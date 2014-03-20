@@ -1,12 +1,12 @@
 
-#if !defined(LIBSIXEL_SIXEL_H)
-#define LIBSIXEL_SIXEL_H 1
+#ifndef LIBSIXEL_SIXEL_H
+#define LIBSIXEL_SIXEL_H
 
 static const int PALETTE_MAX = 256;
 
 typedef struct LibSixel_ImageStruct {
     /* Palette-based image pixels */
-    unsigned char **pixels;
+    unsigned char *pixels;
     int sx;
     int sy;
     int ncolors;
@@ -16,12 +16,12 @@ typedef struct LibSixel_ImageStruct {
     int keycolor;  /* background color */
 } LibSixel_Image, *LibSixel_ImagePtr;
 
-typedef void (* putc_function)(int ch);
-typedef void (* puts_function)(char *str);
-typedef void (* printf_function)(char *fmt, ...);
+typedef int (* putchar_function)(int ch);
+typedef int (* puts_function)(const char *str);
+typedef int (* printf_function)(const char *fmt, ...);
 
 typedef struct LibSixel_OutputContextStruct {
-    putc_function putc;
+    putchar_function putchar;
     puts_function puts;
     printf_function printf;
 } LibSixel_OutputContext, *LibSixel_OutputContextPtr;
