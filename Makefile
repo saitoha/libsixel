@@ -6,11 +6,11 @@ all: img2sixel
 clean:
 	rm -f *.o img2sixel
 
-img2sixel: stb_image.o tosixel.o main.o
-	$(CC) $^ -o $@
+run: all
+	./img2sixel -p 16 a.jpg
 
-stb_image.o: stb_image.c
-	$(CC) -c $< -o $@
+img2sixel: tosixel.o main.o
+	$(CC) $^ -o $@
 
 tosixel.o: tosixel.c
 	$(CC) -c $< -o $@
