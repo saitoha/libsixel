@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
 #include "sixel.h"
 
@@ -47,7 +46,7 @@ static void PutFlash(LibSixel_OutputContextPtr context)
 
     } else {
         for ( n = 0 ; n < save_count ; n++ ) {
-            context->putc(save_pix);
+            context->putchar(save_pix);
         }
     }
 
@@ -286,7 +285,7 @@ void LibSixel_ImageToSixel(LibSixel_ImagePtr im,
 
     for ( y = i = 0 ; y < height ; y++ ) {
         for ( x = 0 ; x < width ; x++ ) {
-            pix = im->pixels[y][x];
+            pix = im->pixels[y * width + x];
             if ( pix >= 0 && pix < maxPalet && pix != back )
                 map[pix * width + x] |= (1 << i);
         }
@@ -338,13 +337,13 @@ void LibSixel_ImageToSixel(LibSixel_ImagePtr im,
     **************/
 
     context->puts("\033P");
-    context->putc('q');
+    context->putchar('q');
     context->printf("\"1;1;%d;%d", width, height);
-    context->putc('\n');
+    context->putchar('\n');
 
     for ( y = i = 0 ; y < height ; y++ ) {
         for ( x = 0 ; x < width ; x++ ) {
-            pix = im->pixels[y][x];
+            pix = im->pixels[y * width + x];
             if ( pix >= 0 && pix < maxPalet && pix != back ) {
                 map[pix * width + x] |= (1 << i);
             }
