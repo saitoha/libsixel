@@ -21,24 +21,12 @@ clean:
 test: img2sixel
 	./img2sixel -p 256 images/snake.jpg
 
-libsixel.so: tosixel.o fromsixel.o
+libsixel.so: tosixel.o fromsixel.o image.o
 	$(CC) -shared $^ -o $@
 
-img2sixel: img2sixel.o quant.o stb_image.o libsixel.so
-	$(CC) img2sixel.o quant.o stb_image.o -o $@ -lsixel -L$(PWD)
+img2sixel: img2sixel.o quant.o stb_image.o image.o libsixel.so
+	$(CC) img2sixel.o quant.o stb_image.o image.o \
+		-o $@ -lsixel -L$(PWD)
 
-tosixel.o: tosixel.c
+.c.o:
 	$(CC) -c $< -o $@
-
-fromsixel.o: fromsixel.c
-	$(CC) -c $< -o $@
-
-stb_image.o: stb_image.c
-	$(CC) -c $< -o $@
-
-quant.o: quant.c
-	$(CC) -c $< -o $@
-
-img2sixel.o: img2sixel.c
-	$(CC) -c $< -o $@
-
