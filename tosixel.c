@@ -1,3 +1,19 @@
+/*
+ * this file is derived from "sixel" original version (2014-3-2)
+ * http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
+ *
+ * Initial developer of this file is kmiya@culti.
+ *
+ * He distributes it under very permissive license which permits
+ * useing, copying, modification, redistribution, and all other
+ * public activities without any restrictions.
+ *
+ * He declares this is compatible with MIT/BSD/GPL.
+ *
+ * Hayaki Saito (user@zuse.jp) modified this and re-licensed
+ * it under the MIT license.
+ *
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
