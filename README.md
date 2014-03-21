@@ -34,7 +34,7 @@ He distributes it under very permissive license which permits
 useing, copying, modification, redistribution, and all other
 public activities without any restrictions.
 
-He declares this is compatible with MIT/BSD/GPL.```
+He declares this is compatible with MIT/BSD/GPL.
 
 
 This software includes stbi-1.33 (stb_image.c),
