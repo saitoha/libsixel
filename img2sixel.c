@@ -4,10 +4,11 @@
 #include <string.h>
 #include <unistd.h>
 #include "sixel.h"
+#include "config.h"
 
 enum
 {
-   STBI_default = 0, // only used for req_comp
+   STBI_default = 0, /* only used for req_comp */
    STBI_grey       = 1,
    STBI_grey_alpha = 2,
    STBI_rgb        = 3,
@@ -115,4 +116,4 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-// EOF
+/* EOF */

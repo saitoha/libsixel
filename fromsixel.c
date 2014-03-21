@@ -24,8 +24,6 @@
 LibSixel_ImagePtr
 LibSixel_SixelToImage(uint8_t *p, int len);
 
-typedef uint8_t BYTE;
-
 #define TrueColor(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
 
 #define TrueColorAlpha(r, g, b, a) (((a) << 24) + ((r) << 16) + ((g) << 8) +  (b))
@@ -99,7 +97,7 @@ static int HLStoRGB(int hue, int lum, int sat)
     }
     return TrueColor(R, G, B);
 }
-static BYTE *GetParam(BYTE *p, int *param, int *len)
+static uint8_t *GetParam(uint8_t *p, int *param, int *len)
 {
     int n;
 
@@ -137,7 +135,7 @@ LibSixel_SixelToImage(uint8_t *p, int len)
     int rep, col, bc, id;
     int param[10];
     LibSixel_ImagePtr im, dm;
-    BYTE *s;
+    uint8_t *s;
     static char pam[256];
     static char gra[256];
 
