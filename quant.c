@@ -1,3 +1,11 @@
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+/* exported function */
+unsigned char *
+quantize(unsigned char *data, int sx, int sy, int depth, int ncolors);
 
 /*****************************************************************************
  *
@@ -72,7 +80,7 @@ stbex_pixel_sort_b(stbex_pixel * const pixels, size_t npixels)
 
 /*****************************************************************************
  *
- * Median cut
+ * quantization
  *
  *****************************************************************************/
 
@@ -358,11 +366,12 @@ make_palette(unsigned char *data, int x, int y, int n, int c)
     stbex_cube_get_sample(cube, sample, (stbex_pixel *)results, &nresult);
     free(sample);
 
+    palette = malloc(c * n);
+
 /*
     printf("[%d -> %d]\n", sample_count, count); fflush(0);
 */
 
-    palette = malloc(c * n);
     for (i = 0; i < c; i++) {
         memcpy(palette + i * 3, results + i, 3); 
     }
@@ -402,8 +411,7 @@ void add_offset(unsigned char *data, int i, int n, int roffset, int goffset, int
 unsigned char *
 apply_palette(unsigned char *data,
               int width, int height, int depth,
-              unsigned char *palette, int c,
-              int use_diffusion)
+              unsigned char *palette, int c)
 {
     int i;
     int j;

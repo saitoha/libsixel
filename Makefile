@@ -9,10 +9,16 @@ clean:
 run: all
 	./img2sixel -p 16 a.jpg
 
-img2sixel: tosixel.o main.o
+img2sixel: tosixel.o main.o quant.o stb_image.o
 	$(CC) $^ -o $@
 
 tosixel.o: tosixel.c
+	$(CC) -c $< -o $@
+
+stb_image.o: stb_image.c
+	$(CC) -c $< -o $@
+
+quant.o: quant.c
 	$(CC) -c $< -o $@
 
 main.o: main.c
