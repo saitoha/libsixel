@@ -3,7 +3,6 @@ libsixel
 
 ## License
 
-```txt
 The MIT License (MIT)
 
 Copyright (c) 2014 Hayaki Saito
@@ -24,9 +23,8 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-```
 
-```txt
+
 tosixel.c and fromsixel.c are derived from "sixel" original version (2014-3-2)
 http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
 
@@ -37,17 +35,14 @@ useing, copying, modification, redistribution, and all other
 public activities without any restrictions.
 
 He declares this is compatible with MIT/BSD/GPL.```
-```
 
-```txt
+
 This software includes stbi-1.33 (stb_image.c),
 public domain JPEG/PNG reader.
 http://nothings.org/stb_image.c
-```
 
-```txt
+
 This software includes stbiw-0.92 (stb_image_write.h),
 public domain PNG/BMP/TGA writer.
 http://nothings.org/stb/stb_image_write.h
-```
 
