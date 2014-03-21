@@ -20,7 +20,7 @@ clean:
 distclean: clean
 	rm -rf config.log config.status autom4te.cache
 
-config.h.in: config.h configure
+config.h: config.h.in configure
 	./configure
 
 Makefile: Makefile.in configure
