@@ -110,7 +110,7 @@ static void PutCr(LibSixel_OutputContextPtr context)
 {
     // DECGCR Graphics Carriage Return
 
-    context->puts("$\n");
+    context->puts("$");
     // x = 0;
 }
 
@@ -118,7 +118,7 @@ static void PutLf(LibSixel_OutputContextPtr context)
 {
     // DECGNL Graphics Next Line
 
-    context->puts("-\n");
+    context->puts("-");
     // x = 0;
     // y += 6;
 }

@@ -2,7 +2,7 @@
 #ifndef LIBSIXEL_SIXEL_H
 #define LIBSIXEL_SIXEL_H
 
-static const int PALETTE_MAX = 256;
+static const int PALETTE_MAX = 1024;
 
 typedef struct LibSixel_ImageStruct {
     /* Palette-based image pixels */
@@ -10,6 +10,7 @@ typedef struct LibSixel_ImageStruct {
     int sx;
     int sy;
     int ncolors;
+    int paletted;
     int red[PALETTE_MAX];
     int green[PALETTE_MAX];
     int blue[PALETTE_MAX];
