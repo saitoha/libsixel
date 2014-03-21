@@ -10,14 +10,16 @@ typedef struct LibSixel_ImageStruct {
     int sx;
     int sy;
     int ncolors;
-    int paletted;
     int red[PALETTE_MAX];
     int green[PALETTE_MAX];
     int blue[PALETTE_MAX];
     int keycolor;  /* background color */
 } LibSixel_Image, *LibSixel_ImagePtr;
 
-LibSixel_ImagePtr LibSixel_Image_create(int sx, int sy);
+LibSixel_ImagePtr LibSixel_Image_create(int sx, int sy, int ncolors);
+void LibSixel_Image_setpalette(LibSixel_ImagePtr im,
+                               int n, int r, int g, int b);
+void LibSixel_Image_setpixels(LibSixel_ImagePtr im, uint8_t *pixels);
 void LibSixel_Image_copy(LibSixel_ImagePtr dst,
                          LibSixel_ImagePtr src, int w, int h);
 void LibSixel_Image_destroy(LibSixel_ImagePtr im);

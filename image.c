@@ -3,7 +3,7 @@
 #include "config.h"
 
 LibSixel_ImagePtr
-LibSixel_Image_create(int sx, int sy)
+LibSixel_Image_create(int sx, int sy, int ncolors)
 {
     LibSixel_ImagePtr im;
    
@@ -11,7 +11,24 @@ LibSixel_Image_create(int sx, int sy)
     im->pixels = (uint8_t *)malloc(sx * sy);
     im->sx = sx;
     im->sy = sy;
+    im->ncolors = ncolors;
+    im->keycolor = -1;
     return im;
+}
+
+void
+LibSixel_Image_setpalette(LibSixel_ImagePtr im,
+                          int n, int r, int g, int b)
+{
+    im->red[n] = r;
+    im->green[n] = g;
+    im->blue[n] = b;
+}
+
+void
+LibSixel_Image_setpixels(LibSixel_ImagePtr im, uint8_t *pixels)
+{
+    im->pixels = pixels;
 }
 
 void

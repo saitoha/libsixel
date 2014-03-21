@@ -42,7 +42,7 @@ char sixel_palinit[PALETTE_MAX];
 int sixel_palet[PALETTE_MAX];
 
 static int ColTab[] = {
-    XRGB( 0,  0,  0),        //  0 Black
+    XRGB(0,  0,  0),        //  0 Black
     XRGB(20, 20, 80),        //  1 Blue
     XRGB(80, 13, 13),        //  2 Red
     XRGB(20, 80, 20),        //  3 Green
@@ -62,30 +62,30 @@ static int ColTab[] = {
 
 static int HueToRGB(int n1, int n2, int hue)
 {
-    if ( hue < 0 )
+    if (hue < 0)
         hue += HLSMAX;
 
     if (hue > HLSMAX)
         hue -= HLSMAX;
 
-    if ( hue < (HLSMAX / 6) )
+    if (hue < (HLSMAX / 6))
         return (n1 + (((n2 - n1) * hue + (HLSMAX / 12)) / (HLSMAX / 6)));
-    if ( hue < (HLSMAX / 2))
-        return ( n2 );
-    if ( hue < ((HLSMAX * 2) / 3))
-        return ( n1 + (((n2 - n1) * (((HLSMAX * 2) / 3) - hue) + (HLSMAX / 12))/(HLSMAX / 6)));
+    if (hue < (HLSMAX / 2))
+        return (n2);
+    if (hue < ((HLSMAX * 2) / 3))
+        return (n1 + (((n2 - n1) * (((HLSMAX * 2) / 3) - hue) + (HLSMAX / 12))/(HLSMAX / 6)));
     else
-        return ( n1 );
+        return (n1);
 }
 static int HLStoRGB(int hue, int lum, int sat)
 {
     int R, G, B;
     int Magic1, Magic2;
 
-    if ( sat == 0 ) {
+    if (sat == 0) {
         R = G = B = (lum * RGBMAX) / HLSMAX;
     } else {
-        if ( lum <= (HLSMAX / 2) )
+        if (lum <= (HLSMAX / 2))
             Magic2 = (lum * (HLSMAX + sat) + (HLSMAX / 2)) / HLSMAX;
         else
             Magic2 = lum + sat - ((lum * sat) + (HLSMAX / 2)) / HLSMAX;
@@ -102,20 +102,20 @@ static uint8_t *GetParam(uint8_t *p, int *param, int *len)
     int n;
 
     *len = 0;
-    while ( *p != '\0' ) {
-        while ( *p == ' ' || *p == '\t' )
+    while (*p != '\0') {
+        while (*p == ' ' || *p == '\t')
             p++;
-        if ( isdigit(*p) ) {
-            for ( n = 0 ; isdigit(*p) ; p++ )
+        if (isdigit(*p)) {
+            for (n = 0 ; isdigit(*p) ; p++)
                 n = n * 10 + (*p - '0');
-            if ( *len < 10 )
+            if (*len < 10)
                 param[(*len)++] = n;
-            while ( *p == ' ' || *p == '\t' )
+            while (*p == ' ' || *p == '\t')
                 p++;
-            if ( *p == ';' )
+            if (*p == ';')
                 p++;
-        } else if ( *p == ';' ) {
-            if ( *len < 10 )
+        } else if (*p == ';') {
+            if (*len < 10)
                 param[(*len)++] = 0;
             p++;
         } else
@@ -148,27 +148,27 @@ LibSixel_SixelToImage(uint8_t *p, int len)
     col = 0;
     bc = 0;
 
-    if ( (im = LibSixel_Image_create(1024, 1024)) == NULL ) {
+    if ((im = LibSixel_Image_create(1024, 1024, -1)) == NULL) {
         return NULL;
     }
 
-    for ( n = 0 ; n < 16 ; n++ )
+    for (n = 0 ; n < 16 ; n++)
         sixel_palet[n] = ColTab[n];
 
     // colors 16-231 are a 6x6x6 color cube
-    for ( a = 0 ; a < 6 ; a++ ) {
-        for ( b = 0 ; b < 6 ; b++ ) {
-            for ( c = 0 ; c < 6 ; c++ )
+    for (a = 0 ; a < 6 ; a++) {
+        for (b = 0 ; b < 6 ; b++) {
+            for (c = 0 ; c < 6 ; c++)
                 sixel_palet[n++] = TrueColor(a * 51, b * 51, c * 51);
         }
     }
     // colors 232-255 are a grayscale ramp, intentionally leaving out
-    for ( a = 0 ; a < 24 ; a++ )
+    for (a = 0 ; a < 24 ; a++)
         sixel_palet[n++] = TrueColor(a * 11, a * 11, a * 11);
 
     bc = TrueColorAlpha(255, 255, 255, 127);
 
-    for ( ; n < PALETTE_MAX ; n++ )
+    for (; n < PALETTE_MAX ; n++)
         sixel_palet[n] = TrueColor(255, 255, 255);
 
     LibSixel_Image_fill(im, bc);
@@ -177,28 +177,28 @@ LibSixel_SixelToImage(uint8_t *p, int len)
     sixel_param = pam;
     sixel_gra   = gra;
 
-    for ( n = 0 ; n < PALETTE_MAX ; n++ )
+    for (n = 0 ; n < PALETTE_MAX ; n++)
         sixel_palinit[n] = 0;
 
     sixel_palfix = 0;
 
-    while ( *p != '\0' ) {
-        if ( (p[0] == '\033' && p[1] == 'P') || *p == 0x90 ) {
-            if ( *p == '\033' )
+    while (*p != '\0') {
+        if ((p[0] == '\033' && p[1] == 'P') || *p == 0x90) {
+            if (*p == '\033')
                 p++;
 
             s = ++p;
             p = GetParam(p, param, &n);
-            if ( s < p ) {
-                for ( i = 0 ; i < 255 && s < p ; )
+            if (s < p) {
+                for (i = 0 ; i < 255 && s < p ;)
                     pam[i++] = *(s++);
                 pam[i] = '\0';
             }
 
-            if ( *p == 'q' ) {
+            if (*p == 'q') {
                 p++;
 
-                if ( n > 0 ) {        // Pn1
+                if (n > 0) {        // Pn1
                     switch(param[0]) {
                     case 0:
                     case 1:
@@ -231,40 +231,40 @@ LibSixel_SixelToImage(uint8_t *p, int len)
                     }
                 }
 
-                if ( n > 2 ) {        // Pn3
-                    if ( param[2] == 0 )
+                if (n > 2) {        // Pn3
+                    if (param[2] == 0)
                         param[2] = 10;
                     ax = ax * param[2] / 10;
                     ay = ay * param[2] / 10;
-                    if ( ax <= 0 ) ax = 1;
-                    if ( ay <= 0 ) ay = 1;
+                    if (ax <= 0) ax = 1;
+                    if (ay <= 0) ay = 1;
                 }
             }
 
-        } else if ( (p[0] == '\033' && p[1] == '\\') || *p == 0x9C ) {
+        } else if ((p[0] == '\033' && p[1] == '\\') || *p == 0x9C) {
             break;
 
-        } else if ( *p == '"' ) { // DECGRA Set Raster Attributes " Pan ; Pad ; Ph ; Pv
+        } else if (*p == '"') { // DECGRA Set Raster Attributes " Pan ; Pad ; Ph ; Pv
             s = p++;
             p = GetParam(p, param, &n);
-            if ( s < p ) {
-                for ( i = 0 ; i < 255 && s < p ; )
+            if (s < p) {
+                for (i = 0 ; i < 255 && s < p ;)
                     gra[i++] = *(s++);
                 gra[i] = '\0';
             }
 
-            if ( n > 0 ) ay = param[0];
-            if ( n > 1 ) ax = param[1];
-            if ( n > 2 && param[2] > 0 ) tx = param[2];
-            if ( n > 3 && param[3] > 0 ) ty = param[3];
+            if (n > 0) ay = param[0];
+            if (n > 1) ax = param[1];
+            if (n > 2 && param[2] > 0) tx = param[2];
+            if (n > 3 && param[3] > 0) ty = param[3];
 
-            if ( ax <= 0 ) ax = 1;
-            if ( ay <= 0 ) ay = 1;
+            if (ax <= 0) ax = 1;
+            if (ay <= 0) ay = 1;
 
-            if ( im->sx < tx || im->sy < ty ) {
-                if ( (dm = LibSixel_Image_create(
-                               im->sx > tx ? im->sx : tx,
-                               im->sy > ty ? im->sy : ty)) == NULL )
+            if (im->sx < tx || im->sy < ty) {
+                dm = LibSixel_Image_create(im->sx > tx ? im->sx : tx,
+                                           im->sy > ty ? im->sy : ty, -1);
+                if (dm == NULL)
                     return NULL;
                 LibSixel_Image_fill(dm, bc);
                 LibSixel_Image_copy(dm, im, im->sx, im->sy);
@@ -272,61 +272,61 @@ LibSixel_SixelToImage(uint8_t *p, int len)
                 im = dm;
             }
 
-        } else if ( *p == '!' ) { // DECGRI Graphics Repeat Introducer ! Pn Ch
+        } else if (*p == '!') { // DECGRI Graphics Repeat Introducer ! Pn Ch
             p = GetParam(++p, param, &n);
 
-            if ( n > 0 )
+            if (n > 0)
                 rep = param[0];
 
-        } else if ( *p == '#' ) {
+        } else if (*p == '#') {
             // DECGCI Graphics Color Introducer # Pc ; Pu; Px; Py; Pz
             p = GetParam(++p, param, &n);
 
-            if ( n > 0 ) {
-                if ( (col = param[0]) < 0 )
+            if (n > 0) {
+                if ((col = param[0]) < 0)
                     col = 0;
-                else if ( col >= PALETTE_MAX )
+                else if (col >= PALETTE_MAX)
                     col = PALETTE_MAX - 1;
             }
 
-            if ( n > 4 ) {
-                if ( param[1] == 1 ) {            // HLS
-                    if ( param[2] > 360 ) param[2] = 360;
-                    if ( param[3] > 100 ) param[3] = 100;
-                    if ( param[4] > 100 ) param[4] = 100;
+            if (n > 4) {
+                if (param[1] == 1) {            // HLS
+                    if (param[2] > 360) param[2] = 360;
+                    if (param[3] > 100) param[3] = 100;
+                    if (param[4] > 100) param[4] = 100;
                     sixel_palet[col] = HLStoRGB(param[2] * 100 / 360, param[3], param[4]);
                     sixel_palinit[col] |= 2;
-                } else if ( param[1] == 2 ) {    // RGB
-                    if ( param[2] > 100 ) param[2] = 100;
-                    if ( param[3] > 100 ) param[3] = 100;
-                    if ( param[4] > 100 ) param[4] = 100;
+                } else if (param[1] == 2) {    // RGB
+                    if (param[2] > 100) param[2] = 100;
+                    if (param[3] > 100) param[3] = 100;
+                    if (param[4] > 100) param[4] = 100;
                     sixel_palet[col] = XRGB(param[2], param[3], param[4]);
                     sixel_palinit[col] |= 2;
                 }
             }
 
-        } else if ( *p == '$' ) {        // DECGCR Graphics Carriage Return
+        } else if (*p == '$') {        // DECGCR Graphics Carriage Return
             p++;
             px = 0;
             rep = 1;
 
-        } else if ( *p == '-' ) {        // DECGNL Graphics Next Line
+        } else if (*p == '-') {        // DECGNL Graphics Next Line
             p++;
             px  = 0;
             py += 6;
             rep = 1;
 
-        } else if ( *p >= '?' && *p <= '\x7E' ) {
-            if ( im->sx < (px + rep) || im->sy < (py + 6) ) {
+        } else if (*p >= '?' && *p <= '\x7E') {
+            if (im->sx < (px + rep) || im->sy < (py + 6)) {
                 int nx = im->sx * 2;
                 int ny = im->sy * 2;
 
-                while ( nx < (px + rep) || ny < (py + 6) ) {
+                while (nx < (px + rep) || ny < (py + 6)) {
                     nx *= 2;
                     ny *= 2;
                 }
 
-                if ( (dm = LibSixel_Image_create(nx, ny)) == NULL )
+                if ((dm = LibSixel_Image_create(nx, ny, -1)) == NULL)
                     return NULL;
                 LibSixel_Image_fill(dm, bc);
                 LibSixel_Image_copy(dm, im, im->sx, im->sy);
@@ -334,23 +334,23 @@ LibSixel_SixelToImage(uint8_t *p, int len)
                 im = dm;
             }
 
-            if ( (b = *(p++) - '?') == 0 ) {
+            if ((b = *(p++) - '?') == 0) {
                 px += rep;
 
             } else {
-                if ( sixel_palinit[col] == 0 )
+                if (sixel_palinit[col] == 0)
                     sixel_palfix = 1;
                 sixel_palinit[col] |= 1;
 
                 a = 0x01;
 
-                if ( rep <= 1 ) {
-                    for ( i = 0 ; i < 6 ; i++ ) {
-                        if ( (b & a) != 0 ) {
+                if (rep <= 1) {
+                    for (i = 0 ; i < 6 ; i++) {
+                        if ((b & a) != 0) {
                             LibSixel_Image_setpixel(im, px, py + i, sixel_palet[col]);
-                            if ( mx < px )
+                            if (mx < px)
                                 mx = px;
-                            if ( my < (py + i) )
+                            if (my < (py + i))
                                 my = py + i;
                         }
                         a <<= 1;
@@ -358,11 +358,11 @@ LibSixel_SixelToImage(uint8_t *p, int len)
                     px += 1;
 
                 } else {
-                    for ( i = 0 ; i < 6 ; i++ ) {
-                        if ( (b & a) != 0 ) {
+                    for (i = 0 ; i < 6 ; i++) {
+                        if ((b & a) != 0) {
                             c = a << 1;
-                            for ( n = 1 ; (i + n) < 6 ; n++ ) {
-                                if ( (b & c) == 0 )
+                            for (n = 1 ; (i + n) < 6 ; n++) {
+                                if ((b & c) == 0)
                                     break;
                                 c <<= 1;
                             }
@@ -371,9 +371,9 @@ LibSixel_SixelToImage(uint8_t *p, int len)
                                                          py + i + n - 1,
                                                          sixel_palet[col]);
 
-                            if ( mx < (px + rep - 1)  )
+                            if (mx < (px + rep - 1))
                                 mx = px + rep - 1;
-                            if ( my < (py + i + n - 1) )
+                            if (my < (py + i + n - 1))
                                 my = py + i + n - 1;
 
                             i += (n - 1);
@@ -391,13 +391,13 @@ LibSixel_SixelToImage(uint8_t *p, int len)
         }
     }
 
-    if ( ++mx < tx )
+    if (++mx < tx)
         mx = tx;
-    if ( ++my < ty )
+    if (++my < ty)
         my = ty;
 
-    if ( im->sx > mx || im->sy > my ) {
-        if ( (dm = LibSixel_Image_create(mx, my)) == NULL )
+    if (im->sx > mx || im->sy > my) {
+        if ((dm = LibSixel_Image_create(mx, my, -1)) == NULL)
             return NULL;
         LibSixel_Image_copy(dm, im, dm->sx, dm->sy);
         LibSixel_Image_destroy(im);

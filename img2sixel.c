@@ -9,10 +9,10 @@
 enum
 {
    STBI_default = 0, /* only used for req_comp */
-   STBI_grey       = 1,
+   STBI_grey = 1,
    STBI_grey_alpha = 2,
-   STBI_rgb        = 3,
-   STBI_rgb_alpha  = 4
+   STBI_rgb = 3,
+   STBI_rgb_alpha = 4
 };
 
 extern unsigned char *
@@ -32,21 +32,16 @@ apply_palette(unsigned char *data,
 static int
 convert_to_sixel(char *filename, int ncolors)
 {
-    unsigned char *pixels;
-    unsigned char *palette;
-    unsigned char *data;
-    LibSixel_Image image;
+    unsigned char *pixels = NULL;
+    unsigned char *palette = NULL;
+    unsigned char *data = NULL;
+    LibSixel_ImagePtr im = NULL;
     LibSixel_OutputContext context = { putchar, puts, printf };
     int sx, sy, comp;
     int i;
+    int nret = -1;
 
     if (filename == NULL) {
-        return (-1);
-    }
-
-    pixels = stbi_load(filename, &sx, &sy, &comp, STBI_rgb);
-
-    if (pixels == NULL) {
         return (-1);
     }
 
@@ -56,30 +51,41 @@ convert_to_sixel(char *filename, int ncolors)
         ncolors = PALETTE_MAX;
     }
 
-    image.sy = sy;
-    image.sx = sx;
-    image.ncolors = ncolors;
+    pixels = stbi_load(filename, &sx, &sy, &comp, STBI_rgb);
+    if (pixels == NULL) {
+        return (-1);
+    }
     palette = make_palette(pixels, sx, sy, 3, ncolors);
     if (!palette) {
-        stbi_image_free(pixels);
-        return -1;
+        goto end;
+    }
+    im = LibSixel_Image_create(sx, sy, ncolors);
+    if (!im) {
+        goto end;
     }
     for (i = 0; i < ncolors; i++) {
-        image.red[i] = palette[i * 3 + 0];
-        image.green[i] = palette[i * 3 + 1];
-        image.blue[i] = palette[i * 3 + 2];
+        LibSixel_Image_setpalette(im, i,
+                                  palette[i * 3 + 0],
+                                  palette[i * 3 + 1],
+                                  palette[i * 3 + 2]);
     }
     data = apply_palette(pixels, sx, sy, 3, palette, ncolors);
-    stbi_image_free(pixels);
-    free(palette);
     if (!data) {
-        return -1;
+        goto end;
     }
-    image.pixels = data;
-    image.keycolor = -1;
+    LibSixel_Image_setpixels(im, data);
+    LibSixel_ImageToSixel(im, &context);
 
-    LibSixel_ImageToSixel(&image, &context);
-    free(image.pixels);
+end:
+    if (pixels) {
+        stbi_image_free(pixels);
+    }
+    if (palette) {
+        free(palette);
+    }
+    if (im) {
+        LibSixel_Image_destroy(im);
+    }
     return 0;
 }
 

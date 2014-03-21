@@ -50,19 +50,19 @@ static void PutFlash(LibSixel_OutputContextPtr context)
     int n;
 
 #ifdef USE_VT240        // VT240 Max 255 ?
-    while ( save_count > 255 ) {
+    while (save_count > 255) {
         context->printf("!%d%c", 255, save_pix);
         save_count -= 255;
     }
 #endif
 
-    if ( save_count > 3 ) {
+    if (save_count > 3) {
         // DECGRI Graphics Repeat Introducer                ! Pn Ch
 
         context->printf("!%d%c", save_count, save_pix);
 
     } else {
-        for ( n = 0 ; n < save_count ; n++ ) {
+        for (n = 0 ; n < save_count ; n++) {
             context->putchar(save_pix);
         }
     }
@@ -73,12 +73,12 @@ static void PutFlash(LibSixel_OutputContextPtr context)
 
 static void PutPixel(LibSixel_OutputContextPtr context, int pix)
 {
-    if ( pix < 0 || pix > 63 )
+    if (pix < 0 || pix > 63)
         pix = 0;
 
     pix += '?';
 
-    if ( pix == save_pix ) {
+    if (pix == save_pix) {
         save_count++;
     } else {
         PutFlash(context);
@@ -93,7 +93,7 @@ static void PutPalet(LibSixel_OutputContextPtr context,
 {
     // DECGCI Graphics Color Introducer                        # Pc ; Pu; Px; Py; Pz
 
-    if ( init_palet[pal] == 0 ) {
+    if (init_palet[pal] == 0) {
         context->printf("#%d;2;%d;%d;%d",
                         conv_palet[pal],
                         (im->red[pal] * 100 + 128) / 256,
@@ -101,7 +101,7 @@ static void PutPalet(LibSixel_OutputContextPtr context,
                         (im->blue[pal] * 100 + 128) / 256);
         init_palet[pal] = 1;
 
-    } else if ( act_palet != pal )
+    } else if (act_palet != pal)
         context->printf("#%d", conv_palet[pal]);
 
     act_palet = pal;
@@ -128,7 +128,7 @@ static void NodeFree()
 {
     SixNode *np;
 
-    while ( (np = node_free) != NULL ) {
+    while ((np = node_free) != NULL) {
         node_free = np->next;
         free(np);
     }
@@ -138,12 +138,12 @@ static void NodeDel(SixNode *np)
 {
     SixNode *tp;
 
-    if ( (tp = node_top) == np )
+    if ((tp = node_top) == np)
         node_top = np->next;
 
     else {
-        while ( tp->next != NULL ) {
-            if ( tp->next == np ) {
+        while (tp->next != NULL) {
+            if (tp->next == np) {
                 tp->next = np->next;
                 break;
             }
@@ -162,9 +162,9 @@ static void NodeAdd(int pal,
 {
     SixNode *np, *tp, top;
 
-    if ( (np = node_free) != NULL ) {
+    if ((np = node_free) != NULL) {
         node_free = np->next;
-    } else if ( (np = (SixNode *)malloc(sizeof(SixNode))) == NULL ) {
+    } else if ((np = (SixNode *)malloc(sizeof(SixNode))) == NULL) {
         return;
     }
 
@@ -176,10 +176,10 @@ static void NodeAdd(int pal,
     top.next = node_top;
     tp = &top;
 
-    while ( tp->next != NULL ) {
-        if ( np->sx < tp->next->sx ) {
+    while (tp->next != NULL) {
+        if (np->sx < tp->next->sx) {
             break;
-        } else if ( np->sx == tp->next->sx && np->mx > tp->next->mx ) {
+        } else if (np->sx == tp->next->sx && np->mx > tp->next->mx) {
             break;
         }
         tp = tp->next;
@@ -196,20 +196,20 @@ static void NodeLine(int pal,
 {
     int sx, mx, n;
 
-    for ( sx = 0 ; sx < width ; sx++ ) {
-        if ( map[sx] == 0 )
+    for (sx = 0 ; sx < width ; sx++) {
+        if (map[sx] == 0)
             continue;
 
-        for ( mx = sx + 1 ; mx < width ; mx++ ) {
-            if ( map[mx] != 0 )
+        for (mx = sx + 1 ; mx < width ; mx++) {
+            if (map[mx] != 0)
                 continue;
 
-            for ( n = 1 ; (mx + n) < width ; n++ ) {
-                if ( map[mx + n] != 0 )
+            for (n = 1 ; (mx + n) < width ; n++) {
+                if (map[mx + n] != 0)
                     break;
             }
 
-            if ( n >= 10 || (mx + n) >= width )
+            if (n >= 10 || (mx + n) >= width)
                 break;
             mx = mx + n - 1;
         }
@@ -225,10 +225,10 @@ static int PutNode(LibSixel_OutputContextPtr context,
 {
     PutPalet(context, im, np->pal);
 
-    for ( ; x < np->sx ; x++ )
+    for (; x < np->sx ; x++)
         PutPixel(context, 0);
 
-    for ( ; x < np->mx ; x++ )
+    for (; x < np->mx ; x++)
         PutPixel(context, np->map[x]);
 
     PutFlash(context);
@@ -251,14 +251,14 @@ static int GetColIdx(LibSixel_ImagePtr im, int col)
     int idx   = (-1);
     int min   = 0xFFFFFF;    // 255 * 255 * 3 + 255 * 255 * 9 + 255 * 255 = 845325 = 0x000CE60D
 
-    for ( i = 0 ; i < im->ncolors ; i++ ) {
-        if ( i == im->keycolor )
+    for (i = 0 ; i < im->ncolors ; i++) {
+        if (i == im->keycolor)
             continue;
         r = im->red[i] - red;
         g = im->green[i] - green;
         b = im->blue[i] - blue;
         d = r * r * 3 + g * g * 9 + b * b;
-        if ( min > d ) {
+        if (min > d) {
             idx = i;
             min = d;
         }
@@ -285,12 +285,12 @@ void LibSixel_ImageToSixel(LibSixel_ImagePtr im,
     back = im->keycolor;
     len = maxPalet * width;
 
-    if ( (map = (uint8_t *)malloc(len)) == NULL )
+    if ((map = (uint8_t *)malloc(len)) == NULL)
         return;
 
     memset(map, 0, len);
 
-    for ( n = 0 ; n < maxPalet ; n++ )
+    for (n = 0 ; n < maxPalet ; n++)
         conv_palet[n] = list[n] = n;
 
     memset(init_palet, 0, sizeof(init_palet));
@@ -300,21 +300,21 @@ void LibSixel_ImageToSixel(LibSixel_ImagePtr im,
     memset(use_palet, 0, sizeof(use_palet));
     skip = (height / 240) * 6;
 
-    for ( y = i = 0 ; y < height ; y++ ) {
-        for ( x = 0 ; x < width ; x++ ) {
+    for (y = i = 0 ; y < height ; y++) {
+        for (x = 0 ; x < width ; x++) {
             pix = im->pixels[y * width + x];
-            if ( pix >= 0 && pix < maxPalet && pix != back )
+            if (pix >= 0 && pix < maxPalet && pix != back)
                 map[pix * width + x] |= (1 << i);
         }
 
-        if ( ++i < 6 && (y + 1) < height )
+        if (++i < 6 && (y + 1) < height)
             continue;
 
-        for ( n = 0 ; n < maxPalet ; n++ )
+        for (n = 0 ; n < maxPalet ; n++)
             NodeLine(n, width, map + n * width);
 
-        for ( x = 0 ; (np = node_top) != NULL ; ) {
-            if ( x > np->sx )
+        for (x = 0 ; (np = node_top) != NULL ;) {
+            if (x > np->sx)
                 x = 0;
 
             use_palet[np->pal]++;
@@ -323,8 +323,8 @@ void LibSixel_ImageToSixel(LibSixel_ImagePtr im,
             NodeDel(np);
             np = node_top;
 
-            while ( np != NULL ) {
-                if ( np->sx < x ) {
+            while (np != NULL) {
+                if (np->sx < x) {
                     np = np->next;
                     continue;
                 }
@@ -344,12 +344,12 @@ void LibSixel_ImageToSixel(LibSixel_ImagePtr im,
 
     qsort(list, maxPalet, sizeof(uint8_t), PalUseCmp);
 
-    for ( n = 0 ; n < maxPalet ; n++ ) {
+    for (n = 0 ; n < maxPalet ; n++) {
         conv_palet[list[n]] = n;
     }
 
     /*************
-        for ( n = 0 ; n < maxPalet ; n++ )
+        for (n = 0 ; n < maxPalet ; n++)
             fprintf(stderr, "%d %d=%d\n", n, list[n], conv_palet[list[n]]);
     **************/
 
@@ -358,24 +358,24 @@ void LibSixel_ImageToSixel(LibSixel_ImagePtr im,
     context->printf("\"1;1;%d;%d", width, height);
     context->putchar('\n');
 
-    for ( y = i = 0 ; y < height ; y++ ) {
-        for ( x = 0 ; x < width ; x++ ) {
+    for (y = i = 0 ; y < height ; y++) {
+        for (x = 0 ; x < width ; x++) {
             pix = im->pixels[y * width + x];
-            if ( pix >= 0 && pix < maxPalet && pix != back ) {
+            if (pix >= 0 && pix < maxPalet && pix != back) {
                 map[pix * width + x] |= (1 << i);
             }
         }
 
-        if ( ++i < 6 && (y + 1) < height ) {
+        if (++i < 6 && (y + 1) < height) {
             continue;
         }
 
-        for ( n = 0 ; n < maxPalet ; n++ ) {
+        for (n = 0 ; n < maxPalet ; n++) {
             NodeLine(n, width, map + n * width);
         }
 
-        for ( x = 0 ; (np = node_top) != NULL ; ) {
-            if ( x > np->sx ) {
+        for (x = 0 ; (np = node_top) != NULL ;) {
+            if (x > np->sx) {
                 PutCr(context);
                 x = 0;
             }
@@ -384,8 +384,8 @@ void LibSixel_ImageToSixel(LibSixel_ImagePtr im,
             NodeDel(np);
             np = node_top;
 
-            while ( np != NULL ) {
-                if ( np->sx < x ) {
+            while (np != NULL) {
+                if (np->sx < x) {
                     np = np->next;
                     continue;
                 }
