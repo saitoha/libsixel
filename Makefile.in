@@ -1,0 +1,44 @@
+
+CC=cc -O3
+INSTALL=@INSTALL@
+
+.PHONY: all install uninstall clean test
+
+all: img2sixel libsixel.so
+
+install: libsixel.so img2sixel
+	$(INSTALL) -m 755 libsixel.so @prefix@@libdir@/
+	$(INSTALL) -m 755 img2sixel @prefix@@bindir@/
+
+uninstall:
+	rm -f @prefix@@libdir@/libsixel.so
+	rm -f @prefix@@bindir@/img2sixel
+
+clean:
+	rm -f *.o *.so img2sixel
+
+distclean: clean
+	rm -rf config.log config.status autom4te.cache
+
+config.h.in: config.h configure
+	./configure
+
+Makefile: Makefile.in configure
+	./configure
+
+configure: configure.ac
+	autoconf
+
+test: img2sixel
+	./img2sixel -p 256 images/snake.jpg
+
+libsixel.so: tosixel.o fromsixel.o image.o
+	$(CC) -shared $^ -o $@
+
+img2sixel: img2sixel.o quant.o stb_image.o image.o libsixel.so
+	$(CC) img2sixel.o quant.o stb_image.o image.o \
+		-o $@ -lsixel -L$(PWD)
+
+.c.o:
+	$(CC) -c $< -o $@
+
