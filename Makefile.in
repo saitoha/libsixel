@@ -84,9 +84,8 @@ bin_PROGRAMS = img2sixel$(EXEEXT) sixel2png$(EXEEXT)
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(srcdir)/config.h.in depcomp $(img2sixel_include_HEADERS) \
-	$(libsixel_la_include_HEADERS) $(sixel2png_include_HEADERS) \
-	compile config.guess config.sub install-sh missing ltmain.sh
+	$(srcdir)/config.h.in depcomp $(include_HEADERS) compile \
+	config.guess config.sub install-sh missing ltmain.sh
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -125,9 +124,7 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" \
-	"$(DESTDIR)$(img2sixel_includedir)" \
-	"$(DESTDIR)$(libsixel_la_includedir)" \
-	"$(DESTDIR)$(sixel2png_includedir)"
+	"$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libsixel_la_LIBADD =
 am_libsixel_la_OBJECTS = image.lo fromsixel.lo tosixel.lo
@@ -144,7 +141,7 @@ img2sixel_LDADD = $(LDADD)
 img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(img2sixel_LDFLAGS) $(LDFLAGS) -o $@
-am_sixel2png_OBJECTS = sixel2png.$(OBJEXT)
+am_sixel2png_OBJECTS = sixel2png.$(OBJEXT) stb_image_write.$(OBJEXT)
 sixel2png_OBJECTS = $(am_sixel2png_OBJECTS)
 sixel2png_LDADD = $(LDADD)
 sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -193,8 +190,7 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-HEADERS = $(img2sixel_include_HEADERS) $(libsixel_la_include_HEADERS) \
-	$(sixel2png_include_HEADERS)
+HEADERS = $(include_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) \
 	$(LISP)config.h.in
 # Read a list of newline-separated strings from the standard input,
@@ -348,18 +344,13 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+include_HEADERS = sixel.h stb_image_write.h
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = image.c fromsixel.c tosixel.c
-libsixel_la_includedir = .
-libsixel_la_include_HEADERS = sixel.h config.h
 img2sixel_SOURCES = img2sixel.c quant.c stb_image.c
 img2sixel_LDFLAGS = -lsixel -lm
-img2sixel_includedir = .
-img2sixel_include_HEADERS = sixel.h config.h
-sixel2png_SOURCES = sixel2png.c
+sixel2png_SOURCES = sixel2png.c stb_image_write.c
 sixel2png_LDFLAGS = -lsixel
-sixel2png_includedir = .
-sixel2png_include_HEADERS = sixel.h config.h stb_image_write.h
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -523,6 +514,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quant.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stb_image.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stb_image_write.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tosixel.Plo@am__quote@
 
 .c.o:
@@ -554,69 +546,27 @@ clean-libtool:
 
 distclean-libtool:
 	-rm -f libtool config.lt
-install-img2sixel_includeHEADERS: $(img2sixel_include_HEADERS)
+install-includeHEADERS: $(include_HEADERS)
 	@$(NORMAL_INSTALL)
-	@list='$(img2sixel_include_HEADERS)'; test -n "$(img2sixel_includedir)" || list=; \
+	@list='$(include_HEADERS)'; test -n "$(includedir)" || list=; \
 	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(img2sixel_includedir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(img2sixel_includedir)" || exit 1; \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(includedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(includedir)" || exit 1; \
 	fi; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(img2sixel_includedir)'"; \
-	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(img2sixel_includedir)" || exit $$?; \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(includedir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(includedir)" || exit $$?; \
 	done
 
-uninstall-img2sixel_includeHEADERS:
+uninstall-includeHEADERS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(img2sixel_include_HEADERS)'; test -n "$(img2sixel_includedir)" || list=; \
+	@list='$(include_HEADERS)'; test -n "$(includedir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(img2sixel_includedir)'; $(am__uninstall_files_from_dir)
-install-libsixel_la_includeHEADERS: $(libsixel_la_include_HEADERS)
-	@$(NORMAL_INSTALL)
-	@list='$(libsixel_la_include_HEADERS)'; test -n "$(libsixel_la_includedir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(libsixel_la_includedir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(libsixel_la_includedir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(libsixel_la_includedir)'"; \
-	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(libsixel_la_includedir)" || exit $$?; \
-	done
-
-uninstall-libsixel_la_includeHEADERS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(libsixel_la_include_HEADERS)'; test -n "$(libsixel_la_includedir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(libsixel_la_includedir)'; $(am__uninstall_files_from_dir)
-install-sixel2png_includeHEADERS: $(sixel2png_include_HEADERS)
-	@$(NORMAL_INSTALL)
-	@list='$(sixel2png_include_HEADERS)'; test -n "$(sixel2png_includedir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(sixel2png_includedir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(sixel2png_includedir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(sixel2png_includedir)'"; \
-	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(sixel2png_includedir)" || exit $$?; \
-	done
-
-uninstall-sixel2png_includeHEADERS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(sixel2png_include_HEADERS)'; test -n "$(sixel2png_includedir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(sixel2png_includedir)'; $(am__uninstall_files_from_dir)
+	dir='$(DESTDIR)$(includedir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -846,7 +796,7 @@ all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(HEADERS) config.h
 install-binPROGRAMS: install-libLTLIBRARIES
 
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(img2sixel_includedir)" "$(DESTDIR)$(libsixel_la_includedir)" "$(DESTDIR)$(sixel2png_includedir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -903,9 +853,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-img2sixel_includeHEADERS \
-	install-libsixel_la_includeHEADERS \
-	install-sixel2png_includeHEADERS
+install-data-am: install-includeHEADERS
 
 install-dvi: install-dvi-am
 
@@ -953,9 +901,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-img2sixel_includeHEADERS \
-	uninstall-libLTLIBRARIES uninstall-libsixel_la_includeHEADERS \
-	uninstall-sixel2png_includeHEADERS
+uninstall-am: uninstall-binPROGRAMS uninstall-includeHEADERS \
+	uninstall-libLTLIBRARIES
 
 .MAKE: all install-am install-strip
 
@@ -970,17 +917,14 @@ uninstall-am: uninstall-binPROGRAMS uninstall-img2sixel_includeHEADERS \
 	install install-am install-binPROGRAMS install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am \
-	install-img2sixel_includeHEADERS install-info install-info-am \
-	install-libLTLIBRARIES install-libsixel_la_includeHEADERS \
-	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-sixel2png_includeHEADERS install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
+	install-includeHEADERS install-info install-info-am \
+	install-libLTLIBRARIES install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags tags-am uninstall uninstall-am uninstall-binPROGRAMS \
-	uninstall-img2sixel_includeHEADERS uninstall-libLTLIBRARIES \
-	uninstall-libsixel_la_includeHEADERS \
-	uninstall-sixel2png_includeHEADERS
+	uninstall-includeHEADERS uninstall-libLTLIBRARIES
 
 
 test:
