@@ -407,4 +407,4 @@ exit(0);
     return im;
 }
 
-// EOF
+/* EOF */

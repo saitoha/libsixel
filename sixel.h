@@ -73,4 +73,4 @@ LibSixel_SixelToImage(uint8_t *p, int len);
 
 #endif /* LIBSIXEL_SIXEL_H */
 
-// EOF
+/* EOF */

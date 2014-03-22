@@ -498,4 +498,4 @@ apply_palette(unsigned char *data,
     return result;
 }
 
-// EOF
+/* EOF */

@@ -86,3 +86,4 @@ LibSixel_Image_setpixel(LibSixel_ImagePtr im, int x, int y, int color)
     im->pixels[im->sx * 3 * y + x * 3 + 2] = color & 0xff;
 }
 
+/* EOF */

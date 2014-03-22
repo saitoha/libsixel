@@ -76,7 +76,6 @@ sixel_to_png(const char *filename)
     (int)stbi_write_png("out.png", im->sx, im->sy,
                         STBI_rgb, im->pixels, im->sx * 3);
 
-    printf("%d - %d ", im->sx, im->sy);
     LibSixel_Image_destroy(im);
 
     return 0;
@@ -87,9 +86,8 @@ int main(int argc, char *argv[])
     int n;
     int filecount = 1;
 
-    for (n = 1; n < argc; n++) {
-        sixel_to_png(argv[n]);
-    }
+    sixel_to_png(argv[n]);
+
     return 0;
 }
 

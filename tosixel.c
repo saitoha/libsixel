@@ -408,4 +408,4 @@ void LibSixel_ImageToSixel(LibSixel_ImagePtr im,
     free(map);
 }
 
-// EOF
+/* EOF */
