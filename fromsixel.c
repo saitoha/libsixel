@@ -147,7 +147,7 @@ LibSixel_SixelToImage(uint8_t *p, int len)
     col = 0;
     bc = 0;
 
-    if ((im = LibSixel_Image_create(1024, 1024, -1)) == NULL) {
+    if ((im = LibSixel_Image_create(2048, 2048, 3, -1)) == NULL) {
         return NULL;
     }
 
@@ -261,8 +261,9 @@ LibSixel_SixelToImage(uint8_t *p, int len)
             if (ay <= 0) ay = 1;
 
             if (im->sx < tx || im->sy < ty) {
+exit(0);
                 dm = LibSixel_Image_create(im->sx > tx ? im->sx : tx,
-                                           im->sy > ty ? im->sy : ty, -1);
+                                           im->sy > ty ? im->sy : ty, 3, -1);
                 if (dm == NULL)
                     return NULL;
                 LibSixel_Image_fill(dm, bc);
@@ -325,7 +326,7 @@ LibSixel_SixelToImage(uint8_t *p, int len)
                     ny *= 2;
                 }
 
-                if ((dm = LibSixel_Image_create(nx, ny, -1)) == NULL)
+                if ((dm = LibSixel_Image_create(nx, ny, 3, -1)) == NULL)
                     return NULL;
                 LibSixel_Image_fill(dm, bc);
                 LibSixel_Image_copy(dm, im, im->sx, im->sy);
@@ -396,7 +397,7 @@ LibSixel_SixelToImage(uint8_t *p, int len)
         my = ty;
 
     if (im->sx > mx || im->sy > my) {
-        if ((dm = LibSixel_Image_create(mx, my, -1)) == NULL)
+        if ((dm = LibSixel_Image_create(mx, my, 3, -1)) == NULL)
             return NULL;
         LibSixel_Image_copy(dm, im, dm->sx, dm->sy);
         LibSixel_Image_destroy(im);

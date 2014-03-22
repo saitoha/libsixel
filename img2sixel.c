@@ -59,7 +59,7 @@ convert_to_sixel(char *filename, int ncolors)
     if (!palette) {
         goto end;
     }
-    im = LibSixel_Image_create(sx, sy, ncolors);
+    im = LibSixel_Image_create(sx, sy, 1, ncolors);
     if (!im) {
         goto end;
     }

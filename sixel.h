@@ -9,6 +9,7 @@ typedef struct LibSixel_ImageStruct {
     unsigned char *pixels;
     int sx;
     int sy;
+    int depth;
     int ncolors;
     int red[PALETTE_MAX];
     int green[PALETTE_MAX];
@@ -31,7 +32,7 @@ extern "C" {
 #endif
 
 extern LibSixel_ImagePtr
-LibSixel_Image_create(int sx, int sy, int ncolors);
+LibSixel_Image_create(int sx, int sy, int depth, int ncolors);
 
 extern void
 LibSixel_Image_setpalette(LibSixel_ImagePtr im,
@@ -62,6 +63,9 @@ LibSixel_Image_setpixel(LibSixel_ImagePtr im,
 extern void
 LibSixel_ImageToSixel(LibSixel_ImagePtr im,
                       LibSixel_OutputContextPtr context);
+
+extern LibSixel_ImagePtr
+LibSixel_SixelToImage(uint8_t *p, int len);
 
 #ifdef __cplusplus
 }

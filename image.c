@@ -3,14 +3,15 @@
 #include "config.h"
 
 LibSixel_ImagePtr
-LibSixel_Image_create(int sx, int sy, int ncolors)
+LibSixel_Image_create(int sx, int sy, int depth, int ncolors)
 {
     LibSixel_ImagePtr im;
    
     im = (LibSixel_ImagePtr)malloc(sizeof(LibSixel_Image));
-    im->pixels = (uint8_t *)malloc(sx * sy);
+    im->pixels = (uint8_t *)malloc(sx * sy * depth);
     im->sx = sx;
     im->sy = sy;
+    im->depth = depth;
     im->ncolors = ncolors;
     im->keycolor = -1;
     return im;
@@ -39,8 +40,9 @@ LibSixel_Image_copy(LibSixel_ImagePtr dst,
     int x, y;
 
     for (y = 0; y < h; y++) {
-        for (x = 0; x < w; x++) {
-            dst->pixels[dst->sx * y + x] = src->pixels[src->sx * y + x];
+        for (x = 0; x < w * dst->depth; x++) {
+            dst->pixels[dst->sx * dst->depth * y + x] 
+                = src->pixels[src->sx * src->depth * y + x];
         }
     }
 }
@@ -58,7 +60,7 @@ LibSixel_Image_fill(LibSixel_ImagePtr im, int color)
     int x, y;
     for (y = 0; y < im->sy; y++) {
         for (x = 0; x < im->sx; x++) {
-            im->pixels[im->sx * y + x] = color;
+            LibSixel_Image_setpixel(im, x, y, color);
         }
     }
 }
@@ -71,7 +73,7 @@ LibSixel_Image_fillrectangle(LibSixel_ImagePtr im,
     int x, y;
     for (y = y1; y < y2; y++) {
         for (x = x1; x < x2; x++) {
-            im->pixels[im->sx * y + x] = color;
+            LibSixel_Image_setpixel(im, x, y, color);
         }
     }
 }
@@ -79,6 +81,8 @@ LibSixel_Image_fillrectangle(LibSixel_ImagePtr im,
 void
 LibSixel_Image_setpixel(LibSixel_ImagePtr im, int x, int y, int color)
 {
-    im->pixels[im->sx * y + x] = color;
+    im->pixels[im->sx * 3 * y + x * 3 + 0] = (color >> 16) & 0xff;
+    im->pixels[im->sx * 3 * y + x * 3 + 1] = (color >> 8) & 0xff;
+    im->pixels[im->sx * 3 * y + x * 3 + 2] = color & 0xff;
 }
 
