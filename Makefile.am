@@ -8,3 +8,8 @@ sixel2png_SOURCES = sixel2png.c
 sixel2png_LDFLAGS = -lsixel
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
+
+test:
+	./img2sixel images/snake.jpg
+	./img2sixel images/snake.jpg > snake.sixel
+	./sixel2png < snake.sixel > snake.png

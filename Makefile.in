@@ -899,6 +899,11 @@ uninstall-am: uninstall-binPROGRAMS uninstall-libLTLIBRARIES
 	uninstall-libLTLIBRARIES
 
 
+test:
+	./img2sixel images/snake.jpg
+	./img2sixel images/snake.jpg > snake.sixel
+	./sixel2png < snake.sixel > snake.png
+
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
