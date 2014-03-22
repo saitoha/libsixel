@@ -85,22 +85,24 @@ int main(int argc, char *argv[])
 {
     int n;
     int filecount = 1;
-    char *output = "/dev/stdout";
-    char *input = "/dev/stdin";
-    const char *usage = "Usage: %s -i<input file name> -o<output file name>\n"
-                        "       %s < <input file name> > <output file name>\n";
+    char *output = strdup("/dev/stdout");
+    char *input = strdup("/dev/stdin");
+    const char *usage = "Usage: %s -i input.sixel -o output.png\n"
+                        "       %s < input.sixel > output.png\n";
 
     for (;;) {
         while ((n = getopt(argc, argv, "o:i:")) != EOF) {
             switch(n) {
             case 'i':
+                free(input);
                 input = strdup(optarg);
                 break;
             case 'o':
+                free(output);
                 output = strdup(optarg);
                 break;
             default:
-                fprintf(stderr, usage, argv[0], argv[1]);
+                fprintf(stderr, usage, argv[0], argv[0]);
                 exit(0);
             }
         }
