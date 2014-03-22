@@ -87,4 +87,6 @@ LibSixel_Image_setpixel(LibSixel_ImagePtr im, int x, int y, int color)
     im->pixels[im->sx * 3 * y + x * 3 + 2] = color & 0xff;
 }
 
+/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
+/* vim: set expandtab ts=4 : */
 /* EOF */

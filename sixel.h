@@ -73,4 +73,6 @@ LibSixel_SixelToImage(uint8_t *p, int len);
 
 #endif /* LIBSIXEL_SIXEL_H */
 
+/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
+/* vim: set expandtab ts=4 : */
 /* EOF */

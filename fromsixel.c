@@ -244,8 +244,8 @@ LibSixel_SixelToImage(uint8_t *p, int len)
 
         } else if ((p[0] == '\033' && p[1] == '\\') || *p == 0x9C) {
             break;
-
-        } else if (*p == '"') { // DECGRA Set Raster Attributes " Pan ; Pad ; Ph ; Pv
+        } else if (*p == '"') {
+            // DECGRA Set Raster Attributes " Pan ; Pad ; Ph ; Pv
             s = p++;
             p = GetParam(p, param, &n);
             if (s < p) {
@@ -409,4 +409,6 @@ exit(0);
     return im;
 }
 
+/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
+/* vim: set expandtab ts=4 : */
 /* EOF */
