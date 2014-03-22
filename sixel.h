@@ -39,14 +39,15 @@ typedef struct LSImageStruct {
 } LSImage, *LSImagePtr;
 
 typedef int (* putchar_function)(int ch);
-typedef int (* puts_function)(const char *str);
 typedef int (* printf_function)(const char *fmt, ...);
 
 typedef struct LSOutputContextStruct {
     putchar_function fn_putchar;
-    puts_function fn_puts;
     printf_function fn_printf;
 } LSOutputContext, *LSOutputContextPtr;
+
+LSOutputContextPtr LSOutputContext_new();
+void LSOutputContext_free(LSOutputContextPtr context);
 
 /* converter API */
 

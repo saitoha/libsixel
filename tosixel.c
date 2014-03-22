@@ -112,7 +112,7 @@ static void PutCr(LSOutputContextPtr context)
 {
     // DECGCR Graphics Carriage Return
 
-    context->fn_puts("$");
+    context->fn_putchar('$');
     // x = 0;
 }
 
@@ -120,7 +120,7 @@ static void PutLf(LSOutputContextPtr context)
 {
     // DECGNL Graphics Next Line
 
-    context->fn_puts("-");
+    context->fn_putchar('-');
     // x = 0;
     // y += 6;
 }
@@ -353,7 +353,7 @@ void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
             fprintf(stderr, "%d %d=%d\n", n, list[n], conv_palet[list[n]]);
     **************/
 
-    context->fn_puts("\033P");
+    context->fn_printf("\033P");
     context->fn_putchar('q');
     context->fn_printf("\"1;1;%d;%d", width, height);
     context->fn_putchar('\n');
@@ -402,7 +402,7 @@ void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
         memset(map, 0, len);
     }
 
-    context->fn_puts("\033\\");
+    context->fn_printf("\033\\");
 
     NodeFree();
     free(map);

@@ -60,7 +60,7 @@ convert_to_sixel(char const *filename, int ncolors)
     uint8_t *palette = NULL;
     uint8_t *data = NULL;
     LSImagePtr im = NULL;
-    LSOutputContext context = { putchar, puts, printf };
+    LSOutputContextPtr context;
     int sx, sy, comp;
     int i;
     int nret = -1;
@@ -95,7 +95,9 @@ convert_to_sixel(char const *filename, int ncolors)
         goto end;
     }
     LSImage_setpixels(im, data);
-    LibSixel_LSImageToSixel(im, &context);
+    context = LSOutputContext_new();
+    LibSixel_LSImageToSixel(im, context);
+    LSOutputContext_free(context);
 
 end:
     if (pixels) {

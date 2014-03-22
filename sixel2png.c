@@ -47,7 +47,6 @@ sixel_to_png(const char *input, const char *output)
 {
     uint8_t *data;
     LSImagePtr im;
-    LSOutputContext context = { putchar, puts, printf };
     int sx, sy, comp;
     int len;
     int i;
