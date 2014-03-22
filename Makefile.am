@@ -1,7 +1,7 @@
 include_HEADERS = sixel.h stb_image_write.h
 
 lib_LTLIBRARIES = libsixel.la
-libsixel_la_SOURCES = image.c fromsixel.c tosixel.c
+libsixel_la_SOURCES = image.c output.c fromsixel.c tosixel.c
 
 bin_PROGRAMS = img2sixel sixel2png
 img2sixel_SOURCES = img2sixel.c quant.c stb_image.c

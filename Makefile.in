@@ -127,7 +127,7 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libsixel_la_LIBADD =
-am_libsixel_la_OBJECTS = image.lo fromsixel.lo tosixel.lo
+am_libsixel_la_OBJECTS = image.lo output.lo fromsixel.lo tosixel.lo
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -346,7 +346,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 include_HEADERS = sixel.h stb_image_write.h
 lib_LTLIBRARIES = libsixel.la
-libsixel_la_SOURCES = image.c fromsixel.c tosixel.c
+libsixel_la_SOURCES = image.c output.c fromsixel.c tosixel.c
 img2sixel_SOURCES = img2sixel.c quant.c stb_image.c
 img2sixel_LDFLAGS = -lsixel -lm
 sixel2png_SOURCES = sixel2png.c stb_image_write.c
@@ -511,6 +511,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fromsixel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/image.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/output.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quant.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stb_image.Po@am__quote@
