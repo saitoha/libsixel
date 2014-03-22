@@ -36,8 +36,8 @@ static int
 sixel_to_png(const char *input, const char *output)
 {
     uint8_t *data;
-    LibSixel_ImagePtr im;
-    LibSixel_OutputContext context = { putchar, puts, printf };
+    LSImagePtr im;
+    LSOutputContext context = { putchar, puts, printf };
     int sx, sy, comp;
     int len;
     int i;
@@ -70,14 +70,14 @@ sixel_to_png(const char *input, const char *output)
     if (fp != stdout)
             fclose(fp);
 
-    im = LibSixel_SixelToImage(data, len);
+    im = LibSixel_SixelToLSImage(data, len);
     if (!im) {
       return 1;
     }
     stbi_write_png(output, im->sx, im->sy,
                    STBI_rgb, im->pixels, im->sx * 3);
 
-    LibSixel_Image_destroy(im);
+    LSImage_destroy(im);
 
     return 0;
 }

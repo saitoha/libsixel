@@ -23,7 +23,7 @@
 #include "sixel.h"
 
 /* exported function */
-LibSixel_ImagePtr LibSixel_SixelToImage(uint8_t *p, int len);
+LSImagePtr LibSixel_SixelToLSImage(uint8_t *p, int len);
 
 #define TrueColor(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
 
@@ -125,8 +125,8 @@ static uint8_t *GetParam(uint8_t *p, int *param, int *len)
     return p;
 }
 
-LibSixel_ImagePtr
-LibSixel_SixelToImage(uint8_t *p, int len)
+LSImagePtr
+LibSixel_SixelToLSImage(uint8_t *p, int len)
 {
     int n, i, a, b, c;
     int px, py;
@@ -135,7 +135,7 @@ LibSixel_SixelToImage(uint8_t *p, int len)
     int tx, ty;
     int rep, col, bc, id;
     int param[10];
-    LibSixel_ImagePtr im, dm;
+    LSImagePtr im, dm;
     uint8_t *s;
     static char pam[256];
     static char gra[256];
@@ -149,7 +149,7 @@ LibSixel_SixelToImage(uint8_t *p, int len)
     col = 0;
     bc = 0;
 
-    if ((im = LibSixel_Image_create(2048, 2048, 3, -1)) == NULL) {
+    if ((im = LSImage_create(2048, 2048, 3, -1)) == NULL) {
         return NULL;
     }
 
@@ -172,7 +172,7 @@ LibSixel_SixelToImage(uint8_t *p, int len)
     for (; n < PALETTE_MAX ; n++)
         sixel_palet[n] = TrueColor(255, 255, 255);
 
-    LibSixel_Image_fill(im, bc);
+    LSImage_fill(im, bc);
 
     pam[0] = gra[0] = '\0';
     sixel_param = pam;
@@ -264,13 +264,13 @@ LibSixel_SixelToImage(uint8_t *p, int len)
 
             if (im->sx < tx || im->sy < ty) {
 exit(0);
-                dm = LibSixel_Image_create(im->sx > tx ? im->sx : tx,
+                dm = LSImage_create(im->sx > tx ? im->sx : tx,
                                            im->sy > ty ? im->sy : ty, 3, -1);
                 if (dm == NULL)
                     return NULL;
-                LibSixel_Image_fill(dm, bc);
-                LibSixel_Image_copy(dm, im, im->sx, im->sy);
-                LibSixel_Image_destroy(im);
+                LSImage_fill(dm, bc);
+                LSImage_copy(dm, im, im->sx, im->sy);
+                LSImage_destroy(im);
                 im = dm;
             }
 
@@ -328,11 +328,11 @@ exit(0);
                     ny *= 2;
                 }
 
-                if ((dm = LibSixel_Image_create(nx, ny, 3, -1)) == NULL)
+                if ((dm = LSImage_create(nx, ny, 3, -1)) == NULL)
                     return NULL;
-                LibSixel_Image_fill(dm, bc);
-                LibSixel_Image_copy(dm, im, im->sx, im->sy);
-                LibSixel_Image_destroy(im);
+                LSImage_fill(dm, bc);
+                LSImage_copy(dm, im, im->sx, im->sy);
+                LSImage_destroy(im);
                 im = dm;
             }
 
@@ -349,7 +349,7 @@ exit(0);
                 if (rep <= 1) {
                     for (i = 0 ; i < 6 ; i++) {
                         if ((b & a) != 0) {
-                            LibSixel_Image_setpixel(im, px, py + i, sixel_palet[col]);
+                            LSImage_setpixel(im, px, py + i, sixel_palet[col]);
                             if (mx < px)
                                 mx = px;
                             if (my < (py + i))
@@ -368,7 +368,7 @@ exit(0);
                                     break;
                                 c <<= 1;
                             }
-                            LibSixel_Image_fillrectangle(im, px, py + i,
+                            LSImage_fillrectangle(im, px, py + i,
                                                          px + rep - 1,
                                                          py + i + n - 1,
                                                          sixel_palet[col]);
@@ -399,10 +399,10 @@ exit(0);
         my = ty;
 
     if (im->sx > mx || im->sy > my) {
-        if ((dm = LibSixel_Image_create(mx, my, 3, -1)) == NULL)
+        if ((dm = LSImage_create(mx, my, 3, -1)) == NULL)
             return NULL;
-        LibSixel_Image_copy(dm, im, dm->sx, dm->sy);
-        LibSixel_Image_destroy(im);
+        LSImage_copy(dm, im, dm->sx, dm->sy);
+        LSImage_destroy(im);
         im = dm;
     }
 
