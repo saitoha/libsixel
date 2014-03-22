@@ -3,12 +3,12 @@
 #include <inttypes.h>
 #include "sixel.h"
 
-LibSixel_ImagePtr
-LibSixel_Image_create(int sx, int sy, int depth, int ncolors)
+LSImagePtr
+LSImage_create(int sx, int sy, int depth, int ncolors)
 {
-    LibSixel_ImagePtr im;
+    LSImagePtr im;
    
-    im = (LibSixel_ImagePtr)malloc(sizeof(LibSixel_Image));
+    im = (LSImagePtr)malloc(sizeof(LSImage));
     im->pixels = (uint8_t *)malloc(sx * sy * depth);
     im->sx = sx;
     im->sy = sy;
@@ -19,8 +19,8 @@ LibSixel_Image_create(int sx, int sy, int depth, int ncolors)
 }
 
 void
-LibSixel_Image_setpalette(LibSixel_ImagePtr im,
-                          int n, int r, int g, int b)
+LSImage_setpalette(LSImagePtr im,
+                   int n, int r, int g, int b)
 {
     im->red[n] = r;
     im->green[n] = g;
@@ -28,15 +28,15 @@ LibSixel_Image_setpalette(LibSixel_ImagePtr im,
 }
 
 void
-LibSixel_Image_setpixels(LibSixel_ImagePtr im, uint8_t *pixels)
+LSImage_setpixels(LSImagePtr im, uint8_t *pixels)
 {
     im->pixels = pixels;
 }
 
 void
-LibSixel_Image_copy(LibSixel_ImagePtr dst,
-                    LibSixel_ImagePtr src,
-                    int w, int h)
+LSImage_copy(LSImagePtr dst,
+             LSImagePtr src,
+             int w, int h)
 {
     int x, y;
 
@@ -49,38 +49,38 @@ LibSixel_Image_copy(LibSixel_ImagePtr dst,
 }
 
 void
-LibSixel_Image_destroy(LibSixel_ImagePtr im)
+LSImage_destroy(LSImagePtr im)
 {
     free(im->pixels);
     free(im);
 }
 
 void
-LibSixel_Image_fill(LibSixel_ImagePtr im, int color)
+LSImage_fill(LSImagePtr im, int color)
 {
     int x, y;
     for (y = 0; y < im->sy; y++) {
         for (x = 0; x < im->sx; x++) {
-            LibSixel_Image_setpixel(im, x, y, color);
+            LSImage_setpixel(im, x, y, color);
         }
     }
 }
 
 void
-LibSixel_Image_fillrectangle(LibSixel_ImagePtr im,
-                             int x1, int y1, int x2, int y2,
-                             int color)
+LSImage_fillrectangle(LSImagePtr im,
+                      int x1, int y1, int x2, int y2,
+                      int color)
 {
     int x, y;
     for (y = y1; y < y2; y++) {
         for (x = x1; x < x2; x++) {
-            LibSixel_Image_setpixel(im, x, y, color);
+            LSImage_setpixel(im, x, y, color);
         }
     }
 }
 
 void
-LibSixel_Image_setpixel(LibSixel_ImagePtr im, int x, int y, int color)
+LSImage_setpixel(LSImagePtr im, int x, int y, int color)
 {
     im->pixels[im->sx * 3 * y + x * 3 + 0] = (color >> 16) & 0xff;
     im->pixels[im->sx * 3 * y + x * 3 + 1] = (color >> 8) & 0xff;

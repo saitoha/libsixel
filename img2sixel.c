@@ -38,8 +38,8 @@ convert_to_sixel(char const *filename, int ncolors)
     uint8_t *pixels = NULL;
     uint8_t *palette = NULL;
     uint8_t *data = NULL;
-    LibSixel_ImagePtr im = NULL;
-    LibSixel_OutputContext context = { putchar, puts, printf };
+    LSImagePtr im = NULL;
+    LSOutputContext context = { putchar, puts, printf };
     int sx, sy, comp;
     int i;
     int nret = -1;
@@ -59,12 +59,12 @@ convert_to_sixel(char const *filename, int ncolors)
     if (!palette) {
         goto end;
     }
-    im = LibSixel_Image_create(sx, sy, 1, ncolors);
+    im = LSImage_create(sx, sy, 1, ncolors);
     if (!im) {
         goto end;
     }
     for (i = 0; i < ncolors; i++) {
-        LibSixel_Image_setpalette(im, i,
+        LSImage_setpalette(im, i,
                                   palette[i * 3 + 0],
                                   palette[i * 3 + 1],
                                   palette[i * 3 + 2]);
@@ -73,8 +73,8 @@ convert_to_sixel(char const *filename, int ncolors)
     if (!data) {
         goto end;
     }
-    LibSixel_Image_setpixels(im, data);
-    LibSixel_ImageToSixel(im, &context);
+    LSImage_setpixels(im, data);
+    LibSixel_LSImageToSixel(im, &context);
 
 end:
     if (pixels) {
@@ -84,7 +84,7 @@ end:
         free(palette);
     }
     if (im) {
-        LibSixel_Image_destroy(im);
+        LSImage_destroy(im);
     }
     return 0;
 }

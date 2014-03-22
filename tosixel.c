@@ -22,8 +22,8 @@
 #include "sixel.h"
 
 /* exported function */
-void LibSixel_ImageToSixel(LibSixel_ImagePtr im,
-                           LibSixel_OutputContextPtr context);
+void LibSixel_LSImageToSixel(LSImagePtr im,
+                             LSOutputContextPtr context);
 
 /* implementation */
 
@@ -46,7 +46,7 @@ static int act_palet = (-1);
 static long use_palet[PALETTE_MAX];
 static uint8_t conv_palet[PALETTE_MAX];
 
-static void PutFlash(LibSixel_OutputContextPtr context)
+static void PutFlash(LSOutputContextPtr context)
 {
     int n;
 
@@ -72,7 +72,7 @@ static void PutFlash(LibSixel_OutputContextPtr context)
     save_count = 0;
 }
 
-static void PutPixel(LibSixel_OutputContextPtr context, int pix)
+static void PutPixel(LSOutputContextPtr context, int pix)
 {
     if (pix < 0 || pix > 63)
         pix = 0;
@@ -88,8 +88,8 @@ static void PutPixel(LibSixel_OutputContextPtr context, int pix)
     }
 }
 
-static void PutPalet(LibSixel_OutputContextPtr context,
-                     LibSixel_ImagePtr im,
+static void PutPalet(LSOutputContextPtr context,
+                     LSImagePtr im,
                      int pal)
 {
     // DECGCI Graphics Color Introducer                        # Pc ; Pu; Px; Py; Pz
@@ -108,7 +108,7 @@ static void PutPalet(LibSixel_OutputContextPtr context,
     act_palet = pal;
 }
 
-static void PutCr(LibSixel_OutputContextPtr context)
+static void PutCr(LSOutputContextPtr context)
 {
     // DECGCR Graphics Carriage Return
 
@@ -116,7 +116,7 @@ static void PutCr(LibSixel_OutputContextPtr context)
     // x = 0;
 }
 
-static void PutLf(LibSixel_OutputContextPtr context)
+static void PutLf(LSOutputContextPtr context)
 {
     // DECGNL Graphics Next Line
 
@@ -220,8 +220,8 @@ static void NodeLine(int pal,
     }
 }
 
-static int PutNode(LibSixel_OutputContextPtr context,
-                   LibSixel_ImagePtr im,
+static int PutNode(LSOutputContextPtr context,
+                   LSImagePtr im,
                    int x, SixNode *np)
 {
     PutPalet(context, im, np->pal);
@@ -242,7 +242,7 @@ static int PalUseCmp(const void *src, const void *dis)
     return use_palet[*((uint8_t *)dis)] - use_palet[*((uint8_t *)src)];
 }
 
-static int GetColIdx(LibSixel_ImagePtr im, int col)
+static int GetColIdx(LSImagePtr im, int col)
 {
     int i, r, g, b, d;
 
@@ -267,8 +267,7 @@ static int GetColIdx(LibSixel_ImagePtr im, int col)
     return idx;
 }
 
-void LibSixel_ImageToSixel(LibSixel_ImagePtr im,
-                           LibSixel_OutputContextPtr context)
+void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
 {
     int x, y, i, n, c;
     int maxPalet;
