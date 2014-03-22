@@ -3,12 +3,18 @@
 
 AC_PREREQ([2.60])
 AC_INIT([sixel], [0.1.1], [user@zuse.jp])
+AM_INIT_AUTOMAKE([foreign])
+LT_INIT
 AC_CONFIG_SRCDIR([fromsixel.c])
 AC_CONFIG_HEADERS([config.h])
+#AC_CONFIG_MACRO_DIR([m4])
+AC_ENABLE_SHARED
+AC_DISABLE_STATIC
 
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
+AC_PROG_LIBTOOL
 
 # Checks for libraries.
 
