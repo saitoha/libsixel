@@ -36,6 +36,7 @@ test: img2sixel sixel2png
 	./img2sixel -p 256 images/snake.jpg > snake.sixel
 	rm -f snake.png
 	./sixel2png < snake.sixel > snake.png
+	./sixel2png -i snake.sixel -o snake2.png
 
 libsixel.so: tosixel.o fromsixel.o image.o
 	$(CC) -shared $^ -o $@

@@ -32,7 +32,7 @@ apply_palette(unsigned char *data,
               unsigned char *palette, int ncolors);
 
 static int
-sixel_to_png(const char *filename)
+sixel_to_png(const char *input, const char *output)
 {
     unsigned char *data;
     LibSixel_ImagePtr im;
@@ -44,37 +44,37 @@ sixel_to_png(const char *filename)
     int n;
     FILE *fp;
 
-    if (filename != NULL && (fp = fopen(filename, "r")) == NULL) {
-	return (-1);
+    if (input != NULL && (fp = fopen(input, "r")) == NULL) {
+        return (-1);
     }
 
     len = 0;
     max = 64 * 1024;
 
     if ((data = (uint8_t *)malloc(max)) == NULL) {
-	return (-1);
+        return (-1);
     }
 
     for (;;) {
-	if ((max - len) < 4096) {
-	    max *= 2;
-    	    if ((data = (uint8_t *)realloc(data, max)) == NULL)
-		return (-1);
-	}
-	if ((n = fread(data + len, 1, 4096, fp)) <= 0)
-	    break;
-	len += n;
+        if ((max - len) < 4096) {
+            max *= 2;
+            if ((data = (uint8_t *)realloc(data, max)) == NULL)
+                return (-1);
+        }
+        if ((n = fread(data + len, 1, 4096, fp)) <= 0)
+            break;
+        len += n;
     }
 
     if (fp != stdout)
-    	fclose(fp);
+            fclose(fp);
 
     im = LibSixel_SixelToImage(data, len);
     if (!im) {
       return 1;
     }
-    (int)stbi_write_png("out.png", im->sx, im->sy,
-                        STBI_rgb, im->pixels, im->sx * 3);
+    stbi_write_png(output, im->sx, im->sy,
+                   STBI_rgb, im->pixels, im->sx * 3);
 
     LibSixel_Image_destroy(im);
 
@@ -85,8 +85,32 @@ int main(int argc, char *argv[])
 {
     int n;
     int filecount = 1;
+    char *output = "/dev/stdout";
+    char *input = "/dev/stdin";
+    const char *usage = "Usage: %s -i<input file name> -o<output file name>\n"
+                        "       %s < <input file name> > <output file name>\n";
 
-    sixel_to_png(argv[n]);
+    for (;;) {
+        while ((n = getopt(argc, argv, "o:i:")) != EOF) {
+            switch(n) {
+            case 'i':
+                input = strdup(optarg);
+                break;
+            case 'o':
+                output = strdup(optarg);
+                break;
+            default:
+                fprintf(stderr, usage, argv[0], argv[1]);
+                exit(0);
+            }
+        }
+        if (optind >= argc) {
+            break;
+        }
+        optind++;
+    }
+
+    sixel_to_png(input, output);
 
     return 0;
 }
