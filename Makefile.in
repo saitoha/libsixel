@@ -31,8 +31,11 @@ Makefile: Makefile.in configure
 configure: configure.ac
 	autoconf
 
-test: img2sixel
+test: img2sixel sixel2png
 	./img2sixel -p 256 images/snake.jpg
+	./img2sixel -p 256 images/snake.jpg > snake.sixel
+	rm -f snake.png
+	./sixel2png < snake.sixel > snake.png
 
 libsixel.so: tosixel.o fromsixel.o image.o
 	$(CC) -shared $^ -o $@
