@@ -1,4 +1,25 @@
-#include "config.h" 
+/*
+ * Copyright (c) 2014 Hayaki Saito
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+#include "config.h"
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
@@ -33,7 +54,7 @@ stbex_pixel_new(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 
     p.r = r;
     p.g = g;
-    p.b = b; 
+    p.b = b;
     p.a = a;
 
     return p;
@@ -141,7 +162,7 @@ struct stbex_cube *
 stbex_cube_new(stbex_pixel *pixels, size_t npixels, stbex_cube *parent)
 {
     stbex_cube *cube;
-   
+
     cube = malloc(sizeof(stbex_cube));
     cube->pixels = malloc(sizeof(stbex_pixel *) * npixels);
     memcpy(cube->pixels, pixels, sizeof(stbex_pixel *) * npixels);
@@ -183,7 +204,7 @@ stbex_cube_hatch(stbex_cube *cube, int threshold)
     if (cube->npixels <= 8) {
         return cube->npixels;
     }
-           
+
     if (cube->npixels < threshold) {
         if (length_r < 16 && length_g < 16 && length_b < 16) {
             return 1;
@@ -252,19 +273,19 @@ stbex_cube_get_sample(stbex_cube *cube, stbex_pixel *samples, stbex_pixel *resul
         length_b = (int)cube->max_b - (int)cube->min_b;
 
         if (length_r < 16 && length_g < 16 && length_b < 16) {
-            *(results + (*nresults)++) = stbex_pixel_new((cube->min_r + cube->max_r) / 2, (cube->min_g + cube->max_g) / 2, (cube->min_b + cube->max_b) / 2, 0); 
+            *(results + (*nresults)++) = stbex_pixel_new((cube->min_r + cube->max_r) / 2, (cube->min_g + cube->max_g) / 2, (cube->min_b + cube->max_b) / 2, 0);
 /*
             printf("(%d, %d, %d)\n", (cube->min_r + cube->max_r) / 2, (cube->min_g + cube->max_g) / 2, (cube->min_b + cube->max_b) / 2);
 */
         } else {
-            *(results + (*nresults)++) = stbex_pixel_new(cube->min_r, cube->min_g, cube->min_b, 0); 
-            *(results + (*nresults)++) = stbex_pixel_new(cube->max_r, cube->min_g, cube->min_b, 0); 
-            *(results + (*nresults)++) = stbex_pixel_new(cube->min_r, cube->max_g, cube->min_b, 0); 
-            *(results + (*nresults)++) = stbex_pixel_new(cube->min_r, cube->min_g, cube->max_b, 0); 
-            *(results + (*nresults)++) = stbex_pixel_new(cube->max_r, cube->max_g, cube->min_b, 0); 
-            *(results + (*nresults)++) = stbex_pixel_new(cube->min_r, cube->max_g, cube->max_b, 0); 
-            *(results + (*nresults)++) = stbex_pixel_new(cube->max_r, cube->min_g, cube->max_b, 0); 
-            *(results + (*nresults)++) = stbex_pixel_new(cube->max_r, cube->max_g, cube->max_b, 0); 
+            *(results + (*nresults)++) = stbex_pixel_new(cube->min_r, cube->min_g, cube->min_b, 0);
+            *(results + (*nresults)++) = stbex_pixel_new(cube->max_r, cube->min_g, cube->min_b, 0);
+            *(results + (*nresults)++) = stbex_pixel_new(cube->min_r, cube->max_g, cube->min_b, 0);
+            *(results + (*nresults)++) = stbex_pixel_new(cube->min_r, cube->min_g, cube->max_b, 0);
+            *(results + (*nresults)++) = stbex_pixel_new(cube->max_r, cube->max_g, cube->min_b, 0);
+            *(results + (*nresults)++) = stbex_pixel_new(cube->min_r, cube->max_g, cube->max_b, 0);
+            *(results + (*nresults)++) = stbex_pixel_new(cube->max_r, cube->min_g, cube->max_b, 0);
+            *(results + (*nresults)++) = stbex_pixel_new(cube->max_r, cube->max_g, cube->max_b, 0);
 /*
             printf("(%d, %d, %d) - (%d, %d, %d) => %ld\n",
                             cube->min_r,
@@ -374,7 +395,7 @@ make_palette(unsigned char *data, int x, int y, int n, int c)
 */
 
     for (i = 0; i < c; i++) {
-        memcpy(palette + i * 3, results + i, 3); 
+        memcpy(palette + i * 3, results + i, 3);
     }
     return palette;
 }

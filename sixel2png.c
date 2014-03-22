@@ -1,3 +1,24 @@
+/*
+ * Copyright (c) 2014 Hayaki Saito
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 #include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,8 +27,6 @@
 #include <unistd.h>
 #include <inttypes.h>
 #include "sixel.h"
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
 
 enum
 {
@@ -18,19 +37,10 @@ enum
    STBI_rgb_alpha = 4
 };
 
-extern uint8_t *
-stbi_load(char const *filename, int *x, int *y, int *comp, int req_comp);
-
-extern void
-stbi_image_free(void *retval_from_stbi_load);
-
-extern uint8_t *
-make_palette(uint8_t *data, int x, int y, int n, int c);
-
-extern uint8_t *
-apply_palette(uint8_t *data,
-              int width, int height, int depth,
-              uint8_t *palette, int ncolors);
+extern int
+stbi_write_png(char const *filename,
+               int w, int h, int comp,
+               const void *data, int stride_in_bytes);
 
 static int
 sixel_to_png(const char *input, const char *output)
