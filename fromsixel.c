@@ -21,8 +21,7 @@
 #include "sixel.h"
 
 /* exported function */
-LibSixel_ImagePtr
-LibSixel_SixelToImage(uint8_t *p, int len);
+LibSixel_ImagePtr LibSixel_SixelToImage(uint8_t *p, int len);
 
 #define TrueColor(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
 

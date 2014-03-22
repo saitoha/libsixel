@@ -2,7 +2,7 @@
 #ifndef LIBSIXEL_SIXEL_H
 #define LIBSIXEL_SIXEL_H
 
-static const int PALETTE_MAX = 1024;
+static const int PALETTE_MAX = 256;
 
 typedef struct LibSixel_ImageStruct {
     /* Palette-based image pixels */
@@ -16,20 +16,6 @@ typedef struct LibSixel_ImageStruct {
     int keycolor;  /* background color */
 } LibSixel_Image, *LibSixel_ImagePtr;
 
-LibSixel_ImagePtr LibSixel_Image_create(int sx, int sy, int ncolors);
-void LibSixel_Image_setpalette(LibSixel_ImagePtr im,
-                               int n, int r, int g, int b);
-void LibSixel_Image_setpixels(LibSixel_ImagePtr im, uint8_t *pixels);
-void LibSixel_Image_copy(LibSixel_ImagePtr dst,
-                         LibSixel_ImagePtr src, int w, int h);
-void LibSixel_Image_destroy(LibSixel_ImagePtr im);
-void LibSixel_Image_fill(LibSixel_ImagePtr im, int color);
-void LibSixel_Image_fillrectangle(LibSixel_ImagePtr im,
-                                  int x1, int y1, int x2, int y2,
-                                  int color);
-void LibSixel_Image_setpixel(LibSixel_ImagePtr im,
-                             int x, int y, int color);
-
 typedef int (* putchar_function)(int ch);
 typedef int (* puts_function)(const char *str);
 typedef int (* printf_function)(const char *fmt, ...);
@@ -40,8 +26,46 @@ typedef struct LibSixel_OutputContextStruct {
     printf_function printf;
 } LibSixel_OutputContext, *LibSixel_OutputContextPtr;
 
-void LibSixel_ImageToSixel(LibSixel_ImagePtr im,
-                           LibSixel_OutputContextPtr context);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern LibSixel_ImagePtr
+LibSixel_Image_create(int sx, int sy, int ncolors);
+
+extern void
+LibSixel_Image_setpalette(LibSixel_ImagePtr im,
+                          int n, int r, int g, int b);
+
+extern void
+LibSixel_Image_setpixels(LibSixel_ImagePtr im, uint8_t *pixels);
+
+extern void
+LibSixel_Image_copy(LibSixel_ImagePtr dst,
+                    LibSixel_ImagePtr src, int w, int h);
+
+extern void
+LibSixel_Image_destroy(LibSixel_ImagePtr im);
+
+extern void
+LibSixel_Image_fill(LibSixel_ImagePtr im, int color);
+
+extern void
+LibSixel_Image_fillrectangle(LibSixel_ImagePtr im,
+                             int x1, int y1, int x2, int y2,
+                             int color);
+
+extern void
+LibSixel_Image_setpixel(LibSixel_ImagePtr im,
+                        int x, int y, int color);
+
+extern void
+LibSixel_ImageToSixel(LibSixel_ImagePtr im,
+                      LibSixel_OutputContextPtr context);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LIBSIXEL_SIXEL_H */
 
