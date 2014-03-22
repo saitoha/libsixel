@@ -1,6 +1,7 @@
-#include <stdlib.h>
-#include "sixel.h"
 #include "config.h"
+#include <stdlib.h>
+#include <inttypes.h>
+#include "sixel.h"
 
 LibSixel_ImagePtr
 LibSixel_Image_create(int sx, int sy, int depth, int ncolors)

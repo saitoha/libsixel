@@ -14,10 +14,12 @@
  * it under the MIT license.
  *
  */
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <inttypes.h>
 #include "sixel.h"
 
 /* exported function */

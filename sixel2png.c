@@ -1,12 +1,13 @@
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
+#include <inttypes.h>
 #include "sixel.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-#include "config.h"
 
 enum
 {
@@ -17,24 +18,24 @@ enum
    STBI_rgb_alpha = 4
 };
 
-extern unsigned char *
+extern uint8_t *
 stbi_load(char const *filename, int *x, int *y, int *comp, int req_comp);
 
 extern void
 stbi_image_free(void *retval_from_stbi_load);
 
-extern unsigned char *
-make_palette(unsigned char *data, int x, int y, int n, int c);
+extern uint8_t *
+make_palette(uint8_t *data, int x, int y, int n, int c);
 
-extern unsigned char *
-apply_palette(unsigned char *data,
+extern uint8_t *
+apply_palette(uint8_t *data,
               int width, int height, int depth,
-              unsigned char *palette, int ncolors);
+              uint8_t *palette, int ncolors);
 
 static int
 sixel_to_png(const char *input, const char *output)
 {
-    unsigned char *data;
+    uint8_t *data;
     LibSixel_ImagePtr im;
     LibSixel_OutputContext context = { putchar, puts, printf };
     int sx, sy, comp;

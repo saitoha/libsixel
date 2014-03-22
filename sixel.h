@@ -2,7 +2,7 @@
 #ifndef LIBSIXEL_SIXEL_H
 #define LIBSIXEL_SIXEL_H
 
-static const int PALETTE_MAX = 256;
+#define PALETTE_MAX 256
 
 typedef struct LibSixel_ImageStruct {
     /* Palette-based image pixels */
