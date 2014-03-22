@@ -16,35 +16,33 @@ enum
    STBI_rgb_alpha = 4
 };
 
-extern unsigned char *
+extern uint8_t *
 stbi_load(char const *filename, int *x, int *y, int *comp, int req_comp);
+extern uint8_t *
+stbi_load_from_file(FILE *f, int *x, int *y, int *comp, int req_comp);
 
 extern void
 stbi_image_free(void *retval_from_stbi_load);
 
-extern unsigned char *
-make_palette(unsigned char *data, int x, int y, int n, int c);
+extern uint8_t *
+make_palette(uint8_t *data, int x, int y, int n, int c);
 
-extern unsigned char *
-apply_palette(unsigned char *data,
+extern uint8_t *
+apply_palette(uint8_t *data,
               int width, int height, int depth,
-              unsigned char *palette, int ncolors);
+              uint8_t *palette, int ncolors);
 
 static int
-convert_to_sixel(char *filename, int ncolors)
+convert_to_sixel(char const *filename, int ncolors)
 {
-    unsigned char *pixels = NULL;
-    unsigned char *palette = NULL;
-    unsigned char *data = NULL;
+    uint8_t *pixels = NULL;
+    uint8_t *palette = NULL;
+    uint8_t *data = NULL;
     LibSixel_ImagePtr im = NULL;
     LibSixel_OutputContext context = { putchar, puts, printf };
     int sx, sy, comp;
     int i;
     int nret = -1;
-
-    if (filename == NULL) {
-        return (-1);
-    }
 
     if ( ncolors < 2 ) {
         ncolors = 2;
@@ -56,6 +54,7 @@ convert_to_sixel(char *filename, int ncolors)
     if (pixels == NULL) {
         return (-1);
     }
+
     palette = make_palette(pixels, sx, sy, 3, ncolors);
     if (!palette) {
         goto end;
@@ -96,30 +95,27 @@ int main(int argc, char *argv[])
     int filecount = 1;
     int ncolors = PALETTE_MAX;
 
-    for (;;) {
-        while ((n = getopt(argc, argv, "p:")) != EOF) {
-            switch(n) {
-            case 'p':
-                ncolors = atoi(optarg);
-                break;
-            default:
-                fprintf(stderr, "Usage: %s [-p MaxPalet] <file name...>\n", argv[0]);
-                exit(0);
-            }
-        }
-        if (optind >= argc) {
+    while ((n = getopt(argc, argv, "p:")) != -1) {
+        switch(n) {
+        case 'p':
+            ncolors = atoi(optarg);
             break;
+        default:
+            goto argerr;
         }
-        argv[filecount++] = argv[optind++];
     }
 
-    if (filecount <= 1) {
+    if (optind == argc) {
         convert_to_sixel("/dev/stdin", ncolors);
     } else {
-        for (n = 1; n < filecount; n++) {
+        for (n = optind; n < argc; n++) {
             convert_to_sixel(argv[n], ncolors);
         }
     }
+    return 0;
+
+argerr:
+    fprintf(stderr, "Usage: %s [-p MaxPalet] <file name...>\n", argv[0]);
     return 0;
 }
 

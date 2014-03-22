@@ -1,5 +1,5 @@
 
-CC=cc -O3 -fPIC
+CC=@CC@ -O3 -fPIC
 INSTALL=@INSTALL@
 
 .PHONY: all install uninstall clean test
