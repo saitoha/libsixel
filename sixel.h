@@ -22,9 +22,9 @@ typedef int (* puts_function)(const char *str);
 typedef int (* printf_function)(const char *fmt, ...);
 
 typedef struct LibSixel_OutputContextStruct {
-    putchar_function putchar;
-    puts_function puts;
-    printf_function printf;
+    putchar_function fn_putchar;
+    puts_function fn_puts;
+    printf_function fn_printf;
 } LibSixel_OutputContext, *LibSixel_OutputContextPtr;
 
 #ifdef __cplusplus

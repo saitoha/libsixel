@@ -52,7 +52,7 @@ static void PutFlash(LibSixel_OutputContextPtr context)
 
 #ifdef USE_VT240        // VT240 Max 255 ?
     while (save_count > 255) {
-        context->printf("!%d%c", 255, save_pix);
+        context->fn_printf("!%d%c", 255, save_pix);
         save_count -= 255;
     }
 #endif
@@ -60,11 +60,11 @@ static void PutFlash(LibSixel_OutputContextPtr context)
     if (save_count > 3) {
         // DECGRI Graphics Repeat Introducer                ! Pn Ch
 
-        context->printf("!%d%c", save_count, save_pix);
+        context->fn_printf("!%d%c", save_count, save_pix);
 
     } else {
         for (n = 0 ; n < save_count ; n++) {
-            context->putchar(save_pix);
+            context->fn_putchar(save_pix);
         }
     }
 
@@ -95,15 +95,15 @@ static void PutPalet(LibSixel_OutputContextPtr context,
     // DECGCI Graphics Color Introducer                        # Pc ; Pu; Px; Py; Pz
 
     if (init_palet[pal] == 0) {
-        context->printf("#%d;2;%d;%d;%d",
-                        conv_palet[pal],
-                        (im->red[pal] * 100 + 128) / 256,
-                        (im->green[pal] * 100 + 128) / 256,
-                        (im->blue[pal] * 100 + 128) / 256);
+        context->fn_printf("#%d;2;%d;%d;%d",
+                           conv_palet[pal],
+                           (im->red[pal] * 100 + 127) / 255,
+                           (im->green[pal] * 100 + 127) / 255,
+                           (im->blue[pal] * 100 + 127) / 255);
         init_palet[pal] = 1;
 
     } else if (act_palet != pal)
-        context->printf("#%d", conv_palet[pal]);
+        context->fn_printf("#%d", conv_palet[pal]);
 
     act_palet = pal;
 }
@@ -112,7 +112,7 @@ static void PutCr(LibSixel_OutputContextPtr context)
 {
     // DECGCR Graphics Carriage Return
 
-    context->puts("$");
+    context->fn_puts("$");
     // x = 0;
 }
 
@@ -120,7 +120,7 @@ static void PutLf(LibSixel_OutputContextPtr context)
 {
     // DECGNL Graphics Next Line
 
-    context->puts("-");
+    context->fn_puts("-");
     // x = 0;
     // y += 6;
 }
@@ -354,10 +354,10 @@ void LibSixel_ImageToSixel(LibSixel_ImagePtr im,
             fprintf(stderr, "%d %d=%d\n", n, list[n], conv_palet[list[n]]);
     **************/
 
-    context->puts("\033P");
-    context->putchar('q');
-    context->printf("\"1;1;%d;%d", width, height);
-    context->putchar('\n');
+    context->fn_puts("\033P");
+    context->fn_putchar('q');
+    context->fn_printf("\"1;1;%d;%d", width, height);
+    context->fn_putchar('\n');
 
     for (y = i = 0 ; y < height ; y++) {
         for (x = 0 ; x < width ; x++) {
@@ -403,7 +403,7 @@ void LibSixel_ImageToSixel(LibSixel_ImagePtr im,
         memset(map, 0, len);
     }
 
-    context->puts("\033\\");
+    context->fn_puts("\033\\");
 
     NodeFree();
     free(map);
