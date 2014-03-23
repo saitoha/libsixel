@@ -52,7 +52,7 @@
 #include <math.h>
 #include <limits.h>
 
-#if 1
+#if 0
 #define quant_trace fprintf
 #else
 static inline void quant_trace(FILE *f, ...) {}
