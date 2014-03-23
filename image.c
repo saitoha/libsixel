@@ -92,8 +92,8 @@ LSImage_fillrectangle(LSImagePtr im,
                       int color)
 {
     int x, y;
-    for (y = y1; y < y2; y++) {
-        for (x = x1; x < x2; x++) {
+    for (y = y1; y <= y2; y++) {
+        for (x = x1; x <= x2; x++) {
             LSImage_setpixel(im, x, y, color);
         }
     }
