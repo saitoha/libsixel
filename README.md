@@ -40,6 +40,53 @@ Convert a sixel file to a png image file
 $ sixeltopng < egret.sixel > egret.png
 ```
 
+## Similar software
+
+- ppmtosixel (netpbm)
+
+http://netpbm.sourceforge.net/doc/ppmtosixel.html
+
+
+- kmiya's sixel
+
+http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
+
+
+- PySixel
+
+https://pypi.python.org/pypi/PySixel
+
+
+## Color image quantization quality
+
+- ppmtosixel (netpbm)
+
+$ jpegtopnm images/snake.jpg | pnmquant | ppmtosixel
+
+![ppmtosixel](http://zuse.jp/misc/q_ppmtosixel.png)
+
+
+- kmiya's sixel
+
+$ sixel -p16 images/snake.jpg
+
+![kmiya's sixel](http://zuse.jp/misc/q_sixel.png)
+
+
+- PySixel (sixelconv command)
+
+$ sixelconv -n16 images/snake.jpg
+
+![PySixel](http://zuse.jp/misc/q_sixelconv.png)
+
+
+- libsixel (img2sixel command)
+
+$ img2sixel -p16 images/snake.jpg
+
+![PySixel](http://zuse.jp/misc/q_libsixel.png)
+
+
 ## Support
 
 This software is provided "as is" without express or implied warranty.
@@ -80,9 +127,9 @@ This software derives from the following implementations.
 
 ### sixel 2014-3-2
 
-tosixel.c and fromsixel.c are derived from "*sixel*" original version (2014-3-2)
+tosixel.c and fromsixel.c are derived from kmiya's "*sixel*" original version (2014-3-2)
 
-    http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
+http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
 
 It is written by kmiya@culti.
 
@@ -98,7 +145,7 @@ He declares this is compatible with MIT/BSD/GPL.
 This software includes *stbi-1.33* (stb_image.c),
 public domain JPEG/PNG reader.
 
-    http://nothings.org/stb_image.c
+http://nothings.org/stb_image.c
 
 
 ### stbiw-0.92
@@ -106,7 +153,7 @@ public domain JPEG/PNG reader.
 This software includes *stbiw-0.92* (stb_image_write.h),
 public domain PNG/BMP/TGA writer.
 
-    http://nothings.org/stb/stb_image_write.h
+http://nothings.org/stb/stb_image_write.h
 
 
 ### pnmquant.c (netpbm library)
@@ -114,7 +161,7 @@ public domain PNG/BMP/TGA writer.
 The implementation of median cut algorithm for color quantization in quant.c
 is imported from *pnmcolormap* included in *netpbm library*.
 
-    http://netpbm.sourceforge.net/
+http://netpbm.sourceforge.net/
 
 *pnmcolormap* was derived from *ppmquant*, originally by Jef Poskanzer.
 
