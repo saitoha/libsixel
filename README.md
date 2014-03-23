@@ -40,6 +40,16 @@ Convert a sixel file to a png image file
 $ sixeltopng < egret.sixel > egret.png
 ```
 
+## Support
+
+This software is provided "as is" without express or implied warranty.
+The main support channel for this software is the github issue tracker:
+    
+    https://github.com/saitoha/libsixel/issues
+
+Please post your issue if you have any problems, questions or suggestions.
+
+
 ## License
 
 The MIT License (MIT)
@@ -72,7 +82,7 @@ This software derives from the following implementations.
 
 tosixel.c and fromsixel.c are derived from "*sixel*" original version (2014-3-2)
 
-http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
+    http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
 
 It is written by kmiya@culti.
 
@@ -88,7 +98,7 @@ He declares this is compatible with MIT/BSD/GPL.
 This software includes *stbi-1.33* (stb_image.c),
 public domain JPEG/PNG reader.
 
-http://nothings.org/stb_image.c
+    http://nothings.org/stb_image.c
 
 
 ### stbiw-0.92
@@ -96,15 +106,17 @@ http://nothings.org/stb_image.c
 This software includes *stbiw-0.92* (stb_image_write.h),
 public domain PNG/BMP/TGA writer.
 
-http://nothings.org/stb/stb_image_write.h
+    http://nothings.org/stb/stb_image_write.h
 
 
 ### pnmquant.c (netpbm library)
 
-mediancut algorithm implementation of quant.c is imported from *pnmcolormap* included by *netpbm library*.
-*pnmcolormap* was derived from *ppmquant*, originally by Jef Poskanzer.
+The implementation of median cut algorithm for color quantization in quant.c
+is imported from *pnmcolormap* included in *netpbm library*.
 
-http://netpbm.sourceforge.net/
+    http://netpbm.sourceforge.net/
+
+*pnmcolormap* was derived from *ppmquant*, originally by Jef Poskanzer.
 
 
 Copyright (C) 1989, 1991 by Jef Poskanzer.
