@@ -70,7 +70,7 @@ This software derives from the following implementations.
 
 ### sixel 2014-3-2
 
-tosixel.c and fromsixel.c are derived from "sixel" original version (2014-3-2)
+tosixel.c and fromsixel.c are derived from "*sixel*" original version (2014-3-2)
 
 http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
 
@@ -85,7 +85,7 @@ He declares this is compatible with MIT/BSD/GPL.
 
 ### stbi-1.33
 
-This software includes stbi-1.33 (stb_image.c),
+This software includes *stbi-1.33* (stb_image.c),
 public domain JPEG/PNG reader.
 
 http://nothings.org/stb_image.c
@@ -93,8 +93,28 @@ http://nothings.org/stb_image.c
 
 ### stbiw-0.92
 
-This software includes stbiw-0.92 (stb_image_write.h),
+This software includes *stbiw-0.92* (stb_image_write.h),
 public domain PNG/BMP/TGA writer.
 
 http://nothings.org/stb/stb_image_write.h
+
+
+### pnmquant.c (netpbm library)
+
+mediancut algorithm implementation of quant.c is imported from *pnmcolormap* included by *netpbm library*.
+*pnmcolormap* was derived from *ppmquant*, originally by Jef Poskanzer.
+
+http://netpbm.sourceforge.net/
+
+
+Copyright (C) 1989, 1991 by Jef Poskanzer.
+Copyright (C) 2001 by Bryan Henderson.
+
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted, provided
+that the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.  This software is provided "as is" without express or
+implied warranty.
+ 
 
