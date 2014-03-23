@@ -86,9 +86,9 @@ convert_to_sixel(char const *filename, int ncolors)
     }
     for (i = 0; i < ncolors; i++) {
         LSImage_setpalette(im, i,
-                                  palette[i * 3 + 0],
-                                  palette[i * 3 + 1],
-                                  palette[i * 3 + 2]);
+                           palette[i * 3 + 0],
+                           palette[i * 3 + 1],
+                           palette[i * 3 + 2]);
     }
     data = apply_palette(pixels, sx, sy, 3, palette, ncolors);
     if (!data) {
