@@ -1,4 +1,27 @@
 /*
+ *
+ * mediancut algorithm implementation is imported from pnmcolormap.c
+ * in netpbm library.
+ * http://netpbm.sourceforge.net/ 
+ *
+ * *******************************************************************************
+ *                  original license block of pnmcolormap.c
+ * *******************************************************************************
+ * 
+ *   Derived from ppmquant, originally by Jef Poskanzer.
+ * 
+ *   Copyright (C) 1989, 1991 by Jef Poskanzer.
+ *   Copyright (C) 2001 by Bryan Henderson.
+ * 
+ *   Permission to use, copy, modify, and distribute this software and its
+ *   documentation for any purpose and without fee is hereby granted, provided
+ *   that the above copyright notice appear in all copies and that both that
+ *   copyright notice and this permission notice appear in supporting
+ *   documentation.  This software is provided "as is" without express or
+ *   implied warranty.
+ * 
+ * ******************************************************************************
+ *
  * Copyright (c) 2014 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -17,88 +40,30 @@
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ *
  */
 
 #include "config.h"
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
+#include <limits.h>
+
+#if 1
+#define quant_trace fprintf
+#else
+static inline void quant_trace(FILE *f, ...) {}
+#endif
 
 /* exported function */
-unsigned char *
-quantize(unsigned char *data, int sx, int sy, int depth, int ncolors);
+extern uint8_t *
+make_palette(uint8_t *data, int x, int y, int depth, int reqcolors, int *ncolors);
 
-/*****************************************************************************
- *
- * Pixel object
- *
- *****************************************************************************/
-
-typedef struct _stbex_pixel {
-    union {
-        struct {
-            uint8_t r;
-            uint8_t g;
-            uint8_t b;
-            uint8_t a;
-        };
-        uint32_t color_index;
-    };
-} stbex_pixel;
-
-stbex_pixel
-stbex_pixel_new(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-{
-    stbex_pixel p;
-
-    p.r = r;
-    p.g = g;
-    p.b = b;
-    p.a = a;
-
-    return p;
-}
-
-int
-stbex_pixel_compare_r(const stbex_pixel *lhs, const stbex_pixel *rhs)
-{
-    return lhs->b > rhs->b ? 1: -1;
-}
-
-int
-stbex_pixel_compare_g(const stbex_pixel *lhs, const stbex_pixel *rhs)
-{
-    return lhs->g > rhs->g ? 1: -1;
-}
-
-int
-stbex_pixel_compare_b(const stbex_pixel *lhs, const stbex_pixel *rhs)
-{
-    return lhs->b > rhs->b ? 1: -1;
-}
-
-void
-stbex_pixel_sort_r(stbex_pixel * const pixels, size_t npixels)
-{
-    qsort(pixels, npixels, sizeof(stbex_pixel),
-          (int (*)(const void *, const void *))stbex_pixel_compare_r);
-}
-
-void
-stbex_pixel_sort_g(stbex_pixel * const pixels, size_t npixels)
-{
-    qsort(pixels, npixels, sizeof(stbex_pixel),
-          (int (*)(const void *, const void *))stbex_pixel_compare_g);
-}
-
-void
-stbex_pixel_sort_b(stbex_pixel * const pixels, size_t npixels)
-{
-    qsort(pixels, npixels, sizeof(stbex_pixel),
-          (int (*)(const void *, const void *))stbex_pixel_compare_b);
-}
-
+extern uint8_t *
+apply_palette(unsigned char *data, int x, int y, int depth, uint8_t *palette, int ncolors);
 
 /*****************************************************************************
  *
@@ -106,304 +71,597 @@ stbex_pixel_sort_b(stbex_pixel * const pixels, size_t npixels)
  *
  *****************************************************************************/
 
-/** cube */
-struct stbex_cube;
-typedef struct _stbex_cube {
-    uint8_t min_r;
-    uint8_t min_g;
-    uint8_t min_b;
-    uint8_t max_r;
-    uint8_t max_g;
-    uint8_t max_b;
-    size_t npixels;
-    stbex_pixel *pixels;
-    struct stbex_cube *left;
-    struct stbex_cube *right;
-    struct stbex_cube *parent;
-} stbex_cube;
+typedef struct box* boxVector;
+struct box {
+    int ind;
+    int colors;
+    int sum;
+};
 
-void
-stbex_cube_fit(stbex_cube *cube)
-{
-    int i;
-    stbex_pixel *p;
+typedef unsigned long sample;
+typedef sample * tuple;
+enum methodForRep {REP_CENTER_BOX, REP_AVERAGE_COLORS, REP_AVERAGE_PIXELS};
+ 
+struct tupleint {
+    /* An ordered pair of a tuple value and an integer, such as you 
+       would find in a tuple table or tuple hash.
+       Note that this is a variable length structure.
+    */
+    int value;
+    sample tuple[1];  
+    /* This is actually a variable size array -- its size is the 
+       depth of the tuple in question.  Some compilers do not let us
+       declare a variable length array.
+    */
+};
+typedef struct tupleint ** tupletable;
 
-    cube->max_r = 0;
-    cube->min_r = 255;
-    cube->max_g = 0;
-    cube->min_g = 255;
-    cube->max_b = 0;
-    cube->min_b = 255;
+typedef struct {
+    unsigned int size;
+    tupletable table;
+} tupletable2;
 
-    for (i = 0; i < cube->npixels; i++) {
-        p = cube->pixels + i;
-        if (p->r < cube->min_r) {
-            cube->min_r = p->r;
-        }
-        if (p->g < cube->min_g) {
-            cube->min_g = p->g;
-        }
-        if (p->b < cube->min_b) {
-            cube->min_b = p->b;
-        }
-        if (p->r > cube->max_r) {
-            cube->max_r = p->r;
-        }
-        if (p->g > cube->max_g) {
-            cube->max_g = p->g;
-        }
-        if (p->b > cube->max_b) {
-            cube->max_b = p->b;
-        }
-    }
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+
+static unsigned int compareplanePlane;
+    /* This is a parameter to compareplane().  We use this global variable
+       so that compareplane() can be called by qsort(), to compare two
+       tuples.  qsort() doesn't pass any arguments except the two tuples.
+    */
+static int
+compareplane(const void * const arg1, 
+             const void * const arg2) {
+
+    const struct tupleint * const * const comparandPP  = arg1;
+    const struct tupleint * const * const comparatorPP = arg2;
+
+    return (*comparandPP)->tuple[compareplanePlane] -
+        (*comparatorPP)->tuple[compareplanePlane];
 }
 
-struct stbex_cube *
-stbex_cube_new(stbex_pixel *pixels, size_t npixels, stbex_cube *parent)
+
+static int
+sumcompare(const void * const b1, const void * const b2)
 {
-    stbex_cube *cube;
-
-    cube = malloc(sizeof(stbex_cube));
-    cube->pixels = malloc(sizeof(stbex_pixel *) * npixels);
-    memcpy(cube->pixels, pixels, sizeof(stbex_pixel *) * npixels);
-    cube->npixels = npixels;
-    cube->left = NULL;
-    cube->right = NULL;
-    cube->parent = (struct stbex_cube*)parent;
-
-    stbex_cube_fit(cube);
-
-    return (struct stbex_cube *)cube;
+    return(((boxVector)b2)->sum - ((boxVector)b1)->sum);
 }
 
-void
-stbex_cube_free(stbex_cube *cube, stbex_pixel *pixels)
+
+static tupletable const
+alloctupletable(unsigned int const depth, unsigned int const size)
 {
-    free(cube->pixels);
-    free(cube);
+    if (UINT_MAX / sizeof(struct tupleint) < size) {
+        quant_trace(stderr, "size %u is too big for arithmetic\n", size);
+        return NULL;
+    }
+
+    unsigned int const mainTableSize = size * sizeof(struct tupleint *);
+    unsigned int const tupleIntSize = 
+        sizeof(struct tupleint) - sizeof(sample) 
+        + depth * sizeof(sample);
+
+    /* To save the enormous amount of time it could take to allocate
+       each individual tuple, we do a trick here and allocate everything
+       as a single malloc block and suballocate internally.
+    */
+    if ((UINT_MAX - mainTableSize) / tupleIntSize < size) {
+        quant_trace(stderr, "size %u is too big for arithmetic\n", size);
+        return NULL;
+    }
+
+    unsigned int const allocSize = mainTableSize + size * tupleIntSize;
+    void * pool;
+    
+    pool = malloc(allocSize);
+
+    if (!pool) {
+        quant_trace(stderr, "Unable to allocate %u bytes for a %u-entry "
+                  "tuple table\n", allocSize, size);
+        return NULL;
+    }
+    tupletable const tbl = (tupletable) pool;
+
+    unsigned int i;
+
+    for (i = 0; i < size; ++i)
+        tbl[i] = (struct tupleint *)
+            ((char*)pool + mainTableSize + i * tupleIntSize);
+
+    return tbl;
 }
 
-int
-stbex_cube_hatch(stbex_cube *cube, int threshold)
-{
-    int length_r;
-    int length_g;
-    int length_b;
-    int divide_point;
-    int divide_value = 0;
 
-    if (cube->left != NULL && cube->right != NULL) {
-        return stbex_cube_hatch((stbex_cube *)cube->left, threshold)
-             + stbex_cube_hatch((stbex_cube *)cube->right, threshold);
-    }
 
-    length_r = (int)cube->max_r - (int)cube->min_r;
-    length_g = (int)cube->max_g - (int)cube->min_g;
-    length_b = (int)cube->max_b - (int)cube->min_b;
-
-    if (cube->npixels <= 8) {
-        return cube->npixels;
-    }
-
-    if (cube->npixels < threshold) {
-        if (length_r < 16 && length_g < 16 && length_b < 16) {
-            return 1;
-        }
-        return 0;
-    }
-
-    divide_point = cube->npixels / 2;
-
-    if (length_r > length_g && length_r > length_b) {
-        stbex_pixel_sort_r(cube->pixels, cube->npixels);
-        divide_value = cube->pixels[divide_point - 1].r;
-        for (; divide_point < cube->npixels; divide_point++) {
-            if (cube->pixels[divide_point].r != divide_value) {
-                break;
-            }
-        }
-    } else if (length_g > length_b) {
-        stbex_pixel_sort_g(cube->pixels, cube->npixels);
-        divide_value = cube->pixels[divide_point - 1].g;
-        for (; divide_point < cube->npixels; divide_point++) {
-            if (cube->pixels[divide_point].g != divide_value) {
-                break;
-            }
-        }
-    } else {
-        stbex_pixel_sort_b(cube->pixels, cube->npixels);
-        divide_value = cube->pixels[divide_point - 1].b;
-        for (; divide_point < cube->npixels; divide_point++) {
-            if (cube->pixels[divide_point].b != divide_value) {
-                break;
-            }
-        }
-    }
-
-    if (divide_point == cube->npixels) {
-        return 1;
-    }
-
-    if (cube->npixels == divide_point + 1) {
-        return 1;
-    }
-
-    cube->left = stbex_cube_new(cube->pixels, divide_point, cube);
-    cube->right = stbex_cube_new(cube->pixels + divide_point + 1,
-                           cube->npixels - divide_point - 1, cube);
-    cube->npixels = 0;
-
-    return 2;
-}
-
-void
-stbex_cube_get_sample(stbex_cube *cube, stbex_pixel *samples, stbex_pixel *results, int *nresults)
-{
-    int length_r;
-    int length_g;
-    int length_b;
-
-    if (cube->left) {
-        stbex_cube_get_sample((stbex_cube *)cube->left, samples, results, nresults);
-        stbex_cube_get_sample((stbex_cube *)cube->right, samples, results, nresults);
-    } else {
-
-        length_r = (int)cube->max_r - (int)cube->min_r;
-        length_g = (int)cube->max_g - (int)cube->min_g;
-        length_b = (int)cube->max_b - (int)cube->min_b;
-
-        if (length_r < 16 && length_g < 16 && length_b < 16) {
-            *(results + (*nresults)++) = stbex_pixel_new((cube->min_r + cube->max_r) / 2, (cube->min_g + cube->max_g) / 2, (cube->min_b + cube->max_b) / 2, 0);
 /*
-            printf("(%d, %d, %d)\n", (cube->min_r + cube->max_r) / 2, (cube->min_g + cube->max_g) / 2, (cube->min_b + cube->max_b) / 2);
+** Here is the fun part, the median-cut colormap generator.  This is based
+** on Paul Heckbert's paper "Color Image Quantization for Frame Buffer
+** Display", SIGGRAPH '82 Proceedings, page 297.
 */
-        } else {
-            *(results + (*nresults)++) = stbex_pixel_new(cube->min_r, cube->min_g, cube->min_b, 0);
-            *(results + (*nresults)++) = stbex_pixel_new(cube->max_r, cube->min_g, cube->min_b, 0);
-            *(results + (*nresults)++) = stbex_pixel_new(cube->min_r, cube->max_g, cube->min_b, 0);
-            *(results + (*nresults)++) = stbex_pixel_new(cube->min_r, cube->min_g, cube->max_b, 0);
-            *(results + (*nresults)++) = stbex_pixel_new(cube->max_r, cube->max_g, cube->min_b, 0);
-            *(results + (*nresults)++) = stbex_pixel_new(cube->min_r, cube->max_g, cube->max_b, 0);
-            *(results + (*nresults)++) = stbex_pixel_new(cube->max_r, cube->min_g, cube->max_b, 0);
-            *(results + (*nresults)++) = stbex_pixel_new(cube->max_r, cube->max_g, cube->max_b, 0);
-/*
-            printf("(%d, %d, %d) - (%d, %d, %d) => %ld\n",
-                            cube->min_r,
-                            cube->min_g,
-                            cube->min_b,
-                            cube->max_r,
-                            cube->max_g,
-                            cube->max_b,
-                            cube->npixels);
-*/
+
+static tupletable2
+newColorMap(unsigned int const newcolors,
+            unsigned int const depth) {
+
+    tupletable2 colormap;
+    unsigned int i;
+    tupletable table;
+
+    colormap.table = alloctupletable(depth, newcolors);
+
+    for (i = 0; i < newcolors; ++i) {
+        unsigned int plane;
+        for (plane = 0; plane < depth; ++plane) 
+            colormap.table[i]->tuple[plane] = 0;
+    }
+    colormap.size = newcolors;
+
+    return colormap;
+}
+
+
+static boxVector
+newBoxVector(int const colors, int const sum, int const newcolors)
+{
+    boxVector bv;
+    bv = (boxVector)malloc(sizeof(struct box) * newcolors);
+    if (bv == NULL)
+        quant_trace(stderr, "out of memory allocating box vector table\n");
+
+    /* Set up the initial box. */
+    bv[0].ind = 0;
+    bv[0].colors = colors;
+    bv[0].sum = sum;
+
+    return bv;
+}
+
+
+static void
+findBoxBoundaries(tupletable2  const colorfreqtable,
+                  unsigned int const depth,
+                  unsigned int const boxStart,
+                  unsigned int const boxSize,
+                  sample             minval[],
+                  sample             maxval[]) {
+/*----------------------------------------------------------------------------
+  Go through the box finding the minimum and maximum of each
+  component - the boundaries of the box.
+-----------------------------------------------------------------------------*/
+    unsigned int plane;
+    unsigned int i;
+
+    for (plane = 0; plane < depth; ++plane) {
+        minval[plane] = colorfreqtable.table[boxStart]->tuple[plane];
+        maxval[plane] = minval[plane];
+    }
+
+    for (i = 1; i < boxSize; ++i) {
+        unsigned int plane;
+        for (plane = 0; plane < depth; ++plane) {
+            sample const v = colorfreqtable.table[boxStart + i]->tuple[plane];
+            if (v < minval[plane]) minval[plane] = v;
+            if (v > maxval[plane]) maxval[plane] = v;
+        } 
+    }
+}
+
+
+
+static unsigned int
+largestByNorm(sample minval[], sample maxval[], unsigned int const depth) {
+    
+    unsigned int largestDimension;
+    unsigned int plane;
+
+    sample largestSpreadSoFar = 0;  
+    largestDimension = 0;
+    for (plane = 0; plane < depth; ++plane) {
+        sample const spread = maxval[plane]-minval[plane];
+        if (spread > largestSpreadSoFar) {
+            largestDimension = plane;
+            largestSpreadSoFar = spread;
         }
     }
+    return largestDimension;
 }
 
-/*****************************************************************************
- *
- * Coulor reduction
- *
- *****************************************************************************/
 
-void
-pset(uint8_t *data, int index, int depth, stbex_pixel *value)
-{
-    memcpy(data + index * depth, value, depth);
-}
 
-stbex_pixel *
-pget(unsigned char *data, int index, int depth)
-{
-    return (stbex_pixel *)(data + index * depth);
-}
 
-stbex_pixel *
-zigzag_pget(unsigned char *data, int index, int width, int depth)
-{
-    int n = (int)floor(sqrt((index + 1) * 8) * 0.5 - 0.5);
-    int x, y;
+static void
+centerBox(int          const boxStart,
+          int          const boxSize,
+          tupletable2  const colorfreqtable, 
+          unsigned int const depth,
+          tuple        const newTuple) {
 
-    if ((n & 0x1) == 0) {
-        y = index - n * (n + 1) / 2;
-        x = n - y;
-    } else {
-        x = index - n * (n + 1) / 2;
-        y = n - x;
+    unsigned int plane;
+
+    for (plane = 0; plane < depth; ++plane) {
+        int minval, maxval;
+        unsigned int i;
+
+        minval = maxval = colorfreqtable.table[boxStart]->tuple[plane];
+        
+        for (i = 1; i < boxSize; ++i) {
+            int const v = colorfreqtable.table[boxStart + i]->tuple[plane];
+            minval = MIN( minval, v);
+            maxval = MAX( maxval, v);
+        }
+        newTuple[plane] = (minval + maxval) / 2;
     }
-    return (stbex_pixel *)(data + (y * width + x) * depth);
 }
 
-stbex_pixel *
-get_sample(unsigned char *data, int width, int height, int depth, int *count)
+
+
+static void
+averageColors(int          const boxStart,
+              int          const boxSize,
+              tupletable2  const colorfreqtable, 
+              unsigned int const depth,
+              tuple        const newTuple) {
+
+    unsigned int plane;
+
+    for (plane = 0; plane < depth; ++plane) {
+        sample sum;
+        int i;
+
+        sum = 0;
+
+        for (i = 0; i < boxSize; ++i) 
+            sum += colorfreqtable.table[boxStart+i]->tuple[plane];
+
+        newTuple[plane] = sum / boxSize;
+    }
+}
+
+
+
+static void
+averagePixels(int          const boxStart,
+              int          const boxSize,
+              tupletable2  const colorfreqtable, 
+              unsigned int const depth,
+              tuple        const newTuple) {
+
+    unsigned int n;
+        /* Number of tuples represented by the box */
+    unsigned int plane;
+    unsigned int i;
+
+    /* Count the tuples in question */
+    n = 0;  /* initial value */
+    for (i = 0; i < boxSize; ++i)
+        n += colorfreqtable.table[boxStart + i]->value;
+
+
+    for (plane = 0; plane < depth; ++plane) {
+        sample sum;
+        int i;
+
+        sum = 0;
+
+        for (i = 0; i < boxSize; ++i) 
+            sum += colorfreqtable.table[boxStart+i]->tuple[plane]
+                * colorfreqtable.table[boxStart+i]->value;
+
+        newTuple[plane] = sum / n;
+    }
+}
+
+
+
+static tupletable2
+colormapFromBv(unsigned int      const newcolors,
+               boxVector         const bv, 
+               unsigned int      const boxes,
+               tupletable2       const colorfreqtable, 
+               unsigned int      const depth,
+               enum methodForRep const methodForRep) {
+    /*
+    ** Ok, we've got enough boxes.  Now choose a representative color for
+    ** each box.  There are a number of possible ways to make this choice.
+    ** One would be to choose the center of the box; this ignores any structure
+    ** within the boxes.  Another method would be to average all the colors in
+    ** the box - this is the method specified in Heckbert's paper.  A third
+    ** method is to average all the pixels in the box. 
+    */
+    tupletable2 colormap;
+    unsigned int bi;
+
+    colormap = newColorMap(newcolors, depth);
+
+    for (bi = 0; bi < boxes; ++bi) {
+        switch (methodForRep) {
+        case REP_CENTER_BOX: 
+            centerBox(bv[bi].ind, bv[bi].colors, colorfreqtable, depth, 
+                      colormap.table[bi]->tuple);
+            break;
+        case REP_AVERAGE_COLORS:
+            averageColors(bv[bi].ind, bv[bi].colors, colorfreqtable, depth,
+                          colormap.table[bi]->tuple);
+            break;
+        case REP_AVERAGE_PIXELS:
+            averagePixels(bv[bi].ind, bv[bi].colors, colorfreqtable, depth,
+                          colormap.table[bi]->tuple);
+            break;
+        default:
+            quant_trace(stderr, "Internal error: invalid value of methodForRep: %d\n",
+                        methodForRep);
+        }
+    }
+    return colormap;
+}
+
+
+
+static unsigned int
+freqTotal(tupletable2 const freqtable) {
+    
+    unsigned int i;
+    unsigned int sum;
+
+    sum = 0;
+
+    for (i = 0; i < freqtable.size; ++i)
+        sum += freqtable.table[i]->value;
+
+    return sum;
+}
+
+
+static void
+splitBox(boxVector             const bv, 
+         unsigned int *        const boxesP, 
+         unsigned int          const bi,
+         tupletable2           const colorfreqtable, 
+         unsigned int          const depth)
 {
-    int i, j;
-    int n = width * height / *count;
-    int index;
-    stbex_pixel *result = malloc(sizeof(stbex_pixel) * *count);
-    stbex_pixel p;
-    char histgram[1 << 15];
+/*----------------------------------------------------------------------------
+   Split Box 'bi' in the box vector bv (so that bv contains one more box
+   than it did as input).  Split it so that each new box represents about
+   half of the pixels in the distribution given by 'colorfreqtable' for 
+   the colors in the original box, but with distinct colors in each of the
+   two new boxes.
+
+   Assume the box contains at least two colors.
+-----------------------------------------------------------------------------*/
+    unsigned int const boxStart = bv[bi].ind;
+    unsigned int const boxSize  = bv[bi].colors;
+    unsigned int const sm       = bv[bi].sum;
+
+    sample * minval;  /* malloc'ed array */
+    sample * maxval;  /* malloc'ed array */
+
+    unsigned int largestDimension;
+        /* number of the plane with the largest spread */
+    unsigned int medianIndex;
+    int lowersum;
+        /* Number of pixels whose value is "less than" the median */
+
+    minval = (sample *)malloc(depth);
+    maxval = (sample *)malloc(depth);
+
+    findBoxBoundaries(colorfreqtable, depth, boxStart, boxSize, 
+                      minval, maxval);
+
+    /* Find the largest dimension, and sort by that component.  I have
+       included two methods for determining the "largest" dimension;
+       first by simply comparing the range in RGB space, and second by
+       transforming into luminosities before the comparison.
+    */
+    largestDimension = largestByNorm(minval, maxval, depth);
+                                                    
+    /* TODO: I think this sort should go after creating a box,
+       not before splitting.  Because you need the sort to use
+       the REP_CENTER_BOX method of choosing a color to
+       represent the final boxes 
+    */
+
+    /* Set the gross global variable 'compareplanePlane' as a
+       parameter to compareplane(), which is called by qsort().
+    */
+    compareplanePlane = largestDimension;
+    qsort((char*) &colorfreqtable.table[boxStart], boxSize, 
+          sizeof(colorfreqtable.table[boxStart]), 
+          compareplane);
+            
+    {
+        /* Now find the median based on the counts, so that about half
+           the pixels (not colors, pixels) are in each subdivision.  */
+
+        unsigned int i;
+
+        lowersum = colorfreqtable.table[boxStart]->value; /* initial value */
+        for (i = 1; i < boxSize - 1 && lowersum < sm/2; ++i) {
+            lowersum += colorfreqtable.table[boxStart + i]->value;
+        }
+        medianIndex = i;
+    }
+    /* Split the box, and sort to bring the biggest boxes to the top.  */
+
+    bv[bi].colors = medianIndex;
+    bv[bi].sum = lowersum;
+    bv[*boxesP].ind = boxStart + medianIndex;
+    bv[*boxesP].colors = boxSize - medianIndex;
+    bv[*boxesP].sum = sm - lowersum;
+    ++(*boxesP);
+    qsort((char*) bv, *boxesP, sizeof(struct box), sumcompare);
+
+    free(minval); free(maxval);
+}
+
+
+
+static void
+mediancut(tupletable2           const colorfreqtable, 
+          unsigned int          const depth,
+          int                   const newcolors,
+          enum methodForRep     const methodForRep,
+          tupletable2 *         const colormapP) {
+/*----------------------------------------------------------------------------
+   Compute a set of only 'newcolors' colors that best represent an
+   image whose pixels are summarized by the histogram
+   'colorfreqtable'.  Each tuple in that table has depth 'depth'.
+   colorfreqtable.table[i] tells the number of pixels in the subject image
+   have a particular color.
+
+   As a side effect, sort 'colorfreqtable'.
+-----------------------------------------------------------------------------*/
+    boxVector bv;
+    unsigned int bi;
+    unsigned int boxes;
+    int multicolorBoxesExist;
+        /* There is at least one box that contains at least 2 colors; ergo,
+           there is more splitting we can do.
+        */
+
+    bv = newBoxVector(colorfreqtable.size, freqTotal(colorfreqtable), newcolors);
+    boxes = 1;
+    multicolorBoxesExist = (colorfreqtable.size > 1);
+
+    /* Main loop: split boxes until we have enough. */
+    while (boxes < newcolors && multicolorBoxesExist) {
+        /* Find the first splittable box. */
+        for (bi = 0; bi < boxes && bv[bi].colors < 2; ++bi);
+        if (bi >= boxes)
+            multicolorBoxesExist = 0;
+        else 
+            splitBox(bv, &boxes, bi, colorfreqtable, depth);
+    }
+    *colormapP = colormapFromBv(newcolors, bv, boxes, colorfreqtable, depth,
+                                methodForRep);
+
+    free(bv);
+}
+
+
+static void
+computeHistogram(unsigned char *data,
+                 size_t length,
+                 unsigned long const depth,
+                 tupletable2 * const colorfreqtableP)
+{
+    size_t i;
+    unsigned char histgram[1 << 15];
+    int refmap[1 << 15];
+    int *ref = (int *)refmap;
+    struct tupleint *t;
+    unsigned int index;
+
+    quant_trace(stderr, "making histogram...\n");
 
     memset(histgram, 0, sizeof(histgram));
+    colorfreqtableP->size = 0;
+    colorfreqtableP->table = malloc(sizeof(void *) * (1 << 15));
 
-    for (i = 0; i < *count; i++) {
-        /* p = *zigzag_pget(data, i * n, width, depth); */
-        p = *pget(data, i * n, depth);
-        index = (p.r >> 3) << 10 | (p.g >> 3) << 5 | p.b >> 3;
-        histgram[index] = 1;
-    }
-
-    for (i = 0, j = 0; i < sizeof(histgram); i++) {
-        if (histgram[i] != 0) {
-            result[j].r = (i >> 10 & 0x1f) << 3;
-            result[j].g = (i >> 5 & 0x1f) << 3;
-            result[j].b = (i & 0x1f) << 3;
-            j++;
+    for (i = 0; i < length; i += depth) {
+        index = (data[i + 0] >> 3) << 10
+              | (data[i + 1] >> 3) << 5
+              | (data[i + 2] >> 3);
+        if (histgram[index] == 0) { 
+            *ref++ = index;
+        }
+        if (histgram[index] < 255) { 
+            histgram[index]++;
         }
     }
-    *count = j;
-    return result;
+
+    /*colorfreqtableP->table = alloctupletable(depth, (ref - refmap) / sizeof(*ref));*/
+    while (--ref != refmap) {
+        if (histgram[*ref] > 0) {
+            t = (struct tupleint *)malloc(sizeof(int) + sizeof(sample) * depth);
+            t->value = histgram[*ref];
+            t->tuple[0] = (*ref >> 10 & 0x1f) << 3;
+            t->tuple[1] = (*ref >> 5 & 0x1f) << 3;
+            t->tuple[2] = (*ref & 0x1f) << 3;
+            colorfreqtableP->table[colorfreqtableP->size] = t;
+            colorfreqtableP->size++;
+        }
+    }
+
+    quant_trace(stderr, "%u colors found\n", colorfreqtableP->size);
 }
 
+
+static void
+computeColorMapFromInput(unsigned char *data,
+                         size_t length,
+                         unsigned int const depth, 
+                         int const reqColors, 
+                         enum methodForRep const methodForRep,
+                         tupletable2 * const colormapP)
+{
+/*----------------------------------------------------------------------------
+   Produce a colormap containing the best colors to represent the
+   image stream in file 'ifP'.  Figure it out using the median cut
+   technique.
+
+   The colormap will have 'reqcolors' or fewer colors in it, unless
+   'allcolors' is true, in which case it will have all the colors that
+   are in the input.
+
+   The colormap has the same maxval as the input.
+
+   Put the colormap in newly allocated storage as a tupletable2 
+   and return its address as *colormapP.  Return the number of colors in
+   it as *colorsP and its maxval as *colormapMaxvalP.
+
+   Return the characteristics of the input file as
+   *formatP and *freqPamP.  (This information is not really
+   relevant to our colormap mission; just a fringe benefit).
+-----------------------------------------------------------------------------*/
+    tupletable2 colorfreqtable;
+
+    computeHistogram(data, length, depth, &colorfreqtable);
+    
+    if (colorfreqtable.size <= reqColors) {
+        quant_trace(stderr, "Image already has few enough colors (<=%d).  "
+                   "Keeping same colors.\n", reqColors);
+        *colormapP = colorfreqtable;
+    } else {
+        quant_trace(stderr, "choosing %d colors...\n", reqColors);
+        mediancut(colorfreqtable, depth, reqColors, methodForRep, colormapP);
+        free(colorfreqtable.table);
+    }
+}
+
+
 unsigned char *
-make_palette(unsigned char *data, int x, int y, int n, int c)
+make_palette(unsigned char *data, int x, int y, int depth, int reqcolors, int *ncolors)
 {
     int i;
     unsigned char *palette;
-    int sample_count = 256;
-    stbex_pixel *sample;
-    stbex_cube *cube;
-    int nresult = 0;
-    int ncount;
-    int count = 0;
+    tupletable2 colormap;
 
-    sample = get_sample(data, x, y, n, &sample_count);
-    cube = (stbex_cube *)stbex_cube_new(sample, sample_count, NULL);
-
-    for (ncount = sample_count / 2; ncount > 8; ncount /= 2) {
-        count += stbex_cube_hatch(cube, ncount);
+    computeColorMapFromInput(data, x * y * depth, depth, reqcolors, REP_CENTER_BOX, &colormap);
+    *ncolors = colormap.size;
+    quant_trace(stderr, "tupletable size: %d", *ncolors);
+    palette = malloc(*ncolors * depth);
+    for (i = 0; i < *ncolors; i++) {
+        palette[i * depth + 0] = colormap.table[i]->tuple[0];
+        palette[i * depth + 1] = colormap.table[i]->tuple[1];
+        palette[i * depth + 2] = colormap.table[i]->tuple[2];
+        quant_trace(stderr, "(%lu, %lu, %lu) -> %d\n",
+                    colormap.table[i]->tuple[0],
+                    colormap.table[i]->tuple[1],
+                    colormap.table[i]->tuple[2],
+                    colormap.table[i]->value);
     }
-
-    stbex_pixel results[sample_count];
-    stbex_cube_get_sample(cube, sample, (stbex_pixel *)results, &nresult);
-    free(sample);
-
-    palette = malloc(c * n);
-
-/*
-    printf("[%d -> %d]\n", sample_count, count); fflush(0);
-*/
-
-    for (i = 0; i < c; i++) {
-        memcpy(palette + i * 3, results + i, 3);
-    }
+    free(colormap.table);
     return palette;
 }
 
-void add_offset(unsigned char *data, int i, int n, int roffset, int goffset, int boffset) {
-    int r = data[i * n + 0] + roffset;
-    int g = data[i * n + 1] + goffset;
-    int b = data[i * n + 2] + boffset;
+void add_offset(unsigned char *data, int i, int n,
+                int roffset, int goffset, int boffset)
+{
+    int r, g, b;
+
+    r = data[i * n + 0] + roffset;
+    g = data[i * n + 1] + goffset;
+    b = data[i * n + 2] + boffset;
 
     if (r < 0) {
         r = 0;

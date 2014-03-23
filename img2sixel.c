@@ -46,7 +46,7 @@ extern void
 stbi_image_free(void *retval_from_stbi_load);
 
 extern uint8_t *
-make_palette(uint8_t *data, int x, int y, int n, int c);
+make_palette(uint8_t *data, int x, int y, int depth, int reqcolors, int *ncolors);
 
 extern uint8_t *
 apply_palette(uint8_t *data,
@@ -54,21 +54,22 @@ apply_palette(uint8_t *data,
               uint8_t *palette, int ncolors);
 
 static int
-convert_to_sixel(char const *filename, int ncolors)
+convert_to_sixel(char const *filename, int reqcolors)
 {
     uint8_t *pixels = NULL;
     uint8_t *palette = NULL;
     uint8_t *data = NULL;
+    int ncolors;
     LSImagePtr im = NULL;
     LSOutputContextPtr context;
     int sx, sy, comp;
     int i;
     int nret = -1;
 
-    if ( ncolors < 2 ) {
-        ncolors = 2;
-    } else if ( ncolors > PALETTE_MAX ) {
-        ncolors = PALETTE_MAX;
+    if ( reqcolors < 2 ) {
+        reqcolors = 2;
+    } else if ( reqcolors > PALETTE_MAX ) {
+        reqcolors = PALETTE_MAX;
     }
 
     pixels = stbi_load(filename, &sx, &sy, &comp, STBI_rgb);
@@ -76,7 +77,7 @@ convert_to_sixel(char const *filename, int ncolors)
         return (-1);
     }
 
-    palette = make_palette(pixels, sx, sy, 3, ncolors);
+    palette = make_palette(pixels, sx, sy, 3, reqcolors, &ncolors);
     if (!palette) {
         goto end;
     }
