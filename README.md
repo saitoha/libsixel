@@ -28,13 +28,13 @@ $ make package
 
 ## Usage of command line tools
 
-Convert a jpeg image file to a sixel file
+Convert a jpeg image file into a sixel file
 
 ```
 $ img2sixel -p 16 < image/egret.jpg > egret.sixel
 ```
 
-Convert a sixel file to a png image file
+Convert a sixel file into a png image file
 
 ```
 $ sixeltopng < egret.sixel > egret.png
