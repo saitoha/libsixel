@@ -176,4 +176,17 @@ copyright notice and this permission notice appear in supporting
 documentation.  This software is provided "as is" without express or
 implied warranty.
  
+### test images (egret.jpg / snake.jpg)
+
+Test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.com
+
+http://public-domain-photos.com/
+
+images/egret.jpg
+    author: Jon Sullivan
+    url: http://public-domain-photos.com/animals/egret-4.htm
+
+images/snake.jpg
+    author: Jon Sullivan
+    url: http://public-domain-photos.com/animals/snake-4.htm
 
