@@ -57,34 +57,34 @@ http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
 https://pypi.python.org/pypi/PySixel
 
 
-## Color image quantization quality
+## Color image quantization quality comparison
 
 - ppmtosixel (netpbm)
 
-$ jpegtopnm images/snake.jpg | pnmquant | ppmtosixel
+    $ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel
 
-![ppmtosixel](http://zuse.jp/misc/q_ppmtosixel.png)
+  ![ppmtosixel](http://zuse.jp/misc/q_ppmtosixel.png)
 
 
 - kmiya's sixel
 
-$ sixel -p16 images/snake.jpg
+    $ sixel -p16 images/snake.jpg
 
-![kmiya's sixel](http://zuse.jp/misc/q_sixel.png)
+  ![kmiya's sixel](http://zuse.jp/misc/q_sixel.png)
 
 
 - PySixel (sixelconv command)
 
-$ sixelconv -n16 images/snake.jpg
+    $ sixelconv -n16 images/snake.jpg
 
-![PySixel](http://zuse.jp/misc/q_sixelconv.png)
+  ![PySixel](http://zuse.jp/misc/q_sixelconv.png)
 
 
 - libsixel (img2sixel command)
 
-$ img2sixel -p16 images/snake.jpg
+    $ img2sixel -p16 images/snake.jpg
 
-![PySixel](http://zuse.jp/misc/q_libsixel.png)
+  ![PySixel](http://zuse.jp/misc/q_libsixel.png)
 
 
 ## Support
