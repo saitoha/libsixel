@@ -64,7 +64,14 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+## Thanks
+
+This software derives from the following implementations.
+
+### sixel 2014-3-2
+
 tosixel.c and fromsixel.c are derived from "sixel" original version (2014-3-2)
+
 http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
 
 It is written by kmiya@culti.
@@ -76,12 +83,18 @@ public activities without any restrictions.
 He declares this is compatible with MIT/BSD/GPL.
 
 
+### stbi-1.33
+
 This software includes stbi-1.33 (stb_image.c),
 public domain JPEG/PNG reader.
+
 http://nothings.org/stb_image.c
 
 
+### stbiw-0.92
+
 This software includes stbiw-0.92 (stb_image_write.h),
 public domain PNG/BMP/TGA writer.
+
 http://nothings.org/stb/stb_image_write.h
 
