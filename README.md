@@ -1,6 +1,45 @@
 libsixel
 ========
 
+## What is this?
+
+This package provides encoder/decoder implementation for DEC SIXEL graphics, and
+some converter programs.
+
+![img2sixel](http://zuse.jp/misc/libsixel-1.png)
+
+SIXEL is one of image formats for terminal imaging introduced by DEC VT series.
+Its data scheme is represented as a terminal-friendly escape sequence.
+So if you want to view a SIXEL image file, all you have to do is "cat" it to your terminal.
+
+## Build and install
+
+```
+$ ./configure
+$ make
+# make install
+```
+
+To build source package:
+
+```
+$ make package
+```
+
+## Usage of command line tools
+
+Convert a jpeg image file to a sixel file
+
+```
+$ img2sixel -p 16 < image/egret.jpg > egret.sixel
+```
+
+Convert a sixel file to a png image file
+
+```
+$ sixeltopng < egret.sixel > egret.png
+```
+
 ## License
 
 The MIT License (MIT)
