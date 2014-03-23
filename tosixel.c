@@ -102,8 +102,12 @@ static void PutPalet(LSOutputContextPtr context,
                            (im->blue[pal] * 100 + 127) / 255);
         init_palet[pal] = 1;
 
-    } else if (act_palet != pal)
+    }
+
+    /* designate palette index */
+    if (act_palet != pal) {
         context->fn_printf("#%d", conv_palet[pal]);
+    }
 
     act_palet = pal;
 }
