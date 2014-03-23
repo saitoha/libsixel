@@ -46,17 +46,17 @@ typedef struct LSOutputContextStruct {
     printf_function fn_printf;
 } LSOutputContext, *LSOutputContextPtr;
 
-LSOutputContextPtr LSOutputContext_new();
-void LSOutputContext_free(LSOutputContextPtr context);
-
 /* converter API */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern LSImagePtr LibSixel_SixelToLSImage(uint8_t *p, int len);
-extern void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context);
+extern LSImagePtr
+LibSixel_SixelToLSImage(uint8_t *p, int len);
+
+extern void
+LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context);
 
 #ifdef __cplusplus
 }
@@ -95,6 +95,24 @@ LSImage_fillrectangle(LSImagePtr im, int x1, int y1, int x2, int y2, int color);
 #ifdef __cplusplus
 }
 #endif
+
+
+/* LSOutputContext manipulation API */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern LSOutputContextPtr
+LSOutputContext_new();
+
+extern void
+LSOutputContext_free(LSOutputContextPtr context);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* LIBSIXEL_SIXEL_H */
 
