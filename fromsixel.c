@@ -43,22 +43,22 @@ char sixel_palinit[PALETTE_MAX];
 int sixel_palet[PALETTE_MAX];
 
 static int ColTab[] = {
-    XRGB(0,  0,  0),        //  0 Black
-    XRGB(20, 20, 80),        //  1 Blue
-    XRGB(80, 13, 13),        //  2 Red
-    XRGB(20, 80, 20),        //  3 Green
-    XRGB(80, 20, 80),        //  4 Magenta
-    XRGB(20, 80, 80),        //  5 Cyan
-    XRGB(80, 80, 20),        //  6 Yellow
-    XRGB(53, 53, 53),         //  7 Gray 50%
-    XRGB(26, 26, 26),         //  8 Gray 25%
-    XRGB(33, 33, 60),         //  9 Blue*
-    XRGB(60, 26, 26),         // 10 Red*
-    XRGB(33, 60, 33),         // 11 Green*
-    XRGB(60, 33, 60),         // 12 Magenta*
-    XRGB(33, 60, 60),        // 13 Cyan*
-    XRGB(60, 60, 33),        // 14 Yellow*
-    XRGB(80, 80, 80),         // 15 Gray 75%
+    XRGB(0,  0,  0),        /*  0 Black    */
+    XRGB(20, 20, 80),       /*  1 Blue     */
+    XRGB(80, 13, 13),       /*  2 Red      */
+    XRGB(20, 80, 20),       /*  3 Green    */
+    XRGB(80, 20, 80),       /*  4 Magenta  */
+    XRGB(20, 80, 80),       /*  5 Cyan     */
+    XRGB(80, 80, 20),       /*  6 Yellow   */
+    XRGB(53, 53, 53),       /*  7 Gray 50% */
+    XRGB(26, 26, 26),       /*  8 Gray 25% */
+    XRGB(33, 33, 60),       /*  9 Blue*    */
+    XRGB(60, 26, 26),       /* 10 Red*     */
+    XRGB(33, 60, 33),       /* 11 Green*   */
+    XRGB(60, 33, 60),       /* 12 Magenta* */
+    XRGB(33, 60, 60),       /* 13 Cyan*    */
+    XRGB(60, 60, 33),       /* 14 Yellow*  */
+    XRGB(80, 80, 80),       /* 15 Gray 75% */
 };
 
 static int HueToRGB(int n1, int n2, int hue)
@@ -78,6 +78,7 @@ static int HueToRGB(int n1, int n2, int hue)
     else
         return (n1);
 }
+
 static int HLStoRGB(int hue, int lum, int sat)
 {
     int R, G, B;
@@ -98,6 +99,7 @@ static int HLStoRGB(int hue, int lum, int sat)
     }
     return TrueColor(R, G, B);
 }
+
 static uint8_t *GetParam(uint8_t *p, int *param, int *len)
 {
     int n;
@@ -156,14 +158,14 @@ LibSixel_SixelToLSImage(uint8_t *p, int len)
     for (n = 0 ; n < 16 ; n++)
         sixel_palet[n] = ColTab[n];
 
-    // colors 16-231 are a 6x6x6 color cube
+    /* colors 16-231 are a 6x6x6 color cube */
     for (a = 0 ; a < 6 ; a++) {
         for (b = 0 ; b < 6 ; b++) {
             for (c = 0 ; c < 6 ; c++)
                 sixel_palet[n++] = TrueColor(a * 51, b * 51, c * 51);
         }
     }
-    // colors 232-255 are a grayscale ramp, intentionally leaving out
+    /* colors 232-255 are a grayscale ramp, intentionally leaving out */
     for (a = 0 ; a < 24 ; a++)
         sixel_palet[n++] = TrueColor(a * 11, a * 11, a * 11);
 
@@ -199,7 +201,7 @@ LibSixel_SixelToLSImage(uint8_t *p, int len)
             if (*p == 'q') {
                 p++;
 
-                if (n > 0) {        // Pn1
+                if (n > 0) {        /* Pn1 */
                     switch(param[0]) {
                     case 0:
                     case 1:
@@ -232,7 +234,7 @@ LibSixel_SixelToLSImage(uint8_t *p, int len)
                     }
                 }
 
-                if (n > 2) {        // Pn3
+                if (n > 2) {        /* Pn3 */
                     if (param[2] == 0)
                         param[2] = 10;
                     ax = ax * param[2] / 10;
@@ -245,7 +247,7 @@ LibSixel_SixelToLSImage(uint8_t *p, int len)
         } else if ((p[0] == '\033' && p[1] == '\\') || *p == 0x9C) {
             break;
         } else if (*p == '"') {
-            // DECGRA Set Raster Attributes " Pan ; Pad ; Ph ; Pv
+            /* DECGRA Set Raster Attributes " Pan ; Pad ; Ph ; Pv */
             s = p++;
             p = GetParam(p, param, &n);
             if (s < p) {
@@ -274,14 +276,15 @@ exit(0);
                 im = dm;
             }
 
-        } else if (*p == '!') { // DECGRI Graphics Repeat Introducer ! Pn Ch
+        } else if (*p == '!') {
+            /* DECGRI Graphics Repeat Introducer ! Pn Ch */
             p = GetParam(++p, param, &n);
 
             if (n > 0)
                 rep = param[0];
 
         } else if (*p == '#') {
-            // DECGCI Graphics Color Introducer # Pc ; Pu; Px; Py; Pz
+            /* DECGCI Graphics Color Introducer # Pc ; Pu; Px; Py; Pz */
             p = GetParam(++p, param, &n);
 
             if (n > 0) {
@@ -292,13 +295,13 @@ exit(0);
             }
 
             if (n > 4) {
-                if (param[1] == 1) {            // HLS
+                if (param[1] == 1) {            /* HLS */
                     if (param[2] > 360) param[2] = 360;
                     if (param[3] > 100) param[3] = 100;
                     if (param[4] > 100) param[4] = 100;
                     sixel_palet[col] = HLStoRGB(param[2] * 100 / 360, param[3], param[4]);
                     sixel_palinit[col] |= 2;
-                } else if (param[1] == 2) {    // RGB
+                } else if (param[1] == 2) {    /* RGB */
                     if (param[2] > 100) param[2] = 100;
                     if (param[3] > 100) param[3] = 100;
                     if (param[4] > 100) param[4] = 100;
@@ -307,12 +310,14 @@ exit(0);
                 }
             }
 
-        } else if (*p == '$') {        // DECGCR Graphics Carriage Return
+        } else if (*p == '$') {
+            /* DECGCR Graphics Carriage Return */
             p++;
             px = 0;
             rep = 1;
 
-        } else if (*p == '-') {        // DECGNL Graphics Next Line
+        } else if (*p == '-') {
+            /* DECGNL Graphics Next Line */
             p++;
             px  = 0;
             py += 6;
@@ -359,7 +364,7 @@ exit(0);
                     }
                     px += 1;
 
-                } else {
+                } else { /* rep > 1 */
                     for (i = 0 ; i < 6 ; i++) {
                         if ((b & a) != 0) {
                             c = a << 1;
@@ -369,9 +374,9 @@ exit(0);
                                 c <<= 1;
                             }
                             LSImage_fillrectangle(im, px, py + i,
-                                                         px + rep - 1,
-                                                         py + i + n - 1,
-                                                         sixel_palet[col]);
+                                                  px + rep - 1,
+                                                  py + i + n - 1,
+                                                  sixel_palet[col]);
 
                             if (mx < (px + rep - 1))
                                 mx = px + rep - 1;

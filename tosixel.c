@@ -50,7 +50,7 @@ static void PutFlash(LSOutputContextPtr context)
 {
     int n;
 
-#ifdef USE_VT240        // VT240 Max 255 ?
+#ifdef USE_VT240        /* VT240 Max 255 ? */
     while (save_count > 255) {
         context->fn_printf("!%d%c", 255, save_pix);
         save_count -= 255;
@@ -58,7 +58,7 @@ static void PutFlash(LSOutputContextPtr context)
 #endif
 
     if (save_count > 3) {
-        // DECGRI Graphics Repeat Introducer                ! Pn Ch
+        /* DECGRI Graphics Repeat Introducer ! Pn Ch */
 
         context->fn_printf("!%d%c", save_count, save_pix);
 
@@ -92,7 +92,7 @@ static void PutPalet(LSOutputContextPtr context,
                      LSImagePtr im,
                      int pal)
 {
-    // DECGCI Graphics Color Introducer                        # Pc ; Pu; Px; Py; Pz
+    /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
 
     if (init_palet[pal] == 0) {
         context->fn_printf("#%d;2;%d;%d;%d",
@@ -110,19 +110,19 @@ static void PutPalet(LSOutputContextPtr context,
 
 static void PutCr(LSOutputContextPtr context)
 {
-    // DECGCR Graphics Carriage Return
+    /* DECGCR Graphics Carriage Return */
 
     context->fn_putchar('$');
-    // x = 0;
+    /* x = 0; */
 }
 
 static void PutLf(LSOutputContextPtr context)
 {
-    // DECGNL Graphics Next Line
+    /* DECGNL Graphics Next Line */
 
     context->fn_putchar('-');
-    // x = 0;
-    // y += 6;
+    /* x = 0; */
+    /* y += 6; */
 }
 
 static void NodeFree()
@@ -250,7 +250,8 @@ static int GetColIdx(LSImagePtr im, int col)
     int green = (col & 0x00FF00) >> 8;
     int blue  = col & 0x0000FF;
     int idx   = (-1);
-    int min   = 0xFFFFFF;    // 255 * 255 * 3 + 255 * 255 * 9 + 255 * 255 = 845325 = 0x000CE60D
+    int min   = 0xFFFFFF;
+    /* 255 * 255 * 3 + 255 * 255 * 9 + 255 * 255 = 845325 = 0x000CE60D */
 
     for (i = 0 ; i < im->ncolors ; i++) {
         if (i == im->keycolor)
@@ -295,7 +296,7 @@ void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
 
     memset(init_palet, 0, sizeof(init_palet));
 
-    // Pass 1 Palet count
+    /* Pass 1 Palet count */
 
     memset(use_palet, 0, sizeof(use_palet));
     skip = (height / 240) * 6;
