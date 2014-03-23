@@ -113,6 +113,7 @@ static void PutCr(LSOutputContextPtr context)
     /* DECGCR Graphics Carriage Return */
 
     context->fn_putchar('$');
+    context->fn_putchar('\n');
     /* x = 0; */
 }
 
@@ -121,6 +122,7 @@ static void PutLf(LSOutputContextPtr context)
     /* DECGNL Graphics Next Line */
 
     context->fn_putchar('-');
+    context->fn_putchar('\n');
     /* x = 0; */
     /* y += 6; */
 }
