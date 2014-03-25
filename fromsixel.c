@@ -10,59 +10,54 @@
  *
  * He declares this is compatible with MIT/BSD/GPL.
  *
- * Hayaki Saito (user@zuse.jp) modified this and re-licensed
+ * Hayaki Saito <user@zuse.jp> modified this and re-licensed
  * it under the MIT license.
  *
  */
 #include "config.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <inttypes.h>
+#include <stdlib.h>  /* NULL */
+#include <ctype.h>   /* isdigit */
+
+#if defined(HAVE_INTTYPES_H)
+# include <inttypes.h>
+#endif
+
 #include "sixel.h"
 
 /* exported function */
 LSImagePtr LibSixel_SixelToLSImage(uint8_t *p, int len);
 
-#define TrueColor(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
+#define RGB(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
 
-#define TrueColorAlpha(r, g, b, a) (((a) << 24) + ((r) << 16) + ((g) << 8) +  (b))
+#define RGBA(r, g, b, a) (((a) << 24) + ((r) << 16) + ((g) << 8) +  (b))
 
 #define PALVAL(n,a,m) (((n) * (a) + ((m) / 2)) / (m))
 
-#define XRGB(r,g,b) TrueColor(PALVAL(r,255, 100), PALVAL(g,255, 100), PALVAL(b,255, 100))
+#define XRGB(r,g,b) RGB(PALVAL(r, 255, 100), PALVAL(g, 255, 100), PALVAL(b, 255, 100))
 
-#define RGBMAX 255
-#define HLSMAX 100
-
-char *sixel_param = NULL;
-char *sixel_gra   = NULL;
-int sixel_palfix = 0;
-char sixel_palinit[PALETTE_MAX];
-int sixel_palet[PALETTE_MAX];
-
-static int ColTab[] = {
-    XRGB(0,  0,  0),        /*  0 Black    */
-    XRGB(20, 20, 80),       /*  1 Blue     */
-    XRGB(80, 13, 13),       /*  2 Red      */
-    XRGB(20, 80, 20),       /*  3 Green    */
-    XRGB(80, 20, 80),       /*  4 Magenta  */
-    XRGB(20, 80, 80),       /*  5 Cyan     */
-    XRGB(80, 80, 20),       /*  6 Yellow   */
-    XRGB(53, 53, 53),       /*  7 Gray 50% */
-    XRGB(26, 26, 26),       /*  8 Gray 25% */
-    XRGB(33, 33, 60),       /*  9 Blue*    */
-    XRGB(60, 26, 26),       /* 10 Red*     */
-    XRGB(33, 60, 33),       /* 11 Green*   */
-    XRGB(60, 33, 60),       /* 12 Magenta* */
-    XRGB(33, 60, 60),       /* 13 Cyan*    */
-    XRGB(60, 60, 33),       /* 14 Yellow*  */
-    XRGB(80, 80, 80),       /* 15 Gray 75% */
+static int const ColTab[] = {
+    XRGB(0,  0,  0),   /*  0 Black    */
+    XRGB(20, 20, 80),  /*  1 Blue     */
+    XRGB(80, 13, 13),  /*  2 Red      */
+    XRGB(20, 80, 20),  /*  3 Green    */
+    XRGB(80, 20, 80),  /*  4 Magenta  */
+    XRGB(20, 80, 80),  /*  5 Cyan     */
+    XRGB(80, 80, 20),  /*  6 Yellow   */
+    XRGB(53, 53, 53),  /*  7 Gray 50% */
+    XRGB(26, 26, 26),  /*  8 Gray 25% */
+    XRGB(33, 33, 60),  /*  9 Blue*    */
+    XRGB(60, 26, 26),  /* 10 Red*     */
+    XRGB(33, 60, 33),  /* 11 Green*   */
+    XRGB(60, 33, 60),  /* 12 Magenta* */
+    XRGB(33, 60, 60),  /* 13 Cyan*    */
+    XRGB(60, 60, 33),  /* 14 Yellow*  */
+    XRGB(80, 80, 80),  /* 15 Gray 75% */
 };
 
 static int HueToRGB(int n1, int n2, int hue)
 {
+    const int HLSMAX = 100;
+
     if (hue < 0)
         hue += HLSMAX;
 
@@ -83,6 +78,8 @@ static int HLStoRGB(int hue, int lum, int sat)
 {
     int R, G, B;
     int Magic1, Magic2;
+    const int RGBMAX = 255;
+    const int HLSMAX = 100;
 
     if (sat == 0) {
         R = G = B = (lum * RGBMAX) / HLSMAX;
@@ -97,7 +94,7 @@ static int HLStoRGB(int hue, int lum, int sat)
         G = (HueToRGB(Magic1, Magic2, hue) * RGBMAX + (HLSMAX / 2)) / HLSMAX;
         B = (HueToRGB(Magic1, Magic2, hue - (HLSMAX / 3)) * RGBMAX + (HLSMAX/2)) / HLSMAX;
     }
-    return TrueColor(R, G, B);
+    return RGB(R, G, B);
 }
 
 static uint8_t *GetParam(uint8_t *p, int *param, int *len)
@@ -141,6 +138,7 @@ LibSixel_SixelToLSImage(uint8_t *p, int len)
     uint8_t *s;
     static char pam[256];
     static char gra[256];
+    int sixel_palet[PALETTE_MAX];
 
     px = py = 0;
     mx = my = 0;
@@ -162,28 +160,21 @@ LibSixel_SixelToLSImage(uint8_t *p, int len)
     for (a = 0 ; a < 6 ; a++) {
         for (b = 0 ; b < 6 ; b++) {
             for (c = 0 ; c < 6 ; c++)
-                sixel_palet[n++] = TrueColor(a * 51, b * 51, c * 51);
+                sixel_palet[n++] = RGB(a * 51, b * 51, c * 51);
         }
     }
     /* colors 232-255 are a grayscale ramp, intentionally leaving out */
     for (a = 0 ; a < 24 ; a++)
-        sixel_palet[n++] = TrueColor(a * 11, a * 11, a * 11);
+        sixel_palet[n++] = RGB(a * 11, a * 11, a * 11);
 
-    bc = TrueColorAlpha(255, 255, 255, 127);
+    bc = RGBA(255, 255, 255, 127);
 
     for (; n < PALETTE_MAX ; n++)
-        sixel_palet[n] = TrueColor(255, 255, 255);
+        sixel_palet[n] = RGB(255, 255, 255);
 
     LSImage_fill(im, bc);
 
     pam[0] = gra[0] = '\0';
-    sixel_param = pam;
-    sixel_gra   = gra;
-
-    for (n = 0 ; n < PALETTE_MAX ; n++)
-        sixel_palinit[n] = 0;
-
-    sixel_palfix = 0;
 
     while (*p != '\0') {
         if ((p[0] == '\033' && p[1] == 'P') || *p == 0x90) {
@@ -265,9 +256,8 @@ LibSixel_SixelToLSImage(uint8_t *p, int len)
             if (ay <= 0) ay = 1;
 
             if (im->sx < tx || im->sy < ty) {
-exit(0);
                 dm = LSImage_create(im->sx > tx ? im->sx : tx,
-                                           im->sy > ty ? im->sy : ty, 3, -1);
+                                    im->sy > ty ? im->sy : ty, 3, -1);
                 if (dm == NULL)
                     return NULL;
                 LSImage_fill(dm, bc);
@@ -300,13 +290,11 @@ exit(0);
                     if (param[3] > 100) param[3] = 100;
                     if (param[4] > 100) param[4] = 100;
                     sixel_palet[col] = HLStoRGB(param[2] * 100 / 360, param[3], param[4]);
-                    sixel_palinit[col] |= 2;
                 } else if (param[1] == 2) {    /* RGB */
                     if (param[2] > 100) param[2] = 100;
                     if (param[3] > 100) param[3] = 100;
                     if (param[4] > 100) param[4] = 100;
                     sixel_palet[col] = XRGB(param[2], param[3], param[4]);
-                    sixel_palinit[col] |= 2;
                 }
             }
 
@@ -323,7 +311,7 @@ exit(0);
             py += 6;
             rep = 1;
 
-        } else if (*p >= '?' && *p <= '\x7E') {
+        } else if (*p >= '?' && *p <= '\177') {
             if (im->sx < (px + rep) || im->sy < (py + 6)) {
                 int nx = im->sx * 2;
                 int ny = im->sy * 2;
@@ -345,10 +333,6 @@ exit(0);
                 px += rep;
 
             } else {
-                if (sixel_palinit[col] == 0)
-                    sixel_palfix = 1;
-                sixel_palinit[col] |= 1;
-
                 a = 0x01;
 
                 if (rep <= 1) {

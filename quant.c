@@ -53,6 +53,10 @@
 #include <math.h>
 #include <limits.h>
 
+#if defined(HAVE_INTTYPES_H)
+# include <inttypes.h>
+#endif
+
 #if 0
 #define quant_trace fprintf
 #else
@@ -637,7 +641,8 @@ make_palette(unsigned char *data, int x, int y, int depth, int reqcolors, int *n
     unsigned char *palette;
     tupletable2 colormap;
 
-    computeColorMapFromInput(data, x * y * depth, depth, reqcolors, REP_CENTER_BOX, &colormap);
+    computeColorMapFromInput(data, x * y * depth, depth,
+                             reqcolors, REP_CENTER_BOX, &colormap);
     *ncolors = colormap.size;
     quant_trace(stderr, "tupletable size: %d", *ncolors);
     palette = malloc(*ncolors * depth);
@@ -716,7 +721,7 @@ apply_palette(unsigned char *data,
             diff = 256 * 256 * 3;
             index = -1;
             j = 1;
-            while (1) {
+            do {
                 rdiff = r - (int)palette[j * 3 + 0];
                 gdiff = g - (int)palette[j * 3 + 1];
                 bdiff = b - (int)palette[j * 3 + 2];
@@ -726,13 +731,10 @@ apply_palette(unsigned char *data,
                     index = j;
                 }
                 j++;
-                if (j == c) {
-                    break;
-                }
-            }
+            } while (j != c);
             if (index > 0) {
                 result[i] = index;
-                if (1) {
+                if (c > 2) {
                     roffset = (int)data[i * depth + 0] - (int)palette[index * 3 + 0];
                     goffset = (int)data[i * depth + 1] - (int)palette[index * 3 + 1];
                     boffset = (int)data[i * depth + 2] - (int)palette[index * 3 + 2];
