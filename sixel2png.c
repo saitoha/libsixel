@@ -22,11 +22,18 @@
 #include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <unistd.h>
-#include <inttypes.h>
-#include "sixel.h"
+#include <string.h>  /* strdup */
+
+#if defined(HAVE_UNISTD_H)
+# include <unistd.h>  /* getopt */
+#endif
+
+#if defined(HAVE_INTTYPES_H)
+# include <inttypes.h>
+#endif
+
+#include <sixel.h>
+#include "stb_image_write.h"
 
 enum
 {
@@ -36,11 +43,6 @@ enum
    STBI_rgb = 3,
    STBI_rgb_alpha = 4
 };
-
-extern int
-stbi_write_png(char const *filename,
-               int w, int h, int comp,
-               const void *data, int stride_in_bytes);
 
 static int
 sixel_to_png(const char *input, const char *output)

@@ -20,7 +20,11 @@
  */
 #include "config.h"
 #include <stdlib.h>
-#include <inttypes.h>
+
+#if defined(HAVE_INTTYPES_H)
+# include <inttypes.h>
+#endif
+
 #include "sixel.h"
 
 LSImagePtr

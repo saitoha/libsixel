@@ -5,7 +5,9 @@ libsixel_la_SOURCES = image.c output.c fromsixel.c tosixel.c
 
 bin_PROGRAMS = img2sixel sixel2png
 img2sixel_SOURCES = img2sixel.c quant.c stb_image.c
-img2sixel_LDFLAGS = -lsixel -lm
+img2sixel_LDFLAGS = -lsixel
+img2sixel_CFLAGS = -DSTBI_NO_HDR #-DSTBI_SIMD
+
 sixel2png_SOURCES = sixel2png.c stb_image_write.c
 sixel2png_LDFLAGS = -lsixel
 

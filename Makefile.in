@@ -134,13 +134,13 @@ am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
 PROGRAMS = $(bin_PROGRAMS)
-am_img2sixel_OBJECTS = img2sixel.$(OBJEXT) quant.$(OBJEXT) \
-	stb_image.$(OBJEXT)
+am_img2sixel_OBJECTS = img2sixel-img2sixel.$(OBJEXT) \
+	img2sixel-quant.$(OBJEXT) img2sixel-stb_image.$(OBJEXT)
 img2sixel_OBJECTS = $(am_img2sixel_OBJECTS)
 img2sixel_LDADD = $(LDADD)
 img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(img2sixel_LDFLAGS) $(LDFLAGS) -o $@
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(img2sixel_CFLAGS) \
+	$(CFLAGS) $(img2sixel_LDFLAGS) $(LDFLAGS) -o $@
 am_sixel2png_OBJECTS = sixel2png.$(OBJEXT) stb_image_write.$(OBJEXT)
 sixel2png_OBJECTS = $(am_sixel2png_OBJECTS)
 sixel2png_LDADD = $(LDADD)
@@ -348,7 +348,8 @@ include_HEADERS = sixel.h stb_image_write.h
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = image.c output.c fromsixel.c tosixel.c
 img2sixel_SOURCES = img2sixel.c quant.c stb_image.c
-img2sixel_LDFLAGS = -lsixel -lm
+img2sixel_LDFLAGS = -lsixel
+img2sixel_CFLAGS = -DSTBI_NO_HDR #-DSTBI_SIMD
 sixel2png_SOURCES = sixel2png.c stb_image_write.c
 sixel2png_LDFLAGS = -lsixel
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}

@@ -18,7 +18,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <inttypes.h>
+
+#if defined(HAVE_INTTYPES_H)
+# include <inttypes.h>
+#endif
+
 #include "sixel.h"
 
 /* exported function */

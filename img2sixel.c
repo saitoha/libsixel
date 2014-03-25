@@ -20,38 +20,29 @@
  */
 
 #include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
-#include <unistd.h>
-#include <inttypes.h>
-#include "sixel.h"
 
-enum
-{
-   STBI_default = 0, /* only used for req_comp */
-   STBI_grey = 1,
-   STBI_grey_alpha = 2,
-   STBI_rgb = 3,
-   STBI_rgb_alpha = 4
-};
+#if defined(HAVE_UNISTD_H)
+# include <unistd.h>  /* getopt */
+#endif
 
-extern uint8_t *
-stbi_load(char const *filename, int *x, int *y, int *comp, int req_comp);
-extern uint8_t *
-stbi_load_from_file(FILE *f, int *x, int *y, int *comp, int req_comp);
+#if defined(HAVE_INTTYPES_H)
+# include <inttypes.h>
+#endif
 
-extern void
-stbi_image_free(void *retval_from_stbi_load);
+#include <sixel.h>
+
+#define STBI_HEADER_FILE_ONLY
+#include <stb_image.c>
 
 extern uint8_t *
 make_palette(uint8_t *data, int x, int y, int depth, int reqcolors, int *ncolors);
 
 extern uint8_t *
-apply_palette(uint8_t *data,
-              int width, int height, int depth,
-              uint8_t *palette, int ncolors);
+apply_palette(uint8_t *data, int x, int y, int depth, uint8_t *palette, int ncolors);
 
 static int
 convert_to_sixel(char const *filename, int reqcolors)
@@ -81,6 +72,7 @@ convert_to_sixel(char const *filename, int reqcolors)
     if (!palette) {
         goto end;
     }
+
     im = LSImage_create(sx, sy, 1, ncolors);
     if (!im) {
         goto end;

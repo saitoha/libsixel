@@ -25,13 +25,12 @@ AC_CHECK_HEADERS([memory.h stdint.h stdlib.h string.h unistd.h])
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL
 AC_TYPE_SIZE_T
-AC_TYPE_UINT32_T
 AC_TYPE_UINT8_T
 
 # Checks for library functions.
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([floor memmove memset pow sqrt strtol])
+AC_CHECK_FUNCS([memmove memset strtol])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
