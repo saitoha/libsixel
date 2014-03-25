@@ -45,15 +45,17 @@ extern uint8_t *
 apply_palette(uint8_t *data, int x, int y, int depth, uint8_t *palette, int ncolors);
 
 static int
-convert_to_sixel(char const *filename, int reqcolors)
+convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
 {
     uint8_t *pixels = NULL;
+    uint8_t *mappixels = NULL;
     uint8_t *palette = NULL;
     uint8_t *data = NULL;
     int ncolors;
     LSImagePtr im = NULL;
     LSOutputContextPtr context;
     int sx, sy, comp;
+    int map_sx, map_sy, map_comp;
     int i;
     int nret = -1;
 
@@ -68,7 +70,12 @@ convert_to_sixel(char const *filename, int reqcolors)
         return (-1);
     }
 
-    palette = make_palette(pixels, sx, sy, 3, reqcolors, &ncolors);
+    if (mapfile) {
+        mappixels = stbi_load(mapfile, &map_sx, &map_sy, &map_comp, STBI_rgb);
+        palette = make_palette(mappixels, map_sx, map_sy, 3, reqcolors, &ncolors);
+    } else {
+        palette = make_palette(pixels, sx, sy, 3, reqcolors, &ncolors);
+    }
     if (!palette) {
         goto end;
     }
@@ -109,29 +116,46 @@ int main(int argc, char *argv[])
 {
     int n;
     int filecount = 1;
-    int ncolors = PALETTE_MAX;
+    int ncolors = -1;
+    char *mapfile = NULL;
 
-    while ((n = getopt(argc, argv, "p:")) != -1) {
+    while ((n = getopt(argc, argv, "p:m:")) != -1) {
         switch(n) {
         case 'p':
             ncolors = atoi(optarg);
+            break;
+        case 'm':
+            mapfile = strdup(optarg);
             break;
         default:
             goto argerr;
         }
     }
 
+    if (ncolors != -1 && mapfile) {
+        fprintf(stderr, "option -p conflicts with -m.\n");
+        exit(1);
+    }
+    printf("mapfile %s\n", mapfile);
+
+    if (ncolors == -1) {
+        ncolors = PALETTE_MAX;
+    }
+
     if (optind == argc) {
-        convert_to_sixel("/dev/stdin", ncolors);
+        convert_to_sixel("/dev/stdin", ncolors, mapfile);
     } else {
         for (n = optind; n < argc; n++) {
-            convert_to_sixel(argv[n], ncolors);
+            convert_to_sixel(argv[n], ncolors, mapfile);
         }
     }
     return 0;
 
 argerr:
-    fprintf(stderr, "Usage: %s [-p MaxPalet] <file name...>\n", argv[0]);
+    if (mapfile) {
+        free(mapfile);
+    }
+    fprintf(stderr, "Usage: %s [-p MaxPalet] [-m PaletFile] <file name...>\n", argv[0]);
     return 0;
 }
 
