@@ -7994,10 +7994,6 @@ _lt_linker_boilerplate=`cat conftest.err`
 $RM -r conftest*
 
 
-## CAVEAT EMPTOR:
-## There is no encapsulation within the following macros, do not change
-## the running order or otherwise move them around unless you know exactly
-## what you are doing...
 if test -n "$compiler"; then
 
 lt_prog_compiler_no_builtin_flag=
@@ -11540,7 +11536,7 @@ CC="$lt_save_CC"
 
 ac_config_headers="$ac_config_headers config.h"
 
-
+#AC_CONFIG_MACRO_DIR([m4])
 #AC_ENABLE_SHARED
 #AC_DISABLE_STATIC
 
