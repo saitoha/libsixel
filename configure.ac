@@ -2,6 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.60])
+LT_PREREQ([2.4])
 AC_INIT([sixel], [0.4.0], [user@zuse.jp])
 AM_INIT_AUTOMAKE([foreign])
 LT_INIT
