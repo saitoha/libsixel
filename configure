@@ -2310,9 +2310,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-
-touch -c aclocal.m4 Makefle.in configure config.h.in
-
 am__api_version='1.14'
 
 ac_aux_dir=
@@ -14926,3 +14923,6 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
+
+
+touch -c aclocal.m4 Makefle.in configure config.h.in

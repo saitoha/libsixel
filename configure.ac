@@ -5,10 +5,6 @@ AC_PREREQ([2.60])
 LT_PREREQ([2.4])
 AC_INIT([sixel], [0.4.0], [user@zuse.jp])
 
-AC_DEFUN([LS_UPDATE_TIMESTUMP],
-         [touch -c aclocal.m4 Makefle.in configure config.h.in])
-LS_UPDATE_TIMESTUMP
-
 AM_INIT_AUTOMAKE([foreign])
 LT_INIT
 AC_CONFIG_SRCDIR([fromsixel.c])
@@ -40,3 +36,7 @@ AC_CHECK_FUNCS([memmove memset strtol])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
+
+AC_DEFUN([LS_UPDATE_TIMESTUMP],
+         [touch -c aclocal.m4 Makefle.in configure config.h.in])
+LS_UPDATE_TIMESTUMP
