@@ -2310,6 +2310,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
+touch aclocal.m4 Makefile.in configure config.h.in touch aaa
+
 am__api_version='1.14'
 
 ac_aux_dir=
@@ -12557,6 +12560,7 @@ done
 
 ac_config_files="$ac_config_files Makefile"
 
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -14924,5 +14928,3 @@ $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
 
-
-touch aclocal.m4 Makefle.in configure config.h.in
