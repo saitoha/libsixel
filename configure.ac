@@ -38,5 +38,5 @@ AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
 AC_DEFUN([LS_UPDATE_TIMESTUMP],
-         [touch -c aclocal.m4 Makefle.in configure config.h.in])
+         [touch aclocal.m4 Makefle.in configure config.h.in])
 LS_UPDATE_TIMESTUMP
