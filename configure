@@ -14925,4 +14925,4 @@ fi
 
 
 
-touch -c aclocal.m4 Makefle.in configure config.h.in
+touch aclocal.m4 Makefle.in configure config.h.in
