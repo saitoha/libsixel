@@ -12,6 +12,10 @@ AC_CONFIG_MACRO_DIR([m4])
 #AC_ENABLE_SHARED
 #AC_DISABLE_STATIC
 
+AC_DEFUN([UPDATE_TIMESTUMP],
+         [touch -c aclocal.m4 Makefle.in configure config.h.in])
+UPDATE_TIMESTUMP
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
