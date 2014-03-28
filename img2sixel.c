@@ -73,7 +73,6 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
     if (mapfile) {
         mappixels = stbi_load(mapfile, &map_sx, &map_sy, &map_comp, STBI_rgb);
         palette = make_palette(mappixels, map_sx, map_sy, 3, reqcolors, &ncolors);
-        fprintf(stderr, "%d\n", ncolors);
     } else {
         palette = make_palette(pixels, sx, sy, 3, reqcolors, &ncolors);
     }
