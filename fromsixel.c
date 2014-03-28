@@ -167,7 +167,7 @@ LibSixel_SixelToLSImage(uint8_t *p, int len)
     for (a = 0 ; a < 24 ; a++)
         sixel_palet[n++] = RGB(a * 11, a * 11, a * 11);
 
-    bc = RGBA(255, 255, 255, 127);
+    bc = RGBA(0, 0, 0, 127);
 
     for (; n < PALETTE_MAX ; n++)
         sixel_palet[n] = RGB(255, 255, 255);

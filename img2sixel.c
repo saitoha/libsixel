@@ -136,7 +136,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "option -p conflicts with -m.\n");
         exit(1);
     }
-    printf("mapfile %s\n", mapfile);
 
     if (ncolors == -1) {
         ncolors = PALETTE_MAX;

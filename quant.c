@@ -711,7 +711,7 @@ void add_offset(unsigned char *data, int i, int n,
 unsigned char *
 apply_palette(unsigned char *data,
               int width, int height, int depth,
-              unsigned char *palette, int c)
+              unsigned char *palette, int ncolor)
 {
     int i;
     int j;
@@ -734,7 +734,7 @@ apply_palette(unsigned char *data,
             b = data[i * depth + 2];
             diff = 256 * 256 * 3;
             index = -1;
-            j = 1;
+            j = 0;
             do {
                 rdiff = r - (int)palette[j * 3 + 0];
                 gdiff = g - (int)palette[j * 3 + 1];
@@ -745,10 +745,10 @@ apply_palette(unsigned char *data,
                     index = j;
                 }
                 j++;
-            } while (j != c);
-            if (index > 0) {
+            } while (j != ncolor + 1);
+            if (index != -1) {
                 result[i] = index;
-                if (c > 2) {
+                if (ncolor > 2) {
                     roffset = (int)data[i * depth + 0] - (int)palette[index * 3 + 0];
                     goffset = (int)data[i * depth + 1] - (int)palette[index * 3 + 1];
                     boffset = (int)data[i * depth + 2] - (int)palette[index * 3 + 2];
