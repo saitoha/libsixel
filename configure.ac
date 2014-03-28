@@ -4,6 +4,11 @@
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
 AC_INIT([sixel], [0.4.0], [user@zuse.jp])
+
+AC_DEFUN([LS_UPDATE_TIMESTAMP],
+         [touch aclocal.m4 Makefile.in configure config.h.in touch aaa])
+LS_UPDATE_TIMESTAMP
+
 AM_INIT_AUTOMAKE([foreign])
 LT_INIT
 AC_CONFIG_SRCDIR([fromsixel.c])
@@ -34,4 +39,6 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNCS([memmove memset strtol])
 
 AC_CONFIG_FILES([Makefile])
+
 AC_OUTPUT
+
