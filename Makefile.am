@@ -17,3 +17,6 @@ test:
 	./img2sixel images/snake.jpg
 	./img2sixel images/snake.jpg > snake.sixel
 	./sixel2png < snake.sixel > snake.png
+	./img2sixel -p 16 images/egret.jpg
+	./img2sixel -m images/map8.png images/egret.jpg
+	./img2sixel -m images/map16.png images/egret.jpg
