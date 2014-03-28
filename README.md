@@ -31,12 +31,20 @@ $ make package
 Convert a jpeg image file into a sixel file
 
 ```
-$ img2sixel < image/egret.jpg > egret.sixel
+$ img2sixel < images/egret.jpg > egret.sixel
 ```
 
+Reduce colors to 16
+
 ```
-$ img2sixel -p 16 < image/egret.jpg > egret.sixel
-[-p MaxPalet] [-m PaletFile] <file name...>
+$ img2sixel -p 16 < images/egret.jpg > egret.sixel
+```
+
+Reduce colors with fixed palette
+
+```
+$ img2sixel -m images/map16 < images/egret.jpg > egret.sixel
+```
 
 Convert a sixel file into a png image file
 
