@@ -44,7 +44,6 @@ static SixNode *node_free = NULL;
 
 static int save_pix = 0;
 static int save_count = 0;
-static char init_palet[PALETTE_MAX];
 static int act_palet = (-1);
 
 static long use_palet[PALETTE_MAX];
@@ -96,24 +95,11 @@ static void PutPalet(LSOutputContextPtr context,
                      LSImagePtr im,
                      int pal)
 {
-    /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
-
-    if (init_palet[pal] == 0) {
-        context->fn_printf("#%d;2;%d;%d;%d",
-                           conv_palet[pal],
-                           (im->red[pal] * 100 + 127) / 255,
-                           (im->green[pal] * 100 + 127) / 255,
-                           (im->blue[pal] * 100 + 127) / 255);
-        init_palet[pal] = 1;
-
-    }
-
     /* designate palette index */
     if (act_palet != pal) {
         context->fn_printf("#%d", conv_palet[pal]);
+        act_palet = pal;
     }
-
-    act_palet = pal;
 }
 
 static void PutCr(LSOutputContextPtr context)
@@ -304,8 +290,6 @@ void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     for (n = 0 ; n < maxPalet ; n++)
         conv_palet[n] = list[n] = n;
 
-    memset(init_palet, 0, sizeof(init_palet));
-
     /* Pass 1 Palet count */
 
     memset(use_palet, 0, sizeof(use_palet));
@@ -368,6 +352,15 @@ void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     context->fn_putchar('q');
     context->fn_printf("\"1;1;%d;%d", width, height);
     context->fn_putchar('\n');
+
+    for (n = 0 ; n < maxPalet ; n++) {
+        /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
+        context->fn_printf("#%d;2;%d;%d;%d",
+                           conv_palet[n],
+                           (im->red[n] * 100 + 127) / 255,
+                           (im->green[n] * 100 + 127) / 255,
+                           (im->blue[n] * 100 + 127) / 255);
+    }
 
     for (y = i = 0 ; y < height ; y++) {
         for (x = 0 ; x < width ; x++) {
