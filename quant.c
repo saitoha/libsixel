@@ -458,6 +458,8 @@ splitBox(boxVector             const bv,
        transforming into luminosities before the comparison.
     */
     largestDimension = largestByNorm(minval, maxval, depth);
+    free(minval);
+    free(maxval);
                                                     
     /* TODO: I think this sort should go after creating a box,
        not before splitting.  Because you need the sort to use
@@ -494,8 +496,6 @@ splitBox(boxVector             const bv,
     bv[*boxesP].sum = sm - lowersum;
     ++(*boxesP);
     qsort((char*) bv, *boxesP, sizeof(struct box), sumcompare);
-
-    free(minval); free(maxval);
 }
 
 
@@ -545,27 +545,38 @@ mediancut(tupletable2           const colorfreqtable,
 
 static void
 computeHistogram(unsigned char *data,
-                 size_t length,
+                 unsigned int length,
                  unsigned long const depth,
                  tupletable2 * const colorfreqtableP)
 {
-    size_t i;
-    unsigned char histgram[1 << 15];
-    int refmap[1 << 15];
-    int *ref = (int *)refmap;
+    unsigned int i, n;
+    unsigned char *histgram;
+    int *refmap;
+    int *ref;
     struct tupleint *t;
     unsigned int index;
+    unsigned int step;
+    const unsigned int max_sample = 256 * 32;
 
     quant_trace(stderr, "making histogram...\n");
 
-    memset(histgram, 0, sizeof(histgram));
+    histgram = (unsigned char *)malloc(1 << depth * 5);
+    ref = refmap = (int *)malloc(1 << depth * 5);
+
     colorfreqtableP->size = 0;
     colorfreqtableP->table = malloc(sizeof(void *) * (1 << 15));
 
-    for (i = 0; i < length; i += depth) {
-        index = (data[i + 0] >> 3) << 10
-              | (data[i + 1] >> 3) << 5
-              | (data[i + 2] >> 3);
+    if (length > max_sample * depth) {
+        step = length / depth / max_sample;
+    } else {
+        step = depth;
+    }
+
+    for (i = 0; i < length; i += step) {
+        index = 0;
+        for (n = 0; n < depth; n ++) {
+            index |= data[i + depth - 1 - n] >> 3 << n * 5;
+        }
         if (histgram[index] == 0) { 
             *ref++ = index;
         }
@@ -574,18 +585,21 @@ computeHistogram(unsigned char *data,
         }
     }
 
-    /*colorfreqtableP->table = alloctupletable(depth, (ref - refmap) / sizeof(*ref));*/
+    colorfreqtableP->table = alloctupletable(depth, (ref - refmap) / sizeof(ref));
     while (--ref != refmap) {
         if (histgram[*ref] > 0) {
             t = (struct tupleint *)malloc(sizeof(int) + sizeof(sample) * depth);
             t->value = histgram[*ref];
-            t->tuple[0] = (*ref >> 10 & 0x1f) << 3;
-            t->tuple[1] = (*ref >> 5 & 0x1f) << 3;
-            t->tuple[2] = (*ref & 0x1f) << 3;
+            for (n = 0; n < depth; n++) {
+                t->tuple[depth - 1 - n] = (*ref >> n * 5 & 0x1f) << 3;
+            }
             colorfreqtableP->table[colorfreqtableP->size] = t;
             colorfreqtableP->size++;
         }
     }
+
+    free(refmap);
+    free(histgram);
 
     quant_trace(stderr, "%u colors found\n", colorfreqtableP->size);
 }
