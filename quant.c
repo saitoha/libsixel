@@ -551,8 +551,8 @@ computeHistogram(unsigned char *data,
 {
     unsigned int i, n;
     unsigned char *histgram;
-    int *refmap;
-    int *ref;
+    unsigned short *refmap;
+    unsigned short *ref;
     struct tupleint *t;
     unsigned int index;
     unsigned int step;
@@ -560,8 +560,9 @@ computeHistogram(unsigned char *data,
 
     quant_trace(stderr, "making histogram...\n");
 
-    histgram = (unsigned char *)malloc(1 << depth * 5);
-    ref = refmap = (int *)malloc(1 << depth * 5);
+    histgram = (unsigned char *)malloc(1 << depth * 5 * sizeof(*histgram));
+    memset(histgram, 0, 1 << depth * 5 * sizeof(*histgram));
+    ref = refmap = (unsigned short *)malloc(1 << depth * 5 * sizeof(*refmap));
 
     colorfreqtableP->size = 0;
     colorfreqtableP->table = malloc(sizeof(void *) * (1 << 15));
@@ -586,7 +587,7 @@ computeHistogram(unsigned char *data,
     }
 
     colorfreqtableP->table = alloctupletable(depth, (ref - refmap) / sizeof(ref));
-    while (--ref != refmap) {
+    while (ref-- != refmap) {
         if (histgram[*ref] > 0) {
             t = (struct tupleint *)malloc(sizeof(int) + sizeof(sample) * depth);
             t->value = histgram[*ref];
