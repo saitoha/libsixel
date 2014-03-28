@@ -545,7 +545,7 @@ mediancut(tupletable2           const colorfreqtable,
 
 static void
 computeHistogram(unsigned char *data,
-                 size_t length,
+                 unsigned int length,
                  unsigned long const depth,
                  tupletable2 * const colorfreqtableP)
 {
@@ -555,6 +555,8 @@ computeHistogram(unsigned char *data,
     int *ref;
     struct tupleint *t;
     unsigned int index;
+    unsigned int step;
+    const unsigned int max_sample = 256 * 32;
 
     quant_trace(stderr, "making histogram...\n");
 
@@ -564,7 +566,13 @@ computeHistogram(unsigned char *data,
     colorfreqtableP->size = 0;
     colorfreqtableP->table = malloc(sizeof(void *) * (1 << 15));
 
-    for (i = 0; i < length; i += depth) {
+    if (length > max_sample * depth) {
+        step = length / depth / max_sample;
+    } else {
+        step = depth;
+    }
+
+    for (i = 0; i < length; i += step) {
         index = 0;
         for (n = 0; n < depth; n ++) {
             index |= data[i + depth - 1 - n] >> 3 << n * 5;
