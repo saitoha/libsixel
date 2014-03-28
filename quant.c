@@ -458,6 +458,8 @@ splitBox(boxVector             const bv,
        transforming into luminosities before the comparison.
     */
     largestDimension = largestByNorm(minval, maxval, depth);
+    free(minval);
+    free(maxval);
                                                     
     /* TODO: I think this sort should go after creating a box,
        not before splitting.  Because you need the sort to use
@@ -494,8 +496,6 @@ splitBox(boxVector             const bv,
     bv[*boxesP].sum = sm - lowersum;
     ++(*boxesP);
     qsort((char*) bv, *boxesP, sizeof(struct box), sumcompare);
-
-    free(minval); free(maxval);
 }
 
 
