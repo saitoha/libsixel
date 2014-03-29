@@ -78,6 +78,13 @@ https://pypi.python.org/pypi/PySixel
   ![ppmtosixel](http://zuse.jp/misc/q_ppmtosixel.png)
 
 
+- ppmtosixel with Floyd–Steinberg dithering (netpbm)
+
+    $ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel
+
+  ![ppmtosixel](http://zuse.jp/misc/q_ppmtosixel2.png)
+
+
 - kmiya's sixel
 
     $ sixel -p16 images/snake.jpg
