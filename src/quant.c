@@ -186,21 +186,23 @@ alloctupletable(unsigned int const depth, unsigned int const size)
 */
 
 static tupletable2
-newColorMap(unsigned int const newcolors,
-            unsigned int const depth) {
+newColorMap(unsigned int const newcolors, unsigned int const depth)
+{
 
     tupletable2 colormap;
     unsigned int i;
     tupletable table;
 
+    colormap.size = 0;
     colormap.table = alloctupletable(depth, newcolors);
-
-    for (i = 0; i < newcolors; ++i) {
-        unsigned int plane;
-        for (plane = 0; plane < depth; ++plane) 
-            colormap.table[i]->tuple[plane] = 0;
+    if (colormap.table) {
+        for (i = 0; i < newcolors; ++i) {
+            unsigned int plane;
+            for (plane = 0; plane < depth; ++plane) 
+                colormap.table[i]->tuple[plane] = 0;
+        }
+        colormap.size = newcolors;
     }
-    colormap.size = newcolors;
 
     return colormap;
 }
@@ -378,6 +380,9 @@ colormapFromBv(unsigned int      const newcolors,
     unsigned int bi;
 
     colormap = newColorMap(newcolors, depth);
+    if (!colormap.size) {
+        return colormap;
+    }
 
     for (bi = 0; bi < boxes; ++bi) {
         switch (methodForRep) {
