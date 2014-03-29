@@ -292,6 +292,7 @@ void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
 
     /* Pass 1 Palet count */
 
+    /*
     memset(use_palet, 0, sizeof(use_palet));
     skip = (height / 240) * 6;
 
@@ -339,7 +340,6 @@ void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
 
     qsort(list, maxPalet, sizeof(uint8_t), PalUseCmp);
 
-    /*
     for (n = 0 ; n < maxPalet ; n++) {
         conv_palet[list[n]] = n;
     }
