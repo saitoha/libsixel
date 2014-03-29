@@ -646,6 +646,7 @@ computeColorMapFromInput(unsigned char *data,
     } else {
         quant_trace(stderr, "choosing %d colors...\n", reqColors);
         mediancut(colorfreqtable, depth, reqColors, methodForRep, colormapP);
+        quant_trace(stderr, "%d colors are choosed.\n", colorfreqtable.size);
         free(colorfreqtable.table);
     }
 }
