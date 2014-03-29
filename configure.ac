@@ -6,7 +6,7 @@ LT_PREREQ([2.4])
 AC_INIT([sixel], [0.5.0], [user@zuse.jp])
 
 AC_DEFUN([LS_UPDATE_TIMESTAMP],
-         [touch aclocal.m4 Makefile.in configure config.h.in touch aaa])
+         [touch aclocal.m4 Makefile.in src/Makefile.in configure config.h.in])
 LS_UPDATE_TIMESTAMP
 
 AM_INIT_AUTOMAKE([foreign])
