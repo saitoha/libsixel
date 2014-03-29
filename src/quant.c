@@ -407,22 +407,6 @@ colormapFromBv(unsigned int      const newcolors,
 }
 
 
-
-static unsigned int
-freqTotal(tupletable2 const freqtable) {
-    
-    unsigned int i;
-    unsigned int sum;
-
-    sum = 0;
-
-    for (i = 0; i < freqtable.size; ++i)
-        sum += freqtable.table[i]->value;
-
-    return sum;
-}
-
-
 static void
 splitBox(boxVector             const bv, 
          unsigned int *        const boxesP, 
@@ -525,11 +509,19 @@ mediancut(tupletable2           const colorfreqtable,
     unsigned int bi;
     unsigned int boxes;
     int multicolorBoxesExist;
+    unsigned int i;
+    unsigned int sum;
+
+    sum = 0;
+
+    for (i = 0; i < colorfreqtable.size; ++i)
+        sum += colorfreqtable.table[i]->value;
+
         /* There is at least one box that contains at least 2 colors; ergo,
            there is more splitting we can do.
         */
 
-    bv = newBoxVector(colorfreqtable.size, freqTotal(colorfreqtable), newcolors);
+    bv = newBoxVector(colorfreqtable.size, sum, newcolors);
     boxes = 1;
     multicolorBoxesExist = (colorfreqtable.size > 1);
 
@@ -542,7 +534,8 @@ mediancut(tupletable2           const colorfreqtable,
         else 
             splitBox(bv, &boxes, bi, colorfreqtable, depth);
     }
-    *colormapP = colormapFromBv(newcolors, bv, boxes, colorfreqtable, depth,
+    *colormapP = colormapFromBv(newcolors, bv, boxes,
+                                colorfreqtable, depth,
                                 methodForRep);
 
     free(bv);
