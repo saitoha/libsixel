@@ -11542,7 +11542,7 @@ CC="$lt_save_CC"
 
 
 
-ac_config_headers="$ac_config_headers src/config.h"
+ac_config_headers="$ac_config_headers config.h"
 
 
 #AC_ENABLE_SHARED
@@ -13569,7 +13569,7 @@ do
   case $ac_config_target in
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
-    "src/config.h") CONFIG_HEADERS="$CONFIG_HEADERS src/config.h" ;;
+    "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
 

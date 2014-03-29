@@ -83,7 +83,7 @@ host_triplet = @host@
 bin_PROGRAMS = img2sixel$(EXEEXT) sixel2png$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(srcdir)/config.h.in $(top_srcdir)/depcomp $(include_HEADERS)
+	$(top_srcdir)/depcomp $(include_HEADERS)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
@@ -92,7 +92,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
-CONFIG_HEADER = config.h
+CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -158,7 +158,7 @@ AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
-DEFAULT_INCLUDES = -I.@am__isrc@
+DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
@@ -190,8 +190,7 @@ am__can_run_installinfo = \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
 HEADERS = $(include_HEADERS)
-am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) \
-	$(LISP)config.h.in
+am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
 # *not* preserved.
@@ -334,8 +333,7 @@ img2sixel_CFLAGS = -DSTBI_NO_HDR #-DSTBI_SIMD
 sixel2png_SOURCES = sixel2png.c stb_image_write.c
 sixel2png_LDFLAGS = -lsixel
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
-all: config.h
-	$(MAKE) $(AM_MAKEFLAGS) all-am
+all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
@@ -369,21 +367,6 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
-
-config.h: stamp-h1
-	@test -f $@ || rm -f stamp-h1
-	@test -f $@ || $(MAKE) $(AM_MAKEFLAGS) stamp-h1
-
-stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
-	@rm -f stamp-h1
-	cd $(top_builddir) && $(SHELL) ./config.status src/config.h
-$(srcdir)/config.h.in:  $(am__configure_deps) 
-	($(am__cd) $(top_srcdir) && $(AUTOHEADER))
-	rm -f stamp-h1
-	touch $@
-
-distclean-hdr:
-	-rm -f config.h stamp-h1
 
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
@@ -670,7 +653,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(HEADERS) config.h
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(HEADERS)
 install-binPROGRAMS: install-libLTLIBRARIES
 
 installdirs:
@@ -716,7 +699,7 @@ distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
-	distclean-hdr distclean-tags
+	distclean-tags
 
 dvi: dvi-am
 
@@ -779,16 +762,16 @@ ps-am:
 uninstall-am: uninstall-binPROGRAMS uninstall-includeHEADERS \
 	uninstall-libLTLIBRARIES
 
-.MAKE: all install-am install-strip
+.MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am check check-am clean \
 	clean-binPROGRAMS clean-generic clean-libLTLIBRARIES \
 	clean-libtool cscopelist-am ctags ctags-am distclean \
-	distclean-compile distclean-generic distclean-hdr \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-binPROGRAMS \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-tags distdir dvi dvi-am html html-am info info-am \
+	install install-am install-binPROGRAMS install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am \
 	install-includeHEADERS install-info install-info-am \
 	install-libLTLIBRARIES install-man install-pdf install-pdf-am \
 	install-ps install-ps-am install-strip installcheck \
@@ -800,12 +783,12 @@ uninstall-am: uninstall-binPROGRAMS uninstall-includeHEADERS \
 
 
 test:
-	./img2sixel images/snake.jpg
-	./img2sixel images/snake.jpg > snake.sixel
+	./img2sixel ../images/snake.jpg
+	./img2sixel ../images/snake.jpg > snake.sixel
 	./sixel2png < snake.sixel > snake.png
-	./img2sixel -p 16 images/egret.jpg
-	./img2sixel -m images/map8.png images/egret.jpg
-	./img2sixel -m images/map16.png images/egret.jpg
+	./img2sixel -p 16 ../images/egret.jpg
+	./img2sixel -m ../images/map8.png ../images/egret.jpg
+	./img2sixel -m ../images/map16.png ../images/egret.jpg
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

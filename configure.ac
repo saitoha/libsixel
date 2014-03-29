@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.4.0], [user@zuse.jp])
+AC_INIT([sixel], [0.5.0], [user@zuse.jp])
 
 AC_DEFUN([LS_UPDATE_TIMESTAMP],
          [touch aclocal.m4 Makefile.in configure config.h.in touch aaa])
@@ -12,7 +12,7 @@ LS_UPDATE_TIMESTAMP
 AM_INIT_AUTOMAKE([foreign])
 LT_INIT
 AC_CONFIG_SRCDIR([src/fromsixel.c])
-AC_CONFIG_HEADERS([src/config.h])
+AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 #AC_ENABLE_SHARED
 #AC_DISABLE_STATIC

@@ -14,9 +14,9 @@ sixel2png_LDFLAGS = -lsixel
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 test:
-	./img2sixel images/snake.jpg
-	./img2sixel images/snake.jpg > snake.sixel
+	./img2sixel ../images/snake.jpg
+	./img2sixel ../images/snake.jpg > snake.sixel
 	./sixel2png < snake.sixel > snake.png
-	./img2sixel -p 16 images/egret.jpg
-	./img2sixel -m images/map8.png images/egret.jpg
-	./img2sixel -m images/map16.png images/egret.jpg
+	./img2sixel -p 16 ../images/egret.jpg
+	./img2sixel -m ../images/map8.png ../images/egret.jpg
+	./img2sixel -m ../images/map16.png ../images/egret.jpg
