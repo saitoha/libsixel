@@ -87,6 +87,7 @@ typedef unsigned long sample;
 typedef sample * tuple;
 enum methodForRep {REP_CENTER_BOX, REP_AVERAGE_COLORS, REP_AVERAGE_PIXELS};
  
+#pragma pack(1)
 struct tupleint {
     /* An ordered pair of a tuple value and an integer, such as you 
        would find in a tuple table or tuple hash.
@@ -99,12 +100,15 @@ struct tupleint {
        declare a variable length array.
     */
 };
+#pragma pack(0)
 typedef struct tupleint ** tupletable;
 
+#pragma pack(1)
 typedef struct {
     unsigned int size;
     tupletable table;
 } tupletable2;
+#pragma pack(0)
 
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
