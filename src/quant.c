@@ -585,9 +585,12 @@ computeHistogram(unsigned char *data,
         }
     }
 
+    /*
     colorfreqtableP->table = alloctupletable(depth, (ref - refmap) / sizeof(ref));
+    */
     while (ref-- != refmap) {
         if (histgram[*ref] > 0) {
+            /* TODO: fix memory leak */
             t = (struct tupleint *)malloc(sizeof(int) + sizeof(sample) * depth);
             t->value = histgram[*ref];
             for (n = 0; n < depth; n++) {
