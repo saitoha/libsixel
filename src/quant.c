@@ -110,9 +110,6 @@ typedef struct {
 } tupletable2;
 #pragma pack(0)
 
-#define MAX(a,b) (((a) > (b)) ? (a) : (b))
-#define MIN(a,b) (((a) < (b)) ? (a) : (b))
-
 static unsigned int compareplanePlane;
     /* This is a parameter to compareplane().  We use this global variable
        so that compareplane() can be called by qsort(), to compare two
@@ -295,8 +292,8 @@ centerBox(int          const boxStart,
         
         for (i = 1; i < boxSize; ++i) {
             int const v = colorfreqtable.table[boxStart + i]->tuple[plane];
-            minval = MIN( minval, v);
-            maxval = MAX( maxval, v);
+            minval = minval < v ? minval: v;
+            maxval = maxval > v ? maxval: v;
         }
         newTuple[plane] = (minval + maxval) / 2;
     }
