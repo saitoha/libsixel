@@ -560,7 +560,7 @@ computeHistogram(unsigned char *data,
     quant_trace(stderr, "making histogram...\n");
 
     histgram = (unsigned char *)malloc((1 << depth * 5) * sizeof(*histgram));
-    memset(histgram, 0, 1 << depth * 5 * sizeof(*histgram));
+    memset(histgram, 0, (1 << depth * 5) * sizeof(*histgram));
     ref = refmap = (unsigned short *)malloc(max_sample * sizeof(*refmap));
 
     colorfreqtableP->size = 0;
