@@ -11,8 +11,8 @@ LS_UPDATE_TIMESTAMP
 
 AM_INIT_AUTOMAKE([foreign])
 LT_INIT
-AC_CONFIG_SRCDIR([fromsixel.c])
-AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_SRCDIR([src/fromsixel.c])
+AC_CONFIG_HEADERS([src/config.h])
 AC_CONFIG_MACRO_DIR([m4])
 #AC_ENABLE_SHARED
 #AC_DISABLE_STATIC
@@ -38,7 +38,7 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([memmove memset strtol])
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile])
 
 AC_OUTPUT
 
