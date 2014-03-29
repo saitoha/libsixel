@@ -87,7 +87,6 @@ typedef unsigned long sample;
 typedef sample * tuple;
 enum methodForRep {REP_CENTER_BOX, REP_AVERAGE_COLORS, REP_AVERAGE_PIXELS};
  
-#pragma pack(1)
 struct tupleint {
     /* An ordered pair of a tuple value and an integer, such as you 
        would find in a tuple table or tuple hash.
@@ -100,15 +99,12 @@ struct tupleint {
        declare a variable length array.
     */
 };
-#pragma pack(0)
 typedef struct tupleint ** tupletable;
 
-#pragma pack(1)
 typedef struct {
     unsigned int size;
     tupletable table;
 } tupletable2;
-#pragma pack(0)
 
 static unsigned int compareplanePlane;
     /* This is a parameter to compareplane().  We use this global variable
@@ -564,9 +560,6 @@ computeHistogram(unsigned char *data,
     memset(histgram, 0, (1 << depth * 5) * sizeof(*histgram));
     it = ref = refmap = (unsigned short *)malloc(max_sample * sizeof(*refmap));
 
-    colorfreqtableP->size = 0;
-    colorfreqtableP->table = malloc(sizeof(void *) * (1 << 15));
-
     if (length > max_sample * depth) {
         step = length / depth / max_sample;
     } else {
@@ -581,24 +574,20 @@ computeHistogram(unsigned char *data,
         if (histgram[index] == 0) { 
             *ref++ = index;
         }
-        if (histgram[index] < 255) { 
+        if (histgram[index] < (1 << sizeof(*histgram) * 8) - 1) { 
             histgram[index]++;
         }
     }
 
-    /*
-    colorfreqtableP->table = alloctupletable(depth, (ref - refmap) / sizeof(ref));
-    */
-    while (it != ref) {
-        if (histgram[*it] > 0) {
-            /* TODO: fix memory leak */
-            t = (struct tupleint *)malloc(sizeof(int) + sizeof(sample) * depth);
-            t->value = histgram[*it];
+    colorfreqtableP->size = ref - refmap;
+    colorfreqtableP->table = malloc((ref - refmap) * sizeof(colorfreqtableP->table));
+    for (i = 0; i < colorfreqtableP->size; ++i) {
+        if (histgram[refmap[i]] > 0) {
+            colorfreqtableP->table[i] = (struct tupleint *)malloc(sizeof(int) + sizeof(sample) * depth);
+            colorfreqtableP->table[i]->value = histgram[refmap[i]];
             for (n = 0; n < depth; n++) {
-                t->tuple[depth - 1 - n] = (*it >> n * 5 & 0x1f) << 3;
+                colorfreqtableP->table[i]->tuple[depth - 1 - n] = (*it >> n * 5 & 0x1f) << 3;
             }
-            colorfreqtableP->table[colorfreqtableP->size] = t;
-            colorfreqtableP->size++;
         }
         it++;
     }
@@ -638,6 +627,7 @@ computeColorMapFromInput(unsigned char *data,
    relevant to our colormap mission; just a fringe benefit).
 -----------------------------------------------------------------------------*/
     tupletable2 colorfreqtable;
+    int i;
 
     computeHistogram(data, length, depth, &colorfreqtable);
     
@@ -649,6 +639,9 @@ computeColorMapFromInput(unsigned char *data,
         quant_trace(stderr, "choosing %d colors...\n", reqColors);
         mediancut(colorfreqtable, depth, reqColors, methodForRep, colormapP);
         quant_trace(stderr, "%d colors are choosed.\n", colorfreqtable.size);
+        for (i = 0; i < colorfreqtable.size; ++i) {
+            free(colorfreqtable.table[i]);
+        }
         free(colorfreqtable.table);
     }
 }
