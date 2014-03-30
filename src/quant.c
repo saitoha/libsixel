@@ -88,7 +88,7 @@ typedef sample * tuple;
 
 enum methodForLargest {LARGE_NORM, LARGE_LUM};
 enum methodForRep {REP_CENTER_BOX, REP_AVERAGE_COLORS, REP_AVERAGE_PIXELS};
-enum methodForDiffuse {DIFFUSE_FS, DIFFUSE_JAJUNI};
+enum methodForDiffuse {DIFFUSE_NONE, DIFFUSE_FS, DIFFUSE_JAJUNI};
  
 struct tupleint {
     /* An ordered pair of a tuple value and an integer, such as you 
@@ -824,6 +824,9 @@ void diffuse(unsigned char *data, int width, int height,
                 add_offset(data, pos + 2, depth, offsets, 5, 48);
             }
         }
+        break;
+
+    case DIFFUSE_NONE:
         break;
 
     default:
