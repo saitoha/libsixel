@@ -595,18 +595,18 @@ computeHistogram(unsigned char *data,
                  tupletable2 * const colorfreqtableP)
 {
     unsigned int i, n;
-    unsigned char *histgram;
+    unsigned short *histgram;
     unsigned short *refmap;
     unsigned short *ref;
     unsigned short *it;
     struct tupleint *t;
     unsigned int index;
     unsigned int step;
-    const unsigned int max_sample = 4096;
+    const unsigned int max_sample = 18384;
 
     quant_trace(stderr, "making histogram...\n");
 
-    histgram = (unsigned char *)malloc((1 << depth * 5) * sizeof(*histgram));
+    histgram = malloc((1 << depth * 5) * sizeof(*histgram));
     memset(histgram, 0, (1 << depth * 5) * sizeof(*histgram));
     it = ref = refmap = (unsigned short *)malloc(max_sample * sizeof(*refmap));
 
