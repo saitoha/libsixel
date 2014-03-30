@@ -85,6 +85,8 @@ struct box {
 
 typedef unsigned long sample;
 typedef sample * tuple;
+
+enum methodForLargest {LARGE_NORM, LARGE_LUM};
 enum methodForRep {REP_CENTER_BOX, REP_AVERAGE_COLORS, REP_AVERAGE_PIXELS};
  
 struct tupleint {
@@ -445,7 +447,8 @@ splitBox(boxVector             const bv,
          unsigned int *        const boxesP, 
          unsigned int          const bi,
          tupletable2           const colorfreqtable, 
-         unsigned int          const depth)
+         unsigned int          const depth,
+         enum methodForLargest const methodForLargest)
 {
 /*----------------------------------------------------------------------------
    Split Box 'bi' in the box vector bv (so that bv contains one more box
@@ -480,7 +483,15 @@ splitBox(boxVector             const bv,
        first by simply comparing the range in RGB space, and second by
        transforming into luminosities before the comparison.
     */
-    largestDimension = largestByNorm(minval, maxval, depth);
+    switch (methodForLargest) {
+    case LARGE_NORM: 
+        largestDimension = largestByNorm(minval, maxval, depth);
+        break;
+    case LARGE_LUM: 
+        largestDimension = largestByLuminosity(minval, maxval, depth);
+        break;
+    }
+ 
     free(minval);
     free(maxval);
                                                     
@@ -527,8 +538,10 @@ static void
 mediancut(tupletable2           const colorfreqtable, 
           unsigned int          const depth,
           int                   const newcolors,
+          enum methodForLargest const methodForLargest,
           enum methodForRep     const methodForRep,
-          tupletable2 *         const colormapP) {
+          tupletable2 *         const colormapP)
+{
 /*----------------------------------------------------------------------------
    Compute a set of only 'newcolors' colors that best represent an
    image whose pixels are summarized by the histogram
@@ -565,7 +578,7 @@ mediancut(tupletable2           const colorfreqtable,
         if (bi >= boxes)
             multicolorBoxesExist = 0;
         else 
-            splitBox(bv, &boxes, bi, colorfreqtable, depth);
+            splitBox(bv, &boxes, bi, colorfreqtable, depth, methodForLargest);
     }
     *colormapP = colormapFromBv(newcolors, bv, boxes,
                                 colorfreqtable, depth,
@@ -641,6 +654,7 @@ computeColorMapFromInput(unsigned char *data,
                          size_t length,
                          unsigned int const depth, 
                          int const reqColors, 
+                         enum methodForLargest const methodForLargest,
                          enum methodForRep const methodForRep,
                          tupletable2 * const colormapP)
 {
@@ -674,7 +688,7 @@ computeColorMapFromInput(unsigned char *data,
         *colormapP = colorfreqtable;
     } else {
         quant_trace(stderr, "choosing %d colors...\n", reqColors);
-        mediancut(colorfreqtable, depth, reqColors, methodForRep, colormapP);
+        mediancut(colorfreqtable, depth, reqColors, methodForLargest, methodForRep, colormapP);
         quant_trace(stderr, "%d colors are choosed.\n", colorfreqtable.size);
         for (i = 0; i < colorfreqtable.size; ++i) {
             free(colorfreqtable.table[i]);
@@ -692,7 +706,7 @@ make_palette(unsigned char *data, int x, int y, int depth, int reqcolors, int *n
     tupletable2 colormap;
 
     computeColorMapFromInput(data, x * y * depth, depth,
-                             reqcolors, REP_CENTER_BOX, &colormap);
+                             reqcolors, LARGE_NORM, REP_CENTER_BOX, &colormap);
     *ncolors = colormap.size;
     quant_trace(stderr, "tupletable size: %d", *ncolors);
     palette = malloc(*ncolors * depth);
