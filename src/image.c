@@ -31,7 +31,7 @@ LSImagePtr
 LSImage_create(int sx, int sy, int depth, int ncolors)
 {
     LSImagePtr im;
-   
+
     im = (LSImagePtr)malloc(sizeof(LSImage));
     im->pixels = (uint8_t *)malloc(sx * sy * depth);
     im->sx = sx;
@@ -66,7 +66,7 @@ LSImage_copy(LSImagePtr dst,
 
     for (y = 0; y < h; y++) {
         for (x = 0; x < w * dst->depth; x++) {
-            dst->pixels[dst->sx * dst->depth * y + x] 
+            dst->pixels[dst->sx * dst->depth * y + x]
                 = src->pixels[src->sx * src->depth * y + x];
         }
     }

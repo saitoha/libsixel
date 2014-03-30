@@ -2,24 +2,24 @@
  *
  * mediancut algorithm implementation is imported from pnmcolormap.c
  * in netpbm library.
- * http://netpbm.sourceforge.net/ 
+ * http://netpbm.sourceforge.net/
  *
  * *******************************************************************************
  *                  original license block of pnmcolormap.c
  * *******************************************************************************
- * 
+ *
  *   Derived from ppmquant, originally by Jef Poskanzer.
- * 
+ *
  *   Copyright (C) 1989, 1991 by Jef Poskanzer.
  *   Copyright (C) 2001 by Bryan Henderson.
- * 
+ *
  *   Permission to use, copy, modify, and distribute this software and its
  *   documentation for any purpose and without fee is hereby granted, provided
  *   that the above copyright notice appear in all copies and that both that
  *   copyright notice and this permission notice appear in supporting
  *   documentation.  This software is provided "as is" without express or
  *   implied warranty.
- * 
+ *
  * ******************************************************************************
  *
  * Copyright (c) 2014 Hayaki Saito
@@ -89,15 +89,15 @@ typedef sample * tuple;
 enum methodForLargest {LARGE_NORM, LARGE_LUM};
 enum methodForRep {REP_CENTER_BOX, REP_AVERAGE_COLORS, REP_AVERAGE_PIXELS};
 enum methodForDiffuse {DIFFUSE_NONE, DIFFUSE_FS, DIFFUSE_JAJUNI};
- 
+
 struct tupleint {
-    /* An ordered pair of a tuple value and an integer, such as you 
+    /* An ordered pair of a tuple value and an integer, such as you
        would find in a tuple table or tuple hash.
        Note that this is a variable length structure.
     */
     int value;
-    sample tuple[1];  
-    /* This is actually a variable size array -- its size is the 
+    sample tuple[1];
+    /* This is actually a variable size array -- its size is the
        depth of the tuple in question.  Some compilers do not let us
        declare a variable length array.
     */
@@ -115,7 +115,7 @@ static unsigned int compareplanePlane;
        tuples.  qsort() doesn't pass any arguments except the two tuples.
     */
 static int
-compareplane(const void * const arg1, 
+compareplane(const void * const arg1,
              const void * const arg2) {
 
     const struct tupleint * const * const comparandPP  = arg1;
@@ -142,8 +142,8 @@ alloctupletable(unsigned int const depth, unsigned int const size)
     }
 
     unsigned int const mainTableSize = size * sizeof(struct tupleint *);
-    unsigned int const tupleIntSize = 
-        sizeof(struct tupleint) - sizeof(sample) 
+    unsigned int const tupleIntSize =
+        sizeof(struct tupleint) - sizeof(sample)
         + depth * sizeof(sample);
 
     /* To save the enormous amount of time it could take to allocate
@@ -157,7 +157,7 @@ alloctupletable(unsigned int const depth, unsigned int const size)
 
     unsigned int const allocSize = mainTableSize + size * tupleIntSize;
     void * pool;
-    
+
     pool = malloc(allocSize);
 
     if (!pool) {
@@ -197,7 +197,7 @@ newColorMap(unsigned int const newcolors, unsigned int const depth)
     if (colormap.table) {
         for (i = 0; i < newcolors; ++i) {
             unsigned int plane;
-            for (plane = 0; plane < depth; ++plane) 
+            for (plane = 0; plane < depth; ++plane)
                 colormap.table[i]->tuple[plane] = 0;
         }
         colormap.size = newcolors;
@@ -249,7 +249,7 @@ findBoxBoundaries(tupletable2  const colorfreqtable,
             sample const v = colorfreqtable.table[boxStart + i]->tuple[plane];
             if (v < minval[plane]) minval[plane] = v;
             if (v > maxval[plane]) maxval[plane] = v;
-        } 
+        }
     }
 }
 
@@ -257,11 +257,11 @@ findBoxBoundaries(tupletable2  const colorfreqtable,
 
 static unsigned int
 largestByNorm(sample minval[], sample maxval[], unsigned int const depth) {
-    
+
     unsigned int largestDimension;
     unsigned int plane;
 
-    sample largestSpreadSoFar = 0;  
+    sample largestSpreadSoFar = 0;
     largestDimension = 0;
     for (plane = 0; plane < depth; ++plane) {
         sample const spread = maxval[plane]-minval[plane];
@@ -280,7 +280,7 @@ largestByLuminosity(sample minval[], sample maxval[],
                     unsigned int const depth)
 {
 /*----------------------------------------------------------------------------
-   This subroutine presumes that the tuple type is either 
+   This subroutine presumes that the tuple type is either
    BLACKANDWHITE, GRAYSCALE, or RGB (which implies pamP->depth is 1 or 3).
    To save time, we don't actually check it.
 -----------------------------------------------------------------------------*/
@@ -316,7 +316,7 @@ largestByLuminosity(sample minval[], sample maxval[],
 static void
 centerBox(int          const boxStart,
           int          const boxSize,
-          tupletable2  const colorfreqtable, 
+          tupletable2  const colorfreqtable,
           unsigned int const depth,
           tuple        const newTuple) {
 
@@ -327,7 +327,7 @@ centerBox(int          const boxStart,
         unsigned int i;
 
         minval = maxval = colorfreqtable.table[boxStart]->tuple[plane];
-        
+
         for (i = 1; i < boxSize; ++i) {
             int const v = colorfreqtable.table[boxStart + i]->tuple[plane];
             minval = minval < v ? minval: v;
@@ -342,7 +342,7 @@ centerBox(int          const boxStart,
 static void
 averageColors(int          const boxStart,
               int          const boxSize,
-              tupletable2  const colorfreqtable, 
+              tupletable2  const colorfreqtable,
               unsigned int const depth,
               tuple        const newTuple) {
 
@@ -354,7 +354,7 @@ averageColors(int          const boxStart,
 
         sum = 0;
 
-        for (i = 0; i < boxSize; ++i) 
+        for (i = 0; i < boxSize; ++i)
             sum += colorfreqtable.table[boxStart+i]->tuple[plane];
 
         newTuple[plane] = sum / boxSize;
@@ -366,7 +366,7 @@ averageColors(int          const boxStart,
 static void
 averagePixels(int          const boxStart,
               int          const boxSize,
-              tupletable2  const colorfreqtable, 
+              tupletable2  const colorfreqtable,
               unsigned int const depth,
               tuple        const newTuple) {
 
@@ -387,7 +387,7 @@ averagePixels(int          const boxStart,
 
         sum = 0;
 
-        for (i = 0; i < boxSize; ++i) 
+        for (i = 0; i < boxSize; ++i)
             sum += colorfreqtable.table[boxStart+i]->tuple[plane]
                 * colorfreqtable.table[boxStart+i]->value;
 
@@ -399,9 +399,9 @@ averagePixels(int          const boxStart,
 
 static tupletable2
 colormapFromBv(unsigned int      const newcolors,
-               boxVector         const bv, 
+               boxVector         const bv,
                unsigned int      const boxes,
-               tupletable2       const colorfreqtable, 
+               tupletable2       const colorfreqtable,
                unsigned int      const depth,
                enum methodForRep const methodForRep) {
     /*
@@ -410,7 +410,7 @@ colormapFromBv(unsigned int      const newcolors,
     ** One would be to choose the center of the box; this ignores any structure
     ** within the boxes.  Another method would be to average all the colors in
     ** the box - this is the method specified in Heckbert's paper.  A third
-    ** method is to average all the pixels in the box. 
+    ** method is to average all the pixels in the box.
     */
     tupletable2 colormap;
     unsigned int bi;
@@ -422,8 +422,8 @@ colormapFromBv(unsigned int      const newcolors,
 
     for (bi = 0; bi < boxes; ++bi) {
         switch (methodForRep) {
-        case REP_CENTER_BOX: 
-            centerBox(bv[bi].ind, bv[bi].colors, colorfreqtable, depth, 
+        case REP_CENTER_BOX:
+            centerBox(bv[bi].ind, bv[bi].colors, colorfreqtable, depth,
                       colormap.table[bi]->tuple);
             break;
         case REP_AVERAGE_COLORS:
@@ -444,17 +444,17 @@ colormapFromBv(unsigned int      const newcolors,
 
 
 static void
-splitBox(boxVector             const bv, 
-         unsigned int *        const boxesP, 
+splitBox(boxVector             const bv,
+         unsigned int *        const boxesP,
          unsigned int          const bi,
-         tupletable2           const colorfreqtable, 
+         tupletable2           const colorfreqtable,
          unsigned int          const depth,
          enum methodForLargest const methodForLargest)
 {
 /*----------------------------------------------------------------------------
    Split Box 'bi' in the box vector bv (so that bv contains one more box
    than it did as input).  Split it so that each new box represents about
-   half of the pixels in the distribution given by 'colorfreqtable' for 
+   half of the pixels in the distribution given by 'colorfreqtable' for
    the colors in the original box, but with distinct colors in each of the
    two new boxes.
 
@@ -476,7 +476,7 @@ splitBox(boxVector             const bv,
     minval = (sample *)malloc(depth);
     maxval = (sample *)malloc(depth);
 
-    findBoxBoundaries(colorfreqtable, depth, boxStart, boxSize, 
+    findBoxBoundaries(colorfreqtable, depth, boxStart, boxSize,
                       minval, maxval);
 
     /* Find the largest dimension, and sort by that component.  I have
@@ -485,31 +485,31 @@ splitBox(boxVector             const bv,
        transforming into luminosities before the comparison.
     */
     switch (methodForLargest) {
-    case LARGE_NORM: 
+    case LARGE_NORM:
         largestDimension = largestByNorm(minval, maxval, depth);
         break;
-    case LARGE_LUM: 
+    case LARGE_LUM:
         largestDimension = largestByLuminosity(minval, maxval, depth);
         break;
     }
- 
+
     free(minval);
     free(maxval);
-                                                    
+
     /* TODO: I think this sort should go after creating a box,
        not before splitting.  Because you need the sort to use
        the REP_CENTER_BOX method of choosing a color to
-       represent the final boxes 
+       represent the final boxes
     */
 
     /* Set the gross global variable 'compareplanePlane' as a
        parameter to compareplane(), which is called by qsort().
     */
     compareplanePlane = largestDimension;
-    qsort((char*) &colorfreqtable.table[boxStart], boxSize, 
-          sizeof(colorfreqtable.table[boxStart]), 
+    qsort((char*) &colorfreqtable.table[boxStart], boxSize,
+          sizeof(colorfreqtable.table[boxStart]),
           compareplane);
-            
+
     {
         /* Now find the median based on the counts, so that about half
            the pixels (not colors, pixels) are in each subdivision.  */
@@ -536,7 +536,7 @@ splitBox(boxVector             const bv,
 
 
 static void
-mediancut(tupletable2           const colorfreqtable, 
+mediancut(tupletable2           const colorfreqtable,
           unsigned int          const depth,
           int                   const newcolors,
           enum methodForLargest const methodForLargest,
@@ -578,7 +578,7 @@ mediancut(tupletable2           const colorfreqtable,
         for (bi = 0; bi < boxes && bv[bi].colors < 2; ++bi);
         if (bi >= boxes)
             multicolorBoxesExist = 0;
-        else 
+        else
             splitBox(bv, &boxes, bi, colorfreqtable, depth, methodForLargest);
     }
     *colormapP = colormapFromBv(newcolors, bv, boxes,
@@ -622,10 +622,10 @@ computeHistogram(unsigned char *data,
         for (n = 0; n < depth; n ++) {
             index |= data[i + depth - 1 - n] >> 3 << n * 5;
         }
-        if (histgram[index] == 0) { 
+        if (histgram[index] == 0) {
             *ref++ = index;
         }
-        if (histgram[index] < (1 << sizeof(*histgram) * 8) - 1) { 
+        if (histgram[index] < (1 << sizeof(*histgram) * 8) - 1) {
             histgram[index]++;
         }
     }
@@ -653,8 +653,8 @@ computeHistogram(unsigned char *data,
 static void
 computeColorMapFromInput(unsigned char *data,
                          size_t length,
-                         unsigned int const depth, 
-                         int const reqColors, 
+                         unsigned int const depth,
+                         int const reqColors,
                          enum methodForLargest const methodForLargest,
                          enum methodForRep const methodForRep,
                          tupletable2 * const colormapP)
@@ -670,7 +670,7 @@ computeColorMapFromInput(unsigned char *data,
 
    The colormap has the same maxval as the input.
 
-   Put the colormap in newly allocated storage as a tupletable2 
+   Put the colormap in newly allocated storage as a tupletable2
    and return its address as *colormapP.  Return the number of colors in
    it as *colorsP and its maxval as *colormapMaxvalP.
 
@@ -682,7 +682,7 @@ computeColorMapFromInput(unsigned char *data,
     int i;
 
     computeHistogram(data, length, depth, &colorfreqtable);
-    
+
     if (colorfreqtable.size <= reqColors) {
         quant_trace(stderr, "Image already has few enough colors (<=%d).  "
                    "Keeping same colors.\n", reqColors);
