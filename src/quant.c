@@ -711,14 +711,9 @@ make_palette(unsigned char *data, int x, int y, int depth, int reqcolors, int *n
     quant_trace(stderr, "tupletable size: %d", *ncolors);
     palette = malloc(*ncolors * depth);
     for (i = 0; i < *ncolors; i++) {
-        palette[i * depth + 0] = colormap.table[i]->tuple[0];
-        palette[i * depth + 1] = colormap.table[i]->tuple[1];
-        palette[i * depth + 2] = colormap.table[i]->tuple[2];
-        quant_trace(stderr, "(%lu, %lu, %lu) -> %d\n",
-                    colormap.table[i]->tuple[0],
-                    colormap.table[i]->tuple[1],
-                    colormap.table[i]->tuple[2],
-                    colormap.table[i]->value);
+        for (n = 0; n < depth; ++n) {
+            palette[i * depth + n] = colormap.table[i]->tuple[n];
+        }
     }
     free(colormap.table);
     return palette;
