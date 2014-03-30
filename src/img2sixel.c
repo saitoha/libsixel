@@ -113,6 +113,9 @@ end:
     if (pixels) {
         stbi_image_free(pixels);
     }
+    if (mappixels) {
+        stbi_image_free(mappixels);
+    }
     if (palette) {
         free(palette);
     }
