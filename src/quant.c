@@ -702,7 +702,7 @@ computeColorMapFromInput(unsigned char *data,
 unsigned char *
 make_palette(unsigned char *data, int x, int y, int depth, int reqcolors, int *ncolors)
 {
-    int i;
+    int i, n;
     unsigned char *palette;
     tupletable2 colormap;
 
@@ -720,37 +720,21 @@ make_palette(unsigned char *data, int x, int y, int depth, int reqcolors, int *n
     return palette;
 }
 
-void add_offset(unsigned char *data, int i, int n,
-                int roffset, int goffset, int boffset)
+void add_offset(unsigned char *data, int pos, int depth,
+                int *offsets, int mul, int div)
 {
-    int r, g, b;
+    int n, c;
 
-    r = data[i * n + 0] + roffset;
-    g = data[i * n + 1] + goffset;
-    b = data[i * n + 2] + boffset;
-
-    if (r < 0) {
-        r = 0;
+    for (n = 0; n < depth; ++n) {
+        c = data[pos * depth + n] + offsets[n] * mul / div;
+        if (c < 0) {
+            c = 0;
+        }
+        if (c >= 1 << 8) {
+            c = (1 << 8) - 1;
+        }
+        data[pos * depth + n] = (unsigned char)c;
     }
-    if (g < 0) {
-        g = 0;
-    }
-    if (b < 0) {
-        b = 0;
-    }
-    if (r > 255) {
-        r = 255;
-    }
-    if (g > 255) {
-        g = 255;
-    }
-    if (b > 255) {
-        b = 255;
-    }
-
-    data[i * n + 0] = (unsigned char)r;
-    data[i * n + 1] = (unsigned char)g;
-    data[i * n + 2] = (unsigned char)b;
 }
 
 void diffuse(unsigned char *data, int width, int height,
