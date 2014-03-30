@@ -67,21 +67,30 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
 
     pixels = stbi_load(filename, &sx, &sy, &comp, STBI_rgb);
     if (pixels == NULL) {
+        fprintf(stderr, "stbi_load('%s') failed.\n", filename);
+        nret = -1;
         return (-1);
     }
 
     if (mapfile) {
         mappixels = stbi_load(mapfile, &map_sx, &map_sy, &map_comp, STBI_rgb);
+        if (!mappixels) {
+            fprintf(stderr, "stbi_load('%s') failed.\n", mapfile);
+            nret = -1;
+            goto end;
+        }
         palette = make_palette(mappixels, map_sx, map_sy, 3, reqcolors, &ncolors);
     } else {
         palette = make_palette(pixels, sx, sy, 3, reqcolors, &ncolors);
     }
     if (!palette) {
+        nret = -1;
         goto end;
     }
 
     im = LSImage_create(sx, sy, 1, ncolors);
     if (!im) {
+        nret = -1;
         goto end;
     }
     for (i = 0; i < ncolors; i++) {
@@ -92,6 +101,7 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
     }
     data = apply_palette(pixels, sx, sy, 3, palette, ncolors);
     if (!data) {
+        nret = -1;
         goto end;
     }
     LSImage_setpixels(im, data);
@@ -103,13 +113,16 @@ end:
     if (pixels) {
         stbi_image_free(pixels);
     }
+    if (mappixels) {
+        stbi_image_free(mappixels);
+    }
     if (palette) {
         free(palette);
     }
     if (im) {
         LSImage_destroy(im);
     }
-    return 0;
+    return nret;
 }
 
 int main(int argc, char *argv[])
