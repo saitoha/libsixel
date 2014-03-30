@@ -752,6 +752,100 @@ void add_offset(unsigned char *data, int i, int n,
     data[i * n + 2] = (unsigned char)b;
 }
 
+void diffuse(unsigned char *data, int width, int height,
+             int x, int y, int depth, int *offsets,
+             enum methodForDiffuse const methodForDiffuse)
+{
+    int n;
+    int pos;
+
+    pos = y * width + x;
+
+    switch (methodForDiffuse) {
+    case DIFFUSE_FS:
+        /* Floyd Steinberg Method
+                    curr    7/16
+            3/16    5/48    1/16
+        */
+        if (y < height - 1) {
+            /* add offset to the bottom cell */
+            add_offset(data, pos + width, depth, offsets, 5, 16);
+            if (x > 1) {
+                /* add offset to the left-bottom cell */
+                add_offset(data, pos + width - 1, depth, offsets, 3, 16);
+            }
+            if (x < width - 1) {
+                /* add offset to the right-bottom cell */
+                add_offset(data, pos + width + 1, depth, offsets, 1, 16);
+            }
+        }
+        if (x < width - 1) {
+            /* add offset to the right cell */
+            add_offset(data, pos + 1, depth, offsets, 7, 16);
+        }
+        break;
+
+    case DIFFUSE_JAJUNI:
+        /* Jarvis, Judice & Ninke Method
+                            curr    7/48    5/48
+            3/48    5/48    7/48    5/48    3/48
+            1/48    3/48    5/48    3/48    1/48
+        */
+        if (y < height - 1) {
+            /* add offset to the bottom cell */
+            add_offset(data, pos + width, depth, offsets, 7, 48);
+            if (x > 1) {
+                /* add offset to the left-bottom cell */
+                add_offset(data, pos + width - 1, depth, offsets, 5, 48);
+                if (x > 2) {
+                    /* add offset to the left-bottom cell */
+                    add_offset(data, pos + width - 2, depth, offsets, 3, 48);
+                }
+            }
+            if (x < width - 1) {
+                /* add offset to the right-bottom cell */
+                add_offset(data, pos + width + 1, depth, offsets, 5, 48);
+                if (x < width - 2) {
+                    /* add offset to the right-bottom cell */
+                    add_offset(data, pos + width + 2, depth, offsets, 3, 48);
+                }
+            }
+            if (y < height - 2) {
+                /* add offset to the bottom cell */
+                add_offset(data, pos + width * 2, depth, offsets, 5, 48);
+                if (x > 1) {
+                    /* add offset to the left-bottom cell */
+                    add_offset(data, pos + width * 2 - 1, depth, offsets, 3, 48);
+                    if (x > 2) {
+                        /* add offset to the left-bottom cell */
+                        add_offset(data, pos + width * 2 - 2, depth, offsets, 1, 48);
+                    }
+                }
+                if (x < width - 1) {
+                    /* add offset to the right-bottom cell */
+                    add_offset(data, pos + width + 1, depth, offsets, 3, 48);
+                    if (x < width - 2) {
+                        /* add offset to the right-bottom cell */
+                        add_offset(data, pos + width + 2, depth, offsets, 1, 48);
+                    }
+                }
+            }
+        }
+        if (x < width - 1) {
+            /* add offset to the right cell */
+            add_offset(data, pos + 1, depth, offsets, 7, 48);
+            if (x < width - 2) {
+                /* add offset to the right cell */
+                add_offset(data, pos + 2, depth, offsets, 5, 48);
+            }
+        }
+        break;
+
+    default:
+        quant_trace(stderr, "Internal error: invalid value of methodForDiffuse: %d\n",
+                    methodForDiffuse);
+    }
+}
 
 unsigned char *
 apply_palette(unsigned char *data,
