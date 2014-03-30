@@ -852,69 +852,46 @@ apply_palette(unsigned char *data,
               int width, int height, int depth,
               unsigned char *palette, int ncolor)
 {
-    int i, j, n, x, y;
+    int pos, j, n, x, y;
     int roffset, goffset, boffset;
+    int *offsets;
     int distant;
     int diff;
     int index;
     unsigned char *result;
 
+    offsets = malloc(sizeof(*offsets) * depth);
     result = malloc(width * height);
 
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width; ++x) {
-            i = y * width + x;
+            pos = y * width + x;
             diff = INT_MAX;
             index = -1;
             for (j = 0; j < ncolor; ++j) {
                 distant = 0;
                 for (n = 0; n < depth; ++n) {
-                    distant |= (data[i * depth + n] - palette[j * 3 + n])
-                             * (data[i * depth + n] - palette[j * 3 + n]);
+                    distant |= (data[pos * depth + n] - palette[j * depth + n])
+                             * (data[pos * depth + n] - palette[j * depth + n]);
                 }
                 if (distant < diff) {
                     diff = distant;
                     index = j;
                 }
             }
-
             if (index != -1 && depth == 3) {
-                result[i] = index;
+                result[pos] = index;
                 if (ncolor > 2) {
-                    roffset = (int)data[i * depth + 0] - (int)palette[index * 3 + 0];
-                    goffset = (int)data[i * depth + 1] - (int)palette[index * 3 + 1];
-                    boffset = (int)data[i * depth + 2] - (int)palette[index * 3 + 2];
-                    if (y < height - 1) {
-                        add_offset(data, i + width, depth,
-                                   roffset * 5 / 16, goffset * 5 / 16, boffset * 5 / 16);
-                        if (x > 1) {
-                            add_offset(data, i + width - 1, depth,
-                                       roffset * 3 / 16, goffset * 3 / 16, boffset * 3 / 16);
-                            roffset -= roffset * 3 / 16;
-                            goffset -= goffset * 3 / 16;
-                            boffset -= boffset * 3 / 16;
-                        }
-                        if (x < width - 1) {
-                            add_offset(data, i + width + 1, depth,
-                                       roffset * 1 / 16, goffset * 1 / 16, boffset * 1 / 16);
-                        }
+                    for (n = 0; n < depth; ++n) {
+                        offsets[n] = data[pos * depth + n] - palette[index * depth + n];
                     }
-                    if (x < width - 1) {
-                        roffset -= roffset * 5 / 16;
-                        goffset -= goffset * 5 / 16;
-                        boffset -= boffset * 5 / 16;
-                        roffset -= roffset * 3 / 16;
-                        goffset -= goffset * 3 / 16;
-                        boffset -= boffset * 3 / 16;
-                        roffset -= roffset * 1 / 16;
-                        goffset -= goffset * 1 / 16;
-                        boffset -= boffset * 1 / 16;
-                        add_offset(data, i + 1, depth, roffset, goffset, boffset);
-                    }
+                    diffuse(data, width, height, x, y, depth, offsets, DIFFUSE_FS);
                 }
             }
         }
     }
+
+    free(offsets);
     return result;
 }
 
