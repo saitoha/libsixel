@@ -445,7 +445,14 @@ static int stdio_read(void *user, char *data, int size)
 
 static void stdio_skip(void *user, unsigned n)
 {
+#if 0
    fseek((FILE*) user, n, SEEK_CUR);
+#else
+   char *data;
+   data=malloc(n);
+   fread(data,1,n,(FILE*) user);
+   free(data);
+#endif
 }
 
 static int stdio_eof(void *user)
