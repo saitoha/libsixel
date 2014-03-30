@@ -272,6 +272,43 @@ largestByNorm(sample minval[], sample maxval[], unsigned int const depth) {
 
 
 
+static unsigned int
+largestByLuminosity(sample minval[], sample maxval[],
+                    unsigned int const depth)
+{
+/*----------------------------------------------------------------------------
+   This subroutine presumes that the tuple type is either 
+   BLACKANDWHITE, GRAYSCALE, or RGB (which implies pamP->depth is 1 or 3).
+   To save time, we don't actually check it.
+-----------------------------------------------------------------------------*/
+    unsigned int retval;
+
+    double pnm_lumin_factor[3] = {0.2989, 0.5866, 0.1145};
+
+    if (depth == 1)
+        retval = 0;
+    else {
+        /* An RGB tuple */
+        unsigned int largestDimension;
+        unsigned int plane;
+        double largestSpreadSoFar;
+
+        largestSpreadSoFar = 0.0;
+
+        for (plane = 0; plane < 3; ++plane) {
+            double const spread =
+                pnm_lumin_factor[plane] * (maxval[plane]-minval[plane]);
+            if (spread > largestSpreadSoFar) {
+                largestDimension = plane;
+                largestSpreadSoFar = spread;
+            }
+        }
+        retval = largestDimension;
+    }
+    return retval;
+}
+
+
 
 static void
 centerBox(int          const boxStart,
