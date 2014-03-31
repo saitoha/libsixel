@@ -162,7 +162,7 @@ alloctupletable(unsigned int const depth, unsigned int const size)
 
     if (!pool) {
         quant_trace(stderr, "Unable to allocate %u bytes for a %u-entry "
-                  "tuple table\n", allocSize, size);
+                    "tuple table\n", allocSize, size);
         return NULL;
     }
     tupletable const tbl = (tupletable) pool;
@@ -212,8 +212,9 @@ newBoxVector(int const colors, int const sum, int const newcolors)
 {
     boxVector bv;
     bv = (boxVector)malloc(sizeof(struct box) * newcolors);
-    if (bv == NULL)
+    if (bv == NULL) {
         quant_trace(stderr, "out of memory allocating box vector table\n");
+    }
 
     /* Set up the initial box. */
     bv[0].ind = 0;
@@ -260,8 +261,9 @@ largestByNorm(sample minval[], sample maxval[], unsigned int const depth) {
 
     unsigned int largestDimension;
     unsigned int plane;
+    sample largestSpreadSoFar;
 
-    sample largestSpreadSoFar = 0;
+    largestSpreadSoFar = 0;
     largestDimension = 0;
     for (plane = 0; plane < depth; ++plane) {
         sample const spread = maxval[plane]-minval[plane];
@@ -286,11 +288,11 @@ largestByLuminosity(sample minval[], sample maxval[],
 -----------------------------------------------------------------------------*/
     unsigned int retval;
 
-    double pnm_lumin_factor[3] = {0.2989, 0.5866, 0.1145};
+    double lumin_factor[3] = {0.2989, 0.5866, 0.1145};
 
-    if (depth == 1)
+    if (depth == 1) {
         retval = 0;
-    else {
+    } else {
         /* An RGB tuple */
         unsigned int largestDimension;
         unsigned int plane;
@@ -300,7 +302,7 @@ largestByLuminosity(sample minval[], sample maxval[],
 
         for (plane = 0; plane < 3; ++plane) {
             double const spread =
-                pnm_lumin_factor[plane] * (maxval[plane]-minval[plane]);
+                lumin_factor[plane] * (maxval[plane]-minval[plane]);
             if (spread > largestSpreadSoFar) {
                 largestDimension = plane;
                 largestSpreadSoFar = spread;
