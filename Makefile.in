@@ -791,7 +791,7 @@ uninstall-am:
 	uninstall-am
 
 
-test:
+test: all
 	$(MAKE) test -C src
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
