@@ -629,10 +629,9 @@ computeHistogram(unsigned char *data,
     }
 
     colorfreqtableP->size = ref - refmap;
-    colorfreqtableP->table = malloc((ref - refmap) * sizeof(colorfreqtableP->table));
+    colorfreqtableP->table = alloctupletable(depth, ref - refmap);
     for (i = 0; i < colorfreqtableP->size; ++i) {
         if (histgram[refmap[i]] > 0) {
-            colorfreqtableP->table[i] = (struct tupleint *)malloc(sizeof(int) + sizeof(sample) * depth);
             colorfreqtableP->table[i]->value = histgram[refmap[i]];
             for (n = 0; n < depth; n++) {
                 colorfreqtableP->table[i]->tuple[depth - 1 - n] = (*it >> n * 5 & 0x1f) << 3;
@@ -677,23 +676,29 @@ computeColorMapFromInput(unsigned char *data,
    relevant to our colormap mission; just a fringe benefit).
 -----------------------------------------------------------------------------*/
     tupletable2 colorfreqtable;
-    int i;
+    int i, n;
 
     computeHistogram(data, length, depth, &colorfreqtable);
 
     if (colorfreqtable.size <= reqColors) {
         quant_trace(stderr, "Image already has few enough colors (<=%d).  "
-                   "Keeping same colors.\n", reqColors);
-        *colormapP = colorfreqtable;
+                    "Keeping same colors.\n", reqColors);
+        /* *colormapP = colorfreqtable; */
+        colormapP->size = colorfreqtable.size;
+        colormapP->table = alloctupletable(depth, colorfreqtable.size);
+        for (i = 0; i < colorfreqtable.size; ++i) {
+            colormapP->table[i]->value = colorfreqtable.table[i]->value;
+            for (n = 0; n < depth; ++n) {
+                colormapP->table[i]->tuple[n] = colorfreqtable.table[i]->tuple[n];
+            }
+        }
     } else {
         quant_trace(stderr, "choosing %d colors...\n", reqColors);
         mediancut(colorfreqtable, depth, reqColors, methodForLargest, methodForRep, colormapP);
         quant_trace(stderr, "%d colors are choosed.\n", colorfreqtable.size);
-        for (i = 0; i < colorfreqtable.size; ++i) {
-            free(colorfreqtable.table[i]);
-        }
-        free(colorfreqtable.table);
     }
+
+    free(colorfreqtable.table);
 }
 
 
