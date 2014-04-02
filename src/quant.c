@@ -116,7 +116,8 @@ static unsigned int compareplanePlane;
     */
 static int
 compareplane(const void * const arg1,
-             const void * const arg2) {
+             const void * const arg2)
+{
 
     const struct tupleint * const * const comparandPP  = arg1;
     const struct tupleint * const * const comparatorPP = arg2;
@@ -211,6 +212,7 @@ static boxVector
 newBoxVector(int const colors, int const sum, int const newcolors)
 {
     boxVector bv;
+
     bv = (boxVector)malloc(sizeof(struct box) * newcolors);
     if (bv == NULL) {
         quant_trace(stderr, "out of memory allocating box vector table\n");
@@ -231,7 +233,8 @@ findBoxBoundaries(tupletable2  const colorfreqtable,
                   unsigned int const boxStart,
                   unsigned int const boxSize,
                   sample             minval[],
-                  sample             maxval[]) {
+                  sample             maxval[])
+{
 /*----------------------------------------------------------------------------
   Go through the box finding the minimum and maximum of each
   component - the boundaries of the box.
@@ -257,7 +260,8 @@ findBoxBoundaries(tupletable2  const colorfreqtable,
 
 
 static unsigned int
-largestByNorm(sample minval[], sample maxval[], unsigned int const depth) {
+largestByNorm(sample minval[], sample maxval[], unsigned int const depth)
+{
 
     unsigned int largestDimension;
     unsigned int plane;
@@ -278,8 +282,7 @@ largestByNorm(sample minval[], sample maxval[], unsigned int const depth) {
 
 
 static unsigned int
-largestByLuminosity(sample minval[], sample maxval[],
-                    unsigned int const depth)
+largestByLuminosity(sample minval[], sample maxval[], unsigned int const depth)
 {
 /*----------------------------------------------------------------------------
    This subroutine presumes that the tuple type is either
@@ -320,7 +323,8 @@ centerBox(int          const boxStart,
           int          const boxSize,
           tupletable2  const colorfreqtable,
           unsigned int const depth,
-          tuple        const newTuple) {
+          tuple        const newTuple)
+{
 
     unsigned int plane;
 
@@ -346,8 +350,8 @@ averageColors(int          const boxStart,
               int          const boxSize,
               tupletable2  const colorfreqtable,
               unsigned int const depth,
-              tuple        const newTuple) {
-
+              tuple        const newTuple)
+{
     unsigned int plane;
 
     for (plane = 0; plane < depth; ++plane) {
@@ -370,7 +374,8 @@ averagePixels(int          const boxStart,
               int          const boxSize,
               tupletable2  const colorfreqtable,
               unsigned int const depth,
-              tuple        const newTuple) {
+              tuple        const newTuple)
+{
 
     unsigned int n;
         /* Number of tuples represented by the box */
@@ -405,7 +410,8 @@ colormapFromBv(unsigned int      const newcolors,
                unsigned int      const boxes,
                tupletable2       const colorfreqtable,
                unsigned int      const depth,
-               enum methodForRep const methodForRep) {
+               enum methodForRep const methodForRep)
+{
     /*
     ** Ok, we've got enough boxes.  Now choose a representative color for
     ** each box.  There are a number of possible ways to make this choice.
@@ -425,16 +431,13 @@ colormapFromBv(unsigned int      const newcolors,
     for (bi = 0; bi < boxes; ++bi) {
         switch (methodForRep) {
         case REP_CENTER_BOX:
-            centerBox(bv[bi].ind, bv[bi].colors, colorfreqtable, depth,
-                      colormap.table[bi]->tuple);
+            centerBox(bv[bi].ind, bv[bi].colors, colorfreqtable, depth, colormap.table[bi]->tuple);
             break;
         case REP_AVERAGE_COLORS:
-            averageColors(bv[bi].ind, bv[bi].colors, colorfreqtable, depth,
-                          colormap.table[bi]->tuple);
+            averageColors(bv[bi].ind, bv[bi].colors, colorfreqtable, depth, colormap.table[bi]->tuple);
             break;
         case REP_AVERAGE_PIXELS:
-            averagePixels(bv[bi].ind, bv[bi].colors, colorfreqtable, depth,
-                          colormap.table[bi]->tuple);
+            averagePixels(bv[bi].ind, bv[bi].colors, colorfreqtable, depth, colormap.table[bi]->tuple);
             break;
         default:
             quant_trace(stderr, "Internal error: invalid value of methodForRep: %d\n",
@@ -718,6 +721,7 @@ make_palette(unsigned char *data, int x, int y, int depth, int reqcolors, int *n
             palette[i * depth + n] = colormap.table[i]->tuple[n];
         }
     }
+
     free(colormap.table);
     return palette;
 }
