@@ -713,7 +713,7 @@ LSQ_MakePalette(unsigned char *data, int x, int y, int depth, int reqcolors, int
     tupletable2 colormap;
 
     computeColorMapFromInput(data, x * y * depth, depth,
-                             reqcolors, LARGE_NORM, REP_CENTER_BOX, &colormap);
+                             reqcolors, methodForLargest, methodForRep, &colormap);
     *ncolors = colormap.size;
     quant_trace(stderr, "tupletable size: %d", *ncolors);
     palette = malloc(*ncolors * depth);
