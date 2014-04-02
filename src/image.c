@@ -27,13 +27,20 @@
 
 #include "sixel.h"
 
+
 LSImagePtr
 LSImage_create(int sx, int sy, int depth, int ncolors)
 {
     LSImagePtr im;
 
     im = (LSImagePtr)malloc(sizeof(LSImage));
-    im->pixels = (uint8_t *)malloc(sx * sy * depth);
+    if (ncolors == -1) {
+        /* non-paletted bitmap image */
+        im->pixels = (uint8_t *)malloc(sx * sy * depth);
+    } else {
+        /* paletted image */
+        im->pixels = (uint8_t *)malloc(sx * sy);
+    }
     im->sx = sx;
     im->sy = sy;
     im->depth = depth;
