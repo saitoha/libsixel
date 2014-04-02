@@ -49,14 +49,15 @@ LSImage_create(int sx, int sy, int depth, int ncolors)
     return im;
 }
 
+
 void
-LSImage_setpalette(LSImagePtr im,
-                   int n, int r, int g, int b)
+LSImage_setpalette(LSImagePtr im, int n, int r, int g, int b)
 {
     im->red[n] = r;
     im->green[n] = g;
     im->blue[n] = b;
 }
+
 
 void
 LSImage_setpixels(LSImagePtr im, uint8_t *pixels)
@@ -64,10 +65,9 @@ LSImage_setpixels(LSImagePtr im, uint8_t *pixels)
     im->pixels = pixels;
 }
 
+
 void
-LSImage_copy(LSImagePtr dst,
-             LSImagePtr src,
-             int w, int h)
+LSImage_copy(LSImagePtr dst, LSImagePtr src, int w, int h)
 {
     int x, y;
 
@@ -79,12 +79,14 @@ LSImage_copy(LSImagePtr dst,
     }
 }
 
+
 void
 LSImage_destroy(LSImagePtr im)
 {
     free(im->pixels);
     free(im);
 }
+
 
 void
 LSImage_fill(LSImagePtr im, int color)
@@ -96,6 +98,7 @@ LSImage_fill(LSImagePtr im, int color)
         }
     }
 }
+
 
 void
 LSImage_fillrectangle(LSImagePtr im,
@@ -109,6 +112,7 @@ LSImage_fillrectangle(LSImagePtr im,
         }
     }
 }
+
 
 void
 LSImage_setpixel(LSImagePtr im, int x, int y, int color)
