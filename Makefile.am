@@ -1,5 +1,5 @@
 SUBDIRS = src
 DIST_SUBDIRS = $(SUBDIRS)
 
-test:
+test: all
 	$(MAKE) test -C src
