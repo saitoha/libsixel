@@ -49,7 +49,8 @@ static int act_palet = (-1);
 static long use_palet[PALETTE_MAX];
 static uint8_t conv_palet[PALETTE_MAX];
 
-static void PutFlash(LSOutputContextPtr context)
+static void
+PutFlash(LSOutputContextPtr const context)
 {
     int n;
 
@@ -75,7 +76,8 @@ static void PutFlash(LSOutputContextPtr context)
     save_count = 0;
 }
 
-static void PutPixel(LSOutputContextPtr context, int pix)
+static void
+PutPixel(LSOutputContextPtr const context, int pix)
 {
     if (pix < 0 || pix > 63)
         pix = 0;

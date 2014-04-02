@@ -21,19 +21,19 @@
 
 #include "config.h"
 #include <stdlib.h>
-#include <inttypes.h>
-#include <stdio.h>
 #include "sixel.h"
 
-LSOutputContextPtr LSOutputContext_new()
+LSOutputContextPtr const
+LSOutputContext_create(putchar_function fn_putchar, printf_function fn_printf)
 {
     LSOutputContextPtr context = (LSOutputContextPtr)malloc(sizeof(LSOutputContext));
-    context->fn_putchar = putchar;
-    context->fn_printf = printf;
+    context->fn_putchar = fn_putchar;
+    context->fn_printf = fn_printf;
     return context;
 }
 
-void LSOutputContext_free(LSOutputContextPtr context)
+void
+LSOutputContext_destroy(LSOutputContextPtr context)
 {
     free(context);
 }

@@ -78,12 +78,13 @@ sixel_to_png(const char *input, const char *output)
         len += n;
     }
 
-    if (fp != stdout)
-            fclose(fp);
+    if (fp != stdout) {
+        fclose(fp);
+    }
 
     im = LibSixel_SixelToLSImage(data, len);
     if (!im) {
-      return 1;
+        return 1;
     }
     stbi_write_png(output, im->sx, im->sy,
                    STBI_rgb, im->pixels, im->sx * 3);

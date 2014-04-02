@@ -100,7 +100,7 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
     }
     LSImage_setpixels(im, data);
     data = NULL;
-    context = LSOutputContext_new();
+    context = LSOutputContext_create(putchar, printf);
     LibSixel_LSImageToSixel(im, context);
 
 end:
@@ -120,7 +120,7 @@ end:
         LSImage_destroy(im);
     }
     if (context) {
-        LSOutputContext_free(context);
+        LSOutputContext_destroy(context);
     }
     return nret;
 }

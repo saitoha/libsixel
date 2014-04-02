@@ -54,7 +54,9 @@ static int const ColTab[] = {
     XRGB(80, 80, 80),  /* 15 Gray 75% */
 };
 
-static int HueToRGB(int n1, int n2, int hue)
+
+static int
+HueToRGB(int n1, int n2, int hue)
 {
     const int HLSMAX = 100;
 
@@ -74,7 +76,9 @@ static int HueToRGB(int n1, int n2, int hue)
         return (n1);
 }
 
-static int HLStoRGB(int hue, int lum, int sat)
+
+static int
+HLStoRGB(int hue, int lum, int sat)
 {
     int R, G, B;
     int Magic1, Magic2;
@@ -97,7 +101,8 @@ static int HLStoRGB(int hue, int lum, int sat)
     return RGB(R, G, B);
 }
 
-static uint8_t *GetParam(uint8_t *p, int *param, int *len)
+static uint8_t *
+GetParam(uint8_t *p, int *param, int *len)
 {
     int n;
 

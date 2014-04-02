@@ -103,11 +103,11 @@ LSImage_fillrectangle(LSImagePtr im, int x1, int y1, int x2, int y2, int color);
 extern "C" {
 #endif
 
-extern LSOutputContextPtr
-LSOutputContext_new();
+extern LSOutputContextPtr const
+LSOutputContext_create(putchar_function fn_putchar, printf_function fn_printf);
 
 extern void
-LSOutputContext_free(LSOutputContextPtr context);
+LSOutputContext_destroy(LSOutputContextPtr context);
 
 #ifdef __cplusplus
 }
