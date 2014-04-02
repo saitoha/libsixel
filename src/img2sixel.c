@@ -49,7 +49,7 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
     uint8_t *data = NULL;
     int ncolors;
     LSImagePtr im = NULL;
-    LSOutputContextPtr context;
+    LSOutputContextPtr context = NULL;
     int sx, sy, comp;
     int map_sx, map_sy, map_comp;
     int i;
@@ -102,11 +102,14 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
         goto end;
     }
     LSImage_setpixels(im, data);
+    data = NULL;
     context = LSOutputContext_new();
     LibSixel_LSImageToSixel(im, context);
-    LSOutputContext_free(context);
 
 end:
+    if (data) {
+        free(data);
+    }
     if (pixels) {
         stbi_image_free(pixels);
     }
@@ -119,8 +122,12 @@ end:
     if (im) {
         LSImage_destroy(im);
     }
+    if (context) {
+        LSOutputContext_free(context);
+    }
     return nret;
 }
+
 
 int main(int argc, char *argv[])
 {
