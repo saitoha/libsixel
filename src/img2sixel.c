@@ -91,10 +91,7 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
         goto end;
     }
     for (i = 0; i < ncolors; i++) {
-        LSImage_setpalette(im, i,
-                           palette[i * 3 + 0],
-                           palette[i * 3 + 1],
-                           palette[i * 3 + 2]);
+        LSImage_setpalette(im, i, palette[i * 3], palette[i * 3 + 1], palette[i * 3 + 2]);
     }
     data = LSQ_ApplyPalette(pixels, sx, sy, 3, palette, ncolors, REP_CENTER_BOX, DIFFUSE_FS);
     if (!data) {
