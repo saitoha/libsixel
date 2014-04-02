@@ -57,18 +57,13 @@
 # include <inttypes.h>
 #endif
 
+#include "quant.h"
+
 #if 0
 #define quant_trace fprintf
 #else
 static inline void quant_trace(FILE *f, ...) {}
 #endif
-
-/* exported function */
-extern uint8_t *
-make_palette(uint8_t *data, int x, int y, int depth, int reqcolors, int *ncolors);
-
-extern uint8_t *
-apply_palette(unsigned char *data, int x, int y, int depth, uint8_t *palette, int ncolors);
 
 /*****************************************************************************
  *
@@ -85,10 +80,6 @@ struct box {
 
 typedef unsigned long sample;
 typedef sample * tuple;
-
-enum methodForLargest {LARGE_NORM, LARGE_LUM};
-enum methodForRep {REP_CENTER_BOX, REP_AVERAGE_COLORS, REP_AVERAGE_PIXELS};
-enum methodForDiffuse {DIFFUSE_NONE, DIFFUSE_FS, DIFFUSE_JAJUNI};
 
 struct tupleint {
     /* An ordered pair of a tuple value and an integer, such as you
@@ -705,7 +696,7 @@ computeColorMapFromInput(unsigned char *data,
 
 
 unsigned char *
-make_palette(unsigned char *data, int x, int y, int depth, int reqcolors, int *ncolors)
+LSQ_MakePalette(unsigned char *data, int x, int y, int depth, int reqcolors, int *ncolors)
 {
     int i, n;
     unsigned char *palette;
@@ -841,10 +832,16 @@ void diffuse(unsigned char *data, int width, int height,
     }
 }
 
+
 unsigned char *
-apply_palette(unsigned char *data,
-              int width, int height, int depth,
-              unsigned char *palette, int ncolor)
+LSQ_ApplyPalette(unsigned char *data,
+                 int width,
+                 int height,
+                 int depth,
+                 unsigned char *palette,
+                 int ncolor,
+                 enum methodForRep const methodForRep,
+                 enum methodForDiffuse const methodForDiffuse)
 {
     int pos, j, n, x, y;
     int roffset, goffset, boffset;
@@ -887,6 +884,14 @@ apply_palette(unsigned char *data,
 
     free(offsets);
     return result;
+}
+
+
+
+void
+LSQ_FreePalette(uint8_t * data)
+{
+    free(data);
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */

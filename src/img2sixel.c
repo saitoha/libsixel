@@ -38,11 +38,7 @@
 #define STBI_HEADER_FILE_ONLY
 #include <stb_image.c>
 
-extern uint8_t *
-make_palette(uint8_t *data, int x, int y, int depth, int reqcolors, int *ncolors);
-
-extern uint8_t *
-apply_palette(uint8_t *data, int x, int y, int depth, uint8_t *palette, int ncolors);
+#include "quant.h"
 
 static int
 convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
@@ -79,10 +75,11 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
             nret = -1;
             goto end;
         }
-        palette = make_palette(mappixels, map_sx, map_sy, 3, reqcolors, &ncolors);
+        palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3, reqcolors, &ncolors);
     } else {
-        palette = make_palette(pixels, sx, sy, 3, reqcolors, &ncolors);
+        palette = LSQ_MakePalette(pixels, sx, sy, 3, reqcolors, &ncolors);
     }
+
     if (!palette) {
         nret = -1;
         goto end;
@@ -99,7 +96,7 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
                            palette[i * 3 + 1],
                            palette[i * 3 + 2]);
     }
-    data = apply_palette(pixels, sx, sy, 3, palette, ncolors);
+    data = LSQ_ApplyPalette(pixels, sx, sy, 3, palette, ncolors, REP_CENTER_BOX, DIFFUSE_FS);
     if (!data) {
         nret = -1;
         goto end;
@@ -117,7 +114,7 @@ end:
         stbi_image_free(mappixels);
     }
     if (palette) {
-        free(palette);
+        LSQ_FreePalette(palette);
     }
     if (im) {
         LSImage_destroy(im);
