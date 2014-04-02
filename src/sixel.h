@@ -52,10 +52,10 @@ typedef struct LSOutputContextStruct {
 extern "C" {
 #endif
 
-extern LSImagePtr
+LSImagePtr
 LibSixel_SixelToLSImage(uint8_t *p, int len);
 
-extern void
+void
 LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context);
 
 #ifdef __cplusplus
@@ -68,28 +68,28 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context);
 extern "C" {
 #endif
 
-extern LSImagePtr
+LSImagePtr
 LSImage_create(int sx, int sy, int depth, int ncolors);
 
-extern void
+void
 LSImage_destroy(LSImagePtr im);
 
-extern void
+void
 LSImage_setpalette(LSImagePtr im, int n, int r, int g, int b);
 
-extern void
+void
 LSImage_setpixels(LSImagePtr im, uint8_t *pixels);
 
-extern void
+void
 LSImage_setpixel(LSImagePtr im, int x, int y, int color);
 
-extern void
+void
 LSImage_copy(LSImagePtr dst, LSImagePtr src, int w, int h);
 
-extern void
+void
 LSImage_fill(LSImagePtr im, int color);
 
-extern void
+void
 LSImage_fillrectangle(LSImagePtr im, int x1, int y1, int x2, int y2, int color);
 
 #ifdef __cplusplus
@@ -103,10 +103,10 @@ LSImage_fillrectangle(LSImagePtr im, int x1, int y1, int x2, int y2, int color);
 extern "C" {
 #endif
 
-extern LSOutputContextPtr const
+LSOutputContextPtr const
 LSOutputContext_create(putchar_function fn_putchar, printf_function fn_printf);
 
-extern void
+void
 LSOutputContext_destroy(LSOutputContextPtr context);
 
 #ifdef __cplusplus
