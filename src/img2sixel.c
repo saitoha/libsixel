@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
 
     if (ncolors != -1 && mapfile) {
         fprintf(stderr, "option -p conflicts with -m.\n");
-        exit(1);
+        goto argerr;
     }
 
     if (ncolors == -1) {
@@ -161,13 +161,15 @@ int main(int argc, char *argv[])
             convert_to_sixel(argv[n], ncolors, mapfile);
         }
     }
-    return 0;
+    goto end;
 
 argerr:
+    fprintf(stderr, "Usage: %s [-p MaxPalet] [-m PaletFile] <file name...>\n", argv[0]);
+
+end:
     if (mapfile) {
         free(mapfile);
     }
-    fprintf(stderr, "Usage: %s [-p MaxPalet] [-m PaletFile] <file name...>\n", argv[0]);
     return 0;
 }
 
