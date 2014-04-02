@@ -62,6 +62,7 @@ LSImage_setpalette(LSImagePtr im, int n, int r, int g, int b)
 void
 LSImage_setpixels(LSImagePtr im, uint8_t *pixels)
 {
+    free(im->pixels);
     im->pixels = pixels;
 }
 
