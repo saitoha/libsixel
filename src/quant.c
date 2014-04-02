@@ -704,7 +704,9 @@ computeColorMapFromInput(unsigned char *data,
 
 
 unsigned char *
-LSQ_MakePalette(unsigned char *data, int x, int y, int depth, int reqcolors, int *ncolors)
+LSQ_MakePalette(unsigned char *data, int x, int y, int depth, int reqcolors, int *ncolors,
+                enum methodForLargest const methodForLargest,
+                enum methodForRep const methodForRep)
 {
     int i, n;
     unsigned char *palette;
@@ -848,7 +850,6 @@ LSQ_ApplyPalette(unsigned char *data,
                  int depth,
                  unsigned char *palette,
                  int ncolor,
-                 enum methodForRep const methodForRep,
                  enum methodForDiffuse const methodForDiffuse)
 {
     int pos, j, n, x, y;

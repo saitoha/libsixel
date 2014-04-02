@@ -57,7 +57,9 @@ LSQ_MakePalette(unsigned char *data,
                 int y,
                 int depth,
                 int reqcolors,
-                int *ncolors);
+                int *ncolors,
+                enum methodForLargest const methodForLargest,
+                enum methodForRep const methodForRep);
 
 
 extern unsigned char *
@@ -67,7 +69,6 @@ LSQ_ApplyPalette(unsigned char *data,
                  int depth,
                  uint8_t *palette,
                  int ncolors,
-                 enum methodForRep const methodForRep,
                  enum methodForDiffuse const methodForDiffuse);
 
 

@@ -75,9 +75,9 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
             nret = -1;
             goto end;
         }
-        palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3, reqcolors, &ncolors);
+        palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3, reqcolors, &ncolors, LARGE_NORM, REP_CENTER_BOX);
     } else {
-        palette = LSQ_MakePalette(pixels, sx, sy, 3, reqcolors, &ncolors);
+        palette = LSQ_MakePalette(pixels, sx, sy, 3, reqcolors, &ncolors, LARGE_NORM, REP_CENTER_BOX);
     }
 
     if (!palette) {
@@ -93,7 +93,7 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
     for (i = 0; i < ncolors; i++) {
         LSImage_setpalette(im, i, palette[i * 3], palette[i * 3 + 1], palette[i * 3 + 2]);
     }
-    data = LSQ_ApplyPalette(pixels, sx, sy, 3, palette, ncolors, REP_CENTER_BOX, DIFFUSE_FS);
+    data = LSQ_ApplyPalette(pixels, sx, sy, 3, palette, ncolors, DIFFUSE_FS);
     if (!data) {
         nret = -1;
         goto end;
