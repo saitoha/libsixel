@@ -88,7 +88,7 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
         goto end;
     }
 
-    im = LSImage_create(sx, sy, 1, ncolors);
+    im = LSImage_create(sx, sy, 3, ncolors);
     if (!im) {
         nret = -1;
         goto end;
