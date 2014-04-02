@@ -885,7 +885,7 @@ LSQ_ApplyPalette(unsigned char *data,
                     for (n = 0; n < depth; ++n) {
                         offsets[n] = data[pos * depth + n] - palette[index * depth + n];
                     }
-                    diffuse(data, width, height, x, y, depth, offsets, DIFFUSE_FS);
+                    diffuse(data, width, height, x, y, depth, offsets, methodForDiffuse);
                 }
             }
         }
