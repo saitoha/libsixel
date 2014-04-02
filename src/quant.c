@@ -702,6 +702,7 @@ computeColorMapFromInput(unsigned char *data,
 }
 
 
+
 unsigned char *
 LSQ_MakePalette(unsigned char *data, int x, int y, int depth, int reqcolors, int *ncolors)
 {
