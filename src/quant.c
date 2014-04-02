@@ -439,7 +439,7 @@ colormapFromBv(unsigned int      const newcolors,
 }
 
 
-static void
+static int
 splitBox(boxVector             const bv,
          unsigned int *        const boxesP,
          unsigned int          const bi,
@@ -460,17 +460,17 @@ splitBox(boxVector             const bv,
     unsigned int const boxSize  = bv[bi].colors;
     unsigned int const sm       = bv[bi].sum;
 
-    sample * minval;  /* malloc'ed array */
-    sample * maxval;  /* malloc'ed array */
+    unsigned int const max_depth = 16;
+    sample minval[max_depth];
+    sample maxval[max_depth];
+
+    /* assert(max_depth >= depth); */
 
     unsigned int largestDimension;
         /* number of the plane with the largest spread */
     unsigned int medianIndex;
     int lowersum;
         /* Number of pixels whose value is "less than" the median */
-
-    minval = (sample *)malloc(depth);
-    maxval = (sample *)malloc(depth);
 
     findBoxBoundaries(colorfreqtable, depth, boxStart, boxSize,
                       minval, maxval);
@@ -487,10 +487,11 @@ splitBox(boxVector             const bv,
     case LARGE_LUM:
         largestDimension = largestByLuminosity(minval, maxval, depth);
         break;
+    default:
+        quant_trace(stderr, "Internal error: invalid value of methodForLargest: %d\n",
+                    methodForLargest);
+        return -1;
     }
-
-    free(minval);
-    free(maxval);
 
     /* TODO: I think this sort should go after creating a box,
        not before splitting.  Because you need the sort to use
@@ -527,6 +528,7 @@ splitBox(boxVector             const bv,
     bv[*boxesP].sum = sm - lowersum;
     ++(*boxesP);
     qsort((char*) bv, *boxesP, sizeof(struct box), sumcompare);
+    return 0;
 }
 
 
