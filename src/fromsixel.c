@@ -24,9 +24,6 @@
 
 #include "sixel.h"
 
-/* exported function */
-LSImagePtr LibSixel_SixelToLSImage(uint8_t *p, int len);
-
 #define RGB(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
 
 #define RGBA(r, g, b, a) (((a) << 24) + ((r) << 16) + ((g) << 8) +  (b))
@@ -130,7 +127,7 @@ GetParam(uint8_t *p, int *param, int *len)
 }
 
 LSImagePtr
-LibSixel_SixelToLSImage(uint8_t *p, int len)
+LibSixel_SixelToLSImage(unsigned char *p, int len)
 {
     int n, i, a, b, c;
     int px, py;
