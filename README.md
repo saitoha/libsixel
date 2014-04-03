@@ -47,23 +47,23 @@ Now SIXEL feature is supported by the following terminals.
 
 - RLogin (Japanese terminal emulator)
 
-[http://nanno.dip.jp/softlib/man/rlogin/](http://nanno.dip.jp/softlib/man/rlogin/)
+  [http://nanno.dip.jp/softlib/man/rlogin/](http://nanno.dip.jp/softlib/man/rlogin/)
 
 - tanasinn (Works with firefox)
 
-[http://zuse.jp/tanasinn/](http://zuse.jp/tanasinn/)
+  [http://zuse.jp/tanasinn/](http://zuse.jp/tanasinn/)
 
 - mlterm
 
-[http://mlterm.sourceforge.net/](http://mlterm.sourceforge.net/)
+  [http://mlterm.sourceforge.net/](http://mlterm.sourceforge.net/)
 
-Works on each of X, win32/cygwin, framebuffer version.
+  Works on each of X, win32/cygwin, framebuffer version.
 
 - XTerm (compiled with --enable-sixel option)
 
-[http://invisible-island.net/xterm/](http://invisible-island.net/xterm/)
+  [http://invisible-island.net/xterm/](http://invisible-island.net/xterm/)
 
-You should launch xterm with "-ti 340" option. the SIXEL palette is limited to a maximum of 16 colors. 
+  You should launch xterm with "-ti 340" option. the SIXEL palette is limited to a maximum of 16 colors. 
 
 - DECterm
 
