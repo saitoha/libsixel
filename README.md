@@ -26,6 +26,54 @@ To build source package:
 $ make package
 ```
 
+
+## Terminal requirements
+
+If you want to view a SIXEL image, you have to get a terminal which support sixel graphics.
+
+Now SIXEL feature is supported by the following terminals.
+
+- VT125
+
+- VT240
+
+- VT241
+
+- VT330
+
+- VT340
+
+- VT382
+
+- RLogin (Japanese terminal emulator)
+
+[http://nanno.dip.jp/softlib/man/rlogin/](http://nanno.dip.jp/softlib/man/rlogin/)
+
+- tanasinn (Works with firefox)
+
+[http://zuse.jp/tanasinn/](http://zuse.jp/tanasinn/)
+
+- mlterm
+
+[http://mlterm.sourceforge.net/](http://mlterm.sourceforge.net/)
+
+Works on each of X, win32/cygwin, framebuffer version.
+
+- XTerm (compiled with --enable-sixel option)
+
+[http://invisible-island.net/xterm/](http://invisible-island.net/xterm/)
+
+You should launch xterm with "-ti 340" option. the SIXEL palette is limited to a maximum of 16 colors. 
+
+- DECterm
+
+- Kermit
+
+- WRQ Reflection
+
+- ZSTEM
+
+
 ## Usage of command line tools
 
 Convert a jpeg image file into a sixel file
@@ -54,22 +102,47 @@ $ sixeltopng < egret.sixel > egret.png
 
 ## Similar software
 
-- ppmtosixel (netpbm)
+- [ppmtosixel (netpbm)](http://netpbm.sourceforge.net/)
 
-http://netpbm.sourceforge.net/doc/ppmtosixel.html
-
-
-- kmiya's sixel
-
-http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
+  You can get SIXEL graphics using [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html) or [pbmtoln03](http://netpbm.sourceforge.net/doc/ppmtosixel.html).
 
 
-- PySixel
+- [kmiya's sixel](http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz)
 
-https://pypi.python.org/pypi/PySixel
+  libgd based SIXEL converter
+
+
+- [PySixel](https://pypi.python.org/pypi/PySixel)
+
+  Python implementation of SIXEL converter
+
+
+## Other software supporting SIXEL
+
+- [GNUPLOT](http://www.gnuplot.info/)
+
+Recent version of GNUPLOT supports new terminal driver "sixel".
+
+  ![GNUPLOT](http://zuse.jp/misc/gnuplot.png)
+
+
+- [ghostscript](http://www.ghostscript.com/)
+
+You can emit SIXEL images with LN03 / LN50 / LA75 driver.
+
+example:
+
+```
+  $ gs -q -r100x -dBATCH -dNOPAUSE -sDEVICE=ln03 -sOutputFile=- tiger.eps
+```
+  ![GhostScript](http://zuse.jp/misc/gs.png)
+
+
+- ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
 
 
 ## Color image quantization quality comparison
+
 
 - ppmtosixel (netpbm)
 
@@ -111,7 +184,8 @@ https://pypi.python.org/pypi/PySixel
 This software is provided "as is" without express or implied warranty.
 The main support channel for this software is the github issue tracker:
     
-    https://github.com/saitoha/libsixel/issues
+  [https://github.com/saitoha/libsixel/issues](https://github.com/saitoha/libsixel/issues)
+
 
 Please post your issue if you have any problems, questions or suggestions.
 
