@@ -128,13 +128,14 @@ Recent version of GNUPLOT supports new terminal driver "sixel".
 
 - [ghostscript](http://www.ghostscript.com/)
 
-You can emit SIXEL images with LN03 / LN50 / LA75 driver.
+  You can emit SIXEL images with LN03 / LN50 / LA75 driver.
 
-example:
+  example:
 
-```
-  $ gs -q -r100x -dBATCH -dNOPAUSE -sDEVICE=ln03 -sOutputFile=- tiger.eps
-```
+  ```
+    $ gs -q -r100x -dBATCH -dNOPAUSE -sDEVICE=ln03 -sOutputFile=- tiger.eps
+  ```
+
   ![GhostScript](http://zuse.jp/misc/gs.png)
 
 
