@@ -121,7 +121,7 @@ $ sixeltopng < egret.sixel > egret.png
 
 - [GNUPLOT](http://www.gnuplot.info/)
 
-Recent version of GNUPLOT supports new terminal driver "sixel".
+  Recent version of GNUPLOT supports new terminal driver "sixel".
 
   ![GNUPLOT](http://zuse.jp/misc/gnuplot.png)
 
