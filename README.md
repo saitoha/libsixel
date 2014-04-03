@@ -276,11 +276,13 @@ Test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.com
 
 http://public-domain-photos.com/
 
-images/egret.jpg
+- images/egret.jpg
+
     author: Jon Sullivan
     url: http://public-domain-photos.com/animals/egret-4.htm
 
-images/snake.jpg
+- images/snake.jpg
+
     author: Jon Sullivan
     url: http://public-domain-photos.com/animals/snake-4.htm
 
