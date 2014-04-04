@@ -10,6 +10,9 @@
    to 0 otherwise. */
 #undef HAVE_MALLOC
 
+/* Define to 1 if you have the `memcpy' function. */
+#undef HAVE_MEMCPY
+
 /* Define to 1 if you have the `memmove' function. */
 #undef HAVE_MEMMOVE
 
@@ -46,9 +49,6 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
-
-/* Define to 1 if the system has the type `_Bool'. */
-#undef HAVE__BOOL
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
@@ -91,9 +91,6 @@
 
 /* Define to rpl_realloc if the replacement function should be used. */
 #undef realloc
-
-/* Define to `unsigned int' if <sys/types.h> does not define. */
-#undef size_t
 
 /* Define to the type of an unsigned integer type of width exactly 8 bits if
    such a type exists and the standard includes do not define it. */
