@@ -36,7 +36,16 @@
 #include <sixel.h>
 
 #define STBI_HEADER_FILE_ONLY
-#include <stb_image.c>
+
+#if !defined(HAVE_MEMCPY)
+# define memcpy(d, s, n) (bcopy ((s), (d), (n)))
+#endif
+
+#if !defined(HAVE_MEMMOVE)
+# define memmove(d, s, n) (bcopy ((s), (d), (n)))
+#endif
+
+#include "stb_image.c"
 
 #include "quant.h"
 
