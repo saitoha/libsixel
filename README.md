@@ -33,8 +33,6 @@ If you want to view a SIXEL image, you have to get a terminal which support sixe
 
 Now SIXEL feature is supported by the following terminals.
 
-- VT125
-
 - VT240
 
 - VT241
