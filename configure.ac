@@ -45,7 +45,7 @@ AC_CHECK_FUNCS([memcpy memmove strtol])
 # for HDR
 # AC_CHECK_FUNCS([strtol pow])
 
-AC_CONFIG_FILES([Makefile src/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile include/Makefile])
 
 AC_OUTPUT
 
