@@ -12420,7 +12420,7 @@ done
 # for HDR
 # AC_CHECK_FUNCS([strtol pow])
 
-ac_config_files="$ac_config_files Makefile src/Makefile include/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile include/Makefile converters/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -13435,6 +13435,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
+    "converters/Makefile") CONFIG_FILES="$CONFIG_FILES converters/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
