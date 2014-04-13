@@ -21,8 +21,6 @@ AC_CONFIG_MACRO_DIR([m4])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
-#AC_PROG_LIBTOOL
-#AC_PROG_RANLIB
 
 # Options
 AC_ARG_ENABLE([img2sixel],
@@ -40,7 +38,7 @@ AM_CONDITIONAL(WANT_SIXEL2IMG, test x$enable_sixel2img == xyes)
 # Checks for libraries.
 
 # Checks for header files.
-AC_CHECK_HEADERS([memory.h stdint.h stdlib.h string.h unistd.h])
+AC_CHECK_HEADERS([memory.h stdint.h stdlib.h string.h unistd.h getopt.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
@@ -54,12 +52,18 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNC([memset], [],
               [AC_MSG_ERROR(memset is not available.)])
 
+AC_CHECK_FUNC([getopt_long], [],
+              [AC_MSG_ERROR(getopt_long is not available.)])
+
 AC_CHECK_FUNCS([memcpy memmove strtol])
 
 # for HDR
 # AC_CHECK_FUNCS([strtol pow])
 
-AC_CONFIG_FILES([Makefile src/Makefile include/Makefile converters/Makefile])
+AC_CONFIG_FILES([Makefile
+                 src/Makefile
+                 include/Makefile
+                 converters/Makefile])
 
 AC_OUTPUT
 

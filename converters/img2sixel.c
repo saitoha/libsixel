@@ -29,6 +29,10 @@
 # include <unistd.h>  /* getopt */
 #endif
 
+#if defined(HAVE_GETOPT_H)
+# include <getopt.h>
+#endif
+
 #if defined(HAVE_INTTYPES_H)
 # include <inttypes.h>
 #endif
@@ -86,12 +90,16 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
             nret = -1;
             goto end;
         }
-        palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3, reqcolors, &ncolors, &origcolors, LARGE_NORM, REP_CENTER_BOX);
+        palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3,
+                                  reqcolors, &ncolors, &origcolors,
+                                  LARGE_NORM, REP_CENTER_BOX);
         if (origcolors > ncolors) {
             method_for_diffuse = DIFFUSE_FS;
         }
     } else {
-        palette = LSQ_MakePalette(pixels, sx, sy, 3, reqcolors, &ncolors, &origcolors, LARGE_NORM, REP_CENTER_BOX);
+        palette = LSQ_MakePalette(pixels, sx, sy, 3,
+                                  reqcolors, &ncolors, &origcolors,
+                                  LARGE_NORM, REP_CENTER_BOX);
         method_for_diffuse = DIFFUSE_FS;
     }
 
@@ -148,8 +156,24 @@ int main(int argc, char *argv[])
     int filecount = 1;
     int ncolors = -1;
     char *mapfile = NULL;
+    int long_opt;
+    int option_index;
 
-    while ((n = getopt(argc, argv, "p:m:")) != -1) {
+    struct option long_options[] = {
+        {"colors",       required_argument,  &long_opt, 'p'},
+        {"remap",        required_argument,  &long_opt, 'm'},
+        {0, 0, 0, 0}
+    };
+
+    for (;;) {
+        n = getopt_long(argc, argv, "p:m:",
+                        long_options, &option_index);
+        if (n == -1) {
+            break;
+        }
+        if (n == 0) {
+            n = long_opt;
+        }
         switch(n) {
         case 'p':
             ncolors = atoi(optarg);
@@ -157,6 +181,8 @@ int main(int argc, char *argv[])
         case 'm':
             mapfile = strdup(optarg);
             break;
+        case '?':
+            goto argerr;
         default:
             goto argerr;
         }
@@ -181,7 +207,7 @@ int main(int argc, char *argv[])
     goto end;
 
 argerr:
-    fprintf(stderr, "Usage: %s [-p MaxPalet] [-m PaletFile] <file name...>\n", argv[0]);
+    fprintf(stderr, "Usage: %s [Options] [files]\n", argv[0]);
 
 end:
     if (mapfile) {
