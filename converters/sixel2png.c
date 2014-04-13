@@ -103,8 +103,6 @@ int main(int argc, char *argv[])
     int n;
     char *output = NULL;
     char *input = NULL;
-    const char *usage = "Usage: %s -i input.sixel -o output.png\n"
-                        "       %s < input.sixel > output.png\n";
     int long_opt;
     int option_index;
 
@@ -172,7 +170,13 @@ argerr:
     if (output) {
         free(output);
     }
-    fprintf(stderr, usage, argv[0], argv[0]);
+    fprintf(stderr,
+            "Usage: sixel2png -i input.sixel -o output.png\n"
+            "       sixel2png < input.sixel > output.png\n"
+            "\n"
+            "Options:\n"
+            "-i, --input     specify input file\n"
+            "-o, --output    specify output file\n");
     return 0;
 }
 

@@ -240,7 +240,14 @@ int main(int argc, char *argv[])
     goto end;
 
 argerr:
-    fprintf(stderr, "Usage: %s [Options] [files]\n", argv[0]);
+    fprintf(stderr,
+            "Usage: img2sixel [Options] imagefiles\n"
+            "       img2sixel [Options] < imagefile\n"
+            "\n"
+            "Options:\n"
+            "-p, --colors       specify number of colors to reduce the image to\n"
+            "-m, --mapfile      transform image colors to match this set of colorsspecify map\n"
+            "-e, --monochrome   output monochrome sixel image\n");
 
 end:
     if (mapfile) {
