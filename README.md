@@ -74,6 +74,18 @@ Now SIXEL feature is supported by the following terminals.
 
 ## Usage of command line tools
 
+### img2sixel
+
+```
+Usage: img2sixel [Options] imagefiles
+       img2sixel [Options] < imagefile
+
+Options:
+-p, --colors       specify number of colors to reduce the image to
+-m, --mapfile      transform image colors to match this set of colorsspecify map
+-e, --monochrome   output monochrome sixel image
+```
+
 Convert a jpeg image file into a sixel file
 
 ```
@@ -92,10 +104,21 @@ Reduce colors with fixed palette:
 $ img2sixel -m images/map16.png < images/egret.jpg > egret.sixel
 ```
 
+### sixel2png
+
+```
+Usage: sixel2png -i input.sixel -o output.png
+       sixel2png < input.sixel > output.png
+
+Options:
+-i, --input     specify input file
+-o, --output    specify output file
+```
+
 Convert a sixel file into a png image file
 
 ```
-$ sixeltopng < egret.sixel > egret.png
+$ sixel2png < egret.sixel > egret.png
 ```
 
 ## Similar software
