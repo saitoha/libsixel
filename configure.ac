@@ -5,8 +5,9 @@ AC_PREREQ([2.60])
 LT_PREREQ([2.4])
 AC_INIT([sixel], [0.7.0], [user@zuse.jp])
 
-AC_DEFUN([LS_UPDATE_TIMESTAMP],
-         [touch aclocal.m4 Makefile.in src/Makefile.in configure config.h.in])
+AC_DEFUN([LS_UPDATE_TIMESTAMP], [
+          touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
+          ])
 LS_UPDATE_TIMESTAMP
 
 AM_INIT_AUTOMAKE([foreign])
@@ -22,6 +23,19 @@ AC_PROG_CC
 AC_PROG_INSTALL
 #AC_PROG_LIBTOOL
 #AC_PROG_RANLIB
+
+# Options
+AC_ARG_ENABLE([img2sixel],
+              AS_HELP_STRING([--disable-img2sixel], [do not build img2sixel]),
+              [],
+              [enable_img2sixel=yes])
+AM_CONDITIONAL(WANT_IMG2SIXEL, test x$enable_img2sixel == xyes)
+
+AC_ARG_ENABLE([sixel2png],
+              AS_HELP_STRING([--disable-sixel2png], [do not build sixel2png]),
+              [],
+              [enable_sixel2img=yes])
+AM_CONDITIONAL(WANT_SIXEL2IMG, test x$enable_sixel2img == xyes)
 
 # Checks for libraries.
 
