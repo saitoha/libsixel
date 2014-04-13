@@ -635,6 +635,10 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+WANT_SIXEL2IMG_FALSE
+WANT_SIXEL2IMG_TRUE
+WANT_IMG2SIXEL_FALSE
+WANT_IMG2SIXEL_TRUE
 CPP
 OTOOL64
 OTOOL
@@ -759,6 +763,8 @@ enable_dependency_tracking
 with_gnu_ld
 with_sysroot
 enable_libtool_lock
+enable_img2sixel
+enable_sixel2png
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1398,6 +1404,8 @@ Optional Features:
   --disable-dependency-tracking
                           speeds up one-time build
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --disable-img2sixel     do not build img2sixel
+  --disable-sixel2png     do not build sixel2png
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -2257,7 +2265,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-touch aclocal.m4 Makefile.in src/Makefile.in configure config.h.in
+
+          touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
+
 
 am__api_version='1.14'
 
@@ -12225,6 +12235,39 @@ fi
 #AC_PROG_LIBTOOL
 #AC_PROG_RANLIB
 
+# Options
+# Check whether --enable-img2sixel was given.
+if test "${enable_img2sixel+set}" = set; then :
+  enableval=$enable_img2sixel;
+else
+  enable_img2sixel=yes
+fi
+
+ if test x$enable_img2sixel == xyes; then
+  WANT_IMG2SIXEL_TRUE=
+  WANT_IMG2SIXEL_FALSE='#'
+else
+  WANT_IMG2SIXEL_TRUE='#'
+  WANT_IMG2SIXEL_FALSE=
+fi
+
+
+# Check whether --enable-sixel2png was given.
+if test "${enable_sixel2png+set}" = set; then :
+  enableval=$enable_sixel2png;
+else
+  enable_sixel2img=yes
+fi
+
+ if test x$enable_sixel2img == xyes; then
+  WANT_SIXEL2IMG_TRUE=
+  WANT_SIXEL2IMG_FALSE='#'
+else
+  WANT_SIXEL2IMG_TRUE='#'
+  WANT_SIXEL2IMG_FALSE=
+fi
+
+
 # Checks for libraries.
 
 # Checks for header files.
@@ -12420,7 +12463,7 @@ done
 # for HDR
 # AC_CHECK_FUNCS([strtol pow])
 
-ac_config_files="$ac_config_files Makefile src/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile include/Makefile converters/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -12558,6 +12601,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${WANT_IMG2SIXEL_TRUE}" && test -z "${WANT_IMG2SIXEL_FALSE}"; then
+  as_fn_error $? "conditional \"WANT_IMG2SIXEL\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${WANT_SIXEL2IMG_TRUE}" && test -z "${WANT_SIXEL2IMG_FALSE}"; then
+  as_fn_error $? "conditional \"WANT_SIXEL2IMG\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -13434,6 +13485,8 @@ do
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
+    "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
+    "converters/Makefile") CONFIG_FILES="$CONFIG_FILES converters/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

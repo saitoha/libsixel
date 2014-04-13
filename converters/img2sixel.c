@@ -57,12 +57,14 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
     uint8_t *palette = NULL;
     uint8_t *data = NULL;
     int ncolors;
+    int origcolors;
     LSImagePtr im = NULL;
     LSOutputContextPtr context = NULL;
     int sx, sy, comp;
     int map_sx, map_sy, map_comp;
     int i;
     int nret = -1;
+    enum methodForDiffuse method_for_diffuse = DIFFUSE_NONE;
 
     if ( reqcolors < 2 ) {
         reqcolors = 2;
@@ -84,9 +86,9 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
             nret = -1;
             goto end;
         }
-        palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3, reqcolors, &ncolors, LARGE_NORM, REP_CENTER_BOX);
+        palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3, reqcolors, &ncolors, &origcolors, LARGE_NORM, REP_CENTER_BOX);
     } else {
-        palette = LSQ_MakePalette(pixels, sx, sy, 3, reqcolors, &ncolors, LARGE_NORM, REP_CENTER_BOX);
+        palette = LSQ_MakePalette(pixels, sx, sy, 3, reqcolors, &ncolors, &origcolors, LARGE_NORM, REP_CENTER_BOX);
     }
 
     if (!palette) {
@@ -102,7 +104,11 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
     for (i = 0; i < ncolors; i++) {
         LSImage_setpalette(im, i, palette[i * 3], palette[i * 3 + 1], palette[i * 3 + 2]);
     }
-    data = LSQ_ApplyPalette(pixels, sx, sy, 3, palette, ncolors, DIFFUSE_FS);
+    if (origcolors > ncolors) {
+        method_for_diffuse = DIFFUSE_FS;
+    }
+    printf("%d -> %d", origcolors, ncolors);
+    data = LSQ_ApplyPalette(pixels, sx, sy, 3, palette, ncolors, method_for_diffuse);
     if (!data) {
         nret = -1;
         goto end;

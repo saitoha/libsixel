@@ -654,7 +654,8 @@ computeColorMapFromInput(unsigned char *data,
                          int const reqColors,
                          enum methodForLargest const methodForLargest,
                          enum methodForRep const methodForRep,
-                         tupletable2 * const colormapP)
+                         tupletable2 * const colormapP,
+                         int *origcolors)
 {
 /*----------------------------------------------------------------------------
    Produce a colormap containing the best colors to represent the
@@ -679,6 +680,9 @@ computeColorMapFromInput(unsigned char *data,
     int i, n;
 
     computeHistogram(data, length, depth, &colorfreqtable);
+    if (origcolors) {
+        *origcolors = colorfreqtable.size;
+    }
 
     if (colorfreqtable.size <= reqColors) {
         quant_trace(stderr, "Image already has few enough colors (<=%d).  "
@@ -704,7 +708,8 @@ computeColorMapFromInput(unsigned char *data,
 
 
 unsigned char *
-LSQ_MakePalette(unsigned char *data, int x, int y, int depth, int reqcolors, int *ncolors,
+LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
+                int reqcolors, int *ncolors, int *origcolors,
                 enum methodForLargest const methodForLargest,
                 enum methodForRep const methodForRep)
 {
@@ -713,7 +718,7 @@ LSQ_MakePalette(unsigned char *data, int x, int y, int depth, int reqcolors, int
     tupletable2 colormap;
 
     computeColorMapFromInput(data, x * y * depth, depth,
-                             reqcolors, methodForLargest, methodForRep, &colormap);
+                             reqcolors, methodForLargest, methodForRep, &colormap, origcolors);
     *ncolors = colormap.size;
     quant_trace(stderr, "tupletable size: %d", *ncolors);
     palette = malloc(*ncolors * depth);
