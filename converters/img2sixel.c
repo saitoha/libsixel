@@ -87,10 +87,15 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
             goto end;
         }
         palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3, reqcolors, &ncolors, &origcolors, LARGE_NORM, REP_CENTER_BOX);
+        if (origcolors > ncolors) {
+            method_for_diffuse = DIFFUSE_FS;
+        }
     } else {
         palette = LSQ_MakePalette(pixels, sx, sy, 3, reqcolors, &ncolors, &origcolors, LARGE_NORM, REP_CENTER_BOX);
+        method_for_diffuse = DIFFUSE_FS;
     }
 
+        method_for_diffuse = DIFFUSE_FS;
     if (!palette) {
         nret = -1;
         goto end;
@@ -104,10 +109,6 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
     for (i = 0; i < ncolors; i++) {
         LSImage_setpalette(im, i, palette[i * 3], palette[i * 3 + 1], palette[i * 3 + 2]);
     }
-    if (origcolors > ncolors) {
-        method_for_diffuse = DIFFUSE_FS;
-    }
-    printf("%d -> %d", origcolors, ncolors);
     data = LSQ_ApplyPalette(pixels, sx, sy, 3, palette, ncolors, method_for_diffuse);
     if (!data) {
         nret = -1;
