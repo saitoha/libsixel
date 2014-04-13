@@ -58,6 +58,7 @@ LSQ_MakePalette(unsigned char *data,
                 int depth,
                 int reqcolors,
                 int *ncolors,
+                int *origcolors,
                 enum methodForLargest const methodForLargest,
                 enum methodForRep const methodForRep);
 
