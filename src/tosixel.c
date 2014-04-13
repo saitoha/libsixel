@@ -222,13 +222,16 @@ static int PutNode(LSOutputContextPtr context,
                    LSImagePtr im,
                    int x, SixNode *np)
 {
-    PutPalet(context, im, np->pal);
+    if (im->ncolors != 2 || im->keycolor == -1)
+        PutPalet(context, im, np->pal);
 
     for (; x < np->sx ; x++)
-        PutPixel(context, 0);
+        if (x != im->keycolor)
+            PutPixel(context, 0);
 
     for (; x < np->mx ; x++)
-        PutPixel(context, np->map[x]);
+        if (x != im->keycolor)
+            PutPixel(context, np->map[x]);
 
     PutFlash(context);
 
@@ -357,13 +360,15 @@ void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     context->fn_printf("\"1;1;%d;%d", width, height);
     context->fn_putchar('\n');
 
-    for (n = 0 ; n < maxPalet ; n++) {
-        /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
-        context->fn_printf("#%d;2;%d;%d;%d",
-                           conv_palet[n],
-                           (im->red[n] * 100 + 127) / 255,
-                           (im->green[n] * 100 + 127) / 255,
-                           (im->blue[n] * 100 + 127) / 255);
+    if (im->ncolors != 2 || im->keycolor == -1) {
+        for (n = 0 ; n < maxPalet ; n++) {
+            /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
+            context->fn_printf("#%d;2;%d;%d;%d",
+                               conv_palet[n],
+                               (im->red[n] * 100 + 127) / 255,
+                               (im->green[n] * 100 + 127) / 255,
+                               (im->blue[n] * 100 + 127) / 255);
+        }
     }
 
     for (y = i = 0 ; y < height ; y++) {

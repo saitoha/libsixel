@@ -29,6 +29,10 @@
 # include <unistd.h>  /* getopt */
 #endif
 
+#if defined(HAVE_GETOPT_H)
+# include <getopt.h>
+#endif
+
 #if defined(HAVE_INTTYPES_H)
 # include <inttypes.h>
 #endif
@@ -50,7 +54,8 @@
 #include "quant.h"
 
 static int
-convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
+convert_to_sixel(char const *filename, int reqcolors,
+                 const char *mapfile, int monochrome)
 {
     uint8_t *pixels = NULL;
     uint8_t *mappixels = NULL;
@@ -79,23 +84,36 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
         return (-1);
     }
 
-    if (mapfile) {
+    if (monochrome) {
+        palette = malloc(6);
+        palette[0] = 0x00;
+        palette[1] = 0x00;
+        palette[2] = 0x00;
+        palette[3] = 0xff;
+        palette[4] = 0xff;
+        palette[5] = 0xff;
+        ncolors = 2;
+        method_for_diffuse = DIFFUSE_FS;
+    } else if (mapfile) {
         mappixels = stbi_load(mapfile, &map_sx, &map_sy, &map_comp, STBI_rgb);
         if (!mappixels) {
             fprintf(stderr, "stbi_load('%s') failed.\n", mapfile);
             nret = -1;
             goto end;
         }
-        palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3, reqcolors, &ncolors, &origcolors, LARGE_NORM, REP_CENTER_BOX);
+        palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3,
+                                  reqcolors, &ncolors, &origcolors,
+                                  LARGE_NORM, REP_CENTER_BOX);
+        method_for_diffuse = DIFFUSE_FS;
+    } else {
+        palette = LSQ_MakePalette(pixels, sx, sy, 3,
+                                  reqcolors, &ncolors, &origcolors,
+                                  LARGE_NORM, REP_CENTER_BOX);
         if (origcolors > ncolors) {
             method_for_diffuse = DIFFUSE_FS;
         }
-    } else {
-        palette = LSQ_MakePalette(pixels, sx, sy, 3, reqcolors, &ncolors, &origcolors, LARGE_NORM, REP_CENTER_BOX);
-        method_for_diffuse = DIFFUSE_FS;
     }
 
-        method_for_diffuse = DIFFUSE_FS;
     if (!palette) {
         nret = -1;
         goto end;
@@ -107,9 +125,19 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
         goto end;
     }
     for (i = 0; i < ncolors; i++) {
-        LSImage_setpalette(im, i, palette[i * 3], palette[i * 3 + 1], palette[i * 3 + 2]);
+        LSImage_setpalette(im, i,
+                           palette[i * 3],
+                           palette[i * 3 + 1],
+                           palette[i * 3 + 2]);
     }
-    data = LSQ_ApplyPalette(pixels, sx, sy, 3, palette, ncolors, method_for_diffuse);
+    if (monochrome) {
+        im->keycolor = 0;
+    } else {
+        im->keycolor = -1;
+    }
+    data = LSQ_ApplyPalette(pixels, sx, sy, 3,
+                            palette, ncolors,
+                            method_for_diffuse);
     if (!data) {
         nret = -1;
         goto end;
@@ -147,9 +175,27 @@ int main(int argc, char *argv[])
     int n;
     int filecount = 1;
     int ncolors = -1;
+    int monochrome = 0;
     char *mapfile = NULL;
+    int long_opt;
+    int option_index;
 
-    while ((n = getopt(argc, argv, "p:m:")) != -1) {
+    struct option long_options[] = {
+        {"colors",       required_argument,  &long_opt, 'p'},
+        {"mapfile",      required_argument,  &long_opt, 'm'},
+        {"monochrome",   no_argument,        &long_opt, 'e'},
+        {0, 0, 0, 0}
+    };
+
+    for (;;) {
+        n = getopt_long(argc, argv, "p:m:e",
+                        long_options, &option_index);
+        if (n == -1) {
+            break;
+        }
+        if (n == 0) {
+            n = long_opt;
+        }
         switch(n) {
         case 'p':
             ncolors = atoi(optarg);
@@ -157,13 +203,26 @@ int main(int argc, char *argv[])
         case 'm':
             mapfile = strdup(optarg);
             break;
+        case 'e':
+            monochrome = 1;
+            break;
+        case '?':
+            goto argerr;
         default:
             goto argerr;
         }
     }
 
     if (ncolors != -1 && mapfile) {
-        fprintf(stderr, "option -p conflicts with -m.\n");
+        fprintf(stderr, "option -p, --colors conflicts with -m, --mapfile.\n");
+        goto argerr;
+    }
+    if (mapfile && monochrome) {
+        fprintf(stderr, "option -m, --mapfile conflicts with -e, --monochrome.\n");
+        goto argerr;
+    }
+    if (monochrome && ncolors != -1) {
+        fprintf(stderr, "option -e, --monochrome conflicts with -p, --colors.\n");
         goto argerr;
     }
 
@@ -172,16 +231,23 @@ int main(int argc, char *argv[])
     }
 
     if (optind == argc) {
-        convert_to_sixel("/dev/stdin", ncolors, mapfile);
+        convert_to_sixel("/dev/stdin", ncolors, mapfile, monochrome);
     } else {
         for (n = optind; n < argc; n++) {
-            convert_to_sixel(argv[n], ncolors, mapfile);
+            convert_to_sixel(argv[n], ncolors, mapfile, monochrome);
         }
     }
     goto end;
 
 argerr:
-    fprintf(stderr, "Usage: %s [-p MaxPalet] [-m PaletFile] <file name...>\n", argv[0]);
+    fprintf(stderr,
+            "Usage: img2sixel [Options] imagefiles\n"
+            "       img2sixel [Options] < imagefile\n"
+            "\n"
+            "Options:\n"
+            "-p, --colors       specify number of colors to reduce the image to\n"
+            "-m, --mapfile      transform image colors to match this set of colorsspecify map\n"
+            "-e, --monochrome   output monochrome sixel image\n");
 
 end:
     if (mapfile) {
