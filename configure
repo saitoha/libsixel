@@ -12232,8 +12232,6 @@ fi
 
 
 
-#AC_PROG_LIBTOOL
-#AC_PROG_RANLIB
 
 # Options
 # Check whether --enable-img2sixel was given.
@@ -12271,7 +12269,7 @@ fi
 # Checks for libraries.
 
 # Checks for header files.
-for ac_header in memory.h stdint.h stdlib.h string.h unistd.h
+for ac_header in memory.h stdint.h stdlib.h string.h unistd.h getopt.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -12444,6 +12442,14 @@ if test "x$ac_cv_func_memset" = xyes; then :
 
 else
   as_fn_error $? "memset is not available." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_func "$LINENO" "getopt_long" "ac_cv_func_getopt_long"
+if test "x$ac_cv_func_getopt_long" = xyes; then :
+
+else
+  as_fn_error $? "getopt_long is not available." "$LINENO" 5
 fi
 
 

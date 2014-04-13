@@ -28,6 +28,10 @@
 # include <unistd.h>  /* getopt */
 #endif
 
+#if defined(HAVE_GETOPT_H)
+# include <getopt.h>
+#endif
+
 #if defined(HAVE_INTTYPES_H)
 # include <inttypes.h>
 #endif
@@ -97,27 +101,41 @@ sixel_to_png(const char *input, const char *output)
 int main(int argc, char *argv[])
 {
     int n;
-    int filecount = 1;
-    char *output = strdup("/dev/stdout");
-    char *input = strdup("/dev/stdin");
+    char *output = NULL;
+    char *input = NULL;
     const char *usage = "Usage: %s -i input.sixel -o output.png\n"
                         "       %s < input.sixel > output.png\n";
+    int long_opt;
+    int option_index;
+
+    struct option long_options[] = {
+        {"output",       required_argument,  &long_opt, 'o'},
+        {"input",        required_argument,  &long_opt, 'i'},
+        {0, 0, 0, 0}
+    };
 
     for (;;) {
-        while ((n = getopt(argc, argv, "o:i:")) != EOF) {
-            switch(n) {
-            case 'i':
-                free(input);
-                input = strdup(optarg);
-                break;
-            case 'o':
-                free(output);
-                output = strdup(optarg);
-                break;
-            default:
-                fprintf(stderr, usage, argv[0], argv[0]);
-                exit(0);
-            }
+        n = getopt_long(argc, argv, "i:o:",
+                        long_options, &option_index);
+        if (n == -1) {
+            break;
+        }
+        if (n == 0) {
+            n = long_opt;
+        }
+        switch(n) {
+        case 'i':
+            free(input);
+            input = strdup(optarg);
+            break;
+        case 'o':
+            free(output);
+            output = strdup(optarg);
+            break;
+        case '?':
+            goto argerr;
+        default:
+            goto argerr;
         }
         if (optind >= argc) {
             break;
@@ -125,8 +143,36 @@ int main(int argc, char *argv[])
         optind++;
     }
 
+    if (input == NULL && optind < argc) {
+        input = argv[optind++];
+    }
+    if (output == NULL && optind < argc) {
+        output = argv[optind++];
+    }
+    if (optind != argc) {
+        goto argerr;
+    }
+    if (input == NULL) {
+        input = strdup("/dev/stdin");
+    }
+    if (output == NULL) {
+        output = strdup("/dev/stdout");
+    }
+
     sixel_to_png(input, output);
 
+    free(input);
+    free(output);
+    return 0;
+
+argerr:
+    if (input) {
+        free(input);
+    }
+    if (output) {
+        free(output);
+    }
+    fprintf(stderr, usage, argv[0], argv[0]);
     return 0;
 }
 
