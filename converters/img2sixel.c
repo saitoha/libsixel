@@ -93,17 +93,16 @@ convert_to_sixel(char const *filename, int reqcolors, const char *mapfile)
         palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3,
                                   reqcolors, &ncolors, &origcolors,
                                   LARGE_NORM, REP_CENTER_BOX);
-        if (origcolors > ncolors) {
-            method_for_diffuse = DIFFUSE_FS;
-        }
+        method_for_diffuse = DIFFUSE_FS;
     } else {
         palette = LSQ_MakePalette(pixels, sx, sy, 3,
                                   reqcolors, &ncolors, &origcolors,
                                   LARGE_NORM, REP_CENTER_BOX);
-        method_for_diffuse = DIFFUSE_FS;
+        if (origcolors > ncolors) {
+            method_for_diffuse = DIFFUSE_FS;
+        }
     }
 
-        method_for_diffuse = DIFFUSE_FS;
     if (!palette) {
         nret = -1;
         goto end;
