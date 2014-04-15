@@ -111,6 +111,8 @@ convert_to_sixel(char const *filename, int reqcolors,
                                   LARGE_NORM, REP_CENTER_BOX);
         if (origcolors > ncolors) {
             method_for_diffuse = DIFFUSE_FS;
+        } else {
+            method_for_diffuse = DIFFUSE_NONE;
         }
     }
 
