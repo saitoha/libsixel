@@ -55,7 +55,8 @@
 
 static int
 convert_to_sixel(char const *filename, int reqcolors,
-                 const char *mapfile, int monochrome)
+                 const char *mapfile, int monochrome,
+                 const char *diffusion)
 {
     uint8_t *pixels = NULL;
     uint8_t *mappixels = NULL;
@@ -238,10 +239,12 @@ int main(int argc, char *argv[])
     }
 
     if (optind == argc) {
-        convert_to_sixel("/dev/stdin", ncolors, mapfile, monochrome);
+        convert_to_sixel("/dev/stdin", ncolors, mapfile,
+                         monochrome, diffusion);
     } else {
         for (n = optind; n < argc; n++) {
-            convert_to_sixel(argv[n], ncolors, mapfile, monochrome);
+            convert_to_sixel(argv[n], ncolors, mapfile,
+                             monochrome, diffusion);
         }
     }
     goto end;
