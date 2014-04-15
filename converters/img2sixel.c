@@ -178,6 +178,7 @@ int main(int argc, char *argv[])
     int filecount = 1;
     int ncolors = -1;
     int monochrome = 0;
+    char *diffusion = NULL;
     char *mapfile = NULL;
     int long_opt;
     int option_index;
@@ -186,11 +187,12 @@ int main(int argc, char *argv[])
         {"colors",       required_argument,  &long_opt, 'p'},
         {"mapfile",      required_argument,  &long_opt, 'm'},
         {"monochrome",   no_argument,        &long_opt, 'e'},
+        {"diffusion",    required_argument,  &long_opt, 'd'},
         {0, 0, 0, 0}
     };
 
     for (;;) {
-        n = getopt_long(argc, argv, "p:m:e",
+        n = getopt_long(argc, argv, "p:m:ed:",
                         long_options, &option_index);
         if (n == -1) {
             break;
@@ -207,6 +209,9 @@ int main(int argc, char *argv[])
             break;
         case 'e':
             monochrome = 1;
+            break;
+        case 'd':
+            diffusion = strdup(optarg);
             break;
         case '?':
             goto argerr;
