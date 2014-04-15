@@ -80,7 +80,8 @@ convert_to_sixel(char const *filename, int reqcolors,
 
     pixels = stbi_load(filename, &sx, &sy, &comp, STBI_rgb);
     if (pixels == NULL) {
-        fprintf(stderr, "stbi_load('%s') failed.\n", filename);
+        fprintf(stderr, "stbi_load('%s') failed.\n" "reason: %s.\n",
+                filename, stbi_failure_reason());
         nret = -1;
         return (-1);
     }
@@ -98,7 +99,8 @@ convert_to_sixel(char const *filename, int reqcolors,
     } else if (mapfile) {
         mappixels = stbi_load(mapfile, &map_sx, &map_sy, &map_comp, STBI_rgb);
         if (!mappixels) {
-            fprintf(stderr, "stbi_load('%s') failed.\n", mapfile);
+            fprintf(stderr, "stbi_load('%s') failed.\n" "reason: %s.\n",
+                    mapfile, stbi_failure_reason());
             nret = -1;
             goto end;
         }
