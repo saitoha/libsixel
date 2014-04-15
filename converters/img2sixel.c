@@ -255,9 +255,20 @@ argerr:
             "       img2sixel [Options] < imagefile\n"
             "\n"
             "Options:\n"
-            "-p, --colors       specify number of colors to reduce the image to\n"
-            "-m, --mapfile      transform image colors to match this set of colorsspecify map\n"
-            "-e, --monochrome   output monochrome sixel image\n");
+            "-p COLORS, --colors=COLORS specify number of colors to reduce the\n"
+            "                           image to\n"
+            "-m FILE, --mapfile=FILE    transform image colors to match this set\n"
+            "                           of colorsspecify map\n"
+            "-e, --monochrome           output monochrome sixel image\n"
+            "-d TYPE, --diffusion=TYPE  choose diffusion method which used with\n"
+            "                           color reduction\n"
+            "                           TYPE is one of them:\n"
+            "                               auto   -> choose diffusion type\n"
+            "                                         automatically\n"
+            "                               none   -> do not diffusion\n"
+            "                               fs     -> Floyd-Steinberg method\n"
+            "                               jajuji -> Jarvis, Judice & Ninke\n"
+            );
 
 end:
     if (mapfile) {
