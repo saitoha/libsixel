@@ -274,6 +274,9 @@ end:
     if (mapfile) {
         free(mapfile);
     }
+    if (diffusion) {
+        free(diffusion);
+    }
     return 0;
 }
 
