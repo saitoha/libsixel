@@ -152,7 +152,7 @@ convert_to_sixel(char const *filename, int reqcolors,
             method_for_diffuse = DIFFUSE_JAJUNI;
         } else {
             fprintf(stderr,
-                    "Diffusion method ('%s') is not supported.\n",
+                    "Diffusion method '%s' is not supported.\n",
                     diffusion);
             nret = -1;
             goto end;
