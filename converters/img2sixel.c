@@ -138,6 +138,24 @@ convert_to_sixel(char const *filename, int reqcolors,
     } else {
         im->keycolor = -1;
     }
+
+    if (diffusion) {
+        if (strcmp(diffusion, "auto") == 0) {
+            // do nothing
+        } else if (strcmp(diffusion, "none") == 0) {
+            method_for_diffuse = DIFFUSE_NONE;
+        } else if (strcmp(diffusion, "fs") == 0) {
+            method_for_diffuse = DIFFUSE_FS;
+        } else if (strcmp(diffusion, "jajuni") == 0) {
+            method_for_diffuse = DIFFUSE_JAJUNI;
+        } else {
+            fprintf(stderr,
+                    "Diffusion method ('%s') is not supported.\n",
+                    diffusion);
+            nret = -1;
+            goto end;
+        }
+    }
     data = LSQ_ApplyPalette(pixels, sx, sy, 3,
                             palette, ncolors,
                             method_for_diffuse);
