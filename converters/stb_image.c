@@ -2460,13 +2460,17 @@ static int create_png_image_raw(png *a, uint8 *raw, uint32 raw_len, int out_n, u
    uint32 i,j,stride = x*out_n;
    int k;
    int img_n = s->img_n; // copy it into a local for later
+   int bpp = 8;
    assert(out_n == s->img_n || out_n == s->img_n+1);
    if (stbi_png_partial) y = 1;
    a->out = (uint8 *) malloc(x * y * out_n);
    if (!a->out) return e("outofmem", "Out of memory");
    if (!stbi_png_partial) {
       if (s->img_x == x && s->img_y == y) {
-         if (raw_len != (img_n * x + 1) * y) return e("not enough pixels","Corrupt PNG");
+         if (raw_len == (img_n * x / 8 + 1) * y) {
+             bpp = 1;
+         } else if (raw_len != (img_n * x + 1) * y) return e("not enough pixels","Corrupt PNG");
+
       } else { // interlaced:
          if (raw_len < (img_n * x + 1) * y) return e("not enough pixels","Corrupt PNG");
       }
@@ -2492,8 +2496,13 @@ static int create_png_image_raw(png *a, uint8 *raw, uint32 raw_len, int out_n, u
       }
       if (img_n != out_n) cur[img_n] = 255;
       raw += img_n;
-      cur += out_n;
+      if (bpp == 1) {
+          cur += out_n * 16;
+      } else {
+          cur += out_n;
+      }
       prior += out_n;
+      char l;
       // this is a little gross, so that we don't switch per-pixel or per-component
       if (img_n == out_n) {
          #define CASE(f) \
@@ -2501,7 +2510,22 @@ static int create_png_image_raw(png *a, uint8 *raw, uint32 raw_len, int out_n, u
                 for (i=x-1; i >= 1; --i, raw+=img_n,cur+=img_n,prior+=img_n) \
                    for (k=0; k < img_n; ++k)
          switch (filter) {
-            CASE(F_none)  cur[k] = raw[k]; break;
+            case F_none:
+                for (i=(x - 1) * bpp / 8; i >= 1; --i) {
+                   for (k = 0; k < img_n + 1; ++k) {
+                       if (bpp == 1) {
+                           for (l = 0; l < 8; ++l) {
+                               cur[(k - 1) * 8 - l] = (raw[k - 1] >> l & 1) * 0xff;
+                           }
+                       } else {
+                           cur[k] = raw[k];
+                       }
+                   }
+                   raw += img_n;
+                   cur += img_n * 8 / bpp;
+                   prior += img_n;
+               }
+            break;
             CASE(F_sub)   cur[k] = raw[k] + cur[k-img_n]; break;
             CASE(F_up)    cur[k] = raw[k] + prior[k]; break;
             CASE(F_avg)   cur[k] = raw[k] + ((prior[k] + cur[k-img_n])>>1); break;
@@ -2718,7 +2742,7 @@ static int parse_png_file(png *z, int scan, int req_comp)
             if (c.length != 13) return e("bad IHDR len","Corrupt PNG");
             s->img_x = get32(s); if (s->img_x > (1 << 24)) return e("too large","Very large image (corrupt?)");
             s->img_y = get32(s); if (s->img_y > (1 << 24)) return e("too large","Very large image (corrupt?)");
-            depth = get8(s);  if (depth != 8)        return e("8bit only","PNG not supported: 8-bit only");
+            depth = get8(s);  if (depth != 8 && depth != 1)        return e("8bit/1bit only","PNG not supported: 8-bit/1-bit only");
             color = get8(s);  if (color > 6)         return e("bad ctype","Corrupt PNG");
             if (color == 3) pal_img_n = 3; else if (color & 1) return e("bad ctype","Corrupt PNG");
             comp  = get8(s);  if (comp) return e("bad comp method","Corrupt PNG");
