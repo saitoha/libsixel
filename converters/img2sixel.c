@@ -72,9 +72,9 @@ convert_to_sixel(char const *filename, int reqcolors,
     int nret = -1;
     enum methodForDiffuse method_for_diffuse = DIFFUSE_NONE;
 
-    if ( reqcolors < 2 ) {
+    if (reqcolors < 2) {
         reqcolors = 2;
-    } else if ( reqcolors > PALETTE_MAX ) {
+    } else if (reqcolors > PALETTE_MAX) {
         reqcolors = PALETTE_MAX;
     }
 
