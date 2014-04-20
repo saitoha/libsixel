@@ -422,16 +422,23 @@ colormapFromBv(unsigned int      const newcolors,
     for (bi = 0; bi < boxes; ++bi) {
         switch (methodForRep) {
         case REP_CENTER_BOX:
-            centerBox(bv[bi].ind, bv[bi].colors, colorfreqtable, depth, colormap.table[bi]->tuple);
+            centerBox(bv[bi].ind, bv[bi].colors,
+                      colorfreqtable, depth,
+                      colormap.table[bi]->tuple);
             break;
         case REP_AVERAGE_COLORS:
-            averageColors(bv[bi].ind, bv[bi].colors, colorfreqtable, depth, colormap.table[bi]->tuple);
+            averageColors(bv[bi].ind, bv[bi].colors,
+                          colorfreqtable, depth,
+                          colormap.table[bi]->tuple);
             break;
         case REP_AVERAGE_PIXELS:
-            averagePixels(bv[bi].ind, bv[bi].colors, colorfreqtable, depth, colormap.table[bi]->tuple);
+            averagePixels(bv[bi].ind, bv[bi].colors,
+                          colorfreqtable, depth,
+                          colormap.table[bi]->tuple);
             break;
         default:
-            quant_trace(stderr, "Internal error: invalid value of methodForRep: %d\n",
+            quant_trace(stderr, "Internal error: "
+                                "invalid value of methodForRep: %d\n",
                         methodForRep);
         }
     }

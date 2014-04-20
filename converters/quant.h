@@ -22,7 +22,8 @@
 #ifndef LIBSQUANT_H
 #define LIBSQUANT_H
 
-/* method for finding the largest dimention for splitting, and sorting by that component */
+/* method for finding the largest dimention for splitting,
+ * and sorting by that component */
 enum methodForLargest {
     LARGE_NORM,  /* simply comparing the range in RGB space */
     LARGE_LUM    /* transforming into luminosities before the comparison */
@@ -31,7 +32,8 @@ enum methodForLargest {
 /* method for choosing a color from the box */
 enum methodForRep {
     REP_CENTER_BOX,     /* choose the center of the box */
-    REP_AVERAGE_COLORS, /* choose the average all the color in the box (specified in Heckbert's paper) */
+    REP_AVERAGE_COLORS, /* choose the average all the color
+                           in the box (specified in Heckbert's paper) */
     REP_AVERAGE_PIXELS  /* choose the averate all the pixels in the box */
 };
 
