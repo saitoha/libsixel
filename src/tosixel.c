@@ -269,7 +269,8 @@ static int GetColIdx(LSImagePtr im, int col)
     return idx;
 }
 
-void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
+void
+LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
 {
     int x, y, i, n, c;
     int maxPalet;
