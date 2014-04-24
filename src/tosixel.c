@@ -54,7 +54,7 @@ PutFlash(LSOutputContextPtr const context)
 {
     int n;
 
-#ifdef USE_VT240        /* VT240 Max 255 ? */
+#if defined(USE_VT240)        /* VT240 Max 255 ? */
     while (save_count > 255) {
         context->fn_printf("!%d%c", 255, save_pix);
         save_count -= 255;
@@ -295,9 +295,8 @@ void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     for (n = 0 ; n < maxPalet ; n++)
         conv_palet[n] = list[n] = n;
 
+#if defined(USE_SORT)
     /* Pass 1 Palet count */
-
-    /*
     memset(use_palet, 0, sizeof(use_palet));
     skip = (height / 240) * 6;
 
@@ -348,12 +347,12 @@ void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     for (n = 0 ; n < maxPalet ; n++) {
         conv_palet[list[n]] = n;
     }
-    */
 
     /*************
         for (n = 0 ; n < maxPalet ; n++)
             fprintf(stderr, "%d %d=%d\n", n, list[n], conv_palet[list[n]]);
     **************/
+#endif  /* defined(USE_SORT) */
 
     context->fn_printf("\033P");
     context->fn_putchar('q');
