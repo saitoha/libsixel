@@ -55,7 +55,8 @@
 
 static int
 convert_to_sixel(char const *filename, int reqcolors,
-                 const char *mapfile, int monochrome)
+                 const char *mapfile, int monochrome,
+                 const char *diffusion)
 {
     uint8_t *pixels = NULL;
     uint8_t *mappixels = NULL;
@@ -71,17 +72,18 @@ convert_to_sixel(char const *filename, int reqcolors,
     int nret = -1;
     enum methodForDiffuse method_for_diffuse = DIFFUSE_NONE;
 
-    if ( reqcolors < 2 ) {
+    if (reqcolors < 2) {
         reqcolors = 2;
-    } else if ( reqcolors > PALETTE_MAX ) {
+    } else if (reqcolors > PALETTE_MAX) {
         reqcolors = PALETTE_MAX;
     }
 
     pixels = stbi_load(filename, &sx, &sy, &comp, STBI_rgb);
     if (pixels == NULL) {
-        fprintf(stderr, "stbi_load('%s') failed.\n", filename);
+        fprintf(stderr, "stbi_load('%s') failed.\n" "reason: %s.\n",
+                filename, stbi_failure_reason());
         nret = -1;
-        return (-1);
+        goto end;
     }
 
     if (monochrome) {
@@ -97,7 +99,8 @@ convert_to_sixel(char const *filename, int reqcolors,
     } else if (mapfile) {
         mappixels = stbi_load(mapfile, &map_sx, &map_sy, &map_comp, STBI_rgb);
         if (!mappixels) {
-            fprintf(stderr, "stbi_load('%s') failed.\n", mapfile);
+            fprintf(stderr, "stbi_load('%s') failed.\n" "reason: %s.\n",
+                    mapfile, stbi_failure_reason());
             nret = -1;
             goto end;
         }
@@ -111,6 +114,8 @@ convert_to_sixel(char const *filename, int reqcolors,
                                   LARGE_NORM, REP_CENTER_BOX);
         if (origcolors > ncolors) {
             method_for_diffuse = DIFFUSE_FS;
+        } else {
+            method_for_diffuse = DIFFUSE_NONE;
         }
     }
 
@@ -135,6 +140,24 @@ convert_to_sixel(char const *filename, int reqcolors,
     } else {
         im->keycolor = -1;
     }
+
+    if (diffusion) {
+        if (strcmp(diffusion, "auto") == 0) {
+            // do nothing
+        } else if (strcmp(diffusion, "none") == 0) {
+            method_for_diffuse = DIFFUSE_NONE;
+        } else if (strcmp(diffusion, "fs") == 0) {
+            method_for_diffuse = DIFFUSE_FS;
+        } else if (strcmp(diffusion, "jajuni") == 0) {
+            method_for_diffuse = DIFFUSE_JAJUNI;
+        } else {
+            fprintf(stderr,
+                    "Diffusion method '%s' is not supported.\n",
+                    diffusion);
+            nret = -1;
+            goto end;
+        }
+    }
     data = LSQ_ApplyPalette(pixels, sx, sy, 3,
                             palette, ncolors,
                             method_for_diffuse);
@@ -146,6 +169,7 @@ convert_to_sixel(char const *filename, int reqcolors,
     data = NULL;
     context = LSOutputContext_create(putchar, printf);
     LibSixel_LSImageToSixel(im, context);
+    nret = 0;
 
 end:
     if (data) {
@@ -176,19 +200,23 @@ int main(int argc, char *argv[])
     int filecount = 1;
     int ncolors = -1;
     int monochrome = 0;
+    char *diffusion = NULL;
     char *mapfile = NULL;
     int long_opt;
     int option_index;
+    int ret;
+    int exit_code;
 
     struct option long_options[] = {
         {"colors",       required_argument,  &long_opt, 'p'},
         {"mapfile",      required_argument,  &long_opt, 'm'},
         {"monochrome",   no_argument,        &long_opt, 'e'},
+        {"diffusion",    required_argument,  &long_opt, 'd'},
         {0, 0, 0, 0}
     };
 
     for (;;) {
-        n = getopt_long(argc, argv, "p:m:e",
+        n = getopt_long(argc, argv, "p:m:ed:",
                         long_options, &option_index);
         if (n == -1) {
             break;
@@ -205,6 +233,9 @@ int main(int argc, char *argv[])
             break;
         case 'e':
             monochrome = 1;
+            break;
+        case 'd':
+            diffusion = strdup(optarg);
             break;
         case '?':
             goto argerr;
@@ -231,29 +262,55 @@ int main(int argc, char *argv[])
     }
 
     if (optind == argc) {
-        convert_to_sixel("/dev/stdin", ncolors, mapfile, monochrome);
+        ret = convert_to_sixel("/dev/stdin", ncolors, mapfile,
+                               monochrome, diffusion);
+        if (ret != 0) {
+            exit_code = EXIT_FAILURE;
+            goto end;
+        }
     } else {
         for (n = optind; n < argc; n++) {
-            convert_to_sixel(argv[n], ncolors, mapfile, monochrome);
+            ret = convert_to_sixel(argv[n], ncolors, mapfile,
+                                   monochrome, diffusion);
+            if (ret != 0) {
+                exit_code = EXIT_FAILURE;
+                goto end;
+            }
         }
     }
+    exit_code = EXIT_SUCCESS;
     goto end;
 
 argerr:
+    exit_code = EXIT_FAILURE;
     fprintf(stderr,
             "Usage: img2sixel [Options] imagefiles\n"
             "       img2sixel [Options] < imagefile\n"
             "\n"
             "Options:\n"
-            "-p, --colors       specify number of colors to reduce the image to\n"
-            "-m, --mapfile      transform image colors to match this set of colorsspecify map\n"
-            "-e, --monochrome   output monochrome sixel image\n");
+            "-p COLORS, --colors=COLORS specify number of colors to reduce the\n"
+            "                           image to\n"
+            "-m FILE, --mapfile=FILE    transform image colors to match this set\n"
+            "                           of colorsspecify map\n"
+            "-e, --monochrome           output monochrome sixel image\n"
+            "-d TYPE, --diffusion=TYPE  choose diffusion method which used with\n"
+            "                           color reduction\n"
+            "                           TYPE is one of them:\n"
+            "                               auto   -> choose diffusion type\n"
+            "                                         automatically\n"
+            "                               none   -> do not diffusion\n"
+            "                               fs     -> Floyd-Steinberg method\n"
+            "                               jajuji -> Jarvis, Judice & Ninke\n"
+            );
 
 end:
     if (mapfile) {
         free(mapfile);
     }
-    return 0;
+    if (diffusion) {
+        free(diffusion);
+    }
+    return exit_code;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */

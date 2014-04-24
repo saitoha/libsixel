@@ -69,7 +69,7 @@ extern "C" {
 LSImagePtr
 LibSixel_SixelToLSImage(unsigned char *p, int len);
 
-void
+int
 LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context);
 
 #ifdef __cplusplus
