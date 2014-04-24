@@ -141,7 +141,7 @@ PutLf(LSOutputContextPtr context)
     /* DECGNL Graphics Next Line */
     /* x = 0; */
     /* y += 6; */
-    context->fn_printf("-\n");
+    ret = context->fn_printf("-\n");
     if (ret <= 0)
         return (-1);
     return 0;
@@ -372,7 +372,11 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     **************/
 #endif  /* defined(USE_SORT) */
 
-    ret = context->fn_printf("\033Pq");
+    if (context->has_8bit_control) {
+        ret = context->fn_printf("\x90q");
+    } else {
+        ret = context->fn_printf("\x1bPq");
+    }
     if (ret <= 0)
         return (-1);
     ret = context->fn_printf("\"1;1;%d;%d\n", width, height);
@@ -442,7 +446,11 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
         memset(map, 0, len);
     }
 
-    ret = context->fn_printf("\033\\");
+    if (context->has_8bit_control) {
+        ret = context->fn_printf("\x9c");
+    } else {
+        ret = context->fn_printf("\x1b\\");
+    }
     if (ret <= 0)
         return (-1);
 

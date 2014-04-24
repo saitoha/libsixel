@@ -56,7 +56,7 @@
 static int
 convert_to_sixel(char const *filename, int reqcolors,
                  const char *mapfile, int monochrome,
-                 const char *diffusion)
+                 const char *diffusion, int f8bit)
 {
     uint8_t *pixels = NULL;
     uint8_t *mappixels = NULL;
@@ -168,6 +168,7 @@ convert_to_sixel(char const *filename, int reqcolors,
     LSImage_setpixels(im, data);
     data = NULL;
     context = LSOutputContext_create(putchar, printf);
+    context->has_8bit_control = f8bit;
     LibSixel_LSImageToSixel(im, context);
     nret = 0;
 
@@ -206,8 +207,13 @@ int main(int argc, char *argv[])
     int option_index;
     int ret;
     int exit_code;
+    int f8bit;
+
+    f8bit = 0;
 
     struct option long_options[] = {
+        {"7bit-mode",    no_argument,        &long_opt, '7'},
+        {"8bit-mode",    no_argument,        &long_opt, '8'},
         {"colors",       required_argument,  &long_opt, 'p'},
         {"mapfile",      required_argument,  &long_opt, 'm'},
         {"monochrome",   no_argument,        &long_opt, 'e'},
@@ -216,7 +222,7 @@ int main(int argc, char *argv[])
     };
 
     for (;;) {
-        n = getopt_long(argc, argv, "p:m:ed:",
+        n = getopt_long(argc, argv, "78p:m:ed:",
                         long_options, &option_index);
         if (n == -1) {
             break;
@@ -225,6 +231,12 @@ int main(int argc, char *argv[])
             n = long_opt;
         }
         switch(n) {
+        case '7':
+            f8bit = 0;
+            break;
+        case '8':
+            f8bit = 1;
+            break;
         case 'p':
             ncolors = atoi(optarg);
             break;
@@ -263,7 +275,7 @@ int main(int argc, char *argv[])
 
     if (optind == argc) {
         ret = convert_to_sixel("/dev/stdin", ncolors, mapfile,
-                               monochrome, diffusion);
+                               monochrome, diffusion, f8bit);
         if (ret != 0) {
             exit_code = EXIT_FAILURE;
             goto end;
@@ -271,7 +283,7 @@ int main(int argc, char *argv[])
     } else {
         for (n = optind; n < argc; n++) {
             ret = convert_to_sixel(argv[n], ncolors, mapfile,
-                                   monochrome, diffusion);
+                                   monochrome, diffusion, f8bit);
             if (ret != 0) {
                 exit_code = EXIT_FAILURE;
                 goto end;
@@ -288,8 +300,12 @@ argerr:
             "       img2sixel [Options] < imagefile\n"
             "\n"
             "Options:\n"
+            "-7, --7bit-mode            generate a sixel image for 8bit terminal\n"
+            "                           or printer (default)\n"
+            "-8, --8bit-mode            generate a sixel image for 8bit terminal\n"
+            "                           or printer\n"
             "-p COLORS, --colors=COLORS specify number of colors to reduce the\n"
-            "                           image to\n"
+            "                           image to (default=256)\n"
             "-m FILE, --mapfile=FILE    transform image colors to match this set\n"
             "                           of colorsspecify map\n"
             "-e, --monochrome           output monochrome sixel image\n"
@@ -297,7 +313,7 @@ argerr:
             "                           color reduction\n"
             "                           TYPE is one of them:\n"
             "                               auto   -> choose diffusion type\n"
-            "                                         automatically\n"
+            "                                         automatically (default)\n"
             "                               none   -> do not diffusion\n"
             "                               fs     -> Floyd-Steinberg method\n"
             "                               jajuni -> Jarvis, Judice & Ninke\n"
