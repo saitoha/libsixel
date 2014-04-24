@@ -243,32 +243,6 @@ static int PalUseCmp(const void *src, const void *dis)
     return use_palet[*((unsigned char *)dis)] - use_palet[*((unsigned char *)src)];
 }
 
-static int GetColIdx(LSImagePtr im, int col)
-{
-    int i, r, g, b, d;
-
-    int red   = (col & 0xFF0000) >> 16;
-    int green = (col & 0x00FF00) >> 8;
-    int blue  = col & 0x0000FF;
-    int idx   = (-1);
-    int min   = 0xFFFFFF;
-    /* 255 * 255 * 3 + 255 * 255 * 9 + 255 * 255 = 845325 = 0x000CE60D */
-
-    for (i = 0 ; i < im->ncolors ; i++) {
-        if (i == im->keycolor)
-            continue;
-        r = im->red[i] - red;
-        g = im->green[i] - green;
-        b = im->blue[i] - blue;
-        d = r * r * 3 + g * g * 9 + b * b;
-        if (min > d) {
-            idx = i;
-            min = d;
-        }
-    }
-    return idx;
-}
-
 void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
 {
     int x, y, i, n, c;
