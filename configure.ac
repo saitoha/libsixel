@@ -38,12 +38,12 @@ AM_CONDITIONAL(WANT_SIXEL2IMG, test x$enable_sixel2img == xyes)
 # Checks for libraries.
 
 # Checks for header files.
-AC_CHECK_HEADERS([memory.h stdint.h stdlib.h string.h unistd.h getopt.h])
+AC_CHECK_HEADERS([memory.h stdlib.h string.h unistd.h getopt.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
 #AC_TYPE_SIZE_T
-AC_TYPE_UINT8_T
+#AC_TYPE_UINT8_T
 
 # Checks for library functions.
 AC_FUNC_MALLOC

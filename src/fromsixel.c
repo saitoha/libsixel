@@ -98,8 +98,8 @@ HLStoRGB(int hue, int lum, int sat)
     return RGB(R, G, B);
 }
 
-static uint8_t *
-GetParam(uint8_t *p, int *param, int *len)
+static unsigned char *
+GetParam(unsigned char *p, int *param, int *len)
 {
     int n;
 
@@ -137,7 +137,7 @@ LibSixel_SixelToLSImage(unsigned char *p, int len)
     int rep, col, bc, id;
     int param[10];
     LSImagePtr im, dm;
-    uint8_t *s;
+    unsigned char *s;
     static char pam[256];
     static char gra[256];
     int sixel_palet[PALETTE_MAX];

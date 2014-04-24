@@ -36,7 +36,7 @@ typedef struct _SixNode {
     int pal;
     int sx;
     int mx;
-    uint8_t *map;
+    unsigned char *map;
 } SixNode;
 
 static SixNode *node_top = NULL;
@@ -47,7 +47,7 @@ static int save_count = 0;
 static int act_palet = (-1);
 
 static long use_palet[PALETTE_MAX];
-static uint8_t conv_palet[PALETTE_MAX];
+static unsigned char conv_palet[PALETTE_MAX];
 
 static void
 PutFlash(LSOutputContextPtr const context)
@@ -157,7 +157,7 @@ static void NodeDel(SixNode *np)
 static void NodeAdd(int pal,
                     int sx,
                     int mx,
-                    uint8_t *map)
+                    unsigned char *map)
 {
     SixNode *np, *tp, top;
 
@@ -191,7 +191,7 @@ static void NodeAdd(int pal,
 
 static void NodeLine(int pal,
                      int width,
-                     uint8_t *map)
+                     unsigned char *map)
 {
     int sx, mx, n;
 
@@ -240,7 +240,7 @@ static int PutNode(LSOutputContextPtr context,
 
 static int PalUseCmp(const void *src, const void *dis)
 {
-    return use_palet[*((uint8_t *)dis)] - use_palet[*((uint8_t *)src)];
+    return use_palet[*((unsigned char *)dis)] - use_palet[*((unsigned char *)src)];
 }
 
 static int GetColIdx(LSImagePtr im, int col)
@@ -276,9 +276,9 @@ void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     int width, height;
     int len, pix, skip;
     int back = (-1);
-    uint8_t *map;
+    unsigned char *map;
     SixNode *np;
-    uint8_t list[PALETTE_MAX];
+    unsigned char list[PALETTE_MAX];
 
     width  = im->sx;
     height = im->sy;
@@ -287,7 +287,7 @@ void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     back = im->keycolor;
     len = maxPalet * width;
 
-    if ((map = (uint8_t *)malloc(len)) == NULL)
+    if ((map = (unsigned char *)malloc(len)) == NULL)
         return;
 
     memset(map, 0, len);
@@ -343,7 +343,7 @@ void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
         y += skip;
     }
 
-    qsort(list, maxPalet, sizeof(uint8_t), PalUseCmp);
+    qsort(list, maxPalet, sizeof(unsigned char), PalUseCmp);
 
     for (n = 0 ; n < maxPalet ; n++) {
         conv_palet[list[n]] = n;
