@@ -83,7 +83,7 @@ convert_to_sixel(char const *filename, int reqcolors,
         fprintf(stderr, "stbi_load('%s') failed.\n" "reason: %s.\n",
                 filename, stbi_failure_reason());
         nret = -1;
-        return (-1);
+        goto end;
     }
 
     if (monochrome) {
@@ -169,6 +169,7 @@ convert_to_sixel(char const *filename, int reqcolors,
     data = NULL;
     context = LSOutputContext_create(putchar, printf);
     LibSixel_LSImageToSixel(im, context);
+    nret = 0;
 
 end:
     if (data) {
@@ -203,6 +204,8 @@ int main(int argc, char *argv[])
     char *mapfile = NULL;
     int long_opt;
     int option_index;
+    int ret;
+    int exit_code;
 
     struct option long_options[] = {
         {"colors",       required_argument,  &long_opt, 'p'},
@@ -259,17 +262,27 @@ int main(int argc, char *argv[])
     }
 
     if (optind == argc) {
-        convert_to_sixel("/dev/stdin", ncolors, mapfile,
-                         monochrome, diffusion);
+        ret = convert_to_sixel("/dev/stdin", ncolors, mapfile,
+                               monochrome, diffusion);
+        if (ret != 0) {
+            exit_code = EXIT_FAILURE;
+            goto end;
+        }
     } else {
         for (n = optind; n < argc; n++) {
-            convert_to_sixel(argv[n], ncolors, mapfile,
-                             monochrome, diffusion);
+            ret = convert_to_sixel(argv[n], ncolors, mapfile,
+                                   monochrome, diffusion);
+            if (ret != 0) {
+                exit_code = EXIT_FAILURE;
+                goto end;
+            }
         }
     }
+    exit_code = EXIT_SUCCESS;
     goto end;
 
 argerr:
+    exit_code = EXIT_FAILURE;
     fprintf(stderr,
             "Usage: img2sixel [Options] imagefiles\n"
             "       img2sixel [Options] < imagefile\n"
@@ -297,7 +310,7 @@ end:
     if (diffusion) {
         free(diffusion);
     }
-    return 0;
+    return exit_code;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
