@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.8.0], [user@zuse.jp])
+AC_INIT([sixel], [0.9.0], [user@zuse.jp])
 
 AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
