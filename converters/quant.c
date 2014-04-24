@@ -46,7 +46,6 @@
 
 #include "config.h"
 
-#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -422,16 +421,23 @@ colormapFromBv(unsigned int      const newcolors,
     for (bi = 0; bi < boxes; ++bi) {
         switch (methodForRep) {
         case REP_CENTER_BOX:
-            centerBox(bv[bi].ind, bv[bi].colors, colorfreqtable, depth, colormap.table[bi]->tuple);
+            centerBox(bv[bi].ind, bv[bi].colors,
+                      colorfreqtable, depth,
+                      colormap.table[bi]->tuple);
             break;
         case REP_AVERAGE_COLORS:
-            averageColors(bv[bi].ind, bv[bi].colors, colorfreqtable, depth, colormap.table[bi]->tuple);
+            averageColors(bv[bi].ind, bv[bi].colors,
+                          colorfreqtable, depth,
+                          colormap.table[bi]->tuple);
             break;
         case REP_AVERAGE_PIXELS:
-            averagePixels(bv[bi].ind, bv[bi].colors, colorfreqtable, depth, colormap.table[bi]->tuple);
+            averagePixels(bv[bi].ind, bv[bi].colors,
+                          colorfreqtable, depth,
+                          colormap.table[bi]->tuple);
             break;
         default:
-            quant_trace(stderr, "Internal error: invalid value of methodForRep: %d\n",
+            quant_trace(stderr, "Internal error: "
+                                "invalid value of methodForRep: %d\n",
                         methodForRep);
         }
     }
@@ -706,35 +712,9 @@ computeColorMapFromInput(unsigned char *data,
 }
 
 
-
-unsigned char *
-LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
-                int reqcolors, int *ncolors, int *origcolors,
-                enum methodForLargest const methodForLargest,
-                enum methodForRep const methodForRep)
-{
-    int i, n;
-    unsigned char *palette;
-    tupletable2 colormap;
-
-    computeColorMapFromInput(data, x * y * depth, depth,
-                             reqcolors, methodForLargest,
-                             methodForRep, &colormap, origcolors);
-    *ncolors = colormap.size;
-    quant_trace(stderr, "tupletable size: %d", *ncolors);
-    palette = malloc(*ncolors * depth);
-    for (i = 0; i < *ncolors; i++) {
-        for (n = 0; n < depth; ++n) {
-            palette[i * depth + n] = colormap.table[i]->tuple[n];
-        }
-    }
-
-    free(colormap.table);
-    return palette;
-}
-
-void add_offset(unsigned char *data, int pos, int depth,
-                int *offsets, int mul, int div)
+static void
+add_offset(unsigned char *data, int pos, int depth,
+           int *offsets, int mul, int div)
 {
     int n, c;
 
@@ -750,9 +730,11 @@ void add_offset(unsigned char *data, int pos, int depth,
     }
 }
 
-void diffuse(unsigned char *data, int width, int height,
-             int x, int y, int depth, int *offsets,
-             enum methodForDiffuse const methodForDiffuse)
+
+static void
+diffuse(unsigned char *data, int width, int height,
+        int x, int y, int depth, int *offsets,
+        enum methodForDiffuse const methodForDiffuse)
 {
     int n;
     int pos;
@@ -850,6 +832,33 @@ void diffuse(unsigned char *data, int width, int height,
 
 
 unsigned char *
+LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
+                int reqcolors, int *ncolors, int *origcolors,
+                enum methodForLargest const methodForLargest,
+                enum methodForRep const methodForRep)
+{
+    int i, n;
+    unsigned char *palette;
+    tupletable2 colormap;
+
+    computeColorMapFromInput(data, x * y * depth, depth,
+                             reqcolors, methodForLargest,
+                             methodForRep, &colormap, origcolors);
+    *ncolors = colormap.size;
+    quant_trace(stderr, "tupletable size: %d", *ncolors);
+    palette = malloc(*ncolors * depth);
+    for (i = 0; i < *ncolors; i++) {
+        for (n = 0; n < depth; ++n) {
+            palette[i * depth + n] = colormap.table[i]->tuple[n];
+        }
+    }
+
+    free(colormap.table);
+    return palette;
+}
+
+
+unsigned char *
 LSQ_ApplyPalette(unsigned char *data,
                  int width,
                  int height,
@@ -900,7 +909,6 @@ LSQ_ApplyPalette(unsigned char *data,
     free(offsets);
     return result;
 }
-
 
 
 void

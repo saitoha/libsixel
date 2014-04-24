@@ -36,10 +36,10 @@ LSImage_create(int sx, int sy, int depth, int ncolors)
     im = (LSImagePtr)malloc(sizeof(LSImage));
     if (ncolors == -1) {
         /* non-paletted bitmap image */
-        im->pixels = (uint8_t *)malloc(sx * sy * depth);
+        im->pixels = (unsigned char *)malloc(sx * sy * depth);
     } else {
         /* paletted image */
-        im->pixels = (uint8_t *)malloc(sx * sy);
+        im->pixels = (unsigned char *)malloc(sx * sy);
     }
     im->sx = sx;
     im->sy = sy;
