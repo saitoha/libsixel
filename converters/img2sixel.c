@@ -300,7 +300,7 @@ argerr:
             "                                         automatically\n"
             "                               none   -> do not diffusion\n"
             "                               fs     -> Floyd-Steinberg method\n"
-            "                               jajuji -> Jarvis, Judice & Ninke\n"
+            "                               jajuni -> Jarvis, Judice & Ninke\n"
             );
 
 end:
