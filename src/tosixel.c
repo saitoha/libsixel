@@ -59,7 +59,7 @@ PutFlash(LSOutputContextPtr const context)
         context->fn_printf("!%d%c", 255, save_pix);
         save_count -= 255;
     }
-#endif
+#endif  /* defined(USE_VT240) */
 
     if (save_count > 3) {
         /* DECGRI Graphics Repeat Introducer ! Pn Ch */
@@ -93,9 +93,10 @@ PutPixel(LSOutputContextPtr const context, int pix)
     }
 }
 
-static void PutPalet(LSOutputContextPtr context,
-                     LSImagePtr im,
-                     int pal)
+static void
+PutPalet(LSOutputContextPtr context,
+         LSImagePtr im,
+         int pal)
 {
     /* designate palette index */
     if (act_palet != pal) {
@@ -104,26 +105,27 @@ static void PutPalet(LSOutputContextPtr context,
     }
 }
 
-static void PutCr(LSOutputContextPtr context)
+static void
+PutCr(LSOutputContextPtr context)
 {
     /* DECGCR Graphics Carriage Return */
-
     context->fn_putchar('$');
     context->fn_putchar('\n');
     /* x = 0; */
 }
 
-static void PutLf(LSOutputContextPtr context)
+static void
+PutLf(LSOutputContextPtr context)
 {
     /* DECGNL Graphics Next Line */
-
     context->fn_putchar('-');
     context->fn_putchar('\n');
     /* x = 0; */
     /* y += 6; */
 }
 
-static void NodeFree()
+static void
+NodeFree()
 {
     SixNode *np;
 
@@ -133,7 +135,8 @@ static void NodeFree()
     }
 }
 
-static void NodeDel(SixNode *np)
+static void
+NodeDel(SixNode *np)
 {
     SixNode *tp;
 
@@ -154,10 +157,8 @@ static void NodeDel(SixNode *np)
     node_free = np;
 }
 
-static void NodeAdd(int pal,
-                    int sx,
-                    int mx,
-                    unsigned char *map)
+static void
+NodeAdd(int pal, int sx, int mx, unsigned char *map)
 {
     SixNode *np, *tp, top;
 
@@ -189,9 +190,8 @@ static void NodeAdd(int pal,
     node_top = top.next;
 }
 
-static void NodeLine(int pal,
-                     int width,
-                     unsigned char *map)
+static void
+NodeLine(int pal, int width, unsigned char *map)
 {
     int sx, mx, n;
 
@@ -218,9 +218,8 @@ static void NodeLine(int pal,
     }
 }
 
-static int PutNode(LSOutputContextPtr context,
-                   LSImagePtr im,
-                   int x, SixNode *np)
+static int
+PutNode(LSOutputContextPtr context, LSImagePtr im, int x, SixNode *np)
 {
     if (im->ncolors != 2 || im->keycolor == -1)
         PutPalet(context, im, np->pal);
@@ -238,10 +237,13 @@ static int PutNode(LSOutputContextPtr context,
     return x;
 }
 
-static int PalUseCmp(const void *src, const void *dis)
+#if defined(USE_SORT)
+static int
+PalUseCmp(const void *src, const void *dis)
 {
     return use_palet[*((unsigned char *)dis)] - use_palet[*((unsigned char *)src)];
 }
+#endif  /* defined(USE_SORT) */
 
 void LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
 {
