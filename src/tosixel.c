@@ -50,6 +50,7 @@ static int act_palet = (-1);
 static long use_palet[PALETTE_MAX];
 static unsigned char conv_palet[PALETTE_MAX];
 
+
 static int
 PutFlash(LSOutputContextPtr const context)
 {
@@ -86,6 +87,7 @@ PutFlash(LSOutputContextPtr const context)
     return 0;
 }
 
+
 static void
 PutPixel(LSOutputContextPtr const context, int pix)
 {
@@ -103,6 +105,7 @@ PutPixel(LSOutputContextPtr const context, int pix)
     }
 }
 
+
 static void
 PutPalet(LSOutputContextPtr context,
          LSImagePtr im,
@@ -114,6 +117,7 @@ PutPalet(LSOutputContextPtr context,
         act_palet = pal;
     }
 }
+
 
 static int
 PutCr(LSOutputContextPtr context)
@@ -127,6 +131,7 @@ PutCr(LSOutputContextPtr context)
         return (-1);
     return 0;
 }
+
 
 static int
 PutLf(LSOutputContextPtr context)
@@ -142,6 +147,7 @@ PutLf(LSOutputContextPtr context)
     return 0;
 }
 
+
 static void
 NodeFree()
 {
@@ -152,6 +158,7 @@ NodeFree()
         free(np);
     }
 }
+
 
 static void
 NodeDel(SixNode *np)
@@ -174,6 +181,7 @@ NodeDel(SixNode *np)
     np->next = node_free;
     node_free = np;
 }
+
 
 static int
 NodeAdd(int pal, int sx, int mx, unsigned char *map)
@@ -210,6 +218,7 @@ NodeAdd(int pal, int sx, int mx, unsigned char *map)
     return 0;
 }
 
+
 static int
 NodeLine(int pal, int width, unsigned char *map)
 {
@@ -243,6 +252,7 @@ NodeLine(int pal, int width, unsigned char *map)
     return 0;
 }
 
+
 static int
 PutNode(LSOutputContextPtr context, LSImagePtr im, int x, SixNode *np)
 {
@@ -262,6 +272,7 @@ PutNode(LSOutputContextPtr context, LSImagePtr im, int x, SixNode *np)
     return x;
 }
 
+
 #if defined(USE_SORT)
 static int
 PalUseCmp(const void *src, const void *dis)
@@ -269,6 +280,7 @@ PalUseCmp(const void *src, const void *dis)
     return use_palet[*((unsigned char *)dis)] - use_palet[*((unsigned char *)src)];
 }
 #endif  /* defined(USE_SORT) */
+
 
 int
 LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)

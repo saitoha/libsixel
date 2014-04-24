@@ -98,6 +98,7 @@ HLStoRGB(int hue, int lum, int sat)
     return RGB(R, G, B);
 }
 
+
 static unsigned char *
 GetParam(unsigned char *p, int *param, int *len)
 {
@@ -125,6 +126,7 @@ GetParam(unsigned char *p, int *param, int *len)
     }
     return p;
 }
+
 
 LSImagePtr
 LibSixel_SixelToLSImage(unsigned char *p, int len)
