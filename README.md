@@ -81,9 +81,19 @@ Usage: img2sixel [Options] imagefiles
        img2sixel [Options] < imagefile
 
 Options:
--p, --colors       specify number of colors to reduce the image to
--m, --mapfile      transform image colors to match this set of colorsspecify map
--e, --monochrome   output monochrome sixel image
+-p COLORS, --colors=COLORS specify number of colors to reduce the
+                           image to
+-m FILE, --mapfile=FILE    transform image colors to match this set
+                           of colorsspecify map
+-e, --monochrome           output monochrome sixel image
+-d TYPE, --diffusion=TYPE  choose diffusion method which used with
+                           color reduction
+                           TYPE is one of them:
+                               auto   -> choose diffusion type
+                                         automatically
+                               none   -> do not diffusion
+                               fs     -> Floyd-Steinberg method
+                               jajuji -> Jarvis, Judice & Ninke
 ```
 
 Convert a jpeg image file into a sixel file
