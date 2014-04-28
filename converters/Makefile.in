@@ -106,23 +106,25 @@ am__img2sixel_SOURCES_DIST = img2sixel.c quant.c stb_image.c
 @WANT_IMG2SIXEL_TRUE@	img2sixel-quant.$(OBJEXT) \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-stb_image.$(OBJEXT)
 img2sixel_OBJECTS = $(am_img2sixel_OBJECTS)
-img2sixel_LDADD = $(LDADD)
+@WANT_IMG2SIXEL_TRUE@img2sixel_DEPENDENCIES =  \
+@WANT_IMG2SIXEL_TRUE@	$(top_builddir)/src/.libs/libsixel.la
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
 img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(img2sixel_CFLAGS) \
-	$(CFLAGS) $(img2sixel_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 am__sixel2png_SOURCES_DIST = sixel2png.c stb_image_write.c
 @WANT_SIXEL2IMG_TRUE@am_sixel2png_OBJECTS =  \
 @WANT_SIXEL2IMG_TRUE@	sixel2png-sixel2png.$(OBJEXT) \
 @WANT_SIXEL2IMG_TRUE@	sixel2png-stb_image_write.$(OBJEXT)
 sixel2png_OBJECTS = $(am_sixel2png_OBJECTS)
-sixel2png_LDADD = $(LDADD)
+@WANT_SIXEL2IMG_TRUE@sixel2png_DEPENDENCIES =  \
+@WANT_SIXEL2IMG_TRUE@	$(top_builddir)/src/.libs/libsixel.la
 sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sixel2png_CFLAGS) \
-	$(CFLAGS) $(sixel2png_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -300,10 +302,10 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c quant.c stb_image.c
-@WANT_IMG2SIXEL_TRUE@img2sixel_LDFLAGS = -lsixel -L$(top_builddir)/src
+@WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/.libs/libsixel.la
 @WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -DSTBI_NO_HDR -I$(top_builddir)/include/
 @WANT_SIXEL2IMG_TRUE@sixel2png_SOURCES = sixel2png.c stb_image_write.c
-@WANT_SIXEL2IMG_TRUE@sixel2png_LDFLAGS = -lsixel -L$(top_builddir)/src
+@WANT_SIXEL2IMG_TRUE@sixel2png_LDADD = $(top_builddir)/src/.libs/libsixel.la
 @WANT_SIXEL2IMG_TRUE@sixel2png_CFLAGS = -I$(top_builddir)/include/
 all: all-am
 
