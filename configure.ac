@@ -4,6 +4,11 @@
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
 AC_INIT([sixel], [0.10.0], [user@zuse.jp])
+LS_LT_CURRENT=0
+LS_LT_REVISION=0
+LS_LT_AGE=0
+AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
+
 
 AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
