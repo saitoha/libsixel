@@ -29,16 +29,18 @@ AC_PROG_INSTALL
 
 # Options
 AC_ARG_ENABLE([img2sixel],
-              AS_HELP_STRING([--disable-img2sixel], [do not build img2sixel]),
+              [AS_HELP_STRING([--disable-img2sixel],
+                              [whether to build img2sixel (default: enable)])],
               [],
               [enable_img2sixel=yes])
-AM_CONDITIONAL(WANT_IMG2SIXEL, test x$enable_img2sixel == xyes)
+AM_CONDITIONAL(WANT_IMG2SIXEL, test x$enable_img2sixel != xno)
 
 AC_ARG_ENABLE([sixel2png],
-              AS_HELP_STRING([--disable-sixel2png], [do not build sixel2png]),
+              [AS_HELP_STRING([--disable-sixel2png],
+                              [whether to build sixel2png (default: enable)])],
               [],
-              [enable_sixel2img=yes])
-AM_CONDITIONAL(WANT_SIXEL2IMG, test x$enable_sixel2img == xyes)
+              [enable_sixel2png=yes])
+AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
 
 # Checks for libraries.
 

@@ -81,7 +81,7 @@ host_triplet = @host@
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @WANT_IMG2SIXEL_TRUE@am__append_1 = img2sixel
 # -DSTBI_SIMD
-@WANT_SIXEL2IMG_TRUE@am__append_2 = sixel2png
+@WANT_SIXEL2PNG_TRUE@am__append_2 = sixel2png
 subdir = converters
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp
@@ -97,7 +97,7 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 @WANT_IMG2SIXEL_TRUE@am__EXEEXT_1 = img2sixel$(EXEEXT)
-@WANT_SIXEL2IMG_TRUE@am__EXEEXT_2 = sixel2png$(EXEEXT)
+@WANT_SIXEL2PNG_TRUE@am__EXEEXT_2 = sixel2png$(EXEEXT)
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__img2sixel_SOURCES_DIST = img2sixel.c quant.c stb_image.c
@@ -116,12 +116,12 @@ img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(img2sixel_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 am__sixel2png_SOURCES_DIST = sixel2png.c stb_image_write.c
-@WANT_SIXEL2IMG_TRUE@am_sixel2png_OBJECTS =  \
-@WANT_SIXEL2IMG_TRUE@	sixel2png-sixel2png.$(OBJEXT) \
-@WANT_SIXEL2IMG_TRUE@	sixel2png-stb_image_write.$(OBJEXT)
+@WANT_SIXEL2PNG_TRUE@am_sixel2png_OBJECTS =  \
+@WANT_SIXEL2PNG_TRUE@	sixel2png-sixel2png.$(OBJEXT) \
+@WANT_SIXEL2PNG_TRUE@	sixel2png-stb_image_write.$(OBJEXT)
 sixel2png_OBJECTS = $(am_sixel2png_OBJECTS)
-@WANT_SIXEL2IMG_TRUE@sixel2png_DEPENDENCIES =  \
-@WANT_SIXEL2IMG_TRUE@	$(top_builddir)/src/.libs/libsixel.la
+@WANT_SIXEL2PNG_TRUE@sixel2png_DEPENDENCIES =  \
+@WANT_SIXEL2PNG_TRUE@	$(top_builddir)/src/.libs/libsixel.la
 sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sixel2png_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -305,9 +305,9 @@ top_srcdir = @top_srcdir@
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c quant.c stb_image.c
 @WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/.libs/libsixel.la
 @WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -DSTBI_NO_HDR -I$(top_builddir)/include/
-@WANT_SIXEL2IMG_TRUE@sixel2png_SOURCES = sixel2png.c stb_image_write.c
-@WANT_SIXEL2IMG_TRUE@sixel2png_LDADD = $(top_builddir)/src/.libs/libsixel.la
-@WANT_SIXEL2IMG_TRUE@sixel2png_CFLAGS = -I$(top_builddir)/include/
+@WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = sixel2png.c stb_image_write.c
+@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/.libs/libsixel.la
+@WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = -I$(top_builddir)/include/
 all: all-am
 
 .SUFFIXES:
@@ -718,7 +718,7 @@ uninstall-am: uninstall-binPROGRAMS
 test: all
 @WANT_IMG2SIXEL_TRUE@	./img2sixel ../images/snake.jpg
 @WANT_IMG2SIXEL_TRUE@	./img2sixel ../images/snake.jpg > snake.sixel
-@WANT_SIXEL2IMG_TRUE@	./sixel2png < snake.sixel > snake.png
+@WANT_SIXEL2PNG_TRUE@	./sixel2png < snake.sixel > snake.png
 @WANT_IMG2SIXEL_TRUE@	./img2sixel -p 16 ../images/egret.jpg
 @WANT_IMG2SIXEL_TRUE@	./img2sixel -m ../images/map8.png ../images/egret.jpg
 @WANT_IMG2SIXEL_TRUE@	./img2sixel -m ../images/map16.png ../images/egret.jpg

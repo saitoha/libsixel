@@ -9,7 +9,7 @@ img2sixel_CFLAGS = -DSTBI_NO_HDR -I$(top_builddir)/include/
 endif
 # -DSTBI_SIMD
 
-if WANT_SIXEL2IMG
+if WANT_SIXEL2PNG
 bin_PROGRAMS += sixel2png
 sixel2png_SOURCES = sixel2png.c stb_image_write.c
 sixel2png_LDADD = $(top_builddir)/src/.libs/libsixel.la
@@ -21,7 +21,7 @@ if WANT_IMG2SIXEL
 	./img2sixel ../images/snake.jpg
 	./img2sixel ../images/snake.jpg > snake.sixel
 endif
-if WANT_SIXEL2IMG
+if WANT_SIXEL2PNG
 	./sixel2png < snake.sixel > snake.png
 endif
 if WANT_IMG2SIXEL
