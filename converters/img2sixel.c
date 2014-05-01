@@ -25,7 +25,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
+
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 
 #if defined(HAVE_UNISTD_H)
 # include <unistd.h>  /* getopt */
@@ -53,6 +62,7 @@
 
 #include "quant.h"
 #include "stb_image.c"
+
 
 static int
 convert_to_sixel(char const *filename, int reqcolors,
@@ -82,7 +92,11 @@ convert_to_sixel(char const *filename, int reqcolors,
 
     if (filename == NULL || strcmp(filename, "-") == 0) {
         /* for windows */
-        setmode(fileno(stdin), _O_BINARY);
+# if HAVE__SETMODE
+        _setmode(fileno(stdin), O_BINARY);
+# elif HAVE_SETMODE
+        setmode(fileno(stdin), O_BINARY);
+# endif  /* HAVE_SETMODE */
         f = stdin;
     } else {
         f = fopen(filename, "rb");
