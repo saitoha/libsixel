@@ -20,10 +20,21 @@
  */
 
 #include "config.h"
+#include "malloc_stub.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 
 #if defined(HAVE_UNISTD_H)
 # include <unistd.h>  /* getopt */
@@ -37,9 +48,13 @@
 # include <inttypes.h>
 #endif
 
+#if defined(HAVE_ERRNO_H)
+# include <errno.h>
+#endif
+
 #include <sixel.h>
 
-#define STBI_HEADER_FILE_ONLY
+#define STBI_HEADER_FILE_ONLY 1
 
 #if !defined(HAVE_MEMCPY)
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
@@ -49,9 +64,13 @@
 # define memmove(d, s, n) (bcopy ((s), (d), (n)))
 #endif
 
-#include "stb_image.c"
+#if !defined(O_BINARY) && defined(_O_BINARY)
+# define O_BINARY _O_BINARY
+#endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 
 #include "quant.h"
+#include "stb_image.c"
+
 
 static int
 convert_to_sixel(char const *filename, int reqcolors,
@@ -71,6 +90,7 @@ convert_to_sixel(char const *filename, int reqcolors,
     int i;
     int nret = -1;
     enum methodForDiffuse method_for_diffuse = DIFFUSE_NONE;
+    FILE *f;
 
     if (reqcolors < 2) {
         reqcolors = 2;
@@ -78,9 +98,31 @@ convert_to_sixel(char const *filename, int reqcolors,
         reqcolors = PALETTE_MAX;
     }
 
-    pixels = stbi_load(filename, &sx, &sy, &comp, STBI_rgb);
+    if (filename == NULL || strcmp(filename, "-") == 0) {
+        /* for windows */
+#if defined(O_BINARY)
+# if HAVE__SETMODE
+        _setmode(fileno(stdin), O_BINARY);
+# elif HAVE_SETMODE
+        setmode(fileno(stdin), O_BINARY);
+# endif  /* HAVE_SETMODE */
+#endif  /* defined(O_BINARY) */
+        f = stdin;
+    } else {
+        f = fopen(filename, "rb");
+        if (!f) {
+#if HAVE_ERRNO_H
+            fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
+                    filename, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
+            nret = -1;
+            goto end;
+        }
+    }
+    pixels = stbi_load_from_file(f, &sx, &sy, &comp, STBI_rgb);
+    fclose(f);
     if (pixels == NULL) {
-        fprintf(stderr, "stbi_load('%s') failed.\n" "reason: %s.\n",
+        fprintf(stderr, "stbi_load_from_file('%s') failed.\n" "reason: %s.\n",
                 filename, stbi_failure_reason());
         nret = -1;
         goto end;
@@ -97,7 +139,29 @@ convert_to_sixel(char const *filename, int reqcolors,
         ncolors = 2;
         method_for_diffuse = DIFFUSE_FS;
     } else if (mapfile) {
-        mappixels = stbi_load(mapfile, &map_sx, &map_sy, &map_comp, STBI_rgb);
+        if (strcmp(mapfile, "-") == 0) {
+            /* for windows */
+#if defined(O_BINARY)
+# if HAVE__SETMODE
+            _setmode(fileno(stdin), O_BINARY);
+# elif HAVE_SETMODE
+            setmode(fileno(stdin), O_BINARY);
+# endif  /* HAVE_SETMODE */
+#endif  /* defined(O_BINARY) */
+            f = stdin;
+        } else {
+            f = fopen(mapfile, "rb");
+        }
+        if (!f) {
+#if HAVE_ERRNO_H
+            fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
+                    mapfile, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
+            nret = -1;
+            goto end;
+        }
+        mappixels = stbi_load_from_file(f, &map_sx, &map_sy, &map_comp, STBI_rgb);
+        fclose(f);
         if (!mappixels) {
             fprintf(stderr, "stbi_load('%s') failed.\n" "reason: %s.\n",
                     mapfile, stbi_failure_reason());
@@ -274,7 +338,7 @@ int main(int argc, char *argv[])
     }
 
     if (optind == argc) {
-        ret = convert_to_sixel("/dev/stdin", ncolors, mapfile,
+        ret = convert_to_sixel(NULL, ncolors, mapfile,
                                monochrome, diffusion, f8bit);
         if (ret != 0) {
             exit_code = EXIT_FAILURE;

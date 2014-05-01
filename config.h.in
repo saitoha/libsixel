@@ -1,7 +1,21 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if you have the declaration of `O_BINARY', and to 0 if you
+   don't. */
+#undef HAVE_DECL_O_BINARY
+
+/* Define to 1 if you have the declaration of `_O_BINARY', and to 0 if you
+   don't. */
+#undef HAVE_DECL__O_BINARY
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
+
+/* Define to 1 if you have the <errno.h> header file. */
+#undef HAVE_ERRNO_H
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
 
 /* Define to 1 if you have the <getopt.h> header file. */
 #undef HAVE_GETOPT_H
@@ -26,6 +40,9 @@
    and to 0 otherwise. */
 #undef HAVE_REALLOC
 
+/* Define to 1 if you have the `setmode' function. */
+#undef HAVE_SETMODE
+
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
@@ -49,6 +66,9 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the `_setmode' function. */
+#undef HAVE__SETMODE
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */

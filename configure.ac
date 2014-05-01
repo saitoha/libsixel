@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.11.0], [user@zuse.jp])
+AC_INIT([sixel], [0.12.0], [user@zuse.jp])
 LS_LT_CURRENT=0
 LS_LT_REVISION=0
 LS_LT_AGE=0
@@ -45,7 +45,7 @@ AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
 # Checks for libraries.
 
 # Checks for header files.
-AC_CHECK_HEADERS([memory.h stdlib.h string.h unistd.h getopt.h])
+AC_CHECK_HEADERS([memory.h stdlib.h string.h unistd.h getopt.h sys/types.h sys/stat.h fcntl.h errno.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
@@ -62,7 +62,7 @@ AC_CHECK_FUNC([memset], [],
 AC_CHECK_FUNC([getopt_long], [],
               [AC_MSG_ERROR(getopt_long is not available.)])
 
-AC_CHECK_FUNCS([memcpy memmove strtol])
+AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode])
 
 # for HDR
 # AC_CHECK_FUNCS([strtol pow])

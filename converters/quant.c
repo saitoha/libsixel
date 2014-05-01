@@ -45,6 +45,7 @@
  */
 
 #include "config.h"
+#include "malloc_stub.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -704,7 +705,8 @@ computeColorMapFromInput(unsigned char *data,
         }
     } else {
         quant_trace(stderr, "choosing %d colors...\n", reqColors);
-        mediancut(colorfreqtable, depth, reqColors, methodForLargest, methodForRep, colormapP);
+        mediancut(colorfreqtable, depth, reqColors,
+                  methodForLargest, methodForRep, colormapP);
         quant_trace(stderr, "%d colors are choosed.\n", colorfreqtable.size);
     }
 
@@ -912,7 +914,7 @@ LSQ_ApplyPalette(unsigned char *data,
 
 
 void
-LSQ_FreePalette(uint8_t * data)
+LSQ_FreePalette(unsigned char * data)
 {
     free(data);
 }
