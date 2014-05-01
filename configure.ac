@@ -59,7 +59,7 @@ AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
 # Checks for libraries.
 
 # Checks for header files.
-AC_CHECK_HEADERS([memory.h stdlib.h string.h unistd.h getopt.h sys/types.h sys/stat.h fcntl.h])
+AC_CHECK_HEADERS([memory.h stdlib.h string.h unistd.h getopt.h sys/types.h sys/stat.h fcntl.h errno.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
