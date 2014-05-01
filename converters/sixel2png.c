@@ -39,6 +39,31 @@
 #include <sixel.h>
 #include "stb_image_write.h"
 
+#if !HAVE_MALLOC
+void *
+rpl_malloc(size_t n)
+{
+    if(n == 0) {
+        n = 1;
+    }
+    return malloc(n);
+}
+#endif /* !HAVE_MALLOC */
+
+#if !HAVE_REALLOC
+void *
+rpl_realloc(void *p, size_t n)
+{
+    if (n == 0) {
+        n = 1;
+    }
+    if (p == 0) {
+        return malloc (n);
+    }
+    return realloc(p, n);
+}
+#endif /* !HAVE_REALLOC */
+
 enum
 {
    STBI_default = 0, /* only used for req_comp */
