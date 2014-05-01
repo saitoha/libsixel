@@ -84,7 +84,7 @@ sixel_to_png(const char *input, const char *output)
     FILE *input_fp, *output_fp;
     int write_len;
 
-    if (input == NULL || strcmp(input, "-") == 0) {
+    if (strcmp(input, "-") == 0) {
         /* for windows */
 #if defined(O_BINARY)
 # if HAVE__SETMODE
@@ -149,7 +149,7 @@ sixel_to_png(const char *input, const char *output)
         fprintf(stderr, "stbi_write_png_to_mem failed.\n");
         return (-1);
     }
-    if (output == NULL || strcmp(output, "-") == 0) {
+    if (strcmp(output, "-") == 0) {
 #if defined(O_BINARY)
 # if HAVE__SETMODE
         _setmode(fileno(stdout), O_BINARY);
@@ -179,15 +179,15 @@ sixel_to_png(const char *input, const char *output)
 int main(int argc, char *argv[])
 {
     int n;
-    char *output = NULL;
-    char *input = NULL;
+    char *output = strdup("-");
+    char *input = strdup("-");
     int long_opt;
     int option_index;
     int nret = 0;
 
     struct option long_options[] = {
-        {"output",       required_argument,  &long_opt, 'o'},
         {"input",        required_argument,  &long_opt, 'i'},
+        {"output",       required_argument,  &long_opt, 'o'},
         {0, 0, 0, 0}
     };
 
@@ -217,14 +217,15 @@ int main(int argc, char *argv[])
         if (optind >= argc) {
             break;
         }
-        optind++;
     }
 
-    if (input == NULL && optind < argc) {
-        input = argv[optind++];
+    if (strcmp(input, "-") == 0 && optind < argc) {
+        free(input);
+        input = strdup(argv[optind++]);
     }
-    if (output == NULL && optind < argc) {
-        output = argv[optind++];
+    if (strcmp(output, "-") == 0 && optind < argc) {
+        free(output);
+        output = strdup(argv[optind++]);
     }
     if (optind != argc) {
         goto argerr;
@@ -242,12 +243,8 @@ argerr:
             "-i, --input     specify input file\n"
             "-o, --output    specify output file\n");
 end:
-    if (input) {
-        free(input);
-    }
-    if (output) {
-        free(output);
-    }
+    free(input);
+    free(output);
     return nret;
 }
 
