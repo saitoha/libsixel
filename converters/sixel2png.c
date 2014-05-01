@@ -57,7 +57,7 @@
 #include <sixel.h>
 #include "stb_image_write.h"
 
-#if !defined(O_BINARY) && !defined(_O_BINARY)
+#if !defined(O_BINARY) && defined(_O_BINARY)
 # define O_BINARY _O_BINARY
 #endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 

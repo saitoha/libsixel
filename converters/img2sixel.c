@@ -64,6 +64,10 @@
 # define memmove(d, s, n) (bcopy ((s), (d), (n)))
 #endif
 
+#if !defined(O_BINARY) && defined(_O_BINARY)
+# define O_BINARY _O_BINARY
+#endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
+
 #include "quant.h"
 #include "stb_image.c"
 
@@ -96,13 +100,13 @@ convert_to_sixel(char const *filename, int reqcolors,
 
     if (filename == NULL || strcmp(filename, "-") == 0) {
         /* for windows */
-#if HAVE_O_BINARY
+#if defined(O_BINARY)
 # if HAVE__SETMODE
         _setmode(fileno(stdin), O_BINARY);
 # elif HAVE_SETMODE
         setmode(fileno(stdin), O_BINARY);
 # endif  /* HAVE_SETMODE */
-#endif  /* HAVE_O_BINARY */
+#endif  /* defined(O_BINARY) */
         f = stdin;
     } else {
         f = fopen(filename, "rb");
@@ -137,13 +141,13 @@ convert_to_sixel(char const *filename, int reqcolors,
     } else if (mapfile) {
         if (strcmp(mapfile, "-") == 0) {
             /* for windows */
-#if HAVE_O_BINARY
+#if defined(O_BINARY)
 # if HAVE__SETMODE
             _setmode(fileno(stdin), O_BINARY);
 # elif HAVE_SETMODE
             setmode(fileno(stdin), O_BINARY);
 # endif  /* HAVE_SETMODE */
-#endif  /* HAVE_O_BINARY */
+#endif  /* defined(O_BINARY) */
             f = stdin;
         } else {
             f = fopen(mapfile, "rb");

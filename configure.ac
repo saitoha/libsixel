@@ -62,20 +62,6 @@ AC_CHECK_FUNC([memset], [],
 AC_CHECK_FUNC([getopt_long], [],
               [AC_MSG_ERROR(getopt_long is not available.)])
 
-AC_CHECK_DECLS([O_BINARY, _O_BINARY], [],
-  [AC_MSG_ERROR(Define O_BINARY or _O_BINARY if missing)],
-  [
-    #if HAVE_SYS_TYPES_H
-    # include <sys/types.h>
-    #endif
-    #if HAVE_SYS_STAT_H
-    # include <sys/stat.h>
-    #endif
-    #if HAVE_FCNTL_H
-    # include <fcntl.h>
-    #endif
-  ])
-
 AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode])
 
 # for HDR
