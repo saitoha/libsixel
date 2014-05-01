@@ -914,7 +914,7 @@ LSQ_ApplyPalette(unsigned char *data,
 
 
 void
-LSQ_FreePalette(uint8_t * data)
+LSQ_FreePalette(unsigned char * data)
 {
     free(data);
 }

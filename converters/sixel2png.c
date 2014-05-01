@@ -103,7 +103,7 @@ sixel_to_png(const char *input, const char *output)
     raw_len = 0;
     max = 64 * 1024;
 
-    if ((raw_data = (uint8_t *)malloc(max)) == NULL) {
+    if ((raw_data = (unsigned char *)malloc(max)) == NULL) {
 #if HAVE_ERRNO_H
         fprintf(stderr, "malloc(%d) failed.\n" "reason: %s.\n",
                 max, strerror(errno));
@@ -114,7 +114,7 @@ sixel_to_png(const char *input, const char *output)
     for (;;) {
         if ((max - raw_len) < 4096) {
             max *= 2;
-            if ((raw_data = (uint8_t *)realloc(raw_data, max)) == NULL) {
+            if ((raw_data = (unsigned char *)realloc(raw_data, max)) == NULL) {
 #if HAVE_ERRNO_H
                 fprintf(stderr, "reaalloc(raw_data, %d) failed.\n"
                                 "reason: %s.\n",
