@@ -38,6 +38,10 @@
 # include <inttypes.h>
 #endif
 
+#if defined(HAVE_ERRNO_H)
+# include <errno.h>
+#endif
+
 #include <sixel.h>
 #include "stb_image_write.h"
 

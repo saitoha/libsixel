@@ -48,6 +48,10 @@
 # include <inttypes.h>
 #endif
 
+#if defined(HAVE_ERRNO_H)
+# include <errno.h>
+#endif
+
 #include <sixel.h>
 
 #define STBI_HEADER_FILE_ONLY 1
@@ -92,17 +96,21 @@ convert_to_sixel(char const *filename, int reqcolors,
 
     if (filename == NULL || strcmp(filename, "-") == 0) {
         /* for windows */
+#if HAVE_O_BINARY
 # if HAVE__SETMODE
         _setmode(fileno(stdin), O_BINARY);
 # elif HAVE_SETMODE
         setmode(fileno(stdin), O_BINARY);
 # endif  /* HAVE_SETMODE */
+#endif  /* HAVE_O_BINARY */
         f = stdin;
     } else {
         f = fopen(filename, "rb");
         if (!f) {
+#if HAVE_ERRNO_H
             fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
-                    mapfile, strerror(errno));
+                    filename, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
             nret = -1;
             goto end;
         }
@@ -135,8 +143,10 @@ convert_to_sixel(char const *filename, int reqcolors,
             f = fopen(mapfile, "rb");
         }
         if (!f) {
+#if HAVE_ERRNO_H
             fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
                     mapfile, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
             nret = -1;
             goto end;
         }
