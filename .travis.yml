@@ -1,0 +1,46 @@
+
+language: c
+
+compiler:
+  - gcc
+  - clang
+
+env:
+  - HOST= WINE=
+  - HOST=i686-w64-mingw32 WINE=wine
+  - HOST=x86_64-w64-mingw32 WINE=wine64
+
+before_install:
+  - "sudo apt-get -qq update"
+  - "sudo apt-get -qq install $CC"
+  - "test $HOST && sudo apt-get install -qq wine"
+  - "test '$CC' = 'gcc' && test '$WINE' = 'wine' && sudo apt-get install -qq gcc-mingw-w64-i686 binutils-mingw-w64-i686"
+  - "test '$CC' = 'gcc' && test '$CC' = gcc'test '$WINE' = 'wine64' && then sudo apt-get install -qq gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64"
+
+before_script:
+  - "uname -a"
+  - "uname -r"
+  - "./configure --host=$HOST"
+
+script:
+  - "make"
+  - "test $HOST || converters/img2sixel images/snake.jpg > snake1.sixel"
+  - "test $HOST && $WINE converters/img2sixel.exe images/snake.jpg > snake1.sixel"
+  - "du -h snake1.sixel"
+  - "test $HOST || converters/img2sixel -p16 images/snake.jpg > snake2.sixel"
+  - "test $HOST && $WINE converters/img2sixel.exe -p16 images/snake.jpg > snake2.sixel"
+  - "du -h snake2.sixel"
+  - "test $HOST || converters/sixel2img -i snake1.sixel -o snake1.png"
+  - "test $HOST && $WINE converters/img2sixel.exe -i snake1.sixel -o snake1.png"
+  - "du -h snake1.png"
+  - "test $HOST || converters/sixel2img < snake2.sixel > snake2.png"
+  - "test $HOST && $WINE converters/img2sixel.exe < snake2.sixel > snake2.png"
+  - "du -h snake2.png"
+  - "test $HOST || converters/img2sixel snake1.png > snake3.sixel"
+  - "test $HOST && $WINE converters/img2sixel.exe images/snake1.png > snake3.sixel"
+  - "du -h snake3.sixel"
+
+branches:
+  only:
+    - master
+    - develop
