@@ -69,49 +69,89 @@ enum
 static int
 sixel_to_png(const char *input, const char *output)
 {
-    uint8_t *data;
+    unsigned char *raw_data, *png_data;
     LSImagePtr im;
     int sx, sy, comp;
-    int len;
+    int raw_len;
+    int png_len;
     int i;
     int max;
     int n;
-    FILE *fp;
+    FILE *input_fp, *output_fp;
 
-    if (input != NULL && (fp = fopen(input, "r")) == NULL) {
-        return (-1);
+    if (input == NULL || strcmp(input, "-") == 0) {
+        /* for windows */
+#if HAVE_O_BINARY
+# if HAVE__SETMODE
+        _setmode(fileno(stdin), O_BINARY);
+# elif HAVE_SETMODE
+        setmode(fileno(stdin), O_BINARY);
+# endif  /* HAVE_SETMODE */
+#endif  /* HAVE_O_BINARY */
+        input_fp = stdin;
+    } else {
+        input_fp = fopen(input, "rb");
+        if (!input_fp) {
+#if HAVE_ERRNO_H
+            fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
+                    input, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
+            return (-1);
+        }
     }
 
-    len = 0;
+    raw_len = 0;
     max = 64 * 1024;
 
-    if ((data = (uint8_t *)malloc(max)) == NULL) {
+    if ((raw_data = (uint8_t *)malloc(max)) == NULL) {
         return (-1);
     }
 
     for (;;) {
-        if ((max - len) < 4096) {
+        if ((max - raw_len) < 4096) {
             max *= 2;
-            if ((data = (uint8_t *)realloc(data, max)) == NULL)
+            if ((raw_data = (uint8_t *)realloc(raw_data, max)) == NULL)
                 return (-1);
         }
-        if ((n = fread(data + len, 1, 4096, fp)) <= 0)
+        if ((n = fread(raw_data + raw_len, 1, 4096, input_fp)) <= 0)
             break;
-        len += n;
+        raw_len += n;
     }
 
-    if (fp != stdout) {
-        fclose(fp);
+    if (input_fp != stdout) {
+        fclose(input_fp);
     }
 
-    im = LibSixel_SixelToLSImage(data, len);
+    im = LibSixel_SixelToLSImage(raw_data, raw_len);
     if (!im) {
-        return 1;
+        return -1;
     }
-    stbi_write_png(output, im->sx, im->sy,
-                   STBI_rgb, im->pixels, im->sx * 3);
 
+    png_data = stbi_write_png_to_mem(im->pixels, im->sx * 3,
+                                     im->sx, im->sy, STBI_rgb, &png_len);
     LSImage_destroy(im);
+    if (!png_data) {
+        return -1;
+    }
+    if (input == NULL || strcmp(output, "-") == 0) {
+#if HAVE_O_BINARY
+# if HAVE__SETMODE
+        _setmode(fileno(stdout), O_BINARY);
+# elif HAVE_SETMODE
+        setmode(fileno(stdout), O_BINARY);
+# endif  /* HAVE_SETMODE */
+#endif  /* HAVE_O_BINARY */
+        output_fp = stdout;
+    } else {
+        output_fp = fopen(output, "wb");
+    }
+    if (!output_fp) {
+        free(png_data);
+        return -1;
+    }
+    fwrite(png_data, 1, png_len, output_fp);
+    fclose(output_fp);
+    free(png_data);
 
     return 0;
 }
@@ -123,6 +163,7 @@ int main(int argc, char *argv[])
     char *input = NULL;
     int long_opt;
     int option_index;
+    int nret = 0;
 
     struct option long_options[] = {
         {"output",       required_argument,  &long_opt, 'o'},
@@ -168,26 +209,11 @@ int main(int argc, char *argv[])
     if (optind != argc) {
         goto argerr;
     }
-    if (input == NULL) {
-        input = strdup("/dev/stdin");
-    }
-    if (output == NULL) {
-        output = strdup("/dev/stdout");
-    }
 
-    sixel_to_png(input, output);
-
-    free(input);
-    free(output);
-    return 0;
+    nret = sixel_to_png(input, output);
+    goto end;
 
 argerr:
-    if (input) {
-        free(input);
-    }
-    if (output) {
-        free(output);
-    }
     fprintf(stderr,
             "Usage: sixel2png -i input.sixel -o output.png\n"
             "       sixel2png < input.sixel > output.png\n"
@@ -195,7 +221,14 @@ argerr:
             "Options:\n"
             "-i, --input     specify input file\n"
             "-o, --output    specify output file\n");
-    return 0;
+end:
+    if (input) {
+        free(input);
+    }
+    if (output) {
+        free(output);
+    }
+    return nret;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
