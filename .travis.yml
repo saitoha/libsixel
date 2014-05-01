@@ -39,8 +39,3 @@ script:
   - "du -h snake3.sixel"
   - "du -h snake1.png"
   - "du -h snake2.png"
-
-branches:
-  only:
-    - master
-    - develop
