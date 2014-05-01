@@ -796,6 +796,9 @@ uninstall-am:
 test: all
 	$(MAKE) test -C converters
 
+winetest: all
+	$(MAKE) winetest -C converters
+
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

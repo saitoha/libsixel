@@ -12222,7 +12222,7 @@ fi
 # Checks for libraries.
 
 # Checks for header files.
-for ac_header in memory.h stdlib.h string.h unistd.h getopt.h
+for ac_header in memory.h stdlib.h string.h unistd.h getopt.h sys/types.h sys/stat.h fcntl.h errno.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -12393,7 +12393,7 @@ else
 fi
 
 
-for ac_func in memcpy memmove strtol
+for ac_func in memcpy memmove strtol setmode _setmode
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
