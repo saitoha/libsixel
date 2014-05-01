@@ -26,15 +26,27 @@
 #include <stdlib.h>
 #include <string.h>  /* strdup */
 
-#if defined(HAVE_UNISTD_H)
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+
+#if HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
+#if HAVE_UNISTD_H
 # include <unistd.h>  /* getopt */
 #endif
 
-#if defined(HAVE_GETOPT_H)
+#if HAVE_GETOPT_H
 # include <getopt.h>
 #endif
 
-#if defined(HAVE_INTTYPES_H)
+#if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
 

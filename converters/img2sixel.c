@@ -137,7 +137,13 @@ convert_to_sixel(char const *filename, int reqcolors,
     } else if (mapfile) {
         if (strcmp(mapfile, "-") == 0) {
             /* for windows */
-            setmode(fileno(stdin), _O_BINARY);
+#if HAVE_O_BINARY
+# if HAVE__SETMODE
+            _setmode(fileno(stdin), O_BINARY);
+# elif HAVE_SETMODE
+            setmode(fileno(stdin), O_BINARY);
+# endif  /* HAVE_SETMODE */
+#endif  /* HAVE_O_BINARY */
             f = stdin;
         } else {
             f = fopen(mapfile, "rb");
