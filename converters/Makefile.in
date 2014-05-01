@@ -757,6 +757,14 @@ test: all
 @WANT_IMG2SIXEL_TRUE@	./img2sixel -m ../images/map8.png ../images/egret.jpg
 @WANT_IMG2SIXEL_TRUE@	./img2sixel -m ../images/map16.png ../images/egret.jpg
 
+winetest: all
+@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel.exe ../images/snake.jpg
+@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel.exe ../images/snake.jpg > snake.sixel
+@WANT_SIXEL2PNG_TRUE@	wine ./sixel2png.exe < snake.sixel > snake.png
+@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel -p 16 ../images/egret.jpg
+@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel -m ../images/map8.png ../images/egret.jpg
+@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel -m ../images/map16.png ../images/egret.jpg
+
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
