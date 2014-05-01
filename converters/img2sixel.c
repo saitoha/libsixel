@@ -20,6 +20,7 @@
  */
 
 #include "config.h"
+#include "malloc_stub.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,33 +50,8 @@
 # define memmove(d, s, n) (bcopy ((s), (d), (n)))
 #endif
 
-#include "stb_image.c"
 #include "quant.h"
-
-#if !HAVE_MALLOC
-void *
-rpl_malloc(size_t n)
-{
-    if(n == 0) {
-        n = 1;
-    }
-    return malloc(n);
-}
-#endif /* !HAVE_MALLOC */
-
-#if !HAVE_REALLOC
-void *
-rpl_realloc(void *p, size_t n)
-{
-    if (n == 0) {
-        n = 1;
-    }
-    if (p == 0) {
-        return malloc (n);
-    }
-    return realloc(p, n);
-}
-#endif /* !HAVE_REALLOC */
+#include "stb_image.c"
 
 static int
 convert_to_sixel(char const *filename, int reqcolors,
