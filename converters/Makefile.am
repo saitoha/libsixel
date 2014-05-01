@@ -11,7 +11,7 @@ endif
 
 if WANT_SIXEL2PNG
 bin_PROGRAMS += sixel2png
-sixel2png_SOURCES = sixel2png.c stb_image_write.c
+sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c
 sixel2png_LDADD = $(top_builddir)/src/libsixel.la
 sixel2png_CFLAGS = -I$(top_builddir)/include/
 endif

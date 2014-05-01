@@ -117,10 +117,12 @@ am__v_lt_1 =
 img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(img2sixel_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am__sixel2png_SOURCES_DIST = sixel2png.c stb_image_write.c
+am__sixel2png_SOURCES_DIST = sixel2png.c stb_image_write.c \
+	malloc_stub.c
 @WANT_SIXEL2PNG_TRUE@am_sixel2png_OBJECTS =  \
 @WANT_SIXEL2PNG_TRUE@	sixel2png-sixel2png.$(OBJEXT) \
-@WANT_SIXEL2PNG_TRUE@	sixel2png-stb_image_write.$(OBJEXT)
+@WANT_SIXEL2PNG_TRUE@	sixel2png-stb_image_write.$(OBJEXT) \
+@WANT_SIXEL2PNG_TRUE@	sixel2png-malloc_stub.$(OBJEXT)
 sixel2png_OBJECTS = $(am_sixel2png_OBJECTS)
 @WANT_SIXEL2PNG_TRUE@sixel2png_DEPENDENCIES =  \
 @WANT_SIXEL2PNG_TRUE@	$(top_builddir)/src/libsixel.la
@@ -307,7 +309,7 @@ top_srcdir = @top_srcdir@
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c quant.c stb_image.c malloc_stub.c
 @WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la
 @WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -DSTBI_NO_HDR -I$(top_builddir)/include/
-@WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = sixel2png.c stb_image_write.c
+@WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c
 @WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la
 @WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = -I$(top_builddir)/include/
 all: all-am
@@ -412,6 +414,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-malloc_stub.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-quant.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-stb_image.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-malloc_stub.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-sixel2png.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-stb_image_write.Po@am__quote@
 
@@ -519,6 +522,20 @@ sixel2png-stb_image_write.obj: stb_image_write.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stb_image_write.c' object='sixel2png-stb_image_write.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o sixel2png-stb_image_write.obj `if test -f 'stb_image_write.c'; then $(CYGPATH_W) 'stb_image_write.c'; else $(CYGPATH_W) '$(srcdir)/stb_image_write.c'; fi`
+
+sixel2png-malloc_stub.o: malloc_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT sixel2png-malloc_stub.o -MD -MP -MF $(DEPDIR)/sixel2png-malloc_stub.Tpo -c -o sixel2png-malloc_stub.o `test -f 'malloc_stub.c' || echo '$(srcdir)/'`malloc_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sixel2png-malloc_stub.Tpo $(DEPDIR)/sixel2png-malloc_stub.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='malloc_stub.c' object='sixel2png-malloc_stub.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o sixel2png-malloc_stub.o `test -f 'malloc_stub.c' || echo '$(srcdir)/'`malloc_stub.c
+
+sixel2png-malloc_stub.obj: malloc_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT sixel2png-malloc_stub.obj -MD -MP -MF $(DEPDIR)/sixel2png-malloc_stub.Tpo -c -o sixel2png-malloc_stub.obj `if test -f 'malloc_stub.c'; then $(CYGPATH_W) 'malloc_stub.c'; else $(CYGPATH_W) '$(srcdir)/malloc_stub.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sixel2png-malloc_stub.Tpo $(DEPDIR)/sixel2png-malloc_stub.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='malloc_stub.c' object='sixel2png-malloc_stub.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o sixel2png-malloc_stub.obj `if test -f 'malloc_stub.c'; then $(CYGPATH_W) 'malloc_stub.c'; else $(CYGPATH_W) '$(srcdir)/malloc_stub.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
