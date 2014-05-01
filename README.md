@@ -91,7 +91,7 @@ Options:
                            TYPE is one of them:
                                auto   -> choose diffusion type
                                          automatically
-                               none   -> do not diffusion
+                               none   -> do not diffuse
                                fs     -> Floyd-Steinberg method
                                jajuji -> Jarvis, Judice & Ninke
 ```

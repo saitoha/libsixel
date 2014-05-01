@@ -314,7 +314,7 @@ argerr:
             "                           TYPE is one of them:\n"
             "                               auto   -> choose diffusion type\n"
             "                                         automatically (default)\n"
-            "                               none   -> do not diffusion\n"
+            "                               none   -> do not diffuse\n"
             "                               fs     -> Floyd-Steinberg method\n"
             "                               jajuni -> Jarvis, Judice & Ninke\n"
             );
