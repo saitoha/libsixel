@@ -104,14 +104,24 @@ sixel_to_png(const char *input, const char *output)
     max = 64 * 1024;
 
     if ((raw_data = (uint8_t *)malloc(max)) == NULL) {
+#if HAVE_ERRNO_H
+        fprintf(stderr, "malloc(%d) failed.\n" "reason: %s.\n",
+                max, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
         return (-1);
     }
 
     for (;;) {
         if ((max - raw_len) < 4096) {
             max *= 2;
-            if ((raw_data = (uint8_t *)realloc(raw_data, max)) == NULL)
+            if ((raw_data = (uint8_t *)realloc(raw_data, max)) == NULL) {
+#if HAVE_ERRNO_H
+                fprintf(stderr, "reaalloc(raw_data, %d) failed.\n"
+                                "reason: %s.\n",
+                        max, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
                 return (-1);
+            }
         }
         if ((n = fread(raw_data + raw_len, 1, 4096, input_fp)) <= 0)
             break;
@@ -124,14 +134,16 @@ sixel_to_png(const char *input, const char *output)
 
     im = LibSixel_SixelToLSImage(raw_data, raw_len);
     if (!im) {
-        return -1;
+        fprintf(stderr, "LibSixel_SixelToLSImage failed.\n");
+        return (-1);
     }
 
     png_data = stbi_write_png_to_mem(im->pixels, im->sx * 3,
                                      im->sx, im->sy, STBI_rgb, &png_len);
     LSImage_destroy(im);
     if (!png_data) {
-        return -1;
+        fprintf(stderr, "stbi_write_png_to_mem failed.\n");
+        return (-1);
     }
     if (input == NULL || strcmp(output, "-") == 0) {
 #if HAVE_O_BINARY
@@ -144,10 +156,14 @@ sixel_to_png(const char *input, const char *output)
         output_fp = stdout;
     } else {
         output_fp = fopen(output, "wb");
-    }
-    if (!output_fp) {
-        free(png_data);
-        return -1;
+        if (!output_fp) {
+#if HAVE_ERRNO_H
+            fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
+                    output, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
+            free(png_data);
+            return (-1);
+        }
     }
     fwrite(png_data, 1, png_len, output_fp);
     fclose(output_fp);
