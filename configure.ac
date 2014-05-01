@@ -23,6 +23,20 @@ AC_CONFIG_MACRO_DIR([m4])
 #AC_ENABLE_SHARED
 #AC_DISABLE_STATIC
 
+AC_CHECK_DECL([O_BINARY], [],
+  [AC_DEFINE([O_BINARY], [0], [Define O_BINARY if missing])],
+  [
+    #if HAVE_SYS_TYPES_H
+    # include <sys/types.h>
+    #endif
+    #if HAVE_SYS_STAT_H
+    # include <sys/stat.h>
+    #endif
+    #if HAVE_FCNTL_H
+    # include <fcntl.h>
+    #endif
+  ])
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
