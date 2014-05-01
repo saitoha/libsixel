@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
 
 #if defined(HAVE_UNISTD_H)
 # include <unistd.h>  /* getopt */
@@ -71,6 +72,7 @@ convert_to_sixel(char const *filename, int reqcolors,
     int i;
     int nret = -1;
     enum methodForDiffuse method_for_diffuse = DIFFUSE_NONE;
+    FILE *f;
 
     if (reqcolors < 2) {
         reqcolors = 2;
@@ -78,9 +80,23 @@ convert_to_sixel(char const *filename, int reqcolors,
         reqcolors = PALETTE_MAX;
     }
 
-    pixels = stbi_load(filename, &sx, &sy, &comp, STBI_rgb);
+    if (filename == NULL || strcmp(filename, "-") == 0) {
+        /* for windows */
+        setmode(fileno(stdin), _O_BINARY);
+        f = stdin;
+    } else {
+        f = fopen(filename, "rb");
+        if (!f) {
+            fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
+                    mapfile, strerror(errno));
+            nret = -1;
+            goto end;
+        }
+    }
+    pixels = stbi_load_from_file(f, &sx, &sy, &comp, STBI_rgb);
+    fclose(f);
     if (pixels == NULL) {
-        fprintf(stderr, "stbi_load('%s') failed.\n" "reason: %s.\n",
+        fprintf(stderr, "stbi_load_from_file('%s') failed.\n" "reason: %s.\n",
                 filename, stbi_failure_reason());
         nret = -1;
         goto end;
@@ -97,7 +113,21 @@ convert_to_sixel(char const *filename, int reqcolors,
         ncolors = 2;
         method_for_diffuse = DIFFUSE_FS;
     } else if (mapfile) {
-        mappixels = stbi_load(mapfile, &map_sx, &map_sy, &map_comp, STBI_rgb);
+        if (strcmp(mapfile, "-") == 0) {
+            /* for windows */
+            setmode(fileno(stdin), _O_BINARY);
+            f = stdin;
+        } else {
+            f = fopen(mapfile, "rb");
+        }
+        if (!f) {
+            fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
+                    mapfile, strerror(errno));
+            nret = -1;
+            goto end;
+        }
+        mappixels = stbi_load_from_file(f, &map_sx, &map_sy, &map_comp, STBI_rgb);
+        fclose(f);
         if (!mappixels) {
             fprintf(stderr, "stbi_load('%s') failed.\n" "reason: %s.\n",
                     mapfile, stbi_failure_reason());
@@ -274,7 +304,7 @@ int main(int argc, char *argv[])
     }
 
     if (optind == argc) {
-        ret = convert_to_sixel("/dev/stdin", ncolors, mapfile,
+        ret = convert_to_sixel(NULL, ncolors, mapfile,
                                monochrome, diffusion, f8bit);
         if (ret != 0) {
             exit_code = EXIT_FAILURE;
