@@ -70,7 +70,7 @@ LSQ_ApplyPalette(unsigned char *data,
                  int x,
                  int y,
                  int depth,
-                 uint8_t *palette,
+                 unsigned char *palette,
                  int ncolors,
                  enum methodForDiffuse const methodForDiffuse);
 
