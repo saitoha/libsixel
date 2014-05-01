@@ -13,7 +13,7 @@ env:
 before_install:
   - "sudo apt-get -qq update --force-yes > /dev/null"
   - "sudo apt-get -qq install $CC"
-  - "test \"$HOST\" && sudo apt-get install -qq wine > /dev/null"
+  - "if [ \"$HOST\" ]; then sudo apt-get install -qq wine > /dev/null; fi"
   - "if [ \"$CC\" = 'gcc' ] && [ \"$WINE\" = 'wine' ]; then sudo apt-get install -qq gcc-mingw-w64-i686 binutils-mingw-w64-i686; fi"
   - "if [ \"$CC\" = 'gcc' ] && [ \"$WINE\" = 'wine64' ]; then sudo apt-get install -qq gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64; fi"
 
