@@ -4,15 +4,15 @@ bin_PROGRAMS =
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
 img2sixel_SOURCES = img2sixel.c quant.c stb_image.c
-img2sixel_LDFLAGS = -lsixel -L$(top_builddir)/src
+img2sixel_LDADD = $(top_builddir)/src/.libs/libsixel.la
 img2sixel_CFLAGS = -DSTBI_NO_HDR -I$(top_builddir)/include/
 endif
 # -DSTBI_SIMD
 
-if WANT_SIXEL2IMG
+if WANT_SIXEL2PNG
 bin_PROGRAMS += sixel2png
 sixel2png_SOURCES = sixel2png.c stb_image_write.c
-sixel2png_LDFLAGS = -lsixel -L$(top_builddir)/src
+sixel2png_LDADD = $(top_builddir)/src/.libs/libsixel.la
 sixel2png_CFLAGS = -I$(top_builddir)/include/
 endif
 
@@ -21,7 +21,7 @@ if WANT_IMG2SIXEL
 	./img2sixel ../images/snake.jpg
 	./img2sixel ../images/snake.jpg > snake.sixel
 endif
-if WANT_SIXEL2IMG
+if WANT_SIXEL2PNG
 	./sixel2png < snake.sixel > snake.png
 endif
 if WANT_IMG2SIXEL

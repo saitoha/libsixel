@@ -81,17 +81,8 @@
 /* Version number of package */
 #undef VERSION
 
-/* Define for Solaris 2.5.1 so the uint8_t typedef from <sys/synch.h>,
-   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
-   #define below would cause a syntax error. */
-#undef _UINT8_T
-
 /* Define to rpl_malloc if the replacement function should be used. */
 #undef malloc
 
 /* Define to rpl_realloc if the replacement function should be used. */
 #undef realloc
-
-/* Define to the type of an unsigned integer type of width exactly 8 bits if
-   such a type exists and the standard includes do not define it. */
-#undef uint8_t
