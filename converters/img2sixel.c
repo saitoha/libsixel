@@ -39,7 +39,7 @@
 
 #include <sixel.h>
 
-#define STBI_HEADER_FILE_ONLY
+#define STBI_HEADER_FILE_ONLY 1
 
 #if !defined(HAVE_MEMCPY)
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
