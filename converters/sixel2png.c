@@ -57,6 +57,10 @@
 #include <sixel.h>
 #include "stb_image_write.h"
 
+#if !defined(O_BINARY) && !defined(_O_BINARY)
+# define O_BINARY _O_BINARY
+#endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
+
 enum
 {
    STBI_default = 0, /* only used for req_comp */
@@ -78,16 +82,17 @@ sixel_to_png(const char *input, const char *output)
     int max;
     int n;
     FILE *input_fp, *output_fp;
+    int write_len;
 
     if (input == NULL || strcmp(input, "-") == 0) {
         /* for windows */
-#if HAVE_O_BINARY
+#if defined(O_BINARY)
 # if HAVE__SETMODE
         _setmode(fileno(stdin), O_BINARY);
 # elif HAVE_SETMODE
         setmode(fileno(stdin), O_BINARY);
 # endif  /* HAVE_SETMODE */
-#endif  /* HAVE_O_BINARY */
+#endif  /* defined(O_BINARY) */
         input_fp = stdin;
     } else {
         input_fp = fopen(input, "rb");
@@ -137,7 +142,6 @@ sixel_to_png(const char *input, const char *output)
         fprintf(stderr, "LibSixel_SixelToLSImage failed.\n");
         return (-1);
     }
-
     png_data = stbi_write_png_to_mem(im->pixels, im->sx * 3,
                                      im->sx, im->sy, STBI_rgb, &png_len);
     LSImage_destroy(im);
@@ -145,14 +149,14 @@ sixel_to_png(const char *input, const char *output)
         fprintf(stderr, "stbi_write_png_to_mem failed.\n");
         return (-1);
     }
-    if (input == NULL || strcmp(output, "-") == 0) {
-#if HAVE_O_BINARY
+    if (output == NULL || strcmp(output, "-") == 0) {
+#if defined(O_BINARY)
 # if HAVE__SETMODE
         _setmode(fileno(stdout), O_BINARY);
 # elif HAVE_SETMODE
         setmode(fileno(stdout), O_BINARY);
 # endif  /* HAVE_SETMODE */
-#endif  /* HAVE_O_BINARY */
+#endif  /* defined(O_BINARY) */
         output_fp = stdout;
     } else {
         output_fp = fopen(output, "wb");
@@ -165,7 +169,7 @@ sixel_to_png(const char *input, const char *output)
             return (-1);
         }
     }
-    fwrite(png_data, 1, png_len, output_fp);
+    write_len = fwrite(png_data, 1, png_len, output_fp);
     fclose(output_fp);
     free(png_data);
 
