@@ -100,14 +100,16 @@ CONFIG_CLEAN_VPATH_FILES =
 @WANT_SIXEL2PNG_TRUE@am__EXEEXT_2 = sixel2png$(EXEEXT)
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am__img2sixel_SOURCES_DIST = img2sixel.c quant.c stb_image.c
+am__img2sixel_SOURCES_DIST = img2sixel.c quant.c stb_image.c \
+	malloc_stub.c
 @WANT_IMG2SIXEL_TRUE@am_img2sixel_OBJECTS =  \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-img2sixel.$(OBJEXT) \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-quant.$(OBJEXT) \
-@WANT_IMG2SIXEL_TRUE@	img2sixel-stb_image.$(OBJEXT)
+@WANT_IMG2SIXEL_TRUE@	img2sixel-stb_image.$(OBJEXT) \
+@WANT_IMG2SIXEL_TRUE@	img2sixel-malloc_stub.$(OBJEXT)
 img2sixel_OBJECTS = $(am_img2sixel_OBJECTS)
 @WANT_IMG2SIXEL_TRUE@img2sixel_DEPENDENCIES =  \
-@WANT_IMG2SIXEL_TRUE@	$(top_builddir)/src/.libs/libsixel.la
+@WANT_IMG2SIXEL_TRUE@	$(top_builddir)/src/libsixel.la
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -121,7 +123,7 @@ am__sixel2png_SOURCES_DIST = sixel2png.c stb_image_write.c
 @WANT_SIXEL2PNG_TRUE@	sixel2png-stb_image_write.$(OBJEXT)
 sixel2png_OBJECTS = $(am_sixel2png_OBJECTS)
 @WANT_SIXEL2PNG_TRUE@sixel2png_DEPENDENCIES =  \
-@WANT_SIXEL2PNG_TRUE@	$(top_builddir)/src/.libs/libsixel.la
+@WANT_SIXEL2PNG_TRUE@	$(top_builddir)/src/libsixel.la
 sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sixel2png_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -302,11 +304,11 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c quant.c stb_image.c
-@WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/.libs/libsixel.la
+@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c quant.c stb_image.c malloc_stub.c
+@WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la
 @WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -DSTBI_NO_HDR -I$(top_builddir)/include/
 @WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = sixel2png.c stb_image_write.c
-@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/.libs/libsixel.la
+@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la
 @WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = -I$(top_builddir)/include/
 all: all-am
 
@@ -407,6 +409,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-img2sixel.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-malloc_stub.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-quant.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-stb_image.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-sixel2png.Po@am__quote@
@@ -474,6 +477,20 @@ img2sixel-stb_image.obj: stb_image.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stb_image.c' object='img2sixel-stb_image.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o img2sixel-stb_image.obj `if test -f 'stb_image.c'; then $(CYGPATH_W) 'stb_image.c'; else $(CYGPATH_W) '$(srcdir)/stb_image.c'; fi`
+
+img2sixel-malloc_stub.o: malloc_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT img2sixel-malloc_stub.o -MD -MP -MF $(DEPDIR)/img2sixel-malloc_stub.Tpo -c -o img2sixel-malloc_stub.o `test -f 'malloc_stub.c' || echo '$(srcdir)/'`malloc_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel-malloc_stub.Tpo $(DEPDIR)/img2sixel-malloc_stub.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='malloc_stub.c' object='img2sixel-malloc_stub.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o img2sixel-malloc_stub.o `test -f 'malloc_stub.c' || echo '$(srcdir)/'`malloc_stub.c
+
+img2sixel-malloc_stub.obj: malloc_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT img2sixel-malloc_stub.obj -MD -MP -MF $(DEPDIR)/img2sixel-malloc_stub.Tpo -c -o img2sixel-malloc_stub.obj `if test -f 'malloc_stub.c'; then $(CYGPATH_W) 'malloc_stub.c'; else $(CYGPATH_W) '$(srcdir)/malloc_stub.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel-malloc_stub.Tpo $(DEPDIR)/img2sixel-malloc_stub.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='malloc_stub.c' object='img2sixel-malloc_stub.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o img2sixel-malloc_stub.obj `if test -f 'malloc_stub.c'; then $(CYGPATH_W) 'malloc_stub.c'; else $(CYGPATH_W) '$(srcdir)/malloc_stub.c'; fi`
 
 sixel2png-sixel2png.o: sixel2png.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT sixel2png-sixel2png.o -MD -MP -MF $(DEPDIR)/sixel2png-sixel2png.Tpo -c -o sixel2png-sixel2png.o `test -f 'sixel2png.c' || echo '$(srcdir)/'`sixel2png.c
