@@ -29,3 +29,17 @@ if WANT_IMG2SIXEL
 	./img2sixel -m ../images/map8.png ../images/egret.jpg
 	./img2sixel -m ../images/map16.png ../images/egret.jpg
 endif
+
+winetest: all
+if WANT_IMG2SIXEL
+	wine ./img2sixel.exe ../images/snake.jpg
+	wine ./img2sixel.exe ../images/snake.jpg > snake.sixel
+endif
+if WANT_SIXEL2PNG
+	wine ./sixel2png.exe < snake.sixel > snake.png
+endif
+if WANT_IMG2SIXEL
+	wine ./img2sixel -p 16 ../images/egret.jpg
+	wine ./img2sixel -m ../images/map8.png ../images/egret.jpg
+	wine ./img2sixel -m ../images/map16.png ../images/egret.jpg
+endif
