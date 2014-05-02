@@ -1,6 +1,8 @@
 libsixel
 ========
 
+[![Build Status](https://travis-ci.org/saitoha/libsixel.svg?branch=master)](https://travis-ci.org/saitoha/libsixel)
+
 ## What is this?
 
 This package provides encoder/decoder implementation for DEC SIXEL graphics, and
