@@ -2,14 +2,13 @@
 language: c
 
 env:
-  - CC=clang HOST= WINE=
-  - CC=gcc HOST= WINE=
-  - CC=i686-w64-mingw32-gcc HOST=i686-w64-mingw32 WINE=wine
-  - CC=x86_64-w64-mingw32-gcc HOST=x86_64-w64-mingw32 WINE=wine64
+  - XCC=clang HOST= WINE=
+  - XCC=gcc HOST= WINE=
+  - XCC=i686-w64-mingw32-gcc HOST=i686-w64-mingw32 WINE=wine
+  - XCC=x86_64-w64-mingw32-gcc HOST=x86_64-w64-mingw32 WINE=wine64
 
 before_install:
-  - "sudo apt-get -qq update --force-yes > /dev/null"
-  - "sudo apt-get -qq install $CC"
+    #  - "sudo apt-get -qq update --force-yes > /dev/null"
   - "if [ x$WINE != x ]; then sudo apt-get install -qq wine > /dev/null; fi"
   - "if [ x$CC = xclang ]; then sudo apt-get install -qq clang; fi"
   - "if [ x$CC = xgcc ]; then sudo apt-get install -qq gcc; fi"
@@ -19,7 +18,7 @@ before_install:
 before_script:
   - "uname -a"
   - "uname -r"
-  - "./configure --host=$HOST"
+  - "CC=$XCC ./configure --host=$HOST"
 
 script:
   - "make"
