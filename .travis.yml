@@ -23,13 +23,13 @@ before_script:
 
 script:
   - "make"
-  - "$WINE converters/img2sixel.exe images/snake.jpg > snake1.sixel"
+  - "$WINE converters/img2sixel images/snake.jpg > snake1.sixel"
   - "du -h snake1.sixel"
-  - "$WINE converters/img2sixel.exe -p16 images/snake.jpg > snake2.sixel"
+  - "$WINE converters/img2sixel -p16 images/snake.jpg > snake2.sixel"
   - "du -h snake2.sixel"
-  - "$WINE converters/img2sixel.exe -i snake1.sixel -o snake1.png"
+  - "$WINE converters/img2sixel -i snake1.sixel -o snake1.png"
   - "du -h snake1.png"
-  - "$WINE converters/img2sixel.exe < snake2.sixel > snake2.png"
+  - "$WINE converters/img2sixel < snake2.sixel > snake2.png"
   - "du -h snake2.png"
-  - "$WINE converters/img2sixel.exe images/snake1.png > snake3.sixel"
+  - "$WINE converters/img2sixel images/snake1.png > snake3.sixel"
   - "du -h snake3.sixel"
