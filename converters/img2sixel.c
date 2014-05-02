@@ -72,31 +72,10 @@
 #include "stb_image.c"
 
 
-static int
-convert_to_sixel(char const *filename, int reqcolors,
-                 const char *mapfile, int monochrome,
-                 const char *diffusion, int f8bit)
+static FILE *
+open_binary_file(char const *filename)
 {
-    uint8_t *pixels = NULL;
-    uint8_t *mappixels = NULL;
-    uint8_t *palette = NULL;
-    uint8_t *data = NULL;
-    int ncolors;
-    int origcolors;
-    LSImagePtr im = NULL;
-    LSOutputContextPtr context = NULL;
-    int sx, sy, comp;
-    int map_sx, map_sy, map_comp;
-    int i;
-    int nret = -1;
-    enum methodForDiffuse method_for_diffuse = DIFFUSE_NONE;
     FILE *f;
-
-    if (reqcolors < 2) {
-        reqcolors = 2;
-    } else if (reqcolors > PALETTE_MAX) {
-        reqcolors = PALETTE_MAX;
-    }
 
     if (filename == NULL || strcmp(filename, "-") == 0) {
         /* for windows */
@@ -107,17 +86,95 @@ convert_to_sixel(char const *filename, int reqcolors,
         setmode(fileno(stdin), O_BINARY);
 # endif  /* HAVE_SETMODE */
 #endif  /* defined(O_BINARY) */
-        f = stdin;
-    } else {
-        f = fopen(filename, "rb");
-        if (!f) {
-#if HAVE_ERRNO_H
-            fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
-                    filename, strerror(errno));
+        return stdin;
+    }
+    f = fopen(filename, "rb");
+    if (!f) {
+#if _ERRNO_H
+        fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
+                filename, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
-            nret = -1;
-            goto end;
-        }
+        return NULL;
+    }
+    return f;
+}
+
+
+static unsigned char *
+prepare_monochrome_palette()
+{
+    unsigned char *palette;
+
+    palette = malloc(6);
+    palette[0] = 0x00;
+    palette[1] = 0x00;
+    palette[2] = 0x00;
+    palette[3] = 0xff;
+    palette[4] = 0xff;
+    palette[5] = 0xff;
+
+    return palette;
+}
+
+
+static unsigned char *
+prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
+{
+    FILE *f;
+    unsigned char *mappixels;
+    unsigned char *palette;
+    int origcolors;
+    int map_sx;
+    int map_sy;
+    int map_comp;
+
+    f = open_binary_file(mapfile);
+    if (!f) {
+        return NULL;
+    }
+    mappixels = stbi_load_from_file(f, &map_sx, &map_sy, &map_comp, STBI_rgb);
+    fclose(f);
+    if (!mappixels) {
+        fprintf(stderr, "stbi_load('%s') failed.\n" "reason: %s.\n",
+                mapfile, stbi_failure_reason());
+        return NULL;
+    }
+    palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3,
+                              reqcolors, pncolors, &origcolors,
+                              LARGE_NORM, REP_CENTER_BOX);
+    return palette;
+}
+
+
+static int
+convert_to_sixel(char const *filename, int reqcolors,
+                 char const *mapfile, int monochrome,
+                 char const *diffusion, int f8bit)
+{
+    unsigned char *pixels = NULL;
+    unsigned char *mappixels = NULL;
+    unsigned char *palette = NULL;
+    unsigned char *data = NULL;
+    int ncolors;
+    int origcolors;
+    LSImagePtr im = NULL;
+    LSOutputContextPtr context = NULL;
+    int sx, sy, comp;
+    int map_sx, map_sy, map_comp;
+    int i;
+    int nret = -1;
+    enum methodForDiffuse method_for_diffuse = DIFFUSE_FS;
+    FILE *f;
+
+    if (reqcolors < 2) {
+        reqcolors = 2;
+    } else if (reqcolors > PALETTE_MAX) {
+        reqcolors = PALETTE_MAX;
+    }
+    f = open_binary_file(filename);
+    if (!f) {
+        nret = -1;
+        goto end;
     }
     pixels = stbi_load_from_file(f, &sx, &sy, &comp, STBI_rgb);
     fclose(f);
@@ -129,56 +186,15 @@ convert_to_sixel(char const *filename, int reqcolors,
     }
 
     if (monochrome) {
-        palette = malloc(6);
-        palette[0] = 0x00;
-        palette[1] = 0x00;
-        palette[2] = 0x00;
-        palette[3] = 0xff;
-        palette[4] = 0xff;
-        palette[5] = 0xff;
+        palette = prepare_monochrome_palette();
         ncolors = 2;
-        method_for_diffuse = DIFFUSE_FS;
     } else if (mapfile) {
-        if (strcmp(mapfile, "-") == 0) {
-            /* for windows */
-#if defined(O_BINARY)
-# if HAVE__SETMODE
-            _setmode(fileno(stdin), O_BINARY);
-# elif HAVE_SETMODE
-            setmode(fileno(stdin), O_BINARY);
-# endif  /* HAVE_SETMODE */
-#endif  /* defined(O_BINARY) */
-            f = stdin;
-        } else {
-            f = fopen(mapfile, "rb");
-        }
-        if (!f) {
-#if HAVE_ERRNO_H
-            fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
-                    mapfile, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-            nret = -1;
-            goto end;
-        }
-        mappixels = stbi_load_from_file(f, &map_sx, &map_sy, &map_comp, STBI_rgb);
-        fclose(f);
-        if (!mappixels) {
-            fprintf(stderr, "stbi_load('%s') failed.\n" "reason: %s.\n",
-                    mapfile, stbi_failure_reason());
-            nret = -1;
-            goto end;
-        }
-        palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3,
-                                  reqcolors, &ncolors, &origcolors,
-                                  LARGE_NORM, REP_CENTER_BOX);
-        method_for_diffuse = DIFFUSE_FS;
+        palette = prepare_specified_palette(mapfile, reqcolors, &ncolors);
     } else {
         palette = LSQ_MakePalette(pixels, sx, sy, 3,
                                   reqcolors, &ncolors, &origcolors,
                                   LARGE_NORM, REP_CENTER_BOX);
-        if (origcolors > ncolors) {
-            method_for_diffuse = DIFFUSE_FS;
-        } else {
+        if (origcolors <= ncolors) {
             method_for_diffuse = DIFFUSE_NONE;
         }
     }
