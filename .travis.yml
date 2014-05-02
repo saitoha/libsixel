@@ -30,6 +30,6 @@ script:
   - "du -h snake1.png"
   - "$WINE converters/sixel2png < snake2.sixel > snake2.png"
   - "du -h snake2.png"
-  - "$WINE converters/img2sixel images/snake1.png > snake3.sixel"
+  - "$WINE converters/img2sixel snake1.png > snake3.sixel"
   - "du -h snake3.sixel"
 
