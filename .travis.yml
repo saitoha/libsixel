@@ -1,21 +1,20 @@
 
 language: c
 
-compiler:
-  - gcc
-  - clang
-
 env:
-  - HOST= WINE=
-  - HOST=i686-w64-mingw32 WINE=wine
-  - HOST=x86_64-w64-mingw32 WINE=wine64
+  - CC=clang HOST= WINE=
+  - CC=gcc HOST= WINE=
+  - CC=i686-w64-mingw32-gcc HOST=i686-w64-mingw32 WINE=wine
+  - CC=x86_64-w64-mingw32-gcc HOST=x86_64-w64-mingw32 WINE=wine64
 
 before_install:
   - "sudo apt-get -qq update --force-yes > /dev/null"
   - "sudo apt-get -qq install $CC"
-  - "if [ \"$HOST\" ]; then sudo apt-get install -qq wine > /dev/null; fi"
-  - "if [ \"$CC\" = 'gcc' ] && [ \"$WINE\" = 'wine' ]; then sudo apt-get install -qq gcc-mingw-w64-i686 binutils-mingw-w64-i686; fi"
-  - "if [ \"$CC\" = 'gcc' ] && [ \"$WINE\" = 'wine64' ]; then sudo apt-get install -qq gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64; fi"
+  - "if [ x$WINE != x ]; then sudo apt-get install -qq wine > /dev/null; fi"
+  - "if [ x$CC = xclang ]; then sudo apt-get install -qq clang; fi"
+  - "if [ x$CC = xgcc ]; then sudo apt-get install -qq gcc; fi"
+  - "if [ x$CC = xi686-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-i686 binutils-mingw-w64-i686; fi"
+  - "if [ x$CC = x86_64-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64; fi"
 
 before_script:
   - "uname -a"
@@ -24,18 +23,13 @@ before_script:
 
 script:
   - "make"
-  - "if [ ! \"$WINE\" ]; then converters/img2sixel images/snake.jpg > snake1.sixel; fi"
-  - "if [ ! \"$WINE\" ]; then converters/img2sixel -p16 images/snake.jpg > snake2.sixel; fi"
-  - "if [ ! \"$WINE\" ]; then converters/sixel2png -i snake1.sixel -o snake1.png; fi"
-  - "if [ ! \"$WINE\" ]; then converters/sixel2png < snake2.sixel > snake2.png; fi"
-  - "if [ ! \"$WINE\" ]; then converters/img2sixel snake1.png > snake3.sixel; fi"
-  - "if [ \"$WINE\" ]; then $WINE converters/img2sixel.exe images/snake.jpg > snake1.sixel; fi"
-  - "if [ \"$WINE\" ]; then $WINE converters/img2sixel.exe -p16 images/snake.jpg > snake2.sixel; fi"
-  - "if [ \"$WINE\" ]; then $WINE converters/img2sixel.exe -i snake1.sixel -o snake1.png; fi"
-  - "if [ \"$WINE\" ]; then $WINE converters/img2sixel.exe < snake2.sixel > snake2.png; fi"
-  - "if [ \"$WINE\" ]; then $WINE converters/img2sixel.exe images/snake1.png > snake3.sixel; fi"
+  - "$WINE converters/img2sixel.exe images/snake.jpg > snake1.sixel"
   - "du -h snake1.sixel"
+  - "$WINE converters/img2sixel.exe -p16 images/snake.jpg > snake2.sixel"
   - "du -h snake2.sixel"
-  - "du -h snake3.sixel"
+  - "$WINE converters/img2sixel.exe -i snake1.sixel -o snake1.png"
   - "du -h snake1.png"
+  - "$WINE converters/img2sixel.exe < snake2.sixel > snake2.png"
   - "du -h snake2.png"
+  - "$WINE converters/img2sixel.exe images/snake1.png > snake3.sixel"
+  - "du -h snake3.sixel"
