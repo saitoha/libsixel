@@ -13,7 +13,7 @@ before_install:
   - "if [ x$XCC = xclang ]; then sudo apt-get install -qq clang; fi"
   - "if [ x$XCC = xgcc ]; then sudo apt-get install -qq gcc; fi"
   - "if [ x$XCC = xi686-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-i686 binutils-mingw-w64-i686; fi"
-  - "if [ x$XCC = x86_64-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64; fi"
+  - "if [ x$XCC = xx86_64-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64; fi"
 
 before_script:
   - "uname -a"
