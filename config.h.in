@@ -1,13 +1,5 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Define to 1 if you have the declaration of `O_BINARY', and to 0 if you
-   don't. */
-#undef HAVE_DECL_O_BINARY
-
-/* Define to 1 if you have the declaration of `_O_BINARY', and to 0 if you
-   don't. */
-#undef HAVE_DECL__O_BINARY
-
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
