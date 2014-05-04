@@ -1,11 +1,13 @@
 
 bin_PROGRAMS =
+dist_man_MANS =
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
 img2sixel_SOURCES = img2sixel.c quant.c stb_image.c malloc_stub.c
 img2sixel_LDADD = $(top_builddir)/src/libsixel.la
 img2sixel_CFLAGS = -DSTBI_NO_HDR -I$(top_builddir)/include/
+dist_man_MANS += img2sixel.1
 endif
 # -DSTBI_SIMD
 
@@ -14,6 +16,7 @@ bin_PROGRAMS += sixel2png
 sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c
 sixel2png_LDADD = $(top_builddir)/src/libsixel.la
 sixel2png_CFLAGS = -I$(top_builddir)/include/
+dist_man_MANS += sixel2png.1
 endif
 
 test: all
