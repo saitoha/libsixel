@@ -1,0 +1,133 @@
+.\" vi:set wm=5
+.TH IMG2SIXEL 1 "May 2014"
+.if n .ds Q \&"
+.if n .ds U \&"
+.if t .ds Q ``
+.if t .ds U ''
+.UC 4
+.SH NAME
+img2sixel \- image converter to DEC SIXEL graphics
+
+
+.SH SYNOPSIS
+.B img2sixel
+[ \-\fIoptions\fP ] \fIimagefiles\fP
+.br
+.B img2sixel
+[ \-\fIoptions\fP ] < \fIimagefiles\fP
+.ta .5i 1.8i
+
+
+.SH DESCRIPTION
+.I img2sixel
+convert JPEG/PNG images into DEC SIXEL image format.
+
+
+.SH "COMMAND-LINE OPTIONS"
+\fIimg2sixel\fP has the following command-line options:
+.TP 5
+.B \-7, \-\-7bit-mode
+generate a sixel image for 7bit terminals or printers (default).
+.TP 5
+.B \-8, \-\-8bit-mode
+generate a sixel image for 8bit terminals or printers.
+.TP 5
+.B \-p \fICOLORS\fP, \-\-colors=\fICOLORS\fP
+specify number of colors to reduce the image to (default=256).
+.TP 5
+.B \-m \fIFILE\fP, \-\-mapfile=\fIFILE\fP
+transform image colors to match this set of colorsspecify map.
+.TP 5
+.B \-e, \-\-monochrome
+output monochrome(1bpp) sixel image.
+.TP 5
+.B \-d \fITYPE\fP, \-\-diffusion=\fITYPE\fP
+choose diffusion method which used with color reduction.
+.br
+TYPE is one of them:
+.br
+auto   -> choose diffusion type automatically (default).
+.br
+none   -> do not diffusion
+.br
+fs     -> Floyd-Steinberg method
+.br
+jajuni -> Jarvis, Judice & Ninke
+
+
+.SH "SEE ALSO"
+sixel2png(1)
+
+
+.SH AUTHORS
+\fIimg2sixel\fP is maintained by Hayaki Saito.
+We imported whole code of \fIstbi-1.33\fP, written by Sean Barrett and its contributers, for loading PNG/JPEG images,
+and imported some code from \fIpnmquant.c (netpbm library)\fP for image quantization.
+
+
+.SH COPYRIGHT
+Copyright (c) 2014 Hayaki Saito
+.PP
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+.PP
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+.PP
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+.SH THANKS
+This software derives from the following implementations.
+.br
+.TP 5
+.B stbi-1.33
+This software includes \fIstbi-1.33\fP (stb_image.c),
+a public domain JPEG/PNG reader.
+.br
+.B http://nothings.org/stb_image.c
+
+.TP 5
+.B pnmquant.c (netpbm library)
+The implementation of median cut algorithm for color quantization in quant.c
+is imported from \fIpnmcolormap\fP included in \fInetpbm library\fP.
+.br
+http://netpbm.sourceforge.net/
+\fIpnmcolormap\fP was derived from \fIppmquant\fP, originally by Jef Poskanzer.
+.br
+\fB
+.br
+Copyright (C) 1989, 1991 by Jef Poskanzer.
+.br
+Copyright (C) 2001 by Bryan Henderson.
+.br
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted, provided
+that the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.  This software is provided "as is" without express or
+implied warranty.
+\fP
+ 
+
+.SH CONTRIBUTORS
+.nf
+Araki Ken (@arakiken),
+Iwamoto Kouichi (@ttdoda)
+.fi
+
+
+.SH BUGS
+.PD
+.IP \(bu
+Send bug-reports, fixes, enhancements to
+.BR user@zuse.jp .
+
