@@ -429,7 +429,7 @@ argerr:
             "                               fs     -> Floyd-Steinberg method\n"
             "                               jajuni -> Jarvis, Judice & Ninke\n"
             "-w WIDTH, --width=WIDTH    resize image to specific width\n"
-            "-h HEIGHT, --height=HEIGHT specify image to specific height\n"
+            "-h HEIGHT, --height=HEIGHT resize image to specific height\n"
             );
 
 end:
