@@ -149,7 +149,8 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
 static int
 convert_to_sixel(char const *filename, int reqcolors,
                  char const *mapfile, int monochrome,
-                 char const *diffusion, int f8bit)
+                 char const *diffusion, int f8bit,
+                 int width, int height)
 {
     unsigned char *pixels = NULL;
     unsigned char *mappixels = NULL;
@@ -288,8 +289,12 @@ int main(int argc, char *argv[])
     int ret;
     int exit_code;
     int f8bit;
+    int width;
+    int height;
 
     f8bit = 0;
+    width = -1;
+    height = -1;
 
     struct option long_options[] = {
         {"7bit-mode",    no_argument,        &long_opt, '7'},
@@ -298,11 +303,13 @@ int main(int argc, char *argv[])
         {"mapfile",      required_argument,  &long_opt, 'm'},
         {"monochrome",   no_argument,        &long_opt, 'e'},
         {"diffusion",    required_argument,  &long_opt, 'd'},
+        {"width",        required_argument,  &long_opt, 'w'},
+        {"height",       required_argument,  &long_opt, 'h'},
         {0, 0, 0, 0}
     };
 
     for (;;) {
-        n = getopt_long(argc, argv, "78p:m:ed:",
+        n = getopt_long(argc, argv, "78p:m:ed:w:h:",
                         long_options, &option_index);
         if (n == -1) {
             break;
@@ -328,6 +335,12 @@ int main(int argc, char *argv[])
             break;
         case 'd':
             diffusion = strdup(optarg);
+            break;
+        case 'w':
+            width = atoi(optarg);
+            break;
+        case 'h':
+            height = atoi(optarg);
             break;
         case '?':
             goto argerr;
@@ -355,7 +368,8 @@ int main(int argc, char *argv[])
 
     if (optind == argc) {
         ret = convert_to_sixel(NULL, ncolors, mapfile,
-                               monochrome, diffusion, f8bit);
+                               monochrome, diffusion, f8bit,
+                               width, height);
         if (ret != 0) {
             exit_code = EXIT_FAILURE;
             goto end;
@@ -363,7 +377,8 @@ int main(int argc, char *argv[])
     } else {
         for (n = optind; n < argc; n++) {
             ret = convert_to_sixel(argv[n], ncolors, mapfile,
-                                   monochrome, diffusion, f8bit);
+                                   monochrome, diffusion, f8bit,
+                                   width, height);
             if (ret != 0) {
                 exit_code = EXIT_FAILURE;
                 goto end;
@@ -397,6 +412,8 @@ argerr:
             "                               none   -> do not diffuse\n"
             "                               fs     -> Floyd-Steinberg method\n"
             "                               jajuni -> Jarvis, Judice & Ninke\n"
+            "-w WIDTH, --width=WIDTH    resize image to specific width\n"
+            "-h HEIGHT, --height=HEIGHT specify image to specific height\n"
             );
 
 end:
