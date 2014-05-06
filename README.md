@@ -96,6 +96,8 @@ Options:
                                none   -> do not diffuse
                                fs     -> Floyd-Steinberg method
                                jajuji -> Jarvis, Judice & Ninke
+-w WIDTH, --width=WIDTH    resize image to specific width
+-h HEIGHT, --height=HEIGHT resize image to specific height
 ```
 
 Convert a jpeg image file into a sixel file
