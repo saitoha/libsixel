@@ -4,7 +4,7 @@ dist_man_MANS =
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
-img2sixel_SOURCES = img2sixel.c quant.c stb_image.c malloc_stub.c
+img2sixel_SOURCES = img2sixel.c quant.c scale.c stb_image.c malloc_stub.c
 img2sixel_LDADD = $(top_builddir)/src/libsixel.la
 img2sixel_CFLAGS = -DSTBI_NO_HDR -I$(top_builddir)/include/
 dist_man_MANS += img2sixel.1
