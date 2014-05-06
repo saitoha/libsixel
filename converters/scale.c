@@ -22,6 +22,9 @@
 #include "config.h"
 #include "malloc_stub.h"
 
+#include <math.h>
+#include <stdlib.h>
+
 #define MAX(l, r) ((l) > (r) ? (l) : (r))
 #define MIN(l, r) ((l) < (r) ? (l) : (r))
 
