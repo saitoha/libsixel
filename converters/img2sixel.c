@@ -68,9 +68,9 @@
 # define O_BINARY _O_BINARY
 #endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 
-#include "quant.h"
 #include "stb_image.c"
-
+#include "scale.h"
+#include "quant.h"
 
 static FILE *
 open_binary_file(char const *filename)
@@ -153,6 +153,7 @@ convert_to_sixel(char const *filename, int reqcolors,
                  int width, int height)
 {
     unsigned char *pixels = NULL;
+    unsigned char *scaled_pixels = NULL;
     unsigned char *mappixels = NULL;
     unsigned char *palette = NULL;
     unsigned char *data = NULL;
@@ -184,6 +185,21 @@ convert_to_sixel(char const *filename, int reqcolors,
                 filename, stbi_failure_reason());
         nret = -1;
         goto end;
+    }
+
+    if (width > 0 && height <= 0) {
+        height = sy * width / sx;
+    }
+    if (height > 0 && width <= 0) {
+        width = sx * height / sy;
+    }
+
+    if (width > 0 && height > 0) {
+        scaled_pixels = LSS_scale(pixels, sx, sy, width, height);
+        sx = width;
+        sy = height;
+        free(pixels);
+        pixels = scaled_pixels;
     }
 
     if (monochrome) {
