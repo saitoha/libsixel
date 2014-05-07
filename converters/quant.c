@@ -880,8 +880,23 @@ LSQ_ApplyPalette(unsigned char *data,
     unsigned char *result;
 
     offsets = malloc(sizeof(*offsets) * depth);
+    if (!offsets) {
+        quant_trace(stderr, "Unable to allocate memory for offsets.");
+        return NULL;
+    }
     result = malloc(width * height);
+    if (!result) {
+        quant_trace(stderr, "Unable to allocate memory for result.");
+        free(offsets);
+        return NULL;
+    }
     indextable = malloc((1 << depth * 5) * sizeof(*indextable));
+    if (!indextable) {
+        quant_trace(stderr, "Unable to allocate memory for indextable.");
+        free(offsets);
+        free(result);
+        return NULL;
+    }
     memset(indextable, 0x00, (1 << depth * 5) * sizeof(*indextable));
 
     for (y = 0; y < height; ++y) {
