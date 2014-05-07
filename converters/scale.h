@@ -32,7 +32,7 @@ extern "C" {
 
 unsigned char *
 LSS_scale(unsigned char const *pixels,
-          int srcx, int srcy,
+          int srcx, int srcy, int depth,
           int destx, int desty);
 
 #ifdef __cplusplus

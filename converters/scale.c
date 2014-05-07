@@ -67,11 +67,12 @@ normalize(double x, double total)
 
 unsigned char *
 LSS_scale(unsigned char const *pixels,
-          int srcx, int srcy,
+          int srcx, int srcy, int depth,
           int destx, int desty)
 {
     unsigned char *result;
-    double r, g, b;
+    double *offsets;
+    int i;
     int n;
     int h, w;
     int y, x;
@@ -80,11 +81,15 @@ LSS_scale(unsigned char const *pixels,
     double weight_x, weight_y;
     double total;
 
-    result = malloc(destx * desty * 3);
+    result = malloc(destx * desty * depth);
+    offsets = malloc(sizeof(*offsets) * depth);
 
     for (h = 0; h < desty; h++) { 
         for (w = 0; w < destx; w++) { 
-            total = r = g = b = 0.0;
+            total = 0.0;
+            for (i = 0; i < depth; i++) {
+                offsets[i] = 0;
+            }
             if (destx >= srcx) {
                 x0 = (w + 0.5) * srcx / destx;
                 x_first = MAX(x0 - n, 0);
@@ -115,19 +120,20 @@ LSS_scale(unsigned char const *pixels,
                     } else {
                         weight_y = lanczos(abs((y + 0.5) * desty / srcy - y0), n);
                     }
-                    r += pixels[(y * srcx + x) * 3 + 0] * weight_x * weight_y;
-                    g += pixels[(y * srcx + x) * 3 + 1] * weight_x * weight_y;
-                    b += pixels[(y * srcx + x) * 3 + 2] * weight_x * weight_y;
+                    for (i = 0; i < depth; i++) {
+                        offsets[i] += pixels[(y * srcx + x) * depth + i] * weight_x * weight_y;
+                    }
                     total += weight_x * weight_y;
                 }
             }
             if (total > 0) {
-                result[(h * destx + w) * 3 + 0] = normalize(r, total);
-                result[(h * destx + w) * 3 + 1] = normalize(g, total);
-                result[(h * destx + w) * 3 + 2] = normalize(b, total);
+                for (i = 0; i < depth; i++) {
+                    result[(h * destx + w) * depth + i] = normalize(offsets[i], total);
+                }
             }
         }
     }
+    free(offsets);
     return result;
 }
 

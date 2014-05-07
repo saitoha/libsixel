@@ -195,7 +195,7 @@ convert_to_sixel(char const *filename, int reqcolors,
     }
 
     if (width > 0 && height > 0) {
-        scaled_pixels = LSS_scale(pixels, sx, sy, width, height);
+        scaled_pixels = LSS_scale(pixels, sx, sy, 3, width, height);
         sx = width;
         sy = height;
         free(pixels);
