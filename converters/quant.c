@@ -870,7 +870,6 @@ LSQ_ApplyPalette(unsigned char *data,
                  enum methodForDiffuse const methodForDiffuse)
 {
     int pos, j, n, x, y;
-    int roffset, goffset, boffset;
     int *offsets;
     int distant;
     int r;
@@ -926,6 +925,7 @@ LSQ_ApplyPalette(unsigned char *data,
     }
 
     free(offsets);
+    free(indextable);
     return result;
 }
 
