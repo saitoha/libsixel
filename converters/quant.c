@@ -873,36 +873,53 @@ LSQ_ApplyPalette(unsigned char *data,
     int roffset, goffset, boffset;
     int *offsets;
     int distant;
+    int r;
     int diff;
     int index;
+    unsigned short *indextable;
+    int hash, cache;
     unsigned char *result;
 
     offsets = malloc(sizeof(*offsets) * depth);
     result = malloc(width * height);
+    indextable = malloc((1 << depth * 5) * sizeof(*indextable));
+    memset(indextable, 0x00, (1 << depth * 5) * sizeof(*indextable));
 
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width; ++x) {
             pos = y * width + x;
             diff = INT_MAX;
             index = -1;
-            for (j = 0; j < ncolor; ++j) {
-                distant = 0;
-                for (n = 0; n < depth; ++n) {
-                    distant |= (data[pos * depth + n] - palette[j * depth + n])
-                             * (data[pos * depth + n] - palette[j * depth + n]);
+            hash = *(data + (pos * depth) + 0) >> 3 << 10
+                 | *(data + (pos * depth) + 1) >> 3 << 5
+                 | *(data + (pos * depth) + 2) >> 3;
+            cache = indextable[hash];
+            if (cache) {  /* lookup */
+                index = cache - 1;
+            } else {  /* collision */
+                for (j = 0; j < ncolor; ++j) {
+                    distant = 0;
+                    for (n = 0; n < depth; ++n) {
+                        r = data[pos * depth + n]
+                          - palette[j * depth + n];
+                        distant += r * r;
+                    }
+                    if (distant < diff) {
+                        diff = distant;
+                        index = j;
+                    }
                 }
-                if (distant < diff) {
-                    diff = distant;
-                    index = j;
-                }
+                indextable[hash] = index + 1;
             }
             if (index != -1 && depth == 3) {
                 result[pos] = index;
                 if (ncolor > 2) {
                     for (n = 0; n < depth; ++n) {
-                        offsets[n] = data[pos * depth + n] - palette[index * depth + n];
+                        offsets[n] = data[pos * depth + n]
+                                   - palette[index * depth + n];
                     }
-                    diffuse(data, width, height, x, y, depth, offsets, methodForDiffuse);
+                    diffuse(data, width, height, x, y, depth,
+                            offsets, methodForDiffuse);
                 }
             }
         }
