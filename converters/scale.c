@@ -109,14 +109,20 @@ lanczos3(double const d)
     return 0.0;
 }
 
+
 static unsigned char
 normalize(double x, double total)
 {
-  int result = floor(x / total);
-  if (result >= 256) {
-    return 0xff;
-  }
-  return (unsigned char)result;
+    int result;
+
+    result = floor(x / total);
+    if (result > 255) {
+        return 0xff;
+    }
+    if (result < 0) {
+        return 0x00;
+    }
+    return (unsigned char)result;
 }
 
 
