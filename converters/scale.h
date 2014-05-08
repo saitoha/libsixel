@@ -22,6 +22,16 @@
 #ifndef LIBSSCALE_H
 #define LIBSSCALE_H
 
+/* method for re-sampling */
+enum methodForResampling {
+    RES_NEAREST,  /* Use nearest neighbor method */
+    RES_BILINEAR, /* Use bilinear method */
+    RES_BICUBIC,  /* Use bicubic method */
+    RES_LANCZOS2, /* Use lanczos-2 method */
+    RES_LANCZOS3, /* Use lanczos-3 method */
+};
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
