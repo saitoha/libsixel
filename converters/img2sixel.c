@@ -149,7 +149,8 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
 static int
 convert_to_sixel(char const *filename, int reqcolors,
                  char const *mapfile, int monochrome,
-                 char const *diffusion, char const *resampling,
+                 enum methodForDiffuse method_for_diffuse,
+                 enum methodForResampling const method_for_resampling,
                  int f8bit, int width, int height)
 {
     unsigned char *pixels = NULL;
@@ -165,8 +166,6 @@ convert_to_sixel(char const *filename, int reqcolors,
     int map_sx, map_sy, map_comp;
     int i;
     int nret = -1;
-    enum methodForDiffuse method_for_diffuse = DIFFUSE_FS;
-    enum methodForResampling method_for_resampling;
     FILE *f;
 
     if (reqcolors < 2) {
@@ -198,27 +197,6 @@ convert_to_sixel(char const *filename, int reqcolors,
 
     if (width > 0 && height > 0) {
 
-        /* parse --resampling option */
-        if (!resampling) {  /* default */
-            method_for_resampling = RES_BILINEAR;
-        } else if (strcmp(resampling, "nearest") == 0) {
-            method_for_resampling = RES_NEAREST;
-        } else if (strcmp(resampling, "bilinear") == 0) {
-            method_for_resampling = RES_BILINEAR;
-        } else if (strcmp(resampling, "bicubic") == 0) {
-            method_for_resampling = RES_BICUBIC;
-        } else if (strcmp(resampling, "lanczos2") == 0) {
-            method_for_resampling = RES_LANCZOS2;
-        } else if (strcmp(resampling, "lanczos3") == 0) {
-            method_for_resampling = RES_LANCZOS3;
-        } else {
-            fprintf(stderr,
-                    "Resampling method '%s' is not supported.\n",
-                    resampling);
-            nret = -1;
-            goto end;
-        }
-
         scaled_pixels = LSS_scale(pixels, sx, sy, 3,
                                   width, height,
                                   method_for_resampling);
@@ -249,26 +227,10 @@ convert_to_sixel(char const *filename, int reqcolors,
         goto end;
     }
 
-    /* parse --diffusion option */
-    if (diffusion) {
-        if (strcmp(diffusion, "auto") == 0) {
-            // do nothing
-        } else if (strcmp(diffusion, "none") == 0) {
-            method_for_diffuse = DIFFUSE_NONE;
-        } else if (strcmp(diffusion, "fs") == 0) {
-            method_for_diffuse = DIFFUSE_FS;
-        } else if (strcmp(diffusion, "jajuni") == 0) {
-            method_for_diffuse = DIFFUSE_JAJUNI;
-        } else {
-            fprintf(stderr,
-                    "Diffusion method '%s' is not supported.\n",
-                    diffusion);
-            nret = -1;
-            goto end;
-        }
-    }
-
     /* apply palette */
+    if (method_for_diffuse == DIFFUSE_AUTO) {
+        method_for_diffuse = DIFFUSE_FS;
+    }
     data = LSQ_ApplyPalette(pixels, sx, sy, 3,
                             palette, ncolors,
                             method_for_diffuse,
@@ -335,8 +297,8 @@ int main(int argc, char *argv[])
     int filecount = 1;
     int ncolors = -1;
     int monochrome = 0;
-    char *diffusion = NULL;
-    char *resampling = NULL;
+    enum methodForResampling method_for_resampling = RES_BILINEAR;
+    enum methodForDiffuse method_for_diffuse = DIFFUSE_AUTO;
     char *mapfile = NULL;
     int long_opt;
     int option_index;
@@ -389,7 +351,23 @@ int main(int argc, char *argv[])
             monochrome = 1;
             break;
         case 'd':
-            diffusion = strdup(optarg);
+            /* parse --diffusion option */
+            if (optarg) {
+                if (strcmp(optarg, "auto") == 0) {
+                    method_for_diffuse = DIFFUSE_AUTO;
+                } else if (strcmp(optarg, "none") == 0) {
+                    method_for_diffuse = DIFFUSE_NONE;
+                } else if (strcmp(optarg, "fs") == 0) {
+                    method_for_diffuse = DIFFUSE_FS;
+                } else if (strcmp(optarg, "jajuni") == 0) {
+                    method_for_diffuse = DIFFUSE_JAJUNI;
+                } else {
+                    fprintf(stderr,
+                            "Diffusion method '%s' is not supported.\n",
+                            optarg);
+                    goto argerr;
+                }
+            }
             break;
         case 'w':
             width = atoi(optarg);
@@ -398,7 +376,25 @@ int main(int argc, char *argv[])
             height = atoi(optarg);
             break;
         case 'r':
-            resampling = strdup(optarg);
+            /* parse --resampling option */
+            if (!optarg) {  /* default */
+                method_for_resampling = RES_BILINEAR;
+            } else if (strcmp(optarg, "nearest") == 0) {
+                method_for_resampling = RES_NEAREST;
+            } else if (strcmp(optarg, "bilinear") == 0) {
+                method_for_resampling = RES_BILINEAR;
+            } else if (strcmp(optarg, "bicubic") == 0) {
+                method_for_resampling = RES_BICUBIC;
+            } else if (strcmp(optarg, "lanczos2") == 0) {
+                method_for_resampling = RES_LANCZOS2;
+            } else if (strcmp(optarg, "lanczos3") == 0) {
+                method_for_resampling = RES_LANCZOS3;
+            } else {
+                fprintf(stderr,
+                        "Resampling method '%s' is not supported.\n",
+                        optarg);
+                goto argerr;
+            }
             break;
         case '?':
             goto argerr;
@@ -408,15 +404,18 @@ int main(int argc, char *argv[])
     }
 
     if (ncolors != -1 && mapfile) {
-        fprintf(stderr, "option -p, --colors conflicts with -m, --mapfile.\n");
+        fprintf(stderr, "option -p, --colors conflicts "
+                        "with -m, --mapfile.\n");
         goto argerr;
     }
     if (mapfile && monochrome) {
-        fprintf(stderr, "option -m, --mapfile conflicts with -e, --monochrome.\n");
+        fprintf(stderr, "option -m, --mapfile conflicts "
+                        "with -e, --monochrome.\n");
         goto argerr;
     }
     if (monochrome && ncolors != -1) {
-        fprintf(stderr, "option -e, --monochrome conflicts with -p, --colors.\n");
+        fprintf(stderr, "option -e, --monochrome conflicts"
+                        " with -p, --colors.\n");
         goto argerr;
     }
 
@@ -426,7 +425,9 @@ int main(int argc, char *argv[])
 
     if (optind == argc) {
         ret = convert_to_sixel(NULL, ncolors, mapfile,
-                               monochrome, diffusion, resampling,
+                               monochrome,
+                               method_for_diffuse,
+                               method_for_resampling,
                                f8bit, width, height);
         if (ret != 0) {
             exit_code = EXIT_FAILURE;
@@ -435,7 +436,9 @@ int main(int argc, char *argv[])
     } else {
         for (n = optind; n < argc; n++) {
             ret = convert_to_sixel(argv[n], ncolors, mapfile,
-                                   monochrome, diffusion, resampling,
+                                   monochrome,
+                                   method_for_diffuse,
+                                   method_for_resampling,
                                    f8bit, width, height);
             if (ret != 0) {
                 exit_code = EXIT_FAILURE;
@@ -487,12 +490,6 @@ argerr:
 end:
     if (mapfile) {
         free(mapfile);
-    }
-    if (diffusion) {
-        free(diffusion);
-    }
-    if (resampling) {
-        free(resampling);
     }
     return exit_code;
 }

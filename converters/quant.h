@@ -39,7 +39,8 @@ enum methodForRep {
 
 /* method for dithering */
 enum methodForDiffuse {
-    DIFFUSE_NONE        /* don't diffuse */,
+    DIFFUSE_AUTO,       /* choose diffusion type automatically */
+    DIFFUSE_NONE,       /* don't diffuse */
     DIFFUSE_FS,         /* diffuse with Floyd-Steinberg method */
     DIFFUSE_JAJUNI      /* diffuse with Jarvis, Judice & Ninke method */
 };
