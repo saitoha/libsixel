@@ -134,63 +134,99 @@ LSS_scale(unsigned char const *pixels,
 {
     unsigned char *result;
     double *offsets;
-    int i;
-    int n;
+    int i, index;
+    double n;
     int h, w;
     int y, x;
     int x_first, x_last, y_first, y_last;
-    double x0, y0;
-    double weight_x, weight_y;
+    double center_x, center_y;
+    double diff_x, diff_y;
+    double weight;
     double total;
+    double (*f_resample)(double const d);
+
+    /* choose re-sampling strategy */
+    switch (methodForResampling) {
+    case RES_NEAREST:
+        f_resample = nearest_neighbor;
+        n = 1.0;
+        break;
+    case RES_BILINEAR:
+        f_resample = bilinear;
+        n = 1.0;
+        break;
+    case RES_BICUBIC:
+        f_resample = bicubic;
+        n = 2.0;
+        break;
+    case RES_LANCZOS2:
+        f_resample = lanczos2;
+        n = 3.0;
+        break;
+    case RES_LANCZOS3:
+    default:
+        f_resample = lanczos3;
+        n = 3.0;
+        break;
+    }
 
     result = malloc(destx * desty * depth);
     offsets = malloc(sizeof(*offsets) * depth);
 
-    for (h = 0; h < desty; h++) { 
-        for (w = 0; w < destx; w++) { 
+    for (h = 0; h < desty; h++) {
+        for (w = 0; w < destx; w++) {
             total = 0.0;
             for (i = 0; i < depth; i++) {
                 offsets[i] = 0;
             }
+
+            /* retrieve range of affected pixels */
             if (destx >= srcx) {
-                x0 = (w + 0.5) * srcx / destx;
-                x_first = MAX(x0 - n, 0);
-                x_last = MIN(x0 + n, srcx - 1);
+                center_x = (w + 0.5) * srcx / destx;
+                x_first = MAX(center_x - n, 0);
+                x_last = MIN(center_x + n, srcx - 1);
             } else {
-                x0 = w + 0.5;
-                x_first = MAX(floor((x0 - n) * srcx / destx), 0);
-                x_last = MIN(floor((x0 + n) * srcx / destx), srcx - 1);
+                center_x = w + 0.5;
+                x_first = MAX(floor((center_x - n) * srcx / destx), 0);
+                x_last = MIN(floor((center_x + n) * srcx / destx), srcx - 1);
             }
             if (desty >= srcy) {
-                y0 = (h + 0.5) * srcy / desty;
-                y_first = MAX(y0 - n, 0);
-                y_last = MIN(y0 + n, srcy - 1);
+                center_y = (h + 0.5) * srcy / desty;
+                y_first = MAX(center_y - n, 0);
+                y_last = MIN(center_y + n, srcy - 1);
             } else {
-                y0 = h + 0.5;
-                y_first = MAX(floor((y0 - n) * srcy / desty), 0);
-                y_last = MIN(floor((y0 + n) * srcy / desty), srcy - 1);
+                center_y = h + 0.5;
+                y_first = MAX(floor((center_y - n) * srcy / desty), 0);
+                y_last = MIN(floor((center_y + n) * srcy / desty), srcy - 1);
             }
+
+            /* accumerate weights of affected pixels */
             for (y = y_first; y <= y_last; y++) {
                 for (x = x_first; x <= x_last; x++) {
                     if (destx >= srcx) {
-                        weight_x = lanczos(abs((x + 0.5) - x0), n);
+                        diff_x = (x + 0.5) - center_x;
                     } else {
-                        weight_x = lanczos(abs((x + 0.5) * destx / srcx - x0), n);
+                        diff_x = (x + 0.5) * destx / srcx - center_x;
                     }
                     if (desty >= srcy) {
-                        weight_y = lanczos(abs((y + 0.5) - y0), n);
+                        diff_y = (y + 0.5) - center_y;
                     } else {
-                        weight_y = lanczos(abs((y + 0.5) * desty / srcy - y0), n);
+                        diff_y = (y + 0.5) * desty / srcy - center_y;
                     }
+                    weight = f_resample(fabs(diff_x)) * f_resample(fabs(diff_y));
                     for (i = 0; i < depth; i++) {
-                        offsets[i] += pixels[(y * srcx + x) * depth + i] * weight_x * weight_y;
+                        index = (y * srcx + x) * depth + i;
+                        offsets[i] += pixels[index] * weight;
                     }
-                    total += weight_x * weight_y;
+                    total += weight;
                 }
             }
-            if (total > 0) {
+
+            /* normalize */
+            if (total > 0.0) {
                 for (i = 0; i < depth; i++) {
-                    result[(h * destx + w) * depth + i] = normalize(offsets[i], total);
+                    index = (h * destx + w) * depth + i;
+                    result[index] = normalize(offsets[i], total);
                 }
             }
         }
