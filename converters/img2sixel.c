@@ -72,6 +72,7 @@
 #include "scale.h"
 #include "quant.h"
 
+
 static FILE *
 open_binary_file(char const *filename)
 {
@@ -196,7 +197,6 @@ convert_to_sixel(char const *filename, int reqcolors,
     }
 
     if (width > 0 && height > 0) {
-
         scaled_pixels = LSS_scale(pixels, sx, sy, 3,
                                   width, height,
                                   method_for_resampling);
