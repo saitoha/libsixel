@@ -68,7 +68,8 @@ normalize(double x, double total)
 unsigned char *
 LSS_scale(unsigned char const *pixels,
           int srcx, int srcy, int depth,
-          int destx, int desty)
+          int destx, int desty,
+          enum methodForResampling const methodForResampling)
 {
     unsigned char *result;
     double *offsets;
