@@ -83,21 +83,36 @@ Usage: img2sixel [Options] imagefiles
        img2sixel [Options] < imagefile
 
 Options:
--p COLORS, --colors=COLORS specify number of colors to reduce the
-                           image to
--m FILE, --mapfile=FILE    transform image colors to match this set
-                           of colorsspecify map
+-7, --7bit-mode            generate a sixel image for 7bit
+                           terminals or printers (default)
+-8, --8bit-mode            generate a sixel image for 8bit
+                           terminals or printers
+-p COLORS, --colors=COLORS specify number of colors to reduce
+                           the image to (default=256)
+-m FILE, --mapfile=FILE    transform image colors to match this
+                           set of colorsspecify map
 -e, --monochrome           output monochrome sixel image
--d TYPE, --diffusion=TYPE  choose diffusion method which used with
-                           color reduction
-                           TYPE is one of them:
+-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
+                           choose diffusion method which used
+                           with -p option (color reduction)
+                           DIFFUSIONTYPE is one of them:
                                auto   -> choose diffusion type
-                                         automatically
+                                         automatically (default)
                                none   -> do not diffuse
                                fs     -> Floyd-Steinberg method
-                               jajuji -> Jarvis, Judice & Ninke
+                               jajuni -> Jarvis, Judice & Ninke
 -w WIDTH, --width=WIDTH    resize image to specific width
 -h HEIGHT, --height=HEIGHT resize image to specific height
+-r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE
+                           choose resampling method which used
+                           with -w or -h option (scaling)
+                           RESAMPLINGTYPE is one of them:
+                               nearest  -> Nearest-Neighbor
+                               bilinear -> Bilinear
+                               bicubic  -> Bicubic
+                               lanczos2 -> Lanczos-2
+                               lanczos3 -> Lanczos-3 (default)
+
 ```
 
 Convert a jpeg image file into a sixel file
