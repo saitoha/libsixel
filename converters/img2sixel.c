@@ -151,6 +151,8 @@ static int
 convert_to_sixel(char const *filename, int reqcolors,
                  char const *mapfile, int monochrome,
                  enum methodForDiffuse method_for_diffuse,
+                 enum methodForLargest method_for_largest,
+                 enum methodForRep method_for_rep,
                  enum methodForResampling const method_for_resampling,
                  int f8bit, int width, int height)
 {
@@ -214,9 +216,16 @@ convert_to_sixel(char const *filename, int reqcolors,
     } else if (mapfile) {
         palette = prepare_specified_palette(mapfile, reqcolors, &ncolors);
     } else {
+        if (method_for_largest == LARGE_AUTO) {
+            method_for_largest = LARGE_NORM;
+        }
+        if (method_for_rep == REP_AUTO) {
+            method_for_rep = REP_CENTER_BOX;
+        }
         palette = LSQ_MakePalette(pixels, sx, sy, 3,
                                   reqcolors, &ncolors, &origcolors,
-                                  LARGE_NORM, REP_CENTER_BOX);
+                                  method_for_largest,
+                                  method_for_rep);
         if (origcolors <= ncolors) {
             method_for_diffuse = DIFFUSE_NONE;
         }
@@ -299,6 +308,8 @@ int main(int argc, char *argv[])
     int monochrome = 0;
     enum methodForResampling method_for_resampling = RES_BILINEAR;
     enum methodForDiffuse method_for_diffuse = DIFFUSE_AUTO;
+    enum methodForLargest method_for_largest = LARGE_AUTO;
+    enum methodForRep method_for_rep = REP_AUTO;
     char *mapfile = NULL;
     int long_opt;
     int option_index;
@@ -319,6 +330,8 @@ int main(int argc, char *argv[])
         {"mapfile",      required_argument,  &long_opt, 'm'},
         {"monochrome",   no_argument,        &long_opt, 'e'},
         {"diffusion",    required_argument,  &long_opt, 'd'},
+        {"find-largest", required_argument,  &long_opt, 'f'},
+        {"select-color", required_argument,  &long_opt, 's'},
         {"width",        required_argument,  &long_opt, 'w'},
         {"height",       required_argument,  &long_opt, 'h'},
         {"resampling",   required_argument,  &long_opt, 'r'},
@@ -326,7 +339,7 @@ int main(int argc, char *argv[])
     };
 
     for (;;) {
-        n = getopt_long(argc, argv, "78p:m:ed:w:h:r:",
+        n = getopt_long(argc, argv, "78p:m:ed:f:s:w:h:r:",
                         long_options, &option_index);
         if (n == -1) {
             break;
@@ -364,6 +377,42 @@ int main(int argc, char *argv[])
                 } else {
                     fprintf(stderr,
                             "Diffusion method '%s' is not supported.\n",
+                            optarg);
+                    goto argerr;
+                }
+            }
+            break;
+        case 'f':
+            /* parse --find-largest option */
+            if (optarg) {
+                if (strcmp(optarg, "auto") == 0) {
+                    method_for_largest = LARGE_AUTO;
+                } else if (strcmp(optarg, "norm") == 0) {
+                    method_for_largest = LARGE_NORM;
+                } else if (strcmp(optarg, "lum") == 0) {
+                    method_for_largest = LARGE_LUM;
+                } else {
+                    fprintf(stderr,
+                            "Finding method '%s' is not supported.\n",
+                            optarg);
+                    goto argerr;
+                }
+            }
+            break;
+        case 's':
+            /* parse --select-color option */
+            if (optarg) {
+                if (strcmp(optarg, "auto") == 0) {
+                    method_for_rep = REP_AUTO;
+                } else if (strcmp(optarg, "center") == 0) {
+                    method_for_rep = REP_CENTER_BOX;
+                } else if (strcmp(optarg, "average") == 0) {
+                    method_for_rep = REP_AVERAGE_COLORS;
+                } else if (strcmp(optarg, "histgram") == 0) {
+                    method_for_rep = REP_AVERAGE_PIXELS;
+                } else {
+                    fprintf(stderr,
+                            "Finding method '%s' is not supported.\n",
                             optarg);
                     goto argerr;
                 }
@@ -427,6 +476,8 @@ int main(int argc, char *argv[])
         ret = convert_to_sixel(NULL, ncolors, mapfile,
                                monochrome,
                                method_for_diffuse,
+                               method_for_largest,
+                               method_for_rep,
                                method_for_resampling,
                                f8bit, width, height);
         if (ret != 0) {
@@ -438,6 +489,8 @@ int main(int argc, char *argv[])
             ret = convert_to_sixel(argv[n], ncolors, mapfile,
                                    monochrome,
                                    method_for_diffuse,
+                                   method_for_largest,
+                                   method_for_rep,
                                    method_for_resampling,
                                    f8bit, width, height);
             if (ret != 0) {
@@ -474,6 +527,37 @@ argerr:
             "                               none   -> do not diffuse\n"
             "                               fs     -> Floyd-Steinberg method\n"
             "                               jajuni -> Jarvis, Judice & Ninke\n"
+            "-f FINDTYPE, --find-largest=FINDTYPE\n"
+            "                           choose method for finding the largest\n"
+            "                           dimention of median cut boxes for\n"
+            "                           splitting, make sence only when -p\n"
+            "                           option (color reduction) is\n"
+            "                           specified\n"
+            "                           FINDTYPE is one of them:\n"
+            "                               auto -> choose finding method\n"
+            "                                       automatically (default)\n"
+            "                               norm -> simply comparing the\n"
+            "                                       range in RGB space\n"
+            "                               lum  -> transforming into\n"
+            "                                       luminosities before the\n"
+            "                                       comparison\n"
+            "-s SELECTTYPE, --select-color=SELECTTYPE\n"
+            "                           selecting the method for selecting\n"
+            "                           representative color from each\n"
+            "                           median-cut box, make sence only\n"
+            "                           when -p option (color reduction) is\n"
+            "                           specified\n"
+            "                           SELECTTYPE is one of them:\n"
+            "                               auto     -> choose selecting\n"
+            "                                           method automatically\n"
+            "                                           (default)\n"
+            "                               center   -> choose the center of\n"
+            "                                           the box\n"
+            "                               average  -> caclulate the color\n"
+            "                                           average into the box\n"
+            "                               histgram -> similar with average\n"
+            "                                           but considers color\n"
+            "                                           histgram\n"
             "-w WIDTH, --width=WIDTH    resize image to specific width\n"
             "-h HEIGHT, --height=HEIGHT resize image to specific height\n"
             "-r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE\n"

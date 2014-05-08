@@ -101,6 +101,37 @@ Options:
                                none   -> do not diffuse
                                fs     -> Floyd-Steinberg method
                                jajuni -> Jarvis, Judice & Ninke
+-f FINDTYPE, --find-largest=FINDTYPE
+                           choose method for finding the largest
+                           dimention of median cut boxes for
+                           splitting, make sence only when -p
+                           option (color reduction) is
+                           specified
+                           FINDTYPE is one of them:
+                               auto -> choose finding method
+                                       automatically (default)
+                               norm -> simply comparing the
+                                       range in RGB space
+                               lum  -> transforming into
+                                       luminosities before the
+                                       comparison
+-s SELECTTYPE, --select-color=SELECTTYPE
+                           selecting the method for selecting
+                           representative color from each
+                           median-cut box, make sence only
+                           when -p option (color reduction) is
+                           specified
+                           SELECTTYPE is one of them:
+                               auto     -> choose selecting
+                                           method automatically
+                                           (default)
+                               center   -> choose the center of
+                                           the box
+                               average  -> caclulate the color
+                                           average into the box
+                               histgram -> similar with average
+                                           but considers color
+                                           histgram
 -w WIDTH, --width=WIDTH    resize image to specific width
 -h HEIGHT, --height=HEIGHT resize image to specific height
 -r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE

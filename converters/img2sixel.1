@@ -44,15 +44,43 @@ output monochrome(1bpp) sixel image.
 .B \-d \fIDIFFUSIONTYPE\fP, \-\-diffusion=\fIDIFFUSIONTYPE\fP
 choose diffusion method which used with color reduction.
 .br
-DIFFUSIONTYPE is one of them:
+\fIDIFFUSIONTYPE\fP is one of them:
 .br
-auto   -> choose diffusion type automatically (default).
+auto   -> choose diffusion type automatically (default)
 .br
 none   -> do not diffusion
 .br
 fs     -> Floyd-Steinberg method
 .br
 jajuni -> Jarvis, Judice & Ninke
+.TP 5
+.B \-f \fIFINDTYPE\fP, \-\-find\-largest=\fIFINDTYPE\fP
+choose method for finding the largest dimention of median
+cut boxes for splitting, make sence only when -p option
+(color reduction) is specified.
+.br
+\fIFINDTYPE\fP is one of them:
+.br
+auto -> choose finding method automatically (default)
+.br
+norm -> simply comparing the range in RGB space
+.br
+lum  -> transforming into luminosities before the comparison
+.TP 5
+.B \-s \fISELECTTYPE\fP, \-\-select\-color=\fISELECTTYPE\fP
+selecting the method for selecting representative color from each
+median-cut box, make sence only when -p option (color reduction) is
+specified.
+.br
+\fISELECTTYPE\fP is one of them:
+.br
+auto     -> choose selecting method automatically (default)
+.br
+center   -> choose the center of the box
+.br
+average  -> caclulate the color average into the box
+.br
+histgram -> similar with average but considers color histgram
 .TP 5
 .B \-w \fIWIDTH\fP, \-\-width=\fIWIDTH\fP
 resize image to specific width.
@@ -63,7 +91,7 @@ resize image to specific height.
 .B \-r \fIRESAMPLINGTYPE\fP, \-\-resampling=\fIRESAMPLINGTYPE\fP
 choose resampling method which used with -w or -h option (scaling).
 .br
-RESAMPLINGTYPE is one of them:
+\fIRESAMPLINGTYPE\fP is one of them:
 .br
 rearest   -> Nearest-Neighbor
 .br
