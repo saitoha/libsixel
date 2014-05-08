@@ -35,30 +35,78 @@
 #define MAX(l, r) ((l) > (r) ? (l) : (r))
 #define MIN(l, r) ((l) < (r) ? (l) : (r))
 
-/*
- * sinc(x) = sin(PI * x) / (PI * x)
- * Lanczos(x) = sinc(x) * sinc(x/n) , |x| <= n
- *            = 0 , |x| > n
- */
-
-/* function sinc */
+/* function Nearest Neighbor */
 static double
-sinc(x)
+nearest_neighbor(double const d)
 {
-  return sin(M_PI * x) / (M_PI * x);
+    if (d <= 0.5) {
+        return 1.0;
+    }
+    return 0.0;
 }
 
-/* function Lanczos */
+/* function Bi-linear */
 static double
-lanczos(double const distance, int const n)
+bilinear(double const d)
 {
-  if (distance == 0.0) {
-    return 1.0;
-  }
-  if (abs(distance) <= n) {
+    if (d < 1.0) {
+        return 1.0 - d;
+    }
     return 0.0;
-  }
-  return sinc(distance) * sinc(distance / n);
+}
+
+/* function Bi-cubic */
+static double
+bicubic(double const d)
+{
+    if (d <= 1.0) {
+        return 1.0 + (d - 2.0) * d * d;
+    }
+    if (d <= 2.0) {
+        return 4.0 + d * (-8.0 + d * (5.0 - d));
+    }
+    return 0.0;
+}
+
+/* function sinc
+ * sinc(x) = sin(PI * x) / (PI * x)
+ */
+static double
+sinc(double const x)
+{
+    return sin(M_PI * x) / (M_PI * x);
+}
+
+/* function Lanczos-2
+ * Lanczos(x) = sinc(x) * sinc(x / 2) , |x| <= 2
+ *            = 0, |x| > 2
+ */
+static double
+lanczos2(double const d)
+{
+    if (d == 0.0) {
+        return 1.0;
+    }
+    if (d < 2.0) {
+        return sinc(d) * sinc(d / 2.0);
+    }
+    return 0.0;
+}
+
+/* function Lanczos-3
+ * Lanczos(x) = sinc(x) * sinc(x / 3) , |x| <= 3
+ *            = 0, |x| > 3
+ */
+static double
+lanczos3(double const d)
+{
+    if (d == 0.0) {
+        return 1.0;
+    }
+    if (d < 3.0) {
+        return sinc(d) * sinc(d / 3.0);
+    }
+    return 0.0;
 }
 
 static unsigned char
