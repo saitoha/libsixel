@@ -220,7 +220,7 @@ convert_to_sixel(char const *filename, int reqcolors,
         }
 
         scaled_pixels = LSS_scale(pixels, sx, sy, 3,
-                                  width, height, RES_NEAREST);
+                                  width, height, resampling);
         sx = width;
         sy = height;
 
