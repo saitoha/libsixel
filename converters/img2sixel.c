@@ -149,8 +149,8 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
 static int
 convert_to_sixel(char const *filename, int reqcolors,
                  char const *mapfile, int monochrome,
-                 char const *diffusion, int f8bit,
-                 int width, int height)
+                 char const *diffusion, char const *resampling,
+                 int f8bit, int width, int height)
 {
     unsigned char *pixels = NULL;
     unsigned char *scaled_pixels = NULL;
@@ -301,6 +301,7 @@ int main(int argc, char *argv[])
     int ncolors = -1;
     int monochrome = 0;
     char *diffusion = NULL;
+    char *resampling = NULL;
     char *mapfile = NULL;
     int long_opt;
     int option_index;
@@ -323,6 +324,7 @@ int main(int argc, char *argv[])
         {"diffusion",    required_argument,  &long_opt, 'd'},
         {"width",        required_argument,  &long_opt, 'w'},
         {"height",       required_argument,  &long_opt, 'h'},
+        {"resampling",   required_argument,  &long_opt, 'r'},
         {0, 0, 0, 0}
     };
 
@@ -360,6 +362,9 @@ int main(int argc, char *argv[])
         case 'h':
             height = atoi(optarg);
             break;
+        case 'r':
+            resampling = strdup(optarg);
+            break;
         case '?':
             goto argerr;
         default:
@@ -386,7 +391,7 @@ int main(int argc, char *argv[])
 
     if (optind == argc) {
         ret = convert_to_sixel(NULL, ncolors, mapfile,
-                               monochrome, diffusion, f8bit,
+                               monochrome, diffusion, resampling, f8bit,
                                width, height);
         if (ret != 0) {
             exit_code = EXIT_FAILURE;
@@ -395,7 +400,7 @@ int main(int argc, char *argv[])
     } else {
         for (n = optind; n < argc; n++) {
             ret = convert_to_sixel(argv[n], ncolors, mapfile,
-                                   monochrome, diffusion, f8bit,
+                                   monochrome, diffusion, resampling, f8bit,
                                    width, height);
             if (ret != 0) {
                 exit_code = EXIT_FAILURE;
@@ -413,18 +418,19 @@ argerr:
             "       img2sixel [Options] < imagefile\n"
             "\n"
             "Options:\n"
-            "-7, --7bit-mode            generate a sixel image for 7bit terminals\n"
-            "                           or printers (default)\n"
-            "-8, --8bit-mode            generate a sixel image for 8bit terminals\n"
-            "                           or printers\n"
-            "-p COLORS, --colors=COLORS specify number of colors to reduce the\n"
-            "                           image to (default=256)\n"
-            "-m FILE, --mapfile=FILE    transform image colors to match this set\n"
-            "                           of colorsspecify map\n"
+            "-7, --7bit-mode            generate a sixel image for 7bit\n"
+            "                           terminals or printers (default)\n"
+            "-8, --8bit-mode            generate a sixel image for 8bit\n"
+            "                           terminals or printers\n"
+            "-p COLORS, --colors=COLORS specify number of colors to reduce\n"
+            "                           the image to (default=256)\n"
+            "-m FILE, --mapfile=FILE    transform image colors to match this\n"
+            "                           set of colorsspecify map\n"
             "-e, --monochrome           output monochrome sixel image\n"
-            "-d TYPE, --diffusion=TYPE  choose diffusion method which used with\n"
-            "                           color reduction\n"
-            "                           TYPE is one of them:\n"
+            "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
+            "                           choose diffusion method which used\n"
+            "                           with -p option (color reduction)\n"
+            "                           DIFFUSIONTYPE is one of them:\n"
             "                               auto   -> choose diffusion type\n"
             "                                         automatically (default)\n"
             "                               none   -> do not diffuse\n"
@@ -432,6 +438,15 @@ argerr:
             "                               jajuni -> Jarvis, Judice & Ninke\n"
             "-w WIDTH, --width=WIDTH    resize image to specific width\n"
             "-h HEIGHT, --height=HEIGHT resize image to specific height\n"
+            "-r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE\n"
+            "                           choose resampling method which used\n"
+            "                           with -w or -h option (scaling)\n"
+            "                           RESAMPLINGTYPE is one of them:\n"
+            "                               nearest  -> Nearest-Neighbor\n"
+            "                               bilinear -> Bilinear\n"
+            "                               bicubic  -> Bicubic\n"
+            "                               lanczos2 -> Lanczos-2\n"
+            "                               lanczos3 -> Lanczos-3 (default)\n"
             );
 
 end:
