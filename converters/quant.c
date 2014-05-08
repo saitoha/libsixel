@@ -915,10 +915,11 @@ lookup_fast(unsigned char const * const pixel,
 
     index = -1;
     diff = INT_MAX;
+    hash = 0;
 
-    hash = *(pixel + 0) >> 3 << 10
-         | *(pixel + 1) >> 3 << 5
-         | *(pixel + 2) >> 3;
+    for (n = 0; n < depth; ++n) {
+        hash |= *(pixel + n) >> depth << ((depth - 1 - n) * 5);
+    }
 
     cache = cachetable[hash];
     if (cache) {  /* fast lookup */
