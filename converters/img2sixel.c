@@ -187,6 +187,7 @@ convert_to_sixel(char const *filename, int reqcolors,
         goto end;
     }
 
+    /* scaling */
     if (width > 0 && height <= 0) {
         height = sy * width / sx;
     }
@@ -204,6 +205,7 @@ convert_to_sixel(char const *filename, int reqcolors,
         pixels = scaled_pixels;
     }
 
+    /* prepare palette */
     if (monochrome) {
         palette = prepare_monochrome_palette();
         ncolors = 2;
@@ -223,23 +225,7 @@ convert_to_sixel(char const *filename, int reqcolors,
         goto end;
     }
 
-    im = LSImage_create(sx, sy, 3, ncolors);
-    if (!im) {
-        nret = -1;
-        goto end;
-    }
-    for (i = 0; i < ncolors; i++) {
-        LSImage_setpalette(im, i,
-                           palette[i * 3],
-                           palette[i * 3 + 1],
-                           palette[i * 3 + 2]);
-    }
-    if (monochrome) {
-        im->keycolor = 0;
-    } else {
-        im->keycolor = -1;
-    }
-
+    /* parse --diffusion option */
     if (diffusion) {
         if (strcmp(diffusion, "auto") == 0) {
             // do nothing
@@ -257,6 +243,8 @@ convert_to_sixel(char const *filename, int reqcolors,
             goto end;
         }
     }
+
+    /* apply palette */
     data = LSQ_ApplyPalette(pixels, sx, sy, 3,
                             palette, ncolors,
                             method_for_diffuse);
@@ -264,11 +252,33 @@ convert_to_sixel(char const *filename, int reqcolors,
         nret = -1;
         goto end;
     }
+
+    /* create intermidiate bitmap image */
+    im = LSImage_create(sx, sy, 3, ncolors);
+    if (!im) {
+        nret = -1;
+        goto end;
+    }
+    for (i = 0; i < ncolors; i++) {
+        LSImage_setpalette(im, i,
+                           palette[i * 3],
+                           palette[i * 3 + 1],
+                           palette[i * 3 + 2]);
+    }
+    if (monochrome) {
+        im->keycolor = 0;
+    } else {
+        im->keycolor = -1;
+    }
     LSImage_setpixels(im, data);
+
     data = NULL;
+
+    /* convert image object into sixel */
     context = LSOutputContext_create(putchar, printf);
     context->has_8bit_control = f8bit;
     LibSixel_LSImageToSixel(im, context);
+
     nret = 0;
 
 end:
