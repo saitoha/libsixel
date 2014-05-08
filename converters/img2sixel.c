@@ -200,7 +200,7 @@ convert_to_sixel(char const *filename, int reqcolors,
 
         /* parse --resampling option */
         if (!resampling) {  /* default */
-            method_for_resampling = RES_LANCZOS3;
+            method_for_resampling = RES_BILINEAR;
         } else if (strcmp(resampling, "nearest") == 0) {
             method_for_resampling = RES_NEAREST;
         } else if (strcmp(resampling, "bilinear") == 0) {
@@ -478,10 +478,10 @@ argerr:
             "                           with -w or -h option (scaling)\n"
             "                           RESAMPLINGTYPE is one of them:\n"
             "                               nearest  -> Nearest-Neighbor\n"
-            "                               bilinear -> Bilinear\n"
+            "                               bilinear -> Bilinear (default)\n"
             "                               bicubic  -> Bicubic\n"
             "                               lanczos2 -> Lanczos-2\n"
-            "                               lanczos3 -> Lanczos-3 (default)\n"
+            "                               lanczos3 -> Lanczos-3\n"
             );
 
 end:

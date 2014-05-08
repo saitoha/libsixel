@@ -108,10 +108,10 @@ Options:
                            with -w or -h option (scaling)
                            RESAMPLINGTYPE is one of them:
                                nearest  -> Nearest-Neighbor
-                               bilinear -> Bilinear
+                               bilinear -> Bilinear (default)
                                bicubic  -> Bicubic
                                lanczos2 -> Lanczos-2
-                               lanczos3 -> Lanczos-3 (default)
+                               lanczos3 -> Lanczos-3
 
 ```
 

@@ -164,9 +164,12 @@ LSS_scale(unsigned char const *pixels,
         n = 3.0;
         break;
     case RES_LANCZOS3:
-    default:
         f_resample = lanczos3;
         n = 3.0;
+        break;
+    default:
+        f_resample = bilinear;
+        n = 1.0;
         break;
     }
 
