@@ -19,18 +19,22 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSQUANT_H
-#define LIBSQUANT_H
+#ifndef LIBSIXEL_QUANT_H
+#define LIBSIXEL_QUANT_H
 
 /* method for finding the largest dimention for splitting,
  * and sorting by that component */
 enum methodForLargest {
+    LARGE_AUTO,  /* choose automatically the method for finding the largest
+                    dimention */
     LARGE_NORM,  /* simply comparing the range in RGB space */
     LARGE_LUM    /* transforming into luminosities before the comparison */
 };
 
 /* method for choosing a color from the box */
 enum methodForRep {
+    REP_AUTO,           /* choose automatically the method for selecting
+                           representative color from each box */
     REP_CENTER_BOX,     /* choose the center of the box */
     REP_AVERAGE_COLORS, /* choose the average all the color
                            in the box (specified in Heckbert's paper) */
@@ -54,7 +58,7 @@ extern "C" {
 
 /* the palette manipulation API */
 
-extern unsigned char *
+unsigned char *
 LSQ_MakePalette(unsigned char *data,
                 int x,
                 int y,
@@ -66,7 +70,7 @@ LSQ_MakePalette(unsigned char *data,
                 enum methodForRep const methodForRep);
 
 
-extern unsigned char *
+unsigned char *
 LSQ_ApplyPalette(unsigned char *data,
                  int x,
                  int y,
@@ -84,7 +88,7 @@ LSQ_FreePalette(unsigned char * data);
 }
 #endif
 
-#endif /* LIBSQUANT_H */
+#endif /* LIBSIXEL_QUANT_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

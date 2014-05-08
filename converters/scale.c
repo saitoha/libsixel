@@ -32,8 +32,12 @@
 
 #include "scale.h"
 
-#define MAX(l, r) ((l) > (r) ? (l) : (r))
+#if !defined(MAX)
+# define MAX(l, r) ((l) > (r) ? (l) : (r))
+#endif
+#if !defined(MIN)
 #define MIN(l, r) ((l) < (r) ? (l) : (r))
+#endif
 
 /* function Nearest Neighbor */
 static double

@@ -19,8 +19,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSSCALE_H
-#define LIBSSCALE_H
+#ifndef LIBSIXEL_SCALE_H
+#define LIBSIXEL_SCALE_H
 
 /* method for re-sampling */
 enum methodForResampling {
@@ -51,7 +51,7 @@ LSS_scale(unsigned char const *pixels,
 #endif
 
 
-#endif /* LIBSQUANT_H */
+#endif /* LIBSIXEL_QUANT_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
