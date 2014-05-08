@@ -273,15 +273,6 @@ PutNode(LSOutputContextPtr context, LSImagePtr im, int x, SixNode *np)
 }
 
 
-#if defined(USE_SORT)
-static int
-PalUseCmp(const void *src, const void *dis)
-{
-    return use_palet[*((unsigned char *)dis)] - use_palet[*((unsigned char *)src)];
-}
-#endif  /* defined(USE_SORT) */
-
-
 int
 LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
 {
@@ -309,68 +300,6 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
 
     for (n = 0 ; n < maxPalet ; n++)
         conv_palet[n] = list[n] = n;
-
-#if defined(USE_SORT)
-    /* Pass 1 Palet count */
-    memset(use_palet, 0, sizeof(use_palet));
-    skip = (height / 240) * 6;
-
-    for (y = i = 0 ; y < height ; y++) {
-        for (x = 0 ; x < width ; x++) {
-            pix = im->pixels[y * width + x];
-            if (pix >= 0 && pix < maxPalet && pix != back)
-                map[pix * width + x] |= (1 << i);
-        }
-
-        if (++i < 6 && (y + 1) < height)
-            continue;
-
-        for (n = 0 ; n < maxPalet ; n++) {
-            ret = NodeLine(n, width, map + n * width);
-            if (ret != 0)
-                return ret;
-        }
-
-        for (x = 0 ; (np = node_top) != NULL ;) {
-            if (x > np->sx)
-                x = 0;
-
-            use_palet[np->pal]++;
-
-            x = np->mx;
-            NodeDel(np);
-            np = node_top;
-
-            while (np != NULL) {
-                if (np->sx < x) {
-                    np = np->next;
-                    continue;
-                }
-
-                use_palet[np->pal]++;
-
-                x = np->mx;
-                NodeDel(np);
-                np = node_top;
-            }
-        }
-
-        i = 0;
-        memset(map, 0, len);
-        y += skip;
-    }
-
-    qsort(list, maxPalet, sizeof(unsigned char), PalUseCmp);
-
-    for (n = 0 ; n < maxPalet ; n++) {
-        conv_palet[list[n]] = n;
-    }
-
-    /*************
-        for (n = 0 ; n < maxPalet ; n++)
-            fprintf(stderr, "%d %d=%d\n", n, list[n], conv_palet[list[n]]);
-    **************/
-#endif  /* defined(USE_SORT) */
 
     if (context->has_8bit_control) {
         ret = context->fn_printf("\x90q");
