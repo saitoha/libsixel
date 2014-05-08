@@ -641,7 +641,8 @@ computeHistogram(unsigned char *data,
         if (histgram[refmap[i]] > 0) {
             colorfreqtableP->table[i]->value = histgram[refmap[i]];
             for (n = 0; n < depth; n++) {
-                colorfreqtableP->table[i]->tuple[depth - 1 - n] = (*it >> n * 5 & 0x1f) << 3;
+                colorfreqtableP->table[i]->tuple[depth - 1 - n]
+                    = (*it >> n * 5 & 0x1f) << 3;
             }
         }
         it++;
@@ -750,9 +751,9 @@ diffuse_fs(unsigned char *data, int width, int height,
     pos = y * width + x;
 
     /* Floyd Steinberg Method
-                curr    7/16
-        3/16    5/48    1/16
-    */
+     *          curr    7/16
+     *  3/16    5/48    1/16
+     */
     if (y < height - 1) {
         /* add offset to the bottom cell */
         add_offset(data, pos + width, depth, offsets, 5, 16);
@@ -782,10 +783,10 @@ diffuse_jajuni(unsigned char *data, int width, int height,
     pos = y * width + x;
 
     /* Jarvis, Judice & Ninke Method
-                        curr    7/48    5/48
-        3/48    5/48    7/48    5/48    3/48
-        1/48    3/48    5/48    3/48    1/48
-    */
+     *                  curr    7/48    5/48
+     *  3/48    5/48    7/48    5/48    3/48
+     *  1/48    3/48    5/48    3/48    1/48
+     */
     if (y < height - 1) {
         /* add offset to the bottom cell */
         add_offset(data, pos + width, depth, offsets, 7, 48);
