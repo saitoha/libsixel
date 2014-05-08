@@ -30,6 +30,8 @@
 
 #include <stdlib.h>
 
+#include "scale.h"
+
 #define MAX(l, r) ((l) > (r) ? (l) : (r))
 #define MIN(l, r) ((l) < (r) ? (l) : (r))
 
