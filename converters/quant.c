@@ -864,6 +864,84 @@ LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
 }
 
 
+static int
+lookup_normal(unsigned char const * const pixel,
+              int const depth,
+              unsigned char const * const palette,
+              int const ncolor,
+              unsigned short * const cachetable)
+{
+    int index;
+    int diff;
+    int r;
+    int i;
+    int n;
+    int distant;
+
+    index = -1;
+    diff = INT_MAX;
+
+    for (i = 0; i < ncolor; i++) {
+        distant = 0;
+        for (n = 0; n < depth; ++n) {
+            r = pixel[n] - palette[i * depth + n];
+            distant += r * r;
+        }
+        if (distant < diff) {
+            diff = distant;
+            index = i;
+        }
+    }
+
+    return index;
+}
+
+
+static int
+lookup_fast(unsigned char const * const pixel,
+            int const depth,
+            unsigned char const * const palette,
+            int const ncolor,
+            unsigned short * const cachetable)
+{
+    int hash;
+    int index;
+    int diff;
+    int cache;
+    int r;
+    int i;
+    int n;
+    int distant;
+
+    index = -1;
+    diff = INT_MAX;
+
+    hash = *(pixel + 0) >> 3 << 10
+         | *(pixel + 1) >> 3 << 5
+         | *(pixel + 2) >> 3;
+
+    cache = cachetable[hash];
+    if (cache) {  /* fast lookup */
+        index = cache - 1;
+    } else {  /* collision */
+        for (i = 0; i < ncolor; i++) {
+            distant = 0;
+            for (n = 0; n < depth; ++n) {
+                r = pixel[n] - palette[i * depth + n];
+                distant += r * r;
+            }
+            if (distant < diff) {
+                diff = distant;
+                index = i;
+            }
+        }
+        cachetable[hash] = index + 1;
+    }
+
+    return index;
+}
+
+
 unsigned char *
 LSQ_ApplyPalette(unsigned char *data,
                  int width,
@@ -871,36 +949,49 @@ LSQ_ApplyPalette(unsigned char *data,
                  int depth,
                  unsigned char *palette,
                  int ncolor,
-                 enum methodForDiffuse const methodForDiffuse)
+                 enum methodForDiffuse const methodForDiffuse,
+                 int foptimize)
 {
     int pos, j, n, x, y;
     int *offsets;
-    int distant;
-    int r;
     int diff;
     int index;
     unsigned short *indextable;
-    int hash, cache;
     unsigned char *result;
     void (*f_diffuse)(unsigned char *data, int width, int height,
                       int x, int y, int depth, int *offsets);
+    int (*f_lookup)(unsigned char const * const pixel,
+                    int const depth,
+                    unsigned char const * const palette,
+                    int const ncolor,
+                    unsigned short * const cachetable);
 
-    switch (methodForDiffuse) {
-    case DIFFUSE_FS:
-        f_diffuse = diffuse_fs;
-        break;
-    case DIFFUSE_JAJUNI:
-        f_diffuse = diffuse_jajuni;
-        break;
-    case DIFFUSE_NONE:
+    if (ncolor <= 2 || depth != 3) {
         f_diffuse = diffuse_none;
-        break;
-    default:
-        quant_trace(stderr,
-                    "Internal error: invalid value of methodForDiffuse: %d\n",
-                    methodForDiffuse);
-        f_diffuse = diffuse_none;
-        break;
+    } else {
+        switch (methodForDiffuse) {
+        case DIFFUSE_FS:
+            f_diffuse = diffuse_fs;
+            break;
+        case DIFFUSE_JAJUNI:
+            f_diffuse = diffuse_jajuni;
+            break;
+        case DIFFUSE_NONE:
+            f_diffuse = diffuse_none;
+            break;
+        default:
+            quant_trace(stderr, "Internal error: invalid value of"
+                                " methodForDiffuse: %d\n",
+                        methodForDiffuse);
+            f_diffuse = diffuse_none;
+            break;
+        }
+    }
+
+    if (foptimize && depth == 3) {
+        f_lookup = lookup_fast;
+    } else {
+        f_lookup = lookup_normal;
     }
 
     offsets = malloc(sizeof(*offsets) * depth);
@@ -926,38 +1017,15 @@ LSQ_ApplyPalette(unsigned char *data,
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width; ++x) {
             pos = y * width + x;
-            diff = INT_MAX;
-            index = -1;
-            hash = *(data + (pos * depth) + 0) >> 3 << 10
-                 | *(data + (pos * depth) + 1) >> 3 << 5
-                 | *(data + (pos * depth) + 2) >> 3;
-            cache = indextable[hash];
-            if (cache) {  /* lookup */
-                index = cache - 1;
-            } else {  /* collision */
-                for (j = 0; j < ncolor; ++j) {
-                    distant = 0;
-                    for (n = 0; n < depth; ++n) {
-                        r = data[pos * depth + n]
-                          - palette[j * depth + n];
-                        distant += r * r;
-                    }
-                    if (distant < diff) {
-                        diff = distant;
-                        index = j;
-                    }
-                }
-                indextable[hash] = index + 1;
-            }
-            if (index != -1 && depth == 3) {
+            index = f_lookup(data + (pos * depth), depth,
+                             palette, ncolor, indextable);
+            if (index != -1) {
                 result[pos] = index;
-                if (ncolor > 2) {
-                    for (n = 0; n < depth; ++n) {
-                        offsets[n] = data[pos * depth + n]
-                                   - palette[index * depth + n];
-                    }
-                    f_diffuse(data, width, height, x, y, depth, offsets);
+                for (n = 0; n < depth; ++n) {
+                    offsets[n] = data[pos * depth + n]
+                               - palette[index * depth + n];
                 }
+                f_diffuse(data, width, height, x, y, depth, offsets);
             }
         }
     }

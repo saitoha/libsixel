@@ -271,7 +271,8 @@ convert_to_sixel(char const *filename, int reqcolors,
     /* apply palette */
     data = LSQ_ApplyPalette(pixels, sx, sy, 3,
                             palette, ncolors,
-                            method_for_diffuse);
+                            method_for_diffuse,
+                            /* foptimize */ 1);
     if (!data) {
         nret = -1;
         goto end;

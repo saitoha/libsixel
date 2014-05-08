@@ -72,7 +72,8 @@ LSQ_ApplyPalette(unsigned char *data,
                  int depth,
                  unsigned char *palette,
                  int ncolors,
-                 enum methodForDiffuse const methodForDiffuse);
+                 enum methodForDiffuse const methodForDiffuse,
+                 int foptimize);
 
 
 extern void
