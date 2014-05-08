@@ -362,7 +362,7 @@ int main(int argc, char *argv[])
     };
 
     for (;;) {
-        n = getopt_long(argc, argv, "78p:m:ed:w:h:",
+        n = getopt_long(argc, argv, "78p:m:ed:w:h:r:",
                         long_options, &option_index);
         if (n == -1) {
             break;
