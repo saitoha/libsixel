@@ -489,6 +489,9 @@ end:
     if (diffusion) {
         free(diffusion);
     }
+    if (resampling) {
+        free(resampling);
+    }
     return exit_code;
 }
 
