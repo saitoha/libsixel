@@ -166,6 +166,7 @@ convert_to_sixel(char const *filename, int reqcolors,
     int i;
     int nret = -1;
     enum methodForDiffuse method_for_diffuse = DIFFUSE_FS;
+    enum methodForResampling method_for_resampling;
     FILE *f;
 
     if (reqcolors < 2) {
@@ -196,8 +197,30 @@ convert_to_sixel(char const *filename, int reqcolors,
     }
 
     if (width > 0 && height > 0) {
+
+        /* parse --resampling option */
+        if (!resampling) {  /* default */
+            method_for_resampling = RES_LANCZOS3;
+        } else if (strcmp(diffusion, "nearest") == 0) {
+            method_for_resampling = RES_NEAREST;
+        } else if (strcmp(diffusion, "bilinear") == 0) {
+            method_for_resampling = RES_BILINEAR;
+        } else if (strcmp(diffusion, "bicubic") == 0) {
+            method_for_resampling = RES_BICUBIC;
+        } else if (strcmp(diffusion, "lanczos2") == 0) {
+            method_for_resampling = RES_LANCZOS2;
+        } else if (strcmp(diffusion, "lanczos3") == 0) {
+            method_for_resampling = RES_LANCZOS3;
+        } else {
+            fprintf(stderr,
+                    "Resampling method '%s' is not supported.\n",
+                    resampling);
+            nret = -1;
+            goto end;
+        }
+
         scaled_pixels = LSS_scale(pixels, sx, sy, 3,
-                                  width, height, RES_NEAREST);
+                                  width, height, method_for_resampling);
         sx = width;
         sy = height;
 
