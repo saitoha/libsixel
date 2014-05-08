@@ -191,12 +191,17 @@ LSS_scale(unsigned char const *pixels,
     double total;
     double (*f_resample)(double const d);
 
+    result = malloc(destx * desty * depth);
+    offsets = malloc(sizeof(*offsets) * depth);
+
     /* choose re-sampling strategy */
     switch (methodForResampling) {
+#if 0
     case RES_NEAREST:
         f_resample = nearest_neighbor;
         n = 1.0;
         break;
+#endif
     case RES_GAUSSIAN:
         f_resample = gaussian;
         n = 1.0;
@@ -235,63 +240,74 @@ LSS_scale(unsigned char const *pixels,
         break;
     }
 
-    result = malloc(destx * desty * depth);
-    offsets = malloc(sizeof(*offsets) * depth);
 
-    for (h = 0; h < desty; h++) {
-        for (w = 0; w < destx; w++) {
-            total = 0.0;
-            for (i = 0; i < depth; i++) {
-                offsets[i] = 0;
-            }
-
-            /* retrieve range of affected pixels */
-            if (destx >= srcx) {
-                center_x = (w + 0.5) * srcx / destx;
-                x_first = MAX(center_x - n, 0);
-                x_last = MIN(center_x + n, srcx - 1);
-            } else {
-                center_x = w + 0.5;
-                x_first = MAX(floor((center_x - n) * srcx / destx), 0);
-                x_last = MIN(floor((center_x + n) * srcx / destx), srcx - 1);
-            }
-            if (desty >= srcy) {
-                center_y = (h + 0.5) * srcy / desty;
-                y_first = MAX(center_y - n, 0);
-                y_last = MIN(center_y + n, srcy - 1);
-            } else {
-                center_y = h + 0.5;
-                y_first = MAX(floor((center_y - n) * srcy / desty), 0);
-                y_last = MIN(floor((center_y + n) * srcy / desty), srcy - 1);
-            }
-
-            /* accumerate weights of affected pixels */
-            for (y = y_first; y <= y_last; y++) {
-                for (x = x_first; x <= x_last; x++) {
-                    if (destx >= srcx) {
-                        diff_x = (x + 0.5) - center_x;
-                    } else {
-                        diff_x = (x + 0.5) * destx / srcx - center_x;
-                    }
-                    if (desty >= srcy) {
-                        diff_y = (y + 0.5) - center_y;
-                    } else {
-                        diff_y = (y + 0.5) * desty / srcy - center_y;
-                    }
-                    weight = f_resample(fabs(diff_x)) * f_resample(fabs(diff_y));
-                    for (i = 0; i < depth; i++) {
-                        index = (y * srcx + x) * depth + i;
-                        offsets[i] += pixels[index] * weight;
-                    }
-                    total += weight;
+    if (methodForResampling == RES_NEAREST) {
+        for (h = 0; h < desty; h++) {
+            for (w = 0; w < destx; w++) {
+                x = w * srcx / destx;
+                y = h * srcy / desty;
+                for (i = 0; i < depth; i++) {
+                    index = (y * srcx + x) * depth + i;
+                    result[(h * destx + w) * depth + i] = pixels[index];
                 }
             }
-
-            /* normalize */
-            if (total > 0.0) {
+        }
+    } else {
+        for (h = 0; h < desty; h++) {
+            for (w = 0; w < destx; w++) {
+                total = 0.0;
                 for (i = 0; i < depth; i++) {
-                    index = (h * destx + w) * depth + i;
-                    result[index] = normalize(offsets[i], total);
+                    offsets[i] = 0;
+                }
+
+                /* retrieve range of affected pixels */
+                if (destx >= srcx) {
+                    center_x = (w + 0.5) * srcx / destx;
+                    x_first = MAX(center_x - n, 0);
+                    x_last = MIN(center_x + n, srcx - 1);
+                } else {
+                    center_x = w + 0.5;
+                    x_first = MAX(floor((center_x - n) * srcx / destx), 0);
+                    x_last = MIN(floor((center_x + n) * srcx / destx), srcx - 1);
+                }
+                if (desty >= srcy) {
+                    center_y = (h + 0.5) * srcy / desty;
+                    y_first = MAX(center_y - n, 0);
+                    y_last = MIN(center_y + n, srcy - 1);
+                } else {
+                    center_y = h + 0.5;
+                    y_first = MAX(floor((center_y - n) * srcy / desty), 0);
+                    y_last = MIN(floor((center_y + n) * srcy / desty), srcy - 1);
+                }
+
+                /* accumerate weights of affected pixels */
+                for (y = y_first; y <= y_last; y++) {
+                    for (x = x_first; x <= x_last; x++) {
+                        if (destx >= srcx) {
+                            diff_x = (x + 0.5) - center_x;
+                        } else {
+                            diff_x = (x + 0.5) * destx / srcx - center_x;
+                        }
+                        if (desty >= srcy) {
+                            diff_y = (y + 0.5) - center_y;
+                        } else {
+                            diff_y = (y + 0.5) * desty / srcy - center_y;
+                        }
+                        weight = f_resample(fabs(diff_x)) * f_resample(fabs(diff_y));
+                        for (i = 0; i < depth; i++) {
+                            index = (y * srcx + x) * depth + i;
+                            offsets[i] += pixels[index] * weight;
+                        }
+                        total += weight;
+                    }
+                }
+
+                /* normalize */
+                if (total > 0.0) {
+                    for (i = 0; i < depth; i++) {
+                        index = (h * destx + w) * depth + i;
+                        result[index] = normalize(offsets[i], total);
+                    }
                 }
             }
         }
