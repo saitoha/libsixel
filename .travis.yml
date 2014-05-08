@@ -9,7 +9,7 @@ env:
   - XCC=x86_64-w64-mingw32-gcc HOST=x86_64-w64-mingw32 WINE=wine64
 
 before_install:
-    #  - "sudo apt-get -qq update --force-yes > /dev/null"
+  - "sudo apt-get -qq update --force-yes > /dev/null"
   - "if [ x$WINE != x ]; then sudo apt-get install -qq wine > /dev/null; fi"
   - "if [ x$XCC = xclang ]; then sudo apt-get install -qq clang; fi"
   - "if [ x$XCC = xgcc ]; then sudo apt-get install -qq gcc; fi"
