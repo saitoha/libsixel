@@ -41,10 +41,10 @@ transform image colors to match this set of colorsspecify map.
 .B \-e, \-\-monochrome
 output monochrome(1bpp) sixel image.
 .TP 5
-.B \-d \fITYPE\fP, \-\-diffusion=\fITYPE\fP
+.B \-d \fIDIFFUSIONTYPE\fP, \-\-diffusion=\fIDIFFUSIONTYPE\fP
 choose diffusion method which used with color reduction.
 .br
-TYPE is one of them:
+DIFFUSIONTYPE is one of them:
 .br
 auto   -> choose diffusion type automatically (default).
 .br
@@ -55,10 +55,24 @@ fs     -> Floyd-Steinberg method
 jajuni -> Jarvis, Judice & Ninke
 .TP 5
 .B \-w \fIWIDTH\fP, \-\-width=\fIWIDTH\fP
-resize image to specific width
+resize image to specific width.
 .TP 5
 .B \-h \fIHEIGHT\fP, \-\-height=\fIHEIGHT\fP
-resize image to specific height
+resize image to specific height.
+.B \-r \fIRESAMPLINGTYPE\fP, \-\-resampling=\fIRESAMPLINGTYPE\fP
+choose resampling method which used with -w or -h option (scaling).
+.br
+RESAMPLINGTYPE is one of them:
+.br
+rearest   -> Nearest-Neighbor
+.br
+bilinear  -> Bilinear
+.br
+bicubic   -> Bicubic
+.br
+lanczos2  -> Lanczos-2
+.br
+lanczos3  -> Lanczos-3
 
 
 .SH "SEE ALSO"
