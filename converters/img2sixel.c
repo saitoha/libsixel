@@ -201,15 +201,15 @@ convert_to_sixel(char const *filename, int reqcolors,
         /* parse --resampling option */
         if (!resampling) {  /* default */
             method_for_resampling = RES_LANCZOS3;
-        } else if (strcmp(diffusion, "nearest") == 0) {
+        } else if (strcmp(resampling, "nearest") == 0) {
             method_for_resampling = RES_NEAREST;
-        } else if (strcmp(diffusion, "bilinear") == 0) {
+        } else if (strcmp(resampling, "bilinear") == 0) {
             method_for_resampling = RES_BILINEAR;
-        } else if (strcmp(diffusion, "bicubic") == 0) {
+        } else if (strcmp(resampling, "bicubic") == 0) {
             method_for_resampling = RES_BICUBIC;
-        } else if (strcmp(diffusion, "lanczos2") == 0) {
+        } else if (strcmp(resampling, "lanczos2") == 0) {
             method_for_resampling = RES_LANCZOS2;
-        } else if (strcmp(diffusion, "lanczos3") == 0) {
+        } else if (strcmp(resampling, "lanczos3") == 0) {
             method_for_resampling = RES_LANCZOS3;
         } else {
             fprintf(stderr,
@@ -220,7 +220,7 @@ convert_to_sixel(char const *filename, int reqcolors,
         }
 
         scaled_pixels = LSS_scale(pixels, sx, sy, 3,
-                                  width, height, method_for_resampling);
+                                  width, height, RES_NEAREST);
         sx = width;
         sy = height;
 
@@ -424,8 +424,8 @@ int main(int argc, char *argv[])
 
     if (optind == argc) {
         ret = convert_to_sixel(NULL, ncolors, mapfile,
-                               monochrome, diffusion, resampling, f8bit,
-                               width, height);
+                               monochrome, diffusion, resampling,
+                               f8bit, width, height);
         if (ret != 0) {
             exit_code = EXIT_FAILURE;
             goto end;
@@ -433,8 +433,8 @@ int main(int argc, char *argv[])
     } else {
         for (n = optind; n < argc; n++) {
             ret = convert_to_sixel(argv[n], ncolors, mapfile,
-                                   monochrome, diffusion, resampling, f8bit,
-                                   width, height);
+                                   monochrome, diffusion, resampling,
+                                   f8bit, width, height);
             if (ret != 0) {
                 exit_code = EXIT_FAILURE;
                 goto end;
