@@ -39,6 +39,7 @@
 #define MIN(l, r) ((l) < (r) ? (l) : (r))
 #endif
 
+
 /* function Nearest Neighbor */
 static double
 nearest_neighbor(double const d)
@@ -49,6 +50,7 @@ nearest_neighbor(double const d)
     return 0.0;
 }
 
+
 /* function Bi-linear */
 static double
 bilinear(double const d)
@@ -58,6 +60,7 @@ bilinear(double const d)
     }
     return 0.0;
 }
+
 
 /* function Bi-cubic */
 static double
@@ -72,6 +75,7 @@ bicubic(double const d)
     return 0.0;
 }
 
+
 /* function sinc
  * sinc(x) = sin(PI * x) / (PI * x)
  */
@@ -80,6 +84,7 @@ sinc(double const x)
 {
     return sin(M_PI * x) / (M_PI * x);
 }
+
 
 /* function Lanczos-2
  * Lanczos(x) = sinc(x) * sinc(x / 2) , |x| <= 2
@@ -97,6 +102,7 @@ lanczos2(double const d)
     return 0.0;
 }
 
+
 /* function Lanczos-3
  * Lanczos(x) = sinc(x) * sinc(x / 3) , |x| <= 3
  *            = 0, |x| > 3
@@ -113,6 +119,42 @@ lanczos3(double const d)
     return 0.0;
 }
 
+/* function Lanczos-4
+ * Lanczos(x) = sinc(x) * sinc(x / 4) , |x| <= 4
+ *            = 0, |x| > 4
+ */
+static double
+lanczos4(double const d)
+{
+    if (d == 0.0) {
+        return 1.0;
+    }
+    if (d < 4.0) {
+        return sinc(d) * sinc(d / 4.0);
+    }
+    return 0.0;
+}
+
+
+static double
+gaussian(double const d)
+{
+    return exp(-2.0 * d * d) * sqrt(2.0 / M_PI);
+}
+
+
+static double
+hanning(double const d)
+{
+    return 0.5 + 0.5 * cos(d * M_PI);
+}
+
+
+static double
+hamming(const double d)
+{
+    return 0.54 + 0.46 * cos(d * M_PI);
+}
 
 static unsigned char
 normalize(double x, double total)
@@ -155,6 +197,18 @@ LSS_scale(unsigned char const *pixels,
         f_resample = nearest_neighbor;
         n = 1.0;
         break;
+    case RES_GAUSSIAN:
+        f_resample = gaussian;
+        n = 1.0;
+        break;
+    case RES_HANNING:
+        f_resample = hanning;
+        n = 1.0;
+        break;
+    case RES_HAMMING:
+        f_resample = hamming;
+        n = 1.0;
+        break;
     case RES_BILINEAR:
         f_resample = bilinear;
         n = 1.0;
@@ -170,6 +224,10 @@ LSS_scale(unsigned char const *pixels,
     case RES_LANCZOS3:
         f_resample = lanczos3;
         n = 3.0;
+        break;
+    case RES_LANCZOS4:
+        f_resample = lanczos4;
+        n = 4.0;
         break;
     default:
         f_resample = bilinear;

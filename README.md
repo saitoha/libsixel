@@ -139,11 +139,16 @@ Options:
                            with -w or -h option (scaling)
                            RESAMPLINGTYPE is one of them:
                                nearest  -> Nearest-Neighbor
-                               bilinear -> Bilinear (default)
-                               bicubic  -> Bicubic
-                               lanczos2 -> Lanczos-2
-                               lanczos3 -> Lanczos-3
-
+                                           method
+                               gaussian -> Gaussian method
+                               hanning  -> Hanning method
+                               hamming  -> Hamming method
+                               bilinear -> Bilinear method
+                                           (default)
+                               bicubic  -> Bicubic method
+                               lanczos2 -> Lanczos-2 method
+                               lanczos3 -> Lanczos-3 method
+                               lanczos4 -> Lanczos-4 method
 ```
 
 Convert a jpeg image file into a sixel file

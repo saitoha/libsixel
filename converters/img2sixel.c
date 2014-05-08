@@ -430,6 +430,12 @@ int main(int argc, char *argv[])
                 method_for_resampling = RES_BILINEAR;
             } else if (strcmp(optarg, "nearest") == 0) {
                 method_for_resampling = RES_NEAREST;
+            } else if (strcmp(optarg, "gaussian") == 0) {
+                method_for_resampling = RES_GAUSSIAN;
+            } else if (strcmp(optarg, "hanning") == 0) {
+                method_for_resampling = RES_HANNING;
+            } else if (strcmp(optarg, "hamming") == 0) {
+                method_for_resampling = RES_HAMMING;
             } else if (strcmp(optarg, "bilinear") == 0) {
                 method_for_resampling = RES_BILINEAR;
             } else if (strcmp(optarg, "bicubic") == 0) {
@@ -438,6 +444,8 @@ int main(int argc, char *argv[])
                 method_for_resampling = RES_LANCZOS2;
             } else if (strcmp(optarg, "lanczos3") == 0) {
                 method_for_resampling = RES_LANCZOS3;
+            } else if (strcmp(optarg, "lanczos4") == 0) {
+                method_for_resampling = RES_LANCZOS4;
             } else {
                 fprintf(stderr,
                         "Resampling method '%s' is not supported.\n",
@@ -565,10 +573,16 @@ argerr:
             "                           with -w or -h option (scaling)\n"
             "                           RESAMPLINGTYPE is one of them:\n"
             "                               nearest  -> Nearest-Neighbor\n"
-            "                               bilinear -> Bilinear (default)\n"
-            "                               bicubic  -> Bicubic\n"
-            "                               lanczos2 -> Lanczos-2\n"
-            "                               lanczos3 -> Lanczos-3\n"
+            "                                           method\n"
+            "                               gaussian -> Gaussian method\n"
+            "                               hanning  -> Hanning method\n"
+            "                               hamming  -> Hamming method\n"
+            "                               bilinear -> Bilinear method\n"
+            "                                           (default)\n"
+            "                               bicubic  -> Bicubic method\n"
+            "                               lanczos2 -> Lanczos-2 method\n"
+            "                               lanczos3 -> Lanczos-3 method\n"
+            "                               lanczos4 -> Lanczos-4 method\n"
             );
 
 end:

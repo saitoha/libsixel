@@ -25,10 +25,14 @@
 /* method for re-sampling */
 enum methodForResampling {
     RES_NEAREST,  /* Use nearest neighbor method */
+    RES_GAUSSIAN, /* Use guaussian method */
+    RES_HANNING,  /* Use hanning method */
+    RES_HAMMING,  /* Use hamming method */
     RES_BILINEAR, /* Use bilinear method */
     RES_BICUBIC,  /* Use bicubic method */
     RES_LANCZOS2, /* Use lanczos-2 method */
     RES_LANCZOS3, /* Use lanczos-3 method */
+    RES_LANCZOS4, /* Use lanczos-4 method */
 };
 
 

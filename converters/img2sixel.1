@@ -93,16 +93,23 @@ choose resampling method which used with -w or -h option (scaling).
 .br
 \fIRESAMPLINGTYPE\fP is one of them:
 .br
-rearest   -> Nearest-Neighbor
+nearest  -> Nearest-Neighbor method
 .br
-bilinear  -> Bilinear (default)
+gaussian -> Gaussian method
 .br
-bicubic   -> Bicubic
+hanning  -> Hanning method
 .br
-lanczos2  -> Lanczos-2
+hamming  -> Hamming method
 .br
-lanczos3  -> Lanczos-3
-
+bilinear -> Bilinear method (default)
+.br
+bicubic  -> Bicubic method
+.br
+lanczos2 -> Lanczos-2 method
+.br
+lanczos3 -> Lanczos-3 method
+.br
+lanczos4 -> Lanczos-4 method
 
 .SH "SEE ALSO"
 sixel2png(1)
