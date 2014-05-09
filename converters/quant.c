@@ -818,8 +818,8 @@ diffuse_jajuni(unsigned char *data, int width, int height,
         add_offset(data, pos + width * 2 - 2, depth, offsets, 1, 48);
         add_offset(data, pos + width * 2 - 1, depth, offsets, 3, 48);
         add_offset(data, pos + width * 2 + 0, depth, offsets, 5, 48);
-        add_offset(data, pos + width * 1 + 1, depth, offsets, 3, 48);
-        add_offset(data, pos + width * 1 + 2, depth, offsets, 1, 48);
+        add_offset(data, pos + width * 2 + 1, depth, offsets, 3, 48);
+        add_offset(data, pos + width * 2 + 2, depth, offsets, 1, 48);
     }
 }
 
@@ -849,8 +849,8 @@ diffuse_stucki(unsigned char *data, int width, int height,
         add_offset(data, pos + width * 2 - 2, depth, offsets, 1, 48);
         add_offset(data, pos + width * 2 - 1, depth, offsets, 1, 24);
         add_offset(data, pos + width * 2 + 0, depth, offsets, 1, 12);
-        add_offset(data, pos + width * 1 + 1, depth, offsets, 1, 24);
-        add_offset(data, pos + width * 1 + 2, depth, offsets, 1, 48);
+        add_offset(data, pos + width * 2 + 1, depth, offsets, 1, 24);
+        add_offset(data, pos + width * 2 + 2, depth, offsets, 1, 48);
     }
 }
 
