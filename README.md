@@ -102,6 +102,7 @@ Options:
                                fs       -> Floyd-Steinberg method
                                atkinson -> Bill Atkinson's method
                                jajuni   -> Jarvis, Judice & Ninke
+                               stucki   -> Stucki's method
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
                            dimention of median cut boxes for
@@ -117,7 +118,7 @@ Options:
                                        luminosities before the
                                        comparison
 -s SELECTTYPE, --select-color=SELECTTYPE
-                           selecting the method for selecting
+                           choose the method for selecting
                            representative color from each
                            median-cut box, make sence only
                            when -p option (color reduction) is

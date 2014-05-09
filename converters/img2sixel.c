@@ -377,6 +377,8 @@ int main(int argc, char *argv[])
                     method_for_diffuse = DIFFUSE_ATKINSON;
                 } else if (strcmp(optarg, "jajuni") == 0) {
                     method_for_diffuse = DIFFUSE_JAJUNI;
+                } else if (strcmp(optarg, "stucki") == 0) {
+                    method_for_diffuse = DIFFUSE_STUCKI;
                 } else {
                     fprintf(stderr,
                             "Diffusion method '%s' is not supported.\n",
@@ -539,6 +541,7 @@ argerr:
             "                             fs       -> Floyd-Steinberg method\n"
             "                             atkinson -> Bill Atkinson's method\n"
             "                             jajuni   -> Jarvis, Judice & Ninke\n"
+            "                             stucki   -> Stucki's method\n"
             "-f FINDTYPE, --find-largest=FINDTYPE\n"
             "                           choose method for finding the largest\n"
             "                           dimention of median cut boxes for\n"
@@ -554,7 +557,7 @@ argerr:
             "                                     luminosities before the\n"
             "                                     comparison\n"
             "-s SELECTTYPE, --select-color=SELECTTYPE\n"
-            "                           selecting the method for selecting\n"
+            "                           choose the method for selecting\n"
             "                           representative color from each\n"
             "                           median-cut box, make sence only\n"
             "                           when -p option (color reduction) is\n"

@@ -824,6 +824,37 @@ diffuse_jajuni(unsigned char *data, int width, int height,
 }
 
 
+static void
+diffuse_stucki(unsigned char *data, int width, int height,
+               int x, int y, int depth, int *offsets)
+{
+    int n;
+    int pos;
+
+    pos = y * width + x;
+
+    /* Stucki's Method
+     *                  curr    8/48    4/48
+     *  2/48    4/48    8/48    4/48    2/48
+     *  1/48    2/48    4/48    2/48    1/48
+     */
+    if (x > 2 && x < width - 2 && y < height - 2) {
+        add_offset(data, pos + width * 0 + 1, depth, offsets, 1, 6);
+        add_offset(data, pos + width * 0 + 2, depth, offsets, 1, 12);
+        add_offset(data, pos + width * 1 - 2, depth, offsets, 1, 24);
+        add_offset(data, pos + width * 1 - 1, depth, offsets, 1, 12);
+        add_offset(data, pos + width * 1 + 0, depth, offsets, 1, 6);
+        add_offset(data, pos + width * 1 + 1, depth, offsets, 1, 12);
+        add_offset(data, pos + width * 1 + 2, depth, offsets, 1, 24);
+        add_offset(data, pos + width * 2 - 2, depth, offsets, 1, 48);
+        add_offset(data, pos + width * 2 - 1, depth, offsets, 1, 24);
+        add_offset(data, pos + width * 2 + 0, depth, offsets, 1, 12);
+        add_offset(data, pos + width * 1 + 1, depth, offsets, 1, 24);
+        add_offset(data, pos + width * 1 + 2, depth, offsets, 1, 48);
+    }
+}
+
+
 unsigned char *
 LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
                 int reqcolors, int *ncolors, int *origcolors,
@@ -969,6 +1000,9 @@ LSQ_ApplyPalette(unsigned char *data,
             break;
         case DIFFUSE_JAJUNI:
             f_diffuse = diffuse_jajuni;
+            break;
+        case DIFFUSE_STUCKI:
+            f_diffuse = diffuse_stucki;
             break;
         default:
             quant_trace(stderr, "Internal error: invalid value of"

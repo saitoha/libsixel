@@ -47,7 +47,8 @@ enum methodForDiffuse {
     DIFFUSE_NONE,       /* don't diffuse */
     DIFFUSE_ATKINSON,   /* diffuse with Bill Atkinson's method */
     DIFFUSE_FS,         /* diffuse with Floyd-Steinberg method */
-    DIFFUSE_JAJUNI      /* diffuse with Jarvis, Judice & Ninke method */
+    DIFFUSE_JAJUNI,     /* diffuse with Jarvis, Judice & Ninke method */
+    DIFFUSE_STUCKI      /* diffuse with Stucki's method */
 };
 
 
