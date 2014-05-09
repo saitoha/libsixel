@@ -96,11 +96,12 @@ Options:
                            choose diffusion method which used
                            with -p option (color reduction)
                            DIFFUSIONTYPE is one of them:
-                               auto   -> choose diffusion type
-                                         automatically (default)
-                               none   -> do not diffuse
-                               fs     -> Floyd-Steinberg method
-                               jajuni -> Jarvis, Judice & Ninke
+                               auto     -> choose diffusion type
+                                           automatically (default)
+                               none     -> do not diffuse
+                               fs       -> Floyd-Steinberg method
+                               atkinson -> Bill Atkinson's method
+                               jajuni   -> Jarvis, Judice & Ninke
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
                            dimention of median cut boxes for
