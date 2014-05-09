@@ -379,6 +379,8 @@ int main(int argc, char *argv[])
                     method_for_diffuse = DIFFUSE_JAJUNI;
                 } else if (strcmp(optarg, "stucki") == 0) {
                     method_for_diffuse = DIFFUSE_STUCKI;
+                } else if (strcmp(optarg, "burkes") == 0) {
+                    method_for_diffuse = DIFFUSE_BURKES;
                 } else {
                     fprintf(stderr,
                             "Diffusion method '%s' is not supported.\n",
@@ -542,6 +544,7 @@ argerr:
             "                             atkinson -> Bill Atkinson's method\n"
             "                             jajuni   -> Jarvis, Judice & Ninke\n"
             "                             stucki   -> Stucki's method\n"
+            "                             burkes   -> Burkes' method\n"
             "-f FINDTYPE, --find-largest=FINDTYPE\n"
             "                           choose method for finding the largest\n"
             "                           dimention of median cut boxes for\n"
