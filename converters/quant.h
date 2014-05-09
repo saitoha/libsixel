@@ -45,6 +45,7 @@ enum methodForRep {
 enum methodForDiffuse {
     DIFFUSE_AUTO,       /* choose diffusion type automatically */
     DIFFUSE_NONE,       /* don't diffuse */
+    DIFFUSE_ATKINSON,   /* diffuse with Bill Atkinson's method */
     DIFFUSE_FS,         /* diffuse with Floyd-Steinberg method */
     DIFFUSE_JAJUNI      /* diffuse with Jarvis, Judice & Ninke method */
 };

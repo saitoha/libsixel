@@ -184,7 +184,8 @@ convert_to_sixel(char const *filename, int reqcolors,
     pixels = stbi_load_from_file(f, &sx, &sy, &comp, STBI_rgb);
     fclose(f);
     if (pixels == NULL) {
-        fprintf(stderr, "stbi_load_from_file('%s') failed.\n" "reason: %s.\n",
+        fprintf(stderr, "stbi_load_from_file('%s') failed.\n"
+                        "reason: %s.\n",
                 filename, stbi_failure_reason());
         nret = -1;
         goto end;
@@ -372,6 +373,8 @@ int main(int argc, char *argv[])
                     method_for_diffuse = DIFFUSE_NONE;
                 } else if (strcmp(optarg, "fs") == 0) {
                     method_for_diffuse = DIFFUSE_FS;
+                } else if (strcmp(optarg, "atkinson") == 0) {
+                    method_for_diffuse = DIFFUSE_ATKINSON;
                 } else if (strcmp(optarg, "jajuni") == 0) {
                     method_for_diffuse = DIFFUSE_JAJUNI;
                 } else {
@@ -530,11 +533,12 @@ argerr:
             "                           choose diffusion method which used\n"
             "                           with -p option (color reduction)\n"
             "                           DIFFUSIONTYPE is one of them:\n"
-            "                               auto   -> choose diffusion type\n"
+            "                             auto     -> choose diffusion type\n"
             "                                         automatically (default)\n"
-            "                               none   -> do not diffuse\n"
-            "                               fs     -> Floyd-Steinberg method\n"
-            "                               jajuni -> Jarvis, Judice & Ninke\n"
+            "                             none     -> do not diffuse\n"
+            "                             fs       -> Floyd-Steinberg method\n"
+            "                             atkinson -> Bill Atkinson's method\n"
+            "                             jajuni   -> Jarvis, Judice & Ninke\n"
             "-f FINDTYPE, --find-largest=FINDTYPE\n"
             "                           choose method for finding the largest\n"
             "                           dimention of median cut boxes for\n"
@@ -542,13 +546,13 @@ argerr:
             "                           option (color reduction) is\n"
             "                           specified\n"
             "                           FINDTYPE is one of them:\n"
-            "                               auto -> choose finding method\n"
-            "                                       automatically (default)\n"
-            "                               norm -> simply comparing the\n"
-            "                                       range in RGB space\n"
-            "                               lum  -> transforming into\n"
-            "                                       luminosities before the\n"
-            "                                       comparison\n"
+            "                             auto -> choose finding method\n"
+            "                                     automatically (default)\n"
+            "                             norm -> simply comparing the\n"
+            "                                     range in RGB space\n"
+            "                             lum  -> transforming into\n"
+            "                                     luminosities before the\n"
+            "                                     comparison\n"
             "-s SELECTTYPE, --select-color=SELECTTYPE\n"
             "                           selecting the method for selecting\n"
             "                           representative color from each\n"
@@ -556,33 +560,33 @@ argerr:
             "                           when -p option (color reduction) is\n"
             "                           specified\n"
             "                           SELECTTYPE is one of them:\n"
-            "                               auto     -> choose selecting\n"
-            "                                           method automatically\n"
-            "                                           (default)\n"
-            "                               center   -> choose the center of\n"
-            "                                           the box\n"
-            "                               average  -> caclulate the color\n"
-            "                                           average into the box\n"
-            "                               histgram -> similar with average\n"
-            "                                           but considers color\n"
-            "                                           histgram\n"
+            "                             auto     -> choose selecting\n"
+            "                                         method automatically\n"
+            "                                         (default)\n"
+            "                             center   -> choose the center of\n"
+            "                                         the box\n"
+            "                             average  -> caclulate the color\n"
+            "                                         average into the box\n"
+            "                             histgram -> similar with average\n"
+            "                                         but considers color\n"
+            "                                         histgram\n"
             "-w WIDTH, --width=WIDTH    resize image to specific width\n"
             "-h HEIGHT, --height=HEIGHT resize image to specific height\n"
             "-r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE\n"
             "                           choose resampling method which used\n"
             "                           with -w or -h option (scaling)\n"
             "                           RESAMPLINGTYPE is one of them:\n"
-            "                               nearest  -> Nearest-Neighbor\n"
-            "                                           method\n"
-            "                               gaussian -> Gaussian method\n"
-            "                               hanning  -> Hanning method\n"
-            "                               hamming  -> Hamming method\n"
-            "                               bilinear -> Bilinear method\n"
-            "                                           (default)\n"
-            "                               bicubic  -> Bicubic method\n"
-            "                               lanczos2 -> Lanczos-2 method\n"
-            "                               lanczos3 -> Lanczos-3 method\n"
-            "                               lanczos4 -> Lanczos-4 method\n"
+            "                             nearest  -> Nearest-Neighbor\n"
+            "                                         method\n"
+            "                             gaussian -> Gaussian method\n"
+            "                             hanning  -> Hanning method\n"
+            "                             hamming  -> Hamming method\n"
+            "                             bilinear -> Bilinear method\n"
+            "                                         (default)\n"
+            "                             bicubic  -> Bicubic method\n"
+            "                             lanczos2 -> Lanczos-2 method\n"
+            "                             lanczos3 -> Lanczos-3 method\n"
+            "                             lanczos4 -> Lanczos-4 method\n"
             );
 
 end:
