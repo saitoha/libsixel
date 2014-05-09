@@ -864,10 +864,9 @@ diffuse_burkes(unsigned char *data, int width, int height,
 
     pos = y * width + x;
 
-    /* Stucki's Method
-     *                  curr    8/48    4/48
-     *  2/48    4/48    8/48    4/48    2/48
-     *  1/48    2/48    4/48    2/48    1/48
+    /* Burkes' Method
+     *                  curr    4/16    2/16
+     *  1/16    2/16    4/16    2/16    1/16
      */
     if (x > 2 && x < width - 2 && y < height - 2) {
         add_offset(data, pos + width * 0 + 1, depth, offsets, 1, 4);
