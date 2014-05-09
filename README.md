@@ -103,6 +103,7 @@ Options:
                                atkinson -> Bill Atkinson's method
                                jajuni   -> Jarvis, Judice & Ninke
                                stucki   -> Stucki's method
+                               burkes   -> Burkes' method
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
                            dimention of median cut boxes for
