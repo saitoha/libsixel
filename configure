@@ -12222,7 +12222,16 @@ fi
 # Checks for libraries.
 
 # Checks for header files.
-for ac_header in memory.h stdlib.h string.h unistd.h getopt.h sys/types.h sys/stat.h fcntl.h errno.h
+for ac_header in memory.h \
+		  stdlib.h \
+		  string.h \
+		  unistd.h \
+		  getopt.h \
+		  sys/types.h \
+		  sys/stat.h \
+		  fcntl.h \
+		  errno.h \
+		  xmmintrin.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -12404,6 +12413,35 @@ _ACEOF
 
 fi
 done
+
+
+ac_fn_c_check_func "$LINENO" "memalign" "ac_cv_func_memalign"
+if test "x$ac_cv_func_memalign" = xyes; then :
+
+$as_echo "#define HAVE_MEMALIGN 1" >>confdefs.h
+
+fi
+
+ac_fn_c_check_func "$LINENO" "posix_memalign" "ac_cv_func_posix_memalign"
+if test "x$ac_cv_func_posix_memalign" = xyes; then :
+
+$as_echo "#define HAVE_POSIX_MEMALIGN 1" >>confdefs.h
+
+fi
+
+ac_fn_c_check_func "$LINENO" "aligned_alloc" "ac_cv_func_aligned_alloc"
+if test "x$ac_cv_func_aligned_alloc" = xyes; then :
+
+$as_echo "#define HAVE_ALIGNED_ALLOC 1" >>confdefs.h
+
+fi
+
+ac_fn_c_check_func "$LINENO" "_aligned_malloc" "ac_cv_func__aligned_malloc"
+if test "x$ac_cv_func__aligned_malloc" = xyes; then :
+
+$as_echo "#define HAVE__ALIGNED_MALLOC 1" >>confdefs.h
+
+fi
 
 
 # for HDR

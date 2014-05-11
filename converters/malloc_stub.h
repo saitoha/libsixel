@@ -34,6 +34,8 @@ void * rpl_malloc(size_t n);
 void * rpl_realloc(void *p, size_t n);
 #endif /* !HAVE_REALLOC */
 
+int rpl_posix_memalign(void **memptr, size_t alignment, size_t size);
+
 #endif /* MALLOC_STUB_H */
 
 /* Hello emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */

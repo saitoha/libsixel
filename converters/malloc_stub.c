@@ -25,6 +25,13 @@
 #include <sys/types.h>
 #endif  /* HAVE_SYS_TYPES_H */
 
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif  /* HAVE_ERRNO_H */
+
+#include <stdlib.h>
+#include <memory.h>
+
 #if !HAVE_MALLOC
 #undef malloc
 void *
@@ -51,6 +58,25 @@ rpl_realloc(void *p, size_t n)
     return (void *)realloc(p, n);
 }
 #endif /* !HAVE_REALLOC */
+
+
+int
+rpl_posix_memalign(void **memptr, size_t alignment, size_t size)
+{
+#if HAVE_POSIX_MEMALIGN
+    return posix_memalign(memptr, alignment, size);
+#elif HAVE_ALIGNED_ALLOC
+    *memptr = aligned_alloc(alignment, size);
+    return *memptr ? 0: ENOMEM;
+#elif HAVE_MEMALIGN
+    *memptr = memalign(alignment, size);
+    return *memptr ? 0: ENOMEM;
+#elif HAVE__ALIGNED_MALLOC
+    return _aligned_malloc(size, alignment);
+#else
+# error
+#endif /* _MSC_VER */
+}
 
 /* Hello emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
