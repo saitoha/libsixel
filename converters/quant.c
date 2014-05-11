@@ -719,20 +719,18 @@ static void
 add_offset(unsigned char *data, int pos, int depth,
            int *offsets, int mul, int div)
 {
-    int n, c;
+    int c;
 
     data += pos * depth;
 
-    for (n = 0; n < depth; ++n) {
-        c = data[n] + offsets[n] * mul / div;
-        if (c < 0) {
-            c = 0;
-        }
-        if (c >= 1 << 8) {
-            c = (1 << 8) - 1;
-        }
-        data[n] = (unsigned char)c;
+    c = *data + *offsets * mul / div;
+    if (c < 0) {
+        c = 0;
     }
+    if (c >= 1 << 8) {
+        c = (1 << 8) - 1;
+    }
+    *data = (unsigned char)c;
 }
 
 
@@ -742,16 +740,16 @@ diffuse_none(unsigned char *data, int width, int height,
 {
 }
 
+
 static void
 diffuse_atkinson(unsigned char *data, int width, int height,
                  int x, int y, int depth, int *offsets)
 {
-    int pos;
+    int pos, n;
 
     pos = y * width + x;
 
     if (x < width - 2 && y < height - 2) {
-
         /* add offset to the right cell */
         add_offset(data, pos + width * 0 + 1, depth, offsets, 1, 8);
         /* add offset to the 2th right cell */
@@ -960,27 +958,27 @@ lookup_fast(unsigned char const * const pixel,
     diff = INT_MAX;
     hash = 0;
 
-    for (n = 0; n < depth; ++n) {
-        hash |= *(pixel + n) >> depth << ((depth - 1 - n) * 5);
+    for (n = 0; n < 3; ++n) {
+        hash |= *(pixel + n) >> 3 << ((3 - 1 - n) * 5);
     }
 
     cache = cachetable[hash];
     if (cache) {  /* fast lookup */
-        index = cache - 1;
-    } else {  /* collision */
-        for (i = 0; i < ncolor; i++) {
-            distant = 0;
-            for (n = 0; n < depth; ++n) {
-                r = pixel[n] - palette[i * depth + n];
-                distant += r * r;
-            }
-            if (distant < diff) {
-                diff = distant;
-                index = i;
-            }
-        }
-        cachetable[hash] = index + 1;
+        return cache - 1;
     }
+    /* collision */
+    for (i = 0; i < ncolor; i++) {
+        distant = 0;
+        for (n = 0; n < 3; ++n) {
+            r = pixel[n] - palette[i * 3 + n];
+            distant += r * r;
+        }
+        if (distant < diff) {
+            diff = distant;
+            index = i;
+        }
+    }
+    cachetable[hash] = index + 1;
 
     return index;
 }
@@ -1072,13 +1070,11 @@ LSQ_ApplyPalette(unsigned char *data,
             pos = y * width + x;
             index = f_lookup(data + (pos * depth), depth,
                              palette, ncolor, indextable);
-            if (index != -1) {
-                result[pos] = index;
-                for (n = 0; n < depth; ++n) {
-                    offsets[n] = data[pos * depth + n]
-                               - palette[index * depth + n];
-                }
-                f_diffuse(data, width, height, x, y, depth, offsets);
+            result[pos] = index;
+            for (n = 0; n < depth; ++n) {
+                offsets[n] = data[pos * depth + n]
+                           - palette[index * depth + n];
+                f_diffuse(data + n, width, height, x, y, depth, offsets + n);
             }
         }
     }
