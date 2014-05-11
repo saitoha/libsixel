@@ -79,6 +79,7 @@ Now SIXEL feature is supported by the following terminals.
 ### img2sixel
 
 ```
+img2sixel: invalid option -- v
 Usage: img2sixel [Options] imagefiles
        img2sixel [Options] < imagefile
 
@@ -96,14 +97,14 @@ Options:
                            choose diffusion method which used
                            with -p option (color reduction)
                            DIFFUSIONTYPE is one of them:
-                               auto     -> choose diffusion type
-                                           automatically (default)
-                               none     -> do not diffuse
-                               fs       -> Floyd-Steinberg method
-                               atkinson -> Bill Atkinson's method
-                               jajuni   -> Jarvis, Judice & Ninke
-                               stucki   -> Stucki's method
-                               burkes   -> Burkes' method
+                             auto     -> choose diffusion type
+                                         automatically (default)
+                             none     -> do not diffuse
+                             fs       -> Floyd-Steinberg method
+                             atkinson -> Bill Atkinson's method
+                             jajuni   -> Jarvis, Judice & Ninke
+                             stucki   -> Stucki's method
+                             burkes   -> Burkes' method
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
                            dimention of median cut boxes for
@@ -111,13 +112,13 @@ Options:
                            option (color reduction) is
                            specified
                            FINDTYPE is one of them:
-                               auto -> choose finding method
-                                       automatically (default)
-                               norm -> simply comparing the
-                                       range in RGB space
-                               lum  -> transforming into
-                                       luminosities before the
-                                       comparison
+                             auto -> choose finding method
+                                     automatically (default)
+                             norm -> simply comparing the
+                                     range in RGB space
+                             lum  -> transforming into
+                                     luminosities before the
+                                     comparison
 -s SELECTTYPE, --select-color=SELECTTYPE
                            choose the method for selecting
                            representative color from each
@@ -125,33 +126,53 @@ Options:
                            when -p option (color reduction) is
                            specified
                            SELECTTYPE is one of them:
-                               auto     -> choose selecting
-                                           method automatically
-                                           (default)
-                               center   -> choose the center of
-                                           the box
-                               average  -> caclulate the color
-                                           average into the box
-                               histgram -> similar with average
-                                           but considers color
-                                           histgram
+                             auto     -> choose selecting
+                                         method automatically
+                                         (default)
+                             center   -> choose the center of
+                                         the box
+                             average  -> caclulate the color
+                                         average into the box
+                             histgram -> similar with average
+                                         but considers color
+                                         histgram
 -w WIDTH, --width=WIDTH    resize image to specific width
+                           WIDTH is represented by the
+                           following syntax
+                             auto       -> preserving aspect
+                                           ratio (default)
+                             <number>%  -> scale width with
+                                           given percentage
+                             <number>   -> scale width with
+                                           pixel counts
+                             <number>px -> scale width with
+                                           pixel counts
 -h HEIGHT, --height=HEIGHT resize image to specific height
+                           HEIGHT is represented by the
+                           following syntax
+                             auto       -> preserving aspect
+                                           ratio (default)
+                             <number>%  -> scale height with
+                                           given percentage
+                             <number>   -> scale height with
+                                           pixel counts
+                             <number>px -> scale height with
+                                           pixel counts
 -r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE
                            choose resampling method which used
                            with -w or -h option (scaling)
                            RESAMPLINGTYPE is one of them:
-                               nearest  -> Nearest-Neighbor
-                                           method
-                               gaussian -> Gaussian method
-                               hanning  -> Hanning method
-                               hamming  -> Hamming method
-                               bilinear -> Bilinear method
-                                           (default)
-                               bicubic  -> Bicubic method
-                               lanczos2 -> Lanczos-2 method
-                               lanczos3 -> Lanczos-3 method
-                               lanczos4 -> Lanczos-4 method
+                             nearest  -> Nearest-Neighbor
+                                         method
+                             gaussian -> Gaussian method
+                             hanning  -> Hanning method
+                             hamming  -> Hamming method
+                             bilinear -> Bilinear method
+                                         (default)
+                             bicubic  -> Bicubic method
+                             lanczos2 -> Lanczos-2 method
+                             lanczos3 -> Lanczos-3 method
+                             lanczos4 -> Lanczos-4 method
 ```
 
 Convert a jpeg image file into a sixel file

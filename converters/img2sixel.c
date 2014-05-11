@@ -637,7 +637,6 @@ argerr:
             "                                           pixel counts\n"
             "                             <number>px -> scale height with\n"
             "                                           pixel counts\n"
-            "                                           pixel units\n"
             "-r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE\n"
             "                           choose resampling method which used\n"
             "                           with -w or -h option (scaling)\n"
