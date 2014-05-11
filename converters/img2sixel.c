@@ -447,6 +447,9 @@ int main(int argc, char *argv[])
             } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
                 pixelwidth = number;
                 percentwidth = -1;
+            } else if (strcmp(optarg, "auto") == 0) {
+                pixelwidth = -1;
+                percentwidth = -1;
             } else {
                 fprintf(stderr,
                         "Cannot parse -w/--width option.\n");
@@ -460,6 +463,9 @@ int main(int argc, char *argv[])
                 percentheight = number;
             } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
                 pixelheight = number;
+                percentheight = -1;
+            } else if (strcmp(optarg, "auto") == 0) {
+                pixelheight = -1;
                 percentheight = -1;
             } else {
                 fprintf(stderr,
