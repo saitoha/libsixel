@@ -90,9 +90,29 @@ histgram -> similar with average but considers color histgram
 .TP 5
 .B \-w \fIWIDTH\fP, \-\-width=\fIWIDTH\fP
 resize image to specific width.
+.br
+\fIWIDTH\fP is represented by the following syntax:
+.br
+auto       -> preserving aspect ratio (default)
+.br
+<number>%  -> scale width with given percentage
+.br
+<number>   -> scale width with pixel counts
+.br
+<number>px -> scale width with pixel counts
 .TP 5
 .B \-h \fIHEIGHT\fP, \-\-height=\fIHEIGHT\fP
 resize image to specific height.
+.br
+\fIHEIGHT\fP is represented by the following syntax
+.br
+auto       -> preserving aspect ratio (default)
+.br
+<number>%  -> scale height with given percentage
+.br
+<number>   -> scale height with pixel counts
+.br
+<number>px -> scale height with pixel counts
 .TP 5
 .B \-r \fIRESAMPLINGTYPE\fP, \-\-resampling=\fIRESAMPLINGTYPE\fP
 choose resampling method which used with -w or -h option (scaling).

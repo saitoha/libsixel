@@ -154,7 +154,9 @@ convert_to_sixel(char const *filename, int reqcolors,
                  enum methodForLargest method_for_largest,
                  enum methodForRep method_for_rep,
                  enum methodForResampling const method_for_resampling,
-                 int f8bit, int width, int height)
+                 int f8bit,
+                 int pixelwidth, int pixelheight,
+                 int percentwidth, int percentheight)
 {
     unsigned char *pixels = NULL;
     unsigned char *scaled_pixels = NULL;
@@ -190,21 +192,26 @@ convert_to_sixel(char const *filename, int reqcolors,
         nret = -1;
         goto end;
     }
-
     /* scaling */
-    if (width > 0 && height <= 0) {
-        height = sy * width / sx;
+    if (percentwidth > 0) {
+        pixelwidth = sx * percentwidth / 100;
     }
-    if (height > 0 && width <= 0) {
-        width = sx * height / sy;
+    if (percentheight > 0) {
+        pixelheight = sy * percentheight / 100;
+    }
+    if (pixelwidth > 0 && pixelheight <= 0) {
+        pixelheight = sy * pixelwidth / sx;
+    }
+    if (pixelheight > 0 && pixelwidth <= 0) {
+        pixelwidth = sx * pixelheight / sy;
     }
 
-    if (width > 0 && height > 0) {
+    if (pixelwidth > 0 && pixelheight > 0) {
         scaled_pixels = LSS_scale(pixels, sx, sy, 3,
-                                  width, height,
+                                  pixelwidth, pixelheight,
                                   method_for_resampling);
-        sx = width;
-        sy = height;
+        sx = pixelwidth;
+        sy = pixelheight;
 
         free(pixels);
         pixels = scaled_pixels;
@@ -317,12 +324,19 @@ int main(int argc, char *argv[])
     int ret;
     int exit_code;
     int f8bit;
-    int width;
-    int height;
+    int number;
+    char unit[32];
+    int parsed;
+    int pixelwidth;
+    int pixelheight;
+    int percentwidth;
+    int percentheight;
 
     f8bit = 0;
-    width = -1;
-    height = -1;
+    pixelwidth = -1;
+    pixelheight = -1;
+    percentwidth = -1;
+    percentheight = -1;
 
     struct option long_options[] = {
         {"7bit-mode",    no_argument,        &long_opt, '7'},
@@ -426,10 +440,38 @@ int main(int argc, char *argv[])
             }
             break;
         case 'w':
-            width = atoi(optarg);
+            parsed = sscanf(optarg, "%d%s", &number, unit);
+            if (parsed == 2 && strcmp(unit, "%") == 0) {
+                pixelwidth = -1;
+                percentwidth = number;
+            } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
+                pixelwidth = number;
+                percentwidth = -1;
+            } else if (strcmp(optarg, "auto") == 0) {
+                pixelwidth = -1;
+                percentwidth = -1;
+            } else {
+                fprintf(stderr,
+                        "Cannot parse -w/--width option.\n");
+                goto argerr;
+            }
             break;
         case 'h':
-            height = atoi(optarg);
+            parsed = sscanf(optarg, "%d%s", &number, unit);
+            if (parsed == 2 && strcmp(unit, "%") == 0) {
+                pixelheight = -1;
+                percentheight = number;
+            } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
+                pixelheight = number;
+                percentheight = -1;
+            } else if (strcmp(optarg, "auto") == 0) {
+                pixelheight = -1;
+                percentheight = -1;
+            } else {
+                fprintf(stderr,
+                        "Cannot parse -h/--height option.\n");
+                goto argerr;
+            }
             break;
         case 'r':
             /* parse --resampling option */
@@ -466,7 +508,6 @@ int main(int argc, char *argv[])
             goto argerr;
         }
     }
-
     if (ncolors != -1 && mapfile) {
         fprintf(stderr, "option -p, --colors conflicts "
                         "with -m, --mapfile.\n");
@@ -494,7 +535,9 @@ int main(int argc, char *argv[])
                                method_for_largest,
                                method_for_rep,
                                method_for_resampling,
-                               f8bit, width, height);
+                               f8bit,
+                               pixelwidth, pixelheight,
+                               percentwidth, percentheight);
         if (ret != 0) {
             exit_code = EXIT_FAILURE;
             goto end;
@@ -507,7 +550,9 @@ int main(int argc, char *argv[])
                                    method_for_largest,
                                    method_for_rep,
                                    method_for_resampling,
-                                   f8bit, width, height);
+                                   f8bit,
+                                   pixelwidth, pixelheight,
+                                   percentwidth, percentheight);
             if (ret != 0) {
                 exit_code = EXIT_FAILURE;
                 goto end;
@@ -577,7 +622,27 @@ argerr:
             "                                         but considers color\n"
             "                                         histgram\n"
             "-w WIDTH, --width=WIDTH    resize image to specific width\n"
+            "                           WIDTH is represented by the\n"
+            "                           following syntax\n"
+            "                             auto       -> preserving aspect\n"
+            "                                           ratio (default)\n"
+            "                             <number>%%  -> scale width with\n"
+            "                                           given percentage\n"
+            "                             <number>   -> scale width with\n"
+            "                                           pixel counts\n"
+            "                             <number>px -> scale width with\n"
+            "                                           pixel counts\n"
             "-h HEIGHT, --height=HEIGHT resize image to specific height\n"
+            "                           HEIGHT is represented by the\n"
+            "                           following syntax\n"
+            "                             auto       -> preserving aspect\n"
+            "                                           ratio (default)\n"
+            "                             <number>%%  -> scale height with\n"
+            "                                           given percentage\n"
+            "                             <number>   -> scale height with\n"
+            "                                           pixel counts\n"
+            "                             <number>px -> scale height with\n"
+            "                                           pixel counts\n"
             "-r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE\n"
             "                           choose resampling method which used\n"
             "                           with -w or -h option (scaling)\n"
