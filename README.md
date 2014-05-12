@@ -325,7 +325,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-## Thanks
+## Thanks & References
 
 This software derives from the following implementations.
 
@@ -395,4 +395,11 @@ http://public-domain-photos.com/
 
     author: Jon Sullivan
     url: http://public-domain-photos.com/animals/snake-4.htm
+
+### ImageMagick
+
+We added some resampling filters in reference to the line-up of filters of
+MagickCore's resize.c.
+
+    http://www.imagemagick.org/api/MagickCore/resize_8c_source.html
 
