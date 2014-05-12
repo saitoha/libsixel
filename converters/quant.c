@@ -716,8 +716,8 @@ computeColorMapFromInput(unsigned char *data,
 
 
 static void
-add_offset(unsigned char *data, int pos, int depth,
-           int *offsets, int mul, int div)
+error_diffuse(unsigned char *data, int pos, int depth,
+              int *offsets, int mul, int div)
 {
     int c;
 
@@ -751,17 +751,17 @@ diffuse_atkinson(unsigned char *data, int width, int height,
 
     if (x < width - 2 && y < height - 2) {
         /* add offset to the right cell */
-        add_offset(data, pos + width * 0 + 1, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 0 + 1, depth, offsets, 1, 8);
         /* add offset to the 2th right cell */
-        add_offset(data, pos + width * 0 + 2, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 0 + 2, depth, offsets, 1, 8);
         /* add offset to the left-bottom cell */
-        add_offset(data, pos + width * 1 - 1, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 1 - 1, depth, offsets, 1, 8);
         /* add offset to the bottom cell */
-        add_offset(data, pos + width * 1 + 0, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 1 + 0, depth, offsets, 1, 8);
         /* add offset to the right-bottom cell */
-        add_offset(data, pos + width * 1 + 1, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 1 + 1, depth, offsets, 1, 8);
         /* add offset to the 2th bottom cell */
-        add_offset(data, pos + width * 2 + 0, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 2 + 0, depth, offsets, 1, 8);
     }
 }
 
@@ -780,13 +780,13 @@ diffuse_fs(unsigned char *data, int width, int height,
      */
     if (x > 1 && x < width - 1 && y < height - 1) {
         /* add offset to the right cell */
-        add_offset(data, pos + width * 0 + 1, depth, offsets, 7, 16);
+        error_diffuse(data, pos + width * 0 + 1, depth, offsets, 7, 16);
         /* add offset to the left-bottom cell */
-        add_offset(data, pos + width * 1 - 1, depth, offsets, 3, 16);
+        error_diffuse(data, pos + width * 1 - 1, depth, offsets, 3, 16);
         /* add offset to the bottom cell */
-        add_offset(data, pos + width * 1 + 0, depth, offsets, 5, 16);
+        error_diffuse(data, pos + width * 1 + 0, depth, offsets, 5, 16);
         /* add offset to the right-bottom cell */
-        add_offset(data, pos + width * 1 + 1, depth, offsets, 1, 16);
+        error_diffuse(data, pos + width * 1 + 1, depth, offsets, 1, 16);
     }
 }
 
@@ -806,18 +806,18 @@ diffuse_jajuni(unsigned char *data, int width, int height,
      *  1/48    3/48    5/48    3/48    1/48
      */
     if (x > 2 && x < width - 2 && y < height - 2) {
-        add_offset(data, pos + width * 0 + 1, depth, offsets, 7, 48);
-        add_offset(data, pos + width * 0 + 2, depth, offsets, 5, 48);
-        add_offset(data, pos + width * 1 - 2, depth, offsets, 3, 48);
-        add_offset(data, pos + width * 1 - 1, depth, offsets, 5, 48);
-        add_offset(data, pos + width * 1 + 0, depth, offsets, 7, 48);
-        add_offset(data, pos + width * 1 + 1, depth, offsets, 5, 48);
-        add_offset(data, pos + width * 1 + 2, depth, offsets, 3, 48);
-        add_offset(data, pos + width * 2 - 2, depth, offsets, 1, 48);
-        add_offset(data, pos + width * 2 - 1, depth, offsets, 3, 48);
-        add_offset(data, pos + width * 2 + 0, depth, offsets, 5, 48);
-        add_offset(data, pos + width * 2 + 1, depth, offsets, 3, 48);
-        add_offset(data, pos + width * 2 + 2, depth, offsets, 1, 48);
+        error_diffuse(data, pos + width * 0 + 1, depth, offsets, 7, 48);
+        error_diffuse(data, pos + width * 0 + 2, depth, offsets, 5, 48);
+        error_diffuse(data, pos + width * 1 - 2, depth, offsets, 3, 48);
+        error_diffuse(data, pos + width * 1 - 1, depth, offsets, 5, 48);
+        error_diffuse(data, pos + width * 1 + 0, depth, offsets, 7, 48);
+        error_diffuse(data, pos + width * 1 + 1, depth, offsets, 5, 48);
+        error_diffuse(data, pos + width * 1 + 2, depth, offsets, 3, 48);
+        error_diffuse(data, pos + width * 2 - 2, depth, offsets, 1, 48);
+        error_diffuse(data, pos + width * 2 - 1, depth, offsets, 3, 48);
+        error_diffuse(data, pos + width * 2 + 0, depth, offsets, 5, 48);
+        error_diffuse(data, pos + width * 2 + 1, depth, offsets, 3, 48);
+        error_diffuse(data, pos + width * 2 + 2, depth, offsets, 1, 48);
     }
 }
 
@@ -837,18 +837,18 @@ diffuse_stucki(unsigned char *data, int width, int height,
      *  1/48    2/48    4/48    2/48    1/48
      */
     if (x > 2 && x < width - 2 && y < height - 2) {
-        add_offset(data, pos + width * 0 + 1, depth, offsets, 1, 6);
-        add_offset(data, pos + width * 0 + 2, depth, offsets, 1, 12);
-        add_offset(data, pos + width * 1 - 2, depth, offsets, 1, 24);
-        add_offset(data, pos + width * 1 - 1, depth, offsets, 1, 12);
-        add_offset(data, pos + width * 1 + 0, depth, offsets, 1, 6);
-        add_offset(data, pos + width * 1 + 1, depth, offsets, 1, 12);
-        add_offset(data, pos + width * 1 + 2, depth, offsets, 1, 24);
-        add_offset(data, pos + width * 2 - 2, depth, offsets, 1, 48);
-        add_offset(data, pos + width * 2 - 1, depth, offsets, 1, 24);
-        add_offset(data, pos + width * 2 + 0, depth, offsets, 1, 12);
-        add_offset(data, pos + width * 2 + 1, depth, offsets, 1, 24);
-        add_offset(data, pos + width * 2 + 2, depth, offsets, 1, 48);
+        error_diffuse(data, pos + width * 0 + 1, depth, offsets, 1, 6);
+        error_diffuse(data, pos + width * 0 + 2, depth, offsets, 1, 12);
+        error_diffuse(data, pos + width * 1 - 2, depth, offsets, 1, 24);
+        error_diffuse(data, pos + width * 1 - 1, depth, offsets, 1, 12);
+        error_diffuse(data, pos + width * 1 + 0, depth, offsets, 1, 6);
+        error_diffuse(data, pos + width * 1 + 1, depth, offsets, 1, 12);
+        error_diffuse(data, pos + width * 1 + 2, depth, offsets, 1, 24);
+        error_diffuse(data, pos + width * 2 - 2, depth, offsets, 1, 48);
+        error_diffuse(data, pos + width * 2 - 1, depth, offsets, 1, 24);
+        error_diffuse(data, pos + width * 2 + 0, depth, offsets, 1, 12);
+        error_diffuse(data, pos + width * 2 + 1, depth, offsets, 1, 24);
+        error_diffuse(data, pos + width * 2 + 2, depth, offsets, 1, 48);
     }
 }
 
@@ -867,13 +867,13 @@ diffuse_burkes(unsigned char *data, int width, int height,
      *  1/16    2/16    4/16    2/16    1/16
      */
     if (x > 2 && x < width - 2 && y < height - 2) {
-        add_offset(data, pos + width * 0 + 1, depth, offsets, 1, 4);
-        add_offset(data, pos + width * 0 + 2, depth, offsets, 1, 8);
-        add_offset(data, pos + width * 1 - 2, depth, offsets, 1, 16);
-        add_offset(data, pos + width * 1 - 1, depth, offsets, 1, 8);
-        add_offset(data, pos + width * 1 + 0, depth, offsets, 1, 4);
-        add_offset(data, pos + width * 1 + 1, depth, offsets, 1, 8);
-        add_offset(data, pos + width * 1 + 2, depth, offsets, 1, 16);
+        error_diffuse(data, pos + width * 0 + 1, depth, offsets, 1, 4);
+        error_diffuse(data, pos + width * 0 + 2, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 1 - 2, depth, offsets, 1, 16);
+        error_diffuse(data, pos + width * 1 - 1, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 1 + 0, depth, offsets, 1, 4);
+        error_diffuse(data, pos + width * 1 + 1, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 1 + 2, depth, offsets, 1, 16);
     }
 }
 
