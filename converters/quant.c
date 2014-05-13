@@ -207,6 +207,7 @@ newBoxVector(int const colors, int const sum, int const newcolors)
     bv = (boxVector)malloc(sizeof(struct box) * newcolors);
     if (bv == NULL) {
         quant_trace(stderr, "out of memory allocating box vector table\n");
+        return NULL;
     }
 
     /* Set up the initial box. */
@@ -540,7 +541,7 @@ splitBox(boxVector             const bv,
 
 
 
-static void
+static int
 mediancut(tupletable2           const colorfreqtable,
           unsigned int          const depth,
           int                   const newcolors,
@@ -574,6 +575,9 @@ mediancut(tupletable2           const colorfreqtable,
         */
 
     bv = newBoxVector(colorfreqtable.size, sum, newcolors);
+    if (!bv) {
+        return (-1);
+    }
     boxes = 1;
     multicolorBoxesExist = (colorfreqtable.size > 1);
 
@@ -591,6 +595,7 @@ mediancut(tupletable2           const colorfreqtable,
                                 methodForRep);
 
     free(bv);
+    return 0;
 }
 
 
@@ -655,7 +660,7 @@ computeHistogram(unsigned char *data,
 }
 
 
-static void
+static int
 computeColorMapFromInput(unsigned char *data,
                          size_t length,
                          unsigned int const depth,
@@ -686,6 +691,7 @@ computeColorMapFromInput(unsigned char *data,
 -----------------------------------------------------------------------------*/
     tupletable2 colorfreqtable;
     int i, n;
+    int ret;
 
     computeHistogram(data, length, depth, &colorfreqtable);
     if (origcolors) {
@@ -706,12 +712,16 @@ computeColorMapFromInput(unsigned char *data,
         }
     } else {
         quant_trace(stderr, "choosing %d colors...\n", reqColors);
-        mediancut(colorfreqtable, depth, reqColors,
-                  methodForLargest, methodForRep, colormapP);
+        ret = mediancut(colorfreqtable, depth, reqColors,
+                        methodForLargest, methodForRep, colormapP);
+        if (ret != 0) {
+            return (-1);
+        }
         quant_trace(stderr, "%d colors are choosed.\n", colorfreqtable.size);
     }
 
     free(colorfreqtable.table);
+    return 0;
 }
 
 
@@ -885,12 +895,16 @@ LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
                 enum methodForRep const methodForRep)
 {
     int i, n;
+    int ret;
     unsigned char *palette;
     tupletable2 colormap;
 
-    computeColorMapFromInput(data, x * y * depth, depth,
-                             reqcolors, methodForLargest,
-                             methodForRep, &colormap, origcolors);
+    ret = computeColorMapFromInput(data, x * y * depth, depth,
+                                   reqcolors, methodForLargest,
+                                   methodForRep, &colormap, origcolors);
+    if (ret != 0) {
+        return NULL;
+    }
     *ncolors = colormap.size;
     quant_trace(stderr, "tupletable size: %d", *ncolors);
     palette = malloc(*ncolors * depth);
