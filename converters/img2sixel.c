@@ -252,6 +252,7 @@ convert_to_sixel(char const *filename, int reqcolors,
                             palette, ncolors,
                             method_for_diffuse,
                             /* foptimize */ 1);
+
     if (!data) {
         nret = -1;
         goto end;
