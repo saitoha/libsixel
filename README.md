@@ -173,6 +173,13 @@ Options:
                              lanczos2 -> Lanczos-2 method
                              lanczos3 -> Lanczos-3 method
                              lanczos4 -> Lanczos-4 method
+-q QUALITYMODE, --quality=QUALITYMODE
+                             auto -> decide quality mode
+                                     automatically (default)
+                             high -> high quality and low
+                                     speed mode
+                             low  -> low quality and high
+                                     speed mode
 ```
 
 Convert a jpeg image file into a sixel file
