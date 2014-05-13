@@ -179,7 +179,6 @@ alloctupletable(unsigned int const depth, unsigned int const size)
 static tupletable2
 newColorMap(unsigned int const newcolors, unsigned int const depth)
 {
-
     tupletable2 colormap;
     unsigned int i;
     tupletable table;
@@ -603,7 +602,8 @@ static void
 computeHistogram(unsigned char *data,
                  unsigned int length,
                  unsigned long const depth,
-                 tupletable2 * const colorfreqtableP)
+                 tupletable2 * const colorfreqtableP,
+                 enum qualityMode const qualityMode)
 {
     unsigned int i, n;
     unsigned short *histgram;
@@ -613,7 +613,13 @@ computeHistogram(unsigned char *data,
     struct tupleint *t;
     unsigned int index;
     unsigned int step;
-    const unsigned int max_sample = 18384;
+    unsigned int max_sample;
+
+    if (qualityMode == QUALITY_HIGH) {
+        max_sample = 1118383;
+    } else { /* if (qualityMode == QUALITY_LOW) */
+        max_sample = 18383;
+    }
 
     quant_trace(stderr, "making histogram...\n");
 
@@ -629,7 +635,7 @@ computeHistogram(unsigned char *data,
 
     for (i = 0; i < length; i += step) {
         index = 0;
-        for (n = 0; n < depth; n ++) {
+        for (n = 0; n < depth; n++) {
             index |= data[i + depth - 1 - n] >> 3 << n * 5;
         }
         if (histgram[index] == 0) {
@@ -667,6 +673,7 @@ computeColorMapFromInput(unsigned char *data,
                          int const reqColors,
                          enum methodForLargest const methodForLargest,
                          enum methodForRep const methodForRep,
+                         enum qualityMode const qualityMode,
                          tupletable2 * const colormapP,
                          int *origcolors)
 {
@@ -693,7 +700,7 @@ computeColorMapFromInput(unsigned char *data,
     int i, n;
     int ret;
 
-    computeHistogram(data, length, depth, &colorfreqtable);
+    computeHistogram(data, length, depth, &colorfreqtable, qualityMode);
     if (origcolors) {
         *origcolors = colorfreqtable.size;
     }
@@ -892,7 +899,8 @@ unsigned char *
 LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
                 int reqcolors, int *ncolors, int *origcolors,
                 enum methodForLargest const methodForLargest,
-                enum methodForRep const methodForRep)
+                enum methodForRep const methodForRep,
+                enum qualityMode const qualityMode)
 {
     int i, n;
     int ret;
@@ -901,7 +909,8 @@ LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
 
     ret = computeColorMapFromInput(data, x * y * depth, depth,
                                    reqcolors, methodForLargest,
-                                   methodForRep, &colormap, origcolors);
+                                   methodForRep, qualityMode,
+                                   &colormap, origcolors);
     if (ret != 0) {
         return NULL;
     }
