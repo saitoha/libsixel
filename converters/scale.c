@@ -62,6 +62,17 @@ bilinear(double const d)
 }
 
 
+/* function Welsh */
+static double
+welsh(double const d)
+{
+    if (d < 1.0) {
+        return 1.0 - d * d;
+    }
+    return 0.0;
+}
+
+
 /* function Bi-cubic */
 static double
 bicubic(double const d)
@@ -216,6 +227,10 @@ LSS_scale(unsigned char const *pixels,
         break;
     case RES_BILINEAR:
         f_resample = bilinear;
+        n = 1.0;
+        break;
+    case RES_WELSH:
+        f_resample = welsh;
         n = 1.0;
         break;
     case RES_BICUBIC:

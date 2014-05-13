@@ -793,6 +793,7 @@ diffuse_atkinson(unsigned char *data, int width, int height,
     }
 }
 
+
 static void
 diffuse_fs(unsigned char *data, int width, int height,
            int x, int y, int depth, int *offsets)
