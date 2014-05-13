@@ -378,7 +378,6 @@ averagePixels(int          const boxStart,
     for (i = 0; i < boxSize; ++i)
         n += colorfreqtable.table[boxStart + i]->value;
 
-
     for (plane = 0; plane < depth; ++plane) {
         sample sum;
         int i;

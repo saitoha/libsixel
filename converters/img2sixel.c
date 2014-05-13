@@ -520,8 +520,7 @@ int main(int argc, char *argv[])
                     quality_mode = QUALITY_LOW;
                 } else {
                     fprintf(stderr,
-                            "Cannot parse quality option.\n",
-                            optarg);
+                            "Cannot parse quality option.\n");
                     goto argerr;
                 }
             }
