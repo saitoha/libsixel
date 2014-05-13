@@ -599,7 +599,7 @@ mediancut(tupletable2           const colorfreqtable,
 }
 
 
-static void
+static int
 computeHistogram(unsigned char *data,
                  unsigned int length,
                  unsigned long const depth,
@@ -618,8 +618,16 @@ computeHistogram(unsigned char *data,
     quant_trace(stderr, "making histogram...\n");
 
     histgram = malloc((1 << depth * 5) * sizeof(*histgram));
+    if (!histgram) {
+        quant_trace(stderr, "Unable to allocate memory for histgram.");
+        return (-1);
+    }
     memset(histgram, 0, (1 << depth * 5) * sizeof(*histgram));
     it = ref = refmap = (unsigned short *)malloc(max_sample * sizeof(*refmap));
+    if (!it) {
+        quant_trace(stderr, "Unable to allocate memory for lookup table.");
+        return (-1);
+    }
 
     if (length > max_sample * depth) {
         step = length / depth / max_sample;
@@ -657,6 +665,7 @@ computeHistogram(unsigned char *data,
     free(histgram);
 
     quant_trace(stderr, "%u colors found\n", colorfreqtableP->size);
+    return 0;
 }
 
 
@@ -693,7 +702,10 @@ computeColorMapFromInput(unsigned char *data,
     int i, n;
     int ret;
 
-    computeHistogram(data, length, depth, &colorfreqtable);
+    ret = computeHistogram(data, length, depth, &colorfreqtable);
+    if (ret != 0) {
+        return (-1);
+    }
     if (origcolors) {
         *origcolors = colorfreqtable.size;
     }
