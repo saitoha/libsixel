@@ -115,27 +115,29 @@ auto       -> preserving aspect ratio (default)
 <number>px -> scale height with pixel counts
 .TP 5
 .B \-r \fIRESAMPLINGTYPE\fP, \-\-resampling=\fIRESAMPLINGTYPE\fP
-choose resampling method which used with -w or -h option (scaling).
+choose resampling method used with -w or -h option (scaling).
 .br
 \fIRESAMPLINGTYPE\fP is one of them:
 .br
 nearest  -> Nearest-Neighbor method
 .br
-gaussian -> Gaussian method
+gaussian -> Gaussian filter
 .br
-hanning  -> Hanning method
+hanning  -> Hanning filter
 .br
-hamming  -> Hamming method
+hamming  -> Hamming filter
 .br
-bilinear -> Bilinear method (default)
+bilinear -> Bilinear filter (default)
 .br
-bicubic  -> Bicubic method
+welsh    -> Welsh filter
 .br
-lanczos2 -> Lanczos-2 method
+bicubic  -> Bicubic filter
 .br
-lanczos3 -> Lanczos-3 method
+lanczos2 -> Lanczos-2 filter
 .br
-lanczos4 -> Lanczos-4 method
+lanczos3 -> Lanczos-3 filter
+.br
+lanczos4 -> Lanczos-4 filter
 
 .SH "SEE ALSO"
 sixel2png(1)

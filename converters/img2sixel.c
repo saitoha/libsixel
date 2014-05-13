@@ -487,6 +487,8 @@ int main(int argc, char *argv[])
                 method_for_resampling = RES_HAMMING;
             } else if (strcmp(optarg, "bilinear") == 0) {
                 method_for_resampling = RES_BILINEAR;
+            } else if (strcmp(optarg, "welsh") == 0) {
+                method_for_resampling = RES_WELSH;
             } else if (strcmp(optarg, "bicubic") == 0) {
                 method_for_resampling = RES_BICUBIC;
             } else if (strcmp(optarg, "lanczos2") == 0) {
@@ -644,20 +646,21 @@ argerr:
             "                             <number>px -> scale height with\n"
             "                                           pixel counts\n"
             "-r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE\n"
-            "                           choose resampling method which used\n"
+            "                           choose resampling filter used\n"
             "                           with -w or -h option (scaling)\n"
             "                           RESAMPLINGTYPE is one of them:\n"
             "                             nearest  -> Nearest-Neighbor\n"
             "                                         method\n"
-            "                             gaussian -> Gaussian method\n"
-            "                             hanning  -> Hanning method\n"
-            "                             hamming  -> Hamming method\n"
-            "                             bilinear -> Bilinear method\n"
+            "                             gaussian -> Gaussian filter\n"
+            "                             hanning  -> Hanning filter\n"
+            "                             hamming  -> Hamming filter\n"
+            "                             bilinear -> Bilinear filter\n"
             "                                         (default)\n"
-            "                             bicubic  -> Bicubic method\n"
-            "                             lanczos2 -> Lanczos-2 method\n"
-            "                             lanczos3 -> Lanczos-3 method\n"
-            "                             lanczos4 -> Lanczos-4 method\n"
+            "                             welsh    -> Welsh filter\n"
+            "                             bicubic  -> Bicubic filter\n"
+            "                             lanczos2 -> Lanczos-2 filter\n"
+            "                             lanczos3 -> Lanczos-3 filter\n"
+            "                             lanczos4 -> Lanczos-4 filter\n"
             );
 
 end:

@@ -159,20 +159,20 @@ Options:
                              <number>px -> scale height with
                                            pixel counts
 -r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE
-                           choose resampling method which used
+                           choose resampling method used
                            with -w or -h option (scaling)
                            RESAMPLINGTYPE is one of them:
                              nearest  -> Nearest-Neighbor
                                          method
-                             gaussian -> Gaussian method
-                             hanning  -> Hanning method
-                             hamming  -> Hamming method
-                             bilinear -> Bilinear method
+                             gaussian -> Gaussian filter
+                             hanning  -> Hanning filter
+                             hamming  -> Hamming filter
+                             bilinear -> Bilinear filter
                                          (default)
-                             bicubic  -> Bicubic method
-                             lanczos2 -> Lanczos-2 method
-                             lanczos3 -> Lanczos-3 method
-                             lanczos4 -> Lanczos-4 method
+                             bicubic  -> Bicubic filter
+                             lanczos2 -> Lanczos-2 filter
+                             lanczos3 -> Lanczos-3 filter
+                             lanczos4 -> Lanczos-4 filter
 ```
 
 Convert a jpeg image file into a sixel file
