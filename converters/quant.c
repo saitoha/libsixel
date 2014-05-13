@@ -20,6 +20,39 @@
  *   documentation.  This software is provided "as is" without express or
  *   implied warranty.
  *
+ * *******************************************************************************
+ *
+ *
+ * pattern dither algorithm implementation is imported from monosixel/main.c
+ * in arakiken's tw "sixel" branch
+ * https://bitbucket.org/arakiken/tw/branch/sixel
+ *
+ * *******************************************************************************
+ *              original license of monosixel/main.c of arakiken's tw
+ * *******************************************************************************
+ *
+ * Copyright (c) 2012 Sho Hashimoto
+ * Copyright (c) 2014 Araki Ken
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
  * ******************************************************************************
  *
  * Copyright (c) 2014 Hayaki Saito
@@ -1019,6 +1052,45 @@ lookup_fast(unsigned char const * const pixel,
 }
 
 
+/**
+ * this function comes from "monosixel", which is contained in
+ * arakiken's tw "sixel" branch
+ * https://bitbucket.org/arakiken/tw/branch/sixel
+ */
+static unsigned char *
+pattern_dither(unsigned char *pixels, int width, int height, int depth)
+{
+    int pattern[] = {
+        24, 384,  96, 480,
+        576, 192, 672, 288,
+        144, 528,  48, 432,
+        720, 336, 624, 240,
+    };
+    unsigned char *p, *result;
+    unsigned char *pixel;
+    unsigned char *line;
+    int x, y;
+    int rowstride;
+
+    rowstride = width * depth;
+    line = pixels;
+
+    result = p = malloc(width * height * sizeof(*pixels));
+    for (y = 0; y < height; y++) {
+        pixel = line;
+        line += rowstride;
+
+        for (x = 0; x < width; x++) {
+            (*p++) = (pixel[0] + pixel[1] + pixel[2] >= pattern[(y & 3) * 4 + (x & 3)]) ?
+                    1 : 0;
+            pixel += depth;
+        }
+    }
+
+    return result;
+}
+
+
 unsigned char *
 LSQ_ApplyPalette(unsigned char *data,
                  int width,
@@ -1043,7 +1115,10 @@ LSQ_ApplyPalette(unsigned char *data,
                     int const ncolor,
                     unsigned short * const cachetable);
 
-    if (ncolor <= 2 || depth != 3) {
+    if (ncolor <= 2) {
+        return pattern_dither(data, width, height, depth);
+    }
+    if (depth != 3) {
         f_diffuse = diffuse_none;
     } else {
         switch (methodForDiffuse) {

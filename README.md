@@ -388,7 +388,42 @@ that the above copyright notice appear in all copies and that both that
 copyright notice and this permission notice appear in supporting
 documentation.  This software is provided "as is" without express or
 implied warranty.
- 
+
+
+### monosixel (arakiken's tw)
+
+The pattern dither algorithm implemented in quant.c is imported from
+*monosixel/main.c* in *arakiken's tw "sixel" branch*.
+
+https://bitbucket.org/arakiken/tw/branch/sixel
+
+This tool is written by Araki Ken, and we regard it as a derivative of.
+original tw, created by Sho Hashimoto.
+
+
+Copyright (c) 2012 Sho Hashimoto
+Copyright (c) 2014 Araki Ken
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
 ### test images (egret.jpg / snake.jpg)
 
 Test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.com
@@ -404,6 +439,7 @@ http://public-domain-photos.com/
 
     author: Jon Sullivan
     url: http://public-domain-photos.com/animals/snake-4.htm
+
 
 ### ImageMagick
 
