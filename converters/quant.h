@@ -52,6 +52,13 @@ enum methodForDiffuse {
     DIFFUSE_BURKES      /* diffuse with Burkes' method */
 };
 
+/* quality modes */
+enum qualityMode {
+    QUALITY_AUTO,       /* choose quality mode automatically */
+    QUALITY_HIGH,       /* high quality */
+    QUALITY_LOW,        /* low quality */
+};
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -70,7 +77,8 @@ LSQ_MakePalette(unsigned char *data,
                 int *ncolors,
                 int *origcolors,
                 enum methodForLargest const methodForLargest,
-                enum methodForRep const methodForRep);
+                enum methodForRep const methodForRep,
+                enum qualityMode const qualityMode);
 
 
 unsigned char *

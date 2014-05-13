@@ -142,7 +142,7 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
     }
     palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3,
                               reqcolors, pncolors, &origcolors,
-                              LARGE_NORM, REP_CENTER_BOX);
+                              LARGE_NORM, REP_CENTER_BOX, QUALITY_LOW);
     return palette;
 }
 
@@ -153,6 +153,7 @@ convert_to_sixel(char const *filename, int reqcolors,
                  enum methodForDiffuse method_for_diffuse,
                  enum methodForLargest method_for_largest,
                  enum methodForRep method_for_rep,
+                 enum qualityMode quality_mode,
                  enum methodForResampling const method_for_resampling,
                  int f8bit,
                  int pixelwidth, int pixelheight,
@@ -230,10 +231,14 @@ convert_to_sixel(char const *filename, int reqcolors,
         if (method_for_rep == REP_AUTO) {
             method_for_rep = REP_CENTER_BOX;
         }
+        if (quality_mode == QUALITY_AUTO) {
+            quality_mode = reqcolors <= 8 ? QUALITY_HIGH: QUALITY_LOW;
+        }
         palette = LSQ_MakePalette(pixels, sx, sy, 3,
                                   reqcolors, &ncolors, &origcolors,
                                   method_for_largest,
-                                  method_for_rep);
+                                  method_for_rep,
+                                  quality_mode);
         if (origcolors <= ncolors) {
             method_for_diffuse = DIFFUSE_NONE;
         }
@@ -318,6 +323,7 @@ int main(int argc, char *argv[])
     enum methodForDiffuse method_for_diffuse = DIFFUSE_AUTO;
     enum methodForLargest method_for_largest = LARGE_AUTO;
     enum methodForRep method_for_rep = REP_AUTO;
+    enum qualityMode quality_mode = QUALITY_AUTO;
     char *mapfile = NULL;
     int long_opt;
     int option_index;
@@ -350,6 +356,7 @@ int main(int argc, char *argv[])
         {"width",        required_argument,  &long_opt, 'w'},
         {"height",       required_argument,  &long_opt, 'h'},
         {"resampling",   required_argument,  &long_opt, 'r'},
+        {"quality",      required_argument,  &long_opt, 'q'},
         {0, 0, 0, 0}
     };
 
@@ -502,6 +509,22 @@ int main(int argc, char *argv[])
                 goto argerr;
             }
             break;
+        case 'q':
+            /* parse --quality option */
+            if (optarg) {
+                if (strcmp(optarg, "auto") == 0) {
+                    quality_mode = QUALITY_AUTO;
+                } else if (strcmp(optarg, "high") == 0) {
+                    quality_mode = QUALITY_HIGH;
+                } else if (strcmp(optarg, "hanning") == 0) {
+                    quality_mode = QUALITY_LOW;
+                } else {
+                    fprintf(stderr,
+                            "Cannot parse quality option.\n");
+                    goto argerr;
+                }
+            }
+            break;
         case '?':
             goto argerr;
         default:
@@ -534,6 +557,7 @@ int main(int argc, char *argv[])
                                method_for_diffuse,
                                method_for_largest,
                                method_for_rep,
+                               quality_mode,
                                method_for_resampling,
                                f8bit,
                                pixelwidth, pixelheight,
@@ -549,6 +573,7 @@ int main(int argc, char *argv[])
                                    method_for_diffuse,
                                    method_for_largest,
                                    method_for_rep,
+                                   quality_mode,
                                    method_for_resampling,
                                    f8bit,
                                    pixelwidth, pixelheight,
@@ -658,6 +683,15 @@ argerr:
             "                             lanczos2 -> Lanczos-2 method\n"
             "                             lanczos3 -> Lanczos-3 method\n"
             "                             lanczos4 -> Lanczos-4 method\n"
+            "-q QUALITYMODE, --quality=QUALITYMODE\n"
+            "                           select quality of color\n"
+            "                           quanlization.\n"
+            "                             auto -> decide quality mode\n"
+            "                                     automatically (default)\n"
+            "                             high -> high quality and low\n"
+            "                                     speed mode\n"
+            "                             low  -> low quality and high\n"
+            "                                     speed mode\n"
             );
 
 end:
