@@ -684,6 +684,8 @@ argerr:
             "                             lanczos3 -> Lanczos-3 method\n"
             "                             lanczos4 -> Lanczos-4 method\n"
             "-q QUALITYMODE, --quality=QUALITYMODE\n"
+            "                           select quality of color\n"
+            "                           quanlization.\n"
             "                             auto -> decide quality mode\n"
             "                                     automatically (default)\n"
             "                             high -> high quality and low\n"

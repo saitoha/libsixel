@@ -174,6 +174,7 @@ Options:
                              lanczos3 -> Lanczos-3 method
                              lanczos4 -> Lanczos-4 method
 -q QUALITYMODE, --quality=QUALITYMODE
+			   select quality of color quanlization.
                              auto -> decide quality mode
                                      automatically (default)
                              high -> high quality and low
