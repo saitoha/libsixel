@@ -24,14 +24,19 @@ before_script:
 
 script:
   - "make"
-  - "$VALGRIND $WINE converters/img2sixel images/snake.jpg > snake1.sixel"
+  - "sudo make install"
+  - "$VALGRIND $WINE img2sixel images/snake.jpg > snake1.sixel"
   - "du -h snake1.sixel"
-  - "$VALGRIND $WINE converters/img2sixel -p16 images/snake.jpg > snake2.sixel"
+  - "$VALGRIND $WINE img2sixel -p16 images/snake.jpg > snake2.sixel"
   - "du -h snake2.sixel"
-  - "$VALGRIND $WINE converters/sixel2png -i snake1.sixel -o snake1.png"
+  - "$VALGRIND $WINE sixel2png -i snake1.sixel -o snake1.png"
   - "du -h snake1.png"
-  - "$VALGRIND $WINE converters/sixel2png < snake2.sixel > snake2.png"
+  - "$VALGRIND $WINE sixel2png < snake2.sixel > snake2.png"
   - "du -h snake2.png"
-  - "$VALGRIND $WINE converters/img2sixel snake1.png > snake3.sixel"
+  - "$VALGRIND $WINE img2sixel snake1.png > snake3.sixel"
   - "du -h snake3.sixel"
-
+  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -dfs | grep "ERROR SUMMARY: 0 errors" || exit 1; fi
+  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -datkinson | grep "ERROR SUMMARY: 0 errors" || exit 1; fi
+  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -jajuni | grep "ERROR SUMMARY: 0 errors" || exit 1; fi
+  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -stucki | grep "ERROR SUMMARY: 0 errors" || exit 1; fi
+  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -dburkes | grep "ERROR SUMMARY: 0 errors" || exit 1; fi
