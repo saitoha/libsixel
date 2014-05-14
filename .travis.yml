@@ -35,8 +35,8 @@ script:
   - "du -h snake2.png"
   - "$VALGRIND $WINE img2sixel snake1.png > snake3.sixel"
   - "du -h snake3.sixel"
-  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -dfs | grep "ERROR SUMMARY: 0 errors" || exit 1; fi
-  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -datkinson | grep "ERROR SUMMARY: 0 errors" || exit 1; fi
-  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -jajuni | grep "ERROR SUMMARY: 0 errors" || exit 1; fi
-  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -stucki | grep "ERROR SUMMARY: 0 errors" || exit 1; fi
-  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -dburkes | grep "ERROR SUMMARY: 0 errors" || exit 1; fi
+  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes img2sixel images/snake.jpg -dfs | grep "ERROR SUMMARY: 0 errors" || exit 1; fi"
+  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes img2sixel images/snake.jpg -datkinson | grep "ERROR SUMMARY: 0 errors" || exit 1; fi"
+  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes img2sixel images/snake.jpg -jajuni | grep "ERROR SUMMARY: 0 errors" || exit 1; fi"
+  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes img2sixel images/snake.jpg -stucki | grep "ERROR SUMMARY: 0 errors" || exit 1; fi"
+  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes img2sixel images/snake.jpg -dburkes | grep "ERROR SUMMARY: 0 errors" || exit 1; fi"
