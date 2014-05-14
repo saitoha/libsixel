@@ -142,7 +142,7 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
     }
     palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3,
                               reqcolors, pncolors, &origcolors,
-                              LARGE_NORM, REP_CENTER_BOX, QUALITY_LOW);
+                              LARGE_NORM, REP_CENTER_BOX, QUALITY_HIGH);
     return palette;
 }
 
