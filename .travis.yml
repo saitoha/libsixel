@@ -12,7 +12,6 @@ env:
 before_install:
   - "sudo apt-get -qq update --force-yes > /dev/null"
   - "if [ x$WINE != x ]; then sudo apt-get install -qq wine > /dev/null; fi"
-  - "if [ x$VALGRIND != x ]; then sudo apt-get install -qq valgrind > /dev/null; fi"
   - "if [ x$XCC = xclang ]; then sudo apt-get install -qq clang; fi"
   - "if [ x$XCC = xgcc ]; then sudo apt-get install -qq gcc; fi"
   - "if [ x$XCC = xi686-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-i686 binutils-mingw-w64-i686; fi"
@@ -24,19 +23,14 @@ before_script:
 
 script:
   - "make"
-  - "sudo make install"
-  - "$VALGRIND $WINE img2sixel images/snake.jpg > snake1.sixel"
+  - "$WINE converters/img2sixel images/snake.jpg > snake1.sixel"
   - "du -h snake1.sixel"
-  - "$VALGRIND $WINE img2sixel -p16 images/snake.jpg > snake2.sixel"
+  - "$WINE converters/img2sixel -p16 images/snake.jpg > snake2.sixel"
   - "du -h snake2.sixel"
-  - "$VALGRIND $WINE sixel2png -i snake1.sixel -o snake1.png"
+  - "$WINE converters/sixel2png -i snake1.sixel -o snake1.png"
   - "du -h snake1.png"
-  - "$VALGRIND $WINE sixel2png < snake2.sixel > snake2.png"
+  - "$WINE converters/sixel2png < snake2.sixel > snake2.png"
   - "du -h snake2.png"
-  - "$VALGRIND $WINE img2sixel snake1.png > snake3.sixel"
+  - "$WINE converters/img2sixel snake1.png > snake3.sixel"
   - "du -h snake3.sixel"
-  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes img2sixel images/snake.jpg -dfs | grep "ERROR SUMMARY: 0 errors" || exit 1; fi"
-  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes img2sixel images/snake.jpg -datkinson | grep "ERROR SUMMARY: 0 errors" || exit 1; fi"
-  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes img2sixel images/snake.jpg -jajuni | grep "ERROR SUMMARY: 0 errors" || exit 1; fi"
-  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes img2sixel images/snake.jpg -stucki | grep "ERROR SUMMARY: 0 errors" || exit 1; fi"
-  - "if [ x$VALGRIND != x ]; then valgrind --leak-check=yes img2sixel images/snake.jpg -dburkes | grep "ERROR SUMMARY: 0 errors" || exit 1; fi"
+
