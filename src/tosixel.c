@@ -312,17 +312,19 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     if (ret <= 0)
         return (-1);
 
-    if (im->ncolors != 2 || im->keycolor == -1) {
-        for (n = 0 ; n < maxPalet ; n++) {
-            /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
-            ret = context->fn_printf("#%d;2;%d;%d;%d",
-                                     conv_palet[n],
-                                     (im->red[n] * 100 + 127) / 255,
-                                     (im->green[n] * 100 + 127) / 255,
-                                     (im->blue[n] * 100 + 127) / 255);
-            if (ret <= 0)
-                return (-1);
-        }
+    for (n = 0 ; n < maxPalet ; n++) {
+        /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
+        ret = context->fn_printf("#%d;2;%d;%d;%d",
+                                 conv_palet[n],
+                                 (im->red[n] * 100 + 127) / 255,
+                                 (im->green[n] * 100 + 127) / 255,
+                                 (im->blue[n] * 100 + 127) / 255);
+        if (ret <= 0)
+            return (-1);
+    }
+
+    if (im->ncolors == 2 || im->keycolor != -1) {
+        context->fn_printf("#1");
     }
 
     for (y = i = 0 ; y < height ; y++) {
