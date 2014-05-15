@@ -28,9 +28,11 @@ if WANT_SIXEL2PNG
 	./sixel2png < snake.sixel > snake.png
 endif
 if WANT_IMG2SIXEL
-	./img2sixel -p 16 ../images/egret.jpg
 	./img2sixel -m ../images/map8.png ../images/egret.jpg
 	./img2sixel -m ../images/map16.png ../images/egret.jpg
+	./img2sixel -p 8 ../images/snake.jpg
+	./img2sixel -p 2 ../images/snake.jpg
+	./img2sixel -e ../images/snake.jpg
 endif
 
 winetest: all
@@ -42,7 +44,9 @@ if WANT_SIXEL2PNG
 	wine ./sixel2png.exe < snake.sixel > snake.png
 endif
 if WANT_IMG2SIXEL
-	wine ./img2sixel -p 16 ../images/egret.jpg
 	wine ./img2sixel -m ../images/map8.png ../images/egret.jpg
 	wine ./img2sixel -m ../images/map16.png ../images/egret.jpg
+	wine ./img2sixel -p 8 ../images/snake.jpg
+	wine ./img2sixel -p 2 ../images/snake.jpg
+	wine ./img2sixel -e ../images/snake.jpg
 endif
