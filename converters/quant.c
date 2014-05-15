@@ -1052,42 +1052,22 @@ lookup_fast(unsigned char const * const pixel,
 }
 
 
+
 /**
  * this function comes from "monosixel", which is contained in
  * arakiken's tw "sixel" branch
  * https://bitbucket.org/arakiken/tw/branch/sixel
  */
-static unsigned char *
-pattern_dither(unsigned char *pixels, int width, int height, int depth)
+static unsigned char
+pattern_lookup(unsigned char *pixel, int x, int y)
 {
-    int pattern[] = {
+    static int pattern[] = {
         24, 384,  96, 480,
         576, 192, 672, 288,
         144, 528,  48, 432,
         720, 336, 624, 240,
     };
-    unsigned char *p, *result;
-    unsigned char *pixel;
-    unsigned char *line;
-    int x, y;
-    int rowstride;
-
-    rowstride = width * depth;
-    line = pixels;
-
-    result = p = malloc(width * height * sizeof(*pixels));
-    for (y = 0; y < height; y++) {
-        pixel = line;
-        line += rowstride;
-
-        for (x = 0; x < width; x++) {
-            (*p++) = (pixel[0] + pixel[1] + pixel[2] >= pattern[(y & 3) * 4 + (x & 3)]) ?
-                    1 : 0;
-            pixel += depth;
-        }
-    }
-
-    return result;
+    return (pixel[0] + pixel[1] + pixel[2] >= pattern[(y & 3) * 4 + (x & 3)]) ?  1 : 0;
 }
 
 
@@ -1115,9 +1095,6 @@ LSQ_ApplyPalette(unsigned char *data,
                     int const ncolor,
                     unsigned short * const cachetable);
 
-    if (ncolor <= 2) {
-        return pattern_dither(data, width, height, depth);
-    }
     if (depth != 3) {
         f_diffuse = diffuse_none;
     } else {
@@ -1178,8 +1155,12 @@ LSQ_ApplyPalette(unsigned char *data,
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width; ++x) {
             pos = y * width + x;
-            index = f_lookup(data + (pos * depth), depth,
-                             palette, ncolor, indextable);
+            if (depth == 2) {
+                index = pattern_lookup(data + (pos * depth), x, y);
+            } else {
+                index = f_lookup(data + (pos * depth), depth,
+                                 palette, ncolor, indextable);
+            }
             result[pos] = index;
             for (n = 0; n < depth; ++n) {
                 offsets[n] = data[pos * depth + n]
