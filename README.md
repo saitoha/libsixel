@@ -94,6 +94,11 @@ Options:
 -m FILE, --mapfile=FILE    transform image colors to match this
                            set of colorsspecify map
 -e, --monochrome           output monochrome sixel image
+                           this option assumes the terminal
+                           background color is black
+-i, --invert               assume the terminal background color
+                           is white, make sense only when -e
+                           option is given.
 -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
                            choose diffusion method which used
                            with -p option (color reduction)
@@ -109,7 +114,7 @@ Options:
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
                            dimention of median cut boxes for
-                           splitting, make sence only when -p
+                           splitting, make sense only when -p
                            option (color reduction) is
                            specified
                            FINDTYPE is one of them:
@@ -123,7 +128,7 @@ Options:
 -s SELECTTYPE, --select-color=SELECTTYPE
                            choose the method for selecting
                            representative color from each
-                           median-cut box, make sence only
+                           median-cut box, make sense only
                            when -p option (color reduction) is
                            specified
                            SELECTTYPE is one of them:

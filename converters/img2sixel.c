@@ -102,18 +102,27 @@ open_binary_file(char const *filename)
 
 
 static unsigned char *
-prepare_monochrome_palette()
+prepare_monochrome_palette(finvert)
 {
     unsigned char *palette;
 
     palette = malloc(6);
-    palette[0] = 0x00;
-    palette[1] = 0x00;
-    palette[2] = 0x00;
-    palette[3] = 0xff;
-    palette[4] = 0xff;
-    palette[5] = 0xff;
-
+    if (finvert) {
+        palette[0] = 0xff;
+        palette[1] = 0xff;
+        palette[2] = 0xff;
+        palette[3] = 0x00;
+        palette[4] = 0x00;
+        palette[5] = 0x00;
+    } else {
+        palette[0] = 0x00;
+        palette[1] = 0x00;
+        palette[2] = 0x00;
+        palette[3] = 0xff;
+        palette[4] = 0xff;
+        palette[5] = 0xff;
+    }
+    
     return palette;
 }
 
@@ -155,7 +164,7 @@ convert_to_sixel(char const *filename, int reqcolors,
                  enum methodForRep method_for_rep,
                  enum qualityMode quality_mode,
                  enum methodForResampling const method_for_resampling,
-                 int f8bit,
+                 int f8bit, int finvert,
                  int pixelwidth, int pixelheight,
                  int percentwidth, int percentheight)
 {
@@ -220,7 +229,7 @@ convert_to_sixel(char const *filename, int reqcolors,
 
     /* prepare palette */
     if (monochrome) {
-        palette = prepare_monochrome_palette();
+        palette = prepare_monochrome_palette(finvert);
         ncolors = 2;
     } else if (mapfile) {
         palette = prepare_specified_palette(mapfile, reqcolors, &ncolors);
@@ -331,6 +340,7 @@ int main(int argc, char *argv[])
     int ret;
     int exit_code;
     int f8bit;
+    int finvert;
     int number;
     char unit[32];
     int parsed;
@@ -340,6 +350,7 @@ int main(int argc, char *argv[])
     int percentheight;
 
     f8bit = 0;
+    finvert = 0;
     pixelwidth = -1;
     pixelheight = -1;
     percentwidth = -1;
@@ -358,11 +369,12 @@ int main(int argc, char *argv[])
         {"height",       required_argument,  &long_opt, 'h'},
         {"resampling",   required_argument,  &long_opt, 'r'},
         {"quality",      required_argument,  &long_opt, 'q'},
+        {"invert",       required_argument,  &long_opt, 'i'},
         {0, 0, 0, 0}
     };
 
     for (;;) {
-        n = getopt_long(argc, argv, "78p:m:ed:f:s:w:h:r:q:",
+        n = getopt_long(argc, argv, "78p:m:ed:f:s:w:h:r:q:i",
                         long_options, &option_index);
         if (n == -1) {
             break;
@@ -528,6 +540,9 @@ int main(int argc, char *argv[])
                 }
             }
             break;
+        case 'i':
+	    finvert = 1;
+            break;
         case '?':
             goto argerr;
         default:
@@ -562,7 +577,7 @@ int main(int argc, char *argv[])
                                method_for_rep,
                                quality_mode,
                                method_for_resampling,
-                               f8bit,
+                               f8bit, finvert,
                                pixelwidth, pixelheight,
                                percentwidth, percentheight);
         if (ret != 0) {
@@ -578,7 +593,7 @@ int main(int argc, char *argv[])
                                    method_for_rep,
                                    quality_mode,
                                    method_for_resampling,
-                                   f8bit,
+                                   f8bit, finvert,
                                    pixelwidth, pixelheight,
                                    percentwidth, percentheight);
             if (ret != 0) {
@@ -606,6 +621,11 @@ argerr:
             "-m FILE, --mapfile=FILE    transform image colors to match this\n"
             "                           set of colorsspecify map\n"
             "-e, --monochrome           output monochrome sixel image\n"
+            "                           this option assumes the terminal \n"
+            "                           background color is black\n"
+            "-i, --invert               assume the terminal background color\n" 
+            "                           is white, make sense only when -e\n"
+	    "                           option is given.\n"
             "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
             "                           choose diffusion method which used\n"
             "                           with -p option (color reduction)\n"
@@ -621,7 +641,7 @@ argerr:
             "-f FINDTYPE, --find-largest=FINDTYPE\n"
             "                           choose method for finding the largest\n"
             "                           dimention of median cut boxes for\n"
-            "                           splitting, make sence only when -p\n"
+            "                           splitting, make sense only when -p\n"
             "                           option (color reduction) is\n"
             "                           specified\n"
             "                           FINDTYPE is one of them:\n"
@@ -635,7 +655,7 @@ argerr:
             "-s SELECTTYPE, --select-color=SELECTTYPE\n"
             "                           choose the method for selecting\n"
             "                           representative color from each\n"
-            "                           median-cut box, make sence only\n"
+            "                           median-cut box, make sense only\n"
             "                           when -p option (color reduction) is\n"
             "                           specified\n"
             "                           SELECTTYPE is one of them:\n"
