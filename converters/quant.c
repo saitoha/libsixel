@@ -1061,13 +1061,15 @@ lookup_fast(unsigned char const * const pixel,
 static unsigned char
 pattern_lookup(unsigned char *pixel, int x, int y)
 {
-    static int pattern[] = {
+    static unsigned int pattern[] = {
         24, 384,  96, 480,
         576, 192, 672, 288,
         144, 528,  48, 432,
         720, 336, 624, 240,
     };
-    return (pixel[0] + pixel[1] + pixel[2] >= pattern[(y & 3) * 4 + (x & 3)]) ?  1 : 0;
+    return ((unsigned int)pixel[0] +
+            (unsigned int)pixel[1] +
+            (unsigned int)pixel[2] >= pattern[(y & 3) * 4 + (x & 3)]) ?  1 : 0;
 }
 
 
