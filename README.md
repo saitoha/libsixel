@@ -94,6 +94,11 @@ Options:
 -m FILE, --mapfile=FILE    transform image colors to match this
                            set of colorsspecify map
 -e, --monochrome           output monochrome sixel image
+                           this option assumes the terminal
+                           background color is black
+-i, --invert               assume the terminal background color
+                           is white, make sense only when -e
+                           option is given.
 -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
                            choose diffusion method which used
                            with -p option (color reduction)

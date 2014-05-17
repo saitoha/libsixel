@@ -39,7 +39,13 @@ specify number of colors to reduce the image to (default=256).
 transform image colors to match this set of colorsspecify map.
 .TP 5
 .B \-e, \-\-monochrome
-output monochrome(1bpp) sixel image.
+output monochrome sixel image.
+this option assumes the terminal
+background color is black.
+.TP 5
+.B \-i, \-\-invert
+assume the terminal background color is white.
+make sense only when -e option is given.
 .TP 5
 .B \-d \fIDIFFUSIONTYPE\fP, \-\-diffusion=\fIDIFFUSIONTYPE\fP
 choose diffusion method which used with color reduction.
