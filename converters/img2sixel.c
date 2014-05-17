@@ -108,19 +108,19 @@ prepare_monochrome_palette(finvert)
 
     palette = malloc(6);
     if (finvert) {
-        palette[0] = 0x00;
-        palette[1] = 0x00;
-        palette[2] = 0x00;
-        palette[3] = 0xff;
-        palette[4] = 0xff;
-        palette[5] = 0xff;
-    } else {
         palette[0] = 0xff;
         palette[1] = 0xff;
         palette[2] = 0xff;
         palette[3] = 0x00;
         palette[4] = 0x00;
         palette[5] = 0x00;
+    } else {
+        palette[0] = 0x00;
+        palette[1] = 0x00;
+        palette[2] = 0x00;
+        palette[3] = 0xff;
+        palette[4] = 0xff;
+        palette[5] = 0xff;
     }
     
     return palette;
