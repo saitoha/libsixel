@@ -10,7 +10,8 @@ some converter programs.
 
 ![img2sixel](http://zuse.jp/misc/libsixel-1.png)
 
-SIXEL is one of image formats for terminal imaging introduced by DEC VT series.
+SIXEL is one of image formats for printer and terminal imaging introduced by
+Digital Equipment Corp. (DEC).
 Its data scheme is represented as a terminal-friendly escape sequence.
 So if you want to view a SIXEL image file, all you have to do is "cat" it to your terminal.
 
