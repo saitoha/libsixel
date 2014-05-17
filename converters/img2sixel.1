@@ -39,7 +39,13 @@ specify number of colors to reduce the image to (default=256).
 transform image colors to match this set of colorsspecify map.
 .TP 5
 .B \-e, \-\-monochrome
-output monochrome(1bpp) sixel image.
+output monochrome sixel image.
+this option assumes the terminal
+background color is black.
+.TP 5
+.B \-i, \-\-invert
+assume the terminal background color is white.
+make sense only when -e option is given.
 .TP 5
 .B \-d \fIDIFFUSIONTYPE\fP, \-\-diffusion=\fIDIFFUSIONTYPE\fP
 choose diffusion method which used with color reduction.
@@ -62,7 +68,7 @@ burkes   -> Burkes' method
 .TP 5
 .B \-f \fIFINDTYPE\fP, \-\-find\-largest=\fIFINDTYPE\fP
 choose method for finding the largest dimention of median
-cut boxes for splitting, make sence only when -p option
+cut boxes for splitting, make sense only when -p option
 (color reduction) is specified.
 .br
 \fIFINDTYPE\fP is one of them:
@@ -75,7 +81,7 @@ lum  -> transforming into luminosities before the comparison
 .TP 5
 .B \-s \fISELECTTYPE\fP, \-\-select\-color=\fISELECTTYPE\fP
 choose the method for selecting representative color from each
-median-cut box, make sence only when -p option (color reduction) is
+median-cut box, make sense only when -p option (color reduction) is
 specified.
 .br
 \fISELECTTYPE\fP is one of them:
