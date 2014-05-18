@@ -72,16 +72,20 @@
 #include "scale.h"
 #include "quant.h"
 
-#ifdef USE_GDK_PIXBUF
+#ifdef HAVE_GDK_PIXBUF2
 # include <gdk-pixbuf/gdk-pixbuf.h>
+#endif
+
+#ifdef HAVE_LIBCURL
 # include <curl/curl.h>
+#endif
+
 static size_t
 loader_write(void *data, size_t size, size_t len, void *loader)
 {
     gdk_pixbuf_loader_write(loader, data, len, NULL) ;
     return len;
 }
-#endif
 
 typedef struct chunk
 {
@@ -151,7 +155,7 @@ load_with_stbi(char const *filename, int *psx, int *psy,
 {
     FILE *f;
     unsigned char *result;
-# ifdef USE_LIBCURL
+# ifdef HAVE_LIBCURL
     CURL *curl;
     CURLcode code;
     chunk_t chunk;
@@ -180,7 +184,7 @@ load_with_stbi(char const *filename, int *psx, int *psy,
         free(chunk.buffer);
     }
     else
-# endif  /* USE_LIBCURL */
+# endif  /* HAVE_LIBCURL */
     {
         f = open_binary_file(filename);
         if (!f) {
@@ -200,14 +204,14 @@ load_with_stbi(char const *filename, int *psx, int *psy,
 }
 
 
-#ifdef USE_GDK_PIXBUF
+#ifdef HAVE_GDK_PIXBUF2
 static unsigned char *
 load_with_gdk_and_curl(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
 {
     GdkPixbuf *pixbuf;
     unsigned char *pixels;
 
-# ifdef USE_LIBCURL
+# ifdef HAVE_LIBCURL
     if (strstr(filename, "://")) {
         CURL *curl;
         GdkPixbufLoader *loader;
@@ -235,7 +239,7 @@ load_with_gdk_and_curl(char const *filename, int *psx, int *psy, int *pcomp, int
         g_object_unref(loader);
     }
     else
-# endif  /* USE_LIBCURL */
+# endif  /* HAVE_LIBCURL */
     {
         pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
     }
@@ -252,7 +256,7 @@ load_with_gdk_and_curl(char const *filename, int *psx, int *psy, int *pcomp, int
     }
     return pixels;
 }
-#endif  /* USE_GDK_PIXBUF */
+#endif  /* HAVE_GDK_PIXBUF2 */
 
 static unsigned char *
 load_image_file(char const *filename, int *psx, int *psy)
@@ -266,11 +270,11 @@ load_image_file(char const *filename, int *psx, int *psy)
     int x;
     int y;
 
-#ifdef USE_GDK_PIXBUF
+#ifdef HAVE_GDK_PIXBUF2
     pixels = load_with_gdk_and_curl(filename, psx, psy, &comp, &stride);
 #else
     pixels = load_with_stbi(filename, psx, psy, &comp, &stride);
-#endif  /* USE_GDK_PIXBUF */
+#endif  /* HAVE_GDK_PIXBUF2 */
 
     src = dst = pixels;
     if (comp == 4) {
