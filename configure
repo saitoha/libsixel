@@ -634,8 +634,12 @@ ac_unique_file="src/fromsixel.c"
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
+HAVE_LIBCURL_FALSE
+HAVE_LIBCURL_TRUE
 LIBCURL_LIBS
 LIBCURL_CFLAGS
+HAVE_GDK_PIXBUF_FALSE
+HAVE_GDK_PIXBUF_TRUE
 GDK_PIXBUF_LIBS
 GDK_PIXBUF_CFLAGS
 PKG_CONFIG_LIBDIR
@@ -12491,7 +12495,6 @@ $as_echo "#define HAVE__ALIGNED_MALLOC 1" >>confdefs.h
 fi
 
 
-if test x$enable_gdk_pixbuf2 = xyes; then
 
 
 
@@ -12685,14 +12688,25 @@ $as_echo "yes" >&6; }
 fi
 
 
+ if test x$enable_gdk_pixbuf2 != xno && test x$have_gdk_pixbuf2 = xyes; then
+  HAVE_GDK_PIXBUF_TRUE=
+  HAVE_GDK_PIXBUF_FALSE='#'
+else
+  HAVE_GDK_PIXBUF_TRUE='#'
+  HAVE_GDK_PIXBUF_FALSE=
+fi
+
+
+if test x$enable_gdk_pixbuf2 != xno; then
     if test x$have_gdk_pixbuf2 = xyes; then
 
 $as_echo "#define HAVE_GDK_PIXBUF2 1" >>confdefs.h
 
+    else
+        as_fn_error $? "gdk-pixbuf2 is not available." "$LINENO" 5
     fi
 fi
 
-if test x$enable_libcurl = xyes; then
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBCURL" >&5
@@ -12766,10 +12780,22 @@ $as_echo "yes" >&6; }
 fi
 
 
+ if test x$enable_libcurl != xno && test x$have_libcurl = xyes; then
+  HAVE_LIBCURL_TRUE=
+  HAVE_LIBCURL_FALSE='#'
+else
+  HAVE_LIBCURL_TRUE='#'
+  HAVE_LIBCURL_FALSE=
+fi
+
+
+if test x$enable_libcurl != xno; then
     if test x$have_libcurl = xyes; then
 
 $as_echo "#define HAVE_LIBCURL 1" >>confdefs.h
 
+    else
+        as_fn_error $? "libcurl is not available." "$LINENO" 5
     fi
 fi
 
@@ -12922,6 +12948,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_SIXEL2PNG_TRUE}" && test -z "${WANT_SIXEL2PNG_FALSE}"; then
   as_fn_error $? "conditional \"WANT_SIXEL2PNG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_GDK_PIXBUF_TRUE}" && test -z "${HAVE_GDK_PIXBUF_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_GDK_PIXBUF\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_LIBCURL_TRUE}" && test -z "${HAVE_LIBCURL_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_LIBCURL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
