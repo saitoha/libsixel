@@ -30,17 +30,29 @@ AC_PROG_INSTALL
 # Options
 AC_ARG_ENABLE([img2sixel],
               [AS_HELP_STRING([--disable-img2sixel],
-                              [whether to build img2sixel (default: enable)])],
+                              [whether to build img2sixel (default: yes)])],
               [],
               [enable_img2sixel=yes])
 AM_CONDITIONAL(WANT_IMG2SIXEL, test x$enable_img2sixel != xno)
 
 AC_ARG_ENABLE([sixel2png],
               [AS_HELP_STRING([--disable-sixel2png],
-                              [whether to build sixel2png (default: enable)])],
+                              [whether to build sixel2png (default: yes)])],
               [],
               [enable_sixel2png=yes])
 AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
+
+AC_ARG_ENABLE([gdk-pixbuf2],
+              [AS_HELP_STRING([--enable-gdk-pixbuf2],
+                              [whether to build with gdk-pixbuf2 (default: no)])],
+              [],
+              [enable_gdk_pixbuf2=no])
+
+AC_ARG_ENABLE([libcurl],
+              [AS_HELP_STRING([--enable-libcurl],
+                              [whether to build with libcurl (default: no)])],
+              [],
+              [enable_libcurl=no])
 
 # Checks for libraries.
 
@@ -81,6 +93,24 @@ AC_CHECK_FUNC(aligned_alloc,
 	      [AC_DEFINE(HAVE_ALIGNED_ALLOC, 1, [whether aligned_alloc() is available])])
 AC_CHECK_FUNC(_aligned_malloc,
 	      [AC_DEFINE(HAVE__ALIGNED_MALLOC, 1, [whether _aligned_malloc() is available])])
+
+if test x$enable_gdk_pixbuf2 = xyes; then
+    PKG_CHECK_MODULES(GDK_PIXBUF, [gdk-pixbuf-2.0], [have_gdk_pixbuf2=yes], [have_gdk_pixbuf2=no])
+    AC_SUBST(GDK_PIXBUF_CFLAGS)
+    AC_SUBST(GDK_PIXBUF_LIBS)
+    if test x$have_gdk_pixbuf2 = xyes; then
+        AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
+    fi
+fi
+
+if test x$enable_libcurl = xyes; then
+    PKG_CHECK_MODULES(LIBCURL, [libcurl], [have_libcurl=yes], [have_libcurl=no])
+    AC_SUBST(LIBCURL_CFLAGS)
+    AC_SUBST(LIBCURL_LIBS)
+    if test x$have_libcurl = xyes; then
+        AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
+    fi
+fi
 
 # for HDR
 # AC_CHECK_FUNCS([strtol pow])
