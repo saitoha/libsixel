@@ -81,9 +81,14 @@ host_triplet = @host@
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @WANT_IMG2SIXEL_TRUE@am__append_1 = img2sixel
 @WANT_IMG2SIXEL_TRUE@am__append_2 = img2sixel.1
+@HAVE_GDK_PIXBUF_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_3 = $(GDK_PIXBUF_CFLAGS)
+@HAVE_GDK_PIXBUF_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_4 = $(GDK_PIXBUF_LIBS)
+@HAVE_LIBCURL_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_5 = $(LIBCURL_CFLAGS)
+@HAVE_LIBCURL_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_6 = $(LIBCURL_LIBS)
+
 # -DSTBI_SIMD
-@WANT_SIXEL2PNG_TRUE@am__append_3 = sixel2png
-@WANT_SIXEL2PNG_TRUE@am__append_4 = sixel2png.1
+@WANT_SIXEL2PNG_TRUE@am__append_7 = sixel2png
+@WANT_SIXEL2PNG_TRUE@am__append_8 = sixel2png.1
 subdir = converters
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp $(dist_man_MANS)
@@ -111,8 +116,14 @@ am__img2sixel_SOURCES_DIST = img2sixel.c quant.c scale.c stb_image.c \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-stb_image.$(OBJEXT) \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-malloc_stub.$(OBJEXT)
 img2sixel_OBJECTS = $(am_img2sixel_OBJECTS)
+am__DEPENDENCIES_1 =
+@HAVE_GDK_PIXBUF_TRUE@@WANT_IMG2SIXEL_TRUE@am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
+@HAVE_LIBCURL_TRUE@@WANT_IMG2SIXEL_TRUE@am__DEPENDENCIES_3 =  \
+@HAVE_LIBCURL_TRUE@@WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_1)
 @WANT_IMG2SIXEL_TRUE@img2sixel_DEPENDENCIES =  \
-@WANT_IMG2SIXEL_TRUE@	$(top_builddir)/src/libsixel.la
+@WANT_IMG2SIXEL_TRUE@	$(top_builddir)/src/libsixel.la \
+@WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_2) \
+@WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_3)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -249,6 +260,8 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+GDK_PIXBUF_CFLAGS = @GDK_PIXBUF_CFLAGS@
+GDK_PIXBUF_LIBS = @GDK_PIXBUF_LIBS@
 GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -257,6 +270,8 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
+LIBCURL_CFLAGS = @LIBCURL_CFLAGS@
+LIBCURL_LIBS = @LIBCURL_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
@@ -281,6 +296,9 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -339,10 +357,13 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-dist_man_MANS = $(am__append_2) $(am__append_4)
+dist_man_MANS = $(am__append_2) $(am__append_8)
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c quant.c scale.c stb_image.c malloc_stub.c
-@WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm
-@WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -I$(top_builddir)/include/
+@WANT_IMG2SIXEL_TRUE@img2sixel_LDADD =  \
+@WANT_IMG2SIXEL_TRUE@	$(top_builddir)/src/libsixel.la -lm \
+@WANT_IMG2SIXEL_TRUE@	$(am__append_4) $(am__append_6)
+@WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -I$(top_builddir)/include/ \
+@WANT_IMG2SIXEL_TRUE@	$(am__append_3) $(am__append_5)
 @WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c
 @WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la
 @WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = -I$(top_builddir)/include/
