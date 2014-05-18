@@ -53,10 +53,21 @@
 
 #include "quant.h"
 
+#ifdef USE_GDK_PIXBUF
+#include <gdk-pixbuf/gdk-pixbuf.h>
+#include <curl/curl.h>
+static size_t
+loader_write(void *data, size_t size, size_t len, void *loader)
+{
+    gdk_pixbuf_loader_write(loader, data, len, NULL) ;
+    return len;
+}
+#endif
+
 static int
 convert_to_sixel(char const *filename, int reqcolors,
                  const char *mapfile, int monochrome,
-                 const char *diffusion)
+                 const char *diffusion , int reqsx , int reqsy)
 {
     uint8_t *pixels = NULL;
     uint8_t *mappixels = NULL;
@@ -78,7 +89,83 @@ convert_to_sixel(char const *filename, int reqcolors,
         reqcolors = PALETTE_MAX;
     }
 
+#ifdef  USE_GDK_PIXBUF
+    {
+        GdkPixbuf *pixbuf;
+        if (strstr(filename, "://")) {
+            CURL *curl;
+            GdkPixbufLoader *loader;
+
+            loader = gdk_pixbuf_loader_new();
+
+			if (reqsx > 0 && reqsy > 0) {
+				gdk_pixbuf_loader_set_size(loader, reqsx, reqsy) ;
+			}
+
+            curl = curl_easy_init();
+            curl_easy_setopt(curl, CURLOPT_URL, filename);
+            curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+            if (strncmp(filename, "https://", 8) == 0) {
+                curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+                curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+            }
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, loader_write);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, loader);
+            curl_easy_perform(curl);
+            curl_easy_cleanup(curl);
+
+            gdk_pixbuf_loader_close(loader, NULL);
+
+            if ((pixbuf = gdk_pixbuf_loader_get_pixbuf(loader))) {
+                g_object_ref(pixbuf);
+            }
+
+            g_object_unref(loader);
+        }
+        else
+        {
+            if (reqsx > 0 && reqsy > 0) {
+                pixbuf = gdk_pixbuf_new_from_file_at_scale(filename, reqsx, reqsy, FALSE, NULL);
+            }
+            else {
+                pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
+            }
+        }
+
+        if (pixbuf == NULL) {
+            pixels = NULL;
+        }
+        else {
+            int y;
+            uint8_t *src;
+            uint8_t *dst;
+            sx = gdk_pixbuf_get_width(pixbuf);
+            sy = gdk_pixbuf_get_height(pixbuf);
+            src = dst = pixels = gdk_pixbuf_get_pixels(pixbuf);
+
+            if (gdk_pixbuf_get_has_alpha(pixbuf)) {
+                for (y = 0; y < sy; y++) {
+                    int x;
+                    for (x = 0; x < sx; x++) {
+                        *(dst++) = *(src++);	/* R */
+                        *(dst++) = *(src++);	/* G */
+                        *(dst++) = *(src++);	/* B */
+                        src++;	/* A */
+                    }
+                }
+            }
+            else {
+                size_t rowstride = gdk_pixbuf_get_rowstride(pixbuf);
+                size_t new_rowstride = sx * 3;
+                for (y = 1; y < sy; y++) {
+                    memmove(dst += new_rowstride, src += rowstride, new_rowstride);
+                }
+            }
+        }
+    }
+#else
     pixels = stbi_load(filename, &sx, &sy, &comp, STBI_rgb);
+#endif
     if (pixels == NULL) {
         fprintf(stderr, "stbi_load('%s') failed.\n" "reason: %s.\n",
                 filename, stbi_failure_reason());
@@ -201,6 +288,8 @@ int main(int argc, char *argv[])
     int monochrome = 0;
     char *diffusion = NULL;
     char *mapfile = NULL;
+    int reqsx = 0;
+    int reqsy = 0;
     int long_opt;
     int option_index;
 
@@ -213,7 +302,7 @@ int main(int argc, char *argv[])
     };
 
     for (;;) {
-        n = getopt_long(argc, argv, "p:m:ed:",
+        n = getopt_long(argc, argv, "p:m:ed:s:",
                         long_options, &option_index);
         if (n == -1) {
             break;
@@ -233,6 +322,11 @@ int main(int argc, char *argv[])
             break;
         case 'd':
             diffusion = strdup(optarg);
+            break;
+        case 's':
+            if (sscanf(optarg, "%dx%d", &reqsx, &reqsy) != 2) {
+                reqsx = reqsy = 0;
+            }
             break;
         case '?':
             goto argerr;
@@ -260,11 +354,11 @@ int main(int argc, char *argv[])
 
     if (optind == argc) {
         convert_to_sixel("/dev/stdin", ncolors, mapfile,
-                         monochrome, diffusion);
+                         monochrome, diffusion, reqsx, reqsy);
     } else {
         for (n = optind; n < argc; n++) {
             convert_to_sixel(argv[n], ncolors, mapfile,
-                             monochrome, diffusion);
+                             monochrome, diffusion, reqsx, reqsy);
         }
     }
     goto end;
