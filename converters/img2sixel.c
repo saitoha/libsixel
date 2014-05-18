@@ -100,6 +100,26 @@ open_binary_file(char const *filename)
     return f;
 }
 
+static unsigned char *
+load_from_local_file(char const *filename, int *sx, int *sy, int *comp)
+{
+    FILE *f;
+    unsigned char *result;
+
+    f = open_binary_file(mapfile);
+    if (!f) {
+        return NULL;
+    }
+    result = stbi_load_from_file(f, &sx, &sy, &comp, STBI_rgb);
+    if (!result) {
+        fprintf(stderr, "stbi_load_from_file('%s') failed.\n" "reason: %s.\n",
+                filename, stbi_failure_reason());
+        return NULL;
+    }
+    fclose(f);
+    return result;
+}
+
 
 static unsigned char *
 prepare_monochrome_palette(finvert)
@@ -138,15 +158,8 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
     int map_sy;
     int map_comp;
 
-    f = open_binary_file(mapfile);
-    if (!f) {
-        return NULL;
-    }
-    mappixels = stbi_load_from_file(f, &map_sx, &map_sy, &map_comp, STBI_rgb);
-    fclose(f);
+    mappixels = load_from_local_file(mapfile, &map_sx, &map_sy, &map_comp);
     if (!mappixels) {
-        fprintf(stderr, "stbi_load('%s') failed.\n" "reason: %s.\n",
-                mapfile, stbi_failure_reason());
         return NULL;
     }
     palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3,
@@ -274,17 +287,8 @@ convert_to_sixel(char const *filename, int reqcolors,
         }
     }
 #else
-    f = open_binary_file(filename);
-    if (!f) {
-        nret = -1;
-        goto end;
-    }
-    pixels = stbi_load_from_file(f, &sx, &sy, &comp, STBI_rgb);
-    fclose(f);
+    pixels = load_from_local_file(filename, &sx, &sy, &comp);
     if (pixels == NULL) {
-        fprintf(stderr, "stbi_load_from_file('%s') failed.\n"
-                        "reason: %s.\n",
-                filename, stbi_failure_reason());
         nret = -1;
         goto end;
     }
