@@ -247,8 +247,8 @@ convert_to_sixel(char const *filename, int reqcolors,
         }
         else {
             int y;
-            uint8_t *src;
-            uint8_t *dst;
+            unsigned char *src;
+            unsigned char *dst;
             sx = gdk_pixbuf_get_width(pixbuf);
             sy = gdk_pixbuf_get_height(pixbuf);
             src = dst = pixels = gdk_pixbuf_get_pixels(pixbuf);
