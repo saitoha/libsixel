@@ -80,12 +80,14 @@
 # include <curl/curl.h>
 #endif
 
+#ifdef HAVE_GDK_PIXBUF2
 static size_t
 loader_write(void *data, size_t size, size_t len, void *loader)
 {
     gdk_pixbuf_loader_write(loader, data, len, NULL) ;
     return len;
 }
+#endif
 
 typedef struct chunk
 {
