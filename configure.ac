@@ -82,6 +82,22 @@ AC_CHECK_FUNC(aligned_alloc,
 AC_CHECK_FUNC(_aligned_malloc,
 	      [AC_DEFINE(HAVE__ALIGNED_MALLOC, 1, [whether _aligned_malloc() is available])])
 
+PKG_CHECK_MODULES(GDK_PIXBUF, [gdk-pixbuf-2.0], [have_gdk_pixbuf2=yes], [have_gdk_pixbuf2=no])
+AC_SUBST(GDK_PIXBUF_CFLAGS)
+AC_SUBST(GDK_PIXBUF_LIBS)
+AM_CONDITIONAL(HAVE_GDKPIXBUF2, test "x$have_gdk_pixbuf2" = "xyes")
+if test x$have_gdk_pixbuf2=xyes; then
+    AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
+fi
+
+PKG_CHECK_MODULES(LIBCURL, [libcurl], [have_libcurl=yes], [have_libcurl=no])
+AC_SUBST(LIBCURL_CFLAGS)
+AC_SUBST(LIBCURL_LIBS)
+AM_CONDITIONAL(HAVE_LIBCURL, test "x$have_libcurl" = "xyes")
+if test x$have_libcurl=xyes; then
+    AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
+fi
+
 # for HDR
 # AC_CHECK_FUNCS([strtol pow])
 
