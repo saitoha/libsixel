@@ -30,17 +30,29 @@ AC_PROG_INSTALL
 # Options
 AC_ARG_ENABLE([img2sixel],
               [AS_HELP_STRING([--disable-img2sixel],
-                              [whether to build img2sixel (default: enable)])],
+                              [whether to build img2sixel (default: yes)])],
               [],
               [enable_img2sixel=yes])
 AM_CONDITIONAL(WANT_IMG2SIXEL, test x$enable_img2sixel != xno)
 
 AC_ARG_ENABLE([sixel2png],
               [AS_HELP_STRING([--disable-sixel2png],
-                              [whether to build sixel2png (default: enable)])],
+                              [whether to build sixel2png (default: yes)])],
               [],
               [enable_sixel2png=yes])
 AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
+
+AC_ARG_ENABLE([gdk-pixbuf2],
+              [AS_HELP_STRING([--enable-gdk-pixbuf2],
+                              [whether to build with gdk-pixbuf2 (default: no)])],
+              [],
+              [enable_gdk_pixbuf2=no])
+
+AC_ARG_ENABLE([libcurl],
+              [AS_HELP_STRING([--enable-libcurl],
+                              [whether to build with libcurl (default: no)])],
+              [],
+              [enable_libcurl=no])
 
 # Checks for libraries.
 
@@ -85,17 +97,27 @@ AC_CHECK_FUNC(_aligned_malloc,
 PKG_CHECK_MODULES(GDK_PIXBUF, [gdk-pixbuf-2.0], [have_gdk_pixbuf2=yes], [have_gdk_pixbuf2=no])
 AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
-AM_CONDITIONAL(HAVE_GDKPIXBUF2, test "x$have_gdk_pixbuf2" = "xyes")
-if test x$have_gdk_pixbuf2=xyes; then
-    AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
+AM_CONDITIONAL(HAVE_GDK_PIXBUF, [test x$enable_gdk_pixbuf2 != xno && test x$have_gdk_pixbuf2 = xyes])
+
+if test x$enable_gdk_pixbuf2 != xno; then
+    if test x$have_gdk_pixbuf2 = xyes; then
+        AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
+    else
+        AC_MSG_ERROR(gdk-pixbuf2 is not available.)
+    fi
 fi
 
 PKG_CHECK_MODULES(LIBCURL, [libcurl], [have_libcurl=yes], [have_libcurl=no])
 AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
-AM_CONDITIONAL(HAVE_LIBCURL, test "x$have_libcurl" = "xyes")
-if test x$have_libcurl=xyes; then
-    AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
+AM_CONDITIONAL(HAVE_LIBCURL, [test x$enable_libcurl != xno && test x$have_libcurl = xyes])
+
+if test x$enable_libcurl != xno; then
+    if test x$have_libcurl = xyes; then
+        AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
+    else
+        AC_MSG_ERROR(libcurl is not available.)
+    fi
 fi
 
 # for HDR
