@@ -72,6 +72,54 @@
 #include "scale.h"
 #include "quant.h"
 
+#ifdef HAVE_GDK_PIXBUF2
+# include <gdk-pixbuf/gdk-pixbuf.h>
+#endif
+
+#ifdef HAVE_LIBCURL
+# include <curl/curl.h>
+#endif
+
+static size_t
+loader_write(void *data, size_t size, size_t len, void *loader)
+{
+    gdk_pixbuf_loader_write(loader, data, len, NULL) ;
+    return len;
+}
+
+typedef struct chunk
+{
+    unsigned char* buffer;
+    size_t size;
+    size_t max_size;
+} chunk_t;
+
+
+size_t
+memory_write(void* ptr, size_t size, size_t len, void* memory)
+{
+    size_t nbytes;
+    chunk_t* chunk;
+
+    nbytes = size * len;
+    if (nbytes == 0) {
+        return 0;
+    }
+
+    chunk = (chunk_t*)memory;
+
+    if (chunk->max_size <= chunk->size + nbytes) {
+        do {
+            chunk->max_size *= 2;
+        } while (chunk->max_size <= chunk->size + nbytes);
+        chunk->buffer = (unsigned char*)realloc(chunk->buffer, chunk->max_size);
+    }
+
+    memcpy(chunk->buffer + chunk->size, ptr, nbytes);
+    chunk->size += nbytes;
+
+    return nbytes;
+}
 
 static FILE *
 open_binary_file(char const *filename)
@@ -102,6 +150,154 @@ open_binary_file(char const *filename)
 
 
 static unsigned char *
+load_with_stbi(char const *filename, int *psx, int *psy,
+               int *pcomp, int *pstride)
+{
+    FILE *f;
+    unsigned char *result;
+# ifdef HAVE_LIBCURL
+    CURL *curl;
+    CURLcode code;
+    chunk_t chunk;
+
+    if (strstr(filename, "://")) {
+        chunk.max_size = 1024;
+        chunk.size = 0;
+        chunk.buffer = malloc(chunk.max_size);
+        curl = curl_easy_init();
+        curl_easy_setopt(curl, CURLOPT_URL, filename);
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        if (strncmp(filename, "https://", 8) == 0) {
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        }
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, memory_write);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+        if ((code = curl_easy_perform(curl))) {
+            fprintf(stderr, "curl_easy_perform('%s') failed.\n" "code: %d.\n",
+                    filename, code);
+            return NULL;
+        }
+        curl_easy_cleanup(curl);
+
+        result = stbi_load_from_memory(chunk.buffer, chunk.size, psx, psy, pcomp, STBI_rgb);
+        free(chunk.buffer);
+    }
+    else
+# endif  /* HAVE_LIBCURL */
+    {
+        f = open_binary_file(filename);
+        if (!f) {
+            return NULL;
+        }
+        result = stbi_load_from_file(f, psx, psy, pcomp, STBI_rgb);
+        if (!result) {
+            fprintf(stderr, "stbi_load_from_file('%s') failed.\n" "reason: %s.\n",
+                    filename, stbi_failure_reason());
+            return NULL;
+        }
+        fclose(f);
+    }
+
+    *pstride = *pcomp * *psx;
+    return result;
+}
+
+
+#ifdef HAVE_GDK_PIXBUF2
+static unsigned char *
+load_with_gdk_and_curl(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
+{
+    GdkPixbuf *pixbuf;
+    unsigned char *pixels;
+
+# ifdef HAVE_LIBCURL
+    if (strstr(filename, "://")) {
+        CURL *curl;
+        GdkPixbufLoader *loader;
+
+        loader = gdk_pixbuf_loader_new();
+
+        curl = curl_easy_init();
+        curl_easy_setopt(curl, CURLOPT_URL, filename);
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        if (strncmp(filename, "https://", 8) == 0) {
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        }
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, loader_write);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, loader);
+        curl_easy_perform(curl);
+        curl_easy_cleanup(curl);
+
+        gdk_pixbuf_loader_close(loader, NULL);
+
+        if ((pixbuf = gdk_pixbuf_loader_get_pixbuf(loader))) {
+            g_object_ref(pixbuf);
+        }
+
+        g_object_unref(loader);
+    }
+    else
+# endif  /* HAVE_LIBCURL */
+    {
+        pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
+    }
+
+    if (pixbuf == NULL) {
+        pixels = NULL;
+    }
+    else {
+        *psx = gdk_pixbuf_get_width(pixbuf);
+        *psy = gdk_pixbuf_get_height(pixbuf);
+        *pcomp = gdk_pixbuf_get_has_alpha(pixbuf) ? 4: 3;
+        *pstride = gdk_pixbuf_get_rowstride(pixbuf);
+        pixels = gdk_pixbuf_get_pixels(pixbuf);
+    }
+    return pixels;
+}
+#endif  /* HAVE_GDK_PIXBUF2 */
+
+static unsigned char *
+load_image_file(char const *filename, int *psx, int *psy)
+{
+    unsigned char *pixels;
+    size_t new_rowstride;
+    unsigned char *src;
+    unsigned char *dst;
+    int comp;
+    int stride;
+    int x;
+    int y;
+
+#ifdef HAVE_GDK_PIXBUF2
+    pixels = load_with_gdk_and_curl(filename, psx, psy, &comp, &stride);
+#else
+    pixels = load_with_stbi(filename, psx, psy, &comp, &stride);
+#endif  /* HAVE_GDK_PIXBUF2 */
+
+    src = dst = pixels;
+    if (comp == 4) {
+        for (y = 0; y < *psy; y++) {
+            for (x = 0; x < *psx; x++) {
+                *(dst++) = *(src++);   /* R */
+                *(dst++) = *(src++);   /* G */
+                *(dst++) = *(src++);   /* B */
+                src++;   /* A */
+            }
+        }
+    }
+    else {
+        new_rowstride = *psx * 3;
+        for (y = 1; y < *psy; y++) {
+            memmove(dst += new_rowstride, src += stride, new_rowstride);
+        }
+    }
+    return pixels;
+}
+
+
+static unsigned char *
 prepare_monochrome_palette(finvert)
 {
     unsigned char *palette;
@@ -122,7 +318,7 @@ prepare_monochrome_palette(finvert)
         palette[4] = 0xff;
         palette[5] = 0xff;
     }
-    
+
     return palette;
 }
 
@@ -136,17 +332,9 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
     int origcolors;
     int map_sx;
     int map_sy;
-    int map_comp;
 
-    f = open_binary_file(mapfile);
-    if (!f) {
-        return NULL;
-    }
-    mappixels = stbi_load_from_file(f, &map_sx, &map_sy, &map_comp, STBI_rgb);
-    fclose(f);
+    mappixels = load_image_file(mapfile, &map_sx, &map_sy);
     if (!mappixels) {
-        fprintf(stderr, "stbi_load('%s') failed.\n" "reason: %s.\n",
-                mapfile, stbi_failure_reason());
         return NULL;
     }
     palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3,
@@ -154,17 +342,6 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
                               LARGE_NORM, REP_CENTER_BOX, QUALITY_HIGH);
     return palette;
 }
-
-#ifdef USE_GDK_PIXBUF
-#include <gdk-pixbuf/gdk-pixbuf.h>
-#include <curl/curl.h>
-static size_t
-loader_write(void *data, size_t size, size_t len, void *loader)
-{
-    gdk_pixbuf_loader_write(loader, data, len, NULL) ;
-    return len;
-}
-#endif
 
 
 static int
@@ -189,7 +366,6 @@ convert_to_sixel(char const *filename, int reqcolors,
     LSImagePtr im = NULL;
     LSOutputContextPtr context = NULL;
     int sx, sy, comp;
-    int map_sx, map_sy, map_comp;
     int i;
     int nret = -1;
     FILE *f;
@@ -199,92 +375,9 @@ convert_to_sixel(char const *filename, int reqcolors,
     } else if (reqcolors > PALETTE_MAX) {
         reqcolors = PALETTE_MAX;
     }
-#ifdef  USE_GDK_PIXBUF
-    {
-        GdkPixbuf *pixbuf;
-        if (strstr(filename, "://")) {
-            CURL *curl;
-            GdkPixbufLoader *loader;
 
-            loader = gdk_pixbuf_loader_new();
-
-			if (pixelwidth > 0 && pixelheight > 0) {
-				gdk_pixbuf_loader_set_size(loader, pixelwidth, pixelheight) ;
-			}
-
-            curl = curl_easy_init();
-            curl_easy_setopt(curl, CURLOPT_URL, filename);
-            curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-            if (strncmp(filename, "https://", 8) == 0) {
-                curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-                curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-            }
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, loader_write);
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, loader);
-            curl_easy_perform(curl);
-            curl_easy_cleanup(curl);
-
-            gdk_pixbuf_loader_close(loader, NULL);
-
-            if ((pixbuf = gdk_pixbuf_loader_get_pixbuf(loader))) {
-                g_object_ref(pixbuf);
-            }
-
-            g_object_unref(loader);
-        }
-        else
-        {
-            if (pixelwidth > 0 && pixelheight > 0) {
-                pixbuf = gdk_pixbuf_new_from_file_at_scale(filename, pixelwidth, pixelheight, FALSE, NULL);
-            }
-            else {
-                pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
-            }
-        }
-
-        if (pixbuf == NULL) {
-            pixels = NULL;
-        }
-        else {
-            int y;
-            uint8_t *src;
-            uint8_t *dst;
-            sx = gdk_pixbuf_get_width(pixbuf);
-            sy = gdk_pixbuf_get_height(pixbuf);
-            src = dst = pixels = gdk_pixbuf_get_pixels(pixbuf);
-
-            if (gdk_pixbuf_get_has_alpha(pixbuf)) {
-                for (y = 0; y < sy; y++) {
-                    int x;
-                    for (x = 0; x < sx; x++) {
-                        *(dst++) = *(src++);	/* R */
-                        *(dst++) = *(src++);	/* G */
-                        *(dst++) = *(src++);	/* B */
-                        src++;	/* A */
-                    }
-                }
-            }
-            else {
-                size_t rowstride = gdk_pixbuf_get_rowstride(pixbuf);
-                size_t new_rowstride = sx * 3;
-                for (y = 1; y < sy; y++) {
-                    memmove(dst += new_rowstride, src += rowstride, new_rowstride);
-                }
-            }
-        }
-    }
-#else
-    f = open_binary_file(filename);
-    if (!f) {
-        nret = -1;
-        goto end;
-    }
-    pixels = stbi_load_from_file(f, &sx, &sy, &comp, STBI_rgb);
-    fclose(f);
+    pixels = load_image_file(filename, &sx, &sy);
     if (pixels == NULL) {
-        fprintf(stderr, "stbi_load_from_file('%s') failed.\n"
-                        "reason: %s.\n",
-                filename, stbi_failure_reason());
         nret = -1;
         goto end;
     }
@@ -312,7 +405,6 @@ convert_to_sixel(char const *filename, int reqcolors,
         free(pixels);
         pixels = scaled_pixels;
     }
-#endif
 
     /* prepare palette */
     if (monochrome) {
@@ -710,9 +802,9 @@ argerr:
             "-e, --monochrome           output monochrome sixel image\n"
             "                           this option assumes the terminal \n"
             "                           background color is black\n"
-            "-i, --invert               assume the terminal background color\n" 
+            "-i, --invert               assume the terminal background color\n"
             "                           is white, make sense only when -e\n"
-	    "                           option is given.\n"
+            "                           option is given.\n"
             "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
             "                           choose diffusion method which used\n"
             "                           with -p option (color reduction)\n"

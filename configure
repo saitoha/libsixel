@@ -634,12 +634,8 @@ ac_unique_file="src/fromsixel.c"
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
-HAVE_LIBCURL_FALSE
-HAVE_LIBCURL_TRUE
 LIBCURL_LIBS
 LIBCURL_CFLAGS
-HAVE_GDKPIXBUF2_FALSE
-HAVE_GDKPIXBUF2_TRUE
 GDK_PIXBUF_LIBS
 GDK_PIXBUF_CFLAGS
 PKG_CONFIG_LIBDIR
@@ -777,6 +773,8 @@ with_sysroot
 enable_libtool_lock
 enable_img2sixel
 enable_sixel2png
+enable_gdk_pixbuf2
+enable_libcurl
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1423,8 +1421,10 @@ Optional Features:
   --disable-dependency-tracking
                           speeds up one-time build
   --disable-libtool-lock  avoid locking (might break parallel builds)
-  --disable-img2sixel     whether to build img2sixel (default: enable)
-  --disable-sixel2png     whether to build sixel2png (default: enable)
+  --disable-img2sixel     whether to build img2sixel (default: yes)
+  --disable-sixel2png     whether to build sixel2png (default: yes)
+  --enable-gdk-pixbuf2    whether to build with gdk-pixbuf2 (default: no)
+  --enable-libcurl        whether to build with libcurl (default: no)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -12250,6 +12250,22 @@ else
 fi
 
 
+# Check whether --enable-gdk-pixbuf2 was given.
+if test "${enable_gdk_pixbuf2+set}" = set; then :
+  enableval=$enable_gdk_pixbuf2;
+else
+  enable_gdk_pixbuf2=no
+fi
+
+
+# Check whether --enable-libcurl was given.
+if test "${enable_libcurl+set}" = set; then :
+  enableval=$enable_libcurl;
+else
+  enable_libcurl=no
+fi
+
+
 # Checks for libraries.
 
 # Checks for header files.
@@ -12475,6 +12491,7 @@ $as_echo "#define HAVE__ALIGNED_MALLOC 1" >>confdefs.h
 fi
 
 
+if test x$enable_gdk_pixbuf2 = xyes; then
 
 
 
@@ -12668,20 +12685,14 @@ $as_echo "yes" >&6; }
 fi
 
 
- if test "x$have_gdk_pixbuf2" = "xyes"; then
-  HAVE_GDKPIXBUF2_TRUE=
-  HAVE_GDKPIXBUF2_FALSE='#'
-else
-  HAVE_GDKPIXBUF2_TRUE='#'
-  HAVE_GDKPIXBUF2_FALSE=
-fi
-
-if test x$have_gdk_pixbuf2=xyes; then
+    if test x$have_gdk_pixbuf2 = xyes; then
 
 $as_echo "#define HAVE_GDK_PIXBUF2 1" >>confdefs.h
 
+    fi
 fi
 
+if test x$enable_libcurl = xyes; then
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBCURL" >&5
@@ -12755,18 +12766,11 @@ $as_echo "yes" >&6; }
 fi
 
 
- if test "x$have_libcurl" = "xyes"; then
-  HAVE_LIBCURL_TRUE=
-  HAVE_LIBCURL_FALSE='#'
-else
-  HAVE_LIBCURL_TRUE='#'
-  HAVE_LIBCURL_FALSE=
-fi
-
-if test x$have_libcurl=xyes; then
+    if test x$have_libcurl = xyes; then
 
 $as_echo "#define HAVE_LIBCURL 1" >>confdefs.h
 
+    fi
 fi
 
 # for HDR
@@ -12918,14 +12922,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_SIXEL2PNG_TRUE}" && test -z "${WANT_SIXEL2PNG_FALSE}"; then
   as_fn_error $? "conditional \"WANT_SIXEL2PNG\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${HAVE_GDKPIXBUF2_TRUE}" && test -z "${HAVE_GDKPIXBUF2_FALSE}"; then
-  as_fn_error $? "conditional \"HAVE_GDKPIXBUF2\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${HAVE_LIBCURL_TRUE}" && test -z "${HAVE_LIBCURL_FALSE}"; then
-  as_fn_error $? "conditional \"HAVE_LIBCURL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
