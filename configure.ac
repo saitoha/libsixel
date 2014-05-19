@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.17.2], [user@zuse.jp])
+AC_INIT([sixel], [0.18.0], [user@zuse.jp])
 LS_LT_CURRENT=0
 LS_LT_REVISION=0
 LS_LT_AGE=0
@@ -94,21 +94,29 @@ AC_CHECK_FUNC(aligned_alloc,
 AC_CHECK_FUNC(_aligned_malloc,
 	      [AC_DEFINE(HAVE__ALIGNED_MALLOC, 1, [whether _aligned_malloc() is available])])
 
-if test x$enable_gdk_pixbuf2 = xyes; then
-    PKG_CHECK_MODULES(GDK_PIXBUF, [gdk-pixbuf-2.0], [have_gdk_pixbuf2=yes], [have_gdk_pixbuf2=no])
-    AC_SUBST(GDK_PIXBUF_CFLAGS)
-    AC_SUBST(GDK_PIXBUF_LIBS)
+PKG_CHECK_MODULES(GDK_PIXBUF, [gdk-pixbuf-2.0], [have_gdk_pixbuf2=yes], [have_gdk_pixbuf2=no])
+AC_SUBST(GDK_PIXBUF_CFLAGS)
+AC_SUBST(GDK_PIXBUF_LIBS)
+AM_CONDITIONAL(HAVE_GDK_PIXBUF, [test x$enable_gdk_pixbuf2 != xno && test x$have_gdk_pixbuf2 = xyes])
+
+if test x$enable_gdk_pixbuf2 != xno; then
     if test x$have_gdk_pixbuf2 = xyes; then
         AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
+    else
+        AC_MSG_ERROR(gdk-pixbuf2 is not available.)
     fi
 fi
 
-if test x$enable_libcurl = xyes; then
-    PKG_CHECK_MODULES(LIBCURL, [libcurl], [have_libcurl=yes], [have_libcurl=no])
-    AC_SUBST(LIBCURL_CFLAGS)
-    AC_SUBST(LIBCURL_LIBS)
+PKG_CHECK_MODULES(LIBCURL, [libcurl], [have_libcurl=yes], [have_libcurl=no])
+AC_SUBST(LIBCURL_CFLAGS)
+AC_SUBST(LIBCURL_LIBS)
+AM_CONDITIONAL(HAVE_LIBCURL, [test x$enable_libcurl != xno && test x$have_libcurl = xyes])
+
+if test x$enable_libcurl != xno; then
     if test x$have_libcurl = xyes; then
         AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
+    else
+        AC_MSG_ERROR(libcurl is not available.)
     fi
 fi
 
