@@ -8,6 +8,16 @@ img2sixel_SOURCES = img2sixel.c quant.c scale.c stb_image.c malloc_stub.c
 img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm
 img2sixel_CFLAGS = -I$(top_builddir)/include/
 dist_man_MANS += img2sixel.1
+
+if HAVE_GDK_PIXBUF
+img2sixel_CFLAGS += $(GDK_PIXBUF_CFLAGS)
+img2sixel_LDADD += $(GDK_PIXBUF_LIBS)
+endif
+if HAVE_LIBCURL
+img2sixel_CFLAGS += $(LIBCURL_CFLAGS)
+img2sixel_LDADD += $(LIBCURL_LIBS)
+endif
+
 endif
 # -DSTBI_SIMD
 
@@ -28,9 +38,11 @@ if WANT_SIXEL2PNG
 	./sixel2png < snake.sixel > snake.png
 endif
 if WANT_IMG2SIXEL
-	./img2sixel -p 16 ../images/egret.jpg
 	./img2sixel -m ../images/map8.png ../images/egret.jpg
 	./img2sixel -m ../images/map16.png ../images/egret.jpg
+	./img2sixel -p 8 ../images/snake.jpg
+	./img2sixel -p 2 ../images/snake.jpg
+	./img2sixel -e ../images/snake.jpg
 endif
 
 winetest: all
@@ -42,7 +54,9 @@ if WANT_SIXEL2PNG
 	wine ./sixel2png.exe < snake.sixel > snake.png
 endif
 if WANT_IMG2SIXEL
-	wine ./img2sixel -p 16 ../images/egret.jpg
 	wine ./img2sixel -m ../images/map8.png ../images/egret.jpg
 	wine ./img2sixel -m ../images/map16.png ../images/egret.jpg
+	wine ./img2sixel -p 8 ../images/snake.jpg
+	wine ./img2sixel -p 2 ../images/snake.jpg
+	wine ./img2sixel -e ../images/snake.jpg
 endif

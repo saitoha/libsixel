@@ -810,7 +810,7 @@ diffuse_atkinson(unsigned char *data, int width, int height,
 
     pos = y * width + x;
 
-    if (y < height - 2) {
+    if (x < width - 2 && y < height - 2) {
         /* add offset to the right cell */
         error_diffuse(data, pos + width * 0 + 1, depth, offsets, 1, 8);
         /* add offset to the 2th right cell */
@@ -840,7 +840,7 @@ diffuse_fs(unsigned char *data, int width, int height,
      *          curr    7/16
      *  3/16    5/48    1/16
      */
-    if (y < height - 1) {
+    if (x > 1 && x < width - 1 && y < height - 1) {
         /* add offset to the right cell */
         error_diffuse(data, pos + width * 0 + 1, depth, offsets, 7, 16);
         /* add offset to the left-bottom cell */
@@ -867,7 +867,7 @@ diffuse_jajuni(unsigned char *data, int width, int height,
      *  3/48    5/48    7/48    5/48    3/48
      *  1/48    3/48    5/48    3/48    1/48
      */
-    if (y < height - 2) {
+    if (x > 2 && x < width - 2 && y < height - 2) {
         error_diffuse(data, pos + width * 0 + 1, depth, offsets, 7, 48);
         error_diffuse(data, pos + width * 0 + 2, depth, offsets, 5, 48);
         error_diffuse(data, pos + width * 1 - 2, depth, offsets, 3, 48);
@@ -898,7 +898,7 @@ diffuse_stucki(unsigned char *data, int width, int height,
      *  2/48    4/48    8/48    4/48    2/48
      *  1/48    2/48    4/48    2/48    1/48
      */
-    if (y < height - 2) {
+    if (x > 2 && x < width - 2 && y < height - 2) {
         error_diffuse(data, pos + width * 0 + 1, depth, offsets, 1, 6);
         error_diffuse(data, pos + width * 0 + 2, depth, offsets, 1, 12);
         error_diffuse(data, pos + width * 1 - 2, depth, offsets, 1, 24);
@@ -928,7 +928,7 @@ diffuse_burkes(unsigned char *data, int width, int height,
      *                  curr    4/16    2/16
      *  1/16    2/16    4/16    2/16    1/16
      */
-    if (y < height - 2) {
+    if (x > 2 && x < width - 2 && y < height - 2) {
         error_diffuse(data, pos + width * 0 + 1, depth, offsets, 1, 4);
         error_diffuse(data, pos + width * 0 + 2, depth, offsets, 1, 8);
         error_diffuse(data, pos + width * 1 - 2, depth, offsets, 1, 16);
@@ -1052,42 +1052,24 @@ lookup_fast(unsigned char const * const pixel,
 }
 
 
+
 /**
  * this function comes from "monosixel", which is contained in
  * arakiken's tw "sixel" branch
  * https://bitbucket.org/arakiken/tw/branch/sixel
  */
-static unsigned char *
-pattern_dither(unsigned char *pixels, int width, int height, int depth)
+static unsigned char
+pattern_lookup(unsigned char *pixel, int x, int y)
 {
-    int pattern[] = {
+    static unsigned int pattern[] = {
         24, 384,  96, 480,
         576, 192, 672, 288,
         144, 528,  48, 432,
         720, 336, 624, 240,
     };
-    unsigned char *p, *result;
-    unsigned char *pixel;
-    unsigned char *line;
-    int x, y;
-    int rowstride;
-
-    rowstride = width * depth;
-    line = pixels;
-
-    result = p = malloc(width * height * sizeof(*pixels));
-    for (y = 0; y < height; y++) {
-        pixel = line;
-        line += rowstride;
-
-        for (x = 0; x < width; x++) {
-            (*p++) = (pixel[0] + pixel[1] + pixel[2] >= pattern[(y & 3) * 4 + (x & 3)]) ?
-                    1 : 0;
-            pixel += depth;
-        }
-    }
-
-    return result;
+    return ((unsigned int)pixel[0] +
+            (unsigned int)pixel[1] +
+            (unsigned int)pixel[2] >= pattern[(y & 3) * 4 + (x & 3)]) ?  1 : 0;
 }
 
 
@@ -1115,9 +1097,6 @@ LSQ_ApplyPalette(unsigned char *data,
                     int const ncolor,
                     unsigned short * const cachetable);
 
-    if (ncolor <= 2) {
-        return pattern_dither(data, width, height, depth);
-    }
     if (depth != 3) {
         f_diffuse = diffuse_none;
     } else {
@@ -1178,8 +1157,12 @@ LSQ_ApplyPalette(unsigned char *data,
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width; ++x) {
             pos = y * width + x;
-            index = f_lookup(data + (pos * depth), depth,
-                             palette, ncolor, indextable);
+            if (depth == 2) {
+                index = pattern_lookup(data + (pos * depth), x, y);
+            } else {
+                index = f_lookup(data + (pos * depth), depth,
+                                 palette, ncolor, indextable);
+            }
             result[pos] = index;
             for (n = 0; n < depth; ++n) {
                 offsets[n] = data[pos * depth + n]

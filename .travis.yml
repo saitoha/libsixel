@@ -2,15 +2,19 @@
 language: c
 
 env:
-  - XCC=clang HOST= WINE= VALGRIND=
-  - XCC=gcc HOST= WINE= VALGRIND=
-  - XCC=i686-w64-mingw32-gcc HOST=i686-w64-mingw32 WINE=wine VALGRIND=
-  - XCC=i586-mingw32msvc-gcc HOST=i586-mingw32msvc WINE=wine VALGRIND=
-  - XCC=x86_64-w64-mingw32-gcc HOST=x86_64-w64-mingw32 WINE=wine64 VALGRIND=
-  - XCC=clang HOST= WINE= VALGRIND=valgrind
+  - XCC=clang HOST= WINE=
+  - XCC=gcc HOST= WINE=
+  - XCC=i686-w64-mingw32-gcc HOST=i686-w64-mingw32 WINE=wine
+  - XCC=i586-mingw32msvc-gcc HOST=i586-mingw32msvc WINE=wine
+  - XCC=x86_64-w64-mingw32-gcc HOST=x86_64-w64-mingw32 WINE=wine64
+  - XCC=clang HOST= WINE= GDKPIXBUF=" --enable-gdk-pixbuf2 "
+  - XCC=clang HOST= WINE= LIBCURL=" --enable-libcurl "
+  - XCC=clang HOST= WINE= GDKPIXBUF=" --enable-gdk-pixbuf2 " LIBCURL=" --enable-libcurl "
 
 before_install:
   - "sudo apt-get -qq update --force-yes > /dev/null"
+  - "if [ x$GDKPIXBUF != x ]; then sudo apt-get -qq install libgdk-pixbuf2.0-dev; fi"
+  - "if [ x$LIBCURL != x ]; then sudo apt-get -qq install libcurl4-openssl-dev; fi"
   - "if [ x$WINE != x ]; then sudo apt-get install -qq wine > /dev/null; fi"
   - "if [ x$XCC = xclang ]; then sudo apt-get install -qq clang; fi"
   - "if [ x$XCC = xgcc ]; then sudo apt-get install -qq gcc; fi"
@@ -19,7 +23,7 @@ before_install:
   - "if [ x$XCC = xx86_64-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64; fi"
 
 before_script:
-  - "CC=$XCC ./configure --host=$HOST"
+  - "CC=$XCC ./configure --host=$HOST $(GDKPIXBUF) $(LIBCURL)"
 
 script:
   - "make"
