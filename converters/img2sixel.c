@@ -277,41 +277,53 @@ load_with_gdk_and_curl(char const *filename, int *psx, int *psy, int *pcomp, int
 static int
 detect_file_format(int len, unsigned char *data)
 {
-    if (memcmp("TRUEVISION", data + len - 18, 10) == 0)
+    if (memcmp("TRUEVISION", data + len - 18, 10) == 0) {
         return FMT_TGA;
+    }
 
-    if (memcmp("GIF", data, 3) == 0)
+    if (memcmp("GIF", data, 3) == 0) {
         return FMT_GIF;
+    }
 
-    if (memcmp("\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", data, 8) == 0)
+    if (memcmp("\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", data, 8) == 0) {
         return FMT_PNG;
+    }
 
-    if (memcmp("BM", data, 2) == 0)
+    if (memcmp("BM", data, 2) == 0) {
         return FMT_BMP;
+    }
 
-    if (memcmp("\xFF\xD8", data, 2) == 0)
+    if (memcmp("\xFF\xD8", data, 2) == 0) {
         return FMT_JPG;
+    }
 
-    if (memcmp("\x00\x00", data, 2) == 0)
+    if (memcmp("\x00\x00", data, 2) == 0) {
         return FMT_WBMP;
+    }
 
-    if (memcmp("\x4D\x4D", data, 2) == 0)
+    if (memcmp("\x4D\x4D", data, 2) == 0) {
         return FMT_TIFF;
+    }
 
-    if (memcmp("\x49\x49", data, 2) == 0)
+    if (memcmp("\x49\x49", data, 2) == 0) {
         return FMT_TIFF;
+    }
 
-    if (memcmp("\033P", data, 2) == 0)
+    if (memcmp("\033P", data, 2) == 0) {
         return FMT_SIXEL;
+    }
 
-    if (data[0] == 0x90  && (data[len-1] == 0x9C || data[len-2] == 0x9C))
+    if (data[0] == 0x90  && (data[len-1] == 0x9C || data[len-2] == 0x9C)) {
         return FMT_SIXEL;
+    }
 
-    if (data[0] == 'P' && data[1] >= '1' && data[1] <= '6')
+    if (data[0] == 'P' && data[1] >= '1' && data[1] <= '6') {
         return FMT_PNM;
+    }
 
-    if (memcmp("gd2", data, 3) == 0)
+    if (memcmp("gd2", data, 3) == 0) {
         return FMT_GD2;
+    }
 
     return (-1);
 }
