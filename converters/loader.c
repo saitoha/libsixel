@@ -193,7 +193,7 @@ load_with_stbi(char const *filename, int *psx, int *psy,
 
 #ifdef HAVE_GDK_PIXBUF2
 static unsigned char *
-load_with_gdk_and_curl(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
+load_with_gdkpixbuf(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
 {
     GdkPixbuf *pixbuf;
     unsigned char *pixels;
@@ -441,6 +441,7 @@ load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
 
 #endif  /* HAVE_GD */
 
+
 unsigned char *
 load_image_file(char const *filename, int *psx, int *psy)
 {
@@ -456,7 +457,7 @@ load_image_file(char const *filename, int *psx, int *psy)
     pixels = NULL;
 #ifdef HAVE_GDK_PIXBUF2
     if (!pixels) {
-        pixels = load_with_gdk_and_curl(filename, psx, psy, &comp, &stride);
+        pixels = load_with_gdkpixbuf(filename, psx, psy, &comp, &stride);
     }
 #elif HAVE_GD
     if (!pixels) {
