@@ -126,7 +126,7 @@ if test x$with_libcurl != xno; then
     fi
 fi
 
-PKG_CHECK_MODULES(GD, [libgd], [have_gd=yes], [have_gd=no])
+PKG_CHECK_MODULES(GD, [gdlib], [have_gd=yes], [have_gd=no])
 AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
 AM_CONDITIONAL(HAVE_GD, [test x$with_gd != xno && test x$have_gd = xyes])
