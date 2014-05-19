@@ -54,6 +54,12 @@ AC_ARG_WITH([libcurl],
             [],
             [with_libcurl=no])
 
+AC_ARG_WITH([gd],
+            [AS_HELP_STRING([--with-gd],
+                            [whether to build with gd (default: no)])],
+            [],
+            [with_gd=no])
+
 # Checks for libraries.
 
 # Checks for header files.
@@ -119,6 +125,20 @@ if test x$with_libcurl != xno; then
         AC_MSG_ERROR(libcurl is not available.)
     fi
 fi
+
+PKG_CHECK_MODULES(GD, [libgd], [have_gd=yes], [have_gd=no])
+AC_SUBST(GD_CFLAGS)
+AC_SUBST(GD_LIBS)
+AM_CONDITIONAL(HAVE_GD, [test x$with_gd != xno && test x$have_gd = xyes])
+
+if test x$with_gd != xno; then
+    if test x$have_gd = xyes; then
+        AC_DEFINE(HAVE_GD, 1, [whether gd is available])
+    else
+        AC_MSG_ERROR(gd is not available.)
+    fi
+fi
+
 
 # for HDR
 # AC_CHECK_FUNCS([strtol pow])
