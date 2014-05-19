@@ -234,10 +234,10 @@ end:
         free(data);
     }
     if (pixels) {
-        stbi_image_free(pixels);
+        free(pixels);
     }
     if (mappixels) {
-        stbi_image_free(mappixels);
+        free(mappixels);
     }
     if (palette) {
         LSQ_FreePalette(palette);
