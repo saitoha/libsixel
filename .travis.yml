@@ -24,7 +24,7 @@ before_install:
   - "if [ x$XCC = xx86_64-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64; fi"
 
 before_script:
-  - "CC=$XCC ./configure --host=$HOST $(GDKPIXBUF) $(LIBCURL)"
+  - "CC=$XCC ./configure --prefix=/usr --host=$HOST $(GDKPIXBUF) $(LIBCURL)"
 
 script:
   - "make"
