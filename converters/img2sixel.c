@@ -327,34 +327,64 @@ load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
     FILE *f;
     int x, y;
     int c;
+# ifdef HAVE_LIBCURL
+    CURL *curl;
+    CURLcode code;
+    chunk_t chunk;
 
-    f = open_binary_file(filename);
-    if (!f) {
-        return NULL;
+    if (strstr(filename, "://")) {
+        chunk.max_size = 1024;
+        chunk.size = 0;
+        chunk.buffer = malloc(chunk.max_size);
+        curl = curl_easy_init();
+        curl_easy_setopt(curl, CURLOPT_URL, filename);
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        if (strncmp(filename, "https://", 8) == 0) {
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        }
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, memory_write);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+        if ((code = curl_easy_perform(curl))) {
+            fprintf(stderr, "curl_easy_perform('%s') failed.\n" "code: %d.\n",
+                    filename, code);
+            return NULL;
+        }
+        curl_easy_cleanup(curl);
+        data = chunk.buffer;
+        len = chunk.size;
     }
+    else
+# endif  /* HAVE_LIBCURL */
+    {
+        f = open_binary_file(filename);
+        if (!f) {
+            return NULL;
+        }
 
-    len = 0;
-    max = 64 * 1024;
+        len = 0;
+        max = 64 * 1024;
 
-    if ((data = (unsigned char *)malloc(max)) == NULL) {
-        return NULL;
-    }
+        if ((data = (unsigned char *)malloc(max)) == NULL) {
+            return NULL;
+        }
 
-    for (;;) {
-        if ((max - len) < 4096) {
-            max *= 2;
-            if ((data = (unsigned char *)realloc(data, max)) == NULL) {
-                return NULL;
+        for (;;) {
+            if ((max - len) < 4096) {
+                max *= 2;
+                if ((data = (unsigned char *)realloc(data, max)) == NULL) {
+                    return NULL;
+                }
             }
+            if ((n = fread(data + len, 1, 4096, f)) <= 0) {
+                break;
+            }
+            len += n;
         }
-        if ((n = fread(data + len, 1, 4096, f)) <= 0) {
-            break;
-        }
-        len += n;
-    }
 
-    if (f != stdout) {
-        fclose(f);
+        if (f != stdout) {
+            fclose(f);
+        }
     }
 
     switch(detect_file_format(len, data)) {
