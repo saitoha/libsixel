@@ -58,15 +58,15 @@ AC_ARG_ENABLE([libcurl],
 
 # Checks for header files.
 AC_CHECK_HEADERS([memory.h \
-		  stdlib.h \
-		  string.h \
-		  unistd.h \
-		  getopt.h \
-		  sys/types.h \
-		  sys/stat.h \
-		  fcntl.h \
-		  errno.h \
-		  xmmintrin.h])
+                  stdlib.h \
+                  string.h \
+                  unistd.h \
+                  getopt.h \
+                  sys/types.h \
+                  sys/stat.h \
+                  fcntl.h \
+                  errno.h \
+                  xmmintrin.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
