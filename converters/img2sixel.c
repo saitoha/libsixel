@@ -260,6 +260,191 @@ load_with_gdk_and_curl(char const *filename, int *psx, int *psy, int *pcomp, int
 }
 #endif  /* HAVE_GDK_PIXBUF2 */
 
+#ifdef HAVE_GD
+#include <gd.h>
+
+#define        FMT_GIF     0
+#define        FMT_PNG     1
+#define        FMT_BMP     2
+#define        FMT_JPG     3
+#define        FMT_TGA     4
+#define        FMT_WBMP    5
+#define        FMT_TIFF    6
+#define        FMT_SIXEL   7
+#define        FMT_PNM     8
+#define        FMT_GD2     9
+
+static int
+detect_file_format(int len, unsigned char *data)
+{
+    if (memcmp("TRUEVISION", data + len - 18, 10) == 0)
+        return FMT_TGA;
+
+    if (memcmp("GIF", data, 3) == 0)
+        return FMT_GIF;
+
+    if (memcmp("\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", data, 8) == 0)
+        return FMT_PNG;
+
+    if (memcmp("BM", data, 2) == 0)
+        return FMT_BMP;
+
+    if (memcmp("\xFF\xD8", data, 2) == 0)
+        return FMT_JPG;
+
+    if (memcmp("\x00\x00", data, 2) == 0)
+        return FMT_WBMP;
+
+    if (memcmp("\x4D\x4D", data, 2) == 0)
+        return FMT_TIFF;
+
+    if (memcmp("\x49\x49", data, 2) == 0)
+        return FMT_TIFF;
+
+    if (memcmp("\033P", data, 2) == 0)
+        return FMT_SIXEL;
+
+    if (data[0] == 0x90  && (data[len-1] == 0x9C || data[len-2] == 0x9C))
+        return FMT_SIXEL;
+
+    if (data[0] == 'P' && data[1] >= '1' && data[1] <= '6')
+        return FMT_PNM;
+
+    if (memcmp("gd2", data, 3) == 0)
+        return FMT_GD2;
+
+    return (-1);
+}
+
+
+static unsigned char *
+load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
+{
+    unsigned char *pixels, *p;
+    int n, len, max;
+    unsigned char *data;
+    gdImagePtr im = NULL;
+    FILE *f;
+    int x, y;
+    int c;
+# ifdef HAVE_LIBCURL
+    CURL *curl;
+    CURLcode code;
+    chunk_t chunk;
+
+    if (strstr(filename, "://")) {
+        chunk.max_size = 1024;
+        chunk.size = 0;
+        chunk.buffer = malloc(chunk.max_size);
+        curl = curl_easy_init();
+        curl_easy_setopt(curl, CURLOPT_URL, filename);
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        if (strncmp(filename, "https://", 8) == 0) {
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        }
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, memory_write);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+        if ((code = curl_easy_perform(curl))) {
+            fprintf(stderr, "curl_easy_perform('%s') failed.\n" "code: %d.\n",
+                    filename, code);
+            return NULL;
+        }
+        curl_easy_cleanup(curl);
+        data = chunk.buffer;
+        len = chunk.size;
+    }
+    else
+# endif  /* HAVE_LIBCURL */
+    {
+        f = open_binary_file(filename);
+        if (!f) {
+            return NULL;
+        }
+
+        len = 0;
+        max = 64 * 1024;
+
+        if ((data = (unsigned char *)malloc(max)) == NULL) {
+            return NULL;
+        }
+
+        for (;;) {
+            if ((max - len) < 4096) {
+                max *= 2;
+                if ((data = (unsigned char *)realloc(data, max)) == NULL) {
+                    return NULL;
+                }
+            }
+            if ((n = fread(data + len, 1, 4096, f)) <= 0) {
+                break;
+            }
+            len += n;
+        }
+
+        if (f != stdout) {
+            fclose(f);
+        }
+    }
+
+    switch(detect_file_format(len, data)) {
+        case FMT_GIF:
+            im = gdImageCreateFromGifPtr(len, data);
+            break;
+        case FMT_PNG:
+            im = gdImageCreateFromPngPtr(len, data);
+            break;
+        case FMT_BMP:
+            im = gdImageCreateFromBmpPtr(len, data);
+            break;
+        case FMT_JPG:
+            im = gdImageCreateFromJpegPtrEx(len, data, 1);
+            break;
+        case FMT_TGA:
+            im = gdImageCreateFromTgaPtr(len, data);
+            break;
+        case FMT_WBMP:
+            im = gdImageCreateFromWBMPPtr(len, data);
+            break;
+        case FMT_TIFF:
+            im = gdImageCreateFromTiffPtr(len, data);
+            break;
+        case FMT_GD2:
+            im = gdImageCreateFromGd2Ptr(len, data);
+            break;
+    }
+
+    free(data);
+
+    if (im == NULL) {
+        return NULL;
+    }
+
+    if (!gdImageTrueColor(im)) {
+        if (!gdImagePaletteToTrueColor(im)) {
+            return NULL;
+        }
+    }
+
+    *psx = gdImageSX(im);
+    *psy = gdImageSY(im);
+    *pcomp = 3;
+    *pstride = *psx * *pcomp;
+    p = pixels = malloc(*pstride * *psy);
+    for (y = 0; y < *psy; y++) {
+        for (x = 0; x < *psx; x++) {
+            c = gdImageTrueColorPixel(im, x, y);
+            *p++ = gdTrueColorGetRed(c);
+            *p++ = gdTrueColorGetGreen(c);
+            *p++ = gdTrueColorGetBlue(c);
+        }
+    }
+    gdImageDestroy(im);
+    return pixels;
+}
+
+#endif  /* HAVE_GD */
+
 static unsigned char *
 load_image_file(char const *filename, int *psx, int *psy)
 {
@@ -274,6 +459,8 @@ load_image_file(char const *filename, int *psx, int *psy)
 
 #ifdef HAVE_GDK_PIXBUF2
     pixels = load_with_gdk_and_curl(filename, psx, psy, &comp, &stride);
+#elif HAVE_GD
+    pixels = load_with_gd(filename, psx, psy, &comp, &stride);
 #else
     pixels = load_with_stbi(filename, psx, psy, &comp, &stride);
 #endif  /* HAVE_GDK_PIXBUF2 */

@@ -17,6 +17,10 @@ if HAVE_LIBCURL
 img2sixel_CFLAGS += $(LIBCURL_CFLAGS)
 img2sixel_LDADD += $(LIBCURL_LIBS)
 endif
+if HAVE_GD
+img2sixel_CFLAGS += $(GD_CFLAGS)
+img2sixel_LDADD += $(GD_LIBS)
+endif
 
 endif
 # -DSTBI_SIMD
