@@ -320,11 +320,13 @@ detect_file_format(int len, unsigned char *data)
 static unsigned char *
 load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
 {
-    unsigned char *pixels;
+    unsigned char *pixels, *p;
     int n, len, max;
     unsigned char *data;
     gdImagePtr im = NULL;
     FILE *f;
+    int x, y;
+    int c;
 
     f = open_binary_file(filename);
     if (!f) {
@@ -398,7 +400,16 @@ load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
     *psy = gdImageSY(im);
     *pcomp = 3;
     *pstride = *psx * *pcomp;
-    pixels = (void *)im->pixels;
+    p = pixels = malloc(*pstride * *psy);
+    for (y = 0; y < *psy; y++) {
+        for (x = 0; x < *psx; x++) {
+            c = gdImageTrueColorPixel(im, x, y);
+            *p++ = gdTrueColorGetRed(c);
+            *p++ = gdTrueColorGetGreen(c);
+            *p++ = gdTrueColorGetBlue(c);
+        }
+    }
+    gdImageDestroy(im);
     return pixels;
 }
 
