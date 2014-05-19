@@ -261,6 +261,7 @@ load_with_gdk_and_curl(char const *filename, int *psx, int *psy, int *pcomp, int
 #endif  /* HAVE_GDK_PIXBUF2 */
 
 #ifdef HAVE_GD
+#include <gd.h>
 
 #define        FMT_GIF     0
 #define        FMT_PNG     1
@@ -323,6 +324,7 @@ load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
     int n, len, max;
     unsigned char *data;
     gdImagePtr im = NULL;
+    FILE *f;
 
     f = open_binary_file(filename);
     if (!f) {
@@ -339,7 +341,7 @@ load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
     for (;;) {
         if ((max - len) < 4096) {
             max *= 2;
-            if ((data = (BYTE *)realloc(data, max)) == NULL) {
+            if ((data = (unsigned char *)realloc(data, max)) == NULL) {
                 return NULL;
             }
         }
@@ -374,12 +376,6 @@ load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
             break;
         case FMT_TIFF:
             im = gdImageCreateFromTiffPtr(len, data);
-            break;
-        case FMT_SIXEL:
-            im = gdImageCreateFromSixelPtr(len, data);
-            break;
-        case FMT_PNM:
-            im = gdImageCreateFromPnmPtr(len, data);
             break;
         case FMT_GD2:
             im = gdImageCreateFromGd2Ptr(len, data);
