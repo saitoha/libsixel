@@ -453,12 +453,19 @@ load_image_file(char const *filename, int *psx, int *psy)
     int x;
     int y;
 
+    pixels = NULL;
 #ifdef HAVE_GDK_PIXBUF2
-    pixels = load_with_gdk_and_curl(filename, psx, psy, &comp, &stride);
+    if (!pixels) {
+        pixels = load_with_gdk_and_curl(filename, psx, psy, &comp, &stride);
+    }
 #elif HAVE_GD
-    pixels = load_with_gd(filename, psx, psy, &comp, &stride);
+    if (!pixels) {
+        pixels = load_with_gd(filename, psx, psy, &comp, &stride);
+    }
 #else
-    pixels = load_with_stbi(filename, psx, psy, &comp, &stride);
+    if (!pixels) {
+        pixels = load_with_stbi(filename, psx, psy, &comp, &stride);
+    }
 #endif  /* HAVE_GDK_PIXBUF2 */
 
     src = dst = pixels;
