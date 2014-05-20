@@ -300,6 +300,7 @@ load_with_gdkpixbuf(char const *filename, int *psx, int *psy, int *pcomp, int *p
 #define        FMT_PNM     8
 #define        FMT_GD2     9
 #define        FMT_PSD     10
+#define        FMT_HDR     11
 
 static int
 detect_file_format(int len, unsigned char *data)
@@ -354,6 +355,10 @@ detect_file_format(int len, unsigned char *data)
 
     if (memcmp("8BPS", data, 4) == 0) {
         return FMT_PSD;
+    }
+
+    if (memcmp("#?RADIANCE\n", data, 11) == 0) {
+        return FMT_HDR;
     }
 
     return (-1);
