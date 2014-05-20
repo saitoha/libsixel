@@ -782,8 +782,8 @@ enable_libtool_lock
 enable_img2sixel
 enable_sixel2png
 with_gdk_pixbuf2
-with_libcurl
 with_gd
+with_libcurl
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1444,8 +1444,8 @@ Optional Packages:
   --with-sysroot=DIR Search for dependent libraries within DIR
                         (or the compiler's sysroot if not specified).
   --with-gdk-pixbuf2      whether to build with gdk-pixbuf2 (default: no)
-  --with-libcurl          whether to build with libcurl (default: no)
   --with-gd               whether to build with gd (default: no)
+  --with-libcurl          whether to build with libcurl (default: no)
 
 Some influential environment variables:
   CC          C compiler command
@@ -12274,20 +12274,20 @@ fi
 
 
 
-# Check whether --with-libcurl was given.
-if test "${with_libcurl+set}" = set; then :
-  withval=$with_libcurl;
-else
-  with_libcurl=no
-fi
-
-
-
 # Check whether --with-gd was given.
 if test "${with_gd+set}" = set; then :
   withval=$with_gd;
 else
   with_gd=no
+fi
+
+
+
+# Check whether --with-libcurl was given.
+if test "${with_libcurl+set}" = set; then :
+  withval=$with_libcurl;
+else
+  with_libcurl=no
 fi
 
 
