@@ -108,6 +108,7 @@ memory_write(void* ptr, size_t size, size_t len, void* memory)
     return nbytes;
 }
 
+
 static FILE *
 open_binary_file(char const *filename)
 {
@@ -133,6 +134,45 @@ open_binary_file(char const *filename)
         return NULL;
     }
     return f;
+}
+
+
+static int
+get_chunk_from_file(char const *filename, chunk_t *chunk)
+{
+    FILE *f;
+    int n;
+
+    f = open_binary_file(filename);
+    if (!f) {
+        return (-1);
+    }
+
+    chunk->size = 0;
+    chunk->max_size = 64 * 1024;
+
+    if ((chunk->buffer = (unsigned char *)malloc(chunk->max_size)) == NULL) {
+        return (-1);
+    }
+
+    for (;;) {
+        if ((chunk->max_size - chunk->size) < 4096) {
+            chunk->max_size *= 2;
+            if ((chunk->buffer = (unsigned char *)realloc(chunk->buffer, chunk->max_size)) == NULL) {
+                return (-1);
+            }
+        }
+        if ((n = fread(chunk->buffer + chunk->size, 1, 4096, f)) <= 0) {
+            break;
+        }
+        chunk->size += n;
+    }
+
+    if (f != stdout) {
+        fclose(f);
+    }
+
+    return 0;
 }
 
 
@@ -347,43 +387,20 @@ load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
             return NULL;
         }
         curl_easy_cleanup(curl);
-        data = chunk.buffer;
-        len = chunk.size;
     }
     else
 # endif  /* HAVE_LIBCURL */
     {
-        f = open_binary_file(filename);
-        if (!f) {
+        if (get_chunk_from_file(filename, &chunk) != 0) {
+#if _ERRNO_H
+            fprintf(stderr, "get_chunk_from_file('%s') failed.\n" "readon: %s.\n",
+                    filename, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
             return NULL;
-        }
-
-        len = 0;
-        max = 64 * 1024;
-
-        if ((data = (unsigned char *)malloc(max)) == NULL) {
-            return NULL;
-        }
-
-        for (;;) {
-            if ((max - len) < 4096) {
-                max *= 2;
-                if ((data = (unsigned char *)realloc(data, max)) == NULL) {
-                    return NULL;
-                }
-            }
-            if ((n = fread(data + len, 1, 4096, f)) <= 0) {
-                break;
-            }
-            len += n;
-        }
-
-        if (f != stdout) {
-            fclose(f);
         }
     }
 
-    switch(detect_file_format(len, data)) {
+    switch(detect_file_format(chunk.size, chunk.buffer)) {
         case FMT_GIF:
             im = gdImageCreateFromGifPtr(len, data);
             break;
