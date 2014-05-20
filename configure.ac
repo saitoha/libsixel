@@ -48,17 +48,17 @@ AC_ARG_WITH([gdk-pixbuf2],
             [],
             [with_gdk_pixbuf2=no])
 
-AC_ARG_WITH([libcurl],
-            [AS_HELP_STRING([--with-libcurl],
-                            [whether to build with libcurl (default: no)])],
-            [],
-            [with_libcurl=no])
-
 AC_ARG_WITH([gd],
             [AS_HELP_STRING([--with-gd],
                             [whether to build with gd (default: no)])],
             [],
             [with_gd=no])
+
+AC_ARG_WITH([libcurl],
+            [AS_HELP_STRING([--with-libcurl],
+                            [whether to build with libcurl (default: no)])],
+            [],
+            [with_libcurl=no])
 
 # Checks for libraries.
 
