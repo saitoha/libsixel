@@ -23,11 +23,6 @@ $ make
 # make install
 ```
 
-To build source package:
-
-```
-$ make package
-```
 
 
 ## Terminal requirements
