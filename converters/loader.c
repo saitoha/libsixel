@@ -65,14 +65,7 @@
 # include <curl/curl.h>
 #endif
 
-#ifdef HAVE_GDK_PIXBUF2
-static size_t
-loader_write(void *data, size_t size, size_t len, void *loader)
-{
-    gdk_pixbuf_loader_write(loader, data, len, NULL) ;
-    return len;
-}
-#endif
+#include "loader.h"
 
 typedef struct chunk
 {
@@ -81,6 +74,15 @@ typedef struct chunk
     size_t max_size;
 } chunk_t;
 
+
+#ifdef HAVE_GDK_PIXBUF2
+static size_t
+loader_write(void *data, size_t size, size_t len, void *loader)
+{
+    gdk_pixbuf_loader_write(loader, data, len, NULL) ;
+    return len;
+}
+#endif
 
 size_t
 memory_write(void* ptr, size_t size, size_t len, void* memory)
@@ -108,6 +110,7 @@ memory_write(void* ptr, size_t size, size_t len, void* memory)
     return nbytes;
 }
 
+
 static FILE *
 open_binary_file(char const *filename)
 {
@@ -133,6 +136,45 @@ open_binary_file(char const *filename)
         return NULL;
     }
     return f;
+}
+
+
+static int
+get_chunk_from_file(char const *filename, chunk_t *chunk)
+{
+    FILE *f;
+    int n;
+
+    f = open_binary_file(filename);
+    if (!f) {
+        return (-1);
+    }
+
+    chunk->size = 0;
+    chunk->max_size = 64 * 1024;
+
+    if ((chunk->buffer = (unsigned char *)malloc(chunk->max_size)) == NULL) {
+        return (-1);
+    }
+
+    for (;;) {
+        if ((chunk->max_size - chunk->size) < 4096) {
+            chunk->max_size *= 2;
+            if ((chunk->buffer = (unsigned char *)realloc(chunk->buffer, chunk->max_size)) == NULL) {
+                return (-1);
+            }
+        }
+        if ((n = fread(chunk->buffer + chunk->size, 1, 4096, f)) <= 0) {
+            break;
+        }
+        chunk->size += n;
+    }
+
+    if (f != stdout) {
+        fclose(f);
+    }
+
+    return 0;
 }
 
 
@@ -185,6 +227,9 @@ load_with_stbi(char const *filename, int *psx, int *psy,
         }
         fclose(f);
     }
+
+    /* 4 is set in *pcomp when source image is GIF. we reset it to 3. */
+    *pcomp = 3;
 
     *pstride = *pcomp * *psx;
     return result;
@@ -257,6 +302,8 @@ load_with_gdkpixbuf(char const *filename, int *psx, int *psy, int *pcomp, int *p
 #define        FMT_SIXEL   7
 #define        FMT_PNM     8
 #define        FMT_GD2     9
+#define        FMT_PSD     10
+#define        FMT_HDR     11
 
 static int
 detect_file_format(int len, unsigned char *data)
@@ -309,6 +356,14 @@ detect_file_format(int len, unsigned char *data)
         return FMT_GD2;
     }
 
+    if (memcmp("8BPS", data, 4) == 0) {
+        return FMT_PSD;
+    }
+
+    if (memcmp("#?RADIANCE\n", data, 11) == 0) {
+        return FMT_HDR;
+    }
+
     return (-1);
 }
 
@@ -319,7 +374,7 @@ load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
     unsigned char *pixels, *p;
     int n, len, max;
     unsigned char *data;
-    gdImagePtr im = NULL;
+    gdImagePtr im;
     FILE *f;
     int x, y;
     int c;
@@ -347,43 +402,20 @@ load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
             return NULL;
         }
         curl_easy_cleanup(curl);
-        data = chunk.buffer;
-        len = chunk.size;
     }
     else
 # endif  /* HAVE_LIBCURL */
     {
-        f = open_binary_file(filename);
-        if (!f) {
+        if (get_chunk_from_file(filename, &chunk) != 0) {
+#if _ERRNO_H
+            fprintf(stderr, "get_chunk_from_file('%s') failed.\n" "readon: %s.\n",
+                    filename, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
             return NULL;
-        }
-
-        len = 0;
-        max = 64 * 1024;
-
-        if ((data = (unsigned char *)malloc(max)) == NULL) {
-            return NULL;
-        }
-
-        for (;;) {
-            if ((max - len) < 4096) {
-                max *= 2;
-                if ((data = (unsigned char *)realloc(data, max)) == NULL) {
-                    return NULL;
-                }
-            }
-            if ((n = fread(data + len, 1, 4096, f)) <= 0) {
-                break;
-            }
-            len += n;
-        }
-
-        if (f != stdout) {
-            fclose(f);
         }
     }
 
-    switch(detect_file_format(len, data)) {
+    switch(detect_file_format(chunk.size, chunk.buffer)) {
         case FMT_GIF:
             im = gdImageCreateFromGifPtr(len, data);
             break;
@@ -408,6 +440,8 @@ load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
         case FMT_GD2:
             im = gdImageCreateFromGd2Ptr(len, data);
             break;
+        default:
+            return NULL;
     }
 
     free(data);
