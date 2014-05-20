@@ -12,6 +12,9 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
+/* whether gd is available */
+#undef HAVE_GD
+
 /* whether gdk-pixbuf2 is available */
 #undef HAVE_GDK_PIXBUF2
 
