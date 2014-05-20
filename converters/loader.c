@@ -65,14 +65,7 @@
 # include <curl/curl.h>
 #endif
 
-#ifdef HAVE_GDK_PIXBUF2
-static size_t
-loader_write(void *data, size_t size, size_t len, void *loader)
-{
-    gdk_pixbuf_loader_write(loader, data, len, NULL) ;
-    return len;
-}
-#endif
+#include "loader.h"
 
 typedef struct chunk
 {
@@ -81,6 +74,15 @@ typedef struct chunk
     size_t max_size;
 } chunk_t;
 
+
+#ifdef HAVE_GDK_PIXBUF2
+static size_t
+loader_write(void *data, size_t size, size_t len, void *loader)
+{
+    gdk_pixbuf_loader_write(loader, data, len, NULL) ;
+    return len;
+}
+#endif
 
 size_t
 memory_write(void* ptr, size_t size, size_t len, void* memory)
