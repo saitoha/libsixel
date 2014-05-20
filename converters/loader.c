@@ -299,6 +299,7 @@ load_with_gdkpixbuf(char const *filename, int *psx, int *psy, int *pcomp, int *p
 #define        FMT_SIXEL   7
 #define        FMT_PNM     8
 #define        FMT_GD2     9
+#define        FMT_PSD     10
 
 static int
 detect_file_format(int len, unsigned char *data)
@@ -351,6 +352,10 @@ detect_file_format(int len, unsigned char *data)
         return FMT_GD2;
     }
 
+    if (memcmp("8BPS", data, 4) == 0) {
+        return FMT_PSD;
+    }
+
     return (-1);
 }
 
@@ -361,7 +366,7 @@ load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
     unsigned char *pixels, *p;
     int n, len, max;
     unsigned char *data;
-    gdImagePtr im = NULL;
+    gdImagePtr im;
     FILE *f;
     int x, y;
     int c;
@@ -427,6 +432,8 @@ load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
         case FMT_GD2:
             im = gdImageCreateFromGd2Ptr(len, data);
             break;
+        default:
+            return NULL;
     }
 
     free(data);
