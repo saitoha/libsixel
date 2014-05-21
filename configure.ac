@@ -26,6 +26,7 @@ AC_CONFIG_MACRO_DIR([m4])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
+PKG_PROG_PKG_CONFIG
 
 # Options
 AC_ARG_ENABLE([img2sixel],
@@ -100,7 +101,10 @@ AC_CHECK_FUNC(aligned_alloc,
 AC_CHECK_FUNC(_aligned_malloc,
 	      [AC_DEFINE(HAVE__ALIGNED_MALLOC, 1, [whether _aligned_malloc() is available])])
 
-PKG_CHECK_MODULES(GDK_PIXBUF, [gdk-pixbuf-2.0], [have_gdk_pixbuf2=yes], [have_gdk_pixbuf2=no])
+PKG_CHECK_MODULES(GDK_PIXBUF,
+                  [gdk-pixbuf-2.0],
+                  [have_gdk_pixbuf2=yes],
+                  [have_gdk_pixbuf2=no])
 AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
 AM_CONDITIONAL(HAVE_GDK_PIXBUF, [test x$with_gdk_pixbuf2 != xno && test x$have_gdk_pixbuf2 = xyes])
@@ -110,19 +114,6 @@ if test x$with_gdk_pixbuf2 != xno; then
         AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
     else
         AC_MSG_ERROR(gdk-pixbuf2 is not available.)
-    fi
-fi
-
-PKG_CHECK_MODULES(LIBCURL, [libcurl], [have_libcurl=yes], [have_libcurl=no])
-AC_SUBST(LIBCURL_CFLAGS)
-AC_SUBST(LIBCURL_LIBS)
-AM_CONDITIONAL(HAVE_LIBCURL, [test x$with_libcurl != xno && test x$have_libcurl = xyes])
-
-if test x$with_libcurl != xno; then
-    if test x$have_libcurl = xyes; then
-        AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
-    else
-        AC_MSG_ERROR(libcurl is not available.)
     fi
 fi
 
@@ -138,6 +129,26 @@ if test x$with_gd != xno; then
         AC_MSG_ERROR(gd is not available.)
     fi
 fi
+
+PKG_CHECK_MODULES(LIBCURL, [libcurl], [have_libcurl=yes], [have_libcurl=no])
+
+if test x$with_libcurl != xno; then
+    if test x$have_libcurl = xyes; then
+        curl="yes"
+    else
+        AC_CHECK_HEADER([curl/curl.h],
+                        [AC_CHECK_LIB(curl, curl_easy_cleanup, [curl="yes"])])
+    fi
+    if test x$curl = xyes; then
+        AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
+    else
+        AC_MSG_ERROR([unable to find libcurl header files])
+    fi
+fi
+
+AC_SUBST(LIBCURL_CFLAGS)
+AC_SUBST(LIBCURL_LIBS)
+AM_CONDITIONAL(HAVE_LIBCURL, [test x$with_libcurl != xno && test x$have_libcurl = xyes])
 
 
 # for HDR
