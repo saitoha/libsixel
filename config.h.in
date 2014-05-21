@@ -1,7 +1,19 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* whether aligned_alloc() is available */
+#undef HAVE_ALIGNED_ALLOC
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
+
+/* Define to 1 if you have the <errno.h> header file. */
+#undef HAVE_ERRNO_H
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
+
+/* whether gdk-pixbuf2 is available */
+#undef HAVE_GDK_PIXBUF2
 
 /* Define to 1 if you have the <getopt.h> header file. */
 #undef HAVE_GETOPT_H
@@ -9,9 +21,15 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* whether libcurl is available */
+#undef HAVE_LIBCURL
+
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
 #undef HAVE_MALLOC
+
+/* whether memalign() is available */
+#undef HAVE_MEMALIGN
 
 /* Define to 1 if you have the `memcpy' function. */
 #undef HAVE_MEMCPY
@@ -22,9 +40,15 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
+/* whether posix_memalign() is available */
+#undef HAVE_POSIX_MEMALIGN
+
 /* Define to 1 if your system has a GNU libc compatible `realloc' function,
    and to 0 otherwise. */
 #undef HAVE_REALLOC
+
+/* Define to 1 if you have the `setmode' function. */
+#undef HAVE_SETMODE
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
@@ -49,6 +73,15 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the <xmmintrin.h> header file. */
+#undef HAVE_XMMINTRIN_H
+
+/* whether _aligned_malloc() is available */
+#undef HAVE__ALIGNED_MALLOC
+
+/* Define to 1 if you have the `_setmode' function. */
+#undef HAVE__SETMODE
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
@@ -81,17 +114,8 @@
 /* Version number of package */
 #undef VERSION
 
-/* Define for Solaris 2.5.1 so the uint8_t typedef from <sys/synch.h>,
-   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
-   #define below would cause a syntax error. */
-#undef _UINT8_T
-
 /* Define to rpl_malloc if the replacement function should be used. */
 #undef malloc
 
 /* Define to rpl_realloc if the replacement function should be used. */
 #undef realloc
-
-/* Define to the type of an unsigned integer type of width exactly 8 bits if
-   such a type exists and the standard includes do not define it. */
-#undef uint8_t
