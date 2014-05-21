@@ -782,8 +782,8 @@ enable_libtool_lock
 enable_img2sixel
 enable_sixel2png
 with_gdk_pixbuf2
-with_libcurl
 with_gd
+with_libcurl
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1444,8 +1444,8 @@ Optional Packages:
   --with-sysroot=DIR Search for dependent libraries within DIR
                         (or the compiler's sysroot if not specified).
   --with-gdk-pixbuf2      whether to build with gdk-pixbuf2 (default: no)
-  --with-libcurl          whether to build with libcurl (default: no)
   --with-gd               whether to build with gd (default: no)
+  --with-libcurl          whether to build with libcurl (default: no)
 
 Some influential environment variables:
   CC          C compiler command
@@ -12394,20 +12394,20 @@ fi
 
 
 
-# Check whether --with-libcurl was given.
-if test "${with_libcurl+set}" = set; then :
-  withval=$with_libcurl;
-else
-  with_libcurl=no
-fi
-
-
-
 # Check whether --with-gd was given.
 if test "${with_gd+set}" = set; then :
   withval=$with_gd;
 else
   with_gd=no
+fi
+
+
+
+# Check whether --with-libcurl was given.
+if test "${with_libcurl+set}" = set; then :
+  withval=$with_libcurl;
+else
+  with_libcurl=no
 fi
 
 
@@ -12718,11 +12718,15 @@ else
 fi
 
 
+loaders="stb_image"
+curl="no"
+
 if test x$with_gdk_pixbuf2 != xno; then
     if test x$have_gdk_pixbuf2 = xyes; then
 
 $as_echo "#define HAVE_GDK_PIXBUF2 1" >>confdefs.h
 
+        loaders+=" gdk-pixbuf2"
     else
         as_fn_error $? "gdk-pixbuf2 is not available." "$LINENO" 5
     fi
@@ -12815,6 +12819,7 @@ if test x$with_gd != xno; then
 
 $as_echo "#define HAVE_GD 1" >>confdefs.h
 
+        loaders+=" gd"
     else
         as_fn_error $? "gd is not available." "$LINENO" 5
     fi
@@ -15358,4 +15363,13 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
+
+echo ""
+echo ""
+echo "libsixel was configured as follows"
+echo ""
+echo "       Loader component    : $loaders"
+echo "       libcurl integration : $curl"
+echo ""
+echo ""
 

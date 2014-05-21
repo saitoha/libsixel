@@ -49,17 +49,17 @@ AC_ARG_WITH([gdk-pixbuf2],
             [],
             [with_gdk_pixbuf2=no])
 
-AC_ARG_WITH([libcurl],
-            [AS_HELP_STRING([--with-libcurl],
-                            [whether to build with libcurl (default: no)])],
-            [],
-            [with_libcurl=no])
-
 AC_ARG_WITH([gd],
             [AS_HELP_STRING([--with-gd],
                             [whether to build with gd (default: no)])],
             [],
             [with_gd=no])
+
+AC_ARG_WITH([libcurl],
+            [AS_HELP_STRING([--with-libcurl],
+                            [whether to build with libcurl (default: no)])],
+            [],
+            [with_libcurl=no])
 
 # Checks for libraries.
 
@@ -109,9 +109,13 @@ AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
 AM_CONDITIONAL(HAVE_GDK_PIXBUF, [test x$with_gdk_pixbuf2 != xno && test x$have_gdk_pixbuf2 = xyes])
 
+loaders="stb_image"
+curl="no"
+
 if test x$with_gdk_pixbuf2 != xno; then
     if test x$have_gdk_pixbuf2 = xyes; then
         AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
+        loaders+=" gdk-pixbuf2"
     else
         AC_MSG_ERROR(gdk-pixbuf2 is not available.)
     fi
@@ -125,6 +129,7 @@ AM_CONDITIONAL(HAVE_GD, [test x$with_gd != xno && test x$have_gd = xyes])
 if test x$with_gd != xno; then
     if test x$have_gd = xyes; then
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
+        loaders+=" gd"
     else
         AC_MSG_ERROR(gd is not available.)
     fi
@@ -160,4 +165,13 @@ AC_CONFIG_FILES([Makefile
                  converters/Makefile])
 
 AC_OUTPUT
+
+echo ""
+echo ""
+echo "libsixel was configured as follows"
+echo ""
+echo "       Loader component    : $loaders"
+echo "       libcurl integration : $curl"
+echo ""
+echo ""
 
