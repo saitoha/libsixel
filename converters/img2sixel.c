@@ -127,83 +127,7 @@ convert_to_sixel(char const *filename, int reqcolors,
         reqcolors = PALETTE_MAX;
     }
 
-#ifdef  USE_GDK_PIXBUF
-    {
-        GdkPixbuf *pixbuf;
-        if (strstr(filename, "://")) {
-            CURL *curl;
-            GdkPixbufLoader *loader;
-
-            loader = gdk_pixbuf_loader_new();
-
-			if (reqsx > 0 && reqsy > 0) {
-				gdk_pixbuf_loader_set_size(loader, reqsx, reqsy) ;
-			}
-
-            curl = curl_easy_init();
-            curl_easy_setopt(curl, CURLOPT_URL, filename);
-            curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-            if (strncmp(filename, "https://", 8) == 0) {
-                curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-                curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-            }
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, loader_write);
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, loader);
-            curl_easy_perform(curl);
-            curl_easy_cleanup(curl);
-
-            gdk_pixbuf_loader_close(loader, NULL);
-
-            if ((pixbuf = gdk_pixbuf_loader_get_pixbuf(loader))) {
-                g_object_ref(pixbuf);
-            }
-
-            g_object_unref(loader);
-        }
-        else
-        {
-            if (reqsx > 0 && reqsy > 0) {
-                pixbuf = gdk_pixbuf_new_from_file_at_scale(filename, reqsx, reqsy, FALSE, NULL);
-            }
-            else {
-                pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
-            }
-        }
-
-        if (pixbuf == NULL) {
-            pixels = NULL;
-        }
-        else {
-            int y;
-            uint8_t *src;
-            uint8_t *dst;
-            sx = gdk_pixbuf_get_width(pixbuf);
-            sy = gdk_pixbuf_get_height(pixbuf);
-            src = dst = pixels = gdk_pixbuf_get_pixels(pixbuf);
-
-            if (gdk_pixbuf_get_has_alpha(pixbuf)) {
-                for (y = 0; y < sy; y++) {
-                    int x;
-                    for (x = 0; x < sx; x++) {
-                        *(dst++) = *(src++);	/* R */
-                        *(dst++) = *(src++);	/* G */
-                        *(dst++) = *(src++);	/* B */
-                        src++;	/* A */
-                    }
-                }
-            }
-            else {
-                size_t rowstride = gdk_pixbuf_get_rowstride(pixbuf);
-                size_t new_rowstride = sx * 3;
-                for (y = 1; y < sy; y++) {
-                    memmove(dst += new_rowstride, src += rowstride, new_rowstride);
-                }
-            }
-        }
-    }
-#else
-    pixels = stbi_load(filename, &sx, &sy, &comp, STBI_rgb);
-#endif
+    pixels = load_image_file(filename, &sx, &sy);
     if (pixels == NULL) {
         nret = -1;
         goto end;
@@ -341,8 +265,6 @@ int main(int argc, char *argv[])
     enum methodForRep method_for_rep = REP_AUTO;
     enum qualityMode quality_mode = QUALITY_AUTO;
     char *mapfile = NULL;
-    int reqsx = 0;
-    int reqsy = 0;
     int long_opt;
     int option_index;
     int ret;
