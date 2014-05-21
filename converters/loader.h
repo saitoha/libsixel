@@ -19,25 +19,22 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef MALLOC_STUB_H
-#define MALLOC_STUB_H
+#ifndef LIBSIXEL_LOADER_H
+#define LIBSIXEL_LOADER_H
 
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif  /* HAVE_SYS_TYPES_H */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#if !HAVE_MALLOC
-void * rpl_malloc(size_t n);
-#endif /* !HAVE_MALLOC */
+unsigned char *
+load_image_file(char const *filename, int *psx, int *psy);
 
-#if !HAVE_REALLOC
-void * rpl_realloc(void *p, size_t n);
-#endif /* !HAVE_REALLOC */
+#ifdef __cplusplus
+}
+#endif
 
-int rpl_posix_memalign(void **memptr, size_t alignment, size_t size);
+#endif /* LIBSIXEL_LOADER_H */
 
-#endif /* MALLOC_STUB_H */
-
-/* Hello emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
+/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
 /* EOF */

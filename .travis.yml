@@ -7,9 +7,19 @@ env:
   - XCC=i686-w64-mingw32-gcc HOST=i686-w64-mingw32 WINE=wine
   - XCC=i586-mingw32msvc-gcc HOST=i586-mingw32msvc WINE=wine
   - XCC=x86_64-w64-mingw32-gcc HOST=x86_64-w64-mingw32 WINE=wine64
+  - XCC=clang HOST= WINE= GDKPIXBUF=" --with-gdk-pixbuf2 "
+  - XCC=clang HOST= WINE= LIBCURL=" --with-libcurl "
+  - XCC=clang HOST= WINE= GD=" --with-gd "
+  - XCC=clang HOST= WINE= GDKPIXBUF=" --with-gdk-pixbuf2 " LIBCURL=" --with-libcurl "
+  - XCC=clang HOST= WINE= GD=" --with-gd " LIBCURL=" --with-libcurl "
+  - XCC=clang HOST= WINE= GDKPIXBUF=" --with-gdk-pixbuf2 " GD=" --with-gd "
+  - XCC=clang HOST= WINE= GDKPIXBUF=" --with-gdk-pixbuf2 " GD=" --with-gd " LIBCURL=" --with-libcurl "
 
 before_install:
-    #  - "sudo apt-get -qq update --force-yes > /dev/null"
+  - "sudo apt-get -qq update --force-yes > /dev/null"
+  - "if [ x$GDKPIXBUF != x ]; then sudo apt-get -qq install libgdk-pixbuf2.0-dev; fi"
+  - "if [ x$LIBCURL != x ]; then sudo apt-get -qq install libcurl4-openssl-dev; fi"
+  - "if [ x$WINE = x ]; then sudo apt-get install -qq valgrind > /dev/null; fi"
   - "if [ x$WINE != x ]; then sudo apt-get install -qq wine > /dev/null; fi"
   - "if [ x$XCC = xclang ]; then sudo apt-get install -qq clang; fi"
   - "if [ x$XCC = xgcc ]; then sudo apt-get install -qq gcc; fi"
@@ -18,12 +28,11 @@ before_install:
   - "if [ x$XCC = xx86_64-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64; fi"
 
 before_script:
-  - "uname -a"
-  - "uname -r"
-  - "CC=$XCC ./configure --host=$HOST"
+  - "CC=$XCC ./configure --prefix=/usr --host=$HOST $(GDKPIXBUF) $(LIBCURL)"
 
 script:
   - "make"
+  - "sudo make install"
   - "$WINE converters/img2sixel images/snake.jpg > snake1.sixel"
   - "du -h snake1.sixel"
   - "$WINE converters/img2sixel -p16 images/snake.jpg > snake2.sixel"
@@ -34,4 +43,5 @@ script:
   - "du -h snake2.png"
   - "$WINE converters/img2sixel snake1.png > snake3.sixel"
   - "du -h snake3.sixel"
+  - "if [ x$WINE = x ]; then valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -dfs 2>&1 | tee valgrind.log | grep 'ERROR SUMMARY: 0 errors from 0 contexts' || exit 1; fi"
 

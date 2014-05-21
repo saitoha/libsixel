@@ -19,25 +19,45 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef MALLOC_STUB_H
-#define MALLOC_STUB_H
+#ifndef LIBSIXEL_SCALE_H
+#define LIBSIXEL_SCALE_H
 
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif  /* HAVE_SYS_TYPES_H */
+/* method for re-sampling */
+enum methodForResampling {
+    RES_NEAREST,  /* Use nearest neighbor method */
+    RES_GAUSSIAN, /* Use guaussian filter */
+    RES_HANNING,  /* Use hanning filter */
+    RES_HAMMING,  /* Use hamming filter */
+    RES_BILINEAR, /* Use bilinear filter */
+    RES_WELSH,    /* Use welsh filter */
+    RES_BICUBIC,  /* Use bicubic filter */
+    RES_LANCZOS2, /* Use lanczos-2 filter */
+    RES_LANCZOS3, /* Use lanczos-3 filter */
+    RES_LANCZOS4, /* Use lanczos-4 filter */
+};
 
-#if !HAVE_MALLOC
-void * rpl_malloc(size_t n);
-#endif /* !HAVE_MALLOC */
 
-#if !HAVE_REALLOC
-void * rpl_realloc(void *p, size_t n);
-#endif /* !HAVE_REALLOC */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-int rpl_posix_memalign(void **memptr, size_t alignment, size_t size);
+/* exported functions */
 
-#endif /* MALLOC_STUB_H */
+/* image scaling api */
 
-/* Hello emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
+unsigned char *
+LSS_scale(unsigned char const *pixels,
+          int srcx, int srcy, int depth,
+          int destx, int desty,
+          enum methodForResampling const methodForResampling);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+#endif /* LIBSIXEL_QUANT_H */
+
+/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
 /* EOF */

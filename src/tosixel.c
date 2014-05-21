@@ -60,8 +60,9 @@ PutFlash(LSOutputContextPtr const context)
 #if defined(USE_VT240)        /* VT240 Max 255 ? */
     while (save_count > 255) {
         ret = context->fn_printf("!%d%c", 255, save_pix);
-        if (ret <= 0)
+        if (ret <= 0) {
             return (-1);
+        }
         save_count -= 255;
     }
 #endif  /* defined(USE_VT240) */
@@ -70,14 +71,16 @@ PutFlash(LSOutputContextPtr const context)
         /* DECGRI Graphics Repeat Introducer ! Pn Ch */
 
         ret = context->fn_printf("!%d%c", save_count, save_pix);
-        if (ret <= 0)
+        if (ret <= 0) {
             return (-1);
+        }
 
     } else {
         for (n = 0 ; n < save_count ; n++) {
             ret = context->fn_putchar(save_pix);
-            if (ret <= 0)
+            if (ret <= 0) {
                 return (-1);
+            }
         }
     }
 
@@ -91,8 +94,9 @@ PutFlash(LSOutputContextPtr const context)
 static void
 PutPixel(LSOutputContextPtr const context, int pix)
 {
-    if (pix < 0 || pix > 63)
+    if (pix < 0 || pix > 63) {
         pix = 0;
+    }
 
     pix += '?';
 
@@ -127,8 +131,9 @@ PutCr(LSOutputContextPtr context)
     /* DECGCR Graphics Carriage Return */
     /* x = 0; */
     ret = context->fn_printf("$\n");
-    if (ret <= 0)
+    if (ret <= 0) {
         return (-1);
+    }
     return 0;
 }
 
@@ -142,8 +147,9 @@ PutLf(LSOutputContextPtr context)
     /* x = 0; */
     /* y += 6; */
     ret = context->fn_printf("-\n");
-    if (ret <= 0)
+    if (ret <= 0) {
         return (-1);
+    }
     return 0;
 }
 
@@ -165,8 +171,9 @@ NodeDel(SixNode *np)
 {
     SixNode *tp;
 
-    if ((tp = node_top) == np)
+    if ((tp = node_top) == np) {
         node_top = np->next;
+    }
 
     else {
         while (tp->next != NULL) {
@@ -226,26 +233,31 @@ NodeLine(int pal, int width, unsigned char *map)
     int ret;
 
     for (sx = 0 ; sx < width ; sx++) {
-        if (map[sx] == 0)
+        if (map[sx] == 0) {
             continue;
+        }
 
         for (mx = sx + 1 ; mx < width ; mx++) {
-            if (map[mx] != 0)
+            if (map[mx] != 0) {
                 continue;
-
-            for (n = 1 ; (mx + n) < width ; n++) {
-                if (map[mx + n] != 0)
-                    break;
             }
 
-            if (n >= 10 || (mx + n) >= width)
+            for (n = 1 ; (mx + n) < width ; n++) {
+                if (map[mx + n] != 0) {
+                    break;
+                }
+            }
+
+            if (n >= 10 || (mx + n) >= width) {
                 break;
+            }
             mx = mx + n - 1;
         }
 
         ret = NodeAdd(pal, sx, mx, map);
-        if (ret != 0)
+        if (ret != 0) {
             return ret;
+        }
         sx = mx - 1;
     }
 
@@ -256,30 +268,26 @@ NodeLine(int pal, int width, unsigned char *map)
 static int
 PutNode(LSOutputContextPtr context, LSImagePtr im, int x, SixNode *np)
 {
-    if (im->ncolors != 2 || im->keycolor == -1)
+    if (im->ncolors != 2 || im->keycolor == -1) {
         PutPalet(context, im, np->pal);
+    }
 
-    for (; x < np->sx ; x++)
-        if (x != im->keycolor)
+    for (; x < np->sx ; x++) {
+        if (x != im->keycolor) {
             PutPixel(context, 0);
+        }
+    }
 
-    for (; x < np->mx ; x++)
-        if (x != im->keycolor)
+    for (; x < np->mx ; x++) {
+        if (x != im->keycolor) {
             PutPixel(context, np->map[x]);
+        }
+    }
 
     PutFlash(context);
 
     return x;
 }
-
-
-#if defined(USE_SORT)
-static int
-PalUseCmp(const void *src, const void *dis)
-{
-    return use_palet[*((unsigned char *)dis)] - use_palet[*((unsigned char *)src)];
-}
-#endif  /* defined(USE_SORT) */
 
 
 int
@@ -302,86 +310,28 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     back = im->keycolor;
     len = maxPalet * width;
 
-    if ((map = (unsigned char *)malloc(len)) == NULL)
+    if ((map = (unsigned char *)malloc(len)) == NULL) {
         return (-1);
+    }
 
     memset(map, 0, len);
 
-    for (n = 0 ; n < maxPalet ; n++)
-        conv_palet[n] = list[n] = n;
-
-#if defined(USE_SORT)
-    /* Pass 1 Palet count */
-    memset(use_palet, 0, sizeof(use_palet));
-    skip = (height / 240) * 6;
-
-    for (y = i = 0 ; y < height ; y++) {
-        for (x = 0 ; x < width ; x++) {
-            pix = im->pixels[y * width + x];
-            if (pix >= 0 && pix < maxPalet && pix != back)
-                map[pix * width + x] |= (1 << i);
-        }
-
-        if (++i < 6 && (y + 1) < height)
-            continue;
-
-        for (n = 0 ; n < maxPalet ; n++) {
-            ret = NodeLine(n, width, map + n * width);
-            if (ret != 0)
-                return ret;
-        }
-
-        for (x = 0 ; (np = node_top) != NULL ;) {
-            if (x > np->sx)
-                x = 0;
-
-            use_palet[np->pal]++;
-
-            x = np->mx;
-            NodeDel(np);
-            np = node_top;
-
-            while (np != NULL) {
-                if (np->sx < x) {
-                    np = np->next;
-                    continue;
-                }
-
-                use_palet[np->pal]++;
-
-                x = np->mx;
-                NodeDel(np);
-                np = node_top;
-            }
-        }
-
-        i = 0;
-        memset(map, 0, len);
-        y += skip;
-    }
-
-    qsort(list, maxPalet, sizeof(unsigned char), PalUseCmp);
-
     for (n = 0 ; n < maxPalet ; n++) {
-        conv_palet[list[n]] = n;
+        conv_palet[n] = list[n] = n;
     }
-
-    /*************
-        for (n = 0 ; n < maxPalet ; n++)
-            fprintf(stderr, "%d %d=%d\n", n, list[n], conv_palet[list[n]]);
-    **************/
-#endif  /* defined(USE_SORT) */
 
     if (context->has_8bit_control) {
         ret = context->fn_printf("\x90q");
     } else {
         ret = context->fn_printf("\x1bPq");
     }
-    if (ret <= 0)
+    if (ret <= 0) {
         return (-1);
+    }
     ret = context->fn_printf("\"1;1;%d;%d\n", width, height);
-    if (ret <= 0)
+    if (ret <= 0) {
         return (-1);
+    }
 
     if (im->ncolors != 2 || im->keycolor == -1) {
         for (n = 0 ; n < maxPalet ; n++) {
@@ -391,8 +341,9 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
                                      (im->red[n] * 100 + 127) / 255,
                                      (im->green[n] * 100 + 127) / 255,
                                      (im->blue[n] * 100 + 127) / 255);
-            if (ret <= 0)
+            if (ret <= 0) {
                 return (-1);
+            }
         }
     }
 
@@ -410,15 +361,17 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
 
         for (n = 0 ; n < maxPalet ; n++) {
             ret = NodeLine(n, width, map + n * width);
-            if (ret != 0)
+            if (ret != 0) {
                 return ret;
+            }
         }
 
         for (x = 0 ; (np = node_top) != NULL ;) {
             if (x > np->sx) {
                 ret = PutCr(context);
-                if (ret != 0)
+                if (ret != 0) {
                     return (-1);
+                }
                 x = 0;
             }
 
@@ -439,8 +392,9 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
         }
 
         ret = PutLf(context);
-        if (ret != 0)
+        if (ret != 0) {
             return (-1);
+        }
 
         i = 0;
         memset(map, 0, len);
@@ -451,8 +405,9 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     } else {
         ret = context->fn_printf("\x1b\\");
     }
-    if (ret <= 0)
+    if (ret <= 0) {
         return (-1);
+    }
 
     NodeFree();
     free(map);
