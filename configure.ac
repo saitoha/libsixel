@@ -26,7 +26,7 @@ AC_CONFIG_MACRO_DIR([m4])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
-PKG_PROG_PKG_CONFIG
+AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
 
 # Options
 AC_ARG_ENABLE([img2sixel],
@@ -101,45 +101,54 @@ AC_CHECK_FUNC(aligned_alloc,
 AC_CHECK_FUNC(_aligned_malloc,
 	      [AC_DEFINE(HAVE__ALIGNED_MALLOC, 1, [whether _aligned_malloc() is available])])
 
-PKG_CHECK_MODULES(GDK_PIXBUF,
-                  [gdk-pixbuf-2.0],
-                  [have_gdk_pixbuf2=yes],
-                  [have_gdk_pixbuf2=no])
-AC_SUBST(GDK_PIXBUF_CFLAGS)
-AC_SUBST(GDK_PIXBUF_LIBS)
-AM_CONDITIONAL(HAVE_GDK_PIXBUF, [test x$with_gdk_pixbuf2 != xno && test x$have_gdk_pixbuf2 = xyes])
-
 loaders="stb_image"
 curl="no"
 
 if test x$with_gdk_pixbuf2 != xno; then
-    if test x$have_gdk_pixbuf2 = xyes; then
-        AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
-        loaders+=" gdk-pixbuf2"
+    if test x$have_pkg_config != xno; then
+        PKG_CHECK_MODULES(GDK_PIXBUF,
+                          [gdk-pixbuf-2.0],
+                          [have_gdk_pixbuf2=yes],
+                          [have_gdk_pixbuf2=no])
+        if test x$have_gdk_pixbuf2 = xyes; then
+            AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
+            loaders+=" gdk-pixbuf2"
+        else
+            AC_MSG_ERROR(pkg-config is not available.)
+        fi
     else
-        AC_MSG_ERROR(gdk-pixbuf2 is not available.)
+        AC_MSG_ERROR([pkg-config is missing])
     fi
 fi
+AC_SUBST(GDK_PIXBUF_CFLAGS)
+AC_SUBST(GDK_PIXBUF_LIBS)
+AM_CONDITIONAL(HAVE_GDK_PIXBUF, [test x$with_gdk_pixbuf2 != xno && test x$have_gdk_pixbuf2 = xyes])
 
-PKG_CHECK_MODULES(GD, [gdlib], [have_gd=yes], [have_gd=no])
+
+if test x$with_gd != xno; then
+    if test x$have_pkg_config != xno; then
+        PKG_CHECK_MODULES(GD, [gdlib], [have_gd=yes], [have_gd=no])
+        if test x$have_gd = xyes; then
+            AC_DEFINE(HAVE_GD, 1, [whether gd is available])
+            loaders+=" gd"
+        else
+            AC_MSG_ERROR(gd is not available.)
+        fi
+    else
+        AC_MSG_ERROR([pkg-config is missing])
+    fi
+fi
 AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
 AM_CONDITIONAL(HAVE_GD, [test x$with_gd != xno && test x$have_gd = xyes])
 
-if test x$with_gd != xno; then
-    if test x$have_gd = xyes; then
-        AC_DEFINE(HAVE_GD, 1, [whether gd is available])
-        loaders+=" gd"
-    else
-        AC_MSG_ERROR(gd is not available.)
-    fi
-fi
-
-PKG_CHECK_MODULES(LIBCURL, [libcurl], [have_libcurl=yes], [have_libcurl=no])
 
 if test x$with_libcurl != xno; then
-    if test x$have_libcurl = xyes; then
-        curl="yes"
+    if test x$have_pkg_config != xno; then
+        PKG_CHECK_MODULES(LIBCURL, [libcurl], [have_libcurl=yes], [have_libcurl=no])
+        if test x$have_libcurl = xyes; then
+            curl="yes"
+        fi
     else
         AC_CHECK_HEADER([curl/curl.h],
                         [AC_CHECK_LIB(curl, curl_easy_cleanup, [curl="yes"])])
@@ -150,10 +159,9 @@ if test x$with_libcurl != xno; then
         AC_MSG_ERROR([unable to find libcurl header files])
     fi
 fi
-
 AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
-AM_CONDITIONAL(HAVE_LIBCURL, [test x$with_libcurl != xno && test x$have_libcurl = xyes])
+AM_CONDITIONAL(HAVE_LIBCURL, [test x$with_libcurl != xno && test x$curl = xyes])
 
 
 # for HDR
