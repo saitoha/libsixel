@@ -23,10 +23,21 @@ $ make
 # make install
 ```
 
-To build source package:
+## Configure options
+
+### Build with optional packages
 
 ```
-$ make package
+--disable-img2sixel     do not build img2sixel
+--disable-sixel2png     do not build sixel2png
+```
+
+### Build with optional packages
+
+```
+--with-gdk-pixbuf2      build with gdk-pixbuf2 (default: no)
+--with-libcurl          build with libcurl (default: no)
+--with-gd               build with gd (default: no)
 ```
 
 
