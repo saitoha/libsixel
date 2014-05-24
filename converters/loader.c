@@ -64,6 +64,7 @@
 # include <curl/curl.h>
 #endif
 
+#include "frompnm.h"
 #include "loader.h"
 
 typedef struct chunk
@@ -409,7 +410,7 @@ load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
     {
         if (get_chunk_from_file(filename, &chunk) != 0) {
 #if _ERRNO_H
-            fprintf(stderr, "get_chunk_from_file('%s') failed.\n" "readon: %s.\n",
+            fprintf(stderr, "get_chunk_from_file('%s') failed.\n" "reason: %s.\n",
                     filename, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
             return NULL;
@@ -488,6 +489,7 @@ load_image_file(char const *filename, int *psx, int *psy)
     int stride;
     int x;
     int y;
+    chunk_t chunk;
 
     pixels = NULL;
 #ifdef HAVE_GDK_PIXBUF2
@@ -502,6 +504,17 @@ load_image_file(char const *filename, int *psx, int *psy)
 #endif  /* HAVE_GD */
     if (!pixels) {
         pixels = load_with_stbi(filename, psx, psy, &comp, &stride);
+    }
+    if (!pixels) {
+        if (get_chunk_from_file(filename, &chunk) != 0) {
+#if _ERRNO_H
+            fprintf(stderr, "get_chunk_from_file('%s') failed.\n" "reason: %s.\n",
+                    filename, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
+            return NULL;
+        }
+        pixels = load_pnm(chunk.buffer, chunk.size, psx, psy, &comp, &stride);
+        free(chunk.buffer);
     }
 
     src = dst = pixels;
