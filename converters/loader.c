@@ -229,7 +229,7 @@ chunk_is_pnm(chunk_t const *chunk)
 
 
 static unsigned char *
-load_with_stbi(char const *filename, int *psx, int *psy,
+load_with_builtin(char const *filename, int *psx, int *psy,
                int *pcomp, int *pstride)
 {
     FILE *f;
@@ -557,7 +557,7 @@ load_image_file(char const *filename, int *psx, int *psy)
     }
 #endif  /* HAVE_GD */
     if (!pixels) {
-        pixels = load_with_stbi(filename, psx, psy, &comp, &stride);
+        pixels = load_with_builtin(filename, psx, psy, &comp, &stride);
     }
 
     src = dst = pixels;
