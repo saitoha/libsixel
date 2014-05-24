@@ -270,11 +270,18 @@ load_with_stbi(char const *filename, int *psx, int *psy,
             return NULL;
         }
     }
-    result = stbi_load_from_memory(chunk.buffer, chunk.size, psx, psy, pcomp, STBI_rgb);
-    if (!result) {
-        fprintf(stderr, "stbi_load_from_file('%s') failed.\n" "reason: %s.\n",
-                filename, stbi_failure_reason());
-        return NULL;
+
+    if (chunk_is_sixel(&chunk)) {
+        /* sixel */
+    } else if (chunk_is_pnm(&chunk)) {
+        /* pnm */
+    } else {
+        result = stbi_load_from_memory(chunk.buffer, chunk.size, psx, psy, pcomp, STBI_rgb);
+        if (!result) {
+            fprintf(stderr, "stbi_load_from_file('%s') failed.\n" "reason: %s.\n",
+                    filename, stbi_failure_reason());
+            return NULL;
+        }
     }
     free(chunk.buffer);
 
