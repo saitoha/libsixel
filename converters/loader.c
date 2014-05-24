@@ -37,8 +37,6 @@
 # include <fcntl.h>
 #endif
 
-#define STBI_HEADER_FILE_ONLY 1
-
 #if !defined(HAVE_MEMCPY)
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
 #endif
@@ -51,6 +49,7 @@
 # define O_BINARY _O_BINARY
 #endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 
+#define STBI_HEADER_FILE_ONLY 1
 #include "stb_image.c"
 
 #ifdef HAVE_GDK_PIXBUF2
@@ -83,6 +82,7 @@ loader_write(void *data, size_t size, size_t len, void *loader)
     return len;
 }
 #endif
+
 
 size_t
 memory_write(void* ptr, size_t size, size_t len, void* memory)
@@ -301,6 +301,7 @@ load_with_gdkpixbuf(char const *filename, int *psx, int *psy, int *pcomp, int *p
 #define        FMT_GD2     9
 #define        FMT_PSD     10
 #define        FMT_HDR     11
+
 
 static int
 detect_file_format(int len, unsigned char *data)
