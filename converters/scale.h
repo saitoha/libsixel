@@ -56,7 +56,7 @@ LSS_scale(unsigned char const *pixels,
 #endif
 
 
-#endif /* LIBSIXEL_QUANT_H */
+#endif /* LIBSIXEL_SCALE_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
