@@ -228,6 +228,9 @@ load_with_stbi(char const *filename, int *psx, int *psy,
         fclose(f);
     }
 
+    /* 4 is set in *pcomp when source image is GIF. we reset it to 3. */
+    *pcomp = 3;
+
     *pstride = *pcomp * *psx;
     return result;
 }

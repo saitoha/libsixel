@@ -47,6 +47,7 @@
 #include "quant.h"
 #include "loader.h"
 
+
 static unsigned char *
 prepare_monochrome_palette(finvert)
 {
@@ -115,7 +116,7 @@ convert_to_sixel(char const *filename, int reqcolors,
     int origcolors;
     LSImagePtr im = NULL;
     LSOutputContextPtr context = NULL;
-    int sx, sy, comp;
+    int sx, sy;
     int i;
     int nret = -1;
     FILE *f;
