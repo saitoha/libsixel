@@ -178,6 +178,56 @@ get_chunk_from_file(char const *filename, chunk_t *chunk)
 }
 
 
+static int
+chunk_is_sixel(chunk_t const *chunk)
+{
+    unsigned char *p;
+    unsigned char *end;
+    int result;
+
+    result = 0;
+    p = chunk->buffer;
+
+    p++;
+    p++;
+    if (p >= end) {
+        return 0;
+    }
+    if (*(p - 1) == 0x90 ||
+        (*(p - 1) == 0x1b && *p == 0x50)) {
+        while (p++ < end) {
+            if (*p == 0x70) {
+                return 1;
+            } else if (*p == 0x18 || *p == 0x1a) {
+                return 0;
+            } else if (*p < 0x20) {
+                continue;
+            } else if (*p < 0x30) {
+                return 0;
+            } else if (*p < 0x40) {
+                continue;
+            }
+        }
+    }
+    return 0;
+}
+
+
+static int
+chunk_is_pnm(chunk_t const *chunk)
+{
+    if (chunk->size < 2) {
+        return 0;
+    }
+    if (chunk->buffer[0] == 'P' &&
+        chunk->buffer[1] >= '1' &&
+        chunk->buffer[1] <= '6') {
+        return 1;
+    }
+    return 0;
+}
+
+
 static unsigned char *
 load_with_stbi(char const *filename, int *psx, int *psy,
                int *pcomp, int *pstride)
