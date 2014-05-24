@@ -122,46 +122,52 @@ if test x$with_gdk_pixbuf2 != xno; then
 fi
 AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
-AM_CONDITIONAL(HAVE_GDK_PIXBUF, [test x$with_gdk_pixbuf2 != xno && test x$have_gdk_pixbuf2 = xyes])
 
 
 if test x$with_gd != xno; then
+    AC_CHECK_HEADER([gd.h],
+                    [AC_CHECK_LIB([gd],
+                                  [gdImageCreateFromGifPtr],
+                                  [have_gd="yes" GD_LIBS=-lgd],
+                                  [have_gd="no"])])
     if test x$have_pkg_config != xno; then
-        PKG_CHECK_MODULES(GD, [gdlib], [have_gd=yes], [have_gd=no])
-        if test x$have_gd = xyes; then
-            AC_DEFINE(HAVE_GD, 1, [whether gd is available])
-            loaders+=" gd"
-        else
-            AC_MSG_ERROR(gd is not available.)
+        if test x$have_gd != xyes; then
+            PKG_CHECK_MODULES(GD, [gdlib], [have_gd=yes], [have_gd=no])
         fi
+    fi
+    if test x$have_gd = xyes; then
+        AC_DEFINE(HAVE_GD, 1, [whether gd is available])
+        loaders+=" gd"
     else
-        AC_MSG_ERROR([pkg-config is missing])
+        AC_MSG_ERROR(gd is not available.)
     fi
 fi
 AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
-AM_CONDITIONAL(HAVE_GD, [test x$with_gd != xno && test x$have_gd = xyes])
 
 
 if test x$with_libcurl != xno; then
-    if test x$have_pkg_config != xno; then
-        PKG_CHECK_MODULES(LIBCURL, [libcurl], [have_libcurl=yes], [have_libcurl=no])
-        if test x$have_libcurl = xyes; then
-            curl="yes"
+    AC_CHECK_HEADER([curl/curl.h],
+                    [AC_CHECK_LIB([curl],
+                                  [curl_easy_cleanup],
+                                  [have_curl=yes LIBCURL_LIBS=-lcurl],
+                                  [have_curl=no])])
+    if test x$have_curl != xyes; then
+        if test x$have_pkg_config != xno; then
+            PKG_CHECK_MODULES(LIBCURL,
+                              [libcurl],
+                              [have_curl=yes],
+                              [have_curl=no])
         fi
-    else
-        AC_CHECK_HEADER([curl/curl.h],
-                        [AC_CHECK_LIB(curl, curl_easy_cleanup, [curl="yes"])])
     fi
-    if test x$curl = xyes; then
+    if test x$have_curl = xyes; then
         AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
     else
-        AC_MSG_ERROR([unable to find libcurl header files])
+        AC_MSG_ERROR([unable to find libcurl])
     fi
 fi
 AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
-AM_CONDITIONAL(HAVE_LIBCURL, [test x$with_libcurl != xno && test x$curl = xyes])
 
 
 # for HDR
@@ -179,7 +185,7 @@ echo ""
 echo "libsixel was configured as follows"
 echo ""
 echo "       Loader component    : $loaders"
-echo "       libcurl integration : $curl"
+echo "       libcurl integration : $have_curl"
 echo ""
 echo ""
 
