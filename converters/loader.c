@@ -184,10 +184,10 @@ load_with_stbi(char const *filename, int *psx, int *psy,
 {
     FILE *f;
     unsigned char *result;
+    chunk_t chunk;
 # ifdef HAVE_LIBCURL
     CURL *curl;
     CURLcode code;
-    chunk_t chunk;
 
     if (strstr(filename, "://")) {
         chunk.max_size = 1024;
@@ -208,25 +208,25 @@ load_with_stbi(char const *filename, int *psx, int *psy,
             return NULL;
         }
         curl_easy_cleanup(curl);
-
-        result = stbi_load_from_memory(chunk.buffer, chunk.size, psx, psy, pcomp, STBI_rgb);
-        free(chunk.buffer);
     }
     else
 # endif  /* HAVE_LIBCURL */
     {
-        f = open_binary_file(filename);
-        if (!f) {
+        if (get_chunk_from_file(filename, &chunk) != 0) {
+#if _ERRNO_H
+            fprintf(stderr, "get_chunk_from_file('%s') failed.\n" "readon: %s.\n",
+                    filename, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
             return NULL;
         }
-        result = stbi_load_from_file(f, psx, psy, pcomp, STBI_rgb);
-        if (!result) {
-            fprintf(stderr, "stbi_load_from_file('%s') failed.\n" "reason: %s.\n",
-                    filename, stbi_failure_reason());
-            return NULL;
-        }
-        fclose(f);
     }
+    result = stbi_load_from_memory(chunk.buffer, chunk.size, psx, psy, pcomp, STBI_rgb);
+    if (!result) {
+        fprintf(stderr, "stbi_load_from_file('%s') failed.\n" "reason: %s.\n",
+                filename, stbi_failure_reason());
+        return NULL;
+    }
+    free(chunk.buffer);
 
     /* 4 is set in *pcomp when source image is GIF. we reset it to 3. */
     *pcomp = 3;
