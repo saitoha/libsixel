@@ -243,6 +243,10 @@ load_with_gdkpixbuf(char const *filename, int *psx, int *psy, int *pcomp, int *p
     GdkPixbuf *pixbuf;
     unsigned char *pixels;
 
+    if (filename == NULL) {
+        filename = "/dev/stdin";
+    }
+
 # ifdef HAVE_LIBCURL
     if (strstr(filename, "://")) {
         CURL *curl;
