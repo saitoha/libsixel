@@ -638,8 +638,6 @@ LIBCURL_LIBS
 LIBCURL_CFLAGS
 GD_LIBS
 GD_CFLAGS
-GIO_LIBS
-GIO_CFLAGS
 GDK_PIXBUF_LIBS
 GDK_PIXBUF_CFLAGS
 PKG_CONFIG_LIBDIR
@@ -796,8 +794,6 @@ PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
 GDK_PIXBUF_CFLAGS
 GDK_PIXBUF_LIBS
-GIO_CFLAGS
-GIO_LIBS
 GD_CFLAGS
 GD_LIBS
 LIBCURL_CFLAGS
@@ -1464,8 +1460,6 @@ Some influential environment variables:
               C compiler flags for GDK_PIXBUF, overriding pkg-config
   GDK_PIXBUF_LIBS
               linker flags for GDK_PIXBUF, overriding pkg-config
-  GIO_CFLAGS  C compiler flags for GIO, overriding pkg-config
-  GIO_LIBS    linker flags for GIO, overriding pkg-config
   GD_CFLAGS   C compiler flags for GD, overriding pkg-config
   GD_LIBS     linker flags for GD, overriding pkg-config
   LIBCURL_CFLAGS
@@ -12726,94 +12720,6 @@ fi
 $as_echo "#define HAVE_GDK_PIXBUF2 1" >>confdefs.h
 
             loaders+=" gdk-pixbuf2"
-        else
-            as_fn_error $? "pkg-config is not available." "$LINENO" 5
-        fi
-    else
-        as_fn_error $? "pkg-config is missing" "$LINENO" 5
-    fi
-fi
-
-
-
-
-if test x$with_gdk_pixbuf2 != xno; then
-    if test x$have_pkg_config != xno; then
-
-pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GIO" >&5
-$as_echo_n "checking for GIO... " >&6; }
-
-if test -n "$GIO_CFLAGS"; then
-    pkg_cv_GIO_CFLAGS="$GIO_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gio-2.0\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gio-2.0") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GIO_CFLAGS=`$PKG_CONFIG --cflags "gio-2.0" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$GIO_LIBS"; then
-    pkg_cv_GIO_LIBS="$GIO_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gio-2.0\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gio-2.0") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_GIO_LIBS=`$PKG_CONFIG --libs "gio-2.0" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-	        GIO_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gio-2.0" 2>&1`
-        else
-	        GIO_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gio-2.0" 2>&1`
-        fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$GIO_PKG_ERRORS" >&5
-
-	have_gio=no
-elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-	have_gio=no
-else
-	GIO_CFLAGS=$pkg_cv_GIO_CFLAGS
-	GIO_LIBS=$pkg_cv_GIO_LIBS
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-	have_gio=yes
-fi
-        if test x$have_gio = xyes; then
-
-$as_echo "#define HAVE_GIO 1" >>confdefs.h
-
         else
             as_fn_error $? "pkg-config is not available." "$LINENO" 5
         fi
