@@ -189,7 +189,7 @@ load_with_stbi(char const *filename, int *psx, int *psy,
     CURLcode code;
     chunk_t chunk;
 
-    if (strstr(filename, "://")) {
+    if (filename != NULL && strstr(filename, "://")) {
         chunk.max_size = 1024;
         chunk.size = 0;
         chunk.buffer = malloc(chunk.max_size);
@@ -244,7 +244,7 @@ load_with_gdkpixbuf(char const *filename, int *psx, int *psy, int *pcomp, int *p
     unsigned char *pixels;
 
 # ifdef HAVE_LIBCURL
-    if (strstr(filename, "://")) {
+    if (filename != NULL && strstr(filename, "://")) {
         CURL *curl;
         GdkPixbufLoader *loader;
 
@@ -383,7 +383,7 @@ load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
     CURLcode code;
     chunk_t chunk;
 
-    if (strstr(filename, "://")) {
+    if (filename != NULL && strstr(filename, "://")) {
         chunk.max_size = 1024;
         chunk.size = 0;
         chunk.buffer = malloc(chunk.max_size);
