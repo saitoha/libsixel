@@ -140,7 +140,7 @@ open_binary_file(char const *filename)
 
 
 static int
-get_chunk_from_file(char const *filename, chunk_t *chunk)
+get_chunk_from_file(char const *filename, chunk_t *pchunk)
 {
     FILE *f;
     int n;
@@ -150,10 +150,10 @@ get_chunk_from_file(char const *filename, chunk_t *chunk)
         return (-1);
     }
 
-    chunk->size = 0;
-    chunk->max_size = 64 * 1024;
+    pchunk->size = 0;
+    pchunk->max_size = 64 * 1024;
 
-    if ((chunk->buffer = (unsigned char *)malloc(chunk->max_size)) == NULL) {
+    if ((pchunk->buffer = (unsigned char *)malloc(pchunk->max_size)) == NULL) {
 #if _ERRNO_H
         fprintf(stderr, "get_chunk_from_file('%s'): malloc failed.\n" "reason: %s.\n",
                 filename, strerror(errno));
@@ -162,9 +162,9 @@ get_chunk_from_file(char const *filename, chunk_t *chunk)
     }
 
     for (;;) {
-        if ((chunk->max_size - chunk->size) < 4096) {
-            chunk->max_size *= 2;
-            if ((chunk->buffer = (unsigned char *)realloc(chunk->buffer, chunk->max_size)) == NULL) {
+        if ((pchunk->max_size - pchunk->size) < 4096) {
+            pchunk->max_size *= 2;
+            if ((pchunk->buffer = (unsigned char *)realloc(pchunk->buffer, pchunk->max_size)) == NULL) {
 #if _ERRNO_H
                 fprintf(stderr, "get_chunk_from_file('%s'): relloc failed.\n" "reason: %s.\n",
                         filename, strerror(errno));
@@ -172,10 +172,10 @@ get_chunk_from_file(char const *filename, chunk_t *chunk)
                 return (-1);
             }
         }
-        if ((n = fread(chunk->buffer + chunk->size, 1, 4096, f)) <= 0) {
+        if ((n = fread(pchunk->buffer + pchunk->size, 1, 4096, f)) <= 0) {
             break;
         }
-        chunk->size += n;
+        pchunk->size += n;
     }
 
     if (f != stdout) {
@@ -188,15 +188,14 @@ get_chunk_from_file(char const *filename, chunk_t *chunk)
 
 # ifdef HAVE_LIBCURL
 static int
-get_chunk_from_url(char const *url, chunk_t *chunk)
+get_chunk_from_url(char const *url, chunk_t *pchunk)
 {
-    chunk_t chunk;
     CURL *curl;
     CURLcode code;
 
-    chunk.max_size = 1024;
-    chunk.size = 0;
-    chunk.buffer = malloc(chunk.max_size);
+    pchunk->max_size = 1024;
+    pchunk->size = 0;
+    pchunk->buffer = malloc(pchunk->max_size);
     curl = curl_easy_init();
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
@@ -205,7 +204,7 @@ get_chunk_from_url(char const *url, chunk_t *chunk)
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
     }
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, memory_write);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)pchunk);
     if ((code = curl_easy_perform(curl))) {
         fprintf(stderr, "curl_easy_perform('%s') failed.\n" "code: %d.\n",
                 url, code);
@@ -215,6 +214,20 @@ get_chunk_from_url(char const *url, chunk_t *chunk)
     return 0;
 }
 # endif  /* HAVE_LIBCURL */
+
+
+static int
+get_chunk(char const *filename, chunk_t *pchunk)
+{
+# ifdef HAVE_LIBCURL
+    if (filename != NULL && strstr(filename, "://")) {
+        return get_chunk_from_url(filename, pchunk);
+    }
+    else
+# endif  /* HAVE_LIBCURL */
+    return get_chunk_from_file(filename, pchunk);
+}
+
 
 static int
 chunk_is_sixel(chunk_t const *chunk)
@@ -273,18 +286,8 @@ load_with_builtin(char const *filename, int *psx, int *psy,
     FILE *f;
     unsigned char *result;
     chunk_t chunk;
-# ifdef HAVE_LIBCURL
-    CURL *curl;
-    CURLcode code;
 
-    if (filename != NULL && strstr(filename, "://")) {
-        if (get_chunk_from_url(filename, &chunk) != 0) {
-            return NULL;
-        }
-    }
-    else
-# endif  /* HAVE_LIBCURL */
-    if (get_chunk_from_file(filename, &chunk) != 0) {
+    if (get_chunk(filename, &chunk) != 0) {
         return NULL;
     }
 
@@ -319,15 +322,7 @@ load_with_gdkpixbuf(char const *filename, int *psx, int *psy, int *pcomp, int *p
     chunk_t chunk;
     GdkPixbufLoader *loader;
 
-# ifdef HAVE_LIBCURL
-    if (filename != NULL && strstr(filename, "://")) {
-        if (get_chunk_from_url(filename, &chunk) != 0) {
-            return NULL;
-        }
-    }
-    else
-# endif  /* HAVE_LIBCURL */
-    if (get_chunk_from_file(filename, &chunk) != 0) {
+    if (get_chunk(filename, &chunk) != 0) {
         return NULL;
     }
     loader = gdk_pixbuf_loader_new();
@@ -437,23 +432,13 @@ load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
     FILE *f;
     int x, y;
     int c;
-# ifdef HAVE_LIBCURL
-    CURL *curl;
-    CURLcode code;
-    chunk_t chunk;
 
-    if (filename != NULL && strstr(filename, "://")) {
-        if (get_chunk_from_url(filename, &chunk) != 0) {
-            return NULL;
-        }
+    if (get_chunk(filename, &chunk) != 0) {
+        return NULL;
     }
-    else
-# endif  /* HAVE_LIBCURL */
-    {
-        if (get_chunk_from_file(filename, &chunk) != 0) {
-            return NULL;
-        }
-    }
+
+    len = chunk.size;
+    data = chunk.buffer;
 
     switch(detect_file_format(chunk.size, chunk.buffer)) {
         case FMT_GIF:
