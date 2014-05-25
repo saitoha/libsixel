@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.19.0], [user@zuse.jp])
+AC_INIT([sixel], [0.19.2], [user@zuse.jp])
 LS_LT_CURRENT=0
 LS_LT_REVISION=0
 LS_LT_AGE=0
@@ -26,6 +26,7 @@ AC_CONFIG_MACRO_DIR([m4])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
+AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
 
 # Options
 AC_ARG_ENABLE([img2sixel],
@@ -71,8 +72,7 @@ AC_CHECK_HEADERS([memory.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
-                  errno.h \
-                  xmmintrin.h])
+                  errno.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
@@ -91,52 +91,40 @@ AC_CHECK_FUNC([getopt_long], [],
 
 AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode])
 
-AC_CHECK_FUNC(memalign,
-	      [AC_DEFINE(HAVE_MEMALIGN, 1, [whether memalign() is available])])
-AC_CHECK_FUNC(posix_memalign,
-	      [AC_DEFINE(HAVE_POSIX_MEMALIGN, 1, [whether posix_memalign() is available])])
-AC_CHECK_FUNC(aligned_alloc,
-	      [AC_DEFINE(HAVE_ALIGNED_ALLOC, 1, [whether aligned_alloc() is available])])
-AC_CHECK_FUNC(_aligned_malloc,
-	      [AC_DEFINE(HAVE__ALIGNED_MALLOC, 1, [whether _aligned_malloc() is available])])
-
-PKG_CHECK_MODULES(GDK_PIXBUF, [gdk-pixbuf-2.0], [have_gdk_pixbuf2=yes], [have_gdk_pixbuf2=no])
-AC_SUBST(GDK_PIXBUF_CFLAGS)
-AC_SUBST(GDK_PIXBUF_LIBS)
-AM_CONDITIONAL(HAVE_GDK_PIXBUF, [test x$with_gdk_pixbuf2 != xno && test x$have_gdk_pixbuf2 = xyes])
-
 loaders="stb_image"
 curl="no"
 
 if test x$with_gdk_pixbuf2 != xno; then
-    if test x$have_gdk_pixbuf2 = xyes; then
-        AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
-        loaders+=" gdk-pixbuf2"
+    if test x$have_pkg_config != xno; then
+        PKG_CHECK_MODULES(GDK_PIXBUF,
+                          [gdk-pixbuf-2.0],
+                          [have_gdk_pixbuf2=yes],
+                          [have_gdk_pixbuf2=no])
+        if test x$have_gdk_pixbuf2 = xyes; then
+            AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
+            loaders+=" gdk-pixbuf2"
+        else
+            AC_MSG_ERROR(pkg-config is not available.)
+        fi
     else
-        AC_MSG_ERROR(gdk-pixbuf2 is not available.)
+        AC_MSG_ERROR([pkg-config is missing])
     fi
 fi
+AC_SUBST(GDK_PIXBUF_CFLAGS)
+AC_SUBST(GDK_PIXBUF_LIBS)
 
-PKG_CHECK_MODULES(LIBCURL, [libcurl], [have_libcurl=yes], [have_libcurl=no])
-AC_SUBST(LIBCURL_CFLAGS)
-AC_SUBST(LIBCURL_LIBS)
-AM_CONDITIONAL(HAVE_LIBCURL, [test x$with_libcurl != xno && test x$have_libcurl = xyes])
-
-if test x$with_libcurl != xno; then
-    if test x$have_libcurl = xyes; then
-        AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
-        curl="yes"
-    else
-        AC_MSG_ERROR(libcurl is not available.)
-    fi
-fi
-
-PKG_CHECK_MODULES(GD, [gdlib], [have_gd=yes], [have_gd=no])
-AC_SUBST(GD_CFLAGS)
-AC_SUBST(GD_LIBS)
-AM_CONDITIONAL(HAVE_GD, [test x$with_gd != xno && test x$have_gd = xyes])
 
 if test x$with_gd != xno; then
+    AC_CHECK_HEADER([gd.h],
+                    [AC_CHECK_LIB([gd],
+                                  [gdImageCreateFromGifPtr],
+                                  [have_gd="yes" GD_LIBS=-lgd],
+                                  [have_gd="no"])])
+    if test x$have_pkg_config != xno; then
+        if test x$have_gd != xyes; then
+            PKG_CHECK_MODULES(GD, [gdlib], [have_gd=yes], [have_gd=no])
+        fi
+    fi
     if test x$have_gd = xyes; then
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
         loaders+=" gd"
@@ -144,6 +132,32 @@ if test x$with_gd != xno; then
         AC_MSG_ERROR(gd is not available.)
     fi
 fi
+AC_SUBST(GD_CFLAGS)
+AC_SUBST(GD_LIBS)
+
+
+if test x$with_libcurl != xno; then
+    AC_CHECK_HEADER([curl/curl.h],
+                    [AC_CHECK_LIB([curl],
+                                  [curl_easy_cleanup],
+                                  [have_curl=yes LIBCURL_LIBS=-lcurl],
+                                  [have_curl=no])])
+    if test x$have_curl != xyes; then
+        if test x$have_pkg_config != xno; then
+            PKG_CHECK_MODULES(LIBCURL,
+                              [libcurl],
+                              [have_curl=yes],
+                              [have_curl=no])
+        fi
+    fi
+    if test x$have_curl = xyes; then
+        AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
+    else
+        AC_MSG_ERROR([unable to find libcurl])
+    fi
+fi
+AC_SUBST(LIBCURL_CFLAGS)
+AC_SUBST(LIBCURL_LIBS)
 
 
 # for HDR
@@ -162,7 +176,7 @@ echo ""
 echo "libsixel was configured as follows"
 echo ""
 echo "       Loader component    : $loaders"
-echo "       libcurl integration : $curl"
+echo "       libcurl integration : $have_curl"
 echo ""
 echo ""
 
