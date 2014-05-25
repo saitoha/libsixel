@@ -37,6 +37,8 @@
 # include <fcntl.h>
 #endif
 
+#define STBI_HEADER_FILE_ONLY 1
+
 #if !defined(HAVE_MEMCPY)
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
 #endif
@@ -49,7 +51,6 @@
 # define O_BINARY _O_BINARY
 #endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 
-#define STBI_HEADER_FILE_ONLY 1
 #include "stb_image.c"
 
 #ifdef HAVE_GDK_PIXBUF2
@@ -83,7 +84,6 @@ loader_write(void *data, size_t size, size_t len, void *loader)
     return len;
 }
 #endif
-
 
 size_t
 memory_write(void* ptr, size_t size, size_t len, void* memory)
@@ -141,7 +141,7 @@ open_binary_file(char const *filename)
 
 
 static int
-get_chunk_from_file(char const *filename, chunk_t *chunk)
+get_chunk_from_file(char const *filename, chunk_t *pchunk)
 {
     FILE *f;
     int n;
@@ -151,24 +151,32 @@ get_chunk_from_file(char const *filename, chunk_t *chunk)
         return (-1);
     }
 
-    chunk->size = 0;
-    chunk->max_size = 64 * 1024;
+    pchunk->size = 0;
+    pchunk->max_size = 64 * 1024;
 
-    if ((chunk->buffer = (unsigned char *)malloc(chunk->max_size)) == NULL) {
+    if ((pchunk->buffer = (unsigned char *)malloc(pchunk->max_size)) == NULL) {
+#if _ERRNO_H
+        fprintf(stderr, "get_chunk_from_file('%s'): malloc failed.\n" "reason: %s.\n",
+                filename, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
         return (-1);
     }
 
     for (;;) {
-        if ((chunk->max_size - chunk->size) < 4096) {
-            chunk->max_size *= 2;
-            if ((chunk->buffer = (unsigned char *)realloc(chunk->buffer, chunk->max_size)) == NULL) {
+        if ((pchunk->max_size - pchunk->size) < 4096) {
+            pchunk->max_size *= 2;
+            if ((pchunk->buffer = (unsigned char *)realloc(pchunk->buffer, pchunk->max_size)) == NULL) {
+#if _ERRNO_H
+                fprintf(stderr, "get_chunk_from_file('%s'): relloc failed.\n" "reason: %s.\n",
+                        filename, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
                 return (-1);
             }
         }
-        if ((n = fread(chunk->buffer + chunk->size, 1, 4096, f)) <= 0) {
+        if ((n = fread(pchunk->buffer + pchunk->size, 1, 4096, f)) <= 0) {
             break;
         }
-        chunk->size += n;
+        pchunk->size += n;
     }
 
     if (f != stdout) {
@@ -179,55 +187,124 @@ get_chunk_from_file(char const *filename, chunk_t *chunk)
 }
 
 
+# ifdef HAVE_LIBCURL
+static int
+get_chunk_from_url(char const *url, chunk_t *pchunk)
+{
+    CURL *curl;
+    CURLcode code;
+
+    pchunk->max_size = 1024;
+    pchunk->size = 0;
+    pchunk->buffer = malloc(pchunk->max_size);
+    curl = curl_easy_init();
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    if (strncmp(url, "https://", 8) == 0) {
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    }
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, memory_write);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)pchunk);
+    if ((code = curl_easy_perform(curl))) {
+        fprintf(stderr, "curl_easy_perform('%s') failed.\n" "code: %d.\n",
+                url, code);
+        return (-1);
+    }
+    curl_easy_cleanup(curl);
+    return 0;
+}
+# endif  /* HAVE_LIBCURL */
+
+
+static int
+get_chunk(char const *filename, chunk_t *pchunk)
+{
+# ifdef HAVE_LIBCURL
+    if (filename != NULL && strstr(filename, "://")) {
+        return get_chunk_from_url(filename, pchunk);
+    }
+    else
+# endif  /* HAVE_LIBCURL */
+    return get_chunk_from_file(filename, pchunk);
+}
+
+
+static int
+chunk_is_sixel(chunk_t const *chunk)
+{
+    unsigned char *p;
+    unsigned char *end;
+    int result;
+
+    result = 0;
+    p = chunk->buffer;
+
+    p++;
+    p++;
+    if (p >= end) {
+        return 0;
+    }
+    if (*(p - 1) == 0x90 ||
+        (*(p - 1) == 0x1b && *p == 0x50)) {
+        while (p++ < end) {
+            if (*p == 0x70) {
+                return 1;
+            } else if (*p == 0x18 || *p == 0x1a) {
+                return 0;
+            } else if (*p < 0x20) {
+                continue;
+            } else if (*p < 0x30) {
+                return 0;
+            } else if (*p < 0x40) {
+                continue;
+            }
+        }
+    }
+    return 0;
+}
+
+
+static int
+chunk_is_pnm(chunk_t const *chunk)
+{
+    if (chunk->size < 2) {
+        return 0;
+    }
+    if (chunk->buffer[0] == 'P' &&
+        chunk->buffer[1] >= '1' &&
+        chunk->buffer[1] <= '6') {
+        return 1;
+    }
+    return 0;
+}
+
+
 static unsigned char *
-load_with_stbi(char const *filename, int *psx, int *psy,
+load_with_builtin(char const *filename, int *psx, int *psy,
                int *pcomp, int *pstride)
 {
     FILE *f;
     unsigned char *result;
-# ifdef HAVE_LIBCURL
-    CURL *curl;
-    CURLcode code;
     chunk_t chunk;
 
-    if (strstr(filename, "://")) {
-        chunk.max_size = 1024;
-        chunk.size = 0;
-        chunk.buffer = malloc(chunk.max_size);
-        curl = curl_easy_init();
-        curl_easy_setopt(curl, CURLOPT_URL, filename);
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-        if (strncmp(filename, "https://", 8) == 0) {
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        }
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, memory_write);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
-        if ((code = curl_easy_perform(curl))) {
-            fprintf(stderr, "curl_easy_perform('%s') failed.\n" "code: %d.\n",
-                    filename, code);
-            return NULL;
-        }
-        curl_easy_cleanup(curl);
-
-        result = stbi_load_from_memory(chunk.buffer, chunk.size, psx, psy, pcomp, STBI_rgb);
-        free(chunk.buffer);
+    if (get_chunk(filename, &chunk) != 0) {
+        return NULL;
     }
-    else
-# endif  /* HAVE_LIBCURL */
-    {
-        f = open_binary_file(filename);
-        if (!f) {
-            return NULL;
-        }
-        result = stbi_load_from_file(f, psx, psy, pcomp, STBI_rgb);
+
+    if (chunk_is_sixel(&chunk)) {
+        /* sixel */
+    } else if (chunk_is_pnm(&chunk)) {
+        /* pnm */
+    } else {
+        result = stbi_load_from_memory(chunk.buffer, chunk.size, psx, psy, pcomp, STBI_rgb);
         if (!result) {
             fprintf(stderr, "stbi_load_from_file('%s') failed.\n" "reason: %s.\n",
                     filename, stbi_failure_reason());
             return NULL;
         }
-        fclose(f);
     }
+    free(chunk.buffer);
 
     /* 4 is set in *pcomp when source image is GIF. we reset it to 3. */
     *pcomp = 3;
@@ -243,39 +320,16 @@ load_with_gdkpixbuf(char const *filename, int *psx, int *psy, int *pcomp, int *p
 {
     GdkPixbuf *pixbuf;
     unsigned char *pixels;
+    chunk_t chunk;
+    GdkPixbufLoader *loader;
 
-# ifdef HAVE_LIBCURL
-    if (strstr(filename, "://")) {
-        CURL *curl;
-        GdkPixbufLoader *loader;
-
-        loader = gdk_pixbuf_loader_new();
-
-        curl = curl_easy_init();
-        curl_easy_setopt(curl, CURLOPT_URL, filename);
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-        if (strncmp(filename, "https://", 8) == 0) {
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        }
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, loader_write);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, loader);
-        curl_easy_perform(curl);
-        curl_easy_cleanup(curl);
-
-        gdk_pixbuf_loader_close(loader, NULL);
-
-        if ((pixbuf = gdk_pixbuf_loader_get_pixbuf(loader))) {
-            g_object_ref(pixbuf);
-        }
-
-        g_object_unref(loader);
+    if (get_chunk(filename, &chunk) != 0) {
+        return NULL;
     }
-    else
-# endif  /* HAVE_LIBCURL */
-    {
-        pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
-    }
+    loader = gdk_pixbuf_loader_new();
+    gdk_pixbuf_loader_write(loader, chunk.buffer, chunk.size, NULL);
+    pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
+    free(chunk.buffer);
 
     if (pixbuf == NULL) {
         pixels = NULL;
@@ -305,7 +359,6 @@ load_with_gdkpixbuf(char const *filename, int *psx, int *psy, int *pcomp, int *p
 #define        FMT_GD2     9
 #define        FMT_PSD     10
 #define        FMT_HDR     11
-
 
 static int
 detect_file_format(int len, unsigned char *data)
@@ -380,42 +433,13 @@ load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
     FILE *f;
     int x, y;
     int c;
-# ifdef HAVE_LIBCURL
-    CURL *curl;
-    CURLcode code;
-    chunk_t chunk;
 
-    if (strstr(filename, "://")) {
-        chunk.max_size = 1024;
-        chunk.size = 0;
-        chunk.buffer = malloc(chunk.max_size);
-        curl = curl_easy_init();
-        curl_easy_setopt(curl, CURLOPT_URL, filename);
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-        if (strncmp(filename, "https://", 8) == 0) {
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        }
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, memory_write);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
-        if ((code = curl_easy_perform(curl))) {
-            fprintf(stderr, "curl_easy_perform('%s') failed.\n" "code: %d.\n",
-                    filename, code);
-            return NULL;
-        }
-        curl_easy_cleanup(curl);
+    if (get_chunk(filename, &chunk) != 0) {
+        return NULL;
     }
-    else
-# endif  /* HAVE_LIBCURL */
-    {
-        if (get_chunk_from_file(filename, &chunk) != 0) {
-#if _ERRNO_H
-            fprintf(stderr, "get_chunk_from_file('%s') failed.\n" "reason: %s.\n",
-                    filename, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-            return NULL;
-        }
-    }
+
+    len = chunk.size;
+    data = chunk.buffer;
 
     switch(detect_file_format(chunk.size, chunk.buffer)) {
         case FMT_GIF:
@@ -496,14 +520,20 @@ load_image_file(char const *filename, int *psx, int *psy)
     if (!pixels) {
         pixels = load_with_gdkpixbuf(filename, psx, psy, &comp, &stride);
     }
+    if (!pixels && !filename) {
+        return NULL;
+    }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
     if (!pixels) {
         pixels = load_with_gd(filename, psx, psy, &comp, &stride);
     }
+    if (!pixels && !filename) {
+        return NULL;
+    }
 #endif  /* HAVE_GD */
     if (!pixels) {
-        pixels = load_with_stbi(filename, psx, psy, &comp, &stride);
+        pixels = load_with_builtin(filename, psx, psy, &comp, &stride);
     }
     if (!pixels) {
         if (get_chunk_from_file(filename, &chunk) != 0) {
