@@ -282,6 +282,14 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         /* sixel */
     } else if (chunk_is_pnm(pchunk)) {
         /* pnm */
+        result = load_pnm(pchunk->buffer, pchunk->size, psx, psy, pcomp, pstride);
+        if (!result) {
+#if _ERRNO_H
+            fprintf(stderr, "load_pnm failed.\n" "reason: %s.\n",
+                    strerror(errno));
+#endif  /* HAVE_ERRNO_H */
+            return NULL;
+        }
     } else {
         result = stbi_load_from_memory(pchunk->buffer, pchunk->size, psx, psy, pcomp, STBI_rgb);
         if (!result) {
@@ -499,32 +507,16 @@ load_image_file(char const *filename, int *psx, int *psy)
     if (!pixels) {
         pixels = load_with_gdkpixbuf(&chunk, psx, psy, &comp, &stride);
     }
-    if (!pixels && !filename) {
-        return NULL;
-    }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
     if (!pixels) {
         pixels = load_with_gd(&chunk, psx, psy, &comp, &stride);
     }
-    if (!pixels && !filename) {
-        return NULL;
-    }
 #endif  /* HAVE_GD */
     if (!pixels) {
         pixels = load_with_builtin(&chunk, psx, psy, &comp, &stride);
     }
-    if (!pixels) {
-        if (get_chunk_from_file(filename, &chunk) != 0) {
-#if _ERRNO_H
-            fprintf(stderr, "get_chunk_from_file('%s') failed.\n" "reason: %s.\n",
-                    filename, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-            return NULL;
-        }
-        pixels = load_pnm(chunk.buffer, chunk.size, psx, psy, &comp, &stride);
-        free(chunk.buffer);
-    }
+    free(chunk.buffer);
 
     src = dst = pixels;
     if (comp == 4) {
