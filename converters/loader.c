@@ -154,6 +154,10 @@ get_chunk_from_file(char const *filename, chunk_t *chunk)
     chunk->max_size = 64 * 1024;
 
     if ((chunk->buffer = (unsigned char *)malloc(chunk->max_size)) == NULL) {
+#if _ERRNO_H
+        fprintf(stderr, "get_chunk_from_file('%s'): malloc failed.\n" "reason: %s.\n",
+                filename, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
         return (-1);
     }
 
@@ -161,6 +165,10 @@ get_chunk_from_file(char const *filename, chunk_t *chunk)
         if ((chunk->max_size - chunk->size) < 4096) {
             chunk->max_size *= 2;
             if ((chunk->buffer = (unsigned char *)realloc(chunk->buffer, chunk->max_size)) == NULL) {
+#if _ERRNO_H
+                fprintf(stderr, "get_chunk_from_file('%s'): relloc failed.\n" "reason: %s.\n",
+                        filename, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
                 return (-1);
             }
         }
@@ -177,6 +185,36 @@ get_chunk_from_file(char const *filename, chunk_t *chunk)
     return 0;
 }
 
+
+# ifdef HAVE_LIBCURL
+static int
+get_chunk_from_url(char const *url, chunk_t *chunk)
+{
+    chunk_t chunk;
+    CURL *curl;
+    CURLcode code;
+
+    chunk.max_size = 1024;
+    chunk.size = 0;
+    chunk.buffer = malloc(chunk.max_size);
+    curl = curl_easy_init();
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    if (strncmp(url, "https://", 8) == 0) {
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    }
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, memory_write);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+    if ((code = curl_easy_perform(curl))) {
+        fprintf(stderr, "curl_easy_perform('%s') failed.\n" "code: %d.\n",
+                url, code);
+        return (-1);
+    }
+    curl_easy_cleanup(curl);
+    return 0;
+}
+# endif  /* HAVE_LIBCURL */
 
 static int
 chunk_is_sixel(chunk_t const *chunk)
@@ -240,35 +278,14 @@ load_with_builtin(char const *filename, int *psx, int *psy,
     CURLcode code;
 
     if (filename != NULL && strstr(filename, "://")) {
-        chunk.max_size = 1024;
-        chunk.size = 0;
-        chunk.buffer = malloc(chunk.max_size);
-        curl = curl_easy_init();
-        curl_easy_setopt(curl, CURLOPT_URL, filename);
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-        if (strncmp(filename, "https://", 8) == 0) {
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        }
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, memory_write);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
-        if ((code = curl_easy_perform(curl))) {
-            fprintf(stderr, "curl_easy_perform('%s') failed.\n" "code: %d.\n",
-                    filename, code);
+        if (get_chunk_from_url(filename, &chunk) != 0) {
             return NULL;
         }
-        curl_easy_cleanup(curl);
     }
     else
 # endif  /* HAVE_LIBCURL */
-    {
-        if (get_chunk_from_file(filename, &chunk) != 0) {
-#if _ERRNO_H
-            fprintf(stderr, "get_chunk_from_file('%s') failed.\n" "readon: %s.\n",
-                    filename, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-            return NULL;
-        }
+    if (get_chunk_from_file(filename, &chunk) != 0) {
+        return NULL;
     }
 
     if (chunk_is_sixel(&chunk)) {
@@ -304,50 +321,19 @@ load_with_gdkpixbuf(char const *filename, int *psx, int *psy, int *pcomp, int *p
 
 # ifdef HAVE_LIBCURL
     if (filename != NULL && strstr(filename, "://")) {
-        CURL *curl;
-        GdkPixbufLoader *loader;
-
-        loader = gdk_pixbuf_loader_new();
-
-        curl = curl_easy_init();
-        curl_easy_setopt(curl, CURLOPT_URL, filename);
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-        if (strncmp(filename, "https://", 8) == 0) {
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        if (get_chunk_from_url(filename, &chunk) != 0) {
+            return NULL;
         }
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, loader_write);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, loader);
-        curl_easy_perform(curl);
-        curl_easy_cleanup(curl);
-
-        gdk_pixbuf_loader_close(loader, NULL);
-
-        if ((pixbuf = gdk_pixbuf_loader_get_pixbuf(loader))) {
-            g_object_ref(pixbuf);
-        }
-
-        g_object_unref(loader);
     }
     else
 # endif  /* HAVE_LIBCURL */
-    {
-        if (filename == NULL) {
-            if (get_chunk_from_file(filename, &chunk) != 0) {
-    #if _ERRNO_H
-                fprintf(stderr, "get_chunk_from_file('%s') failed.\n" "readon: %s.\n",
-                        filename, strerror(errno));
-    #endif  /* HAVE_ERRNO_H */
-                return NULL;
-            }
-            loader = gdk_pixbuf_loader_new ();
-            gdk_pixbuf_loader_write(loader, chunk.buffer, chunk.size, NULL);
-            pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
-            free(chunk.buffer);
-        } else {
-            pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
-        }
+    if (get_chunk_from_file(filename, &chunk) != 0) {
+        return NULL;
     }
+    loader = gdk_pixbuf_loader_new();
+    gdk_pixbuf_loader_write(loader, chunk.buffer, chunk.size, NULL);
+    pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
+    free(chunk.buffer);
 
     if (pixbuf == NULL) {
         pixels = NULL;
@@ -457,33 +443,14 @@ load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
     chunk_t chunk;
 
     if (filename != NULL && strstr(filename, "://")) {
-        chunk.max_size = 1024;
-        chunk.size = 0;
-        chunk.buffer = malloc(chunk.max_size);
-        curl = curl_easy_init();
-        curl_easy_setopt(curl, CURLOPT_URL, filename);
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-        if (strncmp(filename, "https://", 8) == 0) {
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        }
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, memory_write);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
-        if ((code = curl_easy_perform(curl))) {
-            fprintf(stderr, "curl_easy_perform('%s') failed.\n" "code: %d.\n",
-                    filename, code);
+        if (get_chunk_from_url(filename, &chunk) != 0) {
             return NULL;
         }
-        curl_easy_cleanup(curl);
     }
     else
 # endif  /* HAVE_LIBCURL */
     {
         if (get_chunk_from_file(filename, &chunk) != 0) {
-#if _ERRNO_H
-            fprintf(stderr, "get_chunk_from_file('%s') failed.\n" "readon: %s.\n",
-                    filename, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
             return NULL;
         }
     }
