@@ -150,6 +150,7 @@ fi
 # AC_CHECK_FUNCS([strtol pow])
 
 AC_CONFIG_FILES([Makefile
+                 libsixel.pc
                  src/Makefile
                  include/Makefile
                  converters/Makefile])
