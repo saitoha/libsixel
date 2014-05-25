@@ -34,7 +34,9 @@ void * rpl_malloc(size_t n);
 void * rpl_realloc(void *p, size_t n);
 #endif /* !HAVE_REALLOC */
 
+#if 0
 int rpl_posix_memalign(void **memptr, size_t alignment, size_t size);
+#endif
 
 #endif /* MALLOC_STUB_H */
 

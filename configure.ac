@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.19.2], [user@zuse.jp])
+AC_INIT([sixel], [0.19.3], [user@zuse.jp])
 LS_LT_CURRENT=0
 LS_LT_REVISION=0
 LS_LT_AGE=0
@@ -72,8 +72,7 @@ AC_CHECK_HEADERS([memory.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
-                  errno.h \
-                  xmmintrin.h])
+                  errno.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
@@ -91,15 +90,6 @@ AC_CHECK_FUNC([getopt_long], [],
               [AC_MSG_ERROR(getopt_long is not available.)])
 
 AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode])
-
-AC_CHECK_FUNC(memalign,
-	      [AC_DEFINE(HAVE_MEMALIGN, 1, [whether memalign() is available])])
-AC_CHECK_FUNC(posix_memalign,
-	      [AC_DEFINE(HAVE_POSIX_MEMALIGN, 1, [whether posix_memalign() is available])])
-AC_CHECK_FUNC(aligned_alloc,
-	      [AC_DEFINE(HAVE_ALIGNED_ALLOC, 1, [whether aligned_alloc() is available])])
-AC_CHECK_FUNC(_aligned_malloc,
-	      [AC_DEFINE(HAVE__ALIGNED_MALLOC, 1, [whether _aligned_malloc() is available])])
 
 loaders="stb_image"
 curl="no"
