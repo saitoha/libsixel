@@ -114,6 +114,25 @@ AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
 
 
+if test x$with_gdk_pixbuf2 != xno; then
+    if test x$have_pkg_config != xno; then
+        PKG_CHECK_MODULES(GIO,
+                          [gio-2.0],
+                          [have_gio=yes],
+                          [have_gio=no])
+        if test x$have_gio = xyes; then
+            AC_DEFINE(HAVE_GIO, 1, [whether gio is available])
+        else
+            AC_MSG_ERROR(pkg-config is not available.)
+        fi
+    else
+        AC_MSG_ERROR([pkg-config is missing])
+    fi
+fi
+AC_SUBST(GIO_CFLAGS)
+AC_SUBST(GIO_LIBS)
+
+
 if test x$with_gd != xno; then
     AC_CHECK_HEADER([gd.h],
                     [AC_CHECK_LIB([gd],
