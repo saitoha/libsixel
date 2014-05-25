@@ -30,7 +30,10 @@
 #endif  /* HAVE_ERRNO_H */
 
 #include <stdlib.h>
+
+#if HAVE_MEMORY_H
 #include <memory.h>
+#endif  /* HAVE_MEMORY_H */
 
 #if !HAVE_MALLOC
 #undef malloc
