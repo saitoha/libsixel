@@ -12922,7 +12922,7 @@ fi
 # for HDR
 # AC_CHECK_FUNCS([strtol pow])
 
-ac_config_files="$ac_config_files Makefile src/Makefile include/Makefile converters/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc src/Makefile include/Makefile converters/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -13955,6 +13955,7 @@ do
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "libsixel.pc") CONFIG_FILES="$CONFIG_FILES libsixel.pc" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
     "converters/Makefile") CONFIG_FILES="$CONFIG_FILES converters/Makefile" ;;
