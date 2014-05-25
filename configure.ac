@@ -72,8 +72,7 @@ AC_CHECK_HEADERS([memory.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
-                  errno.h \
-                  xmmintrin.h])
+                  errno.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
@@ -91,15 +90,6 @@ AC_CHECK_FUNC([getopt_long], [],
               [AC_MSG_ERROR(getopt_long is not available.)])
 
 AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode])
-
-AC_CHECK_FUNC(memalign,
-	      [AC_DEFINE(HAVE_MEMALIGN, 1, [whether memalign() is available])])
-AC_CHECK_FUNC(posix_memalign,
-	      [AC_DEFINE(HAVE_POSIX_MEMALIGN, 1, [whether posix_memalign() is available])])
-AC_CHECK_FUNC(aligned_alloc,
-	      [AC_DEFINE(HAVE_ALIGNED_ALLOC, 1, [whether aligned_alloc() is available])])
-AC_CHECK_FUNC(_aligned_malloc,
-	      [AC_DEFINE(HAVE__ALIGNED_MALLOC, 1, [whether _aligned_malloc() is available])])
 
 loaders="stb_image"
 curl="no"
@@ -122,6 +112,25 @@ if test x$with_gdk_pixbuf2 != xno; then
 fi
 AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
+
+
+if test x$with_gdk_pixbuf2 != xno; then
+    if test x$have_pkg_config != xno; then
+        PKG_CHECK_MODULES(GIO,
+                          [gio-2.0],
+                          [have_gio=yes],
+                          [have_gio=no])
+        if test x$have_gio = xyes; then
+            AC_DEFINE(HAVE_GIO, 1, [whether gio is available])
+        else
+            AC_MSG_ERROR(pkg-config is not available.)
+        fi
+    else
+        AC_MSG_ERROR([pkg-config is missing])
+    fi
+fi
+AC_SUBST(GIO_CFLAGS)
+AC_SUBST(GIO_LIBS)
 
 
 if test x$with_gd != xno; then
