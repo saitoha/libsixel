@@ -61,6 +61,14 @@ AC_ARG_WITH([libcurl],
             [],
             [with_libcurl=no])
 
+AC_ARG_WITH(pkgconfigdir,
+            AC_HELP_STRING([--with-pkgconfigdir],
+                           [Use the specified pkgconfig dir (default is libdir/pkgconfig)]),
+                           [pkgconfigdir=${withval}],
+                           [pkgconfigdir='${libdir}/pkgconfig'])
+
+AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
+
 # Checks for libraries.
 
 # Checks for header files.
