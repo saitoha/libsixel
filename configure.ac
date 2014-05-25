@@ -65,9 +65,9 @@ AC_ARG_WITH(pkgconfigdir,
             AC_HELP_STRING([--with-pkgconfigdir],
                            [Use the specified pkgconfig dir (default is libdir/pkgconfig)]),
                            [pkgconfigdir=${withval}],
-                           [pkgconfigdir='${libdir}/pkgconfig'])
-
+                           [pkgconfigdir=${libdir}/pkgconfig])
 AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
+AC_SUBST(pkgconfigdir)
 
 # Checks for libraries.
 
