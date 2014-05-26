@@ -19,23 +19,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_SCALE_H
-#define LIBSIXEL_SCALE_H
-
-/* method for re-sampling */
-enum methodForResampling {
-    RES_NEAREST,  /* Use nearest neighbor method */
-    RES_GAUSSIAN, /* Use guaussian filter */
-    RES_HANNING,  /* Use hanning filter */
-    RES_HAMMING,  /* Use hamming filter */
-    RES_BILINEAR, /* Use bilinear filter */
-    RES_WELSH,    /* Use welsh filter */
-    RES_BICUBIC,  /* Use bicubic filter */
-    RES_LANCZOS2, /* Use lanczos-2 filter */
-    RES_LANCZOS3, /* Use lanczos-3 filter */
-    RES_LANCZOS4, /* Use lanczos-4 filter */
-};
-
+#ifndef LIBSIXEL_FROMPNM_H
+#define LIBSIXEL_FROMPNM_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,17 +31,13 @@ extern "C" {
 /* image scaling api */
 
 unsigned char *
-LSS_scale(unsigned char const *pixels,
-          int srcx, int srcy, int depth,
-          int destx, int desty,
-          enum methodForResampling const methodForResampling);
+load_pnm(unsigned char *p, int len, int *psx, int *psy, int *pcomp, int *pstride);
 
 #ifdef __cplusplus
 }
 #endif
 
-
-#endif /* LIBSIXEL_SCALE_H */
+#endif /* LIBSIXEL_FROMPNM_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
