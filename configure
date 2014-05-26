@@ -644,6 +644,7 @@ PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
 LIBOBJS
+pkgconfigdir
 WANT_SIXEL2PNG_FALSE
 WANT_SIXEL2PNG_TRUE
 WANT_IMG2SIXEL_FALSE
@@ -779,6 +780,7 @@ enable_sixel2png
 with_gdk_pixbuf2
 with_gd
 with_libcurl
+with_pkgconfigdir
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1441,6 +1443,8 @@ Optional Packages:
   --with-gdk-pixbuf2      whether to build with gdk-pixbuf2 (default: no)
   --with-gd               whether to build with gd (default: no)
   --with-libcurl          whether to build with libcurl (default: no)
+  --with-pkgconfigdir     Use the specified pkgconfig dir (default is
+                          libdir/pkgconfig)
 
 Some influential environment variables:
   CC          C compiler command
@@ -12324,6 +12328,18 @@ else
 fi
 
 
+
+# Check whether --with-pkgconfigdir was given.
+if test "${with_pkgconfigdir+set}" = set; then :
+  withval=$with_pkgconfigdir; pkgconfigdir=${withval}
+else
+  pkgconfigdir=${libdir}/pkgconfig
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: pkgconfig directory is ${pkgconfigdir}" >&5
+$as_echo "$as_me: pkgconfig directory is ${pkgconfigdir}" >&6;}
+
+
 # Checks for libraries.
 
 # Checks for header files.
@@ -13005,7 +13021,7 @@ fi
 # for HDR
 # AC_CHECK_FUNCS([strtol pow])
 
-ac_config_files="$ac_config_files Makefile src/Makefile include/Makefile converters/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc src/Makefile include/Makefile converters/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -14026,6 +14042,7 @@ do
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "libsixel.pc") CONFIG_FILES="$CONFIG_FILES libsixel.pc" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
     "converters/Makefile") CONFIG_FILES="$CONFIG_FILES converters/Makefile" ;;
