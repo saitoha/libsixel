@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.19.3], [user@zuse.jp])
+AC_INIT([sixel], [0.19.4], [user@zuse.jp])
 LS_LT_CURRENT=0
 LS_LT_REVISION=0
 LS_LT_AGE=0
@@ -60,6 +60,14 @@ AC_ARG_WITH([libcurl],
                             [whether to build with libcurl (default: no)])],
             [],
             [with_libcurl=no])
+
+AC_ARG_WITH(pkgconfigdir,
+            AC_HELP_STRING([--with-pkgconfigdir],
+                           [Use the specified pkgconfig dir (default is libdir/pkgconfig)]),
+                           [pkgconfigdir=${withval}],
+                           [pkgconfigdir=${libdir}/pkgconfig])
+AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
+AC_SUBST(pkgconfigdir)
 
 # Checks for libraries.
 
@@ -164,6 +172,7 @@ AC_SUBST(LIBCURL_LIBS)
 # AC_CHECK_FUNCS([strtol pow])
 
 AC_CONFIG_FILES([Makefile
+                 libsixel.pc
                  src/Makefile
                  include/Makefile
                  converters/Makefile])
