@@ -65,6 +65,7 @@
 # include <curl/curl.h>
 #endif
 
+#include "frompnm.h"
 #include "loader.h"
 
 typedef struct chunk
@@ -74,15 +75,6 @@ typedef struct chunk
     size_t max_size;
 } chunk_t;
 
-
-#ifdef HAVE_GDK_PIXBUF2
-static size_t
-loader_write(void *data, size_t size, size_t len, void *loader)
-{
-    gdk_pixbuf_loader_write(loader, data, len, NULL) ;
-    return len;
-}
-#endif
 
 size_t
 memory_write(void* ptr, size_t size, size_t len, void* memory)
@@ -280,30 +272,32 @@ chunk_is_pnm(chunk_t const *chunk)
 
 
 static unsigned char *
-load_with_builtin(char const *filename, int *psx, int *psy,
+load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
                int *pcomp, int *pstride)
 {
     FILE *f;
     unsigned char *result;
-    chunk_t chunk;
 
-    if (get_chunk(filename, &chunk) != 0) {
-        return NULL;
-    }
-
-    if (chunk_is_sixel(&chunk)) {
+    if (chunk_is_sixel(pchunk)) {
         /* sixel */
-    } else if (chunk_is_pnm(&chunk)) {
+    } else if (chunk_is_pnm(pchunk)) {
         /* pnm */
-    } else {
-        result = stbi_load_from_memory(chunk.buffer, chunk.size, psx, psy, pcomp, STBI_rgb);
+        result = load_pnm(pchunk->buffer, pchunk->size, psx, psy, pcomp, pstride);
         if (!result) {
-            fprintf(stderr, "stbi_load_from_file('%s') failed.\n" "reason: %s.\n",
-                    filename, stbi_failure_reason());
+#if _ERRNO_H
+            fprintf(stderr, "load_pnm failed.\n" "reason: %s.\n",
+                    strerror(errno));
+#endif  /* HAVE_ERRNO_H */
+            return NULL;
+        }
+    } else {
+        result = stbi_load_from_memory(pchunk->buffer, pchunk->size, psx, psy, pcomp, STBI_rgb);
+        if (!result) {
+            fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
+                    stbi_failure_reason());
             return NULL;
         }
     }
-    free(chunk.buffer);
 
     /* 4 is set in *pcomp when source image is GIF. we reset it to 3. */
     *pcomp = 3;
@@ -315,20 +309,15 @@ load_with_builtin(char const *filename, int *psx, int *psy,
 
 #ifdef HAVE_GDK_PIXBUF2
 static unsigned char *
-load_with_gdkpixbuf(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
+load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride)
 {
     GdkPixbuf *pixbuf;
     unsigned char *pixels;
-    chunk_t chunk;
     GdkPixbufLoader *loader;
 
-    if (get_chunk(filename, &chunk) != 0) {
-        return NULL;
-    }
     loader = gdk_pixbuf_loader_new();
-    gdk_pixbuf_loader_write(loader, chunk.buffer, chunk.size, NULL);
+    gdk_pixbuf_loader_write(loader, pchunk->buffer, pchunk->size, NULL);
     pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
-    free(chunk.buffer);
 
     if (pixbuf == NULL) {
         pixels = NULL;
@@ -423,53 +412,43 @@ detect_file_format(int len, unsigned char *data)
 
 
 static unsigned char *
-load_with_gd(char const *filename, int *psx, int *psy, int *pcomp, int *pstride)
+load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride)
 {
     unsigned char *pixels, *p;
-    int n, len, max;
-    unsigned char *data;
+    int n, max;
     gdImagePtr im;
     FILE *f;
     int x, y;
     int c;
 
-    if (get_chunk(filename, &chunk) != 0) {
-        return NULL;
-    }
-
-    len = chunk.size;
-    data = chunk.buffer;
-
-    switch(detect_file_format(chunk.size, chunk.buffer)) {
+    switch(detect_file_format(pchunk->size, pchunk->buffer)) {
         case FMT_GIF:
-            im = gdImageCreateFromGifPtr(len, data);
+            im = gdImageCreateFromGifPtr(pchunk->size, pchunk->buffer);
             break;
         case FMT_PNG:
-            im = gdImageCreateFromPngPtr(len, data);
+            im = gdImageCreateFromPngPtr(pchunk->size, pchunk->buffer);
             break;
         case FMT_BMP:
-            im = gdImageCreateFromBmpPtr(len, data);
+            im = gdImageCreateFromBmpPtr(pchunk->size, pchunk->buffer);
             break;
         case FMT_JPG:
-            im = gdImageCreateFromJpegPtrEx(len, data, 1);
+            im = gdImageCreateFromJpegPtrEx(pchunk->size, pchunk->buffer, 1);
             break;
         case FMT_TGA:
-            im = gdImageCreateFromTgaPtr(len, data);
+            im = gdImageCreateFromTgaPtr(pchunk->size, pchunk->buffer);
             break;
         case FMT_WBMP:
-            im = gdImageCreateFromWBMPPtr(len, data);
+            im = gdImageCreateFromWBMPPtr(pchunk->size, pchunk->buffer);
             break;
         case FMT_TIFF:
-            im = gdImageCreateFromTiffPtr(len, data);
+            im = gdImageCreateFromTiffPtr(pchunk->size, pchunk->buffer);
             break;
         case FMT_GD2:
-            im = gdImageCreateFromGd2Ptr(len, data);
+            im = gdImageCreateFromGd2Ptr(pchunk->size, pchunk->buffer);
             break;
         default:
             return NULL;
     }
-
-    free(data);
 
     if (im == NULL) {
         return NULL;
@@ -512,27 +491,28 @@ load_image_file(char const *filename, int *psx, int *psy)
     int stride;
     int x;
     int y;
+    chunk_t chunk;
 
     pixels = NULL;
+
+    if (get_chunk(filename, &chunk) != 0) {
+        return NULL;
+    }
+
 #ifdef HAVE_GDK_PIXBUF2
     if (!pixels) {
-        pixels = load_with_gdkpixbuf(filename, psx, psy, &comp, &stride);
-    }
-    if (!pixels && !filename) {
-        return NULL;
+        pixels = load_with_gdkpixbuf(&chunk, psx, psy, &comp, &stride);
     }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
     if (!pixels) {
-        pixels = load_with_gd(filename, psx, psy, &comp, &stride);
-    }
-    if (!pixels && !filename) {
-        return NULL;
+        pixels = load_with_gd(&chunk, psx, psy, &comp, &stride);
     }
 #endif  /* HAVE_GD */
     if (!pixels) {
-        pixels = load_with_builtin(filename, psx, psy, &comp, &stride);
+        pixels = load_with_builtin(&chunk, psx, psy, &comp, &stride);
     }
+    free(chunk.buffer);
 
     src = dst = pixels;
     if (comp == 4) {
