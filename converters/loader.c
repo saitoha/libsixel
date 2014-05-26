@@ -242,6 +242,8 @@ load_with_gdkpixbuf(char const *filename, int *psx, int *psy, int *pcomp, int *p
 {
     GdkPixbuf *pixbuf;
     unsigned char *pixels;
+    chunk_t chunk;
+    GdkPixbufLoader *loader;
 
 # ifdef HAVE_LIBCURL
     if (filename != NULL && strstr(filename, "://")) {
@@ -273,7 +275,21 @@ load_with_gdkpixbuf(char const *filename, int *psx, int *psy, int *pcomp, int *p
     else
 # endif  /* HAVE_LIBCURL */
     {
-        pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
+        if (filename == NULL) {
+            if (get_chunk_from_file(filename, &chunk) != 0) {
+    #if _ERRNO_H
+                fprintf(stderr, "get_chunk_from_file('%s') failed.\n" "readon: %s.\n",
+                        filename, strerror(errno));
+    #endif  /* HAVE_ERRNO_H */
+                return NULL;
+            }
+            loader = gdk_pixbuf_loader_new ();
+            gdk_pixbuf_loader_write(loader, chunk.buffer, chunk.size, NULL);
+            pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
+            free(chunk.buffer);
+        } else {
+            pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
+        }
     }
 
     if (pixbuf == NULL) {
@@ -493,10 +509,16 @@ load_image_file(char const *filename, int *psx, int *psy)
     if (!pixels) {
         pixels = load_with_gdkpixbuf(filename, psx, psy, &comp, &stride);
     }
+    if (!pixels && !filename) {
+        return NULL;
+    }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
     if (!pixels) {
         pixels = load_with_gd(filename, psx, psy, &comp, &stride);
+    }
+    if (!pixels && !filename) {
+        return NULL;
     }
 #endif  /* HAVE_GD */
     if (!pixels) {
