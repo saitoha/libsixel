@@ -298,7 +298,6 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
             return NULL;
         }
     }
-    free(pchunk->buffer);
 
     /* 4 is set in *pcomp when source image is GIF. we reset it to 3. */
     *pcomp = 3;
@@ -319,7 +318,6 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *
     loader = gdk_pixbuf_loader_new();
     gdk_pixbuf_loader_write(loader, pchunk->buffer, pchunk->size, NULL);
     pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
-    free(pchunk->buffer);
 
     if (pixbuf == NULL) {
         pixels = NULL;
@@ -451,8 +449,6 @@ load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride
         default:
             return NULL;
     }
-
-    free(pchunk->buffer);
 
     if (im == NULL) {
         return NULL;
