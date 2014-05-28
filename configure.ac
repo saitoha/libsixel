@@ -110,12 +110,14 @@ if test x$with_gdk_pixbuf2 != xno; then
                           [have_gdk_pixbuf2=no])
         if test x$have_gdk_pixbuf2 = xyes; then
             AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
-            loaders+=" gdk-pixbuf2"
+            loaders="${loaders} gdk-pixbuf2"
         else
             AC_MSG_ERROR(pkg-config is not available.)
         fi
     else
-        AC_MSG_ERROR([pkg-config is missing])
+        if test x${GDK_PIXBUF_CFLAGS} = x || test x${GDK_PIXBUF_LIBS} = x; then
+            AC_MSG_ERROR([please set GDK_PIXBUF_CFLAGS and GDK_PIXBUF_LIBS, or install pkg-config.])
+        fi
     fi
 fi
 AC_SUBST(GDK_PIXBUF_CFLAGS)
@@ -135,7 +137,7 @@ if test x$with_gd != xno; then
     fi
     if test x$have_gd = xyes; then
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
-        loaders+=" gd"
+        loaders="${loaders} gd"
     else
         AC_MSG_ERROR(gd is not available.)
     fi
