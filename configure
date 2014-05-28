@@ -12735,7 +12735,7 @@ fi
 
 $as_echo "#define HAVE_GDK_PIXBUF2 1" >>confdefs.h
 
-            loaders+=" gdk-pixbuf2"
+            loaders="${loaders} gdk-pixbuf2"
         else
             as_fn_error $? "pkg-config is not available." "$LINENO" 5
         fi
@@ -12874,7 +12874,7 @@ fi
 
 $as_echo "#define HAVE_GD 1" >>confdefs.h
 
-        loaders+=" gd"
+        loaders="${loaders} gd"
     else
         as_fn_error $? "gd is not available." "$LINENO" 5
     fi

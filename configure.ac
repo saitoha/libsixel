@@ -110,7 +110,7 @@ if test x$with_gdk_pixbuf2 != xno; then
                           [have_gdk_pixbuf2=no])
         if test x$have_gdk_pixbuf2 = xyes; then
             AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
-            loaders+=" gdk-pixbuf2"
+            loaders="${loaders} gdk-pixbuf2"
         else
             AC_MSG_ERROR(pkg-config is not available.)
         fi
@@ -135,7 +135,7 @@ if test x$with_gd != xno; then
     fi
     if test x$have_gd = xyes; then
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
-        loaders+=" gd"
+        loaders="${loaders} gd"
     else
         AC_MSG_ERROR(gd is not available.)
     fi
