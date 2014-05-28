@@ -23,10 +23,14 @@ $ make
 # make install
 ```
 
-To build source package:
+## Configure options
+
+### Build with optional packages
 
 ```
-$ make package
+--with-gdk-pixbuf2      build with gdk-pixbuf2 (default: no)
+--with-libcurl          build with libcurl (default: no)
+--with-gd               build with gd (default: no)
 ```
 
 
@@ -345,7 +349,8 @@ This software derives from the following implementations.
 
 ### sixel 2014-3-2
 
-tosixel.c and fromsixel.c are derived from kmiya's "*sixel*" original version (2014-3-2)
+src/tosixel.c, src/fromsixel.c, and some part of converters/loader.c are
+derived from kmiya's "*sixel*" original version (2014-3-2)
 
 http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
 

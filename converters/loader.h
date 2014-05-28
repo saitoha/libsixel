@@ -19,66 +19,22 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
+#ifndef LIBSIXEL_LOADER_H
+#define LIBSIXEL_LOADER_H
 
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif  /* HAVE_SYS_TYPES_H */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif  /* HAVE_ERRNO_H */
+unsigned char *
+load_image_file(char const *filename, int *psx, int *psy);
 
-#include <stdlib.h>
-#include <memory.h>
-
-#if !HAVE_MALLOC
-#undef malloc
-void *
-rpl_malloc(size_t n)
-{
-    if(n == 0) {
-        n = 1;
-    }
-    return (void *)malloc(n);
-}
-#endif /* !HAVE_MALLOC */
-
-#if !HAVE_REALLOC
-#undef realloc
-void *
-rpl_realloc(void *p, size_t n)
-{
-    if (n == 0) {
-        n = 1;
-    }
-    if (p == 0) {
-        return malloc(n);
-    }
-    return (void *)realloc(p, n);
-}
-#endif /* !HAVE_REALLOC */
-
-#if 0
-int
-rpl_posix_memalign(void **memptr, size_t alignment, size_t size)
-{
-#if HAVE_POSIX_MEMALIGN
-    return posix_memalign(memptr, alignment, size);
-#elif HAVE_ALIGNED_ALLOC
-    *memptr = aligned_alloc(alignment, size);
-    return *memptr ? 0: ENOMEM;
-#elif HAVE_MEMALIGN
-    *memptr = memalign(alignment, size);
-    return *memptr ? 0: ENOMEM;
-#elif HAVE__ALIGNED_MALLOC
-    return _aligned_malloc(size, alignment);
-#else
-# error
-#endif /* _MSC_VER */
+#ifdef __cplusplus
 }
 #endif
 
-/* Hello emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
+#endif /* LIBSIXEL_LOADER_H */
+
+/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
 /* EOF */
