@@ -61,6 +61,14 @@ AC_ARG_WITH([libcurl],
             [],
             [with_libcurl=no])
 
+AC_ARG_WITH(pkgconfigdir,
+            AC_HELP_STRING([--with-pkgconfigdir],
+                           [Use the specified pkgconfig dir (default is libdir/pkgconfig)]),
+                           [pkgconfigdir=${withval}],
+                           [pkgconfigdir=${libdir}/pkgconfig])
+AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
+AC_SUBST(pkgconfigdir)
+
 # Checks for libraries.
 
 # Checks for header files.
@@ -102,7 +110,7 @@ if test x$with_gdk_pixbuf2 != xno; then
                           [have_gdk_pixbuf2=no])
         if test x$have_gdk_pixbuf2 = xyes; then
             AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
-            loaders+=" gdk-pixbuf2"
+            loaders="${loaders} gdk-pixbuf2"
         else
             AC_MSG_ERROR(pkg-config is not available.)
         fi
@@ -127,7 +135,7 @@ if test x$with_gd != xno; then
     fi
     if test x$have_gd = xyes; then
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
-        loaders+=" gd"
+        loaders="${loaders} gd"
     else
         AC_MSG_ERROR(gd is not available.)
     fi
@@ -164,6 +172,7 @@ AC_SUBST(LIBCURL_LIBS)
 # AC_CHECK_FUNCS([strtol pow])
 
 AC_CONFIG_FILES([Makefile
+                 libsixel.pc
                  src/Makefile
                  include/Makefile
                  converters/Makefile])
