@@ -115,7 +115,9 @@ if test x$with_gdk_pixbuf2 != xno; then
             AC_MSG_ERROR(pkg-config is not available.)
         fi
     else
-        AC_MSG_ERROR([pkg-config is missing])
+        if test x${GDK_PIXBUF_CFLAGS} = x || test x${GDK_PIXBUF_LIBS} = x; then
+            AC_MSG_ERROR([please set GDK_PIXBUF_CFLAGS and GDK_PIXBUF_LIBS, or install pkg-config.])
+        fi
     fi
 fi
 AC_SUBST(GDK_PIXBUF_CFLAGS)
