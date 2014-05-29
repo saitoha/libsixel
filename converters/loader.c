@@ -38,6 +38,7 @@
 #endif
 
 #define STBI_HEADER_FILE_ONLY 1
+#define STBI_NO_STDIO 1
 
 #if !defined(HAVE_MEMCPY)
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
