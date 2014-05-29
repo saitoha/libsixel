@@ -12741,7 +12741,7 @@ $as_echo "#define HAVE_GDK_PIXBUF2 1" >>confdefs.h
         fi
     else
         if test x${GDK_PIXBUF_CFLAGS} = x || test x${GDK_PIXBUF_LIBS} = x; then
-            as_fn_error $? "pkg-config is missing" "$LINENO" 5
+            as_fn_error $? "please set GDK_PIXBUF_CFLAGS and GDK_PIXBUF_LIBS, or install pkg-config." "$LINENO" 5
         fi
     fi
 fi
