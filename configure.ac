@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.19.2], [user@zuse.jp])
+AC_INIT([sixel], [0.19.3], [user@zuse.jp])
 LS_LT_CURRENT=0
 LS_LT_REVISION=0
 LS_LT_AGE=0
@@ -61,6 +61,14 @@ AC_ARG_WITH([libcurl],
             [],
             [with_libcurl=no])
 
+AC_ARG_WITH(pkgconfigdir,
+            AC_HELP_STRING([--with-pkgconfigdir],
+                           [Use the specified pkgconfig dir (default is libdir/pkgconfig)]),
+                           [pkgconfigdir=${withval}],
+                           [pkgconfigdir=${libdir}/pkgconfig])
+AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
+AC_SUBST(pkgconfigdir)
+
 # Checks for libraries.
 
 # Checks for header files.
@@ -102,35 +110,18 @@ if test x$with_gdk_pixbuf2 != xno; then
                           [have_gdk_pixbuf2=no])
         if test x$have_gdk_pixbuf2 = xyes; then
             AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
-            loaders+=" gdk-pixbuf2"
+            loaders="${loaders} gdk-pixbuf2"
         else
             AC_MSG_ERROR(pkg-config is not available.)
         fi
     else
-        AC_MSG_ERROR([pkg-config is missing])
+        if test x${GDK_PIXBUF_CFLAGS} = x || test x${GDK_PIXBUF_LIBS} = x; then
+            AC_MSG_ERROR([please set GDK_PIXBUF_CFLAGS and GDK_PIXBUF_LIBS, or install pkg-config.])
+        fi
     fi
 fi
 AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
-
-
-if test x$with_gdk_pixbuf2 != xno; then
-    if test x$have_pkg_config != xno; then
-        PKG_CHECK_MODULES(GIO,
-                          [gio-2.0],
-                          [have_gio=yes],
-                          [have_gio=no])
-        if test x$have_gio = xyes; then
-            AC_DEFINE(HAVE_GIO, 1, [whether gio is available])
-        else
-            AC_MSG_ERROR(pkg-config is not available.)
-        fi
-    else
-        AC_MSG_ERROR([pkg-config is missing])
-    fi
-fi
-AC_SUBST(GIO_CFLAGS)
-AC_SUBST(GIO_LIBS)
 
 
 if test x$with_gd != xno; then
@@ -146,7 +137,7 @@ if test x$with_gd != xno; then
     fi
     if test x$have_gd = xyes; then
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
-        loaders+=" gd"
+        loaders="${loaders} gd"
     else
         AC_MSG_ERROR(gd is not available.)
     fi
@@ -183,6 +174,7 @@ AC_SUBST(LIBCURL_LIBS)
 # AC_CHECK_FUNCS([strtol pow])
 
 AC_CONFIG_FILES([Makefile
+                 libsixel.pc
                  src/Makefile
                  include/Makefile
                  converters/Makefile])
