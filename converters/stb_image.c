@@ -188,8 +188,9 @@
  * this problem. Do we stop using the buffer for portability?
  */
 #define UNGET(s) \
-   while (s->img_buffer_end != s->img_buffer){\
-     ungetc(*--s->img_buffer_end, s->io_user_data);}
+   if (s->io_user_data)\
+     while (s->img_buffer_end != s->img_buffer){\
+       ungetc(*--s->img_buffer_end, s->io_user_data);}
 
 #ifndef STBI_NO_STDIO
 
@@ -422,6 +423,7 @@ static void refill_buffer(stbi *s);
 static void start_mem(stbi *s, uint8 const *buffer, int len)
 {
    s->io.read = NULL;
+   s->io_user_data = NULL;
    s->read_from_callbacks = 0;
    s->img_buffer = s->img_buffer_original = (uint8 *) buffer;
    s->img_buffer_end = (uint8 *) buffer+len;
