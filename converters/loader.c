@@ -437,11 +437,13 @@ load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride
             im = gdImageCreateFromBmpPtr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMBMPPTR */
-#if HAVE_DECL_GDIMAGECREATEFROMJPEGPTREX
         case FMT_JPG:
+#if HAVE_DECL_GDIMAGECREATEFROMJPEGPTREX
             im = gdImageCreateFromJpegPtrEx(pchunk->size, pchunk->buffer, 1);
-            break;
+#elif HAVE_DECL_GDIMAGECREATEFROMJPEGPTR
+            im = gdImageCreateFromJpegPtr(pchunk->size, pchunk->buffer);
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMJPEGPTREX */
+            break;
 #if HAVE_DECL_GDIMAGECREATEFROMTGAPTR
         case FMT_TGA:
             im = gdImageCreateFromTgaPtr(pchunk->size, pchunk->buffer);
