@@ -12558,8 +12558,20 @@ fi
 ac_fn_c_check_func "$LINENO" "getopt_long" "ac_cv_func_getopt_long"
 if test "x$ac_cv_func_getopt_long" = xyes; then :
 
+$as_echo "#define HAVE_GETOPT_LONG 1" >>confdefs.h
+
 else
-  as_fn_error $? "getopt_long is not available." "$LINENO" 5
+  ac_fn_c_check_func "$LINENO" "getopt" "ac_cv_func_getopt"
+if test "x$ac_cv_func_getopt" = xyes; then :
+
+$as_echo "#define HAVE_GETOPT 1" >>confdefs.h
+
+else
+  as_fn_error $? "getopt or getopt_long is not available." "$LINENO" 5
+
+fi
+
+
 fi
 
 
