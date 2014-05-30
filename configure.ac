@@ -3,17 +3,13 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.18.0], [user@zuse.jp])
+AC_INIT([sixel], [0.19.3], [user@zuse.jp])
 LS_LT_CURRENT=0
 LS_LT_REVISION=0
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 
-
-AC_DEFUN([LS_UPDATE_TIMESTAMP], [
-          touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
-          ])
-LS_UPDATE_TIMESTAMP
+AC_CANONICAL_HOST
 
 AM_INIT_AUTOMAKE([foreign])
 LT_INIT
@@ -26,6 +22,7 @@ AC_CONFIG_MACRO_DIR([m4])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
+AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
 
 # Options
 AC_ARG_ENABLE([img2sixel],
@@ -48,17 +45,25 @@ AC_ARG_WITH([gdk-pixbuf2],
             [],
             [with_gdk_pixbuf2=no])
 
+AC_ARG_WITH([gd],
+            [AS_HELP_STRING([--with-gd],
+                            [whether to build with gd (default: no)])],
+            [],
+            [with_gd=no])
+
 AC_ARG_WITH([libcurl],
             [AS_HELP_STRING([--with-libcurl],
                             [whether to build with libcurl (default: no)])],
             [],
             [with_libcurl=no])
 
-AC_ARG_WITH([gd],
-            [AS_HELP_STRING([--with-gd],
-                            [whether to build with gd (default: no)])],
-            [],
-            [with_gd=no])
+AC_ARG_WITH(pkgconfigdir,
+            AC_HELP_STRING([--with-pkgconfigdir],
+                           [Use the specified pkgconfig dir (default is libdir/pkgconfig)]),
+                           [pkgconfigdir=${withval}],
+                           [pkgconfigdir=${libdir}/pkgconfig])
+AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
+AC_SUBST(pkgconfigdir)
 
 # Checks for libraries.
 
@@ -71,8 +76,7 @@ AC_CHECK_HEADERS([memory.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
-                  errno.h \
-                  xmmintrin.h])
+                  errno.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
@@ -91,62 +95,114 @@ AC_CHECK_FUNC([getopt_long], [],
 
 AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode])
 
-AC_CHECK_FUNC(memalign,
-	      [AC_DEFINE(HAVE_MEMALIGN, 1, [whether memalign() is available])])
-AC_CHECK_FUNC(posix_memalign,
-	      [AC_DEFINE(HAVE_POSIX_MEMALIGN, 1, [whether posix_memalign() is available])])
-AC_CHECK_FUNC(aligned_alloc,
-	      [AC_DEFINE(HAVE_ALIGNED_ALLOC, 1, [whether aligned_alloc() is available])])
-AC_CHECK_FUNC(_aligned_malloc,
-	      [AC_DEFINE(HAVE__ALIGNED_MALLOC, 1, [whether _aligned_malloc() is available])])
+# for HDR
+AC_CHECK_FUNCS([strtol pow])
 
-PKG_CHECK_MODULES(GDK_PIXBUF, [gdk-pixbuf-2.0], [have_gdk_pixbuf2=yes], [have_gdk_pixbuf2=no])
-AC_SUBST(GDK_PIXBUF_CFLAGS)
-AC_SUBST(GDK_PIXBUF_LIBS)
-AM_CONDITIONAL(HAVE_GDK_PIXBUF, [test x$with_gdk_pixbuf2 != xno && test x$have_gdk_pixbuf2 = xyes])
+loaders="stb_image"
+curl="no"
 
 if test x$with_gdk_pixbuf2 != xno; then
-    if test x$have_gdk_pixbuf2 = xyes; then
-        AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
+    if test x$have_pkg_config != xno; then
+        PKG_CHECK_MODULES(GDK_PIXBUF,
+                          [gdk-pixbuf-2.0],
+                          [have_gdk_pixbuf2=yes],
+                          [have_gdk_pixbuf2=no])
+        if test x$have_gdk_pixbuf2 = xyes; then
+            AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
+            loaders="${loaders} gdk-pixbuf2"
+        else
+            AC_MSG_ERROR(pkg-config is not available.)
+        fi
     else
-        AC_MSG_ERROR(gdk-pixbuf2 is not available.)
+        if test x${GDK_PIXBUF_CFLAGS} = x || test x${GDK_PIXBUF_LIBS} = x; then
+            AC_MSG_ERROR([please set GDK_PIXBUF_CFLAGS and GDK_PIXBUF_LIBS, or install pkg-config.])
+        fi
     fi
 fi
+AC_SUBST(GDK_PIXBUF_CFLAGS)
+AC_SUBST(GDK_PIXBUF_LIBS)
 
-PKG_CHECK_MODULES(LIBCURL, [libcurl], [have_libcurl=yes], [have_libcurl=no])
-AC_SUBST(LIBCURL_CFLAGS)
-AC_SUBST(LIBCURL_LIBS)
-AM_CONDITIONAL(HAVE_LIBCURL, [test x$with_libcurl != xno && test x$have_libcurl = xyes])
-
-if test x$with_libcurl != xno; then
-    if test x$have_libcurl = xyes; then
-        AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
-    else
-        AC_MSG_ERROR(libcurl is not available.)
-    fi
-fi
-
-PKG_CHECK_MODULES(GD, [gdlib], [have_gd=yes], [have_gd=no])
-AC_SUBST(GD_CFLAGS)
-AC_SUBST(GD_LIBS)
-AM_CONDITIONAL(HAVE_GD, [test x$with_gd != xno && test x$have_gd = xyes])
 
 if test x$with_gd != xno; then
+    AC_CHECK_HEADER([gd.h],
+                    [AC_CHECK_LIB([gd],
+                                  [gdImageCreateFromGifPtr],
+                                  [have_gd="yes" GD_LIBS=-lgd],
+                                  [have_gd="no"])])
+    if test x$have_pkg_config != xno; then
+        if test x$have_gd != xyes; then
+            PKG_CHECK_MODULES(GD, [gdlib], [have_gd=yes], [have_gd=no])
+        fi
+    fi
     if test x$have_gd = xyes; then
+        AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromPngPtr],   [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromBmpPtr],   [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromJpegPtrEx],[], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromTgaPtr],   [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromWBMPPtr],  [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromTiffPtr],  [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromGd2Ptr],   [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImagePaletteToTrueColor], [], [], [ #include <gd.h> ])
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
+        loaders="${loaders} gd"
     else
         AC_MSG_ERROR(gd is not available.)
     fi
+
+    case $host in
+        *-*-cygwin)
+            AC_CHECK_LIB(iconv, [libiconv], [],
+                         [AC_CHECK_LIB(iconv, [iconv], [],
+                                       [AC_MSG_ERROR([please install libiconv])])
+                         ])
+            ;;
+    esac
 fi
+AC_SUBST(GD_CFLAGS)
+AC_SUBST(GD_LIBS)
 
+if test x$with_libcurl != xno; then
+    AC_CHECK_HEADER([curl/curl.h],
+                    [AC_CHECK_LIB([curl],
+                                  [curl_easy_cleanup],
+                                  [have_curl=yes LIBCURL_LIBS=-lcurl],
+                                  [have_curl=no])])
+    if test x$have_curl != xyes; then
+        if test x$have_pkg_config != xno; then
+            PKG_CHECK_MODULES(LIBCURL,
+                              [libcurl],
+                              [have_curl=yes],
+                              [have_curl=no])
+        fi
+    fi
+    if test x$have_curl = xyes; then
+        AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
+    else
+        AC_MSG_ERROR([unable to find libcurl])
+    fi
+fi
+AC_SUBST(LIBCURL_CFLAGS)
+AC_SUBST(LIBCURL_LIBS)
 
-# for HDR
-# AC_CHECK_FUNCS([strtol pow])
+AC_DEFUN([LS_UPDATE_TIMESTAMP], [
+          touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
+          ])
+LS_UPDATE_TIMESTAMP
 
 AC_CONFIG_FILES([Makefile
+                 libsixel.pc
                  src/Makefile
                  include/Makefile
                  converters/Makefile])
 
 AC_OUTPUT
 
+echo ""
+echo ""
+echo "libsixel was configured as follows"
+echo ""
+echo "       Loader component    : $loaders"
+echo "       libcurl integration : $have_curl"
+echo ""
+echo ""
