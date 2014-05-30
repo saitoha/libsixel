@@ -9,11 +9,7 @@ LS_LT_REVISION=0
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 
-
-AC_DEFUN([LS_UPDATE_TIMESTAMP], [
-          touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
-          ])
-LS_UPDATE_TIMESTAMP
+AC_CANONICAL_HOST
 
 AM_INIT_AUTOMAKE([foreign])
 LT_INIT
@@ -99,6 +95,9 @@ AC_CHECK_FUNC([getopt_long], [],
 
 AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode])
 
+# for HDR
+AC_CHECK_FUNCS([strtol pow])
+
 loaders="stb_image"
 curl="no"
 
@@ -136,15 +135,33 @@ if test x$with_gd != xno; then
         fi
     fi
     if test x$have_gd = xyes; then
+        AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromPngPtr],   [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromBmpPtr],   [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromJpegPtrEx],[], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromJpegPtr],  [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromTgaPtr],   [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromWBMPPtr],  [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromTiffPtr],  [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromGd2Ptr],   [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImagePaletteToTrueColor], [], [], [ #include <gd.h> ])
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
         loaders="${loaders} gd"
     else
         AC_MSG_ERROR(gd is not available.)
     fi
+
+    case $host in
+        *-*-cygwin)
+            AC_CHECK_LIB(iconv, [libiconv], [],
+                         [AC_CHECK_LIB(iconv, [iconv], [],
+                                       [AC_MSG_ERROR([please install libiconv])])
+                         ])
+            ;;
+    esac
 fi
 AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
-
 
 if test x$with_libcurl != xno; then
     AC_CHECK_HEADER([curl/curl.h],
@@ -169,9 +186,10 @@ fi
 AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
 
-
-# for HDR
-# AC_CHECK_FUNCS([strtol pow])
+AC_DEFUN([LS_UPDATE_TIMESTAMP], [
+          touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
+          ])
+LS_UPDATE_TIMESTAMP
 
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
@@ -189,4 +207,3 @@ echo "       Loader component    : $loaders"
 echo "       libcurl integration : $have_curl"
 echo ""
 echo ""
-
