@@ -422,30 +422,48 @@ load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride
     int c;
 
     switch(detect_file_format(pchunk->size, pchunk->buffer)) {
+#if HAVE_DECL_GDIMAGECREATEFROMGIFPTR
         case FMT_GIF:
             im = gdImageCreateFromGifPtr(pchunk->size, pchunk->buffer);
             break;
+#endif  /* HAVE_DECL_GDIMAGECREATEFROMGIFPTR */
+#if HAVE_DECL_GDIMAGECREATEFROMPNGPTR
         case FMT_PNG:
             im = gdImageCreateFromPngPtr(pchunk->size, pchunk->buffer);
             break;
+#endif  /* HAVE_DECL_GDIMAGECREATEFROMPNGPTR */
+#if HAVE_DECL_GDIMAGECREATEFROMBMPPTR
         case FMT_BMP:
             im = gdImageCreateFromBmpPtr(pchunk->size, pchunk->buffer);
             break;
+#endif  /* HAVE_DECL_GDIMAGECREATEFROMBMPPTR */
         case FMT_JPG:
+#if HAVE_DECL_GDIMAGECREATEFROMJPEGPTREX
             im = gdImageCreateFromJpegPtrEx(pchunk->size, pchunk->buffer, 1);
+#elif HAVE_DECL_GDIMAGECREATEFROMJPEGPTR
+            im = gdImageCreateFromJpegPtr(pchunk->size, pchunk->buffer);
+#endif  /* HAVE_DECL_GDIMAGECREATEFROMJPEGPTREX */
             break;
+#if HAVE_DECL_GDIMAGECREATEFROMTGAPTR
         case FMT_TGA:
             im = gdImageCreateFromTgaPtr(pchunk->size, pchunk->buffer);
             break;
+#endif  /* HAVE_DECL_GDIMAGECREATEFROMTGAPTR */
+#if HAVE_DECL_GDIMAGECREATEFROMWBMPPTR
         case FMT_WBMP:
             im = gdImageCreateFromWBMPPtr(pchunk->size, pchunk->buffer);
             break;
+#endif  /* HAVE_DECL_GDIMAGECREATEFROMWBMPPTR */
+#if HAVE_DECL_GDIMAGECREATEFROMTIFFPTR
         case FMT_TIFF:
             im = gdImageCreateFromTiffPtr(pchunk->size, pchunk->buffer);
             break;
+#endif  /* HAVE_DECL_GDIMAGECREATEFROMTIFFPTR */
+#if HAVE_DECL_GDIMAGECREATEFROMGD2PTR
         case FMT_GD2:
             im = gdImageCreateFromGd2Ptr(pchunk->size, pchunk->buffer);
             break;
+#endif  /* HAVE_DECL_GDIMAGECREATEFROMGD2PTR */
         default:
             return NULL;
     }
@@ -455,9 +473,13 @@ load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride
     }
 
     if (!gdImageTrueColor(im)) {
+#if HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
         if (!gdImagePaletteToTrueColor(im)) {
             return NULL;
         }
+#else
+        return NULL;
+#endif
     }
 
     *psx = gdImageSX(im);
