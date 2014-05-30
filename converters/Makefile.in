@@ -103,7 +103,8 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__img2sixel_SOURCES_DIST = img2sixel.c quant.c scale.c stb_image.c \
-	malloc_stub.c loader.c frompnm.c
+	malloc_stub.c loader.c frompnm.c quant.h scale.h malloc_stub.h \
+	loader.h frompnm.h
 @WANT_IMG2SIXEL_TRUE@am_img2sixel_OBJECTS =  \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-img2sixel.$(OBJEXT) \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-quant.$(OBJEXT) \
@@ -127,7 +128,7 @@ img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(img2sixel_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 am__sixel2png_SOURCES_DIST = sixel2png.c stb_image_write.c \
-	malloc_stub.c
+	malloc_stub.c stb_image_write.h malloc_stub.h
 @WANT_SIXEL2PNG_TRUE@am_sixel2png_OBJECTS =  \
 @WANT_SIXEL2PNG_TRUE@	sixel2png-sixel2png.$(OBJEXT) \
 @WANT_SIXEL2PNG_TRUE@	sixel2png-stb_image_write.$(OBJEXT) \
@@ -357,10 +358,14 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 dist_man_MANS = $(am__append_2) $(am__append_4)
-@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c quant.c scale.c stb_image.c malloc_stub.c loader.c frompnm.c
+@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c quant.c scale.c stb_image.c malloc_stub.c loader.c frompnm.c \
+@WANT_IMG2SIXEL_TRUE@                    quant.h scale.h malloc_stub.h loader.h frompnm.h
+
 @WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -I$(top_builddir)/include/ $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) $(GD_CFLAGS)
 @WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS)
-@WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c
+@WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c \
+@WANT_SIXEL2PNG_TRUE@                    stb_image_write.h malloc_stub.h
+
 @WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la
 @WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = -I$(top_builddir)/include/
 all: all-am
