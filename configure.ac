@@ -135,6 +135,15 @@ if test x$with_gd != xno; then
         fi
     fi
     if test x$have_gd = xyes; then
+        AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromPngPtr],   [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromBmpPtr],   [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromJpegPtrEx],[], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromTgaPtr],   [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromWBMPPtr],  [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromTiffPtr],  [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImageCreateFromGd2Ptr],   [], [], [ #include <gd.h> ])
+        AC_CHECK_DECLS([gdImagePaletteToTrueColor], [], [], [ #include <gd.h> ])
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
         loaders="${loaders} gd"
     else
