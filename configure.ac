@@ -140,10 +140,18 @@ if test x$with_gd != xno; then
     else
         AC_MSG_ERROR(gd is not available.)
     fi
+
+    case $host in
+        *-*-cygwin)
+            AC_CHECK_LIB(iconv, [libiconv], [],
+                         [AC_CHECK_LIB(iconv, [iconv], [],
+                                       [AC_MSG_ERROR([please install libiconv])])
+                         ])
+            ;;
+    esac
 fi
 AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
-
 
 if test x$with_libcurl != xno; then
     AC_CHECK_HEADER([curl/curl.h],
