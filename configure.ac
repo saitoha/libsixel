@@ -52,6 +52,12 @@ AC_ARG_WITH([libcurl],
             [],
             [with_libcurl=no])
 
+AC_ARG_WITH([wic],
+            [AS_HELP_STRING([--with-wic],
+                            [whether to build with windows WIC integration, windows only (default: no)])],
+            [],
+            [with_wic=no])
+
 AC_ARG_WITH(pkgconfigdir,
             AC_HELP_STRING([--with-pkgconfigdir],
                            [Use the specified pkgconfig dir (default is libdir/pkgconfig)]),
