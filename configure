@@ -644,12 +644,12 @@ PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
 LIBOBJS
+have_pkg_config
 pkgconfigdir
 WANT_SIXEL2PNG_FALSE
 WANT_SIXEL2PNG_TRUE
 WANT_IMG2SIXEL_FALSE
 WANT_IMG2SIXEL_TRUE
-have_pkg_config
 CPP
 OTOOL64
 OTOOL
@@ -1902,6 +1902,60 @@ fi
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_c_check_header_mongrel
+
+# ac_fn_c_check_type LINENO TYPE VAR INCLUDES
+# -------------------------------------------
+# Tests whether TYPE exists after having included INCLUDES, setting cache
+# variable VAR accordingly.
+ac_fn_c_check_type ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+$as_echo_n "checking for $2... " >&6; }
+if eval \${$3+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  eval "$3=no"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main ()
+{
+if (sizeof ($2))
+	 return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main ()
+{
+if (sizeof (($2)))
+	    return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+else
+  eval "$3=yes"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_c_check_type
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -11501,6 +11555,78 @@ ac_config_headers="$ac_config_headers config.h"
 #AC_ENABLE_SHARED
 #AC_DISABLE_STATIC
 
+# Options
+# Check whether --enable-img2sixel was given.
+if test "${enable_img2sixel+set}" = set; then :
+  enableval=$enable_img2sixel;
+else
+  enable_img2sixel=yes
+fi
+
+ if test x$enable_img2sixel != xno; then
+  WANT_IMG2SIXEL_TRUE=
+  WANT_IMG2SIXEL_FALSE='#'
+else
+  WANT_IMG2SIXEL_TRUE='#'
+  WANT_IMG2SIXEL_FALSE=
+fi
+
+
+# Check whether --enable-sixel2png was given.
+if test "${enable_sixel2png+set}" = set; then :
+  enableval=$enable_sixel2png;
+else
+  enable_sixel2png=yes
+fi
+
+ if test x$enable_sixel2png != xno; then
+  WANT_SIXEL2PNG_TRUE=
+  WANT_SIXEL2PNG_FALSE='#'
+else
+  WANT_SIXEL2PNG_TRUE='#'
+  WANT_SIXEL2PNG_FALSE=
+fi
+
+
+
+# Check whether --with-gdk-pixbuf2 was given.
+if test "${with_gdk_pixbuf2+set}" = set; then :
+  withval=$with_gdk_pixbuf2;
+else
+  with_gdk_pixbuf2=no
+fi
+
+
+
+# Check whether --with-gd was given.
+if test "${with_gd+set}" = set; then :
+  withval=$with_gd;
+else
+  with_gd=no
+fi
+
+
+
+# Check whether --with-libcurl was given.
+if test "${with_libcurl+set}" = set; then :
+  withval=$with_libcurl;
+else
+  with_libcurl=no
+fi
+
+
+
+# Check whether --with-pkgconfigdir was given.
+if test "${with_pkgconfigdir+set}" = set; then :
+  withval=$with_pkgconfigdir; pkgconfigdir=${withval}
+else
+  pkgconfigdir=${libdir}/pkgconfig
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: pkgconfig directory is ${pkgconfigdir}" >&5
+$as_echo "$as_me: pkgconfig directory is ${pkgconfigdir}" >&6;}
+
+
 # Checks for programs.
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -12268,76 +12394,234 @@ fi
 
 
 
-# Options
-# Check whether --enable-img2sixel was given.
-if test "${enable_img2sixel+set}" = set; then :
-  enableval=$enable_img2sixel;
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lole32" >&5
+$as_echo_n "checking for main in -lole32... " >&6; }
+if ${ac_cv_lib_ole32_main+:} false; then :
+  $as_echo_n "(cached) " >&6
 else
-  enable_img2sixel=yes
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lole32  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_ole32_main=yes
+else
+  ac_cv_lib_ole32_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ole32_main" >&5
+$as_echo "$ac_cv_lib_ole32_main" >&6; }
+if test "x$ac_cv_lib_ole32_main" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBOLE32 1
+_ACEOF
+
+  LIBS="-lole32 $LIBS"
+
 fi
 
- if test x$enable_img2sixel != xno; then
-  WANT_IMG2SIXEL_TRUE=
-  WANT_IMG2SIXEL_FALSE='#'
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -luuid" >&5
+$as_echo_n "checking for main in -luuid... " >&6; }
+if ${ac_cv_lib_uuid_main+:} false; then :
+  $as_echo_n "(cached) " >&6
 else
-  WANT_IMG2SIXEL_TRUE='#'
-  WANT_IMG2SIXEL_FALSE=
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-luuid  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_uuid_main=yes
+else
+  ac_cv_lib_uuid_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_uuid_main" >&5
+$as_echo "$ac_cv_lib_uuid_main" >&6; }
+if test "x$ac_cv_lib_uuid_main" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBUUID 1
+_ACEOF
+
+  LIBS="-luuid $LIBS"
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lwindowscodecs" >&5
+$as_echo_n "checking for main in -lwindowscodecs... " >&6; }
+if ${ac_cv_lib_windowscodecs_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lwindowscodecs  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_windowscodecs_main=yes
+else
+  ac_cv_lib_windowscodecs_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_windowscodecs_main" >&5
+$as_echo "$ac_cv_lib_windowscodecs_main" >&6; }
+if test "x$ac_cv_lib_windowscodecs_main" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBWINDOWSCODECS 1
+_ACEOF
+
+  LIBS="-lwindowscodecs $LIBS"
+
+fi
+
+for ac_header in wincodec.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "wincodec.h" "ac_cv_header_wincodec_h" "$ac_includes_default"
+if test "x$ac_cv_header_wincodec_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_WINCODEC_H 1
+_ACEOF
+
+fi
+
+done
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for stdbool.h that conforms to C99" >&5
+$as_echo_n "checking for stdbool.h that conforms to C99... " >&6; }
+if ${ac_cv_header_stdbool_h+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+             #include <stdbool.h>
+             #ifndef bool
+              "error: bool is not defined"
+             #endif
+             #ifndef false
+              "error: false is not defined"
+             #endif
+             #if false
+              "error: false is not 0"
+             #endif
+             #ifndef true
+              "error: true is not defined"
+             #endif
+             #if true != 1
+              "error: true is not 1"
+             #endif
+             #ifndef __bool_true_false_are_defined
+              "error: __bool_true_false_are_defined is not defined"
+             #endif
+
+             struct s { _Bool s: 1; _Bool t; } s;
+
+             char a[true == 1 ? 1 : -1];
+             char b[false == 0 ? 1 : -1];
+             char c[__bool_true_false_are_defined == 1 ? 1 : -1];
+             char d[(bool) 0.5 == true ? 1 : -1];
+             /* See body of main program for 'e'.  */
+             char f[(_Bool) 0.0 == false ? 1 : -1];
+             char g[true];
+             char h[sizeof (_Bool)];
+             char i[sizeof s.t];
+             enum { j = false, k = true, l = false * true, m = true * 256 };
+             /* The following fails for
+                HP aC++/ANSI C B3910B A.05.55 [Dec 04 2003]. */
+             _Bool n[m];
+             char o[sizeof n == m * sizeof n[0] ? 1 : -1];
+             char p[-1 - (_Bool) 0 < 0 && -1 - (bool) 0 < 0 ? 1 : -1];
+             /* Catch a bug in an HP-UX C compiler.  See
+                http://gcc.gnu.org/ml/gcc-patches/2003-12/msg02303.html
+                http://lists.gnu.org/archive/html/bug-coreutils/2005-11/msg00161.html
+              */
+             _Bool q = true;
+             _Bool *pq = &q;
+
+int
+main ()
+{
+
+             bool e = &s;
+             *pq |= q;
+             *pq |= ! q;
+             /* Refer to every declared value, to avoid compiler optimizations.  */
+             return (!a + !b + !c + !d + !e + !f + !g + !h + !i + !!j + !k + !!l
+                     + !m + !n + !o + !p + !q + !pq);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_header_stdbool_h=yes
+else
+  ac_cv_header_stdbool_h=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_header_stdbool_h" >&5
+$as_echo "$ac_cv_header_stdbool_h" >&6; }
+   ac_fn_c_check_type "$LINENO" "_Bool" "ac_cv_type__Bool" "$ac_includes_default"
+if test "x$ac_cv_type__Bool" = xyes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE__BOOL 1
+_ACEOF
+
+
 fi
 
 
-# Check whether --enable-sixel2png was given.
-if test "${enable_sixel2png+set}" = set; then :
-  enableval=$enable_sixel2png;
+ac_fn_c_check_type "$LINENO" "size_t" "ac_cv_type_size_t" "$ac_includes_default"
+if test "x$ac_cv_type_size_t" = xyes; then :
+
 else
-  enable_sixel2png=yes
+
+cat >>confdefs.h <<_ACEOF
+#define size_t unsigned int
+_ACEOF
+
 fi
 
- if test x$enable_sixel2png != xno; then
-  WANT_SIXEL2PNG_TRUE=
-  WANT_SIXEL2PNG_FALSE='#'
-else
-  WANT_SIXEL2PNG_TRUE='#'
-  WANT_SIXEL2PNG_FALSE=
-fi
-
-
-
-# Check whether --with-gdk-pixbuf2 was given.
-if test "${with_gdk_pixbuf2+set}" = set; then :
-  withval=$with_gdk_pixbuf2;
-else
-  with_gdk_pixbuf2=no
-fi
-
-
-
-# Check whether --with-gd was given.
-if test "${with_gd+set}" = set; then :
-  withval=$with_gd;
-else
-  with_gd=no
-fi
-
-
-
-# Check whether --with-libcurl was given.
-if test "${with_libcurl+set}" = set; then :
-  withval=$with_libcurl;
-else
-  with_libcurl=no
-fi
-
-
-
-# Check whether --with-pkgconfigdir was given.
-if test "${with_pkgconfigdir+set}" = set; then :
-  withval=$with_pkgconfigdir; pkgconfigdir=${withval}
-else
-  pkgconfigdir=${libdir}/pkgconfig
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: pkgconfig directory is ${pkgconfigdir}" >&5
-$as_echo "$as_me: pkgconfig directory is ${pkgconfigdir}" >&6;}
 
 
 # Checks for libraries.
@@ -12741,7 +13025,7 @@ $as_echo "#define HAVE_GDK_PIXBUF2 1" >>confdefs.h
         fi
     else
         if test x${GDK_PIXBUF_CFLAGS} = x || test x${GDK_PIXBUF_LIBS} = x; then
-            as_fn_error $? "pkg-config is missing" "$LINENO" 5
+            as_fn_error $? "please set GDK_PIXBUF_CFLAGS and GDK_PIXBUF_LIBS, or install pkg-config." "$LINENO" 5
         fi
     fi
 fi
@@ -13159,16 +13443,16 @@ if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
-  as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
 if test -z "${WANT_IMG2SIXEL_TRUE}" && test -z "${WANT_IMG2SIXEL_FALSE}"; then
   as_fn_error $? "conditional \"WANT_IMG2SIXEL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_SIXEL2PNG_TRUE}" && test -z "${WANT_SIXEL2PNG_FALSE}"; then
   as_fn_error $? "conditional \"WANT_SIXEL2PNG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
+  as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

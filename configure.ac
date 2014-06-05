@@ -23,11 +23,6 @@ AC_CONFIG_MACRO_DIR([m4])
 #AC_ENABLE_SHARED
 #AC_DISABLE_STATIC
 
-# Checks for programs.
-AC_PROG_CC
-AC_PROG_INSTALL
-AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
-
 # Options
 AC_ARG_ENABLE([img2sixel],
               [AS_HELP_STRING([--disable-img2sixel],
@@ -68,6 +63,20 @@ AC_ARG_WITH(pkgconfigdir,
                            [pkgconfigdir=${libdir}/pkgconfig])
 AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
 AC_SUBST(pkgconfigdir)
+
+# Checks for programs.
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
+
+
+AC_CHECK_LIB([ole32], [main])
+AC_CHECK_LIB([uuid], [main])
+AC_CHECK_LIB([windowscodecs], [main])
+AC_CHECK_HEADERS([wincodec.h])
+AC_CHECK_HEADER_STDBOOL
+AC_TYPE_SIZE_T
+
 
 # Checks for libraries.
 
