@@ -122,6 +122,7 @@ if test x$with_wic != xno; then
                  [AC_MSG_ERROR([WIC integration: library wincodecs is not avilable.])])
     have_wic="yes"
 fi
+AM_CONDITIONAL(WITH_WIC, test x$have_wic == xyes)
 
 if test x$with_gdk_pixbuf2 != xno; then
     if test x$have_pkg_config == xyes; then

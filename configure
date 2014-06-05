@@ -645,6 +645,8 @@ gdkpixbuf2_CFLAGS
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
+WITH_WIC_FALSE
+WITH_WIC_TRUE
 LIBOBJS
 CXXCPP
 am__fastdepCXX_FALSE
@@ -16417,6 +16419,14 @@ fi
 
     have_wic="yes"
 fi
+ if test x$have_wic == xyes; then
+  WITH_WIC_TRUE=
+  WITH_WIC_FALSE='#'
+else
+  WITH_WIC_TRUE='#'
+  WITH_WIC_FALSE=
+fi
+
 
 if test x$with_gdk_pixbuf2 != xno; then
     if test x$have_pkg_config == xyes; then
@@ -17272,6 +17282,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCXX_TRUE}" && test -z "${am__fastdepCXX_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCXX\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${WITH_WIC_TRUE}" && test -z "${WITH_WIC_FALSE}"; then
+  as_fn_error $? "conditional \"WITH_WIC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
