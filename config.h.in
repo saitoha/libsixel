@@ -67,6 +67,12 @@
 /* Define to 1 if you have the `iconv' library (-liconv). */
 #undef HAVE_LIBICONV
 
+/* Define to 1 if you have the `ole32' library (-lole32). */
+#undef HAVE_LIBOLE32
+
+/* Define to 1 if you have the `windowscodecs' library (-lwindowscodecs). */
+#undef HAVE_LIBWINDOWSCODECS
+
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
 #undef HAVE_MALLOC
@@ -114,6 +120,12 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
+/* Define to 1 if you have the <wincodec.h> header file. */
+#undef HAVE_WINCODEC_H
+
+/* Define to 1 if the system has the type `_Bool'. */
+#undef HAVE__BOOL
+
 /* Define to 1 if you have the `_setmode' function. */
 #undef HAVE__SETMODE
 
@@ -153,3 +165,6 @@
 
 /* Define to rpl_realloc if the replacement function should be used. */
 #undef realloc
+
+/* Define to `unsigned int' if <sys/types.h> does not define. */
+#undef size_t
