@@ -1326,22 +1326,6 @@ private:
 };
 
 
-class SixelCodecsRegistryManager
-{
-public:
-    HRESULT Register()
-    {
-        return S_OK;
-    }
-
-    HRESULT Unregister()
-    {
-        HRESULT result = S_OK;
-        return result;
-    }
-};
-SixelCodecsRegistryManager register_manager;
-
 template< typename T >
 class SixelCodecClassFactory : public IClassFactory
 {
@@ -1430,14 +1414,12 @@ private:
 extern "C"
 STDAPI DllRegisterServer()
 {    
-    register_manger.Register();
     return S_OK;
 }
 
 extern "C"
 STDAPI DllUnregisterServer()
 { 
-    register_manager.Unregister();
     return S_OK;
 }
 
