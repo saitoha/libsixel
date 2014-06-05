@@ -116,15 +116,16 @@ if test x$with_wic != xno; then
                      [AC_MSG_ERROR([WIC integration: wincodec.h is not avilable.])])
     AC_CHECK_LIB([ole32], [main], [],
                  [AC_MSG_ERROR([WIC integration: library ole32 is not avilable.])])
-    AC_CHECK_LIB([uuid], [main], [].
+    AC_CHECK_LIB([uuid], [main], [],
                  [AC_MSG_ERROR([WIC integration: library uuid is not avilable.])])
     AC_CHECK_LIB([windowscodecs], [main], [],
                  [AC_MSG_ERROR([WIC integration: library wincodecs is not avilable.])])
+    have_wic="yes"
 fi
 
 if test x$with_gdk_pixbuf2 != xno; then
-    if test x$have_pkg_config != xno; then
-        PKG_CHECK_MODULES(GDK_PIXBUF,
+    if test x$have_pkg_config == xyes; then
+        PKG_CHECK_MODULES([gdkpixbuf2],
                           [gdk-pixbuf-2.0],
                           [have_gdk_pixbuf2=yes],
                           [have_gdk_pixbuf2=no])
