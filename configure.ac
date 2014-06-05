@@ -214,6 +214,8 @@ LS_UPDATE_TIMESTAMP
 
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
+                 wic_install.reg
+                 wic_uninstall.reg
                  src/Makefile
                  include/Makefile
                  converters/Makefile])
