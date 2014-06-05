@@ -71,14 +71,8 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
 
-
-AC_CHECK_LIB([ole32], [main])
-AC_CHECK_LIB([uuid], [main])
-AC_CHECK_LIB([windowscodecs], [main])
-AC_CHECK_HEADERS([wincodec.h])
-AC_CHECK_HEADER_STDBOOL
-AC_TYPE_SIZE_T
-
+# For wic integration
+AC_PROG_CXX
 
 # Checks for libraries.
 
@@ -114,7 +108,19 @@ AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode])
 AC_CHECK_FUNCS([strtol pow])
 
 loaders="stb_image"
-curl="no"
+have_curl="no"
+have_wic="no"
+
+if test x$with_wic != xno; then
+    AC_CHECK_HEADERS([wincodec.h], [],
+                     [AC_MSG_ERROR([WIC integration: wincodec.h is not avilable.])])
+    AC_CHECK_LIB([ole32], [main], [],
+                 [AC_MSG_ERROR([WIC integration: library ole32 is not avilable.])])
+    AC_CHECK_LIB([uuid], [main], [].
+                 [AC_MSG_ERROR([WIC integration: library uuid is not avilable.])])
+    AC_CHECK_LIB([windowscodecs], [main], [],
+                 [AC_MSG_ERROR([WIC integration: library wincodecs is not avilable.])])
+fi
 
 if test x$with_gdk_pixbuf2 != xno; then
     if test x$have_pkg_config != xno; then
@@ -126,7 +132,7 @@ if test x$with_gdk_pixbuf2 != xno; then
             AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
             loaders="${loaders} gdk-pixbuf2"
         else
-            AC_MSG_ERROR(pkg-config is not available.)
+            AC_MSG_ERROR([pkg-config is not available.])
         fi
     else
         if test x${GDK_PIXBUF_CFLAGS} = x || test x${GDK_PIXBUF_LIBS} = x; then
@@ -220,5 +226,6 @@ echo "libsixel was configured as follows"
 echo ""
 echo "       Loader component    : $loaders"
 echo "       libcurl integration : $have_curl"
+echo "       WIC integration : $have_wic"
 echo ""
 echo ""
