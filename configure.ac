@@ -37,7 +37,7 @@ AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
 AC_ARG_WITH([gdk-pixbuf2],
             [AS_HELP_STRING([--with-gdk-pixbuf2],
                             [whether to build with gdk-pixbuf2 (default: no)])],
-            [],
+            [with_gdk_pixbuf2=yes],
             [with_gdk_pixbuf2=no])
 
 AC_ARG_WITH([gd],
