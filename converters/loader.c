@@ -51,6 +51,7 @@
 # define O_BINARY _O_BINARY
 #endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 
+#include <assert.h>
 #include "stb_image.c"
 
 #ifdef HAVE_GDK_PIXBUF2
