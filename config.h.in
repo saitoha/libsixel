@@ -70,6 +70,12 @@
 /* Define to 1 if you have the `ole32' library (-lole32). */
 #undef HAVE_LIBOLE32
 
+/* Define to 1 if you have the `uuid' library (-luuid). */
+#undef HAVE_LIBUUID
+
+/* Define to 1 if you have the `windowscodecs' library (-lwindowscodecs). */
+#undef HAVE_LIBWINDOWSCODECS
+
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
 #undef HAVE_MALLOC
