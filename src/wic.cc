@@ -1326,7 +1326,6 @@ private:
 };
 
 
-template< typename T >
 class SixelCodecClassFactory : public IClassFactory
 {
 public:
@@ -1386,7 +1385,7 @@ public:
 
         if (NULL != ppv)
         {
-            T *obj = new T();
+            SixelDecoder *obj = new SixelDecoder();
 
             if (NULL != obj)
             {
@@ -1434,7 +1433,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
         if (CLSID_SixelDecoder == rclsid)
         {
             result = S_OK;
-            classFactory = new SixelCodecClassFactory<SixelDecoder>();
+            classFactory = new SixelCodecClassFactory();
         }
         else
         {
