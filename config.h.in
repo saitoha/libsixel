@@ -55,8 +55,14 @@
 /* whether gdk-pixbuf2 is available */
 #undef HAVE_GDK_PIXBUF2
 
+/* whether getopt is avilable */
+#undef HAVE_GETOPT
+
 /* Define to 1 if you have the <getopt.h> header file. */
 #undef HAVE_GETOPT_H
+
+/* whether getopt_long is avilable */
+#undef HAVE_GETOPT_LONG
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
