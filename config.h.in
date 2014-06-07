@@ -55,8 +55,14 @@
 /* whether gdk-pixbuf2 is available */
 #undef HAVE_GDK_PIXBUF2
 
+/* whether getopt is avilable */
+#undef HAVE_GETOPT
+
 /* Define to 1 if you have the <getopt.h> header file. */
 #undef HAVE_GETOPT_H
+
+/* whether getopt_long is avilable */
+#undef HAVE_GETOPT_LONG
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -66,6 +72,9 @@
 
 /* Define to 1 if you have the `iconv' library (-liconv). */
 #undef HAVE_LIBICONV
+
+/* Define to 1 if you have the `ole32' library (-lole32). */
+#undef HAVE_LIBOLE32
 
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
@@ -113,6 +122,9 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the <wincodec.h> header file. */
+#undef HAVE_WINCODEC_H
 
 /* Define to 1 if you have the `_setmode' function. */
 #undef HAVE__SETMODE
