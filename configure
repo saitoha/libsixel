@@ -647,6 +647,8 @@ PKG_CONFIG_PATH
 PKG_CONFIG
 WITH_WIC_FALSE
 WITH_WIC_TRUE
+COMPATH
+compath
 LIBOBJS
 CXXCPP
 am__fastdepCXX_FALSE
@@ -16290,6 +16292,10 @@ done
 loaders="stb_image"
 have_curl="no"
 have_wic="no"
+compath="${libdir}/libsixel.la"
+
+COMPATH="${libdir}/libsixel.la"
+
 
 if test x$with_wic != xno; then
     for ac_header in wincodec.h
