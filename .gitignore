@@ -12,6 +12,9 @@
 *.la
 *.a
 
+# Compiled Executable binary
+*.exe
+
 # swap files
 *.swp
 \#*\#
@@ -35,5 +38,14 @@ stamp-h1
 # OSX
 .DS_Store
 
+# editor
+*.un~
+
 # project.vim
 .vimprojects
+
+# project specific
+wic_install.reg
+wic_uninstall.reg
+libsixel.pc
+converters/snake.png
