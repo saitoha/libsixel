@@ -60,6 +60,13 @@ AC_ARG_WITH(pkgconfigdir,
 AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
 AC_SUBST(pkgconfigdir)
 
+AC_ARG_ENABLE([gcov],
+              [AS_HELP_STRING([--enable-gcov],
+                              [use Gcov to test the test suite])],
+              [],
+              [enable_gcov=no])
+AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL

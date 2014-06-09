@@ -645,6 +645,8 @@ PKG_CONFIG_PATH
 PKG_CONFIG
 LIBOBJS
 have_pkg_config
+COND_GCOV_FALSE
+COND_GCOV_TRUE
 pkgconfigdir
 WANT_SIXEL2PNG_FALSE
 WANT_SIXEL2PNG_TRUE
@@ -781,6 +783,7 @@ with_gdk_pixbuf2
 with_gd
 with_libcurl
 with_pkgconfigdir
+enable_gcov
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1431,6 +1434,7 @@ Optional Features:
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-img2sixel     whether to build img2sixel (default: yes)
   --disable-sixel2png     whether to build sixel2png (default: yes)
+  --enable-gcov           use Gcov to test the test suite
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -11668,6 +11672,22 @@ fi
 $as_echo "$as_me: pkgconfig directory is ${pkgconfigdir}" >&6;}
 
 
+# Check whether --enable-gcov was given.
+if test "${enable_gcov+set}" = set; then :
+  enableval=$enable_gcov;
+else
+  enable_gcov=no
+fi
+
+ if test x$enable_gcov != xno; then
+  COND_GCOV_TRUE=
+  COND_GCOV_FALSE='#'
+else
+  COND_GCOV_TRUE='#'
+  COND_GCOV_FALSE=
+fi
+
+
 # Checks for programs.
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -13723,6 +13743,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_SIXEL2PNG_TRUE}" && test -z "${WANT_SIXEL2PNG_FALSE}"; then
   as_fn_error $? "conditional \"WANT_SIXEL2PNG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${COND_GCOV_TRUE}" && test -z "${COND_GCOV_FALSE}"; then
+  as_fn_error $? "conditional \"COND_GCOV\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
