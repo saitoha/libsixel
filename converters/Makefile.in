@@ -366,7 +366,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 dist_man_MANS = $(am__append_2) $(am__append_4)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
-CLEANFILES = *.gcno *.gcda *.gcov
+CLEANFILES = *.gcno *.gcda *.gcov snake.png snake.sixel
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c quant.c scale.c stb_image.c malloc_stub.c loader.c frompnm.c \
 @WANT_IMG2SIXEL_TRUE@                    quant.h scale.h malloc_stub.h loader.h frompnm.h
 

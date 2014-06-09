@@ -364,7 +364,7 @@ SUBDIRS = include src converters
 DIST_SUBDIRS = $(SUBDIRS)
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = libsixel.pc
-CLEANFILES = libsixel.pc
+CLEANFILES = libsixel.pc wic_install.reg wic_uninstall.reg
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -885,8 +885,10 @@ winetest: all
 	$(MAKE) winetest -C converters
 
 coveralls: test
+	ln -s -f converters/stb_image.h .
 	ln -s -f converters/stb_image_write.h .
 	coveralls
+	rm -f stb_image.h
 	rm -f stb_image_write.h
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
