@@ -2,6 +2,7 @@ libsixel
 ========
 
 [![Build Status](https://travis-ci.org/saitoha/libsixel.svg?branch=master)](https://travis-ci.org/saitoha/libsixel)
+[![Coverage Status](https://coveralls.io/repos/saitoha/libsixel/badge.png?branch=configure-with-gcov)](https://coveralls.io/r/saitoha/libsixel?branch=configure-with-gcov)
 
 ## What is this?
 

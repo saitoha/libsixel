@@ -7,10 +7,22 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libsixel.pc
 
-CLEANFILES = libsixel.pc
+CLEANFILES = libsixel.pc wic_install.reg wic_uninstall.reg valgrind.log
 
 test: all
 	$(MAKE) test -C converters
 
 winetest: all
 	$(MAKE) winetest -C converters
+
+valgrind: all
+	valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -dfs 2>&1 \
+		| tee valgrind.log \
+		| grep 'ERROR SUMMARY: 0 errors from 0 contexts'
+
+coveralls: test
+	ln -s -f converters/stb_image.h .
+	ln -s -f converters/stb_image_write.h .
+	coveralls -e sixel_orig -e include -e m4
+	rm -f stb_image.h
+	rm -f stb_image_write.h
