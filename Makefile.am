@@ -7,7 +7,7 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libsixel.pc
 
-CLEANFILES = libsixel.pc
+CLEANFILES = libsixel.pc wic_install.reg wic_uninstall.reg
 
 test: all
 	$(MAKE) test -C converters
