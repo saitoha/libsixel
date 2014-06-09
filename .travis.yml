@@ -45,5 +45,7 @@ script:
   - "du -h snake2.png"
   - "$WINE converters/img2sixel snake1.png > snake3.sixel"
   - "du -h snake3.sixel"
-  - "if [ x$WINE = x ]; then valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -dfs 2>&1 | tee valgrind.log | grep 'ERROR SUMMARY: 0 errors from 0 contexts' || exit 1; fi"
-  - "if [ x$GCOV != x ]; then make coveralls; fi"
+
+after_success:
+  - "if [ x$WINE = x ]; then make valgrind || exit 1; fi"
+  - "if [ x$GCOV != x ]; then make coveralls || exit 1 ; fi"

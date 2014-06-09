@@ -15,6 +15,11 @@ test: all
 winetest: all
 	$(MAKE) winetest -C converters
 
+valgrind: all
+	valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -dfs 2>&1 \
+		| tee valgrind.log \
+		| grep 'ERROR SUMMARY: 0 errors from 0 contexts'
+
 coveralls: test
 	ln -s -f converters/stb_image.h .
 	ln -s -f converters/stb_image_write.h .
