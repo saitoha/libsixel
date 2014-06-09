@@ -1,7 +1,44 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* whether aligned_alloc() is available */
-#undef HAVE_ALIGNED_ALLOC
+/* Define to 1 if you have the declaration of `gdImageCreateFromBmpPtr', and
+   to 0 if you don't. */
+#undef HAVE_DECL_GDIMAGECREATEFROMBMPPTR
+
+/* Define to 1 if you have the declaration of `gdImageCreateFromGd2Ptr', and
+   to 0 if you don't. */
+#undef HAVE_DECL_GDIMAGECREATEFROMGD2PTR
+
+/* Define to 1 if you have the declaration of `gdImageCreateFromGifPtr', and
+   to 0 if you don't. */
+#undef HAVE_DECL_GDIMAGECREATEFROMGIFPTR
+
+/* Define to 1 if you have the declaration of `gdImageCreateFromJpegPtr', and
+   to 0 if you don't. */
+#undef HAVE_DECL_GDIMAGECREATEFROMJPEGPTR
+
+/* Define to 1 if you have the declaration of `gdImageCreateFromJpegPtrEx',
+   and to 0 if you don't. */
+#undef HAVE_DECL_GDIMAGECREATEFROMJPEGPTREX
+
+/* Define to 1 if you have the declaration of `gdImageCreateFromPngPtr', and
+   to 0 if you don't. */
+#undef HAVE_DECL_GDIMAGECREATEFROMPNGPTR
+
+/* Define to 1 if you have the declaration of `gdImageCreateFromTgaPtr', and
+   to 0 if you don't. */
+#undef HAVE_DECL_GDIMAGECREATEFROMTGAPTR
+
+/* Define to 1 if you have the declaration of `gdImageCreateFromTiffPtr', and
+   to 0 if you don't. */
+#undef HAVE_DECL_GDIMAGECREATEFROMTIFFPTR
+
+/* Define to 1 if you have the declaration of `gdImageCreateFromWBMPPtr', and
+   to 0 if you don't. */
+#undef HAVE_DECL_GDIMAGECREATEFROMWBMPPTR
+
+/* Define to 1 if you have the declaration of `gdImagePaletteToTrueColor', and
+   to 0 if you don't. */
+#undef HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
@@ -18,8 +55,14 @@
 /* whether gdk-pixbuf2 is available */
 #undef HAVE_GDK_PIXBUF2
 
+/* whether getopt is avilable */
+#undef HAVE_GETOPT
+
 /* Define to 1 if you have the <getopt.h> header file. */
 #undef HAVE_GETOPT_H
+
+/* whether getopt_long is avilable */
+#undef HAVE_GETOPT_LONG
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -27,12 +70,15 @@
 /* whether libcurl is available */
 #undef HAVE_LIBCURL
 
+/* Define to 1 if you have the `iconv' library (-liconv). */
+#undef HAVE_LIBICONV
+
+/* Define to 1 if you have the `ole32' library (-lole32). */
+#undef HAVE_LIBOLE32
+
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
 #undef HAVE_MALLOC
-
-/* whether memalign() is available */
-#undef HAVE_MEMALIGN
 
 /* Define to 1 if you have the `memcpy' function. */
 #undef HAVE_MEMCPY
@@ -43,8 +89,8 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
-/* whether posix_memalign() is available */
-#undef HAVE_POSIX_MEMALIGN
+/* Define to 1 if you have the `pow' function. */
+#undef HAVE_POW
 
 /* Define to 1 if your system has a GNU libc compatible `realloc' function,
    and to 0 otherwise. */
@@ -77,11 +123,8 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* Define to 1 if you have the <xmmintrin.h> header file. */
-#undef HAVE_XMMINTRIN_H
-
-/* whether _aligned_malloc() is available */
-#undef HAVE__ALIGNED_MALLOC
+/* Define to 1 if you have the <wincodec.h> header file. */
+#undef HAVE_WINCODEC_H
 
 /* Define to 1 if you have the `_setmode' function. */
 #undef HAVE__SETMODE

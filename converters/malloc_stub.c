@@ -30,7 +30,10 @@
 #endif  /* HAVE_ERRNO_H */
 
 #include <stdlib.h>
+
+#if HAVE_MEMORY_H
 #include <memory.h>
+#endif  /* HAVE_MEMORY_H */
 
 #if !HAVE_MALLOC
 #undef malloc
@@ -59,7 +62,7 @@ rpl_realloc(void *p, size_t n)
 }
 #endif /* !HAVE_REALLOC */
 
-
+#if 0
 int
 rpl_posix_memalign(void **memptr, size_t alignment, size_t size)
 {
@@ -77,6 +80,7 @@ rpl_posix_memalign(void **memptr, size_t alignment, size_t size)
 # error
 #endif /* _MSC_VER */
 }
+#endif
 
 /* Hello emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

@@ -4,30 +4,18 @@ dist_man_MANS =
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
-img2sixel_SOURCES = img2sixel.c quant.c scale.c stb_image.c malloc_stub.c loader.c
-img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm
-img2sixel_CFLAGS = -I$(top_builddir)/include/
+img2sixel_SOURCES = img2sixel.c quant.c scale.c stb_image.c malloc_stub.c loader.c frompnm.c \
+                    quant.h scale.h malloc_stub.h loader.h frompnm.h
+img2sixel_CFLAGS = -I$(top_builddir)/include/ $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) $(GD_CFLAGS)
+img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS)
 dist_man_MANS += img2sixel.1
-
-if HAVE_GDK_PIXBUF
-img2sixel_CFLAGS += $(GDK_PIXBUF_CFLAGS)
-img2sixel_LDADD += $(GDK_PIXBUF_LIBS)
-endif
-if HAVE_LIBCURL
-img2sixel_CFLAGS += $(LIBCURL_CFLAGS)
-img2sixel_LDADD += $(LIBCURL_LIBS)
-endif
-if HAVE_GD
-img2sixel_CFLAGS += $(GD_CFLAGS)
-img2sixel_LDADD += $(GD_LIBS)
-endif
-
 endif
 # -DSTBI_SIMD
 
 if WANT_SIXEL2PNG
 bin_PROGRAMS += sixel2png
-sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c
+sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c \
+                    stb_image_write.h malloc_stub.h
 sixel2png_LDADD = $(top_builddir)/src/libsixel.la
 sixel2png_CFLAGS = -I$(top_builddir)/include/
 dist_man_MANS += sixel2png.1

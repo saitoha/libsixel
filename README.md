@@ -28,13 +28,6 @@ $ make
 ### Build with optional packages
 
 ```
---disable-img2sixel     do not build img2sixel
---disable-sixel2png     do not build sixel2png
-```
-
-### Build with optional packages
-
-```
 --with-gdk-pixbuf2      build with gdk-pixbuf2 (default: no)
 --with-libcurl          build with libcurl (default: no)
 --with-gd               build with gd (default: no)
@@ -419,6 +412,7 @@ original tw, created by Sho Hashimoto.
 
 
 > Copyright (c) 2012 Sho Hashimoto
+>
 > Copyright (c) 2014 Araki Ken
 >
 > Permission is hereby granted, free of charge, to any person obtaining
@@ -441,11 +435,11 @@ original tw, created by Sho Hashimoto.
 > WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-### test images (egret.jpg / snake.jpg)
+### test images
 
-Test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.com
+#### http://public-domain-photos.com/
 
-http://public-domain-photos.com/
+The following test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.com.
 
 - images/egret.jpg
 
@@ -456,6 +450,15 @@ http://public-domain-photos.com/
 
     author: Jon Sullivan
     url: http://public-domain-photos.com/animals/snake-4.htm
+
+
+#### vimperator3.png (mascot of vimperator)
+
+images/vimperator3.png is in public domain.
+
+    author: @k_wizard
+    url: http://quadrantem.com/~k_wizard/vimprtan/
+
 
 
 ### ImageMagick
