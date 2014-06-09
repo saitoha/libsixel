@@ -11,3 +11,5 @@ libsixel_la_CFLAGS = -I$(top_builddir)/include/ $(MAYBE_COVERAGE)
 libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION)
 dist_man_MANS = sixel.5
 
+coveralls: test
+	coveralls
