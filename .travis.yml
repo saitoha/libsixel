@@ -27,7 +27,7 @@ before_install:
   - "if [ x$XCC = xi686-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-i686 binutils-mingw-w64-i686; fi"
   - "if [ x$XCC = xi586-mingw32msvc-gcc ]; then sudo apt-get install -qq mingw32; fi"
   - "if [ x$XCC = xx86_64-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64; fi"
-  - "if [ x$GCOV != x ]; then sudo pip install cpp-coveralls; fi"
+  - "if [ x$GCOV != x ]; then sudo pip install cpp-coveralls pyyaml; fi"
 
 before_script:
   - "CC=$XCC ./configure --prefix=/usr --host=$HOST $(GDKPIXBUF) $(GD) $(LIBCURL) $(GCOV)"
