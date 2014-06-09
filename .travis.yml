@@ -14,6 +14,7 @@ env:
   - XCC=clang HOST= WINE= GD=" --with-gd " LIBCURL=" --with-libcurl "
   - XCC=clang HOST= WINE= GDKPIXBUF=" --with-gdk-pixbuf2 " GD=" --with-gd "
   - XCC=clang HOST= WINE= GDKPIXBUF=" --with-gdk-pixbuf2 " GD=" --with-gd " LIBCURL=" --with-libcurl "
+  - XCC=clang HOST= WINE= GCOV=" --enable-gcov "
 
 before_install:
   - "sudo apt-get -qq update --force-yes > /dev/null"
@@ -26,9 +27,10 @@ before_install:
   - "if [ x$XCC = xi686-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-i686 binutils-mingw-w64-i686; fi"
   - "if [ x$XCC = xi586-mingw32msvc-gcc ]; then sudo apt-get install -qq mingw32; fi"
   - "if [ x$XCC = xx86_64-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64; fi"
+  - "if [ x$GCOV != x ]; then sudo pip install cpp-coveralls; fi"
 
 before_script:
-  - "CC=$XCC ./configure --prefix=/usr --host=$HOST $(GDKPIXBUF) $(LIBCURL)"
+  - "CC=$XCC ./configure --prefix=/usr --host=$HOST $(GDKPIXBUF) $(LIBCURL) $(GCOV)"
 
 script:
   - "make"
@@ -44,4 +46,4 @@ script:
   - "$WINE converters/img2sixel snake1.png > snake3.sixel"
   - "du -h snake3.sixel"
   - "if [ x$WINE = x ]; then valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -dfs 2>&1 | tee valgrind.log | grep 'ERROR SUMMARY: 0 errors from 0 contexts' || exit 1; fi"
-
+  - "if [ x$GCOV != x ]; then make coveralls; fi"
