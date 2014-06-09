@@ -871,8 +871,9 @@ test: all
 winetest: all
 	$(MAKE) winetest -C converters
 
-test-with-gcov: all
-	$(MAKE) test-with-gcov -C converters
+coveralls: test
+	cd src && coveralls
+	cd converters && coveralls
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

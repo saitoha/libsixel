@@ -58,6 +58,3 @@ if WANT_IMG2SIXEL
 	wine ./img2sixel -p 2 ../images/snake.jpg
 	wine ./img2sixel -e ../images/snake.jpg
 endif
-
-coveralls: test
-	coveralls

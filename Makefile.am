@@ -15,6 +15,6 @@ test: all
 winetest: all
 	$(MAKE) winetest -C converters
 
-coveralls: all
-	$(MAKE) coveralls -C src
-	$(MAKE) coveralls -C converters
+coveralls: test
+	cd src && coveralls
+	cd converters && coveralls
