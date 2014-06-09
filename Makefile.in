@@ -872,8 +872,9 @@ winetest: all
 	$(MAKE) winetest -C converters
 
 coveralls: test
-	cd src && coveralls
-	cd converters && coveralls
+	ln -s -f converters/stb_image_write.h .
+	coveralls
+	rm -f stb_image_write.h
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

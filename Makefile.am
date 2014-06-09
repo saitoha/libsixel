@@ -16,5 +16,6 @@ winetest: all
 	$(MAKE) winetest -C converters
 
 coveralls: test
-	cd src && coveralls
-	cd converters && coveralls
+	ln -s -f converters/stb_image_write.h .
+	coveralls
+	rm -f stb_image_write.h
