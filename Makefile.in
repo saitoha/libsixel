@@ -364,7 +364,7 @@ SUBDIRS = include src converters
 DIST_SUBDIRS = $(SUBDIRS)
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = libsixel.pc
-CLEANFILES = libsixel.pc wic_install.reg wic_uninstall.reg
+CLEANFILES = libsixel.pc wic_install.reg wic_uninstall.reg valgrind.log
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
