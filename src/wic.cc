@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <vector>
 
+static CHAR g_moduleFileName[MAX_PATH];
+
 static const CLSID CLSID_SixelDecoder = {
     /* 15b9b4da-b155-4977-8571-cf005884bcb9 */
     0x15b9b4da,
@@ -34,243 +36,243 @@ static WICColor colortable[] = {
     ARGB(255, 0x00, 0x00, 0x00),
     ARGB(255, 0x00, 0x00, 0x5f),
     ARGB(255, 0x00, 0x00, 0x87),
-    ARGB(255, 0x00, 0x00, 0xaf),  /* 16 -19  */ 
+    ARGB(255, 0x00, 0x00, 0xaf),  /* 16 -19  */
     ARGB(255, 0x00, 0x00, 0xd7),
     ARGB(255, 0x00, 0x00, 0xff),
     ARGB(255, 0x00, 0x5f, 0x00),
-    ARGB(255, 0x00, 0x5f, 0x5f),  /* 20 -23  */ 
+    ARGB(255, 0x00, 0x5f, 0x5f),  /* 20 -23  */
     ARGB(255, 0x00, 0x5f, 0x87),
     ARGB(255, 0x00, 0x5f, 0xaf),
     ARGB(255, 0x00, 0x5f, 0xd7),
-    ARGB(255, 0x00, 0x5f, 0xff),  /* 24 -27  */ 
+    ARGB(255, 0x00, 0x5f, 0xff),  /* 24 -27  */
     ARGB(255, 0x00, 0x87, 0x00),
     ARGB(255, 0x00, 0x87, 0x5f),
     ARGB(255, 0x00, 0x87, 0x87),
-    ARGB(255, 0x00, 0x87, 0xaf),  /* 28 -31  */ 
+    ARGB(255, 0x00, 0x87, 0xaf),  /* 28 -31  */
     ARGB(255, 0x00, 0x87, 0xd7),
     ARGB(255, 0x00, 0x87, 0xff),
     ARGB(255, 0x00, 0xaf, 0x00),
-    ARGB(255, 0x00, 0xaf, 0x5f),  /* 32 -35  */ 
+    ARGB(255, 0x00, 0xaf, 0x5f),  /* 32 -35  */
     ARGB(255, 0x00, 0xaf, 0x87),
     ARGB(255, 0x00, 0xaf, 0xaf),
     ARGB(255, 0x00, 0xaf, 0xd7),
-    ARGB(255, 0x00, 0xaf, 0xff),  /* 36 -39  */ 
+    ARGB(255, 0x00, 0xaf, 0xff),  /* 36 -39  */
     ARGB(255, 0x00, 0xd7, 0x00),
     ARGB(255, 0x00, 0xd7, 0x5f),
     ARGB(255, 0x00, 0xd7, 0x87),
-    ARGB(255, 0x00, 0xd7, 0xaf),  /* 40 -43  */ 
+    ARGB(255, 0x00, 0xd7, 0xaf),  /* 40 -43  */
     ARGB(255, 0x00, 0xd7, 0xd7),
     ARGB(255, 0x00, 0xd7, 0xff),
     ARGB(255, 0x00, 0xff, 0x00),
-    ARGB(255, 0x00, 0xff, 0x5f),  /* 44 -47  */ 
+    ARGB(255, 0x00, 0xff, 0x5f),  /* 44 -47  */
     ARGB(255, 0x00, 0xff, 0x87),
     ARGB(255, 0x00, 0xff, 0xaf),
     ARGB(255, 0x00, 0xff, 0xd7),
-    ARGB(255, 0x00, 0xff, 0xff),  /* 48 -51  */ 
+    ARGB(255, 0x00, 0xff, 0xff),  /* 48 -51  */
     ARGB(255, 0x5f, 0x00, 0x00),
     ARGB(255, 0x5f, 0x00, 0x5f),
     ARGB(255, 0x5f, 0x00, 0x87),
-    ARGB(255, 0x5f, 0x00, 0xaf),  /* 52 -55  */ 
+    ARGB(255, 0x5f, 0x00, 0xaf),  /* 52 -55  */
     ARGB(255, 0x5f, 0x00, 0xd7),
     ARGB(255, 0x5f, 0x00, 0xff),
     ARGB(255, 0x5f, 0x5f, 0x00),
-    ARGB(255, 0x5f, 0x5f, 0x5f),  /* 56 -59  */ 
+    ARGB(255, 0x5f, 0x5f, 0x5f),  /* 56 -59  */
     ARGB(255, 0x5f, 0x5f, 0x87),
     ARGB(255, 0x5f, 0x5f, 0xaf),
     ARGB(255, 0x5f, 0x5f, 0xd7),
-    ARGB(255, 0x5f, 0x5f, 0xff),  /* 60 -63  */ 
+    ARGB(255, 0x5f, 0x5f, 0xff),  /* 60 -63  */
     ARGB(255, 0x5f, 0x87, 0x00),
     ARGB(255, 0x5f, 0x87, 0x5f),
     ARGB(255, 0x5f, 0x87, 0x87),
-    ARGB(255, 0x5f, 0x87, 0xaf),  /* 64 -67  */ 
+    ARGB(255, 0x5f, 0x87, 0xaf),  /* 64 -67  */
     ARGB(255, 0x5f, 0x87, 0xd7),
     ARGB(255, 0x5f, 0x87, 0xff),
     ARGB(255, 0x5f, 0xaf, 0x00),
-    ARGB(255, 0x5f, 0xaf, 0x5f),  /* 68 -71  */ 
+    ARGB(255, 0x5f, 0xaf, 0x5f),  /* 68 -71  */
     ARGB(255, 0x5f, 0xaf, 0x87),
     ARGB(255, 0x5f, 0xaf, 0xaf),
     ARGB(255, 0x5f, 0xaf, 0xd7),
-    ARGB(255, 0x5f, 0xaf, 0xff),  /* 72 -75  */ 
+    ARGB(255, 0x5f, 0xaf, 0xff),  /* 72 -75  */
     ARGB(255, 0x5f, 0xd7, 0x00),
     ARGB(255, 0x5f, 0xd7, 0x5f),
     ARGB(255, 0x5f, 0xd7, 0x87),
-    ARGB(255, 0x5f, 0xd7, 0xaf),  /* 76 -79  */ 
+    ARGB(255, 0x5f, 0xd7, 0xaf),  /* 76 -79  */
     ARGB(255, 0x5f, 0xd7, 0xd7),
     ARGB(255, 0x5f, 0xd7, 0xff),
     ARGB(255, 0x5f, 0xff, 0x00),
-    ARGB(255, 0x5f, 0xff, 0x5f),  /* 80 -83  */ 
+    ARGB(255, 0x5f, 0xff, 0x5f),  /* 80 -83  */
     ARGB(255, 0x5f, 0xff, 0x87),
     ARGB(255, 0x5f, 0xff, 0xaf),
     ARGB(255, 0x5f, 0xff, 0xd7),
-    ARGB(255, 0x5f, 0xff, 0xff),  /* 84 -87  */ 
+    ARGB(255, 0x5f, 0xff, 0xff),  /* 84 -87  */
     ARGB(255, 0x87, 0x00, 0x00),
     ARGB(255, 0x87, 0x00, 0x5f),
     ARGB(255, 0x87, 0x00, 0x87),
-    ARGB(255, 0x87, 0x00, 0xaf),  /* 88 -91  */ 
+    ARGB(255, 0x87, 0x00, 0xaf),  /* 88 -91  */
     ARGB(255, 0x87, 0x00, 0xd7),
     ARGB(255, 0x87, 0x00, 0xff),
     ARGB(255, 0x87, 0x5f, 0x00),
-    ARGB(255, 0x87, 0x5f, 0x5f),  /* 92 -95  */ 
+    ARGB(255, 0x87, 0x5f, 0x5f),  /* 92 -95  */
     ARGB(255, 0x87, 0x5f, 0x87),
     ARGB(255, 0x87, 0x5f, 0xaf),
     ARGB(255, 0x87, 0x5f, 0xd7),
-    ARGB(255, 0x87, 0x5f, 0xff),  /* 96 -99  */ 
+    ARGB(255, 0x87, 0x5f, 0xff),  /* 96 -99  */
     ARGB(255, 0x87, 0x87, 0x00),
     ARGB(255, 0x87, 0x87, 0x5f),
     ARGB(255, 0x87, 0x87, 0x87),
-    ARGB(255, 0x87, 0x87, 0xaf),  /* 100-103 */ 
+    ARGB(255, 0x87, 0x87, 0xaf),  /* 100-103 */
     ARGB(255, 0x87, 0x87, 0xd7),
     ARGB(255, 0x87, 0x87, 0xff),
     ARGB(255, 0x87, 0xaf, 0x00),
-    ARGB(255, 0x87, 0xaf, 0x5f),  /* 104-107 */ 
+    ARGB(255, 0x87, 0xaf, 0x5f),  /* 104-107 */
     ARGB(255, 0x87, 0xaf, 0x87),
     ARGB(255, 0x87, 0xaf, 0xaf),
     ARGB(255, 0x87, 0xaf, 0xd7),
-    ARGB(255, 0x87, 0xaf, 0xff),  /* 108-111 */ 
+    ARGB(255, 0x87, 0xaf, 0xff),  /* 108-111 */
     ARGB(255, 0x87, 0xd7, 0x00),
     ARGB(255, 0x87, 0xd7, 0x5f),
     ARGB(255, 0x87, 0xd7, 0x87),
-    ARGB(255, 0x87, 0xd7, 0xaf),  /* 112-115 */ 
+    ARGB(255, 0x87, 0xd7, 0xaf),  /* 112-115 */
     ARGB(255, 0x87, 0xd7, 0xd7),
     ARGB(255, 0x87, 0xd7, 0xff),
     ARGB(255, 0x87, 0xff, 0x00),
-    ARGB(255, 0x87, 0xff, 0x5f),  /* 116-119 */ 
+    ARGB(255, 0x87, 0xff, 0x5f),  /* 116-119 */
     ARGB(255, 0x87, 0xff, 0x87),
     ARGB(255, 0x87, 0xff, 0xaf),
     ARGB(255, 0x87, 0xff, 0xd7),
-    ARGB(255, 0x87, 0xff, 0xff),  /* 120-123 */ 
+    ARGB(255, 0x87, 0xff, 0xff),  /* 120-123 */
     ARGB(255, 0xaf, 0x00, 0x00),
     ARGB(255, 0xaf, 0x00, 0x5f),
     ARGB(255, 0xaf, 0x00, 0x87),
-    ARGB(255, 0xaf, 0x00, 0xaf),  /* 124-127 */ 
+    ARGB(255, 0xaf, 0x00, 0xaf),  /* 124-127 */
     ARGB(255, 0xaf, 0x00, 0xd7),
     ARGB(255, 0xaf, 0x00, 0xff),
     ARGB(255, 0xaf, 0x5f, 0x00),
-    ARGB(255, 0xaf, 0x5f, 0x5f),  /* 128-131 */ 
+    ARGB(255, 0xaf, 0x5f, 0x5f),  /* 128-131 */
     ARGB(255, 0xaf, 0x5f, 0x87),
     ARGB(255, 0xaf, 0x5f, 0xaf),
     ARGB(255, 0xaf, 0x5f, 0xd7),
-    ARGB(255, 0xaf, 0x5f, 0xff),  /* 132-135 */ 
+    ARGB(255, 0xaf, 0x5f, 0xff),  /* 132-135 */
     ARGB(255, 0xaf, 0x87, 0x00),
     ARGB(255, 0xaf, 0x87, 0x5f),
     ARGB(255, 0xaf, 0x87, 0x87),
-    ARGB(255, 0xaf, 0x87, 0xaf),  /* 136-139 */ 
+    ARGB(255, 0xaf, 0x87, 0xaf),  /* 136-139 */
     ARGB(255, 0xaf, 0x87, 0xd7),
     ARGB(255, 0xaf, 0x87, 0xff),
     ARGB(255, 0xaf, 0xaf, 0x00),
-    ARGB(255, 0xaf, 0xaf, 0x5f),  /* 140-143 */ 
+    ARGB(255, 0xaf, 0xaf, 0x5f),  /* 140-143 */
     ARGB(255, 0xaf, 0xaf, 0x87),
     ARGB(255, 0xaf, 0xaf, 0xaf),
     ARGB(255, 0xaf, 0xaf, 0xd7),
-    ARGB(255, 0xaf, 0xaf, 0xff),  /* 144-147 */ 
+    ARGB(255, 0xaf, 0xaf, 0xff),  /* 144-147 */
     ARGB(255, 0xaf, 0xd7, 0x00),
     ARGB(255, 0xaf, 0xd7, 0x5f),
     ARGB(255, 0xaf, 0xd7, 0x87),
-    ARGB(255, 0xaf, 0xd7, 0xaf),  /* 148-151 */ 
+    ARGB(255, 0xaf, 0xd7, 0xaf),  /* 148-151 */
     ARGB(255, 0xaf, 0xd7, 0xd7),
     ARGB(255, 0xaf, 0xd7, 0xff),
     ARGB(255, 0xaf, 0xff, 0x00),
-    ARGB(255, 0xaf, 0xff, 0x5f),  /* 152-155 */ 
+    ARGB(255, 0xaf, 0xff, 0x5f),  /* 152-155 */
     ARGB(255, 0xaf, 0xff, 0x87),
     ARGB(255, 0xaf, 0xff, 0xaf),
     ARGB(255, 0xaf, 0xff, 0xd7),
-    ARGB(255, 0xaf, 0xff, 0xff),  /* 156-159 */ 
+    ARGB(255, 0xaf, 0xff, 0xff),  /* 156-159 */
     ARGB(255, 0xd7, 0x00, 0x00),
     ARGB(255, 0xd7, 0x00, 0x5f),
     ARGB(255, 0xd7, 0x00, 0x87),
-    ARGB(255, 0xd7, 0x00, 0xaf),  /* 160-163 */ 
+    ARGB(255, 0xd7, 0x00, 0xaf),  /* 160-163 */
     ARGB(255, 0xd7, 0x00, 0xd7),
     ARGB(255, 0xd7, 0x00, 0xff),
     ARGB(255, 0xd7, 0x5f, 0x00),
-    ARGB(255, 0xd7, 0x5f, 0x5f),  /* 164-167 */ 
+    ARGB(255, 0xd7, 0x5f, 0x5f),  /* 164-167 */
     ARGB(255, 0xd7, 0x5f, 0x87),
     ARGB(255, 0xd7, 0x5f, 0xaf),
     ARGB(255, 0xd7, 0x5f, 0xd7),
-    ARGB(255, 0xd7, 0x5f, 0xff),  /* 168-171 */ 
+    ARGB(255, 0xd7, 0x5f, 0xff),  /* 168-171 */
     ARGB(255, 0xd7, 0x87, 0x00),
     ARGB(255, 0xd7, 0x87, 0x5f),
     ARGB(255, 0xd7, 0x87, 0x87),
-    ARGB(255, 0xd7, 0x87, 0xaf),  /* 172-175 */ 
+    ARGB(255, 0xd7, 0x87, 0xaf),  /* 172-175 */
     ARGB(255, 0xd7, 0x87, 0xd7),
     ARGB(255, 0xd7, 0x87, 0xff),
     ARGB(255, 0xd7, 0xaf, 0x00),
-    ARGB(255, 0xd7, 0xaf, 0x5f),  /* 176-179 */ 
+    ARGB(255, 0xd7, 0xaf, 0x5f),  /* 176-179 */
     ARGB(255, 0xd7, 0xaf, 0x87),
     ARGB(255, 0xd7, 0xaf, 0xaf),
     ARGB(255, 0xd7, 0xaf, 0xd7),
-    ARGB(255, 0xd7, 0xaf, 0xff),  /* 180-183 */ 
+    ARGB(255, 0xd7, 0xaf, 0xff),  /* 180-183 */
     ARGB(255, 0xd7, 0xd7, 0x00),
     ARGB(255, 0xd7, 0xd7, 0x5f),
     ARGB(255, 0xd7, 0xd7, 0x87),
-    ARGB(255, 0xd7, 0xd7, 0xaf),  /* 184-187 */ 
+    ARGB(255, 0xd7, 0xd7, 0xaf),  /* 184-187 */
     ARGB(255, 0xd7, 0xd7, 0xd7),
     ARGB(255, 0xd7, 0xd7, 0xff),
     ARGB(255, 0xd7, 0xff, 0x00),
-    ARGB(255, 0xd7, 0xff, 0x5f),  /* 188-191 */ 
+    ARGB(255, 0xd7, 0xff, 0x5f),  /* 188-191 */
     ARGB(255, 0xd7, 0xff, 0x87),
     ARGB(255, 0xd7, 0xff, 0xaf),
     ARGB(255, 0xd7, 0xff, 0xd7),
-    ARGB(255, 0xd7, 0xff, 0xff),  /* 192-195 */ 
+    ARGB(255, 0xd7, 0xff, 0xff),  /* 192-195 */
     ARGB(255, 0xff, 0x00, 0x00),
     ARGB(255, 0xff, 0x00, 0x5f),
     ARGB(255, 0xff, 0x00, 0x87),
-    ARGB(255, 0xff, 0x00, 0xaf),  /* 196-199 */ 
+    ARGB(255, 0xff, 0x00, 0xaf),  /* 196-199 */
     ARGB(255, 0xff, 0x00, 0xd7),
     ARGB(255, 0xff, 0x00, 0xff),
     ARGB(255, 0xff, 0x5f, 0x00),
-    ARGB(255, 0xff, 0x5f, 0x5f),  /* 200-203 */ 
+    ARGB(255, 0xff, 0x5f, 0x5f),  /* 200-203 */
     ARGB(255, 0xff, 0x5f, 0x87),
     ARGB(255, 0xff, 0x5f, 0xaf),
     ARGB(255, 0xff, 0x5f, 0xd7),
-    ARGB(255, 0xff, 0x5f, 0xff),  /* 204-207 */ 
+    ARGB(255, 0xff, 0x5f, 0xff),  /* 204-207 */
     ARGB(255, 0xff, 0x87, 0x00),
     ARGB(255, 0xff, 0x87, 0x5f),
     ARGB(255, 0xff, 0x87, 0x87),
-    ARGB(255, 0xff, 0x87, 0xaf),  /* 208-211 */ 
+    ARGB(255, 0xff, 0x87, 0xaf),  /* 208-211 */
     ARGB(255, 0xff, 0x87, 0xd7),
     ARGB(255, 0xff, 0x87, 0xff),
     ARGB(255, 0xff, 0xaf, 0x00),
-    ARGB(255, 0xff, 0xaf, 0x5f),  /* 212-215 */ 
+    ARGB(255, 0xff, 0xaf, 0x5f),  /* 212-215 */
     ARGB(255, 0xff, 0xaf, 0x87),
     ARGB(255, 0xff, 0xaf, 0xaf),
     ARGB(255, 0xff, 0xaf, 0xd7),
-    ARGB(255, 0xff, 0xaf, 0xff),  /* 216-219 */ 
+    ARGB(255, 0xff, 0xaf, 0xff),  /* 216-219 */
     ARGB(255, 0xff, 0xd7, 0x00),
     ARGB(255, 0xff, 0xd7, 0x5f),
     ARGB(255, 0xff, 0xd7, 0x87),
-    ARGB(255, 0xff, 0xd7, 0xaf),  /* 220-223 */ 
+    ARGB(255, 0xff, 0xd7, 0xaf),  /* 220-223 */
     ARGB(255, 0xff, 0xd7, 0xd7),
     ARGB(255, 0xff, 0xd7, 0xff),
     ARGB(255, 0xff, 0xff, 0x00),
-    ARGB(255, 0xff, 0xff, 0x5f),  /* 224-227 */ 
+    ARGB(255, 0xff, 0xff, 0x5f),  /* 224-227 */
     ARGB(255, 0xff, 0xff, 0x87),
     ARGB(255, 0xff, 0xff, 0xaf),
     ARGB(255, 0xff, 0xff, 0xd7),
-    ARGB(255, 0xff, 0xff, 0xff),  /* 228-231 */ 
+    ARGB(255, 0xff, 0xff, 0xff),  /* 228-231 */
     ARGB(255, 0x08, 0x08, 0x08),
     ARGB(255, 0x12, 0x12, 0x12),
     ARGB(255, 0x1c, 0x1c, 0x1c),
-    ARGB(255, 0x26, 0x26, 0x26),  /* 232-235 */ 
+    ARGB(255, 0x26, 0x26, 0x26),  /* 232-235 */
     ARGB(255, 0x30, 0x30, 0x30),
     ARGB(255, 0x3a, 0x3a, 0x3a),
     ARGB(255, 0x44, 0x44, 0x44),
-    ARGB(255, 0x4e, 0x4e, 0x4e),  /* 236-239 */ 
+    ARGB(255, 0x4e, 0x4e, 0x4e),  /* 236-239 */
     ARGB(255, 0x58, 0x58, 0x58),
     ARGB(255, 0x62, 0x62, 0x62),
     ARGB(255, 0x6c, 0x6c, 0x6c),
-    ARGB(255, 0x76, 0x76, 0x76),  /* 240-243 */ 
+    ARGB(255, 0x76, 0x76, 0x76),  /* 240-243 */
     ARGB(255, 0x80, 0x80, 0x80),
     ARGB(255, 0x8a, 0x8a, 0x8a),
     ARGB(255, 0x94, 0x94, 0x94),
-    ARGB(255, 0x9e, 0x9e, 0x9e),  /* 244-247 */ 
+    ARGB(255, 0x9e, 0x9e, 0x9e),  /* 244-247 */
     ARGB(255, 0xa8, 0xa8, 0xa8),
     ARGB(255, 0xb2, 0xb2, 0xb2),
     ARGB(255, 0xbc, 0xbc, 0xbc),
-    ARGB(255, 0xc6, 0xc6, 0xc6),  /* 248-251 */ 
+    ARGB(255, 0xc6, 0xc6, 0xc6),  /* 248-251 */
     ARGB(255, 0xd0, 0xd0, 0xd0),
     ARGB(255, 0xda, 0xda, 0xda),
     ARGB(255, 0xe4, 0xe4, 0xe4),
-    ARGB(255, 0xee, 0xee, 0xee)   /* 252-255 */ 
+    ARGB(255, 0xee, 0xee, 0xee)   /* 252-255 */
 };
 
 class UnknownImpl
@@ -350,7 +352,7 @@ public:
             }
             else if (iid == IID_IWICBitmapSource)
             {
-                    ::MessageBox(0, "Jl", 0, 0);
+                ::MessageBox(NULL, "QueryInterface", NULL, MB_OK);
                 *ppvObject = bitmapSource;
 
                 if (NULL != bitmapSource)
@@ -389,7 +391,7 @@ public:
     STDMETHOD(GetMetadataQueryReader)(
         /* [out] */ IWICMetadataQueryReader **ppIMetadataQueryReader)
     {
-//        ::MessageBox(NULL, "GetMetadataQueryReader", NULL, NULL);
+//        ::MessageBox(NULL, "GetMetadataQueryReader", NULL, MB_OK);
         return WINCODEC_ERR_UNSUPPORTEDOPERATION;
     }
 
@@ -418,7 +420,7 @@ public:
     STDMETHOD(GetThumbnail)(
         /* [out] */ IWICBitmapSource **ppIThumbnail)
     {
-        ::MessageBox(NULL, "GetThumbnail", NULL, NULL);
+        ::MessageBox(NULL, "GetThumbnail", NULL, MB_OK);
         HRESULT result = S_OK;
 
         if (NULL == ppIThumbnail)
@@ -516,7 +518,7 @@ public:
         }
 
 //        if (SUCCEEDED(result))
-//        ::MessageBox(NULL, "CopyPalette - 1", NULL, NULL);
+//        ::MessageBox(NULL, "CopyPalette - 1", NULL, MB_OK);
 
 //        if (SUCCEEDED(result))
 //        {
@@ -554,7 +556,7 @@ public:
                 "CopyPixels[%d][%d][%d][%d],stride=[%d],pixelsize=[%d]",
                 prc->X, prc->Y, prc->Width, prc->Height,
                 cbStride, cbPixelsSize);
-        //::MessageBox(NULL, buf, NULL, NULL);
+        //::MessageBox(NULL, buf, NULL, MB_OK);
         HRESULT result = E_UNEXPECTED;
 
         if (bitmapSource)
@@ -839,7 +841,7 @@ public:
         LARGE_INTEGER zero = { 0 };
         ULARGE_INTEGER curPos = { 0 };
 
-        ::MessageBox(NULL, "SixelDecoder::QueryCapability", NULL, NULL);
+        ::MessageBox(NULL, "SixelDecoder::QueryCapability", NULL, MB_OK);
         if ((NULL == pIStream) || (NULL == pCapability))
         {
             result = E_INVALIDARG;
@@ -864,7 +866,7 @@ public:
         /* [in] */ IStream *pIStream,
         /* [in] */ WICDecodeOptions cacheOptions)
     {
-//        ::MessageBox(NULL, "Initialize", NULL, NULL);
+//        ::MessageBox(NULL, "Initialize", NULL, MB_OK);
         HRESULT result = S_OK;
         ULONG numRead = 0;
         UINT cbBufferSize = 0;
@@ -992,7 +994,7 @@ public:
 
             //char buf2[16];
             //sprintf(buf2, "[%d]", (int)numRead);
-            //::MessageBox(NULL, buf2, NULL, NULL);
+            //::MessageBox(NULL, buf2, NULL, MB_OK);
             for (i = 0; i < numRead; ++i)
             {
                 c = buffer[c];
@@ -1013,7 +1015,7 @@ public:
                     } else if (c == '\\') {
                         state = STATE_GROUND;
                     } else if (c >= 0x20 && c < 0x7f) {
-                        
+
                     }
                     break;
                 case STATE_DCS_ESC:
@@ -1052,7 +1054,7 @@ public:
         {
             result = S_OK;
             *pguidContainerFormat = CLSID_SixelDecoder;
-//        ::MessageBox(NULL, "GetContainerFormat", NULL, NULL);
+//        ::MessageBox(NULL, "GetContainerFormat", NULL, MB_OK);
         }
 
         return result;
@@ -1060,7 +1062,7 @@ public:
 
     STDMETHOD(GetDecoderInfo)(/* [out] */ IWICBitmapDecoderInfo **ppIDecoderInfo)
     {
-        ::MessageBox(NULL, "GetDecoderInfo", NULL, NULL);
+        ::MessageBox(NULL, "GetDecoderInfo", NULL, MB_OK);
         HRESULT result = S_OK;
 
         IWICComponentInfo *compInfo = NULL;
@@ -1091,7 +1093,7 @@ public:
     STDMETHOD(CopyPalette)(
         /* [in] */ IWICPalette *pIPalette)
     {
-        ::MessageBox(NULL, "CopyPalette", NULL, NULL);
+        ::MessageBox(NULL, "CopyPalette", NULL, MB_OK);
         HRESULT result = S_OK;
         WICColor *colors;
         UINT numColors = 256;
@@ -1106,7 +1108,7 @@ public:
 //        {
 //            result = factory->CreatePalette(palette);
 //        }
-    
+
         // Read the colors
         if (SUCCEEDED(result))
         {
@@ -1147,7 +1149,7 @@ public:
     STDMETHOD(GetMetadataQueryReader)(
         /* [out] */ IWICMetadataQueryReader **ppIMetadataQueryReader)
     {
-//        ::MessageBox(NULL, "GetMetadataQueryReader", NULL, NULL);
+//        ::MessageBox(NULL, "GetMetadataQueryReader", NULL, MB_OK);
         return WINCODEC_ERR_UNSUPPORTEDOPERATION;
         return E_NOTIMPL;
     }
@@ -1155,7 +1157,7 @@ public:
     STDMETHOD(GetPreview)(
         /* [out] */ IWICBitmapSource **ppIPreview)
     {
-        ::MessageBox(NULL, "GetPreview", NULL, NULL);
+        ::MessageBox(NULL, "GetPreview", NULL, MB_OK);
         HRESULT result = S_OK;
 
         if (NULL == ppIPreview)
@@ -1204,7 +1206,7 @@ public:
     STDMETHOD(GetThumbnail)(
         /* [out] */ IWICBitmapSource **ppIThumbnail)
     {
-        ::MessageBox(NULL, "GetThumbnail", NULL, NULL);
+        ::MessageBox(NULL, "GetThumbnail", NULL, MB_OK);
         HRESULT result = S_OK;
 
         if (NULL == ppIThumbnail)
@@ -1264,7 +1266,7 @@ public:
             result = p_frame->QueryInterface(IID_IWICBitmapFrameDecode,
                                              (void**)ppIBitmapFrame);
         }
-//        ::MessageBox(NULL, buf, NULL, NULL);
+//        ::MessageBox(NULL, buf, NULL, MB_OK);
 
         return result;
     }
@@ -1410,22 +1412,59 @@ private:
     UnknownImpl unknownImpl;
 };
 
-extern "C"
-STDAPI DllRegisterServer()
-{    
+HRESULT SetRegValue(LPCSTR keyName,
+                    LPCSTR valueName,
+                    DWORD type,
+                    BYTE const *data,
+                    DWORD size)
+{
+    HKEY hkey;
+    LONG err;
+   
+    err = RegCreateKeyA(HKEY_CLASSES_ROOT, keyName, &hkey);
+    if (ERROR_SUCCESS != err) {
+        return E_FAIL;
+    }
+    err = RegSetValueExA(hkey, valueName, 0, type, data, size);
+    if (ERROR_SUCCESS != err) {
+        return E_FAIL;
+    }
+    RegCloseKey(hkey);
     return S_OK;
 }
 
+#define CLSIDSTR_SixelDecoder \
+    "15b9b4da-b155-4977-8571-cf005884bcb9"
+
+#define KEY_INPROCSERVER32 \
+    "CLSID\\" " ## CLSIDSTR_SixelDecoder ## " "\\InprocServer32"
+
+
 extern "C"
-STDAPI DllUnregisterServer()
-{ 
+STDAPI DllRegisterServer()
+{
+    SetRegValue(KEY_INPROCSERVER32,
+                "",
+                REG_SZ,
+                (BYTE const *)g_moduleFileName,
+                strlen(g_moduleFileName) + 1);
     return S_OK;
 }
+
+
+extern "C"
+STDAPI DllUnregisterServer()
+{
+    RegDeleteKeyA(HKEY_CLASSES_ROOT,
+                  KEY_INPROCSERVER32);
+    return S_OK;
+}
+
 
 extern "C"
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
 {
-    HRESULT result = E_INVALIDARG; 
+    HRESULT result = E_INVALIDARG;
     IClassFactory *classFactory = NULL;
 
     if (NULL != ppv)
@@ -1452,8 +1491,9 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
             }
         }
     }
-    return result;    
+    return result;
 }
+
 
 extern "C"
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,
@@ -1466,6 +1506,9 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,
     {
     case DLL_PROCESS_ATTACH:
         DisableThreadLibraryCalls(hinstDLL);
+        GetModuleFileNameA(hinstDLL,
+                           (LPSTR)&g_moduleFileName,
+                           sizeof(g_moduleFileName));
         break;
 
     case DLL_PROCESS_DETACH:
