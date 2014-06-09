@@ -18,6 +18,6 @@ winetest: all
 coveralls: test
 	ln -s -f converters/stb_image.h .
 	ln -s -f converters/stb_image_write.h .
-	coveralls
+	coveralls -e sixel_orig -e include -e m4
 	rm -f stb_image.h
 	rm -f stb_image_write.h
