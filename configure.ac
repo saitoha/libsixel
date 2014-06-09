@@ -115,8 +115,6 @@ AC_CHECK_FUNCS([strtol pow])
 loaders="stb_image"
 have_curl="no"
 have_wic="no"
-AC_SUBST(compath, "${libdir}/libsixel.la")
-AC_SUBST(COMPATH, "${libdir}/libsixel.la")
 
 if test x$with_wic != xno; then
     AC_CHECK_HEADERS([wincodec.h], [],
