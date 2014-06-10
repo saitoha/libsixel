@@ -50,5 +50,5 @@ script:
   - "du -h snake3.sixel"
 
 after_success:
-  - "if [ x$WINE = x ]; then make valgrind || cat valgrind.log && exit 1; fi"
+  - "if [ x$WINE = x ]; then make valgrind && exit 0 || cat valgrind.log; fi"
   - "if [ x$GCOV != x ]; then make coveralls || exit 1 ; fi"
