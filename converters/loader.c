@@ -37,8 +37,6 @@
 # include <fcntl.h>
 #endif
 
-#define STBI_HEADER_FILE_ONLY 1
-
 #if !defined(HAVE_MEMCPY)
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
 #endif
@@ -52,7 +50,9 @@
 #endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 
 #include <assert.h>
-#include "stb_image.c"
+
+#define STBI_NO_STDIO 1
+#include "stb_image.h"
 
 #ifdef HAVE_GDK_PIXBUF2
 # include <gdk-pixbuf/gdk-pixbuf.h>
@@ -66,6 +66,7 @@
 # include <curl/curl.h>
 #endif
 
+#include <stdio.h>
 #include "frompnm.h"
 #include "loader.h"
 
@@ -283,7 +284,8 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         /* sixel */
     } else if (chunk_is_pnm(pchunk)) {
         /* pnm */
-        result = load_pnm(pchunk->buffer, pchunk->size, psx, psy, pcomp, pstride);
+        result = load_pnm(pchunk->buffer, pchunk->size,
+                          psx, psy, pcomp, pstride);
         if (!result) {
 #if _ERRNO_H
             fprintf(stderr, "load_pnm failed.\n" "reason: %s.\n",
@@ -292,7 +294,8 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
             return NULL;
         }
     } else {
-        result = stbi_load_from_memory(pchunk->buffer, pchunk->size, psx, psy, pcomp, STBI_rgb);
+        result = stbi_load_from_memory(pchunk->buffer, pchunk->size,
+                                       psx, psy, pcomp, STBI_rgb);
         if (!result) {
             fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
                     stbi_failure_reason());
