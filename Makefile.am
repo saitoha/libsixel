@@ -16,9 +16,11 @@ winetest: all
 	$(MAKE) winetest -C converters
 
 valgrind: all
-	valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -dfs 2>&1 \
-		| tee valgrind.log \
-		| grep 'ERROR SUMMARY: 0 errors from 0 contexts'
+	valgrind --leak-check=full --show-leachable=no --error-limit=no img2sixel images/snake.jpg -dfs 2>&1 \
+		| grep ^== \
+		> tee valgrind.log
+	grep "definitely lost: 0 bytes in 0 blocks" valgrind.log
+	grep "indirectly lost: 0 bytes in 0 blocks" valgrind.log
 
 coveralls: test
 	rm -rf gcovtmp
