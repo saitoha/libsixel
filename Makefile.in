@@ -884,6 +884,7 @@ winetest: all
 
 valgrind: all
 	valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -dfs 2>&1 \
+		| grep ^== \
 		| tee valgrind.log \
 		| grep 'ERROR SUMMARY: 0 errors from 0 contexts'
 
