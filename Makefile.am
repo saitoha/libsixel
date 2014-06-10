@@ -10,7 +10,7 @@ pkgconfig_DATA = libsixel.pc
 CLEANFILES = libsixel.pc wic_install.reg wic_uninstall.reg valgrind.log
 
 test: all
-	$(MAKE) test -C converters
+	$(MAKE) test -C converters > test.log
 
 winetest: all
 	$(MAKE) winetest -C converters
