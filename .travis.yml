@@ -4,9 +4,9 @@ language: c
 env:
   - XCC=clang HOST= WINE=
   - XCC=gcc HOST= WINE=
-  - XCC=i686-w64-mingw32-gcc HOST=i686-w64-mingw32 WINE=wine
-  - XCC=i586-mingw32msvc-gcc HOST=i586-mingw32msvc WINE=wine
-  - XCC=x86_64-w64-mingw32-gcc HOST=x86_64-w64-mingw32 WINE=wine64
+  - XCC=i686-w64-mingw32-gcc HOST="--host=i686-w64-mingw32" WINE=wine
+  - XCC=i586-mingw32msvc-gcc HOST="--host=i586-mingw32msvc" WINE=wine
+  - XCC=x86_64-w64-mingw32-gcc HOST="--host=x86_64-w64-mingw32" WINE=wine64
   - XCC=clang HOST= WINE= GDKPIXBUF="--with-gdk-pixbuf2"
   - XCC=clang HOST= WINE= LIBCURL="--with-libcurl"
   - XCC=clang HOST= WINE= GD="--with-gd"
@@ -31,8 +31,8 @@ before_install:
   - "if [ x$GCOV != x ]; then sudo pip install cpp-coveralls pyyaml; fi"
 
 before_script:
-  - "echo ./configure --prefix=/usr --host=${HOST} ${GDKPIXBUF} ${GD} ${LIBCURL} ${GCOV} ${STATIC}"
-  - "CC=$XCC ./configure --prefix=/usr --host=${HOST} ${GDKPIXBUF} ${GD} ${LIBCURL} ${GCOV} ${STATIC}"
+  - "echo ./configure --prefix=/usr ${HOST} ${GDKPIXBUF} ${GD} ${LIBCURL} ${GCOV} ${STATIC}"
+  - "CC=$XCC ./configure --prefix=/usr ${HOST} ${GDKPIXBUF} ${GD} ${LIBCURL} ${GCOV} ${STATIC}"
 
 script:
   - "make"
