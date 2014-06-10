@@ -321,9 +321,9 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     }
 
     if (context->has_8bit_control) {
-        ret = context->fn_printf("\x90q");
+        ret = context->fn_printf("\x90" "0;0;0" "q");
     } else {
-        ret = context->fn_printf("\x1bPq");
+        ret = context->fn_printf("\x1bP" "0;0;0" "q");
     }
     if (ret <= 0) {
         return (-1);

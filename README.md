@@ -2,6 +2,7 @@ libsixel
 ========
 
 [![Build Status](https://travis-ci.org/saitoha/libsixel.svg?branch=master)](https://travis-ci.org/saitoha/libsixel)
+[![Coverage Status](https://coveralls.io/repos/saitoha/libsixel/badge.png?branch=configure-with-gcov)](https://coveralls.io/r/saitoha/libsixel?branch=configure-with-gcov)
 
 ## What is this?
 
@@ -246,6 +247,10 @@ $ sixel2png < egret.sixel > egret.png
   Python implementation of SIXEL converter
 
 
+- [monosixel in arakiken's tw](https://bitbucket.org/arakiken/tw/branch/sixel)
+
+  A monochrome SIXEL converter
+
 ## Other software supporting SIXEL
 
 - [GNUPLOT](http://www.gnuplot.info/)
@@ -400,45 +405,11 @@ http://netpbm.sourceforge.net/
 > implied warranty.
 
 
-### monosixel (arakiken's tw)
+### test images
 
-The pattern dither algorithm implemented in quant.c is imported from
-*monosixel/main.c* in *arakiken's tw "sixel" branch*.
+#### http://public-domain-photos.com/
 
-https://bitbucket.org/arakiken/tw/branch/sixel
-
-This tool is written by Araki Ken, and we regard it as a derivative of.
-original tw, created by Sho Hashimoto.
-
-
-> Copyright (c) 2012 Sho Hashimoto
-> Copyright (c) 2014 Araki Ken
->
-> Permission is hereby granted, free of charge, to any person obtaining
-> a copy of this software and associated documentation files (the
-> "Software"), to deal in the Software without restriction, including
-> without limitation the rights to use, copy, modify, merge, publish,
-> distribute, sublicense, and/or sell copies of the Software, and to
-> permit persons to whom the Software is furnished to do so, subject to
-> the following conditions:
->
-> The above copyright notice and this permission notice shall be
-> included in all copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-> EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-> MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-> NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-> LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-> OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-> WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
-### test images (egret.jpg / snake.jpg)
-
-Test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.com
-
-http://public-domain-photos.com/
+The following test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.com.
 
 - images/egret.jpg
 
@@ -449,6 +420,15 @@ http://public-domain-photos.com/
 
     author: Jon Sullivan
     url: http://public-domain-photos.com/animals/snake-4.htm
+
+
+#### vimperator3.png (mascot of vimperator)
+
+images/vimperator3.png is in public domain.
+
+    author: @k_wizard
+    url: http://quadrantem.com/~k_wizard/vimprtan/
+
 
 
 ### ImageMagick
