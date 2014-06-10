@@ -34,4 +34,3 @@ coveralls-dryrun: test
 	mkdir gcovtmp
 	cp src/*.{c,cc,gcno,gcda} converters/*.{c,h,gcno,gcda} .coveralls.yml gcovtmp/
 	cd gcovtmp && coveralls -e sixel_orig -e include -e m4 --dryrun
-	rm -rf gcovtmp
