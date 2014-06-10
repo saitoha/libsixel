@@ -2,6 +2,7 @@ libsixel
 ========
 
 [![Build Status](https://travis-ci.org/saitoha/libsixel.svg?branch=master)](https://travis-ci.org/saitoha/libsixel)
+[![Coverage Status](https://coveralls.io/repos/saitoha/libsixel/badge.png?branch=configure-with-gcov)](https://coveralls.io/r/saitoha/libsixel?branch=configure-with-gcov)
 
 ## What is this?
 
@@ -23,10 +24,14 @@ $ make
 # make install
 ```
 
-To build source package:
+## Configure options
+
+### Build with optional packages
 
 ```
-$ make package
+--with-gdk-pixbuf2      build with gdk-pixbuf2 (default: no)
+--with-libcurl          build with libcurl (default: no)
+--with-gd               build with gd (default: no)
 ```
 
 
@@ -345,7 +350,8 @@ This software derives from the following implementations.
 
 ### sixel 2014-3-2
 
-tosixel.c and fromsixel.c are derived from kmiya's "*sixel*" original version (2014-3-2)
+src/tosixel.c, src/fromsixel.c, and some part of converters/loader.c are
+derived from kmiya's "*sixel*" original version (2014-3-2)
 
 http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
 
@@ -407,6 +413,7 @@ original tw, created by Sho Hashimoto.
 
 
 > Copyright (c) 2012 Sho Hashimoto
+>
 > Copyright (c) 2014 Araki Ken
 >
 > Permission is hereby granted, free of charge, to any person obtaining
@@ -429,11 +436,11 @@ original tw, created by Sho Hashimoto.
 > WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-### test images (egret.jpg / snake.jpg)
+### test images
 
-Test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.com
+#### http://public-domain-photos.com/
 
-http://public-domain-photos.com/
+The following test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.com.
 
 - images/egret.jpg
 
@@ -444,6 +451,15 @@ http://public-domain-photos.com/
 
     author: Jon Sullivan
     url: http://public-domain-photos.com/animals/snake-4.htm
+
+
+#### vimperator3.png (mascot of vimperator)
+
+images/vimperator3.png is in public domain.
+
+    author: @k_wizard
+    url: http://quadrantem.com/~k_wizard/vimprtan/
+
 
 
 ### ImageMagick
