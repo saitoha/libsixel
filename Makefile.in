@@ -877,7 +877,7 @@ uninstall-am: uninstall-pkgconfigDATA
 
 
 test: all
-	$(MAKE) test -C converters
+	$(MAKE) test -C converters > test.log
 
 winetest: all
 	$(MAKE) winetest -C converters
