@@ -266,7 +266,9 @@ int main(int argc, char *argv[])
     enum qualityMode quality_mode = QUALITY_AUTO;
     char *mapfile = NULL;
     int long_opt;
+#if HAVE_GETOPT_LONG
     int option_index;
+#endif  /* HAVE_GETOPT_LONG */
     int ret;
     int exit_code;
     int f8bit;
@@ -278,6 +280,7 @@ int main(int argc, char *argv[])
     int pixelheight;
     int percentwidth;
     int percentheight;
+    char const *optstring = "78p:m:ed:f:s:w:h:r:q:i";
 
     f8bit = 0;
     finvert = 0;
@@ -286,6 +289,7 @@ int main(int argc, char *argv[])
     percentwidth = -1;
     percentheight = -1;
 
+#if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"7bit-mode",    no_argument,        &long_opt, '7'},
         {"8bit-mode",    no_argument,        &long_opt, '8'},
@@ -302,10 +306,16 @@ int main(int argc, char *argv[])
         {"invert",       required_argument,  &long_opt, 'i'},
         {0, 0, 0, 0}
     };
+#endif  /* HAVE_GETOPT_LONG */
 
     for (;;) {
-        n = getopt_long(argc, argv, "78p:m:ed:f:s:w:h:r:q:i",
+
+#if HAVE_GETOPT_LONG
+        n = getopt_long(argc, argv, optstring,
                         long_options, &option_index);
+#else
+        n = getopt(argc, argv, optstring);
+#endif  /* HAVE_GETOPT_LONG */
         if (n == -1) {
             break;
         }

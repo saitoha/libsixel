@@ -117,7 +117,7 @@ static void PutLf()
 {
     // DECGNL Graphics Next Line
 
-    PutStr("-\n");
+    PutStr("$-\n");
     // x = 0;
     // y += 6;
 }
