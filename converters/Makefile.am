@@ -29,11 +29,11 @@ endif
 
 test: all
 if WANT_IMG2SIXEL
-	./img2sixel ../images/snake.jpg
-	./img2sixel ../images/snake.jpg > snake.sixel
+	./img2sixel ../images/snake.jpg | tee snake.sixel
 endif
 if WANT_SIXEL2PNG
-	./sixel2png < snake.sixel > snake.png
+	./sixel2png < snake.sixel > snake1.png
+	./sixel2png -i snake.sixel -o snake2.png
 endif
 if WANT_IMG2SIXEL
 	./img2sixel -m ../images/map8.png ../images/egret.jpg
@@ -45,11 +45,11 @@ endif
 
 winetest: all
 if WANT_IMG2SIXEL
-	wine ./img2sixel.exe ../images/snake.jpg
-	wine ./img2sixel.exe ../images/snake.jpg > snake.sixel
+	wine ./img2sixel.exe ../images/snake.jpg | tee snake.sixel
 endif
 if WANT_SIXEL2PNG
-	wine ./sixel2png.exe < snake.sixel > snake.png
+	wine ./sixel2png < snake.sixel > snake1.png
+	wine ./sixel2png -i snake.sixel -o snake2.png
 endif
 if WANT_IMG2SIXEL
 	wine ./img2sixel -m ../images/map8.png ../images/egret.jpg
