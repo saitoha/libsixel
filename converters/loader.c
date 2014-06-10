@@ -56,7 +56,6 @@
 
 #ifdef HAVE_GDK_PIXBUF2
 # include <gdk-pixbuf/gdk-pixbuf.h>
-# include <gio/gio.h>
 #endif
 
 #ifdef HAVE_GD
@@ -320,7 +319,9 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *
     unsigned char *pixels;
     GdkPixbufLoader *loader;
 
-    g_type_init();
+#if (!GLIB_CHECK_VERSION(2, 36, 0))
+    g_type_init ();
+#endif
     loader = gdk_pixbuf_loader_new();
     gdk_pixbuf_loader_write(loader, pchunk->buffer, pchunk->size, NULL);
     pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
