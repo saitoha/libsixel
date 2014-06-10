@@ -1,9 +1,9 @@
 
-# libtool (GNU libtool) 2.4.2
+# libtool (GNU libtool) 2.4
 # Written by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006,
-# 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+# 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 # This is free software; see the source for copying conditions.  There is NO
 # warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
@@ -41,7 +41,6 @@
 #       --quiet, --silent    don't print informational messages
 #       --no-quiet, --no-silent
 #                            print informational messages (default)
-#       --no-warn            don't display warning messages
 #       --tag=TAG            use configuration variables from tag TAG
 #   -v, --verbose            print more informational messages than default
 #       --no-verbose         don't print the extra informational messages
@@ -70,7 +69,7 @@
 #         compiler:		$LTCC
 #         compiler flags:		$LTCFLAGS
 #         linker:		$LD (gnu? $with_gnu_ld)
-#         $progname:	(GNU libtool) 2.4.2
+#         $progname:	(GNU libtool) 2.4
 #         automake:	$automake_version
 #         autoconf:	$autoconf_version
 #
@@ -80,9 +79,9 @@
 
 PROGRAM=libtool
 PACKAGE=libtool
-VERSION=2.4.2
+VERSION=2.4
 TIMESTAMP=""
-package_revision=1.3337
+package_revision=1.3294
 
 # Be Bourne compatible
 if test -n "${ZSH_VERSION+set}" && (emulate sh) >/dev/null 2>&1; then
@@ -137,10 +136,15 @@ progpath="$0"
 
 : ${CP="cp -f"}
 test "${ECHO+set}" = set || ECHO=${as_echo-'printf %s\n'}
+: ${EGREP="/usr/bin/grep -E"}
+: ${FGREP="/usr/bin/grep -F"}
+: ${GREP="/usr/bin/grep"}
+: ${LN_S="ln -s"}
 : ${MAKE="make"}
 : ${MKDIR="mkdir"}
 : ${MV="mv -f"}
 : ${RM="rm -f"}
+: ${SED="/usr/bin/sed"}
 : ${SHELL="${CONFIG_SHELL-/bin/sh}"}
 : ${Xsed="$SED -e 1s/^X//"}
 
@@ -383,7 +387,7 @@ case $progpath in
      ;;
   *)
      save_IFS="$IFS"
-     IFS=${PATH_SEPARATOR-:}
+     IFS=:
      for progdir in $PATH; do
        IFS="$save_IFS"
        test -x "$progdir/$progname" && break
@@ -767,8 +771,8 @@ func_help ()
 	s*\$LTCFLAGS*'"$LTCFLAGS"'*
 	s*\$LD*'"$LD"'*
 	s/\$with_gnu_ld/'"$with_gnu_ld"'/
-	s/\$automake_version/'"`(${AUTOMAKE-automake} --version) 2>/dev/null |$SED 1q`"'/
-	s/\$autoconf_version/'"`(${AUTOCONF-autoconf} --version) 2>/dev/null |$SED 1q`"'/
+	s/\$automake_version/'"`(automake --version) 2>/dev/null |$SED 1q`"'/
+	s/\$autoconf_version/'"`(autoconf --version) 2>/dev/null |$SED 1q`"'/
 	p
 	d
      }
@@ -1048,7 +1052,6 @@ opt_finish=false
 opt_help=false
 opt_help_all=false
 opt_silent=:
-opt_warning=:
 opt_verbose=:
 opt_silent=false
 opt_verbose=false
@@ -1115,10 +1118,6 @@ esac
 			;;
       --no-silent|--no-quiet)
 			opt_silent=false
-func_append preserve_args " $opt"
-			;;
-      --no-warning|--no-warn)
-			opt_warning=false
 func_append preserve_args " $opt"
 			;;
       --no-verbose)
@@ -2060,7 +2059,7 @@ func_mode_compile ()
     *.[cCFSifmso] | \
     *.ada | *.adb | *.ads | *.asm | \
     *.c++ | *.cc | *.ii | *.class | *.cpp | *.cxx | \
-    *.[fF][09]? | *.for | *.java | *.go | *.obj | *.sx | *.cu | *.cup)
+    *.[fF][09]? | *.for | *.java | *.obj | *.sx | *.cu | *.cup)
       func_xform "$libobj"
       libobj=$func_xform_result
       ;;
@@ -3202,13 +3201,11 @@ func_mode_install ()
 
       # Set up the ranlib parameters.
       oldlib="$destdir/$name"
-      func_to_tool_file "$oldlib" func_convert_file_msys_to_w32
-      tool_oldlib=$func_to_tool_file_result
 
       func_show_eval "$install_prog \$file \$oldlib" 'exit $?'
 
       if test -n "$stripme" && test -n "$old_striplib"; then
-	func_show_eval "$old_striplib $tool_oldlib" 'exit $?'
+	func_show_eval "$old_striplib $oldlib" 'exit $?'
       fi
 
       # Do each command in the postinstall commands.
@@ -3473,7 +3470,7 @@ static const void *lt_preloaded_setup() {
 	  # linked before any other PIC object.  But we must not use
 	  # pic_flag when linking with -static.  The problem exists in
 	  # FreeBSD 2.2.6 and is fixed in FreeBSD 3.1.
-	  *-*-freebsd2.*|*-*-freebsd3.0*|*-*-freebsdelf3.0*)
+	  *-*-freebsd2*|*-*-freebsd3.0*|*-*-freebsdelf3.0*)
 	    pic_flag_for_symtable=" $pic_flag -DFREEBSD_WORKAROUND" ;;
 	  *-*-hpux*)
 	    pic_flag_for_symtable=" $pic_flag"  ;;
@@ -3985,17 +3982,14 @@ func_exec_program_core ()
 # launches target application with the remaining arguments.
 func_exec_program ()
 {
-  case \" \$* \" in
-  *\\ --lt-*)
-    for lt_wr_arg
-    do
-      case \$lt_wr_arg in
-      --lt-*) ;;
-      *) set x \"\$@\" \"\$lt_wr_arg\"; shift;;
-      esac
-      shift
-    done ;;
-  esac
+  for lt_wr_arg
+  do
+    case \$lt_wr_arg in
+    --lt-*) ;;
+    *) set x \"\$@\" \"\$lt_wr_arg\"; shift;;
+    esac
+    shift
+  done
   func_exec_program_core \${1+\"\$@\"}
 }
 
@@ -5063,20 +5057,49 @@ void lt_dump_script (FILE* f)
 {
 EOF
 	    func_emit_wrapper yes |
-	      $SED -n -e '
-s/^\(.\{79\}\)\(..*\)/\1\
-\2/
-h
-s/\([\\"]\)/\\\1/g
-s/$/\\n/
-s/\([^\n]*\).*/  fputs ("\1", f);/p
-g
-D'
+              $SED -e 's/\([\\"]\)/\\\1/g' \
+	           -e 's/^/  fputs ("/' -e 's/$/\\n", f);/'
+
             cat <<"EOF"
 }
 EOF
 }
 # end: func_emit_cwrapperexe_src
+
+# func_emit_exe_manifest
+# emit a Win32 UAC manifest for executable on stdout
+# Must ONLY be called from within func_mode_link because
+# it depends on a number of variable set therein.
+func_emit_exe_manifest ()
+{
+    cat <<EOF
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity version="1.0.0.0"
+EOF
+
+    case $host in
+    i?86-*-* )   echo '     processorArchitecture="x86"' ;;
+    ia64-*-* )   echo '     processorArchitecture="ia64"' ;;
+    x86_64-*-* ) echo '     processorArchitecture="amd64"' ;;
+    *)           echo '     processorArchitecture="*"' ;;
+    esac
+
+    cat <<EOF
+     name="$host_os.$PROGRAM.$outputname"
+     type="win32"/>
+
+  <!-- Identify the application security requirements. -->
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+      <requestedPrivileges>
+        <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+</assembly>
+EOF
+}
 
 # func_win32_import_lib_p ARG
 # True if ARG is an import lib, as indicated by $file_magic_cmd
@@ -5655,8 +5678,7 @@ func_mode_link ()
 	continue
 	;;
 
-      -mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe \
-      |-threads|-fopenmp|-openmp|-mp|-xopenmp|-omp|-qsmp=*)
+      -mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe|-threads)
 	func_append compiler_flags " $arg"
 	func_append compile_command " $arg"
 	func_append finalize_command " $arg"
@@ -5851,10 +5873,14 @@ func_mode_link ()
       # -tp=*                Portland pgcc target processor selection
       # --sysroot=*          for sysroot support
       # -O*, -flto*, -fwhopr*, -fuse-linker-plugin GCC link-time optimization
-      # -stdlib=*            select c++ std lib with clang
+      # -{shared,static}-libgcc, -static-{libgfortran|libstdc++}
+      #                      link against specified runtime library
+      # -fstack-protector*   stack protector flags for GCC
       -64|-mips[0-9]|-r[0-9][0-9]*|-xarch=*|-xtarget=*|+DA*|+DD*|-q*|-m*| \
       -t[45]*|-txscale*|-p|-pg|--coverage|-fprofile-*|-F*|@*|-tp=*|--sysroot=*| \
-      -O*|-flto*|-fwhopr*|-fuse-linker-plugin|-stdlib=*)
+      -O*|-flto*|-fwhopr*|-fuse-linker-plugin| \
+      -shared-libgcc|-static-libgcc|-static-libgfortran|-static-libstdc++| \
+      -fstack-protector*)
         func_quote_for_eval "$arg"
 	arg="$func_quote_for_eval_result"
         func_append compile_command " $arg"
@@ -6161,8 +6187,7 @@ func_mode_link ()
 	lib=
 	found=no
 	case $deplib in
-	-mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe \
-        |-threads|-fopenmp|-openmp|-mp|-xopenmp|-omp|-qsmp=*)
+	-mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe|-threads)
 	  if test "$linkmode,$pass" = "prog,link"; then
 	    compile_deplibs="$deplib $compile_deplibs"
 	    finalize_deplibs="$deplib $finalize_deplibs"
@@ -6846,7 +6871,7 @@ func_mode_link ()
 	         test "$hardcode_direct_absolute" = no; then
 		add="$dir/$linklib"
 	      elif test "$hardcode_minus_L" = yes; then
-		add_dir="-L$absdir"
+		add_dir="-L$dir"
 		# Try looking first in the location we're being installed to.
 		if test -n "$inst_prefix_dir"; then
 		  case $libdir in
@@ -7331,7 +7356,6 @@ func_mode_link ()
 	  # which has an extra 1 added just for fun
 	  #
 	  case $version_type in
-	  # correct linux to gnu/linux during the next big refactor
 	  darwin|linux|osf|windows|none)
 	    func_arith $number_major + $number_minor
 	    current=$func_arith_result
@@ -7448,7 +7472,7 @@ func_mode_link ()
 	  versuffix="$major.$revision"
 	  ;;
 
-	linux) # correct to gnu/linux during the next big refactor
+	linux)
 	  func_arith $current - $age
 	  major=.$func_arith_result
 	  versuffix="$major.$age.$revision"
@@ -8036,11 +8060,6 @@ EOF
 
       # Test again, we may have decided not to build it any more
       if test "$build_libtool_libs" = yes; then
-	# Remove ${wl} instances when linking with ld.
-	# FIXME: should test the right _cmds variable.
-	case $archive_cmds in
-	  *\$LD\ *) wl= ;;
-        esac
 	if test "$hardcode_into_libs" = yes; then
 	  # Hardcode the library paths
 	  hardcode_libdirs=
@@ -8071,7 +8090,7 @@ EOF
 	    elif test -n "$runpath_var"; then
 	      case "$perm_rpath " in
 	      *" $libdir "*) ;;
-	      *) func_append perm_rpath " $libdir" ;;
+	      *) func_apped perm_rpath " $libdir" ;;
 	      esac
 	    fi
 	  done
@@ -8079,7 +8098,11 @@ EOF
 	  if test -n "$hardcode_libdir_separator" &&
 	     test -n "$hardcode_libdirs"; then
 	    libdir="$hardcode_libdirs"
-	    eval "dep_rpath=\"$hardcode_libdir_flag_spec\""
+	    if test -n "$hardcode_libdir_flag_spec_ld"; then
+	      eval dep_rpath=\"$hardcode_libdir_flag_spec_ld\"
+	    else
+	      eval dep_rpath=\"$hardcode_libdir_flag_spec\"
+	    fi
 	  fi
 	  if test -n "$runpath_var" && test -n "$perm_rpath"; then
 	    # We should set the runpath_var.
@@ -9043,7 +9066,7 @@ EOF
 	    cwrappersource="$output_path/$objdir/lt-$output_name.c"
 	    cwrapper="$output_path/$output_name.exe"
 	    $RM $cwrappersource $cwrapper
-	    trap "$RM $cwrappersource $cwrapper; exit $EXIT_FAILURE" 1 2 15
+	    trap "$RM $cwrappersource $cwrapper $cwrapper.manifest; exit $EXIT_FAILURE" 1 2 15
 
 	    func_emit_cwrapperexe_src > $cwrappersource
 
@@ -9063,6 +9086,16 @@ EOF
 	    $opt_dry_run || {
 	      # note: this script will not be executed, so do not chmod.
 	      if test "x$build" = "x$host" ; then
+		# Create the UAC manifests first if necessary (but the
+		# manifest files must have executable permission regardless).
+		case $output_name in
+		  *instal*|*patch*|*setup*|*update*)
+		    func_emit_exe_manifest > $cwrapper.manifest
+		    func_emit_exe_manifest > $output_path/$objdir/$output_name.exe.manifest
+		    chmod +x $cwrapper.manifest
+		    chmod +x $output_path/$objdir/$output_name.exe.manifest
+		  ;;
+		esac
 		$cwrapper --lt-dump-script > $func_ltwrapper_scriptname_result
 	      else
 		func_emit_wrapper no > $func_ltwrapper_scriptname_result
@@ -9169,8 +9202,6 @@ EOF
 	    esac
 	  done
 	fi
-	func_to_tool_file "$oldlib" func_convert_file_msys_to_w32
-	tool_oldlib=$func_to_tool_file_result
 	eval cmds=\"$old_archive_cmds\"
 
 	func_len " $cmds"
@@ -9280,8 +9311,7 @@ EOF
 	      *.la)
 		func_basename "$deplib"
 		name="$func_basename_result"
-		func_resolve_sysroot "$deplib"
-		eval libdir=`${SED} -n -e 's/^libdir=\(.*\)$/\1/p' $func_resolve_sysroot_result`
+		eval libdir=`${SED} -n -e 's/^libdir=\(.*\)$/\1/p' $deplib`
 		test -z "$libdir" && \
 		  func_fatal_error "\`$deplib' is not a valid libtool archive"
 		func_append newdependency_libs " ${lt_sysroot:+=}$libdir/$name"
@@ -9586,8 +9616,9 @@ func_mode_uninstall ()
 	    # note $name still contains .exe if it was in $file originally
 	    # as does the version of $file that was added into $rmfiles
 	    func_append rmfiles " $odir/$name $odir/${name}S.${objext}"
+	    func_append rmfiles " ${name}.manifest $objdir/${name}.manifest"
 	    if test "$fast_install" = yes && test -n "$relink_command"; then
-	      func_append rmfiles " $odir/lt-$name"
+	      func_append rmfiles " $odir/lt-$name $objdir/lt-${name}.manifest"
 	    fi
 	    if test "X$noexename" != "X$name" ; then
 	      func_append rmfiles " $odir/lt-${noexename}.c"
