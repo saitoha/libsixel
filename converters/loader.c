@@ -325,17 +325,27 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *
     loader = gdk_pixbuf_loader_new();
     gdk_pixbuf_loader_write(loader, pchunk->buffer, pchunk->size, NULL);
     pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
+    gdk_pixbuf_loader_close(loader, NULL);
 
     if (pixbuf == NULL) {
         pixels = NULL;
-    }
-    else {
+    } else {
+        g_object_ref(pixbuf);
         *psx = gdk_pixbuf_get_width(pixbuf);
         *psy = gdk_pixbuf_get_height(pixbuf);
         *pcomp = gdk_pixbuf_get_has_alpha(pixbuf) ? 4: 3;
         *pstride = gdk_pixbuf_get_rowstride(pixbuf);
-        pixels = gdk_pixbuf_get_pixels(pixbuf);
+        pixels = malloc(*pstride * *psy);
+#if _ERRNO_H
+        if (pixels = NULL) {
+            fprintf(stderr, "load_with_gdkpixbuf: malloc failed.\n" "reason: %s.\n",
+                    filename, strerror(errno));
+        }
+#endif  /* HAVE_ERRNO_H */
+        memcpy(pixels, gdk_pixbuf_get_pixels(pixbuf), *pstride * *psy);
+        g_object_unref(in);
     }
+    g_object_unref(loader);
     return pixels;
 }
 #endif  /* HAVE_GDK_PIXBUF2 */
