@@ -330,7 +330,6 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *
     if (pixbuf == NULL) {
         pixels = NULL;
     } else {
-        g_object_ref(pixbuf);
         *psx = gdk_pixbuf_get_width(pixbuf);
         *psy = gdk_pixbuf_get_height(pixbuf);
         *pcomp = gdk_pixbuf_get_has_alpha(pixbuf) ? 4: 3;
@@ -343,7 +342,6 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *
         }
 #endif  /* HAVE_ERRNO_H */
         memcpy(pixels, gdk_pixbuf_get_pixels(pixbuf), *pstride * *psy);
-        g_object_unref(pixbuf);
     }
     g_object_unref(loader);
     return pixels;
