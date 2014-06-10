@@ -502,6 +502,14 @@ load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride
     *pcomp = 3;
     *pstride = *psx * *pcomp;
     p = pixels = malloc(*pstride * *psy);
+    if (p == NULL) {
+#if _ERRNO_H
+        fprintf(stderr, "load_with_gd failed.\n" "reason: %s.\n",
+                strerror(errno));
+#endif  /* HAVE_ERRNO_H */
+        gdImageDestroy(im);
+        return NULL;
+    }
     for (y = 0; y < *psy; y++) {
         for (x = 0; x < *psx; x++) {
             c = gdImageTrueColorPixel(im, x, y);
