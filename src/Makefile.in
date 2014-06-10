@@ -297,8 +297,6 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
-gdkpixbuf2_CFLAGS = @gdkpixbuf2_CFLAGS@
-gdkpixbuf2_LIBS = @gdkpixbuf2_LIBS@
 have_pkg_config = @have_pkg_config@
 host = @host@
 host_alias = @host_alias@
@@ -329,9 +327,11 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+@COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
+CLEANFILES = *.gcno *.gcda *.gcov
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = image.c output.c fromsixel.c tosixel.c
-libsixel_la_CFLAGS = -I$(top_builddir)/include/
+libsixel_la_CFLAGS = -I$(top_builddir)/include/ $(MAYBE_COVERAGE)
 libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION)
 dist_man_MANS = sixel.5
 all: all-am
@@ -627,6 +627,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)

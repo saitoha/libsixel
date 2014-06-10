@@ -640,8 +640,6 @@ GD_LIBS
 GD_CFLAGS
 GDK_PIXBUF_LIBS
 GDK_PIXBUF_CFLAGS
-gdkpixbuf2_LIBS
-gdkpixbuf2_CFLAGS
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
@@ -654,6 +652,8 @@ ac_ct_CXX
 CXXFLAGS
 CXX
 have_pkg_config
+COND_GCOV_FALSE
+COND_GCOV_TRUE
 pkgconfigdir
 WANT_SIXEL2PNG_FALSE
 WANT_SIXEL2PNG_TRUE
@@ -791,6 +791,7 @@ with_gd
 with_libcurl
 with_wic
 with_pkgconfigdir
+enable_gcov
 '
       ac_precious_vars='build_alias
 host_alias
@@ -808,8 +809,8 @@ CXXCPP
 PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
-gdkpixbuf2_CFLAGS
-gdkpixbuf2_LIBS
+GDK_PIXBUF_CFLAGS
+GDK_PIXBUF_LIBS
 GD_CFLAGS
 GD_LIBS
 LIBCURL_CFLAGS
@@ -1445,6 +1446,7 @@ Optional Features:
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-img2sixel     whether to build img2sixel (default: yes)
   --disable-sixel2png     whether to build sixel2png (default: yes)
+  --enable-gcov           use Gcov to test the test suite
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1479,10 +1481,10 @@ Some influential environment variables:
               directories to add to pkg-config's search path
   PKG_CONFIG_LIBDIR
               path overriding pkg-config's built-in search path
-  gdkpixbuf2_CFLAGS
-              C compiler flags for gdkpixbuf2, overriding pkg-config
-  gdkpixbuf2_LIBS
-              linker flags for gdkpixbuf2, overriding pkg-config
+  GDK_PIXBUF_CFLAGS
+              C compiler flags for GDK_PIXBUF, overriding pkg-config
+  GDK_PIXBUF_LIBS
+              linker flags for GDK_PIXBUF, overriding pkg-config
   GD_CFLAGS   C compiler flags for GD, overriding pkg-config
   GD_LIBS     linker flags for GD, overriding pkg-config
   LIBCURL_CFLAGS
@@ -3125,6 +3127,7 @@ END
     as_fn_error $? "Your 'rm' program is bad, sorry." "$LINENO" 5
   fi
 fi
+
 case `pwd` in
   *\ * | *\	*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Libtool does not cope well with whitespace in \`pwd\`" >&5
@@ -11709,6 +11712,22 @@ fi
 $as_echo "$as_me: pkgconfig directory is ${pkgconfigdir}" >&6;}
 
 
+# Check whether --enable-gcov was given.
+if test "${enable_gcov+set}" = set; then :
+  enableval=$enable_gcov;
+else
+  enable_gcov=no
+fi
+
+ if test x$enable_gcov != xno; then
+  COND_GCOV_TRUE=
+  COND_GCOV_FALSE='#'
+else
+  COND_GCOV_TRUE='#'
+  COND_GCOV_FALSE=
+fi
+
+
 # Checks for programs.
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -16431,7 +16450,7 @@ fi
 fi
 
 if test x$with_gdk_pixbuf2 != xno; then
-    if test x$have_pkg_config == xyes; then
+    if test x$have_pkg_config != xno; then
 
 
 
@@ -16554,11 +16573,11 @@ $as_echo "no" >&6; }
 fi
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdkpixbuf2" >&5
-$as_echo_n "checking for gdkpixbuf2... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GDK_PIXBUF" >&5
+$as_echo_n "checking for GDK_PIXBUF... " >&6; }
 
-if test -n "$gdkpixbuf2_CFLAGS"; then
-    pkg_cv_gdkpixbuf2_CFLAGS="$gdkpixbuf2_CFLAGS"
+if test -n "$GDK_PIXBUF_CFLAGS"; then
+    pkg_cv_GDK_PIXBUF_CFLAGS="$GDK_PIXBUF_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
     { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gdk-pixbuf-2.0\""; } >&5
@@ -16566,7 +16585,7 @@ if test -n "$gdkpixbuf2_CFLAGS"; then
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_gdkpixbuf2_CFLAGS=`$PKG_CONFIG --cflags "gdk-pixbuf-2.0" 2>/dev/null`
+  pkg_cv_GDK_PIXBUF_CFLAGS=`$PKG_CONFIG --cflags "gdk-pixbuf-2.0" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -16574,8 +16593,8 @@ fi
  else
     pkg_failed=untried
 fi
-if test -n "$gdkpixbuf2_LIBS"; then
-    pkg_cv_gdkpixbuf2_LIBS="$gdkpixbuf2_LIBS"
+if test -n "$GDK_PIXBUF_LIBS"; then
+    pkg_cv_GDK_PIXBUF_LIBS="$GDK_PIXBUF_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
     { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gdk-pixbuf-2.0\""; } >&5
@@ -16583,7 +16602,7 @@ if test -n "$gdkpixbuf2_LIBS"; then
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_gdkpixbuf2_LIBS=`$PKG_CONFIG --libs "gdk-pixbuf-2.0" 2>/dev/null`
+  pkg_cv_GDK_PIXBUF_LIBS=`$PKG_CONFIG --libs "gdk-pixbuf-2.0" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -16604,12 +16623,12 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        gdkpixbuf2_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
+	        GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
         else
-	        gdkpixbuf2_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
+	        GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
-	echo "$gdkpixbuf2_PKG_ERRORS" >&5
+	echo "$GDK_PIXBUF_PKG_ERRORS" >&5
 
 	have_gdk_pixbuf2=no
 elif test $pkg_failed = untried; then
@@ -16617,13 +16636,15 @@ elif test $pkg_failed = untried; then
 $as_echo "no" >&6; }
 	have_gdk_pixbuf2=no
 else
-	gdkpixbuf2_CFLAGS=$pkg_cv_gdkpixbuf2_CFLAGS
-	gdkpixbuf2_LIBS=$pkg_cv_gdkpixbuf2_LIBS
+	GDK_PIXBUF_CFLAGS=$pkg_cv_GDK_PIXBUF_CFLAGS
+	GDK_PIXBUF_LIBS=$pkg_cv_GDK_PIXBUF_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 	have_gdk_pixbuf2=yes
 fi
-        if test x$have_gdk_pixbuf2 = xyes; then
+        if test x$have_gdk_pixbuf2 != xno; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: gdk-pixbuf: $have_gdk_pixbuf2" >&5
+$as_echo "$as_me: gdk-pixbuf: $have_gdk_pixbuf2" >&6;}
 
 $as_echo "#define HAVE_GDK_PIXBUF2 1" >>confdefs.h
 
@@ -16636,6 +16657,10 @@ $as_echo "#define HAVE_GDK_PIXBUF2 1" >>confdefs.h
             as_fn_error $? "please set GDK_PIXBUF_CFLAGS and GDK_PIXBUF_LIBS, or install pkg-config." "$LINENO" 5
         fi
     fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}" >&5
+$as_echo "$as_me: gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}" >&6;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}" >&5
+$as_echo "$as_me: gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}" >&6;}
 fi
 
 
@@ -16991,6 +17016,11 @@ fi
 
             ;;
     esac
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: gd cflags is ${GD_CFLAGS}" >&5
+$as_echo "$as_me: gd cflags is ${GD_CFLAGS}" >&6;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: gd libs is ${GD_LIBS}" >&5
+$as_echo "$as_me: gd libs is ${GD_LIBS}" >&6;}
 fi
 
 
@@ -17125,6 +17155,10 @@ $as_echo "#define HAVE_LIBCURL 1" >>confdefs.h
     else
         as_fn_error $? "unable to find libcurl" "$LINENO" 5
     fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: libcurl cflags is ${LIBCURL_CFLAGS}" >&5
+$as_echo "$as_me: libcurl cflags is ${LIBCURL_CFLAGS}" >&6;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: libcurl libs is ${LIBCURL_LIBS}" >&5
+$as_echo "$as_me: libcurl libs is ${LIBCURL_LIBS}" >&6;}
 fi
 
 
@@ -17276,6 +17310,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_SIXEL2PNG_TRUE}" && test -z "${WANT_SIXEL2PNG_FALSE}"; then
   as_fn_error $? "conditional \"WANT_SIXEL2PNG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${COND_GCOV_TRUE}" && test -z "${COND_GCOV_FALSE}"; then
+  as_fn_error $? "conditional \"COND_GCOV\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then

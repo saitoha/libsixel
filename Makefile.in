@@ -326,8 +326,6 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
-gdkpixbuf2_CFLAGS = @gdkpixbuf2_CFLAGS@
-gdkpixbuf2_LIBS = @gdkpixbuf2_LIBS@
 have_pkg_config = @have_pkg_config@
 host = @host@
 host_alias = @host_alias@
@@ -364,7 +362,7 @@ SUBDIRS = include src converters
 DIST_SUBDIRS = $(SUBDIRS)
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = libsixel.pc
-CLEANFILES = libsixel.pc
+CLEANFILES = libsixel.pc wic_install.reg wic_uninstall.reg valgrind.log
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -883,6 +881,25 @@ test: all
 
 winetest: all
 	$(MAKE) winetest -C converters
+
+valgrind: all
+	valgrind --leak-check=yes --error-limit=no img2sixel images/snake.jpg -dfs 2>&1 \
+		| tee valgrind.log \
+		| grep 'ERROR SUMMARY: 0 errors from 0 contexts'
+
+coveralls: test
+	rm -rf gcovtmp
+	mkdir gcovtmp
+	cp src/*.{c,cc,gcno,gcda} converters/*.{c,h,gcno,gcda} .coveralls.yml gcovtmp/
+	coveralls -e sixel_orig -e include -e m4
+	rm -rf gcovtmp
+
+coveralls-dryrun: test
+	rm -rf gcovtmp
+	mkdir gcovtmp
+	cp src/*.{c,cc,gcno,gcda} converters/*.{c,h,gcno,gcda} .coveralls.yml gcovtmp/
+	coveralls -e sixel_orig -e include -e m4 --dryrun
+	rm -rf gcovtmp
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -66,6 +66,13 @@ AC_ARG_WITH(pkgconfigdir,
 AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
 AC_SUBST(pkgconfigdir)
 
+AC_ARG_ENABLE([gcov],
+              [AS_HELP_STRING([--enable-gcov],
+                              [use Gcov to test the test suite])],
+              [],
+              [enable_gcov=no])
+AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
@@ -129,12 +136,13 @@ if test x$with_wic != xno; then
 fi
 
 if test x$with_gdk_pixbuf2 != xno; then
-    if test x$have_pkg_config == xyes; then
-        PKG_CHECK_MODULES([gdkpixbuf2],
+    if test x$have_pkg_config != xno; then
+        PKG_CHECK_MODULES([GDK_PIXBUF],
                           [gdk-pixbuf-2.0],
                           [have_gdk_pixbuf2=yes],
                           [have_gdk_pixbuf2=no])
-        if test x$have_gdk_pixbuf2 = xyes; then
+        if test x$have_gdk_pixbuf2 != xno; then
+            AC_MSG_NOTICE([gdk-pixbuf: $have_gdk_pixbuf2])
             AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
             loaders="${loaders} gdk-pixbuf2"
         else
@@ -145,6 +153,8 @@ if test x$with_gdk_pixbuf2 != xno; then
             AC_MSG_ERROR([please set GDK_PIXBUF_CFLAGS and GDK_PIXBUF_LIBS, or install pkg-config.])
         fi
     fi
+    AC_MSG_NOTICE([gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}])
+    AC_MSG_NOTICE([gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}])
 fi
 AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
@@ -186,6 +196,9 @@ if test x$with_gd != xno; then
                          ])
             ;;
     esac
+
+    AC_MSG_NOTICE([gd cflags is ${GD_CFLAGS}])
+    AC_MSG_NOTICE([gd libs is ${GD_LIBS}])
 fi
 AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
@@ -209,6 +222,8 @@ if test x$with_libcurl != xno; then
     else
         AC_MSG_ERROR([unable to find libcurl])
     fi
+    AC_MSG_NOTICE([libcurl cflags is ${LIBCURL_CFLAGS}])
+    AC_MSG_NOTICE([libcurl libs is ${LIBCURL_LIBS}])
 fi
 AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
