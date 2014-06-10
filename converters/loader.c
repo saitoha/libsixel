@@ -320,7 +320,7 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *
     GdkPixbufLoader *loader;
 
 #if (!GLIB_CHECK_VERSION(2, 36, 0))
-    g_type_init ();
+    g_type_init();
 #endif
     loader = gdk_pixbuf_loader_new();
     gdk_pixbuf_loader_write(loader, pchunk->buffer, pchunk->size, NULL);
@@ -343,7 +343,7 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *
         }
 #endif  /* HAVE_ERRNO_H */
         memcpy(pixels, gdk_pixbuf_get_pixels(pixbuf), *pstride * *psy);
-        g_object_unref(in);
+        g_object_unref(pixbuf);
     }
     g_object_unref(loader);
     return pixels;
