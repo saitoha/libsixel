@@ -19,7 +19,7 @@ env:
 before_install:
   - "sudo apt-get -qq update --force-yes > /dev/null"
   - "if [ x$GDKPIXBUF != x ]; then sudo apt-get -qq install pkg-config libgdk-pixbuf2.0-dev; fi"
-  - "if [ x$GD != x ]; then sudo apt-get -qq install libgd-dev; fi"
+  - "if [ x$GD != x ]; then sudo apt-get -qq install libgd2-xpm-dev; fi"
   - "if [ x$LIBCURL != x ]; then sudo apt-get -qq install libcurl4-openssl-dev; fi"
   - "if [ x$WINE = x ]; then sudo apt-get install -qq valgrind > /dev/null; fi"
   - "if [ x$WINE != x ]; then sudo apt-get install -qq wine > /dev/null; fi"
