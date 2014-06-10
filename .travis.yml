@@ -14,7 +14,7 @@ env:
   - XCC=clang HOST= WINE= GD="--with-gd" LIBCURL="--with-libcurl"
   - XCC=clang HOST= WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd"
   - XCC=clang HOST= WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" LIBCURL="--with-libcurl"
-  - XCC=clang HOST= WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" LIBCURL="--with-libcurl" GCOV="--enable-gcov"
+  - XCC=clang HOST= WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" LIBCURL="--with-libcurl" GCOV="--enable-gcov" STATIC="--disable-shared"
 
 before_install:
   - "sudo apt-get -qq update --force-yes > /dev/null"
@@ -31,7 +31,7 @@ before_install:
   - "if [ x$GCOV != x ]; then sudo pip install cpp-coveralls pyyaml; fi"
 
 before_script:
-  - "CC=$XCC ./configure --prefix=/usr --host=$HOST $(GDKPIXBUF) $(GD) $(LIBCURL) $(GCOV)"
+  - "CC=$XCC ./configure --prefix=/usr --host=$HOST $(GDKPIXBUF) $(GD) $(LIBCURL) $(GCOV) $(STATIC)"
 
 script:
   - "make"

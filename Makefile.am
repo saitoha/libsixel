@@ -21,8 +21,15 @@ valgrind: all
 		| grep 'ERROR SUMMARY: 0 errors from 0 contexts'
 
 coveralls: test
-	ln -s -f converters/stb_image.h .
-	ln -s -f converters/stb_image_write.h .
+	rm -rf gcovtmp
+	mkdir gcovtmp
+	cp src/*.{c,cc,gcno,gcda} converters/*.{c,h,gcno,gcda} .coveralls.yml gcovtmp/
 	coveralls -e sixel_orig -e include -e m4
-	rm -f stb_image.h
-	rm -f stb_image_write.h
+	rm -rf gcovtmp
+
+coveralls-dryrun: test
+	rm -rf gcovtmp
+	mkdir gcovtmp
+	cp src/*.{c,cc,gcno,gcda} converters/*.{c,h,gcno,gcda} .coveralls.yml gcovtmp/
+	coveralls -e sixel_orig -e include -e m4 --dryrun
+	rm -rf gcovtmp
