@@ -19,27 +19,27 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
-#include <stdlib.h>
-#include "sixel.h"
+#ifndef MALLOC_STUB_H
+#define MALLOC_STUB_H
 
-LSOutputContextPtr const
-LSOutputContext_create(putchar_function fn_putchar, printf_function fn_printf)
-{
-    LSOutputContextPtr context = (LSOutputContextPtr)malloc(sizeof(LSOutputContext));
-    context->has_8bit_control = 0;
-    context->has_sdm_glitch = 0;
-    context->fn_putchar = fn_putchar;
-    context->fn_printf = fn_printf;
-    return context;
-}
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif  /* HAVE_SYS_TYPES_H */
 
-void
-LSOutputContext_destroy(LSOutputContextPtr context)
-{
-    free(context);
-}
+#if !HAVE_MALLOC
+void * rpl_malloc(size_t n);
+#endif /* !HAVE_MALLOC */
 
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
+#if !HAVE_REALLOC
+void * rpl_realloc(void *p, size_t n);
+#endif /* !HAVE_REALLOC */
+
+#if 0
+int rpl_posix_memalign(void **memptr, size_t alignment, size_t size);
+#endif
+
+#endif /* MALLOC_STUB_H */
+
+/* Hello emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
 /* EOF */

@@ -61,6 +61,7 @@ extern "C" {
 extern int stbi_write_png(char const *filename, int w, int h, int comp, const void *data, int stride_in_bytes);
 extern int stbi_write_bmp(char const *filename, int w, int h, int comp, const void *data);
 extern int stbi_write_tga(char const *filename, int w, int h, int comp, const void *data);
+unsigned char *stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes, int x, int y, int n, int *out_len);
 
 #ifdef __cplusplus
 }

@@ -1,0 +1,309 @@
+.\" vi:set wm=5
+.TH IMG2SIXEL 1 "May 2014"
+.if n .ds Q \&"
+.if n .ds U \&"
+.if t .ds Q ``
+.if t .ds U ''
+.UC 4
+.SH NAME
+img2sixel \- image converter to DEC SIXEL graphics
+
+
+.SH SYNOPSIS
+.B img2sixel
+[ \-\fIoptions\fP ] \fIimagefiles\fP
+.br
+.B img2sixel
+[ \-\fIoptions\fP ] < \fIimagefiles\fP
+.ta .5i 1.8i
+
+
+.SH DESCRIPTION
+.I img2sixel
+convert JPEG/PNG images into DEC SIXEL image format.
+
+
+.SH "COMMAND-LINE OPTIONS"
+\fIimg2sixel\fP has the following command-line options:
+.TP 5
+.B \-7, \-\-7bit-mode
+generate a sixel image for 7bit terminals or printers (default).
+.TP 5
+.B \-8, \-\-8bit-mode
+generate a sixel image for 8bit terminals or printers.
+.TP 5
+.B \-p \fICOLORS\fP, \-\-colors=\fICOLORS\fP
+specify number of colors to reduce the image to (default=256).
+.TP 5
+.B \-m \fIFILE\fP, \-\-mapfile=\fIFILE\fP
+transform image colors to match this set of colorsspecify map.
+.TP 5
+.B \-e, \-\-monochrome
+output monochrome sixel image.
+this option assumes the terminal
+background color is black.
+.TP 5
+.B \-i, \-\-invert
+assume the terminal background color is white.
+make sense only when -e option is given.
+.TP 5
+.B \-d \fIDIFFUSIONTYPE\fP, \-\-diffusion=\fIDIFFUSIONTYPE\fP
+choose diffusion method which used with color reduction.
+.br
+\fIDIFFUSIONTYPE\fP is one of them:
+.br
+auto     -> choose diffusion type automatically (default)
+.br
+none     -> do not diffusion
+.br
+fs       -> Bill Atkinson's method
+.br
+atkinson -> Floyd-Steinberg method
+.br
+jajuni   -> Jarvis, Judice & Ninke
+.br
+stucki   -> Stucki's method
+.br
+burkes   -> Burkes' method
+.TP 5
+.B \-f \fIFINDTYPE\fP, \-\-find\-largest=\fIFINDTYPE\fP
+choose method for finding the largest dimention of median
+cut boxes for splitting, make sense only when -p option
+(color reduction) is specified.
+.br
+\fIFINDTYPE\fP is one of them:
+.br
+auto -> choose finding method automatically (default)
+.br
+norm -> simply comparing the range in RGB space
+.br
+lum  -> transforming into luminosities before the comparison
+.TP 5
+.B \-s \fISELECTTYPE\fP, \-\-select\-color=\fISELECTTYPE\fP
+choose the method for selecting representative color from each
+median-cut box, make sense only when -p option (color reduction) is
+specified.
+.br
+\fISELECTTYPE\fP is one of them:
+.br
+auto     -> choose selecting method automatically (default)
+.br
+center   -> choose the center of the box
+.br
+average  -> caclulate the color average into the box
+.br
+histgram -> similar with average but considers color histgram
+.TP 5
+.B \-w \fIWIDTH\fP, \-\-width=\fIWIDTH\fP
+resize image to specific width.
+.br
+\fIWIDTH\fP is represented by the following syntax:
+.br
+auto       -> preserving aspect ratio (default)
+.br
+<number>%  -> scale width with given percentage
+.br
+<number>   -> scale width with pixel counts
+.br
+<number>px -> scale width with pixel counts
+.TP 5
+.B \-h \fIHEIGHT\fP, \-\-height=\fIHEIGHT\fP
+resize image to specific height.
+.br
+\fIHEIGHT\fP is represented by the following syntax
+.br
+auto       -> preserving aspect ratio (default)
+.br
+<number>%  -> scale height with given percentage
+.br
+<number>   -> scale height with pixel counts
+.br
+<number>px -> scale height with pixel counts
+.TP 5
+.B \-r \fIRESAMPLINGTYPE\fP, \-\-resampling=\fIRESAMPLINGTYPE\fP
+choose resampling method used with -w or -h option (scaling).
+.br
+\fIRESAMPLINGTYPE\fP is one of them:
+.br
+nearest  -> Nearest-Neighbor method
+.br
+gaussian -> Gaussian filter
+.br
+hanning  -> Hanning filter
+.br
+hamming  -> Hamming filter
+.br
+bilinear -> Bilinear filter (default)
+.br
+welsh    -> Welsh filter
+.br
+bicubic  -> Bicubic filter
+.br
+lanczos2 -> Lanczos-2 filter
+.br
+lanczos3 -> Lanczos-3 filter
+.br
+lanczos4 -> Lanczos-4 filter
+.TP 5
+.B \-q \fIQUALITYMODE\fP, \-\-quality=\fIQUALITYMODE\fP
+select quality of color quanlization.
+.br
+\fIQUALITYMODE\fP is one of them:
+.br
+auto -> decide quality mode automatically (default)
+.br
+high -> high quality and low speed mode
+.br
+low  -> low quality and high speed mode
+
+.SH "SEE ALSO"
+sixel(5) sixel2png(1)
+
+
+.SH AUTHORS
+\fIimg2sixel\fP is maintained by Hayaki Saito.
+We imported whole code of \fIstbi-1.33\fP, written by Sean Barrett and its contributers, for loading PNG/JPEG images,
+and imported some code from \fIpnmquant.c (netpbm library)\fP for image quantization.
+
+
+.SH COPYRIGHT
+Copyright (c) 2014 Hayaki Saito
+.PP
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+.PP
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+.PP
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+.SH THANKS
+This software derives from the following implementations.
+.br
+.TP 5
+.B stbi-1.33
+This software includes \fIstbi-1.33\fP (stb_image.c),
+a public domain JPEG/PNG reader.
+.br
+.B http://nothings.org/stb_image.c
+
+.TP 5
+.B pnmquant.c (netpbm library)
+The implementation of median cut algorithm for color quantization in quant.c
+is imported from \fIpnmcolormap\fP included in \fInetpbm library\fP.
+.br
+http://netpbm.sourceforge.net/
+.br
+\fIpnmcolormap\fP was derived from \fIppmquant\fP, originally by Jef Poskanzer.
+.br
+\fB
+.br
+Copyright (C) 1989, 1991 by Jef Poskanzer.
+.br
+.br
+Copyright (C) 2001 by Bryan Henderson.
+.br
+.br
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted, provided
+that the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.  This software is provided "as is" without express or
+implied warranty.
+\fP
+
+.TP 5
+.B monosixel (arakiken's tw)
+
+The pattern dither algorithm implemented in quant.c is imported from
+\fImonosixel/main.c\fP in \fIarakiken's tw "sixel" branch\fP.
+.br
+https://bitbucket.org/arakiken/tw/branch/sixel
+.br
+This tool is written by Araki Ken, and we regard it as a derivative of.
+original tw, created by Sho Hashimoto.
+.br
+\fB
+.br
+Copyright (c) 2012 Sho Hashimoto
+.br
+.br
+Copyright (c) 2014 Araki Ken
+.br
+.br
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+.br
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+.br
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+\fP
+
+.TP 5
+.B sixel 2014-3-2
+
+some part of converters/loader.c are
+derived from kmiya's "sixel" original version (2014-3-2).
+.br
+.br
+http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
+.br
+.br
+It is written by kmiya@culti.
+.br
+.br
+He distributes it under very permissive license which permits
+useing, copying, modification, redistribution, and all other
+public activities without any restrictions.
+.br
+.br
+He declares this is compatible with MIT/BSD/GPL.
+
+
+.SH REFERENCES
+.TP 5
+.B resize.c (ImageMagick)
+
+We added some resampling filters in reference to the line-up of filters of
+MagickCore's resize.c.
+
+.br
+.B http://www.imagemagick.org/api/MagickCore/resize_8c_source.html
+
+
+.SH CONTRIBUTORS
+.nf
+Araki Ken (@arakiken),
+Iwamoto Kouichi (@ttdoda)
+Kazuhiro YOSHIKAWA (@yoshikaw)
+.fi
+
+
+.SH BUGS
+.PD
+.IP \(bu
+Send bug-reports, fixes, enhancements to
+.BR user@zuse.jp .
+
+.\" end of man page

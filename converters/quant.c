@@ -20,6 +20,39 @@
  *   documentation.  This software is provided "as is" without express or
  *   implied warranty.
  *
+ * *******************************************************************************
+ *
+ *
+ * pattern dither algorithm implementation is imported from monosixel/main.c
+ * in arakiken's tw "sixel" branch
+ * https://bitbucket.org/arakiken/tw/branch/sixel
+ *
+ * *******************************************************************************
+ *              original license of monosixel/main.c of arakiken's tw
+ * *******************************************************************************
+ *
+ * Copyright (c) 2012 Sho Hashimoto
+ * Copyright (c) 2014 Araki Ken
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
  * ******************************************************************************
  *
  * Copyright (c) 2014 Hayaki Saito
@@ -45,8 +78,8 @@
  */
 
 #include "config.h"
+#include "malloc_stub.h"
 
-#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -179,7 +212,6 @@ alloctupletable(unsigned int const depth, unsigned int const size)
 static tupletable2
 newColorMap(unsigned int const newcolors, unsigned int const depth)
 {
-
     tupletable2 colormap;
     unsigned int i;
     tupletable table;
@@ -207,6 +239,7 @@ newBoxVector(int const colors, int const sum, int const newcolors)
     bv = (boxVector)malloc(sizeof(struct box) * newcolors);
     if (bv == NULL) {
         quant_trace(stderr, "out of memory allocating box vector table\n");
+        return NULL;
     }
 
     /* Set up the initial box. */
@@ -378,7 +411,6 @@ averagePixels(int          const boxStart,
     for (i = 0; i < boxSize; ++i)
         n += colorfreqtable.table[boxStart + i]->value;
 
-
     for (plane = 0; plane < depth; ++plane) {
         sample sum;
         int i;
@@ -422,16 +454,23 @@ colormapFromBv(unsigned int      const newcolors,
     for (bi = 0; bi < boxes; ++bi) {
         switch (methodForRep) {
         case REP_CENTER_BOX:
-            centerBox(bv[bi].ind, bv[bi].colors, colorfreqtable, depth, colormap.table[bi]->tuple);
+            centerBox(bv[bi].ind, bv[bi].colors,
+                      colorfreqtable, depth,
+                      colormap.table[bi]->tuple);
             break;
         case REP_AVERAGE_COLORS:
-            averageColors(bv[bi].ind, bv[bi].colors, colorfreqtable, depth, colormap.table[bi]->tuple);
+            averageColors(bv[bi].ind, bv[bi].colors,
+                          colorfreqtable, depth,
+                          colormap.table[bi]->tuple);
             break;
         case REP_AVERAGE_PIXELS:
-            averagePixels(bv[bi].ind, bv[bi].colors, colorfreqtable, depth, colormap.table[bi]->tuple);
+            averagePixels(bv[bi].ind, bv[bi].colors,
+                          colorfreqtable, depth,
+                          colormap.table[bi]->tuple);
             break;
         default:
-            quant_trace(stderr, "Internal error: invalid value of methodForRep: %d\n",
+            quant_trace(stderr, "Internal error: "
+                                "invalid value of methodForRep: %d\n",
                         methodForRep);
         }
     }
@@ -533,7 +572,7 @@ splitBox(boxVector             const bv,
 
 
 
-static void
+static int
 mediancut(tupletable2           const colorfreqtable,
           unsigned int          const depth,
           int                   const newcolors,
@@ -567,6 +606,9 @@ mediancut(tupletable2           const colorfreqtable,
         */
 
     bv = newBoxVector(colorfreqtable.size, sum, newcolors);
+    if (!bv) {
+        return (-1);
+    }
     boxes = 1;
     multicolorBoxesExist = (colorfreqtable.size > 1);
 
@@ -584,14 +626,16 @@ mediancut(tupletable2           const colorfreqtable,
                                 methodForRep);
 
     free(bv);
+    return 0;
 }
 
 
-static void
+static int
 computeHistogram(unsigned char *data,
                  unsigned int length,
                  unsigned long const depth,
-                 tupletable2 * const colorfreqtableP)
+                 tupletable2 * const colorfreqtableP,
+                 enum qualityMode const qualityMode)
 {
     unsigned int i, n;
     unsigned short *histgram;
@@ -601,13 +645,27 @@ computeHistogram(unsigned char *data,
     struct tupleint *t;
     unsigned int index;
     unsigned int step;
-    const unsigned int max_sample = 18384;
+    unsigned int max_sample;
+
+    if (qualityMode == QUALITY_HIGH) {
+        max_sample = 1118383;
+    } else { /* if (qualityMode == QUALITY_LOW) */
+        max_sample = 18383;
+    }
 
     quant_trace(stderr, "making histogram...\n");
 
     histgram = malloc((1 << depth * 5) * sizeof(*histgram));
+    if (!histgram) {
+        quant_trace(stderr, "Unable to allocate memory for histgram.");
+        return (-1);
+    }
     memset(histgram, 0, (1 << depth * 5) * sizeof(*histgram));
     it = ref = refmap = (unsigned short *)malloc(max_sample * sizeof(*refmap));
+    if (!it) {
+        quant_trace(stderr, "Unable to allocate memory for lookup table.");
+        return (-1);
+    }
 
     if (length > max_sample * depth) {
         step = length / depth / max_sample;
@@ -617,7 +675,7 @@ computeHistogram(unsigned char *data,
 
     for (i = 0; i < length; i += step) {
         index = 0;
-        for (n = 0; n < depth; n ++) {
+        for (n = 0; n < depth; n++) {
             index |= data[i + depth - 1 - n] >> 3 << n * 5;
         }
         if (histgram[index] == 0) {
@@ -634,7 +692,8 @@ computeHistogram(unsigned char *data,
         if (histgram[refmap[i]] > 0) {
             colorfreqtableP->table[i]->value = histgram[refmap[i]];
             for (n = 0; n < depth; n++) {
-                colorfreqtableP->table[i]->tuple[depth - 1 - n] = (*it >> n * 5 & 0x1f) << 3;
+                colorfreqtableP->table[i]->tuple[depth - 1 - n]
+                    = (*it >> n * 5 & 0x1f) << 3;
             }
         }
         it++;
@@ -644,16 +703,18 @@ computeHistogram(unsigned char *data,
     free(histgram);
 
     quant_trace(stderr, "%u colors found\n", colorfreqtableP->size);
+    return 0;
 }
 
 
-static void
+static int
 computeColorMapFromInput(unsigned char *data,
                          size_t length,
                          unsigned int const depth,
                          int const reqColors,
                          enum methodForLargest const methodForLargest,
                          enum methodForRep const methodForRep,
+                         enum qualityMode const qualityMode,
                          tupletable2 * const colormapP,
                          int *origcolors)
 {
@@ -678,8 +739,12 @@ computeColorMapFromInput(unsigned char *data,
 -----------------------------------------------------------------------------*/
     tupletable2 colorfreqtable;
     int i, n;
+    int ret;
 
-    computeHistogram(data, length, depth, &colorfreqtable);
+    ret = computeHistogram(data, length, depth, &colorfreqtable, qualityMode);
+    if (ret != 0) {
+        return (-1);
+    }
     if (origcolors) {
         *origcolors = colorfreqtable.size;
     }
@@ -698,27 +763,202 @@ computeColorMapFromInput(unsigned char *data,
         }
     } else {
         quant_trace(stderr, "choosing %d colors...\n", reqColors);
-        mediancut(colorfreqtable, depth, reqColors, methodForLargest, methodForRep, colormapP);
+        ret = mediancut(colorfreqtable, depth, reqColors,
+                        methodForLargest, methodForRep, colormapP);
+        if (ret != 0) {
+            return (-1);
+        }
         quant_trace(stderr, "%d colors are choosed.\n", colorfreqtable.size);
     }
 
     free(colorfreqtable.table);
+    return 0;
 }
 
+
+static void
+error_diffuse(unsigned char *data, int pos, int depth,
+              int *offsets, int mul, int div)
+{
+    int c;
+
+    data += pos * depth;
+
+    c = *data + *offsets * mul / div;
+    if (c < 0) {
+        c = 0;
+    }
+    if (c >= 1 << 8) {
+        c = (1 << 8) - 1;
+    }
+    *data = (unsigned char)c;
+}
+
+
+static void
+diffuse_none(unsigned char *data, int width, int height,
+             int x, int y, int depth, int *offsets)
+{
+}
+
+
+static void
+diffuse_atkinson(unsigned char *data, int width, int height,
+                 int x, int y, int depth, int *offsets)
+{
+    int pos, n;
+
+    pos = y * width + x;
+
+    if (x < width - 2 && y < height - 2) {
+        /* add offset to the right cell */
+        error_diffuse(data, pos + width * 0 + 1, depth, offsets, 1, 8);
+        /* add offset to the 2th right cell */
+        error_diffuse(data, pos + width * 0 + 2, depth, offsets, 1, 8);
+        /* add offset to the left-bottom cell */
+        error_diffuse(data, pos + width * 1 - 1, depth, offsets, 1, 8);
+        /* add offset to the bottom cell */
+        error_diffuse(data, pos + width * 1 + 0, depth, offsets, 1, 8);
+        /* add offset to the right-bottom cell */
+        error_diffuse(data, pos + width * 1 + 1, depth, offsets, 1, 8);
+        /* add offset to the 2th bottom cell */
+        error_diffuse(data, pos + width * 2 + 0, depth, offsets, 1, 8);
+    }
+}
+
+
+static void
+diffuse_fs(unsigned char *data, int width, int height,
+           int x, int y, int depth, int *offsets)
+{
+    int n;
+    int pos;
+
+    pos = y * width + x;
+
+    /* Floyd Steinberg Method
+     *          curr    7/16
+     *  3/16    5/48    1/16
+     */
+    if (x > 1 && x < width - 1 && y < height - 1) {
+        /* add offset to the right cell */
+        error_diffuse(data, pos + width * 0 + 1, depth, offsets, 7, 16);
+        /* add offset to the left-bottom cell */
+        error_diffuse(data, pos + width * 1 - 1, depth, offsets, 3, 16);
+        /* add offset to the bottom cell */
+        error_diffuse(data, pos + width * 1 + 0, depth, offsets, 5, 16);
+        /* add offset to the right-bottom cell */
+        error_diffuse(data, pos + width * 1 + 1, depth, offsets, 1, 16);
+    }
+}
+
+
+static void
+diffuse_jajuni(unsigned char *data, int width, int height,
+               int x, int y, int depth, int *offsets)
+{
+    int n;
+    int pos;
+
+    pos = y * width + x;
+
+    /* Jarvis, Judice & Ninke Method
+     *                  curr    7/48    5/48
+     *  3/48    5/48    7/48    5/48    3/48
+     *  1/48    3/48    5/48    3/48    1/48
+     */
+    if (x > 2 && x < width - 2 && y < height - 2) {
+        error_diffuse(data, pos + width * 0 + 1, depth, offsets, 7, 48);
+        error_diffuse(data, pos + width * 0 + 2, depth, offsets, 5, 48);
+        error_diffuse(data, pos + width * 1 - 2, depth, offsets, 3, 48);
+        error_diffuse(data, pos + width * 1 - 1, depth, offsets, 5, 48);
+        error_diffuse(data, pos + width * 1 + 0, depth, offsets, 7, 48);
+        error_diffuse(data, pos + width * 1 + 1, depth, offsets, 5, 48);
+        error_diffuse(data, pos + width * 1 + 2, depth, offsets, 3, 48);
+        error_diffuse(data, pos + width * 2 - 2, depth, offsets, 1, 48);
+        error_diffuse(data, pos + width * 2 - 1, depth, offsets, 3, 48);
+        error_diffuse(data, pos + width * 2 + 0, depth, offsets, 5, 48);
+        error_diffuse(data, pos + width * 2 + 1, depth, offsets, 3, 48);
+        error_diffuse(data, pos + width * 2 + 2, depth, offsets, 1, 48);
+    }
+}
+
+
+static void
+diffuse_stucki(unsigned char *data, int width, int height,
+               int x, int y, int depth, int *offsets)
+{
+    int n;
+    int pos;
+
+    pos = y * width + x;
+
+    /* Stucki's Method
+     *                  curr    8/48    4/48
+     *  2/48    4/48    8/48    4/48    2/48
+     *  1/48    2/48    4/48    2/48    1/48
+     */
+    if (x > 2 && x < width - 2 && y < height - 2) {
+        error_diffuse(data, pos + width * 0 + 1, depth, offsets, 1, 6);
+        error_diffuse(data, pos + width * 0 + 2, depth, offsets, 1, 12);
+        error_diffuse(data, pos + width * 1 - 2, depth, offsets, 1, 24);
+        error_diffuse(data, pos + width * 1 - 1, depth, offsets, 1, 12);
+        error_diffuse(data, pos + width * 1 + 0, depth, offsets, 1, 6);
+        error_diffuse(data, pos + width * 1 + 1, depth, offsets, 1, 12);
+        error_diffuse(data, pos + width * 1 + 2, depth, offsets, 1, 24);
+        error_diffuse(data, pos + width * 2 - 2, depth, offsets, 1, 48);
+        error_diffuse(data, pos + width * 2 - 1, depth, offsets, 1, 24);
+        error_diffuse(data, pos + width * 2 + 0, depth, offsets, 1, 12);
+        error_diffuse(data, pos + width * 2 + 1, depth, offsets, 1, 24);
+        error_diffuse(data, pos + width * 2 + 2, depth, offsets, 1, 48);
+    }
+}
+
+
+static void
+diffuse_burkes(unsigned char *data, int width, int height,
+               int x, int y, int depth, int *offsets)
+{
+    int n;
+    int pos;
+
+    pos = y * width + x;
+
+    /* Burkes' Method
+     *                  curr    4/16    2/16
+     *  1/16    2/16    4/16    2/16    1/16
+     */
+    if (x > 2 && x < width - 2 && y < height - 2) {
+        error_diffuse(data, pos + width * 0 + 1, depth, offsets, 1, 4);
+        error_diffuse(data, pos + width * 0 + 2, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 1 - 2, depth, offsets, 1, 16);
+        error_diffuse(data, pos + width * 1 - 1, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 1 + 0, depth, offsets, 1, 4);
+        error_diffuse(data, pos + width * 1 + 1, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 1 + 2, depth, offsets, 1, 16);
+    }
+}
 
 
 unsigned char *
 LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
                 int reqcolors, int *ncolors, int *origcolors,
                 enum methodForLargest const methodForLargest,
-                enum methodForRep const methodForRep)
+                enum methodForRep const methodForRep,
+                enum qualityMode const qualityMode)
 {
     int i, n;
+    int ret;
     unsigned char *palette;
     tupletable2 colormap;
 
-    computeColorMapFromInput(data, x * y * depth, depth,
-                             reqcolors, methodForLargest, methodForRep, &colormap, origcolors);
+    ret = computeColorMapFromInput(data, x * y * depth, depth,
+                                   reqcolors, methodForLargest,
+                                   methodForRep, qualityMode,
+                                   &colormap, origcolors);
+    if (ret != 0) {
+        return NULL;
+    }
     *ncolors = colormap.size;
     quant_trace(stderr, "tupletable size: %d", *ncolors);
     palette = malloc(*ncolors * depth);
@@ -732,119 +972,104 @@ LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
     return palette;
 }
 
-void add_offset(unsigned char *data, int pos, int depth,
-                int *offsets, int mul, int div)
-{
-    int n, c;
 
-    for (n = 0; n < depth; ++n) {
-        c = data[pos * depth + n] + offsets[n] * mul / div;
-        if (c < 0) {
-            c = 0;
+static int
+lookup_normal(unsigned char const * const pixel,
+              int const depth,
+              unsigned char const * const palette,
+              int const ncolor,
+              unsigned short * const cachetable)
+{
+    int index;
+    int diff;
+    int r;
+    int i;
+    int n;
+    int distant;
+
+    index = -1;
+    diff = INT_MAX;
+
+    for (i = 0; i < ncolor; i++) {
+        distant = 0;
+        for (n = 0; n < depth; ++n) {
+            r = pixel[n] - palette[i * depth + n];
+            distant += r * r;
         }
-        if (c >= 1 << 8) {
-            c = (1 << 8) - 1;
+        if (distant < diff) {
+            diff = distant;
+            index = i;
         }
-        data[pos * depth + n] = (unsigned char)c;
     }
+
+    return index;
 }
 
-void diffuse(unsigned char *data, int width, int height,
-             int x, int y, int depth, int *offsets,
-             enum methodForDiffuse const methodForDiffuse)
+
+static int
+lookup_fast(unsigned char const * const pixel,
+            int const depth,
+            unsigned char const * const palette,
+            int const ncolor,
+            unsigned short * const cachetable)
 {
+    int hash;
+    int index;
+    int diff;
+    int cache;
+    int r;
+    int i;
     int n;
-    int pos;
+    int distant;
 
-    pos = y * width + x;
+    index = -1;
+    diff = INT_MAX;
+    hash = 0;
 
-    switch (methodForDiffuse) {
-    case DIFFUSE_FS:
-        /* Floyd Steinberg Method
-                    curr    7/16
-            3/16    5/48    1/16
-        */
-        if (y < height - 1) {
-            /* add offset to the bottom cell */
-            add_offset(data, pos + width, depth, offsets, 5, 16);
-            if (x > 1) {
-                /* add offset to the left-bottom cell */
-                add_offset(data, pos + width - 1, depth, offsets, 3, 16);
-            }
-            if (x < width - 1) {
-                /* add offset to the right-bottom cell */
-                add_offset(data, pos + width + 1, depth, offsets, 1, 16);
-            }
-        }
-        if (x < width - 1) {
-            /* add offset to the right cell */
-            add_offset(data, pos + 1, depth, offsets, 7, 16);
-        }
-        break;
-
-    case DIFFUSE_JAJUNI:
-        /* Jarvis, Judice & Ninke Method
-                            curr    7/48    5/48
-            3/48    5/48    7/48    5/48    3/48
-            1/48    3/48    5/48    3/48    1/48
-        */
-        if (y < height - 1) {
-            /* add offset to the bottom cell */
-            add_offset(data, pos + width, depth, offsets, 7, 48);
-            if (x > 1) {
-                /* add offset to the left-bottom cell */
-                add_offset(data, pos + width - 1, depth, offsets, 5, 48);
-                if (x > 2) {
-                    /* add offset to the left-bottom cell */
-                    add_offset(data, pos + width - 2, depth, offsets, 3, 48);
-                }
-            }
-            if (x < width - 1) {
-                /* add offset to the right-bottom cell */
-                add_offset(data, pos + width + 1, depth, offsets, 5, 48);
-                if (x < width - 2) {
-                    /* add offset to the right-bottom cell */
-                    add_offset(data, pos + width + 2, depth, offsets, 3, 48);
-                }
-            }
-            if (y < height - 2) {
-                /* add offset to the bottom cell */
-                add_offset(data, pos + width * 2, depth, offsets, 5, 48);
-                if (x > 1) {
-                    /* add offset to the left-bottom cell */
-                    add_offset(data, pos + width * 2 - 1, depth, offsets, 3, 48);
-                    if (x > 2) {
-                        /* add offset to the left-bottom cell */
-                        add_offset(data, pos + width * 2 - 2, depth, offsets, 1, 48);
-                    }
-                }
-                if (x < width - 1) {
-                    /* add offset to the right-bottom cell */
-                    add_offset(data, pos + width + 1, depth, offsets, 3, 48);
-                    if (x < width - 2) {
-                        /* add offset to the right-bottom cell */
-                        add_offset(data, pos + width + 2, depth, offsets, 1, 48);
-                    }
-                }
-            }
-        }
-        if (x < width - 1) {
-            /* add offset to the right cell */
-            add_offset(data, pos + 1, depth, offsets, 7, 48);
-            if (x < width - 2) {
-                /* add offset to the right cell */
-                add_offset(data, pos + 2, depth, offsets, 5, 48);
-            }
-        }
-        break;
-
-    case DIFFUSE_NONE:
-        break;
-
-    default:
-        quant_trace(stderr, "Internal error: invalid value of methodForDiffuse: %d\n",
-                    methodForDiffuse);
+    for (n = 0; n < 3; ++n) {
+        hash |= *(pixel + n) >> 3 << ((3 - 1 - n) * 5);
     }
+
+    cache = cachetable[hash];
+    if (cache) {  /* fast lookup */
+        return cache - 1;
+    }
+    /* collision */
+    for (i = 0; i < ncolor; i++) {
+        distant = 0;
+        for (n = 0; n < 3; ++n) {
+            r = pixel[n] - palette[i * 3 + n];
+            distant += r * r;
+        }
+        if (distant < diff) {
+            diff = distant;
+            index = i;
+        }
+    }
+    cachetable[hash] = index + 1;
+
+    return index;
+}
+
+
+
+/**
+ * this function comes from "monosixel", which is contained in
+ * arakiken's tw "sixel" branch
+ * https://bitbucket.org/arakiken/tw/branch/sixel
+ */
+static unsigned char
+pattern_lookup(unsigned char *pixel, int x, int y)
+{
+    static unsigned int pattern[] = {
+        24, 384,  96, 480,
+        576, 192, 672, 288,
+        144, 528,  48, 432,
+        720, 336, 624, 240,
+    };
+    return ((unsigned int)pixel[0] +
+            (unsigned int)pixel[1] +
+            (unsigned int)pixel[2] >= pattern[(y & 3) * 4 + (x & 3)]) ?  1 : 0;
 }
 
 
@@ -855,55 +1080,106 @@ LSQ_ApplyPalette(unsigned char *data,
                  int depth,
                  unsigned char *palette,
                  int ncolor,
-                 enum methodForDiffuse const methodForDiffuse)
+                 enum methodForDiffuse const methodForDiffuse,
+                 int foptimize)
 {
     int pos, j, n, x, y;
-    int roffset, goffset, boffset;
     int *offsets;
-    int distant;
     int diff;
     int index;
+    unsigned short *indextable;
     unsigned char *result;
+    void (*f_diffuse)(unsigned char *data, int width, int height,
+                      int x, int y, int depth, int *offsets);
+    int (*f_lookup)(unsigned char const * const pixel,
+                    int const depth,
+                    unsigned char const * const palette,
+                    int const ncolor,
+                    unsigned short * const cachetable);
+
+    if (depth != 3) {
+        f_diffuse = diffuse_none;
+    } else {
+        switch (methodForDiffuse) {
+        case DIFFUSE_NONE:
+            f_diffuse = diffuse_none;
+            break;
+        case DIFFUSE_ATKINSON:
+            f_diffuse = diffuse_atkinson;
+            break;
+        case DIFFUSE_FS:
+            f_diffuse = diffuse_fs;
+            break;
+        case DIFFUSE_JAJUNI:
+            f_diffuse = diffuse_jajuni;
+            break;
+        case DIFFUSE_STUCKI:
+            f_diffuse = diffuse_stucki;
+            break;
+        case DIFFUSE_BURKES:
+            f_diffuse = diffuse_burkes;
+            break;
+        default:
+            quant_trace(stderr, "Internal error: invalid value of"
+                                " methodForDiffuse: %d\n",
+                        methodForDiffuse);
+            f_diffuse = diffuse_none;
+            break;
+        }
+    }
+
+    if (foptimize && depth == 3) {
+        f_lookup = lookup_fast;
+    } else {
+        f_lookup = lookup_normal;
+    }
 
     offsets = malloc(sizeof(*offsets) * depth);
+    if (!offsets) {
+        quant_trace(stderr, "Unable to allocate memory for offsets.");
+        return NULL;
+    }
     result = malloc(width * height);
+    if (!result) {
+        quant_trace(stderr, "Unable to allocate memory for result.");
+        free(offsets);
+        return NULL;
+    }
+    indextable = malloc((1 << depth * 5) * sizeof(*indextable));
+    if (!indextable) {
+        quant_trace(stderr, "Unable to allocate memory for indextable.");
+        free(offsets);
+        free(result);
+        return NULL;
+    }
+    memset(indextable, 0x00, (1 << depth * 5) * sizeof(*indextable));
 
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width; ++x) {
             pos = y * width + x;
-            diff = INT_MAX;
-            index = -1;
-            for (j = 0; j < ncolor; ++j) {
-                distant = 0;
-                for (n = 0; n < depth; ++n) {
-                    distant |= (data[pos * depth + n] - palette[j * depth + n])
-                             * (data[pos * depth + n] - palette[j * depth + n]);
-                }
-                if (distant < diff) {
-                    diff = distant;
-                    index = j;
-                }
+            if (depth == 2) {
+                index = pattern_lookup(data + (pos * depth), x, y);
+            } else {
+                index = f_lookup(data + (pos * depth), depth,
+                                 palette, ncolor, indextable);
             }
-            if (index != -1 && depth == 3) {
-                result[pos] = index;
-                if (ncolor > 2) {
-                    for (n = 0; n < depth; ++n) {
-                        offsets[n] = data[pos * depth + n] - palette[index * depth + n];
-                    }
-                    diffuse(data, width, height, x, y, depth, offsets, methodForDiffuse);
-                }
+            result[pos] = index;
+            for (n = 0; n < depth; ++n) {
+                offsets[n] = data[pos * depth + n]
+                           - palette[index * depth + n];
+                f_diffuse(data + n, width, height, x, y, depth, offsets + n);
             }
         }
     }
 
     free(offsets);
+    free(indextable);
     return result;
 }
 
 
-
 void
-LSQ_FreePalette(uint8_t * data)
+LSQ_FreePalette(unsigned char * data)
 {
     free(data);
 }

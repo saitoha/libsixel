@@ -19,26 +19,25 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
-#include <stdlib.h>
-#include "sixel.h"
+#ifndef LIBSIXEL_FROMPNM_H
+#define LIBSIXEL_FROMPNM_H
 
-LSOutputContextPtr const
-LSOutputContext_create(putchar_function fn_putchar, printf_function fn_printf)
-{
-    LSOutputContextPtr context = (LSOutputContextPtr)malloc(sizeof(LSOutputContext));
-    context->has_8bit_control = 0;
-    context->has_sdm_glitch = 0;
-    context->fn_putchar = fn_putchar;
-    context->fn_printf = fn_printf;
-    return context;
-}
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void
-LSOutputContext_destroy(LSOutputContextPtr context)
-{
-    free(context);
+/* exported functions */
+
+/* image scaling api */
+
+unsigned char *
+load_pnm(unsigned char *p, int len, int *psx, int *psy, int *pcomp, int *pstride);
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif /* LIBSIXEL_FROMPNM_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
