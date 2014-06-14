@@ -41,15 +41,13 @@ If you want to view a SIXEL image, you have to get a terminal which support sixe
 
 Now SIXEL feature is supported by the following terminals.
 
-- VT240
+- DEC VT series, VT240/VT241/VT330/VT340/VT282/VT284/VT286/VT382
 
-- VT241
+- DECterm(dxterm)
 
-- VT330
+- Kermit
 
-- VT340
-
-- VT382
+- WRQ Reflection / ZSTEM
 
 - RLogin (Japanese terminal emulator)
 
@@ -71,13 +69,9 @@ Now SIXEL feature is supported by the following terminals.
 
   You should launch xterm with "-ti 340" option. the SIXEL palette is limited to a maximum of 16 colors.
 
-- DECterm
+- yaft (in github repo)
 
-- Kermit
-
-- WRQ Reflection
-
-- ZSTEM
+  [https://github.com/uobikiemukot/yaft](https://github.com/uobikiemukot/yaft)
 
 
 ## Usage of command line tools
