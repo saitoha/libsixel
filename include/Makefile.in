@@ -249,6 +249,7 @@ am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
+bashcompletiondir = @bashcompletiondir@
 bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
