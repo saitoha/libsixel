@@ -654,6 +654,7 @@ CXX
 have_pkg_config
 COND_GCOV_FALSE
 COND_GCOV_TRUE
+zshcompletiondir
 bashcompletiondir
 pkgconfigdir
 WANT_SIXEL2PNG_FALSE
@@ -793,6 +794,7 @@ with_libcurl
 with_wic
 with_pkgconfigdir
 with_bashcompletiondir
+with_zshcompletiondir
 enable_gcov
 '
       ac_precious_vars='build_alias
@@ -1467,6 +1469,7 @@ Optional Packages:
                           libdir/pkgconfig)
   --with-bashcompletiondir
                           Use the specified bashcompletion.d
+  --with-zshcompletiondir Use the specified zshcompletion.d
 
 Some influential environment variables:
   CC          C compiler command
@@ -11781,6 +11784,18 @@ fi
 $as_echo "$as_me: bash-completion directory is ${bashcompletiondir}" >&6;}
 
 
+
+# Check whether --with-zshcompletiondir was given.
+if test "${with_zshcompletiondir+set}" = set; then :
+  withval=$with_zshcompletiondir; zshcompletiondir=${withval}
+else
+  zshcompletiondir=${datadir}/zsh/site-functions
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: zsh-completion directory is ${zshcompletiondir}" >&5
+$as_echo "$as_me: zsh-completion directory is ${zshcompletiondir}" >&6;}
+
+
 # Check whether --enable-gcov was given.
 if test "${enable_gcov+set}" = set; then :
   enableval=$enable_gcov;
@@ -19900,6 +19915,7 @@ echo "       Loader component    : $loaders"
 echo "       libcurl integration : $have_curl"
 echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
+echo "       Zsh completion dir  : $zshcompletiondir"
 echo "       WIC integration     : $have_wic"
 echo ""
 echo ""

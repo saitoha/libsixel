@@ -74,6 +74,14 @@ AC_ARG_WITH(bashcompletiondir,
 AC_MSG_NOTICE([bash-completion directory is ${bashcompletiondir}])
 AC_SUBST(bashcompletiondir)
 
+AC_ARG_WITH(zshcompletiondir,
+            AC_HELP_STRING([--with-zshcompletiondir],
+                           [Use the specified zshcompletion.d]),
+                           [zshcompletiondir=${withval}],
+                           [zshcompletiondir=${datadir}/zsh/site-functions])
+AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])
+AC_SUBST(zshcompletiondir)
+
 AC_ARG_ENABLE([gcov],
               [AS_HELP_STRING([--enable-gcov],
                               [use Gcov to test the test suite])],
@@ -259,6 +267,7 @@ echo "       Loader component    : $loaders"
 echo "       libcurl integration : $have_curl"
 echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
+echo "       Zsh completion dir  : $zshcompletiondir"
 echo "       WIC integration     : $have_wic"
 echo ""
 echo ""
