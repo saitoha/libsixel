@@ -1,6 +1,13 @@
+DIST_SUBDIRS = $(SUBDIRS)
 
 bin_PROGRAMS =
 dist_man_MANS =
+
+bashcompletiondir = @bashcompletiondir@
+dist_bashcompletion_DATA =
+
+zshcompletiondir = @zshcompletiondir@
+dist_zshcompletion_DATA =
 
 if COND_GCOV
 MAYBE_COVERAGE = --coverage
@@ -15,8 +22,9 @@ img2sixel_SOURCES = img2sixel.c quant.c scale.c stb_image.c malloc_stub.c loader
 img2sixel_CFLAGS = -I$(top_builddir)/include/ $(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) $(GD_CFLAGS)
 img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS)
 dist_man_MANS += img2sixel.1
+dist_bashcompletion_DATA += shell-completion/bash/img2sixel
+dist_zshcompletion_DATA += shell-completion/zsh/_img2sixel
 endif
-# -DSTBI_SIMD
 
 if WANT_SIXEL2PNG
 bin_PROGRAMS += sixel2png
