@@ -83,13 +83,15 @@ bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @WANT_IMG2SIXEL_TRUE@am__append_1 = img2sixel
 @WANT_IMG2SIXEL_TRUE@am__append_2 = img2sixel.1
 @WANT_IMG2SIXEL_TRUE@am__append_3 = shell-completion/bash/img2sixel
-@WANT_SIXEL2PNG_TRUE@am__append_4 = sixel2png
-@WANT_SIXEL2PNG_TRUE@am__append_5 = sixel2png.1
+@WANT_IMG2SIXEL_TRUE@am__append_4 = shell-completion/zsh/_img2sixel
+@WANT_SIXEL2PNG_TRUE@am__append_5 = sixel2png
+@WANT_SIXEL2PNG_TRUE@am__append_6 = sixel2png.1
 subdir = converters
 SUBDIRS =
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp $(dist_man_MANS) \
-	$(am__dist_bashcompletion_DATA_DIST)
+	$(am__dist_bashcompletion_DATA_DIST) \
+	$(am__dist_zshcompletion_DATA_DIST)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
@@ -104,7 +106,8 @@ CONFIG_CLEAN_VPATH_FILES =
 @WANT_IMG2SIXEL_TRUE@am__EXEEXT_1 = img2sixel$(EXEEXT)
 @WANT_SIXEL2PNG_TRUE@am__EXEEXT_2 = sixel2png$(EXEEXT)
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" \
-	"$(DESTDIR)$(bashcompletiondir)"
+	"$(DESTDIR)$(bashcompletiondir)" \
+	"$(DESTDIR)$(zshcompletiondir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__img2sixel_SOURCES_DIST = img2sixel.c quant.c scale.c stb_image.c \
 	malloc_stub.c loader.c frompnm.c quant.h scale.h malloc_stub.h \
@@ -224,7 +227,8 @@ man1dir = $(mandir)/man1
 NROFF = nroff
 MANS = $(dist_man_MANS)
 am__dist_bashcompletion_DATA_DIST = shell-completion/bash/img2sixel
-DATA = $(dist_bashcompletion_DATA)
+am__dist_zshcompletion_DATA_DIST = shell-completion/zsh/_img2sixel
+DATA = $(dist_bashcompletion_DATA) $(dist_zshcompletion_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 am__recursive_targets = \
@@ -410,9 +414,11 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+zshcompletiondir = @zshcompletiondir@
 DIST_SUBDIRS = $(SUBDIRS)
-dist_man_MANS = $(am__append_2) $(am__append_5)
+dist_man_MANS = $(am__append_2) $(am__append_6)
 dist_bashcompletion_DATA = $(am__append_3)
+dist_zshcompletion_DATA = $(am__append_4)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 CLEANFILES = *.gcno *.gcda *.gcov snake.png snake.sixel
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c quant.c scale.c stb_image.c malloc_stub.c loader.c frompnm.c \
@@ -764,6 +770,27 @@ uninstall-dist_bashcompletionDATA:
 	@list='$(dist_bashcompletion_DATA)'; test -n "$(bashcompletiondir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(bashcompletiondir)'; $(am__uninstall_files_from_dir)
+install-dist_zshcompletionDATA: $(dist_zshcompletion_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(dist_zshcompletion_DATA)'; test -n "$(zshcompletiondir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(zshcompletiondir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(zshcompletiondir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(zshcompletiondir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(zshcompletiondir)" || exit $$?; \
+	done
+
+uninstall-dist_zshcompletionDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_zshcompletion_DATA)'; test -n "$(zshcompletiondir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(zshcompletiondir)'; $(am__uninstall_files_from_dir)
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run 'make' without going through this Makefile.
@@ -924,7 +951,7 @@ check: check-recursive
 all-am: Makefile $(PROGRAMS) $(MANS) $(DATA)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(bashcompletiondir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(bashcompletiondir)" "$(DESTDIR)$(zshcompletiondir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -980,7 +1007,8 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-dist_bashcompletionDATA install-man
+install-data-am: install-dist_bashcompletionDATA \
+	install-dist_zshcompletionDATA install-man
 
 install-dvi: install-dvi-recursive
 
@@ -1027,7 +1055,7 @@ ps: ps-recursive
 ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-dist_bashcompletionDATA \
-	uninstall-man
+	uninstall-dist_zshcompletionDATA uninstall-man
 
 uninstall-man: uninstall-man1
 
@@ -1039,16 +1067,17 @@ uninstall-man: uninstall-man1
 	distclean-generic distclean-libtool distclean-tags distdir dvi \
 	dvi-am html html-am info info-am install install-am \
 	install-binPROGRAMS install-data install-data-am \
-	install-dist_bashcompletionDATA install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-man1 \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-binPROGRAMS \
-	uninstall-dist_bashcompletionDATA uninstall-man uninstall-man1
+	install-dist_bashcompletionDATA install-dist_zshcompletionDATA \
+	install-dvi install-dvi-am install-exec install-exec-am \
+	install-html install-html-am install-info install-info-am \
+	install-man install-man1 install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-am uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-dist_bashcompletionDATA \
+	uninstall-dist_zshcompletionDATA uninstall-man uninstall-man1
 
 
 test: all
