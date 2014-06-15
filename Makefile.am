@@ -23,15 +23,23 @@ valgrind: all
 	grep "indirectly lost: 0 bytes in 0 blocks" valgrind.log
 
 coveralls: test
-	rm -rf gcovtmp
-	mkdir gcovtmp
-	cp src/*.{c,cc,gcno,gcda} converters/*.{c,h,gcno,gcda} .coveralls.yml gcovtmp/
-	cd gcovtmp && coveralls -e sixel_orig -e include -e m4
-	rm -rf gcovtmp
+	ln -sf converters/stb_image.h .
+	ln -sf converters/stb_image.h.gcov .
+	ln -sf converters/stb_image_write.h .
+	ln -sf converters/stb_image_write.h.gcov .
+	coveralls -e sixel_orig -e include -e m4
+	rm -f stb_image.h
+	rm -f stb_image.h.gcov
+	rm -f stb_image_write.h
+	rm -f stb_image_write.h.gcov
 
 coveralls-dryrun: test
-	rm -rf gcovtmp
-	mkdir gcovtmp
-	cp src/*.{c,cc,gcno,gcda} converters/*.{c,h,gcno,gcda} .coveralls.yml gcovtmp/
-	cd gcovtmp && coveralls -e sixel_orig -e include -e m4 --dryrun
-	rm -rf gcovtmp
+	ln -sf converters/stb_image.h .
+	ln -sf converters/stb_image.h.gcov .
+	ln -sf converters/stb_image_write.h .
+	ln -sf converters/stb_image_write.h.gcov .
+	coveralls -e sixel_orig -e include -e m4 --dryrun
+	rm -f stb_image.h
+	rm -f stb_image.h.gcov
+	rm -f stb_image_write.h
+	rm -f stb_image_write.h.gcov
