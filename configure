@@ -11713,7 +11713,7 @@ $as_echo "$as_me: pkgconfig directory is ${pkgconfigdir}" >&6;}
 
 # Check whether --enable-gcov was given.
 if test "${enable_gcov+set}" = set; then :
-  enableval=$enable_gcov;
+  enableval=$enable_gcov; enable_gcov=yes
 else
   enable_gcov=no
 fi
@@ -19838,5 +19838,6 @@ echo ""
 echo "       Loader component    : $loaders"
 echo "       libcurl integration : $have_curl"
 echo "       WIC integration     : $have_wic"
+echo "       gcov integration    : $enable_gcov"
 echo ""
 echo ""

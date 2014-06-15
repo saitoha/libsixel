@@ -69,7 +69,7 @@ AC_SUBST(pkgconfigdir)
 AC_ARG_ENABLE([gcov],
               [AS_HELP_STRING([--enable-gcov],
                               [use Gcov to test the test suite])],
-              [],
+              [enable_gcov=yes],
               [enable_gcov=no])
 AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
 
@@ -250,5 +250,6 @@ echo ""
 echo "       Loader component    : $loaders"
 echo "       libcurl integration : $have_curl"
 echo "       WIC integration     : $have_wic"
+echo "       gcov integration    : $enable_gcov"
 echo ""
 echo ""
