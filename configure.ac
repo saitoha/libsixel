@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.22.0], [user@zuse.jp])
+AC_INIT([sixel], [0.22.1], [user@zuse.jp])
 LS_LT_CURRENT=0
 LS_LT_REVISION=0
 LS_LT_AGE=0
@@ -37,7 +37,7 @@ AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
 AC_ARG_WITH([gdk-pixbuf2],
             [AS_HELP_STRING([--with-gdk-pixbuf2],
                             [whether to build with gdk-pixbuf2 (default: no)])],
-            [with_gdk_pixbuf2=yes],
+            [],
             [with_gdk_pixbuf2=no])
 
 AC_ARG_WITH([gd],
@@ -84,8 +84,8 @@ AC_SUBST(zshcompletiondir)
 
 AC_ARG_ENABLE([gcov],
               [AS_HELP_STRING([--enable-gcov],
-                              [use Gcov to test the test suite])],
-              [enable_gcov=yes],
+                              [Use gcov])],
+              [],
               [enable_gcov=no])
 AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
 
