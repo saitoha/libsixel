@@ -2464,11 +2464,14 @@ static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 r
    stbi__uint32 i,j,stride = x*out_n;
    int k;
    int img_n = s->img_n; // copy it into a local for later
+   int bpp = 8;
    assert(out_n == s->img_n || out_n == s->img_n+1);
    a->out = (stbi_uc *) malloc(x * y * out_n);
    if (!a->out) return stbi__err("outofmem", "Out of memory");
    if (s->img_x == x && s->img_y == y) {
-      if (raw_len != (img_n * x + 1) * y) return stbi__err("not enough pixels","Corrupt PNG");
+      if (raw_len == (img_n * x / 8 + 1) * y) {
+          bpp = 1;
+      } else if (raw_len != (img_n * x + 1) * y) return stbi__err("not enough pixels","Corrupt PNG");
    } else { // interlaced:
       if (raw_len < (img_n * x + 1) * y) return stbi__err("not enough pixels","Corrupt PNG");
    }
@@ -2494,7 +2497,13 @@ static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 r
       if (img_n != out_n) cur[img_n] = 255;
       raw += img_n;
       cur += out_n;
+      if (bpp == 1) {
+          cur += out_n * 16;
+      } else {
+          cur += out_n;
+      }
       prior += out_n;
+      char l;
       // this is a little gross, so that we don't switch per-pixel or per-component
       if (img_n == out_n) {
          #define CASE(f) \
@@ -2502,7 +2511,22 @@ static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 r
                 for (i=x-1; i >= 1; --i, raw+=img_n,cur+=img_n,prior+=img_n) \
                    for (k=0; k < img_n; ++k)
          switch (filter) {
-            CASE(STBI__F_none)         cur[k] = raw[k]; break;
+            case STBI__F_none:
+                for (i=(x - 1) * bpp / 8; i >= 1; --i) {
+                   for (k = 0; k < img_n + 1; ++k) {
+                       if (bpp == 1) {
+                           for (l = 0; l < 8; ++l) {
+                               cur[(k - 1) * 8 - l] = (raw[k - 1] >> l & 1) * 0xff;
+                           }
+                       } else {
+                           cur[k] = raw[k];
+                       }
+                   }
+                   raw += img_n;
+                   cur += img_n * 8 / bpp;
+                   prior += img_n;
+               }
+            break;
             CASE(STBI__F_sub)          cur[k] = STBI__BYTECAST(raw[k] + cur[k-img_n]); break;
             CASE(STBI__F_up)           cur[k] = STBI__BYTECAST(raw[k] + prior[k]); break;
             CASE(STBI__F_avg)          cur[k] = STBI__BYTECAST(raw[k] + ((prior[k] + cur[k-img_n])>>1)); break;
@@ -2716,7 +2740,7 @@ static int stbi__parse_png_file(stbi__png *z, int scan, int req_comp)
             if (c.length != 13) return stbi__err("bad IHDR len","Corrupt PNG");
             s->img_x = stbi__get32be(s); if (s->img_x > (1 << 24)) return stbi__err("too large","Very large image (corrupt?)");
             s->img_y = stbi__get32be(s); if (s->img_y > (1 << 24)) return stbi__err("too large","Very large image (corrupt?)");
-            depth = stbi__get8(s);  if (depth != 8)        return stbi__err("8bit only","PNG not supported: 8-bit only");
+            depth = stbi__get8(s);  if (depth != 8 && depth != 1)        return stbi__err("8bit/1bit only","PNG not supported: 8-bit/1-bit only");
             color = stbi__get8(s);  if (color > 6)         return stbi__err("bad ctype","Corrupt PNG");
             if (color == 3) pal_img_n = 3; else if (color & 1) return stbi__err("bad ctype","Corrupt PNG");
             comp  = stbi__get8(s);  if (comp) return stbi__err("bad comp method","Corrupt PNG");
