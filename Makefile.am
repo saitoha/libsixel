@@ -19,8 +19,10 @@ valgrind: all
 	valgrind --leak-check=full --show-reachable=no --error-limit=no img2sixel images/snake.jpg -dfs 2>&1 \
 		| grep ^== \
 		| tee valgrind.log
-	grep "definitely lost: 0 bytes in 0 blocks" valgrind.log
-	grep "indirectly lost: 0 bytes in 0 blocks" valgrind.log
+	grep "All heap blocks were freed" valgrind.log || \
+		grep "definitely lost: 0 bytes in 0 blocks" valgrind.log
+	grep "All heap blocks were freed" valgrind.log || \
+		grep "indirectly lost: 0 bytes in 0 blocks" valgrind.log
 
 coveralls: test
 	ln -sf converters/stb_image.h .
