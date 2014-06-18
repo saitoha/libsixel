@@ -2496,7 +2496,6 @@ static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 r
       }
       if (img_n != out_n) cur[img_n] = 255;
       raw += img_n;
-      cur += out_n;
       if (bpp == 1) {
           cur += out_n * 16;
       } else {
