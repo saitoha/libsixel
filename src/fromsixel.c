@@ -57,20 +57,24 @@ HueToRGB(int n1, int n2, int hue)
 {
     const int HLSMAX = 100;
 
-    if (hue < 0)
+    if (hue < 0) {
         hue += HLSMAX;
+    }
 
-    if (hue > HLSMAX)
+    if (hue > HLSMAX) {
         hue -= HLSMAX;
+    }
 
-    if (hue < (HLSMAX / 6))
+    if (hue < (HLSMAX / 6)) {
         return (n1 + (((n2 - n1) * hue + (HLSMAX / 12)) / (HLSMAX / 6)));
-    if (hue < (HLSMAX / 2))
+    }
+    if (hue < (HLSMAX / 2)) {
         return (n2);
-    if (hue < ((HLSMAX * 2) / 3))
+    }
+    if (hue < ((HLSMAX * 2) / 3)) {
         return (n1 + (((n2 - n1) * (((HLSMAX * 2) / 3) - hue) + (HLSMAX / 12))/(HLSMAX / 6)));
-    else
-        return (n1);
+    }
+    return (n1);
 }
 
 
@@ -85,10 +89,11 @@ HLStoRGB(int hue, int lum, int sat)
     if (sat == 0) {
         R = G = B = (lum * RGBMAX) / HLSMAX;
     } else {
-        if (lum <= (HLSMAX / 2))
+        if (lum <= (HLSMAX / 2)) {
             Magic2 = (lum * (HLSMAX + sat) + (HLSMAX / 2)) / HLSMAX;
-        else
+        } else {
             Magic2 = lum + sat - ((lum * sat) + (HLSMAX / 2)) / HLSMAX;
+        }
         Magic1 = 2 * lum - Magic2;
 
         R = (HueToRGB(Magic1, Magic2, hue + (HLSMAX / 3)) * RGBMAX + (HLSMAX / 2)) / HLSMAX;
@@ -98,33 +103,41 @@ HLStoRGB(int hue, int lum, int sat)
     return RGB(R, G, B);
 }
 
-static uint8_t *
-GetParam(uint8_t *p, int *param, int *len)
+
+static unsigned char *
+GetParam(unsigned char *p, int *param, int *len)
 {
     int n;
 
     *len = 0;
     while (*p != '\0') {
-        while (*p == ' ' || *p == '\t')
+        while (*p == ' ' || *p == '\t') {
             p++;
+        }
         if (isdigit(*p)) {
-            for (n = 0 ; isdigit(*p) ; p++)
+            for (n = 0; isdigit(*p); p++) {
                 n = n * 10 + (*p - '0');
-            if (*len < 10)
+            }
+            if (*len < 10) {
                 param[(*len)++] = n;
-            while (*p == ' ' || *p == '\t')
+            }
+            while (*p == ' ' || *p == '\t') {
                 p++;
-            if (*p == ';')
+            }
+            if (*p == ';') {
                 p++;
+            }
         } else if (*p == ';') {
-            if (*len < 10)
+            if (*len < 10) {
                 param[(*len)++] = 0;
+            }
             p++;
         } else
             break;
     }
     return p;
 }
+
 
 LSImagePtr
 LibSixel_SixelToLSImage(unsigned char *p, int len)
@@ -137,7 +150,7 @@ LibSixel_SixelToLSImage(unsigned char *p, int len)
     int rep, col, bc, id;
     int param[10];
     LSImagePtr im, dm;
-    uint8_t *s;
+    unsigned char *s;
     static char pam[256];
     static char gra[256];
     int sixel_palet[PALETTE_MAX];
@@ -155,24 +168,28 @@ LibSixel_SixelToLSImage(unsigned char *p, int len)
         return NULL;
     }
 
-    for (n = 0 ; n < 16 ; n++)
+    for (n = 0; n < 16; n++) {
         sixel_palet[n] = ColTab[n];
+    }
 
     /* colors 16-231 are a 6x6x6 color cube */
-    for (a = 0 ; a < 6 ; a++) {
-        for (b = 0 ; b < 6 ; b++) {
-            for (c = 0 ; c < 6 ; c++)
+    for (a = 0; a < 6; a++) {
+        for (b = 0; b < 6; b++) {
+            for (c = 0; c < 6; c++) {
                 sixel_palet[n++] = RGB(a * 51, b * 51, c * 51);
+            }
         }
     }
     /* colors 232-255 are a grayscale ramp, intentionally leaving out */
-    for (a = 0 ; a < 24 ; a++)
+    for (a = 0; a < 24; a++) {
         sixel_palet[n++] = RGB(a * 11, a * 11, a * 11);
+    }
 
     bc = RGBA(0, 0, 0, 127);
 
-    for (; n < PALETTE_MAX ; n++)
+    for (; n < PALETTE_MAX; n++) {
         sixel_palet[n] = RGB(255, 255, 255);
+    }
 
     LSImage_fill(im, bc);
 
@@ -180,14 +197,16 @@ LibSixel_SixelToLSImage(unsigned char *p, int len)
 
     while (*p != '\0') {
         if ((p[0] == '\033' && p[1] == 'P') || *p == 0x90) {
-            if (*p == '\033')
+            if (*p == '\033') {
                 p++;
+            }
 
             s = ++p;
             p = GetParam(p, param, &n);
             if (s < p) {
-                for (i = 0 ; i < 255 && s < p ;)
+                for (i = 0; i < 255 && s < p;) {
                     pam[i++] = *(s++);
+                }
                 pam[i] = '\0';
             }
 
@@ -228,8 +247,9 @@ LibSixel_SixelToLSImage(unsigned char *p, int len)
                 }
 
                 if (n > 2) {        /* Pn3 */
-                    if (param[2] == 0)
+                    if (param[2] == 0) {
                         param[2] = 10;
+                    }
                     ax = ax * param[2] / 10;
                     ay = ay * param[2] / 10;
                     if (ax <= 0) ax = 1;
@@ -240,12 +260,13 @@ LibSixel_SixelToLSImage(unsigned char *p, int len)
         } else if ((p[0] == '\033' && p[1] == '\\') || *p == 0x9C) {
             break;
         } else if (*p == '"') {
-            /* DECGRA Set Raster Attributes " Pan ; Pad ; Ph ; Pv */
+            /* DECGRA Set Raster Attributes " Pan; Pad; Ph; Pv */
             s = p++;
             p = GetParam(p, param, &n);
             if (s < p) {
-                for (i = 0 ; i < 255 && s < p ;)
+                for (i = 0; i < 255 && s < p;) {
                     gra[i++] = *(s++);
+                }
                 gra[i] = '\0';
             }
 
@@ -260,8 +281,9 @@ LibSixel_SixelToLSImage(unsigned char *p, int len)
             if (im->sx < tx || im->sy < ty) {
                 dm = LSImage_create(im->sx > tx ? im->sx : tx,
                                     im->sy > ty ? im->sy : ty, 3, -1);
-                if (dm == NULL)
+                if (dm == NULL) {
                     return NULL;
+                }
                 LSImage_fill(dm, bc);
                 LSImage_copy(dm, im, im->sx, im->sy);
                 LSImage_destroy(im);
@@ -272,18 +294,20 @@ LibSixel_SixelToLSImage(unsigned char *p, int len)
             /* DECGRI Graphics Repeat Introducer ! Pn Ch */
             p = GetParam(++p, param, &n);
 
-            if (n > 0)
+            if (n > 0) {
                 rep = param[0];
+            }
 
         } else if (*p == '#') {
-            /* DECGCI Graphics Color Introducer # Pc ; Pu; Px; Py; Pz */
+            /* DECGCI Graphics Color Introducer # Pc; Pu; Px; Py; Pz */
             p = GetParam(++p, param, &n);
 
             if (n > 0) {
-                if ((col = param[0]) < 0)
+                if ((col = param[0]) < 0) {
                     col = 0;
-                else if (col >= PALETTE_MAX)
+                } else if (col >= PALETTE_MAX) {
                     col = PALETTE_MAX - 1;
+                }
             }
 
             if (n > 4) {
@@ -323,8 +347,9 @@ LibSixel_SixelToLSImage(unsigned char *p, int len)
                     ny *= 2;
                 }
 
-                if ((dm = LSImage_create(nx, ny, 3, -1)) == NULL)
+                if ((dm = LSImage_create(nx, ny, 3, -1)) == NULL) {
                     return NULL;
+                }
                 LSImage_fill(dm, bc);
                 LSImage_copy(dm, im, im->sx, im->sy);
                 LSImage_destroy(im);
@@ -338,25 +363,28 @@ LibSixel_SixelToLSImage(unsigned char *p, int len)
                 a = 0x01;
 
                 if (rep <= 1) {
-                    for (i = 0 ; i < 6 ; i++) {
+                    for (i = 0; i < 6; i++) {
                         if ((b & a) != 0) {
                             LSImage_setpixel(im, px, py + i, sixel_palet[col]);
-                            if (mx < px)
+                            if (mx < px) {
                                 mx = px;
-                            if (my < (py + i))
+                            }
+                            if (my < (py + i)) {
                                 my = py + i;
+                            }
                         }
                         a <<= 1;
                     }
                     px += 1;
 
                 } else { /* rep > 1 */
-                    for (i = 0 ; i < 6 ; i++) {
+                    for (i = 0; i < 6; i++) {
                         if ((b & a) != 0) {
                             c = a << 1;
-                            for (n = 1 ; (i + n) < 6 ; n++) {
-                                if ((b & c) == 0)
+                            for (n = 1; (i + n) < 6; n++) {
+                                if ((b & c) == 0) {
                                     break;
+                                }
                                 c <<= 1;
                             }
                             LSImage_fillrectangle(im, px, py + i,
@@ -364,10 +392,12 @@ LibSixel_SixelToLSImage(unsigned char *p, int len)
                                                   py + i + n - 1,
                                                   sixel_palet[col]);
 
-                            if (mx < (px + rep - 1))
+                            if (mx < (px + rep - 1)) {
                                 mx = px + rep - 1;
-                            if (my < (py + i + n - 1))
+                            }
+                            if (my < (py + i + n - 1)) {
                                 my = py + i + n - 1;
+                            }
 
                             i += (n - 1);
                             a <<= (n - 1);
@@ -384,14 +414,17 @@ LibSixel_SixelToLSImage(unsigned char *p, int len)
         }
     }
 
-    if (++mx < tx)
+    if (++mx < tx) {
         mx = tx;
-    if (++my < ty)
+    }
+    if (++my < ty) {
         my = ty;
+    }
 
     if (im->sx > mx || im->sy > my) {
-        if ((dm = LSImage_create(mx, my, 3, -1)) == NULL)
+        if ((dm = LSImage_create(mx, my, 3, -1)) == NULL) {
             return NULL;
+        }
         LSImage_copy(dm, im, dm->sx, dm->sy);
         LSImage_destroy(im);
         im = dm;

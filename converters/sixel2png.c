@@ -20,24 +20,48 @@
  */
 
 #include "config.h"
+#include "malloc_stub.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>  /* strdup */
 
-#if defined(HAVE_UNISTD_H)
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+
+#if HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
+#if HAVE_UNISTD_H
 # include <unistd.h>  /* getopt */
 #endif
 
-#if defined(HAVE_GETOPT_H)
+#if HAVE_GETOPT_H
 # include <getopt.h>
 #endif
 
-#if defined(HAVE_INTTYPES_H)
+#if HAVE_INTTYPES_H
 # include <inttypes.h>
+#endif
+
+#if defined(HAVE_ERRNO_H)
+# include <errno.h>
 #endif
 
 #include <sixel.h>
 #include "stb_image_write.h"
+
+unsigned char *stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes, int x, int y, int n, int *out_len);
+
+#if !defined(O_BINARY) && defined(_O_BINARY)
+# define O_BINARY _O_BINARY
+#endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 
 enum
 {
@@ -51,49 +75,106 @@ enum
 static int
 sixel_to_png(const char *input, const char *output)
 {
-    uint8_t *data;
+    unsigned char *raw_data, *png_data;
     LSImagePtr im;
     int sx, sy, comp;
-    int len;
+    int raw_len;
+    int png_len;
     int i;
     int max;
     int n;
-    FILE *fp;
+    FILE *input_fp, *output_fp;
+    int write_len;
 
-    if (input != NULL && (fp = fopen(input, "r")) == NULL) {
-        return (-1);
+    if (strcmp(input, "-") == 0) {
+        /* for windows */
+#if defined(O_BINARY)
+# if HAVE__SETMODE
+        _setmode(fileno(stdin), O_BINARY);
+# elif HAVE_SETMODE
+        setmode(fileno(stdin), O_BINARY);
+# endif  /* HAVE_SETMODE */
+#endif  /* defined(O_BINARY) */
+        input_fp = stdin;
+    } else {
+        input_fp = fopen(input, "rb");
+        if (!input_fp) {
+#if HAVE_ERRNO_H
+            fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
+                    input, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
+            return (-1);
+        }
     }
 
-    len = 0;
+    raw_len = 0;
     max = 64 * 1024;
 
-    if ((data = (uint8_t *)malloc(max)) == NULL) {
+    if ((raw_data = (unsigned char *)malloc(max)) == NULL) {
+#if HAVE_ERRNO_H
+        fprintf(stderr, "malloc(%d) failed.\n" "reason: %s.\n",
+                max, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
         return (-1);
     }
 
     for (;;) {
-        if ((max - len) < 4096) {
+        if ((max - raw_len) < 4096) {
             max *= 2;
-            if ((data = (uint8_t *)realloc(data, max)) == NULL)
+            if ((raw_data = (unsigned char *)realloc(raw_data, max)) == NULL) {
+#if HAVE_ERRNO_H
+                fprintf(stderr, "reaalloc(raw_data, %d) failed.\n"
+                                "reason: %s.\n",
+                        max, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
                 return (-1);
+            }
         }
-        if ((n = fread(data + len, 1, 4096, fp)) <= 0)
+        if ((n = fread(raw_data + raw_len, 1, 4096, input_fp)) <= 0)
             break;
-        len += n;
+        raw_len += n;
     }
 
-    if (fp != stdout) {
-        fclose(fp);
+    if (input_fp != stdout) {
+        fclose(input_fp);
     }
 
-    im = LibSixel_SixelToLSImage(data, len);
+    im = LibSixel_SixelToLSImage(raw_data, raw_len);
     if (!im) {
-        return 1;
+        fprintf(stderr, "LibSixel_SixelToLSImage failed.\n");
+        return (-1);
     }
-    stbi_write_png(output, im->sx, im->sy,
-                   STBI_rgb, im->pixels, im->sx * 3);
 
+    png_data = stbi_write_png_to_mem(im->pixels, im->sx * 3,
+                                     im->sx, im->sy, STBI_rgb, &png_len);
     LSImage_destroy(im);
+    if (!png_data) {
+        fprintf(stderr, "stbi_write_png_to_mem failed.\n");
+        return (-1);
+    }
+    if (strcmp(output, "-") == 0) {
+#if defined(O_BINARY)
+# if HAVE__SETMODE
+        _setmode(fileno(stdout), O_BINARY);
+# elif HAVE_SETMODE
+        setmode(fileno(stdout), O_BINARY);
+# endif  /* HAVE_SETMODE */
+#endif  /* defined(O_BINARY) */
+        output_fp = stdout;
+    } else {
+        output_fp = fopen(output, "wb");
+        if (!output_fp) {
+#if HAVE_ERRNO_H
+            fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
+                    output, strerror(errno));
+#endif  /* HAVE_ERRNO_H */
+            free(png_data);
+            return (-1);
+        }
+    }
+    write_len = fwrite(png_data, 1, png_len, output_fp);
+    fclose(output_fp);
+    free(png_data);
 
     return 0;
 }
@@ -101,14 +182,15 @@ sixel_to_png(const char *input, const char *output)
 int main(int argc, char *argv[])
 {
     int n;
-    char *output = NULL;
-    char *input = NULL;
+    char *output = strdup("-");
+    char *input = strdup("-");
     int long_opt;
     int option_index;
+    int nret = 0;
 
     struct option long_options[] = {
-        {"output",       required_argument,  &long_opt, 'o'},
         {"input",        required_argument,  &long_opt, 'i'},
+        {"output",       required_argument,  &long_opt, 'o'},
         {0, 0, 0, 0}
     };
 
@@ -138,38 +220,24 @@ int main(int argc, char *argv[])
         if (optind >= argc) {
             break;
         }
-        optind++;
     }
 
-    if (input == NULL && optind < argc) {
-        input = argv[optind++];
+    if (strcmp(input, "-") == 0 && optind < argc) {
+        free(input);
+        input = strdup(argv[optind++]);
     }
-    if (output == NULL && optind < argc) {
-        output = argv[optind++];
+    if (strcmp(output, "-") == 0 && optind < argc) {
+        free(output);
+        output = strdup(argv[optind++]);
     }
     if (optind != argc) {
         goto argerr;
     }
-    if (input == NULL) {
-        input = strdup("/dev/stdin");
-    }
-    if (output == NULL) {
-        output = strdup("/dev/stdout");
-    }
 
-    sixel_to_png(input, output);
-
-    free(input);
-    free(output);
-    return 0;
+    nret = sixel_to_png(input, output);
+    goto end;
 
 argerr:
-    if (input) {
-        free(input);
-    }
-    if (output) {
-        free(output);
-    }
     fprintf(stderr,
             "Usage: sixel2png -i input.sixel -o output.png\n"
             "       sixel2png < input.sixel > output.png\n"
@@ -177,7 +245,10 @@ argerr:
             "Options:\n"
             "-i, --input     specify input file\n"
             "-o, --output    specify output file\n");
-    return 0;
+end:
+    free(input);
+    free(output);
+    return nret;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */

@@ -19,20 +19,44 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
+#ifndef LIBSIXEL_SCALE_H
+#define LIBSIXEL_SCALE_H
 
-#if !defined(HAVE_MEMCPY)
-# define memcpy(d, s, n) (bcopy ((s), (d), (n)))
+/* method for re-sampling */
+enum methodForResampling {
+    RES_NEAREST,  /* Use nearest neighbor method */
+    RES_GAUSSIAN, /* Use guaussian filter */
+    RES_HANNING,  /* Use hanning filter */
+    RES_HAMMING,  /* Use hamming filter */
+    RES_BILINEAR, /* Use bilinear filter */
+    RES_WELSH,    /* Use welsh filter */
+    RES_BICUBIC,  /* Use bicubic filter */
+    RES_LANCZOS2, /* Use lanczos-2 filter */
+    RES_LANCZOS3, /* Use lanczos-3 filter */
+    RES_LANCZOS4, /* Use lanczos-4 filter */
+};
+
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#if !defined(HAVE_MEMMOVE)
-# define memmove(d, s, n) (bcopy ((s), (d), (n)))
+/* exported functions */
+
+/* image scaling api */
+
+unsigned char *
+LSS_scale(unsigned char const *pixels,
+          int srcx, int srcy, int depth,
+          int destx, int desty,
+          enum methodForResampling const methodForResampling);
+
+#ifdef __cplusplus
+}
 #endif
 
-#define STBI_NO_STDIO 1
-#define STB_IMAGE_IMPLEMENTATION 1
 
-#include "stb_image.h"
+#endif /* LIBSIXEL_SCALE_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

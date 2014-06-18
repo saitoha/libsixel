@@ -1,6 +1,9 @@
 libsixel
 ========
 
+[![Build Status](https://travis-ci.org/saitoha/libsixel.svg?branch=master)](https://travis-ci.org/saitoha/libsixel)
+[![Coverage Status](https://coveralls.io/repos/saitoha/libsixel/badge.png?branch=master)](https://coveralls.io/r/saitoha/libsixel?branch=master)
+
 ## What is this?
 
 This package provides encoder/decoder implementation for DEC SIXEL graphics, and
@@ -8,7 +11,8 @@ some converter programs.
 
 ![img2sixel](http://zuse.jp/misc/libsixel-1.png)
 
-SIXEL is one of image formats for terminal imaging introduced by DEC VT series.
+SIXEL is one of image formats for printer and terminal imaging introduced by
+Digital Equipment Corp. (DEC).
 Its data scheme is represented as a terminal-friendly escape sequence.
 So if you want to view a SIXEL image file, all you have to do is "cat" it to your terminal.
 
@@ -20,10 +24,14 @@ $ make
 # make install
 ```
 
-To build source package:
+## Configure options
+
+### Build with optional packages
 
 ```
-$ make package
+--with-gdk-pixbuf2      build with gdk-pixbuf2 (default: no)
+--with-libcurl          build with libcurl (default: no)
+--with-gd               build with gd (default: no)
 ```
 
 
@@ -33,15 +41,13 @@ If you want to view a SIXEL image, you have to get a terminal which support sixe
 
 Now SIXEL feature is supported by the following terminals.
 
-- VT240
+- DEC VT series, VT240/VT241/VT330/VT340/VT282/VT284/VT286/VT382
 
-- VT241
+- DECterm(dxterm)
 
-- VT330
+- Kermit
 
-- VT340
-
-- VT382
+- WRQ Reflection / ZSTEM
 
 - RLogin (Japanese terminal emulator)
 
@@ -61,15 +67,11 @@ Now SIXEL feature is supported by the following terminals.
 
   [http://invisible-island.net/xterm/](http://invisible-island.net/xterm/)
 
-  You should launch xterm with "-ti 340" option. the SIXEL palette is limited to a maximum of 16 colors. 
+  You should launch xterm with "-ti 340" option. the SIXEL palette is limited to a maximum of 16 colors.
 
-- DECterm
+- yaft (in github repo)
 
-- Kermit
-
-- WRQ Reflection
-
-- ZSTEM
+  [https://github.com/uobikiemukot/yaft](https://github.com/uobikiemukot/yaft)
 
 
 ## Usage of command line tools
@@ -77,23 +79,114 @@ Now SIXEL feature is supported by the following terminals.
 ### img2sixel
 
 ```
+img2sixel: invalid option -- v
 Usage: img2sixel [Options] imagefiles
        img2sixel [Options] < imagefile
 
 Options:
--p COLORS, --colors=COLORS specify number of colors to reduce the
-                           image to
--m FILE, --mapfile=FILE    transform image colors to match this set
-                           of colorsspecify map
+-7, --7bit-mode            generate a sixel image for 7bit
+                           terminals or printers (default)
+-8, --8bit-mode            generate a sixel image for 8bit
+                           terminals or printers
+-p COLORS, --colors=COLORS specify number of colors to reduce
+                           the image to (default=256)
+-m FILE, --mapfile=FILE    transform image colors to match this
+                           set of colorsspecify map
 -e, --monochrome           output monochrome sixel image
--d TYPE, --diffusion=TYPE  choose diffusion method which used with
-                           color reduction
-                           TYPE is one of them:
-                               auto   -> choose diffusion type
-                                         automatically
-                               none   -> do not diffusion
-                               fs     -> Floyd-Steinberg method
-                               jajuji -> Jarvis, Judice & Ninke
+                           this option assumes the terminal
+                           background color is black
+-i, --invert               assume the terminal background color
+                           is white, make sense only when -e
+                           option is given.
+-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
+                           choose diffusion method which used
+                           with -p option (color reduction)
+                           DIFFUSIONTYPE is one of them:
+                             auto     -> choose diffusion type
+                                         automatically (default)
+                             none     -> do not diffuse
+                             fs       -> Floyd-Steinberg method
+                             atkinson -> Bill Atkinson's method
+                             jajuni   -> Jarvis, Judice & Ninke
+                             stucki   -> Stucki's method
+                             burkes   -> Burkes' method
+-f FINDTYPE, --find-largest=FINDTYPE
+                           choose method for finding the largest
+                           dimention of median cut boxes for
+                           splitting, make sense only when -p
+                           option (color reduction) is
+                           specified
+                           FINDTYPE is one of them:
+                             auto -> choose finding method
+                                     automatically (default)
+                             norm -> simply comparing the
+                                     range in RGB space
+                             lum  -> transforming into
+                                     luminosities before the
+                                     comparison
+-s SELECTTYPE, --select-color=SELECTTYPE
+                           choose the method for selecting
+                           representative color from each
+                           median-cut box, make sense only
+                           when -p option (color reduction) is
+                           specified
+                           SELECTTYPE is one of them:
+                             auto     -> choose selecting
+                                         method automatically
+                                         (default)
+                             center   -> choose the center of
+                                         the box
+                             average  -> caclulate the color
+                                         average into the box
+                             histgram -> similar with average
+                                         but considers color
+                                         histgram
+-w WIDTH, --width=WIDTH    resize image to specific width
+                           WIDTH is represented by the
+                           following syntax
+                             auto       -> preserving aspect
+                                           ratio (default)
+                             <number>%  -> scale width with
+                                           given percentage
+                             <number>   -> scale width with
+                                           pixel counts
+                             <number>px -> scale width with
+                                           pixel counts
+-h HEIGHT, --height=HEIGHT resize image to specific height
+                           HEIGHT is represented by the
+                           following syntax
+                             auto       -> preserving aspect
+                                           ratio (default)
+                             <number>%  -> scale height with
+                                           given percentage
+                             <number>   -> scale height with
+                                           pixel counts
+                             <number>px -> scale height with
+                                           pixel counts
+-r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE
+                           choose resampling method used
+                           with -w or -h option (scaling)
+                           RESAMPLINGTYPE is one of them:
+                             nearest  -> Nearest-Neighbor
+                                         method
+                             gaussian -> Gaussian filter
+                             hanning  -> Hanning filter
+                             hamming  -> Hamming filter
+                             bilinear -> Bilinear filter
+                                         (default)
+                             welsh    -> Welsh filter
+                             bicubic  -> Bicubic filter
+                             lanczos2 -> Lanczos-2 filter
+                             lanczos3 -> Lanczos-3 filter
+                             lanczos4 -> Lanczos-4 filter
+-q QUALITYMODE, --quality=QUALITYMODE
+			   select quality of color quanlization.
+                             auto -> decide quality mode
+                                     automatically (default)
+                             high -> high quality and low
+                                     speed mode
+                             low  -> low quality and high
+                                     speed mode
 ```
 
 Convert a jpeg image file into a sixel file
@@ -147,6 +240,10 @@ $ sixel2png < egret.sixel > egret.png
 
   Python implementation of SIXEL converter
 
+
+- [monosixel in arakiken's tw](https://bitbucket.org/arakiken/tw/branch/sixel)
+
+  A monochrome SIXEL converter
 
 ## Other software supporting SIXEL
 
@@ -215,7 +312,7 @@ $ sixel2png < egret.sixel > egret.png
 
 This software is provided "as is" without express or implied warranty.
 The main support channel for this software is the github issue tracker:
-    
+
   [https://github.com/saitoha/libsixel/issues](https://github.com/saitoha/libsixel/issues)
 
 
@@ -226,33 +323,33 @@ Please post your issue if you have any problems, questions or suggestions.
 
 The MIT License (MIT)
 
-Copyright (c) 2014 Hayaki Saito
+> Copyright (c) 2014 Hayaki Saito
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy of
+> this software and associated documentation files (the "Software"), to deal in
+> the Software without restriction, including without limitation the rights to
+> use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+> the Software, and to permit persons to whom the Software is furnished to do so,
+> subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in all
+> copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+> FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+> COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+> IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+> CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
-## Thanks
+## Thanks & References
 
 This software derives from the following implementations.
 
 ### sixel 2014-3-2
 
-tosixel.c and fromsixel.c are derived from kmiya's "*sixel*" original version (2014-3-2)
+src/tosixel.c, src/fromsixel.c, and some part of converters/loader.c are
+derived from kmiya's "*sixel*" original version (2014-3-2)
 
 http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
 
@@ -291,21 +388,22 @@ http://netpbm.sourceforge.net/
 *pnmcolormap* was derived from *ppmquant*, originally by Jef Poskanzer.
 
 
-Copyright (C) 1989, 1991 by Jef Poskanzer.
-Copyright (C) 2001 by Bryan Henderson.
+> Copyright (C) 1989, 1991 by Jef Poskanzer.
+> Copyright (C) 2001 by Bryan Henderson.
+>
+> Permission to use, copy, modify, and distribute this software and its
+> documentation for any purpose and without fee is hereby granted, provided
+> that the above copyright notice appear in all copies and that both that
+> copyright notice and this permission notice appear in supporting
+> documentation.  This software is provided "as is" without express or
+> implied warranty.
 
-Permission to use, copy, modify, and distribute this software and its
-documentation for any purpose and without fee is hereby granted, provided
-that the above copyright notice appear in all copies and that both that
-copyright notice and this permission notice appear in supporting
-documentation.  This software is provided "as is" without express or
-implied warranty.
- 
-### test images (egret.jpg / snake.jpg)
 
-Test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.com
+### test images
 
-http://public-domain-photos.com/
+#### http://public-domain-photos.com/
+
+The following test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.com.
 
 - images/egret.jpg
 
@@ -316,4 +414,21 @@ http://public-domain-photos.com/
 
     author: Jon Sullivan
     url: http://public-domain-photos.com/animals/snake-4.htm
+
+
+#### vimperator3.png (mascot of vimperator)
+
+images/vimperator3.png is in public domain.
+
+    author: @k_wizard
+    url: http://quadrantem.com/~k_wizard/vimprtan/
+
+
+
+### ImageMagick
+
+We added some resampling filters in reference to the line-up of filters of
+MagickCore's resize.c.
+
+    http://www.imagemagick.org/api/MagickCore/resize_8c_source.html
 

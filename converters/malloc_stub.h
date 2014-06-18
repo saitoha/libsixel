@@ -19,21 +19,27 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
+#ifndef MALLOC_STUB_H
+#define MALLOC_STUB_H
 
-#if !defined(HAVE_MEMCPY)
-# define memcpy(d, s, n) (bcopy ((s), (d), (n)))
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif  /* HAVE_SYS_TYPES_H */
+
+#if !HAVE_MALLOC
+void * rpl_malloc(size_t n);
+#endif /* !HAVE_MALLOC */
+
+#if !HAVE_REALLOC
+void * rpl_realloc(void *p, size_t n);
+#endif /* !HAVE_REALLOC */
+
+#if 0
+int rpl_posix_memalign(void **memptr, size_t alignment, size_t size);
 #endif
 
-#if !defined(HAVE_MEMMOVE)
-# define memmove(d, s, n) (bcopy ((s), (d), (n)))
-#endif
+#endif /* MALLOC_STUB_H */
 
-#define STBI_NO_STDIO 1
-#define STB_IMAGE_IMPLEMENTATION 1
-
-#include "stb_image.h"
-
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
+/* Hello emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
 /* EOF */

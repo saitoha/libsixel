@@ -19,20 +19,21 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
+#ifndef LIBSIXEL_LOADER_H
+#define LIBSIXEL_LOADER_H
 
-#if !defined(HAVE_MEMCPY)
-# define memcpy(d, s, n) (bcopy ((s), (d), (n)))
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#if !defined(HAVE_MEMMOVE)
-# define memmove(d, s, n) (bcopy ((s), (d), (n)))
+unsigned char *
+load_image_file(char const *filename, int *psx, int *psy);
+
+#ifdef __cplusplus
+}
 #endif
 
-#define STBI_NO_STDIO 1
-#define STB_IMAGE_IMPLEMENTATION 1
-
-#include "stb_image.h"
+#endif /* LIBSIXEL_LOADER_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

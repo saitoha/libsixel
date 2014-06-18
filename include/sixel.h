@@ -42,6 +42,20 @@ typedef int (* putchar_function)(int ch);
 typedef int (* printf_function)(const char *fmt, ...);
 
 typedef struct LSOutputContextStruct {
+    /* compatiblity flags */
+
+    /* 0: 7bit terminal,
+     * 1: 8bit terminal */
+    unsigned char has_8bit_control;
+
+    /* 0: the terminal has sixel scrolling
+     * 1: the terminal does not have sixel scrolling */
+    unsigned char has_sixel_scrolling;
+
+    /* 0: DECSDM set (CSI ? 80 h) enables sixel scrolling
+       1: DECSDM set (CSI ? 80 h) disables sixel scrolling */
+    unsigned char has_sdm_glitch;
+
     putchar_function fn_putchar;
     printf_function fn_printf;
 } LSOutputContext, *LSOutputContextPtr;
@@ -55,7 +69,7 @@ extern "C" {
 LSImagePtr
 LibSixel_SixelToLSImage(unsigned char *p, int len);
 
-void
+int
 LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context);
 
 #ifdef __cplusplus
@@ -114,7 +128,7 @@ LSOutputContext_destroy(LSOutputContextPtr context);
 #endif
 
 
-#endif /* LIBSIXEL_SIXEL_H */
+#endif  /* LIBSIXEL_SIXEL_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

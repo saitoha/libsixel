@@ -27,6 +27,8 @@ LSOutputContextPtr const
 LSOutputContext_create(putchar_function fn_putchar, printf_function fn_printf)
 {
     LSOutputContextPtr context = (LSOutputContextPtr)malloc(sizeof(LSOutputContext));
+    context->has_8bit_control = 0;
+    context->has_sdm_glitch = 0;
     context->fn_putchar = fn_putchar;
     context->fn_printf = fn_printf;
     return context;
