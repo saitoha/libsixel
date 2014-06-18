@@ -1446,7 +1446,7 @@ Optional Features:
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-img2sixel     whether to build img2sixel (default: yes)
   --disable-sixel2png     whether to build sixel2png (default: yes)
-  --enable-gcov           use Gcov to test the test suite
+  --enable-gcov           Use gcov
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -11666,7 +11666,7 @@ fi
 
 # Check whether --with-gdk-pixbuf2 was given.
 if test "${with_gdk_pixbuf2+set}" = set; then :
-  withval=$with_gdk_pixbuf2; with_gdk_pixbuf2=yes
+  withval=$with_gdk_pixbuf2;
 else
   with_gdk_pixbuf2=no
 fi
@@ -11713,7 +11713,7 @@ $as_echo "$as_me: pkgconfig directory is ${pkgconfigdir}" >&6;}
 
 # Check whether --enable-gcov was given.
 if test "${enable_gcov+set}" = set; then :
-  enableval=$enable_gcov; enable_gcov=yes
+  enableval=$enable_gcov;
 else
   enable_gcov=no
 fi
