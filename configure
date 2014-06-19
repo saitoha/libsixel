@@ -16872,31 +16872,44 @@ fi
         fi
     fi
     if test x$have_gd = xyes; then
-        ac_fn_c_check_decl "$LINENO" "gdImageCreateFromGifPtr" "ac_cv_have_decl_gdImageCreateFromGifPtr" " #include <gd.h>
-"
-if test "x$ac_cv_have_decl_gdImageCreateFromGifPtr" = xyes; then :
-  ac_have_decl=1
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromBmpPtr in -lgd" >&5
+$as_echo_n "checking for gdImageCreateFromBmpPtr in -lgd... " >&6; }
+if ${ac_cv_lib_gd_gdImageCreateFromBmpPtr+:} false; then :
+  $as_echo_n "(cached) " >&6
 else
-  ac_have_decl=0
-fi
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lgd  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
 
-cat >>confdefs.h <<_ACEOF
-#define HAVE_DECL_GDIMAGECREATEFROMGIFPTR $ac_have_decl
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gdImageCreateFromBmpPtr ();
+int
+main ()
+{
+return gdImageCreateFromBmpPtr ();
+  ;
+  return 0;
+}
 _ACEOF
-
-        ac_fn_c_check_decl "$LINENO" "gdImageCreateFromPngPtr" "ac_cv_have_decl_gdImageCreateFromPngPtr" " #include <gd.h>
-"
-if test "x$ac_cv_have_decl_gdImageCreateFromPngPtr" = xyes; then :
-  ac_have_decl=1
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_gd_gdImageCreateFromBmpPtr=yes
 else
-  ac_have_decl=0
+  ac_cv_lib_gd_gdImageCreateFromBmpPtr=no
 fi
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_DECL_GDIMAGECREATEFROMPNGPTR $ac_have_decl
-_ACEOF
-
-        ac_fn_c_check_decl "$LINENO" "gdImageCreateFromBmpPtr" "ac_cv_have_decl_gdImageCreateFromBmpPtr" " #include <gd.h>
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImageCreateFromBmpPtr" >&5
+$as_echo "$ac_cv_lib_gd_gdImageCreateFromBmpPtr" >&6; }
+if test "x$ac_cv_lib_gd_gdImageCreateFromBmpPtr" = xyes; then :
+  ac_fn_c_check_decl "$LINENO" "gdImageCreateFromBmpPtr" "ac_cv_have_decl_gdImageCreateFromBmpPtr" " #include <gd.h>
 "
 if test "x$ac_cv_have_decl_gdImageCreateFromBmpPtr" = xyes; then :
   ac_have_decl=1
@@ -16908,7 +16921,148 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_GDIMAGECREATEFROMBMPPTR $ac_have_decl
 _ACEOF
 
-        ac_fn_c_check_decl "$LINENO" "gdImageCreateFromJpegPtrEx" "ac_cv_have_decl_gdImageCreateFromJpegPtrEx" " #include <gd.h>
+fi
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromBmpPtr in -lgd" >&5
+$as_echo_n "checking for gdImageCreateFromBmpPtr in -lgd... " >&6; }
+if ${ac_cv_lib_gd_gdImageCreateFromBmpPtr+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lgd  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gdImageCreateFromBmpPtr ();
+int
+main ()
+{
+return gdImageCreateFromBmpPtr ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_gd_gdImageCreateFromBmpPtr=yes
+else
+  ac_cv_lib_gd_gdImageCreateFromBmpPtr=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImageCreateFromBmpPtr" >&5
+$as_echo "$ac_cv_lib_gd_gdImageCreateFromBmpPtr" >&6; }
+if test "x$ac_cv_lib_gd_gdImageCreateFromBmpPtr" = xyes; then :
+  ac_fn_c_check_decl "$LINENO" "gdImageCreateFromPngPtr" "ac_cv_have_decl_gdImageCreateFromPngPtr" " #include <gd.h>
+"
+if test "x$ac_cv_have_decl_gdImageCreateFromPngPtr" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_GDIMAGECREATEFROMPNGPTR $ac_have_decl
+_ACEOF
+
+fi
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromBmpPtr in -lgd" >&5
+$as_echo_n "checking for gdImageCreateFromBmpPtr in -lgd... " >&6; }
+if ${ac_cv_lib_gd_gdImageCreateFromBmpPtr+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lgd  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gdImageCreateFromBmpPtr ();
+int
+main ()
+{
+return gdImageCreateFromBmpPtr ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_gd_gdImageCreateFromBmpPtr=yes
+else
+  ac_cv_lib_gd_gdImageCreateFromBmpPtr=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImageCreateFromBmpPtr" >&5
+$as_echo "$ac_cv_lib_gd_gdImageCreateFromBmpPtr" >&6; }
+if test "x$ac_cv_lib_gd_gdImageCreateFromBmpPtr" = xyes; then :
+  ac_fn_c_check_decl "$LINENO" "gdImageCreateFromBmpPtr" "ac_cv_have_decl_gdImageCreateFromBmpPtr" " #include <gd.h>
+"
+if test "x$ac_cv_have_decl_gdImageCreateFromBmpPtr" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_GDIMAGECREATEFROMBMPPTR $ac_have_decl
+_ACEOF
+
+fi
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromJpegPtrEx in -lgd" >&5
+$as_echo_n "checking for gdImageCreateFromJpegPtrEx in -lgd... " >&6; }
+if ${ac_cv_lib_gd_gdImageCreateFromJpegPtrEx+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lgd  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gdImageCreateFromJpegPtrEx ();
+int
+main ()
+{
+return gdImageCreateFromJpegPtrEx ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_gd_gdImageCreateFromJpegPtrEx=yes
+else
+  ac_cv_lib_gd_gdImageCreateFromJpegPtrEx=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImageCreateFromJpegPtrEx" >&5
+$as_echo "$ac_cv_lib_gd_gdImageCreateFromJpegPtrEx" >&6; }
+if test "x$ac_cv_lib_gd_gdImageCreateFromJpegPtrEx" = xyes; then :
+  ac_fn_c_check_decl "$LINENO" "gdImageCreateFromJpegPtrEx" "ac_cv_have_decl_gdImageCreateFromJpegPtrEx" " #include <gd.h>
 "
 if test "x$ac_cv_have_decl_gdImageCreateFromJpegPtrEx" = xyes; then :
   ac_have_decl=1
@@ -16920,7 +17074,46 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_GDIMAGECREATEFROMJPEGPTREX $ac_have_decl
 _ACEOF
 
-        ac_fn_c_check_decl "$LINENO" "gdImageCreateFromJpegPtr" "ac_cv_have_decl_gdImageCreateFromJpegPtr" " #include <gd.h>
+fi
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromTgaPtr in -lgd" >&5
+$as_echo_n "checking for gdImageCreateFromTgaPtr in -lgd... " >&6; }
+if ${ac_cv_lib_gd_gdImageCreateFromTgaPtr+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lgd  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gdImageCreateFromTgaPtr ();
+int
+main ()
+{
+return gdImageCreateFromTgaPtr ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_gd_gdImageCreateFromTgaPtr=yes
+else
+  ac_cv_lib_gd_gdImageCreateFromTgaPtr=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImageCreateFromTgaPtr" >&5
+$as_echo "$ac_cv_lib_gd_gdImageCreateFromTgaPtr" >&6; }
+if test "x$ac_cv_lib_gd_gdImageCreateFromTgaPtr" = xyes; then :
+  ac_fn_c_check_decl "$LINENO" "gdImageCreateFromJpegPtr" "ac_cv_have_decl_gdImageCreateFromJpegPtr" " #include <gd.h>
 "
 if test "x$ac_cv_have_decl_gdImageCreateFromJpegPtr" = xyes; then :
   ac_have_decl=1
@@ -16932,7 +17125,46 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_GDIMAGECREATEFROMJPEGPTR $ac_have_decl
 _ACEOF
 
-        ac_fn_c_check_decl "$LINENO" "gdImageCreateFromTgaPtr" "ac_cv_have_decl_gdImageCreateFromTgaPtr" " #include <gd.h>
+fi
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromTgaPtr in -lgd" >&5
+$as_echo_n "checking for gdImageCreateFromTgaPtr in -lgd... " >&6; }
+if ${ac_cv_lib_gd_gdImageCreateFromTgaPtr+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lgd  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gdImageCreateFromTgaPtr ();
+int
+main ()
+{
+return gdImageCreateFromTgaPtr ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_gd_gdImageCreateFromTgaPtr=yes
+else
+  ac_cv_lib_gd_gdImageCreateFromTgaPtr=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImageCreateFromTgaPtr" >&5
+$as_echo "$ac_cv_lib_gd_gdImageCreateFromTgaPtr" >&6; }
+if test "x$ac_cv_lib_gd_gdImageCreateFromTgaPtr" = xyes; then :
+  ac_fn_c_check_decl "$LINENO" "gdImageCreateFromTgaPtr" "ac_cv_have_decl_gdImageCreateFromTgaPtr" " #include <gd.h>
 "
 if test "x$ac_cv_have_decl_gdImageCreateFromTgaPtr" = xyes; then :
   ac_have_decl=1
@@ -16944,7 +17176,46 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_GDIMAGECREATEFROMTGAPTR $ac_have_decl
 _ACEOF
 
-        ac_fn_c_check_decl "$LINENO" "gdImageCreateFromWBMPPtr" "ac_cv_have_decl_gdImageCreateFromWBMPPtr" " #include <gd.h>
+fi
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromWBMPPtr in -lgd" >&5
+$as_echo_n "checking for gdImageCreateFromWBMPPtr in -lgd... " >&6; }
+if ${ac_cv_lib_gd_gdImageCreateFromWBMPPtr+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lgd  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gdImageCreateFromWBMPPtr ();
+int
+main ()
+{
+return gdImageCreateFromWBMPPtr ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_gd_gdImageCreateFromWBMPPtr=yes
+else
+  ac_cv_lib_gd_gdImageCreateFromWBMPPtr=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImageCreateFromWBMPPtr" >&5
+$as_echo "$ac_cv_lib_gd_gdImageCreateFromWBMPPtr" >&6; }
+if test "x$ac_cv_lib_gd_gdImageCreateFromWBMPPtr" = xyes; then :
+  ac_fn_c_check_decl "$LINENO" "gdImageCreateFromWBMPPtr" "ac_cv_have_decl_gdImageCreateFromWBMPPtr" " #include <gd.h>
 "
 if test "x$ac_cv_have_decl_gdImageCreateFromWBMPPtr" = xyes; then :
   ac_have_decl=1
@@ -16956,7 +17227,46 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_GDIMAGECREATEFROMWBMPPTR $ac_have_decl
 _ACEOF
 
-        ac_fn_c_check_decl "$LINENO" "gdImageCreateFromTiffPtr" "ac_cv_have_decl_gdImageCreateFromTiffPtr" " #include <gd.h>
+fi
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromTiffPtr in -lgd" >&5
+$as_echo_n "checking for gdImageCreateFromTiffPtr in -lgd... " >&6; }
+if ${ac_cv_lib_gd_gdImageCreateFromTiffPtr+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lgd  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gdImageCreateFromTiffPtr ();
+int
+main ()
+{
+return gdImageCreateFromTiffPtr ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_gd_gdImageCreateFromTiffPtr=yes
+else
+  ac_cv_lib_gd_gdImageCreateFromTiffPtr=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImageCreateFromTiffPtr" >&5
+$as_echo "$ac_cv_lib_gd_gdImageCreateFromTiffPtr" >&6; }
+if test "x$ac_cv_lib_gd_gdImageCreateFromTiffPtr" = xyes; then :
+  ac_fn_c_check_decl "$LINENO" "gdImageCreateFromTiffPtr" "ac_cv_have_decl_gdImageCreateFromTiffPtr" " #include <gd.h>
 "
 if test "x$ac_cv_have_decl_gdImageCreateFromTiffPtr" = xyes; then :
   ac_have_decl=1
@@ -16968,7 +17278,46 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_GDIMAGECREATEFROMTIFFPTR $ac_have_decl
 _ACEOF
 
-        ac_fn_c_check_decl "$LINENO" "gdImageCreateFromGd2Ptr" "ac_cv_have_decl_gdImageCreateFromGd2Ptr" " #include <gd.h>
+fi
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromGd2Ptr in -lgd" >&5
+$as_echo_n "checking for gdImageCreateFromGd2Ptr in -lgd... " >&6; }
+if ${ac_cv_lib_gd_gdImageCreateFromGd2Ptr+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lgd  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gdImageCreateFromGd2Ptr ();
+int
+main ()
+{
+return gdImageCreateFromGd2Ptr ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_gd_gdImageCreateFromGd2Ptr=yes
+else
+  ac_cv_lib_gd_gdImageCreateFromGd2Ptr=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImageCreateFromGd2Ptr" >&5
+$as_echo "$ac_cv_lib_gd_gdImageCreateFromGd2Ptr" >&6; }
+if test "x$ac_cv_lib_gd_gdImageCreateFromGd2Ptr" = xyes; then :
+  ac_fn_c_check_decl "$LINENO" "gdImageCreateFromGd2Ptr" "ac_cv_have_decl_gdImageCreateFromGd2Ptr" " #include <gd.h>
 "
 if test "x$ac_cv_have_decl_gdImageCreateFromGd2Ptr" = xyes; then :
   ac_have_decl=1
@@ -16980,7 +17329,46 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_GDIMAGECREATEFROMGD2PTR $ac_have_decl
 _ACEOF
 
-        ac_fn_c_check_decl "$LINENO" "gdImagePaletteToTrueColor" "ac_cv_have_decl_gdImagePaletteToTrueColor" " #include <gd.h>
+fi
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImagePaletteToTrueColor in -lgd" >&5
+$as_echo_n "checking for gdImagePaletteToTrueColor in -lgd... " >&6; }
+if ${ac_cv_lib_gd_gdImagePaletteToTrueColor+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lgd  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gdImagePaletteToTrueColor ();
+int
+main ()
+{
+return gdImagePaletteToTrueColor ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_gd_gdImagePaletteToTrueColor=yes
+else
+  ac_cv_lib_gd_gdImagePaletteToTrueColor=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImagePaletteToTrueColor" >&5
+$as_echo "$ac_cv_lib_gd_gdImagePaletteToTrueColor" >&6; }
+if test "x$ac_cv_lib_gd_gdImagePaletteToTrueColor" = xyes; then :
+  ac_fn_c_check_decl "$LINENO" "gdImagePaletteToTrueColor" "ac_cv_have_decl_gdImagePaletteToTrueColor" " #include <gd.h>
 "
 if test "x$ac_cv_have_decl_gdImagePaletteToTrueColor" = xyes; then :
   ac_have_decl=1
@@ -16991,6 +17379,8 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR $ac_have_decl
 _ACEOF
+
+fi
 
 
 $as_echo "#define HAVE_GD 1" >>confdefs.h
