@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.22.2], [user@zuse.jp])
+AC_INIT([sixel], [0.22.3], [user@zuse.jp])
 LS_LT_CURRENT=0
 LS_LT_REVISION=0
 LS_LT_AGE=0
@@ -92,6 +92,7 @@ AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
+PKG_PROG_PKG_CONFIG
 AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
 
 # For wic integration
