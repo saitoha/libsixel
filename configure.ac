@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.21.1], [user@zuse.jp])
+AC_INIT([sixel], [0.22.2], [user@zuse.jp])
 LS_LT_CURRENT=0
 LS_LT_REVISION=0
 LS_LT_AGE=0
@@ -66,6 +66,22 @@ AC_ARG_WITH(pkgconfigdir,
 AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
 AC_SUBST(pkgconfigdir)
 
+AC_ARG_WITH(bashcompletiondir,
+            AC_HELP_STRING([--with-bashcompletiondir],
+                           [Use the specified bashcompletion.d]),
+                           [bashcompletiondir=${withval}],
+                           [bashcompletiondir=${datadir}/bash-completion/completions])
+AC_MSG_NOTICE([bash-completion directory is ${bashcompletiondir}])
+AC_SUBST(bashcompletiondir)
+
+AC_ARG_WITH(zshcompletiondir,
+            AC_HELP_STRING([--with-zshcompletiondir],
+                           [Use the specified zshcompletion.d]),
+                           [zshcompletiondir=${withval}],
+                           [zshcompletiondir=${datadir}/zsh/site-functions])
+AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])
+AC_SUBST(zshcompletiondir)
+
 AC_ARG_ENABLE([gcov],
               [AS_HELP_STRING([--enable-gcov],
                               [Use gcov])],
@@ -76,6 +92,7 @@ AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
+PKG_PROG_PKG_CONFIG
 AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
 
 # For wic integration
@@ -249,6 +266,9 @@ echo "libsixel was configured as follows"
 echo ""
 echo "       Loader component    : $loaders"
 echo "       libcurl integration : $have_curl"
+echo "       pkg-config dir      : $pkgconfigdir"
+echo "       Bash completion dir : $bashcompletiondir"
+echo "       Zsh completion dir  : $zshcompletiondir"
 echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
 echo ""
