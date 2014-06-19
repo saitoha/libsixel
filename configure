@@ -16872,9 +16872,9 @@ fi
         fi
     fi
     if test x$have_gd = xyes; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromBmpPtr in -lgd" >&5
-$as_echo_n "checking for gdImageCreateFromBmpPtr in -lgd... " >&6; }
-if ${ac_cv_lib_gd_gdImageCreateFromBmpPtr+:} false; then :
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromGifPtr in -lgd" >&5
+$as_echo_n "checking for gdImageCreateFromGifPtr in -lgd... " >&6; }
+if ${ac_cv_lib_gd_gdImageCreateFromGifPtr+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -16888,37 +16888,37 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char gdImageCreateFromBmpPtr ();
+char gdImageCreateFromGifPtr ();
 int
 main ()
 {
-return gdImageCreateFromBmpPtr ();
+return gdImageCreateFromGifPtr ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_gd_gdImageCreateFromBmpPtr=yes
+  ac_cv_lib_gd_gdImageCreateFromGifPtr=yes
 else
-  ac_cv_lib_gd_gdImageCreateFromBmpPtr=no
+  ac_cv_lib_gd_gdImageCreateFromGifPtr=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImageCreateFromBmpPtr" >&5
-$as_echo "$ac_cv_lib_gd_gdImageCreateFromBmpPtr" >&6; }
-if test "x$ac_cv_lib_gd_gdImageCreateFromBmpPtr" = xyes; then :
-  ac_fn_c_check_decl "$LINENO" "gdImageCreateFromBmpPtr" "ac_cv_have_decl_gdImageCreateFromBmpPtr" " #include <gd.h>
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImageCreateFromGifPtr" >&5
+$as_echo "$ac_cv_lib_gd_gdImageCreateFromGifPtr" >&6; }
+if test "x$ac_cv_lib_gd_gdImageCreateFromGifPtr" = xyes; then :
+  ac_fn_c_check_decl "$LINENO" "gdImageCreateFromGifPtr" "ac_cv_have_decl_gdImageCreateFromGifPtr" " #include <gd.h>
 "
-if test "x$ac_cv_have_decl_gdImageCreateFromBmpPtr" = xyes; then :
+if test "x$ac_cv_have_decl_gdImageCreateFromGifPtr" = xyes; then :
   ac_have_decl=1
 else
   ac_have_decl=0
 fi
 
 cat >>confdefs.h <<_ACEOF
-#define HAVE_DECL_GDIMAGECREATEFROMBMPPTR $ac_have_decl
+#define HAVE_DECL_GDIMAGECREATEFROMGIFPTR $ac_have_decl
 _ACEOF
 
 fi
@@ -17076,9 +17076,9 @@ _ACEOF
 
 fi
 
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromTgaPtr in -lgd" >&5
-$as_echo_n "checking for gdImageCreateFromTgaPtr in -lgd... " >&6; }
-if ${ac_cv_lib_gd_gdImageCreateFromTgaPtr+:} false; then :
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromJpegPtr in -lgd" >&5
+$as_echo_n "checking for gdImageCreateFromJpegPtr in -lgd... " >&6; }
+if ${ac_cv_lib_gd_gdImageCreateFromJpegPtr+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -17092,27 +17092,27 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char gdImageCreateFromTgaPtr ();
+char gdImageCreateFromJpegPtr ();
 int
 main ()
 {
-return gdImageCreateFromTgaPtr ();
+return gdImageCreateFromJpegPtr ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_gd_gdImageCreateFromTgaPtr=yes
+  ac_cv_lib_gd_gdImageCreateFromJpegPtr=yes
 else
-  ac_cv_lib_gd_gdImageCreateFromTgaPtr=no
+  ac_cv_lib_gd_gdImageCreateFromJpegPtr=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImageCreateFromTgaPtr" >&5
-$as_echo "$ac_cv_lib_gd_gdImageCreateFromTgaPtr" >&6; }
-if test "x$ac_cv_lib_gd_gdImageCreateFromTgaPtr" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImageCreateFromJpegPtr" >&5
+$as_echo "$ac_cv_lib_gd_gdImageCreateFromJpegPtr" >&6; }
+if test "x$ac_cv_lib_gd_gdImageCreateFromJpegPtr" = xyes; then :
   ac_fn_c_check_decl "$LINENO" "gdImageCreateFromJpegPtr" "ac_cv_have_decl_gdImageCreateFromJpegPtr" " #include <gd.h>
 "
 if test "x$ac_cv_have_decl_gdImageCreateFromJpegPtr" = xyes; then :
