@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.22.2], [user@zuse.jp])
+AC_INIT([sixel], [0.22.3], [user@zuse.jp])
 LS_LT_CURRENT=0
 LS_LT_REVISION=0
 LS_LT_AGE=0
@@ -92,6 +92,7 @@ AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
+PKG_PROG_PKG_CONFIG
 AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
 
 # For wic integration
@@ -188,16 +189,36 @@ if test x$with_gd != xno; then
         fi
     fi
     if test x$have_gd = xyes; then
-        AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromPngPtr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromBmpPtr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromJpegPtrEx],[], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromJpegPtr],  [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromTgaPtr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromWBMPPtr],  [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromTiffPtr],  [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromGd2Ptr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImagePaletteToTrueColor], [], [], [ #include <gd.h> ])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromGifPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromBmpPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromPngPtr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromBmpPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromBmpPtr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromJpegPtrEx],
+                     [AC_CHECK_DECLS([gdImageCreateFromJpegPtrEx],[], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromJpegPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromJpegPtr],  [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromTgaPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromTgaPtr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromWBMPPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromWBMPPtr],  [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromTiffPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromTiffPtr], [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromGd2Ptr],
+                     [AC_CHECK_DECLS([gdImageCreateFromGd2Ptr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImagePaletteToTrueColor],
+                     [AC_CHECK_DECLS([gdImagePaletteToTrueColor], [], [], [ #include <gd.h> ])])
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
         loaders="${loaders} gd"
     else
