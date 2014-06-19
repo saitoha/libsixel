@@ -190,8 +190,8 @@ if test x$with_gd != xno; then
     fi
     if test x$have_gd = xyes; then
         AC_CHECK_LIB([gd],
-                     [gdImageCreateFromBmpPtr],
-                     [AC_CHECK_DECLS([gdImageCreateFromBmpPtr],   [], [], [ #include <gd.h> ])])
+                     [gdImageCreateFromGifPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])])
         AC_CHECK_LIB([gd],
                      [gdImageCreateFromBmpPtr],
                      [AC_CHECK_DECLS([gdImageCreateFromPngPtr],   [], [], [ #include <gd.h> ])])
