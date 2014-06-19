@@ -2,7 +2,7 @@ libsixel
 ========
 
 [![Build Status](https://travis-ci.org/saitoha/libsixel.svg?branch=master)](https://travis-ci.org/saitoha/libsixel)
-[![Coverage Status](https://coveralls.io/repos/saitoha/libsixel/badge.png?branch=configure-with-gcov)](https://coveralls.io/r/saitoha/libsixel?branch=configure-with-gcov)
+[![Coverage Status](https://coveralls.io/repos/saitoha/libsixel/badge.png?branch=master)](https://coveralls.io/r/saitoha/libsixel?branch=master)
 
 ## What is this?
 
@@ -41,15 +41,13 @@ If you want to view a SIXEL image, you have to get a terminal which support sixe
 
 Now SIXEL feature is supported by the following terminals.
 
-- VT240
+- DEC VT series, VT240/VT241/VT330/VT340/VT282/VT284/VT286/VT382
 
-- VT241
+- DECterm(dxterm)
 
-- VT330
+- Kermit
 
-- VT340
-
-- VT382
+- WRQ Reflection / ZSTEM
 
 - RLogin (Japanese terminal emulator)
 
@@ -71,13 +69,9 @@ Now SIXEL feature is supported by the following terminals.
 
   You should launch xterm with "-ti 340" option. the SIXEL palette is limited to a maximum of 16 colors.
 
-- DECterm
+- yaft (in github repo)
 
-- Kermit
-
-- WRQ Reflection
-
-- ZSTEM
+  [https://github.com/uobikiemukot/yaft](https://github.com/uobikiemukot/yaft)
 
 
 ## Usage of command line tools
@@ -247,6 +241,10 @@ $ sixel2png < egret.sixel > egret.png
   Python implementation of SIXEL converter
 
 
+- [monosixel in arakiken's tw](https://bitbucket.org/arakiken/tw/branch/sixel)
+
+  A monochrome SIXEL converter
+
 ## Other software supporting SIXEL
 
 - [GNUPLOT](http://www.gnuplot.info/)
@@ -399,41 +397,6 @@ http://netpbm.sourceforge.net/
 > copyright notice and this permission notice appear in supporting
 > documentation.  This software is provided "as is" without express or
 > implied warranty.
-
-
-### monosixel (arakiken's tw)
-
-The pattern dither algorithm implemented in quant.c is imported from
-*monosixel/main.c* in *arakiken's tw "sixel" branch*.
-
-https://bitbucket.org/arakiken/tw/branch/sixel
-
-This tool is written by Araki Ken, and we regard it as a derivative of.
-original tw, created by Sho Hashimoto.
-
-
-> Copyright (c) 2012 Sho Hashimoto
->
-> Copyright (c) 2014 Araki Ken
->
-> Permission is hereby granted, free of charge, to any person obtaining
-> a copy of this software and associated documentation files (the
-> "Software"), to deal in the Software without restriction, including
-> without limitation the rights to use, copy, modify, merge, publish,
-> distribute, sublicense, and/or sell copies of the Software, and to
-> permit persons to whom the Software is furnished to do so, subject to
-> the following conditions:
->
-> The above copyright notice and this permission notice shall be
-> included in all copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-> EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-> MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-> NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-> LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-> OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-> WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 ### test images

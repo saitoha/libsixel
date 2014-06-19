@@ -20,39 +20,6 @@
  *   documentation.  This software is provided "as is" without express or
  *   implied warranty.
  *
- * *******************************************************************************
- *
- *
- * pattern dither algorithm implementation is imported from monosixel/main.c
- * in arakiken's tw "sixel" branch
- * https://bitbucket.org/arakiken/tw/branch/sixel
- *
- * *******************************************************************************
- *              original license of monosixel/main.c of arakiken's tw
- * *******************************************************************************
- *
- * Copyright (c) 2012 Sho Hashimoto
- * Copyright (c) 2014 Araki Ken
- *
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
  * ******************************************************************************
  *
  * Copyright (c) 2014 Hayaki Saito
@@ -637,11 +604,12 @@ computeHistogram(unsigned char *data,
                  tupletable2 * const colorfreqtableP,
                  enum qualityMode const qualityMode)
 {
+    typedef unsigned short unit_t;
     unsigned int i, n;
-    unsigned short *histgram;
-    unsigned short *refmap;
-    unsigned short *ref;
-    unsigned short *it;
+    unit_t *histgram;
+    unit_t *refmap;
+    unit_t *ref;
+    unit_t *it;
     struct tupleint *t;
     unsigned int index;
     unsigned int step;
@@ -655,13 +623,13 @@ computeHistogram(unsigned char *data,
 
     quant_trace(stderr, "making histogram...\n");
 
-    histgram = malloc((1 << depth * 5) * sizeof(*histgram));
+    histgram = malloc((1 << depth * 5) * sizeof(unit_t));
     if (!histgram) {
         quant_trace(stderr, "Unable to allocate memory for histgram.");
         return (-1);
     }
-    memset(histgram, 0, (1 << depth * 5) * sizeof(*histgram));
-    it = ref = refmap = (unsigned short *)malloc(max_sample * sizeof(*refmap));
+    memset(histgram, 0, (1 << depth * 5) * sizeof(unit_t));
+    it = ref = refmap = (unsigned short *)malloc(max_sample * sizeof(unit_t));
     if (!it) {
         quant_trace(stderr, "Unable to allocate memory for lookup table.");
         return (-1);
@@ -681,7 +649,7 @@ computeHistogram(unsigned char *data,
         if (histgram[index] == 0) {
             *ref++ = index;
         }
-        if (histgram[index] < (1 << sizeof(*histgram) * 8) - 1) {
+        if (histgram[index] < (1 << sizeof(unsigned short) * 8) - 1) {
             histgram[index]++;
         }
     }
@@ -1052,27 +1020,6 @@ lookup_fast(unsigned char const * const pixel,
 }
 
 
-
-/**
- * this function comes from "monosixel", which is contained in
- * arakiken's tw "sixel" branch
- * https://bitbucket.org/arakiken/tw/branch/sixel
- */
-static unsigned char
-pattern_lookup(unsigned char *pixel, int x, int y)
-{
-    static unsigned int pattern[] = {
-        24, 384,  96, 480,
-        576, 192, 672, 288,
-        144, 528,  48, 432,
-        720, 336, 624, 240,
-    };
-    return ((unsigned int)pixel[0] +
-            (unsigned int)pixel[1] +
-            (unsigned int)pixel[2] >= pattern[(y & 3) * 4 + (x & 3)]) ?  1 : 0;
-}
-
-
 unsigned char *
 LSQ_ApplyPalette(unsigned char *data,
                  int width,
@@ -1083,11 +1030,13 @@ LSQ_ApplyPalette(unsigned char *data,
                  enum methodForDiffuse const methodForDiffuse,
                  int foptimize)
 {
+    typedef int component_t;
+    typedef unsigned short compressed_color_t;
     int pos, j, n, x, y;
-    int *offsets;
+    component_t *offsets;
     int diff;
     int index;
-    unsigned short *indextable;
+    compressed_color_t *indextable;
     unsigned char *result;
     void (*f_diffuse)(unsigned char *data, int width, int height,
                       int x, int y, int depth, int *offsets);
@@ -1134,7 +1083,7 @@ LSQ_ApplyPalette(unsigned char *data,
         f_lookup = lookup_normal;
     }
 
-    offsets = malloc(sizeof(*offsets) * depth);
+    offsets = malloc(sizeof(component_t) * depth);
     if (!offsets) {
         quant_trace(stderr, "Unable to allocate memory for offsets.");
         return NULL;
@@ -1145,24 +1094,20 @@ LSQ_ApplyPalette(unsigned char *data,
         free(offsets);
         return NULL;
     }
-    indextable = malloc((1 << depth * 5) * sizeof(*indextable));
+    indextable = malloc((1 << depth * 5) * sizeof(compressed_color_t));
     if (!indextable) {
         quant_trace(stderr, "Unable to allocate memory for indextable.");
         free(offsets);
         free(result);
         return NULL;
     }
-    memset(indextable, 0x00, (1 << depth * 5) * sizeof(*indextable));
+    memset(indextable, 0x00, (1 << depth * 5) * sizeof(compressed_color_t));
 
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width; ++x) {
             pos = y * width + x;
-            if (depth == 2) {
-                index = pattern_lookup(data + (pos * depth), x, y);
-            } else {
-                index = f_lookup(data + (pos * depth), depth,
-                                 palette, ncolor, indextable);
-            }
+            index = f_lookup(data + (pos * depth), depth,
+                             palette, ncolor, indextable);
             result[pos] = index;
             for (n = 0; n < depth; ++n) {
                 offsets[n] = data[pos * depth + n]
