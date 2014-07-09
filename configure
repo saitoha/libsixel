@@ -735,6 +735,7 @@ build_os
 build_vendor
 build_cpu
 build
+PACKAGE_DESCRIPTION
 LS_LTVERSION
 target_alias
 host_alias
@@ -2453,6 +2454,8 @@ LS_LT_CURRENT=0
 LS_LT_REVISION=0
 LS_LT_AGE=0
 LS_LTVERSION=$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE
+
+PACKAGE_DESCRIPTION="A lightweight, fast implementation of DEC SIXEL graphics codec"
 
 
 ac_aux_dir=
@@ -17640,7 +17643,7 @@ fi
           touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
 
 
-ac_config_files="$ac_config_files Makefile libsixel.pc wic_install.reg wic_uninstall.reg src/Makefile include/Makefile converters/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc package.json wic_install.reg wic_uninstall.reg src/Makefile include/Makefile converters/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -18768,6 +18771,7 @@ do
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "libsixel.pc") CONFIG_FILES="$CONFIG_FILES libsixel.pc" ;;
+    "package.json") CONFIG_FILES="$CONFIG_FILES package.json" ;;
     "wic_install.reg") CONFIG_FILES="$CONFIG_FILES wic_install.reg" ;;
     "wic_uninstall.reg") CONFIG_FILES="$CONFIG_FILES wic_uninstall.reg" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
