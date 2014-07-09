@@ -274,6 +274,7 @@ LS_UPDATE_TIMESTAMP
 
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
+                 package.json
                  wic_install.reg
                  wic_uninstall.reg
                  src/Makefile
