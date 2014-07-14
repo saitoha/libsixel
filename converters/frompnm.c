@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 static unsigned char *
 pnm_get_line(unsigned char *p, unsigned char *e, unsigned char *line)

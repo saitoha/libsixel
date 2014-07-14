@@ -49,6 +49,8 @@
 # define O_BINARY _O_BINARY
 #endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 
+#include <assert.h>
+
 #define STBI_NO_STDIO 1
 #include "stb_image.h"
 
@@ -317,20 +319,31 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *
     unsigned char *pixels;
     GdkPixbufLoader *loader;
 
+#if (!GLIB_CHECK_VERSION(2, 36, 0))
+    g_type_init();
+#endif
     loader = gdk_pixbuf_loader_new();
     gdk_pixbuf_loader_write(loader, pchunk->buffer, pchunk->size, NULL);
     pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
+    gdk_pixbuf_loader_close(loader, NULL);
 
     if (pixbuf == NULL) {
         pixels = NULL;
-    }
-    else {
+    } else {
         *psx = gdk_pixbuf_get_width(pixbuf);
         *psy = gdk_pixbuf_get_height(pixbuf);
         *pcomp = gdk_pixbuf_get_has_alpha(pixbuf) ? 4: 3;
         *pstride = gdk_pixbuf_get_rowstride(pixbuf);
-        pixels = gdk_pixbuf_get_pixels(pixbuf);
+        pixels = malloc(*pstride * *psy);
+#if _ERRNO_H
+        if (pixels = NULL) {
+            fprintf(stderr, "load_with_gdkpixbuf: malloc failed.\n" "reason: %s.\n",
+                    filename, strerror(errno));
+        }
+#endif  /* HAVE_ERRNO_H */
+        memcpy(pixels, gdk_pixbuf_get_pixels(pixbuf), *pstride * *psy);
     }
+    g_object_unref(loader);
     return pixels;
 }
 #endif  /* HAVE_GDK_PIXBUF2 */
@@ -489,6 +502,14 @@ load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride
     *pcomp = 3;
     *pstride = *psx * *pcomp;
     p = pixels = malloc(*pstride * *psy);
+    if (p == NULL) {
+#if _ERRNO_H
+        fprintf(stderr, "load_with_gd failed.\n" "reason: %s.\n",
+                strerror(errno));
+#endif  /* HAVE_ERRNO_H */
+        gdImageDestroy(im);
+        return NULL;
+    }
     for (y = 0; y < *psy; y++) {
         for (x = 0; x < *psx; x++) {
             c = gdImageTrueColorPixel(im, x, y);

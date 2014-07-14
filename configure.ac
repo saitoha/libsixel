@@ -3,11 +3,13 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.19.3], [user@zuse.jp])
+AC_INIT([sixel], [0.23.1], [user@zuse.jp])
 LS_LT_CURRENT=0
 LS_LT_REVISION=0
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
+AC_SUBST([PACKAGE_DESCRIPTION],
+         ["A lightweight, fast implementation of DEC SIXEL graphics codec"])
 
 AC_CANONICAL_HOST
 
@@ -37,7 +39,7 @@ AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
 AC_ARG_WITH([gdk-pixbuf2],
             [AS_HELP_STRING([--with-gdk-pixbuf2],
                             [whether to build with gdk-pixbuf2 (default: no)])],
-            [with_gdk_pixbuf2=yes],
+            [],
             [with_gdk_pixbuf2=no])
 
 AC_ARG_WITH([gd],
@@ -66,9 +68,33 @@ AC_ARG_WITH(pkgconfigdir,
 AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
 AC_SUBST(pkgconfigdir)
 
+AC_ARG_WITH(bashcompletiondir,
+            AC_HELP_STRING([--with-bashcompletiondir],
+                           [Use the specified bashcompletion.d]),
+                           [bashcompletiondir=${withval}],
+                           [bashcompletiondir=${datadir}/bash-completion/completions])
+AC_MSG_NOTICE([bash-completion directory is ${bashcompletiondir}])
+AC_SUBST(bashcompletiondir)
+
+AC_ARG_WITH(zshcompletiondir,
+            AC_HELP_STRING([--with-zshcompletiondir],
+                           [Use the specified zshcompletion.d]),
+                           [zshcompletiondir=${withval}],
+                           [zshcompletiondir=${datadir}/zsh/site-functions])
+AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])
+AC_SUBST(zshcompletiondir)
+
+AC_ARG_ENABLE([gcov],
+              [AS_HELP_STRING([--enable-gcov],
+                              [Use gcov])],
+              [],
+              [enable_gcov=no])
+AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
+PKG_PROG_PKG_CONFIG
 AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
 
 # For wic integration
@@ -129,12 +155,13 @@ if test x$with_wic != xno; then
 fi
 
 if test x$with_gdk_pixbuf2 != xno; then
-    if test x$have_pkg_config == xyes; then
-        PKG_CHECK_MODULES([gdkpixbuf2],
+    if test x$have_pkg_config != xno; then
+        PKG_CHECK_MODULES([GDK_PIXBUF],
                           [gdk-pixbuf-2.0],
                           [have_gdk_pixbuf2=yes],
                           [have_gdk_pixbuf2=no])
-        if test x$have_gdk_pixbuf2 = xyes; then
+        if test x$have_gdk_pixbuf2 != xno; then
+            AC_MSG_NOTICE([gdk-pixbuf: $have_gdk_pixbuf2])
             AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
             loaders="${loaders} gdk-pixbuf2"
         else
@@ -145,6 +172,8 @@ if test x$with_gdk_pixbuf2 != xno; then
             AC_MSG_ERROR([please set GDK_PIXBUF_CFLAGS and GDK_PIXBUF_LIBS, or install pkg-config.])
         fi
     fi
+    AC_MSG_NOTICE([gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}])
+    AC_MSG_NOTICE([gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}])
 fi
 AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
@@ -162,16 +191,36 @@ if test x$with_gd != xno; then
         fi
     fi
     if test x$have_gd = xyes; then
-        AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromPngPtr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromBmpPtr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromJpegPtrEx],[], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromJpegPtr],  [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromTgaPtr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromWBMPPtr],  [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromTiffPtr],  [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromGd2Ptr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImagePaletteToTrueColor], [], [], [ #include <gd.h> ])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromGifPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromBmpPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromPngPtr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromBmpPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromBmpPtr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromJpegPtrEx],
+                     [AC_CHECK_DECLS([gdImageCreateFromJpegPtrEx],[], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromJpegPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromJpegPtr],  [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromTgaPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromTgaPtr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromWBMPPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromWBMPPtr],  [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromTiffPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromTiffPtr], [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromGd2Ptr],
+                     [AC_CHECK_DECLS([gdImageCreateFromGd2Ptr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImagePaletteToTrueColor],
+                     [AC_CHECK_DECLS([gdImagePaletteToTrueColor], [], [], [ #include <gd.h> ])])
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
         loaders="${loaders} gd"
     else
@@ -186,6 +235,9 @@ if test x$with_gd != xno; then
                          ])
             ;;
     esac
+
+    AC_MSG_NOTICE([gd cflags is ${GD_CFLAGS}])
+    AC_MSG_NOTICE([gd libs is ${GD_LIBS}])
 fi
 AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
@@ -209,6 +261,8 @@ if test x$with_libcurl != xno; then
     else
         AC_MSG_ERROR([unable to find libcurl])
     fi
+    AC_MSG_NOTICE([libcurl cflags is ${LIBCURL_CFLAGS}])
+    AC_MSG_NOTICE([libcurl libs is ${LIBCURL_LIBS}])
 fi
 AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
@@ -220,6 +274,7 @@ LS_UPDATE_TIMESTAMP
 
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
+                 package.json
                  wic_install.reg
                  wic_uninstall.reg
                  src/Makefile
@@ -234,6 +289,10 @@ echo "libsixel was configured as follows"
 echo ""
 echo "       Loader component    : $loaders"
 echo "       libcurl integration : $have_curl"
+echo "       pkg-config dir      : $pkgconfigdir"
+echo "       Bash completion dir : $bashcompletiondir"
+echo "       Zsh completion dir  : $zshcompletiondir"
 echo "       WIC integration     : $have_wic"
+echo "       gcov integration    : $enable_gcov"
 echo ""
 echo ""
