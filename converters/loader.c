@@ -301,7 +301,7 @@ chunk_is_gif(chunk_t const *chunk)
 
 static unsigned char *
 load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
-               int *pcomp, int *pstride)
+                  int *pcomp, int *pstride, int *pcount)
 {
     FILE *f;
     unsigned char *result;
@@ -581,7 +581,7 @@ load_image_file(char const *filename, int *psx, int *psy, int *pcount)
     }
 #endif  /* HAVE_GD */
     if (!pixels) {
-        pixels = load_with_builtin(&chunk, psx, psy, &comp, &stride);
+        pixels = load_with_builtin(&chunk, psx, psy, &comp, &stride, pcount);
     }
     free(chunk.buffer);
 
