@@ -606,21 +606,22 @@ load_image_file(char const *filename, int *psx, int *psy, int *pcount)
 #ifdef HAVE_GDK_PIXBUF2
     if (!pixels) {
         pixels = load_with_gdkpixbuf(&chunk, psx, psy, &comp, &stride);
+        *pcount = 1;
     }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
     if (!pixels) {
         pixels = load_with_gd(&chunk, psx, psy, &comp, &stride);
+        *pcount = 1;
     }
 #endif  /* HAVE_GD */
     if (!pixels) {
         pixels = load_with_builtin(&chunk, psx, psy, &comp, &stride, pcount);
     }
-    free(chunk.buffer);
 
     src = dst = pixels;
     if (comp == 4) {
-        for (y = 0; y < *psy; y++) {
+        for (y = 0; y < *psy * *pcount; y++) {
             for (x = 0; x < *psx; x++) {
                 *(dst++) = *(src++);   /* R */
                 *(dst++) = *(src++);   /* G */
@@ -631,10 +632,11 @@ load_image_file(char const *filename, int *psx, int *psy, int *pcount)
     }
     else {
         new_rowstride = *psx * 3;
-        for (y = 1; y < *psy; y++) {
+        for (y = 1; y < *psy * *pcount; y++) {
             memmove(dst += new_rowstride, src += stride, new_rowstride);
         }
     }
+    free(chunk.buffer);
     return pixels;
 }
 
