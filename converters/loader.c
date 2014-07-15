@@ -281,6 +281,24 @@ chunk_is_pnm(chunk_t const *chunk)
 }
 
 
+static int
+chunk_is_gif(chunk_t const *chunk)
+{
+    if (chunk->size < 2) {
+        return 0;
+    }
+    if (chunk->buffer[0] == 'G' &&
+        chunk->buffer[1] == 'I' &&
+        chunk->buffer[2] == 'F' &&
+        chunk->buffer[3] == '8' &&
+        (chunk->buffer[4] == '7' || chunk->buffer[4] == '9') &&
+        chunk->buffer[5] == 'a') {
+        return 1;
+    }
+    return 0;
+}
+
+
 static unsigned char *
 load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
                int *pcomp, int *pstride)
