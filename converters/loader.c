@@ -530,7 +530,7 @@ load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride
 
 
 unsigned char *
-load_image_file(char const *filename, int *psx, int *psy)
+load_image_file(char const *filename, int *psx, int *psy, int *pcount)
 {
     unsigned char *pixels;
     size_t new_rowstride;

@@ -83,8 +83,9 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
     int origcolors;
     int map_sx;
     int map_sy;
+    int count;
 
-    mappixels = load_image_file(mapfile, &map_sx, &map_sy);
+    mappixels = load_image_file(mapfile, &map_sx, &map_sy, &count);
     if (!mappixels) {
         return NULL;
     }
@@ -117,6 +118,7 @@ convert_to_sixel(char const *filename, int reqcolors,
     LSImagePtr im = NULL;
     LSOutputContextPtr context = NULL;
     int sx, sy;
+    int count;
     int i;
     int nret = -1;
     FILE *f;
@@ -127,7 +129,7 @@ convert_to_sixel(char const *filename, int reqcolors,
         reqcolors = PALETTE_MAX;
     }
 
-    pixels = load_image_file(filename, &sx, &sy);
+    pixels = load_image_file(filename, &sx, &sy, &count);
     if (pixels == NULL) {
         nret = -1;
         goto end;
