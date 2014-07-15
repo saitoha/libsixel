@@ -82,6 +82,14 @@ typedef struct chunk
 } chunk_t;
 
 
+void
+chunk_init(chunk_t * const pchunk, size_t initial_size)
+{
+    pchunk->max_size = initial_size;
+    pchunk->size = 0;
+    pchunk->buffer = malloc(pchunk->max_size);
+}
+
 size_t
 memory_write(void* ptr, size_t size, size_t len, void* memory)
 {
@@ -148,10 +156,8 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
         return (-1);
     }
 
-    pchunk->size = 0;
-    pchunk->max_size = 64 * 1024;
-
-    if ((pchunk->buffer = (unsigned char *)malloc(pchunk->max_size)) == NULL) {
+    chunk_init(pchunk, 64 * 1024);
+    if (pchunk->buffer == NULL) {
 #if _ERRNO_H
         fprintf(stderr, "get_chunk_from_file('%s'): malloc failed.\n" "reason: %s.\n",
                 filename, strerror(errno));
@@ -190,10 +196,8 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
 {
     CURL *curl;
     CURLcode code;
-
-    pchunk->max_size = 1024;
-    pchunk->size = 0;
-    pchunk->buffer = malloc(pchunk->max_size);
+ 
+    chunk_init(pchunk, 1024);
     curl = curl_easy_init();
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
