@@ -70,6 +70,10 @@
 #include "frompnm.h"
 #include "loader.h"
 
+#define STBI_NO_STDIO 1
+#define STB_IMAGE_IMPLEMENTATION 1
+#include "stb_image.h"
+
 typedef struct chunk
 {
     unsigned char* buffer;
