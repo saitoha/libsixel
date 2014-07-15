@@ -304,36 +304,69 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
                   int *pcomp, int *pstride, int *pcount)
 {
     FILE *f;
-    unsigned char *result;
+    chunk_t presult_chunk;
+    unsigned char *p;
+    unsigned char *pixels;
+    stbi__context s;
+    stbi__gif g;
 
     if (chunk_is_sixel(pchunk)) {
         /* sixel */
     } else if (chunk_is_pnm(pchunk)) {
         /* pnm */
-        result = load_pnm(pchunk->buffer, pchunk->size,
+        pixels = load_pnm(pchunk->buffer, pchunk->size,
                           psx, psy, pcomp, pstride);
-        if (!result) {
+        if (!pixels) {
 #if _ERRNO_H
             fprintf(stderr, "load_pnm failed.\n" "reason: %s.\n",
                     strerror(errno));
 #endif  /* HAVE_ERRNO_H */
             return NULL;
         }
-    } else {
-        result = stbi_load_from_memory(pchunk->buffer, pchunk->size,
-                                       psx, psy, pcomp, STBI_rgb);
-        if (!result) {
+        *pcount = 1;
+    } else if (chunk_is_gif(pchunk)) {
+        stbi__start_mem(&s, pchunk->buffer, pchunk->size);
+        memset(&g, 0, sizeof(g));
+        chunk_t frames;
+        chunk_init(&frames, 1024);
+        *pcount = 0;
+        do {
+            pixels = p = stbi__gif_load_next(&s, &g, pcomp, STBI_rgb);
+            if (p == (void *) 1) {
+                p = NULL;  /* end of animated gif marker */
+                pixels = frames.buffer;
+                break;
+            }
+            if (p == 0) {
+                break;
+            }
+            *psx = g.w;
+            *psy = g.h;
+            memory_write((void *)p, 1, *psx * *psy * 3, (void *)&frames);
+            ++*pcount;
+        } while (p);
+
+        if (!pixels) {
             fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
                     stbi_failure_reason());
             return NULL;
         }
+    } else {
+        stbi__start_mem(&s, pchunk->buffer, pchunk->size);
+        pixels = stbi_load_main(&s, psx, psy, pcomp, STBI_rgb);
+        if (!pixels) {
+            fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
+                    stbi_failure_reason());
+            return NULL;
+        }
+        *pcount = 1;
     }
 
     /* 4 is set in *pcomp when source image is GIF. we reset it to 3. */
     *pcomp = 3;
 
     *pstride = *pcomp * *psx;
-    return result;
+    return pixels;
 }
 
 
