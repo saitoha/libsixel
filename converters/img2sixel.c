@@ -144,7 +144,7 @@ convert_to_sixel(char const *filename, int reqcolors,
 
     for (n = 0; n < count; ++n) {
         if (count > 1) {
-            context->fn_printf("\0337");
+            context->fn_printf("\033[H");
         }
         /* scaling */
         if (percentwidth > 0) {
@@ -240,11 +240,7 @@ convert_to_sixel(char const *filename, int reqcolors,
         LibSixel_LSImageToSixel(im, context);
 
         frame += sx * sy * 3;
-        if (count > 1) {
-            context->fn_printf("\0338");
-        }
     }
-
 
     nret = 0;
 
