@@ -304,11 +304,10 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
                   int *pcomp, int *pstride, int *pcount)
 {
     FILE *f;
-    chunk_t presult_chunk;
     unsigned char *p;
     unsigned char *pixels;
-    stbi__context s;
-    stbi__gif g;
+    static stbi__context s;
+    static stbi__gif g;
     chunk_t frames;
 
     if (chunk_is_sixel(pchunk)) {
@@ -326,25 +325,27 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         }
         *pcount = 1;
     } else if (chunk_is_gif(pchunk)) {
-        stbi__start_mem(&s, pchunk->buffer, pchunk->size);
-        memset(&g, 0, sizeof(g));
         chunk_init(&frames, 1024);
+        stbi__start_mem(&s, pchunk->buffer, pchunk->size);
         *pcount = 0;
-        do {
-            pixels = p = stbi__gif_load_next(&s, &g, pcomp, STBI_rgb);
+        memset(&g, 0, sizeof(g));
+
+        for (;;) {
+            p = stbi__gif_load_next(&s, &g, pcomp, 4);
             if (p == (void *) 1) {
-                p = NULL;  /* end of animated gif marker */
-                pixels = frames.buffer;
+                /* end of animated gif marker */
                 break;
             }
             if (p == 0) {
+                pixels = NULL;
                 break;
             }
             *psx = g.w;
             *psy = g.h;
-            memory_write((void *)p, 1, *psx * *psy * 3, (void *)&frames);
+            memory_write((void *)p, 1, *psx * *psy * 4, (void *)&frames);
             ++*pcount;
-        } while (p);
+            pixels = frames.buffer;
+        }
 
         if (!pixels) {
             fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
@@ -353,7 +354,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         }
     } else {
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);
-        pixels = stbi_load_main(&s, psx, psy, pcomp, STBI_rgb);
+        pixels = stbi_load_main(&s, psx, psy, pcomp, 4);
         if (!pixels) {
             fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
                     stbi_failure_reason());
@@ -361,9 +362,6 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         }
         *pcount = 1;
     }
-
-    /* 4 is set in *pcomp when source image is GIF. we reset it to 3. */
-    *pcomp = 3;
 
     *pstride = *pcomp * *psx;
     return pixels;
