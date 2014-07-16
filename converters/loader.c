@@ -309,6 +309,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
     unsigned char *pixels;
     stbi__context s;
     stbi__gif g;
+    chunk_t frames;
 
     if (chunk_is_sixel(pchunk)) {
         /* sixel */
@@ -327,7 +328,6 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
     } else if (chunk_is_gif(pchunk)) {
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);
         memset(&g, 0, sizeof(g));
-        chunk_t frames;
         chunk_init(&frames, 1024);
         *pcount = 0;
         do {
