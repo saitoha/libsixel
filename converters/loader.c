@@ -284,7 +284,7 @@ chunk_is_pnm(chunk_t const *chunk)
 static int
 chunk_is_gif(chunk_t const *chunk)
 {
-    if (chunk->size < 2) {
+    if (chunk->size < 6) {
         return 0;
     }
     if (chunk->buffer[0] == 'G' &&
