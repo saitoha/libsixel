@@ -512,11 +512,13 @@ load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride
     int c;
 
     switch(detect_file_format(pchunk->size, pchunk->buffer)) {
-#if HAVE_DECL_GDIMAGECREATEFROMGIFPTR
+#if 0
+# if HAVE_DECL_GDIMAGECREATEFROMGIFPTR
         case FMT_GIF:
             im = gdImageCreateFromGifPtr(pchunk->size, pchunk->buffer);
             break;
-#endif  /* HAVE_DECL_GDIMAGECREATEFROMGIFPTR */
+# endif  /* HAVE_DECL_GDIMAGECREATEFROMGIFPTR */
+#endif
 #if HAVE_DECL_GDIMAGECREATEFROMPNGPTR
         case FMT_PNG:
             im = gdImageCreateFromPngPtr(pchunk->size, pchunk->buffer);
