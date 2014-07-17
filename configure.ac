@@ -3,11 +3,13 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.22.2], [user@zuse.jp])
+AC_INIT([sixel], [0.23.2], [user@zuse.jp])
 LS_LT_CURRENT=0
 LS_LT_REVISION=0
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
+AC_SUBST([PACKAGE_DESCRIPTION],
+         ["A lightweight, fast implementation of DEC SIXEL graphics codec"])
 
 AC_CANONICAL_HOST
 
@@ -270,6 +272,7 @@ LS_UPDATE_TIMESTAMP
 
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
+                 package.json
                  wic_install.reg
                  wic_uninstall.reg
                  src/Makefile
