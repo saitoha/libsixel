@@ -3852,6 +3852,7 @@ typedef struct
    int max_x, max_y;
    int cur_x, cur_y;
    int line_size;
+   int loop_count;
 } stbi__gif;
 
 static int stbi__gif_test_raw(stbi__context *s)
@@ -4157,7 +4158,7 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
                if (stbi__get8(s) != '0') break;
                if (stbi__get8(s) != 0x03) break;
                if (stbi__get8(s) != 0x01) break;
-               stbi__get16le(s); // loop count
+               g->loop_count = stbi__get16le(s); // loop count
                break;
             default:
                break;
