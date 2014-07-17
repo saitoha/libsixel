@@ -16509,6 +16509,59 @@ fi
 done
 
 
+ac_fn_c_check_decl "$LINENO" "SIGINT" "ac_cv_have_decl_SIGINT" "
+                   #ifdef HAVE_SIGNAL_H
+                   # include <signal.h>
+                   #elif HAVE_SYS_SIGNAL_H
+                   # include <sys/signal.h>
+                   #endif
+
+"
+if test "x$ac_cv_have_decl_SIGINT" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SIGINT $ac_have_decl
+_ACEOF
+ac_fn_c_check_decl "$LINENO" "SIGTERM" "ac_cv_have_decl_SIGTERM" "
+                   #ifdef HAVE_SIGNAL_H
+                   # include <signal.h>
+                   #elif HAVE_SYS_SIGNAL_H
+                   # include <sys/signal.h>
+                   #endif
+
+"
+if test "x$ac_cv_have_decl_SIGTERM" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SIGTERM $ac_have_decl
+_ACEOF
+ac_fn_c_check_decl "$LINENO" "SIGHUP" "ac_cv_have_decl_SIGHUP" "
+                   #ifdef HAVE_SIGNAL_H
+                   # include <signal.h>
+                   #elif HAVE_SYS_SIGNAL_H
+                   # include <sys/signal.h>
+                   #endif
+
+"
+if test "x$ac_cv_have_decl_SIGHUP" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SIGHUP $ac_have_decl
+_ACEOF
+
+
 loaders="stb_image"
 have_curl="no"
 have_wic="no"

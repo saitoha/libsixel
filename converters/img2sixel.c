@@ -162,9 +162,15 @@ convert_to_sixel(char const *filename, int reqcolors,
     context->has_8bit_control = f8bit;
 
 #if HAVE_SIGNAL
+# if HAVE_DECL_SIGINT
     signal(SIGINT, signal_handler);
+# endif
+# if HAVE_DECL_SIGTERM
+    signal(SIGTERM, signal_handler);
+# endif
+# if HAVE_DECL_SIGHUP
     signal(SIGHUP, signal_handler);
-    signal(SIGKILL, signal_handler);
+# endif
 #endif
 
     for (n = 0; n < count; ++n) {
