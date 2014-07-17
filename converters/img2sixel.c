@@ -42,6 +42,13 @@
 # include <errno.h>
 #endif
 
+#if defined(HAVE_SIGNAL_H)
+# include <signal.h>
+#elif defined(HAVE_SYS_SIGNAL_H)
+# include <sys/signal.h>
+#endif
+
+
 #include <sixel.h>
 #include "scale.h"
 #include "quant.h"
@@ -96,8 +103,9 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
 }
 
 
-static volatile int signaled = 0;
+#if HAVE_SIGNAL
 
+static volatile int signaled = 0;
 
 static void
 signal_handler(int sig)
@@ -105,6 +113,7 @@ signal_handler(int sig)
     signaled = sig;
 }
 
+#endif
 
 static int
 convert_to_sixel(char const *filename, int reqcolors,
@@ -152,9 +161,11 @@ convert_to_sixel(char const *filename, int reqcolors,
     context = LSOutputContext_create(putchar, printf);
     context->has_8bit_control = f8bit;
 
+#if HAVE_SIGNAL
     signal(SIGINT, signal_handler);
     signal(SIGHUP, signal_handler);
     signal(SIGKILL, signal_handler);
+#endif
 
     for (n = 0; n < count; ++n) {
         if (count > 1) {
@@ -253,6 +264,7 @@ convert_to_sixel(char const *filename, int reqcolors,
         /* convert image object into sixel */
         LibSixel_LSImageToSixel(im, context);
 
+#if HAVE_SIGNAL
         if (signaled) {
             if (context->has_8bit_control) {
                 context->fn_printf("\x9c");
@@ -261,6 +273,7 @@ convert_to_sixel(char const *filename, int reqcolors,
             }
             break;
         }
+#endif
 
         frame += sx * sy * 3;
     }
