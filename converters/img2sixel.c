@@ -55,6 +55,14 @@
 #include "loader.h"
 
 
+/* loop modes */
+enum loopMode {
+    LOOP_AUTO,       /* honer the setting of GIF header */
+    LOOP_FORCE,      /* always enable loop */
+    LOOP_DISABLE,    /* always disable loop */
+};
+
+
 static unsigned char *
 prepare_monochrome_palette(finvert)
 {
@@ -92,7 +100,7 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
     int map_sy;
     int count;
 
-    mappixels = load_image_file(mapfile, &map_sx, &map_sy, &count);
+    mappixels = load_image_file(mapfile, &map_sx, &map_sy, &count, loop_mode);
     if (!mappixels) {
         return NULL;
     }
@@ -123,6 +131,7 @@ convert_to_sixel(char const *filename, int reqcolors,
                  enum methodForRep method_for_rep,
                  enum qualityMode quality_mode,
                  enum methodForResampling const method_for_resampling,
+                 enum loopMode loop_mode,
                  int f8bit, int finvert,
                  int pixelwidth, int pixelheight,
                  int percentwidth, int percentheight)
@@ -138,7 +147,7 @@ convert_to_sixel(char const *filename, int reqcolors,
     LSImagePtr im = NULL;
     LSOutputContextPtr context = NULL;
     int sx, sy;
-    int count;
+    int frame_count;
     int i;
     int n;
     int nret = -1;
@@ -150,7 +159,7 @@ convert_to_sixel(char const *filename, int reqcolors,
         reqcolors = PALETTE_MAX;
     }
 
-    pixels = load_image_file(filename, &sx, &sy, &count);
+    pixels = load_image_file(filename, &sx, &sy, &frame_count);
     if (pixels == NULL) {
         nret = -1;
         goto end;
@@ -173,8 +182,8 @@ convert_to_sixel(char const *filename, int reqcolors,
 # endif
 #endif
 
-    for (n = 0; n < count; ++n) {
-        if (count > 1) {
+    for (n = 0; n < frame_count; ++n) {
+        if (frame_count > 1) {
             context->fn_printf("\033[H");
         }
         /* scaling */
@@ -323,6 +332,7 @@ int main(int argc, char *argv[])
     enum methodForLargest method_for_largest = LARGE_AUTO;
     enum methodForRep method_for_rep = REP_AUTO;
     enum qualityMode quality_mode = QUALITY_AUTO;
+    enum loopMode loop_mode = LOOP_AUTO;
     char *mapfile = NULL;
     int long_opt;
 #if HAVE_GETOPT_LONG
@@ -363,6 +373,7 @@ int main(int argc, char *argv[])
         {"resampling",   required_argument,  &long_opt, 'r'},
         {"quality",      required_argument,  &long_opt, 'q'},
         {"invert",       required_argument,  &long_opt, 'i'},
+        {"loop-control", required_argument,  &long_opt, 'l'},
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
@@ -539,6 +550,22 @@ int main(int argc, char *argv[])
                 }
             }
             break;
+        case 'l':
+            /* parse --quality option */
+            if (optarg) {
+                if (strcmp(optarg, "auto") == 0) {
+                    loop_mode = LOOP_AUTO;
+                } else if (strcmp(optarg, "force") == 0) {
+                    loop_mode = LOOP_FORCE;
+                } else if (strcmp(optarg, "disable") == 0) {
+                    loop_mode = LOOP_DISABLE;
+                } else {
+                    fprintf(stderr,
+                            "Cannot parse loop-control option.\n");
+                    goto argerr;
+                }
+            }
+            break;
         case 'i':
             finvert = 1;
             break;
@@ -576,6 +603,7 @@ int main(int argc, char *argv[])
                                method_for_rep,
                                quality_mode,
                                method_for_resampling,
+                               loop_mode,
                                f8bit, finvert,
                                pixelwidth, pixelheight,
                                percentwidth, percentheight);
@@ -592,6 +620,7 @@ int main(int argc, char *argv[])
                                    method_for_rep,
                                    quality_mode,
                                    method_for_resampling,
+                                   loop_mode,
                                    f8bit, finvert,
                                    pixelwidth, pixelheight,
                                    percentwidth, percentheight);
@@ -715,6 +744,13 @@ argerr:
             "                                     speed mode\n"
             "                             low  -> low quality and high\n"
             "                                     speed mode\n"
+            "-l LOOPMODE, --loop-control=LOOPMODE\n"
+            "                           select loop control mode for GIF\n"
+            "                           animation.\n"
+            "                             auto   -> honer the setting of\n"
+            "                                       GIF header (default)\n"
+            "                             force   -> always enable loop\n"
+            "                             disable -> always disable loop\n"
             );
 
 end:

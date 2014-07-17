@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 unsigned char *
-load_image_file(char const *filename, int *psx, int *psy, int *pcount);
+load_image_file(char const *filename, int *psx, int *psy);
 
 #ifdef __cplusplus
 }
