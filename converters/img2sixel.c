@@ -96,6 +96,16 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
 }
 
 
+static volatile int signaled = 0;
+
+
+static void
+signal_handler(int sig)
+{
+    signaled = sig;
+}
+
+
 static int
 convert_to_sixel(char const *filename, int reqcolors,
                  char const *mapfile, int monochrome,
@@ -141,6 +151,10 @@ convert_to_sixel(char const *filename, int reqcolors,
     /* create output context */
     context = LSOutputContext_create(putchar, printf);
     context->has_8bit_control = f8bit;
+
+    signal(SIGINT, signal_handler);
+    signal(SIGHUP, signal_handler);
+    signal(SIGKILL, signal_handler);
 
     for (n = 0; n < count; ++n) {
         if (count > 1) {
@@ -238,6 +252,15 @@ convert_to_sixel(char const *filename, int reqcolors,
 
         /* convert image object into sixel */
         LibSixel_LSImageToSixel(im, context);
+
+        if (signaled) {
+            if (context->has_8bit_control) {
+                context->fn_printf("\x9c");
+            } else {
+                context->fn_printf("\x1b\\");
+            }
+            break;
+        }
 
         frame += sx * sy * 3;
     }
