@@ -42,6 +42,13 @@
 # include <errno.h>
 #endif
 
+#if defined(HAVE_SIGNAL_H)
+# include <signal.h>
+#elif defined(HAVE_SYS_SIGNAL_H)
+# include <sys/signal.h>
+#endif
+
+
 #include <sixel.h>
 #include "scale.h"
 #include "quant.h"
@@ -83,8 +90,9 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
     int origcolors;
     int map_sx;
     int map_sy;
+    int count;
 
-    mappixels = load_image_file(mapfile, &map_sx, &map_sy);
+    mappixels = load_image_file(mapfile, &map_sx, &map_sy, &count);
     if (!mappixels) {
         return NULL;
     }
@@ -94,6 +102,18 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
     return palette;
 }
 
+
+#if HAVE_SIGNAL
+
+static volatile int signaled = 0;
+
+static void
+signal_handler(int sig)
+{
+    signaled = sig;
+}
+
+#endif
 
 static int
 convert_to_sixel(char const *filename, int reqcolors,
@@ -108,7 +128,8 @@ convert_to_sixel(char const *filename, int reqcolors,
                  int percentwidth, int percentheight)
 {
     unsigned char *pixels = NULL;
-    unsigned char *scaled_pixels = NULL;
+    unsigned char *frame = NULL;
+    unsigned char *scaled_frame = NULL;
     unsigned char *mappixels = NULL;
     unsigned char *palette = NULL;
     unsigned char *data = NULL;
@@ -117,7 +138,9 @@ convert_to_sixel(char const *filename, int reqcolors,
     LSImagePtr im = NULL;
     LSOutputContextPtr context = NULL;
     int sx, sy;
+    int count;
     int i;
+    int n;
     int nret = -1;
     FILE *f;
 
@@ -127,106 +150,139 @@ convert_to_sixel(char const *filename, int reqcolors,
         reqcolors = PALETTE_MAX;
     }
 
-    pixels = load_image_file(filename, &sx, &sy);
+    pixels = load_image_file(filename, &sx, &sy, &count);
     if (pixels == NULL) {
         nret = -1;
         goto end;
     }
-    /* scaling */
-    if (percentwidth > 0) {
-        pixelwidth = sx * percentwidth / 100;
-    }
-    if (percentheight > 0) {
-        pixelheight = sy * percentheight / 100;
-    }
-    if (pixelwidth > 0 && pixelheight <= 0) {
-        pixelheight = sy * pixelwidth / sx;
-    }
-    if (pixelheight > 0 && pixelwidth <= 0) {
-        pixelwidth = sx * pixelheight / sy;
-    }
+    frame = pixels;
 
-    if (pixelwidth > 0 && pixelheight > 0) {
-        scaled_pixels = LSS_scale(pixels, sx, sy, 3,
-                                  pixelwidth, pixelheight,
-                                  method_for_resampling);
-        sx = pixelwidth;
-        sy = pixelheight;
-
-        free(pixels);
-        pixels = scaled_pixels;
-    }
-
-    /* prepare palette */
-    if (monochrome) {
-        palette = prepare_monochrome_palette(finvert);
-        ncolors = 2;
-    } else if (mapfile) {
-        palette = prepare_specified_palette(mapfile, reqcolors, &ncolors);
-    } else {
-        if (method_for_largest == LARGE_AUTO) {
-            method_for_largest = LARGE_NORM;
-        }
-        if (method_for_rep == REP_AUTO) {
-            method_for_rep = REP_CENTER_BOX;
-        }
-        if (quality_mode == QUALITY_AUTO) {
-            quality_mode = reqcolors <= 8 ? QUALITY_HIGH: QUALITY_LOW;
-        }
-        palette = LSQ_MakePalette(pixels, sx, sy, 3,
-                                  reqcolors, &ncolors, &origcolors,
-                                  method_for_largest,
-                                  method_for_rep,
-                                  quality_mode);
-        if (origcolors <= ncolors) {
-            method_for_diffuse = DIFFUSE_NONE;
-        }
-    }
-
-    if (!palette) {
-        nret = -1;
-        goto end;
-    }
-
-    /* apply palette */
-    if (method_for_diffuse == DIFFUSE_AUTO) {
-        method_for_diffuse = DIFFUSE_FS;
-    }
-    data = LSQ_ApplyPalette(pixels, sx, sy, 3,
-                            palette, ncolors,
-                            method_for_diffuse,
-                            /* foptimize */ 1);
-
-    if (!data) {
-        nret = -1;
-        goto end;
-    }
-
-    /* create intermidiate bitmap image */
-    im = LSImage_create(sx, sy, 3, ncolors);
-    if (!im) {
-        nret = -1;
-        goto end;
-    }
-    for (i = 0; i < ncolors; i++) {
-        LSImage_setpalette(im, i,
-                           palette[i * 3],
-                           palette[i * 3 + 1],
-                           palette[i * 3 + 2]);
-    }
-    if (monochrome) {
-        im->keycolor = 0;
-    } else {
-        im->keycolor = -1;
-    }
-    LSImage_setpixels(im, data);
-
-    data = NULL;
-
-    /* convert image object into sixel */
+    /* create output context */
     context = LSOutputContext_create(putchar, printf);
     context->has_8bit_control = f8bit;
-    LibSixel_LSImageToSixel(im, context);
+
+#if HAVE_SIGNAL
+# if HAVE_DECL_SIGINT
+    signal(SIGINT, signal_handler);
+# endif
+# if HAVE_DECL_SIGTERM
+    signal(SIGTERM, signal_handler);
+# endif
+# if HAVE_DECL_SIGHUP
+    signal(SIGHUP, signal_handler);
+# endif
+#endif
+
+    for (n = 0; n < count; ++n) {
+        if (count > 1) {
+            context->fn_printf("\033[H");
+        }
+        /* scaling */
+        if (percentwidth > 0) {
+            pixelwidth = sx * percentwidth / 100;
+        }
+        if (percentheight > 0) {
+            pixelheight = sy * percentheight / 100;
+        }
+        if (pixelwidth > 0 && pixelheight <= 0) {
+            pixelheight = sy * pixelwidth / sx;
+        }
+        if (pixelheight > 0 && pixelwidth <= 0) {
+            pixelwidth = sx * pixelheight / sy;
+        }
+
+        if (pixelwidth > 0 && pixelheight > 0) {
+            scaled_frame = LSS_scale(frame, sx, sy, 3,
+                                      pixelwidth, pixelheight,
+                                      method_for_resampling);
+            sx = pixelwidth;
+            sy = pixelheight;
+
+            frame = scaled_frame;
+        }
+
+        /* prepare palette */
+        if (monochrome) {
+            palette = prepare_monochrome_palette(finvert);
+            ncolors = 2;
+        } else if (mapfile) {
+            palette = prepare_specified_palette(mapfile, reqcolors, &ncolors);
+        } else {
+            if (method_for_largest == LARGE_AUTO) {
+                method_for_largest = LARGE_NORM;
+            }
+            if (method_for_rep == REP_AUTO) {
+                method_for_rep = REP_CENTER_BOX;
+            }
+            if (quality_mode == QUALITY_AUTO) {
+                quality_mode = reqcolors <= 8 ? QUALITY_HIGH: QUALITY_LOW;
+            }
+            palette = LSQ_MakePalette(frame, sx, sy, 3,
+                                      reqcolors, &ncolors, &origcolors,
+                                      method_for_largest,
+                                      method_for_rep,
+                                      quality_mode);
+            if (origcolors <= ncolors) {
+                method_for_diffuse = DIFFUSE_NONE;
+            }
+        }
+
+        if (!palette) {
+            nret = -1;
+            goto end;
+        }
+
+        /* apply palette */
+        if (method_for_diffuse == DIFFUSE_AUTO) {
+            method_for_diffuse = DIFFUSE_FS;
+        }
+        data = LSQ_ApplyPalette(frame, sx, sy, 3,
+                                palette, ncolors,
+                                method_for_diffuse,
+                                /* foptimize */ 1);
+
+        if (!data) {
+            nret = -1;
+            goto end;
+        }
+
+        /* create intermidiate bitmap image */
+        im = LSImage_create(sx, sy, 3, ncolors);
+        if (!im) {
+            nret = -1;
+            goto end;
+        }
+        for (i = 0; i < ncolors; i++) {
+            LSImage_setpalette(im, i,
+                               palette[i * 3],
+                               palette[i * 3 + 1],
+                               palette[i * 3 + 2]);
+        }
+        if (monochrome) {
+            im->keycolor = 0;
+        } else {
+            im->keycolor = -1;
+        }
+        LSImage_setpixels(im, data);
+
+        data = NULL;
+
+        /* convert image object into sixel */
+        LibSixel_LSImageToSixel(im, context);
+
+#if HAVE_SIGNAL
+        if (signaled) {
+            if (context->has_8bit_control) {
+                context->fn_printf("\x9c");
+            } else {
+                context->fn_printf("\x1b\\");
+            }
+            break;
+        }
+#endif
+
+        frame += sx * sy * 3;
+    }
 
     nret = 0;
 
@@ -236,6 +292,9 @@ end:
     }
     if (pixels) {
         free(pixels);
+    }
+    if (scaled_frame) {
+        free(scaled_frame);
     }
     if (mappixels) {
         free(mappixels);

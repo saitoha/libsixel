@@ -16299,7 +16299,9 @@ for ac_header in memory.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
-                  errno.h
+                  errno.h \
+                  signal.h \
+                  sys/signal.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -16475,14 +16477,12 @@ $as_echo "#define HAVE_GETOPT 1" >>confdefs.h
 
 else
   as_fn_error $? "getopt or getopt_long is not available." "$LINENO" 5
+fi
 
 fi
 
 
-fi
-
-
-for ac_func in memcpy memmove strtol setmode _setmode
+for ac_func in memcpy memmove strtol setmode _setmode signal
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -16507,6 +16507,59 @@ _ACEOF
 
 fi
 done
+
+
+ac_fn_c_check_decl "$LINENO" "SIGINT" "ac_cv_have_decl_SIGINT" "
+                   #ifdef HAVE_SIGNAL_H
+                   # include <signal.h>
+                   #elif HAVE_SYS_SIGNAL_H
+                   # include <sys/signal.h>
+                   #endif
+
+"
+if test "x$ac_cv_have_decl_SIGINT" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SIGINT $ac_have_decl
+_ACEOF
+ac_fn_c_check_decl "$LINENO" "SIGTERM" "ac_cv_have_decl_SIGTERM" "
+                   #ifdef HAVE_SIGNAL_H
+                   # include <signal.h>
+                   #elif HAVE_SYS_SIGNAL_H
+                   # include <sys/signal.h>
+                   #endif
+
+"
+if test "x$ac_cv_have_decl_SIGTERM" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SIGTERM $ac_have_decl
+_ACEOF
+ac_fn_c_check_decl "$LINENO" "SIGHUP" "ac_cv_have_decl_SIGHUP" "
+                   #ifdef HAVE_SIGNAL_H
+                   # include <signal.h>
+                   #elif HAVE_SYS_SIGNAL_H
+                   # include <sys/signal.h>
+                   #endif
+
+"
+if test "x$ac_cv_have_decl_SIGHUP" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_SIGHUP $ac_have_decl
+_ACEOF
 
 
 loaders="stb_image"
