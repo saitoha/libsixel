@@ -111,7 +111,9 @@ AC_CHECK_HEADERS([memory.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
-                  errno.h])
+                  errno.h \
+                  signal.h \
+                  sys/signal.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
@@ -133,7 +135,7 @@ AC_CHECK_FUNC([getopt_long],
 			     ])
 	      ])
 
-AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode])
+AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode signal])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
