@@ -126,12 +126,10 @@ AC_CHECK_FUNC([memset], [],
               [AC_MSG_ERROR(memset is not available.)])
 
 AC_CHECK_FUNC([getopt_long],
-	      [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])],
+              [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])],
               [AC_CHECK_FUNC([getopt],
-			     [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
-                             [AC_MSG_ERROR(getopt or getopt_long is not available.)
-			     ])
-	      ])
+                             [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
+                             [AC_MSG_ERROR(getopt or getopt_long is not available.)])])
 
 AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode])
 
