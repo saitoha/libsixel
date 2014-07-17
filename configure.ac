@@ -138,6 +138,15 @@ AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode signal])
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
 
+AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
+               [
+                   #ifdef HAVE_SIGNAL_H
+                   # include <signal.h>
+                   #elif HAVE_SYS_SIGNAL_H
+                   # include <sys/signal.h>
+                   #endif
+               ])
+
 loaders="stb_image"
 have_curl="no"
 have_wic="no"

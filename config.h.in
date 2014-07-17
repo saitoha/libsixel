@@ -40,6 +40,18 @@
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
 
+/* Define to 1 if you have the declaration of `SIGHUP', and to 0 if you don't.
+   */
+#undef HAVE_DECL_SIGHUP
+
+/* Define to 1 if you have the declaration of `SIGINT', and to 0 if you don't.
+   */
+#undef HAVE_DECL_SIGINT
+
+/* Define to 1 if you have the declaration of `SIGTERM', and to 0 if you
+   don't. */
+#undef HAVE_DECL_SIGTERM
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
