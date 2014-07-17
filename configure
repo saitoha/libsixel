@@ -16472,9 +16472,7 @@ $as_echo "#define HAVE_GETOPT 1" >>confdefs.h
 
 else
   as_fn_error $? "getopt or getopt_long is not available." "$LINENO" 5
-
 fi
-
 
 fi
 
