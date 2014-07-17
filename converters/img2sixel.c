@@ -164,7 +164,7 @@ convert_to_sixel(char const *filename, int reqcolors,
 #if HAVE_SIGNAL
     signal(SIGINT, signal_handler);
     signal(SIGHUP, signal_handler);
-    signal(SIGKILL, signal_handler);
+    signal(SIGTERM, signal_handler);
 #endif
 
     for (n = 0; n < count; ++n) {
