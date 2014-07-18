@@ -302,7 +302,7 @@ chunk_is_gif(chunk_t const *chunk)
 static unsigned char *
 load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
                   int *pcomp, int *pstride,
-                  int *pframe_count, int *ploop_count)
+                  int *pframe_count, int *ploop_count, int *pdelay)
 {
     FILE *f;
     unsigned char *p;
@@ -351,6 +351,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
             pixels = frames.buffer;
         }
         *ploop_count = g.loop_count;
+        *pdelay = g.delay;
 
         if (!pixels) {
             fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
@@ -608,7 +609,7 @@ load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride
 
 unsigned char *
 load_image_file(char const *filename, int *psx, int *psy,
-                int *pframe_count, int *ploop_count)
+                int *pframe_count, int *ploop_count, int *pdelay)
 {
     unsigned char *pixels;
     size_t new_rowstride;
@@ -640,7 +641,7 @@ load_image_file(char const *filename, int *psx, int *psy,
 #endif  /* HAVE_GD */
     if (!pixels) {
         pixels = load_with_builtin(&chunk, psx, psy, &comp, &stride,
-                                   pframe_count, ploop_count);
+                                   pframe_count, ploop_count, pdelay);
     }
 
     src = dst = pixels;
