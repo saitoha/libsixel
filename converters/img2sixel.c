@@ -421,6 +421,7 @@ end:
         for (n = 0; n < frame_count; ++n) {
             LSImage_destroy(image_array[n]);
         }
+        free(image_array);
     }
     if (context) {
         LSOutputContext_destroy(context);
