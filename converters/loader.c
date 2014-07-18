@@ -82,7 +82,7 @@ typedef struct chunk
 } chunk_t;
 
 
-void
+static void
 chunk_init(chunk_t * const pchunk, size_t initial_size)
 {
     pchunk->max_size = initial_size;
@@ -90,7 +90,7 @@ chunk_init(chunk_t * const pchunk, size_t initial_size)
     pchunk->buffer = malloc(pchunk->max_size);
 }
 
-size_t
+static size_t
 memory_write(void* ptr, size_t size, size_t len, void* memory)
 {
     size_t nbytes;
@@ -301,7 +301,8 @@ chunk_is_gif(chunk_t const *chunk)
 
 static unsigned char *
 load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
-                  int *pcomp, int *pstride, int *pcount)
+                  int *pcomp, int *pstride,
+                  int *pframe_count, int *ploop_count)
 {
     FILE *f;
     unsigned char *p;
@@ -312,6 +313,8 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
 
     if (chunk_is_sixel(pchunk)) {
         /* sixel */
+        *pframe_count = 1;
+        *ploop_count = 1;
     } else if (chunk_is_pnm(pchunk)) {
         /* pnm */
         pixels = load_pnm(pchunk->buffer, pchunk->size,
@@ -323,11 +326,12 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
 #endif  /* HAVE_ERRNO_H */
             return NULL;
         }
-        *pcount = 1;
+        *pframe_count = 1;
+        *ploop_count = 1;
     } else if (chunk_is_gif(pchunk)) {
         chunk_init(&frames, 1024);
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);
-        *pcount = 0;
+        *pframe_count = 0;
         memset(&g, 0, sizeof(g));
 
         for (;;) {
@@ -343,9 +347,10 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
             *psx = g.w;
             *psy = g.h;
             memory_write((void *)p, 1, *psx * *psy * 4, (void *)&frames);
-            ++*pcount;
+            ++*pframe_count;
             pixels = frames.buffer;
         }
+        *ploop_count = g.loop_count;
 
         if (!pixels) {
             fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
@@ -354,13 +359,14 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         }
     } else {
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);
-        pixels = stbi_load_main(&s, psx, psy, pcomp, 4);
+        pixels = stbi_load_main(&s, psx, psy, pcomp, 3);
         if (!pixels) {
             fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
                     stbi_failure_reason());
             return NULL;
         }
-        *pcount = 1;
+        *pframe_count = 1;
+        *ploop_count = 1;
     }
 
     *pstride = *pcomp * *psx;
@@ -371,7 +377,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
 #ifdef HAVE_GDK_PIXBUF2
 static unsigned char *
 load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
-                    int *pcomp, int *pstride, int *pcount)
+                    int *pcomp, int *pstride, int *pframe_count)
 {
     GdkPixbuf *pixbuf;
     GdkPixbufAnimation *animation;
@@ -396,7 +402,7 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
     animation = gdk_pixbuf_loader_get_animation(loader);
     it = gdk_pixbuf_animation_get_iter(animation, &time);
     delay = gdk_pixbuf_animation_iter_get_delay_time(it);
-    *pcount = 0;
+    *pframe_count = 0;
     while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
         g_time_val_add(&time, delay * 1000);
         pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
@@ -411,7 +417,7 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
         *pcomp = gdk_pixbuf_get_has_alpha(pixbuf) ? 4: 3;
         *pstride = gdk_pixbuf_get_rowstride(pixbuf);
         memory_write((void *)p, 1, *psx * *psy * *pcomp, (void *)&frames);
-        ++*pcount;
+        ++*pframe_count;
         gdk_pixbuf_animation_iter_advance(it, &time);
     }
     pixels = frames.buffer;
@@ -601,7 +607,8 @@ load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride
 
 
 unsigned char *
-load_image_file(char const *filename, int *psx, int *psy, int *pcount)
+load_image_file(char const *filename, int *psx, int *psy,
+                int *pframe_count, int *ploop_count)
 {
     unsigned char *pixels;
     size_t new_rowstride;
@@ -621,22 +628,24 @@ load_image_file(char const *filename, int *psx, int *psy, int *pcount)
 
 #ifdef HAVE_GDK_PIXBUF2
     if (!pixels) {
-        pixels = load_with_gdkpixbuf(&chunk, psx, psy, &comp, &stride, pcount);
+        pixels = load_with_gdkpixbuf(&chunk, psx, psy, &comp, &stride,
+                                     pframe_count, ploop_count);
     }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
     if (!pixels) {
         pixels = load_with_gd(&chunk, psx, psy, &comp, &stride);
-        *pcount = 1;
+        *pframe_count = 1;
     }
 #endif  /* HAVE_GD */
     if (!pixels) {
-        pixels = load_with_builtin(&chunk, psx, psy, &comp, &stride, pcount);
+        pixels = load_with_builtin(&chunk, psx, psy, &comp, &stride,
+                                   pframe_count, ploop_count);
     }
 
     src = dst = pixels;
     if (comp == 4) {
-        for (y = 0; y < *psy * *pcount; y++) {
+        for (y = 0; y < *psy * *pframe_count; y++) {
             for (x = 0; x < *psx; x++) {
                 *(dst++) = *(src++);   /* R */
                 *(dst++) = *(src++);   /* G */
@@ -647,7 +656,7 @@ load_image_file(char const *filename, int *psx, int *psy, int *pcount)
     }
     else {
         new_rowstride = *psx * 3;
-        for (y = 1; y < *psy * *pcount; y++) {
+        for (y = 1; y < *psy * *pframe_count; y++) {
             memmove(dst += new_rowstride, src += stride, new_rowstride);
         }
     }
