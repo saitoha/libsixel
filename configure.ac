@@ -107,6 +107,7 @@ AC_CHECK_HEADERS([memory.h \
                   stdlib.h \
                   string.h \
                   unistd.h \
+                  sys/unistd.h \
                   getopt.h \
                   sys/types.h \
                   sys/stat.h \
@@ -133,7 +134,7 @@ AC_CHECK_FUNC([getopt_long],
                              [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
                              [AC_MSG_ERROR(getopt or getopt_long is not available.)])])
 
-AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode signal])
+AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode signal usleep])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])

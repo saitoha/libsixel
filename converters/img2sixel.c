@@ -27,7 +27,9 @@
 #include <string.h>
 
 #if defined(HAVE_UNISTD_H)
-# include <unistd.h>  /* getopt */
+# include <unistd.h>
+#elif defined(HAVE_SYS_UNISTD_H)
+# include <sys/unistd.h>
 #endif
 
 #if defined(HAVE_GETOPT_H)
@@ -381,7 +383,9 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                 break;
             }
 #endif
+#if HAVE_USLEEP
             usleep(10000 * delay);
+#endif
         }
         if (signaled) {
             break;
