@@ -82,7 +82,7 @@ typedef struct chunk
 } chunk_t;
 
 
-void
+static void
 chunk_init(chunk_t * const pchunk, size_t initial_size)
 {
     pchunk->max_size = initial_size;
@@ -90,7 +90,7 @@ chunk_init(chunk_t * const pchunk, size_t initial_size)
     pchunk->buffer = malloc(pchunk->max_size);
 }
 
-size_t
+static size_t
 memory_write(void* ptr, size_t size, size_t len, void* memory)
 {
     size_t nbytes;
@@ -301,7 +301,8 @@ chunk_is_gif(chunk_t const *chunk)
 
 static unsigned char *
 load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
-                  int *pcomp, int *pstride, int *pframe_count, int *ploop_count)
+                  int *pcomp, int *pstride,
+                  int *pframe_count, int *ploop_count)
 {
     FILE *f;
     unsigned char *p;
@@ -312,6 +313,8 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
 
     if (chunk_is_sixel(pchunk)) {
         /* sixel */
+        *pframe_count = 1;
+        *ploop_count = 1;
     } else if (chunk_is_pnm(pchunk)) {
         /* pnm */
         pixels = load_pnm(pchunk->buffer, pchunk->size,
@@ -324,6 +327,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
             return NULL;
         }
         *pframe_count = 1;
+        *ploop_count = 1;
     } else if (chunk_is_gif(pchunk)) {
         chunk_init(&frames, 1024);
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);
@@ -346,6 +350,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
             ++*pframe_count;
             pixels = frames.buffer;
         }
+        *ploop_count = g.loop_count;
 
         if (!pixels) {
             fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
@@ -354,13 +359,14 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         }
     } else {
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);
-        pixels = stbi_load_main(&s, psx, psy, pcomp, 4);
+        pixels = stbi_load_main(&s, psx, psy, pcomp, 3);
         if (!pixels) {
             fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
                     stbi_failure_reason());
             return NULL;
         }
         *pframe_count = 1;
+        *ploop_count = 1;
     }
 
     *pstride = *pcomp * *psx;
