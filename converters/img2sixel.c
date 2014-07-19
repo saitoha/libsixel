@@ -838,7 +838,7 @@ argerr:
             "-l LOOPMODE, --loop-control=LOOPMODE\n"
             "                           select loop control mode for GIF\n"
             "                           animation.\n"
-            "                             auto   -> honer the setting of\n"
+            "                             auto   -> honor the setting of\n"
             "                                       GIF header (default)\n"
             "                             force   -> always enable loop\n"
             "                             disable -> always disable loop\n"
