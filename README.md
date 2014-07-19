@@ -187,6 +187,13 @@ Options:
                                      speed mode
                              low  -> low quality and high
                                      speed mode
+-l LOOPMODE, --loop-control=LOOPMODE
+                           select loop control mode for GIF
+                           animation.
+                             auto   -> honer the setting of
+                                       GIF header (default)
+                             force   -> always enable loop
+                             disable -> always disable loop
 ```
 
 Convert a jpeg image file into a sixel file
