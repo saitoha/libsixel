@@ -3852,6 +3852,8 @@ typedef struct
    int max_x, max_y;
    int cur_x, cur_y;
    int line_size;
+   int loop_count;
+   int delay;
 } stbi__gif;
 
 static int stbi__gif_test_raw(stbi__context *s)
@@ -4122,19 +4124,45 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
             return o;
          }
 
-         case 0x21: // Comment Extension.
+         case 0x21: // Extension Introducer
          {
             int len;
-            if (stbi__get8(s) == 0xF9) { // Graphic Control Extension.
-               len = stbi__get8(s);
+            switch (stbi__get8(s)) {
+            case 0x01: // Plain Text Extension
+               break;
+            case 0x21: // Comment Extension
+               break;
+            case 0xF9: // Graphic Control Extension
+               len = stbi__get8(s); // block size
                if (len == 4) {
                   g->eflags = stbi__get8(s);
-                  stbi__get16le(s); // delay
+                  g->delay = stbi__get16le(s); // delay
                   g->transparent = stbi__get8(s);
                } else {
                   stbi__skip(s, len);
                   break;
                }
+               break;
+            case 0xFF: // Application Extension
+               len = stbi__get8(s); // block size
+               if (len != 11) break;
+               if (stbi__get8(s) != 'N') break;
+               if (stbi__get8(s) != 'E') break;
+               if (stbi__get8(s) != 'T') break;
+               if (stbi__get8(s) != 'S') break;
+               if (stbi__get8(s) != 'C') break;
+               if (stbi__get8(s) != 'A') break;
+               if (stbi__get8(s) != 'P') break;
+               if (stbi__get8(s) != 'E') break;
+               if (stbi__get8(s) != '2') break;
+               if (stbi__get8(s) != '.') break;
+               if (stbi__get8(s) != '0') break;
+               if (stbi__get8(s) != 0x03) break;
+               if (stbi__get8(s) != 0x01) break;
+               g->loop_count = stbi__get16le(s); // loop count
+               break;
+            default:
+               break;
             }
             while ((len = stbi__get8(s)) != 0)
                stbi__skip(s, len);

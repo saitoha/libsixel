@@ -27,7 +27,9 @@
 #include <string.h>
 
 #if defined(HAVE_UNISTD_H)
-# include <unistd.h>  /* getopt */
+# include <unistd.h>
+#elif defined(HAVE_SYS_UNISTD_H)
+# include <sys/unistd.h>
 #endif
 
 #if defined(HAVE_GETOPT_H)
@@ -42,10 +44,25 @@
 # include <errno.h>
 #endif
 
+#if defined(HAVE_SIGNAL_H)
+# include <signal.h>
+#elif defined(HAVE_SYS_SIGNAL_H)
+# include <sys/signal.h>
+#endif
+
+
 #include <sixel.h>
 #include "scale.h"
 #include "quant.h"
 #include "loader.h"
+
+
+/* loop modes */
+enum loopMode {
+    LOOP_AUTO,       /* honer the setting of GIF header */
+    LOOP_FORCE,      /* always enable loop */
+    LOOP_DISABLE,    /* always disable loop */
+};
 
 
 static unsigned char *
@@ -83,8 +100,12 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
     int origcolors;
     int map_sx;
     int map_sy;
+    int frame_count;
+    int loop_count;
+    int delay;
 
-    mappixels = load_image_file(mapfile, &map_sx, &map_sy);
+    mappixels = load_image_file(mapfile, &map_sx, &map_sy,
+                                &frame_count, &loop_count, &delay);
     if (!mappixels) {
         return NULL;
     }
@@ -95,147 +116,307 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
 }
 
 
+#if HAVE_SIGNAL
+
+static volatile int signaled = 0;
+
+static void
+signal_handler(int sig)
+{
+    signaled = sig;
+}
+
+#endif
+
+typedef struct Settings {
+    int reqcolors;
+    char *mapfile;
+    int monochrome;
+    enum methodForDiffuse method_for_diffuse;
+    enum methodForLargest method_for_largest;
+    enum methodForRep method_for_rep;
+    enum qualityMode quality_mode;
+    enum methodForResampling method_for_resampling;
+    enum loopMode loop_mode;
+    int f8bit;
+    int finvert;
+    int pixelwidth;
+    int pixelheight;
+    int percentwidth;
+    int percentheight;
+} settings_t;
+
+typedef struct Frame {
+    int sx;
+    int sy;
+    unsigned char *buffer;
+} frame_t;
+
+typedef struct FrameSet {
+    int frame_count;
+    unsigned char *palette;
+    frame_t pframe[1];
+} frame_set_t;
+
+
+static unsigned char *
+prepare_palette(unsigned char *frame, int sx, int sy,
+                settings_t *psettings,
+                int *pncolors, int *porigcolors)
+{
+    unsigned char *palette;
+
+    if (psettings->monochrome) {
+        palette = prepare_monochrome_palette(psettings->finvert);
+        *pncolors = 2;
+    } else if (psettings->mapfile) {
+        palette = prepare_specified_palette(psettings->mapfile,
+                                            psettings->reqcolors,
+                                            pncolors);
+    } else {
+        if (psettings->method_for_largest == LARGE_AUTO) {
+            psettings->method_for_largest = LARGE_NORM;
+        }
+        if (psettings->method_for_rep == REP_AUTO) {
+            psettings->method_for_rep = REP_CENTER_BOX;
+        }
+        if (psettings->quality_mode == QUALITY_AUTO) {
+            if (psettings->reqcolors <= 8) {
+                psettings->quality_mode = QUALITY_HIGH;
+            } else {
+                psettings->quality_mode = QUALITY_LOW;
+            }
+        }
+        palette = LSQ_MakePalette(frame, sx, sy, 3,
+                                  psettings->reqcolors,
+                                  pncolors,
+                                  porigcolors,
+                                  psettings->method_for_largest,
+                                  psettings->method_for_rep,
+                                  psettings->quality_mode);
+        if (*porigcolors <= *pncolors) {
+            psettings->method_for_diffuse = DIFFUSE_NONE;
+        }
+    }
+    return palette;
+}
+
 static int
-convert_to_sixel(char const *filename, int reqcolors,
-                 char const *mapfile, int monochrome,
-                 enum methodForDiffuse method_for_diffuse,
-                 enum methodForLargest method_for_largest,
-                 enum methodForRep method_for_rep,
-                 enum qualityMode quality_mode,
-                 enum methodForResampling const method_for_resampling,
-                 int f8bit, int finvert,
-                 int pixelwidth, int pixelheight,
-                 int percentwidth, int percentheight)
+convert_to_sixel(char const *filename, settings_t *psettings)
 {
     unsigned char *pixels = NULL;
-    unsigned char *scaled_pixels = NULL;
+    unsigned char *frame = NULL;
+    unsigned char **frames = NULL;
+    unsigned char *scaled_frame = NULL;
     unsigned char *mappixels = NULL;
     unsigned char *palette = NULL;
     unsigned char *data = NULL;
+    unsigned char *p = NULL;
     int ncolors;
     int origcolors;
     LSImagePtr im = NULL;
+    LSImagePtr *image_array = NULL;
     LSOutputContextPtr context = NULL;
     int sx, sy;
+    int frame_count;
+    int loop_count;
+    int delay;
     int i;
+    int c;
+    int n;
     int nret = -1;
     FILE *f;
+    int size;
 
-    if (reqcolors < 2) {
-        reqcolors = 2;
-    } else if (reqcolors > PALETTE_MAX) {
-        reqcolors = PALETTE_MAX;
+    frame_count = 1;
+    loop_count = 1;
+    delay = 0;
+
+    if (psettings->reqcolors < 2) {
+        psettings->reqcolors = 2;
+    } else if (psettings->reqcolors > PALETTE_MAX) {
+        psettings->reqcolors = PALETTE_MAX;
     }
 
-    pixels = load_image_file(filename, &sx, &sy);
+    pixels = load_image_file(filename, &sx, &sy, &frame_count, &loop_count, &delay);
+
     if (pixels == NULL) {
         nret = -1;
         goto end;
     }
+
+    frames = malloc(sizeof(unsigned char *) * frame_count);
+
+    frame = pixels;
+    for (n = 0; n < frame_count; ++n) {
+        frames[n] = frame;
+        frame += sx * sy * 3;
+    }
+
     /* scaling */
-    if (percentwidth > 0) {
-        pixelwidth = sx * percentwidth / 100;
+    if (psettings->percentwidth > 0) {
+        psettings->pixelwidth = sx * psettings->percentwidth / 100;
     }
-    if (percentheight > 0) {
-        pixelheight = sy * percentheight / 100;
+    if (psettings->percentheight > 0) {
+        psettings->pixelheight = sy * psettings->percentheight / 100;
     }
-    if (pixelwidth > 0 && pixelheight <= 0) {
-        pixelheight = sy * pixelwidth / sx;
+    if (psettings->pixelwidth > 0 && psettings->pixelheight <= 0) {
+        psettings->pixelheight = sy * psettings->pixelwidth / sx;
     }
-    if (pixelheight > 0 && pixelwidth <= 0) {
-        pixelwidth = sx * pixelheight / sy;
+    if (psettings->pixelheight > 0 && psettings->pixelwidth <= 0) {
+        psettings->pixelwidth = sx * psettings->pixelheight / sy;
     }
 
-    if (pixelwidth > 0 && pixelheight > 0) {
-        scaled_pixels = LSS_scale(pixels, sx, sy, 3,
-                                  pixelwidth, pixelheight,
-                                  method_for_resampling);
-        sx = pixelwidth;
-        sy = pixelheight;
-
+    if (psettings->pixelwidth > 0 && psettings->pixelheight > 0) {
+        size = psettings->pixelwidth * psettings->pixelheight * 3;
+        p = malloc(size * frame_count);
+        for (n = 0; n < frame_count; ++n) {
+            scaled_frame = LSS_scale(frames[n], sx, sy, 3,
+                                     psettings->pixelwidth,
+                                     psettings->pixelheight,
+                                     psettings->method_for_resampling);
+            memcpy(p + size * n, scaled_frame, size); 
+        }
+        for (n = 0; n < frame_count; ++n) {
+            frames[n] = p + size * n;
+        }
         free(pixels);
-        pixels = scaled_pixels;
+        pixels = p;
+        sx = psettings->pixelwidth;
+        sy = psettings->pixelheight;
     }
 
     /* prepare palette */
-    if (monochrome) {
-        palette = prepare_monochrome_palette(finvert);
-        ncolors = 2;
-    } else if (mapfile) {
-        palette = prepare_specified_palette(mapfile, reqcolors, &ncolors);
-    } else {
-        if (method_for_largest == LARGE_AUTO) {
-            method_for_largest = LARGE_NORM;
-        }
-        if (method_for_rep == REP_AUTO) {
-            method_for_rep = REP_CENTER_BOX;
-        }
-        if (quality_mode == QUALITY_AUTO) {
-            quality_mode = reqcolors <= 8 ? QUALITY_HIGH: QUALITY_LOW;
-        }
-        palette = LSQ_MakePalette(pixels, sx, sy, 3,
-                                  reqcolors, &ncolors, &origcolors,
-                                  method_for_largest,
-                                  method_for_rep,
-                                  quality_mode);
-        if (origcolors <= ncolors) {
-            method_for_diffuse = DIFFUSE_NONE;
-        }
-    }
-
+    palette = prepare_palette(frames[0], sx, sy,
+                              psettings, 
+                              &ncolors, &origcolors);
     if (!palette) {
         nret = -1;
         goto end;
     }
 
-    /* apply palette */
-    if (method_for_diffuse == DIFFUSE_AUTO) {
-        method_for_diffuse = DIFFUSE_FS;
-    }
-    data = LSQ_ApplyPalette(pixels, sx, sy, 3,
-                            palette, ncolors,
-                            method_for_diffuse,
-                            /* foptimize */ 1);
+    image_array = malloc(sizeof(LSImagePtr) * frame_count);
 
-    if (!data) {
-        nret = -1;
-        goto end;
+    for (n = 0; n < frame_count; ++n) {
+
+        /* apply palette */
+        if (psettings->method_for_diffuse == DIFFUSE_AUTO) {
+            psettings->method_for_diffuse = DIFFUSE_FS;
+        }
+        data = LSQ_ApplyPalette(frames[n], sx, sy, 3,
+                                palette, ncolors,
+                                psettings->method_for_diffuse,
+                                /* foptimize */ 1);
+
+        if (!data) {
+            nret = -1;
+            goto end;
+        }
+
+        /* create intermidiate bitmap image */
+        im = LSImage_create(sx, sy, 3, ncolors);
+        if (!im) {
+            nret = -1;
+            goto end;
+        }
+        for (i = 0; i < ncolors; i++) {
+            LSImage_setpalette(im, i,
+                               palette[i * 3],
+                               palette[i * 3 + 1],
+                               palette[i * 3 + 2]);
+        }
+        if (psettings->monochrome) {
+            im->keycolor = 0;
+        } else {
+            im->keycolor = -1;
+        }
+        LSImage_setpixels(im, data);
+
+        data = NULL;
+
+        image_array[n] = im;
     }
 
-    /* create intermidiate bitmap image */
-    im = LSImage_create(sx, sy, 3, ncolors);
-    if (!im) {
-        nret = -1;
-        goto end;
-    }
-    for (i = 0; i < ncolors; i++) {
-        LSImage_setpalette(im, i,
-                           palette[i * 3],
-                           palette[i * 3 + 1],
-                           palette[i * 3 + 2]);
-    }
-    if (monochrome) {
-        im->keycolor = 0;
-    } else {
-        im->keycolor = -1;
-    }
-    LSImage_setpixels(im, data);
-
-    data = NULL;
-
-    /* convert image object into sixel */
+    /* create output context */
     context = LSOutputContext_create(putchar, printf);
-    context->has_8bit_control = f8bit;
-    LibSixel_LSImageToSixel(im, context);
+    context->has_8bit_control = psettings->f8bit;
+
+#if HAVE_SIGNAL
+# if HAVE_DECL_SIGINT
+    signal(SIGINT, signal_handler);
+# endif
+# if HAVE_DECL_SIGTERM
+    signal(SIGTERM, signal_handler);
+# endif
+# if HAVE_DECL_SIGHUP
+    signal(SIGHUP, signal_handler);
+# endif
+#endif
+
+    switch (psettings->loop_mode) {
+    case LOOP_FORCE:
+        loop_count = -1;
+        break;
+    case LOOP_DISABLE:
+        loop_count = 1;
+        break;
+    default:
+        if (frame_count == 1) {
+            loop_count = 1;
+        } else if (loop_count == 0) {
+            loop_count = -1;
+        }
+        break;
+    }
+
+    for (c = 0; c != loop_count; ++c) {
+        for (n = 0; n < frame_count; ++n) {
+
+            if (frame_count > 1) {
+                context->fn_printf("\033[H");
+            }
+
+            /* convert image object into sixel */
+            LibSixel_LSImageToSixel(image_array[n], context);
+
+#if HAVE_SIGNAL
+            if (signaled) {
+                break;
+            }
+#endif
+#if HAVE_USLEEP
+            if (delay < 100) {
+                usleep(10000 * delay);
+            }
+#endif
+        }
+        if (signaled) {
+            break;
+        }
+    }
+
+    if (signaled) {
+        if (context->has_8bit_control) {
+            context->fn_printf("\x9c");
+        } else {
+            context->fn_printf("\x1b\\");
+        }
+    }
 
     nret = 0;
 
 end:
+    if (frames) {
+        free(frames);
+    }
     if (data) {
         free(data);
     }
     if (pixels) {
         free(pixels);
+    }
+    if (scaled_frame) {
+        free(scaled_frame);
     }
     if (mappixels) {
         free(mappixels);
@@ -243,8 +424,11 @@ end:
     if (palette) {
         LSQ_FreePalette(palette);
     }
-    if (im) {
-        LSImage_destroy(im);
+    if (image_array) {
+        for (n = 0; n < frame_count; ++n) {
+            LSImage_destroy(image_array[n]);
+        }
+        free(image_array);
     }
     if (context) {
         LSOutputContext_destroy(context);
@@ -257,37 +441,33 @@ int main(int argc, char *argv[])
 {
     int n;
     int filecount = 1;
-    int ncolors = -1;
-    int monochrome = 0;
-    enum methodForResampling method_for_resampling = RES_BILINEAR;
-    enum methodForDiffuse method_for_diffuse = DIFFUSE_AUTO;
-    enum methodForLargest method_for_largest = LARGE_AUTO;
-    enum methodForRep method_for_rep = REP_AUTO;
-    enum qualityMode quality_mode = QUALITY_AUTO;
-    char *mapfile = NULL;
     int long_opt;
 #if HAVE_GETOPT_LONG
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     int ret;
     int exit_code;
-    int f8bit;
-    int finvert;
     int number;
     char unit[32];
     int parsed;
-    int pixelwidth;
-    int pixelheight;
-    int percentwidth;
-    int percentheight;
-    char const *optstring = "78p:m:ed:f:s:w:h:r:q:i";
+    char const *optstring = "78p:m:ed:f:s:w:h:r:q:i:l";
+    settings_t settings;
 
-    f8bit = 0;
-    finvert = 0;
-    pixelwidth = -1;
-    pixelheight = -1;
-    percentwidth = -1;
-    percentheight = -1;
+    settings.mapfile = NULL;
+    settings.method_for_resampling = RES_BILINEAR;
+    settings.method_for_diffuse = DIFFUSE_AUTO;
+    settings.method_for_largest = LARGE_AUTO;
+    settings.method_for_rep = REP_AUTO;
+    settings.quality_mode = QUALITY_AUTO;
+    settings.loop_mode = LOOP_AUTO;
+    settings.reqcolors = -1;
+    settings.f8bit = 0;
+    settings.finvert = 0;
+    settings.monochrome = 0;
+    settings.pixelwidth = -1;
+    settings.pixelheight = -1;
+    settings.percentwidth = -1;
+    settings.percentheight = -1;
 
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
@@ -304,6 +484,7 @@ int main(int argc, char *argv[])
         {"resampling",   required_argument,  &long_opt, 'r'},
         {"quality",      required_argument,  &long_opt, 'q'},
         {"invert",       required_argument,  &long_opt, 'i'},
+        {"loop-control", required_argument,  &long_opt, 'l'},
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
@@ -324,37 +505,37 @@ int main(int argc, char *argv[])
         }
         switch(n) {
         case '7':
-            f8bit = 0;
+            settings.f8bit = 0;
             break;
         case '8':
-            f8bit = 1;
+            settings.f8bit = 1;
             break;
         case 'p':
-            ncolors = atoi(optarg);
+            settings.reqcolors = atoi(optarg);
             break;
         case 'm':
-            mapfile = strdup(optarg);
+            settings.mapfile = strdup(optarg);
             break;
         case 'e':
-            monochrome = 1;
+            settings.monochrome = 1;
             break;
         case 'd':
             /* parse --diffusion option */
             if (optarg) {
                 if (strcmp(optarg, "auto") == 0) {
-                    method_for_diffuse = DIFFUSE_AUTO;
+                    settings.method_for_diffuse = DIFFUSE_AUTO;
                 } else if (strcmp(optarg, "none") == 0) {
-                    method_for_diffuse = DIFFUSE_NONE;
+                    settings.method_for_diffuse = DIFFUSE_NONE;
                 } else if (strcmp(optarg, "fs") == 0) {
-                    method_for_diffuse = DIFFUSE_FS;
+                    settings.method_for_diffuse = DIFFUSE_FS;
                 } else if (strcmp(optarg, "atkinson") == 0) {
-                    method_for_diffuse = DIFFUSE_ATKINSON;
+                    settings.method_for_diffuse = DIFFUSE_ATKINSON;
                 } else if (strcmp(optarg, "jajuni") == 0) {
-                    method_for_diffuse = DIFFUSE_JAJUNI;
+                    settings.method_for_diffuse = DIFFUSE_JAJUNI;
                 } else if (strcmp(optarg, "stucki") == 0) {
-                    method_for_diffuse = DIFFUSE_STUCKI;
+                    settings.method_for_diffuse = DIFFUSE_STUCKI;
                 } else if (strcmp(optarg, "burkes") == 0) {
-                    method_for_diffuse = DIFFUSE_BURKES;
+                    settings.method_for_diffuse = DIFFUSE_BURKES;
                 } else {
                     fprintf(stderr,
                             "Diffusion method '%s' is not supported.\n",
@@ -367,11 +548,11 @@ int main(int argc, char *argv[])
             /* parse --find-largest option */
             if (optarg) {
                 if (strcmp(optarg, "auto") == 0) {
-                    method_for_largest = LARGE_AUTO;
+                    settings.method_for_largest = LARGE_AUTO;
                 } else if (strcmp(optarg, "norm") == 0) {
-                    method_for_largest = LARGE_NORM;
+                    settings.method_for_largest = LARGE_NORM;
                 } else if (strcmp(optarg, "lum") == 0) {
-                    method_for_largest = LARGE_LUM;
+                    settings.method_for_largest = LARGE_LUM;
                 } else {
                     fprintf(stderr,
                             "Finding method '%s' is not supported.\n",
@@ -384,13 +565,13 @@ int main(int argc, char *argv[])
             /* parse --select-color option */
             if (optarg) {
                 if (strcmp(optarg, "auto") == 0) {
-                    method_for_rep = REP_AUTO;
+                    settings.method_for_rep = REP_AUTO;
                 } else if (strcmp(optarg, "center") == 0) {
-                    method_for_rep = REP_CENTER_BOX;
+                    settings.method_for_rep = REP_CENTER_BOX;
                 } else if (strcmp(optarg, "average") == 0) {
-                    method_for_rep = REP_AVERAGE_COLORS;
+                    settings.method_for_rep = REP_AVERAGE_COLORS;
                 } else if (strcmp(optarg, "histgram") == 0) {
-                    method_for_rep = REP_AVERAGE_PIXELS;
+                    settings.method_for_rep = REP_AVERAGE_PIXELS;
                 } else {
                     fprintf(stderr,
                             "Finding method '%s' is not supported.\n",
@@ -402,14 +583,14 @@ int main(int argc, char *argv[])
         case 'w':
             parsed = sscanf(optarg, "%d%s", &number, unit);
             if (parsed == 2 && strcmp(unit, "%") == 0) {
-                pixelwidth = -1;
-                percentwidth = number;
+                settings.pixelwidth = -1;
+                settings.percentwidth = number;
             } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
-                pixelwidth = number;
-                percentwidth = -1;
+                settings.pixelwidth = number;
+                settings.percentwidth = -1;
             } else if (strcmp(optarg, "auto") == 0) {
-                pixelwidth = -1;
-                percentwidth = -1;
+                settings.pixelwidth = -1;
+                settings.percentwidth = -1;
             } else {
                 fprintf(stderr,
                         "Cannot parse -w/--width option.\n");
@@ -419,14 +600,14 @@ int main(int argc, char *argv[])
         case 'h':
             parsed = sscanf(optarg, "%d%s", &number, unit);
             if (parsed == 2 && strcmp(unit, "%") == 0) {
-                pixelheight = -1;
-                percentheight = number;
+                settings.pixelheight = -1;
+                settings.percentheight = number;
             } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
-                pixelheight = number;
-                percentheight = -1;
+                settings.pixelheight = number;
+                settings.percentheight = -1;
             } else if (strcmp(optarg, "auto") == 0) {
-                pixelheight = -1;
-                percentheight = -1;
+                settings.pixelheight = -1;
+                settings.percentheight = -1;
             } else {
                 fprintf(stderr,
                         "Cannot parse -h/--height option.\n");
@@ -436,27 +617,27 @@ int main(int argc, char *argv[])
         case 'r':
             /* parse --resampling option */
             if (!optarg) {  /* default */
-                method_for_resampling = RES_BILINEAR;
+                settings.method_for_resampling = RES_BILINEAR;
             } else if (strcmp(optarg, "nearest") == 0) {
-                method_for_resampling = RES_NEAREST;
+                settings.method_for_resampling = RES_NEAREST;
             } else if (strcmp(optarg, "gaussian") == 0) {
-                method_for_resampling = RES_GAUSSIAN;
+                settings.method_for_resampling = RES_GAUSSIAN;
             } else if (strcmp(optarg, "hanning") == 0) {
-                method_for_resampling = RES_HANNING;
+                settings.method_for_resampling = RES_HANNING;
             } else if (strcmp(optarg, "hamming") == 0) {
-                method_for_resampling = RES_HAMMING;
+                settings.method_for_resampling = RES_HAMMING;
             } else if (strcmp(optarg, "bilinear") == 0) {
-                method_for_resampling = RES_BILINEAR;
+                settings.method_for_resampling = RES_BILINEAR;
             } else if (strcmp(optarg, "welsh") == 0) {
-                method_for_resampling = RES_WELSH;
+                settings.method_for_resampling = RES_WELSH;
             } else if (strcmp(optarg, "bicubic") == 0) {
-                method_for_resampling = RES_BICUBIC;
+                settings.method_for_resampling = RES_BICUBIC;
             } else if (strcmp(optarg, "lanczos2") == 0) {
-                method_for_resampling = RES_LANCZOS2;
+                settings.method_for_resampling = RES_LANCZOS2;
             } else if (strcmp(optarg, "lanczos3") == 0) {
-                method_for_resampling = RES_LANCZOS3;
+                settings.method_for_resampling = RES_LANCZOS3;
             } else if (strcmp(optarg, "lanczos4") == 0) {
-                method_for_resampling = RES_LANCZOS4;
+                settings.method_for_resampling = RES_LANCZOS4;
             } else {
                 fprintf(stderr,
                         "Resampling method '%s' is not supported.\n",
@@ -468,11 +649,11 @@ int main(int argc, char *argv[])
             /* parse --quality option */
             if (optarg) {
                 if (strcmp(optarg, "auto") == 0) {
-                    quality_mode = QUALITY_AUTO;
+                    settings.quality_mode = QUALITY_AUTO;
                 } else if (strcmp(optarg, "high") == 0) {
-                    quality_mode = QUALITY_HIGH;
+                    settings.quality_mode = QUALITY_HIGH;
                 } else if (strcmp(optarg, "hanning") == 0) {
-                    quality_mode = QUALITY_LOW;
+                    settings.quality_mode = QUALITY_LOW;
                 } else {
                     fprintf(stderr,
                             "Cannot parse quality option.\n");
@@ -480,8 +661,24 @@ int main(int argc, char *argv[])
                 }
             }
             break;
+        case 'l':
+            /* parse --quality option */
+            if (optarg) {
+                if (strcmp(optarg, "auto") == 0) {
+                    settings.loop_mode = LOOP_AUTO;
+                } else if (strcmp(optarg, "force") == 0) {
+                    settings.loop_mode = LOOP_FORCE;
+                } else if (strcmp(optarg, "disable") == 0) {
+                    settings.loop_mode = LOOP_DISABLE;
+                } else {
+                    fprintf(stderr,
+                            "Cannot parse loop-control option.\n");
+                    goto argerr;
+                }
+            }
+            break;
         case 'i':
-            finvert = 1;
+            settings.finvert = 1;
             break;
         case '?':
             goto argerr;
@@ -489,53 +686,35 @@ int main(int argc, char *argv[])
             goto argerr;
         }
     }
-    if (ncolors != -1 && mapfile) {
+    if (settings.reqcolors != -1 && settings.mapfile) {
         fprintf(stderr, "option -p, --colors conflicts "
                         "with -m, --mapfile.\n");
         goto argerr;
     }
-    if (mapfile && monochrome) {
+    if (settings.mapfile && settings.monochrome) {
         fprintf(stderr, "option -m, --mapfile conflicts "
                         "with -e, --monochrome.\n");
         goto argerr;
     }
-    if (monochrome && ncolors != -1) {
+    if (settings.monochrome && settings.reqcolors != -1) {
         fprintf(stderr, "option -e, --monochrome conflicts"
                         " with -p, --colors.\n");
         goto argerr;
     }
 
-    if (ncolors == -1) {
-        ncolors = PALETTE_MAX;
+    if (settings.reqcolors == -1) {
+        settings.reqcolors = PALETTE_MAX;
     }
 
     if (optind == argc) {
-        ret = convert_to_sixel(NULL, ncolors, mapfile,
-                               monochrome,
-                               method_for_diffuse,
-                               method_for_largest,
-                               method_for_rep,
-                               quality_mode,
-                               method_for_resampling,
-                               f8bit, finvert,
-                               pixelwidth, pixelheight,
-                               percentwidth, percentheight);
+        ret = convert_to_sixel(NULL, &settings);
         if (ret != 0) {
             exit_code = EXIT_FAILURE;
             goto end;
         }
     } else {
         for (n = optind; n < argc; n++) {
-            ret = convert_to_sixel(argv[n], ncolors, mapfile,
-                                   monochrome,
-                                   method_for_diffuse,
-                                   method_for_largest,
-                                   method_for_rep,
-                                   quality_mode,
-                                   method_for_resampling,
-                                   f8bit, finvert,
-                                   pixelwidth, pixelheight,
-                                   percentwidth, percentheight);
+            ret = convert_to_sixel(argv[n], &settings);
             if (ret != 0) {
                 exit_code = EXIT_FAILURE;
                 goto end;
@@ -656,11 +835,18 @@ argerr:
             "                                     speed mode\n"
             "                             low  -> low quality and high\n"
             "                                     speed mode\n"
+            "-l LOOPMODE, --loop-control=LOOPMODE\n"
+            "                           select loop control mode for GIF\n"
+            "                           animation.\n"
+            "                             auto   -> honer the setting of\n"
+            "                                       GIF header (default)\n"
+            "                             force   -> always enable loop\n"
+            "                             disable -> always disable loop\n"
             );
 
 end:
-    if (mapfile) {
-        free(mapfile);
+    if (settings.mapfile) {
+        free(settings.mapfile);
     }
     return exit_code;
 }

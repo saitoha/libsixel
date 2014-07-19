@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.23.2], [user@zuse.jp])
+AC_INIT([sixel], [0.24.0], [user@zuse.jp])
 LS_LT_CURRENT=0
 LS_LT_REVISION=0
 LS_LT_AGE=0
@@ -107,11 +107,14 @@ AC_CHECK_HEADERS([memory.h \
                   stdlib.h \
                   string.h \
                   unistd.h \
+                  sys/unistd.h \
                   getopt.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
-                  errno.h])
+                  errno.h \
+                  signal.h \
+                  sys/signal.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
@@ -126,17 +129,24 @@ AC_CHECK_FUNC([memset], [],
               [AC_MSG_ERROR(memset is not available.)])
 
 AC_CHECK_FUNC([getopt_long],
-	      [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])],
+              [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])],
               [AC_CHECK_FUNC([getopt],
-			     [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
-                             [AC_MSG_ERROR(getopt or getopt_long is not available.)
-			     ])
-	      ])
+                             [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
+                             [AC_MSG_ERROR(getopt or getopt_long is not available.)])])
 
-AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode])
+AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode signal usleep])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
+
+AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
+               [
+                   #ifdef HAVE_SIGNAL_H
+                   # include <signal.h>
+                   #elif HAVE_SYS_SIGNAL_H
+                   # include <sys/signal.h>
+                   #endif
+               ])
 
 loaders="stb_image"
 have_curl="no"
