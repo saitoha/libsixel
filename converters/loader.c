@@ -368,6 +368,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         }
         *pframe_count = 1;
         *ploop_count = 1;
+        *pcomp = 3;  /* reset component to 3 */
     }
 
     *pstride = *pcomp * *psx;

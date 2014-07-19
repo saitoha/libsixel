@@ -239,6 +239,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
     pixels = load_image_file(filename, &sx, &sy, &frame_count, &loop_count, &delay);
+
     if (pixels == NULL) {
         nret = -1;
         goto end;
@@ -384,7 +385,9 @@ convert_to_sixel(char const *filename, settings_t *psettings)
             }
 #endif
 #if HAVE_USLEEP
-            usleep(10000 * delay);
+            if (delay < 100) {
+                usleep(10000 * delay);
+            }
 #endif
         }
         if (signaled) {
