@@ -155,6 +155,15 @@ auto -> decide quality mode automatically (default)
 high -> high quality and low speed mode
 .br
 low  -> low quality and high speed mode
+.TP 5
+.B \-l \fILOOPMODE\fP, \-\-loop\-control=\fILOOPMODE\fP
+select loop control mode for GIF animation.
+.br
+auto   -> honer the setting of GIF header (default)
+.br
+force   -> always enable loop
+.br
+disable -> always disable loop
 
 .SH "SEE ALSO"
 sixel(5) sixel2png(1)
