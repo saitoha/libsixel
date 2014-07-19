@@ -27,7 +27,9 @@
 #include <string.h>
 
 #if defined(HAVE_UNISTD_H)
-# include <unistd.h>  /* getopt */
+# include <unistd.h>
+#elif defined(HAVE_SYS_UNISTD_H)
+# include <sys/unistd.h>
 #endif
 
 #if defined(HAVE_GETOPT_H)
@@ -100,9 +102,10 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
     int map_sy;
     int frame_count;
     int loop_count;
+    int delay;
 
     mappixels = load_image_file(mapfile, &map_sx, &map_sy,
-                                &frame_count, &loop_count);
+                                &frame_count, &loop_count, &delay);
     if (!mappixels) {
         return NULL;
     }
@@ -217,6 +220,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int sx, sy;
     int frame_count;
     int loop_count;
+    int delay;
     int i;
     int c;
     int n;
@@ -226,6 +230,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 
     frame_count = 1;
     loop_count = 1;
+    delay = 0;
 
     if (psettings->reqcolors < 2) {
         psettings->reqcolors = 2;
@@ -233,7 +238,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         psettings->reqcolors = PALETTE_MAX;
     }
 
-    pixels = load_image_file(filename, &sx, &sy, &frame_count, &loop_count);
+    pixels = load_image_file(filename, &sx, &sy, &frame_count, &loop_count, &delay);
     if (pixels == NULL) {
         nret = -1;
         goto end;
@@ -377,6 +382,9 @@ convert_to_sixel(char const *filename, settings_t *psettings)
             if (signaled) {
                 break;
             }
+#endif
+#if HAVE_USLEEP
+            usleep(10000 * delay);
 #endif
         }
         if (signaled) {
