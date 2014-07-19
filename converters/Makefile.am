@@ -17,7 +17,7 @@ CLEANFILES = *.gcno *.gcda *.gcov snake.png snake.sixel
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
-img2sixel_SOURCES = img2sixel.c quant.c scale.c stb_image.c malloc_stub.c loader.c frompnm.c \
+img2sixel_SOURCES = img2sixel.c quant.c scale.c malloc_stub.c loader.c frompnm.c \
                     quant.h scale.h malloc_stub.h loader.h frompnm.h
 img2sixel_CFLAGS = -I$(top_builddir)/include/ $(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) $(GD_CFLAGS)
 img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS)

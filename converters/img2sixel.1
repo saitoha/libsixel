@@ -155,6 +155,15 @@ auto -> decide quality mode automatically (default)
 high -> high quality and low speed mode
 .br
 low  -> low quality and high speed mode
+.TP 5
+.B \-l \fILOOPMODE\fP, \-\-loop\-control=\fILOOPMODE\fP
+select loop control mode for GIF animation.
+.br
+auto   -> honer the setting of GIF header (default)
+.br
+force   -> always enable loop
+.br
+disable -> always disable loop
 
 .SH "SEE ALSO"
 sixel(5) sixel2png(1)
@@ -162,7 +171,7 @@ sixel(5) sixel2png(1)
 
 .SH AUTHORS
 \fIimg2sixel\fP is maintained by Hayaki Saito.
-We imported whole code of \fIstbi-1.33\fP, written by Sean Barrett and its contributers, for loading PNG/JPEG images,
+We imported whole code of \fIstbi-1.41\fP, written by Sean Barrett and its contributers, for loading PNG/JPEG images,
 and imported some code from \fIpnmquant.c (netpbm library)\fP for image quantization.
 
 
@@ -190,11 +199,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 This software derives from the following implementations.
 .br
 .TP 5
-.B stbi-1.33
-This software includes \fIstbi-1.33\fP (stb_image.c),
+.B stbi-1.41
+This software includes \fIstbi-1.41\fP (stb_image.h),
 a public domain JPEG/PNG reader.
 .br
-.B http://nothings.org/stb_image.c
+.B https://github.com/nothings/stb
 
 .TP 5
 .B pnmquant.c (netpbm library)
