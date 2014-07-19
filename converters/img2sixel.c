@@ -450,7 +450,7 @@ int main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:ed:f:s:w:h:r:q:i:l";
+    char const *optstring = "78p:m:ed:f:s:w:h:r:q:il:";
     settings_t settings;
 
     settings.mapfile = NULL;
@@ -662,7 +662,7 @@ int main(int argc, char *argv[])
             }
             break;
         case 'l':
-            /* parse --quality option */
+            /* parse --loop-control option */
             if (optarg) {
                 if (strcmp(optarg, "auto") == 0) {
                     settings.loop_mode = LOOP_AUTO;
