@@ -3,11 +3,13 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.21.0], [user@zuse.jp])
+AC_INIT([sixel], [0.24.1], [user@zuse.jp])
 LS_LT_CURRENT=0
 LS_LT_REVISION=0
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
+AC_SUBST([PACKAGE_DESCRIPTION],
+         ["A lightweight, fast implementation of DEC SIXEL graphics codec"])
 
 AC_CANONICAL_HOST
 
@@ -37,7 +39,7 @@ AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
 AC_ARG_WITH([gdk-pixbuf2],
             [AS_HELP_STRING([--with-gdk-pixbuf2],
                             [whether to build with gdk-pixbuf2 (default: no)])],
-            [with_gdk_pixbuf2=yes],
+            [],
             [with_gdk_pixbuf2=no])
 
 AC_ARG_WITH([gd],
@@ -74,9 +76,17 @@ AC_ARG_WITH(bashcompletiondir,
 AC_MSG_NOTICE([bash-completion directory is ${bashcompletiondir}])
 AC_SUBST(bashcompletiondir)
 
+AC_ARG_WITH(zshcompletiondir,
+            AC_HELP_STRING([--with-zshcompletiondir],
+                           [Use the specified zshcompletion.d]),
+                           [zshcompletiondir=${withval}],
+                           [zshcompletiondir=${datadir}/zsh/site-functions])
+AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])
+AC_SUBST(zshcompletiondir)
+
 AC_ARG_ENABLE([gcov],
               [AS_HELP_STRING([--enable-gcov],
-                              [use Gcov to test the test suite])],
+                              [Use gcov])],
               [],
               [enable_gcov=no])
 AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
@@ -84,6 +94,7 @@ AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
+PKG_PROG_PKG_CONFIG
 AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
 
 # For wic integration
@@ -96,11 +107,14 @@ AC_CHECK_HEADERS([memory.h \
                   stdlib.h \
                   string.h \
                   unistd.h \
+                  sys/unistd.h \
                   getopt.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
-                  errno.h])
+                  errno.h \
+                  signal.h \
+                  sys/signal.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
@@ -115,17 +129,24 @@ AC_CHECK_FUNC([memset], [],
               [AC_MSG_ERROR(memset is not available.)])
 
 AC_CHECK_FUNC([getopt_long],
-	      [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])],
+              [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])],
               [AC_CHECK_FUNC([getopt],
-			     [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
-                             [AC_MSG_ERROR(getopt or getopt_long is not available.)
-			     ])
-	      ])
+                             [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
+                             [AC_MSG_ERROR(getopt or getopt_long is not available.)])])
 
-AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode])
+AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode signal usleep])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
+
+AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
+               [
+                   #ifdef HAVE_SIGNAL_H
+                   # include <signal.h>
+                   #elif HAVE_SYS_SIGNAL_H
+                   # include <sys/signal.h>
+                   #endif
+               ])
 
 loaders="stb_image"
 have_curl="no"
@@ -180,16 +201,36 @@ if test x$with_gd != xno; then
         fi
     fi
     if test x$have_gd = xyes; then
-        AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromPngPtr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromBmpPtr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromJpegPtrEx],[], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromJpegPtr],  [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromTgaPtr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromWBMPPtr],  [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromTiffPtr],  [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromGd2Ptr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImagePaletteToTrueColor], [], [], [ #include <gd.h> ])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromGifPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromBmpPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromPngPtr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromBmpPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromBmpPtr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromJpegPtrEx],
+                     [AC_CHECK_DECLS([gdImageCreateFromJpegPtrEx],[], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromJpegPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromJpegPtr],  [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromTgaPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromTgaPtr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromWBMPPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromWBMPPtr],  [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromTiffPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromTiffPtr], [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromGd2Ptr],
+                     [AC_CHECK_DECLS([gdImageCreateFromGd2Ptr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImagePaletteToTrueColor],
+                     [AC_CHECK_DECLS([gdImagePaletteToTrueColor], [], [], [ #include <gd.h> ])])
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
         loaders="${loaders} gd"
     else
@@ -243,6 +284,7 @@ LS_UPDATE_TIMESTAMP
 
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
+                 package.json
                  wic_install.reg
                  wic_uninstall.reg
                  src/Makefile
@@ -259,6 +301,8 @@ echo "       Loader component    : $loaders"
 echo "       libcurl integration : $have_curl"
 echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
+echo "       Zsh completion dir  : $zshcompletiondir"
 echo "       WIC integration     : $have_wic"
+echo "       gcov integration    : $enable_gcov"
 echo ""
 echo ""
