@@ -109,14 +109,13 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" \
 	"$(DESTDIR)$(bashcompletiondir)" \
 	"$(DESTDIR)$(zshcompletiondir)"
 PROGRAMS = $(bin_PROGRAMS)
-am__img2sixel_SOURCES_DIST = img2sixel.c quant.c scale.c stb_image.c \
-	malloc_stub.c loader.c frompnm.c quant.h scale.h malloc_stub.h \
-	loader.h frompnm.h
+am__img2sixel_SOURCES_DIST = img2sixel.c quant.c scale.c malloc_stub.c \
+	loader.c frompnm.c quant.h scale.h malloc_stub.h loader.h \
+	frompnm.h
 @WANT_IMG2SIXEL_TRUE@am_img2sixel_OBJECTS =  \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-img2sixel.$(OBJEXT) \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-quant.$(OBJEXT) \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-scale.$(OBJEXT) \
-@WANT_IMG2SIXEL_TRUE@	img2sixel-stb_image.$(OBJEXT) \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-malloc_stub.$(OBJEXT) \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-loader.$(OBJEXT) \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-frompnm.$(OBJEXT)
@@ -422,7 +421,7 @@ dist_bashcompletion_DATA = $(am__append_3)
 dist_zshcompletion_DATA = $(am__append_4)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 CLEANFILES = *.gcno *.gcda *.gcov snake.png snake.sixel
-@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c quant.c scale.c stb_image.c malloc_stub.c loader.c frompnm.c \
+@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c quant.c scale.c malloc_stub.c loader.c frompnm.c \
 @WANT_IMG2SIXEL_TRUE@                    quant.h scale.h malloc_stub.h loader.h frompnm.h
 
 @WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -I$(top_builddir)/include/ $(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) $(GD_CFLAGS)
@@ -536,7 +535,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-malloc_stub.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-quant.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-scale.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-stb_image.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-malloc_stub.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-sixel2png.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-stb_image_write.Po@am__quote@
@@ -603,20 +601,6 @@ img2sixel-scale.obj: scale.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='scale.c' object='img2sixel-scale.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o img2sixel-scale.obj `if test -f 'scale.c'; then $(CYGPATH_W) 'scale.c'; else $(CYGPATH_W) '$(srcdir)/scale.c'; fi`
-
-img2sixel-stb_image.o: stb_image.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT img2sixel-stb_image.o -MD -MP -MF $(DEPDIR)/img2sixel-stb_image.Tpo -c -o img2sixel-stb_image.o `test -f 'stb_image.c' || echo '$(srcdir)/'`stb_image.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel-stb_image.Tpo $(DEPDIR)/img2sixel-stb_image.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stb_image.c' object='img2sixel-stb_image.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o img2sixel-stb_image.o `test -f 'stb_image.c' || echo '$(srcdir)/'`stb_image.c
-
-img2sixel-stb_image.obj: stb_image.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT img2sixel-stb_image.obj -MD -MP -MF $(DEPDIR)/img2sixel-stb_image.Tpo -c -o img2sixel-stb_image.obj `if test -f 'stb_image.c'; then $(CYGPATH_W) 'stb_image.c'; else $(CYGPATH_W) '$(srcdir)/stb_image.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel-stb_image.Tpo $(DEPDIR)/img2sixel-stb_image.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stb_image.c' object='img2sixel-stb_image.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o img2sixel-stb_image.obj `if test -f 'stb_image.c'; then $(CYGPATH_W) 'stb_image.c'; else $(CYGPATH_W) '$(srcdir)/stb_image.c'; fi`
 
 img2sixel-malloc_stub.o: malloc_stub.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT img2sixel-malloc_stub.o -MD -MP -MF $(DEPDIR)/img2sixel-malloc_stub.Tpo -c -o img2sixel-malloc_stub.o `test -f 'malloc_stub.c' || echo '$(srcdir)/'`malloc_stub.c
