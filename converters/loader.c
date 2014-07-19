@@ -378,7 +378,8 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
 #ifdef HAVE_GDK_PIXBUF2
 static unsigned char *
 load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
-                    int *pcomp, int *pstride, int *pframe_count)
+                    int *pcomp, int *pstride, int *pframe_count,
+                    int *ploop_count, int *pdelay)
 {
     GdkPixbuf *pixbuf;
     GdkPixbufAnimation *animation;
@@ -422,8 +423,14 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
         gdk_pixbuf_animation_iter_advance(it, &time);
     }
     pixels = frames.buffer;
+    if (gdk_pixbuf_simple_anim_get_loop(animation)) {
+        *ploop_count = 0;
+    } else {
+        *ploop_count = 1;
+    }
     gdk_pixbuf_loader_close(loader, NULL);
     g_object_unref(loader);
+    *pdelay = delay / 10;
     return pixels;
 }
 #endif  /* HAVE_GDK_PIXBUF2 */
@@ -630,7 +637,7 @@ load_image_file(char const *filename, int *psx, int *psy,
 #ifdef HAVE_GDK_PIXBUF2
     if (!pixels) {
         pixels = load_with_gdkpixbuf(&chunk, psx, psy, &comp, &stride,
-                                     pframe_count, ploop_count);
+                                     pframe_count, ploop_count, pdelay);
     }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
