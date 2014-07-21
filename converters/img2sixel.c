@@ -238,7 +238,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         psettings->reqcolors = PALETTE_MAX;
     }
 
-    pixels = load_image_file(filename, &sx, &sy, &frame_count, &loop_count, &delay);
+    pixels = load_image_file(filename, &sx, &sy,
+                             &frame_count, &loop_count, &delay);
 
     if (pixels == NULL) {
         nret = -1;
@@ -287,7 +288,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
     /* prepare palette */
-    palette = prepare_palette(frames[0], sx, sy,
+    palette = prepare_palette(pixels, sx, sy * frame_count,
                               psettings, 
                               &ncolors, &origcolors);
     if (!palette) {
