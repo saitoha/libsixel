@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 
 #if defined(HAVE_UNISTD_H)
@@ -140,6 +141,8 @@ typedef struct Settings {
     enum loopMode loop_mode;
     int f8bit;
     int finvert;
+    int fuse_macro;
+    int fignore_delay;
     int pixelwidth;
     int pixelheight;
     int percentwidth;
@@ -202,6 +205,28 @@ prepare_palette(unsigned char *frame, int sx, int sy,
 }
 
 static int
+printf_hex(char const *fmt, ...)
+{
+    char buffer[65536];
+    int i;
+
+    va_list ap;
+    va_start(ap, fmt);
+    vsprintf(buffer, fmt, ap);
+    va_end(ap);
+    for (i = 0; i < strlen(buffer); ++i) {
+        printf("%02x", buffer[i]);
+    }
+    return 1;
+}
+
+static int
+putchar_hex(int c)
+{
+    return printf("%02x", c);
+}
+
+static int
 convert_to_sixel(char const *filename, settings_t *psettings)
 {
     unsigned char *pixels = NULL;
@@ -238,7 +263,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         psettings->reqcolors = PALETTE_MAX;
     }
 
-    pixels = load_image_file(filename, &sx, &sy, &frame_count, &loop_count, &delay);
+    pixels = load_image_file(filename, &sx, &sy,
+                             &frame_count, &loop_count, &delay);
 
     if (pixels == NULL) {
         nret = -1;
@@ -287,7 +313,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
     /* prepare palette */
-    palette = prepare_palette(frames[0], sx, sy,
+    palette = prepare_palette(pixels, sx, sy * frame_count,
                               psettings, 
                               &ncolors, &origcolors);
     if (!palette) {
@@ -337,10 +363,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         image_array[n] = im;
     }
 
-    /* create output context */
-    context = LSOutputContext_create(putchar, printf);
-    context->has_8bit_control = psettings->f8bit;
-
 #if HAVE_SIGNAL
 # if HAVE_DECL_SIGINT
     signal(SIGINT, signal_handler);
@@ -369,37 +391,85 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         break;
     }
 
-    for (c = 0; c != loop_count; ++c) {
-        for (n = 0; n < frame_count; ++n) {
-
-            if (frame_count > 1) {
-                context->fn_printf("\033[H");
-            }
-
-            /* convert image object into sixel */
+    if (psettings->fuse_macro && frame_count > 1) {
+        context = LSOutputContext_create(putchar_hex, printf_hex);
+        context->has_8bit_control = psettings->f8bit;
+        for (n = 0; n < frame_count && n < 64; ++n) {
+            printf("\033P%d;0;1!z", n);
             LibSixel_LSImageToSixel(image_array[n], context);
-
+            printf("\033\\");
 #if HAVE_SIGNAL
             if (signaled) {
                 break;
             }
 #endif
+        }
+        if (signaled) {
+            if (psettings->f8bit) {
+                printf("\x9c");
+            } else {
+                printf("\x1b\\");
+            }
+        }
+        for (c = 0; c != loop_count; ++c) {
+            for (n = 0; n < frame_count && n < 64; ++n) {
+                printf("\033[H");
+                printf("\033[%d*z", n);
+                fflush(0);
 #if HAVE_USLEEP
-            if (delay < 100) {
-                usleep(10000 * delay);
+                if (!psettings->fignore_delay) {
+                    usleep(10000 * delay);
+                }
+#endif
+#if HAVE_SIGNAL
+                if (signaled) {
+                    break;
+                }
+#endif
+            }
+#if HAVE_SIGNAL
+            if (signaled) {
+                break;
+            }
+#endif
+        }
+    } else {
+        /* create output context */
+        context = LSOutputContext_create(putchar, printf);
+        context->has_8bit_control = psettings->f8bit;
+        for (c = 0; c != loop_count; ++c) {
+            for (n = 0; n < frame_count; ++n) {
+
+                if (frame_count > 1) {
+                    context->fn_printf("\033[H");
+                }
+
+                /* convert image object into sixel */
+                LibSixel_LSImageToSixel(image_array[n], context);
+
+#if HAVE_SIGNAL
+                if (signaled) {
+                    break;
+                }
+#endif
+#if HAVE_USLEEP
+                if (!psettings->fignore_delay) {
+                    usleep(10000 * delay);
+                }
+#endif
+            }
+#if HAVE_SIGNAL
+            if (signaled) {
+                break;
             }
 #endif
         }
         if (signaled) {
-            break;
-        }
-    }
-
-    if (signaled) {
-        if (context->has_8bit_control) {
-            context->fn_printf("\x9c");
-        } else {
-            context->fn_printf("\x1b\\");
+            if (context->has_8bit_control) {
+                context->fn_printf("\x9c");
+            } else {
+                context->fn_printf("\x1b\\");
+            }
         }
     }
 
@@ -450,7 +520,7 @@ int main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:ed:f:s:w:h:r:q:il:";
+    char const *optstring = "78p:m:ed:f:s:w:h:r:q:il:ug";
     settings_t settings;
 
     settings.mapfile = NULL;
@@ -463,6 +533,8 @@ int main(int argc, char *argv[])
     settings.reqcolors = -1;
     settings.f8bit = 0;
     settings.finvert = 0;
+    settings.fuse_macro = 0;
+    settings.fignore_delay = 0;
     settings.monochrome = 0;
     settings.pixelwidth = -1;
     settings.pixelheight = -1;
@@ -483,8 +555,10 @@ int main(int argc, char *argv[])
         {"height",       required_argument,  &long_opt, 'h'},
         {"resampling",   required_argument,  &long_opt, 'r'},
         {"quality",      required_argument,  &long_opt, 'q'},
-        {"invert",       required_argument,  &long_opt, 'i'},
+        {"invert",       no_argument,        &long_opt, 'i'},
         {"loop-control", required_argument,  &long_opt, 'l'},
+        {"use-macro",    no_argument,        &long_opt, 'u'},
+        {"ignore-delay", no_argument,        &long_opt, 'g'},
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
@@ -680,6 +754,12 @@ int main(int argc, char *argv[])
         case 'i':
             settings.finvert = 1;
             break;
+        case 'u':
+            settings.fuse_macro = 1;
+            break;
+        case 'g':
+            settings.fignore_delay = 1;
+            break;
         case '?':
             goto argerr;
         default:
@@ -744,7 +824,10 @@ argerr:
             "                           background color is black\n"
             "-i, --invert               assume the terminal background color\n"
             "                           is white, make sense only when -e\n"
-            "                           option is given.\n"
+            "                           option is given\n"
+            "-u, --use-macro            use DECDMAC and DEVINVM sequences to\n"
+            "                           optimize GIF animation rendering\n"
+            "-g, --ignore-delay         render GIF animation without delay\n"
             "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
             "                           choose diffusion method which used\n"
             "                           with -p option (color reduction)\n"

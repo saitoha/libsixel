@@ -97,7 +97,10 @@ Options:
                            background color is black
 -i, --invert               assume the terminal background color
                            is white, make sense only when -e
-                           option is given.
+                           option is given
+-u, --use-macro            use DECDMAC and DEVINVM sequences to
+                           optimize GIF animation rendering
+-g, --ignore-delay         render GIF animation without delay
 -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
                            choose diffusion method which used
                            with -p option (color reduction)
