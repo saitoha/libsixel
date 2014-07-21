@@ -348,10 +348,12 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
             *psy = g.h;
             memory_write((void *)p, 1, *psx * *psy * 4, (void *)&frames);
             ++*pframe_count;
+            if (*pframe_count == 1) {
+                *pdelay = g.delay;
+            }
             pixels = frames.buffer;
         }
         *ploop_count = g.loop_count;
-        *pdelay = g.delay;
 
         if (!pixels) {
             fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
