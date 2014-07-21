@@ -65,6 +65,14 @@ _qualitytype() {
     'low[low quality and high speed mode]'
 }
 
+_looptype() {
+  _values \
+    'LOOPTYPE' \
+    'auto[honor the setting of GIF header (default)]' \
+    'force[always enable loop]' \
+    'disable[always disable loop]'
+}
+
 _arguments -S -s -A "-*" -S \
   {-7,--7bit-mode}'[generate a sixel image for 7bit terminals (default)]' \
   {-8,--8bit-mode}'[generate a sixel image for 8bit terminals]' \
@@ -79,6 +87,7 @@ _arguments -S -s -A "-*" -S \
   {-h,--height=}'[resize image to specific height]' \
   {-r,--resampling=}'[choose resampling filter used with -w or -h option]':resamplingtype:_resamplingtype \
   {-q,--quality=}'[select quality of color quanlization]':qualitytype:_qualitytype \
+  {-l,--loop-control=}'[select loop control mode of GIF animation]':looptype:_looptype \
   '*:files:_files' \
   && return 0
 
