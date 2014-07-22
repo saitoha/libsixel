@@ -207,27 +207,26 @@ prepare_palette(unsigned char *frame, int sx, int sy,
 static int
 printf_hex(char const *fmt, ...)
 {
-    char buffer[65536];
-    char *hex;
+    char buffer[128];
+    char hex[256];
     int i;
     int j;
     size_t len;
-
     va_list ap;
+
     va_start(ap, fmt);
     vsprintf(buffer, fmt, ap);
     va_end(ap);
+
     len = strlen(buffer);
-    hex = malloc(len*2);
-    if (!hex) return 0;
     for (i = j = 0; i < len; ++i, ++j) {
         hex[j] = (buffer[i] >> 4) & 0xf;
         hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
         hex[++j] = buffer[i] & 0xf;
         hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
     }
-    fwrite(hex, 1, len*2, stdout);
-    free(hex);
+    fwrite(hex, 1, len * 2, stdout);
+
     return 1;
 }
 
