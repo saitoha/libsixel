@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 
 #if defined(HAVE_UNISTD_H)
@@ -140,6 +141,8 @@ typedef struct Settings {
     enum loopMode loop_mode;
     int f8bit;
     int finvert;
+    int fuse_macro;
+    int fignore_delay;
     int pixelwidth;
     int pixelheight;
     int percentwidth;
@@ -202,6 +205,44 @@ prepare_palette(unsigned char *frame, int sx, int sy,
 }
 
 static int
+printf_hex(char const *fmt, ...)
+{
+    char buffer[128];
+    char hex[256];
+    int i;
+    int j;
+    size_t len;
+    va_list ap;
+
+    va_start(ap, fmt);
+    vsprintf(buffer, fmt, ap);
+    va_end(ap);
+
+    len = strlen(buffer);
+    for (i = j = 0; i < len; ++i, ++j) {
+        hex[j] = (buffer[i] >> 4) & 0xf;
+        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
+        hex[++j] = buffer[i] & 0xf;
+        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
+    }
+    fwrite(hex, 1, len * 2, stdout);
+
+    return 1;
+}
+
+static int
+putchar_hex(int c)
+{
+    char hex[2];
+    hex[0] = (c >> 4) & 0xf;
+    hex[0] += (hex[0] < 10 ? '0' : ('a' - 10));
+    hex[1] = c & 0xf;
+    hex[1] += (hex[1] < 10 ? '0' : ('a' - 10));
+    fwrite(hex, 1, 2, stdout);
+    return 1;
+}
+
+static int
 convert_to_sixel(char const *filename, settings_t *psettings)
 {
     unsigned char *pixels = NULL;
@@ -238,7 +279,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         psettings->reqcolors = PALETTE_MAX;
     }
 
-    pixels = load_image_file(filename, &sx, &sy, &frame_count, &loop_count, &delay);
+    pixels = load_image_file(filename, &sx, &sy,
+                             &frame_count, &loop_count, &delay);
 
     if (pixels == NULL) {
         nret = -1;
@@ -287,7 +329,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
     /* prepare palette */
-    palette = prepare_palette(frames[0], sx, sy,
+    palette = prepare_palette(pixels, sx, sy * frame_count,
                               psettings, 
                               &ncolors, &origcolors);
     if (!palette) {
@@ -337,10 +379,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         image_array[n] = im;
     }
 
-    /* create output context */
-    context = LSOutputContext_create(putchar, printf);
-    context->has_8bit_control = psettings->f8bit;
-
 #if HAVE_SIGNAL
 # if HAVE_DECL_SIGINT
     signal(SIGINT, signal_handler);
@@ -369,37 +407,85 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         break;
     }
 
-    for (c = 0; c != loop_count; ++c) {
-        for (n = 0; n < frame_count; ++n) {
-
-            if (frame_count > 1) {
-                context->fn_printf("\033[H");
-            }
-
-            /* convert image object into sixel */
+    if (psettings->fuse_macro && frame_count > 1) {
+        context = LSOutputContext_create(putchar_hex, printf_hex);
+        context->has_8bit_control = psettings->f8bit;
+        for (n = 0; n < frame_count && n < 64; ++n) {
+            printf("\033P%d;0;1!z", n);
             LibSixel_LSImageToSixel(image_array[n], context);
-
+            printf("\033\\");
 #if HAVE_SIGNAL
             if (signaled) {
                 break;
             }
 #endif
+        }
+        if (signaled) {
+            if (psettings->f8bit) {
+                printf("\x9c");
+            } else {
+                printf("\x1b\\");
+            }
+        }
+        for (c = 0; c != loop_count; ++c) {
+            for (n = 0; n < frame_count && n < 64; ++n) {
+                printf("\033[H");
+                printf("\033[%d*z", n);
+                fflush(0);
 #if HAVE_USLEEP
-            if (delay < 100) {
-                usleep(10000 * delay);
+                if (!psettings->fignore_delay) {
+                    usleep(10000 * delay);
+                }
+#endif
+#if HAVE_SIGNAL
+                if (signaled) {
+                    break;
+                }
+#endif
+            }
+#if HAVE_SIGNAL
+            if (signaled) {
+                break;
+            }
+#endif
+        }
+    } else {
+        /* create output context */
+        context = LSOutputContext_create(putchar, printf);
+        context->has_8bit_control = psettings->f8bit;
+        for (c = 0; c != loop_count; ++c) {
+            for (n = 0; n < frame_count; ++n) {
+
+                if (frame_count > 1) {
+                    context->fn_printf("\033[H");
+                }
+
+                /* convert image object into sixel */
+                LibSixel_LSImageToSixel(image_array[n], context);
+
+#if HAVE_SIGNAL
+                if (signaled) {
+                    break;
+                }
+#endif
+#if HAVE_USLEEP
+                if (!psettings->fignore_delay) {
+                    usleep(10000 * delay);
+                }
+#endif
+            }
+#if HAVE_SIGNAL
+            if (signaled) {
+                break;
             }
 #endif
         }
         if (signaled) {
-            break;
-        }
-    }
-
-    if (signaled) {
-        if (context->has_8bit_control) {
-            context->fn_printf("\x9c");
-        } else {
-            context->fn_printf("\x1b\\");
+            if (context->has_8bit_control) {
+                context->fn_printf("\x9c");
+            } else {
+                context->fn_printf("\x1b\\");
+            }
         }
     }
 
@@ -450,7 +536,7 @@ int main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:ed:f:s:w:h:r:q:i:l";
+    char const *optstring = "78p:m:ed:f:s:w:h:r:q:il:ug";
     settings_t settings;
 
     settings.mapfile = NULL;
@@ -463,6 +549,8 @@ int main(int argc, char *argv[])
     settings.reqcolors = -1;
     settings.f8bit = 0;
     settings.finvert = 0;
+    settings.fuse_macro = 0;
+    settings.fignore_delay = 0;
     settings.monochrome = 0;
     settings.pixelwidth = -1;
     settings.pixelheight = -1;
@@ -483,8 +571,10 @@ int main(int argc, char *argv[])
         {"height",       required_argument,  &long_opt, 'h'},
         {"resampling",   required_argument,  &long_opt, 'r'},
         {"quality",      required_argument,  &long_opt, 'q'},
-        {"invert",       required_argument,  &long_opt, 'i'},
+        {"invert",       no_argument,        &long_opt, 'i'},
         {"loop-control", required_argument,  &long_opt, 'l'},
+        {"use-macro",    no_argument,        &long_opt, 'u'},
+        {"ignore-delay", no_argument,        &long_opt, 'g'},
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
@@ -662,7 +752,7 @@ int main(int argc, char *argv[])
             }
             break;
         case 'l':
-            /* parse --quality option */
+            /* parse --loop-control option */
             if (optarg) {
                 if (strcmp(optarg, "auto") == 0) {
                     settings.loop_mode = LOOP_AUTO;
@@ -679,6 +769,12 @@ int main(int argc, char *argv[])
             break;
         case 'i':
             settings.finvert = 1;
+            break;
+        case 'u':
+            settings.fuse_macro = 1;
+            break;
+        case 'g':
+            settings.fignore_delay = 1;
             break;
         case '?':
             goto argerr;
@@ -744,7 +840,10 @@ argerr:
             "                           background color is black\n"
             "-i, --invert               assume the terminal background color\n"
             "                           is white, make sense only when -e\n"
-            "                           option is given.\n"
+            "                           option is given\n"
+            "-u, --use-macro            use DECDMAC and DEVINVM sequences to\n"
+            "                           optimize GIF animation rendering\n"
+            "-g, --ignore-delay         render GIF animation without delay\n"
             "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
             "                           choose diffusion method which used\n"
             "                           with -p option (color reduction)\n"
@@ -838,7 +937,7 @@ argerr:
             "-l LOOPMODE, --loop-control=LOOPMODE\n"
             "                           select loop control mode for GIF\n"
             "                           animation.\n"
-            "                             auto   -> honer the setting of\n"
+            "                             auto   -> honor the setting of\n"
             "                                       GIF header (default)\n"
             "                             force   -> always enable loop\n"
             "                             disable -> always disable loop\n"

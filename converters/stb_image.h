@@ -4158,8 +4158,15 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
                if (stbi__get8(s) != '.') break;
                if (stbi__get8(s) != '0') break;
                if (stbi__get8(s) != 0x03) break;
-               if (stbi__get8(s) != 0x01) break;
-               g->loop_count = stbi__get16le(s); // loop count
+               // loop count
+               switch (stbi__get8(s)) {
+               case 0x00:
+                  g->loop_count = 1;
+                  break;
+               case 0x01:
+                  g->loop_count = stbi__get16le(s);
+                  break;
+               }
                break;
             default:
                break;

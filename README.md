@@ -97,7 +97,10 @@ Options:
                            background color is black
 -i, --invert               assume the terminal background color
                            is white, make sense only when -e
-                           option is given.
+                           option is given
+-u, --use-macro            use DECDMAC and DEVINVM sequences to
+                           optimize GIF animation rendering
+-g, --ignore-delay         render GIF animation without delay
 -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
                            choose diffusion method which used
                            with -p option (color reduction)
@@ -187,6 +190,13 @@ Options:
                                      speed mode
                              low  -> low quality and high
                                      speed mode
+-l LOOPMODE, --loop-control=LOOPMODE
+                           select loop control mode for GIF
+                           animation.
+                             auto   -> honer the setting of
+                                       GIF header (default)
+                             force   -> always enable loop
+                             disable -> always disable loop
 ```
 
 Convert a jpeg image file into a sixel file
