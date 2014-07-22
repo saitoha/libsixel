@@ -2,6 +2,7 @@ libsixel
 ========
 
 [![Build Status](https://travis-ci.org/saitoha/libsixel.svg?branch=master)](https://travis-ci.org/saitoha/libsixel)
+[![Coverage Status](https://coveralls.io/repos/saitoha/libsixel/badge.png?branch=master)](https://coveralls.io/r/saitoha/libsixel?branch=master)
 
 ## What is this?
 
@@ -40,15 +41,13 @@ If you want to view a SIXEL image, you have to get a terminal which support sixe
 
 Now SIXEL feature is supported by the following terminals.
 
-- VT240
+- DEC VT series, VT240/VT241/VT330/VT340/VT282/VT284/VT286/VT382
 
-- VT241
+- DECterm(dxterm)
 
-- VT330
+- Kermit
 
-- VT340
-
-- VT382
+- WRQ Reflection / ZSTEM
 
 - RLogin (Japanese terminal emulator)
 
@@ -70,13 +69,9 @@ Now SIXEL feature is supported by the following terminals.
 
   You should launch xterm with "-ti 340" option. the SIXEL palette is limited to a maximum of 16 colors.
 
-- DECterm
+- yaft (in github repo)
 
-- Kermit
-
-- WRQ Reflection
-
-- ZSTEM
+  [https://github.com/uobikiemukot/yaft](https://github.com/uobikiemukot/yaft)
 
 
 ## Usage of command line tools
@@ -102,7 +97,10 @@ Options:
                            background color is black
 -i, --invert               assume the terminal background color
                            is white, make sense only when -e
-                           option is given.
+                           option is given
+-u, --use-macro            use DECDMAC and DEVINVM sequences to
+                           optimize GIF animation rendering
+-g, --ignore-delay         render GIF animation without delay
 -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
                            choose diffusion method which used
                            with -p option (color reduction)
@@ -192,6 +190,13 @@ Options:
                                      speed mode
                              low  -> low quality and high
                                      speed mode
+-l LOOPMODE, --loop-control=LOOPMODE
+                           select loop control mode for GIF
+                           animation.
+                             auto   -> honer the setting of
+                                       GIF header (default)
+                             force   -> always enable loop
+                             disable -> always disable loop
 ```
 
 Convert a jpeg image file into a sixel file
@@ -245,6 +250,10 @@ $ sixel2png < egret.sixel > egret.png
 
   Python implementation of SIXEL converter
 
+
+- [monosixel in arakiken's tw](https://bitbucket.org/arakiken/tw/branch/sixel)
+
+  A monochrome SIXEL converter
 
 ## Other software supporting SIXEL
 
@@ -363,20 +372,20 @@ public activities without any restrictions.
 He declares this is compatible with MIT/BSD/GPL.
 
 
-### stbi-1.33
+### stbi-1.41
 
-This software includes *stbi-1.33* (stb_image.c),
+This software includes *stbi-1.41* (stb_image.h),
 public domain JPEG/PNG reader.
 
-http://nothings.org/stb_image.c
+https://github.com/nothings/stb
 
 
 ### stbiw-0.92
 
-This software includes *stbiw-0.92* (stb_image_write.h),
+This software includes *stbiw-0.94* (stb_image_write.h),
 public domain PNG/BMP/TGA writer.
 
-http://nothings.org/stb/stb_image_write.h
+https://github.com/nothings/stb
 
 
 ### pnmquant.c (netpbm library)
@@ -400,45 +409,11 @@ http://netpbm.sourceforge.net/
 > implied warranty.
 
 
-### monosixel (arakiken's tw)
+### test images
 
-The pattern dither algorithm implemented in quant.c is imported from
-*monosixel/main.c* in *arakiken's tw "sixel" branch*.
+#### http://public-domain-photos.com/
 
-https://bitbucket.org/arakiken/tw/branch/sixel
-
-This tool is written by Araki Ken, and we regard it as a derivative of.
-original tw, created by Sho Hashimoto.
-
-
-> Copyright (c) 2012 Sho Hashimoto
-> Copyright (c) 2014 Araki Ken
->
-> Permission is hereby granted, free of charge, to any person obtaining
-> a copy of this software and associated documentation files (the
-> "Software"), to deal in the Software without restriction, including
-> without limitation the rights to use, copy, modify, merge, publish,
-> distribute, sublicense, and/or sell copies of the Software, and to
-> permit persons to whom the Software is furnished to do so, subject to
-> the following conditions:
->
-> The above copyright notice and this permission notice shall be
-> included in all copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-> EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-> MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-> NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-> LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-> OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-> WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
-### test images (egret.jpg / snake.jpg)
-
-Test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.com
-
-http://public-domain-photos.com/
+The following test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.com.
 
 - images/egret.jpg
 
@@ -449,6 +424,15 @@ http://public-domain-photos.com/
 
     author: Jon Sullivan
     url: http://public-domain-photos.com/animals/snake-4.htm
+
+
+#### vimperator3.png (mascot of vimperator)
+
+images/vimperator3.png is in public domain.
+
+    author: @k_wizard
+    url: http://quadrantem.com/~k_wizard/vimprtan/
+
 
 
 ### ImageMagick
