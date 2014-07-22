@@ -97,7 +97,10 @@ Options:
                            background color is black
 -i, --invert               assume the terminal background color
                            is white, make sense only when -e
-                           option is given.
+                           option is given
+-u, --use-macro            use DECDMAC and DEVINVM sequences to
+                           optimize GIF animation rendering
+-g, --ignore-delay         render GIF animation without delay
 -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
                            choose diffusion method which used
                            with -p option (color reduction)
@@ -369,20 +372,20 @@ public activities without any restrictions.
 He declares this is compatible with MIT/BSD/GPL.
 
 
-### stbi-1.33
+### stbi-1.41
 
-This software includes *stbi-1.33* (stb_image.c),
+This software includes *stbi-1.41* (stb_image.h),
 public domain JPEG/PNG reader.
 
-http://nothings.org/stb_image.c
+https://github.com/nothings/stb
 
 
 ### stbiw-0.92
 
-This software includes *stbiw-0.92* (stb_image_write.h),
+This software includes *stbiw-0.94* (stb_image_write.h),
 public domain PNG/BMP/TGA writer.
 
-http://nothings.org/stb/stb_image_write.h
+https://github.com/nothings/stb
 
 
 ### pnmquant.c (netpbm library)

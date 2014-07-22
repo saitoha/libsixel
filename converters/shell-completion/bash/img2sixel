@@ -70,6 +70,12 @@ _img2sixel()
                                    low' -- "$cur" ) )
         return 0
         ;;
+    -l|--loop-control)
+        COMPREPLY=( $( compgen -W 'auto \
+                                   force \
+                                   disable' -- "$cur" ) )
+        return 0
+        ;;
     esac
 
     case "$cur" in

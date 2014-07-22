@@ -47,6 +47,12 @@ background color is black.
 assume the terminal background color is white.
 make sense only when -e option is given.
 .TP 5
+.B \-u, \-\-use-macro
+use DECDMAC and DEVINVM sequences to optimize GIF animation rendering.
+.TP 5
+.B \-g, \-\-ignore-delay
+render GIF animation without delay.
+.TP 5
 .B \-d \fIDIFFUSIONTYPE\fP, \-\-diffusion=\fIDIFFUSIONTYPE\fP
 choose diffusion method which used with color reduction.
 .br
@@ -171,7 +177,7 @@ sixel(5) sixel2png(1)
 
 .SH AUTHORS
 \fIimg2sixel\fP is maintained by Hayaki Saito.
-We imported whole code of \fIstbi-1.33\fP, written by Sean Barrett and its contributers, for loading PNG/JPEG images,
+We imported whole code of \fIstbi-1.41\fP, written by Sean Barrett and its contributers, for loading PNG/JPEG images,
 and imported some code from \fIpnmquant.c (netpbm library)\fP for image quantization.
 
 
@@ -199,11 +205,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 This software derives from the following implementations.
 .br
 .TP 5
-.B stbi-1.33
-This software includes \fIstbi-1.33\fP (stb_image.c),
+.B stbi-1.41
+This software includes \fIstbi-1.41\fP (stb_image.h),
 a public domain JPEG/PNG reader.
 .br
-.B http://nothings.org/stb_image.c
+.B https://github.com/nothings/stb
 
 .TP 5
 .B pnmquant.c (netpbm library)
