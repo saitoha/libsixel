@@ -72,6 +72,11 @@ prepare_monochrome_palette(finvert)
     unsigned char *palette;
 
     palette = malloc(6);
+
+    if (palette == NULL) {
+        return NULL;
+    }
+
     if (finvert) {
         palette[0] = 0xff;
         palette[1] = 0xff;
@@ -149,11 +154,13 @@ typedef struct Settings {
     int percentheight;
 } settings_t;
 
+
 typedef struct Frame {
     int sx;
     int sy;
     unsigned char *buffer;
 } frame_t;
+
 
 typedef struct FrameSet {
     int frame_count;
@@ -204,6 +211,7 @@ prepare_palette(unsigned char *frame, int sx, int sy,
     return palette;
 }
 
+
 static int
 printf_hex(char const *fmt, ...)
 {
@@ -225,22 +233,25 @@ printf_hex(char const *fmt, ...)
         hex[++j] = buffer[i] & 0xf;
         hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
     }
-    fwrite(hex, 1, len * 2, stdout);
 
-    return 1;
+    return fwrite(hex, 1, len * 2, stdout);
 }
+
 
 static int
 putchar_hex(int c)
 {
     char hex[2];
+
     hex[0] = (c >> 4) & 0xf;
     hex[0] += (hex[0] < 10 ? '0' : ('a' - 10));
     hex[1] = c & 0xf;
     hex[1] += (hex[1] < 10 ? '0' : ('a' - 10));
     fwrite(hex, 1, 2, stdout);
-    return 1;
+
+    return c;
 }
+
 
 static int
 convert_to_sixel(char const *filename, settings_t *psettings)
@@ -289,6 +300,11 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 
     frames = malloc(sizeof(unsigned char *) * frame_count);
 
+    if (frames == NULL) {
+        nret = -1;
+        goto end;
+    }
+
     frame = pixels;
     for (n = 0; n < frame_count; ++n) {
         frames[n] = frame;
@@ -312,6 +328,11 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     if (psettings->pixelwidth > 0 && psettings->pixelheight > 0) {
         size = psettings->pixelwidth * psettings->pixelheight * 3;
         p = malloc(size * frame_count);
+
+        if (p == NULL) {
+            return NULL;
+        }
+
         for (n = 0; n < frame_count; ++n) {
             scaled_frame = LSS_scale(frames[n], sx, sy, 3,
                                      psettings->pixelwidth,
@@ -338,6 +359,11 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
     image_array = malloc(sizeof(LSImagePtr) * frame_count);
+
+    if (!image_array) {
+        nret = -1;
+        goto end;
+    }
 
     for (n = 0; n < frame_count; ++n) {
 
@@ -537,25 +563,26 @@ int main(int argc, char *argv[])
     char unit[32];
     int parsed;
     char const *optstring = "78p:m:ed:f:s:w:h:r:q:il:ug";
-    settings_t settings;
 
-    settings.mapfile = NULL;
-    settings.method_for_resampling = RES_BILINEAR;
-    settings.method_for_diffuse = DIFFUSE_AUTO;
-    settings.method_for_largest = LARGE_AUTO;
-    settings.method_for_rep = REP_AUTO;
-    settings.quality_mode = QUALITY_AUTO;
-    settings.loop_mode = LOOP_AUTO;
-    settings.reqcolors = -1;
-    settings.f8bit = 0;
-    settings.finvert = 0;
-    settings.fuse_macro = 0;
-    settings.fignore_delay = 0;
-    settings.monochrome = 0;
-    settings.pixelwidth = -1;
-    settings.pixelheight = -1;
-    settings.percentwidth = -1;
-    settings.percentheight = -1;
+    settings_t settings = {
+        -1,           /* reqcolors */
+        NULL,         /* *mapfile */
+        0,            /* monochrome */
+        DIFFUSE_AUTO, /* method_for_diffuse */
+        LARGE_AUTO,   /* method_for_largest */
+        REP_AUTO,     /* method_for_rep */
+        QUALITY_AUTO, /* quality_mode */
+        RES_BILINEAR, /* method_for_resampling */
+        LOOP_AUTO,    /* loop_mode */
+        0,            /* f8bit */
+        0,            /* finvert */
+        0,            /* fuse_macro */
+        0,            /* fignore_delay */
+        -1,           /* pixelwidth */
+        -1,           /* pixelheight */
+        -1,           /* percentwidth */
+        -1,           /* percentheight */
+    };
 
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
