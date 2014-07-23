@@ -330,7 +330,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         p = malloc(size * frame_count);
 
         if (p == NULL) {
-            return NULL;
+            nret = -1;
+            goto end;
         }
 
         for (n = 0; n < frame_count; ++n) {
@@ -440,6 +441,10 @@ convert_to_sixel(char const *filename, settings_t *psettings)
             printf("\033P%d;0;1!z", n);
             LibSixel_LSImageToSixel(image_array[n], context);
             printf("\033\\");
+            if (loop_count == -1) {
+                printf("\033[H");
+                printf("\033[%d*z", n);
+            }
 #if HAVE_SIGNAL
             if (signaled) {
                 break;
@@ -457,7 +462,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
             for (n = 0; n < frame_count && n < 64; ++n) {
                 printf("\033[H");
                 printf("\033[%d*z", n);
-                fflush(0);
+                fflush(stdout);
 #if HAVE_USLEEP
                 if (!psettings->fignore_delay) {
                     usleep(10000 * delay);
