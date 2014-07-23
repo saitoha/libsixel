@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Libsixel : A lightweight, fast implementation of DEC SIXEL graphics codec" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Libsixel</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/saitoha/libsixel">View on GitHub</a>
+
+          <h1 id="project_title">Libsixel</h1>
+          <h2 id="project_tagline">A lightweight, fast implementation of DEC SIXEL graphics codec</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/saitoha/libsixel/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/saitoha/libsixel/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="libsixel" class="anchor" href="#libsixel"><span class="octicon octicon-link"></span></a>libsixel</h1>
+
+<p><a href="https://travis-ci.org/saitoha/libsixel"><img src="https://travis-ci.org/saitoha/libsixel.svg?branch=master" alt="Build Status"></a>
+<a href="https://coveralls.io/r/saitoha/libsixel?branch=master"><img src="https://coveralls.io/repos/saitoha/libsixel/badge.png?branch=master" alt="Coverage Status"></a></p>
+
+<h2>
+<a name="what-is-this" class="anchor" href="#what-is-this"><span class="octicon octicon-link"></span></a>What is this?</h2>
+
+<p>This package provides encoder/decoder implementation for DEC SIXEL graphics, and
+some converter programs.</p>
+
+<p><img src="http://zuse.jp/misc/libsixel-1.png" alt="img2sixel"></p>
+
+<p>SIXEL is one of image formats for printer and terminal imaging introduced by
+Digital Equipment Corp. (DEC).
+Its data scheme is represented as a terminal-friendly escape sequence.
+So if you want to view a SIXEL image file, all you have to do is "cat" it to your terminal.</p>
+
+<h2>
+<a name="build-and-install" class="anchor" href="#build-and-install"><span class="octicon octicon-link"></span></a>Build and install</h2>
+
+<pre><code>$ ./configure
+$ make
+# make install
+</code></pre>
+
+<h2>
+<a name="configure-options" class="anchor" href="#configure-options"><span class="octicon octicon-link"></span></a>Configure options</h2>
+
+<h3>
+<a name="build-with-optional-packages" class="anchor" href="#build-with-optional-packages"><span class="octicon octicon-link"></span></a>Build with optional packages</h3>
+
+<pre><code>--with-gdk-pixbuf2      build with gdk-pixbuf2 (default: no)
+--with-libcurl          build with libcurl (default: no)
+--with-gd               build with gd (default: no)
+</code></pre>
+
+<h2>
+<a name="terminal-requirements" class="anchor" href="#terminal-requirements"><span class="octicon octicon-link"></span></a>Terminal requirements</h2>
+
+<p>If you want to view a SIXEL image, you have to get a terminal which support sixel graphics.</p>
+
+<p>Now SIXEL feature is supported by the following terminals.</p>
+
+<ul>
+<li><p>DEC VT series, VT240/VT241/VT330/VT340/VT282/VT284/VT286/VT382</p></li>
+<li><p>DECterm(dxterm)</p></li>
+<li><p>Kermit</p></li>
+<li><p>WRQ Reflection / ZSTEM</p></li>
+<li>
+<p>RLogin (Japanese terminal emulator)</p>
+
+<p><a href="http://nanno.dip.jp/softlib/man/rlogin/">http://nanno.dip.jp/softlib/man/rlogin/</a></p>
+</li>
+<li>
+<p>tanasinn (Works with firefox)</p>
+
+<p><a href="http://zuse.jp/tanasinn/">http://zuse.jp/tanasinn/</a></p>
+</li>
+<li>
+<p>mlterm</p>
+
+<p><a href="http://mlterm.sourceforge.net/">http://mlterm.sourceforge.net/</a></p>
+
+<p>Works on each of X, win32/cygwin, framebuffer version.</p>
+</li>
+<li>
+<p>XTerm (compiled with --enable-sixel option)</p>
+
+<p><a href="http://invisible-island.net/xterm/">http://invisible-island.net/xterm/</a></p>
+
+<p>You should launch xterm with "-ti 340" option. the SIXEL palette is limited to a maximum of 16 colors.</p>
+</li>
+<li>
+<p>yaft (in github repo)</p>
+
+<p><a href="https://github.com/uobikiemukot/yaft">https://github.com/uobikiemukot/yaft</a></p>
+</li>
+</ul><h2>
+<a name="usage-of-command-line-tools" class="anchor" href="#usage-of-command-line-tools"><span class="octicon octicon-link"></span></a>Usage of command line tools</h2>
+
+<h3>
+<a name="img2sixel" class="anchor" href="#img2sixel"><span class="octicon octicon-link"></span></a>img2sixel</h3>
+
+<pre><code>img2sixel: invalid option -- v
+Usage: img2sixel [Options] imagefiles
+       img2sixel [Options] &lt; imagefile
+
+Options:
+-7, --7bit-mode            generate a sixel image for 7bit
+                           terminals or printers (default)
+-8, --8bit-mode            generate a sixel image for 8bit
+                           terminals or printers
+-p COLORS, --colors=COLORS specify number of colors to reduce
+                           the image to (default=256)
+-m FILE, --mapfile=FILE    transform image colors to match this
+                           set of colorsspecify map
+-e, --monochrome           output monochrome sixel image
+                           this option assumes the terminal
+                           background color is black
+-i, --invert               assume the terminal background color
+                           is white, make sense only when -e
+                           option is given
+-u, --use-macro            use DECDMAC and DEVINVM sequences to
+                           optimize GIF animation rendering
+-g, --ignore-delay         render GIF animation without delay
+-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
+                           choose diffusion method which used
+                           with -p option (color reduction)
+                           DIFFUSIONTYPE is one of them:
+                             auto     -&gt; choose diffusion type
+                                         automatically (default)
+                             none     -&gt; do not diffuse
+                             fs       -&gt; Floyd-Steinberg method
+                             atkinson -&gt; Bill Atkinson's method
+                             jajuni   -&gt; Jarvis, Judice &amp; Ninke
+                             stucki   -&gt; Stucki's method
+                             burkes   -&gt; Burkes' method
+-f FINDTYPE, --find-largest=FINDTYPE
+                           choose method for finding the largest
+                           dimention of median cut boxes for
+                           splitting, make sense only when -p
+                           option (color reduction) is
+                           specified
+                           FINDTYPE is one of them:
+                             auto -&gt; choose finding method
+                                     automatically (default)
+                             norm -&gt; simply comparing the
+                                     range in RGB space
+                             lum  -&gt; transforming into
+                                     luminosities before the
+                                     comparison
+-s SELECTTYPE, --select-color=SELECTTYPE
+                           choose the method for selecting
+                           representative color from each
+                           median-cut box, make sense only
+                           when -p option (color reduction) is
+                           specified
+                           SELECTTYPE is one of them:
+                             auto     -&gt; choose selecting
+                                         method automatically
+                                         (default)
+                             center   -&gt; choose the center of
+                                         the box
+                             average  -&gt; caclulate the color
+                                         average into the box
+                             histgram -&gt; similar with average
+                                         but considers color
+                                         histgram
+-w WIDTH, --width=WIDTH    resize image to specific width
+                           WIDTH is represented by the
+                           following syntax
+                             auto       -&gt; preserving aspect
+                                           ratio (default)
+                             &lt;number&gt;%  -&gt; scale width with
+                                           given percentage
+                             &lt;number&gt;   -&gt; scale width with
+                                           pixel counts
+                             &lt;number&gt;px -&gt; scale width with
+                                           pixel counts
+-h HEIGHT, --height=HEIGHT resize image to specific height
+                           HEIGHT is represented by the
+                           following syntax
+                             auto       -&gt; preserving aspect
+                                           ratio (default)
+                             &lt;number&gt;%  -&gt; scale height with
+                                           given percentage
+                             &lt;number&gt;   -&gt; scale height with
+                                           pixel counts
+                             &lt;number&gt;px -&gt; scale height with
+                                           pixel counts
+-r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE
+                           choose resampling method used
+                           with -w or -h option (scaling)
+                           RESAMPLINGTYPE is one of them:
+                             nearest  -&gt; Nearest-Neighbor
+                                         method
+                             gaussian -&gt; Gaussian filter
+                             hanning  -&gt; Hanning filter
+                             hamming  -&gt; Hamming filter
+                             bilinear -&gt; Bilinear filter
+                                         (default)
+                             welsh    -&gt; Welsh filter
+                             bicubic  -&gt; Bicubic filter
+                             lanczos2 -&gt; Lanczos-2 filter
+                             lanczos3 -&gt; Lanczos-3 filter
+                             lanczos4 -&gt; Lanczos-4 filter
+-q QUALITYMODE, --quality=QUALITYMODE
+               select quality of color quanlization.
+                             auto -&gt; decide quality mode
+                                     automatically (default)
+                             high -&gt; high quality and low
+                                     speed mode
+                             low  -&gt; low quality and high
+                                     speed mode
+-l LOOPMODE, --loop-control=LOOPMODE
+                           select loop control mode for GIF
+                           animation.
+                             auto   -&gt; honer the setting of
+                                       GIF header (default)
+                             force   -&gt; always enable loop
+                             disable -&gt; always disable loop
+</code></pre>
+
+<p>Convert a jpeg image file into a sixel file</p>
+
+<pre><code>$ img2sixel &lt; images/egret.jpg &gt; egret.sixel
+</code></pre>
+
+<p>Reduce colors to 16:</p>
+
+<pre><code>$ img2sixel -p 16 &lt; images/egret.jpg &gt; egret.sixel
+</code></pre>
+
+<p>Reduce colors with fixed palette:</p>
+
+<pre><code>$ img2sixel -m images/map16.png &lt; images/egret.jpg &gt; egret.sixel
+</code></pre>
+
+<h3>
+<a name="sixel2png" class="anchor" href="#sixel2png"><span class="octicon octicon-link"></span></a>sixel2png</h3>
+
+<pre><code>Usage: sixel2png -i input.sixel -o output.png
+       sixel2png &lt; input.sixel &gt; output.png
+
+Options:
+-i, --input     specify input file
+-o, --output    specify output file
+</code></pre>
+
+<p>Convert a sixel file into a png image file</p>
+
+<pre><code>$ sixel2png &lt; egret.sixel &gt; egret.png
+</code></pre>
+
+<h2>
+<a name="similar-software" class="anchor" href="#similar-software"><span class="octicon octicon-link"></span></a>Similar software</h2>
+
+<ul>
+<li>
+<p><a href="http://netpbm.sourceforge.net/">ppmtosixel (netpbm)</a></p>
+
+<p>You can get SIXEL graphics using <a href="http://netpbm.sourceforge.net/doc/ppmtosixel.html">ppmtosixel</a> or <a href="http://netpbm.sourceforge.net/doc/ppmtosixel.html">pbmtoln03</a>.</p>
+</li>
+<li>
+<p><a href="http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz">kmiya's sixel</a></p>
+
+<p>libgd based SIXEL converter</p>
+</li>
+<li>
+<p><a href="https://pypi.python.org/pypi/PySixel">PySixel</a></p>
+
+<p>Python implementation of SIXEL converter</p>
+</li>
+<li>
+<p><a href="https://bitbucket.org/arakiken/tw/branch/sixel">monosixel in arakiken's tw</a></p>
+
+<p>A monochrome SIXEL converter</p>
+</li>
+</ul><h2>
+<a name="other-software-supporting-sixel" class="anchor" href="#other-software-supporting-sixel"><span class="octicon octicon-link"></span></a>Other software supporting SIXEL</h2>
+
+<ul>
+<li>
+<p><a href="http://www.gnuplot.info/">GNUPLOT</a></p>
+
+<p>Recent version of GNUPLOT supports new terminal driver "sixel".</p>
+
+<p><img src="http://zuse.jp/misc/gnuplot.png" alt="GNUPLOT"></p>
+</li>
+<li>
+<p><a href="http://www.ghostscript.com/">ghostscript</a></p>
+
+<p>You can emit SIXEL images with LN03 / LN50 / LA75 driver.</p>
+
+<p>example:</p>
+
+<pre><code>  $ gs -q -r100x -dBATCH -dNOPAUSE -sDEVICE=ln03 -sOutputFile=- tiger.eps
+</code></pre>
+
+<p><img src="http://zuse.jp/misc/gs.png" alt="GhostScript"></p>
+</li>
+<li><p><img src="http://www.astro.caltech.edu/%7Etjp/pgplot/" alt="PGPLOT"></p></li>
+</ul><h2>
+<a name="color-image-quantization-quality-comparison" class="anchor" href="#color-image-quantization-quality-comparison"><span class="octicon octicon-link"></span></a>Color image quantization quality comparison</h2>
+
+<ul>
+<li>
+<p>ppmtosixel (netpbm)</p>
+
+<p>$ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel</p>
+
+<p><img src="http://zuse.jp/misc/q_ppmtosixel.png" alt="ppmtosixel"></p>
+</li>
+<li>
+<p>ppmtosixel with Floyd–Steinberg dithering (netpbm)</p>
+
+<p>$ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel</p>
+
+<p><img src="http://zuse.jp/misc/q_ppmtosixel2.png" alt="ppmtosixel"></p>
+</li>
+<li>
+<p>kmiya's sixel</p>
+
+<p>$ sixel -p16 images/snake.jpg</p>
+
+<p><img src="http://zuse.jp/misc/q_sixel.png" alt="kmiya's sixel"></p>
+</li>
+<li>
+<p>PySixel (sixelconv command)</p>
+
+<p>$ sixelconv -n16 images/snake.jpg</p>
+
+<p><img src="http://zuse.jp/misc/q_sixelconv.png" alt="PySixel"></p>
+</li>
+<li>
+<p>libsixel (img2sixel command)</p>
+
+<p>$ img2sixel -p16 images/snake.jpg</p>
+
+<p><img src="http://zuse.jp/misc/q_libsixel.png" alt="PySixel"></p>
+</li>
+</ul><h2>
+<a name="support" class="anchor" href="#support"><span class="octicon octicon-link"></span></a>Support</h2>
+
+<p>This software is provided "as is" without express or implied warranty.
+The main support channel for this software is the github issue tracker:</p>
+
+<p><a href="https://github.com/saitoha/libsixel/issues">https://github.com/saitoha/libsixel/issues</a></p>
+
+<p>Please post your issue if you have any problems, questions or suggestions.</p>
+
+<h2>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>The MIT License (MIT)</p>
+
+<blockquote>
+<p>Copyright (c) 2014 Hayaki Saito</p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+</blockquote>
+
+<h2>
+<a name="thanks--references" class="anchor" href="#thanks--references"><span class="octicon octicon-link"></span></a>Thanks &amp; References</h2>
+
+<p>This software derives from the following implementations.</p>
+
+<h3>
+<a name="sixel-2014-3-2" class="anchor" href="#sixel-2014-3-2"><span class="octicon octicon-link"></span></a>sixel 2014-3-2</h3>
+
+<p>src/tosixel.c, src/fromsixel.c, and some part of converters/loader.c are
+derived from kmiya's "<em>sixel</em>" original version (2014-3-2)</p>
+
+<p><a href="http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz">http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz</a></p>
+
+<p>It is written by kmiya@culti.</p>
+
+<p>He distributes it under very permissive license which permits
+useing, copying, modification, redistribution, and all other
+public activities without any restrictions.</p>
+
+<p>He declares this is compatible with MIT/BSD/GPL.</p>
+
+<h3>
+<a name="stbi-141" class="anchor" href="#stbi-141"><span class="octicon octicon-link"></span></a>stbi-1.41</h3>
+
+<p>This software includes <em>stbi-1.41</em> (stb_image.h),
+public domain JPEG/PNG reader.</p>
+
+<p><a href="https://github.com/nothings/stb">https://github.com/nothings/stb</a></p>
+
+<h3>
+<a name="stbiw-092" class="anchor" href="#stbiw-092"><span class="octicon octicon-link"></span></a>stbiw-0.92</h3>
+
+<p>This software includes <em>stbiw-0.94</em> (stb_image_write.h),
+public domain PNG/BMP/TGA writer.</p>
+
+<p><a href="https://github.com/nothings/stb">https://github.com/nothings/stb</a></p>
+
+<h3>
+<a name="pnmquantc-netpbm-library" class="anchor" href="#pnmquantc-netpbm-library"><span class="octicon octicon-link"></span></a>pnmquant.c (netpbm library)</h3>
+
+<p>The implementation of median cut algorithm for color quantization in quant.c
+is imported from <em>pnmcolormap</em> included in <em>netpbm library</em>.</p>
+
+<p><a href="http://netpbm.sourceforge.net/">http://netpbm.sourceforge.net/</a></p>
+
+<p><em>pnmcolormap</em> was derived from <em>ppmquant</em>, originally by Jef Poskanzer.</p>
+
+<blockquote>
+<p>Copyright (C) 1989, 1991 by Jef Poskanzer.
+Copyright (C) 2001 by Bryan Henderson.</p>
+
+<p>Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted, provided
+that the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.  This software is provided "as is" without express or
+implied warranty.</p>
+</blockquote>
+
+<h3>
+<a name="test-images" class="anchor" href="#test-images"><span class="octicon octicon-link"></span></a>test images</h3>
+
+<h4>
+<a name="httppublic-domain-photoscom" class="anchor" href="#httppublic-domain-photoscom"><span class="octicon octicon-link"></span></a><a href="http://public-domain-photos.com/">http://public-domain-photos.com/</a>
+</h4>
+
+<p>The following test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.com.</p>
+
+<ul>
+<li>
+<p>images/egret.jpg</p>
+
+<p>author: Jon Sullivan
+url: <a href="http://public-domain-photos.com/animals/egret-4.htm">http://public-domain-photos.com/animals/egret-4.htm</a></p>
+</li>
+<li>
+<p>images/snake.jpg</p>
+
+<p>author: Jon Sullivan
+url: <a href="http://public-domain-photos.com/animals/snake-4.htm">http://public-domain-photos.com/animals/snake-4.htm</a></p>
+</li>
+</ul><h4>
+<a name="vimperator3png-mascot-of-vimperator" class="anchor" href="#vimperator3png-mascot-of-vimperator"><span class="octicon octicon-link"></span></a>vimperator3.png (mascot of vimperator)</h4>
+
+<p>images/vimperator3.png is in public domain.</p>
+
+<pre><code>author: @k_wizard
+url: http://quadrantem.com/~k_wizard/vimprtan/
+</code></pre>
+
+<h3>
+<a name="imagemagick" class="anchor" href="#imagemagick"><span class="octicon octicon-link"></span></a>ImageMagick</h3>
+
+<p>We added some resampling filters in reference to the line-up of filters of
+MagickCore's resize.c.</p>
+
+<pre><code>http://www.imagemagick.org/api/MagickCore/resize_8c_source.html
+</code></pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Libsixel maintained by <a href="https://github.com/saitoha">saitoha</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
