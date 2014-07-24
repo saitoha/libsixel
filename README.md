@@ -352,7 +352,7 @@ The MIT License (MIT)
 > IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 > CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-## Thanks & References
+## Acknowledgment
 
 This software derives from the following implementations.
 
@@ -395,8 +395,7 @@ is imported from *pnmcolormap* included in *netpbm library*.
 
 http://netpbm.sourceforge.net/
 
-*pnmcolormap* was derived from *ppmquant*, originally by Jef Poskanzer.
-
+*pnmcolormap* was derived from *ppmquant*, originally written by Jef Poskanzer.
 
 > Copyright (C) 1989, 1991 by Jef Poskanzer.
 > Copyright (C) 2001 by Bryan Henderson.
