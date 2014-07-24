@@ -23,22 +23,28 @@
 #include <stdlib.h>
 #include "sixel.h"
 
+
 LSOutputContextPtr const
 LSOutputContext_create(putchar_function fn_putchar, printf_function fn_printf)
 {
-    LSOutputContextPtr context = (LSOutputContextPtr)malloc(sizeof(LSOutputContext));
+    LSOutputContextPtr context;
+
+    context = (LSOutputContextPtr)malloc(sizeof(LSOutputContext));
     context->has_8bit_control = 0;
     context->has_sdm_glitch = 0;
     context->fn_putchar = fn_putchar;
     context->fn_printf = fn_printf;
+
     return context;
 }
+
 
 void
 LSOutputContext_destroy(LSOutputContextPtr context)
 {
     free(context);
 }
+
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
