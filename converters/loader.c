@@ -647,7 +647,7 @@ load_image_file(char const *filename, int *psx, int *psy,
 #ifdef HAVE_GDK_PIXBUF2
     if (!pixels) {
         pixels = load_with_gdkpixbuf(&chunk, psx, psy, &comp, &stride,
-                                     pframe_count, ploop_count,p pdelay);
+                                     pframe_count, ploop_count,ppdelay);
     }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
