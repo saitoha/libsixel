@@ -384,7 +384,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
 static unsigned char *
 load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
                     int *pcomp, int *pstride, int *pframe_count,
-                    int *ploop_count, int *ppdelay)
+                    int *ploop_count, int **ppdelay)
 {
     GdkPixbuf *pixbuf;
     GdkPixbufAnimation *animation;
@@ -432,7 +432,7 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
         gdk_pixbuf_animation_iter_advance(it, &time);
     }
     pixels = frames.buffer;
-    ppdelay = delays.buffer;
+    *ppdelay = (int *)delays.buffer;
     if (gdk_pixbuf_simple_anim_get_loop(animation)) {
         *ploop_count = 0;
     } else {
