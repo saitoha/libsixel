@@ -401,11 +401,11 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
 
     chunk_init(&frames, 1024);
     chunk_init(&delays, 1024);
-    g_get_current_time(&time);
 
 #if (!GLIB_CHECK_VERSION(2, 36, 0))
     g_type_init();
 #endif
+    g_get_current_time(&time);
     loader = gdk_pixbuf_loader_new();
     gdk_pixbuf_loader_write(loader, pchunk->buffer, pchunk->size, NULL);
     animation = gdk_pixbuf_loader_get_animation(loader);
