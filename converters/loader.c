@@ -384,7 +384,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
 static unsigned char *
 load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
                     int *pcomp, int *pstride, int *pframe_count,
-                    int *ploop_count, int *ppdelay)
+                    int *ploop_count, int **ppdelay)
 {
     GdkPixbuf *pixbuf;
     GdkPixbufAnimation *animation;
@@ -400,44 +400,56 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
 #endif
 
     chunk_init(&frames, 1024);
-    chunk_init(&delays, 1024);
-    g_get_current_time(&time);
 
 #if (!GLIB_CHECK_VERSION(2, 36, 0))
     g_type_init();
 #endif
+    g_get_current_time(&time);
     loader = gdk_pixbuf_loader_new();
     gdk_pixbuf_loader_write(loader, pchunk->buffer, pchunk->size, NULL);
     animation = gdk_pixbuf_loader_get_animation(loader);
-    it = gdk_pixbuf_animation_get_iter(animation, &time);
-    *pframe_count = 0;
-    *ppdelay = malloc(256) * sizeof(int);
-    while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
-        delay = gdk_pixbuf_animation_iter_get_delay_time(it);
-        g_time_val_add(&time, delay * 1000);
-        pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
-        p = gdk_pixbuf_get_pixels(pixbuf);
-
+    if (gdk_pixbuf_animation_is_static_image(animation)) {
+        pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
         if (pixbuf == NULL) {
-            pixels = NULL;
-            break;
+            return NULL;
         }
+        p = gdk_pixbuf_get_pixels(pixbuf);
         *psx = gdk_pixbuf_get_width(pixbuf);
         *psy = gdk_pixbuf_get_height(pixbuf);
         *pcomp = gdk_pixbuf_get_has_alpha(pixbuf) ? 4: 3;
         *pstride = gdk_pixbuf_get_rowstride(pixbuf);
         memory_write((void *)p, 1, *psx * *psy * *pcomp, (void *)&frames);
-        delay /= 10;
-        memory_write((void *)&delay, sizeof(delay), 1, (void *)&delays);
-        ++*pframe_count;
-        gdk_pixbuf_animation_iter_advance(it, &time);
-    }
-    pixels = frames.buffer;
-    ppdelay = delays.buffer;
-    if (gdk_pixbuf_simple_anim_get_loop(animation)) {
-        *ploop_count = 0;
+        pixels = frames.buffer;
     } else {
-        *ploop_count = 1;
+        chunk_init(&delays, 1024);
+        g_get_current_time(&time);
+
+        it = gdk_pixbuf_animation_get_iter(animation, &time);
+        *pframe_count = 0;
+        while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
+            delay = gdk_pixbuf_animation_iter_get_delay_time(it);
+            g_time_val_add(&time, delay * 1000);
+            pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
+            p = gdk_pixbuf_get_pixels(pixbuf);
+
+            if (pixbuf == NULL) {
+                pixels = NULL;
+                break;
+            }
+            *psx = gdk_pixbuf_get_width(pixbuf);
+            *psy = gdk_pixbuf_get_height(pixbuf);
+            *pcomp = gdk_pixbuf_get_has_alpha(pixbuf) ? 4: 3;
+            *pstride = gdk_pixbuf_get_rowstride(pixbuf);
+            memory_write((void *)p, 1, *psx * *psy * *pcomp, (void *)&frames);
+            delay /= 10;
+            memory_write((void *)&delay, sizeof(delay), 1, (void *)&delays);
+            ++*pframe_count;
+            gdk_pixbuf_animation_iter_advance(it, &time);
+            pixels = frames.buffer;
+        }
+        *ppdelay = (int *)delays.buffer;
+        /* TODO: get loop property */
+        *ploop_count = 0;
     }
     gdk_pixbuf_loader_close(loader, NULL);
     g_object_unref(loader);
@@ -647,7 +659,7 @@ load_image_file(char const *filename, int *psx, int *psy,
 #ifdef HAVE_GDK_PIXBUF2
     if (!pixels) {
         pixels = load_with_gdkpixbuf(&chunk, psx, psy, &comp, &stride,
-                                     pframe_count, ploop_count,p pdelay);
+                                     pframe_count, ploop_count,ppdelay);
     }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
