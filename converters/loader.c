@@ -411,7 +411,6 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
     animation = gdk_pixbuf_loader_get_animation(loader);
     it = gdk_pixbuf_animation_get_iter(animation, &time);
     *pframe_count = 0;
-    *ppdelay = malloc(256) * sizeof(int);
     while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
         delay = gdk_pixbuf_animation_iter_get_delay_time(it);
         g_time_val_add(&time, delay * 1000);
