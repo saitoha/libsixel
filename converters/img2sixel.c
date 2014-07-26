@@ -108,10 +108,15 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
     int map_sy;
     int frame_count;
     int loop_count;
-    int delay;
+    int *delays;
+
+    delays = 0;
 
     mappixels = load_image_file(mapfile, &map_sx, &map_sy,
-                                &frame_count, &loop_count, &delay);
+                                &frame_count, &loop_count, &delays);
+    if (delays) {
+        free(delays);
+    }
     if (!mappixels) {
         return NULL;
     }
@@ -272,7 +277,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int sx, sy;
     int frame_count;
     int loop_count;
-    int delay;
+    int *delays;
     int i;
     int c;
     int n;
@@ -282,7 +287,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 
     frame_count = 1;
     loop_count = 1;
-    delay = 0;
+    delays = 0;
 
     if (psettings->reqcolors < 2) {
         psettings->reqcolors = 2;
@@ -291,7 +296,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
     pixels = load_image_file(filename, &sx, &sy,
-                             &frame_count, &loop_count, &delay);
+                             &frame_count, &loop_count, &delays);
 
     if (pixels == NULL) {
         nret = -1;
@@ -465,7 +470,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                 fflush(stdout);
 #if HAVE_USLEEP
                 if (!psettings->fignore_delay) {
-                    usleep(10000 * delay);
+                    usleep(10000 * delays[n]);
                 }
 #endif
 #if HAVE_SIGNAL
@@ -501,7 +506,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 #endif
 #if HAVE_USLEEP
                 if (!psettings->fignore_delay) {
-                    usleep(10000 * delay);
+                    usleep(10000 * delays[n]);
                 }
 #endif
             }
@@ -531,6 +536,9 @@ end:
     }
     if (pixels) {
         free(pixels);
+    }
+    if (delays) {
+        free(delays);
     }
     if (scaled_frame) {
         free(scaled_frame);
