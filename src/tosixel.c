@@ -40,12 +40,11 @@ typedef struct _SixNode {
     unsigned char *map;
 } SixNode;
 
-static SixNode *node_top = NULL;
-static SixNode *node_free = NULL;
-
-static int save_pix = 0;
-static int save_count = 0;
-static int act_palet = (-1);
+SixNode *node_top;
+SixNode *node_free;
+int save_pix;
+int save_count;
+int act_palet;
 
 static long use_palet[PALETTE_MAX];
 static unsigned char conv_palet[PALETTE_MAX];
@@ -303,6 +302,12 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     SixNode *np;
     unsigned char list[PALETTE_MAX];
 
+    node_top = NULL;
+    node_free = NULL;
+    save_pix = 0;
+    save_count = 0;
+    act_palet = (-1);
+
     width  = im->sx;
     height = im->sy;
 
@@ -345,6 +350,7 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
                 return (-1);
             }
         }
+        context->fn_putchar('\n');
     }
 
     for (y = i = 0 ; y < height ; y++) {
