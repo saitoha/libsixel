@@ -469,7 +469,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                 printf("\033[%d*z", n);
                 fflush(stdout);
 #if HAVE_USLEEP
-                if (!psettings->fignore_delay) {
+                if (delays != NULL && !psettings->fignore_delay) {
                     usleep(10000 * delays[n]);
                 }
 #endif
@@ -505,7 +505,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                 }
 #endif
 #if HAVE_USLEEP
-                if (!psettings->fignore_delay) {
+                if (delays != NULL && !psettings->fignore_delay) {
                     usleep(10000 * delays[n]);
                 }
 #endif
