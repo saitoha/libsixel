@@ -302,7 +302,7 @@ chunk_is_gif(chunk_t const *chunk)
 static unsigned char *
 load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
                   int *pcomp, int *pstride,
-                  int *pframe_count, int *ploop_count, int *pdelay)
+                  int *pframe_count, int *ploop_count, int **ppdelay)
 {
     FILE *f;
     unsigned char *p;
@@ -310,6 +310,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
     static stbi__context s;
     static stbi__gif g;
     chunk_t frames;
+    chunk_t delays;
 
     if (chunk_is_sixel(pchunk)) {
         /* sixel */
@@ -330,6 +331,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         *ploop_count = 1;
     } else if (chunk_is_gif(pchunk)) {
         chunk_init(&frames, 1024);
+        chunk_init(&delays, 1024);
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);
         *pframe_count = 0;
         memset(&g, 0, sizeof(g));
@@ -341,19 +343,19 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
                 break;
             }
             if (p == 0) {
+                free(frames.buffer);
                 pixels = NULL;
                 break;
             }
             *psx = g.w;
             *psy = g.h;
             memory_write((void *)p, 1, *psx * *psy * 4, (void *)&frames);
+            memory_write((void *)&g.delay, sizeof(g.delay), 1, (void *)&delays);
             ++*pframe_count;
-            if (*pframe_count == 1) {
-                *pdelay = g.delay;
-            }
             pixels = frames.buffer;
         }
         *ploop_count = g.loop_count;
+        *ppdelay = (int *)delays.buffer;
 
         if (!pixels) {
             fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
@@ -382,7 +384,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
 static unsigned char *
 load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
                     int *pcomp, int *pstride, int *pframe_count,
-                    int *ploop_count, int *pdelay)
+                    int *ploop_count, int *ppdelay)
 {
     GdkPixbuf *pixbuf;
     GdkPixbufAnimation *animation;
@@ -390,6 +392,7 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
     unsigned char *p;
     GdkPixbufLoader *loader;
     chunk_t frames;
+    chunk_t delays;
 #if 1
     GdkPixbufAnimationIter *it;
     GTimeVal time;
@@ -397,6 +400,7 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
 #endif
 
     chunk_init(&frames, 1024);
+    chunk_init(&delays, 1024);
     g_get_current_time(&time);
 
 #if (!GLIB_CHECK_VERSION(2, 36, 0))
@@ -406,9 +410,10 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
     gdk_pixbuf_loader_write(loader, pchunk->buffer, pchunk->size, NULL);
     animation = gdk_pixbuf_loader_get_animation(loader);
     it = gdk_pixbuf_animation_get_iter(animation, &time);
-    delay = gdk_pixbuf_animation_iter_get_delay_time(it);
     *pframe_count = 0;
+    *ppdelay = malloc(256) * sizeof(int);
     while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
+        delay = gdk_pixbuf_animation_iter_get_delay_time(it);
         g_time_val_add(&time, delay * 1000);
         pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
         p = gdk_pixbuf_get_pixels(pixbuf);
@@ -422,10 +427,13 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
         *pcomp = gdk_pixbuf_get_has_alpha(pixbuf) ? 4: 3;
         *pstride = gdk_pixbuf_get_rowstride(pixbuf);
         memory_write((void *)p, 1, *psx * *psy * *pcomp, (void *)&frames);
+        delay /= 10;
+        memory_write((void *)&delay, sizeof(delay), 1, (void *)&delays);
         ++*pframe_count;
         gdk_pixbuf_animation_iter_advance(it, &time);
     }
     pixels = frames.buffer;
+    ppdelay = delays.buffer;
     if (gdk_pixbuf_simple_anim_get_loop(animation)) {
         *ploop_count = 0;
     } else {
@@ -433,7 +441,6 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
     }
     gdk_pixbuf_loader_close(loader, NULL);
     g_object_unref(loader);
-    *pdelay = delay / 10;
     return pixels;
 }
 #endif  /* HAVE_GDK_PIXBUF2 */
@@ -619,7 +626,7 @@ load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride
 
 unsigned char *
 load_image_file(char const *filename, int *psx, int *psy,
-                int *pframe_count, int *ploop_count, int *pdelay)
+                int *pframe_count, int *ploop_count, int **ppdelay)
 {
     unsigned char *pixels;
     size_t new_rowstride;
@@ -640,7 +647,7 @@ load_image_file(char const *filename, int *psx, int *psy,
 #ifdef HAVE_GDK_PIXBUF2
     if (!pixels) {
         pixels = load_with_gdkpixbuf(&chunk, psx, psy, &comp, &stride,
-                                     pframe_count, ploop_count, pdelay);
+                                     pframe_count, ploop_count,p pdelay);
     }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
@@ -651,7 +658,7 @@ load_image_file(char const *filename, int *psx, int *psy,
 #endif  /* HAVE_GD */
     if (!pixels) {
         pixels = load_with_builtin(&chunk, psx, psy, &comp, &stride,
-                                   pframe_count, ploop_count, pdelay);
+                                   pframe_count, ploop_count, ppdelay);
     }
 
     src = dst = pixels;
