@@ -465,14 +465,14 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         }
         for (c = 0; c != loop_count; ++c) {
             for (n = 0; n < frame_count && n < 64; ++n) {
-                printf("\033[H");
-                printf("\033[%d*z", n);
-                fflush(stdout);
 #if HAVE_USLEEP
                 if (delays != NULL && !psettings->fignore_delay) {
                     usleep(10000 * delays[n]);
                 }
 #endif
+                printf("\033[H");
+                printf("\033[%d*z", n);
+                fflush(stdout);
 #if HAVE_SIGNAL
                 if (signaled) {
                     break;
@@ -491,8 +491,12 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         context->has_8bit_control = psettings->f8bit;
         for (c = 0; c != loop_count; ++c) {
             for (n = 0; n < frame_count; ++n) {
-
                 if (frame_count > 1) {
+#if HAVE_USLEEP
+                    if (delays != NULL && !psettings->fignore_delay) {
+                        usleep(10000 * delays[n]);
+                    }
+#endif
                     context->fn_printf("\033[H");
                 }
 
@@ -502,11 +506,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 #if HAVE_SIGNAL
                 if (signaled) {
                     break;
-                }
-#endif
-#if HAVE_USLEEP
-                if (delays != NULL && !psettings->fignore_delay) {
-                    usleep(10000 * delays[n]);
                 }
 #endif
             }
