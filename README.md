@@ -424,20 +424,23 @@ The following test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.c
     author: Jon Sullivan
     url: http://public-domain-photos.com/animals/snake-4.htm
 
+These are in the [public domain](http://creativecommons.org/licenses/publicdomain/).
+
 
 #### vimperator3.png (mascot of vimperator)
 
-images/vimperator3.png is in public domain.
+images/vimperator3.png is in the public domain.
 
     author: @k_wizard
     url: http://quadrantem.com/~k_wizard/vimprtan/
 
 
+## Thanks
 
 ### ImageMagick
 
-We added some resampling filters in reference to the line-up of filters of
-MagickCore's resize.c.
+We are greatly inspired by the quality of ImageMagick and added some resampling filters to
+img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 
     http://www.imagemagick.org/api/MagickCore/resize_8c_source.html
 
