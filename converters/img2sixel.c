@@ -27,10 +27,18 @@
 #include <stdarg.h>
 #include <string.h>
 
+#if defined(HAVE_SYS_UNISTD_H)
+# include <sys/unistd.h>
+#endif
 #if defined(HAVE_UNISTD_H)
 # include <unistd.h>
-#elif defined(HAVE_SYS_UNISTD_H)
-# include <sys/unistd.h>
+#endif
+
+#if defined(HAVE_SYS_TIME_H)
+# include <sys/time.h>
+#endif
+#if defined(HAVE_TIME_H)
+# include <time.h>
 #endif
 
 #if defined(HAVE_GETOPT_H)
@@ -284,6 +292,9 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int nret = -1;
     FILE *f;
     int size;
+    int dulation = 0;
+    int lag = 0;
+    clock_t start;
 
     frame_count = 1;
     loop_count = 1;
@@ -442,7 +453,28 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     if (psettings->fuse_macro && frame_count > 1) {
         context = LSOutputContext_create(putchar_hex, printf_hex);
         context->has_8bit_control = psettings->f8bit;
-        for (n = 0; n < frame_count && n < 64; ++n) {
+#if HAVE_USLEEP && HAVE_CLOCK
+        start = clock();
+#endif
+        for (n = 0; n < frame_count; ++n) {
+#if HAVE_USLEEP
+            if (delays != NULL && !psettings->fignore_delay) {
+# if HAVE_CLOCK
+                dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
+                lag = 0;
+# else
+                dulation = 0;
+# endif
+                if (dulation < 10000 * delays[n]) {
+                    usleep(10000 * delays[n] - dulation);
+                } else {
+                    lag = 10000 * delays[n] - dulation;
+                }
+            }
+#endif
+#if HAVE_USLEEP && HAVE_CLOCK
+            start = clock();
+#endif
             printf("\033P%d;0;1!z", n);
             LibSixel_LSImageToSixel(image_array[n], context);
             printf("\033\\");
@@ -464,10 +496,30 @@ convert_to_sixel(char const *filename, settings_t *psettings)
             }
         }
         for (c = 0; c != loop_count; ++c) {
-            for (n = 0; n < frame_count && n < 64; ++n) {
+#if HAVE_USLEEP && HAVE_CLOCK
+            if (frame_count > 1) {
+                start = clock();
+            }
+#endif
+            for (n = 0; n < frame_count; ++n) {
 #if HAVE_USLEEP
                 if (delays != NULL && !psettings->fignore_delay) {
-                    usleep(10000 * delays[n]);
+# if HAVE_CLOCK
+                    dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
+                    lag = 0;
+# else
+                    dulation = 0;
+# endif
+                    if (dulation < 10000 * delays[n]) {
+                        usleep(10000 * delays[n] - dulation);
+                    } else {
+                        lag = 10000 * delays[n] - dulation;
+                    }
+                }
+#endif
+#if HAVE_USLEEP && HAVE_CLOCK
+                if (frame_count > 1) {
+                    start = clock();
                 }
 #endif
                 printf("\033[H");
@@ -485,21 +537,41 @@ convert_to_sixel(char const *filename, settings_t *psettings)
             }
 #endif
         }
-    } else {
+    } else { /* do not use macro */
         /* create output context */
         context = LSOutputContext_create(putchar, printf);
         context->has_8bit_control = psettings->f8bit;
         for (c = 0; c != loop_count; ++c) {
+#if HAVE_USLEEP && HAVE_CLOCK
+            if (frame_count > 1) {
+                start = clock();
+            }
+#endif
             for (n = 0; n < frame_count; ++n) {
                 if (frame_count > 1) {
-#if HAVE_USLEEP
+#if HAVE_USLEEP && HAVE_CLOCK
                     if (delays != NULL && !psettings->fignore_delay) {
-                        usleep(10000 * delays[n]);
+# if HAVE_CLOCK
+                        dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
+                        lag = 0;
+# else
+                        dulation = 0;
+# endif
+                        if (dulation < 10000 * delays[n]) {
+                            usleep(10000 * delays[n] - dulation);
+                        } else {
+                            lag = 10000 * delays[n] - dulation;
+                        }
                     }
 #endif
                     context->fn_printf("\033[H");
+                    fflush(stdout);
+#if HAVE_USLEEP && HAVE_CLOCK
+                    if (frame_count > 1) {
+                        start = clock();
+                    }
+#endif
                 }
-
                 /* convert image object into sixel */
                 LibSixel_LSImageToSixel(image_array[n], context);
 

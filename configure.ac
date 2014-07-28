@@ -113,6 +113,8 @@ AC_CHECK_HEADERS([memory.h \
                   sys/stat.h \
                   fcntl.h \
                   errno.h \
+                  sys/time.h \
+                  time.h \
                   signal.h \
                   sys/signal.h])
 
@@ -134,7 +136,7 @@ AC_CHECK_FUNC([getopt_long],
                              [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
                              [AC_MSG_ERROR(getopt or getopt_long is not available.)])])
 
-AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode signal usleep])
+AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode signal usleep clock])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
