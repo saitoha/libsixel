@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if you have the `clock' function. */
+#undef HAVE_CLOCK
+
 /* Define to 1 if you have the declaration of `gdImageCreateFromBmpPtr', and
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMBMPPTR
@@ -149,6 +152,9 @@
 
 /* Define to 1 if you have the <sys/unistd.h> header file. */
 #undef HAVE_SYS_UNISTD_H
+
+/* Define to 1 if you have the <time.h> header file. */
+#undef HAVE_TIME_H
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
