@@ -9,7 +9,7 @@ libsixel
 This package provides encoder/decoder implementation for DEC SIXEL graphics, and
 some converter programs.
 
-![img2sixel](http://zuse.jp/misc/libsixel-1.png)
+![img2sixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/libsixel-1.png)
 
 SIXEL is one of image formats for printer and terminal imaging introduced by
 Digital Equipment Corp. (DEC).
@@ -47,7 +47,9 @@ Now SIXEL feature is supported by the following terminals.
 
 - Kermit
 
-- WRQ Reflection / ZSTEM
+- ZSTEM 340
+
+- WRQ Reflection
 
 - RLogin (Japanese terminal emulator)
 
@@ -72,6 +74,14 @@ Now SIXEL feature is supported by the following terminals.
 - yaft (in github repo)
 
   [https://github.com/uobikiemukot/yaft](https://github.com/uobikiemukot/yaft)
+
+- recterm (ttyrec to GIF converter)
+
+  [https://github.com/uobikiemukot/recterm](https://github.com/uobikiemukot/recterm)
+
+- seq2gif (ttyrec to GIF converter)
+
+  [https://github.com/saitoha/seq2gif](https://github.com/saitoha/seq2gif)
 
 
 ## Usage of command line tools
@@ -242,7 +252,8 @@ $ sixel2png < egret.sixel > egret.png
 
 - [ppmtosixel (netpbm)](http://netpbm.sourceforge.net/)
 
-  You can get SIXEL graphics using [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html) or [pbmtoln03](http://netpbm.sourceforge.net/doc/ppmtosixel.html).
+  You can get SIXEL graphics using [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html)
+  or [pbmtoln03](http://netpbm.sourceforge.net/doc/ppmtosixel.html).
 
 
 - [kmiya's sixel](http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz)
@@ -259,13 +270,20 @@ $ sixel2png < egret.sixel > egret.png
 
   A monochrome SIXEL converter
 
+
+- [xpr(x11-apps)](ftp://ftp.x.org/pub/unsupported/programs/xpr/)
+
+  xpr(1) can convert a xwd(X window dump) format image into a sixel
+  image with '-device ln03' or '-device la100' option.
+  But now it is not maintained. It looks broken.
+
 ## Other software supporting SIXEL
 
 - [GNUPLOT](http://www.gnuplot.info/)
 
   Recent version of GNUPLOT supports new terminal driver "sixel".
 
-  ![GNUPLOT](http://zuse.jp/misc/gnuplot.png)
+  ![GNUPLOT](https://raw.githubusercontent.com/saitoha/libsixel/master/data/gnuplot.png)
 
 
 - [ghostscript](http://www.ghostscript.com/)
@@ -278,48 +296,65 @@ $ sixel2png < egret.sixel > egret.png
     $ gs -q -r100x -dBATCH -dNOPAUSE -sDEVICE=ln03 -sOutputFile=- tiger.eps
   ```
 
-  ![GhostScript](http://zuse.jp/misc/gs.png)
-
+  ![GhostScript](https://raw.githubusercontent.com/saitoha/libsixel/master/data/gs.png)
 
 - ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
 
+- [ZX81 Emulator](http://rullf2.xs4all.nl/sg/zx81ce.html)
 
-## Color image quantization quality comparison
+  A ZX81 emulator producing Sixel Image Files
 
+  ![ZX81](https://raw.githubusercontent.com/saitoha/libsixel/master/data/zx81.png)
+
+- [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
+
+- [SIXEL image viewer(written in javascript)](http://rullf2.xs4all.nl/sg/sg.html)
+
+- [SixelGraphics.jl(written in Julia)](https://github.com/olofsen/SixelGraphics.jl)
+
+## Animation
+
+img2sixel(1) can decode GIF animation.
+
+  ![Animation](https://raw.githubusercontent.com/saitoha/libsixel/master/data/sixel.gif)
+
+## Quantization quality
+
+img2sixel(1) supports high quality color image quantization.
 
 - ppmtosixel (netpbm)
 
     $ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel
 
-  ![ppmtosixel](http://zuse.jp/misc/q_ppmtosixel.png)
+  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_ppmtosixel.png)
 
 
 - ppmtosixel with Floyd–Steinberg dithering (netpbm)
 
     $ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel
 
-  ![ppmtosixel](http://zuse.jp/misc/q_ppmtosixel2.png)
+  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_ppmtosixel2.png)
 
 
 - kmiya's sixel
 
     $ sixel -p16 images/snake.jpg
 
-  ![kmiya's sixel](http://zuse.jp/misc/q_sixel.png)
+  ![kmiya's sixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_sixel.png)
 
 
 - PySixel (sixelconv command)
 
     $ sixelconv -n16 images/snake.jpg
 
-  ![PySixel](http://zuse.jp/misc/q_sixelconv.png)
+  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_sixelconv.png)
 
 
 - libsixel (img2sixel command)
 
     $ img2sixel -p16 images/snake.jpg
 
-  ![PySixel](http://zuse.jp/misc/q_libsixel.png)
+  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_libsixel.png)
 
 
 ## Support
