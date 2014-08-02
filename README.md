@@ -79,7 +79,6 @@ Now SIXEL feature is supported by the following terminals.
 ### img2sixel
 
 ```
-img2sixel: invalid option -- v
 Usage: img2sixel [Options] imagefiles
        img2sixel [Options] < imagefile
 
@@ -100,6 +99,10 @@ Options:
                            option is given
 -u, --use-macro            use DECDMAC and DEVINVM sequences to
                            optimize GIF animation rendering
+-n, --macro-number         specify an number argument for
+                           DECDMAC and make terminal memorize
+                           SIXEL image. No image is shown if this
+                           option is specified
 -g, --ignore-delay         render GIF animation without delay
 -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
                            choose diffusion method which used
@@ -167,7 +170,7 @@ Options:
                              <number>px -> scale height with
                                            pixel counts
 -r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE
-                           choose resampling method used
+                           choose resampling filter used
                            with -w or -h option (scaling)
                            RESAMPLINGTYPE is one of them:
                              nearest  -> Nearest-Neighbor
@@ -183,7 +186,8 @@ Options:
                              lanczos3 -> Lanczos-3 filter
                              lanczos4 -> Lanczos-4 filter
 -q QUALITYMODE, --quality=QUALITYMODE
-			   select quality of color quanlization.
+                           select quality of color
+                           quanlization.
                              auto -> decide quality mode
                                      automatically (default)
                              high -> high quality and low
@@ -193,7 +197,7 @@ Options:
 -l LOOPMODE, --loop-control=LOOPMODE
                            select loop control mode for GIF
                            animation.
-                             auto   -> honer the setting of
+                             auto   -> honor the setting of
                                        GIF header (default)
                              force   -> always enable loop
                              disable -> always disable loop
