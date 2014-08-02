@@ -27,18 +27,18 @@
 #include <stdarg.h>
 #include <string.h>
 
-#if defined(HAVE_SYS_UNISTD_H)
-# include <sys/unistd.h>
-#endif
 #if defined(HAVE_UNISTD_H)
 # include <unistd.h>
 #endif
-
-#if defined(HAVE_SYS_TIME_H)
-# include <sys/time.h>
+#if defined(HAVE_SYS_UNISTD_H)
+# include <sys/unistd.h>
 #endif
+
 #if defined(HAVE_TIME_H)
 # include <time.h>
+#endif
+#if defined(HAVE_SYS_TIME_H)
+# include <sys/time.h>
 #endif
 
 #if defined(HAVE_GETOPT_H)
@@ -55,7 +55,8 @@
 
 #if defined(HAVE_SIGNAL_H)
 # include <signal.h>
-#elif defined(HAVE_SYS_SIGNAL_H)
+#endif
+#if defined(HAVE_SYS_SIGNAL_H)
 # include <sys/signal.h>
 #endif
 
@@ -165,6 +166,7 @@ typedef struct Settings {
     int pixelheight;
     int percentwidth;
     int percentheight;
+    int macro_number;
 } settings_t;
 
 
@@ -355,7 +357,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                                      psettings->pixelwidth,
                                      psettings->pixelheight,
                                      psettings->method_for_resampling);
-            memcpy(p + size * n, scaled_frame, size); 
+            memcpy(p + size * n, scaled_frame, size);
         }
         for (n = 0; n < frame_count; ++n) {
             frames[n] = p + size * n;
@@ -368,7 +370,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 
     /* prepare palette */
     palette = prepare_palette(pixels, sx, sy * frame_count,
-                              psettings, 
+                              psettings,
                               &ncolors, &origcolors);
     if (!palette) {
         nret = -1;
@@ -450,19 +452,25 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         break;
     }
 
-    if (psettings->fuse_macro && frame_count > 1) {
+    if ((psettings->fuse_macro && frame_count > 1) || psettings->macro_number >= 0) {
         context = LSOutputContext_create(putchar_hex, printf_hex);
         context->has_8bit_control = psettings->f8bit;
         for (n = 0; n < frame_count; ++n) {
 #if HAVE_USLEEP && HAVE_CLOCK
             start = clock();
 #endif
-            printf("\033P%d;0;1!z", n);
+            if (frame_count == 1 && psettings->macro_number >= 0) {
+                printf("\033P%d;0;1!z", psettings->macro_number);
+            } else {
+                printf("\033P%d;0;1!z", n);
+            }
             LibSixel_LSImageToSixel(image_array[n], context);
             printf("\033\\");
             if (loop_count == -1) {
                 printf("\033[H");
-                printf("\033[%d*z", n);
+                if (frame_count != 1 || psettings->macro_number < 0) {
+                    printf("\033[%d*z", n);
+                }
             }
 #if HAVE_USLEEP
             if (delays != NULL && !psettings->fignore_delay) {
@@ -492,42 +500,44 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                 printf("\x1b\\");
             }
         }
-        for (c = 0; c != loop_count; ++c) {
-            for (n = 0; n < frame_count; ++n) {
+        if (frame_count != 1 || psettings->macro_number < 0) {
+            for (c = 0; c != loop_count; ++c) {
+                for (n = 0; n < frame_count; ++n) {
 #if HAVE_USLEEP && HAVE_CLOCK
-                if (frame_count > 1) {
-                    start = clock();
-                }
-#endif
-                printf("\033[H");
-                printf("\033[%d*z", n);
-                fflush(stdout);
-#if HAVE_USLEEP
-                if (delays != NULL && !psettings->fignore_delay) {
-# if HAVE_CLOCK
-                    dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
-                    lag = 0;
-# else
-                    dulation = 0;
-# endif
-                    if (dulation < 10000 * delays[n]) {
-                        usleep(10000 * delays[n] - dulation);
-                    } else {
-                        lag = 10000 * delays[n] - dulation;
+                    if (frame_count > 1) {
+                        start = clock();
                     }
-                }
 #endif
+                    printf("\033[H");
+                    printf("\033[%d*z", n);
+                    fflush(stdout);
+#if HAVE_USLEEP
+                    if (delays != NULL && !psettings->fignore_delay) {
+# if HAVE_CLOCK
+                        dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
+                        lag = 0;
+# else
+                        dulation = 0;
+# endif
+                        if (dulation < 10000 * delays[n]) {
+                            usleep(10000 * delays[n] - dulation);
+                        } else {
+                            lag = 10000 * delays[n] - dulation;
+                        }
+                    }
+#endif
+#if HAVE_SIGNAL
+                    if (signaled) {
+                        break;
+                    }
+#endif
+                }
 #if HAVE_SIGNAL
                 if (signaled) {
                     break;
                 }
 #endif
             }
-#if HAVE_SIGNAL
-            if (signaled) {
-                break;
-            }
-#endif
         }
     } else { /* do not use macro */
         /* create output context */
@@ -633,7 +643,7 @@ int main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:ed:f:s:w:h:r:q:il:ug";
+    char const *optstring = "78p:m:ed:f:s:w:h:r:q:il:ugn:";
 
     settings_t settings = {
         -1,           /* reqcolors */
@@ -653,6 +663,7 @@ int main(int argc, char *argv[])
         -1,           /* pixelheight */
         -1,           /* percentwidth */
         -1,           /* percentheight */
+        -1,           /* macro_number */
     };
 
 #if HAVE_GETOPT_LONG
@@ -673,6 +684,7 @@ int main(int argc, char *argv[])
         {"loop-control", required_argument,  &long_opt, 'l'},
         {"use-macro",    no_argument,        &long_opt, 'u'},
         {"ignore-delay", no_argument,        &long_opt, 'g'},
+        {"macro-number", required_argument,  &long_opt, 'n'},
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
@@ -871,6 +883,12 @@ int main(int argc, char *argv[])
         case 'u':
             settings.fuse_macro = 1;
             break;
+        case 'n':
+            settings.macro_number = atoi(optarg);
+            if (settings.macro_number < 0) {
+                goto argerr;
+            }
+            break;
         case 'g':
             settings.fignore_delay = 1;
             break;
@@ -934,13 +952,17 @@ argerr:
             "-m FILE, --mapfile=FILE    transform image colors to match this\n"
             "                           set of colorsspecify map\n"
             "-e, --monochrome           output monochrome sixel image\n"
-            "                           this option assumes the terminal \n"
+            "                           this option assumes the terminal\n"
             "                           background color is black\n"
             "-i, --invert               assume the terminal background color\n"
             "                           is white, make sense only when -e\n"
             "                           option is given\n"
             "-u, --use-macro            use DECDMAC and DEVINVM sequences to\n"
             "                           optimize GIF animation rendering\n"
+            "-n, --macro-number         specify an number argument for\n"
+            "                           DECDMAC and make terminal memorize\n"
+            "                           SIXEL image. No image is shown if this\n"
+            "                           option is specified\n"
             "-g, --ignore-delay         render GIF animation without delay\n"
             "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
             "                           choose diffusion method which used\n"
