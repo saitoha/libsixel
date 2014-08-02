@@ -453,10 +453,17 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     if (psettings->fuse_macro && frame_count > 1) {
         context = LSOutputContext_create(putchar_hex, printf_hex);
         context->has_8bit_control = psettings->f8bit;
-#if HAVE_USLEEP && HAVE_CLOCK
-        start = clock();
-#endif
         for (n = 0; n < frame_count; ++n) {
+#if HAVE_USLEEP && HAVE_CLOCK
+            start = clock();
+#endif
+            printf("\033P%d;0;1!z", n);
+            LibSixel_LSImageToSixel(image_array[n], context);
+            printf("\033\\");
+            if (loop_count == -1) {
+                printf("\033[H");
+                printf("\033[%d*z", n);
+            }
 #if HAVE_USLEEP
             if (delays != NULL && !psettings->fignore_delay) {
 # if HAVE_CLOCK
@@ -472,16 +479,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                 }
             }
 #endif
-#if HAVE_USLEEP && HAVE_CLOCK
-            start = clock();
-#endif
-            printf("\033P%d;0;1!z", n);
-            LibSixel_LSImageToSixel(image_array[n], context);
-            printf("\033\\");
-            if (loop_count == -1) {
-                printf("\033[H");
-                printf("\033[%d*z", n);
-            }
 #if HAVE_SIGNAL
             if (signaled) {
                 break;
@@ -496,12 +493,15 @@ convert_to_sixel(char const *filename, settings_t *psettings)
             }
         }
         for (c = 0; c != loop_count; ++c) {
-#if HAVE_USLEEP && HAVE_CLOCK
-            if (frame_count > 1) {
-                start = clock();
-            }
-#endif
             for (n = 0; n < frame_count; ++n) {
+#if HAVE_USLEEP && HAVE_CLOCK
+                if (frame_count > 1) {
+                    start = clock();
+                }
+#endif
+                printf("\033[H");
+                printf("\033[%d*z", n);
+                fflush(stdout);
 #if HAVE_USLEEP
                 if (delays != NULL && !psettings->fignore_delay) {
 # if HAVE_CLOCK
@@ -517,14 +517,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                     }
                 }
 #endif
-#if HAVE_USLEEP && HAVE_CLOCK
-                if (frame_count > 1) {
-                    start = clock();
-                }
-#endif
-                printf("\033[H");
-                printf("\033[%d*z", n);
-                fflush(stdout);
 #if HAVE_SIGNAL
                 if (signaled) {
                     break;
@@ -542,13 +534,15 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         context = LSOutputContext_create(putchar, printf);
         context->has_8bit_control = psettings->f8bit;
         for (c = 0; c != loop_count; ++c) {
-#if HAVE_USLEEP && HAVE_CLOCK
-            if (frame_count > 1) {
-                start = clock();
-            }
-#endif
             for (n = 0; n < frame_count; ++n) {
                 if (frame_count > 1) {
+#if HAVE_USLEEP && HAVE_CLOCK
+                    if (frame_count > 1) {
+                        start = clock();
+                    }
+#endif
+                    context->fn_printf("\033[H");
+                    fflush(stdout);
 #if HAVE_USLEEP && HAVE_CLOCK
                     if (delays != NULL && !psettings->fignore_delay) {
 # if HAVE_CLOCK
@@ -562,13 +556,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                         } else {
                             lag = 10000 * delays[n] - dulation;
                         }
-                    }
-#endif
-                    context->fn_printf("\033[H");
-                    fflush(stdout);
-#if HAVE_USLEEP && HAVE_CLOCK
-                    if (frame_count > 1) {
-                        start = clock();
                     }
 #endif
                 }
