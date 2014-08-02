@@ -29,11 +29,13 @@ $ make
 ### Build with optional packages
 
 ```
---with-gdk-pixbuf2      build with gdk-pixbuf2 (default: no)
---with-libcurl          build with libcurl (default: no)
---with-gd               build with gd (default: no)
+--with-gdk-pixbuf2        build with gdk-pixbuf2 (default: no)
+--with-libcurl            build with libcurl (default: no)
+--with-gd                 build with gd (default: no)
+--with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
+--with-bashcompletiondir  specify bashcompletion.d
+--with-zshcompletiondir   specify zshcompletion.d
 ```
-
 
 ## Terminal requirements
 
@@ -474,7 +476,7 @@ images/vimperator3.png is in the public domain.
     url: http://quadrantem.com/~k_wizard/vimprtan/
 
 
-## Thanks
+## References
 
 ### ImageMagick
 
