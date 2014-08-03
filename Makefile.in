@@ -359,7 +359,7 @@ SUBDIRS = include src converters
 DIST_SUBDIRS = $(SUBDIRS)
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = libsixel.pc
-CLEANFILES = wic_install.reg wic_uninstall.reg valgrind.log
+CLEANFILES = valgrind.log
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -886,11 +886,14 @@ valgrind: all
 	grep "All heap blocks were freed" valgrind.log || \
 		grep "indirectly lost: 0 bytes in 0 blocks" valgrind.log
 
-coveralls: test
-	coveralls -e sixel_orig -e include -e m4
+coveralls:
+	coveralls -e sixel_orig -e include -e m4 \
+		-e stb_image.h -e stb_image_write.h
 
 coveralls-dryrun: test
-	coveralls -e sixel_orig -e include -e m4 --dryrun
+	coveralls -e sixel_orig -e include -e m4 \
+		-e stb_image.h -e stb_image_write.h \
+		--dryrun
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -24,7 +24,7 @@ valgrind: all
 	grep "All heap blocks were freed" valgrind.log || \
 		grep "indirectly lost: 0 bytes in 0 blocks" valgrind.log
 
-coveralls: test
+coveralls:
 	coveralls -e sixel_orig -e include -e m4 \
 		-e stb_image.h -e stb_image_write.h
 
