@@ -2,13 +2,13 @@
 <html>
 
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Libsixel : A lightweight, fast implementation of DEC SIXEL graphics codec" />
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="libsixel : A lightweight, fast implementation of DEC SIXEL graphics codec">
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-    <title>Libsixel</title>
+    <title>libsixel</title>
   </head>
 
   <body>
@@ -18,7 +18,7 @@
         <header class="inner">
           <a id="forkme_banner" href="https://github.com/saitoha/libsixel">View on GitHub</a>
 
-          <h1 id="project_title">Libsixel</h1>
+          <h1 id="project_title">libsixel</h1>
           <h2 id="project_tagline">A lightweight, fast implementation of DEC SIXEL graphics codec</h2>
 
             <section id="downloads">
@@ -43,7 +43,7 @@
 <p>This package provides encoder/decoder implementation for DEC SIXEL graphics, and
 some converter programs.</p>
 
-<p><img src="http://zuse.jp/misc/libsixel-1.png" alt="img2sixel"></p>
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/libsixel-1.png" alt="img2sixel"></p>
 
 <p>SIXEL is one of image formats for printer and terminal imaging introduced by
 Digital Equipment Corp. (DEC).
@@ -64,9 +64,12 @@ $ make
 <h3>
 <a name="build-with-optional-packages" class="anchor" href="#build-with-optional-packages"><span class="octicon octicon-link"></span></a>Build with optional packages</h3>
 
-<pre><code>--with-gdk-pixbuf2      build with gdk-pixbuf2 (default: no)
---with-libcurl          build with libcurl (default: no)
---with-gd               build with gd (default: no)
+<pre><code>--with-gdk-pixbuf2        build with gdk-pixbuf2 (default: no)
+--with-libcurl            build with libcurl (default: no)
+--with-gd                 build with gd (default: no)
+--with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
+--with-bashcompletiondir  specify bashcompletion.d
+--with-zshcompletiondir   specify zshcompletion.d
 </code></pre>
 
 <h2>
@@ -80,7 +83,8 @@ $ make
 <li><p>DEC VT series, VT240/VT241/VT330/VT340/VT282/VT284/VT286/VT382</p></li>
 <li><p>DECterm(dxterm)</p></li>
 <li><p>Kermit</p></li>
-<li><p>WRQ Reflection / ZSTEM</p></li>
+<li><p>ZSTEM 340</p></li>
+<li><p>WRQ Reflection</p></li>
 <li>
 <p>RLogin (Japanese terminal emulator)</p>
 
@@ -110,14 +114,23 @@ $ make
 
 <p><a href="https://github.com/uobikiemukot/yaft">https://github.com/uobikiemukot/yaft</a></p>
 </li>
+<li>
+<p>recterm (ttyrec to GIF converter)</p>
+
+<p><a href="https://github.com/uobikiemukot/recterm">https://github.com/uobikiemukot/recterm</a></p>
+</li>
+<li>
+<p>seq2gif (ttyrec to GIF converter)</p>
+
+<p><a href="https://github.com/saitoha/seq2gif">https://github.com/saitoha/seq2gif</a></p>
+</li>
 </ul><h2>
 <a name="usage-of-command-line-tools" class="anchor" href="#usage-of-command-line-tools"><span class="octicon octicon-link"></span></a>Usage of command line tools</h2>
 
 <h3>
 <a name="img2sixel" class="anchor" href="#img2sixel"><span class="octicon octicon-link"></span></a>img2sixel</h3>
 
-<pre><code>img2sixel: invalid option -- v
-Usage: img2sixel [Options] imagefiles
+<pre><code>Usage: img2sixel [Options] imagefiles
        img2sixel [Options] &lt; imagefile
 
 Options:
@@ -137,6 +150,10 @@ Options:
                            option is given
 -u, --use-macro            use DECDMAC and DEVINVM sequences to
                            optimize GIF animation rendering
+-n, --macro-number         specify an number argument for
+                           DECDMAC and make terminal memorize
+                           SIXEL image. No image is shown if this
+                           option is specified
 -g, --ignore-delay         render GIF animation without delay
 -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
                            choose diffusion method which used
@@ -204,7 +221,7 @@ Options:
                              &lt;number&gt;px -&gt; scale height with
                                            pixel counts
 -r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE
-                           choose resampling method used
+                           choose resampling filter used
                            with -w or -h option (scaling)
                            RESAMPLINGTYPE is one of them:
                              nearest  -&gt; Nearest-Neighbor
@@ -220,7 +237,8 @@ Options:
                              lanczos3 -&gt; Lanczos-3 filter
                              lanczos4 -&gt; Lanczos-4 filter
 -q QUALITYMODE, --quality=QUALITYMODE
-               select quality of color quanlization.
+                           select quality of color
+                           quanlization.
                              auto -&gt; decide quality mode
                                      automatically (default)
                              high -&gt; high quality and low
@@ -230,10 +248,12 @@ Options:
 -l LOOPMODE, --loop-control=LOOPMODE
                            select loop control mode for GIF
                            animation.
-                             auto   -&gt; honer the setting of
+                             auto   -&gt; honor the setting of
                                        GIF header (default)
                              force   -&gt; always enable loop
                              disable -&gt; always disable loop
+-V, --version              show version and license info
+-H, --help                 show this help
 </code></pre>
 
 <p>Convert a jpeg image file into a sixel file</p>
@@ -260,6 +280,8 @@ Options:
 Options:
 -i, --input     specify input file
 -o, --output    specify output file
+-V, --version   show version and license information
+-H, --help      show this help
 </code></pre>
 
 <p>Convert a sixel file into a png image file</p>
@@ -268,55 +290,16 @@ Options:
 </code></pre>
 
 <h2>
-<a name="similar-software" class="anchor" href="#similar-software"><span class="octicon octicon-link"></span></a>Similar software</h2>
+<a name="animation" class="anchor" href="#animation"><span class="octicon octicon-link"></span></a>Animation</h2>
 
-<ul>
-<li>
-<p><a href="http://netpbm.sourceforge.net/">ppmtosixel (netpbm)</a></p>
+<p>img2sixel(1) can decode GIF animation.</p>
 
-<p>You can get SIXEL graphics using <a href="http://netpbm.sourceforge.net/doc/ppmtosixel.html">ppmtosixel</a> or <a href="http://netpbm.sourceforge.net/doc/ppmtosixel.html">pbmtoln03</a>.</p>
-</li>
-<li>
-<p><a href="http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz">kmiya's sixel</a></p>
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/sixel.gif" alt="Animation"></p>
 
-<p>libgd based SIXEL converter</p>
-</li>
-<li>
-<p><a href="https://pypi.python.org/pypi/PySixel">PySixel</a></p>
+<h2>
+<a name="quantization-quality" class="anchor" href="#quantization-quality"><span class="octicon octicon-link"></span></a>Quantization quality</h2>
 
-<p>Python implementation of SIXEL converter</p>
-</li>
-<li>
-<p><a href="https://bitbucket.org/arakiken/tw/branch/sixel">monosixel in arakiken's tw</a></p>
-
-<p>A monochrome SIXEL converter</p>
-</li>
-</ul><h2>
-<a name="other-software-supporting-sixel" class="anchor" href="#other-software-supporting-sixel"><span class="octicon octicon-link"></span></a>Other software supporting SIXEL</h2>
-
-<ul>
-<li>
-<p><a href="http://www.gnuplot.info/">GNUPLOT</a></p>
-
-<p>Recent version of GNUPLOT supports new terminal driver "sixel".</p>
-
-<p><img src="http://zuse.jp/misc/gnuplot.png" alt="GNUPLOT"></p>
-</li>
-<li>
-<p><a href="http://www.ghostscript.com/">ghostscript</a></p>
-
-<p>You can emit SIXEL images with LN03 / LN50 / LA75 driver.</p>
-
-<p>example:</p>
-
-<pre><code>  $ gs -q -r100x -dBATCH -dNOPAUSE -sDEVICE=ln03 -sOutputFile=- tiger.eps
-</code></pre>
-
-<p><img src="http://zuse.jp/misc/gs.png" alt="GhostScript"></p>
-</li>
-<li><p><img src="http://www.astro.caltech.edu/%7Etjp/pgplot/" alt="PGPLOT"></p></li>
-</ul><h2>
-<a name="color-image-quantization-quality-comparison" class="anchor" href="#color-image-quantization-quality-comparison"><span class="octicon octicon-link"></span></a>Color image quantization quality comparison</h2>
+<p>img2sixel(1) supports high quality color image quantization.</p>
 
 <ul>
 <li>
@@ -324,35 +307,35 @@ Options:
 
 <p>$ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel</p>
 
-<p><img src="http://zuse.jp/misc/q_ppmtosixel.png" alt="ppmtosixel"></p>
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_ppmtosixel.png" alt="ppmtosixel"></p>
 </li>
 <li>
 <p>ppmtosixel with Floyd–Steinberg dithering (netpbm)</p>
 
 <p>$ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel</p>
 
-<p><img src="http://zuse.jp/misc/q_ppmtosixel2.png" alt="ppmtosixel"></p>
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_ppmtosixel2.png" alt="ppmtosixel"></p>
 </li>
 <li>
 <p>kmiya's sixel</p>
 
 <p>$ sixel -p16 images/snake.jpg</p>
 
-<p><img src="http://zuse.jp/misc/q_sixel.png" alt="kmiya's sixel"></p>
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_sixel.png" alt="kmiya's sixel"></p>
 </li>
 <li>
 <p>PySixel (sixelconv command)</p>
 
 <p>$ sixelconv -n16 images/snake.jpg</p>
 
-<p><img src="http://zuse.jp/misc/q_sixelconv.png" alt="PySixel"></p>
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_sixelconv.png" alt="PySixel"></p>
 </li>
 <li>
 <p>libsixel (img2sixel command)</p>
 
 <p>$ img2sixel -p16 images/snake.jpg</p>
 
-<p><img src="http://zuse.jp/misc/q_libsixel.png" alt="PySixel"></p>
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_libsixel.png" alt="PySixel"></p>
 </li>
 </ul><h2>
 <a name="support" class="anchor" href="#support"><span class="octicon octicon-link"></span></a>Support</h2>
@@ -391,7 +374,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
 </blockquote>
 
 <h2>
-<a name="thanks--references" class="anchor" href="#thanks--references"><span class="octicon octicon-link"></span></a>Thanks &amp; References</h2>
+<a name="acknowledgment" class="anchor" href="#acknowledgment"><span class="octicon octicon-link"></span></a>Acknowledgment</h2>
 
 <p>This software derives from the following implementations.</p>
 
@@ -435,7 +418,7 @@ is imported from <em>pnmcolormap</em> included in <em>netpbm library</em>.</p>
 
 <p><a href="http://netpbm.sourceforge.net/">http://netpbm.sourceforge.net/</a></p>
 
-<p><em>pnmcolormap</em> was derived from <em>ppmquant</em>, originally by Jef Poskanzer.</p>
+<p><em>pnmcolormap</em> was derived from <em>ppmquant</em>, originally written by Jef Poskanzer.</p>
 
 <blockquote>
 <p>Copyright (C) 1989, 1991 by Jef Poskanzer.
@@ -471,30 +454,103 @@ url: <a href="http://public-domain-photos.com/animals/egret-4.htm">http://public
 <p>author: Jon Sullivan
 url: <a href="http://public-domain-photos.com/animals/snake-4.htm">http://public-domain-photos.com/animals/snake-4.htm</a></p>
 </li>
-</ul><h4>
+</ul><p>These are in the <a href="http://creativecommons.org/licenses/publicdomain/">public domain</a>.</p>
+
+<h4>
 <a name="vimperator3png-mascot-of-vimperator" class="anchor" href="#vimperator3png-mascot-of-vimperator"><span class="octicon octicon-link"></span></a>vimperator3.png (mascot of vimperator)</h4>
 
-<p>images/vimperator3.png is in public domain.</p>
+<p>images/vimperator3.png is in the public domain.</p>
 
 <pre><code>author: @k_wizard
 url: http://quadrantem.com/~k_wizard/vimprtan/
 </code></pre>
 
+<h2>
+<a name="references" class="anchor" href="#references"><span class="octicon octicon-link"></span></a>References</h2>
+
 <h3>
 <a name="imagemagick" class="anchor" href="#imagemagick"><span class="octicon octicon-link"></span></a>ImageMagick</h3>
 
-<p>We added some resampling filters in reference to the line-up of filters of
-MagickCore's resize.c.</p>
+<p>We are greatly inspired by the quality of ImageMagick and added some resampling filters to
+img2sixel in reference to the line-up of filters of MagickCore's resize.c.</p>
 
 <pre><code>http://www.imagemagick.org/api/MagickCore/resize_8c_source.html
 </code></pre>
+
+<h2>
+<a name="similar-software" class="anchor" href="#similar-software"><span class="octicon octicon-link"></span></a>Similar software</h2>
+
+<ul>
+<li>
+<p><a href="http://netpbm.sourceforge.net/">ppmtosixel (netpbm)</a></p>
+
+<p>You can get SIXEL graphics using <a href="http://netpbm.sourceforge.net/doc/ppmtosixel.html">ppmtosixel</a>
+or <a href="http://netpbm.sourceforge.net/doc/ppmtosixel.html">pbmtoln03</a>.</p>
+</li>
+<li>
+<p><a href="http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz">kmiya's sixel</a></p>
+
+<p>libgd based SIXEL converter</p>
+</li>
+<li>
+<p><a href="https://pypi.python.org/pypi/PySixel">PySixel</a></p>
+
+<p>Python implementation of SIXEL converter</p>
+</li>
+<li>
+<p><a href="https://bitbucket.org/arakiken/tw/branch/sixel">monosixel in arakiken's tw</a></p>
+
+<p>A monochrome SIXEL converter</p>
+</li>
+<li>
+<p>xpr(x11-apps)</p>
+
+<p>xpr(1) can convert a xwd(X window dump) format image into a sixel
+image with '-device ln03' or '-device la100' option.
+But now it is not maintained. It looks broken.</p>
+</li>
+</ul><h2>
+<a name="other-software-supporting-sixel" class="anchor" href="#other-software-supporting-sixel"><span class="octicon octicon-link"></span></a>Other software supporting SIXEL</h2>
+
+<ul>
+<li>
+<p><a href="http://www.gnuplot.info/">GNUPLOT</a></p>
+
+<p>Recent version of GNUPLOT supports new terminal driver "sixel".</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/gnuplot.png" alt="GNUPLOT"></p>
+</li>
+<li>
+<p><a href="http://www.ghostscript.com/">ghostscript</a></p>
+
+<p>You can emit SIXEL images with LN03 / LN50 / LA75 driver.</p>
+
+<p>example:</p>
+
+<pre><code>  $ gs -q -r100x -dBATCH -dNOPAUSE -sDEVICE=ln03 -sOutputFile=- tiger.eps
+</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/gs.png" alt="GhostScript"></p>
+</li>
+<li><p><img src="http://www.astro.caltech.edu/%7Etjp/pgplot/" alt="PGPLOT"></p></li>
+<li>
+<p><a href="http://rullf2.xs4all.nl/sg/zx81ce.html">ZX81 Emulator</a></p>
+
+<p>A ZX81 emulator producing Sixel Image Files</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/zx81.png" alt="ZX81"></p>
+</li>
+<li><p><a href="http://t.co/zTC7LhRbBc">SIXEL to PostScript converter</a></p></li>
+<li><p><a href="http://rullf2.xs4all.nl/sg/sg.html">SIXEL image viewer(written in javascript)</a></p></li>
+<li><p><a href="https://github.com/olofsen/SixelGraphics.jl">SixelGraphics.jl(written in Julia)</a></p></li>
+</ul>
       </section>
     </div>
 
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
       <footer class="inner">
-        <p class="copyright">Libsixel maintained by <a href="https://github.com/saitoha">saitoha</a></p>
+        <p class="copyright">libsixel maintained by <a href="https://github.com/saitoha">saitoha</a></p>
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
