@@ -1,0 +1,9 @@
+{
+  "name": "libsixel",
+  "version": "@PACKAGE_VERSION@",
+  "repo": "saitoha/libsixel",
+  "description": "@PACKAGE_DESCRIPTION@",
+  "keywords": ["terminal", "graphics", "image", "sixel"],
+  "license": "MIT",
+  "install": "./configure && make install"
+}
