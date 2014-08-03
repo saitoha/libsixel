@@ -48,7 +48,7 @@ script:
   - "du -h snake2.png"
   - "$WINE converters/img2sixel snake1.png > snake3.sixel"
   - "du -h snake3.sixel"
-  - "if [ x$GCOV != x ]; then make coveralls || exit 1 ; fi"
 
 after_success:
   - "if [ x$WINE = x ]; then make valgrind && exit 0 || cat valgrind.log && exit 1; fi"
+  - "make coveralls"
