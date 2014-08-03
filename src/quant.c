@@ -45,7 +45,6 @@
  */
 
 #include "config.h"
-#include "malloc_stub.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -57,7 +56,7 @@
 # include <inttypes.h>
 #endif
 
-#include "quant.h"
+#include "sixel.h"
 
 #if 0
 #define quant_trace fprintf

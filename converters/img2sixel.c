@@ -54,7 +54,6 @@
 
 #include <sixel.h>
 #include "scale.h"
-#include "quant.h"
 #include "loader.h"
 
 
@@ -383,7 +382,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         }
 
         /* create intermidiate bitmap image */
-        im = LSImage_create(sx, sy, 3, ncolors);
+        im = LSImage_create(sx, sy, 1, ncolors);
         if (!im) {
             nret = -1;
             goto end;
