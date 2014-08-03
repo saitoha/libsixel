@@ -54,11 +54,11 @@ AC_ARG_WITH([libcurl],
             [],
             [with_libcurl=no])
 
-AC_ARG_WITH([wic],
-            [AS_HELP_STRING([--with-wic],
-                            [whether to build with windows WIC integration, windows only (default: no)])],
-            [],
-            [with_wic=no])
+#AC_ARG_WITH([wic],
+#            [AS_HELP_STRING([--with-wic],
+#                            [whether to build with windows WIC integration, windows only (default: no)])],
+#            [],
+#            [with_wic=no])
 
 AC_ARG_WITH(pkgconfigdir,
             AC_HELP_STRING([--with-pkgconfigdir],
@@ -98,7 +98,7 @@ PKG_PROG_PKG_CONFIG
 AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
 
 # For wic integration
-AC_PROG_CXX
+#AC_PROG_CXX
 
 # Checks for libraries.
 
@@ -152,19 +152,19 @@ AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
 
 loaders="stb_image"
 have_curl="no"
-have_wic="no"
+#have_wic="no"
 
-if test x$with_wic != xno; then
-    AC_CHECK_HEADERS([wincodec.h], [],
-                     [AC_MSG_ERROR([WIC integration: wincodec.h is not avilable.])])
-    AC_CHECK_LIB([ole32], [main], [],
-                 [AC_MSG_ERROR([WIC integration: library ole32 is not avilable.])])
-    AC_CHECK_LIB([uuid], [main], [],
-                 [AC_MSG_ERROR([WIC integration: library uuid is not avilable.])])
-    AC_CHECK_LIB([windowscodecs], [main], [],
-                 [AC_MSG_ERROR([WIC integration: library wincodecs is not avilable.])])
-    have_wic="yes"
-fi
+#if test x$with_wic != xno; then
+#    AC_CHECK_HEADERS([wincodec.h], [],
+#                     [AC_MSG_ERROR([WIC integration: wincodec.h is not avilable.])])
+#    AC_CHECK_LIB([ole32], [main], [],
+#                 [AC_MSG_ERROR([WIC integration: library ole32 is not avilable.])])
+#    AC_CHECK_LIB([uuid], [main], [],
+#                 [AC_MSG_ERROR([WIC integration: library uuid is not avilable.])])
+#    AC_CHECK_LIB([windowscodecs], [main], [],
+#                 [AC_MSG_ERROR([WIC integration: library wincodecs is not avilable.])])
+#    have_wic="yes"
+#fi
 
 if test x$with_gdk_pixbuf2 != xno; then
     if test x$have_pkg_config != xno; then
@@ -287,8 +287,6 @@ LS_UPDATE_TIMESTAMP
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
                  package.json
-                 wic_install.reg
-                 wic_uninstall.reg
                  src/Makefile
                  include/Makefile
                  converters/Makefile])
@@ -304,7 +302,7 @@ echo "       libcurl integration : $have_curl"
 echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
-echo "       WIC integration     : $have_wic"
+#echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
 echo ""
 echo ""
