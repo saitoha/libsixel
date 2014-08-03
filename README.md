@@ -213,6 +213,8 @@ Options:
                                        GIF header (default)
                              force   -> always enable loop
                              disable -> always disable loop
+-V, --version              show version and license info
+-H, --help                 show this help
 ```
 
 Convert a jpeg image file into a sixel file
@@ -242,6 +244,8 @@ Usage: sixel2png -i input.sixel -o output.png
 Options:
 -i, --input     specify input file
 -o, --output    specify output file
+-V, --version   show version and license information
+-H, --help      show this help
 ```
 
 Convert a sixel file into a png image file
