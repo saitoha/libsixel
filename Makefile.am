@@ -7,7 +7,7 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libsixel.pc
 
-CLEANFILES = wic_install.reg wic_uninstall.reg valgrind.log
+CLEANFILES = valgrind.log
 
 test: all
 	$(MAKE) test -C converters > test.log
@@ -25,7 +25,10 @@ valgrind: all
 		grep "indirectly lost: 0 bytes in 0 blocks" valgrind.log
 
 coveralls: test
-	coveralls -e sixel_orig -e include -e m4
+	coveralls -e sixel_orig -e include -e m4 \
+		-e stb_image.h -e stb_image_write.h
 
 coveralls-dryrun: test
-	coveralls -e sixel_orig -e include -e m4 --dryrun
+	coveralls -e sixel_orig -e include -e m4 \
+		-e stb_image.h -e stb_image_write.h \
+		--dryrun
