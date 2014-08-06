@@ -261,7 +261,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     unsigned char *scaled_frame = NULL;
     unsigned char *mappixels = NULL;
     unsigned char *palette = NULL;
-    unsigned char *data = NULL;
     unsigned char *p = NULL;
     int ncolors;
     int origcolors;
@@ -372,27 +371,23 @@ convert_to_sixel(char const *filename, settings_t *psettings)
             psettings->method_for_diffuse = DIFFUSE_FS;
         }
 
-        data = malloc(sx * sy);
-        if (!data) {
-            nret = -1;
-            goto end;
-        }
-        nret = LSQ_ApplyPalette(frames[n], sx, sy, 3,
-                                palette, ncolors,
-                                psettings->method_for_diffuse,
-                                /* foptimize */ 1,
-                                data);
-
-        if (nret != 0) {
-            goto end;
-        }
-
         /* create intermidiate bitmap image */
         im = LSImage_create(sx, sy, 1, ncolors);
         if (!im) {
             nret = -1;
             goto end;
         }
+
+        nret = LSQ_ApplyPalette(frames[n], sx, sy, 3,
+                                palette, ncolors,
+                                psettings->method_for_diffuse,
+                                /* foptimize */ 1,
+                                im->pixels);
+
+        if (nret != 0) {
+            goto end;
+        }
+
         for (i = 0; i < ncolors; i++) {
             LSImage_setpalette(im, i,
                                palette[i * 3],
@@ -404,9 +399,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         } else {
             im->keycolor = -1;
         }
-        LSImage_setpixels(im, data);
-
-        data = NULL;
 
         image_array[n] = im;
     }
@@ -530,9 +522,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 end:
     if (frames) {
         free(frames);
-    }
-    if (data) {
-        free(data);
     }
     if (pixels) {
         free(pixels);
