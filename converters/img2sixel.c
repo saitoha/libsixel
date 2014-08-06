@@ -277,6 +277,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int nret = -1;
     FILE *f;
     int size;
+    unsigned short cachetable[1 << 3 * 5];
 
     frame_count = 1;
     loop_count = 1;
@@ -364,6 +365,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         goto end;
     }
 
+    memset(cachetable, 0, sizeof(cachetable));
+
     for (n = 0; n < frame_count; ++n) {
 
         /* apply palette */
@@ -382,6 +385,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                                 palette, ncolors,
                                 psettings->method_for_diffuse,
                                 /* foptimize */ 1,
+                                NULL,
                                 im->pixels);
 
         if (nret != 0) {

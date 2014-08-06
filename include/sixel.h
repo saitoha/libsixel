@@ -198,6 +198,7 @@ LSQ_ApplyPalette(unsigned char *data,
                  int ncolor,
                  enum methodForDiffuse const methodForDiffuse,
                  int foptimize,
+                 unsigned short *cachetable,
                  unsigned char *result);
 
 
