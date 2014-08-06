@@ -1019,7 +1019,7 @@ lookup_fast(unsigned char const * const pixel,
 }
 
 
-unsigned char *
+int
 LSQ_ApplyPalette(unsigned char *data,
                  int width,
                  int height,
@@ -1027,7 +1027,8 @@ LSQ_ApplyPalette(unsigned char *data,
                  unsigned char *palette,
                  int ncolor,
                  enum methodForDiffuse const methodForDiffuse,
-                 int foptimize)
+                 int foptimize,
+                 unsigned char *result)
 {
     typedef int component_t;
     typedef unsigned short compressed_color_t;
@@ -1036,7 +1037,6 @@ LSQ_ApplyPalette(unsigned char *data,
     int diff;
     int index;
     compressed_color_t *indextable;
-    unsigned char *result;
     void (*f_diffuse)(unsigned char *data, int width, int height,
                       int x, int y, int depth, int offset);
     int (*f_lookup)(unsigned char const * const pixel,
@@ -1082,16 +1082,10 @@ LSQ_ApplyPalette(unsigned char *data,
         f_lookup = lookup_normal;
     }
 
-    result = malloc(width * height);
-    if (!result) {
-        quant_trace(stderr, "Unable to allocate memory for result.");
-        return NULL;
-    }
     indextable = malloc((1 << depth * 5) * sizeof(compressed_color_t));
     if (!indextable) {
         quant_trace(stderr, "Unable to allocate memory for indextable.");
-        free(result);
-        return NULL;
+        return (-1);
     }
     memset(indextable, 0x00, (1 << depth * 5) * sizeof(compressed_color_t));
 
@@ -1109,7 +1103,7 @@ LSQ_ApplyPalette(unsigned char *data,
     }
 
     free(indextable);
-    return result;
+    return 0;
 }
 
 

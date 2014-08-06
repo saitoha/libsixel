@@ -371,13 +371,19 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         if (psettings->method_for_diffuse == DIFFUSE_AUTO) {
             psettings->method_for_diffuse = DIFFUSE_FS;
         }
-        data = LSQ_ApplyPalette(frames[n], sx, sy, 3,
-                                palette, ncolors,
-                                psettings->method_for_diffuse,
-                                /* foptimize */ 1);
 
+        data = malloc(sx * sy);
         if (!data) {
             nret = -1;
+            goto end;
+        }
+        nret = LSQ_ApplyPalette(frames[n], sx, sy, 3,
+                                palette, ncolors,
+                                psettings->method_for_diffuse,
+                                /* foptimize */ 1,
+                                data);
+
+        if (nret != 0) {
             goto end;
         }
 

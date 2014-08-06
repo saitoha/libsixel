@@ -189,15 +189,16 @@ LSQ_MakePalette(unsigned char *data,
                 enum qualityMode const qualityMode);
 
 
-unsigned char *
+int
 LSQ_ApplyPalette(unsigned char *data,
-                 int x,
-                 int y,
+                 int width,
+                 int height,
                  int depth,
                  unsigned char *palette,
-                 int ncolors,
+                 int ncolor,
                  enum methodForDiffuse const methodForDiffuse,
-                 int foptimize);
+                 int foptimize,
+                 unsigned char *result);
 
 
 extern void
