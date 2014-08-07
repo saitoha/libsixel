@@ -1082,6 +1082,7 @@ LSQ_ApplyPalette(unsigned char *data,
         f_lookup = lookup_normal;
     }
 
+    indextable = cachetable;
     if (cachetable == NULL) {
         indextable = malloc((1 << depth * 5) * sizeof(unsigned short));
         if (!indextable) {

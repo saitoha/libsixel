@@ -130,7 +130,7 @@ PutCr(LSOutputContextPtr context)
 
     /* DECGCR Graphics Carriage Return */
     /* x = 0; */
-    ret = context->fn_printf("$\n");
+    ret = context->fn_putchar('$');
     if (ret <= 0) {
         return (-1);
     }
@@ -146,7 +146,7 @@ PutLf(LSOutputContextPtr context)
     /* DECGNL Graphics Next Line */
     /* x = 0; */
     /* y += 6; */
-    ret = context->fn_printf("-\n");
+    ret = context->fn_putchar('-');
     if (ret <= 0) {
         return (-1);
     }
@@ -328,7 +328,7 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     if (ret <= 0) {
         return (-1);
     }
-    ret = context->fn_printf("\"1;1;%d;%d\n", width, height);
+    ret = context->fn_printf("\"1;1;%d;%d", width, height);
     if (ret <= 0) {
         return (-1);
     }
