@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include "sixel.h"
 
+
 LSOutputContextPtr const
 LSOutputContext_create(putchar_function fn_putchar, printf_function fn_printf)
 {
@@ -31,8 +32,14 @@ LSOutputContext_create(putchar_function fn_putchar, printf_function fn_printf)
     context->has_sdm_glitch = 0;
     context->fn_putchar = fn_putchar;
     context->fn_printf = fn_printf;
+    context->save_pixel = 0;
+    context->save_count = 0;
+    context->active_palette = (-1);
+    context->node_top = NULL;
+    context->node_free = NULL;
     return context;
 }
+
 
 void
 LSOutputContext_destroy(LSOutputContextPtr context)

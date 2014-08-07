@@ -42,6 +42,14 @@ typedef struct LSImageStruct {
 typedef int (* putchar_function)(int ch);
 typedef int (* printf_function)(const char *fmt, ...);
 
+typedef struct LSNode {
+    struct LSNode *next;
+    int pal;
+    int sx;
+    int mx;
+    unsigned char *map;
+} sixel_node_t;
+
 typedef struct LSOutputContextStruct {
     /* compatiblity flags */
 
@@ -59,6 +67,14 @@ typedef struct LSOutputContextStruct {
 
     putchar_function fn_putchar;
     printf_function fn_printf;
+
+    unsigned char conv_palette[PALETTE_MAX];
+    int save_pixel;
+    int save_count;
+    int active_palette;
+
+    sixel_node_t *node_top;
+    sixel_node_t *node_free;
 } LSOutputContext, *LSOutputContextPtr;
 
 /* converter API */
