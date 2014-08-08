@@ -86,6 +86,11 @@ Now SIXEL feature is supported by the following terminals.
   [https://github.com/saitoha/seq2gif](https://github.com/saitoha/seq2gif)
 
 
+## API
+
+The API is not freezed.
+
+
 ## Usage of command line tools
 
 ### img2sixel
