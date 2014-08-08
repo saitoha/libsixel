@@ -260,16 +260,16 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     back = im->keycolor;
     len = maxPalet * width;
 
-//#if HAVE_CALLOC
-//    if ((map = (unsigned char *)calloc(len, sizeof(unsigned char))) == NULL) {
-//        return (-1);
-//    }
-//#else
+#if HAVE_CALLOC
+    if ((map = (unsigned char *)calloc(len, sizeof(unsigned char))) == NULL) {
+        return (-1);
+    }
+#else
     if ((map = (unsigned char *)malloc(len)) == NULL) {
         return (-1);
     }
     memset(map, 0, len);
-//#endif
+#endif
 
     for (n = 0 ; n < maxPalet ; n++) {
         context->conv_palette[n] = list[n] = n;
