@@ -259,6 +259,7 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     maxPalet = im->ncolors;
     back = im->keycolor;
     len = maxPalet * width;
+    context->active_palette = (-1);
 
 #if HAVE_CALLOC
     if ((map = (unsigned char *)calloc(len, sizeof(unsigned char))) == NULL) {
