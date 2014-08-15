@@ -1148,7 +1148,7 @@ sixel_palette_create(int ncolors)
     result->data = (unsigned char*)(result + 1);
     result->cachetable = (unsigned short *)(result->data + datasize);
     result->reqcolors = ncolors;
-    result->ncolors = (-1);
+    result->ncolors = ncolors;
     result->origcolors = (-1);
 
     return result;
