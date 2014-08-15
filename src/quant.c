@@ -1127,22 +1127,24 @@ sixel_palette_create(int ncolors)
     int headsize;
     int datasize;
     int cachesize;
+    int wholesize;
 
     headsize = sizeof(sixel_palette_t);
-    datasize = ncolors * sizeof(unsigned char);
+    datasize = ncolors * 3;
     cachesize = (1 << 3 * 5) * sizeof(unsigned short);
+    wholesize = headsize + datasize + cachesize;
 
 #if HAVE_CALLOC
-    result = malloc(headsize + datasize + cachesize);
+    result = calloc(wholesize, sizeof(unsigned char));
     if (result == NULL) {
         return NULL;
     }
-    memset(result, 0, headsize + datasize + cachesize);
 #else
-    result = malloc(headsize + datasize + cachesize);
+    result = malloc(wholesize);
     if (result == NULL) {
         return NULL;
     }
+    memset(result, 0, wholesize);
 #endif
     result->ref = 1;
     result->data = (unsigned char*)(result + 1);
@@ -1154,11 +1156,13 @@ sixel_palette_create(int ncolors)
     return result;
 }
 
+
 void
 sixel_palette_destroy(sixel_palette_t *palette)
 {
     free(palette);
 }
+
 
 void
 sixel_palette_ref(sixel_palette_t *palette)
@@ -1166,6 +1170,7 @@ sixel_palette_ref(sixel_palette_t *palette)
     /* TODO: be thread safe */
     ++palette->ref;
 }
+
 
 void
 sixel_palette_unref(sixel_palette_t *palette)
@@ -1175,6 +1180,7 @@ sixel_palette_unref(sixel_palette_t *palette)
         sixel_palette_destroy(palette);
     }
 }
+
 
 int
 sixel_prepare_palette(unsigned char *data, int width, int height, int depth,
