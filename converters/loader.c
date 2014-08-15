@@ -210,6 +210,7 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
     if ((code = curl_easy_perform(curl))) {
         fprintf(stderr, "curl_easy_perform('%s') failed.\n" "code: %d.\n",
                 url, code);
+        curl_easy_cleanup(curl);
         return (-1);
     }
     curl_easy_cleanup(curl);
@@ -618,18 +619,43 @@ load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride
 #endif  /* HAVE_GD */
 
 
+static void
+arrange_pixelformat(unsigned char *pixels, int width, int height,
+                    int comp, int stride)
+{
+    int x;
+    int y;
+    unsigned char *src;
+    unsigned char *dst;
+    size_t new_rowstride;
+
+    src = dst = pixels;
+    if (comp == 4) {
+        for (y = 0; y < height; y++) {
+            for (x = 0; x < width; x++) {
+                *(dst++) = *(src++);   /* R */
+                *(dst++) = *(src++);   /* G */
+                *(dst++) = *(src++);   /* B */
+                src++;   /* A */
+            }
+        }
+    }
+    else {
+        new_rowstride = width * 3;
+        for (y = 1; y < height; y++) {
+            memmove(dst += new_rowstride, src += stride, new_rowstride);
+        }
+    }
+}
+
+
 unsigned char *
 load_image_file(char const *filename, int *psx, int *psy,
                 int *pframe_count, int *ploop_count, int *pdelay)
 {
     unsigned char *pixels;
-    size_t new_rowstride;
-    unsigned char *src;
-    unsigned char *dst;
     int comp;
     int stride;
-    int x;
-    int y;
     chunk_t chunk;
 
     pixels = NULL;
@@ -654,25 +680,10 @@ load_image_file(char const *filename, int *psx, int *psy,
         pixels = load_with_builtin(&chunk, psx, psy, &comp, &stride,
                                    pframe_count, ploop_count, pdelay);
     }
-
-    src = dst = pixels;
-    if (comp == 4) {
-        for (y = 0; y < *psy * *pframe_count; y++) {
-            for (x = 0; x < *psx; x++) {
-                *(dst++) = *(src++);   /* R */
-                *(dst++) = *(src++);   /* G */
-                *(dst++) = *(src++);   /* B */
-                src++;   /* A */
-            }
-        }
-    }
-    else {
-        new_rowstride = *psx * 3;
-        for (y = 1; y < *psy * *pframe_count; y++) {
-            memmove(dst += new_rowstride, src += stride, new_rowstride);
-        }
-    }
     free(chunk.buffer);
+
+    arrange_pixelformat(pixels, *psx, *psy * *pframe_count, comp, stride);
+
     return pixels;
 }
 
