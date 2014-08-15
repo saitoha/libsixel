@@ -240,6 +240,7 @@ chunk_is_sixel(chunk_t const *chunk)
 
     result = 0;
     p = chunk->buffer;
+    end = p + chunk->size;
 
     p++;
     p++;

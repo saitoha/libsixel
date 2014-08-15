@@ -65,58 +65,62 @@ enum loopMode {
 };
 
 
-static unsigned char *
+sixel_palette_t *
 prepare_monochrome_palette(finvert)
 {
-    unsigned char *palette;
+    sixel_palette_t *palette;
 
-    palette = malloc(6);
-
+    palette = sixel_palette_create(2);
     if (palette == NULL) {
         return NULL;
     }
 
     if (finvert) {
-        palette[0] = 0xff;
-        palette[1] = 0xff;
-        palette[2] = 0xff;
-        palette[3] = 0x00;
-        palette[4] = 0x00;
-        palette[5] = 0x00;
+        palette->data[0] = 0xff;
+        palette->data[1] = 0xff;
+        palette->data[2] = 0xff;
+        palette->data[3] = 0x00;
+        palette->data[4] = 0x00;
+        palette->data[5] = 0x00;
     } else {
-        palette[0] = 0x00;
-        palette[1] = 0x00;
-        palette[2] = 0x00;
-        palette[3] = 0xff;
-        palette[4] = 0xff;
-        palette[5] = 0xff;
+        palette->data[0] = 0x00;
+        palette->data[1] = 0x00;
+        palette->data[2] = 0x00;
+        palette->data[3] = 0xff;
+        palette->data[4] = 0xff;
+        palette->data[5] = 0xff;
     }
 
     return palette;
 }
 
 
-static unsigned char *
-prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
+static sixel_palette_t *
+prepare_specified_palette(char const *mapfile, int reqcolors)
 {
     FILE *f;
     unsigned char *mappixels;
-    unsigned char *palette;
-    int origcolors;
+    sixel_palette_t *palette;
     int map_sx;
     int map_sy;
     int frame_count;
     int loop_count;
     int delay;
+    int ret;
 
     mappixels = load_image_file(mapfile, &map_sx, &map_sy,
                                 &frame_count, &loop_count, &delay);
     if (!mappixels) {
         return NULL;
     }
-    palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3,
-                              reqcolors, pncolors, &origcolors,
-                              LARGE_NORM, REP_CENTER_BOX, QUALITY_HIGH);
+    palette = sixel_palette_create(reqcolors);
+    ret = sixel_prepare_palette(mappixels, map_sx, map_sy, 3,
+                                LARGE_NORM, REP_CENTER_BOX, QUALITY_HIGH,
+                                palette);
+    if (ret != 0) {
+        sixel_palette_unref(palette);
+        return NULL;
+    }
     return palette;
 }
 
@@ -168,20 +172,23 @@ typedef struct FrameSet {
 } frame_set_t;
 
 
-static unsigned char *
-prepare_palette(unsigned char *frame, int sx, int sy,
-                settings_t *psettings,
-                int *pncolors, int *porigcolors)
+sixel_palette_t *
+prepare_palette(unsigned char *frame, int sx, int sy, settings_t *psettings)
 {
-    unsigned char *palette;
+    sixel_palette_t *palette;
+    int ret;
 
     if (psettings->monochrome) {
         palette = prepare_monochrome_palette(psettings->finvert);
-        *pncolors = 2;
+        if (!palette) {
+            return NULL;
+        }
     } else if (psettings->mapfile) {
         palette = prepare_specified_palette(psettings->mapfile,
-                                            psettings->reqcolors,
-                                            pncolors);
+                                            psettings->reqcolors);
+        if (!palette) {
+            return NULL;
+        }
     } else {
         if (psettings->method_for_largest == LARGE_AUTO) {
             psettings->method_for_largest = LARGE_NORM;
@@ -196,14 +203,18 @@ prepare_palette(unsigned char *frame, int sx, int sy,
                 psettings->quality_mode = QUALITY_LOW;
             }
         }
-        palette = LSQ_MakePalette(frame, sx, sy, 3,
-                                  psettings->reqcolors,
-                                  pncolors,
-                                  porigcolors,
-                                  psettings->method_for_largest,
-                                  psettings->method_for_rep,
-                                  psettings->quality_mode);
-        if (*porigcolors <= *pncolors) {
+
+        palette = sixel_palette_create(psettings->reqcolors);
+        ret = sixel_prepare_palette(frame, sx, sy, 3,
+                                    psettings->method_for_largest,
+                                    psettings->method_for_rep,
+                                    psettings->quality_mode,
+                                    palette);
+        if (ret != 0) {
+            sixel_palette_unref(palette);
+            return NULL;
+        }
+        if (palette->origcolors <= palette->ncolors) {
             psettings->method_for_diffuse = DIFFUSE_NONE;
         }
     }
@@ -260,10 +271,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     unsigned char **frames = NULL;
     unsigned char *scaled_frame = NULL;
     unsigned char *mappixels = NULL;
-    unsigned char *palette = NULL;
     unsigned char *p = NULL;
-    int ncolors;
-    int origcolors;
     LSImagePtr im = NULL;
     LSImagePtr *image_array = NULL;
     LSOutputContextPtr context = NULL;
@@ -278,6 +286,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     FILE *f;
     int size;
     unsigned short cachetable[1 << 3 * 5];
+    sixel_palette_t *palette;
 
     frame_count = 1;
     loop_count = 1;
@@ -338,7 +347,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                                      psettings->pixelwidth,
                                      psettings->pixelheight,
                                      psettings->method_for_resampling);
-            memcpy(p + size * n, scaled_frame, size); 
+            memcpy(p + size * n, scaled_frame, size);
         }
         for (n = 0; n < frame_count; ++n) {
             frames[n] = p + size * n;
@@ -350,9 +359,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
     /* prepare palette */
-    palette = prepare_palette(pixels, sx, sy * frame_count,
-                              psettings, 
-                              &ncolors, &origcolors);
+    palette = prepare_palette(pixels, sx, sy * frame_count, psettings);
     if (!palette) {
         nret = -1;
         goto end;
@@ -375,29 +382,19 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         }
 
         /* create intermidiate bitmap image */
-        im = LSImage_create(sx, sy, 1, ncolors);
+        im = sixel_create_image(frames[n], sx, sy, 3, palette);
         if (!im) {
             nret = -1;
             goto end;
         }
 
-        nret = LSQ_ApplyPalette(frames[n], sx, sy, 3,
-                                palette, ncolors,
-                                psettings->method_for_diffuse,
-                                /* foptimize */ 1,
-                                NULL,
-                                im->pixels);
+        nret = sixel_apply_palette(im, psettings->method_for_diffuse,
+                                   palette->optimized, palette->cachetable);
 
         if (nret != 0) {
             goto end;
         }
 
-        for (i = 0; i < ncolors; i++) {
-            LSImage_setpalette(im, i,
-                               palette[i * 3],
-                               palette[i * 3 + 1],
-                               palette[i * 3 + 2]);
-        }
         if (psettings->monochrome) {
             im->keycolor = 0;
         } else {
@@ -465,8 +462,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                 printf("\033[%d*z", n);
                 fflush(stdout);
 #if HAVE_USLEEP
-                if (!psettings->fignore_delay) {
-                    usleep(10000 * delay);
+                if (!psettings->fignore_delay && delay > 1) {
+                    usleep(10000 * (delay - 1));
                 }
 #endif
 #if HAVE_SIGNAL
@@ -501,8 +498,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                 }
 #endif
 #if HAVE_USLEEP
-                if (!psettings->fignore_delay) {
-                    usleep(10000 * delay);
+                if (!psettings->fignore_delay && delay > 1) {
+                    usleep(10000 * (delay - 1));
                 }
 #endif
             }
@@ -524,6 +521,9 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     nret = 0;
 
 end:
+    if (palette) {
+        sixel_palette_unref(palette);
+    }
     if (frames) {
         free(frames);
     }
@@ -536,11 +536,9 @@ end:
     if (mappixels) {
         free(mappixels);
     }
-    if (palette) {
-        LSQ_FreePalette(palette);
-    }
     if (image_array) {
         for (n = 0; n < frame_count; ++n) {
+            image_array[n]->pixels = NULL;
             LSImage_destroy(image_array[n]);
         }
         free(image_array);

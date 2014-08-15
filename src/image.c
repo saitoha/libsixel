@@ -44,8 +44,26 @@ LSImage_create(int sx, int sy, int depth, int ncolors)
     im->sx = sx;
     im->sy = sy;
     im->depth = depth;
-    im->ncolors = ncolors;
     im->keycolor = -1;
+    im->palette = sixel_palette_create(ncolors);
+    return im;
+}
+
+
+LSImagePtr
+sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
+                   sixel_palette_t *palette)
+{
+    LSImagePtr im;
+
+    im = (LSImagePtr)malloc(sizeof(LSImage));
+    im->pixels = pixels;
+    im->sx = sx;
+    im->sy = sy;
+    im->depth = depth;
+    im->keycolor = -1;
+    im->palette = palette;
+    sixel_palette_ref(palette);
     return im;
 }
 
@@ -53,9 +71,20 @@ LSImage_create(int sx, int sy, int depth, int ncolors)
 void
 LSImage_setpalette(LSImagePtr im, int n, int r, int g, int b)
 {
-    im->red[n] = r;
-    im->green[n] = g;
-    im->blue[n] = b;
+    im->palette->data[n * 3 + 0] = r;
+    im->palette->data[n * 3 + 1] = g;
+    im->palette->data[n * 3 + 2] = b;
+}
+
+
+void
+sixel_set_palette(LSImagePtr im, sixel_palette_t *palette)
+{
+    if (im->palette) {
+        sixel_palette_unref(im->palette);
+    }
+    im->palette = palette;
+    sixel_palette_ref(palette);
 }
 
 
@@ -84,7 +113,12 @@ LSImage_copy(LSImagePtr dst, LSImagePtr src, int w, int h)
 void
 LSImage_destroy(LSImagePtr im)
 {
-    free(im->pixels);
+    if (im->palette) {
+        sixel_palette_unref(im->palette);
+    }
+    if (im->pixels) {
+        free(im->pixels);
+    }
     free(im);
 }
 

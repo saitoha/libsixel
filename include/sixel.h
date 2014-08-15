@@ -25,6 +25,16 @@
 #define PALETTE_MAX 256
 
 
+typedef struct sixel_palette {
+    unsigned int ref;
+    unsigned char *data;
+    unsigned short *cachetable;
+    int reqcolors;  /* requested colors */
+    int ncolors;    /* active colors */
+    int origcolors; /* original colors */
+    int optimized;
+} sixel_palette_t;
+
 /* LSImage definition */
 typedef struct LSImageStruct {
     /* Palette-based image pixels */
@@ -32,10 +42,7 @@ typedef struct LSImageStruct {
     int sx;
     int sy;
     int depth;
-    int ncolors;
-    int red[PALETTE_MAX];
-    int green[PALETTE_MAX];
-    int blue[PALETTE_MAX];
+    sixel_palette_t *palette;
     int keycolor;  /* background color */
 } LSImage, *LSImagePtr;
 
@@ -102,11 +109,18 @@ extern "C" {
 LSImagePtr
 LSImage_create(int sx, int sy, int depth, int ncolors);
 
+LSImagePtr
+sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
+                   sixel_palette_t *palette);
+
 void
 LSImage_destroy(LSImagePtr im);
 
 void
 LSImage_setpalette(LSImagePtr im, int n, int r, int g, int b);
+
+void
+sixel_set_palette(LSImagePtr im, sixel_palette_t *palette);
 
 void
 LSImage_setpixels(LSImagePtr im, unsigned char *pixels);
@@ -184,40 +198,58 @@ enum qualityMode {
 };
 
 
+/* the palette manipulation API */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* exported functions */
 
-/* the palette manipulation API */
+sixel_palette_t *
+sixel_palette_create(int ncolors);
 
+void
+sixel_palette_destroy(sixel_palette_t *palette);
+
+void
+sixel_palette_ref(sixel_palette_t *palette);
+
+void
+sixel_palette_unref(sixel_palette_t *palette);
+
+int
+sixel_prepare_palette(unsigned char *data, int width, int height, int depth,
+                      enum methodForLargest const methodForLargest,
+                      enum methodForRep const methodForRep,
+                      enum qualityMode const qualityMode,
+                      sixel_palette_t *palette);
+
+int
+sixel_apply_palette(LSImagePtr im,
+                    enum methodForDiffuse const methodForDiffuse,
+                    int foptimize,
+                    unsigned short *cachetable);
+
+/* deprecated */
 unsigned char *
-LSQ_MakePalette(unsigned char *data,
-                int x,
-                int y,
-                int depth,
-                int reqcolors,
-                int *ncolors,
-                int *origcolors,
+LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
+                int reqcolors, int *ncolors, int *origcolors,
                 enum methodForLargest const methodForLargest,
                 enum methodForRep const methodForRep,
                 enum qualityMode const qualityMode);
 
-
+/* deprecated */
 int
-LSQ_ApplyPalette(unsigned char *data,
-                 int width,
-                 int height,
-                 int depth,
-                 unsigned char *palette,
-                 int ncolor,
+LSQ_ApplyPalette(unsigned char *data, int width, int height, int depth,
+                 unsigned char *palette, int ncolor,
                  enum methodForDiffuse const methodForDiffuse,
                  int foptimize,
                  unsigned short *cachetable,
                  unsigned char *result);
 
 
+/* deprecated */
 extern void
 LSQ_FreePalette(unsigned char * data);
 

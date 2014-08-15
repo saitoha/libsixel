@@ -1119,6 +1119,109 @@ LSQ_FreePalette(unsigned char * data)
     free(data);
 }
 
+
+sixel_palette_t *
+sixel_palette_create(int ncolors)
+{
+    sixel_palette_t *result;
+    int headsize;
+    int datasize;
+    int cachesize;
+
+    headsize = sizeof(sixel_palette_t);
+    datasize = ncolors * sizeof(unsigned char);
+    cachesize = (1 << 3 * 5) * sizeof(unsigned short);
+
+#if HAVE_CALLOC
+    result = malloc(headsize + datasize + cachesize);
+    if (result == NULL) {
+        return NULL;
+    }
+    memset(result, 0, headsize + datasize + cachesize);
+#else
+    result = malloc(headsize + datasize + cachesize);
+    if (result == NULL) {
+        return NULL;
+    }
+#endif
+    result->ref = 1;
+    result->data = (unsigned char*)(result + 1);
+    result->cachetable = (unsigned short *)(result->data + datasize);
+    result->reqcolors = ncolors;
+    result->ncolors = (-1);
+    result->origcolors = (-1);
+
+    return result;
+}
+
+void
+sixel_palette_destroy(sixel_palette_t *palette)
+{
+    free(palette);
+}
+
+void
+sixel_palette_ref(sixel_palette_t *palette)
+{
+    /* TODO: be thread safe */
+    ++palette->ref;
+}
+
+void
+sixel_palette_unref(sixel_palette_t *palette)
+{
+    /* TODO: be thread safe */
+    if (--palette->ref == 0) {
+        sixel_palette_destroy(palette);
+    }
+}
+
+int
+sixel_prepare_palette(unsigned char *data, int width, int height, int depth,
+                      enum methodForLargest const methodForLargest,
+                      enum methodForRep const methodForRep,
+                      enum qualityMode const qualityMode,
+                      sixel_palette_t *palette)
+{
+    unsigned char *buf;
+
+    buf = LSQ_MakePalette(data, width, height, depth,
+                          palette->reqcolors, &palette->ncolors,
+                          &palette->origcolors, methodForLargest,
+                          methodForRep, qualityMode);
+    memcpy(palette->data, buf, palette->ncolors * sizeof(unsigned char));
+    free(buf);
+
+    if (palette->data == NULL) {
+        return (-1);
+    }
+
+    palette->optimized = 1;
+
+    return 0;
+}
+
+int
+sixel_apply_palette(LSImagePtr im,
+                    enum methodForDiffuse const methodForDiffuse,
+                    int foptimize,
+                    unsigned short *cachetable)
+{
+    int ret;
+
+    ret = LSQ_ApplyPalette(im->pixels, im->sx, im->sy, im->depth,
+                           im->palette->data, im->palette->ncolors,
+                           methodForDiffuse,
+                           foptimize, cachetable, im->pixels);
+
+    if (ret != 0) {
+        return ret;
+    }
+
+    return 0;
+}
+
+
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
 /* EOF */
