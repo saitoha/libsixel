@@ -257,6 +257,9 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     height = im->sy;
 
     maxPalet = im->palette->ncolors;
+    if (maxPalet < 1) {
+        return (-1);
+    }
     back = im->keycolor;
     len = maxPalet * width;
     context->active_palette = (-1);
@@ -271,7 +274,6 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     }
     memset(map, 0, len);
 #endif
-
     for (n = 0 ; n < maxPalet ; n++) {
         context->conv_palette[n] = list[n] = n;
     }

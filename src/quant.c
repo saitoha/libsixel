@@ -1189,12 +1189,11 @@ sixel_prepare_palette(unsigned char *data, int width, int height, int depth,
                           palette->reqcolors, &palette->ncolors,
                           &palette->origcolors, methodForLargest,
                           methodForRep, qualityMode);
-    memcpy(palette->data, buf, palette->ncolors * sizeof(unsigned char));
-    free(buf);
-
-    if (palette->data == NULL) {
+    if (buf == NULL) {
         return (-1);
     }
+    memcpy(palette->data, buf, palette->ncolors * depth);
+    free(buf);
 
     palette->optimized = 1;
 
