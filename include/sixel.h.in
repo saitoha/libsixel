@@ -236,7 +236,7 @@ LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
                 int reqcolors, int *ncolors, int *origcolors,
                 enum methodForLargest const methodForLargest,
                 enum methodForRep const methodForRep,
-                enum qualityMode const qualityMode) ;
+                enum qualityMode const qualityMode) @attr_func_deprecated@;
 
 /* deprecated */
 int
@@ -245,12 +245,12 @@ LSQ_ApplyPalette(unsigned char *data, int width, int height, int depth,
                  enum methodForDiffuse const methodForDiffuse,
                  int foptimize,
                  unsigned short *cachetable,
-                 unsigned char *result) ;
+                 unsigned char *result) @attr_func_deprecated@;
 
 
 /* deprecated */
 extern void
-LSQ_FreePalette(unsigned char * data) ;
+LSQ_FreePalette(unsigned char * data) @attr_func_deprecated@;
 
 #ifdef __cplusplus
 }

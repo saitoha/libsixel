@@ -408,6 +408,21 @@ http://netpbm.sourceforge.net/
 > implied warranty.
 
 
+### ax_gcc_var_attribute / ax_gcc_func_attribute
+
+These are useful m4 macros for detecting some GCC attributes.
+
+http://www.gnu.org/software/autoconf-archive/ax_gcc_var_attribute.html
+http://www.gnu.org/software/autoconf-archive/ax_gcc_func_attribute.html
+
+> Copyright (c) 2013 Gabriele Svelto <gabriele.svelto@gmail.com>
+>
+> Copying and distribution of this file, with or without modification, are
+> permitted in any medium without royalty provided the copyright notice
+> and this notice are preserved.  This file is offered as-is, without any
+> warranty.
+
+
 ### test images
 
 #### http://public-domain-photos.com/
