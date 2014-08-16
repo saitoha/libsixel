@@ -212,27 +212,20 @@ extern "C" {
 
 /* exported functions */
 
-sixel_dither_t *
-sixel_dither_create(int ncolors);
+sixel_dither_t * sixel_dither_create(int ncolors);
 
-void
-sixel_dither_destroy(sixel_dither_t *dither);
+void sixel_dither_destroy(sixel_dither_t *dither);
 
-void
-sixel_dither_ref(sixel_dither_t *dither);
+void sixel_dither_ref(sixel_dither_t *dither);
 
-void
-sixel_dither_unref(sixel_dither_t *dither);
+void sixel_dither_unref(sixel_dither_t *dither);
 
-sixel_dither_t *
-sixel_dither_get(int builtin_dither);
+sixel_dither_t * sixel_dither_get(int builtin_dither);
 
-int
-sixel_prepare_palette(sixel_dither_t *dither, unsigned char *data,
-                      int width, int height, int depth);
+int sixel_prepare_palette(sixel_dither_t *dither, unsigned char *data,
+                          int width, int height, int depth);
 
-int
-sixel_apply_palette(LSImagePtr im);
+int sixel_apply_palette(LSImagePtr im);
 
 
 /* deprecated */

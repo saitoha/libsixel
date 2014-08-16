@@ -1192,32 +1192,23 @@ sixel_dither_create(int ncolors)
     sixel_dither_t *dither;
     int headsize;
     int datasize;
-    int cachesize;
     int wholesize;
 
     headsize = sizeof(sixel_dither_t);
     datasize = ncolors * 3;
-    cachesize = (1 << 3 * 5) * sizeof(unsigned short);
-    wholesize = headsize + datasize + cachesize;
+    wholesize = headsize + datasize;// + cachesize;
 
-#if HAVE_CALLOC
-    dither = calloc(wholesize, sizeof(unsigned char));
-    if (dither == NULL) {
-        return NULL;
-    }
-#else
     dither = malloc(wholesize);
     if (dither == NULL) {
         return NULL;
     }
-    memset(dither, 0, wholesize);
-#endif
     dither->ref = 1;
     dither->palette = (unsigned char*)(dither + 1);
-    dither->cachetable = (unsigned short *)(dither->palette + datasize);
+    dither->cachetable = NULL;
     dither->reqcolors = ncolors;
     dither->ncolors = ncolors;
     dither->origcolors = (-1);
+    dither->optimized = 0;
     dither->method_for_largest = LARGE_NORM;
     dither->method_for_rep = REP_CENTER_BOX;
     dither->method_for_diffuse = DIFFUSE_FS;
@@ -1230,6 +1221,9 @@ sixel_dither_create(int ncolors)
 void
 sixel_dither_destroy(sixel_dither_t *dither)
 {
+    if (dither->cachetable) {
+        free(dither->cachetable);
+    }
     free(dither);
 }
 
@@ -1274,6 +1268,7 @@ sixel_dither_get(int builtin_dither)
 
     dither = sixel_dither_create(ncolors);
     dither->palette = palette;
+    dither->optimized = 1;
 
     return dither;
 }
@@ -1306,18 +1301,39 @@ sixel_apply_palette(LSImagePtr im)
 {
     int ret;
     unsigned char *src;
+    int bufsize;
+    int cachesize;
+    sixel_dither_t *dither;
 
+    dither = im->dither;
     src = im->pixels;
+
     if (im->borrowed) {
-        im->pixels = malloc(im->sx * im->sy * sizeof(unsigned char));
+        bufsize = im->sx * im->sy * sizeof(unsigned char);
+        im->pixels = malloc(bufsize);
+        if (im->pixels == NULL) {
+            return (-1);
+        }
         im->borrowed = 0;
     }
 
-    ret = LSQ_ApplyPalette(src, im->sx, im->sy, im->depth,
-                           im->dither->palette, im->dither->ncolors,
-                           im->dither->method_for_diffuse,
-                           im->dither->optimized,
-                           im->dither->cachetable, im->pixels);
+    if (im->dither->cachetable == NULL) {
+        cachesize = (1 << 3 * 5) * sizeof(unsigned short);
+#if HAVE_CALLOC
+        im->dither->cachetable = calloc(cachesize, 1);
+#else
+        im->dither->cachetable = malloc(cachesize, 1);
+        memset(im->dither->cachetable, 0, cachesize);
+#endif
+    }
+
+    ret = LSQ_ApplyPalette(src, im->sx, im->sy, 3,
+                           dither->palette,
+                           dither->ncolors,
+                           dither->method_for_diffuse,
+                           dither->optimized,
+                           dither->cachetable,
+                           im->pixels);
 
     if (ret != 0) {
         return ret;
