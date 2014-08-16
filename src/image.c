@@ -44,8 +44,27 @@ LSImage_create(int sx, int sy, int depth, int ncolors)
     im->sx = sx;
     im->sy = sy;
     im->depth = depth;
-    im->ncolors = ncolors;
     im->keycolor = -1;
+    im->dither = sixel_dither_create(ncolors);
+    return im;
+}
+
+
+LSImagePtr
+sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
+                   int borrowed, sixel_dither_t *dither)
+{
+    LSImagePtr im;
+
+    im = (LSImagePtr)malloc(sizeof(LSImage));
+    im->pixels = pixels;
+    im->sx = sx;
+    im->sy = sy;
+    im->depth = depth;
+    im->borrowed = borrowed;
+    im->keycolor = -1;
+    im->dither = dither;
+    sixel_dither_ref(dither);
     return im;
 }
 
@@ -53,9 +72,9 @@ LSImage_create(int sx, int sy, int depth, int ncolors)
 void
 LSImage_setpalette(LSImagePtr im, int n, int r, int g, int b)
 {
-    im->red[n] = r;
-    im->green[n] = g;
-    im->blue[n] = b;
+    im->dither->palette[n * 3 + 0] = r;
+    im->dither->palette[n * 3 + 1] = g;
+    im->dither->palette[n * 3 + 2] = b;
 }
 
 
@@ -84,7 +103,12 @@ LSImage_copy(LSImagePtr dst, LSImagePtr src, int w, int h)
 void
 LSImage_destroy(LSImagePtr im)
 {
-    free(im->pixels);
+    if (im->dither) {
+        sixel_dither_unref(im->dither);
+    }
+    if (im->pixels && !im->borrowed) {
+        free(im->pixels);
+    }
     free(im);
 }
 

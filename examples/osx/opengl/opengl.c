@@ -1,27 +1,47 @@
-#if !defined(__APPLE__) || !defined(__MACH__)
-# error "Now this program works on only OSX"
-#endif
+/**
+ * Example program for libsixel-OpenGL integration
+ *
+ * Hayaki Saito <user@zuse.jp>
+ *
+ * I declared this program is in Public Domain (CC0 - "No Rights Reserved"),
+ * This file is offered AS-IS, without any warranty.
+ *
+ */
+#if defined(__APPLE__) && defined(__MACH__)
 # include <OpenGL/gl.h>
 # include <OpenGL/glu.h>
 # include <OpenGL/OpenGL.h>
+#else
+# error Now this example only works on OSX. I hope someone port this onto other environments.\n
+# include <GL/gl.h>
+# include <GL/glu.h>
+#endif
 #include <sys/signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sixel.h>
 
+#include <sixel.h>  /* libsixel */
+
+#if defined(__APPLE__) && defined(__MACH__)
 static CGLPBufferObj pbuffer;
 static CGLContextObj context;
+#endif
 static volatile int signaled = 0;
 
-static void handler(int sig)
+static void sighandler(int sig)
 {
     signaled = sig;
 }
 
 static CGLError setup(int width, int height)
 {
-    CGLPixelFormatAttribute pfattr[] = { kCGLPFAPBuffer, (CGLPixelFormatAttribute)0 };
+#if defined(__APPLE__) && defined(__MACH__)
+    /* OpenGL PBuffer initialization: OSX specific */
+    CGLPixelFormatAttribute pfattr[] = {
+        kCGLPFAPBuffer,
+        (CGLPixelFormatAttribute)0
+    };
     CGLPixelFormatObj pixformat;
     GLint npixels;
     CGLError e;
@@ -57,14 +77,24 @@ static CGLError setup(int width, int height)
        return e;
     }
     return kCGLNoError;
+#else
+    /* TODO: pbuffer initialization */
+    return 0;
+#endif
 }
 
 static CGLError cleanup()
 {
+#if defined(__APPLE__) && defined(__MACH__)
     (void)CGLDestroyContext(context);
     (void)CGLDestroyPBuffer(pbuffer);
-    return kCGLNoError;
+    return kCGLNoError /* 0 */;
+#else
+    /* TODO: cleanup pbuffer and OpenGL context */
+    return 0;
+#endif
 }
+
 
 static int draw_scene()
 {
@@ -133,25 +163,23 @@ static int draw_scene()
     return 0;
 }
 
-static int output_sixel(unsigned char *pixbuf, int width, int height, int ncolors, int depth)
+static int
+output_sixel(unsigned char *pixbuf, int width, int height,
+             int ncolors, int depth)
 {
     LSImagePtr im;
     LSOutputContextPtr context;
-    unsigned char *palette;
-    int i;
+    int ret;
+    sixel_dither_t* dither;
 
-    im = LSImage_create(width, height, 1, ncolors);
-    palette = LSQ_MakePalette(pixbuf, width, height, depth, ncolors, &ncolors, NULL,
-                              LARGE_NORM, REP_CENTER_BOX, QUALITY_HIGH);
-    for (i = 0; i < ncolors; i++)
-        LSImage_setpalette(im, i, palette[i * 3], palette[i * 3 + 1], palette[i * 3 + 2]);
-    LSQ_ApplyPalette(pixbuf, width, height, depth,
-                     palette, ncolors, DIFFUSE_FS, 1, NULL, im->pixels);
-
+    dither = sixel_dither_create(ncolors);
+    ret = sixel_prepare_palette(dither, pixbuf, width, height, depth);
+    im = sixel_create_image(pixbuf, width, height, depth, 1, dither);
+    sixel_apply_palette(im);
     context = LSOutputContext_create(putchar, printf);
     LibSixel_LSImageToSixel(im, context);
-    LSQ_FreePalette(palette);
     LSOutputContext_destroy(context);
+    sixel_dither_unref(dither);
     LSImage_destroy(im);
 
     return 0;
@@ -165,9 +193,9 @@ int main(int argc, char** argv)
 
     static char *pixbuf;
 
-    if (signal(SIGINT, handler) == SIG_ERR)
+    if (signal(SIGINT, sighandler) == SIG_ERR)
        return (-1);
-    if (setup(width, height) != kCGLNoError)
+    if (setup(width, height) != 0)
        return (-1);
 
     glShadeModel(GL_SMOOTH);
@@ -203,7 +231,7 @@ int main(int argc, char** argv)
     printf("\e\\");
     free(pixbuf);
 
-    if (cleanup() != kCGLNoError)
+    if (cleanup() != 0)
        return (-1);
     return 0;
 }
