@@ -985,7 +985,7 @@ lookup_fast(unsigned char const * const pixel,
     return index;
 }
 
-static const unsigned char pal_xterm256b[] = {
+static const unsigned char pal_xterm256[] = {
     0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x80, 0x00, 0x80, 0x80, 0x00,
     0x00, 0x00, 0x80, 0x80, 0x00, 0x80, 0x00, 0x80, 0x80, 0xc0, 0xc0, 0xc0,
     0x80, 0x80, 0x80, 0xff, 0x00, 0x00, 0x00, 0xff, 0x00, 0xff, 0xff, 0x00,
@@ -1260,13 +1260,13 @@ sixel_dither_get(int builtin_dither)
     sixel_dither_t *dither;
 
     switch (builtin_dither) {
-    case BUILTIN_XTERM16D:
+    case BUILTIN_XTERM16:
         ncolors = 16;
-        palette = (unsigned char *)pal_xterm256b;
+        palette = (unsigned char *)pal_xterm256;
         break;
-    case BUILTIN_XTERM256D:
+    case BUILTIN_XTERM256:
         ncolors = 256;
-        palette = (unsigned char *)pal_xterm256b;
+        palette = (unsigned char *)pal_xterm256;
         break;
     default:
         return NULL;

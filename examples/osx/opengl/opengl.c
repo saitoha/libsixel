@@ -1,17 +1,32 @@
-#if !defined(__APPLE__) || !defined(__MACH__)
-# error "Now this program works on only OSX"
-#endif
+/**
+ * Example program for libsixel-OpenGL integration
+ *
+ * Hayaki Saito <user@zuse.jp>
+ *
+ * I declared this program is in Public Domain (CC0 - "No Rights Reserved"),
+ * This file is offered AS-IS, without any warranty.
+ *
+ */
+#if defined(__APPLE__) && defined(__MACH__)
 # include <OpenGL/gl.h>
 # include <OpenGL/glu.h>
 # include <OpenGL/OpenGL.h>
+#else
+# error Now this example only works on OSX. I hope someone port this onto other environments.\n
+# include <GL/gl.h>
+# include <GL/glu.h>
+#endif
 #include <sys/signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sixel.h>
 
+#include <sixel.h>  /* libsixel */
+
+#if defined(__APPLE__) && defined(__MACH__)
 static CGLPBufferObj pbuffer;
 static CGLContextObj context;
+#endif
 static volatile int signaled = 0;
 
 static void sighandler(int sig)
@@ -21,6 +36,8 @@ static void sighandler(int sig)
 
 static CGLError setup(int width, int height)
 {
+#if defined(__APPLE__) && defined(__MACH__)
+    /* OpenGL PBuffer initialization: OSX specific */
     CGLPixelFormatAttribute pfattr[] = {
         kCGLPFAPBuffer,
         (CGLPixelFormatAttribute)0
@@ -60,14 +77,24 @@ static CGLError setup(int width, int height)
        return e;
     }
     return kCGLNoError;
+#else
+    /* TODO: pbuffer initialization */
+    return 0;
+#endif
 }
 
 static CGLError cleanup()
 {
+#if defined(__APPLE__) && defined(__MACH__)
     (void)CGLDestroyContext(context);
     (void)CGLDestroyPBuffer(pbuffer);
-    return kCGLNoError;
+    return kCGLNoError /* 0 */;
+#else
+    /* TODO: cleanup pbuffer and OpenGL context */
+    return 0;
+#endif
 }
+
 
 static int draw_scene()
 {
@@ -168,7 +195,7 @@ int main(int argc, char** argv)
 
     if (signal(SIGINT, sighandler) == SIG_ERR)
        return (-1);
-    if (setup(width, height) != kCGLNoError)
+    if (setup(width, height) != 0)
        return (-1);
 
     glShadeModel(GL_SMOOTH);
@@ -204,7 +231,7 @@ int main(int argc, char** argv)
     printf("\e\\");
     free(pixbuf);
 
-    if (cleanup() != kCGLNoError)
+    if (cleanup() != 0)
        return (-1);
     return 0;
 }

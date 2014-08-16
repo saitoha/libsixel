@@ -200,10 +200,10 @@ enum qualityMode {
 
 /* built-in dither */
 enum builtinDither {
-    BUILTIN_XTERM16W  = 0, /* xterm 16color white background */
-    BUILTIN_XTERM16D  = 1, /* xterm 16color dark background */
-    BUILTIN_XTERM256W = 2, /* xterm 256color white background */
-    BUILTIN_XTERM256D = 3, /* xterm 256color dark background */
+    BUILTIN_XTERM16  = 0, /* xterm 16color white background */
+    BUILTIN_XTERM16  = 1, /* xterm 16color dark background */
+    BUILTIN_XTERM256 = 2, /* xterm 256color white background */
+    BUILTIN_XTERM256 = 3, /* xterm 256color dark background */
 };
 
 /* the palette manipulation API */

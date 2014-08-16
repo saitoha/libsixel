@@ -442,7 +442,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                 fflush(stdout);
 #if HAVE_USLEEP
                 if (!psettings->fignore_delay && delay > 1) {
-                    usleep(10000 * (delay - 1));
+                    usleep(10000 * (delay));
                 }
 #endif
 #if HAVE_SIGNAL
@@ -478,7 +478,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 #endif
 #if HAVE_USLEEP
                 if (!psettings->fignore_delay && delay > 1) {
-                    usleep(10000 * (delay - 1));
+                    usleep(10000 * (delay));
                 }
 #endif
             }
