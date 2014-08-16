@@ -301,6 +301,7 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
                 return (-1);
             }
         }
+        context->fn_putchar('\n');
     }
 
     for (y = i = 0 ; y < height ; y++) {
