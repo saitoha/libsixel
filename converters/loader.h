@@ -28,7 +28,7 @@ extern "C" {
 
 unsigned char *
 load_image_file(char const *filename, int *psx, int *psy,
-                int *pframe_count, int *ploop_count, int *pdelay);
+                int *pframe_count, int *ploop_count, int **ppdelay);
 
 #ifdef __cplusplus
 }

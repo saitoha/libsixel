@@ -29,8 +29,16 @@
 
 #if defined(HAVE_UNISTD_H)
 # include <unistd.h>
-#elif defined(HAVE_SYS_UNISTD_H)
+#endif
+#if defined(HAVE_SYS_UNISTD_H)
 # include <sys/unistd.h>
+#endif
+
+#if defined(HAVE_TIME_H)
+# include <time.h>
+#endif
+#if defined(HAVE_SYS_TIME_H)
+# include <sys/time.h>
 #endif
 
 #if defined(HAVE_GETOPT_H)
@@ -47,7 +55,8 @@
 
 #if defined(HAVE_SIGNAL_H)
 # include <signal.h>
-#elif defined(HAVE_SYS_SIGNAL_H)
+#endif
+#if defined(HAVE_SYS_SIGNAL_H)
 # include <sys/signal.h>
 #endif
 
@@ -105,11 +114,16 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
     int map_sy;
     int frame_count;
     int loop_count;
-    int delay;
     int ret;
+    int *delays;
+
+    delays = NULL;
 
     mappixels = load_image_file(mapfile, &map_sx, &map_sy,
-                                &frame_count, &loop_count, &delay);
+                                &frame_count, &loop_count, &delays);
+    if (delays) {
+        free(delays);
+    }
     if (!mappixels) {
         return NULL;
     }
@@ -153,6 +167,9 @@ typedef struct Settings {
     int pixelheight;
     int percentwidth;
     int percentheight;
+    int macro_number;
+    int show_version;
+    int show_help;
 } settings_t;
 
 
@@ -262,17 +279,20 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int sx, sy;
     int frame_count;
     int loop_count;
-    int delay;
+    int *delays;
     int i;
     int c;
     int n;
     int nret = -1;
     FILE *f;
     int size;
+    int dulation = 0;
+    int lag = 0;
+    clock_t start;
 
     frame_count = 1;
     loop_count = 1;
-    delay = 0;
+    delays = 0;
 
     if (psettings->reqcolors < 2) {
         psettings->reqcolors = 2;
@@ -281,7 +301,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
     pixels = load_image_file(filename, &sx, &sy,
-                             &frame_count, &loop_count, &delay);
+                             &frame_count, &loop_count, &delays);
 
     if (pixels == NULL) {
         nret = -1;
@@ -411,17 +431,41 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         break;
     }
 
-    if (psettings->fuse_macro && frame_count > 1) {
+    if ((psettings->fuse_macro && frame_count > 1) || psettings->macro_number >= 0) {
         context = LSOutputContext_create(putchar_hex, printf_hex);
         context->has_8bit_control = psettings->f8bit;
-        for (n = 0; n < frame_count && n < 64; ++n) {
-            printf("\033P%d;0;1!z", n);
+        for (n = 0; n < frame_count; ++n) {
+#if HAVE_USLEEP && HAVE_CLOCK
+            start = clock();
+#endif
+            if (frame_count == 1 && psettings->macro_number >= 0) {
+                printf("\033P%d;0;1!z", psettings->macro_number);
+            } else {
+                printf("\033P%d;0;1!z", n);
+            }
             LibSixel_LSImageToSixel(image_array[n], context);
             printf("\033\\");
             if (loop_count == -1) {
                 printf("\033[H");
-                printf("\033[%d*z", n);
+                if (frame_count != 1 || psettings->macro_number < 0) {
+                    printf("\033[%d*z", n);
+                }
             }
+#if HAVE_USLEEP
+            if (delays != NULL && !psettings->fignore_delay) {
+# if HAVE_CLOCK
+                dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
+                lag = 0;
+# else
+                dulation = 0;
+# endif
+                if (dulation < 10000 * delays[n]) {
+                    usleep(10000 * delays[n] - dulation);
+                } else {
+                    lag = 10000 * delays[n] - dulation;
+                }
+            }
+#endif
 #if HAVE_SIGNAL
             if (signaled) {
                 break;
@@ -435,50 +479,81 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                 printf("\x1b\\");
             }
         }
-        for (c = 0; c != loop_count; ++c) {
-            for (n = 0; n < frame_count && n < 64; ++n) {
-                printf("\033[H");
-                printf("\033[%d*z", n);
-                fflush(stdout);
-#if HAVE_USLEEP
-                if (!psettings->fignore_delay && delay > 1) {
-                    usleep(10000 * (delay));
-                }
+        if (frame_count != 1 || psettings->macro_number < 0) {
+            for (c = 0; c != loop_count; ++c) {
+                for (n = 0; n < frame_count; ++n) {
+#if HAVE_USLEEP && HAVE_CLOCK
+                    if (frame_count > 1) {
+                        start = clock();
+                    }
 #endif
+                    printf("\033[H");
+                    printf("\033[%d*z", n);
+                    fflush(stdout);
+#if HAVE_USLEEP
+                    if (delays != NULL && !psettings->fignore_delay) {
+# if HAVE_CLOCK
+                        dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
+                        lag = 0;
+# else
+                        dulation = 0;
+# endif
+                        if (dulation < 10000 * delays[n]) {
+                            usleep(10000 * delays[n] - dulation);
+                        } else {
+                            lag = 10000 * delays[n] - dulation;
+                        }
+                    }
+#endif
+#if HAVE_SIGNAL
+                    if (signaled) {
+                        break;
+                    }
+#endif
+                }
 #if HAVE_SIGNAL
                 if (signaled) {
                     break;
                 }
 #endif
             }
-#if HAVE_SIGNAL
-            if (signaled) {
-                break;
-            }
-#endif
         }
-    } else {
+    } else { /* do not use macro */
         /* create output context */
         context = LSOutputContext_create(putchar, printf);
         context->has_8bit_control = psettings->f8bit;
         for (c = 0; c != loop_count; ++c) {
             for (n = 0; n < frame_count; ++n) {
-
                 if (frame_count > 1) {
+#if HAVE_USLEEP && HAVE_CLOCK
+                    if (frame_count > 1) {
+                        start = clock();
+                    }
+#endif
                     context->fn_printf("\033[H");
+                    fflush(stdout);
+#if HAVE_USLEEP && HAVE_CLOCK
+                    if (delays != NULL && !psettings->fignore_delay) {
+# if HAVE_CLOCK
+                        dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
+                        lag = 0;
+# else
+                        dulation = 0;
+# endif
+                        if (dulation < 10000 * delays[n]) {
+                            usleep(10000 * delays[n] - dulation);
+                        } else {
+                            lag = 10000 * delays[n] - dulation;
+                        }
+                    }
+#endif
                 }
-
                 /* convert image object into sixel */
                 LibSixel_LSImageToSixel(image_array[n], context);
 
 #if HAVE_SIGNAL
                 if (signaled) {
                     break;
-                }
-#endif
-#if HAVE_USLEEP
-                if (!psettings->fignore_delay && delay > 1) {
-                    usleep(10000 * (delay));
                 }
 #endif
             }
@@ -509,6 +584,9 @@ end:
     if (pixels) {
         free(pixels);
     }
+    if (delays) {
+        free(delays);
+    }
     if (scaled_frame) {
         free(scaled_frame);
     }
@@ -528,7 +606,166 @@ end:
 }
 
 
-int main(int argc, char *argv[])
+static
+void show_version()
+{
+    printf("img2sixel " PACKAGE_VERSION "\n"
+           "Copyright (C) 2014 Hayaki Saito <user@zuse.jp>.\n"
+           "\n"
+           "Permission is hereby granted, free of charge, to any person obtaining a copy of\n"
+           "this software and associated documentation files (the \"Software\"), to deal in\n"
+           "the Software without restriction, including without limitation the rights to\n"
+           "use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\n"
+           "the Software, and to permit persons to whom the Software is furnished to do so,\n"
+           "subject to the following conditions:\n"
+           "\n"
+           "The above copyright notice and this permission notice shall be included in all\n"
+           "copies or substantial portions of the Software.\n"
+           "\n"
+           "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"
+           "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\n"
+           "FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\n"
+           "COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\n"
+           "IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\n"
+           "CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n"
+          );
+}
+
+
+static
+void show_help()
+{
+    fprintf(stderr,
+            "Usage: img2sixel [Options] imagefiles\n"
+            "       img2sixel [Options] < imagefile\n"
+            "\n"
+            "Options:\n"
+            "-7, --7bit-mode            generate a sixel image for 7bit\n"
+            "                           terminals or printers (default)\n"
+            "-8, --8bit-mode            generate a sixel image for 8bit\n"
+            "                           terminals or printers\n"
+            "-p COLORS, --colors=COLORS specify number of colors to reduce\n"
+            "                           the image to (default=256)\n"
+            "-m FILE, --mapfile=FILE    transform image colors to match this\n"
+            "                           set of colorsspecify map\n"
+            "-e, --monochrome           output monochrome sixel image\n"
+            "                           this option assumes the terminal\n"
+            "                           background color is black\n"
+            "-i, --invert               assume the terminal background color\n"
+            "                           is white, make sense only when -e\n"
+            "                           option is given\n"
+            "-u, --use-macro            use DECDMAC and DEVINVM sequences to\n"
+            "                           optimize GIF animation rendering\n"
+            "-n, --macro-number         specify an number argument for\n"
+            "                           DECDMAC and make terminal memorize\n"
+            "                           SIXEL image. No image is shown if this\n"
+            "                           option is specified\n"
+            "-g, --ignore-delay         render GIF animation without delay\n"
+            "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
+            "                           choose diffusion method which used\n"
+            "                           with -p option (color reduction)\n"
+            "                           DIFFUSIONTYPE is one of them:\n"
+            "                             auto     -> choose diffusion type\n"
+            "                                         automatically (default)\n"
+            "                             none     -> do not diffuse\n"
+            "                             fs       -> Floyd-Steinberg method\n"
+            "                             atkinson -> Bill Atkinson's method\n"
+            "                             jajuni   -> Jarvis, Judice & Ninke\n"
+            "                             stucki   -> Stucki's method\n"
+            "                             burkes   -> Burkes' method\n"
+            "-f FINDTYPE, --find-largest=FINDTYPE\n"
+            "                           choose method for finding the largest\n"
+            "                           dimention of median cut boxes for\n"
+            "                           splitting, make sense only when -p\n"
+            "                           option (color reduction) is\n"
+            "                           specified\n"
+            "                           FINDTYPE is one of them:\n"
+            "                             auto -> choose finding method\n"
+            "                                     automatically (default)\n"
+            "                             norm -> simply comparing the\n"
+            "                                     range in RGB space\n"
+            "                             lum  -> transforming into\n"
+            "                                     luminosities before the\n"
+            "                                     comparison\n"
+            "-s SELECTTYPE, --select-color=SELECTTYPE\n"
+            "                           choose the method for selecting\n"
+            "                           representative color from each\n"
+            "                           median-cut box, make sense only\n"
+            "                           when -p option (color reduction) is\n"
+            "                           specified\n"
+            "                           SELECTTYPE is one of them:\n"
+            "                             auto     -> choose selecting\n"
+            "                                         method automatically\n"
+            "                                         (default)\n"
+            "                             center   -> choose the center of\n"
+            "                                         the box\n"
+            "                             average  -> caclulate the color\n"
+            "                                         average into the box\n"
+            "                             histgram -> similar with average\n"
+            "                                         but considers color\n"
+            "                                         histgram\n"
+            "-w WIDTH, --width=WIDTH    resize image to specific width\n"
+            "                           WIDTH is represented by the\n"
+            "                           following syntax\n"
+            "                             auto       -> preserving aspect\n"
+            "                                           ratio (default)\n"
+            "                             <number>%%  -> scale width with\n"
+            "                                           given percentage\n"
+            "                             <number>   -> scale width with\n"
+            "                                           pixel counts\n"
+            "                             <number>px -> scale width with\n"
+            "                                           pixel counts\n"
+            "-h HEIGHT, --height=HEIGHT resize image to specific height\n"
+            "                           HEIGHT is represented by the\n"
+            "                           following syntax\n"
+            "                             auto       -> preserving aspect\n"
+            "                                           ratio (default)\n"
+            "                             <number>%%  -> scale height with\n"
+            "                                           given percentage\n"
+            "                             <number>   -> scale height with\n"
+            "                                           pixel counts\n"
+            "                             <number>px -> scale height with\n"
+            "                                           pixel counts\n"
+            "-r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE\n"
+            "                           choose resampling filter used\n"
+            "                           with -w or -h option (scaling)\n"
+            "                           RESAMPLINGTYPE is one of them:\n"
+            "                             nearest  -> Nearest-Neighbor\n"
+            "                                         method\n"
+            "                             gaussian -> Gaussian filter\n"
+            "                             hanning  -> Hanning filter\n"
+            "                             hamming  -> Hamming filter\n"
+            "                             bilinear -> Bilinear filter\n"
+            "                                         (default)\n"
+            "                             welsh    -> Welsh filter\n"
+            "                             bicubic  -> Bicubic filter\n"
+            "                             lanczos2 -> Lanczos-2 filter\n"
+            "                             lanczos3 -> Lanczos-3 filter\n"
+            "                             lanczos4 -> Lanczos-4 filter\n"
+            "-q QUALITYMODE, --quality=QUALITYMODE\n"
+            "                           select quality of color\n"
+            "                           quanlization.\n"
+            "                             auto -> decide quality mode\n"
+            "                                     automatically (default)\n"
+            "                             high -> high quality and low\n"
+            "                                     speed mode\n"
+            "                             low  -> low quality and high\n"
+            "                                     speed mode\n"
+            "-l LOOPMODE, --loop-control=LOOPMODE\n"
+            "                           select loop control mode for GIF\n"
+            "                           animation.\n"
+            "                             auto   -> honor the setting of\n"
+            "                                       GIF header (default)\n"
+            "                             force   -> always enable loop\n"
+            "                             disable -> always disable loop\n"
+            "-V, --version              show version and license info\n"
+            "-H, --help                 show this help\n"
+            );
+}
+
+
+int
+main(int argc, char *argv[])
 {
     int n;
     int filecount = 1;
@@ -541,7 +778,7 @@ int main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:ed:f:s:w:h:r:q:il:ug";
+    char const *optstring = "78p:m:ed:f:s:w:h:r:q:il:ugn:VH";
 
     settings_t settings = {
         -1,           /* reqcolors */
@@ -561,6 +798,9 @@ int main(int argc, char *argv[])
         -1,           /* pixelheight */
         -1,           /* percentwidth */
         -1,           /* percentheight */
+        -1,           /* macro_number */
+        0,            /* show_version */
+        0,            /* show_help */
     };
 
 #if HAVE_GETOPT_LONG
@@ -581,6 +821,9 @@ int main(int argc, char *argv[])
         {"loop-control", required_argument,  &long_opt, 'l'},
         {"use-macro",    no_argument,        &long_opt, 'u'},
         {"ignore-delay", no_argument,        &long_opt, 'g'},
+        {"macro-number", required_argument,  &long_opt, 'n'},
+        {"version",      no_argument,        &long_opt, 'V'},
+        {"help",         no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
@@ -779,11 +1022,24 @@ int main(int argc, char *argv[])
         case 'u':
             settings.fuse_macro = 1;
             break;
+        case 'n':
+            settings.macro_number = atoi(optarg);
+            if (settings.macro_number < 0) {
+                goto argerr;
+            }
+            break;
         case 'g':
             settings.fignore_delay = 1;
             break;
+        case 'V':
+            settings.show_version = 1;
+            break;
+        case 'H':
+            settings.show_help = 1;
+            break;
         case '?':
-            goto argerr;
+            settings.show_help = 1;
+            break;
         default:
             goto argerr;
         }
@@ -802,6 +1058,14 @@ int main(int argc, char *argv[])
         fprintf(stderr, "option -e, --monochrome conflicts"
                         " with -p, --colors.\n");
         goto argerr;
+    }
+    if (settings.show_version) {
+        show_version();
+        goto end;
+    }
+    if (settings.show_help) {
+        show_help();
+        goto end;
     }
 
     if (settings.reqcolors == -1) {
@@ -828,126 +1092,7 @@ int main(int argc, char *argv[])
 
 argerr:
     exit_code = EXIT_FAILURE;
-    fprintf(stderr,
-            "Usage: img2sixel [Options] imagefiles\n"
-            "       img2sixel [Options] < imagefile\n"
-            "\n"
-            "Options:\n"
-            "-7, --7bit-mode            generate a sixel image for 7bit\n"
-            "                           terminals or printers (default)\n"
-            "-8, --8bit-mode            generate a sixel image for 8bit\n"
-            "                           terminals or printers\n"
-            "-p COLORS, --colors=COLORS specify number of colors to reduce\n"
-            "                           the image to (default=256)\n"
-            "-m FILE, --mapfile=FILE    transform image colors to match this\n"
-            "                           set of colorsspecify map\n"
-            "-e, --monochrome           output monochrome sixel image\n"
-            "                           this option assumes the terminal \n"
-            "                           background color is black\n"
-            "-i, --invert               assume the terminal background color\n"
-            "                           is white, make sense only when -e\n"
-            "                           option is given\n"
-            "-u, --use-macro            use DECDMAC and DEVINVM sequences to\n"
-            "                           optimize GIF animation rendering\n"
-            "-g, --ignore-delay         render GIF animation without delay\n"
-            "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
-            "                           choose diffusion method which used\n"
-            "                           with -p option (color reduction)\n"
-            "                           DIFFUSIONTYPE is one of them:\n"
-            "                             auto     -> choose diffusion type\n"
-            "                                         automatically (default)\n"
-            "                             none     -> do not diffuse\n"
-            "                             fs       -> Floyd-Steinberg method\n"
-            "                             atkinson -> Bill Atkinson's method\n"
-            "                             jajuni   -> Jarvis, Judice & Ninke\n"
-            "                             stucki   -> Stucki's method\n"
-            "                             burkes   -> Burkes' method\n"
-            "-f FINDTYPE, --find-largest=FINDTYPE\n"
-            "                           choose method for finding the largest\n"
-            "                           dimention of median cut boxes for\n"
-            "                           splitting, make sense only when -p\n"
-            "                           option (color reduction) is\n"
-            "                           specified\n"
-            "                           FINDTYPE is one of them:\n"
-            "                             auto -> choose finding method\n"
-            "                                     automatically (default)\n"
-            "                             norm -> simply comparing the\n"
-            "                                     range in RGB space\n"
-            "                             lum  -> transforming into\n"
-            "                                     luminosities before the\n"
-            "                                     comparison\n"
-            "-s SELECTTYPE, --select-color=SELECTTYPE\n"
-            "                           choose the method for selecting\n"
-            "                           representative color from each\n"
-            "                           median-cut box, make sense only\n"
-            "                           when -p option (color reduction) is\n"
-            "                           specified\n"
-            "                           SELECTTYPE is one of them:\n"
-            "                             auto     -> choose selecting\n"
-            "                                         method automatically\n"
-            "                                         (default)\n"
-            "                             center   -> choose the center of\n"
-            "                                         the box\n"
-            "                             average  -> caclulate the color\n"
-            "                                         average into the box\n"
-            "                             histgram -> similar with average\n"
-            "                                         but considers color\n"
-            "                                         histgram\n"
-            "-w WIDTH, --width=WIDTH    resize image to specific width\n"
-            "                           WIDTH is represented by the\n"
-            "                           following syntax\n"
-            "                             auto       -> preserving aspect\n"
-            "                                           ratio (default)\n"
-            "                             <number>%%  -> scale width with\n"
-            "                                           given percentage\n"
-            "                             <number>   -> scale width with\n"
-            "                                           pixel counts\n"
-            "                             <number>px -> scale width with\n"
-            "                                           pixel counts\n"
-            "-h HEIGHT, --height=HEIGHT resize image to specific height\n"
-            "                           HEIGHT is represented by the\n"
-            "                           following syntax\n"
-            "                             auto       -> preserving aspect\n"
-            "                                           ratio (default)\n"
-            "                             <number>%%  -> scale height with\n"
-            "                                           given percentage\n"
-            "                             <number>   -> scale height with\n"
-            "                                           pixel counts\n"
-            "                             <number>px -> scale height with\n"
-            "                                           pixel counts\n"
-            "-r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE\n"
-            "                           choose resampling filter used\n"
-            "                           with -w or -h option (scaling)\n"
-            "                           RESAMPLINGTYPE is one of them:\n"
-            "                             nearest  -> Nearest-Neighbor\n"
-            "                                         method\n"
-            "                             gaussian -> Gaussian filter\n"
-            "                             hanning  -> Hanning filter\n"
-            "                             hamming  -> Hamming filter\n"
-            "                             bilinear -> Bilinear filter\n"
-            "                                         (default)\n"
-            "                             welsh    -> Welsh filter\n"
-            "                             bicubic  -> Bicubic filter\n"
-            "                             lanczos2 -> Lanczos-2 filter\n"
-            "                             lanczos3 -> Lanczos-3 filter\n"
-            "                             lanczos4 -> Lanczos-4 filter\n"
-            "-q QUALITYMODE, --quality=QUALITYMODE\n"
-            "                           select quality of color\n"
-            "                           quanlization.\n"
-            "                             auto -> decide quality mode\n"
-            "                                     automatically (default)\n"
-            "                             high -> high quality and low\n"
-            "                                     speed mode\n"
-            "                             low  -> low quality and high\n"
-            "                                     speed mode\n"
-            "-l LOOPMODE, --loop-control=LOOPMODE\n"
-            "                           select loop control mode for GIF\n"
-            "                           animation.\n"
-            "                             auto   -> honor the setting of\n"
-            "                                       GIF header (default)\n"
-            "                             force   -> always enable loop\n"
-            "                             disable -> always disable loop\n"
-            );
+    show_help();
 
 end:
     if (settings.mapfile) {
