@@ -14,14 +14,17 @@ static CGLPBufferObj pbuffer;
 static CGLContextObj context;
 static volatile int signaled = 0;
 
-static void handler(int sig)
+static void sighandler(int sig)
 {
     signaled = sig;
 }
 
 static CGLError setup(int width, int height)
 {
-    CGLPixelFormatAttribute pfattr[] = { kCGLPFAPBuffer, (CGLPixelFormatAttribute)0 };
+    CGLPixelFormatAttribute pfattr[] = {
+        kCGLPFAPBuffer,
+        (CGLPixelFormatAttribute)0
+    };
     CGLPixelFormatObj pixformat;
     GLint npixels;
     CGLError e;
@@ -133,25 +136,23 @@ static int draw_scene()
     return 0;
 }
 
-static int output_sixel(unsigned char *pixbuf, int width, int height, int ncolors, int depth)
+static int
+output_sixel(unsigned char *pixbuf, int width, int height,
+             int ncolors, int depth)
 {
     LSImagePtr im;
     LSOutputContextPtr context;
-    unsigned char *palette;
-    int i;
+    int ret;
+    sixel_dither_t* dither;
 
-    im = LSImage_create(width, height, 1, ncolors);
-    palette = LSQ_MakePalette(pixbuf, width, height, depth, ncolors, &ncolors, NULL,
-                              LARGE_NORM, REP_CENTER_BOX, QUALITY_HIGH);
-    for (i = 0; i < ncolors; i++)
-        LSImage_setpalette(im, i, palette[i * 3], palette[i * 3 + 1], palette[i * 3 + 2]);
-    LSQ_ApplyPalette(pixbuf, width, height, depth,
-                     palette, ncolors, DIFFUSE_FS, 1, NULL, im->pixels);
-
+    dither = sixel_dither_create(ncolors);
+    ret = sixel_prepare_palette(dither, pixbuf, width, height, depth);
+    im = sixel_create_image(pixbuf, width, height, depth, 1, dither);
+    sixel_apply_palette(im);
     context = LSOutputContext_create(putchar, printf);
     LibSixel_LSImageToSixel(im, context);
-    LSQ_FreePalette(palette);
     LSOutputContext_destroy(context);
+    sixel_dither_unref(dither);
     LSImage_destroy(im);
 
     return 0;
@@ -165,7 +166,7 @@ int main(int argc, char** argv)
 
     static char *pixbuf;
 
-    if (signal(SIGINT, handler) == SIG_ERR)
+    if (signal(SIGINT, sighandler) == SIG_ERR)
        return (-1);
     if (setup(width, height) != kCGLNoError)
        return (-1);

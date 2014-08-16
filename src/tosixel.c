@@ -218,7 +218,7 @@ NodeLine(LSOutputContextPtr const context, int pal, int width, unsigned char *ma
 static int
 PutNode(LSOutputContextPtr const context, LSImagePtr im, int x, sixel_node_t *np)
 {
-    if (im->palette->ncolors != 2 || im->keycolor == -1) {
+    if (im->dither->ncolors != 2 || im->keycolor == -1) {
         PutPalet(context, im, np->pal);
     }
 
@@ -256,7 +256,7 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     width  = im->sx;
     height = im->sy;
 
-    maxPalet = im->palette->ncolors;
+    maxPalet = im->dither->ncolors;
     if (maxPalet < 1) {
         return (-1);
     }
@@ -291,14 +291,14 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
         return (-1);
     }
 
-    if (im->palette->ncolors != 2 || im->keycolor == -1) {
+    if (im->dither->ncolors != 2 || im->keycolor == -1) {
         for (n = 0 ; n < maxPalet ; n++) {
             /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
             ret = context->fn_printf("#%d;2;%d;%d;%d",
                                      context->conv_palette[n],
-                                     (im->palette->data[n * 3 + 0] * 100 + 127) / 255,
-                                     (im->palette->data[n * 3 + 1] * 100 + 127) / 255,
-                                     (im->palette->data[n * 3 + 2] * 100 + 127) / 255);
+                                     (im->dither->palette[n * 3 + 0] * 100 + 127) / 255,
+                                     (im->dither->palette[n * 3 + 1] * 100 + 127) / 255,
+                                     (im->dither->palette[n * 3 + 2] * 100 + 127) / 255);
             if (ret <= 0) {
                 return (-1);
             }

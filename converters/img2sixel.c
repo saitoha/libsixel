@@ -65,42 +65,42 @@ enum loopMode {
 };
 
 
-sixel_palette_t *
+sixel_dither_t *
 prepare_monochrome_palette(finvert)
 {
-    sixel_palette_t *palette;
+    sixel_dither_t *dither;
 
-    palette = sixel_palette_create(2);
-    if (palette == NULL) {
+    dither = sixel_dither_create(2);
+    if (dither == NULL) {
         return NULL;
     }
 
     if (finvert) {
-        palette->data[0] = 0xff;
-        palette->data[1] = 0xff;
-        palette->data[2] = 0xff;
-        palette->data[3] = 0x00;
-        palette->data[4] = 0x00;
-        palette->data[5] = 0x00;
+        dither->palette[0] = 0xff;
+        dither->palette[1] = 0xff;
+        dither->palette[2] = 0xff;
+        dither->palette[3] = 0x00;
+        dither->palette[4] = 0x00;
+        dither->palette[5] = 0x00;
     } else {
-        palette->data[0] = 0x00;
-        palette->data[1] = 0x00;
-        palette->data[2] = 0x00;
-        palette->data[3] = 0xff;
-        palette->data[4] = 0xff;
-        palette->data[5] = 0xff;
+        dither->palette[0] = 0x00;
+        dither->palette[1] = 0x00;
+        dither->palette[2] = 0x00;
+        dither->palette[3] = 0xff;
+        dither->palette[4] = 0xff;
+        dither->palette[5] = 0xff;
     }
 
-    return palette;
+    return dither;
 }
 
 
-static sixel_palette_t *
+static sixel_dither_t *
 prepare_specified_palette(char const *mapfile, int reqcolors)
 {
     FILE *f;
     unsigned char *mappixels;
-    sixel_palette_t *palette;
+    sixel_dither_t *dither;
     int map_sx;
     int map_sy;
     int frame_count;
@@ -113,15 +113,13 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
     if (!mappixels) {
         return NULL;
     }
-    palette = sixel_palette_create(reqcolors);
-    ret = sixel_prepare_palette(mappixels, map_sx, map_sy, 3,
-                                LARGE_NORM, REP_CENTER_BOX, QUALITY_HIGH,
-                                palette);
+    dither = sixel_dither_create(reqcolors);
+    ret = sixel_prepare_palette(dither, mappixels, map_sx, map_sy, 3);
     if (ret != 0) {
-        sixel_palette_unref(palette);
+        sixel_dither_unref(dither);
         return NULL;
     }
-    return palette;
+    return dither;
 }
 
 
@@ -158,35 +156,21 @@ typedef struct Settings {
 } settings_t;
 
 
-typedef struct Frame {
-    int sx;
-    int sy;
-    unsigned char *buffer;
-} frame_t;
-
-
-typedef struct FrameSet {
-    int frame_count;
-    unsigned char *palette;
-    frame_t pframe[1];
-} frame_set_t;
-
-
-sixel_palette_t *
+sixel_dither_t *
 prepare_palette(unsigned char *frame, int sx, int sy, settings_t *psettings)
 {
-    sixel_palette_t *palette;
+    sixel_dither_t *dither;
     int ret;
 
     if (psettings->monochrome) {
-        palette = prepare_monochrome_palette(psettings->finvert);
-        if (!palette) {
+        dither = prepare_monochrome_palette(psettings->finvert);
+        if (!dither) {
             return NULL;
         }
     } else if (psettings->mapfile) {
-        palette = prepare_specified_palette(psettings->mapfile,
+        dither = prepare_specified_palette(psettings->mapfile,
                                             psettings->reqcolors);
-        if (!palette) {
+        if (!dither) {
             return NULL;
         }
     } else {
@@ -204,21 +188,20 @@ prepare_palette(unsigned char *frame, int sx, int sy, settings_t *psettings)
             }
         }
 
-        palette = sixel_palette_create(psettings->reqcolors);
-        ret = sixel_prepare_palette(frame, sx, sy, 3,
-                                    psettings->method_for_largest,
-                                    psettings->method_for_rep,
-                                    psettings->quality_mode,
-                                    palette);
+        dither = sixel_dither_create(psettings->reqcolors);
+        dither->method_for_largest = psettings->method_for_largest;
+        dither->method_for_rep = psettings->method_for_rep;
+        dither->quality_mode = psettings->quality_mode;
+        ret = sixel_prepare_palette(dither, frame, sx, sy, 3);
         if (ret != 0) {
-            sixel_palette_unref(palette);
+            sixel_dither_unref(dither);
             return NULL;
         }
-        if (palette->origcolors <= palette->ncolors) {
+        if (dither->origcolors <= dither->ncolors) {
             psettings->method_for_diffuse = DIFFUSE_NONE;
         }
     }
-    return palette;
+    return dither;
 }
 
 
@@ -285,8 +268,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int nret = -1;
     FILE *f;
     int size;
-    unsigned short cachetable[1 << 3 * 5];
-    sixel_palette_t *palette;
+    sixel_dither_t *dither;
 
     frame_count = 1;
     loop_count = 1;
@@ -358,9 +340,9 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         sy = psettings->pixelheight;
     }
 
-    /* prepare palette */
-    palette = prepare_palette(pixels, sx, sy * frame_count, psettings);
-    if (!palette) {
+    /* prepare dither context */
+    dither = prepare_palette(pixels, sx, sy * frame_count, psettings);
+    if (!dither) {
         nret = -1;
         goto end;
     }
@@ -372,25 +354,22 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         goto end;
     }
 
-    memset(cachetable, 0, sizeof(cachetable));
-
     for (n = 0; n < frame_count; ++n) {
 
         /* apply palette */
         if (psettings->method_for_diffuse == DIFFUSE_AUTO) {
             psettings->method_for_diffuse = DIFFUSE_FS;
         }
+        dither->method_for_diffuse = psettings->method_for_diffuse;
 
         /* create intermidiate bitmap image */
-        im = sixel_create_image(frames[n], sx, sy, 3, palette);
+        im = sixel_create_image(frames[n], sx, sy, 3, 1, dither);
         if (!im) {
             nret = -1;
             goto end;
         }
 
-        nret = sixel_apply_palette(im, psettings->method_for_diffuse,
-                                   palette->optimized, palette->cachetable);
-
+        nret = sixel_apply_palette(im);
         if (nret != 0) {
             goto end;
         }
@@ -521,8 +500,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     nret = 0;
 
 end:
-    if (palette) {
-        sixel_palette_unref(palette);
+    if (dither) {
+        sixel_dither_unref(dither);
     }
     if (frames) {
         free(frames);
@@ -538,7 +517,6 @@ end:
     }
     if (image_array) {
         for (n = 0; n < frame_count; ++n) {
-            image_array[n]->pixels = NULL;
             LSImage_destroy(image_array[n]);
         }
         free(image_array);

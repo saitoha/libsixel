@@ -1120,16 +1120,16 @@ LSQ_FreePalette(unsigned char * data)
 }
 
 
-sixel_palette_t *
-sixel_palette_create(int ncolors)
+sixel_dither_t *
+sixel_dither_create(int ncolors)
 {
-    sixel_palette_t *result;
+    sixel_dither_t *result;
     int headsize;
     int datasize;
     int cachesize;
     int wholesize;
 
-    headsize = sizeof(sixel_palette_t);
+    headsize = sizeof(sixel_dither_t);
     datasize = ncolors * 3;
     cachesize = (1 << 3 * 5) * sizeof(unsigned short);
     wholesize = headsize + datasize + cachesize;
@@ -1147,77 +1147,85 @@ sixel_palette_create(int ncolors)
     memset(result, 0, wholesize);
 #endif
     result->ref = 1;
-    result->data = (unsigned char*)(result + 1);
-    result->cachetable = (unsigned short *)(result->data + datasize);
+    result->palette = (unsigned char*)(result + 1);
+    result->cachetable = (unsigned short *)(result->palette + datasize);
     result->reqcolors = ncolors;
     result->ncolors = ncolors;
     result->origcolors = (-1);
+    result->method_for_largest = LARGE_NORM;
+    result->method_for_rep = REP_CENTER_BOX;
+    result->method_for_diffuse = DIFFUSE_FS;
+    result->quality_mode = QUALITY_LOW;
 
     return result;
 }
 
 
 void
-sixel_palette_destroy(sixel_palette_t *palette)
+sixel_dither_destroy(sixel_dither_t *dither)
 {
-    free(palette);
+    free(dither);
 }
 
 
 void
-sixel_palette_ref(sixel_palette_t *palette)
+sixel_dither_ref(sixel_dither_t *dither)
 {
     /* TODO: be thread safe */
-    ++palette->ref;
+    ++dither->ref;
 }
 
 
 void
-sixel_palette_unref(sixel_palette_t *palette)
+sixel_dither_unref(sixel_dither_t *dither)
 {
     /* TODO: be thread safe */
-    if (--palette->ref == 0) {
-        sixel_palette_destroy(palette);
+    if (dither != NULL && --dither->ref == 0) {
+        sixel_dither_destroy(dither);
     }
 }
 
 
 int
-sixel_prepare_palette(unsigned char *data, int width, int height, int depth,
-                      enum methodForLargest const methodForLargest,
-                      enum methodForRep const methodForRep,
-                      enum qualityMode const qualityMode,
-                      sixel_palette_t *palette)
+sixel_prepare_palette(sixel_dither_t *dither, unsigned char *data,
+                      int width, int height, int depth)
 {
     unsigned char *buf;
 
     buf = LSQ_MakePalette(data, width, height, depth,
-                          palette->reqcolors, &palette->ncolors,
-                          &palette->origcolors, methodForLargest,
-                          methodForRep, qualityMode);
+                          dither->reqcolors, &dither->ncolors,
+                          &dither->origcolors,
+                          dither->method_for_largest,
+                          dither->method_for_rep,
+                          dither->quality_mode);
     if (buf == NULL) {
         return (-1);
     }
-    memcpy(palette->data, buf, palette->ncolors * depth);
+    memcpy(dither->palette, buf, dither->ncolors * depth);
     free(buf);
 
-    palette->optimized = 1;
+    dither->optimized = 1;
 
     return 0;
 }
 
 int
-sixel_apply_palette(LSImagePtr im,
-                    enum methodForDiffuse const methodForDiffuse,
-                    int foptimize,
-                    unsigned short *cachetable)
+sixel_apply_palette(LSImagePtr im)
 {
     int ret;
+    unsigned char *src;
 
-    ret = LSQ_ApplyPalette(im->pixels, im->sx, im->sy, im->depth,
-                           im->palette->data, im->palette->ncolors,
-                           methodForDiffuse,
-                           foptimize, cachetable, im->pixels);
+    src = im->pixels;
+    if (im->borrowed) {
+        im->pixels = malloc(im->sx * im->sy * sizeof(unsigned char));
+        im->borrowed = 0;
+    }
+
+    ret = LSQ_ApplyPalette(src, im->sx, im->sy, im->depth,
+                           im->dither->palette, im->dither->ncolors,
+                           im->dither->method_for_diffuse,
+                           im->dither->optimized,
+                           im->dither->cachetable, im->pixels);
 
     if (ret != 0) {
         return ret;

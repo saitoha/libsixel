@@ -24,25 +24,30 @@
 
 #define PALETTE_MAX 256
 
-typedef struct sixel_palette {
+typedef struct sixel_dither {
     unsigned int ref;
-    unsigned char *data;
+    unsigned char *palette;
     unsigned short *cachetable;
     int reqcolors;  /* requested colors */
     int ncolors;    /* active colors */
     int origcolors; /* original colors */
     int optimized;
-} sixel_palette_t;
+    int method_for_largest;
+    int method_for_rep;
+    int method_for_diffuse;
+    int quality_mode;
+} sixel_dither_t;
 
 /* LSImage definition */
 typedef struct LSImageStruct {
     /* Palette-based image pixels */
-    unsigned char *pixels;
-    int sx;
-    int sy;
-    int depth;
-    sixel_palette_t *palette;
+    unsigned char *pixels;  /* pixel buffer */
+    int sx;        /* width */
+    int sy;        /* height */
+    int depth;     /* bytes per pixel */
     int keycolor;  /* background color */
+    int borrowed;  /* whether pixels is borrowed reference */
+    sixel_dither_t *dither;
 } LSImage, *LSImagePtr;
 
 typedef int (* putchar_function)(int ch);
@@ -110,16 +115,13 @@ LSImage_create(int sx, int sy, int depth, int ncolors);
 
 LSImagePtr
 sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
-                   sixel_palette_t *palette);
+                   int borrowed, sixel_dither_t *dither);
 
 void
 LSImage_destroy(LSImagePtr im);
 
 void
 LSImage_setpalette(LSImagePtr im, int n, int r, int g, int b);
-
-void
-sixel_set_palette(LSImagePtr im, sixel_palette_t *palette);
 
 void
 LSImage_setpixels(LSImagePtr im, unsigned char *pixels);
@@ -205,30 +207,25 @@ extern "C" {
 
 /* exported functions */
 
-sixel_palette_t *
-sixel_palette_create(int ncolors);
+sixel_dither_t *
+sixel_dither_create(int ncolors);
 
 void
-sixel_palette_destroy(sixel_palette_t *palette);
+sixel_dither_destroy(sixel_dither_t *dither);
 
 void
-sixel_palette_ref(sixel_palette_t *palette);
+sixel_dither_ref(sixel_dither_t *dither);
 
 void
-sixel_palette_unref(sixel_palette_t *palette);
+sixel_dither_unref(sixel_dither_t *dither);
 
 int
-sixel_prepare_palette(unsigned char *data, int width, int height, int depth,
-                      enum methodForLargest const methodForLargest,
-                      enum methodForRep const methodForRep,
-                      enum qualityMode const qualityMode,
-                      sixel_palette_t *palette);
+sixel_prepare_palette(sixel_dither_t *dither, unsigned char *data,
+                      int width, int height, int depth);
 
 int
-sixel_apply_palette(LSImagePtr im,
-                    enum methodForDiffuse const methodForDiffuse,
-                    int foptimize,
-                    unsigned short *cachetable);
+sixel_apply_palette(LSImagePtr im);
+
 
 /* deprecated */
 unsigned char *

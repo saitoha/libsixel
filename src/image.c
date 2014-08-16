@@ -45,14 +45,14 @@ LSImage_create(int sx, int sy, int depth, int ncolors)
     im->sy = sy;
     im->depth = depth;
     im->keycolor = -1;
-    im->palette = sixel_palette_create(ncolors);
+    im->dither = sixel_dither_create(ncolors);
     return im;
 }
 
 
 LSImagePtr
 sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
-                   sixel_palette_t *palette)
+                   int borrowed, sixel_dither_t *dither)
 {
     LSImagePtr im;
 
@@ -61,9 +61,10 @@ sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
     im->sx = sx;
     im->sy = sy;
     im->depth = depth;
+    im->borrowed = borrowed;
     im->keycolor = -1;
-    im->palette = palette;
-    sixel_palette_ref(palette);
+    im->dither = dither;
+    sixel_dither_ref(dither);
     return im;
 }
 
@@ -71,20 +72,9 @@ sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
 void
 LSImage_setpalette(LSImagePtr im, int n, int r, int g, int b)
 {
-    im->palette->data[n * 3 + 0] = r;
-    im->palette->data[n * 3 + 1] = g;
-    im->palette->data[n * 3 + 2] = b;
-}
-
-
-void
-sixel_set_palette(LSImagePtr im, sixel_palette_t *palette)
-{
-    if (im->palette) {
-        sixel_palette_unref(im->palette);
-    }
-    im->palette = palette;
-    sixel_palette_ref(palette);
+    im->dither->palette[n * 3 + 0] = r;
+    im->dither->palette[n * 3 + 1] = g;
+    im->dither->palette[n * 3 + 2] = b;
 }
 
 
@@ -113,10 +103,10 @@ LSImage_copy(LSImagePtr dst, LSImagePtr src, int w, int h)
 void
 LSImage_destroy(LSImagePtr im)
 {
-    if (im->palette) {
-        sixel_palette_unref(im->palette);
+    if (im->dither) {
+        sixel_dither_unref(im->dither);
     }
-    if (im->pixels) {
+    if (im->pixels && !im->borrowed) {
         free(im->pixels);
     }
     free(im);
