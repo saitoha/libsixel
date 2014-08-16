@@ -258,6 +258,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     LSImagePtr im = NULL;
     LSImagePtr *image_array = NULL;
     LSOutputContextPtr context = NULL;
+    sixel_dither_t *dither = NULL;
     int sx, sy;
     int frame_count;
     int loop_count;
@@ -268,7 +269,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int nret = -1;
     FILE *f;
     int size;
-    sixel_dither_t *dither;
 
     frame_count = 1;
     loop_count = 1;

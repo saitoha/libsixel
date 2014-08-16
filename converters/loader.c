@@ -222,12 +222,16 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
 static int
 get_chunk(char const *filename, chunk_t *pchunk)
 {
-# ifdef HAVE_LIBCURL
     if (filename != NULL && strstr(filename, "://")) {
+# ifdef HAVE_LIBCURL
         return get_chunk_from_url(filename, pchunk);
-    }
-    else
+# else
+        fprintf(stderr, "To specify URI schemes, you have to "
+                        "configure this program with --with-libcurl "
+                        "option at compile time.\n");
+        return (-1);
 # endif  /* HAVE_LIBCURL */
+    }
     return get_chunk_from_file(filename, pchunk);
 }
 
