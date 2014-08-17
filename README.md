@@ -16,26 +16,19 @@ Digital Equipment Corp. (DEC).
 Its data scheme is represented as a terminal-friendly escape sequence.
 So if you want to view a SIXEL image file, all you have to do is "cat" it to your terminal.
 
-## Build and install
+## SIXEL Animation
 
-```
-$ ./configure
-$ make
-# make install
-```
+img2sixel(1) can decode GIF animation.
 
-## Configure options
+  ![Animation](https://raw.githubusercontent.com/saitoha/libsixel/master/data/sixel.gif)
 
-### Build with optional packages
 
-```
---with-gdk-pixbuf2        build with gdk-pixbuf2 (default: no)
---with-libcurl            build with libcurl (default: no)
---with-gd                 build with gd (default: no)
---with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
---with-bashcompletiondir  specify bashcompletion.d
---with-zshcompletiondir   specify zshcompletion.d
-```
+## Youtube streaming
+
+Now Youtube video streaming is available by [FFmpeg-SIXEL](https://github.com/saitoha/FFmpeg-SIXEL) project.
+
+  [![FFmpeg-SIXEL](https://raw.githubusercontent.com/saitoha/libsixel/master/data/ffmpeg.png)](http://youtu.be/hqMh47lYHlc)
+
 
 ## Terminal requirements
 
@@ -86,20 +79,6 @@ Now SIXEL feature is supported by the following terminals.
   [https://github.com/saitoha/seq2gif](https://github.com/saitoha/seq2gif)
 
 
-## SIXEL Animation
-
-img2sixel(1) can decode GIF animation.
-
-  ![Animation](https://raw.githubusercontent.com/saitoha/libsixel/master/data/sixel.gif)
-
-
-## Youtube streaming
-
-Now Youtube video streaming is available by [FFmpeg-SIXEL](https://github.com/saitoha/FFmpeg-SIXEL) project.
-
-  [![FFmpeg-SIXEL](https://raw.githubusercontent.com/saitoha/libsixel/master/data/sixel.gif)](youtu.be/hqMh47lYHlc)
-
-
 ## Quantization quality
 
 img2sixel(1) supports high quality color image quantization.
@@ -138,6 +117,27 @@ img2sixel(1) supports high quality color image quantization.
 
   ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_libsixel.png)
 
+
+## Build and install
+
+```
+$ ./configure
+$ make
+# make install
+```
+
+## Configure options
+
+### Build with optional packages
+
+```
+--with-gdk-pixbuf2        build with gdk-pixbuf2 (default: no)
+--with-libcurl            build with libcurl (default: no)
+--with-gd                 build with gd (default: no)
+--with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
+--with-bashcompletiondir  specify bashcompletion.d
+--with-zshcompletiondir   specify zshcompletion.d
+```
 
 ## Usage of command line tools
 
