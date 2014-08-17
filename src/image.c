@@ -44,7 +44,6 @@ LSImage_create(int sx, int sy, int depth, int ncolors)
     im->sx = sx;
     im->sy = sy;
     im->depth = depth;
-    im->keycolor = -1;
     im->dither = sixel_dither_create(ncolors);
     return im;
 }
@@ -62,7 +61,6 @@ sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
     im->sy = sy;
     im->depth = depth;
     im->borrowed = borrowed;
-    im->keycolor = -1;
     im->dither = dither;
     sixel_dither_ref(dither);
     return im;

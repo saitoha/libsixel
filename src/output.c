@@ -20,24 +20,77 @@
  */
 
 #include "config.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include "sixel.h"
+
+
+sixel_output_t * const
+sixel_output_create(write_function fn_write, void *priv)
+{
+    sixel_output_t *output;
+   
+    output = malloc(sizeof(sixel_output_t) + OUTPUT_PACKET_SIZE * 2);
+    output->ref = 1;
+    output->has_8bit_control = 0;
+    output->has_sdm_glitch = 0;
+    output->fn_putchar = putchar;
+    output->fn_printf = printf;
+    output->fn_write = fn_write;
+    output->save_pixel = 0;
+    output->save_count = 0;
+    output->active_palette = (-1);
+    output->node_top = NULL;
+    output->node_free = NULL;
+    output->private = priv;
+    output->pos = 0;
+
+    return output;
+}
+
+
+void
+sixel_output_destroy(sixel_output_t *output)
+{
+    free(output);
+}
+
+
+void
+sixel_output_ref(sixel_output_t *output)
+{
+    /* TODO: be thread-safe */
+    ++output->ref;
+}
+
+void
+sixel_output_unref(sixel_output_t *output)
+{
+    /* TODO: be thread-safe */
+    if (output && --output->ref == 0) {
+        sixel_output_destroy(output);
+    }
+}
 
 
 LSOutputContextPtr const
 LSOutputContext_create(putchar_function fn_putchar, printf_function fn_printf)
 {
-    LSOutputContextPtr context = (LSOutputContextPtr)malloc(sizeof(LSOutputContext));
-    context->has_8bit_control = 0;
-    context->has_sdm_glitch = 0;
-    context->fn_putchar = fn_putchar;
-    context->fn_printf = fn_printf;
-    context->save_pixel = 0;
-    context->save_count = 0;
-    context->active_palette = (-1);
-    context->node_top = NULL;
-    context->node_free = NULL;
-    return context;
+    LSOutputContextPtr output;
+
+    output = (LSOutputContextPtr)malloc(sizeof(LSOutputContext));
+    output->has_8bit_control = 0;
+    output->has_sdm_glitch = 0;
+    output->fn_putchar = fn_putchar;
+    output->fn_printf = fn_printf;
+    output->save_pixel = 0;
+    output->save_count = 0;
+    output->active_palette = (-1);
+    output->node_top = NULL;
+    output->node_free = NULL;
+    output->pos = 0;
+
+    return output;
 }
 
 

@@ -73,8 +73,14 @@ enum loopMode {
     LOOP_DISABLE,    /* always disable loop */
 };
 
+static int
+sixel_write_callback(char *data, int size, void *priv)
+{
+    return fwrite(data, 1, size, stdout);
+}
 
-sixel_dither_t *
+
+static sixel_dither_t *
 prepare_monochrome_palette(finvert)
 {
     sixel_dither_t *dither;
@@ -128,7 +134,10 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
         return NULL;
     }
     dither = sixel_dither_create(reqcolors);
-    ret = sixel_prepare_palette(dither, mappixels, map_sx, map_sy, 3);
+    if (dither == NULL) {
+        return NULL;
+    }
+    ret = sixel_dither_initialize(dither, mappixels, map_sx, map_sy, 3);
     if (ret != 0) {
         sixel_dither_unref(dither);
         return NULL;
@@ -209,7 +218,7 @@ prepare_palette(unsigned char *frame, int sx, int sy, settings_t *psettings)
         dither->method_for_largest = psettings->method_for_largest;
         dither->method_for_rep = psettings->method_for_rep;
         dither->quality_mode = psettings->quality_mode;
-        ret = sixel_prepare_palette(dither, frame, sx, sy, 3);
+        ret = sixel_dither_initialize(dither, frame, sx, sy, 3);
         if (ret != 0) {
             sixel_dither_unref(dither);
             return NULL;
@@ -272,9 +281,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     unsigned char *scaled_frame = NULL;
     unsigned char *mappixels = NULL;
     unsigned char *p = NULL;
-    LSImagePtr im = NULL;
-    LSImagePtr *image_array = NULL;
-    LSOutputContextPtr context = NULL;
+    sixel_output_t *context = NULL;
     sixel_dither_t *dither = NULL;
     int sx, sy;
     int frame_count;
@@ -367,40 +374,16 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         goto end;
     }
 
-    image_array = malloc(sizeof(LSImagePtr) * frame_count);
-
-    if (!image_array) {
-        nret = -1;
-        goto end;
+    if (psettings->method_for_diffuse == DIFFUSE_AUTO) {
+        psettings->method_for_diffuse = DIFFUSE_FS;
+    }
+    dither->method_for_diffuse = psettings->method_for_diffuse;
+    if (psettings->monochrome) {
+        dither->keycolor = 0;
     }
 
     for (n = 0; n < frame_count; ++n) {
 
-        /* apply palette */
-        if (psettings->method_for_diffuse == DIFFUSE_AUTO) {
-            psettings->method_for_diffuse = DIFFUSE_FS;
-        }
-        dither->method_for_diffuse = psettings->method_for_diffuse;
-
-        /* create intermidiate bitmap image */
-        im = sixel_create_image(frames[n], sx, sy, 3, 1, dither);
-        if (!im) {
-            nret = -1;
-            goto end;
-        }
-
-        nret = sixel_apply_palette(im);
-        if (nret != 0) {
-            goto end;
-        }
-
-        if (psettings->monochrome) {
-            im->keycolor = 0;
-        } else {
-            im->keycolor = -1;
-        }
-
-        image_array[n] = im;
     }
 
 #if HAVE_SIGNAL
@@ -432,7 +415,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
     if ((psettings->fuse_macro && frame_count > 1) || psettings->macro_number >= 0) {
-        context = LSOutputContext_create(putchar_hex, printf_hex);
+        context = sixel_output_create(sixel_write_callback, stdout);
         context->has_8bit_control = psettings->f8bit;
         for (n = 0; n < frame_count; ++n) {
 #if HAVE_USLEEP && HAVE_CLOCK
@@ -443,7 +426,12 @@ convert_to_sixel(char const *filename, settings_t *psettings)
             } else {
                 printf("\033P%d;0;1!z", n);
             }
-            LibSixel_LSImageToSixel(image_array[n], context);
+
+            nret = sixel_encode(frames[n], sx, sy, 3, dither, context);
+            if (nret != 0) {
+                goto end;
+            }
+
             printf("\033\\");
             if (loop_count == -1) {
                 printf("\033[H");
@@ -520,7 +508,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         }
     } else { /* do not use macro */
         /* create output context */
-        context = LSOutputContext_create(putchar, printf);
+        context = sixel_output_create(sixel_write_callback, stdout);
         context->has_8bit_control = psettings->f8bit;
         for (c = 0; c != loop_count; ++c) {
             for (n = 0; n < frame_count; ++n) {
@@ -548,8 +536,11 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                     }
 #endif
                 }
-                /* convert image object into sixel */
-                LibSixel_LSImageToSixel(image_array[n], context);
+
+                nret = sixel_encode(frames[n], sx, sy, 3, dither, context);
+                if (nret != 0) {
+                    goto end;
+                }
 
 #if HAVE_SIGNAL
                 if (signaled) {
@@ -593,14 +584,8 @@ end:
     if (mappixels) {
         free(mappixels);
     }
-    if (image_array) {
-        for (n = 0; n < frame_count; ++n) {
-            LSImage_destroy(image_array[n]);
-        }
-        free(image_array);
-    }
     if (context) {
-        LSOutputContext_destroy(context);
+        sixel_output_unref(context);
     }
     return nret;
 }

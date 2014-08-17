@@ -167,20 +167,20 @@ static int
 output_sixel(unsigned char *pixbuf, int width, int height,
              int ncolors, int depth)
 {
-    LSImagePtr im;
     LSOutputContextPtr context;
     int ret;
     sixel_dither_t* dither;
 
+    context = LSOutputContext_create(putchar, printf);
     dither = sixel_dither_create(ncolors);
     ret = sixel_prepare_palette(dither, pixbuf, width, height, depth);
-    im = sixel_create_image(pixbuf, width, height, depth, 1, dither);
-    sixel_apply_palette(im);
-    context = LSOutputContext_create(putchar, printf);
-    LibSixel_LSImageToSixel(im, context);
+    if (ret != 0)
+        return ret;
+    ret = sixel_encode(pixbuf, width, height, depth, dither, context);
+    if (ret != 0)
+        return ret;
     LSOutputContext_destroy(context);
     sixel_dither_unref(dither);
-    LSImage_destroy(im);
 
     return 0;
 }
