@@ -655,6 +655,7 @@ WANT_SIXEL2PNG_TRUE
 WANT_IMG2SIXEL_FALSE
 WANT_IMG2SIXEL_TRUE
 attr_func_deprecated
+attr_var_deprecated
 CPP
 OTOOL64
 OTOOL
@@ -2313,8 +2314,8 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-LS_LT_CURRENT=0
-LS_LT_REVISION=3
+LS_LT_CURRENT=1
+LS_LT_REVISION=0
 LS_LT_AGE=0
 LS_LTVERSION=$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE
 
@@ -11603,6 +11604,61 @@ $as_echo "$ax_cv_have_var_attribute_deprecated" >&6; }
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_VAR_ATTRIBUTE_DEPRECATED 1
+_ACEOF
+
+fi
+
+
+
+if test x$ax_cv_have_func_attribute_deprecated != x; then
+    attr_var_deprecated=__attribute__\(\(deprecated\)\)
+
+fi
+
+
+
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __attribute__((deprecated))" >&5
+$as_echo_n "checking for __attribute__((deprecated))... " >&6; }
+if ${ax_cv_have_func_attribute_deprecated+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+                    int foo( void ) __attribute__((deprecated("")));
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+                                      if test -s conftest.err; then :
+  ax_cv_have_func_attribute_deprecated=no
+else
+  ax_cv_have_func_attribute_deprecated=yes
+fi
+else
+  ax_cv_have_func_attribute_deprecated=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_have_func_attribute_deprecated" >&5
+$as_echo "$ax_cv_have_func_attribute_deprecated" >&6; }
+
+    if test yes = $ax_cv_have_func_attribute_deprecated; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FUNC_ATTRIBUTE_DEPRECATED 1
 _ACEOF
 
 fi

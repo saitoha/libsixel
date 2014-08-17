@@ -31,9 +31,17 @@
 # include <inttypes.h>
 #endif
 
-#include "sixel.h"
 #include "dither.h"
+#include "sixel.h"
 
+
+static const unsigned char pal_mono_dark[] = {
+    0x00, 0x00, 0x00, 0xff, 0xff, 0xff
+};
+
+static const unsigned char pal_mono_light[] = {
+    0xff, 0xff, 0xff, 0x00, 0x00, 0x00
+};
 
 static const unsigned char pal_xterm256[] = {
     0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x80, 0x00, 0x80, 0x80, 0x00,
@@ -110,6 +118,11 @@ sixel_dither_create(int ncolors)
     int datasize;
     int wholesize;
 
+    if (ncolors > SIXEL_PALETTE_MAX) {
+        ncolors = 256;
+    } else if (ncolors < 2) {
+        ncolors = 2;
+    }
     headsize = sizeof(sixel_dither_t);
     datasize = ncolors * 3;
     wholesize = headsize + datasize;// + cachesize;
@@ -168,16 +181,29 @@ sixel_dither_get(int builtin_dither)
 {
     unsigned char *palette;
     int ncolors;
+    int keycolor;
     sixel_dither_t *dither;
 
     switch (builtin_dither) {
+    case BUILTIN_MONO_DARK:
+        ncolors = 2;
+        palette = (unsigned char *)pal_mono_dark;
+        keycolor = 0;
+        break;
+    case BUILTIN_MONO_LIGHT:
+        ncolors = 2;
+        palette = (unsigned char *)pal_mono_light;
+        keycolor = 0;
+        break;
     case BUILTIN_XTERM16:
         ncolors = 16;
         palette = (unsigned char *)pal_xterm256;
+        keycolor = (-1);
         break;
     case BUILTIN_XTERM256:
         ncolors = 256;
         palette = (unsigned char *)pal_xterm256;
+        keycolor = (-1);
         break;
     default:
         return NULL;
@@ -185,6 +211,7 @@ sixel_dither_get(int builtin_dither)
 
     dither = sixel_dither_create(ncolors);
     dither->palette = palette;
+    dither->keycolor = keycolor;
     dither->optimized = 1;
 
     return dither;
@@ -193,7 +220,9 @@ sixel_dither_get(int builtin_dither)
 
 int
 sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
-                        int width, int height, int depth)
+                        int width, int height, int depth,
+                        int method_for_largest, int method_for_rep,
+                        int quality_mode)
 {
     unsigned char *buf;
 
@@ -210,13 +239,44 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     free(buf);
 
     dither->optimized = 1;
+    if (dither->origcolors <= dither->ncolors) {
+        dither->method_for_diffuse = DIFFUSE_NONE;
+    }
 
     return 0;
 }
 
 
+void
+sixel_dither_set_diffusion_type(sixel_dither_t *dither, int method_for_diffuse)
+{
+    dither->method_for_diffuse = method_for_diffuse;
+}
+
+
 int
-sixel_apply_palette(LSImagePtr im)
+sixel_dither_get_num_of_palette_colors(sixel_dither_t *dither)
+{
+    return dither->ncolors;
+}
+
+
+int
+sixel_dither_get_num_of_histgram_colors(sixel_dither_t *dither)
+{
+    return dither->origcolors;
+}
+
+
+unsigned char *
+sixel_dither_get_palette(sixel_dither_t /* in */ *dither)  /* dither context object */
+{
+    return dither->palette;
+}
+
+
+int
+sixel_apply_palette(sixel_image_t *im)
 {
     int ret;
     unsigned char *src;

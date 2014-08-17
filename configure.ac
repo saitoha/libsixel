@@ -4,8 +4,8 @@
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
 AC_INIT([sixel], [0.28.0], [user@zuse.jp])
-LS_LT_CURRENT=0
-LS_LT_REVISION=3
+LS_LT_CURRENT=1
+LS_LT_REVISION=0
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 AC_SUBST([PACKAGE_DESCRIPTION],
@@ -22,6 +22,11 @@ AC_CONFIG_MACRO_DIR([m4])
 #AC_DISABLE_STATIC
 
 AX_GCC_VAR_ATTRIBUTE([deprecated])
+if test x$ax_cv_have_func_attribute_deprecated != x; then
+    AC_SUBST(attr_var_deprecated, [__attribute__\(\(deprecated\)\)])
+fi
+
+AX_GCC_FUNC_ATTRIBUTE([deprecated])
 if test x$ax_cv_have_func_attribute_deprecated != x; then
     AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
 fi

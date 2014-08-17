@@ -23,29 +23,27 @@
 # include <inttypes.h>
 #endif
 
-#include "sixel.h"
+#include "output.h"
 #include "dither.h"
-
-/* exported function */
-extern int
-LibSixel_LSImageToSixel(LSImagePtr im,
-                        LSOutputContextPtr context);
+#include "image.h"
+#include "sixel.h"
 
 /* implementation */
 
 static void
 advance(sixel_output_t *context, int nwrite)
 {
-    if ((context->pos += nwrite) > OUTPUT_PACKET_SIZE) {
-        context->fn_write((char *)context->buffer, context->pos, context->private);
-        memcpy(context->buffer, context->buffer + OUTPUT_PACKET_SIZE, (context->pos - OUTPUT_PACKET_SIZE));
-        context->pos = 0;
+    if ((context->pos += nwrite) >= SIXEL_OUTPUT_PACKET_SIZE) {
+        context->fn_write((char *)context->buffer, SIXEL_OUTPUT_PACKET_SIZE, context->priv);
+        memcpy(context->buffer,
+               context->buffer + SIXEL_OUTPUT_PACKET_SIZE,
+               (context->pos -= SIXEL_OUTPUT_PACKET_SIZE));
     }
 }
 
 
 static int
-PutFlash(LSOutputContextPtr const context)
+PutFlash(sixel_output_t *const context)
 {
     int n;
     int ret;
@@ -85,7 +83,7 @@ PutFlash(LSOutputContextPtr const context)
 
 
 static void
-PutPixel(LSOutputContextPtr const context, int pix)
+PutPixel(sixel_output_t *const context, int pix)
 {
     if (pix < 0 || pix > 63) {
         pix = 0;
@@ -104,9 +102,7 @@ PutPixel(LSOutputContextPtr const context, int pix)
 
 
 static void
-PutPalet(LSOutputContextPtr context,
-         LSImagePtr im,
-         int pal)
+PutPalet(sixel_output_t *context, sixel_image_t *im, int pal)
 {
     int nwrite;
 
@@ -120,7 +116,7 @@ PutPalet(LSOutputContextPtr context,
 
 
 static void
-NodeFree(LSOutputContextPtr const context)
+NodeFree(sixel_output_t *const context)
 {
     sixel_node_t *np;
 
@@ -132,7 +128,7 @@ NodeFree(LSOutputContextPtr const context)
 
 
 static void
-NodeDel(LSOutputContextPtr const context, sixel_node_t *np)
+NodeDel(sixel_output_t *const context, sixel_node_t *np)
 {
     sixel_node_t *tp;
 
@@ -156,7 +152,7 @@ NodeDel(LSOutputContextPtr const context, sixel_node_t *np)
 
 
 static int
-NodeAdd(LSOutputContextPtr const context, int pal, int sx, int mx, unsigned char *map)
+NodeAdd(sixel_output_t *const context, int pal, int sx, int mx, unsigned char *map)
 {
     sixel_node_t *np, *tp, top;
 
@@ -192,7 +188,7 @@ NodeAdd(LSOutputContextPtr const context, int pal, int sx, int mx, unsigned char
 
 
 static int
-NodeLine(LSOutputContextPtr const context, int pal, int width, unsigned char *map)
+NodeLine(sixel_output_t *const context, int pal, int width, unsigned char *map)
 {
     int sx, mx, n;
     int ret;
@@ -231,7 +227,7 @@ NodeLine(LSOutputContextPtr const context, int pal, int width, unsigned char *ma
 
 
 static int
-PutNode(LSOutputContextPtr const context, LSImagePtr im, int x,
+PutNode(sixel_output_t *const context, sixel_image_t *im, int x,
         sixel_node_t *np, int ncolors, int keycolor)
 {
     if (ncolors != 2 || keycolor == -1) {
@@ -257,7 +253,7 @@ PutNode(LSOutputContextPtr const context, LSImagePtr im, int x,
 
 
 int
-LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
+LibSixel_LSImageToSixel(sixel_image_t *im, sixel_output_t *context)
 {
     int x, y, i, n, c;
     int maxPalet;
@@ -267,7 +263,7 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     int ret;
     unsigned char *map;
     sixel_node_t *np;
-    unsigned char list[PALETTE_MAX];
+    unsigned char list[SIXEL_PALETTE_MAX];
     char buf[256];
     int nwrite;
 
@@ -398,8 +394,9 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
         return (-1);
     }
 
+    /* flush buffer */
     if (context->pos > 0) {
-        context->fn_write((char *)context->buffer, context->pos, context->private);
+        context->fn_write((char *)context->buffer, context->pos, context->priv);
     }
 
     NodeFree(context);
@@ -432,7 +429,7 @@ int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
 
     LibSixel_LSImageToSixel(im, context);
 
-    LSImage_destroy(im);
+    sixel_image_destroy(im);
 
     return 0;
 }

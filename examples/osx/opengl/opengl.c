@@ -163,27 +163,37 @@ static int draw_scene()
     return 0;
 }
 
+
+static int
+sixel_write(char *data, int size, void *priv)
+{
+    return fwrite(data, 1, size, (FILE *)priv);
+}
+
+
 static int
 output_sixel(unsigned char *pixbuf, int width, int height,
              int ncolors, int depth)
 {
-    LSOutputContextPtr context;
+    sixel_output_t *context;
+    sixel_dither_t *dither;
     int ret;
-    sixel_dither_t* dither;
 
-    context = LSOutputContext_create(putchar, printf);
+    context = sixel_output_create(sixel_write, stdout);
     dither = sixel_dither_create(ncolors);
-    ret = sixel_prepare_palette(dither, pixbuf, width, height, depth);
+    ret = sixel_dither_initialize(dither, pixbuf, width, height, depth,
+                                  LARGE_AUTO, REP_AUTO, QUALITY_AUTO);
     if (ret != 0)
         return ret;
     ret = sixel_encode(pixbuf, width, height, depth, dither, context);
     if (ret != 0)
         return ret;
-    LSOutputContext_destroy(context);
+    sixel_output_unref(context);
     sixel_dither_unref(dither);
 
     return 0;
 }
+
 
 int main(int argc, char** argv)
 {

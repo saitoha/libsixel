@@ -73,10 +73,29 @@ enum loopMode {
     LOOP_DISABLE,    /* always disable loop */
 };
 
+
 static int
 sixel_write_callback(char *data, int size, void *priv)
 {
     return fwrite(data, 1, size, stdout);
+}
+
+
+static int
+sixel_hex_write_callback(char *data, int size, void *priv)
+{
+    char hex[SIXEL_OUTPUT_PACKET_SIZE * 2];
+    int i;
+    int j;
+
+    for (i = j = 0; i < size; ++i, ++j) {
+        hex[j] = (data[i] >> 4) & 0xf;
+        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
+        hex[++j] = data[i] & 0xf;
+        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
+    }
+    return fwrite(hex, 1, size * 2, stdout);
+    return size;
 }
 
 
@@ -85,25 +104,13 @@ prepare_monochrome_palette(finvert)
 {
     sixel_dither_t *dither;
 
-    dither = sixel_dither_create(2);
+    if (finvert) {
+        dither = sixel_dither_get(BUILTIN_MONO_LIGHT);
+    } else {
+        dither = sixel_dither_get(BUILTIN_MONO_DARK);
+    }
     if (dither == NULL) {
         return NULL;
-    }
-
-    if (finvert) {
-        dither->palette[0] = 0xff;
-        dither->palette[1] = 0xff;
-        dither->palette[2] = 0xff;
-        dither->palette[3] = 0x00;
-        dither->palette[4] = 0x00;
-        dither->palette[5] = 0x00;
-    } else {
-        dither->palette[0] = 0x00;
-        dither->palette[1] = 0x00;
-        dither->palette[2] = 0x00;
-        dither->palette[3] = 0xff;
-        dither->palette[4] = 0xff;
-        dither->palette[5] = 0xff;
     }
 
     return dither;
@@ -137,7 +144,8 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
     if (dither == NULL) {
         return NULL;
     }
-    ret = sixel_dither_initialize(dither, mappixels, map_sx, map_sy, 3);
+    ret = sixel_dither_initialize(dither, mappixels, map_sx, map_sy, 3,
+                                  LARGE_NORM, REP_CENTER_BOX, QUALITY_LOW);
     if (ret != 0) {
         sixel_dither_unref(dither);
         return NULL;
@@ -215,16 +223,13 @@ prepare_palette(unsigned char *frame, int sx, int sy, settings_t *psettings)
         }
 
         dither = sixel_dither_create(psettings->reqcolors);
-        dither->method_for_largest = psettings->method_for_largest;
-        dither->method_for_rep = psettings->method_for_rep;
-        dither->quality_mode = psettings->quality_mode;
-        ret = sixel_dither_initialize(dither, frame, sx, sy, 3);
+        ret = sixel_dither_initialize(dither, frame, sx, sy, 3,
+                                      psettings->method_for_largest,
+                                      psettings->method_for_rep,
+                                      psettings->quality_mode);
         if (ret != 0) {
             sixel_dither_unref(dither);
             return NULL;
-        }
-        if (dither->origcolors <= dither->ncolors) {
-            psettings->method_for_diffuse = DIFFUSE_NONE;
         }
     }
     return dither;
@@ -303,8 +308,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 
     if (psettings->reqcolors < 2) {
         psettings->reqcolors = 2;
-    } else if (psettings->reqcolors > PALETTE_MAX) {
-        psettings->reqcolors = PALETTE_MAX;
     }
 
     pixels = load_image_file(filename, &sx, &sy,
@@ -377,10 +380,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     if (psettings->method_for_diffuse == DIFFUSE_AUTO) {
         psettings->method_for_diffuse = DIFFUSE_FS;
     }
-    dither->method_for_diffuse = psettings->method_for_diffuse;
-    if (psettings->monochrome) {
-        dither->keycolor = 0;
-    }
+    sixel_dither_set_diffusion_type(dither, psettings->method_for_diffuse);
 
     for (n = 0; n < frame_count; ++n) {
 
@@ -415,8 +415,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
     if ((psettings->fuse_macro && frame_count > 1) || psettings->macro_number >= 0) {
-        context = sixel_output_create(sixel_write_callback, stdout);
-        context->has_8bit_control = psettings->f8bit;
+        context = sixel_output_create(sixel_hex_write_callback, stdout);
+        sixel_output_set_8bit_availability(context, psettings->f8bit);
         for (n = 0; n < frame_count; ++n) {
 #if HAVE_USLEEP && HAVE_CLOCK
             start = clock();
@@ -509,7 +509,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     } else { /* do not use macro */
         /* create output context */
         context = sixel_output_create(sixel_write_callback, stdout);
-        context->has_8bit_control = psettings->f8bit;
+        sixel_output_set_8bit_availability(context, psettings->f8bit);
         for (c = 0; c != loop_count; ++c) {
             for (n = 0; n < frame_count; ++n) {
                 if (frame_count > 1) {
@@ -518,7 +518,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                         start = clock();
                     }
 #endif
-                    context->fn_printf("\033[H");
+                    printf("\033[H");
                     fflush(stdout);
 #if HAVE_USLEEP && HAVE_CLOCK
                     if (delays != NULL && !psettings->fignore_delay) {
@@ -555,10 +555,10 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 #endif
         }
         if (signaled) {
-            if (context->has_8bit_control) {
-                context->fn_printf("\x9c");
+            if (sixel_output_get_8bit_availability(context)) {
+                printf("\x9c");
             } else {
-                context->fn_printf("\x1b\\");
+                printf("\x1b\\");
             }
         }
     }
@@ -1054,7 +1054,7 @@ main(int argc, char *argv[])
     }
 
     if (settings.reqcolors == -1) {
-        settings.reqcolors = PALETTE_MAX;
+        settings.reqcolors = SIXEL_PALETTE_MAX;
     }
 
     if (optind == argc) {

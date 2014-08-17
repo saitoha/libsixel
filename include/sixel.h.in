@@ -19,207 +19,22 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <stddef.h>  /* for size_t */
+
 #ifndef LIBSIXEL_SIXEL_H
 #define LIBSIXEL_SIXEL_H
-
-#define PALETTE_MAX 256
-#define OUTPUT_PACKET_SIZE 8192
 
 #define LIBSIXEL_VRTSION @PACKAGE_VERSION@
 #define LIBSIXEL_ABI_VRTSION @LS_LTVERSION@
 
-/* dither context object */
-typedef struct sixel_dither {
-    unsigned int ref;           /* reference counter */
-    unsigned char *palette;     /* palette definition */
-    unsigned short *cachetable; /* cache table */
-    int reqcolors;              /* requested colors */
-    int ncolors;                /* active colors */
-    int origcolors;             /* original colors */
-    int optimized;              /* pixel is 15bpp compressable */
-    int method_for_largest;     /* method for finding the largest dimention 
-				   for splitting */
-    int method_for_rep;         /* method for choosing a color from the box */
-    int method_for_diffuse;     /* method for diffusing */
-    int quality_mode;           /* quality of histgram */
-    int keycolor;               /* background color */
-} sixel_dither_t;
+#define SIXEL_OUTPUT_PACKET_SIZE 1024
+#define SIXEL_PALETTE_MAX 256
 
-/* LSImage definition */
-typedef struct LSImageStruct {
-    /* Palette-based image pixels */
-    unsigned char *pixels;      /* pixel buffer */
-    int sx;                     /* width */
-    int sy;                     /* height */
-    int depth;                  /* bytes per pixel */
-    int borrowed;               /* whether pixels is borrowed reference */
-    sixel_dither_t *dither;     /* dithering context object */
-} LSImage, *LSImagePtr;
-
-typedef LSImage sixel_image_t;
-
-typedef int (* putchar_function)(int ch);
-typedef int (* printf_function)(const char *fmt, ...);
-typedef int (* write_function)(char *data, int size, void *priv);
-
-typedef struct LSNode {
-    struct LSNode *next;
-    int pal;
-    int sx;
-    int mx;
-    unsigned char *map;
-} sixel_node_t;
-
-typedef struct LSOutputContextStruct {
-
-    int ref;
-
-    /* compatiblity flags */
-
-    /* 0: 7bit terminal,
-     * 1: 8bit terminal */
-    unsigned char has_8bit_control;
-
-    /* 0: the terminal has sixel scrolling
-     * 1: the terminal does not have sixel scrolling */
-    unsigned char has_sixel_scrolling;
-
-    /* 0: DECSDM set (CSI ? 80 h) enables sixel scrolling
-       1: DECSDM set (CSI ? 80 h) disables sixel scrolling */
-    unsigned char has_sdm_glitch;
-
-    putchar_function fn_putchar;
-    printf_function fn_printf;
-    write_function fn_write;
-
-    unsigned char conv_palette[PALETTE_MAX];
-    int save_pixel;
-    int save_count;
-    int active_palette;
-
-    sixel_node_t *node_top;
-    sixel_node_t *node_free;
-
-    void *private;
-    int pos;
-    unsigned char buffer[1];
-
-} LSOutputContext, *LSOutputContextPtr;
-
-typedef LSOutputContext sixel_output_t;
-
-/* converter API */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* convert pixels into sixel format and write it to output context */
-int
-sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
-             int            /* in */ width,     /* image width */
-             int            /* in */ height,    /* image height */
-             int            /* in */ depth,     /* pixel depth */
-             sixel_dither_t /* in */ *dither,   /* dither context */
-             sixel_output_t /* in */ *context); /* output context */
-
-/* convert sixel data into indexed pixel bytes and palette data */
-int
-sixel_decode(unsigned char /* in */  *sixels,   /* sixel bytes */
-             unsigned char /* out */ **pixels,  /* decoded pixels */
-             int           /* out */ *pwidth,   /* image width */
-             int           /* out */ *pheight,  /* image height */
-             unsigned char /* out */ **palette, /* ARGB palette */
-             unsigned char /* out */ *ncolors); /* palette size (<= 256) */
-
-/* deprecated */
-LSImagePtr LibSixel_SixelToLSImage(unsigned char *p, int len) @attr_func_deprecated@;
-
-/* deprecated */
-int LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context) @attr_func_deprecated@;
-
-#ifdef __cplusplus
-}
-#endif
-
-/* LSImage manipulation API */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-LSImagePtr sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
-                              int borrowed, sixel_dither_t *dither);
-/* deprecated */
-LSImagePtr
-LSImage_create(int sx, int sy, int depth, int ncolors) @attr_func_deprecated@;
-
-/* deprecated */
-void LSImage_destroy(LSImagePtr im) @attr_func_deprecated@;
-
-/* deprecated */
-void LSImage_setpalette(LSImagePtr im, int n, int r, int g, int b) @attr_func_deprecated@;
-
-/* deprecated */
-void LSImage_setpixels(LSImagePtr im, unsigned char *pixels) @attr_func_deprecated@;
-
-/* deprecated */
-void LSImage_setpixel(LSImagePtr im, int x, int y, int color) @attr_func_deprecated@;
-
-/* deprecated */
-void LSImage_copy(LSImagePtr dst, LSImagePtr src, int w, int h) @attr_func_deprecated@;
-
-/* deprecated */
-void LSImage_fill(LSImagePtr im, int color) @attr_func_deprecated@;
-
-/* deprecated */
-void LSImage_fillrectangle(LSImagePtr im,
-                           int x1, int y1,
-                           int x2, int y2,
-                           int color) @attr_func_deprecated@;
-
-#ifdef __cplusplus
-}
-#endif
-
-
-/* LSOutputContext manipulation API */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* create output context object */
-sixel_output_t *const
-sixel_output_create(write_function /* in */ fn_write,  /* callback function for output sixel */
-                    void           /* in */ *priv);    /* private data given as 
-                                                          3rd argument of fn_write */
-/* destroy output context object */
-void
-sixel_output_destroy(sixel_output_t /* in */ *output); /* output context */
-
-/* increment reference count of output context object (thread-unsafe) */
-void
-sixel_output_ref(sixel_output_t /* in */ *output);     /* output context */
-
-/* decrement reference count of output context object (thread-unsafe) */
-void
-sixel_output_unref(sixel_output_t /* in */ *output);   /* output context */
-
-
-/* deprecated */
-LSOutputContextPtr const
-LSOutputContext_create(putchar_function fn_putchar, printf_function fn_printf) @attr_func_deprecated@;
-
-/* deprecated */
-void
-LSOutputContext_destroy(LSOutputContextPtr context) @attr_func_deprecated@;
-
-#ifdef __cplusplus
-}
-#endif
-
-/* Color quantization API */
+/* output character size */
+enum characterSize {
+    CSIZE_7BIT = 0,  /* 7bit character */
+    CSIZE_8BIT = 1,  /* 8bit character */
+};
 
 /* method for finding the largest dimention for splitting,
  * and sorting by that component */
@@ -260,11 +75,63 @@ enum qualityMode {
 
 /* built-in dither */
 enum builtinDither {
-    BUILTIN_XTERM16  = 0, /* xterm 16color */
-    BUILTIN_XTERM256 = 1, /* xterm 256color */
+    BUILTIN_MONO_DARK  = 0, /* monochrome terminal with dark background */
+    BUILTIN_MONO_LIGHT = 1, /* monochrome terminal with dark background */
+    BUILTIN_XTERM16    = 2, /* xterm 16color */
+    BUILTIN_XTERM256   = 3, /* xterm 256color */
 };
 
-/* the palette manipulation API */
+#ifndef LIBSIXEL_DITHER_H
+
+/* dither context object */
+typedef struct sixel_dither {} sixel_dither_t;
+
+#endif /* SIXEL_DITHER_H */
+
+#ifndef LIBSIXEL_OUTPUT_H
+
+typedef int (* sixel_write_function)(char *data, int size, void *priv);
+
+typedef struct sixel_output {} sixel_output_t;
+
+#endif  /* LIBSIXEL_OUTPUT_H */
+
+
+/* output context manipulation API */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* create output context object */
+sixel_output_t *const
+sixel_output_create(sixel_write_function /* in */ fn_write, /* callback function for output sixel */
+                    void /* in */ *priv);                   /* private data given as 
+                                                               3rd argument of fn_write */
+/* destroy output context object */
+void
+sixel_output_destroy(sixel_output_t /* in */ *output); /* output context */
+
+/* increment reference count of output context object (thread-unsafe) */
+void
+sixel_output_ref(sixel_output_t /* in */ *output);     /* output context */
+
+/* decrement reference count of output context object (thread-unsafe) */
+void
+sixel_output_unref(sixel_output_t /* in */ *output);   /* output context */
+
+int
+sixel_output_get_8bit_availability(sixel_output_t *output);
+
+void
+sixel_output_set_8bit_availability(sixel_output_t *output, int availability);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+/* color quantization API */
 
 #ifdef __cplusplus
 extern "C" {
@@ -294,35 +161,67 @@ sixel_dither_unref(sixel_dither_t *dither); /* dither context object */
 
 /* initialize internal palette from specified pixel buffer */
 int
-sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
-                        int width, int height, int depth);
+sixel_dither_initialize(sixel_dither_t *dither,          /* dither context object */
+                        unsigned char /* in */ *data,    /* sample image */
+                        int /* in */ width,              /* image width */
+                        int /* in */ height,             /* image height */
+                        int /* in */ depth,              /* pixel depth, now only '3' is supported */
+                        int /* in */ method_for_largest, /* method for finding the largest dimention */
+                        int /* in */ method_for_rep,     /* method for choosing a color from the box */
+                        int /* in */ quality_mode);      /* quality of histgram processing */
 
-/* deprecated */
-unsigned char *
-LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
-                int reqcolors, int *ncolors, int *origcolors,
-                enum methodForLargest const methodForLargest,
-                enum methodForRep const methodForRep,
-                enum qualityMode const qualityMode) @attr_func_deprecated@;
+/* set diffusion type, choose from enum methodForDiffuse */
+void
+sixel_dither_set_diffusion_type(sixel_dither_t /* in */ *dither,  /* dither context object */
+                                int /* in */ method_for_diffuse); /* one of enum methodForDiffuse */
 
-/* deprecated */
+/* get number of palette colors */
 int
-LSQ_ApplyPalette(unsigned char *data, int width, int height, int depth,
-                 unsigned char *palette, int ncolor,
-                 enum methodForDiffuse const methodForDiffuse,
-                 int foptimize,
-                 unsigned short *cachetable,
-                 unsigned char *result) @attr_func_deprecated@;
+sixel_dither_get_num_of_palette_colors(sixel_dither_t /* in */ *dither);   /* dither context object */
 
+/* get number of histgram colors */
+int
+sixel_dither_get_num_of_histgram_colors(sixel_dither_t /* in */ *dither);  /* dither context object */
 
-/* deprecated */
-extern void
-LSQ_FreePalette(unsigned char * data) @attr_func_deprecated@;
+/* get palette */
+unsigned char *
+sixel_dither_get_palette(sixel_dither_t /* in */ *dither);  /* dither context object */
 
 #ifdef __cplusplus
 }
 #endif
 
+/* converter API */
+
+typedef void * (* sixel_allocator_function)(size_t size);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* convert pixels into sixel format and write it to output context */
+int
+sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
+             int            /* in */  width,      /* image width */
+             int            /* in */  height,     /* image height */
+             int            /* in */  depth,      /* pixel depth */
+             sixel_dither_t /* in */ *dither,     /* dither context */
+             sixel_output_t /* in */ *context);   /* output context */
+
+/* convert sixel data into indexed pixel bytes and palette data */
+int
+sixel_decode(unsigned char              /* in */  *sixels,    /* sixel bytes */
+             int                        /* in */  size,       /* size of sixel bytes */
+             unsigned char              /* out */ **pixels,   /* decoded pixels */
+             int                        /* out */ *pwidth,    /* image width */
+             int                        /* out */ *pheight,   /* image height */
+             unsigned char              /* out */ **palette,  /* RGBA palette */
+             int                        /* out */ *ncolors,   /* palette size (<= 256) */
+             sixel_allocator_function   /* out */ allocator); /* malloc function */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* LIBSIXEL_SIXEL_H */
 

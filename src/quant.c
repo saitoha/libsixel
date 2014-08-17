@@ -360,11 +360,11 @@ averageColors(int          const boxStart,
 
 
 static void
-averagePixels(int          const boxStart,
-              int          const boxSize,
-              tupletable2  const colorfreqtable,
+averagePixels(int const boxStart,
+              int const boxSize,
+              tupletable2 const colorfreqtable,
               unsigned int const depth,
-              tuple        const newTuple)
+              tuple const newTuple)
 {
 
     unsigned int n;
@@ -394,12 +394,12 @@ averagePixels(int          const boxStart,
 
 
 static tupletable2
-colormapFromBv(unsigned int      const newcolors,
-               boxVector         const bv,
-               unsigned int      const boxes,
-               tupletable2       const colorfreqtable,
-               unsigned int      const depth,
-               enum methodForRep const methodForRep)
+colormapFromBv(unsigned int const newcolors,
+               boxVector const bv,
+               unsigned int const boxes,
+               tupletable2 const colorfreqtable,
+               unsigned int const depth,
+               int const methodForRep)
 {
     /*
     ** Ok, we've got enough boxes.  Now choose a representative color for
@@ -445,12 +445,12 @@ colormapFromBv(unsigned int      const newcolors,
 
 
 static int
-splitBox(boxVector             const bv,
-         unsigned int *        const boxesP,
-         unsigned int          const bi,
-         tupletable2           const colorfreqtable,
-         unsigned int          const depth,
-         enum methodForLargest const methodForLargest)
+splitBox(boxVector const bv,
+         unsigned int *const boxesP,
+         unsigned int const bi,
+         tupletable2 const colorfreqtable,
+         unsigned int const depth,
+         int const methodForLargest)
 {
 /*----------------------------------------------------------------------------
    Split Box 'bi' in the box vector bv (so that bv contains one more box
@@ -539,12 +539,12 @@ splitBox(boxVector             const bv,
 
 
 static int
-mediancut(tupletable2           const colorfreqtable,
-          unsigned int          const depth,
-          int                   const newcolors,
-          enum methodForLargest const methodForLargest,
-          enum methodForRep     const methodForRep,
-          tupletable2 *         const colormapP)
+mediancut(tupletable2 const colorfreqtable,
+          unsigned int const depth,
+          int const newcolors,
+          int const methodForLargest,
+          int const methodForRep,
+          tupletable2 *const colormapP)
 {
 /*----------------------------------------------------------------------------
    Compute a set of only 'newcolors' colors that best represent an
