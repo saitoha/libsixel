@@ -86,9 +86,50 @@ Now SIXEL feature is supported by the following terminals.
   [https://github.com/saitoha/seq2gif](https://github.com/saitoha/seq2gif)
 
 
-## API
+## SIXEL Animation
 
-The API is not freezed.
+img2sixel(1) can decode GIF animation.
+
+  ![Animation](https://raw.githubusercontent.com/saitoha/libsixel/master/data/sixel.gif)
+
+
+## Quantization quality
+
+img2sixel(1) supports high quality color image quantization.
+
+- ppmtosixel (netpbm)
+
+    $ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel
+
+  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_ppmtosixel.png)
+
+
+- ppmtosixel with Floyd–Steinberg dithering (netpbm)
+
+    $ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel
+
+  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_ppmtosixel2.png)
+
+
+- kmiya's sixel
+
+    $ sixel -p16 images/snake.jpg
+
+  ![kmiya's sixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_sixel.png)
+
+
+- PySixel (sixelconv command)
+
+    $ sixelconv -n16 images/snake.jpg
+
+  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_sixelconv.png)
+
+
+- libsixel (img2sixel command)
+
+    $ img2sixel -p16 images/snake.jpg
+
+  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_libsixel.png)
 
 
 ## Usage of command line tools
@@ -259,50 +300,112 @@ Convert a sixel file into a png image file
 $ sixel2png < egret.sixel > egret.png
 ```
 
-## Animation
+## Usage of conversion API 1.0
 
-img2sixel(1) can decode GIF animation.
+The Whole API is described [here](https://github.com/saitoha/libsixel/blob/master/include/sixel.h.in).
 
-  ![Animation](https://raw.githubusercontent.com/saitoha/libsixel/master/data/sixel.gif)
+### Example
 
+If you use OSX, a tiny example is available 
+[here](https://github.com/saitoha/libsixel/blob/master/examples/osx/opengl/).
 
-## Quantization quality
+  ![opengl example](https://raw.githubusercontent.com/saitoha/libsixel/master/data/example_opengl.gif)
 
-img2sixel(1) supports high quality color image quantization.
+### Bitmap to SIXEL
 
-- ppmtosixel (netpbm)
+*sixel_encode* function converts bitmap array into SIXEL format.
 
-    $ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel
+```C
+/* converter API */
 
-  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_ppmtosixel.png)
+/* convert pixels into sixel format and write it to output context */
+int
+sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
+             int            /* in */  width,    /* image width */
+             int            /* in */  height,   /* image height */
+             int            /* in */  depth,    /* pixel depth: now only 3 is supported */
+             sixel_dither_t /* in */ *dither,   /* dither context */
+             sixel_output_t /* in */ *context); /* output context */
+```
+To use this function, you have to initialize two objects,
 
+- *sixel_dither_t* (dithering context object)
+- *sixel_output_t* (output context object)
 
-- ppmtosixel with Floyd–Steinberg dithering (netpbm)
+#### Dithering context
 
-    $ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel
+Here is a part of APIs for dithering context manipulation.
 
-  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_ppmtosixel2.png)
+```C
+/* create dither context object: reference counter is set to 1 */
+sixel_dither_t *
+sixel_dither_create(int /* in */ ncolors); /* number of colors */
 
+/* increment reference count of dither context object (thread-unsafe) */
+void
+sixel_dither_ref(sixel_dither_t *dither); /* dither context object */
 
-- kmiya's sixel
+/* decrement reference count of dither context object (thread-unsafe) */
+void
+sixel_dither_unref(sixel_dither_t *dither); /* dither context object */
 
-    $ sixel -p16 images/snake.jpg
+/* initialize internal palette from specified pixel buffer */
+int
+sixel_dither_initialize(
+    sixel_dither_t *dither,          /* dither context object */
+    unsigned char /* in */ *data,    /* sample image */
+    int /* in */ width,              /* image width */
+    int /* in */ height,             /* image height */
+    int /* in */ depth,              /* pixel depth, now only '3' is supported */
+    int /* in */ method_for_largest, /* set 0 or method for finding the largest dimention */
+    int /* in */ method_for_rep,     /* set 0 or method for choosing a color from the box */
+    int /* in */ quality_mode        /* set 0 or quality of histgram processing */
+);
+```
 
-  ![kmiya's sixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_sixel.png)
+#### Output context
 
+Here is a part of APIs for output context manipulation.
 
-- PySixel (sixelconv command)
+```C
+typedef int (* sixel_write_function)(char *data, int size, void *priv);
 
-    $ sixelconv -n16 images/snake.jpg
+/* create output context object */
+sixel_output_t *const
+sixel_output_create(
+    sixel_write_function /* in */ fn_write, /* callback function for output sixel */
+    void /* in */ *priv                     /* private data given as 
+);                                             3rd argument of fn_write */
 
-  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_sixelconv.png)
+/* increment reference count of output context object (thread-unsafe) */
+void
+sixel_output_ref(sixel_output_t /* in */ *output);     /* output context */
 
+/* decrement reference count of output context object (thread-unsafe) */
+void
+sixel_output_unref(sixel_output_t /* in */ *output);   /* output context */
 
-- libsixel (img2sixel command)
+```
 
-    $ img2sixel -p16 images/snake.jpg
+### SIXEL to indexed bitmap
 
-  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_libsixel.png)
+*sixel_decode* function converts SIXEL into indexed bitmap bytes with its palette.
+
+```
+/* malloc(3) compatible function */
+typedef void * (* sixel_allocator_function)(size_t size);
+
+/* convert sixel data into indexed pixel bytes and palette data */
+int
+sixel_decode(unsigned char              /* in */  *sixels,    /* sixel bytes */
+             int                        /* in */  size,       /* size of sixel bytes */
+             unsigned char              /* out */ **pixels,   /* decoded pixels */
+             int                        /* out */ *pwidth,    /* image width */
+             int                        /* out */ *pheight,   /* image height */
+             unsigned char              /* out */ **palette,  /* RGBA palette */
+             int                        /* out */ *ncolors,   /* palette size (<= 256) */
+             sixel_allocator_function   /* out */ allocator); /* malloc function */
+```
 
 
 ## Support
@@ -393,6 +496,21 @@ http://netpbm.sourceforge.net/
 > copyright notice and this permission notice appear in supporting
 > documentation.  This software is provided "as is" without express or
 > implied warranty.
+
+
+### ax_gcc_var_attribute / ax_gcc_func_attribute
+
+These are useful m4 macros for detecting some GCC attributes.
+
+http://www.gnu.org/software/autoconf-archive/ax_gcc_var_attribute.html
+http://www.gnu.org/software/autoconf-archive/ax_gcc_func_attribute.html
+
+> Copyright (c) 2013 Gabriele Svelto <gabriele.svelto@gmail.com>
+>
+> Copying and distribution of this file, with or without modification, are
+> permitted in any medium without royalty provided the copyright notice
+> and this notice are preserved.  This file is offered as-is, without any
+> warranty.
 
 
 ### test images

@@ -4,7 +4,7 @@
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
 AC_INIT([sixel], [0.28.0], [user@zuse.jp])
-LS_LT_CURRENT=0
+LS_LT_CURRENT=1
 LS_LT_REVISION=0
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
@@ -20,6 +20,16 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 #AC_ENABLE_SHARED
 #AC_DISABLE_STATIC
+
+AX_GCC_VAR_ATTRIBUTE([deprecated])
+if test x$ax_cv_have_func_attribute_deprecated != x; then
+    AC_SUBST(attr_var_deprecated, [__attribute__\(\(deprecated\)\)])
+fi
+
+AX_GCC_FUNC_ATTRIBUTE([deprecated])
+if test x$ax_cv_have_func_attribute_deprecated != x; then
+    AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
+fi
 
 # Options
 AC_ARG_ENABLE([img2sixel],
@@ -136,7 +146,7 @@ AC_CHECK_FUNC([getopt_long],
                              [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
                              [AC_MSG_ERROR(getopt or getopt_long is not available.)])])
 
-AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode signal usleep clock])
+AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode signal usleep calloc clock])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
@@ -287,6 +297,7 @@ LS_UPDATE_TIMESTAMP
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
                  package.json
+                 include/sixel.h
                  src/Makefile
                  include/Makefile
                  converters/Makefile])

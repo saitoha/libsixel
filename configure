@@ -654,6 +654,8 @@ WANT_SIXEL2PNG_FALSE
 WANT_SIXEL2PNG_TRUE
 WANT_IMG2SIXEL_FALSE
 WANT_IMG2SIXEL_TRUE
+attr_func_deprecated
+attr_var_deprecated
 CPP
 OTOOL64
 OTOOL
@@ -2312,7 +2314,7 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-LS_LT_CURRENT=0
+LS_LT_CURRENT=1
 LS_LT_REVISION=0
 LS_LT_AGE=0
 LS_LTVERSION=$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE
@@ -11556,6 +11558,118 @@ ac_config_headers="$ac_config_headers config.h"
 #AC_ENABLE_SHARED
 #AC_DISABLE_STATIC
 
+
+
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __attribute__((deprecated))" >&5
+$as_echo_n "checking for __attribute__((deprecated))... " >&6; }
+if ${ax_cv_have_var_attribute_deprecated+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+                    int foo __attribute__((deprecated)) = 0;
+
+int
+main ()
+{
+
+
+
+  ;
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+                                      if test -s conftest.err; then :
+  ax_cv_have_var_attribute_deprecated=no
+else
+  ax_cv_have_var_attribute_deprecated=yes
+fi
+else
+  ax_cv_have_var_attribute_deprecated=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_have_var_attribute_deprecated" >&5
+$as_echo "$ax_cv_have_var_attribute_deprecated" >&6; }
+
+    if test yes = $ax_cv_have_var_attribute_deprecated; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_VAR_ATTRIBUTE_DEPRECATED 1
+_ACEOF
+
+fi
+
+
+
+if test x$ax_cv_have_func_attribute_deprecated != x; then
+    attr_var_deprecated=__attribute__\(\(deprecated\)\)
+
+fi
+
+
+
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __attribute__((deprecated))" >&5
+$as_echo_n "checking for __attribute__((deprecated))... " >&6; }
+if ${ax_cv_have_func_attribute_deprecated+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+                    int foo( void ) __attribute__((deprecated("")));
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+                                      if test -s conftest.err; then :
+  ax_cv_have_func_attribute_deprecated=no
+else
+  ax_cv_have_func_attribute_deprecated=yes
+fi
+else
+  ax_cv_have_func_attribute_deprecated=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_have_func_attribute_deprecated" >&5
+$as_echo "$ax_cv_have_func_attribute_deprecated" >&6; }
+
+    if test yes = $ax_cv_have_func_attribute_deprecated; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FUNC_ATTRIBUTE_DEPRECATED 1
+_ACEOF
+
+fi
+
+
+
+if test x$ax_cv_have_func_attribute_deprecated != x; then
+    attr_func_deprecated=__attribute__\(\(deprecated\)\)
+
+fi
+
 # Options
 # Check whether --enable-img2sixel was given.
 if test "${enable_img2sixel+set}" = set; then :
@@ -12761,7 +12875,7 @@ fi
 fi
 
 
-for ac_func in memcpy memmove strtol setmode _setmode signal usleep clock
+for ac_func in memcpy memmove strtol setmode _setmode signal usleep calloc clock
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -13846,7 +13960,7 @@ fi
           touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
 
 
-ac_config_files="$ac_config_files Makefile libsixel.pc package.json src/Makefile include/Makefile converters/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc package.json include/sixel.h src/Makefile include/Makefile converters/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -14873,6 +14987,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "libsixel.pc") CONFIG_FILES="$CONFIG_FILES libsixel.pc" ;;
     "package.json") CONFIG_FILES="$CONFIG_FILES package.json" ;;
+    "include/sixel.h") CONFIG_FILES="$CONFIG_FILES include/sixel.h" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
     "converters/Makefile") CONFIG_FILES="$CONFIG_FILES converters/Makefile" ;;
