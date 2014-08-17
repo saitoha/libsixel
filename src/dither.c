@@ -32,6 +32,7 @@
 #endif
 
 #include "dither.h"
+#include "quant.h"
 #include "sixel.h"
 
 

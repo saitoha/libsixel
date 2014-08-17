@@ -56,6 +56,7 @@
 # include <inttypes.h>
 #endif
 
+#include "quant.h"
 #include "sixel.h"
 
 #if 0
@@ -989,9 +990,9 @@ lookup_fast(unsigned char const * const pixel,
 unsigned char *
 LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
                 int reqcolors, int *ncolors, int *origcolors,
-                enum methodForLargest const methodForLargest,
-                enum methodForRep const methodForRep,
-                enum qualityMode const qualityMode)
+                int methodForLargest,
+                int methodForRep,
+                int qualityMode)
 {
     int i, n;
     int ret;
@@ -1025,7 +1026,7 @@ LSQ_ApplyPalette(unsigned char *data,
                  int depth,
                  unsigned char *palette,
                  int ncolor,
-                 enum methodForDiffuse const methodForDiffuse,
+                 int methodForDiffuse,
                  int foptimize,
                  unsigned short *cachetable,
                  unsigned char *result)
