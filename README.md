@@ -93,6 +93,13 @@ img2sixel(1) can decode GIF animation.
   ![Animation](https://raw.githubusercontent.com/saitoha/libsixel/master/data/sixel.gif)
 
 
+## Youtube streaming
+
+Now Youtube video streaming is available by [FFmpeg-SIXEL](https://github.com/saitoha/FFmpeg-SIXEL) project.
+
+  [![FFmpeg-SIXEL](https://raw.githubusercontent.com/saitoha/libsixel/master/data/sixel.gif)](youtu.be/hqMh47lYHlc)
+
+
 ## Quantization quality
 
 img2sixel(1) supports high quality color image quantization.
