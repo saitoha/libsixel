@@ -23,35 +23,44 @@
 #define LIBSIXEL_SIXEL_H
 
 #define PALETTE_MAX 256
+#define OUTPUT_PACKET_SIZE 8192
 
+#define LIBSIXEL_VRTSION @PACKAGE_VERSION@
+#define LIBSIXEL_ABI_VRTSION @LS_LTVERSION@
+
+/* dither context object */
 typedef struct sixel_dither {
-    unsigned int ref;
-    unsigned char *palette;
-    unsigned short *cachetable;
-    int reqcolors;  /* requested colors */
-    int ncolors;    /* active colors */
-    int origcolors; /* original colors */
-    int optimized;
-    int method_for_largest;
-    int method_for_rep;
-    int method_for_diffuse;
-    int quality_mode;
+    unsigned int ref;           /* reference counter */
+    unsigned char *palette;     /* palette definition */
+    unsigned short *cachetable; /* cache table */
+    int reqcolors;              /* requested colors */
+    int ncolors;                /* active colors */
+    int origcolors;             /* original colors */
+    int optimized;              /* pixel is 15bpp compressable */
+    int method_for_largest;     /* method for finding the largest dimention 
+				   for splitting */
+    int method_for_rep;         /* method for choosing a color from the box */
+    int method_for_diffuse;     /* method for diffusing */
+    int quality_mode;           /* quality of histgram */
+    int keycolor;               /* background color */
 } sixel_dither_t;
 
 /* LSImage definition */
 typedef struct LSImageStruct {
     /* Palette-based image pixels */
-    unsigned char *pixels;  /* pixel buffer */
-    int sx;        /* width */
-    int sy;        /* height */
-    int depth;     /* bytes per pixel */
-    int keycolor;  /* background color */
-    int borrowed;  /* whether pixels is borrowed reference */
-    sixel_dither_t *dither;
+    unsigned char *pixels;      /* pixel buffer */
+    int sx;                     /* width */
+    int sy;                     /* height */
+    int depth;                  /* bytes per pixel */
+    int borrowed;               /* whether pixels is borrowed reference */
+    sixel_dither_t *dither;     /* dithering context object */
 } LSImage, *LSImagePtr;
+
+typedef LSImage sixel_image_t;
 
 typedef int (* putchar_function)(int ch);
 typedef int (* printf_function)(const char *fmt, ...);
+typedef int (* write_function)(char *data, int size, void *priv);
 
 typedef struct LSNode {
     struct LSNode *next;
@@ -62,6 +71,9 @@ typedef struct LSNode {
 } sixel_node_t;
 
 typedef struct LSOutputContextStruct {
+
+    int ref;
+
     /* compatiblity flags */
 
     /* 0: 7bit terminal,
@@ -78,6 +90,7 @@ typedef struct LSOutputContextStruct {
 
     putchar_function fn_putchar;
     printf_function fn_printf;
+    write_function fn_write;
 
     unsigned char conv_palette[PALETTE_MAX];
     int save_pixel;
@@ -86,7 +99,14 @@ typedef struct LSOutputContextStruct {
 
     sixel_node_t *node_top;
     sixel_node_t *node_free;
+
+    void *private;
+    int pos;
+    unsigned char buffer[1];
+
 } LSOutputContext, *LSOutputContextPtr;
+
+typedef LSOutputContext sixel_output_t;
 
 /* converter API */
 
@@ -94,11 +114,29 @@ typedef struct LSOutputContextStruct {
 extern "C" {
 #endif
 
-LSImagePtr
-LibSixel_SixelToLSImage(unsigned char *p, int len);
-
+/* convert pixels into sixel format and write it to output context */
 int
-LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context);
+sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
+             int            /* in */ width,     /* image width */
+             int            /* in */ height,    /* image height */
+             int            /* in */ depth,     /* pixel depth */
+             sixel_dither_t /* in */ *dither,   /* dither context */
+             sixel_output_t /* in */ *context); /* output context */
+
+/* convert sixel data into indexed pixel bytes and palette data */
+int
+sixel_decode(unsigned char /* in */  *sixels,   /* sixel bytes */
+             unsigned char /* out */ **pixels,  /* decoded pixels */
+             int           /* out */ *pwidth,   /* image width */
+             int           /* out */ *pheight,  /* image height */
+             unsigned char /* out */ **palette, /* ARGB palette */
+             unsigned char /* out */ *ncolors); /* palette size (<= 256) */
+
+/* deprecated */
+LSImagePtr LibSixel_SixelToLSImage(unsigned char *p, int len) @attr_func_deprecated@;
+
+/* deprecated */
+int LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context) @attr_func_deprecated@;
 
 #ifdef __cplusplus
 }
@@ -110,33 +148,35 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context);
 extern "C" {
 #endif
 
+LSImagePtr sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
+                              int borrowed, sixel_dither_t *dither);
+/* deprecated */
 LSImagePtr
-LSImage_create(int sx, int sy, int depth, int ncolors);
+LSImage_create(int sx, int sy, int depth, int ncolors) @attr_func_deprecated@;
 
-LSImagePtr
-sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
-                   int borrowed, sixel_dither_t *dither);
+/* deprecated */
+void LSImage_destroy(LSImagePtr im) @attr_func_deprecated@;
 
-void
-LSImage_destroy(LSImagePtr im);
+/* deprecated */
+void LSImage_setpalette(LSImagePtr im, int n, int r, int g, int b) @attr_func_deprecated@;
 
-void
-LSImage_setpalette(LSImagePtr im, int n, int r, int g, int b);
+/* deprecated */
+void LSImage_setpixels(LSImagePtr im, unsigned char *pixels) @attr_func_deprecated@;
 
-void
-LSImage_setpixels(LSImagePtr im, unsigned char *pixels);
+/* deprecated */
+void LSImage_setpixel(LSImagePtr im, int x, int y, int color) @attr_func_deprecated@;
 
-void
-LSImage_setpixel(LSImagePtr im, int x, int y, int color);
+/* deprecated */
+void LSImage_copy(LSImagePtr dst, LSImagePtr src, int w, int h) @attr_func_deprecated@;
 
-void
-LSImage_copy(LSImagePtr dst, LSImagePtr src, int w, int h);
+/* deprecated */
+void LSImage_fill(LSImagePtr im, int color) @attr_func_deprecated@;
 
-void
-LSImage_fill(LSImagePtr im, int color);
-
-void
-LSImage_fillrectangle(LSImagePtr im, int x1, int y1, int x2, int y2, int color);
+/* deprecated */
+void LSImage_fillrectangle(LSImagePtr im,
+                           int x1, int y1,
+                           int x2, int y2,
+                           int color) @attr_func_deprecated@;
 
 #ifdef __cplusplus
 }
@@ -149,11 +189,31 @@ LSImage_fillrectangle(LSImagePtr im, int x1, int y1, int x2, int y2, int color);
 extern "C" {
 #endif
 
-LSOutputContextPtr const
-LSOutputContext_create(putchar_function fn_putchar, printf_function fn_printf);
-
+/* create output context object */
+sixel_output_t *const
+sixel_output_create(write_function /* in */ fn_write,  /* callback function for output sixel */
+                    void           /* in */ *priv);    /* private data given as 
+                                                          3rd argument of fn_write */
+/* destroy output context object */
 void
-LSOutputContext_destroy(LSOutputContextPtr context);
+sixel_output_destroy(sixel_output_t /* in */ *output); /* output context */
+
+/* increment reference count of output context object (thread-unsafe) */
+void
+sixel_output_ref(sixel_output_t /* in */ *output);     /* output context */
+
+/* decrement reference count of output context object (thread-unsafe) */
+void
+sixel_output_unref(sixel_output_t /* in */ *output);   /* output context */
+
+
+/* deprecated */
+LSOutputContextPtr const
+LSOutputContext_create(putchar_function fn_putchar, printf_function fn_printf) @attr_func_deprecated@;
+
+/* deprecated */
+void
+LSOutputContext_destroy(LSOutputContextPtr context) @attr_func_deprecated@;
 
 #ifdef __cplusplus
 }
@@ -180,7 +240,7 @@ enum methodForRep {
     REP_AVERAGE_PIXELS = 3  /* choose the averate all the pixels in the box */
 };
 
-/* method for dithering */
+/* method for diffusing */
 enum methodForDiffuse {
     DIFFUSE_AUTO     = 0, /* choose diffusion type automatically */
     DIFFUSE_NONE     = 1, /* don't diffuse */
@@ -212,21 +272,30 @@ extern "C" {
 
 /* exported functions */
 
-sixel_dither_t * sixel_dither_create(int ncolors);
+/* create dither context object */
+sixel_dither_t *
+sixel_dither_create(int /* in */ ncolors); /* number of colors */
 
-void sixel_dither_destroy(sixel_dither_t *dither);
+/* get built-in dither context object */
+sixel_dither_t *
+sixel_dither_get(int builtin_dither); /* ID of built-in dither object */
 
-void sixel_dither_ref(sixel_dither_t *dither);
+/* destroy dither context object */
+void
+sixel_dither_destroy(sixel_dither_t *dither); /* dither context object */
 
-void sixel_dither_unref(sixel_dither_t *dither);
+/* increment reference count of dither context object (thread-unsafe) */
+void
+sixel_dither_ref(sixel_dither_t *dither); /* dither context object */
 
-sixel_dither_t * sixel_dither_get(int builtin_dither);
+/* decrement reference count of dither context object (thread-unsafe) */
+void
+sixel_dither_unref(sixel_dither_t *dither); /* dither context object */
 
-int sixel_prepare_palette(sixel_dither_t *dither, unsigned char *data,
-                          int width, int height, int depth);
-
-int sixel_apply_palette(LSImagePtr im);
-
+/* initialize internal palette from specified pixel buffer */
+int
+sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
+                        int width, int height, int depth);
 
 /* deprecated */
 unsigned char *
