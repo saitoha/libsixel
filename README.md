@@ -2,13 +2,14 @@ libsixel
 ========
 
 [![Build Status](https://travis-ci.org/saitoha/libsixel.svg?branch=master)](https://travis-ci.org/saitoha/libsixel)
+[![Coverage Status](https://coveralls.io/repos/saitoha/libsixel/badge.png?branch=master)](https://coveralls.io/r/saitoha/libsixel?branch=master)
 
 ## What is this?
 
 This package provides encoder/decoder implementation for DEC SIXEL graphics, and
 some converter programs.
 
-![img2sixel](http://zuse.jp/misc/libsixel-1.png)
+![img2sixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/libsixel-1.png)
 
 SIXEL is one of image formats for printer and terminal imaging introduced by
 Digital Equipment Corp. (DEC).
@@ -28,11 +29,13 @@ $ make
 ### Build with optional packages
 
 ```
---with-gdk-pixbuf2      build with gdk-pixbuf2 (default: no)
---with-libcurl          build with libcurl (default: no)
---with-gd               build with gd (default: no)
+--with-gdk-pixbuf2        build with gdk-pixbuf2 (default: no)
+--with-libcurl            build with libcurl (default: no)
+--with-gd                 build with gd (default: no)
+--with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
+--with-bashcompletiondir  specify bashcompletion.d
+--with-zshcompletiondir   specify zshcompletion.d
 ```
-
 
 ## Terminal requirements
 
@@ -40,15 +43,15 @@ If you want to view a SIXEL image, you have to get a terminal which support sixe
 
 Now SIXEL feature is supported by the following terminals.
 
-- VT240
+- DEC VT series, VT240/VT241/VT330/VT340/VT282/VT284/VT286/VT382
 
-- VT241
+- DECterm(dxterm)
 
-- VT330
+- Kermit
 
-- VT340
+- ZSTEM 340
 
-- VT382
+- WRQ Reflection
 
 - RLogin (Japanese terminal emulator)
 
@@ -70,13 +73,22 @@ Now SIXEL feature is supported by the following terminals.
 
   You should launch xterm with "-ti 340" option. the SIXEL palette is limited to a maximum of 16 colors.
 
-- DECterm
+- yaft (in github repo)
 
-- Kermit
+  [https://github.com/uobikiemukot/yaft](https://github.com/uobikiemukot/yaft)
 
-- WRQ Reflection
+- recterm (ttyrec to GIF converter)
 
-- ZSTEM
+  [https://github.com/uobikiemukot/recterm](https://github.com/uobikiemukot/recterm)
+
+- seq2gif (ttyrec to GIF converter)
+
+  [https://github.com/saitoha/seq2gif](https://github.com/saitoha/seq2gif)
+
+
+## API
+
+The API is not freezed.
 
 
 ## Usage of command line tools
@@ -84,7 +96,6 @@ Now SIXEL feature is supported by the following terminals.
 ### img2sixel
 
 ```
-img2sixel: invalid option -- v
 Usage: img2sixel [Options] imagefiles
        img2sixel [Options] < imagefile
 
@@ -102,7 +113,14 @@ Options:
                            background color is black
 -i, --invert               assume the terminal background color
                            is white, make sense only when -e
-                           option is given.
+                           option is given
+-u, --use-macro            use DECDMAC and DEVINVM sequences to
+                           optimize GIF animation rendering
+-n, --macro-number         specify an number argument for
+                           DECDMAC and make terminal memorize
+                           SIXEL image. No image is shown if this
+                           option is specified
+-g, --ignore-delay         render GIF animation without delay
 -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
                            choose diffusion method which used
                            with -p option (color reduction)
@@ -169,7 +187,7 @@ Options:
                              <number>px -> scale height with
                                            pixel counts
 -r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE
-                           choose resampling method used
+                           choose resampling filter used
                            with -w or -h option (scaling)
                            RESAMPLINGTYPE is one of them:
                              nearest  -> Nearest-Neighbor
@@ -185,13 +203,23 @@ Options:
                              lanczos3 -> Lanczos-3 filter
                              lanczos4 -> Lanczos-4 filter
 -q QUALITYMODE, --quality=QUALITYMODE
-			   select quality of color quanlization.
+                           select quality of color
+                           quanlization.
                              auto -> decide quality mode
                                      automatically (default)
                              high -> high quality and low
                                      speed mode
                              low  -> low quality and high
                                      speed mode
+-l LOOPMODE, --loop-control=LOOPMODE
+                           select loop control mode for GIF
+                           animation.
+                             auto   -> honor the setting of
+                                       GIF header (default)
+                             force   -> always enable loop
+                             disable -> always disable loop
+-V, --version              show version and license info
+-H, --help                 show this help
 ```
 
 Convert a jpeg image file into a sixel file
@@ -221,6 +249,8 @@ Usage: sixel2png -i input.sixel -o output.png
 Options:
 -i, --input     specify input file
 -o, --output    specify output file
+-V, --version   show version and license information
+-H, --help      show this help
 ```
 
 Convert a sixel file into a png image file
@@ -229,84 +259,50 @@ Convert a sixel file into a png image file
 $ sixel2png < egret.sixel > egret.png
 ```
 
-## Similar software
+## Animation
 
-- [ppmtosixel (netpbm)](http://netpbm.sourceforge.net/)
+img2sixel(1) can decode GIF animation.
 
-  You can get SIXEL graphics using [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html) or [pbmtoln03](http://netpbm.sourceforge.net/doc/ppmtosixel.html).
-
-
-- [kmiya's sixel](http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz)
-
-  libgd based SIXEL converter
+  ![Animation](https://raw.githubusercontent.com/saitoha/libsixel/master/data/sixel.gif)
 
 
-- [PySixel](https://pypi.python.org/pypi/PySixel)
+## Quantization quality
 
-  Python implementation of SIXEL converter
-
-
-## Other software supporting SIXEL
-
-- [GNUPLOT](http://www.gnuplot.info/)
-
-  Recent version of GNUPLOT supports new terminal driver "sixel".
-
-  ![GNUPLOT](http://zuse.jp/misc/gnuplot.png)
-
-
-- [ghostscript](http://www.ghostscript.com/)
-
-  You can emit SIXEL images with LN03 / LN50 / LA75 driver.
-
-  example:
-
-  ```
-    $ gs -q -r100x -dBATCH -dNOPAUSE -sDEVICE=ln03 -sOutputFile=- tiger.eps
-  ```
-
-  ![GhostScript](http://zuse.jp/misc/gs.png)
-
-
-- ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
-
-
-## Color image quantization quality comparison
-
+img2sixel(1) supports high quality color image quantization.
 
 - ppmtosixel (netpbm)
 
     $ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel
 
-  ![ppmtosixel](http://zuse.jp/misc/q_ppmtosixel.png)
+  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_ppmtosixel.png)
 
 
 - ppmtosixel with Floyd–Steinberg dithering (netpbm)
 
     $ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel
 
-  ![ppmtosixel](http://zuse.jp/misc/q_ppmtosixel2.png)
+  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_ppmtosixel2.png)
 
 
 - kmiya's sixel
 
     $ sixel -p16 images/snake.jpg
 
-  ![kmiya's sixel](http://zuse.jp/misc/q_sixel.png)
+  ![kmiya's sixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_sixel.png)
 
 
 - PySixel (sixelconv command)
 
     $ sixelconv -n16 images/snake.jpg
 
-  ![PySixel](http://zuse.jp/misc/q_sixelconv.png)
+  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_sixelconv.png)
 
 
 - libsixel (img2sixel command)
 
     $ img2sixel -p16 images/snake.jpg
 
-  ![PySixel](http://zuse.jp/misc/q_libsixel.png)
+  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_libsixel.png)
 
 
 ## Support
@@ -343,7 +339,7 @@ The MIT License (MIT)
 > IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 > CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-## Thanks & References
+## Acknowledgment
 
 This software derives from the following implementations.
 
@@ -363,20 +359,20 @@ public activities without any restrictions.
 He declares this is compatible with MIT/BSD/GPL.
 
 
-### stbi-1.33
+### stbi-1.41
 
-This software includes *stbi-1.33* (stb_image.c),
+This software includes *stbi-1.41* (stb_image.h),
 public domain JPEG/PNG reader.
 
-http://nothings.org/stb_image.c
+https://github.com/nothings/stb
 
 
 ### stbiw-0.92
 
-This software includes *stbiw-0.92* (stb_image_write.h),
+This software includes *stbiw-0.94* (stb_image_write.h),
 public domain PNG/BMP/TGA writer.
 
-http://nothings.org/stb/stb_image_write.h
+https://github.com/nothings/stb
 
 
 ### pnmquant.c (netpbm library)
@@ -386,8 +382,7 @@ is imported from *pnmcolormap* included in *netpbm library*.
 
 http://netpbm.sourceforge.net/
 
-*pnmcolormap* was derived from *ppmquant*, originally by Jef Poskanzer.
-
+*pnmcolormap* was derived from *ppmquant*, originally written by Jef Poskanzer.
 
 > Copyright (C) 1989, 1991 by Jef Poskanzer.
 > Copyright (C) 2001 by Bryan Henderson.
@@ -400,45 +395,11 @@ http://netpbm.sourceforge.net/
 > implied warranty.
 
 
-### monosixel (arakiken's tw)
+### test images
 
-The pattern dither algorithm implemented in quant.c is imported from
-*monosixel/main.c* in *arakiken's tw "sixel" branch*.
+#### http://public-domain-photos.com/
 
-https://bitbucket.org/arakiken/tw/branch/sixel
-
-This tool is written by Araki Ken, and we regard it as a derivative of.
-original tw, created by Sho Hashimoto.
-
-
-> Copyright (c) 2012 Sho Hashimoto
-> Copyright (c) 2014 Araki Ken
->
-> Permission is hereby granted, free of charge, to any person obtaining
-> a copy of this software and associated documentation files (the
-> "Software"), to deal in the Software without restriction, including
-> without limitation the rights to use, copy, modify, merge, publish,
-> distribute, sublicense, and/or sell copies of the Software, and to
-> permit persons to whom the Software is furnished to do so, subject to
-> the following conditions:
->
-> The above copyright notice and this permission notice shall be
-> included in all copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-> EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-> MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-> NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-> LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-> OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-> WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
-### test images (egret.jpg / snake.jpg)
-
-Test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.com
-
-http://public-domain-photos.com/
+The following test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.com.
 
 - images/egret.jpg
 
@@ -450,11 +411,90 @@ http://public-domain-photos.com/
     author: Jon Sullivan
     url: http://public-domain-photos.com/animals/snake-4.htm
 
+These are in the [public domain](http://creativecommons.org/licenses/publicdomain/).
+
+
+#### vimperator3.png (mascot of vimperator)
+
+images/vimperator3.png is in the public domain.
+
+    author: @k_wizard
+    url: http://quadrantem.com/~k_wizard/vimprtan/
+
+
+## References
 
 ### ImageMagick
 
-We added some resampling filters in reference to the line-up of filters of
-MagickCore's resize.c.
+We are greatly inspired by the quality of ImageMagick and added some resampling filters to
+img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 
     http://www.imagemagick.org/api/MagickCore/resize_8c_source.html
+
+
+## Similar software
+
+- [ppmtosixel (netpbm)](http://netpbm.sourceforge.net/)
+
+  You can get SIXEL graphics using [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html)
+  or [pbmtoln03](http://netpbm.sourceforge.net/doc/ppmtosixel.html).
+
+
+- [kmiya's sixel](http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz)
+
+  libgd based SIXEL converter
+
+
+- [PySixel](https://pypi.python.org/pypi/PySixel)
+
+  Python implementation of SIXEL converter
+
+
+- [monosixel in arakiken's tw](https://bitbucket.org/arakiken/tw/branch/sixel)
+
+  A monochrome SIXEL converter
+
+
+- [xpr(x11-apps)](ftp://ftp.x.org/pub/unsupported/programs/xpr/)
+
+  xpr(1) can convert a xwd(X window dump) format image into a sixel
+  image with '-device ln03' or '-device la100' option.
+  But now it is not maintained. It looks broken.
+
+
+## Other software supporting SIXEL
+
+- [GNUPLOT](http://www.gnuplot.info/)
+
+  Recent version of GNUPLOT supports new terminal driver "sixel".
+
+  ![GNUPLOT](https://raw.githubusercontent.com/saitoha/libsixel/master/data/gnuplot.png)
+
+
+- [ghostscript](http://www.ghostscript.com/)
+
+  You can emit SIXEL images with LN03 / LN50 / LA75 driver.
+
+  example:
+
+  ```
+    $ gs -q -r100x -dBATCH -dNOPAUSE -sDEVICE=ln03 -sOutputFile=- tiger.eps
+  ```
+
+  ![GhostScript](https://raw.githubusercontent.com/saitoha/libsixel/master/data/gs.png)
+
+- ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
+
+- [ZX81 Emulator](http://rullf2.xs4all.nl/sg/zx81ce.html)
+
+  A ZX81 emulator producing Sixel Image Files
+
+  ![ZX81](https://raw.githubusercontent.com/saitoha/libsixel/master/data/zx81.png)
+
+- [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
+
+- [SIXEL image viewer(written in javascript)](http://rullf2.xs4all.nl/sg/sg.html)
+
+- [SixelGraphics.jl(written in Julia)](https://github.com/olofsen/SixelGraphics.jl)
+
 

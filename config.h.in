@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if you have the `clock' function. */
+#undef HAVE_CLOCK
+
 /* Define to 1 if you have the declaration of `gdImageCreateFromBmpPtr', and
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMBMPPTR
@@ -40,6 +43,18 @@
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
 
+/* Define to 1 if you have the declaration of `SIGHUP', and to 0 if you don't.
+   */
+#undef HAVE_DECL_SIGHUP
+
+/* Define to 1 if you have the declaration of `SIGINT', and to 0 if you don't.
+   */
+#undef HAVE_DECL_SIGINT
+
+/* Define to 1 if you have the declaration of `SIGTERM', and to 0 if you
+   don't. */
+#undef HAVE_DECL_SIGTERM
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
@@ -55,8 +70,14 @@
 /* whether gdk-pixbuf2 is available */
 #undef HAVE_GDK_PIXBUF2
 
+/* whether getopt is avilable */
+#undef HAVE_GETOPT
+
 /* Define to 1 if you have the <getopt.h> header file. */
 #undef HAVE_GETOPT_H
+
+/* whether getopt_long is avilable */
+#undef HAVE_GETOPT_LONG
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -90,6 +111,12 @@
 /* Define to 1 if you have the `setmode' function. */
 #undef HAVE_SETMODE
 
+/* Define to 1 if you have the `signal' function. */
+#undef HAVE_SIGNAL
+
+/* Define to 1 if you have the <signal.h> header file. */
+#undef HAVE_SIGNAL_H
+
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
@@ -105,14 +132,29 @@
 /* Define to 1 if you have the `strtol' function. */
 #undef HAVE_STRTOL
 
+/* Define to 1 if you have the <sys/signal.h> header file. */
+#undef HAVE_SYS_SIGNAL_H
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
+/* Define to 1 if you have the <sys/unistd.h> header file. */
+#undef HAVE_SYS_UNISTD_H
+
+/* Define to 1 if you have the <time.h> header file. */
+#undef HAVE_TIME_H
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the `usleep' function. */
+#undef HAVE_USLEEP
 
 /* Define to 1 if you have the `_setmode' function. */
 #undef HAVE__SETMODE

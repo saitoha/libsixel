@@ -1,0 +1,7 @@
+
+This software includes some part of stb(https://github.com/nothings/stb),
+
+- stb_image.h: public domain JPEG/PNG reader.
+- stb_image_write.h: public domain PNG/BMP/TGA writer.
+
+These great works is written by @nothings and some contributers.
