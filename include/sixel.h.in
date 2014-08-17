@@ -137,8 +137,6 @@ sixel_output_set_8bit_availability(sixel_output_t *output, int availability);
 extern "C" {
 #endif
 
-/* exported functions */
-
 /* create dither context object */
 sixel_dither_t *
 sixel_dither_create(int /* in */ ncolors); /* number of colors */
