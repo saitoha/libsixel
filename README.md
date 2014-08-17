@@ -86,6 +86,11 @@ Now SIXEL feature is supported by the following terminals.
   [https://github.com/saitoha/seq2gif](https://github.com/saitoha/seq2gif)
 
 
+## API
+
+The API is not freezed.
+
+
 ## Usage of command line tools
 
 ### img2sixel
@@ -254,75 +259,12 @@ Convert a sixel file into a png image file
 $ sixel2png < egret.sixel > egret.png
 ```
 
-## Similar software
-
-- [ppmtosixel (netpbm)](http://netpbm.sourceforge.net/)
-
-  You can get SIXEL graphics using [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html)
-  or [pbmtoln03](http://netpbm.sourceforge.net/doc/ppmtosixel.html).
-
-
-- [kmiya's sixel](http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz)
-
-  libgd based SIXEL converter
-
-
-- [PySixel](https://pypi.python.org/pypi/PySixel)
-
-  Python implementation of SIXEL converter
-
-
-- [monosixel in arakiken's tw](https://bitbucket.org/arakiken/tw/branch/sixel)
-
-  A monochrome SIXEL converter
-
-
-- [xpr(x11-apps)](ftp://ftp.x.org/pub/unsupported/programs/xpr/)
-
-  xpr(1) can convert a xwd(X window dump) format image into a sixel
-  image with '-device ln03' or '-device la100' option.
-  But now it is not maintained. It looks broken.
-
-## Other software supporting SIXEL
-
-- [GNUPLOT](http://www.gnuplot.info/)
-
-  Recent version of GNUPLOT supports new terminal driver "sixel".
-
-  ![GNUPLOT](https://raw.githubusercontent.com/saitoha/libsixel/master/data/gnuplot.png)
-
-
-- [ghostscript](http://www.ghostscript.com/)
-
-  You can emit SIXEL images with LN03 / LN50 / LA75 driver.
-
-  example:
-
-  ```
-    $ gs -q -r100x -dBATCH -dNOPAUSE -sDEVICE=ln03 -sOutputFile=- tiger.eps
-  ```
-
-  ![GhostScript](https://raw.githubusercontent.com/saitoha/libsixel/master/data/gs.png)
-
-- ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
-
-- [ZX81 Emulator](http://rullf2.xs4all.nl/sg/zx81ce.html)
-
-  A ZX81 emulator producing Sixel Image Files
-
-  ![ZX81](https://raw.githubusercontent.com/saitoha/libsixel/master/data/zx81.png)
-
-- [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
-
-- [SIXEL image viewer(written in javascript)](http://rullf2.xs4all.nl/sg/sg.html)
-
-- [SixelGraphics.jl(written in Julia)](https://github.com/olofsen/SixelGraphics.jl)
-
 ## Animation
 
 img2sixel(1) can decode GIF animation.
 
   ![Animation](https://raw.githubusercontent.com/saitoha/libsixel/master/data/sixel.gif)
+
 
 ## Quantization quality
 
@@ -488,4 +430,71 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 
     http://www.imagemagick.org/api/MagickCore/resize_8c_source.html
+
+
+## Similar software
+
+- [ppmtosixel (netpbm)](http://netpbm.sourceforge.net/)
+
+  You can get SIXEL graphics using [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html)
+  or [pbmtoln03](http://netpbm.sourceforge.net/doc/ppmtosixel.html).
+
+
+- [kmiya's sixel](http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz)
+
+  libgd based SIXEL converter
+
+
+- [PySixel](https://pypi.python.org/pypi/PySixel)
+
+  Python implementation of SIXEL converter
+
+
+- [monosixel in arakiken's tw](https://bitbucket.org/arakiken/tw/branch/sixel)
+
+  A monochrome SIXEL converter
+
+
+- [xpr(x11-apps)](ftp://ftp.x.org/pub/unsupported/programs/xpr/)
+
+  xpr(1) can convert a xwd(X window dump) format image into a sixel
+  image with '-device ln03' or '-device la100' option.
+  But now it is not maintained. It looks broken.
+
+
+## Other software supporting SIXEL
+
+- [GNUPLOT](http://www.gnuplot.info/)
+
+  Recent version of GNUPLOT supports new terminal driver "sixel".
+
+  ![GNUPLOT](https://raw.githubusercontent.com/saitoha/libsixel/master/data/gnuplot.png)
+
+
+- [ghostscript](http://www.ghostscript.com/)
+
+  You can emit SIXEL images with LN03 / LN50 / LA75 driver.
+
+  example:
+
+  ```
+    $ gs -q -r100x -dBATCH -dNOPAUSE -sDEVICE=ln03 -sOutputFile=- tiger.eps
+  ```
+
+  ![GhostScript](https://raw.githubusercontent.com/saitoha/libsixel/master/data/gs.png)
+
+- ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
+
+- [ZX81 Emulator](http://rullf2.xs4all.nl/sg/zx81ce.html)
+
+  A ZX81 emulator producing Sixel Image Files
+
+  ![ZX81](https://raw.githubusercontent.com/saitoha/libsixel/master/data/zx81.png)
+
+- [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
+
+- [SIXEL image viewer(written in javascript)](http://rullf2.xs4all.nl/sg/sg.html)
+
+- [SixelGraphics.jl(written in Julia)](https://github.com/olofsen/SixelGraphics.jl)
+
 
