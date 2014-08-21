@@ -1,5 +1,11 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if you have the `calloc' function. */
+#undef HAVE_CALLOC
+
+/* Define to 1 if you have the `clock' function. */
+#undef HAVE_CLOCK
+
 /* Define to 1 if you have the declaration of `gdImageCreateFromBmpPtr', and
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMBMPPTR
@@ -85,15 +91,6 @@
 /* Define to 1 if you have the `iconv' library (-liconv). */
 #undef HAVE_LIBICONV
 
-/* Define to 1 if you have the `ole32' library (-lole32). */
-#undef HAVE_LIBOLE32
-
-/* Define to 1 if you have the `uuid' library (-luuid). */
-#undef HAVE_LIBUUID
-
-/* Define to 1 if you have the `windowscodecs' library (-lwindowscodecs). */
-#undef HAVE_LIBWINDOWSCODECS
-
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
 #undef HAVE_MALLOC
@@ -144,11 +141,17 @@
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
 /* Define to 1 if you have the <sys/unistd.h> header file. */
 #undef HAVE_SYS_UNISTD_H
+
+/* Define to 1 if you have the <time.h> header file. */
+#undef HAVE_TIME_H
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
@@ -156,8 +159,8 @@
 /* Define to 1 if you have the `usleep' function. */
 #undef HAVE_USLEEP
 
-/* Define to 1 if you have the <wincodec.h> header file. */
-#undef HAVE_WINCODEC_H
+/* Define to 1 if the system has the `deprecated' variable attribute */
+#undef HAVE_VAR_ATTRIBUTE_DEPRECATED
 
 /* Define to 1 if you have the `_setmode' function. */
 #undef HAVE__SETMODE

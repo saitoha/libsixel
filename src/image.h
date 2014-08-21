@@ -19,71 +19,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include "output.h"
-#include "sixel.h"
+#ifndef LIBSIXEL_IMAGE_H
+#define LIBSIXEL_IMAGE_H
 
+#include "dither.h"
 
-sixel_output_t * const
-sixel_output_create(sixel_write_function fn_write, void *priv)
-{
-    sixel_output_t *output;
-   
-    output = malloc(sizeof(sixel_output_t) + SIXEL_OUTPUT_PACKET_SIZE * 2);
-    output->ref = 1;
-    output->has_8bit_control = 0;
-    output->has_sdm_glitch = 0;
-    output->fn_write = fn_write;
-    output->save_pixel = 0;
-    output->save_count = 0;
-    output->active_palette = (-1);
-    output->node_top = NULL;
-    output->node_free = NULL;
-    output->priv = priv;
-    output->pos = 0;
-
-    return output;
-}
-
-
-void
-sixel_output_destroy(sixel_output_t *output)
-{
-    free(output);
-}
-
-
-void
-sixel_output_ref(sixel_output_t *output)
-{
-    /* TODO: be thread-safe */
-    ++output->ref;
-}
-
-void
-sixel_output_unref(sixel_output_t *output)
-{
-    /* TODO: be thread-safe */
-    if (output && --output->ref == 0) {
-        sixel_output_destroy(output);
-    }
-}
-
-int
-sixel_output_get_8bit_availability(sixel_output_t *output)
-{
-    return output->has_8bit_control;
-}
-
-
-void
-sixel_output_set_8bit_availability(sixel_output_t *output, int availability)
-{
-    output->has_8bit_control = availability;
-}
-
+#endif /* LIBSIXEL_IMAGE_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

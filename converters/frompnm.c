@@ -120,10 +120,10 @@ load_pnm(unsigned char *p, int len, int *psx, int *psy, int *pcomp, int *pstride
     if (width < 1 || height < 1 || deps < 1)
         return NULL;
 
-    if ((result = malloc(width * height * 3)) == NULL)
+    if ((result = malloc(width * height * 3 + 1)) == NULL)
         return NULL;
 
-    memset(result, 0, width * height * 3);
+    memset(result, 0, width * height * 3 + 1);
 
     for (y = 0 ; y < height ; y++) {
         for (x = 0 ; x < width ; x++) {
@@ -152,16 +152,16 @@ load_pnm(unsigned char *p, int len, int *psx, int *psy, int *pcomp, int *pstride
                 break;
 
             switch(maps) {
-            case 0:        // bitmap
+            case 0:        /* bitmap */
                 if (c[0] == 0)
                     c[0] = c[1] = c[2] = 0;
                 else
                     c[0] = c[1] = c[2] = 255;
                 break;
-            case 1:        // graymap
+            case 1:        /* graymap */
                 c[0] = c[1] = c[2] = (c[0] * 255 / deps);
                 break;
-            case 2:        // pixmap
+            case 2:        /* pixmap */
                 c[0] = (c[0] * 255 / deps);
                 c[1] = (c[1] * 255 / deps);
                 c[2] = (c[2] * 255 / deps);

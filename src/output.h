@@ -19,71 +19,62 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include "output.h"
-#include "sixel.h"
+#ifndef LIBSIXEL_OUTPUT_H
+#define LIBSIXEL_OUTPUT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-sixel_output_t * const
-sixel_output_create(sixel_write_function fn_write, void *priv)
-{
-    sixel_output_t *output;
-   
-    output = malloc(sizeof(sixel_output_t) + SIXEL_OUTPUT_PACKET_SIZE * 2);
-    output->ref = 1;
-    output->has_8bit_control = 0;
-    output->has_sdm_glitch = 0;
-    output->fn_write = fn_write;
-    output->save_pixel = 0;
-    output->save_count = 0;
-    output->active_palette = (-1);
-    output->node_top = NULL;
-    output->node_free = NULL;
-    output->priv = priv;
-    output->pos = 0;
+typedef struct sixel_node {
+    struct sixel_node *next;
+    int pal;
+    int sx;
+    int mx;
+    unsigned char *map;
+} sixel_node_t;
 
-    return output;
+typedef int (* sixel_write_function)(char *data, int size, void *priv);
+
+typedef struct sixel_output {
+
+    int ref;
+
+    /* compatiblity flags */
+
+    /* 0: 7bit terminal,
+     * 1: 8bit terminal */
+    unsigned char has_8bit_control;
+
+    /* 0: the terminal has sixel scrolling
+     * 1: the terminal does not have sixel scrolling */
+    unsigned char has_sixel_scrolling;
+
+    /* 0: DECSDM set (CSI ? 80 h) enables sixel scrolling
+       1: DECSDM set (CSI ? 80 h) disables sixel scrolling */
+    unsigned char has_sdm_glitch;
+
+    sixel_write_function fn_write;
+
+    unsigned char conv_palette[256];
+    int save_pixel;
+    int save_count;
+    int active_palette;
+
+    sixel_node_t *node_top;
+    sixel_node_t *node_free;
+
+    void *priv;
+    int pos;
+    unsigned char buffer[1];
+
+} sixel_output_t;
+
+#ifdef __cplusplus
 }
+#endif
 
-
-void
-sixel_output_destroy(sixel_output_t *output)
-{
-    free(output);
-}
-
-
-void
-sixel_output_ref(sixel_output_t *output)
-{
-    /* TODO: be thread-safe */
-    ++output->ref;
-}
-
-void
-sixel_output_unref(sixel_output_t *output)
-{
-    /* TODO: be thread-safe */
-    if (output && --output->ref == 0) {
-        sixel_output_destroy(output);
-    }
-}
-
-int
-sixel_output_get_8bit_availability(sixel_output_t *output)
-{
-    return output->has_8bit_control;
-}
-
-
-void
-sixel_output_set_8bit_availability(sixel_output_t *output, int availability)
-{
-    output->has_8bit_control = availability;
-}
-
+#endif /* LIBSIXEL_OUTPUT_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
