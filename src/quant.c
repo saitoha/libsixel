@@ -1137,7 +1137,7 @@ LSQ_ApplyPalette(unsigned char *data,
     }
 
     indextable = cachetable;
-    if (cachetable == NULL) {
+    if (cachetable == NULL && f_lookup == lookup_fast) {
         indextable = malloc((1 << depth * 5) * sizeof(unsigned short));
         if (!indextable) {
             quant_trace(stderr, "Unable to allocate memory for indextable.");
