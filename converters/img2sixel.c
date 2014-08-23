@@ -63,7 +63,6 @@
 
 #include <sixel.h>
 #include "scale.h"
-#include "quant.h"
 #include "loader.h"
 
 
@@ -75,51 +74,63 @@ enum loopMode {
 };
 
 
-static unsigned char *
-prepare_monochrome_palette(finvert)
+static int
+sixel_write_callback(char *data, int size, void *priv)
 {
-    unsigned char *palette;
-
-    palette = malloc(6);
-
-    if (palette == NULL) {
-        return NULL;
-    }
-
-    if (finvert) {
-        palette[0] = 0xff;
-        palette[1] = 0xff;
-        palette[2] = 0xff;
-        palette[3] = 0x00;
-        palette[4] = 0x00;
-        palette[5] = 0x00;
-    } else {
-        palette[0] = 0x00;
-        palette[1] = 0x00;
-        palette[2] = 0x00;
-        palette[3] = 0xff;
-        palette[4] = 0xff;
-        palette[5] = 0xff;
-    }
-
-    return palette;
+    return fwrite(data, 1, size, stdout);
 }
 
 
-static unsigned char *
-prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
+static int
+sixel_hex_write_callback(char *data, int size, void *priv)
+{
+    char hex[SIXEL_OUTPUT_PACKET_SIZE * 2];
+    int i;
+    int j;
+
+    for (i = j = 0; i < size; ++i, ++j) {
+        hex[j] = (data[i] >> 4) & 0xf;
+        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
+        hex[++j] = data[i] & 0xf;
+        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
+    }
+    return fwrite(hex, 1, size * 2, stdout);
+    return size;
+}
+
+
+static sixel_dither_t *
+prepare_monochrome_palette(finvert)
+{
+    sixel_dither_t *dither;
+
+    if (finvert) {
+        dither = sixel_dither_get(BUILTIN_MONO_LIGHT);
+    } else {
+        dither = sixel_dither_get(BUILTIN_MONO_DARK);
+    }
+    if (dither == NULL) {
+        return NULL;
+    }
+
+    return dither;
+}
+
+
+static sixel_dither_t *
+prepare_specified_palette(char const *mapfile, int reqcolors)
 {
     FILE *f;
     unsigned char *mappixels;
-    unsigned char *palette;
-    int origcolors;
+    sixel_dither_t *dither;
     int map_sx;
     int map_sy;
     int frame_count;
     int loop_count;
+    int ret;
     int *delays;
 
-    delays = 0;
+    delays = NULL;
 
     mappixels = load_image_file(mapfile, &map_sx, &map_sy,
                                 &frame_count, &loop_count, &delays);
@@ -129,10 +140,17 @@ prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
     if (!mappixels) {
         return NULL;
     }
-    palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3,
-                              reqcolors, pncolors, &origcolors,
-                              LARGE_NORM, REP_CENTER_BOX, QUALITY_HIGH);
-    return palette;
+    dither = sixel_dither_create(reqcolors);
+    if (dither == NULL) {
+        return NULL;
+    }
+    ret = sixel_dither_initialize(dither, mappixels, map_sx, map_sy, 3,
+                                  LARGE_NORM, REP_CENTER_BOX, QUALITY_LOW);
+    if (ret != 0) {
+        sixel_dither_unref(dither);
+        return NULL;
+    }
+    return dither;
 }
 
 
@@ -172,34 +190,23 @@ typedef struct Settings {
 } settings_t;
 
 
-typedef struct Frame {
-    int sx;
-    int sy;
-    unsigned char *buffer;
-} frame_t;
-
-
-typedef struct FrameSet {
-    int frame_count;
-    unsigned char *palette;
-    frame_t pframe[1];
-} frame_set_t;
-
-
-static unsigned char *
-prepare_palette(unsigned char *frame, int sx, int sy,
-                settings_t *psettings,
-                int *pncolors, int *porigcolors)
+sixel_dither_t *
+prepare_palette(unsigned char *frame, int sx, int sy, settings_t *psettings)
 {
-    unsigned char *palette;
+    sixel_dither_t *dither;
+    int ret;
 
     if (psettings->monochrome) {
-        palette = prepare_monochrome_palette(psettings->finvert);
-        *pncolors = 2;
+        dither = prepare_monochrome_palette(psettings->finvert);
+        if (!dither) {
+            return NULL;
+        }
     } else if (psettings->mapfile) {
-        palette = prepare_specified_palette(psettings->mapfile,
-                                            psettings->reqcolors,
-                                            pncolors);
+        dither = prepare_specified_palette(psettings->mapfile,
+                                            psettings->reqcolors);
+        if (!dither) {
+            return NULL;
+        }
     } else {
         if (psettings->method_for_largest == LARGE_AUTO) {
             psettings->method_for_largest = LARGE_NORM;
@@ -214,18 +221,18 @@ prepare_palette(unsigned char *frame, int sx, int sy,
                 psettings->quality_mode = QUALITY_LOW;
             }
         }
-        palette = LSQ_MakePalette(frame, sx, sy, 3,
-                                  psettings->reqcolors,
-                                  pncolors,
-                                  porigcolors,
-                                  psettings->method_for_largest,
-                                  psettings->method_for_rep,
-                                  psettings->quality_mode);
-        if (*porigcolors <= *pncolors) {
-            psettings->method_for_diffuse = DIFFUSE_NONE;
+
+        dither = sixel_dither_create(psettings->reqcolors);
+        ret = sixel_dither_initialize(dither, frame, sx, sy, 3,
+                                      psettings->method_for_largest,
+                                      psettings->method_for_rep,
+                                      psettings->quality_mode);
+        if (ret != 0) {
+            sixel_dither_unref(dither);
+            return NULL;
         }
     }
-    return palette;
+    return dither;
 }
 
 
@@ -278,14 +285,9 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     unsigned char **frames = NULL;
     unsigned char *scaled_frame = NULL;
     unsigned char *mappixels = NULL;
-    unsigned char *palette = NULL;
-    unsigned char *data = NULL;
     unsigned char *p = NULL;
-    int ncolors;
-    int origcolors;
-    LSImagePtr im = NULL;
-    LSImagePtr *image_array = NULL;
-    LSOutputContextPtr context = NULL;
+    sixel_output_t *context = NULL;
+    sixel_dither_t *dither = NULL;
     int sx, sy;
     int frame_count;
     int loop_count;
@@ -306,8 +308,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 
     if (psettings->reqcolors < 2) {
         psettings->reqcolors = 2;
-    } else if (psettings->reqcolors > PALETTE_MAX) {
-        psettings->reqcolors = PALETTE_MAX;
     }
 
     pixels = load_image_file(filename, &sx, &sy,
@@ -370,60 +370,20 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         sy = psettings->pixelheight;
     }
 
-    /* prepare palette */
-    palette = prepare_palette(pixels, sx, sy * frame_count,
-                              psettings,
-                              &ncolors, &origcolors);
-    if (!palette) {
+    /* prepare dither context */
+    dither = prepare_palette(pixels, sx, sy * frame_count, psettings);
+    if (!dither) {
         nret = -1;
         goto end;
     }
 
-    image_array = malloc(sizeof(LSImagePtr) * frame_count);
-
-    if (!image_array) {
-        nret = -1;
-        goto end;
+    if (psettings->method_for_diffuse == DIFFUSE_AUTO) {
+        psettings->method_for_diffuse = DIFFUSE_FS;
     }
+    sixel_dither_set_diffusion_type(dither, psettings->method_for_diffuse);
 
     for (n = 0; n < frame_count; ++n) {
 
-        /* apply palette */
-        if (psettings->method_for_diffuse == DIFFUSE_AUTO) {
-            psettings->method_for_diffuse = DIFFUSE_FS;
-        }
-        data = LSQ_ApplyPalette(frames[n], sx, sy, 3,
-                                palette, ncolors,
-                                psettings->method_for_diffuse,
-                                /* foptimize */ 1);
-
-        if (!data) {
-            nret = -1;
-            goto end;
-        }
-
-        /* create intermidiate bitmap image */
-        im = LSImage_create(sx, sy, 3, ncolors);
-        if (!im) {
-            nret = -1;
-            goto end;
-        }
-        for (i = 0; i < ncolors; i++) {
-            LSImage_setpalette(im, i,
-                               palette[i * 3],
-                               palette[i * 3 + 1],
-                               palette[i * 3 + 2]);
-        }
-        if (psettings->monochrome) {
-            im->keycolor = 0;
-        } else {
-            im->keycolor = -1;
-        }
-        LSImage_setpixels(im, data);
-
-        data = NULL;
-
-        image_array[n] = im;
     }
 
 #if HAVE_SIGNAL
@@ -455,8 +415,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
     if ((psettings->fuse_macro && frame_count > 1) || psettings->macro_number >= 0) {
-        context = LSOutputContext_create(putchar_hex, printf_hex);
-        context->has_8bit_control = psettings->f8bit;
+        context = sixel_output_create(sixel_hex_write_callback, stdout);
+        sixel_output_set_8bit_availability(context, psettings->f8bit);
         for (n = 0; n < frame_count; ++n) {
 #if HAVE_USLEEP && HAVE_CLOCK
             start = clock();
@@ -466,7 +426,12 @@ convert_to_sixel(char const *filename, settings_t *psettings)
             } else {
                 printf("\033P%d;0;1!z", n);
             }
-            LibSixel_LSImageToSixel(image_array[n], context);
+
+            nret = sixel_encode(frames[n], sx, sy, 3, dither, context);
+            if (nret != 0) {
+                goto end;
+            }
+
             printf("\033\\");
             if (loop_count == -1) {
                 printf("\033[H");
@@ -543,8 +508,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         }
     } else { /* do not use macro */
         /* create output context */
-        context = LSOutputContext_create(putchar, printf);
-        context->has_8bit_control = psettings->f8bit;
+        context = sixel_output_create(sixel_write_callback, stdout);
+        sixel_output_set_8bit_availability(context, psettings->f8bit);
         for (c = 0; c != loop_count; ++c) {
             for (n = 0; n < frame_count; ++n) {
                 if (frame_count > 1) {
@@ -553,7 +518,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                         start = clock();
                     }
 #endif
-                    context->fn_printf("\033[H");
+                    printf("\033[H");
                     fflush(stdout);
 #if HAVE_USLEEP && HAVE_CLOCK
                     if (delays != NULL && !psettings->fignore_delay) {
@@ -571,8 +536,11 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                     }
 #endif
                 }
-                /* convert image object into sixel */
-                LibSixel_LSImageToSixel(image_array[n], context);
+
+                nret = sixel_encode(frames[n], sx, sy, 3, dither, context);
+                if (nret != 0) {
+                    goto end;
+                }
 
 #if HAVE_SIGNAL
                 if (signaled) {
@@ -587,10 +555,10 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 #endif
         }
         if (signaled) {
-            if (context->has_8bit_control) {
-                context->fn_printf("\x9c");
+            if (sixel_output_get_8bit_availability(context)) {
+                printf("\x9c");
             } else {
-                context->fn_printf("\x1b\\");
+                printf("\x1b\\");
             }
         }
     }
@@ -598,11 +566,11 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     nret = 0;
 
 end:
+    if (dither) {
+        sixel_dither_unref(dither);
+    }
     if (frames) {
         free(frames);
-    }
-    if (data) {
-        free(data);
     }
     if (pixels) {
         free(pixels);
@@ -616,17 +584,8 @@ end:
     if (mappixels) {
         free(mappixels);
     }
-    if (palette) {
-        LSQ_FreePalette(palette);
-    }
-    if (image_array) {
-        for (n = 0; n < frame_count; ++n) {
-            LSImage_destroy(image_array[n]);
-        }
-        free(image_array);
-    }
     if (context) {
-        LSOutputContext_destroy(context);
+        sixel_output_unref(context);
     }
     return nret;
 }
@@ -1095,7 +1054,7 @@ main(int argc, char *argv[])
     }
 
     if (settings.reqcolors == -1) {
-        settings.reqcolors = PALETTE_MAX;
+        settings.reqcolors = SIXEL_PALETTE_MAX;
     }
 
     if (optind == argc) {

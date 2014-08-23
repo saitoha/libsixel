@@ -57,7 +57,9 @@
 #include <sixel.h>
 #include "stb_image_write.h"
 
-unsigned char *stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes, int x, int y, int n, int *out_len);
+unsigned char *
+stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes,
+                      int x, int y, int n, int *out_len);
 
 #if !defined(O_BINARY) && defined(_O_BINARY)
 # define O_BINARY _O_BINARY
@@ -72,11 +74,11 @@ enum
    STBI_rgb_alpha = 4
 };
 
+
 static int
 sixel_to_png(const char *input, const char *output)
 {
     unsigned char *raw_data, *png_data;
-    LSImagePtr im;
     int sx, sy, comp;
     int raw_len;
     int png_len;
@@ -139,15 +141,37 @@ sixel_to_png(const char *input, const char *output)
         fclose(input_fp);
     }
 
-    im = LibSixel_SixelToLSImage(raw_data, raw_len);
-    if (!im) {
-        fprintf(stderr, "LibSixel_SixelToLSImage failed.\n");
+    unsigned char *indexed_pixels;
+    unsigned char *palette;
+    //int sx, sy;
+    int depth, ncolors;
+
+    unsigned char *rgb_pixels;
+    int x, y;
+    int ret;
+
+    ret = sixel_decode(raw_data, raw_len, &indexed_pixels,
+                       &sx, &sy, &palette, &ncolors, malloc);
+
+    if (ret != 0) {
+        fprintf(stderr, "sixel_decode failed.\n");
         return (-1);
     }
 
-    png_data = stbi_write_png_to_mem(im->pixels, im->sx * 3,
-                                     im->sx, im->sy, STBI_rgb, &png_len);
-    LSImage_destroy(im);
+    rgb_pixels = malloc(sx * sy * 3);
+    for (y = 0; y < sy; ++y) {
+        for (x = 0; x < sx; ++x) {
+            n = indexed_pixels[sx * y + x];
+            rgb_pixels[sx * 3 * y + x * 3 + 0] = palette[n * 4 + 0];
+            rgb_pixels[sx * 3 * y + x * 3 + 1] = palette[n * 4 + 1];
+            rgb_pixels[sx * 3 * y + x * 3 + 2] = palette[n * 4 + 2];
+            rgb_pixels[sx * 3 * y + x * 3 + 3] = palette[n * 4 + 3];
+        }
+    }
+
+    png_data = stbi_write_png_to_mem(rgb_pixels, sx * 3,
+                                     sx, sy, STBI_rgb, &png_len);
+
     if (!png_data) {
         fprintf(stderr, "stbi_write_png_to_mem failed.\n");
         return (-1);

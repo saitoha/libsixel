@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if you have the `calloc' function. */
+#undef HAVE_CALLOC
+
 /* Define to 1 if you have the `clock' function. */
 #undef HAVE_CLOCK
 
@@ -155,6 +158,9 @@
 
 /* Define to 1 if you have the `usleep' function. */
 #undef HAVE_USLEEP
+
+/* Define to 1 if the system has the `deprecated' variable attribute */
+#undef HAVE_VAR_ATTRIBUTE_DEPRECATED
 
 /* Define to 1 if you have the `_setmode' function. */
 #undef HAVE__SETMODE
