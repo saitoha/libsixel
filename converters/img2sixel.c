@@ -976,7 +976,7 @@ main(int argc, char *argv[])
                     settings.quality_mode = QUALITY_AUTO;
                 } else if (strcmp(optarg, "high") == 0) {
                     settings.quality_mode = QUALITY_HIGH;
-                } else if (strcmp(optarg, "hanning") == 0) {
+                } else if (strcmp(optarg, "low") == 0) {
                     settings.quality_mode = QUALITY_LOW;
                 } else {
                     fprintf(stderr,
