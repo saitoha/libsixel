@@ -19,22 +19,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_LOADER_H
-#define LIBSIXEL_LOADER_H
+#ifndef LIBSIXEL_IMAGE_H
+#define LIBSIXEL_IMAGE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "dither.h"
 
-unsigned char *
-load_image_file(char const *filename, int *psx, int *psy,
-                int *pframe_count, int *ploop_count, int **ppdelay);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* LIBSIXEL_LOADER_H */
+#endif /* LIBSIXEL_IMAGE_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
