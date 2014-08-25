@@ -469,9 +469,9 @@ public activities without any restrictions.
 He declares this is compatible with MIT/BSD/GPL.
 
 
-### stbi-1.41
+### stbi-1.44
 
-This software includes *stbi-1.41* (stb_image.h),
+This software includes *stbi-1.44* (stb_image.h),
 public domain JPEG/PNG reader.
 
 https://github.com/nothings/stb
