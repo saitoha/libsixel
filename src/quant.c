@@ -45,7 +45,6 @@
  */
 
 #include "config.h"
-#include "malloc_stub.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -58,6 +57,7 @@
 #endif
 
 #include "quant.h"
+#include "sixel.h"
 
 #if 0
 #define quant_trace fprintf
@@ -361,11 +361,11 @@ averageColors(int          const boxStart,
 
 
 static void
-averagePixels(int          const boxStart,
-              int          const boxSize,
-              tupletable2  const colorfreqtable,
+averagePixels(int const boxStart,
+              int const boxSize,
+              tupletable2 const colorfreqtable,
               unsigned int const depth,
-              tuple        const newTuple)
+              tuple const newTuple)
 {
 
     unsigned int n;
@@ -395,12 +395,12 @@ averagePixels(int          const boxStart,
 
 
 static tupletable2
-colormapFromBv(unsigned int      const newcolors,
-               boxVector         const bv,
-               unsigned int      const boxes,
-               tupletable2       const colorfreqtable,
-               unsigned int      const depth,
-               enum methodForRep const methodForRep)
+colormapFromBv(unsigned int const newcolors,
+               boxVector const bv,
+               unsigned int const boxes,
+               tupletable2 const colorfreqtable,
+               unsigned int const depth,
+               int const methodForRep)
 {
     /*
     ** Ok, we've got enough boxes.  Now choose a representative color for
@@ -446,12 +446,12 @@ colormapFromBv(unsigned int      const newcolors,
 
 
 static int
-splitBox(boxVector             const bv,
-         unsigned int *        const boxesP,
-         unsigned int          const bi,
-         tupletable2           const colorfreqtable,
-         unsigned int          const depth,
-         enum methodForLargest const methodForLargest)
+splitBox(boxVector const bv,
+         unsigned int *const boxesP,
+         unsigned int const bi,
+         tupletable2 const colorfreqtable,
+         unsigned int const depth,
+         int const methodForLargest)
 {
 /*----------------------------------------------------------------------------
    Split Box 'bi' in the box vector bv (so that bv contains one more box
@@ -540,12 +540,12 @@ splitBox(boxVector             const bv,
 
 
 static int
-mediancut(tupletable2           const colorfreqtable,
-          unsigned int          const depth,
-          int                   const newcolors,
-          enum methodForLargest const methodForLargest,
-          enum methodForRep     const methodForRep,
-          tupletable2 *         const colormapP)
+mediancut(tupletable2 const colorfreqtable,
+          unsigned int const depth,
+          int const newcolors,
+          int const methodForLargest,
+          int const methodForRep,
+          tupletable2 *const colormapP)
 {
 /*----------------------------------------------------------------------------
    Compute a set of only 'newcolors' colors that best represent an
@@ -746,13 +746,13 @@ computeColorMapFromInput(unsigned char *data,
 
 static void
 error_diffuse(unsigned char *data, int pos, int depth,
-              int *offsets, int mul, int div)
+              int offset, int mul, int div)
 {
     int c;
 
     data += pos * depth;
 
-    c = *data + *offsets * mul / div;
+    c = *data + offset * mul / div;
     if (c < 0) {
         c = 0;
     }
@@ -765,14 +765,14 @@ error_diffuse(unsigned char *data, int pos, int depth,
 
 static void
 diffuse_none(unsigned char *data, int width, int height,
-             int x, int y, int depth, int *offsets)
+             int x, int y, int depth, int offset)
 {
 }
 
 
 static void
 diffuse_atkinson(unsigned char *data, int width, int height,
-                 int x, int y, int depth, int *offsets)
+                 int x, int y, int depth, int offset)
 {
     int pos, n;
 
@@ -780,24 +780,24 @@ diffuse_atkinson(unsigned char *data, int width, int height,
 
     if (x < width - 2 && y < height - 2) {
         /* add offset to the right cell */
-        error_diffuse(data, pos + width * 0 + 1, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 0 + 1, depth, offset, 1, 8);
         /* add offset to the 2th right cell */
-        error_diffuse(data, pos + width * 0 + 2, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 0 + 2, depth, offset, 1, 8);
         /* add offset to the left-bottom cell */
-        error_diffuse(data, pos + width * 1 - 1, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 1 - 1, depth, offset, 1, 8);
         /* add offset to the bottom cell */
-        error_diffuse(data, pos + width * 1 + 0, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 1 + 0, depth, offset, 1, 8);
         /* add offset to the right-bottom cell */
-        error_diffuse(data, pos + width * 1 + 1, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 1 + 1, depth, offset, 1, 8);
         /* add offset to the 2th bottom cell */
-        error_diffuse(data, pos + width * 2 + 0, depth, offsets, 1, 8);
+        error_diffuse(data, pos + width * 2 + 0, depth, offset, 1, 8);
     }
 }
 
 
 static void
 diffuse_fs(unsigned char *data, int width, int height,
-           int x, int y, int depth, int *offsets)
+           int x, int y, int depth, int offset)
 {
     int n;
     int pos;
@@ -810,20 +810,20 @@ diffuse_fs(unsigned char *data, int width, int height,
      */
     if (x > 1 && x < width - 1 && y < height - 1) {
         /* add offset to the right cell */
-        error_diffuse(data, pos + width * 0 + 1, depth, offsets, 7, 16);
+        error_diffuse(data, pos + width * 0 + 1, depth, offset, 7, 16);
         /* add offset to the left-bottom cell */
-        error_diffuse(data, pos + width * 1 - 1, depth, offsets, 3, 16);
+        error_diffuse(data, pos + width * 1 - 1, depth, offset, 3, 16);
         /* add offset to the bottom cell */
-        error_diffuse(data, pos + width * 1 + 0, depth, offsets, 5, 16);
+        error_diffuse(data, pos + width * 1 + 0, depth, offset, 5, 16);
         /* add offset to the right-bottom cell */
-        error_diffuse(data, pos + width * 1 + 1, depth, offsets, 1, 16);
+        error_diffuse(data, pos + width * 1 + 1, depth, offset, 1, 16);
     }
 }
 
 
 static void
 diffuse_jajuni(unsigned char *data, int width, int height,
-               int x, int y, int depth, int *offsets)
+               int x, int y, int depth, int offset)
 {
     int n;
     int pos;
@@ -836,25 +836,25 @@ diffuse_jajuni(unsigned char *data, int width, int height,
      *  1/48    3/48    5/48    3/48    1/48
      */
     if (x > 2 && x < width - 2 && y < height - 2) {
-        error_diffuse(data, pos + width * 0 + 1, depth, offsets, 7, 48);
-        error_diffuse(data, pos + width * 0 + 2, depth, offsets, 5, 48);
-        error_diffuse(data, pos + width * 1 - 2, depth, offsets, 3, 48);
-        error_diffuse(data, pos + width * 1 - 1, depth, offsets, 5, 48);
-        error_diffuse(data, pos + width * 1 + 0, depth, offsets, 7, 48);
-        error_diffuse(data, pos + width * 1 + 1, depth, offsets, 5, 48);
-        error_diffuse(data, pos + width * 1 + 2, depth, offsets, 3, 48);
-        error_diffuse(data, pos + width * 2 - 2, depth, offsets, 1, 48);
-        error_diffuse(data, pos + width * 2 - 1, depth, offsets, 3, 48);
-        error_diffuse(data, pos + width * 2 + 0, depth, offsets, 5, 48);
-        error_diffuse(data, pos + width * 2 + 1, depth, offsets, 3, 48);
-        error_diffuse(data, pos + width * 2 + 2, depth, offsets, 1, 48);
+        error_diffuse(data, pos + width * 0 + 1, depth, offset, 7, 48);
+        error_diffuse(data, pos + width * 0 + 2, depth, offset, 5, 48);
+        error_diffuse(data, pos + width * 1 - 2, depth, offset, 3, 48);
+        error_diffuse(data, pos + width * 1 - 1, depth, offset, 5, 48);
+        error_diffuse(data, pos + width * 1 + 0, depth, offset, 7, 48);
+        error_diffuse(data, pos + width * 1 + 1, depth, offset, 5, 48);
+        error_diffuse(data, pos + width * 1 + 2, depth, offset, 3, 48);
+        error_diffuse(data, pos + width * 2 - 2, depth, offset, 1, 48);
+        error_diffuse(data, pos + width * 2 - 1, depth, offset, 3, 48);
+        error_diffuse(data, pos + width * 2 + 0, depth, offset, 5, 48);
+        error_diffuse(data, pos + width * 2 + 1, depth, offset, 3, 48);
+        error_diffuse(data, pos + width * 2 + 2, depth, offset, 1, 48);
     }
 }
 
 
 static void
 diffuse_stucki(unsigned char *data, int width, int height,
-               int x, int y, int depth, int *offsets)
+               int x, int y, int depth, int offset)
 {
     int n;
     int pos;
@@ -867,25 +867,25 @@ diffuse_stucki(unsigned char *data, int width, int height,
      *  1/48    2/48    4/48    2/48    1/48
      */
     if (x > 2 && x < width - 2 && y < height - 2) {
-        error_diffuse(data, pos + width * 0 + 1, depth, offsets, 1, 6);
-        error_diffuse(data, pos + width * 0 + 2, depth, offsets, 1, 12);
-        error_diffuse(data, pos + width * 1 - 2, depth, offsets, 1, 24);
-        error_diffuse(data, pos + width * 1 - 1, depth, offsets, 1, 12);
-        error_diffuse(data, pos + width * 1 + 0, depth, offsets, 1, 6);
-        error_diffuse(data, pos + width * 1 + 1, depth, offsets, 1, 12);
-        error_diffuse(data, pos + width * 1 + 2, depth, offsets, 1, 24);
-        error_diffuse(data, pos + width * 2 - 2, depth, offsets, 1, 48);
-        error_diffuse(data, pos + width * 2 - 1, depth, offsets, 1, 24);
-        error_diffuse(data, pos + width * 2 + 0, depth, offsets, 1, 12);
-        error_diffuse(data, pos + width * 2 + 1, depth, offsets, 1, 24);
-        error_diffuse(data, pos + width * 2 + 2, depth, offsets, 1, 48);
+        error_diffuse(data, pos + width * 0 + 1, depth, offset, 1, 6);
+        error_diffuse(data, pos + width * 0 + 2, depth, offset, 1, 12);
+        error_diffuse(data, pos + width * 1 - 2, depth, offset, 1, 24);
+        error_diffuse(data, pos + width * 1 - 1, depth, offset, 1, 12);
+        error_diffuse(data, pos + width * 1 + 0, depth, offset, 1, 6);
+        error_diffuse(data, pos + width * 1 + 1, depth, offset, 1, 12);
+        error_diffuse(data, pos + width * 1 + 2, depth, offset, 1, 24);
+        error_diffuse(data, pos + width * 2 - 2, depth, offset, 1, 48);
+        error_diffuse(data, pos + width * 2 - 1, depth, offset, 1, 24);
+        error_diffuse(data, pos + width * 2 + 0, depth, offset, 1, 12);
+        error_diffuse(data, pos + width * 2 + 1, depth, offset, 1, 24);
+        error_diffuse(data, pos + width * 2 + 2, depth, offset, 1, 48);
     }
 }
 
 
 static void
 diffuse_burkes(unsigned char *data, int width, int height,
-               int x, int y, int depth, int *offsets)
+               int x, int y, int depth, int offset)
 {
     int n;
     int pos;
@@ -897,47 +897,14 @@ diffuse_burkes(unsigned char *data, int width, int height,
      *  1/16    2/16    4/16    2/16    1/16
      */
     if (x > 2 && x < width - 2 && y < height - 2) {
-        error_diffuse(data, pos + width * 0 + 1, depth, offsets, 1, 4);
-        error_diffuse(data, pos + width * 0 + 2, depth, offsets, 1, 8);
-        error_diffuse(data, pos + width * 1 - 2, depth, offsets, 1, 16);
-        error_diffuse(data, pos + width * 1 - 1, depth, offsets, 1, 8);
-        error_diffuse(data, pos + width * 1 + 0, depth, offsets, 1, 4);
-        error_diffuse(data, pos + width * 1 + 1, depth, offsets, 1, 8);
-        error_diffuse(data, pos + width * 1 + 2, depth, offsets, 1, 16);
+        error_diffuse(data, pos + width * 0 + 1, depth, offset, 1, 4);
+        error_diffuse(data, pos + width * 0 + 2, depth, offset, 1, 8);
+        error_diffuse(data, pos + width * 1 - 2, depth, offset, 1, 16);
+        error_diffuse(data, pos + width * 1 - 1, depth, offset, 1, 8);
+        error_diffuse(data, pos + width * 1 + 0, depth, offset, 1, 4);
+        error_diffuse(data, pos + width * 1 + 1, depth, offset, 1, 8);
+        error_diffuse(data, pos + width * 1 + 2, depth, offset, 1, 16);
     }
-}
-
-
-unsigned char *
-LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
-                int reqcolors, int *ncolors, int *origcolors,
-                enum methodForLargest const methodForLargest,
-                enum methodForRep const methodForRep,
-                enum qualityMode const qualityMode)
-{
-    int i, n;
-    int ret;
-    unsigned char *palette;
-    tupletable2 colormap;
-
-    ret = computeColorMapFromInput(data, x * y * depth, depth,
-                                   reqcolors, methodForLargest,
-                                   methodForRep, qualityMode,
-                                   &colormap, origcolors);
-    if (ret != 0) {
-        return NULL;
-    }
-    *ncolors = colormap.size;
-    quant_trace(stderr, "tupletable size: %d", *ncolors);
-    palette = malloc(*ncolors * depth);
-    for (i = 0; i < *ncolors; i++) {
-        for (n = 0; n < depth; ++n) {
-            palette[i * depth + n] = colormap.table[i]->tuple[n];
-        }
-    }
-
-    free(colormap.table);
-    return palette;
 }
 
 
@@ -1021,25 +988,57 @@ lookup_fast(unsigned char const * const pixel,
 
 
 unsigned char *
+LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
+                int reqcolors, int *ncolors, int *origcolors,
+                int methodForLargest,
+                int methodForRep,
+                int qualityMode)
+{
+    int i, n;
+    int ret;
+    unsigned char *palette;
+    tupletable2 colormap;
+
+    ret = computeColorMapFromInput(data, x * y * depth, depth,
+                                   reqcolors, methodForLargest,
+                                   methodForRep, qualityMode,
+                                   &colormap, origcolors);
+    if (ret != 0) {
+        return NULL;
+    }
+    *ncolors = colormap.size;
+    quant_trace(stderr, "tupletable size: %d", *ncolors);
+    palette = malloc(*ncolors * depth);
+    for (i = 0; i < *ncolors; i++) {
+        for (n = 0; n < depth; ++n) {
+            palette[i * depth + n] = colormap.table[i]->tuple[n];
+        }
+    }
+
+    free(colormap.table);
+    return palette;
+}
+
+int
 LSQ_ApplyPalette(unsigned char *data,
                  int width,
                  int height,
                  int depth,
                  unsigned char *palette,
                  int ncolor,
-                 enum methodForDiffuse const methodForDiffuse,
-                 int foptimize)
+                 int methodForDiffuse,
+                 int foptimize,
+                 unsigned short *cachetable,
+                 unsigned char *result)
 {
     typedef int component_t;
-    typedef unsigned short compressed_color_t;
     int pos, j, n, x, y;
-    component_t *offsets;
+    component_t offset;
     int diff;
     int index;
-    compressed_color_t *indextable;
-    unsigned char *result;
+    unsigned short *indextable;
     void (*f_diffuse)(unsigned char *data, int width, int height,
-                      int x, int y, int depth, int *offsets);
+                      int x, int y, int depth, int offset);
     int (*f_lookup)(unsigned char const * const pixel,
                     int const depth,
                     unsigned char const * const palette,
@@ -1083,25 +1082,15 @@ LSQ_ApplyPalette(unsigned char *data,
         f_lookup = lookup_normal;
     }
 
-    offsets = malloc(sizeof(component_t) * depth);
-    if (!offsets) {
-        quant_trace(stderr, "Unable to allocate memory for offsets.");
-        return NULL;
+    indextable = cachetable;
+    if (cachetable == NULL) {
+        indextable = malloc((1 << depth * 5) * sizeof(unsigned short));
+        if (!indextable) {
+            quant_trace(stderr, "Unable to allocate memory for indextable.");
+            return (-1);
+        }
+        memset(indextable, 0x00, (1 << depth * 5) * sizeof(unsigned short));
     }
-    result = malloc(width * height);
-    if (!result) {
-        quant_trace(stderr, "Unable to allocate memory for result.");
-        free(offsets);
-        return NULL;
-    }
-    indextable = malloc((1 << depth * 5) * sizeof(compressed_color_t));
-    if (!indextable) {
-        quant_trace(stderr, "Unable to allocate memory for indextable.");
-        free(offsets);
-        free(result);
-        return NULL;
-    }
-    memset(indextable, 0x00, (1 << depth * 5) * sizeof(compressed_color_t));
 
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width; ++x) {
@@ -1110,16 +1099,17 @@ LSQ_ApplyPalette(unsigned char *data,
                              palette, ncolor, indextable);
             result[pos] = index;
             for (n = 0; n < depth; ++n) {
-                offsets[n] = data[pos * depth + n]
-                           - palette[index * depth + n];
-                f_diffuse(data + n, width, height, x, y, depth, offsets + n);
+                offset = data[pos * depth + n] - palette[index * depth + n];
+                f_diffuse(data + n, width, height, x, y, depth, offset);
             }
         }
     }
 
-    free(offsets);
-    free(indextable);
-    return result;
+    if (cachetable == NULL) {
+        free(indextable);
+    }
+
+    return 0;
 }
 
 

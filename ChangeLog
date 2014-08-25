@@ -1,0 +1,805 @@
+2014-08-03  Hayaki Saito <user@zuse.jp>
+
+  * README.md, converters/img2sixel.c, converters/sixel2png.c: Add --version
+  and --help option
+
+  * configure, configure.ac, package.json: Bump version
+
+  * Makefile.in, config.h.in, configure, configure.ac, converters/Makefile.in,
+  include/Makefile.in, src/Makefile.in, src/wic.cc, wic/wic.cc,
+  wic/wic_install.reg.in, wic/wic_uninstall.reg.in, wic_install.reg.in,
+  wic_uninstall.reg.in: Temporary drop wic integration
+
+  * README.md, data/gnuplot.png, data/gs.png, data/libsixel-1.png,
+  data/q_libsixel.png, data/q_ppmtosixel.png, data/q_ppmtosixel2.png,
+  data/q_sixel.png, data/q_sixelconv.png, data/sixel.gif, data/zx81.png: Update
+  README
+
+2014-08-02  Hayaki Saito <user@zuse.jp>
+
+  * config.h.in, configure, configure.ac: Bump version
+
+  * README.md, converters/img2sixel.c: Add --macro-number option
+
+2014-07-28  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, package.json: Update version
+
+  * config.h.in, configure, configure.ac, converters/img2sixel.c: Improve time
+  precision of animation rendering
+
+  * configure, configure.ac, package.json: Update micro version
+
+2014-07-26  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c, converters/loader.c, converters/loader.h: Respect
+  delay by each frame
+
+  * configure, configure.ac, package.json: Bump version
+
+2014-07-25  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, package.json: Bump version
+
+2014-07-24  Hayaki Saito <user@zuse.jp>
+
+  * LICENSE.images, LICENSE.stb: Minor update of LICENSE files
+
+  * configure, configure.ac, package.json: Bump version
+
+2014-07-23  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, package.json: Bump version
+
+2014-07-21  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, package.json: Bump version
+
+  * README.md, converters/img2sixel.1: Add some descriptions for new options to
+  documents
+
+  * converters/img2sixel.c, converters/loader.c, converters/stb_image.h:
+  Initial implementation for --use-macro option
+
+2014-07-19  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, package.json: Bump version
+
+  * configure, configure.ac, package.json: Update version
+
+  * README.md, converters/img2sixel.1: Update document
+
+  * README.md, converters/img2sixel.1: Update img2sixel document
+
+  * config.h.in, configure, configure.ac, converters/img2sixel.c: Check
+  usleep(3) availabiliey
+
+  * converters/img2sixel.c, converters/loader.c, converters/loader.h: Respect
+  "delay time" setting in GIF header
+
+  * converters/img2sixel.c, converters/loader.c, converters/loader.h: Implement
+  "loop control" option
+
+2014-07-17  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c, converters/loader.c, converters/loader.h: Add new
+  CLI argument: --loop-control
+
+  * config.h.in, configure, configure.ac, converters/img2sixel.c: Checks
+  availability of SIGINT/SIGTERM/SIGHUP
+
+  * Makefile.am, Makefile.in: Except libsixel.pc from CLEANFILES
+
+  * configure, configure.ac: Style improvement
+
+  * config.h.in, configure, configure.ac, converters/img2sixel.c: Checks
+  signal(3) availability
+
+  * configure, configure.ac: Bump version
+
+2014-07-16  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c, converters/loader.c, converters/loader.h: Change
+  the signature of load_image_file
+
+  * converters/Makefile.am, converters/Makefile.in, converters/loader.c:
+  Include stb_image.h into loader.c
+
+2014-07-09  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Update version
+
+  * Makefile.in, configure, converters/Makefile.in, include/Makefile.in,
+  src/Makefile.in: Rebuild build files
+
+  * configure.ac, package.json.in: clib's package.json integration
+
+  * configure, configure.ac: Bump version
+
+2014-06-20  Hayaki Saito <user@zuse.jp>
+
+  * LICENSE.stb, LICENSE.stbi, LICENSE.stbiw: Update some LICENSE files
+
+  * configure, configure.ac: Fix a typo
+
+  * configure, configure.ac: Fix linker error: gdImageCreateFromTiffPtr not
+  found in ArchLinux
+
+  * configure, configure.ac: Bump version
+
+2014-06-19  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Do PKG_PROG_PKG_CONFIG out of if-clause
+
+  * configure, configure.ac: Bump version
+
+2014-06-18  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Bump version
+
+  * Makefile.am, Makefile.in: Fix travis build
+
+  * config.guess, config.h.in, config.sub, configure, ltmain.sh, m4/libtool.m4,
+  m4/ltoptions.m4, m4/ltversion.m4: Update libtool version to 2.4.2
+
+  * configure, configure.ac: Fix wrong AC_ARG_WITH option parsing, reported by
+  @ttdoda
+
+  * Makefile.am, Makefile.in: Fix a typo in valgrind target
+
+2014-06-16  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.am, Makefile.in: Fix travis build
+
+2014-06-15  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.am, Makefile.in: Minor fix
+
+  * Makefile.in, configure, configure.ac, include/Makefile.in, src/Makefile.in:
+  Add new configure option, --with-zshcompletiondir
+
+  * converters/Makefile.am, converters/Makefile.in: Add a zsh completion file
+  to install target
+
+  * converters/sixel2png.c, converters/stb_image_write.h: Update
+  stb_image_write version to 0.94
+
+  * configure, configure.ac: Update version
+
+  * Makefile.in, config.guess, config.h.in, config.sub, configure,
+  configure.ac, include/Makefile.in, ltmain.sh, m4/libtool.m4, m4/ltoptions.m4,
+  m4/ltversion.m4, src/Makefile.in: Add new configure option,
+  --with-bashcompletiondir
+
+  * converters/Makefile.am, converters/Makefile.in: Add bash-completion file to
+  install target
+
+  * configure, configure.ac: Update version
+
+2014-06-11  Hayaki Saito <user@zuse.jp>
+
+  * images/snake.tga, images/snake.tiff: Add TGA/TIFF test images
+
+  * Makefile.am, Makefile.in, converters/Makefile.am, converters/Makefile.in:
+  Update tests
+
+  * converters/Makefile.am, converters/Makefile.in: Minor fixes
+
+  * Makefile.am, Makefile.in: Minor fix
+
+  * Makefile.am, Makefile.in: Update makefile
+
+  * Makefile.am, Makefile.in: Allow "possibly lost" and "still reachable" on
+  checking leaks with valgrind
+
+2014-06-10  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.am, Makefile.in: Strip garbage output from valgrind.log
+
+  * aclocal.m4, configure: Update configure script
+
+  * Makefile.in, configure, configure.ac, converters/Makefile.in,
+  include/Makefile.in, src/Makefile.in: Fix a configuration bug where
+  gdk-pixbuf flags are not set
+
+2014-06-10  saitoha <user@zuse.jp>
+
+  * .travis.yml, Makefile.am, Makefile.in, aclocal.m4, configure,
+  src/tosixel.c: Add --disable-shared configure option with gcov target
+
+2014-06-10  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.am, Makefile.in: Remove valgrind.log in clean target
+
+  * .travis.yml, Makefile.am, Makefile.in: Add valgrind target to Makefile
+
+  * Makefile.in, converters/Makefile.in: Minor fixes
+
+  * Makefile.am, converters/Makefile.am: Add some CLEANFILES
+
+  * Makefile.am, Makefile.in: Add workaround for a cpp-coveralls problem
+
+  * .coveralls.yml, Makefile.am, Makefile.in, converters/.coveralls.yml,
+  converters/Makefile.am, converters/Makefile.in, src/Makefile.am: Fix travis
+  build
+
+  * Makefile.am, Makefile.in, converters/Makefile.am, converters/Makefile.in,
+  src/Makefile.am: Add coveralls tqrget to makefiles
+
+2014-06-09  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, converters/Makefile.am, converters/Makefile.in,
+  src/Makefile.am, src/Makefile.in: Add new configure option --enable-gcov
+
+  * converters/loader.c, converters/stb_image.c, converters/stb_image.h:
+  Headerify stb_image
+
+2014-06-08  Hayaki Saito <user@zuse.jp>
+
+  * sixel_orig/tosixel.c, src/tosixel.c: Add workarounds for old version of
+  mlterm
+
+2014-06-07  Hayaki Saito <user@zuse.jp>
+
+  * LICENSE.tw, converters/quant.c: Drop unused pattern-dither function
+
+2014-06-06  Hayaki Saito <user@zuse.jp>
+
+  * converters/frompnm.c, converters/loader.c: Fix linker error for mingw
+  environment
+
+  * Makefile.in, configure, configure.ac, wic_install.reg, wic_install.reg.in,
+  wic_uninstall.reg, wic_uninstall.reg.in: Add new configure output target:
+  wic_install.reg/wic_uninstall.reg
+
+  * Makefile.in, config.guess, config.h.in, config.sub, configure,
+  configure.ac, converters/Makefile.in, include/Makefile.in, ltmain.sh,
+  m4/libtool.m4, m4/ltoptions.m4, m4/ltversion.m4, src/Makefile.in: Update
+  build files
+
+2014-06-05  Hayaki Saito <user@zuse.jp>
+
+  * src/wic.cc, wic_install.reg, wic_uninstall.reg: Add some files for WIC
+  integration
+
+  * Makefile.in, config.h.in, configure, converters/Makefile.in,
+  include/Makefile.in, src/Makefile.in: Update build files
+
+  * configure, configure.ac: Update configure script
+
+2014-05-30  Hayaki Saito <user@zuse.jp>
+
+  * config.h.in, configure, configure.ac: Add a config.h definition which
+  represents getopt_long avilability
+
+  * configure, configure.ac: Check libiconv avilability if --with-gd is
+  specified
+
+  * configure, configure.ac: Check host environment
+
+2014-05-28  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Continue to configure without pkg-config if
+  GDK_PIXBUF_CFLAGS and GDK_PIXBUF_LIBS is set
+
+  * configure, configure.ac: Don't use addition assingment operator in
+  configure, it's an extension of bash. reported by @ttdoda
+
+2014-05-25  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.1, converters/sixel2png.1: Update "See Also" section
+  of img2sixel/sixel2png
+
+  * Makefile.in, configure, configure.ac, converters/Makefile.in,
+  include/Makefile.in, src/Makefile.in: Rebuild
+
+  * Makefile.in, configure: Rebuild
+
+  * converters/malloc_stub.c, converters/stb_image.c: Fix for some environment
+  lacks memory.h
+
+  * Makefile.in, config.h.in, configure, configure.ac, converters/Makefile.in,
+  include/Makefile.in, src/Makefile.in: Drop unused gio-2.0 detection
+
+  * Makefile.in, config.h.in, configure, configure.ac, converters/Makefile.in,
+  converters/loader.c, include/Makefile.in, src/Makefile.in: Fix segmentation
+  errors when loading stdin with gdk-pixbuf
+
+  * converters/Makefile.am, converters/Makefile.in: Build with frompnm.c
+
+  * converters/frompnm.c, converters/frompnm.h: Add PNM loader imported from
+  kmiya's sixel
+
+2014-05-24  Hayaki Saito <user@zuse.jp>
+
+  * config.h.in, configure: Rebuild configure script
+
+  * converters/malloc_stub.c, converters/malloc_stub.h: Drop unused
+  posix_memalign stub function
+
+  * Makefile.in, configure, converters/Makefile.am, converters/Makefile.in,
+  include/Makefile.in, src/Makefile.in: Update build scripts
+
+2014-05-21  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Minor fix
+
+  * converters/img2sixel.c, converters/loader.c: Fix segfault when source image
+  is GIF
+
+2014-05-20  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Display configure summary
+
+  * src/fromsixel.c, src/tosixel.c: Cleanup
+
+  * converters/Makefile.am, converters/Makefile.in, converters/img2sixel.c,
+  converters/loader.c, converters/loader.h: Add loader.c
+
+2014-05-19  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Search package gdlib not but libgd
+
+  * Makefile.in, configure, configure.ac, converters/Makefile.am,
+  converters/Makefile.in, include/Makefile.in, src/Makefile.in: Add --with-gd
+  option
+
+  * .gitignore, .travis.yml, configure, configure.ac: Up to date
+
+  * configure, configure.ac, converters/Makefile.am, converters/Makefile.in:
+  Raise errors if gdk-pixbuf/libcurl are not available when they are enabled
+
+  * configure, configure.ac: Add new configure options, --enable-gdk-pixbuf2
+  and --enable-libcurl
+
+  * converters/Makefile.am, converters/Makefile.in: Update CFLAGS and LDADD for
+  img2sixel
+
+  * Makefile.in, aclocal.m4, config.h.in, configure, configure.ac,
+  converters/Makefile.in, include/Makefile.in, src/Makefile.in: Check
+  gdk-pixbuf2 and libcurl availability
+
+  * build-gdkpixbuf.sh, converters/img2sixel.c: Integrate libcurl only if
+  gdk-pixbuf is not available
+
+2014-05-17  Hayaki Saito <user@zuse.jp>
+
+  * README.md, converters/img2sixel.1: Update manpage and README
+
+  * README.md, converters/img2sixel.1, converters/img2sixel.c: Fix typos: sence
+  -> sense
+
+  * README.md, configure: Rebuild
+
+2014-05-16  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Update version
+
+  * converters/Makefile.am, converters/Makefile.in: Add some smoke tests
+
+2014-05-14  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Update version
+
+  * converters/img2sixel.c, converters/quant.c: Use pattern dither when doing
+  monochrome quantization
+
+  * README.md, converters/img2sixel.c: Minor fix
+
+  * converters/img2sixel.c, converters/quant.c: Minor fix
+
+  * converters/img2sixel.c, converters/quant.c, converters/quant.h: Implement
+  --quality option
+
+2014-05-13  Hayaki Saito <user@zuse.jp>
+
+  * README.md, converters/img2sixel.1, converters/img2sixel.c,
+  converters/quant.c, converters/scale.c, converters/scale.h: Add welsh
+  resampling filter
+
+2014-05-12  Hayaki Saito <user@zuse.jp>
+
+  * README.md, converters/img2sixel.1: Add reference notations of ImageMagick
+
+2014-05-11  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Bump version
+
+  * README.md, converters/img2sixel.c: Update README
+
+  * config.h.in, configure, configure.ac, converters/malloc_stub.c,
+  converters/malloc_stub.h: Prepare for SSE2 extension
+
+2014-05-10  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Update version
+
+  * README.md, converters/img2sixel.1, converters/img2sixel.c,
+  converters/quant.c, converters/quant.h: Add burkes' dithering method
+
+  * README.md, converters/img2sixel.1, converters/img2sixel.c,
+  converters/quant.c, converters/quant.h: Add stucki's dithering method
+
+  * configure, configure.ac: Bump version
+
+  * converters/img2sixel.1, converters/img2sixel.c, converters/quant.c,
+  converters/quant.h: Add Bill Atkinson's dithering method
+
+2014-05-09  Hayaki Saito <user@zuse.jp>
+
+  * converters/Makefile.am, converters/Makefile.in, src/Makefile.am,
+  src/Makefile.in: Strip -O3 option
+
+  * README.md, converters/img2sixel.1, converters/img2sixel.c,
+  converters/scale.c, converters/scale.h: Add gaussian/hanning/hamming filter
+  for resampling
+
+2014-05-08  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Update version
+
+  * README.md, converters/img2sixel.1, converters/img2sixel.c: Add and
+  implement -f and -s option
+
+  * converters/img2sixel.c, converters/quant.c, converters/quant.h,
+  converters/scale.c, converters/scale.h: Cleanup
+
+  * converters/img2sixel.c, converters/quant.c: Cleanup
+
+  * converters/img2sixel.c, converters/quant.h: Minor fix for processing
+  options, -d and -r
+
+  * README.md, converters/img2sixel.1, converters/img2sixel.c,
+  converters/scale.c: Change default re-sampling option to bilinear method
+
+  * configure, configure.ac: Update version
+
+  * converters/img2sixel.c, converters/quant.c, converters/quant.h: Add
+  "foptimize" strategy option to LSQ_ApplyPalette
+
+  * converters/img2sixel.c, converters/quant.c, converters/scale.c,
+  converters/scale.h: Add methodForResampling argument to LSS_scale signature
+
+2014-05-07  Hayaki Saito <user@zuse.jp>
+
+  * converters/Makefile.am, converters/Makefile.in, src/Makefile.am,
+  src/Makefile.in: Add -O3 to CFLAGS
+
+  * converters/img2sixel.c, converters/scale.c, converters/scale.h: Fix the
+  signature of LSS_Scale
+
+  * converters/Makefile.am, converters/Makefile.in: enable HDR image format
+
+  * converters/Makefile.am, converters/Makefile.in: Fix build
+
+  * README.md, converters/img2sixel.1: Update README and manpage
+
+  * converters/Makefile.am, converters/Makefile.in: Rebuild
+
+  * converters/scale.c, converters/scale.h: Add the image resizing function
+
+2014-05-04  Hayaki Saito <user@zuse.jp>
+
+  * config.h.in, converters/Makefile.in: Update configure script
+
+2014-05-02  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Bump version
+
+  * configure.ac, converters/img2sixel.c, converters/sixel2png.c: Fix broken
+  build for non-win32 environment
+
+2014-05-01  Hayaki Saito <user@zuse.jp>
+
+  * config.h.in, configure, converters/Makefile.in: Rebuild configure script
+
+  * Makefile.am, Makefile.in, converters/Makefile.am: Add new target winetest
+
+  * converters/quant.c, converters/sixel2png.c: Get rid of utf8_t
+
+  * converters/img2sixel.c, converters/sixel2png.c,
+  converters/stb_image_write.h: Respect HAVE_O_BINARY, HAVE_SET_MODE,
+  HAVE__SET_MODE
+
+  * converters/img2sixel.c, converters/sixel2png.c: Respect HAVE_ERRNO_H
+
+  * config.h.in, configure: Rebuild configure script
+
+  * converters/Makefile.am, converters/Makefile.in, converters/sixel2png.c:
+  Link malloc_stub.c with sixel2png
+
+  * config.h.in, configure, configure.ac, converters/img2sixel.c: Don't use
+  _O_BINARY to prevent build error
+
+  * converters/img2sixel.c, converters/quant.c: Include malloc_stub.h
+
+  * converters/Makefile.am, converters/Makefile.in: Add malloc_stub.c to target
+  source files
+
+  * converters/malloc_stub.c, converters/malloc_stub.h: Add malloc stub files
+
+  * converters/img2sixel.c, converters/sixel2png.c: Implement
+  rpl_malloc/rpl_realloc for mingw target
+
+  * README.md, converters/img2sixel.c: Fix wrong english
+
+2014-04-30  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Initial package relase
+
+  * configure, configure.ac, converters/Makefile.am, converters/Makefile.in:
+  Update configure option
+
+2014-04-28  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.in, config.h.in, configure, configure.ac, converters/Makefile.in,
+  include/Makefile.in, src/Makefile.am, src/Makefile.in: Start to define ABI
+  version
+
+  * converters/Makefile.am, converters/Makefile.in: img2sixel, sixel2png: stop
+  ambiguous link using LDADD instead of using -l and -L flags
+
+2014-04-24  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c, src/tosixel.c: Implement 7bit/8bit mode
+
+  * src/fromsixel.c, src/tosixel.c: Minor fix
+
+  * include/sixel.h, src/output.c: Add some compatibility options to
+  LSOutputContext structure
+
+  * include/sixel.h, src/tosixel.c: Add error handling, and change the
+  signature of LibSixel_LSImageToSixel
+
+  * configure, configure.ac, converters/quant.c, src/fromsixel.c, src/image.c,
+  src/tosixel.c: Don't use stdint.h for old compilers
+
+2014-04-20  Hayaki Saito <user@zuse.jp>
+
+  * converters/quant.c, converters/quant.h: Linting
+
+2014-04-14  Hayaki Saito <user@zuse.jp>
+
+  * src/Makefile.am, src/Makefile.in: Fix a build error (sixel.h is missing,
+  reported by @ttdoda).
+
+  * converters/Makefile.in, include/Makefile.in: Add missing build files
+
+  * README.md, converters/img2sixel.c, converters/sixel2png.c: Update usage
+  description
+
+  * config.h.in, configure, configure.ac, converters/img2sixel.c,
+  converters/sixel2png.c: Support long options
+
+  * src/Makefile.am, src/Makefile.in: Fix a build error (sixel.h is missing,
+  reported by @ttdoda).
+
+  * converters/Makefile.in, include/Makefile.in: Add missing build files
+
+  * README.md, converters/img2sixel.c, converters/sixel2png.c: Update usage
+  description
+
+  * config.h.in, configure, configure.ac, converters/img2sixel.c,
+  converters/sixel2png.c: Support long options
+
+2014-04-13  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c, converters/quant.c, converters/quant.h: Use
+  Floyd-Steinberg diffusion method only if original colors is more than reduced
+  colors
+
+  * configure, configure.ac: Add new configure switch --disable-img2sixel
+  --disable-sixel2png
+
+  * converters/Makefile.am, include/Makefile.am: Add new Makefiles for
+  separated directories
+
+2014-04-10  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.am, Makefile.in, config.h.in, configure, configure.ac,
+  converters/img2sixel.c, converters/quant.c, converters/quant.h,
+  converters/sixel2png.c, converters/stb_image.c, converters/stb_image_write.c,
+  converters/stb_image_write.h, src/Makefile.am, src/Makefile.in,
+  src/img2sixel.c, src/quant.c, src/quant.h, src/sixel2png.c, src/stb_image.c,
+  src/stb_image_write.c, src/stb_image_write.h: Move source files of converter
+  programs to new directory converters/
+
+  * Makefile.am, Makefile.in, configure, configure.ac, include/sixel.h,
+  src/Makefile.am, src/Makefile.in, src/sixel.h: Move the include file sixel.h
+  to separated directory
+
+2014-04-04  saitoha <user@zuse.jp>
+
+  * src/img2sixel.c, src/stb_image_write.c: Use bcopy/bmove if memcpy/memmove
+  is not availabe
+
+  * config.h.in, configure: Update ./configure
+
+2014-04-02  Hayaki Saito <user@zuse.jp>
+
+  * src/fromsixel.c, src/image.c, src/sixel.h: Remove uint8_t from public
+  interface
+
+  * src/fromsixel.c, src/img2sixel.c, src/output.c, src/sixel.h,
+  src/sixel2png.c, src/tosixel.c: Change interface signature of output.c
+
+  * src/img2sixel.c, src/quant.c, src/quant.h: Change interface signature of
+  quant.c
+
+  * Makefile.in, src/Makefile.in: Rebuild
+
+  * src/img2sixel.c, src/quant.c: Include quant.h and change signatures
+  exported from quant.c
+
+2014-03-31  Hayaki Saito <user@zuse.jp>
+
+  * src/image.c, src/quant.c, src/stb_image.c, src/stb_image_write.h: Strip
+  trailing spaces
+
+  * src/stb_image.c, src/stb_image_write.h: Change end of line style of some
+  files, CRLF to LF
+
+2014-03-29  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Rebuild
+
+  * Makefile.am, Makefile.in, config.h.in, configure, configure.ac,
+  src/Makefile.am, src/Makefile.in: Update version
+
+  * Makefile.am, Makefile.in, config.h.in, configure, configure.ac,
+  fromsixel.c, image.c, img2sixel.c, output.c, quant.c, sixel.h, sixel2png.c,
+  src/Makefile.am, src/Makefile.in, src/fromsixel.c, src/image.c,
+  src/img2sixel.c, src/output.c, src/quant.c, src/sixel.h, src/sixel2png.c,
+  src/stb_image.c, src/stb_image_write.c, src/stb_image_write.h, src/tosixel.c,
+  stb_image.c, stb_image_write.c, stb_image_write.h, tosixel.c: Move source
+  files to src directory
+
+  * Makefile.am, Makefile.in, images/map8.png, quant.c: Minor fix
+
+  * README.md, quant.c: Update README
+
+  * README.md, images/map16.png, images/map8.png: Add color map image files
+
+  * fromsixel.c, img2sixel.c, quant.c: Tweak for applying palette
+
+2014-03-28  Hayaki Saito <user@zuse.jp>
+
+  * LICENSE.pnmcolormap, LICENSE.pnmquant: Rename a license file
+
+  * LICENSE.sixel, LICENSE.sixel_original_version, sixel_orig/Makefile,
+  sixel_orig/frompnm.c, sixel_orig/fromsixel.c, sixel_orig/main.c,
+  sixel_orig/tosixel.c, sixel_original_version/Makefile,
+  sixel_original_version/frompnm.c, sixel_original_version/fromsixel.c,
+  sixel_original_version/main.c, sixel_original_version/tosixel.c: Rename the
+  directory of sixel original version
+
+  * configure, configure.ac: Fix typo
+
+2014-03-27  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Minor fix
+
+  * configure, configure.ac: Minor fix
+
+  * Makefile.in, aclocal.m4, config.guess, config.sub, configure, configure.ac,
+  ltmain.sh, m4/libtool.m4, m4/ltoptions.m4, m4/ltversion.m4, missing: Update
+  timestamps of some files during running configure script
+
+  * m4/libtool.m4, m4/ltoptions.m4, m4/ltsugar.m4, m4/ltversion.m4,
+  m4/lt~obsolete.m4: Add m4 directory again
+
+2014-03-26  Hayaki Saito <user@zuse.jp>
+
+  * config.guess, config.sub, install-sh, missing: Rebuild
+
+  * Makefile.in, aclocal.m4, configure, configure.ac, ltmain.sh: Recreate build
+  files in automake-1.14/libtool-2.4 environment
+
+  * aclocal.m4, configure, m4/libtool.m4, m4/ltoptions.m4, m4/ltsugar.m4,
+  m4/ltversion.m4, m4/lt~obsolete.m4: Rebuild
+
+  * Makefile.in, aclocal.m4, configure, configure.ac: Rebuild
+
+  * m4/libtool.m4, m4/ltoptions.m4, m4/ltsugar.m4, m4/ltversion.m4,
+  m4/lt~obsolete.m4: Add m4 scripts
+
+  * fromsixel.c, quant.c: Linting
+
+  * Makefile.am, Makefile.in, config.h.in, configure, configure.ac, image.c,
+  img2sixel.c, quant.c, sixel2png.c, tosixel.c: Minor fix
+
+2014-03-24  Hayaki Saito <user@zuse.jp>
+
+  * aclocal.m4, configure: Rebuild
+
+  * LICENSE.pnmquant, README.md: Add license notice of pnmquant.c
+
+  * img2sixel.c, quant.c: Imported mediancut algorithm implementation from
+  pnmquant.c of netpbm
+
+2014-03-23  Hayaki Saito <user@zuse.jp>
+
+  * aclocal.m4, configure, configure.ac: Build fix for ubuntu jessy environment
+
+  * images/egret.jpg, images/snake.jpg: Resize images
+
+  * fromsixel.c, tosixel.c: Linting
+
+  * img2sixel.c, sixel.h, sixel2png.c, tosixel.c: Drop OutputContext::fn_puts
+
+  * Makefile.am, Makefile.in: Update makefile
+
+  * image.c, img2sixel.c, quant.c, sixel.h, sixel2png.c: Add license blocks
+
+  * Makefile.am, Makefile.in: Update makefile
+
+2014-03-22  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.am, Makefile.in: Build tweak
+
+  * fromsixel.c, image.c, img2sixel.c, sixel.h, sixel2png.c, tosixel.c: Rename
+  public symbols
+
+  * Makefile.am, Makefile.in: Add missing LD flag -lm
+
+  * fromsixel.c, image.c, img2sixel.c, quant.c, sixel.h, sixel2png.c,
+  tosixel.c: Add some modlines for editors
+
+  * Makefile.am, Makefile.in: Add test target
+
+  * Makefile.in, aclocal.m4, compile, config.guess, config.h.in, config.sub,
+  configure, configure.ac, depcomp, ltmain.sh, missing: Use automake
+
+  * configure, configure.ac: Bump version
+
+  * sixel.h, tosixel.c: Fix for the case putchar is implemented as macro
+
+  * Makefile.in, img2sixel.c: Fix for cygwin environment
+
+2014-03-22  saitoha <user@zuse.jp>
+
+  * Makefile.in, fromsixel.c, image.c, img2sixel.c, quant.c, sixel.h,
+  sixel2png.c, tosixel.c: Build fix for linux environment
+
+2014-03-22  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.in, sixel2png.c: Implement -i and -o option for sixel2png
+
+  * fromsixel.c, image.c, quant.c, sixel.h, sixel2png.c, tosixel.c: Linting
+
+  * fromsixel.c, image.c, img2sixel.c, sixel.h, sixel2png.c: Add sixel2png.c
+
+  * fromsixel.c, sixel.h: Minor fix
+
+  * fromsixel.c, image.c, img2sixel.c, sixel.h, tosixel.c: Linting
+
+2014-03-21  Hayaki Saito <user@zuse.jp>
+
+  * Makefile, config.h.in, configure, configure.ac: Use autoconf
+
+  * fromsixel.c, img2sixel.c, tosixel.c: use uint8_t insted of unsigned char
+
+  * Makefile, fromsixel.c, image.c, sixel.h: Add image.c
+
+  * LICENSE.sixel_original_version, LICENSE.stb_image, LICENSE.stbi, Makefile,
+  fromsixel.c, img2sixel.c, main.c, sixel.h, tosixel.c: Minor fix
+
+  * LICENSE.images, images/egret.jpg, images/snake.jpg: Add test images
+
+  * LICENSE.stbiw, stb_image_write.h: Add stb_image_write.h and license file
+
+  * LICENSE, LICENSE.sixel_original_version, LICENSE.stb_image, tosixel.c: Add
+  license files
+
+  * Makefile, main.c, quant.c: Minor fix
+
+  * sixel_original_version/Makefile, sixel_original_version/frompnm.c,
+  sixel_original_version/fromsixel.c, sixel_original_version/main.c,
+  sixel_original_version/tosixel.c: Add original version (2014-3-2) of sixel
+
+  * Makefile, main.c: implement -p option
+
+2014-03-19  Hayaki Saito <user@zuse.jp>
+
+  * fromsixel.c, tosixel.c: Import sixel encoder/decoder written by kmiya
+  http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
