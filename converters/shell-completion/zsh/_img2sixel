@@ -77,17 +77,22 @@ _arguments -S -s -A "-*" -S \
   {-7,--7bit-mode}'[generate a sixel image for 7bit terminals (default)]' \
   {-8,--8bit-mode}'[generate a sixel image for 8bit terminals]' \
   {-p,--colors=}'[specify number of colors to reduce the image to]' \
-  {-d,--diffusion=}'[choose diffusion method which used with -p option]':diffusiontype:_diffusiontype \
-  {-f,--find-largest=}'[method for finding the largest dimention in median-cut]':findtype:_findtype \
-  {-i,--invert}'[assume the terminal background color is white]' \
   {-m,--mapfile=}'[transform image colors to match specified set of colors]':files:_files \
   {-e,--monochrome}'[output monochrome sixel image]' \
+  {-i,--invert}'[assume the terminal background color is white]' \
+  {-u,--use-macro}'[use DECDMAC and DECINVM for GIF animation]' \
+  {-n,--macro-number}'[specify a number argument for DECDMAC]' \
+  {-g,--ignore-delay}'[render GIF animation without delay]' \
+  {-d,--diffusion=}'[choose diffusion method which used with -p option]':diffusiontype:_diffusiontype \
+  {-f,--find-largest=}'[method for finding the largest dimention in median-cut]':findtype:_findtype \
   {-s,--select-color=}'[method for selecting color from median-cut boxes]':selecttype:_selecttype \
   {-w,--width=}'[resize image to specific width]' \
   {-h,--height=}'[resize image to specific height]' \
   {-r,--resampling=}'[choose resampling filter used with -w or -h option]':resamplingtype:_resamplingtype \
   {-q,--quality=}'[select quality of color quanlization]':qualitytype:_qualitytype \
   {-l,--loop-control=}'[select loop control mode of GIF animation]':looptype:_looptype \
+  {-V,--version}'[show version and license information]' \
+  {-H,--help}'[show help]' \
   '*:files:_files' \
   && return 0
 
