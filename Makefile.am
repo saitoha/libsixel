@@ -7,7 +7,7 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libsixel.pc
 
-CLEANFILES = wic_install.reg wic_uninstall.reg valgrind.log
+CLEANFILES = valgrind.log
 
 test: all
 	$(MAKE) test -C converters > test.log
@@ -24,24 +24,11 @@ valgrind: all
 	grep "All heap blocks were freed" valgrind.log || \
 		grep "indirectly lost: 0 bytes in 0 blocks" valgrind.log
 
-coveralls: test
-	ln -sf converters/stb_image.h .
-	ln -sf converters/stb_image.h.gcov .
-	ln -sf converters/stb_image_write.h .
-	ln -sf converters/stb_image_write.h.gcov .
-	coveralls -e sixel_orig -e include -e m4
-	rm -f stb_image.h
-	rm -f stb_image.h.gcov
-	rm -f stb_image_write.h
-	rm -f stb_image_write.h.gcov
+coveralls:
+	coveralls -e sixel_orig -e include -e m4 \
+		-e stb_image.h -e stb_image_write.h
 
 coveralls-dryrun: test
-	ln -sf converters/stb_image.h .
-	ln -sf converters/stb_image.h.gcov .
-	ln -sf converters/stb_image_write.h .
-	ln -sf converters/stb_image_write.h.gcov .
-	coveralls -e sixel_orig -e include -e m4 --dryrun
-	rm -f stb_image.h
-	rm -f stb_image.h.gcov
-	rm -f stb_image_write.h
-	rm -f stb_image_write.h.gcov
+	coveralls -e sixel_orig -e include -e m4 \
+		-e stb_image.h -e stb_image_write.h \
+		--dryrun
