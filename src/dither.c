@@ -32,6 +32,7 @@
 #endif
 
 #include "dither.h"
+#include "quant.h"
 #include "sixel.h"
 
 
@@ -109,6 +110,7 @@ static const unsigned char pal_xterm256[] = {
     0xa8, 0xa8, 0xa8, 0xb2, 0xb2, 0xb2, 0xbc, 0xbc, 0xbc, 0xc6, 0xc6, 0xc6,
     0xd0, 0xd0, 0xd0, 0xda, 0xda, 0xda, 0xe4, 0xe4, 0xe4, 0xee, 0xee, 0xee,
 };
+
 
 sixel_dither_t *
 sixel_dither_create(int ncolors)
@@ -296,14 +298,16 @@ sixel_apply_palette(sixel_image_t *im)
         im->borrowed = 0;
     }
 
-    if (im->dither->cachetable == NULL) {
-        cachesize = (1 << 3 * 5) * sizeof(unsigned short);
+    if (dither->cachetable == NULL && dither->optimized) {
+        if (dither->palette != pal_mono_dark && dither->palette != pal_mono_light) {
+            cachesize = (1 << 3 * 5) * sizeof(unsigned short);
 #if HAVE_CALLOC
-        im->dither->cachetable = calloc(cachesize, 1);
+            dither->cachetable = calloc(cachesize, 1);
 #else
-        im->dither->cachetable = malloc(cachesize, 1);
-        memset(im->dither->cachetable, 0, cachesize);
+            dither->cachetable = malloc(cachesize);
+            memset(dither->cachetable, 0, cachesize);
 #endif
+        }
     }
 
     ret = LSQ_ApplyPalette(src, im->sx, im->sy, 3,
