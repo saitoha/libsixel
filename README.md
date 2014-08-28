@@ -23,11 +23,20 @@ img2sixel(1) can decode GIF animation.
   ![Animation](https://raw.githubusercontent.com/saitoha/libsixel/master/data/sixel.gif)
 
 
-## Youtube streaming
+## Video streaming
 
-Now Youtube video streaming is available by [FFmpeg-SIXEL](https://github.com/saitoha/FFmpeg-SIXEL) project.
+Now Youtube video streaming is available over SIXEL protocol by [FFmpeg-SIXEL](https://github.com/saitoha/FFmpeg-SIXEL) project.
 
   [![FFmpeg-SIXEL](https://raw.githubusercontent.com/saitoha/libsixel/master/data/ffmpeg.png)](http://youtu.be/hqMh47lYHlc)
+
+
+## Gaming, Virtualization
+
+You can play "The Battle for Wesnoth" over SIXEL protocol, and run QEMU on mlterm by [SDL1.2-SIXEL](https://github.com/saitoha/SDL1.2-SIXEL) project.
+
+  [![SDL1.2-SIXEL WESNOTH](https://raw.githubusercontent.com/saitoha/libsixel/master/data/wethnoth.png)](http://youtu.be/aMUkN7TSct4)
+
+  [![SDL1.2-SIXEL QEMU](https://raw.githubusercontent.com/saitoha/libsixel/master/data/qemu.png)](http://youtu.be/X6M5tgNjEuQ)
 
 
 ## Terminal requirements
