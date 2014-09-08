@@ -625,6 +625,12 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 
   ![ZX81](https://raw.githubusercontent.com/saitoha/libsixel/master/data/zx81.png)
 
+- [qrc](https://github.com/fumiyas/qrc)
+
+  QR code generator for terminals (ASCII Art, Sixel)
+
+  ![qrc](https://github.com/fumiyas/qrc/blob/master/qrc-demo.png)
+
 - [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
 
 - [SIXEL image viewer(written in javascript)](http://rullf2.xs4all.nl/sg/sg.html)
