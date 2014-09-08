@@ -19,12 +19,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_IMAGE_H
-#define LIBSIXEL_IMAGE_H
+#ifndef _LIBSIXEL_IMAGE_H
+# define _LIBSIXEL_IMAGE_H
 
-#include "dither.h"
+# include "dither.h"
 
-#endif /* LIBSIXEL_IMAGE_H */
+#endif /* _LIBSIXEL_IMAGE_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

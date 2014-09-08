@@ -19,8 +19,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_DITHER_H
-#define LIBSIXEL_DITHER_H
+#ifndef _LIBSIXEL_DITHER_H
+# define _LIBSIXEL_DITHER_H
 
 /* dither context object */
 typedef struct sixel_dither {
@@ -50,23 +50,26 @@ typedef struct sixel_image {
     sixel_dither_t *dither;     /* dithering context object */
 } sixel_image_t;
 
-#ifdef __cplusplus
+# ifdef __cplusplus
 extern "C" {
-#endif
+# endif
 
-sixel_image_t * sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
-                                   int borrowed, sixel_dither_t *dither);
+sixel_image_t *
+sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
+                   int borrowed, sixel_dither_t *dither);
 
-void sixel_image_destroy(sixel_image_t *im);
+void
+sixel_image_destroy(sixel_image_t *im);
 
 /* apply palette */
-int sixel_apply_palette(sixel_image_t *im);
+int
+sixel_apply_palette(sixel_image_t *im);
 
-#ifdef __cplusplus
+# ifdef __cplusplus
 }
-#endif
+# endif
 
-#endif /* LIBSIXEL_DITHER_H */
+#endif /* _LIBSIXEL_DITHER_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

@@ -21,14 +21,35 @@
 
 #include <stddef.h>  /* for size_t */
 
-#ifndef LIBSIXEL_SIXEL_H
-#define LIBSIXEL_SIXEL_H
+#ifndef _LIBSIXEL_SIXEL_H
+# define _LIBSIXEL_SIXEL_H
 
-#define LIBSIXEL_VRTSION @PACKAGE_VERSION@
-#define LIBSIXEL_ABI_VRTSION @LS_LTVERSION@
+# define LIBSIXEL_VRTSION @PACKAGE_VERSION@
+# define LIBSIXEL_API_VRTSION @LS_LTVERSION@
 
-#define SIXEL_OUTPUT_PACKET_SIZE 1024
-#define SIXEL_PALETTE_MAX 256
+# define SIXEL_OUTPUT_PACKET_SIZE 1024
+# define SIXEL_PALETTE_MAX 256
+
+# ifdef SIXELAPI
+# undef SIXELAPI
+# endif
+# ifdef WIN32
+#  ifdef LIBSIXEL_BUILD
+#   define SIXELAPI __declspec(dllexport)
+#  else
+#   define SIXELAPI __declspec(dllimport)
+#  endif
+# else
+#  ifdef __GNUC__
+#   if __GNUC__ >= 4
+#    define SIXELAPI __attribute__ ((visibility("default")))
+#   else
+#    define SIXELAPI
+#   endif
+#  else
+#   define SIXELAPI
+#  endif
+# endif
 
 /* output character size */
 enum characterSize {
@@ -81,84 +102,84 @@ enum builtinDither {
     BUILTIN_XTERM256   = 3, /* xterm 256color */
 };
 
-#ifndef LIBSIXEL_DITHER_H
+# ifndef _LIBSIXEL_DITHER_H
 
 /* dither context object */
 typedef struct sixel_dither {} sixel_dither_t;
 
-#endif /* SIXEL_DITHER_H */
+# endif /* SIXEL_DITHER_H */
 
-#ifndef LIBSIXEL_OUTPUT_H
+# ifndef _LIBSIXEL_OUTPUT_H
 
 typedef int (* sixel_write_function)(char *data, int size, void *priv);
 
 typedef struct sixel_output {} sixel_output_t;
 
-#endif  /* LIBSIXEL_OUTPUT_H */
+# endif  /* LIBSIXEL_OUTPUT_H */
 
 
 /* output context manipulation API */
 
-#ifdef __cplusplus
+# ifdef __cplusplus
 extern "C" {
-#endif
+# endif
 
 /* create output context object */
-sixel_output_t *const
+SIXELAPI sixel_output_t *
 sixel_output_create(sixel_write_function /* in */ fn_write, /* callback function for output sixel */
                     void /* in */ *priv);                   /* private data given as 
                                                                3rd argument of fn_write */
 /* destroy output context object */
-void
+SIXELAPI void
 sixel_output_destroy(sixel_output_t /* in */ *output); /* output context */
 
 /* increment reference count of output context object (thread-unsafe) */
-void
+SIXELAPI void
 sixel_output_ref(sixel_output_t /* in */ *output);     /* output context */
 
 /* decrement reference count of output context object (thread-unsafe) */
-void
+SIXELAPI void
 sixel_output_unref(sixel_output_t /* in */ *output);   /* output context */
 
-int
+SIXELAPI int
 sixel_output_get_8bit_availability(sixel_output_t *output);
 
-void
+SIXELAPI void
 sixel_output_set_8bit_availability(sixel_output_t *output, int availability);
 
-#ifdef __cplusplus
+# ifdef __cplusplus
 }
-#endif
+# endif
 
 
 /* color quantization API */
 
-#ifdef __cplusplus
+# ifdef __cplusplus
 extern "C" {
-#endif
+# endif
 
 /* create dither context object */
-sixel_dither_t *
+SIXELAPI sixel_dither_t *
 sixel_dither_create(int /* in */ ncolors); /* number of colors */
 
 /* get built-in dither context object */
-sixel_dither_t *
+SIXELAPI sixel_dither_t *
 sixel_dither_get(int builtin_dither); /* ID of built-in dither object */
 
 /* destroy dither context object */
-void
+SIXELAPI void
 sixel_dither_destroy(sixel_dither_t *dither); /* dither context object */
 
 /* increment reference count of dither context object (thread-unsafe) */
-void
+SIXELAPI void
 sixel_dither_ref(sixel_dither_t *dither); /* dither context object */
 
 /* decrement reference count of dither context object (thread-unsafe) */
-void
+SIXELAPI void
 sixel_dither_unref(sixel_dither_t *dither); /* dither context object */
 
 /* initialize internal palette from specified pixel buffer */
-int
+SIXELAPI int
 sixel_dither_initialize(sixel_dither_t *dither,          /* dither context object */
                         unsigned char /* in */ *data,    /* sample image */
                         int /* in */ width,              /* image width */
@@ -169,36 +190,36 @@ sixel_dither_initialize(sixel_dither_t *dither,          /* dither context objec
                         int /* in */ quality_mode);      /* quality of histgram processing */
 
 /* set diffusion type, choose from enum methodForDiffuse */
-void
+SIXELAPI void
 sixel_dither_set_diffusion_type(sixel_dither_t /* in */ *dither,  /* dither context object */
                                 int /* in */ method_for_diffuse); /* one of enum methodForDiffuse */
 
 /* get number of palette colors */
-int
+SIXELAPI int
 sixel_dither_get_num_of_palette_colors(sixel_dither_t /* in */ *dither);   /* dither context object */
 
 /* get number of histgram colors */
-int
+SIXELAPI int
 sixel_dither_get_num_of_histgram_colors(sixel_dither_t /* in */ *dither);  /* dither context object */
 
 /* get palette */
-unsigned char *
+SIXELAPI unsigned char *
 sixel_dither_get_palette(sixel_dither_t /* in */ *dither);  /* dither context object */
 
-#ifdef __cplusplus
+# ifdef __cplusplus
 }
-#endif
+# endif
 
 /* converter API */
 
 typedef void * (* sixel_allocator_function)(size_t size);
 
-#ifdef __cplusplus
+# ifdef __cplusplus
 extern "C" {
-#endif
+# endif
 
 /* convert pixels into sixel format and write it to output context */
-int
+SIXELAPI int
 sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
              int            /* in */  width,      /* image width */
              int            /* in */  height,     /* image height */
@@ -207,7 +228,7 @@ sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
              sixel_output_t /* in */ *context);   /* output context */
 
 /* convert sixel data into indexed pixel bytes and palette data */
-int
+SIXELAPI int
 sixel_decode(unsigned char              /* in */  *sixels,    /* sixel bytes */
              int                        /* in */  size,       /* size of sixel bytes */
              unsigned char              /* out */ **pixels,   /* decoded pixels */
@@ -217,11 +238,11 @@ sixel_decode(unsigned char              /* in */  *sixels,    /* sixel bytes */
              int                        /* out */ *ncolors,   /* palette size (<= 256) */
              sixel_allocator_function   /* out */ allocator); /* malloc function */
 
-#ifdef __cplusplus
+# ifdef __cplusplus
 }
-#endif
+# endif
 
-#endif  /* LIBSIXEL_SIXEL_H */
+#endif  /* _LIBSIXEL_SIXEL_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

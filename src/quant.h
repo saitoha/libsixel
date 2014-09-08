@@ -19,12 +19,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_QUANT_H
-#define LIBSIXEL_QUANT_H
+#ifndef _LIBSIXEL_QUANT_H
+# define _LIBSIXEL_QUANT_H
 
-#ifdef __cplusplus
+# ifdef __cplusplus
 extern "C" {
-#endif
+# endif
 
 unsigned char *
 LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
@@ -42,14 +42,14 @@ LSQ_ApplyPalette(unsigned char *data, int width, int height, int depth,
                  unsigned char *result);
 
 
-extern void
+void
 LSQ_FreePalette(unsigned char * data);
 
-#ifdef __cplusplus
+# ifdef __cplusplus
 }
-#endif
+# endif
 
-#endif /* LIBSIXEL_QUANT_H */
+#endif /* _LIBSIXEL_QUANT_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

@@ -19,12 +19,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_OUTPUT_H
-#define LIBSIXEL_OUTPUT_H
+#ifndef _LIBSIXEL_OUTPUT_H
+# define _LIBSIXEL_OUTPUT_H
 
-#ifdef __cplusplus
+# ifdef __cplusplus
 extern "C" {
-#endif
+# endif
 
 typedef struct sixel_node {
     struct sixel_node *next;
@@ -70,11 +70,11 @@ typedef struct sixel_output {
 
 } sixel_output_t;
 
-#ifdef __cplusplus
+# ifdef __cplusplus
 }
-#endif
+# endif
 
-#endif /* LIBSIXEL_OUTPUT_H */
+#endif /* _LIBSIXEL_OUTPUT_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
