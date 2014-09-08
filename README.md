@@ -478,9 +478,9 @@ public activities without any restrictions.
 He declares this is compatible with MIT/BSD/GPL.
 
 
-### stbi-1.44
+### stbi-1.41
 
-This software includes *stbi-1.44* (stb_image.h),
+This software includes *stbi-1.41* (stb_image.h),
 public domain JPEG/PNG reader.
 
 https://github.com/nothings/stb
@@ -617,8 +617,6 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 
   ![GhostScript](https://raw.githubusercontent.com/saitoha/libsixel/master/data/gs.png)
 
-- ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
-
 - [ZX81 Emulator](http://rullf2.xs4all.nl/sg/zx81ce.html)
 
   A ZX81 emulator producing Sixel Image Files
@@ -630,6 +628,14 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
   QR code generator for terminals (ASCII Art, Sixel)
 
   ![qrc](https://github.com/fumiyas/qrc/blob/master/qrc-demo.png)
+
+- [hiptext](https://github.com/jart/hiptext)
+
+  SIXEL format is supported by -sixel2, -sixel16 or -sixel256 option.
+
+  ![hiptext](https://camo.githubusercontent.com/fc973ffb20a7ff85969df03fd579da2845e62e68/68747470733a2f2f662e636c6f75642e6769746875622e636f6d2f6173736574732f313136323733392f323233393832362f39303361653765382d396335622d313165332d383462362d3539626261346661336430342e706e67)
+
+- ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
 
 - [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
 
