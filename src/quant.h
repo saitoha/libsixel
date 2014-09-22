@@ -19,71 +19,37 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include "output.h"
-#include "sixel.h"
+#ifndef LIBSIXEL_QUANT_H
+#define LIBSIXEL_QUANT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-sixel_output_t * const
-sixel_output_create(sixel_write_function fn_write, void *priv)
-{
-    sixel_output_t *output;
-   
-    output = malloc(sizeof(sixel_output_t) + SIXEL_OUTPUT_PACKET_SIZE * 2);
-    output->ref = 1;
-    output->has_8bit_control = 0;
-    output->has_sdm_glitch = 0;
-    output->fn_write = fn_write;
-    output->save_pixel = 0;
-    output->save_count = 0;
-    output->active_palette = (-1);
-    output->node_top = NULL;
-    output->node_free = NULL;
-    output->priv = priv;
-    output->pos = 0;
-
-    return output;
-}
-
-
-void
-sixel_output_destroy(sixel_output_t *output)
-{
-    free(output);
-}
-
-
-void
-sixel_output_ref(sixel_output_t *output)
-{
-    /* TODO: be thread-safe */
-    ++output->ref;
-}
-
-void
-sixel_output_unref(sixel_output_t *output)
-{
-    /* TODO: be thread-safe */
-    if (output && --output->ref == 0) {
-        sixel_output_destroy(output);
-    }
-}
+unsigned char *
+LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
+                int reqcolors, int *ncolors, int *origcolors,
+                int const methodForLargest,
+                int const methodForRep,
+                int const qualityMode);
 
 int
-sixel_output_get_8bit_availability(sixel_output_t *output)
-{
-    return output->has_8bit_control;
+LSQ_ApplyPalette(unsigned char *data, int width, int height, int depth,
+                 unsigned char *palette, int ncolor,
+                 int const methodForDiffuse,
+                 int foptimize,
+                 unsigned short *cachetable,
+                 unsigned char *result);
+
+
+extern void
+LSQ_FreePalette(unsigned char * data);
+
+#ifdef __cplusplus
 }
+#endif
 
-
-void
-sixel_output_set_8bit_availability(sixel_output_t *output, int availability)
-{
-    output->has_8bit_control = availability;
-}
-
+#endif /* LIBSIXEL_QUANT_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
