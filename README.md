@@ -38,7 +38,7 @@ Now Youtube video streaming is available over SIXEL protocol by [FFmpeg-SIXEL](h
 
 You can play "The Battle for Wesnoth" over SIXEL protocol.
 
-  [![SDL1.2-SIXEL WESNOTH](https://raw.githubusercontent.com/saitoha/libsixel/master/data/wethnoth.png)](http://youtu.be/aMUkN7TSct4)
+  [![SDL1.2-SIXEL WESNOTH](https://raw.githubusercontent.com/saitoha/libsixel/master/data/wesnoth.png)](http://youtu.be/aMUkN7TSct4)
 
 You can run QEMU on SIXEL terminals.
 
@@ -660,6 +660,13 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
   ![ZX81](https://raw.githubusercontent.com/saitoha/libsixel/master/data/zx81.png)
 
 
+- [qrc](https://github.com/fumiyas/qrc)
+
+  QR code generator for terminals (ASCII Art, Sixel)
+
+  ![qrc](https://github.com/fumiyas/qrc/blob/master/qrc-demo.png)
+
+
 - [hiptext](https://github.com/jart/hiptext)
 
   SIXEL format is supported by -sixel2, -sixel16 or -sixel256 option.
@@ -674,11 +681,15 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 
   cf. http://www.slideshare.net/syuu1228/presentation-on-your-terminal
 
+
 - ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
+
 
 - [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
 
+
 - [SIXEL image viewer(written in javascript)](http://rullf2.xs4all.nl/sg/sg.html)
+
 
 - [SixelGraphics.jl(written in Julia)](https://github.com/olofsen/SixelGraphics.jl)
 
