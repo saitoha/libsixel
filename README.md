@@ -53,7 +53,7 @@ You can run QEMU on SIXEL terminals.
 
 [XSIXEL](https://github.com/saitoha/xserver-sixel) is a kdrive server implementation for SIXEL terminals.
 
-  ![w3m-sixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/xsdl.png)
+  ![XSIXEL](https://raw.githubusercontent.com/saitoha/libsixel/master/data/xsixel.png)
 
 
 ### W3M integration
