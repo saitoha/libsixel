@@ -56,6 +56,7 @@
 # include <inttypes.h>
 #endif
 
+#include "quant.h"
 #include "sixel.h"
 
 #if 0
@@ -986,12 +987,48 @@ lookup_fast(unsigned char const * const pixel,
 }
 
 
+static int
+lookup_mono_darkbg(unsigned char const * const pixel,
+                   int const depth,
+                   unsigned char const * const palette,
+                   int const ncolor,
+                   unsigned short * const cachetable)
+{
+    int n;
+    int distant;
+
+    distant = 0;
+    for (n = 0; n < depth; ++n) {
+        distant += pixel[n];
+    }
+    return distant >= 128 * ncolor ? 1: 0;
+}
+
+
+static int
+lookup_mono_lightbg(unsigned char const * const pixel,
+                    int const depth,
+                    unsigned char const * const palette,
+                    int const ncolor,
+                    unsigned short * const cachetable)
+{
+    int n;
+    int distant;
+
+    distant = 0;
+    for (n = 0; n < depth; ++n) {
+        distant += pixel[n];
+    }
+    return distant < 128 * ncolor ? 1: 0;
+}
+
+
 unsigned char *
 LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
                 int reqcolors, int *ncolors, int *origcolors,
-                enum methodForLargest const methodForLargest,
-                enum methodForRep const methodForRep,
-                enum qualityMode const qualityMode)
+                int methodForLargest,
+                int methodForRep,
+                int qualityMode)
 {
     int i, n;
     int ret;
@@ -1025,13 +1062,13 @@ LSQ_ApplyPalette(unsigned char *data,
                  int depth,
                  unsigned char *palette,
                  int ncolor,
-                 enum methodForDiffuse const methodForDiffuse,
+                 int methodForDiffuse,
                  int foptimize,
                  unsigned short *cachetable,
                  unsigned char *result)
 {
     typedef int component_t;
-    int pos, j, n, x, y;
+    int pos, j, n, x, y, sum1, sum2;
     component_t offset;
     int diff;
     int index;
@@ -1075,14 +1112,32 @@ LSQ_ApplyPalette(unsigned char *data,
         }
     }
 
-    if (foptimize && depth == 3) {
-        f_lookup = lookup_fast;
-    } else {
-        f_lookup = lookup_normal;
+    f_lookup = NULL;
+    if (ncolor == 2) {
+        sum1 = 0;
+        sum2 = 0;
+        for (n = 0; n < depth; ++n) {
+            sum1 += palette[n];
+        }
+        for (n = depth; n < depth + depth; ++n) {
+            sum2 += palette[n];
+        }
+        if (sum1 == 0 && sum2 == 255 * 3) {
+            f_lookup = lookup_mono_darkbg;
+        } else if (sum1 == 255 * 3 && sum2 == 0) {
+            f_lookup = lookup_mono_lightbg;
+        }
+    }
+    if (f_lookup == NULL) {
+        if (foptimize && depth == 3) {
+            f_lookup = lookup_fast;
+        } else {
+            f_lookup = lookup_normal;
+        }
     }
 
     indextable = cachetable;
-    if (cachetable == NULL) {
+    if (cachetable == NULL && f_lookup == lookup_fast) {
         indextable = malloc((1 << depth * 5) * sizeof(unsigned short));
         if (!indextable) {
             quant_trace(stderr, "Unable to allocate memory for indextable.");

@@ -62,25 +62,6 @@ void sixel_image_destroy(sixel_image_t *im);
 /* apply palette */
 int sixel_apply_palette(sixel_image_t *im);
 
-unsigned char *
-LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
-                int reqcolors, int *ncolors, int *origcolors,
-                int const methodForLargest,
-                int const methodForRep,
-                int const qualityMode);
-
-int
-LSQ_ApplyPalette(unsigned char *data, int width, int height, int depth,
-                 unsigned char *palette, int ncolor,
-                 int const methodForDiffuse,
-                 int foptimize,
-                 unsigned short *cachetable,
-                 unsigned char *result);
-
-
-extern void
-LSQ_FreePalette(unsigned char * data);
-
 #ifdef __cplusplus
 }
 #endif
