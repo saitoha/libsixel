@@ -184,6 +184,10 @@ typedef struct Settings {
     int pixelheight;
     int percentwidth;
     int percentheight;
+    int clipx;
+    int clipy;
+    int clipwidth;
+    int clipheight;
     int macro_number;
     int show_version;
     int show_help;
@@ -276,6 +280,21 @@ putchar_hex(int c)
     return c;
 }
 
+static void
+clip(unsigned char *pixels, int sx, int sy, int cx, int cy, int cw, int ch)
+{
+    int y;
+    unsigned char *src;
+    unsigned char *dst;
+
+    dst = pixels;
+    src = pixels + cy * sx * 3;
+    for (y = 0; y < ch; y++) {
+        memmove(dst, src, cw * 3);
+        dst += (cw * 3);
+        src += (sx * 3);
+    }
+}
 
 static int
 convert_to_sixel(char const *filename, settings_t *psettings)
@@ -329,6 +348,22 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     for (n = 0; n < frame_count; ++n) {
         frames[n] = frame;
         frame += sx * sy * 3;
+    }
+
+    /* clipping */
+    if (psettings->clipwidth + psettings->clipx > sx) {
+        psettings->clipwidth = (psettings->clipx > sx) ? 0 : sx - psettings->clipx;
+    }
+    if (psettings->clipheight + psettings->clipy > sy) {
+        psettings->clipheight = (psettings->clipy > sy) ? 0 : sy - psettings->clipy;
+    }
+    if (psettings->clipwidth > 0 && psettings->clipheight > 0) {
+        for (n = 0; n < frame_count; ++n) {
+            clip(frames[n], sx, sy, psettings->clipx, psettings->clipy,
+                 psettings->clipwidth, psettings->clipheight);
+        }
+        sx = psettings->clipwidth;
+        sy = psettings->clipheight;
     }
 
     /* scaling */
@@ -689,6 +724,9 @@ void show_help()
             "                             histgram -> similar with average\n"
             "                                         but considers color\n"
             "                                         histgram\n"
+            "-c REGION, --crop=REGION   crop source image to fit the\n"
+            "                           specified geometry. REGION should\n"
+            "                           be formatted as '%%dx%%d+%%d+%%d'\n"
             "-w WIDTH, --width=WIDTH    resize image to specific width\n"
             "                           WIDTH is represented by the\n"
             "                           following syntax\n"
@@ -763,7 +801,7 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:ed:f:s:w:h:r:q:il:ugn:VH";
+    char const *optstring = "78p:m:ed:f:s:c:w:h:r:q:il:ugn:VH";
 
     settings_t settings = {
         -1,           /* reqcolors */
@@ -783,6 +821,10 @@ main(int argc, char *argv[])
         -1,           /* pixelheight */
         -1,           /* percentwidth */
         -1,           /* percentheight */
+        0,            /* clipx */
+        0,            /* clipy */
+        0,            /* clipwidth */
+        0,            /* clipheight */
         -1,           /* macro_number */
         0,            /* show_version */
         0,            /* show_help */
@@ -798,6 +840,7 @@ main(int argc, char *argv[])
         {"diffusion",    required_argument,  &long_opt, 'd'},
         {"find-largest", required_argument,  &long_opt, 'f'},
         {"select-color", required_argument,  &long_opt, 's'},
+        {"crop",         required_argument,  &long_opt, 'c'},
         {"width",        required_argument,  &long_opt, 'w'},
         {"height",       required_argument,  &long_opt, 'h'},
         {"resampling",   required_argument,  &long_opt, 'r'},
@@ -904,6 +947,20 @@ main(int argc, char *argv[])
                 }
             }
             break;
+        case 'c':
+            {
+                int cw, ch, cx, cy;
+                if (sscanf(optarg, "%dx%d+%d+%d", &cw, &ch, &cx, &cy) == 4) {
+                    settings.clipx = cx;
+                    settings.clipy = cy;
+                    settings.clipwidth = cw;
+                    settings.clipheight = ch;
+                }
+                else {
+                    goto argerr;
+                }
+            }
+	    break;
         case 'w':
             parsed = sscanf(optarg, "%d%s", &number, unit);
             if (parsed == 2 && strcmp(unit, "%") == 0) {
