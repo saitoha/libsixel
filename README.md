@@ -49,7 +49,7 @@ You can run QEMU on SIXEL terminals.
   [![SDL1.2-SIXEL XSDL](https://raw.githubusercontent.com/saitoha/libsixel/master/data/xsdl.png)](http://youtu.be/UOTMGdUPYRo)
 
 
-### X11 on SIXEL.terminals
+### X11 on SIXEL terminals
 
 [XSIXEL](https://github.com/saitoha/xserver-sixel) is a kdrive server implementation for SIXEL terminals.
 
