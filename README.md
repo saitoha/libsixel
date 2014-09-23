@@ -221,6 +221,9 @@ Options:
                              histgram -> similar with average
                                          but considers color
                                          histgram
+-c REGION, --crop=REGION   crop source image to fit the
+                           specified geometry. REGION should
+                           be formatted as '%dx%d+%d+%d'
 -w WIDTH, --width=WIDTH    resize image to specific width
                            WIDTH is represented by the
                            following syntax

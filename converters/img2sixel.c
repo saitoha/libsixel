@@ -724,6 +724,9 @@ void show_help()
             "                             histgram -> similar with average\n"
             "                                         but considers color\n"
             "                                         histgram\n"
+            "-c REGION, --crop=REGION   crop source image to fit the\n"
+            "                           specified geometry. REGION should\n"
+            "                           be formatted as '%%dx%%d+%%d+%%d'\n"
             "-w WIDTH, --width=WIDTH    resize image to specific width\n"
             "                           WIDTH is represented by the\n"
             "                           following syntax\n"
@@ -837,6 +840,7 @@ main(int argc, char *argv[])
         {"diffusion",    required_argument,  &long_opt, 'd'},
         {"find-largest", required_argument,  &long_opt, 'f'},
         {"select-color", required_argument,  &long_opt, 's'},
+        {"crop",         required_argument,  &long_opt, 'c'},
         {"width",        required_argument,  &long_opt, 'w'},
         {"height",       required_argument,  &long_opt, 'h'},
         {"resampling",   required_argument,  &long_opt, 'r'},
