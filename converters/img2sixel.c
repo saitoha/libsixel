@@ -290,9 +290,9 @@ clip(unsigned char *pixels, int sx, int sy, int cx, int cy, int cw, int ch)
     dst = pixels;
     src = pixels + cy * sx * 3;
     for (y = 0; y < ch; y++) {
-        memmove(dst, src, cw*3);
-	dst += (cw*3);
-	src += (sx*3);
+        memmove(dst, src, cw * 3);
+        dst += (cw * 3);
+        src += (sx * 3);
     }
 }
 
@@ -350,6 +350,22 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         frame += sx * sy * 3;
     }
 
+    /* clipping */
+    if (psettings->clipwidth + psettings->clipx > sx) {
+        psettings->clipwidth = (psettings->clipx > sx) ? 0 : sx - psettings->clipx;
+    }
+    if (psettings->clipheight + psettings->clipy > sy) {
+        psettings->clipheight = (psettings->clipy > sy) ? 0 : sy - psettings->clipy;
+    }
+    if (psettings->clipwidth > 0 && psettings->clipheight > 0) {
+        for (n = 0; n < frame_count; ++n) {
+            clip(frames[n], sx, sy, psettings->clipx, psettings->clipy,
+                 psettings->clipwidth, psettings->clipheight);
+        }
+        sx = psettings->clipwidth;
+        sy = psettings->clipheight;
+    }
+
     /* scaling */
     if (psettings->percentwidth > 0) {
         psettings->pixelwidth = sx * psettings->percentwidth / 100;
@@ -387,21 +403,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         pixels = p;
         sx = psettings->pixelwidth;
         sy = psettings->pixelheight;
-    }
-
-    if (psettings->clipwidth + psettings->clipx > sx) {
-        psettings->clipwidth = (psettings->clipx > sx) ? 0 : sx - psettings->clipx;
-    }
-    if (psettings->clipheight + psettings->clipy > sy) {
-        psettings->clipheight = (psettings->clipy > sy) ? 0 : sy - psettings->clipy;
-    }
-    if (psettings->clipwidth > 0 && psettings->clipheight > 0) {
-        for (n = 0; n < frame_count; ++n) {
-            clip(frames[n], sx, sy, psettings->clipx, psettings->clipy,
-                 psettings->clipwidth, psettings->clipheight);
-        }
-        sx = psettings->clipwidth;
-        sy = psettings->clipheight;
     }
 
     /* prepare dither context */
