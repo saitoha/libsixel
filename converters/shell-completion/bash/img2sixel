@@ -92,6 +92,7 @@ _img2sixel()
                                    -d --diffusion \
                                    -f --find-largest \
                                    -s --select-color \
+                                   -c --crop \
                                    -w --width \
                                    -h --height \
                                    -r --resampling \
