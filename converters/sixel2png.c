@@ -197,9 +197,17 @@ sixel_to_png(const char *input, const char *output)
         }
     }
     write_len = fwrite(png_data, 1, png_len, output_fp);
+    if (write_len < 0) {
+#if HAVE_ERRNO_H
+        fprintf(stderr, "fwrite failed.\n" "reason: %s.\n",
+                strerror(errno));
+#endif  /* HAVE_ERRNO_H */
+        fclose(output_fp);
+        free(png_data);
+        return (-1);
+    }
     fclose(output_fp);
     free(png_data);
-
     return 0;
 }
 
