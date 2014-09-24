@@ -35,13 +35,15 @@ sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
     sixel_image_t *im;
 
     im = (sixel_image_t *)malloc(sizeof(sixel_image_t));
-    im->pixels = pixels;
-    im->sx = sx;
-    im->sy = sy;
-    im->depth = depth;
-    im->borrowed = borrowed;
-    im->dither = dither;
-    sixel_dither_ref(dither);
+    if (im) {
+        im->pixels = pixels;
+        im->sx = sx;
+        im->sy = sy;
+        im->depth = depth;
+        im->borrowed = borrowed;
+        im->dither = dither;
+        sixel_dither_ref(dither);
+    }
     return im;
 }
 
