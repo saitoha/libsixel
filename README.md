@@ -254,7 +254,7 @@ Options:
 -c REGION, --crop=REGION   crop source image to fit the
                            specified geometry. REGION should
                            be formatted as '%dx%d+%d+%d'
--w WIDTH, --width=WIDTH    resize image to specific width
+-w WIDTH, --width=WIDTH    resize image to specified width
                            WIDTH is represented by the
                            following syntax
                              auto       -> preserving aspect
@@ -265,7 +265,7 @@ Options:
                                            pixel counts
                              <number>px -> scale width with
                                            pixel counts
--h HEIGHT, --height=HEIGHT resize image to specific height
+-h HEIGHT, --height=HEIGHT resize image to specified height
                            HEIGHT is represented by the
                            following syntax
                              auto       -> preserving aspect
