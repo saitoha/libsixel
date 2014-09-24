@@ -1,3 +1,13 @@
+2014-09-24  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Do cropping after resizing by changing the order of arguments
+  * converters/shell-completion/zsh/_img2sixel: Update zsh completion file
+  * converters/shell-completion/bash/img2sixel: Update bash completion file
+
+2014-09-23  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Add --crop option
+
 2014-08-03  Hayaki Saito <user@zuse.jp>
 
   * README.md, converters/img2sixel.c, converters/sixel2png.c: Add --version
