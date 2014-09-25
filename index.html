@@ -48,26 +48,57 @@ Its data scheme is represented as a terminal-friendly escape sequence.
 So if you want to view a SIXEL image file, all you have to do is "cat" it to your terminal.</p>
 
 <h2>
-<a name="build-and-install" class="anchor" href="#build-and-install"><span class="octicon octicon-link"></span></a>Build and install</h2>
+<a name="sixel-animation" class="anchor" href="#sixel-animation"><span class="octicon octicon-link"></span></a>SIXEL Animation</h2>
 
-<pre><code>$ ./configure
-$ make
-# make install
-</code></pre>
+<p>img2sixel(1) can decode GIF animation.</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/sixel.gif" alt="Animation"></p>
 
 <h2>
-<a name="configure-options" class="anchor" href="#configure-options"><span class="octicon octicon-link"></span></a>Configure options</h2>
+<a name="related-projects" class="anchor" href="#related-projects"><span class="octicon octicon-link"></span></a>Related projects</h2>
 
 <h3>
-<a name="build-with-optional-packages" class="anchor" href="#build-with-optional-packages"><span class="octicon octicon-link"></span></a>Build with optional packages</h3>
+<a name="video-streaming" class="anchor" href="#video-streaming"><span class="octicon octicon-link"></span></a>Video streaming</h3>
 
-<pre><code>--with-gdk-pixbuf2        build with gdk-pixbuf2 (default: no)
---with-libcurl            build with libcurl (default: no)
---with-gd                 build with gd (default: no)
---with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
---with-bashcompletiondir  specify bashcompletion.d
---with-zshcompletiondir   specify zshcompletion.d
-</code></pre>
+<p>Now Youtube video streaming is available over SIXEL protocol by <a href="https://github.com/saitoha/FFmpeg-SIXEL">FFmpeg-SIXEL</a> project.</p>
+
+<p><a href="http://youtu.be/hqMh47lYHlc"><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/ffmpeg.png" alt="FFmpeg-SIXEL"></a></p>
+
+<h3>
+<a name="sdl-integration-gaming-virtualization-etc" class="anchor" href="#sdl-integration-gaming-virtualization-etc"><span class="octicon octicon-link"></span></a>SDL integration: Gaming, Virtualization, ...etc.</h3>
+
+<p><a href="https://github.com/saitoha/SDL1.2-SIXEL">SDL1.2-SIXEL</a> project makes enable you to operate various GUI applications on the terminal.</p>
+
+<p>You can play "The Battle for Wesnoth" over SIXEL protocol.</p>
+
+<p><a href="http://youtu.be/aMUkN7TSct4"><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/wesnoth.png" alt="SDL1.2-SIXEL WESNOTH"></a></p>
+
+<p>You can run QEMU on SIXEL terminals.</p>
+
+<p><a href="http://youtu.be/X6M5tgNjEuQ"><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/qemu.png" alt="SDL1.2-SIXEL QEMU"></a></p>
+
+<p><a href="https://github.com/saitoha/SDL1.2-SIXEL">SDL1.2-SIXEL</a> can collaborate with <a href="https://github.com/saitoha/xserver-xsdl-sixel">XSDL-SIXEL</a>.</p>
+
+<p><a href="http://youtu.be/UOTMGdUPYRo"><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/xsdl.png" alt="SDL1.2-SIXEL XSDL"></a></p>
+
+<h3>
+<a name="x11-on-sixel-terminals" class="anchor" href="#x11-on-sixel-terminals"><span class="octicon octicon-link"></span></a>X11 on SIXEL terminals</h3>
+
+<p><a href="https://github.com/saitoha/xserver-sixel">XSIXEL</a> is a kdrive server implementation for SIXEL terminals.</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/xsixel.png" alt="XSIXEL"></p>
+
+<h3>
+<a name="w3m-integration" class="anchor" href="#w3m-integration"><span class="octicon octicon-link"></span></a>W3M integration</h3>
+
+<p>img2sixel(1) can be integrated with <img src="https://bitbucket.org/arakiken/w3m/branch/remoteimg" alt="Arakiken's w3m fork(remoteimg branch)">.</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/w3m-sixel.png" alt="w3m-sixel"></p>
+
+<h3>
+<a name="twitter-client-integration" class="anchor" href="#twitter-client-integration"><span class="octicon octicon-link"></span></a>Twitter client integration</h3>
+
+<p>Now <a href="http://mikutter.hachune.net/">mikutter</a> + <a href="https://bitbucket.org/arakiken/mikutterm">mikutterm</a> works with libsixel inline-image extension.</p>
 
 <h2>
 <a name="terminal-requirements" class="anchor" href="#terminal-requirements"><span class="octicon octicon-link"></span></a>Terminal requirements</h2>
@@ -122,6 +153,69 @@ $ make
 <p><a href="https://github.com/saitoha/seq2gif">https://github.com/saitoha/seq2gif</a></p>
 </li>
 </ul><h2>
+<a name="quantization-quality" class="anchor" href="#quantization-quality"><span class="octicon octicon-link"></span></a>Quantization quality</h2>
+
+<p>img2sixel(1) supports high quality color image quantization.</p>
+
+<ul>
+<li>
+<p>ppmtosixel (netpbm)</p>
+
+<p>$ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_ppmtosixel.png" alt="ppmtosixel"></p>
+</li>
+<li>
+<p>ppmtosixel with Floyd–Steinberg dithering (netpbm)</p>
+
+<p>$ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_ppmtosixel2.png" alt="ppmtosixel"></p>
+</li>
+<li>
+<p>kmiya's sixel</p>
+
+<p>$ sixel -p16 images/snake.jpg</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_sixel.png" alt="kmiya's sixel"></p>
+</li>
+<li>
+<p>PySixel (sixelconv command)</p>
+
+<p>$ sixelconv -n16 images/snake.jpg</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_sixelconv.png" alt="PySixel"></p>
+</li>
+<li>
+<p>libsixel (img2sixel command)</p>
+
+<p>$ img2sixel -p16 images/snake.jpg</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_libsixel.png" alt="PySixel"></p>
+</li>
+</ul><h2>
+<a name="build-and-install" class="anchor" href="#build-and-install"><span class="octicon octicon-link"></span></a>Build and install</h2>
+
+<pre><code>$ ./configure
+$ make
+# make install
+</code></pre>
+
+<h2>
+<a name="configure-options" class="anchor" href="#configure-options"><span class="octicon octicon-link"></span></a>Configure options</h2>
+
+<h3>
+<a name="build-with-optional-packages" class="anchor" href="#build-with-optional-packages"><span class="octicon octicon-link"></span></a>Build with optional packages</h3>
+
+<pre><code>--with-gdk-pixbuf2        build with gdk-pixbuf2 (default: no)
+--with-libcurl            build with libcurl (default: no)
+--with-gd                 build with gd (default: no)
+--with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
+--with-bashcompletiondir  specify bashcompletion.d
+--with-zshcompletiondir   specify zshcompletion.d
+</code></pre>
+
+<h2>
 <a name="usage-of-command-line-tools" class="anchor" href="#usage-of-command-line-tools"><span class="octicon octicon-link"></span></a>Usage of command line tools</h2>
 
 <h3>
@@ -195,7 +289,10 @@ Options:
                              histgram -&gt; similar with average
                                          but considers color
                                          histgram
--w WIDTH, --width=WIDTH    resize image to specific width
+-c REGION, --crop=REGION   crop source image to fit the
+                           specified geometry. REGION should
+                           be formatted as '%dx%d+%d+%d'
+-w WIDTH, --width=WIDTH    resize image to specified width
                            WIDTH is represented by the
                            following syntax
                              auto       -&gt; preserving aspect
@@ -206,7 +303,7 @@ Options:
                                            pixel counts
                              &lt;number&gt;px -&gt; scale width with
                                            pixel counts
--h HEIGHT, --height=HEIGHT resize image to specific height
+-h HEIGHT, --height=HEIGHT resize image to specified height
                            HEIGHT is represented by the
                            following syntax
                              auto       -&gt; preserving aspect
@@ -287,54 +384,118 @@ Options:
 </code></pre>
 
 <h2>
-<a name="animation" class="anchor" href="#animation"><span class="octicon octicon-link"></span></a>Animation</h2>
+<a name="usage-of-conversion-api-10" class="anchor" href="#usage-of-conversion-api-10"><span class="octicon octicon-link"></span></a>Usage of conversion API 1.0</h2>
 
-<p>img2sixel(1) can decode GIF animation.</p>
+<p>The Whole API is described <a href="https://github.com/saitoha/libsixel/blob/master/include/sixel.h.in">here</a>.</p>
 
-<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/sixel.gif" alt="Animation"></p>
+<h3>
+<a name="example" class="anchor" href="#example"><span class="octicon octicon-link"></span></a>Example</h3>
 
-<h2>
-<a name="quantization-quality" class="anchor" href="#quantization-quality"><span class="octicon octicon-link"></span></a>Quantization quality</h2>
+<p>If you use OSX, a tiny example is available 
+<a href="https://github.com/saitoha/libsixel/blob/master/examples/osx/opengl/">here</a>.</p>
 
-<p>img2sixel(1) supports high quality color image quantization.</p>
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/example_opengl.gif" alt="opengl example"></p>
+
+<h3>
+<a name="bitmap-to-sixel" class="anchor" href="#bitmap-to-sixel"><span class="octicon octicon-link"></span></a>Bitmap to SIXEL</h3>
+
+<p><em>sixel_encode</em> function converts bitmap array into SIXEL format.</p>
+
+<div class="highlight highlight-C"><pre><span class="cm">/* converter API */</span>
+
+<span class="cm">/* convert pixels into sixel format and write it to output context */</span>
+<span class="kt">int</span>
+<span class="nf">sixel_encode</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">char</span>  <span class="cm">/* in */</span> <span class="o">*</span><span class="n">pixels</span><span class="p">,</span>   <span class="cm">/* pixel bytes */</span>
+             <span class="kt">int</span>            <span class="cm">/* in */</span>  <span class="n">width</span><span class="p">,</span>    <span class="cm">/* image width */</span>
+             <span class="kt">int</span>            <span class="cm">/* in */</span>  <span class="n">height</span><span class="p">,</span>   <span class="cm">/* image height */</span>
+             <span class="kt">int</span>            <span class="cm">/* in */</span>  <span class="n">depth</span><span class="p">,</span>    <span class="cm">/* pixel depth: now only 3 is supported */</span>
+             <span class="kt">sixel_dither_t</span> <span class="cm">/* in */</span> <span class="o">*</span><span class="n">dither</span><span class="p">,</span>   <span class="cm">/* dither context */</span>
+             <span class="kt">sixel_output_t</span> <span class="cm">/* in */</span> <span class="o">*</span><span class="n">context</span><span class="p">);</span> <span class="cm">/* output context */</span>
+</pre></div>
+
+<p>To use this function, you have to initialize two objects,</p>
 
 <ul>
 <li>
-<p>ppmtosixel (netpbm)</p>
-
-<p>$ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel</p>
-
-<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_ppmtosixel.png" alt="ppmtosixel"></p>
-</li>
+<em>sixel_dither_t</em> (dithering context object)</li>
 <li>
-<p>ppmtosixel with Floyd–Steinberg dithering (netpbm)</p>
+<em>sixel_output_t</em> (output context object)</li>
+</ul><h4>
+<a name="dithering-context" class="anchor" href="#dithering-context"><span class="octicon octicon-link"></span></a>Dithering context</h4>
 
-<p>$ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel</p>
+<p>Here is a part of APIs for dithering context manipulation.</p>
 
-<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_ppmtosixel2.png" alt="ppmtosixel"></p>
-</li>
-<li>
-<p>kmiya's sixel</p>
+<div class="highlight highlight-C"><pre><span class="cm">/* create dither context object: reference counter is set to 1 */</span>
+<span class="kt">sixel_dither_t</span> <span class="o">*</span>
+<span class="nf">sixel_dither_create</span><span class="p">(</span><span class="kt">int</span> <span class="cm">/* in */</span> <span class="n">ncolors</span><span class="p">);</span> <span class="cm">/* number of colors */</span>
 
-<p>$ sixel -p16 images/snake.jpg</p>
+<span class="cm">/* increment reference count of dither context object (thread-unsafe) */</span>
+<span class="kt">void</span>
+<span class="nf">sixel_dither_ref</span><span class="p">(</span><span class="kt">sixel_dither_t</span> <span class="o">*</span><span class="n">dither</span><span class="p">);</span> <span class="cm">/* dither context object */</span>
 
-<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_sixel.png" alt="kmiya's sixel"></p>
-</li>
-<li>
-<p>PySixel (sixelconv command)</p>
+<span class="cm">/* decrement reference count of dither context object (thread-unsafe) */</span>
+<span class="kt">void</span>
+<span class="nf">sixel_dither_unref</span><span class="p">(</span><span class="kt">sixel_dither_t</span> <span class="o">*</span><span class="n">dither</span><span class="p">);</span> <span class="cm">/* dither context object */</span>
 
-<p>$ sixelconv -n16 images/snake.jpg</p>
+<span class="cm">/* initialize internal palette from specified pixel buffer */</span>
+<span class="kt">int</span>
+<span class="nf">sixel_dither_initialize</span><span class="p">(</span>
+    <span class="kt">sixel_dither_t</span> <span class="o">*</span><span class="n">dither</span><span class="p">,</span>          <span class="cm">/* dither context object */</span>
+    <span class="kt">unsigned</span> <span class="kt">char</span> <span class="cm">/* in */</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span>    <span class="cm">/* sample image */</span>
+    <span class="kt">int</span> <span class="cm">/* in */</span> <span class="n">width</span><span class="p">,</span>              <span class="cm">/* image width */</span>
+    <span class="kt">int</span> <span class="cm">/* in */</span> <span class="n">height</span><span class="p">,</span>             <span class="cm">/* image height */</span>
+    <span class="kt">int</span> <span class="cm">/* in */</span> <span class="n">depth</span><span class="p">,</span>              <span class="cm">/* pixel depth, now only '3' is supported */</span>
+    <span class="kt">int</span> <span class="cm">/* in */</span> <span class="n">method_for_largest</span><span class="p">,</span> <span class="cm">/* set 0 or method for finding the largest dimention */</span>
+    <span class="kt">int</span> <span class="cm">/* in */</span> <span class="n">method_for_rep</span><span class="p">,</span>     <span class="cm">/* set 0 or method for choosing a color from the box */</span>
+    <span class="kt">int</span> <span class="cm">/* in */</span> <span class="n">quality_mode</span>        <span class="cm">/* set 0 or quality of histgram processing */</span>
+<span class="p">);</span>
+</pre></div>
 
-<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_sixelconv.png" alt="PySixel"></p>
-</li>
-<li>
-<p>libsixel (img2sixel command)</p>
+<h4>
+<a name="output-context" class="anchor" href="#output-context"><span class="octicon octicon-link"></span></a>Output context</h4>
 
-<p>$ img2sixel -p16 images/snake.jpg</p>
+<p>Here is a part of APIs for output context manipulation.</p>
 
-<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_libsixel.png" alt="PySixel"></p>
-</li>
-</ul><h2>
+<div class="highlight highlight-C"><pre><span class="k">typedef</span> <span class="nf">int</span> <span class="p">(</span><span class="o">*</span> <span class="n">sixel_write_function</span><span class="p">)(</span><span class="kt">char</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="kt">int</span> <span class="n">size</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">priv</span><span class="p">);</span>
+
+<span class="cm">/* create output context object */</span>
+<span class="kt">sixel_output_t</span> <span class="o">*</span><span class="k">const</span>
+<span class="nf">sixel_output_create</span><span class="p">(</span>
+    <span class="n">sixel_write_function</span> <span class="cm">/* in */</span> <span class="n">fn_write</span><span class="p">,</span> <span class="cm">/* callback function for output sixel */</span>
+    <span class="kt">void</span> <span class="cm">/* in */</span> <span class="o">*</span><span class="n">priv</span>                     <span class="o">/*</span> <span class="n">private</span> <span class="n">data</span> <span class="n">given</span> <span class="n">as</span> 
+<span class="p">);</span>                                             <span class="mi">3</span><span class="n">rd</span> <span class="n">argument</span> <span class="n">of</span> <span class="n">fn_write</span> <span class="err">*/</span>
+
+<span class="cm">/* increment reference count of output context object (thread-unsafe) */</span>
+<span class="kt">void</span>
+<span class="n">sixel_output_ref</span><span class="p">(</span><span class="kt">sixel_output_t</span> <span class="cm">/* in */</span> <span class="o">*</span><span class="n">output</span><span class="p">);</span>     <span class="cm">/* output context */</span>
+
+<span class="cm">/* decrement reference count of output context object (thread-unsafe) */</span>
+<span class="kt">void</span>
+<span class="nf">sixel_output_unref</span><span class="p">(</span><span class="kt">sixel_output_t</span> <span class="cm">/* in */</span> <span class="o">*</span><span class="n">output</span><span class="p">);</span>   <span class="cm">/* output context */</span>
+
+</pre></div>
+
+<h3>
+<a name="sixel-to-indexed-bitmap" class="anchor" href="#sixel-to-indexed-bitmap"><span class="octicon octicon-link"></span></a>SIXEL to indexed bitmap</h3>
+
+<p><em>sixel_decode</em> function converts SIXEL into indexed bitmap bytes with its palette.</p>
+
+<pre><code>/* malloc(3) compatible function */
+typedef void * (* sixel_allocator_function)(size_t size);
+
+/* convert sixel data into indexed pixel bytes and palette data */
+int
+sixel_decode(unsigned char              /* in */  *sixels,    /* sixel bytes */
+             int                        /* in */  size,       /* size of sixel bytes */
+             unsigned char              /* out */ **pixels,   /* decoded pixels */
+             int                        /* out */ *pwidth,    /* image width */
+             int                        /* out */ *pheight,   /* image height */
+             unsigned char              /* out */ **palette,  /* RGBA palette */
+             int                        /* out */ *ncolors,   /* palette size (&lt;= 256) */
+             sixel_allocator_function   /* out */ allocator); /* malloc function */
+</code></pre>
+
+<h2>
 <a name="support" class="anchor" href="#support"><span class="octicon octicon-link"></span></a>Support</h2>
 
 <p>This software is provided "as is" without express or implied warranty.
@@ -430,6 +591,23 @@ implied warranty.</p>
 </blockquote>
 
 <h3>
+<a name="ax_gcc_var_attribute--ax_gcc_func_attribute" class="anchor" href="#ax_gcc_var_attribute--ax_gcc_func_attribute"><span class="octicon octicon-link"></span></a>ax_gcc_var_attribute / ax_gcc_func_attribute</h3>
+
+<p>These are useful m4 macros for detecting some GCC attributes.</p>
+
+<p><a href="http://www.gnu.org/software/autoconf-archive/ax_gcc_var_attribute.html">http://www.gnu.org/software/autoconf-archive/ax_gcc_var_attribute.html</a>
+<a href="http://www.gnu.org/software/autoconf-archive/ax_gcc_func_attribute.html">http://www.gnu.org/software/autoconf-archive/ax_gcc_func_attribute.html</a></p>
+
+<blockquote>
+<p>Copyright (c) 2013 Gabriele Svelto <a href="mailto:gabriele.svelto@gmail.com">gabriele.svelto@gmail.com</a></p>
+
+<p>Copying and distribution of this file, with or without modification, are
+permitted in any medium without royalty provided the copyright notice
+and this notice are preserved.  This file is offered as-is, without any
+warranty.</p>
+</blockquote>
+
+<h3>
 <a name="test-images" class="anchor" href="#test-images"><span class="octicon octicon-link"></span></a>test images</h3>
 
 <h4>
@@ -500,6 +678,11 @@ or <a href="http://netpbm.sourceforge.net/doc/ppmtosixel.html">pbmtoln03</a>.</p
 <p>A monochrome SIXEL converter</p>
 </li>
 <li>
+<p><a href="https://github.com/uobikiemukot/sdump">sdump</a></p>
+
+<p>SIXEL image dumper. It also provides a PDF viewer and a pager for multiple images.</p>
+</li>
+<li>
 <p>xpr(x11-apps)</p>
 
 <p>xpr(1) can convert a xwd(X window dump) format image into a sixel
@@ -529,7 +712,6 @@ But now it is not maintained. It looks broken.</p>
 
 <p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/gs.png" alt="GhostScript"></p>
 </li>
-<li><p><img src="http://www.astro.caltech.edu/%7Etjp/pgplot/" alt="PGPLOT"></p></li>
 <li>
 <p><a href="http://rullf2.xs4all.nl/sg/zx81ce.html">ZX81 Emulator</a></p>
 
@@ -537,6 +719,29 @@ But now it is not maintained. It looks broken.</p>
 
 <p><img src="https://raw.githubusercontent.com/saitoha/libsixel/master/data/zx81.png" alt="ZX81"></p>
 </li>
+<li>
+<p><a href="https://github.com/fumiyas/qrc">qrc</a></p>
+
+<p>QR code generator for terminals (ASCII Art, Sixel)</p>
+
+<p><img src="https://github.com/fumiyas/qrc/blob/master/qrc-demo.png" alt="qrc"></p>
+</li>
+<li>
+<p><a href="https://github.com/jart/hiptext">hiptext</a></p>
+
+<p>SIXEL format is supported by -sixel2, -sixel16 or -sixel256 option.</p>
+
+<p><img src="https://camo.githubusercontent.com/fc973ffb20a7ff85969df03fd579da2845e62e68/68747470733a2f2f662e636c6f75642e6769746875622e636f6d2f6173736574732f313136323733392f323233393832362f39303361653765382d396335622d313165332d383462362d3539626261346661336430342e706e67" alt="hiptext"></p>
+</li>
+<li>
+<p><a href="https://github.com/syuu1228/sixelslide">sixelslide</a></p>
+
+<p>Freestanding slideviewer using sixel graphics.
+Currently runs on QEMU(i386), without any filesystem or network.</p>
+
+<p>cf. <a href="http://www.slideshare.net/syuu1228/presentation-on-your-terminal">http://www.slideshare.net/syuu1228/presentation-on-your-terminal</a></p>
+</li>
+<li><p><img src="http://www.astro.caltech.edu/%7Etjp/pgplot/" alt="PGPLOT"></p></li>
 <li><p><a href="http://t.co/zTC7LhRbBc">SIXEL to PostScript converter</a></p></li>
 <li><p><a href="http://rullf2.xs4all.nl/sg/sg.html">SIXEL image viewer(written in javascript)</a></p></li>
 <li><p><a href="https://github.com/olofsen/SixelGraphics.jl">SixelGraphics.jl(written in Julia)</a></p></li>
