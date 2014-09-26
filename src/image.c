@@ -49,10 +49,8 @@ sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
 void
 sixel_image_destroy(sixel_image_t *im)
 {
-    if (im->dither) {
-        sixel_dither_unref(im->dither);
-    }
-    if (im->pixels && !im->borrowed) {
+    sixel_dither_unref(im->dither);
+    if (!im->borrowed) {
         free(im->pixels);
     }
     free(im);

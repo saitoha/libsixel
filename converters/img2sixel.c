@@ -134,9 +134,7 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
 
     mappixels = load_image_file(mapfile, &map_sx, &map_sy,
                                 &frame_count, &loop_count, &delays);
-    if (delays) {
-        free(delays);
-    }
+    free(delays);
     if (!mappixels) {
         return NULL;
     }
@@ -289,9 +287,9 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     sixel_output_t *context = NULL;
     sixel_dither_t *dither = NULL;
     int sx, sy;
-    int frame_count;
-    int loop_count;
-    int *delays;
+    int frame_count = 1;
+    int loop_count = 1;
+    int *delays = NULL;
     int i;
     int c;
     int n;
@@ -301,10 +299,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int dulation = 0;
     int lag = 0;
     clock_t start;
-
-    frame_count = 1;
-    loop_count = 1;
-    delays = 0;
 
     if (psettings->reqcolors < 2) {
         psettings->reqcolors = 2;
@@ -569,24 +563,15 @@ end:
     if (dither) {
         sixel_dither_unref(dither);
     }
-    if (frames) {
-        free(frames);
-    }
-    if (pixels) {
-        free(pixels);
-    }
-    if (delays) {
-        free(delays);
-    }
-    if (scaled_frame) {
-        free(scaled_frame);
-    }
-    if (mappixels) {
-        free(mappixels);
-    }
     if (context) {
         sixel_output_unref(context);
     }
+    free(frames);
+    free(pixels);
+    free(delays);
+    free(scaled_frame);
+    free(mappixels);
+
     return nret;
 }
 
@@ -767,7 +752,7 @@ main(int argc, char *argv[])
 
     settings_t settings = {
         -1,           /* reqcolors */
-        NULL,         /* *mapfile */
+        NULL,         /* mapfile */
         0,            /* monochrome */
         DIFFUSE_AUTO, /* method_for_diffuse */
         LARGE_AUTO,   /* method_for_largest */
@@ -1080,9 +1065,7 @@ argerr:
     show_help();
 
 end:
-    if (settings.mapfile) {
-        free(settings.mapfile);
-    }
+    free(settings.mapfile);
     return exit_code;
 }
 
