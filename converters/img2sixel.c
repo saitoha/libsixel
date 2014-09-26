@@ -569,7 +569,6 @@ end:
     free(frames);
     free(pixels);
     free(delays);
-    free(scaled_frame);
     free(mappixels);
 
     return nret;
