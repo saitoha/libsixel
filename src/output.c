@@ -32,17 +32,19 @@ sixel_output_create(sixel_write_function fn_write, void *priv)
     sixel_output_t *output;
    
     output = malloc(sizeof(sixel_output_t) + SIXEL_OUTPUT_PACKET_SIZE * 2);
-    output->ref = 1;
-    output->has_8bit_control = 0;
-    output->has_sdm_glitch = 0;
-    output->fn_write = fn_write;
-    output->save_pixel = 0;
-    output->save_count = 0;
-    output->active_palette = (-1);
-    output->node_top = NULL;
-    output->node_free = NULL;
-    output->priv = priv;
-    output->pos = 0;
+    if (output) {
+        output->ref = 1;
+        output->has_8bit_control = 0;
+        output->has_sdm_glitch = 0;
+        output->fn_write = fn_write;
+        output->save_pixel = 0;
+        output->save_count = 0;
+        output->active_palette = (-1);
+        output->node_top = NULL;
+        output->node_free = NULL;
+        output->priv = priv;
+        output->pos = 0;
+    }
 
     return output;
 }
