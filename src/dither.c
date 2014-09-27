@@ -211,9 +211,11 @@ sixel_dither_get(int builtin_dither)
     }
 
     dither = sixel_dither_create(ncolors);
-    dither->palette = palette;
-    dither->keycolor = keycolor;
-    dither->optimized = 1;
+    if (dither) {
+        dither->palette = palette;
+        dither->keycolor = keycolor;
+        dither->optimized = 1;
+    }
 
     return dither;
 }
