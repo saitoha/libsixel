@@ -39,28 +39,13 @@ typedef struct sixel_dither {
     int keycolor;               /* background color */
 } sixel_dither_t;
 
-/* sixel_image_t definition */
-typedef struct sixel_image {
-    /* Palette-based image pixels */
-    unsigned char *pixels;      /* pixel buffer */
-    int sx;                     /* width */
-    int sy;                     /* height */
-    int depth;                  /* bytes per pixel */
-    int borrowed;               /* whether pixels is borrowed reference */
-    sixel_dither_t *dither;     /* dithering context object */
-} sixel_image_t;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-sixel_image_t * sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
-                                   int borrowed, sixel_dither_t *dither);
-
-void sixel_image_destroy(sixel_image_t *im);
-
 /* apply palette */
-int sixel_apply_palette(sixel_image_t *im);
+unsigned char * sixel_apply_palette(unsigned char *pixels, int width, int height,
+                                    sixel_dither_t *dither);
 
 #ifdef __cplusplus
 }
