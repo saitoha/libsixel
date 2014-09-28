@@ -913,7 +913,8 @@ lookup_normal(unsigned char const * const pixel,
               int const depth,
               unsigned char const * const palette,
               int const ncolor,
-              unsigned short * const cachetable)
+              unsigned short * const cachetable,
+              int const complexion)
 {
     int index;
     int diff;
@@ -926,8 +927,9 @@ lookup_normal(unsigned char const * const pixel,
     diff = INT_MAX;
 
     for (i = 0; i < ncolor; i++) {
-        distant = 0;
-        for (n = 0; n < depth; ++n) {
+        r = pixel[0] - palette[i * depth + 0];
+        distant += r * r * complexion;
+        for (n = 1; n < depth; ++n) {
             r = pixel[n] - palette[i * depth + n];
             distant += r * r;
         }
@@ -946,7 +948,8 @@ lookup_fast(unsigned char const * const pixel,
             int const depth,
             unsigned char const * const palette,
             int const ncolor,
-            unsigned short * const cachetable)
+            unsigned short * const cachetable,
+            int const complexion)
 {
     int hash;
     int index;
@@ -972,10 +975,17 @@ lookup_fast(unsigned char const * const pixel,
     /* collision */
     for (i = 0; i < ncolor; i++) {
         distant = 0;
+#if 0
         for (n = 0; n < 3; ++n) {
             r = pixel[n] - palette[i * 3 + n];
             distant += r * r;
         }
+#elif 1  /* complexion correction */
+        distant = (pixel[0] - palette[i * 3 + 0]) * (pixel[0] - palette[i * 3 + 0]) * complexion
+                + (pixel[1] - palette[i * 3 + 1]) * (pixel[1] - palette[i * 3 + 1])
+                + (pixel[2] - palette[i * 3 + 2]) * (pixel[2] - palette[i * 3 + 2])
+                ;
+#endif
         if (distant < diff) {
             diff = distant;
             index = i;
@@ -992,7 +1002,8 @@ lookup_mono_darkbg(unsigned char const * const pixel,
                    int const depth,
                    unsigned char const * const palette,
                    int const ncolor,
-                   unsigned short * const cachetable)
+                   unsigned short * const cachetable,
+                   int const complexion)
 {
     int n;
     int distant;
@@ -1010,7 +1021,8 @@ lookup_mono_lightbg(unsigned char const * const pixel,
                     int const depth,
                     unsigned char const * const palette,
                     int const ncolor,
-                    unsigned short * const cachetable)
+                    unsigned short * const cachetable,
+                    int const complexion)
 {
     int n;
     int distant;
@@ -1064,6 +1076,7 @@ LSQ_ApplyPalette(unsigned char *data,
                  int ncolor,
                  int methodForDiffuse,
                  int foptimize,
+                 int complexion,
                  unsigned short *cachetable,
                  unsigned char *result)
 {
@@ -1079,7 +1092,8 @@ LSQ_ApplyPalette(unsigned char *data,
                     int const depth,
                     unsigned char const * const palette,
                     int const ncolor,
-                    unsigned short * const cachetable);
+                    unsigned short * const cachetable,
+                    int const complexion);
 
     if (depth != 3) {
         f_diffuse = diffuse_none;
@@ -1150,7 +1164,7 @@ LSQ_ApplyPalette(unsigned char *data,
         for (x = 0; x < width; ++x) {
             pos = y * width + x;
             index = f_lookup(data + (pos * depth), depth,
-                             palette, ncolor, indextable);
+                             palette, ncolor, indextable, complexion);
             result[pos] = index;
             for (n = 0; n < depth; ++n) {
                 offset = data[pos * depth + n] - palette[index * depth + n];
