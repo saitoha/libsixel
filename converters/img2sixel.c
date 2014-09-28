@@ -190,6 +190,7 @@ typedef struct Settings {
     int clipheight;
     int clipfirst;
     int macro_number;
+    int penetrate_multiplexer;
     int show_version;
     int show_help;
 } settings_t;
@@ -500,6 +501,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     if ((psettings->fuse_macro && frame_count > 1) || psettings->macro_number >= 0) {
         context = sixel_output_create(sixel_hex_write_callback, stdout);
         sixel_output_set_8bit_availability(context, psettings->f8bit);
+        sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
         for (n = 0; n < frame_count; ++n) {
 #if HAVE_USLEEP && HAVE_CLOCK
             start = clock();
@@ -593,6 +595,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         /* create output context */
         context = sixel_output_create(sixel_write_callback, stdout);
         sixel_output_set_8bit_availability(context, psettings->f8bit);
+        sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
         for (c = 0; c != loop_count; ++c) {
             for (n = 0; n < frame_count; ++n) {
                 if (frame_count > 1) {
@@ -846,7 +849,7 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:ed:f:s:c:w:h:r:q:il:ugn:VH";
+    char const *optstring = "78p:m:ed:f:s:c:w:h:r:q:il:ugn:PVH";
 
     settings_t settings = {
         -1,           /* reqcolors */
@@ -872,6 +875,7 @@ main(int argc, char *argv[])
         0,            /* clipheight */
         0,            /* clipfirst */
         -1,           /* macro_number */
+        0,            /* penetrate_multiplexer */
         0,            /* show_version */
         0,            /* show_help */
     };
@@ -896,6 +900,7 @@ main(int argc, char *argv[])
         {"use-macro",    no_argument,        &long_opt, 'u'},
         {"ignore-delay", no_argument,        &long_opt, 'g'},
         {"macro-number", required_argument,  &long_opt, 'n'},
+        {"penetrate",    no_argument,        &long_opt, 'P'},
         {"version",      no_argument,        &long_opt, 'V'},
         {"help",         no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}
@@ -1127,6 +1132,9 @@ main(int argc, char *argv[])
             break;
         case 'g':
             settings.fignore_delay = 1;
+            break;
+        case 'P':
+            settings.penetrate_multiplexer = 1;
             break;
         case 'V':
             settings.show_version = 1;

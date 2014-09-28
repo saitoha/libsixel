@@ -43,6 +43,7 @@ sixel_output_create(sixel_write_function fn_write, void *priv)
     output->node_free = NULL;
     output->priv = priv;
     output->pos = 0;
+    output->penetrate_multiplexer = 0;
 
     return output;
 }
@@ -82,6 +83,12 @@ void
 sixel_output_set_8bit_availability(sixel_output_t *output, int availability)
 {
     output->has_8bit_control = availability;
+}
+
+void
+sixel_output_set_penetrate_multiplexer(sixel_output_t *output, int penetrate)
+{
+    output->penetrate_multiplexer = penetrate;
 }
 
 

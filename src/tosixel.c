@@ -30,10 +30,27 @@
 /* implementation */
 
 static void
+penetrate(sixel_output_t *context, int nwrite)
+{
+    int pos;
+    for (pos = 0; pos < nwrite; pos += 508) {
+        context->fn_write("\x1bP", 2, context->priv);
+        context->fn_write(((char *)context->buffer)+pos,
+                nwrite - pos < 508 ? nwrite - pos : 508, context->priv);
+        context->fn_write("\x1b\\", 2, context->priv);
+    }
+}
+
+
+static void
 sixel_advance(sixel_output_t *context, int nwrite)
 {
     if ((context->pos += nwrite) >= SIXEL_OUTPUT_PACKET_SIZE) {
-        context->fn_write((char *)context->buffer, SIXEL_OUTPUT_PACKET_SIZE, context->priv);
+        if (context->penetrate_multiplexer) {
+            penetrate(context, SIXEL_OUTPUT_PACKET_SIZE);
+        } else {
+            context->fn_write((char *)context->buffer, SIXEL_OUTPUT_PACKET_SIZE, context->priv);
+        }
         memcpy(context->buffer,
                context->buffer + SIXEL_OUTPUT_PACKET_SIZE,
                (context->pos -= SIXEL_OUTPUT_PACKET_SIZE));
@@ -195,7 +212,7 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
         context->conv_palette[n] = list[n] = n;
     }
 
-    if (context->has_8bit_control) {
+    if (! context->penetrate_multiplexer && context->has_8bit_control) {
         nwrite = sprintf((char *)context->buffer, "\x90" "0;0;0" "q");
     } else {
         nwrite = sprintf((char *)context->buffer, "\x1bP" "0;0;0" "q");
@@ -332,7 +349,16 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
         memset(map, 0, len);
     }
 
-    if (context->has_8bit_control) {
+    if (context->penetrate_multiplexer) {
+        context->buffer[context->pos] = '\x1b';
+        context->buffer[context->pos + 1] = '\x1b';
+        context->buffer[context->pos + 2] = '\\';
+        context->buffer[context->pos + 3] = '\x1b';
+        context->buffer[context->pos + 4] = 'P';
+        context->buffer[context->pos + 5] = '\\';
+        advance(context, 6);
+    }
+    else if (context->has_8bit_control) {
         context->buffer[context->pos] = '\x9c';
         sixel_advance(context, 1);
     } else {
@@ -346,7 +372,12 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
 
     /* flush buffer */
     if (context->pos > 0) {
-        context->fn_write((char *)context->buffer, context->pos, context->priv);
+        if (context->penetrate_multiplexer) {
+            penetrate(context, context->pos);
+        }
+        else {
+            context->fn_write((char *)context->buffer, context->pos, context->priv);
+        }
     }
 
     /* free nodes */
