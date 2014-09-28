@@ -1009,7 +1009,7 @@ main(int argc, char *argv[])
                     goto argerr;
                 }
             }
-	    break;
+            break;
         case 'w':
             parsed = sscanf(optarg, "%d%s", &number, unit);
             if (parsed == 2 && strcmp(unit, "%") == 0) {

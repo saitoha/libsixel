@@ -35,6 +35,7 @@ sixel_output_create(sixel_write_function fn_write, void *priv)
     output->ref = 1;
     output->has_8bit_control = 0;
     output->has_sdm_glitch = 0;
+    output->skip_dcs_envelope = 0;
     output->fn_write = fn_write;
     output->save_pixel = 0;
     output->save_count = 0;
@@ -62,6 +63,7 @@ sixel_output_ref(sixel_output_t *output)
     ++output->ref;
 }
 
+
 void
 sixel_output_unref(sixel_output_t *output)
 {
@@ -70,6 +72,7 @@ sixel_output_unref(sixel_output_t *output)
         sixel_output_destroy(output);
     }
 }
+
 
 int
 sixel_output_get_8bit_availability(sixel_output_t *output)
@@ -82,6 +85,20 @@ void
 sixel_output_set_8bit_availability(sixel_output_t *output, int availability)
 {
     output->has_8bit_control = availability;
+}
+
+
+int
+sixel_output_get_skip_dcs_envelope(sixel_output_t *output)
+{
+    return output->skip_dcs_envelope;
+}
+
+
+void
+sixel_output_set_skip_dcs_envelope(sixel_output_t *output, int skip)
+{
+    output->skip_dcs_envelope = skip;
 }
 
 

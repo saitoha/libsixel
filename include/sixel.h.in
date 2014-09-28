@@ -126,6 +126,12 @@ sixel_output_get_8bit_availability(sixel_output_t *output);
 void
 sixel_output_set_8bit_availability(sixel_output_t *output, int availability);
 
+int
+sixel_output_get_skip_dcs_envelope(sixel_output_t *output);
+
+void
+sixel_output_set_skip_dcs_envelope(sixel_output_t *output, int skip);
+
 #ifdef __cplusplus
 }
 #endif

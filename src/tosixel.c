@@ -195,15 +195,24 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
         context->conv_palette[n] = list[n] = n;
     }
 
-    if (context->has_8bit_control) {
-        nwrite = sprintf((char *)context->buffer, "\x90" "0;0;0" "q");
-    } else {
-        nwrite = sprintf((char *)context->buffer, "\x1bP" "0;0;0" "q");
+    if (!context->skip_dcs_envelope) {
+        if (context->has_8bit_control) {
+            nwrite = sprintf((char *)context->buffer, "\x90");
+        } else {
+            nwrite = sprintf((char *)context->buffer, "\x1bP");
+        }
+        if (nwrite <= 0) {
+            return (-1);
+        }
+        sixel_advance(context, nwrite);
     }
+
+    nwrite = sprintf((char *)context->buffer + context->pos, "0;0;0" "q");
     if (nwrite <= 0) {
         return (-1);
     }
     sixel_advance(context, nwrite);
+
     nwrite = sprintf((char *)context->buffer + context->pos, "\"1;1;%d;%d", width, height);
     if (nwrite <= 0) {
         return (-1);
@@ -332,16 +341,16 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
         memset(map, 0, len);
     }
 
-    if (context->has_8bit_control) {
-        context->buffer[context->pos] = '\x9c';
-        sixel_advance(context, 1);
-    } else {
-        context->buffer[context->pos] = '\x1b';
-        context->buffer[context->pos + 1] = '\\';
-        sixel_advance(context, 2);
-    }
-    if (nwrite <= 0) {
-        return (-1);
+    if (!context->skip_dcs_envelope) {
+        if (context->has_8bit_control) {
+            nwrite = sprintf((char *)context->buffer + context->pos, "\x9c");
+        } else {
+            nwrite = sprintf((char *)context->buffer + context->pos, "\x1b\\");
+        }
+        if (nwrite <= 0) {
+            return (-1);
+        }
+        sixel_advance(context, nwrite);
     }
 
     /* flush buffer */
