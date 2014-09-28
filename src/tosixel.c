@@ -356,7 +356,7 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
         context->buffer[context->pos + 3] = '\x1b';
         context->buffer[context->pos + 4] = 'P';
         context->buffer[context->pos + 5] = '\\';
-        advance(context, 6);
+        sixel_advance(context, 6);
     }
     else if (context->has_8bit_control) {
         context->buffer[context->pos] = '\x9c';

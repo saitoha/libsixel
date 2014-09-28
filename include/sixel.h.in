@@ -126,6 +126,9 @@ sixel_output_get_8bit_availability(sixel_output_t *output);
 void
 sixel_output_set_8bit_availability(sixel_output_t *output, int availability);
 
+void
+sixel_output_set_penetrate_multiplexer(sixel_output_t *output, int penetrate);
+
 #ifdef __cplusplus
 }
 #endif
