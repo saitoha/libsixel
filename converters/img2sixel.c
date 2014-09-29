@@ -700,7 +700,7 @@ void show_version()
 static
 void show_help()
 {
-    fprintf(stderr,
+    fprintf(stdout,
             "Usage: img2sixel [Options] imagefiles\n"
             "       img2sixel [Options] < imagefile\n"
             "\n"
@@ -838,6 +838,7 @@ main(int argc, char *argv[])
     int n;
     int filecount = 1;
     int long_opt;
+    int unknown_opt = 0;
 #if HAVE_GETOPT_LONG
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
@@ -1134,11 +1135,9 @@ main(int argc, char *argv[])
         case 'H':
             settings.show_help = 1;
             break;
-        case '?':
-            settings.show_help = 1;
-            break;
+        case '?':  /* unknown option */
         default:
-            goto argerr;
+            unknown_opt = 1;
         }
     }
     if (settings.reqcolors != -1 && settings.mapfile) {
@@ -1162,7 +1161,11 @@ main(int argc, char *argv[])
     }
     if (settings.show_help) {
         show_help();
+        exit_code = EXIT_SUCCESS;
         goto end;
+    }
+    if (unknown_opt) {
+        goto argerr;
     }
 
     if (settings.reqcolors == -1) {
@@ -1189,7 +1192,11 @@ main(int argc, char *argv[])
 
 argerr:
     exit_code = EXIT_FAILURE;
-    show_help();
+    fprintf(stderr, "usage: img2sixel [-78eiugVH] [-p colors] [-m file] [-d diffusiontype]\n"
+                    "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
+                    "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
+                    "                 [-n macronumber] [filename ...]\n"
+                    "for more details, type: 'img2sixel -H'.\n");
 
 end:
     if (settings.mapfile) {
