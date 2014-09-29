@@ -350,13 +350,7 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
     }
 
     if (context->penetrate_multiplexer) {
-        context->buffer[context->pos] = '\x1b';
-        context->buffer[context->pos + 1] = '\x1b';
-        context->buffer[context->pos + 2] = '\\';
-        context->buffer[context->pos + 3] = '\x1b';
-        context->buffer[context->pos + 4] = 'P';
-        context->buffer[context->pos + 5] = '\\';
-        sixel_advance(context, 6);
+        /* do nothing */
     }
     else if (context->has_8bit_control) {
         context->buffer[context->pos] = '\x9c';
@@ -374,6 +368,7 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
     if (context->pos > 0) {
         if (context->penetrate_multiplexer) {
             penetrate(context, context->pos);
+            context->fn_write("\x1bP\x1b\x1b\\\x1bP\\\x1b\\", 10, context->priv);
         }
         else {
             context->fn_write((char *)context->buffer, context->pos, context->priv);
