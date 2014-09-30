@@ -296,7 +296,7 @@ LS_UPDATE_TIMESTAMP
 
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
-                 package.json
+                 package.json.in
                  include/sixel.h
                  src/Makefile
                  include/Makefile

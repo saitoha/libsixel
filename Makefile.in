@@ -82,7 +82,7 @@ subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(srcdir)/config.h.in $(srcdir)/libsixel.pc.in \
-	$(srcdir)/package.json.in ChangeLog compile config.guess \
+	$(srcdir)/package.json.in.in ChangeLog compile config.guess \
 	config.sub depcomp install-sh missing ltmain.sh
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_func_attribute.m4 \
@@ -96,7 +96,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = libsixel.pc package.json
+CONFIG_CLEAN_FILES = libsixel.pc package.json.in
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -418,7 +418,7 @@ distclean-hdr:
 	-rm -f config.h stamp-h1
 libsixel.pc: $(top_builddir)/config.status $(srcdir)/libsixel.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-package.json: $(top_builddir)/config.status $(srcdir)/package.json.in
+package.json.in: $(top_builddir)/config.status $(srcdir)/package.json.in.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:
@@ -873,6 +873,9 @@ uninstall-am: uninstall-pkgconfigDATA
 	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
 	uninstall-am uninstall-pkgconfigDATA
 
+
+all-am:
+	cp package.json.in package.json
 
 test: all
 	$(MAKE) test -C converters > test.log

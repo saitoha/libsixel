@@ -9,6 +9,9 @@ pkgconfig_DATA = libsixel.pc
 
 CLEANFILES = valgrind.log test.log
 
+all-am:
+	cp package.json.in package.json
+
 test: all
 	$(MAKE) test -C converters > test.log
 
