@@ -275,25 +275,18 @@ sixel_dither_get_palette(sixel_dither_t /* in */ *dither)  /* dither context obj
 }
 
 
-int
-sixel_apply_palette(sixel_image_t *im)
+unsigned char *
+sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t *dither)
 {
     int ret;
-    unsigned char *src;
     int bufsize;
     int cachesize;
-    sixel_dither_t *dither;
+    unsigned char *dest;
 
-    dither = im->dither;
-    src = im->pixels;
-
-    if (im->borrowed) {
-        bufsize = im->sx * im->sy * sizeof(unsigned char);
-        im->pixels = malloc(bufsize);
-        if (im->pixels == NULL) {
-            return (-1);
-        }
-        im->borrowed = 0;
+    bufsize = width * height * sizeof(unsigned char);
+    dest = malloc(bufsize);
+    if (dest == NULL) {
+        return NULL;
     }
 
     if (dither->cachetable == NULL && dither->optimized) {
@@ -308,19 +301,15 @@ sixel_apply_palette(sixel_image_t *im)
         }
     }
 
-    ret = LSQ_ApplyPalette(src, im->sx, im->sy, 3,
+    ret = LSQ_ApplyPalette(pixels, width, height, 3,
                            dither->palette,
                            dither->ncolors,
                            dither->method_for_diffuse,
                            dither->optimized,
                            dither->cachetable,
-                           im->pixels);
+                           dest);
 
-    if (ret != 0) {
-        return ret;
-    }
-
-    return 0;
+    return dest;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
