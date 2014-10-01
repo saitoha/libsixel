@@ -1,14 +1,158 @@
+2014-10-01  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Update libtool micro version
+
+  * configure, configure.ac, package.json: Bump version
+
+  * Makefile.am, Makefile.in, configure, configure.ac, package.json.in,
+  package.json.in.in: Issue #7: prevent to erase package.json in "make
+  distclean" target
+
+  * Makefile.am, Makefile.in: Issue #7: Add test.log to CLEANFILES
+
+  * converters/Makefile.am, converters/Makefile.in: Issue #7: correct wrong
+  CLEANFILES definition
+
+2014-09-28  Hayaki Saito <user@zuse.jp>
+
+  * src/Makefile.am, src/Makefile.in, src/dither.c, src/dither.h, src/image.c,
+  src/image.h, src/tosixel.c: Drop sixel_image_t object and related functions
+
+2014-09-26  Hayaki Saito <user@zuse.jp>
+
+  * sixel_orig/Makefile, sixel_orig/frompnm.c, sixel_orig/fromsixel.c,
+  sixel_orig/main.c, sixel_orig/tosixel.c: Remove original sixel (kmiya's
+  sixel), Mirror repo is now here: https://github.com/saitoha/sixel
+
+  * converters/img2sixel.c, src/dither.c, src/image.c: Fix Issue #6: Remove
+  unnecessary null pointer checks
+
+2014-09-25  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, package.json: Update version
+
+  * converters/sixel2png.c, src/image.c: Issue #5: Completion of error handling
+
 2014-09-24  Hayaki Saito <user@zuse.jp>
 
-  * converters/img2sixel.c: Do cropping after resizing by changing the order of arguments
-  * converters/shell-completion/zsh/_img2sixel: Update zsh completion file
-  * converters/shell-completion/bash/img2sixel: Update bash completion file
+  * README.md, converters/img2sixel.1, converters/img2sixel.c: Fix typos
+
+  * configure, configure.ac, package.json: Bump version
 
 2014-09-23  Hayaki Saito <user@zuse.jp>
 
-  * converters/img2sixel.c: Add --crop option
+  * README.md, converters/img2sixel.1, converters/img2sixel.c: Update documents
+
+  * data/w3m-sixel.png, data/xsdl.png, data/xsixel.png: Add some images
+
+  * configure, configure.ac: Bump version
+
+2014-09-02  Hayaki Saito <user@zuse.jp>
+
+  * config.h.in, configure, configure.ac, package.json: v1.0.3 revert
+  stb_image.h to 1.41
+
+  * configure, configure.ac, package.json: v1.0.3 revert stb_image.h to 1.41
+
+  * README.md, converters/stb_image.h: Revert stb_image.h to 1.41 for
+  preventing segfault
+
+2014-08-29  Hayaki Saito <user@zuse.jp>
+
+  * data/qemu.png, data/wesnoth.png: Add some images for README
+
+  * configure, configure.ac, package.json: Update version
+
+2014-08-25  Hayaki Saito <user@zuse.jp>
+
+  * README.md, converters/stb_image.h: Update stb_image.h version to 1.44
+
+2014-08-23  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, package.json: Bump version
+
+  * src/dither.c, src/quant.c: Don't create cache table when it is not needed
+
+2014-08-17  Hayaki Saito <user@zuse.jp>
+
+  * src/dither.c, src/dither.h, src/quant.c, src/quant.h: Add quant.h and fix
+  signature confusion of some functions
+
+  * README.md, data/ffmpeg.png: Update README
+
+  * configure, configure.ac, package.json: Bump version: 1.0.0
+
+  * README.md, data/example_opengl.gif, examples/osx/opengl/Makefile,
+  examples/osx/opengl/opengl, include/sixel.h.in: Update README
+
+  * Makefile.in, aclocal.m4, configure, configure.ac, converters/Makefile.in,
+  converters/img2sixel.c, converters/sixel2png.c, examples/osx/opengl/opengl,
+  examples/osx/opengl/opengl.c, include/Makefile.in, include/sixel.h.in,
+  src/Makefile.in, src/dither.c, src/dither.h, src/fromsixel.c, src/image.c,
+  src/image.h, src/output.c, src/quant.c, src/tosixel.c: ABI version 1.0.0
+
+  * src/dither.c, src/dither.h: Add missing files
+
+  * configure, configure.ac, converters/img2sixel.c,
+  examples/osx/opengl/opengl, examples/osx/opengl/opengl.c, include/sixel.h.in,
+  src/Makefile.am, src/Makefile.in, src/image.c, src/output.c, src/quant.c,
+  src/tosixel.c: ABI version 0.3.0
+
+2014-08-16  Hayaki Saito <user@zuse.jp>
+
+  * include/sixel.h.in, src/quant.c: Performance optimization
+
+  * converters/img2sixel.c, examples/osx/opengl/opengl.c, include/sixel.h.in,
+  src/quant.c: Minor update
+
+  * converters/img2sixel.c, converters/loader.c, include/sixel.h,
+  include/sixel.h.in, src/quant.c: Add new function sixel_dither_get
+
+  * converters/img2sixel.c, converters/sixel2png.c, examples/osx/opengl/opengl,
+  examples/osx/opengl/opengl.c, include/sixel.h, include/sixel.h.in,
+  src/image.c, src/quant.c, src/tosixel.c: Update interface symbols
+
+  * src/quant.c, src/tosixel.c: Minor fix
+
+2014-08-15  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.in, README.md, aclocal.m4, config.h.in, configure, configure.ac,
+  converters/Makefile.in, include/Makefile.in, include/sixel.h,
+  include/sixel.h.in, m4/ax_gcc_func_attribute.m4, m4/ax_gcc_var_attribute.m4,
+  src/Makefile.in: Add deprecated attribute to some functions
+
+  * configure, configure.ac, converters/img2sixel.c, converters/loader.c,
+  include/sixel.h, src/image.c, src/quant.c, src/tosixel.c: ABI version 0.2.0
+
+  * examples/osx/opengl/opengl, examples/osx/opengl/opengl.c: Add an example:
+  opengl test
+
+2014-08-07  Hayaki Saito <user@zuse.jp>
+
+  * config.h.in, configure, configure.ac, include/sixel.h, src/output.c,
+  src/tosixel.c: +
+
+  * src/quant.c, src/tosixel.c: Minor fixes
+
+2014-08-06  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c, include/sixel.h, src/quant.c: Allocate cache table
+  only once to improve performance
+
+  * converters/img2sixel.c, include/sixel.h, src/quant.c: Minor fix of applying
+  palette
+
+2014-08-04  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.am, Makefile.in: Minor fix
+
+  * Makefile.am, Makefile.in: Update .travis.yml
 
 2014-08-03  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, converters/Makefile.am, converters/Makefile.in,
+  converters/img2sixel.c, converters/quant.c, include/sixel.h, src/Makefile.am,
+  src/Makefile.in, src/quant.c: Move quantization APIs to library domain
 
   * README.md, converters/img2sixel.c, converters/sixel2png.c: Add --version
   and --help option
