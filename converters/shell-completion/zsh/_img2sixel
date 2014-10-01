@@ -86,8 +86,9 @@ _arguments -S -s -A "-*" -S \
   {-d,--diffusion=}'[choose diffusion method which used with -p option]':diffusiontype:_diffusiontype \
   {-f,--find-largest=}'[method for finding the largest dimention in median-cut]':findtype:_findtype \
   {-s,--select-color=}'[method for selecting color from median-cut boxes]':selecttype:_selecttype \
-  {-w,--width=}'[resize image to specific width]' \
-  {-h,--height=}'[resize image to specific height]' \
+  {-c,--crop=}'[crop image to specified geometory(%dx%d+%d+%d)]' \
+  {-w,--width=}'[resize image to specified width]' \
+  {-h,--height=}'[resize image to specified height]' \
   {-r,--resampling=}'[choose resampling filter used with -w or -h option]':resamplingtype:_resamplingtype \
   {-q,--quality=}'[select quality of color quanlization]':qualitytype:_qualitytype \
   {-l,--loop-control=}'[select loop control mode of GIF animation]':looptype:_looptype \

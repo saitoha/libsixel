@@ -77,6 +77,7 @@ sixel_output_get_8bit_availability(sixel_output_t *output)
     return output->has_8bit_control;
 }
 
+
 void
 sixel_output_set_8bit_availability(sixel_output_t *output, int availability)
 {

@@ -100,8 +100,13 @@ average  -> caclulate the color average into the box
 .br
 histgram -> similar with average but considers color histgram
 .TP 5
+.B \-c \fIREGION\fP, \-\-crop=\fIREGION\fP
+crop source image to fit the specified geometry.
+.br
+REGION should be formatted as '%dx%d+%d+%d'.
+.TP 5
 .B \-w \fIWIDTH\fP, \-\-width=\fIWIDTH\fP
-resize image to specific width.
+resize image to specified width.
 .br
 \fIWIDTH\fP is represented by the following syntax:
 .br
@@ -114,7 +119,7 @@ auto       -> preserving aspect ratio (default)
 <number>px -> scale width with pixel counts
 .TP 5
 .B \-h \fIHEIGHT\fP, \-\-height=\fIHEIGHT\fP
-resize image to specific height.
+resize image to specified height.
 .br
 \fIHEIGHT\fP is represented by the following syntax
 .br
