@@ -188,6 +188,7 @@ typedef struct Settings {
     int clipy;
     int clipwidth;
     int clipheight;
+    int clipfirst;
     int macro_number;
     int show_version;
     int show_help;
@@ -296,13 +297,94 @@ clip(unsigned char *pixels, int sx, int sy, int cx, int cy, int cw, int ch)
     }
 }
 
+
+static int do_resize(unsigned char **ppixels,
+                     unsigned char **frames, int frame_count,
+                     int *psx, int *psy,
+                     settings_t *psettings)
+{
+    unsigned char *p;
+    int size;
+    int n;
+    unsigned char *scaled_frame = NULL;
+
+    if (psettings->percentwidth > 0) {
+        psettings->pixelwidth = *psx * psettings->percentwidth / 100;
+    }
+    if (psettings->percentheight > 0) {
+        psettings->pixelheight = *psy * psettings->percentheight / 100;
+    }
+    if (psettings->pixelwidth > 0 && psettings->pixelheight <= 0) {
+        psettings->pixelheight = *psy * psettings->pixelwidth / *psx;
+    }
+    if (psettings->pixelheight > 0 && psettings->pixelwidth <= 0) {
+        psettings->pixelwidth = *psx * psettings->pixelheight / *psy;
+    }
+
+    if (psettings->pixelwidth > 0 && psettings->pixelheight > 0) {
+        size = psettings->pixelwidth * psettings->pixelheight * 3;
+        p = malloc(size * frame_count);
+
+        if (p == NULL) {
+            return (-1);
+        }
+
+        for (n = 0; n < frame_count; ++n) {
+            scaled_frame = LSS_scale(frames[n], *psx, *psy, 3,
+                                     psettings->pixelwidth,
+                                     psettings->pixelheight,
+                                     psettings->method_for_resampling);
+            if (scaled_frame == NULL) {
+                return (-1);
+            }
+            memcpy(p + size * n, scaled_frame, size);
+            free(scaled_frame);
+        }
+        for (n = 0; n < frame_count; ++n) {
+            frames[n] = p + size * n;
+        }
+        free(*ppixels);
+        *ppixels = p;
+        *psx = psettings->pixelwidth;
+        *psy = psettings->pixelheight;
+    }
+
+    return 0;
+}
+
+
+static int do_crop(unsigned char **frames, int frame_count,
+                   int *psx, int *psy,
+                   settings_t *psettings)
+{
+    int n;
+
+    /* clipping */
+    if (psettings->clipwidth + psettings->clipx > *psx) {
+        psettings->clipwidth = (psettings->clipx > *psx) ? 0 : *psx - psettings->clipx;
+    }
+    if (psettings->clipheight + psettings->clipy > *psy) {
+        psettings->clipheight = (psettings->clipy > *psy) ? 0 : *psy - psettings->clipy;
+    }
+    if (psettings->clipwidth > 0 && psettings->clipheight > 0) {
+        for (n = 0; n < frame_count; ++n) {
+            clip(frames[n], *psx, *psy, psettings->clipx, psettings->clipy,
+                 psettings->clipwidth, psettings->clipheight);
+        }
+        *psx = psettings->clipwidth;
+        *psy = psettings->clipheight;
+    }
+
+    return 0;
+}
+
+
 static int
 convert_to_sixel(char const *filename, settings_t *psettings)
 {
     unsigned char *pixels = NULL;
     unsigned char *frame = NULL;
     unsigned char **frames = NULL;
-    unsigned char *scaled_frame = NULL;
     unsigned char *mappixels = NULL;
     unsigned char *p = NULL;
     sixel_output_t *context = NULL;
@@ -316,7 +398,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int n;
     int nret = -1;
     FILE *f;
-    int size;
     int dulation = 0;
     int lag = 0;
     clock_t start;
@@ -350,59 +431,30 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         frame += sx * sy * 3;
     }
 
-    /* clipping */
-    if (psettings->clipwidth + psettings->clipx > sx) {
-        psettings->clipwidth = (psettings->clipx > sx) ? 0 : sx - psettings->clipx;
-    }
-    if (psettings->clipheight + psettings->clipy > sy) {
-        psettings->clipheight = (psettings->clipy > sy) ? 0 : sy - psettings->clipy;
-    }
-    if (psettings->clipwidth > 0 && psettings->clipheight > 0) {
-        for (n = 0; n < frame_count; ++n) {
-            clip(frames[n], sx, sy, psettings->clipx, psettings->clipy,
-                 psettings->clipwidth, psettings->clipheight);
-        }
-        sx = psettings->clipwidth;
-        sy = psettings->clipheight;
-    }
-
-    /* scaling */
-    if (psettings->percentwidth > 0) {
-        psettings->pixelwidth = sx * psettings->percentwidth / 100;
-    }
-    if (psettings->percentheight > 0) {
-        psettings->pixelheight = sy * psettings->percentheight / 100;
-    }
-    if (psettings->pixelwidth > 0 && psettings->pixelheight <= 0) {
-        psettings->pixelheight = sy * psettings->pixelwidth / sx;
-    }
-    if (psettings->pixelheight > 0 && psettings->pixelwidth <= 0) {
-        psettings->pixelwidth = sx * psettings->pixelheight / sy;
-    }
-
-    if (psettings->pixelwidth > 0 && psettings->pixelheight > 0) {
-        size = psettings->pixelwidth * psettings->pixelheight * 3;
-        p = malloc(size * frame_count);
-
-        if (p == NULL) {
-            nret = -1;
+    if (psettings->clipfirst) {
+        /* clipping */
+        nret = do_crop(frames, frame_count, &sx, &sy, psettings);
+        if (nret != 0) {
             goto end;
         }
 
-        for (n = 0; n < frame_count; ++n) {
-            scaled_frame = LSS_scale(frames[n], sx, sy, 3,
-                                     psettings->pixelwidth,
-                                     psettings->pixelheight,
-                                     psettings->method_for_resampling);
-            memcpy(p + size * n, scaled_frame, size);
+        /* scaling */
+        nret = do_resize(&pixels, frames, frame_count, &sx, &sy, psettings);
+        if (nret != 0) {
+            goto end;
         }
-        for (n = 0; n < frame_count; ++n) {
-            frames[n] = p + size * n;
+    } else {
+        /* scaling */
+        nret = do_resize(&pixels, frames, frame_count, &sx, &sy, psettings);
+        if (nret != 0) {
+            goto end;
         }
-        free(pixels);
-        pixels = p;
-        sx = psettings->pixelwidth;
-        sy = psettings->pixelheight;
+
+        /* clipping */
+        nret = do_crop(frames, frame_count, &sx, &sy, psettings);
+        if (nret != 0) {
+            goto end;
+        }
     }
 
     /* prepare dither context */
@@ -416,10 +468,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         psettings->method_for_diffuse = DIFFUSE_FS;
     }
     sixel_dither_set_diffusion_type(dither, psettings->method_for_diffuse);
-
-    for (n = 0; n < frame_count; ++n) {
-
-    }
 
 #if HAVE_SIGNAL
 # if HAVE_DECL_SIGINT
@@ -613,9 +661,6 @@ end:
     if (delays) {
         free(delays);
     }
-    if (scaled_frame) {
-        free(scaled_frame);
-    }
     if (mappixels) {
         free(mappixels);
     }
@@ -724,7 +769,10 @@ void show_help()
             "                             histgram -> similar with average\n"
             "                                         but considers color\n"
             "                                         histgram\n"
-            "-w WIDTH, --width=WIDTH    resize image to specific width\n"
+            "-c REGION, --crop=REGION   crop source image to fit the\n"
+            "                           specified geometry. REGION should\n"
+            "                           be formatted as '%%dx%%d+%%d+%%d'\n"
+            "-w WIDTH, --width=WIDTH    resize image to specified width\n"
             "                           WIDTH is represented by the\n"
             "                           following syntax\n"
             "                             auto       -> preserving aspect\n"
@@ -735,7 +783,7 @@ void show_help()
             "                                           pixel counts\n"
             "                             <number>px -> scale width with\n"
             "                                           pixel counts\n"
-            "-h HEIGHT, --height=HEIGHT resize image to specific height\n"
+            "-h HEIGHT, --height=HEIGHT resize image to specified height\n"
             "                           HEIGHT is represented by the\n"
             "                           following syntax\n"
             "                             auto       -> preserving aspect\n"
@@ -822,6 +870,7 @@ main(int argc, char *argv[])
         0,            /* clipy */
         0,            /* clipwidth */
         0,            /* clipheight */
+        0,            /* clipfirst */
         -1,           /* macro_number */
         0,            /* show_version */
         0,            /* show_help */
@@ -837,6 +886,7 @@ main(int argc, char *argv[])
         {"diffusion",    required_argument,  &long_opt, 'd'},
         {"find-largest", required_argument,  &long_opt, 'f'},
         {"select-color", required_argument,  &long_opt, 's'},
+        {"crop",         required_argument,  &long_opt, 'c'},
         {"width",        required_argument,  &long_opt, 'w'},
         {"height",       required_argument,  &long_opt, 'h'},
         {"resampling",   required_argument,  &long_opt, 'r'},
@@ -947,12 +997,15 @@ main(int argc, char *argv[])
             {
                 int cw, ch, cx, cy;
                 if (sscanf(optarg, "%dx%d+%d+%d", &cw, &ch, &cx, &cy) == 4) {
+                    if (cw <= 0 || ch <= 0) {
+                        goto argerr;
+                    }
                     settings.clipx = cx;
                     settings.clipy = cy;
                     settings.clipwidth = cw;
                     settings.clipheight = ch;
-                }
-                else {
+                    settings.clipfirst = 0;
+                } else {
                     goto argerr;
                 }
             }
@@ -973,6 +1026,9 @@ main(int argc, char *argv[])
                         "Cannot parse -w/--width option.\n");
                 goto argerr;
             }
+            if (settings.clipwidth) {
+                settings.clipfirst = 1;
+            }
             break;
         case 'h':
             parsed = sscanf(optarg, "%d%s", &number, unit);
@@ -989,6 +1045,9 @@ main(int argc, char *argv[])
                 fprintf(stderr,
                         "Cannot parse -h/--height option.\n");
                 goto argerr;
+            }
+            if (settings.clipheight) {
+                settings.clipfirst = 1;
             }
             break;
         case 'r':
