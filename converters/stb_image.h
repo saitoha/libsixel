@@ -4177,6 +4177,7 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
          }
 
          case 0x3B: // gif stream termination code
+         case 0x3c: // ? (unknown code)
             return (stbi_uc *) 1;
 
          default:
