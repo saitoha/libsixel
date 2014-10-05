@@ -197,9 +197,17 @@ sixel_to_png(const char *input, const char *output)
         }
     }
     write_len = fwrite(png_data, 1, png_len, output_fp);
+    if (write_len < 0) {
+#if HAVE_ERRNO_H
+        fprintf(stderr, "fwrite failed.\n" "reason: %s.\n",
+                strerror(errno));
+#endif  /* HAVE_ERRNO_H */
+        fclose(output_fp);
+        free(png_data);
+        return (-1);
+    }
     fclose(output_fp);
     free(png_data);
-
     return 0;
 }
 
@@ -253,9 +261,13 @@ main(int argc, char *argv[])
     char *output = strdup("-");
     char *input = strdup("-");
     int long_opt;
+#if HAVE_GETOPT_LONG
     int option_index;
+#endif  /* HAVE_GETOPT_LONG */
     int nret = 0;
+    char const *optstring = "i:o:VH";
 
+#if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"input",        required_argument,  &long_opt, 'i'},
         {"output",       required_argument,  &long_opt, 'o'},
@@ -263,10 +275,15 @@ main(int argc, char *argv[])
         {"help",         no_argument,        &long_opt, 'V'},
         {0, 0, 0, 0}
     };
+#endif  /* HAVE_GETOPT_LONG */
 
     for (;;) {
-        n = getopt_long(argc, argv, "i:o:VH",
+#if HAVE_GETOPT_LONG
+        n = getopt_long(argc, argv, optstring,
                         long_options, &option_index);
+#else
+        n = getopt(argc, argv, optstring);
+#endif  /* HAVE_GETOPT_LONG */
         if (n == -1) {
             break;
         }

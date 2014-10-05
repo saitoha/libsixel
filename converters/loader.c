@@ -705,7 +705,9 @@ load_image_file(char const *filename, int *psx, int *psy,
     }
     free(chunk.buffer);
 
-    arrange_pixelformat(pixels, *psx, *psy * *pframe_count, comp, stride);
+    if (pixels) {
+        arrange_pixelformat(pixels, *psx, *psy * *pframe_count, comp, stride);
+    }
 
     return pixels;
 }

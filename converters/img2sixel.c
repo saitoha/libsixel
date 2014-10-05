@@ -134,9 +134,7 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
 
     mappixels = load_image_file(mapfile, &map_sx, &map_sy,
                                 &frame_count, &loop_count, &delays);
-    if (delays) {
-        free(delays);
-    }
+    free(delays);
     if (!mappixels) {
         return NULL;
     }
@@ -390,9 +388,9 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     sixel_output_t *context = NULL;
     sixel_dither_t *dither = NULL;
     int sx, sy;
-    int frame_count;
-    int loop_count;
-    int *delays;
+    int frame_count = 1;
+    int loop_count = 1;
+    int *delays = NULL;
     int i;
     int c;
     int n;
@@ -401,10 +399,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int dulation = 0;
     int lag = 0;
     clock_t start;
-
-    frame_count = 1;
-    loop_count = 1;
-    delays = 0;
 
     if (psettings->reqcolors < 2) {
         psettings->reqcolors = 2;
@@ -652,21 +646,14 @@ end:
     if (dither) {
         sixel_dither_unref(dither);
     }
-    if (frames) {
-        free(frames);
-    }
-    if (pixels) {
-        free(pixels);
-    }
-    if (delays) {
-        free(delays);
-    }
-    if (mappixels) {
-        free(mappixels);
-    }
     if (context) {
         sixel_output_unref(context);
     }
+    free(frames);
+    free(pixels);
+    free(delays);
+    free(mappixels);
+
     return nret;
 }
 
@@ -700,7 +687,7 @@ void show_version()
 static
 void show_help()
 {
-    fprintf(stderr,
+    fprintf(stdout,
             "Usage: img2sixel [Options] imagefiles\n"
             "       img2sixel [Options] < imagefile\n"
             "\n"
@@ -838,6 +825,7 @@ main(int argc, char *argv[])
     int n;
     int filecount = 1;
     int long_opt;
+    int unknown_opt = 0;
 #if HAVE_GETOPT_LONG
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
@@ -850,7 +838,7 @@ main(int argc, char *argv[])
 
     settings_t settings = {
         -1,           /* reqcolors */
-        NULL,         /* *mapfile */
+        NULL,         /* mapfile */
         0,            /* monochrome */
         DIFFUSE_AUTO, /* method_for_diffuse */
         LARGE_AUTO,   /* method_for_largest */
@@ -1134,11 +1122,9 @@ main(int argc, char *argv[])
         case 'H':
             settings.show_help = 1;
             break;
-        case '?':
-            settings.show_help = 1;
-            break;
+        case '?':  /* unknown option */
         default:
-            goto argerr;
+            unknown_opt = 1;
         }
     }
     if (settings.reqcolors != -1 && settings.mapfile) {
@@ -1162,7 +1148,11 @@ main(int argc, char *argv[])
     }
     if (settings.show_help) {
         show_help();
+        exit_code = EXIT_SUCCESS;
         goto end;
+    }
+    if (unknown_opt) {
+        goto argerr;
     }
 
     if (settings.reqcolors == -1) {
@@ -1189,12 +1179,14 @@ main(int argc, char *argv[])
 
 argerr:
     exit_code = EXIT_FAILURE;
-    show_help();
+    fprintf(stderr, "usage: img2sixel [-78eiugVH] [-p colors] [-m file] [-d diffusiontype]\n"
+                    "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
+                    "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
+                    "                 [-n macronumber] [filename ...]\n"
+                    "for more details, type: 'img2sixel -H'.\n");
 
 end:
-    if (settings.mapfile) {
-        free(settings.mapfile);
-    }
+    free(settings.mapfile);
     return exit_code;
 }
 
