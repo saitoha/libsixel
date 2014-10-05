@@ -13,7 +13,7 @@ if COND_GCOV
 MAYBE_COVERAGE = --coverage
 endif
 
-CLEANFILES = *.gcno *.gcda *.gcov snake.png snake.sixel
+CLEANFILES = *.gcno *.gcda *.gcov snake1.png snake2.png snake2.sixel
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
