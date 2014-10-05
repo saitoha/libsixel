@@ -64,6 +64,8 @@ typedef struct sixel_output {
     sixel_node_t *node_top;
     sixel_node_t *node_free;
 
+    int penetrate_multiplexer;
+
     void *priv;
     int pos;
     unsigned char buffer[1];
