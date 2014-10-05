@@ -355,7 +355,7 @@ The Whole API is described [here](https://github.com/saitoha/libsixel/blob/maste
 
 ### Example
 
-If you use OSX, a tiny example is available 
+If you use OSX, a tiny example is available
 [here](https://github.com/saitoha/libsixel/blob/master/examples/osx/opengl/).
 
   ![opengl example](https://raw.githubusercontent.com/saitoha/libsixel/data/data/example_opengl.gif)
@@ -423,7 +423,7 @@ typedef int (* sixel_write_function)(char *data, int size, void *priv);
 sixel_output_t *const
 sixel_output_create(
     sixel_write_function /* in */ fn_write, /* callback function for output sixel */
-    void /* in */ *priv                     /* private data given as 
+    void /* in */ *priv                     /* private data given as
 );                                             3rd argument of fn_write */
 
 /* increment reference count of output context object (thread-unsafe) */
@@ -500,16 +500,49 @@ This software derives from the following implementations.
 src/tosixel.c, src/fromsixel.c, and some part of converters/loader.c are
 derived from kmiya's "*sixel*" original version (2014-3-2)
 
-http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
+  Package: http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
 
-It is written by kmiya@culti.
+  Unofficial repo: https://github.com/saitoha/sixel
 
-He distributes it under very permissive license which permits
-useing, copying, modification, redistribution, and all other
-public activities without any restrictions.
+This work is written by kmiya@ culti. He distributes it under very permissive license.
 
-He declares this is compatible with MIT/BSD/GPL.
+The original license text(in Japanese only) is:
 
+```
+このプログラム及びソースコードの使用について個人・商用を問わず
+
+ご自由に使用していただいで結構です。
+
+また、配布・転載・紹介もご連絡の必要もありません。
+
+ソースの改変による配布も自由ですが、どのバージョンの改変かを
+
+明記されることを希望します。
+
+バージョン情報が無い場合は、配布物の年月日を明記されることを
+
+希望します。
+
+                  2014/10/05  kmiya
+```
+
+The unofficial translation:
+
+```
+Anyone is free to use this program for any purpose,
+commercial or non-commercial, without any restriction.
+
+Anyone is free to distribute, copy, publish, or
+advertise this software, without any contact.
+
+Anyone is free to distribute with modification of the
+source code, but I "hope" that its based version or
+date will be written clearly.
+
+                                    2014/10/05 kmiya
+```
+
+kmiya also said this is compatible with MIT/BSD/GPL.
 
 ### stbi-1.41
 
