@@ -153,8 +153,10 @@ sixel_dither_create(int ncolors)
 void
 sixel_dither_destroy(sixel_dither_t *dither)
 {
-    free(dither->cachetable);
-    free(dither);
+    if (dither) {
+        free(dither->cachetable);
+        free(dither);
+    }
 }
 
 
