@@ -222,9 +222,20 @@ static inline void
 get_rgb(unsigned char *data, int const bitfield, int depth,
                            unsigned char *r, unsigned char *g, unsigned char *b)
 {
-    unsigned int pixels = 0;
+    unsigned int pixels = 0, low, high;
+	int count = 0;
 
-    memcpy(&pixels, data, depth);
+	while (count < depth) {
+		pixels = *(data + count) | (pixels << 8);
+		count++;
+	}
+
+	/* XXX: we should swap bytes (only necessary on LSByte first hardware?) */
+	if (depth == 2) {
+		low    = pixels & 0xFF;
+		high   = (pixels >> 8) & 0xFF;
+		pixels = (low << 8) | high;
+	}
 
     if (bitfield == GRAYSCALE_G8 || bitfield == GRAYSCALE_AG88) {
         *r = *g = *b = pixels & 0xFF;
@@ -247,10 +258,6 @@ get_rgb(unsigned char *data, int const bitfield, int depth,
         *g = (pixels >>  8) & 0xFF;
         *b = (pixels >>  0) & 0xFF;
     }
-    /*
-    fprintf(stderr, "depth:%d pixels:0x%.8X r:%.2X g:%.2X b:%.2X\n",
-        depth, pixels, *r, *g, *b);
-    */
 }
 
 
