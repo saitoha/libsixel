@@ -142,7 +142,7 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
     if (dither == NULL) {
         return NULL;
     }
-    ret = sixel_dither_initialize(dither, mappixels, map_sx, map_sy, 3,
+    ret = sixel_dither_initialize(dither, mappixels, map_sx, map_sy, COLOR_RGB888,
                                   LARGE_NORM, REP_CENTER_BOX, QUALITY_LOW);
     if (ret != 0) {
         sixel_dither_unref(dither);
@@ -226,7 +226,7 @@ prepare_palette(unsigned char *frame, int sx, int sy, settings_t *psettings)
         }
 
         dither = sixel_dither_create(psettings->reqcolors);
-        ret = sixel_dither_initialize(dither, frame, sx, sy, 3,
+        ret = sixel_dither_initialize(dither, frame, sx, sy, COLOR_RGB888,
                                       psettings->method_for_largest,
                                       psettings->method_for_rep,
                                       psettings->quality_mode);
@@ -504,7 +504,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
                 printf("\033P%d;0;1!z", n);
             }
 
-            nret = sixel_encode(frames[n], sx, sy, 3, dither, context);
+            nret = sixel_encode(frames[n], sx, sy, COLOR_RGB888, dither, context);
             if (nret != 0) {
                 goto end;
             }
@@ -614,7 +614,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 #endif
                 }
 
-                nret = sixel_encode(frames[n], sx, sy, 3, dither, context);
+                nret = sixel_encode(frames[n], sx, sy, COLOR_RGB888, dither, context);
                 if (nret != 0) {
                     goto end;
                 }
