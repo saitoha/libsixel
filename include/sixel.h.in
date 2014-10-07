@@ -81,6 +81,18 @@ enum builtinDither {
     BUILTIN_XTERM256   = 3, /* xterm 256color */
 };
 
+/* bitfield type of input image */
+enum colorBitfield {
+    COLOR_RGB555   = 0, /* 15 bpp */
+    COLOR_RGB565   = 1, /* 16 bpp */
+    COLOR_RGB888   = 2, /* 24 bpp */
+    COLOR_ARGB8888 = 3, /* 32 bpp */
+    COLOR_RGBA8888 = 4, /* 32 bpp */
+    GRAYSCALE_G8   = 5, /*  8 bpp grayscale */
+    GRAYSCALE_AG88 = 6, /* 16 bpp grayscale + alpha */
+    GRAYSCALE_GA88 = 7, /* 16 bpp grayscale + alpha */
+};
+
 #ifndef LIBSIXEL_DITHER_H
 
 /* dither context object */
@@ -163,7 +175,7 @@ sixel_dither_initialize(sixel_dither_t *dither,          /* dither context objec
                         unsigned char /* in */ *data,    /* sample image */
                         int /* in */ width,              /* image width */
                         int /* in */ height,             /* image height */
-                        int /* in */ depth,              /* pixel depth, now only '3' is supported */
+                        int /* in */ bitfield,           /* one of enum colorBitfield */
                         int /* in */ method_for_largest, /* method for finding the largest dimention */
                         int /* in */ method_for_rep,     /* method for choosing a color from the box */
                         int /* in */ quality_mode);      /* quality of histgram processing */
@@ -202,7 +214,7 @@ int
 sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
              int            /* in */  width,      /* image width */
              int            /* in */  height,     /* image height */
-             int            /* in */  depth,      /* pixel depth */
+             int            /* in */  bitfield,   /* one of enum colorBitfield */
              sixel_dither_t /* in */ *dither,     /* dither context */
              sixel_output_t /* in */ *context);   /* output context */
 

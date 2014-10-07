@@ -363,19 +363,33 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
 int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
                  int            /* in */ width,     /* image width */
                  int            /* in */ height,    /* image height */
-                 int            /* in */ depth,     /* pixel depth */
+                 int const      /* in */ bitfield,  /* color bitfield */
                  sixel_dither_t /* in */ *dither,   /* dither context */
                  sixel_output_t /* in */ *context)  /* output context */
 {
     int ret;
-    unsigned char *paletted_pixels;
+    unsigned char *paletted_pixels, *normalized_pixels;
 
     sixel_dither_ref(dither);
 
+    /* normalize bitfield */
+    normalized_pixels = malloc(width * height * 3);
+    if (normalized_pixels == NULL) {
+        sixel_dither_unref(dither);
+        return (-1);
+    }
+
+    if (bitfield != COLOR_RGB888) {
+        sixel_normalize_bitfield(normalized_pixels, pixels, width, height, bitfield);
+    } else {
+        memcpy(normalized_pixels, pixels, width * height * 3);
+    }
+
     /* apply palette */
-    paletted_pixels = sixel_apply_palette(pixels, width, height, dither);
+    paletted_pixels = sixel_apply_palette(normalized_pixels, width, height, dither);
     if (paletted_pixels == NULL) {
         sixel_dither_unref(dither);
+        free(normalized_pixels);
         return (-1);
     }
 
@@ -384,6 +398,7 @@ int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
                       dither->keycolor, context);
 
     sixel_dither_unref(dither);
+    free(normalized_pixels);
     free(paletted_pixels);
 
     return 0;
