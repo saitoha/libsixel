@@ -83,14 +83,14 @@ enum builtinDither {
 
 /* bitfield type of input image */
 enum colorBitfield {
-    COLOR_RGB555   = 0, /* 15 bpp */
-    COLOR_RGB565   = 1, /* 16 bpp */
-    COLOR_RGB888   = 2, /* 24 bpp */
-    COLOR_ARGB8888 = 3, /* 32 bpp */
-    COLOR_RGBA8888 = 4, /* 32 bpp */
-    GRAYSCALE_G8   = 5, /*  8 bpp grayscale */
-    GRAYSCALE_AG88 = 6, /* 16 bpp grayscale + alpha */
-    GRAYSCALE_GA88 = 7, /* 16 bpp grayscale + alpha */
+    COLOR_RGB555   = 1, /* 15 bpp */
+    COLOR_RGB565   = 2, /* 16 bpp */
+    COLOR_RGB888   = 3, /* 24 bpp */
+    COLOR_ARGB8888 = 4, /* 32 bpp */
+    COLOR_RGBA8888 = 5, /* 32 bpp */
+    GRAYSCALE_G8   = 6, /*  8 bpp grayscale */
+    GRAYSCALE_AG88 = 7, /* 16 bpp grayscale + alpha */
+    GRAYSCALE_GA88 = 8, /* 16 bpp grayscale + alpha */
 };
 
 #ifndef LIBSIXEL_DITHER_H
