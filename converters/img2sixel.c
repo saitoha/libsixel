@@ -413,16 +413,15 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
     frames = malloc(sizeof(unsigned char *) * frame_count);
-
     if (frames == NULL) {
         nret = -1;
         goto end;
     }
 
-    frame = pixels;
+    p = pixels;
     for (n = 0; n < frame_count; ++n) {
-        frames[n] = frame;
-        frame += sx * sy * 3;
+        frames[n] = p;
+        p += sx * sy * 3;
     }
 
     if (psettings->clipfirst) {
@@ -506,6 +505,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 
             nret = sixel_encode(frames[n], sx, sy, 3, dither, context);
             if (nret != 0) {
+                free(p);
                 goto end;
             }
 
@@ -587,6 +587,11 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         /* create output context */
         context = sixel_output_create(sixel_write_callback, stdout);
         sixel_output_set_8bit_availability(context, psettings->f8bit);
+        p = malloc(sx * sy * 3);
+        if (nret != 0) {
+            goto end;
+        }
+
         for (c = 0; c != loop_count; ++c) {
             for (n = 0; n < frame_count; ++n) {
                 if (frame_count > 1) {
@@ -614,7 +619,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 #endif
                 }
 
-                nret = sixel_encode(frames[n], sx, sy, 3, dither, context);
+                memcpy(p, frames[n], sx * sy * 3);
+                nret = sixel_encode(p, sx, sy, 3, dither, context);
                 if (nret != 0) {
                     goto end;
                 }
@@ -653,6 +659,7 @@ end:
     free(pixels);
     free(delays);
     free(mappixels);
+    free(p);
 
     return nret;
 }
