@@ -829,6 +829,8 @@ void show_help()
             "                                       GIF header (default)\n"
             "                             force   -> always enable loop\n"
             "                             disable -> always disable loop\n"
+            "-P --penetrate             penetrate GNU Screen using DCS\n"
+            "                           pass-through sequence\n"
             "-V, --version              show version and license info\n"
             "-H, --help                 show this help\n"
             );
