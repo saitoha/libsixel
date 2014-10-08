@@ -133,7 +133,7 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
     delays = NULL;
 
     mappixels = load_image_file(mapfile, &map_sx, &map_sy,
-                                &frame_count, &loop_count, &delays);
+                                &frame_count, &loop_count, &delays, 1);
     free(delays);
     if (!mappixels) {
         return NULL;
@@ -178,6 +178,7 @@ typedef struct Settings {
     int finvert;
     int fuse_macro;
     int fignore_delay;
+    int fstatic;
     int pixelwidth;
     int pixelheight;
     int percentwidth;
@@ -405,7 +406,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
     pixels = load_image_file(filename, &sx, &sy,
-                             &frame_count, &loop_count, &delays);
+                             &frame_count, &loop_count,
+                             &delays, psettings->fstatic);
 
     if (pixels == NULL) {
         nret = -1;
@@ -841,7 +843,7 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:ed:f:s:c:w:h:r:q:il:ugn:VH";
+    char const *optstring = "78p:m:ed:f:s:c:w:h:r:q:il:ugSn:VH";
 
     settings_t settings = {
         -1,           /* reqcolors */
@@ -857,6 +859,7 @@ main(int argc, char *argv[])
         0,            /* finvert */
         0,            /* fuse_macro */
         0,            /* fignore_delay */
+        0,            /* static */
         -1,           /* pixelwidth */
         -1,           /* pixelheight */
         -1,           /* percentwidth */
@@ -890,6 +893,7 @@ main(int argc, char *argv[])
         {"loop-control", required_argument,  &long_opt, 'l'},
         {"use-macro",    no_argument,        &long_opt, 'u'},
         {"ignore-delay", no_argument,        &long_opt, 'g'},
+        {"static",       no_argument,        &long_opt, 'S'},
         {"macro-number", required_argument,  &long_opt, 'n'},
         {"version",      no_argument,        &long_opt, 'V'},
         {"help",         no_argument,        &long_opt, 'H'},
@@ -1122,6 +1126,9 @@ main(int argc, char *argv[])
             break;
         case 'g':
             settings.fignore_delay = 1;
+            break;
+        case 'S':
+            settings.fstatic = 1;
             break;
         case 'V':
             settings.show_version = 1;
