@@ -133,7 +133,7 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
     delays = NULL;
 
     mappixels = load_image_file(mapfile, &map_sx, &map_sy,
-                                &frame_count, &loop_count, &delays);
+                                &frame_count, &loop_count, &delays, 1);
     free(delays);
     if (!mappixels) {
         return NULL;
@@ -179,6 +179,7 @@ typedef struct Settings {
     int fuse_macro;
     int fignore_delay;
     int complexion;
+    int fstatic;
     int pixelwidth;
     int pixelheight;
     int percentwidth;
@@ -407,7 +408,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
     pixels = load_image_file(filename, &sx, &sy,
-                             &frame_count, &loop_count, &delays);
+                             &frame_count, &loop_count,
+                             &delays, psettings->fstatic);
 
     if (pixels == NULL) {
         nret = -1;
@@ -415,16 +417,15 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
     frames = malloc(sizeof(unsigned char *) * frame_count);
-
     if (frames == NULL) {
         nret = -1;
         goto end;
     }
 
-    frame = pixels;
+    p = pixels;
     for (n = 0; n < frame_count; ++n) {
-        frames[n] = frame;
-        frame += sx * sy * 3;
+        frames[n] = p;
+        p += sx * sy * 3;
     }
 
     if (psettings->clipfirst) {
@@ -512,6 +513,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 
             nret = sixel_encode(frames[n], sx, sy, 3, dither, context);
             if (nret != 0) {
+                free(p);
                 goto end;
             }
 
@@ -594,6 +596,10 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         context = sixel_output_create(sixel_write_callback, stdout);
         sixel_output_set_8bit_availability(context, psettings->f8bit);
         sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
+        p = malloc(sx * sy * 3);
+        if (nret != 0) {
+            goto end;
+        }
         for (c = 0; c != loop_count; ++c) {
             for (n = 0; n < frame_count; ++n) {
                 if (frame_count > 1) {
@@ -621,7 +627,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 #endif
                 }
 
-                nret = sixel_encode(frames[n], sx, sy, 3, dither, context);
+                memcpy(p, frames[n], sx * sy * 3);
+                nret = sixel_encode(p, sx, sy, 3, dither, context);
                 if (nret != 0) {
                     goto end;
                 }
@@ -660,6 +667,7 @@ end:
     free(pixels);
     free(delays);
     free(mappixels);
+    free(p);
 
     return nret;
 }
@@ -724,6 +732,7 @@ void show_help()
             "                           score of complexion correction.\n"
             "                           COMPLEXIONSCORE must be 1 or more.\n"
             "-g, --ignore-delay         render GIF animation without delay\n"
+            "-S, --static               render animated GIF as a static image\n"
             "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
             "                           choose diffusion method which used\n"
             "                           with -p option (color reduction)\n"
@@ -845,7 +854,7 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:ed:f:s:c:w:h:r:q:il:ugn:PC:VH";
+    char const *optstring = "78p:m:ed:f:s:c:w:h:r:q:il:ugSn:PC:VH";
 
     settings_t settings = {
         -1,           /* reqcolors */
@@ -862,6 +871,7 @@ main(int argc, char *argv[])
         0,            /* fuse_macro */
         0,            /* fignore_delay */
         1,            /* complexion */
+        0,            /* static */
         -1,           /* pixelwidth */
         -1,           /* pixelheight */
         -1,           /* percentwidth */
@@ -896,6 +906,7 @@ main(int argc, char *argv[])
         {"loop-control",     required_argument,  &long_opt, 'l'},
         {"use-macro",        no_argument,        &long_opt, 'u'},
         {"ignore-delay",     no_argument,        &long_opt, 'g'},
+        {"static",           no_argument,        &long_opt, 'S'},
         {"macro-number",     required_argument,  &long_opt, 'n'},
         {"penetrate",        no_argument,        &long_opt, 'P'},
         {"complexion-score", required_argument,  &long_opt, 'C'},
@@ -1130,6 +1141,9 @@ main(int argc, char *argv[])
             break;
         case 'g':
             settings.fignore_delay = 1;
+            break;
+        case 'S':
+            settings.fstatic = 1;
             break;
         case 'P':
             settings.penetrate_multiplexer = 1;
