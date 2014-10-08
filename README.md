@@ -9,7 +9,7 @@ libsixel
 This package provides encoder/decoder implementation for DEC SIXEL graphics, and
 some converter programs.
 
-![img2sixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/libsixel-1.png)
+![img2sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/libsixel-1.png)
 
 SIXEL is one of image formats for printer and terminal imaging introduced by
 Digital Equipment Corp. (DEC).
@@ -20,14 +20,53 @@ So if you want to view a SIXEL image file, all you have to do is "cat" it to you
 
 img2sixel(1) can decode GIF animation.
 
-  ![Animation](https://raw.githubusercontent.com/saitoha/libsixel/master/data/sixel.gif)
+  ![Animation](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixel.gif)
 
 
-## Youtube streaming
+## Related projects
 
-Now Youtube video streaming is available by [FFmpeg-SIXEL](https://github.com/saitoha/FFmpeg-SIXEL) project.
+### Video streaming
 
-  [![FFmpeg-SIXEL](https://raw.githubusercontent.com/saitoha/libsixel/master/data/ffmpeg.png)](http://youtu.be/hqMh47lYHlc)
+Now Youtube video streaming is available over SIXEL protocol by [FFmpeg-SIXEL](https://github.com/saitoha/FFmpeg-SIXEL) project.
+
+  [![FFmpeg-SIXEL](https://raw.githubusercontent.com/saitoha/libsixel/data/data/ffmpeg.png)](http://youtu.be/hqMh47lYHlc)
+
+
+### SDL integration: Gaming, Virtualization, ...etc.
+
+[SDL1.2-SIXEL](https://github.com/saitoha/SDL1.2-SIXEL) project makes enable you to operate various GUI applications on the terminal.
+
+You can play "The Battle for Wesnoth" over SIXEL protocol.
+
+  [![SDL1.2-SIXEL WESNOTH](https://raw.githubusercontent.com/saitoha/libsixel/data/data/wesnoth.png)](http://youtu.be/aMUkN7TSct4)
+
+You can run QEMU on SIXEL terminals.
+
+  [![SDL1.2-SIXEL QEMU](https://raw.githubusercontent.com/saitoha/libsixel/data/data/qemu.png)](http://youtu.be/X6M5tgNjEuQ)
+
+[SDL1.2-SIXEL](https://github.com/saitoha/SDL1.2-SIXEL) can collaborate with [XSDL-SIXEL](https://github.com/saitoha/xserver-xsdl-sixel).
+
+  [![SDL1.2-SIXEL XSDL](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsdl.png)](http://youtu.be/UOTMGdUPYRo)
+
+
+### X11 on SIXEL terminals
+
+[XSIXEL](https://github.com/saitoha/xserver-sixel) is a kdrive server implementation for SIXEL terminals.
+
+  ![XSIXEL](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel.png)
+
+
+### W3M integration
+
+img2sixel(1) can be integrated with ![Arakiken's w3m fork(remoteimg branch)](https://bitbucket.org/arakiken/w3m/branch/remoteimg).
+
+  ![w3m-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel.png)
+
+
+### Twitter client integration
+
+  Now [mikutter](http://mikutter.hachune.net/) + [mikutterm](https://bitbucket.org/arakiken/mikutterm) works with libsixel inline-image extension.
+
 
 
 ## Terminal requirements
@@ -87,35 +126,35 @@ img2sixel(1) supports high quality color image quantization.
 
     $ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel
 
-  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_ppmtosixel.png)
+  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel.png)
 
 
 - ppmtosixel with Floyd–Steinberg dithering (netpbm)
 
     $ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel
 
-  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_ppmtosixel2.png)
+  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel2.png)
 
 
 - kmiya's sixel
 
     $ sixel -p16 images/snake.jpg
 
-  ![kmiya's sixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_sixel.png)
+  ![kmiya's sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixel.png)
 
 
 - PySixel (sixelconv command)
 
     $ sixelconv -n16 images/snake.jpg
 
-  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_sixelconv.png)
+  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixelconv.png)
 
 
 - libsixel (img2sixel command)
 
     $ img2sixel -p16 images/snake.jpg
 
-  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/master/data/q_libsixel.png)
+  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_libsixel.png)
 
 
 ## Build and install
@@ -212,7 +251,10 @@ Options:
                              histgram -> similar with average
                                          but considers color
                                          histgram
--w WIDTH, --width=WIDTH    resize image to specific width
+-c REGION, --crop=REGION   crop source image to fit the
+                           specified geometry. REGION should
+                           be formatted as '%dx%d+%d+%d'
+-w WIDTH, --width=WIDTH    resize image to specified width
                            WIDTH is represented by the
                            following syntax
                              auto       -> preserving aspect
@@ -223,7 +265,7 @@ Options:
                                            pixel counts
                              <number>px -> scale width with
                                            pixel counts
--h HEIGHT, --height=HEIGHT resize image to specific height
+-h HEIGHT, --height=HEIGHT resize image to specified height
                            HEIGHT is represented by the
                            following syntax
                              auto       -> preserving aspect
@@ -313,10 +355,10 @@ The Whole API is described [here](https://github.com/saitoha/libsixel/blob/maste
 
 ### Example
 
-If you use OSX, a tiny example is available 
+If you use OSX, a tiny example is available
 [here](https://github.com/saitoha/libsixel/blob/master/examples/osx/opengl/).
 
-  ![opengl example](https://raw.githubusercontent.com/saitoha/libsixel/master/data/example_opengl.gif)
+  ![opengl example](https://raw.githubusercontent.com/saitoha/libsixel/data/data/example_opengl.gif)
 
 ### Bitmap to SIXEL
 
@@ -381,7 +423,7 @@ typedef int (* sixel_write_function)(char *data, int size, void *priv);
 sixel_output_t *const
 sixel_output_create(
     sixel_write_function /* in */ fn_write, /* callback function for output sixel */
-    void /* in */ *priv                     /* private data given as 
+    void /* in */ *priv                     /* private data given as
 );                                             3rd argument of fn_write */
 
 /* increment reference count of output context object (thread-unsafe) */
@@ -458,16 +500,49 @@ This software derives from the following implementations.
 src/tosixel.c, src/fromsixel.c, and some part of converters/loader.c are
 derived from kmiya's "*sixel*" original version (2014-3-2)
 
-http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
+  Package: http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
 
-It is written by kmiya@culti.
+  Unofficial repo: https://github.com/saitoha/sixel
 
-He distributes it under very permissive license which permits
-useing, copying, modification, redistribution, and all other
-public activities without any restrictions.
+This work is written by kmiya@ culti. He distributes it under very permissive license.
 
-He declares this is compatible with MIT/BSD/GPL.
+The original license text(in Japanese only) is:
 
+```
+このプログラム及びソースコードの使用について個人・商用を問わず
+
+ご自由に使用していただいで結構です。
+
+また、配布・転載・紹介もご連絡の必要もありません。
+
+ソースの改変による配布も自由ですが、どのバージョンの改変かを
+
+明記されることを希望します。
+
+バージョン情報が無い場合は、配布物の年月日を明記されることを
+
+希望します。
+
+                  2014/10/05  kmiya
+```
+
+The unofficial translation:
+
+```
+Anyone is free to use this program for any purpose,
+commercial or non-commercial, without any restriction.
+
+Anyone is free to distribute, copy, publish, or
+advertise this software, without any contact.
+
+Anyone is free to distribute with modification of the
+source code, but I "hope" that its based version or
+date will be written clearly.
+
+                                    2014/10/05 kmiya
+```
+
+kmiya also said this is compatible with MIT/BSD/GPL.
 
 ### stbi-1.41
 
@@ -580,6 +655,11 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
   A monochrome SIXEL converter
 
 
+- [sdump](https://github.com/uobikiemukot/sdump)
+
+  SIXEL image dumper. It also provides a PDF viewer and a pager for multiple images.
+
+
 - [xpr(x11-apps)](ftp://ftp.x.org/pub/unsupported/programs/xpr/)
 
   xpr(1) can convert a xwd(X window dump) format image into a sixel
@@ -593,7 +673,7 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 
   Recent version of GNUPLOT supports new terminal driver "sixel".
 
-  ![GNUPLOT](https://raw.githubusercontent.com/saitoha/libsixel/master/data/gnuplot.png)
+  ![GNUPLOT](https://raw.githubusercontent.com/saitoha/libsixel/data/data/gnuplot.png)
 
 
 - [ghostscript](http://www.ghostscript.com/)
@@ -606,19 +686,46 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
     $ gs -q -r100x -dBATCH -dNOPAUSE -sDEVICE=ln03 -sOutputFile=- tiger.eps
   ```
 
-  ![GhostScript](https://raw.githubusercontent.com/saitoha/libsixel/master/data/gs.png)
+  ![GhostScript](https://raw.githubusercontent.com/saitoha/libsixel/data/data/gs.png)
 
-- ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
 
 - [ZX81 Emulator](http://rullf2.xs4all.nl/sg/zx81ce.html)
 
   A ZX81 emulator producing Sixel Image Files
 
-  ![ZX81](https://raw.githubusercontent.com/saitoha/libsixel/master/data/zx81.png)
+  ![ZX81](https://raw.githubusercontent.com/saitoha/libsixel/data/data/zx81.png)
+
+
+- [qrc](https://github.com/fumiyas/qrc)
+
+  QR code generator for terminals (ASCII Art, Sixel)
+
+  ![qrc](https://github.com/fumiyas/qrc/blob/master/qrc-demo.png)
+
+
+- [hiptext](https://github.com/jart/hiptext)
+
+  SIXEL format is supported by -sixel2, -sixel16 or -sixel256 option.
+
+  ![hiptext](https://camo.githubusercontent.com/fc973ffb20a7ff85969df03fd579da2845e62e68/68747470733a2f2f662e636c6f75642e6769746875622e636f6d2f6173736574732f313136323733392f323233393832362f39303361653765382d396335622d313165332d383462362d3539626261346661336430342e706e67)
+
+
+- [sixelslide](https://github.com/syuu1228/sixelslide)
+
+  Freestanding slideviewer using sixel graphics.
+  Currently runs on QEMU(i386), without any filesystem or network.
+
+  cf. http://www.slideshare.net/syuu1228/presentation-on-your-terminal
+
+
+- ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
+
 
 - [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
 
+
 - [SIXEL image viewer(written in javascript)](http://rullf2.xs4all.nl/sg/sg.html)
+
 
 - [SixelGraphics.jl(written in Julia)](https://github.com/olofsen/SixelGraphics.jl)
 

@@ -111,6 +111,7 @@ static const unsigned char pal_xterm256[] = {
     0xd0, 0xd0, 0xd0, 0xda, 0xda, 0xda, 0xe4, 0xe4, 0xe4, 0xee, 0xee, 0xee,
 };
 
+
 sixel_dither_t *
 sixel_dither_create(int ncolors)
 {
@@ -152,9 +153,7 @@ sixel_dither_create(int ncolors)
 void
 sixel_dither_destroy(sixel_dither_t *dither)
 {
-    if (dither->cachetable) {
-        free(dither->cachetable);
-    }
+    free(dither->cachetable);
     free(dither);
 }
 
@@ -251,6 +250,13 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
 void
 sixel_dither_set_diffusion_type(sixel_dither_t *dither, int method_for_diffuse)
 {
+    if (method_for_diffuse == DIFFUSE_AUTO) {
+        if (dither->ncolors > 16) {
+            method_for_diffuse = DIFFUSE_FS;
+        } else {
+            method_for_diffuse = DIFFUSE_ATKINSON;
+        }
+    }
     dither->method_for_diffuse = method_for_diffuse;
 }
 
@@ -276,50 +282,41 @@ sixel_dither_get_palette(sixel_dither_t /* in */ *dither)  /* dither context obj
 }
 
 
-int
-sixel_apply_palette(sixel_image_t *im)
+unsigned char *
+sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t *dither)
 {
     int ret;
-    unsigned char *src;
     int bufsize;
     int cachesize;
-    sixel_dither_t *dither;
+    unsigned char *dest;
 
-    dither = im->dither;
-    src = im->pixels;
-
-    if (im->borrowed) {
-        bufsize = im->sx * im->sy * sizeof(unsigned char);
-        im->pixels = malloc(bufsize);
-        if (im->pixels == NULL) {
-            return (-1);
-        }
-        im->borrowed = 0;
+    bufsize = width * height * sizeof(unsigned char);
+    dest = malloc(bufsize);
+    if (dest == NULL) {
+        return NULL;
     }
 
-    if (im->dither->cachetable == NULL) {
-        cachesize = (1 << 3 * 5) * sizeof(unsigned short);
+    if (dither->cachetable == NULL && dither->optimized) {
+        if (dither->palette != pal_mono_dark && dither->palette != pal_mono_light) {
+            cachesize = (1 << 3 * 5) * sizeof(unsigned short);
 #if HAVE_CALLOC
-        im->dither->cachetable = calloc(cachesize, 1);
+            dither->cachetable = calloc(cachesize, 1);
 #else
-        im->dither->cachetable = malloc(cachesize, 1);
-        memset(im->dither->cachetable, 0, cachesize);
+            dither->cachetable = malloc(cachesize);
+            memset(dither->cachetable, 0, cachesize);
 #endif
+        }
     }
 
-    ret = LSQ_ApplyPalette(src, im->sx, im->sy, 3,
+    ret = LSQ_ApplyPalette(pixels, width, height, 3,
                            dither->palette,
                            dither->ncolors,
                            dither->method_for_diffuse,
                            dither->optimized,
                            dither->cachetable,
-                           im->pixels);
+                           dest);
 
-    if (ret != 0) {
-        return ret;
-    }
-
-    return 0;
+    return dest;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */

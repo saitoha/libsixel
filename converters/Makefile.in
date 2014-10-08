@@ -416,7 +416,7 @@ dist_man_MANS = $(am__append_2) $(am__append_6)
 dist_bashcompletion_DATA = $(am__append_3)
 dist_zshcompletion_DATA = $(am__append_4)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
-CLEANFILES = *.gcno *.gcda *.gcov snake.png snake.sixel
+CLEANFILES = *.gcno *.gcda *.gcov snake1.png snake2.png snake2.sixel
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c scale.c malloc_stub.c loader.c frompnm.c \
 @WANT_IMG2SIXEL_TRUE@                    scale.h malloc_stub.h loader.h frompnm.h
 
