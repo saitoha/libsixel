@@ -141,6 +141,7 @@ sixel_dither_create(int ncolors)
     dither->origcolors = (-1);
     dither->keycolor = (-1);
     dither->optimized = 0;
+    dither->complexion = 1;
     dither->method_for_largest = LARGE_NORM;
     dither->method_for_rep = REP_CENTER_BOX;
     dither->method_for_diffuse = DIFFUSE_FS;
@@ -286,6 +287,13 @@ sixel_dither_get_palette(sixel_dither_t /* in */ *dither)  /* dither context obj
 }
 
 
+void
+sixel_dither_set_complexion_score(sixel_dither_t /* in */ *dither,  /* dither context object */
+                                  int            /* in */ score)    /* complexion score (>= 1) */
+{
+    dither->complexion = score;
+}
+
 unsigned char *
 sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t *dither)
 {
@@ -317,6 +325,7 @@ sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t
                            dither->ncolors,
                            dither->method_for_diffuse,
                            dither->optimized,
+                           dither->complexion,
                            dither->cachetable,
                            dest);
 

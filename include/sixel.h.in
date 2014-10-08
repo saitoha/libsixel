@@ -191,6 +191,9 @@ sixel_dither_get_num_of_histgram_colors(sixel_dither_t /* in */ *dither);  /* di
 unsigned char *
 sixel_dither_get_palette(sixel_dither_t /* in */ *dither);  /* dither context object */
 
+void
+sixel_dither_set_complexion_score(sixel_dither_t /* in */ *dither,  /* dither context object */
+                                  int            /* in */ score);   /* complexion score (>= 1) */
 #ifdef __cplusplus
 }
 #endif

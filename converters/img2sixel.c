@@ -178,6 +178,7 @@ typedef struct Settings {
     int finvert;
     int fuse_macro;
     int fignore_delay;
+    int complexion;
     int pixelwidth;
     int pixelheight;
     int percentwidth;
@@ -464,6 +465,9 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
     sixel_dither_set_diffusion_type(dither, psettings->method_for_diffuse);
 
+    if (psettings->complexion > 1) {
+        sixel_dither_set_complexion_score(dither, psettings->complexion);
+    }
 #if HAVE_SIGNAL
 # if HAVE_DECL_SIGINT
     signal(SIGINT, signal_handler);
@@ -715,6 +719,10 @@ void show_help()
             "                           DECDMAC and make terminal memorize\n"
             "                           SIXEL image. No image is shown if this\n"
             "                           option is specified\n"
+            "-C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE\n"
+            "                           specify an number argument for the\n"
+            "                           score of complexion correction.\n"
+            "                           COMPLEXIONSCORE must be 1 or more.\n"
             "-g, --ignore-delay         render GIF animation without delay\n"
             "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
             "                           choose diffusion method which used\n"
@@ -837,7 +845,7 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:ed:f:s:c:w:h:r:q:il:ugn:PVH";
+    char const *optstring = "78p:m:ed:f:s:c:w:h:r:q:il:ugn:PC:VH";
 
     settings_t settings = {
         -1,           /* reqcolors */
@@ -853,6 +861,7 @@ main(int argc, char *argv[])
         0,            /* finvert */
         0,            /* fuse_macro */
         0,            /* fignore_delay */
+        1,            /* complexion */
         -1,           /* pixelwidth */
         -1,           /* pixelheight */
         -1,           /* percentwidth */
@@ -870,27 +879,28 @@ main(int argc, char *argv[])
 
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
-        {"7bit-mode",    no_argument,        &long_opt, '7'},
-        {"8bit-mode",    no_argument,        &long_opt, '8'},
-        {"colors",       required_argument,  &long_opt, 'p'},
-        {"mapfile",      required_argument,  &long_opt, 'm'},
-        {"monochrome",   no_argument,        &long_opt, 'e'},
-        {"diffusion",    required_argument,  &long_opt, 'd'},
-        {"find-largest", required_argument,  &long_opt, 'f'},
-        {"select-color", required_argument,  &long_opt, 's'},
-        {"crop",         required_argument,  &long_opt, 'c'},
-        {"width",        required_argument,  &long_opt, 'w'},
-        {"height",       required_argument,  &long_opt, 'h'},
-        {"resampling",   required_argument,  &long_opt, 'r'},
-        {"quality",      required_argument,  &long_opt, 'q'},
-        {"invert",       no_argument,        &long_opt, 'i'},
-        {"loop-control", required_argument,  &long_opt, 'l'},
-        {"use-macro",    no_argument,        &long_opt, 'u'},
-        {"ignore-delay", no_argument,        &long_opt, 'g'},
-        {"macro-number", required_argument,  &long_opt, 'n'},
-        {"penetrate",    no_argument,        &long_opt, 'P'},
-        {"version",      no_argument,        &long_opt, 'V'},
-        {"help",         no_argument,        &long_opt, 'H'},
+        {"7bit-mode",        no_argument,        &long_opt, '7'},
+        {"8bit-mode",        no_argument,        &long_opt, '8'},
+        {"colors",           required_argument,  &long_opt, 'p'},
+        {"mapfile",          required_argument,  &long_opt, 'm'},
+        {"monochrome",       no_argument,        &long_opt, 'e'},
+        {"diffusion",        required_argument,  &long_opt, 'd'},
+        {"find-largest",     required_argument,  &long_opt, 'f'},
+        {"select-color",     required_argument,  &long_opt, 's'},
+        {"crop",             required_argument,  &long_opt, 'c'},
+        {"width",            required_argument,  &long_opt, 'w'},
+        {"height",           required_argument,  &long_opt, 'h'},
+        {"resampling",       required_argument,  &long_opt, 'r'},
+        {"quality",          required_argument,  &long_opt, 'q'},
+        {"invert",           no_argument,        &long_opt, 'i'},
+        {"loop-control",     required_argument,  &long_opt, 'l'},
+        {"use-macro",        no_argument,        &long_opt, 'u'},
+        {"ignore-delay",     no_argument,        &long_opt, 'g'},
+        {"macro-number",     required_argument,  &long_opt, 'n'},
+        {"penetrate",        no_argument,        &long_opt, 'P'},
+        {"complexion-score", required_argument,  &long_opt, 'C'},
+        {"version",          no_argument,        &long_opt, 'V'},
+        {"help",             no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
@@ -1123,6 +1133,14 @@ main(int argc, char *argv[])
             break;
         case 'P':
             settings.penetrate_multiplexer = 1;
+            break;
+        case 'C':
+            settings.complexion = atoi(optarg);
+            if (settings.complexion < 1) {
+                fprintf(stderr,
+                        "complexion parameter must be 1 or more.\n");
+                goto argerr;
+            }
             break;
         case 'V':
             settings.show_version = 1;
