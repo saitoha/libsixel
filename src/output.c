@@ -20,25 +20,70 @@
  */
 
 #include "config.h"
+#include <stdio.h>
 #include <stdlib.h>
+#include "output.h"
 #include "sixel.h"
 
-LSOutputContextPtr const
-LSOutputContext_create(putchar_function fn_putchar, printf_function fn_printf)
+
+sixel_output_t * const
+sixel_output_create(sixel_write_function fn_write, void *priv)
 {
-    LSOutputContextPtr context = (LSOutputContextPtr)malloc(sizeof(LSOutputContext));
-    context->has_8bit_control = 0;
-    context->has_sdm_glitch = 0;
-    context->fn_putchar = fn_putchar;
-    context->fn_printf = fn_printf;
-    return context;
+    sixel_output_t *output;
+   
+    output = malloc(sizeof(sixel_output_t) + SIXEL_OUTPUT_PACKET_SIZE * 2);
+    output->ref = 1;
+    output->has_8bit_control = 0;
+    output->has_sdm_glitch = 0;
+    output->fn_write = fn_write;
+    output->save_pixel = 0;
+    output->save_count = 0;
+    output->active_palette = (-1);
+    output->node_top = NULL;
+    output->node_free = NULL;
+    output->priv = priv;
+    output->pos = 0;
+
+    return output;
+}
+
+
+void
+sixel_output_destroy(sixel_output_t *output)
+{
+    free(output);
+}
+
+
+void
+sixel_output_ref(sixel_output_t *output)
+{
+    /* TODO: be thread-safe */
+    ++output->ref;
 }
 
 void
-LSOutputContext_destroy(LSOutputContextPtr context)
+sixel_output_unref(sixel_output_t *output)
 {
-    free(context);
+    /* TODO: be thread-safe */
+    if (output && --output->ref == 0) {
+        sixel_output_destroy(output);
+    }
 }
+
+int
+sixel_output_get_8bit_availability(sixel_output_t *output)
+{
+    return output->has_8bit_control;
+}
+
+
+void
+sixel_output_set_8bit_availability(sixel_output_t *output, int availability)
+{
+    output->has_8bit_control = availability;
+}
+
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

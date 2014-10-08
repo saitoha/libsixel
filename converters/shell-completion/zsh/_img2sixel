@@ -1,0 +1,108 @@
+#compdef img2sixel
+# ------------------------------------------------------------------------------
+# Description
+# -----------
+#
+#  Completion script for img2sixel (https://github.com/saitoha/libsixel)
+#
+# ------------------------------------------------------------------------------
+# Author
+# -------
+#
+#  * Hayaki Saito (https://github.com/saitoha)
+#
+# ------------------------------------------------------------------------------
+
+_diffusiontype() {
+  _values \
+    'DIFFUSIONTYPE' \
+    'auto[choose diffusion type automatically (default)]' \
+    'none[do not diffuse]' \
+    'fs[Floyd-Steinberg method]' \
+    "atkinson[Bill Atkinson's method]" \
+    'jajuni[Jarvis, Judice & Ninke method]' \
+    "stucki[Stucki's method]" \
+    "burkes[Burkes' method]"
+}
+
+_findtype() {
+  _values \
+    'FINDTYPE' \
+    'auto[choose finding method automatically (default)]' \
+    'norm[simply comparing the range in RGB space]' \
+    'lum[transforming into luminosities before the comparison]'
+}
+
+_selecttype() {
+  _values \
+    'SELECTTYPE' \
+    'auto[choose selecting method automatically (default)]' \
+    'center[choose the center of the box]' \
+    'average[caclulate the color average into the box]' \
+    'histgram[similar with average but considers color histgram]'
+}
+
+_resamplingtype() {
+  _values \
+    'RESAMPLINGTYPE' \
+    'nearest[Nearest-Neighbor method]' \
+    'gaussian[Gaussian filter]' \
+    'hanning[Hanning filter]' \
+    'hamming[Hamming filter]' \
+    'bilinear[Bilinear filter (default)]' \
+    'welsh[Welsh filter]' \
+    'bicubic[Bicubic filter]' \
+    'lanczos2[Lanczos2 filter]' \
+    'lanczos3[Lanczos3 filter]' \
+    'lanczos3[Lanczos4 filter]'
+}
+
+_qualitytype() {
+  _values \
+    'QUALITYTYPE' \
+    'auto[decide quality mode automatically (default)]' \
+    'high[high quality and low speed mode]' \
+    'low[low quality and high speed mode]'
+}
+
+_looptype() {
+  _values \
+    'LOOPTYPE' \
+    'auto[honor the setting of GIF header (default)]' \
+    'force[always enable loop]' \
+    'disable[always disable loop]'
+}
+
+_arguments -S -s -A "-*" -S \
+  {-7,--7bit-mode}'[generate a sixel image for 7bit terminals (default)]' \
+  {-8,--8bit-mode}'[generate a sixel image for 8bit terminals]' \
+  {-p,--colors=}'[specify number of colors to reduce the image to]' \
+  {-m,--mapfile=}'[transform image colors to match specified set of colors]':files:_files \
+  {-e,--monochrome}'[output monochrome sixel image]' \
+  {-i,--invert}'[assume the terminal background color is white]' \
+  {-u,--use-macro}'[use DECDMAC and DECINVM for GIF animation]' \
+  {-n,--macro-number}'[specify a number argument for DECDMAC]' \
+  {-g,--ignore-delay}'[render GIF animation without delay]' \
+  {-d,--diffusion=}'[choose diffusion method which used with -p option]':diffusiontype:_diffusiontype \
+  {-f,--find-largest=}'[method for finding the largest dimention in median-cut]':findtype:_findtype \
+  {-s,--select-color=}'[method for selecting color from median-cut boxes]':selecttype:_selecttype \
+  {-c,--crop=}'[crop image to specified geometory(%dx%d+%d+%d)]' \
+  {-w,--width=}'[resize image to specified width]' \
+  {-h,--height=}'[resize image to specified height]' \
+  {-r,--resampling=}'[choose resampling filter used with -w or -h option]':resamplingtype:_resamplingtype \
+  {-q,--quality=}'[select quality of color quanlization]':qualitytype:_qualitytype \
+  {-l,--loop-control=}'[select loop control mode of GIF animation]':looptype:_looptype \
+  {-V,--version}'[show version and license information]' \
+  {-H,--help}'[show help]' \
+  '*:files:_files' \
+  && return 0
+
+return 1
+
+# Local Variables:
+# mode: Shell-Script
+# sh-indentation: 2
+# indent-tabs-mode: nil
+# sh-basic-offset: 2
+# End:
+# vim: ft=zsh sw=2 ts=2 et

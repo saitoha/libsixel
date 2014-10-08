@@ -23,156 +23,90 @@
 # include <inttypes.h>
 #endif
 
+#include "output.h"
+#include "dither.h"
 #include "sixel.h"
-
-/* exported function */
-extern int
-LibSixel_LSImageToSixel(LSImagePtr im,
-                        LSOutputContextPtr context);
 
 /* implementation */
 
-typedef struct _SixNode {
-    struct _SixNode *next;
-    int pal;
-    int sx;
-    int mx;
-    unsigned char *map;
-} SixNode;
-
-static SixNode *node_top = NULL;
-static SixNode *node_free = NULL;
-
-static int save_pix = 0;
-static int save_count = 0;
-static int act_palet = (-1);
-
-static long use_palet[PALETTE_MAX];
-static unsigned char conv_palet[PALETTE_MAX];
+static void
+sixel_advance(sixel_output_t *context, int nwrite)
+{
+    if ((context->pos += nwrite) >= SIXEL_OUTPUT_PACKET_SIZE) {
+        context->fn_write((char *)context->buffer, SIXEL_OUTPUT_PACKET_SIZE, context->priv);
+        memcpy(context->buffer,
+               context->buffer + SIXEL_OUTPUT_PACKET_SIZE,
+               (context->pos -= SIXEL_OUTPUT_PACKET_SIZE));
+    }
+}
 
 
 static int
-PutFlash(LSOutputContextPtr const context)
+sixel_put_flash(sixel_output_t *const context)
 {
     int n;
     int ret;
+    char buf[256];
+    int nwrite;
 
 #if defined(USE_VT240)        /* VT240 Max 255 ? */
-    while (save_count > 255) {
-        ret = context->fn_printf("!%d%c", 255, save_pix);
-        if (ret <= 0) {
+    while (context->save_count > 255) {
+        nwrite = spritf((char *)context->buffer + context->pos, "!255%c", context->save_pixel);
+        if (nwrite <= 0) {
             return (-1);
         }
-        save_count -= 255;
+        sixel_advance(context, nwrite);
+        context->save_count -= 255;
     }
 #endif  /* defined(USE_VT240) */
 
-    if (save_count > 3) {
+    if (context->save_count > 3) {
         /* DECGRI Graphics Repeat Introducer ! Pn Ch */
-
-        ret = context->fn_printf("!%d%c", save_count, save_pix);
-        if (ret <= 0) {
+        nwrite = sprintf((char *)context->buffer + context->pos, "!%d%c", context->save_count, context->save_pixel);
+        if (nwrite <= 0) {
             return (-1);
         }
-
+        sixel_advance(context, nwrite);
     } else {
-        for (n = 0 ; n < save_count ; n++) {
-            ret = context->fn_putchar(save_pix);
-            if (ret <= 0) {
-                return (-1);
-            }
+        for (n = 0; n < context->save_count; n++) {
+            context->buffer[context->pos] = (char)context->save_pixel;
+            sixel_advance(context, 1);
         }
     }
 
-    save_pix = 0;
-    save_count = 0;
+    context->save_pixel = 0;
+    context->save_count = 0;
 
     return 0;
 }
 
 
 static void
-PutPixel(LSOutputContextPtr const context, int pix)
+sixel_put_pixel(sixel_output_t *const context, int pix)
 {
-    if (pix < 0 || pix > 63) {
+    if (pix < 0 || pix > '?') {
         pix = 0;
     }
 
     pix += '?';
 
-    if (pix == save_pix) {
-        save_count++;
+    if (pix == context->save_pixel) {
+        context->save_count++;
     } else {
-        PutFlash(context);
-        save_pix = pix;
-        save_count = 1;
+        sixel_put_flash(context);
+        context->save_pixel = pix;
+        context->save_count = 1;
     }
 }
 
 
 static void
-PutPalet(LSOutputContextPtr context,
-         LSImagePtr im,
-         int pal)
+sixel_node_del(sixel_output_t *const context, sixel_node_t *np)
 {
-    /* designate palette index */
-    if (act_palet != pal) {
-        context->fn_printf("#%d", conv_palet[pal]);
-        act_palet = pal;
-    }
-}
+    sixel_node_t *tp;
 
-
-static int
-PutCr(LSOutputContextPtr context)
-{
-    int ret;
-
-    /* DECGCR Graphics Carriage Return */
-    /* x = 0; */
-    ret = context->fn_printf("$\n");
-    if (ret <= 0) {
-        return (-1);
-    }
-    return 0;
-}
-
-
-static int
-PutLf(LSOutputContextPtr context)
-{
-    int ret;
-
-    /* DECGNL Graphics Next Line */
-    /* x = 0; */
-    /* y += 6; */
-    ret = context->fn_printf("-\n");
-    if (ret <= 0) {
-        return (-1);
-    }
-    return 0;
-}
-
-
-static void
-NodeFree()
-{
-    SixNode *np;
-
-    while ((np = node_free) != NULL) {
-        node_free = np->next;
-        free(np);
-    }
-}
-
-
-static void
-NodeDel(SixNode *np)
-{
-    SixNode *tp;
-
-    if ((tp = node_top) == np) {
-        node_top = np->next;
+    if ((tp = context->node_top) == np) {
+        context->node_top = np->next;
     }
 
     else {
@@ -185,172 +119,121 @@ NodeDel(SixNode *np)
         }
     }
 
-    np->next = node_free;
-    node_free = np;
+    np->next = context->node_free;
+    context->node_free = np;
 }
 
 
 static int
-NodeAdd(int pal, int sx, int mx, unsigned char *map)
+sixel_put_node(sixel_output_t *const context, int x,
+        sixel_node_t *np, int ncolors, int keycolor)
 {
-    SixNode *np, *tp, top;
+    int nwrite;
 
-    if ((np = node_free) != NULL) {
-        node_free = np->next;
-    } else if ((np = (SixNode *)malloc(sizeof(SixNode))) == NULL) {
-        return (-1);
-    }
-
-    np->pal = pal;
-    np->sx = sx;
-    np->mx = mx;
-    np->map = map;
-
-    top.next = node_top;
-    tp = &top;
-
-    while (tp->next != NULL) {
-        if (np->sx < tp->next->sx) {
-            break;
-        } else if (np->sx == tp->next->sx && np->mx > tp->next->mx) {
-            break;
-        }
-        tp = tp->next;
-    }
-
-    np->next = tp->next;
-    tp->next = np;
-    node_top = top.next;
-
-    return 0;
-}
-
-
-static int
-NodeLine(int pal, int width, unsigned char *map)
-{
-    int sx, mx, n;
-    int ret;
-
-    for (sx = 0 ; sx < width ; sx++) {
-        if (map[sx] == 0) {
-            continue;
-        }
-
-        for (mx = sx + 1 ; mx < width ; mx++) {
-            if (map[mx] != 0) {
-                continue;
-            }
-
-            for (n = 1 ; (mx + n) < width ; n++) {
-                if (map[mx + n] != 0) {
-                    break;
-                }
-            }
-
-            if (n >= 10 || (mx + n) >= width) {
-                break;
-            }
-            mx = mx + n - 1;
-        }
-
-        ret = NodeAdd(pal, sx, mx, map);
-        if (ret != 0) {
-            return ret;
-        }
-        sx = mx - 1;
-    }
-
-    return 0;
-}
-
-
-static int
-PutNode(LSOutputContextPtr context, LSImagePtr im, int x, SixNode *np)
-{
-    if (im->ncolors != 2 || im->keycolor == -1) {
-        PutPalet(context, im, np->pal);
-    }
-
-    for (; x < np->sx ; x++) {
-        if (x != im->keycolor) {
-            PutPixel(context, 0);
+    if (ncolors != 2 || keycolor == -1) {
+        /* designate palette index */
+        if (context->active_palette != np->pal) {
+            nwrite = sprintf((char *)context->buffer + context->pos,
+                             "#%d", context->conv_palette[np->pal]);
+            sixel_advance(context, nwrite);
+            context->active_palette = np->pal;
         }
     }
 
-    for (; x < np->mx ; x++) {
-        if (x != im->keycolor) {
-            PutPixel(context, np->map[x]);
+    for (; x < np->sx; x++) {
+        if (x != keycolor) {
+            sixel_put_pixel(context, 0);
         }
     }
 
-    PutFlash(context);
+    for (; x < np->mx; x++) {
+        if (x != keycolor) {
+            sixel_put_pixel(context, np->map[x]);
+        }
+    }
+
+    sixel_put_flash(context);
 
     return x;
 }
 
 
-int
-LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
+static int
+sixel_encode_impl(unsigned char *pixels, int width, int height,
+                  unsigned char *palette, int ncolors, int keycolor,
+                  sixel_output_t *context)
 {
     int x, y, i, n, c;
-    int maxPalet;
-    int width, height;
+    int sx, mx;
     int len, pix, skip;
-    int back = (-1);
     int ret;
     unsigned char *map;
-    SixNode *np;
-    unsigned char list[PALETTE_MAX];
+    sixel_node_t *np, *tp, top;
+    unsigned char list[SIXEL_PALETTE_MAX];
+    char buf[256];
+    int nwrite;
 
-    width  = im->sx;
-    height = im->sy;
+    context->pos = 0;
 
-    maxPalet = im->ncolors;
-    back = im->keycolor;
-    len = maxPalet * width;
+    if (ncolors < 1) {
+        return (-1);
+    }
+    len = ncolors * width;
+    context->active_palette = (-1);
 
+#if HAVE_CALLOC
+    if ((map = (unsigned char *)calloc(len, sizeof(unsigned char))) == NULL) {
+        return (-1);
+    }
+#else
     if ((map = (unsigned char *)malloc(len)) == NULL) {
         return (-1);
     }
-
     memset(map, 0, len);
-
-    for (n = 0 ; n < maxPalet ; n++) {
-        conv_palet[n] = list[n] = n;
+#endif
+    for (n = 0; n < ncolors; n++) {
+        context->conv_palette[n] = list[n] = n;
     }
 
     if (context->has_8bit_control) {
-        ret = context->fn_printf("\x90q");
+        nwrite = sprintf((char *)context->buffer, "\x90" "0;0;0" "q");
     } else {
-        ret = context->fn_printf("\x1bPq");
+        nwrite = sprintf((char *)context->buffer, "\x1bP" "0;0;0" "q");
     }
-    if (ret <= 0) {
+    if (nwrite <= 0) {
         return (-1);
     }
-    ret = context->fn_printf("\"1;1;%d;%d\n", width, height);
-    if (ret <= 0) {
+    sixel_advance(context, nwrite);
+    nwrite = sprintf((char *)context->buffer + context->pos, "\"1;1;%d;%d", width, height);
+    if (nwrite <= 0) {
         return (-1);
     }
+    sixel_advance(context, nwrite);
 
-    if (im->ncolors != 2 || im->keycolor == -1) {
-        for (n = 0 ; n < maxPalet ; n++) {
+    if (ncolors != 2 || keycolor == -1) {
+        for (n = 0; n < ncolors; n++) {
             /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
-            ret = context->fn_printf("#%d;2;%d;%d;%d",
-                                     conv_palet[n],
-                                     (im->red[n] * 100 + 127) / 255,
-                                     (im->green[n] * 100 + 127) / 255,
-                                     (im->blue[n] * 100 + 127) / 255);
-            if (ret <= 0) {
+            nwrite = sprintf((char *)context->buffer + context->pos, "#%d;2;%d;%d;%d",
+                             context->conv_palette[n],
+                             (palette[n * 3 + 0] * 100 + 127) / 255,
+                             (palette[n * 3 + 1] * 100 + 127) / 255,
+                             (palette[n * 3 + 2] * 100 + 127) / 255);
+            if (nwrite <= 0) {
+                return (-1);
+            }
+            sixel_advance(context, nwrite);
+            if (nwrite <= 0) {
                 return (-1);
             }
         }
+        context->buffer[context->pos] = '\n';
+        sixel_advance(context, 1);
     }
 
-    for (y = i = 0 ; y < height ; y++) {
-        for (x = 0 ; x < width ; x++) {
-            pix = im->pixels[y * width + x];
-            if (pix >= 0 && pix < maxPalet && pix != back) {
+    for (y = i = 0; y < height; y++) {
+        for (x = 0; x < width; x++) {
+            pix = pixels[y * width + x];
+            if (pix >= 0 && pix < ncolors && pix != keycolor) {
                 map[pix * width + x] |= (1 << i);
             }
         }
@@ -359,25 +242,72 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
             continue;
         }
 
-        for (n = 0 ; n < maxPalet ; n++) {
-            ret = NodeLine(n, width, map + n * width);
-            if (ret != 0) {
-                return ret;
-            }
-        }
+        for (c = 0; c < ncolors; c++) {
+            for (sx = 0; sx < width; sx++) {
+                if (*(map + c * width + sx) == 0) {
+                    continue;
+                }
 
-        for (x = 0 ; (np = node_top) != NULL ;) {
-            if (x > np->sx) {
-                ret = PutCr(context);
-                if (ret != 0) {
+                for (mx = sx + 1; mx < width; mx++) {
+                    if (*(map + c * width + mx) != 0) {
+                        continue;
+                    }
+
+                    for (n = 1; (mx + n) < width; n++) {
+                        if (*(map + c * width + mx + n) != 0) {
+                            break;
+                        }
+                    }
+
+                    if (n >= 10 || (mx + n) >= width) {
+                        break;
+                    }
+                    mx = mx + n - 1;
+                }
+
+                if ((np = context->node_free) != NULL) {
+                    context->node_free = np->next;
+                } else if ((np = (sixel_node_t *)malloc(sizeof(sixel_node_t))) == NULL) {
                     return (-1);
                 }
+
+                np->pal = c;
+                np->sx = sx;
+                np->mx = mx;
+                np->map = map + c * width;
+
+                top.next = context->node_top;
+                tp = &top;
+
+                while (tp->next != NULL) {
+                    if (np->sx < tp->next->sx) {
+                        break;
+                    } else if (np->sx == tp->next->sx && np->mx > tp->next->mx) {
+                        break;
+                    }
+                    tp = tp->next;
+                }
+
+                np->next = tp->next;
+                tp->next = np;
+                context->node_top = top.next;
+
+                sx = mx - 1;
+            }
+
+        }
+
+        for (x = 0; (np = context->node_top) != NULL;) {
+            if (x > np->sx) {
+                /* DECGCR Graphics Carriage Return */
+                context->buffer[context->pos] = '$';
+                sixel_advance(context, 1);
                 x = 0;
             }
 
-            x = PutNode(context, im, x, np);
-            NodeDel(np);
-            np = node_top;
+            x = sixel_put_node(context, x, np, ncolors, keycolor);
+            sixel_node_del(context, np);
+            np = context->node_top;
 
             while (np != NULL) {
                 if (np->sx < x) {
@@ -385,14 +315,16 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
                     continue;
                 }
 
-                x = PutNode(context, im, x, np);
-                NodeDel(np);
-                np = node_top;
+                x = sixel_put_node(context, x, np, ncolors, keycolor);
+                sixel_node_del(context, np);
+                np = context->node_top;
             }
         }
 
-        ret = PutLf(context);
-        if (ret != 0) {
+        /* DECGNL Graphics Next Line */
+        context->buffer[context->pos] = '-';
+        sixel_advance(context, 1);
+        if (nwrite <= 0) {
             return (-1);
         }
 
@@ -401,19 +333,62 @@ LibSixel_LSImageToSixel(LSImagePtr im, LSOutputContextPtr context)
     }
 
     if (context->has_8bit_control) {
-        ret = context->fn_printf("\x9c");
+        context->buffer[context->pos] = '\x9c';
+        sixel_advance(context, 1);
     } else {
-        ret = context->fn_printf("\x1b\\");
+        context->buffer[context->pos] = '\x1b';
+        context->buffer[context->pos + 1] = '\\';
+        sixel_advance(context, 2);
     }
-    if (ret <= 0) {
+    if (nwrite <= 0) {
         return (-1);
     }
 
-    NodeFree();
+    /* flush buffer */
+    if (context->pos > 0) {
+        context->fn_write((char *)context->buffer, context->pos, context->priv);
+    }
+
+    /* free nodes */
+    while ((np = context->node_free) != NULL) {
+        context->node_free = np->next;
+        free(np);
+    }
+
     free(map);
 
     return 0;
 }
+
+int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
+                 int            /* in */ width,     /* image width */
+                 int            /* in */ height,    /* image height */
+                 int            /* in */ depth,     /* pixel depth */
+                 sixel_dither_t /* in */ *dither,   /* dither context */
+                 sixel_output_t /* in */ *context)  /* output context */
+{
+    int ret;
+    unsigned char *paletted_pixels;
+
+    sixel_dither_ref(dither);
+
+    /* apply palette */
+    paletted_pixels = sixel_apply_palette(pixels, width, height, dither);
+    if (paletted_pixels == NULL) {
+        sixel_dither_unref(dither);
+        return (-1);
+    }
+
+    sixel_encode_impl(paletted_pixels, width, height,
+                      dither->palette, dither->ncolors,
+                      dither->keycolor, context);
+
+    sixel_dither_unref(dither);
+    free(paletted_pixels);
+
+    return 0;
+}
+
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

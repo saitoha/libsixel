@@ -3,6 +3,11 @@
 *.lo
 *.o
 
+# gcov
+*.gcno
+*.gcda
+*.gcov
+
 # Compiled Dynamic libraries
 *.so
 *.dylib
@@ -11,6 +16,9 @@
 *.lai
 *.la
 *.a
+
+# Compiled Executable binary
+*.exe
 
 # swap files
 *.swp
@@ -35,5 +43,19 @@ stamp-h1
 # OSX
 .DS_Store
 
+# editor
+*.un~
+
 # project.vim
 .vimprojects
+
+# project specific
+wic_install.reg
+wic_uninstall.reg
+libsixel.pc
+package.json.in
+include/sixel.h
+converters/snake.png
+converters/img2sixel
+converters/sixel2png
+converters/snake.sixel
