@@ -309,6 +309,8 @@ Options:
                                        GIF header (default)
                              force   -> always enable loop
                              disable -> always disable loop
+-P --penetrate             penetrate GNU Screen using DCS
+                           pass-through sequence
 -V, --version              show version and license info
 -H, --help                 show this help
 ```
