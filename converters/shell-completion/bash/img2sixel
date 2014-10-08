@@ -27,6 +27,15 @@ _img2sixel()
         _filedir
         return 0
         ;;
+    -C|--complexion-score)
+        COMPREPLY=( $( compgen -W '1 \
+                                   2 \
+                                   3 \
+                                   4 \
+                                   5 \
+                                   6' -- "$cur" ) )
+        return 0
+        ;;
     -d|--diffusion)
         COMPREPLY=( $( compgen -W 'auto \
                                    none \
@@ -88,7 +97,9 @@ _img2sixel()
                                    -i --invert \
                                    -u --use-macro \
                                    -n --macro-number \
+                                   -C --complexion-score \
                                    -g --ignore-delay \
+                                   -S --static \
                                    -d --diffusion \
                                    -f --find-largest \
                                    -s --select-color \
@@ -98,6 +109,7 @@ _img2sixel()
                                    -r --resampling \
                                    -q --quality \
                                    -l --loop-control \
+                                   -P --penetrate \
                                    -V --version \
                                    -H --help \
                                   ' -- "$cur" ))
