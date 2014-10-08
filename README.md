@@ -208,6 +208,7 @@ Options:
                            SIXEL image. No image is shown if this
                            option is specified
 -g, --ignore-delay         render GIF animation without delay
+-S, --static               render animated GIF as a static image
 -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
                            choose diffusion method which used
                            with -p option (color reduction)

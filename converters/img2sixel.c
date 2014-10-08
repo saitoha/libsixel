@@ -722,6 +722,7 @@ void show_help()
             "                           SIXEL image. No image is shown if this\n"
             "                           option is specified\n"
             "-g, --ignore-delay         render GIF animation without delay\n"
+            "-S, --static               render animated GIF as a static image\n"
             "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
             "                           choose diffusion method which used\n"
             "                           with -p option (color reduction)\n"
