@@ -63,10 +63,44 @@ img2sixel(1) can be integrated with ![Arakiken's w3m fork(remoteimg branch)](htt
   ![w3m-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel.png)
 
 
+![Arakiken's GNU Screen fork(sixel branch)](https://bitbucket.org/arakiken/screen/branch/sixel) works with this.
+
+  ![w3m-sixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel-screen.png)
+
+
 ### Twitter client integration
+
+#### [arakiken's mikutterm(mikutterm-sixel)](https://bitbucket.org/arakiken/mikutterm/branch/sixel)
 
   Now [mikutter](http://mikutter.hachune.net/) + [mikutterm](https://bitbucket.org/arakiken/mikutterm) works with libsixel inline-image extension.
 
+  SIXEL works with old powerless machines such as
+
+  [NetBSD/luna68k](http://wiki.netbsd.org/ports/luna68k/):
+
+  ![mikutterm-netbsd-luna68k](https://raw.githubusercontent.com/saitoha/libsixel/data/data/mikutterm-netbsd-luna68k.jpg)
+
+  [NetBSD/hp300](http://wiki.netbsd.org/ports/hp300/) (here is HP9000/425e):
+
+  ![mikutterm-netbsd-hp9000](https://raw.githubusercontent.com/saitoha/libsixel/data/data/mikutterm-netbsd-hp9000.jpg)
+
+
+#### [arakiken's tw(tw-sixel)](https://bitbucket.org/arakiken/tw/branch/sixel)
+
+  [arakiken's tw(tw-sixel)](https://bitbucket.org/arakiken/tw/branch/sixel) works with libsixel inline-image extension.
+
+  SIXEL works with old powerless machines such as [OpenBSD/luna88k](http://www.openbsd.org/luna88k.html):
+
+  ![mikutterm-netbsd-hp9000](https://raw.githubusercontent.com/saitoha/libsixel/data/data/tw-openbsd-luna88k.jpg)
+
+
+#### [sayaka-chan](https://github.com/isaki68k/sayaka/)
+
+  [sayaka-chan](https://github.com/isaki68k/sayaka/) works with libsixel inline-image extension.
+
+  SIXEL works with old powerless machines such as [NetBSD/x68k](http://wiki.netbsd.org/ports/x68k/):
+
+  ![sayaka-chan](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sayaka-netbsd-x68k.jpg)
 
 
 ## Terminal requirements
@@ -494,6 +528,16 @@ The MIT License (MIT)
 > IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 > CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+## Contributers
+
+- @arakiken
+- @elfring 
+- @knok
+- @mattn
+- @ttdoda
+- @uobikiemukot
+- @yoshikaw
+  
 ## Acknowledgment
 
 This software derives from the following implementations.
@@ -706,6 +750,13 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
   ![qrc](https://github.com/fumiyas/qrc/blob/master/qrc-demo.png)
 
 
+ - [go-sixel](https://github.com/mattn/go-sixel)
+
+  SIXEL encoder/decoder and command line tools writtern in golang.
+
+  ![go-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/go-sixel.png)
+
+
 - [hiptext](https://github.com/jart/hiptext)
 
   SIXEL format is supported by -sixel2, -sixel16 or -sixel256 option.
@@ -717,6 +768,8 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 
   Freestanding slideviewer using sixel graphics.
   Currently runs on QEMU(i386), without any filesystem or network.
+
+  ![Animation](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixelslide.png)
 
   cf. http://www.slideshare.net/syuu1228/presentation-on-your-terminal
 
