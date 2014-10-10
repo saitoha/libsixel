@@ -238,46 +238,6 @@ prepare_palette(unsigned char *frame, int sx, int sy, settings_t *psettings)
 }
 
 
-static int
-printf_hex(char const *fmt, ...)
-{
-    char buffer[128];
-    char hex[256];
-    int i;
-    int j;
-    size_t len;
-    va_list ap;
-
-    va_start(ap, fmt);
-    vsprintf(buffer, fmt, ap);
-    va_end(ap);
-
-    len = strlen(buffer);
-    for (i = j = 0; i < len; ++i, ++j) {
-        hex[j] = (buffer[i] >> 4) & 0xf;
-        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
-        hex[++j] = buffer[i] & 0xf;
-        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
-    }
-
-    return fwrite(hex, 1, len * 2, stdout);
-}
-
-
-static int
-putchar_hex(int c)
-{
-    char hex[2];
-
-    hex[0] = (c >> 4) & 0xf;
-    hex[0] += (hex[0] < 10 ? '0' : ('a' - 10));
-    hex[1] = c & 0xf;
-    hex[1] += (hex[1] < 10 ? '0' : ('a' - 10));
-    fwrite(hex, 1, 2, stdout);
-
-    return c;
-}
-
 static void
 clip(unsigned char *pixels, int sx, int sy, int cx, int cy, int cw, int ch)
 {
