@@ -152,6 +152,15 @@ Now SIXEL feature is supported by the following terminals.
   [https://github.com/saitoha/seq2gif](https://github.com/saitoha/seq2gif)
 
 
+## Packages
+
+- [FreeBSD ports](http://portsmon.freebsd.org/portoverview.py?category=graphics&portname=libsixel)
+- [DPorts](https://github.com/DragonFlyBSD/DPorts/tree/master/graphics/libsixel)
+- [pkgsrc](http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/graphics/libsixel/)
+- [Homebrew tap](https://github.com/aki017/homebrew-sixel)
+- [yacp](https://github.com/fd00/yacp/tree/master/libsixel)
+- [Debian](https://ftp-master.debian.org/new/libsixel_1.1.2-1.html)
+
 ## Quantization quality
 
 img2sixel(1) supports high quality color image quantization.
@@ -750,7 +759,7 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
   ![qrc](https://github.com/fumiyas/qrc/blob/master/qrc-demo.png)
 
 
- - [go-sixel](https://github.com/mattn/go-sixel)
+- [go-sixel](https://github.com/mattn/go-sixel)
 
   SIXEL encoder/decoder and command line tools writtern in golang.
 
