@@ -310,7 +310,6 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
                   int *pcomp, int *pstride,
                   int *pframe_count, int *ploop_count, int **ppdelay)
 {
-    FILE *f;
     unsigned char *p;
     unsigned char *pixels;
     static stbi__context s;

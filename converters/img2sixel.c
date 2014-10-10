@@ -120,7 +120,6 @@ prepare_monochrome_palette(finvert)
 static sixel_dither_t *
 prepare_specified_palette(char const *mapfile, int reqcolors)
 {
-    FILE *f;
     unsigned char *mappixels;
     sixel_dither_t *dither;
     int map_sx;
@@ -381,7 +380,6 @@ static int
 convert_to_sixel(char const *filename, settings_t *psettings)
 {
     unsigned char *pixels = NULL;
-    unsigned char *frame = NULL;
     unsigned char **frames = NULL;
     unsigned char *mappixels = NULL;
     unsigned char *p = NULL;
@@ -391,11 +389,9 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int frame_count = 1;
     int loop_count = 1;
     int *delays = NULL;
-    int i;
     int c;
     int n;
     int nret = -1;
-    FILE *f;
     int dulation = 0;
     int lag = 0;
     clock_t start;
@@ -830,7 +826,6 @@ int
 main(int argc, char *argv[])
 {
     int n;
-    int filecount = 1;
     int long_opt;
     int unknown_opt = 0;
 #if HAVE_GETOPT_LONG

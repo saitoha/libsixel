@@ -181,7 +181,6 @@ newColorMap(unsigned int const newcolors, unsigned int const depth)
 {
     tupletable2 colormap;
     unsigned int i;
-    tupletable table;
 
     colormap.size = 0;
     colormap.table = alloctupletable(depth, newcolors);
@@ -610,7 +609,6 @@ computeHistogram(unsigned char *data,
     unit_t *refmap;
     unit_t *ref;
     unit_t *it;
-    struct tupleint *t;
     unsigned int index;
     unsigned int step;
     unsigned int max_sample;
@@ -774,7 +772,7 @@ static void
 diffuse_atkinson(unsigned char *data, int width, int height,
                  int x, int y, int depth, int offset)
 {
-    int pos, n;
+    int pos;
 
     pos = y * width + x;
 
@@ -799,7 +797,6 @@ static void
 diffuse_fs(unsigned char *data, int width, int height,
            int x, int y, int depth, int offset)
 {
-    int n;
     int pos;
 
     pos = y * width + x;
@@ -825,7 +822,6 @@ static void
 diffuse_jajuni(unsigned char *data, int width, int height,
                int x, int y, int depth, int offset)
 {
-    int n;
     int pos;
 
     pos = y * width + x;
@@ -856,7 +852,6 @@ static void
 diffuse_stucki(unsigned char *data, int width, int height,
                int x, int y, int depth, int offset)
 {
-    int n;
     int pos;
 
     pos = y * width + x;
@@ -887,7 +882,6 @@ static void
 diffuse_burkes(unsigned char *data, int width, int height,
                int x, int y, int depth, int offset)
 {
-    int n;
     int pos;
 
     pos = y * width + x;
@@ -1068,9 +1062,8 @@ LSQ_ApplyPalette(unsigned char *data,
                  unsigned char *result)
 {
     typedef int component_t;
-    int pos, j, n, x, y, sum1, sum2;
+    int pos, n, x, y, sum1, sum2;
     component_t offset;
-    int diff;
     int index;
     unsigned short *indextable;
     void (*f_diffuse)(unsigned char *data, int width, int height,
