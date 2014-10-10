@@ -125,7 +125,7 @@ sumcompare(const void * const b1, const void * const b2)
 }
 
 
-static tupletable const
+static tupletable
 alloctupletable(unsigned int const depth, unsigned int const size)
 {
     if (UINT_MAX / sizeof(struct tupleint) < size) {
