@@ -1106,6 +1106,7 @@ main(int argc, char *argv[])
     }
     if (settings.show_version) {
         show_version();
+        exit_code = EXIT_SUCCESS;
         goto end;
     }
     if (settings.show_help) {
