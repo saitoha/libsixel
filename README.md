@@ -98,7 +98,7 @@ Some NetBSD/OpenBSD users are doing amazing challenge.
 
   [arakiken's tw(tw-sixel)](https://bitbucket.org/arakiken/tw/branch/sixel) works with libsixel inline-image extension.
 
-  SIXEL works with old powerless machines such as [OpenBSD/luna88k](http://www.openbsd.org/luna88k.html) (here is OMRON LUNA-88000):
+  SIXEL works with old powerless machines such as [OpenBSD/luna88k](http://www.openbsd.org/luna88k.html) (here is OMRON LUNA-88K2 MC88100@33MHz):
 
   ![mikutterm-netbsd-hp9000](https://raw.githubusercontent.com/saitoha/libsixel/data/data/tw-openbsd-luna88k.jpg)
 
