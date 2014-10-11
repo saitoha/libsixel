@@ -196,7 +196,7 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
 {
     CURL *curl;
     CURLcode code;
- 
+
     chunk_init(pchunk, 1024);
     curl = curl_easy_init();
     curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -311,7 +311,6 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
                   int *pframe_count, int *ploop_count, int **ppdelay,
                   int fstatic)
 {
-    FILE *f;
     unsigned char *p;
     unsigned char *pixels = NULL;
     static stbi__context s;

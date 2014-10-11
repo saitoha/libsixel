@@ -36,7 +36,7 @@ typedef struct sixel_dither {
                                    for splitting */
     int method_for_rep;         /* method for choosing a color from the box */
     int method_for_diffuse;     /* method for diffusing */
-    int quality_mode;           /* quality of histgram */
+    int quality_mode;           /* quality of histogram */
     int keycolor;               /* background color */
 } sixel_dither_t;
 

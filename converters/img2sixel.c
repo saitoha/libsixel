@@ -120,7 +120,6 @@ prepare_monochrome_palette(finvert)
 static sixel_dither_t *
 prepare_specified_palette(char const *mapfile, int reqcolors)
 {
-    FILE *f;
     unsigned char *mappixels;
     sixel_dither_t *dither;
     int map_sx;
@@ -242,46 +241,6 @@ prepare_palette(unsigned char *frame, int sx, int sy, settings_t *psettings)
 }
 
 
-static int
-printf_hex(char const *fmt, ...)
-{
-    char buffer[128];
-    char hex[256];
-    int i;
-    int j;
-    size_t len;
-    va_list ap;
-
-    va_start(ap, fmt);
-    vsprintf(buffer, fmt, ap);
-    va_end(ap);
-
-    len = strlen(buffer);
-    for (i = j = 0; i < len; ++i, ++j) {
-        hex[j] = (buffer[i] >> 4) & 0xf;
-        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
-        hex[++j] = buffer[i] & 0xf;
-        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
-    }
-
-    return fwrite(hex, 1, len * 2, stdout);
-}
-
-
-static int
-putchar_hex(int c)
-{
-    char hex[2];
-
-    hex[0] = (c >> 4) & 0xf;
-    hex[0] += (hex[0] < 10 ? '0' : ('a' - 10));
-    hex[1] = c & 0xf;
-    hex[1] += (hex[1] < 10 ? '0' : ('a' - 10));
-    fwrite(hex, 1, 2, stdout);
-
-    return c;
-}
-
 static void
 clip(unsigned char *pixels, int sx, int sy, int cx, int cy, int cw, int ch)
 {
@@ -384,7 +343,6 @@ static int
 convert_to_sixel(char const *filename, settings_t *psettings)
 {
     unsigned char *pixels = NULL;
-    unsigned char *frame = NULL;
     unsigned char **frames = NULL;
     unsigned char *mappixels = NULL;
     unsigned char *p = NULL;
@@ -394,11 +352,9 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int frame_count = 1;
     int loop_count = 1;
     int *delays = NULL;
-    int i;
     int c;
     int n;
     int nret = -1;
-    FILE *f;
     int dulation = 0;
     int lag = 0;
     clock_t start;
@@ -747,7 +703,7 @@ void show_help()
             "                             burkes   -> Burkes' method\n"
             "-f FINDTYPE, --find-largest=FINDTYPE\n"
             "                           choose method for finding the largest\n"
-            "                           dimention of median cut boxes for\n"
+            "                           dimension of median cut boxes for\n"
             "                           splitting, make sense only when -p\n"
             "                           option (color reduction) is\n"
             "                           specified\n"
@@ -766,16 +722,16 @@ void show_help()
             "                           when -p option (color reduction) is\n"
             "                           specified\n"
             "                           SELECTTYPE is one of them:\n"
-            "                             auto     -> choose selecting\n"
-            "                                         method automatically\n"
-            "                                         (default)\n"
-            "                             center   -> choose the center of\n"
-            "                                         the box\n"
-            "                             average  -> caclulate the color\n"
-            "                                         average into the box\n"
-            "                             histgram -> similar with average\n"
-            "                                         but considers color\n"
-            "                                         histgram\n"
+            "                             auto      -> choose selecting\n"
+            "                                          method automatically\n"
+            "                                          (default)\n"
+            "                             center    -> choose the center of\n"
+            "                                          the box\n"
+            "                             average    -> calculate the color\n"
+            "                                          average into the box\n"
+            "                             histogram -> similar with average\n"
+            "                                          but considers color\n"
+            "                                          histogram\n"
             "-c REGION, --crop=REGION   crop source image to fit the\n"
             "                           specified geometry. REGION should\n"
             "                           be formatted as '%%dx%%d+%%d+%%d'\n"
@@ -845,7 +801,6 @@ int
 main(int argc, char *argv[])
 {
     int n;
-    int filecount = 1;
     int long_opt;
     int unknown_opt = 0;
 #if HAVE_GETOPT_LONG
@@ -999,7 +954,8 @@ main(int argc, char *argv[])
                     settings.method_for_rep = REP_CENTER_BOX;
                 } else if (strcmp(optarg, "average") == 0) {
                     settings.method_for_rep = REP_AVERAGE_COLORS;
-                } else if (strcmp(optarg, "histgram") == 0) {
+                } else if ((strcmp(optarg, "histogram") == 0) ||
+                           (strcmp(optarg, "histgram") == 0)) {
                     settings.method_for_rep = REP_AVERAGE_PIXELS;
                 } else {
                     fprintf(stderr,
@@ -1186,6 +1142,7 @@ main(int argc, char *argv[])
     }
     if (settings.show_version) {
         show_version();
+        exit_code = EXIT_SUCCESS;
         goto end;
     }
     if (settings.show_help) {

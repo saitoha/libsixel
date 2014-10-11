@@ -62,8 +62,6 @@ static int
 sixel_put_flash(sixel_output_t *const context)
 {
     int n;
-    int ret;
-    char buf[256];
     int nwrite;
 
 #if defined(USE_VT240)        /* VT240 Max 255 ? */
@@ -182,12 +180,10 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
 {
     int x, y, i, n, c;
     int sx, mx;
-    int len, pix, skip;
-    int ret;
+    int len, pix;
     unsigned char *map;
     sixel_node_t *np, *tp, top;
     unsigned char list[SIXEL_PALETTE_MAX];
-    char buf[256];
     int nwrite;
 
     context->pos = 0;
@@ -399,7 +395,6 @@ int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
                  sixel_dither_t /* in */ *dither,   /* dither context */
                  sixel_output_t /* in */ *context)  /* output context */
 {
-    int ret;
     unsigned char *paletted_pixels;
 
     sixel_dither_ref(dither);

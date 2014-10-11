@@ -125,7 +125,7 @@ sumcompare(const void * const b1, const void * const b2)
 }
 
 
-static tupletable const
+static tupletable
 alloctupletable(unsigned int const depth, unsigned int const size)
 {
     if (UINT_MAX / sizeof(struct tupleint) < size) {
@@ -181,7 +181,6 @@ newColorMap(unsigned int const newcolors, unsigned int const depth)
 {
     tupletable2 colormap;
     unsigned int i;
-    tupletable table;
 
     colormap.size = 0;
     colormap.table = alloctupletable(depth, newcolors);
@@ -606,11 +605,10 @@ computeHistogram(unsigned char *data,
 {
     typedef unsigned short unit_t;
     unsigned int i, n;
-    unit_t *histgram;
+    unit_t *histogram;
     unit_t *refmap;
     unit_t *ref;
     unit_t *it;
-    struct tupleint *t;
     unsigned int index;
     unsigned int step;
     unsigned int max_sample;
@@ -623,12 +621,12 @@ computeHistogram(unsigned char *data,
 
     quant_trace(stderr, "making histogram...\n");
 
-    histgram = malloc((1 << depth * 5) * sizeof(unit_t));
-    if (!histgram) {
-        quant_trace(stderr, "Unable to allocate memory for histgram.");
+    histogram = malloc((1 << depth * 5) * sizeof(unit_t));
+    if (!histogram) {
+        quant_trace(stderr, "Unable to allocate memory for histogram.");
         return (-1);
     }
-    memset(histgram, 0, (1 << depth * 5) * sizeof(unit_t));
+    memset(histogram, 0, (1 << depth * 5) * sizeof(unit_t));
     it = ref = refmap = (unsigned short *)malloc(max_sample * sizeof(unit_t));
     if (!it) {
         quant_trace(stderr, "Unable to allocate memory for lookup table.");
@@ -646,19 +644,19 @@ computeHistogram(unsigned char *data,
         for (n = 0; n < depth; n++) {
             index |= data[i + depth - 1 - n] >> 3 << n * 5;
         }
-        if (histgram[index] == 0) {
+        if (histogram[index] == 0) {
             *ref++ = index;
         }
-        if (histgram[index] < (1 << sizeof(unsigned short) * 8) - 1) {
-            histgram[index]++;
+        if (histogram[index] < (1 << sizeof(unsigned short) * 8) - 1) {
+            histogram[index]++;
         }
     }
 
     colorfreqtableP->size = ref - refmap;
     colorfreqtableP->table = alloctupletable(depth, ref - refmap);
     for (i = 0; i < colorfreqtableP->size; ++i) {
-        if (histgram[refmap[i]] > 0) {
-            colorfreqtableP->table[i]->value = histgram[refmap[i]];
+        if (histogram[refmap[i]] > 0) {
+            colorfreqtableP->table[i]->value = histogram[refmap[i]];
             for (n = 0; n < depth; n++) {
                 colorfreqtableP->table[i]->tuple[depth - 1 - n]
                     = (*it >> n * 5 & 0x1f) << 3;
@@ -668,7 +666,7 @@ computeHistogram(unsigned char *data,
     }
 
     free(refmap);
-    free(histgram);
+    free(histogram);
 
     quant_trace(stderr, "%u colors found\n", colorfreqtableP->size);
     return 0;
@@ -774,7 +772,7 @@ static void
 diffuse_atkinson(unsigned char *data, int width, int height,
                  int x, int y, int depth, int offset)
 {
-    int pos, n;
+    int pos;
 
     pos = y * width + x;
 
@@ -799,7 +797,6 @@ static void
 diffuse_fs(unsigned char *data, int width, int height,
            int x, int y, int depth, int offset)
 {
-    int n;
     int pos;
 
     pos = y * width + x;
@@ -825,7 +822,6 @@ static void
 diffuse_jajuni(unsigned char *data, int width, int height,
                int x, int y, int depth, int offset)
 {
-    int n;
     int pos;
 
     pos = y * width + x;
@@ -856,7 +852,6 @@ static void
 diffuse_stucki(unsigned char *data, int width, int height,
                int x, int y, int depth, int offset)
 {
-    int n;
     int pos;
 
     pos = y * width + x;
@@ -887,7 +882,6 @@ static void
 diffuse_burkes(unsigned char *data, int width, int height,
                int x, int y, int depth, int offset)
 {
-    int n;
     int pos;
 
     pos = y * width + x;
@@ -1081,9 +1075,8 @@ LSQ_ApplyPalette(unsigned char *data,
                  unsigned char *result)
 {
     typedef int component_t;
-    int pos, j, n, x, y, sum1, sum2;
+    int pos, n, x, y, sum1, sum2;
     component_t offset;
-    int diff;
     int index;
     unsigned short *indextable;
     void (*f_diffuse)(unsigned char *data, int width, int height,
