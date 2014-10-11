@@ -77,6 +77,8 @@ It also works with [ranger](https://github.com/hut/ranger).
 
 ### Twitter client integration
 
+Some NetBSD/OpenBSD users are doing amazing challenge.
+
 #### [arakiken's mikutterm(mikutterm-sixel)](https://bitbucket.org/arakiken/mikutterm/branch/sixel)
 
   Now [mikutter](http://mikutter.hachune.net/) + [mikutterm](https://bitbucket.org/arakiken/mikutterm) works with libsixel inline-image extension.
