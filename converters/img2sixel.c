@@ -690,7 +690,7 @@ void show_help()
             "                             burkes   -> Burkes' method\n"
             "-f FINDTYPE, --find-largest=FINDTYPE\n"
             "                           choose method for finding the largest\n"
-            "                           dimention of median cut boxes for\n"
+            "                           dimension of median cut boxes for\n"
             "                           splitting, make sense only when -p\n"
             "                           option (color reduction) is\n"
             "                           specified\n"
@@ -709,16 +709,16 @@ void show_help()
             "                           when -p option (color reduction) is\n"
             "                           specified\n"
             "                           SELECTTYPE is one of them:\n"
-            "                             auto     -> choose selecting\n"
-            "                                         method automatically\n"
-            "                                         (default)\n"
-            "                             center   -> choose the center of\n"
-            "                                         the box\n"
-            "                             average  -> caclulate the color\n"
-            "                                         average into the box\n"
-            "                             histgram -> similar with average\n"
-            "                                         but considers color\n"
-            "                                         histgram\n"
+            "                             auto      -> choose selecting\n"
+            "                                          method automatically\n"
+            "                                          (default)\n"
+            "                             center    -> choose the center of\n"
+            "                                          the box\n"
+            "                             average    -> calculate the color\n"
+            "                                          average into the box\n"
+            "                             histogram -> similar with average\n"
+            "                                          but considers color\n"
+            "                                          histogram\n"
             "-c REGION, --crop=REGION   crop source image to fit the\n"
             "                           specified geometry. REGION should\n"
             "                           be formatted as '%%dx%%d+%%d+%%d'\n"
@@ -933,7 +933,8 @@ main(int argc, char *argv[])
                     settings.method_for_rep = REP_CENTER_BOX;
                 } else if (strcmp(optarg, "average") == 0) {
                     settings.method_for_rep = REP_AVERAGE_COLORS;
-                } else if (strcmp(optarg, "histgram") == 0) {
+                } else if ((strcmp(optarg, "histogram") == 0) ||
+                           (strcmp(optarg, "histgram") == 0)) {
                     settings.method_for_rep = REP_AVERAGE_PIXELS;
                 } else {
                     fprintf(stderr,

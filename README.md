@@ -103,7 +103,7 @@ Now SIXEL feature is supported by the following terminals.
 
   [http://invisible-island.net/xterm/](http://invisible-island.net/xterm/)
 
-  You should launch xterm with "-ti 340" option. the SIXEL palette is limited to a maximum of 16 colors.
+  You should launch xterm with "-ti 340" option. The SIXEL palette is limited to a maximum of 16 colors.
 
 - yaft (in github repo)
 
@@ -222,7 +222,7 @@ Options:
                              burkes   -> Burkes' method
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
-                           dimention of median cut boxes for
+                           dimension of median cut boxes for
                            splitting, make sense only when -p
                            option (color reduction) is
                            specified
@@ -246,11 +246,11 @@ Options:
                                          (default)
                              center   -> choose the center of
                                          the box
-                             average  -> caclulate the color
+                             average  -> calculate the color
                                          average into the box
-                             histgram -> similar with average
+                             histogram -> similar with average
                                          but considers color
-                                         histgram
+                                         histogram
 -c REGION, --crop=REGION   crop source image to fit the
                            specified geometry. REGION should
                            be formatted as '%dx%d+%d+%d'
@@ -406,9 +406,9 @@ sixel_dither_initialize(
     int /* in */ width,              /* image width */
     int /* in */ height,             /* image height */
     int /* in */ depth,              /* pixel depth, now only '3' is supported */
-    int /* in */ method_for_largest, /* set 0 or method for finding the largest dimention */
+    int /* in */ method_for_largest, /* set 0 or method for finding the largest dimension */
     int /* in */ method_for_rep,     /* set 0 or method for choosing a color from the box */
-    int /* in */ quality_mode        /* set 0 or quality of histgram processing */
+    int /* in */ quality_mode        /* set 0 or quality of histogram processing */
 );
 ```
 

@@ -31,11 +31,11 @@ typedef struct sixel_dither {
     int ncolors;                /* active colors */
     int origcolors;             /* original colors */
     int optimized;              /* pixel is 15bpp compressable */
-    int method_for_largest;     /* method for finding the largest dimention 
+    int method_for_largest;     /* method for finding the largest dimension
                                    for splitting */
     int method_for_rep;         /* method for choosing a color from the box */
     int method_for_diffuse;     /* method for diffusing */
-    int quality_mode;           /* quality of histgram */
+    int quality_mode;           /* quality of histogram */
     int keycolor;               /* background color */
 } sixel_dither_t;
 

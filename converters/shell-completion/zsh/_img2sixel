@@ -38,8 +38,8 @@ _selecttype() {
     'SELECTTYPE' \
     'auto[choose selecting method automatically (default)]' \
     'center[choose the center of the box]' \
-    'average[caclulate the color average into the box]' \
-    'histgram[similar with average but considers color histgram]'
+    'average[calculate the color average into the box]' \
+    'histogram[similar with average but considers color histogram]'
 }
 
 _resamplingtype() {
@@ -84,7 +84,7 @@ _arguments -S -s -A "-*" -S \
   {-n,--macro-number}'[specify a number argument for DECDMAC]' \
   {-g,--ignore-delay}'[render GIF animation without delay]' \
   {-d,--diffusion=}'[choose diffusion method which used with -p option]':diffusiontype:_diffusiontype \
-  {-f,--find-largest=}'[method for finding the largest dimention in median-cut]':findtype:_findtype \
+  {-f,--find-largest=}'[method for finding the largest dimension in median-cut]':findtype:_findtype \
   {-s,--select-color=}'[method for selecting color from median-cut boxes]':selecttype:_selecttype \
   {-c,--crop=}'[crop image to specified geometory(%dx%d+%d+%d)]' \
   {-w,--width=}'[resize image to specified width]' \

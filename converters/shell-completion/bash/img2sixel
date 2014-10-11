@@ -47,7 +47,7 @@ _img2sixel()
         COMPREPLY=( $( compgen -W 'auto \
                                    center \
                                    average \
-                                   histgram' -- "$cur" ) )
+                                   histogram' -- "$cur" ) )
         return 0
         ;;
     -r|--resampling)

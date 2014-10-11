@@ -605,7 +605,7 @@ computeHistogram(unsigned char *data,
 {
     typedef unsigned short unit_t;
     unsigned int i, n;
-    unit_t *histgram;
+    unit_t *histogram;
     unit_t *refmap;
     unit_t *ref;
     unit_t *it;
@@ -621,12 +621,12 @@ computeHistogram(unsigned char *data,
 
     quant_trace(stderr, "making histogram...\n");
 
-    histgram = malloc((1 << depth * 5) * sizeof(unit_t));
-    if (!histgram) {
-        quant_trace(stderr, "Unable to allocate memory for histgram.");
+    histogram = malloc((1 << depth * 5) * sizeof(unit_t));
+    if (!histogram) {
+        quant_trace(stderr, "Unable to allocate memory for histogram.");
         return (-1);
     }
-    memset(histgram, 0, (1 << depth * 5) * sizeof(unit_t));
+    memset(histogram, 0, (1 << depth * 5) * sizeof(unit_t));
     it = ref = refmap = (unsigned short *)malloc(max_sample * sizeof(unit_t));
     if (!it) {
         quant_trace(stderr, "Unable to allocate memory for lookup table.");
@@ -644,19 +644,19 @@ computeHistogram(unsigned char *data,
         for (n = 0; n < depth; n++) {
             index |= data[i + depth - 1 - n] >> 3 << n * 5;
         }
-        if (histgram[index] == 0) {
+        if (histogram[index] == 0) {
             *ref++ = index;
         }
-        if (histgram[index] < (1 << sizeof(unsigned short) * 8) - 1) {
-            histgram[index]++;
+        if (histogram[index] < (1 << sizeof(unsigned short) * 8) - 1) {
+            histogram[index]++;
         }
     }
 
     colorfreqtableP->size = ref - refmap;
     colorfreqtableP->table = alloctupletable(depth, ref - refmap);
     for (i = 0; i < colorfreqtableP->size; ++i) {
-        if (histgram[refmap[i]] > 0) {
-            colorfreqtableP->table[i]->value = histgram[refmap[i]];
+        if (histogram[refmap[i]] > 0) {
+            colorfreqtableP->table[i]->value = histogram[refmap[i]];
             for (n = 0; n < depth; n++) {
                 colorfreqtableP->table[i]->tuple[depth - 1 - n]
                     = (*it >> n * 5 & 0x1f) << 3;
@@ -666,7 +666,7 @@ computeHistogram(unsigned char *data,
     }
 
     free(refmap);
-    free(histgram);
+    free(histogram);
 
     quant_trace(stderr, "%u colors found\n", colorfreqtableP->size);
     return 0;
