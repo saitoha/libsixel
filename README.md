@@ -107,7 +107,7 @@ Some NetBSD/OpenBSD users are doing amazing challenge.
 
   [sayaka-chan](https://github.com/isaki68k/sayaka/) works with libsixel inline-image extension.
 
-  SIXEL works with old powerless machines such as [NetBSD/x68k](http://wiki.netbsd.org/ports/x68k/) (here is SHARP X68030):
+  SIXEL works with old powerless machines such as [NetBSD/x68k](http://wiki.netbsd.org/ports/x68k/) (here is SHARP X68030 with 060turbo):
 
   ![sayaka-chan](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sayaka-netbsd-x68k.jpg)
 
