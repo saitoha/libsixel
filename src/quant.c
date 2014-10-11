@@ -949,7 +949,6 @@ lookup_fast(unsigned char const * const pixel,
     int index;
     int diff;
     int cache;
-    int r;
     int i;
     int n;
     int distant;

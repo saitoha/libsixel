@@ -236,6 +236,7 @@ get_chunk(char const *filename, chunk_t *pchunk)
 }
 
 
+#if 0
 static int
 chunk_is_sixel(chunk_t const *chunk)
 {
@@ -270,6 +271,7 @@ chunk_is_sixel(chunk_t const *chunk)
     }
     return 0;
 }
+#endif
 
 
 static int
