@@ -312,17 +312,20 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
 {
     FILE *f;
     unsigned char *p;
-    unsigned char *pixels;
+    unsigned char *pixels = NULL;
     static stbi__context s;
     static stbi__gif g;
     chunk_t frames;
     chunk_t delays;
 
+#if 0
     if (chunk_is_sixel(pchunk)) {
         /* sixel */
         *pframe_count = 1;
         *ploop_count = 1;
-    } else if (chunk_is_pnm(pchunk)) {
+    } else
+#endif
+    if (chunk_is_pnm(pchunk)) {
         /* pnm */
         pixels = load_pnm(pchunk->buffer, pchunk->size,
                           psx, psy, pcomp, pstride);
