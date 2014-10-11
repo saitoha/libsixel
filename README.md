@@ -148,7 +148,7 @@ Now SIXEL feature is supported by the following terminals.
 
   You should launch xterm with "-ti 340" option. The SIXEL palette is limited to a maximum of 16 colors.
 
-- yaft (in github repo)
+- yaft
 
   [https://github.com/uobikiemukot/yaft](https://github.com/uobikiemukot/yaft)
 
@@ -554,6 +554,7 @@ The MIT License (MIT)
 - @mattn
 - @ttdoda
 - @uobikiemukot
+- @waywardmonkeys
 - @yoshikaw
   
 ## Acknowledgment
@@ -785,6 +786,11 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
   ![Animation](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixelslide.png)
 
   cf. http://www.slideshare.net/syuu1228/presentation-on-your-terminal
+
+
+- [GraphicConverter](https://itunes.apple.com/jp/app/graphicconverter-9/id736099092?mt=12)
+
+  ![GraphicConverter](https://raw.githubusercontent.com/saitoha/libsixel/data/data/graphicconverter.png)
 
 
 - ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
