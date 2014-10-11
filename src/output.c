@@ -30,7 +30,7 @@ sixel_output_t *
 sixel_output_create(sixel_write_function fn_write, void *priv)
 {
     sixel_output_t *output;
-   
+
     output = malloc(sizeof(sixel_output_t) + SIXEL_OUTPUT_PACKET_SIZE * 2);
     output->ref = 1;
     output->has_8bit_control = 0;

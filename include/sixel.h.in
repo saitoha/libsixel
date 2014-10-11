@@ -106,7 +106,7 @@ extern "C" {
 /* create output context object */
 sixel_output_t *
 sixel_output_create(sixel_write_function /* in */ fn_write, /* callback function for output sixel */
-                    void /* in */ *priv);                   /* private data given as 
+                    void /* in */ *priv);                   /* private data given as
                                                                3rd argument of fn_write */
 /* destroy output context object */
 void

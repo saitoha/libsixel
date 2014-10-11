@@ -196,7 +196,7 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
 {
     CURL *curl;
     CURLcode code;
- 
+
     chunk_init(pchunk, 1024);
     curl = curl_easy_init();
     curl_easy_setopt(curl, CURLOPT_URL, url);
