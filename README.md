@@ -68,6 +68,13 @@ img2sixel(1) can be integrated with ![Arakiken's w3m fork(remoteimg branch)](htt
   ![w3m-sixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel-screen.png)
 
 
+@uobikiemukot's [sdump](https://github.com/uobikiemukot/sdump) project selected another approach.
+He wrote a w3mimgdisplay compatible program [yaimg-sixel](https://github.com/uobikiemukot/sdump/tree/master/yaimg-sixel).
+It also works with [ranger](https://github.com/hut/ranger).
+
+  ![w3m-yaimg-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-yaimg-sixel.jpg)
+
+
 ### Twitter client integration
 
 #### [arakiken's mikutterm(mikutterm-sixel)](https://bitbucket.org/arakiken/mikutterm/branch/sixel)
@@ -76,7 +83,7 @@ img2sixel(1) can be integrated with ![Arakiken's w3m fork(remoteimg branch)](htt
 
   SIXEL works with old powerless machines such as
 
-  [NetBSD/luna68k](http://wiki.netbsd.org/ports/luna68k/):
+  [NetBSD/luna68k](http://wiki.netbsd.org/ports/luna68k/) (here is OMRON LUNA-II):
 
   ![mikutterm-netbsd-luna68k](https://raw.githubusercontent.com/saitoha/libsixel/data/data/mikutterm-netbsd-luna68k.jpg)
 
@@ -89,7 +96,7 @@ img2sixel(1) can be integrated with ![Arakiken's w3m fork(remoteimg branch)](htt
 
   [arakiken's tw(tw-sixel)](https://bitbucket.org/arakiken/tw/branch/sixel) works with libsixel inline-image extension.
 
-  SIXEL works with old powerless machines such as [OpenBSD/luna88k](http://www.openbsd.org/luna88k.html):
+  SIXEL works with old powerless machines such as [OpenBSD/luna88k](http://www.openbsd.org/luna88k.html) (here is OMRON LUNA-88000):
 
   ![mikutterm-netbsd-hp9000](https://raw.githubusercontent.com/saitoha/libsixel/data/data/tw-openbsd-luna88k.jpg)
 
@@ -98,7 +105,7 @@ img2sixel(1) can be integrated with ![Arakiken's w3m fork(remoteimg branch)](htt
 
   [sayaka-chan](https://github.com/isaki68k/sayaka/) works with libsixel inline-image extension.
 
-  SIXEL works with old powerless machines such as [NetBSD/x68k](http://wiki.netbsd.org/ports/x68k/):
+  SIXEL works with old powerless machines such as [NetBSD/x68k](http://wiki.netbsd.org/ports/x68k/) (here is SHARP X68030):
 
   ![sayaka-chan](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sayaka-netbsd-x68k.jpg)
 
@@ -709,11 +716,6 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 - [monosixel in arakiken's tw](https://bitbucket.org/arakiken/tw/branch/sixel)
 
   A monochrome SIXEL converter
-
-
-- [sdump](https://github.com/uobikiemukot/sdump)
-
-  SIXEL image dumper. It also provides a PDF viewer and a pager for multiple images.
 
 
 - [xpr(x11-apps)](ftp://ftp.x.org/pub/unsupported/programs/xpr/)
