@@ -921,7 +921,7 @@ lookup_normal(unsigned char const * const pixel,
     int r;
     int i;
     int n;
-    int distant;
+    int distant = 0;
 
     index = -1;
     diff = INT_MAX;
