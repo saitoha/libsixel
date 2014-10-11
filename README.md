@@ -752,6 +752,13 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
   ![GhostScript](https://raw.githubusercontent.com/saitoha/libsixel/data/data/gs.png)
 
 
+- [ImageMagick](http://www.imagemagick.org/)
+
+  Recent version of ImageMagick provides SIXEL coder. It's also available over commandline tools.
+
+  ![ImageMagick](https://raw.githubusercontent.com/saitoha/libsixel/data/data/imagemagick.png)
+
+
 - [ZX81 Emulator](http://rullf2.xs4all.nl/sg/zx81ce.html)
 
   A ZX81 emulator producing Sixel Image Files
@@ -792,16 +799,22 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 
 - [GraphicConverter](https://itunes.apple.com/jp/app/graphicconverter-9/id736099092?mt=12)
 
+  It can import SIXEL images.
+
   ![GraphicConverter](https://raw.githubusercontent.com/saitoha/libsixel/data/data/graphicconverter.png)
+
+
+- [SIXEL image viewer](http://rullf2.xs4all.nl/sg/sg.html)
+
+  This web page can decode SIXEL images (written in javascript).
+
+  ![SIXEL image viewer ](https://raw.githubusercontent.com/saitoha/libsixel/data/data/js-sixel.png)
 
 
 - ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
 
 
 - [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
-
-
-- [SIXEL image viewer(written in javascript)](http://rullf2.xs4all.nl/sg/sg.html)
 
 
 - [SixelGraphics.jl(written in Julia)](https://github.com/olofsen/SixelGraphics.jl)
