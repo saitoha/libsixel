@@ -19,23 +19,38 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_LOADER_H
-#define LIBSIXEL_LOADER_H
+#ifndef LIBSIXEL_QUANT_H
+#define LIBSIXEL_QUANT_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 unsigned char *
-load_image_file(char const *filename, int *psx, int *psy,
-                int *pframe_count, int *ploop_count, int **ppdelay,
-                int fstatic);
+LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
+                int reqcolors, int *ncolors, int *origcolors,
+                int const methodForLargest,
+                int const methodForRep,
+                int const qualityMode);
+
+int
+LSQ_ApplyPalette(unsigned char *data, int width, int height, int depth,
+                 unsigned char *palette, int ncolor,
+                 int const methodForDiffuse,
+                 int foptimize,
+                 int complexion,
+                 unsigned short *cachetable,
+                 unsigned char *result);
+
+
+extern void
+LSQ_FreePalette(unsigned char * data);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LIBSIXEL_LOADER_H */
+#endif /* LIBSIXEL_QUANT_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

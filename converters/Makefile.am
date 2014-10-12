@@ -13,13 +13,13 @@ if COND_GCOV
 MAYBE_COVERAGE = --coverage
 endif
 
-CLEANFILES = *.gcno *.gcda *.gcov snake.png snake.sixel
+CLEANFILES = *.gcno *.gcda *.gcov snake1.png snake2.png snake2.sixel
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
-img2sixel_SOURCES = img2sixel.c quant.c scale.c stb_image.c malloc_stub.c loader.c frompnm.c \
-                    quant.h scale.h malloc_stub.h loader.h frompnm.h
-img2sixel_CFLAGS = -I$(top_builddir)/include/ $(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) $(GD_CFLAGS)
+img2sixel_SOURCES = img2sixel.c scale.c malloc_stub.c loader.c frompnm.c \
+                    scale.h malloc_stub.h loader.h frompnm.h
+img2sixel_CFLAGS = -Wall -I$(top_builddir)/include/ $(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) $(GD_CFLAGS)
 img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS)
 dist_man_MANS += img2sixel.1
 dist_bashcompletion_DATA += shell-completion/bash/img2sixel
@@ -30,7 +30,7 @@ if WANT_SIXEL2PNG
 bin_PROGRAMS += sixel2png
 sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c \
                     stb_image_write.h malloc_stub.h
-sixel2png_CFLAGS = -I$(top_builddir)/include/ $(MAYBE_COVERAGE)
+sixel2png_CFLAGS = -Wall -I$(top_builddir)/include/ $(MAYBE_COVERAGE)
 sixel2png_LDADD = $(top_builddir)/src/libsixel.la
 dist_man_MANS += sixel2png.1
 endif

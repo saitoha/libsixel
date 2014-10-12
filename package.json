@@ -1,6 +1,6 @@
 {
   "name": "libsixel",
-  "version": "0.22.3",
+  "version": "1.2.0",
   "repo": "saitoha/libsixel",
   "description": "A lightweight, fast implementation of DEC SIXEL graphics codec",
   "keywords": ["terminal", "graphics", "image", "sixel"],

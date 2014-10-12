@@ -3,9 +3,9 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.22.3], [user@zuse.jp])
-LS_LT_CURRENT=0
-LS_LT_REVISION=0
+AC_INIT([sixel], [1.2.0], [user@zuse.jp])
+LS_LT_CURRENT=1
+LS_LT_REVISION=1
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 AC_SUBST([PACKAGE_DESCRIPTION],
@@ -20,6 +20,16 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 #AC_ENABLE_SHARED
 #AC_DISABLE_STATIC
+
+AX_GCC_VAR_ATTRIBUTE([deprecated])
+if test x$ax_cv_have_func_attribute_deprecated != x; then
+    AC_SUBST(attr_var_deprecated, [__attribute__\(\(deprecated\)\)])
+fi
+
+AX_GCC_FUNC_ATTRIBUTE([deprecated])
+if test x$ax_cv_have_func_attribute_deprecated != x; then
+    AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
+fi
 
 # Options
 AC_ARG_ENABLE([img2sixel],
@@ -54,11 +64,11 @@ AC_ARG_WITH([libcurl],
             [],
             [with_libcurl=no])
 
-AC_ARG_WITH([wic],
-            [AS_HELP_STRING([--with-wic],
-                            [whether to build with windows WIC integration, windows only (default: no)])],
-            [],
-            [with_wic=no])
+#AC_ARG_WITH([wic],
+#            [AS_HELP_STRING([--with-wic],
+#                            [whether to build with windows WIC integration, windows only (default: no)])],
+#            [],
+#            [with_wic=no])
 
 AC_ARG_WITH(pkgconfigdir,
             AC_HELP_STRING([--with-pkgconfigdir],
@@ -98,7 +108,7 @@ PKG_PROG_PKG_CONFIG
 AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
 
 # For wic integration
-AC_PROG_CXX
+#AC_PROG_CXX
 
 # Checks for libraries.
 
@@ -107,11 +117,16 @@ AC_CHECK_HEADERS([memory.h \
                   stdlib.h \
                   string.h \
                   unistd.h \
+                  sys/unistd.h \
                   getopt.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
-                  errno.h])
+                  errno.h \
+                  sys/time.h \
+                  time.h \
+                  signal.h \
+                  sys/signal.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
@@ -126,33 +141,40 @@ AC_CHECK_FUNC([memset], [],
               [AC_MSG_ERROR(memset is not available.)])
 
 AC_CHECK_FUNC([getopt_long],
-	      [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])],
+              [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])],
               [AC_CHECK_FUNC([getopt],
-			     [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
-                             [AC_MSG_ERROR(getopt or getopt_long is not available.)
-			     ])
-	      ])
+                             [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
+                             [AC_MSG_ERROR(getopt or getopt_long is not available.)])])
 
-AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode])
+AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode signal usleep calloc clock])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
 
+AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
+               [
+                   #ifdef HAVE_SIGNAL_H
+                   # include <signal.h>
+                   #elif HAVE_SYS_SIGNAL_H
+                   # include <sys/signal.h>
+                   #endif
+               ])
+
 loaders="stb_image"
 have_curl="no"
-have_wic="no"
+#have_wic="no"
 
-if test x$with_wic != xno; then
-    AC_CHECK_HEADERS([wincodec.h], [],
-                     [AC_MSG_ERROR([WIC integration: wincodec.h is not avilable.])])
-    AC_CHECK_LIB([ole32], [main], [],
-                 [AC_MSG_ERROR([WIC integration: library ole32 is not avilable.])])
-    AC_CHECK_LIB([uuid], [main], [],
-                 [AC_MSG_ERROR([WIC integration: library uuid is not avilable.])])
-    AC_CHECK_LIB([windowscodecs], [main], [],
-                 [AC_MSG_ERROR([WIC integration: library wincodecs is not avilable.])])
-    have_wic="yes"
-fi
+#if test x$with_wic != xno; then
+#    AC_CHECK_HEADERS([wincodec.h], [],
+#                     [AC_MSG_ERROR([WIC integration: wincodec.h is not avilable.])])
+#    AC_CHECK_LIB([ole32], [main], [],
+#                 [AC_MSG_ERROR([WIC integration: library ole32 is not avilable.])])
+#    AC_CHECK_LIB([uuid], [main], [],
+#                 [AC_MSG_ERROR([WIC integration: library uuid is not avilable.])])
+#    AC_CHECK_LIB([windowscodecs], [main], [],
+#                 [AC_MSG_ERROR([WIC integration: library wincodecs is not avilable.])])
+#    have_wic="yes"
+#fi
 
 if test x$with_gdk_pixbuf2 != xno; then
     if test x$have_pkg_config != xno; then
@@ -274,9 +296,8 @@ LS_UPDATE_TIMESTAMP
 
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
-                 package.json
-                 wic_install.reg
-                 wic_uninstall.reg
+                 package.json.in
+                 include/sixel.h
                  src/Makefile
                  include/Makefile
                  converters/Makefile])
@@ -292,7 +313,7 @@ echo "       libcurl integration : $have_curl"
 echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
-echo "       WIC integration     : $have_wic"
+#echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
 echo ""
 echo ""
