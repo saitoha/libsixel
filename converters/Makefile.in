@@ -81,11 +81,13 @@ build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @WANT_IMG2SIXEL_TRUE@am__append_1 = img2sixel
-@WANT_IMG2SIXEL_TRUE@am__append_2 = img2sixel.1
-@WANT_IMG2SIXEL_TRUE@am__append_3 = shell-completion/bash/img2sixel
-@WANT_IMG2SIXEL_TRUE@am__append_4 = shell-completion/zsh/_img2sixel
-@WANT_SIXEL2PNG_TRUE@am__append_5 = sixel2png
-@WANT_SIXEL2PNG_TRUE@am__append_6 = sixel2png.1
+@COND_DEBUG_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_2 = -Werror
+@WANT_IMG2SIXEL_TRUE@am__append_3 = img2sixel.1
+@WANT_IMG2SIXEL_TRUE@am__append_4 = shell-completion/bash/img2sixel
+@WANT_IMG2SIXEL_TRUE@am__append_5 = shell-completion/zsh/_img2sixel
+@WANT_SIXEL2PNG_TRUE@am__append_6 = sixel2png
+@COND_DEBUG_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_7 = -Werror
+@WANT_SIXEL2PNG_TRUE@am__append_8 = sixel2png.1
 subdir = converters
 SUBDIRS =
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
@@ -412,20 +414,28 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 DIST_SUBDIRS = $(SUBDIRS)
-dist_man_MANS = $(am__append_2) $(am__append_6)
-dist_bashcompletion_DATA = $(am__append_3)
-dist_zshcompletion_DATA = $(am__append_4)
+dist_man_MANS = $(am__append_3) $(am__append_8)
+dist_bashcompletion_DATA = $(am__append_4)
+dist_zshcompletion_DATA = $(am__append_5)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 CLEANFILES = *.gcno *.gcda *.gcov snake1.png snake2.png snake2.sixel
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c scale.c malloc_stub.c loader.c frompnm.c \
 @WANT_IMG2SIXEL_TRUE@                    scale.h malloc_stub.h loader.h frompnm.h
 
-@WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -Wall -I$(top_builddir)/include/ $(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) $(GD_CFLAGS)
-@WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS)
+@WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -Wall \
+@WANT_IMG2SIXEL_TRUE@	-I$(top_builddir)/include/ \
+@WANT_IMG2SIXEL_TRUE@	$(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) \
+@WANT_IMG2SIXEL_TRUE@	$(LIBCURL_CFLAGS) $(GD_CFLAGS) \
+@WANT_IMG2SIXEL_TRUE@	$(am__append_2)
+@WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm \
+@WANT_IMG2SIXEL_TRUE@				  $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS)
+
 @WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c \
 @WANT_SIXEL2PNG_TRUE@                    stb_image_write.h malloc_stub.h
 
-@WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = -Wall -I$(top_builddir)/include/ $(MAYBE_COVERAGE)
+@WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = -Wall \
+@WANT_SIXEL2PNG_TRUE@	-I$(top_builddir)/include/ \
+@WANT_SIXEL2PNG_TRUE@	$(MAYBE_COVERAGE) $(am__append_7)
 @WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la
 all: all-recursive
 
