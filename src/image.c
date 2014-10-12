@@ -18,69 +18,47 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+#include "config.h"
+#include <stdlib.h>
 
-#ifndef LIBSIXEL_OUTPUT_H
-#define LIBSIXEL_OUTPUT_H
-
-#ifdef __cplusplus
-extern "C" {
+#if defined(HAVE_INTTYPES_H)
+# include <inttypes.h>
 #endif
 
-typedef struct sixel_node {
-    struct sixel_node *next;
-    int pal;
-    int sx;
-    int mx;
-    unsigned char *map;
-} sixel_node_t;
+#include "dither.h"
+#include "sixel.h"
 
-typedef int (* sixel_write_function)(char *data, int size, void *priv);
+sixel_image_t *
+sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
+                   int borrowed, sixel_dither_t *dither)
+{
+    sixel_image_t *im;
 
-typedef struct sixel_output {
-
-    int ref;
-
-    /* compatiblity flags */
-
-    /* 0: 7bit terminal,
-     * 1: 8bit terminal */
-    unsigned char has_8bit_control;
-
-    /* 0: the terminal has sixel scrolling
-     * 1: the terminal does not have sixel scrolling */
-    unsigned char has_sixel_scrolling;
-
-    /* 0: DECSDM set (CSI ? 80 h) enables sixel scrolling
-       1: DECSDM set (CSI ? 80 h) disables sixel scrolling */
-    unsigned char has_sdm_glitch;
-
-    /* 0: do not skip DCS envelope,
-     * 1: skip DCS envelope */
-    unsigned char skip_dcs_envelope;
-
-    sixel_write_function fn_write;
-
-    unsigned char conv_palette[256];
-    int save_pixel;
-    int save_count;
-    int active_palette;
-
-    sixel_node_t *node_top;
-    sixel_node_t *node_free;
-
-    int penetrate_multiplexer;
-
-    void *priv;
-    int pos;
-    unsigned char buffer[1];
-
-} sixel_output_t;
-
-#ifdef __cplusplus
+    im = (sixel_image_t *)malloc(sizeof(sixel_image_t));
+    im->pixels = pixels;
+    im->sx = sx;
+    im->sy = sy;
+    im->depth = depth;
+    im->borrowed = borrowed;
+    im->dither = dither;
+    sixel_dither_ref(dither);
+    return im;
 }
-#endif
 
-#endif /* LIBSIXEL_OUTPUT_H */
+
+void
+sixel_image_destroy(sixel_image_t *im)
+{
+    if (im) {
+        if (im->dither) {
+            sixel_dither_unref(im->dither);
+        }
+        if (!im->borrowed) {
+            free(im->pixels);
+        }
+    }
+    free(im);
+}
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

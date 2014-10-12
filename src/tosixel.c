@@ -30,10 +30,27 @@
 /* implementation */
 
 static void
+penetrate(sixel_output_t *context, int nwrite)
+{
+    int pos;
+    for (pos = 0; pos < nwrite; pos += 508) {
+        context->fn_write("\x1bP", 2, context->priv);
+        context->fn_write(((char *)context->buffer)+pos,
+                nwrite - pos < 508 ? nwrite - pos : 508, context->priv);
+        context->fn_write("\x1b\\", 2, context->priv);
+    }
+}
+
+
+static void
 sixel_advance(sixel_output_t *context, int nwrite)
 {
     if ((context->pos += nwrite) >= SIXEL_OUTPUT_PACKET_SIZE) {
-        context->fn_write((char *)context->buffer, SIXEL_OUTPUT_PACKET_SIZE, context->priv);
+        if (context->penetrate_multiplexer) {
+            penetrate(context, SIXEL_OUTPUT_PACKET_SIZE);
+        } else {
+            context->fn_write((char *)context->buffer, SIXEL_OUTPUT_PACKET_SIZE, context->priv);
+        }
         memcpy(context->buffer,
                context->buffer + SIXEL_OUTPUT_PACKET_SIZE,
                (context->pos -= SIXEL_OUTPUT_PACKET_SIZE));
@@ -45,8 +62,6 @@ static int
 sixel_put_flash(sixel_output_t *const context)
 {
     int n;
-    int ret;
-    char buf[256];
     int nwrite;
 
 #if defined(USE_VT240)        /* VT240 Max 255 ? */
@@ -165,12 +180,10 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
 {
     int x, y, i, n, c;
     int sx, mx;
-    int len, pix, skip;
-    int ret;
+    int len, pix;
     unsigned char *map;
     sixel_node_t *np, *tp, top;
     unsigned char list[SIXEL_PALETTE_MAX];
-    char buf[256];
     int nwrite;
 
     context->pos = 0;
@@ -195,15 +208,24 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
         context->conv_palette[n] = list[n] = n;
     }
 
-    if (context->has_8bit_control) {
-        nwrite = sprintf((char *)context->buffer, "\x90" "0;0;0" "q");
-    } else {
-        nwrite = sprintf((char *)context->buffer, "\x1bP" "0;0;0" "q");
+    if (!context->skip_dcs_envelope) {
+        if (context->has_8bit_control) {
+            nwrite = sprintf((char *)context->buffer, "\x90");
+        } else {
+            nwrite = sprintf((char *)context->buffer, "\x1bP");
+        }
+        if (nwrite <= 0) {
+            return (-1);
+        }
+        sixel_advance(context, nwrite);
     }
+
+    nwrite = sprintf((char *)context->buffer + context->pos, "0;0;0" "q");
     if (nwrite <= 0) {
         return (-1);
     }
     sixel_advance(context, nwrite);
+
     nwrite = sprintf((char *)context->buffer + context->pos, "\"1;1;%d;%d", width, height);
     if (nwrite <= 0) {
         return (-1);
@@ -332,21 +354,27 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
         memset(map, 0, len);
     }
 
-    if (context->has_8bit_control) {
-        context->buffer[context->pos] = '\x9c';
-        sixel_advance(context, 1);
-    } else {
-        context->buffer[context->pos] = '\x1b';
-        context->buffer[context->pos + 1] = '\\';
-        sixel_advance(context, 2);
-    }
-    if (nwrite <= 0) {
-        return (-1);
+    if (!context->skip_dcs_envelope && !context->penetrate_multiplexer) {
+        if (context->has_8bit_control) {
+            nwrite = sprintf((char *)context->buffer + context->pos, "\x9c");
+        } else {
+            nwrite = sprintf((char *)context->buffer + context->pos, "\x1b\\");
+        }
+        if (nwrite <= 0) {
+            return (-1);
+        }
+        sixel_advance(context, nwrite);
     }
 
     /* flush buffer */
     if (context->pos > 0) {
-        context->fn_write((char *)context->buffer, context->pos, context->priv);
+        if (context->penetrate_multiplexer) {
+            penetrate(context, context->pos);
+            context->fn_write("\x1bP\x1b\x1b\\\x1bP\\\x1b\\", 10, context->priv);
+        }
+        else {
+            context->fn_write((char *)context->buffer, context->pos, context->priv);
+        }
     }
 
     /* free nodes */
@@ -367,7 +395,6 @@ int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
                  sixel_dither_t /* in */ *dither,   /* dither context */
                  sixel_output_t /* in */ *context)  /* output context */
 {
-    int ret;
     unsigned char *paletted_pixels, *normalized_pixels;
 
     sixel_dither_ref(dither);

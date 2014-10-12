@@ -79,10 +79,9 @@ static int
 sixel_to_png(const char *input, const char *output)
 {
     unsigned char *raw_data, *png_data;
-    int sx, sy, comp;
+    int sx, sy;
     int raw_len;
     int png_len;
-    int i;
     int max;
     int n;
     FILE *input_fp, *output_fp;
@@ -143,8 +142,7 @@ sixel_to_png(const char *input, const char *output)
 
     unsigned char *indexed_pixels;
     unsigned char *palette;
-    //int sx, sy;
-    int depth, ncolors;
+    int ncolors;
 
     unsigned char *rgb_pixels;
     int x, y;
