@@ -647,6 +647,8 @@ PKG_CONFIG_PATH
 PKG_CONFIG
 COND_GCOV_FALSE
 COND_GCOV_TRUE
+COND_DEBUG_FALSE
+COND_DEBUG_TRUE
 zshcompletiondir
 bashcompletiondir
 pkgconfigdir
@@ -790,6 +792,7 @@ with_libcurl
 with_pkgconfigdir
 with_bashcompletiondir
 with_zshcompletiondir
+enable_debug
 enable_gcov
 '
       ac_precious_vars='build_alias
@@ -1441,6 +1444,7 @@ Optional Features:
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-img2sixel     whether to build img2sixel (default: yes)
   --disable-sixel2png     whether to build sixel2png (default: yes)
+  --enable-debug          Use debug macro and specific CFLAGS
   --enable-gcov           Use gcov
 
 Optional Packages:
@@ -11772,6 +11776,24 @@ fi
 $as_echo "$as_me: zsh-completion directory is ${zshcompletiondir}" >&6;}
 
 
+# Check whether --enable-debug was given.
+if test "${enable_debug+set}" = set; then :
+  enableval=$enable_debug;
+$as_echo "#define HAVE_DEBUG 1" >>confdefs.h
+
+else
+  enable_debug=no
+fi
+
+ if test x$enable_debug != xno; then
+  COND_DEBUG_TRUE=
+  COND_DEBUG_FALSE='#'
+else
+  COND_DEBUG_TRUE='#'
+  COND_DEBUG_FALSE=
+fi
+
+
 # Check whether --enable-gcov was given.
 if test "${enable_gcov+set}" = set; then :
   enableval=$enable_gcov;
@@ -14104,6 +14126,10 @@ if test -z "${WANT_SIXEL2PNG_TRUE}" && test -z "${WANT_SIXEL2PNG_FALSE}"; then
   as_fn_error $? "conditional \"WANT_SIXEL2PNG\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${COND_DEBUG_TRUE}" && test -z "${COND_DEBUG_FALSE}"; then
+  as_fn_error $? "conditional \"COND_DEBUG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${COND_GCOV_TRUE}" && test -z "${COND_GCOV_FALSE}"; then
   as_fn_error $? "conditional \"COND_GCOV\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -16359,5 +16385,6 @@ echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
+echo "       debugging           : $enable_debug"
 echo ""
 echo ""

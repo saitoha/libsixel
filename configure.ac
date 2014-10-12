@@ -94,6 +94,13 @@ AC_ARG_WITH(zshcompletiondir,
 AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])
 AC_SUBST(zshcompletiondir)
 
+AC_ARG_ENABLE([debug],
+              [AS_HELP_STRING([--enable-debug],
+                              [Use debug macro and specific CFLAGS])],
+              [AC_DEFINE(HAVE_DEBUG, [1], [enable debugging support])],
+              [enable_debug=no])
+AM_CONDITIONAL([COND_DEBUG], [test x$enable_debug != xno])
+
 AC_ARG_ENABLE([gcov],
               [AS_HELP_STRING([--enable-gcov],
                               [Use gcov])],
@@ -315,5 +322,6 @@ echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
+echo "       debugging           : $enable_debug"
 echo ""
 echo ""
