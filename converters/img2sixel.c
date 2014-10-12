@@ -469,7 +469,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 
             nret = sixel_encode(frames[n], sx, sy, COLOR_RGB888, dither, context);
             if (nret != 0) {
-                free(p);
                 goto end;
             }
 
