@@ -66,6 +66,10 @@
 # include <curl/curl.h>
 #endif
 
+#ifdef HAVE_ERRNO_H
+# include <errno.h>
+#endif
+
 #include <stdio.h>
 #include "frompnm.h"
 #include "loader.h"
@@ -135,7 +139,7 @@ open_binary_file(char const *filename)
     }
     f = fopen(filename, "rb");
     if (!f) {
-#if _ERRNO_H
+#if HAVE_ERRNO_H
         fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
                 filename, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
@@ -158,7 +162,7 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
 
     chunk_init(pchunk, 64 * 1024);
     if (pchunk->buffer == NULL) {
-#if _ERRNO_H
+#if HAVE_ERRNO_H
         fprintf(stderr, "get_chunk_from_file('%s'): malloc failed.\n" "reason: %s.\n",
                 filename, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
@@ -169,7 +173,7 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
         if ((pchunk->max_size - pchunk->size) < 4096) {
             pchunk->max_size *= 2;
             if ((pchunk->buffer = (unsigned char *)realloc(pchunk->buffer, pchunk->max_size)) == NULL) {
-#if _ERRNO_H
+#if HAVE_ERRNO_H
                 fprintf(stderr, "get_chunk_from_file('%s'): relloc failed.\n" "reason: %s.\n",
                         filename, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
@@ -327,7 +331,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         pixels = load_pnm(pchunk->buffer, pchunk->size,
                           psx, psy, pcomp, pstride);
         if (!pixels) {
-#if _ERRNO_H
+#if HAVE_ERRNO_H
             fprintf(stderr, "load_pnm failed.\n" "reason: %s.\n",
                     strerror(errno));
 #endif  /* HAVE_ERRNO_H */
@@ -620,7 +624,7 @@ load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride
     *pstride = *psx * *pcomp;
     p = pixels = malloc(*pstride * *psy);
     if (p == NULL) {
-#if _ERRNO_H
+#if HAVE_ERRNO_H
         fprintf(stderr, "load_with_gd failed.\n" "reason: %s.\n",
                 strerror(errno));
 #endif  /* HAVE_ERRNO_H */
