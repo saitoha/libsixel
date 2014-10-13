@@ -120,7 +120,6 @@ prepare_monochrome_palette(finvert)
 static sixel_dither_t *
 prepare_specified_palette(char const *mapfile, int reqcolors)
 {
-    FILE *f;
     unsigned char *mappixels;
     sixel_dither_t *dither;
     int map_sx;
@@ -133,7 +132,7 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
     delays = NULL;
 
     mappixels = load_image_file(mapfile, &map_sx, &map_sy,
-                                &frame_count, &loop_count, &delays);
+                                &frame_count, &loop_count, &delays, 1);
     free(delays);
     if (!mappixels) {
         return NULL;
@@ -178,6 +177,8 @@ typedef struct Settings {
     int finvert;
     int fuse_macro;
     int fignore_delay;
+    int complexion;
+    int fstatic;
     int pixelwidth;
     int pixelheight;
     int percentwidth;
@@ -188,6 +189,7 @@ typedef struct Settings {
     int clipheight;
     int clipfirst;
     int macro_number;
+    int penetrate_multiplexer;
     int show_version;
     int show_help;
 } settings_t;
@@ -238,46 +240,6 @@ prepare_palette(unsigned char *frame, int sx, int sy, settings_t *psettings)
     return dither;
 }
 
-
-static int
-printf_hex(char const *fmt, ...)
-{
-    char buffer[128];
-    char hex[256];
-    int i;
-    int j;
-    size_t len;
-    va_list ap;
-
-    va_start(ap, fmt);
-    vsprintf(buffer, fmt, ap);
-    va_end(ap);
-
-    len = strlen(buffer);
-    for (i = j = 0; i < len; ++i, ++j) {
-        hex[j] = (buffer[i] >> 4) & 0xf;
-        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
-        hex[++j] = buffer[i] & 0xf;
-        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
-    }
-
-    return fwrite(hex, 1, len * 2, stdout);
-}
-
-
-static int
-putchar_hex(int c)
-{
-    char hex[2];
-
-    hex[0] = (c >> 4) & 0xf;
-    hex[0] += (hex[0] < 10 ? '0' : ('a' - 10));
-    hex[1] = c & 0xf;
-    hex[1] += (hex[1] < 10 ? '0' : ('a' - 10));
-    fwrite(hex, 1, 2, stdout);
-
-    return c;
-}
 
 static void
 clip(unsigned char *pixels, int sx, int sy, int cx, int cy, int cw, int ch)
@@ -381,7 +343,6 @@ static int
 convert_to_sixel(char const *filename, settings_t *psettings)
 {
     unsigned char *pixels = NULL;
-    unsigned char *frame = NULL;
     unsigned char **frames = NULL;
     unsigned char *mappixels = NULL;
     unsigned char *p = NULL;
@@ -391,11 +352,9 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int frame_count = 1;
     int loop_count = 1;
     int *delays = NULL;
-    int i;
     int c;
     int n;
     int nret = -1;
-    FILE *f;
     int dulation = 0;
     int lag = 0;
     clock_t start;
@@ -405,7 +364,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
     pixels = load_image_file(filename, &sx, &sy,
-                             &frame_count, &loop_count, &delays);
+                             &frame_count, &loop_count,
+                             &delays, psettings->fstatic);
 
     if (pixels == NULL) {
         nret = -1;
@@ -462,6 +422,9 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
     sixel_dither_set_diffusion_type(dither, psettings->method_for_diffuse);
 
+    if (psettings->complexion > 1) {
+        sixel_dither_set_complexion_score(dither, psettings->complexion);
+    }
 #if HAVE_SIGNAL
 # if HAVE_DECL_SIGINT
     signal(SIGINT, signal_handler);
@@ -493,6 +456,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     if ((psettings->fuse_macro && frame_count > 1) || psettings->macro_number >= 0) {
         context = sixel_output_create(sixel_hex_write_callback, stdout);
         sixel_output_set_8bit_availability(context, psettings->f8bit);
+        sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
         for (n = 0; n < frame_count; ++n) {
 #if HAVE_USLEEP && HAVE_CLOCK
             start = clock();
@@ -587,11 +551,11 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         /* create output context */
         context = sixel_output_create(sixel_write_callback, stdout);
         sixel_output_set_8bit_availability(context, psettings->f8bit);
+        sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
         p = malloc(sx * sy * 3);
         if (nret != 0) {
             goto end;
         }
-
         for (c = 0; c != loop_count; ++c) {
             for (n = 0; n < frame_count; ++n) {
                 if (frame_count > 1) {
@@ -719,7 +683,12 @@ void show_help()
             "                           DECDMAC and make terminal memorize\n"
             "                           SIXEL image. No image is shown if this\n"
             "                           option is specified\n"
+            "-C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE\n"
+            "                           specify an number argument for the\n"
+            "                           score of complexion correction.\n"
+            "                           COMPLEXIONSCORE must be 1 or more.\n"
             "-g, --ignore-delay         render GIF animation without delay\n"
+            "-S, --static               render animated GIF as a static image\n"
             "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
             "                           choose diffusion method which used\n"
             "                           with -p option (color reduction)\n"
@@ -734,7 +703,7 @@ void show_help()
             "                             burkes   -> Burkes' method\n"
             "-f FINDTYPE, --find-largest=FINDTYPE\n"
             "                           choose method for finding the largest\n"
-            "                           dimention of median cut boxes for\n"
+            "                           dimension of median cut boxes for\n"
             "                           splitting, make sense only when -p\n"
             "                           option (color reduction) is\n"
             "                           specified\n"
@@ -753,16 +722,16 @@ void show_help()
             "                           when -p option (color reduction) is\n"
             "                           specified\n"
             "                           SELECTTYPE is one of them:\n"
-            "                             auto     -> choose selecting\n"
-            "                                         method automatically\n"
-            "                                         (default)\n"
-            "                             center   -> choose the center of\n"
-            "                                         the box\n"
-            "                             average  -> caclulate the color\n"
-            "                                         average into the box\n"
-            "                             histgram -> similar with average\n"
-            "                                         but considers color\n"
-            "                                         histgram\n"
+            "                             auto      -> choose selecting\n"
+            "                                          method automatically\n"
+            "                                          (default)\n"
+            "                             center    -> choose the center of\n"
+            "                                          the box\n"
+            "                             average    -> calculate the color\n"
+            "                                          average into the box\n"
+            "                             histogram -> similar with average\n"
+            "                                          but considers color\n"
+            "                                          histogram\n"
             "-c REGION, --crop=REGION   crop source image to fit the\n"
             "                           specified geometry. REGION should\n"
             "                           be formatted as '%%dx%%d+%%d+%%d'\n"
@@ -820,6 +789,8 @@ void show_help()
             "                                       GIF header (default)\n"
             "                             force   -> always enable loop\n"
             "                             disable -> always disable loop\n"
+            "-P --penetrate             penetrate GNU Screen using DCS\n"
+            "                           pass-through sequence\n"
             "-V, --version              show version and license info\n"
             "-H, --help                 show this help\n"
             );
@@ -830,7 +801,6 @@ int
 main(int argc, char *argv[])
 {
     int n;
-    int filecount = 1;
     int long_opt;
     int unknown_opt = 0;
 #if HAVE_GETOPT_LONG
@@ -841,7 +811,7 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:ed:f:s:c:w:h:r:q:il:ugn:VH";
+    char const *optstring = "78p:m:ed:f:s:c:w:h:r:q:il:ugSn:PC:VH";
 
     settings_t settings = {
         -1,           /* reqcolors */
@@ -857,6 +827,8 @@ main(int argc, char *argv[])
         0,            /* finvert */
         0,            /* fuse_macro */
         0,            /* fignore_delay */
+        1,            /* complexion */
+        0,            /* static */
         -1,           /* pixelwidth */
         -1,           /* pixelheight */
         -1,           /* percentwidth */
@@ -867,32 +839,36 @@ main(int argc, char *argv[])
         0,            /* clipheight */
         0,            /* clipfirst */
         -1,           /* macro_number */
+        0,            /* penetrate_multiplexer */
         0,            /* show_version */
         0,            /* show_help */
     };
 
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
-        {"7bit-mode",    no_argument,        &long_opt, '7'},
-        {"8bit-mode",    no_argument,        &long_opt, '8'},
-        {"colors",       required_argument,  &long_opt, 'p'},
-        {"mapfile",      required_argument,  &long_opt, 'm'},
-        {"monochrome",   no_argument,        &long_opt, 'e'},
-        {"diffusion",    required_argument,  &long_opt, 'd'},
-        {"find-largest", required_argument,  &long_opt, 'f'},
-        {"select-color", required_argument,  &long_opt, 's'},
-        {"crop",         required_argument,  &long_opt, 'c'},
-        {"width",        required_argument,  &long_opt, 'w'},
-        {"height",       required_argument,  &long_opt, 'h'},
-        {"resampling",   required_argument,  &long_opt, 'r'},
-        {"quality",      required_argument,  &long_opt, 'q'},
-        {"invert",       no_argument,        &long_opt, 'i'},
-        {"loop-control", required_argument,  &long_opt, 'l'},
-        {"use-macro",    no_argument,        &long_opt, 'u'},
-        {"ignore-delay", no_argument,        &long_opt, 'g'},
-        {"macro-number", required_argument,  &long_opt, 'n'},
-        {"version",      no_argument,        &long_opt, 'V'},
-        {"help",         no_argument,        &long_opt, 'H'},
+        {"7bit-mode",        no_argument,        &long_opt, '7'},
+        {"8bit-mode",        no_argument,        &long_opt, '8'},
+        {"colors",           required_argument,  &long_opt, 'p'},
+        {"mapfile",          required_argument,  &long_opt, 'm'},
+        {"monochrome",       no_argument,        &long_opt, 'e'},
+        {"diffusion",        required_argument,  &long_opt, 'd'},
+        {"find-largest",     required_argument,  &long_opt, 'f'},
+        {"select-color",     required_argument,  &long_opt, 's'},
+        {"crop",             required_argument,  &long_opt, 'c'},
+        {"width",            required_argument,  &long_opt, 'w'},
+        {"height",           required_argument,  &long_opt, 'h'},
+        {"resampling",       required_argument,  &long_opt, 'r'},
+        {"quality",          required_argument,  &long_opt, 'q'},
+        {"invert",           no_argument,        &long_opt, 'i'},
+        {"loop-control",     required_argument,  &long_opt, 'l'},
+        {"use-macro",        no_argument,        &long_opt, 'u'},
+        {"ignore-delay",     no_argument,        &long_opt, 'g'},
+        {"static",           no_argument,        &long_opt, 'S'},
+        {"macro-number",     required_argument,  &long_opt, 'n'},
+        {"penetrate",        no_argument,        &long_opt, 'P'},
+        {"complexion-score", required_argument,  &long_opt, 'C'},
+        {"version",          no_argument,        &long_opt, 'V'},
+        {"help",             no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
@@ -978,7 +954,8 @@ main(int argc, char *argv[])
                     settings.method_for_rep = REP_CENTER_BOX;
                 } else if (strcmp(optarg, "average") == 0) {
                     settings.method_for_rep = REP_AVERAGE_COLORS;
-                } else if (strcmp(optarg, "histgram") == 0) {
+                } else if ((strcmp(optarg, "histogram") == 0) ||
+                           (strcmp(optarg, "histgram") == 0)) {
                     settings.method_for_rep = REP_AVERAGE_PIXELS;
                 } else {
                     fprintf(stderr,
@@ -1004,7 +981,7 @@ main(int argc, char *argv[])
                     goto argerr;
                 }
             }
-	    break;
+            break;
         case 'w':
             parsed = sscanf(optarg, "%d%s", &number, unit);
             if (parsed == 2 && strcmp(unit, "%") == 0) {
@@ -1123,6 +1100,20 @@ main(int argc, char *argv[])
         case 'g':
             settings.fignore_delay = 1;
             break;
+        case 'S':
+            settings.fstatic = 1;
+            break;
+        case 'P':
+            settings.penetrate_multiplexer = 1;
+            break;
+        case 'C':
+            settings.complexion = atoi(optarg);
+            if (settings.complexion < 1) {
+                fprintf(stderr,
+                        "complexion parameter must be 1 or more.\n");
+                goto argerr;
+            }
+            break;
         case 'V':
             settings.show_version = 1;
             break;
@@ -1151,6 +1142,7 @@ main(int argc, char *argv[])
     }
     if (settings.show_version) {
         show_version();
+        exit_code = EXIT_SUCCESS;
         goto end;
     }
     if (settings.show_help) {

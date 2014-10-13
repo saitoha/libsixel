@@ -196,7 +196,7 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
 {
     CURL *curl;
     CURLcode code;
- 
+
     chunk_init(pchunk, 1024);
     curl = curl_easy_init();
     curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -236,6 +236,7 @@ get_chunk(char const *filename, chunk_t *pchunk)
 }
 
 
+#if 0
 static int
 chunk_is_sixel(chunk_t const *chunk)
 {
@@ -270,6 +271,7 @@ chunk_is_sixel(chunk_t const *chunk)
     }
     return 0;
 }
+#endif
 
 
 static int
@@ -308,21 +310,24 @@ chunk_is_gif(chunk_t const *chunk)
 static unsigned char *
 load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
                   int *pcomp, int *pstride,
-                  int *pframe_count, int *ploop_count, int **ppdelay)
+                  int *pframe_count, int *ploop_count, int **ppdelay,
+                  int fstatic)
 {
-    FILE *f;
     unsigned char *p;
-    unsigned char *pixels;
+    unsigned char *pixels = NULL;
     static stbi__context s;
     static stbi__gif g;
     chunk_t frames;
     chunk_t delays;
 
+#if 0
     if (chunk_is_sixel(pchunk)) {
         /* sixel */
         *pframe_count = 1;
         *ploop_count = 1;
-    } else if (chunk_is_pnm(pchunk)) {
+    } else
+#endif
+    if (chunk_is_pnm(pchunk)) {
         /* pnm */
         pixels = load_pnm(pchunk->buffer, pchunk->size,
                           psx, psy, pcomp, pstride);
@@ -359,6 +364,9 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
             memory_write((void *)&g.delay, sizeof(g.delay), 1, (void *)&delays);
             ++*pframe_count;
             pixels = frames.buffer;
+            if (fstatic) {
+                break;
+            }
         }
         *ploop_count = g.loop_count;
         *ppdelay = (int *)delays.buffer;
@@ -390,7 +398,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
 static unsigned char *
 load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
                     int *pcomp, int *pstride, int *pframe_count,
-                    int *ploop_count, int **ppdelay)
+                    int *ploop_count, int **ppdelay, int fstatic)
 {
     GdkPixbuf *pixbuf;
     GdkPixbufAnimation *animation;
@@ -414,7 +422,7 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
     loader = gdk_pixbuf_loader_new();
     gdk_pixbuf_loader_write(loader, pchunk->buffer, pchunk->size, NULL);
     animation = gdk_pixbuf_loader_get_animation(loader);
-    if (gdk_pixbuf_animation_is_static_image(animation)) {
+    if (fstatic || gdk_pixbuf_animation_is_static_image(animation)) {
         pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
         if (pixbuf == NULL) {
             return NULL;
@@ -674,7 +682,8 @@ arrange_pixelformat(unsigned char *pixels, int width, int height,
 
 unsigned char *
 load_image_file(char const *filename, int *psx, int *psy,
-                int *pframe_count, int *ploop_count, int **ppdelay)
+                int *pframe_count, int *ploop_count, int **ppdelay,
+                int fstatic)
 {
     unsigned char *pixels;
     int comp;
@@ -690,7 +699,8 @@ load_image_file(char const *filename, int *psx, int *psy,
 #ifdef HAVE_GDK_PIXBUF2
     if (!pixels) {
         pixels = load_with_gdkpixbuf(&chunk, psx, psy, &comp, &stride,
-                                     pframe_count, ploop_count,ppdelay);
+                                     pframe_count, ploop_count, ppdelay,
+                                     fstatic);
     }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
@@ -701,7 +711,8 @@ load_image_file(char const *filename, int *psx, int *psy,
 #endif  /* HAVE_GD */
     if (!pixels) {
         pixels = load_with_builtin(&chunk, psx, psy, &comp, &stride,
-                                   pframe_count, ploop_count, ppdelay);
+                                   pframe_count, ploop_count, ppdelay,
+                                   fstatic);
     }
     free(chunk.buffer);
 
