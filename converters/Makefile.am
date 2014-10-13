@@ -19,8 +19,11 @@ if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
 img2sixel_SOURCES = img2sixel.c scale.c malloc_stub.c loader.c frompnm.c \
                     scale.h malloc_stub.h loader.h frompnm.h
-img2sixel_CFLAGS = -I$(top_builddir)/include/ $(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) $(GD_CFLAGS)
-img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS)
+img2sixel_CFLAGS = -I$(top_builddir)/include/ \
+				   $(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) \
+				   $(GD_CFLAGS) $(JPEG_CFLAGS)
+img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm \
+				  $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS) $(JPEG_LIBS)
 dist_man_MANS += img2sixel.1
 dist_bashcompletion_DATA += shell-completion/bash/img2sixel
 dist_zshcompletion_DATA += shell-completion/zsh/_img2sixel

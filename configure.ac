@@ -64,6 +64,12 @@ AC_ARG_WITH([libcurl],
             [],
             [with_libcurl=no])
 
+AC_ARG_WITH([jpeg],
+            [AS_HELP_STRING([--with-jpeg],
+                            [whether to build with libjpeg (default: no)])],
+            [],
+            [with_jpeg=no])
+
 #AC_ARG_WITH([wic],
 #            [AS_HELP_STRING([--with-wic],
 #                            [whether to build with windows WIC integration, windows only (default: no)])],
@@ -162,6 +168,7 @@ AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
 
 loaders="stb_image"
 have_curl="no"
+have_jpeg="no"
 #have_wic="no"
 
 #if test x$with_wic != xno; then
@@ -288,6 +295,26 @@ if test x$with_libcurl != xno; then
 fi
 AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
+
+
+if test x$with_jpeg != xno; then
+    AC_CHECK_HEADER([jpeglib.h],
+                    [AC_CHECK_LIB([jpeg],
+                                  [jpeg_read_header],
+                                  [have_jpeg=yes JPEG_LIBS=-ljpeg],
+                                  [have_jpeg=no])])
+    if test x$have_jpeg = xyes; then
+        AC_DEFINE(HAVE_JPEG, 1, [whether jpeg codec library is available])
+        loaders="${loaders} jpeg"
+    else
+        AC_MSG_ERROR([unable to find jpeg codec library])
+    fi
+    AC_MSG_NOTICE([jpeg cflags is ${JPEG_CFLAGS}])
+    AC_MSG_NOTICE([jpeg libs is ${JPEG_LIBS}])
+fi
+AC_SUBST(JPEG_CFLAGS)
+AC_SUBST(JPEG_LIBS)
+
 
 AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
