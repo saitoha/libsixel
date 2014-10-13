@@ -22,11 +22,11 @@
 #ifndef LIBSIXEL_QUANT_H
 #define LIBSIXEL_QUANT_H
 
-/* method for finding the largest dimention for splitting,
+/* method for finding the largest dimension for splitting,
  * and sorting by that component */
 enum methodForLargest {
     LARGE_AUTO,  /* choose automatically the method for finding the largest
-                    dimention */
+                    dimension */
     LARGE_NORM,  /* simply comparing the range in RGB space */
     LARGE_LUM    /* transforming into luminosities before the comparison */
 };
@@ -38,7 +38,7 @@ enum methodForRep {
     REP_CENTER_BOX,     /* choose the center of the box */
     REP_AVERAGE_COLORS, /* choose the average all the color
                            in the box (specified in Heckbert's paper) */
-    REP_AVERAGE_PIXELS  /* choose the averate all the pixels in the box */
+    REP_AVERAGE_PIXELS  /* choose the average all the pixels in the box */
 };
 
 /* method for dithering */

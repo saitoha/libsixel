@@ -1,3 +1,11 @@
+2014-10-07  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Fix for animation GIF quality degradation
+
+2014-10-06  Hayaki Saito <user@zuse.jp>
+
+  * LICENSE.sixel, README.md: Add a mention about the License of kmiya's sixel
+
 2014-10-05  Hayaki Saito <user@zuse.jp>
 
   * converters/stb_image.h: Skip an unknown code(0x3c) at GIF decoder
@@ -1460,10 +1468,10 @@
 
   * src/quant.c: Minor fix for creating palette
 
-  * src/quant.c: Minor fix around creating histgram
+  * src/quant.c: Minor fix around creating histogram
 
   * src/quant.c: Add new parameter for selecting method for detecting largest
-  splitting dimention
+  splitting dimension
 
   * src/quant.c: Import largestByLuminosity function from pnmcolormap.c
 
@@ -1473,7 +1481,7 @@
 
   * src/quant.c: Fix a memory leak problem
 
-  * src/tosixel.c: Comment out unused code which makes histgram
+  * src/tosixel.c: Comment out unused code which makes histogram
 
   * src/quant.c: Minor fix
 
@@ -1515,9 +1523,9 @@
 
 2014-03-28  Hayaki Saito <user@zuse.jp>
 
-  * quant.c: Reduce sample pixels for creating histgram
+  * quant.c: Reduce sample pixels for creating histogram
 
-  * quant.c: Improve the allocation method for creating histgram
+  * quant.c: Improve the allocation method for creating histogram
 
   * quant.c: Minor fix
 
