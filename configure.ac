@@ -3,10 +3,10 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.1.4], [user@zuse.jp])
+AC_INIT([sixel], [1.2.0], [user@zuse.jp])
 LS_LT_CURRENT=1
-LS_LT_REVISION=0
-LS_LT_AGE=1
+LS_LT_REVISION=1
+LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 AC_SUBST([PACKAGE_DESCRIPTION],
          ["A lightweight, fast implementation of DEC SIXEL graphics codec"])
@@ -93,6 +93,13 @@ AC_ARG_WITH(zshcompletiondir,
                            [zshcompletiondir=${datadir}/zsh/site-functions])
 AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])
 AC_SUBST(zshcompletiondir)
+
+AC_ARG_ENABLE([debug],
+              [AS_HELP_STRING([--enable-debug],
+                              [Use debug macro and specific CFLAGS])],
+              [AC_DEFINE(HAVE_DEBUG, [1], [enable debugging support])],
+              [enable_debug=no])
+AM_CONDITIONAL([COND_DEBUG], [test x$enable_debug != xno])
 
 AC_ARG_ENABLE([gcov],
               [AS_HELP_STRING([--enable-gcov],
@@ -315,5 +322,6 @@ echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
+echo "       debugging           : $enable_debug"
 echo ""
 echo ""
