@@ -91,6 +91,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* whether jpeg codec library is available */
+#undef HAVE_JPEG
+
 /* whether libcurl is available */
 #undef HAVE_LIBCURL
 

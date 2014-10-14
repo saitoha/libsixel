@@ -634,6 +634,8 @@ ac_unique_file="src/fromsixel.c"
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
+JPEG_LIBS
+JPEG_CFLAGS
 LIBCURL_LIBS
 LIBCURL_CFLAGS
 GD_LIBS
@@ -789,6 +791,7 @@ enable_sixel2png
 with_gdk_pixbuf2
 with_gd
 with_libcurl
+with_jpeg
 with_pkgconfigdir
 with_bashcompletiondir
 with_zshcompletiondir
@@ -1458,6 +1461,7 @@ Optional Packages:
   --with-gdk-pixbuf2      whether to build with gdk-pixbuf2 (default: no)
   --with-gd               whether to build with gd (default: no)
   --with-libcurl          whether to build with libcurl (default: no)
+  --with-jpeg             whether to build with libjpeg (default: no)
   --with-pkgconfigdir     Use the specified pkgconfig dir (default is
                           libdir/pkgconfig)
   --with-bashcompletiondir
@@ -11734,6 +11738,15 @@ else
 fi
 
 
+
+# Check whether --with-jpeg was given.
+if test "${with_jpeg+set}" = set; then :
+  withval=$with_jpeg;
+else
+  with_jpeg=no
+fi
+
+
 #AC_ARG_WITH([wic],
 #            [AS_HELP_STRING([--with-wic],
 #                            [whether to build with windows WIC integration, windows only (default: no)])],
@@ -12979,6 +12992,7 @@ _ACEOF
 
 loaders="stb_image"
 have_curl="no"
+have_jpeg="no"
 #have_wic="no"
 
 #if test x$with_wic != xno; then
@@ -13974,6 +13988,72 @@ $as_echo "$as_me: libcurl cflags is ${LIBCURL_CFLAGS}" >&6;}
     { $as_echo "$as_me:${as_lineno-$LINENO}: libcurl libs is ${LIBCURL_LIBS}" >&5
 $as_echo "$as_me: libcurl libs is ${LIBCURL_LIBS}" >&6;}
 fi
+
+
+
+
+if test x$with_jpeg != xno; then
+    ac_fn_c_check_header_mongrel "$LINENO" "jpeglib.h" "ac_cv_header_jpeglib_h" "$ac_includes_default"
+if test "x$ac_cv_header_jpeglib_h" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for jpeg_read_header in -ljpeg" >&5
+$as_echo_n "checking for jpeg_read_header in -ljpeg... " >&6; }
+if ${ac_cv_lib_jpeg_jpeg_read_header+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-ljpeg  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char jpeg_read_header ();
+int
+main ()
+{
+return jpeg_read_header ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_jpeg_jpeg_read_header=yes
+else
+  ac_cv_lib_jpeg_jpeg_read_header=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_jpeg_jpeg_read_header" >&5
+$as_echo "$ac_cv_lib_jpeg_jpeg_read_header" >&6; }
+if test "x$ac_cv_lib_jpeg_jpeg_read_header" = xyes; then :
+  have_jpeg=yes JPEG_LIBS=-ljpeg
+else
+  have_jpeg=no
+fi
+
+fi
+
+
+    if test x$have_jpeg = xyes; then
+
+$as_echo "#define HAVE_JPEG 1" >>confdefs.h
+
+        loaders="${loaders} jpeg"
+    else
+        as_fn_error $? "unable to find jpeg codec library" "$LINENO" 5
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: jpeg cflags is ${JPEG_CFLAGS}" >&5
+$as_echo "$as_me: jpeg cflags is ${JPEG_CFLAGS}" >&6;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: jpeg libs is ${JPEG_LIBS}" >&5
+$as_echo "$as_me: jpeg libs is ${JPEG_LIBS}" >&6;}
+fi
+
 
 
 

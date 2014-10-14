@@ -25,6 +25,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if HAVE_JPEG
+# include <stdio.h>
+# include <jpeglib.h>
+#endif  /* HAVE_JPEG */
+
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif
@@ -221,6 +226,56 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
     return 0;
 }
 # endif  /* HAVE_LIBCURL */
+ 
+
+# if HAVE_JPEG
+/* import from @uobikiemukot's sdump loader.h */
+static unsigned char *
+load_jpeg(unsigned char *data, int datasize,
+          int *pwidth, int *pheight, int *pdepth)
+{
+	int row_stride, size;
+    unsigned char *result;
+	JSAMPARRAY buffer;
+	struct jpeg_decompress_struct cinfo;
+	struct jpeg_error_mgr pub;
+
+	cinfo.err = jpeg_std_error(&pub);
+
+	jpeg_create_decompress(&cinfo);
+	jpeg_mem_src(&cinfo, data, datasize);
+	jpeg_read_header(&cinfo, TRUE);
+
+	/* disable colormap (indexed color), grayscale -> rgb */
+	cinfo.quantize_colors = FALSE;
+	cinfo.out_color_space = JCS_RGB;
+	jpeg_start_decompress(&cinfo);
+
+	*pwidth   = cinfo.output_width;
+	*pheight  = cinfo.output_height;
+	*pdepth = cinfo.output_components;
+
+	size = *pwidth * *pheight * *pdepth;
+	if ((result = (uint8_t *)calloc(1, size)) == NULL) {
+		jpeg_finish_decompress(&cinfo);
+		jpeg_destroy_decompress(&cinfo);
+		return NULL;
+	}
+
+	row_stride = cinfo.output_width * cinfo.output_components;
+	buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
+
+	while (cinfo.output_scanline < cinfo.output_height) {
+		jpeg_read_scanlines(&cinfo, buffer, 1);
+		memcpy(result + (cinfo.output_scanline - 1) * row_stride, buffer[0], row_stride);
+	}
+
+	jpeg_finish_decompress(&cinfo);
+	jpeg_destroy_decompress(&cinfo);
+
+	return result;
+}
+# endif  /* HAVE_JPEG */
 
 
 static int
@@ -311,6 +366,21 @@ chunk_is_gif(chunk_t const *chunk)
 }
 
 
+#if HAVE_JPEG
+static int
+chunk_is_jpeg(chunk_t const *chunk)
+{
+    if (chunk->size < 2) {
+        return 0;
+    }
+    if (memcmp("\xFF\xD8", chunk->buffer, 2) == 0) {
+        return 1;
+    }
+    return 0;
+}
+#endif  /* HAVE_JPEG */
+
+
 static unsigned char *
 load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
                   int *pcomp, int *pstride,
@@ -344,7 +414,16 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         }
         *pframe_count = 1;
         *ploop_count = 1;
-    } else if (chunk_is_gif(pchunk)) {
+    }
+#if HAVE_JPEG
+    else if (chunk_is_jpeg(pchunk)) {
+        pixels = load_jpeg(pchunk->buffer, pchunk->size,
+                           psx, psy, pcomp);
+        *pframe_count = 1;
+        *ploop_count = 1;
+    }
+#endif  /* HAVE_JPEG */
+    else if (chunk_is_gif(pchunk)) {
         chunk_init(&frames, 1024);
         chunk_init(&delays, 1024);
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);

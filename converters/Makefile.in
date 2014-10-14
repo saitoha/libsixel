@@ -126,6 +126,7 @@ am__DEPENDENCIES_1 =
 @WANT_IMG2SIXEL_TRUE@	$(top_builddir)/src/libsixel.la \
 @WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_1) \
 @WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_1) \
 @WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -317,6 +318,8 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+JPEG_CFLAGS = @JPEG_CFLAGS@
+JPEG_LIBS = @JPEG_LIBS@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBCURL_CFLAGS = @LIBCURL_CFLAGS@
@@ -422,13 +425,12 @@ CLEANFILES = *.gcno *.gcda *.gcov snake1.png snake2.png snake2.sixel
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c scale.c malloc_stub.c loader.c frompnm.c \
 @WANT_IMG2SIXEL_TRUE@                    scale.h malloc_stub.h loader.h frompnm.h
 
-@WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -Wall \
-@WANT_IMG2SIXEL_TRUE@	-I$(top_builddir)/include/ \
+@WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -I$(top_builddir)/include/ \
 @WANT_IMG2SIXEL_TRUE@	$(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) \
 @WANT_IMG2SIXEL_TRUE@	$(LIBCURL_CFLAGS) $(GD_CFLAGS) \
-@WANT_IMG2SIXEL_TRUE@	$(am__append_2)
+@WANT_IMG2SIXEL_TRUE@	$(JPEG_CFLAGS) $(am__append_2)
 @WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm \
-@WANT_IMG2SIXEL_TRUE@				  $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS)
+@WANT_IMG2SIXEL_TRUE@				  $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS) $(JPEG_LIBS)
 
 @WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c \
 @WANT_SIXEL2PNG_TRUE@                    stb_image_write.h malloc_stub.h
