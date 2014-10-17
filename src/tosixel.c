@@ -185,6 +185,9 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
     sixel_node_t *np, *tp, top;
     unsigned char list[SIXEL_PALETTE_MAX];
     int nwrite;
+    int p[3] = {0, 0, 0};
+    int pcount = 3;
+    int use_raster_attributes = 1;
 
     context->pos = 0;
 
@@ -220,17 +223,51 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
         sixel_advance(context, nwrite);
     }
 
-    nwrite = sprintf((char *)context->buffer + context->pos, "0;0;0" "q");
+    if (p[2] == 0) {
+        pcount--;
+        if (p[1] == 0) {
+            pcount--;
+            if (p[0] == 0) {
+                pcount--;
+            }
+        }
+    }
+
+    if (pcount > 0) {
+        nwrite = sprintf((char *)context->buffer + context->pos, "%d", p[0]);
+        if (nwrite <= 0) {
+            return (-1);
+        }
+        sixel_advance(context, nwrite);
+        if (pcount > 1) {
+            nwrite = sprintf((char *)context->buffer + context->pos, ";%d", p[1]);
+            if (nwrite <= 0) {
+                return (-1);
+            }
+            sixel_advance(context, nwrite);
+            if (pcount > 2) {
+                nwrite = sprintf((char *)context->buffer + context->pos, ";%d", p[2]);
+                if (nwrite <= 0) {
+                    return (-1);
+                }
+                sixel_advance(context, nwrite);
+            }
+        }
+    }
+
+    nwrite = sprintf((char *)context->buffer + context->pos, "q");
     if (nwrite <= 0) {
         return (-1);
     }
     sixel_advance(context, nwrite);
 
-    nwrite = sprintf((char *)context->buffer + context->pos, "\"1;1;%d;%d", width, height);
-    if (nwrite <= 0) {
-        return (-1);
+    if (use_raster_attributes) {
+        nwrite = sprintf((char *)context->buffer + context->pos, "\"1;1;%d;%d", width, height);
+        if (nwrite <= 0) {
+            return (-1);
+        }
+        sixel_advance(context, nwrite);
     }
-    sixel_advance(context, nwrite);
 
     if (ncolors != 2 || keycolor == -1) {
         for (n = 0; n < ncolors; n++) {
