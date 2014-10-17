@@ -317,6 +317,15 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
 
         }
 
+        if (y != 5) {
+            /* DECGNL Graphics Next Line */
+            context->buffer[context->pos] = '-';
+            sixel_advance(context, 1);
+            if (nwrite <= 0) {
+                return (-1);
+            }
+        }
+
         for (x = 0; (np = context->node_top) != NULL;) {
             if (x > np->sx) {
                 /* DECGCR Graphics Carriage Return */
@@ -339,13 +348,6 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
                 sixel_node_del(context, np);
                 np = context->node_top;
             }
-        }
-
-        /* DECGNL Graphics Next Line */
-        context->buffer[context->pos] = '-';
-        sixel_advance(context, 1);
-        if (nwrite <= 0) {
-            return (-1);
         }
 
         i = 0;
