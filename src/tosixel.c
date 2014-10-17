@@ -248,8 +248,6 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
                 return (-1);
             }
         }
-        context->buffer[context->pos] = '\n';
-        sixel_advance(context, 1);
     }
 
     for (y = i = 0; y < height; y++) {
