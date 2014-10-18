@@ -55,7 +55,7 @@ static int const ColTab[] = {
 
 
 static int
-HueToRGB(int n1, int n2, int hue)
+sixel_hue_to_rgb(int n1, int n2, int hue)
 {
     const int HLSMAX = 100;
 
@@ -81,7 +81,7 @@ HueToRGB(int n1, int n2, int hue)
 
 
 static int
-HLStoRGB(int hue, int lum, int sat)
+sixel_hls_to_rgb(int hue, int lum, int sat)
 {
     int R, G, B;
     int Magic1, Magic2;
@@ -98,16 +98,16 @@ HLStoRGB(int hue, int lum, int sat)
         }
         Magic1 = 2 * lum - Magic2;
 
-        R = (HueToRGB(Magic1, Magic2, hue + (HLSMAX / 3)) * RGBMAX + (HLSMAX / 2)) / HLSMAX;
-        G = (HueToRGB(Magic1, Magic2, hue) * RGBMAX + (HLSMAX / 2)) / HLSMAX;
-        B = (HueToRGB(Magic1, Magic2, hue - (HLSMAX / 3)) * RGBMAX + (HLSMAX/2)) / HLSMAX;
+        R = (sixel_hue_to_rgb(Magic1, Magic2, hue + (HLSMAX / 3)) * RGBMAX + (HLSMAX / 2)) / HLSMAX;
+        G = (sixel_hue_to_rgb(Magic1, Magic2, hue) * RGBMAX + (HLSMAX / 2)) / HLSMAX;
+        B = (sixel_hue_to_rgb(Magic1, Magic2, hue - (HLSMAX / 3)) * RGBMAX + (HLSMAX/2)) / HLSMAX;
     }
     return RGB(R, G, B);
 }
 
 
 static unsigned char *
-GetParam(unsigned char *p, int *param, int *len)
+sixel_getparams(unsigned char *p, int *param, int *len)
 {
     int n;
 
@@ -217,7 +217,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
             }
 
             s = ++p;
-            p = GetParam(p, param, &n);
+            p = sixel_getparams(p, param, &n);
             if (s < p) {
                 for (i = 0; i < 255 && s < p;) {
                     pam[i++] = *(s++);
@@ -277,7 +277,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
         } else if (*p == '"') {
             /* DECGRA Set Raster Attributes " Pan; Pad; Ph; Pv */
             s = p++;
-            p = GetParam(p, param, &n);
+            p = sixel_getparams(p, param, &n);
             if (s < p) {
                 for (i = 0; i < 255 && s < p;) {
                     gra[i++] = *(s++);
@@ -312,7 +312,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
         } else if (*p == '!') {
             /* DECGRI Graphics Repeat Introducer ! Pn Ch */
-            p = GetParam(++p, param, &n);
+            p = sixel_getparams(++p, param, &n);
 
             if (n > 0) {
                 repeat_count = param[0];
@@ -320,7 +320,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
         } else if (*p == '#') {
             /* DECGCI Graphics Color Introducer # Pc; Pu; Px; Py; Pz */
-            p = GetParam(++p, param, &n);
+            p = sixel_getparams(++p, param, &n);
 
             if (n > 0) {
                 if ((color_index = param[0]) < 0) {
@@ -335,7 +335,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
                     if (param[2] > 360) param[2] = 360;
                     if (param[3] > 100) param[3] = 100;
                     if (param[4] > 100) param[4] = 100;
-                    sixel_palet[color_index] = HLStoRGB(param[2] * 100 / 360, param[3], param[4]);
+                    sixel_palet[color_index] = sixel_hls_to_rgb(param[2] * 100 / 360, param[3], param[4]);
                 } else if (param[1] == 2) {    /* RGB */
                     if (param[2] > 100) param[2] = 100;
                     if (param[3] > 100) param[3] = 100;
