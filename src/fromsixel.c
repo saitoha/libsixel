@@ -107,7 +107,7 @@ sixel_hls_to_rgb(int hue, int lum, int sat)
 
 
 static unsigned char *
-sixel_getparams(unsigned char *p, int *param, int *len
+sixel_getparams(unsigned char *p, int *param, int *len)
 {
     int n;
 
