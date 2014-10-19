@@ -344,6 +344,7 @@ if test x$with_png != xno; then
     fi
     if test x$have_png = xyes; then
         AC_DEFINE(HAVE_LIBPNG, 1, [whether libpng is available])
+        loaders="${loaders} png"
     else
         AC_MSG_ERROR([unable to find libpng])
     fi
@@ -380,6 +381,5 @@ echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
-echo "       libpng integration  : $have_png"
 echo ""
 echo ""

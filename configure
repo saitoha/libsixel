@@ -14010,6 +14010,7 @@ fi
 
 
 
+<<<<<<< HEAD
 if test x$with_jpeg != xno; then
     ac_fn_c_check_header_mongrel "$LINENO" "jpeglib.h" "ac_cv_header_jpeglib_h" "$ac_includes_default"
 if test "x$ac_cv_header_jpeglib_h" = xyes; then :
@@ -14074,6 +14075,8 @@ fi
 
 
 
+=======
+>>>>>>> feature-libpng-integration
 if test x$with_png != xno; then
     ac_fn_c_check_header_mongrel "$LINENO" "png.h" "ac_cv_header_png_h" "$ac_includes_default"
 if test "x$ac_cv_header_png_h" = xyes; then :
@@ -14201,6 +14204,7 @@ fi
 
 $as_echo "#define HAVE_LIBPNG 1" >>confdefs.h
 
+        loaders="${loaders} libpng"
     else
         as_fn_error $? "unable to find libpng" "$LINENO" 5
     fi
@@ -16620,7 +16624,10 @@ echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
+<<<<<<< HEAD
 echo "       debugging           : $enable_debug"
 echo "       libpng integration  : $have_png"
+=======
+>>>>>>> feature-libpng-integration
 echo ""
 echo ""
