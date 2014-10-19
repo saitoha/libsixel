@@ -112,6 +112,58 @@ Some NetBSD/OpenBSD users are doing amazing challenge.
   ![sayaka-chan](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sayaka-netbsd-x68k.jpg)
 
 
+## Highlighted features
+
+### Improved compression
+
+Former sixel encoders(such as [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html)) are mainly designed for dot-matrix printers.
+They minimize the amount of printer-head movement distance.
+But nowadays this method did not represent the best performance for displaying sixel data on terminal emulators.
+SIXEL data for terminals were found in 80's Usenet, but the technology of how to create them seems to be lost.
+[kmiya's sixel](http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz) introduces the encoding method which is re-designed
+for terminal emulators to optimize the overhead of transporting SIXEL with keeping compatibility with former SIXEL terminal.
+Now libsixel and ImageMagick's sixel coder follow it.
+
+
+### High quality quantization
+
+img2sixel(1) supports color image quantization. It works well even if few number of colors are allowed.
+
+- ppmtosixel (netpbm)
+
+    $ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel
+
+  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel.png)
+
+
+- ppmtosixel with Floyd–Steinberg dithering (netpbm)
+
+    $ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel
+
+  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel2.png)
+
+
+- kmiya's sixel
+
+    $ sixel -p16 images/snake.jpg
+
+  ![kmiya's sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixel.png)
+
+
+- PySixel (sixelconv command)
+
+    $ sixelconv -n16 images/snake.jpg
+
+  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixelconv.png)
+
+
+- libsixel (img2sixel command)
+
+    $ img2sixel -p16 images/snake.jpg
+
+  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_libsixel.png)
+
+
 ## Terminal requirements
 
 If you want to view a SIXEL image, you have to get a terminal which support sixel graphics.
@@ -169,44 +221,6 @@ Now SIXEL feature is supported by the following terminals.
 - [Homebrew tap](https://github.com/aki017/homebrew-sixel)
 - [yacp](https://github.com/fd00/yacp/tree/master/libsixel)
 - [Debian](https://ftp-master.debian.org/new/libsixel_1.1.2-1.html)
-
-## Quantization quality
-
-img2sixel(1) supports high quality color image quantization.
-
-- ppmtosixel (netpbm)
-
-    $ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel
-
-  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel.png)
-
-
-- ppmtosixel with Floyd–Steinberg dithering (netpbm)
-
-    $ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel
-
-  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel2.png)
-
-
-- kmiya's sixel
-
-    $ sixel -p16 images/snake.jpg
-
-  ![kmiya's sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixel.png)
-
-
-- PySixel (sixelconv command)
-
-    $ sixelconv -n16 images/snake.jpg
-
-  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixelconv.png)
-
-
-- libsixel (img2sixel command)
-
-    $ img2sixel -p16 images/snake.jpg
-
-  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_libsixel.png)
 
 
 ## Build and install
@@ -718,7 +732,7 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 
 ## Similar software
 
-- [ppmtosixel (netpbm)](http://netpbm.sourceforge.net/)
+- [netpbm](http://netpbm.sourceforge.net/)
 
   You can get SIXEL graphics using [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html)
   or [pbmtoln03](http://netpbm.sourceforge.net/doc/ppmtosixel.html).
@@ -732,6 +746,11 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 - [PySixel](https://pypi.python.org/pypi/PySixel)
 
   Python implementation of SIXEL converter
+
+
+- [ImageMagick](http://www.imagemagick.org/)
+
+  Now SIXEL coder is available in svn trunk and V6 branch.
 
 
 - [monosixel in arakiken's tw](https://bitbucket.org/arakiken/tw/branch/sixel)
