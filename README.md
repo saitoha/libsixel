@@ -119,7 +119,8 @@ Some NetBSD/OpenBSD users are doing amazing challenge.
 Former sixel encoders(such as [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html)) are mainly designed for dot-matrix printers.
 They minimize the amount of printer-head movement distance.
 But nowadays this method did not represent the best performance for displaying sixel data on terminal emulators.
-[kmiya's sixel](http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz) introduces new encoding method which is re-designed
+SIXEL data for terminals were found in 80's Usenet, but the technology of how to create them seems to be lost.
+[kmiya's sixel](http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz) introduces the encoding method which is re-designed
 for terminal emulators to optimize the overhead of transporting SIXEL with keeping compatibility with former SIXEL terminal.
 Now libsixel and ImageMagick's sixel coder follow it.
 
