@@ -127,6 +127,7 @@ am__DEPENDENCIES_1 =
 @WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_1) \
 @WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_1) \
 @WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_1) \
 @WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -143,7 +144,8 @@ am__sixel2png_SOURCES_DIST = sixel2png.c stb_image_write.c \
 @WANT_SIXEL2PNG_TRUE@	sixel2png-malloc_stub.$(OBJEXT)
 sixel2png_OBJECTS = $(am_sixel2png_OBJECTS)
 @WANT_SIXEL2PNG_TRUE@sixel2png_DEPENDENCIES =  \
-@WANT_SIXEL2PNG_TRUE@	$(top_builddir)/src/libsixel.la
+@WANT_SIXEL2PNG_TRUE@	$(top_builddir)/src/libsixel.la \
+@WANT_SIXEL2PNG_TRUE@	$(am__DEPENDENCIES_1)
 sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sixel2png_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -325,6 +327,8 @@ LDFLAGS = @LDFLAGS@
 LIBCURL_CFLAGS = @LIBCURL_CFLAGS@
 LIBCURL_LIBS = @LIBCURL_LIBS@
 LIBOBJS = @LIBOBJS@
+LIBPNG_CFLAGS = @LIBPNG_CFLAGS@
+LIBPNG_LIBS = @LIBPNG_LIBS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
@@ -428,17 +432,19 @@ CLEANFILES = *.gcno *.gcda *.gcov snake1.png snake2.png snake2.sixel
 @WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -I$(top_builddir)/include/ \
 @WANT_IMG2SIXEL_TRUE@	$(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) \
 @WANT_IMG2SIXEL_TRUE@	$(LIBCURL_CFLAGS) $(GD_CFLAGS) \
-@WANT_IMG2SIXEL_TRUE@	$(JPEG_CFLAGS) $(am__append_2)
+@WANT_IMG2SIXEL_TRUE@	$(JPEG_CFLAGS) $(LIBPNG_CFLAGS) \
+@WANT_IMG2SIXEL_TRUE@	$(am__append_2)
 @WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm \
-@WANT_IMG2SIXEL_TRUE@				  $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS) $(JPEG_LIBS)
+@WANT_IMG2SIXEL_TRUE@				  $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS) $(JPEG_LIBS) $(LIBPNG_LIBS)
 
 @WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c \
 @WANT_SIXEL2PNG_TRUE@                    stb_image_write.h malloc_stub.h
 
 @WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = -Wall \
 @WANT_SIXEL2PNG_TRUE@	-I$(top_builddir)/include/ \
-@WANT_SIXEL2PNG_TRUE@	$(MAYBE_COVERAGE) $(am__append_7)
-@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la
+@WANT_SIXEL2PNG_TRUE@	$(MAYBE_COVERAGE) $(LIBPNG_CFLAGS) \
+@WANT_SIXEL2PNG_TRUE@	$(am__append_7)
+@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la $(LIBPNG_LIBS)
 all: all-recursive
 
 .SUFFIXES:
