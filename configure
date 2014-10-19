@@ -634,6 +634,8 @@ ac_unique_file="src/fromsixel.c"
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
+LIBPNG_LIBS
+LIBPNG_CFLAGS
 LIBCURL_LIBS
 LIBCURL_CFLAGS
 GD_LIBS
@@ -787,6 +789,7 @@ enable_sixel2png
 with_gdk_pixbuf2
 with_gd
 with_libcurl
+with_png
 with_pkgconfigdir
 with_bashcompletiondir
 with_zshcompletiondir
@@ -809,7 +812,9 @@ GDK_PIXBUF_LIBS
 GD_CFLAGS
 GD_LIBS
 LIBCURL_CFLAGS
-LIBCURL_LIBS'
+LIBCURL_LIBS
+LIBPNG_CFLAGS
+LIBPNG_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1454,6 +1459,7 @@ Optional Packages:
   --with-gdk-pixbuf2      whether to build with gdk-pixbuf2 (default: no)
   --with-gd               whether to build with gd (default: no)
   --with-libcurl          whether to build with libcurl (default: no)
+  --with-png              whether to build with libpng (default: no)
   --with-pkgconfigdir     Use the specified pkgconfig dir (default is
                           libdir/pkgconfig)
   --with-bashcompletiondir
@@ -1484,6 +1490,9 @@ Some influential environment variables:
               C compiler flags for LIBCURL, overriding pkg-config
   LIBCURL_LIBS
               linker flags for LIBCURL, overriding pkg-config
+  LIBPNG_CFLAGS
+              C compiler flags for LIBPNG, overriding pkg-config
+  LIBPNG_LIBS linker flags for LIBPNG, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -11730,6 +11739,15 @@ else
 fi
 
 
+
+# Check whether --with-png was given.
+if test "${with_png+set}" = set; then :
+  withval=$with_png;
+else
+  with_png=no
+fi
+
+
 #AC_ARG_WITH([wic],
 #            [AS_HELP_STRING([--with-wic],
 #                            [whether to build with windows WIC integration, windows only (default: no)])],
@@ -12957,6 +12975,7 @@ _ACEOF
 
 loaders="stb_image"
 have_curl="no"
+have_png="no"
 #have_wic="no"
 
 #if test x$with_wic != xno; then
@@ -13951,6 +13970,144 @@ $as_echo "#define HAVE_LIBCURL 1" >>confdefs.h
 $as_echo "$as_me: libcurl cflags is ${LIBCURL_CFLAGS}" >&6;}
     { $as_echo "$as_me:${as_lineno-$LINENO}: libcurl libs is ${LIBCURL_LIBS}" >&5
 $as_echo "$as_me: libcurl libs is ${LIBCURL_LIBS}" >&6;}
+fi
+
+
+
+if test x$with_libpng != xno; then
+    ac_fn_c_check_header_mongrel "$LINENO" "png.h" "ac_cv_header_png_h" "$ac_includes_default"
+if test "x$ac_cv_header_png_h" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for png_check_sig in -lpng" >&5
+$as_echo_n "checking for png_check_sig in -lpng... " >&6; }
+if ${ac_cv_lib_png_png_check_sig+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpng  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char png_check_sig ();
+int
+main ()
+{
+return png_check_sig ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_png_png_check_sig=yes
+else
+  ac_cv_lib_png_png_check_sig=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_png_png_check_sig" >&5
+$as_echo "$ac_cv_lib_png_png_check_sig" >&6; }
+if test "x$ac_cv_lib_png_png_check_sig" = xyes; then :
+  have_png=yes LIBPNG_LIBS=-lpng
+else
+  have_png=no
+fi
+
+fi
+
+
+    if test x$have_png != xyes; then
+        if test x$have_pkg_config != xno; then
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBPNG" >&5
+$as_echo_n "checking for LIBPNG... " >&6; }
+
+if test -n "$LIBPNG_CFLAGS"; then
+    pkg_cv_LIBPNG_CFLAGS="$LIBPNG_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libpng\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libpng") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBPNG_CFLAGS=`$PKG_CONFIG --cflags "libpng" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBPNG_LIBS"; then
+    pkg_cv_LIBPNG_LIBS="$LIBPNG_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libpng\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libpng") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBPNG_LIBS=`$PKG_CONFIG --libs "libpng" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        LIBPNG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libpng" 2>&1`
+        else
+	        LIBPNG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libpng" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBPNG_PKG_ERRORS" >&5
+
+	have_png=no
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	have_png=no
+else
+	LIBPNG_CFLAGS=$pkg_cv_LIBPNG_CFLAGS
+	LIBPNG_LIBS=$pkg_cv_LIBPNG_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	have_png=yes
+fi
+        fi
+    fi
+    if test x$have_png = xyes; then
+
+$as_echo "#define HAVE_LIBPNG 1" >>confdefs.h
+
+    else
+        as_fn_error $? "unable to find libpng" "$LINENO" 5
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: libpng cflags is ${LIBPNG_CFLAGS}" >&5
+$as_echo "$as_me: libpng cflags is ${LIBPNG_CFLAGS}" >&6;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: libpng libs is ${LIBPNG_LIBS}" >&5
+$as_echo "$as_me: libpng libs is ${LIBPNG_LIBS}" >&6;}
 fi
 
 
@@ -16359,5 +16516,6 @@ echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
+echo "       libpng integration  : $have_png"
 echo ""
 echo ""

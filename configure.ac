@@ -64,6 +64,12 @@ AC_ARG_WITH([libcurl],
             [],
             [with_libcurl=no])
 
+AC_ARG_WITH([png],
+            [AS_HELP_STRING([--with-png],
+                            [whether to build with libpng (default: no)])],
+            [],
+            [with_png=no])
+
 #AC_ARG_WITH([wic],
 #            [AS_HELP_STRING([--with-wic],
 #                            [whether to build with windows WIC integration, windows only (default: no)])],
@@ -162,6 +168,7 @@ AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
 
 loaders="stb_image"
 have_curl="no"
+have_png="no"
 #have_wic="no"
 
 #if test x$with_wic != xno; then
@@ -289,6 +296,31 @@ fi
 AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
 
+if test x$with_libpng != xno; then
+    AC_CHECK_HEADER([png.h],
+                    [AC_CHECK_LIB([png],
+                                  [png_check_sig],
+                                  [have_png=yes LIBPNG_LIBS=-lpng],
+                                  [have_png=no])])
+    if test x$have_png != xyes; then
+        if test x$have_pkg_config != xno; then
+            PKG_CHECK_MODULES(LIBPNG,
+                              [libpng],
+                              [have_png=yes],
+                              [have_png=no])
+        fi
+    fi
+    if test x$have_png = xyes; then
+        AC_DEFINE(HAVE_LIBPNG, 1, [whether libpng is available])
+    else
+        AC_MSG_ERROR([unable to find libpng])
+    fi
+    AC_MSG_NOTICE([libpng cflags is ${LIBPNG_CFLAGS}])
+    AC_MSG_NOTICE([libpng libs is ${LIBPNG_LIBS}])
+fi
+AC_SUBST(LIBPNG_CFLAGS)
+AC_SUBST(LIBPNG_LIBS)
+
 AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
           ])
@@ -315,5 +347,6 @@ echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
+echo "       libpng integration  : $have_png"
 echo ""
 echo ""
