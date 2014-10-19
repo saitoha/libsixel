@@ -13974,7 +13974,7 @@ fi
 
 
 
-if test x$with_libpng != xno; then
+if test x$with_png != xno; then
     ac_fn_c_check_header_mongrel "$LINENO" "png.h" "ac_cv_header_png_h" "$ac_includes_default"
 if test "x$ac_cv_header_png_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for png_check_sig in -lpng" >&5
@@ -14101,6 +14101,7 @@ fi
 
 $as_echo "#define HAVE_LIBPNG 1" >>confdefs.h
 
+        loaders="${loaders} libpng"
     else
         as_fn_error $? "unable to find libpng" "$LINENO" 5
     fi
@@ -16516,6 +16517,5 @@ echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
-echo "       libpng integration  : $have_png"
 echo ""
 echo ""
