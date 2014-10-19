@@ -326,6 +326,7 @@ chunk_is_gif(chunk_t const *chunk)
 }
 
 
+#if HAVE_LIBPNG
 static void
 read_png(png_structp png_ptr, png_bytep data, png_size_t length)
 {
@@ -339,6 +340,7 @@ read_png(png_structp png_ptr, png_bytep data, png_size_t length)
         pchunk->size -= length;
     }
 }
+#endif  /* HAVE_LIBPNG */
 
 
 static unsigned char *
