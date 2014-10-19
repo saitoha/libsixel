@@ -40,6 +40,7 @@
 #endif
 
 
+#if 0
 /* function Nearest Neighbor */
 static double
 nearest_neighbor(double const d)
@@ -49,6 +50,7 @@ nearest_neighbor(double const d)
     }
     return 0.0;
 }
+#endif
 
 
 /* function Bi-linear */

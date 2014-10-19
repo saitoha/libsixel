@@ -53,6 +53,9 @@ use DECDMAC and DEVINVM sequences to optimize GIF animation rendering.
 .B \-g, \-\-ignore-delay
 render GIF animation without delay.
 .TP 5
+.B \-S, \-\-static
+render animated GIF as a static image.
+.TP 5
 .B \-d \fIDIFFUSIONTYPE\fP, \-\-diffusion=\fIDIFFUSIONTYPE\fP
 choose diffusion method which used with color reduction.
 .br
@@ -73,7 +76,7 @@ stucki   -> Stucki's method
 burkes   -> Burkes' method
 .TP 5
 .B \-f \fIFINDTYPE\fP, \-\-find\-largest=\fIFINDTYPE\fP
-choose method for finding the largest dimention of median
+choose method for finding the largest dimension of median
 cut boxes for splitting, make sense only when -p option
 (color reduction) is specified.
 .br
@@ -96,12 +99,17 @@ auto     -> choose selecting method automatically (default)
 .br
 center   -> choose the center of the box
 .br
-average  -> caclulate the color average into the box
+average  -> calculate the color average into the box
 .br
-histgram -> similar with average but considers color histgram
+histogram -> similar with average but considers color histogram
+.TP 5
+.B \-c \fIREGION\fP, \-\-crop=\fIREGION\fP
+crop source image to fit the specified geometry.
+.br
+REGION should be formatted as '%dx%d+%d+%d'.
 .TP 5
 .B \-w \fIWIDTH\fP, \-\-width=\fIWIDTH\fP
-resize image to specific width.
+resize image to specified width.
 .br
 \fIWIDTH\fP is represented by the following syntax:
 .br
@@ -114,7 +122,7 @@ auto       -> preserving aspect ratio (default)
 <number>px -> scale width with pixel counts
 .TP 5
 .B \-h \fIHEIGHT\fP, \-\-height=\fIHEIGHT\fP
-resize image to specific height.
+resize image to specified height.
 .br
 \fIHEIGHT\fP is represented by the following syntax
 .br
@@ -170,6 +178,15 @@ auto   -> honer the setting of GIF header (default)
 force   -> always enable loop
 .br
 disable -> always disable loop
+.TP 5
+.B \-P, \-\-penetrate
+penetrate GNU Screen using DCS pass-through sequence.
+.TP 5
+.B \-V, \-\-version
+show version and license info.
+.TP 5
+.B \-H, \-\-help
+print help.
 
 .SH "SEE ALSO"
 sixel(5) sixel2png(1)

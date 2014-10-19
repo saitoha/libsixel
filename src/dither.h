@@ -19,23 +19,40 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_LOADER_H
-#define LIBSIXEL_LOADER_H
+#ifndef LIBSIXEL_DITHER_H
+#define LIBSIXEL_DITHER_H
+
+/* dither context object */
+typedef struct sixel_dither {
+    unsigned int ref;           /* reference counter */
+    unsigned char *palette;     /* palette definition */
+    unsigned short *cachetable; /* cache table */
+    int reqcolors;              /* requested colors */
+    int ncolors;                /* active colors */
+    int origcolors;             /* original colors */
+    int optimized;              /* pixel is 15bpp compressable */
+    int complexion;             /* for complexion correction */
+    int method_for_largest;     /* method for finding the largest dimention 
+                                   for splitting */
+    int method_for_rep;         /* method for choosing a color from the box */
+    int method_for_diffuse;     /* method for diffusing */
+    int quality_mode;           /* quality of histogram */
+    int keycolor;               /* background color */
+} sixel_dither_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-unsigned char *
-load_image_file(char const *filename, int *psx, int *psy,
-                int *pframe_count, int *ploop_count, int **ppdelay,
-                int fstatic);
+/* apply palette */
+unsigned char * sixel_apply_palette(unsigned char *pixels, int width, int height,
+                                    sixel_dither_t *dither);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LIBSIXEL_LOADER_H */
+#endif /* LIBSIXEL_DITHER_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

@@ -1,7 +1,13 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if you have the `calloc' function. */
+#undef HAVE_CALLOC
+
 /* Define to 1 if you have the `clock' function. */
 #undef HAVE_CLOCK
+
+/* enable debugging support */
+#undef HAVE_DEBUG
 
 /* Define to 1 if you have the declaration of `gdImageCreateFromBmpPtr', and
    to 0 if you don't. */
@@ -64,6 +70,9 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
+/* Define to 1 if the system has the `deprecated' function attribute */
+#undef HAVE_FUNC_ATTRIBUTE_DEPRECATED
+
 /* whether gd is available */
 #undef HAVE_GD
 
@@ -82,11 +91,17 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* whether jpeg codec library is available */
+#undef HAVE_JPEG
+
 /* whether libcurl is available */
 #undef HAVE_LIBCURL
 
 /* Define to 1 if you have the `iconv' library (-liconv). */
 #undef HAVE_LIBICONV
+
+/* whether libpng is available */
+#undef HAVE_LIBPNG
 
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
@@ -155,6 +170,9 @@
 
 /* Define to 1 if you have the `usleep' function. */
 #undef HAVE_USLEEP
+
+/* Define to 1 if the system has the `deprecated' variable attribute */
+#undef HAVE_VAR_ATTRIBUTE_DEPRECATED
 
 /* Define to 1 if you have the `_setmode' function. */
 #undef HAVE__SETMODE

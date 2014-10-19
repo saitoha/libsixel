@@ -19,23 +19,68 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_LOADER_H
-#define LIBSIXEL_LOADER_H
+#ifndef LIBSIXEL_OUTPUT_H
+#define LIBSIXEL_OUTPUT_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-unsigned char *
-load_image_file(char const *filename, int *psx, int *psy,
-                int *pframe_count, int *ploop_count, int **ppdelay,
-                int fstatic);
+typedef struct sixel_node {
+    struct sixel_node *next;
+    int pal;
+    int sx;
+    int mx;
+    unsigned char *map;
+} sixel_node_t;
+
+typedef int (* sixel_write_function)(char *data, int size, void *priv);
+
+typedef struct sixel_output {
+
+    int ref;
+
+    /* compatiblity flags */
+
+    /* 0: 7bit terminal,
+     * 1: 8bit terminal */
+    unsigned char has_8bit_control;
+
+    /* 0: the terminal has sixel scrolling
+     * 1: the terminal does not have sixel scrolling */
+    unsigned char has_sixel_scrolling;
+
+    /* 0: DECSDM set (CSI ? 80 h) enables sixel scrolling
+       1: DECSDM set (CSI ? 80 h) disables sixel scrolling */
+    unsigned char has_sdm_glitch;
+
+    /* 0: do not skip DCS envelope,
+     * 1: skip DCS envelope */
+    unsigned char skip_dcs_envelope;
+
+    sixel_write_function fn_write;
+
+    unsigned char conv_palette[256];
+    int save_pixel;
+    int save_count;
+    int active_palette;
+
+    sixel_node_t *node_top;
+    sixel_node_t *node_free;
+
+    int penetrate_multiplexer;
+
+    void *priv;
+    int pos;
+    unsigned char buffer[1];
+
+} sixel_output_t;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LIBSIXEL_LOADER_H */
+#endif /* LIBSIXEL_OUTPUT_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
