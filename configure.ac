@@ -328,7 +328,7 @@ fi
 AC_SUBST(JPEG_CFLAGS)
 AC_SUBST(JPEG_LIBS)
 
-if test x$with_libpng != xno; then
+if test x$with_png != xno; then
     AC_CHECK_HEADER([png.h],
                     [AC_CHECK_LIB([png],
                                   [png_check_sig],
