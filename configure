@@ -14074,7 +14074,7 @@ fi
 
 
 
-if test x$with_libpng != xno; then
+if test x$with_png != xno; then
     ac_fn_c_check_header_mongrel "$LINENO" "png.h" "ac_cv_header_png_h" "$ac_includes_default"
 if test "x$ac_cv_header_png_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for png_check_sig in -lpng" >&5
