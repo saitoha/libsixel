@@ -16,4 +16,4 @@
 
 * Add APIs for skipping DCS envelope (sixel_output_{get,set}_skip_dcs_envelope). (disscussion with @uobikiemukot)
 
-* Some bug fixes and minor improvements (Thanks to @elfring, @isaki68k, @knok, @mattn, @tsutsui and @waywardmonkeys).
+* Some bug fixes and minor improvements (Thanks to @elfring, @isaki68k, @knok, @mattn, @tsutsui, @waywardmonkeys and @ttdoda).
