@@ -273,6 +273,10 @@ Options:
                            DECDMAC and make terminal memorize
                            SIXEL image. No image is shown if this
                            option is specified
+-C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE
+                           specify an number argument for the
+                           score of complexion correction.
+                           COMPLEXIONSCORE must be 1 or more.
 -g, --ignore-delay         render GIF animation without delay
 -S, --static               render animated GIF as a static image
 -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
@@ -308,16 +312,16 @@ Options:
                            when -p option (color reduction) is
                            specified
                            SELECTTYPE is one of them:
-                             auto     -> choose selecting
-                                         method automatically
-                                         (default)
-                             center   -> choose the center of
-                                         the box
-                             average  -> calculate the color
-                                         average into the box
+                             auto      -> choose selecting
+                                          method automatically
+                                          (default)
+                             center    -> choose the center of
+                                          the box
+                             average    -> calculate the color
+                                          average into the box
                              histogram -> similar with average
-                                         but considers color
-                                         histogram
+                                          but considers color
+                                          histogram
 -c REGION, --crop=REGION   crop source image to fit the
                            specified geometry. REGION should
                            be formatted as '%dx%d+%d+%d'

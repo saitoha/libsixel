@@ -602,7 +602,7 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
     loader = gdk_pixbuf_loader_new();
     gdk_pixbuf_loader_write(loader, pchunk->buffer, pchunk->size, NULL);
     animation = gdk_pixbuf_loader_get_animation(loader);
-    if (fstatic || gdk_pixbuf_animation_is_static_image(animation)) {
+    if (!animation || fstatic || gdk_pixbuf_animation_is_static_image(animation)) {
         pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
         if (pixbuf == NULL) {
             return NULL;
