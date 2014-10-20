@@ -239,6 +239,7 @@ $ make
 --with-gdk-pixbuf2        build with gdk-pixbuf2 (default: no)
 --with-libcurl            build with libcurl (default: no)
 --with-gd                 build with gd (default: no)
+--with-png                build with libpng (default: no)
 --with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
 --with-bashcompletiondir  specify bashcompletion.d
 --with-zshcompletiondir   specify zshcompletion.d
