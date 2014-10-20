@@ -176,7 +176,7 @@ sixel_put_node(sixel_output_t *const context, int x,
 static int
 sixel_encode_impl(unsigned char *pixels, int width, int height,
                   unsigned char *palette, int ncolors, int keycolor,
-                  sixel_output_t *context)
+                  int bodyonly, sixel_output_t *context)
 {
     int x, y, i, n, c;
     int sx, mx;
@@ -232,7 +232,7 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
     }
     sixel_advance(context, nwrite);
 
-    if (ncolors != 2 || keycolor == -1) {
+    if (!bodyonly && (ncolors != 2 || keycolor == -1)) {
         for (n = 0; n < ncolors; n++) {
             /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
             nwrite = sprintf((char *)context->buffer + context->pos, "#%d;2;%d;%d;%d",
@@ -408,7 +408,7 @@ int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
 
     sixel_encode_impl(paletted_pixels, width, height,
                       dither->palette, dither->ncolors,
-                      dither->keycolor, context);
+                      dither->keycolor, dither->bodyonly, context);
 
     sixel_dither_unref(dither);
     free(paletted_pixels);
