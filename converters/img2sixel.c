@@ -173,6 +173,7 @@ typedef struct Settings {
     enum qualityMode quality_mode;
     enum methodForResampling method_for_resampling;
     enum loopMode loop_mode;
+    enum paletteType palette_type;
     int f8bit;
     int finvert;
     int fuse_macro;
@@ -784,10 +785,16 @@ void show_help()
             "-l LOOPMODE, --loop-control=LOOPMODE\n"
             "                           select loop control mode for GIF\n"
             "                           animation.\n"
-            "                             auto   -> honor the setting of\n"
-            "                                       GIF header (default)\n"
+            "                             auto    -> honor the setting of\n"
+            "                                        GIF header (default)\n"
             "                             force   -> always enable loop\n"
             "                             disable -> always disable loop\n"
+            "-t PALETTETYPE, --palette-type=PALETTETYPE\n"
+            "                           select palette color space type\n"
+            "                             auto -> choose palette type\n"
+            "                                     automatically (default)\n"
+            "                             hls  -> use HLS color space\n"
+            "                             rgb  -> use RGB color space\n"
             "-P --penetrate             penetrate GNU Screen using DCS\n"
             "                           pass-through sequence\n"
             "-V, --version              show version and license info\n"
@@ -810,37 +817,38 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:ed:f:s:c:w:h:r:q:il:ugSn:PC:VH";
+    char const *optstring = "78p:m:ed:f:s:c:w:h:r:q:il:t:ugSn:PC:VH";
 
     settings_t settings = {
-        -1,           /* reqcolors */
-        NULL,         /* mapfile */
-        0,            /* monochrome */
-        DIFFUSE_AUTO, /* method_for_diffuse */
-        LARGE_AUTO,   /* method_for_largest */
-        REP_AUTO,     /* method_for_rep */
-        QUALITY_AUTO, /* quality_mode */
-        RES_BILINEAR, /* method_for_resampling */
-        LOOP_AUTO,    /* loop_mode */
-        0,            /* f8bit */
-        0,            /* finvert */
-        0,            /* fuse_macro */
-        0,            /* fignore_delay */
-        1,            /* complexion */
-        0,            /* static */
-        -1,           /* pixelwidth */
-        -1,           /* pixelheight */
-        -1,           /* percentwidth */
-        -1,           /* percentheight */
-        0,            /* clipx */
-        0,            /* clipy */
-        0,            /* clipwidth */
-        0,            /* clipheight */
-        0,            /* clipfirst */
-        -1,           /* macro_number */
-        0,            /* penetrate_multiplexer */
-        0,            /* show_version */
-        0,            /* show_help */
+        -1,                 /* reqcolors */
+        NULL,               /* mapfile */
+        0,                  /* monochrome */
+        DIFFUSE_AUTO,       /* method_for_diffuse */
+        LARGE_AUTO,         /* method_for_largest */
+        REP_AUTO,           /* method_for_rep */
+        QUALITY_AUTO,       /* quality_mode */
+        RES_BILINEAR,       /* method_for_resampling */
+        LOOP_AUTO,          /* loop_mode */
+        PALETTETYPE_AUTO,   /* palette_type */
+        0,                  /* f8bit */
+        0,                  /* finvert */
+        0,                  /* fuse_macro */
+        0,                  /* fignore_delay */
+        1,                  /* complexion */
+        0,                  /* static */
+        -1,                 /* pixelwidth */
+        -1,                 /* pixelheight */
+        -1,                 /* percentwidth */
+        -1,                 /* percentheight */
+        0,                  /* clipx */
+        0,                  /* clipy */
+        0,                  /* clipwidth */
+        0,                  /* clipheight */
+        0,                  /* clipfirst */
+        -1,                 /* macro_number */
+        0,                  /* penetrate_multiplexer */
+        0,                  /* show_version */
+        0,                  /* show_help */
     };
 
 #if HAVE_GETOPT_LONG
@@ -858,6 +866,7 @@ main(int argc, char *argv[])
         {"height",           required_argument,  &long_opt, 'h'},
         {"resampling",       required_argument,  &long_opt, 'r'},
         {"quality",          required_argument,  &long_opt, 'q'},
+        {"palette-type",     required_argument,  &long_opt, 't'},
         {"invert",           no_argument,        &long_opt, 'i'},
         {"loop-control",     required_argument,  &long_opt, 'l'},
         {"use-macro",        no_argument,        &long_opt, 'u'},
@@ -1084,6 +1093,22 @@ main(int argc, char *argv[])
                 }
             }
             break;
+        case 't':
+            /* parse --palette-type option */
+            if (optarg) {
+                if (strcmp(optarg, "auto") == 0) {
+                    settings.palette_type = PALETTETYPE_AUTO;
+                } else if (strcmp(optarg, "hls") == 0) {
+                    settings.palette_type = PALETTETYPE_HLS;
+                } else if (strcmp(optarg, "rgb") == 0) {
+                    settings.palette_type = PALETTETYPE_RGB;
+                } else {
+                    fprintf(stderr,
+                            "Cannot parse palette type option.\n");
+                    goto argerr;
+                }
+            }
+            break;
         case 'i':
             settings.finvert = 1;
             break;
@@ -1180,7 +1205,7 @@ argerr:
     fprintf(stderr, "usage: img2sixel [-78eiugVH] [-p colors] [-m file] [-d diffusiontype]\n"
                     "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
                     "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
-                    "                 [-n macronumber] [filename ...]\n"
+                    "                 [-t palettetype] [-n macronumber] [filename ...]\n"
                     "for more details, type: 'img2sixel -H'.\n");
 
 end:
