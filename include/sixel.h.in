@@ -139,6 +139,9 @@ sixel_output_set_penetrate_multiplexer(sixel_output_t *output, int penetrate);
 void
 sixel_output_set_skip_dcs_envelope(sixel_output_t *output, int skip);
 
+void
+sixel_output_set_palette_type(sixel_output_t *output, int palettetype);
+
 #ifdef __cplusplus
 }
 #endif
