@@ -48,6 +48,9 @@ test: all
 if WANT_IMG2SIXEL
 	./img2sixel ../images/snake.jpg | tee snake.sixel
 	./img2sixel ../images/snake.jpg -w50% --height=100 | tee snake2.sixel
+if HAVE_JPEG
+	./img2sixel ../images/snake-progressive.jpg | tee snake.sixel
+endif
 endif
 if WANT_SIXEL2PNG
 	./sixel2png < snake.sixel > snake1.png
@@ -65,6 +68,9 @@ winetest: all
 if WANT_IMG2SIXEL
 	wine ./img2sixel.exe ../images/snake.jpg | tee snake.sixel
 	wine ./img2sixel ../images/snake.jpg -w50% --height=100 | tee snake2.sixel
+if HAVE_JPEG
+	wine ./img2sixel ../images/snake-progressive.jpg | tee snake.sixel
+endif
 endif
 if WANT_SIXEL2PNG
 	wine ./sixel2png < snake.sixel > snake1.png

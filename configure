@@ -634,6 +634,10 @@ ac_unique_file="src/fromsixel.c"
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
+HAVE_PNG_FALSE
+HAVE_PNG_TRUE
+HAVE_JPEG_FALSE
+HAVE_JPEG_TRUE
 LIBPNG_LIBS
 LIBPNG_CFLAGS
 JPEG_LIBS
@@ -14218,6 +14222,23 @@ fi
           touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
 
 
+ if test x$have_jpeg == xyes; then
+  HAVE_JPEG_TRUE=
+  HAVE_JPEG_FALSE='#'
+else
+  HAVE_JPEG_TRUE='#'
+  HAVE_JPEG_FALSE=
+fi
+
+ if test x$have_png == xyes; then
+  HAVE_PNG_TRUE=
+  HAVE_PNG_FALSE='#'
+else
+  HAVE_PNG_TRUE='#'
+  HAVE_PNG_FALSE=
+fi
+
+
 ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile"
 
 
@@ -14372,6 +14393,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_JPEG_TRUE}" && test -z "${HAVE_JPEG_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_JPEG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_PNG_TRUE}" && test -z "${HAVE_PNG_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_PNG\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

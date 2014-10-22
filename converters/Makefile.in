@@ -1067,6 +1067,7 @@ uninstall-man: uninstall-man1
 test: all
 @WANT_IMG2SIXEL_TRUE@	./img2sixel ../images/snake.jpg | tee snake.sixel
 @WANT_IMG2SIXEL_TRUE@	./img2sixel ../images/snake.jpg -w50% --height=100 | tee snake2.sixel
+@HAVE_JPEG_TRUE@@WANT_IMG2SIXEL_TRUE@	./img2sixel ../images/snake-progressive.jpg | tee snake.sixel
 @WANT_SIXEL2PNG_TRUE@	./sixel2png < snake.sixel > snake1.png
 @WANT_SIXEL2PNG_TRUE@	./sixel2png -i snake.sixel -o snake2.png
 @WANT_IMG2SIXEL_TRUE@	./img2sixel -m ../images/map8.png ../images/egret.jpg
@@ -1078,6 +1079,7 @@ test: all
 winetest: all
 @WANT_IMG2SIXEL_TRUE@	wine ./img2sixel.exe ../images/snake.jpg | tee snake.sixel
 @WANT_IMG2SIXEL_TRUE@	wine ./img2sixel ../images/snake.jpg -w50% --height=100 | tee snake2.sixel
+@HAVE_JPEG_TRUE@@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel ../images/snake-progressive.jpg | tee snake.sixel
 @WANT_SIXEL2PNG_TRUE@	wine ./sixel2png < snake.sixel > snake1.png
 @WANT_SIXEL2PNG_TRUE@	wine ./sixel2png -i snake.sixel -o snake2.png
 @WANT_IMG2SIXEL_TRUE@	wine ./img2sixel -m ../images/map8.png ../images/egret.jpg
