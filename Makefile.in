@@ -882,7 +882,7 @@ all-am:
 	cp package.json.in package.json
 
 test: all
-	$(MAKE) test -C converters > test.log
+	$(MAKE) test -C converters 2>&1 |tee test.log
 
 winetest: all
 	$(MAKE) winetest -C converters

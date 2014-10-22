@@ -1065,28 +1065,20 @@ uninstall-man: uninstall-man1
 
 
 test: all
-@WANT_IMG2SIXEL_TRUE@	./img2sixel ../images/snake.jpg | tee snake.sixel
-@WANT_IMG2SIXEL_TRUE@	./img2sixel ../images/snake.jpg -w50% --height=100 | tee snake2.sixel
-@HAVE_JPEG_TRUE@@WANT_IMG2SIXEL_TRUE@	./img2sixel ../images/snake-progressive.jpg | tee snake.sixel
-@WANT_SIXEL2PNG_TRUE@	./sixel2png < snake.sixel > snake1.png
-@WANT_SIXEL2PNG_TRUE@	./sixel2png -i snake.sixel -o snake2.png
-@WANT_IMG2SIXEL_TRUE@	./img2sixel -m ../images/map8.png ../images/egret.jpg
-@WANT_IMG2SIXEL_TRUE@	./img2sixel -m ../images/map16.png ../images/snake.pnm
-@WANT_IMG2SIXEL_TRUE@	./img2sixel -p 8 ../images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	./img2sixel -p 2 ../images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	./img2sixel -e ../images/snake.jpg
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.jpg | tee snake.sixel
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.jpg -w50% --height=100 | tee snake2.sixel
+@HAVE_JPEG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake-progressive.jpg | tee snake.sixel
+@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.png | tee snake.sixel
+@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png < snake.sixel > snake1.png
+@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -i snake.sixel -o snake2.png
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -m ../images/map8.png ../images/egret.jpg
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -m ../images/map16.png ../images/snake.pnm
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -p 8 ../images/snake.jpg
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -p 2 ../images/snake.jpg
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -e ../images/snake.jpg
 
 winetest: all
-@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel.exe ../images/snake.jpg | tee snake.sixel
-@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel ../images/snake.jpg -w50% --height=100 | tee snake2.sixel
-@HAVE_JPEG_TRUE@@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel ../images/snake-progressive.jpg | tee snake.sixel
-@WANT_SIXEL2PNG_TRUE@	wine ./sixel2png < snake.sixel > snake1.png
-@WANT_SIXEL2PNG_TRUE@	wine ./sixel2png -i snake.sixel -o snake2.png
-@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel -m ../images/map8.png ../images/egret.jpg
-@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel -m ../images/map16.png ../images/snake.pnm
-@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel -p 8 ../images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel -p 2 ../images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel -e ../images/snake.jpg
+	WINE=wine $(MAKE) test
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
