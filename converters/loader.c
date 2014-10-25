@@ -490,12 +490,16 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         switch (png_get_color_type(png_ptr, info_ptr)) {
         case PNG_COLOR_TYPE_PALETTE:
             png_set_palette_to_rgb(png_ptr);
-            *pcomp = 3;
+            *pcomp = 4;
             break;
         case PNG_COLOR_TYPE_GRAY:
             if (bitdepth < 8) {
                 png_set_expand_gray_1_2_4_to_8(png_ptr);
             }
+            break;
+        case PNG_COLOR_MASK_ALPHA:
+            png_set_strip_alpha(png_ptr);
+            *pcomp = 3;
             break;
         default:
             break;
