@@ -364,6 +364,10 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         psettings->reqcolors = 2;
     }
 
+    if (psettings->palette_type == PALETTETYPE_AUTO) {
+        psettings->palette_type = PALETTETYPE_RGB;
+    }
+
     pixels = load_image_file(filename, &sx, &sy,
                              &frame_count, &loop_count,
                              &delays, psettings->fstatic);
@@ -457,6 +461,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     if ((psettings->fuse_macro && frame_count > 1) || psettings->macro_number >= 0) {
         context = sixel_output_create(sixel_hex_write_callback, stdout);
         sixel_output_set_8bit_availability(context, psettings->f8bit);
+        sixel_output_set_palette_type(context, psettings->palette_type);
         sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
         for (n = 0; n < frame_count; ++n) {
 #if HAVE_USLEEP && HAVE_CLOCK
@@ -551,6 +556,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         /* create output context */
         context = sixel_output_create(sixel_write_callback, stdout);
         sixel_output_set_8bit_availability(context, psettings->f8bit);
+        sixel_output_set_palette_type(context, psettings->palette_type);
         sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
         p = malloc(sx * sy * 3);
         if (nret != 0) {
