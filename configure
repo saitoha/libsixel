@@ -1469,7 +1469,7 @@ Optional Packages:
                         (or the compiler's sysroot if not specified).
   --with-gdk-pixbuf2      whether to build with gdk-pixbuf2 (default: no)
   --with-gd               whether to build with gd (default: no)
-  --with-libcurl          whether to build with libcurl (default: no)
+  --with-libcurl          whether to build with libcurl (default: auto)
   --with-jpeg             whether to build with libjpeg (default: auto)
   --with-png              whether to build with libpng (default: auto)
   --with-pkgconfigdir     Use the specified pkgconfig dir (default is
@@ -11747,7 +11747,7 @@ fi
 if test "${with_libcurl+set}" = set; then :
   withval=$with_libcurl;
 else
-  with_libcurl=no
+  with_libcurl=auto
 fi
 
 

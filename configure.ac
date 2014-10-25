@@ -60,9 +60,9 @@ AC_ARG_WITH([gd],
 
 AC_ARG_WITH([libcurl],
             [AS_HELP_STRING([--with-libcurl],
-                            [whether to build with libcurl (default: no)])],
+                            [whether to build with libcurl (default: auto)])],
             [],
-            [with_libcurl=no])
+            [with_libcurl=auto])
 
 AC_ARG_WITH([jpeg],
             [AS_HELP_STRING([--with-jpeg],

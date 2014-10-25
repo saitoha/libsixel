@@ -236,11 +236,11 @@ $ make
 ### Build with optional packages
 
 ```
---with-libcurl            build with libcurl (default: no)
+--with-libcurl            build with libcurl (default: auto)
 --with-gd                 build with libgd (default: no)
 --with-gdk-pixbuf2        build with gdk-pixbuf2 (default: no)
---with-jpeg               build with libjpeg (default: no)                                                                                                            
---with-png                build with libpng (default: no)
+--with-jpeg               build with libjpeg (default: auto)
+--with-png                build with libpng (default: auto)
 --with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
 --with-bashcompletiondir  specify bashcompletion.d
 --with-zshcompletiondir   specify zshcompletion.d
