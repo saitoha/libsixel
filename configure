@@ -14201,12 +14201,7 @@ else
 	LIBPNG_LIBS=$pkg_cv_LIBPNG_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-	ac_fn_c_check_header_mongrel "$LINENO" "zlib.h" "ac_cv_header_zlib_h" "$ac_includes_default"
-if test "x$ac_cv_header_zlib_h" = xyes; then :
-  have_png=yes
-fi
-
-
+	have_png=yes
 fi
         fi
     fi
