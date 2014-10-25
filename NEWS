@@ -1,6 +1,14 @@
-                  --------------------------------
-                   What's new in libsixel-1.2.0 ?
-                  --------------------------------
+                  ------------------------------
+                   What's new in libsixel-1.3 ?
+                  ------------------------------
+
+* Add libjpeg integration
+
+* Add libpng integration
+
+                  ------------------------------
+                   What's new in libsixel-1.2 ?
+                  ------------------------------
 
 * Introduce GNU Screen penetration (-P) feature written by @arakiken.
   This works with arakiken's GNU screen sixel branch
@@ -8,12 +16,18 @@
 
 * Introduce crop operation (-c) feature written by @arakiken.
   This works with arakiken's w3m remoteimg branch
-  (w3m with "-sixel" option, https://bitbucket.org/arakiken/w3m/branch/remoteimg).
+  https://bitbucket.org/arakiken/w3m/branch/remoteimg
+  (w3m with "-sixel" option)
 
-* Introduce -C (complexion score) option and implement complexion correction feature. (discussion with @tsutsui)
+* Introduce -C (complexion score) option and implement complexion correction
+  feature. (discussion with @tsutsui)
 
-* Introduce static image extraction from Gif animation (-S). (discussion with @isaki68k)
+* Introduce static image extraction from Gif animation (-S).
+  (discussion with @isaki68k)
 
-* Add APIs for skipping DCS envelope (sixel_output_{get,set}_skip_dcs_envelope). (disscussion with @uobikiemukot)
+* Add APIs for skipping DCS envelope
+  sixel_output_{get,set}_skip_dcs_envelope. (disscussion with @uobikiemukot)
 
-* Some bug fixes and minor improvements (Thanks to @elfring, @isaki68k, @knok, @mattn, @tsutsui, @waywardmonkeys and @ttdoda).
+* Some bug fixes and minor improvements.
+  Thanks to @elfring, @isaki68k, @knok, @mattn, @tsutsui, @waywardmonkeys
+  and @ttdoda.

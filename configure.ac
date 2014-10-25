@@ -66,15 +66,15 @@ AC_ARG_WITH([libcurl],
 
 AC_ARG_WITH([jpeg],
             [AS_HELP_STRING([--with-jpeg],
-                            [whether to build with libjpeg (default: no)])],
+                            [whether to build with libjpeg (default: auto)])],
             [],
-            [with_jpeg=no])
+            [with_jpeg=auto])
 
 AC_ARG_WITH([png],
             [AS_HELP_STRING([--with-png],
-                            [whether to build with libpng (default: no)])],
+                            [whether to build with libpng (default: auto)])],
             [],
-            [with_png=no])
+            [with_png=auto])
 
 #AC_ARG_WITH([wic],
 #            [AS_HELP_STRING([--with-wic],
@@ -314,19 +314,22 @@ if test x$with_jpeg != xno; then
     AC_CHECK_HEADER([jpeglib.h],
                     [AC_CHECK_LIB([jpeg],
                                   [jpeg_read_header],
-                                  [have_jpeg=yes JPEG_LIBS=-ljpeg],
+                                  [have_jpeg=yes LIBJPEG_LIBS=-ljpeg],
                                   [have_jpeg=no])])
     if test x$have_jpeg = xyes; then
         AC_DEFINE(HAVE_JPEG, 1, [whether jpeg codec library is available])
         loaders="${loaders} jpeg"
+        AC_MSG_NOTICE([jpeg cflags is ${LIBJPEG_CFLAGS}])
+        AC_MSG_NOTICE([jpeg libs is ${LIBJPEG_LIBS}])
     else
-        AC_MSG_ERROR([unable to find jpeg codec library])
+        if test x$with_jpeg != xauto; then
+            AC_MSG_ERROR([unable to find jpeg codec library])
+        fi
+        AC_MSG_NOTICE([libjpeg is not available])
     fi
-    AC_MSG_NOTICE([jpeg cflags is ${JPEG_CFLAGS}])
-    AC_MSG_NOTICE([jpeg libs is ${JPEG_LIBS}])
 fi
-AC_SUBST(JPEG_CFLAGS)
-AC_SUBST(JPEG_LIBS)
+AC_SUBST(LIBJPEG_CFLAGS)
+AC_SUBST(LIBJPEG_LIBS)
 
 if test x$with_png != xno; then
     AC_CHECK_HEADER([png.h],
@@ -345,11 +348,14 @@ if test x$with_png != xno; then
     if test x$have_png = xyes; then
         AC_DEFINE(HAVE_LIBPNG, 1, [whether libpng is available])
         loaders="${loaders} png"
+        AC_MSG_NOTICE([libpng cflags is ${LIBPNG_CFLAGS}])
+        AC_MSG_NOTICE([libpng libs is ${LIBPNG_LIBS}])
     else
-        AC_MSG_ERROR([unable to find libpng])
+        if test x$with_png != xauto; then
+            AC_MSG_ERROR([unable to find libpng])
+        fi
+        AC_MSG_NOTICE([libpng is not available])
     fi
-    AC_MSG_NOTICE([libpng cflags is ${LIBPNG_CFLAGS}])
-    AC_MSG_NOTICE([libpng libs is ${LIBPNG_LIBS}])
 fi
 AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBPNG_LIBS)

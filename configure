@@ -640,8 +640,8 @@ HAVE_JPEG_FALSE
 HAVE_JPEG_TRUE
 LIBPNG_LIBS
 LIBPNG_CFLAGS
-JPEG_LIBS
-JPEG_CFLAGS
+LIBJPEG_LIBS
+LIBJPEG_CFLAGS
 LIBCURL_LIBS
 LIBCURL_CFLAGS
 GD_LIBS
@@ -1470,8 +1470,8 @@ Optional Packages:
   --with-gdk-pixbuf2      whether to build with gdk-pixbuf2 (default: no)
   --with-gd               whether to build with gd (default: no)
   --with-libcurl          whether to build with libcurl (default: no)
-  --with-jpeg             whether to build with libjpeg (default: no)
-  --with-png              whether to build with libpng (default: no)
+  --with-jpeg             whether to build with libjpeg (default: auto)
+  --with-png              whether to build with libpng (default: auto)
   --with-pkgconfigdir     Use the specified pkgconfig dir (default is
                           libdir/pkgconfig)
   --with-bashcompletiondir
@@ -11756,7 +11756,7 @@ fi
 if test "${with_jpeg+set}" = set; then :
   withval=$with_jpeg;
 else
-  with_jpeg=no
+  with_jpeg=auto
 fi
 
 
@@ -11765,7 +11765,7 @@ fi
 if test "${with_png+set}" = set; then :
   withval=$with_png;
 else
-  with_png=no
+  with_png=auto
 fi
 
 
@@ -14054,7 +14054,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_jpeg_jpeg_read_header" >&5
 $as_echo "$ac_cv_lib_jpeg_jpeg_read_header" >&6; }
 if test "x$ac_cv_lib_jpeg_jpeg_read_header" = xyes; then :
-  have_jpeg=yes JPEG_LIBS=-ljpeg
+  have_jpeg=yes LIBJPEG_LIBS=-ljpeg
 else
   have_jpeg=no
 fi
@@ -14067,13 +14067,17 @@ fi
 $as_echo "#define HAVE_JPEG 1" >>confdefs.h
 
         loaders="${loaders} jpeg"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: jpeg cflags is ${LIBJPEG_CFLAGS}" >&5
+$as_echo "$as_me: jpeg cflags is ${LIBJPEG_CFLAGS}" >&6;}
+        { $as_echo "$as_me:${as_lineno-$LINENO}: jpeg libs is ${LIBJPEG_LIBS}" >&5
+$as_echo "$as_me: jpeg libs is ${LIBJPEG_LIBS}" >&6;}
     else
-        as_fn_error $? "unable to find jpeg codec library" "$LINENO" 5
+        if test x$with_jpeg != xauto; then
+            as_fn_error $? "unable to find jpeg codec library" "$LINENO" 5
+        fi
+        { $as_echo "$as_me:${as_lineno-$LINENO}: libjpeg is not available" >&5
+$as_echo "$as_me: libjpeg is not available" >&6;}
     fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: jpeg cflags is ${JPEG_CFLAGS}" >&5
-$as_echo "$as_me: jpeg cflags is ${JPEG_CFLAGS}" >&6;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: jpeg libs is ${JPEG_LIBS}" >&5
-$as_echo "$as_me: jpeg libs is ${JPEG_LIBS}" >&6;}
 fi
 
 
@@ -14206,13 +14210,17 @@ fi
 $as_echo "#define HAVE_LIBPNG 1" >>confdefs.h
 
         loaders="${loaders} png"
-    else
-        as_fn_error $? "unable to find libpng" "$LINENO" 5
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: libpng cflags is ${LIBPNG_CFLAGS}" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: libpng cflags is ${LIBPNG_CFLAGS}" >&5
 $as_echo "$as_me: libpng cflags is ${LIBPNG_CFLAGS}" >&6;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: libpng libs is ${LIBPNG_LIBS}" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: libpng libs is ${LIBPNG_LIBS}" >&5
 $as_echo "$as_me: libpng libs is ${LIBPNG_LIBS}" >&6;}
+    else
+        if test x$with_png != xauto; then
+            as_fn_error $? "unable to find libpng" "$LINENO" 5
+        fi
+        { $as_echo "$as_me:${as_lineno-$LINENO}: libpng is not available" >&5
+$as_echo "$as_me: libpng is not available" >&6;}
+    fi
 fi
 
 
