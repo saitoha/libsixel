@@ -12572,6 +12572,7 @@ fi
 
 
 
+if test x$cross_compile != xyes; then :
 
 
 
@@ -12691,6 +12692,7 @@ $as_echo "yes" >&6; }
 $as_echo "no" >&6; }
 		PKG_CONFIG=""
 	fi
+fi
 fi
 
 # For wic integration

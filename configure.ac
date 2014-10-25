@@ -123,7 +123,7 @@ AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
-PKG_PROG_PKG_CONFIG
+AS_IF([test x$cross_compile != xyes], [PKG_PROG_PKG_CONFIG], [])
 
 # For wic integration
 #AC_PROG_CXX
