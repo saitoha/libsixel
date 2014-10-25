@@ -320,12 +320,12 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
-JPEG_CFLAGS = @JPEG_CFLAGS@
-JPEG_LIBS = @JPEG_LIBS@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBCURL_CFLAGS = @LIBCURL_CFLAGS@
 LIBCURL_LIBS = @LIBCURL_LIBS@
+LIBJPEG_CFLAGS = @LIBJPEG_CFLAGS@
+LIBJPEG_LIBS = @LIBJPEG_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBPNG_CFLAGS = @LIBPNG_CFLAGS@
 LIBPNG_LIBS = @LIBPNG_LIBS@
@@ -389,7 +389,6 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
-have_pkg_config = @have_pkg_config@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -432,10 +431,11 @@ CLEANFILES = *.gcno *.gcda *.gcov snake1.png snake2.png snake2.sixel
 @WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -I$(top_builddir)/include/ \
 @WANT_IMG2SIXEL_TRUE@	$(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) \
 @WANT_IMG2SIXEL_TRUE@	$(LIBCURL_CFLAGS) $(GD_CFLAGS) \
-@WANT_IMG2SIXEL_TRUE@	$(JPEG_CFLAGS) $(LIBPNG_CFLAGS) \
+@WANT_IMG2SIXEL_TRUE@	$(LIBJPEG_CFLAGS) $(LIBPNG_CFLAGS) \
 @WANT_IMG2SIXEL_TRUE@	$(am__append_2)
 @WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm \
-@WANT_IMG2SIXEL_TRUE@				  $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS) $(JPEG_LIBS) $(LIBPNG_LIBS)
+@WANT_IMG2SIXEL_TRUE@				  $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS) \
+@WANT_IMG2SIXEL_TRUE@				  $(LIBJPEG_LIBS) $(LIBPNG_LIBS)
 
 @WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c \
 @WANT_SIXEL2PNG_TRUE@                    stb_image_write.h malloc_stub.h

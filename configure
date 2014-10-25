@@ -640,8 +640,8 @@ HAVE_JPEG_FALSE
 HAVE_JPEG_TRUE
 LIBPNG_LIBS
 LIBPNG_CFLAGS
-JPEG_LIBS
-JPEG_CFLAGS
+LIBJPEG_LIBS
+LIBJPEG_CFLAGS
 LIBCURL_LIBS
 LIBCURL_CFLAGS
 GD_LIBS
@@ -649,7 +649,6 @@ GD_CFLAGS
 GDK_PIXBUF_LIBS
 GDK_PIXBUF_CFLAGS
 LIBOBJS
-have_pkg_config
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
@@ -1469,9 +1468,9 @@ Optional Packages:
                         (or the compiler's sysroot if not specified).
   --with-gdk-pixbuf2      whether to build with gdk-pixbuf2 (default: no)
   --with-gd               whether to build with gd (default: no)
-  --with-libcurl          whether to build with libcurl (default: no)
-  --with-jpeg             whether to build with libjpeg (default: no)
-  --with-png              whether to build with libpng (default: no)
+  --with-libcurl          whether to build with libcurl (default: auto)
+  --with-jpeg             whether to build with libjpeg (default: auto)
+  --with-png              whether to build with libpng (default: auto)
   --with-pkgconfigdir     Use the specified pkgconfig dir (default is
                           libdir/pkgconfig)
   --with-bashcompletiondir
@@ -11747,7 +11746,7 @@ fi
 if test "${with_libcurl+set}" = set; then :
   withval=$with_libcurl;
 else
-  with_libcurl=no
+  with_libcurl=auto
 fi
 
 
@@ -11756,7 +11755,7 @@ fi
 if test "${with_jpeg+set}" = set; then :
   withval=$with_jpeg;
 else
-  with_jpeg=no
+  with_jpeg=auto
 fi
 
 
@@ -11765,7 +11764,7 @@ fi
 if test "${with_png+set}" = set; then :
   withval=$with_png;
 else
-  with_png=no
+  with_png=auto
 fi
 
 
@@ -12573,6 +12572,7 @@ fi
 
 
 
+if test x$cross_compile != xyes; then :
 
 
 
@@ -12693,44 +12693,7 @@ $as_echo "no" >&6; }
 		PKG_CONFIG=""
 	fi
 fi
-# Extract the first word of "pkg-config", so it can be a program name with args.
-set dummy pkg-config; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_have_pkg_config+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$have_pkg_config"; then
-  ac_cv_prog_have_pkg_config="$have_pkg_config" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_have_pkg_config="yes"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_prog_have_pkg_config" && ac_cv_prog_have_pkg_config="no"
 fi
-fi
-have_pkg_config=$ac_cv_prog_have_pkg_config
-if test -n "$have_pkg_config"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_pkg_config" >&5
-$as_echo "$have_pkg_config" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
 
 # For wic integration
 #AC_PROG_CXX
@@ -13031,7 +12994,7 @@ have_png="no"
 #fi
 
 if test x$with_gdk_pixbuf2 != xno; then
-    if test x$have_pkg_config != xno; then
+    if test x${PKG_CONFIG} != x; then
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GDK_PIXBUF" >&5
@@ -13175,7 +13138,7 @@ fi
 fi
 
 
-    if test x$have_pkg_config != xno; then
+    if test x${PKG_CONFIG} != x; then
         if test x$have_gd != xyes; then
 
 pkg_failed=no
@@ -13925,7 +13888,7 @@ fi
 
 
     if test x$have_curl != xyes; then
-        if test x$have_pkg_config != xno; then
+        if test x${PKG_CONFIG} != x; then
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBCURL" >&5
@@ -14004,7 +13967,11 @@ fi
 $as_echo "#define HAVE_LIBCURL 1" >>confdefs.h
 
     else
-        as_fn_error $? "unable to find libcurl" "$LINENO" 5
+        if test x$with_libcurl != xauto; then
+            as_fn_error $? "unable to find libcurl" "$LINENO" 5
+        fi
+        { $as_echo "$as_me:${as_lineno-$LINENO}: libcurl is not available" >&5
+$as_echo "$as_me: libcurl is not available" >&6;}
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: libcurl cflags is ${LIBCURL_CFLAGS}" >&5
 $as_echo "$as_me: libcurl cflags is ${LIBCURL_CFLAGS}" >&6;}
@@ -14054,7 +14021,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_jpeg_jpeg_read_header" >&5
 $as_echo "$ac_cv_lib_jpeg_jpeg_read_header" >&6; }
 if test "x$ac_cv_lib_jpeg_jpeg_read_header" = xyes; then :
-  have_jpeg=yes JPEG_LIBS=-ljpeg
+  have_jpeg=yes LIBJPEG_LIBS=-ljpeg
 else
   have_jpeg=no
 fi
@@ -14067,13 +14034,17 @@ fi
 $as_echo "#define HAVE_JPEG 1" >>confdefs.h
 
         loaders="${loaders} jpeg"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: jpeg cflags is ${LIBJPEG_CFLAGS}" >&5
+$as_echo "$as_me: jpeg cflags is ${LIBJPEG_CFLAGS}" >&6;}
+        { $as_echo "$as_me:${as_lineno-$LINENO}: jpeg libs is ${LIBJPEG_LIBS}" >&5
+$as_echo "$as_me: jpeg libs is ${LIBJPEG_LIBS}" >&6;}
     else
-        as_fn_error $? "unable to find jpeg codec library" "$LINENO" 5
+        if test x$with_jpeg != xauto; then
+            as_fn_error $? "unable to find jpeg codec library" "$LINENO" 5
+        fi
+        { $as_echo "$as_me:${as_lineno-$LINENO}: libjpeg is not available" >&5
+$as_echo "$as_me: libjpeg is not available" >&6;}
     fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: jpeg cflags is ${JPEG_CFLAGS}" >&5
-$as_echo "$as_me: jpeg cflags is ${JPEG_CFLAGS}" >&6;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: jpeg libs is ${JPEG_LIBS}" >&5
-$as_echo "$as_me: jpeg libs is ${JPEG_LIBS}" >&6;}
 fi
 
 
@@ -14127,7 +14098,7 @@ fi
 
 
     if test x$have_png != xyes; then
-        if test x$have_pkg_config != xno; then
+        if test x${PKG_CONFIG} != x; then
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBPNG" >&5
@@ -14206,13 +14177,17 @@ fi
 $as_echo "#define HAVE_LIBPNG 1" >>confdefs.h
 
         loaders="${loaders} png"
-    else
-        as_fn_error $? "unable to find libpng" "$LINENO" 5
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: libpng cflags is ${LIBPNG_CFLAGS}" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: libpng cflags is ${LIBPNG_CFLAGS}" >&5
 $as_echo "$as_me: libpng cflags is ${LIBPNG_CFLAGS}" >&6;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: libpng libs is ${LIBPNG_LIBS}" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: libpng libs is ${LIBPNG_LIBS}" >&5
 $as_echo "$as_me: libpng libs is ${LIBPNG_LIBS}" >&6;}
+    else
+        if test x$with_png != xauto; then
+            as_fn_error $? "unable to find libpng" "$LINENO" 5
+        fi
+        { $as_echo "$as_me:${as_lineno-$LINENO}: libpng is not available" >&5
+$as_echo "$as_me: libpng is not available" >&6;}
+    fi
 fi
 
 
