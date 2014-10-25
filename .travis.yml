@@ -2,20 +2,20 @@
 language: c
 
 env:
-  - XCC=clang HOST= WINE=
-  - XCC=gcc HOST= WINE=
+  - XCC=clang HOST= WINE= LIBCURL=--without-libcurl JPEG=--without-jpeg PNG=--without-png
+  - XCC=gcc HOST= WINE= LIBCURL=--without-libcurl JPEG=--without-jpeg PNG=--without-png
   - XCC=i686-w64-mingw32-gcc HOST="--host=i686-w64-mingw32" WINE=wine
   - XCC=i586-mingw32msvc-gcc HOST="--host=i586-mingw32msvc" WINE=wine
   - XCC=x86_64-w64-mingw32-gcc HOST="--host=x86_64-w64-mingw32" WINE=wine64
   - XCC=clang HOST= WINE= JPEG="--with-jpeg"
   - XCC=clang HOST= WINE= PNG="--with-png"
-  - XCC=clang HOST= WINE= GDKPIXBUF="--with-gdk-pixbuf2"
-  - XCC=clang HOST= WINE= LIBCURL="--with-libcurl"
-  - XCC=clang HOST= WINE= GD="--with-gd"
-  - XCC=clang HOST= WINE= GDKPIXBUF="--with-gdk-pixbuf2" LIBCURL="--with-libcurl"
-  - XCC=clang HOST= WINE= GD="--with-gd" LIBCURL="--with-libcurl"
-  - XCC=clang HOST= WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd"
-  - XCC=clang HOST= WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" LIBCURL="--with-libcurl"
+  - XCC=clang HOST= WINE= GDKPIXBUF="--with-gdk-pixbuf2" JPEG=--without-jpeg PNG=--without-png
+  - XCC=clang HOST= WINE= LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
+  - XCC=clang HOST= WINE= GD="--with-gd" JPEG=--without-jpeg PNG=--without-png
+  - XCC=clang HOST= WINE= GDKPIXBUF="--with-gdk-pixbuf2" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
+  - XCC=clang HOST= WINE= GD="--with-gd" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
+  - XCC=clang HOST= WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" JPEG=--without-jpeg PNG=--without-png
+  - XCC=clang HOST= WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
   - XCC=clang HOST= WINE= JPEG="--with-jpeg" PNG="--with-png" GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" LIBCURL="--with-libcurl" GCOV="--enable-gcov" STATIC="--disable-shared"
 
 before_install:
