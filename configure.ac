@@ -124,7 +124,13 @@ AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
 AC_PROG_CC
 AC_PROG_INSTALL
 PKG_PROG_PKG_CONFIG
-AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
+if test x${PKG_CONFIG} == x; then
+    if test x$cross_compile == xyes; then
+        AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no, [${prefix}/bin])
+    else
+        AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
+    fi
+fi
 
 # For wic integration
 #AC_PROG_CXX
