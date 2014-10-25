@@ -2,9 +2,23 @@
                    What's new in libsixel-1.3 ?
                   ------------------------------
 
-* Add libjpeg integration
+* Now libcurl is automatically linked.
+  If you don't want to build with libcurl, you should configure with
+  --without-libcurl option.
 
-* Add libpng integration
+* Add libjpeg integration(linked automatically).
+
+* Add libpng integration(linked automatically).
+
+* Introduce -t(--palette-type) option.
+  img2sixel can output HLS paletted sixel with "-t hls".
+  Add new API sixel_output_set_palette_type.
+
+* Introduce -v(--verbose) option.
+
+* Add new API sixel_dither_set_body_only.
+
+* Some bug fixes and minor improvements.
 
                   ------------------------------
                    What's new in libsixel-1.2 ?
@@ -24,6 +38,8 @@
 
 * Introduce static image extraction from Gif animation (-S).
   (discussion with @isaki68k)
+
+* Introduce --enable-debug configure option.
 
 * Add APIs for skipping DCS envelope
   sixel_output_{get,set}_skip_dcs_envelope. (disscussion with @uobikiemukot)
