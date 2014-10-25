@@ -4,9 +4,9 @@ language: c
 env:
   - XCC=clang HOST= PREFIX=/usr WINE= LIBCURL=--without-libcurl JPEG=--without-jpeg PNG=--without-png
   - XCC=gcc HOST= PREFIX=/usr WINE= LIBCURL=--without-libcurl JPEG=--without-jpeg PNG=--without-png
-  - XCC=i686-w64-mingw32-gcc HOST="--host=i686-w64-mingw32" PREFIX="--/usr/i686-w64-mingw32" WINE=wine
-  - XCC=i586-mingw32msvc-gcc HOST="--host=i586-mingw32msvc" PREFIX="--host=/usr/i586-mingw32msvc" WINE=wine
-  - XCC=x86_64-w64-mingw32-gcc HOST="--host=x86_64-w64-mingw32" PREFIX="--host=/usr/x86_64-w64-mingw32" WINE=wine64
+  - XCC=i686-w64-mingw32-gcc HOST="--host=i686-w64-mingw32" PREFIX="/usr/i686-w64-mingw32" WINE=wine
+  - XCC=i586-mingw32msvc-gcc HOST="--host=i586-mingw32msvc" PREFIX="/usr/i586-mingw32msvc" WINE=wine
+  - XCC=x86_64-w64-mingw32-gcc HOST="--host=x86_64-w64-mingw32" PREFIX="/usr/x86_64-w64-mingw32" WINE=wine64
   - XCC=clang HOST= PREFIX=/usr WINE= JPEG="--with-jpeg"
   - XCC=clang HOST= PREFIX=/usr WINE= PNG="--with-png"
   - XCC=clang HOST= PREFIX=/usr WINE= GDKPIXBUF="--with-gdk-pixbuf2" JPEG=--without-jpeg PNG=--without-png
