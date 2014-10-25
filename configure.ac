@@ -124,13 +124,6 @@ AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
 AC_PROG_CC
 AC_PROG_INSTALL
 PKG_PROG_PKG_CONFIG
-if test x${PKG_CONFIG} == x; then
-    if test x$cross_compile == xyes; then
-        AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no, [${prefix}/bin])
-    else
-        AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
-    fi
-fi
 
 # For wic integration
 #AC_PROG_CXX
@@ -204,7 +197,7 @@ have_png="no"
 #fi
 
 if test x$with_gdk_pixbuf2 != xno; then
-    if test x$have_pkg_config != xno; then
+    if test x${PKG_CONFIG} != x; then
         PKG_CHECK_MODULES([GDK_PIXBUF],
                           [gdk-pixbuf-2.0],
                           [have_gdk_pixbuf2=yes],
@@ -234,7 +227,7 @@ if test x$with_gd != xno; then
                                   [gdImageCreateFromGifPtr],
                                   [have_gd="yes" GD_LIBS=-lgd],
                                   [have_gd="no"])])
-    if test x$have_pkg_config != xno; then
+    if test x${PKG_CONFIG} != x; then
         if test x$have_gd != xyes; then
             PKG_CHECK_MODULES(GD, [gdlib], [have_gd=yes], [have_gd=no])
         fi
@@ -298,7 +291,7 @@ if test x$with_libcurl != xno; then
                                   [have_curl=yes LIBCURL_LIBS=-lcurl],
                                   [have_curl=no])])
     if test x$have_curl != xyes; then
-        if test x$have_pkg_config != xno; then
+        if test x${PKG_CONFIG} != x; then
             PKG_CHECK_MODULES(LIBCURL,
                               [libcurl],
                               [have_curl=yes],
@@ -344,7 +337,7 @@ if test x$with_png != xno; then
                                   [have_png=yes LIBPNG_LIBS=-lpng],
                                   [have_png=no])])
     if test x$have_png != xyes; then
-        if test x$have_pkg_config != xno; then
+        if test x${PKG_CONFIG} != x; then
             PKG_CHECK_MODULES(LIBPNG,
                               [libpng],
                               [have_png=yes],
