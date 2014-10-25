@@ -142,6 +142,7 @@ sixel_dither_create(int ncolors)
     dither->keycolor = (-1);
     dither->optimized = 0;
     dither->complexion = 1;
+    dither->bodyonly = 0;
     dither->method_for_largest = LARGE_NORM;
     dither->method_for_rep = REP_CENTER_BOX;
     dither->method_for_diffuse = DIFFUSE_FS;
@@ -292,6 +293,14 @@ sixel_dither_set_complexion_score(sixel_dither_t /* in */ *dither,  /* dither co
                                   int            /* in */ score)    /* complexion score (>= 1) */
 {
     dither->complexion = score;
+}
+
+void
+sixel_dither_set_body_only(sixel_dither_t /* in */ *dither,     /* dither context object */
+                           int            /* in */ bodyonly)    /* 0: output palette section
+                                                                   1: do not output palette section  */
+{
+    dither->bodyonly = bodyonly;
 }
 
 unsigned char *

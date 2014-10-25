@@ -3,9 +3,9 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.2.0], [user@zuse.jp])
+AC_INIT([sixel], [1.2.2], [user@zuse.jp])
 LS_LT_CURRENT=1
-LS_LT_REVISION=1
+LS_LT_REVISION=2
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 AC_SUBST([PACKAGE_DESCRIPTION],
@@ -64,6 +64,18 @@ AC_ARG_WITH([libcurl],
             [],
             [with_libcurl=no])
 
+AC_ARG_WITH([jpeg],
+            [AS_HELP_STRING([--with-jpeg],
+                            [whether to build with libjpeg (default: no)])],
+            [],
+            [with_jpeg=no])
+
+AC_ARG_WITH([png],
+            [AS_HELP_STRING([--with-png],
+                            [whether to build with libpng (default: no)])],
+            [],
+            [with_png=no])
+
 #AC_ARG_WITH([wic],
 #            [AS_HELP_STRING([--with-wic],
 #                            [whether to build with windows WIC integration, windows only (default: no)])],
@@ -93,6 +105,13 @@ AC_ARG_WITH(zshcompletiondir,
                            [zshcompletiondir=${datadir}/zsh/site-functions])
 AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])
 AC_SUBST(zshcompletiondir)
+
+AC_ARG_ENABLE([debug],
+              [AS_HELP_STRING([--enable-debug],
+                              [Use debug macro and specific CFLAGS])],
+              [AC_DEFINE(HAVE_DEBUG, [1], [enable debugging support])],
+              [enable_debug=no])
+AM_CONDITIONAL([COND_DEBUG], [test x$enable_debug != xno])
 
 AC_ARG_ENABLE([gcov],
               [AS_HELP_STRING([--enable-gcov],
@@ -162,6 +181,8 @@ AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
 
 loaders="stb_image"
 have_curl="no"
+have_jpeg="no"
+have_png="no"
 #have_wic="no"
 
 #if test x$with_wic != xno; then
@@ -289,10 +310,57 @@ fi
 AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
 
+if test x$with_jpeg != xno; then
+    AC_CHECK_HEADER([jpeglib.h],
+                    [AC_CHECK_LIB([jpeg],
+                                  [jpeg_read_header],
+                                  [have_jpeg=yes JPEG_LIBS=-ljpeg],
+                                  [have_jpeg=no])])
+    if test x$have_jpeg = xyes; then
+        AC_DEFINE(HAVE_JPEG, 1, [whether jpeg codec library is available])
+        loaders="${loaders} jpeg"
+    else
+        AC_MSG_ERROR([unable to find jpeg codec library])
+    fi
+    AC_MSG_NOTICE([jpeg cflags is ${JPEG_CFLAGS}])
+    AC_MSG_NOTICE([jpeg libs is ${JPEG_LIBS}])
+fi
+AC_SUBST(JPEG_CFLAGS)
+AC_SUBST(JPEG_LIBS)
+
+if test x$with_png != xno; then
+    AC_CHECK_HEADER([png.h],
+                    [AC_CHECK_LIB([png],
+                                  [png_check_sig],
+                                  [have_png=yes LIBPNG_LIBS=-lpng],
+                                  [have_png=no])])
+    if test x$have_png != xyes; then
+        if test x$have_pkg_config != xno; then
+            PKG_CHECK_MODULES(LIBPNG,
+                              [libpng],
+                              [have_png=yes],
+                              [have_png=no])
+        fi
+    fi
+    if test x$have_png = xyes; then
+        AC_DEFINE(HAVE_LIBPNG, 1, [whether libpng is available])
+        loaders="${loaders} png"
+    else
+        AC_MSG_ERROR([unable to find libpng])
+    fi
+    AC_MSG_NOTICE([libpng cflags is ${LIBPNG_CFLAGS}])
+    AC_MSG_NOTICE([libpng libs is ${LIBPNG_LIBS}])
+fi
+AC_SUBST(LIBPNG_CFLAGS)
+AC_SUBST(LIBPNG_LIBS)
+
 AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
           ])
 LS_UPDATE_TIMESTAMP
+
+AM_CONDITIONAL([HAVE_JPEG], [test x$have_jpeg == xyes])
+AM_CONDITIONAL([HAVE_PNG], [test x$have_png == xyes])
 
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
@@ -315,5 +383,6 @@ echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
+echo "       debugging           : $enable_debug"
 echo ""
 echo ""

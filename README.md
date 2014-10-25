@@ -112,6 +112,58 @@ Some NetBSD/OpenBSD users are doing amazing challenge.
   ![sayaka-chan](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sayaka-netbsd-x68k.jpg)
 
 
+## Highlighted features
+
+### Improved compression
+
+Former sixel encoders(such as [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html)) are mainly designed for dot-matrix printers.
+They minimize the amount of printer-head movement distance.
+But nowadays this method did not represent the best performance for displaying sixel data on terminal emulators.
+SIXEL data for terminals were found in 80's Usenet, but the technology of how to create them seems to be lost.
+[kmiya's sixel](http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz) introduces the encoding method which is re-designed
+for terminal emulators to optimize the overhead of transporting SIXEL with keeping compatibility with former SIXEL terminal.
+Now libsixel and ImageMagick's sixel coder follow it.
+
+
+### High quality quantization
+
+img2sixel(1) supports color image quantization. It works well even if few number of colors are allowed.
+
+- ppmtosixel (netpbm)
+
+    $ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel
+
+  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel.png)
+
+
+- ppmtosixel with Floyd–Steinberg dithering (netpbm)
+
+    $ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel
+
+  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel2.png)
+
+
+- kmiya's sixel
+
+    $ sixel -p16 images/snake.jpg
+
+  ![kmiya's sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixel.png)
+
+
+- PySixel (sixelconv command)
+
+    $ sixelconv -n16 images/snake.jpg
+
+  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixelconv.png)
+
+
+- libsixel (img2sixel command)
+
+    $ img2sixel -p16 images/snake.jpg
+
+  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_libsixel.png)
+
+
 ## Terminal requirements
 
 If you want to view a SIXEL image, you have to get a terminal which support sixel graphics.
@@ -170,44 +222,6 @@ Now SIXEL feature is supported by the following terminals.
 - [yacp](https://github.com/fd00/yacp/tree/master/libsixel)
 - [Debian](https://ftp-master.debian.org/new/libsixel_1.1.2-1.html)
 
-## Quantization quality
-
-img2sixel(1) supports high quality color image quantization.
-
-- ppmtosixel (netpbm)
-
-    $ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel
-
-  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel.png)
-
-
-- ppmtosixel with Floyd–Steinberg dithering (netpbm)
-
-    $ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel
-
-  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel2.png)
-
-
-- kmiya's sixel
-
-    $ sixel -p16 images/snake.jpg
-
-  ![kmiya's sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixel.png)
-
-
-- PySixel (sixelconv command)
-
-    $ sixelconv -n16 images/snake.jpg
-
-  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixelconv.png)
-
-
-- libsixel (img2sixel command)
-
-    $ img2sixel -p16 images/snake.jpg
-
-  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_libsixel.png)
-
 
 ## Build and install
 
@@ -222,9 +236,11 @@ $ make
 ### Build with optional packages
 
 ```
---with-gdk-pixbuf2        build with gdk-pixbuf2 (default: no)
 --with-libcurl            build with libcurl (default: no)
---with-gd                 build with gd (default: no)
+--with-gd                 build with libgd (default: no)
+--with-gdk-pixbuf2        build with gdk-pixbuf2 (default: no)
+--with-jpeg               build with libjpeg (default: no)                                                                                                            
+--with-png                build with libpng (default: no)
 --with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
 --with-bashcompletiondir  specify bashcompletion.d
 --with-zshcompletiondir   specify zshcompletion.d
@@ -259,6 +275,10 @@ Options:
                            DECDMAC and make terminal memorize
                            SIXEL image. No image is shown if this
                            option is specified
+-C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE
+                           specify an number argument for the
+                           score of complexion correction.
+                           COMPLEXIONSCORE must be 1 or more.
 -g, --ignore-delay         render GIF animation without delay
 -S, --static               render animated GIF as a static image
 -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
@@ -294,16 +314,16 @@ Options:
                            when -p option (color reduction) is
                            specified
                            SELECTTYPE is one of them:
-                             auto     -> choose selecting
-                                         method automatically
-                                         (default)
-                             center   -> choose the center of
-                                         the box
-                             average  -> calculate the color
-                                         average into the box
+                             auto      -> choose selecting
+                                          method automatically
+                                          (default)
+                             center    -> choose the center of
+                                          the box
+                             average    -> calculate the color
+                                          average into the box
                              histogram -> similar with average
-                                         but considers color
-                                         histogram
+                                          but considers color
+                                          histogram
 -c REGION, --crop=REGION   crop source image to fit the
                            specified geometry. REGION should
                            be formatted as '%dx%d+%d+%d'
@@ -648,6 +668,22 @@ http://netpbm.sourceforge.net/
 > implied warranty.
 
 
+### loader.h (@uobikiemukot's sdump)
+
+Some parts of converters/loader.c are imported from @uobikiemukot's
+[sdump](https://github.com/uobikiemukot/sdump) project
+
+> The MIT License (MIT)
+>
+> Copyright (c) 2014 haru <uobikiemukot at gmail dot com>
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
 ### ax_gcc_var_attribute / ax_gcc_func_attribute
 
 These are useful m4 macros for detecting some GCC attributes.
@@ -661,6 +697,41 @@ http://www.gnu.org/software/autoconf-archive/ax_gcc_func_attribute.html
 > permitted in any medium without royalty provided the copyright notice
 > and this notice are preserved.  This file is offered as-is, without any
 > warranty.
+
+
+### graphics.c (from Xterm pl#310)
+
+The helper function *hls2rgb* in *src/fromsixel.c* is imported from
+*graphics.c* in [Xterm pl#310](http://invisible-island.net/xterm/),
+originally written by Ross Combs.
+
+> Copyright 2013,2014 by Ross Combs
+>
+>                         All Rights Reserved
+>
+> Permission is hereby granted, free of charge, to any person obtaining a
+> copy of this software and associated documentation files (the
+> "Software"), to deal in the Software without restriction, including
+> without limitation the rights to use, copy, modify, merge, publish,
+> distribute, sublicense, and/or sell copies of the Software, and to
+> permit persons to whom the Software is furnished to do so, subject to
+> the following conditions:
+>
+> The above copyright notice and this permission notice shall be included
+> in all copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+> OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+> MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+> IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE LIABLE FOR ANY
+> CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+> TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+> SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+>
+> Except as contained in this notice, the name(s) of the above copyright
+> holders shall not be used in advertising or otherwise to promote the
+> sale, use or other dealings in this Software without prior written
+> authorization.
 
 
 ### test images
@@ -702,7 +773,7 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 
 ## Similar software
 
-- [ppmtosixel (netpbm)](http://netpbm.sourceforge.net/)
+- [netpbm](http://netpbm.sourceforge.net/)
 
   You can get SIXEL graphics using [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html)
   or [pbmtoln03](http://netpbm.sourceforge.net/doc/ppmtosixel.html).
@@ -716,6 +787,11 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 - [PySixel](https://pypi.python.org/pypi/PySixel)
 
   Python implementation of SIXEL converter
+
+
+- [ImageMagick](http://www.imagemagick.org/)
+
+  Now SIXEL coder is available in svn trunk and V6 branch.
 
 
 - [monosixel in arakiken's tw](https://bitbucket.org/arakiken/tw/branch/sixel)

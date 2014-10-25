@@ -194,6 +194,12 @@ sixel_dither_get_palette(sixel_dither_t /* in */ *dither);  /* dither context ob
 void
 sixel_dither_set_complexion_score(sixel_dither_t /* in */ *dither,  /* dither context object */
                                   int            /* in */ score);   /* complexion score (>= 1) */
+
+void
+sixel_dither_set_body_only(sixel_dither_t /* in */ *dither,     /* dither context object */
+                           int            /* in */ bodyonly);   /* 0: output palette section
+                                                                   1: do not output palette section  */
+
 #ifdef __cplusplus
 }
 #endif
