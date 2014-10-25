@@ -340,9 +340,9 @@ if test x$with_png != xno; then
     if test x$have_png != xyes; then
         if test x$have_pkg_config != xno; then
             PKG_CHECK_MODULES(LIBPNG,
-                              [libpng],
-                              [have_png=yes],
-                              [have_png=no])
+                               [libpng],
+                               [AC_CHECK_HEADER([zlib.h], [have_png=yes])],
+                               [have_png=no])
         fi
     fi
     if test x$have_png = xyes; then
