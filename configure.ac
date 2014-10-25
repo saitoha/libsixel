@@ -301,7 +301,10 @@ if test x$with_libcurl != xno; then
     if test x$have_curl = xyes; then
         AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
     else
-        AC_MSG_ERROR([unable to find libcurl])
+        if test x$with_libcurl != xauto; then
+            AC_MSG_ERROR([unable to find libcurl])
+        fi
+        AC_MSG_NOTICE([libcurl is not available])
     fi
     AC_MSG_NOTICE([libcurl cflags is ${LIBCURL_CFLAGS}])
     AC_MSG_NOTICE([libcurl libs is ${LIBCURL_LIBS}])

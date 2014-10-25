@@ -13967,7 +13967,11 @@ fi
 $as_echo "#define HAVE_LIBCURL 1" >>confdefs.h
 
     else
-        as_fn_error $? "unable to find libcurl" "$LINENO" 5
+        if test x$with_libcurl != xauto; then
+            as_fn_error $? "unable to find libcurl" "$LINENO" 5
+        fi
+        { $as_echo "$as_me:${as_lineno-$LINENO}: libcurl is not available" >&5
+$as_echo "$as_me: libcurl is not available" >&6;}
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: libcurl cflags is ${LIBCURL_CFLAGS}" >&5
 $as_echo "$as_me: libcurl cflags is ${LIBCURL_CFLAGS}" >&6;}
