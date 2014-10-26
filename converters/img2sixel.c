@@ -826,6 +826,7 @@ void show_help()
             "                             rgb  -> use RGB color space\n"
             "-P --penetrate             penetrate GNU Screen using DCS\n"
             "                           pass-through sequence\n"
+            "-v, --verbose              show debugging info\n"
             "-V, --version              show version and license info\n"
             "-H, --help                 show this help\n"
             );
