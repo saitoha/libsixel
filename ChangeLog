@@ -1,3 +1,8 @@
+2014-10-26  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Fix segmentation fault on quitting GIF animation
+  with -u option
+
 2014-10-25  Hayaki Saito <user@zuse.jp>
 
   * configure, configure.ac: Don't terminate configure process if
