@@ -812,6 +812,7 @@ void show_help()
             "                             disable -> always disable loop\n"
             "-P --penetrate             penetrate GNU Screen using DCS\n"
             "                           pass-through sequence\n"
+            "-v, --verbose              show debugging info\n"
             "-V, --version              show version and license info\n"
             "-H, --help                 show this help\n"
             );
