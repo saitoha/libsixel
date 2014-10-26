@@ -1,3 +1,8 @@
+2014-10-26  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Fix segmentation fault on quitting GIF animation
+  with -u option
+
 2014-10-17  Hayaki Saito <user@zuse.jp>
 
   * converters/loader.c: Suppress gdk-pixbuf assersion on processing some GIF
