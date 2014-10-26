@@ -83,7 +83,7 @@ GUI flavored SIXEL applications will integrated with existing terminal applicati
 
   ![xsixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel-on-screen.png)
 
-See [youtube movie](http://youtu.be/QQAqe32VkFg).
+See also on [youtube](http://youtu.be/QQAqe32VkFg).
 
 ### Twitter client integration
 
