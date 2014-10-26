@@ -81,6 +81,13 @@ enum builtinDither {
     BUILTIN_XTERM256   = 3, /* xterm 256color */
 };
 
+/* palette type */
+enum paletteType {
+    PALETTETYPE_AUTO = 0, /* choose palette type automatically */
+    PALETTETYPE_HLS  = 1, /* HLS colorspace */
+    PALETTETYPE_RGB  = 2, /* RGB colorspace */
+};
+
 #ifndef LIBSIXEL_DITHER_H
 
 /* dither context object */
@@ -131,6 +138,9 @@ sixel_output_set_penetrate_multiplexer(sixel_output_t *output, int penetrate);
 
 void
 sixel_output_set_skip_dcs_envelope(sixel_output_t *output, int skip);
+
+void
+sixel_output_set_palette_type(sixel_output_t *output, int palettetype);
 
 #ifdef __cplusplus
 }
@@ -194,6 +204,12 @@ sixel_dither_get_palette(sixel_dither_t /* in */ *dither);  /* dither context ob
 void
 sixel_dither_set_complexion_score(sixel_dither_t /* in */ *dither,  /* dither context object */
                                   int            /* in */ score);   /* complexion score (>= 1) */
+
+void
+sixel_dither_set_body_only(sixel_dither_t /* in */ *dither,     /* dither context object */
+                           int            /* in */ bodyonly);   /* 0: output palette section
+                                                                   1: do not output palette section  */
+
 #ifdef __cplusplus
 }
 #endif

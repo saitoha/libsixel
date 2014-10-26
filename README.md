@@ -63,17 +63,27 @@ img2sixel(1) can be integrated with [Arakiken's w3m fork(remoteimg branch)](http
   ![w3m-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel.png)
 
 
-[Arakiken's GNU Screen fork(sixel branch)](https://bitbucket.org/arakiken/screen/branch/sixel) works with this.
-
-  ![w3m-sixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel-screen.png)
-
-
 @uobikiemukot's [sdump](https://github.com/uobikiemukot/sdump) project selected another approach.
 He wrote a w3mimgdisplay compatible program [yaimg-sixel](https://github.com/uobikiemukot/sdump/tree/master/yaimg-sixel).
 It also works with [ranger](https://github.com/hut/ranger).
 
   ![w3m-yaimg-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-yaimg-sixel.jpg)
 
+
+### GNU Screen integration
+
+[Arakiken's GNU Screen fork(sixel branch)](https://bitbucket.org/arakiken/screen/branch/sixel)
+works with SIXEL-supported applications including above products.
+This project is now in progress.
+GUI flavored SIXEL applications will integrated with existing terminal applications on it.
+
+  ![w3m-sixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel-screen.png)
+
+  ![sixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/arakikens-screen.jpg)
+
+  ![xsixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel-on-screen.png)
+
+See also on [youtube](http://youtu.be/QQAqe32VkFg).
 
 ### Twitter client integration
 
@@ -110,6 +120,63 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
   SIXEL works with old powerless machines such as [NetBSD/x68k](http://wiki.netbsd.org/ports/x68k/) (here is SHARP X68030 with 060turbo):
 
   ![sayaka-chan](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sayaka-netbsd-x68k.jpg)
+
+  SIXEL works even in-kernel console. [@isaki68k](https://github.com/isaki68k) wrote
+  [a patch for ite(4)](https://github.com/isaki68k/misc/blob/master/NetBSD/patch/x68k-ite-sixel.diff).
+
+  ![ite(4)](https://raw.githubusercontent.com/saitoha/libsixel/data/data/ite.png)
+
+
+## Highlighted features
+
+### Improved compression
+
+Former sixel encoders(such as [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html)) are mainly designed for dot-matrix printers.
+They minimize the amount of printer-head movement distance.
+But nowadays this method did not represent the best performance for displaying sixel data on terminal emulators.
+SIXEL data for terminals were found in 80's Usenet, but the technology of how to create them seems to be lost.
+[kmiya's sixel](http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz) introduces the encoding method which is re-designed
+for terminal emulators to optimize the overhead of transporting SIXEL with keeping compatibility with former SIXEL terminal.
+Now libsixel and ImageMagick's sixel coder follow it.
+
+
+### High quality quantization
+
+img2sixel(1) supports color image quantization. It works well even if few number of colors are allowed.
+
+- ppmtosixel (netpbm)
+
+    $ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel
+
+  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel.png)
+
+
+- ppmtosixel with Floyd–Steinberg dithering (netpbm)
+
+    $ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel
+
+  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel2.png)
+
+
+- kmiya's sixel
+
+    $ sixel -p16 images/snake.jpg
+
+  ![kmiya's sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixel.png)
+
+
+- PySixel (sixelconv command)
+
+    $ sixelconv -n16 images/snake.jpg
+
+  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixelconv.png)
+
+
+- libsixel (img2sixel command)
+
+    $ img2sixel -p16 images/snake.jpg
+
+  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_libsixel.png)
 
 
 ## Terminal requirements
@@ -171,46 +238,10 @@ Now SIXEL feature is supported by the following terminals.
 - [Debian](https://packages.debian.org/search?searchon=names&keywords=libsixel)
 - [AUR](https://aur.archlinux.org/packages/libsixel/)
 
-## Quantization quality
-
-img2sixel(1) supports high quality color image quantization.
-
-- ppmtosixel (netpbm)
-
-    $ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel
-
-  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel.png)
-
-
-- ppmtosixel with Floyd–Steinberg dithering (netpbm)
-
-    $ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel
-
-  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel2.png)
-
-
-- kmiya's sixel
-
-    $ sixel -p16 images/snake.jpg
-
-  ![kmiya's sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixel.png)
-
-
-- PySixel (sixelconv command)
-
-    $ sixelconv -n16 images/snake.jpg
-
-  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixelconv.png)
-
-
-- libsixel (img2sixel command)
-
-    $ img2sixel -p16 images/snake.jpg
-
-  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_libsixel.png)
-
 
 ## Build and install
+
+### Linux, OSX, cygwin
 
 ```
 $ ./configure
@@ -218,14 +249,23 @@ $ make
 # make install
 ```
 
+### Cross compile with MinGW
+
+```
+$ CC=i686-w64-mingw32-gcc cross_compile=yes ./configure --host=i686-w64-mingw32
+$ make
+```
+
 ## Configure options
 
 ### Build with optional packages
 
 ```
+--with-libcurl            build with libcurl (default: auto)
+--with-gd                 build with libgd (default: no)
 --with-gdk-pixbuf2        build with gdk-pixbuf2 (default: no)
---with-libcurl            build with libcurl (default: no)
---with-gd                 build with gd (default: no)
+--with-jpeg               build with libjpeg (default: auto)
+--with-png                build with libpng (default: auto)
 --with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
 --with-bashcompletiondir  specify bashcompletion.d
 --with-zshcompletiondir   specify zshcompletion.d
@@ -362,12 +402,19 @@ Options:
 -l LOOPMODE, --loop-control=LOOPMODE
                            select loop control mode for GIF
                            animation.
-                             auto   -> honor the setting of
-                                       GIF header (default)
+                             auto    -> honor the setting of
+                                        GIF header (default)
                              force   -> always enable loop
                              disable -> always disable loop
+-t PALETTETYPE, --palette-type=PALETTETYPE
+                           select palette color space type
+                             auto -> choose palette type
+                                     automatically (default)
+                             hls  -> use HLS color space
+                             rgb  -> use RGB color space
 -P --penetrate             penetrate GNU Screen using DCS
                            pass-through sequence
+-v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
 ```
@@ -653,6 +700,22 @@ http://netpbm.sourceforge.net/
 > implied warranty.
 
 
+### loader.h (@uobikiemukot's sdump)
+
+Some parts of converters/loader.c are imported from @uobikiemukot's
+[sdump](https://github.com/uobikiemukot/sdump) project
+
+> The MIT License (MIT)
+>
+> Copyright (c) 2014 haru <uobikiemukot at gmail dot com>
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
 ### ax_gcc_var_attribute / ax_gcc_func_attribute
 
 These are useful m4 macros for detecting some GCC attributes.
@@ -666,6 +729,41 @@ http://www.gnu.org/software/autoconf-archive/ax_gcc_func_attribute.html
 > permitted in any medium without royalty provided the copyright notice
 > and this notice are preserved.  This file is offered as-is, without any
 > warranty.
+
+
+### graphics.c (from Xterm pl#310)
+
+The helper function *hls2rgb* in *src/fromsixel.c* is imported from
+*graphics.c* in [Xterm pl#310](http://invisible-island.net/xterm/),
+originally written by Ross Combs.
+
+> Copyright 2013,2014 by Ross Combs
+>
+>                         All Rights Reserved
+>
+> Permission is hereby granted, free of charge, to any person obtaining a
+> copy of this software and associated documentation files (the
+> "Software"), to deal in the Software without restriction, including
+> without limitation the rights to use, copy, modify, merge, publish,
+> distribute, sublicense, and/or sell copies of the Software, and to
+> permit persons to whom the Software is furnished to do so, subject to
+> the following conditions:
+>
+> The above copyright notice and this permission notice shall be included
+> in all copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+> OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+> MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+> IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE LIABLE FOR ANY
+> CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+> TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+> SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+>
+> Except as contained in this notice, the name(s) of the above copyright
+> holders shall not be used in advertising or otherwise to promote the
+> sale, use or other dealings in this Software without prior written
+> authorization.
 
 
 ### test images
@@ -707,7 +805,7 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 
 ## Similar software
 
-- [ppmtosixel (netpbm)](http://netpbm.sourceforge.net/)
+- [netpbm](http://netpbm.sourceforge.net/)
 
   You can get SIXEL graphics using [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html)
   or [pbmtoln03](http://netpbm.sourceforge.net/doc/ppmtosixel.html).
@@ -721,6 +819,11 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 - [PySixel](https://pypi.python.org/pypi/PySixel)
 
   Python implementation of SIXEL converter
+
+
+- [ImageMagick](http://www.imagemagick.org/)
+
+  Now SIXEL coder is available in svn trunk and V6 branch.
 
 
 - [monosixel in arakiken's tw](https://bitbucket.org/arakiken/tw/branch/sixel)
@@ -816,12 +919,17 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
   ![SIXEL image viewer ](https://raw.githubusercontent.com/saitoha/libsixel/data/data/js-sixel.png)
 
 
+- [SixelGraphics.jl(written in Julia)](https://github.com/olofsen/SixelGraphics.jl)
+
+  A module for Julia implementing simple Sixel graphics.
+
+  ![SixelGraphics.jl](https://raw.githubusercontent.com/saitoha/libsixel/data/data/julia.png)
+
+
 - ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
 
 
 - [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
 
-
-- [SixelGraphics.jl(written in Julia)](https://github.com/olofsen/SixelGraphics.jl)
 
 

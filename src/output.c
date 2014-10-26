@@ -37,6 +37,7 @@ sixel_output_create(sixel_write_function fn_write, void *priv)
         output->has_8bit_control = 0;
         output->has_sdm_glitch = 0;
         output->skip_dcs_envelope = 0;
+        output->palette_type = PALETTETYPE_AUTO;
         output->fn_write = fn_write;
         output->save_pixel = 0;
         output->save_count = 0;
@@ -104,6 +105,12 @@ sixel_output_set_skip_dcs_envelope(sixel_output_t *output, int skip)
     output->skip_dcs_envelope = skip;
 }
 
+
+void
+sixel_output_set_palette_type(sixel_output_t *output, int palettetype)
+{
+    output->palette_type = palettetype;
+}
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
