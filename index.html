@@ -91,71 +91,96 @@ So if you want to view a SIXEL image file, all you have to do is "cat" it to you
 <h3>
 <a name="w3m-integration" class="anchor" href="#w3m-integration"><span class="octicon octicon-link"></span></a>W3M integration</h3>
 
-<p>img2sixel(1) can be integrated with <img src="https://bitbucket.org/arakiken/w3m/branch/remoteimg" alt="Arakiken's w3m fork(remoteimg branch)">.</p>
+<p>img2sixel(1) can be integrated with <a href="https://bitbucket.org/arakiken/w3m/branch/remoteimg">Arakiken's w3m fork(remoteimg branch)</a>.</p>
 
 <p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel.png" alt="w3m-sixel"></p>
+
+<p><a href="https://github.com/uobikiemukot" class="user-mention">@uobikiemukot</a>'s <a href="https://github.com/uobikiemukot/sdump">sdump</a> project selected another approach.
+He wrote a w3mimgdisplay compatible program <a href="https://github.com/uobikiemukot/sdump/tree/master/yaimg-sixel">yaimg-sixel</a>.
+It also works with <a href="https://github.com/hut/ranger">ranger</a>.</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-yaimg-sixel.jpg" alt="w3m-yaimg-sixel"></p>
+
+<h3>
+<a name="gnu-screen-integration" class="anchor" href="#gnu-screen-integration"><span class="octicon octicon-link"></span></a>GNU Screen integration</h3>
+
+<p><a href="https://bitbucket.org/arakiken/screen/branch/sixel">Arakiken's GNU Screen fork(sixel branch)</a>
+works with SIXEL-supported applications including above products.
+This project is now in progress.
+GUI flavored SIXEL applications will integrated with existing terminal applications on it.</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel-screen.png" alt="w3m-sixel-screen"></p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/arakikens-screen.jpg" alt="sixel-screen"></p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel-on-screen.png" alt="xsixel-screen"></p>
+
+<p>See also on <a href="http://youtu.be/QQAqe32VkFg">youtube</a>.</p>
 
 <h3>
 <a name="twitter-client-integration" class="anchor" href="#twitter-client-integration"><span class="octicon octicon-link"></span></a>Twitter client integration</h3>
 
+<p>Some NetBSD/OpenBSD users are doing amazing challenges.</p>
+
+<h4>
+<a name="arakikens-mikuttermmikutterm-sixel" class="anchor" href="#arakikens-mikuttermmikutterm-sixel"><span class="octicon octicon-link"></span></a><a href="https://bitbucket.org/arakiken/mikutterm/branch/sixel">arakiken's mikutterm(mikutterm-sixel)</a>
+</h4>
+
 <p>Now <a href="http://mikutter.hachune.net/">mikutter</a> + <a href="https://bitbucket.org/arakiken/mikutterm">mikutterm</a> works with libsixel inline-image extension.</p>
 
+<p>SIXEL works with old powerless machines such as</p>
+
+<p><a href="http://wiki.netbsd.org/ports/luna68k/">NetBSD/luna68k</a> (here is OMRON LUNA-II):</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/mikutterm-netbsd-luna68k.jpg" alt="mikutterm-netbsd-luna68k"></p>
+
+<p><a href="http://wiki.netbsd.org/ports/hp300/">NetBSD/hp300</a> (here is HP9000/425e):</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/mikutterm-netbsd-hp9000.jpg" alt="mikutterm-netbsd-hp9000"></p>
+
+<h4>
+<a name="arakikens-twtw-sixel" class="anchor" href="#arakikens-twtw-sixel"><span class="octicon octicon-link"></span></a><a href="https://bitbucket.org/arakiken/tw/branch/sixel">arakiken's tw(tw-sixel)</a>
+</h4>
+
+<p><a href="https://bitbucket.org/arakiken/tw/branch/sixel">arakiken's tw(tw-sixel)</a> works with libsixel inline-image extension.</p>
+
+<p>SIXEL works with old powerless machines such as <a href="http://www.openbsd.org/luna88k.html">OpenBSD/luna88k</a> (here is OMRON LUNA-88K2 MC88100@33MHz):</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/tw-openbsd-luna88k.jpg" alt="mikutterm-netbsd-hp9000"></p>
+
+<h4>
+<a name="sayaka-chan" class="anchor" href="#sayaka-chan"><span class="octicon octicon-link"></span></a><a href="https://github.com/isaki68k/sayaka/">sayaka-chan</a>
+</h4>
+
+<p><a href="https://github.com/isaki68k/sayaka/">sayaka-chan</a> works with libsixel inline-image extension.</p>
+
+<p>SIXEL works with old powerless machines such as <a href="http://wiki.netbsd.org/ports/x68k/">NetBSD/x68k</a> (here is SHARP X68030 with 060turbo):</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/sayaka-netbsd-x68k.jpg" alt="sayaka-chan"></p>
+
+<p>SIXEL works even in-kernel console. <a href="https://github.com/isaki68k">@isaki68k</a> wrote
+  <a href="https://github.com/isaki68k/misc/blob/master/NetBSD/patch/x68k-ite-sixel.diff">a patch for ite(4)</a>.</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/ite.png" alt="ite(4)"></p>
+
 <h2>
-<a name="terminal-requirements" class="anchor" href="#terminal-requirements"><span class="octicon octicon-link"></span></a>Terminal requirements</h2>
+<a name="highlighted-features" class="anchor" href="#highlighted-features"><span class="octicon octicon-link"></span></a>Highlighted features</h2>
 
-<p>If you want to view a SIXEL image, you have to get a terminal which support sixel graphics.</p>
+<h3>
+<a name="improved-compression" class="anchor" href="#improved-compression"><span class="octicon octicon-link"></span></a>Improved compression</h3>
 
-<p>Now SIXEL feature is supported by the following terminals.</p>
+<p>Former sixel encoders(such as <a href="http://netpbm.sourceforge.net/doc/ppmtosixel.html">ppmtosixel</a>) are mainly designed for dot-matrix printers.
+They minimize the amount of printer-head movement distance.
+But nowadays this method did not represent the best performance for displaying sixel data on terminal emulators.
+SIXEL data for terminals were found in 80's Usenet, but the technology of how to create them seems to be lost.
+<a href="http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz">kmiya's sixel</a> introduces the encoding method which is re-designed
+for terminal emulators to optimize the overhead of transporting SIXEL with keeping compatibility with former SIXEL terminal.
+Now libsixel and ImageMagick's sixel coder follow it.</p>
 
-<ul>
-<li><p>DEC VT series, VT240/VT241/VT330/VT340/VT282/VT284/VT286/VT382</p></li>
-<li><p>DECterm(dxterm)</p></li>
-<li><p>Kermit</p></li>
-<li><p>ZSTEM 340</p></li>
-<li><p>WRQ Reflection</p></li>
-<li>
-<p>RLogin (Japanese terminal emulator)</p>
+<h3>
+<a name="high-quality-quantization" class="anchor" href="#high-quality-quantization"><span class="octicon octicon-link"></span></a>High quality quantization</h3>
 
-<p><a href="http://nanno.dip.jp/softlib/man/rlogin/">http://nanno.dip.jp/softlib/man/rlogin/</a></p>
-</li>
-<li>
-<p>tanasinn (Works with firefox)</p>
-
-<p><a href="http://zuse.jp/tanasinn/">http://zuse.jp/tanasinn/</a></p>
-</li>
-<li>
-<p>mlterm</p>
-
-<p><a href="http://mlterm.sourceforge.net/">http://mlterm.sourceforge.net/</a></p>
-
-<p>Works on each of X, win32/cygwin, framebuffer version.</p>
-</li>
-<li>
-<p>XTerm (compiled with --enable-sixel option)</p>
-
-<p><a href="http://invisible-island.net/xterm/">http://invisible-island.net/xterm/</a></p>
-
-<p>You should launch xterm with "-ti 340" option. the SIXEL palette is limited to a maximum of 16 colors.</p>
-</li>
-<li>
-<p>yaft (in github repo)</p>
-
-<p><a href="https://github.com/uobikiemukot/yaft">https://github.com/uobikiemukot/yaft</a></p>
-</li>
-<li>
-<p>recterm (ttyrec to GIF converter)</p>
-
-<p><a href="https://github.com/uobikiemukot/recterm">https://github.com/uobikiemukot/recterm</a></p>
-</li>
-<li>
-<p>seq2gif (ttyrec to GIF converter)</p>
-
-<p><a href="https://github.com/saitoha/seq2gif">https://github.com/saitoha/seq2gif</a></p>
-</li>
-</ul><h2>
-<a name="quantization-quality" class="anchor" href="#quantization-quality"><span class="octicon octicon-link"></span></a>Quantization quality</h2>
-
-<p>img2sixel(1) supports high quality color image quantization.</p>
+<p>img2sixel(1) supports color image quantization. It works well even if few number of colors are allowed.</p>
 
 <ul>
 <li>
@@ -193,12 +218,91 @@ So if you want to view a SIXEL image file, all you have to do is "cat" it to you
 
 <p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_libsixel.png" alt="PySixel"></p>
 </li>
-</ul><h2>
+</ul>
+
+<h2>
+<a name="terminal-requirements" class="anchor" href="#terminal-requirements"><span class="octicon octicon-link"></span></a>Terminal requirements</h2>
+
+<p>If you want to view a SIXEL image, you have to get a terminal which support sixel graphics.</p>
+
+<p>Now SIXEL feature is supported by the following terminals.</p>
+
+<ul>
+<li><p>DEC VT series, VT240/VT241/VT330/VT340/VT282/VT284/VT286/VT382</p></li>
+<li><p>DECterm(dxterm)</p></li>
+<li><p>Kermit</p></li>
+<li><p>ZSTEM 340</p></li>
+<li><p>WRQ Reflection</p></li>
+<li>
+<p>RLogin (Japanese terminal emulator)</p>
+
+<p><a href="http://nanno.dip.jp/softlib/man/rlogin/">http://nanno.dip.jp/softlib/man/rlogin/</a></p>
+</li>
+<li>
+<p>tanasinn (Works with firefox)</p>
+
+<p><a href="http://zuse.jp/tanasinn/">http://zuse.jp/tanasinn/</a></p>
+</li>
+<li>
+<p>mlterm</p>
+
+<p><a href="http://mlterm.sourceforge.net/">http://mlterm.sourceforge.net/</a></p>
+
+<p>Works on each of X, win32/cygwin, framebuffer version.</p>
+</li>
+<li>
+<p>XTerm (compiled with --enable-sixel option)</p>
+
+<p><a href="http://invisible-island.net/xterm/">http://invisible-island.net/xterm/</a></p>
+
+<p>You should launch xterm with "-ti 340" option. The SIXEL palette is limited to a maximum of 16 colors.</p>
+</li>
+<li>
+<p>yaft</p>
+
+<p><a href="https://github.com/uobikiemukot/yaft">https://github.com/uobikiemukot/yaft</a></p>
+</li>
+<li>
+<p>recterm (ttyrec to GIF converter)</p>
+
+<p><a href="https://github.com/uobikiemukot/recterm">https://github.com/uobikiemukot/recterm</a></p>
+</li>
+<li>
+<p>seq2gif (ttyrec to GIF converter)</p>
+
+<p><a href="https://github.com/saitoha/seq2gif">https://github.com/saitoha/seq2gif</a></p>
+</li>
+</ul>
+
+<h2>
+<a name="packages" class="anchor" href="#packages"><span class="octicon octicon-link"></span></a>Packages</h2>
+
+<ul>
+<li><a href="http://portsmon.freebsd.org/portoverview.py?category=graphics&amp;portname=libsixel">FreeBSD ports</a></li>
+<li><a href="https://github.com/DragonFlyBSD/DPorts/tree/master/graphics/libsixel">DPorts</a></li>
+<li><a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/graphics/libsixel/">pkgsrc</a></li>
+<li><a href="https://github.com/aki017/homebrew-sixel">Homebrew tap</a></li>
+<li><a href="https://github.com/fd00/yacp/tree/master/libsixel">yacp</a></li>
+<li><a href="https://packages.debian.org/search?searchon=names&amp;keywords=libsixel">Debian</a></li>
+<li><a href="https://aur.archlinux.org/packages/libsixel/">AUR</a></li>
+</ul>
+
+<h2>
 <a name="build-and-install" class="anchor" href="#build-and-install"><span class="octicon octicon-link"></span></a>Build and install</h2>
+
+<h3>
+<a name="linux-osx-cygwin" class="anchor" href="#linux-osx-cygwin"><span class="octicon octicon-link"></span></a>Linux, OSX, cygwin</h3>
 
 <pre><code>$ ./configure
 $ make
 # make install
+</code></pre>
+
+<h3>
+<a name="cross-compile-with-mingw" class="anchor" href="#cross-compile-with-mingw"><span class="octicon octicon-link"></span></a>Cross compile with MinGW</h3>
+
+<pre><code>$ CC=i686-w64-mingw32-gcc cross_compile=yes ./configure --host=i686-w64-mingw32
+$ make
 </code></pre>
 
 <h2>
@@ -207,9 +311,11 @@ $ make
 <h3>
 <a name="build-with-optional-packages" class="anchor" href="#build-with-optional-packages"><span class="octicon octicon-link"></span></a>Build with optional packages</h3>
 
-<pre><code>--with-gdk-pixbuf2        build with gdk-pixbuf2 (default: no)
---with-libcurl            build with libcurl (default: no)
---with-gd                 build with gd (default: no)
+<pre><code>--with-libcurl            build with libcurl (default: auto)
+--with-gd                 build with libgd (default: no)
+--with-gdk-pixbuf2        build with gdk-pixbuf2 (default: no)
+--with-jpeg               build with libjpeg (default: auto)
+--with-png                build with libpng (default: auto)
 --with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
 --with-bashcompletiondir  specify bashcompletion.d
 --with-zshcompletiondir   specify zshcompletion.d
@@ -245,7 +351,12 @@ Options:
                            DECDMAC and make terminal memorize
                            SIXEL image. No image is shown if this
                            option is specified
+-C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE
+                           specify an number argument for the
+                           score of complexion correction.
+                           COMPLEXIONSCORE must be 1 or more.
 -g, --ignore-delay         render GIF animation without delay
+-S, --static               render animated GIF as a static image
 -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
                            choose diffusion method which used
                            with -p option (color reduction)
@@ -260,7 +371,7 @@ Options:
                              burkes   -&gt; Burkes' method
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
-                           dimention of median cut boxes for
+                           dimension of median cut boxes for
                            splitting, make sense only when -p
                            option (color reduction) is
                            specified
@@ -279,16 +390,16 @@ Options:
                            when -p option (color reduction) is
                            specified
                            SELECTTYPE is one of them:
-                             auto     -&gt; choose selecting
-                                         method automatically
-                                         (default)
-                             center   -&gt; choose the center of
-                                         the box
-                             average  -&gt; caclulate the color
-                                         average into the box
-                             histgram -&gt; similar with average
-                                         but considers color
-                                         histgram
+                             auto      -&gt; choose selecting
+                                          method automatically
+                                          (default)
+                             center    -&gt; choose the center of
+                                          the box
+                             average    -&gt; calculate the color
+                                          average into the box
+                             histogram -&gt; similar with average
+                                          but considers color
+                                          histogram
 -c REGION, --crop=REGION   crop source image to fit the
                            specified geometry. REGION should
                            be formatted as '%dx%d+%d+%d'
@@ -342,10 +453,19 @@ Options:
 -l LOOPMODE, --loop-control=LOOPMODE
                            select loop control mode for GIF
                            animation.
-                             auto   -&gt; honor the setting of
-                                       GIF header (default)
+                             auto    -&gt; honor the setting of
+                                        GIF header (default)
                              force   -&gt; always enable loop
                              disable -&gt; always disable loop
+-t PALETTETYPE, --palette-type=PALETTETYPE
+                           select palette color space type
+                             auto -&gt; choose palette type
+                                     automatically (default)
+                             hls  -&gt; use HLS color space
+                             rgb  -&gt; use RGB color space
+-P --penetrate             penetrate GNU Screen using DCS
+                           pass-through sequence
+-v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
 </code></pre>
@@ -420,7 +540,9 @@ Options:
 <em>sixel_dither_t</em> (dithering context object)</li>
 <li>
 <em>sixel_output_t</em> (output context object)</li>
-</ul><h4>
+</ul>
+
+<h4>
 <a name="dithering-context" class="anchor" href="#dithering-context"><span class="octicon octicon-link"></span></a>Dithering context</h4>
 
 <p>Here is a part of APIs for dithering context manipulation.</p>
@@ -445,9 +567,9 @@ Options:
     <span class="kt">int</span> <span class="cm">/* in */</span> <span class="n">width</span><span class="p">,</span>              <span class="cm">/* image width */</span>
     <span class="kt">int</span> <span class="cm">/* in */</span> <span class="n">height</span><span class="p">,</span>             <span class="cm">/* image height */</span>
     <span class="kt">int</span> <span class="cm">/* in */</span> <span class="n">depth</span><span class="p">,</span>              <span class="cm">/* pixel depth, now only '3' is supported */</span>
-    <span class="kt">int</span> <span class="cm">/* in */</span> <span class="n">method_for_largest</span><span class="p">,</span> <span class="cm">/* set 0 or method for finding the largest dimention */</span>
+    <span class="kt">int</span> <span class="cm">/* in */</span> <span class="n">method_for_largest</span><span class="p">,</span> <span class="cm">/* set 0 or method for finding the largest dimension */</span>
     <span class="kt">int</span> <span class="cm">/* in */</span> <span class="n">method_for_rep</span><span class="p">,</span>     <span class="cm">/* set 0 or method for choosing a color from the box */</span>
-    <span class="kt">int</span> <span class="cm">/* in */</span> <span class="n">quality_mode</span>        <span class="cm">/* set 0 or quality of histgram processing */</span>
+    <span class="kt">int</span> <span class="cm">/* in */</span> <span class="n">quality_mode</span>        <span class="cm">/* set 0 or quality of histogram processing */</span>
 <span class="p">);</span>
 </pre></div>
 
@@ -530,6 +652,23 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
 </blockquote>
+
+<h2>
+<a name="contributers-and-reviewers" class="anchor" href="#contributers-and-reviewers"><span class="octicon octicon-link"></span></a>Contributers and Reviewers</h2>
+
+<ul>
+<li><a href="https://github.com/arakiken" class="user-mention">@arakiken</a></li>
+<li>
+<a href="https://github.com/elfring" class="user-mention">@elfring</a> </li>
+<li><a href="https://github.com/isaki68k" class="user-mention">@isaki68k</a></li>
+<li><a href="https://github.com/knok" class="user-mention">@knok</a></li>
+<li><a href="https://github.com/mattn" class="user-mention">@mattn</a></li>
+<li><a href="https://github.com/tsutsui" class="user-mention">@tsutsui</a></li>
+<li><a href="https://github.com/ttdoda" class="user-mention">@ttdoda</a></li>
+<li><a href="https://github.com/uobikiemukot" class="user-mention">@uobikiemukot</a></li>
+<li><a href="https://github.com/waywardmonkeys" class="user-mention">@waywardmonkeys</a></li>
+<li><a href="https://github.com/yoshikaw" class="user-mention">@yoshikaw</a></li>
+</ul>
 
 <h2>
 <a name="acknowledgment" class="anchor" href="#acknowledgment"><span class="octicon octicon-link"></span></a>Acknowledgment</h2>
@@ -623,6 +762,24 @@ implied warranty.</p>
 </blockquote>
 
 <h3>
+<a name="loaderh-uobikiemukots-sdump" class="anchor" href="#loaderh-uobikiemukots-sdump"><span class="octicon octicon-link"></span></a>loader.h (<a href="https://github.com/uobikiemukot" class="user-mention">@uobikiemukot</a>'s sdump)</h3>
+
+<p>Some parts of converters/loader.c are imported from <a href="https://github.com/uobikiemukot" class="user-mention">@uobikiemukot</a>'s
+<a href="https://github.com/uobikiemukot/sdump">sdump</a> project</p>
+
+<blockquote>
+<p>The MIT License (MIT)</p>
+
+<p>Copyright (c) 2014 haru </p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+</blockquote>
+
+<h3>
 <a name="ax_gcc_var_attribute--ax_gcc_func_attribute" class="anchor" href="#ax_gcc_var_attribute--ax_gcc_func_attribute"><span class="octicon octicon-link"></span></a>ax_gcc_var_attribute / ax_gcc_func_attribute</h3>
 
 <p>These are useful m4 macros for detecting some GCC attributes.</p>
@@ -637,6 +794,44 @@ implied warranty.</p>
 permitted in any medium without royalty provided the copyright notice
 and this notice are preserved.  This file is offered as-is, without any
 warranty.</p>
+</blockquote>
+
+<h3>
+<a name="graphicsc-from-xterm-pl310" class="anchor" href="#graphicsc-from-xterm-pl310"><span class="octicon octicon-link"></span></a>graphics.c (from Xterm pl#310)</h3>
+
+<p>The helper function <em>hls2rgb</em> in <em>src/fromsixel.c</em> is imported from
+<em>graphics.c</em> in <a href="http://invisible-island.net/xterm/">Xterm pl#310</a>,
+originally written by Ross Combs.</p>
+
+<blockquote>
+<p>Copyright 2013,2014 by Ross Combs</p>
+
+<pre><code>                    All Rights Reserved
+</code></pre>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+
+<p>Except as contained in this notice, the name(s) of the above copyright
+holders shall not be used in advertising or otherwise to promote the
+sale, use or other dealings in this Software without prior written
+authorization.</p>
 </blockquote>
 
 <h3>
@@ -661,7 +856,9 @@ url: <a href="http://public-domain-photos.com/animals/egret-4.htm">http://public
 <p>author: Jon Sullivan
 url: <a href="http://public-domain-photos.com/animals/snake-4.htm">http://public-domain-photos.com/animals/snake-4.htm</a></p>
 </li>
-</ul><p>These are in the <a href="http://creativecommons.org/licenses/publicdomain/">public domain</a>.</p>
+</ul>
+
+<p>These are in the <a href="http://creativecommons.org/licenses/publicdomain/">public domain</a>.</p>
 
 <h4>
 <a name="vimperator3png-mascot-of-vimperator" class="anchor" href="#vimperator3png-mascot-of-vimperator"><span class="octicon octicon-link"></span></a>vimperator3.png (mascot of vimperator)</h4>
@@ -689,7 +886,7 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.</p>
 
 <ul>
 <li>
-<p><a href="http://netpbm.sourceforge.net/">ppmtosixel (netpbm)</a></p>
+<p><a href="http://netpbm.sourceforge.net/">netpbm</a></p>
 
 <p>You can get SIXEL graphics using <a href="http://netpbm.sourceforge.net/doc/ppmtosixel.html">ppmtosixel</a>
 or <a href="http://netpbm.sourceforge.net/doc/ppmtosixel.html">pbmtoln03</a>.</p>
@@ -705,14 +902,14 @@ or <a href="http://netpbm.sourceforge.net/doc/ppmtosixel.html">pbmtoln03</a>.</p
 <p>Python implementation of SIXEL converter</p>
 </li>
 <li>
+<p><a href="http://www.imagemagick.org/">ImageMagick</a></p>
+
+<p>Now SIXEL coder is available in svn trunk and V6 branch.</p>
+</li>
+<li>
 <p><a href="https://bitbucket.org/arakiken/tw/branch/sixel">monosixel in arakiken's tw</a></p>
 
 <p>A monochrome SIXEL converter</p>
-</li>
-<li>
-<p><a href="https://github.com/uobikiemukot/sdump">sdump</a></p>
-
-<p>SIXEL image dumper. It also provides a PDF viewer and a pager for multiple images.</p>
 </li>
 <li>
 <p>xpr(x11-apps)</p>
@@ -721,7 +918,9 @@ or <a href="http://netpbm.sourceforge.net/doc/ppmtosixel.html">pbmtoln03</a>.</p
 image with '-device ln03' or '-device la100' option.
 But now it is not maintained. It looks broken.</p>
 </li>
-</ul><h2>
+</ul>
+
+<h2>
 <a name="other-software-supporting-sixel" class="anchor" href="#other-software-supporting-sixel"><span class="octicon octicon-link"></span></a>Other software supporting SIXEL</h2>
 
 <ul>
@@ -745,6 +944,13 @@ But now it is not maintained. It looks broken.</p>
 <p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/gs.png" alt="GhostScript"></p>
 </li>
 <li>
+<p><a href="http://www.imagemagick.org/">ImageMagick</a></p>
+
+<p>Recent version of ImageMagick provides SIXEL coder. It's also available over commandline tools.</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/imagemagick.png" alt="ImageMagick"></p>
+</li>
+<li>
 <p><a href="http://rullf2.xs4all.nl/sg/zx81ce.html">ZX81 Emulator</a></p>
 
 <p>A ZX81 emulator producing Sixel Image Files</p>
@@ -759,6 +965,13 @@ But now it is not maintained. It looks broken.</p>
 <p><img src="https://github.com/fumiyas/qrc/blob/master/qrc-demo.png" alt="qrc"></p>
 </li>
 <li>
+<p><a href="https://github.com/mattn/go-sixel">go-sixel</a></p>
+
+<p>SIXEL encoder/decoder and command line tools writtern in golang.</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/go-sixel.png" alt="go-sixel"></p>
+</li>
+<li>
 <p><a href="https://github.com/jart/hiptext">hiptext</a></p>
 
 <p>SIXEL format is supported by -sixel2, -sixel16 or -sixel256 option.</p>
@@ -771,12 +984,33 @@ But now it is not maintained. It looks broken.</p>
 <p>Freestanding slideviewer using sixel graphics.
 Currently runs on QEMU(i386), without any filesystem or network.</p>
 
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixelslide.png" alt="Animation"></p>
+
 <p>cf. <a href="http://www.slideshare.net/syuu1228/presentation-on-your-terminal">http://www.slideshare.net/syuu1228/presentation-on-your-terminal</a></p>
+</li>
+<li>
+<p><a href="https://itunes.apple.com/jp/app/graphicconverter-9/id736099092?mt=12">GraphicConverter</a></p>
+
+<p>It can import SIXEL images.</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/graphicconverter.png" alt="GraphicConverter"></p>
+</li>
+<li>
+<p><a href="http://rullf2.xs4all.nl/sg/sg.html">SIXEL image viewer</a></p>
+
+<p>This web page can decode SIXEL images (written in javascript).</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/js-sixel.png" alt="SIXEL image viewer "></p>
+</li>
+<li>
+<p><a href="https://github.com/olofsen/SixelGraphics.jl">SixelGraphics.jl(written in Julia)</a></p>
+
+<p>A module for Julia implementing simple Sixel graphics.</p>
+
+<p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/julia.png" alt="SixelGraphics.jl"></p>
 </li>
 <li><p><img src="http://www.astro.caltech.edu/%7Etjp/pgplot/" alt="PGPLOT"></p></li>
 <li><p><a href="http://t.co/zTC7LhRbBc">SIXEL to PostScript converter</a></p></li>
-<li><p><a href="http://rullf2.xs4all.nl/sg/sg.html">SIXEL image viewer(written in javascript)</a></p></li>
-<li><p><a href="https://github.com/olofsen/SixelGraphics.jl">SixelGraphics.jl(written in Julia)</a></p></li>
 </ul>
       </section>
       <footer>
