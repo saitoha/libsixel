@@ -141,6 +141,7 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
     if (dither == NULL) {
         return NULL;
     }
+
     ret = sixel_dither_initialize(dither, mappixels, map_sx, map_sy, 3,
                                   LARGE_NORM, REP_CENTER_BOX, QUALITY_LOW);
     if (ret != 0) {
@@ -190,6 +191,7 @@ typedef struct Settings {
     int clipfirst;
     int macro_number;
     int penetrate_multiplexer;
+    int verbose;
     int show_version;
     int show_help;
 } settings_t;
@@ -208,7 +210,7 @@ prepare_palette(unsigned char *frame, int sx, int sy, settings_t *psettings)
         }
     } else if (psettings->mapfile) {
         dither = prepare_specified_palette(psettings->mapfile,
-                                            psettings->reqcolors);
+                                           psettings->reqcolors);
         if (!dither) {
             return NULL;
         }
@@ -339,6 +341,22 @@ static int do_crop(unsigned char **frames, int frame_count,
 }
 
 
+static void
+print_palette(sixel_dither_t *dither)
+{
+    unsigned char *palette;
+    int i;
+
+    fprintf(stderr, "palette:\n");
+    palette = sixel_dither_get_palette(dither);
+    for (i = 0; i < sixel_dither_get_num_of_palette_colors(dither); ++i) {
+        fprintf(stderr, "%d: #%02x%02x%02x\n", i,
+                palette[i * 3 + 1],
+                palette[i * 3 + 2],
+                palette[i * 3 + 3]);
+    }
+}
+
 static int
 convert_to_sixel(char const *filename, settings_t *psettings)
 {
@@ -417,6 +435,10 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         goto end;
     }
 
+    if (psettings->verbose) {
+        print_palette(dither);
+    }
+
     if (psettings->method_for_diffuse == DIFFUSE_AUTO) {
         psettings->method_for_diffuse = DIFFUSE_FS;
     }
@@ -469,7 +491,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 
             nret = sixel_encode(frames[n], sx, sy, 3, dither, context);
             if (nret != 0) {
-                free(p);
                 goto end;
             }
 
@@ -811,7 +832,7 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:ed:f:s:c:w:h:r:q:il:ugSn:PC:VH";
+    char const *optstring = "78p:m:ed:f:s:c:w:h:r:q:il:ugvSn:PC:VH";
 
     settings_t settings = {
         -1,           /* reqcolors */
@@ -863,6 +884,7 @@ main(int argc, char *argv[])
         {"loop-control",     required_argument,  &long_opt, 'l'},
         {"use-macro",        no_argument,        &long_opt, 'u'},
         {"ignore-delay",     no_argument,        &long_opt, 'g'},
+        {"verbose",          no_argument,        &long_opt, 'v'},
         {"static",           no_argument,        &long_opt, 'S'},
         {"macro-number",     required_argument,  &long_opt, 'n'},
         {"penetrate",        no_argument,        &long_opt, 'P'},
@@ -1100,6 +1122,9 @@ main(int argc, char *argv[])
         case 'g':
             settings.fignore_delay = 1;
             break;
+        case 'v':
+            settings.verbose = 1;
+            break;
         case 'S':
             settings.fstatic = 1;
             break;
@@ -1178,7 +1203,7 @@ main(int argc, char *argv[])
 
 argerr:
     exit_code = EXIT_FAILURE;
-    fprintf(stderr, "usage: img2sixel [-78eiugVH] [-p colors] [-m file] [-d diffusiontype]\n"
+    fprintf(stderr, "usage: img2sixel [-78eiugvVH] [-p colors] [-m file] [-d diffusiontype]\n"
                     "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
                     "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
                     "                 [-n macronumber] [filename ...]\n"
