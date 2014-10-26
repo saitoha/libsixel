@@ -377,12 +377,19 @@ Options:
 -l LOOPMODE, --loop-control=LOOPMODE
                            select loop control mode for GIF
                            animation.
-                             auto   -> honor the setting of
-                                       GIF header (default)
+                             auto    -> honor the setting of
+                                        GIF header (default)
                              force   -> always enable loop
                              disable -> always disable loop
+-t PALETTETYPE, --palette-type=PALETTETYPE
+                           select palette color space type
+                             auto -> choose palette type
+                                     automatically (default)
+                             hls  -> use HLS color space
+                             rgb  -> use RGB color space
 -P --penetrate             penetrate GNU Screen using DCS
                            pass-through sequence
+-v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
 ```

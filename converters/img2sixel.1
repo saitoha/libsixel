@@ -173,14 +173,26 @@ low  -> low quality and high speed mode
 .B \-l \fILOOPMODE\fP, \-\-loop\-control=\fILOOPMODE\fP
 select loop control mode for GIF animation.
 .br
-auto   -> honer the setting of GIF header (default)
+auto    -> honer the setting of GIF header (default)
 .br
 force   -> always enable loop
 .br
 disable -> always disable loop
 .TP 5
+.B \-t \fIPALETTETYPE\fP, \-\-palette\-type=\fIPALETTETYPE\fP
+select palette color space type.
+.br
+auto -> choose palette type automatically (default)
+.br
+hls  -> use HLS color space
+.br
+rgb  -> use RGB color space
+.TP 5
 .B \-P, \-\-penetrate
 penetrate GNU Screen using DCS pass-through sequence.
+.TP 5
+.B \-v, \-\-verbose
+show debugging info.
 .TP 5
 .B \-V, \-\-version
 show version and license info.
