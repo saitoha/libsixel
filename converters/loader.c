@@ -73,6 +73,7 @@
 #include <stdio.h>
 #include "frompnm.h"
 #include "loader.h"
+#include <sixel.h>
 
 #define STBI_NO_STDIO 1
 #define STB_IMAGE_IMPLEMENTATION 1
@@ -240,7 +241,6 @@ get_chunk(char const *filename, chunk_t *pchunk)
 }
 
 
-#if 0
 static int
 chunk_is_sixel(chunk_t const *chunk)
 {
@@ -252,15 +252,17 @@ chunk_is_sixel(chunk_t const *chunk)
     p = chunk->buffer;
     end = p + chunk->size;
 
-    p++;
+    if (chunk->size < 3) {
+        return 0;
+    }
+
     p++;
     if (p >= end) {
         return 0;
     }
-    if (*(p - 1) == 0x90 ||
-        (*(p - 1) == 0x1b && *p == 0x50)) {
+    if (*(p - 1) == 0x90 || (*(p - 1) == 0x1b && *p == 0x50)) {
         while (p++ < end) {
-            if (*p == 0x70) {
+            if (*p == 0x71) {
                 return 1;
             } else if (*p == 0x18 || *p == 0x1a) {
                 return 0;
@@ -275,7 +277,6 @@ chunk_is_sixel(chunk_t const *chunk)
     }
     return 0;
 }
-#endif
 
 
 static int
@@ -319,19 +320,39 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
 {
     unsigned char *p;
     unsigned char *pixels = NULL;
+    unsigned char *palette;
     static stbi__context s;
     static stbi__gif g;
     chunk_t frames;
     chunk_t delays;
+    int ret;
+    int colors;
+    int i;
 
-#if 0
     if (chunk_is_sixel(pchunk)) {
         /* sixel */
+        ret = sixel_decode(pchunk->buffer, pchunk->size,
+                           &p, psx, psy,
+                           &palette, &colors, malloc);
+        if (ret != 0) {
+#if HAVE_ERRNO_H
+            fprintf(stderr, "sixel_decode failed.\n" "reason: %s.\n",
+                    strerror(errno));
+#endif  /* HAVE_ERRNO_H */
+            return NULL;
+        }
+        *pcomp = 3;
+        pixels = malloc(*psx * *psy * *pcomp);
+        for (i = 0; i < *psx * *psy; ++i) {
+            pixels[i * 3 + 0] = palette[p[i] * 4 + 0];
+            pixels[i * 3 + 1] = palette[p[i] * 4 + 1];
+            pixels[i * 3 + 2] = palette[p[i] * 4 + 2];
+        }
+        free(palette);
+        free(p);
         *pframe_count = 1;
         *ploop_count = 1;
-    } else
-#endif
-    if (chunk_is_pnm(pchunk)) {
+    } else if (chunk_is_pnm(pchunk)) {
         /* pnm */
         pixels = load_pnm(pchunk->buffer, pchunk->size,
                           psx, psy, pcomp, pstride);
