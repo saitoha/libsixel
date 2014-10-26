@@ -1,7 +1,25 @@
 2014-10-26  Hayaki Saito <user@zuse.jp>
 
+  * converters/shell-completion/bash/img2sixel: Update bash completion file
+
+  * converters/shell-completion/zsh/_img2sixel: Update zsh completion file
+
+  * README.md, converters/img2sixel.1: Update manpage and README.md
+
+  * converters/img2sixel.c: Update help
+
+  * converters/sixel2png.c: Write png data using libpng by sixel2png
+
+  * converters/sixel2png.c: Fix a typo
+
+  * converters/sixel2png.c: Cleanup
+
+  * converters/loader.c: Accepts sixel as input format by img2sixel
+
   * converters/img2sixel.c: Fix segmentation fault on quitting GIF animation
   with -u option
+
+  * converters/img2sixel.c, src/tosixel.c: Support HLS palette
 
 2014-10-25  Hayaki Saito <user@zuse.jp>
 
@@ -36,6 +54,11 @@
 
   * configure, configure.ac, converters/Makefile.am, converters/Makefile.in,
   images/snake-progressive.jpg: Add a test for loading progressive jpeg
+
+  * include/sixel.h.in, src/output.c, src/output.h: Add new API
+  sixel_output_set_palette_type
+
+  * converters/img2sixel.c, include/sixel.h.in: Add --palette-type option
 
 2014-10-20  Hayaki Saito <user@zuse.jp>
 
