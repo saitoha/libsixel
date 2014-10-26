@@ -270,19 +270,62 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
     }
 
     if (!bodyonly && (ncolors != 2 || keycolor == -1)) {
-        for (n = 0; n < ncolors; n++) {
-            /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
-            nwrite = sprintf((char *)context->buffer + context->pos, "#%d;2;%d;%d;%d",
-                             context->conv_palette[n],
-                             (palette[n * 3 + 0] * 100 + 127) / 255,
-                             (palette[n * 3 + 1] * 100 + 127) / 255,
-                             (palette[n * 3 + 2] * 100 + 127) / 255);
-            if (nwrite <= 0) {
-                return (-1);
+        if (context->palette_type == PALETTETYPE_HLS) {
+            for (n = 0; n < ncolors; n++) {
+                int h;
+                int l;
+                int s;
+                int r, g, b, max, min;
+                r = palette[n * 3 + 0];
+                g = palette[n * 3 + 1];
+                b = palette[n * 3 + 2];
+                max = r > g ? (r > b ? r: b): (g > b ? g: b);
+                min = r < g ? (r < b ? r: b): (g < b ? g: b);
+                l = ((max + min) * 100 + 255) / 510;
+                if (max == min) {
+                    h = s = 0;
+                } else {
+                    if (l < 50) {
+                        s = ((max - min) * 100 + 127) / (max + min);
+                    } else {
+                        s = ((max - min) * 100 + 127) / ((255 - max) + (255 - min));
+                    }
+                    if (r == max) {
+                        h = 120 + (g - b) * 60 / (max - min);
+                    } else if (g == max) {
+                        h = 240 + (b - r) * 60 / (max - min);
+                    } else if (r < g) /* if (b == max) */ {
+                        h = 360 + (r - g) * 60 / (max - min);
+                    } else {
+                        h = 0 + (r - g) * 60 / (max - min);
+                    }
+                }
+                /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
+                nwrite = sprintf((char *)context->buffer + context->pos, "#%d;1;%d;%d;%d",
+                                 context->conv_palette[n], h, l, s);
+                if (nwrite <= 0) {
+                    return (-1);
+                }
+                sixel_advance(context, nwrite);
+                if (nwrite <= 0) {
+                    return (-1);
+                }
             }
-            sixel_advance(context, nwrite);
-            if (nwrite <= 0) {
-                return (-1);
+        } else {
+            for (n = 0; n < ncolors; n++) {
+                /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
+                nwrite = sprintf((char *)context->buffer + context->pos, "#%d;2;%d;%d;%d",
+                                 context->conv_palette[n],
+                                 (palette[n * 3 + 0] * 100 + 127) / 255,
+                                 (palette[n * 3 + 1] * 100 + 127) / 255,
+                                 (palette[n * 3 + 2] * 100 + 127) / 255);
+                if (nwrite <= 0) {
+                    return (-1);
+                }
+                sixel_advance(context, nwrite);
+                if (nwrite <= 0) {
+                    return (-1);
+                }
             }
         }
     }
