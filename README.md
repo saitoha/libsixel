@@ -225,10 +225,19 @@ Now SIXEL feature is supported by the following terminals.
 
 ## Build and install
 
+### Linux, OSX, cygwin
+
 ```
 $ ./configure
 $ make
 # make install
+```
+
+### Cross compile with MinGW
+
+```
+$ CC=i686-w64-mingw32-gcc cross_compile=yes ./configure --host=i686-w64-mingw32
+$ make
 ```
 
 ## Configure options
