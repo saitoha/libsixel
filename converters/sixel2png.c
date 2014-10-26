@@ -86,6 +86,12 @@ sixel_to_png(const char *input, const char *output)
     int n;
     FILE *input_fp, *output_fp;
     int write_len;
+    unsigned char *indexed_pixels;
+    unsigned char *palette;
+    int ncolors;
+    unsigned char *rgb_pixels;
+    int x, y;
+    int ret;
 
     if (strcmp(input, "-") == 0) {
         /* for windows */
@@ -139,14 +145,6 @@ sixel_to_png(const char *input, const char *output)
     if (input_fp != stdout) {
         fclose(input_fp);
     }
-
-    unsigned char *indexed_pixels;
-    unsigned char *palette;
-    int ncolors;
-
-    unsigned char *rgb_pixels;
-    int x, y;
-    int ret;
 
     ret = sixel_decode(raw_data, raw_len, &indexed_pixels,
                        &sx, &sy, &palette, &ncolors, malloc);
