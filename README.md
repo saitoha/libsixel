@@ -63,17 +63,27 @@ img2sixel(1) can be integrated with [Arakiken's w3m fork(remoteimg branch)](http
   ![w3m-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel.png)
 
 
-[Arakiken's GNU Screen fork(sixel branch)](https://bitbucket.org/arakiken/screen/branch/sixel) works with this.
-
-  ![w3m-sixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel-screen.png)
-
-
 @uobikiemukot's [sdump](https://github.com/uobikiemukot/sdump) project selected another approach.
 He wrote a w3mimgdisplay compatible program [yaimg-sixel](https://github.com/uobikiemukot/sdump/tree/master/yaimg-sixel).
 It also works with [ranger](https://github.com/hut/ranger).
 
   ![w3m-yaimg-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-yaimg-sixel.jpg)
 
+
+### GNU Screen integration
+
+[Arakiken's GNU Screen fork(sixel branch)](https://bitbucket.org/arakiken/screen/branch/sixel)
+works with SIXEL-supported applications including above products.
+This project is now in progress.
+GUI flavored SIXEL applications will integrated with existing terminal applications on it.
+
+  ![w3m-sixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel-screen.png)
+
+  ![sixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/arakikens-screen.jpg)
+
+  ![xsixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel-on-screen.png)
+
+See [youtube movie](http://youtu.be/QQAqe32VkFg).
 
 ### Twitter client integration
 
