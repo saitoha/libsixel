@@ -111,6 +111,11 @@ Some NetBSD/OpenBSD users are doing amazing challenge.
 
   ![sayaka-chan](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sayaka-netbsd-x68k.jpg)
 
+  SIXEL works even in-kernel console. [@isaki68k](https://github.com/isaki68k) wrote
+  [a patch for ite(4)](https://github.com/isaki68k/misc/blob/master/NetBSD/patch/x68k-ite-sixel.diff).
+
+  ![ite(4)](https://raw.githubusercontent.com/saitoha/libsixel/data/data/ite.png)
+
 
 ## Highlighted features
 
@@ -903,12 +908,17 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
   ![SIXEL image viewer ](https://raw.githubusercontent.com/saitoha/libsixel/data/data/js-sixel.png)
 
 
+- [SixelGraphics.jl(written in Julia)](https://github.com/olofsen/SixelGraphics.jl)
+
+  A module for Julia implementing simple Sixel graphics.
+
+  ![SixelGraphics.jl](https://raw.githubusercontent.com/saitoha/libsixel/data/data/julia.png)
+
+
 - ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
 
 
 - [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
 
-
-- [SixelGraphics.jl(written in Julia)](https://github.com/olofsen/SixelGraphics.jl)
 
 
