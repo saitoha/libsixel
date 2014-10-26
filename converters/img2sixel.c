@@ -346,6 +346,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     unsigned char **frames = NULL;
     unsigned char *mappixels = NULL;
     unsigned char *p = NULL;
+    unsigned char *frame = NULL;
     sixel_output_t *context = NULL;
     sixel_dither_t *dither = NULL;
     int sx, sy;
@@ -551,7 +552,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         context = sixel_output_create(sixel_write_callback, stdout);
         sixel_output_set_8bit_availability(context, psettings->f8bit);
         sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
-        p = malloc(sx * sy * 3);
+        frame = malloc(sx * sy * 3);
         if (nret != 0) {
             goto end;
         }
@@ -582,8 +583,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 #endif
                 }
 
-                memcpy(p, frames[n], sx * sy * 3);
-                nret = sixel_encode(p, sx, sy, 3, dither, context);
+                memcpy(frame, frames[n], sx * sy * 3);
+                nret = sixel_encode(frame, sx, sy, 3, dither, context);
                 if (nret != 0) {
                     goto end;
                 }
@@ -622,7 +623,7 @@ end:
     free(pixels);
     free(delays);
     free(mappixels);
-    free(p);
+    free(frame);
 
     return nret;
 }
