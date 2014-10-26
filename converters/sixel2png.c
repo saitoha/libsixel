@@ -130,7 +130,7 @@ sixel_to_png(const char *input, const char *output)
             max *= 2;
             if ((raw_data = (unsigned char *)realloc(raw_data, max)) == NULL) {
 #if HAVE_ERRNO_H
-                fprintf(stderr, "reaalloc(raw_data, %d) failed.\n"
+                fprintf(stderr, "realloc(raw_data, %d) failed.\n"
                                 "reason: %s.\n",
                         max, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
