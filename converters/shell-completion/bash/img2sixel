@@ -85,6 +85,12 @@ _img2sixel()
                                    disable' -- "$cur" ) )
         return 0
         ;;
+    -t|--palette-type)
+        COMPREPLY=( $( compgen -W 'auto \
+                                   hls \
+                                   rgb' -- "$cur" ) )
+        return 0
+        ;;
     esac
 
     case "$cur" in
@@ -109,7 +115,9 @@ _img2sixel()
                                    -r --resampling \
                                    -q --quality \
                                    -l --loop-control \
+                                   -t --palette-type \
                                    -P --penetrate \
+                                   -v --verbose \
                                    -V --version \
                                    -H --help \
                                   ' -- "$cur" ))
