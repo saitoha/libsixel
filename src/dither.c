@@ -141,6 +141,8 @@ sixel_dither_create(int ncolors)
     dither->origcolors = (-1);
     dither->keycolor = (-1);
     dither->optimized = 0;
+    dither->complexion = 1;
+    dither->bodyonly = 0;
     dither->method_for_largest = LARGE_NORM;
     dither->method_for_rep = REP_CENTER_BOX;
     dither->method_for_diffuse = DIFFUSE_FS;
@@ -153,8 +155,10 @@ sixel_dither_create(int ncolors)
 void
 sixel_dither_destroy(sixel_dither_t *dither)
 {
-    free(dither->cachetable);
-    free(dither);
+    if (dither) {
+        free(dither->cachetable);
+        free(dither);
+    }
 }
 
 
@@ -210,9 +214,11 @@ sixel_dither_get(int builtin_dither)
     }
 
     dither = sixel_dither_create(ncolors);
-    dither->palette = palette;
-    dither->keycolor = keycolor;
-    dither->optimized = 1;
+    if (dither) {
+        dither->palette = palette;
+        dither->keycolor = keycolor;
+        dither->optimized = 1;
+    }
 
     return dither;
 }
@@ -282,6 +288,21 @@ sixel_dither_get_palette(sixel_dither_t /* in */ *dither)  /* dither context obj
 }
 
 
+void
+sixel_dither_set_complexion_score(sixel_dither_t /* in */ *dither,  /* dither context object */
+                                  int            /* in */ score)    /* complexion score (>= 1) */
+{
+    dither->complexion = score;
+}
+
+void
+sixel_dither_set_body_only(sixel_dither_t /* in */ *dither,     /* dither context object */
+                           int            /* in */ bodyonly)    /* 0: output palette section
+                                                                   1: do not output palette section  */
+{
+    dither->bodyonly = bodyonly;
+}
+
 unsigned char *
 sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t *dither)
 {
@@ -313,6 +334,7 @@ sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t
                            dither->ncolors,
                            dither->method_for_diffuse,
                            dither->optimized,
+                           dither->complexion,
                            dither->cachetable,
                            dest);
 

@@ -18,24 +18,47 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+#include "config.h"
+#include <stdlib.h>
 
-#ifndef LIBSIXEL_LOADER_H
-#define LIBSIXEL_LOADER_H
-
-#ifdef __cplusplus
-extern "C" {
+#if defined(HAVE_INTTYPES_H)
+# include <inttypes.h>
 #endif
 
-unsigned char *
-load_image_file(char const *filename, int *psx, int *psy,
-                int *pframe_count, int *ploop_count, int **ppdelay,
-                int fstatic);
+#include "dither.h"
+#include "sixel.h"
 
-#ifdef __cplusplus
+sixel_image_t *
+sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
+                   int borrowed, sixel_dither_t *dither)
+{
+    sixel_image_t *im;
+
+    im = (sixel_image_t *)malloc(sizeof(sixel_image_t));
+    im->pixels = pixels;
+    im->sx = sx;
+    im->sy = sy;
+    im->depth = depth;
+    im->borrowed = borrowed;
+    im->dither = dither;
+    sixel_dither_ref(dither);
+    return im;
 }
-#endif
 
-#endif /* LIBSIXEL_LOADER_H */
+
+void
+sixel_image_destroy(sixel_image_t *im)
+{
+    if (im) {
+        if (im->dither) {
+            sixel_dither_unref(im->dither);
+        }
+        if (!im->borrowed) {
+            free(im->pixels);
+        }
+    }
+    free(im);
+}
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

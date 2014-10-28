@@ -81,11 +81,13 @@ build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @WANT_IMG2SIXEL_TRUE@am__append_1 = img2sixel
-@WANT_IMG2SIXEL_TRUE@am__append_2 = img2sixel.1
-@WANT_IMG2SIXEL_TRUE@am__append_3 = shell-completion/bash/img2sixel
-@WANT_IMG2SIXEL_TRUE@am__append_4 = shell-completion/zsh/_img2sixel
-@WANT_SIXEL2PNG_TRUE@am__append_5 = sixel2png
-@WANT_SIXEL2PNG_TRUE@am__append_6 = sixel2png.1
+@COND_DEBUG_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_2 = -Werror
+@WANT_IMG2SIXEL_TRUE@am__append_3 = img2sixel.1
+@WANT_IMG2SIXEL_TRUE@am__append_4 = shell-completion/bash/img2sixel
+@WANT_IMG2SIXEL_TRUE@am__append_5 = shell-completion/zsh/_img2sixel
+@WANT_SIXEL2PNG_TRUE@am__append_6 = sixel2png
+@COND_DEBUG_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_7 = -Werror
+@WANT_SIXEL2PNG_TRUE@am__append_8 = sixel2png.1
 subdir = converters
 SUBDIRS =
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
@@ -124,6 +126,8 @@ am__DEPENDENCIES_1 =
 @WANT_IMG2SIXEL_TRUE@	$(top_builddir)/src/libsixel.la \
 @WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_1) \
 @WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_1) \
 @WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -140,7 +144,8 @@ am__sixel2png_SOURCES_DIST = sixel2png.c stb_image_write.c \
 @WANT_SIXEL2PNG_TRUE@	sixel2png-malloc_stub.$(OBJEXT)
 sixel2png_OBJECTS = $(am_sixel2png_OBJECTS)
 @WANT_SIXEL2PNG_TRUE@sixel2png_DEPENDENCIES =  \
-@WANT_SIXEL2PNG_TRUE@	$(top_builddir)/src/libsixel.la
+@WANT_SIXEL2PNG_TRUE@	$(top_builddir)/src/libsixel.la \
+@WANT_SIXEL2PNG_TRUE@	$(am__DEPENDENCIES_1)
 sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sixel2png_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -319,7 +324,11 @@ LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBCURL_CFLAGS = @LIBCURL_CFLAGS@
 LIBCURL_LIBS = @LIBCURL_LIBS@
+LIBJPEG_CFLAGS = @LIBJPEG_CFLAGS@
+LIBJPEG_LIBS = @LIBJPEG_LIBS@
 LIBOBJS = @LIBOBJS@
+LIBPNG_CFLAGS = @LIBPNG_CFLAGS@
+LIBPNG_LIBS = @LIBPNG_LIBS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
@@ -380,7 +389,6 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
-have_pkg_config = @have_pkg_config@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -412,21 +420,31 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 DIST_SUBDIRS = $(SUBDIRS)
-dist_man_MANS = $(am__append_2) $(am__append_6)
-dist_bashcompletion_DATA = $(am__append_3)
-dist_zshcompletion_DATA = $(am__append_4)
+dist_man_MANS = $(am__append_3) $(am__append_8)
+dist_bashcompletion_DATA = $(am__append_4)
+dist_zshcompletion_DATA = $(am__append_5)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 CLEANFILES = *.gcno *.gcda *.gcov snake1.png snake2.png snake2.sixel
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c scale.c malloc_stub.c loader.c frompnm.c \
 @WANT_IMG2SIXEL_TRUE@                    scale.h malloc_stub.h loader.h frompnm.h
 
-@WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -I$(top_builddir)/include/ $(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) $(GD_CFLAGS)
-@WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS)
+@WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -I$(top_builddir)/include/ \
+@WANT_IMG2SIXEL_TRUE@	$(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) \
+@WANT_IMG2SIXEL_TRUE@	$(LIBCURL_CFLAGS) $(GD_CFLAGS) \
+@WANT_IMG2SIXEL_TRUE@	$(LIBJPEG_CFLAGS) $(LIBPNG_CFLAGS) \
+@WANT_IMG2SIXEL_TRUE@	$(am__append_2)
+@WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm \
+@WANT_IMG2SIXEL_TRUE@				  $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS) \
+@WANT_IMG2SIXEL_TRUE@				  $(LIBJPEG_LIBS) $(LIBPNG_LIBS)
+
 @WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c \
 @WANT_SIXEL2PNG_TRUE@                    stb_image_write.h malloc_stub.h
 
-@WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = -I$(top_builddir)/include/ $(MAYBE_COVERAGE)
-@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la
+@WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = -Wall \
+@WANT_SIXEL2PNG_TRUE@	-I$(top_builddir)/include/ \
+@WANT_SIXEL2PNG_TRUE@	$(MAYBE_COVERAGE) $(LIBPNG_CFLAGS) \
+@WANT_SIXEL2PNG_TRUE@	$(am__append_7)
+@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la $(LIBPNG_LIBS)
 all: all-recursive
 
 .SUFFIXES:
@@ -1047,26 +1065,20 @@ uninstall-man: uninstall-man1
 
 
 test: all
-@WANT_IMG2SIXEL_TRUE@	./img2sixel ../images/snake.jpg | tee snake.sixel
-@WANT_IMG2SIXEL_TRUE@	./img2sixel ../images/snake.jpg -w50% --height=100 | tee snake2.sixel
-@WANT_SIXEL2PNG_TRUE@	./sixel2png < snake.sixel > snake1.png
-@WANT_SIXEL2PNG_TRUE@	./sixel2png -i snake.sixel -o snake2.png
-@WANT_IMG2SIXEL_TRUE@	./img2sixel -m ../images/map8.png ../images/egret.jpg
-@WANT_IMG2SIXEL_TRUE@	./img2sixel -m ../images/map16.png ../images/snake.pnm
-@WANT_IMG2SIXEL_TRUE@	./img2sixel -p 8 ../images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	./img2sixel -p 2 ../images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	./img2sixel -e ../images/snake.jpg
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.jpg | tee snake.sixel
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.jpg -w50% --height=100 | tee snake2.sixel
+@HAVE_JPEG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake-progressive.jpg | tee snake.sixel
+@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.png | tee snake.sixel
+@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png < snake.sixel > snake1.png
+@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -i snake.sixel -o snake2.png
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -m ../images/map8.png ../images/egret.jpg
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -m ../images/map16.png ../images/snake.pnm
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -p 8 ../images/snake.jpg
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -p 2 ../images/snake.jpg
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -e ../images/snake.jpg
 
 winetest: all
-@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel.exe ../images/snake.jpg | tee snake.sixel
-@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel ../images/snake.jpg -w50% --height=100 | tee snake2.sixel
-@WANT_SIXEL2PNG_TRUE@	wine ./sixel2png < snake.sixel > snake1.png
-@WANT_SIXEL2PNG_TRUE@	wine ./sixel2png -i snake.sixel -o snake2.png
-@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel -m ../images/map8.png ../images/egret.jpg
-@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel -m ../images/map16.png ../images/snake.pnm
-@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel -p 8 ../images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel -p 2 ../images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	wine ./img2sixel -e ../images/snake.jpg
+	WINE=wine $(MAKE) test
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

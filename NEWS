@@ -1,0 +1,51 @@
+                  ------------------------------
+                   What's new in libsixel-1.3 ?
+                  ------------------------------
+
+* Now libcurl is automatically linked to img2sixel.
+  If you don't want to build with libcurl, you should configure with
+  --without-libcurl option.
+
+* Add libjpeg integration(linked automatically to img2sixel).
+
+* Add libpng integration(linked automatically to img2sixel/sixel2png).
+
+* Introduce -t(--palette-type) option.
+  img2sixel can output HLS paletted sixel with "-t hls".
+  Add new API sixel_output_set_palette_type.
+
+* Introduce -v(--verbose) option.
+
+* Add new API sixel_dither_set_body_only.
+
+* Now img2sixel can load SIXEL as input data.
+
+* Some bug fixes and minor improvements.
+
+                  ------------------------------
+                   What's new in libsixel-1.2 ?
+                  ------------------------------
+
+* Introduce GNU Screen penetration (-P) feature written by @arakiken.
+  This works with arakiken's GNU screen sixel branch
+  (screen-sixel, https://bitbucket.org/arakiken/screen/branch/screen).
+
+* Introduce crop operation (-c) feature written by @arakiken.
+  This works with arakiken's w3m remoteimg branch
+  https://bitbucket.org/arakiken/w3m/branch/remoteimg
+  (w3m with "-sixel" option)
+
+* Introduce -C (complexion score) option and implement complexion correction
+  feature. (discussion with @tsutsui)
+
+* Introduce static image extraction from Gif animation (-S).
+  (discussion with @isaki68k)
+
+* Introduce --enable-debug configure option.
+
+* Add APIs for skipping DCS envelope
+  sixel_output_{get,set}_skip_dcs_envelope. (disscussion with @uobikiemukot)
+
+* Some bug fixes and minor improvements.
+  Thanks to @elfring, @isaki68k, @knok, @mattn, @tsutsui, @waywardmonkeys
+  and @ttdoda.

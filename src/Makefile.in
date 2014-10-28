@@ -78,6 +78,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@COND_DEBUG_TRUE@am__append_1 = -Werror
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp $(dist_man_MANS)
@@ -237,7 +238,11 @@ LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBCURL_CFLAGS = @LIBCURL_CFLAGS@
 LIBCURL_LIBS = @LIBCURL_LIBS@
+LIBJPEG_CFLAGS = @LIBJPEG_CFLAGS@
+LIBJPEG_LIBS = @LIBJPEG_LIBS@
 LIBOBJS = @LIBOBJS@
+LIBPNG_CFLAGS = @LIBPNG_CFLAGS@
+LIBPNG_LIBS = @LIBPNG_LIBS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
@@ -298,7 +303,6 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
-have_pkg_config = @have_pkg_config@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -333,7 +337,8 @@ zshcompletiondir = @zshcompletiondir@
 CLEANFILES = *.gcno *.gcda *.gcov
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = output.c fromsixel.c tosixel.c quant.c dither.c
-libsixel_la_CFLAGS = -I$(top_builddir)/include/ $(MAYBE_COVERAGE)
+libsixel_la_CFLAGS = -Wall -I$(top_builddir)/include/ \
+	$(MAYBE_COVERAGE) $(am__append_1)
 libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION)
 dist_man_MANS = sixel.5
 all: all-am
