@@ -26,6 +26,16 @@
 extern "C" {
 #endif
 
+#define SIXEL_OUTPUT_PACKET_SIZE 1024
+#define SIXEL_PALETTE_MAX 256
+
+/* palette type */
+enum paletteType {
+    PALETTETYPE_AUTO = 0, /* choose palette type automatically */
+    PALETTETYPE_HLS  = 1, /* HLS colorspace */
+    PALETTETYPE_RGB  = 2, /* RGB colorspace */
+};
+
 typedef struct sixel_node {
     struct sixel_node *next;
     int pal;
@@ -80,6 +90,8 @@ typedef struct sixel_output {
     unsigned char buffer[1];
 
 } sixel_output_t;
+
+/* implementation */
 
 #ifdef __cplusplus
 }

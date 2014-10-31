@@ -22,6 +22,8 @@
 #ifndef LIBSIXEL_DITHER_H
 #define LIBSIXEL_DITHER_H
 
+#define SIXEL_PALETTE_MAX 256
+
 /* dither context object */
 typedef struct sixel_dither {
     unsigned int ref;           /* reference counter */

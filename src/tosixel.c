@@ -25,9 +25,6 @@
 
 #include "output.h"
 #include "dither.h"
-#include "sixel.h"
-
-/* implementation */
 
 static void
 penetrate(sixel_output_t *context, int nwrite)
@@ -40,7 +37,6 @@ penetrate(sixel_output_t *context, int nwrite)
         context->fn_write("\x1b\\", 2, context->priv);
     }
 }
-
 
 static void
 sixel_advance(sixel_output_t *context, int nwrite)
@@ -477,12 +473,9 @@ int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
 {
     unsigned char *paletted_pixels;
 
-    sixel_dither_ref(dither);
-
     /* apply palette */
     paletted_pixels = sixel_apply_palette(pixels, width, height, dither);
     if (paletted_pixels == NULL) {
-        sixel_dither_unref(dither);
         return (-1);
     }
 
@@ -490,7 +483,6 @@ int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
                       dither->palette, dither->ncolors,
                       dither->keycolor, dither->bodyonly, context);
 
-    sixel_dither_unref(dither);
     free(paletted_pixels);
 
     return 0;

@@ -23,8 +23,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "output.h"
-#include "sixel.h"
-
 
 sixel_output_t *
 sixel_output_create(sixel_write_function fn_write, void *priv)

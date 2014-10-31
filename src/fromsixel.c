@@ -57,7 +57,6 @@
 #endif
 
 #include "output.h"
-#include "sixel.h"
 
 #define RGB(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
 
@@ -203,6 +202,8 @@ sixel_getparams(unsigned char *p, int *param, int *len)
     return p;
 }
 
+
+typedef void * (* sixel_allocator_function)(size_t size);
 
 /* convert sixel data into indexed pixel bytes and palette data */
 int

@@ -57,7 +57,7 @@
 #endif
 
 #include "quant.h"
-#include "sixel.h"
+#include "dither.h"
 
 #if 0
 #define quant_trace fprintf

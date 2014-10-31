@@ -33,8 +33,6 @@
 
 #include "dither.h"
 #include "quant.h"
-#include "sixel.h"
-
 
 static const unsigned char pal_mono_dark[] = {
     0x00, 0x00, 0x00, 0xff, 0xff, 0xff
