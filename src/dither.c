@@ -122,17 +122,17 @@ sixel_dither_create(int ncolors)
     int quality_mode;
 
     if (ncolors == -1) {
-		ncolors = 256;
-		quality_mode = QUALITY_FULL;
+        ncolors = 256;
+        quality_mode = QUALITY_FULL;
     }
     else {
-	    if (ncolors > SIXEL_PALETTE_MAX) {
-			ncolors = 256;
-	    } else if (ncolors < 2) {
-			ncolors = 2;
-	    }
-		quality_mode = QUALITY_LOW;
-	}
+        if (ncolors > SIXEL_PALETTE_MAX) {
+            ncolors = 256;
+        } else if (ncolors < 2) {
+            ncolors = 2;
+        }
+        quality_mode = QUALITY_LOW;
+    }
     headsize = sizeof(sixel_dither_t);
     datasize = ncolors * 3;
     wholesize = headsize + datasize;// + cachesize;
