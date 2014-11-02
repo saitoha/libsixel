@@ -178,47 +178,14 @@ enum {
 } ;
 
 static int
-sixel_encode_impl(unsigned char *pixels, int width, int height,
-                  unsigned char *palette, int ncolors, int keycolor,
-                  int bodyonly, sixel_output_t *context, unsigned char *palstate,
-                  int dcs_beg, int dcs_end)
+sixel_encode_header(int width, int height, sixel_output_t *context)
 {
-    int x, y, i, n, c;
-    int sx, mx;
-    int len, pix;
-    unsigned char *map;
-    sixel_node_t *np, *tp, top;
-    unsigned char list[SIXEL_PALETTE_MAX];
     int nwrite;
     int p[3] = {0, 0, 0};
     int pcount = 3;
     int use_raster_attributes = 1;
 
     context->pos = 0;
-
-    if (ncolors < 1) {
-        return (-1);
-    }
-    len = ncolors * width;
-    context->active_palette = (-1);
-
-#if HAVE_CALLOC
-    if ((map = (unsigned char *)calloc(len, sizeof(unsigned char))) == NULL) {
-        return (-1);
-    }
-#else
-    if ((map = (unsigned char *)malloc(len)) == NULL) {
-        return (-1);
-    }
-    memset(map, 0, len);
-#endif
-    for (n = 0; n < ncolors; n++) {
-        context->conv_palette[n] = list[n] = n;
-    }
-
-    if (!dcs_beg) {
-        goto skip_header;
-    }
 
     if (!context->skip_dcs_envelope) {
         if (context->has_8bit_control) {
@@ -278,7 +245,42 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
         sixel_advance(context, nwrite);
     }
 
-skip_header:
+    return 0;
+}
+
+static int
+sixel_encode_body(unsigned char *pixels, int width, int height,
+                  unsigned char *palette, int ncolors, int keycolor, int bodyonly,
+                  sixel_output_t *context, unsigned char *palstate)
+{
+    int x, y, i, n, c;
+    int sx, mx;
+    int len, pix;
+    unsigned char *map;
+    sixel_node_t *np, *tp, top;
+    unsigned char list[SIXEL_PALETTE_MAX];
+    int nwrite;
+
+    if (ncolors < 1) {
+        return (-1);
+    }
+    len = ncolors * width;
+    context->active_palette = (-1);
+
+#if HAVE_CALLOC
+    if ((map = (unsigned char *)calloc(len, sizeof(unsigned char))) == NULL) {
+        return (-1);
+    }
+#else
+    if ((map = (unsigned char *)malloc(len)) == NULL) {
+        return (-1);
+    }
+    memset(map, 0, len);
+#endif
+    for (n = 0; n < ncolors; n++) {
+        context->conv_palette[n] = list[n] = n;
+    }
+
     if (!bodyonly && (ncolors != 2 || keycolor == -1)) {
         if (context->palette_type == PALETTETYPE_HLS) {
             for (n = 0; n < ncolors; n++) {
@@ -347,7 +349,7 @@ skip_header:
 
         /* Read long sixel sequence from pty on cygwin faster than what has no \n. */
 #if 1
-        if (!dcs_beg || !dcs_end) {
+        if (palstate) {
             context->buffer[context->pos] = '\n';
             sixel_advance(context, 1);
             if (nwrite <= 0) {
@@ -461,7 +463,7 @@ skip_header:
         memset(map, 0, len);
     }
 
-    if (!dcs_beg || !dcs_end) {
+    if (palstate) {
         context->buffer[context->pos] = '$';
         sixel_advance(context, 1);
         if (nwrite <= 0) {
@@ -469,7 +471,23 @@ skip_header:
         }
     }
 
-    if (dcs_end && !context->skip_dcs_envelope && !context->penetrate_multiplexer) {
+    /* free nodes */
+    while ((np = context->node_free) != NULL) {
+        context->node_free = np->next;
+        free(np);
+    }
+
+    free(map);
+
+    return 0;
+}
+
+static int
+sixel_encode_footer(sixel_output_t *context)
+{
+    int nwrite;
+
+    if (!context->skip_dcs_envelope && !context->penetrate_multiplexer) {
         if (context->has_8bit_control) {
             nwrite = sprintf((char *)context->buffer + context->pos, "\x9c");
         } else {
@@ -492,13 +510,172 @@ skip_header:
         }
     }
 
-    /* free nodes */
-    while ((np = context->node_free) != NULL) {
-        context->node_free = np->next;
-        free(np);
+    return 0;
+}
+
+static int
+sixel_encode_dither(unsigned char *pixels, int width, int height, int depth,
+                    sixel_dither_t *dither, sixel_output_t *context)
+{
+    unsigned char *paletted_pixels;
+
+    /* apply palette */
+    paletted_pixels = sixel_apply_palette(pixels, width, height, dither);
+    if (paletted_pixels == NULL) {
+        return (-1);
     }
 
-    free(map);
+    sixel_encode_header(width, height, context);
+    sixel_encode_body(paletted_pixels, width, height,
+              dither->palette, dither->ncolors,
+              dither->keycolor, dither->bodyonly, context, NULL);
+    sixel_encode_footer(context);
+
+    free(paletted_pixels);
+
+    return 0;
+}
+
+static int
+sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
+                    sixel_dither_t *dither, sixel_output_t *context)
+{
+    unsigned char *paletted_pixels;
+    unsigned char *src;
+    unsigned char *orig_src;
+    /* Mark sixel line pixels which have been already drawn. */
+    unsigned char *marks;
+    unsigned char rgbhit[32768];
+    unsigned char rgb2pal[32768];
+    unsigned char palhitcount[256];
+    unsigned char palstate[256];
+    int output_count;
+
+    orig_src = src = pixels;
+    marks = calloc(width * 6, 1);
+    paletted_pixels = malloc(width * height);
+    memset(rgbhit, 0, sizeof(rgbhit));
+    memset(palhitcount, 0, sizeof(palhitcount));
+    output_count = 0;
+    while (1) {
+        int x, y;
+        unsigned char *dst;
+        unsigned char *mptr;
+        int dirty;
+        int mod_y;
+        int nextpal;
+        int threshold;
+
+        dst = paletted_pixels;
+        nextpal = 0;
+        threshold = 1;
+        dirty = 0;
+        mptr = marks;
+        memset(palstate, 0, sizeof(palstate));
+        y = mod_y = 0;
+
+        while (1) {
+            for (x = 0; x < width; x++, mptr++, dst++, src += 3) {
+                if (*mptr) {
+                    *dst = 255;
+                }
+                else {
+                    int pix = ((src[0] & 0xf8) << 7) |
+                              ((src[1] & 0xf8) << 2) |
+                              ((src[2] >> 3) & 0x1f);
+                    if (!rgbhit[pix]) {
+                        while (1) {
+                            if (nextpal >= 255) {
+                                if (threshold >= 255) {
+                                    break;
+                                }
+                                else {
+                                    threshold = (threshold == 1) ? 9 : 255;
+                                    nextpal = 0;
+                                }
+                            }
+                            else if (palstate[nextpal] ||
+                                     palhitcount[nextpal] > threshold) {
+                                nextpal++;
+                            }
+                            else {
+                                break;
+                            }
+                        }
+
+                        if (nextpal >= 255) {
+                            dirty = 1;
+                            *dst = 255;
+                        }
+                        else {
+                            unsigned char *pal = dither->palette + (nextpal * 3);
+                            rgbhit[pix] = 1;
+                            if (output_count > 0) {
+                                rgbhit[((pal[0] & 0xf8) << 7) |
+                                       ((pal[1] & 0xf8) << 2) |
+                                       ((pal[2] >> 3) & 0x1f)] = 0;
+                            }
+                            *dst = rgb2pal[pix] = nextpal++;
+                            *mptr = 1;
+                            palstate[*dst] = PALETTE_CHANGE;
+                            palhitcount[*dst] = 1;
+                            *(pal++) = src[0];
+                            *(pal++) = src[1];
+                            *(pal++) = src[2];
+                        }
+                    }
+                    else {
+                        *dst = rgb2pal[pix];
+                        *mptr = 1;
+                        if (!palstate[*dst]) {
+                            palstate[*dst] = PALETTE_HIT;
+                        }
+                        if (palhitcount[*dst] < 255) {
+                            palhitcount[*dst]++;
+                        }
+                    }
+                }
+            }
+
+            if (++y >= height) {
+                if (dirty) {
+                    mod_y = 5;
+                }
+                else {
+                    goto end;
+                }
+            }
+            if (dirty && mod_y == 5) {
+                int orig_height = height;
+                if (output_count++ == 0) {
+                    sixel_encode_header(width, height, context);
+                }
+                height = y;
+                sixel_encode_body(paletted_pixels, width, height,
+                          dither->palette, 255, 255, dither->bodyonly,
+                          context, palstate);
+                src -= (6 * width * 3);
+                height = orig_height - height + 6;
+                break;
+            }
+
+            if (++mod_y == 6) {
+                mptr = memset(marks, 0, width*6);
+                mod_y = 0;
+            }
+        }
+    }
+
+end:
+    if (output_count == 0) {
+        sixel_encode_header(width, height, context);
+    }
+    sixel_encode_body(paletted_pixels, width, height,
+              dither->palette, 255, 255, dither->bodyonly, context, palstate);
+    sixel_encode_footer(context);
+
+    free(marks);
+    free(paletted_pixels);
 
     return 0;
 }
@@ -510,160 +687,26 @@ int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
                  sixel_dither_t /* in */ *dither,   /* dither context */
                  sixel_output_t /* in */ *context)  /* output context */
 {
-    unsigned char *paletted_pixels;
-
     sixel_dither_ref(dither);
 
     if (dither->quality_mode != QUALITY_FULL) {
-        /* apply palette */
-        paletted_pixels = sixel_apply_palette(pixels, width, height, dither);
-        if (paletted_pixels == NULL) {
+        if (sixel_encode_dither(pixels, width, height, depth, dither, context) == -1) {
             sixel_dither_unref(dither);
             return (-1);
         }
-
-        sixel_encode_impl(paletted_pixels, width, height,
-                      dither->palette, dither->ncolors,
-                      dither->keycolor, dither->bodyonly, context, NULL, 1, 1);
     }
     else if (depth != 3) {
         sixel_dither_unref(dither);
         return (-1);
     }
     else {
-        unsigned char *src;
-        unsigned char *orig_src;
-        /* Mark sixel line pixels which have been already drawn. */
-        unsigned char *marks;
-        unsigned char rgbhit[32768];
-        unsigned char rgb2pal[32768];
-        unsigned char palhitcount[256];
-        unsigned char palstate[256];
-        int output_count;
-
-        orig_src = src = pixels;
-        marks = calloc(width * 6, 1);
-        paletted_pixels = malloc(width * height);
-        memset(rgbhit, 0, sizeof(rgbhit));
-        memset(palhitcount, 0, sizeof(palhitcount));
-        output_count = 0;
-        while (1) {
-            int x, y;
-            unsigned char *dst;
-            unsigned char *mptr;
-            int dirty;
-            int mod_y;
-            int nextpal;
-            int threshold;
-
-            dst = paletted_pixels;
-            nextpal = 0;
-            threshold = 1;
-            dirty = 0;
-            mptr = marks;
-            memset(palstate, 0, sizeof(palstate));
-            y = mod_y = 0;
-
-            while (1) {
-                for (x = 0; x < width; x++, mptr++, dst++, src += 3) {
-                    if (*mptr) {
-                        *dst = 255;
-                    }
-                    else {
-                        int pix = ((src[0] & 0xf8) << 7) |
-                                  ((src[1] & 0xf8) << 2) |
-                                  ((src[2] >> 3) & 0x1f);
-                        if (!rgbhit[pix]) {
-                            while (1) {
-                                if (nextpal >= 255) {
-                                    if (threshold >= 255) {
-                                        break;
-                                    }
-                                    else {
-                                        threshold = (threshold == 1) ? 9 : 255;
-                                        nextpal = 0;
-                                    }
-                                }
-                                else if (palstate[nextpal] ||
-                                         palhitcount[nextpal] > threshold) {
-                                    nextpal++;
-                                }
-                                else {
-                                    break;
-                                }
-                            }
-
-                            if (nextpal >= 255) {
-                                dirty = 1;
-                                *dst = 255;
-                            }
-                            else {
-                                unsigned char *pal = dither->palette + (nextpal * 3);
-                                rgbhit[pix] = 1;
-                                if (output_count > 0) {
-                                    rgbhit[((pal[0] & 0xf8) << 7) |
-                                           ((pal[1] & 0xf8) << 2) |
-                                           ((pal[2] >> 3) & 0x1f)] = 0;
-                                }
-                                *dst = rgb2pal[pix] = nextpal++;
-                                *mptr = 1;
-                                palstate[*dst] = PALETTE_CHANGE;
-                                palhitcount[*dst] = 1;
-                                *(pal++) = src[0];
-                                *(pal++) = src[1];
-                                *(pal++) = src[2];
-                            }
-                        }
-                        else {
-                            *dst = rgb2pal[pix];
-                            *mptr = 1;
-                            if (!palstate[*dst]) {
-                                palstate[*dst] = PALETTE_HIT;
-                            }
-                            if (palhitcount[*dst] < 255) {
-                                palhitcount[*dst]++;
-                            }
-                        }
-                    }
-                }
-
-                if (++y >= height) {
-                    if (dirty) {
-                        mod_y = 5;
-                    }
-                    else {
-                        goto end;
-                    }
-                }
-                if (dirty && mod_y == 5) {
-                    int orig_height = height;
-                    height = y;
-                    sixel_encode_impl(paletted_pixels, width, height,
-                                  dither->palette, 255,
-                                  255, dither->bodyonly, context, palstate,
-                                  (output_count++ == 0), 0);
-                    src -= (6 * width * 3);
-                    height = orig_height - height + 6;
-                    break;
-                }
-
-                if (++mod_y == 6) {
-                    mptr = memset(marks, 0, width*6);
-                    mod_y = 0;
-                }
-            }
+        if (sixel_encode_fullcolor(pixels, width, height, depth, dither, context) == -1) {
+            sixel_dither_unref(dither);
+            return (-1);
         }
-
-    end:
-        sixel_encode_impl(paletted_pixels, width, height,
-                      dither->palette, 255,
-                      255, dither->bodyonly, context, palstate,
-                      output_count == 0, 1);
-        free(marks);
     }
 
     sixel_dither_unref(dither);
-    free(paletted_pixels);
 
     return 0;
 }
