@@ -316,9 +316,6 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
                     return (-1);
                 }
                 sixel_advance(context, nwrite);
-                if (nwrite <= 0) {
-                    return (-1);
-                }
             }
         } else {
             for (n = 0; n < ncolors; n++) {
@@ -332,9 +329,6 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
                     return (-1);
                 }
                 sixel_advance(context, nwrite);
-                if (nwrite <= 0) {
-                    return (-1);
-                }
             }
         }
     }
@@ -446,9 +440,6 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
     if (palstate) {
         context->buffer[context->pos] = '$';
         sixel_advance(context, 1);
-        if (nwrite <= 0) {
-            return (-1);
-        }
     }
 
     /* free nodes */
