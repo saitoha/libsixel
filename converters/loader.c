@@ -890,7 +890,7 @@ arrange_pixelformat(unsigned char *pixels, int width, int height,
 unsigned char *
 load_image_file(char const *filename, int *psx, int *psy,
                 int *pframe_count, int *ploop_count, int **ppdelay,
-                int fstatic, int pipe_mode)
+                int fstatic)
 {
     unsigned char *pixels;
     int comp;
@@ -899,11 +899,6 @@ load_image_file(char const *filename, int *psx, int *psy,
 
     pixels = NULL;
 
-#if HAVE_FSEEK
-    if (pipe_mode) {
-        (void)fseek(stdin, 0L, SEEK_SET);
-    }
-#endif  /* HAVE_FSEEK */
     if (get_chunk(filename, &chunk) != 0) {
         return NULL;
     }

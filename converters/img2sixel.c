@@ -132,7 +132,7 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
     delays = NULL;
 
     mappixels = load_image_file(mapfile, &map_sx, &map_sy,
-                                &frame_count, &loop_count, &delays, 1, 0);
+                                &frame_count, &loop_count, &delays, 1);
     free(delays);
     if (!mappixels) {
         return NULL;
@@ -371,16 +371,16 @@ print_palette(sixel_dither_t *dither)
 static int
 convert_to_sixel(char const *filename, settings_t *psettings)
 {
-    unsigned char *pixels = NULL;
-    unsigned char **frames = NULL;
-    unsigned char *p = NULL;
-    unsigned char *frame = NULL;
+    unsigned char *pixels;
+    unsigned char **frames;
+    unsigned char *p;
+    unsigned char *frame;
     sixel_output_t *context = NULL;
     sixel_dither_t *dither = NULL;
     int sx, sy;
     int frame_count = 1;
     int loop_count = 1;
-    int *delays = NULL;
+    int *delays;
     int c;
     int n;
     int nret = -1;
@@ -397,10 +397,13 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
 reload:
+    pixels = NULL;
+    frames = NULL;
+    frame = NULL;
+    delays = NULL;
     pixels = load_image_file(filename, &sx, &sy,
                              &frame_count, &loop_count,
-                             &delays, psettings->fstatic,
-                             psettings->pipe_mode);
+                             &delays, psettings->fstatic);
 
     if (pixels == NULL) {
         nret = -1;
@@ -655,15 +658,18 @@ reload:
     }
 
     nret = 0;
+    fflush(stdout);
 
 end:
     free(frames);
     free(pixels);
     free(delays);
     free(frame);
-    fflush(stdout);
 
     if (nret == 0 && psettings->pipe_mode) {
+#if HAVE_CLEARERR
+        clearerr(stdin);
+#endif  /* HAVE_FSEEK */
         while (!signaled) {
             fd_set rfds;
             struct timeval tv;

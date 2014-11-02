@@ -164,7 +164,7 @@ AC_CHECK_FUNC([getopt_long],
                              [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
                              [AC_MSG_ERROR(getopt or getopt_long is not available.)])])
 
-AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode signal usleep calloc clock fseek])
+AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode signal usleep calloc clock clearerr])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
