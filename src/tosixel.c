@@ -173,7 +173,7 @@ sixel_put_node(sixel_output_t *const context, int x,
 }
 
 enum {
-    PALETTE_HIT = 1, 
+    PALETTE_HIT = 1,
     PALETTE_CHANGE = 2,
 } ;
 
@@ -527,6 +527,7 @@ int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
                       dither->keycolor, dither->bodyonly, context, NULL, 1, 1);
     }
     else if (depth != 3) {
+        sixel_dither_unref(dither);
         return (-1);
     }
     else {
