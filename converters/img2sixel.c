@@ -1023,7 +1023,7 @@ main(int argc, char *argv[])
             }
             break;
         case 'w':
-            parsed = sscanf(optarg, "%d%s", &number, unit);
+            parsed = sscanf(optarg, "%d%2s", &number, unit);
             if (parsed == 2 && strcmp(unit, "%") == 0) {
                 settings.pixelwidth = -1;
                 settings.percentwidth = number;
@@ -1043,7 +1043,7 @@ main(int argc, char *argv[])
             }
             break;
         case 'h':
-            parsed = sscanf(optarg, "%d%s", &number, unit);
+            parsed = sscanf(optarg, "%d%2s", &number, unit);
             if (parsed == 2 && strcmp(unit, "%") == 0) {
                 settings.pixelheight = -1;
                 settings.percentheight = number;
