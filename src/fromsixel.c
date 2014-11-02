@@ -223,9 +223,6 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     int attributed_ph, attributed_pv;
     int repeat_count, color_index, max_color_index = 2, background_color_index;
     int param[10];
-    unsigned char *s;
-    static char pam[256];
-    static char gra[256];
     int sixel_palet[SIXEL_PALETTE_MAX];
     unsigned char *imbuf, *dmbuf;
     int imsx, imsy;
@@ -272,22 +269,13 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
     memset(imbuf, background_color_index, imsx * imsy);
 
-    pam[0] = gra[0] = '\0';
-
     while (*p != '\0') {
         if ((p[0] == '\033' && p[1] == 'P') || *p == 0x90) {
             if (*p == '\033') {
                 p++;
             }
 
-            s = ++p;
-            p = sixel_getparams(p, param, &n);
-            if (s < p) {
-                for (i = 0; i < 255 && s < p;) {
-                    pam[i++] = *(s++);
-                }
-                pam[i] = '\0';
-            }
+            p = sixel_getparams(++p, param, &n);
 
             if (*p == 'q') {
                 p++;
@@ -340,14 +328,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
             break;
         } else if (*p == '"') {
             /* DECGRA Set Raster Attributes " Pan; Pad; Ph; Pv */
-            s = p++;
-            p = sixel_getparams(p, param, &n);
-            if (s < p) {
-                for (i = 0; i < 255 && s < p;) {
-                    gra[i++] = *(s++);
-                }
-                gra[i] = '\0';
-            }
+            p = sixel_getparams(p + 1, param, &n);
 
             if (n > 0) attributed_pad = param[0];
             if (n > 1) attributed_pan = param[1];
@@ -376,7 +357,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
         } else if (*p == '!') {
             /* DECGRI Graphics Repeat Introducer ! Pn Ch */
-            p = sixel_getparams(++p, param, &n);
+            p = sixel_getparams(p + 1, param, &n);
 
             if (n > 0) {
                 repeat_count = param[0];
