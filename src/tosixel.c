@@ -352,9 +352,6 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
         if (palstate) {
             context->buffer[context->pos] = '\n';
             sixel_advance(context, 1);
-            if (nwrite <= 0) {
-                return (-1);
-            }
         }
 #endif
     }
@@ -466,9 +463,6 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
     if (palstate) {
         context->buffer[context->pos] = '$';
         sixel_advance(context, 1);
-        if (nwrite <= 0) {
-            return (-1);
-        }
     }
 
     /* free nodes */
