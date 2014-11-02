@@ -239,46 +239,46 @@ static unsigned char *
 load_jpeg(unsigned char *data, int datasize,
           int *pwidth, int *pheight, int *pdepth)
 {
-	int row_stride, size;
+    int row_stride, size;
     unsigned char *result;
-	JSAMPARRAY buffer;
-	struct jpeg_decompress_struct cinfo;
-	struct jpeg_error_mgr pub;
+    JSAMPARRAY buffer;
+    struct jpeg_decompress_struct cinfo;
+    struct jpeg_error_mgr pub;
 
-	cinfo.err = jpeg_std_error(&pub);
+    cinfo.err = jpeg_std_error(&pub);
 
-	jpeg_create_decompress(&cinfo);
-	jpeg_mem_src(&cinfo, data, datasize);
-	jpeg_read_header(&cinfo, TRUE);
+    jpeg_create_decompress(&cinfo);
+    jpeg_mem_src(&cinfo, data, datasize);
+    jpeg_read_header(&cinfo, TRUE);
 
-	/* disable colormap (indexed color), grayscale -> rgb */
-	cinfo.quantize_colors = FALSE;
-	cinfo.out_color_space = JCS_RGB;
-	jpeg_start_decompress(&cinfo);
+    /* disable colormap (indexed color), grayscale -> rgb */
+    cinfo.quantize_colors = FALSE;
+    cinfo.out_color_space = JCS_RGB;
+    jpeg_start_decompress(&cinfo);
 
-	*pwidth   = cinfo.output_width;
-	*pheight  = cinfo.output_height;
-	*pdepth = cinfo.output_components;
+    *pwidth   = cinfo.output_width;
+    *pheight  = cinfo.output_height;
+    *pdepth = cinfo.output_components;
 
-	size = *pwidth * *pheight * *pdepth;
-	if ((result = (uint8_t *)calloc(1, size)) == NULL) {
-		jpeg_finish_decompress(&cinfo);
-		jpeg_destroy_decompress(&cinfo);
-		return NULL;
-	}
+    size = *pwidth * *pheight * *pdepth;
+    if ((result = (uint8_t *)calloc(1, size)) == NULL) {
+        jpeg_finish_decompress(&cinfo);
+        jpeg_destroy_decompress(&cinfo);
+        return NULL;
+    }
 
-	row_stride = cinfo.output_width * cinfo.output_components;
-	buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
+    row_stride = cinfo.output_width * cinfo.output_components;
+    buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
 
-	while (cinfo.output_scanline < cinfo.output_height) {
-		jpeg_read_scanlines(&cinfo, buffer, 1);
-		memcpy(result + (cinfo.output_scanline - 1) * row_stride, buffer[0], row_stride);
-	}
+    while (cinfo.output_scanline < cinfo.output_height) {
+        jpeg_read_scanlines(&cinfo, buffer, 1);
+        memcpy(result + (cinfo.output_scanline - 1) * row_stride, buffer[0], row_stride);
+    }
 
-	jpeg_finish_decompress(&cinfo);
-	jpeg_destroy_decompress(&cinfo);
+    jpeg_finish_decompress(&cinfo);
+    jpeg_destroy_decompress(&cinfo);
 
-	return result;
+    return result;
 }
 # endif  /* HAVE_JPEG */
 
