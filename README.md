@@ -87,7 +87,7 @@ See also on [youtube](http://youtu.be/QQAqe32VkFg).
 
 ### Twitter client integration
 
-Some NetBSD/OpenBSD users are doing amazing challenge.
+Some NetBSD/OpenBSD users are doing amazing challenges.
 
 #### [arakiken's mikutterm(mikutterm-sixel)](https://bitbucket.org/arakiken/mikutterm/branch/sixel)
 
@@ -235,7 +235,8 @@ Now SIXEL feature is supported by the following terminals.
 - [pkgsrc](http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/graphics/libsixel/)
 - [Homebrew tap](https://github.com/aki017/homebrew-sixel)
 - [yacp](https://github.com/fd00/yacp/tree/master/libsixel)
-- [Debian](https://ftp-master.debian.org/new/libsixel_1.1.2-1.html)
+- [Debian](https://packages.debian.org/search?searchon=names&keywords=libsixel)
+- [AUR](https://aur.archlinux.org/packages/libsixel/)
 
 
 ## Build and install

@@ -18,6 +18,8 @@
 
 * Add new API sixel_dither_set_body_only.
 
+* Now img2sixel can load SIXEL as input data.
+
 * Some bug fixes and minor improvements.
 
                   ------------------------------
