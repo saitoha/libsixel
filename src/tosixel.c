@@ -350,9 +350,6 @@ skip_header:
         if (!dcs_beg || !dcs_end) {
             context->buffer[context->pos] = '\n';
             sixel_advance(context, 1);
-            if (nwrite <= 0) {
-                return (-1);
-            }
         }
 #endif
     }
@@ -464,9 +461,6 @@ skip_header:
     if (!dcs_beg || !dcs_end) {
         context->buffer[context->pos] = '$';
         sixel_advance(context, 1);
-        if (nwrite <= 0) {
-            return (-1);
-        }
     }
 
     if (dcs_end && !context->skip_dcs_envelope && !context->penetrate_multiplexer) {
