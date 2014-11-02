@@ -149,7 +149,7 @@ sixel_put_node(sixel_output_t *const context, int x,
         /* designate palette index */
         if (context->active_palette != np->pal) {
             nwrite = sprintf((char *)context->buffer + context->pos,
-                             "#%d", context->conv_palette[np->pal]);
+                             "#%d", np->pal);
             sixel_advance(context, nwrite);
             context->active_palette = np->pal;
         }
@@ -255,7 +255,6 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
     int len, pix;
     unsigned char *map;
     sixel_node_t *np, *tp, top;
-    unsigned char list[SIXEL_PALETTE_MAX];
     int nwrite;
 
     if (ncolors < 1) {
@@ -274,9 +273,6 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
     }
     memset(map, 0, len);
 #endif
-    for (n = 0; n < ncolors; n++) {
-        context->conv_palette[n] = list[n] = n;
-    }
 
     if (!bodyonly && (ncolors != 2 || keycolor == -1)) {
         if (context->palette_type == PALETTETYPE_HLS) {
@@ -311,7 +307,7 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
                 }
                 /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
                 nwrite = sprintf((char *)context->buffer + context->pos, "#%d;1;%d;%d;%d",
-                                 context->conv_palette[n], h, l, s);
+                                 n, h, l, s);
                 if (nwrite <= 0) {
                     return (-1);
                 }
@@ -321,7 +317,7 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
             for (n = 0; n < ncolors; n++) {
                 /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
                 nwrite = sprintf((char *)context->buffer + context->pos, "#%d;2;%d;%d;%d",
-                                 context->conv_palette[n],
+                                 n,
                                  (palette[n * 3 + 0] * 100 + 127) / 255,
                                  (palette[n * 3 + 1] * 100 + 127) / 255,
                                  (palette[n * 3 + 2] * 100 + 127) / 255);
