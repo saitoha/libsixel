@@ -70,6 +70,9 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
+/* Define to 1 if you have the `fseek' function. */
+#undef HAVE_FSEEK
+
 /* Define to 1 if the system has the `deprecated' function attribute */
 #undef HAVE_FUNC_ATTRIBUTE_DEPRECATED
 

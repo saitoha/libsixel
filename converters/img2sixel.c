@@ -132,7 +132,7 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
     delays = NULL;
 
     mappixels = load_image_file(mapfile, &map_sx, &map_sy,
-                                &frame_count, &loop_count, &delays, 1);
+                                &frame_count, &loop_count, &delays, 1, 0);
     free(delays);
     if (!mappixels) {
         return NULL;
@@ -367,6 +367,7 @@ print_palette(sixel_dither_t *dither)
     }
 }
 
+
 static int
 convert_to_sixel(char const *filename, settings_t *psettings)
 {
@@ -398,7 +399,8 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 reload:
     pixels = load_image_file(filename, &sx, &sy,
                              &frame_count, &loop_count,
-                             &delays, psettings->fstatic);
+                             &delays, psettings->fstatic,
+                             psettings->pipe_mode);
 
     if (pixels == NULL) {
         nret = -1;

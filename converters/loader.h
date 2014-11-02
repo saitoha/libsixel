@@ -29,7 +29,7 @@ extern "C" {
 unsigned char *
 load_image_file(char const *filename, int *psx, int *psy,
                 int *pframe_count, int *ploop_count, int **ppdelay,
-                int fstatic);
+                int fstatic, int pipe_mode);
 
 #ifdef __cplusplus
 }
