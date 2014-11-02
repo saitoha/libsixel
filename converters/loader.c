@@ -196,7 +196,7 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
         pchunk->size += n;
     }
 
-    if (f != stdout) {
+    if (f != stdin) {
         fclose(f);
     }
 
@@ -899,6 +899,7 @@ load_image_file(char const *filename, int *psx, int *psy,
 
     pixels = NULL;
 
+    rewind(stdin);
     if (get_chunk(filename, &chunk) != 0) {
         return NULL;
     }
