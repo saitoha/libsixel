@@ -228,7 +228,11 @@ Now SIXEL feature is supported by the following terminals.
   [https://github.com/saitoha/seq2gif](https://github.com/saitoha/seq2gif)
 
 
-## Packages
+## Install
+
+### Using package managers
+
+You can install libsixel via the following package systems.
 
 - [FreeBSD ports](http://portsmon.freebsd.org/portoverview.py?category=graphics&portname=libsixel)
 - [DPorts](https://github.com/DragonFlyBSD/DPorts/tree/master/graphics/libsixel)
@@ -237,11 +241,11 @@ Now SIXEL feature is supported by the following terminals.
 - [yacp](https://github.com/fd00/yacp/tree/master/libsixel)
 - [Debian](https://packages.debian.org/search?searchon=names&keywords=libsixel)
 - [AUR](https://aur.archlinux.org/packages/libsixel/)
+- [Portage](http://packages.gentoo.org/package/media-libs/libsixel)
+- [Ubuntu](https://launchpad.net/ubuntu/+source/libsixel)
 
 
-## Build and install
-
-### Linux, OSX, cygwin
+### Build from source package
 
 ```
 $ ./configure
@@ -249,16 +253,9 @@ $ make
 # make install
 ```
 
-### Cross compile with MinGW
+#### Build with optional packages
 
-```
-$ CC=i686-w64-mingw32-gcc cross_compile=yes ./configure --host=i686-w64-mingw32
-$ make
-```
-
-## Configure options
-
-### Build with optional packages
+You can configure with the following options
 
 ```
 --with-libcurl            build with libcurl (default: auto)
@@ -269,6 +266,18 @@ $ make
 --with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
 --with-bashcompletiondir  specify bashcompletion.d
 --with-zshcompletiondir   specify zshcompletion.d
+```
+
+For more information, see "./configure --help".
+
+
+##### Cross compiling with MinGW
+
+You can build a windows binary in cross-build environment.
+
+```
+$ CC=i686-w64-mingw32-gcc cross_compile=yes ./configure --host=i686-w64-mingw32
+$ make
 ```
 
 ## Usage of command line tools
