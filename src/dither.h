@@ -32,6 +32,7 @@ typedef struct sixel_dither {
     int origcolors;             /* original colors */
     int optimized;              /* pixel is 15bpp compressable */
     int complexion;             /* for complexion correction */
+    int bodyonly;               /* do not output palette section if true */
     int method_for_largest;     /* method for finding the largest dimention 
                                    for splitting */
     int method_for_rep;         /* method for choosing a color from the box */
