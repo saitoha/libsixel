@@ -1032,7 +1032,7 @@ main(int argc, char *argv[])
             }
             break;
         case 'w':
-            parsed = sscanf(optarg, "%d%s", &number, unit);
+            parsed = sscanf(optarg, "%d%2s", &number, unit);
             if (parsed == 2 && strcmp(unit, "%") == 0) {
                 settings.pixelwidth = -1;
                 settings.percentwidth = number;
@@ -1052,7 +1052,7 @@ main(int argc, char *argv[])
             }
             break;
         case 'h':
-            parsed = sscanf(optarg, "%d%s", &number, unit);
+            parsed = sscanf(optarg, "%d%2s", &number, unit);
             if (parsed == 2 && strcmp(unit, "%") == 0) {
                 settings.pixelheight = -1;
                 settings.percentheight = number;
@@ -1246,10 +1246,10 @@ main(int argc, char *argv[])
 
 argerr:
     exit_code = EXIT_FAILURE;
-    fprintf(stderr, "usage: img2sixel [-78eiugvVH] [-p colors] [-m file] [-d diffusiontype]\n"
+    fprintf(stderr, "usage: img2sixel [-78eiugvSPVH] [-p colors] [-m file] [-d diffusiontype]\n"
                     "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
                     "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
-                    "                 [-t palettetype] [-n macronumber] [filename ...]\n"
+                    "                 [-t palettetype] [-n macronumber] [-C score] [filename ...]\n"
                     "for more details, type: 'img2sixel -H'.\n");
 
 end:
