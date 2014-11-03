@@ -372,6 +372,20 @@ print_palette(sixel_dither_t *dither)
 
 
 static int
+wait_stdin(void)
+{
+    fd_set rfds;
+    struct timeval tv;
+
+    tv.tv_sec = 1;
+    tv.tv_usec = 0;
+    FD_ZERO(&rfds);
+    FD_SET(STDIN_FILENO, &rfds);
+    return select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
+}
+
+
+static int
 convert_to_sixel(char const *filename, settings_t *psettings)
 {
     unsigned char *pixels;
@@ -674,14 +688,7 @@ end:
         clearerr(stdin);
 #endif  /* HAVE_FSEEK */
         while (!signaled) {
-            fd_set rfds;
-            struct timeval tv;
-
-            tv.tv_sec = 1;
-            tv.tv_usec = 0;
-            FD_ZERO(&rfds);
-            FD_SET(STDIN_FILENO, &rfds);
-            nret = select(1, &rfds, NULL, NULL, &tv);
+            nret = wait_stdin();
             if (nret == -1) {
                 return nret;
             }
