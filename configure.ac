@@ -144,6 +144,7 @@ AC_CHECK_HEADERS([memory.h \
                   sys/time.h \
                   time.h \
                   signal.h \
+                  sys/select.h \
                   sys/signal.h])
 
 # Checks for typedefs, structures, and compiler characteristics.

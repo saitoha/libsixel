@@ -33,6 +33,9 @@
 #if defined(HAVE_SYS_UNISTD_H)
 # include <sys/unistd.h>
 #endif
+#if defined(HAVE_SYS_SELECT_H)
+#include <sys/select.h>
+#endif
 
 #if defined(HAVE_TIME_H)
 # include <time.h>
