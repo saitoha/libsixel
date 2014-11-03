@@ -306,7 +306,6 @@ sixel_dither_set_body_only(sixel_dither_t /* in */ *dither,     /* dither contex
 unsigned char *
 sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t *dither)
 {
-    int ret;
     int bufsize;
     int cachesize;
     unsigned char *dest;
