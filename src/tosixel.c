@@ -337,14 +337,6 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
                 sixel_advance(context, nwrite);
             }
         }
-
-        /* Read long sixel sequence from pty on cygwin faster than what has no \n. */
-#if 1
-        if (palstate) {
-            context->buffer[context->pos] = '\n';
-            sixel_advance(context, 1);
-        }
-#endif
     }
 
     for (y = i = 0; y < height; y++) {
