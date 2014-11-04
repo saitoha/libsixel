@@ -519,8 +519,6 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
                     sixel_dither_t *dither, sixel_output_t *context)
 {
     unsigned char *paletted_pixels;
-    unsigned char *src;
-    unsigned char *orig_src;
     /* Mark sixel line pixels which have been already drawn. */
     unsigned char *marks;
     unsigned char *rgbhit;
@@ -529,7 +527,6 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
     unsigned char palstate[256];
     int output_count;
 
-    orig_src = src = pixels;
     if ((paletted_pixels = (unsigned char*)malloc(width * height + 32768 * 2 + width * 6)) == NULL) {
         return (-1);
     }
@@ -556,14 +553,14 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
         y = mod_y = 0;
 
         while (1) {
-            for (x = 0; x < width; x++, mptr++, dst++, src += 3) {
+            for (x = 0; x < width; x++, mptr++, dst++, pixels += 3) {
                 if (*mptr) {
                     *dst = 255;
                 }
                 else {
-                    int pix = ((src[0] & 0xf8) << 7) |
-                              ((src[1] & 0xf8) << 2) |
-                              ((src[2] >> 3) & 0x1f);
+                    int pix = ((pixels[0] & 0xf8) << 7) |
+                              ((pixels[1] & 0xf8) << 2) |
+                              ((pixels[2] >> 3) & 0x1f);
                     if (!rgbhit[pix]) {
                         while (1) {
                             if (nextpal >= 255) {
@@ -600,9 +597,9 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
                             *mptr = 1;
                             palstate[*dst] = PALETTE_CHANGE;
                             palhitcount[*dst] = 1;
-                            *(pal++) = src[0];
-                            *(pal++) = src[1];
-                            *(pal++) = src[2];
+                            *(pal++) = pixels[0];
+                            *(pal++) = pixels[1];
+                            *(pal++) = pixels[2];
                         }
                     }
                     else {
@@ -635,7 +632,7 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
                 sixel_encode_body(paletted_pixels, width, height,
                           dither->palette, 255, 255, dither->bodyonly,
                           context, palstate);
-                src -= (6 * width * 3);
+                pixels -= (6 * width * 3);
                 height = orig_height - height + 6;
                 break;
             }
