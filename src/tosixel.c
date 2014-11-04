@@ -400,9 +400,6 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
             /* DECGNL Graphics Next Line */
             context->buffer[context->pos] = '-';
             sixel_advance(context, 1);
-            if (nwrite <= 0) {
-                return (-1);
-            }
         }
 
         for (x = 0; (np = context->node_top) != NULL;) {
