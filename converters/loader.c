@@ -239,46 +239,46 @@ static unsigned char *
 load_jpeg(unsigned char *data, int datasize,
           int *pwidth, int *pheight, int *pdepth)
 {
-	int row_stride, size;
+    int row_stride, size;
     unsigned char *result;
-	JSAMPARRAY buffer;
-	struct jpeg_decompress_struct cinfo;
-	struct jpeg_error_mgr pub;
+    JSAMPARRAY buffer;
+    struct jpeg_decompress_struct cinfo;
+    struct jpeg_error_mgr pub;
 
-	cinfo.err = jpeg_std_error(&pub);
+    cinfo.err = jpeg_std_error(&pub);
 
-	jpeg_create_decompress(&cinfo);
-	jpeg_mem_src(&cinfo, data, datasize);
-	jpeg_read_header(&cinfo, TRUE);
+    jpeg_create_decompress(&cinfo);
+    jpeg_mem_src(&cinfo, data, datasize);
+    jpeg_read_header(&cinfo, TRUE);
 
-	/* disable colormap (indexed color), grayscale -> rgb */
-	cinfo.quantize_colors = FALSE;
-	cinfo.out_color_space = JCS_RGB;
-	jpeg_start_decompress(&cinfo);
+    /* disable colormap (indexed color), grayscale -> rgb */
+    cinfo.quantize_colors = FALSE;
+    cinfo.out_color_space = JCS_RGB;
+    jpeg_start_decompress(&cinfo);
 
-	*pwidth   = cinfo.output_width;
-	*pheight  = cinfo.output_height;
-	*pdepth = cinfo.output_components;
+    *pwidth   = cinfo.output_width;
+    *pheight  = cinfo.output_height;
+    *pdepth = cinfo.output_components;
 
-	size = *pwidth * *pheight * *pdepth;
-	if ((result = (uint8_t *)calloc(1, size)) == NULL) {
-		jpeg_finish_decompress(&cinfo);
-		jpeg_destroy_decompress(&cinfo);
-		return NULL;
-	}
+    size = *pwidth * *pheight * *pdepth;
+    if ((result = (uint8_t *)calloc(1, size)) == NULL) {
+        jpeg_finish_decompress(&cinfo);
+        jpeg_destroy_decompress(&cinfo);
+        return NULL;
+    }
 
-	row_stride = cinfo.output_width * cinfo.output_components;
-	buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
+    row_stride = cinfo.output_width * cinfo.output_components;
+    buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
 
-	while (cinfo.output_scanline < cinfo.output_height) {
-		jpeg_read_scanlines(&cinfo, buffer, 1);
-		memcpy(result + (cinfo.output_scanline - 1) * row_stride, buffer[0], row_stride);
-	}
+    while (cinfo.output_scanline < cinfo.output_height) {
+        jpeg_read_scanlines(&cinfo, buffer, 1);
+        memcpy(result + (cinfo.output_scanline - 1) * row_stride, buffer[0], row_stride);
+    }
 
-	jpeg_finish_decompress(&cinfo);
-	jpeg_destroy_decompress(&cinfo);
+    jpeg_finish_decompress(&cinfo);
+    jpeg_destroy_decompress(&cinfo);
 
-	return result;
+    return result;
 }
 # endif  /* HAVE_JPEG */
 
@@ -507,20 +507,23 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         *psy = png_get_image_height(png_ptr, info_ptr);
         bitdepth = png_get_bit_depth(png_ptr, info_ptr);
         *pcomp = png_get_channels(png_ptr, info_ptr);
+
         switch (png_get_color_type(png_ptr, info_ptr)) {
         case PNG_COLOR_TYPE_PALETTE:
             png_set_palette_to_rgb(png_ptr);
             *pcomp = 4;
             break;
         case PNG_COLOR_TYPE_GRAY:
+        case PNG_COLOR_TYPE_GRAY_ALPHA:
             if (bitdepth < 8) {
                 png_set_expand_gray_1_2_4_to_8(png_ptr);
             }
             break;
-        case PNG_COLOR_MASK_ALPHA:
+        case PNG_COLOR_TYPE_RGB_ALPHA:
             png_set_strip_alpha(png_ptr);
             *pcomp = 3;
             break;
+        case PNG_COLOR_TYPE_RGB:
         default:
             break;
         }

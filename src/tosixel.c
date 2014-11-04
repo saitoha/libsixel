@@ -149,7 +149,7 @@ sixel_put_node(sixel_output_t *const context, int x,
         /* designate palette index */
         if (context->active_palette != np->pal) {
             nwrite = sprintf((char *)context->buffer + context->pos,
-                             "#%d", context->conv_palette[np->pal]);
+                             "#%d", np->pal);
             sixel_advance(context, nwrite);
             context->active_palette = np->pal;
         }
@@ -174,42 +174,14 @@ sixel_put_node(sixel_output_t *const context, int x,
 
 
 static int
-sixel_encode_impl(unsigned char *pixels, int width, int height,
-                  unsigned char *palette, int ncolors, int keycolor,
-                  int bodyonly, sixel_output_t *context)
+sixel_encode_header(int width, int height, sixel_output_t *context)
 {
-    int x, y, i, n, c;
-    int sx, mx;
-    int len, pix;
-    unsigned char *map;
-    sixel_node_t *np, *tp, top;
-    unsigned char list[SIXEL_PALETTE_MAX];
     int nwrite;
     int p[3] = {0, 0, 0};
     int pcount = 3;
     int use_raster_attributes = 1;
 
     context->pos = 0;
-
-    if (ncolors < 1) {
-        return (-1);
-    }
-    len = ncolors * width;
-    context->active_palette = (-1);
-
-#if HAVE_CALLOC
-    if ((map = (unsigned char *)calloc(len, sizeof(unsigned char))) == NULL) {
-        return (-1);
-    }
-#else
-    if ((map = (unsigned char *)malloc(len)) == NULL) {
-        return (-1);
-    }
-    memset(map, 0, len);
-#endif
-    for (n = 0; n < ncolors; n++) {
-        context->conv_palette[n] = list[n] = n;
-    }
 
     if (!context->skip_dcs_envelope) {
         if (context->has_8bit_control) {
@@ -269,6 +241,39 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
         sixel_advance(context, nwrite);
     }
 
+    return 0;
+}
+
+
+static int
+sixel_encode_body(unsigned char *pixels, int width, int height,
+                  unsigned char *palette, int ncolors, int keycolor, int bodyonly,
+                  sixel_output_t *context, unsigned char *palstate)
+{
+    int x, y, i, n, c;
+    int sx, mx;
+    int len, pix;
+    unsigned char *map;
+    sixel_node_t *np, *tp, top;
+    int nwrite;
+
+    if (ncolors < 1) {
+        return (-1);
+    }
+    len = ncolors * width;
+    context->active_palette = (-1);
+
+#if HAVE_CALLOC
+    if ((map = (unsigned char *)calloc(len, sizeof(unsigned char))) == NULL) {
+        return (-1);
+    }
+#else
+    if ((map = (unsigned char *)malloc(len)) == NULL) {
+        return (-1);
+    }
+    memset(map, 0, len);
+#endif
+
     if (!bodyonly && (ncolors != 2 || keycolor == -1)) {
         if (context->palette_type == PALETTETYPE_HLS) {
             for (n = 0; n < ncolors; n++) {
@@ -302,20 +307,17 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
                 }
                 /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
                 nwrite = sprintf((char *)context->buffer + context->pos, "#%d;1;%d;%d;%d",
-                                 context->conv_palette[n], h, l, s);
+                                 n, h, l, s);
                 if (nwrite <= 0) {
                     return (-1);
                 }
                 sixel_advance(context, nwrite);
-                if (nwrite <= 0) {
-                    return (-1);
-                }
             }
         } else {
             for (n = 0; n < ncolors; n++) {
                 /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
                 nwrite = sprintf((char *)context->buffer + context->pos, "#%d;2;%d;%d;%d",
-                                 context->conv_palette[n],
+                                 n,
                                  (palette[n * 3 + 0] * 100 + 127) / 255,
                                  (palette[n * 3 + 1] * 100 + 127) / 255,
                                  (palette[n * 3 + 2] * 100 + 127) / 255);
@@ -323,9 +325,6 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
                     return (-1);
                 }
                 sixel_advance(context, nwrite);
-                if (nwrite <= 0) {
-                    return (-1);
-                }
             }
         }
     }
@@ -434,6 +433,28 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
         memset(map, 0, len);
     }
 
+    if (palstate) {
+        context->buffer[context->pos] = '$';
+        sixel_advance(context, 1);
+    }
+
+    /* free nodes */
+    while ((np = context->node_free) != NULL) {
+        context->node_free = np->next;
+        free(np);
+    }
+
+    free(map);
+
+    return 0;
+}
+
+
+static int
+sixel_encode_footer(sixel_output_t *context)
+{
+    int nwrite;
+
     if (!context->skip_dcs_envelope && !context->penetrate_multiplexer) {
         if (context->has_8bit_control) {
             nwrite = sprintf((char *)context->buffer + context->pos, "\x9c");
@@ -457,16 +478,32 @@ sixel_encode_impl(unsigned char *pixels, int width, int height,
         }
     }
 
-    /* free nodes */
-    while ((np = context->node_free) != NULL) {
-        context->node_free = np->next;
-        free(np);
+    return 0;
+}
+
+static int
+sixel_encode_dither(unsigned char *pixels, int width, int height, int depth,
+                    sixel_dither_t *dither, sixel_output_t *context)
+{
+    unsigned char *paletted_pixels;
+
+    /* apply palette */
+    paletted_pixels = sixel_apply_palette(pixels, width, height, dither);
+    if (paletted_pixels == NULL) {
+        return (-1);
     }
 
-    free(map);
+    sixel_encode_header(width, height, context);
+    sixel_encode_body(paletted_pixels, width, height,
+                      dither->palette, dither->ncolors,
+                      dither->keycolor, dither->bodyonly, context, NULL);
+    sixel_encode_footer(context);
+
+    free(paletted_pixels);
 
     return 0;
 }
+
 
 int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
                  int            /* in */ width,     /* image width */
@@ -475,23 +512,14 @@ int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
                  sixel_dither_t /* in */ *dither,   /* dither context */
                  sixel_output_t /* in */ *context)  /* output context */
 {
-    unsigned char *paletted_pixels;
-
     sixel_dither_ref(dither);
 
-    /* apply palette */
-    paletted_pixels = sixel_apply_palette(pixels, width, height, dither);
-    if (paletted_pixels == NULL) {
+    if (sixel_encode_dither(pixels, width, height, depth, dither, context) == -1) {
         sixel_dither_unref(dither);
         return (-1);
     }
 
-    sixel_encode_impl(paletted_pixels, width, height,
-                      dither->palette, dither->ncolors,
-                      dither->keycolor, dither->bodyonly, context);
-
     sixel_dither_unref(dither);
-    free(paletted_pixels);
 
     return 0;
 }
