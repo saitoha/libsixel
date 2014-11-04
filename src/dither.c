@@ -337,6 +337,9 @@ sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t
                            dither->complexion,
                            dither->cachetable,
                            dest);
+    if (ret != 0) {
+        return NULL;
+    }
 
     return dest;
 }
