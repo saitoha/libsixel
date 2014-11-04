@@ -175,7 +175,7 @@ sixel_put_node(sixel_output_t *const context, int x,
 enum {
     PALETTE_HIT = 1,
     PALETTE_CHANGE = 2,
-} ;
+};
 
 static int
 sixel_encode_header(int width, int height, sixel_output_t *context)
