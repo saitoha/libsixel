@@ -523,17 +523,20 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
     unsigned char *orig_src;
     /* Mark sixel line pixels which have been already drawn. */
     unsigned char *marks;
-    unsigned char rgbhit[32768];
-    unsigned char rgb2pal[32768];
+    unsigned char *rgbhit;
+    unsigned char *rgb2pal;
     unsigned char palhitcount[256];
     unsigned char palstate[256];
     int output_count;
 
     orig_src = src = pixels;
-    marks = calloc(width * 6, 1);
-    paletted_pixels = malloc(width * height);
-    memset(rgbhit, 0, sizeof(rgbhit));
-    memset(palhitcount, 0, sizeof(palhitcount));
+    if ((paletted_pixels = (unsigned char*)malloc(width * height + 32768 * 2 + width * 6)) == NULL) {
+        return (-1);
+    }
+    rgbhit = paletted_pixels + width * height;
+    memset(rgbhit, 0, 32768 * 2 + width * 6);
+    rgb2pal = rgbhit + 32768;
+    marks = rgb2pal + 32768;
     output_count = 0;
     while (1) {
         int x, y;
@@ -652,7 +655,6 @@ end:
               dither->palette, 255, 255, dither->bodyonly, context, palstate);
     sixel_encode_footer(context);
 
-    free(marks);
     free(paletted_pixels);
 
     return 0;
