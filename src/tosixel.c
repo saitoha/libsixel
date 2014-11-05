@@ -177,6 +177,7 @@ enum {
     PALETTE_CHANGE = 2,
 };
 
+
 static int
 sixel_encode_header(int width, int height, sixel_output_t *context)
 {
@@ -488,6 +489,7 @@ sixel_encode_footer(sixel_output_t *context)
     return 0;
 }
 
+
 static int
 sixel_encode_dither(unsigned char *pixels, int width, int height, int depth,
                     sixel_dither_t *dither, sixel_output_t *context)
@@ -510,6 +512,7 @@ sixel_encode_dither(unsigned char *pixels, int width, int height, int depth,
 
     return 0;
 }
+
 
 static int
 sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
@@ -558,6 +561,7 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
                     int pix = ((pixels[0] & 0xf8) << 7) |
                               ((pixels[1] & 0xf8) << 2) |
                               ((pixels[2] >> 3) & 0x1f);
+
                     if (!rgbhit[pix]) {
                         while (1) {
                             if (nextpal >= 255) {
@@ -565,7 +569,7 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
                                     break;
                                 }
                                 else {
-                                    threshold = (threshold == 1) ? 9 : 255;
+                                    threshold = (threshold == 1) ? 9: 255;
                                     nextpal = 0;
                                 }
                             }
@@ -584,6 +588,7 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
                         }
                         else {
                             unsigned char *pal = dither->palette + (nextpal * 3);
+
                             rgbhit[pix] = 1;
                             if (output_count > 0) {
                                 rgbhit[((pal[0] & 0xf8) << 7) |
@@ -622,6 +627,7 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
             }
             if (dirty && mod_y == 5) {
                 int orig_height = height;
+
                 if (output_count++ == 0) {
                     sixel_encode_header(width, height, context);
                 }
@@ -635,7 +641,7 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
             }
 
             if (++mod_y == 6) {
-                mptr = memset(marks, 0, width*6);
+                mptr = memset(marks, 0, width * 6);
                 mod_y = 0;
             }
         }
