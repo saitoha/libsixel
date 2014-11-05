@@ -561,6 +561,45 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
                     int pix = ((pixels[0] & 0xf8) << 7) |
                               ((pixels[1] & 0xf8) << 2) |
                               ((pixels[2] >> 3) & 0x1f);
+                    int r, g, b;
+                    int error_r, error_g, error_b;
+
+                    /* apply floyd steinberg dithering */
+                    error_r = pixels[0] & 0x7;
+                    error_g = pixels[1] & 0x7;
+                    error_b = pixels[2] & 0x7;
+                    if (x < width - 1) {
+                        r = (pixels[3 + 0] + (error_r * 5 >> 4));
+                        g = (pixels[3 + 1] + (error_g * 5 >> 4));
+                        b = (pixels[3 + 2] + (error_b * 5 >> 4));
+                        pixels[3] = r > 0xff ? 0xff: r;
+                        pixels[4] = g > 0xff ? 0xff: g;
+                        pixels[5] = b > 0xff ? 0xff: b;
+                    }
+                    if (y < height - 1) {
+                        if (x > 0) {
+                            r = pixels[width * 3 - 3 + 0] + (error_r * 3 >> 4);
+                            g = pixels[width * 3 - 3 + 1] + (error_g * 3 >> 4);
+                            b = pixels[width * 3 - 3 + 2] + (error_b * 3 >> 4);
+                            pixels[width * 3 - 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[width * 3 - 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[width * 3 - 3 + 2] = b > 0xff ? 0xff: b;
+                        }
+                        r = pixels[width * 3 + 0] + (error_r * 5 >> 4);
+                        g = pixels[width * 3 + 1] + (error_g * 5 >> 4);
+                        b = pixels[width * 3 + 2] + (error_b * 5 >> 4);
+                        pixels[width * 3 + 0] = r > 0xff ? 0xff: r;
+                        pixels[width * 3 + 1] = g > 0xff ? 0xff: g;
+                        pixels[width * 3 + 2] = b > 0xff ? 0xff: b;
+                        if (x < width - 1) {
+                            r = pixels[width * 3 + 3 + 0] + (error_r >> 4);
+                            g = pixels[width * 3 + 3 + 1] + (error_g >> 4);
+                            b = pixels[width * 3 + 3 + 2] + (error_b >> 4);
+                            pixels[width * 3 + 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[width * 3 + 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[width * 3 + 3 + 2] = b > 0xff ? 0xff: b;
+                        }
+                    }
 
                     if (!rgbhit[pix]) {
                         while (1) {
