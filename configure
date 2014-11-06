@@ -3021,6 +3021,7 @@ END
     as_fn_error $? "Your 'rm' program is bad, sorry." "$LINENO" 5
   fi
 fi
+
 case `pwd` in
   *\ * | *\	*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Libtool does not cope well with whitespace in \`pwd\`" >&5
@@ -13841,7 +13842,8 @@ fi
 
 
 if test x$with_libcurl != xno; then
-    ac_fn_c_check_header_mongrel "$LINENO" "curl/curl.h" "ac_cv_header_curl_curl_h" "$ac_includes_default"
+    if test x$build == x$host; then
+        ac_fn_c_check_header_mongrel "$LINENO" "curl/curl.h" "ac_cv_header_curl_curl_h" "$ac_includes_default"
 if test "x$ac_cv_header_curl_curl_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for curl_easy_cleanup in -lcurl" >&5
 $as_echo_n "checking for curl_easy_cleanup in -lcurl... " >&6; }
@@ -13888,8 +13890,8 @@ fi
 fi
 
 
-    if test x$have_curl != xyes; then
-        if test x${PKG_CONFIG} != x; then
+        if test x$have_curl != xyes; then
+            if test x${PKG_CONFIG} != x; then
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBCURL" >&5
@@ -13961,6 +13963,7 @@ else
 $as_echo "yes" >&6; }
 	have_curl=yes
 fi
+            fi
         fi
     fi
     if test x$have_curl = xyes; then
@@ -13983,7 +13986,8 @@ fi
 
 
 if test x$with_jpeg != xno; then
-    ac_fn_c_check_header_mongrel "$LINENO" "jpeglib.h" "ac_cv_header_jpeglib_h" "$ac_includes_default"
+    if test x$build == x$host; then
+        ac_fn_c_check_header_mongrel "$LINENO" "jpeglib.h" "ac_cv_header_jpeglib_h" "$ac_includes_default"
 if test "x$ac_cv_header_jpeglib_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for jpeg_read_header in -ljpeg" >&5
 $as_echo_n "checking for jpeg_read_header in -ljpeg... " >&6; }
@@ -14030,6 +14034,7 @@ fi
 fi
 
 
+    fi
     if test x$have_jpeg = xyes; then
 
 $as_echo "#define HAVE_JPEG 1" >>confdefs.h
@@ -14051,7 +14056,8 @@ fi
 
 
 if test x$with_png != xno; then
-    ac_fn_c_check_header_mongrel "$LINENO" "png.h" "ac_cv_header_png_h" "$ac_includes_default"
+    if test x$build == x$host; then
+        ac_fn_c_check_header_mongrel "$LINENO" "png.h" "ac_cv_header_png_h" "$ac_includes_default"
 if test "x$ac_cv_header_png_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for png_check_sig in -lpng" >&5
 $as_echo_n "checking for png_check_sig in -lpng... " >&6; }
@@ -14098,8 +14104,8 @@ fi
 fi
 
 
-    if test x$have_png != xyes; then
-        if test x${PKG_CONFIG} != x; then
+        if test x$have_png != xyes; then
+            if test x${PKG_CONFIG} != x; then
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBPNG" >&5
@@ -14171,6 +14177,7 @@ else
 $as_echo "yes" >&6; }
 	have_png=yes
 fi
+            fi
         fi
     fi
     if test x$have_png = xyes; then
@@ -16627,5 +16634,7 @@ echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
+echo ""
+echo ""
 echo ""
 echo ""

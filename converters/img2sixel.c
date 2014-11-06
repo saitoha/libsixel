@@ -27,45 +27,43 @@
 #include <stdarg.h>
 #include <string.h>
 
-#if defined(HAVE_UNISTD_H)
+#if HAVE_UNISTD_H
 # include <unistd.h>
 #endif
-#if defined(HAVE_SYS_UNISTD_H)
+#if HAVE_SYS_UNISTD_H
 # include <sys/unistd.h>
 #endif
-#if defined(HAVE_SYS_TYPES_H)
+#if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#if defined(HAVE_SYS_SELECT_H)
+#if HAVE_SYS_SELECT_H
 #include <sys/select.h>
 #endif
 
-#if defined(HAVE_TIME_H)
+#if HAVE_TIME_H
 # include <time.h>
 #endif
-#if defined(HAVE_SYS_TIME_H)
+#if HAVE_SYS_TIME_H
 # include <sys/time.h>
 #endif
-
-#if defined(HAVE_GETOPT_H)
+#if HAVE_GETOPT_H
 # include <getopt.h>
 #endif
 
-#if defined(HAVE_INTTYPES_H)
+#if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
 
-#if defined(HAVE_ERRNO_H)
+#if HAVE_ERRNO_H
 # include <errno.h>
 #endif
 
-#if defined(HAVE_SIGNAL_H)
+#if HAVE_SIGNAL_H
 # include <signal.h>
 #endif
-#if defined(HAVE_SYS_SIGNAL_H)
+#if HAVE_SYS_SIGNAL_H
 # include <sys/signal.h>
 #endif
-
 
 #include <sixel.h>
 #include "scale.h"
@@ -106,7 +104,7 @@ sixel_hex_write_callback(char *data, int size, void *priv)
 
 
 static sixel_dither_t *
-prepare_monochrome_palette(finvert)
+prepare_monochrome_palette(int finvert)
 {
     sixel_dither_t *dither;
 
@@ -374,6 +372,7 @@ print_palette(sixel_dither_t *dither)
 }
 
 
+#if HAVE_SYS_SELECT_H
 static int
 wait_stdin(void)
 {
@@ -386,6 +385,7 @@ wait_stdin(void)
     FD_SET(STDIN_FILENO, &rfds);
     return select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
 }
+#endif  /* HAVE_SYS_SELECT_H */
 
 
 static int
@@ -691,10 +691,12 @@ end:
         clearerr(stdin);
 #endif  /* HAVE_FSEEK */
         while (!signaled) {
+#if HAVE_SYS_SELECT_H
             nret = wait_stdin();
             if (nret == -1) {
                 return nret;
             }
+#endif  /* HAVE_SYS_SELECT_H */
             if (nret != 0) {
                 break;
             }
