@@ -172,6 +172,7 @@ typedef struct Settings {
     int reqcolors;
     char *mapfile;
     int monochrome;
+    int fullcolor;
     enum methodForDiffuse method_for_diffuse;
     enum methodForLargest method_for_largest;
     enum methodForRep method_for_rep;
@@ -210,21 +211,19 @@ prepare_palette(sixel_dither_t *former_dither,
     sixel_dither_t *dither;
     int ret;
 
-    if (psettings->monochrome) {
+    if (psettings->fullcolor) {
+        dither = sixel_dither_create(-1);
+    } else if (psettings->monochrome) {
         if (former_dither) {
             return former_dither;
-        } else {
-            dither = prepare_monochrome_palette(psettings->finvert);
-            return dither;
         }
+        dither = prepare_monochrome_palette(psettings->finvert);
     } else if (psettings->mapfile) {
         if (former_dither) {
             return former_dither;
-        } else {
-            dither = prepare_specified_palette(psettings->mapfile,
-                                               psettings->reqcolors);
-            return dither;
         }
+        dither = prepare_specified_palette(psettings->mapfile,
+                                           psettings->reqcolors);
     } else {
         if (psettings->method_for_largest == LARGE_AUTO) {
             psettings->method_for_largest = LARGE_NORM;
@@ -764,6 +763,7 @@ void show_help()
             "-i, --invert               assume the terminal background color\n"
             "                           is white, make sense only when -e\n"
             "                           option is given\n"
+            "-F, --fullcolor            output 15bpp sixel image\n"
             "-u, --use-macro            use DECDMAC and DEVINVM sequences to\n"
             "                           optimize GIF animation rendering\n"
             "-n, --macro-number         specify an number argument for\n"
@@ -907,12 +907,13 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:ed:f:s:c:w:h:r:q:il:t:ugvSn:PC:DVH";
+    char const *optstring = "78p:m:eFd:f:s:c:w:h:r:q:il:t:ugvSn:PC:DVH";
 
     settings_t settings = {
         -1,                 /* reqcolors */
         NULL,               /* mapfile */
         0,                  /* monochrome */
+        0,                  /* fullcolor */
         DIFFUSE_AUTO,       /* method_for_diffuse */
         LARGE_AUTO,         /* method_for_largest */
         REP_AUTO,           /* method_for_rep */
@@ -950,6 +951,7 @@ main(int argc, char *argv[])
         {"colors",           required_argument,  &long_opt, 'p'},
         {"mapfile",          required_argument,  &long_opt, 'm'},
         {"monochrome",       no_argument,        &long_opt, 'e'},
+        {"fullcolor",        no_argument,        &long_opt, 'F'},
         {"diffusion",        required_argument,  &long_opt, 'd'},
         {"find-largest",     required_argument,  &long_opt, 'f'},
         {"select-color",     required_argument,  &long_opt, 's'},
@@ -1004,6 +1006,9 @@ main(int argc, char *argv[])
             break;
         case 'e':
             settings.monochrome = 1;
+            break;
+        case 'F':
+            settings.fullcolor = 1;
             break;
         case 'd':
             /* parse --diffusion option */
