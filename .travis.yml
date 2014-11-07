@@ -49,6 +49,7 @@ script:
   - "du -h snake2.png"
   - "$WINE converters/img2sixel snake1.png > snake3.sixel"
   - "du -h snake3.sixel"
+  - "make test > /dev/null"
   - "if [ x$GCOV != x ]; then make coveralls; fi"
 
 after_success:
