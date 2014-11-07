@@ -1076,6 +1076,9 @@ test: all
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -p 8 ../images/snake.jpg
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -p 2 ../images/snake.jpg
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -e ../images/snake.jpg
+@WANT_IMG2SIXEL_TRUE@	which mkfifo && (mkfifo pipe; $(WINE) ./img2sixel -D < pipe&) && cat ../images/snake.jpg > pipe
+@WANT_IMG2SIXEL_TRUE@	echo > pipe
+@WANT_IMG2SIXEL_TRUE@	rm -f pipe
 
 winetest: all
 	WINE=wine $(MAKE) test

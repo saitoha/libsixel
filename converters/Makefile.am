@@ -67,6 +67,9 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -p 8 ../images/snake.jpg
 	$(WINE) ./img2sixel -p 2 ../images/snake.jpg
 	$(WINE) ./img2sixel -e ../images/snake.jpg
+	which mkfifo && (mkfifo pipe; $(WINE) ./img2sixel -D < pipe&) && cat ../images/snake.jpg > pipe
+	echo > pipe
+	rm -f pipe
 endif
 
 winetest: all
