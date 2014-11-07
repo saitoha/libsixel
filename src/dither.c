@@ -119,11 +119,19 @@ sixel_dither_create(int ncolors)
     int headsize;
     int datasize;
     int wholesize;
+    int quality_mode;
 
-    if (ncolors > SIXEL_PALETTE_MAX) {
+    if (ncolors == -1) {
         ncolors = 256;
-    } else if (ncolors < 2) {
-        ncolors = 2;
+        quality_mode = QUALITY_FULL;
+    }
+    else {
+        if (ncolors > SIXEL_PALETTE_MAX) {
+            ncolors = 256;
+        } else if (ncolors < 2) {
+            ncolors = 2;
+        }
+        quality_mode = QUALITY_LOW;
     }
     headsize = sizeof(sixel_dither_t);
     datasize = ncolors * 3;
@@ -146,7 +154,7 @@ sixel_dither_create(int ncolors)
     dither->method_for_largest = LARGE_NORM;
     dither->method_for_rep = REP_CENTER_BOX;
     dither->method_for_diffuse = DIFFUSE_FS;
-    dither->quality_mode = QUALITY_LOW;
+    dither->quality_mode = quality_mode;
 
     return dither;
 }
@@ -337,6 +345,9 @@ sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t
                            dither->complexion,
                            dither->cachetable,
                            dest);
+    if (ret != 0) {
+        return NULL;
+    }
 
     return dest;
 }

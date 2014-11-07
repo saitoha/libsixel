@@ -286,17 +286,19 @@ AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
 
 if test x$with_libcurl != xno; then
-    AC_CHECK_HEADER([curl/curl.h],
-                    [AC_CHECK_LIB([curl],
-                                  [curl_easy_cleanup],
-                                  [have_curl=yes LIBCURL_LIBS=-lcurl],
-                                  [have_curl=no])])
-    if test x$have_curl != xyes; then
-        if test x${PKG_CONFIG} != x; then
-            PKG_CHECK_MODULES(LIBCURL,
-                              [libcurl],
-                              [have_curl=yes],
-                              [have_curl=no])
+    if test x$build == x$host; then
+        AC_CHECK_HEADER([curl/curl.h],
+                        [AC_CHECK_LIB([curl],
+                                      [curl_easy_cleanup],
+                                      [have_curl=yes LIBCURL_LIBS=-lcurl],
+                                      [have_curl=no])])
+        if test x$have_curl != xyes; then
+            if test x${PKG_CONFIG} != x; then
+                PKG_CHECK_MODULES(LIBCURL,
+                                  [libcurl],
+                                  [have_curl=yes],
+                                  [have_curl=no])
+            fi
         fi
     fi
     if test x$have_curl = xyes; then
@@ -314,11 +316,13 @@ AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
 
 if test x$with_jpeg != xno; then
-    AC_CHECK_HEADER([jpeglib.h],
-                    [AC_CHECK_LIB([jpeg],
-                                  [jpeg_read_header],
-                                  [have_jpeg=yes LIBJPEG_LIBS=-ljpeg],
-                                  [have_jpeg=no])])
+    if test x$build == x$host; then
+        AC_CHECK_HEADER([jpeglib.h],
+                        [AC_CHECK_LIB([jpeg],
+                                      [jpeg_read_header],
+                                      [have_jpeg=yes LIBJPEG_LIBS=-ljpeg],
+                                      [have_jpeg=no])])
+    fi
     if test x$have_jpeg = xyes; then
         AC_DEFINE(HAVE_JPEG, 1, [whether jpeg codec library is available])
         loaders="${loaders} jpeg"
@@ -335,17 +339,19 @@ AC_SUBST(LIBJPEG_CFLAGS)
 AC_SUBST(LIBJPEG_LIBS)
 
 if test x$with_png != xno; then
-    AC_CHECK_HEADER([png.h],
-                    [AC_CHECK_LIB([png],
-                                  [png_check_sig],
-                                  [have_png=yes LIBPNG_LIBS=-lpng],
-                                  [have_png=no])])
-    if test x$have_png != xyes; then
-        if test x${PKG_CONFIG} != x; then
-            PKG_CHECK_MODULES(LIBPNG,
-                              [libpng],
-                              [have_png=yes],
-                              [have_png=no])
+    if test x$build == x$host; then
+        AC_CHECK_HEADER([png.h],
+                        [AC_CHECK_LIB([png],
+                                      [png_check_sig],
+                                      [have_png=yes LIBPNG_LIBS=-lpng],
+                                      [have_png=no])])
+        if test x$have_png != xyes; then
+            if test x${PKG_CONFIG} != x; then
+                PKG_CHECK_MODULES(LIBPNG,
+                                  [libpng],
+                                  [have_png=yes],
+                                  [have_png=no])
+            fi
         fi
     fi
     if test x$have_png = xyes; then
@@ -393,5 +399,7 @@ echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
+echo ""
+echo ""
 echo ""
 echo ""

@@ -292,6 +292,7 @@ largestByLuminosity(sample minval[], sample maxval[], unsigned int const depth)
         double largestSpreadSoFar;
 
         largestSpreadSoFar = 0.0;
+        largestDimension = 0;
 
         for (plane = 0; plane < 3; ++plane) {
             double const spread =
