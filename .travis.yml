@@ -16,7 +16,7 @@ env:
   - XCC=clang HOST= PREFIX=/usr WINE= GD="--with-gd" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
   - XCC=clang HOST= PREFIX=/usr WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" JPEG=--without-jpeg PNG=--without-png
   - XCC=clang HOST= PREFIX=/usr WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
-  - XCC=clang HOST= PREFIX=/usr WINE= JPEG="--with-jpeg" PNG="--with-png" GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" LIBCURL="--with-libcurl" GCOV="--enable-gcov" STATIC="--disable-shared"
+  - XCC=clang HOST= PREFIX=/usr WINE= JPEG="--with-jpeg" PNG="--with-png" LIBCURL="--with-libcurl" GCOV="--enable-gcov" STATIC="--disable-shared"
 
 before_install:
   - "sudo apt-get -qq update --force-yes > /dev/null"
