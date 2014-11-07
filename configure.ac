@@ -369,6 +369,7 @@ LS_UPDATE_TIMESTAMP
 
 AM_CONDITIONAL([HAVE_JPEG], [test x$have_jpeg == xyes])
 AM_CONDITIONAL([HAVE_PNG], [test x$have_png == xyes])
+AM_CONDITIONAL([HAVE_CURL], [test x$have_curl == xyes])
 
 AC_CONFIG_FILES([Makefile
                  libsixel.pc

@@ -61,6 +61,9 @@ endif
 if HAVE_PNG
 	$(WINE) ./img2sixel ../images/snake.png | tee snake.sixel
 endif
+if HAVE_CURL
+	$(WINE) ./img2sixel file:///$$(pwd)/../images/snake.jpg
+endif
 endif
 if WANT_SIXEL2PNG
 	$(WINE) ./sixel2png < snake.sixel > snake1.png
