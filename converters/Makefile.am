@@ -50,6 +50,11 @@ test: all
 if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel ../images/snake.jpg | tee snake.sixel
 	$(WINE) ./img2sixel ../images/snake.jpg -w50% --height=100 | tee snake2.sixel
+	$(WINE) ./img2sixel ../images/snake.gif
+	$(WINE) ./img2sixel ../images/snake.tga
+	$(WINE) ./img2sixel ../images/snake.tiff
+	$(WINE) ./img2sixel ../images/snake.pnm
+	$(WINE) ./img2sixel ../images/snake.bmp
 if HAVE_JPEG
 	$(WINE) ./img2sixel ../images/snake-progressive.jpg | tee snake.sixel
 endif

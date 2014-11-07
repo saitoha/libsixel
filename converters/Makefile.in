@@ -1067,6 +1067,11 @@ uninstall-man: uninstall-man1
 test: all
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.jpg | tee snake.sixel
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.jpg -w50% --height=100 | tee snake2.sixel
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.gif
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.tga
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.tiff
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.pnm
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.bmp
 @HAVE_JPEG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake-progressive.jpg | tee snake.sixel
 @HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.png | tee snake.sixel
 @WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png < snake.sixel > snake1.png
