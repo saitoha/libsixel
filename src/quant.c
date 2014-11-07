@@ -622,12 +622,18 @@ computeHistogram(unsigned char *data,
 
     quant_trace(stderr, "making histogram...\n");
 
+#if HAVE_CALLOC
+    histogram = calloc(1 << depth * 5, sizeof(unit_t));
+#else
     histogram = malloc((1 << depth * 5) * sizeof(unit_t));
+#endif
     if (!histogram) {
         quant_trace(stderr, "Unable to allocate memory for histogram.");
         return (-1);
     }
+#if !HAVE_CALLOC
     memset(histogram, 0, (1 << depth * 5) * sizeof(unit_t));
+#endif
     it = ref = refmap = (unsigned short *)malloc(max_sample * sizeof(unit_t));
     if (!it) {
         quant_trace(stderr, "Unable to allocate memory for lookup table.");
@@ -1145,12 +1151,18 @@ LSQ_ApplyPalette(unsigned char *data,
 
     indextable = cachetable;
     if (cachetable == NULL && f_lookup == lookup_fast) {
+#if HAVE_CALLOC
         indextable = malloc((1 << depth * 5) * sizeof(unsigned short));
+#else
+        indextable = calloc(1 << depth * 5, sizeof(unsigned short));
+#endif
         if (!indextable) {
             quant_trace(stderr, "Unable to allocate memory for indextable.");
             return (-1);
         }
+#if !HAVE_CALLOC
         memset(indextable, 0x00, (1 << depth * 5) * sizeof(unsigned short));
+#endif
     }
 
     for (y = 0; y < height; ++y) {

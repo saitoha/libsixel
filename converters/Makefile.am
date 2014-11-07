@@ -52,11 +52,18 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -V
 	$(WINE) ./img2sixel ../images/snake.jpg -datkinson | tee snake.sixel
 	$(WINE) ./img2sixel -w50% -h150% -dfs < ../images/snake.jpg | tee snake2.sixel
-	$(WINE) ./img2sixel - - -w105% -h100 -djajuni -rnearest < ../images/snake.gif
-	$(WINE) ./img2sixel ../images/snake.tga -w100 -rgaussian  -dburkes -tauto
-	$(WINE) ./img2sixel ../images/snake.tiff -h100 -rhanning -dstucki -thls
-	$(WINE) ./img2sixel ../images/snake.pnm -h200 -dauto -rbilinear -trgb
-	$(WINE) ./img2sixel ../images/snake.bmp -w200 -dnone -rhamming
+	$(WINE) ./img2sixel - -w105% -h100 -djajuni -rnearest < ../images/snake.gif
+	$(WINE) ./img2sixel ../images/snake.tga -7 -sauto -w100 -rgaussian  -dburkes -tauto
+	$(WINE) ./img2sixel ../images/snake.tiff -8 -scenter -h100 -qauto -rhanning -dstucki -thls
+	$(WINE) ./img2sixel ../images/snake.pnm -c200x100+40+20 -h200 -qhigh -saverage -dauto -rbilinear -trgb
+	$(WINE) ./img2sixel ../images/snake.bmp -w200 -c100x100+40+20 -qlow -shistogram -dnone -rhamming
+	$(WINE) ./img2sixel -m ../images/map8.png -w200 -fauto -rwelsh ../images/egret.jpg
+	$(WINE) ./img2sixel -m ../images/map16.png -w100 -flum -rbicubic ../images/snake.pnm
+	$(WINE) ./img2sixel -p 16 -C3 ../images/snake.jpg -h100 -fnorm -rlanczos2
+	$(WINE) ./img2sixel -p 8 ../images/snake.jpg -h200 -fnorm -rlanczos2
+	$(WINE) ./img2sixel -p 2 ../images/snake.jpg -h100 -rlanczos3
+	$(WINE) ./img2sixel -e ../images/snake.jpg -h140 -rlanczos4 -P
+	$(WINE) ./img2sixel -e -i ../images/snake.jpg -P > /dev/null
 if HAVE_JPEG
 	$(WINE) ./img2sixel ../images/snake-progressive.jpg | tee snake.sixel
 endif
@@ -70,13 +77,6 @@ endif
 if WANT_SIXEL2PNG
 	$(WINE) ./sixel2png < snake.sixel > snake1.png
 	$(WINE) ./sixel2png -i snake.sixel -o snake2.png
-endif
-if WANT_IMG2SIXEL
-	$(WINE) ./img2sixel -m ../images/map8.png -w200 -rwelsh ../images/egret.jpg
-	$(WINE) ./img2sixel -m ../images/map16.png -w100 -rbicubic ../images/snake.pnm
-	$(WINE) ./img2sixel -p 8 ../images/snake.jpg -h200 -rlanczos2
-	$(WINE) ./img2sixel -p 2 ../images/snake.jpg -h100 -rlanczos3
-	$(WINE) ./img2sixel -e ../images/snake.jpg -h140 -rlanczos4
 endif
 
 winetest: all
