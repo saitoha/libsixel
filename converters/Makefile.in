@@ -424,7 +424,7 @@ dist_man_MANS = $(am__append_3) $(am__append_8)
 dist_bashcompletion_DATA = $(am__append_4)
 dist_zshcompletion_DATA = $(am__append_5)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
-CLEANFILES = *.gcno *.gcda *.gcov snake1.png snake2.png snake2.sixel
+CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c scale.c malloc_stub.c loader.c frompnm.c \
 @WANT_IMG2SIXEL_TRUE@                    scale.h malloc_stub.h loader.h frompnm.h
 
@@ -1099,7 +1099,8 @@ test: all
 @WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -H
 @WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -V
 @WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png < snake.sixel > snake1.png
-@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -i snake.sixel -o snake2.png
+@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png < snake2.sixel > snake2.png
+@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -i snake.sixel -o snake3.png
 
 winetest: all
 	WINE=wine $(MAKE) test

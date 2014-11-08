@@ -13,7 +13,7 @@ if COND_GCOV
 MAYBE_COVERAGE = --coverage
 endif
 
-CLEANFILES = *.gcno *.gcda *.gcov snake1.png snake2.png snake2.sixel
+CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
@@ -90,7 +90,8 @@ if WANT_SIXEL2PNG
 	$(WINE) ./sixel2png -H
 	$(WINE) ./sixel2png -V
 	$(WINE) ./sixel2png < snake.sixel > snake1.png
-	$(WINE) ./sixel2png -i snake.sixel -o snake2.png
+	$(WINE) ./sixel2png < snake2.sixel > snake2.png
+	$(WINE) ./sixel2png -i snake.sixel -o snake3.png
 endif
 
 winetest: all
