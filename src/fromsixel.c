@@ -205,6 +205,7 @@ sixel_getparams(unsigned char *p, int *param, int *len)
 
 
 /* convert sixel data into indexed pixel bytes and palette data */
+/* TODO: make "free" function as an argument */
 int
 sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
              int                        /* in */  len,        /* size of sixel bytes */
@@ -342,6 +343,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
                 dmsy = imsy > attributed_pv ? imsy : attributed_pv;
                 dmbuf = allocator(dmsx * dmsy);
                 if (dmbuf == NULL) {
+                    free(imbuf);
                     return (-1);
                 }
                 memset(dmbuf, background_color_index, dmsx * dmsy);
@@ -414,6 +416,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
                 dmsx = nx;
                 dmsy = ny;
                 if ((dmbuf = allocator(dmsx * dmsy)) == NULL) {
+                    free(imbuf);
                     return (-1);
                 }
                 memset(dmbuf, background_color_index, dmsx * dmsy);
@@ -495,6 +498,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
         dmsx = max_x;
         dmsy = max_y;
         if ((dmbuf = allocator(dmsx * dmsy)) == NULL) {
+            free(imbuf);
             return (-1);
         }
         for (y = 0; y < dmsy; ++y) {
