@@ -1,4 +1,37 @@
+2014-11-03  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Fix a segmentation fault occurs when using libpng
+  loader
+
+  * src/output.h, src/tosixel.c: Drop unnecessary variable
+  sixel_output_t::conv_palette
+
+2014-11-02  arakiken <arakiken@users.sf.net>
+
+  * src/tosixel.c: Remove unnecessary check. (nwrite <= 0) Cherry-picked from
+  cf00bed  Conflicts: src/tosixel.c
+
+2014-11-03  Hayaki Saito <user@zuse.jp>
+
+  * src/fromsixel.c: Strip unused variables
+
+  * converters/loader.c: Replace some indent tabs to spaces
+
+2014-11-02  arakiken <arakiken@users.sf.net>
+
+  * src/tosixel.c: Separate sixel_encode_impl() into sixel_encode_header(),
+  sixel_encode_body() and sixel_encode_footer(). Cherry-picked from 339d958. 
+  Conflicts: src/tosixel.c
+
+2014-10-29  Hayaki Saito <user@zuse.jp>
+
+  * src/image.c: Remove unused source file image.c
+
 2014-10-26  Hayaki Saito <user@zuse.jp>
+
+  * NEWS: Update NEWS
+
+  * NEWS: Update NEWS
 
   * converters/shell-completion/bash/img2sixel: Update bash completion file
 
