@@ -65,7 +65,7 @@
 
 #define XRGB(r,g,b) RGB(PALVAL(r, 255, 100), PALVAL(g, 255, 100), PALVAL(b, 255, 100))
 
-static int const ColTab[] = {
+static int const color_table[] = {
     XRGB(0,  0,  0),   /*  0 Black    */
     XRGB(20, 20, 80),  /*  1 Blue     */
     XRGB(80, 13, 13),  /*  2 Red      */
@@ -247,7 +247,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     }
 
     for (n = 0; n < 16; n++) {
-        sixel_palet[n] = ColTab[n];
+        sixel_palet[n] = color_table[n];
     }
 
     /* colors 16-231 are a 6x6x6 color cube */
