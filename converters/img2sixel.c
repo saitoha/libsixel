@@ -212,6 +212,9 @@ prepare_palette(sixel_dither_t *former_dither,
     int ret;
 
     if (psettings->fullcolor) {
+        if (former_dither) {
+            return former_dither;
+        }
         dither = sixel_dither_create(-1);
     } else if (psettings->monochrome) {
         if (former_dither) {
