@@ -56,28 +56,21 @@
 
 #if HAVE_LIBPNG
 # include <png.h>
+#else
+# include "stb_image_write.h"
 #endif
 
 #include <sixel.h>
-
-#include "stb_image_write.h"
-
-unsigned char *
-stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes,
-                      int x, int y, int n, int *out_len);
 
 #if !defined(O_BINARY) && defined(_O_BINARY)
 # define O_BINARY _O_BINARY
 #endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 
-enum
-{
-   STBI_default = 0, /* only used for req_comp */
-   STBI_grey = 1,
-   STBI_grey_alpha = 2,
-   STBI_rgb = 3,
-   STBI_rgb_alpha = 4
-};
+#if !HAVE_LIBPNG
+unsigned char *
+stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes,
+                      int x, int y, int n, int *out_len);
+#endif
 
 
 static int
@@ -224,7 +217,7 @@ sixel_to_png(const char *input, const char *output)
     png_write_end(png_ptr, NULL);
 #else
     png_data = stbi_write_png_to_mem(pixels, sx * 3,
-                                     sx, sy, STBI_rgb, &png_len);
+                                     sx, sy, /* STBI_rgb */ 3, &png_len);
 
     if (!png_data) {
         fprintf(stderr, "stbi_write_png_to_mem failed.\n");
