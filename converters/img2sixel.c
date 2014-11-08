@@ -216,20 +216,6 @@ prepare_palette(unsigned char *frame, int sx, int sy, settings_t *psettings)
             return NULL;
         }
     } else {
-        if (psettings->method_for_largest == LARGE_AUTO) {
-            psettings->method_for_largest = LARGE_NORM;
-        }
-        if (psettings->method_for_rep == REP_AUTO) {
-            psettings->method_for_rep = REP_CENTER_BOX;
-        }
-        if (psettings->quality_mode == QUALITY_AUTO) {
-            if (psettings->reqcolors <= 8) {
-                psettings->quality_mode = QUALITY_HIGH;
-            } else {
-                psettings->quality_mode = QUALITY_LOW;
-            }
-        }
-
         dither = sixel_dither_create(psettings->reqcolors);
         ret = sixel_dither_initialize(dither, frame, sx, sy, 3,
                                       psettings->method_for_largest,
@@ -377,7 +363,9 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int nret = -1;
     int dulation = 0;
     int lag = 0;
+#if HAVE_USLEEP && HAVE_CLOCK
     clock_t start;
+#endif
 
     if (psettings->reqcolors < 2) {
         psettings->reqcolors = 2;

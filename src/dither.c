@@ -224,6 +224,40 @@ sixel_dither_get(int builtin_dither)
 }
 
 
+static void
+sixel_dither_set_method_for_largest(sixel_dither_t *dither, int method_for_largest)
+{
+    if (method_for_largest == LARGE_AUTO) {
+        method_for_largest = LARGE_NORM;
+    }
+    dither->method_for_largest = method_for_largest;
+}
+
+
+static void
+sixel_dither_set_method_for_rep(sixel_dither_t *dither, int method_for_rep)
+{
+    if (method_for_rep == REP_AUTO) {
+        method_for_rep = REP_CENTER_BOX;
+    }
+    dither->method_for_rep = method_for_rep;
+}
+
+
+static void
+sixel_dither_set_quality_mode(sixel_dither_t *dither, int quality_mode)
+{
+    if (quality_mode == QUALITY_AUTO) {
+        if (dither->ncolors <= 8) {
+            quality_mode = QUALITY_HIGH;
+        } else {
+            quality_mode = QUALITY_LOW;
+        }
+    }
+    dither->quality_mode = quality_mode;
+}
+
+
 int
 sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
                         int width, int height, int depth,
@@ -231,6 +265,10 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
                         int quality_mode)
 {
     unsigned char *buf;
+
+    sixel_dither_set_method_for_largest(dither, method_for_largest);
+    sixel_dither_set_method_for_rep(dither, method_for_rep);
+    sixel_dither_set_quality_mode(dither, quality_mode);
 
     buf = LSQ_MakePalette(data, width, height, depth,
                           dither->reqcolors, &dither->ncolors,
