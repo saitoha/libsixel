@@ -363,7 +363,9 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int nret = -1;
     int dulation = 0;
     int lag = 0;
+#if HAVE_USLEEP && HAVE_CLOCK
     clock_t start;
+#endif
 
     if (psettings->reqcolors < 2) {
         psettings->reqcolors = 2;
