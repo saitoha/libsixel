@@ -75,7 +75,7 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -m ../images/map8.png -w200 -fauto -rwelsh ../images/egret.jpg
 	$(WINE) ./img2sixel -m ../images/map16.png -w100 -hauto -flum -rbicubic ../images/snake.pnm
 	$(WINE) ./img2sixel -p 16 -C3 ../images/snake.jpg -h100 -fnorm -rlanczos2
-	$(WINE) ./img2sixel -v -p 8 ../images/snake.jpg -h200 -fnorm -rlanczos2
+	$(WINE) ./img2sixel -v -p 8 ../images/snake.jpg -h200 -fnorm -rlanczos2 -dnone
 	$(WINE) ./img2sixel -p 2 ../images/snake.jpg -h100 -wauto -rlanczos3
 	$(WINE) ./img2sixel -p 1 ../images/snake.jpg -h100 -n1
 	$(WINE) ./img2sixel -e ../images/snake.jpg -h140 -rlanczos4 -P

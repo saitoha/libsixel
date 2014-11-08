@@ -288,7 +288,7 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
         return (-1);
     }
     memcpy(dither->palette, buf, dither->ncolors * depth);
-    free(buf);
+    LSQ_FreePalette(buf);
 
     dither->optimized = 1;
     if (dither->origcolors <= dither->ncolors) {
