@@ -54,10 +54,15 @@ if WANT_IMG2SIXEL
 	! $(WINE) ./img2sixel -t invalid_option
 	! $(WINE) ./img2sixel -w invalid_option
 	! $(WINE) ./img2sixel -h invalid_option
+	! $(WINE) ./img2sixel -f invalid_option
+	! $(WINE) ./img2sixel -q invalid_option
 	! $(WINE) ./img2sixel -%
 	! $(WINE) ./img2sixel invalid_filename
 	! $(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg
 	! $(WINE) ./img2sixel -m ../images/map8.png -p 8 ../images/snake.jpg
+	! $(WINE) ./img2sixel -m ../images/map8.png -e ../images/snake.jpg
+	! $(WINE) ./img2sixel -p16 -e ../images/snake.jpg
+	! $(WINE) ./img2sixel -D ../images/snake.jpg
 	$(WINE) ./img2sixel -H
 	$(WINE) ./img2sixel -V
 	$(WINE) ./img2sixel ../images/snake.jpg -datkinson | tee snake.sixel
@@ -65,13 +70,14 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel - -w105% -h100 -djajuni -rnearest < ../images/snake.gif
 	$(WINE) ./img2sixel ../images/snake.tga -7 -sauto -w100 -rgaussian  -dburkes -tauto
 	$(WINE) ./img2sixel -p300 ../images/snake.tiff -8 -scenter -h100 -qauto -rhanning -dstucki -thls
-	$(WINE) ./img2sixel -F  ../images/snake.pnm -c2000x100+40+20 -h200 -qhigh -saverage -dauto -rbilinear -trgb
-	$(WINE) ./img2sixel -F -v ../images/snake.bmp -w200 -c100x1000+40+20 -qlow -shistogram -dnone -rhamming -thls
+	$(WINE) ./img2sixel -F  ../images/snake.pnm -c2000x100+40+20 -wauto -h200 -qhigh -saverage -dauto -rbilinear -trgb
+	$(WINE) ./img2sixel -F -v ../images/snake.bmp -w200 -hauto -c100x1000+40+20 -qlow -shistogram -dnone -rhamming -thls
 	$(WINE) ./img2sixel -m ../images/map8.png -w200 -fauto -rwelsh ../images/egret.jpg
-	$(WINE) ./img2sixel -m ../images/map16.png -w100 -flum -rbicubic ../images/snake.pnm
+	$(WINE) ./img2sixel -m ../images/map16.png -w100 -hauto -flum -rbicubic ../images/snake.pnm
 	$(WINE) ./img2sixel -p 16 -C3 ../images/snake.jpg -h100 -fnorm -rlanczos2
 	$(WINE) ./img2sixel -v -p 8 ../images/snake.jpg -h200 -fnorm -rlanczos2
-	$(WINE) ./img2sixel -p 2 ../images/snake.jpg -h100 -rlanczos3
+	$(WINE) ./img2sixel -p 2 ../images/snake.jpg -h100 -wauto -rlanczos3
+	$(WINE) ./img2sixel -p 1 ../images/snake.jpg -h100 -n1
 	$(WINE) ./img2sixel -e ../images/snake.jpg -h140 -rlanczos4 -P
 	$(WINE) ./img2sixel -e -i ../images/snake.jpg -P > /dev/null
 if HAVE_JPEG
