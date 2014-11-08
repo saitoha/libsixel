@@ -196,7 +196,7 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
         pchunk->size += n;
     }
 
-    if (f != stdout) {
+    if (f != stdin) {
         fclose(f);
     }
 
@@ -511,7 +511,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         switch (png_get_color_type(png_ptr, info_ptr)) {
         case PNG_COLOR_TYPE_PALETTE:
             png_set_palette_to_rgb(png_ptr);
-            *pcomp = 4;
+            *pcomp = 3;
             break;
         case PNG_COLOR_TYPE_GRAY:
         case PNG_COLOR_TYPE_GRAY_ALPHA:
