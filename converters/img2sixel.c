@@ -448,9 +448,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         print_palette(dither);
     }
 
-    if (psettings->method_for_diffuse == DIFFUSE_AUTO) {
-        psettings->method_for_diffuse = DIFFUSE_FS;
-    }
     sixel_dither_set_diffusion_type(dither, psettings->method_for_diffuse);
 
     if (psettings->complexion > 1) {

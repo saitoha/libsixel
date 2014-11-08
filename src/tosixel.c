@@ -668,28 +668,20 @@ int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
                  sixel_dither_t /* in */ *dither,   /* dither context */
                  sixel_output_t /* in */ *context)  /* output context */
 {
+    int nret = (-1);
+
     sixel_dither_ref(dither);
 
     if (dither->quality_mode != QUALITY_FULL) {
-        if (sixel_encode_dither(pixels, width, height, depth, dither, context) == -1) {
-            sixel_dither_unref(dither);
-            return (-1);
-        }
+        nret = sixel_encode_dither(pixels, width, height, depth, dither, context);
     }
-    else if (depth != 3) {
-        sixel_dither_unref(dither);
-        return (-1);
-    }
-    else {
-        if (sixel_encode_fullcolor(pixels, width, height, depth, dither, context) == -1) {
-            sixel_dither_unref(dither);
-            return (-1);
-        }
+    else if (depth == 3) {
+        nret = sixel_encode_fullcolor(pixels, width, height, depth, dither, context);
     }
 
     sixel_dither_unref(dither);
 
-    return 0;
+    return nret;
 }
 
 
