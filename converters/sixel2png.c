@@ -318,7 +318,6 @@ main(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
-
     for (;;) {
 #if HAVE_GETOPT_LONG
         n = getopt_long(argc, argv, optstring,
@@ -326,7 +325,9 @@ main(int argc, char *argv[])
 #else
         n = getopt(argc, argv, optstring);
 #endif  /* HAVE_GETOPT_LONG */
+
         if (n == -1) {
+            nret = (-1);
             break;
         }
         if (n == 0) {
@@ -345,10 +346,11 @@ main(int argc, char *argv[])
             show_version();
             goto end;
         case 'H':
-        case '?':
             show_help();
             goto end;
+        case '?':
         default:
+            nret = (-1);
             goto argerr;
         }
         if (optind >= argc) {
@@ -365,6 +367,7 @@ main(int argc, char *argv[])
         output = strdup(argv[optind++]);
     }
     if (optind != argc) {
+        nret = (-1);
         goto argerr;
     }
 

@@ -48,15 +48,25 @@ endif
 
 test: all
 if WANT_IMG2SIXEL
+	! $(WINE) ./img2sixel -d invalid_option
+	! $(WINE) ./img2sixel -r invalid_option
+	! $(WINE) ./img2sixel -s invalid_option
+	! $(WINE) ./img2sixel -t invalid_option
+	! $(WINE) ./img2sixel -w invalid_option
+	! $(WINE) ./img2sixel -h invalid_option
+	! $(WINE) ./img2sixel -%
+	! $(WINE) ./img2sixel invalid_filename
+	! $(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg
+	! $(WINE) ./img2sixel -m ../images/map8.png -p 8 ../images/snake.jpg
 	$(WINE) ./img2sixel -H
 	$(WINE) ./img2sixel -V
 	$(WINE) ./img2sixel ../images/snake.jpg -datkinson | tee snake.sixel
-	$(WINE) ./img2sixel -w50% -h150% -dfs < ../images/snake.jpg | tee snake2.sixel
+	$(WINE) ./img2sixel -w50% -h150% -dfs -thls < ../images/snake.jpg | tee snake2.sixel
 	$(WINE) ./img2sixel - -w105% -h100 -djajuni -rnearest < ../images/snake.gif
 	$(WINE) ./img2sixel ../images/snake.tga -7 -sauto -w100 -rgaussian  -dburkes -tauto
-	$(WINE) ./img2sixel ../images/snake.tiff -8 -scenter -h100 -qauto -rhanning -dstucki -thls
-	$(WINE) ./img2sixel ../images/snake.pnm -c200x100+40+20 -h200 -qhigh -saverage -dauto -rbilinear -trgb
-	$(WINE) ./img2sixel ../images/snake.bmp -w200 -c100x100+40+20 -qlow -shistogram -dnone -rhamming
+	$(WINE) ./img2sixel -p300 ../images/snake.tiff -8 -scenter -h100 -qauto -rhanning -dstucki -thls
+	$(WINE) ./img2sixel -F  ../images/snake.pnm -c200x100+40+20 -h200 -qhigh -saverage -dauto -rbilinear -trgb
+	$(WINE) ./img2sixel -F ../images/snake.bmp -w200 -c100x100+40+20 -qlow -shistogram -dnone -rhamming -thls
 	$(WINE) ./img2sixel -m ../images/map8.png -w200 -fauto -rwelsh ../images/egret.jpg
 	$(WINE) ./img2sixel -m ../images/map16.png -w100 -flum -rbicubic ../images/snake.pnm
 	$(WINE) ./img2sixel -p 16 -C3 ../images/snake.jpg -h100 -fnorm -rlanczos2
@@ -75,6 +85,10 @@ if HAVE_CURL
 endif
 endif
 if WANT_SIXEL2PNG
+	! $(WINE) ./sixel2png -i unknown.sixel
+	! $(WINE) ./sixel2png -% < snake.sixel
+	$(WINE) ./sixel2png -H
+	$(WINE) ./sixel2png -V
 	$(WINE) ./sixel2png < snake.sixel > snake1.png
 	$(WINE) ./sixel2png -i snake.sixel -o snake2.png
 endif
