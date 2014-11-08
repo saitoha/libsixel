@@ -225,20 +225,6 @@ prepare_palette(sixel_dither_t *former_dither,
         dither = prepare_specified_palette(psettings->mapfile,
                                            psettings->reqcolors);
     } else {
-        if (psettings->method_for_largest == LARGE_AUTO) {
-            psettings->method_for_largest = LARGE_NORM;
-        }
-        if (psettings->method_for_rep == REP_AUTO) {
-            psettings->method_for_rep = REP_CENTER_BOX;
-        }
-        if (psettings->quality_mode == QUALITY_AUTO) {
-            if (psettings->reqcolors <= 8) {
-                psettings->quality_mode = QUALITY_HIGH;
-            } else {
-                psettings->quality_mode = QUALITY_LOW;
-            }
-        }
-
         if (former_dither) {
             sixel_dither_unref(former_dither);
         }
