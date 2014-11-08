@@ -1,4 +1,16 @@
+2014-11-08  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c, src/dither.c: Enable some options(-f, -s, and -q)
+  ignored unintentionally
+
 2014-11-03  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Interpret an image expanded by png_set_palette_to_rgb
+  as a 3-channel image
+
+  * converters/img2sixel.c: Avoid scanf buffer overflow
+
+  * converters/img2sixel.c: Add missing options in brevity help
 
   * converters/loader.c: Fix a segmentation fault occurs when using libpng
   loader
