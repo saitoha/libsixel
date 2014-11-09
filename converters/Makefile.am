@@ -106,6 +106,7 @@ if WANT_SIXEL2PNG
 	$(WINE) ./sixel2png < snake.sixel > snake1.png
 	$(WINE) ./sixel2png < snake2.sixel > snake2.png
 	$(WINE) ./sixel2png -i snake.sixel -o snake3.png
+	@echo succeeded
 endif
 
 winetest: all

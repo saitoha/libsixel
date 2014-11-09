@@ -1115,6 +1115,7 @@ test: all
 @WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png < snake.sixel > snake1.png
 @WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png < snake2.sixel > snake2.png
 @WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -i snake.sixel -o snake3.png
+@WANT_SIXEL2PNG_TRUE@	@echo succeeded
 
 winetest: all
 	WINE=wine $(MAKE) test
