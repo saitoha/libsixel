@@ -90,8 +90,7 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -e ../images/snake.jpg -h140 -rlanczos4 -P
 	$(WINE) ./img2sixel -e -i ../images/snake.jpg -P > /dev/null
 	$(WINE) ./img2sixel ../images/seq2gif.gif -lauto -dnone -u
-	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone
-	$(WINE) ./img2sixel ../images/seq2gif.gif -lforce -dnone -i
+	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -i
 	$(WINE) ./img2sixel ../images/seq2gif.gif -S -datkinson
 if HAVE_JPEG
 	$(WINE) ./img2sixel ../images/snake-progressive.jpg | tee snake.sixel
