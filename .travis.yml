@@ -39,8 +39,8 @@ before_script:
 script:
   - "make"
   - "sudo make install"
-  - "make test > /dev/null"
-  - "if [ x$WINE = x ]; then make valgrind && exit 0 || cat valgrind.log && exit 1; fi"
-  - "if [ x$GCOV != x ]; then make coveralls; fi"
+  - "make test | grep ^succeeded$"
 
 after_success:
+  - "make valgrind || (cat valgrind.log && exit 1)"
+  - "make coveralls"
