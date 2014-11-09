@@ -172,7 +172,7 @@ typedef struct Settings {
     int reqcolors;
     char *mapfile;
     int monochrome;
-    int fullcolor;
+    int highcolor;
     enum methodForDiffuse method_for_diffuse;
     enum methodForLargest method_for_largest;
     enum methodForRep method_for_rep;
@@ -211,7 +211,7 @@ prepare_palette(sixel_dither_t *former_dither,
     sixel_dither_t *dither;
     int ret;
 
-    if (psettings->fullcolor) {
+    if (psettings->highcolor) {
         if (former_dither) {
             return former_dither;
         }
@@ -751,7 +751,7 @@ void show_help()
             "-i, --invert               assume the terminal background color\n"
             "                           is white, make sense only when -e\n"
             "                           option is given\n"
-            "-F, --fullcolor            output 15bpp sixel image\n"
+            "-I, --high-color           output 15bpp sixel image\n"
             "-u, --use-macro            use DECDMAC and DEVINVM sequences to\n"
             "                           optimize GIF animation rendering\n"
             "-n, --macro-number         specify an number argument for\n"
@@ -895,13 +895,13 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:eFd:f:s:c:w:h:r:q:il:t:ugvSn:PC:DVH";
+    char const *optstring = "78p:m:eId:f:s:c:w:h:r:q:il:t:ugvSn:PC:DVH";
 
     settings_t settings = {
         -1,                 /* reqcolors */
         NULL,               /* mapfile */
         0,                  /* monochrome */
-        0,                  /* fullcolor */
+        0,                  /* highcolor */
         DIFFUSE_AUTO,       /* method_for_diffuse */
         LARGE_AUTO,         /* method_for_largest */
         REP_AUTO,           /* method_for_rep */
@@ -939,7 +939,7 @@ main(int argc, char *argv[])
         {"colors",           required_argument,  &long_opt, 'p'},
         {"mapfile",          required_argument,  &long_opt, 'm'},
         {"monochrome",       no_argument,        &long_opt, 'e'},
-        {"fullcolor",        no_argument,        &long_opt, 'F'},
+        {"high-color",       no_argument,        &long_opt, 'I'},
         {"diffusion",        required_argument,  &long_opt, 'd'},
         {"find-largest",     required_argument,  &long_opt, 'f'},
         {"select-color",     required_argument,  &long_opt, 's'},
@@ -995,8 +995,8 @@ main(int argc, char *argv[])
         case 'e':
             settings.monochrome = 1;
             break;
-        case 'F':
-            settings.fullcolor = 1;
+        case 'I':
+            settings.highcolor = 1;
             break;
         case 'd':
             /* parse --diffusion option */
@@ -1252,9 +1252,24 @@ main(int argc, char *argv[])
                         "with -e, --monochrome.\n");
         goto argerr;
     }
-    if (settings.monochrome && settings.reqcolors != -1) {
+    if (settings.monochrome && settings.reqcolors != (-1)) {
         fprintf(stderr, "option -e, --monochrome conflicts"
                         " with -p, --colors.\n");
+        goto argerr;
+    }
+    if (settings.monochrome && settings.highcolor) {
+        fprintf(stderr, "option -e, --monochrome conflicts"
+                        " with -I, --high-color.\n");
+        goto argerr;
+    }
+    if (settings.reqcolors != (-1) && settings.highcolor) {
+        fprintf(stderr, "option -p, --colors conflicts"
+                        " with -I, --high-color.\n");
+        goto argerr;
+    }
+    if (settings.mapfile && settings.highcolor) {
+        fprintf(stderr, "option -m, --mapfile conflicts"
+                        " with -I, --high-color.\n");
         goto argerr;
     }
     if (settings.pipe_mode && optind != argc) {
@@ -1300,7 +1315,7 @@ main(int argc, char *argv[])
 
 argerr:
     exit_code = EXIT_FAILURE;
-    fprintf(stderr, "usage: img2sixel [-78eiugvSPDVH] [-p colors] [-m file] [-d diffusiontype]\n"
+    fprintf(stderr, "usage: img2sixel [-78eIiugvSPDVH] [-p colors] [-m file] [-d diffusiontype]\n"
                     "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
                     "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
                     "                 [-t palettetype] [-n macronumber] [-C score] [filename ...]\n"

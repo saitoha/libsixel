@@ -123,7 +123,7 @@ sixel_dither_create(int ncolors)
 
     if (ncolors == -1) {
         ncolors = 256;
-        quality_mode = QUALITY_FULL;
+        quality_mode = QUALITY_HIGHCOLOR;
     }
     else {
         if (ncolors > SIXEL_PALETTE_MAX) {

@@ -6,7 +6,7 @@ LT_PREREQ([2.4])
 AC_INIT([sixel], [1.3.3], [user@zuse.jp])
 LS_LT_CURRENT=1
 LS_LT_REVISION=2
-LS_LT_AGE=0
+LS_LT_AGE=1
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 AC_SUBST([PACKAGE_DESCRIPTION],
          ["A lightweight, fast implementation of DEC SIXEL graphics codec"])

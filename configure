@@ -2338,7 +2338,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 LS_LT_CURRENT=1
 LS_LT_REVISION=2
-LS_LT_AGE=0
+LS_LT_AGE=1
 LS_LTVERSION=$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE
 
 PACKAGE_DESCRIPTION="A lightweight, fast implementation of DEC SIXEL graphics codec"

@@ -68,10 +68,10 @@ enum methodForDiffuse {
 
 /* quality modes */
 enum qualityMode {
-    QUALITY_AUTO = 0, /* choose quality mode automatically */
-    QUALITY_HIGH = 1, /* high quality */
-    QUALITY_LOW  = 2, /* low quality */
-    QUALITY_FULL = 3, /* full color */
+    QUALITY_AUTO      = 0, /* choose quality mode automatically */
+    QUALITY_HIGH      = 1, /* high quality palette construction */
+    QUALITY_LOW       = 2, /* low quality palette construction */
+    QUALITY_HIGHCOLOR = 3, /* high color */
 };
 
 /* built-in dither */

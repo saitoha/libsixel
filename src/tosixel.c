@@ -959,7 +959,7 @@ int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
 
     sixel_dither_ref(dither);
 
-    if (dither->quality_mode != QUALITY_FULL) {
+    if (dither->quality_mode != QUALITY_HIGHCOLOR) {
         nret = sixel_encode_dither(pixels, width, height, depth, dither, context);
     }
     else if (depth == 3) {
