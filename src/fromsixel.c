@@ -221,7 +221,9 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     int max_x, max_y;
     int attributed_pan, attributed_pad;
     int attributed_ph, attributed_pv;
-    int repeat_count, color_index, max_color_index = 2, background_color_index;
+    int repeat_count, color_index;
+    int max_color_index;
+    int background_color_index;
     int param[10];
     int sixel_palet[SIXEL_PALETTE_MAX];
     unsigned char *imbuf, *dmbuf;
@@ -235,7 +237,8 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     attributed_pad = 1;
     attributed_ph = attributed_pv = 0;
     repeat_count = 1;
-    color_index = 0;
+    color_index = 15;
+    max_color_index = 2;
     background_color_index = 0;
 
     imsx = 2048;
