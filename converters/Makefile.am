@@ -109,8 +109,8 @@ if WANT_SIXEL2PNG
 	$(WINE) ./sixel2png -V
 	$(WINE) ./sixel2png < snake.sixel > snake1.png
 	$(WINE) ./sixel2png < snake2.sixel > snake2.png
-	$(WINE) ./sixel2png < snake3.sixel > snake3.png
-	$(WINE) ./sixel2png -i snake.sixel -o snake4.png
+	$(WINE) ./sixel2png - - < snake3.sixel > snake3.png
+	$(WINE) ./sixel2png --input=snake.sixel -o snake4.png
 endif
 endif
 	@echo succeeded

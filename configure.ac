@@ -145,7 +145,8 @@ AC_CHECK_HEADERS([memory.h \
                   time.h \
                   signal.h \
                   sys/select.h \
-                  sys/signal.h])
+                  sys/signal.h \
+                  setjmp.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
@@ -165,7 +166,17 @@ AC_CHECK_FUNC([getopt_long],
                              [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
                              [AC_MSG_ERROR(getopt or getopt_long is not available.)])])
 
-AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode signal usleep calloc clock clearerr])
+AC_CHECK_FUNCS([memcpy \
+                memmove \
+                strtol \
+                setmode \
+                _setmode \
+                signal \
+                usleep \
+                calloc \
+                clock \
+                clearerr \
+                setjmp])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])

@@ -54,6 +54,10 @@
 # include <errno.h>
 #endif
 
+#if HAVE_SETJMP_H
+# include <setjmp.h>
+#endif
+
 #if HAVE_LIBPNG
 # include <png.h>
 #else
@@ -204,10 +208,12 @@ sixel_to_png(const char *input, const char *output)
         ret = (-1);
         goto end;
     }
+# if HAVE_SETJMP
     if (setjmp(png_jmpbuf(png_ptr))) {
         ret = (-1);
         goto end;
     }
+# endif
     png_init_io(png_ptr, output_fp);
     png_set_IHDR(png_ptr, info_ptr, sx, sy,
                  /* bit_depth */ 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
