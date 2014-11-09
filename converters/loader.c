@@ -507,6 +507,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         *psy = png_get_image_height(png_ptr, info_ptr);
         bitdepth = png_get_bit_depth(png_ptr, info_ptr);
         *pcomp = png_get_channels(png_ptr, info_ptr);
+        *pframe_count = 1;
 
         switch (png_get_color_type(png_ptr, info_ptr)) {
         case PNG_COLOR_TYPE_PALETTE:
