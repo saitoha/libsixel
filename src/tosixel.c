@@ -920,8 +920,8 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
                 }
                 height = y;
                 sixel_encode_body(paletted_pixels, width, height,
-                          dither->palette, 255, 255, dither->bodyonly,
-                          context, palstate);
+                                  dither->palette, 255, 255, dither->bodyonly,
+                                  context, palstate);
                 pixels -= (6 * width * 3);
                 height = orig_height - height + 6;
                 break;
@@ -939,7 +939,7 @@ end:
         sixel_encode_header(width, height, context);
     }
     sixel_encode_body(paletted_pixels, width, height,
-              dither->palette, 255, 255, dither->bodyonly, context, palstate);
+                      dither->palette, 255, 255, dither->bodyonly, context, palstate);
     sixel_encode_footer(context);
 
     free(paletted_pixels);

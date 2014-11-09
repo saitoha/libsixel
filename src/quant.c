@@ -1067,6 +1067,7 @@ LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
     return palette;
 }
 
+
 int
 LSQ_ApplyPalette(unsigned char *data,
                  int width,
