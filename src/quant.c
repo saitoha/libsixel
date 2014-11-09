@@ -1151,7 +1151,7 @@ LSQ_ApplyPalette(unsigned char *data,
 
     indextable = cachetable;
     if (cachetable == NULL && f_lookup == lookup_fast) {
-#if HAVE_CALLOC
+#if !HAVE_CALLOC
         indextable = malloc((1 << depth * 5) * sizeof(unsigned short));
 #else
         indextable = calloc(1 << depth * 5, sizeof(unsigned short));
