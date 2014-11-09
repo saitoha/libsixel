@@ -598,6 +598,20 @@ mediancut(tupletable2 const colorfreqtable,
 
 
 static int
+computeHash(unsigned char const *data, int const depth)
+{
+    int hash = 0;
+    int n;
+
+    for (n = 0; n < depth; n++) {
+        hash |= data[depth - 1 - n] >> 3 << n * 5;
+    }
+
+    return hash;
+}
+
+
+static int
 computeHistogram(unsigned char *data,
                  unsigned int length,
                  unsigned long const depth,
@@ -647,10 +661,7 @@ computeHistogram(unsigned char *data,
     }
 
     for (i = 0; i < length; i += step) {
-        index = 0;
-        for (n = 0; n < depth; n++) {
-            index |= data[i + depth - 1 - n] >> 3 << n * 5;
-        }
+        index = computeHash(data + i, 3);
         if (histogram[index] == 0) {
             *ref++ = index;
         }
@@ -922,12 +933,13 @@ lookup_normal(unsigned char const * const pixel,
     int r;
     int i;
     int n;
-    int distant = 0;
+    int distant;
 
     index = -1;
     diff = INT_MAX;
 
     for (i = 0; i < ncolor; i++) {
+        distant = 0;
         r = pixel[0] - palette[i * depth + 0];
         distant += r * r * complexion;
         for (n = 1; n < depth; ++n) {
@@ -957,16 +969,11 @@ lookup_fast(unsigned char const * const pixel,
     int diff;
     int cache;
     int i;
-    int n;
     int distant;
 
     index = -1;
     diff = INT_MAX;
-    hash = 0;
-
-    for (n = 0; n < 3; ++n) {
-        hash |= *(pixel + n) >> 3 << ((3 - 1 - n) * 5);
-    }
+    hash = computeHash(pixel, 3);
 
     cache = cachetable[hash];
     if (cache) {  /* fast lookup */
