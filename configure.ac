@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.3.3], [user@zuse.jp])
+AC_INIT([sixel], [1.3.4], [user@zuse.jp])
 LS_LT_CURRENT=1
 LS_LT_REVISION=2
 LS_LT_AGE=1
@@ -374,9 +374,9 @@ AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           ])
 LS_UPDATE_TIMESTAMP
 
-AM_CONDITIONAL([HAVE_JPEG], [test x$have_jpeg == xyes])
-AM_CONDITIONAL([HAVE_PNG], [test x$have_png == xyes])
-AM_CONDITIONAL([HAVE_CURL], [test x$have_curl == xyes])
+AM_CONDITIONAL([HAVE_JPEG], [test x$have_jpeg = xyes])
+AM_CONDITIONAL([HAVE_PNG], [test x$have_png = xyes])
+AM_CONDITIONAL([HAVE_CURL], [test x$have_curl = xyes])
 
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
