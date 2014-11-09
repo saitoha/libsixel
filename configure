@@ -14197,7 +14197,7 @@ fi
           touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
 
 
- if test x$have_jpeg == xyes; then
+ if test x$have_jpeg = xyes; then
   HAVE_JPEG_TRUE=
   HAVE_JPEG_FALSE='#'
 else
@@ -14205,7 +14205,7 @@ else
   HAVE_JPEG_FALSE=
 fi
 
- if test x$have_png == xyes; then
+ if test x$have_png = xyes; then
   HAVE_PNG_TRUE=
   HAVE_PNG_FALSE='#'
 else
