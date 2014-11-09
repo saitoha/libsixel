@@ -69,6 +69,7 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -V
 	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum | tee snake.sixel
 	$(WINE) ./img2sixel -w50% -h150% -dfs -thls < ../images/snake.jpg | tee snake2.sixel
+	$(WINE) ./img2sixel -w2100 -h2100 < ../images/snake.jpg > snake3.sixel
 	$(WINE) ./img2sixel - -w105% -h100 -djajuni -rnearest < ../images/snake.gif
 	$(WINE) ./img2sixel ../images/snake.tga -7 -sauto -w100 -rgaussian  -dburkes -tauto
 	$(WINE) ./img2sixel -p300 ../images/snake.tiff -8 -scenter -h100 -qauto -rhanning -dstucki -thls
@@ -101,7 +102,6 @@ endif
 if HAVE_CURL
 	$(WINE) ./img2sixel file:///$$(pwd)/../images/snake.jpg
 endif
-endif
 if WANT_SIXEL2PNG
 	! $(WINE) ./sixel2png -i unknown.sixel
 	! $(WINE) ./sixel2png -% < snake.sixel
@@ -109,9 +109,11 @@ if WANT_SIXEL2PNG
 	$(WINE) ./sixel2png -V
 	$(WINE) ./sixel2png < snake.sixel > snake1.png
 	$(WINE) ./sixel2png < snake2.sixel > snake2.png
-	$(WINE) ./sixel2png -i snake.sixel -o snake3.png
-	@echo succeeded
+	$(WINE) ./sixel2png < snake3.sixel > snake3.png
+	$(WINE) ./sixel2png -i snake.sixel -o snake4.png
 endif
+endif
+	@echo succeeded
 
 winetest: all
 	WINE=wine $(MAKE) test
