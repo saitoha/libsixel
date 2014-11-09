@@ -232,6 +232,7 @@ prepare_palette(sixel_dither_t *former_dither,
             sixel_dither_unref(former_dither);
         }
         dither = sixel_dither_create(psettings->reqcolors);
+
         ret = sixel_dither_initialize(dither, frame, sx, sy, 3,
                                       psettings->method_for_largest,
                                       psettings->method_for_rep,

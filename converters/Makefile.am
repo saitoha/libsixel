@@ -67,8 +67,8 @@ if WANT_IMG2SIXEL
 	! $(WINE) ./img2sixel -I -C0 ../images/snake.png
 	$(WINE) ./img2sixel -H
 	$(WINE) ./img2sixel -V
-	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum | tee snake.sixel
-	$(WINE) ./img2sixel -w50% -h150% -dfs -thls < ../images/snake.jpg | tee snake2.sixel
+	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | tee snake.sixel
+	$(WINE) ./img2sixel -w50% -h150% -dfs -thls < ../images/snake.jpg -shistogram | tee snake2.sixel
 	$(WINE) ./img2sixel -w2100 -h2100 < ../images/snake.jpg > snake3.sixel
 	$(WINE) ./img2sixel - -w105% -h100 -djajuni -rnearest < ../images/snake.gif
 	$(WINE) ./img2sixel ../images/snake.tga -7 -sauto -w100 -rgaussian  -dburkes -tauto
@@ -80,8 +80,8 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -I -C10 ../images/snake.png -djajuni
 	$(WINE) ./img2sixel -I ../images/snake-ascii.pgm
 	$(WINE) ./img2sixel -I ../images/snake-ascii.pbm -datkinson
-	$(WINE) ./img2sixel -I  ../images/snake.ppm -c2000x100+40+20 -wauto -h200 -qhigh -saverage -dfs -rbilinear -trgb
-	$(WINE) ./img2sixel -I -v ../images/snake.bmp -w200 -hauto -c100x1000+40+20 -qlow -shistogram -dnone -rhamming -thls
+	$(WINE) ./img2sixel -I  ../images/snake.ppm -c2000x100+40+20 -wauto -h200 -qhigh -dfs -rbilinear -trgb
+	$(WINE) ./img2sixel -I -v ../images/snake.bmp -w200 -hauto -c100x1000+40+20 -qlow -dnone -rhamming -thls
 	$(WINE) ./img2sixel -m ../images/map8.png -w200 -fauto -rwelsh ../images/egret.jpg
 	$(WINE) ./img2sixel -m ../images/map16.png -w100 -hauto -rbicubic -dauto ../images/snake.ppm
 	$(WINE) ./img2sixel -p 16 -C3 ../images/snake.jpg -h100 -fnorm -rlanczos2
