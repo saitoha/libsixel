@@ -56,6 +56,7 @@ if WANT_IMG2SIXEL
 	! $(WINE) ./img2sixel -h invalid_option
 	! $(WINE) ./img2sixel -f invalid_option
 	! $(WINE) ./img2sixel -q invalid_option
+	! $(WINE) ./img2sixel -l invalid_option
 	! $(WINE) ./img2sixel -%
 	! $(WINE) ./img2sixel invalid_filename
 	! $(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg
@@ -88,6 +89,10 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -p 1 ../images/snake.jpg -h100 -n1
 	$(WINE) ./img2sixel -e ../images/snake.jpg -h140 -rlanczos4 -P
 	$(WINE) ./img2sixel -e -i ../images/snake.jpg -P > /dev/null
+	$(WINE) ./img2sixel ../images/seq2gif.gif -lauto -dnone -u
+	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone
+	$(WINE) ./img2sixel ../images/seq2gif.gif -lforce -dnone -i
+	$(WINE) ./img2sixel ../images/seq2gif.gif -S -datkinson
 if HAVE_JPEG
 	$(WINE) ./img2sixel ../images/snake-progressive.jpg | tee snake.sixel
 endif
