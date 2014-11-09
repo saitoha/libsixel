@@ -73,6 +73,14 @@ _looptype() {
     'disable[always disable loop]'
 }
 
+_palettetype() {
+  _values \
+    'PALETTETYPE' \
+    'auto[choose palette type automatically (default)]' \
+    'hls[use HLS color space]' \
+    'rgb[use RGB color space]'
+}
+
 _arguments -S -s -A "-*" -S \
   {-7,--7bit-mode}'[generate a sixel image for 7bit terminals (default)]' \
   {-8,--8bit-mode}'[generate a sixel image for 8bit terminals]' \
@@ -94,7 +102,9 @@ _arguments -S -s -A "-*" -S \
   {-r,--resampling=}'[choose resampling filter used with -w or -h option]':resamplingtype:_resamplingtype \
   {-q,--quality=}'[select quality of color quanlization]':qualitytype:_qualitytype \
   {-l,--loop-control=}'[select loop control mode of GIF animation]':looptype:_looptype \
+  {-t,--palette-type=}'[select palette color space type]':palettetype:_palettetype \
   {-P,--penetrate}'[penetrate GNU Screen using DCS pass-through sequence]' \
+  {-v,--verbose}'[show debugging information]' \
   {-V,--version}'[show version and license information]' \
   {-H,--help}'[show help]' \
   '*:files:_files' \

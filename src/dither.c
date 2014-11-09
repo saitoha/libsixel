@@ -142,6 +142,7 @@ sixel_dither_create(int ncolors)
     dither->keycolor = (-1);
     dither->optimized = 0;
     dither->complexion = 1;
+    dither->bodyonly = 0;
     dither->method_for_largest = LARGE_NORM;
     dither->method_for_rep = REP_CENTER_BOX;
     dither->method_for_diffuse = DIFFUSE_FS;
@@ -293,6 +294,41 @@ sixel_normalize_bitfield(unsigned char *dst, unsigned char *src, int width, int 
     }
 }
 
+
+static void
+sixel_dither_set_method_for_largest(sixel_dither_t *dither, int method_for_largest)
+{
+    if (method_for_largest == LARGE_AUTO) {
+        method_for_largest = LARGE_NORM;
+    }
+    dither->method_for_largest = method_for_largest;
+}
+
+
+static void
+sixel_dither_set_method_for_rep(sixel_dither_t *dither, int method_for_rep)
+{
+    if (method_for_rep == REP_AUTO) {
+        method_for_rep = REP_CENTER_BOX;
+    }
+    dither->method_for_rep = method_for_rep;
+}
+
+
+static void
+sixel_dither_set_quality_mode(sixel_dither_t *dither, int quality_mode)
+{
+    if (quality_mode == QUALITY_AUTO) {
+        if (dither->ncolors <= 8) {
+            quality_mode = QUALITY_HIGH;
+        } else {
+            quality_mode = QUALITY_LOW;
+        }
+    }
+    dither->quality_mode = quality_mode;
+}
+
+
 int
 sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
                         int width, int height, int const bitfield,
@@ -312,6 +348,10 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     } else {
         memcpy(normalized_pixels, data, width * height * 3);
     }
+
+    sixel_dither_set_method_for_largest(dither, method_for_largest);
+    sixel_dither_set_method_for_rep(dither, method_for_rep);
+    sixel_dither_set_quality_mode(dither, quality_mode);
 
     buf = LSQ_MakePalette(normalized_pixels, width, height, 3,
                           dither->reqcolors, &dither->ncolors,
@@ -376,6 +416,14 @@ sixel_dither_set_complexion_score(sixel_dither_t /* in */ *dither,  /* dither co
                                   int            /* in */ score)    /* complexion score (>= 1) */
 {
     dither->complexion = score;
+}
+
+void
+sixel_dither_set_body_only(sixel_dither_t /* in */ *dither,     /* dither context object */
+                           int            /* in */ bodyonly)    /* 0: output palette section
+                                                                   1: do not output palette section  */
+{
+    dither->bodyonly = bodyonly;
 }
 
 unsigned char *

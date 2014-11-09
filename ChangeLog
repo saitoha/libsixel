@@ -1,3 +1,239 @@
+2014-11-08  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c, src/dither.c: Enable some options(-f, -s, and -q)
+  ignored unintentionally
+
+2014-11-03  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Interpret an image expanded by png_set_palette_to_rgb
+  as a 3-channel image
+
+  * converters/img2sixel.c: Avoid scanf buffer overflow
+
+  * converters/img2sixel.c: Add missing options in brevity help
+
+  * converters/loader.c: Fix a segmentation fault occurs when using libpng
+  loader
+
+  * src/output.h, src/tosixel.c: Drop unnecessary variable
+  sixel_output_t::conv_palette
+
+2014-11-02  arakiken <arakiken@users.sf.net>
+
+  * src/tosixel.c: Remove unnecessary check. (nwrite <= 0) Cherry-picked from
+  cf00bed  Conflicts: src/tosixel.c
+
+2014-11-03  Hayaki Saito <user@zuse.jp>
+
+  * src/fromsixel.c: Strip unused variables
+
+  * converters/loader.c: Replace some indent tabs to spaces
+
+2014-11-02  arakiken <arakiken@users.sf.net>
+
+  * src/tosixel.c: Separate sixel_encode_impl() into sixel_encode_header(),
+  sixel_encode_body() and sixel_encode_footer(). Cherry-picked from 339d958. 
+  Conflicts: src/tosixel.c
+
+2014-10-29  Hayaki Saito <user@zuse.jp>
+
+  * src/image.c: Remove unused source file image.c
+
+2014-10-26  Hayaki Saito <user@zuse.jp>
+
+  * NEWS: Update NEWS
+
+  * NEWS: Update NEWS
+
+  * converters/shell-completion/bash/img2sixel: Update bash completion file
+
+  * converters/shell-completion/zsh/_img2sixel: Update zsh completion file
+
+  * README.md, converters/img2sixel.1: Update manpage and README.md
+
+  * converters/img2sixel.c: Update help
+
+  * converters/sixel2png.c: Write png data using libpng by sixel2png
+
+  * converters/sixel2png.c: Fix a typo
+
+  * converters/sixel2png.c: Cleanup
+
+  * converters/loader.c: Accepts sixel as input format by img2sixel
+
+  * converters/img2sixel.c: Fix segmentation fault on quitting GIF animation
+  with -u option
+
+  * converters/img2sixel.c, src/tosixel.c: Support HLS palette
+
+2014-10-25  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Don't terminate configure process if
+  --with-libcurl=auto
+
+  * configure, configure.ac: Don't check pkg-config availability if
+  $cross_compile == yes
+
+  * Makefile.in, configure, configure.ac, converters/Makefile.in,
+  include/Makefile.in, src/Makefile.in: Use $PKG_CONFIG environment variable
+  instead of $have_pkg_config
+
+  * configure, configure.ac: Don't use system pkg-config if $cross_compile ==
+  "yes"
+
+  * configure, configure.ac: Checks zlib availability with libpng, workaround
+  for MinGW build
+
+  * README.md, configure, configure.ac: Links libcurl automatically
+
+  * Makefile.in, NEWS, configure, configure.ac, converters/Makefile.am,
+  converters/Makefile.in, include/Makefile.in, src/Makefile.in: Build with
+  libjpeg/libpng automatically
+
+  * converters/loader.c: Strip alpha in png loader
+
+2014-10-22  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.am, Makefile.in, converters/Makefile.am, converters/Makefile.in,
+  images/snake.png: Add test for loading png with libpng
+
+  * configure, configure.ac, converters/Makefile.am, converters/Makefile.in,
+  images/snake-progressive.jpg: Add a test for loading progressive jpeg
+
+  * include/sixel.h.in, src/output.c, src/output.h: Add new API
+  sixel_output_set_palette_type
+
+  * converters/img2sixel.c, include/sixel.h.in: Add --palette-type option
+
+2014-10-20  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, include/sixel.h.in, src/dither.c, src/dither.h,
+  src/tosixel.c: Add new API, sixel_dither_set_body_only
+
+  * converters/img2sixel.c: Update usage
+
+  * configure: Minor fix
+
+  * configure, configure.ac: Minor fix
+
+  * configure.ac: Fix build error
+
+  * converters/loader.c: Fix build error
+
+  * converters/loader.c: Use libpng reader
+
+  * Makefile.in, config.h.in, configure, configure.ac, converters/Makefile.am,
+  converters/Makefile.in, include/Makefile.in, src/Makefile.in: Add --with-png
+  configure option
+
+  * LICENSE.xterm, README.md, src/fromsixel.c: Fix wrong HLS-to-RGB conversion
+  routine
+
+2014-10-18  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Introduce --verbose option
+
+  * src/fromsixel.c: Rename some functions as snake case
+
+  * src/fromsixel.c: Rename some functions as snake case
+
+2014-10-17  Hayaki Saito <user@zuse.jp>
+
+  * src/tosixel.c: Omit DCS parameters by default
+
+  * src/tosixel.c: Strip an extra DECGNL character at the end of output data
+
+  * src/tosixel.c: Strip an extra LF character from output data
+
+  * converters/loader.c: Suppress gdk-pixbuf assersion on processing some GIF
+  images, reported by @ttdoda
+
+2014-10-14  Hayaki Saito <user@zuse.jp>
+
+  * LICENSE.sdump, Makefile.in, README.md, config.h.in, configure,
+  configure.ac, converters/Makefile.am, converters/Makefile.in,
+  converters/loader.c, include/Makefile.in, src/Makefile.in: Add libjpeg
+  support with --with-jpeg configure option
+
+2014-10-12  Hayaki Saito <user@zuse.jp>
+
+  * package.json.in.in: clib integration: add --with-libcurl option by default
+
+  * NEWS: Add missing items to NEWS
+
+  * converters/loader.c: Include errno.h in loader.c
+
+  * converters/Makefile.am, converters/Makefile.in, src/Makefile.am,
+  src/Makefile.in: Add -Werror to CFLAGS when --enable-debug configure option
+  is specified
+
+  * config.h.in, configure, configure.ac: Introduce --enable-debug configure
+  option
+
+  * converters/img2sixel.c: Fix a double free error
+
+2014-10-11  Hayaki Saito <user@zuse.jp>
+
+  * NEWS, README.md: Document updates
+
+  * converters/loader.c, src/quant.c: Suppress some compiler wanings
+
+  * src/quant.c: Fix a bug caused by an uninitialized variable
+
+  * converters/Makefile.am, converters/Makefile.in, src/Makefile.am,
+  src/Makefile.in: Add missing -Wall option to cflags to privent stupid bugs
+  like #9
+
+  * converters/loader.c: Quick fix for Issue #9
+
+2014-10-11  Bruce Mitchener <bruce.mitchener@gmail.com>
+
+  * converters/loader.c, converters/shell-completion/bash/img2sixel,
+  converters/sixel2png.1, include/sixel.h.in, src/output.c: Remove whitespace
+  at EOL.
+
+  * ChangeLog, README.md, converters/img2sixel.1, converters/img2sixel.c,
+  converters/quant.h, converters/shell-completion/bash/img2sixel,
+  converters/shell-completion/zsh/_img2sixel, include/sixel.h.in, src/dither.h,
+  src/quant.c: Fix typos.
+
+  * converters/img2sixel.c: Fix uninitialized variable.
+
+  * converters/img2sixel.c, converters/scale.c: Remove unused functions.
+
+  * converters/img2sixel.c, converters/loader.c, converters/sixel2png.c,
+  src/quant.c, src/tosixel.c: Remove unused variables.
+
+  * include/sixel.h.in, src/output.c, src/quant.c: Remove invalid const
+  specifier on return type.
+
+2014-10-11  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.in, NEWS: Add NEWS
+
+2014-10-09  Hayaki Saito <user@zuse.jp>
+
+  * converters/shell-completion/bash/img2sixel: Update bash completion file
+
+  * converters/shell-completion/zsh/_img2sixel: Update zsh completion file
+
+  * converters/img2sixel.1: Add missing descriptions to img2sixel manpage
+
+  * README.md, converters/img2sixel.1, converters/img2sixel.c: Update documents
+
+  * data/example_opengl.gif, data/ffmpeg.png, data/gnuplot.png, data/gs.png,
+  data/libsixel-1.png, data/q_libsixel.png, data/q_ppmtosixel.png,
+  data/q_ppmtosixel2.png, data/q_sixel.png, data/q_sixelconv.png,
+  data/qemu.png, data/sixel.gif, data/w3m-sixel.png, data/wesnoth.png,
+  data/xsdl.png, data/xsixel.png, data/zx81.png: Remove data directory
+
+2014-10-08  Hayaki Saito <user@zuse.jp>
+
+  * README.md, converters/img2sixel.1, converters/img2sixel.c: Update documents
+
+  * converters/img2sixel.c, converters/loader.c, converters/loader.h: Introduce
+  --static option
+
 2014-10-07  Hayaki Saito <user@zuse.jp>
 
   * converters/img2sixel.c: Fix for animation GIF quality degradation
@@ -11,6 +247,8 @@
   * converters/stb_image.h: Skip an unknown code(0x3c) at GIF decoder
 
 2014-10-01  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Update libtool minor version
 
   * configure, configure.ac: Update libtool micro version
 
@@ -27,6 +265,9 @@
 
 2014-09-29  Hayaki Saito <user@zuse.jp>
 
+  * src/tosixel.c: Merge arakiken's amend patch:
+  http://mlterm.sourceforge.net/libsixel-penetrate2.patch
+
   * converters/img2sixel.c: Print short usage explanation if invalid option is
   given.
 
@@ -35,8 +276,30 @@
 
 2014-09-28  Hayaki Saito <user@zuse.jp>
 
+  * converters/img2sixel.c, include/sixel.h.in, src/dither.c, src/dither.h,
+  src/quant.c, src/quant.h: Introduce -C(complexion score) option and implement
+  complexion correction
+
+  * include/sixel.h.in, src/tosixel.c: Fix build broken by fb1cd8a
+
+  * converters/img2sixel.c, src/output.c, src/output.h, src/tosixel.c: Apply
+  arakiken's patch for GNU Screen integration:
+  http://mlterm.sourceforge.net/libsixel-penetrate.patch
+
+  * converters/img2sixel.c, include/sixel.h.in, src/output.c, src/output.h,
+  src/tosixel.c: Introduce new APIs: sixel_output_{get,set}_skip_dcs_envelope
+
   * src/Makefile.am, src/Makefile.in, src/dither.c, src/dither.h, src/image.c,
   src/image.h, src/tosixel.c: Drop sixel_image_t object and related functions
+
+2014-09-27  Hayaki Saito <user@zuse.jp>
+
+  * src/dither.c, src/output.c: Add NULL checks
+
+  * src/dither.c, src/output.c: Add NULL checks
+
+  * src/dither.c, src/image.c: Add input parameter validation for some
+  functions
 
 2014-09-26  Hayaki Saito <user@zuse.jp>
 
@@ -1468,10 +1731,10 @@
 
   * src/quant.c: Minor fix for creating palette
 
-  * src/quant.c: Minor fix around creating histogram
+  * src/quant.c: Minor fix around creating histgram
 
   * src/quant.c: Add new parameter for selecting method for detecting largest
-  splitting dimension
+  splitting dimention
 
   * src/quant.c: Import largestByLuminosity function from pnmcolormap.c
 
@@ -1481,7 +1744,7 @@
 
   * src/quant.c: Fix a memory leak problem
 
-  * src/tosixel.c: Comment out unused code which makes histogram
+  * src/tosixel.c: Comment out unused code which makes histgram
 
   * src/quant.c: Minor fix
 
@@ -1523,9 +1786,9 @@
 
 2014-03-28  Hayaki Saito <user@zuse.jp>
 
-  * quant.c: Reduce sample pixels for creating histogram
+  * quant.c: Reduce sample pixels for creating histgram
 
-  * quant.c: Improve the allocation method for creating histogram
+  * quant.c: Improve the allocation method for creating histgram
 
   * quant.c: Minor fix
 
