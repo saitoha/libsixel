@@ -1082,6 +1082,9 @@ test: all
 @WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -p16 -e ../images/snake.jpg
 @WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -D ../images/snake.jpg
 @WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -I -C0 ../images/snake.png
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -I -e ../images/snake.png
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -I -p8 ../images/snake.png
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -I -m ../images/map8.png ../images/snake.png
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -H
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -V
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | tee snake.sixel

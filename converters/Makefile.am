@@ -65,6 +65,9 @@ if WANT_IMG2SIXEL
 	! $(WINE) ./img2sixel -p16 -e ../images/snake.jpg
 	! $(WINE) ./img2sixel -D ../images/snake.jpg
 	! $(WINE) ./img2sixel -I -C0 ../images/snake.png
+	! $(WINE) ./img2sixel -I -e ../images/snake.png
+	! $(WINE) ./img2sixel -I -p8 ../images/snake.png
+	! $(WINE) ./img2sixel -I -m ../images/map8.png ../images/snake.png
 	$(WINE) ./img2sixel -H
 	$(WINE) ./img2sixel -V
 	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | tee snake.sixel

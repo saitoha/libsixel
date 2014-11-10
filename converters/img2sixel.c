@@ -1001,27 +1001,25 @@ main(int argc, char *argv[])
             break;
         case 'd':
             /* parse --diffusion option */
-            if (optarg) {
-                if (strcmp(optarg, "auto") == 0) {
-                    settings.method_for_diffuse = DIFFUSE_AUTO;
-                } else if (strcmp(optarg, "none") == 0) {
-                    settings.method_for_diffuse = DIFFUSE_NONE;
-                } else if (strcmp(optarg, "fs") == 0) {
-                    settings.method_for_diffuse = DIFFUSE_FS;
-                } else if (strcmp(optarg, "atkinson") == 0) {
-                    settings.method_for_diffuse = DIFFUSE_ATKINSON;
-                } else if (strcmp(optarg, "jajuni") == 0) {
-                    settings.method_for_diffuse = DIFFUSE_JAJUNI;
-                } else if (strcmp(optarg, "stucki") == 0) {
-                    settings.method_for_diffuse = DIFFUSE_STUCKI;
-                } else if (strcmp(optarg, "burkes") == 0) {
-                    settings.method_for_diffuse = DIFFUSE_BURKES;
-                } else {
-                    fprintf(stderr,
-                            "Diffusion method '%s' is not supported.\n",
-                            optarg);
-                    goto argerr;
-                }
+            if (strcmp(optarg, "auto") == 0) {
+                settings.method_for_diffuse = DIFFUSE_AUTO;
+            } else if (strcmp(optarg, "none") == 0) {
+                settings.method_for_diffuse = DIFFUSE_NONE;
+            } else if (strcmp(optarg, "fs") == 0) {
+                settings.method_for_diffuse = DIFFUSE_FS;
+            } else if (strcmp(optarg, "atkinson") == 0) {
+                settings.method_for_diffuse = DIFFUSE_ATKINSON;
+            } else if (strcmp(optarg, "jajuni") == 0) {
+                settings.method_for_diffuse = DIFFUSE_JAJUNI;
+            } else if (strcmp(optarg, "stucki") == 0) {
+                settings.method_for_diffuse = DIFFUSE_STUCKI;
+            } else if (strcmp(optarg, "burkes") == 0) {
+                settings.method_for_diffuse = DIFFUSE_BURKES;
+            } else {
+                fprintf(stderr,
+                        "Diffusion method '%s' is not supported.\n",
+                        optarg);
+                goto argerr;
             }
             break;
         case 'f':
@@ -1043,40 +1041,33 @@ main(int argc, char *argv[])
             break;
         case 's':
             /* parse --select-color option */
-            if (optarg) {
-                if (strcmp(optarg, "auto") == 0) {
-                    settings.method_for_rep = REP_AUTO;
-                } else if (strcmp(optarg, "center") == 0) {
-                    settings.method_for_rep = REP_CENTER_BOX;
-                } else if (strcmp(optarg, "average") == 0) {
-                    settings.method_for_rep = REP_AVERAGE_COLORS;
-                } else if ((strcmp(optarg, "histogram") == 0) ||
-                           (strcmp(optarg, "histgram") == 0)) {
-                    settings.method_for_rep = REP_AVERAGE_PIXELS;
-                } else {
-                    fprintf(stderr,
-                            "Finding method '%s' is not supported.\n",
-                            optarg);
-                    goto argerr;
-                }
+            if (strcmp(optarg, "auto") == 0) {
+                settings.method_for_rep = REP_AUTO;
+            } else if (strcmp(optarg, "center") == 0) {
+                settings.method_for_rep = REP_CENTER_BOX;
+            } else if (strcmp(optarg, "average") == 0) {
+                settings.method_for_rep = REP_AVERAGE_COLORS;
+            } else if ((strcmp(optarg, "histogram") == 0) ||
+                       (strcmp(optarg, "histgram") == 0)) {
+                settings.method_for_rep = REP_AVERAGE_PIXELS;
+            } else {
+                fprintf(stderr,
+                        "Finding method '%s' is not supported.\n",
+                        optarg);
+                goto argerr;
             }
             break;
         case 'c':
-            {
-                int cw, ch, cx, cy;
-                if (sscanf(optarg, "%dx%d+%d+%d", &cw, &ch, &cx, &cy) == 4) {
-                    if (cw <= 0 || ch <= 0) {
-                        goto argerr;
-                    }
-                    settings.clipx = cx;
-                    settings.clipy = cy;
-                    settings.clipwidth = cw;
-                    settings.clipheight = ch;
-                    settings.clipfirst = 0;
-                } else {
-                    goto argerr;
-                }
+            number = sscanf(optarg, "%dx%d+%d+%d",
+                            &settings.clipwidth, &settings.clipheight,
+                            &settings.clipx, &settings.clipy);
+            if (number != 4) {
+                goto argerr;
             }
+            if (settings.clipwidth <= 0 || settings.clipheight <= 0) {
+                goto argerr;
+            }
+            settings.clipfirst = 0;
             break;
         case 'w':
             parsed = sscanf(optarg, "%d%2s", &number, unit);
@@ -1120,9 +1111,7 @@ main(int argc, char *argv[])
             break;
         case 'r':
             /* parse --resampling option */
-            if (!optarg) {  /* default */
-                settings.method_for_resampling = RES_BILINEAR;
-            } else if (strcmp(optarg, "nearest") == 0) {
+            if (strcmp(optarg, "nearest") == 0) {
                 settings.method_for_resampling = RES_NEAREST;
             } else if (strcmp(optarg, "gaussian") == 0) {
                 settings.method_for_resampling = RES_GAUSSIAN;
@@ -1151,50 +1140,44 @@ main(int argc, char *argv[])
             break;
         case 'q':
             /* parse --quality option */
-            if (optarg) {
-                if (strcmp(optarg, "auto") == 0) {
-                    settings.quality_mode = QUALITY_AUTO;
-                } else if (strcmp(optarg, "high") == 0) {
-                    settings.quality_mode = QUALITY_HIGH;
-                } else if (strcmp(optarg, "low") == 0) {
-                    settings.quality_mode = QUALITY_LOW;
-                } else {
-                    fprintf(stderr,
-                            "Cannot parse quality option.\n");
-                    goto argerr;
-                }
+            if (strcmp(optarg, "auto") == 0) {
+                settings.quality_mode = QUALITY_AUTO;
+            } else if (strcmp(optarg, "high") == 0) {
+                settings.quality_mode = QUALITY_HIGH;
+            } else if (strcmp(optarg, "low") == 0) {
+                settings.quality_mode = QUALITY_LOW;
+            } else {
+                fprintf(stderr,
+                        "Cannot parse quality option.\n");
+                goto argerr;
             }
             break;
         case 'l':
             /* parse --loop-control option */
-            if (optarg) {
-                if (strcmp(optarg, "auto") == 0) {
-                    settings.loop_mode = LOOP_AUTO;
-                } else if (strcmp(optarg, "force") == 0) {
-                    settings.loop_mode = LOOP_FORCE;
-                } else if (strcmp(optarg, "disable") == 0) {
-                    settings.loop_mode = LOOP_DISABLE;
-                } else {
-                    fprintf(stderr,
-                            "Cannot parse loop-control option.\n");
-                    goto argerr;
-                }
+            if (strcmp(optarg, "auto") == 0) {
+                settings.loop_mode = LOOP_AUTO;
+            } else if (strcmp(optarg, "force") == 0) {
+                settings.loop_mode = LOOP_FORCE;
+            } else if (strcmp(optarg, "disable") == 0) {
+                settings.loop_mode = LOOP_DISABLE;
+            } else {
+                fprintf(stderr,
+                        "Cannot parse loop-control option.\n");
+                goto argerr;
             }
             break;
         case 't':
             /* parse --palette-type option */
-            if (optarg) {
-                if (strcmp(optarg, "auto") == 0) {
-                    settings.palette_type = PALETTETYPE_AUTO;
-                } else if (strcmp(optarg, "hls") == 0) {
-                    settings.palette_type = PALETTETYPE_HLS;
-                } else if (strcmp(optarg, "rgb") == 0) {
-                    settings.palette_type = PALETTETYPE_RGB;
-                } else {
-                    fprintf(stderr,
-                            "Cannot parse palette type option.\n");
-                    goto argerr;
-                }
+            if (strcmp(optarg, "auto") == 0) {
+                settings.palette_type = PALETTETYPE_AUTO;
+            } else if (strcmp(optarg, "hls") == 0) {
+                settings.palette_type = PALETTETYPE_HLS;
+            } else if (strcmp(optarg, "rgb") == 0) {
+                settings.palette_type = PALETTETYPE_RGB;
+            } else {
+                fprintf(stderr,
+                        "Cannot parse palette type option.\n");
+                goto argerr;
             }
             break;
         case 'i':
