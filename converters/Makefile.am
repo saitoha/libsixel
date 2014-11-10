@@ -71,8 +71,8 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -w50% -h150% -dfs -thls < ../images/snake.jpg -shistogram | tee snake2.sixel
 	$(WINE) ./img2sixel -w2100 -h2100 < ../images/snake.jpg > snake3.sixel
 	$(WINE) ./img2sixel - -w105% -h100 -djajuni -rnearest < ../images/snake.gif
-	$(WINE) ./img2sixel ../images/snake.tga -7 -sauto -w100 -rgaussian  -dburkes -tauto
-	$(WINE) ./img2sixel -p300 ../images/snake.tiff -8 -scenter -h100 -qauto -rhanning -dstucki -thls
+	$(WINE) ./img2sixel ../images/snake.tga -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto
+	$(WINE) ./img2sixel -p300 ../images/snake.tiff -8 -scenter -h100 -qfull -rhanning -dstucki -thls
 	$(WINE) ./img2sixel -8 -qauto -thls -e ../images/snake.pgm
 	$(WINE) ./img2sixel -7 -w100 -h100 ../images/snake.pbm
 	$(WINE) ./img2sixel -I ../images/snake.ppm -dstucki -thls
