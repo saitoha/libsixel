@@ -129,9 +129,6 @@
 /* Define to 1 if you have the `setjmp' function. */
 #undef HAVE_SETJMP
 
-/* Define to 1 if you have the <setjmp.h> header file. */
-#undef HAVE_SETJMP_H
-
 /* Define to 1 if you have the `setmode' function. */
 #undef HAVE_SETMODE
 

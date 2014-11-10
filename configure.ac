@@ -145,8 +145,7 @@ AC_CHECK_HEADERS([memory.h \
                   time.h \
                   signal.h \
                   sys/select.h \
-                  sys/signal.h \
-                  setjmp.h])
+                  sys/signal.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
