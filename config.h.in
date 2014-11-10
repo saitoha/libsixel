@@ -126,6 +126,9 @@
    and to 0 otherwise. */
 #undef HAVE_REALLOC
 
+/* Define to 1 if you have the `setjmp' function. */
+#undef HAVE_SETJMP
+
 /* Define to 1 if you have the `setmode' function. */
 #undef HAVE_SETMODE
 
