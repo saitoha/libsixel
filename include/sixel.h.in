@@ -71,7 +71,8 @@ enum qualityMode {
     QUALITY_AUTO      = 0, /* choose quality mode automatically */
     QUALITY_HIGH      = 1, /* high quality palette construction */
     QUALITY_LOW       = 2, /* low quality palette construction */
-    QUALITY_HIGHCOLOR = 3, /* high color */
+    QUALITY_FULL      = 3, /* full quality palette construction */
+    QUALITY_HIGHCOLOR = 4, /* high color */
 };
 
 /* built-in dither */

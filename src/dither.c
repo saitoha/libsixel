@@ -363,6 +363,10 @@ sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t
         return NULL;
     }
 
+    if (dither->quality_mode == QUALITY_FULL) {
+        dither->optimized = 0;
+    }
+
     if (dither->cachetable == NULL && dither->optimized) {
         if (dither->palette != pal_mono_dark && dither->palette != pal_mono_light) {
             cachesize = (1 << 3 * 5) * sizeof(unsigned short);
