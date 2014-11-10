@@ -75,10 +75,6 @@
 # include <errno.h>
 #endif
 
-#ifdef HAVE_SETJMP_H
-# include <setjmp.h>
-#endif
-
 #ifdef HAVE_LIBPNG
 # include <png.h>
 #endif  /* HAVE_LIBPNG */

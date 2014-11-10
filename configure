@@ -12717,8 +12717,7 @@ for ac_header in memory.h \
                   time.h \
                   signal.h \
                   sys/select.h \
-                  sys/signal.h \
-                  setjmp.h
+                  sys/signal.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
