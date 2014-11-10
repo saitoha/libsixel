@@ -628,10 +628,17 @@ computeHistogram(unsigned char *data,
     unsigned int step;
     unsigned int max_sample;
 
-    if (qualityMode == QUALITY_HIGH) {
+    switch (qualityMode) {
+    case QUALITY_HIGH:
         max_sample = 1118383;
-    } else { /* if (qualityMode == QUALITY_LOW) */
+        break;
+    case QUALITY_LOW:
         max_sample = 18383;
+        break;
+    case QUALITY_FULL:
+    default:
+        max_sample = 4003079;
+        break;
     }
 
     quant_trace(stderr, "making histogram...\n");

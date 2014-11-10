@@ -854,9 +854,11 @@ void show_help()
             "                           quanlization.\n"
             "                             auto -> decide quality mode\n"
             "                                     automatically (default)\n"
+            "                             low  -> low quality and high\n"
+            "                                     speed mode\n"
             "                             high -> high quality and low\n"
             "                                     speed mode\n"
-            "                             low  -> low quality and high\n"
+            "                             full -> full quality and careful\n"
             "                                     speed mode\n"
             "-l LOOPMODE, --loop-control=LOOPMODE\n"
             "                           select loop control mode for GIF\n"
@@ -1146,6 +1148,8 @@ main(int argc, char *argv[])
                 settings.quality_mode = QUALITY_HIGH;
             } else if (strcmp(optarg, "low") == 0) {
                 settings.quality_mode = QUALITY_LOW;
+            } else if (strcmp(optarg, "full") == 0) {
+                settings.quality_mode = QUALITY_FULL;
             } else {
                 fprintf(stderr,
                         "Cannot parse quality option.\n");
