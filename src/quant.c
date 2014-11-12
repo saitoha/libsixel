@@ -936,7 +936,7 @@ static int
 lookup_normal(unsigned char const * const pixel,
               int const depth,
               unsigned char const * const palette,
-              int const ncolor,
+              int const reqcolor,
               unsigned short * const cachetable,
               int const complexion)
 {
@@ -950,7 +950,7 @@ lookup_normal(unsigned char const * const pixel,
     index = -1;
     diff = INT_MAX;
 
-    for (i = 0; i < ncolor; i++) {
+    for (i = 0; i < reqcolor; i++) {
         distant = 0;
         r = pixel[0] - palette[i * depth + 0];
         distant += r * r * complexion;
@@ -972,7 +972,7 @@ static int
 lookup_fast(unsigned char const * const pixel,
             int const depth,
             unsigned char const * const palette,
-            int const ncolor,
+            int const reqcolor,
             unsigned short * const cachetable,
             int const complexion)
 {
@@ -992,7 +992,7 @@ lookup_fast(unsigned char const * const pixel,
         return cache - 1;
     }
     /* collision */
-    for (i = 0; i < ncolor; i++) {
+    for (i = 0; i < reqcolor; i++) {
         distant = 0;
 #if 0
         for (n = 0; n < 3; ++n) {
@@ -1020,7 +1020,7 @@ static int
 lookup_mono_darkbg(unsigned char const * const pixel,
                    int const depth,
                    unsigned char const * const palette,
-                   int const ncolor,
+                   int const reqcolor,
                    unsigned short * const cachetable,
                    int const complexion)
 {
@@ -1031,7 +1031,7 @@ lookup_mono_darkbg(unsigned char const * const pixel,
     for (n = 0; n < depth; ++n) {
         distant += pixel[n];
     }
-    return distant >= 128 * ncolor ? 1: 0;
+    return distant >= 128 * reqcolor ? 1: 0;
 }
 
 
@@ -1039,7 +1039,7 @@ static int
 lookup_mono_lightbg(unsigned char const * const pixel,
                     int const depth,
                     unsigned char const * const palette,
-                    int const ncolor,
+                    int const reqcolor,
                     unsigned short * const cachetable,
                     int const complexion)
 {
@@ -1050,7 +1050,7 @@ lookup_mono_lightbg(unsigned char const * const pixel,
     for (n = 0; n < depth; ++n) {
         distant += pixel[n];
     }
-    return distant < 128 * ncolor ? 1: 0;
+    return distant < 128 * reqcolor ? 1: 0;
 }
 
 
@@ -1093,11 +1093,13 @@ LSQ_ApplyPalette(unsigned char *data,
                  int height,
                  int depth,
                  unsigned char *palette,
-                 int ncolor,
+                 int reqcolor,
                  int methodForDiffuse,
                  int foptimize,
+                 int foptimize_palette,
                  int complexion,
                  unsigned short *cachetable,
+                 int *ncolors,
                  unsigned char *result)
 {
     typedef int component_t;
@@ -1110,7 +1112,7 @@ LSQ_ApplyPalette(unsigned char *data,
     int (*f_lookup)(unsigned char const * const pixel,
                     int const depth,
                     unsigned char const * const palette,
-                    int const ncolor,
+                    int const reqcolor,
                     unsigned short * const cachetable,
                     int const complexion);
 
@@ -1146,7 +1148,7 @@ LSQ_ApplyPalette(unsigned char *data,
     }
 
     f_lookup = NULL;
-    if (ncolor == 2) {
+    if (reqcolor == 2) {
         sum1 = 0;
         sum2 = 0;
         for (n = 0; n < depth; ++n) {
@@ -1185,17 +1187,51 @@ LSQ_ApplyPalette(unsigned char *data,
 #endif
     }
 
-    for (y = 0; y < height; ++y) {
-        for (x = 0; x < width; ++x) {
-            pos = y * width + x;
-            index = f_lookup(data + (pos * depth), depth,
-                             palette, ncolor, indextable, complexion);
-            result[pos] = index;
-            for (n = 0; n < depth; ++n) {
-                offset = data[pos * depth + n] - palette[index * depth + n];
-                f_diffuse(data + n, width, height, x, y, depth, offset);
+    unsigned char new_palette[256 * 4];
+    unsigned short migration_map[256];
+
+    if (foptimize_palette) {
+        *ncolors = 0;
+
+        memset(new_palette, 0x00, sizeof(256 * depth));
+        memset(migration_map, 0x00, sizeof(migration_map));
+
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < width; ++x) {
+                pos = y * width + x;
+                index = f_lookup(data + (pos * depth), depth,
+                                 palette, reqcolor, indextable, complexion);
+                if (migration_map[index] == 0) {
+                    result[pos] = *ncolors;
+                    for (n = 0; n < depth; ++n) {
+                        new_palette[*ncolors * depth + n] = palette[index * depth + n];
+                    }
+                    ++*ncolors;
+                    migration_map[index] = *ncolors;
+                } else {
+                    result[pos] = migration_map[index] - 1;
+                }
+                for (n = 0; n < depth; ++n) {
+                    offset = data[pos * depth + n] - palette[index * depth + n];
+                    f_diffuse(data + n, width, height, x, y, depth, offset);
+                }
             }
         }
+        memcpy(palette, new_palette, *ncolors * depth);
+    } else {
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < width; ++x) {
+                pos = y * width + x;
+                index = f_lookup(data + (pos * depth), depth,
+                                 palette, reqcolor, indextable, complexion);
+                result[pos] = index;
+                for (n = 0; n < depth; ++n) {
+                    offset = data[pos * depth + n] - palette[index * depth + n];
+                    f_diffuse(data + n, width, height, x, y, depth, offset);
+                }
+            }
+        }
+        *ncolors = reqcolor;
     }
 
     if (cachetable == NULL) {

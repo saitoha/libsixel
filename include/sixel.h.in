@@ -231,7 +231,12 @@ void
 sixel_dither_set_body_only(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     int            /* in */ bodyonly); /* 0: output palette section(default)
-                                         1: don't optimize palette size */
+                                          1: do not output palette section */
+void
+sixel_dither_set_optimize_palette(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    int            /* in */ do_opt);   /* 0: optimize palette size
+                                          1: don't optimize palette size */
 
 #ifdef __cplusplus
 }

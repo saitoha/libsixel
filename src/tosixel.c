@@ -514,6 +514,346 @@ sixel_encode_dither(unsigned char *pixels, int width, int height, int depth,
 }
 
 
+static void
+dither_func_none(unsigned char *data, int width)
+{
+}
+
+
+static void
+dither_func_fs(unsigned char *data, int width)
+{
+    int r, g, b;
+    int error_r = data[0] & 0x7;
+    int error_g = data[1] & 0x7;
+    int error_b = data[2] & 0x7;
+
+    /* Floyd Steinberg Method
+     *          curr    7/16
+     *  3/16    5/48    1/16
+     */
+    r = (data[3 + 0] + (error_r * 5 >> 4));
+    g = (data[3 + 1] + (error_g * 5 >> 4));
+    b = (data[3 + 2] + (error_b * 5 >> 4));
+    data[3 + 0] = r > 0xff ? 0xff: r;
+    data[3 + 1] = g > 0xff ? 0xff: g;
+    data[3 + 2] = b > 0xff ? 0xff: b;
+    r = data[width * 3 - 3 + 0] + (error_r * 3 >> 4);
+    g = data[width * 3 - 3 + 1] + (error_g * 3 >> 4);
+    b = data[width * 3 - 3 + 2] + (error_b * 3 >> 4);
+    data[width * 3 - 3 + 0] = r > 0xff ? 0xff: r;
+    data[width * 3 - 3 + 1] = g > 0xff ? 0xff: g;
+    data[width * 3 - 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[width * 3 + 0] + (error_r * 5 >> 4);
+    g = data[width * 3 + 1] + (error_g * 5 >> 4);
+    b = data[width * 3 + 2] + (error_b * 5 >> 4);
+    data[width * 3 + 0] = r > 0xff ? 0xff: r;
+    data[width * 3 + 1] = g > 0xff ? 0xff: g;
+    data[width * 3 + 2] = b > 0xff ? 0xff: b;
+}
+
+
+static void
+dither_func_atkinson(unsigned char *data, int width)
+{
+    int r, g, b;
+    int error_r = data[0] & 0x7;
+    int error_g = data[1] & 0x7;
+    int error_b = data[2] & 0x7;
+
+    error_r += 4;
+    error_g += 4;
+    error_b += 4;
+
+    /* Atkinson's Method
+     *          curr    1/8    1/8
+     *   1/8     1/8    1/8
+     *           1/8
+     */
+    r = data[(width * 0 + 1) * 3 + 0] + (error_r >> 3);
+    g = data[(width * 0 + 1) * 3 + 1] + (error_g >> 3);
+    b = data[(width * 0 + 1) * 3 + 2] + (error_b >> 3);
+    data[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 0 + 2) * 3 + 0] + (error_r >> 3);
+    g = data[(width * 0 + 2) * 3 + 1] + (error_g >> 3);
+    b = data[(width * 0 + 2) * 3 + 2] + (error_b >> 3);
+    data[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 - 1) * 3 + 0] + (error_r >> 3);
+    g = data[(width * 1 - 1) * 3 + 1] + (error_g >> 3);
+    b = data[(width * 1 - 1) * 3 + 2] + (error_b >> 3);
+    data[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 + 0) * 3 + 0] + (error_r >> 3);
+    g = data[(width * 1 + 0) * 3 + 1] + (error_g >> 3);
+    b = data[(width * 1 + 0) * 3 + 2] + (error_b >> 3);
+    data[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = (data[(width * 1 + 1) * 3 + 0] + (error_r >> 3));
+    g = (data[(width * 1 + 1) * 3 + 1] + (error_g >> 3));
+    b = (data[(width * 1 + 1) * 3 + 2] + (error_b >> 3));
+    data[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = (data[(width * 2 + 0) * 3 + 0] + (error_r >> 3));
+    g = (data[(width * 2 + 0) * 3 + 1] + (error_g >> 3));
+    b = (data[(width * 2 + 0) * 3 + 2] + (error_b >> 3));
+    data[(width * 2 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+}
+
+
+static void
+dither_func_jajuni(unsigned char *data, int width)
+{
+    int r, g, b;
+    int error_r = data[0] & 0x7;
+    int error_g = data[1] & 0x7;
+    int error_b = data[2] & 0x7;
+
+    error_r += 4;
+    error_g += 4;
+    error_b += 4;
+
+    /* Jarvis, Judice & Ninke Method
+     *                  curr    7/48    5/48
+     *  3/48    5/48    7/48    5/48    3/48
+     *  1/48    3/48    5/48    3/48    1/48
+     */
+    r = data[(width * 0 + 1) * 3 + 0] + (error_r * 7 / 48);
+    g = data[(width * 0 + 1) * 3 + 1] + (error_g * 7 / 48);
+    b = data[(width * 0 + 1) * 3 + 2] + (error_b * 7 / 48);
+    data[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 0 + 2) * 3 + 0] + (error_r * 5 / 48);
+    g = data[(width * 0 + 2) * 3 + 1] + (error_g * 5 / 48);
+    b = data[(width * 0 + 2) * 3 + 2] + (error_b * 5 / 48);
+    data[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 - 2) * 3 + 0] + (error_r * 3 / 48);
+    g = data[(width * 1 - 2) * 3 + 1] + (error_g * 3 / 48);
+    b = data[(width * 1 - 2) * 3 + 2] + (error_b * 3 / 48);
+    data[(width * 1 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 - 1) * 3 + 0] + (error_r * 5 / 48);
+    g = data[(width * 1 - 1) * 3 + 1] + (error_g * 5 / 48);
+    b = data[(width * 1 - 1) * 3 + 2] + (error_b * 5 / 48);
+    data[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 + 0) * 3 + 0] + (error_r * 7 / 48);
+    g = data[(width * 1 + 0) * 3 + 1] + (error_g * 7 / 48);
+    b = data[(width * 1 + 0) * 3 + 2] + (error_b * 7 / 48);
+    data[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 + 1) * 3 + 0] + (error_r * 5 / 48);
+    g = data[(width * 1 + 1) * 3 + 1] + (error_g * 5 / 48);
+    b = data[(width * 1 + 1) * 3 + 2] + (error_b * 5 / 48);
+    data[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 + 2) * 3 + 0] + (error_r * 3 / 48);
+    g = data[(width * 1 + 2) * 3 + 1] + (error_g * 3 / 48);
+    b = data[(width * 1 + 2) * 3 + 2] + (error_b * 3 / 48);
+    data[(width * 1 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 2 - 2) * 3 + 0] + (error_r * 1 / 48);
+    g = data[(width * 2 - 2) * 3 + 1] + (error_g * 1 / 48);
+    b = data[(width * 2 - 2) * 3 + 2] + (error_b * 1 / 48);
+    data[(width * 2 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 2 - 1) * 3 + 0] + (error_r * 3 / 48);
+    g = data[(width * 2 - 1) * 3 + 1] + (error_g * 3 / 48);
+    b = data[(width * 2 - 1) * 3 + 2] + (error_b * 3 / 48);
+    data[(width * 2 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 2 + 0) * 3 + 0] + (error_r * 5 / 48);
+    g = data[(width * 2 + 0) * 3 + 1] + (error_g * 5 / 48);
+    b = data[(width * 2 + 0) * 3 + 2] + (error_b * 5 / 48);
+    data[(width * 2 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 2 + 1) * 3 + 0] + (error_r * 3 / 48);
+    g = data[(width * 2 + 1) * 3 + 1] + (error_g * 3 / 48);
+    b = data[(width * 2 + 1) * 3 + 2] + (error_b * 3 / 48);
+    data[(width * 2 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 2 + 2) * 3 + 0] + (error_r * 1 / 48);
+    g = data[(width * 2 + 2) * 3 + 1] + (error_g * 1 / 48);
+    b = data[(width * 2 + 2) * 3 + 2] + (error_b * 1 / 48);
+    data[(width * 2 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+}
+
+
+static void
+dither_func_stucki(unsigned char *data, int width)
+{
+    int r, g, b;
+    int error_r = data[0] & 0x7;
+    int error_g = data[1] & 0x7;
+    int error_b = data[2] & 0x7;
+
+    error_r += 4;
+    error_g += 4;
+    error_b += 4;
+
+    /* Stucki's Method
+     *                  curr    8/48    4/48
+     *  2/48    4/48    8/48    4/48    2/48
+     *  1/48    2/48    4/48    2/48    1/48
+     */
+    r = data[(width * 0 + 1) * 3 + 0] + (error_r * 8 / 48);
+    g = data[(width * 0 + 1) * 3 + 1] + (error_g * 8 / 48);
+    b = data[(width * 0 + 1) * 3 + 2] + (error_b * 8 / 48);
+    data[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 0 + 2) * 3 + 0] + (error_r * 4 / 48);
+    g = data[(width * 0 + 2) * 3 + 1] + (error_g * 4 / 48);
+    b = data[(width * 0 + 2) * 3 + 2] + (error_b * 4 / 48);
+    data[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 - 2) * 3 + 0] + (error_r * 2 / 48);
+    g = data[(width * 1 - 2) * 3 + 1] + (error_g * 2 / 48);
+    b = data[(width * 1 - 2) * 3 + 2] + (error_b * 2 / 48);
+    data[(width * 1 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 - 1) * 3 + 0] + (error_r * 4 / 48);
+    g = data[(width * 1 - 1) * 3 + 1] + (error_g * 4 / 48);
+    b = data[(width * 1 - 1) * 3 + 2] + (error_b * 4 / 48);
+    data[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 + 0) * 3 + 0] + (error_r * 8 / 48);
+    g = data[(width * 1 + 0) * 3 + 1] + (error_g * 8 / 48);
+    b = data[(width * 1 + 0) * 3 + 2] + (error_b * 8 / 48);
+    data[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 + 1) * 3 + 0] + (error_r * 4 / 48);
+    g = data[(width * 1 + 1) * 3 + 1] + (error_g * 4 / 48);
+    b = data[(width * 1 + 1) * 3 + 2] + (error_b * 4 / 48);
+    data[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 + 2) * 3 + 0] + (error_r * 2 / 48);
+    g = data[(width * 1 + 2) * 3 + 1] + (error_g * 2 / 48);
+    b = data[(width * 1 + 2) * 3 + 2] + (error_b * 2 / 48);
+    data[(width * 1 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 2 - 2) * 3 + 0] + (error_r * 1 / 48);
+    g = data[(width * 2 - 2) * 3 + 1] + (error_g * 1 / 48);
+    b = data[(width * 2 - 2) * 3 + 2] + (error_b * 1 / 48);
+    data[(width * 2 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 2 - 1) * 3 + 0] + (error_r * 2 / 48);
+    g = data[(width * 2 - 1) * 3 + 1] + (error_g * 2 / 48);
+    b = data[(width * 2 - 1) * 3 + 2] + (error_b * 2 / 48);
+    data[(width * 2 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 2 + 0) * 3 + 0] + (error_r * 4 / 48);
+    g = data[(width * 2 + 0) * 3 + 1] + (error_g * 4 / 48);
+    b = data[(width * 2 + 0) * 3 + 2] + (error_b * 4 / 48);
+    data[(width * 2 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 2 + 1) * 3 + 0] + (error_r * 2 / 48);
+    g = data[(width * 2 + 1) * 3 + 1] + (error_g * 2 / 48);
+    b = data[(width * 2 + 1) * 3 + 2] + (error_b * 2 / 48);
+    data[(width * 2 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 2 + 2) * 3 + 0] + (error_r * 1 / 48);
+    g = data[(width * 2 + 2) * 3 + 1] + (error_g * 1 / 48);
+    b = data[(width * 2 + 2) * 3 + 2] + (error_b * 1 / 48);
+    data[(width * 2 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+}
+
+
+static void
+dither_func_burkes(unsigned char *data, int width)
+{
+    int r, g, b;
+    int error_r = data[0] & 0x7;
+    int error_g = data[1] & 0x7;
+    int error_b = data[2] & 0x7;
+
+    error_r += 2;
+    error_g += 2;
+    error_b += 2;
+
+    /* Burkes' Method
+     *                  curr    4/16    2/16
+     *  1/16    2/16    4/16    2/16    1/16
+     */
+    r = data[(width * 0 + 1) * 3 + 0] + (error_r * 4 / 16);
+    g = data[(width * 0 + 1) * 3 + 1] + (error_g * 4 / 16);
+    b = data[(width * 0 + 1) * 3 + 2] + (error_b * 4 / 16);
+    data[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 0 + 2) * 3 + 0] + (error_r * 2 / 16);
+    g = data[(width * 0 + 2) * 3 + 1] + (error_g * 2 / 16);
+    b = data[(width * 0 + 2) * 3 + 2] + (error_b * 2 / 16);
+    data[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 - 2) * 3 + 0] + (error_r * 1 / 16);
+    g = data[(width * 1 - 2) * 3 + 1] + (error_g * 1 / 16);
+    b = data[(width * 1 - 2) * 3 + 2] + (error_b * 1 / 16);
+    data[(width * 1 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 - 1) * 3 + 0] + (error_r * 2 / 16);
+    g = data[(width * 1 - 1) * 3 + 1] + (error_g * 2 / 16);
+    b = data[(width * 1 - 1) * 3 + 2] + (error_b * 2 / 16);
+    data[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 + 0) * 3 + 0] + (error_r * 4 / 16);
+    g = data[(width * 1 + 0) * 3 + 1] + (error_g * 4 / 16);
+    b = data[(width * 1 + 0) * 3 + 2] + (error_b * 4 / 16);
+    data[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 + 1) * 3 + 0] + (error_r * 2 / 16);
+    g = data[(width * 1 + 1) * 3 + 1] + (error_g * 2 / 16);
+    b = data[(width * 1 + 1) * 3 + 2] + (error_b * 2 / 16);
+    data[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 + 2) * 3 + 0] + (error_r * 1 / 16);
+    g = data[(width * 1 + 2) * 3 + 1] + (error_g * 1 / 16);
+    b = data[(width * 1 + 2) * 3 + 2] + (error_b * 1 / 16);
+    data[(width * 1 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+}
+
+
 static int
 sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
                     sixel_dither_t *dither, sixel_output_t *context)
@@ -561,291 +901,37 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
                     int pix = ((pixels[0] & 0xf8) << 7) |
                               ((pixels[1] & 0xf8) << 2) |
                               ((pixels[2] >> 3) & 0x1f);
-                    int r, g, b;
-                    int error_r = pixels[0] & 0x7;
-                    int error_g = pixels[1] & 0x7;
-                    int error_b = pixels[2] & 0x7;
 
                     /* apply floyd steinberg dithering */
                     switch (dither->method_for_diffuse) {
                     case DIFFUSE_FS:
-                        if (x < width - 1) {
-                            r = (pixels[3 + 0] + (error_r * 5 >> 4));
-                            g = (pixels[3 + 1] + (error_g * 5 >> 4));
-                            b = (pixels[3 + 2] + (error_b * 5 >> 4));
-                            pixels[3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[3 + 2] = b > 0xff ? 0xff: b;
-                        }
-                        if (y < height - 1) {
-                            if (x > 0) {
-                                r = pixels[width * 3 - 3 + 0] + (error_r * 3 >> 4);
-                                g = pixels[width * 3 - 3 + 1] + (error_g * 3 >> 4);
-                                b = pixels[width * 3 - 3 + 2] + (error_b * 3 >> 4);
-                                pixels[width * 3 - 3 + 0] = r > 0xff ? 0xff: r;
-                                pixels[width * 3 - 3 + 1] = g > 0xff ? 0xff: g;
-                                pixels[width * 3 - 3 + 2] = b > 0xff ? 0xff: b;
-                            }
-                            r = pixels[width * 3 + 0] + (error_r * 5 >> 4);
-                            g = pixels[width * 3 + 1] + (error_g * 5 >> 4);
-                            b = pixels[width * 3 + 2] + (error_b * 5 >> 4);
-                            pixels[width * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[width * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[width * 3 + 2] = b > 0xff ? 0xff: b;
+                        if (x < width - 1 && y < height - 1) {
+                            dither_func_fs(pixels, width);
                         }
                         break;
                     case DIFFUSE_ATKINSON:
-                        error_r += 4;
-                        error_g += 4;
-                        error_b += 4;
                         if (x < width - 2 && y < height - 2) {
-                            r = pixels[(width * 0 + 1) * 3 + 0] + (error_r >> 3);
-                            g = pixels[(width * 0 + 1) * 3 + 1] + (error_g >> 3);
-                            b = pixels[(width * 0 + 1) * 3 + 2] + (error_b >> 3);
-                            pixels[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 0 + 2) * 3 + 0] + (error_r >> 3);
-                            g = pixels[(width * 0 + 2) * 3 + 1] + (error_g >> 3);
-                            b = pixels[(width * 0 + 2) * 3 + 2] + (error_b >> 3);
-                            pixels[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 1 - 1) * 3 + 0] + (error_r >> 3);
-                            g = pixels[(width * 1 - 1) * 3 + 1] + (error_g >> 3);
-                            b = pixels[(width * 1 - 1) * 3 + 2] + (error_b >> 3);
-                            pixels[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 1 + 0) * 3 + 0] + (error_r >> 3);
-                            g = pixels[(width * 1 + 0) * 3 + 1] + (error_g >> 3);
-                            b = pixels[(width * 1 + 0) * 3 + 2] + (error_b >> 3);
-                            pixels[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = (pixels[(width * 1 + 1) * 3 + 0] + (error_r >> 3));
-                            g = (pixels[(width * 1 + 1) * 3 + 1] + (error_g >> 3));
-                            b = (pixels[(width * 1 + 1) * 3 + 2] + (error_b >> 3));
-                            pixels[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = (pixels[(width * 2 + 0) * 3 + 0] + (error_r >> 3));
-                            g = (pixels[(width * 2 + 0) * 3 + 1] + (error_g >> 3));
-                            b = (pixels[(width * 2 + 0) * 3 + 2] + (error_b >> 3));
-                            pixels[(width * 2 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 2 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 2 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+                            dither_func_atkinson(pixels, width);
                         }
                         break;
                    case DIFFUSE_JAJUNI:
-                        error_r += 4;
-                        error_g += 4;
-                        error_b += 4;
-                        if (x > 2 && x < width - 2 && y < height - 2) {
-                            r = pixels[(width * 0 + 1) * 3 + 0] + (error_r * 7 / 48);
-                            g = pixels[(width * 0 + 1) * 3 + 1] + (error_g * 7 / 48);
-                            b = pixels[(width * 0 + 1) * 3 + 2] + (error_b * 7 / 48);
-                            pixels[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 0 + 2) * 3 + 0] + (error_r * 5 / 48);
-                            g = pixels[(width * 0 + 2) * 3 + 1] + (error_g * 5 / 48);
-                            b = pixels[(width * 0 + 2) * 3 + 2] + (error_b * 5 / 48);
-                            pixels[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 1 - 2) * 3 + 0] + (error_r * 3 / 48);
-                            g = pixels[(width * 1 - 2) * 3 + 1] + (error_g * 3 / 48);
-                            b = pixels[(width * 1 - 2) * 3 + 2] + (error_b * 3 / 48);
-                            pixels[(width * 1 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 1 - 1) * 3 + 0] + (error_r * 5 / 48);
-                            g = pixels[(width * 1 - 1) * 3 + 1] + (error_g * 5 / 48);
-                            b = pixels[(width * 1 - 1) * 3 + 2] + (error_b * 5 / 48);
-                            pixels[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 1 + 0) * 3 + 0] + (error_r * 7 / 48);
-                            g = pixels[(width * 1 + 0) * 3 + 1] + (error_g * 7 / 48);
-                            b = pixels[(width * 1 + 0) * 3 + 2] + (error_b * 7 / 48);
-                            pixels[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 1 + 1) * 3 + 0] + (error_r * 5 / 48);
-                            g = pixels[(width * 1 + 1) * 3 + 1] + (error_g * 5 / 48);
-                            b = pixels[(width * 1 + 1) * 3 + 2] + (error_b * 5 / 48);
-                            pixels[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 1 + 2) * 3 + 0] + (error_r * 3 / 48);
-                            g = pixels[(width * 1 + 2) * 3 + 1] + (error_g * 3 / 48);
-                            b = pixels[(width * 1 + 2) * 3 + 2] + (error_b * 3 / 48);
-                            pixels[(width * 1 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 2 - 2) * 3 + 0] + (error_r * 1 / 48);
-                            g = pixels[(width * 2 - 2) * 3 + 1] + (error_g * 1 / 48);
-                            b = pixels[(width * 2 - 2) * 3 + 2] + (error_b * 1 / 48);
-                            pixels[(width * 2 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 2 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 2 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 2 - 1) * 3 + 0] + (error_r * 3 / 48);
-                            g = pixels[(width * 2 - 1) * 3 + 1] + (error_g * 3 / 48);
-                            b = pixels[(width * 2 - 1) * 3 + 2] + (error_b * 3 / 48);
-                            pixels[(width * 2 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 2 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 2 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 2 + 0) * 3 + 0] + (error_r * 5 / 48);
-                            g = pixels[(width * 2 + 0) * 3 + 1] + (error_g * 5 / 48);
-                            b = pixels[(width * 2 + 0) * 3 + 2] + (error_b * 5 / 48);
-                            pixels[(width * 2 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 2 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 2 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 2 + 1) * 3 + 0] + (error_r * 3 / 48);
-                            g = pixels[(width * 2 + 1) * 3 + 1] + (error_g * 3 / 48);
-                            b = pixels[(width * 2 + 1) * 3 + 2] + (error_b * 3 / 48);
-                            pixels[(width * 2 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 2 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 2 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 2 + 2) * 3 + 0] + (error_r * 1 / 48);
-                            g = pixels[(width * 2 + 2) * 3 + 1] + (error_g * 1 / 48);
-                            b = pixels[(width * 2 + 2) * 3 + 2] + (error_b * 1 / 48);
-                            pixels[(width * 2 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 2 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 2 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+                        if (x < width - 2 && y < height - 2) {
+                            dither_func_jajuni(pixels, width);
                         }
                         break;
                    case DIFFUSE_STUCKI:
-                        error_r += 4;
-                        error_g += 4;
-                        error_b += 4;
-                        if (x > 2 && x < width - 2 && y < height - 2) {
-                            r = pixels[(width * 0 + 1) * 3 + 0] + (error_r * 8 / 48);
-                            g = pixels[(width * 0 + 1) * 3 + 1] + (error_g * 8 / 48);
-                            b = pixels[(width * 0 + 1) * 3 + 2] + (error_b * 8 / 48);
-                            pixels[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 0 + 2) * 3 + 0] + (error_r * 4 / 48);
-                            g = pixels[(width * 0 + 2) * 3 + 1] + (error_g * 4 / 48);
-                            b = pixels[(width * 0 + 2) * 3 + 2] + (error_b * 4 / 48);
-                            pixels[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 1 - 2) * 3 + 0] + (error_r * 2 / 48);
-                            g = pixels[(width * 1 - 2) * 3 + 1] + (error_g * 2 / 48);
-                            b = pixels[(width * 1 - 2) * 3 + 2] + (error_b * 2 / 48);
-                            pixels[(width * 1 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 1 - 1) * 3 + 0] + (error_r * 4 / 48);
-                            g = pixels[(width * 1 - 1) * 3 + 1] + (error_g * 4 / 48);
-                            b = pixels[(width * 1 - 1) * 3 + 2] + (error_b * 4 / 48);
-                            pixels[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 1 + 0) * 3 + 0] + (error_r * 8 / 48);
-                            g = pixels[(width * 1 + 0) * 3 + 1] + (error_g * 8 / 48);
-                            b = pixels[(width * 1 + 0) * 3 + 2] + (error_b * 8 / 48);
-                            pixels[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 1 + 1) * 3 + 0] + (error_r * 4 / 48);
-                            g = pixels[(width * 1 + 1) * 3 + 1] + (error_g * 4 / 48);
-                            b = pixels[(width * 1 + 1) * 3 + 2] + (error_b * 4 / 48);
-                            pixels[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 1 + 2) * 3 + 0] + (error_r * 2 / 48);
-                            g = pixels[(width * 1 + 2) * 3 + 1] + (error_g * 2 / 48);
-                            b = pixels[(width * 1 + 2) * 3 + 2] + (error_b * 2 / 48);
-                            pixels[(width * 1 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 2 - 2) * 3 + 0] + (error_r * 1 / 48);
-                            g = pixels[(width * 2 - 2) * 3 + 1] + (error_g * 1 / 48);
-                            b = pixels[(width * 2 - 2) * 3 + 2] + (error_b * 1 / 48);
-                            pixels[(width * 2 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 2 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 2 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 2 - 1) * 3 + 0] + (error_r * 2 / 48);
-                            g = pixels[(width * 2 - 1) * 3 + 1] + (error_g * 2 / 48);
-                            b = pixels[(width * 2 - 1) * 3 + 2] + (error_b * 2 / 48);
-                            pixels[(width * 2 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 2 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 2 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 2 + 0) * 3 + 0] + (error_r * 4 / 48);
-                            g = pixels[(width * 2 + 0) * 3 + 1] + (error_g * 4 / 48);
-                            b = pixels[(width * 2 + 0) * 3 + 2] + (error_b * 4 / 48);
-                            pixels[(width * 2 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 2 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 2 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 2 + 1) * 3 + 0] + (error_r * 2 / 48);
-                            g = pixels[(width * 2 + 1) * 3 + 1] + (error_g * 2 / 48);
-                            b = pixels[(width * 2 + 1) * 3 + 2] + (error_b * 2 / 48);
-                            pixels[(width * 2 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 2 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 2 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 2 + 2) * 3 + 0] + (error_r * 1 / 48);
-                            g = pixels[(width * 2 + 2) * 3 + 1] + (error_g * 1 / 48);
-                            b = pixels[(width * 2 + 2) * 3 + 2] + (error_b * 1 / 48);
-                            pixels[(width * 2 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 2 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 2 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+                        if (x < width - 2 && y < height - 2) {
+                            dither_func_stucki(pixels, width);
                         }
                         break;
                    case DIFFUSE_BURKES:
-                        error_r += 2;
-                        error_g += 2;
-                        error_b += 2;
-                        if (x > 2 && x < width - 2 && y < height - 2) {
-                            r = pixels[(width * 0 + 1) * 3 + 0] + (error_r * 4 / 16);
-                            g = pixels[(width * 0 + 1) * 3 + 1] + (error_g * 4 / 16);
-                            b = pixels[(width * 0 + 1) * 3 + 2] + (error_b * 4 / 16);
-                            pixels[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 0 + 2) * 3 + 0] + (error_r * 2 / 16);
-                            g = pixels[(width * 0 + 2) * 3 + 1] + (error_g * 2 / 16);
-                            b = pixels[(width * 0 + 2) * 3 + 2] + (error_b * 2 / 16);
-                            pixels[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 1 - 2) * 3 + 0] + (error_r * 1 / 16);
-                            g = pixels[(width * 1 - 2) * 3 + 1] + (error_g * 1 / 16);
-                            b = pixels[(width * 1 - 2) * 3 + 2] + (error_b * 1 / 16);
-                            pixels[(width * 1 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 1 - 1) * 3 + 0] + (error_r * 2 / 16);
-                            g = pixels[(width * 1 - 1) * 3 + 1] + (error_g * 2 / 16);
-                            b = pixels[(width * 1 - 1) * 3 + 2] + (error_b * 2 / 16);
-                            pixels[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 1 + 0) * 3 + 0] + (error_r * 4 / 16);
-                            g = pixels[(width * 1 + 0) * 3 + 1] + (error_g * 4 / 16);
-                            b = pixels[(width * 1 + 0) * 3 + 2] + (error_b * 4 / 16);
-                            pixels[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 1 + 1) * 3 + 0] + (error_r * 2 / 16);
-                            g = pixels[(width * 1 + 1) * 3 + 1] + (error_g * 2 / 16);
-                            b = pixels[(width * 1 + 1) * 3 + 2] + (error_b * 2 / 16);
-                            pixels[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
-                            r = pixels[(width * 1 + 2) * 3 + 0] + (error_r * 1 / 16);
-                            g = pixels[(width * 1 + 2) * 3 + 1] + (error_g * 1 / 16);
-                            b = pixels[(width * 1 + 2) * 3 + 2] + (error_b * 1 / 16);
-                            pixels[(width * 1 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-                            pixels[(width * 1 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-                            pixels[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+                        if (x < width - 2 && y < height - 1) {
+                            dither_func_burkes(pixels, width);
                         }
                         break;
                     case DIFFUSE_NONE:
                     default:
+                        dither_func_none(pixels, width);
                         break;
                     }
 
