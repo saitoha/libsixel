@@ -152,6 +152,7 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
         sixel_dither_unref(dither);
         return NULL;
     }
+
     return dither;
 }
 
@@ -606,6 +607,11 @@ reload:
         sixel_output_set_8bit_availability(context, psettings->f8bit);
         sixel_output_set_palette_type(context, psettings->palette_type);
         sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
+
+        if (frame_count == 1 && !psettings->mapfile && !psettings->monochrome && !psettings->highcolor) {
+            sixel_dither_set_optimize_palette(dither, 1);
+        }
+
         frame = malloc(sx * sy * 3);
         if (nret != 0) {
             goto end;

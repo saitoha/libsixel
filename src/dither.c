@@ -149,6 +149,7 @@ sixel_dither_create(int ncolors)
     dither->origcolors = (-1);
     dither->keycolor = (-1);
     dither->optimized = 0;
+    dither->optimize_palette = 0;
     dither->complexion = 1;
     dither->bodyonly = 0;
     dither->method_for_largest = LARGE_NORM;
@@ -226,6 +227,7 @@ sixel_dither_get(int builtin_dither)
         dither->palette = palette;
         dither->keycolor = keycolor;
         dither->optimized = 1;
+        dither->optimize_palette = 0;
     }
 
     return dither;
@@ -447,6 +449,16 @@ sixel_dither_set_body_only(sixel_dither_t /* in */ *dither,     /* dither contex
     dither->bodyonly = bodyonly;
 }
 
+void
+sixel_dither_set_optimize_palette(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    int            /* in */ do_opt)    /* 0: optimize palette size
+                                          1: don't optimize palette size */
+{
+    dither->optimize_palette = do_opt;
+}
+
+
 unsigned char *
 sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t *dither)
 {
@@ -454,6 +466,7 @@ sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t
     int bufsize;
     int cachesize;
     unsigned char *dest;
+    int ncolors;
 
     bufsize = width * height * sizeof(unsigned char);
     dest = malloc(bufsize);
@@ -482,12 +495,16 @@ sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t
                            dither->ncolors,
                            dither->method_for_diffuse,
                            dither->optimized,
+                           dither->optimize_palette,
                            dither->complexion,
                            dither->cachetable,
+                           &ncolors,
                            dest);
     if (ret != 0) {
         return NULL;
     }
+
+    dither->ncolors = ncolors;
 
     return dest;
 }

@@ -35,11 +35,13 @@ LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
 
 int
 LSQ_ApplyPalette(unsigned char *data, int width, int height, int depth,
-                 unsigned char *palette, int ncolor,
+                 unsigned char *palette, int reqcolor,
                  int const methodForDiffuse,
                  int foptimize,
+                 int foptimize_palette,
                  int complexion,
                  unsigned short *cachetable,
+                 int *ncolor,
                  unsigned char *result);
 
 

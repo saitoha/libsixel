@@ -127,9 +127,10 @@ extern "C" {
 
 /* create output context object */
 sixel_output_t *
-sixel_output_create(sixel_write_function /* in */ fn_write, /* callback function for output sixel */
-                    void /* in */ *priv);                   /* private data given as
-                                                               3rd argument of fn_write */
+sixel_output_create(
+    sixel_write_function /* in */ fn_write, /* callback for output sixel */
+    void /* in */ *priv);                   /* private data given as
+                                               3rd argument of fn_write */
 /* destroy output context object */
 void
 sixel_output_destroy(sixel_output_t /* in */ *output); /* output context */
@@ -143,19 +144,32 @@ void
 sixel_output_unref(sixel_output_t /* in */ *output);   /* output context */
 
 int
-sixel_output_get_8bit_availability(sixel_output_t *output);
+sixel_output_get_8bit_availability(
+    sixel_output_t /* in */ *output);   /* output context */
 
 void
-sixel_output_set_8bit_availability(sixel_output_t *output, int availability);
+sixel_output_set_8bit_availability(
+    sixel_output_t /* in */ *output,       /* output context */
+    int            /* in */ availability); /* 0: do not use 8bit characters
+                                              1: use 8bit characters */
 
 void
-sixel_output_set_penetrate_multiplexer(sixel_output_t *output, int penetrate);
+sixel_output_set_penetrate_multiplexer(
+    sixel_output_t /* in */ *output,    /* output context */
+    int            /* in */ penetrate); /* 0: penetrate GNU Screen
+                                           1: do not penetrate GNU Screen */
 
 void
-sixel_output_set_skip_dcs_envelope(sixel_output_t *output, int skip);
+sixel_output_set_skip_dcs_envelope(
+    sixel_output_t /* in */ *output,   /* output context */
+    int            /* in */ skip);     /* 0: output DCS envelope
+                                          1: do not output DCS envelope */
 
 void
-sixel_output_set_palette_type(sixel_output_t *output, int palettetype);
+sixel_output_set_palette_type(
+    sixel_output_t /* in */ *output,      /* output context */
+    int            /* in */ palettetype); /* PALETTETYPE_RGB: RGB palette
+                                             PALETTETYPE_HLS: HLS palette */
 
 #ifdef __cplusplus
 }
@@ -190,40 +204,52 @@ sixel_dither_unref(sixel_dither_t *dither); /* dither context object */
 
 /* initialize internal palette from specified pixel buffer */
 int
-sixel_dither_initialize(sixel_dither_t *dither,          /* dither context object */
-                        unsigned char /* in */ *data,    /* sample image */
-                        int /* in */ width,              /* image width */
-                        int /* in */ height,             /* image height */
-                        int /* in */ bitfield,           /* one of enum colorBitfield */
-                        int /* in */ method_for_largest, /* method for finding the largest dimension */
-                        int /* in */ method_for_rep,     /* method for choosing a color from the box */
-                        int /* in */ quality_mode);      /* quality of histogram processing */
+sixel_dither_initialize(
+    sixel_dither_t *dither,          /* dither context object */
+    unsigned char /* in */ *data,    /* sample image */
+    int /* in */ width,              /* image width */
+    int /* in */ height,             /* image height */
+    int /* in */ bitfield,           /* one of enum colorBitfield */
+    int /* in */ method_for_largest, /* method for finding the largest dimension */
+    int /* in */ method_for_rep,     /* method for choosing a color from the box */
+    int /* in */ quality_mode);      /* quality of histogram processing */
 
 /* set diffusion type, choose from enum methodForDiffuse */
 void
-sixel_dither_set_diffusion_type(sixel_dither_t /* in */ *dither,  /* dither context object */
-                                int /* in */ method_for_diffuse); /* one of enum methodForDiffuse */
+sixel_dither_set_diffusion_type(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    int /* in */ method_for_diffuse);  /* one of enum methodForDiffuse */
 
 /* get number of palette colors */
 int
-sixel_dither_get_num_of_palette_colors(sixel_dither_t /* in */ *dither);   /* dither context object */
+sixel_dither_get_num_of_palette_colors(
+    sixel_dither_t /* in */ *dither);  /* dither context object */
 
 /* get number of histogram colors */
 int
-sixel_dither_get_num_of_histgram_colors(sixel_dither_t /* in */ *dither);  /* dither context object */
+sixel_dither_get_num_of_histgram_colors(
+    sixel_dither_t /* in */ *dither);  /* dither context object */
 
 /* get palette */
 unsigned char *
-sixel_dither_get_palette(sixel_dither_t /* in */ *dither);  /* dither context object */
+sixel_dither_get_palette(
+    sixel_dither_t /* in */ *dither);  /* dither context object */
 
 void
-sixel_dither_set_complexion_score(sixel_dither_t /* in */ *dither,  /* dither context object */
-                                  int            /* in */ score);   /* complexion score (>= 1) */
+sixel_dither_set_complexion_score(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    int            /* in */ score);    /* complexion score (>= 1) */
 
 void
-sixel_dither_set_body_only(sixel_dither_t /* in */ *dither,     /* dither context object */
-                           int            /* in */ bodyonly);   /* 0: output palette section
-                                                                   1: do not output palette section  */
+sixel_dither_set_body_only(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    int            /* in */ bodyonly); /* 0: output palette section(default)
+                                          1: do not output palette section */
+void
+sixel_dither_set_optimize_palette(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    int            /* in */ do_opt);   /* 0: optimize palette size
+                                          1: don't optimize palette size */
 
 #ifdef __cplusplus
 }
@@ -239,23 +265,25 @@ extern "C" {
 
 /* convert pixels into sixel format and write it to output context */
 int
-sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
-             int            /* in */  width,      /* image width */
-             int            /* in */  height,     /* image height */
-             int            /* in */  bitfield,   /* one of enum colorBitfield */
-             sixel_dither_t /* in */ *dither,     /* dither context */
-             sixel_output_t /* in */ *context);   /* output context */
+sixel_encode(
+    unsigned char  /* in */ *pixels,     /* pixel bytes */
+    int            /* in */  width,      /* image width */
+    int            /* in */  height,     /* image height */
+    int            /* in */  bitfield,   /* one of enum colorBitfield */
+    sixel_dither_t /* in */ *dither,     /* dither context */
+    sixel_output_t /* in */ *context);   /* output context */
 
 /* convert sixel data into indexed pixel bytes and palette data */
 int
-sixel_decode(unsigned char              /* in */  *sixels,    /* sixel bytes */
-             int                        /* in */  size,       /* size of sixel bytes */
-             unsigned char              /* out */ **pixels,   /* decoded pixels */
-             int                        /* out */ *pwidth,    /* image width */
-             int                        /* out */ *pheight,   /* image height */
-             unsigned char              /* out */ **palette,  /* RGBA palette */
-             int                        /* out */ *ncolors,   /* palette size (<= 256) */
-             sixel_allocator_function   /* out */ allocator); /* malloc function */
+sixel_decode(
+    unsigned char            /* in */  *sixels,    /* sixel bytes */
+    int                      /* in */  size,       /* size of sixel bytes */
+    unsigned char            /* out */ **pixels,   /* decoded pixels */
+    int                      /* out */ *pwidth,    /* image width */
+    int                      /* out */ *pheight,   /* image height */
+    unsigned char            /* out */ **palette,  /* RGBA palette */
+    int                      /* out */ *ncolors,   /* palette size (<= 256) */
+    sixel_allocator_function /* out */ allocator); /* malloc function */
 
 #ifdef __cplusplus
 }
