@@ -261,7 +261,8 @@ load_jpeg(unsigned char *data, int datasize,
     *pdepth = cinfo.output_components;
 
     size = *pwidth * *pheight * *pdepth;
-    if ((result = (uint8_t *)calloc(1, size)) == NULL) {
+    result = (unsigned char *)malloc(size);
+    if (result == NULL) {
         jpeg_finish_decompress(&cinfo);
         jpeg_destroy_decompress(&cinfo);
         return NULL;
