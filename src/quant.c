@@ -794,6 +794,31 @@ diffuse_none(unsigned char *data, int width, int height,
 
 
 static void
+diffuse_fs(unsigned char *data, int width, int height,
+           int x, int y, int depth, int offset)
+{
+    int pos;
+
+    pos = y * width + x;
+
+    /* Floyd Steinberg Method
+     *          curr    7/16
+     *  3/16    5/48    1/16
+     */
+    if (x < width - 1 && y < height - 1) {
+        /* add offset to the right cell */
+        error_diffuse(data, pos + width * 0 + 1, depth, offset, 7, 16);
+        /* add offset to the left-bottom cell */
+        error_diffuse(data, pos + width * 1 - 1, depth, offset, 3, 16);
+        /* add offset to the bottom cell */
+        error_diffuse(data, pos + width * 1 + 0, depth, offset, 5, 16);
+        /* add offset to the right-bottom cell */
+        error_diffuse(data, pos + width * 1 + 1, depth, offset, 1, 16);
+    }
+}
+
+
+static void
 diffuse_atkinson(unsigned char *data, int width, int height,
                  int x, int y, int depth, int offset)
 {
@@ -801,7 +826,12 @@ diffuse_atkinson(unsigned char *data, int width, int height,
 
     pos = y * width + x;
 
-    if (x < width - 2 && y < height - 2) {
+    /* Atkinson's Method
+     *          curr    1/8    1/8
+     *   1/8     1/8    1/8
+     *           1/8
+     */
+    if (y < height - 2) {
         /* add offset to the right cell */
         error_diffuse(data, pos + width * 0 + 1, depth, offset, 1, 8);
         /* add offset to the 2th right cell */
@@ -819,31 +849,6 @@ diffuse_atkinson(unsigned char *data, int width, int height,
 
 
 static void
-diffuse_fs(unsigned char *data, int width, int height,
-           int x, int y, int depth, int offset)
-{
-    int pos;
-
-    pos = y * width + x;
-
-    /* Floyd Steinberg Method
-     *          curr    7/16
-     *  3/16    5/48    1/16
-     */
-    if (x > 1 && x < width - 1 && y < height - 1) {
-        /* add offset to the right cell */
-        error_diffuse(data, pos + width * 0 + 1, depth, offset, 7, 16);
-        /* add offset to the left-bottom cell */
-        error_diffuse(data, pos + width * 1 - 1, depth, offset, 3, 16);
-        /* add offset to the bottom cell */
-        error_diffuse(data, pos + width * 1 + 0, depth, offset, 5, 16);
-        /* add offset to the right-bottom cell */
-        error_diffuse(data, pos + width * 1 + 1, depth, offset, 1, 16);
-    }
-}
-
-
-static void
 diffuse_jajuni(unsigned char *data, int width, int height,
                int x, int y, int depth, int offset)
 {
@@ -856,7 +861,7 @@ diffuse_jajuni(unsigned char *data, int width, int height,
      *  3/48    5/48    7/48    5/48    3/48
      *  1/48    3/48    5/48    3/48    1/48
      */
-    if (x > 2 && x < width - 2 && y < height - 2) {
+    if (x < width - 2 && y < height - 2) {
         error_diffuse(data, pos + width * 0 + 1, depth, offset, 7, 48);
         error_diffuse(data, pos + width * 0 + 2, depth, offset, 5, 48);
         error_diffuse(data, pos + width * 1 - 2, depth, offset, 3, 48);
@@ -886,7 +891,7 @@ diffuse_stucki(unsigned char *data, int width, int height,
      *  2/48    4/48    8/48    4/48    2/48
      *  1/48    2/48    4/48    2/48    1/48
      */
-    if (x > 2 && x < width - 2 && y < height - 2) {
+    if (x < width - 2 && y < height - 2) {
         error_diffuse(data, pos + width * 0 + 1, depth, offset, 1, 6);
         error_diffuse(data, pos + width * 0 + 2, depth, offset, 1, 12);
         error_diffuse(data, pos + width * 1 - 2, depth, offset, 1, 24);
@@ -915,7 +920,7 @@ diffuse_burkes(unsigned char *data, int width, int height,
      *                  curr    4/16    2/16
      *  1/16    2/16    4/16    2/16    1/16
      */
-    if (x > 2 && x < width - 2 && y < height - 2) {
+    if (x < width - 2 && y < height - 1) {
         error_diffuse(data, pos + width * 0 + 1, depth, offset, 1, 4);
         error_diffuse(data, pos + width * 0 + 2, depth, offset, 1, 8);
         error_diffuse(data, pos + width * 1 - 2, depth, offset, 1, 16);
