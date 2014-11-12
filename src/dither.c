@@ -232,9 +232,9 @@ sixel_dither_get(int builtin_dither)
 }
 
 
-static inline void
+static void
 get_rgb(unsigned char *data, int const bitfield, int depth,
-                           unsigned char *r, unsigned char *g, unsigned char *b)
+        unsigned char *r, unsigned char *g, unsigned char *b)
 {
     unsigned int pixels = 0, low, high;
 	int count = 0;
@@ -251,26 +251,37 @@ get_rgb(unsigned char *data, int const bitfield, int depth,
 		pixels = (low << 8) | high;
 	}
 
-    if (bitfield == GRAYSCALE_G8 || bitfield == GRAYSCALE_AG88) {
-        *r = *g = *b = pixels & 0xFF;
-    } else if (bitfield == GRAYSCALE_GA88) {
-        *r = *g = *b = (pixels >> 8) & 0xFF;
-    } else if (bitfield == COLOR_RGB555) {
+    switch (bitfield) {
+    case COLOR_RGB555:
         *r = ((pixels >> 10) & 0x1F) << 3;
         *g = ((pixels >>  5) & 0x1F) << 3;
         *b = ((pixels >>  0) & 0x1F) << 3;
-    } else if (bitfield == COLOR_RGB565) {
+        break;
+    case COLOR_RGB565:
         *r = ((pixels >> 11) & 0x1F) << 3;
         *g = ((pixels >>  5) & 0x3F) << 2;
         *b = ((pixels >>  0) & 0x1F) << 3;
-    } else if (bitfield == COLOR_RGBA8888) {
+        break;
+    case COLOR_RGBA8888:
         *r = (pixels >> 24) & 0xFF;
         *g = (pixels >> 16) & 0xFF;
         *b = (pixels >>  8) & 0xFF;
-    } else if (bitfield == COLOR_ARGB8888) {
+        break;
+    case COLOR_ARGB8888:
         *r = (pixels >> 16) & 0xFF;
         *g = (pixels >>  8) & 0xFF;
         *b = (pixels >>  0) & 0xFF;
+        break;
+    case GRAYSCALE_GA88:
+        *r = *g = *b = (pixels >> 8) & 0xFF;
+        break;
+    case GRAYSCALE_G8:
+    case GRAYSCALE_AG88:
+        *r = *g = *b = pixels & 0xFF;
+        break;
+    default:
+        *r = *g = *b = 0;
+        break;
     }
 }
 
