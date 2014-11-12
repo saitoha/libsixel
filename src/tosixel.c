@@ -172,6 +172,11 @@ sixel_put_node(sixel_output_t *const context, int x,
     return x;
 }
 
+enum {
+    PALETTE_HIT = 1,
+    PALETTE_CHANGE = 2,
+};
+
 
 static int
 sixel_encode_header(int width, int height, sixel_output_t *context)
@@ -281,6 +286,9 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
                 int l;
                 int s;
                 int r, g, b, max, min;
+                if (palstate && palstate[n] != PALETTE_CHANGE) {
+                    continue;
+                }
                 r = palette[n * 3 + 0];
                 g = palette[n * 3 + 1];
                 b = palette[n * 3 + 2];
@@ -315,6 +323,9 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
             }
         } else {
             for (n = 0; n < ncolors; n++) {
+                if (palstate && palstate[n] != PALETTE_CHANGE) {
+                    continue;
+                }
                 /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
                 nwrite = sprintf((char *)context->buffer + context->pos, "#%d;2;%d;%d;%d",
                                  n,
@@ -400,9 +411,6 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
             /* DECGNL Graphics Next Line */
             context->buffer[context->pos] = '-';
             sixel_advance(context, 1);
-            if (nwrite <= 0) {
-                return (-1);
-            }
         }
 
         for (x = 0; (np = context->node_top) != NULL;) {
@@ -481,6 +489,7 @@ sixel_encode_footer(sixel_output_t *context)
     return 0;
 }
 
+
 static int
 sixel_encode_dither(unsigned char *pixels, int width, int height, int bitfield,
                     sixel_dither_t *dither, sixel_output_t *context)
@@ -489,21 +498,19 @@ sixel_encode_dither(unsigned char *pixels, int width, int height, int bitfield,
     unsigned char *normalized_pixels = NULL;
     int nret = (-1);
 
-    /* normalize bitfield */
-    normalized_pixels = malloc(width * height * 3);
-    if (normalized_pixels == NULL) {
-        goto end;
-    }
-
     if (bitfield != COLOR_RGB888) {
+        /* normalize bitfield */
+        normalized_pixels = malloc(width * height * 3);
+        if (normalized_pixels == NULL) {
+            goto end;
+        }
         sixel_normalize_bitfield(normalized_pixels, pixels, width, height, bitfield);
+        paletted_pixels = sixel_apply_palette(normalized_pixels, width, height, dither);
     } else {
-        memcpy(normalized_pixels, pixels, width * height * 3);
+        paletted_pixels = sixel_apply_palette(pixels, width, height, dither);
     }
 
     /* apply palette */
-    paletted_pixels = sixel_apply_palette(normalized_pixels, width, height, dither);
-
     if (paletted_pixels == NULL) {
         goto end;
     }
@@ -523,6 +530,456 @@ end:
 }
 
 
+static int
+sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int bitfield,
+                       sixel_dither_t *dither, sixel_output_t *context)
+{
+    unsigned char *paletted_pixels = NULL;
+    unsigned char *normalized_pixels = NULL;
+    /* Mark sixel line pixels which have been already drawn. */
+    unsigned char *marks;
+    unsigned char *rgbhit;
+    unsigned char *rgb2pal;
+    unsigned char palhitcount[256];
+    unsigned char palstate[256];
+    int output_count;
+    int nret = (-1);
+
+    if (bitfield != COLOR_RGB888) {
+        /* normalize bitfield */
+        normalized_pixels = malloc(width * height * 3);
+        if (normalized_pixels == NULL) {
+            goto error;
+        }
+        sixel_normalize_bitfield(normalized_pixels, pixels, width, height, bitfield);
+        pixels = normalized_pixels;
+    }
+
+    paletted_pixels = (unsigned char*)malloc(width * height + 32768 * 2 + width * 6);
+    if (paletted_pixels == NULL) {
+        goto error;
+    }
+    rgbhit = paletted_pixels + width * height;
+    memset(rgbhit, 0, 32768 * 2 + width * 6);
+    rgb2pal = rgbhit + 32768;
+    marks = rgb2pal + 32768;
+    output_count = 0;
+    while (1) {
+        int x, y;
+        unsigned char *dst;
+        unsigned char *mptr;
+        int dirty;
+        int mod_y;
+        int nextpal;
+        int threshold;
+
+        dst = paletted_pixels;
+        nextpal = 0;
+        threshold = 1;
+        dirty = 0;
+        mptr = marks;
+        memset(palstate, 0, sizeof(palstate));
+        y = mod_y = 0;
+
+        while (1) {
+            for (x = 0; x < width; x++, mptr++, dst++, pixels += 3) {
+                if (*mptr) {
+                    *dst = 255;
+                }
+                else {
+                    int pix = ((pixels[0] & 0xf8) << 7) |
+                              ((pixels[1] & 0xf8) << 2) |
+                              ((pixels[2] >> 3) & 0x1f);
+                    int r, g, b;
+                    int error_r = pixels[0] & 0x7;
+                    int error_g = pixels[1] & 0x7;
+                    int error_b = pixels[2] & 0x7;
+
+                    /* apply floyd steinberg dithering */
+                    switch (dither->method_for_diffuse) {
+                    case DIFFUSE_FS:
+                        if (x < width - 1) {
+                            r = (pixels[3 + 0] + (error_r * 5 >> 4));
+                            g = (pixels[3 + 1] + (error_g * 5 >> 4));
+                            b = (pixels[3 + 2] + (error_b * 5 >> 4));
+                            pixels[3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[3 + 2] = b > 0xff ? 0xff: b;
+                        }
+                        if (y < height - 1) {
+                            if (x > 0) {
+                                r = pixels[width * 3 - 3 + 0] + (error_r * 3 >> 4);
+                                g = pixels[width * 3 - 3 + 1] + (error_g * 3 >> 4);
+                                b = pixels[width * 3 - 3 + 2] + (error_b * 3 >> 4);
+                                pixels[width * 3 - 3 + 0] = r > 0xff ? 0xff: r;
+                                pixels[width * 3 - 3 + 1] = g > 0xff ? 0xff: g;
+                                pixels[width * 3 - 3 + 2] = b > 0xff ? 0xff: b;
+                            }
+                            r = pixels[width * 3 + 0] + (error_r * 5 >> 4);
+                            g = pixels[width * 3 + 1] + (error_g * 5 >> 4);
+                            b = pixels[width * 3 + 2] + (error_b * 5 >> 4);
+                            pixels[width * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[width * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[width * 3 + 2] = b > 0xff ? 0xff: b;
+                        }
+                        break;
+                    case DIFFUSE_ATKINSON:
+                        error_r += 4;
+                        error_g += 4;
+                        error_b += 4;
+                        if (x < width - 2 && y < height - 2) {
+                            r = pixels[(width * 0 + 1) * 3 + 0] + (error_r >> 3);
+                            g = pixels[(width * 0 + 1) * 3 + 1] + (error_g >> 3);
+                            b = pixels[(width * 0 + 1) * 3 + 2] + (error_b >> 3);
+                            pixels[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 0 + 2) * 3 + 0] + (error_r >> 3);
+                            g = pixels[(width * 0 + 2) * 3 + 1] + (error_g >> 3);
+                            b = pixels[(width * 0 + 2) * 3 + 2] + (error_b >> 3);
+                            pixels[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 1 - 1) * 3 + 0] + (error_r >> 3);
+                            g = pixels[(width * 1 - 1) * 3 + 1] + (error_g >> 3);
+                            b = pixels[(width * 1 - 1) * 3 + 2] + (error_b >> 3);
+                            pixels[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 1 + 0) * 3 + 0] + (error_r >> 3);
+                            g = pixels[(width * 1 + 0) * 3 + 1] + (error_g >> 3);
+                            b = pixels[(width * 1 + 0) * 3 + 2] + (error_b >> 3);
+                            pixels[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = (pixels[(width * 1 + 1) * 3 + 0] + (error_r >> 3));
+                            g = (pixels[(width * 1 + 1) * 3 + 1] + (error_g >> 3));
+                            b = (pixels[(width * 1 + 1) * 3 + 2] + (error_b >> 3));
+                            pixels[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = (pixels[(width * 2 + 0) * 3 + 0] + (error_r >> 3));
+                            g = (pixels[(width * 2 + 0) * 3 + 1] + (error_g >> 3));
+                            b = (pixels[(width * 2 + 0) * 3 + 2] + (error_b >> 3));
+                            pixels[(width * 2 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 2 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 2 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+                        }
+                        break;
+                   case DIFFUSE_JAJUNI:
+                        error_r += 4;
+                        error_g += 4;
+                        error_b += 4;
+                        if (x > 2 && x < width - 2 && y < height - 2) {
+                            r = pixels[(width * 0 + 1) * 3 + 0] + (error_r * 7 / 48);
+                            g = pixels[(width * 0 + 1) * 3 + 1] + (error_g * 7 / 48);
+                            b = pixels[(width * 0 + 1) * 3 + 2] + (error_b * 7 / 48);
+                            pixels[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 0 + 2) * 3 + 0] + (error_r * 5 / 48);
+                            g = pixels[(width * 0 + 2) * 3 + 1] + (error_g * 5 / 48);
+                            b = pixels[(width * 0 + 2) * 3 + 2] + (error_b * 5 / 48);
+                            pixels[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 1 - 2) * 3 + 0] + (error_r * 3 / 48);
+                            g = pixels[(width * 1 - 2) * 3 + 1] + (error_g * 3 / 48);
+                            b = pixels[(width * 1 - 2) * 3 + 2] + (error_b * 3 / 48);
+                            pixels[(width * 1 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 1 - 1) * 3 + 0] + (error_r * 5 / 48);
+                            g = pixels[(width * 1 - 1) * 3 + 1] + (error_g * 5 / 48);
+                            b = pixels[(width * 1 - 1) * 3 + 2] + (error_b * 5 / 48);
+                            pixels[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 1 + 0) * 3 + 0] + (error_r * 7 / 48);
+                            g = pixels[(width * 1 + 0) * 3 + 1] + (error_g * 7 / 48);
+                            b = pixels[(width * 1 + 0) * 3 + 2] + (error_b * 7 / 48);
+                            pixels[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 1 + 1) * 3 + 0] + (error_r * 5 / 48);
+                            g = pixels[(width * 1 + 1) * 3 + 1] + (error_g * 5 / 48);
+                            b = pixels[(width * 1 + 1) * 3 + 2] + (error_b * 5 / 48);
+                            pixels[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 1 + 2) * 3 + 0] + (error_r * 3 / 48);
+                            g = pixels[(width * 1 + 2) * 3 + 1] + (error_g * 3 / 48);
+                            b = pixels[(width * 1 + 2) * 3 + 2] + (error_b * 3 / 48);
+                            pixels[(width * 1 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 2 - 2) * 3 + 0] + (error_r * 1 / 48);
+                            g = pixels[(width * 2 - 2) * 3 + 1] + (error_g * 1 / 48);
+                            b = pixels[(width * 2 - 2) * 3 + 2] + (error_b * 1 / 48);
+                            pixels[(width * 2 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 2 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 2 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 2 - 1) * 3 + 0] + (error_r * 3 / 48);
+                            g = pixels[(width * 2 - 1) * 3 + 1] + (error_g * 3 / 48);
+                            b = pixels[(width * 2 - 1) * 3 + 2] + (error_b * 3 / 48);
+                            pixels[(width * 2 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 2 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 2 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 2 + 0) * 3 + 0] + (error_r * 5 / 48);
+                            g = pixels[(width * 2 + 0) * 3 + 1] + (error_g * 5 / 48);
+                            b = pixels[(width * 2 + 0) * 3 + 2] + (error_b * 5 / 48);
+                            pixels[(width * 2 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 2 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 2 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 2 + 1) * 3 + 0] + (error_r * 3 / 48);
+                            g = pixels[(width * 2 + 1) * 3 + 1] + (error_g * 3 / 48);
+                            b = pixels[(width * 2 + 1) * 3 + 2] + (error_b * 3 / 48);
+                            pixels[(width * 2 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 2 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 2 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 2 + 2) * 3 + 0] + (error_r * 1 / 48);
+                            g = pixels[(width * 2 + 2) * 3 + 1] + (error_g * 1 / 48);
+                            b = pixels[(width * 2 + 2) * 3 + 2] + (error_b * 1 / 48);
+                            pixels[(width * 2 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 2 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 2 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+                        }
+                        break;
+                   case DIFFUSE_STUCKI:
+                        error_r += 4;
+                        error_g += 4;
+                        error_b += 4;
+                        if (x > 2 && x < width - 2 && y < height - 2) {
+                            r = pixels[(width * 0 + 1) * 3 + 0] + (error_r * 8 / 48);
+                            g = pixels[(width * 0 + 1) * 3 + 1] + (error_g * 8 / 48);
+                            b = pixels[(width * 0 + 1) * 3 + 2] + (error_b * 8 / 48);
+                            pixels[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 0 + 2) * 3 + 0] + (error_r * 4 / 48);
+                            g = pixels[(width * 0 + 2) * 3 + 1] + (error_g * 4 / 48);
+                            b = pixels[(width * 0 + 2) * 3 + 2] + (error_b * 4 / 48);
+                            pixels[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 1 - 2) * 3 + 0] + (error_r * 2 / 48);
+                            g = pixels[(width * 1 - 2) * 3 + 1] + (error_g * 2 / 48);
+                            b = pixels[(width * 1 - 2) * 3 + 2] + (error_b * 2 / 48);
+                            pixels[(width * 1 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 1 - 1) * 3 + 0] + (error_r * 4 / 48);
+                            g = pixels[(width * 1 - 1) * 3 + 1] + (error_g * 4 / 48);
+                            b = pixels[(width * 1 - 1) * 3 + 2] + (error_b * 4 / 48);
+                            pixels[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 1 + 0) * 3 + 0] + (error_r * 8 / 48);
+                            g = pixels[(width * 1 + 0) * 3 + 1] + (error_g * 8 / 48);
+                            b = pixels[(width * 1 + 0) * 3 + 2] + (error_b * 8 / 48);
+                            pixels[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 1 + 1) * 3 + 0] + (error_r * 4 / 48);
+                            g = pixels[(width * 1 + 1) * 3 + 1] + (error_g * 4 / 48);
+                            b = pixels[(width * 1 + 1) * 3 + 2] + (error_b * 4 / 48);
+                            pixels[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 1 + 2) * 3 + 0] + (error_r * 2 / 48);
+                            g = pixels[(width * 1 + 2) * 3 + 1] + (error_g * 2 / 48);
+                            b = pixels[(width * 1 + 2) * 3 + 2] + (error_b * 2 / 48);
+                            pixels[(width * 1 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 2 - 2) * 3 + 0] + (error_r * 1 / 48);
+                            g = pixels[(width * 2 - 2) * 3 + 1] + (error_g * 1 / 48);
+                            b = pixels[(width * 2 - 2) * 3 + 2] + (error_b * 1 / 48);
+                            pixels[(width * 2 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 2 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 2 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 2 - 1) * 3 + 0] + (error_r * 2 / 48);
+                            g = pixels[(width * 2 - 1) * 3 + 1] + (error_g * 2 / 48);
+                            b = pixels[(width * 2 - 1) * 3 + 2] + (error_b * 2 / 48);
+                            pixels[(width * 2 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 2 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 2 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 2 + 0) * 3 + 0] + (error_r * 4 / 48);
+                            g = pixels[(width * 2 + 0) * 3 + 1] + (error_g * 4 / 48);
+                            b = pixels[(width * 2 + 0) * 3 + 2] + (error_b * 4 / 48);
+                            pixels[(width * 2 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 2 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 2 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 2 + 1) * 3 + 0] + (error_r * 2 / 48);
+                            g = pixels[(width * 2 + 1) * 3 + 1] + (error_g * 2 / 48);
+                            b = pixels[(width * 2 + 1) * 3 + 2] + (error_b * 2 / 48);
+                            pixels[(width * 2 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 2 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 2 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 2 + 2) * 3 + 0] + (error_r * 1 / 48);
+                            g = pixels[(width * 2 + 2) * 3 + 1] + (error_g * 1 / 48);
+                            b = pixels[(width * 2 + 2) * 3 + 2] + (error_b * 1 / 48);
+                            pixels[(width * 2 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 2 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 2 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+                        }
+                        break;
+                   case DIFFUSE_BURKES:
+                        error_r += 2;
+                        error_g += 2;
+                        error_b += 2;
+                        if (x > 2 && x < width - 2 && y < height - 2) {
+                            r = pixels[(width * 0 + 1) * 3 + 0] + (error_r * 4 / 16);
+                            g = pixels[(width * 0 + 1) * 3 + 1] + (error_g * 4 / 16);
+                            b = pixels[(width * 0 + 1) * 3 + 2] + (error_b * 4 / 16);
+                            pixels[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 0 + 2) * 3 + 0] + (error_r * 2 / 16);
+                            g = pixels[(width * 0 + 2) * 3 + 1] + (error_g * 2 / 16);
+                            b = pixels[(width * 0 + 2) * 3 + 2] + (error_b * 2 / 16);
+                            pixels[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 1 - 2) * 3 + 0] + (error_r * 1 / 16);
+                            g = pixels[(width * 1 - 2) * 3 + 1] + (error_g * 1 / 16);
+                            b = pixels[(width * 1 - 2) * 3 + 2] + (error_b * 1 / 16);
+                            pixels[(width * 1 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 1 - 1) * 3 + 0] + (error_r * 2 / 16);
+                            g = pixels[(width * 1 - 1) * 3 + 1] + (error_g * 2 / 16);
+                            b = pixels[(width * 1 - 1) * 3 + 2] + (error_b * 2 / 16);
+                            pixels[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 1 + 0) * 3 + 0] + (error_r * 4 / 16);
+                            g = pixels[(width * 1 + 0) * 3 + 1] + (error_g * 4 / 16);
+                            b = pixels[(width * 1 + 0) * 3 + 2] + (error_b * 4 / 16);
+                            pixels[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 1 + 1) * 3 + 0] + (error_r * 2 / 16);
+                            g = pixels[(width * 1 + 1) * 3 + 1] + (error_g * 2 / 16);
+                            b = pixels[(width * 1 + 1) * 3 + 2] + (error_b * 2 / 16);
+                            pixels[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+                            r = pixels[(width * 1 + 2) * 3 + 0] + (error_r * 1 / 16);
+                            g = pixels[(width * 1 + 2) * 3 + 1] + (error_g * 1 / 16);
+                            b = pixels[(width * 1 + 2) * 3 + 2] + (error_b * 1 / 16);
+                            pixels[(width * 1 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+                            pixels[(width * 1 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+                            pixels[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+                        }
+                        break;
+                    case DIFFUSE_NONE:
+                    default:
+                        break;
+                    }
+
+                    if (!rgbhit[pix]) {
+                        while (1) {
+                            if (nextpal >= 255) {
+                                if (threshold >= 255) {
+                                    break;
+                                }
+                                else {
+                                    threshold = (threshold == 1) ? 9: 255;
+                                    nextpal = 0;
+                                }
+                            }
+                            else if (palstate[nextpal] ||
+                                     palhitcount[nextpal] > threshold) {
+                                nextpal++;
+                            }
+                            else {
+                                break;
+                            }
+                        }
+
+                        if (nextpal >= 255) {
+                            dirty = 1;
+                            *dst = 255;
+                        }
+                        else {
+                            unsigned char *pal = dither->palette + (nextpal * 3);
+
+                            rgbhit[pix] = 1;
+                            if (output_count > 0) {
+                                rgbhit[((pal[0] & 0xf8) << 7) |
+                                       ((pal[1] & 0xf8) << 2) |
+                                       ((pal[2] >> 3) & 0x1f)] = 0;
+                            }
+                            *dst = rgb2pal[pix] = nextpal++;
+                            *mptr = 1;
+                            palstate[*dst] = PALETTE_CHANGE;
+                            palhitcount[*dst] = 1;
+                            *(pal++) = pixels[0];
+                            *(pal++) = pixels[1];
+                            *(pal++) = pixels[2];
+                        }
+                    }
+                    else {
+                        *dst = rgb2pal[pix];
+                        *mptr = 1;
+                        if (!palstate[*dst]) {
+                            palstate[*dst] = PALETTE_HIT;
+                        }
+                        if (palhitcount[*dst] < 255) {
+                            palhitcount[*dst]++;
+                        }
+                    }
+                }
+            }
+
+            if (++y >= height) {
+                if (dirty) {
+                    mod_y = 5;
+                }
+                else {
+                    goto end;
+                }
+            }
+            if (dirty && mod_y == 5) {
+                int orig_height = height;
+
+                if (output_count++ == 0) {
+                    sixel_encode_header(width, height, context);
+                }
+                height = y;
+                sixel_encode_body(paletted_pixels, width, height,
+                                  dither->palette, 255, 255, dither->bodyonly,
+                                  context, palstate);
+                pixels -= (6 * width * 3);
+                height = orig_height - height + 6;
+                break;
+            }
+
+            if (++mod_y == 6) {
+                mptr = memset(marks, 0, width * 6);
+                mod_y = 0;
+            }
+        }
+    }
+
+end:
+    if (output_count == 0) {
+        sixel_encode_header(width, height, context);
+    }
+    sixel_encode_body(paletted_pixels, width, height,
+                      dither->palette, 255, 255, dither->bodyonly, context, palstate);
+    sixel_encode_footer(context);
+    nret = 0;
+
+error:
+    free(paletted_pixels);
+    free(normalized_pixels);
+
+    return nret;
+}
+
+
 int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
                  int            /* in */ width,     /* image width */
                  int            /* in */ height,    /* image height */
@@ -530,16 +987,19 @@ int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
                  sixel_dither_t /* in */ *dither,   /* dither context */
                  sixel_output_t /* in */ *context)  /* output context */
 {
+    int nret = (-1);
+
     sixel_dither_ref(dither);
 
-    if (sixel_encode_dither(pixels, width, height, bitfield, dither, context) == -1) {
-        sixel_dither_unref(dither);
-        return (-1);
+    if (dither->quality_mode == QUALITY_HIGHCOLOR) {
+        nret = sixel_encode_fullcolor(pixels, width, height, bitfield, dither, context);
+    } else {
+        nret = sixel_encode_dither(pixels, width, height, bitfield, dither, context);
     }
 
     sixel_dither_unref(dither);
 
-    return 0;
+    return nret;
 }
 
 

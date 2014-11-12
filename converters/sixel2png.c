@@ -54,30 +54,27 @@
 # include <errno.h>
 #endif
 
+#if HAVE_SETJMP_H
+# include <setjmp.h>
+#endif
+
 #if HAVE_LIBPNG
 # include <png.h>
+#else
+# include "stb_image_write.h"
 #endif
 
 #include <sixel.h>
-
-#include "stb_image_write.h"
-
-unsigned char *
-stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes,
-                      int x, int y, int n, int *out_len);
 
 #if !defined(O_BINARY) && defined(_O_BINARY)
 # define O_BINARY _O_BINARY
 #endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 
-enum
-{
-   STBI_default = 0, /* only used for req_comp */
-   STBI_grey = 1,
-   STBI_grey_alpha = 2,
-   STBI_rgb = 3,
-   STBI_rgb_alpha = 4
-};
+#if !HAVE_LIBPNG
+unsigned char *
+stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes,
+                      int x, int y, int n, int *out_len);
+#endif
 
 
 static int
@@ -211,10 +208,12 @@ sixel_to_png(const char *input, const char *output)
         ret = (-1);
         goto end;
     }
+# if HAVE_SETJMP
     if (setjmp(png_jmpbuf(png_ptr))) {
         ret = (-1);
         goto end;
     }
+# endif
     png_init_io(png_ptr, output_fp);
     png_set_IHDR(png_ptr, info_ptr, sx, sy,
                  /* bit_depth */ 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
@@ -224,7 +223,7 @@ sixel_to_png(const char *input, const char *output)
     png_write_end(png_ptr, NULL);
 #else
     png_data = stbi_write_png_to_mem(pixels, sx * 3,
-                                     sx, sy, STBI_rgb, &png_len);
+                                     sx, sy, /* STBI_rgb */ 3, &png_len);
 
     if (!png_data) {
         fprintf(stderr, "stbi_write_png_to_mem failed.\n");
@@ -318,7 +317,6 @@ main(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
-
     for (;;) {
 #if HAVE_GETOPT_LONG
         n = getopt_long(argc, argv, optstring,
@@ -326,7 +324,9 @@ main(int argc, char *argv[])
 #else
         n = getopt(argc, argv, optstring);
 #endif  /* HAVE_GETOPT_LONG */
+
         if (n == -1) {
+            nret = (-1);
             break;
         }
         if (n == 0) {
@@ -345,10 +345,11 @@ main(int argc, char *argv[])
             show_version();
             goto end;
         case 'H':
-        case '?':
             show_help();
             goto end;
+        case '?':
         default:
+            nret = (-1);
             goto argerr;
         }
         if (optind >= argc) {
@@ -365,6 +366,7 @@ main(int argc, char *argv[])
         output = strdup(argv[optind++]);
     }
     if (optind != argc) {
+        nret = (-1);
         goto argerr;
     }
 

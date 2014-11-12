@@ -634,6 +634,8 @@ ac_unique_file="src/fromsixel.c"
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
+HAVE_CURL_FALSE
+HAVE_CURL_TRUE
 HAVE_PNG_FALSE
 HAVE_PNG_TRUE
 HAVE_JPEG_FALSE
@@ -2336,7 +2338,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 LS_LT_CURRENT=1
 LS_LT_REVISION=2
-LS_LT_AGE=0
+LS_LT_AGE=1
 LS_LTVERSION=$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE
 
 PACKAGE_DESCRIPTION="A lightweight, fast implementation of DEC SIXEL graphics codec"
@@ -12714,6 +12716,7 @@ for ac_header in memory.h \
                   sys/time.h \
                   time.h \
                   signal.h \
+                  sys/select.h \
                   sys/signal.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
@@ -12895,7 +12898,17 @@ fi
 fi
 
 
-for ac_func in memcpy memmove strtol setmode _setmode signal usleep calloc clock
+for ac_func in memcpy \
+                memmove \
+                strtol \
+                setmode \
+                _setmode \
+                signal \
+                usleep \
+                calloc \
+                clock \
+                clearerr \
+                setjmp
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -13840,7 +13853,8 @@ fi
 
 
 if test x$with_libcurl != xno; then
-    ac_fn_c_check_header_mongrel "$LINENO" "curl/curl.h" "ac_cv_header_curl_curl_h" "$ac_includes_default"
+    if test x$build == x$host; then
+        ac_fn_c_check_header_mongrel "$LINENO" "curl/curl.h" "ac_cv_header_curl_curl_h" "$ac_includes_default"
 if test "x$ac_cv_header_curl_curl_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for curl_easy_cleanup in -lcurl" >&5
 $as_echo_n "checking for curl_easy_cleanup in -lcurl... " >&6; }
@@ -13887,8 +13901,8 @@ fi
 fi
 
 
-    if test x$have_curl != xyes; then
-        if test x${PKG_CONFIG} != x; then
+        if test x$have_curl != xyes; then
+            if test x${PKG_CONFIG} != x; then
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBCURL" >&5
@@ -13960,6 +13974,7 @@ else
 $as_echo "yes" >&6; }
 	have_curl=yes
 fi
+            fi
         fi
     fi
     if test x$have_curl = xyes; then
@@ -13982,7 +13997,8 @@ fi
 
 
 if test x$with_jpeg != xno; then
-    ac_fn_c_check_header_mongrel "$LINENO" "jpeglib.h" "ac_cv_header_jpeglib_h" "$ac_includes_default"
+    if test x$build == x$host; then
+        ac_fn_c_check_header_mongrel "$LINENO" "jpeglib.h" "ac_cv_header_jpeglib_h" "$ac_includes_default"
 if test "x$ac_cv_header_jpeglib_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for jpeg_read_header in -ljpeg" >&5
 $as_echo_n "checking for jpeg_read_header in -ljpeg... " >&6; }
@@ -14029,6 +14045,7 @@ fi
 fi
 
 
+    fi
     if test x$have_jpeg = xyes; then
 
 $as_echo "#define HAVE_JPEG 1" >>confdefs.h
@@ -14050,7 +14067,8 @@ fi
 
 
 if test x$with_png != xno; then
-    ac_fn_c_check_header_mongrel "$LINENO" "png.h" "ac_cv_header_png_h" "$ac_includes_default"
+    if test x$build == x$host; then
+        ac_fn_c_check_header_mongrel "$LINENO" "png.h" "ac_cv_header_png_h" "$ac_includes_default"
 if test "x$ac_cv_header_png_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for png_check_sig in -lpng" >&5
 $as_echo_n "checking for png_check_sig in -lpng... " >&6; }
@@ -14097,8 +14115,8 @@ fi
 fi
 
 
-    if test x$have_png != xyes; then
-        if test x${PKG_CONFIG} != x; then
+        if test x$have_png != xyes; then
+            if test x${PKG_CONFIG} != x; then
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBPNG" >&5
@@ -14170,6 +14188,7 @@ else
 $as_echo "yes" >&6; }
 	have_png=yes
 fi
+            fi
         fi
     fi
     if test x$have_png = xyes; then
@@ -14211,6 +14230,14 @@ fi
 else
   HAVE_PNG_TRUE='#'
   HAVE_PNG_FALSE=
+fi
+
+ if test x$have_curl = xyes; then
+  HAVE_CURL_TRUE=
+  HAVE_CURL_FALSE='#'
+else
+  HAVE_CURL_TRUE='#'
+  HAVE_CURL_FALSE=
 fi
 
 
@@ -14376,6 +14403,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_PNG_TRUE}" && test -z "${HAVE_PNG_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_PNG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_CURL_TRUE}" && test -z "${HAVE_CURL_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_CURL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -16626,5 +16657,7 @@ echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
+echo ""
+echo ""
 echo ""
 echo ""

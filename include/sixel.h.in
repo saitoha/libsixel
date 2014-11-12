@@ -68,9 +68,11 @@ enum methodForDiffuse {
 
 /* quality modes */
 enum qualityMode {
-    QUALITY_AUTO = 0, /* choose quality mode automatically */
-    QUALITY_HIGH = 1, /* high quality */
-    QUALITY_LOW  = 2, /* low quality */
+    QUALITY_AUTO      = 0, /* choose quality mode automatically */
+    QUALITY_HIGH      = 1, /* high quality palette construction */
+    QUALITY_LOW       = 2, /* low quality palette construction */
+    QUALITY_FULL      = 3, /* full quality palette construction */
+    QUALITY_HIGHCOLOR = 4, /* high color */
 };
 
 /* built-in dither */
@@ -83,6 +85,7 @@ enum builtinDither {
 
 /* bitfield type of input image */
 enum colorBitfield {
+    COLOR_PAL8     = 0, /* 8bit palette */
     COLOR_RGB555   = 1, /* 15 bpp */
     COLOR_RGB565   = 2, /* 16 bpp */
     COLOR_RGB888   = 3, /* 24 bpp */

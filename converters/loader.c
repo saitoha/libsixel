@@ -196,7 +196,7 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
         pchunk->size += n;
     }
 
-    if (f != stdout) {
+    if (f != stdin) {
         fclose(f);
     }
 
@@ -537,11 +537,13 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         for (i = 0; i < *psy; ++i) {
             rows[i] = pixels + *pstride * i;
         }
+#if HAVE_SETJMP
         if (setjmp(png_jmpbuf(png_ptr))) {
             free(pixels);
             pixels = NULL;
             goto cleanup;
         }
+#endif  /* HAVE_SETJMP */
         png_read_image(png_ptr, rows);
 cleanup:
         png_destroy_read_struct(&png_ptr, &info_ptr,(png_infopp)0);

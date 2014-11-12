@@ -19,6 +19,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <stdlib.h>
 #include "config.h"
 
 #if HAVE_SYS_TYPES_H
@@ -28,8 +29,6 @@
 #if HAVE_ERRNO_H
 #include <errno.h>
 #endif  /* HAVE_ERRNO_H */
-
-#include <stdlib.h>
 
 #if HAVE_MEMORY_H
 #include <memory.h>

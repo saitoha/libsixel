@@ -119,11 +119,19 @@ sixel_dither_create(int ncolors)
     int headsize;
     int datasize;
     int wholesize;
+    int quality_mode;
 
-    if (ncolors > SIXEL_PALETTE_MAX) {
+    if (ncolors == -1) {
         ncolors = 256;
-    } else if (ncolors < 2) {
-        ncolors = 2;
+        quality_mode = QUALITY_HIGHCOLOR;
+    }
+    else {
+        if (ncolors > SIXEL_PALETTE_MAX) {
+            ncolors = 256;
+        } else if (ncolors < 2) {
+            ncolors = 2;
+        }
+        quality_mode = QUALITY_LOW;
     }
     headsize = sizeof(sixel_dither_t);
     datasize = ncolors * 3;
@@ -146,7 +154,7 @@ sixel_dither_create(int ncolors)
     dither->method_for_largest = LARGE_NORM;
     dither->method_for_rep = REP_CENTER_BOX;
     dither->method_for_diffuse = DIFFUSE_FS;
-    dither->quality_mode = QUALITY_LOW;
+    dither->quality_mode = quality_mode;
 
     return dither;
 }
@@ -335,7 +343,8 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
                         int method_for_largest, int method_for_rep,
                         int quality_mode)
 {
-    unsigned char *buf, *normalized_pixels;
+    unsigned char *buf = NULL;
+    unsigned char *normalized_pixels = NULL;
 
     /* normalize bitfield */
     normalized_pixels = malloc(width * height * 3);
@@ -364,13 +373,14 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
         return (-1);
     }
     memcpy(dither->palette, buf, dither->ncolors * 3);
-    free(normalized_pixels);
-    free(buf);
 
     dither->optimized = 1;
     if (dither->origcolors <= dither->ncolors) {
         dither->method_for_diffuse = DIFFUSE_NONE;
     }
+
+    free(normalized_pixels);
+    LSQ_FreePalette(buf);
 
     return 0;
 }
@@ -440,6 +450,10 @@ sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t
         return NULL;
     }
 
+    if (dither->quality_mode == QUALITY_FULL) {
+        dither->optimized = 0;
+    }
+
     if (dither->cachetable == NULL && dither->optimized) {
         if (dither->palette != pal_mono_dark && dither->palette != pal_mono_light) {
             cachesize = (1 << 3 * 5) * sizeof(unsigned short);
@@ -460,6 +474,9 @@ sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t
                            dither->complexion,
                            dither->cachetable,
                            dest);
+    if (ret != 0) {
+        return NULL;
+    }
 
     return dest;
 }

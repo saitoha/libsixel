@@ -292,6 +292,7 @@ largestByLuminosity(sample minval[], sample maxval[], unsigned int const depth)
         double largestSpreadSoFar;
 
         largestSpreadSoFar = 0.0;
+        largestDimension = 0;
 
         for (plane = 0; plane < 3; ++plane) {
             double const spread =
@@ -597,6 +598,20 @@ mediancut(tupletable2 const colorfreqtable,
 
 
 static int
+computeHash(unsigned char const *data, int const depth)
+{
+    int hash = 0;
+    int n;
+
+    for (n = 0; n < depth; n++) {
+        hash |= data[depth - 1 - n] >> 3 << n * 5;
+    }
+
+    return hash;
+}
+
+
+static int
 computeHistogram(unsigned char *data,
                  unsigned int length,
                  unsigned long const depth,
@@ -613,20 +628,33 @@ computeHistogram(unsigned char *data,
     unsigned int step;
     unsigned int max_sample;
 
-    if (qualityMode == QUALITY_HIGH) {
+    switch (qualityMode) {
+    case QUALITY_HIGH:
         max_sample = 1118383;
-    } else { /* if (qualityMode == QUALITY_LOW) */
+        break;
+    case QUALITY_LOW:
         max_sample = 18383;
+        break;
+    case QUALITY_FULL:
+    default:
+        max_sample = 4003079;
+        break;
     }
 
     quant_trace(stderr, "making histogram...\n");
 
+#if HAVE_CALLOC
+    histogram = calloc(1 << depth * 5, sizeof(unit_t));
+#else
     histogram = malloc((1 << depth * 5) * sizeof(unit_t));
+#endif
     if (!histogram) {
         quant_trace(stderr, "Unable to allocate memory for histogram.");
         return (-1);
     }
+#if !HAVE_CALLOC
     memset(histogram, 0, (1 << depth * 5) * sizeof(unit_t));
+#endif
     it = ref = refmap = (unsigned short *)malloc(max_sample * sizeof(unit_t));
     if (!it) {
         quant_trace(stderr, "Unable to allocate memory for lookup table.");
@@ -640,10 +668,7 @@ computeHistogram(unsigned char *data,
     }
 
     for (i = 0; i < length; i += step) {
-        index = 0;
-        for (n = 0; n < depth; n++) {
-            index |= data[i + depth - 1 - n] >> 3 << n * 5;
-        }
+        index = computeHash(data + i, 3);
         if (histogram[index] == 0) {
             *ref++ = index;
         }
@@ -915,12 +940,13 @@ lookup_normal(unsigned char const * const pixel,
     int r;
     int i;
     int n;
-    int distant = 0;
+    int distant;
 
     index = -1;
     diff = INT_MAX;
 
     for (i = 0; i < ncolor; i++) {
+        distant = 0;
         r = pixel[0] - palette[i * depth + 0];
         distant += r * r * complexion;
         for (n = 1; n < depth; ++n) {
@@ -950,16 +976,11 @@ lookup_fast(unsigned char const * const pixel,
     int diff;
     int cache;
     int i;
-    int n;
     int distant;
 
     index = -1;
     diff = INT_MAX;
-    hash = 0;
-
-    for (n = 0; n < 3; ++n) {
-        hash |= *(pixel + n) >> 3 << ((3 - 1 - n) * 5);
-    }
+    hash = computeHash(pixel, 3);
 
     cache = cachetable[hash];
     if (cache) {  /* fast lookup */
@@ -1060,6 +1081,7 @@ LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
     return palette;
 }
 
+
 int
 LSQ_ApplyPalette(unsigned char *data,
                  int width,
@@ -1144,12 +1166,18 @@ LSQ_ApplyPalette(unsigned char *data,
 
     indextable = cachetable;
     if (cachetable == NULL && f_lookup == lookup_fast) {
+#if !HAVE_CALLOC
         indextable = malloc((1 << depth * 5) * sizeof(unsigned short));
+#else
+        indextable = calloc(1 << depth * 5, sizeof(unsigned short));
+#endif
         if (!indextable) {
             quant_trace(stderr, "Unable to allocate memory for indextable.");
             return (-1);
         }
+#if !HAVE_CALLOC
         memset(indextable, 0x00, (1 << depth * 5) * sizeof(unsigned short));
+#endif
     }
 
     for (y = 0; y < height; ++y) {
