@@ -68,9 +68,10 @@ if WANT_IMG2SIXEL
 	! $(WINE) ./img2sixel -I -e ../images/snake.png
 	! $(WINE) ./img2sixel -I -p8 ../images/snake.png
 	! $(WINE) ./img2sixel -I -m ../images/map8.png ../images/snake.png
+	! (echo -n a | ./img2sixel)
 	$(WINE) ./img2sixel -H
 	$(WINE) ./img2sixel -V
-	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | tee snake.sixel
+	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | img2sixel | tee snake.sixel
 	$(WINE) ./img2sixel -w50% -h150% -dfs -thls < ../images/snake.jpg -shistogram | tee snake2.sixel
 	$(WINE) ./img2sixel -w2100 -h2100 < ../images/snake.jpg > snake3.sixel
 	$(WINE) ./img2sixel - -w105% -h100 -djajuni -rnearest < ../images/snake.gif
@@ -103,6 +104,7 @@ if HAVE_PNG
 	$(WINE) ./img2sixel ../images/snake.png | tee snake.sixel
 endif
 if HAVE_CURL
+	!$(WINE) ./img2sixel file:///test
 	$(WINE) ./img2sixel file:///$$(pwd)/../images/snake.jpg
 endif
 if WANT_SIXEL2PNG
