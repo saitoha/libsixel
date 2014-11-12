@@ -233,6 +233,88 @@ sixel_dither_get(int builtin_dither)
 
 
 static void
+get_rgb(unsigned char *data, int const bitfield, int depth,
+        unsigned char *r, unsigned char *g, unsigned char *b)
+{
+    unsigned int pixels = 0, low, high;
+	int count = 0;
+
+	while (count < depth) {
+		pixels = *(data + count) | (pixels << 8);
+		count++;
+	}
+
+	/* XXX: we should swap bytes (only necessary on LSByte first hardware?) */
+	if (depth == 2) {
+		low    = pixels & 0xFF;
+		high   = (pixels >> 8) & 0xFF;
+		pixels = (low << 8) | high;
+	}
+
+    switch (bitfield) {
+    case COLOR_RGB555:
+        *r = ((pixels >> 10) & 0x1F) << 3;
+        *g = ((pixels >>  5) & 0x1F) << 3;
+        *b = ((pixels >>  0) & 0x1F) << 3;
+        break;
+    case COLOR_RGB565:
+        *r = ((pixels >> 11) & 0x1F) << 3;
+        *g = ((pixels >>  5) & 0x3F) << 2;
+        *b = ((pixels >>  0) & 0x1F) << 3;
+        break;
+    case COLOR_RGBA8888:
+        *r = (pixels >> 24) & 0xFF;
+        *g = (pixels >> 16) & 0xFF;
+        *b = (pixels >>  8) & 0xFF;
+        break;
+    case COLOR_ARGB8888:
+        *r = (pixels >> 16) & 0xFF;
+        *g = (pixels >>  8) & 0xFF;
+        *b = (pixels >>  0) & 0xFF;
+        break;
+    case GRAYSCALE_GA88:
+        *r = *g = *b = (pixels >> 8) & 0xFF;
+        break;
+    case GRAYSCALE_G8:
+    case GRAYSCALE_AG88:
+        *r = *g = *b = pixels & 0xFF;
+        break;
+    default:
+        *r = *g = *b = 0;
+        break;
+    }
+}
+
+
+void
+sixel_normalize_bitfield(unsigned char *dst, unsigned char *src, int width, int height, int const bitfield)
+{
+    int x, y, dst_offset, src_offset, depth;
+    unsigned char r, g, b;
+
+    if (bitfield == GRAYSCALE_G8)
+        depth = 1;
+    else if (bitfield == COLOR_RGB565 || bitfield == COLOR_RGB555
+             || bitfield == GRAYSCALE_GA88 || bitfield == GRAYSCALE_AG88)
+        depth = 2;
+    else /* COLOR_RGBA8888 or COLOR_ARGB8888 */
+        depth = 4;
+
+    for (y = 0; y < height; y++) {
+        for (x = 0; x < width; x++) {
+            src_offset = depth * (y * width + x);
+            dst_offset = 3 * (y * width + x);
+            get_rgb(src + src_offset, bitfield, depth, &r, &g, &b);
+
+            *(dst + dst_offset + 0) = r;
+            *(dst + dst_offset + 1) = g;
+            *(dst + dst_offset + 2) = b;
+        }
+    }
+}
+
+
+static void
 sixel_dither_set_method_for_largest(sixel_dither_t *dither, int method_for_largest)
 {
     if (method_for_largest == LARGE_AUTO) {
@@ -268,32 +350,48 @@ sixel_dither_set_quality_mode(sixel_dither_t *dither, int quality_mode)
 
 int
 sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
-                        int width, int height, int depth,
+                        int width, int height, int const bitfield,
                         int method_for_largest, int method_for_rep,
                         int quality_mode)
 {
-    unsigned char *buf;
+    unsigned char *buf = NULL;
+    unsigned char *normalized_pixels = NULL;
+
+    /* normalize bitfield */
+    normalized_pixels = malloc(width * height * 3);
+    if (normalized_pixels == NULL) {
+        return (-1);
+    }
+
+    if (bitfield != COLOR_RGB888) {
+        sixel_normalize_bitfield(normalized_pixels, data, width, height, bitfield);
+    } else {
+        memcpy(normalized_pixels, data, width * height * 3);
+    }
 
     sixel_dither_set_method_for_largest(dither, method_for_largest);
     sixel_dither_set_method_for_rep(dither, method_for_rep);
     sixel_dither_set_quality_mode(dither, quality_mode);
 
-    buf = LSQ_MakePalette(data, width, height, depth,
+    buf = LSQ_MakePalette(normalized_pixels, width, height, 3,
                           dither->reqcolors, &dither->ncolors,
                           &dither->origcolors,
                           dither->method_for_largest,
                           dither->method_for_rep,
                           dither->quality_mode);
     if (buf == NULL) {
+        free(normalized_pixels);
         return (-1);
     }
-    memcpy(dither->palette, buf, dither->ncolors * depth);
-    LSQ_FreePalette(buf);
+    memcpy(dither->palette, buf, dither->ncolors * 3);
 
     dither->optimized = 1;
     if (dither->origcolors <= dither->ncolors) {
         dither->method_for_diffuse = DIFFUSE_NONE;
     }
+
+    free(normalized_pixels);
+    LSQ_FreePalette(buf);
 
     return 0;
 }
