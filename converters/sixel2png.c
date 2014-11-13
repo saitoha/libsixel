@@ -312,8 +312,8 @@ main(int argc, char *argv[])
     struct option long_options[] = {
         {"input",        required_argument,  &long_opt, 'i'},
         {"output",       required_argument,  &long_opt, 'o'},
-        {"version",      no_argument,        &long_opt, 'H'},
-        {"help",         no_argument,        &long_opt, 'V'},
+        {"version",      no_argument,        &long_opt, 'V'},
+        {"help",         no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
