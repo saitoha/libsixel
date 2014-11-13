@@ -235,7 +235,7 @@ sixel_dither_get(int builtin_dither)
 
 
 static void
-get_rgb(unsigned char *data, int const bitfield, int depth,
+get_rgb(unsigned char *data, int const pixelformat, int depth,
         unsigned char *r, unsigned char *g, unsigned char *b)
 {
     unsigned int pixels = 0, low, high;
@@ -253,7 +253,7 @@ get_rgb(unsigned char *data, int const bitfield, int depth,
 		pixels = (low << 8) | high;
 	}
 
-    switch (bitfield) {
+    switch (pixelformat) {
     case COLOR_RGB555:
         *r = ((pixels >> 10) & 0x1F) << 3;
         *g = ((pixels >>  5) & 0x1F) << 3;
@@ -289,15 +289,17 @@ get_rgb(unsigned char *data, int const bitfield, int depth,
 
 
 void
-sixel_normalize_bitfield(unsigned char *dst, unsigned char *src, int width, int height, int const bitfield)
+sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
+                            int width, int height,
+                            int const pixelformat)
 {
     int x, y, dst_offset, src_offset, depth;
     unsigned char r, g, b;
 
-    if (bitfield == GRAYSCALE_G8)
+    if (pixelformat == GRAYSCALE_G8)
         depth = 1;
-    else if (bitfield == COLOR_RGB565 || bitfield == COLOR_RGB555
-             || bitfield == GRAYSCALE_GA88 || bitfield == GRAYSCALE_AG88)
+    else if (pixelformat == COLOR_RGB565 || pixelformat == COLOR_RGB555
+             || pixelformat == GRAYSCALE_GA88 || pixelformat == GRAYSCALE_AG88)
         depth = 2;
     else /* COLOR_RGBA8888 or COLOR_ARGB8888 */
         depth = 4;
@@ -306,7 +308,7 @@ sixel_normalize_bitfield(unsigned char *dst, unsigned char *src, int width, int 
         for (x = 0; x < width; x++) {
             src_offset = depth * (y * width + x);
             dst_offset = 3 * (y * width + x);
-            get_rgb(src + src_offset, bitfield, depth, &r, &g, &b);
+            get_rgb(src + src_offset, pixelformat, depth, &r, &g, &b);
 
             *(dst + dst_offset + 0) = r;
             *(dst + dst_offset + 1) = g;
@@ -352,21 +354,21 @@ sixel_dither_set_quality_mode(sixel_dither_t *dither, int quality_mode)
 
 int
 sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
-                        int width, int height, int const bitfield,
+                        int width, int height, int const pixelformat,
                         int method_for_largest, int method_for_rep,
                         int quality_mode)
 {
     unsigned char *buf = NULL;
     unsigned char *normalized_pixels = NULL;
 
-    /* normalize bitfield */
+    /* normalize pixelformat */
     normalized_pixels = malloc(width * height * 3);
     if (normalized_pixels == NULL) {
         return (-1);
     }
 
-    if (bitfield != COLOR_RGB888) {
-        sixel_normalize_bitfield(normalized_pixels, data, width, height, bitfield);
+    if (pixelformat != COLOR_RGB888) {
+        sixel_normalize_pixelformat(normalized_pixels, data, width, height, pixelformat);
     } else {
         memcpy(normalized_pixels, data, width * height * 3);
     }

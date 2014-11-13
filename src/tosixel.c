@@ -491,20 +491,20 @@ sixel_encode_footer(sixel_output_t *context)
 
 
 static int
-sixel_encode_dither(unsigned char *pixels, int width, int height, int bitfield,
+sixel_encode_dither(unsigned char *pixels, int width, int height, int pixelformat,
                     sixel_dither_t *dither, sixel_output_t *context)
 {
     unsigned char *paletted_pixels = NULL;
     unsigned char *normalized_pixels = NULL;
     int nret = (-1);
 
-    if (bitfield != COLOR_RGB888) {
-        /* normalize bitfield */
+    if (pixelformat != COLOR_RGB888) {
+        /* normalize pixelformat */
         normalized_pixels = malloc(width * height * 3);
         if (normalized_pixels == NULL) {
             goto end;
         }
-        sixel_normalize_bitfield(normalized_pixels, pixels, width, height, bitfield);
+        sixel_normalize_pixelformat(normalized_pixels, pixels, width, height, pixelformat);
         paletted_pixels = sixel_apply_palette(normalized_pixels, width, height, dither);
     } else {
         paletted_pixels = sixel_apply_palette(pixels, width, height, dither);
@@ -871,7 +871,7 @@ dither_func_burkes(unsigned char *data, int width)
 
 
 static int
-sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int bitfield,
+sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int pixelformat,
                        sixel_dither_t *dither, sixel_output_t *context)
 {
     unsigned char *paletted_pixels = NULL;
@@ -885,13 +885,13 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int bitfiel
     int output_count;
     int nret = (-1);
 
-    if (bitfield != COLOR_RGB888) {
-        /* normalize bitfield */
+    if (pixelformat != COLOR_RGB888) {
+        /* normalize pixelfromat */
         normalized_pixels = malloc(width * height * 3);
         if (normalized_pixels == NULL) {
             goto error;
         }
-        sixel_normalize_bitfield(normalized_pixels, pixels, width, height, bitfield);
+        sixel_normalize_pixelformat(normalized_pixels, pixels, width, height, pixelformat);
         pixels = normalized_pixels;
     }
 
@@ -1066,21 +1066,23 @@ error:
 }
 
 
-int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
-                 int            /* in */ width,     /* image width */
-                 int            /* in */ height,    /* image height */
-                 int const      /* in */ bitfield,  /* color bitfield */
-                 sixel_dither_t /* in */ *dither,   /* dither context */
-                 sixel_output_t /* in */ *context)  /* output context */
+int sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
+                 int            /* in */ width,       /* image width */
+                 int            /* in */ height,      /* image height */
+                 int const      /* in */ pixelformat, /* color pixelformat */
+                 sixel_dither_t /* in */ *dither,     /* dither context */
+                 sixel_output_t /* in */ *context)    /* output context */
 {
     int nret = (-1);
 
     sixel_dither_ref(dither);
 
     if (dither->quality_mode == QUALITY_HIGHCOLOR) {
-        nret = sixel_encode_fullcolor(pixels, width, height, bitfield, dither, context);
+        nret = sixel_encode_fullcolor(pixels, width, height,
+                                      pixelformat, dither, context);
     } else {
-        nret = sixel_encode_dither(pixels, width, height, bitfield, dither, context);
+        nret = sixel_encode_dither(pixels, width, height,
+                                   pixelformat, dither, context);
     }
 
     sixel_dither_unref(dither);

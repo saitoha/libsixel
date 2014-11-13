@@ -50,8 +50,8 @@ extern "C" {
 unsigned char * sixel_apply_palette(unsigned char *pixels, int width, int height,
                                     sixel_dither_t *dither);
 
-void sixel_normalize_bitfield(unsigned char *dst, unsigned char *src,
-                              int width, int height, int const bitfield);
+void sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
+                                 int width, int height, int const pixelformat);
 
 #ifdef __cplusplus
 }
