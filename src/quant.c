@@ -861,7 +861,7 @@ diffuse_jajuni(unsigned char *data, int width, int height,
      *  3/48    5/48    7/48    5/48    3/48
      *  1/48    3/48    5/48    3/48    1/48
      */
-    if (x < width - 2 && y < height - 2) {
+    if (pos < (height - 2) * width - 2) {
         error_diffuse(data, pos + width * 0 + 1, depth, offset, 7, 48);
         error_diffuse(data, pos + width * 0 + 2, depth, offset, 5, 48);
         error_diffuse(data, pos + width * 1 - 2, depth, offset, 3, 48);
@@ -891,7 +891,7 @@ diffuse_stucki(unsigned char *data, int width, int height,
      *  2/48    4/48    8/48    4/48    2/48
      *  1/48    2/48    4/48    2/48    1/48
      */
-    if (x < width - 2 && y < height - 2) {
+    if (pos < (height - 2) * width - 2) {
         error_diffuse(data, pos + width * 0 + 1, depth, offset, 1, 6);
         error_diffuse(data, pos + width * 0 + 2, depth, offset, 1, 12);
         error_diffuse(data, pos + width * 1 - 2, depth, offset, 1, 24);
@@ -920,7 +920,7 @@ diffuse_burkes(unsigned char *data, int width, int height,
      *                  curr    4/16    2/16
      *  1/16    2/16    4/16    2/16    1/16
      */
-    if (x < width - 2 && y < height - 1) {
+    if (pos < (height - 1) * width - 2) {
         error_diffuse(data, pos + width * 0 + 1, depth, offset, 1, 4);
         error_diffuse(data, pos + width * 0 + 2, depth, offset, 1, 8);
         error_diffuse(data, pos + width * 1 - 2, depth, offset, 1, 16);
