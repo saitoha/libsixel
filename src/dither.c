@@ -379,7 +379,9 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     sixel_dither_set_method_for_rep(dither, method_for_rep);
     sixel_dither_set_quality_mode(dither, quality_mode);
 
-    buf = sixel_quant_make_palette(normalized_pixels, width, height, 3,
+    buf = sixel_quant_make_palette(normalized_pixels,
+                                   width * height * 3,
+                                   COLOR_RGB888,
                                    dither->reqcolors, &dither->ncolors,
                                    &dither->origcolors,
                                    dither->method_for_largest,

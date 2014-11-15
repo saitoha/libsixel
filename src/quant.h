@@ -27,11 +27,16 @@ extern "C" {
 #endif
 
 unsigned char *
-sixel_quant_make_palette(unsigned char *data, int x, int y, int depth,
-                         int reqcolors, int *ncolors, int *origcolors,
-                         int const methodForLargest,
-                         int const methodForRep,
-                         int const qualityMode);
+sixel_quant_make_palette(
+    unsigned const char /* in */ *data,  /* data for sampling */
+    int /* in */ length,                 /* data size */
+    int /* in */ depth,
+    int /* in */ reqcolors,
+    int /* in */ *ncolors,
+    int /* in */ *origcolors,
+    int /* in */ methodForLargest,
+    int /* in */ methodForRep,
+    int /* in */ qualityMode);
 
 int
 sixel_quant_apply_palette(unsigned char *data,

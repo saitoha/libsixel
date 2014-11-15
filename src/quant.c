@@ -598,6 +598,27 @@ mediancut(tupletable2 const colorfreqtable,
 
 
 static int
+compute_depth_from_pixelformat(pixelformat)
+{
+    int depth = (-1);  /* unknown */
+
+    switch (pixelformat) {
+        case COLOR_RGB888:
+            depth = 3;
+            break;
+        case COLOR_RGB555:
+        case COLOR_RGB565:
+            depth = 2;
+            break;
+        default:
+            break;
+    }
+
+    return depth;
+}
+
+
+static int
 computeHash(unsigned char const *data, int const depth)
 {
     int hash = 0;
@@ -612,7 +633,7 @@ computeHash(unsigned char const *data, int const depth)
 
 
 static int
-computeHistogram(unsigned char *data,
+computeHistogram(unsigned char const *data,
                  unsigned int length,
                  unsigned long const depth,
                  tupletable2 * const colorfreqtableP,
@@ -699,8 +720,8 @@ computeHistogram(unsigned char *data,
 
 
 static int
-computeColorMapFromInput(unsigned char *data,
-                         size_t length,
+computeColorMapFromInput(unsigned char const *data,
+                         unsigned int const length,
                          unsigned int const depth,
                          unsigned int const reqColors,
                          enum methodForLargest const methodForLargest,
@@ -1077,8 +1098,9 @@ lookup_mono_lightbg(unsigned char const * const pixel,
 
 
 unsigned char *
-sixel_quant_make_palette(unsigned char *data,
-                         int x, int y, int depth,
+sixel_quant_make_palette(unsigned char const *data,
+                         int length,
+                         int pixelformat,
                          int reqcolors, int *ncolors, int *origcolors,
                          int methodForLargest,
                          int methodForRep,
@@ -1088,8 +1110,12 @@ sixel_quant_make_palette(unsigned char *data,
     int ret;
     unsigned char *palette;
     tupletable2 colormap;
+    int depth = compute_depth_from_pixelformat(pixelformat);
+    if (depth == -1) {
+        return NULL;
+    }
 
-    ret = computeColorMapFromInput(data, x * y * depth, depth,
+    ret = computeColorMapFromInput(data, length, depth,
                                    reqcolors, methodForLargest,
                                    methodForRep, qualityMode,
                                    &colormap, origcolors);
