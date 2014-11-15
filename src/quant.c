@@ -562,38 +562,40 @@ mediancut(tupletable2 const colorfreqtable,
     int multicolorBoxesExist;
     unsigned int i;
     unsigned int sum;
+    int nret = (-1);
 
     sum = 0;
 
-    for (i = 0; i < colorfreqtable.size; ++i)
+    for (i = 0; i < colorfreqtable.size; ++i) {
         sum += colorfreqtable.table[i]->value;
+    }
 
-        /* There is at least one box that contains at least 2 colors; ergo,
-           there is more splitting we can do.
-        */
-
+    /* There is at least one box that contains at least 2 colors; ergo,
+       there is more splitting we can do.  */
     bv = newBoxVector(colorfreqtable.size, sum, newcolors);
-    if (!bv) {
-        return (-1);
-    }
-    boxes = 1;
-    multicolorBoxesExist = (colorfreqtable.size > 1);
+    if (bv) {
+        boxes = 1;
+        multicolorBoxesExist = (colorfreqtable.size > 1);
 
-    /* Main loop: split boxes until we have enough. */
-    while (boxes < newcolors && multicolorBoxesExist) {
-        /* Find the first splittable box. */
-        for (bi = 0; bi < boxes && bv[bi].colors < 2; ++bi);
-        if (bi >= boxes)
-            multicolorBoxesExist = 0;
-        else
-            splitBox(bv, &boxes, bi, colorfreqtable, depth, methodForLargest);
-    }
-    *colormapP = colormapFromBv(newcolors, bv, boxes,
-                                colorfreqtable, depth,
-                                methodForRep);
+        /* Main loop: split boxes until we have enough. */
+        while (boxes < newcolors && multicolorBoxesExist) {
+            /* Find the first splittable box. */
+            for (bi = 0; bi < boxes && bv[bi].colors < 2; ++bi)
+                ;
+            if (bi >= boxes) {
+                multicolorBoxesExist = 0;
+            } else {
+                splitBox(bv, &boxes, bi, colorfreqtable, depth, methodForLargest);
+            }
+        }
+        *colormapP = colormapFromBv(newcolors, bv, boxes,
+                                    colorfreqtable, depth,
+                                    methodForRep);
 
-    free(bv);
-    return 0;
+        free(bv);
+        nret = 0;
+    }
+    return nret;
 }
 
 
