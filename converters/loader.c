@@ -621,7 +621,7 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
 {
     GdkPixbuf *pixbuf;
     GdkPixbufAnimation *animation;
-    unsigned char *pixels;
+    unsigned char *pixels = NULL;
     unsigned char *p;
     GdkPixbufLoader *loader;
     chunk_t frames;
@@ -687,6 +687,7 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
     }
     gdk_pixbuf_loader_close(loader, NULL);
     g_object_unref(loader);
+
     return pixels;
 }
 #endif  /* HAVE_GDK_PIXBUF2 */
