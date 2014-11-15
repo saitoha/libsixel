@@ -428,7 +428,8 @@ CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c scale.c malloc_stub.c loader.c frompnm.c \
 @WANT_IMG2SIXEL_TRUE@                    scale.h malloc_stub.h loader.h frompnm.h
 
-@WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -I$(top_builddir)/include/ \
+@WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -Wall -Wextra \
+@WANT_IMG2SIXEL_TRUE@	-I$(top_builddir)/include/ \
 @WANT_IMG2SIXEL_TRUE@	$(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) \
 @WANT_IMG2SIXEL_TRUE@	$(LIBCURL_CFLAGS) $(GD_CFLAGS) \
 @WANT_IMG2SIXEL_TRUE@	$(LIBJPEG_CFLAGS) $(LIBPNG_CFLAGS) \
@@ -440,7 +441,7 @@ CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel
 @WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c \
 @WANT_SIXEL2PNG_TRUE@                    stb_image_write.h malloc_stub.h
 
-@WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = -Wall \
+@WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = -Wall -Wextra \
 @WANT_SIXEL2PNG_TRUE@	-I$(top_builddir)/include/ \
 @WANT_SIXEL2PNG_TRUE@	$(MAYBE_COVERAGE) $(LIBPNG_CFLAGS) \
 @WANT_SIXEL2PNG_TRUE@	$(am__append_7)
