@@ -84,7 +84,7 @@ enum builtinDither {
 };
 
 /* bitfield type of input image */
-enum colorBitfield {
+enum pixelFormat {
     COLOR_PAL8     = 0, /* 8bit palette */
     COLOR_RGB555   = 1, /* 15 bpp */
     COLOR_RGB565   = 2, /* 16 bpp */
@@ -250,6 +250,10 @@ sixel_dither_set_optimize_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     int            /* in */ do_opt);   /* 0: optimize palette size
                                           1: don't optimize palette size */
+void
+sixel_dither_set_pixelformat(
+    sixel_dither_t /* in */ *dither,      /* dither context object */
+    int            /* in */ pixelformat); /* one of enum pixelFormat */
 
 #ifdef __cplusplus
 }

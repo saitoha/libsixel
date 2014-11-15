@@ -1079,6 +1079,8 @@ int sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
 
     sixel_dither_ref(dither);
 
+    sixel_dither_set_pixelformat(dither, pixelformat);
+
     if (dither->quality_mode == QUALITY_HIGHCOLOR) {
         nret = sixel_encode_fullcolor(pixels, width, height,
                                       pixelformat, dither, context);

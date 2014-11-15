@@ -444,6 +444,7 @@ sixel_dither_set_complexion_score(sixel_dither_t /* in */ *dither,  /* dither co
     dither->complexion = score;
 }
 
+
 void
 sixel_dither_set_body_only(sixel_dither_t /* in */ *dither,     /* dither context object */
                            int            /* in */ bodyonly)    /* 0: output palette section
@@ -452,6 +453,7 @@ sixel_dither_set_body_only(sixel_dither_t /* in */ *dither,     /* dither contex
     dither->bodyonly = bodyonly;
 }
 
+
 void
 sixel_dither_set_optimize_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
@@ -459,6 +461,15 @@ sixel_dither_set_optimize_palette(
                                           1: don't optimize palette size */
 {
     dither->optimize_palette = do_opt;
+}
+
+
+void
+sixel_dither_set_pixelformat(
+    sixel_dither_t /* in */ *dither,     /* dither context object */
+    int            /* in */ pixelformat) /* one of enum pixelFormat */
+{
+    dither->pixelformat = pixelformat;
 }
 
 
