@@ -630,7 +630,7 @@ reload:
 #endif
                     printf("\033[H");
                     fflush(stdout);
-#if HAVE_USLEEP && HAVE_CLOCK
+#if HAVE_USLEEP
                     if (delays != NULL && !psettings->fignore_delay) {
 # if HAVE_CLOCK
                         dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
