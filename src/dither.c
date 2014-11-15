@@ -379,12 +379,12 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     sixel_dither_set_method_for_rep(dither, method_for_rep);
     sixel_dither_set_quality_mode(dither, quality_mode);
 
-    buf = LSQ_MakePalette(normalized_pixels, width, height, 3,
-                          dither->reqcolors, &dither->ncolors,
-                          &dither->origcolors,
-                          dither->method_for_largest,
-                          dither->method_for_rep,
-                          dither->quality_mode);
+    buf = sixel_quant_make_palette(normalized_pixels, width, height, 3,
+                                   dither->reqcolors, &dither->ncolors,
+                                   &dither->origcolors,
+                                   dither->method_for_largest,
+                                   dither->method_for_rep,
+                                   dither->quality_mode);
     if (buf == NULL) {
         free(normalized_pixels);
         return (-1);
@@ -397,7 +397,7 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     }
 
     free(normalized_pixels);
-    LSQ_FreePalette(buf);
+    sixel_quant_free_palette(buf);
 
     return 0;
 }
@@ -525,17 +525,17 @@ sixel_dither_apply_palette(sixel_dither_t *dither,
         input_pixels = pixels;
     }
 
-    ret = LSQ_ApplyPalette(input_pixels,
-                           width, height, 3,
-                           dither->palette,
-                           dither->ncolors,
-                           dither->method_for_diffuse,
-                           dither->optimized,
-                           dither->optimize_palette,
-                           dither->complexion,
-                           dither->cachetable,
-                           &ncolors,
-                           dest);
+    ret = sixel_quant_apply_palette(input_pixels,
+                                    width, height, 3,
+                                    dither->palette,
+                                    dither->ncolors,
+                                    dither->method_for_diffuse,
+                                    dither->optimized,
+                                    dither->optimize_palette,
+                                    dither->complexion,
+                                    dither->cachetable,
+                                    &ncolors,
+                                    dest);
     if (ret != 0) {
         free(dest);
         dest = NULL;

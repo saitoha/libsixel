@@ -27,26 +27,27 @@ extern "C" {
 #endif
 
 unsigned char *
-LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
-                int reqcolors, int *ncolors, int *origcolors,
-                int const methodForLargest,
-                int const methodForRep,
-                int const qualityMode);
+sixel_quant_make_palette(unsigned char *data, int x, int y, int depth,
+                         int reqcolors, int *ncolors, int *origcolors,
+                         int const methodForLargest,
+                         int const methodForRep,
+                         int const qualityMode);
 
 int
-LSQ_ApplyPalette(unsigned char *data, int width, int height, int depth,
-                 unsigned char *palette, int reqcolor,
-                 int const methodForDiffuse,
-                 int foptimize,
-                 int foptimize_palette,
-                 int complexion,
-                 unsigned short *cachetable,
-                 int *ncolor,
-                 unsigned char *result);
+sixel_quant_apply_palette(unsigned char *data,
+                          int width, int height, int depth,
+                          unsigned char *palette, int reqcolor,
+                          int const methodForDiffuse,
+                          int foptimize,
+                          int foptimize_palette,
+                          int complexion,
+                          unsigned short *cachetable,
+                          int *ncolor,
+                          unsigned char *result);
 
 
-extern void
-LSQ_FreePalette(unsigned char * data);
+void
+sixel_quant_free_palette(unsigned char * data);
 
 #ifdef __cplusplus
 }

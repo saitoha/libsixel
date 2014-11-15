@@ -1077,11 +1077,12 @@ lookup_mono_lightbg(unsigned char const * const pixel,
 
 
 unsigned char *
-LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
-                int reqcolors, int *ncolors, int *origcolors,
-                int methodForLargest,
-                int methodForRep,
-                int qualityMode)
+sixel_quant_make_palette(unsigned char *data,
+                         int x, int y, int depth,
+                         int reqcolors, int *ncolors, int *origcolors,
+                         int methodForLargest,
+                         int methodForRep,
+                         int qualityMode)
 {
     int i, n;
     int ret;
@@ -1110,19 +1111,19 @@ LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
 
 
 int
-LSQ_ApplyPalette(unsigned char *data,
-                 int width,
-                 int height,
-                 int depth,
-                 unsigned char *palette,
-                 int reqcolor,
-                 int methodForDiffuse,
-                 int foptimize,
-                 int foptimize_palette,
-                 int complexion,
-                 unsigned short *cachetable,
-                 int *ncolors,
-                 unsigned char *result)
+sixel_quant_apply_palette(unsigned char *data,
+                          int width,
+                          int height,
+                          int depth,
+                          unsigned char *palette,
+                          int reqcolor,
+                          int methodForDiffuse,
+                          int foptimize,
+                          int foptimize_palette,
+                          int complexion,
+                          unsigned short *cachetable,
+                          int *ncolors,
+                          unsigned char *result)
 {
     typedef int component_t;
     int pos, n, x, y, sum1, sum2;
@@ -1265,7 +1266,7 @@ LSQ_ApplyPalette(unsigned char *data,
 
 
 void
-LSQ_FreePalette(unsigned char * data)
+sixel_quant_free_palette(unsigned char * data)
 {
     free(data);
 }
