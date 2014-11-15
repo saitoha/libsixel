@@ -81,6 +81,8 @@ enum loopMode {
 static int
 sixel_write_callback(char *data, int size, void *priv)
 {
+    /* unused */ (void) priv;
+
     return fwrite(data, 1, size, stdout);
 }
 
@@ -88,6 +90,8 @@ sixel_write_callback(char *data, int size, void *priv)
 static int
 sixel_hex_write_callback(char *data, int size, void *priv)
 {
+    /* unused */ (void) priv;
+
     char hex[SIXEL_OUTPUT_PACKET_SIZE * 2];
     int i;
     int j;
@@ -252,6 +256,10 @@ clip(unsigned char *pixels, int sx, int sy, int cx, int cy, int cw, int ch)
     int y;
     unsigned char *src;
     unsigned char *dst;
+
+    /* unused */ (void) sx;
+    /* unused */ (void) sy;
+    /* unused */ (void) cx;
 
     dst = pixels;
     src = pixels + cy * sx * 3;

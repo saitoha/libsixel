@@ -62,7 +62,7 @@
 #if 0
 #define quant_trace fprintf
 #else
-static inline void quant_trace(FILE *f, ...) {}
+static inline void quant_trace(FILE *f, ...) { (void) f; }
 #endif
 
 /*****************************************************************************
@@ -321,7 +321,7 @@ centerBox(int          const boxStart,
 
     for (plane = 0; plane < depth; ++plane) {
         int minval, maxval;
-        unsigned int i;
+        int i;
 
         minval = maxval = colorfreqtable.table[boxStart]->tuple[plane];
 
@@ -371,7 +371,7 @@ averagePixels(int const boxStart,
     unsigned int n;
         /* Number of tuples represented by the box */
     unsigned int plane;
-    unsigned int i;
+    int i;
 
     /* Count the tuples in question */
     n = 0;  /* initial value */
@@ -475,7 +475,7 @@ splitBox(boxVector const bv,
     unsigned int largestDimension;
         /* number of the plane with the largest spread */
     unsigned int medianIndex;
-    int lowersum;
+    unsigned int lowersum;
         /* Number of pixels whose value is "less than" the median */
 
     findBoxBoundaries(colorfreqtable, depth, boxStart, boxSize,
@@ -520,7 +520,7 @@ splitBox(boxVector const bv,
         unsigned int i;
 
         lowersum = colorfreqtable.table[boxStart]->value; /* initial value */
-        for (i = 1; i < boxSize - 1 && lowersum < sm/2; ++i) {
+        for (i = 1; i < boxSize - 1 && lowersum < sm / 2; ++i) {
             lowersum += colorfreqtable.table[boxStart + i]->value;
         }
         medianIndex = i;
@@ -542,7 +542,7 @@ splitBox(boxVector const bv,
 static int
 mediancut(tupletable2 const colorfreqtable,
           unsigned int const depth,
-          int const newcolors,
+          unsigned int const newcolors,
           int const methodForLargest,
           int const methodForRep,
           tupletable2 *const colormapP)
@@ -702,7 +702,7 @@ static int
 computeColorMapFromInput(unsigned char *data,
                          size_t length,
                          unsigned int const depth,
-                         int const reqColors,
+                         unsigned int const reqColors,
                          enum methodForLargest const methodForLargest,
                          enum methodForRep const methodForRep,
                          enum qualityMode const qualityMode,
@@ -729,7 +729,8 @@ computeColorMapFromInput(unsigned char *data,
    relevant to our colormap mission; just a fringe benefit).
 -----------------------------------------------------------------------------*/
     tupletable2 colorfreqtable;
-    int i, n;
+    unsigned int i;
+    unsigned int n;
     int ret;
 
     ret = computeHistogram(data, length, depth, &colorfreqtable, qualityMode);
@@ -790,6 +791,13 @@ static void
 diffuse_none(unsigned char *data, int width, int height,
              int x, int y, int depth, int offset)
 {
+    /* unused */ (void) data;
+    /* unused */ (void) width;
+    /* unused */ (void) height;
+    /* unused */ (void) x;
+    /* unused */ (void) y;
+    /* unused */ (void) depth;
+    /* unused */ (void) offset;
 }
 
 
@@ -950,6 +958,9 @@ lookup_normal(unsigned char const * const pixel,
     index = -1;
     diff = INT_MAX;
 
+    /* don't use cachetable in 'normal' strategy */
+    (void) cachetable;
+
     for (i = 0; i < reqcolor; i++) {
         distant = 0;
         r = pixel[0] - palette[i * depth + 0];
@@ -982,6 +993,9 @@ lookup_fast(unsigned char const * const pixel,
     int cache;
     int i;
     int distant;
+
+    /* don't use depth in 'fast' strategy because it's always 3 */
+    (void) depth;
 
     index = -1;
     diff = INT_MAX;
@@ -1027,6 +1041,10 @@ lookup_mono_darkbg(unsigned char const * const pixel,
     int n;
     int distant;
 
+    /* unused */ (void) palette;
+    /* unused */ (void) cachetable;
+    /* unused */ (void) complexion;
+
     distant = 0;
     for (n = 0; n < depth; ++n) {
         distant += pixel[n];
@@ -1045,6 +1063,10 @@ lookup_mono_lightbg(unsigned char const * const pixel,
 {
     int n;
     int distant;
+
+    /* unused */ (void) palette;
+    /* unused */ (void) cachetable;
+    /* unused */ (void) complexion;
 
     distant = 0;
     for (n = 0; n < depth; ++n) {

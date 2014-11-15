@@ -533,6 +533,8 @@ end:
 static void
 dither_func_none(unsigned char *data, int width)
 {
+    (void) data;  /* unused */
+    (void) width; /* unused */
 }
 
 
