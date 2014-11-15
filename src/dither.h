@@ -47,11 +47,14 @@ extern "C" {
 #endif
 
 /* apply palette */
-unsigned char * sixel_apply_palette(unsigned char *pixels, int width, int height,
-                                    sixel_dither_t *dither);
+unsigned char *
+sixel_dither_apply_palette(sixel_dither_t *dither,
+                           unsigned char *pixels,
+                           int width, int height);
 
-void sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
-                                 int width, int height, int const pixelformat);
+void
+sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
+                            int width, int height, int const pixelformat);
 
 #ifdef __cplusplus
 }

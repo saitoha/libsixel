@@ -505,9 +505,9 @@ sixel_encode_dither(unsigned char *pixels, int width, int height, int pixelforma
             goto end;
         }
         sixel_normalize_pixelformat(normalized_pixels, pixels, width, height, pixelformat);
-        paletted_pixels = sixel_apply_palette(normalized_pixels, width, height, dither);
+        paletted_pixels = sixel_dither_apply_palette(dither, normalized_pixels, width, height);
     } else {
-        paletted_pixels = sixel_apply_palette(pixels, width, height, dither);
+        paletted_pixels = sixel_dither_apply_palette(dither, pixels, width, height);
     }
 
     /* apply palette */

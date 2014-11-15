@@ -462,7 +462,9 @@ sixel_dither_set_optimize_palette(
 
 
 unsigned char *
-sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t *dither)
+sixel_dither_apply_palette(sixel_dither_t *dither,
+                           unsigned char *pixels,
+                           int width, int height)
 {
     int ret;
     int bufsize;
