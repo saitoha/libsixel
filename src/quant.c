@@ -598,7 +598,7 @@ mediancut(tupletable2 const colorfreqtable,
 
 
 static int
-compute_depth_from_pixelformat(pixelformat)
+compute_depth_from_pixelformat(int pixelformat)
 {
     int depth = (-1);  /* unknown */
 
