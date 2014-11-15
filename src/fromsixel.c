@@ -170,9 +170,7 @@ hls2rgb(int hue, int lum, int sat)
 }
 
 static unsigned char *
-sixel_getparams(unsigned char *p,
-                unsigned char const *end,
-                int *param, int *len)
+sixel_getparams(unsigned char *p, int *param, int *len)
 {
     int n;
 
@@ -180,9 +178,6 @@ sixel_getparams(unsigned char *p,
     while (*p != '\0') {
         while (*p == ' ' || *p == '\t') {
             p++;
-            if (p == end) {
-                return NULL;
-            }
         }
         if (isdigit(*p)) {
             for (n = 0; isdigit(*p); p++) {
@@ -193,27 +188,17 @@ sixel_getparams(unsigned char *p,
             }
             while (*p == ' ' || *p == '\t') {
                 p++;
-                if (p == end) {
-                    return NULL;
-                }
             }
             if (*p == ';') {
                 p++;
-                if (p == end) {
-                    return NULL;
-                }
             }
         } else if (*p == ';') {
             if (*len < 10) {
                 param[(*len)++] = 0;
             }
             p++;
-            if (p == end) {
-                return NULL;
-            }
-        } else {
+        } else
             break;
-        }
     }
     return p;
 }
@@ -232,7 +217,6 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
              sixel_allocator_function   /* out */ allocator)  /* malloc function */
 {
     int n, i, r, g, b, sixel_vertical_mask, c;
-    unsigned char *end;
     int posision_x, posision_y;
     int max_x, max_y;
     int attributed_pan, attributed_pad;
@@ -246,9 +230,9 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     int imsx, imsy;
     int dmsx, dmsy;
     int y;
-    int nret = (-1);
 
-    end = p + len;
+    (void) len;
+
     posision_x = posision_y = 0;
     max_x = max_y = 0;
     attributed_pan = 2;
@@ -258,7 +242,6 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     color_index = 15;
     max_color_index = 2;
     background_color_index = 0;
-    *palette = NULL;
 
     imsx = 2048;
     imsy = 2048;
@@ -291,26 +274,17 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
     memset(imbuf, background_color_index, imsx * imsy);
 
-    while (p != end && *p != '\0') {
-        if ((*p == '\033' && ++p != end && *p == 'P') || *p == 0x90) {
+    while (*p != '\0') {
+        if ((p[0] == '\033' && p[1] == 'P') || *p == 0x90) {
             if (*p == '\033') {
                 p++;
             }
-            if (p == end) {
-                goto error;
-            }
 
-            p = sixel_getparams(++p, end, param, &n);
-            if (p == NULL) {
-                goto error;
-            }
+            p = sixel_getparams(++p, param, &n);
 
             if (*p == 'q') {
                 p++;
 
-                if (p == end) {
-                    goto error;
-                }
                 if (n > 0) {        /* Pn1 */
                     switch(param[0]) {
                     case 0:
@@ -355,14 +329,11 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
                 }
             }
 
-        } else if ((*p == '\033' && ++p != end && *p == '\\') || *p == 0x9C) {
+        } else if ((p[0] == '\033' && p[1] == '\\') || *p == 0x9C) {
             break;
         } else if (*p == '"') {
             /* DECGRA Set Raster Attributes " Pan; Pad; Ph; Pv */
-            p = sixel_getparams(p + 1, end, param, &n);
-            if (p == NULL) {
-                goto error;
-            }
+            p = sixel_getparams(p + 1, param, &n);
 
             if (n > 0) attributed_pad = param[0];
             if (n > 1) attributed_pan = param[1];
@@ -377,7 +348,8 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
                 dmsy = imsy > attributed_pv ? imsy : attributed_pv;
                 dmbuf = allocator(dmsx * dmsy);
                 if (dmbuf == NULL) {
-                    goto error;
+                    free(imbuf);
+                    return (-1);
                 }
                 memset(dmbuf, background_color_index, dmsx * dmsy);
                 for (y = 0; y < imsy; ++y) {
@@ -387,15 +359,11 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
                 imsx = dmsx;
                 imsy = dmsy;
                 imbuf = dmbuf;
-                dmbuf = NULL;
             }
 
         } else if (*p == '!') {
             /* DECGRI Graphics Repeat Introducer ! Pn Ch */
-            p = sixel_getparams(p + 1, end, param, &n);
-            if (p == NULL) {
-                goto error;
-            }
+            p = sixel_getparams(p + 1, param, &n);
 
             if (n > 0) {
                 repeat_count = param[0];
@@ -403,10 +371,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
         } else if (*p == '#') {
             /* DECGCI Graphics Color Introducer # Pc; Pu; Px; Py; Pz */
-            p = sixel_getparams(++p, end, param, &n);
-            if (p == NULL) {
-                goto error;
-            }
+            p = sixel_getparams(++p, param, &n);
 
             if (n > 0) {
                 if ((color_index = param[0]) < 0) {
@@ -433,18 +398,12 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
         } else if (*p == '$') {
             /* DECGCR Graphics Carriage Return */
             p++;
-            if (p == end) {
-                goto error;
-            }
             posision_x = 0;
             repeat_count = 1;
 
         } else if (*p == '-') {
             /* DECGNL Graphics Next Line */
             p++;
-            if (p == end) {
-                goto error;
-            }
             posision_x  = 0;
             posision_y += 6;
             repeat_count = 1;
@@ -462,6 +421,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
                 dmsx = nx;
                 dmsy = ny;
                 if ((dmbuf = allocator(dmsx * dmsy)) == NULL) {
+                    free(imbuf);
                     return (-1);
                 }
                 memset(dmbuf, background_color_index, dmsx * dmsy);
@@ -472,7 +432,6 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
                 imsx = dmsx;
                 imsy = dmsy;
                 imbuf = dmbuf;
-                dmbuf = NULL;
             }
 
             if (color_index > max_color_index) {
@@ -480,13 +439,8 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
             }
             if ((b = *(p++) - '?') == 0) {
                 posision_x += repeat_count;
-                if (p == end) {
-                    goto error;
-                }
+
             } else {
-                if (p == end) {
-                    goto error;
-                }
                 sixel_vertical_mask = 0x01;
 
                 if (repeat_count <= 1) {
@@ -548,9 +502,9 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     if (imsx > max_x || imsy > max_y) {
         dmsx = max_x;
         dmsy = max_y;
-        dmbuf = allocator(dmsx * dmsy);
-        if (dmbuf == NULL) {
-            goto error;
+        if ((dmbuf = allocator(dmsx * dmsy)) == NULL) {
+            free(imbuf);
+            return (-1);
         }
         for (y = 0; y < dmsy; ++y) {
             memcpy(dmbuf + dmsx * y, imbuf + imsx * y, dmsx);
@@ -559,7 +513,6 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
         imsx = dmsx;
         imsy = dmsy;
         imbuf = dmbuf;
-        dmbuf = NULL;
     }
 
     *pixels = imbuf;
@@ -567,22 +520,13 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     *pheight = imsy;
     *ncolors = max_color_index + 1;
     *palette = allocator(*ncolors * 4);
-    if (*palette == NULL) {
-        goto error;
-    }
     for (n = 0; n < *ncolors; ++n) {
         (*palette)[n * 4 + 0] = sixel_palet[n] >> 16 & 0xff;
         (*palette)[n * 4 + 1] = sixel_palet[n] >> 8 & 0xff;
         (*palette)[n * 4 + 2] = sixel_palet[n] & 0xff;
         (*palette)[n * 4 + 3] = 0xff;
     }
-    nret = 0;
-
-error:
-    free(imbuf);
-    free(dmbuf);
-    free(*palette);
-    return nret;
+    return 0;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
