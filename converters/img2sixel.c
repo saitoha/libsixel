@@ -1336,7 +1336,8 @@ argerr:
     fprintf(stderr, "usage: img2sixel [-78eIiugvSPDVH] [-p colors] [-m file] [-d diffusiontype]\n"
                     "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
                     "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
-                    "                 [-t palettetype] [-n macronumber] [-C score] [filename ...]\n"
+                    "                 [-t palettetype] [-n macronumber] [-C score]\n"
+                    "                 [-E encodepolicy] [filename ...]\n"
                     "for more details, type: 'img2sixel -H'.\n");
 
 end:
