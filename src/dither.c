@@ -369,7 +369,8 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     }
 
     if (pixelformat != COLOR_RGB888) {
-        sixel_normalize_pixelformat(normalized_pixels, data, width, height, pixelformat);
+        sixel_normalize_pixelformat(normalized_pixels, data,
+                                    width, height, pixelformat);
     } else {
         memcpy(normalized_pixels, data, width * height * 3);
     }
@@ -483,6 +484,8 @@ sixel_dither_apply_palette(sixel_dither_t *dither,
     int cachesize;
     unsigned char *dest;
     int ncolors;
+    unsigned char *normalized_pixels = NULL;
+    unsigned char *input_pixels;
 
     bufsize = width * height * sizeof(unsigned char);
     dest = malloc(bufsize);
@@ -490,6 +493,7 @@ sixel_dither_apply_palette(sixel_dither_t *dither,
         return NULL;
     }
 
+    /* if quality_mode is full, do not use palette caching */
     if (dither->quality_mode == QUALITY_FULL) {
         dither->optimized = 0;
     }
@@ -506,7 +510,23 @@ sixel_dither_apply_palette(sixel_dither_t *dither,
         }
     }
 
-    ret = LSQ_ApplyPalette(pixels, width, height, 3,
+    if (dither->pixelformat != COLOR_RGB888) {
+        /* normalize pixelformat */
+        normalized_pixels = malloc(width * height * 3);
+        if (normalized_pixels == NULL) {
+            goto end;
+        }
+        sixel_normalize_pixelformat(normalized_pixels,
+                                    pixels,
+                                    width, height,
+                                    dither->pixelformat);
+        input_pixels = normalized_pixels;
+    } else {
+        input_pixels = pixels;
+    }
+
+    ret = LSQ_ApplyPalette(input_pixels,
+                           width, height, 3,
                            dither->palette,
                            dither->ncolors,
                            dither->method_for_diffuse,
@@ -517,11 +537,14 @@ sixel_dither_apply_palette(sixel_dither_t *dither,
                            &ncolors,
                            dest);
     if (ret != 0) {
-        return NULL;
+        free(dest);
+        dest = NULL;
     }
 
     dither->ncolors = ncolors;
 
+end:
+    free(normalized_pixels);
     return dest;
 }
 
