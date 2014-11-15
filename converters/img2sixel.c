@@ -568,13 +568,11 @@ reload:
                 printf("\x1b\\");
             }
         }
-        if (frame_count != 1 || psettings->macro_number < 0) {
+        if (frame_count > 1 || psettings->macro_number < 0) {
             for (c = 0; c != loop_count; ++c) {
                 for (n = 0; n < frame_count; ++n) {
 #if HAVE_USLEEP && HAVE_CLOCK
-                    if (frame_count > 1) {
-                        start = clock();
-                    }
+                    start = clock();
 #endif
                     printf("\033[H");
                     printf("\033[%d*z", n);
@@ -628,9 +626,7 @@ reload:
             for (n = 0; n < frame_count; ++n) {
                 if (frame_count > 1) {
 #if HAVE_USLEEP && HAVE_CLOCK
-                    if (frame_count > 1) {
-                        start = clock();
-                    }
+                    start = clock();
 #endif
                     printf("\033[H");
                     fflush(stdout);
