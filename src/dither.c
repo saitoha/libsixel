@@ -361,6 +361,7 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
 {
     unsigned char *buf = NULL;
     unsigned char *normalized_pixels = NULL;
+    unsigned char *input_pixels;
 
     /* normalize pixelformat */
     normalized_pixels = malloc(width * height * 3);
@@ -371,15 +372,16 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     if (pixelformat != COLOR_RGB888) {
         sixel_normalize_pixelformat(normalized_pixels, data,
                                     width, height, pixelformat);
+        input_pixels = normalized_pixels;
     } else {
-        memcpy(normalized_pixels, data, width * height * 3);
+        input_pixels = data;
     }
 
     sixel_dither_set_method_for_largest(dither, method_for_largest);
     sixel_dither_set_method_for_rep(dither, method_for_rep);
     sixel_dither_set_quality_mode(dither, quality_mode);
 
-    buf = sixel_quant_make_palette(normalized_pixels,
+    buf = sixel_quant_make_palette(input_pixels,
                                    width * height * 3,
                                    COLOR_RGB888,
                                    dither->reqcolors, &dither->ncolors,
