@@ -106,7 +106,7 @@ enum paletteType {
 #ifndef LIBSIXEL_DITHER_H
 
 /* dither context object */
-typedef struct sixel_dither {} sixel_dither_t;
+typedef struct sixel_dither { int dummy; } sixel_dither_t;
 
 #endif /* SIXEL_DITHER_H */
 
@@ -114,7 +114,7 @@ typedef struct sixel_dither {} sixel_dither_t;
 
 typedef int (* sixel_write_function)(char *data, int size, void *priv);
 
-typedef struct sixel_output {} sixel_output_t;
+typedef struct sixel_output { int dummy; } sixel_output_t;
 
 #endif  /* LIBSIXEL_OUTPUT_H */
 
