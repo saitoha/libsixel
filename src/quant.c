@@ -684,11 +684,14 @@ computeHistogram(unsigned char const *data,
 
     if (length > max_sample * depth) {
         step = length / depth / max_sample;
+        if (step <= 0) {
+            step = depth;
+        }
     } else {
-        step = depth;
+        step = 7 * depth;
     }
 
-    for (i = 0; i < length; i += step) {
+    for (i = 0; i < length - depth; i += step) {
         index = computeHash(data + i, 3);
         if (histogram[index] == 0) {
             *ref++ = index;
@@ -1111,6 +1114,7 @@ sixel_quant_make_palette(unsigned char const *data,
     unsigned char *palette;
     tupletable2 colormap;
     int depth = compute_depth_from_pixelformat(pixelformat);
+
     if (depth == -1) {
         return NULL;
     }
@@ -1156,6 +1160,8 @@ sixel_quant_apply_palette(unsigned char *data,
     component_t offset;
     int index;
     unsigned short *indextable;
+    unsigned char new_palette[256 * 4];
+    unsigned short migration_map[256];
     void (*f_diffuse)(unsigned char *data, int width, int height,
                       int x, int y, int depth, int offset);
     int (*f_lookup)(unsigned char const * const pixel,
@@ -1235,9 +1241,6 @@ sixel_quant_apply_palette(unsigned char *data,
         memset(indextable, 0x00, (1 << depth * 5) * sizeof(unsigned short));
 #endif
     }
-
-    unsigned char new_palette[256 * 4];
-    unsigned short migration_map[256];
 
     if (foptimize_palette) {
         *ncolors = 0;
