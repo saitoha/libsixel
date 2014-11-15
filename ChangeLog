@@ -1,13 +1,174 @@
+2014-11-08  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c, src/dither.c: Enable some options(-f, -s, and -q)
+  ignored unintentionally
+
+2014-11-03  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Interpret an image expanded by png_set_palette_to_rgb
+  as a 3-channel image
+
+  * converters/img2sixel.c: Avoid scanf buffer overflow
+
+  * converters/img2sixel.c: Add missing options in brevity help
+
+  * converters/loader.c: Fix a segmentation fault occurs when using libpng
+  loader
+
+  * src/output.h, src/tosixel.c: Drop unnecessary variable
+  sixel_output_t::conv_palette
+
+2014-11-02  arakiken <arakiken@users.sf.net>
+
+  * src/tosixel.c: Remove unnecessary check. (nwrite <= 0) Cherry-picked from
+  cf00bed  Conflicts: src/tosixel.c
+
+2014-11-03  Hayaki Saito <user@zuse.jp>
+
+  * src/fromsixel.c: Strip unused variables
+
+  * converters/loader.c: Replace some indent tabs to spaces
+
+2014-11-02  arakiken <arakiken@users.sf.net>
+
+  * src/tosixel.c: Separate sixel_encode_impl() into sixel_encode_header(),
+  sixel_encode_body() and sixel_encode_footer(). Cherry-picked from 339d958. 
+  Conflicts: src/tosixel.c
+
+2014-10-29  Hayaki Saito <user@zuse.jp>
+
+  * src/image.c: Remove unused source file image.c
+
+2014-10-26  Hayaki Saito <user@zuse.jp>
+
+  * NEWS: Update NEWS
+
+  * NEWS: Update NEWS
+
+  * converters/shell-completion/bash/img2sixel: Update bash completion file
+
+  * converters/shell-completion/zsh/_img2sixel: Update zsh completion file
+
+  * README.md, converters/img2sixel.1: Update manpage and README.md
+
+  * converters/img2sixel.c: Update help
+
+  * converters/sixel2png.c: Write png data using libpng by sixel2png
+
+  * converters/sixel2png.c: Fix a typo
+
+  * converters/sixel2png.c: Cleanup
+
+  * converters/loader.c: Accepts sixel as input format by img2sixel
+
+  * converters/img2sixel.c: Fix segmentation fault on quitting GIF animation
+  with -u option
+
+  * converters/img2sixel.c, src/tosixel.c: Support HLS palette
+
+2014-10-25  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Don't terminate configure process if
+  --with-libcurl=auto
+
+  * configure, configure.ac: Don't check pkg-config availability if
+  $cross_compile == yes
+
+  * Makefile.in, configure, configure.ac, converters/Makefile.in,
+  include/Makefile.in, src/Makefile.in: Use $PKG_CONFIG environment variable
+  instead of $have_pkg_config
+
+  * configure, configure.ac: Don't use system pkg-config if $cross_compile ==
+  "yes"
+
+  * configure, configure.ac: Checks zlib availability with libpng, workaround
+  for MinGW build
+
+  * README.md, configure, configure.ac: Links libcurl automatically
+
+  * Makefile.in, NEWS, configure, configure.ac, converters/Makefile.am,
+  converters/Makefile.in, include/Makefile.in, src/Makefile.in: Build with
+  libjpeg/libpng automatically
+
+  * converters/loader.c: Strip alpha in png loader
+
+2014-10-22  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.am, Makefile.in, converters/Makefile.am, converters/Makefile.in,
+  images/snake.png: Add test for loading png with libpng
+
+  * configure, configure.ac, converters/Makefile.am, converters/Makefile.in,
+  images/snake-progressive.jpg: Add a test for loading progressive jpeg
+
+  * include/sixel.h.in, src/output.c, src/output.h: Add new API
+  sixel_output_set_palette_type
+
+  * converters/img2sixel.c, include/sixel.h.in: Add --palette-type option
+
+2014-10-20  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, include/sixel.h.in, src/dither.c, src/dither.h,
+  src/tosixel.c: Add new API, sixel_dither_set_body_only
+
+  * converters/img2sixel.c: Update usage
+
+  * configure: Minor fix
+
+  * configure, configure.ac: Minor fix
+
+  * configure.ac: Fix build error
+
+  * converters/loader.c: Fix build error
+
+  * converters/loader.c: Use libpng reader
+
+  * Makefile.in, config.h.in, configure, configure.ac, converters/Makefile.am,
+  converters/Makefile.in, include/Makefile.in, src/Makefile.in: Add --with-png
+  configure option
+
+  * LICENSE.xterm, README.md, src/fromsixel.c: Fix wrong HLS-to-RGB conversion
+  routine
+
+2014-10-18  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Introduce --verbose option
+
+  * src/fromsixel.c: Rename some functions as snake case
+
+  * src/fromsixel.c: Rename some functions as snake case
+
 2014-10-17  Hayaki Saito <user@zuse.jp>
+
+  * src/tosixel.c: Omit DCS parameters by default
+
+  * src/tosixel.c: Strip an extra DECGNL character at the end of output data
+
+  * src/tosixel.c: Strip an extra LF character from output data
 
   * converters/loader.c: Suppress gdk-pixbuf assersion on processing some GIF
   images, reported by @ttdoda
 
+2014-10-14  Hayaki Saito <user@zuse.jp>
+
+  * LICENSE.sdump, Makefile.in, README.md, config.h.in, configure,
+  configure.ac, converters/Makefile.am, converters/Makefile.in,
+  converters/loader.c, include/Makefile.in, src/Makefile.in: Add libjpeg
+  support with --with-jpeg configure option
+
 2014-10-12  Hayaki Saito <user@zuse.jp>
+
+  * package.json.in.in: clib integration: add --with-libcurl option by default
 
   * NEWS: Add missing items to NEWS
 
   * converters/loader.c: Include errno.h in loader.c
+
+  * converters/Makefile.am, converters/Makefile.in, src/Makefile.am,
+  src/Makefile.in: Add -Werror to CFLAGS when --enable-debug configure option
+  is specified
+
+  * config.h.in, configure, configure.ac: Introduce --enable-debug configure
+  option
 
   * converters/img2sixel.c: Fix a double free error
 

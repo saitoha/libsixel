@@ -424,7 +424,7 @@ dist_man_MANS = $(am__append_3) $(am__append_8)
 dist_bashcompletion_DATA = $(am__append_4)
 dist_zshcompletion_DATA = $(am__append_5)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
-CLEANFILES = *.gcno *.gcda *.gcov snake1.png snake2.png snake2.sixel
+CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c scale.c malloc_stub.c loader.c frompnm.c \
 @WANT_IMG2SIXEL_TRUE@                    scale.h malloc_stub.h loader.h frompnm.h
 
@@ -1065,17 +1065,68 @@ uninstall-man: uninstall-man1
 
 
 test: all
-@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.jpg | tee snake.sixel
-@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.jpg -w50% --height=100 | tee snake2.sixel
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -d invalid_option
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -r invalid_option
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -s invalid_option
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -t invalid_option
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -w invalid_option
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -h invalid_option
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -f invalid_option
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -q invalid_option
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -l invalid_option
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -%
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel invalid_filename
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -m ../images/map8.png -p 8 ../images/snake.jpg
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -m ../images/map8.png -e ../images/snake.jpg
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -p16 -e ../images/snake.jpg
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -D ../images/snake.jpg
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -I -C0 ../images/snake.png
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -I -e ../images/snake.png
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -I -p8 ../images/snake.png
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -I -m ../images/map8.png ../images/snake.png
+@WANT_IMG2SIXEL_TRUE@	! (echo -n a | ./img2sixel)
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -H
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -V
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | img2sixel | tee snake.sixel
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -w50% -h150% -dfs -thls < ../images/snake.jpg -shistogram | tee snake2.sixel
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -w2100 -h2100 < ../images/snake.jpg > snake3.sixel
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel - -w105% -h100 -djajuni -rnearest < ../images/snake.gif
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.tga -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -p300 ../images/snake.tiff -8 -scenter -h100 -qfull -rhanning -dstucki -thls
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -8 -qauto -thls -e ../images/snake.pgm
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -7 -w100 -h100 ../images/snake.pbm
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I ../images/snake.ppm -dstucki -thls
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I ../images/snake-ascii.ppm -8 -dburkes
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I -C10 ../images/snake.png -djajuni
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I ../images/snake-ascii.pgm
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I ../images/snake-ascii.pbm -datkinson
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I  ../images/snake.ppm -c2000x100+40+20 -wauto -h200 -qhigh -dfs -rbilinear -trgb
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I -v ../images/snake.bmp -w200 -hauto -c100x1000+40+20 -qlow -dnone -rhamming -thls
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -m ../images/map8.png -w200 -fauto -rwelsh ../images/egret.jpg
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -m ../images/map16.png -w100 -hauto -rbicubic -dauto ../images/snake.ppm
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -p 16 -C3 ../images/snake.jpg -h100 -fnorm -rlanczos2
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -v -p 8 ../images/snake.jpg -h200 -fnorm -rlanczos2 -dnone
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -p 2 ../images/snake.jpg -h100 -wauto -rlanczos3
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -p 1 ../images/snake.jpg -h100 -n1
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -e ../images/snake.jpg -h140 -rlanczos4 -P
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -e -i ../images/snake.jpg -P > /dev/null
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -u
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -g
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/seq2gif.gif -S -datkinson
 @HAVE_JPEG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake-progressive.jpg | tee snake.sixel
 @HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.png | tee snake.sixel
-@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png < snake.sixel > snake1.png
-@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -i snake.sixel -o snake2.png
-@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -m ../images/map8.png ../images/egret.jpg
-@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -m ../images/map16.png ../images/snake.pnm
-@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -p 8 ../images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -p 2 ../images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -e ../images/snake.jpg
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	!$(WINE) ./img2sixel file:///test
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel file:///$$(pwd)/../images/snake.jpg
+@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	! $(WINE) ./sixel2png -i unknown.sixel
+@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	! $(WINE) ./sixel2png -% < snake.sixel
+@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -H
+@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -V
+@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png < snake.sixel > snake1.png
+@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png < snake2.sixel > snake2.png
+@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png - - < snake3.sixel > snake3.png
+@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png --input=snake.sixel -o snake4.png
+	@echo succeeded
 
 winetest: all
 	WINE=wine $(MAKE) test

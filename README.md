@@ -63,11 +63,6 @@ img2sixel(1) can be integrated with [Arakiken's w3m fork(remoteimg branch)](http
   ![w3m-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel.png)
 
 
-[Arakiken's GNU Screen fork(sixel branch)](https://bitbucket.org/arakiken/screen/branch/sixel) works with this.
-
-  ![w3m-sixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel-screen.png)
-
-
 @uobikiemukot's [sdump](https://github.com/uobikiemukot/sdump) project selected another approach.
 He wrote a w3mimgdisplay compatible program [yaimg-sixel](https://github.com/uobikiemukot/sdump/tree/master/yaimg-sixel).
 It also works with [ranger](https://github.com/hut/ranger).
@@ -75,9 +70,24 @@ It also works with [ranger](https://github.com/hut/ranger).
   ![w3m-yaimg-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-yaimg-sixel.jpg)
 
 
+### GNU Screen integration
+
+[Arakiken's GNU Screen fork(sixel branch)](https://bitbucket.org/arakiken/screen/branch/sixel)
+works with SIXEL-supported applications including above products.
+This project is now in progress.
+GUI flavored SIXEL applications will integrated with existing terminal applications on it.
+
+  ![w3m-sixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel-screen.png)
+
+  ![sixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/arakikens-screen.jpg)
+
+  ![xsixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel-on-screen.png)
+
+See also on [youtube](http://youtu.be/QQAqe32VkFg).
+
 ### Twitter client integration
 
-Some NetBSD/OpenBSD users are doing amazing challenge.
+Some NetBSD/OpenBSD users are doing amazing challenges.
 
 #### [arakiken's mikutterm(mikutterm-sixel)](https://bitbucket.org/arakiken/mikutterm/branch/sixel)
 
@@ -110,6 +120,11 @@ Some NetBSD/OpenBSD users are doing amazing challenge.
   SIXEL works with old powerless machines such as [NetBSD/x68k](http://wiki.netbsd.org/ports/x68k/) (here is SHARP X68030 with 060turbo):
 
   ![sayaka-chan](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sayaka-netbsd-x68k.jpg)
+
+  SIXEL works even in-kernel console. [@isaki68k](https://github.com/isaki68k) wrote
+  [a patch for ite(4)](https://github.com/isaki68k/misc/blob/master/NetBSD/patch/x68k-ite-sixel.diff).
+
+  ![ite(4)](https://raw.githubusercontent.com/saitoha/libsixel/data/data/ite.png)
 
 
 ## Highlighted features
@@ -213,17 +228,24 @@ Now SIXEL feature is supported by the following terminals.
   [https://github.com/saitoha/seq2gif](https://github.com/saitoha/seq2gif)
 
 
-## Packages
+## Install
+
+### Using package managers
+
+You can install libsixel via the following package systems.
 
 - [FreeBSD ports](http://portsmon.freebsd.org/portoverview.py?category=graphics&portname=libsixel)
 - [DPorts](https://github.com/DragonFlyBSD/DPorts/tree/master/graphics/libsixel)
 - [pkgsrc](http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/graphics/libsixel/)
 - [Homebrew tap](https://github.com/aki017/homebrew-sixel)
 - [yacp](https://github.com/fd00/yacp/tree/master/libsixel)
-- [Debian](https://ftp-master.debian.org/new/libsixel_1.1.2-1.html)
+- [Debian](https://packages.debian.org/search?searchon=names&keywords=libsixel)
+- [AUR](https://aur.archlinux.org/packages/libsixel/)
+- [Portage](http://packages.gentoo.org/package/media-libs/libsixel)
+- [Ubuntu](https://launchpad.net/ubuntu/+source/libsixel)
 
 
-## Build and install
+### Build from source package
 
 ```
 $ ./configure
@@ -231,9 +253,9 @@ $ make
 # make install
 ```
 
-## Configure options
+#### Build with optional packages
 
-### Build with optional packages
+You can configure with the following options
 
 ```
 --with-libcurl            build with libcurl (default: auto)
@@ -244,6 +266,18 @@ $ make
 --with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
 --with-bashcompletiondir  specify bashcompletion.d
 --with-zshcompletiondir   specify zshcompletion.d
+```
+
+For more information, see "./configure --help".
+
+
+##### Cross compiling with MinGW
+
+You can build a windows binary in cross-build environment.
+
+```
+$ CC=i686-w64-mingw32-gcc cross_compile=yes ./configure --host=i686-w64-mingw32
+$ make
 ```
 
 ## Usage of command line tools
@@ -269,6 +303,7 @@ Options:
 -i, --invert               assume the terminal background color
                            is white, make sense only when -e
                            option is given
+-I, --high-color           output 15bpp sixel image
 -u, --use-macro            use DECDMAC and DEVINVM sequences to
                            optimize GIF animation rendering
 -n, --macro-number         specify an number argument for
@@ -370,19 +405,30 @@ Options:
                            quanlization.
                              auto -> decide quality mode
                                      automatically (default)
+                             low  -> low quality and high
+                                     speed mode
                              high -> high quality and low
                                      speed mode
-                             low  -> low quality and high
+                             full -> full quality and careful
                                      speed mode
 -l LOOPMODE, --loop-control=LOOPMODE
                            select loop control mode for GIF
                            animation.
-                             auto   -> honor the setting of
-                                       GIF header (default)
+                             auto    -> honor the setting of
+                                        GIF header (default)
                              force   -> always enable loop
                              disable -> always disable loop
--P --penetrate             penetrate GNU Screen using DCS
+-t PALETTETYPE, --palette-type=PALETTETYPE
+                           select palette color space type
+                             auto -> choose palette type
+                                     automatically (default)
+                             hls  -> use HLS color space
+                             rgb  -> use RGB color space
+-P, --penetrate            penetrate GNU Screen using DCS
                            pass-through sequence
+-D, --pipe-mode            read source images from stdin
+                           continuously
+-v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
 ```
@@ -887,12 +933,17 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
   ![SIXEL image viewer ](https://raw.githubusercontent.com/saitoha/libsixel/data/data/js-sixel.png)
 
 
+- [SixelGraphics.jl(written in Julia)](https://github.com/olofsen/SixelGraphics.jl)
+
+  A module for Julia implementing simple Sixel graphics.
+
+  ![SixelGraphics.jl](https://raw.githubusercontent.com/saitoha/libsixel/data/data/julia.png)
+
+
 - ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
 
 
 - [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
 
-
-- [SixelGraphics.jl(written in Julia)](https://github.com/olofsen/SixelGraphics.jl)
 
 
