@@ -676,7 +676,7 @@ computeHistogram(unsigned char const *data,
 #if !HAVE_CALLOC
     memset(histogram, 0, (1 << depth * 5) * sizeof(unit_t));
 #endif
-    it = ref = refmap = (unsigned short *)malloc(max_sample * sizeof(unit_t));
+    it = ref = refmap = (unsigned short *)malloc((1 << depth * 5) * sizeof(unit_t));
     if (!it) {
         quant_trace(stderr, "Unable to allocate memory for lookup table.");
         return (-1);
