@@ -47,6 +47,7 @@ sixel_output_create(sixel_write_function fn_write, void *priv)
         output->priv = priv;
         output->pos = 0;
         output->penetrate_multiplexer = 0;
+        output->encode_policy = ENCODEPOLICY_AUTO;
     }
 
     return output;
@@ -110,6 +111,13 @@ void
 sixel_output_set_palette_type(sixel_output_t *output, int palettetype)
 {
     output->palette_type = palettetype;
+}
+
+
+void
+sixel_output_set_encode_policy(sixel_output_t *output, int encode_policy)
+{
+    output->encode_policy = encode_policy;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */

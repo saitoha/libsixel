@@ -342,7 +342,10 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
 
     for (y = i = 0; y < height; y++) {
         int fillable;
-        if (palstate) {
+        if (context->encode_policy != ENCODEPOLICY_SIZE) {
+            fillable = 0;
+        }
+        else if (palstate) {
             /* high color sixel */
             pix = pixels[(y-i)*width];
             if (pix < 0 || pix >= ncolors || pix == keycolor) {
@@ -351,23 +354,17 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
                 fillable = 1;
             }
         } else {
-#ifdef  ALWAYS_OPTIMIZE_SIXEL
             /* normal sixel */
             fillable = 1;
-#else
-            fillable = 0;
-#endif
         }
         for (x = 0; x < width; x++) {
             pix = pixels[y * width + x];
             if (pix >= 0 && pix < ncolors && pix != keycolor) {
                 map[pix * width + x] |= (1 << i);
             }
-#ifdef  ALWAYS_OPTIMIZE_SIXEL
             else if (!palstate) {
                 fillable = 0;
             }
-#endif
         }
 
         if (++i < 6 && (y + 1) < height) {
