@@ -284,6 +284,96 @@ load_jpeg(unsigned char *data, int datasize,
 # endif  /* HAVE_JPEG */
 
 
+# if HAVE_LIBPNG
+static void
+read_png(png_structp png_ptr, png_bytep data, png_size_t length)
+{
+    chunk_t *pchunk = png_get_io_ptr(png_ptr);
+    if (length > pchunk->size) {
+        length = pchunk->size;
+    }
+    if (length > 0) {
+        memcpy(data, pchunk->buffer, length);
+        pchunk->buffer += length;
+        pchunk->size -= length;
+    }
+}
+
+static unsigned char *
+load_png(chunk_t const *pchunk,
+         int *psx, int *psy, int *pcomp)
+{
+    chunk_t read_chunk;
+    png_uint_32 bitdepth;
+    png_structp png_ptr;
+    png_infop info_ptr;
+    unsigned char **rows = NULL;
+    unsigned char *result = NULL;
+    int i;
+
+    png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (!png_ptr) {
+        fprintf(stderr, "png_create_read_struct failed.\n");
+        goto cleanup;
+    }
+    info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr) {
+        fprintf(stderr, "png_create_info_struct failed.\n");
+        png_destroy_read_struct(&png_ptr, (png_infopp)0, (png_infopp)0);
+        goto cleanup;
+    }
+    read_chunk = *pchunk;
+    png_set_read_fn(png_ptr,(png_voidp)&read_chunk, read_png);
+    png_read_info(png_ptr, info_ptr);
+    *psx = png_get_image_width(png_ptr, info_ptr);
+    *psy = png_get_image_height(png_ptr, info_ptr);
+    bitdepth = png_get_bit_depth(png_ptr, info_ptr);
+    *pcomp = png_get_channels(png_ptr, info_ptr);
+
+    switch (png_get_color_type(png_ptr, info_ptr)) {
+    case PNG_COLOR_TYPE_PALETTE:
+        png_set_palette_to_rgb(png_ptr);
+        *pcomp = 3;
+        break;
+    case PNG_COLOR_TYPE_GRAY:
+    case PNG_COLOR_TYPE_GRAY_ALPHA:
+        if (bitdepth < 8) {
+            png_set_expand_gray_1_2_4_to_8(png_ptr);
+        }
+        break;
+    case PNG_COLOR_TYPE_RGB_ALPHA:
+        png_set_strip_alpha(png_ptr);
+        *pcomp = 3;
+        break;
+    case PNG_COLOR_TYPE_RGB:
+    default:
+        break;
+    }
+    if (bitdepth == 16) {
+        png_set_strip_16(png_ptr);
+    }
+    result = malloc(*pcomp * *psx * *psy);
+    rows = malloc(*psy * sizeof(unsigned char *));
+    for (i = 0; i < *psy; ++i) {
+        rows[i] = result + *pcomp * *psx * i;
+    }
+#if HAVE_SETJMP
+    if (setjmp(png_jmpbuf(png_ptr))) {
+        free(result);
+        result = NULL;
+        goto cleanup;
+    }
+#endif  /* HAVE_SETJMP */
+    png_read_image(png_ptr, rows);
+cleanup:
+    png_destroy_read_struct(&png_ptr, &info_ptr,(png_infopp)0);
+    free(rows);
+
+    return result;
+}
+# endif  /* HAVE_PNG */
+
+
 static int
 get_chunk(char const *filename, chunk_t *pchunk)
 {
@@ -400,23 +490,6 @@ chunk_is_jpeg(chunk_t const *chunk)
 #endif  /* HAVE_JPEG */
 
 
-#if HAVE_LIBPNG
-static void
-read_png(png_structp png_ptr, png_bytep data, png_size_t length)
-{
-    chunk_t *pchunk = png_get_io_ptr(png_ptr);
-    if (length > pchunk->size) {
-        length = pchunk->size;
-    }
-    if (length > 0) {
-        memcpy(data, pchunk->buffer, length);
-        pchunk->buffer += length;
-        pchunk->size -= length;
-    }
-}
-#endif  /* HAVE_LIBPNG */
-
-
 static unsigned char *
 load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
                   int *pcomp, int *pstride,
@@ -433,13 +506,6 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
     int ret;
     int colors;
     int i;
-#if HAVE_LIBPNG
-    chunk_t read_chunk;
-    png_uint_32 bitdepth;
-    png_structp png_ptr;
-    png_infop info_ptr;
-    unsigned char **rows = NULL;
-#endif
 
     if (chunk_is_sixel(pchunk)) {
         /* sixel */
@@ -488,65 +554,9 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
 #endif  /* HAVE_JPEG */
 #if HAVE_LIBPNG
     else if (chunk_is_png(pchunk)) {
-        png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-        if (!png_ptr) {
-            fprintf(stderr, "png_create_read_struct failed.\n");
-            goto cleanup;
-        }
-        info_ptr = png_create_info_struct(png_ptr);
-        if (!info_ptr) {
-            fprintf(stderr, "png_create_info_struct failed.\n");
-            png_destroy_read_struct(&png_ptr, (png_infopp)0, (png_infopp)0);
-            goto cleanup;
-        }
-        read_chunk = *pchunk;
-        png_set_read_fn(png_ptr,(png_voidp)&read_chunk, read_png);
-        png_read_info(png_ptr, info_ptr);
-        *psx = png_get_image_width(png_ptr, info_ptr);
-        *psy = png_get_image_height(png_ptr, info_ptr);
-        bitdepth = png_get_bit_depth(png_ptr, info_ptr);
-        *pcomp = png_get_channels(png_ptr, info_ptr);
+        pixels = load_png(pchunk, psx, psy, pcomp);
         *pframe_count = 1;
-
-        switch (png_get_color_type(png_ptr, info_ptr)) {
-        case PNG_COLOR_TYPE_PALETTE:
-            png_set_palette_to_rgb(png_ptr);
-            *pcomp = 3;
-            break;
-        case PNG_COLOR_TYPE_GRAY:
-        case PNG_COLOR_TYPE_GRAY_ALPHA:
-            if (bitdepth < 8) {
-                png_set_expand_gray_1_2_4_to_8(png_ptr);
-            }
-            break;
-        case PNG_COLOR_TYPE_RGB_ALPHA:
-            png_set_strip_alpha(png_ptr);
-            *pcomp = 3;
-            break;
-        case PNG_COLOR_TYPE_RGB:
-        default:
-            break;
-        }
-        if (bitdepth == 16) {
-            png_set_strip_16(png_ptr);
-        }
-        *pstride = *pcomp * *psx;
-        pixels = malloc(*pstride * *psy);
-        rows = malloc(*psy * sizeof(unsigned char *));
-        for (i = 0; i < *psy; ++i) {
-            rows[i] = pixels + *pstride * i;
-        }
-#if HAVE_SETJMP
-        if (setjmp(png_jmpbuf(png_ptr))) {
-            free(pixels);
-            pixels = NULL;
-            goto cleanup;
-        }
-#endif  /* HAVE_SETJMP */
-        png_read_image(png_ptr, rows);
-cleanup:
-        png_destroy_read_struct(&png_ptr, &info_ptr,(png_infopp)0);
-        free(rows);
+        *ploop_count = 1;
     }
 #endif  /* HAVE_LIBPNG */
     else if (chunk_is_gif(pchunk)) {
