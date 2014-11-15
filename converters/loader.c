@@ -773,9 +773,7 @@ static unsigned char *
 load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride)
 {
     unsigned char *pixels, *p;
-    int n, max;
     gdImagePtr im;
-    FILE *f;
     int x, y;
     int c;
 
