@@ -357,7 +357,7 @@ load_png(chunk_t const *pchunk,
     for (i = 0; i < *psy; ++i) {
         rows[i] = result + *pcomp * *psx * i;
     }
-#if HAVE_SETJMP
+#if USE_SETJMP && HAVE_SETJMP
     if (setjmp(png_jmpbuf(png_ptr))) {
         free(result);
         result = NULL;

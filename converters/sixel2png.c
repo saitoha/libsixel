@@ -208,7 +208,7 @@ sixel_to_png(const char *input, const char *output)
         ret = (-1);
         goto end;
     }
-# if HAVE_SETJMP
+# if USE_SETJMP && HAVE_SETJMP
     if (setjmp(png_jmpbuf(png_ptr))) {
         ret = (-1);
         goto end;
