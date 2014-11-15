@@ -156,6 +156,7 @@ sixel_dither_create(int ncolors)
     dither->method_for_rep = REP_CENTER_BOX;
     dither->method_for_diffuse = DIFFUSE_FS;
     dither->quality_mode = quality_mode;
+    dither->pixelformat = COLOR_RGB888;
 
     return dither;
 }

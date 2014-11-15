@@ -40,6 +40,7 @@ typedef struct sixel_dither {
     int method_for_diffuse;     /* method for diffusing */
     int quality_mode;           /* quality of histogram */
     int keycolor;               /* background color */
+    int pixelformat;            /* pixelformat for internal processing */
 } sixel_dither_t;
 
 #ifdef __cplusplus
