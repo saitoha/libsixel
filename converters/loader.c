@@ -306,9 +306,7 @@ chunk_is_sixel(chunk_t const *chunk)
 {
     unsigned char *p;
     unsigned char *end;
-    int result;
 
-    result = 0;
     p = chunk->buffer;
     end = p + chunk->size;
 
