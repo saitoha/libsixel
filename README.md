@@ -306,7 +306,8 @@ Options:
 -I, --high-color           output 15bpp sixel image
 -u, --use-macro            use DECDMAC and DEVINVM sequences to
                            optimize GIF animation rendering
--n, --macro-number         specify an number argument for
+-n MACRONO, --macro-number=MACRONO
+                           specify an number argument for
                            DECDMAC and make terminal memorize
                            SIXEL image. No image is shown if this
                            option is specified
