@@ -117,7 +117,7 @@ if WANT_SIXEL2PNG
 	$(WINE) ./sixel2png - - < snake3.sixel > snake3.png
 	$(WINE) ./sixel2png --input=snake.sixel -o snake4.png
 endif
-	grep ^\.B img2sixel.1|cut -f2 -d\ |grep ^\\\\|tr -d \\ |tr -d , > options1.txt 
+	grep ^\.B img2sixel.1  | cut -f2 -d " " | grep "^\\\\"     | tr -d "\\" | tr -d , > options1.txt 
 	./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options2.txt
 	diff options1.txt options2.txt
 endif

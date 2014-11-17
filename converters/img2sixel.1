@@ -208,9 +208,6 @@ xterm16  -> X default 16 color map
 .br
 xterm256 -> X default 256 color map
 .TP 5
-.B \-P, \-\-penetrate
-penetrate GNU Screen using DCS pass-through sequence.
-.TP 5
 .B \-E \fIENCODEPOLICY\fP, \-\-encode\-policy=\fIENCODEPOLICY\fP
 select encoding policy
 .br
@@ -219,6 +216,9 @@ auto -> choose encoding policy automatically (default)
 fast -> encode as fast as possible
 .br
 size -> encode to as small sixel sequence as possible
+.TP 5
+.B \-P, \-\-penetrate
+penetrate GNU Screen using DCS pass-through sequence.
 .TP 5
 .B \-D, \-\-pipe\-mode
 read source images from stdin continuously.
