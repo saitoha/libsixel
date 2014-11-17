@@ -126,6 +126,24 @@ prepare_monochrome_palette(int finvert)
 
 
 static sixel_dither_t *
+prepare_xterm_palette(int sixteen)
+{
+    sixel_dither_t *dither;
+    
+    if (sixteen) {
+        dither = sixel_dither_get(BUILTIN_XTERM16);
+    } else {
+        dither = sixel_dither_get(BUILTIN_XTERM256);
+    }
+    if (dither == NULL) {
+        return NULL;
+    }
+    
+    return dither;
+}
+
+
+static sixel_dither_t *
 prepare_specified_palette(char const *mapfile, int reqcolors)
 {
     unsigned char *mappixels;
@@ -178,6 +196,8 @@ typedef struct Settings {
     char *mapfile;
     int monochrome;
     int highcolor;
+    int xterm256;
+    int xterm16;
     enum methodForDiffuse method_for_diffuse;
     enum methodForLargest method_for_largest;
     enum methodForRep method_for_rep;
@@ -232,6 +252,18 @@ prepare_palette(sixel_dither_t *former_dither,
         }
         dither = prepare_specified_palette(psettings->mapfile,
                                            psettings->reqcolors);
+    } else if (psettings->xterm16) {
+        dither = prepare_xterm_palette(1);
+        
+        if (!dither) {
+            return NULL;
+        }
+    } else if (psettings->xterm256) {
+        dither = prepare_xterm_palette(0);
+        
+        if (!dither) {
+            return NULL;
+        }
     } else {
         if (former_dither) {
             sixel_dither_unref(former_dither);
@@ -762,6 +794,10 @@ void show_help()
             "                           is white, make sense only when -e\n"
             "                           option is given\n"
             "-I, --high-color           output 15bpp sixel image\n"
+            "-x, --xterm-map            output image using X default 256\n"
+            "                           color map\n"
+            "-y, --xterm-map-16         output image using X default 16\n"
+            "                           color map\n"
             "-u, --use-macro            use DECDMAC and DEVINVM sequences to\n"
             "                           optimize GIF animation rendering\n"
             "-n, --macro-number         specify an number argument for\n"
@@ -907,13 +943,15 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:eId:f:s:c:w:h:r:q:il:t:ugvSn:PC:DVH";
+    char const *optstring = "78p:m:eId:xyf:s:c:w:h:r:q:il:t:ugvSn:PC:DVH";
 
     settings_t settings = {
         -1,                 /* reqcolors */
         NULL,               /* mapfile */
         0,                  /* monochrome */
         0,                  /* highcolor */
+        0,                  /* xterm256 */
+        0,                  /* xterm16 */
         DIFFUSE_AUTO,       /* method_for_diffuse */
         LARGE_AUTO,         /* method_for_largest */
         REP_AUTO,           /* method_for_rep */
@@ -952,6 +990,8 @@ main(int argc, char *argv[])
         {"mapfile",          required_argument,  &long_opt, 'm'},
         {"monochrome",       no_argument,        &long_opt, 'e'},
         {"high-color",       no_argument,        &long_opt, 'I'},
+        {"xterm-map",        no_argument,        &long_opt, 'x'},
+        {"xterm-map-16",     no_argument,        &long_opt, 'y'},
         {"diffusion",        required_argument,  &long_opt, 'd'},
         {"find-largest",     required_argument,  &long_opt, 'f'},
         {"select-color",     required_argument,  &long_opt, 's'},
@@ -1009,6 +1049,12 @@ main(int argc, char *argv[])
             break;
         case 'I':
             settings.highcolor = 1;
+            break;
+        case 'x':
+            settings.xterm256 = 1;
+            break;
+        case 'y':
+            settings.xterm16 = 1;
             break;
         case 'd':
             /* parse --diffusion option */
