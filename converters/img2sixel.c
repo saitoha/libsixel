@@ -638,7 +638,8 @@ reload:
         sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
         sixel_output_set_encode_policy(context, psettings->encode_policy);
 
-        if (frame_count == 1 && !psettings->mapfile && !psettings->monochrome && !psettings->highcolor) {
+        if (frame_count == 1 && !psettings->mapfile && !psettings->monochrome
+                && !psettings->highcolor && !psettings->builtin_palette) {
             sixel_dither_set_optimize_palette(dither, 1);
         }
 
@@ -943,7 +944,7 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:ebId:f:s:c:w:h:r:q:il:t:ugvSn:PE:C:DVH";
+    char const *optstring = "78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:C:DVH";
 
     settings_t settings = {
         -1,                 /* reqcolors */
@@ -1051,7 +1052,7 @@ main(int argc, char *argv[])
             settings.highcolor = 1;
             break;
         case 'b':
-            if (strcmp(optarg, "xterm") == 0) {
+            if (strcmp(optarg, "xterm16") == 0) {
                 settings.builtin_palette = BUILTIN_XTERM16;
             } else if (strcmp(optarg, "xterm256") == 0) {
                 settings.builtin_palette = BUILTIN_XTERM256;
