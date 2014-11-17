@@ -126,15 +126,12 @@ prepare_monochrome_palette(int finvert)
 
 
 static sixel_dither_t *
-prepare_xterm_palette(int sixteen)
+prepare_builtin_palette(int builtin_palette)
 {
     sixel_dither_t *dither;
     
-    if (sixteen) {
-        dither = sixel_dither_get(BUILTIN_XTERM16);
-    } else {
-        dither = sixel_dither_get(BUILTIN_XTERM256);
-    }
+    dither = sixel_dither_get(builtin_palette);
+
     if (dither == NULL) {
         return NULL;
     }
@@ -196,8 +193,7 @@ typedef struct Settings {
     char *mapfile;
     int monochrome;
     int highcolor;
-    int xterm256;
-    int xterm16;
+    int builtin_palette;
     enum methodForDiffuse method_for_diffuse;
     enum methodForLargest method_for_largest;
     enum methodForRep method_for_rep;
@@ -252,18 +248,11 @@ prepare_palette(sixel_dither_t *former_dither,
         }
         dither = prepare_specified_palette(psettings->mapfile,
                                            psettings->reqcolors);
-    } else if (psettings->xterm16) {
-        dither = prepare_xterm_palette(1);
-        
-        if (!dither) {
-            return NULL;
+    } else if (psettings->builtin_palette) {
+        if (former_dither) {
+            return former_dither;
         }
-    } else if (psettings->xterm256) {
-        dither = prepare_xterm_palette(0);
-        
-        if (!dither) {
-            return NULL;
-        }
+        dither = prepare_builtin_palette(psettings->builtin_palette);
     } else {
         if (former_dither) {
             sixel_dither_unref(former_dither);
@@ -794,10 +783,6 @@ void show_help()
             "                           is white, make sense only when -e\n"
             "                           option is given\n"
             "-I, --high-color           output 15bpp sixel image\n"
-            "-x, --xterm-map            output image using X default 256\n"
-            "                           color map\n"
-            "-y, --xterm-map-16         output image using X default 16\n"
-            "                           color map\n"
             "-u, --use-macro            use DECDMAC and DEVINVM sequences to\n"
             "                           optimize GIF animation rendering\n"
             "-n, --macro-number         specify an number argument for\n"
@@ -918,6 +903,10 @@ void show_help()
             "                                     automatically (default)\n"
             "                             hls  -> use HLS color space\n"
             "                             rgb  -> use RGB color space\n"
+            "-b BUILTINPALETTE, --builtin-palette=BUILTINPALETTE\n"
+            "                           select built-in palette type\n"
+            "                             xterm16  -> X default 16 color map\n"
+            "                             xterm256 -> X default 256 color map\n"
             "-P, --penetrate            penetrate GNU Screen using DCS\n"
             "                           pass-through sequence\n"
             "-D, --pipe-mode            read source images from stdin\n"
@@ -943,15 +932,14 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:eId:xyf:s:c:w:h:r:q:il:t:ugvSn:PC:DVH";
+    char const *optstring = "78p:m:eId:f:s:c:w:h:r:q:il:t:ugvSn:PC:DVH";
 
     settings_t settings = {
         -1,                 /* reqcolors */
         NULL,               /* mapfile */
         0,                  /* monochrome */
         0,                  /* highcolor */
-        0,                  /* xterm256 */
-        0,                  /* xterm16 */
+        0,                  /* builtin_palette */
         DIFFUSE_AUTO,       /* method_for_diffuse */
         LARGE_AUTO,         /* method_for_largest */
         REP_AUTO,           /* method_for_rep */
@@ -990,8 +978,7 @@ main(int argc, char *argv[])
         {"mapfile",          required_argument,  &long_opt, 'm'},
         {"monochrome",       no_argument,        &long_opt, 'e'},
         {"high-color",       no_argument,        &long_opt, 'I'},
-        {"xterm-map",        no_argument,        &long_opt, 'x'},
-        {"xterm-map-16",     no_argument,        &long_opt, 'y'},
+        {"builtin-palette",  required_argument,  &long_opt, 'b'},
         {"diffusion",        required_argument,  &long_opt, 'd'},
         {"find-largest",     required_argument,  &long_opt, 'f'},
         {"select-color",     required_argument,  &long_opt, 's'},
@@ -1050,11 +1037,12 @@ main(int argc, char *argv[])
         case 'I':
             settings.highcolor = 1;
             break;
-        case 'x':
-            settings.xterm256 = 1;
-            break;
-        case 'y':
-            settings.xterm16 = 1;
+        case 'b':
+            if (strcmp(optarg, "xterm") == 0) {
+                settings.builtin_palette = BUILTIN_XTERM16;
+            } else if (strcmp(optarg, "xterm256") == 0) {
+                settings.builtin_palette = BUILTIN_XTERM256;
+            }
             break;
         case 'd':
             /* parse --diffusion option */
@@ -1315,6 +1303,26 @@ main(int argc, char *argv[])
                         " with -I, --high-color.\n");
         goto argerr;
     }
+    if (settings.builtin_palette && settings.highcolor) {
+        fprintf(stderr, "option -b, --builtin-palette conflicts"
+                        " with -I, --high-color.\n");
+        goto argerr;
+    }
+    if (settings.monochrome && settings.builtin_palette) {
+        fprintf(stderr, "option -e, --monochrome conflicts"
+                        " with -I, --builtin-palette.\n");
+        goto argerr;
+    }
+    if (settings.mapfile && settings.builtin_palette) {
+        fprintf(stderr, "option -m, --mapfile conflicts"
+                        " with -b, --builtin-palette.\n");
+        goto argerr;
+    }
+    if (settings.reqcolors != (-1) && settings.builtin_palette) {
+        fprintf(stderr, "option -p, --colors conflicts"
+                        " with -b, --builtin-palette.\n");
+        goto argerr;
+    }
     if (settings.pipe_mode && optind != argc) {
         fprintf(stderr, "option -D, --pipe_mode conflicts"
                         " with arguments [filename ...].\n");
@@ -1361,7 +1369,8 @@ argerr:
     fprintf(stderr, "usage: img2sixel [-78eIiugvSPDVH] [-p colors] [-m file] [-d diffusiontype]\n"
                     "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
                     "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
-                    "                 [-t palettetype] [-n macronumber] [-C score] [filename ...]\n"
+                    "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
+                    "                 [filename ...]\n"
                     "for more details, type: 'img2sixel -H'.\n");
 
 end:
