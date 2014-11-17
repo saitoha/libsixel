@@ -341,10 +341,29 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
     }
 
     for (y = i = 0; y < height; y++) {
+        int fillable;
+        if (context->encode_policy != ENCODEPOLICY_SIZE) {
+            fillable = 0;
+        }
+        else if (palstate) {
+            /* high color sixel */
+            pix = pixels[(y-i)*width];
+            if (pix < 0 || pix >= ncolors || pix == keycolor) {
+                fillable = 0;
+            } else {
+                fillable = 1;
+            }
+        } else {
+            /* normal sixel */
+            fillable = 1;
+        }
         for (x = 0; x < width; x++) {
             pix = pixels[y * width + x];
             if (pix >= 0 && pix < ncolors && pix != keycolor) {
                 map[pix * width + x] |= (1 << i);
+            }
+            else if (!palstate) {
+                fillable = 0;
             }
         }
 
@@ -421,6 +440,9 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
                 x = 0;
             }
 
+            if (fillable) {
+                memset(np->map + np->sx, 0x3f, np->mx - np->sx);
+            }
             x = sixel_put_node(context, x, np, ncolors, keycolor);
             sixel_node_del(context, np);
             np = context->node_top;
@@ -431,10 +453,15 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
                     continue;
                 }
 
+                if (fillable) {
+                    memset(np->map + np->sx, 0x3f, np->mx - np->sx);
+                }
                 x = sixel_put_node(context, x, np, ncolors, keycolor);
                 sixel_node_del(context, np);
                 np = context->node_top;
             }
+
+            fillable = 0;
         }
 
         i = 0;

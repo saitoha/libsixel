@@ -218,6 +218,7 @@ typedef struct Settings {
     int clipfirst;
     int macro_number;
     int penetrate_multiplexer;
+    int encode_policy;
     int pipe_mode;
     int verbose;
     int show_version;
@@ -539,6 +540,7 @@ reload:
         sixel_output_set_8bit_availability(context, psettings->f8bit);
         sixel_output_set_palette_type(context, psettings->palette_type);
         sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
+        sixel_output_set_encode_policy(context, psettings->encode_policy);
         for (n = 0; n < frame_count; ++n) {
 #if HAVE_USLEEP && HAVE_CLOCK
             start = clock();
@@ -634,6 +636,7 @@ reload:
         sixel_output_set_8bit_availability(context, psettings->f8bit);
         sixel_output_set_palette_type(context, psettings->palette_type);
         sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
+        sixel_output_set_encode_policy(context, psettings->encode_policy);
 
         if (frame_count == 1 && !psettings->mapfile && !psettings->monochrome && !psettings->highcolor) {
             sixel_dither_set_optimize_palette(dither, 1);
@@ -908,6 +911,13 @@ void show_help()
             "                           select built-in palette type\n"
             "                             xterm16  -> X default 16 color map\n"
             "                             xterm256 -> X default 256 color map\n"
+            "-E ENCODEPOLICY, --encode-policy=ENCODEPOLICY\n"
+            "                           select encoding policy\n"
+            "                             auto -> choose encoding policy\n"
+            "                                     automatically (default)\n"
+            "                             fast -> encode as fast as possible\n"
+            "                             size -> encode to as small sixel\n"
+            "                                     sequence as possible\n"
             "-P, --penetrate            penetrate GNU Screen using DCS\n"
             "                           pass-through sequence\n"
             "-D, --pipe-mode            read source images from stdin\n"
@@ -933,7 +943,7 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:eId:f:s:c:w:h:r:q:il:t:ugvSn:PC:DVH";
+    char const *optstring = "78p:m:eId:f:s:c:w:h:r:q:il:t:ugvSn:PE:C:DVH";
 
     settings_t settings = {
         -1,                 /* reqcolors */
@@ -966,6 +976,7 @@ main(int argc, char *argv[])
         -1,                 /* macro_number */
         0,                  /* verbose */
         0,                  /* penetrate_multiplexer */
+        ENCODEPOLICY_AUTO,  /* encode_policy */
         0,                  /* pipe_mode */
         0,                  /* show_version */
         0,                  /* show_help */
@@ -997,6 +1008,7 @@ main(int argc, char *argv[])
         {"static",           no_argument,        &long_opt, 'S'},
         {"macro-number",     required_argument,  &long_opt, 'n'},
         {"penetrate",        no_argument,        &long_opt, 'P'},
+        {"encode-policy",    required_argument,  &long_opt, 'E'},
         {"complexion-score", required_argument,  &long_opt, 'C'},
         {"pipe-mode",        no_argument,        &long_opt, 'D'},
         {"version",          no_argument,        &long_opt, 'V'},
@@ -1252,6 +1264,19 @@ main(int argc, char *argv[])
         case 'P':
             settings.penetrate_multiplexer = 1;
             break;
+        case 'E':
+            if (strcmp(optarg, "auto") == 0) {
+                settings.encode_policy = ENCODEPOLICY_AUTO;
+            } else if (strcmp(optarg, "fast") == 0) {
+                settings.encode_policy = ENCODEPOLICY_FAST;
+            } else if (strcmp(optarg, "size") == 0) {
+                settings.encode_policy = ENCODEPOLICY_SIZE;
+            } else {
+                fprintf(stderr,
+                        "Cannot parse encode policy option.\n");
+                goto argerr;
+            }
+            break;
         case 'C':
             settings.complexion = atoi(optarg);
             if (settings.complexion < 1) {
@@ -1371,7 +1396,7 @@ argerr:
                     "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
                     "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
                     "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
-                    "                 [filename ...]\n"
+                    "                 [-E encodepolicy] [filename ...]\n"
                     "for more details, type: 'img2sixel -H'.\n");
 
 end:
