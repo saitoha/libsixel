@@ -424,7 +424,7 @@ dist_man_MANS = $(am__append_3) $(am__append_8)
 dist_bashcompletion_DATA = $(am__append_4)
 dist_zshcompletion_DATA = $(am__append_5)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
-CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel
+CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c scale.c malloc_stub.c loader.c frompnm.c \
 @WANT_IMG2SIXEL_TRUE@                    scale.h malloc_stub.h loader.h frompnm.h
 
@@ -1127,6 +1127,9 @@ test: all
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png < snake2.sixel > snake2.png
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png - - < snake3.sixel > snake3.png
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png --input=snake.sixel -o snake4.png
+@WANT_IMG2SIXEL_TRUE@	grep ^\.B img2sixel.1|cut -f2 -d\ |grep ^\\\\|tr -d \\ |tr -d , > options1.txt 
+@WANT_IMG2SIXEL_TRUE@	img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options2.txt
+@WANT_IMG2SIXEL_TRUE@	diff options1.txt options2.txt
 	@echo succeeded
 
 winetest: all
