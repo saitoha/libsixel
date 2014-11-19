@@ -143,7 +143,7 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
     }
 
     ret = sixel_dither_initialize(dither, mappixels, map_sx, map_sy, 3,
-                                  LARGE_NORM, REP_CENTER_BOX, QUALITY_LOW);
+                                  LARGE_NORM, REP_CENTER_BOX, QUALITY_HIGH);
     if (ret != 0) {
         sixel_dither_unref(dither);
         return NULL;

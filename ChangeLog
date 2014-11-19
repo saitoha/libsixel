@@ -1,4 +1,27 @@
+2014-11-19  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Suppress color expansion on loading mapfiles
+
 2014-11-08  Hayaki Saito <user@zuse.jp>
+
+  * converters/frompnm.c: Cherry-picked edd88d0: Make img2sixel enable to load
+  pbm files
+
+2014-11-09  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Prevent segfault with -m option in libpng loader
+
+  * converters/loader.c: Fix segfault on using gdk-pixbuf loader with -m option
+
+2014-11-09  OBATA Akio <obata@lins.jp>
+
+  * configure, configure.ac: Kill bashizm  '=' operator for test(1) is not
+  portable.
+
+2014-11-08  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Build fix for some system which don't provide clock
+  or usleep
 
   * converters/img2sixel.c, src/dither.c: Enable some options(-f, -s, and -q)
   ignored unintentionally
