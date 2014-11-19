@@ -1056,6 +1056,10 @@ main(int argc, char *argv[])
                 settings.builtin_palette = BUILTIN_XTERM16;
             } else if (strcmp(optarg, "xterm256") == 0) {
                 settings.builtin_palette = BUILTIN_XTERM256;
+            } else {
+                fprintf(stderr,
+                        "Cannot parse builtin palette option.\n");
+                goto argerr;
             }
             break;
         case 'd':

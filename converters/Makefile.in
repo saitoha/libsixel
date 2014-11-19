@@ -1075,6 +1075,7 @@ test: all
 @WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -f invalid_option
 @WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -q invalid_option
 @WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -l invalid_option
+@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -b invalid_option
 @WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -%
 @WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel invalid_filename
 @WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg

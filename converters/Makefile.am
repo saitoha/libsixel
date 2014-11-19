@@ -57,7 +57,7 @@ if WANT_IMG2SIXEL
 	! $(WINE) ./img2sixel -f invalid_option
 	! $(WINE) ./img2sixel -q invalid_option
 	! $(WINE) ./img2sixel -l invalid_option
-	! $(WINE) ./img2sixel -l invalid_option
+	! $(WINE) ./img2sixel -b invalid_option
 	! $(WINE) ./img2sixel -%
 	! $(WINE) ./img2sixel invalid_filename
 	! $(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg
