@@ -425,6 +425,10 @@ Options:
                                      automatically (default)
                              hls  -> use HLS color space
                              rgb  -> use RGB color space
+-b BUILTINPALETTE, --builtin-palette=BUILTINPALETTE
+                           select built-in palette type
+                             xterm16  -> X default 16 color map
+                             xterm256 -> X default 256 color map
 -P, --penetrate            penetrate GNU Screen using DCS
                            pass-through sequence
 -D, --pipe-mode            read source images from stdin

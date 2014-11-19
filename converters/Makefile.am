@@ -57,6 +57,7 @@ if WANT_IMG2SIXEL
 	! $(WINE) ./img2sixel -f invalid_option
 	! $(WINE) ./img2sixel -q invalid_option
 	! $(WINE) ./img2sixel -l invalid_option
+	! $(WINE) ./img2sixel -b invalid_option
 	! $(WINE) ./img2sixel -%
 	! $(WINE) ./img2sixel invalid_filename
 	! $(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg
@@ -68,17 +69,21 @@ if WANT_IMG2SIXEL
 	! $(WINE) ./img2sixel -I -e ../images/snake.png
 	! $(WINE) ./img2sixel -I -p8 ../images/snake.png
 	! $(WINE) ./img2sixel -I -m ../images/map8.png ../images/snake.png
+	! $(WINE) ./img2sixel -I -bxterm16 ../images/snake.png
+	! $(WINE) ./img2sixel -e -bxterm256 ../images/snake.png
+	! $(WINE) ./img2sixel -p64 -bxterm256 ../images/snake.png
+	! $(WINE) ./img2sixel -m ../images/map16.png -bxterm256 ../images/snake.png
 	! (echo -n a | ./img2sixel)
 	$(WINE) ./img2sixel -H
 	$(WINE) ./img2sixel -V
 	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | img2sixel | tee snake.sixel
 	$(WINE) ./img2sixel -w50% -h150% -dfs -thls < ../images/snake.jpg -shistogram | tee snake2.sixel
-	$(WINE) ./img2sixel -w2100 -h2100 < ../images/snake.jpg > snake3.sixel
+	$(WINE) ./img2sixel -w2100 -h2100 -bxterm256 < ../images/snake.jpg > snake3.sixel
 	$(WINE) ./img2sixel - -w105% -h100 -djajuni -rnearest < ../images/snake.gif
 	$(WINE) ./img2sixel ../images/snake.tga -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto
 	$(WINE) ./img2sixel -p300 ../images/snake.tiff -8 -scenter -h100 -qfull -rhanning -dstucki -thls
 	$(WINE) ./img2sixel -8 -qauto -thls -e ../images/snake.pgm
-	$(WINE) ./img2sixel -7 -w100 -h100 ../images/snake.pbm
+	$(WINE) ./img2sixel -7 -w100 -h100 -bxterm16 ../images/snake.pbm
 	$(WINE) ./img2sixel -I ../images/snake.ppm -dstucki -thls
 	$(WINE) ./img2sixel -I ../images/snake-ascii.ppm -8 -dburkes
 	$(WINE) ./img2sixel -I -C10 ../images/snake.png -djajuni
@@ -117,8 +122,8 @@ if WANT_SIXEL2PNG
 	$(WINE) ./sixel2png - - < snake3.sixel > snake3.png
 	$(WINE) ./sixel2png --input=snake.sixel -o snake4.png
 endif
-	grep ^\.B img2sixel.1|cut -f2 -d\ |grep ^\\\\|tr -d \\ |tr -d , > options1.txt 
-	./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options2.txt
+	grep ^\.B img2sixel.1  | cut -f2 -d " " | grep "^\\\\"     | tr -d "\\" | tr -d , > options1.txt 
+	$(WINE) ./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options2.txt
 	diff options1.txt options2.txt
 endif
 	@echo succeeded

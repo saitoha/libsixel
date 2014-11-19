@@ -126,6 +126,21 @@ prepare_monochrome_palette(int finvert)
 
 
 static sixel_dither_t *
+prepare_builtin_palette(int builtin_palette)
+{
+    sixel_dither_t *dither;
+    
+    dither = sixel_dither_get(builtin_palette);
+
+    if (dither == NULL) {
+        return NULL;
+    }
+    
+    return dither;
+}
+
+
+static sixel_dither_t *
 prepare_specified_palette(char const *mapfile, int reqcolors)
 {
     unsigned char *mappixels;
@@ -178,6 +193,7 @@ typedef struct Settings {
     char *mapfile;
     int monochrome;
     int highcolor;
+    int builtin_palette;
     enum methodForDiffuse method_for_diffuse;
     enum methodForLargest method_for_largest;
     enum methodForRep method_for_rep;
@@ -233,6 +249,11 @@ prepare_palette(sixel_dither_t *former_dither,
         }
         dither = prepare_specified_palette(psettings->mapfile,
                                            psettings->reqcolors);
+    } else if (psettings->builtin_palette) {
+        if (former_dither) {
+            return former_dither;
+        }
+        dither = prepare_builtin_palette(psettings->builtin_palette);
     } else {
         if (former_dither) {
             sixel_dither_unref(former_dither);
@@ -617,7 +638,8 @@ reload:
         sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
         sixel_output_set_encode_policy(context, psettings->encode_policy);
 
-        if (frame_count == 1 && !psettings->mapfile && !psettings->monochrome && !psettings->highcolor) {
+        if (frame_count == 1 && !psettings->mapfile && !psettings->monochrome
+                && !psettings->highcolor && !psettings->builtin_palette) {
             sixel_dither_set_optimize_palette(dither, 1);
         }
 
@@ -886,6 +908,10 @@ void show_help()
             "                                     automatically (default)\n"
             "                             hls  -> use HLS color space\n"
             "                             rgb  -> use RGB color space\n"
+            "-b BUILTINPALETTE, --builtin-palette=BUILTINPALETTE\n"
+            "                           select built-in palette type\n"
+            "                             xterm16  -> X default 16 color map\n"
+            "                             xterm256 -> X default 256 color map\n"
             "-E ENCODEPOLICY, --encode-policy=ENCODEPOLICY\n"
             "                           select encoding policy\n"
             "                             auto -> choose encoding policy\n"
@@ -918,13 +944,14 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:eId:f:s:c:w:h:r:q:il:t:ugvSn:PE:C:DVH";
+    char const *optstring = "78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:C:DVH";
 
     settings_t settings = {
         -1,                 /* reqcolors */
         NULL,               /* mapfile */
         0,                  /* monochrome */
         0,                  /* highcolor */
+        0,                  /* builtin_palette */
         DIFFUSE_AUTO,       /* method_for_diffuse */
         LARGE_AUTO,         /* method_for_largest */
         REP_AUTO,           /* method_for_rep */
@@ -964,6 +991,7 @@ main(int argc, char *argv[])
         {"mapfile",          required_argument,  &long_opt, 'm'},
         {"monochrome",       no_argument,        &long_opt, 'e'},
         {"high-color",       no_argument,        &long_opt, 'I'},
+        {"builtin-palette",  required_argument,  &long_opt, 'b'},
         {"diffusion",        required_argument,  &long_opt, 'd'},
         {"find-largest",     required_argument,  &long_opt, 'f'},
         {"select-color",     required_argument,  &long_opt, 's'},
@@ -1022,6 +1050,17 @@ main(int argc, char *argv[])
             break;
         case 'I':
             settings.highcolor = 1;
+            break;
+        case 'b':
+            if (strcmp(optarg, "xterm16") == 0) {
+                settings.builtin_palette = BUILTIN_XTERM16;
+            } else if (strcmp(optarg, "xterm256") == 0) {
+                settings.builtin_palette = BUILTIN_XTERM256;
+            } else {
+                fprintf(stderr,
+                        "Cannot parse builtin palette option.\n");
+                goto argerr;
+            }
             break;
         case 'd':
             /* parse --diffusion option */
@@ -1295,6 +1334,26 @@ main(int argc, char *argv[])
                         " with -I, --high-color.\n");
         goto argerr;
     }
+    if (settings.builtin_palette && settings.highcolor) {
+        fprintf(stderr, "option -b, --builtin-palette conflicts"
+                        " with -I, --high-color.\n");
+        goto argerr;
+    }
+    if (settings.monochrome && settings.builtin_palette) {
+        fprintf(stderr, "option -e, --monochrome conflicts"
+                        " with -I, --builtin-palette.\n");
+        goto argerr;
+    }
+    if (settings.mapfile && settings.builtin_palette) {
+        fprintf(stderr, "option -m, --mapfile conflicts"
+                        " with -b, --builtin-palette.\n");
+        goto argerr;
+    }
+    if (settings.reqcolors != (-1) && settings.builtin_palette) {
+        fprintf(stderr, "option -p, --colors conflicts"
+                        " with -b, --builtin-palette.\n");
+        goto argerr;
+    }
     if (settings.pipe_mode && optind != argc) {
         fprintf(stderr, "option -D, --pipe_mode conflicts"
                         " with arguments [filename ...].\n");
@@ -1341,7 +1400,7 @@ argerr:
     fprintf(stderr, "usage: img2sixel [-78eIiugvSPDVH] [-p colors] [-m file] [-d diffusiontype]\n"
                     "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
                     "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
-                    "                 [-t palettetype] [-n macronumber] [-C score]\n"
+                    "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
                     "                 [-E encodepolicy] [filename ...]\n"
                     "for more details, type: 'img2sixel -H'.\n");
 
