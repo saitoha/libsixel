@@ -57,6 +57,7 @@ if WANT_IMG2SIXEL
 	! $(WINE) ./img2sixel -f invalid_option
 	! $(WINE) ./img2sixel -q invalid_option
 	! $(WINE) ./img2sixel -l invalid_option
+	! $(WINE) ./img2sixel -l invalid_option
 	! $(WINE) ./img2sixel -%
 	! $(WINE) ./img2sixel invalid_filename
 	! $(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg
@@ -68,6 +69,10 @@ if WANT_IMG2SIXEL
 	! $(WINE) ./img2sixel -I -e ../images/snake.png
 	! $(WINE) ./img2sixel -I -p8 ../images/snake.png
 	! $(WINE) ./img2sixel -I -m ../images/map8.png ../images/snake.png
+	! $(WINE) ./img2sixel -I -bxterm16 ../images/snake.png
+	! $(WINE) ./img2sixel -e -bxterm256 ../images/snake.png
+	! $(WINE) ./img2sixel -p64 -bxterm256 ../images/snake.png
+	! $(WINE) ./img2sixel -m ../images/map16.png -bxterm256 ../images/snake.png
 	! (echo -n a | ./img2sixel)
 	$(WINE) ./img2sixel -H
 	$(WINE) ./img2sixel -V
