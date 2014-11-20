@@ -441,7 +441,7 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
             }
 
             if (fillable) {
-                memset(np->map + np->sx, 0x3f, np->mx - np->sx);
+                memset(np->map + np->sx, (1 << i) - 1, np->mx - np->sx);
             }
             x = sixel_put_node(context, x, np, ncolors, keycolor);
             sixel_node_del(context, np);
@@ -454,7 +454,7 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
                 }
 
                 if (fillable) {
-                    memset(np->map + np->sx, 0x3f, np->mx - np->sx);
+                    memset(np->map + np->sx, (1 << i) - 1, np->mx - np->sx);
                 }
                 x = sixel_put_node(context, x, np, ncolors, keycolor);
                 sixel_node_del(context, np);
