@@ -739,7 +739,7 @@ end:
 
 
 static
-void show_version()
+void show_version(void)
 {
     printf("img2sixel " PACKAGE_VERSION "\n"
            "Copyright (C) 2014 Hayaki Saito <user@zuse.jp>.\n"
@@ -765,7 +765,7 @@ void show_version()
 
 
 static
-void show_help()
+void show_help(void)
 {
     fprintf(stdout,
             "Usage: img2sixel [Options] imagefiles\n"
