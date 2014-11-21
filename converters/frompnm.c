@@ -137,14 +137,23 @@ load_pnm(unsigned char *p, int len, int *psx, int *psy, int *pcomp, int *pstride
                         s = tmp;
                     }
                     n = 0;
-                    while (isdigit(*s) && n >= 0)
-                        n = n * 10 + (*s++ - '0');
-                    while (*s == ' ')
-                        s++;
+                    if (maps == 0) {
+                        n = *s++ == '0';
+                    } else {
+                        while (isdigit(*s) && n >= 0)
+                            n = n * 10 + (*s++ - '0');
+                        while (*s == ' ')
+                            s++;
+                    }
                 } else {
                     if (p >= e)
                         break;
-                    n = *(p++);
+                    if (maps == 0) {
+                        n = ((*p << (x & 0x7) >> 0x7) & 1) == 0;
+                        if ((x & 0x7) == 0x7) p++;
+                    } else {
+                        n = *(p++);
+                    }
                 }
                 c[i] = n;
             }

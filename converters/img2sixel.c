@@ -143,7 +143,7 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
     }
 
     ret = sixel_dither_initialize(dither, mappixels, map_sx, map_sy, 3,
-                                  LARGE_NORM, REP_CENTER_BOX, QUALITY_LOW);
+                                  LARGE_NORM, REP_CENTER_BOX, QUALITY_HIGH);
     if (ret != 0) {
         sixel_dither_unref(dither);
         return NULL;
@@ -216,20 +216,6 @@ prepare_palette(unsigned char *frame, int sx, int sy, settings_t *psettings)
             return NULL;
         }
     } else {
-        if (psettings->method_for_largest == LARGE_AUTO) {
-            psettings->method_for_largest = LARGE_NORM;
-        }
-        if (psettings->method_for_rep == REP_AUTO) {
-            psettings->method_for_rep = REP_CENTER_BOX;
-        }
-        if (psettings->quality_mode == QUALITY_AUTO) {
-            if (psettings->reqcolors <= 8) {
-                psettings->quality_mode = QUALITY_HIGH;
-            } else {
-                psettings->quality_mode = QUALITY_LOW;
-            }
-        }
-
         dither = sixel_dither_create(psettings->reqcolors);
         ret = sixel_dither_initialize(dither, frame, sx, sy, 3,
                                       psettings->method_for_largest,
@@ -377,7 +363,9 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int nret = -1;
     int dulation = 0;
     int lag = 0;
+#if HAVE_USLEEP && HAVE_CLOCK
     clock_t start;
+#endif
 
     if (psettings->reqcolors < 2) {
         psettings->reqcolors = 2;
@@ -1023,7 +1011,7 @@ main(int argc, char *argv[])
             }
             break;
         case 'w':
-            parsed = sscanf(optarg, "%d%s", &number, unit);
+            parsed = sscanf(optarg, "%d%2s", &number, unit);
             if (parsed == 2 && strcmp(unit, "%") == 0) {
                 settings.pixelwidth = -1;
                 settings.percentwidth = number;
@@ -1043,7 +1031,7 @@ main(int argc, char *argv[])
             }
             break;
         case 'h':
-            parsed = sscanf(optarg, "%d%s", &number, unit);
+            parsed = sscanf(optarg, "%d%2s", &number, unit);
             if (parsed == 2 && strcmp(unit, "%") == 0) {
                 settings.pixelheight = -1;
                 settings.percentheight = number;
@@ -1237,10 +1225,10 @@ main(int argc, char *argv[])
 
 argerr:
     exit_code = EXIT_FAILURE;
-    fprintf(stderr, "usage: img2sixel [-78eiugvVH] [-p colors] [-m file] [-d diffusiontype]\n"
+    fprintf(stderr, "usage: img2sixel [-78eiugvSPVH] [-p colors] [-m file] [-d diffusiontype]\n"
                     "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
                     "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
-                    "                 [-t palettetype] [-n macronumber] [filename ...]\n"
+                    "                 [-t palettetype] [-n macronumber] [-C score] [filename ...]\n"
                     "for more details, type: 'img2sixel -H'.\n");
 
 end:
