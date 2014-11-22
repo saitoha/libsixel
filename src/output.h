@@ -54,15 +54,26 @@ typedef struct sixel_output {
        1: DECSDM set (CSI ? 80 h) disables sixel scrolling */
     unsigned char has_sdm_glitch;
 
+    /* 0: do not skip DCS envelope
+     * 1: skip DCS envelope */
+    unsigned char skip_dcs_envelope;
+
+    /* PALETTETYPE_AUTO: select palette type automatically
+     * PALETTETYPE_HLS : HLS color space
+     * PALETTETYPE_RGB : RGB color space */
+    unsigned char palette_type;
+
     sixel_write_function fn_write;
 
-    unsigned char conv_palette[256];
     int save_pixel;
     int save_count;
     int active_palette;
 
     sixel_node_t *node_top;
     sixel_node_t *node_free;
+
+    int penetrate_multiplexer;
+    int encode_policy;
 
     void *priv;
     int pos;
