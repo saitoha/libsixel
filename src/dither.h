@@ -53,7 +53,7 @@ sixel_dither_apply_palette(sixel_dither_t *dither,
                            unsigned char *pixels,
                            int width, int height);
 
-void
+int
 sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
                             int width, int height, int const pixelformat);
 

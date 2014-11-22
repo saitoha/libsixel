@@ -605,11 +605,11 @@ compute_depth_from_pixelformat(int pixelformat)
     int depth = (-1);  /* unknown */
 
     switch (pixelformat) {
-        case COLOR_RGB888:
+        case PIXELFORMAT_RGB888:
             depth = 3;
             break;
-        case COLOR_RGB555:
-        case COLOR_RGB565:
+        case PIXELFORMAT_RGB555:
+        case PIXELFORMAT_RGB565:
             depth = 2;
             break;
         default:

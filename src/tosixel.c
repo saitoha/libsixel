@@ -904,7 +904,7 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height,
     int output_count;
     int nret = (-1);
 
-    if (dither->pixelformat != COLOR_RGB888) {
+    if (dither->pixelformat != PIXELFORMAT_RGB888) {
         /* normalize pixelfromat */
         normalized_pixels = malloc(width * height * 3);
         if (normalized_pixels == NULL) {
