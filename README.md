@@ -58,69 +58,91 @@ You can run QEMU on SIXEL terminals.
 
 ### W3M integration
 
-img2sixel(1) can be integrated with ![Arakiken's w3m fork(remoteimg branch)](https://bitbucket.org/arakiken/w3m/branch/remoteimg).
+img2sixel(1) can be integrated with [Arakiken's w3m fork(remoteimg branch)](https://bitbucket.org/arakiken/w3m/branch/remoteimg).
 
   ![w3m-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel.png)
 
 
+@uobikiemukot's [sdump](https://github.com/uobikiemukot/sdump) project selected another approach.
+He wrote a w3mimgdisplay compatible program [yaimg-sixel](https://github.com/uobikiemukot/sdump/tree/master/yaimg-sixel).
+It also works with [ranger](https://github.com/hut/ranger).
+
+  ![w3m-yaimg-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-yaimg-sixel.jpg)
+
+
+### GNU Screen integration
+
+[Arakiken's GNU Screen fork(sixel branch)](https://bitbucket.org/arakiken/screen/branch/sixel)
+works with SIXEL-supported applications including above products.
+This project is now in progress.
+GUI flavored SIXEL applications will integrated with existing terminal applications on it.
+
+  ![w3m-sixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel-screen.png)
+
+  ![sixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/arakikens-screen.jpg)
+
+  ![xsixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel-on-screen.png)
+
+See also on [youtube](http://youtu.be/QQAqe32VkFg).
+
 ### Twitter client integration
+
+Some NetBSD/OpenBSD users are doing amazing challenges.
+
+#### [arakiken's mikutterm(mikutterm-sixel)](https://bitbucket.org/arakiken/mikutterm/branch/sixel)
 
   Now [mikutter](http://mikutter.hachune.net/) + [mikutterm](https://bitbucket.org/arakiken/mikutterm) works with libsixel inline-image extension.
 
+  SIXEL works with old powerless machines such as
+
+  [NetBSD/luna68k](http://wiki.netbsd.org/ports/luna68k/) (here is OMRON LUNA-II):
+
+  ![mikutterm-netbsd-luna68k](https://raw.githubusercontent.com/saitoha/libsixel/data/data/mikutterm-netbsd-luna68k.jpg)
+
+  [NetBSD/hp300](http://wiki.netbsd.org/ports/hp300/) (here is HP9000/425e):
+
+  ![mikutterm-netbsd-hp9000](https://raw.githubusercontent.com/saitoha/libsixel/data/data/mikutterm-netbsd-hp9000.jpg)
 
 
-## Terminal requirements
+#### [arakiken's tw(tw-sixel)](https://bitbucket.org/arakiken/tw/branch/sixel)
 
-If you want to view a SIXEL image, you have to get a terminal which support sixel graphics.
+  [arakiken's tw(tw-sixel)](https://bitbucket.org/arakiken/tw/branch/sixel) works with libsixel inline-image extension.
 
-Now SIXEL feature is supported by the following terminals.
+  SIXEL works with old powerless machines such as [OpenBSD/luna88k](http://www.openbsd.org/luna88k.html) (here is OMRON LUNA-88K2 MC88100@33MHz):
 
-- DEC VT series, VT240/VT241/VT330/VT340/VT282/VT284/VT286/VT382
-
-- DECterm(dxterm)
-
-- Kermit
-
-- ZSTEM 340
-
-- WRQ Reflection
-
-- RLogin (Japanese terminal emulator)
-
-  [http://nanno.dip.jp/softlib/man/rlogin/](http://nanno.dip.jp/softlib/man/rlogin/)
-
-- tanasinn (Works with firefox)
-
-  [http://zuse.jp/tanasinn/](http://zuse.jp/tanasinn/)
-
-- mlterm
-
-  [http://mlterm.sourceforge.net/](http://mlterm.sourceforge.net/)
-
-  Works on each of X, win32/cygwin, framebuffer version.
-
-- XTerm (compiled with --enable-sixel option)
-
-  [http://invisible-island.net/xterm/](http://invisible-island.net/xterm/)
-
-  You should launch xterm with "-ti 340" option. the SIXEL palette is limited to a maximum of 16 colors.
-
-- yaft (in github repo)
-
-  [https://github.com/uobikiemukot/yaft](https://github.com/uobikiemukot/yaft)
-
-- recterm (ttyrec to GIF converter)
-
-  [https://github.com/uobikiemukot/recterm](https://github.com/uobikiemukot/recterm)
-
-- seq2gif (ttyrec to GIF converter)
-
-  [https://github.com/saitoha/seq2gif](https://github.com/saitoha/seq2gif)
+  ![mikutterm-netbsd-hp9000](https://raw.githubusercontent.com/saitoha/libsixel/data/data/tw-openbsd-luna88k.jpg)
 
 
-## Quantization quality
+#### [sayaka-chan](https://github.com/isaki68k/sayaka/)
 
-img2sixel(1) supports high quality color image quantization.
+  [sayaka-chan](https://github.com/isaki68k/sayaka/) works with libsixel inline-image extension.
+
+  SIXEL works with old powerless machines such as [NetBSD/x68k](http://wiki.netbsd.org/ports/x68k/) (here is SHARP X68030 with 060turbo):
+
+  ![sayaka-chan](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sayaka-netbsd-x68k.jpg)
+
+  SIXEL works even in-kernel console. [@isaki68k](https://github.com/isaki68k) wrote
+  [a patch for ite(4)](https://github.com/isaki68k/misc/blob/master/NetBSD/patch/x68k-ite-sixel.diff).
+
+  ![ite(4)](https://raw.githubusercontent.com/saitoha/libsixel/data/data/ite.png)
+
+
+## Highlighted features
+
+### Improved compression
+
+Former sixel encoders(such as [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html)) are mainly designed for dot-matrix printers.
+They minimize the amount of printer-head movement distance.
+But nowadays this method did not represent the best performance for displaying sixel data on terminal emulators.
+SIXEL data for terminals were found in 80's Usenet, but the technology of how to create them seems to be lost.
+[kmiya's sixel](http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz) introduces the encoding method which is re-designed
+for terminal emulators to optimize the overhead of transporting SIXEL with keeping compatibility with former SIXEL terminal.
+Now libsixel and ImageMagick's sixel coder follow it.
+
+
+### High quality quantization
+
+img2sixel(1) supports color image quantization. It works well even if few number of colors are allowed.
 
 - ppmtosixel (netpbm)
 
@@ -157,7 +179,73 @@ img2sixel(1) supports high quality color image quantization.
   ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_libsixel.png)
 
 
-## Build and install
+## Terminal requirements
+
+If you want to view a SIXEL image, you have to get a terminal which support sixel graphics.
+
+Now SIXEL feature is supported by the following terminals.
+
+- DEC VT series, VT240/VT241/VT330/VT340/VT282/VT284/VT286/VT382
+
+- DECterm(dxterm)
+
+- Kermit
+
+- ZSTEM 340
+
+- WRQ Reflection
+
+- RLogin (Japanese terminal emulator)
+
+  [http://nanno.dip.jp/softlib/man/rlogin/](http://nanno.dip.jp/softlib/man/rlogin/)
+
+- tanasinn (Works with firefox)
+
+  [http://zuse.jp/tanasinn/](http://zuse.jp/tanasinn/)
+
+- mlterm
+
+  [http://mlterm.sourceforge.net/](http://mlterm.sourceforge.net/)
+
+  Works on each of X, win32/cygwin, framebuffer version.
+
+- XTerm (compiled with --enable-sixel option)
+
+  [http://invisible-island.net/xterm/](http://invisible-island.net/xterm/)
+
+  You should launch xterm with "-ti 340" option. The SIXEL palette is limited to a maximum of 16 colors.
+
+- yaft
+
+  [https://github.com/uobikiemukot/yaft](https://github.com/uobikiemukot/yaft)
+
+- recterm (ttyrec to GIF converter)
+
+  [https://github.com/uobikiemukot/recterm](https://github.com/uobikiemukot/recterm)
+
+- seq2gif (ttyrec to GIF converter)
+
+  [https://github.com/saitoha/seq2gif](https://github.com/saitoha/seq2gif)
+
+
+## Install
+
+### Using package managers
+
+You can install libsixel via the following package systems.
+
+- [FreeBSD ports](http://portsmon.freebsd.org/portoverview.py?category=graphics&portname=libsixel)
+- [DPorts](https://github.com/DragonFlyBSD/DPorts/tree/master/graphics/libsixel)
+- [pkgsrc](http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/graphics/libsixel/)
+- [Homebrew tap](https://github.com/aki017/homebrew-sixel)
+- [yacp](https://github.com/fd00/yacp/tree/master/libsixel)
+- [Debian](https://packages.debian.org/search?searchon=names&keywords=libsixel)
+- [AUR](https://aur.archlinux.org/packages/libsixel/)
+- [Portage](http://packages.gentoo.org/package/media-libs/libsixel)
+- [Ubuntu](https://launchpad.net/ubuntu/+source/libsixel)
+
+
+### Build from source package
 
 ```
 $ ./configure
@@ -165,17 +253,31 @@ $ make
 # make install
 ```
 
-## Configure options
+#### Build with optional packages
 
-### Build with optional packages
+You can configure with the following options
 
 ```
+--with-libcurl            build with libcurl (default: auto)
+--with-gd                 build with libgd (default: no)
 --with-gdk-pixbuf2        build with gdk-pixbuf2 (default: no)
---with-libcurl            build with libcurl (default: no)
---with-gd                 build with gd (default: no)
+--with-jpeg               build with libjpeg (default: auto)
+--with-png                build with libpng (default: auto)
 --with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
 --with-bashcompletiondir  specify bashcompletion.d
 --with-zshcompletiondir   specify zshcompletion.d
+```
+
+For more information, see "./configure --help".
+
+
+##### Cross compiling with MinGW
+
+You can build a windows binary in cross-build environment.
+
+```
+$ CC=i686-w64-mingw32-gcc cross_compile=yes ./configure --host=i686-w64-mingw32
+$ make
 ```
 
 ## Usage of command line tools
@@ -201,13 +303,20 @@ Options:
 -i, --invert               assume the terminal background color
                            is white, make sense only when -e
                            option is given
+-I, --high-color           output 15bpp sixel image
 -u, --use-macro            use DECDMAC and DEVINVM sequences to
                            optimize GIF animation rendering
--n, --macro-number         specify an number argument for
+-n MACRONO, --macro-number=MACRONO
+                           specify an number argument for
                            DECDMAC and make terminal memorize
                            SIXEL image. No image is shown if this
                            option is specified
+-C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE
+                           specify an number argument for the
+                           score of complexion correction.
+                           COMPLEXIONSCORE must be 1 or more.
 -g, --ignore-delay         render GIF animation without delay
+-S, --static               render animated GIF as a static image
 -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
                            choose diffusion method which used
                            with -p option (color reduction)
@@ -222,7 +331,7 @@ Options:
                              burkes   -> Burkes' method
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
-                           dimention of median cut boxes for
+                           dimension of median cut boxes for
                            splitting, make sense only when -p
                            option (color reduction) is
                            specified
@@ -241,16 +350,16 @@ Options:
                            when -p option (color reduction) is
                            specified
                            SELECTTYPE is one of them:
-                             auto     -> choose selecting
-                                         method automatically
-                                         (default)
-                             center   -> choose the center of
-                                         the box
-                             average  -> caclulate the color
-                                         average into the box
-                             histgram -> similar with average
-                                         but considers color
-                                         histgram
+                             auto      -> choose selecting
+                                          method automatically
+                                          (default)
+                             center    -> choose the center of
+                                          the box
+                             average    -> calculate the color
+                                          average into the box
+                             histogram -> similar with average
+                                          but considers color
+                                          histogram
 -c REGION, --crop=REGION   crop source image to fit the
                            specified geometry. REGION should
                            be formatted as '%dx%d+%d+%d'
@@ -297,17 +406,34 @@ Options:
                            quanlization.
                              auto -> decide quality mode
                                      automatically (default)
+                             low  -> low quality and high
+                                     speed mode
                              high -> high quality and low
                                      speed mode
-                             low  -> low quality and high
+                             full -> full quality and careful
                                      speed mode
 -l LOOPMODE, --loop-control=LOOPMODE
                            select loop control mode for GIF
                            animation.
-                             auto   -> honor the setting of
-                                       GIF header (default)
+                             auto    -> honor the setting of
+                                        GIF header (default)
                              force   -> always enable loop
                              disable -> always disable loop
+-t PALETTETYPE, --palette-type=PALETTETYPE
+                           select palette color space type
+                             auto -> choose palette type
+                                     automatically (default)
+                             hls  -> use HLS color space
+                             rgb  -> use RGB color space
+-b BUILTINPALETTE, --builtin-palette=BUILTINPALETTE
+                           select built-in palette type
+                             xterm16  -> X default 16 color map
+                             xterm256 -> X default 256 color map
+-P, --penetrate            penetrate GNU Screen using DCS
+                           pass-through sequence
+-D, --pipe-mode            read source images from stdin
+                           continuously
+-v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
 ```
@@ -406,9 +532,9 @@ sixel_dither_initialize(
     int /* in */ width,              /* image width */
     int /* in */ height,             /* image height */
     int /* in */ depth,              /* pixel depth, now only '3' is supported */
-    int /* in */ method_for_largest, /* set 0 or method for finding the largest dimention */
+    int /* in */ method_for_largest, /* set 0 or method for finding the largest dimension */
     int /* in */ method_for_rep,     /* set 0 or method for choosing a color from the box */
-    int /* in */ quality_mode        /* set 0 or quality of histgram processing */
+    int /* in */ quality_mode        /* set 0 or quality of histogram processing */
 );
 ```
 
@@ -491,6 +617,19 @@ The MIT License (MIT)
 > IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 > CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+## Contributers and Reviewers
+
+- @arakiken
+- @elfring 
+- @isaki68k
+- @knok
+- @mattn
+- @tsutsui
+- @ttdoda
+- @uobikiemukot
+- @waywardmonkeys
+- @yoshikaw
+  
 ## Acknowledgment
 
 This software derives from the following implementations.
@@ -580,6 +719,22 @@ http://netpbm.sourceforge.net/
 > implied warranty.
 
 
+### loader.h (@uobikiemukot's sdump)
+
+Some parts of converters/loader.c are imported from @uobikiemukot's
+[sdump](https://github.com/uobikiemukot/sdump) project
+
+> The MIT License (MIT)
+>
+> Copyright (c) 2014 haru <uobikiemukot at gmail dot com>
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
 ### ax_gcc_var_attribute / ax_gcc_func_attribute
 
 These are useful m4 macros for detecting some GCC attributes.
@@ -593,6 +748,41 @@ http://www.gnu.org/software/autoconf-archive/ax_gcc_func_attribute.html
 > permitted in any medium without royalty provided the copyright notice
 > and this notice are preserved.  This file is offered as-is, without any
 > warranty.
+
+
+### graphics.c (from Xterm pl#310)
+
+The helper function *hls2rgb* in *src/fromsixel.c* is imported from
+*graphics.c* in [Xterm pl#310](http://invisible-island.net/xterm/),
+originally written by Ross Combs.
+
+> Copyright 2013,2014 by Ross Combs
+>
+>                         All Rights Reserved
+>
+> Permission is hereby granted, free of charge, to any person obtaining a
+> copy of this software and associated documentation files (the
+> "Software"), to deal in the Software without restriction, including
+> without limitation the rights to use, copy, modify, merge, publish,
+> distribute, sublicense, and/or sell copies of the Software, and to
+> permit persons to whom the Software is furnished to do so, subject to
+> the following conditions:
+>
+> The above copyright notice and this permission notice shall be included
+> in all copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+> OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+> MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+> IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE LIABLE FOR ANY
+> CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+> TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+> SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+>
+> Except as contained in this notice, the name(s) of the above copyright
+> holders shall not be used in advertising or otherwise to promote the
+> sale, use or other dealings in this Software without prior written
+> authorization.
 
 
 ### test images
@@ -634,7 +824,7 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 
 ## Similar software
 
-- [ppmtosixel (netpbm)](http://netpbm.sourceforge.net/)
+- [netpbm](http://netpbm.sourceforge.net/)
 
   You can get SIXEL graphics using [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html)
   or [pbmtoln03](http://netpbm.sourceforge.net/doc/ppmtosixel.html).
@@ -650,14 +840,14 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
   Python implementation of SIXEL converter
 
 
+- [ImageMagick](http://www.imagemagick.org/)
+
+  Now SIXEL coder is available in svn trunk and V6 branch.
+
+
 - [monosixel in arakiken's tw](https://bitbucket.org/arakiken/tw/branch/sixel)
 
   A monochrome SIXEL converter
-
-
-- [sdump](https://github.com/uobikiemukot/sdump)
-
-  SIXEL image dumper. It also provides a PDF viewer and a pager for multiple images.
 
 
 - [xpr(x11-apps)](ftp://ftp.x.org/pub/unsupported/programs/xpr/)
@@ -689,6 +879,13 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
   ![GhostScript](https://raw.githubusercontent.com/saitoha/libsixel/data/data/gs.png)
 
 
+- [ImageMagick](http://www.imagemagick.org/)
+
+  Recent version of ImageMagick provides SIXEL coder. It's also available over commandline tools.
+
+  ![ImageMagick](https://raw.githubusercontent.com/saitoha/libsixel/data/data/imagemagick.png)
+
+
 - [ZX81 Emulator](http://rullf2.xs4all.nl/sg/zx81ce.html)
 
   A ZX81 emulator producing Sixel Image Files
@@ -703,6 +900,13 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
   ![qrc](https://github.com/fumiyas/qrc/blob/master/qrc-demo.png)
 
 
+- [go-sixel](https://github.com/mattn/go-sixel)
+
+  SIXEL encoder/decoder and command line tools writtern in golang.
+
+  ![go-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/go-sixel.png)
+
+
 - [hiptext](https://github.com/jart/hiptext)
 
   SIXEL format is supported by -sixel2, -sixel16 or -sixel256 option.
@@ -715,7 +919,30 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
   Freestanding slideviewer using sixel graphics.
   Currently runs on QEMU(i386), without any filesystem or network.
 
+  ![Animation](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixelslide.png)
+
   cf. http://www.slideshare.net/syuu1228/presentation-on-your-terminal
+
+
+- [GraphicConverter](https://itunes.apple.com/jp/app/graphicconverter-9/id736099092?mt=12)
+
+  It can import SIXEL images.
+
+  ![GraphicConverter](https://raw.githubusercontent.com/saitoha/libsixel/data/data/graphicconverter.png)
+
+
+- [SIXEL image viewer](http://rullf2.xs4all.nl/sg/sg.html)
+
+  This web page can decode SIXEL images (written in javascript).
+
+  ![SIXEL image viewer ](https://raw.githubusercontent.com/saitoha/libsixel/data/data/js-sixel.png)
+
+
+- [SixelGraphics.jl(written in Julia)](https://github.com/olofsen/SixelGraphics.jl)
+
+  A module for Julia implementing simple Sixel graphics.
+
+  ![SixelGraphics.jl](https://raw.githubusercontent.com/saitoha/libsixel/data/data/julia.png)
 
 
 - ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
@@ -723,10 +950,5 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 
 - [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
 
-
-- [SIXEL image viewer(written in javascript)](http://rullf2.xs4all.nl/sg/sg.html)
-
-
-- [SixelGraphics.jl(written in Julia)](https://github.com/olofsen/SixelGraphics.jl)
 
 

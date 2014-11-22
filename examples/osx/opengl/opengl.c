@@ -83,7 +83,8 @@ static CGLError setup(int width, int height)
 #endif
 }
 
-static CGLError cleanup()
+static CGLError
+cleanup(void)
 {
 #if defined(__APPLE__) && defined(__MACH__)
     (void)CGLDestroyContext(context);
@@ -96,7 +97,8 @@ static CGLError cleanup()
 }
 
 
-static int draw_scene()
+static int
+draw_scene(void)
 {
     static GLfloat rot1, rot2;
 
