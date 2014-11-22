@@ -50,43 +50,56 @@
 # include <inttypes.h>
 #endif
 
-#if defined(HAVE_ERRNO_H)
+#if HAVE_ERRNO_H
 # include <errno.h>
 #endif
 
-#include <sixel.h>
-#include "stb_image_write.h"
+#if HAVE_SETJMP_H
+# include <setjmp.h>
+#endif
 
-unsigned char *
-stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes,
-                      int x, int y, int n, int *out_len);
+#if HAVE_LIBPNG
+# include <png.h>
+#else
+# include "stb_image_write.h"
+#endif
+
+#include <sixel.h>
 
 #if !defined(O_BINARY) && defined(_O_BINARY)
 # define O_BINARY _O_BINARY
 #endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 
-enum
-{
-   STBI_default = 0, /* only used for req_comp */
-   STBI_grey = 1,
-   STBI_grey_alpha = 2,
-   STBI_rgb = 3,
-   STBI_rgb_alpha = 4
-};
+#if !HAVE_LIBPNG
+unsigned char *
+stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes,
+                      int x, int y, int n, int *out_len);
+#endif
 
 
 static int
 sixel_to_png(const char *input, const char *output)
 {
-    unsigned char *raw_data, *png_data;
-    int sx, sy, comp;
+    unsigned char *raw_data, *png_data = NULL;
+    int sx, sy;
     int raw_len;
-    int png_len;
-    int i;
     int max;
     int n;
-    FILE *input_fp, *output_fp;
+    FILE *input_fp = NULL, *output_fp = NULL;
+    unsigned char *indexed_pixels;
+    unsigned char *palette;
+    int ncolors;
+    unsigned char *pixels;
+    int x, y;
+    int ret = 0;
+#if HAVE_LIBPNG
+    png_structp png_ptr = NULL;
+    png_infop info_ptr = NULL;
+    unsigned char **rows = NULL;
+#else
+    int png_len;
     int write_len;
+#endif  /* HAVE_LIBPNG */
 
     if (strcmp(input, "-") == 0) {
         /* for windows */
@@ -125,7 +138,7 @@ sixel_to_png(const char *input, const char *output)
             max *= 2;
             if ((raw_data = (unsigned char *)realloc(raw_data, max)) == NULL) {
 #if HAVE_ERRNO_H
-                fprintf(stderr, "reaalloc(raw_data, %d) failed.\n"
+                fprintf(stderr, "realloc(raw_data, %d) failed.\n"
                                 "reason: %s.\n",
                         max, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
@@ -141,41 +154,24 @@ sixel_to_png(const char *input, const char *output)
         fclose(input_fp);
     }
 
-    unsigned char *indexed_pixels;
-    unsigned char *palette;
-    //int sx, sy;
-    int depth, ncolors;
-
-    unsigned char *rgb_pixels;
-    int x, y;
-    int ret;
-
     ret = sixel_decode(raw_data, raw_len, &indexed_pixels,
                        &sx, &sy, &palette, &ncolors, malloc);
 
     if (ret != 0) {
         fprintf(stderr, "sixel_decode failed.\n");
-        return (-1);
+        goto end;
     }
 
-    rgb_pixels = malloc(sx * sy * 3);
+    pixels = malloc(sx * sy * 3);
     for (y = 0; y < sy; ++y) {
         for (x = 0; x < sx; ++x) {
             n = indexed_pixels[sx * y + x];
-            rgb_pixels[sx * 3 * y + x * 3 + 0] = palette[n * 4 + 0];
-            rgb_pixels[sx * 3 * y + x * 3 + 1] = palette[n * 4 + 1];
-            rgb_pixels[sx * 3 * y + x * 3 + 2] = palette[n * 4 + 2];
-            rgb_pixels[sx * 3 * y + x * 3 + 3] = palette[n * 4 + 3];
+            pixels[sx * 3 * y + x * 3 + 0] = palette[n * 4 + 0];
+            pixels[sx * 3 * y + x * 3 + 1] = palette[n * 4 + 1];
+            pixels[sx * 3 * y + x * 3 + 2] = palette[n * 4 + 2];
         }
     }
 
-    png_data = stbi_write_png_to_mem(rgb_pixels, sx * 3,
-                                     sx, sy, STBI_rgb, &png_len);
-
-    if (!png_data) {
-        fprintf(stderr, "stbi_write_png_to_mem failed.\n");
-        return (-1);
-    }
     if (strcmp(output, "-") == 0) {
 #if defined(O_BINARY)
 # if HAVE__SETMODE
@@ -192,20 +188,73 @@ sixel_to_png(const char *input, const char *output)
             fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
                     output, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
-            free(png_data);
-            return (-1);
+            ret = -1;
+            goto end;
         }
     }
-    write_len = fwrite(png_data, 1, png_len, output_fp);
-    fclose(output_fp);
-    free(png_data);
 
-    return 0;
+#if HAVE_LIBPNG
+    rows = malloc(sy * sizeof(unsigned char *));
+    for (y = 0; y < sy; ++y) {
+        rows[y] = pixels + sx * 3 * y;
+    }
+    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (!png_ptr) {
+        ret = (-1);
+        goto end;
+    }
+    info_ptr = png_create_info_struct(png_ptr);
+    if (!png_ptr) {
+        ret = (-1);
+        goto end;
+    }
+# if USE_SETJMP && HAVE_SETJMP
+    if (setjmp(png_jmpbuf(png_ptr))) {
+        ret = (-1);
+        goto end;
+    }
+# endif
+    png_init_io(png_ptr, output_fp);
+    png_set_IHDR(png_ptr, info_ptr, sx, sy,
+                 /* bit_depth */ 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+                 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+    png_write_info(png_ptr, info_ptr);
+    png_write_image(png_ptr, rows);
+    png_write_end(png_ptr, NULL);
+#else
+    png_data = stbi_write_png_to_mem(pixels, sx * 3,
+                                     sx, sy, /* STBI_rgb */ 3, &png_len);
+
+    if (!png_data) {
+        fprintf(stderr, "stbi_write_png_to_mem failed.\n");
+        goto end;
+    }
+    write_len = fwrite(png_data, 1, png_len, output_fp);
+    if (write_len < 0) {
+# if HAVE_ERRNO_H
+        fprintf(stderr, "fwrite failed.\n" "reason: %s.\n",
+                strerror(errno));
+# endif  /* HAVE_ERRNO_H */
+        ret = -1;
+        goto end;
+    }
+#endif  /* HAVE_LIBPNG */
+
+end:
+    if (output_fp && output_fp != stdout) {
+        fclose(output_fp);
+    }
+    free(png_data);
+#if HAVE_LIBPNG
+    free(rows);
+    png_destroy_write_struct (&png_ptr, &info_ptr);
+#endif  /* HAVE_LIBPNG */
+    return ret;
 }
 
 
 static
-void show_version()
+void show_version(void)
 {
     printf("sixel2png " PACKAGE_VERSION "\n"
            "Copyright (C) 2014 Hayaki Saito <user@zuse.jp>.\n"
@@ -231,7 +280,7 @@ void show_version()
 
 
 static void
-show_help()
+show_help(void)
 {
     fprintf(stderr,
             "Usage: sixel2png -i input.sixel -o output.png\n"
@@ -253,21 +302,31 @@ main(int argc, char *argv[])
     char *output = strdup("-");
     char *input = strdup("-");
     int long_opt;
+#if HAVE_GETOPT_LONG
     int option_index;
+#endif  /* HAVE_GETOPT_LONG */
     int nret = 0;
+    char const *optstring = "i:o:VH";
 
+#if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"input",        required_argument,  &long_opt, 'i'},
         {"output",       required_argument,  &long_opt, 'o'},
-        {"version",      no_argument,        &long_opt, 'H'},
-        {"help",         no_argument,        &long_opt, 'V'},
+        {"version",      no_argument,        &long_opt, 'V'},
+        {"help",         no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}
     };
-
+#endif  /* HAVE_GETOPT_LONG */
     for (;;) {
-        n = getopt_long(argc, argv, "i:o:VH",
+#if HAVE_GETOPT_LONG
+        n = getopt_long(argc, argv, optstring,
                         long_options, &option_index);
+#else
+        n = getopt(argc, argv, optstring);
+#endif  /* HAVE_GETOPT_LONG */
+
         if (n == -1) {
+            nret = (-1);
             break;
         }
         if (n == 0) {
@@ -286,10 +345,11 @@ main(int argc, char *argv[])
             show_version();
             goto end;
         case 'H':
-        case '?':
             show_help();
             goto end;
+        case '?':
         default:
+            nret = (-1);
             goto argerr;
         }
         if (optind >= argc) {
@@ -306,6 +366,7 @@ main(int argc, char *argv[])
         output = strdup(argv[optind++]);
     }
     if (optind != argc) {
+        nret = (-1);
         goto argerr;
     }
 

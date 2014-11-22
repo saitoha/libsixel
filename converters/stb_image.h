@@ -3155,7 +3155,7 @@ static stbi_uc *stbi__bmp_load(stbi__context *s, int *x, int *y, int *comp, int 
             }
          } else {
             for (i=0; i < (int) s->img_x; ++i) {
-               stbi__uint32 v = (stbi__uint32) (bpp == 16 ? stbi__get16le(s) : stbi__get32le(s));
+               stbi__uint32 v = bpp == 16 ? (stbi__uint32) stbi__get16le(s) : stbi__get32le(s);
                int a;
                out[z++] = STBI__BYTECAST(stbi__shiftsigned(v & mr, rshift, rcount));
                out[z++] = STBI__BYTECAST(stbi__shiftsigned(v & mg, gshift, gcount));
@@ -4177,6 +4177,7 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
          }
 
          case 0x3B: // gif stream termination code
+         case 0x3c: // ? (unknown code)
             return (stbi_uc *) 1;
 
          default:

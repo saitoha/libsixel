@@ -62,7 +62,7 @@
 #if 0
 #define quant_trace fprintf
 #else
-static inline void quant_trace(FILE *f, ...) {}
+static inline void quant_trace(FILE *f, ...) { (void) f; }
 #endif
 
 /*****************************************************************************
@@ -125,7 +125,7 @@ sumcompare(const void * const b1, const void * const b2)
 }
 
 
-static tupletable const
+static tupletable
 alloctupletable(unsigned int const depth, unsigned int const size)
 {
     if (UINT_MAX / sizeof(struct tupleint) < size) {
@@ -181,7 +181,6 @@ newColorMap(unsigned int const newcolors, unsigned int const depth)
 {
     tupletable2 colormap;
     unsigned int i;
-    tupletable table;
 
     colormap.size = 0;
     colormap.table = alloctupletable(depth, newcolors);
@@ -293,6 +292,7 @@ largestByLuminosity(sample minval[], sample maxval[], unsigned int const depth)
         double largestSpreadSoFar;
 
         largestSpreadSoFar = 0.0;
+        largestDimension = 0;
 
         for (plane = 0; plane < 3; ++plane) {
             double const spread =
@@ -321,7 +321,7 @@ centerBox(int          const boxStart,
 
     for (plane = 0; plane < depth; ++plane) {
         int minval, maxval;
-        unsigned int i;
+        int i;
 
         minval = maxval = colorfreqtable.table[boxStart]->tuple[plane];
 
@@ -371,7 +371,7 @@ averagePixels(int const boxStart,
     unsigned int n;
         /* Number of tuples represented by the box */
     unsigned int plane;
-    unsigned int i;
+    int i;
 
     /* Count the tuples in question */
     n = 0;  /* initial value */
@@ -475,7 +475,7 @@ splitBox(boxVector const bv,
     unsigned int largestDimension;
         /* number of the plane with the largest spread */
     unsigned int medianIndex;
-    int lowersum;
+    unsigned int lowersum;
         /* Number of pixels whose value is "less than" the median */
 
     findBoxBoundaries(colorfreqtable, depth, boxStart, boxSize,
@@ -520,7 +520,7 @@ splitBox(boxVector const bv,
         unsigned int i;
 
         lowersum = colorfreqtable.table[boxStart]->value; /* initial value */
-        for (i = 1; i < boxSize - 1 && lowersum < sm/2; ++i) {
+        for (i = 1; i < boxSize - 1 && lowersum < sm / 2; ++i) {
             lowersum += colorfreqtable.table[boxStart + i]->value;
         }
         medianIndex = i;
@@ -542,7 +542,7 @@ splitBox(boxVector const bv,
 static int
 mediancut(tupletable2 const colorfreqtable,
           unsigned int const depth,
-          int const newcolors,
+          unsigned int const newcolors,
           int const methodForLargest,
           int const methodForRep,
           tupletable2 *const colormapP)
@@ -598,6 +598,20 @@ mediancut(tupletable2 const colorfreqtable,
 
 
 static int
+computeHash(unsigned char const *data, int const depth)
+{
+    int hash = 0;
+    int n;
+
+    for (n = 0; n < depth; n++) {
+        hash |= data[depth - 1 - n] >> 3 << n * 5;
+    }
+
+    return hash;
+}
+
+
+static int
 computeHistogram(unsigned char *data,
                  unsigned int length,
                  unsigned long const depth,
@@ -606,29 +620,41 @@ computeHistogram(unsigned char *data,
 {
     typedef unsigned short unit_t;
     unsigned int i, n;
-    unit_t *histgram;
+    unit_t *histogram;
     unit_t *refmap;
     unit_t *ref;
     unit_t *it;
-    struct tupleint *t;
     unsigned int index;
     unsigned int step;
     unsigned int max_sample;
 
-    if (qualityMode == QUALITY_HIGH) {
+    switch (qualityMode) {
+    case QUALITY_HIGH:
         max_sample = 1118383;
-    } else { /* if (qualityMode == QUALITY_LOW) */
+        break;
+    case QUALITY_LOW:
         max_sample = 18383;
+        break;
+    case QUALITY_FULL:
+    default:
+        max_sample = 4003079;
+        break;
     }
 
     quant_trace(stderr, "making histogram...\n");
 
-    histgram = malloc((1 << depth * 5) * sizeof(unit_t));
-    if (!histgram) {
-        quant_trace(stderr, "Unable to allocate memory for histgram.");
+#if HAVE_CALLOC
+    histogram = calloc(1 << depth * 5, sizeof(unit_t));
+#else
+    histogram = malloc((1 << depth * 5) * sizeof(unit_t));
+#endif
+    if (!histogram) {
+        quant_trace(stderr, "Unable to allocate memory for histogram.");
         return (-1);
     }
-    memset(histgram, 0, (1 << depth * 5) * sizeof(unit_t));
+#if !HAVE_CALLOC
+    memset(histogram, 0, (1 << depth * 5) * sizeof(unit_t));
+#endif
     it = ref = refmap = (unsigned short *)malloc(max_sample * sizeof(unit_t));
     if (!it) {
         quant_trace(stderr, "Unable to allocate memory for lookup table.");
@@ -642,23 +668,20 @@ computeHistogram(unsigned char *data,
     }
 
     for (i = 0; i < length; i += step) {
-        index = 0;
-        for (n = 0; n < depth; n++) {
-            index |= data[i + depth - 1 - n] >> 3 << n * 5;
-        }
-        if (histgram[index] == 0) {
+        index = computeHash(data + i, 3);
+        if (histogram[index] == 0) {
             *ref++ = index;
         }
-        if (histgram[index] < (1 << sizeof(unsigned short) * 8) - 1) {
-            histgram[index]++;
+        if (histogram[index] < (1 << sizeof(unsigned short) * 8) - 1) {
+            histogram[index]++;
         }
     }
 
     colorfreqtableP->size = ref - refmap;
     colorfreqtableP->table = alloctupletable(depth, ref - refmap);
     for (i = 0; i < colorfreqtableP->size; ++i) {
-        if (histgram[refmap[i]] > 0) {
-            colorfreqtableP->table[i]->value = histgram[refmap[i]];
+        if (histogram[refmap[i]] > 0) {
+            colorfreqtableP->table[i]->value = histogram[refmap[i]];
             for (n = 0; n < depth; n++) {
                 colorfreqtableP->table[i]->tuple[depth - 1 - n]
                     = (*it >> n * 5 & 0x1f) << 3;
@@ -668,7 +691,7 @@ computeHistogram(unsigned char *data,
     }
 
     free(refmap);
-    free(histgram);
+    free(histogram);
 
     quant_trace(stderr, "%u colors found\n", colorfreqtableP->size);
     return 0;
@@ -679,7 +702,7 @@ static int
 computeColorMapFromInput(unsigned char *data,
                          size_t length,
                          unsigned int const depth,
-                         int const reqColors,
+                         unsigned int const reqColors,
                          enum methodForLargest const methodForLargest,
                          enum methodForRep const methodForRep,
                          enum qualityMode const qualityMode,
@@ -706,7 +729,8 @@ computeColorMapFromInput(unsigned char *data,
    relevant to our colormap mission; just a fringe benefit).
 -----------------------------------------------------------------------------*/
     tupletable2 colorfreqtable;
-    int i, n;
+    unsigned int i;
+    unsigned int n;
     int ret;
 
     ret = computeHistogram(data, length, depth, &colorfreqtable, qualityMode);
@@ -767,6 +791,38 @@ static void
 diffuse_none(unsigned char *data, int width, int height,
              int x, int y, int depth, int offset)
 {
+    /* unused */ (void) data;
+    /* unused */ (void) width;
+    /* unused */ (void) height;
+    /* unused */ (void) x;
+    /* unused */ (void) y;
+    /* unused */ (void) depth;
+    /* unused */ (void) offset;
+}
+
+
+static void
+diffuse_fs(unsigned char *data, int width, int height,
+           int x, int y, int depth, int offset)
+{
+    int pos;
+
+    pos = y * width + x;
+
+    /* Floyd Steinberg Method
+     *          curr    7/16
+     *  3/16    5/48    1/16
+     */
+    if (x < width - 1 && y < height - 1) {
+        /* add offset to the right cell */
+        error_diffuse(data, pos + width * 0 + 1, depth, offset, 7, 16);
+        /* add offset to the left-bottom cell */
+        error_diffuse(data, pos + width * 1 - 1, depth, offset, 3, 16);
+        /* add offset to the bottom cell */
+        error_diffuse(data, pos + width * 1 + 0, depth, offset, 5, 16);
+        /* add offset to the right-bottom cell */
+        error_diffuse(data, pos + width * 1 + 1, depth, offset, 1, 16);
+    }
 }
 
 
@@ -774,11 +830,16 @@ static void
 diffuse_atkinson(unsigned char *data, int width, int height,
                  int x, int y, int depth, int offset)
 {
-    int pos, n;
+    int pos;
 
     pos = y * width + x;
 
-    if (x < width - 2 && y < height - 2) {
+    /* Atkinson's Method
+     *          curr    1/8    1/8
+     *   1/8     1/8    1/8
+     *           1/8
+     */
+    if (y < height - 2) {
         /* add offset to the right cell */
         error_diffuse(data, pos + width * 0 + 1, depth, offset, 1, 8);
         /* add offset to the 2th right cell */
@@ -796,36 +857,9 @@ diffuse_atkinson(unsigned char *data, int width, int height,
 
 
 static void
-diffuse_fs(unsigned char *data, int width, int height,
-           int x, int y, int depth, int offset)
-{
-    int n;
-    int pos;
-
-    pos = y * width + x;
-
-    /* Floyd Steinberg Method
-     *          curr    7/16
-     *  3/16    5/48    1/16
-     */
-    if (x > 1 && x < width - 1 && y < height - 1) {
-        /* add offset to the right cell */
-        error_diffuse(data, pos + width * 0 + 1, depth, offset, 7, 16);
-        /* add offset to the left-bottom cell */
-        error_diffuse(data, pos + width * 1 - 1, depth, offset, 3, 16);
-        /* add offset to the bottom cell */
-        error_diffuse(data, pos + width * 1 + 0, depth, offset, 5, 16);
-        /* add offset to the right-bottom cell */
-        error_diffuse(data, pos + width * 1 + 1, depth, offset, 1, 16);
-    }
-}
-
-
-static void
 diffuse_jajuni(unsigned char *data, int width, int height,
                int x, int y, int depth, int offset)
 {
-    int n;
     int pos;
 
     pos = y * width + x;
@@ -835,7 +869,7 @@ diffuse_jajuni(unsigned char *data, int width, int height,
      *  3/48    5/48    7/48    5/48    3/48
      *  1/48    3/48    5/48    3/48    1/48
      */
-    if (x > 2 && x < width - 2 && y < height - 2) {
+    if (pos < (height - 2) * width - 2) {
         error_diffuse(data, pos + width * 0 + 1, depth, offset, 7, 48);
         error_diffuse(data, pos + width * 0 + 2, depth, offset, 5, 48);
         error_diffuse(data, pos + width * 1 - 2, depth, offset, 3, 48);
@@ -856,7 +890,6 @@ static void
 diffuse_stucki(unsigned char *data, int width, int height,
                int x, int y, int depth, int offset)
 {
-    int n;
     int pos;
 
     pos = y * width + x;
@@ -866,7 +899,7 @@ diffuse_stucki(unsigned char *data, int width, int height,
      *  2/48    4/48    8/48    4/48    2/48
      *  1/48    2/48    4/48    2/48    1/48
      */
-    if (x > 2 && x < width - 2 && y < height - 2) {
+    if (pos < (height - 2) * width - 2) {
         error_diffuse(data, pos + width * 0 + 1, depth, offset, 1, 6);
         error_diffuse(data, pos + width * 0 + 2, depth, offset, 1, 12);
         error_diffuse(data, pos + width * 1 - 2, depth, offset, 1, 24);
@@ -887,7 +920,6 @@ static void
 diffuse_burkes(unsigned char *data, int width, int height,
                int x, int y, int depth, int offset)
 {
-    int n;
     int pos;
 
     pos = y * width + x;
@@ -896,7 +928,7 @@ diffuse_burkes(unsigned char *data, int width, int height,
      *                  curr    4/16    2/16
      *  1/16    2/16    4/16    2/16    1/16
      */
-    if (x > 2 && x < width - 2 && y < height - 2) {
+    if (pos < (height - 1) * width - 2) {
         error_diffuse(data, pos + width * 0 + 1, depth, offset, 1, 4);
         error_diffuse(data, pos + width * 0 + 2, depth, offset, 1, 8);
         error_diffuse(data, pos + width * 1 - 2, depth, offset, 1, 16);
@@ -912,8 +944,9 @@ static int
 lookup_normal(unsigned char const * const pixel,
               int const depth,
               unsigned char const * const palette,
-              int const ncolor,
-              unsigned short * const cachetable)
+              int const reqcolor,
+              unsigned short * const cachetable,
+              int const complexion)
 {
     int index;
     int diff;
@@ -925,9 +958,14 @@ lookup_normal(unsigned char const * const pixel,
     index = -1;
     diff = INT_MAX;
 
-    for (i = 0; i < ncolor; i++) {
+    /* don't use cachetable in 'normal' strategy */
+    (void) cachetable;
+
+    for (i = 0; i < reqcolor; i++) {
         distant = 0;
-        for (n = 0; n < depth; ++n) {
+        r = pixel[0] - palette[i * depth + 0];
+        distant += r * r * complexion;
+        for (n = 1; n < depth; ++n) {
             r = pixel[n] - palette[i * depth + n];
             distant += r * r;
         }
@@ -945,37 +983,42 @@ static int
 lookup_fast(unsigned char const * const pixel,
             int const depth,
             unsigned char const * const palette,
-            int const ncolor,
-            unsigned short * const cachetable)
+            int const reqcolor,
+            unsigned short * const cachetable,
+            int const complexion)
 {
     int hash;
     int index;
     int diff;
     int cache;
-    int r;
     int i;
-    int n;
     int distant;
+
+    /* don't use depth in 'fast' strategy because it's always 3 */
+    (void) depth;
 
     index = -1;
     diff = INT_MAX;
-    hash = 0;
-
-    for (n = 0; n < 3; ++n) {
-        hash |= *(pixel + n) >> 3 << ((3 - 1 - n) * 5);
-    }
+    hash = computeHash(pixel, 3);
 
     cache = cachetable[hash];
     if (cache) {  /* fast lookup */
         return cache - 1;
     }
     /* collision */
-    for (i = 0; i < ncolor; i++) {
+    for (i = 0; i < reqcolor; i++) {
         distant = 0;
+#if 0
         for (n = 0; n < 3; ++n) {
             r = pixel[n] - palette[i * 3 + n];
             distant += r * r;
         }
+#elif 1  /* complexion correction */
+        distant = (pixel[0] - palette[i * 3 + 0]) * (pixel[0] - palette[i * 3 + 0]) * complexion
+                + (pixel[1] - palette[i * 3 + 1]) * (pixel[1] - palette[i * 3 + 1])
+                + (pixel[2] - palette[i * 3 + 2]) * (pixel[2] - palette[i * 3 + 2])
+                ;
+#endif
         if (distant < diff) {
             diff = distant;
             index = i;
@@ -984,6 +1027,52 @@ lookup_fast(unsigned char const * const pixel,
     cachetable[hash] = index + 1;
 
     return index;
+}
+
+
+static int
+lookup_mono_darkbg(unsigned char const * const pixel,
+                   int const depth,
+                   unsigned char const * const palette,
+                   int const reqcolor,
+                   unsigned short * const cachetable,
+                   int const complexion)
+{
+    int n;
+    int distant;
+
+    /* unused */ (void) palette;
+    /* unused */ (void) cachetable;
+    /* unused */ (void) complexion;
+
+    distant = 0;
+    for (n = 0; n < depth; ++n) {
+        distant += pixel[n];
+    }
+    return distant >= 128 * reqcolor ? 1: 0;
+}
+
+
+static int
+lookup_mono_lightbg(unsigned char const * const pixel,
+                    int const depth,
+                    unsigned char const * const palette,
+                    int const reqcolor,
+                    unsigned short * const cachetable,
+                    int const complexion)
+{
+    int n;
+    int distant;
+
+    /* unused */ (void) palette;
+    /* unused */ (void) cachetable;
+    /* unused */ (void) complexion;
+
+    distant = 0;
+    for (n = 0; n < depth; ++n) {
+        distant += pixel[n];
+    }
+    return distant < 128 * reqcolor ? 1: 0;
 }
 
 
@@ -1019,22 +1108,25 @@ LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
     return palette;
 }
 
+
 int
 LSQ_ApplyPalette(unsigned char *data,
                  int width,
                  int height,
                  int depth,
                  unsigned char *palette,
-                 int ncolor,
+                 int reqcolor,
                  int methodForDiffuse,
                  int foptimize,
+                 int foptimize_palette,
+                 int complexion,
                  unsigned short *cachetable,
+                 int *ncolors,
                  unsigned char *result)
 {
     typedef int component_t;
-    int pos, j, n, x, y;
+    int pos, n, x, y, sum1, sum2;
     component_t offset;
-    int diff;
     int index;
     unsigned short *indextable;
     void (*f_diffuse)(unsigned char *data, int width, int height,
@@ -1042,8 +1134,9 @@ LSQ_ApplyPalette(unsigned char *data,
     int (*f_lookup)(unsigned char const * const pixel,
                     int const depth,
                     unsigned char const * const palette,
-                    int const ncolor,
-                    unsigned short * const cachetable);
+                    int const reqcolor,
+                    unsigned short * const cachetable,
+                    int const complexion);
 
     if (depth != 3) {
         f_diffuse = diffuse_none;
@@ -1076,33 +1169,91 @@ LSQ_ApplyPalette(unsigned char *data,
         }
     }
 
-    if (foptimize && depth == 3) {
-        f_lookup = lookup_fast;
-    } else {
-        f_lookup = lookup_normal;
+    f_lookup = NULL;
+    if (reqcolor == 2) {
+        sum1 = 0;
+        sum2 = 0;
+        for (n = 0; n < depth; ++n) {
+            sum1 += palette[n];
+        }
+        for (n = depth; n < depth + depth; ++n) {
+            sum2 += palette[n];
+        }
+        if (sum1 == 0 && sum2 == 255 * 3) {
+            f_lookup = lookup_mono_darkbg;
+        } else if (sum1 == 255 * 3 && sum2 == 0) {
+            f_lookup = lookup_mono_lightbg;
+        }
+    }
+    if (f_lookup == NULL) {
+        if (foptimize && depth == 3) {
+            f_lookup = lookup_fast;
+        } else {
+            f_lookup = lookup_normal;
+        }
     }
 
     indextable = cachetable;
-    if (cachetable == NULL) {
+    if (cachetable == NULL && f_lookup == lookup_fast) {
+#if !HAVE_CALLOC
         indextable = malloc((1 << depth * 5) * sizeof(unsigned short));
+#else
+        indextable = calloc(1 << depth * 5, sizeof(unsigned short));
+#endif
         if (!indextable) {
             quant_trace(stderr, "Unable to allocate memory for indextable.");
             return (-1);
         }
+#if !HAVE_CALLOC
         memset(indextable, 0x00, (1 << depth * 5) * sizeof(unsigned short));
+#endif
     }
 
-    for (y = 0; y < height; ++y) {
-        for (x = 0; x < width; ++x) {
-            pos = y * width + x;
-            index = f_lookup(data + (pos * depth), depth,
-                             palette, ncolor, indextable);
-            result[pos] = index;
-            for (n = 0; n < depth; ++n) {
-                offset = data[pos * depth + n] - palette[index * depth + n];
-                f_diffuse(data + n, width, height, x, y, depth, offset);
+    unsigned char new_palette[256 * 4];
+    unsigned short migration_map[256];
+
+    if (foptimize_palette) {
+        *ncolors = 0;
+
+        memset(new_palette, 0x00, sizeof(256 * depth));
+        memset(migration_map, 0x00, sizeof(migration_map));
+
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < width; ++x) {
+                pos = y * width + x;
+                index = f_lookup(data + (pos * depth), depth,
+                                 palette, reqcolor, indextable, complexion);
+                if (migration_map[index] == 0) {
+                    result[pos] = *ncolors;
+                    for (n = 0; n < depth; ++n) {
+                        new_palette[*ncolors * depth + n] = palette[index * depth + n];
+                    }
+                    ++*ncolors;
+                    migration_map[index] = *ncolors;
+                } else {
+                    result[pos] = migration_map[index] - 1;
+                }
+                for (n = 0; n < depth; ++n) {
+                    offset = data[pos * depth + n] - palette[index * depth + n];
+                    f_diffuse(data + n, width, height, x, y, depth, offset);
+                }
             }
         }
+        memcpy(palette, new_palette, *ncolors * depth);
+    } else {
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < width; ++x) {
+                pos = y * width + x;
+                index = f_lookup(data + (pos * depth), depth,
+                                 palette, reqcolor, indextable, complexion);
+                result[pos] = index;
+                for (n = 0; n < depth; ++n) {
+                    offset = data[pos * depth + n] - palette[index * depth + n];
+                    f_diffuse(data + n, width, height, x, y, depth, offset);
+                }
+            }
+        }
+        *ncolors = reqcolor;
     }
 
     if (cachetable == NULL) {
