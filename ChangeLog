@@ -1,4 +1,10 @@
+2014-11-23  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Fix a segmentation fault while loading grayscaled PNG
+
 2014-11-19  Hayaki Saito <user@zuse.jp>
+
+  * ChangeLog, configure, configure.ac, package.json: Bump micro version
 
   * converters/img2sixel.c: Suppress color expansion on loading mapfiles
 
