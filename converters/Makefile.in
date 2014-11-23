@@ -1107,6 +1107,8 @@ test: all
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I -C10 ../images/snake.png -djajuni
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I ../images/snake-ascii.pgm
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I ../images/snake-ascii.pbm -datkinson
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I ../images/snake-grayscale.png
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I ../images/snake-grayscale.jpg
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I  ../images/snake.ppm -c2000x100+40+20 -wauto -h200 -qhigh -dfs -rbilinear -trgb
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I -v ../images/snake.bmp -w200 -hauto -c100x1000+40+20 -qlow -dnone -rhamming -thls
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -m ../images/map8.png -w200 -fauto -rwelsh ../images/egret.jpg
