@@ -263,6 +263,12 @@ unsigned char *
 sixel_dither_get_palette(
     sixel_dither_t /* in */ *dither);  /* dither context object */
 
+/* set palette */
+void
+sixel_dither_set_palette(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    unsigned char  /* in */ *palette);
+
 void
 sixel_dither_set_complexion_score(
     sixel_dither_t /* in */ *dither,   /* dither context object */
@@ -278,6 +284,7 @@ sixel_dither_set_optimize_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     int            /* in */ do_opt);   /* 0: optimize palette size
                                           1: don't optimize palette size */
+/* set pixelformat */
 void
 sixel_dither_set_pixelformat(
     sixel_dither_t /* in */ *dither,      /* dither context object */
@@ -301,7 +308,7 @@ sixel_encode(
     unsigned char  /* in */ *pixels,     /* pixel bytes */
     int            /* in */  width,      /* image width */
     int            /* in */  height,     /* image height */
-    int            /* in */  bitfield,   /* one of enum colorBitfield */
+    int            /* in */  depth,      /* color depth: now unused */
     sixel_dither_t /* in */ *dither,     /* dither context */
     sixel_output_t /* in */ *context);   /* output context */
 

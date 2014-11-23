@@ -83,6 +83,9 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel ../images/snake.tga -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto
 	$(WINE) ./img2sixel -p300 ../images/snake.tiff -8 -scenter -h100 -qfull -rhanning -dstucki -thls
 	$(WINE) ./img2sixel -8 -qauto -thls -e ../images/snake.pgm
+	$(WINE) ./img2sixel -8 ../images/snake.ppm -m ../images/map8-palette.png
+	$(WINE) ./img2sixel -7 ../images/snake.jpg -m ../images/map16-palette.png
+	$(WINE) ./img2sixel -7 ../images/snake-palette.png -w300
 	$(WINE) ./img2sixel -7 -w100 -h100 -bxterm16 ../images/snake.pbm
 	$(WINE) ./img2sixel -I ../images/snake.ppm -dstucki -thls
 	$(WINE) ./img2sixel -I ../images/snake-ascii.ppm -8 -dburkes

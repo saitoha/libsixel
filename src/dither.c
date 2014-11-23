@@ -135,7 +135,7 @@ sixel_dither_create(int ncolors)
     }
     headsize = sizeof(sixel_dither_t);
     datasize = ncolors * 3;
-    wholesize = headsize + datasize;// + cachesize;
+    wholesize = headsize + datasize;
 
     dither = malloc(wholesize);
     if (dither == NULL) {
@@ -482,6 +482,16 @@ unsigned char *
 sixel_dither_get_palette(sixel_dither_t /* in */ *dither)  /* dither context object */
 {
     return dither->palette;
+}
+
+
+/* set palette */
+void
+sixel_dither_set_palette(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    unsigned char  /* in */ *palette)
+{
+    memcpy(dither->palette, palette, dither->ncolors * 3);
 }
 
 

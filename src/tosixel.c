@@ -525,16 +525,22 @@ sixel_encode_dither(unsigned char *pixels, int width, int height,
                     sixel_dither_t *dither, sixel_output_t *context)
 {
     unsigned char *paletted_pixels = NULL;
+    unsigned char *input_pixels;
     int nret = (-1);
 
-    /* apply palette */
-    paletted_pixels = sixel_dither_apply_palette(dither, pixels, width, height);
-    if (paletted_pixels == NULL) {
-        goto end;
+    if (dither->pixelformat == PIXELFORMAT_PAL8) {
+        input_pixels = pixels;
+    } else {
+        /* apply palette */
+        paletted_pixels = sixel_dither_apply_palette(dither, pixels, width, height);
+        if (paletted_pixels == NULL) {
+            goto end;
+        }
+        input_pixels = paletted_pixels;
     }
 
     sixel_encode_header(width, height, context);
-    sixel_encode_body(paletted_pixels, width, height,
+    sixel_encode_body(input_pixels, width, height,
                       dither->palette, dither->ncolors,
                       dither->keycolor, dither->bodyonly, context, NULL);
     sixel_encode_footer(context);
@@ -1089,7 +1095,7 @@ error:
 int sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
                  int            /* in */ width,       /* image width */
                  int            /* in */ height,      /* image height */
-                 int const      /* in */ pixelformat, /* color pixelformat */
+                 int const      /* in */ depth,       /* color depth */
                  sixel_dither_t /* in */ *dither,     /* dither context */
                  sixel_output_t /* in */ *context)    /* output context */
 {
@@ -1097,7 +1103,7 @@ int sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
 
     sixel_dither_ref(dither);
 
-    sixel_dither_set_pixelformat(dither, pixelformat);
+    (void) depth;
 
     if (dither->quality_mode == QUALITY_HIGHCOLOR) {
         nret = sixel_encode_fullcolor(pixels, width, height,
