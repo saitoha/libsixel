@@ -1107,6 +1107,8 @@ test: all
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I -C10 ../images/snake.png -djajuni
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I ../images/snake-ascii.pgm
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I ../images/snake-ascii.pbm -datkinson
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I ../images/snake-grayscale.png
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I ../images/snake-grayscale.jpg
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I  ../images/snake.ppm -c2000x100+40+20 -wauto -h200 -qhigh -dfs -rbilinear -trgb
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I -v ../images/snake.bmp -w200 -hauto -c100x1000+40+20 -qlow -dnone -rhamming -thls
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -m ../images/map8.png -w200 -fauto -rwelsh ../images/egret.jpg
@@ -1132,9 +1134,13 @@ test: all
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png < snake2.sixel > snake2.png
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png - - < snake3.sixel > snake3.png
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png --input=snake.sixel -o snake4.png
-@WANT_IMG2SIXEL_TRUE@	grep ^\.B img2sixel.1  | cut -f2 -d " " | grep "^\\\\"     | tr -d "\\" | tr -d , > options1.txt 
-@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options2.txt
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options1.txt
+@WANT_IMG2SIXEL_TRUE@	grep ^\.B img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d "\\" | tr -d , > options2.txt 
+@WANT_IMG2SIXEL_TRUE@	grep '^ *-\w --' shell-completion/bash/img2sixel|sed 's/.* \(-.\) .*/\1/' > options3.txt
+@WANT_IMG2SIXEL_TRUE@	grep '{-' shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > options4.txt
 @WANT_IMG2SIXEL_TRUE@	diff options1.txt options2.txt
+@WANT_IMG2SIXEL_TRUE@	diff options2.txt options3.txt
+@WANT_IMG2SIXEL_TRUE@	diff options3.txt options4.txt
 	@echo succeeded
 
 winetest: all

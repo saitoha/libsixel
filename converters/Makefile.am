@@ -89,6 +89,8 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -I -C10 ../images/snake.png -djajuni
 	$(WINE) ./img2sixel -I ../images/snake-ascii.pgm
 	$(WINE) ./img2sixel -I ../images/snake-ascii.pbm -datkinson
+	$(WINE) ./img2sixel -I ../images/snake-grayscale.png
+	$(WINE) ./img2sixel -I ../images/snake-grayscale.jpg
 	$(WINE) ./img2sixel -I  ../images/snake.ppm -c2000x100+40+20 -wauto -h200 -qhigh -dfs -rbilinear -trgb
 	$(WINE) ./img2sixel -I -v ../images/snake.bmp -w200 -hauto -c100x1000+40+20 -qlow -dnone -rhamming -thls
 	$(WINE) ./img2sixel -m ../images/map8.png -w200 -fauto -rwelsh ../images/egret.jpg
@@ -122,9 +124,13 @@ if WANT_SIXEL2PNG
 	$(WINE) ./sixel2png - - < snake3.sixel > snake3.png
 	$(WINE) ./sixel2png --input=snake.sixel -o snake4.png
 endif
-	grep ^\.B img2sixel.1  | cut -f2 -d " " | grep "^\\\\"     | tr -d "\\" | tr -d , > options1.txt 
-	$(WINE) ./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options2.txt
+	$(WINE) ./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options1.txt
+	grep ^\.B img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d "\\" | tr -d , > options2.txt 
+	grep '^ *-\w --' shell-completion/bash/img2sixel|sed 's/.* \(-.\) .*/\1/' > options3.txt
+	grep '{-' shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > options4.txt
 	diff options1.txt options2.txt
+	diff options2.txt options3.txt
+	diff options3.txt options4.txt
 endif
 	@echo succeeded
 

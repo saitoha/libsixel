@@ -337,9 +337,8 @@ load_png(chunk_t const *pchunk,
         break;
     case PNG_COLOR_TYPE_GRAY:
     case PNG_COLOR_TYPE_GRAY_ALPHA:
-        if (bitdepth < 8) {
-            png_set_expand_gray_1_2_4_to_8(png_ptr);
-        }
+        png_set_gray_to_rgb(png_ptr);
+        *pcomp = 3;
         break;
     case PNG_COLOR_TYPE_RGB_ALPHA:
         png_set_strip_alpha(png_ptr);
