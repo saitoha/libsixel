@@ -104,6 +104,7 @@ chunk_init(chunk_t * const pchunk, size_t initial_size)
     pchunk->buffer = malloc(pchunk->max_size);
 }
 
+
 static size_t
 memory_write(void* ptr, size_t size, size_t len, void* memory)
 {
@@ -304,9 +305,10 @@ read_png(png_structp png_ptr, png_bytep data, png_size_t length)
 
 
 static unsigned char *
-load_png(chunk_t const *pchunk,
+load_png(unsigned char *buffer, int size,
          int *psx, int *psy, int *pcomp,
-         unsigned char **ppalette, int *pncolors)
+         unsigned char **ppalette, int *pncolors,
+         int *pixelformat)
 {
     chunk_t read_chunk;
     png_uint_32 bitdepth;
@@ -328,7 +330,8 @@ load_png(chunk_t const *pchunk,
         png_destroy_read_struct(&png_ptr, (png_infopp)0, (png_infopp)0);
         goto cleanup;
     }
-    read_chunk = *pchunk;
+    read_chunk.buffer = buffer;
+    read_chunk.size = size;
     png_set_read_fn(png_ptr,(png_voidp)&read_chunk, read_png);
     png_read_info(png_ptr, info_ptr);
     *psx = png_get_image_width(png_ptr, info_ptr);
@@ -350,23 +353,30 @@ load_png(chunk_t const *pchunk,
                 (*ppalette)[i * 3 + 2] = png_palette[i].blue;
             }
             *pcomp = 1;
+            *pixelformat = PIXELFORMAT_PAL8;
         } else {
             png_set_palette_to_rgb(png_ptr);
             *pcomp = 3;
+            *pixelformat = PIXELFORMAT_RGB888;
         }
         break;
     case PNG_COLOR_TYPE_GRAY:
     case PNG_COLOR_TYPE_GRAY_ALPHA:
         png_set_gray_to_rgb(png_ptr);
         *pcomp = 3;
+        *pixelformat = PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB_ALPHA:
         png_set_strip_alpha(png_ptr);
         *pcomp = 3;
+        *pixelformat = PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB:
+        *pcomp = 3;
+        *pixelformat = PIXELFORMAT_RGB888;
     default:
-        break;
+        /* unknown format */
+        goto cleanup;
     }
     if (bitdepth == 16) {
         png_set_strip_16(png_ptr);
@@ -526,6 +536,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
     int ret;
     int colors;
     int i;
+    int pixelformat;
 
     if (chunk_is_sixel(pchunk)) {
         /* sixel */
@@ -574,8 +585,9 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
 #endif  /* HAVE_JPEG */
 #if HAVE_LIBPNG
     else if (chunk_is_png(pchunk)) {
-        pixels = load_png(pchunk, psx, psy, pcomp,
-                          ppalette, pncolors);
+        pixels = load_png(pchunk->buffer, pchunk->size,
+                          psx, psy, pcomp,
+                          ppalette, pncolors, &pixelformat);
         *pframe_count = 1;
         *ploop_count = 1;
     }
