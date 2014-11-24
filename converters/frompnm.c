@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <assert.h>
 
+
 static unsigned char *
 pnm_get_line(unsigned char *p, unsigned char *e, unsigned char *line)
 {
@@ -189,3 +190,7 @@ load_pnm(unsigned char *p, int len, int *psx, int *psy, int *pcomp, int *pstride
     *pstride = *psx * *pcomp;
     return result;
 }
+
+/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
+/* vim: set expandtab ts=4 : */
+/* EOF */

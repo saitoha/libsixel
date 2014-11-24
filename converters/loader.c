@@ -180,9 +180,10 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
     }
 
     for (;;) {
-        if ((pchunk->max_size - pchunk->size) < 4096) {
+        if (pchunk->max_size - pchunk->size < 4096) {
             pchunk->max_size *= 2;
-            if ((pchunk->buffer = (unsigned char *)realloc(pchunk->buffer, pchunk->max_size)) == NULL) {
+            pchunk->buffer = (unsigned char *)realloc(pchunk->buffer, pchunk->max_size);
+            if (pchunk->buffer == NULL) {
 #if HAVE_ERRNO_H
                 fprintf(stderr, "get_chunk_from_file('%s'): relloc failed.\n" "reason: %s.\n",
                         filename, strerror(errno));
@@ -190,7 +191,8 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
                 return (-1);
             }
         }
-        if ((n = fread(pchunk->buffer + pchunk->size, 1, 4096, f)) <= 0) {
+        n = fread(pchunk->buffer + pchunk->size, 1, 4096, f);
+        if (n <= 0) {
             break;
         }
         pchunk->size += n;
@@ -221,7 +223,8 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
     }
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, memory_write);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)pchunk);
-    if ((code = curl_easy_perform(curl))) {
+    code = curl_easy_perform(curl);
+    if (code != CURLE_OK) {
         fprintf(stderr, "curl_easy_perform('%s') failed.\n" "code: %d.\n",
                 url, code);
         curl_easy_cleanup(curl);
@@ -256,8 +259,8 @@ load_jpeg(unsigned char *data, int datasize,
     cinfo.out_color_space = JCS_RGB;
     jpeg_start_decompress(&cinfo);
 
-    *pwidth   = cinfo.output_width;
-    *pheight  = cinfo.output_height;
+    *pwidth = cinfo.output_width;
+    *pheight = cinfo.output_height;
     *pdepth = cinfo.output_components;
 
     size = *pwidth * *pheight * *pdepth;
@@ -269,7 +272,7 @@ load_jpeg(unsigned char *data, int datasize,
     }
 
     row_stride = cinfo.output_width * cinfo.output_components;
-    buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
+    buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride, 1);
 
     while (cinfo.output_scanline < cinfo.output_height) {
         jpeg_read_scanlines(&cinfo, buffer, 1);
@@ -298,6 +301,7 @@ read_png(png_structp png_ptr, png_bytep data, png_size_t length)
         pchunk->size -= length;
     }
 }
+
 
 static unsigned char *
 load_png(chunk_t const *pchunk,
@@ -335,7 +339,7 @@ load_png(chunk_t const *pchunk,
     switch (png_get_color_type(png_ptr, info_ptr)) {
     case PNG_COLOR_TYPE_PALETTE:
         bitdepth = png_get_PLTE(png_ptr, info_ptr, &png_palette, pncolors);
-        if (ppalette && png_palette) {
+        if (ppalette && png_palette && bitdepth == 8) {
             *ppalette = malloc(*pncolors * 3);
             if (*ppalette == NULL) {
                 goto cleanup;
