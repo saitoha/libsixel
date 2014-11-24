@@ -31,7 +31,10 @@ extern "C" {
 /* image scaling api */
 
 unsigned char *
-load_pnm(unsigned char *p, int len, int *psx, int *psy, int *pcomp, int *pstride);
+load_pnm(unsigned char *p, int len,
+         int *psx, int *psy, int *pcomp,
+         unsigned char **ppalette, int *pncolors,
+         int pixelformat);
 
 #ifdef __cplusplus
 }

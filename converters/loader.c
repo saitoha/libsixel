@@ -505,6 +505,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
     int ret;
     int colors;
     int i;
+    int pixelformat = PIXELFORMAT_RGB888;
 
     if (chunk_is_sixel(pchunk)) {
         /* sixel */
@@ -532,7 +533,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
     } else if (chunk_is_pnm(pchunk)) {
         /* pnm */
         pixels = load_pnm(pchunk->buffer, pchunk->size,
-                          psx, psy, pcomp, pstride);
+                          psx, psy, pcomp, ppalette, pncolors, pixelformat);
         if (!pixels) {
 #if HAVE_ERRNO_H
             fprintf(stderr, "load_pnm failed.\n" "reason: %s.\n",
