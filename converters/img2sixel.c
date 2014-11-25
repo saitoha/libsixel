@@ -372,8 +372,12 @@ do_resize(unsigned char **ppixels,
 }
 
 
-static void
-clip(unsigned char *pixels, int sx, int sy, int cx, int cy, int cw, int ch)
+static int
+clip(unsigned char *pixels,
+     int sx, int sy,
+     int cx, int cy,
+     int cw, int ch,
+     int pixelformat)
 {
     int y;
     unsigned char *src;
@@ -383,13 +387,30 @@ clip(unsigned char *pixels, int sx, int sy, int cx, int cy, int cw, int ch)
     /* unused */ (void) sy;
     /* unused */ (void) cx;
 
-    dst = pixels;
-    src = pixels + cy * sx * 3;
-    for (y = 0; y < ch; y++) {
-        memmove(dst, src, cw * 3);
-        dst += (cw * 3);
-        src += (sx * 3);
+    switch (pixelformat) {
+    case PIXELFORMAT_PAL8:
+        dst = pixels;
+        src = pixels + cy * sx * 1;
+        for (y = 0; y < ch; y++) {
+            memmove(dst, src, cw * 1);
+            dst += (cw * 1);
+            src += (sx * 1);
+        }
+        break;
+    case PIXELFORMAT_RGB888:
+        dst = pixels;
+        src = pixels + cy * sx * 3;
+        for (y = 0; y < ch; y++) {
+            memmove(dst, src, cw * 3);
+            dst += (cw * 3);
+            src += (sx * 3);
+        }
+        break;
+    default:
+        return (-1);
     }
+
+    return 0;
 }
 
 
@@ -398,6 +419,7 @@ static int do_crop(unsigned char **frames, int frame_count,
                    settings_t *psettings)
 {
     int n;
+    int ret;
 
     /* clipping */
     if (psettings->clipwidth + psettings->clipx > *psx) {
@@ -407,15 +429,12 @@ static int do_crop(unsigned char **frames, int frame_count,
         psettings->clipheight = (psettings->clipy > *psy) ? 0 : *psy - psettings->clipy;
     }
     if (psettings->clipwidth > 0 && psettings->clipheight > 0) {
-
-        if (pixelformat != PIXELFORMAT_RGB888) {
-            /* TODO: convert pixelformat to RGB888 */
-            return (-1);
-        }
-
         for (n = 0; n < frame_count; ++n) {
-            clip(frames[n], *psx, *psy, psettings->clipx, psettings->clipy,
-                 psettings->clipwidth, psettings->clipheight);
+            ret = clip(frames[n], *psx, *psy, psettings->clipx, psettings->clipy,
+                       psettings->clipwidth, psettings->clipheight, pixelformat);
+            if (ret != 0) {
+                return ret;
+            }
         }
         *psx = psettings->clipwidth;
         *psy = psettings->clipheight;
