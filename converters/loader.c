@@ -374,6 +374,7 @@ load_png(unsigned char *buffer, int size,
     case PNG_COLOR_TYPE_RGB:
         *pcomp = 3;
         *pixelformat = PIXELFORMAT_RGB888;
+        break;
     default:
         /* unknown format */
         goto cleanup;
