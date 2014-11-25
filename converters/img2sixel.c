@@ -497,9 +497,6 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         psettings->pixelheight > 0) {
         ppalette = NULL;
     }
-    if (psettings->reqcolors != (-1)) {
-        ppalette = NULL;
-    }
 
 reload:
     pixels = NULL;

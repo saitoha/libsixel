@@ -551,15 +551,31 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
 #endif  /* HAVE_ERRNO_H */
             return NULL;
         }
-        *pcomp = 3;
-        pixels = malloc(*psx * *psy * *pcomp);
-        for (i = 0; i < *psx * *psy; ++i) {
-            pixels[i * 3 + 0] = palette[p[i] * 4 + 0];
-            pixels[i * 3 + 1] = palette[p[i] * 4 + 1];
-            pixels[i * 3 + 2] = palette[p[i] * 4 + 2];
+        if (ppalette == NULL) {
+            *ppixelformat = PIXELFORMAT_RGB888;
+            *pcomp = 3;
+            pixels = malloc(*psx * *psy * *pcomp);
+            for (i = 0; i < *psx * *psy; ++i) {
+                pixels[i * 3 + 0] = palette[p[i] * 4 + 0];
+                pixels[i * 3 + 1] = palette[p[i] * 4 + 1];
+                pixels[i * 3 + 2] = palette[p[i] * 4 + 2];
+            }
+            free(palette);
+            free(p);
+        } else {
+            *ppixelformat = PIXELFORMAT_PAL8;
+            *pcomp = 1;
+            pixels = p;
+            *ppalette = palette;
+            p = palette;
+            *pncolors = colors;
+            while (colors--) {
+                *(p++) = *(palette++);
+                *(p++) = *(palette++);
+                *(p++) = *(palette++);
+                palette++;
+            }
         }
-        free(palette);
-        free(p);
         *pframe_count = 1;
         *ploop_count = 1;
     } else if (chunk_is_pnm(pchunk)) {
@@ -940,12 +956,13 @@ load_image_file(char const *filename, int *psx, int *psy,
                 int *pframe_count, int *ploop_count, int **ppdelay,
                 int fstatic)
 {
-    unsigned char *pixels;
+    unsigned char *pixels = NULL;
     int comp;
     int stride;
     chunk_t chunk;
 
     pixels = NULL;
+
     if (ppalette) {
         *ppalette = NULL;
     }
