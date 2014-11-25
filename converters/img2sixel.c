@@ -160,7 +160,8 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
     mappixels = load_image_file(mapfile, &map_sx, &map_sy,
                                 &palette, &ncolors, &pixelformat,
                                 &frame_count, &loop_count,
-                                &delays, /* fstatic */ 1);
+                                &delays, /* fstatic */ 1,
+                                /* reqcolors */ 256);
     free(delays);
     if (!mappixels) {
         return NULL;
@@ -542,7 +543,8 @@ reload:
     pixels = load_image_file(filename, &sx, &sy,
                              ppalette, &ncolors, &pixelformat,
                              &frame_count, &loop_count,
-                             &delays, psettings->fstatic);
+                             &delays, psettings->fstatic,
+                             psettings->reqcolors);
 
     if (pixels == NULL) {
         nret = -1;
