@@ -2475,6 +2475,8 @@ static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 r
    if (s->img_x == x && s->img_y == y) {
       if (raw_len == (img_n * x / 8 + 1) * y) {
           bpp = 1;
+      } else if (raw_len == (img_n * x / 8 + 1) * y * 4) {
+          bpp = 4;
       } else if (raw_len != (img_n * x + 1) * y) return stbi__err("not enough pixels","Corrupt PNG");
    } else { // interlaced:
       if (raw_len < (img_n * x + 1) * y) return stbi__err("not enough pixels","Corrupt PNG");
@@ -2502,6 +2504,8 @@ static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 r
       raw += img_n;
       if (bpp == 1) {
           cur += out_n * 16;
+      } else if (bpp == 4) {
+          cur += out_n * 4;
       } else {
           cur += out_n;
       }
@@ -2521,6 +2525,9 @@ static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 r
                            for (l = 0; l < 8; ++l) {
                                cur[(k - 1) * 8 - l] = (raw[k - 1] >> l & 1) * 0xff;
                            }
+                       } else if (bpp == 4) {
+                           cur[k] = raw[k] & 0xf;
+                           cur[k + 1] = raw[k] >> 4;
                        } else {
                            cur[k] = raw[k];
                        }
@@ -2743,7 +2750,7 @@ static int stbi__parse_png_file(stbi__png *z, int scan, int req_comp)
             if (c.length != 13) return stbi__err("bad IHDR len","Corrupt PNG");
             s->img_x = stbi__get32be(s); if (s->img_x > (1 << 24)) return stbi__err("too large","Very large image (corrupt?)");
             s->img_y = stbi__get32be(s); if (s->img_y > (1 << 24)) return stbi__err("too large","Very large image (corrupt?)");
-            depth = stbi__get8(s);  if (depth != 8 && depth != 1)        return stbi__err("8bit/1bit only","PNG not supported: 8-bit/1-bit only");
+            depth = stbi__get8(s);  if (depth != 8 && depth != 4 && depth != 1)        return stbi__err("8bit/4bit/1bit only","PNG not supported: 8-bit/4-bit/1-bit only");
             color = stbi__get8(s);  if (color > 6)         return stbi__err("bad ctype","Corrupt PNG");
             if (color == 3) pal_img_n = 3; else if (color & 1) return stbi__err("bad ctype","Corrupt PNG");
             comp  = stbi__get8(s);  if (comp) return stbi__err("bad comp method","Corrupt PNG");
