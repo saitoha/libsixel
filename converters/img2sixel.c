@@ -129,13 +129,13 @@ static sixel_dither_t *
 prepare_builtin_palette(int builtin_palette)
 {
     sixel_dither_t *dither;
-    
+
     dither = sixel_dither_get(builtin_palette);
 
     if (dither == NULL) {
         return NULL;
     }
-    
+
     return dither;
 }
 
