@@ -512,7 +512,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         psettings->palette_type = PALETTETYPE_RGB;
     }
 
-    if (psettings->mapfile > 0) {
+    if (psettings->mapfile) {
         ppalette = NULL;
     }
 
