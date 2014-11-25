@@ -404,6 +404,61 @@ cleanup:
 # endif  /* HAVE_PNG */
 
 
+static unsigned char *
+load_sixel(unsigned char *buffer, int size,
+           int *psx, int *psy, int *pcomp,
+           unsigned char **ppalette, int *pncolors,
+           int *ppixelformat)
+{
+    unsigned char *dst;
+    unsigned char *p;
+    unsigned char *pixels = NULL;
+    unsigned char *palette;
+    int colors;
+    int i;
+    int ret;
+
+    /* sixel */
+    ret = sixel_decode(buffer, size,
+                       &p, psx, psy,
+                       &palette, &colors, malloc);
+    if (ret != 0) {
+#if HAVE_ERRNO_H
+            fprintf(stderr, "sixel_decode failed.\n" "reason: %s.\n",
+                    strerror(errno));
+#endif  /* HAVE_ERRNO_H */
+        return NULL;
+    }
+    if (ppalette == NULL) {
+        *ppixelformat = PIXELFORMAT_RGB888;
+        *pcomp = 3;
+        pixels = malloc(*psx * *psy * *pcomp);
+        for (i = 0; i < *psx * *psy; ++i) {
+            pixels[i * 3 + 0] = palette[p[i] * 4 + 0];
+            pixels[i * 3 + 1] = palette[p[i] * 4 + 1];
+            pixels[i * 3 + 2] = palette[p[i] * 4 + 2];
+        }
+        free(palette);
+        free(p);
+    } else {
+        *ppixelformat = PIXELFORMAT_PAL8;
+        *pcomp = 1;
+        pixels = p;
+        *ppalette = palette;
+        *pncolors = colors;
+        dst = palette;
+        while (colors--) {
+            *(dst++) = *(palette++);
+            *(dst++) = *(palette++);
+            *(dst++) = *(palette++);
+            palette++;
+        }
+    }
+
+    return pixels;
+}
+
+
 static int
 get_chunk(char const *filename, chunk_t *pchunk)
 {
@@ -530,51 +585,17 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
 {
     unsigned char *p;
     unsigned char *pixels = NULL;
-    unsigned char *palette;
     static stbi__context s;
     static stbi__gif g;
     chunk_t frames;
     chunk_t delays;
-    int ret;
-    int colors;
-    int i;
 
     if (chunk_is_sixel(pchunk)) {
-        /* sixel */
-        ret = sixel_decode(pchunk->buffer, pchunk->size,
-                           &p, psx, psy,
-                           &palette, &colors, malloc);
-        if (ret != 0) {
-#if HAVE_ERRNO_H
-            fprintf(stderr, "sixel_decode failed.\n" "reason: %s.\n",
-                    strerror(errno));
-#endif  /* HAVE_ERRNO_H */
+        pixels = load_sixel(pchunk->buffer, pchunk->size,
+                            psx, psy, pcomp,
+                            ppalette, pncolors, ppixelformat);
+        if (pixels == NULL) {
             return NULL;
-        }
-        if (ppalette == NULL) {
-            *ppixelformat = PIXELFORMAT_RGB888;
-            *pcomp = 3;
-            pixels = malloc(*psx * *psy * *pcomp);
-            for (i = 0; i < *psx * *psy; ++i) {
-                pixels[i * 3 + 0] = palette[p[i] * 4 + 0];
-                pixels[i * 3 + 1] = palette[p[i] * 4 + 1];
-                pixels[i * 3 + 2] = palette[p[i] * 4 + 2];
-            }
-            free(palette);
-            free(p);
-        } else {
-            *ppixelformat = PIXELFORMAT_PAL8;
-            *pcomp = 1;
-            pixels = p;
-            *ppalette = palette;
-            p = palette;
-            *pncolors = colors;
-            while (colors--) {
-                *(p++) = *(palette++);
-                *(p++) = *(palette++);
-                *(p++) = *(palette++);
-                palette++;
-            }
         }
         *pframe_count = 1;
         *ploop_count = 1;
