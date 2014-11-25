@@ -510,6 +510,23 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     if (psettings->palette_type == PALETTETYPE_AUTO) {
         psettings->palette_type = PALETTETYPE_RGB;
     }
+
+    if (psettings->mapfile > 0) {
+        ppalette = NULL;
+    }
+
+    if (psettings->monochrome > 0) {
+        ppalette = NULL;
+    }
+
+    if (psettings->highcolor > 0) {
+        ppalette = NULL;
+    }
+
+    if (psettings->builtin_palette > 0) {
+        ppalette = NULL;
+    }
+
     if (psettings->percentwidth > 0 ||
         psettings->percentheight > 0 ||
         psettings->pixelwidth > 0 ||
