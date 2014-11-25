@@ -524,6 +524,7 @@ static unsigned char *
 load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
                   int *pcomp, int *pstride,
                   unsigned char **ppalette, int *pncolors,
+                  int *ppixelformat,
                   int *pframe_count, int *ploop_count, int **ppdelay,
                   int fstatic)
 {
@@ -537,7 +538,6 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
     int ret;
     int colors;
     int i;
-    int pixelformat;
 
     if (chunk_is_sixel(pchunk)) {
         /* sixel */
@@ -588,7 +588,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
     else if (chunk_is_png(pchunk)) {
         pixels = load_png(pchunk->buffer, pchunk->size,
                           psx, psy, pcomp,
-                          ppalette, pncolors, &pixelformat);
+                          ppalette, pncolors, ppixelformat);
         *pframe_count = 1;
         *ploop_count = 1;
     }
@@ -936,6 +936,7 @@ arrange_pixelformat(unsigned char *pixels, int width, int height,
 unsigned char *
 load_image_file(char const *filename, int *psx, int *psy,
                 unsigned char **ppalette, int *pncolors,
+                int *ppixelformat,
                 int *pframe_count, int *ploop_count, int **ppdelay,
                 int fstatic)
 {
@@ -968,7 +969,7 @@ load_image_file(char const *filename, int *psx, int *psy,
 #endif  /* HAVE_GD */
     if (!pixels) {
         pixels = load_with_builtin(&chunk, psx, psy, &comp, &stride,
-                                   ppalette, pncolors,
+                                   ppalette, pncolors, ppixelformat,
                                    pframe_count, ploop_count, ppdelay,
                                    fstatic);
     }
