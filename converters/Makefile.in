@@ -1131,8 +1131,8 @@ test: all
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -u
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -g
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/seq2gif.gif -S -datkinson
-@HAVE_JPEG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake-progressive.jpg | tee snake.sixel
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.png | tee snake.sixel
+@HAVE_JPEG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake-progressive.jpg
+@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.png
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	!$(WINE) ./img2sixel file:///test
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel file:///$$(pwd)/../images/snake.jpg
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	! $(WINE) ./sixel2png -i unknown.sixel

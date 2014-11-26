@@ -114,10 +114,10 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -g
 	$(WINE) ./img2sixel ../images/seq2gif.gif -S -datkinson
 if HAVE_JPEG
-	$(WINE) ./img2sixel ../images/snake-progressive.jpg | tee snake.sixel
+	$(WINE) ./img2sixel ../images/snake-progressive.jpg
 endif
 if HAVE_PNG
-	$(WINE) ./img2sixel ../images/snake.png | tee snake.sixel
+	$(WINE) ./img2sixel ../images/snake.png
 endif
 if HAVE_CURL
 	!$(WINE) ./img2sixel file:///test
