@@ -984,7 +984,7 @@ load_image_file(char const *filename, int *psx, int *psy,
 {
     unsigned char *pixels = NULL;
     int comp;
-    int stride;
+    int stride = (-1);
     chunk_t chunk;
 
     pixels = NULL;
@@ -1017,7 +1017,7 @@ load_image_file(char const *filename, int *psx, int *psy,
                                    fstatic, reqcolors);
     }
     free(chunk.buffer);
-    if (pixels && (!ppalette || (ppalette && !*ppalette))) {
+    if (pixels && stride > 0 && (!ppalette || (ppalette && !*ppalette))) {
         arrange_pixelformat(pixels, *psx, *psy * *pframe_count, comp, stride);
     }
 
