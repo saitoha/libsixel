@@ -2501,6 +2501,8 @@ static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 r
       raw += img_n;
       if (bpp == 1) {
           cur += out_n * 16;
+      } else if (bpp == 4) {
+          cur += out_n * 4;
       } else {
           cur += out_n;
       }
@@ -2515,14 +2517,14 @@ static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 r
          switch (filter) {
             case STBI__F_none:
                 for (i=(x - 1) * bpp / 8; i >= 1; --i) {
-                   for (k = 0; k < img_n + 1; ++k) {
+                   for (k = 0; k < img_n; ++k) {
                        if (bpp == 1) {
                            for (l = 0; l < 8; ++l) {
                                cur[(k - 1) * 8 - l] = (raw[k - 1] >> l & 1) * 0xff;
                            }
                        } else if (bpp == 4) {
-                           cur[k + 1] = raw[k] >> 4;
-                           cur[k + 2] = raw[k] & 0xf;
+                           cur[k - 1] = raw[k] >> 4;
+                           cur[k - 0] = raw[k] & 0xf;
                        } else {
                            cur[k] = raw[k];
                        }
