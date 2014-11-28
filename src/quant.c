@@ -59,7 +59,7 @@
 #include "quant.h"
 #include "sixel.h"
 
-#if 0
+#if HAVE_DEBUG
 #define quant_trace fprintf
 #else
 static inline void quant_trace(FILE *f, ...) { (void) f; }
@@ -672,7 +672,7 @@ computeHistogram(unsigned char const *data,
     histogram = malloc((1 << depth * 5) * sizeof(unit_t));
 #endif
     if (!histogram) {
-        quant_trace(stderr, "Unable to allocate memory for histogram.");
+        quant_trace(stderr, "Unable to allocate memory for histogram.\n");
         return (-1);
     }
 #if !HAVE_CALLOC
@@ -680,7 +680,7 @@ computeHistogram(unsigned char const *data,
 #endif
     it = ref = refmap = (unsigned short *)malloc((1 << depth * 5) * sizeof(unit_t));
     if (!it) {
-        quant_trace(stderr, "Unable to allocate memory for lookup table.");
+        quant_trace(stderr, "Unable to allocate memory for lookup table.\n");
         return (-1);
     }
 
@@ -1129,7 +1129,7 @@ sixel_quant_make_palette(unsigned char const *data,
         return NULL;
     }
     *ncolors = colormap.size;
-    quant_trace(stderr, "tupletable size: %d", *ncolors);
+    quant_trace(stderr, "tupletable size: %d\n", *ncolors);
     palette = malloc(*ncolors * depth);
     for (i = 0; i < *ncolors; i++) {
         for (n = 0; n < depth; ++n) {
@@ -1236,7 +1236,7 @@ sixel_quant_apply_palette(unsigned char *data,
         indextable = calloc(1 << depth * 5, sizeof(unsigned short));
 #endif
         if (!indextable) {
-            quant_trace(stderr, "Unable to allocate memory for indextable.");
+            quant_trace(stderr, "Unable to allocate memory for indextable.\n");
             return (-1);
         }
 #if !HAVE_CALLOC
