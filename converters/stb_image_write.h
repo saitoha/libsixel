@@ -211,8 +211,11 @@ static void *stbiw__sbgrowf(void **arr, int increment, int itemsize)
 
 static unsigned char *stbiw__zlib_flushf(unsigned char *data, unsigned int *bitbuffer, int *bitcount)
 {
+   unsigned char value;
+
    while (*bitcount >= 8) {
-      stbiw__sbpush(data, (unsigned char) *bitbuffer);
+      value = (unsigned char)*bitbuffer;
+      stbiw__sbpush(data, value);
       *bitbuffer >>= 8;
       *bitcount -= 8;
    }
@@ -273,10 +276,11 @@ unsigned char * stbi_zlib_compress(unsigned char *data, int data_len, int *out_l
    int i,j, bitcount=0;
    unsigned char *out = NULL;
    unsigned char **hash_table[stbiw__ZHASH]; // 64KB on the stack!
+   unsigned char v;
    if (quality < 5) quality = 5;
 
-   stbiw__sbpush(out, 0x78);   // DEFLATE 32K window
-   stbiw__sbpush(out, 0x5e);   // FLEVEL = 1
+   v = 0x78; stbiw__sbpush(out, v);   // DEFLATE 32K window
+   v = 0x5e; stbiw__sbpush(out, v);   // FLEVEL = 1
    stbiw__zlib_add(1,1);  // BFINAL = 1
    stbiw__zlib_add(1,2);  // BTYPE = 1 -- fixed huffman
 
@@ -355,10 +359,10 @@ unsigned char * stbi_zlib_compress(unsigned char *data, int data_len, int *out_l
          j += blocklen;
          blocklen = 5552;
       }
-      stbiw__sbpush(out, (unsigned char) (s2 >> 8));
-      stbiw__sbpush(out, (unsigned char) s2);
-      stbiw__sbpush(out, (unsigned char) (s1 >> 8));
-      stbiw__sbpush(out, (unsigned char) s1);
+      v = (unsigned char) (s2 >> 8); stbiw__sbpush(out, v);
+      v = (unsigned char) (s2); stbiw__sbpush(out, v);
+      v = (unsigned char) (s1 >> 8); stbiw__sbpush(out, v);
+      v = (unsigned char) (s1); stbiw__sbpush(out, v);
    }
    *out_len = stbiw__sbn(out);
    // make returned pointer freeable
