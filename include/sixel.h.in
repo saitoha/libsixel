@@ -101,12 +101,29 @@ enum pixelFormat {
     PIXELFORMAT_BGR888   = FORMATTYPE_COLOR     | 0x06, /* 24bpp */
     PIXELFORMAT_ARGB8888 = FORMATTYPE_COLOR     | 0x10, /* 32bpp */
     PIXELFORMAT_RGBA8888 = FORMATTYPE_COLOR     | 0x11, /* 32bpp */
-    PIXELFORMAT_G8       = FORMATTYPE_GRAYSCALE | 0x00, /* 8bpp grayscale */
-    PIXELFORMAT_AG88     = FORMATTYPE_GRAYSCALE | 0x01, /* 16bpp gray+alpha */
-    PIXELFORMAT_GA88     = FORMATTYPE_GRAYSCALE | 0x02, /* 16bpp gray+alpha */
+#if 0
+    PIXELFORMAT_G1       = FORMATTYPE_GRAYSCALE | 0x00, /* 1bpp grayscale */
+    PIXELFORMAT_G2       = FORMATTYPE_GRAYSCALE | 0x01, /* 2bpp grayscale */
+    PIXELFORMAT_G4       = FORMATTYPE_GRAYSCALE | 0x02, /* 4bpp grayscale */
+#endif
+    PIXELFORMAT_G8       = FORMATTYPE_GRAYSCALE | 0x03, /* 8bpp grayscale */
+#if 0
+    PIXELFORMAT_AG11     = FORMATTYPE_GRAYSCALE | 0x10, /* 2bpp gray+alpha */
+    PIXELFORMAT_AG22     = FORMATTYPE_GRAYSCALE | 0x11, /* 4bpp gray+alpha */
+    PIXELFORMAT_AG44     = FORMATTYPE_GRAYSCALE | 0x12, /* 8bpp gray+alpha */
+#endif
+    PIXELFORMAT_AG88     = FORMATTYPE_GRAYSCALE | 0x13, /* 16bpp gray+alpha */
+#if 0
+    PIXELFORMAT_GA11     = FORMATTYPE_GRAYSCALE | 0x20, /* 2bpp gray+alpha */
+    PIXELFORMAT_GA22     = FORMATTYPE_GRAYSCALE | 0x21, /* 4bpp gray+alpha */
+    PIXELFORMAT_GA44     = FORMATTYPE_GRAYSCALE | 0x22, /* 8bpp gray+alpha */
+#endif
+    PIXELFORMAT_GA88     = FORMATTYPE_GRAYSCALE | 0x23, /* 16bpp gray+alpha */
+#if 0
     PIXELFORMAT_PAL1     = FORMATTYPE_PALETTE   | 0x00, /* monochrome */
     PIXELFORMAT_PAL2     = FORMATTYPE_PALETTE   | 0x01, /* 2bpp palette */
     PIXELFORMAT_PAL4     = FORMATTYPE_PALETTE   | 0x02, /* 4bpp palette */
+#endif
     PIXELFORMAT_PAL8     = FORMATTYPE_PALETTE   | 0x03, /* 8bpp palette */
 };
 
