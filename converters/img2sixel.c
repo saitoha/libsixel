@@ -185,7 +185,7 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
 
         ret = sixel_dither_initialize(dither, mappixels, map_sx, map_sy,
                                       pixelformat,
-                                      LARGE_NORM, REP_CENTER_BOX, QUALITY_LOW);
+                                      LARGE_NORM, REP_CENTER_BOX, QUALITY_HIGH);
         if (ret != 0) {
             sixel_dither_unref(dither);
             goto end;
@@ -1023,8 +1023,10 @@ void show_help(void)
             "                             rgb  -> use RGB color space\n"
             "-b BUILTINPALETTE, --builtin-palette=BUILTINPALETTE\n"
             "                           select built-in palette type\n"
-            "                             xterm16  -> X default 16 color map\n"
-            "                             xterm256 -> X default 256 color map\n"
+            "                             xterm16    -> X default 16 color map\n"
+            "                             xterm256   -> X default 256 color map\n"
+            "                             vt340mono  -> VT340 monochrome map\n"
+            "                             vt340color -> VT340 color map\n"
             "-E ENCODEPOLICY, --encode-policy=ENCODEPOLICY\n"
             "                           select encoding policy\n"
             "                             auto -> choose encoding policy\n"
@@ -1169,6 +1171,10 @@ main(int argc, char *argv[])
                 settings.builtin_palette = BUILTIN_XTERM16;
             } else if (strcmp(optarg, "xterm256") == 0) {
                 settings.builtin_palette = BUILTIN_XTERM256;
+            } else if (strcmp(optarg, "vt340mono") == 0) {
+                settings.builtin_palette = BUILTIN_VT340_MONO;
+            } else if (strcmp(optarg, "vt340color") == 0) {
+                settings.builtin_palette = BUILTIN_VT340_COLOR;
             } else {
                 fprintf(stderr,
                         "Cannot parse builtin palette option.\n");

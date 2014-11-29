@@ -85,7 +85,9 @@ _builtinpalette() {
   _values \
     'BUILTINPALETTE' \
     'xterm16[X default 16 color map]' \
-    'xterm256[X default 256 color map]'
+    'xterm256[X default 256 color map]' \
+    'vt340mono[VT340 monochrome map]' \
+    'vt340color[VT340 color map]'
 }
 
 _encodepolicy() {

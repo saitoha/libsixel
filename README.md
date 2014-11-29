@@ -427,8 +427,17 @@ Options:
                              rgb  -> use RGB color space
 -b BUILTINPALETTE, --builtin-palette=BUILTINPALETTE
                            select built-in palette type
-                             xterm16  -> X default 16 color map
-                             xterm256 -> X default 256 color map
+                             xterm16    -> X default 16 color map
+                             xterm256   -> X default 256 color map
+                             vt340mono  -> VT340 monochrome map
+                             vt340color -> VT340 color map
+-E ENCODEPOLICY, --encode-policy=ENCODEPOLICY
+                           select encoding policy
+                             auto -> choose encoding policy
+                                     automatically (default)
+                             fast -> encode as fast as possible
+                             size -> encode to as small sixel
+                                     sequence as possible
 -P, --penetrate            penetrate GNU Screen using DCS
                            pass-through sequence
 -D, --pipe-mode            read source images from stdin
