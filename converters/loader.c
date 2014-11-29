@@ -338,8 +338,9 @@ load_png(unsigned char *buffer, int size,
     *psx = png_get_image_width(png_ptr, info_ptr);
     *psy = png_get_image_height(png_ptr, info_ptr);
     bitdepth = png_get_bit_depth(png_ptr, info_ptr);
-    *pcomp = png_get_channels(png_ptr, info_ptr);
-
+    if (bitdepth == 16) {
+        png_set_strip_16(png_ptr);
+    }
     switch (png_get_color_type(png_ptr, info_ptr)) {
     case PNG_COLOR_TYPE_PALETTE:
         bitdepth = png_get_PLTE(png_ptr, info_ptr, &png_palette, pncolors);
@@ -362,6 +363,18 @@ load_png(unsigned char *buffer, int size,
         }
         break;
     case PNG_COLOR_TYPE_GRAY:
+        switch (bitdepth) {
+        case 8:
+            *pcomp = 1;
+            *pixelformat = PIXELFORMAT_G8;
+            break;
+        default:
+            png_set_gray_to_rgb(png_ptr);
+            *pcomp = 3;
+            *pixelformat = PIXELFORMAT_RGB888;
+            break;
+        }
+        break;
     case PNG_COLOR_TYPE_GRAY_ALPHA:
         png_set_gray_to_rgb(png_ptr);
         *pcomp = 3;
@@ -379,9 +392,6 @@ load_png(unsigned char *buffer, int size,
     default:
         /* unknown format */
         goto cleanup;
-    }
-    if (bitdepth == 16) {
-        png_set_strip_16(png_ptr);
     }
     result = malloc(*pcomp * *psx * *psy);
     rows = malloc(*psy * sizeof(unsigned char *));
@@ -1017,7 +1027,7 @@ load_image_file(char const *filename, int *psx, int *psy,
                                    fstatic, reqcolors);
     }
     free(chunk.buffer);
-    if (pixels && stride > 0 && (!ppalette || (ppalette && !*ppalette))) {
+    if (pixels && stride > 0 && comp == 4 && (!ppalette || (ppalette && !*ppalette))) {
         arrange_pixelformat(pixels, *psx, *psy * *pframe_count, comp, stride);
     }
 
