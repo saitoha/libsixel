@@ -21,6 +21,7 @@
 * Now img2sixel can load SIXEL as input data.
 
 * Some bug fixes and minor improvements.
+  Thanks to @obache and @arakiken.
 
                   ------------------------------
                    What's new in libsixel-1.2 ?

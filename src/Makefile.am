@@ -7,7 +7,7 @@ CLEANFILES = *.gcno *.gcda *.gcov
 
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = output.c fromsixel.c tosixel.c quant.c dither.c
-libsixel_la_CFLAGS = -Wall -I$(top_builddir)/include/ $(MAYBE_COVERAGE)
+libsixel_la_CFLAGS = -Wall -Wextra -I$(top_builddir)/include/ $(MAYBE_COVERAGE)
 if COND_DEBUG
 libsixel_la_CFLAGS += -Werror
 endif

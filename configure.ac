@@ -3,10 +3,10 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.3.2], [user@zuse.jp])
+AC_INIT([sixel], [1.3.6], [user@zuse.jp])
 LS_LT_CURRENT=1
 LS_LT_REVISION=2
-LS_LT_AGE=0
+LS_LT_AGE=1
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 AC_SUBST([PACKAGE_DESCRIPTION],
          ["A lightweight, fast implementation of DEC SIXEL graphics codec"])
@@ -144,6 +144,7 @@ AC_CHECK_HEADERS([memory.h \
                   sys/time.h \
                   time.h \
                   signal.h \
+                  sys/select.h \
                   sys/signal.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -164,7 +165,17 @@ AC_CHECK_FUNC([getopt_long],
                              [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
                              [AC_MSG_ERROR(getopt or getopt_long is not available.)])])
 
-AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode signal usleep calloc clock])
+AC_CHECK_FUNCS([memcpy \
+                memmove \
+                strtol \
+                setmode \
+                _setmode \
+                signal \
+                usleep \
+                calloc \
+                clock \
+                clearerr \
+                setjmp])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
@@ -285,17 +296,19 @@ AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
 
 if test x$with_libcurl != xno; then
-    AC_CHECK_HEADER([curl/curl.h],
-                    [AC_CHECK_LIB([curl],
-                                  [curl_easy_cleanup],
-                                  [have_curl=yes LIBCURL_LIBS=-lcurl],
-                                  [have_curl=no])])
-    if test x$have_curl != xyes; then
-        if test x${PKG_CONFIG} != x; then
-            PKG_CHECK_MODULES(LIBCURL,
-                              [libcurl],
-                              [have_curl=yes],
-                              [have_curl=no])
+    if test x$build == x$host; then
+        AC_CHECK_HEADER([curl/curl.h],
+                        [AC_CHECK_LIB([curl],
+                                      [curl_easy_cleanup],
+                                      [have_curl=yes LIBCURL_LIBS=-lcurl],
+                                      [have_curl=no])])
+        if test x$have_curl != xyes; then
+            if test x${PKG_CONFIG} != x; then
+                PKG_CHECK_MODULES(LIBCURL,
+                                  [libcurl],
+                                  [have_curl=yes],
+                                  [have_curl=no])
+            fi
         fi
     fi
     if test x$have_curl = xyes; then
@@ -313,11 +326,13 @@ AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
 
 if test x$with_jpeg != xno; then
-    AC_CHECK_HEADER([jpeglib.h],
-                    [AC_CHECK_LIB([jpeg],
-                                  [jpeg_read_header],
-                                  [have_jpeg=yes LIBJPEG_LIBS=-ljpeg],
-                                  [have_jpeg=no])])
+    if test x$build == x$host; then
+        AC_CHECK_HEADER([jpeglib.h],
+                        [AC_CHECK_LIB([jpeg],
+                                      [jpeg_read_header],
+                                      [have_jpeg=yes LIBJPEG_LIBS=-ljpeg],
+                                      [have_jpeg=no])])
+    fi
     if test x$have_jpeg = xyes; then
         AC_DEFINE(HAVE_JPEG, 1, [whether jpeg codec library is available])
         loaders="${loaders} jpeg"
@@ -334,17 +349,19 @@ AC_SUBST(LIBJPEG_CFLAGS)
 AC_SUBST(LIBJPEG_LIBS)
 
 if test x$with_png != xno; then
-    AC_CHECK_HEADER([png.h],
-                    [AC_CHECK_LIB([png],
-                                  [png_check_sig],
-                                  [have_png=yes LIBPNG_LIBS=-lpng],
-                                  [have_png=no])])
-    if test x$have_png != xyes; then
-        if test x${PKG_CONFIG} != x; then
-            PKG_CHECK_MODULES(LIBPNG,
-                              [libpng],
-                              [have_png=yes],
-                              [have_png=no])
+    if test x$build == x$host; then
+        AC_CHECK_HEADER([png.h],
+                        [AC_CHECK_LIB([png],
+                                      [png_check_sig],
+                                      [have_png=yes LIBPNG_LIBS=-lpng],
+                                      [have_png=no])])
+        if test x$have_png != xyes; then
+            if test x${PKG_CONFIG} != x; then
+                PKG_CHECK_MODULES(LIBPNG,
+                                  [libpng],
+                                  [have_png=yes],
+                                  [have_png=no])
+            fi
         fi
     fi
     if test x$have_png = xyes; then
@@ -367,8 +384,9 @@ AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           ])
 LS_UPDATE_TIMESTAMP
 
-AM_CONDITIONAL([HAVE_JPEG], [test x$have_jpeg == xyes])
-AM_CONDITIONAL([HAVE_PNG], [test x$have_png == xyes])
+AM_CONDITIONAL([HAVE_JPEG], [test x$have_jpeg = xyes])
+AM_CONDITIONAL([HAVE_PNG], [test x$have_png = xyes])
+AM_CONDITIONAL([HAVE_CURL], [test x$have_curl = xyes])
 
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
@@ -392,5 +410,7 @@ echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
+echo ""
+echo ""
 echo ""
 echo ""
