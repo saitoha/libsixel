@@ -240,19 +240,19 @@ get_rgb(unsigned char *data, int const pixelformat, int depth,
         unsigned char *r, unsigned char *g, unsigned char *b)
 {
     unsigned int pixels = 0, low, high;
-	int count = 0;
+    int count = 0;
 
-	while (count < depth) {
-		pixels = *(data + count) | (pixels << 8);
-		count++;
-	}
+    while (count < depth) {
+        pixels = *(data + count) | (pixels << 8);
+        count++;
+    }
 
-	/* TODO: we should swap bytes (only necessary on LSByte first hardware?) */
-	if (depth == 2) {
-		low    = pixels & 0xff;
-		high   = (pixels >> 8) & 0xff;
-		pixels = (low << 8) | high;
-	}
+    /* TODO: we should swap bytes (only necessary on LSByte first hardware?) */
+    if (depth == 2) {
+        low    = pixels & 0xff;
+        high   = (pixels >> 8) & 0xff;
+        pixels = (low << 8) | high;
+    }
 
     switch (pixelformat) {
     case PIXELFORMAT_RGB555:
