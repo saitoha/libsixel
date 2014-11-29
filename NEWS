@@ -1,4 +1,27 @@
                   ------------------------------
+                   What's new in libsixel-1.4 ?
+                  ------------------------------
+
+* core: SIXEL encoder supports various pixel formats(thanks to @uobikiemukot).
+
+* core: Fix typoed API (thanks to @waywardmonkeys).
+
+* img2sixel: New option -D(--pipe-mode) is introduced.
+             with this option, img2sixel continuously read source images from
+             stdin.
+
+* img2sixel: Introduce -I(--high-color) option, high-color(15bpp) output mode
+             is added(thanks to @arakiken).
+
+* img2sixel: New option -E(--encode-policy) is added. high-compressed
+             mode(-E size) is introduced(thanks to @arakiken).
+
+* img2sixel: New option -b(--builtin-palette) is added. built-in support of
+             VT-340 palette is added(thanks to @vrtsds).
+
+* Some bug fixes and minor improvements.
+
+                   ------------------------------
                    What's new in libsixel-1.3 ?
                   ------------------------------
 

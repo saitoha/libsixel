@@ -365,8 +365,14 @@ load_png(unsigned char *buffer, int size,
     case PNG_COLOR_TYPE_GRAY:
         switch (bitdepth) {
         case 8:
-            *pcomp = 1;
-            *pixelformat = PIXELFORMAT_G8;
+            if (ppalette && *pncolors <= 1 << 8) {
+                *pcomp = 1;
+                *pixelformat = PIXELFORMAT_G8;
+            } else {
+                png_set_gray_to_rgb(png_ptr);
+                *pcomp = 3;
+                *pixelformat = PIXELFORMAT_RGB888;
+            }
             break;
         default:
             png_set_gray_to_rgb(png_ptr);
