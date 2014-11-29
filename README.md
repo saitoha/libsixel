@@ -540,7 +540,7 @@ sixel_dither_initialize(
     unsigned char /* in */ *data,    /* sample image */
     int /* in */ width,              /* image width */
     int /* in */ height,             /* image height */
-    int /* in */ depth,              /* pixel depth, now only '3' is supported */
+    int /* in */ depth,              /* pixel depth: now unused, remained for compatibility */
     int /* in */ method_for_largest, /* set 0 or method for finding the largest dimension */
     int /* in */ method_for_rep,     /* set 0 or method for choosing a color from the box */
     int /* in */ quality_mode        /* set 0 or quality of histogram processing */
