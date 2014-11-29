@@ -528,15 +528,21 @@ sixel_encode_dither(unsigned char *pixels, int width, int height,
     unsigned char *input_pixels;
     int nret = (-1);
 
-    if (dither->pixelformat == PIXELFORMAT_PAL8) {
+    switch (dither->pixelformat) {
+    case PIXELFORMAT_PAL8:
+    case PIXELFORMAT_G8:
+    case PIXELFORMAT_GA88:
+    case PIXELFORMAT_AG88:
         input_pixels = pixels;
-    } else {
+        break;
+    default:
         /* apply palette */
         paletted_pixels = sixel_dither_apply_palette(dither, pixels, width, height);
         if (paletted_pixels == NULL) {
             goto end;
         }
         input_pixels = paletted_pixels;
+        break;
     }
 
     sixel_encode_header(width, height, context);
