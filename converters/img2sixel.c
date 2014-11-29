@@ -144,7 +144,7 @@ static sixel_dither_t *
 prepare_specified_palette(char const *mapfile, int reqcolors)
 {
     unsigned char *mappixels;
-    sixel_dither_t *dither;
+    sixel_dither_t *dither = NULL;
     int map_sx;
     int map_sy;
     int frame_count;
@@ -164,28 +164,23 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
                                 /* reqcolors */ 256);
     free(delays);
     if (!mappixels) {
-        return NULL;
+        goto end;
     }
     switch (pixelformat) {
     case PIXELFORMAT_PAL8:
         if (palette == NULL) {
-            return NULL;
+            goto end;
         }
         dither = sixel_dither_create(ncolors);
         if (dither == NULL) {
-            return NULL;
+            goto end;
         }
         sixel_dither_set_palette(dither, palette);
-        free(palette);
-        break;
-    case PIXELFORMAT_G8:
-        dither = sixel_dither_create(-1);
-        sixel_dither_set_pixelformat(dither, pixelformat);
         break;
     default:
         dither = sixel_dither_create(reqcolors);
         if (dither == NULL) {
-            return NULL;
+            goto end;
         }
 
         ret = sixel_dither_initialize(dither, mappixels, map_sx, map_sy,
@@ -193,10 +188,13 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
                                       LARGE_NORM, REP_CENTER_BOX, QUALITY_LOW);
         if (ret != 0) {
             sixel_dither_unref(dither);
-            return NULL;
+            goto end;
         }
         break;
     }
+
+end:
+    free(palette);
 
     return dither;
 }
