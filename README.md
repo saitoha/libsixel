@@ -303,9 +303,11 @@ Options:
 -i, --invert               assume the terminal background color
                            is white, make sense only when -e
                            option is given
+-I, --high-color           output 15bpp sixel image
 -u, --use-macro            use DECDMAC and DEVINVM sequences to
                            optimize GIF animation rendering
--n, --macro-number         specify an number argument for
+-n MACRONO, --macro-number=MACRONO
+                           specify an number argument for
                            DECDMAC and make terminal memorize
                            SIXEL image. No image is shown if this
                            option is specified
@@ -404,9 +406,11 @@ Options:
                            quanlization.
                              auto -> decide quality mode
                                      automatically (default)
+                             low  -> low quality and high
+                                     speed mode
                              high -> high quality and low
                                      speed mode
-                             low  -> low quality and high
+                             full -> full quality and careful
                                      speed mode
 -l LOOPMODE, --loop-control=LOOPMODE
                            select loop control mode for GIF
@@ -421,8 +425,14 @@ Options:
                                      automatically (default)
                              hls  -> use HLS color space
                              rgb  -> use RGB color space
--P --penetrate             penetrate GNU Screen using DCS
+-b BUILTINPALETTE, --builtin-palette=BUILTINPALETTE
+                           select built-in palette type
+                             xterm16  -> X default 16 color map
+                             xterm256 -> X default 256 color map
+-P, --penetrate            penetrate GNU Screen using DCS
                            pass-through sequence
+-D, --pipe-mode            read source images from stdin
+                           continuously
 -v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
