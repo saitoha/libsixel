@@ -13,7 +13,7 @@ if COND_GCOV
 MAYBE_COVERAGE = --coverage
 endif
 
-CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt
+CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
@@ -139,6 +139,11 @@ if WANT_SIXEL2PNG
 	$(WINE) ./sixel2png --input=snake.sixel -o snake4.png
 endif
 	$(WINE) ./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options1.txt
+	rm -f sixel.pipe
+	which mkfifo && (mkfifo sixel.pipe; $(WINE) ./img2sixel -D < sixel.pipe&) && cat ../images/snake.jpg > sixel.pipe
+	(echo -n > sixel.pipe)
+	sleep 1
+	rm -f sixel.pipe
 	grep ^\.B img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d "\\" | tr -d , > options2.txt 
 	grep '^ *-\w --' shell-completion/bash/img2sixel|sed 's/.* \(-.\) .*/\1/' > options3.txt
 	grep '{-' shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > options4.txt
