@@ -77,10 +77,12 @@ enum qualityMode {
 
 /* built-in dither */
 enum builtinDither {
-    BUILTIN_MONO_DARK  = 0, /* monochrome terminal with dark background */
-    BUILTIN_MONO_LIGHT = 1, /* monochrome terminal with dark background */
-    BUILTIN_XTERM16    = 2, /* xterm 16color */
-    BUILTIN_XTERM256   = 3, /* xterm 256color */
+    BUILTIN_MONO_DARK   = 0, /* monochrome terminal with dark background */
+    BUILTIN_MONO_LIGHT  = 1, /* monochrome terminal with dark background */
+    BUILTIN_XTERM16     = 2, /* xterm 16color */
+    BUILTIN_XTERM256    = 3, /* xterm 256color */
+    BUILTIN_VT340_MONO  = 4, /* vt340 monochrome */
+    BUILTIN_VT340_COLOR = 5, /* vt340 color */
 };
 
 /* offset value of enum pixelFormat */

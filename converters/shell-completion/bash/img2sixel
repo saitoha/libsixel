@@ -93,7 +93,9 @@ _img2sixel()
         ;;
     -b|--builtin-palette)
         COMPREPLY=( $( compgen -W 'xterm16 \
-                                   xterm256' -- "$cur" ) )
+                                   xterm256 \
+                                   vt340mono \
+                                   vt340color' -- "$cur" ) )
         return 0
         ;;
     -E|--encode-policy)
