@@ -652,16 +652,27 @@ computeHistogram(unsigned char const *data,
     unsigned int max_sample;
 
     switch (qualityMode) {
-    case QUALITY_HIGH:
-        max_sample = 1118383;
-        break;
     case QUALITY_LOW:
         max_sample = 18383;
+        step = length / depth / max_sample;
+        break;
+    case QUALITY_HIGH:
+        max_sample = 18383;
+        step = length / depth / max_sample * depth;
         break;
     case QUALITY_FULL:
     default:
         max_sample = 4003079;
+        step = length / depth / max_sample * depth;
         break;
+    }
+
+    if (length < max_sample * depth) {
+        step = 6 * depth;
+    }
+
+    if (step <= 0) {
+        step = depth;
     }
 
     quant_trace(stderr, "making histogram...\n");
@@ -682,15 +693,6 @@ computeHistogram(unsigned char const *data,
     if (!it) {
         quant_trace(stderr, "Unable to allocate memory for lookup table.\n");
         return (-1);
-    }
-
-    if (length > max_sample * depth) {
-        step = length / depth / max_sample;
-        if (step <= 0) {
-            step = depth;
-        }
-    } else {
-        step = 7 * depth;
     }
 
     for (i = 0; i < length - depth; i += step) {
