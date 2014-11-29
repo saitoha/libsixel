@@ -424,7 +424,7 @@ dist_man_MANS = $(am__append_3) $(am__append_8)
 dist_bashcompletion_DATA = $(am__append_4)
 dist_zshcompletion_DATA = $(am__append_5)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
-CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt
+CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c scale.c malloc_stub.c loader.c frompnm.c \
 @WANT_IMG2SIXEL_TRUE@                    scale.h malloc_stub.h loader.h frompnm.h
 
@@ -1149,6 +1149,11 @@ test: all
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png - - < snake3.sixel > snake3.png
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png --input=snake.sixel -o snake4.png
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options1.txt
+@WANT_IMG2SIXEL_TRUE@	rm -f sixel.pipe
+@WANT_IMG2SIXEL_TRUE@	which mkfifo && (mkfifo sixel.pipe; $(WINE) ./img2sixel -D < sixel.pipe&) && cat ../images/snake.jpg > sixel.pipe
+@WANT_IMG2SIXEL_TRUE@	(echo -n > sixel.pipe)
+@WANT_IMG2SIXEL_TRUE@	sleep 1
+@WANT_IMG2SIXEL_TRUE@	rm -f sixel.pipe
 @WANT_IMG2SIXEL_TRUE@	grep ^\.B img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d "\\" | tr -d , > options2.txt 
 @WANT_IMG2SIXEL_TRUE@	grep '^ *-\w --' shell-completion/bash/img2sixel|sed 's/.* \(-.\) .*/\1/' > options3.txt
 @WANT_IMG2SIXEL_TRUE@	grep '{-' shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > options4.txt
