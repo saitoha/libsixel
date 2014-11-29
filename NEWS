@@ -4,6 +4,8 @@
 
 * core: SIXEL encoder supports various pixel formats(thanks to @uobikiemukot).
 
+* core: Fix typoed API (thanks to @waywardmonkeys).
+
 * img2sixel: New option -D(--pipe-mode) is introduced.
              with this option, img2sixel continuously read source images from
              stdin.
