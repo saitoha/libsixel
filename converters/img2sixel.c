@@ -178,6 +178,10 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
         sixel_dither_set_palette(dither, palette);
         free(palette);
         break;
+    case PIXELFORMAT_G8:
+        dither = sixel_dither_create(-1);
+        sixel_dither_set_pixelformat(dither, pixelformat);
+        break;
     default:
         dither = sixel_dither_create(reqcolors);
         if (dither == NULL) {
@@ -279,12 +283,15 @@ prepare_palette(sixel_dither_t *former_dither,
             return former_dither;
         }
         dither = prepare_builtin_palette(psettings->builtin_palette);
-    } else if (palette && pixelformat) {
+    } else if (palette && pixelformat & FORMATTYPE_PALETTE) {
         dither = sixel_dither_create(ncolors);
         if (!dither) {
             return NULL;
         }
         sixel_dither_set_palette(dither, palette);
+        sixel_dither_set_pixelformat(dither, pixelformat);
+    } else if (pixelformat == PIXELFORMAT_G8) {
+        dither = sixel_dither_create(-1);
         sixel_dither_set_pixelformat(dither, pixelformat);
     } else {
         if (former_dither) {
@@ -390,6 +397,7 @@ clip(unsigned char *pixels,
 
     switch (pixelformat) {
     case PIXELFORMAT_PAL8:
+    case PIXELFORMAT_G8:
         dst = pixels;
         src = pixels + cy * sx * 1;
         for (y = 0; y < ch; y++) {
@@ -602,7 +610,9 @@ reload:
     }
 
     if (psettings->verbose) {
-        print_palette(dither);
+        if (!(pixelformat & FORMATTYPE_GRAYSCALE)) {
+            print_palette(dither);
+        }
     }
 
     sixel_dither_set_diffusion_type(dither, psettings->method_for_diffuse);
