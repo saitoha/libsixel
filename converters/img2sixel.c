@@ -129,13 +129,13 @@ static sixel_dither_t *
 prepare_builtin_palette(int builtin_palette)
 {
     sixel_dither_t *dither;
-    
+
     dither = sixel_dither_get(builtin_palette);
 
     if (dither == NULL) {
         return NULL;
     }
-    
+
     return dither;
 }
 
@@ -151,25 +151,51 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
     int loop_count;
     int ret;
     int *delays;
+    int ncolors = 0;
+    unsigned char *palette = NULL;
+    int pixelformat = PIXELFORMAT_RGB888;
 
     delays = NULL;
 
     mappixels = load_image_file(mapfile, &map_sx, &map_sy,
-                                &frame_count, &loop_count, &delays, 1);
+                                &palette, &ncolors, &pixelformat,
+                                &frame_count, &loop_count,
+                                &delays, /* fstatic */ 1,
+                                /* reqcolors */ 256);
     free(delays);
     if (!mappixels) {
         return NULL;
     }
-    dither = sixel_dither_create(reqcolors);
-    if (dither == NULL) {
-        return NULL;
-    }
+    switch (pixelformat) {
+    case PIXELFORMAT_PAL8:
+        if (palette == NULL) {
+            return NULL;
+        }
+        dither = sixel_dither_create(ncolors);
+        if (dither == NULL) {
+            return NULL;
+        }
+        sixel_dither_set_palette(dither, palette);
+        free(palette);
+        break;
+    case PIXELFORMAT_G8:
+        dither = sixel_dither_create(-1);
+        sixel_dither_set_pixelformat(dither, pixelformat);
+        break;
+    default:
+        dither = sixel_dither_create(reqcolors);
+        if (dither == NULL) {
+            return NULL;
+        }
 
-    ret = sixel_dither_initialize(dither, mappixels, map_sx, map_sy, COLOR_RGB888,
-                                  LARGE_NORM, REP_CENTER_BOX, QUALITY_LOW);
-    if (ret != 0) {
-        sixel_dither_unref(dither);
-        return NULL;
+        ret = sixel_dither_initialize(dither, mappixels, map_sx, map_sy,
+                                      pixelformat,
+                                      LARGE_NORM, REP_CENTER_BOX, QUALITY_LOW);
+        if (ret != 0) {
+            sixel_dither_unref(dither);
+            return NULL;
+        }
+        break;
     }
 
     return dither;
@@ -226,9 +252,12 @@ typedef struct Settings {
 } settings_t;
 
 
-sixel_dither_t *
+static sixel_dither_t *
 prepare_palette(sixel_dither_t *former_dither,
-                unsigned char *frame, int sx, int sy, settings_t *psettings)
+                unsigned char *frame, int sx, int sy,
+                unsigned char *palette, int ncolors,
+                int pixelformat,
+                settings_t *psettings)
 {
     sixel_dither_t *dither;
     int ret;
@@ -254,12 +283,26 @@ prepare_palette(sixel_dither_t *former_dither,
             return former_dither;
         }
         dither = prepare_builtin_palette(psettings->builtin_palette);
+    } else if (palette && pixelformat & FORMATTYPE_PALETTE) {
+        dither = sixel_dither_create(ncolors);
+        if (!dither) {
+            return NULL;
+        }
+        sixel_dither_set_palette(dither, palette);
+        sixel_dither_set_pixelformat(dither, pixelformat);
+    } else if (pixelformat == PIXELFORMAT_G8) {
+        dither = sixel_dither_create(-1);
+        sixel_dither_set_pixelformat(dither, pixelformat);
     } else {
         if (former_dither) {
             sixel_dither_unref(former_dither);
         }
         dither = sixel_dither_create(psettings->reqcolors);
-        ret = sixel_dither_initialize(dither, frame, sx, sy, COLOR_RGB888,
+        if (!dither) {
+            return NULL;
+        }
+        ret = sixel_dither_initialize(dither, frame, sx, sy,
+                                      pixelformat,
                                       psettings->method_for_largest,
                                       psettings->method_for_rep,
                                       psettings->quality_mode);
@@ -267,36 +310,19 @@ prepare_palette(sixel_dither_t *former_dither,
             sixel_dither_unref(dither);
             return NULL;
         }
+        sixel_dither_set_pixelformat(dither, pixelformat);
     }
     return dither;
 }
 
 
-static void
-clip(unsigned char *pixels, int sx, int sy, int cx, int cy, int cw, int ch)
-{
-    int y;
-    unsigned char *src;
-    unsigned char *dst;
-
-    /* unused */ (void) sx;
-    /* unused */ (void) sy;
-    /* unused */ (void) cx;
-
-    dst = pixels;
-    src = pixels + cy * sx * 3;
-    for (y = 0; y < ch; y++) {
-        memmove(dst, src, cw * 3);
-        dst += (cw * 3);
-        src += (sx * 3);
-    }
-}
-
-
-static int do_resize(unsigned char **ppixels,
-                     unsigned char **frames, int frame_count,
-                     int *psx, int *psy,
-                     settings_t *psettings)
+static int
+do_resize(unsigned char **ppixels,
+          unsigned char **frames, int frame_count,
+          int /* in,out */ *psx,
+          int /* in,out */ *psy,
+          int pixelformat,
+          settings_t *psettings)
 {
     unsigned char *p;
     int size;
@@ -317,6 +343,12 @@ static int do_resize(unsigned char **ppixels,
     }
 
     if (psettings->pixelwidth > 0 && psettings->pixelheight > 0) {
+
+        if (pixelformat != PIXELFORMAT_RGB888) {
+            /* TODO: convert pixelformat to RGB888 */
+            return (-1);
+        }
+
         size = psettings->pixelwidth * psettings->pixelheight * 3;
         p = malloc(size * frame_count);
 
@@ -348,11 +380,55 @@ static int do_resize(unsigned char **ppixels,
 }
 
 
+static int
+clip(unsigned char *pixels,
+     int sx, int sy,
+     int cx, int cy,
+     int cw, int ch,
+     int pixelformat)
+{
+    int y;
+    unsigned char *src;
+    unsigned char *dst;
+
+    /* unused */ (void) sx;
+    /* unused */ (void) sy;
+    /* unused */ (void) cx;
+
+    switch (pixelformat) {
+    case PIXELFORMAT_PAL8:
+    case PIXELFORMAT_G8:
+        dst = pixels;
+        src = pixels + cy * sx * 1;
+        for (y = 0; y < ch; y++) {
+            memmove(dst, src, cw * 1);
+            dst += (cw * 1);
+            src += (sx * 1);
+        }
+        break;
+    case PIXELFORMAT_RGB888:
+        dst = pixels;
+        src = pixels + cy * sx * 3;
+        for (y = 0; y < ch; y++) {
+            memmove(dst, src, cw * 3);
+            dst += (cw * 3);
+            src += (sx * 3);
+        }
+        break;
+    default:
+        return (-1);
+    }
+
+    return 0;
+}
+
+
 static int do_crop(unsigned char **frames, int frame_count,
-                   int *psx, int *psy,
+                   int *psx, int *psy, int pixelformat,
                    settings_t *psettings)
 {
     int n;
+    int ret;
 
     /* clipping */
     if (psettings->clipwidth + psettings->clipx > *psx) {
@@ -363,8 +439,11 @@ static int do_crop(unsigned char **frames, int frame_count,
     }
     if (psettings->clipwidth > 0 && psettings->clipheight > 0) {
         for (n = 0; n < frame_count; ++n) {
-            clip(frames[n], *psx, *psy, psettings->clipx, psettings->clipy,
-                 psettings->clipwidth, psettings->clipheight);
+            ret = clip(frames[n], *psx, *psy, psettings->clipx, psettings->clipy,
+                       psettings->clipwidth, psettings->clipheight, pixelformat);
+            if (ret != 0) {
+                return ret;
+            }
         }
         *psx = psettings->clipwidth;
         *psy = psettings->clipheight;
@@ -425,6 +504,10 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int nret = -1;
     int dulation = 0;
     int lag = 0;
+    unsigned char *palette = NULL;
+    unsigned char **ppalette = &palette;
+    int ncolors = 0;
+    int pixelformat = PIXELFORMAT_RGB888;
 #if HAVE_USLEEP && HAVE_CLOCK
     clock_t start;
 #endif
@@ -437,14 +520,39 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         psettings->palette_type = PALETTETYPE_RGB;
     }
 
+    if (psettings->mapfile) {
+        ppalette = NULL;
+    }
+
+    if (psettings->monochrome > 0) {
+        ppalette = NULL;
+    }
+
+    if (psettings->highcolor > 0) {
+        ppalette = NULL;
+    }
+
+    if (psettings->builtin_palette > 0) {
+        ppalette = NULL;
+    }
+
+    if (psettings->percentwidth > 0 ||
+        psettings->percentheight > 0 ||
+        psettings->pixelwidth > 0 ||
+        psettings->pixelheight > 0) {
+        ppalette = NULL;
+    }
+
 reload:
     pixels = NULL;
     frames = NULL;
     frame = NULL;
     delays = NULL;
     pixels = load_image_file(filename, &sx, &sy,
+                             ppalette, &ncolors, &pixelformat,
                              &frame_count, &loop_count,
-                             &delays, psettings->fstatic);
+                             &delays, psettings->fstatic,
+                             psettings->reqcolors);
 
     if (pixels == NULL) {
         nret = -1;
@@ -465,39 +573,46 @@ reload:
 
     if (psettings->clipfirst) {
         /* clipping */
-        nret = do_crop(frames, frame_count, &sx, &sy, psettings);
+        nret = do_crop(frames, frame_count,
+                       &sx, &sy, pixelformat, psettings);
         if (nret != 0) {
             goto end;
         }
 
         /* scaling */
-        nret = do_resize(&pixels, frames, frame_count, &sx, &sy, psettings);
+        nret = do_resize(&pixels, frames, frame_count,
+                         &sx, &sy, pixelformat, psettings);
         if (nret != 0) {
             goto end;
         }
     } else {
         /* scaling */
-        nret = do_resize(&pixels, frames, frame_count, &sx, &sy, psettings);
+        nret = do_resize(&pixels, frames, frame_count,
+                         &sx, &sy, pixelformat, psettings);
         if (nret != 0) {
             goto end;
         }
 
         /* clipping */
-        nret = do_crop(frames, frame_count, &sx, &sy, psettings);
+        nret = do_crop(frames, frame_count,
+                       &sx, &sy, pixelformat, psettings);
         if (nret != 0) {
             goto end;
         }
     }
 
     /* prepare dither context */
-    dither = prepare_palette(dither, pixels, sx, sy * frame_count, psettings);
+    dither = prepare_palette(dither, pixels, sx, sy * frame_count,
+                             palette, ncolors, pixelformat, psettings);
     if (!dither) {
         nret = -1;
         goto end;
     }
 
     if (psettings->verbose) {
-        print_palette(dither);
+        if (!(pixelformat & FORMATTYPE_GRAYSCALE)) {
+            print_palette(dither);
+        }
     }
 
     sixel_dither_set_diffusion_type(dither, psettings->method_for_diffuse);
@@ -551,7 +666,7 @@ reload:
                 printf("\033P%d;0;1!z", n);
             }
 
-            nret = sixel_encode(frames[n], sx, sy, COLOR_RGB888, dither, context);
+            nret = sixel_encode(frames[n], sx, sy, /* unused */ 3, dither, context);
             if (nret != 0) {
                 goto end;
             }

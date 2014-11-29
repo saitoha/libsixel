@@ -59,7 +59,7 @@
 #include "quant.h"
 #include "sixel.h"
 
-#if 0
+#if HAVE_DEBUG
 #define quant_trace fprintf
 #else
 static inline void quant_trace(FILE *f, ...) { (void) f; }
@@ -562,38 +562,61 @@ mediancut(tupletable2 const colorfreqtable,
     int multicolorBoxesExist;
     unsigned int i;
     unsigned int sum;
+    int nret = (-1);
 
     sum = 0;
 
-    for (i = 0; i < colorfreqtable.size; ++i)
+    for (i = 0; i < colorfreqtable.size; ++i) {
         sum += colorfreqtable.table[i]->value;
+    }
 
-        /* There is at least one box that contains at least 2 colors; ergo,
-           there is more splitting we can do.
-        */
-
+    /* There is at least one box that contains at least 2 colors; ergo,
+       there is more splitting we can do.  */
     bv = newBoxVector(colorfreqtable.size, sum, newcolors);
-    if (!bv) {
-        return (-1);
-    }
-    boxes = 1;
-    multicolorBoxesExist = (colorfreqtable.size > 1);
+    if (bv) {
+        boxes = 1;
+        multicolorBoxesExist = (colorfreqtable.size > 1);
 
-    /* Main loop: split boxes until we have enough. */
-    while (boxes < newcolors && multicolorBoxesExist) {
-        /* Find the first splittable box. */
-        for (bi = 0; bi < boxes && bv[bi].colors < 2; ++bi);
-        if (bi >= boxes)
-            multicolorBoxesExist = 0;
-        else
-            splitBox(bv, &boxes, bi, colorfreqtable, depth, methodForLargest);
-    }
-    *colormapP = colormapFromBv(newcolors, bv, boxes,
-                                colorfreqtable, depth,
-                                methodForRep);
+        /* Main loop: split boxes until we have enough. */
+        while (boxes < newcolors && multicolorBoxesExist) {
+            /* Find the first splittable box. */
+            for (bi = 0; bi < boxes && bv[bi].colors < 2; ++bi)
+                ;
+            if (bi >= boxes) {
+                multicolorBoxesExist = 0;
+            } else {
+                splitBox(bv, &boxes, bi, colorfreqtable, depth, methodForLargest);
+            }
+        }
+        *colormapP = colormapFromBv(newcolors, bv, boxes,
+                                    colorfreqtable, depth,
+                                    methodForRep);
 
-    free(bv);
-    return 0;
+        free(bv);
+        nret = 0;
+    }
+    return nret;
+}
+
+
+static int
+compute_depth_from_pixelformat(int pixelformat)
+{
+    int depth = (-1);  /* unknown */
+
+    switch (pixelformat) {
+        case PIXELFORMAT_RGB888:
+            depth = 3;
+            break;
+        case PIXELFORMAT_RGB555:
+        case PIXELFORMAT_RGB565:
+            depth = 2;
+            break;
+        default:
+            break;
+    }
+
+    return depth;
 }
 
 
@@ -612,7 +635,7 @@ computeHash(unsigned char const *data, int const depth)
 
 
 static int
-computeHistogram(unsigned char *data,
+computeHistogram(unsigned char const *data,
                  unsigned int length,
                  unsigned long const depth,
                  tupletable2 * const colorfreqtableP,
@@ -649,25 +672,28 @@ computeHistogram(unsigned char *data,
     histogram = malloc((1 << depth * 5) * sizeof(unit_t));
 #endif
     if (!histogram) {
-        quant_trace(stderr, "Unable to allocate memory for histogram.");
+        quant_trace(stderr, "Unable to allocate memory for histogram.\n");
         return (-1);
     }
 #if !HAVE_CALLOC
     memset(histogram, 0, (1 << depth * 5) * sizeof(unit_t));
 #endif
-    it = ref = refmap = (unsigned short *)malloc(max_sample * sizeof(unit_t));
+    it = ref = refmap = (unsigned short *)malloc((1 << depth * 5) * sizeof(unit_t));
     if (!it) {
-        quant_trace(stderr, "Unable to allocate memory for lookup table.");
+        quant_trace(stderr, "Unable to allocate memory for lookup table.\n");
         return (-1);
     }
 
     if (length > max_sample * depth) {
         step = length / depth / max_sample;
+        if (step <= 0) {
+            step = depth;
+        }
     } else {
-        step = depth;
+        step = 7 * depth;
     }
 
-    for (i = 0; i < length; i += step) {
+    for (i = 0; i < length - depth; i += step) {
         index = computeHash(data + i, 3);
         if (histogram[index] == 0) {
             *ref++ = index;
@@ -699,8 +725,8 @@ computeHistogram(unsigned char *data,
 
 
 static int
-computeColorMapFromInput(unsigned char *data,
-                         size_t length,
+computeColorMapFromInput(unsigned char const *data,
+                         unsigned int const length,
                          unsigned int const depth,
                          unsigned int const reqColors,
                          enum methodForLargest const methodForLargest,
@@ -1077,18 +1103,25 @@ lookup_mono_lightbg(unsigned char const * const pixel,
 
 
 unsigned char *
-LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
-                int reqcolors, int *ncolors, int *origcolors,
-                int methodForLargest,
-                int methodForRep,
-                int qualityMode)
+sixel_quant_make_palette(unsigned char const *data,
+                         int length,
+                         int pixelformat,
+                         int reqcolors, int *ncolors, int *origcolors,
+                         int methodForLargest,
+                         int methodForRep,
+                         int qualityMode)
 {
     int i, n;
     int ret;
     unsigned char *palette;
     tupletable2 colormap;
+    int depth = compute_depth_from_pixelformat(pixelformat);
 
-    ret = computeColorMapFromInput(data, x * y * depth, depth,
+    if (depth == -1) {
+        return NULL;
+    }
+
+    ret = computeColorMapFromInput(data, length, depth,
                                    reqcolors, methodForLargest,
                                    methodForRep, qualityMode,
                                    &colormap, origcolors);
@@ -1096,7 +1129,7 @@ LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
         return NULL;
     }
     *ncolors = colormap.size;
-    quant_trace(stderr, "tupletable size: %d", *ncolors);
+    quant_trace(stderr, "tupletable size: %d\n", *ncolors);
     palette = malloc(*ncolors * depth);
     for (i = 0; i < *ncolors; i++) {
         for (n = 0; n < depth; ++n) {
@@ -1110,25 +1143,27 @@ LSQ_MakePalette(unsigned char *data, int x, int y, int depth,
 
 
 int
-LSQ_ApplyPalette(unsigned char *data,
-                 int width,
-                 int height,
-                 int depth,
-                 unsigned char *palette,
-                 int reqcolor,
-                 int methodForDiffuse,
-                 int foptimize,
-                 int foptimize_palette,
-                 int complexion,
-                 unsigned short *cachetable,
-                 int *ncolors,
-                 unsigned char *result)
+sixel_quant_apply_palette(unsigned char *data,
+                          int width,
+                          int height,
+                          int depth,
+                          unsigned char *palette,
+                          int reqcolor,
+                          int methodForDiffuse,
+                          int foptimize,
+                          int foptimize_palette,
+                          int complexion,
+                          unsigned short *cachetable,
+                          int *ncolors,
+                          unsigned char *result)
 {
     typedef int component_t;
     int pos, n, x, y, sum1, sum2;
     component_t offset;
     int index;
     unsigned short *indextable;
+    unsigned char new_palette[256 * 4];
+    unsigned short migration_map[256];
     void (*f_diffuse)(unsigned char *data, int width, int height,
                       int x, int y, int depth, int offset);
     int (*f_lookup)(unsigned char const * const pixel,
@@ -1201,16 +1236,13 @@ LSQ_ApplyPalette(unsigned char *data,
         indextable = calloc(1 << depth * 5, sizeof(unsigned short));
 #endif
         if (!indextable) {
-            quant_trace(stderr, "Unable to allocate memory for indextable.");
+            quant_trace(stderr, "Unable to allocate memory for indextable.\n");
             return (-1);
         }
 #if !HAVE_CALLOC
         memset(indextable, 0x00, (1 << depth * 5) * sizeof(unsigned short));
 #endif
     }
-
-    unsigned char new_palette[256 * 4];
-    unsigned short migration_map[256];
 
     if (foptimize_palette) {
         *ncolors = 0;
@@ -1265,7 +1297,7 @@ LSQ_ApplyPalette(unsigned char *data,
 
 
 void
-LSQ_FreePalette(unsigned char * data)
+sixel_quant_free_palette(unsigned char * data)
 {
     free(data);
 }

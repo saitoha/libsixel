@@ -83,6 +83,9 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel ../images/snake.tga -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto
 	$(WINE) ./img2sixel -p300 ../images/snake.tiff -8 -scenter -h100 -qfull -rhanning -dstucki -thls
 	$(WINE) ./img2sixel -8 -qauto -thls -e ../images/snake.pgm
+	$(WINE) ./img2sixel -8 ../images/snake.ppm -m ../images/map8-palette.png
+	$(WINE) ./img2sixel -7 ../images/snake.jpg -m ../images/map16-palette.png
+	$(WINE) ./img2sixel -7 ../images/snake-palette.png -w300
 	$(WINE) ./img2sixel -7 -w100 -h100 -bxterm16 ../images/snake.pbm
 	$(WINE) ./img2sixel -I ../images/snake.ppm -dstucki -thls
 	$(WINE) ./img2sixel -I ../images/snake-ascii.ppm -8 -dburkes
@@ -91,6 +94,12 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -I ../images/snake-ascii.pbm -datkinson
 	$(WINE) ./img2sixel -I ../images/snake-grayscale.png
 	$(WINE) ./img2sixel -I ../images/snake-grayscale.jpg
+	$(WINE) ./img2sixel ../images/snake.six -m ../images/map8.six
+	$(WINE) ./img2sixel ../images/snake.six -w200 -p8
+	$(WINE) ./img2sixel ../images/snake.six -c200x200+100+100
+	$(WINE) ./img2sixel -bxterm16 ../images/snake.six
+	$(WINE) ./img2sixel -e ../images/snake.six
+	$(WINE) ./img2sixel -I ../images/snake.six
 	$(WINE) ./img2sixel -I  ../images/snake.ppm -c2000x100+40+20 -wauto -h200 -qhigh -dfs -rbilinear -trgb
 	$(WINE) ./img2sixel -I -v ../images/snake.bmp -w200 -hauto -c100x1000+40+20 -qlow -dnone -rhamming -thls
 	$(WINE) ./img2sixel -m ../images/map8.png -w200 -fauto -rwelsh ../images/egret.jpg
@@ -105,10 +114,10 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -g
 	$(WINE) ./img2sixel ../images/seq2gif.gif -S -datkinson
 if HAVE_JPEG
-	$(WINE) ./img2sixel ../images/snake-progressive.jpg | tee snake.sixel
+	$(WINE) ./img2sixel ../images/snake-progressive.jpg
 endif
 if HAVE_PNG
-	$(WINE) ./img2sixel ../images/snake.png | tee snake.sixel
+	$(WINE) ./img2sixel ../images/snake.png
 endif
 if HAVE_CURL
 	!$(WINE) ./img2sixel file:///test
