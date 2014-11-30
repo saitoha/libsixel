@@ -65,7 +65,7 @@
 
 #define XRGB(r,g,b) RGB(PALVAL(r, 255, 100), PALVAL(g, 255, 100), PALVAL(b, 255, 100))
 
-static int const ColTab[] = {
+static int const color_table[] = {
     XRGB(0,  0,  0),   /*  0 Black    */
     XRGB(20, 20, 80),  /*  1 Blue     */
     XRGB(80, 13, 13),  /*  2 Red      */
@@ -205,6 +205,7 @@ sixel_getparams(unsigned char *p, int *param, int *len)
 
 
 /* convert sixel data into indexed pixel bytes and palette data */
+/* TODO: make "free" function as an argument */
 int
 sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
              int                        /* in */  len,        /* size of sixel bytes */
@@ -220,7 +221,9 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     int max_x, max_y;
     int attributed_pan, attributed_pad;
     int attributed_ph, attributed_pv;
-    int repeat_count, color_index, max_color_index = 2, background_color_index;
+    int repeat_count, color_index;
+    int max_color_index;
+    int background_color_index;
     int param[10];
     int sixel_palet[SIXEL_PALETTE_MAX];
     unsigned char *imbuf, *dmbuf;
@@ -228,13 +231,16 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     int dmsx, dmsy;
     int y;
 
+    (void) len;
+
     posision_x = posision_y = 0;
     max_x = max_y = 0;
     attributed_pan = 2;
     attributed_pad = 1;
     attributed_ph = attributed_pv = 0;
     repeat_count = 1;
-    color_index = 0;
+    color_index = 15;
+    max_color_index = 2;
     background_color_index = 0;
 
     imsx = 2048;
@@ -246,7 +252,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     }
 
     for (n = 0; n < 16; n++) {
-        sixel_palet[n] = ColTab[n];
+        sixel_palet[n] = color_table[n];
     }
 
     /* colors 16-231 are a 6x6x6 color cube */
@@ -275,10 +281,8 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
             }
 
             p = sixel_getparams(++p, param, &n);
-
             if (*p == 'q') {
                 p++;
-
                 if (n > 0) {        /* Pn1 */
                     switch(param[0]) {
                     case 0:
@@ -342,6 +346,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
                 dmsy = imsy > attributed_pv ? imsy : attributed_pv;
                 dmbuf = allocator(dmsx * dmsy);
                 if (dmbuf == NULL) {
+                    free(imbuf);
                     return (-1);
                 }
                 memset(dmbuf, background_color_index, dmsx * dmsy);
@@ -397,7 +402,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
         } else if (*p == '-') {
             /* DECGNL Graphics Next Line */
             p++;
-            posision_x  = 0;
+            posision_x = 0;
             posision_y += 6;
             repeat_count = 1;
 
@@ -413,7 +418,9 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
                 dmsx = nx;
                 dmsy = ny;
-                if ((dmbuf = allocator(dmsx * dmsy)) == NULL) {
+                dmbuf = allocator(dmsx * dmsy);
+                if (dmbuf == NULL) {
+                    free(imbuf);
                     return (-1);
                 }
                 memset(dmbuf, background_color_index, dmsx * dmsy);
@@ -495,6 +502,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
         dmsx = max_x;
         dmsy = max_y;
         if ((dmbuf = allocator(dmsx * dmsy)) == NULL) {
+            free(imbuf);
             return (-1);
         }
         for (y = 0; y < dmsy; ++y) {

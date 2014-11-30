@@ -139,6 +139,9 @@ SIXEL data for terminals were found in 80's Usenet, but the technology of how to
 for terminal emulators to optimize the overhead of transporting SIXEL with keeping compatibility with former SIXEL terminal.
 Now libsixel and ImageMagick's sixel coder follow it.
 
+@arakiken, known as the maintainer of mlterm, describes about the way to generate high quality SIXEL, which is adopted by libsixel
+([http://mlterm.sourceforge.net/libsixel.pdf](http://mlterm.sourceforge.net/libsixel.pdf), in Japanese).
+
 
 ### High quality quantization
 
@@ -303,9 +306,11 @@ Options:
 -i, --invert               assume the terminal background color
                            is white, make sense only when -e
                            option is given
+-I, --high-color           output 15bpp sixel image
 -u, --use-macro            use DECDMAC and DEVINVM sequences to
                            optimize GIF animation rendering
--n, --macro-number         specify an number argument for
+-n MACRONO, --macro-number=MACRONO
+                           specify an number argument for
                            DECDMAC and make terminal memorize
                            SIXEL image. No image is shown if this
                            option is specified
@@ -404,9 +409,11 @@ Options:
                            quanlization.
                              auto -> decide quality mode
                                      automatically (default)
+                             low  -> low quality and high
+                                     speed mode
                              high -> high quality and low
                                      speed mode
-                             low  -> low quality and high
+                             full -> full quality and careful
                                      speed mode
 -l LOOPMODE, --loop-control=LOOPMODE
                            select loop control mode for GIF
@@ -421,8 +428,23 @@ Options:
                                      automatically (default)
                              hls  -> use HLS color space
                              rgb  -> use RGB color space
--P --penetrate             penetrate GNU Screen using DCS
+-b BUILTINPALETTE, --builtin-palette=BUILTINPALETTE
+                           select built-in palette type
+                             xterm16    -> X default 16 color map
+                             xterm256   -> X default 256 color map
+                             vt340mono  -> VT340 monochrome map
+                             vt340color -> VT340 color map
+-E ENCODEPOLICY, --encode-policy=ENCODEPOLICY
+                           select encoding policy
+                             auto -> choose encoding policy
+                                     automatically (default)
+                             fast -> encode as fast as possible
+                             size -> encode to as small sixel
+                                     sequence as possible
+-P, --penetrate            penetrate GNU Screen using DCS
                            pass-through sequence
+-D, --pipe-mode            read source images from stdin
+                           continuously
 -v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
@@ -521,7 +543,7 @@ sixel_dither_initialize(
     unsigned char /* in */ *data,    /* sample image */
     int /* in */ width,              /* image width */
     int /* in */ height,             /* image height */
-    int /* in */ depth,              /* pixel depth, now only '3' is supported */
+    int /* in */ depth,              /* pixel depth: now unused, remained for compatibility */
     int /* in */ method_for_largest, /* set 0 or method for finding the largest dimension */
     int /* in */ method_for_rep,     /* set 0 or method for choosing a color from the box */
     int /* in */ quality_mode        /* set 0 or quality of histogram processing */

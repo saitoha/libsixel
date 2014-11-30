@@ -81,6 +81,23 @@ _palettetype() {
     'rgb[use RGB color space]'
 }
 
+_builtinpalette() {
+  _values \
+    'BUILTINPALETTE' \
+    'xterm16[X default 16 color map]' \
+    'xterm256[X default 256 color map]' \
+    'vt340mono[VT340 monochrome map]' \
+    'vt340color[VT340 color map]'
+}
+
+_encodepolicy() {
+  _values \
+    'ENCODEPOLICY' \
+    'auto[choose encoding policy automatically (default)]' \
+    'fast[encode as fast as possible]' \
+    'size[encode to as small sixel sequence as possible]'
+}
+
 _arguments -S -s -A "-*" -S \
   {-7,--7bit-mode}'[generate a sixel image for 7bit terminals (default)]' \
   {-8,--8bit-mode}'[generate a sixel image for 8bit terminals]' \
@@ -88,6 +105,7 @@ _arguments -S -s -A "-*" -S \
   {-m,--mapfile=}'[transform image colors to match specified set of colors]':files:_files \
   {-e,--monochrome}'[output monochrome sixel image]' \
   {-i,--invert}'[assume the terminal background color is white]' \
+  {-I,--high-color}'[output 15bpp sixel image]' \
   {-u,--use-macro}'[use DECDMAC and DECINVM for GIF animation]' \
   {-n,--macro-number}'[specify a number argument for DECDMAC]' \
   {-C,--complexion-score=}'[specify a score value for complexion correction]' \
@@ -103,7 +121,10 @@ _arguments -S -s -A "-*" -S \
   {-q,--quality=}'[select quality of color quanlization]':qualitytype:_qualitytype \
   {-l,--loop-control=}'[select loop control mode of GIF animation]':looptype:_looptype \
   {-t,--palette-type=}'[select palette color space type]':palettetype:_palettetype \
+  {-b,--builtin-palette=}'[select built-in palette type]':builtinpalette:_builtinpalette \
+  {-E,--encode-policy=}'[select encoding policy]':encodepolicy:_encodepolicy \
   {-P,--penetrate}'[penetrate GNU Screen using DCS pass-through sequence]' \
+  {-D,--pipe-mode}'[read source images from stdin continuously]' \
   {-v,--verbose}'[show debugging information]' \
   {-V,--version}'[show version and license information]' \
   {-H,--help}'[show help]' \
