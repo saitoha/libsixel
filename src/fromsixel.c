@@ -420,7 +420,8 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
                 dmsx = nx;
                 dmsy = ny;
-                if ((dmbuf = allocator(dmsx * dmsy)) == NULL) {
+                dmbuf = allocator(dmsx * dmsy);
+                if (dmbuf == NULL) {
                     free(imbuf);
                     return (-1);
                 }
