@@ -145,11 +145,11 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
 {
     unsigned char *mappixels;
     sixel_dither_t *dither = NULL;
-    int map_sx;
-    int map_sy;
+    int map_sx = (-1);
+    int map_sy = (-1);
     int frame_count;
     int loop_count;
-    int ret;
+    int ret = (-1);
     int *delays;
     int ncolors = 0;
     unsigned char *palette = NULL;
@@ -157,15 +157,20 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
 
     delays = NULL;
 
-    mappixels = load_image_file(mapfile, &map_sx, &map_sy,
-                                &palette, &ncolors, &pixelformat,
-                                &frame_count, &loop_count,
-                                &delays, /* fstatic */ 1,
-                                /* reqcolors */ 256);
-    free(delays);
-    if (!mappixels) {
+    ret = load_image_file(mapfile, &map_sx, &map_sy,
+                          &palette, &ncolors, &pixelformat,
+                          &frame_count, &loop_count,
+                          &delays, /* fstatic */ 1,
+                          /* reqcolors */ 256,
+                          &mappixels);
+    if (ret != 0 || mappixels == NULL || map_sx * map_sy == 0) {
         goto end;
     }
+    if (mappixels == NULL) {
+        goto end;
+    }
+    free(delays);
+
     switch (pixelformat) {
     case PIXELFORMAT_PAL8:
         if (palette == NULL) {
@@ -474,20 +479,58 @@ wait_stdin(void)
 {
     fd_set rfds;
     struct timeval tv;
+    int ret;
 
     tv.tv_sec = 1;
     tv.tv_usec = 0;
     FD_ZERO(&rfds);
     FD_SET(STDIN_FILENO, &rfds);
-    return select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
+    ret = select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
+
+    return ret;
 }
 #endif  /* HAVE_SYS_SELECT_H */
+
+
+static int
+compute_depth_from_pixelformat(int pixelformat)
+{
+    int depth = (-1);  /* unknown */
+
+    switch (pixelformat) {
+        case PIXELFORMAT_ARGB8888:
+        case PIXELFORMAT_RGBA8888:
+            depth = 4;
+            break;
+        case PIXELFORMAT_RGB888:
+        case PIXELFORMAT_BGR888:
+            depth = 3;
+            break;
+        case PIXELFORMAT_RGB555:
+        case PIXELFORMAT_RGB565:
+        case PIXELFORMAT_BGR555:
+        case PIXELFORMAT_BGR565:
+        case PIXELFORMAT_AG88:
+        case PIXELFORMAT_GA88:
+            depth = 2;
+            break;
+        case PIXELFORMAT_G8:
+        case PIXELFORMAT_PAL8:
+            depth = 1;
+            break;
+        default:
+            break;
+    }
+
+    return depth;
+}
 
 
 static int
 output_sixel_without_macro(
     unsigned char **frames,
     int sx, int sy,
+    int depth,
     int loop_count,
     int frame_count,
     int *delays,
@@ -520,7 +563,7 @@ output_sixel_without_macro(
         sixel_dither_set_optimize_palette(dither, 1);
     }
 
-    frame = malloc(sx * sy * 3);
+    frame = malloc(sx * sy * depth);
     if (nret != 0) {
         goto end;
     }
@@ -549,8 +592,8 @@ output_sixel_without_macro(
 #endif
             }
 
-            memcpy(frame, frames[n], sx * sy * 3);
-            nret = sixel_encode(frame, sx, sy, 3, dither, context);
+            memcpy(frame, frames[n], sx * sy * depth);
+            nret = sixel_encode(frame, sx, sy, depth, dither, context);
             if (nret != 0) {
                 goto end;
             }
@@ -717,6 +760,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int *delays;
     int n;
     int nret = (-1);
+    int depth;
     unsigned char *palette = NULL;
     unsigned char **ppalette = &palette;
     int ncolors = 0;
@@ -758,13 +802,19 @@ reload:
     frames = NULL;
     frame = NULL;
     delays = NULL;
-    pixels = load_image_file(filename, &sx, &sy,
-                             ppalette, &ncolors, &pixelformat,
-                             &frame_count, &loop_count,
-                             &delays, psettings->fstatic,
-                             psettings->reqcolors);
+    nret = load_image_file(filename, &sx, &sy,
+                           ppalette, &ncolors, &pixelformat,
+                           &frame_count, &loop_count,
+                           &delays, psettings->fstatic,
+                           psettings->reqcolors,
+                           &pixels);
 
-    if (pixels == NULL) {
+    if (nret != 0 || pixels == NULL || sx * sy == 0) {
+        goto end;
+    }
+
+    depth = compute_depth_from_pixelformat(pixelformat);
+    if (depth == (-1)) {
         nret = (-1);
         goto end;
     }
@@ -778,7 +828,7 @@ reload:
     p = pixels;
     for (n = 0; n < frame_count; ++n) {
         frames[n] = p;
-        p += sx * sy * 3;
+        p += sx * sy * depth;
     }
 
     /* evaluate -w, -h, and -c option: crop/scale input source */
@@ -850,6 +900,12 @@ reload:
         } else if (loop_count == 0) {
             loop_count = (-1);
         }
+#ifdef HAVE_GDK_PIXBUF2
+        /* do not trust loop_count report of gdk-pixbuf loader */
+        if (loop_count == (-1)) {
+            loop_count = 1;
+        }
+#endif
         break;
     }
 
@@ -878,7 +934,7 @@ reload:
                                        loop_count, frame_count, delays,
                                        dither, context, psettings);
     } else { /* do not use macro */
-        nret = output_sixel_without_macro(frames, sx, sy,
+        nret = output_sixel_without_macro(frames, sx, sy, depth,
                                           loop_count, frame_count, delays,
                                           dither, context, psettings);
     }

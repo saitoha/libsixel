@@ -139,6 +139,9 @@ SIXEL data for terminals were found in 80's Usenet, but the technology of how to
 for terminal emulators to optimize the overhead of transporting SIXEL with keeping compatibility with former SIXEL terminal.
 Now libsixel and ImageMagick's sixel coder follow it.
 
+@arakiken, known as the maintainer of mlterm, describes about the way to generate high quality SIXEL, which is adopted by libsixel
+([http://mlterm.sourceforge.net/libsixel.pdf](http://mlterm.sourceforge.net/libsixel.pdf), in Japanese).
+
 
 ### High quality quantization
 

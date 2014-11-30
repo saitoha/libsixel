@@ -4,7 +4,13 @@
 
 * core: SIXEL encoder supports various pixel formats(thanks to @uobikiemukot).
 
+* core: Supports high-color(15bpp output) mode(thanks to @arakiken).
+
+* core: More high compressed output mode is supported(thanks to @arakiken).
+
 * core: Fix typoed API (thanks to @waywardmonkeys).
+
+* core: Fix a minor performance bug (thanks to @arakiken).
 
 * img2sixel: New option -D(--pipe-mode) is introduced.
              with this option, img2sixel continuously read source images from
@@ -21,7 +27,8 @@
 
 * img2sixel: Performance inprovement for loading 8bit indexed PNG
 
-* Some bug fixes and minor improvements.
+* A lots of bug fixes and minor improvements, now tests achieve 90% coverage.
+
 
                    ------------------------------
                    What's new in libsixel-1.3 ?
@@ -47,6 +54,7 @@
 
 * Some bug fixes and minor improvements.
   Thanks to @obache and @arakiken.
+
 
                   ------------------------------
                    What's new in libsixel-1.2 ?

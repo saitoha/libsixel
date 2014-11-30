@@ -436,6 +436,7 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
         }
 
         for (x = 0; (np = context->node_top) != NULL;) {
+            sixel_node_t *next;
             if (x > np->sx) {
                 /* DECGCR Graphics Carriage Return */
                 context->buffer[context->pos] = '$';
@@ -447,8 +448,9 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
                 memset(np->map + np->sx, (1 << i) - 1, np->mx - np->sx);
             }
             x = sixel_put_node(context, x, np, ncolors, keycolor);
+            next = np->next;
             sixel_node_del(context, np);
-            np = context->node_top;
+            np = next;
 
             while (np != NULL) {
                 if (np->sx < x) {
@@ -460,8 +462,9 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
                     memset(np->map + np->sx, (1 << i) - 1, np->mx - np->sx);
                 }
                 x = sixel_put_node(context, x, np, ncolors, keycolor);
+                next = np->next;
                 sixel_node_del(context, np);
-                np = context->node_top;
+                np = next;
             }
 
             fillable = 0;
@@ -1107,7 +1110,9 @@ int sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
 {
     int nret = (-1);
 
+    /* TODO: reference counting should be thread-safe */
     sixel_dither_ref(dither);
+    sixel_output_ref(context);
 
     (void) depth;
 
@@ -1119,6 +1124,7 @@ int sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
                                    dither, context);
     }
 
+    sixel_output_unref(context);
     sixel_dither_unref(dither);
 
     return nret;

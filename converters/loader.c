@@ -961,83 +961,91 @@ load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride
 #endif  /* HAVE_GD */
 
 
-static void
-arrange_pixelformat(unsigned char *pixels, int width, int height,
-                    int comp, int stride)
+static int
+arrange_pixelformat(unsigned char *pixels, int width, int height)
 {
     int x;
     int y;
     unsigned char *src;
     unsigned char *dst;
-    size_t new_rowstride;
 
     src = dst = pixels;
-    if (comp == 4) {
-        for (y = 0; y < height; y++) {
-            for (x = 0; x < width; x++) {
-                *(dst++) = *(src++);   /* R */
-                *(dst++) = *(src++);   /* G */
-                *(dst++) = *(src++);   /* B */
-                src++;   /* A */
-            }
+    for (y = 0; y < height; y++) {
+        for (x = 0; x < width; x++) {
+            *(dst++) = *(src++);   /* R */
+            *(dst++) = *(src++);   /* G */
+            *(dst++) = *(src++);   /* B */
+            src++;   /* A */
         }
     }
-    else {
-        new_rowstride = width * 3;
-        for (y = 1; y < height; y++) {
-            memmove(dst += new_rowstride, src += stride, new_rowstride);
-        }
-    }
+
+    return 0;
 }
 
 
-unsigned char *
+int
 load_image_file(char const *filename, int *psx, int *psy,
                 unsigned char **ppalette, int *pncolors,
                 int *ppixelformat,
                 int *pframe_count, int *ploop_count, int **ppdelay,
-                int fstatic, int reqcolors)
+                int fstatic, int reqcolors,
+                unsigned char **ppixels)
 {
-    unsigned char *pixels = NULL;
     int comp;
     int stride = (-1);
+    int ret = (-1);
     chunk_t chunk;
-
-    pixels = NULL;
 
     if (ppalette) {
         *ppalette = NULL;
     }
 
     if (get_chunk(filename, &chunk) != 0) {
-        return NULL;
+        return (-1);
+    }
+
+    /* if input date is empty or 1 byte LF, ignore it and return successfully */
+    if (chunk.size <= 0 || (chunk.size == 1 && *chunk.buffer == '\n')) {
+        return 0;
     }
 
 #ifdef HAVE_GDK_PIXBUF2
-    if (!pixels) {
-        pixels = load_with_gdkpixbuf(&chunk, psx, psy, &comp, &stride,
-                                     pframe_count, ploop_count, ppdelay,
-                                     fstatic);
+    if (!*ppixels) {
+        *ppixels = load_with_gdkpixbuf(&chunk, psx, psy, &comp, &stride,
+                                       pframe_count, ploop_count, ppdelay,
+                                       fstatic);
     }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
-    if (!pixels) {
-        pixels = load_with_gd(&chunk, psx, psy, &comp, &stride);
+    if (!*ppixels) {
+        *ppixels = load_with_gd(&chunk, psx, psy, &comp, &stride);
         *pframe_count = 1;
     }
 #endif  /* HAVE_GD */
-    if (!pixels) {
-        pixels = load_with_builtin(&chunk, psx, psy, &comp, &stride,
-                                   ppalette, pncolors, ppixelformat,
-                                   pframe_count, ploop_count, ppdelay,
-                                   fstatic, reqcolors);
+    if (!*ppixels) {
+        *ppixels = load_with_builtin(&chunk, psx, psy, &comp, &stride,
+                                     ppalette, pncolors, ppixelformat,
+                                     pframe_count, ploop_count, ppdelay,
+                                     fstatic, reqcolors);
     }
     free(chunk.buffer);
-    if (pixels && stride > 0 && comp == 4 && (!ppalette || (ppalette && !*ppalette))) {
-        arrange_pixelformat(pixels, *psx, *psy * *pframe_count, comp, stride);
+    if (*ppixels && stride > 0 && comp == 4 && (!ppalette || (ppalette && !*ppalette))) {
+        /* RGBA to RGB */
+        ret = arrange_pixelformat(*ppixels, *psx, *psy * *pframe_count);
+        if (ret != 0) {
+            goto end;
+        }
     }
 
-    return pixels;
+    if (*ppixels == NULL) {
+        ret = (-1);
+        goto end;
+    }
+
+    ret = 0;
+
+end:
+    return ret;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
