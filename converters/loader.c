@@ -202,7 +202,6 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
     if (f != stdin) {
         fclose(f);
     }
-
     return 0;
 }
 
@@ -996,16 +995,19 @@ load_image_file(char const *filename, int *psx, int *psy,
     int ret = (-1);
     chunk_t chunk;
 
+    *ppixels = NULL;
+
     if (ppalette) {
         *ppalette = NULL;
     }
 
-    if (get_chunk(filename, &chunk) != 0) {
+    ret = get_chunk(filename, &chunk);
+    if (ret != 0) {
         return (-1);
     }
 
     /* if input date is empty or 1 byte LF, ignore it and return successfully */
-    if (chunk.size <= 0 || (chunk.size == 1 && *chunk.buffer == '\n')) {
+    if (chunk.size == 0 || (chunk.size == 1 && *chunk.buffer == '\n')) {
         return 0;
     }
 
