@@ -487,7 +487,7 @@ Convert a sixel file into a png image file
 $ sixel2png < egret.sixel > egret.png
 ```
 
-## Usage of conversion API 1.0
+## Usage of conversion API 1.3
 
 The Whole API is described [here](https://github.com/saitoha/libsixel/blob/master/include/sixel.h.in).
 
@@ -507,12 +507,13 @@ If you use OSX, a tiny example is available
 
 /* convert pixels into sixel format and write it to output context */
 int
-sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
-             int            /* in */  width,    /* image width */
-             int            /* in */  height,   /* image height */
-             int            /* in */  depth,    /* pixel depth: now only 3 is supported */
-             sixel_dither_t /* in */ *dither,   /* dither context */
-             sixel_output_t /* in */ *context); /* output context */
+sixel_encode(
+    unsigned char  /* in */ *pixels,     /* pixel bytes */
+    int            /* in */  width,      /* image width */
+    int            /* in */  height,     /* image height */
+    int            /* in */  depth,      /* color depth: now unused */
+    sixel_dither_t /* in */ *dither,     /* dither context */
+    sixel_output_t /* in */ *context);   /* output context */
 ```
 To use this function, you have to initialize two objects,
 
@@ -524,9 +525,13 @@ To use this function, you have to initialize two objects,
 Here is a part of APIs for dithering context manipulation.
 
 ```C
-/* create dither context object: reference counter is set to 1 */
+/* create dither context object */
 sixel_dither_t *
 sixel_dither_create(int /* in */ ncolors); /* number of colors */
+
+/* get built-in dither context object */
+sixel_dither_t *
+sixel_dither_get(int builtin_dither); /* ID of built-in dither object */
 
 /* increment reference count of dither context object (thread-unsafe) */
 void
@@ -543,11 +548,10 @@ sixel_dither_initialize(
     unsigned char /* in */ *data,    /* sample image */
     int /* in */ width,              /* image width */
     int /* in */ height,             /* image height */
-    int /* in */ depth,              /* pixel depth: now unused, remained for compatibility */
-    int /* in */ method_for_largest, /* set 0 or method for finding the largest dimension */
-    int /* in */ method_for_rep,     /* set 0 or method for choosing a color from the box */
-    int /* in */ quality_mode        /* set 0 or quality of histogram processing */
-);
+    int /* in */ pixelformat,        /* one of enum pixelFormat */
+    int /* in */ method_for_largest, /* method for finding the largest dimension */
+    int /* in */ method_for_rep,     /* method for choosing a color from the box */
+    int /* in */ quality_mode);      /* quality of histogram processing */
 ```
 
 #### Output context
@@ -636,9 +640,11 @@ The MIT License (MIT)
 - @isaki68k
 - @knok
 - @mattn
+- @obache
 - @tsutsui
 - @ttdoda
 - @uobikiemukot
+- @vrtsds
 - @waywardmonkeys
 - @yoshikaw
   
