@@ -281,10 +281,8 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
             }
 
             p = sixel_getparams(++p, param, &n);
-
             if (*p == 'q') {
                 p++;
-
                 if (n > 0) {        /* Pn1 */
                     switch(param[0]) {
                     case 0:
@@ -404,7 +402,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
         } else if (*p == '-') {
             /* DECGNL Graphics Next Line */
             p++;
-            posision_x  = 0;
+            posision_x = 0;
             posision_y += 6;
             repeat_count = 1;
 
