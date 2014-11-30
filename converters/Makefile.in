@@ -1140,7 +1140,6 @@ test: all
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.png -w2047 -h2047 | $(WINE) ./img2sixel > /dev/null
 @WANT_IMG2SIXEL_TRUE@	seq 0 10 | while read i; do \
 @WANT_IMG2SIXEL_TRUE@	    seq 0 2 | while read j; do \
-@WANT_IMG2SIXEL_TRUE@			echo "$${i} $${j}"; \
 @WANT_IMG2SIXEL_TRUE@		    $(WINE) ./img2sixel ../images/map8.png | \
 @WANT_IMG2SIXEL_TRUE@	            sed "s/Pq/P$${i};;$${j}q/" | \
 @WANT_IMG2SIXEL_TRUE@	            $(WINE) ./img2sixel; \

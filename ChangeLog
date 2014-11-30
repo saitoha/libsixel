@@ -1,5 +1,95 @@
 2014-11-30  Hayaki Saito <user@zuse.jp>
 
+  * converters/Makefile.am, converters/Makefile.in: Minor fix
+
+  * NEWS: Update NEWS
+
+  * README.md: Add a link to @arakiken's document(libsixel.pdf) to README
+
+2014-11-30  saitoha <user@zuse.jp>
+
+  * converters/img2sixel.c: Fix a segmentation error caused by illigal depth
+  dealing
+
+2014-11-30  Hayaki Saito <user@zuse.jp>
+
+  * converters/Makefile.am, converters/Makefile.in: Add tests for some edge
+  cases of sixel decoding
+
+  * converters/Makefile.am, converters/Makefile.in: Ammend fix for DCS
+  parameter parsing tests
+
+  * converters/Makefile.am, converters/Makefile.in: Fix test for wine
+  environment
+
+  * converters/Makefile.am, converters/Makefile.in: Add a test of parsing sixel
+  DCS parameters
+
+  * converters/Makefile.am, src/fromsixel.c: Add a test of decoding big sixel
+
+  * src/tosixel.c: Add a pair of ref/unref call for output context
+
+  * converters/img2sixel.c: Don't trust loop_count report of gdk-pixbuf loader
+
+  * converters/Makefile.am, converters/Makefile.in: Add tests for
+  -E(--encode-policy) option
+
+  * converters/Makefile.am, converters/Makefile.in: Add a test for option "-l
+  auto"
+
+  * converters/Makefile.am, converters/Makefile.in: Add a test for combination
+  of options, -u and -g
+
+  * converters/Makefile.am, converters/Makefile.in, converters/img2sixel.c,
+  converters/loader.c, converters/loader.h: If input data is empty or 1byte LF,
+  the loader ignores it and returns successfully
+
+2014-11-30  arakiken <arakiken@users.sf.net>
+
+  * src/tosixel.c: Search a next node from nodes after a current node instead
+  of context->node_top in sixel_encode_body().
+
+2014-11-30  Hayaki Saito <user@zuse.jp>
+
+  * converters/Makefile.am, converters/Makefile.in: Add tests for applying
+  vt340 built-in palette
+
+  * converters/img2sixel.c: Separate convert_sixel into 3 functions
+
+  * converters/Makefile.am, converters/Makefile.in: Fix pipe-mode test for
+  mingw build
+
+  * converters/Makefile.am, converters/Makefile.in: Don't test -D option(pipe
+  mode) in wine environment
+
+2014-11-30  arakiken <arakiken@users.sf.net>
+
+  * src/tosixel.c: Search a next node from nodes after a current node instead
+  of context->node_top in sixel_encode_body().
+
+2014-11-30  Hayaki Saito <user@zuse.jp>
+
+  * converters/Makefile.am, converters/Makefile.in: Add tests for applying
+  vt340 built-in palette
+
+  * NEWS: Update NEWS
+
+  * converters/img2sixel.c: Separate convert_sixel into 3 functions
+
+  * converters/Makefile.am, converters/Makefile.in: Fix pipe-mode test for
+  mingw build
+
+  * converters/Makefile.am, converters/Makefile.in: Don't test -D option(pipe
+  mode) in wine environment
+
+  * README.md, configure, configure.ac, package.json: Update minor version
+
+  * configure, configure.ac: Update libtool version to 1.3.0
+
+  * NEWS: Update NEWS
+
+  * NEWS: Update NEWS
+
   * src/quant.c: Minor change of mehod of creating histogram
 
   * converters/Makefile.am: Add some tests of loading grayscaled PNG
@@ -427,6 +517,8 @@
   * converters/Makefile.am, converters/Makefile.in: Add tests for various image
   formats
 
+  * converters/Makefile.am, converters/Makefile.in: Add tests for pipe-mode
+
 2014-11-07  saitoha <user@zuse.jp>
 
   * aclocal.m4, configure, configure.ac, converters/img2sixel.c: Various fixes
@@ -513,6 +605,9 @@
   * src/fromsixel.c: Strip unused variables
 
   * converters/loader.c: Replace some indent tabs to spaces
+
+  * include/sixel.h.in, src/dither.c: Fix a typo of API signature(#10). old one
+  is still remained.
 
 2014-11-02  arakiken <arakiken@users.sf.net>
 

@@ -443,7 +443,7 @@ sixel_dither_set_quality_mode(sixel_dither_t *dither, int quality_mode)
 
 int
 sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
-                        int width, int height, int const pixelformat,
+                        int width, int height, int pixelformat,
                         int method_for_largest, int method_for_rep,
                         int quality_mode)
 {
