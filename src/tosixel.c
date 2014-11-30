@@ -1110,7 +1110,9 @@ int sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
 {
     int nret = (-1);
 
+    /* TODO: reference counting should be thread-safe */
     sixel_dither_ref(dither);
+    sixel_output_ref(context);
 
     (void) depth;
 
@@ -1122,6 +1124,7 @@ int sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
                                    dither, context);
     }
 
+    sixel_output_unref(context);
     sixel_dither_unref(dither);
 
     return nret;
