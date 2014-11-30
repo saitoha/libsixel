@@ -19,6 +19,8 @@
 * img2sixel: New option -b(--builtin-palette) is added. built-in support of
              VT-340 palette is added(thanks to @vrtsds).
 
+* img2sixel: Performance inprovement for loading 8bit indexed PNG
+
 * Some bug fixes and minor improvements.
 
                    ------------------------------
