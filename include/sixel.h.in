@@ -92,7 +92,7 @@ enum formatType {
     FORMATTYPE_PALETTE   = 1 << 7,
 };
 
-/* bitfield type of input image
+/* pixelformat type of input image
    NOTE: for compatibility, the value of PIXELFORAMT_COLOR_RGB888 must be 3 */
 enum pixelFormat {
     PIXELFORMAT_RGB555   = FORMATTYPE_COLOR     | 0x01, /* 15bpp */
@@ -256,7 +256,7 @@ sixel_dither_initialize(
     unsigned char /* in */ *data,    /* sample image */
     int /* in */ width,              /* image width */
     int /* in */ height,             /* image height */
-    int /* in */ bitfield,           /* one of enum colorBitfield */
+    int /* in */ pixelformat,        /* one of enum pixelFormat */
     int /* in */ method_for_largest, /* method for finding the largest dimension */
     int /* in */ method_for_rep,     /* method for choosing a color from the box */
     int /* in */ quality_mode);      /* quality of histogram processing */
