@@ -858,6 +858,12 @@ reload:
         } else if (loop_count == 0) {
             loop_count = (-1);
         }
+#ifdef HAVE_GDK_PIXBUF2
+        /* do not trust loop_count report of gdk-pixbuf loader */
+        if (loop_count == (-1)) {
+            loop_count = 1;
+        }
+#endif
         break;
     }
 
