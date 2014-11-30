@@ -1,3 +1,12 @@
+2014-12-01  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Build fix
+
+  * converters/img2sixel.c, converters/loader.c: Fix broken -m(--mapfile
+  option)
+
+  * include/sixel.h.in, src/dither.c: A bit of fixes of API signature
+
 2014-11-30  Hayaki Saito <user@zuse.jp>
 
   * converters/Makefile.am, converters/Makefile.in: Minor fix
