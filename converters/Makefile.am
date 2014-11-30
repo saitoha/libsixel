@@ -58,6 +58,7 @@ if WANT_IMG2SIXEL
 	! $(WINE) ./img2sixel -q invalid_option
 	! $(WINE) ./img2sixel -l invalid_option
 	! $(WINE) ./img2sixel -b invalid_option
+	! $(WINE) ./img2sixel -E invalid_option
 	! $(WINE) ./img2sixel -%
 	! $(WINE) ./img2sixel invalid_filename
 	! $(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg
@@ -84,8 +85,8 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel ../images/snake.tga -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto
 	$(WINE) ./img2sixel -p300 ../images/snake.tiff -8 -scenter -h100 -qfull -rhanning -dstucki -thls
 	$(WINE) ./img2sixel -8 -qauto -thls -e ../images/snake.pgm
-	$(WINE) ./img2sixel -8 ../images/snake.ppm -m ../images/map8-palette.png
-	$(WINE) ./img2sixel -7 ../images/snake.jpg -m ../images/map16-palette.png
+	$(WINE) ./img2sixel -8 ../images/snake.ppm -m ../images/map8-palette.png -Esize
+	$(WINE) ./img2sixel -7 ../images/snake.jpg -m ../images/map16-palette.png -Efast
 	$(WINE) ./img2sixel -7 ../images/snake-palette.png -w300
 	$(WINE) ./img2sixel -7 -w100 -h100 -bxterm16 ../images/snake.pbm
 	$(WINE) ./img2sixel -I ../images/snake.ppm -dstucki -thls
@@ -93,7 +94,7 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel ../images/snake.tga -bvt340mono
 	$(WINE) ./img2sixel -I ../images/snake-ascii.ppm -8 -dburkes
 	$(WINE) ./img2sixel -I -C10 ../images/snake.png -djajuni
-	$(WINE) ./img2sixel -I ../images/snake-ascii.pgm
+	$(WINE) ./img2sixel -I ../images/snake-ascii.pgm -Eauto
 	$(WINE) ./img2sixel -I ../images/snake-ascii.pbm -datkinson
 	$(WINE) ./img2sixel ../images/snake-grayscale.png
 	$(WINE) ./img2sixel ../images/snake-grayscale.png -m ../images/map8-palette.png
