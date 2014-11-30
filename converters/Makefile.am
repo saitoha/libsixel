@@ -74,6 +74,7 @@ if WANT_IMG2SIXEL
 	! $(WINE) ./img2sixel -p64 -bxterm256 ../images/snake.png
 	! $(WINE) ./img2sixel -m ../images/map16.png -bxterm256 ../images/snake.png
 	! (echo -n a | ./img2sixel)
+	echo ./img2sixel
 	$(WINE) ./img2sixel -H
 	$(WINE) ./img2sixel -V
 	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | img2sixel | tee snake.sixel

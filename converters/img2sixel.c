@@ -145,11 +145,11 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
 {
     unsigned char *mappixels;
     sixel_dither_t *dither = NULL;
-    int map_sx;
-    int map_sy;
+    int map_sx = (-1);
+    int map_sy = (-1);
     int frame_count;
     int loop_count;
-    int ret;
+    int ret = (-1);
     int *delays;
     int ncolors = 0;
     unsigned char *palette = NULL;
@@ -157,15 +157,20 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
 
     delays = NULL;
 
-    mappixels = load_image_file(mapfile, &map_sx, &map_sy,
-                                &palette, &ncolors, &pixelformat,
-                                &frame_count, &loop_count,
-                                &delays, /* fstatic */ 1,
-                                /* reqcolors */ 256);
-    free(delays);
-    if (!mappixels) {
+    ret = load_image_file(mapfile, &map_sx, &map_sy,
+                          &palette, &ncolors, &pixelformat,
+                          &frame_count, &loop_count,
+                          &delays, /* fstatic */ 1,
+                          /* reqcolors */ 256,
+                          &mappixels);
+    if (ret != 0 || mappixels == NULL || map_sx * map_sy == 0) {
         goto end;
     }
+    if (mappixels == NULL) {
+        goto end;
+    }
+    free(delays);
+
     switch (pixelformat) {
     case PIXELFORMAT_PAL8:
         if (palette == NULL) {
@@ -474,12 +479,15 @@ wait_stdin(void)
 {
     fd_set rfds;
     struct timeval tv;
+    int ret;
 
     tv.tv_sec = 1;
     tv.tv_usec = 0;
     FD_ZERO(&rfds);
     FD_SET(STDIN_FILENO, &rfds);
-    return select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
+    ret = select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
+
+    return ret;
 }
 #endif  /* HAVE_SYS_SELECT_H */
 
@@ -758,14 +766,14 @@ reload:
     frames = NULL;
     frame = NULL;
     delays = NULL;
-    pixels = load_image_file(filename, &sx, &sy,
-                             ppalette, &ncolors, &pixelformat,
-                             &frame_count, &loop_count,
-                             &delays, psettings->fstatic,
-                             psettings->reqcolors);
+    nret = load_image_file(filename, &sx, &sy,
+                           ppalette, &ncolors, &pixelformat,
+                           &frame_count, &loop_count,
+                           &delays, psettings->fstatic,
+                           psettings->reqcolors,
+                           &pixels);
 
-    if (pixels == NULL) {
-        nret = (-1);
+    if (nret != 0 || pixels == NULL || sx * sy == 0) {
         goto end;
     }
 
