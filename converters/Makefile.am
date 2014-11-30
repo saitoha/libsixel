@@ -140,9 +140,13 @@ if WANT_SIXEL2PNG
 endif
 	$(WINE) ./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options1.txt
 	rm -f sixel.pipe
-	which mkfifo && (mkfifo sixel.pipe; $(WINE) ./img2sixel -D < sixel.pipe&) && cat ../images/snake.jpg > sixel.pipe
-	(echo -n > sixel.pipe)
-	sleep 1
+	if test "$(WINE)" = "" && which mkfifo; then \
+	    mkfifo sixel.pipe; \
+	    test -e sixel.pipe && ($(WINE) ./img2sixel -D < sixel.pipe&); \
+	    cat ../images/snake.jpg > sixel.pipe; \
+	    echo -n > sixel.pipe; \
+	    sleep 1; \
+	fi
 	rm -f sixel.pipe
 	grep ^\.B img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d "\\" | tr -d , > options2.txt 
 	grep '^ *-\w --' shell-completion/bash/img2sixel|sed 's/.* \(-.\) .*/\1/' > options3.txt
