@@ -493,9 +493,44 @@ wait_stdin(void)
 
 
 static int
+compute_depth_from_pixelformat(int pixelformat)
+{
+    int depth = (-1);  /* unknown */
+
+    switch (pixelformat) {
+        case PIXELFORMAT_ARGB8888:
+        case PIXELFORMAT_RGBA8888:
+            depth = 4;
+            break;
+        case PIXELFORMAT_RGB888:
+        case PIXELFORMAT_BGR888:
+            depth = 3;
+            break;
+        case PIXELFORMAT_RGB555:
+        case PIXELFORMAT_RGB565:
+        case PIXELFORMAT_BGR555:
+        case PIXELFORMAT_BGR565:
+        case PIXELFORMAT_AG88:
+        case PIXELFORMAT_GA88:
+            depth = 2;
+            break;
+        case PIXELFORMAT_G8:
+        case PIXELFORMAT_PAL8:
+            depth = 1;
+            break;
+        default:
+            break;
+    }
+
+    return depth;
+}
+
+
+static int
 output_sixel_without_macro(
     unsigned char **frames,
     int sx, int sy,
+    int depth,
     int loop_count,
     int frame_count,
     int *delays,
@@ -528,7 +563,7 @@ output_sixel_without_macro(
         sixel_dither_set_optimize_palette(dither, 1);
     }
 
-    frame = malloc(sx * sy * 3);
+    frame = malloc(sx * sy * depth);
     if (nret != 0) {
         goto end;
     }
@@ -557,8 +592,8 @@ output_sixel_without_macro(
 #endif
             }
 
-            memcpy(frame, frames[n], sx * sy * 3);
-            nret = sixel_encode(frame, sx, sy, 3, dither, context);
+            memcpy(frame, frames[n], sx * sy * depth);
+            nret = sixel_encode(frame, sx, sy, depth, dither, context);
             if (nret != 0) {
                 goto end;
             }
@@ -725,6 +760,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     int *delays;
     int n;
     int nret = (-1);
+    int depth;
     unsigned char *palette = NULL;
     unsigned char **ppalette = &palette;
     int ncolors = 0;
@@ -777,6 +813,12 @@ reload:
         goto end;
     }
 
+    depth = compute_depth_from_pixelformat(pixelformat);
+    if (depth == (-1)) {
+        nret = (-1);
+        goto end;
+    }
+
     frames = malloc(sizeof(unsigned char *) * frame_count);
     if (frames == NULL) {
         nret = (-1);
@@ -786,7 +828,7 @@ reload:
     p = pixels;
     for (n = 0; n < frame_count; ++n) {
         frames[n] = p;
-        p += sx * sy * 3;
+        p += sx * sy * depth;
     }
 
     /* evaluate -w, -h, and -c option: crop/scale input source */
@@ -892,7 +934,7 @@ reload:
                                        loop_count, frame_count, delays,
                                        dither, context, psettings);
     } else { /* do not use macro */
-        nret = output_sixel_without_macro(frames, sx, sy,
+        nret = output_sixel_without_macro(frames, sx, sy, depth,
                                           loop_count, frame_count, delays,
                                           dither, context, psettings);
     }
