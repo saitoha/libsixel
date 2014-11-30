@@ -120,6 +120,7 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -e -i ../images/snake.jpg -P > /dev/null
 	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -u
 	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -g
+	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -u -g
 	$(WINE) ./img2sixel ../images/seq2gif.gif -S -datkinson
 if HAVE_JPEG
 	$(WINE) ./img2sixel ../images/snake-progressive.jpg

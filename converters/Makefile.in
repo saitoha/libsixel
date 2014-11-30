@@ -1138,6 +1138,7 @@ test: all
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -e -i ../images/snake.jpg -P > /dev/null
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -u
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -g
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -u -g
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/seq2gif.gif -S -datkinson
 @HAVE_JPEG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake-progressive.jpg
 @HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.png
