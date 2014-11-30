@@ -120,7 +120,16 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -e ../images/snake.jpg -h140 -rlanczos4 -P
 	$(WINE) ./img2sixel -e -i ../images/snake.jpg -P > /dev/null
 	$(WINE) ./img2sixel ../images/snake.png -w2047 -h2047 | $(WINE) ./img2sixel > /dev/null
-	$(WINE) seq 0 10 | while read i; do seq 0 2 | while read j; do $(WINE) ./img2sixel ../images/map8.png |sed "s/Pq/P${i};${j}q/" | $(WINE) ./img2sixel; done; done
+	seq 0 10 | while read i; do \
+	    seq 0 2 | while read j; do \
+			echo "$${i} $${j}"; \
+		    $(WINE) ./img2sixel ../images/map8.png | \
+	            sed "s/Pq/P$${i};;$${j}q/" | \
+	            $(WINE) ./img2sixel; \
+	    done; \
+	done
+	$(WINE) ./img2sixel ../images/snake.png| sed 's/C/C:/g'| tr : '\t'| $(WINE) ./img2sixel
+	$(WINE) ./img2sixel ../images/snake.png| sed 's/"1;1;600;450/"1;1;700;500/'| $(WINE) ./img2sixel
 	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -u -lauto
 	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -g
 	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -u -g
