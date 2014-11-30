@@ -1106,6 +1106,8 @@ test: all
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -7 ../images/snake-palette.png -w300
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -7 -w100 -h100 -bxterm16 ../images/snake.pbm
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I ../images/snake.ppm -dstucki -thls
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.ppm -bvt340color
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.tga -bvt340mono
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I ../images/snake-ascii.ppm -8 -dburkes
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I -C10 ../images/snake.png -djajuni
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -I ../images/snake-ascii.pgm
