@@ -119,7 +119,8 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -p 1 ../images/snake.jpg -h100 -n1
 	$(WINE) ./img2sixel -e ../images/snake.jpg -h140 -rlanczos4 -P
 	$(WINE) ./img2sixel -e -i ../images/snake.jpg -P > /dev/null
-	$(WINE) ./img2sixel ./snake.png -w2047 -h2047 | converters/img2sixel > /dev/null
+	$(WINE) ./img2sixel ../images/snake.png -w2047 -h2047 | ./img2sixel > /dev/null
+	$(WINE) seq 0 10 | while read i; do seq 0 2 | while read j; do ./img2sixel ../images/map8.png |sed "s/Pq/P${i};${j}q/"; done; done
 	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -u -lauto
 	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -g
 	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -u -g
