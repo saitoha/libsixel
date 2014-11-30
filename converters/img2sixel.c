@@ -460,7 +460,7 @@ print_palette(sixel_dither_t *dither)
     int i;
 
     palette = sixel_dither_get_palette(dither);
-    fprintf(stderr, "palette colors: %d\n");
+    fprintf(stderr, "palette:\n");
     for (i = 0; i < sixel_dither_get_num_of_palette_colors(dither); ++i) {
         fprintf(stderr, "%d: #%02x%02x%02x\n", i,
                 palette[i * 3 + 1],
