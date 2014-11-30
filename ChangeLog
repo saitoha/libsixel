@@ -1,18 +1,771 @@
+2014-11-30  Hayaki Saito <user@zuse.jp>
+
+  * converters/Makefile.am, converters/Makefile.in: Minor fix
+
+  * NEWS: Update NEWS
+
+  * README.md: Add a link to @arakiken's document(libsixel.pdf) to README
+
+2014-11-30  saitoha <user@zuse.jp>
+
+  * converters/img2sixel.c: Fix a segmentation error caused by illigal depth
+  dealing
+
+2014-11-30  Hayaki Saito <user@zuse.jp>
+
+  * converters/Makefile.am, converters/Makefile.in: Add tests for some edge
+  cases of sixel decoding
+
+  * converters/Makefile.am, converters/Makefile.in: Ammend fix for DCS
+  parameter parsing tests
+
+  * converters/Makefile.am, converters/Makefile.in: Fix test for wine
+  environment
+
+  * converters/Makefile.am, converters/Makefile.in: Add a test of parsing sixel
+  DCS parameters
+
+  * converters/Makefile.am, src/fromsixel.c: Add a test of decoding big sixel
+
+  * src/tosixel.c: Add a pair of ref/unref call for output context
+
+  * converters/img2sixel.c: Don't trust loop_count report of gdk-pixbuf loader
+
+  * converters/Makefile.am, converters/Makefile.in: Add tests for
+  -E(--encode-policy) option
+
+  * converters/Makefile.am, converters/Makefile.in: Add a test for option "-l
+  auto"
+
+  * converters/Makefile.am, converters/Makefile.in: Add a test for combination
+  of options, -u and -g
+
+  * converters/Makefile.am, converters/Makefile.in, converters/img2sixel.c,
+  converters/loader.c, converters/loader.h: If input data is empty or 1byte LF,
+  the loader ignores it and returns successfully
+
+2014-11-30  arakiken <arakiken@users.sf.net>
+
+  * src/tosixel.c: Search a next node from nodes after a current node instead
+  of context->node_top in sixel_encode_body().
+
+2014-11-30  Hayaki Saito <user@zuse.jp>
+
+  * converters/Makefile.am, converters/Makefile.in: Add tests for applying
+  vt340 built-in palette
+
+  * converters/img2sixel.c: Separate convert_sixel into 3 functions
+
+  * converters/Makefile.am, converters/Makefile.in: Fix pipe-mode test for
+  mingw build
+
+  * converters/Makefile.am, converters/Makefile.in: Don't test -D option(pipe
+  mode) in wine environment
+
+2014-11-30  arakiken <arakiken@users.sf.net>
+
+  * src/tosixel.c: Search a next node from nodes after a current node instead
+  of context->node_top in sixel_encode_body().
+
+2014-11-30  Hayaki Saito <user@zuse.jp>
+
+  * converters/Makefile.am, converters/Makefile.in: Add tests for applying
+  vt340 built-in palette
+
+  * NEWS: Update NEWS
+
+  * converters/img2sixel.c: Separate convert_sixel into 3 functions
+
+  * converters/Makefile.am, converters/Makefile.in: Fix pipe-mode test for
+  mingw build
+
+  * converters/Makefile.am, converters/Makefile.in: Don't test -D option(pipe
+  mode) in wine environment
+
+  * README.md, configure, configure.ac, package.json: Update minor version
+
+  * configure, configure.ac: Update libtool version to 1.3.0
+
+  * NEWS: Update NEWS
+
+  * NEWS: Update NEWS
+
+  * src/quant.c: Minor change of mehod of creating histogram
+
+  * converters/Makefile.am: Add some tests of loading grayscaled PNG
+
+  * converters/img2sixel.c: Make palette from grayscaled PNG with -m option
+
+  * converters/loader.c: Expand 8bpp grayscale input into 24bit colors if it is
+  needed
+
+  * README.md, converters/img2sixel.1, converters/img2sixel.c,
+  converters/shell-completion/bash/img2sixel,
+  converters/shell-completion/zsh/_img2sixel: Add new argument definitions of
+  -b option, vt340mono and vt340color
+
+  * include/sixel.h.in, src/dither.c: Add new built-in palette definition,
+  VT340 mono and VT340 color
+
+  * src/dither.c: Style improvement
+
+2014-11-29  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: libpng loader supports 8bit grayscale as an output
+  format
+
+  * converters/img2sixel.c: 8bit grayscale input format is supported internally
+  by img2sixel
+
+  * src/tosixel.c: Accept grayscaled input correctly
+
+  * images/snake-monochrome.png: Add a monochrome test image
+
+  * include/sixel.h.in: Reserve some new grayscale pixelformats
+
+  * .travis.yml, converters/stb_image_write.h: Revert 2ab568c, 52129e9
+
+  * converters/stb_image_write.h: Suppress warnings of breaking strict-aliasing
+  rules on i586-mingw32msvc build target
+
+  * converters/loader.c: Make sure the local variable 'stride' is initialized
+
+2014-11-28  Hayaki Saito <user@zuse.jp>
+
+  * converters/stb_image.h: Fix acesss violation error on 32bit mingw build
+
+2014-11-27  Hayaki Saito <user@zuse.jp>
+
+  * src/quant.c: Enable detailed trace if img2sixel is built with
+  --enable-debug option
+
+2014-11-26  Hayaki Saito <user@zuse.jp>
+
+  * converters/stb_image.h: Retrive bit depth of indexed PNG from IHDR chunk
+
+  * .travis.yml, converters/Makefile.am, converters/Makefile.in: Print more
+  detailed logs on travis
+
+  * converters/stb_image.h: Load 4bpp indexed PNG without libpng loader
+
+  * converters/img2sixel.c: Fix warnings of ordered comparison of pointer with
+  integer zero
+
+  * converters/img2sixel.c, converters/loader.c, converters/loader.h: Don't use
+  internal indexed processing if less number of colors than the source palette
+  are specified by -p option
+
+  * converters/img2sixel.c: Don't use indexed processing if -m,-e,-I,-b options
+  are specified
+
+  * converters/img2sixel.c: Strip trailing spaces
+
+  * converters/img2sixel.c: Crop images with preserving PAL8 pixel format
+
+  * converters/Makefile.am, converters/Makefile.in: Add tests for internal
+  indexed processing
+
+2014-11-25  Hayaki Saito <user@zuse.jp>
+
+  * images/map8.six, images/snake.six: Add test sixel images
+
+  * converters/loader.c: Move the sixel loader process as a separated function
+
+  * converters/img2sixel.c, converters/loader.c: SIXEL loader preserves PAL8
+  pixel format if possible
+
+  * converters/img2sixel.c, converters/loader.c, converters/loader.h: Pass
+  pixelformat value returned by loader component to dithering context
+  initializer
+
+  * converters/loader.c: Add missing break statement
+
+2014-11-24  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Retrive pixelformat from png loader
+
+  * converters/frompnm.c, converters/frompnm.h, converters/loader.c: Change the
+  signature of pnm loader to retrive pixelformat
+
+  * converters/frompnm.c, converters/loader.c: Style improvements
+
+  * converters/Makefile.am, converters/Makefile.in, converters/img2sixel.c,
+  converters/loader.c, converters/loader.h, include/sixel.h.in, src/dither.c,
+  src/tosixel.c: Support paletted input
+
+  * images/map16-palette.png, images/map8-palette.png,
+  images/snake-palette.png: Add paletted PNG images
+
+2014-11-23  Hayaki Saito <user@zuse.jp>
+
+  * converters/Makefile.am, converters/Makefile.in, images/snake-grayscale.jpg,
+  images/snake-grayscale.png: Add tests of loading grayscaled jpeg/png images
+
+  * converters/loader.c: Fix a segmentation fault while loading grayscaled PNG
+
+  * converters/shell-completion/bash/img2sixel: Update bash completion file
+
+  * converters/shell-completion/zsh/_img2sixel: Update zsh completion file
+
+2014-11-22  Hayaki Saito <user@zuse.jp>
+
+  * converters/Makefile.am, converters/Makefile.in: Add tests for completion
+
+  * converters/img2sixel.c, include/sixel.h.in, src/dither.c, src/dither.h,
+  src/quant.c, src/tosixel.c: Chenage symbols of enum pixelFormat
+
+2014-11-20  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c, converters/sixel2png.c,
+  examples/osx/opengl/opengl.c: Fix for DCL20-C compliant: "Explicitly specify
+  void when a function accepts no arguments"
+  
+  ly+specify+void+when+a+function+accepts+no+arguments
+
+  * NEWS: Update NEWS
+
+  * converters/Makefile.am, converters/Makefile.in: Add more tests for -b
+  option
+
+  * converters/Makefile.am, converters/Makefile.in, converters/img2sixel.c: Add
+  invalid option handler for -b option
+
+  * converters/Makefile.am, converters/Makefile.in: Add some tests for -b
+  option
+
+2014-11-19  arakiken <arakiken@users.sf.net>
+
+  * src/tosixel.c: Fix a bug which outputs sixel sequence exceeding the size of
+  an original image if encode_policy is ENCODEPOLICY_SIZE.
+
+2014-11-19  Hayaki Saito <user@zuse.jp>
+
+  * ChangeLog, configure, configure.ac, package.json: Bump micro version
+
+  * converters/img2sixel.c: Suppress color expansion on loading mapfiles
+
+2014-11-18  saitoha <user@zuse.jp>
+
+  * converters/Makefile.am: Fix test for MinGW environment
+
+2014-11-17  saitoha <user@zuse.jp>
+
+  * converters/Makefile.am, converters/Makefile.in, converters/img2sixel.1: Fix
+  for passing manpage test
+
+2014-11-17  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Amend fixes for -b option
+
+  * converters/img2sixel.c: Update optstring which is passed to getopt()
+
+  * converters/Makefile.am, converters/Makefile.in, converters/img2sixel.1: Add
+  the explanation of -E option to manpage
+
+  * converters/Makefile.am, converters/Makefile.in: Add a test for avoid
+  forgetting to write about new options in manpage
+
+  * README.md, converters/img2sixel.1, converters/img2sixel.c: Add missing
+  options in manpage
+
+  * README.md, converters/img2sixel.1, converters/img2sixel.c: Introduce
+  -b/--builtin-palette option instead of -x/-y options
+
+2014-11-16  arakiken <arakiken@users.sf.net>
+
+  * converters/img2sixel.c: Fix help message.
+
+  * converters/img2sixel.c, include/sixel.h.in, src/output.c, src/output.h,
+  src/tosixel.c: Add -E, --encode-policy mode.
+
+2014-11-16  saitoha <user@zuse.jp>
+
+  * src/quant.c: Minor style improvement
+
+2014-11-16  Hayaki Saito <user@zuse.jp>
+
+  * src/quant.c: Prevent memory access violation
+
+  * src/quant.c: Reduce working memory allcation size during prepare histogram
+
+2014-11-15  Hayaki Saito <user@zuse.jp>
+
+  * src/dither.c: Skip memcpy only when pixelformat is RGB888
+
+  * src/quant.c: Add missing parameter type definition
+
+  * src/dither.c, src/quant.c, src/quant.h: Pass pixelformat instead of depth
+  to sixel_quant_make_palette
+
+  * src/dither.c, src/quant.c, src/quant.h: Rename functions prefixed by 'LSQ'
+  to sixel_quant_xxx
+
+  * src/dither.c, src/tosixel.c: convert pixelformat in
+  sixel_dither_apply_palette
+
+  * src/tosixel.c: Use dither->pixelformat internally
+
+  * include/sixel.h.in, src/dither.c, src/tosixel.c: Introduce new API:
+  sixel_dither_set_pixelformat
+
+  * src/dither.c, src/dither.h: Introduce a new member for dithering context
+  object: pixelformat
+
+  * src/dither.c, src/dither.h, src/tosixel.c: Rename internal API
+  sixel_apply_palette to sixel_dither_apply_palette
+
+2014-11-15  saitoha <user@zuse.jp>
+
+  * converters/loader.c: Fix a maybe-uninitialized GCC warning
+
+2014-11-15  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Get rid of unused variables
+
+2014-11-15  saitoha <user@zuse.jp>
+
+  * converters/loader.c, converters/sixel2png.c: Don't use setjmp for the
+  future because it's thread-unsafe
+
+  * converters/loader.c: Make PNG loader using libpng as a separated function
+
+  * converters/stb_image.h: Suppress an -Wsigned error in
+  converters/stb_image.h
+
+  * converters/loader.c: Strip an unused local variable
+
+  * converters/img2sixel.c: Strip an extra conditional directive
+
+  * converters/img2sixel.c: Strip an extra conditional clause
+
+2014-11-15  Hayaki Saito <user@zuse.jp>
+
+  * include/sixel.h.in: Add dummy members to some structs in sixel.h because
+  empty struct is a GNU extension
+
+  * converters/img2sixel.c, src/quant.c, src/tosixel.c: Suppress sign-compare
+  and unused-parameter warnings by clang
+
+  * src/fromsixel.c: Fix overflow issue in sixel_decode
+
+  * converters/Makefile.am, converters/Makefile.in, src/Makefile.am,
+  src/Makefile.in: Build with extra waning flags
+
+2014-11-14  arakiken <arakiken@users.sf.net>
+
+  * src/tosixel.c: Optimize encoding to sixel sequence.
+  (http://mlterm.sf.net/optimize-sixel.png)
+
+2014-11-14  Hayaki Saito <user@zuse.jp>
+
+  * src/quant.c: Apply dither to more pixels in the edge
+
+2014-11-13  Hayaki Saito <user@zuse.jp>
+
+  * src/dither.c, src/dither.h, src/tosixel.c: Change symbol names: 'bitfield'
+  -> 'pixelformat'
+
+  * converters/sixel2png.c: Correct wrong correspondence between short and long
+  options: --help/--version
+
+  * src/dither.c: Suppress GCC warnings
+
+  * converters/Makefile.am, converters/Makefile.in: Add more tests
+
+  * converters/loader.c: Use malloc instead of calloc
+
+  * converters/img2sixel.c, include/sixel.h.in, src/dither.c, src/dither.h,
+  src/quant.c, src/quant.h, src/tosixel.c: Add new API:
+  sixel_dither_set_optimize_palette
+
+  * src/quant.c: Improve dithering performance
+
+2014-11-12  Hayaki Saito <user@zuse.jp>
+
+  * include/sixel.h.in: Reformat sixel.h.in
+
+2014-11-11  Hayaki Saito <user@zuse.jp>
+
+  * converters/Makefile.am, converters/Makefile.in, converters/img2sixel.c:
+  Cleanup
+
+2014-11-11  saitoha <user@zuse.jp>
+
+  * aclocal.m4, config.guess, config.h.in, config.sub, configure, configure.ac,
+  converters/loader.c, ltmain.sh, m4/libtool.m4: Don't include setjmp.h
+
+2014-11-10  Hayaki Saito <user@zuse.jp>
+
+  * config.h.in, converters/Makefile.am, converters/Makefile.in: Update tests
+
+  * README.md, converters/img2sixel.1: Update documents
+
+  * converters/img2sixel.c, include/sixel.h.in, src/dither.c, src/quant.c:
+  Implement new quality mode: full
+
+  * src/quant.c: Fix broken lookup_normal strategy function
+
+  * converters/quant.h: Remove an unused file
+
+  * src/quant.c, src/tosixel.c: Style improvements
+
+  * src/fromsixel.c: Change default background color of sixel2png to 15
+
+2014-11-09  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, converters/Makefile.am, converters/Makefile.in,
+  converters/loader.c, converters/sixel2png.c: Check setjmp availability
+
+  * src/quant.c: Correct reversed test condition for HAVE_CALLOC
+
+  * converters/Makefile.am, converters/Makefile.in, converters/img2sixel.c:
+  Test -s option more efficiently
+
+  * converters/Makefile.am: Add tests for loading big sixel image
+
+  * converters/Makefile.am, converters/Makefile.in: Update tests
+
+  * converters/Makefile.am: Update tests
+
+  * converters/Makefile.in: Update tests
+
+  * converters/Makefile.am, converters/Makefile.in: Update tests
+
+  * converters/Makefile.am, converters/Makefile.in, images/seq2gif.gif: Add
+  tests for GIF animation rendering
+
+2014-11-08  Hayaki Saito <user@zuse.jp>
+
+  * converters/frompnm.c: Cherry-picked edd88d0: Make img2sixel enable to load
+  pbm files
+
+2014-11-09  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Prevent segfault with -m option in libpng loader
+
+  * converters/loader.c: Fix segfault on using gdk-pixbuf loader with -m option
+
+2014-11-09  OBATA Akio <obata@lins.jp>
+
+  * configure, configure.ac: Kill bashizm  '=' operator for test(1) is not
+  portable.
+
+2014-11-09  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, converters/Makefile.am, converters/Makefile.in,
+  converters/img2sixel.c, include/sixel.h.in, src/dither.c, src/tosixel.c:
+  Rename the option "-F,--fullcolor" to "-I,--high-color"
+
+2014-11-08  Hayaki Saito <user@zuse.jp>
+
+  * converters/frompnm.c: Make img2sixel enable to load pbm files
+
+  * converters/Makefile.in: Update tests
+
+  * converters/Makefile.am: Update tests
+
+  * images/snake-ascii.pbm, images/snake-ascii.pgm, images/snake-ascii.ppm,
+  images/snake.pbm, images/snake.pgm, images/snake.pnm, images/snake.ppm: Add
+  various ppm images for testing
+
+  * converters/Makefile.in: Update tests
+
+  * converters/img2sixel.c: Fix leaks for the combinated case that 15bpp mode
+  and pipe mode are enabled
+
+  * converters/Makefile.am: Update tests
+
+  * converters/img2sixel.c: Build fix for some system which don't provide clock
+  or usleep
+
+  * converters/Makefile.am, converters/Makefile.in, src/dither.c: Update tests
+
+  * aclocal.m4, configure, converters/Makefile.am, converters/Makefile.in:
+  Update tests
+
+  * converters/img2sixel.c, src/dither.c: Enable some options(-f, -s, and -q)
+  ignored unintentionally
+
+  * converters/Makefile.am, converters/Makefile.in: Add some tests
+
+  * converters/Makefile.am, converters/Makefile.in, converters/img2sixel.c,
+  src/tosixel.c: Cleanup
+
+  * .travis.yml: Build with --enable-debug on travis
+
+  * converters/sixel2png.c: Don't include stb_image_write.h if libpng is used
+
+  * converters/Makefile.am, converters/Makefile.in, converters/sixel2png.c: Add
+  failure cases to tests
+
+  * src/fromsixel.c: ColTab -> color_table
+
+  * src/fromsixel.c: Fix leaks on some error cases
+
+  * converters/Makefile.am, converters/Makefile.in, src/quant.c: Update tests
+
+  * .travis.yml, converters/Makefile.am: Add more tests
+
+  * converters/Makefile.am, converters/Makefile.in: Add tests for various
+  options
+
+2014-11-07  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, converters/Makefile.am, converters/Makefile.in:
+  Add a test for libcurl integration
+
+  * converters/Makefile.am, converters/Makefile.in: Add tests for various image
+  formats
+
+  * converters/Makefile.am, converters/Makefile.in: Add tests for pipe-mode
+
+2014-11-07  saitoha <user@zuse.jp>
+
+  * aclocal.m4, configure, configure.ac, converters/img2sixel.c: Various fixes
+  for MinGW build
+
+2014-11-06  Hayaki Saito <user@zuse.jp>
+
+  * src/tosixel.c: Implement various dithering method for 15bpp mode
+
+2014-11-05  Hayaki Saito <user@zuse.jp>
+
+  * src/tosixel.c: Apply floyd steinberg dithering with 15bpp output mode
+
+  * src/tosixel.c: Cleanup
+
+2014-11-05  saitoha <user@zuse.jp>
+
+  * converters/malloc_stub.c, src/tosixel.c: Suppress warings on MinGW
+  environment
+
+2014-11-04  arakiken <arakiken@users.sf.net>
+
+  * src/tosixel.c: Remove unnecessary variables 'src' and 'orig_src'.
+
+  * src/tosixel.c: Allocate 'rgbhit' and 'rgb2pal' on heap instead of stack.
+
+  * src/tosixel.c: Remove an extra space.
+
+2014-11-04  Hayaki Saito <user@zuse.jp>
+
+  * src/dither.c, src/quant.c: Amend fix for suppressing GCC warnings
+
+  * src/dither.c, src/quant.c: Suppress GCC 4.9.1 warnings
+
+  * converters/img2sixel.c: Include sys/types.h to use fd_set
+
+  * converters/img2sixel.c: Minor fix
+
+  * config.h.in, configure, configure.ac, converters/img2sixel.c: Include
+  sys/select.h to fix build on MinGW environment
+
+2014-11-03  Hayaki Saito <user@zuse.jp>
+
+  * README.md, converters/img2sixel.1, converters/img2sixel.c: Update document
+  for --pipe-mode
+
+2014-11-03  arakiken <arakiken@users.sf.net>
+
+  * src/tosixel.c: Remove a performance hack which inserts '\n' after palette
+  definition.
+
+2014-11-03  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Interpret an image expanded by png_set_palette_to_rgb
+  as a 3-channel image
+
+  * config.h.in, configure, configure.ac, converters/img2sixel.c,
+  converters/loader.c, converters/loader.h: Use clearerr instead of fseek
+
+  * config.h.in, configure, configure.ac, converters/img2sixel.c,
+  converters/loader.c, converters/loader.h: Use fseek instead of rewind, and
+  check the availability of fseek
+
+  * converters/img2sixel.c, converters/loader.c: Add pipe mode
+  feature(-D/--pipe-mode)
+
+  * converters/img2sixel.c: Avoid scanf buffer overflow
+
+  * converters/img2sixel.c: Add missing options in brevity help
+
+  * converters/loader.c: Fix a segmentation fault occurs when using libpng
+  loader
+
+  * src/output.h, src/tosixel.c: Drop unnecessary variable
+  sixel_output_t::conv_palette
+
+2014-11-02  arakiken <arakiken@users.sf.net>
+
+  * src/tosixel.c: Remove unnecessary check. (nwrite <= 0) Cherry-picked from
+  cf00bed  Conflicts: src/tosixel.c
+
+2014-11-03  Hayaki Saito <user@zuse.jp>
+
+  * src/fromsixel.c: Strip unused variables
+
+  * converters/loader.c: Replace some indent tabs to spaces
+
+  * include/sixel.h.in, src/dither.c: Fix a typo of API signature(#10). old one
+  is still remained.
+
+2014-11-02  arakiken <arakiken@users.sf.net>
+
+  * src/tosixel.c: Separate sixel_encode_impl() into sixel_encode_header(),
+  sixel_encode_body() and sixel_encode_footer(). Cherry-picked from 339d958. 
+  Conflicts: src/tosixel.c
+
+  * src/tosixel.c: Remove unnecessary check. (nwrite <= 0)
+
+  * src/tosixel.c: Separate sixel_encode_impl() into sixel_encode_header(),
+  sixel_encode_body() and sixel_encode_footer().
+
+  * src/tosixel.c: Remove a trailing space. Add sixel_dither_unref() before
+  return (-1).
+
+  * src/dither.c: Replace indent tabs to spaces.
+
+  * converters/img2sixel.c, include/sixel.h.in, src/dither.c, src/tosixel.c:
+  Support 15bpp color sixel. (-F option)
+
+2014-10-29  Hayaki Saito <user@zuse.jp>
+
+  * src/image.c: Remove unused source file image.c
+
+2014-10-27  Vertis Sidus <vrtsds@users.noreply.github.com>
+
+  * converters/img2sixel.c: Added command line options to use XTERM palettes.
+
 2014-10-26  Hayaki Saito <user@zuse.jp>
+
+  * NEWS: Update NEWS
+
+  * NEWS: Update NEWS
+
+  * converters/shell-completion/bash/img2sixel: Update bash completion file
+
+  * converters/shell-completion/zsh/_img2sixel: Update zsh completion file
+
+  * README.md, converters/img2sixel.1: Update manpage and README.md
+
+  * converters/img2sixel.c: Update help
+
+  * converters/sixel2png.c: Write png data using libpng by sixel2png
+
+  * converters/sixel2png.c: Fix a typo
+
+  * converters/sixel2png.c: Cleanup
+
+  * converters/loader.c: Accepts sixel as input format by img2sixel
 
   * converters/img2sixel.c: Fix segmentation fault on quitting GIF animation
   with -u option
 
+  * converters/img2sixel.c, src/tosixel.c: Support HLS palette
+
+2014-10-25  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Don't terminate configure process if
+  --with-libcurl=auto
+
+  * configure, configure.ac: Don't check pkg-config availability if
+  $cross_compile == yes
+
+  * Makefile.in, configure, configure.ac, converters/Makefile.in,
+  include/Makefile.in, src/Makefile.in: Use $PKG_CONFIG environment variable
+  instead of $have_pkg_config
+
+  * configure, configure.ac: Don't use system pkg-config if $cross_compile ==
+  "yes"
+
+  * configure, configure.ac: Checks zlib availability with libpng, workaround
+  for MinGW build
+
+  * README.md, configure, configure.ac: Links libcurl automatically
+
+  * Makefile.in, NEWS, configure, configure.ac, converters/Makefile.am,
+  converters/Makefile.in, include/Makefile.in, src/Makefile.in: Build with
+  libjpeg/libpng automatically
+
+  * converters/loader.c: Strip alpha in png loader
+
+2014-10-22  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.am, Makefile.in, converters/Makefile.am, converters/Makefile.in,
+  images/snake.png: Add test for loading png with libpng
+
+  * configure, configure.ac, converters/Makefile.am, converters/Makefile.in,
+  images/snake-progressive.jpg: Add a test for loading progressive jpeg
+
+  * include/sixel.h.in, src/output.c, src/output.h: Add new API
+  sixel_output_set_palette_type
+
+  * converters/img2sixel.c, include/sixel.h.in: Add --palette-type option
+
+2014-10-20  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, include/sixel.h.in, src/dither.c, src/dither.h,
+  src/tosixel.c: Add new API, sixel_dither_set_body_only
+
+  * converters/img2sixel.c: Update usage
+
+  * configure: Minor fix
+
+  * configure, configure.ac: Minor fix
+
+  * configure.ac: Fix build error
+
+  * converters/loader.c: Fix build error
+
+  * converters/loader.c: Use libpng reader
+
+  * Makefile.in, config.h.in, configure, configure.ac, converters/Makefile.am,
+  converters/Makefile.in, include/Makefile.in, src/Makefile.in: Add --with-png
+  configure option
+
+  * LICENSE.xterm, README.md, src/fromsixel.c: Fix wrong HLS-to-RGB conversion
+  routine
+
+2014-10-18  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Introduce --verbose option
+
+  * src/fromsixel.c: Rename some functions as snake case
+
+  * src/fromsixel.c: Rename some functions as snake case
+
 2014-10-17  Hayaki Saito <user@zuse.jp>
+
+  * src/tosixel.c: Omit DCS parameters by default
+
+  * src/tosixel.c: Strip an extra DECGNL character at the end of output data
+
+  * src/tosixel.c: Strip an extra LF character from output data
 
   * converters/loader.c: Suppress gdk-pixbuf assersion on processing some GIF
   images, reported by @ttdoda
 
+2014-10-14  Hayaki Saito <user@zuse.jp>
+
+  * LICENSE.sdump, Makefile.in, README.md, config.h.in, configure,
+  configure.ac, converters/Makefile.am, converters/Makefile.in,
+  converters/loader.c, include/Makefile.in, src/Makefile.in: Add libjpeg
+  support with --with-jpeg configure option
+
 2014-10-12  Hayaki Saito <user@zuse.jp>
+
+  * package.json.in.in: clib integration: add --with-libcurl option by default
 
   * NEWS: Add missing items to NEWS
 
   * converters/loader.c: Include errno.h in loader.c
+
+  * converters/Makefile.am, converters/Makefile.in, src/Makefile.am,
+  src/Makefile.in: Add -Werror to CFLAGS when --enable-debug configure option
+  is specified
+
+  * config.h.in, configure, configure.ac: Introduce --enable-debug configure
+  option
 
   * converters/img2sixel.c: Fix a double free error
 
@@ -78,9 +831,19 @@
   * converters/img2sixel.c, converters/loader.c, converters/loader.h: Introduce
   --static option
 
+  * converters/img2sixel.c: @uobikiemukot's patch in the conversation of #8
+
+  * include/sixel.h.in: Keep compatibility
+
 2014-10-07  Hayaki Saito <user@zuse.jp>
 
+  * src/dither.c: Swap bytes if depth == 2
+
   * converters/img2sixel.c: Fix for animation GIF quality degradation
+
+  * include/sixel.h.in, src/dither.c, src/dither.h, src/tosixel.c: Apply
+  @uobikiemukot's patch (various pixel-format support)
+  https://gist.github.com/uobikiemukot/7adab29310caf0be6f7a
 
 2014-10-06  Hayaki Saito <user@zuse.jp>
 
