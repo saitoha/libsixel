@@ -1136,7 +1136,7 @@ test: all
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -p 1 ../images/snake.jpg -h100 -n1
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -e ../images/snake.jpg -h140 -rlanczos4 -P
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -e -i ../images/snake.jpg -P > /dev/null
-@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -u
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -u -lauto
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -g
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -u -g
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/seq2gif.gif -S -datkinson
