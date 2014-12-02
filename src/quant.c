@@ -1175,6 +1175,16 @@ sixel_quant_apply_palette(unsigned char *data,
                     unsigned short * const cachetable,
                     int const complexion);
 
+    /* check pre-conditions */
+    if (depth < 0 || depth > 4) {  /* check invalid argument */
+        /* TODO: return semantic error code */
+        return (-1);
+    }
+    if (data == NULL) {
+        /* TODO: return semantic error code */
+        return (-1);
+    }
+
     if (depth != 3) {
         f_diffuse = diffuse_none;
     } else {
