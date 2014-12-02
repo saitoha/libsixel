@@ -52,7 +52,9 @@ enum methodForRep {
     REP_CENTER_BOX     = 1, /* choose the center of the box */
     REP_AVERAGE_COLORS = 2, /* choose the average all the color
                                in the box (specified in Heckbert's paper) */
-    REP_AVERAGE_PIXELS = 3  /* choose the average all the pixels in the box */
+    REP_AVERAGE_PIXELS = 3, /* choose the average all the pixels in the box */
+    REP_MAXIMUM_PIXELS = 4  /* choose the most significant pixel in vertexes
+                               of the box */
 };
 
 /* method for diffusing */

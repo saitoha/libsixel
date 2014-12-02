@@ -367,7 +367,6 @@ averagePixels(int const boxStart,
               unsigned int const depth,
               tuple const newTuple)
 {
-
     unsigned int n;
         /* Number of tuples represented by the box */
     unsigned int plane;
