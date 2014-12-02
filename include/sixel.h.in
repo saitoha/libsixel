@@ -77,23 +77,76 @@ enum qualityMode {
 
 /* built-in dither */
 enum builtinDither {
-    BUILTIN_MONO_DARK  = 0, /* monochrome terminal with dark background */
-    BUILTIN_MONO_LIGHT = 1, /* monochrome terminal with dark background */
-    BUILTIN_XTERM16    = 2, /* xterm 16color */
-    BUILTIN_XTERM256   = 3, /* xterm 256color */
+    BUILTIN_MONO_DARK   = 0, /* monochrome terminal with dark background */
+    BUILTIN_MONO_LIGHT  = 1, /* monochrome terminal with dark background */
+    BUILTIN_XTERM16     = 2, /* xterm 16color */
+    BUILTIN_XTERM256    = 3, /* xterm 256color */
+    BUILTIN_VT340_MONO  = 4, /* vt340 monochrome */
+    BUILTIN_VT340_COLOR = 5, /* vt340 color */
+};
+
+/* offset value of enum pixelFormat */
+enum formatType {
+    FORMATTYPE_COLOR     = 0,
+    FORMATTYPE_GRAYSCALE = 1 << 6,
+    FORMATTYPE_PALETTE   = 1 << 7,
+};
+
+/* pixelformat type of input image
+   NOTE: for compatibility, the value of PIXELFORAMT_COLOR_RGB888 must be 3 */
+enum pixelFormat {
+    PIXELFORMAT_RGB555   = FORMATTYPE_COLOR     | 0x01, /* 15bpp */
+    PIXELFORMAT_RGB565   = FORMATTYPE_COLOR     | 0x02, /* 16bpp */
+    PIXELFORMAT_RGB888   = FORMATTYPE_COLOR     | 0x03, /* 24bpp */
+    PIXELFORMAT_BGR555   = FORMATTYPE_COLOR     | 0x04, /* 15bpp */
+    PIXELFORMAT_BGR565   = FORMATTYPE_COLOR     | 0x05, /* 16bpp */
+    PIXELFORMAT_BGR888   = FORMATTYPE_COLOR     | 0x06, /* 24bpp */
+    PIXELFORMAT_ARGB8888 = FORMATTYPE_COLOR     | 0x10, /* 32bpp */
+    PIXELFORMAT_RGBA8888 = FORMATTYPE_COLOR     | 0x11, /* 32bpp */
+#if 0
+    PIXELFORMAT_G1       = FORMATTYPE_GRAYSCALE | 0x00, /* 1bpp grayscale */
+    PIXELFORMAT_G2       = FORMATTYPE_GRAYSCALE | 0x01, /* 2bpp grayscale */
+    PIXELFORMAT_G4       = FORMATTYPE_GRAYSCALE | 0x02, /* 4bpp grayscale */
+#endif
+    PIXELFORMAT_G8       = FORMATTYPE_GRAYSCALE | 0x03, /* 8bpp grayscale */
+#if 0
+    PIXELFORMAT_AG11     = FORMATTYPE_GRAYSCALE | 0x10, /* 2bpp gray+alpha */
+    PIXELFORMAT_AG22     = FORMATTYPE_GRAYSCALE | 0x11, /* 4bpp gray+alpha */
+    PIXELFORMAT_AG44     = FORMATTYPE_GRAYSCALE | 0x12, /* 8bpp gray+alpha */
+#endif
+    PIXELFORMAT_AG88     = FORMATTYPE_GRAYSCALE | 0x13, /* 16bpp gray+alpha */
+#if 0
+    PIXELFORMAT_GA11     = FORMATTYPE_GRAYSCALE | 0x20, /* 2bpp gray+alpha */
+    PIXELFORMAT_GA22     = FORMATTYPE_GRAYSCALE | 0x21, /* 4bpp gray+alpha */
+    PIXELFORMAT_GA44     = FORMATTYPE_GRAYSCALE | 0x22, /* 8bpp gray+alpha */
+#endif
+    PIXELFORMAT_GA88     = FORMATTYPE_GRAYSCALE | 0x23, /* 16bpp gray+alpha */
+#if 0
+    PIXELFORMAT_PAL1     = FORMATTYPE_PALETTE   | 0x00, /* monochrome */
+    PIXELFORMAT_PAL2     = FORMATTYPE_PALETTE   | 0x01, /* 2bpp palette */
+    PIXELFORMAT_PAL4     = FORMATTYPE_PALETTE   | 0x02, /* 4bpp palette */
+#endif
+    PIXELFORMAT_PAL8     = FORMATTYPE_PALETTE   | 0x03, /* 8bpp palette */
 };
 
 /* palette type */
 enum paletteType {
-    PALETTETYPE_AUTO = 0, /* choose palette type automatically */
-    PALETTETYPE_HLS  = 1, /* HLS colorspace */
-    PALETTETYPE_RGB  = 2, /* RGB colorspace */
+    PALETTETYPE_AUTO = 0,     /* choose palette type automatically */
+    PALETTETYPE_HLS  = 1,     /* HLS colorspace */
+    PALETTETYPE_RGB  = 2,     /* RGB colorspace */
+};
+
+/* policies of SIXEL encoding */
+enum encodePolicy {
+    ENCODEPOLICY_AUTO = 0,    /* choose encoding policy automatically */
+    ENCODEPOLICY_FAST = 1,    /* encode as fast as possible */
+    ENCODEPOLICY_SIZE = 2,    /* encode to as small sixel sequence as possible */
 };
 
 #ifndef LIBSIXEL_DITHER_H
 
-/* dither context object */
-typedef struct sixel_dither {} sixel_dither_t;
+/* handle type of dither context object */
+typedef struct sixel_dither { int dummy; } sixel_dither_t;
 
 #endif /* SIXEL_DITHER_H */
 
@@ -101,7 +154,8 @@ typedef struct sixel_dither {} sixel_dither_t;
 
 typedef int (* sixel_write_function)(char *data, int size, void *priv);
 
-typedef struct sixel_output {} sixel_output_t;
+/* handle type of output context object */
+typedef struct sixel_output { int dummy; } sixel_output_t;
 
 #endif  /* LIBSIXEL_OUTPUT_H */
 
@@ -116,7 +170,7 @@ extern "C" {
 sixel_output_t *
 sixel_output_create(
     sixel_write_function /* in */ fn_write, /* callback for output sixel */
-    void /* in */ *priv);                   /* private data given as
+    void                 /* in */ *priv);   /* private data given as
                                                3rd argument of fn_write */
 /* destroy output context object */
 void
@@ -158,6 +212,12 @@ sixel_output_set_palette_type(
     int            /* in */ palettetype); /* PALETTETYPE_RGB: RGB palette
                                              PALETTETYPE_HLS: HLS palette */
 
+void
+sixel_output_set_encode_policy(
+    sixel_output_t /* in */ *output,    /* output context */
+    int            /* in */ encode_policy);
+
+
 #ifdef __cplusplus
 }
 #endif
@@ -196,7 +256,7 @@ sixel_dither_initialize(
     unsigned char /* in */ *data,    /* sample image */
     int /* in */ width,              /* image width */
     int /* in */ height,             /* image height */
-    int /* in */ depth,              /* pixel depth, now only '3' is supported */
+    int /* in */ pixelformat,        /* one of enum pixelFormat */
     int /* in */ method_for_largest, /* method for finding the largest dimension */
     int /* in */ method_for_rep,     /* method for choosing a color from the box */
     int /* in */ quality_mode);      /* quality of histogram processing */
@@ -214,6 +274,10 @@ sixel_dither_get_num_of_palette_colors(
 
 /* get number of histogram colors */
 int
+sixel_dither_get_num_of_histogram_colors(
+    sixel_dither_t /* in */ *dither);  /* dither context object */
+
+@attr_func_deprecated@ int /* typoed! remains for compatibility. */
 sixel_dither_get_num_of_histgram_colors(
     sixel_dither_t /* in */ *dither);  /* dither context object */
 
@@ -221,6 +285,12 @@ sixel_dither_get_num_of_histgram_colors(
 unsigned char *
 sixel_dither_get_palette(
     sixel_dither_t /* in */ *dither);  /* dither context object */
+
+/* set palette */
+void
+sixel_dither_set_palette(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    unsigned char  /* in */ *palette);
 
 void
 sixel_dither_set_complexion_score(
@@ -237,6 +307,11 @@ sixel_dither_set_optimize_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     int            /* in */ do_opt);   /* 0: optimize palette size
                                           1: don't optimize palette size */
+/* set pixelformat */
+void
+sixel_dither_set_pixelformat(
+    sixel_dither_t /* in */ *dither,      /* dither context object */
+    int            /* in */ pixelformat); /* one of enum pixelFormat */
 
 #ifdef __cplusplus
 }
@@ -256,7 +331,7 @@ sixel_encode(
     unsigned char  /* in */ *pixels,     /* pixel bytes */
     int            /* in */  width,      /* image width */
     int            /* in */  height,     /* image height */
-    int            /* in */  depth,      /* pixel depth */
+    int            /* in */  depth,      /* color depth: now unused */
     sixel_dither_t /* in */ *dither,     /* dither context */
     sixel_output_t /* in */ *context);   /* output context */
 

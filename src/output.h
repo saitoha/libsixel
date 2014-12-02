@@ -73,6 +73,7 @@ typedef struct sixel_output {
     sixel_node_t *node_free;
 
     int penetrate_multiplexer;
+    int encode_policy;
 
     void *priv;
     int pos;

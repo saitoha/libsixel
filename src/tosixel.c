@@ -49,7 +49,8 @@ sixel_advance(sixel_output_t *context, int nwrite)
         if (context->penetrate_multiplexer) {
             penetrate(context, SIXEL_OUTPUT_PACKET_SIZE);
         } else {
-            context->fn_write((char *)context->buffer, SIXEL_OUTPUT_PACKET_SIZE, context->priv);
+            context->fn_write((char *)context->buffer,
+                              SIXEL_OUTPUT_PACKET_SIZE, context->priv);
         }
         memcpy(context->buffer,
                context->buffer + SIXEL_OUTPUT_PACKET_SIZE,
@@ -66,7 +67,8 @@ sixel_put_flash(sixel_output_t *const context)
 
 #if defined(USE_VT240)        /* VT240 Max 255 ? */
     while (context->save_count > 255) {
-        nwrite = spritf((char *)context->buffer + context->pos, "!255%c", context->save_pixel);
+        nwrite = spritf((char *)context->buffer + context->pos,
+                        "!255%c", context->save_pixel);
         if (nwrite <= 0) {
             return (-1);
         }
@@ -77,7 +79,8 @@ sixel_put_flash(sixel_output_t *const context)
 
     if (context->save_count > 3) {
         /* DECGRI Graphics Repeat Introducer ! Pn Ch */
-        nwrite = sprintf((char *)context->buffer + context->pos, "!%d%c", context->save_count, context->save_pixel);
+        nwrite = sprintf((char *)context->buffer + context->pos,
+                         "!%d%c", context->save_count, context->save_pixel);
         if (nwrite <= 0) {
             return (-1);
         }
@@ -341,10 +344,29 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
     }
 
     for (y = i = 0; y < height; y++) {
+        int fillable;
+        if (context->encode_policy != ENCODEPOLICY_SIZE) {
+            fillable = 0;
+        }
+        else if (palstate) {
+            /* high color sixel */
+            pix = pixels[(y-i)*width];
+            if (pix < 0 || pix >= ncolors || pix == keycolor) {
+                fillable = 0;
+            } else {
+                fillable = 1;
+            }
+        } else {
+            /* normal sixel */
+            fillable = 1;
+        }
         for (x = 0; x < width; x++) {
             pix = pixels[y * width + x];
             if (pix >= 0 && pix < ncolors && pix != keycolor) {
                 map[pix * width + x] |= (1 << i);
+            }
+            else if (!palstate) {
+                fillable = 0;
             }
         }
 
@@ -414,6 +436,7 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
         }
 
         for (x = 0; (np = context->node_top) != NULL;) {
+            sixel_node_t *next;
             if (x > np->sx) {
                 /* DECGCR Graphics Carriage Return */
                 context->buffer[context->pos] = '$';
@@ -421,9 +444,13 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
                 x = 0;
             }
 
+            if (fillable) {
+                memset(np->map + np->sx, (1 << i) - 1, np->mx - np->sx);
+            }
             x = sixel_put_node(context, x, np, ncolors, keycolor);
+            next = np->next;
             sixel_node_del(context, np);
-            np = context->node_top;
+            np = next;
 
             while (np != NULL) {
                 if (np->sx < x) {
@@ -431,10 +458,16 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
                     continue;
                 }
 
+                if (fillable) {
+                    memset(np->map + np->sx, (1 << i) - 1, np->mx - np->sx);
+                }
                 x = sixel_put_node(context, x, np, ncolors, keycolor);
+                next = np->next;
                 sixel_node_del(context, np);
-                np = context->node_top;
+                np = next;
             }
+
+            fillable = 0;
         }
 
         i = 0;
@@ -491,32 +524,49 @@ sixel_encode_footer(sixel_output_t *context)
 
 
 static int
-sixel_encode_dither(unsigned char *pixels, int width, int height, int depth,
+sixel_encode_dither(unsigned char *pixels, int width, int height,
                     sixel_dither_t *dither, sixel_output_t *context)
 {
-    unsigned char *paletted_pixels;
+    unsigned char *paletted_pixels = NULL;
+    unsigned char *input_pixels;
+    int nret = (-1);
 
-    /* apply palette */
-    paletted_pixels = sixel_apply_palette(pixels, width, height, dither);
-    if (paletted_pixels == NULL) {
-        return (-1);
+    switch (dither->pixelformat) {
+    case PIXELFORMAT_PAL8:
+    case PIXELFORMAT_G8:
+    case PIXELFORMAT_GA88:
+    case PIXELFORMAT_AG88:
+        input_pixels = pixels;
+        break;
+    default:
+        /* apply palette */
+        paletted_pixels = sixel_dither_apply_palette(dither, pixels, width, height);
+        if (paletted_pixels == NULL) {
+            goto end;
+        }
+        input_pixels = paletted_pixels;
+        break;
     }
 
     sixel_encode_header(width, height, context);
-    sixel_encode_body(paletted_pixels, width, height,
+    sixel_encode_body(input_pixels, width, height,
                       dither->palette, dither->ncolors,
                       dither->keycolor, dither->bodyonly, context, NULL);
     sixel_encode_footer(context);
+    nret = 0;
 
+end:
     free(paletted_pixels);
 
-    return 0;
+    return nret;
 }
 
 
 static void
 dither_func_none(unsigned char *data, int width)
 {
+    (void) data;  /* unused */
+    (void) width; /* unused */
 }
 
 
@@ -855,10 +905,11 @@ dither_func_burkes(unsigned char *data, int width)
 
 
 static int
-sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
-                    sixel_dither_t *dither, sixel_output_t *context)
+sixel_encode_fullcolor(unsigned char *pixels, int width, int height,
+                       sixel_dither_t *dither, sixel_output_t *context)
 {
-    unsigned char *paletted_pixels;
+    unsigned char *paletted_pixels = NULL;
+    unsigned char *normalized_pixels = NULL;
     /* Mark sixel line pixels which have been already drawn. */
     unsigned char *marks;
     unsigned char *rgbhit;
@@ -866,9 +917,21 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
     unsigned char palhitcount[256];
     unsigned char palstate[256];
     int output_count;
+    int nret = (-1);
 
-    if ((paletted_pixels = (unsigned char*)malloc(width * height + 32768 * 2 + width * 6)) == NULL) {
-        return (-1);
+    if (dither->pixelformat != PIXELFORMAT_RGB888) {
+        /* normalize pixelfromat */
+        normalized_pixels = malloc(width * height * 3);
+        if (normalized_pixels == NULL) {
+            goto error;
+        }
+        sixel_normalize_pixelformat(normalized_pixels, pixels, width, height, dither->pixelformat);
+        pixels = normalized_pixels;
+    }
+
+    paletted_pixels = (unsigned char*)malloc(width * height + 32768 * 2 + width * 6);
+    if (paletted_pixels == NULL) {
+        goto error;
     }
     rgbhit = paletted_pixels + width * height;
     memset(rgbhit, 0, 32768 * 2 + width * 6);
@@ -1006,8 +1069,8 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height, int depth,
                 }
                 height = y;
                 sixel_encode_body(paletted_pixels, width, height,
-                                  dither->palette, 255, 255, dither->bodyonly,
-                                  context, palstate);
+                                  dither->palette, 255, 255,
+                                  dither->bodyonly, context, palstate);
                 pixels -= (6 * width * 3);
                 height = orig_height - height + 6;
                 break;
@@ -1025,33 +1088,43 @@ end:
         sixel_encode_header(width, height, context);
     }
     sixel_encode_body(paletted_pixels, width, height,
-                      dither->palette, 255, 255, dither->bodyonly, context, palstate);
+                      dither->palette, 255, 255,
+                      dither->bodyonly, context, palstate);
     sixel_encode_footer(context);
+    nret = 0;
 
+error:
     free(paletted_pixels);
+    free(normalized_pixels);
 
-    return 0;
+    return nret;
 }
 
 
-int sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
-                 int            /* in */ width,     /* image width */
-                 int            /* in */ height,    /* image height */
-                 int            /* in */ depth,     /* pixel depth */
-                 sixel_dither_t /* in */ *dither,   /* dither context */
-                 sixel_output_t /* in */ *context)  /* output context */
+int sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
+                 int            /* in */ width,       /* image width */
+                 int            /* in */ height,      /* image height */
+                 int const      /* in */ depth,       /* color depth */
+                 sixel_dither_t /* in */ *dither,     /* dither context */
+                 sixel_output_t /* in */ *context)    /* output context */
 {
     int nret = (-1);
 
+    /* TODO: reference counting should be thread-safe */
     sixel_dither_ref(dither);
+    sixel_output_ref(context);
 
-    if (dither->quality_mode != QUALITY_HIGHCOLOR) {
-        nret = sixel_encode_dither(pixels, width, height, depth, dither, context);
-    }
-    else if (depth == 3) {
-        nret = sixel_encode_fullcolor(pixels, width, height, depth, dither, context);
+    (void) depth;
+
+    if (dither->quality_mode == QUALITY_HIGHCOLOR) {
+        nret = sixel_encode_fullcolor(pixels, width, height,
+                                      dither, context);
+    } else {
+        nret = sixel_encode_dither(pixels, width, height,
+                                   dither, context);
     }
 
+    sixel_output_unref(context);
     sixel_dither_unref(dither);
 
     return nret;

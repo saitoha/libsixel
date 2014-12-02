@@ -208,7 +208,7 @@ sixel_to_png(const char *input, const char *output)
         ret = (-1);
         goto end;
     }
-# if HAVE_SETJMP
+# if USE_SETJMP && HAVE_SETJMP
     if (setjmp(png_jmpbuf(png_ptr))) {
         ret = (-1);
         goto end;
@@ -254,7 +254,7 @@ end:
 
 
 static
-void show_version()
+void show_version(void)
 {
     printf("sixel2png " PACKAGE_VERSION "\n"
            "Copyright (C) 2014 Hayaki Saito <user@zuse.jp>.\n"
@@ -280,7 +280,7 @@ void show_version()
 
 
 static void
-show_help()
+show_help(void)
 {
     fprintf(stderr,
             "Usage: sixel2png -i input.sixel -o output.png\n"
@@ -312,8 +312,8 @@ main(int argc, char *argv[])
     struct option long_options[] = {
         {"input",        required_argument,  &long_opt, 'i'},
         {"output",       required_argument,  &long_opt, 'o'},
-        {"version",      no_argument,        &long_opt, 'H'},
-        {"help",         no_argument,        &long_opt, 'V'},
+        {"version",      no_argument,        &long_opt, 'V'},
+        {"help",         no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
