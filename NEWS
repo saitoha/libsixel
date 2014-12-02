@@ -6,14 +6,14 @@
 
 * core: Supports high-color(15bpp output) mode(thanks to @arakiken).
 
-* core: More high compressed output mode is supported(thanks to @arakiken).
+* core: More high compressed output mode is introduced(thanks to @arakiken).
 
-* core: Fix typoed API (thanks to @waywardmonkeys).
+* core: Fix typoed API(thanks to @waywardmonkeys).
 
-* core: Fix a minor performance bug (thanks to @arakiken).
+* core: Fix a minor performance bug(thanks to @arakiken).
 
 * img2sixel: New option -D(--pipe-mode) is introduced.
-             with this option, img2sixel continuously read source images from
+             With this option, img2sixel continuously read source images from
              stdin.
 
 * img2sixel: Introduce -I(--high-color) option, high-color(15bpp) output mode
@@ -25,9 +25,9 @@
 * img2sixel: New option -b(--builtin-palette) is added. built-in support of
              VT-340 palette is added(thanks to @vrtsds).
 
-* img2sixel: Performance inprovement for loading 8bit indexed PNG
+* img2sixel: Performance inprovement for loading 8bit indexed PNG.
 
-* A lots of bug fixes and minor improvements, now tests achieve 90% coverage.
+* A lot of bug fixe and minor improvements, now tests achieve 90% coverage.
 
 
                    ------------------------------
