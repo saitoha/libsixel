@@ -39,7 +39,8 @@ _selecttype() {
     'auto[choose selecting method automatically (default)]' \
     'center[choose the center of the box]' \
     'average[calculate the color average into the box]' \
-    'histogram[similar with average but considers color histogram]'
+    'histogram[similar with average but considers color histogram]' \
+    'maximum[choose the most significant vertex from the box]'
 }
 
 _resamplingtype() {

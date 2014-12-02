@@ -358,11 +358,15 @@ Options:
                                           (default)
                              center    -> choose the center of
                                           the box
-                             average    -> calculate the color
+                             average   -> calculate the color
                                           average into the box
                              histogram -> similar with average
                                           but considers color
                                           histogram
+                             maximum   -> choose the most
+                                          significant pixel
+                                          from vertexes of the
+                                          median-cut box
 -c REGION, --crop=REGION   crop source image to fit the
                            specified geometry. REGION should
                            be formatted as '%dx%d+%d+%d'

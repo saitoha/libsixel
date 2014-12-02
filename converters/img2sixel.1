@@ -106,13 +106,15 @@ specified.
 .br
 \fISELECTTYPE\fP is one of them:
 .br
-auto     -> choose selecting method automatically (default)
+auto      -> choose selecting method automatically (default)
 .br
-center   -> choose the center of the box
+center    -> choose the center of the box
 .br
-average  -> calculate the color average into the box
+average   -> calculate the color average into the box
 .br
 histogram -> similar with average but considers color histogram
+.br
+maximum   -> choose the most significant pixel from vertexes of the median-cut box
 .TP 5
 .B \-c \fIREGION\fP, \-\-crop=\fIREGION\fP
 crop source image to fit the specified geometry.

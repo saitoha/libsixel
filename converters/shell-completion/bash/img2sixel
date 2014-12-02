@@ -56,7 +56,8 @@ _img2sixel()
         COMPREPLY=( $( compgen -W 'auto \
                                    center \
                                    average \
-                                   histogram' -- "$cur" ) )
+                                   histogram \
+                                   maximum' -- "$cur" ) )
         return 0
         ;;
     -r|--resampling)

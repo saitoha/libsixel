@@ -1078,11 +1078,15 @@ void show_help(void)
             "                                          (default)\n"
             "                             center    -> choose the center of\n"
             "                                          the box\n"
-            "                             average    -> calculate the color\n"
+            "                             average   -> calculate the color\n"
             "                                          average into the box\n"
             "                             histogram -> similar with average\n"
             "                                          but considers color\n"
             "                                          histogram\n"
+            "                             maximum   -> choose the most\n"
+            "                                          significant pixel\n"
+            "                                          from vertexes of the\n"
+            "                                          median-cut box\n"
             "-c REGION, --crop=REGION   crop source image to fit the\n"
             "                           specified geometry. REGION should\n"
             "                           be formatted as '%%dx%%d+%%d+%%d'\n"
@@ -1359,6 +1363,8 @@ main(int argc, char *argv[])
             } else if ((strcmp(optarg, "histogram") == 0) ||
                        (strcmp(optarg, "histgram") == 0)) {
                 settings.method_for_rep = REP_AVERAGE_PIXELS;
+            } else if (strcmp(optarg, "maximum") == 0) {
+                settings.method_for_rep = REP_MAXIMUM_PIXELS;
             } else {
                 fprintf(stderr,
                         "Finding method '%s' is not supported.\n",
