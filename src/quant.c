@@ -464,6 +464,11 @@ colormapFromBv(unsigned int const newcolors,
                           colorfreqtable, depth,
                           colormap.table[bi]->tuple);
             break;
+        case REP_MAXIMUM_PIXELS:
+            maximumPixel(bv[bi].ind, bv[bi].colors,
+                         colorfreqtable, depth,
+                         colormap.table[bi]->tuple);
+            break;
         default:
             quant_trace(stderr, "Internal error: "
                                 "invalid value of methodForRep: %d\n",
