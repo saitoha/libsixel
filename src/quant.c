@@ -393,6 +393,36 @@ averagePixels(int const boxStart,
 
 
 
+static void
+maximumPixel(int const boxStart,
+             int const boxSize,
+             tupletable2 const colorfreqtable,
+             unsigned int const depth,
+             tuple const newTuple)
+{
+    unsigned int plane;
+    int i;
+    int maxvalue;
+    int currentvalue;
+    int selected = 0;
+
+    for (i = 0; i < boxSize; ++i) {
+        maxvalue = 0;
+        currentvalue = colorfreqtable.table[boxStart+i]->value;
+        if (currentvalue > maxvalue) {
+            maxvalue = currentvalue;
+            selected = i;
+        }
+
+    }
+    for (plane = 0; plane < depth; ++plane) {
+        newTuple[plane] = colorfreqtable.table[boxStart+selected]->tuple[plane];
+    }
+
+}
+
+
+
 static tupletable2
 colormapFromBv(unsigned int const newcolors,
                boxVector const bv,
