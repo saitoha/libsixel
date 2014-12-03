@@ -34,7 +34,9 @@ before_install:
   - "if [ x$GCOV != x ]; then sudo pip install cpp-coveralls pyyaml; fi"
 
 before_script:
-  - "CC=$XCC dash ./configure --prefix=${PREFIX} ${DEBUG} ${HOST} ${GDKPIXBUF} ${GD} ${LIBCURL} ${GCOV} ${STATIC}"
+  - "CC=$XCC dash ./configure --prefix=${PREFIX} ${DEBUG} ${HOST} ${GDKPIXBUF} ${GD} ${LIBCURL} ${GCOV} ${STATIC}" 2>&1 | tee log
+  - cat log
+  - ! grep -i "unexpected operator" log
 
 script:
   - "make"
