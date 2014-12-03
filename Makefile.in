@@ -260,12 +260,12 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
-JPEG_CFLAGS = @JPEG_CFLAGS@
-JPEG_LIBS = @JPEG_LIBS@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBCURL_CFLAGS = @LIBCURL_CFLAGS@
 LIBCURL_LIBS = @LIBCURL_LIBS@
+LIBJPEG_CFLAGS = @LIBJPEG_CFLAGS@
+LIBJPEG_LIBS = @LIBJPEG_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBPNG_CFLAGS = @LIBPNG_CFLAGS@
 LIBPNG_LIBS = @LIBPNG_LIBS@
@@ -329,7 +329,6 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
-have_pkg_config = @have_pkg_config@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -882,7 +881,7 @@ all-am:
 	cp package.json.in package.json
 
 test: all
-	$(MAKE) test -C converters > test.log
+	$(MAKE) test -C converters 2>&1 |tee test.log
 
 winetest: all
 	$(MAKE) winetest -C converters
