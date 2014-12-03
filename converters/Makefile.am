@@ -13,7 +13,7 @@ if COND_GCOV
 MAYBE_COVERAGE = --coverage
 endif
 
-CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe server.py
+CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe server.py server.key server.crt
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
@@ -149,11 +149,16 @@ if HAVE_CURL
 	    echo "import BaseHTTPServer as bs, SimpleHTTPServer as ss, ssl" > server.py; \
 	    echo "httpd = bs.HTTPServer(('localhost', 4443), ss.SimpleHTTPRequestHandler)" >> server.py; \
 	    echo "httpd.socket = ssl.wrap_socket(httpd.socket, certfile='server.crt', keyfile='server.key', server_side=True)" >> server.py; \
-	    echo "for x in range(1,2): httpd.handle_request()" >> server.py; \
+	    echo "httpd.handle_request()" >> server.py; \
+	    echo "httpd.handle_request()" >> server.py; \
 	    python server.py& \
 	    sleep 1; \
-	    ./img2sixel 'https://localhost:4443/snake.sixel'; \
+	    ! ./img2sixel 'https://localhost:4443/snake.sixel'; \
+	    sleep 1; \
+	    ./img2sixel -k 'https://localhost:4443/snake.sixel'; \
 	fi
+else
+	! $(WINE) ./img2sixel -k < ../images/snake.jpg
 endif
 if WANT_SIXEL2PNG
 	! $(WINE) ./sixel2png -i unknown.sixel

@@ -303,6 +303,9 @@ Options:
 -e, --monochrome           output monochrome sixel image
                            this option assumes the terminal
                            background color is black
+-k, --insecure             allow to connect to SSL sites without
+                           certs(enabled only when configured
+                           with --with-libcurl)
 -i, --invert               assume the terminal background color
                            is white, make sense only when -e
                            option is given

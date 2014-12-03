@@ -141,7 +141,7 @@ prepare_builtin_palette(int builtin_palette)
 
 
 static sixel_dither_t *
-prepare_specified_palette(char const *mapfile, int reqcolors)
+prepare_specified_palette(char const *mapfile, int reqcolors, int finsecure)
 {
     unsigned char *mappixels;
     sixel_dither_t *dither = NULL;
@@ -160,7 +160,7 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
     ret = load_image_file(mapfile, &map_sx, &map_sy,
                           &palette, &ncolors, &pixelformat,
                           &frame_count, &loop_count,
-                          &delays, /* fstatic */ 1,
+                          &delays, /* fstatic */ 1, finsecure,
                           /* reqcolors */ 256,
                           &mappixels);
     if (ret != 0 || mappixels == NULL || map_sx * map_sy == 0) {
@@ -228,6 +228,7 @@ typedef struct Settings {
     enum loopMode loop_mode;
     enum paletteType palette_type;
     int f8bit;
+    int finsecure;
     int finvert;
     int fuse_macro;
     int fignore_delay;
@@ -277,7 +278,8 @@ prepare_palette(sixel_dither_t *former_dither,
             return former_dither;
         }
         dither = prepare_specified_palette(psettings->mapfile,
-                                           psettings->reqcolors);
+                                           psettings->reqcolors,
+                                           psettings->finsecure);
     } else if (psettings->builtin_palette) {
         if (former_dither) {
             return former_dither;
@@ -803,6 +805,7 @@ reload:
                            ppalette, &ncolors, &pixelformat,
                            &frame_count, &loop_count,
                            &delays, psettings->fstatic,
+                           psettings->finsecure,
                            psettings->reqcolors,
                            &pixels);
 
@@ -1023,6 +1026,9 @@ void show_help(void)
             "-e, --monochrome           output monochrome sixel image\n"
             "                           this option assumes the terminal\n"
             "                           background color is black\n"
+            "-k, --insecure             allow to connect to SSL sites without\n"
+            "                           certs(enabled only when configured\n"
+            "                           with --with-libcurl)\n"
             "-i, --invert               assume the terminal background color\n"
             "                           is white, make sense only when -e\n"
             "                           option is given\n"
@@ -1186,7 +1192,7 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:C:DVH";
+    char const *optstring = "78p:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:C:DVH";
 
     settings_t settings = {
         -1,                 /* reqcolors */
@@ -1202,6 +1208,7 @@ main(int argc, char *argv[])
         LOOP_AUTO,          /* loop_mode */
         PALETTETYPE_AUTO,   /* palette_type */
         0,                  /* f8bit */
+        0,                  /* finsecure */
         0,                  /* finvert */
         0,                  /* fuse_macro */
         0,                  /* fignore_delay */
@@ -1243,6 +1250,7 @@ main(int argc, char *argv[])
         {"resampling",       required_argument,  &long_opt, 'r'},
         {"quality",          required_argument,  &long_opt, 'q'},
         {"palette-type",     required_argument,  &long_opt, 't'},
+        {"insecure",         no_argument,        &long_opt, 'k'},
         {"invert",           no_argument,        &long_opt, 'i'},
         {"loop-control",     required_argument,  &long_opt, 'l'},
         {"use-macro",        no_argument,        &long_opt, 'u'},
@@ -1491,6 +1499,9 @@ main(int argc, char *argv[])
                 goto argerr;
             }
             break;
+        case 'k':
+            settings.finsecure = 1;
+            break;
         case 'i':
             settings.finvert = 1;
             break;
@@ -1605,6 +1616,13 @@ main(int argc, char *argv[])
                         " with arguments [filename ...].\n");
         goto argerr;
     }
+#if !HAVE_LIBCURL
+    if (settings.insecure) {
+        fprintf(stderr, "option -k, --insecure is enabled "
+                        "only when configured with --with-libcurl.\n");
+        goto argerr;
+    }
+#endif  /* HAVE_LIBCURL */
     if (settings.show_version) {
         show_version();
         exit_code = EXIT_SUCCESS;
@@ -1643,7 +1661,7 @@ main(int argc, char *argv[])
 
 argerr:
     exit_code = EXIT_FAILURE;
-    fprintf(stderr, "usage: img2sixel [-78eIiugvSPDVH] [-p colors] [-m file] [-d diffusiontype]\n"
+    fprintf(stderr, "usage: img2sixel [-78eIkiugvSPDVH] [-p colors] [-m file] [-d diffusiontype]\n"
                     "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
                     "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
                     "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"

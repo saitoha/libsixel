@@ -208,16 +208,17 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
 
 # ifdef HAVE_LIBCURL
 static int
-get_chunk_from_url(char const *url, chunk_t *pchunk)
+get_chunk_from_url(char const *url, chunk_t *pchunk, int finsecure)
 {
     CURL *curl;
     CURLcode code;
+    int ret = (-1);
 
     chunk_init(pchunk, 1024);
     curl = curl_easy_init();
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-    if (strncmp(url, "https://", 8) == 0) {
+    if (strncmp(url, "https://", 8) == 0 && finsecure) {
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
     }
@@ -227,11 +228,18 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
     if (code != CURLE_OK) {
         fprintf(stderr, "curl_easy_perform('%s') failed.\n" "code: %d.\n",
                 url, code);
-        curl_easy_cleanup(curl);
-        return (-1);
+        if (code == CURLE_SSL_CACERT) {
+            fprintf(stderr, "if you'd like to turn off libcurl's verification "
+                            "of the certificate, use the -k (or --insecure) "
+                            " option.\n");
+        }
+        goto end;
     }
+    ret = 0;
+
+end:
     curl_easy_cleanup(curl);
-    return 0;
+    return ret;
 }
 # endif  /* HAVE_LIBCURL */
  
@@ -477,11 +485,11 @@ load_sixel(unsigned char *buffer, int size,
 
 
 static int
-get_chunk(char const *filename, chunk_t *pchunk)
+get_chunk(char const *filename, chunk_t *pchunk, int finsecure)
 {
     if (filename != NULL && strstr(filename, "://")) {
 # ifdef HAVE_LIBCURL
-        return get_chunk_from_url(filename, pchunk);
+        return get_chunk_from_url(filename, pchunk, finsecure);
 # else
         fprintf(stderr, "To specify URI schemes, you have to "
                         "configure this program with --with-libcurl "
@@ -987,7 +995,7 @@ load_image_file(char const *filename, int *psx, int *psy,
                 unsigned char **ppalette, int *pncolors,
                 int *ppixelformat,
                 int *pframe_count, int *ploop_count, int **ppdelay,
-                int fstatic, int reqcolors,
+                int fstatic, int finsecure, int reqcolors,
                 unsigned char **ppixels)
 {
     int comp;
@@ -1001,7 +1009,7 @@ load_image_file(char const *filename, int *psx, int *psy,
         *ppalette = NULL;
     }
 
-    ret = get_chunk(filename, &chunk);
+    ret = get_chunk(filename, &chunk, finsecure);
     if (ret != 0) {
         return (-1);
     }
