@@ -424,7 +424,7 @@ dist_man_MANS = $(am__append_3) $(am__append_8)
 dist_bashcompletion_DATA = $(am__append_4)
 dist_zshcompletion_DATA = $(am__append_5)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
-CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe
+CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe server.py
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c scale.c malloc_stub.c loader.c frompnm.c \
 @WANT_IMG2SIXEL_TRUE@                    scale.h malloc_stub.h loader.h frompnm.h
 
@@ -1153,8 +1153,20 @@ test: all
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/seq2gif.gif -S -datkinson
 @HAVE_JPEG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake-progressive.jpg
 @HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.png
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	!$(WINE) ./img2sixel file:///test
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel file:///test
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel https:///test
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel file:///$$(pwd)/../images/snake.jpg
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	if which openssl && which python; then \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    openssl genrsa | openssl rsa > server.key; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    openssl req -new -key server.key -subj "/CN=localhost" | openssl x509 -req -signkey server.key > server.crt; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "import BaseHTTPServer as bs, SimpleHTTPServer as ss, ssl" > server.py; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "httpd = bs.HTTPServer(('localhost', 4443), ss.SimpleHTTPRequestHandler)" >> server.py; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "httpd.socket = ssl.wrap_socket(httpd.socket, certfile='server.crt', keyfile='server.key', server_side=True)" >> server.py; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "for x in range(1,2): httpd.handle_request()" >> server.py; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    python server.py& \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    sleep 1; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    ./img2sixel 'https://localhost:4443/snake.sixel'; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	fi
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	! $(WINE) ./sixel2png -i unknown.sixel
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	! $(WINE) ./sixel2png -% < snake.sixel
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -H
