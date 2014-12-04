@@ -1617,7 +1617,7 @@ main(int argc, char *argv[])
         goto argerr;
     }
 #if !HAVE_LIBCURL
-    if (settings.insecure) {
+    if (settings.finsecure) {
         fprintf(stderr, "option -k, --insecure is enabled "
                         "only when configured with --with-libcurl.\n");
         goto argerr;
