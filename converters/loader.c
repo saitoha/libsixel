@@ -491,6 +491,7 @@ get_chunk(char const *filename, chunk_t *pchunk, int finsecure)
 # ifdef HAVE_LIBCURL
         return get_chunk_from_url(filename, pchunk, finsecure);
 # else
+        (void) finsecure;  /* unused */
         fprintf(stderr, "To specify URI schemes, you have to "
                         "configure this program with --with-libcurl "
                         "option at compile time.\n");
