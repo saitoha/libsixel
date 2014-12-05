@@ -296,7 +296,7 @@ AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
 
 if test x$with_libcurl != xno; then
-    if test x$build == x$host; then
+    if test x$build = x$host; then
         AC_CHECK_HEADER([curl/curl.h],
                         [AC_CHECK_LIB([curl],
                                       [curl_easy_cleanup],
@@ -326,7 +326,7 @@ AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
 
 if test x$with_jpeg != xno; then
-    if test x$build == x$host; then
+    if test x$build = x$host; then
         AC_CHECK_HEADER([jpeglib.h],
                         [AC_CHECK_LIB([jpeg],
                                       [jpeg_read_header],
@@ -349,7 +349,7 @@ AC_SUBST(LIBJPEG_CFLAGS)
 AC_SUBST(LIBJPEG_LIBS)
 
 if test x$with_png != xno; then
-    if test x$build == x$host; then
+    if test x$build = x$host; then
         AC_CHECK_HEADER([png.h],
                         [AC_CHECK_LIB([png],
                                       [png_check_sig],

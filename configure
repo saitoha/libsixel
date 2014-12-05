@@ -13853,7 +13853,7 @@ fi
 
 
 if test x$with_libcurl != xno; then
-    if test x$build == x$host; then
+    if test x$build = x$host; then
         ac_fn_c_check_header_mongrel "$LINENO" "curl/curl.h" "ac_cv_header_curl_curl_h" "$ac_includes_default"
 if test "x$ac_cv_header_curl_curl_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for curl_easy_cleanup in -lcurl" >&5
@@ -13997,7 +13997,7 @@ fi
 
 
 if test x$with_jpeg != xno; then
-    if test x$build == x$host; then
+    if test x$build = x$host; then
         ac_fn_c_check_header_mongrel "$LINENO" "jpeglib.h" "ac_cv_header_jpeglib_h" "$ac_includes_default"
 if test "x$ac_cv_header_jpeglib_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for jpeg_read_header in -ljpeg" >&5
@@ -14067,7 +14067,7 @@ fi
 
 
 if test x$with_png != xno; then
-    if test x$build == x$host; then
+    if test x$build = x$host; then
         ac_fn_c_check_header_mongrel "$LINENO" "png.h" "ac_cv_header_png_h" "$ac_includes_default"
 if test "x$ac_cv_header_png_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for png_check_sig in -lpng" >&5
