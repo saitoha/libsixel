@@ -322,8 +322,12 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
                     }
                     attributed_pan = attributed_pan * param[2] / 10;
                     attributed_pad = attributed_pad * param[2] / 10;
-                    if (attributed_pan <= 0) attributed_pan = 1;
-                    if (attributed_pad <= 0) attributed_pad = 1;
+                    if (attributed_pan <= 0) {
+                        attributed_pan = 1;
+                    }
+                    if (attributed_pad <= 0) {
+                        attributed_pad = 1;
+                    }
                 }
             }
 
@@ -333,13 +337,25 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
             /* DECGRA Set Raster Attributes " Pan; Pad; Ph; Pv */
             p = sixel_getparams(p + 1, param, &n);
 
-            if (n > 0) attributed_pad = param[0];
-            if (n > 1) attributed_pan = param[1];
-            if (n > 2 && param[2] > 0) attributed_ph = param[2];
-            if (n > 3 && param[3] > 0) attributed_pv = param[3];
+            if (n > 0) {
+                attributed_pad = param[0];
+            }
+            if (n > 1) {
+                attributed_pan = param[1];
+            }
+            if (n > 2 && param[2] > 0) {
+                attributed_ph = param[2];
+            }
+            if (n > 3 && param[3] > 0) {
+                attributed_pv = param[3];
+            }
 
-            if (attributed_pan <= 0) attributed_pan = 1;
-            if (attributed_pad <= 0) attributed_pad = 1;
+            if (attributed_pan <= 0) {
+                attributed_pan = 1;
+            }
+            if (attributed_pad <= 0) {
+                attributed_pad = 1;
+            }
 
             if (imsx < attributed_ph || imsy < attributed_pv) {
                 dmsx = imsx > attributed_ph ? imsx : attributed_ph;
