@@ -160,7 +160,8 @@ AC_CHECK_FUNC([memset], [],
               [AC_MSG_ERROR(memset is not available.)])
 
 AC_CHECK_FUNC([getopt_long],
-              [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])],
+              [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])
+               AM_CONDITIONAL([HAVE_GETOPT_LONG], 1)],
               [AC_CHECK_FUNC([getopt],
                              [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
                              [AC_MSG_ERROR(getopt or getopt_long is not available.)])])
@@ -190,8 +191,7 @@ AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
                ])
 
 loaders="stb_image"
-have_curl="no"
-have_jpeg="no"
+have_curl="no" have_jpeg="no"
 have_png="no"
 #have_wic="no"
 
@@ -410,7 +410,5 @@ echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
-echo ""
-echo ""
 echo ""
 echo ""

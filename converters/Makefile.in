@@ -1162,7 +1162,10 @@ test: all
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png < snake.sixel > snake1.png
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png < snake2.sixel > snake2.png
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png - - < snake3.sixel > snake3.png
-@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png --input=snake.sixel -o snake4.png
+@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -i snake.sixel -o snake4.png
+@HAVE_GETOPT_LONG_TRUE@@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png --input=snake.sixel --output=snake4.png
+@HAVE_GETOPT_LONG_TRUE@@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	echoOKOKO;
+@HAVE_GETOPT_LONG_TRUE@@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	exit 1;
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options1.txt
 @WANT_IMG2SIXEL_TRUE@	rm -f sixel.pipe
 @WANT_IMG2SIXEL_TRUE@	if test "$(WINE)" = "" && which mkfifo; then \
