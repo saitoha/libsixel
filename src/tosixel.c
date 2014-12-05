@@ -904,6 +904,47 @@ dither_func_burkes(unsigned char *data, int width)
 }
 
 
+static void
+sixel_apply_15bpp_dither(
+    unsigned char *pixels,
+    int x, int y, int width, int height,
+    int method_for_diffuse)
+{
+    /* apply floyd steinberg dithering */
+    switch (method_for_diffuse) {
+    case DIFFUSE_FS:
+        if (x < width - 1 && y < height - 1) {
+            dither_func_fs(pixels, width);
+        }
+        break;
+    case DIFFUSE_ATKINSON:
+        if (x < width - 2 && y < height - 2) {
+            dither_func_atkinson(pixels, width);
+        }
+        break;
+    case DIFFUSE_JAJUNI:
+        if (x < width - 2 && y < height - 2) {
+            dither_func_jajuni(pixels, width);
+        }
+        break;
+    case DIFFUSE_STUCKI:
+        if (x < width - 2 && y < height - 2) {
+            dither_func_stucki(pixels, width);
+        }
+        break;
+    case DIFFUSE_BURKES:
+        if (x < width - 2 && y < height - 1) {
+            dither_func_burkes(pixels, width);
+        }
+        break;
+    case DIFFUSE_NONE:
+    default:
+        dither_func_none(pixels, width);
+        break;
+    }
+}
+
+
 static int
 sixel_encode_fullcolor(unsigned char *pixels, int width, int height,
                        sixel_dither_t *dither, sixel_output_t *context)
@@ -964,40 +1005,9 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height,
                     int pix = ((pixels[0] & 0xf8) << 7) |
                               ((pixels[1] & 0xf8) << 2) |
                               ((pixels[2] >> 3) & 0x1f);
-
-                    /* apply floyd steinberg dithering */
-                    switch (dither->method_for_diffuse) {
-                    case DIFFUSE_FS:
-                        if (x < width - 1 && y < height - 1) {
-                            dither_func_fs(pixels, width);
-                        }
-                        break;
-                    case DIFFUSE_ATKINSON:
-                        if (x < width - 2 && y < height - 2) {
-                            dither_func_atkinson(pixels, width);
-                        }
-                        break;
-                   case DIFFUSE_JAJUNI:
-                        if (x < width - 2 && y < height - 2) {
-                            dither_func_jajuni(pixels, width);
-                        }
-                        break;
-                   case DIFFUSE_STUCKI:
-                        if (x < width - 2 && y < height - 2) {
-                            dither_func_stucki(pixels, width);
-                        }
-                        break;
-                   case DIFFUSE_BURKES:
-                        if (x < width - 2 && y < height - 1) {
-                            dither_func_burkes(pixels, width);
-                        }
-                        break;
-                    case DIFFUSE_NONE:
-                    default:
-                        dither_func_none(pixels, width);
-                        break;
-                    }
-
+                    sixel_apply_15bpp_dither(pixels,
+                                             x, y, width, height,
+                                             dither->method_for_diffuse);
                     if (!rgbhit[pix]) {
                         while (1) {
                             if (nextpal >= 255) {
