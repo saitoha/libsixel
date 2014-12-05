@@ -959,6 +959,7 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height,
     unsigned char palstate[256];
     int output_count;
     int nret = (-1);
+    int const maxcolors = 1 << 15;
 
     if (dither->pixelformat != PIXELFORMAT_RGB888) {
         /* normalize pixelfromat */
@@ -970,14 +971,14 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height,
         pixels = normalized_pixels;
     }
 
-    paletted_pixels = (unsigned char*)malloc(width * height + 32768 * 2 + width * 6);
+    paletted_pixels = (unsigned char*)malloc(width * height + maxcolors * 2 + width * 6);
     if (paletted_pixels == NULL) {
         goto error;
     }
     rgbhit = paletted_pixels + width * height;
-    memset(rgbhit, 0, 32768 * 2 + width * 6);
-    rgb2pal = rgbhit + 32768;
-    marks = rgb2pal + 32768;
+    memset(rgbhit, 0, maxcolors * 2 + width * 6);
+    rgb2pal = rgbhit + maxcolors;
+    marks = rgb2pal + maxcolors;
     output_count = 0;
     while (1) {
         int x, y;
