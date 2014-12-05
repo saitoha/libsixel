@@ -1176,9 +1176,9 @@ int
 main(int argc, char *argv[])
 {
     int n;
-    int long_opt;
     int unknown_opt = 0;
 #if HAVE_GETOPT_LONG
+    int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     int ret;
@@ -1271,9 +1271,11 @@ main(int argc, char *argv[])
         if (n == -1) {
             break;
         }
+#if HAVE_GETOPT_LONG
         if (n == 0) {
             n = long_opt;
         }
+#endif  /* HAVE_GETOPT_LONG */
         switch(n) {
         case '7':
             settings.f8bit = 0;
