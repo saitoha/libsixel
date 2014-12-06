@@ -1552,6 +1552,8 @@ main(int argc, char *argv[])
             unknown_opt = 1;
         }
     }
+
+    /* detects arguments conflictions */
     if (settings.reqcolors != -1 && settings.mapfile) {
         fprintf(stderr, "option -p, --colors conflicts "
                         "with -m, --mapfile.\n");
@@ -1607,21 +1609,27 @@ main(int argc, char *argv[])
                         " with arguments [filename ...].\n");
         goto argerr;
     }
+
+    /* evaluate the option -v,--version */
     if (settings.show_version) {
         show_version();
         exit_code = EXIT_SUCCESS;
         goto end;
     }
+
+    /* evaluate the option -h,--help */
     if (settings.show_help) {
         show_help();
         exit_code = EXIT_SUCCESS;
         goto end;
     }
+
+    /* exit if unknown options are specified */
     if (unknown_opt) {
         goto argerr;
     }
 
-    if (settings.reqcolors == -1) {
+    if (settings.reqcolors == (-1)) {
         settings.reqcolors = SIXEL_PALETTE_MAX;
     }
 
@@ -1640,6 +1648,8 @@ main(int argc, char *argv[])
             }
         }
     }
+
+    /* mark as success */
     exit_code = EXIT_SUCCESS;
     goto end;
 
