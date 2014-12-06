@@ -12719,10 +12719,11 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-       AM_CFLAGS="$AM_CFLAGS -Wall"
+                      AM_CFLAGS="$AM_CFLAGS -Wall"
 else
-  as_fn_error $? "no" "$LINENO" 5
-       :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+                      :
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    CFLAGS="$saved_cflags"
@@ -12746,10 +12747,11 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-       AM_CFLAGS="$AM_CFLAGS -Wextra"
+                      AM_CFLAGS="$AM_CFLAGS -Wextra"
 else
-  as_fn_error $? "no" "$LINENO" 5
-       :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+                      :
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    CFLAGS="$saved_cflags"
@@ -12774,10 +12776,11 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-       AM_CFLAGS="$AM_CFLAGS -Werror"
+                      AM_CFLAGS="$AM_CFLAGS -Werror"
 else
-  as_fn_error $? "no" "$LINENO" 5
-       :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+                      :
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    CFLAGS="$saved_cflags"

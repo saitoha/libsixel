@@ -128,10 +128,10 @@ AC_DEFUN([LS_CHECK_CFLAG], [
    saved_cflags="$CFLAGS"
    CFLAGS="$1"
    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
-      [AC_MSG_RESULT([yes])
-       m4_default([$2], :)],
-      [AC_MSG_ERROR([no])
-       m4_default([$3], :)])
+                     [AC_MSG_RESULT([yes])
+                      m4_default([$2], :)],
+                     [AC_MSG_RESULT([no])
+                      m4_default([$3], :)])
    CFLAGS="$saved_cflags"
 ])
 
