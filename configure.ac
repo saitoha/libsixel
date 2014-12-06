@@ -172,6 +172,7 @@ AC_CHECK_FUNCS([memcpy \
                 _setmode \
                 signal \
                 usleep \
+                strdup \
                 calloc \
                 clock \
                 clearerr \

@@ -12914,6 +12914,7 @@ for ac_func in memcpy \
                 _setmode \
                 signal \
                 usleep \
+                strdup \
                 calloc \
                 clock \
                 clearerr \
