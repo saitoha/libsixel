@@ -1,4 +1,15 @@
+2014-12-05  Hayaki Saito <user@zuse.jp>
+
+  * NEWS: Update NEWS
+
+2014-12-03  OBATA Akio <obata@lins.jp>
+
+  * configure, configure.ac: Kill bashizm  '=' operator for test(1) is not
+  portable.
+
 2014-12-01  Hayaki Saito <user@zuse.jp>
+
+  * NEWS: Update NEWS
 
   * converters/img2sixel.c: Build fix
 
