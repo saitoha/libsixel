@@ -11579,8 +11579,6 @@ CC="$lt_save_CC"
 ac_config_headers="$ac_config_headers config.h"
 
 
-#AC_ENABLE_SHARED
-#AC_DISABLE_STATIC
 
 
 
@@ -12887,14 +12885,7 @@ if test "x$ac_cv_func_getopt_long" = xyes; then :
 
 $as_echo "#define HAVE_GETOPT_LONG 1" >>confdefs.h
 
-                if 1; then
-  HAVE_GETOPT_LONG_TRUE=
-  HAVE_GETOPT_LONG_FALSE='#'
-else
-  HAVE_GETOPT_LONG_TRUE='#'
-  HAVE_GETOPT_LONG_FALSE=
-fi
-
+               have_getopt_long=1
 else
   ac_fn_c_check_func "$LINENO" "getopt" "ac_cv_func_getopt"
 if test "x$ac_cv_func_getopt" = xyes; then :
@@ -12905,6 +12896,14 @@ else
   as_fn_error $? "getopt or getopt_long is not available." "$LINENO" 5
 fi
 
+fi
+
+ if test x$have_getopt_long = xyes; then
+  HAVE_GETOPT_LONG_TRUE=
+  HAVE_GETOPT_LONG_FALSE='#'
+else
+  HAVE_GETOPT_LONG_TRUE='#'
+  HAVE_GETOPT_LONG_FALSE=
 fi
 
 

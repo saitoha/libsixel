@@ -301,8 +301,8 @@ main(int argc, char *argv[])
     int n;
     char *output = strdup("-");
     char *input = strdup("-");
-    int long_opt;
 #if HAVE_GETOPT_LONG
+    int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     int nret = 0;
@@ -329,9 +329,11 @@ main(int argc, char *argv[])
             nret = (-1);
             break;
         }
+#if HAVE_GETOPT_LONG
         if (n == 0) {
             n = long_opt;
         }
+#endif  /* HAVE_GETOPT_LONG */
         switch(n) {
         case 'i':
             free(input);
