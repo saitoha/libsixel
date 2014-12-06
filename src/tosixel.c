@@ -904,6 +904,47 @@ dither_func_burkes(unsigned char *data, int width)
 }
 
 
+static void
+sixel_apply_15bpp_dither(
+    unsigned char *pixels,
+    int x, int y, int width, int height,
+    int method_for_diffuse)
+{
+    /* apply floyd steinberg dithering */
+    switch (method_for_diffuse) {
+    case DIFFUSE_FS:
+        if (x < width - 1 && y < height - 1) {
+            dither_func_fs(pixels, width);
+        }
+        break;
+    case DIFFUSE_ATKINSON:
+        if (x < width - 2 && y < height - 2) {
+            dither_func_atkinson(pixels, width);
+        }
+        break;
+    case DIFFUSE_JAJUNI:
+        if (x < width - 2 && y < height - 2) {
+            dither_func_jajuni(pixels, width);
+        }
+        break;
+    case DIFFUSE_STUCKI:
+        if (x < width - 2 && y < height - 2) {
+            dither_func_stucki(pixels, width);
+        }
+        break;
+    case DIFFUSE_BURKES:
+        if (x < width - 2 && y < height - 1) {
+            dither_func_burkes(pixels, width);
+        }
+        break;
+    case DIFFUSE_NONE:
+    default:
+        dither_func_none(pixels, width);
+        break;
+    }
+}
+
+
 static int
 sixel_encode_fullcolor(unsigned char *pixels, int width, int height,
                        sixel_dither_t *dither, sixel_output_t *context)
@@ -918,6 +959,7 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height,
     unsigned char palstate[256];
     int output_count;
     int nret = (-1);
+    int const maxcolors = 1 << 15;
 
     if (dither->pixelformat != PIXELFORMAT_RGB888) {
         /* normalize pixelfromat */
@@ -929,14 +971,14 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height,
         pixels = normalized_pixels;
     }
 
-    paletted_pixels = (unsigned char*)malloc(width * height + 32768 * 2 + width * 6);
+    paletted_pixels = (unsigned char*)malloc(width * height + maxcolors * 2 + width * 6);
     if (paletted_pixels == NULL) {
         goto error;
     }
     rgbhit = paletted_pixels + width * height;
-    memset(rgbhit, 0, 32768 * 2 + width * 6);
-    rgb2pal = rgbhit + 32768;
-    marks = rgb2pal + 32768;
+    memset(rgbhit, 0, maxcolors * 2 + width * 6);
+    rgb2pal = rgbhit + maxcolors;
+    marks = rgb2pal + maxcolors;
     output_count = 0;
     while (1) {
         int x, y;
@@ -964,40 +1006,9 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height,
                     int pix = ((pixels[0] & 0xf8) << 7) |
                               ((pixels[1] & 0xf8) << 2) |
                               ((pixels[2] >> 3) & 0x1f);
-
-                    /* apply floyd steinberg dithering */
-                    switch (dither->method_for_diffuse) {
-                    case DIFFUSE_FS:
-                        if (x < width - 1 && y < height - 1) {
-                            dither_func_fs(pixels, width);
-                        }
-                        break;
-                    case DIFFUSE_ATKINSON:
-                        if (x < width - 2 && y < height - 2) {
-                            dither_func_atkinson(pixels, width);
-                        }
-                        break;
-                   case DIFFUSE_JAJUNI:
-                        if (x < width - 2 && y < height - 2) {
-                            dither_func_jajuni(pixels, width);
-                        }
-                        break;
-                   case DIFFUSE_STUCKI:
-                        if (x < width - 2 && y < height - 2) {
-                            dither_func_stucki(pixels, width);
-                        }
-                        break;
-                   case DIFFUSE_BURKES:
-                        if (x < width - 2 && y < height - 1) {
-                            dither_func_burkes(pixels, width);
-                        }
-                        break;
-                    case DIFFUSE_NONE:
-                    default:
-                        dither_func_none(pixels, width);
-                        break;
-                    }
-
+                    sixel_apply_15bpp_dither(pixels,
+                                             x, y, width, height,
+                                             dither->method_for_diffuse);
                     if (!rgbhit[pix]) {
                         while (1) {
                             if (nextpal >= 255) {
