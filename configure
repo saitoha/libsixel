@@ -651,6 +651,7 @@ GD_CFLAGS
 GDK_PIXBUF_LIBS
 GDK_PIXBUF_CFLAGS
 LIBOBJS
+AM_CFLAGS
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
@@ -12696,6 +12697,93 @@ $as_echo "no" >&6; }
 	fi
 fi
 fi
+
+
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wall" >&5
+$as_echo_n "checking if $CC supports -Wall... " >&6; }
+   saved_cflags="$CFLAGS"
+   CFLAGS="-Wall"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+       AM_CFLAGS="$AM_CFLAGS -Wall"
+else
+  as_fn_error $? "no" "$LINENO" 5
+       :
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+   CFLAGS="$saved_cflags"
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wextra" >&5
+$as_echo_n "checking if $CC supports -Wextra... " >&6; }
+   saved_cflags="$CFLAGS"
+   CFLAGS="-Wextra"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+       AM_CFLAGS="$AM_CFLAGS -Wextra"
+else
+  as_fn_error $? "no" "$LINENO" 5
+       :
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+   CFLAGS="$saved_cflags"
+
+if test x$enable_debug = xyes; then :
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Werror" >&5
+$as_echo_n "checking if $CC supports -Werror... " >&6; }
+   saved_cflags="$CFLAGS"
+   CFLAGS="-Werror"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+       AM_CFLAGS="$AM_CFLAGS -Werror"
+else
+  as_fn_error $? "no" "$LINENO" 5
+       :
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+   CFLAGS="$saved_cflags"
+
+fi
+
 
 # For wic integration
 #AC_PROG_CXX

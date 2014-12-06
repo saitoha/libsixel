@@ -125,6 +125,24 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AS_IF([test x$cross_compile != xyes], [PKG_PROG_PKG_CONFIG], [])
 
+AC_DEFUN([LS_CHECK_CFLAG], [
+   AC_MSG_CHECKING([if $CC supports $1])
+   saved_cflags="$CFLAGS"
+   CFLAGS="$1"
+   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
+      [AC_MSG_RESULT([yes])
+       m4_default([$2], :)],
+      [AC_MSG_ERROR([no])
+       m4_default([$3], :)])
+   CFLAGS="$saved_cflags"
+])
+
+LS_CHECK_CFLAG([-Wall],[AM_CFLAGS="$AM_CFLAGS -Wall"], [])
+LS_CHECK_CFLAG([-Wextra],[AM_CFLAGS="$AM_CFLAGS -Wextra"], [])
+AS_IF([test x$enable_debug = xyes],
+      [LS_CHECK_CFLAG([-Werror],[AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
+AC_SUBST([AM_CFLAGS])
+
 # For wic integration
 #AC_PROG_CXX
 
