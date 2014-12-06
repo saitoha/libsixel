@@ -650,6 +650,8 @@ GD_LIBS
 GD_CFLAGS
 GDK_PIXBUF_LIBS
 GDK_PIXBUF_CFLAGS
+HAVE_GETOPT_LONG_FALSE
+HAVE_GETOPT_LONG_TRUE
 LIBOBJS
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
@@ -11577,8 +11579,6 @@ CC="$lt_save_CC"
 ac_config_headers="$ac_config_headers config.h"
 
 
-#AC_ENABLE_SHARED
-#AC_DISABLE_STATIC
 
 
 
@@ -12885,6 +12885,7 @@ if test "x$ac_cv_func_getopt_long" = xyes; then :
 
 $as_echo "#define HAVE_GETOPT_LONG 1" >>confdefs.h
 
+               have_getopt_long=1
 else
   ac_fn_c_check_func "$LINENO" "getopt" "ac_cv_func_getopt"
 if test "x$ac_cv_func_getopt" = xyes; then :
@@ -12895,6 +12896,14 @@ else
   as_fn_error $? "getopt or getopt_long is not available." "$LINENO" 5
 fi
 
+fi
+
+ if test x$have_getopt_long = xyes; then
+  HAVE_GETOPT_LONG_TRUE=
+  HAVE_GETOPT_LONG_FALSE='#'
+else
+  HAVE_GETOPT_LONG_TRUE='#'
+  HAVE_GETOPT_LONG_FALSE=
 fi
 
 
@@ -12989,8 +12998,7 @@ _ACEOF
 
 
 loaders="stb_image"
-have_curl="no"
-have_jpeg="no"
+have_curl="no" have_jpeg="no"
 have_png="no"
 #have_wic="no"
 
@@ -14395,6 +14403,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_GETOPT_LONG_TRUE}" && test -z "${HAVE_GETOPT_LONG_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_GETOPT_LONG\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_JPEG_TRUE}" && test -z "${HAVE_JPEG_FALSE}"; then
@@ -16657,7 +16669,5 @@ echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
-echo ""
-echo ""
 echo ""
 echo ""

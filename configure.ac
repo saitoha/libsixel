@@ -18,8 +18,6 @@ LT_INIT
 AC_CONFIG_SRCDIR([src/fromsixel.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
-#AC_ENABLE_SHARED
-#AC_DISABLE_STATIC
 
 AX_GCC_VAR_ATTRIBUTE([deprecated])
 if test x$ax_cv_have_func_attribute_deprecated != x; then
@@ -160,10 +158,12 @@ AC_CHECK_FUNC([memset], [],
               [AC_MSG_ERROR(memset is not available.)])
 
 AC_CHECK_FUNC([getopt_long],
-              [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])],
+              [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])
+               have_getopt_long=1],
               [AC_CHECK_FUNC([getopt],
                              [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
                              [AC_MSG_ERROR(getopt or getopt_long is not available.)])])
+AM_CONDITIONAL([HAVE_GETOPT_LONG], [test x$have_getopt_long = xyes])
 
 AC_CHECK_FUNCS([memcpy \
                 memmove \
@@ -190,8 +190,7 @@ AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
                ])
 
 loaders="stb_image"
-have_curl="no"
-have_jpeg="no"
+have_curl="no" have_jpeg="no"
 have_png="no"
 #have_wic="no"
 
@@ -410,7 +409,5 @@ echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
-echo ""
-echo ""
 echo ""
 echo ""

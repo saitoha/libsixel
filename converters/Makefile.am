@@ -75,51 +75,50 @@ if WANT_IMG2SIXEL
 	! $(WINE) ./img2sixel -p64 -bxterm256 ../images/snake.png
 	! $(WINE) ./img2sixel -m ../images/map16.png -bxterm256 ../images/snake.png
 	! (echo -n a | ./img2sixel)
-	echo ./img2sixel
 	$(WINE) ./img2sixel -H
 	$(WINE) ./img2sixel -V
 	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | img2sixel | tee snake.sixel
 	$(WINE) ./img2sixel -w50% -h150% -dfs -thls < ../images/snake.jpg -shistogram | tee snake2.sixel
 	$(WINE) ./img2sixel -w2100 -h2100 -bxterm256 < ../images/snake.jpg > snake3.sixel
-	$(WINE) ./img2sixel - -w105% -h100 -djajuni -rnearest < ../images/snake.gif
-	$(WINE) ./img2sixel ../images/snake.tga -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto
-	$(WINE) ./img2sixel -p300 ../images/snake.tiff -8 -scenter -h100 -qfull -rhanning -dstucki -thls
+	$(WINE) ./img2sixel -w105% -h100 -djajuni -rnearest < ../images/snake.gif
+	$(WINE) ./img2sixel -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto ../images/snake.tga
+	$(WINE) ./img2sixel -p300 -8 -scenter -h100 -qfull -rhanning -dstucki -thls ../images/snake.tiff
 	$(WINE) ./img2sixel -8 -qauto -thls -e ../images/snake.pgm
-	$(WINE) ./img2sixel -8 ../images/snake.ppm -m ../images/map8-palette.png -Esize
-	$(WINE) ./img2sixel -7 ../images/snake.jpg -m ../images/map16-palette.png -Efast
-	$(WINE) ./img2sixel -7 ../images/snake-palette.png -w300
+	$(WINE) ./img2sixel -8 -m ../images/map8-palette.png -Esize ../images/snake.ppm
+	$(WINE) ./img2sixel -7 -m ../images/map16-palette.png -Efast ../images/snake.jpg
+	$(WINE) ./img2sixel -7 -w300 ../images/snake-palette.png
 	$(WINE) ./img2sixel -7 -w100 -h100 -bxterm16 ../images/snake.pbm
-	$(WINE) ./img2sixel -I ../images/snake.ppm -dstucki -thls
-	$(WINE) ./img2sixel ../images/snake.ppm -bvt340color
-	$(WINE) ./img2sixel ../images/snake.tga -bvt340mono
-	$(WINE) ./img2sixel -I ../images/snake-ascii.ppm -8 -dburkes
-	$(WINE) ./img2sixel -I -C10 ../images/snake.png -djajuni
-	$(WINE) ./img2sixel -I ../images/snake-ascii.pgm -Eauto
-	$(WINE) ./img2sixel -I ../images/snake-ascii.pbm -datkinson
+	$(WINE) ./img2sixel -I -dstucki -thls ../images/snake.ppm
+	$(WINE) ./img2sixel -bvt340color ../images/snake.ppm
+	$(WINE) ./img2sixel -bvt340mono ../images/snake.tga
+	$(WINE) ./img2sixel -I -8 -dburkes ../images/snake-ascii.ppm
+	$(WINE) ./img2sixel -I -C10 -djajuni ../images/snake.png
+	$(WINE) ./img2sixel -I -Eauto ../images/snake-ascii.pgm
+	$(WINE) ./img2sixel -I -datkinson ../images/snake-ascii.pbm
 	$(WINE) ./img2sixel ../images/snake-grayscale.png
-	$(WINE) ./img2sixel ../images/snake-grayscale.png -m ../images/map8-palette.png
-	$(WINE) ./img2sixel ../images/snake.png -m ../images/snake-grayscale.png
-	$(WINE) ./img2sixel ../images/snake-grayscale.png -c200x200+100+100
-	$(WINE) ./img2sixel ../images/snake-grayscale.png -c200x200+100+100 -w400
+	$(WINE) ./img2sixel -m ../images/map8-palette.png ../images/snake-grayscale.png
+	$(WINE) ./img2sixel -m ../images/snake-grayscale.png ../images/snake.png
+	$(WINE) ./img2sixel -c200x200+100+100 ../images/snake-grayscale.png
+	$(WINE) ./img2sixel -c200x200+100+100 -w400 ../images/snake-grayscale.png
 	$(WINE) ./img2sixel -I ../images/snake-grayscale.png
 	$(WINE) ./img2sixel -I ../images/snake-grayscale.jpg
-	$(WINE) ./img2sixel ../images/snake.six -m ../images/map8.six
-	$(WINE) ./img2sixel ../images/snake.six -w200 -p8
-	$(WINE) ./img2sixel ../images/snake.six -c200x200+100+100
+	$(WINE) ./img2sixel -m ../images/map8.six ../images/snake.six
+	$(WINE) ./img2sixel -w200 -p8 ../images/snake.six
+	$(WINE) ./img2sixel -c200x200+100+100 ../images/snake.six
 	$(WINE) ./img2sixel -bxterm16 ../images/snake.six
 	$(WINE) ./img2sixel -e ../images/snake.six
 	$(WINE) ./img2sixel -I ../images/snake.six
-	$(WINE) ./img2sixel -I  ../images/snake.ppm -c2000x100+40+20 -wauto -h200 -qhigh -dfs -rbilinear -trgb
-	$(WINE) ./img2sixel -I -v ../images/snake.bmp -w200 -hauto -c100x1000+40+20 -qlow -dnone -rhamming -thls
+	$(WINE) ./img2sixel -I -c2000x100+40+20 -wauto -h200 -qhigh -dfs -rbilinear -trgb ../images/snake.ppm
+	$(WINE) ./img2sixel -I -v -w200 -hauto -c100x1000+40+20 -qlow -dnone -rhamming -thls ../images/snake.bmp
 	$(WINE) ./img2sixel -m ../images/map8.png -w200 -fauto -rwelsh ../images/egret.jpg
 	$(WINE) ./img2sixel -m ../images/map16.png -w100 -hauto -rbicubic -dauto ../images/snake.ppm
-	$(WINE) ./img2sixel -p 16 -C3 ../images/snake.jpg -h100 -fnorm -rlanczos2
-	$(WINE) ./img2sixel -v -p 8 ../images/snake.jpg -h200 -fnorm -rlanczos2 -dnone
-	$(WINE) ./img2sixel -p 2 ../images/snake.jpg -h100 -wauto -rlanczos3
-	$(WINE) ./img2sixel -p 1 ../images/snake.jpg -h100 -n1
-	$(WINE) ./img2sixel -e ../images/snake.jpg -h140 -rlanczos4 -P
-	$(WINE) ./img2sixel -e -i ../images/snake.jpg -P > /dev/null
-	$(WINE) ./img2sixel ../images/snake.png -w2047 -h2047 | $(WINE) ./img2sixel > /dev/null
+	$(WINE) ./img2sixel -p 16 -C3 -h100 -fnorm -rlanczos2 ../images/snake.jpg
+	$(WINE) ./img2sixel -v -p 8 -h200 -fnorm -rlanczos2 -dnone ../images/snake.jpg
+	$(WINE) ./img2sixel -p 2 -h100 -wauto -rlanczos3 ../images/snake.jpg
+	$(WINE) ./img2sixel -p 1 -h100 -n1 ../images/snake.jpg
+	$(WINE) ./img2sixel -e -h140 -rlanczos4 -P ../images/snake.jpg
+	$(WINE) ./img2sixel -e -i -P ../images/snake.jpg > /dev/null
+	$(WINE) ./img2sixel -w2047 -h2047 ../images/snake.png | $(WINE) ./img2sixel > /dev/null
 	seq 0 10 | while read i; do \
 	    seq 0 2 | while read j; do \
 		    $(WINE) ./img2sixel ../images/map8.png | \
@@ -129,10 +128,10 @@ if WANT_IMG2SIXEL
 	done
 	$(WINE) ./img2sixel ../images/snake.png| sed 's/C/C:/g'| tr : '\t'| $(WINE) ./img2sixel
 	$(WINE) ./img2sixel ../images/snake.png| sed 's/"1;1;600;450/"1;1;700;500/'| $(WINE) ./img2sixel
-	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -u -lauto
-	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -g
-	$(WINE) ./img2sixel ../images/seq2gif.gif -ldisable -dnone -u -g
-	$(WINE) ./img2sixel ../images/seq2gif.gif -S -datkinson
+	$(WINE) ./img2sixel -ldisable -dnone -u -lauto ../images/seq2gif.gif
+	$(WINE) ./img2sixel -ldisable -dnone -g ../images/seq2gif.gif
+	$(WINE) ./img2sixel -ldisable -dnone -u -g ../images/seq2gif.gif
+	$(WINE) ./img2sixel -S -datkinson ../images/seq2gif.gif
 if HAVE_JPEG
 	$(WINE) ./img2sixel ../images/snake-progressive.jpg
 endif
@@ -151,7 +150,7 @@ if WANT_SIXEL2PNG
 	$(WINE) ./sixel2png < snake.sixel > snake1.png
 	$(WINE) ./sixel2png < snake2.sixel > snake2.png
 	$(WINE) ./sixel2png - - < snake3.sixel > snake3.png
-	$(WINE) ./sixel2png --input=snake.sixel -o snake4.png
+	$(WINE) ./sixel2png -i snake.sixel -o snake4.png
 endif
 	$(WINE) ./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options1.txt
 	rm -f sixel.pipe
