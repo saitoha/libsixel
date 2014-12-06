@@ -1172,6 +1172,21 @@ void show_help(void)
 }
 
 
+#if HAVE_STRDUP
+# define wrap_strdup(s) strdup(s)
+#else
+static char *
+wrap_strdup(char const *s)
+{
+    char *p = malloc(strlen(s) + 1);
+    if (p) {
+        strcpy(p, s);
+    }
+    return p;
+}
+#endif
+
+
 int
 main(int argc, char *argv[])
 {
@@ -1287,7 +1302,7 @@ main(int argc, char *argv[])
             settings.reqcolors = atoi(optarg);
             break;
         case 'm':
-            settings.mapfile = strdup(optarg);
+            settings.mapfile = wrap_strdup(optarg);
             break;
         case 'e':
             settings.monochrome = 1;
