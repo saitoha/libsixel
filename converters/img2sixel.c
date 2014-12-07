@@ -1172,13 +1172,28 @@ void show_help(void)
 }
 
 
+#if HAVE_STRDUP
+# define wrap_strdup(s) strdup(s)
+#else
+static char *
+wrap_strdup(char const *s)
+{
+    char *p = malloc(strlen(s) + 1);
+    if (p) {
+        strcpy(p, s);
+    }
+    return p;
+}
+#endif
+
+
 int
 main(int argc, char *argv[])
 {
     int n;
-    int long_opt;
     int unknown_opt = 0;
 #if HAVE_GETOPT_LONG
+    int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     int ret;
@@ -1271,9 +1286,11 @@ main(int argc, char *argv[])
         if (n == -1) {
             break;
         }
+#if HAVE_GETOPT_LONG
         if (n == 0) {
             n = long_opt;
         }
+#endif  /* HAVE_GETOPT_LONG */
         switch(n) {
         case '7':
             settings.f8bit = 0;
@@ -1285,7 +1302,7 @@ main(int argc, char *argv[])
             settings.reqcolors = atoi(optarg);
             break;
         case 'm':
-            settings.mapfile = strdup(optarg);
+            settings.mapfile = wrap_strdup(optarg);
             break;
         case 'e':
             settings.monochrome = 1;
@@ -1550,6 +1567,8 @@ main(int argc, char *argv[])
             unknown_opt = 1;
         }
     }
+
+    /* detects arguments conflictions */
     if (settings.reqcolors != -1 && settings.mapfile) {
         fprintf(stderr, "option -p, --colors conflicts "
                         "with -m, --mapfile.\n");
@@ -1605,21 +1624,27 @@ main(int argc, char *argv[])
                         " with arguments [filename ...].\n");
         goto argerr;
     }
+
+    /* evaluate the option -v,--version */
     if (settings.show_version) {
         show_version();
         exit_code = EXIT_SUCCESS;
         goto end;
     }
+
+    /* evaluate the option -h,--help */
     if (settings.show_help) {
         show_help();
         exit_code = EXIT_SUCCESS;
         goto end;
     }
+
+    /* exit if unknown options are specified */
     if (unknown_opt) {
         goto argerr;
     }
 
-    if (settings.reqcolors == -1) {
+    if (settings.reqcolors == (-1)) {
         settings.reqcolors = SIXEL_PALETTE_MAX;
     }
 
@@ -1638,6 +1663,8 @@ main(int argc, char *argv[])
             }
         }
     }
+
+    /* mark as success */
     exit_code = EXIT_SUCCESS;
     goto end;
 

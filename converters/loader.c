@@ -266,9 +266,7 @@ load_jpeg(unsigned char *data, int datasize,
     size = *pwidth * *pheight * *pdepth;
     result = (unsigned char *)malloc(size);
     if (result == NULL) {
-        jpeg_finish_decompress(&cinfo);
-        jpeg_destroy_decompress(&cinfo);
-        return NULL;
+        goto end;
     }
 
     row_stride = cinfo.output_width * cinfo.output_components;
@@ -279,6 +277,7 @@ load_jpeg(unsigned char *data, int datasize,
         memcpy(result + (cinfo.output_scanline - 1) * row_stride, buffer[0], row_stride);
     }
 
+end:
     jpeg_finish_decompress(&cinfo);
     jpeg_destroy_decompress(&cinfo);
 

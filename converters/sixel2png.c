@@ -295,14 +295,29 @@ show_help(void)
 }
 
 
+#if HAVE_STRDUP
+# define wrap_strdup(s) strdup(s)
+#else
+static char *
+wrap_strdup(char const *s)
+{
+    char *p = malloc(strlen(s) + 1);
+    if (p) {
+        strcpy(p, s);
+    }
+    return p;
+}
+#endif
+
+
 int
 main(int argc, char *argv[])
 {
     int n;
-    char *output = strdup("-");
-    char *input = strdup("-");
-    int long_opt;
+    char *output = wrap_strdup("-");
+    char *input = wrap_strdup("-");
 #if HAVE_GETOPT_LONG
+    int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     int nret = 0;
@@ -329,17 +344,19 @@ main(int argc, char *argv[])
             nret = (-1);
             break;
         }
+#if HAVE_GETOPT_LONG
         if (n == 0) {
             n = long_opt;
         }
+#endif  /* HAVE_GETOPT_LONG */
         switch(n) {
         case 'i':
             free(input);
-            input = strdup(optarg);
+            input = wrap_strdup(optarg);
             break;
         case 'o':
             free(output);
-            output = strdup(optarg);
+            output = wrap_strdup(optarg);
             break;
         case 'V':
             show_version();
@@ -359,11 +376,11 @@ main(int argc, char *argv[])
 
     if (strcmp(input, "-") == 0 && optind < argc) {
         free(input);
-        input = strdup(argv[optind++]);
+        input = wrap_strdup(argv[optind++]);
     }
     if (strcmp(output, "-") == 0 && optind < argc) {
         free(output);
-        output = strdup(argv[optind++]);
+        output = wrap_strdup(argv[optind++]);
     }
     if (optind != argc) {
         nret = (-1);
