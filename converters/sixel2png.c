@@ -24,7 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>  /* strdup */
+#include <string.h>  /* strcpy */
 
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
@@ -295,27 +295,25 @@ show_help(void)
 }
 
 
-#if HAVE_STRDUP
-# define wrap_strdup(s) strdup(s)
-#else
 static char *
-wrap_strdup(char const *s)
+arg_strdup(char const *s)
 {
-    char *p = malloc(strlen(s) + 1);
+    char *p;
+
+    p = malloc(strlen(s) + 1);
     if (p) {
         strcpy(p, s);
     }
     return p;
 }
-#endif
 
 
 int
 main(int argc, char *argv[])
 {
     int n;
-    char *output = wrap_strdup("-");
-    char *input = wrap_strdup("-");
+    char *output = arg_strdup("-");
+    char *input = arg_strdup("-");
 #if HAVE_GETOPT_LONG
     int long_opt;
     int option_index;
@@ -352,11 +350,11 @@ main(int argc, char *argv[])
         switch(n) {
         case 'i':
             free(input);
-            input = wrap_strdup(optarg);
+            input = arg_strdup(optarg);
             break;
         case 'o':
             free(output);
-            output = wrap_strdup(optarg);
+            output = arg_strdup(optarg);
             break;
         case 'V':
             show_version();
@@ -376,11 +374,11 @@ main(int argc, char *argv[])
 
     if (strcmp(input, "-") == 0 && optind < argc) {
         free(input);
-        input = wrap_strdup(argv[optind++]);
+        input = arg_strdup(argv[optind++]);
     }
     if (strcmp(output, "-") == 0 && optind < argc) {
         free(output);
-        output = wrap_strdup(argv[optind++]);
+        output = arg_strdup(argv[optind++]);
     }
     if (optind != argc) {
         nret = (-1);
