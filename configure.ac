@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.4.1], [user@zuse.jp])
+AC_INIT([sixel], [1.4.2], [user@zuse.jp])
 LS_LT_CURRENT=1
 LS_LT_REVISION=3
 LS_LT_AGE=0
@@ -123,6 +123,24 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AS_IF([test x$cross_compile != xyes], [PKG_PROG_PKG_CONFIG], [])
 
+AC_DEFUN([LS_CHECK_CFLAG], [
+   AC_MSG_CHECKING([if $CC supports $1])
+   saved_cflags="$CFLAGS"
+   CFLAGS="$1"
+   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
+                     [AC_MSG_RESULT([yes])
+                      m4_default([$2], :)],
+                     [AC_MSG_RESULT([no])
+                      m4_default([$3], :)])
+   CFLAGS="$saved_cflags"
+])
+
+LS_CHECK_CFLAG([-Wall],[AM_CFLAGS="$AM_CFLAGS -Wall"], [])
+LS_CHECK_CFLAG([-Wextra],[AM_CFLAGS="$AM_CFLAGS -Wextra"], [])
+AS_IF([test x$enable_debug = xyes],
+      [LS_CHECK_CFLAG([-Werror],[AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
+AC_SUBST([AM_CFLAGS])
+
 # For wic integration
 #AC_PROG_CXX
 
@@ -172,6 +190,7 @@ AC_CHECK_FUNCS([memcpy \
                 _setmode \
                 signal \
                 usleep \
+                strdup \
                 calloc \
                 clock \
                 clearerr \
@@ -295,7 +314,7 @@ AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
 
 if test x$with_libcurl != xno; then
-    if test x$build == x$host; then
+    if test x$build = x$host; then
         AC_CHECK_HEADER([curl/curl.h],
                         [AC_CHECK_LIB([curl],
                                       [curl_easy_cleanup],
@@ -325,7 +344,7 @@ AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
 
 if test x$with_jpeg != xno; then
-    if test x$build == x$host; then
+    if test x$build = x$host; then
         AC_CHECK_HEADER([jpeglib.h],
                         [AC_CHECK_LIB([jpeg],
                                       [jpeg_read_header],
@@ -348,7 +367,7 @@ AC_SUBST(LIBJPEG_CFLAGS)
 AC_SUBST(LIBJPEG_LIBS)
 
 if test x$with_png != xno; then
-    if test x$build == x$host; then
+    if test x$build = x$host; then
         AC_CHECK_HEADER([png.h],
                         [AC_CHECK_LIB([png],
                                       [png_check_sig],

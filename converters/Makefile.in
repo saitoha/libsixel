@@ -81,13 +81,11 @@ build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @WANT_IMG2SIXEL_TRUE@am__append_1 = img2sixel
-@COND_DEBUG_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_2 = -Werror
-@WANT_IMG2SIXEL_TRUE@am__append_3 = img2sixel.1
-@WANT_IMG2SIXEL_TRUE@am__append_4 = shell-completion/bash/img2sixel
-@WANT_IMG2SIXEL_TRUE@am__append_5 = shell-completion/zsh/_img2sixel
-@WANT_SIXEL2PNG_TRUE@am__append_6 = sixel2png
-@COND_DEBUG_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_7 = -Werror
-@WANT_SIXEL2PNG_TRUE@am__append_8 = sixel2png.1
+@WANT_IMG2SIXEL_TRUE@am__append_2 = img2sixel.1
+@WANT_IMG2SIXEL_TRUE@am__append_3 = shell-completion/bash/img2sixel
+@WANT_IMG2SIXEL_TRUE@am__append_4 = shell-completion/zsh/_img2sixel
+@WANT_SIXEL2PNG_TRUE@am__append_5 = sixel2png
+@WANT_SIXEL2PNG_TRUE@am__append_6 = sixel2png.1
 subdir = converters
 SUBDIRS =
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
@@ -287,6 +285,7 @@ am__relativize = \
   reldir="$$dir2"
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
+AM_CFLAGS = @AM_CFLAGS@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
@@ -420,31 +419,30 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 DIST_SUBDIRS = $(SUBDIRS)
-dist_man_MANS = $(am__append_3) $(am__append_8)
-dist_bashcompletion_DATA = $(am__append_4)
-dist_zshcompletion_DATA = $(am__append_5)
+dist_man_MANS = $(am__append_2) $(am__append_6)
+dist_bashcompletion_DATA = $(am__append_3)
+dist_zshcompletion_DATA = $(am__append_4)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c scale.c malloc_stub.c loader.c frompnm.c \
 @WANT_IMG2SIXEL_TRUE@                    scale.h malloc_stub.h loader.h frompnm.h
 
-@WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = -Wall -Wextra \
-@WANT_IMG2SIXEL_TRUE@	-I$(top_builddir)/include/ \
-@WANT_IMG2SIXEL_TRUE@	$(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) \
-@WANT_IMG2SIXEL_TRUE@	$(LIBCURL_CFLAGS) $(GD_CFLAGS) \
-@WANT_IMG2SIXEL_TRUE@	$(LIBJPEG_CFLAGS) $(LIBPNG_CFLAGS) \
-@WANT_IMG2SIXEL_TRUE@	$(am__append_2)
+@WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) -D_ALL_SOURCES \
+@WANT_IMG2SIXEL_TRUE@		   -I$(top_builddir)/include/ \
+@WANT_IMG2SIXEL_TRUE@		   $(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) \
+@WANT_IMG2SIXEL_TRUE@		   $(GD_CFLAGS) $(LIBJPEG_CFLAGS) $(LIBPNG_CFLAGS)
+
 @WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm \
-@WANT_IMG2SIXEL_TRUE@				  $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS) \
-@WANT_IMG2SIXEL_TRUE@				  $(LIBJPEG_LIBS) $(LIBPNG_LIBS)
+@WANT_IMG2SIXEL_TRUE@		  $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS) \
+@WANT_IMG2SIXEL_TRUE@		  $(LIBJPEG_LIBS) $(LIBPNG_LIBS)
 
 @WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c \
 @WANT_SIXEL2PNG_TRUE@                    stb_image_write.h malloc_stub.h
 
-@WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = -Wall -Wextra \
-@WANT_SIXEL2PNG_TRUE@	-I$(top_builddir)/include/ \
-@WANT_SIXEL2PNG_TRUE@	$(MAYBE_COVERAGE) $(LIBPNG_CFLAGS) \
-@WANT_SIXEL2PNG_TRUE@	$(am__append_7)
+@WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) -D_ALL_SOURCES \
+@WANT_SIXEL2PNG_TRUE@		   -I$(top_builddir)/include/ \
+@WANT_SIXEL2PNG_TRUE@		   $(MAYBE_COVERAGE) $(LIBPNG_CFLAGS)
+
 @WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la $(LIBPNG_LIBS)
 all: all-recursive
 
@@ -1066,33 +1064,33 @@ uninstall-man: uninstall-man1
 
 
 test: all
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -d invalid_option
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -r invalid_option
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -s invalid_option
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -t invalid_option
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -w invalid_option
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -h invalid_option
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -f invalid_option
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -q invalid_option
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -l invalid_option
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -b invalid_option
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -E invalid_option
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -%
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel invalid_filename
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -m ../images/map8.png -p 8 ../images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -m ../images/map8.png -e ../images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -p16 -e ../images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -D ../images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -I -C0 ../images/snake.png
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -I -e ../images/snake.png
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -I -p8 ../images/snake.png
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -I -m ../images/map8.png ../images/snake.png
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -I -bxterm16 ../images/snake.png
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -e -bxterm256 ../images/snake.png
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -p64 -bxterm256 ../images/snake.png
-@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -m ../images/map16.png -bxterm256 ../images/snake.png
-@WANT_IMG2SIXEL_TRUE@	! (echo -n a | ./img2sixel)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -d invalid_option)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -r invalid_option)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -s invalid_option)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -t invalid_option)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -w invalid_option)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -h invalid_option)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -f invalid_option)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -q invalid_option)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -l invalid_option)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -b invalid_option)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -E invalid_option)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -%)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel invalid_filename)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -m ../images/map8.png -p 8 ../images/snake.jpg)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -m ../images/map8.png -e ../images/snake.jpg)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -p16 -e ../images/snake.jpg)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -D ../images/snake.jpg)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -I -C0 ../images/snake.png)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -I -e ../images/snake.png)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -I -p8 ../images/snake.png)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -I -m ../images/map8.png ../images/snake.png)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -I -bxterm16 ../images/snake.png)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -e -bxterm256 ../images/snake.png)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -p64 -bxterm256 ../images/snake.png)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -m ../images/map16.png -bxterm256 ../images/snake.png)
+@WANT_IMG2SIXEL_TRUE@	test ! $$(echo -n a | $(WINE) ./img2sixel)
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -H
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -V
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | img2sixel | tee snake.sixel
@@ -1152,10 +1150,10 @@ test: all
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -S -datkinson ../images/seq2gif.gif
 @HAVE_JPEG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake-progressive.jpg
 @HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.png
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	!$(WINE) ./img2sixel file:///test
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel file:///test)
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel file:///$$(pwd)/../images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	! $(WINE) ./sixel2png -i unknown.sixel
-@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	! $(WINE) ./sixel2png -% < snake.sixel
+@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	test ! $$($(WINE) ./sixel2png -i unknown.sixel)
+@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	test ! $$($(WINE) ./sixel2png -% < snake.sixel)
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -H
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -V
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png < snake.sixel > snake1.png
@@ -1172,8 +1170,8 @@ test: all
 @WANT_IMG2SIXEL_TRUE@	    sleep 1; \
 @WANT_IMG2SIXEL_TRUE@	fi
 @WANT_IMG2SIXEL_TRUE@	rm -f sixel.pipe
-@WANT_IMG2SIXEL_TRUE@	grep ^\.B img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d "\\" | tr -d , > options2.txt 
-@WANT_IMG2SIXEL_TRUE@	grep '^ *-\w --' shell-completion/bash/img2sixel|sed 's/.* \(-.\) .*/\1/' > options3.txt
+@WANT_IMG2SIXEL_TRUE@	grep ^\.B img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > options2.txt
+@WANT_IMG2SIXEL_TRUE@	grep ' --' shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > options3.txt
 @WANT_IMG2SIXEL_TRUE@	grep '{-' shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > options4.txt
 @WANT_IMG2SIXEL_TRUE@	diff options1.txt options2.txt
 @WANT_IMG2SIXEL_TRUE@	diff options2.txt options3.txt

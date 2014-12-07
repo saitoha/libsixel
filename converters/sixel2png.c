@@ -295,12 +295,27 @@ show_help(void)
 }
 
 
+#if HAVE_STRDUP
+# define wrap_strdup(s) strdup(s)
+#else
+static char *
+wrap_strdup(char const *s)
+{
+    char *p = malloc(strlen(s) + 1);
+    if (p) {
+        strcpy(p, s);
+    }
+    return p;
+}
+#endif
+
+
 int
 main(int argc, char *argv[])
 {
     int n;
-    char *output = strdup("-");
-    char *input = strdup("-");
+    char *output = wrap_strdup("-");
+    char *input = wrap_strdup("-");
 #if HAVE_GETOPT_LONG
     int long_opt;
     int option_index;
@@ -337,11 +352,11 @@ main(int argc, char *argv[])
         switch(n) {
         case 'i':
             free(input);
-            input = strdup(optarg);
+            input = wrap_strdup(optarg);
             break;
         case 'o':
             free(output);
-            output = strdup(optarg);
+            output = wrap_strdup(optarg);
             break;
         case 'V':
             show_version();
@@ -361,11 +376,11 @@ main(int argc, char *argv[])
 
     if (strcmp(input, "-") == 0 && optind < argc) {
         free(input);
-        input = strdup(argv[optind++]);
+        input = wrap_strdup(argv[optind++]);
     }
     if (strcmp(output, "-") == 0 && optind < argc) {
         free(output);
-        output = strdup(argv[optind++]);
+        output = wrap_strdup(argv[optind++]);
     }
     if (optind != argc) {
         nret = (-1);

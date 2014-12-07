@@ -1,4 +1,57 @@
+2014-12-07  Hayaki Saito <user@zuse.jp>
+
+  * converters/Makefile.am, converters/Makefile.in: Don't use unportable grep
+  arguments for test
+
+  * converters/Makefile.am, converters/Makefile.in: Don't use shell-builtin '!'
+
+  * Makefile.am, Makefile.in: Don't use -C option of make command, for the
+  portability
+
+  * converters/Makefile.am, converters/Makefile.in: Add definition _ALL_SOURCES
+  for some platforms
+
+  * config.h.in, converters/img2sixel.c, converters/sixel2png.c: Add support
+  for strdup-missing environments
+
+  * configure, configure.ac: Check strdup availability
+
+2014-12-06  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Build fix for Interix
+
+  * Makefile.in, configure, configure.ac, converters/Makefile.am,
+  converters/Makefile.in, include/Makefile.in, src/Makefile.am,
+  src/Makefile.in: Checks the availability of some C compiler warning flags
+
+  * configure, configure.ac: Add conditional variable for makefile:
+  HAVE_GETOPT_LONG
+
+  * converters/Makefile.am, converters/Makefile.in: Fix tests as respecting
+  POSIX compliant behavior of getopt
+
+2014-12-05  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c, converters/sixel2png.c: Suppress warnings for
+  Interix build(without HAVE_GEtOPT_LONG)
+
+  * configure, configure.ac, converters/Makefile.am, converters/Makefile.in:
+  Fix tests for some environments that have not getopt_long
+
+  * src/tosixel.c: Replace integer literals 32768 to 'maxcolors'
+
+  * src/tosixel.c: Move a long case statement to a new function
+
+  * NEWS: Update NEWS
+
+2014-12-03  OBATA Akio <obata@lins.jp>
+
+  * configure, configure.ac: Kill bashizm  '=' operator for test(1) is not
+  portable.
+
 2014-12-01  Hayaki Saito <user@zuse.jp>
+
+  * NEWS: Update NEWS
 
   * converters/img2sixel.c: Build fix
 
