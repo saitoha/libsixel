@@ -1090,6 +1090,7 @@ test: all
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -e -bxterm256 ../images/snake.png)
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -p64 -bxterm256 ../images/snake.png)
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -m ../images/map16.png -bxterm256 ../images/snake.png)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -8 -P ../images/snake.png)
 @WANT_IMG2SIXEL_TRUE@	test ! $$(echo -n a | $(WINE) ./img2sixel)
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -H
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -V

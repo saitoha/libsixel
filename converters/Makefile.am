@@ -70,6 +70,7 @@ if WANT_IMG2SIXEL
 	test ! $$($(WINE) ./img2sixel -e -bxterm256 ../images/snake.png)
 	test ! $$($(WINE) ./img2sixel -p64 -bxterm256 ../images/snake.png)
 	test ! $$($(WINE) ./img2sixel -m ../images/map16.png -bxterm256 ../images/snake.png)
+	test ! $$($(WINE) ./img2sixel -8 -P ../images/snake.png)
 	test ! $$(echo -n a | $(WINE) ./img2sixel)
 	$(WINE) ./img2sixel -H
 	$(WINE) ./img2sixel -V
