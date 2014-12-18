@@ -39,6 +39,11 @@
 #define DCS_8BIT(x)          DCS_START_8BIT x DCS_END_8BIT
 #define SCREEN_PACKET_SIZE   256
 
+enum {
+    PALETTE_HIT = 1,
+    PALETTE_CHANGE = 2,
+};
+
 /* implementation */
 
 static void
@@ -196,11 +201,6 @@ sixel_put_node(sixel_output_t *const context, int x,
 
     return x;
 }
-
-enum {
-    PALETTE_HIT = 1,
-    PALETTE_CHANGE = 2,
-};
 
 
 static int
