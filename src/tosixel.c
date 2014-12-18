@@ -27,6 +27,18 @@
 #include "dither.h"
 #include "sixel.h"
 
+#define DCS_START_7BIT       "\033P"
+#define DCS_START_7BIT_SIZE  (sizeof(DCS_START_7BIT) - 1)
+#define DCS_START_8BIT       "\220"
+#define DCS_START_8BIT_SIZE  (sizeof(DCS_START_8BIT) - 1)
+#define DCS_END_7BIT         "\033\\"
+#define DCS_END_7BIT_SIZE    (sizeof(DCS_END_7BIT) - 1)
+#define DCS_END_8BIT         "\234"
+#define DCS_END_8BIT_SIZE    (sizeof(DCS_END_8BIT) - 1)
+#define DCS_7BIT(x)          DCS_START_7BIT x DCS_END_7BIT
+#define DCS_8BIT(x)          DCS_START_8BIT x DCS_END_8BIT
+#define SCREEN_PACKET_SIZE   256
+
 /* implementation */
 
 static void
