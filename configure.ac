@@ -305,6 +305,10 @@ if test x$with_gd != xno; then
                                        [AC_MSG_ERROR([please install libiconv])])
                          ])
             ;;
+        *-*-interix)
+            AM_CPPFLAGS="-D_ALL_SOURCES"
+            AC_SUBST([AM_CPPFLAGS])
+            ;;
     esac
 
     AC_MSG_NOTICE([gd cflags is ${GD_CFLAGS}])

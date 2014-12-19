@@ -646,6 +646,7 @@ LIBJPEG_LIBS
 LIBJPEG_CFLAGS
 LIBCURL_LIBS
 LIBCURL_CFLAGS
+AM_CPPFLAGS
 GD_LIBS
 GD_CFLAGS
 GDK_PIXBUF_LIBS
@@ -13940,6 +13941,10 @@ fi
 
 
 fi
+
+            ;;
+        *-*-interix)
+            AM_CPPFLAGS="-D_ALL_SOURCES"
 
             ;;
     esac
