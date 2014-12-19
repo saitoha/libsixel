@@ -1390,8 +1390,8 @@ main(int argc, char *argv[])
             } else if (strcmp(optarg, "vt340color") == 0) {
                 settings.builtin_palette = BUILTIN_VT340_COLOR;
             } else {
-                fprintf(stderr,
-                        "Cannot parse builtin palette option.\n");
+                errno = EINVAL;
+                perror("Cannot parse builtin palette option.");
                 goto argerr;
             }
             break;
@@ -1412,9 +1412,9 @@ main(int argc, char *argv[])
             } else if (strcmp(optarg, "burkes") == 0) {
                 settings.method_for_diffuse = DIFFUSE_BURKES;
             } else {
-                fprintf(stderr,
-                        "Diffusion method '%s' is not supported.\n",
-                        optarg);
+                errno = EINVAL;
+                perror("The method specified with "
+                       "-d/--diffusion is not supported.");
                 goto argerr;
             }
             break;
@@ -1428,9 +1428,9 @@ main(int argc, char *argv[])
                 } else if (strcmp(optarg, "lum") == 0) {
                     settings.method_for_largest = LARGE_LUM;
                 } else {
-                    fprintf(stderr,
-                            "Finding method '%s' is not supported.\n",
-                            optarg);
+                    errno = EINVAL;
+                    perror("The method specified with "
+                           "-f/--find-largest is not supported.");
                     goto argerr;
                 }
             }
@@ -1447,9 +1447,9 @@ main(int argc, char *argv[])
                        (strcmp(optarg, "histgram") == 0)) {
                 settings.method_for_rep = REP_AVERAGE_PIXELS;
             } else {
-                fprintf(stderr,
-                        "Finding method '%s' is not supported.\n",
-                        optarg);
+                errno = EINVAL;
+                perror("The method specified with "
+                       "-s/--select-color is not supported.");
                 goto argerr;
             }
             break;
@@ -1477,8 +1477,8 @@ main(int argc, char *argv[])
                 settings.pixelwidth = (-1);
                 settings.percentwidth = (-1);
             } else {
-                fprintf(stderr,
-                        "Cannot parse -w/--width option.\n");
+                errno = EINVAL;
+                perror("Cannot parse -w/--width option.");
                 goto argerr;
             }
             if (settings.clipwidth) {
@@ -1497,8 +1497,8 @@ main(int argc, char *argv[])
                 settings.pixelheight = (-1);
                 settings.percentheight = (-1);
             } else {
-                fprintf(stderr,
-                        "Cannot parse -h/--height option.\n");
+                errno = EINVAL;
+                perror("Cannot parse -h/--height option.");
                 goto argerr;
             }
             if (settings.clipheight) {
@@ -1528,9 +1528,8 @@ main(int argc, char *argv[])
             } else if (strcmp(optarg, "lanczos4") == 0) {
                 settings.method_for_resampling = RES_LANCZOS4;
             } else {
-                fprintf(stderr,
-                        "Resampling method '%s' is not supported.\n",
-                        optarg);
+                errno = EINVAL;
+                perror("Cannot parse -r/--resampling option.");
                 goto argerr;
             }
             break;
@@ -1545,8 +1544,8 @@ main(int argc, char *argv[])
             } else if (strcmp(optarg, "full") == 0) {
                 settings.quality_mode = QUALITY_FULL;
             } else {
-                fprintf(stderr,
-                        "Cannot parse quality option.\n");
+                errno = EINVAL;
+                perror("Cannot parse quality option.");
                 goto argerr;
             }
             break;
@@ -1559,8 +1558,8 @@ main(int argc, char *argv[])
             } else if (strcmp(optarg, "disable") == 0) {
                 settings.loop_mode = LOOP_DISABLE;
             } else {
-                fprintf(stderr,
-                        "Cannot parse loop-control option.\n");
+                errno = EINVAL;
+                perror("Cannot parse loop-control option.");
                 goto argerr;
             }
             break;
@@ -1573,8 +1572,8 @@ main(int argc, char *argv[])
             } else if (strcmp(optarg, "rgb") == 0) {
                 settings.palette_type = PALETTETYPE_RGB;
             } else {
-                fprintf(stderr,
-                        "Cannot parse palette type option.\n");
+                errno = EINVAL;
+                perror("Cannot parse palette type option.");
                 goto argerr;
             }
             break;
@@ -1610,16 +1609,16 @@ main(int argc, char *argv[])
             } else if (strcmp(optarg, "size") == 0) {
                 settings.encode_policy = ENCODEPOLICY_SIZE;
             } else {
-                fprintf(stderr,
-                        "Cannot parse encode policy option.\n");
+                errno = EINVAL;
+                perror("Cannot parse encode policy option.");
                 goto argerr;
             }
             break;
         case 'C':
             settings.complexion = atoi(optarg);
             if (settings.complexion < 1) {
-                fprintf(stderr,
-                        "complexion parameter must be 1 or more.\n");
+                errno = EINVAL;
+                perror("complexion parameter must be 1 or more.");
                 goto argerr;
             }
             break;
