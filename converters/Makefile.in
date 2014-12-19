@@ -428,7 +428,7 @@ CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe
 @WANT_IMG2SIXEL_TRUE@                    scale.h malloc_stub.h loader.h frompnm.h
 
 @WANT_IMG2SIXEL_TRUE@img2sixel_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
-@WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) -D_ALL_SOURCES \
+@WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) -D_ALL_SOURCE \
 @WANT_IMG2SIXEL_TRUE@		   $(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) \
 @WANT_IMG2SIXEL_TRUE@		   $(GD_CFLAGS) $(LIBJPEG_CFLAGS) $(LIBPNG_CFLAGS)
 
@@ -440,7 +440,7 @@ CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe
 @WANT_SIXEL2PNG_TRUE@                    stb_image_write.h malloc_stub.h
 
 @WANT_SIXEL2PNG_TRUE@sixel2png_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
-@WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) -D_ALL_SOURCES \
+@WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) -D_ALL_SOURCE \
 @WANT_SIXEL2PNG_TRUE@		   $(MAYBE_COVERAGE) $(LIBPNG_CFLAGS)
 
 @WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la $(LIBPNG_LIBS)
