@@ -1622,6 +1622,11 @@ main(int argc, char *argv[])
                         " with -b, --builtin-palette.\n");
         goto argerr;
     }
+    if (settings.f8bit && settings.penetrate_multiplexer) {
+        fprintf(stderr, "option -8 --8bit-mode conflicts"
+                        " with -P, --penetrate.\n");
+        goto argerr;
+    }
     if (settings.pipe_mode && optind != argc) {
         fprintf(stderr, "option -D, --pipe_mode conflicts"
                         " with arguments [filename ...].\n");
