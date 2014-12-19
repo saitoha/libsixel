@@ -90,11 +90,11 @@ sixel_write_callback(char *data, int size, void *priv)
 static int
 sixel_hex_write_callback(char *data, int size, void *priv)
 {
-    /* unused */ (void) priv;
-
     char hex[SIXEL_OUTPUT_PACKET_SIZE * 2];
     int i;
     int j;
+
+    /* unused */ (void) priv;
 
     for (i = j = 0; i < size; ++i, ++j) {
         hex[j] = (data[i] >> 4) & 0xf;
@@ -538,12 +538,14 @@ output_sixel_without_macro(
 {
     int nret = 0;
     int dulation = 0;
-    int lag = 0;
     int c;
     int n;
     unsigned char *frame;
-#if HAVE_USLEEP && HAVE_CLOCK
+#if HAVE_USLEEP
+    int lag = 0;
+# if HAVE_CLOCK
     clock_t start;
+# endif
 #endif
 
     /* create output context */
@@ -575,7 +577,7 @@ output_sixel_without_macro(
 #if HAVE_USLEEP
                 if (delays != NULL && !psettings->fignore_delay) {
 # if HAVE_CLOCK
-                    dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
+                    dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
                     lag = 0;
 # else
                     dulation = 0;
@@ -634,11 +636,13 @@ output_sixel_with_macro(
 {
     int nret = 0;
     int dulation = 0;
-    int lag = 0;
     int c;
     int n;
-#if HAVE_USLEEP && HAVE_CLOCK
+#if HAVE_USLEEP
+    int lag = 0;
+# if HAVE_CLOCK
     clock_t start;
+# endif
 #endif
 
     if (!context) {
@@ -674,7 +678,7 @@ output_sixel_with_macro(
 #if HAVE_USLEEP
         if (delays != NULL && !psettings->fignore_delay) {
 # if HAVE_CLOCK
-            dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
+            dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
             lag = 0;
 # else
             dulation = 0;
@@ -1172,19 +1176,17 @@ void show_help(void)
 }
 
 
-#if HAVE_STRDUP
-# define wrap_strdup(s) strdup(s)
-#else
 static char *
-wrap_strdup(char const *s)
+arg_strdup(char const *s)
 {
-    char *p = malloc(strlen(s) + 1);
+    char *p;
+
+    p = malloc(strlen(s) + 1);
     if (p) {
         strcpy(p, s);
     }
     return p;
 }
-#endif
 
 
 int
@@ -1302,7 +1304,7 @@ main(int argc, char *argv[])
             settings.reqcolors = atoi(optarg);
             break;
         case 'm':
-            settings.mapfile = wrap_strdup(optarg);
+            settings.mapfile = arg_strdup(optarg);
             break;
         case 'e':
             settings.monochrome = 1;
@@ -1565,6 +1567,7 @@ main(int argc, char *argv[])
         case '?':  /* unknown option */
         default:
             unknown_opt = 1;
+            break;
         }
     }
 

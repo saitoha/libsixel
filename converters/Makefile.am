@@ -19,7 +19,7 @@ if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
 img2sixel_SOURCES = img2sixel.c scale.c malloc_stub.c loader.c frompnm.c \
                     scale.h malloc_stub.h loader.h frompnm.h
-img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) -D_ALL_SOURCES \
+img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) -D_ALL_SOURCE \
 		   -I$(top_builddir)/include/ \
 		   $(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) \
 		   $(GD_CFLAGS) $(LIBJPEG_CFLAGS) $(LIBPNG_CFLAGS)
@@ -35,7 +35,7 @@ if WANT_SIXEL2PNG
 bin_PROGRAMS += sixel2png
 sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c \
                     stb_image_write.h malloc_stub.h
-sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) -D_ALL_SOURCES \
+sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) -D_ALL_SOURCE \
 		   -I$(top_builddir)/include/ \
 		   $(MAYBE_COVERAGE) $(LIBPNG_CFLAGS)
 sixel2png_LDADD = $(top_builddir)/src/libsixel.la $(LIBPNG_LIBS)
