@@ -1189,6 +1189,73 @@ arg_strdup(char const *s)
 }
 
 
+static int
+validate_args(settings_t const *psettings, int argc, char **argv,
+              int optind, char **const message)
+{
+    (void) argv;
+
+    /* detects arguments conflictions */
+    if (psettings->reqcolors != (-1) && psettings->mapfile) {
+        *message = "option -p, --colors conflicts with "
+                   "-m, --mapfile.";
+        return (-1);
+    }
+    if (psettings->mapfile && psettings->monochrome) {
+        *message = "option -m, --mapfile conflicts with "
+                   "-e, --monochrome.";
+        return (-1);
+    }
+    if (psettings->monochrome && psettings->reqcolors != (-1)) {
+        *message = "option -e, --monochrome conflicts with "
+                   "-p, --colors.";
+        return (-1);
+    }
+    if (psettings->monochrome && psettings->highcolor) {
+        *message = "option -e, --monochrome conflicts with "
+                   "-I, --high-color.";
+        return (-1);
+    }
+    if (psettings->reqcolors != (-1) && psettings->highcolor) {
+        *message = "option -p, --colors conflicts with -I, "
+                   "--high-color.";
+        return (-1);
+    }
+    if (psettings->mapfile && psettings->highcolor) {
+        *message = "option -m, --mapfile conflicts with -I, "
+                   "--high-color.";
+        return (-1);
+    }
+    if (psettings->builtin_palette && psettings->highcolor) {
+        *message = "option -b, --builtin-palette conflicts with -I, "
+                   "--high-color.";
+        return (-1);
+    }
+    if (psettings->monochrome && psettings->builtin_palette) {
+        *message = "option -e, --monochrome conflicts with -I, "
+                   "--builtin-palette.";
+        return (-1);
+    }
+    if (psettings->mapfile && psettings->builtin_palette) {
+        *message = "option -m, --mapfile conflicts with -b, "
+                   "--builtin-palette.";
+        return (-1);
+    }
+    if (psettings->reqcolors != (-1) && psettings->builtin_palette) {
+        *message = "option -p, --colors conflicts with "
+                   "-b, --builtin-palette.";
+        return (-1);
+    }
+    if (psettings->pipe_mode && optind != argc) {
+        *message = "option -D, --pipe_mode conflicts with "
+                   "arguments [filename ...].";
+        return (-1);
+    }
+
+    return 0;
+}
+
+
 int
 main(int argc, char *argv[])
 {
@@ -1203,6 +1270,7 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
+    char *message;
     char const *optstring = "78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:C:DVH";
 
     settings_t settings = {
@@ -1571,60 +1639,8 @@ main(int argc, char *argv[])
         }
     }
 
-    /* detects arguments conflictions */
-    if (settings.reqcolors != -1 && settings.mapfile) {
-        fprintf(stderr, "option -p, --colors conflicts "
-                        "with -m, --mapfile.\n");
-        goto argerr;
-    }
-    if (settings.mapfile && settings.monochrome) {
-        fprintf(stderr, "option -m, --mapfile conflicts "
-                        "with -e, --monochrome.\n");
-        goto argerr;
-    }
-    if (settings.monochrome && settings.reqcolors != (-1)) {
-        fprintf(stderr, "option -e, --monochrome conflicts"
-                        " with -p, --colors.\n");
-        goto argerr;
-    }
-    if (settings.monochrome && settings.highcolor) {
-        fprintf(stderr, "option -e, --monochrome conflicts"
-                        " with -I, --high-color.\n");
-        goto argerr;
-    }
-    if (settings.reqcolors != (-1) && settings.highcolor) {
-        fprintf(stderr, "option -p, --colors conflicts"
-                        " with -I, --high-color.\n");
-        goto argerr;
-    }
-    if (settings.mapfile && settings.highcolor) {
-        fprintf(stderr, "option -m, --mapfile conflicts"
-                        " with -I, --high-color.\n");
-        goto argerr;
-    }
-    if (settings.builtin_palette && settings.highcolor) {
-        fprintf(stderr, "option -b, --builtin-palette conflicts"
-                        " with -I, --high-color.\n");
-        goto argerr;
-    }
-    if (settings.monochrome && settings.builtin_palette) {
-        fprintf(stderr, "option -e, --monochrome conflicts"
-                        " with -I, --builtin-palette.\n");
-        goto argerr;
-    }
-    if (settings.mapfile && settings.builtin_palette) {
-        fprintf(stderr, "option -m, --mapfile conflicts"
-                        " with -b, --builtin-palette.\n");
-        goto argerr;
-    }
-    if (settings.reqcolors != (-1) && settings.builtin_palette) {
-        fprintf(stderr, "option -p, --colors conflicts"
-                        " with -b, --builtin-palette.\n");
-        goto argerr;
-    }
-    if (settings.pipe_mode && optind != argc) {
-        fprintf(stderr, "option -D, --pipe_mode conflicts"
-                        " with arguments [filename ...].\n");
+    if (validate_args(&settings, argc, argv, optind, &message) != 0) {
+        perror(message);
         goto argerr;
     }
 
