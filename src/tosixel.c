@@ -269,23 +269,26 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
     int x, y, i, n, c;
     int sx, mx;
     int len, pix;
-    unsigned char *map;
+    unsigned char *map = NULL;
     sixel_node_t *np, *tp, top;
     int nwrite;
+    int nret = (-1);
 
     if (ncolors < 1) {
-        return (-1);
+        goto end;
     }
     len = ncolors * width;
     context->active_palette = (-1);
 
 #if HAVE_CALLOC
-    if ((map = (unsigned char *)calloc(len, sizeof(unsigned char))) == NULL) {
-        return (-1);
+    map = (unsigned char *)calloc(len, sizeof(unsigned char));
+    if (map == NULL) {
+        goto end;
     }
 #else
-    if ((map = (unsigned char *)malloc(len)) == NULL) {
-        return (-1);
+    map = (unsigned char *)malloc(len);
+    if (map == NULL) {
+        goto end;
     }
     memset(map, 0, len);
 #endif
@@ -328,7 +331,7 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
                 nwrite = sprintf((char *)context->buffer + context->pos,
                                  "#%d;1;%d;%d;%d", n, h, l, s);
                 if (nwrite <= 0) {
-                    return (-1);
+                    goto end;
                 }
                 sixel_advance(context, nwrite);
             }
@@ -345,7 +348,7 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
                                  (palette[n * 3 + 1] * 100 + 127) / 255,
                                  (palette[n * 3 + 2] * 100 + 127) / 255);
                 if (nwrite <= 0) {
-                    return (-1);
+                    goto end;
                 }
                 sixel_advance(context, nwrite);
             }
@@ -359,7 +362,7 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
         }
         else if (palstate) {
             /* high color sixel */
-            pix = pixels[(y-i)*width];
+            pix = pixels[(y - i) * width];
             if (pix < 0 || pix >= ncolors || pix == keycolor) {
                 fillable = 0;
             } else {
@@ -411,7 +414,7 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
                 } else {
                     np = (sixel_node_t *)malloc(sizeof(sixel_node_t));
                     if (np == NULL) {
-                        return (-1);
+                        goto end;
                     }
                 }
 
@@ -491,15 +494,19 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
         sixel_advance(context, 1);
     }
 
+    nret = 0;
+
+end:
     /* free nodes */
     while ((np = context->node_free) != NULL) {
         context->node_free = np->next;
         free(np);
     }
+    context->node_top = NULL;
 
     free(map);
 
-    return 0;
+    return nret;
 }
 
 
