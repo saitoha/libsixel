@@ -13,10 +13,10 @@ all-am:
 	cp package.json.in package.json
 
 test: all
-	$(MAKE) test -C converters 2>&1 |tee test.log
+	cd converters && $(MAKE) test 2>&1 |tee test.log
 
 winetest: all
-	$(MAKE) winetest -C converters
+	cd converters && $(MAKE) winetest
 
 valgrind: all
 	valgrind --leak-check=full --show-reachable=no --error-limit=no img2sixel images/snake.jpg -dfs 2>&1 \

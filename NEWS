@@ -27,7 +27,10 @@
 
 * img2sixel: Performance inprovement for loading 8bit indexed PNG.
 
-* A lot of bug fixe and minor improvements, now tests achieve 90% coverage.
+* tests: 'make test' achieves 90% coverage.
+
+* A lot of bug fixes and minor improvements.
+  Thanks to @obache and @ttdoda.
 
 
                    ------------------------------

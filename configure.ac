@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.4.1], [user@zuse.jp])
+AC_INIT([sixel], [1.4.3], [user@zuse.jp])
 LS_LT_CURRENT=1
 LS_LT_REVISION=3
 LS_LT_AGE=0
@@ -18,8 +18,6 @@ LT_INIT
 AC_CONFIG_SRCDIR([src/fromsixel.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
-#AC_ENABLE_SHARED
-#AC_DISABLE_STATIC
 
 AX_GCC_VAR_ATTRIBUTE([deprecated])
 if test x$ax_cv_have_func_attribute_deprecated != x; then
@@ -125,6 +123,24 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AS_IF([test x$cross_compile != xyes], [PKG_PROG_PKG_CONFIG], [])
 
+AC_DEFUN([LS_CHECK_CFLAG], [
+   AC_MSG_CHECKING([if $CC supports $1])
+   saved_cflags="$CFLAGS"
+   CFLAGS="$1"
+   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
+                     [AC_MSG_RESULT([yes])
+                      m4_default([$2], :)],
+                     [AC_MSG_RESULT([no])
+                      m4_default([$3], :)])
+   CFLAGS="$saved_cflags"
+])
+
+LS_CHECK_CFLAG([-Wall],[AM_CFLAGS="$AM_CFLAGS -Wall"], [])
+LS_CHECK_CFLAG([-Wextra],[AM_CFLAGS="$AM_CFLAGS -Wextra"], [])
+AS_IF([test x$enable_debug = xyes],
+      [LS_CHECK_CFLAG([-Werror],[AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
+AC_SUBST([AM_CFLAGS])
+
 # For wic integration
 #AC_PROG_CXX
 
@@ -160,10 +176,12 @@ AC_CHECK_FUNC([memset], [],
               [AC_MSG_ERROR(memset is not available.)])
 
 AC_CHECK_FUNC([getopt_long],
-              [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])],
+              [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])
+               have_getopt_long=1],
               [AC_CHECK_FUNC([getopt],
                              [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
                              [AC_MSG_ERROR(getopt or getopt_long is not available.)])])
+AM_CONDITIONAL([HAVE_GETOPT_LONG], [test x$have_getopt_long = xyes])
 
 AC_CHECK_FUNCS([memcpy \
                 memmove \
@@ -172,6 +190,7 @@ AC_CHECK_FUNCS([memcpy \
                 _setmode \
                 signal \
                 usleep \
+                strdup \
                 calloc \
                 clock \
                 clearerr \
@@ -190,8 +209,7 @@ AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
                ])
 
 loaders="stb_image"
-have_curl="no"
-have_jpeg="no"
+have_curl="no" have_jpeg="no"
 have_png="no"
 #have_wic="no"
 
@@ -287,6 +305,10 @@ if test x$with_gd != xno; then
                                        [AC_MSG_ERROR([please install libiconv])])
                          ])
             ;;
+        *-*-interix)
+            AM_CPPFLAGS="-D_ALL_SOURCES"
+            AC_SUBST([AM_CPPFLAGS])
+            ;;
     esac
 
     AC_MSG_NOTICE([gd cflags is ${GD_CFLAGS}])
@@ -296,7 +318,7 @@ AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
 
 if test x$with_libcurl != xno; then
-    if test x$build == x$host; then
+    if test x$build = x$host; then
         AC_CHECK_HEADER([curl/curl.h],
                         [AC_CHECK_LIB([curl],
                                       [curl_easy_cleanup],
@@ -326,7 +348,7 @@ AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
 
 if test x$with_jpeg != xno; then
-    if test x$build == x$host; then
+    if test x$build = x$host; then
         AC_CHECK_HEADER([jpeglib.h],
                         [AC_CHECK_LIB([jpeg],
                                       [jpeg_read_header],
@@ -349,7 +371,7 @@ AC_SUBST(LIBJPEG_CFLAGS)
 AC_SUBST(LIBJPEG_LIBS)
 
 if test x$with_png != xno; then
-    if test x$build == x$host; then
+    if test x$build = x$host; then
         AC_CHECK_HEADER([png.h],
                         [AC_CHECK_LIB([png],
                                       [png_check_sig],
@@ -410,7 +432,5 @@ echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
-echo ""
-echo ""
 echo ""
 echo ""

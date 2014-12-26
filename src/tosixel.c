@@ -27,17 +27,42 @@
 #include "dither.h"
 #include "sixel.h"
 
+#define DCS_START_7BIT       "\033P"
+#define DCS_START_7BIT_SIZE  (sizeof(DCS_START_7BIT) - 1)
+#define DCS_START_8BIT       "\220"
+#define DCS_START_8BIT_SIZE  (sizeof(DCS_START_8BIT) - 1)
+#define DCS_END_7BIT         "\033\\"
+#define DCS_END_7BIT_SIZE    (sizeof(DCS_END_7BIT) - 1)
+#define DCS_END_8BIT         "\234"
+#define DCS_END_8BIT_SIZE    (sizeof(DCS_END_8BIT) - 1)
+#define DCS_7BIT(x)          DCS_START_7BIT x DCS_END_7BIT
+#define DCS_8BIT(x)          DCS_START_8BIT x DCS_END_8BIT
+#define SCREEN_PACKET_SIZE   256
+
+enum {
+    PALETTE_HIT = 1,
+    PALETTE_CHANGE = 2,
+};
+
 /* implementation */
 
 static void
-penetrate(sixel_output_t *context, int nwrite)
+penetrate(sixel_output_t *context, int nwrite,
+          char *dcs_start,
+          char *dcs_end,
+          int const dcs_start_size,
+          int const dcs_end_size)
 {
     int pos;
-    for (pos = 0; pos < nwrite; pos += 508) {
-        context->fn_write("\x1bP", 2, context->priv);
-        context->fn_write(((char *)context->buffer)+pos,
-                nwrite - pos < 508 ? nwrite - pos : 508, context->priv);
-        context->fn_write("\x1b\\", 2, context->priv);
+    int const splitsize = SCREEN_PACKET_SIZE
+                        - dcs_start_size - dcs_end_size;
+
+    for (pos = 0; pos < nwrite; pos += splitsize) {
+        context->fn_write(dcs_start, dcs_end_size, context->priv);
+        context->fn_write(((char *)context->buffer) + pos,
+                          nwrite - pos < splitsize ? nwrite - pos: splitsize,
+                          context->priv);
+        context->fn_write(dcs_end, dcs_end_size, context->priv);
     }
 }
 
@@ -47,7 +72,9 @@ sixel_advance(sixel_output_t *context, int nwrite)
 {
     if ((context->pos += nwrite) >= SIXEL_OUTPUT_PACKET_SIZE) {
         if (context->penetrate_multiplexer) {
-            penetrate(context, SIXEL_OUTPUT_PACKET_SIZE);
+            penetrate(context, SIXEL_OUTPUT_PACKET_SIZE,
+                      DCS_START_7BIT, DCS_END_7BIT,
+                      DCS_START_7BIT_SIZE, DCS_END_7BIT_SIZE);
         } else {
             context->fn_write((char *)context->buffer,
                               SIXEL_OUTPUT_PACKET_SIZE, context->priv);
@@ -175,11 +202,6 @@ sixel_put_node(sixel_output_t *const context, int x,
     return x;
 }
 
-enum {
-    PALETTE_HIT = 1,
-    PALETTE_CHANGE = 2,
-};
-
 
 static int
 sixel_encode_header(int width, int height, sixel_output_t *context)
@@ -193,9 +215,9 @@ sixel_encode_header(int width, int height, sixel_output_t *context)
 
     if (!context->skip_dcs_envelope) {
         if (context->has_8bit_control) {
-            nwrite = sprintf((char *)context->buffer, "\x90");
+            nwrite = sprintf((char *)context->buffer, DCS_START_8BIT);
         } else {
-            nwrite = sprintf((char *)context->buffer, "\x1bP");
+            nwrite = sprintf((char *)context->buffer, DCS_START_7BIT);
         }
         if (nwrite <= 0) {
             return (-1);
@@ -498,9 +520,9 @@ sixel_encode_footer(sixel_output_t *context)
 
     if (!context->skip_dcs_envelope && !context->penetrate_multiplexer) {
         if (context->has_8bit_control) {
-            nwrite = sprintf((char *)context->buffer + context->pos, "\x9c");
+            nwrite = sprintf((char *)context->buffer + context->pos, DCS_END_8BIT);
         } else {
-            nwrite = sprintf((char *)context->buffer + context->pos, "\x1b\\");
+            nwrite = sprintf((char *)context->buffer + context->pos, DCS_END_7BIT);
         }
         if (nwrite <= 0) {
             return (-1);
@@ -511,8 +533,12 @@ sixel_encode_footer(sixel_output_t *context)
     /* flush buffer */
     if (context->pos > 0) {
         if (context->penetrate_multiplexer) {
-            penetrate(context, context->pos);
-            context->fn_write("\x1bP\x1b\x1b\\\x1bP\\\x1b\\", 10, context->priv);
+            penetrate(context, context->pos,
+                      DCS_START_7BIT, DCS_END_7BIT,
+                      DCS_START_7BIT_SIZE, DCS_END_7BIT_SIZE);
+            context->fn_write(DCS_7BIT("\033") DCS_7BIT("\\"),
+                              (DCS_START_7BIT_SIZE + 1 + DCS_END_7BIT_SIZE) * 2,
+                              context->priv);
         }
         else {
             context->fn_write((char *)context->buffer, context->pos, context->priv);
@@ -904,6 +930,47 @@ dither_func_burkes(unsigned char *data, int width)
 }
 
 
+static void
+sixel_apply_15bpp_dither(
+    unsigned char *pixels,
+    int x, int y, int width, int height,
+    int method_for_diffuse)
+{
+    /* apply floyd steinberg dithering */
+    switch (method_for_diffuse) {
+    case DIFFUSE_FS:
+        if (x < width - 1 && y < height - 1) {
+            dither_func_fs(pixels, width);
+        }
+        break;
+    case DIFFUSE_ATKINSON:
+        if (x < width - 2 && y < height - 2) {
+            dither_func_atkinson(pixels, width);
+        }
+        break;
+    case DIFFUSE_JAJUNI:
+        if (x < width - 2 && y < height - 2) {
+            dither_func_jajuni(pixels, width);
+        }
+        break;
+    case DIFFUSE_STUCKI:
+        if (x < width - 2 && y < height - 2) {
+            dither_func_stucki(pixels, width);
+        }
+        break;
+    case DIFFUSE_BURKES:
+        if (x < width - 2 && y < height - 1) {
+            dither_func_burkes(pixels, width);
+        }
+        break;
+    case DIFFUSE_NONE:
+    default:
+        dither_func_none(pixels, width);
+        break;
+    }
+}
+
+
 static int
 sixel_encode_fullcolor(unsigned char *pixels, int width, int height,
                        sixel_dither_t *dither, sixel_output_t *context)
@@ -918,6 +985,7 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height,
     unsigned char palstate[256];
     int output_count;
     int nret = (-1);
+    int const maxcolors = 1 << 15;
 
     if (dither->pixelformat != PIXELFORMAT_RGB888) {
         /* normalize pixelfromat */
@@ -929,14 +997,14 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height,
         pixels = normalized_pixels;
     }
 
-    paletted_pixels = (unsigned char*)malloc(width * height + 32768 * 2 + width * 6);
+    paletted_pixels = (unsigned char*)malloc(width * height + maxcolors * 2 + width * 6);
     if (paletted_pixels == NULL) {
         goto error;
     }
     rgbhit = paletted_pixels + width * height;
-    memset(rgbhit, 0, 32768 * 2 + width * 6);
-    rgb2pal = rgbhit + 32768;
-    marks = rgb2pal + 32768;
+    memset(rgbhit, 0, maxcolors * 2 + width * 6);
+    rgb2pal = rgbhit + maxcolors;
+    marks = rgb2pal + maxcolors;
     output_count = 0;
     while (1) {
         int x, y;
@@ -964,40 +1032,9 @@ sixel_encode_fullcolor(unsigned char *pixels, int width, int height,
                     int pix = ((pixels[0] & 0xf8) << 7) |
                               ((pixels[1] & 0xf8) << 2) |
                               ((pixels[2] >> 3) & 0x1f);
-
-                    /* apply floyd steinberg dithering */
-                    switch (dither->method_for_diffuse) {
-                    case DIFFUSE_FS:
-                        if (x < width - 1 && y < height - 1) {
-                            dither_func_fs(pixels, width);
-                        }
-                        break;
-                    case DIFFUSE_ATKINSON:
-                        if (x < width - 2 && y < height - 2) {
-                            dither_func_atkinson(pixels, width);
-                        }
-                        break;
-                   case DIFFUSE_JAJUNI:
-                        if (x < width - 2 && y < height - 2) {
-                            dither_func_jajuni(pixels, width);
-                        }
-                        break;
-                   case DIFFUSE_STUCKI:
-                        if (x < width - 2 && y < height - 2) {
-                            dither_func_stucki(pixels, width);
-                        }
-                        break;
-                   case DIFFUSE_BURKES:
-                        if (x < width - 2 && y < height - 1) {
-                            dither_func_burkes(pixels, width);
-                        }
-                        break;
-                    case DIFFUSE_NONE:
-                    default:
-                        dither_func_none(pixels, width);
-                        break;
-                    }
-
+                    sixel_apply_15bpp_dither(pixels,
+                                             x, y, width, height,
+                                             dither->method_for_diffuse);
                     if (!rgbhit[pix]) {
                         while (1) {
                             if (nextpal >= 255) {
