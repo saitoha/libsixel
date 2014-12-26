@@ -174,6 +174,9 @@
 /* Define to 1 if you have the <sys/unistd.h> header file. */
 #undef HAVE_SYS_UNISTD_H
 
+/* enable tests */
+#undef HAVE_TESTS
+
 /* Define to 1 if you have the <time.h> header file. */
 #undef HAVE_TIME_H
 
