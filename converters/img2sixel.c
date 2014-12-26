@@ -98,12 +98,12 @@ sixel_hex_write_callback(char *data, int size, void *priv)
 
     for (i = j = 0; i < size; ++i, ++j) {
         hex[j] = (data[i] >> 4) & 0xf;
-        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
+        hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
         hex[++j] = data[i] & 0xf;
-        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
+        hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
     }
+
     return fwrite(hex, 1, size * 2, stdout);
-    return size;
 }
 
 
@@ -423,9 +423,10 @@ clip(unsigned char *pixels,
 }
 
 
-static int do_crop(unsigned char **frames, int frame_count,
-                   int *psx, int *psy, int pixelformat,
-                   settings_t *psettings)
+static int
+do_crop(unsigned char **frames, int frame_count,
+        int *psx, int *psy, int pixelformat,
+        settings_t *psettings)
 {
     int n;
     int ret;
