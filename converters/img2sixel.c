@@ -423,9 +423,10 @@ clip(unsigned char *pixels,
 }
 
 
-static int do_crop(unsigned char **frames, int frame_count,
-                   int *psx, int *psy, int pixelformat,
-                   settings_t *psettings)
+static int
+do_crop(unsigned char **frames, int frame_count,
+        int *psx, int *psy, int pixelformat,
+        settings_t *psettings)
 {
     int n;
     int ret;
