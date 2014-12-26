@@ -1,4 +1,4 @@
-/* stb_image - v1.38 - public domain JPEG/PNG reader - http://nothings.org/stb_image.c
+/* stb_image - v1.41 - public domain JPEG/PNG reader - http://nothings.org/stb_image.c
    when you control the images you're loading
                                      no warranty implied; use at your own risk
 
@@ -21,18 +21,20 @@
       HDR (radiance rgbE format)
       PIC (Softimage PIC)
 
-      - stbi__jpeg_huff_decode from memory or through FILE (define STBI_NO_STDIO to remove code)
-      - stbi__jpeg_huff_decode from arbitrary I/O callbacks
+      - decode from memory or through FILE (define STBI_NO_STDIO to remove code)
+      - decode from arbitrary I/O callbacks
       - overridable dequantizing-IDCT, YCbCr-to-RGB conversion (define STBI_SIMD)
 
    Latest revisions:
+      1.41 (2014-06-25) fix search&replace that messed up comments/error messages
+      1.40 (2014-06-22) gcc warning
+      1.39 (2014-06-15) TGA optimization fix, multiple BMP fixes
       1.38 (2014-06-06) suppress MSVC run-time warnings, fix accidental rename of 'skip'
       1.37 (2014-06-04) remove duplicate typedef
       1.36 (2014-06-03) converted to header file, allow reading incorrect iphoned-images without iphone flag
       1.35 (2014-05-27) warnings, bugfixes, TGA optimization, etc
       1.34 (unknown   ) warning fix
       1.33 (2011-07-14) minor fixes suggested by Dave Moore
-      1.32 (2011-07-13) info support for all filetypes (SpartanJ)
 
    See end of file for full revision history.
 
@@ -63,8 +65,10 @@
     Arseny Kapoulkine                            Blazej Dariusz Roszkowski
                                                  Thibault Reuille
  If your name should be here but                 Paul Du Bois
- isn't let Sean know.                            Guillaume George
-
+ isn't, let Sean know.                           Guillaume George
+                                                 Jerry Jansson
+                                                 Hayaki Saito
+                                                 Johan Duparc
 */
 
 #ifndef STBI_INCLUDE_STB_IMAGE_H
@@ -407,6 +411,7 @@ typedef unsigned char validate_uint32[sizeof(stbi__uint32)==4 ? 1 : -1];
 typedef struct
 {
    stbi__uint32 img_x, img_y;
+   int depth;
    int img_n, img_out_n;
    
    stbi_io_callbacks io;
@@ -423,7 +428,7 @@ typedef struct
 
 static void stbi__refill_buffer(stbi__context *s);
 
-// initialize a memory-stbi__jpeg_huff_decode context
+// initialize a memory-decode context
 static void stbi__start_mem(stbi__context *s, stbi_uc const *buffer, int len)
 {
    s->io.read = NULL;
@@ -1080,7 +1085,7 @@ static void stbi__grow_buffer_unsafe(stbi__jpeg *j)
 // (1 << n) - 1
 static stbi__uint32 stbi__bmask[17]={0,1,3,7,15,31,63,127,255,511,1023,2047,4095,8191,16383,32767,65535};
 
-// stbi__jpeg_huff_decode a jpeg huffman value from the bitstream
+// decode a jpeg huffman value from the bitstream
 stbi_inline static int stbi__jpeg_huff_decode(stbi__jpeg *j, stbi__huffman *h)
 {
    unsigned int temp;
@@ -1174,7 +1179,7 @@ static stbi_uc stbi__jpeg_dezigzag[64+15] =
    63, 63, 63, 63, 63, 63, 63
 };
 
-// stbi__jpeg_huff_decode one 64-entry block--
+// decode one 64-entry block--
 static int stbi__jpeg_decode_block(stbi__jpeg *j, short data[64], stbi__huffman *hdc, stbi__huffman *hac, int b)
 {
    int diff,dc,k;
@@ -1189,7 +1194,7 @@ static int stbi__jpeg_decode_block(stbi__jpeg *j, short data[64], stbi__huffman 
    j->img_comp[b].dc_pred = dc;
    data[0] = (short) dc;
 
-   // stbi__jpeg_huff_decode AC components, see JPEG spec
+   // decode AC components, see JPEG spec
    k = 1;
    do {
       int r,s;
@@ -1202,7 +1207,7 @@ static int stbi__jpeg_decode_block(stbi__jpeg *j, short data[64], stbi__huffman 
          k += 16;
       } else {
          k += r;
-         // stbi__jpeg_huff_decode into unzigzag'd location
+         // decode into unzigzag'd location
          data[stbi__jpeg_dezigzag[k++]] = (short) stbi__extend_receive(j,s);
       }
    } while (k < 64);
@@ -1568,7 +1573,7 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
 
    if (scan != SCAN_load) return 1;
 
-   if ((1 << 30) / s->img_x / s->img_n < s->img_y) return stbi__err("too large", "Image too large to stbi__jpeg_huff_decode");
+   if ((1 << 30) / s->img_x / s->img_n < s->img_y) return stbi__err("too large", "Image too large to decode");
 
    for (i=0; i < s->img_n; ++i) {
       if (z->img_comp[i].h > h_max) h_max = z->img_comp[i].h;
@@ -1587,7 +1592,7 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
       // number of effective pixels (stbi__err.g. for non-interleaved MCU)
       z->img_comp[i].x = (s->img_x * z->img_comp[i].h + h_max-1) / h_max;
       z->img_comp[i].y = (s->img_y * z->img_comp[i].v + v_max-1) / v_max;
-      // to simplify generation, we'll allocate enough memory to stbi__jpeg_huff_decode
+      // to simplify generation, we'll allocate enough memory to decode
       // the bogus oversized data from using interleaved MCUs and their
       // big blocks (stbi__err.g. a 16x16 iMCU on an image of width 33); we won't
       // discard the extra data until colorspace conversion
@@ -1960,7 +1965,7 @@ static int stbi__jpeg_info(stbi__context *s, int *x, int *y, int *comp)
    return stbi__jpeg_info_raw(&j, x, y, comp);
 }
 
-// public domain zlib stbi__jpeg_huff_decode    v0.2  Sean Barrett 2006-11-18
+// public domain zlib decode    v0.2  Sean Barrett 2006-11-18
 //    simple implementation
 //      - all input must be provided in an upfront buffer
 //      - all output is written to a single output buffer (can malloc/realloc)
@@ -2464,11 +2469,12 @@ static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 r
    stbi__uint32 i,j,stride = x*out_n;
    int k;
    int img_n = s->img_n; // copy it into a local for later
+   int bpp = s->depth;
    assert(out_n == s->img_n || out_n == s->img_n+1);
    a->out = (stbi_uc *) malloc(x * y * out_n);
    if (!a->out) return stbi__err("outofmem", "Out of memory");
    if (s->img_x == x && s->img_y == y) {
-      if (raw_len != (img_n * x + 1) * y) return stbi__err("not enough pixels","Corrupt PNG");
+      //if (raw_len != (img_n * x + 1) * y) return stbi__err("not enough pixels","Corrupt PNG");
    } else { // interlaced:
       if (raw_len < (img_n * x + 1) * y) return stbi__err("not enough pixels","Corrupt PNG");
    }
@@ -2493,8 +2499,15 @@ static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 r
       }
       if (img_n != out_n) cur[img_n] = 255;
       raw += img_n;
-      cur += out_n;
+      if (bpp == 1) {
+          cur += out_n * 16;
+      } else if (bpp == 4) {
+          cur += out_n * 4;
+      } else {
+          cur += out_n;
+      }
       prior += out_n;
+      char l;
       // this is a little gross, so that we don't switch per-pixel or per-component
       if (img_n == out_n) {
          #define CASE(f) \
@@ -2502,7 +2515,25 @@ static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 r
                 for (i=x-1; i >= 1; --i, raw+=img_n,cur+=img_n,prior+=img_n) \
                    for (k=0; k < img_n; ++k)
          switch (filter) {
-            CASE(STBI__F_none)         cur[k] = raw[k]; break;
+            case STBI__F_none:
+                for (i=(x - 1) * bpp / 8; i >= 1; --i) {
+                   for (k = 0; k < img_n; ++k) {
+                       if (bpp == 1) {
+                           for (l = 0; l < 8; ++l) {
+                               cur[(k - 1) * 8 - l] = (raw[k - 1] >> l & 1) * 0xff;
+                           }
+                       } else if (bpp == 4) {
+                           cur[k - 1] = raw[k] >> 4;
+                           cur[k - 0] = raw[k] & 0xf;
+                       } else {
+                           cur[k] = raw[k];
+                       }
+                   }
+                   raw += img_n;
+                   cur += img_n * 8 / bpp;
+                   prior += img_n;
+               }
+            break;
             CASE(STBI__F_sub)          cur[k] = STBI__BYTECAST(raw[k] + cur[k-img_n]); break;
             CASE(STBI__F_up)           cur[k] = STBI__BYTECAST(raw[k] + prior[k]); break;
             CASE(STBI__F_avg)          cur[k] = STBI__BYTECAST(raw[k] + ((prior[k] + cur[k-img_n])>>1)); break;
@@ -2710,13 +2741,13 @@ static int stbi__parse_png_file(stbi__png *z, int scan, int req_comp)
             stbi__skip(s, c.length);
             break;
          case PNG_TYPE('I','H','D','R'): {
-            int depth,color,comp,filter;
+            int color,comp,filter;
             if (!first) return stbi__err("multiple IHDR","Corrupt PNG");
             first = 0;
             if (c.length != 13) return stbi__err("bad IHDR len","Corrupt PNG");
             s->img_x = stbi__get32be(s); if (s->img_x > (1 << 24)) return stbi__err("too large","Very large image (corrupt?)");
             s->img_y = stbi__get32be(s); if (s->img_y > (1 << 24)) return stbi__err("too large","Very large image (corrupt?)");
-            depth = stbi__get8(s);  if (depth != 8)        return stbi__err("8bit only","PNG not supported: 8-bit only");
+            s->depth = stbi__get8(s);  if (s->depth != 8 && s->depth != 4 && s->depth != 1)        return stbi__err("8bit/4bit/1bit only","PNG not supported: 8-bit/4-bit/1-bit only");
             color = stbi__get8(s);  if (color > 6)         return stbi__err("bad ctype","Corrupt PNG");
             if (color == 3) pal_img_n = 3; else if (color & 1) return stbi__err("bad ctype","Corrupt PNG");
             comp  = stbi__get8(s);  if (comp) return stbi__err("bad comp method","Corrupt PNG");
@@ -2725,7 +2756,7 @@ static int stbi__parse_png_file(stbi__png *z, int scan, int req_comp)
             if (!s->img_x || !s->img_y) return stbi__err("0-pixel image","Corrupt PNG");
             if (!pal_img_n) {
                s->img_n = (color & 2 ? 3 : 1) + (color & 4 ? 1 : 0);
-               if ((1 << 30) / s->img_x / s->img_n < s->img_y) return stbi__err("too large", "Image too large to stbi__jpeg_huff_decode");
+               if ((1 << 30) / s->img_x / s->img_n < s->img_y) return stbi__err("too large", "Image too large to decode");
                if (scan == SCAN_header) return 1;
             } else {
                // if paletted, then pal_n is our final components, and
@@ -3051,7 +3082,7 @@ static stbi_uc *stbi__bmp_load(stbi__context *s, int *x, int *y, int *comp, int 
          psize = (offset - 14 - hsz) >> 2;
    }
    s->img_n = ma ? 4 : 3;
-   if (req_comp && req_comp >= 3) // we can directly stbi__jpeg_huff_decode 3 or 4
+   if (req_comp && req_comp >= 3) // we can directly decode 3 or 4
       target = req_comp;
    else
       target = s->img_n; // if they want monochrome, we'll post-convert
@@ -3128,7 +3159,7 @@ static stbi_uc *stbi__bmp_load(stbi__context *s, int *x, int *y, int *comp, int 
             }
          } else {
             for (i=0; i < (int) s->img_x; ++i) {
-               stbi__uint32 v = (stbi__uint32) (bpp == 16 ? stbi__get16le(s) : stbi__get32le(s));
+               stbi__uint32 v = bpp == 16 ? (stbi__uint32) stbi__get16le(s) : stbi__get32le(s);
                int a;
                out[z++] = STBI__BYTECAST(stbi__shiftsigned(v & mr, rshift, rcount));
                out[z++] = STBI__BYTECAST(stbi__shiftsigned(v & mg, gshift, gcount));
@@ -3284,10 +3315,10 @@ static stbi_uc *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int 
    *y = tga_height;
    if (comp) *comp = tga_comp;
 
-   tga_data = (unsigned char*)malloc( tga_width * tga_height * req_comp );
+   tga_data = (unsigned char*)malloc( tga_width * tga_height * tga_comp );
    if (!tga_data) return stbi__errpuc("outofmem", "Out of memory");
 
-   //   stbi__skip to the data's starting position (offset usually = 0)
+   // skip to the data's starting position (offset usually = 0)
    stbi__skip(s, tga_offset );
 
    if ( !tga_indexed && !tga_is_RLE) {
@@ -3300,7 +3331,7 @@ static stbi_uc *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int 
       //   do I need to load a palette?
       if ( tga_indexed)
       {
-         //   any data to stbi__skip? (offset usually = 0)
+         //   any data to skip? (offset usually = 0)
          stbi__skip(s, tga_palette_start );
          //   load the palette
          tga_palette = (unsigned char*)malloc( tga_palette_len * tga_palette_bits / 8 );
@@ -3377,9 +3408,9 @@ static stbi_uc *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int 
       {
          for (j = 0; j*2 < tga_height; ++j)
          {
-            int index1 = j * tga_width * req_comp;
-            int index2 = (tga_height - 1 - j) * tga_width * req_comp;
-            for (i = tga_width * req_comp; i > 0; --i)
+            int index1 = j * tga_width * tga_comp;
+            int index2 = (tga_height - 1 - j) * tga_width * tga_comp;
+            for (i = tga_width * tga_comp; i > 0; --i)
             {
                unsigned char temp = tga_data[index1];
                tga_data[index1] = tga_data[index2];
@@ -3512,7 +3543,7 @@ static stbi_uc *stbi__psd_load(stbi__context *s, int *x, int *y, int *comp, int 
       // Endloop
 
       // The RLE-compressed data is preceeded by a 2-byte data count for each row in the data,
-      // which we're going to just stbi__skip.
+      // which we're going to just skip.
       stbi__skip(s, h * channelCount * 2 );
 
       // Read the RLE data by channel.
@@ -3772,7 +3803,7 @@ static stbi_uc *stbi__pic_load(stbi__context *s,int *px,int *py,int *comp,int re
    x = stbi__get16be(s);
    y = stbi__get16be(s);
    if (stbi__at_eof(s))  return stbi__errpuc("bad file","file too short (pic header)");
-   if ((1 << 28) / x < y) return stbi__errpuc("too large", "Image too large to stbi__jpeg_huff_decode");
+   if ((1 << 28) / x < y) return stbi__errpuc("too large", "Image too large to decode");
 
    stbi__get32be(s); //skip `ratio'
    stbi__get16be(s); //skip `fields'
@@ -3825,6 +3856,8 @@ typedef struct
    int max_x, max_y;
    int cur_x, cur_y;
    int line_size;
+   int loop_count;
+   int delay;
 } stbi__gif;
 
 static int stbi__gif_test_raw(stbi__context *s)
@@ -3899,7 +3932,7 @@ static void stbi__out_gif_code(stbi__gif *g, stbi__uint16 code)
 {
    stbi_uc *p, *c;
 
-   // recurse to stbi__jpeg_huff_decode the prefixes, since the linked-list is backwards,
+   // recurse to decode the prefixes, since the linked-list is backwards,
    // and working backwards through an interleaved image would be nasty
    if (g->codes[code].prefix >= 0)
       stbi__out_gif_code(g, g->codes[code].prefix);
@@ -4095,19 +4128,52 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
             return o;
          }
 
-         case 0x21: // Comment Extension.
+         case 0x21: // Extension Introducer
          {
             int len;
-            if (stbi__get8(s) == 0xF9) { // Graphic Control Extension.
-               len = stbi__get8(s);
+            switch (stbi__get8(s)) {
+            case 0x01: // Plain Text Extension
+               break;
+            case 0x21: // Comment Extension
+               break;
+            case 0xF9: // Graphic Control Extension
+               len = stbi__get8(s); // block size
                if (len == 4) {
                   g->eflags = stbi__get8(s);
-                  stbi__get16le(s); // delay
+                  g->delay = stbi__get16le(s); // delay
                   g->transparent = stbi__get8(s);
                } else {
                   stbi__skip(s, len);
                   break;
                }
+               break;
+            case 0xFF: // Application Extension
+               len = stbi__get8(s); // block size
+               if (len != 11) break;
+               if (stbi__get8(s) != 'N') break;
+               if (stbi__get8(s) != 'E') break;
+               if (stbi__get8(s) != 'T') break;
+               if (stbi__get8(s) != 'S') break;
+               if (stbi__get8(s) != 'C') break;
+               if (stbi__get8(s) != 'A') break;
+               if (stbi__get8(s) != 'P') break;
+               if (stbi__get8(s) != 'E') break;
+               if (stbi__get8(s) != '2') break;
+               if (stbi__get8(s) != '.') break;
+               if (stbi__get8(s) != '0') break;
+               if (stbi__get8(s) != 0x03) break;
+               // loop count
+               switch (stbi__get8(s)) {
+               case 0x00:
+                  g->loop_count = 1;
+                  break;
+               case 0x01:
+                  g->loop_count = stbi__get16le(s);
+                  break;
+               }
+               break;
+            default:
+               break;
             }
             while ((len = stbi__get8(s)) != 0)
                stbi__skip(s, len);
@@ -4115,6 +4181,7 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
          }
 
          case 0x3B: // gif stream termination code
+         case 0x3c: // ? (unknown code)
             return (stbi_uc *) 1;
 
          default:
@@ -4126,7 +4193,8 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
 static stbi_uc *stbi__gif_load(stbi__context *s, int *x, int *y, int *comp, int req_comp)
 {
    stbi_uc *u = 0;
-   stbi__gif g={0};
+   stbi__gif g;
+   memset(&g, 0, sizeof(g));
 
    u = stbi__gif_load_next(s, &g, comp, req_comp);
    if (u == (void *) 1) u = 0;  // end of animated gif marker
@@ -4540,6 +4608,14 @@ STBIDEF int stbi_info_from_callbacks(stbi_io_callbacks const *c, void *user, int
 
 /*
    revision history:
+      1.41 (2014-06-25)
+             fix search&replace from 1.36 that messed up comments/error messages
+      1.40 (2014-06-22)
+             fix gcc struct-initialization warning
+      1.39 (2014-06-15)
+             fix to TGA optimization when req_comp != number of components in TGA;
+             fix to GIF loading because BMP wasn't rewinding (whoops, no GIFs in my test suite)
+             add support for BMP version 5 (more ignored fields)
       1.38 (2014-06-06)
              suppress MSVC warnings on integer casts truncating values
              fix accidental rename of 'skip' field of I/O
