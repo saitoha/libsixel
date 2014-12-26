@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.4.2], [user@zuse.jp])
+AC_INIT([sixel], [1.4.3], [user@zuse.jp])
 LS_LT_CURRENT=1
 LS_LT_REVISION=3
 LS_LT_AGE=0
@@ -304,6 +304,10 @@ if test x$with_gd != xno; then
                          [AC_CHECK_LIB(iconv, [iconv], [],
                                        [AC_MSG_ERROR([please install libiconv])])
                          ])
+            ;;
+        *-*-interix)
+            AM_CPPFLAGS="-D_ALL_SOURCES"
+            AC_SUBST([AM_CPPFLAGS])
             ;;
     esac
 

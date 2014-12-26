@@ -19,8 +19,8 @@ if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
 img2sixel_SOURCES = img2sixel.c scale.c malloc_stub.c loader.c frompnm.c \
                     scale.h malloc_stub.h loader.h frompnm.h
-img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) -D_ALL_SOURCE \
-		   -I$(top_builddir)/include/ \
+img2sixel_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
+img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) \
 		   $(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) \
 		   $(GD_CFLAGS) $(LIBJPEG_CFLAGS) $(LIBPNG_CFLAGS)
 img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm \
@@ -35,8 +35,8 @@ if WANT_SIXEL2PNG
 bin_PROGRAMS += sixel2png
 sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c \
                     stb_image_write.h malloc_stub.h
-sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) -D_ALL_SOURCE \
-		   -I$(top_builddir)/include/ \
+sixel2png_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
+sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) \
 		   $(MAYBE_COVERAGE) $(LIBPNG_CFLAGS)
 sixel2png_LDADD = $(top_builddir)/src/libsixel.la $(LIBPNG_LIBS)
 dist_man_MANS += sixel2png.1
@@ -70,6 +70,7 @@ if WANT_IMG2SIXEL
 	test ! $$($(WINE) ./img2sixel -e -bxterm256 ../images/snake.png)
 	test ! $$($(WINE) ./img2sixel -p64 -bxterm256 ../images/snake.png)
 	test ! $$($(WINE) ./img2sixel -m ../images/map16.png -bxterm256 ../images/snake.png)
+	test ! $$($(WINE) ./img2sixel -8 -P ../images/snake.png)
 	test ! $$(echo -n a | $(WINE) ./img2sixel)
 	$(WINE) ./img2sixel -H
 	$(WINE) ./img2sixel -V
