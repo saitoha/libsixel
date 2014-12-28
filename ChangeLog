@@ -1,3 +1,7 @@
+2014-12-24  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Fix wrong crop option(-c) behavior
+
 2014-12-19  Hayaki Saito <user@zuse.jp>
 
   * Makefile.in, configure, configure.ac, converters/Makefile.am,
