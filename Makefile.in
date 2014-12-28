@@ -367,7 +367,7 @@ SUBDIRS = include src converters
 DIST_SUBDIRS = $(SUBDIRS)
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = libsixel.pc
-CLEANFILES = valgrind.log test.log
+CLEANFILES = valgrind.log test.log unittest.log
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -881,6 +881,9 @@ uninstall-am: uninstall-pkgconfigDATA
 
 all-am:
 	cp package.json.in package.json
+
+unittest: all
+	cd converters && $(MAKE) unittest 2>&1 |tee unittest.log
 
 test: all
 	cd converters && $(MAKE) test 2>&1 |tee test.log

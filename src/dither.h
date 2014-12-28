@@ -57,6 +57,11 @@ int
 sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
                             int width, int height, int const pixelformat);
 
+#if HAVE_TESTS
+int
+sixel_dither_tests_main(int argc, char *argv[]);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

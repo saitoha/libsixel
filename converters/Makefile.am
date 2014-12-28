@@ -42,7 +42,21 @@ sixel2png_LDADD = $(top_builddir)/src/libsixel.la $(LIBPNG_LIBS)
 dist_man_MANS += sixel2png.1
 endif
 
-test: all
+if COND_TESTS
+bin_PROGRAMS += tests
+tests_SOURCES = tests.c
+tests_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_builddir)/src/ $(AM_CPPFLAGS)
+tests_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
+tests_LDADD = $(top_builddir)/src/libsixel.la $(LIBPNG_LIBS)
+dist_man_MANS += sixel2png.1
+endif
+
+unittest: all
+if COND_TESTS
+	./tests
+endif
+
+test: all unittest
 if WANT_IMG2SIXEL
 	test ! $$($(WINE) ./img2sixel -d invalid_option)
 	test ! $$($(WINE) ./img2sixel -r invalid_option)

@@ -79,13 +79,15 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
+bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3)
 @WANT_IMG2SIXEL_TRUE@am__append_1 = img2sixel
 @WANT_IMG2SIXEL_TRUE@am__append_2 = img2sixel.1
 @WANT_IMG2SIXEL_TRUE@am__append_3 = shell-completion/bash/img2sixel
 @WANT_IMG2SIXEL_TRUE@am__append_4 = shell-completion/zsh/_img2sixel
 @WANT_SIXEL2PNG_TRUE@am__append_5 = sixel2png
 @WANT_SIXEL2PNG_TRUE@am__append_6 = sixel2png.1
+@COND_TESTS_TRUE@am__append_7 = tests
+@COND_TESTS_TRUE@am__append_8 = sixel2png.1
 subdir = converters
 SUBDIRS =
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
@@ -106,6 +108,7 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 @WANT_IMG2SIXEL_TRUE@am__EXEEXT_1 = img2sixel$(EXEEXT)
 @WANT_SIXEL2PNG_TRUE@am__EXEEXT_2 = sixel2png$(EXEEXT)
+@COND_TESTS_TRUE@am__EXEEXT_3 = tests$(EXEEXT)
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" \
 	"$(DESTDIR)$(bashcompletiondir)" \
 	"$(DESTDIR)$(zshcompletiondir)"
@@ -147,6 +150,14 @@ sixel2png_OBJECTS = $(am_sixel2png_OBJECTS)
 sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sixel2png_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+am__tests_SOURCES_DIST = tests.c
+@COND_TESTS_TRUE@am_tests_OBJECTS = tests-tests.$(OBJEXT)
+tests_OBJECTS = $(am_tests_OBJECTS)
+@COND_TESTS_TRUE@tests_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
+@COND_TESTS_TRUE@	$(am__DEPENDENCIES_1)
+tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(tests_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -181,9 +192,9 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(img2sixel_SOURCES) $(sixel2png_SOURCES)
+SOURCES = $(img2sixel_SOURCES) $(sixel2png_SOURCES) $(tests_SOURCES)
 DIST_SOURCES = $(am__img2sixel_SOURCES_DIST) \
-	$(am__sixel2png_SOURCES_DIST)
+	$(am__sixel2png_SOURCES_DIST) $(am__tests_SOURCES_DIST)
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
 	ctags-recursive dvi-recursive html-recursive info-recursive \
 	install-data-recursive install-dvi-recursive \
@@ -420,7 +431,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 DIST_SUBDIRS = $(SUBDIRS)
-dist_man_MANS = $(am__append_2) $(am__append_6)
+dist_man_MANS = $(am__append_2) $(am__append_6) $(am__append_8)
 dist_bashcompletion_DATA = $(am__append_3)
 dist_zshcompletion_DATA = $(am__append_4)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
@@ -445,6 +456,10 @@ CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe
 @WANT_SIXEL2PNG_TRUE@		   $(MAYBE_COVERAGE) $(LIBPNG_CFLAGS)
 
 @WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la $(LIBPNG_LIBS)
+@COND_TESTS_TRUE@tests_SOURCES = tests.c
+@COND_TESTS_TRUE@tests_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_builddir)/src/ $(AM_CPPFLAGS)
+@COND_TESTS_TRUE@tests_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
+@COND_TESTS_TRUE@tests_LDADD = $(top_builddir)/src/libsixel.la $(LIBPNG_LIBS)
 all: all-recursive
 
 .SUFFIXES:
@@ -537,6 +552,10 @@ sixel2png$(EXEEXT): $(sixel2png_OBJECTS) $(sixel2png_DEPENDENCIES) $(EXTRA_sixel
 	@rm -f sixel2png$(EXEEXT)
 	$(AM_V_CCLD)$(sixel2png_LINK) $(sixel2png_OBJECTS) $(sixel2png_LDADD) $(LIBS)
 
+tests$(EXEEXT): $(tests_OBJECTS) $(tests_DEPENDENCIES) $(EXTRA_tests_DEPENDENCIES) 
+	@rm -f tests$(EXEEXT)
+	$(AM_V_CCLD)$(tests_LINK) $(tests_OBJECTS) $(tests_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -551,6 +570,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-malloc_stub.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-sixel2png.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-stb_image_write.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests-tests.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -684,6 +704,20 @@ sixel2png-malloc_stub.obj: malloc_stub.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='malloc_stub.c' object='sixel2png-malloc_stub.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o sixel2png-malloc_stub.obj `if test -f 'malloc_stub.c'; then $(CYGPATH_W) 'malloc_stub.c'; else $(CYGPATH_W) '$(srcdir)/malloc_stub.c'; fi`
+
+tests-tests.o: tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-tests.o -MD -MP -MF $(DEPDIR)/tests-tests.Tpo -c -o tests-tests.o `test -f 'tests.c' || echo '$(srcdir)/'`tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-tests.Tpo $(DEPDIR)/tests-tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests.c' object='tests-tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-tests.o `test -f 'tests.c' || echo '$(srcdir)/'`tests.c
+
+tests-tests.obj: tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-tests.obj -MD -MP -MF $(DEPDIR)/tests-tests.Tpo -c -o tests-tests.obj `if test -f 'tests.c'; then $(CYGPATH_W) 'tests.c'; else $(CYGPATH_W) '$(srcdir)/tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-tests.Tpo $(DEPDIR)/tests-tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests.c' object='tests-tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-tests.obj `if test -f 'tests.c'; then $(CYGPATH_W) 'tests.c'; else $(CYGPATH_W) '$(srcdir)/tests.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1064,7 +1098,10 @@ uninstall-man: uninstall-man1
 	uninstall-dist_zshcompletionDATA uninstall-man uninstall-man1
 
 
-test: all
+unittest: all
+@COND_TESTS_TRUE@	./tests
+
+test: all unittest
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -d invalid_option)
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -r invalid_option)
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -s invalid_option)
