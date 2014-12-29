@@ -90,20 +90,20 @@ sixel_write_callback(char *data, int size, void *priv)
 static int
 sixel_hex_write_callback(char *data, int size, void *priv)
 {
-    /* unused */ (void) priv;
-
     char hex[SIXEL_OUTPUT_PACKET_SIZE * 2];
     int i;
     int j;
 
+    /* unused */ (void) priv;
+
     for (i = j = 0; i < size; ++i, ++j) {
         hex[j] = (data[i] >> 4) & 0xf;
-        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
+        hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
         hex[++j] = data[i] & 0xf;
-        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
+        hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
     }
+
     return fwrite(hex, 1, size * 2, stdout);
-    return size;
 }
 
 
@@ -164,9 +164,6 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
                           /* reqcolors */ 256,
                           &mappixels);
     if (ret != 0 || mappixels == NULL || map_sx * map_sy == 0) {
-        goto end;
-    }
-    if (mappixels == NULL) {
         goto end;
     }
     free(delays);
@@ -402,7 +399,7 @@ clip(unsigned char *pixels,
     case PIXELFORMAT_PAL8:
     case PIXELFORMAT_G8:
         dst = pixels;
-        src = pixels + cy * sx * 1;
+        src = pixels + cy * sx * 1 + cx * 1;
         for (y = 0; y < ch; y++) {
             memmove(dst, src, cw * 1);
             dst += (cw * 1);
@@ -411,7 +408,7 @@ clip(unsigned char *pixels,
         break;
     case PIXELFORMAT_RGB888:
         dst = pixels;
-        src = pixels + cy * sx * 3;
+        src = pixels + cy * sx * 3 + cx * 3;
         for (y = 0; y < ch; y++) {
             memmove(dst, src, cw * 3);
             dst += (cw * 3);
@@ -426,9 +423,10 @@ clip(unsigned char *pixels,
 }
 
 
-static int do_crop(unsigned char **frames, int frame_count,
-                   int *psx, int *psy, int pixelformat,
-                   settings_t *psettings)
+static int
+do_crop(unsigned char **frames, int frame_count,
+        int *psx, int *psy, int pixelformat,
+        settings_t *psettings)
 {
     int n;
     int ret;
@@ -462,8 +460,8 @@ print_palette(sixel_dither_t *dither)
     unsigned char *palette;
     int i;
 
-    fprintf(stderr, "palette:\n");
     palette = sixel_dither_get_palette(dither);
+    fprintf(stderr, "palette:\n");
     for (i = 0; i < sixel_dither_get_num_of_palette_colors(dither); ++i) {
         fprintf(stderr, "%d: #%02x%02x%02x\n", i,
                 palette[i * 3 + 1],
@@ -541,12 +539,14 @@ output_sixel_without_macro(
 {
     int nret = 0;
     int dulation = 0;
-    int lag = 0;
     int c;
     int n;
     unsigned char *frame;
-#if HAVE_USLEEP && HAVE_CLOCK
+#if HAVE_USLEEP
+    int lag = 0;
+# if HAVE_CLOCK
     clock_t start;
+# endif
 #endif
 
     /* create output context */
@@ -578,7 +578,7 @@ output_sixel_without_macro(
 #if HAVE_USLEEP
                 if (delays != NULL && !psettings->fignore_delay) {
 # if HAVE_CLOCK
-                    dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
+                    dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
                     lag = 0;
 # else
                     dulation = 0;
@@ -637,11 +637,13 @@ output_sixel_with_macro(
 {
     int nret = 0;
     int dulation = 0;
-    int lag = 0;
     int c;
     int n;
-#if HAVE_USLEEP && HAVE_CLOCK
+#if HAVE_USLEEP
+    int lag = 0;
+# if HAVE_CLOCK
     clock_t start;
+# endif
 #endif
 
     if (!context) {
@@ -677,7 +679,7 @@ output_sixel_with_macro(
 #if HAVE_USLEEP
         if (delays != NULL && !psettings->fignore_delay) {
 # if HAVE_CLOCK
-            dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
+            dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
             lag = 0;
 # else
             dulation = 0;
@@ -1175,13 +1177,26 @@ void show_help(void)
 }
 
 
+static char *
+arg_strdup(char const *s)
+{
+    char *p;
+
+    p = malloc(strlen(s) + 1);
+    if (p) {
+        strcpy(p, s);
+    }
+    return p;
+}
+
+
 int
 main(int argc, char *argv[])
 {
     int n;
-    int long_opt;
     int unknown_opt = 0;
 #if HAVE_GETOPT_LONG
+    int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     int ret;
@@ -1274,9 +1289,11 @@ main(int argc, char *argv[])
         if (n == -1) {
             break;
         }
+#if HAVE_GETOPT_LONG
         if (n == 0) {
             n = long_opt;
         }
+#endif  /* HAVE_GETOPT_LONG */
         switch(n) {
         case '7':
             settings.f8bit = 0;
@@ -1288,7 +1305,7 @@ main(int argc, char *argv[])
             settings.reqcolors = atoi(optarg);
             break;
         case 'm':
-            settings.mapfile = strdup(optarg);
+            settings.mapfile = arg_strdup(optarg);
             break;
         case 'e':
             settings.monochrome = 1;
@@ -1551,8 +1568,11 @@ main(int argc, char *argv[])
         case '?':  /* unknown option */
         default:
             unknown_opt = 1;
+            break;
         }
     }
+
+    /* detects arguments conflictions */
     if (settings.reqcolors != -1 && settings.mapfile) {
         fprintf(stderr, "option -p, --colors conflicts "
                         "with -m, --mapfile.\n");
@@ -1603,26 +1623,37 @@ main(int argc, char *argv[])
                         " with -b, --builtin-palette.\n");
         goto argerr;
     }
+    if (settings.f8bit && settings.penetrate_multiplexer) {
+        fprintf(stderr, "option -8 --8bit-mode conflicts"
+                        " with -P, --penetrate.\n");
+        goto argerr;
+    }
     if (settings.pipe_mode && optind != argc) {
         fprintf(stderr, "option -D, --pipe_mode conflicts"
                         " with arguments [filename ...].\n");
         goto argerr;
     }
+
+    /* evaluate the option -v,--version */
     if (settings.show_version) {
         show_version();
         exit_code = EXIT_SUCCESS;
         goto end;
     }
+
+    /* evaluate the option -h,--help */
     if (settings.show_help) {
         show_help();
         exit_code = EXIT_SUCCESS;
         goto end;
     }
+
+    /* exit if unknown options are specified */
     if (unknown_opt) {
         goto argerr;
     }
 
-    if (settings.reqcolors == -1) {
+    if (settings.reqcolors == (-1)) {
         settings.reqcolors = SIXEL_PALETTE_MAX;
     }
 
@@ -1641,6 +1672,8 @@ main(int argc, char *argv[])
             }
         }
     }
+
+    /* mark as success */
     exit_code = EXIT_SUCCESS;
     goto end;
 
