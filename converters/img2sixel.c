@@ -66,9 +66,7 @@
 #endif
 
 #include <sixel.h>
-#include "scale.h"
 #include "loader.h"
-
 
 /* loop modes */
 enum loopMode {
