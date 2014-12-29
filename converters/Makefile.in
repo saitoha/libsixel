@@ -132,8 +132,10 @@ am__sixel2png_SOURCES_DIST = sixel2png.c malloc_stub.c malloc_stub.h \
 @WANT_SIXEL2PNG_TRUE@	sixel2png-malloc_stub.$(OBJEXT) \
 @WANT_SIXEL2PNG_TRUE@	sixel2png-stb_image_write.$(OBJEXT)
 sixel2png_OBJECTS = $(am_sixel2png_OBJECTS)
+am__DEPENDENCIES_1 =
 @WANT_SIXEL2PNG_TRUE@sixel2png_DEPENDENCIES =  \
-@WANT_SIXEL2PNG_TRUE@	$(top_builddir)/src/libsixel.la
+@WANT_SIXEL2PNG_TRUE@	$(top_builddir)/src/libsixel.la \
+@WANT_SIXEL2PNG_TRUE@	$(am__DEPENDENCIES_1)
 sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sixel2png_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -426,7 +428,7 @@ CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe
 
 @WANT_SIXEL2PNG_TRUE@sixel2png_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 @WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) $(LIBPNG_CFLAGS)
-@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la $(LIBPNG_LDFLAGS)
+@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la $(LIBPNG_LIBS)
 all: all-recursive
 
 .SUFFIXES:
