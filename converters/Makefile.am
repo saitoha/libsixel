@@ -20,12 +20,9 @@ bin_PROGRAMS += img2sixel
 img2sixel_SOURCES = img2sixel.c malloc_stub.c malloc_stub.h
 img2sixel_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) \
-		           $(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) \
-		           $(GD_CFLAGS) $(LIBJPEG_CFLAGS) $(LIBPNG_CFLAGS)
+		           $(MAYBE_COVERAGE)
 img2sixel_LDADD = $(top_builddir)/src/libsixel.la \
-                  $(top_builddir)/src/libsixel-imageio.la -lm \
-		          $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS) \
-		          $(LIBJPEG_LIBS) $(LIBPNG_LIBS)
+                  $(top_builddir)/src/libsixel-imageio.la -lm
 dist_man_MANS += img2sixel.1
 dist_bashcompletion_DATA += shell-completion/bash/img2sixel
 dist_zshcompletion_DATA += shell-completion/zsh/_img2sixel
