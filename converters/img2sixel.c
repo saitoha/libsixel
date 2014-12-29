@@ -399,7 +399,7 @@ clip(unsigned char *pixels,
     case PIXELFORMAT_PAL8:
     case PIXELFORMAT_G8:
         dst = pixels;
-        src = pixels + cy * sx * 1;
+        src = pixels + cy * sx * 1 + cx * 1;
         for (y = 0; y < ch; y++) {
             memmove(dst, src, cw * 1);
             dst += (cw * 1);
@@ -408,7 +408,7 @@ clip(unsigned char *pixels,
         break;
     case PIXELFORMAT_RGB888:
         dst = pixels;
-        src = pixels + cy * sx * 3;
+        src = pixels + cy * sx * 3 + cx * 3;
         for (y = 0; y < ch; y++) {
             memmove(dst, src, cw * 3);
             dst += (cw * 3);
