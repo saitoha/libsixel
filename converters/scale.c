@@ -169,6 +169,7 @@ hamming(const double d)
     return 0.54 + 0.46 * cos(d * M_PI);
 }
 
+
 static unsigned char
 normalize(double x, double total)
 {
@@ -185,152 +186,185 @@ normalize(double x, double total)
 }
 
 
-unsigned char *
-LSS_scale(unsigned char const *pixels,
-          int srcx, int srcy, int depth,
-          int destx, int desty,
-          enum methodForResampling const methodForResampling)
+static void
+scale_without_resampling(
+    unsigned char const *pixels,
+    int const srcw,
+    int const srch,
+    int const dstw,
+    int const dsth,
+    int const depth,
+    unsigned char *result)
 {
-    unsigned char *result;
-    double *offsets;
-    int i, index;
-    double n;
-    int h, w;
-    int y, x;
+    int w;
+    int h;
+    int x;
+    int y;
+    int i;
+    int index;
+
+    for (h = 0; h < dsth; h++) {
+        for (w = 0; w < dstw; w++) {
+            x = w * srcw / dstw;
+            y = h * srch / dsth;
+            for (i = 0; i < depth; i++) {
+                index = (y * srcw + x) * depth + i;
+                result[(h * dstw + w) * depth + i] = pixels[index];
+            }
+        }
+    }
+}
+
+
+typedef double (*resample_fn_t)(double const d);
+
+static void
+scale_with_resampling(
+    unsigned char const *pixels,
+    int const srcw,
+    int const srch,
+    int const dstw,
+    int const dsth,
+    int const depth,
+    resample_fn_t const f_resample,
+    double n,
+    unsigned char *result)
+{
+    int w;
+    int h;
+    int x;
+    int y;
+    int i;
+    int index;
     int x_first, x_last, y_first, y_last;
     double center_x, center_y;
     double diff_x, diff_y;
     double weight;
     double total;
-    double (*f_resample)(double const d);
+    double offsets[8];
 
-    result = malloc(destx * desty * depth);
-    offsets = malloc(sizeof(*offsets) * depth);
+    for (h = 0; h < dsth; h++) {
+        for (w = 0; w < dstw; w++) {
+            total = 0.0;
+            for (i = 0; i < depth; i++) {
+                offsets[i] = 0;
+            }
+
+            /* retrieve range of affected pixels */
+            if (dstw >= srcw) {
+                center_x = (w + 0.5) * srcw / dstw;
+                x_first = MAX(center_x - n, 0);
+                x_last = MIN(center_x + n, srcw - 1);
+            } else {
+                center_x = w + 0.5;
+                x_first = MAX(floor((center_x - n) * srcw / dstw), 0);
+                x_last = MIN(floor((center_x + n) * srcw / dstw), srcw - 1);
+            }
+            if (dsth >= srch) {
+                center_y = (h + 0.5) * srch / dsth;
+                y_first = MAX(center_y - n, 0);
+                y_last = MIN(center_y + n, srch - 1);
+            } else {
+                center_y = h + 0.5;
+                y_first = MAX(floor((center_y - n) * srch / dsth), 0);
+                y_last = MIN(floor((center_y + n) * srch / dsth), srch - 1);
+            }
+
+            /* accumerate weights of affected pixels */
+            for (y = y_first; y <= y_last; y++) {
+                for (x = x_first; x <= x_last; x++) {
+                    if (dstw >= srcw) {
+                        diff_x = (x + 0.5) - center_x;
+                    } else {
+                        diff_x = (x + 0.5) * dstw / srcw - center_x;
+                    }
+                    if (dsth >= srch) {
+                        diff_y = (y + 0.5) - center_y;
+                    } else {
+                        diff_y = (y + 0.5) * dsth / srch - center_y;
+                    }
+                    weight = f_resample(fabs(diff_x)) * f_resample(fabs(diff_y));
+                    for (i = 0; i < depth; i++) {
+                        index = (y * srcw + x) * depth + i;
+                        offsets[i] += pixels[index] * weight;
+                    }
+                    total += weight;
+                }
+            }
+
+            /* normalize */
+            if (total > 0.0) {
+                for (i = 0; i < depth; i++) {
+                    index = (h * dstw + w) * depth + i;
+                    result[index] = normalize(offsets[i], total);
+                }
+            }
+        }
+    }
+}
+
+
+int
+sixel_helper_scale_image(
+    unsigned char const /* in */  *pixels,               /* source image data */
+    int const           /* in */  srcw,                  /* source image width */
+    int const           /* in */  srch,                  /* source image height */
+    int const           /* in */  depth,                 /* source image depth */
+    int const           /* in */  dstw,                  /* destination image width */
+    int const           /* in */  dsth,                  /* destination image height */
+    int const           /* in */  method_for_resampling, /* one of methodForResampling */
+    unsigned char       /* out */ *result)
+{
+    if (depth > 4) {
+        return (-1);
+    }
 
     /* choose re-sampling strategy */
-    switch (methodForResampling) {
-#if 0
+    switch (method_for_resampling) {
     case RES_NEAREST:
-        f_resample = nearest_neighbor;
-        n = 1.0;
+        scale_without_resampling(pixels, srcw, srch, dstw, dsth, depth,
+                                 result);
         break;
-#endif
     case RES_GAUSSIAN:
-        f_resample = gaussian;
-        n = 1.0;
+        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
+                              gaussian, 1.0, result);
         break;
     case RES_HANNING:
-        f_resample = hanning;
-        n = 1.0;
+        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
+                              hanning, 1.0, result);
         break;
     case RES_HAMMING:
-        f_resample = hamming;
-        n = 1.0;
-        break;
-    case RES_BILINEAR:
-        f_resample = bilinear;
-        n = 1.0;
+        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
+                              hamming, 1.0, result);
         break;
     case RES_WELSH:
-        f_resample = welsh;
-        n = 1.0;
+        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
+                              welsh, 1.0, result);
         break;
     case RES_BICUBIC:
-        f_resample = bicubic;
-        n = 2.0;
+        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
+                              bicubic, 2.0, result);
         break;
     case RES_LANCZOS2:
-        f_resample = lanczos2;
-        n = 3.0;
+        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
+                              lanczos2, 3.0, result);
         break;
     case RES_LANCZOS3:
-        f_resample = lanczos3;
-        n = 3.0;
+        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
+                              lanczos3, 3.0, result);
         break;
     case RES_LANCZOS4:
-        f_resample = lanczos4;
-        n = 4.0;
+        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
+                              lanczos4, 4.0, result);
         break;
+    case RES_BILINEAR:
     default:
-        f_resample = bilinear;
-        n = 1.0;
+        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
+                              bilinear, 1.0, result);
         break;
     }
 
-
-    if (methodForResampling == RES_NEAREST) {
-        for (h = 0; h < desty; h++) {
-            for (w = 0; w < destx; w++) {
-                x = w * srcx / destx;
-                y = h * srcy / desty;
-                for (i = 0; i < depth; i++) {
-                    index = (y * srcx + x) * depth + i;
-                    result[(h * destx + w) * depth + i] = pixels[index];
-                }
-            }
-        }
-    } else {
-        for (h = 0; h < desty; h++) {
-            for (w = 0; w < destx; w++) {
-                total = 0.0;
-                for (i = 0; i < depth; i++) {
-                    offsets[i] = 0;
-                }
-
-                /* retrieve range of affected pixels */
-                if (destx >= srcx) {
-                    center_x = (w + 0.5) * srcx / destx;
-                    x_first = MAX(center_x - n, 0);
-                    x_last = MIN(center_x + n, srcx - 1);
-                } else {
-                    center_x = w + 0.5;
-                    x_first = MAX(floor((center_x - n) * srcx / destx), 0);
-                    x_last = MIN(floor((center_x + n) * srcx / destx), srcx - 1);
-                }
-                if (desty >= srcy) {
-                    center_y = (h + 0.5) * srcy / desty;
-                    y_first = MAX(center_y - n, 0);
-                    y_last = MIN(center_y + n, srcy - 1);
-                } else {
-                    center_y = h + 0.5;
-                    y_first = MAX(floor((center_y - n) * srcy / desty), 0);
-                    y_last = MIN(floor((center_y + n) * srcy / desty), srcy - 1);
-                }
-
-                /* accumerate weights of affected pixels */
-                for (y = y_first; y <= y_last; y++) {
-                    for (x = x_first; x <= x_last; x++) {
-                        if (destx >= srcx) {
-                            diff_x = (x + 0.5) - center_x;
-                        } else {
-                            diff_x = (x + 0.5) * destx / srcx - center_x;
-                        }
-                        if (desty >= srcy) {
-                            diff_y = (y + 0.5) - center_y;
-                        } else {
-                            diff_y = (y + 0.5) * desty / srcy - center_y;
-                        }
-                        weight = f_resample(fabs(diff_x)) * f_resample(fabs(diff_y));
-                        for (i = 0; i < depth; i++) {
-                            index = (y * srcx + x) * depth + i;
-                            offsets[i] += pixels[index] * weight;
-                        }
-                        total += weight;
-                    }
-                }
-
-                /* normalize */
-                if (total > 0.0) {
-                    for (i = 0; i < depth; i++) {
-                        index = (h * destx + w) * depth + i;
-                        result[index] = normalize(offsets[i], total);
-                    }
-                }
-            }
-        }
-    }
-    free(offsets);
-    return result;
+    return 0;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */

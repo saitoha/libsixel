@@ -328,6 +328,7 @@ do_resize(unsigned char **ppixels,
     int size;
     int n;
     unsigned char *scaled_frame = NULL;
+    int nret;
 
     if (psettings->percentwidth > 0) {
         psettings->pixelwidth = *psx * psettings->percentwidth / 100;
@@ -357,15 +358,16 @@ do_resize(unsigned char **ppixels,
         }
 
         for (n = 0; n < frame_count; ++n) {
-            scaled_frame = LSS_scale(frames[n], *psx, *psy, 3,
-                                     psettings->pixelwidth,
-                                     psettings->pixelheight,
-                                     psettings->method_for_resampling);
-            if (scaled_frame == NULL) {
-                return (-1);
+            scaled_frame = p + size * n;
+            nret = sixel_helper_scale_image(
+                frames[n], *psx, *psy, 3,
+                psettings->pixelwidth,
+                psettings->pixelheight,
+                psettings->method_for_resampling,
+                scaled_frame);
+            if (nret != 0) {
+                return nret;
             }
-            memcpy(p + size * n, scaled_frame, size);
-            free(scaled_frame);
         }
         for (n = 0; n < frame_count; ++n) {
             frames[n] = p + size * n;

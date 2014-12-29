@@ -45,11 +45,16 @@ extern "C" {
 
 /* image scaling api */
 
-unsigned char *
-LSS_scale(unsigned char const *pixels,
-          int srcx, int srcy, int depth,
-          int destx, int desty,
-          enum methodForResampling const methodForResampling);
+int
+sixel_helper_scale_image(
+    unsigned char const /* in */  *pixels,               /* source image data */
+    int const           /* in */  srcw,                  /* source image width */
+    int const           /* in */  srch,                  /* source image height */
+    int const           /* in */  depth,                 /* source image depth */
+    int const           /* in */  dstw,                  /* destination image width */
+    int const           /* in */  dsth,                  /* destination image height */
+    int const           /* in */  method_for_resampling, /* one of methodForResampling */
+    unsigned char       /* out */ *result);
 
 #ifdef __cplusplus
 }
