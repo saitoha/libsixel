@@ -17,15 +17,11 @@ CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
-img2sixel_SOURCES = img2sixel.c malloc_stub.c loader.c frompnm.c \
-                    malloc_stub.h loader.h frompnm.h
+img2sixel_SOURCES = img2sixel.c malloc_stub.c malloc_stub.h
 img2sixel_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
-img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) \
-		   $(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) \
-		   $(GD_CFLAGS) $(LIBJPEG_CFLAGS) $(LIBPNG_CFLAGS)
-img2sixel_LDADD = $(top_builddir)/src/libsixel.la -lm \
-		  $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS) \
-		  $(LIBJPEG_LIBS) $(LIBPNG_LIBS)
+img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
+img2sixel_LDADD = $(top_builddir)/src/libsixel.la \
+		$(top_builddir)/src/libsixel-imageio.la
 dist_man_MANS += img2sixel.1
 dist_bashcompletion_DATA += shell-completion/bash/img2sixel
 dist_zshcompletion_DATA += shell-completion/zsh/_img2sixel
@@ -33,12 +29,11 @@ endif
 
 if WANT_SIXEL2PNG
 bin_PROGRAMS += sixel2png
-sixel2png_SOURCES = sixel2png.c stb_image_write.c malloc_stub.c \
-                    stb_image_write.h malloc_stub.h
+sixel2png_SOURCES = sixel2png.c malloc_stub.c malloc_stub.h \
+		stb_image_write.c stb_image_write.h
 sixel2png_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
-sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) \
-		   $(MAYBE_COVERAGE) $(LIBPNG_CFLAGS)
-sixel2png_LDADD = $(top_builddir)/src/libsixel.la $(LIBPNG_LIBS)
+sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) $(LIBPNG_CFLAGS)
+sixel2png_LDADD = $(top_builddir)/src/libsixel.la $(LIBPNG_LDFLAGS)
 dist_man_MANS += sixel2png.1
 endif
 
