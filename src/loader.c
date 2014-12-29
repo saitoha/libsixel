@@ -20,7 +20,6 @@
  */
 
 #include "config.h"
-#include "malloc_stub.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -81,7 +80,6 @@
 
 #include <stdio.h>
 #include "frompnm.h"
-#include "loader.h"
 #include <sixel.h>
 
 #define STBI_NO_STDIO 1
