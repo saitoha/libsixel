@@ -69,7 +69,7 @@ if WANT_IMG2SIXEL
 	test ! $$(echo -n a | $(WINE) ./img2sixel)
 	$(WINE) ./img2sixel -H
 	$(WINE) ./img2sixel -V
-	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | img2sixel | tee snake.sixel
+	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | ./img2sixel | tee snake.sixel
 	$(WINE) ./img2sixel -w50% -h150% -dfs -thls < ../images/snake.jpg -shistogram | tee snake2.sixel
 	$(WINE) ./img2sixel -w2100 -h2100 -bxterm256 < ../images/snake.jpg > snake3.sixel
 	$(WINE) ./img2sixel -w105% -h100 -djajuni -rnearest < ../images/snake.gif

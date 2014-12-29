@@ -1034,7 +1034,7 @@ test: all
 @WANT_IMG2SIXEL_TRUE@	test ! $$(echo -n a | $(WINE) ./img2sixel)
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -H
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -V
-@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | img2sixel | tee snake.sixel
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | ./img2sixel | tee snake.sixel
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -w50% -h150% -dfs -thls < ../images/snake.jpg -shistogram | tee snake2.sixel
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -w2100 -h2100 -bxterm256 < ../images/snake.jpg > snake3.sixel
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -w105% -h100 -djajuni -rnearest < ../images/snake.gif

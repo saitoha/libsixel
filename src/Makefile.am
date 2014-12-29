@@ -20,6 +20,6 @@ libsixel_imageio_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(GD_CFLAGS) $(LIBJPEG_CFLAGS) $(LIBPNG_CFLAGS)
 libsixel_imageio_la_LDFLAGS = -version-info $(LS_LTVERSION)
 libsixel_imageio_la_LIBADD = $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS) \
-		$(LIBJPEG_LIBS) $(LIBPNG_LIBS) libsixel.la
+		$(LIBJPEG_LIBS) $(LIBPNG_LIBS) $(top_builddir)/src/libsixel.la
 
 dist_man_MANS = sixel.5

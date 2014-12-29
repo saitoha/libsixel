@@ -424,10 +424,9 @@ load_sixel(unsigned char *buffer, int size,
            int reqcolors,
            int *ppixelformat)
 {
-    unsigned char *dst;
-    unsigned char *p;
+    unsigned char *p = NULL;
     unsigned char *pixels = NULL;
-    unsigned char *palette;
+    unsigned char *palette = NULL;
     int colors;
     int i;
     int ret;
@@ -448,9 +447,9 @@ load_sixel(unsigned char *buffer, int size,
         *pcomp = 3;
         pixels = malloc(*psx * *psy * *pcomp);
         for (i = 0; i < *psx * *psy; ++i) {
-            pixels[i * 3 + 0] = palette[p[i] * 4 + 0];
-            pixels[i * 3 + 1] = palette[p[i] * 4 + 1];
-            pixels[i * 3 + 2] = palette[p[i] * 4 + 2];
+            pixels[i * 3 + 0] = palette[p[i] * 3 + 0];
+            pixels[i * 3 + 1] = palette[p[i] * 3 + 1];
+            pixels[i * 3 + 2] = palette[p[i] * 3 + 2];
         }
         free(palette);
         free(p);
@@ -460,13 +459,6 @@ load_sixel(unsigned char *buffer, int size,
         pixels = p;
         *ppalette = palette;
         *pncolors = colors;
-        dst = palette;
-        while (colors--) {
-            *(dst++) = *(palette++);
-            *(dst++) = *(palette++);
-            *(dst++) = *(palette++);
-            palette++;
-        }
     }
 
     return pixels;

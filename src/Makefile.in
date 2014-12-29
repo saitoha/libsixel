@@ -125,7 +125,8 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libsixel_imageio_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) libsixel.la
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(top_builddir)/src/libsixel.la
 am_libsixel_imageio_la_OBJECTS = libsixel_imageio_la-loader.lo \
 	libsixel_imageio_la-frompnm.lo
 libsixel_imageio_la_OBJECTS = $(am_libsixel_imageio_la_OBJECTS)
@@ -362,7 +363,7 @@ libsixel_imageio_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 
 libsixel_imageio_la_LDFLAGS = -version-info $(LS_LTVERSION)
 libsixel_imageio_la_LIBADD = $(GDK_PIXBUF_LIBS) $(LIBCURL_LIBS) $(GD_LIBS) \
-		$(LIBJPEG_LIBS) $(LIBPNG_LIBS) libsixel.la
+		$(LIBJPEG_LIBS) $(LIBPNG_LIBS) $(top_builddir)/src/libsixel.la
 
 dist_man_MANS = sixel.5
 all: all-am
