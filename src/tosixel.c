@@ -1016,8 +1016,13 @@ sixel_encode_highcolor(unsigned char *pixels, int width, int height,
         if (normalized_pixels == NULL) {
             goto error;
         }
-        sixel_normalize_pixelformat(normalized_pixels, pixels, width, height,
-                                    dither->pixelformat);
+        nret = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                  pixels,
+                                                  width, height,
+                                                  dither->pixelformat);
+        if (nret != 0) {
+            goto error;
+        }
         pixels = normalized_pixels;
     }
     paletted_pixels = (unsigned char *)malloc(whole_size);

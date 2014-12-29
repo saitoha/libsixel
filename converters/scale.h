@@ -47,14 +47,38 @@ extern "C" {
 
 int
 sixel_helper_scale_image(
-    unsigned char const /* in */  *pixels,               /* source image data */
-    int const           /* in */  srcw,                  /* source image width */
-    int const           /* in */  srch,                  /* source image height */
-    int const           /* in */  depth,                 /* source image depth */
-    int const           /* in */  dstw,                  /* destination image width */
-    int const           /* in */  dsth,                  /* destination image height */
-    int const           /* in */  method_for_resampling, /* one of methodForResampling */
-    unsigned char       /* out */ *result);
+    unsigned char       /* out */ *dst,
+    unsigned char const /* in */  *src,                   /* source image data */
+    int const           /* in */  srcw,                   /* source image width */
+    int const           /* in */  srch,                   /* source image height */
+    int const           /* in */  pixelformat,            /* source image depth */
+    int const           /* in */  dstw,                   /* destination image width */
+    int const           /* in */  dsth,                   /* destination image height */
+    int const           /* in */  method_for_resampling); /* one of methodForResampling */
+
+#ifdef __cplusplus
+}
+#endif
+
+/* helper API */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int
+sixel_helper_compute_depth(
+    int /* in */ pixelformat /* one of enum pixelFormat */
+);
+
+int
+sixel_helper_normalize_pixelformat(
+    unsigned char       /* out */ *dst,        /* destination image */
+    unsigned char const /* in */  *src,        /* source image */
+    int                 /* in */  width,       /* source image width */
+    int                 /* in */  height,      /* source image height */
+    int const           /* in */  pixelformat  /* source image pixelformat */
+);
 
 #ifdef __cplusplus
 }

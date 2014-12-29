@@ -360,11 +360,11 @@ do_resize(unsigned char **ppixels,
         for (n = 0; n < frame_count; ++n) {
             scaled_frame = p + size * n;
             nret = sixel_helper_scale_image(
+                scaled_frame,
                 frames[n], *psx, *psy, 3,
                 psettings->pixelwidth,
                 psettings->pixelheight,
-                psettings->method_for_resampling,
-                scaled_frame);
+                psettings->method_for_resampling);
             if (nret != 0) {
                 return nret;
             }
@@ -490,40 +490,6 @@ wait_stdin(void)
     return ret;
 }
 #endif  /* HAVE_SYS_SELECT_H */
-
-
-static int
-compute_depth_from_pixelformat(int pixelformat)
-{
-    int depth = (-1);  /* unknown */
-
-    switch (pixelformat) {
-        case PIXELFORMAT_ARGB8888:
-        case PIXELFORMAT_RGBA8888:
-            depth = 4;
-            break;
-        case PIXELFORMAT_RGB888:
-        case PIXELFORMAT_BGR888:
-            depth = 3;
-            break;
-        case PIXELFORMAT_RGB555:
-        case PIXELFORMAT_RGB565:
-        case PIXELFORMAT_BGR555:
-        case PIXELFORMAT_BGR565:
-        case PIXELFORMAT_AG88:
-        case PIXELFORMAT_GA88:
-            depth = 2;
-            break;
-        case PIXELFORMAT_G8:
-        case PIXELFORMAT_PAL8:
-            depth = 1;
-            break;
-        default:
-            break;
-    }
-
-    return depth;
-}
 
 
 static int
@@ -817,7 +783,7 @@ reload:
         goto end;
     }
 
-    depth = compute_depth_from_pixelformat(pixelformat);
+    depth = sixel_helper_compute_depth(pixelformat);
     if (depth == (-1)) {
         nret = (-1);
         goto end;

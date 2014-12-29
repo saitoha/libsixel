@@ -188,13 +188,13 @@ normalize(double x, double total)
 
 static void
 scale_without_resampling(
-    unsigned char const *pixels,
+    unsigned char *dst,
+    unsigned char const *src,
     int const srcw,
     int const srch,
     int const dstw,
     int const dsth,
-    int const depth,
-    unsigned char *result)
+    int const depth)
 {
     int w;
     int h;
@@ -209,7 +209,7 @@ scale_without_resampling(
             y = h * srch / dsth;
             for (i = 0; i < depth; i++) {
                 index = (y * srcw + x) * depth + i;
-                result[(h * dstw + w) * depth + i] = pixels[index];
+                dst[(h * dstw + w) * depth + i] = src[index];
             }
         }
     }
@@ -220,15 +220,15 @@ typedef double (*resample_fn_t)(double const d);
 
 static void
 scale_with_resampling(
-    unsigned char const *pixels,
+    unsigned char *dst,
+    unsigned char const *src,
     int const srcw,
     int const srch,
     int const dstw,
     int const dsth,
     int const depth,
     resample_fn_t const f_resample,
-    double n,
-    unsigned char *result)
+    double n)
 {
     int w;
     int h;
@@ -286,7 +286,7 @@ scale_with_resampling(
                     weight = f_resample(fabs(diff_x)) * f_resample(fabs(diff_y));
                     for (i = 0; i < depth; i++) {
                         index = (y * srcw + x) * depth + i;
-                        offsets[i] += pixels[index] * weight;
+                        offsets[i] += src[index] * weight;
                     }
                     total += weight;
                 }
@@ -296,7 +296,7 @@ scale_with_resampling(
             if (total > 0.0) {
                 for (i = 0; i < depth; i++) {
                     index = (h * dstw + w) * depth + i;
-                    result[index] = normalize(offsets[i], total);
+                    dst[index] = normalize(offsets[i], total);
                 }
             }
         }
@@ -306,64 +306,80 @@ scale_with_resampling(
 
 int
 sixel_helper_scale_image(
-    unsigned char const /* in */  *pixels,               /* source image data */
-    int const           /* in */  srcw,                  /* source image width */
-    int const           /* in */  srch,                  /* source image height */
-    int const           /* in */  depth,                 /* source image depth */
-    int const           /* in */  dstw,                  /* destination image width */
-    int const           /* in */  dsth,                  /* destination image height */
-    int const           /* in */  method_for_resampling, /* one of methodForResampling */
-    unsigned char       /* out */ *result)
+    unsigned char       /* out */ *dst,
+    unsigned char const /* in */  *src,                   /* source image data */
+    int const           /* in */  srcw,                   /* source image width */
+    int const           /* in */  srch,                   /* source image height */
+    int const           /* in */  pixelformat,            /* one of enum pixelFormat */
+    int const           /* in */  dstw,                   /* destination image width */
+    int const           /* in */  dsth,                   /* destination image height */
+    int const           /* in */  method_for_resampling)  /* one of methodForResampling */
 {
-    if (depth > 4) {
-        return (-1);
+    int const depth = sixel_helper_compute_depth(pixelformat);
+    unsigned char *new_src = NULL;
+    int nret;
+
+    if (depth != 3) {
+        new_src = malloc(srcw * srch * 3);
+        if (new_src == NULL) {
+            return (-1);
+        }
+
+        nret = sixel_helper_normalize_pixelformat(new_src, src,
+                                                  srcw, srch, pixelformat);
+        if (nret != 0) {
+            free(new_src);
+            return (-1);
+        }
+
+        src = new_src;
     }
 
     /* choose re-sampling strategy */
     switch (method_for_resampling) {
     case RES_NEAREST:
-        scale_without_resampling(pixels, srcw, srch, dstw, dsth, depth,
-                                 result);
+        scale_without_resampling(dst, src, srcw, srch, dstw, dsth, depth);
         break;
     case RES_GAUSSIAN:
-        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
-                              gaussian, 1.0, result);
+        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
+                              gaussian, 1.0);
         break;
     case RES_HANNING:
-        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
-                              hanning, 1.0, result);
+        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
+                              hanning, 1.0);
         break;
     case RES_HAMMING:
-        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
-                              hamming, 1.0, result);
+        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
+                              hamming, 1.0);
         break;
     case RES_WELSH:
-        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
-                              welsh, 1.0, result);
+        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
+                              welsh, 1.0);
         break;
     case RES_BICUBIC:
-        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
-                              bicubic, 2.0, result);
+        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
+                              bicubic, 2.0);
         break;
     case RES_LANCZOS2:
-        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
-                              lanczos2, 3.0, result);
+        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
+                              lanczos2, 3.0);
         break;
     case RES_LANCZOS3:
-        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
-                              lanczos3, 3.0, result);
+        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
+                              lanczos3, 3.0);
         break;
     case RES_LANCZOS4:
-        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
-                              lanczos4, 4.0, result);
+        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
+                              lanczos4, 4.0);
         break;
     case RES_BILINEAR:
     default:
-        scale_with_resampling(pixels, srcw, srch, dstw, dsth, depth,
-                              bilinear, 1.0, result);
+        scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
+                              bilinear, 1.0);
         break;
     }
 
+    free(new_src);
     return 0;
 }
 

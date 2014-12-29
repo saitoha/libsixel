@@ -351,6 +351,32 @@ sixel_decode(
 }
 #endif
 
+/* helper API */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* compute pixel depth from pixelformat */
+int
+sixel_helper_compute_depth(
+    int /* in */ pixelformat /* one of enum pixelFormat */
+);
+
+/* convert pixelFormat into PIXELFORMAT_RGB888 */
+int
+sixel_helper_normalize_pixelformat(
+    unsigned char       /* out */ *dst,        /* destination image */
+    unsigned char const /* in */  *src,        /* source image */
+    int                 /* in */  width,       /* source image width */
+    int                 /* in */  height,      /* source image height */
+    int const           /* in */  pixelformat  /* source image pixelformat */
+);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif  /* LIBSIXEL_SIXEL_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
