@@ -27,12 +27,19 @@ extern "C" {
 #endif
 
 int
-load_image_file(char const *filename, int *psx, int *psy,
-                unsigned char **ppalette, int *pncolors,
-                int *ppixelformat,
-                int *pframe_count, int *ploop_count, int **ppdelay,
-                int fstatic, int reqcolors,
-                unsigned char **ppixels);
+sixel_helper_load_image_file(
+    unsigned char **ppixels,
+    unsigned char **ppalette,
+    int *psx,
+    int *psy,
+    int *pncolors,
+    int *ppixelformat,
+    int *pframe_count,
+    int *ploop_count,
+    int **ppdelay,
+    char const *filename,
+    int fstatic,
+    int reqcolors);
 
 #ifdef __cplusplus
 }

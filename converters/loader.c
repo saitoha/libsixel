@@ -982,12 +982,19 @@ arrange_pixelformat(unsigned char *pixels, int width, int height)
 
 
 int
-load_image_file(char const *filename, int *psx, int *psy,
-                unsigned char **ppalette, int *pncolors,
-                int *ppixelformat,
-                int *pframe_count, int *ploop_count, int **ppdelay,
-                int fstatic, int reqcolors,
-                unsigned char **ppixels)
+sixel_helper_load_image_file(
+    unsigned char /* out */ **ppixels,     /* loaded pixel data */
+    unsigned char /* out */ **ppalette,    /* loaded palette data */
+    int           /* out */ *psx,          /* image width */
+    int           /* out */ *psy,          /* image height */
+    int           /* out */ *pncolors,     /* palette colors */
+    int           /* out */ *ppixelformat, /* one of enum pixelFormat */
+    int           /* out */ *pframe_count, /* frame count */
+    int           /* out */ *ploop_count,  /* loop count */
+    int           /* out */ **ppdelay,     /* delay for each frames */
+    char const    /* in */  *filename,     /* source file name */
+    int           /* in */  fstatic,       /* whether to extract static image */
+    int           /* in */  reqcolors)     /* requested number of colors */
 {
     int comp;
     int stride = (-1);

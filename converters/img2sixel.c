@@ -157,12 +157,20 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
 
     delays = NULL;
 
-    ret = load_image_file(mapfile, &map_sx, &map_sy,
-                          &palette, &ncolors, &pixelformat,
-                          &frame_count, &loop_count,
-                          &delays, /* fstatic */ 1,
-                          /* reqcolors */ 256,
-                          &mappixels);
+    ret = sixel_helper_load_image_file(
+        &mappixels,
+        &palette,
+        &map_sx,
+        &map_sy,
+        &ncolors,
+        &pixelformat,
+        &frame_count,
+        &loop_count,
+        &delays,
+        mapfile,
+        1,  /* fstatic */
+        256 /* reqcolors */
+    );
     if (ret != 0 || mappixels == NULL || map_sx * map_sy == 0) {
         goto end;
     }
@@ -772,12 +780,19 @@ reload:
     frames = NULL;
     frame = NULL;
     delays = NULL;
-    nret = load_image_file(filename, &sx, &sy,
-                           ppalette, &ncolors, &pixelformat,
-                           &frame_count, &loop_count,
-                           &delays, psettings->fstatic,
-                           psettings->reqcolors,
-                           &pixels);
+    nret = sixel_helper_load_image_file(
+        &pixels,
+        ppalette,
+        &sx,
+        &sy,
+        &ncolors,
+        &pixelformat,
+        &frame_count,
+        &loop_count,
+        &delays,
+        filename,
+        psettings->fstatic,
+        psettings->reqcolors);
 
     if (nret != 0 || pixels == NULL || sx * sy == 0) {
         goto end;
