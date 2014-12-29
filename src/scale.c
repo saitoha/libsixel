@@ -20,7 +20,6 @@
  */
 
 #include "config.h"
-#include "malloc_stub.h"
 
 #define _USE_MATH_DEFINES  /* for MSVC */
 #include <math.h>
@@ -30,7 +29,7 @@
 
 #include <stdlib.h>
 
-#include "scale.h"
+#include <sixel.h>
 
 #if !defined(MAX)
 # define MAX(l, r) ((l) > (r) ? (l) : (r))

@@ -17,8 +17,8 @@ CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
-img2sixel_SOURCES = img2sixel.c scale.c malloc_stub.c loader.c frompnm.c \
-                    scale.h malloc_stub.h loader.h frompnm.h
+img2sixel_SOURCES = img2sixel.c malloc_stub.c loader.c frompnm.c \
+                    malloc_stub.h loader.h frompnm.h
 img2sixel_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) \
 		   $(MAYBE_COVERAGE) $(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) \
