@@ -137,7 +137,7 @@ libsixel_imageio_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(libsixel_imageio_la_CFLAGS) $(CFLAGS) \
 	$(libsixel_imageio_la_LDFLAGS) $(LDFLAGS) -o $@
-libsixel_la_LIBADD =
+libsixel_la_DEPENDENCIES =
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-fromsixel.lo libsixel_la-tosixel.lo \
 	libsixel_la-quant.lo libsixel_la-dither.lo \
@@ -353,6 +353,7 @@ libsixel_la_SOURCES = output.c fromsixel.c tosixel.c quant.c dither.c pixelforma
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/
 libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION)
+libsixel_la_LIBADD = -lm
 libsixel_imageio_la_SOURCES = loader.c frompnm.c frompnm.h stb_image.h
 libsixel_imageio_la_CPPFLAGS = -I$(top_builddir)/include/
 libsixel_imageio_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
