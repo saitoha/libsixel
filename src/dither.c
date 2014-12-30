@@ -112,6 +112,12 @@ static const unsigned char pal_xterm256[] = {
 };
 
 
+/*
+ * VT340 undocumented behavior regarding the color palette reported
+ * by Vertis Sidus(@vrtsds):
+ *     it loads the first fifteen colors as 1 through 15, and loads the
+ *     sixteenth color as 0.
+ */
 static const unsigned char pal_vt340_mono[] = {
     /* 1   Gray-2   */  13 * 255 / 100, 13 * 255 / 100, 13 * 255 / 100,
     /* 2   Gray-4   */  26 * 255 / 100, 26 * 255 / 100, 26 * 255 / 100,
