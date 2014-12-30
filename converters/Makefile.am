@@ -29,11 +29,11 @@ endif
 
 if WANT_SIXEL2PNG
 bin_PROGRAMS += sixel2png
-sixel2png_SOURCES = sixel2png.c malloc_stub.c malloc_stub.h \
-		stb_image_write.c stb_image_write.h
+sixel2png_SOURCES = sixel2png.c malloc_stub.c malloc_stub.h
 sixel2png_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
-sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) $(LIBPNG_CFLAGS)
-sixel2png_LDADD = $(top_builddir)/src/libsixel.la $(LIBPNG_LIBS)
+sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
+sixel2png_LDADD = $(top_builddir)/src/libsixel.la \
+		$(top_builddir)/src/libsixel-imageio.la
 dist_man_MANS += sixel2png.1
 endif
 

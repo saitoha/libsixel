@@ -13,7 +13,8 @@ libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION)
 libsixel_la_LIBADD = -lm
 
 lib_LTLIBRARIES += libsixel-imageio.la
-libsixel_imageio_la_SOURCES = loader.c frompnm.c frompnm.h stb_image.h
+libsixel_imageio_la_SOURCES = loader.c frompnm.c frompnm.h stb_image.h \
+		writer.c stb_image_write.c stb_image_write.h
 libsixel_imageio_la_CPPFLAGS = -I$(top_builddir)/include/
 libsixel_imageio_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) \

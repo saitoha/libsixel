@@ -81,10 +81,12 @@
 #include <stdio.h>
 #include "frompnm.h"
 #include <sixel.h>
+#include <sixel-imageio.h>
 
 #define STBI_NO_STDIO 1
 #define STB_IMAGE_IMPLEMENTATION 1
 #include "stb_image.h"
+
 
 typedef struct chunk
 {
@@ -773,20 +775,6 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
 #endif  /* HAVE_GDK_PIXBUF2 */
 
 #ifdef HAVE_GD
-
-#define        FMT_GIF     0
-#define        FMT_PNG     1
-#define        FMT_BMP     2
-#define        FMT_JPG     3
-#define        FMT_TGA     4
-#define        FMT_WBMP    5
-#define        FMT_TIFF    6
-#define        FMT_SIXEL   7
-#define        FMT_PNM     8
-#define        FMT_GD2     9
-#define        FMT_PSD     10
-#define        FMT_HDR     11
-
 static int
 detect_file_format(int len, unsigned char *data)
 {

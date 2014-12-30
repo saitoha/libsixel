@@ -128,7 +128,8 @@ libsixel_imageio_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(top_builddir)/src/libsixel.la
 am_libsixel_imageio_la_OBJECTS = libsixel_imageio_la-loader.lo \
-	libsixel_imageio_la-frompnm.lo
+	libsixel_imageio_la-frompnm.lo libsixel_imageio_la-writer.lo \
+	libsixel_imageio_la-stb_image_write.lo
 libsixel_imageio_la_OBJECTS = $(am_libsixel_imageio_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -355,7 +356,9 @@ libsixel_la_CPPFLAGS = -I$(top_builddir)/include/
 libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION)
 libsixel_la_LIBADD = -lm
-libsixel_imageio_la_SOURCES = loader.c frompnm.c frompnm.h stb_image.h
+libsixel_imageio_la_SOURCES = loader.c frompnm.c frompnm.h stb_image.h \
+		writer.c stb_image_write.c stb_image_write.h
+
 libsixel_imageio_la_CPPFLAGS = -I$(top_builddir)/include/
 libsixel_imageio_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(GDK_PIXBUF_CFLAGS) $(LIBCURL_CFLAGS) \
@@ -450,6 +453,8 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_imageio_la-frompnm.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_imageio_la-loader.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_imageio_la-stb_image_write.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_imageio_la-writer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromsixel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-output.Plo@am__quote@
@@ -492,6 +497,20 @@ libsixel_imageio_la-frompnm.lo: frompnm.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frompnm.c' object='libsixel_imageio_la-frompnm.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_imageio_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_imageio_la_CFLAGS) $(CFLAGS) -c -o libsixel_imageio_la-frompnm.lo `test -f 'frompnm.c' || echo '$(srcdir)/'`frompnm.c
+
+libsixel_imageio_la-writer.lo: writer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_imageio_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_imageio_la_CFLAGS) $(CFLAGS) -MT libsixel_imageio_la-writer.lo -MD -MP -MF $(DEPDIR)/libsixel_imageio_la-writer.Tpo -c -o libsixel_imageio_la-writer.lo `test -f 'writer.c' || echo '$(srcdir)/'`writer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_imageio_la-writer.Tpo $(DEPDIR)/libsixel_imageio_la-writer.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer.c' object='libsixel_imageio_la-writer.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_imageio_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_imageio_la_CFLAGS) $(CFLAGS) -c -o libsixel_imageio_la-writer.lo `test -f 'writer.c' || echo '$(srcdir)/'`writer.c
+
+libsixel_imageio_la-stb_image_write.lo: stb_image_write.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_imageio_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_imageio_la_CFLAGS) $(CFLAGS) -MT libsixel_imageio_la-stb_image_write.lo -MD -MP -MF $(DEPDIR)/libsixel_imageio_la-stb_image_write.Tpo -c -o libsixel_imageio_la-stb_image_write.lo `test -f 'stb_image_write.c' || echo '$(srcdir)/'`stb_image_write.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_imageio_la-stb_image_write.Tpo $(DEPDIR)/libsixel_imageio_la-stb_image_write.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stb_image_write.c' object='libsixel_imageio_la-stb_image_write.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_imageio_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_imageio_la_CFLAGS) $(CFLAGS) -c -o libsixel_imageio_la-stb_image_write.lo `test -f 'stb_image_write.c' || echo '$(srcdir)/'`stb_image_write.c
 
 libsixel_la-output.lo: output.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-output.lo -MD -MP -MF $(DEPDIR)/libsixel_la-output.Tpo -c -o libsixel_la-output.lo `test -f 'output.c' || echo '$(srcdir)/'`output.c

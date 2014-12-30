@@ -24,6 +24,21 @@
 
 /* loader API */
 
+enum imageFormat {
+    FMT_GIF   =  0,
+    FMT_PNG   =  1,
+    FMT_BMP   =  2,
+    FMT_JPG   =  3,
+    FMT_TGA   =  4,
+    FMT_WBMP  =  5,
+    FMT_TIFF  =  6,
+    FMT_SIXEL =  7,
+    FMT_PNM   =  8,
+    FMT_GD2   =  9,
+    FMT_PSD   = 10,
+    FMT_HDR   = 11,
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -43,6 +58,16 @@ sixel_helper_load_image_file(
     char const    /* in */  *filename,     /* source file name */
     int           /* in */  fstatic,       /* whether to extract static image */
     int           /* in */  reqcolors);    /* requested number of colors */
+
+/* write image to file */
+int
+sixel_helper_write_image_file(
+    unsigned char  /* in */ *data,        /* source pixel data */
+    int            /* in */ width,        /* source data width */
+    int            /* in */ height,       /* source data height */
+    int            /* in */ pixelformat,  /* source pixelFormat */
+    char const     /* in */ *filename,    /* destination filename */
+    int            /* in */ imageformat); /* destination imageformat */
 
 #ifdef __cplusplus
 }
