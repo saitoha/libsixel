@@ -985,7 +985,11 @@ uninstall-man: uninstall-man1
 	uninstall-dist_zshcompletionDATA uninstall-man uninstall-man1
 
 
-test: all
+check: test_impl
+
+test: all test_impl
+
+test_impl:
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -d invalid_option)
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -r invalid_option)
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -s invalid_option)

@@ -37,7 +37,11 @@ sixel2png_LDADD = $(top_builddir)/src/libsixel.la \
 dist_man_MANS += sixel2png.1
 endif
 
-test: all
+check: test_impl
+
+test: all test_impl
+
+test_impl:
 if WANT_IMG2SIXEL
 	test ! $$($(WINE) ./img2sixel -d invalid_option)
 	test ! $$($(WINE) ./img2sixel -r invalid_option)

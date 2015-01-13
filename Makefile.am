@@ -12,6 +12,8 @@ CLEANFILES = valgrind.log test.log
 all-am:
 	cp package.json.in package.json
 
+check-am:
+
 test: all
 	cd converters && $(MAKE) test 2>&1 |tee test.log
 
