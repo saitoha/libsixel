@@ -169,6 +169,7 @@ hls2rgb(int hue, int lum, int sat)
     return RGB(r * 255 / 100, g * 255 / 100, b * 255 / 100);
 }
 
+
 static unsigned char *
 sixel_getparams(unsigned char *p, int *param, int *len)
 {
@@ -536,10 +537,9 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     *ncolors = max_color_index + 1;
     *palette = allocator(*ncolors * 4);
     for (n = 0; n < *ncolors; ++n) {
-        (*palette)[n * 4 + 0] = sixel_palet[n] >> 16 & 0xff;
-        (*palette)[n * 4 + 1] = sixel_palet[n] >> 8 & 0xff;
-        (*palette)[n * 4 + 2] = sixel_palet[n] & 0xff;
-        (*palette)[n * 4 + 3] = 0xff;
+        (*palette)[n * 3 + 0] = sixel_palet[n] >> 16 & 0xff;
+        (*palette)[n * 3 + 1] = sixel_palet[n] >> 8 & 0xff;
+        (*palette)[n * 3 + 2] = sixel_palet[n] & 0xff;
     }
     return 0;
 }
