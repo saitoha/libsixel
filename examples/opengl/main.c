@@ -7,25 +7,52 @@
  * This file is offered AS-IS, without any warranty.
  *
  */
-#if defined(__APPLE__) && defined(__MACH__)
-# include <OpenGL/gl.h>
-# include <OpenGL/glu.h>
-# include <OpenGL/OpenGL.h>
+
+#include "config.h"
+
+#if HAVE_OSMESA
+# define USE_OSMESA 1
+#elif defined(__APPLE__) && defined(__MACH__)
+# define USE_CGL
+#elif HAVE_X11
+# define USE_GLX 1
 #else
-# error Now this example only works on OSX. I hope someone port this onto other environments.\n
-# include <GL/gl.h>
-# include <GL/glu.h>
 #endif
+
+#if USE_OSMESA
+# include <GL/osmesa.h>
+#elif USE_CGL
+# include <OpenGL/gl.h>
+# include <OpenGL/OpenGL.h>
+#elif USE_GLX
+# include <X11/Xlib.h>
+# include <GL/glx.h>
+# include <GL/gl.h>
+#endif
+
 #include <sys/signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <memory.h>
+#include <math.h>
+
+#ifndef PI
+# define PI 3.1415926535897932386
+#endif
 
 #include <sixel.h>  /* libsixel */
 
-#if defined(__APPLE__) && defined(__MACH__)
+#if USE_OSMESA
+static unsigned char *pbuffer;
+static OSMesaContext context;
+#elif USE_CGL
 static CGLPBufferObj pbuffer;
 static CGLContextObj context;
+#elif USE_GLX && (defined(GLX_VERSION_1_3) || defined(GLX_VERSION_1_4))
+static Display *display = NULL;
+static GLXPbuffer pbuffer = 0;
+static GLXContext context;
 #endif
 static volatile int signaled = 0;
 
@@ -34,9 +61,16 @@ static void sighandler(int sig)
     signaled = sig;
 }
 
-static CGLError setup(int width, int height)
+static int setup(int width, int height)
 {
-#if defined(__APPLE__) && defined(__MACH__)
+#if USE_OSMESA
+    const size_t size = width * height * 4;
+    pbuffer = malloc(size);
+    memset(pbuffer, 0x21, size);
+    context = OSMesaCreateContextExt(GL_RGBA, 24, 0, 0, 0);
+    OSMesaMakeCurrent(context, (void *)pbuffer, GL_UNSIGNED_BYTE, width, height);
+    return 0;
+#elif USE_CGL
     /* OpenGL PBuffer initialization: OSX specific */
     CGLPixelFormatAttribute pfattr[] = {
         kCGLPFAPBuffer,
@@ -44,7 +78,7 @@ static CGLError setup(int width, int height)
     };
     CGLPixelFormatObj pixformat;
     GLint npixels;
-    CGLError e;
+    int e;
 
     e = CGLChoosePixelFormat(pfattr, &pixformat, &npixels);
     if (e != kCGLNoError) {
@@ -77,23 +111,132 @@ static CGLError setup(int width, int height)
        return e;
     }
     return kCGLNoError;
+#elif USE_GLX
+    /* Open the X display */
+    display = XOpenDisplay(NULL);
+    if (!display) {
+       printf("Error: couldn't open default X display.\n");
+       return (-1);
+    }
+
+    /* Get default screen */
+    int screen = DefaultScreen(display);
+
+    char *glxversion;
+ 
+    glxversion = (char *) glXGetClientString(display, GLX_VERSION);
+    if (!(strstr(glxversion, "1.3") || strstr(glxversion, "1.4"))) {
+       XCloseDisplay(display);
+       return (-1);
+    }
+
+    glxversion = (char *) glXQueryServerString(display, screen, GLX_VERSION);
+    if (!(strstr(glxversion, "1.3") || strstr(glxversion, "1.4"))) {
+       XCloseDisplay(display);
+       return (-1);
+    }
+
+    /* Create Pbuffer */
+    GLXFBConfig *fbConfigs;
+    GLXFBConfig chosenFBConfig;
+    GLXFBConfig fbconfig = 0;
+    GLXPbuffer pbuffer = None;
+
+    int nConfigs;
+    int fbconfigid;
+
+    int fbAttribs[] = {
+       GLX_RENDER_TYPE, GLX_RGBA_BIT,
+       GLX_DEPTH_SIZE, 1,
+       GLX_DRAWABLE_TYPE, GLX_PIXMAP_BIT | GLX_PBUFFER_BIT,
+       None
+    };
+
+    int pbAttribs[] = {
+       GLX_PBUFFER_WIDTH, 0,
+       GLX_PBUFFER_HEIGHT, 0,
+       GLX_LARGEST_PBUFFER, False,
+       GLX_PRESERVED_CONTENTS, False,
+       None
+    };
+
+    pbAttribs[1] = width;
+    pbAttribs[3] = height;
+
+    fbConfigs = glXChooseFBConfig(display, screen, fbAttribs, &nConfigs);
+
+    if (0 == nConfigs || !fbConfigs) {
+       printf("Error: glxChooseFBConfig failed\n");
+       XFree(fbConfigs);
+       XCloseDisplay(display);
+       return (-1);
+    }
+
+    chosenFBConfig = fbConfigs[0];
+
+    glXGetFBConfigAttrib(display, chosenFBConfig, GLX_FBCONFIG_ID, &fbconfigid);
+    printf("Chose 0x%x as fbconfigid\n", fbconfigid);
+
+    /* Create the pbuffer using first fbConfig in the list that works. */
+    pbuffer = glXCreatePbuffer(display, chosenFBConfig, pbAttribs);
+
+    if (pbuffer) {
+       fbconfig = chosenFBConfig;
+    }
+
+    XFree(fbConfigs);
+
+    //pbuffer = MakePbuffer(display, screen, width, height);
+
+    if (pbuffer==None) {
+       printf("Error: couldn't create pbuffer\n");
+       XCloseDisplay(display);
+       return (-1);
+    }
+
+    /* Create GLX context */
+    context = glXCreateNewContext(display, fbconfig, GLX_RGBA_TYPE, NULL, True);
+    if (context) {
+       if (!glXIsDirect(display, context)) {
+          printf("Warning: using indirect GLXContext\n");
+       }
+    }
+    else {
+       printf("Error: Couldn't create GLXContext\n");
+       XCloseDisplay(display);
+       return (-1);
+    }
+
+    /* Bind context to pbuffer */
+    if (!glXMakeCurrent(display, pbuffer, context)) {
+       printf("Error: glXMakeCurrent failed\n");
+       XCloseDisplay(display);
+       return (-1);
+    }
+    return 0;
 #else
     /* TODO: pbuffer initialization */
     return 0;
 #endif
 }
 
-static CGLError
+static int
 cleanup(void)
 {
-#if defined(__APPLE__) && defined(__MACH__)
+#if USE_OSMESA
+    OSMesaDestroyContext(context);
+    free(pbuffer);
+#elif USE_CGL
     (void)CGLDestroyContext(context);
     (void)CGLDestroyPBuffer(pbuffer);
-    return kCGLNoError /* 0 */;
+#elif USE_GLX
+    display = XOpenDisplay(NULL);
+    glXDestroyPbuffer(display, pbuffer);
+    XCloseDisplay(display);
 #else
     /* TODO: cleanup pbuffer and OpenGL context */
-    return 0;
 #endif
+    return 0;
 }
 
 
@@ -196,12 +339,14 @@ output_sixel(unsigned char *pixbuf, int width, int height,
     return 0;
 }
 
-
 int main(int argc, char** argv)
 {
     int width = 400;
     int height = 300;
     int ncolors = 16;
+
+    (void) argc;
+    (void) argv;
 
     static char *pixbuf;
 
@@ -219,7 +364,20 @@ int main(int argc, char** argv)
     glViewport(0, 0, (GLsizei)width, (GLsizei)height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45, (GLfloat)width / (GLfloat)height, 0.1, 100);
+    GLfloat fovy = 45;
+    GLfloat aspect = (GLfloat)width / (GLfloat)height;
+    GLfloat znear = 0.1;
+    GLfloat zfar = 100;
+    GLfloat radian= 2 * M_PI * fovy / 360.0;
+    GLfloat t = (GLfloat)(1.0 / tan(radian / 2));
+    GLfloat matrix[]={
+        t / aspect, 0, 0, 0,
+        0, t, 0, 0,
+        0, 0, (zfar + znear) / (znear - zfar), -1,
+        0, 0, (2 * zfar * znear) / (znear - zfar), 0
+    };
+    glLoadMatrixf(matrix);
+
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
