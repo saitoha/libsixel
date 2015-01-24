@@ -12,8 +12,8 @@
 
 #if HAVE_OSMESA
 # define USE_OSMESA 1
-#elif defined(__APPLE__) && defined(__MACH__)
-# define USE_CGL
+#elif HAVE_CGL
+# define USE_CGL 1
 #elif HAVE_X11
 # define USE_GLX 1
 #else
