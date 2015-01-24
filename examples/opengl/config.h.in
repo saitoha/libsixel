@@ -1,5 +1,11 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* whether CGL is available */
+#undef HAVE_CGL
+
+/* whether GLX is available */
+#undef HAVE_GLX
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
@@ -69,6 +75,9 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* Define to 1 if the X Window System is missing or not being used. */
+#undef X_DISPLAY_MISSING
 
 /* Define to rpl_malloc if the replacement function should be used. */
 #undef malloc
