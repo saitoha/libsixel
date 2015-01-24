@@ -69,8 +69,8 @@ write_png_to_file(
     FILE *output_fp = NULL;
     unsigned char *pixels = NULL;
     unsigned char *new_pixels = NULL;
-    int y;
 #if HAVE_LIBPNG
+    int y;
     png_structp png_ptr = NULL;
     png_infop info_ptr = NULL;
     unsigned char **rows = NULL;
