@@ -1,13 +1,99 @@
+2015-01-27  Hayaki Saito <user@zuse.jp>
+
+  * examples/opengl/main.c: OpenGL example: performance improvement
+
+2015-01-24  Hayaki Saito <user@zuse.jp>
+
+  * src/fromsixel.c: Fix a bad allocation error
+
+  * examples/opengl/config.guess, examples/opengl/config.sub: Add missing
+  config.sub and config.guess
+
+  * examples/opengl/Makefile.am, examples/opengl/Makefile.in,
+  examples/opengl/config.h.in, examples/opengl/configure,
+  examples/opengl/configure.ac, examples/opengl/main.c: Detect CGL/GLX
+  availability in opengl example configuration
+
+  * src/writer.c: Fix mingw build
+
+  * src/fromsixel.c: Do not free temporary buffer allocated by custom allocator
+
+2015-01-23  Hayaki Saito <user@zuse.jp>
+
+  * examples/opengl/Makefile.am, examples/opengl/Makefile.in,
+  examples/opengl/aclocal.m4, examples/opengl/compile,
+  examples/opengl/config.h.in, examples/opengl/configure,
+  examples/opengl/configure.ac, examples/opengl/depcomp,
+  examples/opengl/install-sh, examples/opengl/main.c, examples/opengl/missing,
+  examples/osx/opengl/Makefile, examples/osx/opengl/opengl.c: Use osmesa for
+  opengl-sixel demo
+
+2015-01-13  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.am, Makefile.in, converters/Makefile.am, converters/Makefile.in,
+  src/loader.c: Add check-am target to makefiles
+
 2014-12-30  Hayaki Saito <user@zuse.jp>
+
+  * ChangeLog, NEWS: Update NEWS and ChangeLog
 
   * src/dither.c: Add a comment block regarding the behavior of VT340
   palette(Issue #12)
 
   * src/dither.c: Hotfix for VT-340's rotated palette(Issue #12)
 
+  * converters/Makefile.am, converters/Makefile.in, converters/sixel2png.c,
+  converters/stb_image_write.c, converters/stb_image_write.h,
+  include/sixel-imageio.h.in, src/Makefile.am, src/Makefile.in, src/loader.c,
+  src/stb_image_write.c, src/stb_image_write.h, src/writer.c: Add new API:
+  sixel_helper_write_image_file
+
+  * converters/Makefile.am, converters/Makefile.in, converters/sixel2png.c,
+  src/Makefile.am, src/Makefile.in, src/loader.c: Cleanup sixel2png.c
+
+  * src/fromsixel.c: Arrange palette with 3byte per color format
+
+  * src/Makefile.am, src/Makefile.in: Build fix for MinGW
+
+  * converters/Makefile.am, converters/Makefile.in: Build fix
+
 2014-12-29  Hayaki Saito <user@zuse.jp>
 
+  * src/Makefile.am, src/Makefile.in: Add -lm to LDADD of libsixel
+
+  * converters/Makefile.am, converters/Makefile.in, src/Makefile.am,
+  src/Makefile.in: Minor fixes
+
+  * include/sixel-imageio.h.in: Add missing sixel-imageio.h.in
+
+  * libsixel.pc.in: Update libsixel.pc.in
+
+  * converters/Makefile.am, converters/Makefile.in, src/Makefile.am,
+  src/Makefile.in: Remove unused dependencies from LIBADD and LDADD
+
+  * configure, configure.ac, converters/Makefile.am, converters/Makefile.in,
+  converters/frompnm.c, converters/frompnm.h, converters/img2sixel.c,
+  converters/loader.c, converters/loader.h, converters/stb_image.c,
+  converters/stb_image.h, include/Makefile.am, include/Makefile.in,
+  src/Makefile.am, src/Makefile.in, src/frompnm.c, src/frompnm.h, src/loader.c,
+  src/stb_image.h: Add new API: sixel_helper_load_image_file
+
+  * converters/Makefile.am, converters/Makefile.in, converters/img2sixel.c,
+  converters/scale.c, converters/scale.h, include/sixel.h.in, src/Makefile.am,
+  src/Makefile.in, src/scale.c: Add new API sixel_helper_scale_image
+
+  * converters/img2sixel.c, converters/loader.c, converters/loader.h,
+  src/pixelformat.c: Cleanup loader.c
+
   * Makefile.am, Makefile.in: Make sure to remove test.log in clean target
+
+  * converters/img2sixel.c, converters/scale.c, converters/scale.h,
+  include/sixel.h.in, src/Makefile.am, src/Makefile.in, src/dither.c,
+  src/pixelformat.c, src/quant.c, src/tosixel.c: Add new API
+  sixel_helper_compute_depth and sixel_helper_normalize_pixelformat
+
+  * converters/img2sixel.c, converters/scale.c, converters/scale.h: Cleanup
+  scale.c
 
 2014-12-26  Hayaki Saito <user@zuse.jp>
 
