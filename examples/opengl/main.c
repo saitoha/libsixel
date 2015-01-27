@@ -37,8 +37,8 @@
 #include <memory.h>
 #include <math.h>
 
-#ifndef PI
-# define PI 3.1415926535897932386
+#ifndef M_PI
+# define M_PI 3.1415926535897932386
 #endif
 
 #include <sixel.h>  /* libsixel */
@@ -326,6 +326,9 @@ output_sixel(unsigned char *pixbuf, int width, int height,
 
     context = sixel_output_create(sixel_write, stdout);
     dither = sixel_dither_create(ncolors);
+#if USE_OSMESA
+    sixel_dither_set_pixelformat(dither, PIXELFORMAT_RGBA8888);
+#endif
     ret = sixel_dither_initialize(dither, pixbuf, width, height, depth,
                                   LARGE_AUTO, REP_AUTO, QUALITY_AUTO);
     if (ret != 0)
@@ -341,14 +344,14 @@ output_sixel(unsigned char *pixbuf, int width, int height,
 
 int main(int argc, char** argv)
 {
+    unsigned char *pixbuf;
+
     int width = 400;
     int height = 300;
     int ncolors = 16;
 
     (void) argc;
     (void) argv;
-
-    static char *pixbuf;
 
     if (signal(SIGINT, sighandler) == SIG_ERR)
        return (-1);
@@ -381,25 +384,33 @@ int main(int argc, char** argv)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    pixbuf = malloc(width * height * 4);
+#if !defined(USE_OSMESA)
+    pixbuf = malloc(width * height * 3);
+#endif
 
     while (!signaled) {
-        glLoadIdentity();
         glPushMatrix();
         glScalef(1, -1, 1);
         draw_scene();
         glPopMatrix();
-        glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixbuf);
 
         if (signaled)
             break;
 
         printf("\e[3;3H");
-        output_sixel((unsigned char *)pixbuf, width, height, ncolors, 3);
+#if USE_OSMESA
+        pixbuf = pbuffer;
+#else
+        glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixbuf);
+#endif
+        output_sixel(pixbuf, width, height, ncolors, /* unused */ 3);
     }
 
-    printf("\e\\");
+#if !defined(USE_OSMESA)
     free(pixbuf);
+#endif
+
+    printf("\e\\");
 
     if (cleanup() != 0)
        return (-1);
