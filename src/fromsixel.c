@@ -531,17 +531,18 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
         imbuf = dmbuf;
     }
 
+    *pwidth = imsx;
+    *pheight = imsy;
+    *ncolors = max_color_index + 1;
     if (allocator) {
         *pixels = allocator(imsx * imsy);
         memcpy(*pixels, imbuf, imsx * imsy);
+        free(imbuf);
         *palette = allocator(*ncolors * 3);
     } else {
         *pixels = imbuf;
         *palette = malloc(*ncolors * 3);
     }
-    *pwidth = imsx;
-    *pheight = imsy;
-    *ncolors = max_color_index + 1;
     for (n = 0; n < *ncolors; ++n) {
         (*palette)[n * 3 + 0] = sixel_palet[n] >> 16 & 0xff;
         (*palette)[n * 3 + 1] = sixel_palet[n] >> 8 & 0xff;
