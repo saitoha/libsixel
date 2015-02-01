@@ -387,6 +387,11 @@ if test x$with_png != xno; then
         fi
     fi
     if test x$have_png = xyes; then
+        CFLAGS_BACKUP=$CFLAGS
+        CFLAGS="$CFLAGS $LIBPNG_CFLAGS"
+        AC_CHECK_DECLS([png_set_gray_1_2_4_to_8, png_set_expand_gray_1_2_4_to_8],
+                       [], [], [ #include <png.h> ])
+        CFLAGS=$CFLAGS_BACKUP
         AC_DEFINE(HAVE_LIBPNG, 1, [whether libpng is available])
         loaders="${loaders} png"
         AC_MSG_NOTICE([libpng cflags is ${LIBPNG_CFLAGS}])

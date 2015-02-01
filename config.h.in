@@ -119,6 +119,12 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
+/* Define to 1 if you have the `png_set_expand_gray_1_2_4_to_8' function. */
+#undef HAVE_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
+
+/* Define to 1 if you have the `png_set_gray_1_2_4_to_8' function. */
+#undef HAVE_PNG_SET_GRAY_1_2_4_TO_8
+
 /* Define to 1 if you have the `pow' function. */
 #undef HAVE_POW
 
@@ -189,8 +195,7 @@
 /* Define to 1 if you have the `_setmode' function. */
 #undef HAVE__SETMODE
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
 /* Name of package */
