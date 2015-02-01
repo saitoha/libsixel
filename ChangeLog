@@ -1,4 +1,13 @@
+2015-02-01  Hayaki Saito <user@zuse.jp>
+
+  * NEWS: Update NEWS
+
+  * converters/loader.c: Fix wrong bit depth handling issue reported by @msmhrt
+  (#22)
+
 2014-12-30  Hayaki Saito <user@zuse.jp>
+
+  * ChangeLog, NEWS: Update NEWS and ChangeLog
 
   * src/dither.c: Add a comment block regarding the behavior of VT340
   palette(Issue #12)
