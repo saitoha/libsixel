@@ -366,11 +366,11 @@ load_png(unsigned char *buffer, int size,
         case 1:
         case 2:
         case 4:
-#  if HAVE_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
+#  if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
             png_set_expand_gray_1_2_4_to_8(png_ptr);
             *pcomp = 1;
             *pixelformat = PIXELFORMAT_G8;
-#  elif HAVE_PNG_SET_GRAY_1_2_4_TO_8
+#  elif HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
             png_set_gray_1_2_4_to_8(png_ptr);
             *pcomp = 1;
             *pixelformat = PIXELFORMAT_G8;

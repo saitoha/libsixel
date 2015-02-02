@@ -52,6 +52,14 @@
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
 
+/* Define to 1 if you have the declaration of
+   `png_set_expand_gray_1_2_4_to_8', and to 0 if you don't. */
+#undef HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
+
+/* Define to 1 if you have the declaration of `png_set_gray_1_2_4_to_8', and
+   to 0 if you don't. */
+#undef HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
+
 /* Define to 1 if you have the declaration of `SIGHUP', and to 0 if you don't.
    */
 #undef HAVE_DECL_SIGHUP
@@ -118,12 +126,6 @@
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
-
-/* Define to 1 if you have the `png_set_expand_gray_1_2_4_to_8' function. */
-#undef HAVE_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
-
-/* Define to 1 if you have the `png_set_gray_1_2_4_to_8' function. */
-#undef HAVE_PNG_SET_GRAY_1_2_4_TO_8
 
 /* Define to 1 if you have the `pow' function. */
 #undef HAVE_POW
