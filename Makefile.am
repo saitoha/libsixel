@@ -16,7 +16,7 @@ unittest: all
 	cd converters && $(MAKE) unittest 2>&1 |tee unittest.log
 
 test: all
-	cd converters && $(MAKE) test 2>&1 |tee test.log
+	cd converters && $(MAKE) test 2>&1 |tee ../test.log
 
 winetest: all
 	cd converters && $(MAKE) winetest
