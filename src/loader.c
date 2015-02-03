@@ -363,6 +363,24 @@ load_png(unsigned char *buffer, int size,
         break;
     case PNG_COLOR_TYPE_GRAY:
         switch (bitdepth) {
+        case 1:
+        case 2:
+        case 4:
+#  if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
+            png_set_expand_gray_1_2_4_to_8(png_ptr);
+            *pcomp = 1;
+            *pixelformat = PIXELFORMAT_G8;
+#  elif HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
+            png_set_gray_1_2_4_to_8(png_ptr);
+            *pcomp = 1;
+            *pixelformat = PIXELFORMAT_G8;
+#  else
+            png_set_gray_to_rgb(png_ptr);
+            *pcomp = 3;
+            *pixelformat = PIXELFORMAT_RGB888;
+#  endif
+            break;
+
         case 8:
             if (ppalette && *pncolors <= 1 << 8) {
                 *pcomp = 1;

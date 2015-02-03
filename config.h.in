@@ -52,6 +52,14 @@
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
 
+/* Define to 1 if you have the declaration of
+   `png_set_expand_gray_1_2_4_to_8', and to 0 if you don't. */
+#undef HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
+
+/* Define to 1 if you have the declaration of `png_set_gray_1_2_4_to_8', and
+   to 0 if you don't. */
+#undef HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
+
 /* Define to 1 if you have the declaration of `SIGHUP', and to 0 if you don't.
    */
 #undef HAVE_DECL_SIGHUP
@@ -189,8 +197,7 @@
 /* Define to 1 if you have the `_setmode' function. */
 #undef HAVE__SETMODE
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
 /* Name of package */
