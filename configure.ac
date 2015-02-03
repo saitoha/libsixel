@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.4.4], [user@zuse.jp])
+AC_INIT([sixel], [1.4.5], [user@zuse.jp])
 LS_LT_CURRENT=1
 LS_LT_REVISION=3
 LS_LT_AGE=0

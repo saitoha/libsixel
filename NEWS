@@ -1,7 +1,6 @@
                   ------------------------------
                    What's new in libsixel-1.4 ?
                   ------------------------------
-
 * core: SIXEL encoder supports various pixel formats(thanks to @uobikiemukot).
 
 * core: Supports high-color(15bpp output) mode(thanks to @arakiken).
@@ -30,7 +29,7 @@
 * tests: 'make test' achieves 90% coverage.
 
 * A lot of bug fixes and minor improvements.
-  Thanks to @obache and @ttdoda.
+  Thanks to @obache, @ttdoda, and @vrtsds.
 
 
                    ------------------------------
