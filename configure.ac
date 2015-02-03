@@ -262,6 +262,8 @@ if test x$with_gd != xno; then
         fi
     fi
     if test x$have_gd = xyes; then
+        CFLAGS_BACKUP=$CFLAGS
+        CFLAGS="$CFLAGS $LIBPNG_CFLAGS"
         AC_CHECK_LIB([gd],
                      [gdImageCreateFromGifPtr],
                      [AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])])
@@ -292,6 +294,7 @@ if test x$with_gd != xno; then
         AC_CHECK_LIB([gd],
                      [gdImagePaletteToTrueColor],
                      [AC_CHECK_DECLS([gdImagePaletteToTrueColor], [], [], [ #include <gd.h> ])])
+        CFLAGS=$CFLAGS_BACKUP
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
         loaders="${loaders} gd"
     else

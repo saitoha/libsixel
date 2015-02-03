@@ -13752,6 +13752,8 @@ fi
         fi
     fi
     if test x$have_gd = xyes; then
+        CFLAGS_BACKUP=$CFLAGS
+        CFLAGS="$CFLAGS $LIBPNG_CFLAGS"
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromGifPtr in -lgd" >&5
 $as_echo_n "checking for gdImageCreateFromGifPtr in -lgd... " >&6; }
 if ${ac_cv_lib_gd_gdImageCreateFromGifPtr+:} false; then :
@@ -14262,6 +14264,7 @@ _ACEOF
 
 fi
 
+        CFLAGS=$CFLAGS_BACKUP
 
 $as_echo "#define HAVE_GD 1" >>confdefs.h
 
