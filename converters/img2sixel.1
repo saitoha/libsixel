@@ -47,8 +47,19 @@ background color is black.
 assume the terminal background color is white.
 make sense only when -e option is given.
 .TP 5
+.B \-I, \-\-high-color
+output 15bpp sixel image
+.TP 5
 .B \-u, \-\-use-macro
 use DECDMAC and DEVINVM sequences to optimize GIF animation rendering.
+.TP 5
+.B \-n \fIMACRONO\fP, \-\-macro-number=\fIMACRONO\fP
+specify an number argument for DECDMAC and make terminal memorize
+SIXEL image. No image is shown if this option is specified
+.TP 5
+.B \-C \fICOMPLEXIONSCORE\fP, \-\-complexion-score=\fICOMPLEXIONSCORE\fP
+specify an number argument for the score of complexion correction.
+\fICOMPLEXIONSCORE\fP must be 1 or more.
 .TP 5
 .B \-g, \-\-ignore-delay
 render GIF animation without delay.
@@ -189,6 +200,26 @@ auto -> choose palette type automatically (default)
 hls  -> use HLS color space
 .br
 rgb  -> use RGB color space
+.TP 5
+.B \-b \fIBUILTINPALETTE\fP, \-\-builtin\-palette=\fIBUILTINPALETTE\fP
+select built-in palette type
+.br
+xterm16    -> X default 16 color map
+.br
+xterm256   -> X default 256 color map
+.br
+vt340mono  -> VT340 monochrome map
+.br
+vt340color -> VT340 color map
+.TP 5
+.B \-E \fIENCODEPOLICY\fP, \-\-encode\-policy=\fIENCODEPOLICY\fP
+select encoding policy
+.br
+auto -> choose encoding policy automatically (default)
+.br
+fast -> encode as fast as possible
+.br
+size -> encode to as small sixel sequence as possible
 .TP 5
 .B \-P, \-\-penetrate
 penetrate GNU Screen using DCS pass-through sequence.

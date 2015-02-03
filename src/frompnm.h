@@ -19,23 +19,28 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_LOADER_H
-#define LIBSIXEL_LOADER_H
+#ifndef LIBSIXEL_FROMPNM_H
+#define LIBSIXEL_FROMPNM_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/* exported functions */
+
+/* image scaling api */
+
 unsigned char *
-load_image_file(char const *filename, int *psx, int *psy,
-                int *pframe_count, int *ploop_count, int **ppdelay,
-                int fstatic);
+load_pnm(unsigned char *p, int len,
+         int *psx, int *psy, int *pcomp,
+         unsigned char **ppalette, int *pncolors,
+         int pixelformat);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LIBSIXEL_LOADER_H */
+#endif /* LIBSIXEL_FROMPNM_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

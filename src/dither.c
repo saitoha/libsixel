@@ -112,6 +112,52 @@ static const unsigned char pal_xterm256[] = {
 };
 
 
+/*
+ * VT340 undocumented behavior regarding the color palette reported
+ * by Vertis Sidus(@vrtsds):
+ *     it loads the first fifteen colors as 1 through 15, and loads the
+ *     sixteenth color as 0.
+ */
+static const unsigned char pal_vt340_mono[] = {
+    /* 1   Gray-2   */  13 * 255 / 100, 13 * 255 / 100, 13 * 255 / 100,
+    /* 2   Gray-4   */  26 * 255 / 100, 26 * 255 / 100, 26 * 255 / 100,
+    /* 3   Gray-6   */  40 * 255 / 100, 40 * 255 / 100, 40 * 255 / 100,
+    /* 4   Gray-1   */   6 * 255 / 100,  6 * 255 / 100,  6 * 255 / 100,
+    /* 5   Gray-3   */  20 * 255 / 100, 20 * 255 / 100, 20 * 255 / 100,
+    /* 6   Gray-5   */  33 * 255 / 100, 33 * 255 / 100, 33 * 255 / 100,
+    /* 7   White 7  */  46 * 255 / 100, 46 * 255 / 100, 46 * 255 / 100,
+    /* 8   Black 0  */   0 * 255 / 100,  0 * 255 / 100,  0 * 255 / 100,
+    /* 9   Gray-2   */  13 * 255 / 100, 13 * 255 / 100, 13 * 255 / 100,
+    /* 10  Gray-4   */  26 * 255 / 100, 26 * 255 / 100, 26 * 255 / 100,
+    /* 11  Gray-6   */  40 * 255 / 100, 40 * 255 / 100, 40 * 255 / 100,
+    /* 12  Gray-1   */   6 * 255 / 100,  6 * 255 / 100,  6 * 255 / 100,
+    /* 13  Gray-3   */  20 * 255 / 100, 20 * 255 / 100, 20 * 255 / 100,
+    /* 14  Gray-5   */  33 * 255 / 100, 33 * 255 / 100, 33 * 255 / 100,
+    /* 15  White 7  */  46 * 255 / 100, 46 * 255 / 100, 46 * 255 / 100,
+    /* 0   Black    */   0 * 255 / 100,  0 * 255 / 100,  0 * 255 / 100,
+};
+
+
+static const unsigned char pal_vt340_color[] = {
+    /* 1   Blue     */  20 * 255 / 100, 20 * 255 / 100, 80 * 255 / 100,
+    /* 2   Red      */  80 * 255 / 100, 13 * 255 / 100, 13 * 255 / 100,
+    /* 3   Green    */  20 * 255 / 100, 80 * 255 / 100, 20 * 255 / 100,
+    /* 4   Magenta  */  80 * 255 / 100, 20 * 255 / 100, 80 * 255 / 100,
+    /* 5   Cyan     */  20 * 255 / 100, 80 * 255 / 100, 80 * 255 / 100,
+    /* 6   Yellow   */  80 * 255 / 100, 80 * 255 / 100, 20 * 255 / 100,
+    /* 7   Gray 50% */  53 * 255 / 100, 53 * 255 / 100, 53 * 255 / 100,
+    /* 8   Gray 25% */  26 * 255 / 100, 26 * 255 / 100, 26 * 255 / 100,
+    /* 9   Blue*    */  33 * 255 / 100, 33 * 255 / 100, 60 * 255 / 100,
+    /* 10  Red*     */  60 * 255 / 100, 26 * 255 / 100, 26 * 255 / 100,
+    /* 11  Green*   */  33 * 255 / 100, 60 * 255 / 100, 33 * 255 / 100,
+    /* 12  Magenta* */  60 * 255 / 100, 33 * 255 / 100, 60 * 255 / 100,
+    /* 13  Cyan*    */  33 * 255 / 100, 60 * 255 / 100, 60 * 255 / 100,
+    /* 14  Yellow*  */  60 * 255 / 100, 60 * 255 / 100, 33 * 255 / 100,
+    /* 15  Gray 75% */  80 * 255 / 100, 80 * 255 / 100, 80 * 255 / 100,
+    /* 0   Black    */   0 * 255 / 100,  0 * 255 / 100,  0 * 255 / 100,
+};
+
+
 sixel_dither_t *
 sixel_dither_create(int ncolors)
 {
@@ -135,7 +181,7 @@ sixel_dither_create(int ncolors)
     }
     headsize = sizeof(sixel_dither_t);
     datasize = ncolors * 3;
-    wholesize = headsize + datasize;// + cachesize;
+    wholesize = headsize + datasize;
 
     dither = malloc(wholesize);
     if (dither == NULL) {
@@ -156,6 +202,7 @@ sixel_dither_create(int ncolors)
     dither->method_for_rep = REP_CENTER_BOX;
     dither->method_for_diffuse = DIFFUSE_FS;
     dither->quality_mode = quality_mode;
+    dither->pixelformat = PIXELFORMAT_RGB888;
 
     return dither;
 }
@@ -218,6 +265,16 @@ sixel_dither_get(int builtin_dither)
         palette = (unsigned char *)pal_xterm256;
         keycolor = (-1);
         break;
+    case BUILTIN_VT340_MONO:
+        ncolors = 16;
+        palette = (unsigned char *)pal_vt340_mono;
+        keycolor = (-1);
+        break;
+    case BUILTIN_VT340_COLOR:
+        ncolors = 16;
+        palette = (unsigned char *)pal_vt340_color;
+        keycolor = (-1);
+        break;
     default:
         return NULL;
     }
@@ -231,90 +288,6 @@ sixel_dither_get(int builtin_dither)
     }
 
     return dither;
-}
-
-
-static void
-get_rgb(unsigned char *data, int const pixelformat, int depth,
-        unsigned char *r, unsigned char *g, unsigned char *b)
-{
-    unsigned int pixels = 0, low, high;
-	int count = 0;
-
-	while (count < depth) {
-		pixels = *(data + count) | (pixels << 8);
-		count++;
-	}
-
-	/* XXX: we should swap bytes (only necessary on LSByte first hardware?) */
-	if (depth == 2) {
-		low    = pixels & 0xFF;
-		high   = (pixels >> 8) & 0xFF;
-		pixels = (low << 8) | high;
-	}
-
-    switch (pixelformat) {
-    case COLOR_RGB555:
-        *r = ((pixels >> 10) & 0x1F) << 3;
-        *g = ((pixels >>  5) & 0x1F) << 3;
-        *b = ((pixels >>  0) & 0x1F) << 3;
-        break;
-    case COLOR_RGB565:
-        *r = ((pixels >> 11) & 0x1F) << 3;
-        *g = ((pixels >>  5) & 0x3F) << 2;
-        *b = ((pixels >>  0) & 0x1F) << 3;
-        break;
-    case COLOR_RGBA8888:
-        *r = (pixels >> 24) & 0xFF;
-        *g = (pixels >> 16) & 0xFF;
-        *b = (pixels >>  8) & 0xFF;
-        break;
-    case COLOR_ARGB8888:
-        *r = (pixels >> 16) & 0xFF;
-        *g = (pixels >>  8) & 0xFF;
-        *b = (pixels >>  0) & 0xFF;
-        break;
-    case GRAYSCALE_GA88:
-        *r = *g = *b = (pixels >> 8) & 0xFF;
-        break;
-    case GRAYSCALE_G8:
-    case GRAYSCALE_AG88:
-        *r = *g = *b = pixels & 0xFF;
-        break;
-    default:
-        *r = *g = *b = 0;
-        break;
-    }
-}
-
-
-void
-sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
-                            int width, int height,
-                            int const pixelformat)
-{
-    int x, y, dst_offset, src_offset, depth;
-    unsigned char r, g, b;
-
-    if (pixelformat == GRAYSCALE_G8)
-        depth = 1;
-    else if (pixelformat == COLOR_RGB565 || pixelformat == COLOR_RGB555
-             || pixelformat == GRAYSCALE_GA88 || pixelformat == GRAYSCALE_AG88)
-        depth = 2;
-    else /* COLOR_RGBA8888 or COLOR_ARGB8888 */
-        depth = 4;
-
-    for (y = 0; y < height; y++) {
-        for (x = 0; x < width; x++) {
-            src_offset = depth * (y * width + x);
-            dst_offset = 3 * (y * width + x);
-            get_rgb(src + src_offset, pixelformat, depth, &r, &g, &b);
-
-            *(dst + dst_offset + 0) = r;
-            *(dst + dst_offset + 1) = g;
-            *(dst + dst_offset + 2) = b;
-        }
-    }
 }
 
 
@@ -354,38 +327,46 @@ sixel_dither_set_quality_mode(sixel_dither_t *dither, int quality_mode)
 
 int
 sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
-                        int width, int height, int const pixelformat,
+                        int width, int height, int pixelformat,
                         int method_for_largest, int method_for_rep,
                         int quality_mode)
 {
     unsigned char *buf = NULL;
     unsigned char *normalized_pixels = NULL;
+    unsigned char *input_pixels;
+    int nret = (-1);
 
     /* normalize pixelformat */
     normalized_pixels = malloc(width * height * 3);
     if (normalized_pixels == NULL) {
-        return (-1);
+        goto end;
     }
 
-    if (pixelformat != COLOR_RGB888) {
-        sixel_normalize_pixelformat(normalized_pixels, data, width, height, pixelformat);
+    if (pixelformat != PIXELFORMAT_RGB888) {
+        nret = sixel_helper_normalize_pixelformat(normalized_pixels, data,
+                                                  width, height, pixelformat);
+        if (nret != 0) {
+            goto end;
+        }
+        input_pixels = normalized_pixels;
     } else {
-        memcpy(normalized_pixels, data, width * height * 3);
+        input_pixels = data;
     }
 
     sixel_dither_set_method_for_largest(dither, method_for_largest);
     sixel_dither_set_method_for_rep(dither, method_for_rep);
     sixel_dither_set_quality_mode(dither, quality_mode);
 
-    buf = LSQ_MakePalette(normalized_pixels, width, height, 3,
-                          dither->reqcolors, &dither->ncolors,
-                          &dither->origcolors,
-                          dither->method_for_largest,
-                          dither->method_for_rep,
-                          dither->quality_mode);
+    buf = sixel_quant_make_palette(input_pixels,
+                                   width * height * 3,
+                                   PIXELFORMAT_RGB888,
+                                   dither->reqcolors, &dither->ncolors,
+                                   &dither->origcolors,
+                                   dither->method_for_largest,
+                                   dither->method_for_rep,
+                                   dither->quality_mode);
     if (buf == NULL) {
-        free(normalized_pixels);
-        return (-1);
+        goto end;
     }
     memcpy(dither->palette, buf, dither->ncolors * 3);
 
@@ -394,10 +375,12 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
         dither->method_for_diffuse = DIFFUSE_NONE;
     }
 
-    free(normalized_pixels);
-    LSQ_FreePalette(buf);
+    sixel_quant_free_palette(buf);
+    nret = 0;
 
-    return 0;
+end:
+    free(normalized_pixels);
+    return nret;
 }
 
 
@@ -422,10 +405,19 @@ sixel_dither_get_num_of_palette_colors(sixel_dither_t *dither)
 }
 
 
+/* get number of histogram colors */
 int
-sixel_dither_get_num_of_histgram_colors(sixel_dither_t *dither)
+sixel_dither_get_num_of_histogram_colors(sixel_dither_t /* in */ *dither)  /* dither context object */
 {
     return dither->origcolors;
+}
+
+
+/* typoed: remained for keeping compatibility */
+int
+sixel_dither_get_num_of_histgram_colors(sixel_dither_t /* in */ *dither)  /* dither context object */
+{
+    return sixel_dither_get_num_of_histogram_colors(dither);
 }
 
 
@@ -436,12 +428,23 @@ sixel_dither_get_palette(sixel_dither_t /* in */ *dither)  /* dither context obj
 }
 
 
+/* set palette */
+void
+sixel_dither_set_palette(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    unsigned char  /* in */ *palette)
+{
+    memcpy(dither->palette, palette, dither->ncolors * 3);
+}
+
+
 void
 sixel_dither_set_complexion_score(sixel_dither_t /* in */ *dither,  /* dither context object */
                                   int            /* in */ score)    /* complexion score (>= 1) */
 {
     dither->complexion = score;
 }
+
 
 void
 sixel_dither_set_body_only(sixel_dither_t /* in */ *dither,     /* dither context object */
@@ -450,6 +453,7 @@ sixel_dither_set_body_only(sixel_dither_t /* in */ *dither,     /* dither contex
 {
     dither->bodyonly = bodyonly;
 }
+
 
 void
 sixel_dither_set_optimize_palette(
@@ -461,14 +465,27 @@ sixel_dither_set_optimize_palette(
 }
 
 
+void
+sixel_dither_set_pixelformat(
+    sixel_dither_t /* in */ *dither,     /* dither context object */
+    int            /* in */ pixelformat) /* one of enum pixelFormat */
+{
+    dither->pixelformat = pixelformat;
+}
+
+
 unsigned char *
-sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t *dither)
+sixel_dither_apply_palette(sixel_dither_t *dither,
+                           unsigned char *pixels,
+                           int width, int height)
 {
     int ret;
     int bufsize;
     int cachesize;
     unsigned char *dest;
     int ncolors;
+    unsigned char *normalized_pixels = NULL;
+    unsigned char *input_pixels;
 
     bufsize = width * height * sizeof(unsigned char);
     dest = malloc(bufsize);
@@ -476,6 +493,7 @@ sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t
         return NULL;
     }
 
+    /* if quality_mode is full, do not use palette caching */
     if (dither->quality_mode == QUALITY_FULL) {
         dither->optimized = 0;
     }
@@ -492,22 +510,41 @@ sixel_apply_palette(unsigned char *pixels, int width, int height, sixel_dither_t
         }
     }
 
-    ret = LSQ_ApplyPalette(pixels, width, height, 3,
-                           dither->palette,
-                           dither->ncolors,
-                           dither->method_for_diffuse,
-                           dither->optimized,
-                           dither->optimize_palette,
-                           dither->complexion,
-                           dither->cachetable,
-                           &ncolors,
-                           dest);
+    if (dither->pixelformat != PIXELFORMAT_RGB888) {
+        /* normalize pixelformat */
+        normalized_pixels = malloc(width * height * 3);
+        if (normalized_pixels == NULL) {
+            goto end;
+        }
+        sixel_helper_normalize_pixelformat(normalized_pixels,
+                                           pixels,
+                                           width, height,
+                                           dither->pixelformat);
+        input_pixels = normalized_pixels;
+    } else {
+        input_pixels = pixels;
+    }
+
+    ret = sixel_quant_apply_palette(input_pixels,
+                                    width, height, 3,
+                                    dither->palette,
+                                    dither->ncolors,
+                                    dither->method_for_diffuse,
+                                    dither->optimized,
+                                    dither->optimize_palette,
+                                    dither->complexion,
+                                    dither->cachetable,
+                                    &ncolors,
+                                    dest);
     if (ret != 0) {
-        return NULL;
+        free(dest);
+        dest = NULL;
     }
 
     dither->ncolors = ncolors;
 
+end:
+    free(normalized_pixels);
     return dest;
 }
 
