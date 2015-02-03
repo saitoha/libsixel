@@ -186,9 +186,7 @@ static int setup(int width, int height)
 
     XFree(fbConfigs);
 
-    //pbuffer = MakePbuffer(display, screen, width, height);
-
-    if (pbuffer==None) {
+    if (pbuffer == None) {
        printf("Error: couldn't create pbuffer\n");
        XCloseDisplay(display);
        return (-1);
