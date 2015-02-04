@@ -7,13 +7,16 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libsixel.pc
 
-CLEANFILES = valgrind.log
+CLEANFILES = valgrind.log test.log
+
+all-am:
+	cp package.json.in package.json
 
 test: all
-	$(MAKE) test -C converters > test.log
+	cd converters && $(MAKE) test 2>&1 |tee ../test.log
 
 winetest: all
-	$(MAKE) winetest -C converters
+	cd converters && $(MAKE) winetest
 
 valgrind: all
 	valgrind --leak-check=full --show-reachable=no --error-limit=no img2sixel images/snake.jpg -dfs 2>&1 \

@@ -13,6 +13,39 @@
  * Hayaki Saito <user@zuse.jp> modified this and re-licensed
  * it under the MIT license.
  *
+ * The helper function hls2rgb is imported from Xterm pl#310.
+ * This is originally written by Ross Combs.
+ * Hayaki Saito <user@zuse.jp> slightly modified this.
+ *
+ * -------------------------------------------------------------------------
+ * Copyright 2013,2014 by Ross Combs
+ *
+ *                         All Rights Reserved
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the name(s) of the above copyright
+ * holders shall not be used in advertising or otherwise to promote the
+ * sale, use or other dealings in this Software without prior written
+ * authorization.
+ * -------------------------------------------------------------------------
  */
 #include "config.h"
 #include <stdlib.h>  /* NULL */
@@ -28,13 +61,11 @@
 
 #define RGB(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
 
-#define RGBA(r, g, b, a) (((a) << 24) + ((r) << 16) + ((g) << 8) +  (b))
-
 #define PALVAL(n,a,m) (((n) * (a) + ((m) / 2)) / (m))
 
 #define XRGB(r,g,b) RGB(PALVAL(r, 255, 100), PALVAL(g, 255, 100), PALVAL(b, 255, 100))
 
-static int const ColTab[] = {
+static int const color_table[] = {
     XRGB(0,  0,  0),   /*  0 Black    */
     XRGB(20, 20, 80),  /*  1 Blue     */
     XRGB(80, 13, 13),  /*  2 Red      */
@@ -54,60 +85,92 @@ static int const ColTab[] = {
 };
 
 
+/*
+ * Primary color hues:
+ *  blue:    0 degrees
+ *  red:   120 degrees
+ *  green: 240 degrees
+ */
 static int
-HueToRGB(int n1, int n2, int hue)
+hls2rgb(int hue, int lum, int sat)
 {
-    const int HLSMAX = 100;
-
-    if (hue < 0) {
-        hue += HLSMAX;
-    }
-
-    if (hue > HLSMAX) {
-        hue -= HLSMAX;
-    }
-
-    if (hue < (HLSMAX / 6)) {
-        return (n1 + (((n2 - n1) * hue + (HLSMAX / 12)) / (HLSMAX / 6)));
-    }
-    if (hue < (HLSMAX / 2)) {
-        return (n2);
-    }
-    if (hue < ((HLSMAX * 2) / 3)) {
-        return (n1 + (((n2 - n1) * (((HLSMAX * 2) / 3) - hue) + (HLSMAX / 12))/(HLSMAX / 6)));
-    }
-    return (n1);
-}
-
-
-static int
-HLStoRGB(int hue, int lum, int sat)
-{
-    int R, G, B;
-    int Magic1, Magic2;
-    const int RGBMAX = 255;
-    const int HLSMAX = 100;
+    double hs = (hue + 240) % 360;
+    double hv = hs / 360.0;
+    double lv = lum / 100.0;
+    double sv = sat / 100.0;
+    double c, x, m, c2;
+    double r1, g1, b1;
+    int r, g, b;
+    int hpi;
 
     if (sat == 0) {
-        R = G = B = (lum * RGBMAX) / HLSMAX;
-    } else {
-        if (lum <= (HLSMAX / 2)) {
-            Magic2 = (lum * (HLSMAX + sat) + (HLSMAX / 2)) / HLSMAX;
-        } else {
-            Magic2 = lum + sat - ((lum * sat) + (HLSMAX / 2)) / HLSMAX;
-        }
-        Magic1 = 2 * lum - Magic2;
-
-        R = (HueToRGB(Magic1, Magic2, hue + (HLSMAX / 3)) * RGBMAX + (HLSMAX / 2)) / HLSMAX;
-        G = (HueToRGB(Magic1, Magic2, hue) * RGBMAX + (HLSMAX / 2)) / HLSMAX;
-        B = (HueToRGB(Magic1, Magic2, hue - (HLSMAX / 3)) * RGBMAX + (HLSMAX/2)) / HLSMAX;
+        r = g = b = lum * 255 / 100;
+        return RGB(r, g, b);
     }
-    return RGB(R, G, B);
+
+    if ((c2 = ((2.0 * lv) - 1.0)) < 0.0)
+        c2 = -c2;
+    c = (1.0 - c2) * sv;
+    hpi = (int) (hv * 6.0);
+    x = (hpi & 1) ? c : 0.0;
+    m = lv - 0.5 * c;
+
+    switch (hpi) {
+    case 0:
+        r1 = c;
+        g1 = x;
+        b1 = 0.0;
+        break;
+    case 1:
+        r1 = x;
+        g1 = c;
+        b1 = 0.0;
+        break;
+    case 2:
+        r1 = 0.0;
+        g1 = c;
+        b1 = x;
+        break;
+    case 3:
+        r1 = 0.0;
+        g1 = x;
+        b1 = c;
+        break;
+    case 4:
+        r1 = x;
+        g1 = 0.0;
+        b1 = c;
+        break;
+    case 5:
+        r1 = c;
+        g1 = 0.0;
+        b1 = x;
+        break;
+    default:
+        return RGB(255, 255, 255);
+    }
+
+    r = (short) ((r1 + m) * 100.0 + 0.5);
+    g = (short) ((g1 + m) * 100.0 + 0.5);
+    b = (short) ((b1 + m) * 100.0 + 0.5);
+
+    if (r < 0)
+        r = 0;
+    else if (r > 100)
+        r = 100;
+    if (g < 0)
+        g = 0;
+    else if (g > 100)
+        g = 100;
+    if (b < 0)
+        b = 0;
+    else if (b > 100)
+        b = 100;
+    return RGB(r * 255 / 100, g * 255 / 100, b * 255 / 100);
 }
 
-
 static unsigned char *
-GetParam(unsigned char *p, int *param, int *len)
+sixel_getparams(unsigned char *p, int *param, int *len)
 {
     int n;
 
@@ -142,6 +205,7 @@ GetParam(unsigned char *p, int *param, int *len)
 
 
 /* convert sixel data into indexed pixel bytes and palette data */
+/* TODO: make "free" function as an argument */
 int
 sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
              int                        /* in */  len,        /* size of sixel bytes */
@@ -157,16 +221,17 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     int max_x, max_y;
     int attributed_pan, attributed_pad;
     int attributed_ph, attributed_pv;
-    int repeat_count, color_index, max_color_index = 2, background_color_index;
+    int repeat_count, color_index;
+    int max_color_index;
+    int background_color_index;
     int param[10];
-    unsigned char *s;
-    static char pam[256];
-    static char gra[256];
     int sixel_palet[SIXEL_PALETTE_MAX];
     unsigned char *imbuf, *dmbuf;
     int imsx, imsy;
     int dmsx, dmsy;
     int y;
+
+    (void) len;
 
     posision_x = posision_y = 0;
     max_x = max_y = 0;
@@ -174,7 +239,8 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     attributed_pad = 1;
     attributed_ph = attributed_pv = 0;
     repeat_count = 1;
-    color_index = 0;
+    color_index = 15;
+    max_color_index = 2;
     background_color_index = 0;
 
     imsx = 2048;
@@ -186,7 +252,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     }
 
     for (n = 0; n < 16; n++) {
-        sixel_palet[n] = ColTab[n];
+        sixel_palet[n] = color_table[n];
     }
 
     /* colors 16-231 are a 6x6x6 color cube */
@@ -208,26 +274,15 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
     memset(imbuf, background_color_index, imsx * imsy);
 
-    pam[0] = gra[0] = '\0';
-
     while (*p != '\0') {
         if ((p[0] == '\033' && p[1] == 'P') || *p == 0x90) {
             if (*p == '\033') {
                 p++;
             }
 
-            s = ++p;
-            p = GetParam(p, param, &n);
-            if (s < p) {
-                for (i = 0; i < 255 && s < p;) {
-                    pam[i++] = *(s++);
-                }
-                pam[i] = '\0';
-            }
-
+            p = sixel_getparams(++p, param, &n);
             if (*p == 'q') {
                 p++;
-
                 if (n > 0) {        /* Pn1 */
                     switch(param[0]) {
                     case 0:
@@ -267,8 +322,12 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
                     }
                     attributed_pan = attributed_pan * param[2] / 10;
                     attributed_pad = attributed_pad * param[2] / 10;
-                    if (attributed_pan <= 0) attributed_pan = 1;
-                    if (attributed_pad <= 0) attributed_pad = 1;
+                    if (attributed_pan <= 0) {
+                        attributed_pan = 1;
+                    }
+                    if (attributed_pad <= 0) {
+                        attributed_pad = 1;
+                    }
                 }
             }
 
@@ -276,28 +335,34 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
             break;
         } else if (*p == '"') {
             /* DECGRA Set Raster Attributes " Pan; Pad; Ph; Pv */
-            s = p++;
-            p = GetParam(p, param, &n);
-            if (s < p) {
-                for (i = 0; i < 255 && s < p;) {
-                    gra[i++] = *(s++);
-                }
-                gra[i] = '\0';
+            p = sixel_getparams(p + 1, param, &n);
+
+            if (n > 0) {
+                attributed_pad = param[0];
+            }
+            if (n > 1) {
+                attributed_pan = param[1];
+            }
+            if (n > 2 && param[2] > 0) {
+                attributed_ph = param[2];
+            }
+            if (n > 3 && param[3] > 0) {
+                attributed_pv = param[3];
             }
 
-            if (n > 0) attributed_pad = param[0];
-            if (n > 1) attributed_pan = param[1];
-            if (n > 2 && param[2] > 0) attributed_ph = param[2];
-            if (n > 3 && param[3] > 0) attributed_pv = param[3];
-
-            if (attributed_pan <= 0) attributed_pan = 1;
-            if (attributed_pad <= 0) attributed_pad = 1;
+            if (attributed_pan <= 0) {
+                attributed_pan = 1;
+            }
+            if (attributed_pad <= 0) {
+                attributed_pad = 1;
+            }
 
             if (imsx < attributed_ph || imsy < attributed_pv) {
                 dmsx = imsx > attributed_ph ? imsx : attributed_ph;
                 dmsy = imsy > attributed_pv ? imsy : attributed_pv;
                 dmbuf = allocator(dmsx * dmsy);
                 if (dmbuf == NULL) {
+                    free(imbuf);
                     return (-1);
                 }
                 memset(dmbuf, background_color_index, dmsx * dmsy);
@@ -312,7 +377,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
         } else if (*p == '!') {
             /* DECGRI Graphics Repeat Introducer ! Pn Ch */
-            p = GetParam(++p, param, &n);
+            p = sixel_getparams(p + 1, param, &n);
 
             if (n > 0) {
                 repeat_count = param[0];
@@ -320,7 +385,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
         } else if (*p == '#') {
             /* DECGCI Graphics Color Introducer # Pc; Pu; Px; Py; Pz */
-            p = GetParam(++p, param, &n);
+            p = sixel_getparams(++p, param, &n);
 
             if (n > 0) {
                 if ((color_index = param[0]) < 0) {
@@ -335,7 +400,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
                     if (param[2] > 360) param[2] = 360;
                     if (param[3] > 100) param[3] = 100;
                     if (param[4] > 100) param[4] = 100;
-                    sixel_palet[color_index] = HLStoRGB(param[2] * 100 / 360, param[3], param[4]);
+                    sixel_palet[color_index] = hls2rgb(param[2], param[3], param[4]);
                 } else if (param[1] == 2) {    /* RGB */
                     if (param[2] > 100) param[2] = 100;
                     if (param[3] > 100) param[3] = 100;
@@ -353,7 +418,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
         } else if (*p == '-') {
             /* DECGNL Graphics Next Line */
             p++;
-            posision_x  = 0;
+            posision_x = 0;
             posision_y += 6;
             repeat_count = 1;
 
@@ -369,7 +434,9 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
                 dmsx = nx;
                 dmsy = ny;
-                if ((dmbuf = allocator(dmsx * dmsy)) == NULL) {
+                dmbuf = allocator(dmsx * dmsy);
+                if (dmbuf == NULL) {
+                    free(imbuf);
                     return (-1);
                 }
                 memset(dmbuf, background_color_index, dmsx * dmsy);
@@ -451,6 +518,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
         dmsx = max_x;
         dmsy = max_y;
         if ((dmbuf = allocator(dmsx * dmsy)) == NULL) {
+            free(imbuf);
             return (-1);
         }
         for (y = 0; y < dmsy; ++y) {

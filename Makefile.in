@@ -82,8 +82,8 @@ subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(srcdir)/config.h.in $(srcdir)/libsixel.pc.in \
-	$(srcdir)/package.json.in ChangeLog compile config.guess \
-	config.sub depcomp install-sh missing ltmain.sh
+	$(srcdir)/package.json.in.in ChangeLog NEWS compile \
+	config.guess config.sub install-sh missing ltmain.sh
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_func_attribute.m4 \
 	$(top_srcdir)/m4/ax_gcc_var_attribute.m4 \
@@ -96,7 +96,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = libsixel.pc package.json
+CONFIG_CLEAN_FILES = libsixel.pc package.json.in
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -227,6 +227,8 @@ am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
 distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
+AM_CFLAGS = @AM_CFLAGS@
+AM_CPPFLAGS = @AM_CPPFLAGS@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
@@ -264,7 +266,11 @@ LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBCURL_CFLAGS = @LIBCURL_CFLAGS@
 LIBCURL_LIBS = @LIBCURL_LIBS@
+LIBJPEG_CFLAGS = @LIBJPEG_CFLAGS@
+LIBJPEG_LIBS = @LIBJPEG_LIBS@
 LIBOBJS = @LIBOBJS@
+LIBPNG_CFLAGS = @LIBPNG_CFLAGS@
+LIBPNG_LIBS = @LIBPNG_LIBS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
@@ -325,7 +331,6 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
-have_pkg_config = @have_pkg_config@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -362,7 +367,7 @@ SUBDIRS = include src converters
 DIST_SUBDIRS = $(SUBDIRS)
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = libsixel.pc
-CLEANFILES = valgrind.log
+CLEANFILES = valgrind.log test.log
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -418,7 +423,7 @@ distclean-hdr:
 	-rm -f config.h stamp-h1
 libsixel.pc: $(top_builddir)/config.status $(srcdir)/libsixel.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-package.json: $(top_builddir)/config.status $(srcdir)/package.json.in
+package.json.in: $(top_builddir)/config.status $(srcdir)/package.json.in.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:
@@ -874,11 +879,14 @@ uninstall-am: uninstall-pkgconfigDATA
 	uninstall-am uninstall-pkgconfigDATA
 
 
+all-am:
+	cp package.json.in package.json
+
 test: all
-	$(MAKE) test -C converters > test.log
+	cd converters && $(MAKE) test 2>&1 |tee ../test.log
 
 winetest: all
-	$(MAKE) winetest -C converters
+	cd converters && $(MAKE) winetest
 
 valgrind: all
 	valgrind --leak-check=full --show-reachable=no --error-limit=no img2sixel images/snake.jpg -dfs 2>&1 \

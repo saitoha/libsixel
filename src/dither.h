@@ -31,36 +31,31 @@ typedef struct sixel_dither {
     int ncolors;                /* active colors */
     int origcolors;             /* original colors */
     int optimized;              /* pixel is 15bpp compressable */
+    int optimize_palette;       /* minimize palette size */
+    int complexion;             /* for complexion correction */
+    int bodyonly;               /* do not output palette section if true */
     int method_for_largest;     /* method for finding the largest dimention 
                                    for splitting */
     int method_for_rep;         /* method for choosing a color from the box */
     int method_for_diffuse;     /* method for diffusing */
-    int quality_mode;           /* quality of histgram */
+    int quality_mode;           /* quality of histogram */
     int keycolor;               /* background color */
+    int pixelformat;            /* pixelformat for internal processing */
 } sixel_dither_t;
-
-/* sixel_image_t definition */
-typedef struct sixel_image {
-    /* Palette-based image pixels */
-    unsigned char *pixels;      /* pixel buffer */
-    int sx;                     /* width */
-    int sy;                     /* height */
-    int depth;                  /* bytes per pixel */
-    int borrowed;               /* whether pixels is borrowed reference */
-    sixel_dither_t *dither;     /* dithering context object */
-} sixel_image_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-sixel_image_t * sixel_create_image(unsigned char *pixels, int sx, int sy, int depth,
-                                   int borrowed, sixel_dither_t *dither);
-
-void sixel_image_destroy(sixel_image_t *im);
-
 /* apply palette */
-int sixel_apply_palette(sixel_image_t *im);
+unsigned char *
+sixel_dither_apply_palette(sixel_dither_t *dither,
+                           unsigned char *pixels,
+                           int width, int height);
+
+int
+sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
+                            int width, int height, int const pixelformat);
 
 #ifdef __cplusplus
 }

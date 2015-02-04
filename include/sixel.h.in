@@ -36,11 +36,11 @@ enum characterSize {
     CSIZE_8BIT = 1,  /* 8bit character */
 };
 
-/* method for finding the largest dimention for splitting,
+/* method for finding the largest dimension for splitting,
  * and sorting by that component */
 enum methodForLargest {
     LARGE_AUTO = 0,  /* choose automatically the method for finding the largest
-                        dimention */
+                        dimension */
     LARGE_NORM = 1,  /* simply comparing the range in RGB space */
     LARGE_LUM  = 2   /* transforming into luminosities before the comparison */
 };
@@ -52,7 +52,7 @@ enum methodForRep {
     REP_CENTER_BOX     = 1, /* choose the center of the box */
     REP_AVERAGE_COLORS = 2, /* choose the average all the color
                                in the box (specified in Heckbert's paper) */
-    REP_AVERAGE_PIXELS = 3  /* choose the averate all the pixels in the box */
+    REP_AVERAGE_PIXELS = 3  /* choose the average all the pixels in the box */
 };
 
 /* method for diffusing */
@@ -68,23 +68,85 @@ enum methodForDiffuse {
 
 /* quality modes */
 enum qualityMode {
-    QUALITY_AUTO = 0, /* choose quality mode automatically */
-    QUALITY_HIGH = 1, /* high quality */
-    QUALITY_LOW  = 2, /* low quality */
+    QUALITY_AUTO      = 0, /* choose quality mode automatically */
+    QUALITY_HIGH      = 1, /* high quality palette construction */
+    QUALITY_LOW       = 2, /* low quality palette construction */
+    QUALITY_FULL      = 3, /* full quality palette construction */
+    QUALITY_HIGHCOLOR = 4, /* high color */
 };
 
 /* built-in dither */
 enum builtinDither {
-    BUILTIN_MONO_DARK  = 0, /* monochrome terminal with dark background */
-    BUILTIN_MONO_LIGHT = 1, /* monochrome terminal with dark background */
-    BUILTIN_XTERM16    = 2, /* xterm 16color */
-    BUILTIN_XTERM256   = 3, /* xterm 256color */
+    BUILTIN_MONO_DARK   = 0, /* monochrome terminal with dark background */
+    BUILTIN_MONO_LIGHT  = 1, /* monochrome terminal with dark background */
+    BUILTIN_XTERM16     = 2, /* xterm 16color */
+    BUILTIN_XTERM256    = 3, /* xterm 256color */
+    BUILTIN_VT340_MONO  = 4, /* vt340 monochrome */
+    BUILTIN_VT340_COLOR = 5, /* vt340 color */
+};
+
+/* offset value of enum pixelFormat */
+enum formatType {
+    FORMATTYPE_COLOR     = 0,
+    FORMATTYPE_GRAYSCALE = 1 << 6,
+    FORMATTYPE_PALETTE   = 1 << 7,
+};
+
+/* pixelformat type of input image
+   NOTE: for compatibility, the value of PIXELFORAMT_COLOR_RGB888 must be 3 */
+enum pixelFormat {
+    PIXELFORMAT_RGB555   = FORMATTYPE_COLOR     | 0x01, /* 15bpp */
+    PIXELFORMAT_RGB565   = FORMATTYPE_COLOR     | 0x02, /* 16bpp */
+    PIXELFORMAT_RGB888   = FORMATTYPE_COLOR     | 0x03, /* 24bpp */
+    PIXELFORMAT_BGR555   = FORMATTYPE_COLOR     | 0x04, /* 15bpp */
+    PIXELFORMAT_BGR565   = FORMATTYPE_COLOR     | 0x05, /* 16bpp */
+    PIXELFORMAT_BGR888   = FORMATTYPE_COLOR     | 0x06, /* 24bpp */
+    PIXELFORMAT_ARGB8888 = FORMATTYPE_COLOR     | 0x10, /* 32bpp */
+    PIXELFORMAT_RGBA8888 = FORMATTYPE_COLOR     | 0x11, /* 32bpp */
+#if 0
+    PIXELFORMAT_G1       = FORMATTYPE_GRAYSCALE | 0x00, /* 1bpp grayscale */
+    PIXELFORMAT_G2       = FORMATTYPE_GRAYSCALE | 0x01, /* 2bpp grayscale */
+    PIXELFORMAT_G4       = FORMATTYPE_GRAYSCALE | 0x02, /* 4bpp grayscale */
+#endif
+    PIXELFORMAT_G8       = FORMATTYPE_GRAYSCALE | 0x03, /* 8bpp grayscale */
+#if 0
+    PIXELFORMAT_AG11     = FORMATTYPE_GRAYSCALE | 0x10, /* 2bpp gray+alpha */
+    PIXELFORMAT_AG22     = FORMATTYPE_GRAYSCALE | 0x11, /* 4bpp gray+alpha */
+    PIXELFORMAT_AG44     = FORMATTYPE_GRAYSCALE | 0x12, /* 8bpp gray+alpha */
+#endif
+    PIXELFORMAT_AG88     = FORMATTYPE_GRAYSCALE | 0x13, /* 16bpp gray+alpha */
+#if 0
+    PIXELFORMAT_GA11     = FORMATTYPE_GRAYSCALE | 0x20, /* 2bpp gray+alpha */
+    PIXELFORMAT_GA22     = FORMATTYPE_GRAYSCALE | 0x21, /* 4bpp gray+alpha */
+    PIXELFORMAT_GA44     = FORMATTYPE_GRAYSCALE | 0x22, /* 8bpp gray+alpha */
+#endif
+    PIXELFORMAT_GA88     = FORMATTYPE_GRAYSCALE | 0x23, /* 16bpp gray+alpha */
+#if 0
+    PIXELFORMAT_PAL1     = FORMATTYPE_PALETTE   | 0x00, /* monochrome */
+    PIXELFORMAT_PAL2     = FORMATTYPE_PALETTE   | 0x01, /* 2bpp palette */
+    PIXELFORMAT_PAL4     = FORMATTYPE_PALETTE   | 0x02, /* 4bpp palette */
+#endif
+    PIXELFORMAT_PAL8     = FORMATTYPE_PALETTE   | 0x03, /* 8bpp palette */
+};
+
+/* palette type */
+enum paletteType {
+    PALETTETYPE_AUTO = 0,     /* choose palette type automatically */
+    PALETTETYPE_HLS  = 1,     /* HLS colorspace */
+    PALETTETYPE_RGB  = 2,     /* RGB colorspace */
+};
+
+/* policies of SIXEL encoding */
+enum encodePolicy {
+    ENCODEPOLICY_AUTO = 0,    /* choose encoding policy automatically */
+    ENCODEPOLICY_FAST = 1,    /* encode as fast as possible */
+    ENCODEPOLICY_SIZE = 2,    /* encode to as small sixel sequence as possible */
 };
 
 #ifndef LIBSIXEL_DITHER_H
 
-/* dither context object */
-typedef struct sixel_dither {} sixel_dither_t;
+/* handle type of dither context object */
+typedef struct sixel_dither { int dummy; } sixel_dither_t;
 
 #endif /* SIXEL_DITHER_H */
 
@@ -92,7 +154,8 @@ typedef struct sixel_dither {} sixel_dither_t;
 
 typedef int (* sixel_write_function)(char *data, int size, void *priv);
 
-typedef struct sixel_output {} sixel_output_t;
+/* handle type of output context object */
+typedef struct sixel_output { int dummy; } sixel_output_t;
 
 #endif  /* LIBSIXEL_OUTPUT_H */
 
@@ -104,10 +167,11 @@ extern "C" {
 #endif
 
 /* create output context object */
-sixel_output_t *const
-sixel_output_create(sixel_write_function /* in */ fn_write, /* callback function for output sixel */
-                    void /* in */ *priv);                   /* private data given as 
-                                                               3rd argument of fn_write */
+sixel_output_t *
+sixel_output_create(
+    sixel_write_function /* in */ fn_write, /* callback for output sixel */
+    void                 /* in */ *priv);   /* private data given as
+                                               3rd argument of fn_write */
 /* destroy output context object */
 void
 sixel_output_destroy(sixel_output_t /* in */ *output); /* output context */
@@ -121,10 +185,38 @@ void
 sixel_output_unref(sixel_output_t /* in */ *output);   /* output context */
 
 int
-sixel_output_get_8bit_availability(sixel_output_t *output);
+sixel_output_get_8bit_availability(
+    sixel_output_t /* in */ *output);   /* output context */
 
 void
-sixel_output_set_8bit_availability(sixel_output_t *output, int availability);
+sixel_output_set_8bit_availability(
+    sixel_output_t /* in */ *output,       /* output context */
+    int            /* in */ availability); /* 0: do not use 8bit characters
+                                              1: use 8bit characters */
+
+void
+sixel_output_set_penetrate_multiplexer(
+    sixel_output_t /* in */ *output,    /* output context */
+    int            /* in */ penetrate); /* 0: penetrate GNU Screen
+                                           1: do not penetrate GNU Screen */
+
+void
+sixel_output_set_skip_dcs_envelope(
+    sixel_output_t /* in */ *output,   /* output context */
+    int            /* in */ skip);     /* 0: output DCS envelope
+                                          1: do not output DCS envelope */
+
+void
+sixel_output_set_palette_type(
+    sixel_output_t /* in */ *output,      /* output context */
+    int            /* in */ palettetype); /* PALETTETYPE_RGB: RGB palette
+                                             PALETTETYPE_HLS: HLS palette */
+
+void
+sixel_output_set_encode_policy(
+    sixel_output_t /* in */ *output,    /* output context */
+    int            /* in */ encode_policy);
+
 
 #ifdef __cplusplus
 }
@@ -159,31 +251,67 @@ sixel_dither_unref(sixel_dither_t *dither); /* dither context object */
 
 /* initialize internal palette from specified pixel buffer */
 int
-sixel_dither_initialize(sixel_dither_t *dither,          /* dither context object */
-                        unsigned char /* in */ *data,    /* sample image */
-                        int /* in */ width,              /* image width */
-                        int /* in */ height,             /* image height */
-                        int /* in */ depth,              /* pixel depth, now only '3' is supported */
-                        int /* in */ method_for_largest, /* method for finding the largest dimention */
-                        int /* in */ method_for_rep,     /* method for choosing a color from the box */
-                        int /* in */ quality_mode);      /* quality of histgram processing */
+sixel_dither_initialize(
+    sixel_dither_t *dither,          /* dither context object */
+    unsigned char /* in */ *data,    /* sample image */
+    int /* in */ width,              /* image width */
+    int /* in */ height,             /* image height */
+    int /* in */ pixelformat,        /* one of enum pixelFormat */
+    int /* in */ method_for_largest, /* method for finding the largest dimension */
+    int /* in */ method_for_rep,     /* method for choosing a color from the box */
+    int /* in */ quality_mode);      /* quality of histogram processing */
 
 /* set diffusion type, choose from enum methodForDiffuse */
 void
-sixel_dither_set_diffusion_type(sixel_dither_t /* in */ *dither,  /* dither context object */
-                                int /* in */ method_for_diffuse); /* one of enum methodForDiffuse */
+sixel_dither_set_diffusion_type(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    int /* in */ method_for_diffuse);  /* one of enum methodForDiffuse */
 
 /* get number of palette colors */
 int
-sixel_dither_get_num_of_palette_colors(sixel_dither_t /* in */ *dither);   /* dither context object */
+sixel_dither_get_num_of_palette_colors(
+    sixel_dither_t /* in */ *dither);  /* dither context object */
 
-/* get number of histgram colors */
+/* get number of histogram colors */
 int
-sixel_dither_get_num_of_histgram_colors(sixel_dither_t /* in */ *dither);  /* dither context object */
+sixel_dither_get_num_of_histogram_colors(
+    sixel_dither_t /* in */ *dither);  /* dither context object */
+
+@attr_func_deprecated@ int /* typoed! remains for compatibility. */
+sixel_dither_get_num_of_histgram_colors(
+    sixel_dither_t /* in */ *dither);  /* dither context object */
 
 /* get palette */
 unsigned char *
-sixel_dither_get_palette(sixel_dither_t /* in */ *dither);  /* dither context object */
+sixel_dither_get_palette(
+    sixel_dither_t /* in */ *dither);  /* dither context object */
+
+/* set palette */
+void
+sixel_dither_set_palette(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    unsigned char  /* in */ *palette);
+
+void
+sixel_dither_set_complexion_score(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    int            /* in */ score);    /* complexion score (>= 1) */
+
+void
+sixel_dither_set_body_only(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    int            /* in */ bodyonly); /* 0: output palette section(default)
+                                          1: do not output palette section */
+void
+sixel_dither_set_optimize_palette(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    int            /* in */ do_opt);   /* 0: optimize palette size
+                                          1: don't optimize palette size */
+/* set pixelformat */
+void
+sixel_dither_set_pixelformat(
+    sixel_dither_t /* in */ *dither,      /* dither context object */
+    int            /* in */ pixelformat); /* one of enum pixelFormat */
 
 #ifdef __cplusplus
 }
@@ -199,23 +327,25 @@ extern "C" {
 
 /* convert pixels into sixel format and write it to output context */
 int
-sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
-             int            /* in */  width,      /* image width */
-             int            /* in */  height,     /* image height */
-             int            /* in */  depth,      /* pixel depth */
-             sixel_dither_t /* in */ *dither,     /* dither context */
-             sixel_output_t /* in */ *context);   /* output context */
+sixel_encode(
+    unsigned char  /* in */ *pixels,     /* pixel bytes */
+    int            /* in */  width,      /* image width */
+    int            /* in */  height,     /* image height */
+    int            /* in */  depth,      /* color depth: now unused */
+    sixel_dither_t /* in */ *dither,     /* dither context */
+    sixel_output_t /* in */ *context);   /* output context */
 
 /* convert sixel data into indexed pixel bytes and palette data */
 int
-sixel_decode(unsigned char              /* in */  *sixels,    /* sixel bytes */
-             int                        /* in */  size,       /* size of sixel bytes */
-             unsigned char              /* out */ **pixels,   /* decoded pixels */
-             int                        /* out */ *pwidth,    /* image width */
-             int                        /* out */ *pheight,   /* image height */
-             unsigned char              /* out */ **palette,  /* RGBA palette */
-             int                        /* out */ *ncolors,   /* palette size (<= 256) */
-             sixel_allocator_function   /* out */ allocator); /* malloc function */
+sixel_decode(
+    unsigned char            /* in */  *sixels,    /* sixel bytes */
+    int                      /* in */  size,       /* size of sixel bytes */
+    unsigned char            /* out */ **pixels,   /* decoded pixels */
+    int                      /* out */ *pwidth,    /* image width */
+    int                      /* out */ *pheight,   /* image height */
+    unsigned char            /* out */ **palette,  /* RGBA palette */
+    int                      /* out */ *ncolors,   /* palette size (<= 256) */
+    sixel_allocator_function /* out */ allocator); /* malloc function */
 
 #ifdef __cplusplus
 }
