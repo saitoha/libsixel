@@ -142,9 +142,7 @@ sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 am__tests_SOURCES_DIST = tests.c
 @COND_TESTS_TRUE@am_tests_OBJECTS = tests-tests.$(OBJEXT)
 tests_OBJECTS = $(am_tests_OBJECTS)
-am__DEPENDENCIES_1 =
-@COND_TESTS_TRUE@tests_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
-@COND_TESTS_TRUE@	$(am__DEPENDENCIES_1)
+@COND_TESTS_TRUE@tests_DEPENDENCIES = $(top_builddir)/src/libsixel.la
 tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(tests_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -441,7 +439,7 @@ CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe *.log
 @COND_TESTS_TRUE@tests_SOURCES = tests.c
 @COND_TESTS_TRUE@tests_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_builddir)/src/ $(AM_CPPFLAGS)
 @COND_TESTS_TRUE@tests_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
-@COND_TESTS_TRUE@tests_LDADD = $(top_builddir)/src/libsixel.la $(LIBPNG_LIBS)
+@COND_TESTS_TRUE@tests_LDADD = $(top_builddir)/src/libsixel.la
 all: all-recursive
 
 .SUFFIXES:
