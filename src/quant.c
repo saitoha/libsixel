@@ -1268,7 +1268,7 @@ sixel_quant_apply_palette(unsigned char *data,
                     result[pos] = migration_map[index] - 1;
                 }
                 for (n = 0; n < depth; ++n) {
-                    offset = data[pos * depth + n] - palette[index * depth + n];
+                    offset = (data[pos * depth + n] & ~7) - palette[index * depth + n];
                     f_diffuse(data + n, width, height, x, y, depth, offset);
                 }
             }
