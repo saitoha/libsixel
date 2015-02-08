@@ -65,6 +65,7 @@
 # include <sys/signal.h>
 #endif
 
+#include <limits.h>
 #include <sixel.h>
 #include "scale.h"
 #include "loader.h"
@@ -76,6 +77,88 @@ enum loopMode {
     LOOP_FORCE,      /* always enable loop */
     LOOP_DISABLE,    /* always disable loop */
 };
+
+static int
+parse_x_colorspec(char const *spec, unsigned char **bgcolor)
+{
+    unsigned long long v;
+    char const *p;
+    unsigned char components[3];
+    int index = 0;
+    unsigned long component;
+    char *endptr;
+
+    if (strncmp(spec, "rgb:", 4) == 0) {
+        p = spec + 4;
+        while (p) {
+            component = strtoul(p, &endptr, 16);
+            if (component == ULONG_MAX)
+                break;
+            if (endptr - p == 0)
+                break;
+            if (endptr - p > 4)
+                break;
+            components[index++] = (unsigned char)(component << ((4 - (endptr - p)) * 4) >> 8);
+            p = endptr;
+            if (index == 3)
+                break;
+            if (*p == '\0')
+                break;
+            if (*p != '/')
+                break;
+            ++p;
+        }
+        if (*p != '\0' || *p == '/') {
+            return (-1);
+        }
+        if (index != 3) {
+            return (-1);
+        }
+        *bgcolor = malloc(3);
+        (*bgcolor)[0] = components[0];
+        (*bgcolor)[1] = components[1];
+        (*bgcolor)[2] = components[2];
+    } else if (*spec == '#') {
+        p = spec + 1;
+        v = strtoull(p, &endptr, 16);
+        if (v == ULLONG_MAX) {
+            return (-1);
+        }
+        if (*endptr != '\0') {
+            return (-1);
+        }
+        if (endptr - p > 12) {
+            return (-1);
+        }
+        *bgcolor = malloc(3);
+        switch (endptr - p) {
+        case 3:
+            (*bgcolor)[0] = (unsigned char)((v & 0xf00) >> 4);
+            (*bgcolor)[1] = (unsigned char)((v & 0x0f0) >> 0);
+            (*bgcolor)[2] = (unsigned char)((v & 0x00f) << 4);
+            break;
+        case 6:
+            (*bgcolor)[0] = (unsigned char)((v & 0xff0000) >> 16);
+            (*bgcolor)[1] = (unsigned char)((v & 0x00ff00) >>  8);
+            (*bgcolor)[2] = (unsigned char)((v & 0x0000ff) >>  0);
+            break;
+        case 9:
+            (*bgcolor)[0] = (unsigned char)((v & 0xfff000000) >> 28);
+            (*bgcolor)[1] = (unsigned char)((v & 0x000fff000) >> 16);
+            (*bgcolor)[2] = (unsigned char)((v & 0x000000fff) >>  4);
+            break;
+        case 12:
+            (*bgcolor)[0] = (unsigned char)((v & 0xffff00000000) >> 40);
+            (*bgcolor)[1] = (unsigned char)((v & 0x0000ffff0000) >> 24);
+            (*bgcolor)[2] = (unsigned char)((v & 0x00000000ffff) >>  8);
+            break;
+        default:
+            return (-1);
+        }
+    }
+
+    return 0;
+}
 
 
 static int
@@ -141,7 +224,7 @@ prepare_builtin_palette(int builtin_palette)
 
 
 static sixel_dither_t *
-prepare_specified_palette(char const *mapfile, int reqcolors)
+prepare_specified_palette(char const *mapfile, int reqcolors, unsigned char *bgcolor)
 {
     unsigned char *mappixels;
     sixel_dither_t *dither = NULL;
@@ -162,7 +245,8 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
                           &frame_count, &loop_count,
                           &delays, /* fstatic */ 1,
                           /* reqcolors */ 256,
-                          &mappixels);
+                          &mappixels,
+                          bgcolor);
     if (ret != 0 || mappixels == NULL || map_sx * map_sy == 0) {
         goto end;
     }
@@ -249,6 +333,7 @@ typedef struct Settings {
     int verbose;
     int show_version;
     int show_help;
+    unsigned char *bgcolor;
 } settings_t;
 
 
@@ -277,7 +362,8 @@ prepare_palette(sixel_dither_t *former_dither,
             return former_dither;
         }
         dither = prepare_specified_palette(psettings->mapfile,
-                                           psettings->reqcolors);
+                                           psettings->reqcolors,
+                                           psettings->bgcolor);
     } else if (psettings->builtin_palette) {
         if (former_dither) {
             return former_dither;
@@ -809,7 +895,7 @@ reload:
                            &frame_count, &loop_count,
                            &delays, psettings->fstatic,
                            psettings->reqcolors,
-                           &pixels);
+                           &pixels, psettings->bgcolor);
 
     if (nret != 0 || pixels == NULL || sx * sy == 0) {
         goto end;
@@ -1204,7 +1290,7 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:C:DVH";
+    char const *optstring = "78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:B:C:DVH";
 
     settings_t settings = {
         -1,                 /* reqcolors */
@@ -1241,6 +1327,7 @@ main(int argc, char *argv[])
         0,                  /* pipe_mode */
         0,                  /* show_version */
         0,                  /* show_help */
+        NULL,               /* bgcolor */
     };
 
 #if HAVE_GETOPT_LONG
@@ -1270,6 +1357,7 @@ main(int argc, char *argv[])
         {"macro-number",     required_argument,  &long_opt, 'n'},
         {"penetrate",        no_argument,        &long_opt, 'P'},
         {"encode-policy",    required_argument,  &long_opt, 'E'},
+        {"bgcolor",          required_argument,  &long_opt, 'B'},
         {"complexion-score", required_argument,  &long_opt, 'C'},
         {"pipe-mode",        no_argument,        &long_opt, 'D'},
         {"version",          no_argument,        &long_opt, 'V'},
@@ -1511,6 +1599,16 @@ main(int argc, char *argv[])
                 goto argerr;
             }
             break;
+        case 'B':
+            /* parse --bgcolor option */
+            if (parse_x_colorspec(optarg, &settings.bgcolor) == 0) {
+                settings.palette_type = PALETTETYPE_AUTO;
+            } else {
+                fprintf(stderr,
+                        "Cannot parse bgcolor option.\n");
+                goto argerr;
+            }
+            break;
         case 'i':
             settings.finvert = 1;
             break;
@@ -1683,11 +1781,12 @@ argerr:
                     "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
                     "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
                     "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
-                    "                 [-E encodepolicy] [filename ...]\n"
+                    "                 [-E encodepolicy] [-B bgcolor] [filename ...]\n"
                     "for more details, type: 'img2sixel -H'.\n");
 
 end:
     free(settings.mapfile);
+    free(settings.bgcolor);
     return exit_code;
 }
 

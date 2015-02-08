@@ -234,7 +234,7 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
     return 0;
 }
 # endif  /* HAVE_LIBCURL */
- 
+
 
 # if HAVE_JPEG
 /* import from @uobikiemukot's sdump loader.h */
@@ -307,7 +307,8 @@ load_png(unsigned char *buffer, int size,
          int *psx, int *psy, int *pcomp,
          unsigned char **ppalette, int *pncolors,
          int reqcolors,
-         int *pixelformat)
+         int *pixelformat,
+         unsigned char *bgcolor)
 {
     chunk_t read_chunk;
     png_uint_32 bitdepth;
@@ -317,6 +318,7 @@ load_png(unsigned char *buffer, int size,
     unsigned char **rows = NULL;
     unsigned char *result = NULL;
     png_color *png_palette = NULL;
+    png_color_16 background;
     int i;
 
     png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -332,6 +334,17 @@ load_png(unsigned char *buffer, int size,
     }
     read_chunk.buffer = buffer;
     read_chunk.size = size;
+
+    if (bgcolor) {
+        background.red = bgcolor[0];
+        background.green = bgcolor[1];
+        background.blue = bgcolor[2];
+
+        if (!png_get_bKGD(png_ptr, info_ptr, NULL)) {
+            png_set_background(png_ptr, &background, PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+        }
+    }
+
     png_set_read_fn(png_ptr,(png_voidp)&read_chunk, read_png);
     png_read_info(png_ptr, info_ptr);
     *psx = png_get_image_width(png_ptr, info_ptr);
@@ -616,7 +629,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
                   unsigned char **ppalette, int *pncolors,
                   int *ppixelformat,
                   int *pframe_count, int *ploop_count, int **ppdelay,
-                  int fstatic, int reqcolors)
+                  int fstatic, int reqcolors, unsigned char *bgcolor)
 {
     unsigned char *p;
     unsigned char *pixels = NULL;
@@ -663,10 +676,12 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         pixels = load_png(pchunk->buffer, pchunk->size,
                           psx, psy, pcomp,
                           ppalette, pncolors, reqcolors,
-                          ppixelformat);
+                          ppixelformat, bgcolor);
         *pframe_count = 1;
         *ploop_count = 1;
     }
+#else
+    (void) bgcolor;
 #endif  /* HAVE_LIBPNG */
     else if (chunk_is_gif(pchunk)) {
         chunk_init(&frames, 1024);
@@ -1006,7 +1021,8 @@ load_image_file(char const *filename, int *psx, int *psy,
                 int *ppixelformat,
                 int *pframe_count, int *ploop_count, int **ppdelay,
                 int fstatic, int reqcolors,
-                unsigned char **ppixels)
+                unsigned char **ppixels,
+                unsigned char *bgcolor)
 {
     int comp;
     int stride = (-1);
@@ -1046,7 +1062,7 @@ load_image_file(char const *filename, int *psx, int *psy,
         *ppixels = load_with_builtin(&chunk, psx, psy, &comp, &stride,
                                      ppalette, pncolors, ppixelformat,
                                      pframe_count, ploop_count, ppdelay,
-                                     fstatic, reqcolors);
+                                     fstatic, reqcolors, bgcolor);
     }
     free(chunk.buffer);
     if (*ppixels && stride > 0 && comp == 4 && (!ppalette || (ppalette && !*ppalette))) {
