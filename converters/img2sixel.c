@@ -78,6 +78,7 @@ enum loopMode {
     LOOP_DISABLE,    /* always disable loop */
 };
 
+
 static int
 parse_x_colorspec(char const *spec, unsigned char **bgcolor)
 {
@@ -1252,6 +1253,18 @@ void show_help(void)
             "                             fast -> encode as fast as possible\n"
             "                             size -> encode to as small sixel\n"
             "                                     sequence as possible\n"
+            "-B BGCOLOR, --bgcolor=BGCOLOR\n"
+            "                           specify background color\n"
+            "                           BGCOLOR is represented by the\n"
+            "                           following syntax\n"
+            "                             #rgb\n"
+            "                             #rrggbb\n"
+            "                             #rrrgggbbb\n"
+            "                             #rrrrggggbbbb\n"
+            "                             rgb:r/g/b\n"
+            "                             rgb:rr/gg/bb\n"
+            "                             rgb:rrr/ggg/bbb\n"
+            "                             rgb:rrrr/gggg/bbbb\n"
             "-P, --penetrate            penetrate GNU Screen using DCS\n"
             "                           pass-through sequence\n"
             "-D, --pipe-mode            read source images from stdin\n"
