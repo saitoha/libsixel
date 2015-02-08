@@ -335,16 +335,6 @@ load_png(unsigned char *buffer, int size,
     read_chunk.buffer = buffer;
     read_chunk.size = size;
 
-    if (bgcolor) {
-        background.red = bgcolor[0];
-        background.green = bgcolor[1];
-        background.blue = bgcolor[2];
-
-        if (!png_get_bKGD(png_ptr, info_ptr, NULL)) {
-            png_set_background(png_ptr, &background, PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
-        }
-    }
-
     png_set_read_fn(png_ptr,(png_voidp)&read_chunk, read_png);
     png_read_info(png_ptr, info_ptr);
     *psx = png_get_image_width(png_ptr, info_ptr);
@@ -353,6 +343,13 @@ load_png(unsigned char *buffer, int size,
     if (bitdepth == 16) {
         png_set_strip_16(png_ptr);
     }
+
+    if (bgcolor) {
+        background.red = bgcolor[0];
+        background.green = bgcolor[1];
+        background.blue = bgcolor[2];
+    }
+
     switch (png_get_color_type(png_ptr, info_ptr)) {
     case PNG_COLOR_TYPE_PALETTE:
         palette_bitdepth = png_get_PLTE(png_ptr, info_ptr, &png_palette, pncolors);
@@ -417,7 +414,11 @@ load_png(unsigned char *buffer, int size,
         *pixelformat = PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB_ALPHA:
-        png_set_strip_alpha(png_ptr);
+        if (bgcolor && !png_get_bKGD(png_ptr, info_ptr, NULL)) {
+            png_set_background(png_ptr, &background, PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+        } else {
+            png_set_strip_alpha(png_ptr);
+        }
         *pcomp = 3;
         *pixelformat = PIXELFORMAT_RGB888;
         break;
