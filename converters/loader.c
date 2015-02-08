@@ -639,6 +639,10 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
     chunk_t delays;
     int pixelformat = PIXELFORMAT_RGB888;
 
+#if !defined(HAVE_LIBPNG)
+    (void) bgcolor;
+#endif
+
     if (chunk_is_sixel(pchunk)) {
         pixels = load_sixel(pchunk->buffer, pchunk->size,
                             psx, psy, pcomp,
@@ -680,8 +684,6 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         *pframe_count = 1;
         *ploop_count = 1;
     }
-#else
-    (void) bgcolor;
 #endif  /* HAVE_LIBPNG */
     else if (chunk_is_gif(pchunk)) {
         chunk_init(&frames, 1024);
