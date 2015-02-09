@@ -319,6 +319,8 @@ load_png(unsigned char *buffer, int size,
     unsigned char *result = NULL;
     png_color *png_palette = NULL;
     png_color_16 background;
+    png_bytep trans = NULL;
+    int num_trans = 0;
     int i;
 
     png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -353,15 +355,28 @@ load_png(unsigned char *buffer, int size,
     switch (png_get_color_type(png_ptr, info_ptr)) {
     case PNG_COLOR_TYPE_PALETTE:
         palette_bitdepth = png_get_PLTE(png_ptr, info_ptr, &png_palette, pncolors);
-        if (ppalette && png_palette && bitdepth == 8 && palette_bitdepth == 8 && *pncolors <= reqcolors) {
+        if (ppalette && png_palette && bitdepth == 8 && palette_bitdepth == 8
+                     && *pncolors <= reqcolors) {
             *ppalette = malloc(*pncolors * 3);
             if (*ppalette == NULL) {
                 goto cleanup;
             }
+            if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
+                png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, NULL);
+            }
             for (i = 0; i < *pncolors; ++i) {
-                (*ppalette)[i * 3 + 0] = png_palette[i].red;
-                (*ppalette)[i * 3 + 1] = png_palette[i].green;
-                (*ppalette)[i * 3 + 2] = png_palette[i].blue;
+                if (bgcolor && i < num_trans) {
+                    (*ppalette)[i * 3 + 0] = ((0xff - trans[i]) * bgcolor[0]
+                                           + trans[i] * png_palette[i].red  ) >> 8;
+                    (*ppalette)[i * 3 + 1] = ((0xff - trans[i]) * bgcolor[1]
+                                           + trans[i] * png_palette[i].green) >> 8;
+                    (*ppalette)[i * 3 + 2] = ((0xff - trans[i]) * bgcolor[2]
+                                           + trans[i] * png_palette[i].blue ) >> 8;
+                } else {
+                    (*ppalette)[i * 3 + 0] = png_palette[i].red;
+                    (*ppalette)[i * 3 + 1] = png_palette[i].green;
+                    (*ppalette)[i * 3 + 2] = png_palette[i].blue;
+                }
             }
             *pcomp = 1;
             *pixelformat = PIXELFORMAT_PAL8;
