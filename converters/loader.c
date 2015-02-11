@@ -354,7 +354,8 @@ load_png(unsigned char *buffer, int size,
 
     switch (png_get_color_type(png_ptr, info_ptr)) {
     case PNG_COLOR_TYPE_PALETTE:
-        palette_bitdepth = png_get_PLTE(png_ptr, info_ptr, &png_palette, pncolors);
+        palette_bitdepth = png_get_PLTE(png_ptr, info_ptr,
+                                        &png_palette, pncolors);
         if (ppalette && png_palette && bitdepth == 8 && palette_bitdepth == 8
                      && *pncolors <= reqcolors) {
             *ppalette = malloc(*pncolors * 3);
@@ -367,11 +368,14 @@ load_png(unsigned char *buffer, int size,
             for (i = 0; i < *pncolors; ++i) {
                 if (bgcolor && i < num_trans) {
                     (*ppalette)[i * 3 + 0] = ((0xff - trans[i]) * bgcolor[0]
-                                           + trans[i] * png_palette[i].red  ) >> 8;
+                                             + trans[i] * png_palette[i].red)
+                                             >> 8;
                     (*ppalette)[i * 3 + 1] = ((0xff - trans[i]) * bgcolor[1]
-                                           + trans[i] * png_palette[i].green) >> 8;
+                                             + trans[i] * png_palette[i].green)
+                                             >> 8;
                     (*ppalette)[i * 3 + 2] = ((0xff - trans[i]) * bgcolor[2]
-                                           + trans[i] * png_palette[i].blue ) >> 8;
+                                             + trans[i] * png_palette[i].blue)
+                                             >> 8;
                 } else {
                     (*ppalette)[i * 3 + 0] = png_palette[i].red;
                     (*ppalette)[i * 3 + 1] = png_palette[i].green;
@@ -1083,11 +1087,13 @@ load_image_file(char const *filename, int *psx, int *psy,
                                      fstatic, reqcolors, bgcolor);
     }
     free(chunk.buffer);
-    if (*ppixels && stride > 0 && comp == 4 && (!ppalette || (ppalette && !*ppalette))) {
-        /* RGBA to RGB */
-        ret = arrange_pixelformat(*ppixels, *psx, *psy * *pframe_count);
-        if (ret != 0) {
-            goto end;
+    if (*ppixels && stride > 0 && comp == 4) {
+        if (!ppalette || (ppalette && !*ppalette)) {
+            /* RGBA to RGB */
+            ret = arrange_pixelformat(*ppixels, *psx, *psy * *pframe_count);
+            if (ret != 0) {
+                goto end;
+            }
         }
     }
 
