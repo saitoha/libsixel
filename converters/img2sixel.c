@@ -1613,7 +1613,7 @@ main(int argc, char *argv[])
     }
     if (settings.monochrome && settings.builtin_palette) {
         fprintf(stderr, "option -e, --monochrome conflicts"
-                        " with -I, --builtin-palette.\n");
+                        " with -b, --builtin-palette.\n");
         goto argerr;
     }
     if (settings.mapfile && settings.builtin_palette) {
