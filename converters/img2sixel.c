@@ -1305,6 +1305,9 @@ main(int argc, char *argv[])
             settings.reqcolors = atoi(optarg);
             break;
         case 'm':
+            if (settings.mapfile) {
+                free(settings.mapfile);
+            }
             settings.mapfile = arg_strdup(optarg);
             break;
         case 'e':
