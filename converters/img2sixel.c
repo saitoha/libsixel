@@ -1617,6 +1617,9 @@ main(int argc, char *argv[])
             break;
         case 'B':
             /* parse --bgcolor option */
+            if (settings.bgcolor) }
+                free(settings.bgcolor);
+            }
             if (parse_x_colorspec(optarg, &settings.bgcolor) == 0) {
                 settings.palette_type = PALETTETYPE_AUTO;
             } else {
