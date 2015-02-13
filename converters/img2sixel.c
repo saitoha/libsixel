@@ -65,7 +65,6 @@
 # include <sys/signal.h>
 #endif
 
-#include <limits.h>
 #include <sixel.h>
 #include "scale.h"
 #include "loader.h"
@@ -79,86 +78,127 @@ enum loopMode {
 };
 
 
-static int
-parse_x_colorspec(char const *spec, unsigned char **bgcolor)
+static char *
+arg_strdup(char const *s)
 {
-    unsigned long long v;
-    char const *p;
+    char *p;
+
+    p = malloc(strlen(s) + 1);
+    if (p) {
+        strcpy(p, s);
+    }
+    return p;
+}
+
+
+static int
+parse_x_colorspec(char const *s, unsigned char **bgcolor)
+{
+    char *p;
     unsigned char components[3];
     int index = 0;
-    unsigned long component;
+    int ret = 0;
+    unsigned long v;
     char *endptr;
+    char *buf = NULL;
 
-    if (strncmp(spec, "rgb:", 4) == 0) {
-        p = spec + 4;
-        while (p) {
-            component = strtoul(p, &endptr, 16);
-            if (component == ULONG_MAX)
+    if (s[0] == 'r' && s[1] == 'g' && s[2] == 'b' && s[3] == ':') {
+        p = buf = arg_strdup(s + 4);
+        while (*p) {
+            v = 0;
+            for (endptr = p; endptr - p <= 12; ++endptr) {
+                if (*endptr >= '0' && *endptr <= '9') {
+                    v = v << 4 | *endptr - '0';
+                } else if (*endptr >= 'a' && *endptr <= 'f') {
+                    v = v << 4 | *endptr - 'a' + 10;
+                } else if (*endptr >= 'A' && *endptr <= 'F') {
+                    v = v << 4 | *endptr - 'A' + 10;
+                } else {
+                    break;
+                }
+            }
+            if (endptr - p == 0) {
                 break;
-            if (endptr - p == 0)
+            }
+            if (endptr - p > 4) {
                 break;
-            if (endptr - p > 4)
-                break;
-            components[index++] = (unsigned char)(component << ((4 - (endptr - p)) * 4) >> 8);
+            }
+            v = v << ((4 - (endptr - p)) * 4) >> 8;
+            components[index++] = (unsigned char)v;
             p = endptr;
-            if (index == 3)
+            if (index == 3) {
                 break;
-            if (*p == '\0')
+            }
+            if (*p == '\0') {
                 break;
-            if (*p != '/')
+            }
+            if (*p != '/') {
                 break;
+            }
             ++p;
         }
-        if (*p != '\0' || *p == '/') {
-            return (-1);
-        }
-        if (index != 3) {
-            return (-1);
+        if (index != 3 || *p != '\0' || *p == '/') {
+            ret = (-1);
+            goto end;
         }
         *bgcolor = malloc(3);
         (*bgcolor)[0] = components[0];
         (*bgcolor)[1] = components[1];
         (*bgcolor)[2] = components[2];
-    } else if (*spec == '#') {
-        p = spec + 1;
-        v = strtoull(p, &endptr, 16);
-        if (v == ULLONG_MAX) {
-            return (-1);
-        }
-        if (*endptr != '\0') {
-            return (-1);
+    } else if (*s == '#') {
+        buf = arg_strdup(s + 1);
+        for (p = endptr = buf; endptr - p <= 12; ++endptr) {
+            if (*endptr >= '0' && *endptr <= '9') {
+                *endptr -= '0';
+            } else if (*endptr >= 'a' && *endptr <= 'f') {
+                *endptr -= 'a' - 10;
+            } else if (*endptr >= 'A' && *endptr <= 'F') {
+                *endptr -= 'A' - 10;
+            } else if (*endptr == '\0') {
+                break;
+            } else {
+                ret = (-1);
+                goto end;
+            }
         }
         if (endptr - p > 12) {
-            return (-1);
+            ret = (-1);
+            goto end;
         }
         *bgcolor = malloc(3);
         switch (endptr - p) {
         case 3:
-            (*bgcolor)[0] = (unsigned char)((v & 0xf00) >> 4);
-            (*bgcolor)[1] = (unsigned char)((v & 0x0f0) >> 0);
-            (*bgcolor)[2] = (unsigned char)((v & 0x00f) << 4);
+            (*bgcolor)[0] = (unsigned char)(p[0] << 4);
+            (*bgcolor)[1] = (unsigned char)(p[1] << 4);
+            (*bgcolor)[2] = (unsigned char)(p[2] << 4);
             break;
         case 6:
-            (*bgcolor)[0] = (unsigned char)((v & 0xff0000) >> 16);
-            (*bgcolor)[1] = (unsigned char)((v & 0x00ff00) >>  8);
-            (*bgcolor)[2] = (unsigned char)((v & 0x0000ff) >>  0);
+            (*bgcolor)[0] = (unsigned char)(p[0] << 4 | p[1]);
+            (*bgcolor)[1] = (unsigned char)(p[2] << 4 | p[3]);
+            (*bgcolor)[2] = (unsigned char)(p[4] << 4 | p[4]);
             break;
         case 9:
-            (*bgcolor)[0] = (unsigned char)((v & 0xfff000000) >> 28);
-            (*bgcolor)[1] = (unsigned char)((v & 0x000fff000) >> 16);
-            (*bgcolor)[2] = (unsigned char)((v & 0x000000fff) >>  4);
+            (*bgcolor)[0] = (unsigned char)(p[0] << 4 | p[1]);
+            (*bgcolor)[1] = (unsigned char)(p[3] << 4 | p[4]);
+            (*bgcolor)[2] = (unsigned char)(p[6] << 4 | p[7]);
             break;
         case 12:
-            (*bgcolor)[0] = (unsigned char)((v & 0xffff00000000) >> 40);
-            (*bgcolor)[1] = (unsigned char)((v & 0x0000ffff0000) >> 24);
-            (*bgcolor)[2] = (unsigned char)((v & 0x00000000ffff) >>  8);
+            (*bgcolor)[0] = (unsigned char)(p[0] << 4 | p[1]);
+            (*bgcolor)[1] = (unsigned char)(p[4] << 4 | p[5]);
+            (*bgcolor)[2] = (unsigned char)(p[8] << 4 | p[9]);
             break;
         default:
-            return (-1);
+            ret = (-1);
+            goto end;
         }
     }
 
-    return 0;
+    ret = 0;
+
+end:
+    free(buf);
+
+    return ret;
 }
 
 
@@ -1273,19 +1313,6 @@ void show_help(void)
             "-V, --version              show version and license info\n"
             "-H, --help                 show this help\n"
             );
-}
-
-
-static char *
-arg_strdup(char const *s)
-{
-    char *p;
-
-    p = malloc(strlen(s) + 1);
-    if (p) {
-        strcpy(p, s);
-    }
-    return p;
 }
 
 
