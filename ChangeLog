@@ -1,3 +1,28 @@
+2015-02-14  Hayaki Saito <user@zuse.jp>
+
+  * converters/stb_image.h: Fix GCC a warning caused by comparison of signed
+  and unsigned type in conditional expression
+
+2015-02-08  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Fix noise problem when applying palette (for issue
+  #26)
+
+  * src/quant.c: Correct wrong histgram processing (for Issue #26)
+
+2015-02-04  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c, converters/stb_image.h,
+  patches/applied/stb_image.h.diff: Update stb_image to v2.02 (for Issue #24)
+
+  * ChangeLog: Update ChnageLog
+
+2015-02-03  Hayaki Saito <user@zuse.jp>
+
+  * examples/opengl/README.md: Add README of OpenGL example
+
+  * examples/opengl/main.c: Minor fix
+
 2015-02-02  Hayaki Saito <user@zuse.jp>
 
   * config.h.in, converters/loader.c: Fix some wrong config.h declaration:
