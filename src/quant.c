@@ -50,9 +50,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <limits.h>
 
-#if defined(HAVE_INTTYPES_H)
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
+#if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
 

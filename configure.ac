@@ -157,6 +157,7 @@ AC_CHECK_HEADERS([memory.h \
                   sys/stat.h \
                   fcntl.h \
                   errno.h \
+                  limits.h \
                   sys/time.h \
                   time.h \
                   signal.h \
@@ -185,12 +186,12 @@ AM_CONDITIONAL([HAVE_GETOPT_LONG], [test x$have_getopt_long = xyes])
 
 AC_CHECK_FUNCS([memcpy \
                 memmove \
-                strtol \
                 setmode \
                 _setmode \
                 signal \
                 usleep \
                 strdup \
+                strtoul \
                 calloc \
                 clock \
                 clearerr \
