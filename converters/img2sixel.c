@@ -1305,6 +1305,9 @@ main(int argc, char *argv[])
             settings.reqcolors = atoi(optarg);
             break;
         case 'm':
+            if (settings.mapfile) {
+                free(settings.mapfile);
+            }
             settings.mapfile = arg_strdup(optarg);
             break;
         case 'e':
@@ -1610,7 +1613,7 @@ main(int argc, char *argv[])
     }
     if (settings.monochrome && settings.builtin_palette) {
         fprintf(stderr, "option -e, --monochrome conflicts"
-                        " with -I, --builtin-palette.\n");
+                        " with -b, --builtin-palette.\n");
         goto argerr;
     }
     if (settings.mapfile && settings.builtin_palette) {
