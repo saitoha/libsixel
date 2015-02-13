@@ -108,11 +108,11 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
             v = 0;
             for (endptr = p; endptr - p <= 12; ++endptr) {
                 if (*endptr >= '0' && *endptr <= '9') {
-                    v = v << 4 | *endptr - '0';
+                    v = (v << 4) | (*endptr - '0');
                 } else if (*endptr >= 'a' && *endptr <= 'f') {
-                    v = v << 4 | *endptr - 'a' + 10;
+                    v = (v << 4) | (*endptr - 'a' + 10);
                 } else if (*endptr >= 'A' && *endptr <= 'F') {
-                    v = v << 4 | *endptr - 'A' + 10;
+                    v = (v << 4) | (*endptr - 'A' + 10);
                 } else {
                     break;
                 }
