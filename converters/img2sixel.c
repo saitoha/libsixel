@@ -267,6 +267,7 @@ prepare_palette(sixel_dither_t *former_dither,
 {
     sixel_dither_t *dither;
     int ret;
+    int histogram_colors;
 
     if (psettings->highcolor) {
         if (former_dither) {
@@ -306,6 +307,10 @@ prepare_palette(sixel_dither_t *former_dither,
         dither = sixel_dither_create(psettings->reqcolors);
         if (!dither) {
             return NULL;
+        }
+        histogram_colors = sixel_dither_get_num_of_histogram_colors(dither);
+        if (histogram_colors <= psettings->reqcolors) {
+            psettings->method_for_diffuse = DIFFUSE_NONE;
         }
         ret = sixel_dither_initialize(dither, frame, sx, sy,
                                       pixelformat,
