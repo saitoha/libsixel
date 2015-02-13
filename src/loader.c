@@ -311,6 +311,7 @@ load_png(unsigned char *buffer, int size,
 {
     chunk_t read_chunk;
     png_uint_32 bitdepth;
+    png_uint_32 palette_bitdepth;
     png_structp png_ptr;
     png_infop info_ptr;
     unsigned char **rows = NULL;
@@ -341,8 +342,8 @@ load_png(unsigned char *buffer, int size,
     }
     switch (png_get_color_type(png_ptr, info_ptr)) {
     case PNG_COLOR_TYPE_PALETTE:
-        bitdepth = png_get_PLTE(png_ptr, info_ptr, &png_palette, pncolors);
-        if (ppalette && png_palette && bitdepth == 8 && *pncolors <= reqcolors) {
+        palette_bitdepth = png_get_PLTE(png_ptr, info_ptr, &png_palette, pncolors);
+        if (ppalette && png_palette && bitdepth == 8 && palette_bitdepth == 8 && *pncolors <= reqcolors) {
             *ppalette = malloc(*pncolors * 3);
             if (*ppalette == NULL) {
                 goto cleanup;
@@ -362,6 +363,24 @@ load_png(unsigned char *buffer, int size,
         break;
     case PNG_COLOR_TYPE_GRAY:
         switch (bitdepth) {
+        case 1:
+        case 2:
+        case 4:
+#  if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
+            png_set_expand_gray_1_2_4_to_8(png_ptr);
+            *pcomp = 1;
+            *pixelformat = PIXELFORMAT_G8;
+#  elif HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
+            png_set_gray_1_2_4_to_8(png_ptr);
+            *pcomp = 1;
+            *pixelformat = PIXELFORMAT_G8;
+#  else
+            png_set_gray_to_rgb(png_ptr);
+            *pcomp = 3;
+            *pixelformat = PIXELFORMAT_RGB888;
+#  endif
+            break;
+
         case 8:
             if (ppalette && *pncolors <= 1 << 8) {
                 *pcomp = 1;
@@ -650,7 +669,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
 
         for (;;) {
             p = stbi__gif_load_next(&s, &g, pcomp, 4);
-            if (p == (void *) 1) {
+            if (p == (void *) &s) {
                 /* end of animated gif marker */
                 break;
             }

@@ -633,7 +633,7 @@ computeHistogram(unsigned char const *data,
     switch (qualityMode) {
     case QUALITY_LOW:
         max_sample = 18383;
-        step = length / depth / max_sample;
+        step = length / depth / max_sample * depth;
         break;
     case QUALITY_HIGH:
         max_sample = 18383;

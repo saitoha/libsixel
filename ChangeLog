@@ -1,3 +1,25 @@
+2015-02-02  Hayaki Saito <user@zuse.jp>
+
+  * config.h.in, converters/loader.c: Fix some wrong config.h declaration:
+  HAVE_XXX -> HAVE_DECL_XXX (for #23)
+
+  * config.h.in, configure, configure.ac, converters/loader.c, ltmain.sh,
+  m4/libtool.m4, m4/ltoptions.m4, m4/ltsugar.m4, m4/ltversion.m4,
+  m4/lt~obsolete.m4: Check availability of png_set_{,expand_}gray_1_2_4_to_8
+  (#23)
+
+2015-02-02  saitoha <user@zuse.jp>
+
+  * converters/loader.c: Workaround for 1/2/4bpp grayscaled image with
+  libpng1.2, reported by @msmhrt(#23)
+
+2015-02-01  Hayaki Saito <user@zuse.jp>
+
+  * NEWS: Update NEWS
+
+  * converters/loader.c: Fix wrong bit depth handling issue reported by @msmhrt
+  (#22)
+
 2015-01-27  Hayaki Saito <user@zuse.jp>
 
   * examples/opengl/main.c: OpenGL example: performance improvement
