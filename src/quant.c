@@ -600,27 +600,6 @@ mediancut(tupletable2 const colorfreqtable,
 
 
 static int
-compute_depth_from_pixelformat(int pixelformat)
-{
-    int depth = (-1);  /* unknown */
-
-    switch (pixelformat) {
-        case PIXELFORMAT_RGB888:
-            depth = 3;
-            break;
-        case PIXELFORMAT_RGB555:
-        case PIXELFORMAT_RGB565:
-            depth = 2;
-            break;
-        default:
-            break;
-    }
-
-    return depth;
-}
-
-
-static int
 computeHash(unsigned char const *data, int const depth)
 {
     int hash = 0;
@@ -654,7 +633,7 @@ computeHistogram(unsigned char const *data,
     switch (qualityMode) {
     case QUALITY_LOW:
         max_sample = 18383;
-        step = length / depth / max_sample;
+        step = length / depth / max_sample * depth;
         break;
     case QUALITY_HIGH:
         max_sample = 18383;
@@ -1117,7 +1096,7 @@ sixel_quant_make_palette(unsigned char const *data,
     int ret;
     unsigned char *palette;
     tupletable2 colormap;
-    int depth = compute_depth_from_pixelformat(pixelformat);
+    int depth = sixel_helper_compute_depth(pixelformat);
 
     if (depth == -1) {
         return NULL;

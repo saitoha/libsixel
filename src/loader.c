@@ -20,7 +20,6 @@
  */
 
 #include "config.h"
-#include "malloc_stub.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -81,12 +80,13 @@
 
 #include <stdio.h>
 #include "frompnm.h"
-#include "loader.h"
 #include <sixel.h>
+#include <sixel-imageio.h>
 
 #define STBI_NO_STDIO 1
 #define STB_IMAGE_IMPLEMENTATION 1
 #include "stb_image.h"
+
 
 typedef struct chunk
 {
@@ -234,7 +234,7 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
     return 0;
 }
 # endif  /* HAVE_LIBCURL */
- 
+
 
 # if HAVE_JPEG
 /* import from @uobikiemukot's sdump loader.h */
@@ -445,10 +445,9 @@ load_sixel(unsigned char *buffer, int size,
            int reqcolors,
            int *ppixelformat)
 {
-    unsigned char *dst;
-    unsigned char *p;
+    unsigned char *p = NULL;
     unsigned char *pixels = NULL;
-    unsigned char *palette;
+    unsigned char *palette = NULL;
     int colors;
     int i;
     int ret;
@@ -469,9 +468,9 @@ load_sixel(unsigned char *buffer, int size,
         *pcomp = 3;
         pixels = malloc(*psx * *psy * *pcomp);
         for (i = 0; i < *psx * *psy; ++i) {
-            pixels[i * 3 + 0] = palette[p[i] * 4 + 0];
-            pixels[i * 3 + 1] = palette[p[i] * 4 + 1];
-            pixels[i * 3 + 2] = palette[p[i] * 4 + 2];
+            pixels[i * 3 + 0] = palette[p[i] * 3 + 0];
+            pixels[i * 3 + 1] = palette[p[i] * 3 + 1];
+            pixels[i * 3 + 2] = palette[p[i] * 3 + 2];
         }
         free(palette);
         free(p);
@@ -481,13 +480,6 @@ load_sixel(unsigned char *buffer, int size,
         pixels = p;
         *ppalette = palette;
         *pncolors = colors;
-        dst = palette;
-        while (colors--) {
-            *(dst++) = *(palette++);
-            *(dst++) = *(palette++);
-            *(dst++) = *(palette++);
-            palette++;
-        }
     }
 
     return pixels;
@@ -802,20 +794,6 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
 #endif  /* HAVE_GDK_PIXBUF2 */
 
 #ifdef HAVE_GD
-
-#define        FMT_GIF     0
-#define        FMT_PNG     1
-#define        FMT_BMP     2
-#define        FMT_JPG     3
-#define        FMT_TGA     4
-#define        FMT_WBMP    5
-#define        FMT_TIFF    6
-#define        FMT_SIXEL   7
-#define        FMT_PNM     8
-#define        FMT_GD2     9
-#define        FMT_PSD     10
-#define        FMT_HDR     11
-
 static int
 detect_file_format(int len, unsigned char *data)
 {
@@ -1001,12 +979,19 @@ arrange_pixelformat(unsigned char *pixels, int width, int height)
 
 
 int
-load_image_file(char const *filename, int *psx, int *psy,
-                unsigned char **ppalette, int *pncolors,
-                int *ppixelformat,
-                int *pframe_count, int *ploop_count, int **ppdelay,
-                int fstatic, int reqcolors,
-                unsigned char **ppixels)
+sixel_helper_load_image_file(
+    unsigned char /* out */ **ppixels,     /* loaded pixel data */
+    unsigned char /* out */ **ppalette,    /* loaded palette data */
+    int           /* out */ *psx,          /* image width */
+    int           /* out */ *psy,          /* image height */
+    int           /* out */ *pncolors,     /* palette colors */
+    int           /* out */ *ppixelformat, /* one of enum pixelFormat */
+    int           /* out */ *pframe_count, /* frame count */
+    int           /* out */ *ploop_count,  /* loop count */
+    int           /* out */ **ppdelay,     /* delay for each frames */
+    char const    /* in */  *filename,     /* source file name */
+    int           /* in */  fstatic,       /* whether to extract static image */
+    int           /* in */  reqcolors)     /* requested number of colors */
 {
     int comp;
     int stride = (-1);
