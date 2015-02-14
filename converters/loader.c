@@ -433,7 +433,7 @@ load_png(unsigned char *buffer, int size,
         *pixelformat = PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB_ALPHA:
-        if (bgcolor && !png_get_bKGD(png_ptr, info_ptr, NULL)) {
+        if (bgcolor) {
             png_set_background(png_ptr, &background,
                                PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
         } else {
@@ -443,7 +443,7 @@ load_png(unsigned char *buffer, int size,
         *pixelformat = PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB:
-        if (bgcolor && !png_get_bKGD(png_ptr, info_ptr, NULL)) {
+        if (bgcolor) {
             png_set_background(png_ptr, &background,
                                PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
         }
