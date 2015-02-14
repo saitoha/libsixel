@@ -142,8 +142,8 @@ write_png_to_file(
     png_write_end(png_ptr, NULL);
 #else
     png_data = stbi_write_png_to_mem(pixels, width * 3,
-                                     width, height, /* STBI_rgb */ 3, &png_len);
-
+                                     width, height,
+                                     /* STBI_rgb */ 3, &png_len);
     if (!png_data) {
         fprintf(stderr, "stbi_write_png_to_mem failed.\n");
         goto end;
@@ -188,20 +188,20 @@ sixel_helper_write_image_file(
     int nret = (-1);
 
     switch (imageformat) {
-    case FMT_PNG:
+    case FORMAT_PNG:
         nret = write_png_to_file(data, width, height, pixelformat, filename);
         break;
-    case FMT_GIF:
-    case FMT_BMP:
-    case FMT_JPG:
-    case FMT_TGA:
-    case FMT_WBMP:
-    case FMT_TIFF:
-    case FMT_SIXEL:
-    case FMT_PNM:
-    case FMT_GD2:
-    case FMT_PSD:
-    case FMT_HDR:
+    case FORMAT_GIF:
+    case FORMAT_BMP:
+    case FORMAT_JPG:
+    case FORMAT_TGA:
+    case FORMAT_WBMP:
+    case FORMAT_TIFF:
+    case FORMAT_SIXEL:
+    case FORMAT_PNM:
+    case FORMAT_GD2:
+    case FORMAT_PSD:
+    case FORMAT_HDR:
     default:
         nret = (-1);
         break;

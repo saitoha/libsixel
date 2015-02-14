@@ -134,7 +134,8 @@ sixel_to_png(char const *input, char const *output)
         goto end;
     }
 
-    ret = sixel_helper_write_image_file(indexed_pixels, sx, sy, PIXELFORMAT_PAL8, output, FMT_PNG);
+    ret = sixel_helper_write_image_file(indexed_pixels, sx, sy,
+                                        PIXELFORMAT_PAL8, output, FORMAT_PNG);
 
 end:
     free(pixels);
