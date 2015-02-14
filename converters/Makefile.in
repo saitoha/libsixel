@@ -1075,7 +1075,7 @@ test_impl:
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -ldisable -dnone -g ../images/seq2gif.gif
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -ldisable -dnone -u -g ../images/seq2gif.gif
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -S -datkinson ../images/seq2gif.gif
-@HAVE_JPEG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake-progressive.jpg
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake-progressive.jpg
 @HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.png
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel file:///test)
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel file:///$$(pwd)/../images/snake.jpg
