@@ -308,10 +308,6 @@ prepare_palette(sixel_dither_t *former_dither,
         if (!dither) {
             return NULL;
         }
-        histogram_colors = sixel_dither_get_num_of_histogram_colors(dither);
-        if (histogram_colors <= psettings->reqcolors) {
-            psettings->method_for_diffuse = DIFFUSE_NONE;
-        }
         ret = sixel_dither_initialize(dither, frame, sx, sy,
                                       pixelformat,
                                       psettings->method_for_largest,
@@ -320,6 +316,10 @@ prepare_palette(sixel_dither_t *former_dither,
         if (ret != 0) {
             sixel_dither_unref(dither);
             return NULL;
+        }
+        histogram_colors = sixel_dither_get_num_of_histogram_colors(dither);
+        if (histogram_colors <= psettings->reqcolors) {
+            psettings->method_for_diffuse = DIFFUSE_NONE;
         }
         sixel_dither_set_pixelformat(dither, pixelformat);
     }
