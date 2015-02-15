@@ -4056,7 +4056,7 @@ static void stbi__fill_gif_background(stbi__gif *g)
 }
 
 // this function is designed to support animated gifs, although stb_image doesn't support it
-static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, int req_comp)
+static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, int req_comp, stbi_uc *bgcolor)
 {
    int i;
    stbi_uc *old_out = 0;
@@ -4114,8 +4114,16 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
             } else if (g->flags & 0x80) {
                for (i=0; i < 256; ++i)  // @OPTIMIZE: stbi__jpeg_reset only the previous transparent
                   g->pal[i][3] = 255; 
-               if (g->transparent >= 0 && (g->eflags & 0x01))
-                  g->pal[g->transparent][3] = 0;
+               if (g->transparent >= 0 && (g->eflags & 0x01)) {
+                  if (bgcolor) {
+                      g->pal[g->transparent][0] = bgcolor[2];
+                      g->pal[g->transparent][1] = bgcolor[1];
+                      g->pal[g->transparent][2] = bgcolor[0];
+                      g->pal[g->transparent][3] = 0xff;
+                  } else {
+                      g->pal[g->transparent][3] = 0;
+                  }
+               }
                g->color_table = (stbi_uc *) g->pal;
             } else
                return stbi__errpuc("missing color table", "Corrupt GIF");
@@ -4196,7 +4204,7 @@ static stbi_uc *stbi__gif_load(stbi__context *s, int *x, int *y, int *comp, int 
    stbi__gif g;
    memset(&g, 0, sizeof(g));
 
-   u = stbi__gif_load_next(s, &g, comp, req_comp);
+   u = stbi__gif_load_next(s, &g, comp, req_comp, NULL);
    if (u == (void *) 1) u = 0;  // end of animated gif marker
    if (u) {
       *x = g.w;
