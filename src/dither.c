@@ -419,6 +419,12 @@ expand_palette(unsigned char *dst, unsigned char const *src,
             *dst++ = *src & 0x3;
         }
         break;
+    case PIXELFORMAT_PAL4:
+        for (i = 0; i < width * height / 2; ++i, ++src) {
+            *dst++ = *src >> 4;
+            *dst++ = *src & 0xf;
+        }
+        break;
     case PIXELFORMAT_PAL8:
         for (i = 0; i < width * height; ++i, ++src) {
             *dst++ = *src;
@@ -457,6 +463,7 @@ sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
         break;
     case PIXELFORMAT_PAL1:
     case PIXELFORMAT_PAL2:
+    case PIXELFORMAT_PAL4:
         expand_palette(dst, src, width, height, pixelformat);
         break;
     case PIXELFORMAT_PAL8:
