@@ -368,37 +368,15 @@ get_rgb(unsigned char *data, int const pixelformat, int depth,
 }
 
 
-int
-sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
-                            int width, int height,
-                            int const pixelformat)
+static void
+expand_rgb(unsigned char *dst, unsigned char *src,
+           int width, int height, int pixelformat, int depth)
 {
-    int x, y, dst_offset, src_offset, depth;
+    int x;
+    int y;
+    int dst_offset;
+    int src_offset;
     unsigned char r, g, b;
-
-    switch (pixelformat) {
-    case PIXELFORMAT_G8:
-        depth = 1;
-        break;
-    case PIXELFORMAT_RGB565:
-    case PIXELFORMAT_RGB555:
-    case PIXELFORMAT_BGR565:
-    case PIXELFORMAT_BGR555:
-    case PIXELFORMAT_GA88:
-    case PIXELFORMAT_AG88:
-        depth = 2;
-        break;
-    case PIXELFORMAT_RGB888:
-    case PIXELFORMAT_BGR888:
-        depth = 3;
-        break;
-    case PIXELFORMAT_RGBA8888:
-    case PIXELFORMAT_ARGB8888:
-        depth = 4;
-        break;
-    default:
-        return (-1);
-    }
 
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x++) {
@@ -410,6 +388,64 @@ sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
             *(dst + dst_offset + 1) = g;
             *(dst + dst_offset + 2) = b;
         }
+    }
+}
+
+
+static void
+expand_palette(unsigned char *dst, unsigned char const *src,
+               int width, int height, int const pixelformat)
+{
+    int i;
+
+    switch (pixelformat) {
+    case PIXELFORMAT_PAL2:
+        for (i = 0; i < width * height / 4; ++i, ++src) {
+            *dst++ = *src >> 6;
+            *dst++ = *src >> 4 & 0x3;
+            *dst++ = *src >> 2 & 0x3;
+            *dst++ = *src & 0x3;
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+
+int
+sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
+                            int width, int height,
+                            int const pixelformat)
+{
+    switch (pixelformat) {
+    case PIXELFORMAT_G8:
+        expand_rgb(dst, src, width, height, pixelformat, 1);
+        break;
+    case PIXELFORMAT_RGB565:
+    case PIXELFORMAT_RGB555:
+    case PIXELFORMAT_BGR565:
+    case PIXELFORMAT_BGR555:
+    case PIXELFORMAT_GA88:
+    case PIXELFORMAT_AG88:
+        expand_rgb(dst, src, width, height, pixelformat, 2);
+        break;
+    case PIXELFORMAT_RGB888:
+    case PIXELFORMAT_BGR888:
+        expand_rgb(dst, src, width, height, pixelformat, 3);
+        break;
+    case PIXELFORMAT_RGBA8888:
+    case PIXELFORMAT_ARGB8888:
+        expand_rgb(dst, src, width, height, pixelformat, 4);
+        break;
+    case PIXELFORMAT_PAL2:
+        expand_palette(dst, src, width, height, pixelformat);
+        break;
+    case PIXELFORMAT_PAL8:
+        memcpy(dst, src, width * height);
+        break;
+    default:
+        return (-1);
     }
 
     return 0;

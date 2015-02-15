@@ -577,6 +577,15 @@ sixel_encode_dither(unsigned char *pixels, int width, int height,
     int nret = (-1);
 
     switch (dither->pixelformat) {
+    case PIXELFORMAT_PAL2:
+        paletted_pixels = malloc(width * height * 3);
+        if (paletted_pixels == NULL) {
+            goto end;
+        }
+        sixel_normalize_pixelformat(paletted_pixels, pixels, width, height,
+                                    dither->pixelformat);
+        input_pixels = paletted_pixels;
+        break;
     case PIXELFORMAT_PAL8:
     case PIXELFORMAT_G8:
     case PIXELFORMAT_GA88:
@@ -585,7 +594,8 @@ sixel_encode_dither(unsigned char *pixels, int width, int height,
         break;
     default:
         /* apply palette */
-        paletted_pixels = sixel_dither_apply_palette(dither, pixels, width, height);
+        paletted_pixels = sixel_dither_apply_palette(dither, pixels,
+                                                     width, height);
         if (paletted_pixels == NULL) {
             goto end;
         }

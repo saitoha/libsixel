@@ -302,6 +302,36 @@ read_png(png_structp png_ptr, png_bytep data, png_size_t length)
 }
 
 
+static void
+read_palette(png_structp png_ptr, png_infop info_ptr,
+             unsigned char *palette, int ncolors,
+             png_color *png_palette, unsigned char *bgcolor)
+{
+    png_bytep trans = NULL;
+    int num_trans = 0;
+    int i;
+
+    if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
+        png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, NULL);
+    }
+    for (i = 0; i < ncolors; ++i) {
+        if (bgcolor && i < num_trans) {
+            palette[i * 3 + 0] = ((0xff - trans[i]) * bgcolor[0]
+                                   + trans[i] * png_palette[i].red) >> 8;
+            palette[i * 3 + 1] = ((0xff - trans[i]) * bgcolor[1]
+                                   + trans[i] * png_palette[i].green) >> 8;
+            palette[i * 3 + 2] = ((0xff - trans[i]) * bgcolor[2]
+                                   + trans[i] * png_palette[i].blue) >> 8;
+        } else {
+            palette[i * 3 + 0] = png_palette[i].red;
+            palette[i * 3 + 1] = png_palette[i].green;
+            palette[i * 3 + 2] = png_palette[i].blue;
+        }
+    }
+}
+
+
+
 static unsigned char *
 load_png(unsigned char *buffer, int size,
          int *psx, int *psy, int *pcomp,
@@ -319,8 +349,6 @@ load_png(unsigned char *buffer, int size,
     unsigned char *result = NULL;
     png_color *png_palette = NULL;
     png_color_16 background;
-    png_bytep trans = NULL;
-    int num_trans = 0;
     int i;
 
     png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -356,38 +384,39 @@ load_png(unsigned char *buffer, int size,
     case PNG_COLOR_TYPE_PALETTE:
         palette_bitdepth = png_get_PLTE(png_ptr, info_ptr,
                                         &png_palette, pncolors);
-        if (ppalette && png_palette && bitdepth == 8 && palette_bitdepth == 8
-                     && *pncolors <= reqcolors) {
-            *ppalette = malloc(*pncolors * 3);
-            if (*ppalette == NULL) {
-                goto cleanup;
-            }
-            if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
-                png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, NULL);
-            }
-            for (i = 0; i < *pncolors; ++i) {
-                if (bgcolor && i < num_trans) {
-                    (*ppalette)[i * 3 + 0] = ((0xff - trans[i]) * bgcolor[0]
-                                             + trans[i] * png_palette[i].red)
-                                             >> 8;
-                    (*ppalette)[i * 3 + 1] = ((0xff - trans[i]) * bgcolor[1]
-                                             + trans[i] * png_palette[i].green)
-                                             >> 8;
-                    (*ppalette)[i * 3 + 2] = ((0xff - trans[i]) * bgcolor[2]
-                                             + trans[i] * png_palette[i].blue)
-                                             >> 8;
-                } else {
-                    (*ppalette)[i * 3 + 0] = png_palette[i].red;
-                    (*ppalette)[i * 3 + 1] = png_palette[i].green;
-                    (*ppalette)[i * 3 + 2] = png_palette[i].blue;
-                }
-            }
-            *pcomp = 1;
-            *pixelformat = PIXELFORMAT_PAL8;
-        } else {
+        if (ppalette == NULL || png_palette == NULL ||
+            palette_bitdepth != 8 || *pncolors > reqcolors) {
             png_set_palette_to_rgb(png_ptr);
             *pcomp = 3;
             *pixelformat = PIXELFORMAT_RGB888;
+        } else {
+            switch (bitdepth) {
+            case 8:
+                *ppalette = malloc(*pncolors * 3);
+                if (*ppalette == NULL) {
+                    goto cleanup;
+                }
+                read_palette(png_ptr, info_ptr, *ppalette,
+                             *pncolors, png_palette, bgcolor);
+                *pcomp = 1;
+                *pixelformat = PIXELFORMAT_PAL8;
+                break;
+            case 2:
+                *ppalette = malloc(*pncolors * 3);
+                if (*ppalette == NULL) {
+                    goto cleanup;
+                }
+                read_palette(png_ptr, info_ptr, *ppalette,
+                             *pncolors, png_palette, bgcolor);
+                *pcomp = 1;
+                *pixelformat = PIXELFORMAT_PAL2;
+                break;
+            default:
+                png_set_palette_to_rgb(png_ptr);
+                *pcomp = 3;
+                *pixelformat = PIXELFORMAT_RGB888;
+                break;
+            }
         }
         break;
     case PNG_COLOR_TYPE_GRAY:
@@ -456,8 +485,17 @@ load_png(unsigned char *buffer, int size,
     }
     result = malloc(*pcomp * *psx * *psy);
     rows = malloc(*psy * sizeof(unsigned char *));
-    for (i = 0; i < *psy; ++i) {
-        rows[i] = result + *pcomp * *psx * i;
+    switch (*pixelformat) {
+    case PIXELFORMAT_PAL2:
+        for (i = 0; i < *psy; ++i) {
+            rows[i] = result + *pcomp * *psx * i / 4;
+        }
+        break;
+    default:
+        for (i = 0; i < *psy; ++i) {
+            rows[i] = result + *pcomp * *psx * i;
+        }
+        break;
     }
 #if USE_SETJMP && HAVE_SETJMP
     if (setjmp(png_jmpbuf(png_ptr))) {
