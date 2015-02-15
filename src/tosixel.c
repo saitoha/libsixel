@@ -577,6 +577,7 @@ sixel_encode_dither(unsigned char *pixels, int width, int height,
     int nret = (-1);
 
     switch (dither->pixelformat) {
+    case PIXELFORMAT_PAL1:
     case PIXELFORMAT_PAL2:
         paletted_pixels = malloc(width * height * 3);
         if (paletted_pixels == NULL) {

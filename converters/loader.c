@@ -391,7 +391,7 @@ load_png(unsigned char *buffer, int size,
             *pixelformat = PIXELFORMAT_RGB888;
         } else {
             switch (bitdepth) {
-            case 8:
+            case 1:
                 *ppalette = malloc(*pncolors * 3);
                 if (*ppalette == NULL) {
                     goto cleanup;
@@ -399,7 +399,7 @@ load_png(unsigned char *buffer, int size,
                 read_palette(png_ptr, info_ptr, *ppalette,
                              *pncolors, png_palette, bgcolor);
                 *pcomp = 1;
-                *pixelformat = PIXELFORMAT_PAL8;
+                *pixelformat = PIXELFORMAT_PAL1;
                 break;
             case 2:
                 *ppalette = malloc(*pncolors * 3);
@@ -410,6 +410,16 @@ load_png(unsigned char *buffer, int size,
                              *pncolors, png_palette, bgcolor);
                 *pcomp = 1;
                 *pixelformat = PIXELFORMAT_PAL2;
+                break;
+            case 8:
+                *ppalette = malloc(*pncolors * 3);
+                if (*ppalette == NULL) {
+                    goto cleanup;
+                }
+                read_palette(png_ptr, info_ptr, *ppalette,
+                             *pncolors, png_palette, bgcolor);
+                *pcomp = 1;
+                *pixelformat = PIXELFORMAT_PAL8;
                 break;
             default:
                 png_set_palette_to_rgb(png_ptr);
@@ -486,9 +496,10 @@ load_png(unsigned char *buffer, int size,
     result = malloc(*pcomp * *psx * *psy);
     rows = malloc(*psy * sizeof(unsigned char *));
     switch (*pixelformat) {
+    case PIXELFORMAT_PAL1:
     case PIXELFORMAT_PAL2:
         for (i = 0; i < *psy; ++i) {
-            rows[i] = result + *pcomp * *psx * i / 4;
+            rows[i] = result + *pcomp * *psx * i * bitdepth / 8;
         }
         break;
     default:

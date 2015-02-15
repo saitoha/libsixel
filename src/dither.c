@@ -399,12 +399,29 @@ expand_palette(unsigned char *dst, unsigned char const *src,
     int i;
 
     switch (pixelformat) {
+    case PIXELFORMAT_PAL1:
+        for (i = 0; i < width * height / 8; ++i, ++src) {
+            *dst++ = *src >> 7;
+            *dst++ = *src >> 6 & 0x1;
+            *dst++ = *src >> 5 & 0x1;
+            *dst++ = *src >> 4 & 0x1;
+            *dst++ = *src >> 3 & 0x1;
+            *dst++ = *src >> 2 & 0x1;
+            *dst++ = *src >> 1 & 0x1;
+            *dst++ = *src & 0x1;
+        }
+        break;
     case PIXELFORMAT_PAL2:
         for (i = 0; i < width * height / 4; ++i, ++src) {
             *dst++ = *src >> 6;
             *dst++ = *src >> 4 & 0x3;
             *dst++ = *src >> 2 & 0x3;
             *dst++ = *src & 0x3;
+        }
+        break;
+    case PIXELFORMAT_PAL8:
+        for (i = 0; i < width * height; ++i, ++src) {
+            *dst++ = *src;
         }
         break;
     default:
@@ -438,6 +455,7 @@ sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
     case PIXELFORMAT_ARGB8888:
         expand_rgb(dst, src, width, height, pixelformat, 4);
         break;
+    case PIXELFORMAT_PAL1:
     case PIXELFORMAT_PAL2:
         expand_palette(dst, src, width, height, pixelformat);
         break;

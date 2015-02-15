@@ -640,8 +640,9 @@ compute_depth_from_pixelformat(int pixelformat)
             depth = 2;
             break;
         case PIXELFORMAT_G8:
-        case PIXELFORMAT_PAL8:
+        case PIXELFORMAT_PAL1:
         case PIXELFORMAT_PAL2:
+        case PIXELFORMAT_PAL8:
             depth = 1;
             break;
         default:
