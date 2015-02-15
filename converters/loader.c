@@ -477,6 +477,12 @@ load_png(unsigned char *buffer, int size,
         }
         break;
     case PNG_COLOR_TYPE_GRAY_ALPHA:
+        if (bgcolor) {
+            png_set_background(png_ptr, &background,
+                               PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+        } else {
+            png_set_strip_alpha(png_ptr);
+        }
         png_set_gray_to_rgb(png_ptr);
         *pcomp = 3;
         *pixelformat = PIXELFORMAT_RGB888;
