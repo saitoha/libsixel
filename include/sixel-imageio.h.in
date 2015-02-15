@@ -57,7 +57,8 @@ sixel_helper_load_image_file(
     int           /* out */ **ppdelay,     /* delay for each frames */
     char const    /* in */  *filename,     /* source file name */
     int           /* in */  fstatic,       /* whether to extract static image */
-    int           /* in */  reqcolors);    /* requested number of colors */
+    int           /* in */  reqcolors,     /* requested number of colors */
+    unsigned char /* in */  *bgcolor);     /* background color */
 
 /* write image to file */
 int

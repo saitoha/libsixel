@@ -127,6 +127,9 @@ sixel_helper_compute_depth(int pixelformat)
         depth = 2;
         break;
     case PIXELFORMAT_G8:
+    case PIXELFORMAT_PAL1:
+    case PIXELFORMAT_PAL2:
+    case PIXELFORMAT_PAL4:
     case PIXELFORMAT_PAL8:
         depth = 1;
         break;

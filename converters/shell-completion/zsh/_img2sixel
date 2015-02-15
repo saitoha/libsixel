@@ -123,6 +123,7 @@ _arguments -S -s -A "-*" -S \
   {-t,--palette-type=}'[select palette color space type]':palettetype:_palettetype \
   {-b,--builtin-palette=}'[select built-in palette type]':builtinpalette:_builtinpalette \
   {-E,--encode-policy=}'[select encoding policy]':encodepolicy:_encodepolicy \
+  {-B,--bgcolor=}'[select background color]' \
   {-P,--penetrate}'[penetrate GNU Screen using DCS pass-through sequence]' \
   {-D,--pipe-mode}'[read source images from stdin continuously]' \
   {-v,--verbose}'[show debugging information]' \

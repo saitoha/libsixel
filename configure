@@ -13229,6 +13229,7 @@ for ac_header in memory.h \
                   sys/stat.h \
                   fcntl.h \
                   errno.h \
+                  limits.h \
                   sys/time.h \
                   time.h \
                   signal.h \
@@ -13425,12 +13426,12 @@ fi
 
 for ac_func in memcpy \
                 memmove \
-                strtol \
                 setmode \
                 _setmode \
                 signal \
                 usleep \
                 strdup \
+                strtoul \
                 calloc \
                 clock \
                 clearerr \

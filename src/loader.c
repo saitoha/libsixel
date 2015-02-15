@@ -302,12 +302,43 @@ read_png(png_structp png_ptr, png_bytep data, png_size_t length)
 }
 
 
+static void
+read_palette(png_structp png_ptr, png_infop info_ptr,
+             unsigned char *palette, int ncolors,
+             png_color *png_palette, unsigned char *bgcolor)
+{
+    png_bytep trans = NULL;
+    int num_trans = 0;
+    int i;
+
+    if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
+        png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, NULL);
+    }
+    for (i = 0; i < ncolors; ++i) {
+        if (bgcolor && i < num_trans) {
+            palette[i * 3 + 0] = ((0xff - trans[i]) * bgcolor[0]
+                                   + trans[i] * png_palette[i].red) >> 8;
+            palette[i * 3 + 1] = ((0xff - trans[i]) * bgcolor[1]
+                                   + trans[i] * png_palette[i].green) >> 8;
+            palette[i * 3 + 2] = ((0xff - trans[i]) * bgcolor[2]
+                                   + trans[i] * png_palette[i].blue) >> 8;
+        } else {
+            palette[i * 3 + 0] = png_palette[i].red;
+            palette[i * 3 + 1] = png_palette[i].green;
+            palette[i * 3 + 2] = png_palette[i].blue;
+        }
+    }
+}
+
+
+
 static unsigned char *
 load_png(unsigned char *buffer, int size,
          int *psx, int *psy, int *pcomp,
          unsigned char **ppalette, int *pncolors,
          int reqcolors,
-         int *pixelformat)
+         int *pixelformat,
+         unsigned char *bgcolor)
 {
     chunk_t read_chunk;
     png_uint_32 bitdepth;
@@ -317,6 +348,7 @@ load_png(unsigned char *buffer, int size,
     unsigned char **rows = NULL;
     unsigned char *result = NULL;
     png_color *png_palette = NULL;
+    png_color_16 background;
     int i;
 
     png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -332,6 +364,7 @@ load_png(unsigned char *buffer, int size,
     }
     read_chunk.buffer = buffer;
     read_chunk.size = size;
+
     png_set_read_fn(png_ptr,(png_voidp)&read_chunk, read_png);
     png_read_info(png_ptr, info_ptr);
     *psx = png_get_image_width(png_ptr, info_ptr);
@@ -340,25 +373,70 @@ load_png(unsigned char *buffer, int size,
     if (bitdepth == 16) {
         png_set_strip_16(png_ptr);
     }
+
+    if (bgcolor) {
+        background.red = bgcolor[0];
+        background.green = bgcolor[1];
+        background.blue = bgcolor[2];
+    }
+
     switch (png_get_color_type(png_ptr, info_ptr)) {
     case PNG_COLOR_TYPE_PALETTE:
-        palette_bitdepth = png_get_PLTE(png_ptr, info_ptr, &png_palette, pncolors);
-        if (ppalette && png_palette && bitdepth == 8 && palette_bitdepth == 8 && *pncolors <= reqcolors) {
-            *ppalette = malloc(*pncolors * 3);
-            if (*ppalette == NULL) {
-                goto cleanup;
-            }
-            for (i = 0; i < *pncolors; ++i) {
-                (*ppalette)[i * 3 + 0] = png_palette[i].red;
-                (*ppalette)[i * 3 + 1] = png_palette[i].green;
-                (*ppalette)[i * 3 + 2] = png_palette[i].blue;
-            }
-            *pcomp = 1;
-            *pixelformat = PIXELFORMAT_PAL8;
-        } else {
+        palette_bitdepth = png_get_PLTE(png_ptr, info_ptr,
+                                        &png_palette, pncolors);
+        if (ppalette == NULL || png_palette == NULL ||
+            palette_bitdepth != 8 || *pncolors > reqcolors) {
             png_set_palette_to_rgb(png_ptr);
             *pcomp = 3;
             *pixelformat = PIXELFORMAT_RGB888;
+        } else {
+            switch (bitdepth) {
+            case 1:
+                *ppalette = malloc(*pncolors * 3);
+                if (*ppalette == NULL) {
+                    goto cleanup;
+                }
+                read_palette(png_ptr, info_ptr, *ppalette,
+                             *pncolors, png_palette, bgcolor);
+                *pcomp = 1;
+                *pixelformat = PIXELFORMAT_PAL1;
+                break;
+            case 2:
+                *ppalette = malloc(*pncolors * 3);
+                if (*ppalette == NULL) {
+                    goto cleanup;
+                }
+                read_palette(png_ptr, info_ptr, *ppalette,
+                             *pncolors, png_palette, bgcolor);
+                *pcomp = 1;
+                *pixelformat = PIXELFORMAT_PAL2;
+                break;
+            case 4:
+                *ppalette = malloc(*pncolors * 3);
+                if (*ppalette == NULL) {
+                    goto cleanup;
+                }
+                read_palette(png_ptr, info_ptr, *ppalette,
+                             *pncolors, png_palette, bgcolor);
+                *pcomp = 1;
+                *pixelformat = PIXELFORMAT_PAL4;
+                break;
+            case 8:
+                *ppalette = malloc(*pncolors * 3);
+                if (*ppalette == NULL) {
+                    goto cleanup;
+                }
+                read_palette(png_ptr, info_ptr, *ppalette,
+                             *pncolors, png_palette, bgcolor);
+                *pcomp = 1;
+                *pixelformat = PIXELFORMAT_PAL8;
+                break;
+            default:
+                png_set_palette_to_rgb(png_ptr);
+                *pcomp = 3;
+                *pixelformat = PIXELFORMAT_RGB888;
+                break;
+            }
         }
         break;
     case PNG_COLOR_TYPE_GRAY:
@@ -404,11 +482,20 @@ load_png(unsigned char *buffer, int size,
         *pixelformat = PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB_ALPHA:
-        png_set_strip_alpha(png_ptr);
+        if (bgcolor) {
+            png_set_background(png_ptr, &background,
+                               PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+        } else {
+            png_set_strip_alpha(png_ptr);
+        }
         *pcomp = 3;
         *pixelformat = PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB:
+        if (bgcolor) {
+            png_set_background(png_ptr, &background,
+                               PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+        }
         *pcomp = 3;
         *pixelformat = PIXELFORMAT_RGB888;
         break;
@@ -418,8 +505,19 @@ load_png(unsigned char *buffer, int size,
     }
     result = malloc(*pcomp * *psx * *psy);
     rows = malloc(*psy * sizeof(unsigned char *));
-    for (i = 0; i < *psy; ++i) {
-        rows[i] = result + *pcomp * *psx * i;
+    switch (*pixelformat) {
+    case PIXELFORMAT_PAL1:
+    case PIXELFORMAT_PAL2:
+    case PIXELFORMAT_PAL4:
+        for (i = 0; i < *psy; ++i) {
+            rows[i] = result + *pcomp * *psx * i * bitdepth / 8;
+        }
+        break;
+    default:
+        for (i = 0; i < *psy; ++i) {
+            rows[i] = result + *pcomp * *psx * i;
+        }
+        break;
     }
 #if USE_SETJMP && HAVE_SETJMP
     if (setjmp(png_jmpbuf(png_ptr))) {
@@ -608,7 +706,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
                   unsigned char **ppalette, int *pncolors,
                   int *ppixelformat,
                   int *pframe_count, int *ploop_count, int **ppdelay,
-                  int fstatic, int reqcolors)
+                  int fstatic, int reqcolors, unsigned char *bgcolor)
 {
     unsigned char *p;
     unsigned char *pixels = NULL;
@@ -617,6 +715,10 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
     chunk_t frames;
     chunk_t delays;
     int pixelformat = PIXELFORMAT_RGB888;
+
+#if !defined(HAVE_LIBPNG)
+    (void) bgcolor;
+#endif
 
     if (chunk_is_sixel(pchunk)) {
         pixels = load_sixel(pchunk->buffer, pchunk->size,
@@ -655,7 +757,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         pixels = load_png(pchunk->buffer, pchunk->size,
                           psx, psy, pcomp,
                           ppalette, pncolors, reqcolors,
-                          ppixelformat);
+                          ppixelformat, bgcolor);
         *pframe_count = 1;
         *ploop_count = 1;
     }
@@ -991,7 +1093,8 @@ sixel_helper_load_image_file(
     int           /* out */ **ppdelay,     /* delay for each frames */
     char const    /* in */  *filename,     /* source file name */
     int           /* in */  fstatic,       /* whether to extract static image */
-    int           /* in */  reqcolors)     /* requested number of colors */
+    int           /* in */  reqcolors,     /* requested number of colors */
+    unsigned char /* in */  *bgcolor)      /* background color */
 {
     int comp;
     int stride = (-1);
@@ -1031,14 +1134,16 @@ sixel_helper_load_image_file(
         *ppixels = load_with_builtin(&chunk, psx, psy, &comp, &stride,
                                      ppalette, pncolors, ppixelformat,
                                      pframe_count, ploop_count, ppdelay,
-                                     fstatic, reqcolors);
+                                     fstatic, reqcolors, bgcolor);
     }
     free(chunk.buffer);
-    if (*ppixels && stride > 0 && comp == 4 && (!ppalette || (ppalette && !*ppalette))) {
-        /* RGBA to RGB */
-        ret = arrange_pixelformat(*ppixels, *psx, *psy * *pframe_count);
-        if (ret != 0) {
-            goto end;
+    if (*ppixels && stride > 0 && comp == 4) {
+        if (!ppalette || (ppalette && !*ppalette)) {
+            /* RGBA to RGB */
+            ret = arrange_pixelformat(*ppixels, *psx, *psy * *pframe_count);
+            if (ret != 0) {
+                goto end;
+            }
         }
     }
 
