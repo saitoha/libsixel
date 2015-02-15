@@ -1065,20 +1065,30 @@ load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride
 
 
 static int
-arrange_pixelformat(unsigned char *pixels, int width, int height)
+arrange_pixelformat(unsigned char *pixels, int width, int height,
+                    unsigned char *bgcolor)
 {
     int x;
     int y;
     unsigned char *src;
     unsigned char *dst;
+    unsigned char alpha;
 
     src = dst = pixels;
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x++) {
-            *(dst++) = *(src++);   /* R */
-            *(dst++) = *(src++);   /* G */
-            *(dst++) = *(src++);   /* B */
-            src++;   /* A */
+            if (bgcolor) {
+                alpha = src[3];
+                *dst++ = (*src++ * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+                *dst++ = (*src++ * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+                *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+                src++;
+            } else {
+                *dst++ = *src++;  /* R */
+                *dst++ = *src++;  /* R */
+                *dst++ = *src++;  /* R */
+                src++;  /* A */
+            }
         }
     }
 
@@ -1146,7 +1156,7 @@ sixel_helper_load_image_file(
     if (*ppixels && stride > 0 && comp == 4) {
         if (!ppalette || (ppalette && !*ppalette)) {
             /* RGBA to RGB */
-            ret = arrange_pixelformat(*ppixels, *psx, *psy * *pframe_count);
+            ret = arrange_pixelformat(*ppixels, *psx, *psy * *pframe_count, bgcolor);
             if (ret != 0) {
                 goto end;
             }
