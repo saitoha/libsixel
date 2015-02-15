@@ -294,6 +294,9 @@ prepare_specified_palette(char const *mapfile, int reqcolors, unsigned char *bgc
     free(delays);
 
     switch (pixelformat) {
+    case PIXELFORMAT_PAL1:
+    case PIXELFORMAT_PAL2:
+    case PIXELFORMAT_PAL4:
     case PIXELFORMAT_PAL8:
         if (palette == NULL) {
             goto end;
