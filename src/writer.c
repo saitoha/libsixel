@@ -62,6 +62,7 @@ write_png_to_file(
     unsigned char  /* in */ *data,         /* source pixel data */
     int            /* in */ width,         /* source data width */
     int            /* in */ height,        /* source data height */
+    unsigned char  /* in */ *palette,      /* palette of source data */
     int            /* in */ pixelformat,   /* source pixelFormat */
     char const     /* in */ *filename)     /* destination filename */
 {
@@ -79,17 +80,59 @@ write_png_to_file(
     int png_len;
     int write_len;
 #endif  /* HAVE_LIBPNG */
+    int i;
+    unsigned char *src;
+    unsigned char *dst;
 
-    if (pixelformat != PIXELFORMAT_RGB888) {
-        pixels = new_pixels = malloc(width * height * 3);
-        ret = sixel_helper_normalize_pixelformat(pixels, data,
+    switch (pixelformat) {
+    case PIXELFORMAT_PAL1:
+    case PIXELFORMAT_PAL2:
+    case PIXELFORMAT_PAL4:
+        new_pixels = malloc(width * height * 4);
+        src = new_pixels + width * height * 3;
+        dst = pixels = new_pixels;
+        ret = sixel_helper_normalize_pixelformat(src, data,
                                                  width, height,
-                                                 PIXELFORMAT_PAL8);
+                                                 pixelformat);
         if (ret != 0) {
             goto end;
         }
-    } else {
+        for (i = 0; i < width * height; ++i, ++src) {
+            *dst++ = *(palette + *src * 3 + 0);
+            *dst++ = *(palette + *src * 3 + 1);
+            *dst++ = *(palette + *src * 3 + 2);
+        }
+        break;
+    case PIXELFORMAT_PAL8:
+        src = data;
+        dst = pixels = new_pixels = malloc(width * height * 3);
+        for (i = 0; i < width * height; ++i, ++src) {
+            *dst++ = *(palette + *src * 3 + 0);
+            *dst++ = *(palette + *src * 3 + 1);
+            *dst++ = *(palette + *src * 3 + 2);
+        }
+        break;
+    case PIXELFORMAT_RGB888:
         pixels = data;
+        break;
+    case PIXELFORMAT_G8:
+    case PIXELFORMAT_RGB565:
+    case PIXELFORMAT_RGB555:
+    case PIXELFORMAT_BGR565:
+    case PIXELFORMAT_BGR555:
+    case PIXELFORMAT_GA88:
+    case PIXELFORMAT_AG88:
+    case PIXELFORMAT_BGR888:
+    case PIXELFORMAT_RGBA8888:
+    case PIXELFORMAT_ARGB8888:
+        pixels = new_pixels = malloc(width * height * 3);
+        ret = sixel_helper_normalize_pixelformat(pixels, data,
+                                                 width, height,
+                                                 pixelformat);
+        if (ret != 0) {
+            goto end;
+        }
+        break;
     }
 
     if (strcmp(filename, "-") == 0) {
@@ -181,6 +224,7 @@ sixel_helper_write_image_file(
     unsigned char  /* in */ *data,        /* source pixel data */
     int            /* in */ width,        /* source data width */
     int            /* in */ height,       /* source data height */
+    unsigned char  /* in */ *palette,     /* palette of source data */
     int            /* in */ pixelformat,  /* source pixelFormat */
     char const     /* in */ *filename,    /* destination filename */
     int            /* in */ imageformat)  /* destination imageformat */
@@ -189,7 +233,8 @@ sixel_helper_write_image_file(
 
     switch (imageformat) {
     case FORMAT_PNG:
-        nret = write_png_to_file(data, width, height, pixelformat, filename);
+        nret = write_png_to_file(data, width, height, palette,
+                                 pixelformat, filename);
         break;
     case FORMAT_GIF:
     case FORMAT_BMP:
