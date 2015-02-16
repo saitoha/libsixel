@@ -302,45 +302,6 @@ read_png(png_structp png_ptr, png_bytep data, png_size_t length)
 }
 
 
-static void
-expand_palette(unsigned char *dst, unsigned char *src,
-               int length, int bitdepth)
-{
-    int i;
-
-    switch (bitdepth) {
-    case 1:
-        for (i = 0; i < length / 8; ++i, ++src) {
-            *dst++ = *src >> 7;
-            *dst++ = *src >> 6 & 0x1;
-            *dst++ = *src >> 5 & 0x1;
-            *dst++ = *src >> 4 & 0x1;
-            *dst++ = *src >> 3 & 0x1;
-            *dst++ = *src >> 2 & 0x1;
-            *dst++ = *src >> 1 & 0x1;
-            *dst++ = *src & 0x1;
-        }
-        break;
-    case 2:
-        for (i = 0; i < length / 4; ++i, ++src) {
-            *dst++ = *src >> 6;
-            *dst++ = *src >> 4 & 0x3;
-            *dst++ = *src >> 2 & 0x3;
-            *dst++ = *src & 0x3;
-        }
-        break;
-    case 4:
-        for (i = 0; i < length / 2; ++i, ++src) {
-            *dst++ = *src >> 4;
-            *dst++ = *src & 0xf;
-        }
-        break;
-    default:
-        break;
-    }
-}
-
-
 static unsigned char *
 load_png(unsigned char *buffer, int size,
          int *psx, int *psy, int *pcomp,
@@ -349,7 +310,7 @@ load_png(unsigned char *buffer, int size,
          int *pixelformat)
 {
     chunk_t read_chunk;
-    png_uint_32 bitdepth = 8;
+    png_uint_32 bitdepth;
     png_uint_32 palette_bitdepth;
     png_structp png_ptr;
     png_infop info_ptr;
@@ -357,7 +318,6 @@ load_png(unsigned char *buffer, int size,
     unsigned char *result = NULL;
     png_color *png_palette = NULL;
     int i;
-    unsigned char *new_result = NULL;
 
     png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if (!png_ptr) {
@@ -383,7 +343,7 @@ load_png(unsigned char *buffer, int size,
     switch (png_get_color_type(png_ptr, info_ptr)) {
     case PNG_COLOR_TYPE_PALETTE:
         palette_bitdepth = png_get_PLTE(png_ptr, info_ptr, &png_palette, pncolors);
-        if (ppalette && png_palette && palette_bitdepth == 8 && *pncolors <= reqcolors) {
+        if (ppalette && png_palette && bitdepth == 8 && palette_bitdepth == 8 && *pncolors <= reqcolors) {
             *ppalette = malloc(*pncolors * 3);
             if (*ppalette == NULL) {
                 goto cleanup;
@@ -458,17 +418,8 @@ load_png(unsigned char *buffer, int size,
     }
     result = malloc(*pcomp * *psx * *psy);
     rows = malloc(*psy * sizeof(unsigned char *));
-    switch (*pixelformat) {
-    case PIXELFORMAT_PAL8:
-        for (i = 0; i < *psy; ++i) {
-            rows[i] = result + *pcomp * *psx * i * bitdepth / 8;
-        }
-        break;
-    default:
-        for (i = 0; i < *psy; ++i) {
-            rows[i] = result + *pcomp * *psx * i;
-        }
-        break;
+    for (i = 0; i < *psy; ++i) {
+        rows[i] = result + *pcomp * *psx * i;
     }
 #if USE_SETJMP && HAVE_SETJMP
     if (setjmp(png_jmpbuf(png_ptr))) {
@@ -481,13 +432,6 @@ load_png(unsigned char *buffer, int size,
 cleanup:
     png_destroy_read_struct(&png_ptr, &info_ptr,(png_infopp)0);
     free(rows);
-
-    if (*pixelformat == PIXELFORMAT_PAL8 && bitdepth < 8) {
-        new_result = malloc(*psx * *psy);
-        expand_palette(new_result, result, *psx * *psy, bitdepth);
-        free(result);
-        result = new_result;
-    }
 
     return result;
 }
