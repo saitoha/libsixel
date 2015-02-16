@@ -342,13 +342,14 @@ load_png(unsigned char *buffer, int size,
 {
     chunk_t read_chunk;
     png_uint_32 bitdepth;
-    png_uint_32 palette_bitdepth;
+    png_uint_32 png_status;
     png_structp png_ptr;
     png_infop info_ptr;
     unsigned char **rows = NULL;
     unsigned char *result = NULL;
     png_color *png_palette = NULL;
     png_color_16 background;
+    png_color_16p default_background;
     int i;
 
     png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -378,14 +379,27 @@ load_png(unsigned char *buffer, int size,
         background.red = bgcolor[0];
         background.green = bgcolor[1];
         background.blue = bgcolor[2];
+        background.gray = (bgcolor[0] + bgcolor[1] + bgcolor[2]) / 3;
+    } else if (png_get_bKGD(png_ptr, info_ptr, &default_background) == PNG_INFO_bKGD) {
+        memcpy(&background, default_background, sizeof(background));
+    } else {
+        background.red = 0;
+        background.green = 0;
+        background.blue = 0;
+        background.gray = 0;
     }
 
     switch (png_get_color_type(png_ptr, info_ptr)) {
     case PNG_COLOR_TYPE_PALETTE:
-        palette_bitdepth = png_get_PLTE(png_ptr, info_ptr,
-                                        &png_palette, pncolors);
-        if (ppalette == NULL || png_palette == NULL ||
-            palette_bitdepth != 8 || *pncolors > reqcolors) {
+        png_status = png_get_PLTE(png_ptr, info_ptr,
+                                  &png_palette, pncolors);
+        if (png_status != PNG_INFO_PLTE || png_palette == NULL) {
+            fprintf(stderr, "invalid PNG header is detected.\n");
+            goto cleanup;
+        }
+        if (ppalette == NULL || *pncolors > reqcolors) {
+            png_set_background(png_ptr, &background,
+                               PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
             png_set_palette_to_rgb(png_ptr);
             *pcomp = 3;
             *pixelformat = PIXELFORMAT_RGB888;
@@ -477,31 +491,21 @@ load_png(unsigned char *buffer, int size,
         }
         break;
     case PNG_COLOR_TYPE_GRAY_ALPHA:
-        if (bgcolor) {
-            png_set_background(png_ptr, &background,
-                               PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
-        } else {
-            png_set_strip_alpha(png_ptr);
-        }
+        png_set_background(png_ptr, &background,
+                           PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
         png_set_gray_to_rgb(png_ptr);
         *pcomp = 3;
         *pixelformat = PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB_ALPHA:
-        if (bgcolor) {
-            png_set_background(png_ptr, &background,
-                               PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
-        } else {
-            png_set_strip_alpha(png_ptr);
-        }
+        png_set_background(png_ptr, &background,
+                           PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
         *pcomp = 3;
         *pixelformat = PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB:
-        if (bgcolor) {
-            png_set_background(png_ptr, &background,
-                               PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
-        }
+        png_set_background(png_ptr, &background,
+                           PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
         *pcomp = 3;
         *pixelformat = PIXELFORMAT_RGB888;
         break;
