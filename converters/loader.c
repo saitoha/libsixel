@@ -343,7 +343,10 @@ load_png(unsigned char *buffer, int size,
     switch (png_get_color_type(png_ptr, info_ptr)) {
     case PNG_COLOR_TYPE_PALETTE:
         palette_bitdepth = png_get_PLTE(png_ptr, info_ptr, &png_palette, pncolors);
-        if (ppalette && png_palette && bitdepth == 8 && palette_bitdepth == 8 && *pncolors <= reqcolors) {
+        if (ppalette && png_palette && palette_bitdepth == 8 && *pncolors <= reqcolors) {
+            if (bitdepth != 8) {
+                png_set_packing(png_ptr);
+            }
             *ppalette = malloc(*pncolors * 3);
             if (*ppalette == NULL) {
                 goto cleanup;
@@ -356,6 +359,7 @@ load_png(unsigned char *buffer, int size,
             *pcomp = 1;
             *pixelformat = PIXELFORMAT_PAL8;
         } else {
+            png_set_packing(png_ptr);
             png_set_palette_to_rgb(png_ptr);
             *pcomp = 3;
             *pixelformat = PIXELFORMAT_RGB888;
