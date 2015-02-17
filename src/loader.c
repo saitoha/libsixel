@@ -776,7 +776,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
         memset(&g, 0, sizeof(g));
 
         for (;;) {
-            p = stbi__gif_load_next(&s, &g, pcomp, 4);
+            p = stbi__gif_load_next(&s, &g, pcomp, 4, bgcolor);
             if (p == (void *) &s) {
                 /* end of animated gif marker */
                 break;
