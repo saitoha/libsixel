@@ -227,6 +227,8 @@ am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
 distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
+AM_CFLAGS = @AM_CFLAGS@
+AM_CPPFLAGS = @AM_CPPFLAGS@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
@@ -880,11 +882,13 @@ uninstall-am: uninstall-pkgconfigDATA
 all-am:
 	cp package.json.in package.json
 
+check-am:
+
 test: all
-	$(MAKE) test -C converters 2>&1 |tee test.log
+	cd converters && $(MAKE) test 2>&1 |tee ../test.log
 
 winetest: all
-	$(MAKE) winetest -C converters
+	cd converters && $(MAKE) winetest
 
 valgrind: all
 	valgrind --leak-check=full --show-reachable=no --error-limit=no img2sixel images/snake.jpg -dfs 2>&1 \

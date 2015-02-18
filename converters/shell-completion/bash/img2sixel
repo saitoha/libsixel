@@ -91,16 +91,31 @@ _img2sixel()
                                    rgb' -- "$cur" ) )
         return 0
         ;;
+    -b|--builtin-palette)
+        COMPREPLY=( $( compgen -W 'xterm16 \
+                                   xterm256 \
+                                   vt340mono \
+                                   vt340color' -- "$cur" ) )
+        return 0
+        ;;
+    -E|--encode-policy)
+        COMPREPLY=( $( compgen -W 'auto \
+                                   fast \
+                                   size' -- "$cur" ) )
+        return 0
+        ;;
     esac
 
     case "$cur" in
     -*)
-        COMPREPLY=( $( compgen -W '-7 --7bit-mode \
+        COMPREPLY=( $( compgen -W '
+                                   -7 --7bit-mode \
                                    -8 --8bit-mode \
                                    -p --colors \
                                    -m --mapfile \
                                    -e --monochrome \
                                    -i --invert \
+                                   -I --high-color \
                                    -u --use-macro \
                                    -n --macro-number \
                                    -C --complexion-score \
@@ -116,7 +131,11 @@ _img2sixel()
                                    -q --quality \
                                    -l --loop-control \
                                    -t --palette-type \
+                                   -b --builtin-palette \
+                                   -E --encode-policy \
+                                   -B --bgcolor \
                                    -P --penetrate \
+                                   -D --pipe-mode \
                                    -v --verbose \
                                    -V --version \
                                    -H --help \

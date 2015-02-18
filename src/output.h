@@ -65,7 +65,6 @@ typedef struct sixel_output {
 
     sixel_write_function fn_write;
 
-    unsigned char conv_palette[256];
     int save_pixel;
     int save_count;
     int active_palette;
@@ -74,6 +73,7 @@ typedef struct sixel_output {
     sixel_node_t *node_free;
 
     int penetrate_multiplexer;
+    int encode_policy;
 
     void *priv;
     int pos;

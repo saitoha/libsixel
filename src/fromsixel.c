@@ -65,7 +65,7 @@
 
 #define XRGB(r,g,b) RGB(PALVAL(r, 255, 100), PALVAL(g, 255, 100), PALVAL(b, 255, 100))
 
-static int const ColTab[] = {
+static int const color_table[] = {
     XRGB(0,  0,  0),   /*  0 Black    */
     XRGB(20, 20, 80),  /*  1 Blue     */
     XRGB(80, 13, 13),  /*  2 Red      */
@@ -169,6 +169,7 @@ hls2rgb(int hue, int lum, int sat)
     return RGB(r * 255 / 100, g * 255 / 100, b * 255 / 100);
 }
 
+
 static unsigned char *
 sixel_getparams(unsigned char *p, int *param, int *len)
 {
@@ -205,6 +206,7 @@ sixel_getparams(unsigned char *p, int *param, int *len)
 
 
 /* convert sixel data into indexed pixel bytes and palette data */
+/* TODO: make "free" function as an argument */
 int
 sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
              int                        /* in */  len,        /* size of sixel bytes */
@@ -220,16 +222,17 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     int max_x, max_y;
     int attributed_pan, attributed_pad;
     int attributed_ph, attributed_pv;
-    int repeat_count, color_index, max_color_index = 2, background_color_index;
+    int repeat_count, color_index;
+    int max_color_index;
+    int background_color_index;
     int param[10];
-    unsigned char *s;
-    static char pam[256];
-    static char gra[256];
     int sixel_palet[SIXEL_PALETTE_MAX];
     unsigned char *imbuf, *dmbuf;
     int imsx, imsy;
     int dmsx, dmsy;
     int y;
+
+    (void) len;
 
     posision_x = posision_y = 0;
     max_x = max_y = 0;
@@ -237,19 +240,20 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     attributed_pad = 1;
     attributed_ph = attributed_pv = 0;
     repeat_count = 1;
-    color_index = 0;
+    color_index = 15;
+    max_color_index = 2;
     background_color_index = 0;
 
     imsx = 2048;
     imsy = 2048;
-    imbuf = allocator(imsx * imsy);
+    imbuf = malloc(imsx * imsy);
 
     if (imbuf == NULL) {
         return (-1);
     }
 
     for (n = 0; n < 16; n++) {
-        sixel_palet[n] = ColTab[n];
+        sixel_palet[n] = color_table[n];
     }
 
     /* colors 16-231 are a 6x6x6 color cube */
@@ -271,26 +275,15 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
     memset(imbuf, background_color_index, imsx * imsy);
 
-    pam[0] = gra[0] = '\0';
-
     while (*p != '\0') {
         if ((p[0] == '\033' && p[1] == 'P') || *p == 0x90) {
             if (*p == '\033') {
                 p++;
             }
 
-            s = ++p;
-            p = sixel_getparams(p, param, &n);
-            if (s < p) {
-                for (i = 0; i < 255 && s < p;) {
-                    pam[i++] = *(s++);
-                }
-                pam[i] = '\0';
-            }
-
+            p = sixel_getparams(++p, param, &n);
             if (*p == 'q') {
                 p++;
-
                 if (n > 0) {        /* Pn1 */
                     switch(param[0]) {
                     case 0:
@@ -330,8 +323,12 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
                     }
                     attributed_pan = attributed_pan * param[2] / 10;
                     attributed_pad = attributed_pad * param[2] / 10;
-                    if (attributed_pan <= 0) attributed_pan = 1;
-                    if (attributed_pad <= 0) attributed_pad = 1;
+                    if (attributed_pan <= 0) {
+                        attributed_pan = 1;
+                    }
+                    if (attributed_pad <= 0) {
+                        attributed_pad = 1;
+                    }
                 }
             }
 
@@ -339,28 +336,34 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
             break;
         } else if (*p == '"') {
             /* DECGRA Set Raster Attributes " Pan; Pad; Ph; Pv */
-            s = p++;
-            p = sixel_getparams(p, param, &n);
-            if (s < p) {
-                for (i = 0; i < 255 && s < p;) {
-                    gra[i++] = *(s++);
-                }
-                gra[i] = '\0';
+            p = sixel_getparams(p + 1, param, &n);
+
+            if (n > 0) {
+                attributed_pad = param[0];
+            }
+            if (n > 1) {
+                attributed_pan = param[1];
+            }
+            if (n > 2 && param[2] > 0) {
+                attributed_ph = param[2];
+            }
+            if (n > 3 && param[3] > 0) {
+                attributed_pv = param[3];
             }
 
-            if (n > 0) attributed_pad = param[0];
-            if (n > 1) attributed_pan = param[1];
-            if (n > 2 && param[2] > 0) attributed_ph = param[2];
-            if (n > 3 && param[3] > 0) attributed_pv = param[3];
-
-            if (attributed_pan <= 0) attributed_pan = 1;
-            if (attributed_pad <= 0) attributed_pad = 1;
+            if (attributed_pan <= 0) {
+                attributed_pan = 1;
+            }
+            if (attributed_pad <= 0) {
+                attributed_pad = 1;
+            }
 
             if (imsx < attributed_ph || imsy < attributed_pv) {
                 dmsx = imsx > attributed_ph ? imsx : attributed_ph;
                 dmsy = imsy > attributed_pv ? imsy : attributed_pv;
-                dmbuf = allocator(dmsx * dmsy);
+                dmbuf = malloc(dmsx * dmsy);
                 if (dmbuf == NULL) {
+                    free(imbuf);
                     return (-1);
                 }
                 memset(dmbuf, background_color_index, dmsx * dmsy);
@@ -375,7 +378,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
         } else if (*p == '!') {
             /* DECGRI Graphics Repeat Introducer ! Pn Ch */
-            p = sixel_getparams(++p, param, &n);
+            p = sixel_getparams(p + 1, param, &n);
 
             if (n > 0) {
                 repeat_count = param[0];
@@ -416,7 +419,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
         } else if (*p == '-') {
             /* DECGNL Graphics Next Line */
             p++;
-            posision_x  = 0;
+            posision_x = 0;
             posision_y += 6;
             repeat_count = 1;
 
@@ -432,7 +435,9 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
                 dmsx = nx;
                 dmsy = ny;
-                if ((dmbuf = allocator(dmsx * dmsy)) == NULL) {
+                dmbuf = malloc(dmsx * dmsy);
+                if (dmbuf == NULL) {
+                    free(imbuf);
                     return (-1);
                 }
                 memset(dmbuf, background_color_index, dmsx * dmsy);
@@ -513,7 +518,8 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     if (imsx > max_x || imsy > max_y) {
         dmsx = max_x;
         dmsy = max_y;
-        if ((dmbuf = allocator(dmsx * dmsy)) == NULL) {
+        if ((dmbuf = malloc(dmsx * dmsy)) == NULL) {
+            free(imbuf);
             return (-1);
         }
         for (y = 0; y < dmsy; ++y) {
@@ -525,16 +531,22 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
         imbuf = dmbuf;
     }
 
-    *pixels = imbuf;
     *pwidth = imsx;
     *pheight = imsy;
     *ncolors = max_color_index + 1;
-    *palette = allocator(*ncolors * 4);
+    if (allocator) {
+        *pixels = allocator(imsx * imsy);
+        memcpy(*pixels, imbuf, imsx * imsy);
+        free(imbuf);
+        *palette = allocator(*ncolors * 3);
+    } else {
+        *pixels = imbuf;
+        *palette = malloc(*ncolors * 3);
+    }
     for (n = 0; n < *ncolors; ++n) {
-        (*palette)[n * 4 + 0] = sixel_palet[n] >> 16 & 0xff;
-        (*palette)[n * 4 + 1] = sixel_palet[n] >> 8 & 0xff;
-        (*palette)[n * 4 + 2] = sixel_palet[n] & 0xff;
-        (*palette)[n * 4 + 3] = 0xff;
+        (*palette)[n * 3 + 0] = sixel_palet[n] >> 16 & 0xff;
+        (*palette)[n * 3 + 1] = sixel_palet[n] >> 8 & 0xff;
+        (*palette)[n * 3 + 2] = sixel_palet[n] & 0xff;
     }
     return 0;
 }

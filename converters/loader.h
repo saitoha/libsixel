@@ -26,10 +26,14 @@
 extern "C" {
 #endif
 
-unsigned char *
+int
 load_image_file(char const *filename, int *psx, int *psy,
+                unsigned char **ppalette, int *pncolors,
+                int *ppixelformat,
                 int *pframe_count, int *ploop_count, int **ppdelay,
-                int fstatic);
+                int fstatic, int reqcolors,
+                unsigned char **ppixels,
+                unsigned char *bgcolor);
 
 #ifdef __cplusplus
 }

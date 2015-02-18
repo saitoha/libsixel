@@ -139,6 +139,9 @@ SIXEL data for terminals were found in 80's Usenet, but the technology of how to
 for terminal emulators to optimize the overhead of transporting SIXEL with keeping compatibility with former SIXEL terminal.
 Now libsixel and ImageMagick's sixel coder follow it.
 
+@arakiken, known as the maintainer of mlterm, describes about the way to generate high quality SIXEL, which is adopted by libsixel
+([http://mlterm.sourceforge.net/libsixel.pdf](http://mlterm.sourceforge.net/libsixel.pdf), in Japanese).
+
 
 ### High quality quantization
 
@@ -228,7 +231,11 @@ Now SIXEL feature is supported by the following terminals.
   [https://github.com/saitoha/seq2gif](https://github.com/saitoha/seq2gif)
 
 
-## Packages
+## Install
+
+### Using package managers
+
+You can install libsixel via the following package systems.
 
 - [FreeBSD ports](http://portsmon.freebsd.org/portoverview.py?category=graphics&portname=libsixel)
 - [DPorts](https://github.com/DragonFlyBSD/DPorts/tree/master/graphics/libsixel)
@@ -237,11 +244,11 @@ Now SIXEL feature is supported by the following terminals.
 - [yacp](https://github.com/fd00/yacp/tree/master/libsixel)
 - [Debian](https://packages.debian.org/search?searchon=names&keywords=libsixel)
 - [AUR](https://aur.archlinux.org/packages/libsixel/)
+- [Portage](http://packages.gentoo.org/package/media-libs/libsixel)
+- [Ubuntu](https://launchpad.net/ubuntu/+source/libsixel)
 
 
-## Build and install
-
-### Linux, OSX, cygwin
+### Build from source package
 
 ```
 $ ./configure
@@ -249,16 +256,9 @@ $ make
 # make install
 ```
 
-### Cross compile with MinGW
+#### Build with optional packages
 
-```
-$ CC=i686-w64-mingw32-gcc cross_compile=yes ./configure --host=i686-w64-mingw32
-$ make
-```
-
-## Configure options
-
-### Build with optional packages
+You can configure with the following options
 
 ```
 --with-libcurl            build with libcurl (default: auto)
@@ -269,6 +269,18 @@ $ make
 --with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
 --with-bashcompletiondir  specify bashcompletion.d
 --with-zshcompletiondir   specify zshcompletion.d
+```
+
+For more information, see "./configure --help".
+
+
+##### Cross compiling with MinGW
+
+You can build a windows binary in cross-build environment.
+
+```
+$ CC=i686-w64-mingw32-gcc cross_compile=yes ./configure --host=i686-w64-mingw32
+$ make
 ```
 
 ## Usage of command line tools
@@ -294,9 +306,11 @@ Options:
 -i, --invert               assume the terminal background color
                            is white, make sense only when -e
                            option is given
+-I, --high-color           output 15bpp sixel image
 -u, --use-macro            use DECDMAC and DEVINVM sequences to
                            optimize GIF animation rendering
--n, --macro-number         specify an number argument for
+-n MACRONO, --macro-number=MACRONO
+                           specify an number argument for
                            DECDMAC and make terminal memorize
                            SIXEL image. No image is shown if this
                            option is specified
@@ -395,9 +409,11 @@ Options:
                            quanlization.
                              auto -> decide quality mode
                                      automatically (default)
+                             low  -> low quality and high
+                                     speed mode
                              high -> high quality and low
                                      speed mode
-                             low  -> low quality and high
+                             full -> full quality and careful
                                      speed mode
 -l LOOPMODE, --loop-control=LOOPMODE
                            select loop control mode for GIF
@@ -412,8 +428,35 @@ Options:
                                      automatically (default)
                              hls  -> use HLS color space
                              rgb  -> use RGB color space
--P --penetrate             penetrate GNU Screen using DCS
+-b BUILTINPALETTE, --builtin-palette=BUILTINPALETTE
+                           select built-in palette type
+                             xterm16    -> X default 16 color map
+                             xterm256   -> X default 256 color map
+                             vt340mono  -> VT340 monochrome map
+                             vt340color -> VT340 color map
+-E ENCODEPOLICY, --encode-policy=ENCODEPOLICY
+                           select encoding policy
+                             auto -> choose encoding policy
+                                     automatically (default)
+                             fast -> encode as fast as possible
+                             size -> encode to as small sixel
+                                     sequence as possible
+-B BGCOLOR, --bgcolor=BGCOLOR
+                           specify background color
+                           BGCOLOR is represented by the
+                           following syntax
+                             #rgb
+                             #rrggbb
+                             #rrrgggbbb
+                             #rrrrggggbbbb
+                             rgb:r/g/b
+                             rgb:rr/gg/bb
+                             rgb:rrr/ggg/bbb
+                             rgb:rrrr/gggg/bbbb
+-P, --penetrate            penetrate GNU Screen using DCS
                            pass-through sequence
+-D, --pipe-mode            read source images from stdin
+                           continuously
 -v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
@@ -456,14 +499,14 @@ Convert a sixel file into a png image file
 $ sixel2png < egret.sixel > egret.png
 ```
 
-## Usage of conversion API 1.0
+## Usage of conversion API 1.3
 
 The Whole API is described [here](https://github.com/saitoha/libsixel/blob/master/include/sixel.h.in).
 
 ### Example
 
 If you use OSX, a tiny example is available
-[here](https://github.com/saitoha/libsixel/blob/master/examples/osx/opengl/).
+[here](https://github.com/saitoha/libsixel/blob/master/examples/opengl/).
 
   ![opengl example](https://raw.githubusercontent.com/saitoha/libsixel/data/data/example_opengl.gif)
 
@@ -476,12 +519,13 @@ If you use OSX, a tiny example is available
 
 /* convert pixels into sixel format and write it to output context */
 int
-sixel_encode(unsigned char  /* in */ *pixels,   /* pixel bytes */
-             int            /* in */  width,    /* image width */
-             int            /* in */  height,   /* image height */
-             int            /* in */  depth,    /* pixel depth: now only 3 is supported */
-             sixel_dither_t /* in */ *dither,   /* dither context */
-             sixel_output_t /* in */ *context); /* output context */
+sixel_encode(
+    unsigned char  /* in */ *pixels,     /* pixel bytes */
+    int            /* in */  width,      /* image width */
+    int            /* in */  height,     /* image height */
+    int            /* in */  depth,      /* color depth: now unused */
+    sixel_dither_t /* in */ *dither,     /* dither context */
+    sixel_output_t /* in */ *context);   /* output context */
 ```
 To use this function, you have to initialize two objects,
 
@@ -493,9 +537,13 @@ To use this function, you have to initialize two objects,
 Here is a part of APIs for dithering context manipulation.
 
 ```C
-/* create dither context object: reference counter is set to 1 */
+/* create dither context object */
 sixel_dither_t *
 sixel_dither_create(int /* in */ ncolors); /* number of colors */
+
+/* get built-in dither context object */
+sixel_dither_t *
+sixel_dither_get(int builtin_dither); /* ID of built-in dither object */
 
 /* increment reference count of dither context object (thread-unsafe) */
 void
@@ -512,11 +560,10 @@ sixel_dither_initialize(
     unsigned char /* in */ *data,    /* sample image */
     int /* in */ width,              /* image width */
     int /* in */ height,             /* image height */
-    int /* in */ depth,              /* pixel depth, now only '3' is supported */
-    int /* in */ method_for_largest, /* set 0 or method for finding the largest dimension */
-    int /* in */ method_for_rep,     /* set 0 or method for choosing a color from the box */
-    int /* in */ quality_mode        /* set 0 or quality of histogram processing */
-);
+    int /* in */ pixelformat,        /* one of enum pixelFormat */
+    int /* in */ method_for_largest, /* method for finding the largest dimension */
+    int /* in */ method_for_rep,     /* method for choosing a color from the box */
+    int /* in */ quality_mode);      /* quality of histogram processing */
 ```
 
 #### Output context
@@ -605,9 +652,11 @@ The MIT License (MIT)
 - @isaki68k
 - @knok
 - @mattn
+- @obache
 - @tsutsui
 - @ttdoda
 - @uobikiemukot
+- @vrtsds
 - @waywardmonkeys
 - @yoshikaw
   

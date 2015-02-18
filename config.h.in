@@ -3,6 +3,9 @@
 /* Define to 1 if you have the `calloc' function. */
 #undef HAVE_CALLOC
 
+/* Define to 1 if you have the `clearerr' function. */
+#undef HAVE_CLEARERR
+
 /* Define to 1 if you have the `clock' function. */
 #undef HAVE_CLOCK
 
@@ -48,6 +51,14 @@
 /* Define to 1 if you have the declaration of `gdImagePaletteToTrueColor', and
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
+
+/* Define to 1 if you have the declaration of
+   `png_set_expand_gray_1_2_4_to_8', and to 0 if you don't. */
+#undef HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
+
+/* Define to 1 if you have the declaration of `png_set_gray_1_2_4_to_8', and
+   to 0 if you don't. */
+#undef HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
 
 /* Define to 1 if you have the declaration of `SIGHUP', and to 0 if you don't.
    */
@@ -103,6 +114,9 @@
 /* whether libpng is available */
 #undef HAVE_LIBPNG
 
+/* Define to 1 if you have the <limits.h> header file. */
+#undef HAVE_LIMITS_H
+
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
 #undef HAVE_MALLOC
@@ -123,6 +137,9 @@
    and to 0 otherwise. */
 #undef HAVE_REALLOC
 
+/* Define to 1 if you have the `setjmp' function. */
+#undef HAVE_SETJMP
+
 /* Define to 1 if you have the `setmode' function. */
 #undef HAVE_SETMODE
 
@@ -138,6 +155,9 @@
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
+/* Define to 1 if you have the `strdup' function. */
+#undef HAVE_STRDUP
+
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
 
@@ -146,6 +166,12 @@
 
 /* Define to 1 if you have the `strtol' function. */
 #undef HAVE_STRTOL
+
+/* Define to 1 if you have the `strtoul' function. */
+#undef HAVE_STRTOUL
+
+/* Define to 1 if you have the <sys/select.h> header file. */
+#undef HAVE_SYS_SELECT_H
 
 /* Define to 1 if you have the <sys/signal.h> header file. */
 #undef HAVE_SYS_SIGNAL_H
@@ -177,8 +203,7 @@
 /* Define to 1 if you have the `_setmode' function. */
 #undef HAVE__SETMODE
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
 /* Name of package */
