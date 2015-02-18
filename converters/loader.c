@@ -311,7 +311,7 @@ load_png(unsigned char *buffer, int size,
 {
     chunk_t read_chunk;
     png_uint_32 bitdepth;
-    png_uint_32 palette_bitdepth;
+    png_uint_32 png_status;
     png_structp png_ptr;
     png_infop info_ptr;
     unsigned char **rows = NULL;
@@ -342,10 +342,14 @@ load_png(unsigned char *buffer, int size,
     }
     switch (png_get_color_type(png_ptr, info_ptr)) {
     case PNG_COLOR_TYPE_PALETTE:
-        palette_bitdepth = png_get_PLTE(png_ptr, info_ptr, &png_palette, pncolors);
-        if (ppalette && png_palette && palette_bitdepth == 8 && *pncolors <= reqcolors) {
-            if (bitdepth != 8) {
-                png_set_packing(png_ptr);
+        if (bitdepth < 8) {
+            png_set_packing(png_ptr);
+        }
+        if (ppalette && *pncolors <= reqcolors) {
+            png_status = png_get_PLTE(png_ptr, info_ptr, &png_palette, pncolors);
+            if (png_status != PNG_INFO_PLTE || png_palette == NULL) {
+                fprintf(stderr, "invalid PNG header is detected (palette not found).\n");
+                goto cleanup;
             }
             *ppalette = malloc(*pncolors * 3);
             if (*ppalette == NULL) {
@@ -359,8 +363,8 @@ load_png(unsigned char *buffer, int size,
             *pcomp = 1;
             *pixelformat = PIXELFORMAT_PAL8;
         } else {
-            png_set_packing(png_ptr);
             png_set_palette_to_rgb(png_ptr);
+            png_set_strip_alpha(png_ptr);
             *pcomp = 3;
             *pixelformat = PIXELFORMAT_RGB888;
         }
