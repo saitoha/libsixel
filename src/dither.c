@@ -397,32 +397,68 @@ expand_palette(unsigned char *dst, unsigned char const *src,
                int width, int height, int const pixelformat)
 {
     int i;
+    int x;
+    int y;
 
     switch (pixelformat) {
     case PIXELFORMAT_PAL1:
-        for (i = 0; i < width * height / 8; ++i, ++src) {
-            *dst++ = *src >> 7;
-            *dst++ = *src >> 6 & 0x1;
-            *dst++ = *src >> 5 & 0x1;
-            *dst++ = *src >> 4 & 0x1;
-            *dst++ = *src >> 3 & 0x1;
-            *dst++ = *src >> 2 & 0x1;
-            *dst++ = *src >> 1 & 0x1;
-            *dst++ = *src & 0x1;
+#if HAVE_DEBUG
+        printf("Expanding PAL1 to PAL8...\n");
+#endif
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < width / 8; ++x) {
+                for (i = 0; i < 8; ++i) {
+                    *dst++ = *src >> (7 - i) & 0x1;
+                }
+                src++;
+            }
+            x = width - x * 8;
+            if (x) {
+                while (x) {
+                    *dst++ = *src >> x-- & 0x1;
+                }
+                src++;
+            }
         }
         break;
     case PIXELFORMAT_PAL2:
-        for (i = 0; i < width * height / 4; ++i, ++src) {
-            *dst++ = *src >> 6;
-            *dst++ = *src >> 4 & 0x3;
-            *dst++ = *src >> 2 & 0x3;
-            *dst++ = *src & 0x3;
+#if HAVE_DEBUG
+        printf("Expanding PAL2 to PAL8...\n");
+#endif
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < width / 4; ++x) {
+                for (i = 0; i < 4; ++i) {
+                    *dst++ = *src >> (3 - i) * 2 & 0x3;
+                }
+                src++;
+            }
+            x = width - x * 4;
+            if (x) {
+                while (x) {
+                    *dst++ = *src >> x-- * 2 & 0x3;
+                }
+                src++;
+            }
         }
         break;
     case PIXELFORMAT_PAL4:
-        for (i = 0; i < width * height / 2; ++i, ++src) {
-            *dst++ = *src >> 4;
-            *dst++ = *src & 0xf;
+#if HAVE_DEBUG
+        printf("Expanding PAL4 to PAL8...\n");
+#endif
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < width / 2; ++x) {
+                for (i = 0; i < 2; ++i) {
+                    *dst++ = *src >> (1 - i) * 4 & 0xf;
+                }
+                src++;
+            }
+            x = width - x * 2;
+            if (x) {
+                while (x) {
+                    *dst++ = *src >> x-- * 4 & 0xf;
+                }
+                src++;
+            }
         }
         break;
     case PIXELFORMAT_PAL8:

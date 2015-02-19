@@ -372,7 +372,12 @@ load_png(unsigned char *buffer, int size,
     *psy = png_get_image_height(png_ptr, info_ptr);
     bitdepth = png_get_bit_depth(png_ptr, info_ptr);
     if (bitdepth == 16) {
+#  if HAVE_DEBUG
+        fprintf(stderr, "bitdepth: %u\n", bitdepth);
+        fprintf(stderr, "stripping to 8bit...\n");
+#  endif
         png_set_strip_16(png_ptr);
+        bitdepth = 8;
     }
 
     if (bgcolor) {
@@ -391,16 +396,28 @@ load_png(unsigned char *buffer, int size,
 
     switch (png_get_color_type(png_ptr, info_ptr)) {
     case PNG_COLOR_TYPE_PALETTE:
+#  if HAVE_DEBUG
+        fprintf(stderr, "paletted PNG(PNG_COLOR_TYPE_PALETTE)\n");
+#  endif
         png_status = png_get_PLTE(png_ptr, info_ptr,
                                   &png_palette, pncolors);
         if (png_status != PNG_INFO_PLTE || png_palette == NULL) {
-            fprintf(stderr, "invalid PNG header is detected.\n");
+            fprintf(stderr, "PLTE chunk not found\n");
             goto cleanup;
         }
+#  if HAVE_DEBUG
+        fprintf(stderr, "palette colors: %d\n", *pncolors);
+        fprintf(stderr, "bitdepth: %u\n", bitdepth);
+#  endif
         if (ppalette == NULL || *pncolors > reqcolors) {
+#  if HAVE_DEBUG
+            fprintf(stderr, "detected more colors than reqired(>%d).\n",
+                    reqcolors);
+#  endif
             png_set_background(png_ptr, &background,
                                PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
             png_set_palette_to_rgb(png_ptr);
+            png_set_strip_alpha(png_ptr);
             *pcomp = 3;
             *pixelformat = PIXELFORMAT_RGB888;
         } else {
@@ -454,6 +471,10 @@ load_png(unsigned char *buffer, int size,
         }
         break;
     case PNG_COLOR_TYPE_GRAY:
+#  if HAVE_DEBUG
+        fprintf(stderr, "grayscale PNG(PNG_COLOR_TYPE_GRAY)\n");
+        fprintf(stderr, "bitdepth: %u\n", bitdepth);
+#  endif
         switch (bitdepth) {
         case 1:
         case 2:
@@ -474,7 +495,7 @@ load_png(unsigned char *buffer, int size,
             break;
 
         case 8:
-            if (ppalette && *pncolors <= 1 << 8) {
+            if (ppalette) {
                 *pcomp = 1;
                 *pixelformat = PIXELFORMAT_G8;
             } else {
@@ -491,21 +512,43 @@ load_png(unsigned char *buffer, int size,
         }
         break;
     case PNG_COLOR_TYPE_GRAY_ALPHA:
-        png_set_background(png_ptr, &background,
-                           PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+#  if HAVE_DEBUG
+        fprintf(stderr, "grayscale-alpha PNG(PNG_COLOR_TYPE_GRAY_ALPHA)\n");
+        fprintf(stderr, "bitdepth: %u\n", bitdepth);
+#  endif
+        if (bgcolor) {
+            png_set_background(png_ptr, &background,
+                               PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+        } else {
+            png_set_strip_alpha(png_ptr);
+        }
         png_set_gray_to_rgb(png_ptr);
         *pcomp = 3;
         *pixelformat = PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB_ALPHA:
-        png_set_background(png_ptr, &background,
-                           PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+#  if HAVE_DEBUG
+        fprintf(stderr, "RGBA PNG(PNG_COLOR_TYPE_RGB_ALPHA)\n");
+        fprintf(stderr, "bitdepth: %u\n", bitdepth);
+#  endif
+        if (bgcolor) {
+            png_set_background(png_ptr, &background,
+                               PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+        } else {
+            png_set_strip_alpha(png_ptr);
+        }
         *pcomp = 3;
         *pixelformat = PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB:
-        png_set_background(png_ptr, &background,
-                           PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+#  if HAVE_DEBUG
+        fprintf(stderr, "RGB PNG(PNG_COLOR_TYPE_RGB)\n");
+        fprintf(stderr, "bitdepth: %u\n", bitdepth);
+#  endif
+        if (bgcolor) {
+            png_set_background(png_ptr, &background,
+                               PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+        }
         *pcomp = 3;
         *pixelformat = PIXELFORMAT_RGB888;
         break;
@@ -520,7 +563,7 @@ load_png(unsigned char *buffer, int size,
     case PIXELFORMAT_PAL2:
     case PIXELFORMAT_PAL4:
         for (i = 0; i < *psy; ++i) {
-            rows[i] = result + *pcomp * *psx * i * bitdepth / 8;
+            rows[i] = result + (*pcomp * *psx * bitdepth + 7) / 8 * i;
         }
         break;
     default:
