@@ -413,6 +413,7 @@ load_png(unsigned char *buffer, int size,
 #  if HAVE_DEBUG
             fprintf(stderr, "detected more colors than reqired(>%d).\n",
                     reqcolors);
+            fprintf(stderr, "expand to RGB format...\n");
 #  endif
             png_set_background(png_ptr, &background,
                                PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
@@ -463,6 +464,8 @@ load_png(unsigned char *buffer, int size,
                 *pixelformat = PIXELFORMAT_PAL8;
                 break;
             default:
+                png_set_background(png_ptr, &background,
+                                   PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
                 png_set_palette_to_rgb(png_ptr);
                 *pcomp = 3;
                 *pixelformat = PIXELFORMAT_RGB888;
@@ -475,40 +478,54 @@ load_png(unsigned char *buffer, int size,
         fprintf(stderr, "grayscale PNG(PNG_COLOR_TYPE_GRAY)\n");
         fprintf(stderr, "bitdepth: %u\n", bitdepth);
 #  endif
-        switch (bitdepth) {
-        case 1:
-        case 2:
-        case 4:
-#  if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
-            png_set_expand_gray_1_2_4_to_8(png_ptr);
-            *pcomp = 1;
-            *pixelformat = PIXELFORMAT_G8;
-#  elif HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
-            png_set_gray_1_2_4_to_8(png_ptr);
-            *pcomp = 1;
-            *pixelformat = PIXELFORMAT_G8;
-#  else
+        if (1 << bitdepth > reqcolors) {
+#  if HAVE_DEBUG
+            fprintf(stderr, "detected more colors than reqired(>%d).\n",
+                    reqcolors);
+            fprintf(stderr, "expand to RGB format...\n");
+#  endif
+            png_set_background(png_ptr, &background,
+                               PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
             png_set_gray_to_rgb(png_ptr);
             *pcomp = 3;
             *pixelformat = PIXELFORMAT_RGB888;
-#  endif
-            break;
-
-        case 8:
-            if (ppalette) {
+        } else {
+            switch (bitdepth) {
+            case 1:
+            case 2:
+            case 4:
+#  if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
+                png_set_expand_gray_1_2_4_to_8(png_ptr);
                 *pcomp = 1;
                 *pixelformat = PIXELFORMAT_G8;
-            } else {
+#  elif HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
+                png_set_gray_1_2_4_to_8(png_ptr);
+                *pcomp = 1;
+                *pixelformat = PIXELFORMAT_G8;
+#  else
                 png_set_gray_to_rgb(png_ptr);
                 *pcomp = 3;
                 *pixelformat = PIXELFORMAT_RGB888;
+#  endif
+                break;
+            case 8:
+                if (ppalette) {
+                    *pcomp = 1;
+                    *pixelformat = PIXELFORMAT_G8;
+                } else {
+                    png_set_gray_to_rgb(png_ptr);
+                    *pcomp = 3;
+                    *pixelformat = PIXELFORMAT_RGB888;
+                }
+                break;
+            default:
+                png_set_background(png_ptr, &background,
+                                   PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+                png_set_gray_to_rgb(png_ptr);
+                *pcomp = 3;
+                *pixelformat = PIXELFORMAT_RGB888;
+                break;
             }
-            break;
-        default:
-            png_set_gray_to_rgb(png_ptr);
-            *pcomp = 3;
-            *pixelformat = PIXELFORMAT_RGB888;
-            break;
         }
         break;
     case PNG_COLOR_TYPE_GRAY_ALPHA:
