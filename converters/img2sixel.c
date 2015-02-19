@@ -261,6 +261,7 @@ prepare_palette(sixel_dither_t *former_dither,
 {
     sixel_dither_t *dither;
     int ret;
+    int histogram_colors;
 
     if (psettings->highcolor) {
         if (former_dither) {
@@ -309,6 +310,10 @@ prepare_palette(sixel_dither_t *former_dither,
         if (ret != 0) {
             sixel_dither_unref(dither);
             return NULL;
+        }
+        histogram_colors = sixel_dither_get_num_of_histogram_colors(dither);
+        if (histogram_colors <= psettings->reqcolors) {
+            psettings->method_for_diffuse = DIFFUSE_NONE;
         }
         sixel_dither_set_pixelformat(dither, pixelformat);
     }
@@ -1305,6 +1310,9 @@ main(int argc, char *argv[])
             settings.reqcolors = atoi(optarg);
             break;
         case 'm':
+            if (settings.mapfile) {
+                free(settings.mapfile);
+            }
             settings.mapfile = arg_strdup(optarg);
             break;
         case 'e':
@@ -1610,7 +1618,7 @@ main(int argc, char *argv[])
     }
     if (settings.monochrome && settings.builtin_palette) {
         fprintf(stderr, "option -e, --monochrome conflicts"
-                        " with -I, --builtin-palette.\n");
+                        " with -b, --builtin-palette.\n");
         goto argerr;
     }
     if (settings.mapfile && settings.builtin_palette) {
