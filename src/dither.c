@@ -397,18 +397,23 @@ expand_palette(unsigned char *dst, unsigned char const *src,
                int width, int height, int const pixelformat)
 {
     int i;
+    int x;
+    int y;
 
     switch (pixelformat) {
     case PIXELFORMAT_PAL1:
-        for (i = 0; i < width * height / 8; ++i, ++src) {
-            *dst++ = *src >> 7;
-            *dst++ = *src >> 6 & 0x1;
-            *dst++ = *src >> 5 & 0x1;
-            *dst++ = *src >> 4 & 0x1;
-            *dst++ = *src >> 3 & 0x1;
-            *dst++ = *src >> 2 & 0x1;
-            *dst++ = *src >> 1 & 0x1;
-            *dst++ = *src & 0x1;
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < width / 8; ++x) {
+                for (i = 0; i < 8; ++i) {
+                    *dst++ = *src >> (7 - i) & 0x1;
+                }
+                src++;
+            }
+            x = width - x * 8;
+            while (x) {
+                *dst++ = *src >> x-- & 0x1;
+            }
+            src++;
         }
         break;
     case PIXELFORMAT_PAL2:
