@@ -393,7 +393,7 @@ load_png(unsigned char *buffer, int size,
         }
 #  if HAVE_DEBUG
         fprintf(stderr, "palette colors: %d\n", *pncolors);
-        fprintf(stderr, "bitdepth: %d\n", bitdepth);
+        fprintf(stderr, "bitdepth: %u\n", bitdepth);
 #  endif
         if (ppalette == NULL || *pncolors > reqcolors) {
 #  if HAVE_DEBUG
@@ -459,7 +459,7 @@ load_png(unsigned char *buffer, int size,
     case PNG_COLOR_TYPE_GRAY:
 #  if HAVE_DEBUG
         fprintf(stderr, "grayscale PNG(PNG_COLOR_TYPE_GRAY)\n");
-        fprintf(stderr, "bitdepth: %d\n", bitdepth);
+        fprintf(stderr, "bitdepth: %u\n", bitdepth);
 #  endif
         switch (bitdepth) {
         case 1:
