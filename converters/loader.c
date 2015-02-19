@@ -371,7 +371,12 @@ load_png(unsigned char *buffer, int size,
     *psy = png_get_image_height(png_ptr, info_ptr);
     bitdepth = png_get_bit_depth(png_ptr, info_ptr);
     if (bitdepth == 16) {
+#  if HAVE_DEBUG
+        fprintf(stderr, "bitdepth: %u\n", bitdepth);
+        fprintf(stderr, "stripping to 8bit...\n");
+#  endif
         png_set_strip_16(png_ptr);
+        bitdepth = 8;
     }
 
     if (bgcolor) {
