@@ -503,6 +503,10 @@ load_png(unsigned char *buffer, int size,
         }
         break;
     case PNG_COLOR_TYPE_GRAY_ALPHA:
+#  if HAVE_DEBUG
+        fprintf(stderr, "grayscale-alpha PNG(PNG_COLOR_TYPE_GRAY_ALPHA)\n");
+        fprintf(stderr, "bitdepth: %u\n", bitdepth);
+#  endif
         if (bgcolor) {
             png_set_background(png_ptr, &background,
                                PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
@@ -514,6 +518,10 @@ load_png(unsigned char *buffer, int size,
         *pixelformat = PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB_ALPHA:
+#  if HAVE_DEBUG
+        fprintf(stderr, "RGBA PNG(PNG_COLOR_TYPE_RGB_ALPHA)\n");
+        fprintf(stderr, "bitdepth: %u\n", bitdepth);
+#  endif
         if (bgcolor) {
             png_set_background(png_ptr, &background,
                                PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
@@ -524,6 +532,10 @@ load_png(unsigned char *buffer, int size,
         *pixelformat = PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB:
+#  if HAVE_DEBUG
+        fprintf(stderr, "RGB PNG(PNG_COLOR_TYPE_RGB)\n");
+        fprintf(stderr, "bitdepth: %u\n", bitdepth);
+#  endif
         if (bgcolor) {
             png_set_background(png_ptr, &background,
                                PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
