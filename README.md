@@ -640,6 +640,7 @@ The MIT License (MIT)
 - @isaki68k
 - @knok
 - @mattn
+- @msmhrt
 - @obache
 - @tsutsui
 - @ttdoda

@@ -1,3 +1,92 @@
+2015-02-18  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Call png_set_strip_alpha() when expanding paletted PNG
+  to RGB888 pixelformat (for Issue #29)
+
+2015-02-17  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Use png_set_packing to expand 1/2/4bpp paletted PNG
+  (for Issue #29)
+
+2015-02-16  saitoha <user@zuse.jp>
+
+  * converters/loader.c: libpng loader: expand 1/2/4bpp palette to 8bpp (for
+  issue #29)
+
+2015-02-14  Hayaki Saito <user@zuse.jp>
+
+  * README.md: README.md: add @msmhrt to the contributer section
+
+  * converters/img2sixel.c: histogram_colors should be initialized after
+  sixel_dither_initialize() function call
+
+2015-02-12  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Fix a typo in the output of -H
+
+  * converters/img2sixel.c: Fix a tiny memory leak when duplicated -m option
+  are specified
+
+2015-02-08  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Fix noise problem when applying palette (for issue
+  #26)
+
+  * src/quant.c: Correct wrong histgram processing (for Issue #26)
+
+2015-02-04  Hayaki Saito <user@zuse.jp>
+
+  * ChangeLog: Update ChnageLog
+
+2015-02-02  Hayaki Saito <user@zuse.jp>
+
+  * config.h.in, converters/loader.c: Fix some wrong config.h declaration:
+  HAVE_XXX -> HAVE_DECL_XXX (for #23)
+
+  * config.h.in, configure, configure.ac, converters/loader.c, ltmain.sh,
+  m4/libtool.m4, m4/ltoptions.m4, m4/ltsugar.m4, m4/ltversion.m4,
+  m4/lt~obsolete.m4: Check availability of png_set_{,expand_}gray_1_2_4_to_8
+  (#23)
+
+2015-02-02  saitoha <user@zuse.jp>
+
+  * converters/loader.c: Workaround for 1/2/4bpp grayscaled image with
+  libpng1.2, reported by @msmhrt(#23)
+
+2015-02-01  Hayaki Saito <user@zuse.jp>
+
+  * NEWS: Update NEWS
+
+  * converters/loader.c: Fix wrong bit depth handling issue reported by @msmhrt
+  (#22)
+
+2014-12-30  Hayaki Saito <user@zuse.jp>
+
+  * ChangeLog, NEWS: Update NEWS and ChangeLog
+
+  * src/dither.c: Add a comment block regarding the behavior of VT340
+  palette(Issue #12)
+
+  * src/dither.c: Hotfix for VT-340's rotated palette(Issue #12)
+
+2014-12-29  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.am, Makefile.in: Make sure to remove test.log in clean target
+
+2014-12-26  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Minor style improvement
+
+  * converters/img2sixel.c: Strip an unreached return statement
+
+2014-12-24  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Fix wrong crop option(-c) behavior
+
+  * src/tosixel.c: Fix memory leak and segmentation fault in rare cases
+
+  * src/tosixel.c: Minor fixes
+
 2014-12-19  Hayaki Saito <user@zuse.jp>
 
   * Makefile.in, configure, configure.ac, converters/Makefile.am,

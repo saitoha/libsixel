@@ -83,7 +83,7 @@ DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(srcdir)/config.h.in $(srcdir)/libsixel.pc.in \
 	$(srcdir)/package.json.in.in ChangeLog NEWS compile \
-	config.guess config.sub depcomp install-sh missing ltmain.sh
+	config.guess config.sub install-sh missing ltmain.sh
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_func_attribute.m4 \
 	$(top_srcdir)/m4/ax_gcc_var_attribute.m4 \
@@ -883,7 +883,7 @@ all-am:
 	cp package.json.in package.json
 
 test: all
-	cd converters && $(MAKE) test 2>&1 |tee test.log
+	cd converters && $(MAKE) test 2>&1 |tee ../test.log
 
 winetest: all
 	cd converters && $(MAKE) winetest

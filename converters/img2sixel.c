@@ -98,12 +98,12 @@ sixel_hex_write_callback(char *data, int size, void *priv)
 
     for (i = j = 0; i < size; ++i, ++j) {
         hex[j] = (data[i] >> 4) & 0xf;
-        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
+        hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
         hex[++j] = data[i] & 0xf;
-        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
+        hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
     }
+
     return fwrite(hex, 1, size * 2, stdout);
-    return size;
 }
 
 
@@ -261,6 +261,7 @@ prepare_palette(sixel_dither_t *former_dither,
 {
     sixel_dither_t *dither;
     int ret;
+    int histogram_colors;
 
     if (psettings->highcolor) {
         if (former_dither) {
@@ -309,6 +310,10 @@ prepare_palette(sixel_dither_t *former_dither,
         if (ret != 0) {
             sixel_dither_unref(dither);
             return NULL;
+        }
+        histogram_colors = sixel_dither_get_num_of_histogram_colors(dither);
+        if (histogram_colors <= psettings->reqcolors) {
+            psettings->method_for_diffuse = DIFFUSE_NONE;
         }
         sixel_dither_set_pixelformat(dither, pixelformat);
     }
@@ -399,7 +404,7 @@ clip(unsigned char *pixels,
     case PIXELFORMAT_PAL8:
     case PIXELFORMAT_G8:
         dst = pixels;
-        src = pixels + cy * sx * 1;
+        src = pixels + cy * sx * 1 + cx * 1;
         for (y = 0; y < ch; y++) {
             memmove(dst, src, cw * 1);
             dst += (cw * 1);
@@ -408,7 +413,7 @@ clip(unsigned char *pixels,
         break;
     case PIXELFORMAT_RGB888:
         dst = pixels;
-        src = pixels + cy * sx * 3;
+        src = pixels + cy * sx * 3 + cx * 3;
         for (y = 0; y < ch; y++) {
             memmove(dst, src, cw * 3);
             dst += (cw * 3);
@@ -423,9 +428,10 @@ clip(unsigned char *pixels,
 }
 
 
-static int do_crop(unsigned char **frames, int frame_count,
-                   int *psx, int *psy, int pixelformat,
-                   settings_t *psettings)
+static int
+do_crop(unsigned char **frames, int frame_count,
+        int *psx, int *psy, int pixelformat,
+        settings_t *psettings)
 {
     int n;
     int ret;
@@ -1304,6 +1310,9 @@ main(int argc, char *argv[])
             settings.reqcolors = atoi(optarg);
             break;
         case 'm':
+            if (settings.mapfile) {
+                free(settings.mapfile);
+            }
             settings.mapfile = arg_strdup(optarg);
             break;
         case 'e':
@@ -1609,7 +1618,7 @@ main(int argc, char *argv[])
     }
     if (settings.monochrome && settings.builtin_palette) {
         fprintf(stderr, "option -e, --monochrome conflicts"
-                        " with -I, --builtin-palette.\n");
+                        " with -b, --builtin-palette.\n");
         goto argerr;
     }
     if (settings.mapfile && settings.builtin_palette) {
