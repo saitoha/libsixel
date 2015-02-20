@@ -368,7 +368,7 @@ get_rgb(unsigned char *data, int const pixelformat, int depth,
 }
 
 
-static void
+static int
 expand_rgb(unsigned char *dst, unsigned char *src,
            int width, int height, int pixelformat, int depth)
 {
@@ -389,86 +389,59 @@ expand_rgb(unsigned char *dst, unsigned char *src,
             *(dst + dst_offset + 2) = b;
         }
     }
+
+    return 0;
 }
 
 
-static void
+static int
 expand_palette(unsigned char *dst, unsigned char const *src,
                int width, int height, int const pixelformat)
 {
-    int i;
     int x;
     int y;
+    int i;
+    int bpp;  /* bit per plane */
 
     switch (pixelformat) {
     case PIXELFORMAT_PAL1:
-#if HAVE_DEBUG
-        fprintf(stderr, "expanding PAL1 to PAL8...\n");
-#endif
-        for (y = 0; y < height; ++y) {
-            for (x = 0; x < width / 8; ++x) {
-                for (i = 0; i < 8; ++i) {
-                    *dst++ = *src >> (7 - i) & 0x1;
-                }
-                src++;
-            }
-            x = width - x * 8;
-            if (x) {
-                while (x) {
-                    *dst++ = *src >> x-- & 0x1;
-                }
-                src++;
-            }
-        }
+        bpp = 1;
         break;
     case PIXELFORMAT_PAL2:
-#if HAVE_DEBUG
-        fprintf(stderr, "expanding PAL2 to PAL8...\n");
-#endif
-        for (y = 0; y < height; ++y) {
-            for (x = 0; x < width / 4; ++x) {
-                for (i = 0; i < 4; ++i) {
-                    *dst++ = *src >> (3 - i) * 2 & 0x3;
-                }
-                src++;
-            }
-            x = width - x * 4;
-            if (x) {
-                while (x) {
-                    *dst++ = *src >> x-- * 2 & 0x3;
-                }
-                src++;
-            }
-        }
+        bpp = 2;
         break;
     case PIXELFORMAT_PAL4:
-#if HAVE_DEBUG
-        fprintf(stderr, "expanding PAL4 to PAL8...\n");
-#endif
-        for (y = 0; y < height; ++y) {
-            for (x = 0; x < width / 2; ++x) {
-                for (i = 0; i < 2; ++i) {
-                    *dst++ = *src >> (1 - i) * 4 & 0xf;
-                }
-                src++;
-            }
-            x = width - x * 2;
-            if (x) {
-                while (x) {
-                    *dst++ = *src >> x-- * 4 & 0xf;
-                }
-                src++;
-            }
-        }
+        bpp = 4;
         break;
     case PIXELFORMAT_PAL8:
         for (i = 0; i < width * height; ++i, ++src) {
             *dst++ = *src;
         }
-        break;
+        return 0;
     default:
-        break;
+        return (-1);
     }
+
+#if HAVE_DEBUG
+    fprintf(stderr, "expanding PAL%d to PAL8...\n", bpp);
+#endif
+
+    for (y = 0; y < height; ++y) {
+        for (x = 0; x < width * bpp / 8; ++x) {
+            for (i = 0; i < 8 / bpp; ++i) {
+                *dst++ = *src >> (8 / bpp - 1 - i) * bpp & (1 << bpp) - 1;
+            }
+            src++;
+        }
+        x = width - x * 8 / bpp;
+        if (x > 0) {
+            for (i = 0; i < x; ++i) {
+                *dst++ = *src >> (8 - (i + 1) * bpp) & (1 << bpp) - 1;
+            }
+            src++;
+        }
+    }
+    return 0;
 }
 
 
