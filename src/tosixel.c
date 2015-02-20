@@ -584,8 +584,8 @@ sixel_encode_dither(unsigned char *pixels, int width, int height,
         if (paletted_pixels == NULL) {
             goto end;
         }
-        sixel_normalize_pixelformat(paletted_pixels, pixels, width, height,
-                                    dither->pixelformat);
+        sixel_normalize_pixelformat(paletted_pixels, &dither->pixelformat,
+                                    pixels, dither->pixelformat, width, height);
         input_pixels = paletted_pixels;
         break;
     case PIXELFORMAT_PAL8:

@@ -446,13 +446,18 @@ expand_palette(unsigned char *dst, unsigned char const *src,
 
 
 int
-sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
-                            int width, int height,
-                            int const pixelformat)
+sixel_normalize_pixelformat(
+    unsigned char /* out */ *dst,             /* destination buffer */
+    int           /* out */ *dst_pixelformat, /* converted pixelformat, RGB888 or PAL8 */
+    unsigned char /* in */  *src,             /* source pixels */
+    int const     /* in */  src_pixelformat,  /* pixel format of source image */
+    int           /* in */  width,            /* width of source image */
+    int           /* in */  height)           /* height of source image */
 {
-    switch (pixelformat) {
+    switch (src_pixelformat) {
     case PIXELFORMAT_G8:
-        expand_rgb(dst, src, width, height, pixelformat, 1);
+        (void) expand_rgb(dst, src, width, height, src_pixelformat, 1);
+        *dst_pixelformat = PIXELFORMAT_RGB888;
         break;
     case PIXELFORMAT_RGB565:
     case PIXELFORMAT_RGB555:
@@ -460,21 +465,23 @@ sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
     case PIXELFORMAT_BGR555:
     case PIXELFORMAT_GA88:
     case PIXELFORMAT_AG88:
-        expand_rgb(dst, src, width, height, pixelformat, 2);
+        (void) expand_rgb(dst, src, width, height, src_pixelformat, 2);
+        *dst_pixelformat = PIXELFORMAT_RGB888;
         break;
     case PIXELFORMAT_RGB888:
     case PIXELFORMAT_BGR888:
-        expand_rgb(dst, src, width, height, pixelformat, 3);
+        (void) expand_rgb(dst, src, width, height, src_pixelformat, 3);
+        *dst_pixelformat = PIXELFORMAT_RGB888;
         break;
     case PIXELFORMAT_RGBA8888:
     case PIXELFORMAT_ARGB8888:
-        expand_rgb(dst, src, width, height, pixelformat, 4);
+        (void) expand_rgb(dst, src, width, height, src_pixelformat, 4);
+        *dst_pixelformat = PIXELFORMAT_RGB888;
         break;
     case PIXELFORMAT_PAL1:
     case PIXELFORMAT_PAL2:
     case PIXELFORMAT_PAL4:
-        expand_palette(dst, src, width, height, pixelformat);
-        break;
+        return expand_palette(dst, src, width, height, src_pixelformat);
     case PIXELFORMAT_PAL8:
         memcpy(dst, src, width * height);
         break;
