@@ -403,7 +403,7 @@ expand_palette(unsigned char *dst, unsigned char const *src,
     switch (pixelformat) {
     case PIXELFORMAT_PAL1:
 #if HAVE_DEBUG
-        printf("Expanding PAL1 to PAL8...\n");
+        fprintf(stderr, "expanding PAL1 to PAL8...\n");
 #endif
         for (y = 0; y < height; ++y) {
             for (x = 0; x < width / 8; ++x) {
@@ -423,7 +423,7 @@ expand_palette(unsigned char *dst, unsigned char const *src,
         break;
     case PIXELFORMAT_PAL2:
 #if HAVE_DEBUG
-        printf("Expanding PAL2 to PAL8...\n");
+        fprintf(stderr, "expanding PAL2 to PAL8...\n");
 #endif
         for (y = 0; y < height; ++y) {
             for (x = 0; x < width / 4; ++x) {
@@ -443,7 +443,7 @@ expand_palette(unsigned char *dst, unsigned char const *src,
         break;
     case PIXELFORMAT_PAL4:
 #if HAVE_DEBUG
-        printf("Expanding PAL4 to PAL8...\n");
+        fprintf(stderr, "expanding PAL4 to PAL8...\n");
 #endif
         for (y = 0; y < height; ++y) {
             for (x = 0; x < width / 2; ++x) {
