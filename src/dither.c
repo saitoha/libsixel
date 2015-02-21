@@ -368,7 +368,7 @@ get_rgb(unsigned char *data, int const pixelformat, int depth,
 }
 
 
-static void
+static int
 expand_rgb(unsigned char *dst, unsigned char *src,
            int width, int height, int pixelformat, int depth)
 {
@@ -389,97 +389,75 @@ expand_rgb(unsigned char *dst, unsigned char *src,
             *(dst + dst_offset + 2) = b;
         }
     }
+
+    return 0;
 }
 
 
-static void
+static int
 expand_palette(unsigned char *dst, unsigned char const *src,
                int width, int height, int const pixelformat)
 {
-    int i;
     int x;
     int y;
+    int i;
+    int bpp;  /* bit per plane */
 
     switch (pixelformat) {
     case PIXELFORMAT_PAL1:
-#if HAVE_DEBUG
-        printf("Expanding PAL1 to PAL8...\n");
-#endif
-        for (y = 0; y < height; ++y) {
-            for (x = 0; x < width / 8; ++x) {
-                for (i = 0; i < 8; ++i) {
-                    *dst++ = *src >> (7 - i) & 0x1;
-                }
-                src++;
-            }
-            x = width - x * 8;
-            if (x) {
-                while (x) {
-                    *dst++ = *src >> x-- & 0x1;
-                }
-                src++;
-            }
-        }
+        bpp = 1;
         break;
     case PIXELFORMAT_PAL2:
-#if HAVE_DEBUG
-        printf("Expanding PAL2 to PAL8...\n");
-#endif
-        for (y = 0; y < height; ++y) {
-            for (x = 0; x < width / 4; ++x) {
-                for (i = 0; i < 4; ++i) {
-                    *dst++ = *src >> (3 - i) * 2 & 0x3;
-                }
-                src++;
-            }
-            x = width - x * 4;
-            if (x) {
-                while (x) {
-                    *dst++ = *src >> x-- * 2 & 0x3;
-                }
-                src++;
-            }
-        }
+        bpp = 2;
         break;
     case PIXELFORMAT_PAL4:
-#if HAVE_DEBUG
-        printf("Expanding PAL4 to PAL8...\n");
-#endif
-        for (y = 0; y < height; ++y) {
-            for (x = 0; x < width / 2; ++x) {
-                for (i = 0; i < 2; ++i) {
-                    *dst++ = *src >> (1 - i) * 4 & 0xf;
-                }
-                src++;
-            }
-            x = width - x * 2;
-            if (x) {
-                while (x) {
-                    *dst++ = *src >> x-- * 4 & 0xf;
-                }
-                src++;
-            }
-        }
+        bpp = 4;
         break;
     case PIXELFORMAT_PAL8:
         for (i = 0; i < width * height; ++i, ++src) {
             *dst++ = *src;
         }
-        break;
+        return 0;
     default:
-        break;
+        return (-1);
     }
+
+#if HAVE_DEBUG
+    fprintf(stderr, "expanding PAL%d to PAL8...\n", bpp);
+#endif
+
+    for (y = 0; y < height; ++y) {
+        for (x = 0; x < width * bpp / 8; ++x) {
+            for (i = 0; i < 8 / bpp; ++i) {
+                *dst++ = *src >> (8 / bpp - 1 - i) * bpp & (1 << bpp) - 1;
+            }
+            src++;
+        }
+        x = width - x * 8 / bpp;
+        if (x > 0) {
+            for (i = 0; i < x; ++i) {
+                *dst++ = *src >> (8 - (i + 1) * bpp) & (1 << bpp) - 1;
+            }
+            src++;
+        }
+    }
+    return 0;
 }
 
 
 int
-sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
-                            int width, int height,
-                            int const pixelformat)
+sixel_normalize_pixelformat(
+    unsigned char /* out */ *dst,             /* destination buffer */
+    int           /* out */ *dst_pixelformat, /* converted pixelformat, RGB888 or PAL8 */
+    unsigned char /* in */  *src,             /* source pixels */
+    int const     /* in */  src_pixelformat,  /* pixel format of source image */
+    int           /* in */  width,            /* width of source image */
+    int           /* in */  height)           /* height of source image */
 {
-    switch (pixelformat) {
+    switch (src_pixelformat) {
     case PIXELFORMAT_G8:
-        expand_rgb(dst, src, width, height, pixelformat, 1);
+        (void) expand_rgb(dst, src, width, height, src_pixelformat, 1);
+        *dst_pixelformat = PIXELFORMAT_RGB888;
         break;
     case PIXELFORMAT_RGB565:
     case PIXELFORMAT_RGB555:
@@ -487,21 +465,23 @@ sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
     case PIXELFORMAT_BGR555:
     case PIXELFORMAT_GA88:
     case PIXELFORMAT_AG88:
-        expand_rgb(dst, src, width, height, pixelformat, 2);
+        (void) expand_rgb(dst, src, width, height, src_pixelformat, 2);
+        *dst_pixelformat = PIXELFORMAT_RGB888;
         break;
     case PIXELFORMAT_RGB888:
     case PIXELFORMAT_BGR888:
-        expand_rgb(dst, src, width, height, pixelformat, 3);
+        (void) expand_rgb(dst, src, width, height, src_pixelformat, 3);
+        *dst_pixelformat = PIXELFORMAT_RGB888;
         break;
     case PIXELFORMAT_RGBA8888:
     case PIXELFORMAT_ARGB8888:
-        expand_rgb(dst, src, width, height, pixelformat, 4);
+        (void) expand_rgb(dst, src, width, height, src_pixelformat, 4);
+        *dst_pixelformat = PIXELFORMAT_RGB888;
         break;
     case PIXELFORMAT_PAL1:
     case PIXELFORMAT_PAL2:
     case PIXELFORMAT_PAL4:
-        expand_palette(dst, src, width, height, pixelformat);
-        break;
+        return expand_palette(dst, src, width, height, src_pixelformat);
     case PIXELFORMAT_PAL8:
         memcpy(dst, src, width * height);
         break;
@@ -565,8 +545,8 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     }
 
     if (pixelformat != PIXELFORMAT_RGB888) {
-        nret = sixel_normalize_pixelformat(normalized_pixels, data,
-                                           width, height, pixelformat);
+        nret = sixel_helper_normalize_pixelformat(normalized_pixels, data,
+                                                  width, height, pixelformat);
         if (nret != 0) {
             goto end;
         }
@@ -738,10 +718,10 @@ sixel_dither_apply_palette(sixel_dither_t *dither,
         if (normalized_pixels == NULL) {
             goto end;
         }
-        sixel_normalize_pixelformat(normalized_pixels,
-                                    pixels,
-                                    width, height,
-                                    dither->pixelformat);
+        sixel_helper_normalize_pixelformat(normalized_pixels,
+                                           pixels,
+                                           width, height,
+                                           dither->pixelformat);
         input_pixels = normalized_pixels;
     } else {
         input_pixels = pixels;

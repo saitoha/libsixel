@@ -66,9 +66,7 @@
 #endif
 
 #include <sixel.h>
-#include "scale.h"
-#include "loader.h"
-
+#include <sixel-imageio.h>
 
 /* loop modes */
 enum loopMode {
@@ -281,13 +279,21 @@ prepare_specified_palette(char const *mapfile, int reqcolors, unsigned char *bgc
 
     delays = NULL;
 
-    ret = load_image_file(mapfile, &map_sx, &map_sy,
-                          &palette, &ncolors, &pixelformat,
-                          &frame_count, &loop_count,
-                          &delays, /* fstatic */ 1,
-                          /* reqcolors */ 256,
-                          &mappixels,
-                          bgcolor);
+    ret = sixel_helper_load_image_file(
+        &mappixels,
+        &palette,
+        &map_sx,
+        &map_sy,
+        &ncolors,
+        &pixelformat,
+        &frame_count,
+        &loop_count,
+        &delays,
+        mapfile,
+        1,  /* fstatic */
+        256, /* reqcolors */
+        bgcolor
+    );
     if (ret != 0 || mappixels == NULL || map_sx * map_sy == 0) {
         goto end;
     }
@@ -390,6 +396,7 @@ prepare_palette(sixel_dither_t *former_dither,
 {
     sixel_dither_t *dither;
     int ret;
+    int histogram_colors;
 
     if (psettings->highcolor) {
         if (former_dither) {
@@ -440,6 +447,10 @@ prepare_palette(sixel_dither_t *former_dither,
             sixel_dither_unref(dither);
             return NULL;
         }
+        histogram_colors = sixel_dither_get_num_of_histogram_colors(dither);
+        if (histogram_colors <= psettings->reqcolors) {
+            psettings->method_for_diffuse = DIFFUSE_NONE;
+        }
         sixel_dither_set_pixelformat(dither, pixelformat);
     }
     return dither;
@@ -458,6 +469,7 @@ do_resize(unsigned char **ppixels,
     int size;
     int n;
     unsigned char *scaled_frame = NULL;
+    int nret;
 
     if (psettings->percentwidth > 0) {
         psettings->pixelwidth = *psx * psettings->percentwidth / 100;
@@ -487,15 +499,16 @@ do_resize(unsigned char **ppixels,
         }
 
         for (n = 0; n < frame_count; ++n) {
-            scaled_frame = LSS_scale(frames[n], *psx, *psy, 3,
-                                     psettings->pixelwidth,
-                                     psettings->pixelheight,
-                                     psettings->method_for_resampling);
-            if (scaled_frame == NULL) {
-                return (-1);
+            scaled_frame = p + size * n;
+            nret = sixel_helper_scale_image(
+                scaled_frame,
+                frames[n], *psx, *psy, 3,
+                psettings->pixelwidth,
+                psettings->pixelheight,
+                psettings->method_for_resampling);
+            if (nret != 0) {
+                return nret;
             }
-            memcpy(p + size * n, scaled_frame, size);
-            free(scaled_frame);
         }
         for (n = 0; n < frame_count; ++n) {
             frames[n] = p + size * n;
@@ -618,43 +631,6 @@ wait_stdin(void)
     return ret;
 }
 #endif  /* HAVE_SYS_SELECT_H */
-
-
-static int
-compute_depth_from_pixelformat(int pixelformat)
-{
-    int depth = (-1);  /* unknown */
-
-    switch (pixelformat) {
-        case PIXELFORMAT_ARGB8888:
-        case PIXELFORMAT_RGBA8888:
-            depth = 4;
-            break;
-        case PIXELFORMAT_RGB888:
-        case PIXELFORMAT_BGR888:
-            depth = 3;
-            break;
-        case PIXELFORMAT_RGB555:
-        case PIXELFORMAT_RGB565:
-        case PIXELFORMAT_BGR555:
-        case PIXELFORMAT_BGR565:
-        case PIXELFORMAT_AG88:
-        case PIXELFORMAT_GA88:
-            depth = 2;
-            break;
-        case PIXELFORMAT_G8:
-        case PIXELFORMAT_PAL1:
-        case PIXELFORMAT_PAL2:
-        case PIXELFORMAT_PAL4:
-        case PIXELFORMAT_PAL8:
-            depth = 1;
-            break;
-        default:
-            break;
-    }
-
-    return depth;
-}
 
 
 static int
@@ -937,18 +913,26 @@ reload:
     frames = NULL;
     frame = NULL;
     delays = NULL;
-    nret = load_image_file(filename, &sx, &sy,
-                           ppalette, &ncolors, &pixelformat,
-                           &frame_count, &loop_count,
-                           &delays, psettings->fstatic,
-                           psettings->reqcolors,
-                           &pixels, psettings->bgcolor);
+    nret = sixel_helper_load_image_file(
+        &pixels,
+        ppalette,
+        &sx,
+        &sy,
+        &ncolors,
+        &pixelformat,
+        &frame_count,
+        &loop_count,
+        &delays,
+        filename,
+        psettings->fstatic,
+        psettings->reqcolors,
+        psettings->bgcolor);
 
     if (nret != 0 || pixels == NULL || sx * sy == 0) {
         goto end;
     }
 
-    depth = compute_depth_from_pixelformat(pixelformat);
+    depth = sixel_helper_compute_depth(pixelformat);
     if (depth == (-1)) {
         nret = (-1);
         goto end;

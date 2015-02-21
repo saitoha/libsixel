@@ -6,5 +6,5 @@ includedir=@includedir@
 Name: libsixel
 Description: @PACKAGE_DESCRIPTION@
 Version: @PACKAGE_VERSION@
-Libs: -L${libdir} -lsixel
+Libs: -L${libdir} -lsixel -lsixel-imageio
 Cflags: -I${includedir}

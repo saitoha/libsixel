@@ -141,6 +141,20 @@ enum encodePolicy {
     ENCODEPOLICY_SIZE = 2,    /* encode to as small sixel sequence as possible */
 };
 
+/* method for re-sampling */
+enum methodForResampling {
+    RES_NEAREST  = 0,  /* Use nearest neighbor method */
+    RES_GAUSSIAN = 1,  /* Use guaussian filter */
+    RES_HANNING  = 2,  /* Use hanning filter */
+    RES_HAMMING  = 3,  /* Use hamming filter */
+    RES_BILINEAR = 4,  /* Use bilinear filter */
+    RES_WELSH    = 5,  /* Use welsh filter */
+    RES_BICUBIC  = 6,  /* Use bicubic filter */
+    RES_LANCZOS2 = 7,  /* Use lanczos-2 filter */
+    RES_LANCZOS3 = 8,  /* Use lanczos-3 filter */
+    RES_LANCZOS4 = 9,  /* Use lanczos-4 filter */
+};
+
 #ifndef LIBSIXEL_DITHER_H
 
 /* handle type of dither context object */
@@ -344,6 +358,45 @@ sixel_decode(
     unsigned char            /* out */ **palette,  /* RGBA palette */
     int                      /* out */ *ncolors,   /* palette size (<= 256) */
     sixel_allocator_function /* out */ allocator); /* malloc function */
+
+#ifdef __cplusplus
+}
+#endif
+
+/* helper API */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* compute pixel depth from pixelformat */
+int
+sixel_helper_compute_depth(
+    int /* in */ pixelformat /* one of enum pixelFormat */
+);
+
+/* convert pixelFormat into PIXELFORMAT_RGB888 */
+int
+sixel_helper_normalize_pixelformat(
+    unsigned char       /* out */ *dst,        /* destination image */
+    unsigned char const /* in */  *src,        /* source image */
+    int                 /* in */  width,       /* source image width */
+    int                 /* in */  height,      /* source image height */
+    int const           /* in */  pixelformat  /* source image pixelformat */
+);
+
+/* scale image to specified size */
+int
+sixel_helper_scale_image(
+    unsigned char       /* out */ *dst,
+    unsigned char const /* in */  *src,                  /* source image data */
+    int const           /* in */  srcw,                  /* source image width */
+    int const           /* in */  srch,                  /* source image height */
+    int const           /* in */  pixelformat,           /* one of enum pixelFormat */
+    int const           /* in */  dstw,                  /* destination image width */
+    int const           /* in */  dsth,                  /* destination image height */
+    int const           /* in */  method_for_resampling  /* one of methodForResampling */
+);
 
 #ifdef __cplusplus
 }
