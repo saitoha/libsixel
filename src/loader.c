@@ -312,7 +312,7 @@ read_png(png_structp png_ptr, png_bytep data, png_size_t length)
 static void
 read_palette(png_structp png_ptr, png_infop info_ptr,
              unsigned char *palette, int ncolors,
-             png_color *png_palette, unsigned char *bgcolor)
+             png_color *png_palette, png_color_16 *pbackground)
 {
     png_bytep trans = NULL;
     int num_trans = 0;
@@ -322,12 +322,12 @@ read_palette(png_structp png_ptr, png_infop info_ptr,
         png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, NULL);
     }
     for (i = 0; i < ncolors; ++i) {
-        if (bgcolor && i < num_trans) {
-            palette[i * 3 + 0] = ((0xff - trans[i]) * bgcolor[0]
+        if (pbackground && i < num_trans) {
+            palette[i * 3 + 0] = ((0xff - trans[i]) * pbackground->red
                                    + trans[i] * png_palette[i].red) >> 8;
-            palette[i * 3 + 1] = ((0xff - trans[i]) * bgcolor[1]
+            palette[i * 3 + 1] = ((0xff - trans[i]) * pbackground->green
                                    + trans[i] * png_palette[i].green) >> 8;
-            palette[i * 3 + 2] = ((0xff - trans[i]) * bgcolor[2]
+            palette[i * 3 + 2] = ((0xff - trans[i]) * pbackground->blue
                                    + trans[i] * png_palette[i].blue) >> 8;
         } else {
             palette[i * 3 + 0] = png_palette[i].red;
@@ -436,7 +436,7 @@ load_png(unsigned char *buffer, int size,
                     goto cleanup;
                 }
                 read_palette(png_ptr, info_ptr, *ppalette,
-                             *pncolors, png_palette, bgcolor);
+                             *pncolors, png_palette, &background);
                 *pcomp = 1;
                 *pixelformat = PIXELFORMAT_PAL1;
                 break;
@@ -446,7 +446,7 @@ load_png(unsigned char *buffer, int size,
                     goto cleanup;
                 }
                 read_palette(png_ptr, info_ptr, *ppalette,
-                             *pncolors, png_palette, bgcolor);
+                             *pncolors, png_palette, &background);
                 *pcomp = 1;
                 *pixelformat = PIXELFORMAT_PAL2;
                 break;
@@ -456,7 +456,7 @@ load_png(unsigned char *buffer, int size,
                     goto cleanup;
                 }
                 read_palette(png_ptr, info_ptr, *ppalette,
-                             *pncolors, png_palette, bgcolor);
+                             *pncolors, png_palette, &background);
                 *pcomp = 1;
                 *pixelformat = PIXELFORMAT_PAL4;
                 break;
@@ -466,7 +466,7 @@ load_png(unsigned char *buffer, int size,
                     goto cleanup;
                 }
                 read_palette(png_ptr, info_ptr, *ppalette,
-                             *pncolors, png_palette, bgcolor);
+                             *pncolors, png_palette, &background);
                 *pcomp = 1;
                 *pixelformat = PIXELFORMAT_PAL8;
                 break;
