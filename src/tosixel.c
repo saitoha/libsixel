@@ -584,8 +584,14 @@ sixel_encode_dither(unsigned char *pixels, int width, int height,
         if (paletted_pixels == NULL) {
             goto end;
         }
-        sixel_normalize_pixelformat(paletted_pixels, &dither->pixelformat,
-                                    pixels, dither->pixelformat, width, height);
+        nret = sixel_helper_normalize_pixelformat(paletted_pixels,
+                                                  &dither->pixelformat,
+                                                  pixels,
+                                                  dither->pixelformat,
+                                                  width, height);
+        if (nret != 0) {
+            goto end;
+        }
         input_pixels = paletted_pixels;
         break;
     case PIXELFORMAT_PAL8:
@@ -1029,9 +1035,10 @@ sixel_encode_highcolor(unsigned char *pixels, int width, int height,
             goto error;
         }
         nret = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                  &dither->pixelformat,
                                                   pixels,
-                                                  width, height,
-                                                  dither->pixelformat);
+                                                  dither->pixelformat,
+                                                  width, height);
         if (nret != 0) {
             goto error;
         }

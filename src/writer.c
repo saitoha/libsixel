@@ -91,9 +91,11 @@ write_png_to_file(
         new_pixels = malloc(width * height * 4);
         src = new_pixels + width * height * 3;
         dst = pixels = new_pixels;
-        ret = sixel_helper_normalize_pixelformat(src, data,
-                                                 width, height,
-                                                 pixelformat);
+        ret = sixel_helper_normalize_pixelformat(src,
+                                                 &pixelformat,
+                                                 data,
+                                                 pixelformat,
+                                                 width, height);
         if (ret != 0) {
             goto end;
         }
@@ -126,9 +128,11 @@ write_png_to_file(
     case PIXELFORMAT_RGBA8888:
     case PIXELFORMAT_ARGB8888:
         pixels = new_pixels = malloc(width * height * 3);
-        ret = sixel_helper_normalize_pixelformat(pixels, data,
-                                                 width, height,
-                                                 pixelformat);
+        ret = sixel_helper_normalize_pixelformat(pixels,
+                                                 &pixelformat,
+                                                 data,
+                                                 pixelformat,
+                                                 width, height);
         if (ret != 0) {
             goto end;
         }

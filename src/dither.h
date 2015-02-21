@@ -52,12 +52,6 @@ unsigned char *
 sixel_dither_apply_palette(sixel_dither_t *dither,
                            unsigned char *pixels,
                            int width, int height);
-
-int
-sixel_normalize_pixelformat(unsigned char *dst, int *dst_pixelformat,
-                            unsigned char *src, int const pixelformat,
-                            int width, int height);
-
 #ifdef __cplusplus
 }
 #endif

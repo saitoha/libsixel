@@ -307,31 +307,35 @@ int
 sixel_helper_scale_image(
     unsigned char       /* out */ *dst,
     unsigned char const /* in */  *src,                   /* source image data */
-    int const           /* in */  srcw,                   /* source image width */
-    int const           /* in */  srch,                   /* source image height */
-    int const           /* in */  pixelformat,            /* one of enum pixelFormat */
-    int const           /* in */  dstw,                   /* destination image width */
-    int const           /* in */  dsth,                   /* destination image height */
-    int const           /* in */  method_for_resampling)  /* one of methodForResampling */
+    int                 /* in */  srcw,                   /* source image width */
+    int                 /* in */  srch,                   /* source image height */
+    int                 /* in */  pixelformat,            /* one of enum pixelFormat */
+    int                 /* in */  dstw,                   /* destination image width */
+    int                 /* in */  dsth,                   /* destination image height */
+    int                 /* in */  method_for_resampling)  /* one of methodForResampling */
 {
     int const depth = sixel_helper_compute_depth(pixelformat);
     unsigned char *new_src = NULL;
     int nret;
+    int new_pixelformat;
 
     if (depth != 3) {
         new_src = malloc(srcw * srch * 3);
         if (new_src == NULL) {
             return (-1);
         }
-
-        nret = sixel_helper_normalize_pixelformat(new_src, src,
-                                                  srcw, srch, pixelformat);
+        nret = sixel_helper_normalize_pixelformat(new_src,
+                                                  &new_pixelformat,
+                                                  src, pixelformat,
+                                                  srcw, srch);
         if (nret != 0) {
             free(new_src);
             return (-1);
         }
 
         src = new_src;
+    } else {
+        new_pixelformat = pixelformat;
     }
 
     /* choose re-sampling strategy */
