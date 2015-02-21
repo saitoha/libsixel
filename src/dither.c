@@ -429,14 +429,14 @@ expand_palette(unsigned char *dst, unsigned char const *src,
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width * bpp / 8; ++x) {
             for (i = 0; i < 8 / bpp; ++i) {
-                *dst++ = *src >> (8 / bpp - 1 - i) * bpp & (1 << bpp) - 1;
+                *dst++ = *src >> (8 / bpp - 1 - i) * bpp & ((1 << bpp) - 1);
             }
             src++;
         }
         x = width - x * 8 / bpp;
         if (x > 0) {
             for (i = 0; i < x; ++i) {
-                *dst++ = *src >> (8 - (i + 1) * bpp) & (1 << bpp) - 1;
+                *dst++ = *src >> (8 - (i + 1) * bpp) & ((1 << bpp) - 1);
             }
             src++;
         }
