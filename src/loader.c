@@ -380,7 +380,7 @@ load_png(unsigned char *buffer, int size,
     bitdepth = png_get_bit_depth(png_ptr, info_ptr);
     if (bitdepth == 16) {
 #  if HAVE_DEBUG
-        fprintf(stderr, "bitdepth: %u\n", bitdepth);
+        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
         fprintf(stderr, "stripping to 8bit...\n");
 #  endif
         png_set_strip_16(png_ptr);
@@ -414,7 +414,7 @@ load_png(unsigned char *buffer, int size,
         }
 #  if HAVE_DEBUG
         fprintf(stderr, "palette colors: %d\n", *pncolors);
-        fprintf(stderr, "bitdepth: %u\n", bitdepth);
+        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
 #  endif
         if (ppalette == NULL || *pncolors > reqcolors) {
 #  if HAVE_DEBUG
@@ -483,7 +483,7 @@ load_png(unsigned char *buffer, int size,
     case PNG_COLOR_TYPE_GRAY:
 #  if HAVE_DEBUG
         fprintf(stderr, "grayscale PNG(PNG_COLOR_TYPE_GRAY)\n");
-        fprintf(stderr, "bitdepth: %u\n", bitdepth);
+        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
 #  endif
         if (1 << bitdepth > reqcolors) {
 #  if HAVE_DEBUG
@@ -503,14 +503,16 @@ load_png(unsigned char *buffer, int size,
             case 4:
 #  if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
 #   if HAVE_DEBUG
-                fprintf(stderr, "expand %d bpp to 8bpp format...\n", bitdepth);
+                fprintf(stderr, "expand %u bpp to 8bpp format...\n",
+                        (unsigned int)bitdepth);
 #   endif
                 png_set_expand_gray_1_2_4_to_8(png_ptr);
                 *pcomp = 1;
                 *pixelformat = PIXELFORMAT_G8;
 #  elif HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
 #   if HAVE_DEBUG
-                fprintf(stderr, "expand %d bpp to 8bpp format...\n", bitdepth);
+                fprintf(stderr, "expand %u bpp to 8bpp format...\n",
+                        (unsigned int)bitdepth);
 #   endif
                 png_set_gray_1_2_4_to_8(png_ptr);
                 *pcomp = 1;
@@ -557,7 +559,7 @@ load_png(unsigned char *buffer, int size,
     case PNG_COLOR_TYPE_GRAY_ALPHA:
 #  if HAVE_DEBUG
         fprintf(stderr, "grayscale-alpha PNG(PNG_COLOR_TYPE_GRAY_ALPHA)\n");
-        fprintf(stderr, "bitdepth: %u\n", bitdepth);
+        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
         fprintf(stderr, "expand to RGB format...\n");
 #  endif
         png_set_background(png_ptr, &background,
@@ -569,7 +571,7 @@ load_png(unsigned char *buffer, int size,
     case PNG_COLOR_TYPE_RGB_ALPHA:
 #  if HAVE_DEBUG
         fprintf(stderr, "RGBA PNG(PNG_COLOR_TYPE_RGB_ALPHA)\n");
-        fprintf(stderr, "bitdepth: %u\n", bitdepth);
+        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
         fprintf(stderr, "expand to RGB format...\n");
 #  endif
         png_set_background(png_ptr, &background,
@@ -580,7 +582,7 @@ load_png(unsigned char *buffer, int size,
     case PNG_COLOR_TYPE_RGB:
 #  if HAVE_DEBUG
         fprintf(stderr, "RGB PNG(PNG_COLOR_TYPE_RGB)\n");
-        fprintf(stderr, "bitdepth: %u\n", bitdepth);
+        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
 #  endif
         png_set_background(png_ptr, &background,
                            PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
