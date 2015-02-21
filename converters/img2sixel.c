@@ -189,6 +189,9 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
             ret = (-1);
             goto end;
         }
+    } else {
+        ret = (-1);
+        goto end;
     }
 
     ret = 0;
