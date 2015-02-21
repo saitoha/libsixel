@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -147,7 +147,7 @@ static
 void show_version(void)
 {
     printf("sixel2png " PACKAGE_VERSION "\n"
-           "Copyright (C) 2014 Hayaki Saito <user@zuse.jp>.\n"
+           "Copyright (C) 2014,2015 Hayaki Saito <user@zuse.jp>.\n"
            "\n"
            "Permission is hereby granted, free of charge, to any person obtaining a copy of\n"
            "this software and associated documentation files (the \"Software\"), to deal in\n"
