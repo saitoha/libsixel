@@ -253,19 +253,40 @@ AC_SUBST(GDK_PIXBUF_LIBS)
 
 
 if test x$with_gd != xno; then
+    CFLAGS_BACKUP=$CFLAGS
+    LDFLAGS_BACKUP=$LDFLAGS
+    if test x$with_gd != xyes -a x$with_gd != xauto; then
+        if test ! -d "$with_gd"; then
+            AC_MSG_ERROR(["${with_gd}" is not directory])
+        fi
+        GD_CFLAGS="-I${with_gd}/include"
+        GD_LIBS="-L${with_gd}/lib -lgd"
+    elif test x${prefix} != x -a x${prefix} != xNONE; then
+        GD_CFLAGS="-I${prefix}/include"
+        GD_LIBS="-L${prefix}/lib -lgd"
+    else
+        GD_CFLAGS="-I/usr/local/include"
+        GD_LIBS="-L/usr/local/lib -lgd"
+    fi
+    CFLAGS="${CFLAGS} ${GD_CFLAGS}"
+    LDFLAGS="${LDFLAGS} ${GD_LIBS}"
     AC_CHECK_HEADER([gd.h],
                     [AC_CHECK_LIB([gd],
                                   [gdImageCreateFromGifPtr],
-                                  [have_gd="yes" GD_LIBS=-lgd],
+                                  [have_gd="yes"],
                                   [have_gd="no"])])
+    CFLAGS=$CFLAGS_BACKUP
+    LDFLAGS=$LDFLAGS_BACKUP
     if test x${PKG_CONFIG} != x; then
-        if test x$have_gd != xyes; then
+        if test x$have_gd != xyes -a ! -d "$with_gd"; then
             PKG_CHECK_MODULES(GD, [gdlib], [have_gd=yes], [have_gd=no])
         fi
     fi
     if test x$have_gd = xyes; then
         CFLAGS_BACKUP=$CFLAGS
-        CFLAGS="$CFLAGS $LIBPNG_CFLAGS"
+        LDFLAGS_BACKUP=$LDFLAGS
+        CFLAGS="$CFLAGS $GD_CFLAGS"
+        LDFLAGS="${LDFLAGS} ${GD_LIBS}"
         AC_CHECK_LIB([gd],
                      [gdImageCreateFromGifPtr],
                      [AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])])
@@ -297,6 +318,7 @@ if test x$with_gd != xno; then
                      [gdImagePaletteToTrueColor],
                      [AC_CHECK_DECLS([gdImagePaletteToTrueColor], [], [], [ #include <gd.h> ])])
         CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
         loaders="${loaders} gd"
     else
