@@ -14634,6 +14634,20 @@ fi
 
 if test x$with_png != xno; then
     if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_png != xyes; then
+            LIBPNG_CFLAGS="-I${with_png}/include"
+            LIBPNG_LIBS="-L${with_png}/lib -lpng"
+        elif test x${prefix} != x -a x${prefix} != xNONE; then
+            LIBPNG_CFLAGS="-I${prefix}/include"
+            LIBPNG_LIBS="-L${prefix}/lib -lpng"
+        else
+            LIBPNG_CFLAGS="-I/usr/local/include"
+            LIBPNG_LIBS="-L/usr/local/lib -lpng"
+        fi
+        CFLAGS="${CFLAGS} ${LIBPNG_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${LIBPNG_LIBS}"
         ac_fn_c_check_header_mongrel "$LINENO" "png.h" "ac_cv_header_png_h" "$ac_includes_default"
 if test "x$ac_cv_header_png_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for png_check_sig in -lpng" >&5
@@ -14673,7 +14687,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_png_png_check_sig" >&5
 $as_echo "$ac_cv_lib_png_png_check_sig" >&6; }
 if test "x$ac_cv_lib_png_png_check_sig" = xyes; then :
-  have_png=yes LIBPNG_LIBS=-lpng
+  have_png=yes
 else
   have_png=no
 fi
@@ -14681,6 +14695,8 @@ fi
 fi
 
 
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_png != xyes; then
             if test x${PKG_CONFIG} != x; then
 

@@ -409,11 +409,27 @@ AC_SUBST(LIBJPEG_LIBS)
 
 if test x$with_png != xno; then
     if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_png != xyes; then
+            LIBPNG_CFLAGS="-I${with_png}/include"
+            LIBPNG_LIBS="-L${with_png}/lib -lpng"
+        elif test x${prefix} != x -a x${prefix} != xNONE; then
+            LIBPNG_CFLAGS="-I${prefix}/include"
+            LIBPNG_LIBS="-L${prefix}/lib -lpng"
+        else
+            LIBPNG_CFLAGS="-I/usr/local/include"
+            LIBPNG_LIBS="-L/usr/local/lib -lpng"
+        fi
+        CFLAGS="${CFLAGS} ${LIBPNG_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${LIBPNG_LIBS}"
         AC_CHECK_HEADER([png.h],
                         [AC_CHECK_LIB([png],
                                       [png_check_sig],
-                                      [have_png=yes LIBPNG_LIBS=-lpng],
+                                      [have_png=yes],
                                       [have_png=no])])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_png != xyes; then
             if test x${PKG_CONFIG} != x; then
                 PKG_CHECK_MODULES(LIBPNG,
