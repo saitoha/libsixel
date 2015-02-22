@@ -52,6 +52,7 @@ if WANT_IMG2SIXEL
 	test ! $$($(WINE) ./img2sixel -l invalid_option)
 	test ! $$($(WINE) ./img2sixel -b invalid_option)
 	test ! $$($(WINE) ./img2sixel -E invalid_option)
+	test ! $$($(WINE) ./img2sixel -B invalid_option)
 	test ! $$($(WINE) ./img2sixel -%)
 	test ! $$($(WINE) ./img2sixel invalid_filename)
 	test ! $$($(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg)
@@ -76,12 +77,12 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -w2100 -h2100 -bxterm256 < ../images/snake.jpg > snake3.sixel
 	$(WINE) ./img2sixel -w105% -h100 -djajuni -rnearest < ../images/snake.gif
 	$(WINE) ./img2sixel -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto ../images/snake.tga
-	$(WINE) ./img2sixel -p300 -8 -scenter -h100 -qfull -rhanning -dstucki -thls ../images/snake.tiff
+	$(WINE) ./img2sixel -p300 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhanning -dstucki -thls ../images/snake.tiff
 	$(WINE) ./img2sixel -8 -qauto -thls -e ../images/snake.pgm
 	$(WINE) ./img2sixel -8 -m ../images/map8-palette.png -Esize ../images/snake.ppm
 	$(WINE) ./img2sixel -7 -m ../images/map16-palette.png -Efast ../images/snake.jpg
 	$(WINE) ./img2sixel -7 -w300 ../images/snake-palette.png
-	$(WINE) ./img2sixel -7 -w100 -h100 -bxterm16 ../images/snake.pbm
+	$(WINE) ./img2sixel -7 -w100 -h100 -bxterm16 -B#aB3 ../images/snake.pbm
 	$(WINE) ./img2sixel -I -dstucki -thls ../images/snake.ppm
 	$(WINE) ./img2sixel -bvt340color ../images/snake.ppm
 	$(WINE) ./img2sixel -bvt340mono ../images/snake.tga
@@ -154,6 +155,7 @@ endif
 	    sleep 1; \
 	fi
 	rm -f sixel.pipe
+	sleep 1
 	grep ^\.B img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > options2.txt
 	grep ' --' shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > options3.txt
 	grep '{-' shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > options4.txt
