@@ -324,11 +324,27 @@ AC_SUBST(GD_LIBS)
 
 if test x$with_libcurl != xno; then
     if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_libcurl != xyes; then
+            LIBCURL_CFLAGS="-I${with_libcurl}/include"
+            LIBCURL_LIBS="-L${with_libcurl}/lib -lcurl"
+        elif test x${prefix} != x -a x${prefix} != xNONE; then
+            LIBCURL_CFLAGS="-I${prefix}/include"
+            LIBCURL_LIBS="-L${prefix}/lib -lcurl"
+        else
+            LIBCURL_CFLAGS="-I/usr/local/include"
+            LIBCURL_LIBS="-L/usr/local/lib -lcurl"
+        fi
+        CFLAGS="${CFLAGS} ${LIBCURL_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${LIBCURL_LIBS}"
         AC_CHECK_HEADER([curl/curl.h],
                         [AC_CHECK_LIB([curl],
                                       [curl_easy_cleanup],
-                                      [have_curl=yes LIBCURL_LIBS=-lcurl],
+                                      [have_curl=yes],
                                       [have_curl=no])])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_curl != xyes; then
             if test x${PKG_CONFIG} != x; then
                 PKG_CHECK_MODULES(LIBCURL,
