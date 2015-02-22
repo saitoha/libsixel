@@ -55,7 +55,6 @@
 #endif
 
 #include <sixel.h>
-#include <sixel-imageio.h>
 
 
 static int

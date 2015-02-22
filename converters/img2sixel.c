@@ -66,7 +66,7 @@
 #endif
 
 #include <sixel.h>
-#include <sixel-imageio.h>
+
 
 /* loop modes */
 enum loopMode {

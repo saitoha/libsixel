@@ -81,7 +81,6 @@
 #include <stdio.h>
 #include "frompnm.h"
 #include <sixel.h>
-#include <sixel-imageio.h>
 
 #define STBI_NO_STDIO 1
 #define STB_IMAGE_IMPLEMENTATION 1
