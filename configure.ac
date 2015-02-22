@@ -326,7 +326,10 @@ if test x$with_libcurl != xno; then
     if test x$build = x$host; then
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
-        if test x$with_libcurl != xyes; then
+        if test x$with_libcurl != xyes -a x$with_libcurl != xauto; then
+            if test ! -d "$with_libcurl"; then
+                AC_MSG_ERROR(["${with_libcurl}" is not directory])
+            fi
             LIBCURL_CFLAGS="-I${with_libcurl}/include"
             LIBCURL_LIBS="-L${with_libcurl}/lib -lcurl"
         elif test x${prefix} != x -a x${prefix} != xNONE; then
@@ -345,7 +348,7 @@ if test x$with_libcurl != xno; then
                                       [have_curl=no])])
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP
-        if test x$have_curl != xyes; then
+        if test x$have_curl != xyes -a ! -d "$with_libcurl"; then
             if test x${PKG_CONFIG} != x; then
                 PKG_CHECK_MODULES(LIBCURL,
                                   [libcurl],
@@ -372,7 +375,10 @@ if test x$with_jpeg != xno; then
     if test x$build = x$host; then
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
-        if test x$with_jpeg != xyes; then
+        if test x$with_jpeg != xyes -a x$with_jpeg != xauto; then
+            if test ! -d "$with_jpeg"; then
+                AC_MSG_ERROR(["${with_jpeg}" is not directory])
+            fi
             LIBJPEG_CFLAGS="-I${with_jpeg}/include"
             LIBJPEG_LIBS="-L${with_jpeg}/lib -ljpeg"
         elif test x${prefix} != x -a x${prefix} != xNONE; then
@@ -411,7 +417,10 @@ if test x$with_png != xno; then
     if test x$build = x$host; then
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
-        if test x$with_png != xyes; then
+        if test x$with_png != xyes -a x$with_png != xauto; then
+            if test ! -d "$with_png"; then
+                AC_MSG_ERROR(["${with_png}" is not directory])
+            fi
             LIBPNG_CFLAGS="-I${with_png}/include"
             LIBPNG_LIBS="-L${with_png}/lib -lpng"
         elif test x${prefix} != x -a x${prefix} != xNONE; then
@@ -430,7 +439,7 @@ if test x$with_png != xno; then
                                       [have_png=no])])
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP
-        if test x$have_png != xyes; then
+        if test x$have_png != xyes -a ! -d "$with_png"; then
             if test x${PKG_CONFIG} != x; then
                 PKG_CHECK_MODULES(LIBPNG,
                                   [libpng],

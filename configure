@@ -14390,7 +14390,10 @@ if test x$with_libcurl != xno; then
     if test x$build = x$host; then
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
-        if test x$with_libcurl != xyes; then
+        if test x$with_libcurl != xyes -a x$with_libcurl != xauto; then
+            if test ! -d "$with_libcurl"; then
+                as_fn_error $? "\"${with_libcurl}\" is not directory" "$LINENO" 5
+            fi
             LIBCURL_CFLAGS="-I${with_libcurl}/include"
             LIBCURL_LIBS="-L${with_libcurl}/lib -lcurl"
         elif test x${prefix} != x -a x${prefix} != xNONE; then
@@ -14451,7 +14454,7 @@ fi
 
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP
-        if test x$have_curl != xyes; then
+        if test x$have_curl != xyes -a ! -d "$with_libcurl"; then
             if test x${PKG_CONFIG} != x; then
 
 pkg_failed=no
@@ -14550,7 +14553,10 @@ if test x$with_jpeg != xno; then
     if test x$build = x$host; then
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
-        if test x$with_jpeg != xyes; then
+        if test x$with_jpeg != xyes -a x$with_jpeg != xauto; then
+            if test ! -d "$with_jpeg"; then
+                as_fn_error $? "\"${with_jpeg}\" is not directory" "$LINENO" 5
+            fi
             LIBJPEG_CFLAGS="-I${with_jpeg}/include"
             LIBJPEG_LIBS="-L${with_jpeg}/lib -ljpeg"
         elif test x${prefix} != x -a x${prefix} != xNONE; then
@@ -14636,7 +14642,10 @@ if test x$with_png != xno; then
     if test x$build = x$host; then
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
-        if test x$with_png != xyes; then
+        if test x$with_png != xyes -a x$with_png != xauto; then
+            if test ! -d "$with_png"; then
+                as_fn_error $? "\"${with_png}\" is not directory" "$LINENO" 5
+            fi
             LIBPNG_CFLAGS="-I${with_png}/include"
             LIBPNG_LIBS="-L${with_png}/lib -lpng"
         elif test x${prefix} != x -a x${prefix} != xNONE; then
@@ -14697,7 +14706,7 @@ fi
 
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP
-        if test x$have_png != xyes; then
+        if test x$have_png != xyes -a ! -d "$with_png"; then
             if test x${PKG_CONFIG} != x; then
 
 pkg_failed=no
