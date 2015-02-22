@@ -271,7 +271,7 @@ load_jpeg(unsigned char *data, int datasize,
           int *pwidth, int *pheight, int *ppixelformat)
 {
     int row_stride, size;
-    unsigned char *result;
+    unsigned char *result = NULL;
     JSAMPARRAY buffer;
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr pub;
@@ -867,6 +867,10 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
     else if (chunk_is_jpeg(pchunk)) {
         pixels = load_jpeg(pchunk->buffer, pchunk->size,
                            psx, psy, ppixelformat);
+        if (pixels == NULL) {
+            free(frames.buffer);
+            return NULL;
+        }
         *pframe_count = 1;
         *ploop_count = 1;
         *pstride = *psx * sixel_helper_compute_depth(*ppixelformat);
@@ -878,6 +882,10 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
                           psx, psy,
                           ppalette, pncolors, reqcolors,
                           ppixelformat, bgcolor);
+        if (pixels == NULL) {
+            free(frames.buffer);
+            return NULL;
+        }
         *pframe_count = 1;
         *ploop_count = 1;
         *pstride = *psx * sixel_helper_compute_depth(*ppixelformat);
