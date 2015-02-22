@@ -370,11 +370,27 @@ AC_SUBST(LIBCURL_LIBS)
 
 if test x$with_jpeg != xno; then
     if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_jpeg != xyes; then
+            LIBJPEG_CFLAGS="-I${with_jpeg}/include"
+            LIBJPEG_LIBS="-L${with_jpeg}/lib -ljpeg"
+        elif test x${prefix} != x -a x${prefix} != xNONE; then
+            LIBJPEG_CFLAGS="-I${prefix}/include"
+            LIBJPEG_LIBS="-L${prefix}/lib -ljpeg"
+        else
+            LIBJPEG_CFLAGS="-I/usr/local/include"
+            LIBJPEG_LIBS="-L/usr/local/lib -ljpeg"
+        fi
+        CFLAGS="${CFLAGS} ${LIBJPEG_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${LIBJPEG_LIBS}"
         AC_CHECK_HEADER([jpeglib.h],
                         [AC_CHECK_LIB([jpeg],
                                       [jpeg_read_header],
-                                      [have_jpeg=yes LIBJPEG_LIBS=-ljpeg],
+                                      [have_jpeg=yes],
                                       [have_jpeg=no])])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
     fi
     if test x$have_jpeg = xyes; then
         AC_DEFINE(HAVE_JPEG, 1, [whether jpeg codec library is available])
