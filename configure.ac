@@ -264,6 +264,8 @@ if test x$with_gd != xno; then
         fi
     fi
     if test x$have_gd = xyes; then
+        CFLAGS_BACKUP=$CFLAGS
+        CFLAGS="$CFLAGS $LIBPNG_CFLAGS"
         AC_CHECK_LIB([gd],
                      [gdImageCreateFromGifPtr],
                      [AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])])
@@ -294,6 +296,7 @@ if test x$with_gd != xno; then
         AC_CHECK_LIB([gd],
                      [gdImagePaletteToTrueColor],
                      [AC_CHECK_DECLS([gdImagePaletteToTrueColor], [], [], [ #include <gd.h> ])])
+        CFLAGS=$CFLAGS_BACKUP
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
         loaders="${loaders} gd"
     else
@@ -321,11 +324,27 @@ AC_SUBST(GD_LIBS)
 
 if test x$with_libcurl != xno; then
     if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_libcurl != xyes; then
+            LIBCURL_CFLAGS="-I${with_libcurl}/include"
+            LIBCURL_LIBS="-L${with_libcurl}/lib -lcurl"
+        elif test x${prefix} != x -a x${prefix} != xNONE; then
+            LIBCURL_CFLAGS="-I${prefix}/include"
+            LIBCURL_LIBS="-L${prefix}/lib -lcurl"
+        else
+            LIBCURL_CFLAGS="-I/usr/local/include"
+            LIBCURL_LIBS="-L/usr/local/lib -lcurl"
+        fi
+        CFLAGS="${CFLAGS} ${LIBCURL_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${LIBCURL_LIBS}"
         AC_CHECK_HEADER([curl/curl.h],
                         [AC_CHECK_LIB([curl],
                                       [curl_easy_cleanup],
-                                      [have_curl=yes LIBCURL_LIBS=-lcurl],
+                                      [have_curl=yes],
                                       [have_curl=no])])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_curl != xyes; then
             if test x${PKG_CONFIG} != x; then
                 PKG_CHECK_MODULES(LIBCURL,
@@ -351,11 +370,27 @@ AC_SUBST(LIBCURL_LIBS)
 
 if test x$with_jpeg != xno; then
     if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_jpeg != xyes; then
+            LIBJPEG_CFLAGS="-I${with_jpeg}/include"
+            LIBJPEG_LIBS="-L${with_jpeg}/lib -ljpeg"
+        elif test x${prefix} != x -a x${prefix} != xNONE; then
+            LIBJPEG_CFLAGS="-I${prefix}/include"
+            LIBJPEG_LIBS="-L${prefix}/lib -ljpeg"
+        else
+            LIBJPEG_CFLAGS="-I/usr/local/include"
+            LIBJPEG_LIBS="-L/usr/local/lib -ljpeg"
+        fi
+        CFLAGS="${CFLAGS} ${LIBJPEG_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${LIBJPEG_LIBS}"
         AC_CHECK_HEADER([jpeglib.h],
                         [AC_CHECK_LIB([jpeg],
                                       [jpeg_read_header],
-                                      [have_jpeg=yes LIBJPEG_LIBS=-ljpeg],
+                                      [have_jpeg=yes],
                                       [have_jpeg=no])])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
     fi
     if test x$have_jpeg = xyes; then
         AC_DEFINE(HAVE_JPEG, 1, [whether jpeg codec library is available])
@@ -374,11 +409,27 @@ AC_SUBST(LIBJPEG_LIBS)
 
 if test x$with_png != xno; then
     if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_png != xyes; then
+            LIBPNG_CFLAGS="-I${with_png}/include"
+            LIBPNG_LIBS="-L${with_png}/lib -lpng"
+        elif test x${prefix} != x -a x${prefix} != xNONE; then
+            LIBPNG_CFLAGS="-I${prefix}/include"
+            LIBPNG_LIBS="-L${prefix}/lib -lpng"
+        else
+            LIBPNG_CFLAGS="-I/usr/local/include"
+            LIBPNG_LIBS="-L/usr/local/lib -lpng"
+        fi
+        CFLAGS="${CFLAGS} ${LIBPNG_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${LIBPNG_LIBS}"
         AC_CHECK_HEADER([png.h],
                         [AC_CHECK_LIB([png],
                                       [png_check_sig],
-                                      [have_png=yes LIBPNG_LIBS=-lpng],
+                                      [have_png=yes],
                                       [have_png=no])])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_png != xyes; then
             if test x${PKG_CONFIG} != x; then
                 PKG_CHECK_MODULES(LIBPNG,

@@ -13754,6 +13754,8 @@ fi
         fi
     fi
     if test x$have_gd = xyes; then
+        CFLAGS_BACKUP=$CFLAGS
+        CFLAGS="$CFLAGS $LIBPNG_CFLAGS"
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromGifPtr in -lgd" >&5
 $as_echo_n "checking for gdImageCreateFromGifPtr in -lgd... " >&6; }
 if ${ac_cv_lib_gd_gdImageCreateFromGifPtr+:} false; then :
@@ -14264,6 +14266,7 @@ _ACEOF
 
 fi
 
+        CFLAGS=$CFLAGS_BACKUP
 
 $as_echo "#define HAVE_GD 1" >>confdefs.h
 
@@ -14385,6 +14388,20 @@ fi
 
 if test x$with_libcurl != xno; then
     if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_libcurl != xyes; then
+            LIBCURL_CFLAGS="-I${with_libcurl}/include"
+            LIBCURL_LIBS="-L${with_libcurl}/lib -lcurl"
+        elif test x${prefix} != x -a x${prefix} != xNONE; then
+            LIBCURL_CFLAGS="-I${prefix}/include"
+            LIBCURL_LIBS="-L${prefix}/lib -lcurl"
+        else
+            LIBCURL_CFLAGS="-I/usr/local/include"
+            LIBCURL_LIBS="-L/usr/local/lib -lcurl"
+        fi
+        CFLAGS="${CFLAGS} ${LIBCURL_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${LIBCURL_LIBS}"
         ac_fn_c_check_header_mongrel "$LINENO" "curl/curl.h" "ac_cv_header_curl_curl_h" "$ac_includes_default"
 if test "x$ac_cv_header_curl_curl_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for curl_easy_cleanup in -lcurl" >&5
@@ -14424,7 +14441,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_curl_curl_easy_cleanup" >&5
 $as_echo "$ac_cv_lib_curl_curl_easy_cleanup" >&6; }
 if test "x$ac_cv_lib_curl_curl_easy_cleanup" = xyes; then :
-  have_curl=yes LIBCURL_LIBS=-lcurl
+  have_curl=yes
 else
   have_curl=no
 fi
@@ -14432,6 +14449,8 @@ fi
 fi
 
 
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_curl != xyes; then
             if test x${PKG_CONFIG} != x; then
 
@@ -14529,6 +14548,20 @@ fi
 
 if test x$with_jpeg != xno; then
     if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_jpeg != xyes; then
+            LIBJPEG_CFLAGS="-I${with_jpeg}/include"
+            LIBJPEG_LIBS="-L${with_jpeg}/lib -ljpeg"
+        elif test x${prefix} != x -a x${prefix} != xNONE; then
+            LIBJPEG_CFLAGS="-I${prefix}/include"
+            LIBJPEG_LIBS="-L${prefix}/lib -ljpeg"
+        else
+            LIBJPEG_CFLAGS="-I/usr/local/include"
+            LIBJPEG_LIBS="-L/usr/local/lib -ljpeg"
+        fi
+        CFLAGS="${CFLAGS} ${LIBJPEG_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${LIBJPEG_LIBS}"
         ac_fn_c_check_header_mongrel "$LINENO" "jpeglib.h" "ac_cv_header_jpeglib_h" "$ac_includes_default"
 if test "x$ac_cv_header_jpeglib_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for jpeg_read_header in -ljpeg" >&5
@@ -14568,7 +14601,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_jpeg_jpeg_read_header" >&5
 $as_echo "$ac_cv_lib_jpeg_jpeg_read_header" >&6; }
 if test "x$ac_cv_lib_jpeg_jpeg_read_header" = xyes; then :
-  have_jpeg=yes LIBJPEG_LIBS=-ljpeg
+  have_jpeg=yes
 else
   have_jpeg=no
 fi
@@ -14576,6 +14609,8 @@ fi
 fi
 
 
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
     fi
     if test x$have_jpeg = xyes; then
 
@@ -14599,6 +14634,20 @@ fi
 
 if test x$with_png != xno; then
     if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_png != xyes; then
+            LIBPNG_CFLAGS="-I${with_png}/include"
+            LIBPNG_LIBS="-L${with_png}/lib -lpng"
+        elif test x${prefix} != x -a x${prefix} != xNONE; then
+            LIBPNG_CFLAGS="-I${prefix}/include"
+            LIBPNG_LIBS="-L${prefix}/lib -lpng"
+        else
+            LIBPNG_CFLAGS="-I/usr/local/include"
+            LIBPNG_LIBS="-L/usr/local/lib -lpng"
+        fi
+        CFLAGS="${CFLAGS} ${LIBPNG_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${LIBPNG_LIBS}"
         ac_fn_c_check_header_mongrel "$LINENO" "png.h" "ac_cv_header_png_h" "$ac_includes_default"
 if test "x$ac_cv_header_png_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for png_check_sig in -lpng" >&5
@@ -14638,7 +14687,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_png_png_check_sig" >&5
 $as_echo "$ac_cv_lib_png_png_check_sig" >&6; }
 if test "x$ac_cv_lib_png_png_check_sig" = xyes; then :
-  have_png=yes LIBPNG_LIBS=-lpng
+  have_png=yes
 else
   have_png=no
 fi
@@ -14646,6 +14695,8 @@ fi
 fi
 
 
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_png != xyes; then
             if test x${PKG_CONFIG} != x; then
 
