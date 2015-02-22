@@ -195,6 +195,7 @@ AC_CHECK_FUNCS([memcpy \
                 calloc \
                 clock \
                 clearerr \
+                stat \
                 setjmp])
 
 # for HDR

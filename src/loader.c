@@ -37,6 +37,10 @@
 # include <sys/stat.h>
 #endif
 
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+
 #if HAVE_FCNTL_H
 # include <fcntl.h>
 #endif
@@ -135,6 +139,9 @@ static FILE *
 open_binary_file(char const *filename)
 {
     FILE *f;
+#if HAVE_STAT
+    struct stat sb;
+#endif  /* HAVE_STAT */
 
     if (filename == NULL || strcmp(filename, "-") == 0) {
         /* for windows */
@@ -147,6 +154,21 @@ open_binary_file(char const *filename)
 #endif  /* defined(O_BINARY) */
         return stdin;
     }
+
+#if HAVE_STAT
+    if (stat(filename, &sb) != 0) {
+# if HAVE_ERRNO_H
+        fprintf(stderr, "stat() failed.\n" "reason: %s.\n",
+                strerror(errno));
+# endif  /* HAVE_ERRNO_H */
+        return NULL;
+    }
+    if ((sb.st_mode & S_IFMT) == S_IFDIR) {
+        fprintf(stderr, "'%s' is directory.\n", filename);
+        return NULL;
+    }
+#endif  /* HAVE_STAT */
+
     f = fopen(filename, "rb");
     if (!f) {
 #if HAVE_ERRNO_H
