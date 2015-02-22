@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -25,9 +25,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <limits.h>
 
-#if defined(HAVE_INTTYPES_H)
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
+#if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
 
@@ -343,8 +346,10 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     }
 
     if (pixelformat != PIXELFORMAT_RGB888) {
-        nret = sixel_helper_normalize_pixelformat(normalized_pixels, data,
-                                                  width, height, pixelformat);
+        nret = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                  &pixelformat,
+                                                  data, pixelformat,
+                                                  width, height);
         if (nret != 0) {
             goto end;
         }
@@ -516,10 +521,13 @@ sixel_dither_apply_palette(sixel_dither_t *dither,
         if (normalized_pixels == NULL) {
             goto end;
         }
-        sixel_helper_normalize_pixelformat(normalized_pixels,
-                                           pixels,
-                                           width, height,
-                                           dither->pixelformat);
+        ret = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                 &dither->pixelformat,
+                                                 pixels, dither->pixelformat,
+                                                 width, height);
+        if (ret != 0) {
+            goto end;
+        }
         input_pixels = normalized_pixels;
     } else {
         input_pixels = pixels;

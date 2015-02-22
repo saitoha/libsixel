@@ -19,46 +19,27 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_QUANT_H
-#define LIBSIXEL_QUANT_H
+#ifndef LIBSIXEL_LOADER_H
+#define LIBSIXEL_LOADER_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-unsigned char *
-sixel_quant_make_palette(
-    unsigned const char /* in */ *data,  /* data for sampling */
-    int /* in */ length,                 /* data size */
-    int /* in */ depth,
-    int /* in */ reqcolors,
-    int /* in */ *ncolors,
-    int /* in */ *origcolors,
-    int /* in */ methodForLargest,
-    int /* in */ methodForRep,
-    int /* in */ qualityMode);
-
 int
-sixel_quant_apply_palette(unsigned char *data,
-                          int width, int height, int depth,
-                          unsigned char *palette, int reqcolor,
-                          int const methodForDiffuse,
-                          int foptimize,
-                          int foptimize_palette,
-                          int complexion,
-                          unsigned short *cachetable,
-                          int *ncolor,
-                          unsigned char *result);
-
-
-void
-sixel_quant_free_palette(unsigned char * data);
+load_image_file(char const *filename, int *psx, int *psy,
+                unsigned char **ppalette, int *pncolors,
+                int *ppixelformat,
+                int *pframe_count, int *ploop_count, int **ppdelay,
+                int fstatic, int reqcolors,
+                unsigned char **ppixels,
+                unsigned char *bgcolor);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LIBSIXEL_QUANT_H */
+#endif /* LIBSIXEL_LOADER_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

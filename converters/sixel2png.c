@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -55,7 +55,6 @@
 #endif
 
 #include <sixel.h>
-#include <sixel-imageio.h>
 
 
 static int
@@ -134,7 +133,8 @@ sixel_to_png(char const *input, char const *output)
         goto end;
     }
 
-    ret = sixel_helper_write_image_file(indexed_pixels, sx, sy, PIXELFORMAT_PAL8, output, FMT_PNG);
+    ret = sixel_helper_write_image_file(indexed_pixels, sx, sy, palette,
+                                        PIXELFORMAT_PAL8, output, FORMAT_PNG);
 
 end:
     free(pixels);
@@ -146,7 +146,7 @@ static
 void show_version(void)
 {
     printf("sixel2png " PACKAGE_VERSION "\n"
-           "Copyright (C) 2014 Hayaki Saito <user@zuse.jp>.\n"
+           "Copyright (C) 2014,2015 Hayaki Saito <user@zuse.jp>.\n"
            "\n"
            "Permission is hereby granted, free of charge, to any person obtaining a copy of\n"
            "this software and associated documentation files (the \"Software\"), to deal in\n"

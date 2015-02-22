@@ -13229,6 +13229,7 @@ for ac_header in memory.h \
                   sys/stat.h \
                   fcntl.h \
                   errno.h \
+                  limits.h \
                   sys/time.h \
                   time.h \
                   signal.h \
@@ -13425,15 +13426,16 @@ fi
 
 for ac_func in memcpy \
                 memmove \
-                strtol \
                 setmode \
                 _setmode \
                 signal \
                 usleep \
                 strdup \
+                strtoul \
                 calloc \
                 clock \
                 clearerr \
+                stat \
                 setjmp
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
@@ -14799,7 +14801,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h include/sixel-imageio.h src/Makefile include/Makefile converters/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -15851,7 +15853,6 @@ do
     "libsixel.pc") CONFIG_FILES="$CONFIG_FILES libsixel.pc" ;;
     "package.json.in") CONFIG_FILES="$CONFIG_FILES package.json.in" ;;
     "include/sixel.h") CONFIG_FILES="$CONFIG_FILES include/sixel.h" ;;
-    "include/sixel-imageio.h") CONFIG_FILES="$CONFIG_FILES include/sixel-imageio.h" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
     "converters/Makefile") CONFIG_FILES="$CONFIG_FILES converters/Makefile" ;;
