@@ -1,0 +1,62 @@
+--- stb_image.h	2015-02-04 15:31:29.000000000 +0900
++++ stb_image.h	2015-02-04 21:42:54.000000000 +0900
+@@ -5347,6 +5347,8 @@
+    int max_x, max_y;
+    int cur_x, cur_y;
+    int line_size;
++   int loop_count;
++   int delay;
+ } stbi__gif;
+ 
+ static int stbi__gif_test_raw(stbi__context *s)
+@@ -5620,8 +5622,13 @@
+          case 0x21: // Comment Extension.
+          {
+             int len;
+-            if (stbi__get8(s) == 0xF9) { // Graphic Control Extension.
+-               len = stbi__get8(s);
++            switch (stbi__get8(s)) {
++            case 0x01: // Plain Text Extension
++               break;
++            case 0x21: // Comment Extension
++               break;
++            case 0xF9: // Graphic Control Extension
++               len = stbi__get8(s); // block size
+                if (len == 4) {
+                   g->eflags = stbi__get8(s);
+                   stbi__get16le(s); // delay
+@@ -5630,6 +5637,34 @@
+                   stbi__skip(s, len);
+                   break;
+                }
++               break;
++            case 0xFF: // Application Extension
++               len = stbi__get8(s); // block size
++               if (len != 11) break;
++               if (stbi__get8(s) != 'N') break;
++               if (stbi__get8(s) != 'E') break;
++               if (stbi__get8(s) != 'T') break;
++               if (stbi__get8(s) != 'S') break;
++               if (stbi__get8(s) != 'C') break;
++               if (stbi__get8(s) != 'A') break;
++               if (stbi__get8(s) != 'P') break;
++               if (stbi__get8(s) != 'E') break;
++               if (stbi__get8(s) != '2') break;
++               if (stbi__get8(s) != '.') break;
++               if (stbi__get8(s) != '0') break;
++               if (stbi__get8(s) != 0x03) break;
++               // loop count
++               switch (stbi__get8(s)) {
++               case 0x00:
++                  g->loop_count = 1;
++                  break;
++               case 0x01:
++                  g->loop_count = stbi__get16le(s);
++                  break;
++               }
++               break;
++            default:
++               break;
+             }
+             while ((len = stbi__get8(s)) != 0)
+                stbi__skip(s, len);

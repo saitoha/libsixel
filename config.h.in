@@ -1,5 +1,17 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if you have the `calloc' function. */
+#undef HAVE_CALLOC
+
+/* Define to 1 if you have the `clearerr' function. */
+#undef HAVE_CLEARERR
+
+/* Define to 1 if you have the `clock' function. */
+#undef HAVE_CLOCK
+
+/* enable debugging support */
+#undef HAVE_DEBUG
+
 /* Define to 1 if you have the declaration of `gdImageCreateFromBmpPtr', and
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMBMPPTR
@@ -40,6 +52,14 @@
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
 
+/* Define to 1 if you have the declaration of
+   `png_set_expand_gray_1_2_4_to_8', and to 0 if you don't. */
+#undef HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
+
+/* Define to 1 if you have the declaration of `png_set_gray_1_2_4_to_8', and
+   to 0 if you don't. */
+#undef HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
+
 /* Define to 1 if you have the declaration of `SIGHUP', and to 0 if you don't.
    */
 #undef HAVE_DECL_SIGHUP
@@ -61,6 +81,9 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
+/* Define to 1 if the system has the `deprecated' function attribute */
+#undef HAVE_FUNC_ATTRIBUTE_DEPRECATED
+
 /* whether gd is available */
 #undef HAVE_GD
 
@@ -79,20 +102,20 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* whether jpeg codec library is available */
+#undef HAVE_JPEG
+
 /* whether libcurl is available */
 #undef HAVE_LIBCURL
 
 /* Define to 1 if you have the `iconv' library (-liconv). */
 #undef HAVE_LIBICONV
 
-/* Define to 1 if you have the `ole32' library (-lole32). */
-#undef HAVE_LIBOLE32
+/* whether libpng is available */
+#undef HAVE_LIBPNG
 
-/* Define to 1 if you have the `uuid' library (-luuid). */
-#undef HAVE_LIBUUID
-
-/* Define to 1 if you have the `windowscodecs' library (-lwindowscodecs). */
-#undef HAVE_LIBWINDOWSCODECS
+/* Define to 1 if you have the <limits.h> header file. */
+#undef HAVE_LIMITS_H
 
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
@@ -114,6 +137,9 @@
    and to 0 otherwise. */
 #undef HAVE_REALLOC
 
+/* Define to 1 if you have the `setjmp' function. */
+#undef HAVE_SETJMP
+
 /* Define to 1 if you have the `setmode' function. */
 #undef HAVE_SETMODE
 
@@ -129,6 +155,9 @@
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
+/* Define to 1 if you have the `strdup' function. */
+#undef HAVE_STRDUP
+
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
 
@@ -138,11 +167,20 @@
 /* Define to 1 if you have the `strtol' function. */
 #undef HAVE_STRTOL
 
+/* Define to 1 if you have the `strtoul' function. */
+#undef HAVE_STRTOUL
+
+/* Define to 1 if you have the <sys/select.h> header file. */
+#undef HAVE_SYS_SELECT_H
+
 /* Define to 1 if you have the <sys/signal.h> header file. */
 #undef HAVE_SYS_SIGNAL_H
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
@@ -150,20 +188,22 @@
 /* Define to 1 if you have the <sys/unistd.h> header file. */
 #undef HAVE_SYS_UNISTD_H
 
+/* Define to 1 if you have the <time.h> header file. */
+#undef HAVE_TIME_H
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
 /* Define to 1 if you have the `usleep' function. */
 #undef HAVE_USLEEP
 
-/* Define to 1 if you have the <wincodec.h> header file. */
-#undef HAVE_WINCODEC_H
+/* Define to 1 if the system has the `deprecated' variable attribute */
+#undef HAVE_VAR_ATTRIBUTE_DEPRECATED
 
 /* Define to 1 if you have the `_setmode' function. */
 #undef HAVE__SETMODE
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
 /* Name of package */

@@ -53,7 +53,9 @@ stamp-h1
 wic_install.reg
 wic_uninstall.reg
 libsixel.pc
-converters/snake.png
+package.json.in
+include/*.h
 converters/img2sixel
 converters/sixel2png
-converters/snake.sixel
+converters/*.sixel
+converters/*.png
