@@ -1520,6 +1520,9 @@ main(int argc, char *argv[])
             if (settings.clipwidth <= 0 || settings.clipheight <= 0) {
                 goto argerr;
             }
+            if (settings.clipx <= 0 || settings.clipy <= 0) {
+                goto argerr;
+            }
             settings.clipfirst = 0;
             break;
         case 'w':
