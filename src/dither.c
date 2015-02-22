@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -295,189 +295,6 @@ sixel_dither_get(int builtin_dither)
 
 
 static void
-get_rgb(unsigned char *data, int const pixelformat, int depth,
-        unsigned char *r, unsigned char *g, unsigned char *b)
-{
-    unsigned int pixels = 0, low, high;
-    int count = 0;
-
-    while (count < depth) {
-        pixels = *(data + count) | (pixels << 8);
-        count++;
-    }
-
-    /* TODO: we should swap bytes (only necessary on LSByte first hardware?) */
-    if (depth == 2) {
-        low    = pixels & 0xff;
-        high   = (pixels >> 8) & 0xff;
-        pixels = (low << 8) | high;
-    }
-
-    switch (pixelformat) {
-    case PIXELFORMAT_RGB555:
-        *r = ((pixels >> 10) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x1f) << 3;
-        *b = ((pixels >>  0) & 0x1f) << 3;
-        break;
-    case PIXELFORMAT_RGB565:
-        *r = ((pixels >> 11) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x3f) << 2;
-        *b = ((pixels >>  0) & 0x1f) << 3;
-        break;
-    case PIXELFORMAT_RGB888:
-        *r = (pixels >>  0) & 0xff;
-        *g = (pixels >>  8) & 0xff;
-        *b = (pixels >> 16) & 0xff;
-        break;
-    case PIXELFORMAT_BGR555:
-        *r = ((pixels >>  0) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x1f) << 3;
-        *b = ((pixels >> 10) & 0x1f) << 3;
-        break;
-    case PIXELFORMAT_BGR565:
-        *r = ((pixels >>  0) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x3f) << 2;
-        *b = ((pixels >> 11) & 0x1f) << 3;
-        break;
-    case PIXELFORMAT_BGR888:
-        *r = (pixels >> 16) & 0xff;
-        *g = (pixels >>  8) & 0xff;
-        *b = (pixels >>  0) & 0xff;
-        break;
-    case PIXELFORMAT_RGBA8888:
-        *r = (pixels >> 24) & 0xff;
-        *g = (pixels >> 16) & 0xff;
-        *b = (pixels >>  8) & 0xff;
-        break;
-    case PIXELFORMAT_ARGB8888:
-        *r = (pixels >> 16) & 0xff;
-        *g = (pixels >>  8) & 0xff;
-        *b = (pixels >>  0) & 0xff;
-        break;
-    case PIXELFORMAT_GA88:
-        *r = *g = *b = (pixels >> 8) & 0xff;
-        break;
-    case PIXELFORMAT_G8:
-    case PIXELFORMAT_AG88:
-        *r = *g = *b = pixels & 0xff;
-        break;
-    default:
-        *r = *g = *b = 0;
-        break;
-    }
-}
-
-
-static void
-expand_rgb(unsigned char *dst, unsigned char *src,
-           int width, int height, int pixelformat, int depth)
-{
-    int x;
-    int y;
-    int dst_offset;
-    int src_offset;
-    unsigned char r, g, b;
-
-    for (y = 0; y < height; y++) {
-        for (x = 0; x < width; x++) {
-            src_offset = depth * (y * width + x);
-            dst_offset = 3 * (y * width + x);
-            get_rgb(src + src_offset, pixelformat, depth, &r, &g, &b);
-
-            *(dst + dst_offset + 0) = r;
-            *(dst + dst_offset + 1) = g;
-            *(dst + dst_offset + 2) = b;
-        }
-    }
-}
-
-
-static void
-expand_palette(unsigned char *dst, unsigned char const *src,
-               int width, int height, int const pixelformat)
-{
-    int i;
-
-    switch (pixelformat) {
-    case PIXELFORMAT_PAL1:
-        for (i = 0; i < width * height / 8; ++i, ++src) {
-            *dst++ = *src >> 7;
-            *dst++ = *src >> 6 & 0x1;
-            *dst++ = *src >> 5 & 0x1;
-            *dst++ = *src >> 4 & 0x1;
-            *dst++ = *src >> 3 & 0x1;
-            *dst++ = *src >> 2 & 0x1;
-            *dst++ = *src >> 1 & 0x1;
-            *dst++ = *src & 0x1;
-        }
-        break;
-    case PIXELFORMAT_PAL2:
-        for (i = 0; i < width * height / 4; ++i, ++src) {
-            *dst++ = *src >> 6;
-            *dst++ = *src >> 4 & 0x3;
-            *dst++ = *src >> 2 & 0x3;
-            *dst++ = *src & 0x3;
-        }
-        break;
-    case PIXELFORMAT_PAL4:
-        for (i = 0; i < width * height / 2; ++i, ++src) {
-            *dst++ = *src >> 4;
-            *dst++ = *src & 0xf;
-        }
-        break;
-    case PIXELFORMAT_PAL8:
-        for (i = 0; i < width * height; ++i, ++src) {
-            *dst++ = *src;
-        }
-        break;
-    default:
-        break;
-    }
-}
-
-
-int
-sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
-                            int width, int height,
-                            int const pixelformat)
-{
-    switch (pixelformat) {
-    case PIXELFORMAT_G8:
-        expand_rgb(dst, src, width, height, pixelformat, 1);
-        break;
-    case PIXELFORMAT_RGB565:
-    case PIXELFORMAT_RGB555:
-    case PIXELFORMAT_BGR565:
-    case PIXELFORMAT_BGR555:
-    case PIXELFORMAT_GA88:
-    case PIXELFORMAT_AG88:
-        expand_rgb(dst, src, width, height, pixelformat, 2);
-        break;
-    case PIXELFORMAT_RGB888:
-    case PIXELFORMAT_BGR888:
-        expand_rgb(dst, src, width, height, pixelformat, 3);
-        break;
-    case PIXELFORMAT_RGBA8888:
-    case PIXELFORMAT_ARGB8888:
-        expand_rgb(dst, src, width, height, pixelformat, 4);
-        break;
-    case PIXELFORMAT_PAL1:
-    case PIXELFORMAT_PAL2:
-    case PIXELFORMAT_PAL4:
-        expand_palette(dst, src, width, height, pixelformat);
-        break;
-    case PIXELFORMAT_PAL8:
-        memcpy(dst, src, width * height);
-        break;
-    default:
-        return (-1);
-    }
-
-    return 0;
-}
-
-
-static void
 sixel_dither_set_method_for_largest(sixel_dither_t *dither, int method_for_largest)
 {
     if (method_for_largest == LARGE_AUTO) {
@@ -529,8 +346,10 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     }
 
     if (pixelformat != PIXELFORMAT_RGB888) {
-        nret = sixel_helper_normalize_pixelformat(normalized_pixels, data,
-                                                  width, height, pixelformat);
+        nret = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                  &pixelformat,
+                                                  data, pixelformat,
+                                                  width, height);
         if (nret != 0) {
             goto end;
         }
@@ -702,10 +521,13 @@ sixel_dither_apply_palette(sixel_dither_t *dither,
         if (normalized_pixels == NULL) {
             goto end;
         }
-        sixel_helper_normalize_pixelformat(normalized_pixels,
-                                           pixels,
-                                           width, height,
-                                           dither->pixelformat);
+        ret = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                 &dither->pixelformat,
+                                                 pixels, dither->pixelformat,
+                                                 width, height);
+        if (ret != 0) {
+            goto end;
+        }
         input_pixels = normalized_pixels;
     } else {
         input_pixels = pixels;

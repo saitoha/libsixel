@@ -1,9 +1,111 @@
+2015-02-19  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.1: Add descriptions about source image formats to
+  manpage of img2sixel(for Issue #24)
+
+2015-02-16  Hayaki Saito <user@zuse.jp>
+
+  * converters/sixel2png.c, include/sixel-imageio.h.in, src/writer.c: Fix
+  sixel2png available (for issue #30)
+
+  * converters/loader.c: Always set background color and respect bKGD chunk
+  again (for Issue #31)
+
+2015-02-15  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c, converters/stb_image.h: Respect -B option regarding
+  with GIF images with transparent index (for Issue #25)
+
+  * src/loader.c: Blend background color to RGBA image pixels with respecting
+  alpha channel
+
+  * converters/loader.c: libpng loader: background color support for
+  glayscale-alpha PNG (for issue #25)
+
+  * converters/img2sixel.c: Pass PLTE chunk of 1/2/4 bpp paletted PNG specified
+  by -m option directly to dither object
+
+  * converters/img2sixel.c, converters/loader.c, include/sixel.h.in,
+  src/dither.c, src/tosixel.c: libpng loader: Support 4bpp paletted PNG with
+  tRNS chunk (for issue #25)
+
+  * converters/img2sixel.c, converters/loader.c, include/sixel.h.in,
+  src/dither.c, src/tosixel.c: libpng loader: Support 1bpp paletted PNG with
+  tRNS chunk (for issue #25)
+
+  * converters/img2sixel.c, converters/loader.c, include/sixel.h.in,
+  src/dither.c, src/tosixel.c: libpng loader: Support 2bpp paletted PNG with
+  tRNS chunk (for issue #25)
+
+  * converters/loader.c: Don't check bKGD chunk before setting background color
+
+  * converters/loader.c: Respect -B/--bgcolor option in libpng loader when PNG
+  color type is RGB (for issue #25)
+
+  * converters/img2sixel.1, converters/sixel2png.1: Update CONTRIBUTERS section
+  of man pages
+
+  * converters/sixel2png.c, include/sixel-imageio.h.in, src/loader.c,
+  src/writer.c: Minor fixes
+
 2015-02-14  Hayaki Saito <user@zuse.jp>
+
+  * converters/Makefile.am, converters/Makefile.in: Add test case whether
+  stb_image can load a progressive jpeg (for issue #24)
+
+  * converters/img2sixel.c: histogram_colors should be initialized after
+  sixel_dither_initialize() function call
+
+  * Makefile.in, converters/img2sixel.c: Add some parentheses arithmetic
+  operator '|', for suppressing GCC warnings
 
   * converters/stb_image.h: Fix GCC a warning caused by comparison of signed
   and unsigned type in conditional expression
 
+  * Makefile.in, config.h.in, configure, configure.ac, src/dither.c,
+  src/quant.c: Check strtoul and <limits.h> availability
+
+  * converters/img2sixel.c: Parse X11 color spec without strtoul/strtoull
+
+2015-02-13  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.in, converters/img2sixel.c: Fix a syntax error caused by a typo
+
+2015-02-12  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Fix a leak around parsing -B option
+
+  * converters/img2sixel.c: Fix a typo in the output of -H
+
+  * converters/img2sixel.c: Fix a tiny memory leak when duplicated -m option
+  are specified
+
+2015-02-11  Hayaki Saito <user@zuse.jp>
+
+  * converters/shell-completion/bash/img2sixel,
+  converters/shell-completion/zsh/_img2sixel: Add -B option to shell completion
+  settings
+
+2015-02-10  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Background color support for 8bpp paletted PNG with
+  tRNS chunk using libpng (for Issue #25)
+
+2015-02-09  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Consider the behavior of libpng1.2 around background
+  color support(for Issue #25)
+
 2015-02-08  Hayaki Saito <user@zuse.jp>
+
+  * README.md, converters/img2sixel.1, converters/img2sixel.c: Add the brief of
+  -B option to README and manpage
+
+  * converters/loader.c: Fix build error when --without-png configure option is
+  specified
+
+  * converters/img2sixel.c, converters/loader.c, converters/loader.h: Add
+  -B/--bgcolor option (for Issue #25)
 
   * converters/img2sixel.c: Fix noise problem when applying palette (for issue
   #26)
@@ -830,6 +932,8 @@
   * converters/loader.c: Interpret an image expanded by png_set_palette_to_rgb
   as a 3-channel image
 
+  * converters/img2sixel.1: Delete duplicated contributers
+
   * config.h.in, configure, configure.ac, converters/img2sixel.c,
   converters/loader.c, converters/loader.h: Use clearerr instead of fseek
 
@@ -886,6 +990,13 @@
 2014-10-29  Hayaki Saito <user@zuse.jp>
 
   * src/image.c: Remove unused source file image.c
+
+2014-10-28  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.1: Add contributers
+
+  * converters/img2sixel.1: Correct swapped explanation of dithering methods
+  atkinson and fs
 
 2014-10-27  Vertis Sidus <vrtsds@users.noreply.github.com>
 

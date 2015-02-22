@@ -420,7 +420,6 @@ AC_CONFIG_FILES([Makefile
                  libsixel.pc
                  package.json.in
                  include/sixel.h
-                 include/sixel-imageio.h
                  src/Makefile
                  include/Makefile
                  converters/Makefile])

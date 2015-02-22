@@ -5639,7 +5639,7 @@ static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, i
                len = stbi__get8(s); // block size
                if (len == 4) {
                   g->eflags = stbi__get8(s);
-                  stbi__get16le(s); // delay
+                  g->delay = stbi__get16le(s); // delay
                   g->transparent = stbi__get8(s);
                } else {
                   stbi__skip(s, len);
