@@ -128,9 +128,7 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -ldisable -dnone -g ../images/seq2gif.gif
 	$(WINE) ./img2sixel -ldisable -dnone -u -g ../images/seq2gif.gif
 	$(WINE) ./img2sixel -S -datkinson ../images/seq2gif.gif
-if HAVE_JPEG
 	$(WINE) ./img2sixel ../images/snake-progressive.jpg
-endif
 if HAVE_PNG
 	$(WINE) ./img2sixel ../images/snake.png
 endif

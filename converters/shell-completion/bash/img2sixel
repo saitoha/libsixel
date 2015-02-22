@@ -133,6 +133,7 @@ _img2sixel()
                                    -t --palette-type \
                                    -b --builtin-palette \
                                    -E --encode-policy \
+                                   -B --bgcolor \
                                    -P --penetrate \
                                    -D --pipe-mode \
                                    -v --verbose \

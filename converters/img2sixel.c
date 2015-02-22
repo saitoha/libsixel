@@ -76,6 +76,130 @@ enum loopMode {
 };
 
 
+static char *
+arg_strdup(char const *s)
+{
+    char *p;
+
+    p = malloc(strlen(s) + 1);
+    if (p) {
+        strcpy(p, s);
+    }
+    return p;
+}
+
+
+static int
+parse_x_colorspec(char const *s, unsigned char **bgcolor)
+{
+    char *p;
+    unsigned char components[3];
+    int index = 0;
+    int ret = 0;
+    unsigned long v;
+    char *endptr;
+    char *buf = NULL;
+
+    if (s[0] == 'r' && s[1] == 'g' && s[2] == 'b' && s[3] == ':') {
+        p = buf = arg_strdup(s + 4);
+        while (*p) {
+            v = 0;
+            for (endptr = p; endptr - p <= 12; ++endptr) {
+                if (*endptr >= '0' && *endptr <= '9') {
+                    v = (v << 4) | (*endptr - '0');
+                } else if (*endptr >= 'a' && *endptr <= 'f') {
+                    v = (v << 4) | (*endptr - 'a' + 10);
+                } else if (*endptr >= 'A' && *endptr <= 'F') {
+                    v = (v << 4) | (*endptr - 'A' + 10);
+                } else {
+                    break;
+                }
+            }
+            if (endptr - p == 0) {
+                break;
+            }
+            if (endptr - p > 4) {
+                break;
+            }
+            v = v << ((4 - (endptr - p)) * 4) >> 8;
+            components[index++] = (unsigned char)v;
+            p = endptr;
+            if (index == 3) {
+                break;
+            }
+            if (*p == '\0') {
+                break;
+            }
+            if (*p != '/') {
+                break;
+            }
+            ++p;
+        }
+        if (index != 3 || *p != '\0' || *p == '/') {
+            ret = (-1);
+            goto end;
+        }
+        *bgcolor = malloc(3);
+        (*bgcolor)[0] = components[0];
+        (*bgcolor)[1] = components[1];
+        (*bgcolor)[2] = components[2];
+    } else if (*s == '#') {
+        buf = arg_strdup(s + 1);
+        for (p = endptr = buf; endptr - p <= 12; ++endptr) {
+            if (*endptr >= '0' && *endptr <= '9') {
+                *endptr -= '0';
+            } else if (*endptr >= 'a' && *endptr <= 'f') {
+                *endptr -= 'a' - 10;
+            } else if (*endptr >= 'A' && *endptr <= 'F') {
+                *endptr -= 'A' - 10;
+            } else if (*endptr == '\0') {
+                break;
+            } else {
+                ret = (-1);
+                goto end;
+            }
+        }
+        if (endptr - p > 12) {
+            ret = (-1);
+            goto end;
+        }
+        *bgcolor = malloc(3);
+        switch (endptr - p) {
+        case 3:
+            (*bgcolor)[0] = (unsigned char)(p[0] << 4);
+            (*bgcolor)[1] = (unsigned char)(p[1] << 4);
+            (*bgcolor)[2] = (unsigned char)(p[2] << 4);
+            break;
+        case 6:
+            (*bgcolor)[0] = (unsigned char)(p[0] << 4 | p[1]);
+            (*bgcolor)[1] = (unsigned char)(p[2] << 4 | p[3]);
+            (*bgcolor)[2] = (unsigned char)(p[4] << 4 | p[4]);
+            break;
+        case 9:
+            (*bgcolor)[0] = (unsigned char)(p[0] << 4 | p[1]);
+            (*bgcolor)[1] = (unsigned char)(p[3] << 4 | p[4]);
+            (*bgcolor)[2] = (unsigned char)(p[6] << 4 | p[7]);
+            break;
+        case 12:
+            (*bgcolor)[0] = (unsigned char)(p[0] << 4 | p[1]);
+            (*bgcolor)[1] = (unsigned char)(p[4] << 4 | p[5]);
+            (*bgcolor)[2] = (unsigned char)(p[8] << 4 | p[9]);
+            break;
+        default:
+            ret = (-1);
+            goto end;
+        }
+    }
+
+    ret = 0;
+
+end:
+    free(buf);
+
+    return ret;
+}
+
+
 static int
 sixel_write_callback(char *data, int size, void *priv)
 {
@@ -139,7 +263,7 @@ prepare_builtin_palette(int builtin_palette)
 
 
 static sixel_dither_t *
-prepare_specified_palette(char const *mapfile, int reqcolors)
+prepare_specified_palette(char const *mapfile, int reqcolors, unsigned char *bgcolor)
 {
     unsigned char *mappixels;
     sixel_dither_t *dither = NULL;
@@ -167,7 +291,8 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
         &delays,
         mapfile,
         1,  /* fstatic */
-        256 /* reqcolors */
+        256, /* reqcolors */
+        bgcolor
     );
     if (ret != 0 || mappixels == NULL || map_sx * map_sy == 0) {
         goto end;
@@ -175,6 +300,9 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
     free(delays);
 
     switch (pixelformat) {
+    case PIXELFORMAT_PAL1:
+    case PIXELFORMAT_PAL2:
+    case PIXELFORMAT_PAL4:
     case PIXELFORMAT_PAL8:
         if (palette == NULL) {
             goto end;
@@ -255,6 +383,7 @@ typedef struct Settings {
     int verbose;
     int show_version;
     int show_help;
+    unsigned char *bgcolor;
 } settings_t;
 
 
@@ -284,7 +413,8 @@ prepare_palette(sixel_dither_t *former_dither,
             return former_dither;
         }
         dither = prepare_specified_palette(psettings->mapfile,
-                                           psettings->reqcolors);
+                                           psettings->reqcolors,
+                                           psettings->bgcolor);
     } else if (psettings->builtin_palette) {
         if (former_dither) {
             return former_dither;
@@ -795,7 +925,8 @@ reload:
         &delays,
         filename,
         psettings->fstatic,
-        psettings->reqcolors);
+        psettings->reqcolors,
+        psettings->bgcolor);
 
     if (nret != 0 || pixels == NULL || sx * sy == 0) {
         goto end;
@@ -1152,6 +1283,18 @@ void show_help(void)
             "                             fast -> encode as fast as possible\n"
             "                             size -> encode to as small sixel\n"
             "                                     sequence as possible\n"
+            "-B BGCOLOR, --bgcolor=BGCOLOR\n"
+            "                           specify background color\n"
+            "                           BGCOLOR is represented by the\n"
+            "                           following syntax\n"
+            "                             #rgb\n"
+            "                             #rrggbb\n"
+            "                             #rrrgggbbb\n"
+            "                             #rrrrggggbbbb\n"
+            "                             rgb:r/g/b\n"
+            "                             rgb:rr/gg/bb\n"
+            "                             rgb:rrr/ggg/bbb\n"
+            "                             rgb:rrrr/gggg/bbbb\n"
             "-P, --penetrate            penetrate GNU Screen using DCS\n"
             "                           pass-through sequence\n"
             "-D, --pipe-mode            read source images from stdin\n"
@@ -1160,19 +1303,6 @@ void show_help(void)
             "-V, --version              show version and license info\n"
             "-H, --help                 show this help\n"
             );
-}
-
-
-static char *
-arg_strdup(char const *s)
-{
-    char *p;
-
-    p = malloc(strlen(s) + 1);
-    if (p) {
-        strcpy(p, s);
-    }
-    return p;
 }
 
 
@@ -1190,7 +1320,7 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:C:DVH";
+    char const *optstring = "78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:B:C:DVH";
 
     settings_t settings = {
         -1,                 /* reqcolors */
@@ -1227,6 +1357,7 @@ main(int argc, char *argv[])
         0,                  /* pipe_mode */
         0,                  /* show_version */
         0,                  /* show_help */
+        NULL,               /* bgcolor */
     };
 
 #if HAVE_GETOPT_LONG
@@ -1256,6 +1387,7 @@ main(int argc, char *argv[])
         {"macro-number",     required_argument,  &long_opt, 'n'},
         {"penetrate",        no_argument,        &long_opt, 'P'},
         {"encode-policy",    required_argument,  &long_opt, 'E'},
+        {"bgcolor",          required_argument,  &long_opt, 'B'},
         {"complexion-score", required_argument,  &long_opt, 'C'},
         {"pipe-mode",        no_argument,        &long_opt, 'D'},
         {"version",          no_argument,        &long_opt, 'V'},
@@ -1291,6 +1423,9 @@ main(int argc, char *argv[])
             settings.reqcolors = atoi(optarg);
             break;
         case 'm':
+            if (settings.mapfile) {
+                free(settings.mapfile);
+            }
             settings.mapfile = arg_strdup(optarg);
             break;
         case 'e':
@@ -1497,6 +1632,19 @@ main(int argc, char *argv[])
                 goto argerr;
             }
             break;
+        case 'B':
+            /* parse --bgcolor option */
+            if (settings.bgcolor) {
+                free(settings.bgcolor);
+            }
+            if (parse_x_colorspec(optarg, &settings.bgcolor) == 0) {
+                settings.palette_type = PALETTETYPE_AUTO;
+            } else {
+                fprintf(stderr,
+                        "Cannot parse bgcolor option.\n");
+                goto argerr;
+            }
+            break;
         case 'i':
             settings.finvert = 1;
             break;
@@ -1596,7 +1744,7 @@ main(int argc, char *argv[])
     }
     if (settings.monochrome && settings.builtin_palette) {
         fprintf(stderr, "option -e, --monochrome conflicts"
-                        " with -I, --builtin-palette.\n");
+                        " with -b, --builtin-palette.\n");
         goto argerr;
     }
     if (settings.mapfile && settings.builtin_palette) {
@@ -1669,11 +1817,12 @@ argerr:
                     "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
                     "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
                     "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
-                    "                 [-E encodepolicy] [filename ...]\n"
+                    "                 [-E encodepolicy] [-B bgcolor] [filename ...]\n"
                     "for more details, type: 'img2sixel -H'.\n");
 
 end:
     free(settings.mapfile);
+    free(settings.bgcolor);
     return exit_code;
 }
 

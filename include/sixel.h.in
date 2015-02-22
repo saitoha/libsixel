@@ -121,11 +121,9 @@ enum pixelFormat {
     PIXELFORMAT_GA44     = FORMATTYPE_GRAYSCALE | 0x22, /* 8bpp gray+alpha */
 #endif
     PIXELFORMAT_GA88     = FORMATTYPE_GRAYSCALE | 0x23, /* 16bpp gray+alpha */
-#if 0
-    PIXELFORMAT_PAL1     = FORMATTYPE_PALETTE   | 0x00, /* monochrome */
+    PIXELFORMAT_PAL1     = FORMATTYPE_PALETTE   | 0x00, /* 1bpp palette */
     PIXELFORMAT_PAL2     = FORMATTYPE_PALETTE   | 0x01, /* 2bpp palette */
     PIXELFORMAT_PAL4     = FORMATTYPE_PALETTE   | 0x02, /* 4bpp palette */
-#endif
     PIXELFORMAT_PAL8     = FORMATTYPE_PALETTE   | 0x03, /* 8bpp palette */
 };
 
