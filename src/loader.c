@@ -93,33 +93,37 @@
 
 typedef struct chunk
 {
-    unsigned char* buffer;
+    unsigned char *buffer;
     size_t size;
     size_t max_size;
 } chunk_t;
 
 
 static void
-chunk_init(chunk_t * const pchunk, size_t initial_size)
+chunk_init(chunk_t * const pchunk,
+           size_t initial_size)
 {
     pchunk->max_size = initial_size;
     pchunk->size = 0;
-    pchunk->buffer = malloc(pchunk->max_size);
+    pchunk->buffer = (unsigned char *)malloc(pchunk->max_size);
 }
 
 
 static size_t
-memory_write(void* ptr, size_t size, size_t len, void* memory)
+memory_write(void *ptr,
+             size_t size,
+             size_t len,
+             void *memory)
 {
     size_t nbytes;
-    chunk_t* chunk;
+    chunk_t *chunk;
 
     nbytes = size * len;
     if (nbytes == 0) {
         return 0;
     }
 
-    chunk = (chunk_t*)memory;
+    chunk = (chunk_t *)memory;
 
     if (chunk->max_size <= chunk->size + nbytes) {
         do {
@@ -267,8 +271,11 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
 # if HAVE_JPEG
 /* import from @uobikiemukot's sdump loader.h */
 static unsigned char *
-load_jpeg(unsigned char *data, int datasize,
-          int *pwidth, int *pheight, int *ppixelformat)
+load_jpeg(unsigned char *data,
+          int datasize,
+          int *pwidth,
+          int *pheight,
+          int *ppixelformat)
 {
     int row_stride, size;
     unsigned char *result = NULL;
@@ -325,7 +332,9 @@ end:
 
 # if HAVE_LIBPNG
 static void
-read_png(png_structp png_ptr, png_bytep data, png_size_t length)
+read_png(png_structp png_ptr,
+         png_bytep data,
+         png_size_t length)
 {
     chunk_t *pchunk = png_get_io_ptr(png_ptr);
     if (length > pchunk->size) {
@@ -340,9 +349,12 @@ read_png(png_structp png_ptr, png_bytep data, png_size_t length)
 
 
 static void
-read_palette(png_structp png_ptr, png_infop info_ptr,
-             unsigned char *palette, int ncolors,
-             png_color *png_palette, png_color_16 *pbackground)
+read_palette(png_structp png_ptr,
+             png_infop info_ptr,
+             unsigned char *palette,
+             int ncolors,
+             png_color *png_palette,
+             png_color_16 *pbackground)
 {
     png_bytep trans = NULL;
     int num_trans = 0;
@@ -370,9 +382,12 @@ read_palette(png_structp png_ptr, png_infop info_ptr,
 
 
 static unsigned char *
-load_png(unsigned char *buffer, int size,
-         int *psx, int *psy,
-         unsigned char **ppalette, int *pncolors,
+load_png(unsigned char *buffer,
+         int size,
+         int *psx,
+         int *psy,
+         unsigned char **ppalette,
+         int *pncolors,
          int reqcolors,
          int *pixelformat,
          unsigned char *bgcolor)
@@ -649,9 +664,12 @@ cleanup:
 
 
 static unsigned char *
-load_sixel(unsigned char *buffer, int size,
-           int *psx, int *psy,
-           unsigned char **ppalette, int *pncolors,
+load_sixel(unsigned char *buffer,
+           int size,
+           int *psx,
+           int *psy,
+           unsigned char **ppalette,
+           int *pncolors,
            int reqcolors,
            int *ppixelformat)
 {
@@ -818,12 +836,21 @@ chunk_is_jpeg(chunk_t const *chunk)
 
 
 static unsigned char *
-load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
-                  int *pstride,
-                  unsigned char **ppalette, int *pncolors,
-                  int *ppixelformat,
-                  int *pframe_count, int *ploop_count, int **ppdelay,
-                  int fstatic, int reqcolors, unsigned char *bgcolor)
+load_with_builtin(
+    chunk_t const *pchunk,
+    int *psx,
+    int *psy,
+    int *pstride,
+    unsigned char **ppalette,
+    int *pncolors,
+    int *ppixelformat,
+    int *pframe_count,
+    int *ploop_count,
+    int **ppdelay,
+    int fstatic,
+    int reqcolors,
+    unsigned char *bgcolor
+)
 {
     unsigned char *p;
     unsigned char *pixels = NULL;
@@ -991,9 +1018,15 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
 
 #ifdef HAVE_GDK_PIXBUF2
 static unsigned char *
-load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
-                    int *ppixelformat, int *pstride, int *pframe_count,
-                    int *ploop_count, int **ppdelay, int fstatic)
+load_with_gdkpixbuf(chunk_t const *pchunk,
+                    int *psx,
+                    int *psy,
+                    int *ppixelformat,
+                    int *pstride,
+                    int *pframe_count,
+                    int *ploop_count,
+                    int **ppdelay,
+                    int fstatic)
 {
     GdkPixbuf *pixbuf;
     GdkPixbufAnimation *animation;
@@ -1249,8 +1282,10 @@ load_with_gd(chunk_t const *pchunk,
 
 
 static int
-arrange_pixelformat(unsigned char *pixels, int width, int height,
-                    unsigned char *bgcolor)
+sixel_strip_alpha(unsigned char *pixels,
+                  int width,
+                  int height,
+                  unsigned char *bgcolor)
 {
     int x;
     int y;
@@ -1338,7 +1373,7 @@ sixel_helper_load_image_file(
     free(chunk.buffer);
     if (*ppixels && stride > 0 && *ppixelformat == PIXELFORMAT_RGBA8888) {
         /* RGBA to RGB */
-        ret = arrange_pixelformat(*ppixels, *psx, *psy * *pframe_count, bgcolor);
+        ret = sixel_strip_alpha(*ppixels, *psx, *psy * *pframe_count, bgcolor);
         if (ret != 0) {
             goto end;
         }
