@@ -14294,6 +14294,8 @@ $as_echo "#define HAVE_GD 1" >>confdefs.h
 
         loaders="${loaders} gd"
     else
+        GD_CFLAGS=
+        GD_LIBS=
         as_fn_error $? "gd is not available." "$LINENO" 5
     fi
 
@@ -14557,6 +14559,8 @@ fi
 $as_echo "#define HAVE_LIBCURL 1" >>confdefs.h
 
     else
+        LIBCURL_CFLAGS=
+        LIBCURL_LIBS=
         if test x$with_libcurl != xauto; then
             as_fn_error $? "unable to find libcurl" "$LINENO" 5
         fi
@@ -14650,6 +14654,8 @@ $as_echo "$as_me: jpeg cflags is ${LIBJPEG_CFLAGS}" >&6;}
         { $as_echo "$as_me:${as_lineno-$LINENO}: jpeg libs is ${LIBJPEG_LIBS}" >&5
 $as_echo "$as_me: jpeg libs is ${LIBJPEG_LIBS}" >&6;}
     else
+        LIBJPEG_CFLAGS=
+        LIBJPEG_LIBS=
         if test x$with_jpeg != xauto; then
             as_fn_error $? "unable to find jpeg codec library" "$LINENO" 5
         fi
@@ -14840,6 +14846,8 @@ $as_echo "$as_me: libpng cflags is ${LIBPNG_CFLAGS}" >&6;}
         { $as_echo "$as_me:${as_lineno-$LINENO}: libpng libs is ${LIBPNG_LIBS}" >&5
 $as_echo "$as_me: libpng libs is ${LIBPNG_LIBS}" >&6;}
     else
+        LIBPNG_CFLAGS=
+        LIBPNG_LIBS=
         if test x$with_png != xauto; then
             as_fn_error $? "unable to find libpng" "$LINENO" 5
         fi
