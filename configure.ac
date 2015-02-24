@@ -322,6 +322,8 @@ if test x$with_gd != xno; then
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
         loaders="${loaders} gd"
     else
+        GD_CFLAGS=
+        GD_LIBS=
         AC_MSG_ERROR(gd is not available.)
     fi
 
@@ -382,6 +384,8 @@ if test x$with_libcurl != xno; then
     if test x$have_curl = xyes; then
         AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
     else
+        LIBCURL_CFLAGS=
+        LIBCURL_LIBS=
         if test x$with_libcurl != xauto; then
             AC_MSG_ERROR([unable to find libcurl])
         fi
@@ -426,6 +430,8 @@ if test x$with_jpeg != xno; then
         AC_MSG_NOTICE([jpeg cflags is ${LIBJPEG_CFLAGS}])
         AC_MSG_NOTICE([jpeg libs is ${LIBJPEG_LIBS}])
     else
+        LIBJPEG_CFLAGS=
+        LIBJPEG_LIBS=
         if test x$with_jpeg != xauto; then
             AC_MSG_ERROR([unable to find jpeg codec library])
         fi
@@ -481,6 +487,8 @@ if test x$with_png != xno; then
         AC_MSG_NOTICE([libpng cflags is ${LIBPNG_CFLAGS}])
         AC_MSG_NOTICE([libpng libs is ${LIBPNG_LIBS}])
     else
+        LIBPNG_CFLAGS=
+        LIBPNG_LIBS=
         if test x$with_png != xauto; then
             AC_MSG_ERROR([unable to find libpng])
         fi
