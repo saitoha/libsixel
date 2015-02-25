@@ -294,7 +294,7 @@ load_jpeg(unsigned char *data,
     cinfo.out_color_space = JCS_RGB;
     jpeg_start_decompress(&cinfo);
 
-    if (cinfo.output_components == 3) {
+    if (cinfo.output_components != 3) {
         fprintf(stderr, "load_jpeg() failed(unknwon format).\n");
         goto end;
     }
