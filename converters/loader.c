@@ -390,7 +390,7 @@ load_png(unsigned char *buffer, int size,
             break;
 
         case 8:
-            if (ppalette && *pncolors <= 1 << 8) {
+            if (ppalette && reqcolors >= (1 << 8)) {
                 *pcomp = 1;
                 *pixelformat = PIXELFORMAT_G8;
             } else {
