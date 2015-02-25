@@ -234,7 +234,7 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
     return 0;
 }
 # endif  /* HAVE_LIBCURL */
- 
+
 
 # if HAVE_JPEG
 /* import from @uobikiemukot's sdump loader.h */
@@ -374,6 +374,12 @@ load_png(unsigned char *buffer, int size,
         case 1:
         case 2:
         case 4:
+            if (ppalette == NULL || (1 << bitdepth) > reqcolors) {
+                png_set_gray_to_rgb(png_ptr);
+                *pcomp = 3;
+                *pixelformat = PIXELFORMAT_RGB888;
+                break;
+            }
 #  if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
             png_set_expand_gray_1_2_4_to_8(png_ptr);
             *pcomp = 1;
