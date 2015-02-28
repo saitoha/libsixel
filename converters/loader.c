@@ -369,6 +369,9 @@ load_png(unsigned char *buffer, int size,
             *pixelformat = PIXELFORMAT_RGB888;
         }
         break;
+    case PNG_COLOR_TYPE_GRAY_ALPHA:
+        png_set_strip_alpha(png_ptr);
+        /* fall through */
     case PNG_COLOR_TYPE_GRAY:
         switch (bitdepth) {
         case 1:
@@ -418,11 +421,6 @@ load_png(unsigned char *buffer, int size,
             *pixelformat = PIXELFORMAT_RGB888;
             break;
         }
-        break;
-    case PNG_COLOR_TYPE_GRAY_ALPHA:
-        png_set_gray_to_rgb(png_ptr);
-        *pcomp = 3;
-        *pixelformat = PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB_ALPHA:
         png_set_strip_alpha(png_ptr);
