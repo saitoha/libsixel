@@ -234,7 +234,7 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
     return 0;
 }
 # endif  /* HAVE_LIBCURL */
- 
+
 
 # if HAVE_JPEG
 /* import from @uobikiemukot's sdump loader.h */
@@ -369,28 +369,44 @@ load_png(unsigned char *buffer, int size,
             *pixelformat = PIXELFORMAT_RGB888;
         }
         break;
+    case PNG_COLOR_TYPE_GRAY_ALPHA:
+        png_set_strip_alpha(png_ptr);
+        /* fall through */
     case PNG_COLOR_TYPE_GRAY:
         switch (bitdepth) {
         case 1:
         case 2:
         case 4:
+            if (ppalette == NULL || (1 << bitdepth) > reqcolors) {
 #  if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
-            png_set_expand_gray_1_2_4_to_8(png_ptr);
-            *pcomp = 1;
-            *pixelformat = PIXELFORMAT_G8;
+                png_set_expand_gray_1_2_4_to_8(png_ptr);
 #  elif HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
-            png_set_gray_1_2_4_to_8(png_ptr);
-            *pcomp = 1;
-            *pixelformat = PIXELFORMAT_G8;
+                png_set_gray_1_2_4_to_8(png_ptr);
 #  else
-            png_set_gray_to_rgb(png_ptr);
-            *pcomp = 3;
-            *pixelformat = PIXELFORMAT_RGB888;
+                png_set_expand(png_ptr);
 #  endif
+                png_set_gray_to_rgb(png_ptr);
+                *pcomp = 3;
+                *pixelformat = PIXELFORMAT_RGB888;
+            } else {
+#  if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
+                png_set_expand_gray_1_2_4_to_8(png_ptr);
+                *pcomp = 1;
+                *pixelformat = PIXELFORMAT_G8;
+#  elif HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
+                png_set_gray_1_2_4_to_8(png_ptr);
+                *pcomp = 1;
+                *pixelformat = PIXELFORMAT_G8;
+#  else
+                png_set_expand(png_ptr);
+                png_set_gray_to_rgb(png_ptr);
+                *pcomp = 3;
+                *pixelformat = PIXELFORMAT_RGB888;
+#  endif
+            }
             break;
-
         case 8:
-            if (ppalette && *pncolors <= 1 << 8) {
+            if (ppalette && reqcolors >= (1 << 8)) {
                 *pcomp = 1;
                 *pixelformat = PIXELFORMAT_G8;
             } else {
@@ -405,11 +421,6 @@ load_png(unsigned char *buffer, int size,
             *pixelformat = PIXELFORMAT_RGB888;
             break;
         }
-        break;
-    case PNG_COLOR_TYPE_GRAY_ALPHA:
-        png_set_gray_to_rgb(png_ptr);
-        *pcomp = 3;
-        *pixelformat = PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB_ALPHA:
         png_set_strip_alpha(png_ptr);
