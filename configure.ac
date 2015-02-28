@@ -374,6 +374,8 @@ if test x$with_libcurl != xno; then
         LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_curl != xyes -a ! -d "$with_libcurl"; then
             if test x${PKG_CONFIG} != x; then
+                LIBCURL_CFLAGS=
+                LIBCURL_LIBS=
                 PKG_CHECK_MODULES(LIBCURL,
                                   [libcurl],
                                   [have_curl=yes],
@@ -469,6 +471,8 @@ if test x$with_png != xno; then
         LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_png != xyes -a ! -d "$with_png"; then
             if test x${PKG_CONFIG} != x; then
+                LIBPNG_CFLAGS=
+                LIBPNG_LIBS=
                 PKG_CHECK_MODULES(LIBPNG,
                                   [libpng],
                                   [have_png=yes],
