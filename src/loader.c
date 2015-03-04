@@ -943,11 +943,9 @@ load_with_builtin(
         for (;;) {
             p = stbi__gif_load_next(&s, &g, &depth, 4, bgcolor);
             if (p == (void *) &s) {
-                /* end of animated gif marker */
                 break;
             }
-            if (p == 0) {
-                free(frames.buffer);
+            if (p == NULL) {
                 pixels = NULL;
                 break;
             }
@@ -961,27 +959,27 @@ load_with_builtin(
                 break;
             }
         }
-        *ploop_count = g.loop_count;
-        *ppdelay = (int *)delays.buffer;
-        *pstride = *psx * depth;
+        if (pixels) {
+            *ploop_count = g.loop_count;
+            *ppdelay = (int *)delays.buffer;
+            *pstride = *psx * depth;
 
-        switch (depth) {
-        case 3:
-            *ppixelformat = PIXELFORMAT_RGB888;
-            break;
-        case 4:
-            *ppixelformat = PIXELFORMAT_RGBA8888;
-            break;
-        default:
-            stbi_image_free(pixels);
-            free(delays.buffer);
-            free(frames.buffer);
-            fprintf(stderr, "load_with_builtin() failed.\n"
-                            "reason: unknwon pixel-format.\n");
-            return NULL;
-        }
-
-        if (!pixels) {
+            switch (depth) {
+            case 3:
+                *ppixelformat = PIXELFORMAT_RGB888;
+                break;
+            case 4:
+                *ppixelformat = PIXELFORMAT_RGBA8888;
+                break;
+            default:
+                stbi_image_free(pixels);
+                free(delays.buffer);
+                free(frames.buffer);
+                fprintf(stderr, "load_with_builtin() failed.\n"
+                                "reason: unknwon pixel-format.\n");
+                return NULL;
+            }
+        } else {
             free(delays.buffer);
             free(frames.buffer);
             fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
