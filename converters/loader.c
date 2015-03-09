@@ -643,7 +643,6 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
     static stbi__gif g;
     chunk_t frames;
     chunk_t delays;
-    int pixelformat = PIXELFORMAT_RGB888;
 
     if (chunk_is_sixel(pchunk)) {
         pixels = load_sixel(pchunk->buffer, pchunk->size,
@@ -658,7 +657,7 @@ load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
     } else if (chunk_is_pnm(pchunk)) {
         /* pnm */
         pixels = load_pnm(pchunk->buffer, pchunk->size,
-                          psx, psy, pcomp, ppalette, pncolors, pixelformat);
+                          psx, psy, pcomp, ppalette, pncolors, ppixelformat);
         if (!pixels) {
 #if HAVE_ERRNO_H
             fprintf(stderr, "load_pnm failed.\n" "reason: %s.\n",
