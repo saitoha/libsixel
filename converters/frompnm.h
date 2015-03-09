@@ -34,7 +34,7 @@ unsigned char *
 load_pnm(unsigned char *p, int len,
          int *psx, int *psy, int *pcomp,
          unsigned char **ppalette, int *pncolors,
-         int pixelformat);
+         int *ppixelformat);
 
 #ifdef __cplusplus
 }
