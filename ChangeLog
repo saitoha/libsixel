@@ -1,3 +1,14 @@
+2015-03-07  Hayaki Saito <user@zuse.jp>
+
+  * converters/frompnm.c, converters/frompnm.h, converters/loader.c: Resolve
+  confliction of parameter declarations of load_pnm(), reported by @tautschnig.
+  (for Issue #40)
+
+2015-03-05  Hayaki Saito <user@zuse.jp>
+
+  * converters/stb_image.h: Parse GIF application extension block correctly
+  (Issue #39)
+
 2015-02-28  Hayaki Saito <user@zuse.jp>
 
   * configure, configure.ac, package.json: Update package version to 1.4.9
