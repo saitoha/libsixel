@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <sixel.h>
 
+
 static unsigned char *
 pnm_get_line(unsigned char *p, unsigned char *end, unsigned char *line)
 {
