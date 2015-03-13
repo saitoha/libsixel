@@ -1002,6 +1002,7 @@ load_with_builtin(
 
         switch (depth) {
         case 3:
+        case 4:
             *ppixelformat = PIXELFORMAT_RGB888;
             break;
         default:
