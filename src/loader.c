@@ -295,7 +295,7 @@ load_jpeg(unsigned char *data,
     jpeg_start_decompress(&cinfo);
 
     if (cinfo.output_components != 3) {
-        fprintf(stderr, "load_jpeg() failed(unknwon format).\n");
+        fprintf(stderr, "load_jpeg() failed(unknown format).\n");
         goto end;
     }
 
@@ -977,7 +977,7 @@ load_with_builtin(
             free(delays.buffer);
             free(frames.buffer);
             fprintf(stderr, "load_with_builtin() failed.\n"
-                            "reason: unknwon pixel-format.\n");
+                            "reason: unknown pixel-format.\n");
             return NULL;
         }
 
@@ -1007,7 +1007,7 @@ load_with_builtin(
         default:
             stbi_image_free(pixels);
             fprintf(stderr, "load_with_builtin() failed.\n"
-                            "reason: unknwon pixel-format.\n");
+                            "reason: unknown pixel-format.\n");
             return NULL;
         }
     }
