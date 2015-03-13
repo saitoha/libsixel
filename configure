@@ -13637,14 +13637,14 @@ if test x$with_gd != xno; then
         if test ! -d "$with_gd"; then
             as_fn_error $? "\"${with_gd}\" is not directory" "$LINENO" 5
         fi
-        GD_CFLAGS="-I${with_gd}/include"
-        GD_LIBS="-L${with_gd}/lib -lgd"
+        ADDED_CFLAGS="-I${with_gd}/include"
+        ADDED_LIBS="-L${with_gd}/lib -lgd"
     elif test x${prefix} != x -a x${prefix} != xNONE; then
-        GD_CFLAGS="-I${prefix}/include"
-        GD_LIBS="-L${prefix}/lib -lgd"
+        ADDED_CFLAGS="-I${prefix}/include"
+        ADDED_LIBS="-L${prefix}/lib -lgd"
     else
-        GD_CFLAGS="-I/usr/local/include"
-        GD_LIBS="-L/usr/local/lib -lgd"
+        ADDED_CFLAGS="-I/usr/local/include"
+        ADDED_LIBS="-L/usr/local/lib -lgd"
     fi
     CFLAGS="${CFLAGS} ${GD_CFLAGS}"
     LDFLAGS="${LDFLAGS} ${GD_LIBS}"
@@ -13688,6 +13688,8 @@ fi
 $as_echo "$ac_cv_lib_gd_gdImageCreateFromGifPtr" >&6; }
 if test "x$ac_cv_lib_gd_gdImageCreateFromGifPtr" = xyes; then :
   have_gd="yes"
+                                   GD_CFLAGS=$ADDED_CFLAGS
+                                   GD_LIBS=$ADDED_LIBS
 else
   have_gd="no"
 fi
@@ -14418,17 +14420,17 @@ if test x$with_libcurl != xno; then
             if test ! -d "$with_libcurl"; then
                 as_fn_error $? "\"${with_libcurl}\" is not directory" "$LINENO" 5
             fi
-            LIBCURL_CFLAGS="-I${with_libcurl}/include"
-            LIBCURL_LIBS="-L${with_libcurl}/lib -lcurl"
+            ADDED_CFLAGS="-I${with_libcurl}/include"
+            ADDED_LIBS="-L${with_libcurl}/lib -lcurl"
         elif test x${prefix} != x -a x${prefix} != xNONE; then
-            LIBCURL_CFLAGS="-I${prefix}/include"
-            LIBCURL_LIBS="-L${prefix}/lib -lcurl"
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -lcurl"
         else
-            LIBCURL_CFLAGS="-I/usr/local/include"
-            LIBCURL_LIBS="-L/usr/local/lib -lcurl"
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -lcurl"
         fi
-        CFLAGS="${CFLAGS} ${LIBCURL_CFLAGS}"
-        LDFLAGS="${LDFLAGS} ${LIBCURL_LIBS}"
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
         ac_fn_c_check_header_mongrel "$LINENO" "curl/curl.h" "ac_cv_header_curl_curl_h" "$ac_includes_default"
 if test "x$ac_cv_header_curl_curl_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for curl_easy_cleanup in -lcurl" >&5
@@ -14469,6 +14471,8 @@ fi
 $as_echo "$ac_cv_lib_curl_curl_easy_cleanup" >&6; }
 if test "x$ac_cv_lib_curl_curl_easy_cleanup" = xyes; then :
   have_curl=yes
+                                       LIBCURL_CFLAGS=$ADDED_CFLAGS
+                                       LIBCURL_LIBS=$ADDED_LIBS
 else
   have_curl=no
 fi
@@ -14480,8 +14484,6 @@ fi
         LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_curl != xyes -a ! -d "$with_libcurl"; then
             if test x${PKG_CONFIG} != x; then
-                LIBCURL_CFLAGS=
-                LIBCURL_LIBS=
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBCURL" >&5
@@ -14561,8 +14563,6 @@ fi
 $as_echo "#define HAVE_LIBCURL 1" >>confdefs.h
 
     else
-        LIBCURL_CFLAGS=
-        LIBCURL_LIBS=
         if test x$with_libcurl != xauto; then
             as_fn_error $? "unable to find libcurl" "$LINENO" 5
         fi
@@ -14585,17 +14585,17 @@ if test x$with_jpeg != xno; then
             if test ! -d "$with_jpeg"; then
                 as_fn_error $? "\"${with_jpeg}\" is not directory" "$LINENO" 5
             fi
-            LIBJPEG_CFLAGS="-I${with_jpeg}/include"
-            LIBJPEG_LIBS="-L${with_jpeg}/lib -ljpeg"
+            ADDED_CFLAGS="-I${with_jpeg}/include"
+            ADDED_LIBS="-L${with_jpeg}/lib -ljpeg"
         elif test x${prefix} != x -a x${prefix} != xNONE; then
-            LIBJPEG_CFLAGS="-I${prefix}/include"
-            LIBJPEG_LIBS="-L${prefix}/lib -ljpeg"
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -ljpeg"
         else
-            LIBJPEG_CFLAGS="-I/usr/local/include"
-            LIBJPEG_LIBS="-L/usr/local/lib -ljpeg"
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -ljpeg"
         fi
-        CFLAGS="${CFLAGS} ${LIBJPEG_CFLAGS}"
-        LDFLAGS="${LDFLAGS} ${LIBJPEG_LIBS}"
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
         ac_fn_c_check_header_mongrel "$LINENO" "jpeglib.h" "ac_cv_header_jpeglib_h" "$ac_includes_default"
 if test "x$ac_cv_header_jpeglib_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for jpeg_read_header in -ljpeg" >&5
@@ -14647,6 +14647,8 @@ fi
         LDFLAGS=$LDFLAGS_BACKUP
     fi
     if test x$have_jpeg = xyes; then
+        LIBJPEG_CFLAGS=$ADDED_CFLAGS
+        LIBJPEG_LIBS=$ADDED_LIBS
 
 $as_echo "#define HAVE_JPEG 1" >>confdefs.h
 
@@ -14656,8 +14658,6 @@ $as_echo "$as_me: jpeg cflags is ${LIBJPEG_CFLAGS}" >&6;}
         { $as_echo "$as_me:${as_lineno-$LINENO}: jpeg libs is ${LIBJPEG_LIBS}" >&5
 $as_echo "$as_me: jpeg libs is ${LIBJPEG_LIBS}" >&6;}
     else
-        LIBJPEG_CFLAGS=
-        LIBJPEG_LIBS=
         if test x$with_jpeg != xauto; then
             as_fn_error $? "unable to find jpeg codec library" "$LINENO" 5
         fi
@@ -14676,17 +14676,17 @@ if test x$with_png != xno; then
             if test ! -d "$with_png"; then
                 as_fn_error $? "\"${with_png}\" is not directory" "$LINENO" 5
             fi
-            LIBPNG_CFLAGS="-I${with_png}/include"
-            LIBPNG_LIBS="-L${with_png}/lib -lpng"
+            ADDED_CFLAGS="-I${with_png}/include"
+            ADDED_LIBS="-L${with_png}/lib -lpng"
         elif test x${prefix} != x -a x${prefix} != xNONE; then
-            LIBPNG_CFLAGS="-I${prefix}/include"
-            LIBPNG_LIBS="-L${prefix}/lib -lpng"
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -lpng"
         else
-            LIBPNG_CFLAGS="-I/usr/local/include"
-            LIBPNG_LIBS="-L/usr/local/lib -lpng"
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -lpng"
         fi
-        CFLAGS="${CFLAGS} ${LIBPNG_CFLAGS}"
-        LDFLAGS="${LDFLAGS} ${LIBPNG_LIBS}"
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
         ac_fn_c_check_header_mongrel "$LINENO" "png.h" "ac_cv_header_png_h" "$ac_includes_default"
 if test "x$ac_cv_header_png_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for png_check_sig in -lpng" >&5
@@ -14727,6 +14727,8 @@ fi
 $as_echo "$ac_cv_lib_png_png_check_sig" >&6; }
 if test "x$ac_cv_lib_png_png_check_sig" = xyes; then :
   have_png=yes
+                                       LIBPNG_CFLAGS=$ADDED_CFLAGS
+                                       LIBPNG_LIBS=$ADDED_LIBS
 else
   have_png=no
 fi
@@ -14738,8 +14740,6 @@ fi
         LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_png != xyes -a ! -d "$with_png"; then
             if test x${PKG_CONFIG} != x; then
-                LIBPNG_CFLAGS=
-                LIBPNG_LIBS=
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBPNG" >&5
@@ -14815,8 +14815,8 @@ fi
         fi
     fi
     if test x$have_png = xyes; then
-        CFLAGS_BACKUP=$CFLAGS
-        CFLAGS="$CFLAGS $LIBPNG_CFLAGS"
+        CFLAGS="${CFLAGS} ${LIBPNG_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${LIBPNG_LIBS}"
         ac_fn_c_check_decl "$LINENO" "png_set_gray_1_2_4_to_8" "ac_cv_have_decl_png_set_gray_1_2_4_to_8" " #include <png.h>
 "
 if test "x$ac_cv_have_decl_png_set_gray_1_2_4_to_8" = xyes; then :
@@ -14841,6 +14841,7 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
         CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
 
 $as_echo "#define HAVE_LIBPNG 1" >>confdefs.h
 
@@ -14850,8 +14851,6 @@ $as_echo "$as_me: libpng cflags is ${LIBPNG_CFLAGS}" >&6;}
         { $as_echo "$as_me:${as_lineno-$LINENO}: libpng libs is ${LIBPNG_LIBS}" >&5
 $as_echo "$as_me: libpng libs is ${LIBPNG_LIBS}" >&6;}
     else
-        LIBPNG_CFLAGS=
-        LIBPNG_LIBS=
         if test x$with_png != xauto; then
             as_fn_error $? "unable to find libpng" "$LINENO" 5
         fi

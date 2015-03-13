@@ -259,21 +259,23 @@ if test x$with_gd != xno; then
         if test ! -d "$with_gd"; then
             AC_MSG_ERROR(["${with_gd}" is not directory])
         fi
-        GD_CFLAGS="-I${with_gd}/include"
-        GD_LIBS="-L${with_gd}/lib -lgd"
+        ADDED_CFLAGS="-I${with_gd}/include"
+        ADDED_LIBS="-L${with_gd}/lib -lgd"
     elif test x${prefix} != x -a x${prefix} != xNONE; then
-        GD_CFLAGS="-I${prefix}/include"
-        GD_LIBS="-L${prefix}/lib -lgd"
+        ADDED_CFLAGS="-I${prefix}/include"
+        ADDED_LIBS="-L${prefix}/lib -lgd"
     else
-        GD_CFLAGS="-I/usr/local/include"
-        GD_LIBS="-L/usr/local/lib -lgd"
+        ADDED_CFLAGS="-I/usr/local/include"
+        ADDED_LIBS="-L/usr/local/lib -lgd"
     fi
     CFLAGS="${CFLAGS} ${GD_CFLAGS}"
     LDFLAGS="${LDFLAGS} ${GD_LIBS}"
     AC_CHECK_HEADER([gd.h],
                     [AC_CHECK_LIB([gd],
                                   [gdImageCreateFromGifPtr],
-                                  [have_gd="yes"],
+                                  [have_gd="yes"
+                                   GD_CFLAGS=$ADDED_CFLAGS
+                                   GD_LIBS=$ADDED_LIBS],
                                   [have_gd="no"])])
     CFLAGS=$CFLAGS_BACKUP
     LDFLAGS=$LDFLAGS_BACKUP
@@ -354,28 +356,28 @@ if test x$with_libcurl != xno; then
             if test ! -d "$with_libcurl"; then
                 AC_MSG_ERROR(["${with_libcurl}" is not directory])
             fi
-            LIBCURL_CFLAGS="-I${with_libcurl}/include"
-            LIBCURL_LIBS="-L${with_libcurl}/lib -lcurl"
+            ADDED_CFLAGS="-I${with_libcurl}/include"
+            ADDED_LIBS="-L${with_libcurl}/lib -lcurl"
         elif test x${prefix} != x -a x${prefix} != xNONE; then
-            LIBCURL_CFLAGS="-I${prefix}/include"
-            LIBCURL_LIBS="-L${prefix}/lib -lcurl"
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -lcurl"
         else
-            LIBCURL_CFLAGS="-I/usr/local/include"
-            LIBCURL_LIBS="-L/usr/local/lib -lcurl"
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -lcurl"
         fi
-        CFLAGS="${CFLAGS} ${LIBCURL_CFLAGS}"
-        LDFLAGS="${LDFLAGS} ${LIBCURL_LIBS}"
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
         AC_CHECK_HEADER([curl/curl.h],
                         [AC_CHECK_LIB([curl],
                                       [curl_easy_cleanup],
-                                      [have_curl=yes],
+                                      [have_curl=yes
+                                       LIBCURL_CFLAGS=$ADDED_CFLAGS
+                                       LIBCURL_LIBS=$ADDED_LIBS],
                                       [have_curl=no])])
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_curl != xyes -a ! -d "$with_libcurl"; then
             if test x${PKG_CONFIG} != x; then
-                LIBCURL_CFLAGS=
-                LIBCURL_LIBS=
                 PKG_CHECK_MODULES(LIBCURL,
                                   [libcurl],
                                   [have_curl=yes],
@@ -386,8 +388,6 @@ if test x$with_libcurl != xno; then
     if test x$have_curl = xyes; then
         AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
     else
-        LIBCURL_CFLAGS=
-        LIBCURL_LIBS=
         if test x$with_libcurl != xauto; then
             AC_MSG_ERROR([unable to find libcurl])
         fi
@@ -407,17 +407,17 @@ if test x$with_jpeg != xno; then
             if test ! -d "$with_jpeg"; then
                 AC_MSG_ERROR(["${with_jpeg}" is not directory])
             fi
-            LIBJPEG_CFLAGS="-I${with_jpeg}/include"
-            LIBJPEG_LIBS="-L${with_jpeg}/lib -ljpeg"
+            ADDED_CFLAGS="-I${with_jpeg}/include"
+            ADDED_LIBS="-L${with_jpeg}/lib -ljpeg"
         elif test x${prefix} != x -a x${prefix} != xNONE; then
-            LIBJPEG_CFLAGS="-I${prefix}/include"
-            LIBJPEG_LIBS="-L${prefix}/lib -ljpeg"
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -ljpeg"
         else
-            LIBJPEG_CFLAGS="-I/usr/local/include"
-            LIBJPEG_LIBS="-L/usr/local/lib -ljpeg"
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -ljpeg"
         fi
-        CFLAGS="${CFLAGS} ${LIBJPEG_CFLAGS}"
-        LDFLAGS="${LDFLAGS} ${LIBJPEG_LIBS}"
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
         AC_CHECK_HEADER([jpeglib.h],
                         [AC_CHECK_LIB([jpeg],
                                       [jpeg_read_header],
@@ -427,13 +427,13 @@ if test x$with_jpeg != xno; then
         LDFLAGS=$LDFLAGS_BACKUP
     fi
     if test x$have_jpeg = xyes; then
+        LIBJPEG_CFLAGS=$ADDED_CFLAGS
+        LIBJPEG_LIBS=$ADDED_LIBS
         AC_DEFINE(HAVE_JPEG, 1, [whether jpeg codec library is available])
         loaders="${loaders} jpeg"
         AC_MSG_NOTICE([jpeg cflags is ${LIBJPEG_CFLAGS}])
         AC_MSG_NOTICE([jpeg libs is ${LIBJPEG_LIBS}])
     else
-        LIBJPEG_CFLAGS=
-        LIBJPEG_LIBS=
         if test x$with_jpeg != xauto; then
             AC_MSG_ERROR([unable to find jpeg codec library])
         fi
@@ -451,28 +451,28 @@ if test x$with_png != xno; then
             if test ! -d "$with_png"; then
                 AC_MSG_ERROR(["${with_png}" is not directory])
             fi
-            LIBPNG_CFLAGS="-I${with_png}/include"
-            LIBPNG_LIBS="-L${with_png}/lib -lpng"
+            ADDED_CFLAGS="-I${with_png}/include"
+            ADDED_LIBS="-L${with_png}/lib -lpng"
         elif test x${prefix} != x -a x${prefix} != xNONE; then
-            LIBPNG_CFLAGS="-I${prefix}/include"
-            LIBPNG_LIBS="-L${prefix}/lib -lpng"
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -lpng"
         else
-            LIBPNG_CFLAGS="-I/usr/local/include"
-            LIBPNG_LIBS="-L/usr/local/lib -lpng"
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -lpng"
         fi
-        CFLAGS="${CFLAGS} ${LIBPNG_CFLAGS}"
-        LDFLAGS="${LDFLAGS} ${LIBPNG_LIBS}"
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
         AC_CHECK_HEADER([png.h],
                         [AC_CHECK_LIB([png],
                                       [png_check_sig],
-                                      [have_png=yes],
+                                      [have_png=yes
+                                       LIBPNG_CFLAGS=$ADDED_CFLAGS
+                                       LIBPNG_LIBS=$ADDED_LIBS],
                                       [have_png=no])])
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_png != xyes -a ! -d "$with_png"; then
             if test x${PKG_CONFIG} != x; then
-                LIBPNG_CFLAGS=
-                LIBPNG_LIBS=
                 PKG_CHECK_MODULES(LIBPNG,
                                   [libpng],
                                   [have_png=yes],
@@ -481,18 +481,17 @@ if test x$with_png != xno; then
         fi
     fi
     if test x$have_png = xyes; then
-        CFLAGS_BACKUP=$CFLAGS
-        CFLAGS="$CFLAGS $LIBPNG_CFLAGS"
+        CFLAGS="${CFLAGS} ${LIBPNG_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${LIBPNG_LIBS}"
         AC_CHECK_DECLS([png_set_gray_1_2_4_to_8, png_set_expand_gray_1_2_4_to_8],
                        [], [], [ #include <png.h> ])
         CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
         AC_DEFINE(HAVE_LIBPNG, 1, [whether libpng is available])
         loaders="${loaders} png"
         AC_MSG_NOTICE([libpng cflags is ${LIBPNG_CFLAGS}])
         AC_MSG_NOTICE([libpng libs is ${LIBPNG_LIBS}])
     else
-        LIBPNG_CFLAGS=
-        LIBPNG_LIBS=
         if test x$with_png != xauto; then
             AC_MSG_ERROR([unable to find libpng])
         fi
