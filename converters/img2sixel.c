@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -66,8 +66,6 @@
 #endif
 
 #include <sixel.h>
-#include "scale.h"
-#include "loader.h"
 
 
 /* loop modes */
@@ -76,6 +74,133 @@ enum loopMode {
     LOOP_FORCE,      /* always enable loop */
     LOOP_DISABLE,    /* always disable loop */
 };
+
+
+static char *
+arg_strdup(char const *s)
+{
+    char *p;
+
+    p = malloc(strlen(s) + 1);
+    if (p) {
+        strcpy(p, s);
+    }
+    return p;
+}
+
+
+static int
+parse_x_colorspec(char const *s, unsigned char **bgcolor)
+{
+    char *p;
+    unsigned char components[3];
+    int index = 0;
+    int ret = 0;
+    unsigned long v;
+    char *endptr;
+    char *buf = NULL;
+
+    if (s[0] == 'r' && s[1] == 'g' && s[2] == 'b' && s[3] == ':') {
+        p = buf = arg_strdup(s + 4);
+        while (*p) {
+            v = 0;
+            for (endptr = p; endptr - p <= 12; ++endptr) {
+                if (*endptr >= '0' && *endptr <= '9') {
+                    v = (v << 4) | (*endptr - '0');
+                } else if (*endptr >= 'a' && *endptr <= 'f') {
+                    v = (v << 4) | (*endptr - 'a' + 10);
+                } else if (*endptr >= 'A' && *endptr <= 'F') {
+                    v = (v << 4) | (*endptr - 'A' + 10);
+                } else {
+                    break;
+                }
+            }
+            if (endptr - p == 0) {
+                break;
+            }
+            if (endptr - p > 4) {
+                break;
+            }
+            v = v << ((4 - (endptr - p)) * 4) >> 8;
+            components[index++] = (unsigned char)v;
+            p = endptr;
+            if (index == 3) {
+                break;
+            }
+            if (*p == '\0') {
+                break;
+            }
+            if (*p != '/') {
+                break;
+            }
+            ++p;
+        }
+        if (index != 3 || *p != '\0' || *p == '/') {
+            ret = (-1);
+            goto end;
+        }
+        *bgcolor = malloc(3);
+        (*bgcolor)[0] = components[0];
+        (*bgcolor)[1] = components[1];
+        (*bgcolor)[2] = components[2];
+    } else if (*s == '#') {
+        buf = arg_strdup(s + 1);
+        for (p = endptr = buf; endptr - p <= 12; ++endptr) {
+            if (*endptr >= '0' && *endptr <= '9') {
+                *endptr -= '0';
+            } else if (*endptr >= 'a' && *endptr <= 'f') {
+                *endptr -= 'a' - 10;
+            } else if (*endptr >= 'A' && *endptr <= 'F') {
+                *endptr -= 'A' - 10;
+            } else if (*endptr == '\0') {
+                break;
+            } else {
+                ret = (-1);
+                goto end;
+            }
+        }
+        if (endptr - p > 12) {
+            ret = (-1);
+            goto end;
+        }
+        *bgcolor = malloc(3);
+        switch (endptr - p) {
+        case 3:
+            (*bgcolor)[0] = (unsigned char)(p[0] << 4);
+            (*bgcolor)[1] = (unsigned char)(p[1] << 4);
+            (*bgcolor)[2] = (unsigned char)(p[2] << 4);
+            break;
+        case 6:
+            (*bgcolor)[0] = (unsigned char)(p[0] << 4 | p[1]);
+            (*bgcolor)[1] = (unsigned char)(p[2] << 4 | p[3]);
+            (*bgcolor)[2] = (unsigned char)(p[4] << 4 | p[4]);
+            break;
+        case 9:
+            (*bgcolor)[0] = (unsigned char)(p[0] << 4 | p[1]);
+            (*bgcolor)[1] = (unsigned char)(p[3] << 4 | p[4]);
+            (*bgcolor)[2] = (unsigned char)(p[6] << 4 | p[7]);
+            break;
+        case 12:
+            (*bgcolor)[0] = (unsigned char)(p[0] << 4 | p[1]);
+            (*bgcolor)[1] = (unsigned char)(p[4] << 4 | p[5]);
+            (*bgcolor)[2] = (unsigned char)(p[8] << 4 | p[9]);
+            break;
+        default:
+            ret = (-1);
+            goto end;
+        }
+    } else {
+        ret = (-1);
+        goto end;
+    }
+
+    ret = 0;
+
+end:
+    free(buf);
+
+    return ret;
+}
 
 
 static int
@@ -90,20 +215,20 @@ sixel_write_callback(char *data, int size, void *priv)
 static int
 sixel_hex_write_callback(char *data, int size, void *priv)
 {
-    /* unused */ (void) priv;
-
     char hex[SIXEL_OUTPUT_PACKET_SIZE * 2];
     int i;
     int j;
 
+    /* unused */ (void) priv;
+
     for (i = j = 0; i < size; ++i, ++j) {
         hex[j] = (data[i] >> 4) & 0xf;
-        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
+        hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
         hex[++j] = data[i] & 0xf;
-        hex[j] += (hex[j] < 10 ? '0' : ('a' - 10));
+        hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
     }
+
     return fwrite(hex, 1, size * 2, stdout);
-    return size;
 }
 
 
@@ -141,7 +266,7 @@ prepare_builtin_palette(int builtin_palette)
 
 
 static sixel_dither_t *
-prepare_specified_palette(char const *mapfile, int reqcolors)
+prepare_specified_palette(char const *mapfile, int reqcolors, unsigned char *bgcolor)
 {
     unsigned char *mappixels;
     sixel_dither_t *dither = NULL;
@@ -157,18 +282,30 @@ prepare_specified_palette(char const *mapfile, int reqcolors)
 
     delays = NULL;
 
-    ret = load_image_file(mapfile, &map_sx, &map_sy,
-                          &palette, &ncolors, &pixelformat,
-                          &frame_count, &loop_count,
-                          &delays, /* fstatic */ 1,
-                          /* reqcolors */ 256,
-                          &mappixels);
+    ret = sixel_helper_load_image_file(
+        &mappixels,
+        &palette,
+        &map_sx,
+        &map_sy,
+        &ncolors,
+        &pixelformat,
+        &frame_count,
+        &loop_count,
+        &delays,
+        mapfile,
+        1,  /* fstatic */
+        256, /* reqcolors */
+        bgcolor
+    );
     if (ret != 0 || mappixels == NULL || map_sx * map_sy == 0) {
         goto end;
     }
     free(delays);
 
     switch (pixelformat) {
+    case PIXELFORMAT_PAL1:
+    case PIXELFORMAT_PAL2:
+    case PIXELFORMAT_PAL4:
     case PIXELFORMAT_PAL8:
         if (palette == NULL) {
             goto end;
@@ -249,6 +386,7 @@ typedef struct Settings {
     int verbose;
     int show_version;
     int show_help;
+    unsigned char *bgcolor;
 } settings_t;
 
 
@@ -261,6 +399,7 @@ prepare_palette(sixel_dither_t *former_dither,
 {
     sixel_dither_t *dither;
     int ret;
+    int histogram_colors;
 
     if (psettings->highcolor) {
         if (former_dither) {
@@ -277,7 +416,8 @@ prepare_palette(sixel_dither_t *former_dither,
             return former_dither;
         }
         dither = prepare_specified_palette(psettings->mapfile,
-                                           psettings->reqcolors);
+                                           psettings->reqcolors,
+                                           psettings->bgcolor);
     } else if (psettings->builtin_palette) {
         if (former_dither) {
             return former_dither;
@@ -310,6 +450,10 @@ prepare_palette(sixel_dither_t *former_dither,
             sixel_dither_unref(dither);
             return NULL;
         }
+        histogram_colors = sixel_dither_get_num_of_histogram_colors(dither);
+        if (histogram_colors <= psettings->reqcolors) {
+            psettings->method_for_diffuse = DIFFUSE_NONE;
+        }
         sixel_dither_set_pixelformat(dither, pixelformat);
     }
     return dither;
@@ -328,6 +472,7 @@ do_resize(unsigned char **ppixels,
     int size;
     int n;
     unsigned char *scaled_frame = NULL;
+    int nret;
 
     if (psettings->percentwidth > 0) {
         psettings->pixelwidth = *psx * psettings->percentwidth / 100;
@@ -357,15 +502,16 @@ do_resize(unsigned char **ppixels,
         }
 
         for (n = 0; n < frame_count; ++n) {
-            scaled_frame = LSS_scale(frames[n], *psx, *psy, 3,
-                                     psettings->pixelwidth,
-                                     psettings->pixelheight,
-                                     psettings->method_for_resampling);
-            if (scaled_frame == NULL) {
-                return (-1);
+            scaled_frame = p + size * n;
+            nret = sixel_helper_scale_image(
+                scaled_frame,
+                frames[n], *psx, *psy, 3,
+                psettings->pixelwidth,
+                psettings->pixelheight,
+                psettings->method_for_resampling);
+            if (nret != 0) {
+                return nret;
             }
-            memcpy(p + size * n, scaled_frame, size);
-            free(scaled_frame);
         }
         for (n = 0; n < frame_count; ++n) {
             frames[n] = p + size * n;
@@ -399,7 +545,7 @@ clip(unsigned char *pixels,
     case PIXELFORMAT_PAL8:
     case PIXELFORMAT_G8:
         dst = pixels;
-        src = pixels + cy * sx * 1;
+        src = pixels + cy * sx * 1 + cx * 1;
         for (y = 0; y < ch; y++) {
             memmove(dst, src, cw * 1);
             dst += (cw * 1);
@@ -408,7 +554,7 @@ clip(unsigned char *pixels,
         break;
     case PIXELFORMAT_RGB888:
         dst = pixels;
-        src = pixels + cy * sx * 3;
+        src = pixels + cy * sx * 3 + cx * 3;
         for (y = 0; y < ch; y++) {
             memmove(dst, src, cw * 3);
             dst += (cw * 3);
@@ -423,9 +569,10 @@ clip(unsigned char *pixels,
 }
 
 
-static int do_crop(unsigned char **frames, int frame_count,
-                   int *psx, int *psy, int pixelformat,
-                   settings_t *psettings)
+static int
+do_crop(unsigned char **frames, int frame_count,
+        int *psx, int *psy, int pixelformat,
+        settings_t *psettings)
 {
     int n;
     int ret;
@@ -490,40 +637,6 @@ wait_stdin(void)
 
 
 static int
-compute_depth_from_pixelformat(int pixelformat)
-{
-    int depth = (-1);  /* unknown */
-
-    switch (pixelformat) {
-        case PIXELFORMAT_ARGB8888:
-        case PIXELFORMAT_RGBA8888:
-            depth = 4;
-            break;
-        case PIXELFORMAT_RGB888:
-        case PIXELFORMAT_BGR888:
-            depth = 3;
-            break;
-        case PIXELFORMAT_RGB555:
-        case PIXELFORMAT_RGB565:
-        case PIXELFORMAT_BGR555:
-        case PIXELFORMAT_BGR565:
-        case PIXELFORMAT_AG88:
-        case PIXELFORMAT_GA88:
-            depth = 2;
-            break;
-        case PIXELFORMAT_G8:
-        case PIXELFORMAT_PAL8:
-            depth = 1;
-            break;
-        default:
-            break;
-    }
-
-    return depth;
-}
-
-
-static int
 output_sixel_without_macro(
     unsigned char **frames,
     int sx, int sy,
@@ -538,12 +651,14 @@ output_sixel_without_macro(
 {
     int nret = 0;
     int dulation = 0;
-    int lag = 0;
     int c;
     int n;
     unsigned char *frame;
-#if HAVE_USLEEP && HAVE_CLOCK
+#if HAVE_USLEEP
+    int lag = 0;
+# if HAVE_CLOCK
     clock_t start;
+# endif
 #endif
 
     /* create output context */
@@ -575,7 +690,7 @@ output_sixel_without_macro(
 #if HAVE_USLEEP
                 if (delays != NULL && !psettings->fignore_delay) {
 # if HAVE_CLOCK
-                    dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
+                    dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
                     lag = 0;
 # else
                     dulation = 0;
@@ -634,11 +749,13 @@ output_sixel_with_macro(
 {
     int nret = 0;
     int dulation = 0;
-    int lag = 0;
     int c;
     int n;
-#if HAVE_USLEEP && HAVE_CLOCK
+#if HAVE_USLEEP
+    int lag = 0;
+# if HAVE_CLOCK
     clock_t start;
+# endif
 #endif
 
     if (!context) {
@@ -674,7 +791,7 @@ output_sixel_with_macro(
 #if HAVE_USLEEP
         if (delays != NULL && !psettings->fignore_delay) {
 # if HAVE_CLOCK
-            dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
+            dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
             lag = 0;
 # else
             dulation = 0;
@@ -799,18 +916,26 @@ reload:
     frames = NULL;
     frame = NULL;
     delays = NULL;
-    nret = load_image_file(filename, &sx, &sy,
-                           ppalette, &ncolors, &pixelformat,
-                           &frame_count, &loop_count,
-                           &delays, psettings->fstatic,
-                           psettings->reqcolors,
-                           &pixels);
+    nret = sixel_helper_load_image_file(
+        &pixels,
+        ppalette,
+        &sx,
+        &sy,
+        &ncolors,
+        &pixelformat,
+        &frame_count,
+        &loop_count,
+        &delays,
+        filename,
+        psettings->fstatic,
+        psettings->reqcolors,
+        psettings->bgcolor);
 
     if (nret != 0 || pixels == NULL || sx * sy == 0) {
         goto end;
     }
 
-    depth = compute_depth_from_pixelformat(pixelformat);
+    depth = sixel_helper_compute_depth(pixelformat);
     if (depth == (-1)) {
         nret = (-1);
         goto end;
@@ -982,7 +1107,7 @@ static
 void show_version(void)
 {
     printf("img2sixel " PACKAGE_VERSION "\n"
-           "Copyright (C) 2014 Hayaki Saito <user@zuse.jp>.\n"
+           "Copyright (C) 2014,2015 Hayaki Saito <user@zuse.jp>.\n"
            "\n"
            "Permission is hereby granted, free of charge, to any person obtaining a copy of\n"
            "this software and associated documentation files (the \"Software\"), to deal in\n"
@@ -1161,6 +1286,18 @@ void show_help(void)
             "                             fast -> encode as fast as possible\n"
             "                             size -> encode to as small sixel\n"
             "                                     sequence as possible\n"
+            "-B BGCOLOR, --bgcolor=BGCOLOR\n"
+            "                           specify background color\n"
+            "                           BGCOLOR is represented by the\n"
+            "                           following syntax\n"
+            "                             #rgb\n"
+            "                             #rrggbb\n"
+            "                             #rrrgggbbb\n"
+            "                             #rrrrggggbbbb\n"
+            "                             rgb:r/g/b\n"
+            "                             rgb:rr/gg/bb\n"
+            "                             rgb:rrr/ggg/bbb\n"
+            "                             rgb:rrrr/gggg/bbbb\n"
             "-P, --penetrate            penetrate GNU Screen using DCS\n"
             "                           pass-through sequence\n"
             "-D, --pipe-mode            read source images from stdin\n"
@@ -1176,9 +1313,9 @@ int
 main(int argc, char *argv[])
 {
     int n;
-    int long_opt;
     int unknown_opt = 0;
 #if HAVE_GETOPT_LONG
+    int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     int ret;
@@ -1186,7 +1323,7 @@ main(int argc, char *argv[])
     int number;
     char unit[32];
     int parsed;
-    char const *optstring = "78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:C:DVH";
+    char const *optstring = "78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:B:C:DVH";
 
     settings_t settings = {
         -1,                 /* reqcolors */
@@ -1223,6 +1360,7 @@ main(int argc, char *argv[])
         0,                  /* pipe_mode */
         0,                  /* show_version */
         0,                  /* show_help */
+        NULL,               /* bgcolor */
     };
 
 #if HAVE_GETOPT_LONG
@@ -1252,6 +1390,7 @@ main(int argc, char *argv[])
         {"macro-number",     required_argument,  &long_opt, 'n'},
         {"penetrate",        no_argument,        &long_opt, 'P'},
         {"encode-policy",    required_argument,  &long_opt, 'E'},
+        {"bgcolor",          required_argument,  &long_opt, 'B'},
         {"complexion-score", required_argument,  &long_opt, 'C'},
         {"pipe-mode",        no_argument,        &long_opt, 'D'},
         {"version",          no_argument,        &long_opt, 'V'},
@@ -1271,9 +1410,11 @@ main(int argc, char *argv[])
         if (n == -1) {
             break;
         }
+#if HAVE_GETOPT_LONG
         if (n == 0) {
             n = long_opt;
         }
+#endif  /* HAVE_GETOPT_LONG */
         switch(n) {
         case '7':
             settings.f8bit = 0;
@@ -1285,7 +1426,10 @@ main(int argc, char *argv[])
             settings.reqcolors = atoi(optarg);
             break;
         case 'm':
-            settings.mapfile = strdup(optarg);
+            if (settings.mapfile) {
+                free(settings.mapfile);
+            }
+            settings.mapfile = arg_strdup(optarg);
             break;
         case 'e':
             settings.monochrome = 1;
@@ -1374,6 +1518,9 @@ main(int argc, char *argv[])
                 goto argerr;
             }
             if (settings.clipwidth <= 0 || settings.clipheight <= 0) {
+                goto argerr;
+            }
+            if (settings.clipx < 0 || settings.clipy < 0) {
                 goto argerr;
             }
             settings.clipfirst = 0;
@@ -1491,6 +1638,19 @@ main(int argc, char *argv[])
                 goto argerr;
             }
             break;
+        case 'B':
+            /* parse --bgcolor option */
+            if (settings.bgcolor) {
+                free(settings.bgcolor);
+            }
+            if (parse_x_colorspec(optarg, &settings.bgcolor) == 0) {
+                settings.palette_type = PALETTETYPE_AUTO;
+            } else {
+                fprintf(stderr,
+                        "Cannot parse bgcolor option.\n");
+                goto argerr;
+            }
+            break;
         case 'i':
             settings.finvert = 1;
             break;
@@ -1548,8 +1708,11 @@ main(int argc, char *argv[])
         case '?':  /* unknown option */
         default:
             unknown_opt = 1;
+            break;
         }
     }
+
+    /* detects arguments conflictions */
     if (settings.reqcolors != -1 && settings.mapfile) {
         fprintf(stderr, "option -p, --colors conflicts "
                         "with -m, --mapfile.\n");
@@ -1587,7 +1750,7 @@ main(int argc, char *argv[])
     }
     if (settings.monochrome && settings.builtin_palette) {
         fprintf(stderr, "option -e, --monochrome conflicts"
-                        " with -I, --builtin-palette.\n");
+                        " with -b, --builtin-palette.\n");
         goto argerr;
     }
     if (settings.mapfile && settings.builtin_palette) {
@@ -1600,26 +1763,37 @@ main(int argc, char *argv[])
                         " with -b, --builtin-palette.\n");
         goto argerr;
     }
+    if (settings.f8bit && settings.penetrate_multiplexer) {
+        fprintf(stderr, "option -8 --8bit-mode conflicts"
+                        " with -P, --penetrate.\n");
+        goto argerr;
+    }
     if (settings.pipe_mode && optind != argc) {
         fprintf(stderr, "option -D, --pipe_mode conflicts"
                         " with arguments [filename ...].\n");
         goto argerr;
     }
+
+    /* evaluate the option -v,--version */
     if (settings.show_version) {
         show_version();
         exit_code = EXIT_SUCCESS;
         goto end;
     }
+
+    /* evaluate the option -h,--help */
     if (settings.show_help) {
         show_help();
         exit_code = EXIT_SUCCESS;
         goto end;
     }
+
+    /* exit if unknown options are specified */
     if (unknown_opt) {
         goto argerr;
     }
 
-    if (settings.reqcolors == -1) {
+    if (settings.reqcolors == (-1)) {
         settings.reqcolors = SIXEL_PALETTE_MAX;
     }
 
@@ -1638,6 +1812,8 @@ main(int argc, char *argv[])
             }
         }
     }
+
+    /* mark as success */
     exit_code = EXIT_SUCCESS;
     goto end;
 
@@ -1647,11 +1823,12 @@ argerr:
                     "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
                     "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
                     "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
-                    "                 [-E encodepolicy] [filename ...]\n"
+                    "                 [-E encodepolicy] [-B bgcolor] [filename ...]\n"
                     "for more details, type: 'img2sixel -H'.\n");
 
 end:
     free(settings.mapfile);
+    free(settings.bgcolor);
     return exit_code;
 }
 

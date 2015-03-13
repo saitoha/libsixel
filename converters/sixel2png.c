@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,7 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>  /* strdup */
+#include <string.h>  /* strcpy */
 
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
@@ -54,52 +54,23 @@
 # include <errno.h>
 #endif
 
-#if HAVE_SETJMP_H
-# include <setjmp.h>
-#endif
-
-#if HAVE_LIBPNG
-# include <png.h>
-#else
-# include "stb_image_write.h"
-#endif
-
 #include <sixel.h>
-
-#if !defined(O_BINARY) && defined(_O_BINARY)
-# define O_BINARY _O_BINARY
-#endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
-
-#if !HAVE_LIBPNG
-unsigned char *
-stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes,
-                      int x, int y, int n, int *out_len);
-#endif
 
 
 static int
-sixel_to_png(const char *input, const char *output)
+sixel_to_png(char const *input, char const *output)
 {
-    unsigned char *raw_data, *png_data = NULL;
+    unsigned char *raw_data;
     int sx, sy;
     int raw_len;
     int max;
     int n;
-    FILE *input_fp = NULL, *output_fp = NULL;
+    FILE *input_fp = NULL;
     unsigned char *indexed_pixels;
     unsigned char *palette;
     int ncolors;
-    unsigned char *pixels;
-    int x, y;
+    unsigned char *pixels = NULL;
     int ret = 0;
-#if HAVE_LIBPNG
-    png_structp png_ptr = NULL;
-    png_infop info_ptr = NULL;
-    unsigned char **rows = NULL;
-#else
-    int png_len;
-    int write_len;
-#endif  /* HAVE_LIBPNG */
 
     if (strcmp(input, "-") == 0) {
         /* for windows */
@@ -162,93 +133,11 @@ sixel_to_png(const char *input, const char *output)
         goto end;
     }
 
-    pixels = malloc(sx * sy * 3);
-    for (y = 0; y < sy; ++y) {
-        for (x = 0; x < sx; ++x) {
-            n = indexed_pixels[sx * y + x];
-            pixels[sx * 3 * y + x * 3 + 0] = palette[n * 4 + 0];
-            pixels[sx * 3 * y + x * 3 + 1] = palette[n * 4 + 1];
-            pixels[sx * 3 * y + x * 3 + 2] = palette[n * 4 + 2];
-        }
-    }
-
-    if (strcmp(output, "-") == 0) {
-#if defined(O_BINARY)
-# if HAVE__SETMODE
-        _setmode(fileno(stdout), O_BINARY);
-# elif HAVE_SETMODE
-        setmode(fileno(stdout), O_BINARY);
-# endif  /* HAVE_SETMODE */
-#endif  /* defined(O_BINARY) */
-        output_fp = stdout;
-    } else {
-        output_fp = fopen(output, "wb");
-        if (!output_fp) {
-#if HAVE_ERRNO_H
-            fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
-                    output, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-            ret = -1;
-            goto end;
-        }
-    }
-
-#if HAVE_LIBPNG
-    rows = malloc(sy * sizeof(unsigned char *));
-    for (y = 0; y < sy; ++y) {
-        rows[y] = pixels + sx * 3 * y;
-    }
-    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if (!png_ptr) {
-        ret = (-1);
-        goto end;
-    }
-    info_ptr = png_create_info_struct(png_ptr);
-    if (!png_ptr) {
-        ret = (-1);
-        goto end;
-    }
-# if USE_SETJMP && HAVE_SETJMP
-    if (setjmp(png_jmpbuf(png_ptr))) {
-        ret = (-1);
-        goto end;
-    }
-# endif
-    png_init_io(png_ptr, output_fp);
-    png_set_IHDR(png_ptr, info_ptr, sx, sy,
-                 /* bit_depth */ 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
-                 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-    png_write_info(png_ptr, info_ptr);
-    png_write_image(png_ptr, rows);
-    png_write_end(png_ptr, NULL);
-#else
-    png_data = stbi_write_png_to_mem(pixels, sx * 3,
-                                     sx, sy, /* STBI_rgb */ 3, &png_len);
-
-    if (!png_data) {
-        fprintf(stderr, "stbi_write_png_to_mem failed.\n");
-        goto end;
-    }
-    write_len = fwrite(png_data, 1, png_len, output_fp);
-    if (write_len < 0) {
-# if HAVE_ERRNO_H
-        fprintf(stderr, "fwrite failed.\n" "reason: %s.\n",
-                strerror(errno));
-# endif  /* HAVE_ERRNO_H */
-        ret = -1;
-        goto end;
-    }
-#endif  /* HAVE_LIBPNG */
+    ret = sixel_helper_write_image_file(indexed_pixels, sx, sy, palette,
+                                        PIXELFORMAT_PAL8, output, FORMAT_PNG);
 
 end:
-    if (output_fp && output_fp != stdout) {
-        fclose(output_fp);
-    }
-    free(png_data);
-#if HAVE_LIBPNG
-    free(rows);
-    png_destroy_write_struct (&png_ptr, &info_ptr);
-#endif  /* HAVE_LIBPNG */
+    free(pixels);
     return ret;
 }
 
@@ -257,7 +146,7 @@ static
 void show_version(void)
 {
     printf("sixel2png " PACKAGE_VERSION "\n"
-           "Copyright (C) 2014 Hayaki Saito <user@zuse.jp>.\n"
+           "Copyright (C) 2014,2015 Hayaki Saito <user@zuse.jp>.\n"
            "\n"
            "Permission is hereby granted, free of charge, to any person obtaining a copy of\n"
            "this software and associated documentation files (the \"Software\"), to deal in\n"
@@ -295,14 +184,27 @@ show_help(void)
 }
 
 
+static char *
+arg_strdup(char const *s)
+{
+    char *p;
+
+    p = malloc(strlen(s) + 1);
+    if (p) {
+        strcpy(p, s);
+    }
+    return p;
+}
+
+
 int
 main(int argc, char *argv[])
 {
     int n;
-    char *output = strdup("-");
-    char *input = strdup("-");
-    int long_opt;
+    char *output = arg_strdup("-");
+    char *input = arg_strdup("-");
 #if HAVE_GETOPT_LONG
+    int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     int nret = 0;
@@ -329,17 +231,19 @@ main(int argc, char *argv[])
             nret = (-1);
             break;
         }
+#if HAVE_GETOPT_LONG
         if (n == 0) {
             n = long_opt;
         }
+#endif  /* HAVE_GETOPT_LONG */
         switch(n) {
         case 'i':
             free(input);
-            input = strdup(optarg);
+            input = arg_strdup(optarg);
             break;
         case 'o':
             free(output);
-            output = strdup(optarg);
+            output = arg_strdup(optarg);
             break;
         case 'V':
             show_version();
@@ -359,11 +263,11 @@ main(int argc, char *argv[])
 
     if (strcmp(input, "-") == 0 && optind < argc) {
         free(input);
-        input = strdup(argv[optind++]);
+        input = arg_strdup(argv[optind++]);
     }
     if (strcmp(output, "-") == 0 && optind < argc) {
         free(output);
-        output = strdup(argv[optind++]);
+        output = arg_strdup(argv[optind++]);
     }
     if (optind != argc) {
         nret = (-1);

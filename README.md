@@ -441,6 +441,18 @@ Options:
                              fast -> encode as fast as possible
                              size -> encode to as small sixel
                                      sequence as possible
+-B BGCOLOR, --bgcolor=BGCOLOR
+                           specify background color
+                           BGCOLOR is represented by the
+                           following syntax
+                             #rgb
+                             #rrggbb
+                             #rrrgggbbb
+                             #rrrrggggbbbb
+                             rgb:r/g/b
+                             rgb:rr/gg/bb
+                             rgb:rrr/ggg/bbb
+                             rgb:rrrr/gggg/bbbb
 -P, --penetrate            penetrate GNU Screen using DCS
                            pass-through sequence
 -D, --pipe-mode            read source images from stdin
@@ -494,7 +506,7 @@ The Whole API is described [here](https://github.com/saitoha/libsixel/blob/maste
 ### Example
 
 If you use OSX, a tiny example is available
-[here](https://github.com/saitoha/libsixel/blob/master/examples/osx/opengl/).
+[here](https://github.com/saitoha/libsixel/blob/master/examples/opengl/).
 
   ![opengl example](https://raw.githubusercontent.com/saitoha/libsixel/data/data/example_opengl.gif)
 
@@ -640,6 +652,7 @@ The MIT License (MIT)
 - @isaki68k
 - @knok
 - @mattn
+- @msmhrt
 - @obache
 - @tsutsui
 - @ttdoda

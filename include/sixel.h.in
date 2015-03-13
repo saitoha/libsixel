@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -109,23 +109,11 @@ enum pixelFormat {
     PIXELFORMAT_G4       = FORMATTYPE_GRAYSCALE | 0x02, /* 4bpp grayscale */
 #endif
     PIXELFORMAT_G8       = FORMATTYPE_GRAYSCALE | 0x03, /* 8bpp grayscale */
-#if 0
-    PIXELFORMAT_AG11     = FORMATTYPE_GRAYSCALE | 0x10, /* 2bpp gray+alpha */
-    PIXELFORMAT_AG22     = FORMATTYPE_GRAYSCALE | 0x11, /* 4bpp gray+alpha */
-    PIXELFORMAT_AG44     = FORMATTYPE_GRAYSCALE | 0x12, /* 8bpp gray+alpha */
-#endif
     PIXELFORMAT_AG88     = FORMATTYPE_GRAYSCALE | 0x13, /* 16bpp gray+alpha */
-#if 0
-    PIXELFORMAT_GA11     = FORMATTYPE_GRAYSCALE | 0x20, /* 2bpp gray+alpha */
-    PIXELFORMAT_GA22     = FORMATTYPE_GRAYSCALE | 0x21, /* 4bpp gray+alpha */
-    PIXELFORMAT_GA44     = FORMATTYPE_GRAYSCALE | 0x22, /* 8bpp gray+alpha */
-#endif
     PIXELFORMAT_GA88     = FORMATTYPE_GRAYSCALE | 0x23, /* 16bpp gray+alpha */
-#if 0
-    PIXELFORMAT_PAL1     = FORMATTYPE_PALETTE   | 0x00, /* monochrome */
+    PIXELFORMAT_PAL1     = FORMATTYPE_PALETTE   | 0x00, /* 1bpp palette */
     PIXELFORMAT_PAL2     = FORMATTYPE_PALETTE   | 0x01, /* 2bpp palette */
     PIXELFORMAT_PAL4     = FORMATTYPE_PALETTE   | 0x02, /* 4bpp palette */
-#endif
     PIXELFORMAT_PAL8     = FORMATTYPE_PALETTE   | 0x03, /* 8bpp palette */
 };
 
@@ -141,6 +129,20 @@ enum encodePolicy {
     ENCODEPOLICY_AUTO = 0,    /* choose encoding policy automatically */
     ENCODEPOLICY_FAST = 1,    /* encode as fast as possible */
     ENCODEPOLICY_SIZE = 2,    /* encode to as small sixel sequence as possible */
+};
+
+/* method for re-sampling */
+enum methodForResampling {
+    RES_NEAREST  = 0,  /* Use nearest neighbor method */
+    RES_GAUSSIAN = 1,  /* Use guaussian filter */
+    RES_HANNING  = 2,  /* Use hanning filter */
+    RES_HAMMING  = 3,  /* Use hamming filter */
+    RES_BILINEAR = 4,  /* Use bilinear filter */
+    RES_WELSH    = 5,  /* Use welsh filter */
+    RES_BICUBIC  = 6,  /* Use bicubic filter */
+    RES_LANCZOS2 = 7,  /* Use lanczos-2 filter */
+    RES_LANCZOS3 = 8,  /* Use lanczos-3 filter */
+    RES_LANCZOS4 = 9,  /* Use lanczos-4 filter */
 };
 
 #ifndef LIBSIXEL_DITHER_H
@@ -350,6 +352,100 @@ sixel_decode(
 #ifdef __cplusplus
 }
 #endif
+
+/* helper API */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* compute pixel depth from pixelformat */
+int
+sixel_helper_compute_depth(
+    int /* in */ pixelformat /* one of enum pixelFormat */
+);
+
+/* convert pixelFormat into PIXELFORMAT_RGB888 */
+int
+sixel_helper_normalize_pixelformat(
+    unsigned char       /* out */ *dst,             /* destination buffer */
+    int                 /* out */ *dst_pixelformat, /* converted pixelformat */
+    unsigned char const /* in */  *src,             /* source pixels */
+    int                 /* in */  src_pixelformat,  /* format of source image */
+    int                 /* in */  width,            /* width of source image */
+    int                 /* in */  height            /* height of source image */
+);
+
+/* scale image to specified size */
+int
+sixel_helper_scale_image(
+    unsigned char       /* out */ *dst,                  /* destination buffer */
+    unsigned char const /* in */  *src,                  /* source image data */
+    int                 /* in */  srcw,                  /* source image width */
+    int                 /* in */  srch,                  /* source image height */
+    int                 /* in */  pixelformat,           /* one of enum pixelFormat */
+    int                 /* in */  dstw,                  /* destination image width */
+    int                 /* in */  dsth,                  /* destination image height */
+    int                 /* in */  method_for_resampling  /* one of methodForResampling */
+);
+
+#ifdef __cplusplus
+}
+#endif
+
+/* image loader/writer API */
+
+enum imageFormat {
+    FORMAT_GIF   =  0, /* read only */
+    FORMAT_PNG   =  1, /* read/write */
+    FORMAT_BMP   =  2, /* read only */
+    FORMAT_JPG   =  3, /* read only */
+    FORMAT_TGA   =  4, /* read only */
+    FORMAT_WBMP  =  5, /* read only with --with-gd configure option */
+    FORMAT_TIFF  =  6, /* read only */
+    FORMAT_SIXEL =  7, /* read only */
+    FORMAT_PNM   =  8, /* read only */
+    FORMAT_GD2   =  9, /* read only with --with-gd configure option */
+    FORMAT_PSD   = 10, /* read only */
+    FORMAT_HDR   = 11, /* read only */
+};
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* load image from file */
+int
+sixel_helper_load_image_file(
+    unsigned char /* out */ **ppixels,     /* loaded pixel data */
+    unsigned char /* out */ **ppalette,    /* loaded palette data */
+    int           /* out */ *psx,          /* image width */
+    int           /* out */ *psy,          /* image height */
+    int           /* out */ *pncolors,     /* palette colors */
+    int           /* out */ *ppixelformat, /* one of enum pixelFormat */
+    int           /* out */ *pframe_count, /* frame count */
+    int           /* out */ *ploop_count,  /* loop count */
+    int           /* out */ **ppdelay,     /* delay for each frames */
+    char const    /* in */  *filename,     /* source file name */
+    int           /* in */  fstatic,       /* whether to extract static image */
+    int           /* in */  reqcolors,     /* requested number of colors */
+    unsigned char /* in */  *bgcolor);     /* background color */
+
+/* write image to file */
+int
+sixel_helper_write_image_file(
+    unsigned char  /* in */ *data,        /* source pixel data */
+    int            /* in */ width,        /* source data width */
+    int            /* in */ height,       /* source data height */
+    unsigned char  /* in */ *palette,     /* palette of source data */
+    int            /* in */ pixelformat,  /* source pixelFormat */
+    char const     /* in */ *filename,    /* destination filename */
+    int            /* in */ imageformat); /* one of enum imageformat */
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif  /* LIBSIXEL_SIXEL_H */
 

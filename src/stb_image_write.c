@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -29,10 +29,9 @@
 # define memmove(d, s, n) (bcopy ((s), (d), (n)))
 #endif
 
-#define STBI_NO_STDIO 1
-#define STB_IMAGE_IMPLEMENTATION 1
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 
-#include "stb_image.h"
+#include "stb_image_write.h"
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

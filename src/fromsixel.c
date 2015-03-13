@@ -169,6 +169,7 @@ hls2rgb(int hue, int lum, int sat)
     return RGB(r * 255 / 100, g * 255 / 100, b * 255 / 100);
 }
 
+
 static unsigned char *
 sixel_getparams(unsigned char *p, int *param, int *len)
 {
@@ -245,7 +246,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
     imsx = 2048;
     imsy = 2048;
-    imbuf = allocator(imsx * imsy);
+    imbuf = malloc(imsx * imsy);
 
     if (imbuf == NULL) {
         return (-1);
@@ -322,8 +323,12 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
                     }
                     attributed_pan = attributed_pan * param[2] / 10;
                     attributed_pad = attributed_pad * param[2] / 10;
-                    if (attributed_pan <= 0) attributed_pan = 1;
-                    if (attributed_pad <= 0) attributed_pad = 1;
+                    if (attributed_pan <= 0) {
+                        attributed_pan = 1;
+                    }
+                    if (attributed_pad <= 0) {
+                        attributed_pad = 1;
+                    }
                 }
             }
 
@@ -333,18 +338,30 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
             /* DECGRA Set Raster Attributes " Pan; Pad; Ph; Pv */
             p = sixel_getparams(p + 1, param, &n);
 
-            if (n > 0) attributed_pad = param[0];
-            if (n > 1) attributed_pan = param[1];
-            if (n > 2 && param[2] > 0) attributed_ph = param[2];
-            if (n > 3 && param[3] > 0) attributed_pv = param[3];
+            if (n > 0) {
+                attributed_pad = param[0];
+            }
+            if (n > 1) {
+                attributed_pan = param[1];
+            }
+            if (n > 2 && param[2] > 0) {
+                attributed_ph = param[2];
+            }
+            if (n > 3 && param[3] > 0) {
+                attributed_pv = param[3];
+            }
 
-            if (attributed_pan <= 0) attributed_pan = 1;
-            if (attributed_pad <= 0) attributed_pad = 1;
+            if (attributed_pan <= 0) {
+                attributed_pan = 1;
+            }
+            if (attributed_pad <= 0) {
+                attributed_pad = 1;
+            }
 
             if (imsx < attributed_ph || imsy < attributed_pv) {
                 dmsx = imsx > attributed_ph ? imsx : attributed_ph;
                 dmsy = imsy > attributed_pv ? imsy : attributed_pv;
-                dmbuf = allocator(dmsx * dmsy);
+                dmbuf = malloc(dmsx * dmsy);
                 if (dmbuf == NULL) {
                     free(imbuf);
                     return (-1);
@@ -418,7 +435,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
                 dmsx = nx;
                 dmsy = ny;
-                dmbuf = allocator(dmsx * dmsy);
+                dmbuf = malloc(dmsx * dmsy);
                 if (dmbuf == NULL) {
                     free(imbuf);
                     return (-1);
@@ -501,7 +518,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     if (imsx > max_x || imsy > max_y) {
         dmsx = max_x;
         dmsy = max_y;
-        if ((dmbuf = allocator(dmsx * dmsy)) == NULL) {
+        if ((dmbuf = malloc(dmsx * dmsy)) == NULL) {
             free(imbuf);
             return (-1);
         }
@@ -514,16 +531,22 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
         imbuf = dmbuf;
     }
 
-    *pixels = imbuf;
     *pwidth = imsx;
     *pheight = imsy;
     *ncolors = max_color_index + 1;
-    *palette = allocator(*ncolors * 4);
+    if (allocator) {
+        *pixels = allocator(imsx * imsy);
+        memcpy(*pixels, imbuf, imsx * imsy);
+        free(imbuf);
+        *palette = allocator(*ncolors * 3);
+    } else {
+        *pixels = imbuf;
+        *palette = malloc(*ncolors * 3);
+    }
     for (n = 0; n < *ncolors; ++n) {
-        (*palette)[n * 4 + 0] = sixel_palet[n] >> 16 & 0xff;
-        (*palette)[n * 4 + 1] = sixel_palet[n] >> 8 & 0xff;
-        (*palette)[n * 4 + 2] = sixel_palet[n] & 0xff;
-        (*palette)[n * 4 + 3] = 0xff;
+        (*palette)[n * 3 + 0] = sixel_palet[n] >> 16 & 0xff;
+        (*palette)[n * 3 + 1] = sixel_palet[n] >> 8 & 0xff;
+        (*palette)[n * 3 + 2] = sixel_palet[n] & 0xff;
     }
     return 0;
 }

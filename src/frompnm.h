@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -19,19 +19,28 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
+#ifndef LIBSIXEL_FROMPNM_H
+#define LIBSIXEL_FROMPNM_H
 
-#if !defined(HAVE_MEMCPY)
-# define memcpy(d, s, n) (bcopy ((s), (d), (n)))
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#if !defined(HAVE_MEMMOVE)
-# define memmove(d, s, n) (bcopy ((s), (d), (n)))
+/* exported functions */
+
+/* image scaling api */
+
+unsigned char *
+load_pnm(unsigned char *p, int len,
+         int *psx, int *psy,
+         unsigned char **ppalette, int *pncolors,
+         int *ppixelformat);
+
+#ifdef __cplusplus
+}
 #endif
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-
-#include "stb_image_write.h"
+#endif /* LIBSIXEL_FROMPNM_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -25,9 +25,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <limits.h>
 
-#if defined(HAVE_INTTYPES_H)
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
+#if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
 
@@ -112,8 +115,13 @@ static const unsigned char pal_xterm256[] = {
 };
 
 
+/*
+ * VT340 undocumented behavior regarding the color palette reported
+ * by Vertis Sidus(@vrtsds):
+ *     it loads the first fifteen colors as 1 through 15, and loads the
+ *     sixteenth color as 0.
+ */
 static const unsigned char pal_vt340_mono[] = {
-    /* 0   Black    */   0 * 255 / 100,  0 * 255 / 100,  0 * 255 / 100,
     /* 1   Gray-2   */  13 * 255 / 100, 13 * 255 / 100, 13 * 255 / 100,
     /* 2   Gray-4   */  26 * 255 / 100, 26 * 255 / 100, 26 * 255 / 100,
     /* 3   Gray-6   */  40 * 255 / 100, 40 * 255 / 100, 40 * 255 / 100,
@@ -129,11 +137,11 @@ static const unsigned char pal_vt340_mono[] = {
     /* 13  Gray-3   */  20 * 255 / 100, 20 * 255 / 100, 20 * 255 / 100,
     /* 14  Gray-5   */  33 * 255 / 100, 33 * 255 / 100, 33 * 255 / 100,
     /* 15  White 7  */  46 * 255 / 100, 46 * 255 / 100, 46 * 255 / 100,
+    /* 0   Black    */   0 * 255 / 100,  0 * 255 / 100,  0 * 255 / 100,
 };
 
 
 static const unsigned char pal_vt340_color[] = {
-    /* 0   Black    */   0 * 255 / 100,  0 * 255 / 100,  0 * 255 / 100,
     /* 1   Blue     */  20 * 255 / 100, 20 * 255 / 100, 80 * 255 / 100,
     /* 2   Red      */  80 * 255 / 100, 13 * 255 / 100, 13 * 255 / 100,
     /* 3   Green    */  20 * 255 / 100, 80 * 255 / 100, 20 * 255 / 100,
@@ -149,6 +157,7 @@ static const unsigned char pal_vt340_color[] = {
     /* 13  Cyan*    */  33 * 255 / 100, 60 * 255 / 100, 60 * 255 / 100,
     /* 14  Yellow*  */  60 * 255 / 100, 60 * 255 / 100, 33 * 255 / 100,
     /* 15  Gray 75% */  80 * 255 / 100, 80 * 255 / 100, 80 * 255 / 100,
+    /* 0   Black    */   0 * 255 / 100,  0 * 255 / 100,  0 * 255 / 100,
 };
 
 
@@ -286,128 +295,6 @@ sixel_dither_get(int builtin_dither)
 
 
 static void
-get_rgb(unsigned char *data, int const pixelformat, int depth,
-        unsigned char *r, unsigned char *g, unsigned char *b)
-{
-    unsigned int pixels = 0, low, high;
-    int count = 0;
-
-    while (count < depth) {
-        pixels = *(data + count) | (pixels << 8);
-        count++;
-    }
-
-    /* TODO: we should swap bytes (only necessary on LSByte first hardware?) */
-    if (depth == 2) {
-        low    = pixels & 0xff;
-        high   = (pixels >> 8) & 0xff;
-        pixels = (low << 8) | high;
-    }
-
-    switch (pixelformat) {
-    case PIXELFORMAT_RGB555:
-        *r = ((pixels >> 10) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x1f) << 3;
-        *b = ((pixels >>  0) & 0x1f) << 3;
-        break;
-    case PIXELFORMAT_RGB565:
-        *r = ((pixels >> 11) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x3f) << 2;
-        *b = ((pixels >>  0) & 0x1f) << 3;
-        break;
-    case PIXELFORMAT_RGB888:
-        *r = (pixels >>  0) & 0xff;
-        *g = (pixels >>  8) & 0xff;
-        *b = (pixels >> 16) & 0xff;
-        break;
-    case PIXELFORMAT_BGR555:
-        *r = ((pixels >>  0) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x1f) << 3;
-        *b = ((pixels >> 10) & 0x1f) << 3;
-        break;
-    case PIXELFORMAT_BGR565:
-        *r = ((pixels >>  0) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x3f) << 2;
-        *b = ((pixels >> 11) & 0x1f) << 3;
-        break;
-    case PIXELFORMAT_BGR888:
-        *r = (pixels >> 16) & 0xff;
-        *g = (pixels >>  8) & 0xff;
-        *b = (pixels >>  0) & 0xff;
-        break;
-    case PIXELFORMAT_RGBA8888:
-        *r = (pixels >> 24) & 0xff;
-        *g = (pixels >> 16) & 0xff;
-        *b = (pixels >>  8) & 0xff;
-        break;
-    case PIXELFORMAT_ARGB8888:
-        *r = (pixels >> 16) & 0xff;
-        *g = (pixels >>  8) & 0xff;
-        *b = (pixels >>  0) & 0xff;
-        break;
-    case PIXELFORMAT_GA88:
-        *r = *g = *b = (pixels >> 8) & 0xff;
-        break;
-    case PIXELFORMAT_G8:
-    case PIXELFORMAT_AG88:
-        *r = *g = *b = pixels & 0xff;
-        break;
-    default:
-        *r = *g = *b = 0;
-        break;
-    }
-}
-
-
-int
-sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
-                            int width, int height,
-                            int const pixelformat)
-{
-    int x, y, dst_offset, src_offset, depth;
-    unsigned char r, g, b;
-
-    switch (pixelformat) {
-    case PIXELFORMAT_G8:
-        depth = 1;
-        break;
-    case PIXELFORMAT_RGB565:
-    case PIXELFORMAT_RGB555:
-    case PIXELFORMAT_BGR565:
-    case PIXELFORMAT_BGR555:
-    case PIXELFORMAT_GA88:
-    case PIXELFORMAT_AG88:
-        depth = 2;
-        break;
-    case PIXELFORMAT_RGB888:
-    case PIXELFORMAT_BGR888:
-        depth = 3;
-        break;
-    case PIXELFORMAT_RGBA8888:
-    case PIXELFORMAT_ARGB8888:
-        depth = 4;
-        break;
-    default:
-        return (-1);
-    }
-
-    for (y = 0; y < height; y++) {
-        for (x = 0; x < width; x++) {
-            src_offset = depth * (y * width + x);
-            dst_offset = 3 * (y * width + x);
-            get_rgb(src + src_offset, pixelformat, depth, &r, &g, &b);
-
-            *(dst + dst_offset + 0) = r;
-            *(dst + dst_offset + 1) = g;
-            *(dst + dst_offset + 2) = b;
-        }
-    }
-
-    return 0;
-}
-
-
-static void
 sixel_dither_set_method_for_largest(sixel_dither_t *dither, int method_for_largest)
 {
     if (method_for_largest == LARGE_AUTO) {
@@ -459,8 +346,10 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     }
 
     if (pixelformat != PIXELFORMAT_RGB888) {
-        nret = sixel_normalize_pixelformat(normalized_pixels, data,
-                                           width, height, pixelformat);
+        nret = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                  &pixelformat,
+                                                  data, pixelformat,
+                                                  width, height);
         if (nret != 0) {
             goto end;
         }
@@ -632,10 +521,13 @@ sixel_dither_apply_palette(sixel_dither_t *dither,
         if (normalized_pixels == NULL) {
             goto end;
         }
-        sixel_normalize_pixelformat(normalized_pixels,
-                                    pixels,
-                                    width, height,
-                                    dither->pixelformat);
+        ret = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                 &dither->pixelformat,
+                                                 pixels, dither->pixelformat,
+                                                 width, height);
+        if (ret != 0) {
+            goto end;
+        }
         input_pixels = normalized_pixels;
     } else {
         input_pixels = pixels;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -32,7 +32,8 @@ load_image_file(char const *filename, int *psx, int *psy,
                 int *ppixelformat,
                 int *pframe_count, int *ploop_count, int **ppdelay,
                 int fstatic, int reqcolors,
-                unsigned char **ppixels);
+                unsigned char **ppixels,
+                unsigned char *bgcolor);
 
 #ifdef __cplusplus
 }
