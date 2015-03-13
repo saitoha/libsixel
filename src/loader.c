@@ -1001,6 +1001,7 @@ load_with_builtin(
         *pstride = *psx * depth;
 
         switch (depth) {
+        case 1:
         case 3:
         case 4:
             *ppixelformat = PIXELFORMAT_RGB888;
