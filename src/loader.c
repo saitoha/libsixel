@@ -295,7 +295,7 @@ load_jpeg(unsigned char *data,
     jpeg_start_decompress(&cinfo);
 
     if (cinfo.output_components != 3) {
-        fprintf(stderr, "load_jpeg() failed(unknwon format).\n");
+        fprintf(stderr, "load_jpeg() failed(unknown format).\n");
         goto end;
     }
 
@@ -999,13 +999,15 @@ load_with_builtin(
         *pstride = *psx * depth;
 
         switch (depth) {
+        case 1:
         case 3:
+        case 4:
             *ppixelformat = PIXELFORMAT_RGB888;
             break;
         default:
             stbi_image_free(pixels);
             fprintf(stderr, "load_with_builtin() failed.\n"
-                            "reason: unknwon pixel-format.\n");
+                            "reason: unknown pixel-format.(depth: %d)\n", depth);
             return NULL;
         }
     }
