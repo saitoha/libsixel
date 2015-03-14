@@ -977,7 +977,7 @@ load_with_builtin(
             free(delays.buffer);
             free(frames.buffer);
             fprintf(stderr, "load_with_builtin() failed.\n"
-                            "reason: unknown pixel-format.\n");
+                            "reason: unknown pixel-format.(depth: %d)\n", depth);
             return NULL;
         }
 
@@ -1008,7 +1008,7 @@ load_with_builtin(
         default:
             stbi_image_free(pixels);
             fprintf(stderr, "load_with_builtin() failed.\n"
-                            "reason: unknown pixel-format.\n");
+                            "reason: unknown pixel-format.(depth: %d)\n", depth);
             return NULL;
         }
     }
