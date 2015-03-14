@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,24 +20,104 @@
  */
 
 #include "config.h"
+#include <stdio.h>
 #include <stdlib.h>
+#include "output.h"
 #include "sixel.h"
 
-LSOutputContextPtr const
-LSOutputContext_create(putchar_function fn_putchar, printf_function fn_printf)
+
+sixel_output_t *
+sixel_output_create(sixel_write_function fn_write, void *priv)
 {
-    LSOutputContextPtr context = (LSOutputContextPtr)malloc(sizeof(LSOutputContext));
-    context->has_8bit_control = 0;
-    context->has_sdm_glitch = 0;
-    context->fn_putchar = fn_putchar;
-    context->fn_printf = fn_printf;
-    return context;
+    sixel_output_t *output;
+
+    output = malloc(sizeof(sixel_output_t) + SIXEL_OUTPUT_PACKET_SIZE * 2);
+    if (output) {
+        output->ref = 1;
+        output->has_8bit_control = 0;
+        output->has_sdm_glitch = 0;
+        output->skip_dcs_envelope = 0;
+        output->palette_type = PALETTETYPE_AUTO;
+        output->fn_write = fn_write;
+        output->save_pixel = 0;
+        output->save_count = 0;
+        output->active_palette = (-1);
+        output->node_top = NULL;
+        output->node_free = NULL;
+        output->priv = priv;
+        output->pos = 0;
+        output->penetrate_multiplexer = 0;
+        output->encode_policy = ENCODEPOLICY_AUTO;
+    }
+
+    return output;
 }
 
+
 void
-LSOutputContext_destroy(LSOutputContextPtr context)
+sixel_output_destroy(sixel_output_t *output)
 {
-    free(context);
+    free(output);
+}
+
+
+void
+sixel_output_ref(sixel_output_t *output)
+{
+    /* TODO: be thread-safe */
+    ++output->ref;
+}
+
+
+void
+sixel_output_unref(sixel_output_t *output)
+{
+    /* TODO: be thread-safe */
+    if (output && --output->ref == 0) {
+        sixel_output_destroy(output);
+    }
+}
+
+
+int
+sixel_output_get_8bit_availability(sixel_output_t *output)
+{
+    return output->has_8bit_control;
+}
+
+
+void
+sixel_output_set_8bit_availability(sixel_output_t *output, int availability)
+{
+    output->has_8bit_control = availability;
+}
+
+
+void
+sixel_output_set_penetrate_multiplexer(sixel_output_t *output, int penetrate)
+{
+    output->penetrate_multiplexer = penetrate;
+}
+
+
+void
+sixel_output_set_skip_dcs_envelope(sixel_output_t *output, int skip)
+{
+    output->skip_dcs_envelope = skip;
+}
+
+
+void
+sixel_output_set_palette_type(sixel_output_t *output, int palettetype)
+{
+    output->palette_type = palettetype;
+}
+
+
+void
+sixel_output_set_encode_policy(sixel_output_t *output, int encode_policy)
+{
+    output->encode_policy = encode_policy;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
