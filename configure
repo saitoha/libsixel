@@ -829,6 +829,8 @@ GD_CFLAGS
 GD_LIBS
 LIBCURL_CFLAGS
 LIBCURL_LIBS
+LIBJPEG_CFLAGS
+LIBJPEG_LIBS
 LIBPNG_CFLAGS
 LIBPNG_LIBS'
 
@@ -1511,6 +1513,10 @@ Some influential environment variables:
               C compiler flags for LIBCURL, overriding pkg-config
   LIBCURL_LIBS
               linker flags for LIBCURL, overriding pkg-config
+  LIBJPEG_CFLAGS
+              C compiler flags for LIBJPEG, overriding pkg-config
+  LIBJPEG_LIBS
+              linker flags for LIBJPEG, overriding pkg-config
   LIBPNG_CFLAGS
               C compiler flags for LIBPNG, overriding pkg-config
   LIBPNG_LIBS linker flags for LIBPNG, overriding pkg-config
@@ -14583,17 +14589,17 @@ if test x$with_jpeg != xno; then
             if test ! -d "$with_jpeg"; then
                 as_fn_error $? "\"${with_jpeg}\" is not directory" "$LINENO" 5
             fi
-            LIBJPEG_CFLAGS="-I${with_jpeg}/include"
-            LIBJPEG_LIBS="-L${with_jpeg}/lib -ljpeg"
+            ADDED_CFLAGS="-I${with_jpeg}/include"
+            ADDED_LIBS="-L${with_jpeg}/lib -ljpeg"
         elif test x${prefix} != x -a x${prefix} != xNONE; then
-            LIBJPEG_CFLAGS="-I${prefix}/include"
-            LIBJPEG_LIBS="-L${prefix}/lib -ljpeg"
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -ljpeg"
         else
-            LIBJPEG_CFLAGS="-I/usr/local/include"
-            LIBJPEG_LIBS="-L/usr/local/lib -ljpeg"
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -ljpeg"
         fi
-        CFLAGS="${CFLAGS} ${LIBJPEG_CFLAGS}"
-        LDFLAGS="${LDFLAGS} ${LIBJPEG_LIBS}"
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
         ac_fn_c_check_header_mongrel "$LINENO" "jpeglib.h" "ac_cv_header_jpeglib_h" "$ac_includes_default"
 if test "x$ac_cv_header_jpeglib_h" = xyes; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for jpeg_read_header in -ljpeg" >&5
@@ -14643,6 +14649,81 @@ fi
 
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP
+        if test x$have_jpeg != xyes -a ! -d "$with_jpeg"; then
+            if test x${PKG_CONFIG} != x; then
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBJPEG" >&5
+$as_echo_n "checking for LIBJPEG... " >&6; }
+
+if test -n "$LIBJPEG_CFLAGS"; then
+    pkg_cv_LIBJPEG_CFLAGS="$LIBJPEG_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libjpeg\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libjpeg") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBJPEG_CFLAGS=`$PKG_CONFIG --cflags "libjpeg" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBJPEG_LIBS"; then
+    pkg_cv_LIBJPEG_LIBS="$LIBJPEG_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libjpeg\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libjpeg") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBJPEG_LIBS=`$PKG_CONFIG --libs "libjpeg" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libjpeg" 2>&1`
+        else
+	        LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libjpeg" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBJPEG_PKG_ERRORS" >&5
+
+	have_jpeg=no
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	have_jpeg=no
+else
+	LIBJPEG_CFLAGS=$pkg_cv_LIBJPEG_CFLAGS
+	LIBJPEG_LIBS=$pkg_cv_LIBJPEG_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	have_jpeg=yes
+fi
+            fi
+        fi
     fi
     if test x$have_jpeg = xyes; then
 

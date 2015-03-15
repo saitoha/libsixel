@@ -405,17 +405,17 @@ if test x$with_jpeg != xno; then
             if test ! -d "$with_jpeg"; then
                 AC_MSG_ERROR(["${with_jpeg}" is not directory])
             fi
-            LIBJPEG_CFLAGS="-I${with_jpeg}/include"
-            LIBJPEG_LIBS="-L${with_jpeg}/lib -ljpeg"
+            ADDED_CFLAGS="-I${with_jpeg}/include"
+            ADDED_LIBS="-L${with_jpeg}/lib -ljpeg"
         elif test x${prefix} != x -a x${prefix} != xNONE; then
-            LIBJPEG_CFLAGS="-I${prefix}/include"
-            LIBJPEG_LIBS="-L${prefix}/lib -ljpeg"
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -ljpeg"
         else
-            LIBJPEG_CFLAGS="-I/usr/local/include"
-            LIBJPEG_LIBS="-L/usr/local/lib -ljpeg"
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -ljpeg"
         fi
-        CFLAGS="${CFLAGS} ${LIBJPEG_CFLAGS}"
-        LDFLAGS="${LDFLAGS} ${LIBJPEG_LIBS}"
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
         AC_CHECK_HEADER([jpeglib.h],
                         [AC_CHECK_LIB([jpeg],
                                       [jpeg_read_header],
@@ -423,6 +423,14 @@ if test x$with_jpeg != xno; then
                                       [have_jpeg=no])])
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP
+        if test x$have_jpeg != xyes -a ! -d "$with_jpeg"; then
+            if test x${PKG_CONFIG} != x; then
+                PKG_CHECK_MODULES(LIBJPEG,
+                                  [libjpeg],
+                                  [have_jpeg=yes],
+                                  [have_jpeg=no])
+            fi
+        fi
     fi
     if test x$have_jpeg = xyes; then
         AC_DEFINE(HAVE_JPEG, 1, [whether jpeg codec library is available])
