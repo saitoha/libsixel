@@ -339,13 +339,14 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     unsigned char *input_pixels;
     int nret = (-1);
 
-    /* normalize pixelformat */
-    normalized_pixels = malloc(width * height * 3);
-    if (normalized_pixels == NULL) {
-        goto end;
-    }
-
     if (pixelformat != PIXELFORMAT_RGB888) {
+
+        /* normalize pixelformat */
+        normalized_pixels = malloc(width * height * 3);
+        if (normalized_pixels == NULL) {
+            goto end;
+        }
+
         nret = sixel_helper_normalize_pixelformat(normalized_pixels,
                                                   &pixelformat,
                                                   data, pixelformat,
