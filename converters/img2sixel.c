@@ -465,13 +465,15 @@ do_resize(unsigned char **ppixels,
           unsigned char **frames, int frame_count,
           int /* in,out */ *psx,
           int /* in,out */ *psy,
-          int pixelformat,
+          int /* in */ pixelformat,
+          int /* out */ *dst_pixelformat,
           settings_t *psettings)
 {
     unsigned char *p;
     int size;
     int n;
     unsigned char *scaled_frame = NULL;
+    unsigned char *normalized_pixels = NULL;
     int nret;
 
     if (psettings->percentwidth > 0) {
@@ -488,9 +490,42 @@ do_resize(unsigned char **ppixels,
     }
 
     if (psettings->pixelwidth > 0 && psettings->pixelheight > 0) {
+        switch (pixelformat) {
+        case PIXELFORMAT_RGB888:
+            *dst_pixelformat = pixelformat;
+            break;
+        case PIXELFORMAT_PAL8:
+        case PIXELFORMAT_G8:
+        case PIXELFORMAT_GA88:
+        case PIXELFORMAT_AG88:
+        case PIXELFORMAT_RGB555:
+        case PIXELFORMAT_RGB565:
+        case PIXELFORMAT_BGR555:
+        case PIXELFORMAT_BGR565:
+        case PIXELFORMAT_RGBA8888:
+        case PIXELFORMAT_ARGB8888:
+            /* normalize pixelformat */
+            size = *psx * *psy * 3;
+            normalized_pixels = malloc(size * frame_count);
+            nret = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                      &pixelformat,
+                                                      *ppixels, pixelformat,
+                                                      *psx, *psy);
+            if (nret != 0) {
+               free(normalized_pixels);
+                return nret;
+            }
+            free(*ppixels);
+            *ppixels = normalized_pixels;
+            *dst_pixelformat = pixelformat;
 
-        if (pixelformat != PIXELFORMAT_RGB888) {
-            /* TODO: convert pixelformat to RGB888 */
+            for (n = 0; n < frame_count; ++n) {
+                frames[n] = *ppixels + size * n;
+            }
+            break;
+        default:
+            *dst_pixelformat = pixelformat;
+            fprintf(stderr, "do_resize: invalid pixelformat.\n");
             return (-1);
         }
 
@@ -520,6 +555,8 @@ do_resize(unsigned char **ppixels,
         *ppixels = p;
         *psx = psettings->pixelwidth;
         *psy = psettings->pixelheight;
+    } else {
+        *dst_pixelformat = pixelformat;
     }
 
     return 0;
@@ -879,6 +916,7 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     unsigned char **ppalette = &palette;
     int ncolors = 0;
     int pixelformat = PIXELFORMAT_RGB888;
+    int dst_pixelformat = PIXELFORMAT_RGB888;
 
     if (psettings->reqcolors < 2) {
         psettings->reqcolors = 2;
@@ -964,16 +1002,35 @@ reload:
 
         /* scaling */
         nret = do_resize(&pixels, frames, frame_count,
-                         &sx, &sy, pixelformat, psettings);
+                         &sx, &sy, pixelformat,
+                         &dst_pixelformat, psettings);
         if (nret != 0) {
             goto end;
+        }
+        if (pixelformat != dst_pixelformat) {
+            pixelformat = dst_pixelformat;
+            depth = sixel_helper_compute_depth(pixelformat);
+            if (depth == (-1)) {
+                nret = (-1);
+                goto end;
+            }
         }
     } else {
         /* scaling */
         nret = do_resize(&pixels, frames, frame_count,
-                         &sx, &sy, pixelformat, psettings);
+                         &sx, &sy, pixelformat,
+                         &dst_pixelformat, psettings);
         if (nret != 0) {
             goto end;
+        }
+
+        if (pixelformat != dst_pixelformat) {
+            pixelformat = dst_pixelformat;
+            depth = sixel_helper_compute_depth(pixelformat);
+            if (depth == (-1)) {
+                nret = (-1);
+                goto end;
+            }
         }
 
         /* clipping */
