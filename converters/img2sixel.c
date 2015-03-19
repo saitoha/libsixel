@@ -598,7 +598,9 @@ do_crop(unsigned char **frames, int frame_count,
                                                      &pixelformat,
                                                      *frames, pixelformat,
                                                      *psx, *psy);
-            *frames = normalized_pixels;
+            for (n = 0; n < frame_count; ++n) {
+                frames[n] = normalized_pixels + *psx * *psy * n;
+            }
             *dst_pixelformat = PIXELFORMAT_PAL8;
             break;
         default:
