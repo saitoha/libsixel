@@ -529,6 +529,7 @@ do_resize(unsigned char **ppixels,
 static int
 clip(unsigned char *pixels,
      int sx, int sy,
+     int depth,
      int cx, int cy,
      int cw, int ch,
      int pixelformat)
@@ -554,11 +555,11 @@ clip(unsigned char *pixels,
         break;
     case PIXELFORMAT_RGB888:
         dst = pixels;
-        src = pixels + cy * sx * 3 + cx * 3;
+        src = pixels + cy * sx * depth + cx * depth;
         for (y = 0; y < ch; y++) {
-            memmove(dst, src, cw * 3);
-            dst += (cw * 3);
-            src += (sx * 3);
+            memmove(dst, src, cw * depth);
+            dst += (cw * depth);
+            src += (sx * depth);
         }
         break;
     default:
@@ -571,11 +572,13 @@ clip(unsigned char *pixels,
 
 static int
 do_crop(unsigned char **frames, int frame_count,
-        int *psx, int *psy, int pixelformat,
+        int *psx, int *psy, int pixelformat, int *dst_pixelformat,
         settings_t *psettings)
 {
     int n;
     int ret;
+    int depth;
+    unsigned char *normalized_pixels;
 
     /* clipping */
     if (psettings->clipwidth + psettings->clipx > *psx) {
@@ -585,9 +588,29 @@ do_crop(unsigned char **frames, int frame_count,
         psettings->clipheight = (psettings->clipy > *psy) ? 0 : *psy - psettings->clipy;
     }
     if (psettings->clipwidth > 0 && psettings->clipheight > 0) {
+        depth = sixel_helper_compute_depth(pixelformat);
+        switch (pixelformat) {
+        case PIXELFORMAT_PAL1:
+        case PIXELFORMAT_PAL2:
+        case PIXELFORMAT_PAL4:
+            normalized_pixels = malloc(*psx * *psy * frame_count);
+            ret = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                     &pixelformat,
+                                                     *frames, pixelformat,
+                                                     *psx, *psy);
+            for (n = 0; n < frame_count; ++n) {
+                frames[n] = normalized_pixels + *psx * *psy * n;
+            }
+            *dst_pixelformat = PIXELFORMAT_PAL8;
+            break;
+        default:
+            *dst_pixelformat = pixelformat;
+            break;
+        }
+
         for (n = 0; n < frame_count; ++n) {
-            ret = clip(frames[n], *psx, *psy, psettings->clipx, psettings->clipy,
-                       psettings->clipwidth, psettings->clipheight, pixelformat);
+            ret = clip(frames[n], *psx, *psy, depth, psettings->clipx, psettings->clipy,
+                       psettings->clipwidth, psettings->clipheight, *dst_pixelformat);
             if (ret != 0) {
                 return ret;
             }
@@ -957,7 +980,7 @@ reload:
     if (psettings->clipfirst) {
         /* clipping */
         nret = do_crop(frames, frame_count,
-                       &sx, &sy, pixelformat, psettings);
+                       &sx, &sy, pixelformat, &pixelformat, psettings);
         if (nret != 0) {
             goto end;
         }
@@ -978,7 +1001,7 @@ reload:
 
         /* clipping */
         nret = do_crop(frames, frame_count,
-                       &sx, &sy, pixelformat, psettings);
+                       &sx, &sy, pixelformat, &pixelformat, psettings);
         if (nret != 0) {
             goto end;
         }
