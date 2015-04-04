@@ -1,3 +1,36 @@
+2015-03-07  Hayaki Saito <user@zuse.jp>
+
+  * converters/frompnm.c, converters/frompnm.h, converters/loader.c: Resolve
+  confliction of parameter declarations of load_pnm(), reported by @tautschnig.
+  (for Issue #40)
+
+2015-03-05  Hayaki Saito <user@zuse.jp>
+
+  * converters/stb_image.h: Parse GIF application extension block correctly
+  (Issue #39)
+
+2015-02-28  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, package.json: Update package version to 1.4.9
+
+  * converters/loader.c: Workaround for libpng 1.2 with grayscale-alpha PNG
+  (for Issue #36)
+
+2015-02-27  saitoha <user@zuse.jp>
+
+  * converters/loader.c: Workaround for libpng 1.2 (for Issue #34)
+
+2015-02-25  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.in, converters/loader.c: Fix broken -p option with 8bpp grayscale
+  PNG (concerned with Issue #34)
+
+  * Makefile.in, converters/loader.c: Fix broken -p option with 8bpp grayscale
+  PNG (concerned with Issue #34)
+
+  * converters/loader.c: Fix broken resize option(-w/-h) with 1/2/4bpp
+  grayscale png (for Issue #34)
+
 2015-02-18  Hayaki Saito <user@zuse.jp>
 
   * converters/loader.c: Call png_set_strip_alpha() when expanding paletted PNG

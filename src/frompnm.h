@@ -32,9 +32,9 @@ extern "C" {
 
 unsigned char *
 load_pnm(unsigned char *p, int len,
-         int *psx, int *psy, int *pcomp,
+         int *psx, int *psy,
          unsigned char **ppalette, int *pncolors,
-         int pixelformat);
+         int *ppixelformat);
 
 #ifdef __cplusplus
 }
