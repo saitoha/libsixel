@@ -144,6 +144,10 @@ AC_SUBST([AM_CFLAGS])
 # For wic integration
 #AC_PROG_CXX
 
+# For test
+AC_CHECK_PROGS(MD5SUM, [md5sum md5])
+AC_SUBST(MD5SUM)
+
 # Checks for libraries.
 
 # Checks for header files.

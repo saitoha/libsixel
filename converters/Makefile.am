@@ -129,7 +129,45 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -S -datkinson ../images/seq2gif.gif
 	$(WINE) ./img2sixel ../images/snake-progressive.jpg
 if HAVE_PNG
-	$(WINE) ./img2sixel ../images/snake.png
+	$(WINE) ./img2sixel ../images/pngsuite/basic/basn0g01.png
+	$(WINE) ./img2sixel ../images/pngsuite/basic/basn0g02.png
+	$(WINE) ./img2sixel ../images/pngsuite/basic/basn0g04.png
+	$(WINE) ./img2sixel ../images/pngsuite/basic/basn0g08.png
+	$(WINE) ./img2sixel ../images/pngsuite/basic/basn0g16.png
+	$(WINE) ./img2sixel ../images/pngsuite/basic/basn3p01.png
+	$(WINE) ./img2sixel ../images/pngsuite/basic/basn3p02.png
+	$(WINE) ./img2sixel ../images/pngsuite/basic/basn3p04.png
+	$(WINE) ./img2sixel ../images/pngsuite/basic/basn3p08.png
+	$(WINE) ./img2sixel ../images/pngsuite/basic/basn4a08.png
+	$(WINE) ./img2sixel ../images/pngsuite/basic/basn4a16.png
+	$(WINE) ./img2sixel ../images/pngsuite/basic/basn6a08.png
+	$(WINE) ./img2sixel ../images/pngsuite/basic/basn6a16.png
+	$(WINE) ./img2sixel -w32 ../images/pngsuite/basic/basn0g01.png
+	$(WINE) ./img2sixel -w32 ../images/pngsuite/basic/basn0g02.png
+	$(WINE) ./img2sixel -w32 ../images/pngsuite/basic/basn0g04.png
+	$(WINE) ./img2sixel -w32 ../images/pngsuite/basic/basn0g08.png
+	$(WINE) ./img2sixel -w32 ../images/pngsuite/basic/basn0g16.png
+	$(WINE) ./img2sixel -w32 ../images/pngsuite/basic/basn3p01.png
+	$(WINE) ./img2sixel -w32 ../images/pngsuite/basic/basn3p02.png
+	$(WINE) ./img2sixel -w32 ../images/pngsuite/basic/basn3p04.png
+	$(WINE) ./img2sixel -w32 ../images/pngsuite/basic/basn3p08.png
+	$(WINE) ./img2sixel -w32 ../images/pngsuite/basic/basn4a08.png
+	$(WINE) ./img2sixel -w32 ../images/pngsuite/basic/basn4a16.png
+	$(WINE) ./img2sixel -w32 ../images/pngsuite/basic/basn6a08.png
+	$(WINE) ./img2sixel -w32 ../images/pngsuite/basic/basn6a16.png
+	$(WINE) ./img2sixel -c16x16+8+8 ../images/pngsuite/basic/basn0g01.png
+	$(WINE) ./img2sixel -c16x16+8+8 ../images/pngsuite/basic/basn0g02.png
+	$(WINE) ./img2sixel -c16x16+8+8 ../images/pngsuite/basic/basn0g04.png
+	$(WINE) ./img2sixel -c16x16+8+8 ../images/pngsuite/basic/basn0g08.png
+	$(WINE) ./img2sixel -c16x16+8+8 ../images/pngsuite/basic/basn0g16.png
+	$(WINE) ./img2sixel -c16x16+8+8 ../images/pngsuite/basic/basn3p01.png
+	$(WINE) ./img2sixel -c16x16+8+8 ../images/pngsuite/basic/basn3p02.png
+	$(WINE) ./img2sixel -c16x16+8+8 ../images/pngsuite/basic/basn3p04.png
+	$(WINE) ./img2sixel -c16x16+8+8 ../images/pngsuite/basic/basn3p08.png
+	$(WINE) ./img2sixel -c16x16+8+8 ../images/pngsuite/basic/basn4a08.png
+	$(WINE) ./img2sixel -c16x16+8+8 ../images/pngsuite/basic/basn4a16.png
+	$(WINE) ./img2sixel -c16x16+8+8 ../images/pngsuite/basic/basn6a08.png
+	$(WINE) ./img2sixel -c16x16+8+8 ../images/pngsuite/basic/basn6a16.png
 endif
 if HAVE_CURL
 	test ! $$($(WINE) ./img2sixel file:///test)
