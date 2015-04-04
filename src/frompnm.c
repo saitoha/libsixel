@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
+#include <sixel.h>
 
 
 static unsigned char *
@@ -53,9 +53,9 @@ pnm_get_line(unsigned char *p, unsigned char *end, unsigned char *line)
 
 unsigned char *
 load_pnm(unsigned char *p, int length,
-         int *psx, int *psy, int *pcomp,
+         int *psx, int *psy,
          unsigned char **ppalette, int *pncolors,
-         int *pixelformat)
+         int *ppixelformat)
 {
     int n, i, b, x, y, component[3];
     int ascii, maps;
@@ -65,11 +65,9 @@ load_pnm(unsigned char *p, int length,
 
     (void) ppalette;
     (void) pncolors;
-    (void) pixelformat;
 
     width = height = 0;
     deps = 1;
-    *pcomp = 3;
 
     end = p + length;
     p = pnm_get_line(p, end, tmp);
@@ -213,6 +211,7 @@ load_pnm(unsigned char *p, int length,
 
     *psx = width;
     *psy = height;
+    *ppixelformat = PIXELFORMAT_RGB888;
     return result;
 }
 

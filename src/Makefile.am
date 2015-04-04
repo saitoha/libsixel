@@ -7,10 +7,13 @@ CLEANFILES = *.gcno *.gcda *.gcov
 
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = output.c \
+		output.h \
 		fromsixel.c \
 		tosixel.c \
 		quant.c \
+		quant.h \
 		dither.c \
+		dither.h \
 		pixelformat.c \
 		scale.c \
 		loader.c \

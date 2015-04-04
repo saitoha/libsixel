@@ -1,7 +1,78 @@
+2015-02-22  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, converters/img2sixel.c, converters/sixel2png.c,
+  include/Makefile.am, include/Makefile.in, include/sixel-imageio.h.in,
+  include/sixel.h.in, src/loader.c, src/writer.c: Aggregate sixel-imageio.h and
+  sixel.h into the one header
+
+  * Makefile.in, converters/Makefile.am, converters/Makefile.in,
+  src/Makefile.am, src/Makefile.in: Combine libsixel-imageio with core library
+
+2015-02-21  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.in, converters/Makefile.am, converters/Makefile.in: Add convenient
+  tests for -B option (issue #25)
+
+  * converters/img2sixel.c: Raise error if invalid -B option is given
+
+  * converters/img2sixel.c, converters/loader.h, converters/malloc_stub.c,
+  converters/malloc_stub.h, converters/sixel2png.c, include/sixel-imageio.h.in,
+  include/sixel.h.in, src/dither.c, src/dither.h, src/frompnm.c, src/frompnm.h,
+  src/loader.c, src/output.c, src/output.h, src/pixelformat.c, src/quant.c,
+  src/quant.h, src/scale.c, src/stb_image_write.c, src/writer.c: Update
+  copyright notice
+
+  * include/sixel.h.in, src/dither.c, src/dither.h, src/pixelformat.c,
+  src/scale.c, src/tosixel.c, src/writer.c: Integrate some duplicated code
+  around sixel_helper_normalize_pixelformat()
+
+  * src/loader.c: Apply default background color to paletted PNG with tRNS
+  chunk
+
+  * src/loader.c: Suppress printf() formatter warings
+
+  * src/dither.c: Add some parentheses for suppressing GCC warnings
+
+  * src/stb_image.h: Retrive delay information from animated GIF correctory
+
+  * src/loader.c: Add some malloc() error handlings and fix leaks
+
+2015-02-20  Hayaki Saito <user@zuse.jp>
+
+  * src/dither.c, src/dither.h, src/tosixel.c: Change the signature of
+  sixel_normalize_pixelformat()
+
+  * src/dither.c: Fixes for passing PngSuite odd sizes test (for Issue #25)
+  http://www.schaik.com/pngsuite/pngsuite_siz_png.html
+
+  * src/dither.c: Logging to stderr instead of stdout
+
+  * src/loader.c: Expand grayscale PNG to RGB format if needed
+
+  * converters/loader.c: Add more logs
+
+  * src/dither.c: Expand 1/2/4 bpp palette with considering surplus bits
+
+  * converters/loader.c: Reset bitdepth after calling png_set_strip_16()
+
 2015-02-19  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Suppress printf() formatter warings
+
+  * converters/loader.c, src/dither.c: Add logging
 
   * converters/img2sixel.1: Add descriptions about source image formats to
   manpage of img2sixel(for Issue #24)
+
+2015-02-18  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Call png_set_strip_alpha() when expanding paletted PNG
+  to RGB888 pixelformat (for Issue #29)
+
+2015-02-17  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Use png_set_packing to expand 1/2/4bpp paletted PNG
+  (for Issue #29)
 
 2015-02-16  Hayaki Saito <user@zuse.jp>
 
@@ -10,6 +81,11 @@
 
   * converters/loader.c: Always set background color and respect bKGD chunk
   again (for Issue #31)
+
+2015-02-16  saitoha <user@zuse.jp>
+
+  * converters/loader.c: libpng loader: expand 1/2/4bpp palette to 8bpp (for
+  issue #29)
 
 2015-02-15  Hayaki Saito <user@zuse.jp>
 
@@ -52,6 +128,8 @@
 
   * converters/Makefile.am, converters/Makefile.in: Add test case whether
   stb_image can load a progressive jpeg (for issue #24)
+
+  * README.md: README.md: add @msmhrt to the contributer section
 
   * converters/img2sixel.c: histogram_colors should be initialized after
   sixel_dither_initialize() function call
