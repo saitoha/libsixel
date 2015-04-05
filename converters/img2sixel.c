@@ -265,77 +265,90 @@ prepare_builtin_palette(int builtin_palette)
 }
 
 
-static sixel_dither_t *
-prepare_specified_palette(char const *mapfile, int reqcolors, unsigned char *bgcolor)
+typedef struct sixel_callback_context_for_mapfile {
+    int reqcolors;
+    sixel_dither_t *dither;
+} sixel_callback_context_for_mapfile_t;
+
+
+static int
+load_image_callback_for_palette(sixel_frame_t *frame, void *data)
 {
-    unsigned char *mappixels;
-    sixel_dither_t *dither = NULL;
-    int map_sx = (-1);
-    int map_sy = (-1);
-    int frame_count;
-    int loop_count;
+    sixel_callback_context_for_mapfile_t *callback_context;
     int ret = (-1);
-    int *delays;
-    int ncolors = 0;
-    unsigned char *palette = NULL;
-    int pixelformat = PIXELFORMAT_RGB888;
 
-    delays = NULL;
-
-    ret = sixel_helper_load_image_file(
-        &mappixels,
-        &palette,
-        &map_sx,
-        &map_sy,
-        &ncolors,
-        &pixelformat,
-        &frame_count,
-        &loop_count,
-        &delays,
-        mapfile,
-        1,  /* fstatic */
-        256, /* reqcolors */
-        bgcolor
-    );
-    if (ret != 0 || mappixels == NULL || map_sx * map_sy == 0) {
+    if (frame->pixels == NULL || frame->width == 0 || frame->height == 0) {
         goto end;
     }
-    free(delays);
 
-    switch (pixelformat) {
+    callback_context = (sixel_callback_context_for_mapfile_t *)data;
+
+    switch (frame->pixelformat) {
     case PIXELFORMAT_PAL1:
     case PIXELFORMAT_PAL2:
     case PIXELFORMAT_PAL4:
     case PIXELFORMAT_PAL8:
-        if (palette == NULL) {
+        if (frame->palette == NULL) {
             goto end;
         }
-        dither = sixel_dither_create(ncolors);
-        if (dither == NULL) {
+        callback_context->dither = sixel_dither_create(frame->ncolors);
+        if (callback_context->dither == NULL) {
             goto end;
         }
-        sixel_dither_set_palette(dither, palette);
+        sixel_dither_set_palette(callback_context->dither, frame->palette);
+        ret = 0;
         break;
     default:
-        dither = sixel_dither_create(reqcolors);
-        if (dither == NULL) {
+        callback_context->dither = sixel_dither_create(callback_context->reqcolors);
+        if (callback_context->dither == NULL) {
             goto end;
         }
 
-        ret = sixel_dither_initialize(dither, mappixels, map_sx, map_sy,
-                                      pixelformat,
-                                      LARGE_NORM, REP_CENTER_BOX, QUALITY_HIGH);
+        ret = sixel_dither_initialize(callback_context->dither,
+                                      frame->pixels,
+                                      frame->width,
+                                      frame->height,
+                                      frame->pixelformat,
+                                      LARGE_NORM,
+                                      REP_CENTER_BOX,
+                                      QUALITY_HIGH);
         if (ret != 0) {
-            sixel_dither_unref(dither);
+            sixel_dither_unref(callback_context->dither);
             goto end;
         }
         break;
     }
 
 end:
-    free(palette);
+    free(frame->palette);
 
-    return dither;
+    return ret;
+}
+
+
+static sixel_dither_t *
+prepare_specified_palette(char const *mapfile, int reqcolors, unsigned char *bgcolor)
+{
+    int loop_count;
+    int ret = (-1);
+    sixel_callback_context_for_mapfile_t callback_context;
+
+    callback_context.reqcolors = reqcolors;
+    callback_context.dither = NULL;
+
+    ret = sixel_helper_load_image_file(mapfile,
+                                       1,   /* fstatic */
+                                       1,   /* fuse_palette */
+                                       256, /* reqcolors */
+                                       bgcolor,
+                                       load_image_callback_for_palette,
+                                       &callback_context,
+                                       &loop_count);
+    if (ret != 0) {
+        return NULL;
+    }
+
+    return callback_context.dither;
 }
 
 
@@ -919,27 +932,241 @@ end:
 }
 
 
+typedef struct sixel_callback_context {
+    settings_t *settings;
+} sixel_callback_context_t;
+
+
+static int
+load_image_callback(sixel_frame_t *frame, void *data)
+{
+    int nret = (-1);
+    int depth;
+    settings_t *psettings;
+    sixel_dither_t *dither = NULL;
+    int dst_pixelformat = PIXELFORMAT_RGB888;
+    sixel_output_t *output = NULL;
+
+    if (frame->pixels == NULL || frame->width == 0 || frame->height == 0) {
+        goto end;
+    }
+
+    psettings = ((sixel_callback_context_t *)data)->settings;
+
+    depth = sixel_helper_compute_depth(frame->pixelformat);
+    if (depth == (-1)) {
+        nret = (-1);
+        goto end;
+    }
+
+    /* evaluate -w, -h, and -c option: crop/scale input source */
+    if (psettings->clipfirst) {
+        /* clipping */
+        nret = do_crop(&frame->pixels,
+                       1,
+                       &frame->width,
+                       &frame->height,
+                       frame->pixelformat,
+                       &frame->pixelformat,
+                       psettings);
+        if (nret != 0) {
+            goto end;
+        }
+
+        /* scaling */
+        nret = do_resize(&frame->pixels,
+                         &frame->pixels,
+                         1,
+                         &frame->width,
+                         &frame->height,
+                         frame->pixelformat,
+                         &dst_pixelformat,
+                         psettings);
+        if (nret != 0) {
+            goto end;
+        }
+        if (frame->pixelformat != dst_pixelformat) {
+            frame->pixelformat = dst_pixelformat;
+            depth = sixel_helper_compute_depth(frame->pixelformat);
+            if (depth == (-1)) {
+                nret = (-1);
+                goto end;
+            }
+        }
+    } else {
+        /* scaling */
+        nret = do_resize(&frame->pixels,
+                         &frame->pixels,
+                         1,
+                         &frame->width,
+                         &frame->height,
+                         frame->pixelformat,
+                         &dst_pixelformat,
+                          psettings);
+        if (nret != 0) {
+            goto end;
+        }
+
+        if (frame->pixelformat != dst_pixelformat) {
+            frame->pixelformat = dst_pixelformat;
+            depth = sixel_helper_compute_depth(frame->pixelformat);
+            if (depth == (-1)) {
+                nret = (-1);
+                goto end;
+            }
+        }
+
+        /* clipping */
+        nret = do_crop(&frame->pixels,
+                       1,
+                       &frame->width,
+                       &frame->height,
+                       frame->pixelformat,
+                       &frame->pixelformat,
+                       psettings);
+        if (nret != 0) {
+            goto end;
+        }
+    }
+
+    /* prepare dither context */
+    dither = prepare_palette(dither,
+                             frame->pixels,
+                             frame->width,
+                             frame->height,
+                             frame->palette,
+                             frame->ncolors,
+                             frame->pixelformat,
+                             psettings);
+    if (!dither) {
+        nret = (-1);
+        goto end;
+    }
+
+    /* evaluate -v option: print palette */
+    if (psettings->verbose) {
+        if (!(frame->pixelformat & FORMATTYPE_GRAYSCALE)) {
+            print_palette(dither);
+        }
+    }
+
+    /* evaluate -d option: set method for diffusion */
+    sixel_dither_set_diffusion_type(dither, psettings->method_for_diffuse);
+
+    /* evaluate -C option: set complexion score */
+    if (psettings->complexion > 1) {
+        sixel_dither_set_complexion_score(dither, psettings->complexion);
+    }
+
+//    /* evaluate -l option: set loop count */
+//    switch (psettings->loop_mode) {
+//    case LOOP_FORCE:
+//        loop_count = (-1);  /* infinite */
+//        break;
+//    case LOOP_DISABLE:
+//        loop_count = 1;  /* do not loop */
+//        break;
+//    case LOOP_AUTO:
+//    default:
+//        if (frame_count == 1) {
+//            loop_count = 1;
+//        } else if (loop_count == 0) {
+//            loop_count = (-1);
+//        }
+//#ifdef HAVE_GDK_PIXBUF2
+//        /* do not trust loop_count report of gdk-pixbuf loader */
+//        if (loop_count == (-1)) {
+//            loop_count = 1;
+//        }
+//#endif
+//        break;
+//    }
+
+    /* set signal handler to handle SIGINT/SIGTERM/SIGHUP */
+#if HAVE_SIGNAL
+# if HAVE_DECL_SIGINT
+    signal(SIGINT, signal_handler);
+# endif
+# if HAVE_DECL_SIGTERM
+    signal(SIGTERM, signal_handler);
+# endif
+# if HAVE_DECL_SIGHUP
+    signal(SIGHUP, signal_handler);
+# endif
+#endif
+
+    /* output sixel: junction of multi-frame processing strategy */
+    if ((psettings->fuse_macro && 1 > 1)) {  /* -u option */
+        /* use macro */
+        nret = output_sixel_with_macro(&frame->pixels,
+                                       frame->width,
+                                       frame->height,
+                                       1,    /* loop_count */
+                                       1,    /* frame_count*/
+                                       NULL, /* delays */
+                                       dither,
+                                       output,
+                                       psettings);
+    } else if (psettings->macro_number >= 0) { /* -n option */
+        /* use macro */
+        nret = output_sixel_with_macro(&frame->pixels,
+                                       frame->width,
+                                       frame->height,
+                                       1,    /* loop_count */
+                                       1,    /* frame_count */
+                                       NULL, /* delays,*/
+                                       dither,
+                                       output,
+                                       psettings);
+    } else { /* do not use macro */
+        nret = output_sixel_without_macro(&frame->pixels,
+                                          frame->width,
+                                          frame->height,
+                                          depth,
+                                          1,   /* loop_count */
+                                          1,   /* frame_count */
+                                          NULL,
+                                          dither,
+                                          output,
+                                          psettings);
+    }
+
+    if (nret != 0) {
+        goto end;
+    }
+    nret = 0;
+    fflush(stdout);
+
+end:
+    if (output) {
+        sixel_output_unref(output);
+    }
+    if (dither) {
+        sixel_dither_unref(dither);
+    }
+
+    return nret;
+}
+
+
+
+
 static int
 convert_to_sixel(char const *filename, settings_t *psettings)
 {
     unsigned char *pixels;
-    unsigned char **frames;
     unsigned char *p;
     unsigned char *frame;
-    sixel_output_t *context = NULL;
-    sixel_dither_t *dither = NULL;
     int sx, sy;
     int frame_count = 1;
     int loop_count = 1;
     int *delays;
     int n;
     int nret = (-1);
-    int depth;
     unsigned char *palette = NULL;
     unsigned char **ppalette = &palette;
     int ncolors = 0;
-    int pixelformat = PIXELFORMAT_RGB888;
-    int dst_pixelformat = PIXELFORMAT_RGB888;
+    sixel_callback_context_t callback_context;
 
     if (psettings->reqcolors < 2) {
         psettings->reqcolors = 2;
@@ -974,184 +1201,19 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 
 reload:
     pixels = NULL;
-    frames = NULL;
     frame = NULL;
     delays = NULL;
-    nret = sixel_helper_load_image_file(
-        &pixels,
-        ppalette,
-        &sx,
-        &sy,
-        &ncolors,
-        &pixelformat,
-        &frame_count,
-        &loop_count,
-        &delays,
-        filename,
-        psettings->fstatic,
-        psettings->reqcolors,
-        psettings->bgcolor);
 
-    if (nret != 0 || pixels == NULL || sx * sy == 0) {
-        goto end;
-    }
+    callback_context.settings = psettings;
 
-    depth = sixel_helper_compute_depth(pixelformat);
-    if (depth == (-1)) {
-        nret = (-1);
-        goto end;
-    }
-
-    frames = malloc(sizeof(unsigned char *) * frame_count);
-    if (frames == NULL) {
-        nret = (-1);
-        goto end;
-    }
-
-    p = pixels;
-    for (n = 0; n < frame_count; ++n) {
-        frames[n] = p;
-        p += sx * sy * depth;
-    }
-
-    /* evaluate -w, -h, and -c option: crop/scale input source */
-    if (psettings->clipfirst) {
-        /* clipping */
-        nret = do_crop(frames, frame_count,
-                       &sx, &sy, pixelformat, &pixelformat, psettings);
-        if (nret != 0) {
-            goto end;
-        }
-
-        /* scaling */
-        nret = do_resize(&pixels, frames, frame_count,
-                         &sx, &sy, pixelformat,
-                         &dst_pixelformat, psettings);
-        if (nret != 0) {
-            goto end;
-        }
-        if (pixelformat != dst_pixelformat) {
-            pixelformat = dst_pixelformat;
-            depth = sixel_helper_compute_depth(pixelformat);
-            if (depth == (-1)) {
-                nret = (-1);
-                goto end;
-            }
-        }
-    } else {
-        /* scaling */
-        nret = do_resize(&pixels, frames, frame_count,
-                         &sx, &sy, pixelformat,
-                         &dst_pixelformat, psettings);
-        if (nret != 0) {
-            goto end;
-        }
-
-        if (pixelformat != dst_pixelformat) {
-            pixelformat = dst_pixelformat;
-            depth = sixel_helper_compute_depth(pixelformat);
-            if (depth == (-1)) {
-                nret = (-1);
-                goto end;
-            }
-        }
-
-        /* clipping */
-        nret = do_crop(frames, frame_count,
-                       &sx, &sy, pixelformat, &pixelformat, psettings);
-        if (nret != 0) {
-            goto end;
-        }
-    }
-
-    /* prepare dither context */
-    dither = prepare_palette(dither, pixels, sx, sy * frame_count,
-                             palette, ncolors, pixelformat, psettings);
-    if (!dither) {
-        nret = (-1);
-        goto end;
-    }
-
-    /* evaluate -v option: print palette */
-    if (psettings->verbose) {
-        if (!(pixelformat & FORMATTYPE_GRAYSCALE)) {
-            print_palette(dither);
-        }
-    }
-
-    /* evaluate -d option: set method for diffusion */
-    sixel_dither_set_diffusion_type(dither, psettings->method_for_diffuse);
-
-    /* evaluate -C option: set complexion score */
-    if (psettings->complexion > 1) {
-        sixel_dither_set_complexion_score(dither, psettings->complexion);
-    }
-
-    /* evaluate -l option: set loop count */
-    switch (psettings->loop_mode) {
-    case LOOP_FORCE:
-        loop_count = (-1);  /* infinite */
-        break;
-    case LOOP_DISABLE:
-        loop_count = 1;  /* do not loop */
-        break;
-    case LOOP_AUTO:
-    default:
-        if (frame_count == 1) {
-            loop_count = 1;
-        } else if (loop_count == 0) {
-            loop_count = (-1);
-        }
-#ifdef HAVE_GDK_PIXBUF2
-        /* do not trust loop_count report of gdk-pixbuf loader */
-        if (loop_count == (-1)) {
-            loop_count = 1;
-        }
-#endif
-        break;
-    }
-
-    /* set signal handler to handle SIGINT/SIGTERM/SIGHUP */
-#if HAVE_SIGNAL
-# if HAVE_DECL_SIGINT
-    signal(SIGINT, signal_handler);
-# endif
-# if HAVE_DECL_SIGTERM
-    signal(SIGTERM, signal_handler);
-# endif
-# if HAVE_DECL_SIGHUP
-    signal(SIGHUP, signal_handler);
-# endif
-#endif
-
-    /* output sixel: junction of multi-frame processing strategy */
-    if ((psettings->fuse_macro && frame_count > 1)) {  /* -u option */
-        /* use macro */
-        nret = output_sixel_with_macro(frames, sx, sy,
-                                       loop_count, frame_count, delays,
-                                       dither, context, psettings);
-    } else if (psettings->macro_number >= 0) { /* -n option */
-        /* use macro */
-        nret = output_sixel_with_macro(frames, sx, sy,
-                                       loop_count, frame_count, delays,
-                                       dither, context, psettings);
-    } else { /* do not use macro */
-        nret = output_sixel_without_macro(frames, sx, sy, depth,
-                                          loop_count, frame_count, delays,
-                                          dither, context, psettings);
-    }
-
-    if (nret != 0) {
-        goto end;
-    }
-    nret = 0;
-    fflush(stdout);
-
-end:
-    free(frames);
-    free(pixels);
-    free(delays);
-    free(frame);
+    nret = sixel_helper_load_image_file(filename,
+                                        psettings->fstatic,
+                                        1,   /* fuse_palette */
+                                        psettings->reqcolors,
+                                        psettings->bgcolor,
+                                        load_image_callback,
+                                        &callback_context,
+                                        &loop_count);
 
     if (nret == 0 && psettings->pipe_mode) {
 #if HAVE_CLEARERR
@@ -1173,12 +1235,6 @@ end:
         }
     }
 
-    if (context) {
-        sixel_output_unref(context);
-    }
-    if (dither) {
-        sixel_dither_unref(dither);
-    }
     return nret;
 }
 

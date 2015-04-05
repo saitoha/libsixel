@@ -414,22 +414,28 @@ enum imageFormat {
 extern "C" {
 #endif
 
-/* load image from file */
+typedef struct sixel_frame {
+    unsigned char *pixels;    /* loaded pixel data */
+    unsigned char *palette;   /* loaded palette data */
+    int width;                /* frame width */
+    int height;               /* frame height */
+    int ncolors;              /* palette colors */
+    int pixelformat;          /* one of enum pixelFormat */
+    int delay;                /* delay in msec */
+} sixel_frame_t;
+
+typedef int (* sixel_load_image_function)(sixel_frame_t /* in */ *frame, void /* in/out */ *context);
+
 int
 sixel_helper_load_image_file(
-    unsigned char /* out */ **ppixels,     /* loaded pixel data */
-    unsigned char /* out */ **ppalette,    /* loaded palette data */
-    int           /* out */ *psx,          /* image width */
-    int           /* out */ *psy,          /* image height */
-    int           /* out */ *pncolors,     /* palette colors */
-    int           /* out */ *ppixelformat, /* one of enum pixelFormat */
-    int           /* out */ *pframe_count, /* frame count */
-    int           /* out */ *ploop_count,  /* loop count */
-    int           /* out */ **ppdelay,     /* delay for each frames */
-    char const    /* in */  *filename,     /* source file name */
-    int           /* in */  fstatic,       /* whether to extract static image */
-    int           /* in */  reqcolors,     /* requested number of colors */
-    unsigned char /* in */  *bgcolor);     /* background color */
+    char const                /* in */     *filename,     /* source file name */
+    int                       /* in */     fstatic,       /* whether to extract static image */
+    int                       /* in */     fuse_palette,  /* whether to use paletted image */
+    int                       /* in */     reqcolors,     /* requested number of colors */
+    unsigned char             /* in */     *bgcolor,      /* background color */
+    sixel_load_image_function /* in */     fn_load,       /* callback */
+    void                      /* in/out */ *context,      /* private data for callback */
+    int                       /* out */    *ploop_count); /* requested number of colors */
 
 /* write image to file */
 int
