@@ -1154,18 +1154,9 @@ end:
 static int
 convert_to_sixel(char const *filename, settings_t *psettings)
 {
-    unsigned char *pixels;
-    unsigned char *p;
-    unsigned char *frame;
-    int sx, sy;
-    int frame_count = 1;
     int loop_count = 1;
-    int *delays;
-    int n;
     int nret = (-1);
-    unsigned char *palette = NULL;
-    unsigned char **ppalette = &palette;
-    int ncolors = 0;
+    int fuse_palette = 1;
     sixel_callback_context_t callback_context;
 
     if (psettings->reqcolors < 2) {
@@ -1177,38 +1168,34 @@ convert_to_sixel(char const *filename, settings_t *psettings)
     }
 
     if (psettings->mapfile) {
-        ppalette = NULL;
+        fuse_palette = 0;
     }
 
     if (psettings->monochrome > 0) {
-        ppalette = NULL;
+        fuse_palette = 0;
     }
 
     if (psettings->highcolor > 0) {
-        ppalette = NULL;
+        fuse_palette = 0;
     }
 
     if (psettings->builtin_palette > 0) {
-        ppalette = NULL;
+        fuse_palette = 0;
     }
 
     if (psettings->percentwidth > 0 ||
         psettings->percentheight > 0 ||
         psettings->pixelwidth > 0 ||
         psettings->pixelheight > 0) {
-        ppalette = NULL;
+        fuse_palette = 0;
     }
 
 reload:
-    pixels = NULL;
-    frame = NULL;
-    delays = NULL;
-
     callback_context.settings = psettings;
 
     nret = sixel_helper_load_image_file(filename,
                                         psettings->fstatic,
-                                        1,   /* fuse_palette */
+                                        fuse_palette,
                                         psettings->reqcolors,
                                         psettings->bgcolor,
                                         load_image_callback,
