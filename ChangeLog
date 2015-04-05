@@ -1,3 +1,8 @@
+2015-04-05  Hayaki Saito <user@zuse.jp>
+
+  * converters/stb_image.h: Fix an existing bug in stb_image v1.41 of building
+  color palette, reported by @msmhrt (for Issue #41)
+
 2015-03-07  Hayaki Saito <user@zuse.jp>
 
   * converters/frompnm.c, converters/frompnm.h, converters/loader.c: Resolve
