@@ -3884,7 +3884,7 @@ static void stbi__gif_parse_colortable(stbi__context *s, stbi_uc pal[256][4], in
       pal[i][2] = stbi__get8(s);
       pal[i][1] = stbi__get8(s);
       pal[i][0] = stbi__get8(s);
-      pal[i][3] = transp ? 0 : 255;
+      pal[i][3] = transp == i ? 0 : 255;
    }   
 }
 
