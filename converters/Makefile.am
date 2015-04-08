@@ -110,7 +110,7 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -p 16 -C3 -h100 -fnorm -rlanczos2 ../images/snake.jpg
 	$(WINE) ./img2sixel -v -p 8 -h200 -fnorm -rlanczos2 -dnone ../images/snake.jpg
 	$(WINE) ./img2sixel -p 2 -h100 -wauto -rlanczos3 ../images/snake.jpg
-	$(WINE) ./img2sixel -p 1 -h100 -n1 ../images/snake.jpg
+	$(WINE) ./img2sixel -p 1 -h100 -n1 ../images/snake.jpg && printf '\033[*1z'
 	$(WINE) ./img2sixel -e -h140 -rlanczos4 -P ../images/snake.jpg
 	$(WINE) ./img2sixel -e -i -P ../images/snake.jpg > /dev/null
 	$(WINE) ./img2sixel -w2047 -h2047 ../images/snake.png | $(WINE) ./img2sixel > /dev/null
