@@ -864,7 +864,6 @@ load_with_builtin(
     int depth;
     sixel_frame_t *frame;
     int ret = (-1);
-    int frame_count = 0;
     int stride;
 
 #if !defined(HAVE_LIBPNG)
@@ -878,6 +877,7 @@ load_with_builtin(
     memset(frame, 0, sizeof(sixel_frame_t));
 
     frame->pixels = NULL;
+    frame->frame_no = 0;
 
     if (chunk_is_sixel(pchunk)) {
         frame->pixels = load_sixel(pchunk->buffer,
@@ -891,8 +891,7 @@ load_with_builtin(
         if (frame->pixels == NULL) {
             goto error;
         }
-        frame_count = 1;
-        *ploop_count = 1;
+        frame->loop_count = 1;
         stride = frame->width * sixel_helper_compute_depth(frame->pixelformat);
     } else if (chunk_is_pnm(pchunk)) {
         /* pnm */
@@ -910,8 +909,7 @@ load_with_builtin(
 #endif  /* HAVE_ERRNO_H */
             goto error;
         }
-        frame_count = 1;
-        *ploop_count = 1;
+        frame->loop_count = 1;
         stride = frame->width * sixel_helper_compute_depth(frame->pixelformat);
     }
 #if HAVE_JPEG
@@ -925,8 +923,7 @@ load_with_builtin(
             free(frames.buffer);
             goto error;
         }
-        frame_count = 1;
-        *ploop_count = 1;
+        frame->loop_count = 1;
         stride = frame->width * sixel_helper_compute_depth(frame->pixelformat);
     }
 #endif  /* HAVE_JPEG */
@@ -945,14 +942,12 @@ load_with_builtin(
             free(frames.buffer);
             goto error;
         }
-        frame_count = 1;
-        *ploop_count = 1;
+        frame->loop_count = 1;
         stride = frame->width * sixel_helper_compute_depth(frame->pixelformat);
     }
 #endif  /* HAVE_LIBPNG */
     else if (chunk_is_gif(pchunk)) {
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);
-        frame_count = 0;
         memset(&g, 0, sizeof(g));
 
         for (;;) {
@@ -970,7 +965,7 @@ load_with_builtin(
             frame->pixels = p;
             frame->delay = g.delay;
             if (frame->pixels) {
-                *ploop_count = g.loop_count;
+                frame->loop_count = g.loop_count;
                 stride = frame->width * depth;
 
                 switch (depth) {
@@ -996,7 +991,7 @@ load_with_builtin(
             if (ret != 0) {
                 goto error;
             }
-            ++frame_count;
+            ++frame->frame_no;
             if (fstatic) {
                 break;
             }
@@ -1018,8 +1013,7 @@ load_with_builtin(
                     stbi_failure_reason());
             goto error;
         }
-        frame_count = 1;
-        *ploop_count = 1;
+        frame->loop_count = 1;
         stride = frame->width * depth;
 
         switch (depth) {

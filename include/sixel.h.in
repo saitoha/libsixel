@@ -422,6 +422,8 @@ typedef struct sixel_frame {
     int ncolors;              /* palette colors */
     int pixelformat;          /* one of enum pixelFormat */
     int delay;                /* delay in msec */
+    int frame_no;             /* frame number */
+    int loop_count;           /* loop count */
 } sixel_frame_t;
 
 typedef int (* sixel_load_image_function)(sixel_frame_t /* in */ *frame, void /* in/out */ *context);

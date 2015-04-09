@@ -714,9 +714,8 @@ output_sixel_without_macro(
     unsigned char **frames,
     int sx, int sy,
     int depth,
-    int loop_count,
-    int frame_count,
-    int *delays,
+    int frame_no,
+    int delay,
     sixel_dither_t *dither,
     sixel_output_t *context,
     settings_t *psettings
@@ -743,7 +742,7 @@ output_sixel_without_macro(
     sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
     sixel_output_set_encode_policy(context, psettings->encode_policy);
 
-    if (frame_count == 1 && !psettings->mapfile && !psettings->monochrome
+    if (!psettings->mapfile && !psettings->monochrome
             && !psettings->highcolor && !psettings->builtin_palette) {
         sixel_dither_set_optimize_palette(dither, 1);
     }
@@ -752,49 +751,34 @@ output_sixel_without_macro(
     if (nret != 0) {
         goto end;
     }
-    for (c = 0; c != loop_count; ++c) {
-        for (n = 0; n < frame_count; ++n) {
-            if (frame_count > 1) {
 #if HAVE_USLEEP && HAVE_CLOCK
-                start = clock();
+    start = clock();
 #endif
-                printf("\033[H");
-                fflush(stdout);
+    printf("\033[H");
+    fflush(stdout);
 #if HAVE_USLEEP
-                if (delays != NULL && !psettings->fignore_delay) {
+    if (!psettings->fignore_delay) {
 # if HAVE_CLOCK
-                    dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
-                    lag = 0;
+        dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
+        lag = 0;
 # else
-                    dulation = 0;
+        dulation = 0;
 # endif
-                    if (dulation < 10000 * delays[n]) {
-                        usleep(10000 * delays[n] - dulation);
-                    } else {
-                        lag = 10000 * delays[n] - dulation;
-                    }
-                }
-#endif
-            }
-
-            memcpy(frame, frames[n], sx * sy * depth);
-            nret = sixel_encode(frame, sx, sy, depth, dither, context);
-            if (nret != 0) {
-                goto end;
-            }
-
-#if HAVE_SIGNAL
-            if (signaled) {
-                break;
-            }
-#endif
+        if (dulation < 10000 * delay) {
+            usleep(10000 * delay - dulation);
+        } else {
+            lag = 10000 * delay - dulation;
         }
-#if HAVE_SIGNAL
-        if (signaled) {
-            break;
-        }
-#endif
     }
+#endif
+
+    memcpy(frame, *frames, sx * sy * depth);
+    nret = sixel_encode(frame, sx, sy, depth, dither, context);
+    if (nret != 0) {
+        goto end;
+    }
+
+#if HAVE_SIGNAL
     if (signaled) {
         if (sixel_output_get_8bit_availability(context)) {
             printf("\x9c");
@@ -802,6 +786,7 @@ output_sixel_without_macro(
             printf("\x1b\\");
         }
     }
+#endif
 
 end:
     return nret;
@@ -934,6 +919,7 @@ end:
 
 typedef struct sixel_callback_context {
     settings_t *settings;
+    int frame_counter;
 } sixel_callback_context_t;
 
 
@@ -942,6 +928,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
 {
     int nret = (-1);
     int depth;
+    int loop_count = frame->loop_count;
     settings_t *psettings;
     sixel_dither_t *dither = NULL;
     int dst_pixelformat = PIXELFORMAT_RGB888;
@@ -1058,42 +1045,30 @@ load_image_callback(sixel_frame_t *frame, void *data)
         sixel_dither_set_complexion_score(dither, psettings->complexion);
     }
 
-//    /* evaluate -l option: set loop count */
-//    switch (psettings->loop_mode) {
-//    case LOOP_FORCE:
-//        loop_count = (-1);  /* infinite */
-//        break;
-//    case LOOP_DISABLE:
-//        loop_count = 1;  /* do not loop */
-//        break;
-//    case LOOP_AUTO:
-//    default:
-//        if (frame_count == 1) {
-//            loop_count = 1;
-//        } else if (loop_count == 0) {
-//            loop_count = (-1);
-//        }
-//#ifdef HAVE_GDK_PIXBUF2
-//        /* do not trust loop_count report of gdk-pixbuf loader */
-//        if (loop_count == (-1)) {
-//            loop_count = 1;
-//        }
-//#endif
-//        break;
-//    }
-
-    /* set signal handler to handle SIGINT/SIGTERM/SIGHUP */
-#if HAVE_SIGNAL
-# if HAVE_DECL_SIGINT
-    signal(SIGINT, signal_handler);
-# endif
-# if HAVE_DECL_SIGTERM
-    signal(SIGTERM, signal_handler);
-# endif
-# if HAVE_DECL_SIGHUP
-    signal(SIGHUP, signal_handler);
-# endif
+    /* evaluate -l option: set loop count */
+    switch (psettings->loop_mode) {
+    case LOOP_FORCE:
+        loop_count = (-1);  /* infinite */
+        break;
+    case LOOP_DISABLE:
+        loop_count = 1;  /* do not loop */
+        break;
+    case LOOP_AUTO:
+    default:
+        //if (frame_count == 1) {
+        //    loop_count = 1;
+        //} else
+        if (loop_count == 0) {
+            loop_count = (-1);
+        }
+#ifdef HAVE_GDK_PIXBUF2
+        /* do not trust loop_count report of gdk-pixbuf loader */
+        if (loop_count == (-1)) {
+            loop_count = 1;
+        }
 #endif
+        break;
+    }
 
     /* output sixel: junction of multi-frame processing strategy */
     if ((psettings->fuse_macro && 1 > 1)) {  /* -u option */
@@ -1102,7 +1077,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
                                        frame->width,
                                        frame->height,
                                        1,    /* loop_count */
-                                       1,    /* frame_count*/
+                                       1,    /* frame_no*/
                                        NULL, /* delays */
                                        dither,
                                        output,
@@ -1123,9 +1098,8 @@ load_image_callback(sixel_frame_t *frame, void *data)
                                           frame->width,
                                           frame->height,
                                           depth,
-                                          1,   /* loop_count */
-                                          1,   /* frame_count */
-                                          NULL,
+                                          frame->frame_no,
+                                          frame->delay,
                                           dither,
                                           output,
                                           psettings);
@@ -1136,6 +1110,8 @@ load_image_callback(sixel_frame_t *frame, void *data)
     }
     nret = 0;
     fflush(stdout);
+
+    ((sixel_callback_context_t *)data)->frame_counter++;
 
 end:
     if (output) {
@@ -1190,8 +1166,22 @@ convert_to_sixel(char const *filename, settings_t *psettings)
         fuse_palette = 0;
     }
 
+    /* set signal handler to handle SIGINT/SIGTERM/SIGHUP */
+#if HAVE_SIGNAL
+# if HAVE_DECL_SIGINT
+    signal(SIGINT, signal_handler);
+# endif
+# if HAVE_DECL_SIGTERM
+    signal(SIGTERM, signal_handler);
+# endif
+# if HAVE_DECL_SIGHUP
+    signal(SIGHUP, signal_handler);
+# endif
+#endif
+
 reload:
     callback_context.settings = psettings;
+    callback_context.frame_counter = 0;
 
     nret = sixel_helper_load_image_file(filename,
                                         psettings->fstatic,
