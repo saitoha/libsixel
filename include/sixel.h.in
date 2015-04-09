@@ -31,6 +31,13 @@
 #define SIXEL_PALETTE_MAX 256
 
 /* output character size */
+enum statusCode {
+    SIXEL_SUCCESS      = 0x0000,                 /* succeeded */
+    SIXEL_FAILED       = 0x1000,                 /* failed */
+    SIXEL_INTERRUPTED  = SIXEL_SUCCESS | 0x001,  /* interrupted by a signal */
+};
+
+/* output character size */
 enum characterSize {
     CSIZE_7BIT = 0,  /* 7bit character */
     CSIZE_8BIT = 1,  /* 8bit character */
@@ -414,6 +421,13 @@ enum imageFormat {
 extern "C" {
 #endif
 
+/* loop mode */
+enum loopControl {
+    LOOP_AUTO    = 0,  /* honer the setting of GIF header */
+    LOOP_FORCE   = 1,  /* always enable loop */
+    LOOP_DISABLE = 2,  /* always disable loop */
+};
+
 typedef struct sixel_frame {
     unsigned char *pixels;    /* loaded pixel data */
     unsigned char *palette;   /* loaded palette data */
@@ -435,9 +449,9 @@ sixel_helper_load_image_file(
     int                       /* in */     fuse_palette,  /* whether to use paletted image */
     int                       /* in */     reqcolors,     /* requested number of colors */
     unsigned char             /* in */     *bgcolor,      /* background color */
+    int                       /* in */     loop_control,  /* one of enum loopControl */
     sixel_load_image_function /* in */     fn_load,       /* callback */
-    void                      /* in/out */ *context,      /* private data for callback */
-    int                       /* out */    *ploop_count); /* requested number of colors */
+    void                      /* in/out */ *context);     /* private data for callback */
 
 /* write image to file */
 int

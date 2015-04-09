@@ -68,14 +68,6 @@
 #include <sixel.h>
 
 
-/* loop modes */
-enum loopMode {
-    LOOP_AUTO,       /* honer the setting of GIF header */
-    LOOP_FORCE,      /* always enable loop */
-    LOOP_DISABLE,    /* always disable loop */
-};
-
-
 static char *
 arg_strdup(char const *s)
 {
@@ -329,7 +321,6 @@ end:
 static sixel_dither_t *
 prepare_specified_palette(char const *mapfile, int reqcolors, unsigned char *bgcolor)
 {
-    int loop_count;
     int ret = (-1);
     sixel_callback_context_for_mapfile_t callback_context;
 
@@ -341,9 +332,9 @@ prepare_specified_palette(char const *mapfile, int reqcolors, unsigned char *bgc
                                        1,   /* fuse_palette */
                                        256, /* reqcolors */
                                        bgcolor,
+                                       LOOP_DISABLE,
                                        load_image_callback_for_palette,
-                                       &callback_context,
-                                       &loop_count);
+                                       &callback_context);
     if (ret != 0) {
         return NULL;
     }
@@ -375,7 +366,7 @@ typedef struct Settings {
     enum methodForRep method_for_rep;
     enum qualityMode quality_mode;
     enum methodForResampling method_for_resampling;
-    enum loopMode loop_mode;
+    enum loopControl loop_mode;
     enum paletteType palette_type;
     int f8bit;
     int finvert;
@@ -711,10 +702,10 @@ wait_stdin(void)
 
 static int
 output_sixel_without_macro(
-    unsigned char **frames,
-    int sx, int sy,
+    unsigned char *frame,
+    int width,
+    int height,
     int depth,
-    int frame_no,
     int delay,
     sixel_dither_t *dither,
     sixel_output_t *context,
@@ -723,31 +714,19 @@ output_sixel_without_macro(
 {
     int nret = 0;
     int dulation = 0;
-    int c;
-    int n;
-    unsigned char *frame;
+    unsigned char *p;
 #if HAVE_USLEEP
     int lag = 0;
 # if HAVE_CLOCK
     clock_t start;
 # endif
 #endif
-
-    /* create output context */
-    if (!context) {
-        context = sixel_output_create(sixel_write_callback, stdout);
-    }
-    sixel_output_set_8bit_availability(context, psettings->f8bit);
-    sixel_output_set_palette_type(context, psettings->palette_type);
-    sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
-    sixel_output_set_encode_policy(context, psettings->encode_policy);
-
     if (!psettings->mapfile && !psettings->monochrome
             && !psettings->highcolor && !psettings->builtin_palette) {
         sixel_dither_set_optimize_palette(dither, 1);
     }
 
-    frame = malloc(sx * sy * depth);
+    p = malloc(width * height * depth);
     if (nret != 0) {
         goto end;
     }
@@ -757,7 +736,7 @@ output_sixel_without_macro(
     printf("\033[H");
     fflush(stdout);
 #if HAVE_USLEEP
-    if (!psettings->fignore_delay) {
+    if (!psettings->fignore_delay && delay > 0) {
 # if HAVE_CLOCK
         dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
         lag = 0;
@@ -772,21 +751,11 @@ output_sixel_without_macro(
     }
 #endif
 
-    memcpy(frame, *frames, sx * sy * depth);
-    nret = sixel_encode(frame, sx, sy, depth, dither, context);
+    memcpy(p, frame, width * height * depth);
+    nret = sixel_encode(p, width, height, depth, dither, context);
     if (nret != 0) {
         goto end;
     }
-
-#if HAVE_SIGNAL
-    if (signaled) {
-        if (sixel_output_get_8bit_availability(context)) {
-            printf("\x9c");
-        } else {
-            printf("\x1b\\");
-        }
-    }
-#endif
 
 end:
     return nret;
@@ -919,16 +888,14 @@ end:
 
 typedef struct sixel_callback_context {
     settings_t *settings;
-    int frame_counter;
 } sixel_callback_context_t;
 
 
 static int
 load_image_callback(sixel_frame_t *frame, void *data)
 {
-    int nret = (-1);
+    int nret = SIXEL_FAILED;
     int depth;
-    int loop_count = frame->loop_count;
     settings_t *psettings;
     sixel_dither_t *dither = NULL;
     int dst_pixelformat = PIXELFORMAT_RGB888;
@@ -969,7 +936,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
                          frame->pixelformat,
                          &dst_pixelformat,
                          psettings);
-        if (nret != 0) {
+        if (nret != SIXEL_SUCCESS) {
             goto end;
         }
         if (frame->pixelformat != dst_pixelformat) {
@@ -1045,30 +1012,12 @@ load_image_callback(sixel_frame_t *frame, void *data)
         sixel_dither_set_complexion_score(dither, psettings->complexion);
     }
 
-    /* evaluate -l option: set loop count */
-    switch (psettings->loop_mode) {
-    case LOOP_FORCE:
-        loop_count = (-1);  /* infinite */
-        break;
-    case LOOP_DISABLE:
-        loop_count = 1;  /* do not loop */
-        break;
-    case LOOP_AUTO:
-    default:
-        //if (frame_count == 1) {
-        //    loop_count = 1;
-        //} else
-        if (loop_count == 0) {
-            loop_count = (-1);
-        }
-#ifdef HAVE_GDK_PIXBUF2
-        /* do not trust loop_count report of gdk-pixbuf loader */
-        if (loop_count == (-1)) {
-            loop_count = 1;
-        }
-#endif
-        break;
-    }
+    /* create output context */
+    output = sixel_output_create(sixel_write_callback, stdout);
+    sixel_output_set_8bit_availability(output, psettings->f8bit);
+    sixel_output_set_palette_type(output, psettings->palette_type);
+    sixel_output_set_penetrate_multiplexer(output, psettings->penetrate_multiplexer);
+    sixel_output_set_encode_policy(output, psettings->encode_policy);
 
     /* output sixel: junction of multi-frame processing strategy */
     if ((psettings->fuse_macro && 1 > 1)) {  /* -u option */
@@ -1093,12 +1042,12 @@ load_image_callback(sixel_frame_t *frame, void *data)
                                        dither,
                                        output,
                                        psettings);
-    } else { /* do not use macro */
-        nret = output_sixel_without_macro(&frame->pixels,
+    } else {
+        /* do not use macro */
+        nret = output_sixel_without_macro(frame->pixels,
                                           frame->width,
                                           frame->height,
                                           depth,
-                                          frame->frame_no,
                                           frame->delay,
                                           dither,
                                           output,
@@ -1108,10 +1057,21 @@ load_image_callback(sixel_frame_t *frame, void *data)
     if (nret != 0) {
         goto end;
     }
+
+#if HAVE_SIGNAL
+    if (signaled) {
+        if (sixel_output_get_8bit_availability(output)) {
+            printf("\x9c");
+        } else {
+            printf("\x1b\\");
+        }
+        fflush(stdout);
+        return SIXEL_INTERRUPTED;
+    }
+#endif
+
     nret = 0;
     fflush(stdout);
-
-    ((sixel_callback_context_t *)data)->frame_counter++;
 
 end:
     if (output) {
@@ -1130,9 +1090,9 @@ end:
 static int
 convert_to_sixel(char const *filename, settings_t *psettings)
 {
-    int loop_count = 1;
     int nret = (-1);
     int fuse_palette = 1;
+    int loop_control = psettings->loop_mode;
     sixel_callback_context_t callback_context;
 
     if (psettings->reqcolors < 2) {
@@ -1181,16 +1141,15 @@ convert_to_sixel(char const *filename, settings_t *psettings)
 
 reload:
     callback_context.settings = psettings;
-    callback_context.frame_counter = 0;
 
     nret = sixel_helper_load_image_file(filename,
                                         psettings->fstatic,
                                         fuse_palette,
                                         psettings->reqcolors,
                                         psettings->bgcolor,
+                                        loop_control,
                                         load_image_callback,
-                                        &callback_context,
-                                        &loop_count);
+                                        &callback_context);
 
     if (nret == 0 && psettings->pipe_mode) {
 #if HAVE_CLEARERR
