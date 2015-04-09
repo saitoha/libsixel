@@ -764,11 +764,12 @@ end:
 
 static int
 output_sixel_with_macro(
-    unsigned char **frames,
-    int sx, int sy,
+    unsigned char *frame,
+    int sx,
+    int sy,
+    int delay,
+    int frame_no,
     int loop_count,
-    int frame_count,
-    int *delays,
     sixel_dither_t *dither,
     sixel_output_t *context,
     settings_t *psettings
@@ -776,8 +777,6 @@ output_sixel_with_macro(
 {
     int nret = 0;
     int dulation = 0;
-    int c;
-    int n;
 #if HAVE_USLEEP
     int lag = 0;
 # if HAVE_CLOCK
@@ -785,57 +784,49 @@ output_sixel_with_macro(
 # endif
 #endif
 
-    if (!context) {
-        context = sixel_output_create(sixel_hex_write_callback, stdout);
-    }
-    sixel_output_set_8bit_availability(context, psettings->f8bit);
-    sixel_output_set_palette_type(context, psettings->palette_type);
-    sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
-    sixel_output_set_encode_policy(context, psettings->encode_policy);
-
-    for (n = 0; n < frame_count; ++n) {
 #if HAVE_USLEEP && HAVE_CLOCK
-        start = clock();
+    start = clock();
 #endif
-        if (frame_count == 1 && psettings->macro_number >= 0) {
+    if (loop_count == 0) {
+        if (psettings->macro_number >= 0) {
             printf("\033P%d;0;1!z", psettings->macro_number);
         } else {
-            printf("\033P%d;0;1!z", n);
+            printf("\033P%d;0;1!z", frame_no);
         }
 
-        nret = sixel_encode(frames[n], sx, sy, /* unused */ 3, dither, context);
+        nret = sixel_encode(frame, sx, sy, /* unused */ 3, dither, context);
         if (nret != 0) {
             goto end;
         }
 
         printf("\033\\");
-        if (loop_count == -1) {
-            printf("\033[H");
-            if (frame_count != 1 || psettings->macro_number < 0) {
-                printf("\033[%d*z", n);
-            }
-        }
+    }
+    if (psettings->macro_number < 0) {
+        printf("\033[H");
+        fflush(stdout);
+        printf("\033[%d*z", frame_no);
+    }
 #if HAVE_USLEEP
-        if (delays != NULL && !psettings->fignore_delay) {
+    if (delay > 0 && !psettings->fignore_delay) {
 # if HAVE_CLOCK
-            dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
-            lag = 0;
+        dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
+        lag = 0;
 # else
-            dulation = 0;
+        dulation = 0;
 # endif
-            if (dulation < 10000 * delays[n]) {
-                usleep(10000 * delays[n] - dulation);
-            } else {
-                lag = 10000 * delays[n] - dulation;
-            }
+        if (dulation < 10000 * delay) {
+            usleep(10000 * delay - dulation);
+        } else {
+            lag = 10000 * delay - dulation;
         }
+    }
 #endif
 #if HAVE_SIGNAL
-        if (signaled) {
-            break;
-        }
-#endif
+    if (signaled) {
+        return SIXEL_INTERRUPTED;
     }
+#endif
+
     if (signaled) {
         if (psettings->f8bit) {
             printf("\x9c");
@@ -843,43 +834,35 @@ output_sixel_with_macro(
             printf("\x1b\\");
         }
     }
-    if (frame_count > 1 || psettings->macro_number < 0) {
-        for (c = 0; c != loop_count; ++c) {
-            for (n = 0; n < frame_count; ++n) {
+
+    if (psettings->macro_number < 0) {
 #if HAVE_USLEEP && HAVE_CLOCK
-                start = clock();
+        start = clock();
 #endif
-                printf("\033[H");
-                printf("\033[%d*z", n);
-                fflush(stdout);
+        printf("\033[H");
+        printf("\033[%d*z", frame_no);
+        fflush(stdout);
 #if HAVE_USLEEP
-                if (delays != NULL && !psettings->fignore_delay) {
+        if (delay > 0 && !psettings->fignore_delay) {
 # if HAVE_CLOCK
-                    dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
-                    lag = 0;
+            dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
+            lag = 0;
 # else
-                    dulation = 0;
+            dulation = 0;
 # endif
-                    if (dulation < 10000 * delays[n]) {
-                        usleep(10000 * delays[n] - dulation);
-                    } else {
-                        lag = 10000 * delays[n] - dulation;
-                    }
-                }
-#endif
-#if HAVE_SIGNAL
-                if (signaled) {
-                    break;
-                }
-#endif
+            if (dulation < 10000 * delay) {
+                usleep(10000 * delay - dulation);
+            } else {
+                lag = 10000 * delay - dulation;
             }
-#if HAVE_SIGNAL
-            if (signaled) {
-                break;
-            }
-#endif
         }
+#endif
     }
+#if HAVE_SIGNAL
+    if (signaled) {
+        return SIXEL_INTERRUPTED;
+    }
+#endif
 
 end:
     return nret;
@@ -1013,32 +996,36 @@ load_image_callback(sixel_frame_t *frame, void *data)
     }
 
     /* create output context */
-    output = sixel_output_create(sixel_write_callback, stdout);
+    if (psettings->fuse_macro || psettings->macro_number >= 0) {  /* -u or -n option */
+        output = sixel_output_create(sixel_hex_write_callback, stdout);
+    } else {
+        output = sixel_output_create(sixel_write_callback, stdout);
+    }
     sixel_output_set_8bit_availability(output, psettings->f8bit);
     sixel_output_set_palette_type(output, psettings->palette_type);
     sixel_output_set_penetrate_multiplexer(output, psettings->penetrate_multiplexer);
     sixel_output_set_encode_policy(output, psettings->encode_policy);
 
     /* output sixel: junction of multi-frame processing strategy */
-    if ((psettings->fuse_macro && 1 > 1)) {  /* -u option */
+    if (psettings->fuse_macro) {  /* -u option */
         /* use macro */
-        nret = output_sixel_with_macro(&frame->pixels,
+        nret = output_sixel_with_macro(frame->pixels,
                                        frame->width,
                                        frame->height,
-                                       1,    /* loop_count */
-                                       1,    /* frame_no*/
-                                       NULL, /* delays */
+                                       frame->delay,
+                                       frame->frame_no,
+                                       frame->loop_count,
                                        dither,
                                        output,
                                        psettings);
     } else if (psettings->macro_number >= 0) { /* -n option */
         /* use macro */
-        nret = output_sixel_with_macro(&frame->pixels,
+        nret = output_sixel_with_macro(frame->pixels,
                                        frame->width,
                                        frame->height,
-                                       1,    /* loop_count */
-                                       1,    /* frame_count */
-                                       NULL, /* delays,*/
+                                       frame->delay,
+                                       frame->frame_no,
+                                       frame->loop_count,
                                        dither,
                                        output,
                                        psettings);
