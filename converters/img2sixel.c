@@ -465,38 +465,30 @@ prepare_palette(sixel_dither_t *former_dither,
 
 
 static int
-do_resize(unsigned char **ppixels,
-          unsigned char **frames, int frame_count,
-          int /* in,out */ *psx,
-          int /* in,out */ *psy,
-          int /* in */ pixelformat,
-          int /* out */ *dst_pixelformat,
-          settings_t *psettings)
+do_resize(sixel_frame_t *frame, settings_t *psettings)
 {
     unsigned char *p;
     int size;
-    int n;
     unsigned char *scaled_frame = NULL;
     unsigned char *normalized_pixels = NULL;
     int nret;
 
     if (psettings->percentwidth > 0) {
-        psettings->pixelwidth = *psx * psettings->percentwidth / 100;
+        psettings->pixelwidth = frame->width * psettings->percentwidth / 100;
     }
     if (psettings->percentheight > 0) {
-        psettings->pixelheight = *psy * psettings->percentheight / 100;
+        psettings->pixelheight = frame->height * psettings->percentheight / 100;
     }
     if (psettings->pixelwidth > 0 && psettings->pixelheight <= 0) {
-        psettings->pixelheight = *psy * psettings->pixelwidth / *psx;
+        psettings->pixelheight = frame->height * psettings->pixelwidth / frame->width;
     }
     if (psettings->pixelheight > 0 && psettings->pixelwidth <= 0) {
-        psettings->pixelwidth = *psx * psettings->pixelheight / *psy;
+        psettings->pixelwidth = frame->width * psettings->pixelheight / frame->height;
     }
 
     if (psettings->pixelwidth > 0 && psettings->pixelheight > 0) {
-        switch (pixelformat) {
+        switch (frame->pixelformat) {
         case PIXELFORMAT_RGB888:
-            *dst_pixelformat = pixelformat;
             break;
         case PIXELFORMAT_PAL8:
         case PIXELFORMAT_G8:
@@ -509,58 +501,44 @@ do_resize(unsigned char **ppixels,
         case PIXELFORMAT_RGBA8888:
         case PIXELFORMAT_ARGB8888:
             /* normalize pixelformat */
-            size = *psx * *psy * 3;
-            normalized_pixels = malloc(size * frame_count);
+            size = frame->width * frame->height * 3;
+            normalized_pixels = malloc(size);
             nret = sixel_helper_normalize_pixelformat(normalized_pixels,
-                                                      &pixelformat,
-                                                      *ppixels, pixelformat,
-                                                      *psx, *psy);
+                                                      &frame->pixelformat,
+                                                      frame->pixels, frame->pixelformat,
+                                                      frame->width, frame->height);
             if (nret != 0) {
                free(normalized_pixels);
                 return nret;
             }
-            free(*ppixels);
-            *ppixels = normalized_pixels;
-            *dst_pixelformat = pixelformat;
-
-            for (n = 0; n < frame_count; ++n) {
-                frames[n] = *ppixels + size * n;
-            }
+            free(frame->pixels);
+            frame->pixels = normalized_pixels;
             break;
         default:
-            *dst_pixelformat = pixelformat;
             fprintf(stderr, "do_resize: invalid pixelformat.\n");
             return (-1);
         }
 
         size = psettings->pixelwidth * psettings->pixelheight * 3;
-        p = malloc(size * frame_count);
+        scaled_frame = malloc(size);
 
-        if (p == NULL) {
+        if (scaled_frame == NULL) {
             return (-1);
         }
 
-        for (n = 0; n < frame_count; ++n) {
-            scaled_frame = p + size * n;
-            nret = sixel_helper_scale_image(
-                scaled_frame,
-                frames[n], *psx, *psy, 3,
-                psettings->pixelwidth,
-                psettings->pixelheight,
-                psettings->method_for_resampling);
-            if (nret != 0) {
-                return nret;
-            }
+        nret = sixel_helper_scale_image(
+            scaled_frame,
+            frame->pixels, frame->width, frame->height, 3,
+            psettings->pixelwidth,
+            psettings->pixelheight,
+            psettings->method_for_resampling);
+        if (nret != 0) {
+            return nret;
         }
-        for (n = 0; n < frame_count; ++n) {
-            frames[n] = p + size * n;
-        }
-        free(*ppixels);
-        *ppixels = p;
-        *psx = psettings->pixelwidth;
-        *psy = psettings->pixelheight;
-    } else {
-        *dst_pixelformat = pixelformat;
+        free(frame->pixels);
+        frame->pixels = scaled_frame;
+        frame->width = psettings->pixelwidth;
+        frame->height = psettings->pixelheight;
     }
 
     return 0;
@@ -733,7 +711,7 @@ output_sixel_without_macro(
 #if HAVE_USLEEP && HAVE_CLOCK
     start = clock();
 #endif
-    printf("\033[H");
+//    printf("\033[H");
     fflush(stdout);
 #if HAVE_USLEEP
     if (!psettings->fignore_delay && delay > 0) {
@@ -802,7 +780,7 @@ output_sixel_with_macro(
         printf("\033\\");
     }
     if (psettings->macro_number < 0) {
-        printf("\033[H");
+//        printf("\033[H");
         fflush(stdout);
         printf("\033[%d*z", frame_no);
     }
@@ -839,7 +817,7 @@ output_sixel_with_macro(
 #if HAVE_USLEEP && HAVE_CLOCK
         start = clock();
 #endif
-        printf("\033[H");
+//        printf("\033[H");
         printf("\033[%d*z", frame_no);
         fflush(stdout);
 #if HAVE_USLEEP
@@ -881,7 +859,6 @@ load_image_callback(sixel_frame_t *frame, void *data)
     int depth;
     settings_t *psettings;
     sixel_dither_t *dither = NULL;
-    int dst_pixelformat = PIXELFORMAT_RGB888;
     sixel_output_t *output = NULL;
 
     if (frame->pixels == NULL || frame->width == 0 || frame->height == 0) {
@@ -911,46 +888,26 @@ load_image_callback(sixel_frame_t *frame, void *data)
         }
 
         /* scaling */
-        nret = do_resize(&frame->pixels,
-                         &frame->pixels,
-                         1,
-                         &frame->width,
-                         &frame->height,
-                         frame->pixelformat,
-                         &dst_pixelformat,
-                         psettings);
+        nret = do_resize(frame, psettings);
         if (nret != SIXEL_SUCCESS) {
             goto end;
         }
-        if (frame->pixelformat != dst_pixelformat) {
-            frame->pixelformat = dst_pixelformat;
-            depth = sixel_helper_compute_depth(frame->pixelformat);
-            if (depth == (-1)) {
-                nret = (-1);
-                goto end;
-            }
+        depth = sixel_helper_compute_depth(frame->pixelformat);
+        if (depth == (-1)) {
+            nret = (-1);
+            goto end;
         }
     } else {
         /* scaling */
-        nret = do_resize(&frame->pixels,
-                         &frame->pixels,
-                         1,
-                         &frame->width,
-                         &frame->height,
-                         frame->pixelformat,
-                         &dst_pixelformat,
-                          psettings);
+        nret = do_resize(frame, psettings);
         if (nret != 0) {
             goto end;
         }
 
-        if (frame->pixelformat != dst_pixelformat) {
-            frame->pixelformat = dst_pixelformat;
-            depth = sixel_helper_compute_depth(frame->pixelformat);
-            if (depth == (-1)) {
-                nret = (-1);
-                goto end;
-            }
+        depth = sixel_helper_compute_depth(frame->pixelformat);
+        if (depth == (-1)) {
+            nret = (-1);
+            goto end;
         }
 
         /* clipping */
