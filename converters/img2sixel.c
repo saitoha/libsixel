@@ -467,7 +467,6 @@ prepare_palette(sixel_dither_t *former_dither,
 static int
 do_resize(sixel_frame_t *frame, settings_t *psettings)
 {
-    unsigned char *p;
     int size;
     unsigned char *scaled_frame = NULL;
     unsigned char *normalized_pixels = NULL;
@@ -547,15 +546,18 @@ do_resize(sixel_frame_t *frame, settings_t *psettings)
 
 static int
 clip(unsigned char *pixels,
-     int sx, int sy,
-     int depth,
-     int cx, int cy,
-     int cw, int ch,
-     int pixelformat)
+     int sx,
+     int sy,
+     int pixelformat,
+     int cx,
+     int cy,
+     int cw,
+     int ch)
 {
     int y;
     unsigned char *src;
     unsigned char *dst;
+    int depth = sixel_helper_compute_depth(pixelformat);
 
     /* unused */ (void) sx;
     /* unused */ (void) sy;
@@ -590,52 +592,58 @@ clip(unsigned char *pixels,
 
 
 static int
-do_crop(unsigned char **frames, int frame_count,
-        int *psx, int *psy, int pixelformat, int *dst_pixelformat,
-        settings_t *psettings)
+do_crop(sixel_frame_t *frame, settings_t *psettings)
 {
-    int n;
     int ret;
-    int depth;
     unsigned char *normalized_pixels;
 
     /* clipping */
-    if (psettings->clipwidth + psettings->clipx > *psx) {
-        psettings->clipwidth = (psettings->clipx > *psx) ? 0 : *psx - psettings->clipx;
+    if (psettings->clipwidth + psettings->clipx > frame->width) {
+        if (psettings->clipx > frame->width) {
+            psettings->clipwidth = 0;
+        } else {
+            psettings->clipwidth = frame->width - psettings->clipx;
+        }
     }
-    if (psettings->clipheight + psettings->clipy > *psy) {
-        psettings->clipheight = (psettings->clipy > *psy) ? 0 : *psy - psettings->clipy;
+    if (psettings->clipheight + psettings->clipy > frame->height) {
+        if (psettings->clipy > frame->height) {
+            psettings->clipheight = 0;
+        } else {
+            psettings->clipheight = frame->height - psettings->clipy;
+        }
     }
     if (psettings->clipwidth > 0 && psettings->clipheight > 0) {
-        depth = sixel_helper_compute_depth(pixelformat);
-        switch (pixelformat) {
+        switch (frame->pixelformat) {
         case PIXELFORMAT_PAL1:
         case PIXELFORMAT_PAL2:
         case PIXELFORMAT_PAL4:
-            normalized_pixels = malloc(*psx * *psy * frame_count);
+            normalized_pixels = malloc(frame->width * frame->height);
             ret = sixel_helper_normalize_pixelformat(normalized_pixels,
-                                                     &pixelformat,
-                                                     *frames, pixelformat,
-                                                     *psx, *psy);
-            for (n = 0; n < frame_count; ++n) {
-                frames[n] = normalized_pixels + *psx * *psy * n;
-            }
-            *dst_pixelformat = PIXELFORMAT_PAL8;
+                                                     &frame->pixelformat,
+                                                     frame->pixels,
+                                                     frame->pixelformat,
+                                                     frame->width,
+                                                     frame->height);
+            free(frame->pixels);
+            frame->pixels = normalized_pixels;
             break;
         default:
-            *dst_pixelformat = pixelformat;
             break;
         }
 
-        for (n = 0; n < frame_count; ++n) {
-            ret = clip(frames[n], *psx, *psy, depth, psettings->clipx, psettings->clipy,
-                       psettings->clipwidth, psettings->clipheight, *dst_pixelformat);
-            if (ret != 0) {
-                return ret;
-            }
+        ret = clip(frame->pixels,
+                   frame->width,
+                   frame->height,
+                   frame->pixelformat,
+                   psettings->clipx,
+                   psettings->clipy,
+                   psettings->clipwidth,
+                   psettings->clipheight);
+        if (ret != 0) {
+            return ret;
         }
-        *psx = psettings->clipwidth;
-        *psy = psettings->clipheight;
+        frame->width = psettings->clipwidth;
+        frame->height = psettings->clipheight;
     }
 
     return 0;
@@ -876,13 +884,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
     /* evaluate -w, -h, and -c option: crop/scale input source */
     if (psettings->clipfirst) {
         /* clipping */
-        nret = do_crop(&frame->pixels,
-                       1,
-                       &frame->width,
-                       &frame->height,
-                       frame->pixelformat,
-                       &frame->pixelformat,
-                       psettings);
+        nret = do_crop(frame, psettings);
         if (nret != 0) {
             goto end;
         }
@@ -911,13 +913,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
         }
 
         /* clipping */
-        nret = do_crop(&frame->pixels,
-                       1,
-                       &frame->width,
-                       &frame->height,
-                       frame->pixelformat,
-                       &frame->pixelformat,
-                       psettings);
+        nret = do_crop(frame, psettings);
         if (nret != 0) {
             goto end;
         }
