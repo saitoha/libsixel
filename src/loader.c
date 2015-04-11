@@ -1139,12 +1139,10 @@ load_with_gdkpixbuf(
                 g_time_val_add(&time, frame->delay * 1000);
                 frame->delay /= 10;
                 pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
-                frame->pixels = gdk_pixbuf_get_pixels(pixbuf);
-
                 if (pixbuf == NULL) {
-                    pixels = NULL;
                     break;
                 }
+                frame->pixels = gdk_pixbuf_get_pixels(pixbuf);
                 frame->width = gdk_pixbuf_get_width(pixbuf);
                 frame->height = gdk_pixbuf_get_height(pixbuf);
                 if (gdk_pixbuf_get_has_alpha(pixbuf)) {
