@@ -34,7 +34,7 @@ before_install:
   - "if [ x$GCOV != x ]; then sudo pip install cpp-coveralls pyyaml; fi"
 
 before_script:
-  - "CC=$XCC ./configure --prefix=${PREFIX} ${DEBUG} ${HOST} ${GDKPIXBUF} ${GD} ${LIBCURL} ${GCOV} ${STATIC}"
+  - "CC=$XCC ./configure --prefix=${PREFIX} ${DEBUG} ${HOST} ${GDKPIXBUF} ${GD} ${LIBCURL} ${PNG} ${JPEG} ${GCOV} ${STATIC}"
 
 script:
   - "make"
