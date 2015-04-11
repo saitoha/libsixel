@@ -896,11 +896,12 @@ load_with_builtin(
 
     frame = malloc(sizeof(sixel_frame_t));
     if (frame == NULL) {
-        goto error;
+        return SIXEL_FAILED;
     }
     memset(frame, 0, sizeof(sixel_frame_t));
 
     frame->pixels = NULL;
+    frame->palette = NULL;
     frame->frame_no = 0;
     frame->loop_count = 0;
 
@@ -1091,6 +1092,8 @@ load_with_gdkpixbuf(
     GTimeVal time;
 #endif
     sixel_frame_t *frame;
+    int stride;
+    int ret = SIXEL_FAILED;
 
     (void) fuse_palette;
     (void) reqcolors;
@@ -1098,11 +1101,12 @@ load_with_gdkpixbuf(
 
     frame = malloc(sizeof(sixel_frame_t));
     if (frame == NULL) {
-        goto error;
+        return SIXEL_FAILED;
     }
     memset(frame, 0, sizeof(sixel_frame_t));
 
     frame->pixels = NULL;
+    frame->palette = NULL;
     frame->loop_count = 0;
 
 #if (!GLIB_CHECK_VERSION(2, 36, 0))
@@ -1115,12 +1119,18 @@ load_with_gdkpixbuf(
     if (!animation || fstatic || gdk_pixbuf_animation_is_static_image(animation)) {
         pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
         if (pixbuf == NULL) {
-            return SIXEL_FAILED;
+            goto end;
         }
         frame->frame_no = 0;
-        frame->pixels = gdk_pixbuf_get_pixels(pixbuf);
         frame->width = gdk_pixbuf_get_width(pixbuf);
         frame->height = gdk_pixbuf_get_height(pixbuf);
+        stride = gdk_pixbuf_get_rowstride(pixbuf);
+        frame->pixels = malloc(frame->height * stride);
+        if (frame->pixels == NULL) {
+            goto end;
+        }
+        memcpy(frame->pixels, gdk_pixbuf_get_pixels(pixbuf),
+               frame->height * stride);
         if (gdk_pixbuf_get_has_alpha(pixbuf)) {
             frame->pixelformat = PIXELFORMAT_RGBA8888;
         } else {
@@ -1142,9 +1152,15 @@ load_with_gdkpixbuf(
                 if (pixbuf == NULL) {
                     break;
                 }
-                frame->pixels = gdk_pixbuf_get_pixels(pixbuf);
                 frame->width = gdk_pixbuf_get_width(pixbuf);
                 frame->height = gdk_pixbuf_get_height(pixbuf);
+                stride = gdk_pixbuf_get_rowstride(pixbuf);
+                frame->pixels = malloc(frame->height * stride);
+                if (frame->pixels == NULL) {
+                    goto end;
+                }
+                memcpy(frame->pixels, gdk_pixbuf_get_pixels(pixbuf),
+                       frame->height * stride);
                 if (gdk_pixbuf_get_has_alpha(pixbuf)) {
                     frame->pixelformat = PIXELFORMAT_RGBA8888;
                 } else {
@@ -1166,16 +1182,17 @@ load_with_gdkpixbuf(
             }
         }
     }
+
+    ret = SIXEL_SUCCESS;
+
+end:
     gdk_pixbuf_loader_close(loader, NULL);
     g_object_unref(loader);
-
-
-    return SIXEL_SUCCESS;
-
-error:
+    free(frame->pixels);
+    free(frame->palette);
     free(frame);
 
-    return SIXEL_FAILED;
+    return ret;
 
 }
 #endif  /* HAVE_GDK_PIXBUF2 */

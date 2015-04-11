@@ -312,8 +312,6 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
     }
 
 end:
-    free(frame->palette);
-
     return ret;
 }
 
