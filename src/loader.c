@@ -884,7 +884,6 @@ load_with_builtin(
     unsigned char *p;
     static stbi__context s;
     static stbi__gif g;
-    chunk_t frames;
     int depth;
     sixel_frame_t *frame;
     int ret = (-1);
@@ -943,7 +942,6 @@ load_with_builtin(
                                   &frame->height,
                                   &frame->pixelformat);
         if (frame->pixels == NULL) {
-            free(frames.buffer);
             goto error;
         }
         stride = frame->width * sixel_helper_compute_depth(frame->pixelformat);
@@ -961,7 +959,6 @@ load_with_builtin(
                                  &frame->pixelformat,
                                  bgcolor);
         if (frame->pixels == NULL) {
-            free(frames.buffer);
             goto error;
         }
         stride = frame->width * sixel_helper_compute_depth(frame->pixelformat);
@@ -1080,32 +1077,40 @@ error:
 
 
 #ifdef HAVE_GDK_PIXBUF2
-static unsigned char *
-load_with_gdkpixbuf(chunk_t const *pchunk,
-                    int *psx,
-                    int *psy,
-                    int *ppixelformat,
-                    int *pstride,
-                    int *pframe_count,
-                    int *ploop_count,
-                    int **ppdelay,
-                    int fstatic)
+static int
+load_with_gdkpixbuf(
+    chunk_t const             /* in */     *pchunk,      /* image data */
+    int                       /* in */     fstatic,      /* static */
+    int                       /* in */     fuse_palette, /* whether to use palette if possible */
+    int                       /* in */     reqcolors,    /* reqcolors */
+    unsigned char             /* in */     *bgcolor,     /* background color */
+    int                       /* in */     loop_control, /* one of enum loop_control */
+    sixel_load_image_function /* in */     fn_load,      /* callback */
+    void                      /* in/out */ *context      /* private data for callback */
+)
 {
     GdkPixbuf *pixbuf;
     GdkPixbufAnimation *animation;
     unsigned char *pixels = NULL;
-    unsigned char *p;
     GdkPixbufLoader *loader;
-    chunk_t frames;
-    chunk_t delays;
-    int depth;
 #if 1
     GdkPixbufAnimationIter *it;
     GTimeVal time;
-    int delay;
 #endif
+    sixel_frame_t *frame;
 
-    chunk_init(&frames, 1024);
+    (void) fuse_palette;
+    (void) reqcolors;
+    (void) bgcolor;
+
+    frame = malloc(sizeof(sixel_frame_t));
+    if (frame == NULL) {
+        goto error;
+    }
+    memset(frame, 0, sizeof(sixel_frame_t));
+
+    frame->pixels = NULL;
+    frame->loop_count = 0;
 
 #if (!GLIB_CHECK_VERSION(2, 36, 0))
     g_type_init();
@@ -1117,63 +1122,70 @@ load_with_gdkpixbuf(chunk_t const *pchunk,
     if (!animation || fstatic || gdk_pixbuf_animation_is_static_image(animation)) {
         pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
         if (pixbuf == NULL) {
-            return NULL;
+            return SIXEL_FAILED;
         }
-        p = gdk_pixbuf_get_pixels(pixbuf);
-        *psx = gdk_pixbuf_get_width(pixbuf);
-        *psy = gdk_pixbuf_get_height(pixbuf);
+        frame->frame_no = 0;
+        frame->pixels = gdk_pixbuf_get_pixels(pixbuf);
+        frame->width = gdk_pixbuf_get_width(pixbuf);
+        frame->height = gdk_pixbuf_get_height(pixbuf);
         if (gdk_pixbuf_get_has_alpha(pixbuf)) {
-            *ppixelformat = PIXELFORMAT_RGBA8888;
-            depth = 4;
+            frame->pixelformat = PIXELFORMAT_RGBA8888;
         } else {
-            *ppixelformat = PIXELFORMAT_RGB888;
-            depth = 3;
+            frame->pixelformat = PIXELFORMAT_RGB888;
         }
-        *pstride = gdk_pixbuf_get_rowstride(pixbuf);
-        *pframe_count = 1;
-        memory_write((void *)p, 1, *psx * *psy * depth, (void *)&frames);
-        pixels = frames.buffer;
+        fn_load(frame, context);
     } else {
-        chunk_init(&delays, 1024);
         g_get_current_time(&time);
 
-        it = gdk_pixbuf_animation_get_iter(animation, &time);
-        *pframe_count = 0;
-        while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
-            delay = gdk_pixbuf_animation_iter_get_delay_time(it);
-            g_time_val_add(&time, delay * 1000);
-            pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
-            p = gdk_pixbuf_get_pixels(pixbuf);
+        frame->frame_no = 0;
 
-            if (pixbuf == NULL) {
-                pixels = NULL;
+        it = gdk_pixbuf_animation_get_iter(animation, &time);
+        for (;;) {
+            while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
+                frame->delay = gdk_pixbuf_animation_iter_get_delay_time(it);
+                g_time_val_add(&time, frame->delay * 1000);
+                frame->delay /= 10;
+                pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
+                frame->pixels = gdk_pixbuf_get_pixels(pixbuf);
+
+                if (pixbuf == NULL) {
+                    pixels = NULL;
+                    break;
+                }
+                frame->width = gdk_pixbuf_get_width(pixbuf);
+                frame->height = gdk_pixbuf_get_height(pixbuf);
+                if (gdk_pixbuf_get_has_alpha(pixbuf)) {
+                    frame->pixelformat = PIXELFORMAT_RGBA8888;
+                } else {
+                    frame->pixelformat = PIXELFORMAT_RGB888;
+                }
+                frame->frame_no++;
+                gdk_pixbuf_animation_iter_advance(it, &time);
+                fn_load(frame, context);
+            }
+
+            ++frame->loop_count;
+
+            if (loop_control == LOOP_DISABLE || frame->frame_no == 1) {
                 break;
             }
-            *psx = gdk_pixbuf_get_width(pixbuf);
-            *psy = gdk_pixbuf_get_height(pixbuf);
-            if (gdk_pixbuf_get_has_alpha(pixbuf)) {
-                *ppixelformat = PIXELFORMAT_RGBA8888;
-                depth = 4;
-            } else {
-                *ppixelformat = PIXELFORMAT_RGB888;
-                depth = 3;
+            /* TODO: get loop property */
+            if (loop_control == LOOP_AUTO && frame->loop_count == 1) {
+                break;
             }
-            *pstride = gdk_pixbuf_get_rowstride(pixbuf);
-            memory_write((void *)p, 1, *psx * *psy * depth, (void *)&frames);
-            delay /= 10;
-            memory_write((void *)&delay, sizeof(delay), 1, (void *)&delays);
-            ++*pframe_count;
-            gdk_pixbuf_animation_iter_advance(it, &time);
-            pixels = frames.buffer;
         }
-        *ppdelay = (int *)delays.buffer;
-        /* TODO: get loop property */
-        *ploop_count = 0;
     }
     gdk_pixbuf_loader_close(loader, NULL);
     g_object_unref(loader);
 
-    return pixels;
+
+    return SIXEL_SUCCESS;
+
+error:
+    free(frame);
+
+    return SIXEL_FAILED;
+
 }
 #endif  /* HAVE_GDK_PIXBUF2 */
 
@@ -1372,19 +1384,24 @@ sixel_helper_load_image_file(
     }
 
     ret = (-1);
-//#ifdef HAVE_GDK_PIXBUF2
-//    if (!pixels) {
-//        pixels = load_with_gdkpixbuf(&chunk, psx, psy, ppixelformat, &stride,
-//                                     pframe_count, ploop_count, ppdelay,
-//                                     fstatic);
-//    }
-//#endif  /* HAVE_GDK_PIXBUF2 */
-//#if HAVE_GD
-//    if (!pixels) {
-//        pixels = load_with_gd(&chunk, psx, psy, ppixelformat, &stride);
-//        *pframe_count = 1;
-//    }
-//#endif  /* HAVE_GD */
+#ifdef HAVE_GDK_PIXBUF2
+    if (ret != 0) {
+        ret = load_with_gdkpixbuf(&chunk,
+                                  fstatic,
+                                  fuse_palette,
+                                  reqcolors,
+                                  bgcolor,
+                                  loop_control,
+                                  fn_load,
+                                  context);
+    }
+#endif  /* HAVE_GDK_PIXBUF2 */
+#if HAVE_GD
+    if (!pixels) {
+        pixels = load_with_gd(&chunk, psx, psy, ppixelformat, &stride);
+        *pframe_count = 1;
+    }
+#endif  /* HAVE_GD */
     if (ret != 0) {
         ret = load_with_builtin(&chunk,
                                 fstatic,
