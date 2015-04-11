@@ -1253,17 +1253,38 @@ detect_file_format(int len, unsigned char *data)
 }
 
 
-static unsigned char *
-load_with_gd(chunk_t const *pchunk,
-             int *psx,
-             int *psy,
-             int *ppixelformat,
-             int *pstride)
+static int
+load_with_gd(
+    chunk_t const             /* in */     *pchunk,      /* image data */
+    int                       /* in */     fstatic,      /* static */
+    int                       /* in */     fuse_palette, /* whether to use palette if possible */
+    int                       /* in */     reqcolors,    /* reqcolors */
+    unsigned char             /* in */     *bgcolor,     /* background color */
+    int                       /* in */     loop_control, /* one of enum loop_control */
+    sixel_load_image_function /* in */     fn_load,      /* callback */
+    void                      /* in/out */ *context      /* private data for callback */
+)
 {
-    unsigned char *pixels, *p;
+    unsigned char *p;
     gdImagePtr im;
     int x, y;
     int c;
+    sixel_frame_t *frame;
+
+    (void) fstatic;
+    (void) fuse_palette;
+    (void) reqcolors;
+    (void) bgcolor;
+    (void) loop_control;
+
+    frame = malloc(sizeof(sixel_frame_t));
+    if (frame == NULL) {
+        return SIXEL_FAILED;
+    }
+    memset(frame, 0, sizeof(sixel_frame_t));
+
+    frame->pixels = NULL;
+    frame->loop_count = 0;
 
     switch(detect_file_format(pchunk->size, pchunk->buffer)) {
 #if 0
@@ -1311,38 +1332,37 @@ load_with_gd(chunk_t const *pchunk,
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMGD2PTR */
         default:
-            return NULL;
+            return SIXEL_FAILED;
     }
 
     if (im == NULL) {
-        return NULL;
+        return SIXEL_FAILED;
     }
 
     if (!gdImageTrueColor(im)) {
 #if HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
         if (!gdImagePaletteToTrueColor(im)) {
-            return NULL;
+            return SIXEL_FAILED;
         }
 #else
-        return NULL;
+        return SIXEL_FAILED;
 #endif
     }
 
-    *psx = gdImageSX(im);
-    *psy = gdImageSY(im);
-    *ppixelformat = PIXELFORMAT_RGB888;
-    *pstride = *psx * 3;
-    p = pixels = malloc(*pstride * *psy);
-    if (p == NULL) {
+    frame->width = gdImageSX(im);
+    frame->height = gdImageSY(im);
+    frame->pixelformat = PIXELFORMAT_RGB888;
+    p = frame->pixels = malloc(frame->width * frame->height * 3);
+    if (frame->pixels == NULL) {
 #if HAVE_ERRNO_H
         fprintf(stderr, "load_with_gd failed.\n" "reason: %s.\n",
                 strerror(errno));
 #endif  /* HAVE_ERRNO_H */
         gdImageDestroy(im);
-        return NULL;
+        return SIXEL_FAILED;
     }
-    for (y = 0; y < *psy; y++) {
-        for (x = 0; x < *psx; x++) {
+    for (y = 0; y < frame->height; y++) {
+        for (x = 0; x < frame->width; x++) {
             c = gdImageTrueColorPixel(im, x, y);
             *p++ = gdTrueColorGetRed(c);
             *p++ = gdTrueColorGetGreen(c);
@@ -1350,7 +1370,8 @@ load_with_gd(chunk_t const *pchunk,
         }
     }
     gdImageDestroy(im);
-    return pixels;
+
+    return fn_load(frame, context);
 }
 
 #endif  /* HAVE_GD */
@@ -1397,9 +1418,15 @@ sixel_helper_load_image_file(
     }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
-    if (!pixels) {
-        pixels = load_with_gd(&chunk, psx, psy, ppixelformat, &stride);
-        *pframe_count = 1;
+    if (!ret != 0) {
+        ret = load_with_gd(&chunk,
+                           fstatic,
+                           fuse_palette,
+                           reqcolors,
+                           bgcolor,
+                           loop_control,
+                           fn_load,
+                           context);
     }
 #endif  /* HAVE_GD */
     if (ret != 0) {
