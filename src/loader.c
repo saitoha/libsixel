@@ -109,6 +109,7 @@ chunk_init(chunk_t * const pchunk,
 }
 
 
+# ifdef HAVE_LIBCURL
 static size_t
 memory_write(void *ptr,
              size_t size,
@@ -137,6 +138,7 @@ memory_write(void *ptr,
 
     return nbytes;
 }
+# endif
 
 
 static FILE *
@@ -887,7 +889,6 @@ load_with_builtin(
     int depth;
     sixel_frame_t *frame;
     int ret = (-1);
-    int stride;
 
 #if !defined(HAVE_LIBPNG)
     (void) bgcolor;
@@ -915,7 +916,6 @@ load_with_builtin(
         if (frame->pixels == NULL) {
             goto error;
         }
-        stride = frame->width * sixel_helper_compute_depth(frame->pixelformat);
     } else if (chunk_is_pnm(pchunk)) {
         /* pnm */
         frame->pixels = load_pnm(pchunk->buffer,
@@ -932,7 +932,6 @@ load_with_builtin(
 #endif  /* HAVE_ERRNO_H */
             goto error;
         }
-        stride = frame->width * sixel_helper_compute_depth(frame->pixelformat);
     }
 #if HAVE_JPEG
     else if (chunk_is_jpeg(pchunk)) {
@@ -944,7 +943,6 @@ load_with_builtin(
         if (frame->pixels == NULL) {
             goto error;
         }
-        stride = frame->width * sixel_helper_compute_depth(frame->pixelformat);
     }
 #endif  /* HAVE_JPEG */
 #if HAVE_LIBPNG
@@ -961,7 +959,6 @@ load_with_builtin(
         if (frame->pixels == NULL) {
             goto error;
         }
-        stride = frame->width * sixel_helper_compute_depth(frame->pixelformat);
     }
 #endif  /* HAVE_LIBPNG */
     else if (chunk_is_gif(pchunk)) {
@@ -989,8 +986,6 @@ load_with_builtin(
                 frame->pixels = p;
                 frame->delay = g.delay;
                 if (frame->pixels) {
-                    stride = frame->width * depth;
-
                     switch (depth) {
                     case 3:
                         frame->pixelformat = PIXELFORMAT_RGB888;
@@ -1045,7 +1040,6 @@ load_with_builtin(
             goto error;
         }
         frame->loop_count = 1;
-        stride = frame->width * depth;
 
         switch (depth) {
         case 1:
