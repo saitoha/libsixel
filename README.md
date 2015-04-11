@@ -843,6 +843,18 @@ images/vimperator3.png is in the public domain.
     url: http://quadrantem.com/~k_wizard/vimprtan/
 
 
+#### PngSuite
+
+Images under the directory images/pngsuite/ are imported from
+[PngSuite](http://www.schaik.com/pngsuite/) created by Willem van Schaik.
+
+> Permission to use, copy, modify and distribute these images for any
+> purpose and without fee is hereby granted.
+>
+>
+>(c) Willem van Schaik, 1996, 2011
+
+
 ## References
 
 ### ImageMagick
@@ -980,6 +992,4 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 
 
 - [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
-
-
 

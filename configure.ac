@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.4.10], [user@zuse.jp])
+AC_INIT([sixel], [1.4.11], [user@zuse.jp])
 LS_LT_CURRENT=1
 LS_LT_REVISION=3
 LS_LT_AGE=0
@@ -143,6 +143,10 @@ AC_SUBST([AM_CFLAGS])
 
 # For wic integration
 #AC_PROG_CXX
+
+# For test
+AC_CHECK_PROGS(MD5SUM, [md5sum md5])
+AC_SUBST(MD5SUM)
 
 # Checks for libraries.
 
@@ -425,6 +429,14 @@ if test x$with_jpeg != xno; then
                                       [have_jpeg=no])])
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP
+        if test x$have_jpeg != xyes -a ! -d "$with_jpeg"; then
+            if test x${PKG_CONFIG} != x; then
+                PKG_CHECK_MODULES(LIBJPEG,
+                                  [libjpeg],
+                                  [have_jpeg=yes],
+                                  [have_jpeg=no])
+            fi
+        fi
     fi
     if test x$have_jpeg = xyes; then
         LIBJPEG_CFLAGS=$ADDED_CFLAGS
