@@ -504,8 +504,10 @@ do_resize(sixel_frame_t *frame, settings_t *psettings)
             normalized_pixels = malloc(size);
             nret = sixel_helper_normalize_pixelformat(normalized_pixels,
                                                       &frame->pixelformat,
-                                                      frame->pixels, frame->pixelformat,
-                                                      frame->width, frame->height);
+                                                      frame->pixels,
+                                                      frame->pixelformat,
+                                                      frame->width,
+                                                      frame->height);
             if (nret != 0) {
                free(normalized_pixels);
                 return nret;
@@ -566,14 +568,6 @@ clip(unsigned char *pixels,
     switch (pixelformat) {
     case PIXELFORMAT_PAL8:
     case PIXELFORMAT_G8:
-        dst = pixels;
-        src = pixels + cy * sx * 1 + cx * 1;
-        for (y = 0; y < ch; y++) {
-            memmove(dst, src, cw * 1);
-            dst += (cw * 1);
-            src += (sx * 1);
-        }
-        break;
     case PIXELFORMAT_RGB888:
         dst = pixels;
         src = pixels + cy * sx * depth + cx * depth;
@@ -624,9 +618,22 @@ do_crop(sixel_frame_t *frame, settings_t *psettings)
                                                      frame->pixelformat,
                                                      frame->width,
                                                      frame->height);
+            if (ret != 0) {
+                free(normalized_pixels);
+                return ret;
+            }
             free(frame->pixels);
             frame->pixels = normalized_pixels;
             break;
+        default:
+            break;
+        }
+
+        switch (frame->pixelformat) {
+        case PIXELFORMAT_PAL1:
+        case PIXELFORMAT_PAL2:
+        case PIXELFORMAT_PAL4:
+            puts("aaa");
         default:
             break;
         }
