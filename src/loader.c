@@ -1085,7 +1085,6 @@ load_with_gdkpixbuf(
 {
     GdkPixbuf *pixbuf;
     GdkPixbufAnimation *animation;
-    unsigned char *pixels = NULL;
     GdkPixbufLoader *loader;
 #if 1
     GdkPixbufAnimationIter *it;
