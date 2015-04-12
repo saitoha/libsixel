@@ -58,6 +58,9 @@
 # include <errno.h>
 #endif
 
+#include <termios.h>
+#include <sys/ioctl.h>
+
 #if HAVE_SIGNAL_H
 # include <signal.h>
 #endif
@@ -831,6 +834,50 @@ typedef struct sixel_callback_context {
 } sixel_callback_context_t;
 
 
+static void
+scroll_on_demand(sixel_frame_t const *frame)
+{
+    struct winsize size = {0, 0, 0, 0};
+    struct termios old_termios;
+    struct termios new_termios;
+    int fd1 = fileno(stdin);
+    int fd2 = fileno(stdout);
+    int row = 0;
+    int col = 0;
+    int n;
+
+    if (isatty(fd1) && isatty(fd2)) {
+        ioctl(fd2, TIOCGWINSZ, &size);
+        if (size.ws_ypixel > 0) {
+            if (frame->loop_count == 0 && frame->frame_no == 0) {
+                tcgetattr(fd1, &old_termios);
+                memcpy(&new_termios, &old_termios, sizeof(old_termios));
+                new_termios.c_lflag &= ~(ECHO | ICANON);
+                new_termios.c_cc[VMIN] = 1;
+                new_termios.c_cc[VTIME] = 0;
+                tcsetattr(fd1, TCSAFLUSH, &new_termios);
+                printf("\033[6n");
+                fflush(stdout);
+                scanf("\033[%d;%dR", &row, &col);
+                tcsetattr(fd1, TCSAFLUSH, &old_termios);
+                n = frame->height * size.ws_row / size.ws_ypixel + 1
+                        + row - size.ws_row;
+                if (n > 0) {
+                    printf("\033[%dS\033[%dA", n, n);
+                }
+                printf("\0337");
+            } else {
+                printf("\0338");
+            }
+        } else {
+            printf("\033[H");
+        }
+    } else {
+        printf("\033[H");
+    }
+}
+
+
 static int
 load_image_callback(sixel_frame_t *frame, void *data)
 {
@@ -930,8 +977,8 @@ load_image_callback(sixel_frame_t *frame, void *data)
     sixel_output_set_penetrate_multiplexer(output, psettings->penetrate_multiplexer);
     sixel_output_set_encode_policy(output, psettings->encode_policy);
 
-    if (frame->multiframe) {
-        printf("\033[H");
+    if (frame->multiframe && !psettings->fstatic) {
+        scroll_on_demand(frame);
     }
 
     /* output sixel: junction of multi-frame processing strategy */
