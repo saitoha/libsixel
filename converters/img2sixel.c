@@ -682,14 +682,14 @@ print_palette(sixel_dither_t *dither)
 
 #if HAVE_SYS_SELECT_H
 static int
-wait_stdin(void)
+wait_stdin(int usec)
 {
     fd_set rfds;
     struct timeval tv;
     int ret;
 
-    tv.tv_sec = 1;
-    tv.tv_usec = 0;
+    tv.tv_sec = usec / 1000000;
+    tv.tv_usec = usec % 1000000;
     FD_ZERO(&rfds);
     FD_SET(STDIN_FILENO, &rfds);
     ret = select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
@@ -846,32 +846,37 @@ scroll_on_demand(sixel_frame_t const *frame)
     struct winsize size = {0, 0, 0, 0};
     struct termios old_termios;
     struct termios new_termios;
-    int fd1 = fileno(stdin);
-    int fd2 = fileno(stdout);
     int row = 0;
     int col = 0;
     int n;
 
-    if (isatty(fd1) && isatty(fd2)) {
-        ioctl(fd2, TIOCGWINSZ, &size);
+    if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)) {
+        ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
         if (size.ws_ypixel > 0) {
             if (frame->loop_count == 0 && frame->frame_no == 0) {
-                tcgetattr(fd1, &old_termios);
+                tcgetattr(STDIN_FILENO, &old_termios);
                 memcpy(&new_termios, &old_termios, sizeof(old_termios));
                 new_termios.c_lflag &= ~(ECHO | ICANON);
                 new_termios.c_cc[VMIN] = 1;
                 new_termios.c_cc[VTIME] = 0;
-                tcsetattr(fd1, TCSAFLUSH, &new_termios);
+                tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
                 printf("\033[6n");
                 fflush(stdout);
-                scanf("\033[%d;%dR", &row, &col);
-                tcsetattr(fd1, TCSAFLUSH, &old_termios);
-                n = frame->height * size.ws_row / size.ws_ypixel + 1
-                        + row - size.ws_row;
-                if (n > 0) {
-                    printf("\033[%dS\033[%dA", n, n);
+                if (wait_stdin(1000000) != (-1)) {
+                    if (scanf("\033[%d;%dR", &row, &col) == 2) {
+                        tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
+                        n = frame->height * size.ws_row / size.ws_ypixel + 1
+                                + row - size.ws_row;
+                        if (n > 0) {
+                            printf("\033[%dS\033[%dA", n, n);
+                        }
+                        printf("\0337");
+                    } else {
+                        printf("\033[H");
+                    }
+                } else {
+                    printf("\033[H");
                 }
-                printf("\0337");
             } else {
                 printf("\0338");
             }
@@ -1128,8 +1133,8 @@ reload:
 #endif  /* HAVE_FSEEK */
         while (!signaled) {
 #if HAVE_SYS_SELECT_H
-            nret = wait_stdin();
-            if (nret == -1) {
+            nret = wait_stdin(1000000);
+            if (nret == (-1)) {
                 return nret;
             }
 #endif  /* HAVE_SYS_SELECT_H */
