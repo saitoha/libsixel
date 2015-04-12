@@ -854,15 +854,18 @@ scroll_on_demand(sixel_frame_t const *frame)
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
         if (size.ws_ypixel > 0) {
             if (frame->loop_count == 0 && frame->frame_no == 0) {
+                /* set the terminal to cbreak mode */
                 tcgetattr(STDIN_FILENO, &old_termios);
                 memcpy(&new_termios, &old_termios, sizeof(old_termios));
                 new_termios.c_lflag &= ~(ECHO | ICANON);
                 new_termios.c_cc[VMIN] = 1;
                 new_termios.c_cc[VTIME] = 0;
                 tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
+
+                /* request cursor position report */
                 printf("\033[6n");
                 fflush(stdout);
-                if (wait_stdin(1000000) != (-1)) {
+                if (wait_stdin(1000000) != (-1)) { /* wait 1 sec */
                     if (scanf("\033[%d;%dR", &row, &col) == 2) {
                         tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
                         n = frame->height * size.ws_row / size.ws_ypixel + 1
@@ -887,6 +890,7 @@ scroll_on_demand(sixel_frame_t const *frame)
         printf("\033[H");
     }
 #else
+    (void) frame;
     printf("\033[H");
 #endif
 }
