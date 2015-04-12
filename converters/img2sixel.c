@@ -724,7 +724,6 @@ output_sixel_without_macro(
 #if HAVE_USLEEP && HAVE_CLOCK
     start = clock();
 #endif
-//    printf("\033[H");
     fflush(stdout);
 #if HAVE_USLEEP
     if (!psettings->fignore_delay && delay > 0) {
@@ -793,50 +792,12 @@ output_sixel_with_macro(
         printf("\033\\");
     }
     if (psettings->macro_number < 0) {
-//        printf("\033[H");
         fflush(stdout);
         printf("\033[%d*z", frame_no);
-    }
-#if HAVE_USLEEP
-    if (delay > 0 && !psettings->fignore_delay) {
-# if HAVE_CLOCK
-        dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
-        lag = 0;
-# else
-        dulation = 0;
-# endif
-        if (dulation < 10000 * delay) {
-            usleep(10000 * delay - dulation);
-        } else {
-            lag = 10000 * delay - dulation;
-        }
-    }
-#endif
-#if HAVE_SIGNAL
-    if (signaled) {
-        return SIXEL_INTERRUPTED;
-    }
-#endif
-
-    if (signaled) {
-        if (psettings->f8bit) {
-            printf("\x9c");
-        } else {
-            printf("\x1b\\");
-        }
-    }
-
-    if (psettings->macro_number < 0) {
-#if HAVE_USLEEP && HAVE_CLOCK
-        start = clock();
-#endif
-//        printf("\033[H");
-        printf("\033[%d*z", frame_no);
-        fflush(stdout);
 #if HAVE_USLEEP
         if (delay > 0 && !psettings->fignore_delay) {
 # if HAVE_CLOCK
-            dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
+            dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
             lag = 0;
 # else
             dulation = 0;
@@ -851,6 +812,11 @@ output_sixel_with_macro(
     }
 #if HAVE_SIGNAL
     if (signaled) {
+        if (psettings->f8bit) {
+            printf("\x9c");
+        } else {
+            printf("\x1b\\");
+        }
         return SIXEL_INTERRUPTED;
     }
 #endif
@@ -963,6 +929,10 @@ load_image_callback(sixel_frame_t *frame, void *data)
     sixel_output_set_palette_type(output, psettings->palette_type);
     sixel_output_set_penetrate_multiplexer(output, psettings->penetrate_multiplexer);
     sixel_output_set_encode_policy(output, psettings->encode_policy);
+
+    if (frame->multiframe) {
+        printf("\033[H");
+    }
 
     /* output sixel: junction of multi-frame processing strategy */
     if (psettings->fuse_macro) {  /* -u option */

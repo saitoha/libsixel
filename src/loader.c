@@ -970,6 +970,7 @@ load_with_builtin(
 
             stbi__start_mem(&s, pchunk->buffer, pchunk->size);
             memset(&g, 0, sizeof(g));
+            g.loop_count = (-1);
             frame->frame_no = 0;
 
             for (;;) {
@@ -1010,6 +1011,7 @@ load_with_builtin(
                             stbi_failure_reason());
                     goto error;
                 }
+                frame->multiframe = (g.loop_count != (-1));
 
                 ret = fn_load(frame, context);
                 if (ret != 0) {
@@ -1023,6 +1025,9 @@ load_with_builtin(
 
             ++frame->loop_count;
 
+            if (g.loop_count == (-1)) {
+                break;
+            }
             if (loop_control == LOOP_DISABLE || frame->frame_no == 1) {
                 break;
             }
@@ -1166,9 +1171,10 @@ load_with_gdkpixbuf(
                 } else {
                     frame->pixelformat = PIXELFORMAT_RGB888;
                 }
-                frame->frame_no++;
+                frame->multiframe = 1;
                 gdk_pixbuf_animation_iter_advance(it, &time);
                 fn_load(frame, context);
+                frame->frame_no++;
             }
 
             ++frame->loop_count;
