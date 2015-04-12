@@ -102,6 +102,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the `isatty' function. */
+#undef HAVE_ISATTY
+
 /* whether jpeg codec library is available */
 #undef HAVE_JPEG
 
@@ -173,6 +176,9 @@
 /* Define to 1 if you have the `strtoul' function. */
 #undef HAVE_STRTOUL
 
+/* Define to 1 if you have the <sys/ioctl.h> header file. */
+#undef HAVE_SYS_IOCTL_H
+
 /* Define to 1 if you have the <sys/select.h> header file. */
 #undef HAVE_SYS_SELECT_H
 
@@ -190,6 +196,9 @@
 
 /* Define to 1 if you have the <sys/unistd.h> header file. */
 #undef HAVE_SYS_UNISTD_H
+
+/* Define to 1 if you have the <termios.h> header file. */
+#undef HAVE_TERMIOS_H
 
 /* Define to 1 if you have the <time.h> header file. */
 #undef HAVE_TIME_H

@@ -58,6 +58,14 @@
 # include <errno.h>
 #endif
 
+#if HAVE_TERMIOS_H
+# include <termios.h>
+#endif
+
+#if HAVE_SYS_IOCTL_H
+# include <sys/ioctl.h>
+#endif
+
 #if HAVE_SIGNAL_H
 # include <signal.h>
 #endif
@@ -674,14 +682,14 @@ print_palette(sixel_dither_t *dither)
 
 #if HAVE_SYS_SELECT_H
 static int
-wait_stdin(void)
+wait_stdin(int usec)
 {
     fd_set rfds;
     struct timeval tv;
     int ret;
 
-    tv.tv_sec = 1;
-    tv.tv_usec = 0;
+    tv.tv_sec = usec / 1000000;
+    tv.tv_usec = usec % 1000000;
     FD_ZERO(&rfds);
     FD_SET(STDIN_FILENO, &rfds);
     ret = select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
@@ -831,6 +839,63 @@ typedef struct sixel_callback_context {
 } sixel_callback_context_t;
 
 
+static void
+scroll_on_demand(sixel_frame_t const *frame)
+{
+#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
+    struct winsize size = {0, 0, 0, 0};
+    struct termios old_termios;
+    struct termios new_termios;
+    int row = 0;
+    int col = 0;
+    int n;
+
+    if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)) {
+        ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
+        if (size.ws_ypixel > 0) {
+            if (frame->loop_count == 0 && frame->frame_no == 0) {
+                /* set the terminal to cbreak mode */
+                tcgetattr(STDIN_FILENO, &old_termios);
+                memcpy(&new_termios, &old_termios, sizeof(old_termios));
+                new_termios.c_lflag &= ~(ECHO | ICANON);
+                new_termios.c_cc[VMIN] = 1;
+                new_termios.c_cc[VTIME] = 0;
+                tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
+
+                /* request cursor position report */
+                printf("\033[6n");
+                fflush(stdout);
+                if (wait_stdin(1000000) != (-1)) { /* wait 1 sec */
+                    if (scanf("\033[%d;%dR", &row, &col) == 2) {
+                        tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
+                        n = frame->height * size.ws_row / size.ws_ypixel + 1
+                                + row - size.ws_row;
+                        if (n > 0) {
+                            printf("\033[%dS\033[%dA", n, n);
+                        }
+                        printf("\0337");
+                    } else {
+                        printf("\033[H");
+                    }
+                } else {
+                    printf("\033[H");
+                }
+            } else {
+                printf("\0338");
+            }
+        } else {
+            printf("\033[H");
+        }
+    } else {
+        printf("\033[H");
+    }
+#else
+    (void) frame;
+    printf("\033[H");
+#endif
+}
+
+
 static int
 load_image_callback(sixel_frame_t *frame, void *data)
 {
@@ -930,8 +995,8 @@ load_image_callback(sixel_frame_t *frame, void *data)
     sixel_output_set_penetrate_multiplexer(output, psettings->penetrate_multiplexer);
     sixel_output_set_encode_policy(output, psettings->encode_policy);
 
-    if (frame->multiframe) {
-        printf("\033[H");
+    if (frame->multiframe && !psettings->fstatic) {
+        scroll_on_demand(frame);
     }
 
     /* output sixel: junction of multi-frame processing strategy */
@@ -1072,8 +1137,8 @@ reload:
 #endif  /* HAVE_FSEEK */
         while (!signaled) {
 #if HAVE_SYS_SELECT_H
-            nret = wait_stdin();
-            if (nret == -1) {
+            nret = wait_stdin(1000000);
+            if (nret == (-1)) {
                 return nret;
             }
 #endif  /* HAVE_SYS_SELECT_H */
