@@ -31,6 +31,13 @@
 #define SIXEL_PALETTE_MAX 256
 
 /* output character size */
+enum statusCode {
+    SIXEL_SUCCESS      = 0x0000,                 /* succeeded */
+    SIXEL_FAILED       = 0x1000,                 /* failed */
+    SIXEL_INTERRUPTED  = SIXEL_SUCCESS | 0x001,  /* interrupted by a signal */
+};
+
+/* output character size */
 enum characterSize {
     CSIZE_7BIT = 0,  /* 7bit character */
     CSIZE_8BIT = 1,  /* 8bit character */
@@ -414,22 +421,38 @@ enum imageFormat {
 extern "C" {
 #endif
 
-/* load image from file */
+/* loop mode */
+enum loopControl {
+    LOOP_AUTO    = 0,  /* honer the setting of GIF header */
+    LOOP_FORCE   = 1,  /* always enable loop */
+    LOOP_DISABLE = 2,  /* always disable loop */
+};
+
+typedef struct sixel_frame {
+    unsigned char *pixels;    /* loaded pixel data */
+    unsigned char *palette;   /* loaded palette data */
+    int width;                /* frame width */
+    int height;               /* frame height */
+    int ncolors;              /* palette colors */
+    int pixelformat;          /* one of enum pixelFormat */
+    int delay;                /* delay in msec */
+    int frame_no;             /* frame number */
+    int loop_count;           /* loop count */
+    int multiframe;           /* whether the image has multiple frames */
+} sixel_frame_t;
+
+typedef int (* sixel_load_image_function)(sixel_frame_t /* in */ *frame, void /* in/out */ *context);
+
 int
 sixel_helper_load_image_file(
-    unsigned char /* out */ **ppixels,     /* loaded pixel data */
-    unsigned char /* out */ **ppalette,    /* loaded palette data */
-    int           /* out */ *psx,          /* image width */
-    int           /* out */ *psy,          /* image height */
-    int           /* out */ *pncolors,     /* palette colors */
-    int           /* out */ *ppixelformat, /* one of enum pixelFormat */
-    int           /* out */ *pframe_count, /* frame count */
-    int           /* out */ *ploop_count,  /* loop count */
-    int           /* out */ **ppdelay,     /* delay for each frames */
-    char const    /* in */  *filename,     /* source file name */
-    int           /* in */  fstatic,       /* whether to extract static image */
-    int           /* in */  reqcolors,     /* requested number of colors */
-    unsigned char /* in */  *bgcolor);     /* background color */
+    char const                /* in */     *filename,     /* source file name */
+    int                       /* in */     fstatic,       /* whether to extract static image */
+    int                       /* in */     fuse_palette,  /* whether to use paletted image */
+    int                       /* in */     reqcolors,     /* requested number of colors */
+    unsigned char             /* in */     *bgcolor,      /* background color */
+    int                       /* in */     loop_control,  /* one of enum loopControl */
+    sixel_load_image_function /* in */     fn_load,       /* callback */
+    void                      /* in/out */ *context);     /* private data for callback */
 
 /* write image to file */
 int

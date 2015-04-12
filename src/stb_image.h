@@ -5349,6 +5349,7 @@ typedef struct
    int line_size;
    int loop_count;
    int delay;
+   int is_multiframe;
 } stbi__gif;
 
 static int stbi__gif_test_raw(stbi__context *s)
@@ -5687,6 +5688,8 @@ static stbi_uc *stbi__gif_load(stbi__context *s, int *x, int *y, int *comp, int 
    stbi_uc *u = 0;
    stbi__gif g;
    memset(&g, 0, sizeof(g));
+
+   g.loop_count = -1;
 
    u = stbi__gif_load_next(s, &g, comp, req_comp, NULL);
    if (u == (stbi_uc *) s) u = 0;  // end of animated gif marker
