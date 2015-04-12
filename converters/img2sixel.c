@@ -58,8 +58,13 @@
 # include <errno.h>
 #endif
 
-#include <termios.h>
-#include <sys/ioctl.h>
+#if HAVE_TERMIOS_H
+# include <termios.h>
+#endif
+
+#if HAVE_SYS_IOCTL_H
+# include <sys/ioctl.h>
+#endif
 
 #if HAVE_SIGNAL_H
 # include <signal.h>
@@ -837,6 +842,7 @@ typedef struct sixel_callback_context {
 static void
 scroll_on_demand(sixel_frame_t const *frame)
 {
+#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
     struct winsize size = {0, 0, 0, 0};
     struct termios old_termios;
     struct termios new_termios;
@@ -875,6 +881,9 @@ scroll_on_demand(sixel_frame_t const *frame)
     } else {
         printf("\033[H");
     }
+#else
+    printf("\033[H");
+#endif
 }
 
 

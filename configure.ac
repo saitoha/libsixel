@@ -166,7 +166,9 @@ AC_CHECK_HEADERS([memory.h \
                   time.h \
                   signal.h \
                   sys/select.h \
-                  sys/signal.h])
+                  sys/signal.h \
+                  termios.h \
+                  sys/ioctl.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
@@ -200,7 +202,8 @@ AC_CHECK_FUNCS([memcpy \
                 clock \
                 clearerr \
                 stat \
-                setjmp])
+                setjmp \
+                isatty])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
