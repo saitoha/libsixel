@@ -839,9 +839,7 @@ chunk_is_jpeg(chunk_t const *chunk)
 
 static int
 sixel_strip_alpha(
-    unsigned char  /* in/out */ *pixels,
-    int            /* in */     width,
-    int            /* in */     height,
+    sixel_frame_t  /* in */     *frame,
     unsigned char  /* in */     *bgcolor)
 {
     int x;
@@ -850,22 +848,36 @@ sixel_strip_alpha(
     unsigned char *dst;
     unsigned char alpha;
 
-    src = dst = pixels;
-    for (y = 0; y < height; y++) {
-        for (x = 0; x < width; x++) {
-            if (bgcolor) {
-                alpha = src[3];
-                *dst++ = (*src++ * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
-                *dst++ = (*src++ * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
-                *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
-                src++;
-            } else {
-                *dst++ = *src++;  /* R */
-                *dst++ = *src++;  /* R */
-                *dst++ = *src++;  /* R */
-                src++;  /* A */
+    src = dst = frame->pixels;
+
+    switch (frame->pixelformat) {
+    case PIXELFORMAT_RGBA8888:
+    case PIXELFORMAT_ARGB8888:
+        for (y = 0; y < frame->height; y++) {
+            for (x = 0; x < frame->width; x++) {
+                if (bgcolor) {
+                    alpha = src[3];
+                    *dst++ = (*src++ * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+                    *dst++ = (*src++ * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+                    *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+                    src++;
+                } else if (frame->pixelformat == PIXELFORMAT_ARGB8888){
+                    src++;            /* A */
+                    *dst++ = *src++;  /* R */
+                    *dst++ = *src++;  /* G */
+                    *dst++ = *src++;  /* B */
+                } else if (frame->pixelformat == PIXELFORMAT_RGBA8888){
+                    *dst++ = *src++;  /* R */
+                    *dst++ = *src++;  /* G */
+                    *dst++ = *src++;  /* B */
+                    src++;            /* A */
+                }
             }
         }
+        frame->pixelformat = PIXELFORMAT_RGB888;
+        break;
+    default:
+        break;
     }
 
     return 0;
@@ -1064,9 +1076,9 @@ load_with_builtin(
         }
     }
 
-    if (frame->pixelformat == PIXELFORMAT_RGBA8888) {
-        sixel_strip_alpha(frame->pixels, frame->width, frame->height, bgcolor);
-        frame->pixelformat = PIXELFORMAT_RGB888;
+    ret = sixel_strip_alpha(frame, bgcolor);
+    if (ret != 0) {
+        goto error;
     }
 
     ret = fn_load(frame, context);
