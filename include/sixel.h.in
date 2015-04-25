@@ -322,6 +322,12 @@ sixel_dither_set_pixelformat(
     sixel_dither_t /* in */ *dither,      /* dither context object */
     int            /* in */ pixelformat); /* one of enum pixelFormat */
 
+/* set transparent */
+void
+sixel_dither_set_transparent(
+    sixel_dither_t /* in */ *dither,      /* dither context object */
+    int            /* in */ transparent); /* transparent color index */
+
 #ifdef __cplusplus
 }
 #endif
