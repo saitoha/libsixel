@@ -919,6 +919,7 @@ load_with_builtin(
     frame->palette = NULL;
     frame->frame_no = 0;
     frame->loop_count = 0;
+    frame->transparent = (-1);
 
     if (chunk_is_sixel(pchunk)) {
         frame->pixels = load_sixel(pchunk->buffer,
@@ -1010,6 +1011,15 @@ load_with_builtin(
                         frame->palette[i * 3 + 0] = g.color_table[i * 4 + 2];
                         frame->palette[i * 3 + 1] = g.color_table[i * 4 + 1];
                         frame->palette[i * 3 + 2] = g.color_table[i * 4 + 0];
+                    }
+                    if (g.lflags & 0x80) {
+                        if (g.eflags & 0x01) {
+                            frame->transparent = g.transparent;
+                        }
+                    } else if (g.flags & 0x80) {
+                        if (g.eflags & 0x01) {
+                            frame->transparent = g.transparent;
+                        }
                     }
                 } else {
                     frame->pixelformat = PIXELFORMAT_RGB888;

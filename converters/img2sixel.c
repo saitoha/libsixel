@@ -402,9 +402,7 @@ typedef struct Settings {
 
 static sixel_dither_t *
 prepare_palette(sixel_dither_t *former_dither,
-                unsigned char *frame, int sx, int sy,
-                unsigned char *palette, int ncolors,
-                int pixelformat,
+                sixel_frame_t const *frame,
                 settings_t *psettings)
 {
     sixel_dither_t *dither;
@@ -433,16 +431,19 @@ prepare_palette(sixel_dither_t *former_dither,
             return former_dither;
         }
         dither = prepare_builtin_palette(psettings->builtin_palette);
-    } else if (palette && pixelformat & FORMATTYPE_PALETTE) {
-        dither = sixel_dither_create(ncolors);
+    } else if (frame->palette && (frame->pixelformat & FORMATTYPE_PALETTE)) {
+        dither = sixel_dither_create(frame->ncolors);
         if (!dither) {
             return NULL;
         }
-        sixel_dither_set_palette(dither, palette);
-        sixel_dither_set_pixelformat(dither, pixelformat);
-    } else if (pixelformat == PIXELFORMAT_G8) {
+        sixel_dither_set_palette(dither, frame->palette);
+        sixel_dither_set_pixelformat(dither, frame->pixelformat);
+        if (frame->transparent != (-1)) {
+            sixel_dither_set_transparent(dither, frame->transparent);
+        }
+    } else if (frame->pixelformat == PIXELFORMAT_G8) {
         dither = sixel_dither_create(-1);
-        sixel_dither_set_pixelformat(dither, pixelformat);
+        sixel_dither_set_pixelformat(dither, frame->pixelformat);
     } else {
         if (former_dither) {
             sixel_dither_unref(former_dither);
@@ -451,8 +452,9 @@ prepare_palette(sixel_dither_t *former_dither,
         if (!dither) {
             return NULL;
         }
-        ret = sixel_dither_initialize(dither, frame, sx, sy,
-                                      pixelformat,
+        ret = sixel_dither_initialize(dither, frame->pixels,
+                                      frame->width, frame->height,
+                                      frame->pixelformat,
                                       psettings->method_for_largest,
                                       psettings->method_for_rep,
                                       psettings->quality_mode);
@@ -464,7 +466,7 @@ prepare_palette(sixel_dither_t *former_dither,
         if (histogram_colors <= psettings->reqcolors) {
             psettings->method_for_diffuse = DIFFUSE_NONE;
         }
-        sixel_dither_set_pixelformat(dither, pixelformat);
+        sixel_dither_set_pixelformat(dither, frame->pixelformat);
     }
     return dither;
 }
@@ -956,14 +958,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
     }
 
     /* prepare dither context */
-    dither = prepare_palette(dither,
-                             frame->pixels,
-                             frame->width,
-                             frame->height,
-                             frame->palette,
-                             frame->ncolors,
-                             frame->pixelformat,
-                             psettings);
+    dither = prepare_palette(dither, frame, psettings);
     if (!dither) {
         nret = (-1);
         goto end;
