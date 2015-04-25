@@ -838,10 +838,9 @@ chunk_is_jpeg(chunk_t const *chunk)
 
 
 static int
-sixel_strip_alpha(unsigned char *pixels,
-                  int width,
-                  int height,
-                  unsigned char *bgcolor)
+sixel_strip_alpha(
+    sixel_frame_t  /* in */     *frame,
+    unsigned char  /* in */     *bgcolor)
 {
     int x;
     int y;
@@ -849,22 +848,36 @@ sixel_strip_alpha(unsigned char *pixels,
     unsigned char *dst;
     unsigned char alpha;
 
-    src = dst = pixels;
-    for (y = 0; y < height; y++) {
-        for (x = 0; x < width; x++) {
-            if (bgcolor) {
-                alpha = src[3];
-                *dst++ = (*src++ * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
-                *dst++ = (*src++ * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
-                *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
-                src++;
-            } else {
-                *dst++ = *src++;  /* R */
-                *dst++ = *src++;  /* R */
-                *dst++ = *src++;  /* R */
-                src++;  /* A */
+    src = dst = frame->pixels;
+
+    switch (frame->pixelformat) {
+    case PIXELFORMAT_RGBA8888:
+    case PIXELFORMAT_ARGB8888:
+        for (y = 0; y < frame->height; y++) {
+            for (x = 0; x < frame->width; x++) {
+                if (bgcolor) {
+                    alpha = src[3];
+                    *dst++ = (*src++ * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+                    *dst++ = (*src++ * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+                    *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+                    src++;
+                } else if (frame->pixelformat == PIXELFORMAT_ARGB8888){
+                    src++;            /* A */
+                    *dst++ = *src++;  /* R */
+                    *dst++ = *src++;  /* G */
+                    *dst++ = *src++;  /* B */
+                } else if (frame->pixelformat == PIXELFORMAT_RGBA8888){
+                    *dst++ = *src++;  /* R */
+                    *dst++ = *src++;  /* G */
+                    *dst++ = *src++;  /* B */
+                    src++;            /* A */
+                }
             }
         }
+        frame->pixelformat = PIXELFORMAT_RGB888;
+        break;
+    default:
+        break;
     }
 
     return 0;
@@ -889,6 +902,8 @@ load_with_builtin(
     int depth;
     sixel_frame_t *frame;
     int ret = (-1);
+    int i;
+    unsigned char palette[256 * 3];
 
 #if !defined(HAVE_LIBPNG)
     (void) bgcolor;
@@ -985,28 +1000,28 @@ load_with_builtin(
 
                 frame->width = g.w;
                 frame->height = g.h;
-                frame->pixels = p;
                 frame->delay = g.delay;
-                if (frame->pixels) {
-                    switch (depth) {
-                    case 3:
-                        frame->pixelformat = PIXELFORMAT_RGB888;
-                        break;
-                    case 4:
-                        /* RGBA to RGB */
-                        ret = sixel_strip_alpha(frame->pixels, frame->width, frame->height, bgcolor);
-                        if (ret != 0) {
-                            stbi_image_free(frame->pixels);
-                            goto error;
-                        }
-                        frame->pixelformat = PIXELFORMAT_RGB888;
-                        break;
-                    default:
-                        stbi_image_free(frame->pixels);
-                        fprintf(stderr, "load_with_builtin() failed.\n" "reason: unknwon pixel-format.\n");
-                        goto error;
+                frame->ncolors = 2 << (g.flags & 7);
+                frame->palette = palette;
+                if (frame->ncolors <= reqcolors) {
+                    frame->pixelformat = PIXELFORMAT_PAL8;
+                    frame->pixels = p;
+                    for (i = 0; i < frame->ncolors; ++i) {
+                        frame->palette[i * 3 + 0] = g.color_table[i * 4 + 2];
+                        frame->palette[i * 3 + 1] = g.color_table[i * 4 + 1];
+                        frame->palette[i * 3 + 2] = g.color_table[i * 4 + 0];
                     }
                 } else {
+                    frame->pixelformat = PIXELFORMAT_RGB888;
+                    frame->pixels = malloc(g.w * g.h * 3);
+                    for (i = 0; i < g.w * g.h; ++i) {
+                        frame->pixels[i * 3 + 0] = g.color_table[p[i] * 4 + 2];
+                        frame->pixels[i * 3 + 1] = g.color_table[p[i] * 4 + 1];
+                        frame->pixels[i * 3 + 2] = g.color_table[p[i] * 4 + 0];
+                    }
+                    free(p);
+                }
+                if (frame->pixels == NULL) {
                     fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
                             stbi_failure_reason());
                     goto error;
@@ -1059,6 +1074,11 @@ load_with_builtin(
                             "reason: unknown pixel-format.(depth: %d)\n", depth);
             goto error;
         }
+    }
+
+    ret = sixel_strip_alpha(frame, bgcolor);
+    if (ret != 0) {
+        goto error;
     }
 
     ret = fn_load(frame, context);

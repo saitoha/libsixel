@@ -5422,8 +5422,6 @@ static int stbi__gif_info_raw(stbi__context *s, int *x, int *y, int *comp)
 
 static void stbi__out_gif_code(stbi__gif *g, stbi__uint16 code)
 {
-   stbi_uc *p, *c;
-
    // recurse to decode the prefixes, since the linked-list is backwards,
    // and working backwards through an interleaved image would be nasty
    if (g->codes[code].prefix >= 0)
@@ -5431,16 +5429,8 @@ static void stbi__out_gif_code(stbi__gif *g, stbi__uint16 code)
 
    if (g->cur_y >= g->max_y) return;
 
-   p = &g->out[g->cur_x + g->cur_y];
-   c = &g->color_table[g->codes[code].suffix * 4];
-
-   if (c[3] >= 128) {
-      p[0] = c[2];
-      p[1] = c[1];
-      p[2] = c[0];
-      p[3] = c[3];
-   }
-   g->cur_x += 4;
+   g->out[g->cur_x + g->cur_y] = g->codes[code].suffix;
+   g->cur_x++;
 
    if (g->cur_x >= g->max_x) {
       g->cur_x = g->start_x;
