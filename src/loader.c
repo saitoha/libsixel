@@ -1013,11 +1013,29 @@ load_with_builtin(
                     }
                     if (g.lflags & 0x80) {
                         if (g.eflags & 0x01) {
-                            frame->transparent = g.transparent;
+                            if (bgcolor) {
+                                frame->palette[g.transparent * 3 + 0]
+                                    = bgcolor[0];
+                                frame->palette[g.transparent * 3 + 1]
+                                    = bgcolor[1];
+                                frame->palette[g.transparent * 3 + 2]
+                                    = bgcolor[2];
+                            } else {
+                                frame->transparent = g.transparent;
+                            }
                         }
                     } else if (g.flags & 0x80) {
                         if (g.eflags & 0x01) {
-                            frame->transparent = g.transparent;
+                            if (bgcolor) {
+                                frame->palette[g.transparent * 3 + 0]
+                                    = bgcolor[0];
+                                frame->palette[g.transparent * 3 + 1]
+                                    = bgcolor[1];
+                                frame->palette[g.transparent * 3 + 2]
+                                    = bgcolor[2];
+                            } else {
+                                frame->transparent = g.transparent;
+                            }
                         }
                     }
                 } else {
