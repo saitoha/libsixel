@@ -480,6 +480,15 @@ sixel_dither_set_pixelformat(
 }
 
 
+void
+sixel_dither_set_transparent(
+    sixel_dither_t /* in */ *dither,      /* dither context object */
+    int            /* in */ transparent)  /* transparent color index */
+{
+    dither->keycolor = transparent;
+}
+
+
 unsigned char *
 sixel_dither_apply_palette(sixel_dither_t *dither,
                            unsigned char *pixels,
