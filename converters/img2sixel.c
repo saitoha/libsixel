@@ -487,10 +487,12 @@ do_resize(sixel_frame_t *frame, settings_t *psettings)
         psettings->pixelheight = frame->height * psettings->percentheight / 100;
     }
     if (psettings->pixelwidth > 0 && psettings->pixelheight <= 0) {
-        psettings->pixelheight = frame->height * psettings->pixelwidth / frame->width;
+        psettings->pixelheight
+            = frame->height * psettings->pixelwidth / frame->width;
     }
     if (psettings->pixelheight > 0 && psettings->pixelwidth <= 0) {
-        psettings->pixelwidth = frame->width * psettings->pixelheight / frame->height;
+        psettings->pixelwidth
+            = frame->width * psettings->pixelheight / frame->height;
     }
 
     if (psettings->pixelwidth > 0 && psettings->pixelheight > 0) {
@@ -980,14 +982,16 @@ load_image_callback(sixel_frame_t *frame, void *data)
     }
 
     /* create output context */
-    if (psettings->fuse_macro || psettings->macro_number >= 0) {  /* -u or -n option */
+    if (psettings->fuse_macro || psettings->macro_number >= 0) {
+        /* -u or -n option */
         output = sixel_output_create(sixel_hex_write_callback, stdout);
     } else {
         output = sixel_output_create(sixel_write_callback, stdout);
     }
     sixel_output_set_8bit_availability(output, psettings->f8bit);
     sixel_output_set_palette_type(output, psettings->palette_type);
-    sixel_output_set_penetrate_multiplexer(output, psettings->penetrate_multiplexer);
+    sixel_output_set_penetrate_multiplexer(
+        output, psettings->penetrate_multiplexer);
     sixel_output_set_encode_policy(output, psettings->encode_policy);
 
     if (frame->multiframe && !psettings->fstatic) {
