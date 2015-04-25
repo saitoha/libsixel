@@ -903,7 +903,6 @@ load_with_builtin(
     sixel_frame_t *frame;
     int ret = (-1);
     int i;
-    unsigned char palette[256 * 3];
 
 #if !defined(HAVE_LIBPNG)
     (void) bgcolor;
@@ -1003,7 +1002,7 @@ load_with_builtin(
                 frame->height = g.h;
                 frame->delay = g.delay;
                 frame->ncolors = 2 << (g.flags & 7);
-                frame->palette = palette;
+                frame->palette = malloc(frame->ncolors * 3);
                 if (frame->ncolors <= reqcolors) {
                     frame->pixelformat = PIXELFORMAT_PAL8;
                     frame->pixels = p;
@@ -1079,7 +1078,6 @@ load_with_builtin(
             frame->pixelformat = PIXELFORMAT_RGB888;
             break;
         default:
-            stbi_image_free(frame->pixels);
             fprintf(stderr, "load_with_builtin() failed.\n"
                             "reason: unknown pixel-format.(depth: %d)\n", depth);
             goto error;
@@ -1096,13 +1094,12 @@ load_with_builtin(
         goto error;
     }
 
-    return 0;
-
 error:
     free(frame->pixels);
     free(frame->palette);
     free(frame);
-    return (-1);
+
+    return ret;
 }
 
 
@@ -1172,7 +1169,10 @@ load_with_gdkpixbuf(
         } else {
             frame->pixelformat = PIXELFORMAT_RGB888;
         }
-        fn_load(frame, context);
+        ret = fn_load(frame, context);
+        if (ret != SIXEL_SUCCESS) {
+            goto end;
+        }
     } else {
         g_get_current_time(&time);
 
@@ -1204,7 +1204,10 @@ load_with_gdkpixbuf(
                 }
                 frame->multiframe = 1;
                 gdk_pixbuf_animation_iter_advance(it, &time);
-                fn_load(frame, context);
+                ret = fn_load(frame, context);
+                if (ret != SIXEL_SUCCESS) {
+                    goto end;
+                }
                 frame->frame_no++;
             }
 
