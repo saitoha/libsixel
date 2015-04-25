@@ -1143,6 +1143,7 @@ load_with_gdkpixbuf(
     frame->pixels = NULL;
     frame->palette = NULL;
     frame->loop_count = 0;
+    frame->transparent = (-1);
 
 #if (!GLIB_CHECK_VERSION(2, 36, 0))
     g_type_init();
@@ -1329,6 +1330,7 @@ load_with_gd(
 
     frame->pixels = NULL;
     frame->loop_count = 0;
+    frame->transparent = (-1);
 
     switch(detect_file_format(pchunk->size, pchunk->buffer)) {
 #if 0
