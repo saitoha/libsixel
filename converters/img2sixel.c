@@ -824,11 +824,8 @@ output_sixel_with_macro(
     }
 #if HAVE_SIGNAL
     if (signaled) {
-        if (psettings->f8bit) {
-            printf("\x9c");
-        } else {
-            printf("\x1b\\");
-        }
+        printf("\x1b\\");
+        fflush(stdout);
         return SIXEL_INTERRUPTED;
     }
 #endif
@@ -1033,23 +1030,18 @@ load_image_callback(sixel_frame_t *frame, void *data)
                                           psettings);
     }
 
+#if HAVE_SIGNAL
+    if (signaled) {
+        printf("\x1b\\");
+        fflush(stdout);
+        nret = SIXEL_INTERRUPTED;
+    }
+#endif
+
     if (nret != 0) {
         goto end;
     }
 
-#if HAVE_SIGNAL
-    if (signaled) {
-        if (sixel_output_get_8bit_availability(output)) {
-            printf("\x9c");
-        } else {
-            printf("\x1b\\");
-        }
-        fflush(stdout);
-        return SIXEL_INTERRUPTED;
-    }
-#endif
-
-    nret = 0;
     fflush(stdout);
 
 end:
