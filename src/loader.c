@@ -1011,6 +1011,15 @@ load_with_builtin(
                         frame->palette[i * 3 + 1] = g.color_table[i * 4 + 1];
                         frame->palette[i * 3 + 2] = g.color_table[i * 4 + 0];
                     }
+                    if (g.lflags & 0x80) {
+                        if (g.eflags & 0x01) {
+                            frame->transparent = g.transparent;
+                        }
+                    } else if (g.flags & 0x80) {
+                        if (g.eflags & 0x01) {
+                            frame->transparent = g.transparent;
+                        }
+                    }
                 } else {
                     frame->pixelformat = PIXELFORMAT_RGB888;
                     frame->pixels = malloc(g.w * g.h * 3);
