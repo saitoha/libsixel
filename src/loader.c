@@ -919,6 +919,7 @@ load_with_builtin(
     frame->palette = NULL;
     frame->frame_no = 0;
     frame->loop_count = 0;
+    frame->transparent = (-1);
 
     if (chunk_is_sixel(pchunk)) {
         frame->pixels = load_sixel(pchunk->buffer,
