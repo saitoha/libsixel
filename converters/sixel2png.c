@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,7 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>  /* strdup */
+#include <string.h>  /* strcpy */
 
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
@@ -50,43 +50,27 @@
 # include <inttypes.h>
 #endif
 
-#if defined(HAVE_ERRNO_H)
+#if HAVE_ERRNO_H
 # include <errno.h>
 #endif
 
 #include <sixel.h>
-#include "stb_image_write.h"
-
-unsigned char *
-stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes,
-                      int x, int y, int n, int *out_len);
-
-#if !defined(O_BINARY) && defined(_O_BINARY)
-# define O_BINARY _O_BINARY
-#endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
-
-enum
-{
-   STBI_default = 0, /* only used for req_comp */
-   STBI_grey = 1,
-   STBI_grey_alpha = 2,
-   STBI_rgb = 3,
-   STBI_rgb_alpha = 4
-};
 
 
 static int
-sixel_to_png(const char *input, const char *output)
+sixel_to_png(char const *input, char const *output)
 {
-    unsigned char *raw_data, *png_data;
-    int sx, sy, comp;
+    unsigned char *raw_data;
+    int sx, sy;
     int raw_len;
-    int png_len;
-    int i;
     int max;
     int n;
-    FILE *input_fp, *output_fp;
-    int write_len;
+    FILE *input_fp = NULL;
+    unsigned char *indexed_pixels;
+    unsigned char *palette;
+    int ncolors;
+    unsigned char *pixels = NULL;
+    int ret = 0;
 
     if (strcmp(input, "-") == 0) {
         /* for windows */
@@ -125,7 +109,7 @@ sixel_to_png(const char *input, const char *output)
             max *= 2;
             if ((raw_data = (unsigned char *)realloc(raw_data, max)) == NULL) {
 #if HAVE_ERRNO_H
-                fprintf(stderr, "reaalloc(raw_data, %d) failed.\n"
+                fprintf(stderr, "realloc(raw_data, %d) failed.\n"
                                 "reason: %s.\n",
                         max, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
@@ -141,74 +125,28 @@ sixel_to_png(const char *input, const char *output)
         fclose(input_fp);
     }
 
-    unsigned char *indexed_pixels;
-    unsigned char *palette;
-    //int sx, sy;
-    int depth, ncolors;
-
-    unsigned char *rgb_pixels;
-    int x, y;
-    int ret;
-
     ret = sixel_decode(raw_data, raw_len, &indexed_pixels,
                        &sx, &sy, &palette, &ncolors, malloc);
 
     if (ret != 0) {
         fprintf(stderr, "sixel_decode failed.\n");
-        return (-1);
+        goto end;
     }
 
-    rgb_pixels = malloc(sx * sy * 3);
-    for (y = 0; y < sy; ++y) {
-        for (x = 0; x < sx; ++x) {
-            n = indexed_pixels[sx * y + x];
-            rgb_pixels[sx * 3 * y + x * 3 + 0] = palette[n * 4 + 0];
-            rgb_pixels[sx * 3 * y + x * 3 + 1] = palette[n * 4 + 1];
-            rgb_pixels[sx * 3 * y + x * 3 + 2] = palette[n * 4 + 2];
-            rgb_pixels[sx * 3 * y + x * 3 + 3] = palette[n * 4 + 3];
-        }
-    }
+    ret = sixel_helper_write_image_file(indexed_pixels, sx, sy, palette,
+                                        PIXELFORMAT_PAL8, output, FORMAT_PNG);
 
-    png_data = stbi_write_png_to_mem(rgb_pixels, sx * 3,
-                                     sx, sy, STBI_rgb, &png_len);
-
-    if (!png_data) {
-        fprintf(stderr, "stbi_write_png_to_mem failed.\n");
-        return (-1);
-    }
-    if (strcmp(output, "-") == 0) {
-#if defined(O_BINARY)
-# if HAVE__SETMODE
-        _setmode(fileno(stdout), O_BINARY);
-# elif HAVE_SETMODE
-        setmode(fileno(stdout), O_BINARY);
-# endif  /* HAVE_SETMODE */
-#endif  /* defined(O_BINARY) */
-        output_fp = stdout;
-    } else {
-        output_fp = fopen(output, "wb");
-        if (!output_fp) {
-#if HAVE_ERRNO_H
-            fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
-                    output, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-            free(png_data);
-            return (-1);
-        }
-    }
-    write_len = fwrite(png_data, 1, png_len, output_fp);
-    fclose(output_fp);
-    free(png_data);
-
-    return 0;
+end:
+    free(pixels);
+    return ret;
 }
 
 
 static
-void show_version()
+void show_version(void)
 {
     printf("sixel2png " PACKAGE_VERSION "\n"
-           "Copyright (C) 2014 Hayaki Saito <user@zuse.jp>.\n"
+           "Copyright (C) 2014,2015 Hayaki Saito <user@zuse.jp>.\n"
            "\n"
            "Permission is hereby granted, free of charge, to any person obtaining a copy of\n"
            "this software and associated documentation files (the \"Software\"), to deal in\n"
@@ -231,7 +169,7 @@ void show_version()
 
 
 static void
-show_help()
+show_help(void)
 {
     fprintf(stderr,
             "Usage: sixel2png -i input.sixel -o output.png\n"
@@ -246,50 +184,76 @@ show_help()
 }
 
 
+static char *
+arg_strdup(char const *s)
+{
+    char *p;
+
+    p = malloc(strlen(s) + 1);
+    if (p) {
+        strcpy(p, s);
+    }
+    return p;
+}
+
+
 int
 main(int argc, char *argv[])
 {
     int n;
-    char *output = strdup("-");
-    char *input = strdup("-");
+    char *output = arg_strdup("-");
+    char *input = arg_strdup("-");
+#if HAVE_GETOPT_LONG
     int long_opt;
     int option_index;
+#endif  /* HAVE_GETOPT_LONG */
     int nret = 0;
+    char const *optstring = "i:o:VH";
 
+#if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"input",        required_argument,  &long_opt, 'i'},
         {"output",       required_argument,  &long_opt, 'o'},
-        {"version",      no_argument,        &long_opt, 'H'},
-        {"help",         no_argument,        &long_opt, 'V'},
+        {"version",      no_argument,        &long_opt, 'V'},
+        {"help",         no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}
     };
-
+#endif  /* HAVE_GETOPT_LONG */
     for (;;) {
-        n = getopt_long(argc, argv, "i:o:VH",
+#if HAVE_GETOPT_LONG
+        n = getopt_long(argc, argv, optstring,
                         long_options, &option_index);
+#else
+        n = getopt(argc, argv, optstring);
+#endif  /* HAVE_GETOPT_LONG */
+
         if (n == -1) {
+            nret = (-1);
             break;
         }
+#if HAVE_GETOPT_LONG
         if (n == 0) {
             n = long_opt;
         }
+#endif  /* HAVE_GETOPT_LONG */
         switch(n) {
         case 'i':
             free(input);
-            input = strdup(optarg);
+            input = arg_strdup(optarg);
             break;
         case 'o':
             free(output);
-            output = strdup(optarg);
+            output = arg_strdup(optarg);
             break;
         case 'V':
             show_version();
             goto end;
         case 'H':
-        case '?':
             show_help();
             goto end;
+        case '?':
         default:
+            nret = (-1);
             goto argerr;
         }
         if (optind >= argc) {
@@ -299,13 +263,14 @@ main(int argc, char *argv[])
 
     if (strcmp(input, "-") == 0 && optind < argc) {
         free(input);
-        input = strdup(argv[optind++]);
+        input = arg_strdup(argv[optind++]);
     }
     if (strcmp(output, "-") == 0 && optind < argc) {
         free(output);
-        output = strdup(argv[optind++]);
+        output = arg_strdup(argv[optind++]);
     }
     if (optind != argc) {
+        nret = (-1);
         goto argerr;
     }
 

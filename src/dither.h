@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -31,12 +31,16 @@ typedef struct sixel_dither {
     int ncolors;                /* active colors */
     int origcolors;             /* original colors */
     int optimized;              /* pixel is 15bpp compressable */
+    int optimize_palette;       /* minimize palette size */
+    int complexion;             /* for complexion correction */
+    int bodyonly;               /* do not output palette section if true */
     int method_for_largest;     /* method for finding the largest dimention 
                                    for splitting */
     int method_for_rep;         /* method for choosing a color from the box */
     int method_for_diffuse;     /* method for diffusing */
-    int quality_mode;           /* quality of histgram */
+    int quality_mode;           /* quality of histogram */
     int keycolor;               /* background color */
+    int pixelformat;            /* pixelformat for internal processing */
 } sixel_dither_t;
 
 #ifdef __cplusplus
@@ -44,9 +48,10 @@ extern "C" {
 #endif
 
 /* apply palette */
-unsigned char * sixel_apply_palette(unsigned char *pixels, int width, int height,
-                                    sixel_dither_t *dither);
-
+unsigned char *
+sixel_dither_apply_palette(sixel_dither_t *dither,
+                           unsigned char *pixels,
+                           int width, int height);
 #ifdef __cplusplus
 }
 #endif
