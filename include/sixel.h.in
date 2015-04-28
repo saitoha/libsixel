@@ -514,15 +514,11 @@ sixel_strip_alpha(
 );
 
 int
-sixel_frame_normalize(sixel_frame_t /*in */ *frame);  /* frame object */
-
-int
 sixel_frame_resize(
     sixel_frame_t  /* in */ *frame,
     int            /* in */ width,
     int            /* in */ height,
     int            /* in */ method_for_resampling);
-
 
 int
 sixel_frame_clip(

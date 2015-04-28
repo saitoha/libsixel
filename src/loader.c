@@ -858,10 +858,6 @@ load_with_builtin(
     int ret = (-1);
     int i;
 
-#if !defined(HAVE_LIBPNG)
-    (void) bgcolor;
-#endif
-
     frame = sixel_frame_create();
     if (frame == NULL) {
         return SIXEL_FAILED;
