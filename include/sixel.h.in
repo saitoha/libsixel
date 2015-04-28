@@ -435,6 +435,7 @@ enum loopControl {
 };
 
 typedef struct sixel_frame {
+    int ref;                  /* reference counter */
     unsigned char *pixels;    /* loaded pixel data */
     unsigned char *palette;   /* loaded palette data */
     int width;                /* frame width */
