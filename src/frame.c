@@ -320,6 +320,11 @@ sixel_frame_resize(
     unsigned char *scaled_frame = NULL;
     int nret;
 
+    nret = sixel_frame_convert_to_rgb888(frame);
+    if (nret != 0) {
+        return nret;
+    }
+
     size = width * height * 3;
     scaled_frame = malloc(size);
 

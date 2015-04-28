@@ -406,6 +406,7 @@ sixel_helper_scale_image(
 }
 #endif
 
+
 /* image loader/writer API */
 
 enum imageFormat {
@@ -423,10 +424,6 @@ enum imageFormat {
     FORMAT_HDR   = 11, /* read only */
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* loop mode */
 enum loopControl {
     LOOP_AUTO    = 0,  /* honer the setting of GIF header */
@@ -441,27 +438,18 @@ typedef struct sixel_frame { int dummy; } sixel_frame_t;
 
 #endif  /* LIBSIXEL_FRAME_H */
 
-sixel_frame_t *
-sixel_frame_create();
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 unsigned char *
 sixel_frame_get_pixels(sixel_frame_t *frame);
 
-
-typedef int (* sixel_load_image_function)(
-    sixel_frame_t /* in */     *frame,
-    void          /* in/out */ *context
-);
-
-
 void
 sixel_frame_ref(sixel_frame_t *frame);
 
-
 void
 sixel_frame_unref(sixel_frame_t *frame);
-
 
 int
 sixel_frame_init(
@@ -474,72 +462,59 @@ sixel_frame_init(
     int ncolors
 );
 
+/* get pixels */
+unsigned char *
+sixel_frame_get_pixels(sixel_frame_t /* in */ *frame);  /* frame object */
 
+/* get palette */
+unsigned char *
+sixel_frame_get_palette(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get width */
+int
+sixel_frame_get_width(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get height */
+int
+sixel_frame_get_height(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get ncolors */
+int
+sixel_frame_get_ncolors(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get pixelformat */
+int
+sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get transparent */
+int
+sixel_frame_get_transparent(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get transparent */
+int
+sixel_frame_get_multiframe(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get delay */
+int
+sixel_frame_get_delay(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get frame no */
+int
+sixel_frame_get_frame_no(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get loop no */
+int
+sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* strip alpha from RGBA/ARGB formatted pixbuf */
 int
 sixel_strip_alpha(
     sixel_frame_t  /* in */ *frame,
     unsigned char  /* in */ *bgcolor
 );
 
-
-/* get pixels */
-unsigned char *
-sixel_frame_get_pixels(sixel_frame_t /* in */ *frame);  /* frame object */
-
-
-/* get palette */
-unsigned char *
-sixel_frame_get_palette(sixel_frame_t /* in */ *frame);  /* frame object */
-
-
-/* get width */
 int
-sixel_frame_get_width(sixel_frame_t /* in */ *frame);  /* frame object */
-
-
-/* get height */
-int
-sixel_frame_get_height(sixel_frame_t /* in */ *frame);  /* frame object */
-
-
-/* get ncolors */
-int
-sixel_frame_get_ncolors(sixel_frame_t /* in */ *frame);  /* frame object */
-
-
-/* get pixelformat */
-int
-sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame);  /* frame object */
-
-
-/* get transparent */
-int
-sixel_frame_get_transparent(sixel_frame_t /* in */ *frame);  /* frame object */
-
-
-/* get transparent */
-int
-sixel_frame_get_multiframe(sixel_frame_t /* in */ *frame);  /* frame object */
-
-
-/* get delay */
-int
-sixel_frame_get_delay(sixel_frame_t /* in */ *frame);  /* frame object */
-
-
-/* get frame no */
-int
-sixel_frame_get_frame_no(sixel_frame_t /* in */ *frame);  /* frame object */
-
-
-/* get loop no */
-int
-sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame);  /* frame object */
-
-
-int
-sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame);  /* frame object */
-
+sixel_frame_normalize(sixel_frame_t /*in */ *frame);  /* frame object */
 
 int
 sixel_frame_resize(
@@ -557,6 +532,11 @@ sixel_frame_clip(
     int            /* in */ width,
     int            /* in */ height);
 
+
+typedef int (* sixel_load_image_function)(
+    sixel_frame_t /* in */     *frame,
+    void          /* in/out */ *context
+);
 
 int
 sixel_helper_load_image_file(

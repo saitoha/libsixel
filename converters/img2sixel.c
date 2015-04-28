@@ -493,11 +493,6 @@ do_resize(sixel_frame_t *frame, settings_t *psettings)
 
     if (psettings->pixelwidth > 0 && psettings->pixelheight > 0) {
 
-        nret = sixel_frame_convert_to_rgb888(frame);
-        if (nret != 0) {
-            return nret;
-        }
-
         nret = sixel_frame_resize(frame,
                                   psettings->pixelwidth,
                                   psettings->pixelheight,
