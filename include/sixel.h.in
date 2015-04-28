@@ -434,22 +434,129 @@ enum loopControl {
     LOOP_DISABLE = 2,  /* always disable loop */
 };
 
-typedef struct sixel_frame {
-    int ref;                  /* reference counter */
-    unsigned char *pixels;    /* loaded pixel data */
-    unsigned char *palette;   /* loaded palette data */
-    int width;                /* frame width */
-    int height;               /* frame height */
-    int ncolors;              /* palette colors */
-    int pixelformat;          /* one of enum pixelFormat */
-    int delay;                /* delay in msec */
-    int frame_no;             /* frame number */
-    int loop_count;           /* loop count */
-    int multiframe;           /* whether the image has multiple frames */
-    int transparent;          /* -1(no transparent) or >= 0(index of transparent color) */
-} sixel_frame_t;
+#ifndef LIBSIXEL_FRAME_H
 
-typedef int (* sixel_load_image_function)(sixel_frame_t /* in */ *frame, void /* in/out */ *context);
+/* handle type of dither context object */
+typedef struct sixel_frame { int dummy; } sixel_frame_t;
+
+#endif  /* LIBSIXEL_FRAME_H */
+
+sixel_frame_t *
+sixel_frame_create();
+
+
+unsigned char *
+sixel_frame_get_pixels(sixel_frame_t *frame);
+
+
+typedef int (* sixel_load_image_function)(
+    sixel_frame_t /* in */     *frame,
+    void          /* in/out */ *context
+);
+
+
+void
+sixel_frame_ref(sixel_frame_t *frame);
+
+
+void
+sixel_frame_unref(sixel_frame_t *frame);
+
+
+int
+sixel_frame_init(
+    sixel_frame_t *frame,
+    unsigned char *pixels,
+    int width,
+    int height,
+    int pixelformat,
+    unsigned char *palette,
+    int ncolors
+);
+
+
+int
+sixel_strip_alpha(
+    sixel_frame_t  /* in */ *frame,
+    unsigned char  /* in */ *bgcolor
+);
+
+
+/* get pixels */
+unsigned char *
+sixel_frame_get_pixels(sixel_frame_t /* in */ *frame);  /* frame object */
+
+
+/* get palette */
+unsigned char *
+sixel_frame_get_palette(sixel_frame_t /* in */ *frame);  /* frame object */
+
+
+/* get width */
+int
+sixel_frame_get_width(sixel_frame_t /* in */ *frame);  /* frame object */
+
+
+/* get height */
+int
+sixel_frame_get_height(sixel_frame_t /* in */ *frame);  /* frame object */
+
+
+/* get ncolors */
+int
+sixel_frame_get_ncolors(sixel_frame_t /* in */ *frame);  /* frame object */
+
+
+/* get pixelformat */
+int
+sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame);  /* frame object */
+
+
+/* get transparent */
+int
+sixel_frame_get_transparent(sixel_frame_t /* in */ *frame);  /* frame object */
+
+
+/* get transparent */
+int
+sixel_frame_get_multiframe(sixel_frame_t /* in */ *frame);  /* frame object */
+
+
+/* get delay */
+int
+sixel_frame_get_delay(sixel_frame_t /* in */ *frame);  /* frame object */
+
+
+/* get frame no */
+int
+sixel_frame_get_frame_no(sixel_frame_t /* in */ *frame);  /* frame object */
+
+
+/* get loop no */
+int
+sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame);  /* frame object */
+
+
+int
+sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame);  /* frame object */
+
+
+int
+sixel_frame_resize(
+    sixel_frame_t  /* in */ *frame,
+    int            /* in */ width,
+    int            /* in */ height,
+    int            /* in */ method_for_resampling);
+
+
+int
+sixel_frame_clip(
+    sixel_frame_t  /* in */ *frame,
+    int            /* in */ x,
+    int            /* in */ y,
+    int            /* in */ width,
+    int            /* in */ height);
+
 
 int
 sixel_helper_load_image_file(
@@ -461,6 +568,7 @@ sixel_helper_load_image_file(
     int                       /* in */     loop_control,  /* one of enum loopControl */
     sixel_load_image_function /* in */     fn_load,       /* callback */
     void                      /* in/out */ *context);     /* private data for callback */
+
 
 /* write image to file */
 int
