@@ -84,6 +84,7 @@
 
 #include <stdio.h>
 #include "frompnm.h"
+#include "frame.h"
 #include <sixel.h>
 
 #define STBI_NO_STDIO 1
@@ -842,53 +843,6 @@ chunk_is_jpeg(chunk_t const *chunk)
 #endif  /* HAVE_JPEG */
 
 
-static int
-sixel_strip_alpha(
-    sixel_frame_t  /* in */     *frame,
-    unsigned char  /* in */     *bgcolor)
-{
-    int x;
-    int y;
-    unsigned char *src;
-    unsigned char *dst;
-    unsigned char alpha;
-
-    src = dst = frame->pixels;
-
-    switch (frame->pixelformat) {
-    case PIXELFORMAT_RGBA8888:
-    case PIXELFORMAT_ARGB8888:
-        for (y = 0; y < frame->height; y++) {
-            for (x = 0; x < frame->width; x++) {
-                if (bgcolor) {
-                    alpha = src[3];
-                    *dst++ = (*src++ * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
-                    *dst++ = (*src++ * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
-                    *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
-                    src++;
-                } else if (frame->pixelformat == PIXELFORMAT_ARGB8888){
-                    src++;            /* A */
-                    *dst++ = *src++;  /* R */
-                    *dst++ = *src++;  /* G */
-                    *dst++ = *src++;  /* B */
-                } else if (frame->pixelformat == PIXELFORMAT_RGBA8888){
-                    *dst++ = *src++;  /* R */
-                    *dst++ = *src++;  /* G */
-                    *dst++ = *src++;  /* B */
-                    src++;            /* A */
-                }
-            }
-        }
-        frame->pixelformat = PIXELFORMAT_RGB888;
-        break;
-    default:
-        break;
-    }
-
-    return 0;
-}
-
-
 int
 load_with_builtin(
     chunk_t const             /* in */     *pchunk,      /* image data */
@@ -909,21 +863,10 @@ load_with_builtin(
     int ret = (-1);
     int i;
 
-#if !defined(HAVE_LIBPNG)
-    (void) bgcolor;
-#endif
-
-    frame = malloc(sizeof(sixel_frame_t));
+    frame = sixel_frame_create();
     if (frame == NULL) {
         return SIXEL_FAILED;
     }
-    memset(frame, 0, sizeof(sixel_frame_t));
-
-    frame->pixels = NULL;
-    frame->palette = NULL;
-    frame->frame_no = 0;
-    frame->loop_count = 0;
-    frame->transparent = (-1);
 
     if (chunk_is_sixel(pchunk)) {
         frame->pixels = load_sixel(pchunk->buffer,
@@ -1119,9 +1062,7 @@ load_with_builtin(
     }
 
 error:
-    free(frame->pixels);
-    free(frame->palette);
-    free(frame);
+    sixel_frame_unref(frame);
 
     return ret;
 }
@@ -1155,16 +1096,10 @@ load_with_gdkpixbuf(
     (void) reqcolors;
     (void) bgcolor;
 
-    frame = malloc(sizeof(sixel_frame_t));
+    frame = sixel_frame_create();
     if (frame == NULL) {
         return SIXEL_FAILED;
     }
-    memset(frame, 0, sizeof(sixel_frame_t));
-
-    frame->pixels = NULL;
-    frame->palette = NULL;
-    frame->loop_count = 0;
-    frame->transparent = (-1);
 
 #if (!GLIB_CHECK_VERSION(2, 36, 0))
     g_type_init();
@@ -1349,15 +1284,10 @@ load_with_gd(
     (void) bgcolor;
     (void) loop_control;
 
-    frame = malloc(sizeof(sixel_frame_t));
+    frame = sixel_frame_create();
     if (frame == NULL) {
         return SIXEL_FAILED;
     }
-    memset(frame, 0, sizeof(sixel_frame_t));
-
-    frame->pixels = NULL;
-    frame->loop_count = 0;
-    frame->transparent = (-1);
 
     switch(detect_file_format(pchunk->size, pchunk->buffer)) {
 #if 0

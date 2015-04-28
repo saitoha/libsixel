@@ -14,6 +14,8 @@ libsixel_la_SOURCES = output.c \
 		quant.h \
 		dither.c \
 		dither.h \
+		frame.c \
+		frame.h \
 		pixelformat.c \
 		scale.c \
 		loader.c \
