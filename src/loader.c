@@ -357,7 +357,8 @@ read_palette(png_structp png_ptr,
              unsigned char *palette,
              int ncolors,
              png_color *png_palette,
-             png_color_16 *pbackground)
+             png_color_16 *pbackground,
+             int *transparent)
 {
     png_bytep trans = NULL;
     int num_trans = 0;
@@ -365,6 +366,9 @@ read_palette(png_structp png_ptr,
 
     if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
         png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, NULL);
+    }
+    if (num_trans > 0) {
+        *transparent = trans[0];
     }
     for (i = 0; i < ncolors; ++i) {
         if (pbackground && i < num_trans) {
@@ -393,7 +397,8 @@ load_png(unsigned char *buffer,
          int *pncolors,
          int reqcolors,
          int *pixelformat,
-         unsigned char *bgcolor)
+         unsigned char *bgcolor,
+         int *transparent)
 {
     chunk_t read_chunk;
     png_uint_32 bitdepth;
@@ -484,7 +489,7 @@ load_png(unsigned char *buffer,
                     goto cleanup;
                 }
                 read_palette(png_ptr, info_ptr, *ppalette,
-                             *pncolors, png_palette, &background);
+                             *pncolors, png_palette, &background, transparent);
                 *pixelformat = PIXELFORMAT_PAL1;
                 break;
             case 2:
@@ -493,7 +498,7 @@ load_png(unsigned char *buffer,
                     goto cleanup;
                 }
                 read_palette(png_ptr, info_ptr, *ppalette,
-                             *pncolors, png_palette, &background);
+                             *pncolors, png_palette, &background, transparent);
                 *pixelformat = PIXELFORMAT_PAL2;
                 break;
             case 4:
@@ -502,7 +507,7 @@ load_png(unsigned char *buffer,
                     goto cleanup;
                 }
                 read_palette(png_ptr, info_ptr, *ppalette,
-                             *pncolors, png_palette, &background);
+                             *pncolors, png_palette, &background, transparent);
                 *pixelformat = PIXELFORMAT_PAL4;
                 break;
             case 8:
@@ -511,7 +516,7 @@ load_png(unsigned char *buffer,
                     goto cleanup;
                 }
                 read_palette(png_ptr, info_ptr, *ppalette,
-                             *pncolors, png_palette, &background);
+                             *pncolors, png_palette, &background, transparent);
                 *pixelformat = PIXELFORMAT_PAL8;
                 break;
             default:
@@ -914,7 +919,8 @@ load_with_builtin(
                                  &frame->ncolors,
                                  reqcolors,
                                  &frame->pixelformat,
-                                 bgcolor);
+                                 bgcolor,
+                                 &frame->transparent);
         if (frame->pixels == NULL) {
             goto error;
         }
