@@ -39,7 +39,7 @@
 
 
 sixel_frame_t *
-sixel_frame_create()
+sixel_frame_create(void)
 {
     sixel_frame_t *frame;
 
