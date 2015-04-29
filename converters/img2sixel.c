@@ -322,9 +322,13 @@ end:
 
 
 static sixel_dither_t *
-prepare_specified_palette(char const *mapfile, int reqcolors, unsigned char *bgcolor)
+prepare_specified_palette(
+    char const *mapfile,
+    int reqcolors,
+    unsigned char *bgcolor)
 {
     int ret = (-1);
+
     sixel_callback_context_for_mapfile_t callback_context;
 
     callback_context.reqcolors = reqcolors;
@@ -933,8 +937,8 @@ end:
 
 
 
-static int
-convert_to_sixel(char const *filename, settings_t *psettings)
+int
+sixel_easy_encode(char const *filename, settings_t *psettings)
 {
     int nret = (-1);
     int fuse_palette = 1;
@@ -1228,19 +1232,330 @@ void show_help(void)
 
 
 int
+sixel_easy_encode_setopt(
+    settings_t /* in */ *psettings,
+    int        /* in */ arg,
+    char       /* in */ *optarg)
+{
+    int number;
+    int parsed;
+    char unit[32];
+
+    switch(arg) {
+    case '7':
+        psettings->f8bit = 0;
+        break;
+    case '8':
+        psettings->f8bit = 1;
+        break;
+    case 'p':
+        psettings->reqcolors = atoi(optarg);
+        break;
+    case 'm':
+        if (psettings->mapfile) {
+            free(psettings->mapfile);
+        }
+        psettings->mapfile = arg_strdup(optarg);
+        break;
+    case 'e':
+        psettings->monochrome = 1;
+        break;
+    case 'I':
+        psettings->highcolor = 1;
+        break;
+    case 'b':
+        if (strcmp(optarg, "xterm16") == 0) {
+            psettings->builtin_palette = BUILTIN_XTERM16;
+        } else if (strcmp(optarg, "xterm256") == 0) {
+            psettings->builtin_palette = BUILTIN_XTERM256;
+        } else if (strcmp(optarg, "vt340mono") == 0) {
+            psettings->builtin_palette = BUILTIN_VT340_MONO;
+        } else if (strcmp(optarg, "vt340color") == 0) {
+            psettings->builtin_palette = BUILTIN_VT340_COLOR;
+        } else {
+            fprintf(stderr,
+                    "Cannot parse builtin palette option.\n");
+            goto argerr;
+        }
+        break;
+    case 'd':
+        /* parse --diffusion option */
+        if (strcmp(optarg, "auto") == 0) {
+            psettings->method_for_diffuse = DIFFUSE_AUTO;
+        } else if (strcmp(optarg, "none") == 0) {
+            psettings->method_for_diffuse = DIFFUSE_NONE;
+        } else if (strcmp(optarg, "fs") == 0) {
+            psettings->method_for_diffuse = DIFFUSE_FS;
+        } else if (strcmp(optarg, "atkinson") == 0) {
+            psettings->method_for_diffuse = DIFFUSE_ATKINSON;
+        } else if (strcmp(optarg, "jajuni") == 0) {
+            psettings->method_for_diffuse = DIFFUSE_JAJUNI;
+        } else if (strcmp(optarg, "stucki") == 0) {
+            psettings->method_for_diffuse = DIFFUSE_STUCKI;
+        } else if (strcmp(optarg, "burkes") == 0) {
+            psettings->method_for_diffuse = DIFFUSE_BURKES;
+        } else {
+            fprintf(stderr,
+                    "Diffusion method '%s' is not supported.\n",
+                    optarg);
+            goto argerr;
+        }
+        break;
+    case 'f':
+        /* parse --find-largest option */
+        if (optarg) {
+            if (strcmp(optarg, "auto") == 0) {
+                psettings->method_for_largest = LARGE_AUTO;
+            } else if (strcmp(optarg, "norm") == 0) {
+                psettings->method_for_largest = LARGE_NORM;
+            } else if (strcmp(optarg, "lum") == 0) {
+                psettings->method_for_largest = LARGE_LUM;
+            } else {
+                fprintf(stderr,
+                        "Finding method '%s' is not supported.\n",
+                        optarg);
+                goto argerr;
+            }
+        }
+        break;
+    case 's':
+        /* parse --select-color option */
+        if (strcmp(optarg, "auto") == 0) {
+            psettings->method_for_rep = REP_AUTO;
+        } else if (strcmp(optarg, "center") == 0) {
+            psettings->method_for_rep = REP_CENTER_BOX;
+        } else if (strcmp(optarg, "average") == 0) {
+            psettings->method_for_rep = REP_AVERAGE_COLORS;
+        } else if ((strcmp(optarg, "histogram") == 0) ||
+                   (strcmp(optarg, "histgram") == 0)) {
+            psettings->method_for_rep = REP_AVERAGE_PIXELS;
+        } else {
+            fprintf(stderr,
+                    "Finding method '%s' is not supported.\n",
+                    optarg);
+            goto argerr;
+        }
+        break;
+    case 'c':
+        number = sscanf(optarg, "%dx%d+%d+%d",
+                        &psettings->clipwidth, &psettings->clipheight,
+                        &psettings->clipx, &psettings->clipy);
+        if (number != 4) {
+            goto argerr;
+        }
+        if (psettings->clipwidth <= 0 || psettings->clipheight <= 0) {
+            goto argerr;
+        }
+        if (psettings->clipx < 0 || psettings->clipy < 0) {
+            goto argerr;
+        }
+        psettings->clipfirst = 0;
+        break;
+    case 'w':
+        parsed = sscanf(optarg, "%d%2s", &number, unit);
+        if (parsed == 2 && strcmp(unit, "%") == 0) {
+            psettings->pixelwidth = (-1);
+            psettings->percentwidth = number;
+        } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
+            psettings->pixelwidth = number;
+            psettings->percentwidth = (-1);
+        } else if (strcmp(optarg, "auto") == 0) {
+            psettings->pixelwidth = (-1);
+            psettings->percentwidth = (-1);
+        } else {
+            fprintf(stderr,
+                    "Cannot parse -w/--width option.\n");
+            goto argerr;
+        }
+        if (psettings->clipwidth) {
+            psettings->clipfirst = 1;
+        }
+        break;
+    case 'h':
+        parsed = sscanf(optarg, "%d%2s", &number, unit);
+        if (parsed == 2 && strcmp(unit, "%") == 0) {
+            psettings->pixelheight = (-1);
+            psettings->percentheight = number;
+        } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
+            psettings->pixelheight = number;
+            psettings->percentheight = (-1);
+        } else if (strcmp(optarg, "auto") == 0) {
+            psettings->pixelheight = (-1);
+            psettings->percentheight = (-1);
+        } else {
+            fprintf(stderr,
+                    "Cannot parse -h/--height option.\n");
+            goto argerr;
+        }
+        if (psettings->clipheight) {
+            psettings->clipfirst = 1;
+        }
+        break;
+    case 'r':
+        /* parse --resampling option */
+        if (strcmp(optarg, "nearest") == 0) {
+            psettings->method_for_resampling = RES_NEAREST;
+        } else if (strcmp(optarg, "gaussian") == 0) {
+            psettings->method_for_resampling = RES_GAUSSIAN;
+        } else if (strcmp(optarg, "hanning") == 0) {
+            psettings->method_for_resampling = RES_HANNING;
+        } else if (strcmp(optarg, "hamming") == 0) {
+            psettings->method_for_resampling = RES_HAMMING;
+        } else if (strcmp(optarg, "bilinear") == 0) {
+            psettings->method_for_resampling = RES_BILINEAR;
+        } else if (strcmp(optarg, "welsh") == 0) {
+            psettings->method_for_resampling = RES_WELSH;
+        } else if (strcmp(optarg, "bicubic") == 0) {
+            psettings->method_for_resampling = RES_BICUBIC;
+        } else if (strcmp(optarg, "lanczos2") == 0) {
+            psettings->method_for_resampling = RES_LANCZOS2;
+        } else if (strcmp(optarg, "lanczos3") == 0) {
+            psettings->method_for_resampling = RES_LANCZOS3;
+        } else if (strcmp(optarg, "lanczos4") == 0) {
+            psettings->method_for_resampling = RES_LANCZOS4;
+        } else {
+            fprintf(stderr,
+                    "Resampling method '%s' is not supported.\n",
+                    optarg);
+            goto argerr;
+        }
+        break;
+    case 'q':
+        /* parse --quality option */
+        if (strcmp(optarg, "auto") == 0) {
+            psettings->quality_mode = QUALITY_AUTO;
+        } else if (strcmp(optarg, "high") == 0) {
+            psettings->quality_mode = QUALITY_HIGH;
+        } else if (strcmp(optarg, "low") == 0) {
+            psettings->quality_mode = QUALITY_LOW;
+        } else if (strcmp(optarg, "full") == 0) {
+            psettings->quality_mode = QUALITY_FULL;
+        } else {
+            fprintf(stderr,
+                    "Cannot parse quality option.\n");
+            goto argerr;
+        }
+        break;
+    case 'l':
+        /* parse --loop-control option */
+        if (strcmp(optarg, "auto") == 0) {
+            psettings->loop_mode = LOOP_AUTO;
+        } else if (strcmp(optarg, "force") == 0) {
+            psettings->loop_mode = LOOP_FORCE;
+        } else if (strcmp(optarg, "disable") == 0) {
+            psettings->loop_mode = LOOP_DISABLE;
+        } else {
+            fprintf(stderr,
+                    "Cannot parse loop-control option.\n");
+            goto argerr;
+        }
+        break;
+    case 't':
+        /* parse --palette-type option */
+        if (strcmp(optarg, "auto") == 0) {
+            psettings->palette_type = PALETTETYPE_AUTO;
+        } else if (strcmp(optarg, "hls") == 0) {
+            psettings->palette_type = PALETTETYPE_HLS;
+        } else if (strcmp(optarg, "rgb") == 0) {
+            psettings->palette_type = PALETTETYPE_RGB;
+        } else {
+            fprintf(stderr,
+                    "Cannot parse palette type option.\n");
+            goto argerr;
+        }
+        break;
+    case 'B':
+        /* parse --bgcolor option */
+        if (psettings->bgcolor) {
+            free(psettings->bgcolor);
+        }
+        if (parse_x_colorspec(optarg, &psettings->bgcolor) == 0) {
+            psettings->palette_type = PALETTETYPE_AUTO;
+        } else {
+            fprintf(stderr,
+                    "Cannot parse bgcolor option.\n");
+            goto argerr;
+        }
+        break;
+    case 'i':
+        psettings->finvert = 1;
+        break;
+    case 'u':
+        psettings->fuse_macro = 1;
+        break;
+    case 'n':
+        psettings->macro_number = atoi(optarg);
+        if (psettings->macro_number < 0) {
+            goto argerr;
+        }
+        break;
+    case 'g':
+        psettings->fignore_delay = 1;
+        break;
+    case 'v':
+        psettings->verbose = 1;
+        break;
+    case 'S':
+        psettings->fstatic = 1;
+        break;
+    case 'P':
+        psettings->penetrate_multiplexer = 1;
+        break;
+    case 'E':
+        if (strcmp(optarg, "auto") == 0) {
+            psettings->encode_policy = ENCODEPOLICY_AUTO;
+        } else if (strcmp(optarg, "fast") == 0) {
+            psettings->encode_policy = ENCODEPOLICY_FAST;
+        } else if (strcmp(optarg, "size") == 0) {
+            psettings->encode_policy = ENCODEPOLICY_SIZE;
+        } else {
+            fprintf(stderr,
+                    "Cannot parse encode policy option.\n");
+            goto argerr;
+        }
+        break;
+    case 'C':
+        psettings->complexion = atoi(optarg);
+        if (psettings->complexion < 1) {
+            fprintf(stderr,
+                    "complexion parameter must be 1 or more.\n");
+            goto argerr;
+        }
+        break;
+    case 'D':
+        psettings->pipe_mode = 1;
+        break;
+    case 'V':
+        psettings->show_version = 1;
+        break;
+    case 'H':
+        psettings->show_help = 1;
+        break;
+    case '?':  /* unknown option */
+    default:
+        /* exit if unknown options are specified */
+        fprintf(stderr,
+                "Unknwon option '-%c' is specified.\n", arg);
+        goto argerr;
+    }
+
+    return (0);
+
+argerr:
+    return (-1);
+}
+
+
+int
 main(int argc, char *argv[])
 {
     int n;
-    int unknown_opt = 0;
 #if HAVE_GETOPT_LONG
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     int ret;
     int exit_code;
-    int number;
-    char unit[32];
-    int parsed;
     char const *optstring = "78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:B:C:DVH";
 
     settings_t settings = {
@@ -1333,300 +1648,9 @@ main(int argc, char *argv[])
             n = long_opt;
         }
 #endif  /* HAVE_GETOPT_LONG */
-        switch(n) {
-        case '7':
-            settings.f8bit = 0;
-            break;
-        case '8':
-            settings.f8bit = 1;
-            break;
-        case 'p':
-            settings.reqcolors = atoi(optarg);
-            break;
-        case 'm':
-            if (settings.mapfile) {
-                free(settings.mapfile);
-            }
-            settings.mapfile = arg_strdup(optarg);
-            break;
-        case 'e':
-            settings.monochrome = 1;
-            break;
-        case 'I':
-            settings.highcolor = 1;
-            break;
-        case 'b':
-            if (strcmp(optarg, "xterm16") == 0) {
-                settings.builtin_palette = BUILTIN_XTERM16;
-            } else if (strcmp(optarg, "xterm256") == 0) {
-                settings.builtin_palette = BUILTIN_XTERM256;
-            } else if (strcmp(optarg, "vt340mono") == 0) {
-                settings.builtin_palette = BUILTIN_VT340_MONO;
-            } else if (strcmp(optarg, "vt340color") == 0) {
-                settings.builtin_palette = BUILTIN_VT340_COLOR;
-            } else {
-                fprintf(stderr,
-                        "Cannot parse builtin palette option.\n");
-                goto argerr;
-            }
-            break;
-        case 'd':
-            /* parse --diffusion option */
-            if (strcmp(optarg, "auto") == 0) {
-                settings.method_for_diffuse = DIFFUSE_AUTO;
-            } else if (strcmp(optarg, "none") == 0) {
-                settings.method_for_diffuse = DIFFUSE_NONE;
-            } else if (strcmp(optarg, "fs") == 0) {
-                settings.method_for_diffuse = DIFFUSE_FS;
-            } else if (strcmp(optarg, "atkinson") == 0) {
-                settings.method_for_diffuse = DIFFUSE_ATKINSON;
-            } else if (strcmp(optarg, "jajuni") == 0) {
-                settings.method_for_diffuse = DIFFUSE_JAJUNI;
-            } else if (strcmp(optarg, "stucki") == 0) {
-                settings.method_for_diffuse = DIFFUSE_STUCKI;
-            } else if (strcmp(optarg, "burkes") == 0) {
-                settings.method_for_diffuse = DIFFUSE_BURKES;
-            } else {
-                fprintf(stderr,
-                        "Diffusion method '%s' is not supported.\n",
-                        optarg);
-                goto argerr;
-            }
-            break;
-        case 'f':
-            /* parse --find-largest option */
-            if (optarg) {
-                if (strcmp(optarg, "auto") == 0) {
-                    settings.method_for_largest = LARGE_AUTO;
-                } else if (strcmp(optarg, "norm") == 0) {
-                    settings.method_for_largest = LARGE_NORM;
-                } else if (strcmp(optarg, "lum") == 0) {
-                    settings.method_for_largest = LARGE_LUM;
-                } else {
-                    fprintf(stderr,
-                            "Finding method '%s' is not supported.\n",
-                            optarg);
-                    goto argerr;
-                }
-            }
-            break;
-        case 's':
-            /* parse --select-color option */
-            if (strcmp(optarg, "auto") == 0) {
-                settings.method_for_rep = REP_AUTO;
-            } else if (strcmp(optarg, "center") == 0) {
-                settings.method_for_rep = REP_CENTER_BOX;
-            } else if (strcmp(optarg, "average") == 0) {
-                settings.method_for_rep = REP_AVERAGE_COLORS;
-            } else if ((strcmp(optarg, "histogram") == 0) ||
-                       (strcmp(optarg, "histgram") == 0)) {
-                settings.method_for_rep = REP_AVERAGE_PIXELS;
-            } else {
-                fprintf(stderr,
-                        "Finding method '%s' is not supported.\n",
-                        optarg);
-                goto argerr;
-            }
-            break;
-        case 'c':
-            number = sscanf(optarg, "%dx%d+%d+%d",
-                            &settings.clipwidth, &settings.clipheight,
-                            &settings.clipx, &settings.clipy);
-            if (number != 4) {
-                goto argerr;
-            }
-            if (settings.clipwidth <= 0 || settings.clipheight <= 0) {
-                goto argerr;
-            }
-            if (settings.clipx < 0 || settings.clipy < 0) {
-                goto argerr;
-            }
-            settings.clipfirst = 0;
-            break;
-        case 'w':
-            parsed = sscanf(optarg, "%d%2s", &number, unit);
-            if (parsed == 2 && strcmp(unit, "%") == 0) {
-                settings.pixelwidth = (-1);
-                settings.percentwidth = number;
-            } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
-                settings.pixelwidth = number;
-                settings.percentwidth = (-1);
-            } else if (strcmp(optarg, "auto") == 0) {
-                settings.pixelwidth = (-1);
-                settings.percentwidth = (-1);
-            } else {
-                fprintf(stderr,
-                        "Cannot parse -w/--width option.\n");
-                goto argerr;
-            }
-            if (settings.clipwidth) {
-                settings.clipfirst = 1;
-            }
-            break;
-        case 'h':
-            parsed = sscanf(optarg, "%d%2s", &number, unit);
-            if (parsed == 2 && strcmp(unit, "%") == 0) {
-                settings.pixelheight = (-1);
-                settings.percentheight = number;
-            } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
-                settings.pixelheight = number;
-                settings.percentheight = (-1);
-            } else if (strcmp(optarg, "auto") == 0) {
-                settings.pixelheight = (-1);
-                settings.percentheight = (-1);
-            } else {
-                fprintf(stderr,
-                        "Cannot parse -h/--height option.\n");
-                goto argerr;
-            }
-            if (settings.clipheight) {
-                settings.clipfirst = 1;
-            }
-            break;
-        case 'r':
-            /* parse --resampling option */
-            if (strcmp(optarg, "nearest") == 0) {
-                settings.method_for_resampling = RES_NEAREST;
-            } else if (strcmp(optarg, "gaussian") == 0) {
-                settings.method_for_resampling = RES_GAUSSIAN;
-            } else if (strcmp(optarg, "hanning") == 0) {
-                settings.method_for_resampling = RES_HANNING;
-            } else if (strcmp(optarg, "hamming") == 0) {
-                settings.method_for_resampling = RES_HAMMING;
-            } else if (strcmp(optarg, "bilinear") == 0) {
-                settings.method_for_resampling = RES_BILINEAR;
-            } else if (strcmp(optarg, "welsh") == 0) {
-                settings.method_for_resampling = RES_WELSH;
-            } else if (strcmp(optarg, "bicubic") == 0) {
-                settings.method_for_resampling = RES_BICUBIC;
-            } else if (strcmp(optarg, "lanczos2") == 0) {
-                settings.method_for_resampling = RES_LANCZOS2;
-            } else if (strcmp(optarg, "lanczos3") == 0) {
-                settings.method_for_resampling = RES_LANCZOS3;
-            } else if (strcmp(optarg, "lanczos4") == 0) {
-                settings.method_for_resampling = RES_LANCZOS4;
-            } else {
-                fprintf(stderr,
-                        "Resampling method '%s' is not supported.\n",
-                        optarg);
-                goto argerr;
-            }
-            break;
-        case 'q':
-            /* parse --quality option */
-            if (strcmp(optarg, "auto") == 0) {
-                settings.quality_mode = QUALITY_AUTO;
-            } else if (strcmp(optarg, "high") == 0) {
-                settings.quality_mode = QUALITY_HIGH;
-            } else if (strcmp(optarg, "low") == 0) {
-                settings.quality_mode = QUALITY_LOW;
-            } else if (strcmp(optarg, "full") == 0) {
-                settings.quality_mode = QUALITY_FULL;
-            } else {
-                fprintf(stderr,
-                        "Cannot parse quality option.\n");
-                goto argerr;
-            }
-            break;
-        case 'l':
-            /* parse --loop-control option */
-            if (strcmp(optarg, "auto") == 0) {
-                settings.loop_mode = LOOP_AUTO;
-            } else if (strcmp(optarg, "force") == 0) {
-                settings.loop_mode = LOOP_FORCE;
-            } else if (strcmp(optarg, "disable") == 0) {
-                settings.loop_mode = LOOP_DISABLE;
-            } else {
-                fprintf(stderr,
-                        "Cannot parse loop-control option.\n");
-                goto argerr;
-            }
-            break;
-        case 't':
-            /* parse --palette-type option */
-            if (strcmp(optarg, "auto") == 0) {
-                settings.palette_type = PALETTETYPE_AUTO;
-            } else if (strcmp(optarg, "hls") == 0) {
-                settings.palette_type = PALETTETYPE_HLS;
-            } else if (strcmp(optarg, "rgb") == 0) {
-                settings.palette_type = PALETTETYPE_RGB;
-            } else {
-                fprintf(stderr,
-                        "Cannot parse palette type option.\n");
-                goto argerr;
-            }
-            break;
-        case 'B':
-            /* parse --bgcolor option */
-            if (settings.bgcolor) {
-                free(settings.bgcolor);
-            }
-            if (parse_x_colorspec(optarg, &settings.bgcolor) == 0) {
-                settings.palette_type = PALETTETYPE_AUTO;
-            } else {
-                fprintf(stderr,
-                        "Cannot parse bgcolor option.\n");
-                goto argerr;
-            }
-            break;
-        case 'i':
-            settings.finvert = 1;
-            break;
-        case 'u':
-            settings.fuse_macro = 1;
-            break;
-        case 'n':
-            settings.macro_number = atoi(optarg);
-            if (settings.macro_number < 0) {
-                goto argerr;
-            }
-            break;
-        case 'g':
-            settings.fignore_delay = 1;
-            break;
-        case 'v':
-            settings.verbose = 1;
-            break;
-        case 'S':
-            settings.fstatic = 1;
-            break;
-        case 'P':
-            settings.penetrate_multiplexer = 1;
-            break;
-        case 'E':
-            if (strcmp(optarg, "auto") == 0) {
-                settings.encode_policy = ENCODEPOLICY_AUTO;
-            } else if (strcmp(optarg, "fast") == 0) {
-                settings.encode_policy = ENCODEPOLICY_FAST;
-            } else if (strcmp(optarg, "size") == 0) {
-                settings.encode_policy = ENCODEPOLICY_SIZE;
-            } else {
-                fprintf(stderr,
-                        "Cannot parse encode policy option.\n");
-                goto argerr;
-            }
-            break;
-        case 'C':
-            settings.complexion = atoi(optarg);
-            if (settings.complexion < 1) {
-                fprintf(stderr,
-                        "complexion parameter must be 1 or more.\n");
-                goto argerr;
-            }
-            break;
-        case 'D':
-            settings.pipe_mode = 1;
-            break;
-        case 'V':
-            settings.show_version = 1;
-            break;
-        case 'H':
-            settings.show_help = 1;
-            break;
-        case '?':  /* unknown option */
-        default:
-            unknown_opt = 1;
-            break;
+        ret = sixel_easy_encode_setopt(&settings, n, optarg);
+        if (ret != 0) {
+            goto argerr;
         }
     }
 
@@ -1706,24 +1730,19 @@ main(int argc, char *argv[])
         goto end;
     }
 
-    /* exit if unknown options are specified */
-    if (unknown_opt) {
-        goto argerr;
-    }
-
     if (settings.reqcolors == (-1)) {
         settings.reqcolors = SIXEL_PALETTE_MAX;
     }
 
     if (optind == argc) {
-        ret = convert_to_sixel(NULL, &settings);
+        ret = sixel_easy_encode(NULL, &settings);
         if (ret != 0) {
             exit_code = EXIT_FAILURE;
             goto end;
         }
     } else {
         for (n = optind; n < argc; n++) {
-            ret = convert_to_sixel(argv[n], &settings);
+            ret = sixel_easy_encode(argv[n], &settings);
             if (ret != 0) {
                 exit_code = EXIT_FAILURE;
                 goto end;
