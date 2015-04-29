@@ -59,7 +59,6 @@ if WANT_IMG2SIXEL
 	test ! $$($(WINE) ./img2sixel -m ../images/map8.png -p 8 ../images/snake.jpg)
 	test ! $$($(WINE) ./img2sixel -m ../images/map8.png -e ../images/snake.jpg)
 	test ! $$($(WINE) ./img2sixel -p16 -e ../images/snake.jpg)
-	test ! $$($(WINE) ./img2sixel -D ../images/snake.jpg)
 	test ! $$($(WINE) ./img2sixel -I -C0 ../images/snake.png)
 	test ! $$($(WINE) ./img2sixel -I -e ../images/snake.png)
 	test ! $$($(WINE) ./img2sixel -I -p8 ../images/snake.png)
