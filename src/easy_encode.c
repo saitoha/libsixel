@@ -1318,7 +1318,7 @@ argerr:
 
 
 
-/* create frame object */
+/* create settings object */
 sixel_encode_settings_t *
 sixel_encode_settings_create(void)
 {

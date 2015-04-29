@@ -62,10 +62,6 @@ typedef struct sixel_encode_settings {
     unsigned char *bgcolor;
 } sixel_encode_settings_t;
 
-#ifdef __cplusplus
-}
-#endif
-
 #endif /* LIBSIXEL_EASY_ENCODE_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */

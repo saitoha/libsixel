@@ -562,7 +562,7 @@ sixel_helper_write_image_file(
 #endif
 
 
-/* easy converter API */
+/* easy encode API */
 
 #ifndef LIBSIXEL_EASY_ENCODE_H
 
@@ -571,12 +571,11 @@ typedef struct sixel_encode_settings { int dummy; } sixel_encode_settings_t;
 
 #endif  /* LIBSIXEL_EASY_ENCODE_H */
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* create frame object */
+/* create settings object */
 sixel_encode_settings_t *
 sixel_encode_settings_create(void);
 
@@ -609,6 +608,54 @@ sixel_easy_encode(
 #ifdef __cplusplus
 }
 #endif
+
+
+/* easy encode API */
+
+#ifndef LIBSIXEL_EASY_DECODE_H
+
+/* handle type of dither context object */
+typedef struct sixel_decode_settings { int dummy; } sixel_decode_settings_t;
+
+#endif  /* LIBSIXEL_EASY_ENCODE_H */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* create settings object */
+sixel_decode_settings_t *
+sixel_decode_settings_create(void);
+
+void
+sixel_decode_settings_ref(sixel_decode_settings_t *settings);
+
+void
+sixel_decode_settings_unref(sixel_decode_settings_t *settings);
+
+/* get show_version flag */
+int
+sixel_decode_settings_has_version(sixel_decode_settings_t *settings);
+
+/* get show_help flag */
+int
+sixel_decode_settings_has_help(sixel_decode_settings_t *settings);
+
+int
+sixel_easy_decode_setopt(
+    sixel_decode_settings_t /* in */ *psettings,
+    int                     /* in */ arg,
+    char                    /* in */ *optarg);
+
+int
+sixel_easy_decode(
+    sixel_decode_settings_t /* in */ *psettings,
+    int                     /* in */ *cancel_flag);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 
 #endif  /* LIBSIXEL_SIXEL_H */
