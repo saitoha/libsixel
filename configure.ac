@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.4.10], [user@zuse.jp])
+AC_INIT([sixel], [1.4.11], [user@zuse.jp])
 LS_LT_CURRENT=1
 LS_LT_REVISION=3
 LS_LT_AGE=0
@@ -166,7 +166,9 @@ AC_CHECK_HEADERS([memory.h \
                   time.h \
                   signal.h \
                   sys/select.h \
-                  sys/signal.h])
+                  sys/signal.h \
+                  termios.h \
+                  sys/ioctl.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
@@ -200,7 +202,8 @@ AC_CHECK_FUNCS([memcpy \
                 clock \
                 clearerr \
                 stat \
-                setjmp])
+                setjmp \
+                isatty])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])

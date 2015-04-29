@@ -5349,6 +5349,7 @@ typedef struct
    int line_size;
    int loop_count;
    int delay;
+   int is_multiframe;
 } stbi__gif;
 
 static int stbi__gif_test_raw(stbi__context *s)
@@ -5421,8 +5422,6 @@ static int stbi__gif_info_raw(stbi__context *s, int *x, int *y, int *comp)
 
 static void stbi__out_gif_code(stbi__gif *g, stbi__uint16 code)
 {
-   stbi_uc *p, *c;
-
    // recurse to decode the prefixes, since the linked-list is backwards,
    // and working backwards through an interleaved image would be nasty
    if (g->codes[code].prefix >= 0)
@@ -5430,16 +5429,8 @@ static void stbi__out_gif_code(stbi__gif *g, stbi__uint16 code)
 
    if (g->cur_y >= g->max_y) return;
 
-   p = &g->out[g->cur_x + g->cur_y];
-   c = &g->color_table[g->codes[code].suffix * 4];
-
-   if (c[3] >= 128) {
-      p[0] = c[2];
-      p[1] = c[1];
-      p[2] = c[0];
-      p[3] = c[3];
-   }
-   g->cur_x += 4;
+   g->out[g->cur_x + g->cur_y] = g->codes[code].suffix;
+   g->cur_x++;
 
    if (g->cur_x >= g->max_x) {
       g->cur_x = g->start_x;
@@ -5687,6 +5678,8 @@ static stbi_uc *stbi__gif_load(stbi__context *s, int *x, int *y, int *comp, int 
    stbi_uc *u = 0;
    stbi__gif g;
    memset(&g, 0, sizeof(g));
+
+   g.loop_count = -1;
 
    u = stbi__gif_load_next(s, &g, comp, req_comp, NULL);
    if (u == (stbi_uc *) s) u = 0;  // end of animated gif marker

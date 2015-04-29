@@ -58,6 +58,14 @@
 # include <errno.h>
 #endif
 
+#if HAVE_TERMIOS_H
+# include <termios.h>
+#endif
+
+#if HAVE_SYS_IOCTL_H
+# include <sys/ioctl.h>
+#endif
+
 #if HAVE_SIGNAL_H
 # include <signal.h>
 #endif
@@ -66,14 +74,6 @@
 #endif
 
 #include <sixel.h>
-
-
-/* loop modes */
-enum loopMode {
-    LOOP_AUTO,       /* honer the setting of GIF header */
-    LOOP_FORCE,      /* always enable loop */
-    LOOP_DISABLE,    /* always disable loop */
-};
 
 
 static char *
@@ -265,77 +265,84 @@ prepare_builtin_palette(int builtin_palette)
 }
 
 
-static sixel_dither_t *
-prepare_specified_palette(char const *mapfile, int reqcolors, unsigned char *bgcolor)
+typedef struct sixel_callback_context_for_mapfile {
+    int reqcolors;
+    sixel_dither_t *dither;
+} sixel_callback_context_for_mapfile_t;
+
+
+static int
+load_image_callback_for_palette(sixel_frame_t *frame, void *data)
 {
-    unsigned char *mappixels;
-    sixel_dither_t *dither = NULL;
-    int map_sx = (-1);
-    int map_sy = (-1);
-    int frame_count;
-    int loop_count;
+    sixel_callback_context_for_mapfile_t *callback_context;
     int ret = (-1);
-    int *delays;
-    int ncolors = 0;
-    unsigned char *palette = NULL;
-    int pixelformat = PIXELFORMAT_RGB888;
 
-    delays = NULL;
+    callback_context = (sixel_callback_context_for_mapfile_t *)data;
 
-    ret = sixel_helper_load_image_file(
-        &mappixels,
-        &palette,
-        &map_sx,
-        &map_sy,
-        &ncolors,
-        &pixelformat,
-        &frame_count,
-        &loop_count,
-        &delays,
-        mapfile,
-        1,  /* fstatic */
-        256, /* reqcolors */
-        bgcolor
-    );
-    if (ret != 0 || mappixels == NULL || map_sx * map_sy == 0) {
-        goto end;
-    }
-    free(delays);
-
-    switch (pixelformat) {
+    switch (sixel_frame_get_pixelformat(frame)) {
     case PIXELFORMAT_PAL1:
     case PIXELFORMAT_PAL2:
     case PIXELFORMAT_PAL4:
     case PIXELFORMAT_PAL8:
-        if (palette == NULL) {
+        if (sixel_frame_get_palette(frame) == NULL) {
             goto end;
         }
-        dither = sixel_dither_create(ncolors);
-        if (dither == NULL) {
+        callback_context->dither = sixel_dither_create(sixel_frame_get_ncolors(frame));
+        if (callback_context->dither == NULL) {
             goto end;
         }
-        sixel_dither_set_palette(dither, palette);
+        sixel_dither_set_palette(callback_context->dither,
+                                 sixel_frame_get_palette(frame));
+        ret = 0;
         break;
     default:
-        dither = sixel_dither_create(reqcolors);
-        if (dither == NULL) {
+        callback_context->dither = sixel_dither_create(callback_context->reqcolors);
+        if (callback_context->dither == NULL) {
             goto end;
         }
 
-        ret = sixel_dither_initialize(dither, mappixels, map_sx, map_sy,
-                                      pixelformat,
-                                      LARGE_NORM, REP_CENTER_BOX, QUALITY_HIGH);
+        ret = sixel_dither_initialize(callback_context->dither,
+                                      sixel_frame_get_pixels(frame),
+                                      sixel_frame_get_width(frame),
+                                      sixel_frame_get_height(frame),
+                                      sixel_frame_get_pixelformat(frame),
+                                      LARGE_NORM,
+                                      REP_CENTER_BOX,
+                                      QUALITY_HIGH);
         if (ret != 0) {
-            sixel_dither_unref(dither);
+            sixel_dither_unref(callback_context->dither);
             goto end;
         }
         break;
     }
 
 end:
-    free(palette);
+    return ret;
+}
 
-    return dither;
+
+static sixel_dither_t *
+prepare_specified_palette(char const *mapfile, int reqcolors, unsigned char *bgcolor)
+{
+    int ret = (-1);
+    sixel_callback_context_for_mapfile_t callback_context;
+
+    callback_context.reqcolors = reqcolors;
+    callback_context.dither = NULL;
+
+    ret = sixel_helper_load_image_file(mapfile,
+                                       1,   /* fstatic */
+                                       1,   /* fuse_palette */
+                                       256, /* reqcolors */
+                                       bgcolor,
+                                       LOOP_DISABLE,
+                                       load_image_callback_for_palette,
+                                       &callback_context);
+    if (ret != 0) {
+        return NULL;
+    }
+
+    return callback_context.dither;
 }
 
 
@@ -362,7 +369,7 @@ typedef struct Settings {
     enum methodForRep method_for_rep;
     enum qualityMode quality_mode;
     enum methodForResampling method_for_resampling;
-    enum loopMode loop_mode;
+    enum loopControl loop_mode;
     enum paletteType palette_type;
     int f8bit;
     int finvert;
@@ -392,9 +399,7 @@ typedef struct Settings {
 
 static sixel_dither_t *
 prepare_palette(sixel_dither_t *former_dither,
-                unsigned char *frame, int sx, int sy,
-                unsigned char *palette, int ncolors,
-                int pixelformat,
+                sixel_frame_t *frame,
                 settings_t *psettings)
 {
     sixel_dither_t *dither;
@@ -423,16 +428,19 @@ prepare_palette(sixel_dither_t *former_dither,
             return former_dither;
         }
         dither = prepare_builtin_palette(psettings->builtin_palette);
-    } else if (palette && pixelformat & FORMATTYPE_PALETTE) {
-        dither = sixel_dither_create(ncolors);
+    } else if (sixel_frame_get_palette(frame) && (sixel_frame_get_pixelformat(frame) & FORMATTYPE_PALETTE)) {
+        dither = sixel_dither_create(sixel_frame_get_ncolors(frame));
         if (!dither) {
             return NULL;
         }
-        sixel_dither_set_palette(dither, palette);
-        sixel_dither_set_pixelformat(dither, pixelformat);
-    } else if (pixelformat == PIXELFORMAT_G8) {
+        sixel_dither_set_palette(dither, sixel_frame_get_palette(frame));
+        sixel_dither_set_pixelformat(dither, sixel_frame_get_pixelformat(frame));
+        if (sixel_frame_get_transparent(frame) != (-1)) {
+            sixel_dither_set_transparent(dither, sixel_frame_get_transparent(frame));
+        }
+    } else if (sixel_frame_get_pixelformat(frame) == PIXELFORMAT_G8) {
         dither = sixel_dither_create(-1);
-        sixel_dither_set_pixelformat(dither, pixelformat);
+        sixel_dither_set_pixelformat(dither, sixel_frame_get_pixelformat(frame));
     } else {
         if (former_dither) {
             sixel_dither_unref(former_dither);
@@ -441,8 +449,11 @@ prepare_palette(sixel_dither_t *former_dither,
         if (!dither) {
             return NULL;
         }
-        ret = sixel_dither_initialize(dither, frame, sx, sy,
-                                      pixelformat,
+        ret = sixel_dither_initialize(dither,
+                                      sixel_frame_get_pixels(frame),
+                                      sixel_frame_get_width(frame),
+                                      sixel_frame_get_height(frame),
+                                      sixel_frame_get_pixelformat(frame),
                                       psettings->method_for_largest,
                                       psettings->method_for_rep,
                                       psettings->quality_mode);
@@ -454,109 +465,41 @@ prepare_palette(sixel_dither_t *former_dither,
         if (histogram_colors <= psettings->reqcolors) {
             psettings->method_for_diffuse = DIFFUSE_NONE;
         }
-        sixel_dither_set_pixelformat(dither, pixelformat);
+        sixel_dither_set_pixelformat(dither, sixel_frame_get_pixelformat(frame));
     }
     return dither;
 }
 
 
 static int
-do_resize(unsigned char **ppixels,
-          unsigned char **frames, int frame_count,
-          int /* in,out */ *psx,
-          int /* in,out */ *psy,
-          int /* in */ pixelformat,
-          int /* out */ *dst_pixelformat,
-          settings_t *psettings)
+do_resize(sixel_frame_t *frame, settings_t *psettings)
 {
-    unsigned char *p;
-    int size;
-    int n;
-    unsigned char *scaled_frame = NULL;
-    unsigned char *normalized_pixels = NULL;
     int nret;
 
     if (psettings->percentwidth > 0) {
-        psettings->pixelwidth = *psx * psettings->percentwidth / 100;
+        psettings->pixelwidth = sixel_frame_get_width(frame) * psettings->percentwidth / 100;
     }
     if (psettings->percentheight > 0) {
-        psettings->pixelheight = *psy * psettings->percentheight / 100;
+        psettings->pixelheight = sixel_frame_get_height(frame) * psettings->percentheight / 100;
     }
     if (psettings->pixelwidth > 0 && psettings->pixelheight <= 0) {
-        psettings->pixelheight = *psy * psettings->pixelwidth / *psx;
+        psettings->pixelheight
+            = sixel_frame_get_height(frame) * psettings->pixelwidth / sixel_frame_get_width(frame);
     }
     if (psettings->pixelheight > 0 && psettings->pixelwidth <= 0) {
-        psettings->pixelwidth = *psx * psettings->pixelheight / *psy;
+        psettings->pixelwidth
+            = sixel_frame_get_width(frame) * psettings->pixelheight / sixel_frame_get_height(frame);
     }
 
     if (psettings->pixelwidth > 0 && psettings->pixelheight > 0) {
-        switch (pixelformat) {
-        case PIXELFORMAT_RGB888:
-            *dst_pixelformat = pixelformat;
-            break;
-        case PIXELFORMAT_PAL8:
-        case PIXELFORMAT_G8:
-        case PIXELFORMAT_GA88:
-        case PIXELFORMAT_AG88:
-        case PIXELFORMAT_RGB555:
-        case PIXELFORMAT_RGB565:
-        case PIXELFORMAT_BGR555:
-        case PIXELFORMAT_BGR565:
-        case PIXELFORMAT_RGBA8888:
-        case PIXELFORMAT_ARGB8888:
-            /* normalize pixelformat */
-            size = *psx * *psy * 3;
-            normalized_pixels = malloc(size * frame_count);
-            nret = sixel_helper_normalize_pixelformat(normalized_pixels,
-                                                      &pixelformat,
-                                                      *ppixels, pixelformat,
-                                                      *psx, *psy);
-            if (nret != 0) {
-               free(normalized_pixels);
-                return nret;
-            }
-            free(*ppixels);
-            *ppixels = normalized_pixels;
-            *dst_pixelformat = pixelformat;
 
-            for (n = 0; n < frame_count; ++n) {
-                frames[n] = *ppixels + size * n;
-            }
-            break;
-        default:
-            *dst_pixelformat = pixelformat;
-            fprintf(stderr, "do_resize: invalid pixelformat.\n");
-            return (-1);
+        nret = sixel_frame_resize(frame,
+                                  psettings->pixelwidth,
+                                  psettings->pixelheight,
+                                  psettings->method_for_resampling);
+        if (nret != 0) {
+            return nret;
         }
-
-        size = psettings->pixelwidth * psettings->pixelheight * 3;
-        p = malloc(size * frame_count);
-
-        if (p == NULL) {
-            return (-1);
-        }
-
-        for (n = 0; n < frame_count; ++n) {
-            scaled_frame = p + size * n;
-            nret = sixel_helper_scale_image(
-                scaled_frame,
-                frames[n], *psx, *psy, 3,
-                psettings->pixelwidth,
-                psettings->pixelheight,
-                psettings->method_for_resampling);
-            if (nret != 0) {
-                return nret;
-            }
-        }
-        for (n = 0; n < frame_count; ++n) {
-            frames[n] = p + size * n;
-        }
-        free(*ppixels);
-        *ppixels = p;
-        *psx = psettings->pixelwidth;
-        *psy = psettings->pixelheight;
-    } else {
-        *dst_pixelformat = pixelformat;
     }
 
     return 0;
@@ -564,96 +507,39 @@ do_resize(unsigned char **ppixels,
 
 
 static int
-clip(unsigned char *pixels,
-     int sx, int sy,
-     int depth,
-     int cx, int cy,
-     int cw, int ch,
-     int pixelformat)
+do_crop(sixel_frame_t *frame, settings_t *psettings)
 {
-    int y;
-    unsigned char *src;
-    unsigned char *dst;
-
-    /* unused */ (void) sx;
-    /* unused */ (void) sy;
-    /* unused */ (void) cx;
-
-    switch (pixelformat) {
-    case PIXELFORMAT_PAL8:
-    case PIXELFORMAT_G8:
-        dst = pixels;
-        src = pixels + cy * sx * 1 + cx * 1;
-        for (y = 0; y < ch; y++) {
-            memmove(dst, src, cw * 1);
-            dst += (cw * 1);
-            src += (sx * 1);
-        }
-        break;
-    case PIXELFORMAT_RGB888:
-        dst = pixels;
-        src = pixels + cy * sx * depth + cx * depth;
-        for (y = 0; y < ch; y++) {
-            memmove(dst, src, cw * depth);
-            dst += (cw * depth);
-            src += (sx * depth);
-        }
-        break;
-    default:
-        return (-1);
-    }
-
-    return 0;
-}
-
-
-static int
-do_crop(unsigned char **frames, int frame_count,
-        int *psx, int *psy, int pixelformat, int *dst_pixelformat,
-        settings_t *psettings)
-{
-    int n;
     int ret;
-    int depth;
-    unsigned char *normalized_pixels;
+    int width;
+    int height;
+
+    width = sixel_frame_get_width(frame);
+    height = sixel_frame_get_height(frame);
 
     /* clipping */
-    if (psettings->clipwidth + psettings->clipx > *psx) {
-        psettings->clipwidth = (psettings->clipx > *psx) ? 0 : *psx - psettings->clipx;
+    if (psettings->clipwidth + psettings->clipx > width) {
+        if (psettings->clipx > width) {
+            psettings->clipwidth = 0;
+        } else {
+            psettings->clipwidth = width - psettings->clipx;
+        }
     }
-    if (psettings->clipheight + psettings->clipy > *psy) {
-        psettings->clipheight = (psettings->clipy > *psy) ? 0 : *psy - psettings->clipy;
+    if (psettings->clipheight + psettings->clipy > height) {
+        if (psettings->clipy > height) {
+            psettings->clipheight = 0;
+        } else {
+            psettings->clipheight = height - psettings->clipy;
+        }
     }
     if (psettings->clipwidth > 0 && psettings->clipheight > 0) {
-        depth = sixel_helper_compute_depth(pixelformat);
-        switch (pixelformat) {
-        case PIXELFORMAT_PAL1:
-        case PIXELFORMAT_PAL2:
-        case PIXELFORMAT_PAL4:
-            normalized_pixels = malloc(*psx * *psy * frame_count);
-            ret = sixel_helper_normalize_pixelformat(normalized_pixels,
-                                                     &pixelformat,
-                                                     *frames, pixelformat,
-                                                     *psx, *psy);
-            for (n = 0; n < frame_count; ++n) {
-                frames[n] = normalized_pixels + *psx * *psy * n;
-            }
-            *dst_pixelformat = PIXELFORMAT_PAL8;
-            break;
-        default:
-            *dst_pixelformat = pixelformat;
-            break;
+        ret = sixel_frame_clip(frame,
+                               psettings->clipx,
+                               psettings->clipy,
+                               psettings->clipwidth,
+                               psettings->clipheight);
+        if (ret != 0) {
+            return ret;
         }
-
-        for (n = 0; n < frame_count; ++n) {
-            ret = clip(frames[n], *psx, *psy, depth, psettings->clipx, psettings->clipy,
-                       psettings->clipwidth, psettings->clipheight, *dst_pixelformat);
-            if (ret != 0) {
-                return ret;
-            }
-        }
-        *psx = psettings->clipwidth;
-        *psy = psettings->clipheight;
     }
 
     return 0;
@@ -679,14 +565,14 @@ print_palette(sixel_dither_t *dither)
 
 #if HAVE_SYS_SELECT_H
 static int
-wait_stdin(void)
+wait_stdin(int usec)
 {
     fd_set rfds;
     struct timeval tv;
     int ret;
 
-    tv.tv_sec = 1;
-    tv.tv_usec = 0;
+    tv.tv_sec = usec / 1000000;
+    tv.tv_usec = usec % 1000000;
     FD_ZERO(&rfds);
     FD_SET(STDIN_FILENO, &rfds);
     ret = select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
@@ -698,12 +584,11 @@ wait_stdin(void)
 
 static int
 output_sixel_without_macro(
-    unsigned char **frames,
-    int sx, int sy,
+    unsigned char *frame,
+    int width,
+    int height,
     int depth,
-    int loop_count,
-    int frame_count,
-    int *delays,
+    int delay,
     sixel_dither_t *dither,
     sixel_output_t *context,
     settings_t *psettings
@@ -711,83 +596,46 @@ output_sixel_without_macro(
 {
     int nret = 0;
     int dulation = 0;
-    int c;
-    int n;
-    unsigned char *frame;
+    unsigned char *p;
 #if HAVE_USLEEP
     int lag = 0;
 # if HAVE_CLOCK
     clock_t start;
 # endif
 #endif
-
-    /* create output context */
-    if (!context) {
-        context = sixel_output_create(sixel_write_callback, stdout);
-    }
-    sixel_output_set_8bit_availability(context, psettings->f8bit);
-    sixel_output_set_palette_type(context, psettings->palette_type);
-    sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
-    sixel_output_set_encode_policy(context, psettings->encode_policy);
-
-    if (frame_count == 1 && !psettings->mapfile && !psettings->monochrome
+    if (!psettings->mapfile && !psettings->monochrome
             && !psettings->highcolor && !psettings->builtin_palette) {
         sixel_dither_set_optimize_palette(dither, 1);
     }
 
-    frame = malloc(sx * sy * depth);
+    p = malloc(width * height * depth);
     if (nret != 0) {
         goto end;
     }
-    for (c = 0; c != loop_count; ++c) {
-        for (n = 0; n < frame_count; ++n) {
-            if (frame_count > 1) {
 #if HAVE_USLEEP && HAVE_CLOCK
-                start = clock();
+    start = clock();
 #endif
-                printf("\033[H");
-                fflush(stdout);
+    fflush(stdout);
 #if HAVE_USLEEP
-                if (delays != NULL && !psettings->fignore_delay) {
+    if (!psettings->fignore_delay && delay > 0) {
 # if HAVE_CLOCK
-                    dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
-                    lag = 0;
+        dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
+        lag = 0;
 # else
-                    dulation = 0;
+        dulation = 0;
 # endif
-                    if (dulation < 10000 * delays[n]) {
-                        usleep(10000 * delays[n] - dulation);
-                    } else {
-                        lag = 10000 * delays[n] - dulation;
-                    }
-                }
-#endif
-            }
-
-            memcpy(frame, frames[n], sx * sy * depth);
-            nret = sixel_encode(frame, sx, sy, depth, dither, context);
-            if (nret != 0) {
-                goto end;
-            }
-
-#if HAVE_SIGNAL
-            if (signaled) {
-                break;
-            }
-#endif
-        }
-#if HAVE_SIGNAL
-        if (signaled) {
-            break;
-        }
-#endif
-    }
-    if (signaled) {
-        if (sixel_output_get_8bit_availability(context)) {
-            printf("\x9c");
+        if (dulation < 10000 * delay) {
+            usleep(10000 * delay - dulation);
         } else {
-            printf("\x1b\\");
+            lag = 10000 * delay - dulation;
         }
+    }
+#endif
+
+    memcpy(p, frame, width * height * depth);
+    nret = sixel_encode(p, width, height, depth, dither, context);
+    if (nret != 0) {
+        goto end;
     }
 
 end:
@@ -797,11 +645,12 @@ end:
 
 static int
 output_sixel_with_macro(
-    unsigned char **frames,
-    int sx, int sy,
+    unsigned char *frame,
+    int sx,
+    int sy,
+    int delay,
+    int frame_no,
     int loop_count,
-    int frame_count,
-    int *delays,
     sixel_dither_t *dither,
     sixel_output_t *context,
     settings_t *psettings
@@ -809,8 +658,6 @@ output_sixel_with_macro(
 {
     int nret = 0;
     int dulation = 0;
-    int c;
-    int n;
 #if HAVE_USLEEP
     int lag = 0;
 # if HAVE_CLOCK
@@ -818,255 +665,174 @@ output_sixel_with_macro(
 # endif
 #endif
 
-    if (!context) {
-        context = sixel_output_create(sixel_hex_write_callback, stdout);
-    }
-    sixel_output_set_8bit_availability(context, psettings->f8bit);
-    sixel_output_set_palette_type(context, psettings->palette_type);
-    sixel_output_set_penetrate_multiplexer(context, psettings->penetrate_multiplexer);
-    sixel_output_set_encode_policy(context, psettings->encode_policy);
-
-    for (n = 0; n < frame_count; ++n) {
 #if HAVE_USLEEP && HAVE_CLOCK
-        start = clock();
+    start = clock();
 #endif
-        if (frame_count == 1 && psettings->macro_number >= 0) {
+    if (loop_count == 0) {
+        if (psettings->macro_number >= 0) {
             printf("\033P%d;0;1!z", psettings->macro_number);
         } else {
-            printf("\033P%d;0;1!z", n);
+            printf("\033P%d;0;1!z", frame_no);
         }
 
-        nret = sixel_encode(frames[n], sx, sy, /* unused */ 3, dither, context);
+        nret = sixel_encode(frame, sx, sy, /* unused */ 3, dither, context);
         if (nret != 0) {
             goto end;
         }
 
         printf("\033\\");
-        if (loop_count == -1) {
-            printf("\033[H");
-            if (frame_count != 1 || psettings->macro_number < 0) {
-                printf("\033[%d*z", n);
-            }
-        }
+    }
+    if (psettings->macro_number < 0) {
+        fflush(stdout);
+        printf("\033[%d*z", frame_no);
 #if HAVE_USLEEP
-        if (delays != NULL && !psettings->fignore_delay) {
+        if (delay > 0 && !psettings->fignore_delay) {
 # if HAVE_CLOCK
             dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
             lag = 0;
 # else
             dulation = 0;
 # endif
-            if (dulation < 10000 * delays[n]) {
-                usleep(10000 * delays[n] - dulation);
+            if (dulation < 10000 * delay) {
+                usleep(10000 * delay - dulation);
             } else {
-                lag = 10000 * delays[n] - dulation;
+                lag = 10000 * delay - dulation;
             }
         }
 #endif
-#if HAVE_SIGNAL
-        if (signaled) {
-            break;
-        }
-#endif
     }
+#if HAVE_SIGNAL
     if (signaled) {
-        if (psettings->f8bit) {
-            printf("\x9c");
-        } else {
-            printf("\x1b\\");
-        }
+        printf("\x1b\\");
+        fflush(stdout);
+        return SIXEL_INTERRUPTED;
     }
-    if (frame_count > 1 || psettings->macro_number < 0) {
-        for (c = 0; c != loop_count; ++c) {
-            for (n = 0; n < frame_count; ++n) {
-#if HAVE_USLEEP && HAVE_CLOCK
-                start = clock();
 #endif
-                printf("\033[H");
-                printf("\033[%d*z", n);
-                fflush(stdout);
-#if HAVE_USLEEP
-                if (delays != NULL && !psettings->fignore_delay) {
-# if HAVE_CLOCK
-                    dulation = (clock() - start) * 1000000 / CLOCKS_PER_SEC - lag;
-                    lag = 0;
-# else
-                    dulation = 0;
-# endif
-                    if (dulation < 10000 * delays[n]) {
-                        usleep(10000 * delays[n] - dulation);
-                    } else {
-                        lag = 10000 * delays[n] - dulation;
-                    }
-                }
-#endif
-#if HAVE_SIGNAL
-                if (signaled) {
-                    break;
-                }
-#endif
-            }
-#if HAVE_SIGNAL
-            if (signaled) {
-                break;
-            }
-#endif
-        }
-    }
 
 end:
     return nret;
 }
 
 
-static int
-convert_to_sixel(char const *filename, settings_t *psettings)
+typedef struct sixel_callback_context {
+    settings_t *settings;
+} sixel_callback_context_t;
+
+
+static void
+scroll_on_demand(sixel_frame_t *frame)
 {
-    unsigned char *pixels;
-    unsigned char **frames;
-    unsigned char *p;
-    unsigned char *frame;
-    sixel_output_t *context = NULL;
-    sixel_dither_t *dither = NULL;
-    int sx, sy;
-    int frame_count = 1;
-    int loop_count = 1;
-    int *delays;
+#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
+    struct winsize size = {0, 0, 0, 0};
+    struct termios old_termios;
+    struct termios new_termios;
+    int row = 0;
+    int col = 0;
     int n;
-    int nret = (-1);
+
+    if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)) {
+        ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
+        if (size.ws_ypixel > 0) {
+            if (sixel_frame_get_loop_no(frame) == 0 && sixel_frame_get_frame_no(frame) == 0) {
+                /* set the terminal to cbreak mode */
+                tcgetattr(STDIN_FILENO, &old_termios);
+                memcpy(&new_termios, &old_termios, sizeof(old_termios));
+                new_termios.c_lflag &= ~(ECHO | ICANON);
+                new_termios.c_cc[VMIN] = 1;
+                new_termios.c_cc[VTIME] = 0;
+                tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
+
+                /* request cursor position report */
+                printf("\033[6n");
+                fflush(stdout);
+                if (wait_stdin(1000000) != (-1)) { /* wait 1 sec */
+                    if (scanf("\033[%d;%dR", &row, &col) == 2) {
+                        tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
+                        n = sixel_frame_get_height(frame) * size.ws_row / size.ws_ypixel + 1
+                                + row - size.ws_row;
+                        if (n > 0) {
+                            printf("\033[%dS\033[%dA", n, n);
+                        }
+                        printf("\0337");
+                    } else {
+                        printf("\033[H");
+                    }
+                } else {
+                    printf("\033[H");
+                }
+            } else {
+                printf("\0338");
+            }
+        } else {
+            printf("\033[H");
+        }
+    } else {
+        printf("\033[H");
+    }
+#else
+    (void) frame;
+    printf("\033[H");
+#endif
+}
+
+
+static int
+load_image_callback(sixel_frame_t *frame, void *data)
+{
+    int nret = SIXEL_FAILED;
     int depth;
-    unsigned char *palette = NULL;
-    unsigned char **ppalette = &palette;
-    int ncolors = 0;
-    int pixelformat = PIXELFORMAT_RGB888;
-    int dst_pixelformat = PIXELFORMAT_RGB888;
+    settings_t *psettings;
+    sixel_dither_t *dither = NULL;
+    sixel_output_t *output = NULL;
 
-    if (psettings->reqcolors < 2) {
-        psettings->reqcolors = 2;
-    }
+    psettings = ((sixel_callback_context_t *)data)->settings;
 
-    if (psettings->palette_type == PALETTETYPE_AUTO) {
-        psettings->palette_type = PALETTETYPE_RGB;
-    }
-
-    if (psettings->mapfile) {
-        ppalette = NULL;
-    }
-
-    if (psettings->monochrome > 0) {
-        ppalette = NULL;
-    }
-
-    if (psettings->highcolor > 0) {
-        ppalette = NULL;
-    }
-
-    if (psettings->builtin_palette > 0) {
-        ppalette = NULL;
-    }
-
-    if (psettings->percentwidth > 0 ||
-        psettings->percentheight > 0 ||
-        psettings->pixelwidth > 0 ||
-        psettings->pixelheight > 0) {
-        ppalette = NULL;
-    }
-
-reload:
-    pixels = NULL;
-    frames = NULL;
-    frame = NULL;
-    delays = NULL;
-    nret = sixel_helper_load_image_file(
-        &pixels,
-        ppalette,
-        &sx,
-        &sy,
-        &ncolors,
-        &pixelformat,
-        &frame_count,
-        &loop_count,
-        &delays,
-        filename,
-        psettings->fstatic,
-        psettings->reqcolors,
-        psettings->bgcolor);
-
-    if (nret != 0 || pixels == NULL || sx * sy == 0) {
-        goto end;
-    }
-
-    depth = sixel_helper_compute_depth(pixelformat);
+    depth = sixel_helper_compute_depth(sixel_frame_get_pixelformat(frame));
     if (depth == (-1)) {
         nret = (-1);
         goto end;
     }
 
-    frames = malloc(sizeof(unsigned char *) * frame_count);
-    if (frames == NULL) {
-        nret = (-1);
-        goto end;
-    }
-
-    p = pixels;
-    for (n = 0; n < frame_count; ++n) {
-        frames[n] = p;
-        p += sx * sy * depth;
-    }
-
     /* evaluate -w, -h, and -c option: crop/scale input source */
     if (psettings->clipfirst) {
         /* clipping */
-        nret = do_crop(frames, frame_count,
-                       &sx, &sy, pixelformat, &pixelformat, psettings);
+        nret = do_crop(frame, psettings);
         if (nret != 0) {
             goto end;
         }
 
         /* scaling */
-        nret = do_resize(&pixels, frames, frame_count,
-                         &sx, &sy, pixelformat,
-                         &dst_pixelformat, psettings);
-        if (nret != 0) {
+        nret = do_resize(frame, psettings);
+        if (nret != SIXEL_SUCCESS) {
             goto end;
         }
-        if (pixelformat != dst_pixelformat) {
-            pixelformat = dst_pixelformat;
-            depth = sixel_helper_compute_depth(pixelformat);
-            if (depth == (-1)) {
-                nret = (-1);
-                goto end;
-            }
+        depth = sixel_helper_compute_depth(sixel_frame_get_pixelformat(frame));
+        if (depth == (-1)) {
+            nret = (-1);
+            goto end;
         }
     } else {
         /* scaling */
-        nret = do_resize(&pixels, frames, frame_count,
-                         &sx, &sy, pixelformat,
-                         &dst_pixelformat, psettings);
+        nret = do_resize(frame, psettings);
         if (nret != 0) {
             goto end;
         }
 
-        if (pixelformat != dst_pixelformat) {
-            pixelformat = dst_pixelformat;
-            depth = sixel_helper_compute_depth(pixelformat);
-            if (depth == (-1)) {
-                nret = (-1);
-                goto end;
-            }
+        depth = sixel_helper_compute_depth(sixel_frame_get_pixelformat(frame));
+        if (depth == (-1)) {
+            nret = (-1);
+            goto end;
         }
 
         /* clipping */
-        nret = do_crop(frames, frame_count,
-                       &sx, &sy, pixelformat, &pixelformat, psettings);
+        nret = do_crop(frame, psettings);
         if (nret != 0) {
             goto end;
         }
     }
 
     /* prepare dither context */
-    dither = prepare_palette(dither, pixels, sx, sy * frame_count,
-                             palette, ncolors, pixelformat, psettings);
+    dither = prepare_palette(dither, frame, psettings);
     if (!dither) {
         nret = (-1);
         goto end;
@@ -1074,7 +840,7 @@ reload:
 
     /* evaluate -v option: print palette */
     if (psettings->verbose) {
-        if (!(pixelformat & FORMATTYPE_GRAYSCALE)) {
+        if (!(sixel_frame_get_pixelformat(frame) & FORMATTYPE_GRAYSCALE)) {
             print_palette(dither);
         }
     }
@@ -1087,28 +853,123 @@ reload:
         sixel_dither_set_complexion_score(dither, psettings->complexion);
     }
 
-    /* evaluate -l option: set loop count */
-    switch (psettings->loop_mode) {
-    case LOOP_FORCE:
-        loop_count = (-1);  /* infinite */
-        break;
-    case LOOP_DISABLE:
-        loop_count = 1;  /* do not loop */
-        break;
-    case LOOP_AUTO:
-    default:
-        if (frame_count == 1) {
-            loop_count = 1;
-        } else if (loop_count == 0) {
-            loop_count = (-1);
-        }
-#ifdef HAVE_GDK_PIXBUF2
-        /* do not trust loop_count report of gdk-pixbuf loader */
-        if (loop_count == (-1)) {
-            loop_count = 1;
-        }
+    /* create output context */
+    if (psettings->fuse_macro || psettings->macro_number >= 0) {
+        /* -u or -n option */
+        output = sixel_output_create(sixel_hex_write_callback, stdout);
+    } else {
+        output = sixel_output_create(sixel_write_callback, stdout);
+    }
+    sixel_output_set_8bit_availability(output, psettings->f8bit);
+    sixel_output_set_palette_type(output, psettings->palette_type);
+    sixel_output_set_penetrate_multiplexer(
+        output, psettings->penetrate_multiplexer);
+    sixel_output_set_encode_policy(output, psettings->encode_policy);
+
+    if (sixel_frame_get_multiframe(frame) && !psettings->fstatic) {
+        scroll_on_demand(frame);
+    }
+
+    /* output sixel: junction of multi-frame processing strategy */
+    if (psettings->fuse_macro) {  /* -u option */
+        /* use macro */
+        nret = output_sixel_with_macro(sixel_frame_get_pixels(frame),
+                                       sixel_frame_get_width(frame),
+                                       sixel_frame_get_height(frame),
+                                       sixel_frame_get_delay(frame),
+                                       sixel_frame_get_frame_no(frame),
+                                       sixel_frame_get_loop_no(frame),
+                                       dither,
+                                       output,
+                                       psettings);
+    } else if (psettings->macro_number >= 0) { /* -n option */
+        /* use macro */
+        nret = output_sixel_with_macro(sixel_frame_get_pixels(frame),
+                                       sixel_frame_get_width(frame),
+                                       sixel_frame_get_height(frame),
+                                       sixel_frame_get_delay(frame),
+                                       sixel_frame_get_frame_no(frame),
+                                       sixel_frame_get_loop_no(frame),
+                                       dither,
+                                       output,
+                                       psettings);
+    } else {
+        /* do not use macro */
+        nret = output_sixel_without_macro(sixel_frame_get_pixels(frame),
+                                          sixel_frame_get_width(frame),
+                                          sixel_frame_get_height(frame),
+                                          depth,
+                                          sixel_frame_get_delay(frame),
+                                          dither,
+                                          output,
+                                          psettings);
+    }
+
+#if HAVE_SIGNAL
+    if (signaled) {
+        printf("\x1b\\");
+        fflush(stdout);
+        nret = SIXEL_INTERRUPTED;
+    }
 #endif
-        break;
+
+    if (nret != 0) {
+        goto end;
+    }
+
+    fflush(stdout);
+
+end:
+    if (output) {
+        sixel_output_unref(output);
+    }
+    if (dither) {
+        sixel_dither_unref(dither);
+    }
+
+    return nret;
+}
+
+
+
+
+static int
+convert_to_sixel(char const *filename, settings_t *psettings)
+{
+    int nret = (-1);
+    int fuse_palette = 1;
+    int loop_control = psettings->loop_mode;
+    sixel_callback_context_t callback_context;
+
+    if (psettings->reqcolors < 2) {
+        psettings->reqcolors = 2;
+    }
+
+    if (psettings->palette_type == PALETTETYPE_AUTO) {
+        psettings->palette_type = PALETTETYPE_RGB;
+    }
+
+    if (psettings->mapfile) {
+        fuse_palette = 0;
+    }
+
+    if (psettings->monochrome > 0) {
+        fuse_palette = 0;
+    }
+
+    if (psettings->highcolor > 0) {
+        fuse_palette = 0;
+    }
+
+    if (psettings->builtin_palette > 0) {
+        fuse_palette = 0;
+    }
+
+    if (psettings->percentwidth > 0 ||
+        psettings->percentheight > 0 ||
+        psettings->pixelwidth > 0 ||
+        psettings->pixelheight > 0) {
+        fuse_palette = 0;
     }
 
     /* set signal handler to handle SIGINT/SIGTERM/SIGHUP */
@@ -1124,34 +985,17 @@ reload:
 # endif
 #endif
 
-    /* output sixel: junction of multi-frame processing strategy */
-    if ((psettings->fuse_macro && frame_count > 1)) {  /* -u option */
-        /* use macro */
-        nret = output_sixel_with_macro(frames, sx, sy,
-                                       loop_count, frame_count, delays,
-                                       dither, context, psettings);
-    } else if (psettings->macro_number >= 0) { /* -n option */
-        /* use macro */
-        nret = output_sixel_with_macro(frames, sx, sy,
-                                       loop_count, frame_count, delays,
-                                       dither, context, psettings);
-    } else { /* do not use macro */
-        nret = output_sixel_without_macro(frames, sx, sy, depth,
-                                          loop_count, frame_count, delays,
-                                          dither, context, psettings);
-    }
+reload:
+    callback_context.settings = psettings;
 
-    if (nret != 0) {
-        goto end;
-    }
-    nret = 0;
-    fflush(stdout);
-
-end:
-    free(frames);
-    free(pixels);
-    free(delays);
-    free(frame);
+    nret = sixel_helper_load_image_file(filename,
+                                        psettings->fstatic,
+                                        fuse_palette,
+                                        psettings->reqcolors,
+                                        psettings->bgcolor,
+                                        loop_control,
+                                        load_image_callback,
+                                        &callback_context);
 
     if (nret == 0 && psettings->pipe_mode) {
 #if HAVE_CLEARERR
@@ -1159,8 +1003,8 @@ end:
 #endif  /* HAVE_FSEEK */
         while (!signaled) {
 #if HAVE_SYS_SELECT_H
-            nret = wait_stdin();
-            if (nret == -1) {
+            nret = wait_stdin(1000000);
+            if (nret == (-1)) {
                 return nret;
             }
 #endif  /* HAVE_SYS_SELECT_H */
@@ -1173,12 +1017,6 @@ end:
         }
     }
 
-    if (context) {
-        sixel_output_unref(context);
-    }
-    if (dither) {
-        sixel_dither_unref(dither);
-    }
     return nret;
 }
 

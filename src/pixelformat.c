@@ -258,9 +258,11 @@ sixel_helper_normalize_pixelformat(
     case PIXELFORMAT_PAL1:
     case PIXELFORMAT_PAL2:
     case PIXELFORMAT_PAL4:
+        *dst_pixelformat = PIXELFORMAT_PAL8;
         return expand_palette(dst, src, width, height, src_pixelformat);
     case PIXELFORMAT_PAL8:
         memcpy(dst, src, width * height);
+        *dst_pixelformat = src_pixelformat;
         break;
     default:
         return (-1);
