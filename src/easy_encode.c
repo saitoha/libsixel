@@ -870,14 +870,16 @@ sixel_easy_encode(
 {
     int nret = (-1);
     int fuse_palette = 1;
-    int loop_control = psettings->loop_mode;
+    int loop_control;
     sixel_callback_context_t callback_context;
 
-    if (psettings) {
-        sixel_encode_settings_ref(psettings);
-    } else {
+    if (psettings == NULL) {
         psettings = sixel_encode_settings_create();
+    } else {
+        sixel_encode_settings_ref(psettings);
     }
+
+    loop_control = psettings->loop_mode;
 
     if (psettings->reqcolors == (-1)) {
         psettings->reqcolors = SIXEL_PALETTE_MAX;
@@ -1324,7 +1326,6 @@ sixel_easy_encode_setopt(
 argerr:
     return (-1);
 }
-
 
 
 /* create settings object */
