@@ -525,7 +525,7 @@ output_sixel_without_macro(
     unsigned char *frame,
     int width,
     int height,
-    int depth,
+    int pixelformat,
     int delay,
     sixel_dither_t *dither,
     sixel_output_t *context,
@@ -535,6 +535,7 @@ output_sixel_without_macro(
     int nret = 0;
     int dulation = 0;
     unsigned char *p;
+    int depth;
 #if HAVE_USLEEP
     int lag = 0;
 # if HAVE_CLOCK
@@ -544,6 +545,12 @@ output_sixel_without_macro(
     if (!psettings->mapfile && !psettings->monochrome
             && !psettings->highcolor && !psettings->builtin_palette) {
         sixel_dither_set_optimize_palette(dither, 1);
+    }
+
+    depth = sixel_helper_compute_depth(pixelformat);
+    if (depth == (-1)) {
+        nret = (-1);
+        goto end;
     }
 
     p = malloc(width * height * depth);
@@ -810,18 +817,11 @@ load_image_callback(sixel_frame_t *frame, void *data)
                                        output,
                                        psettings);
     } else {
-
-        depth = sixel_helper_compute_depth(sixel_frame_get_pixelformat(frame));
-        if (depth == (-1)) {
-            nret = (-1);
-            goto end;
-        }
-
         /* do not use macro */
         nret = output_sixel_without_macro(sixel_frame_get_pixels(frame),
                                           sixel_frame_get_width(frame),
                                           sixel_frame_get_height(frame),
-                                          depth,
+                                          sixel_frame_get_pixelformat(frame),
                                           sixel_frame_get_delay(frame),
                                           dither,
                                           output,
