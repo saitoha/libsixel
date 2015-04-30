@@ -873,6 +873,12 @@ sixel_easy_encode(
     int loop_control = psettings->loop_mode;
     sixel_callback_context_t callback_context;
 
+    if (psettings) {
+        sixel_encode_settings_ref(psettings);
+    } else {
+        psettings = sixel_encode_settings_create();
+    }
+
     if (psettings->reqcolors == (-1)) {
         psettings->reqcolors = SIXEL_PALETTE_MAX;
     }
@@ -929,7 +935,7 @@ reload:
 #if HAVE_SYS_SELECT_H
             nret = wait_stdin(1000000);
             if (nret == (-1)) {
-                return nret;
+                goto end;
             }
 #endif  /* HAVE_SYS_SELECT_H */
             if (nret != 0) {
@@ -940,6 +946,9 @@ reload:
             goto reload;
         }
     }
+
+end:
+    sixel_encode_settings_unref(psettings);
 
     return nret;
 }
