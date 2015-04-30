@@ -720,12 +720,6 @@ load_image_callback(sixel_frame_t *frame, void *data)
 
     psettings = callback_context->settings;
 
-    depth = sixel_helper_compute_depth(sixel_frame_get_pixelformat(frame));
-    if (depth == (-1)) {
-        nret = (-1);
-        goto end;
-    }
-
     /* evaluate -w, -h, and -c option: crop/scale input source */
     if (psettings->clipfirst) {
         /* clipping */
@@ -739,21 +733,10 @@ load_image_callback(sixel_frame_t *frame, void *data)
         if (nret != SIXEL_SUCCESS) {
             goto end;
         }
-        depth = sixel_helper_compute_depth(sixel_frame_get_pixelformat(frame));
-        if (depth == (-1)) {
-            nret = (-1);
-            goto end;
-        }
     } else {
         /* scaling */
         nret = do_resize(frame, psettings);
         if (nret != 0) {
-            goto end;
-        }
-
-        depth = sixel_helper_compute_depth(sixel_frame_get_pixelformat(frame));
-        if (depth == (-1)) {
-            nret = (-1);
             goto end;
         }
 
@@ -827,6 +810,13 @@ load_image_callback(sixel_frame_t *frame, void *data)
                                        output,
                                        psettings);
     } else {
+
+        depth = sixel_helper_compute_depth(sixel_frame_get_pixelformat(frame));
+        if (depth == (-1)) {
+            nret = (-1);
+            goto end;
+        }
+
         /* do not use macro */
         nret = output_sixel_without_macro(sixel_frame_get_pixels(frame),
                                           sixel_frame_get_width(frame),
