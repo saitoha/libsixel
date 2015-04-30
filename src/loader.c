@@ -952,9 +952,13 @@ load_with_builtin(
                 frame->delay = g.delay;
                 frame->ncolors = 2 << (g.flags & 7);
                 frame->palette = malloc(frame->ncolors * 3);
+                if (frame->palette == NULL) {
+                    goto error;
+                }
                 if (frame->ncolors <= reqcolors) {
                     frame->pixelformat = PIXELFORMAT_PAL8;
-                    frame->pixels = p;
+                    frame->pixels = malloc(frame->width * frame->height);
+                    memcpy(frame->pixels, g.out, frame->width * frame->height);
                     for (i = 0; i < frame->ncolors; ++i) {
                         frame->palette[i * 3 + 0] = g.color_table[i * 4 + 2];
                         frame->palette[i * 3 + 1] = g.color_table[i * 4 + 1];
@@ -995,7 +999,6 @@ load_with_builtin(
                         frame->pixels[i * 3 + 1] = g.color_table[p[i] * 4 + 1];
                         frame->pixels[i * 3 + 2] = g.color_table[p[i] * 4 + 0];
                     }
-                    free(p);
                 }
                 if (frame->pixels == NULL) {
                     fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
@@ -1013,6 +1016,8 @@ load_with_builtin(
                     break;
                 }
             }
+
+            free(g.out);
 
             ++frame->loop_count;
 
