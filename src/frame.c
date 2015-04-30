@@ -39,7 +39,7 @@
 
 
 sixel_frame_t *
-sixel_frame_create()
+sixel_frame_create(void)
 {
     sixel_frame_t *frame;
 
@@ -269,11 +269,52 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     unsigned char *normalized_pixels = NULL;
     int size;
     int nret = 0;
+    unsigned char *dst;
+    unsigned char *src;
 
     switch (frame->pixelformat) {
-    case PIXELFORMAT_RGB888:
+    case PIXELFORMAT_PAL1:
+    case PIXELFORMAT_PAL2:
+    case PIXELFORMAT_PAL4:
+        size = frame->width * frame->height * 4;
+        normalized_pixels = malloc(size);
+        src = normalized_pixels + frame->width * frame->height * 3;
+        dst = normalized_pixels;
+        nret = sixel_helper_normalize_pixelformat(src,
+                                                  &frame->pixelformat,
+                                                  frame->pixels,
+                                                  frame->pixelformat,
+                                                  frame->width,
+                                                  frame->height);
+        if (nret != 0) {
+            free(normalized_pixels);
+            return nret;
+        }
+        for (; src != dst + size; ++src) {
+            *dst++ = *(frame->palette + *src * 3 + 0);
+            *dst++ = *(frame->palette + *src * 3 + 1);
+            *dst++ = *(frame->palette + *src * 3 + 2);
+        }
+        free(frame->pixels);
+        frame->pixels = normalized_pixels;
+        frame->pixelformat = PIXELFORMAT_RGB888;
         break;
     case PIXELFORMAT_PAL8:
+        size = frame->width * frame->height * 3;
+        normalized_pixels = malloc(size);
+        src = frame->pixels;
+        dst = normalized_pixels;
+        for (; dst != normalized_pixels + size; ++src) {
+            *dst++ = frame->palette[*src * 3 + 0];
+            *dst++ = frame->palette[*src * 3 + 1];
+            *dst++ = frame->palette[*src * 3 + 2];
+        }
+        free(frame->pixels);
+        frame->pixels = normalized_pixels;
+        frame->pixelformat = PIXELFORMAT_RGB888;
+        break;
+    case PIXELFORMAT_RGB888:
+        break;
     case PIXELFORMAT_G8:
     case PIXELFORMAT_GA88:
     case PIXELFORMAT_AG88:
