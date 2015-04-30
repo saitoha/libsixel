@@ -649,8 +649,7 @@ sixel_easy_decode_setopt(
 
 int
 sixel_easy_decode(
-    sixel_decode_settings_t /* in */ *psettings,
-    int                     /* in */ *cancel_flag);
+    sixel_decode_settings_t /* in */ *psettings);
 
 #ifdef __cplusplus
 }
