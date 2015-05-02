@@ -955,7 +955,7 @@ load_with_builtin(
                 if (frame->palette == NULL) {
                     goto error;
                 }
-                if (frame->ncolors <= reqcolors) {
+                if (frame->ncolors <= reqcolors && fuse_palette) {
                     frame->pixelformat = PIXELFORMAT_PAL8;
                     frame->pixels = malloc(frame->width * frame->height);
                     memcpy(frame->pixels, g.out, frame->width * frame->height);
