@@ -22,7 +22,7 @@ def _load():
     return sixel
 
 
-class Encoder(object):
+class EasyEncoder(object):
 
     def __init__(self):
         self._sixel = _load()
@@ -38,12 +38,12 @@ class Encoder(object):
         settings = self._settings
         result = self._sixel.sixel_easy_encode_setopt(settings, flag, arg)
         if result != 0:
-            raise RuntimeError()
+            raise RuntimeError("Invalid option was set.")
 
     def encode(self, filename="-"):
         result = self._sixel.sixel_easy_encode(filename, self._settings, None)
         if result != 0:
-            raise RuntimeError()
+            raise RuntimeError("Unexpected Error")
 
     def test(self, filename):
         import threading
@@ -61,7 +61,7 @@ class Encoder(object):
             print "\033\\\033[Jcanceled."
 
 
-class Decoder(object):
+class EasyDecoder(object):
 
     def __init__(self):
         self._sixel = _load()
@@ -77,12 +77,14 @@ class Decoder(object):
         settings = self._settings
         result = self._sixel.sixel_easy_decode_setopt(settings, flag, arg)
         if result != 0:
-            raise RuntimeError()
+            raise RuntimeError("Invalid option was set.")
 
-    def decode(self):
+    def decode(self, infile=None):
+        if infile:
+            self.setopt("i", infile)
         result = self._sixel.sixel_easy_decode(self._settings)
         if result != 0:
-            raise RuntimeError()
+            raise RuntimeError("Unexpected Error")
 
     def test(self, infile=None, outfile=None):
         import threading
@@ -106,6 +108,6 @@ if __name__ == '__main__':
 
     arg1 = "-" if len(sys.argv) < 2 else sys.argv[1]
 #    arg2 = "-" if len(sys.argv) < 3 else sys.argv[2]
-    Encoder().test(arg1)
-#    Decoder().test(arg1, arg2)
+    EasyEncoder().test(arg1)
+#    EasyDecoder().test(arg1, arg2)
 
