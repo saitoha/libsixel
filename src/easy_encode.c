@@ -525,7 +525,7 @@ output_sixel_without_macro(
     unsigned char *frame,
     int width,
     int height,
-    int depth,
+    int pixelformat,
     int delay,
     sixel_dither_t *dither,
     sixel_output_t *context,
@@ -535,6 +535,7 @@ output_sixel_without_macro(
     int nret = 0;
     int dulation = 0;
     unsigned char *p;
+    int depth;
 #if HAVE_USLEEP
     int lag = 0;
 # if HAVE_CLOCK
@@ -544,6 +545,12 @@ output_sixel_without_macro(
     if (!psettings->mapfile && !psettings->monochrome
             && !psettings->highcolor && !psettings->builtin_palette) {
         sixel_dither_set_optimize_palette(dither, 1);
+    }
+
+    depth = sixel_helper_compute_depth(pixelformat);
+    if (depth == (-1)) {
+        nret = (-1);
+        goto end;
     }
 
     p = malloc(width * height * depth);
@@ -720,12 +727,6 @@ load_image_callback(sixel_frame_t *frame, void *data)
 
     psettings = callback_context->settings;
 
-    depth = sixel_helper_compute_depth(sixel_frame_get_pixelformat(frame));
-    if (depth == (-1)) {
-        nret = (-1);
-        goto end;
-    }
-
     /* evaluate -w, -h, and -c option: crop/scale input source */
     if (psettings->clipfirst) {
         /* clipping */
@@ -739,21 +740,10 @@ load_image_callback(sixel_frame_t *frame, void *data)
         if (nret != SIXEL_SUCCESS) {
             goto end;
         }
-        depth = sixel_helper_compute_depth(sixel_frame_get_pixelformat(frame));
-        if (depth == (-1)) {
-            nret = (-1);
-            goto end;
-        }
     } else {
         /* scaling */
         nret = do_resize(frame, psettings);
         if (nret != 0) {
-            goto end;
-        }
-
-        depth = sixel_helper_compute_depth(sixel_frame_get_pixelformat(frame));
-        if (depth == (-1)) {
-            nret = (-1);
             goto end;
         }
 
@@ -831,14 +821,14 @@ load_image_callback(sixel_frame_t *frame, void *data)
         nret = output_sixel_without_macro(sixel_frame_get_pixels(frame),
                                           sixel_frame_get_width(frame),
                                           sixel_frame_get_height(frame),
-                                          depth,
+                                          sixel_frame_get_pixelformat(frame),
                                           sixel_frame_get_delay(frame),
                                           dither,
                                           output,
                                           psettings);
     }
 
-    if (*callback_context->cancel_flag) {
+    if (callback_context->cancel_flag && *callback_context->cancel_flag) {
         printf("\x1b\\");
         fflush(stdout);
         nret = SIXEL_INTERRUPTED;
@@ -870,8 +860,16 @@ sixel_easy_encode(
 {
     int nret = (-1);
     int fuse_palette = 1;
-    int loop_control = psettings->loop_mode;
+    int loop_control;
     sixel_callback_context_t callback_context;
+
+    if (psettings == NULL) {
+        psettings = sixel_encode_settings_create();
+    } else {
+        sixel_encode_settings_ref(psettings);
+    }
+
+    loop_control = psettings->loop_mode;
 
     if (psettings->reqcolors == (-1)) {
         psettings->reqcolors = SIXEL_PALETTE_MAX;
@@ -929,7 +927,7 @@ reload:
 #if HAVE_SYS_SELECT_H
             nret = wait_stdin(1000000);
             if (nret == (-1)) {
-                return nret;
+                goto end;
             }
 #endif  /* HAVE_SYS_SELECT_H */
             if (nret != 0) {
@@ -940,6 +938,9 @@ reload:
             goto reload;
         }
     }
+
+end:
+    sixel_encode_settings_unref(psettings);
 
     return nret;
 }
@@ -1315,7 +1316,6 @@ sixel_easy_encode_setopt(
 argerr:
     return (-1);
 }
-
 
 
 /* create settings object */

@@ -110,7 +110,6 @@ main(int argc, char *argv[])
 #endif  /* HAVE_GETOPT_LONG */
     int nret = 0;
     char const *optstring = "i:o:VH";
-    int cancel_flag = 0;
 
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
@@ -184,7 +183,7 @@ main(int argc, char *argv[])
         goto argerr;
     }
 
-    nret = sixel_easy_decode(settings, &cancel_flag);
+    nret = sixel_easy_decode(settings);
     goto end;
 
 argerr:
