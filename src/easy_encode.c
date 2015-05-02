@@ -719,7 +719,6 @@ static int
 load_image_callback(sixel_frame_t *frame, void *data)
 {
     int nret = SIXEL_FAILED;
-    int depth;
     sixel_encode_settings_t *psettings;
     sixel_dither_t *dither = NULL;
     sixel_output_t *output = NULL;
