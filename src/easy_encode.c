@@ -522,19 +522,20 @@ wait_stdin(int usec)
 
 static int
 output_sixel_without_macro(
-    unsigned char *frame,
+    unsigned char *buffer,
     int width,
     int height,
     int pixelformat,
     int delay,
     sixel_dither_t *dither,
     sixel_output_t *context,
-    sixel_encode_settings_t *psettings
+    sixel_encode_settings_t *psettings,
+    int *cancel_flag
 )
 {
     int nret = 0;
     int dulation = 0;
-    unsigned char *p;
+    static unsigned char *p;
     int depth;
 #if HAVE_USLEEP
     int lag = 0;
@@ -577,7 +578,12 @@ output_sixel_without_macro(
     }
 #endif
 
-    memcpy(p, frame, width * height * depth);
+    memcpy(p, buffer, width * height * depth);
+
+    if (*cancel_flag) {
+        goto end;
+    }
+
     nret = sixel_encode(p, width, height, depth, dither, context);
     if (nret != 0) {
         goto end;
@@ -796,6 +802,11 @@ load_image_callback(sixel_frame_t *frame, void *data)
         scroll_on_demand(frame);
     }
 
+    if (callback_context->cancel_flag && *callback_context->cancel_flag) {
+        nret = SIXEL_INTERRUPTED;
+        goto end;
+    }
+
     /* output sixel: junction of multi-frame processing strategy */
     if (psettings->fuse_macro) {  /* -u option */
         /* use macro */
@@ -828,7 +839,8 @@ load_image_callback(sixel_frame_t *frame, void *data)
                                           sixel_frame_get_delay(frame),
                                           dither,
                                           output,
-                                          psettings);
+                                          psettings,
+                                          callback_context->cancel_flag);
     }
 
     if (callback_context->cancel_flag && *callback_context->cancel_flag) {
@@ -922,7 +934,11 @@ reload:
                                         load_image_callback,
                                         &callback_context);
 
-    if (nret == 0 && psettings->pipe_mode) {
+    if (nret != 0) {
+        goto end;
+    }
+
+    if (psettings->pipe_mode) {
 #if HAVE_CLEARERR
         clearerr(stdin);
 #endif  /* HAVE_FSEEK */
