@@ -668,7 +668,9 @@ scroll_on_demand(sixel_frame_t *frame)
     struct termios new_termios;
     int row = 0;
     int col = 0;
-    int n;
+    int pixelheight;
+    int cellheight;
+    int scroll;
 
     if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)) {
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
@@ -685,13 +687,14 @@ scroll_on_demand(sixel_frame_t *frame)
                 /* request cursor position report */
                 printf("\033[6n");
                 fflush(stdout);
-                if (wait_stdin(1000000) != (-1)) { /* wait 1 sec */
+                if (wait_stdin(1000 * 1000) != (-1)) { /* wait 1 sec */
                     if (scanf("\033[%d;%dR", &row, &col) == 2) {
                         tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
-                        n = sixel_frame_get_height(frame) * size.ws_row / size.ws_ypixel + 1
-                                + row - size.ws_row;
-                        if (n > 0) {
-                            printf("\033[%dS\033[%dA", n, n);
+                         pixelheight = sixel_frame_get_height(frame);
+                         cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
+                         scroll = cellheight + row - size.ws_row + 1;
+                        if (scroll > 0) {
+                            printf("\033[%dS\033[%dA", scroll, scroll);
                         }
                         printf("\0337");
                     } else {
