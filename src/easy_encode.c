@@ -832,7 +832,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
     }
 
     if (callback_context->cancel_flag && *callback_context->cancel_flag) {
-        printf("\x1b\\");
+        printf("\x18\x1b\\");
         fflush(stdout);
         nret = SIXEL_INTERRUPTED;
     }
