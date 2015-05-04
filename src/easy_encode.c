@@ -522,19 +522,20 @@ wait_stdin(int usec)
 
 static int
 output_sixel_without_macro(
-    unsigned char *frame,
+    unsigned char *buffer,
     int width,
     int height,
     int pixelformat,
     int delay,
     sixel_dither_t *dither,
     sixel_output_t *context,
-    sixel_encode_settings_t *psettings
+    sixel_encode_settings_t *psettings,
+    int *cancel_flag
 )
 {
     int nret = 0;
     int dulation = 0;
-    unsigned char *p;
+    static unsigned char *p;
     int depth;
 #if HAVE_USLEEP
     int lag = 0;
@@ -577,13 +578,19 @@ output_sixel_without_macro(
     }
 #endif
 
-    memcpy(p, frame, width * height * depth);
+    memcpy(p, buffer, width * height * depth);
+
+    if (*cancel_flag) {
+        goto end;
+    }
+
     nret = sixel_encode(p, width, height, depth, dither, context);
     if (nret != 0) {
         goto end;
     }
 
 end:
+    free(p);
     return nret;
 }
 
@@ -667,7 +674,9 @@ scroll_on_demand(sixel_frame_t *frame)
     struct termios new_termios;
     int row = 0;
     int col = 0;
-    int n;
+    int pixelheight;
+    int cellheight;
+    int scroll;
 
     if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)) {
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
@@ -684,13 +693,14 @@ scroll_on_demand(sixel_frame_t *frame)
                 /* request cursor position report */
                 printf("\033[6n");
                 fflush(stdout);
-                if (wait_stdin(1000000) != (-1)) { /* wait 1 sec */
+                if (wait_stdin(1000 * 1000) != (-1)) { /* wait 1 sec */
                     if (scanf("\033[%d;%dR", &row, &col) == 2) {
                         tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
-                        n = sixel_frame_get_height(frame) * size.ws_row / size.ws_ypixel + 1
-                                + row - size.ws_row;
-                        if (n > 0) {
-                            printf("\033[%dS\033[%dA", n, n);
+                         pixelheight = sixel_frame_get_height(frame);
+                         cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
+                         scroll = cellheight + row - size.ws_row + 1;
+                        if (scroll > 0) {
+                            printf("\033[%dS\033[%dA", scroll, scroll);
                         }
                         printf("\0337");
                     } else {
@@ -792,6 +802,11 @@ load_image_callback(sixel_frame_t *frame, void *data)
         scroll_on_demand(frame);
     }
 
+    if (callback_context->cancel_flag && *callback_context->cancel_flag) {
+        nret = SIXEL_INTERRUPTED;
+        goto end;
+    }
+
     /* output sixel: junction of multi-frame processing strategy */
     if (psettings->fuse_macro) {  /* -u option */
         /* use macro */
@@ -824,11 +839,12 @@ load_image_callback(sixel_frame_t *frame, void *data)
                                           sixel_frame_get_delay(frame),
                                           dither,
                                           output,
-                                          psettings);
+                                          psettings,
+                                          callback_context->cancel_flag);
     }
 
     if (callback_context->cancel_flag && *callback_context->cancel_flag) {
-        printf("\x1b\\");
+        printf("\x18\x1b\\");
         fflush(stdout);
         nret = SIXEL_INTERRUPTED;
     }
@@ -918,7 +934,11 @@ reload:
                                         load_image_callback,
                                         &callback_context);
 
-    if (nret == 0 && psettings->pipe_mode) {
+    if (nret != 0) {
+        goto end;
+    }
+
+    if (psettings->pipe_mode) {
 #if HAVE_CLEARERR
         clearerr(stdin);
 #endif  /* HAVE_FSEEK */
