@@ -843,6 +843,7 @@ chunk_is_jpeg(chunk_t const *chunk)
 #endif  /* HAVE_JPEG */
 
 
+
 int
 load_with_builtin(
     chunk_t const             /* in */     *pchunk,      /* image data */
