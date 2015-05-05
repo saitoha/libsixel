@@ -547,6 +547,7 @@ load_gif(unsigned char *buffer,
         return SIXEL_FAILED;
     }
     start_mem(&s, buffer, size);
+    memset(&g, 0, sizeof(g));
     ret = load_gif_header(&s, &g);
     if (ret != SIXEL_SUCCESS) {
         goto end;
