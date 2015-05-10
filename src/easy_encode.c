@@ -580,7 +580,7 @@ output_sixel_without_macro(
 
     memcpy(p, buffer, width * height * depth);
 
-    if (*cancel_flag) {
+    if (cancel_flag && *cancel_flag) {
         goto end;
     }
 
@@ -942,7 +942,7 @@ reload:
 #if HAVE_CLEARERR
         clearerr(stdin);
 #endif  /* HAVE_FSEEK */
-        while (!*cancel_flag) {
+        while (cancel_flag && !*cancel_flag) {
 #if HAVE_SYS_SELECT_H
             nret = wait_stdin(1000000);
             if (nret == (-1)) {
@@ -953,7 +953,7 @@ reload:
                 break;
             }
         }
-        if (!*cancel_flag) {
+        if (cancel_flag && !*cancel_flag) {
             goto reload;
         }
     }
