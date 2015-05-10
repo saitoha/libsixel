@@ -19,34 +19,50 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_FRAME_H
-#define LIBSIXEL_FRAME_H
+#ifndef LIBSIXEL_EASY_ENCODE_H
+#define LIBSIXEL_EASY_ENCODE_H
 
-/* frame object */
-typedef struct sixel_frame {
-    unsigned int ref;         /* reference counter */
-    unsigned char *pixels;    /* loaded pixel data */
-    unsigned char *palette;   /* loaded palette data */
-    int width;                /* frame width */
-    int height;               /* frame height */
-    int ncolors;              /* palette colors */
-    int pixelformat;          /* one of enum pixelFormat */
-    int delay;                /* delay in msec */
-    int frame_no;             /* frame number */
-    int loop_count;           /* loop count */
-    int multiframe;           /* whether the image has multiple frames */
-    int transparent;          /* -1(no transparent) or >= 0(index of transparent color) */
-} sixel_frame_t;
+/* encode settings object */
+typedef struct sixel_encode_settings {
+    unsigned int ref;          /* reference counter */
+    int reqcolors;
+    char *mapfile;
+    int monochrome;
+    int highcolor;
+    int builtin_palette;
+    int method_for_diffuse;
+    int method_for_largest;
+    int method_for_rep;
+    int quality_mode;
+    int method_for_resampling;
+    int loop_mode;
+    int palette_type;
+    int f8bit;
+    int finvert;
+    int fuse_macro;
+    int fignore_delay;
+    int complexion;
+    int fstatic;
+    int pixelwidth;
+    int pixelheight;
+    int percentwidth;
+    int percentheight;
+    int clipx;
+    int clipy;
+    int clipwidth;
+    int clipheight;
+    int clipfirst;
+    int macro_number;
+    int penetrate_multiplexer;
+    int encode_policy;
+    int pipe_mode;
+    int verbose;
+    int show_version;
+    int show_help;
+    unsigned char *bgcolor;
+} sixel_encode_settings_t;
 
-/* create frame object */
-sixel_frame_t *
-sixel_frame_create(void);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* LIBSIXEL_FRAME_H */
+#endif /* LIBSIXEL_EASY_ENCODE_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

@@ -84,6 +84,7 @@
 
 #include <stdio.h>
 #include "frompnm.h"
+#include "fromgif.h"
 #include "frame.h"
 #include <sixel.h>
 
@@ -843,6 +844,7 @@ chunk_is_jpeg(chunk_t const *chunk)
 #endif  /* HAVE_JPEG */
 
 
+
 int
 load_with_builtin(
     chunk_t const             /* in */     *pchunk,      /* image data */
@@ -855,20 +857,14 @@ load_with_builtin(
     void                      /* in/out */ *context      /* private data for callback */
 )
 {
-    unsigned char *p;
-    static stbi__context s;
-    static stbi__gif g;
-    int depth;
-    sixel_frame_t *frame;
+    sixel_frame_t *frame = NULL;
     int ret = (-1);
-    int i;
-
-    frame = sixel_frame_create();
-    if (frame == NULL) {
-        return SIXEL_FAILED;
-    }
 
     if (chunk_is_sixel(pchunk)) {
+        frame = sixel_frame_create();
+        if (frame == NULL) {
+            return SIXEL_FAILED;
+        }
         frame->pixels = load_sixel(pchunk->buffer,
                                    pchunk->size,
                                    &frame->width,
@@ -881,6 +877,10 @@ load_with_builtin(
             goto error;
         }
     } else if (chunk_is_pnm(pchunk)) {
+        frame = sixel_frame_create();
+        if (frame == NULL) {
+            return SIXEL_FAILED;
+        }
         /* pnm */
         frame->pixels = load_pnm(pchunk->buffer,
                                  pchunk->size,
@@ -899,6 +899,10 @@ load_with_builtin(
     }
 #if HAVE_JPEG
     else if (chunk_is_jpeg(pchunk)) {
+        frame = sixel_frame_create();
+        if (frame == NULL) {
+            return SIXEL_FAILED;
+        }
         frame->pixels = load_jpeg(pchunk->buffer,
                                   pchunk->size,
                                   &frame->width,
@@ -911,6 +915,10 @@ load_with_builtin(
 #endif  /* HAVE_JPEG */
 #if HAVE_LIBPNG
     else if (chunk_is_png(pchunk)) {
+        frame = sixel_frame_create();
+        if (frame == NULL) {
+            return SIXEL_FAILED;
+        }
         frame->pixels = load_png(pchunk->buffer,
                                  pchunk->size,
                                  &frame->width,
@@ -927,108 +935,27 @@ load_with_builtin(
     }
 #endif  /* HAVE_LIBPNG */
     else if (chunk_is_gif(pchunk)) {
-
-        frame->loop_count = 0;
-
-        for (;;) {
-
-            stbi__start_mem(&s, pchunk->buffer, pchunk->size);
-            memset(&g, 0, sizeof(g));
-            g.loop_count = (-1);
-            frame->frame_no = 0;
-
-            for (;;) {
-                p = stbi__gif_load_next(&s, &g, &depth, 4, bgcolor);
-                if (p == (void *)&s) {
-                    break;
-                }
-                if (p == NULL) {
-                    frame->pixels = NULL;
-                    break;
-                }
-
-                frame->width = g.w;
-                frame->height = g.h;
-                frame->delay = g.delay;
-                frame->ncolors = 2 << (g.flags & 7);
-                frame->palette = malloc(frame->ncolors * 3);
-                if (frame->ncolors <= reqcolors) {
-                    frame->pixelformat = PIXELFORMAT_PAL8;
-                    frame->pixels = p;
-                    for (i = 0; i < frame->ncolors; ++i) {
-                        frame->palette[i * 3 + 0] = g.color_table[i * 4 + 2];
-                        frame->palette[i * 3 + 1] = g.color_table[i * 4 + 1];
-                        frame->palette[i * 3 + 2] = g.color_table[i * 4 + 0];
-                    }
-                    if (g.lflags & 0x80) {
-                        if (g.eflags & 0x01) {
-                            if (bgcolor) {
-                                frame->palette[g.transparent * 3 + 0]
-                                    = bgcolor[0];
-                                frame->palette[g.transparent * 3 + 1]
-                                    = bgcolor[1];
-                                frame->palette[g.transparent * 3 + 2]
-                                    = bgcolor[2];
-                            } else {
-                                frame->transparent = g.transparent;
-                            }
-                        }
-                    } else if (g.flags & 0x80) {
-                        if (g.eflags & 0x01) {
-                            if (bgcolor) {
-                                frame->palette[g.transparent * 3 + 0]
-                                    = bgcolor[0];
-                                frame->palette[g.transparent * 3 + 1]
-                                    = bgcolor[1];
-                                frame->palette[g.transparent * 3 + 2]
-                                    = bgcolor[2];
-                            } else {
-                                frame->transparent = g.transparent;
-                            }
-                        }
-                    }
-                } else {
-                    frame->pixelformat = PIXELFORMAT_RGB888;
-                    frame->pixels = malloc(g.w * g.h * 3);
-                    for (i = 0; i < g.w * g.h; ++i) {
-                        frame->pixels[i * 3 + 0] = g.color_table[p[i] * 4 + 2];
-                        frame->pixels[i * 3 + 1] = g.color_table[p[i] * 4 + 1];
-                        frame->pixels[i * 3 + 2] = g.color_table[p[i] * 4 + 0];
-                    }
-                    free(p);
-                }
-                if (frame->pixels == NULL) {
-                    fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
-                            stbi_failure_reason());
-                    goto error;
-                }
-                frame->multiframe = (g.loop_count != (-1));
-
-                ret = fn_load(frame, context);
-                if (ret != 0) {
-                    goto error;
-                }
-                ++frame->frame_no;
-                if (fstatic) {
-                    break;
-                }
-            }
-
-            ++frame->loop_count;
-
-            if (g.loop_count == (-1)) {
-                break;
-            }
-            if (loop_control == LOOP_DISABLE || frame->frame_no == 1) {
-                break;
-            }
-            if (loop_control == LOOP_AUTO && frame->loop_count == g.loop_count) {
-                break;
-            }
+        ret = load_gif(pchunk->buffer,
+                       pchunk->size,
+                       bgcolor,
+                       reqcolors,
+                       fuse_palette,
+                       fstatic,
+                       loop_control,
+                       fn_load,
+                       context);
+        if (ret != 0) {
+            goto error;
         }
-
-        return 0;
+        goto end;
     } else {
+        stbi__context s;
+        int depth;
+
+        frame = sixel_frame_create();
+        if (frame == NULL) {
+            return SIXEL_FAILED;
+        }
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);
         frame->pixels = stbi_load_main(&s, &frame->width, &frame->height, &depth, 3);
         if (!frame->pixels) {
@@ -1062,6 +989,7 @@ load_with_builtin(
     }
 
 error:
+end:
     sixel_frame_unref(frame);
 
     return ret;

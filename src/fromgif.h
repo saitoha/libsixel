@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -19,34 +19,32 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_FRAME_H
-#define LIBSIXEL_FRAME_H
+#ifndef LIBSIXEL_FROMGIF_H
+#define LIBSIXEL_FROMGIF_H
 
-/* frame object */
-typedef struct sixel_frame {
-    unsigned int ref;         /* reference counter */
-    unsigned char *pixels;    /* loaded pixel data */
-    unsigned char *palette;   /* loaded palette data */
-    int width;                /* frame width */
-    int height;               /* frame height */
-    int ncolors;              /* palette colors */
-    int pixelformat;          /* one of enum pixelFormat */
-    int delay;                /* delay in msec */
-    int frame_no;             /* frame number */
-    int loop_count;           /* loop count */
-    int multiframe;           /* whether the image has multiple frames */
-    int transparent;          /* -1(no transparent) or >= 0(index of transparent color) */
-} sixel_frame_t;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/* create frame object */
-sixel_frame_t *
-sixel_frame_create(void);
+/* load gif */
+
+int
+load_gif(unsigned char *buffer,
+         int size,
+         unsigned char *bgcolor,
+         int reqcolors,
+         int fuse_palette,
+         int fstatic,
+         int loop_control,
+         void /* in */     *fn_load,     /* callback */
+         void /* in/out */ *context      /* private data for callback */
+);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LIBSIXEL_FRAME_H */
+#endif /* LIBSIXEL_FROMGIF */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
