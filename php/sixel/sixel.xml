@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension name="sixel" version="1.0.0">
+
+  <deps language="c" platform="all">
+    <with name="libsixel" mode="pkg-config" version="1.5">
+      <header name="sixel.h"/>
+    </with>
+  </deps>
+
+  <class name="SixelEncoder">
+
+    <function name="__construct" access="public">
+      <proto>object __construct()</proto>
+      <code><?data
+        sixel_encode_settings_t *settings;
+        settings = sixel_encode_settings_create();
+        if (settings == NULL) {
+            zend_throw_exception_ex(zend_exception_get_default(), 1,
+                                    "sixel_encode_settings_create() failed. %s:%d", __FILE__, __LINE__);
+        } else {
+            zval *value = emalloc(sizeof(zval));
+            ZVAL_RESOURCE(value, settings);
+            zend_update_property(_this_ce, getThis(), "settings", sizeof("settings") - 1, value TSRMLS_CC);
+        }
+      ?></code>
+    </function>
+
+    <function name="__destruct" access="public">
+      <proto>object __destruct()</proto>
+      <code><?data
+        zval *settings = zend_read_property(_this_ce, getThis(), "settings", sizeof("settings") - 1, 1 TSRMLS_CC);
+        sixel_encode_settings_unref(Z_RESVAL_P(settings));
+        efree(settings);
+      ?></code>
+    </function>
+
+    <function name="sixel_easy_encode_setopt" access="public">
+      <proto>void sixel_easy_encode_setopt(string opt[, string arg])</proto>
+      <code><?data
+        zval *settings = zend_read_property(_this_ce, getThis(), "settings", sizeof("settings") - 1, 1 TSRMLS_CC);
+        sixel_easy_encode_setopt(Z_RESVAL_P(settings), *opt, arg);
+      ?></code>
+    </function>
+
+    <function name="sixel_easy_encode" access="public">
+      <proto>void sixel_easy_encode(string filename)</proto>
+      <code><?data
+        zval *settings = zend_read_property(_this_ce, getThis(), "settings", sizeof("settings") - 1, 0 TSRMLS_CC);
+        int ret = sixel_easy_encode(filename, Z_RESVAL_P(settings), NULL);
+        if (ret != 0) {
+            zend_throw_exception_ex(zend_exception_get_default(), 1,
+                                    "sixel_easy_encode() failed. %s:%d", __FILE__, __LINE__);
+        }
+      ?></code>
+    </function>
+  </class>
+</extension>
