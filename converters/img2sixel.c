@@ -624,6 +624,8 @@ output_sixel_without_macro(
     }
 
 end:
+    free(frame);
+    sixel_output_unref(context);
     return nret;
 }
 
