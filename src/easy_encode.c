@@ -56,6 +56,12 @@
 #if HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
 #endif
+#if HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 
 #include "easy_encode.h"
 #include <sixel.h>
@@ -191,9 +197,7 @@ end:
 static int
 sixel_write_callback(char *data, int size, void *priv)
 {
-    /* unused */ (void) priv;
-
-    return fwrite(data, 1, size, stdout);
+    return write(*(int *)priv, data, size);
 }
 
 
@@ -204,8 +208,6 @@ sixel_hex_write_callback(char *data, int size, void *priv)
     int i;
     int j;
 
-    /* unused */ (void) priv;
-
     for (i = j = 0; i < size; ++i, ++j) {
         hex[j] = (data[i] >> 4) & 0xf;
         hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
@@ -213,7 +215,7 @@ sixel_hex_write_callback(char *data, int size, void *priv)
         hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
     }
 
-    return fwrite(hex, 1, size * 2, stdout);
+    return write(*(int *)priv, hex, size * 2);
 }
 
 
@@ -732,8 +734,9 @@ load_image_callback(sixel_frame_t *frame, void *data)
     sixel_encode_settings_t *psettings;
     sixel_dither_t *dither = NULL;
     sixel_output_t *output = NULL;
-    sixel_callback_context_t *callback_context = (sixel_callback_context_t *)data;
+    sixel_callback_context_t *callback_context;
 
+    callback_context = (sixel_callback_context_t *)data;
     psettings = callback_context->settings;
 
     /* evaluate -w, -h, and -c option: crop/scale input source */
@@ -788,9 +791,11 @@ load_image_callback(sixel_frame_t *frame, void *data)
     /* create output context */
     if (psettings->fuse_macro || psettings->macro_number >= 0) {
         /* -u or -n option */
-        output = sixel_output_create(sixel_hex_write_callback, stdout);
+        output = sixel_output_create(sixel_hex_write_callback,
+                                     &psettings->outfd);
     } else {
-        output = sixel_output_create(sixel_write_callback, stdout);
+        output = sixel_output_create(sixel_write_callback,
+                                     &psettings->outfd);
     }
     sixel_output_set_8bit_availability(output, psettings->f8bit);
     sixel_output_set_palette_type(output, psettings->palette_type);
@@ -976,6 +981,20 @@ sixel_easy_encode_setopt(
     char unit[32];
 
     switch(arg) {
+    case 'o':
+        if (*optarg == '\0') {
+            fprintf(stderr, "Invalid file name.\n");
+            goto argerr;
+        }
+        if (strcmp(optarg, "-") != 0) {
+            if (psettings->outfd) {
+                close(psettings->outfd);
+            }
+            psettings->outfd = open(optarg,
+                                    O_RDWR|O_CREAT|O_NOCTTY,
+                                    S_IREAD|S_IWRITE);
+        }
+        break;
     case '7':
         psettings->f8bit = 0;
         break;
@@ -1384,6 +1403,7 @@ sixel_encode_settings_create(void)
     settings->show_version          = 0;
     settings->show_help             = 0;
     settings->bgcolor               = NULL;
+    settings->outfd                 = STDOUT_FILENO;
 
     return settings;
 }
@@ -1395,6 +1415,9 @@ sixel_encode_settings_destroy(sixel_encode_settings_t *settings)
     if (settings) {
         free(settings->mapfile);
         free(settings->bgcolor);
+        if (settings->outfd) {
+            close(settings->outfd);
+        }
         free(settings);
     }
 }

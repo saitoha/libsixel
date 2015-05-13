@@ -166,8 +166,8 @@ open_binary_file(char const *filename)
 #if HAVE_STAT
     if (stat(filename, &sb) != 0) {
 # if HAVE_ERRNO_H
-        fprintf(stderr, "stat() failed.\n" "reason: %s.\n",
-                strerror(errno));
+        fprintf(stderr, "stat(%s) failed.\n" "reason: %s.\n",
+                filename, strerror(errno));
 # endif  /* HAVE_ERRNO_H */
         return NULL;
     }
@@ -203,7 +203,8 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
     chunk_init(pchunk, 64 * 1024);
     if (pchunk->buffer == NULL) {
 #if HAVE_ERRNO_H
-        fprintf(stderr, "get_chunk_from_file('%s'): malloc failed.\n" "reason: %s.\n",
+        fprintf(stderr, "get_chunk_from_file('%s'): malloc failed.\n"
+                        "reason: %s.\n",
                 filename, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
         return (-1);
@@ -212,10 +213,12 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
     for (;;) {
         if (pchunk->max_size - pchunk->size < 4096) {
             pchunk->max_size *= 2;
-            pchunk->buffer = (unsigned char *)realloc(pchunk->buffer, pchunk->max_size);
+            pchunk->buffer = (unsigned char *)realloc(pchunk->buffer,
+                                                      pchunk->max_size);
             if (pchunk->buffer == NULL) {
 #if HAVE_ERRNO_H
-                fprintf(stderr, "get_chunk_from_file('%s'): relloc failed.\n" "reason: %s.\n",
+                fprintf(stderr, "get_chunk_from_file('%s'): relloc failed.\n"
+                                "reason: %s.\n",
                         filename, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
                 return (-1);
@@ -245,7 +248,8 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
     chunk_init(pchunk, 1024);
     if (pchunk->buffer == NULL) {
 #if HAVE_ERRNO_H
-        fprintf(stderr, "get_chunk_from_url('%s'): malloc failed.\n" "reason: %s.\n",
+        fprintf(stderr, "get_chunk_from_url('%s'): malloc failed.\n"
+                        "reason: %s.\n",
                 url, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
         return (-1);
