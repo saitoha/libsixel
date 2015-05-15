@@ -238,20 +238,20 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
 }
 
 
-# ifdef HAVE_LIBCURL
 static int
 get_chunk_from_url(char const *url, chunk_t *pchunk)
 {
+# ifdef HAVE_LIBCURL
     CURL *curl;
     CURLcode code;
 
     chunk_init(pchunk, 1024);
     if (pchunk->buffer == NULL) {
-#if HAVE_ERRNO_H
+#  if HAVE_ERRNO_H
         fprintf(stderr, "get_chunk_from_url('%s'): malloc failed.\n"
                         "reason: %s.\n",
                 url, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
+#  endif  /* HAVE_ERRNO_H */
         return (-1);
     }
     curl = curl_easy_init();
@@ -272,8 +272,13 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
     }
     curl_easy_cleanup(curl);
     return 0;
-}
+# else
+    fprintf(stderr, "To specify URI schemes, you have to "
+                    "configure this program with --with-libcurl "
+                    "option at compile time.\n");
+    return (-1);
 # endif  /* HAVE_LIBCURL */
+}
 
 
 # if HAVE_JPEG
@@ -736,14 +741,7 @@ static int
 get_chunk(char const *filename, chunk_t *pchunk)
 {
     if (filename != NULL && strstr(filename, "://")) {
-# ifdef HAVE_LIBCURL
         return get_chunk_from_url(filename, pchunk);
-# else
-        fprintf(stderr, "To specify URI schemes, you have to "
-                        "configure this program with --with-libcurl "
-                        "option at compile time.\n");
-        return (-1);
-# endif  /* HAVE_LIBCURL */
     }
     return get_chunk_from_file(filename, pchunk);
 }

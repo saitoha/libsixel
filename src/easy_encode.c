@@ -503,23 +503,23 @@ print_palette(sixel_dither_t *dither)
 }
 
 
-#if HAVE_SYS_SELECT_H
 static int
 wait_stdin(int usec)
 {
     fd_set rfds;
     struct timeval tv;
-    int ret;
+    int ret = 0;
 
+#if HAVE_SYS_SELECT_H
     tv.tv_sec = usec / 1000000;
     tv.tv_usec = usec % 1000000;
     FD_ZERO(&rfds);
     FD_SET(STDIN_FILENO, &rfds);
     ret = select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
+#endif  /* HAVE_SYS_SELECT_H */
 
     return ret;
 }
-#endif  /* HAVE_SYS_SELECT_H */
 
 
 static int
@@ -948,12 +948,10 @@ reload:
         clearerr(stdin);
 #endif  /* HAVE_FSEEK */
         while (cancel_flag && !*cancel_flag) {
-#if HAVE_SYS_SELECT_H
             nret = wait_stdin(1000000);
             if (nret == (-1)) {
                 goto end;
             }
-#endif  /* HAVE_SYS_SELECT_H */
             if (nret != 0) {
                 break;
             }
