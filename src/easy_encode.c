@@ -1415,7 +1415,9 @@ sixel_encode_settings_destroy(sixel_encode_settings_t *settings)
     if (settings) {
         free(settings->mapfile);
         free(settings->bgcolor);
-        if (settings->outfd) {
+        if (settings->outfd
+            && settings->outfd != STDOUT_FILENO
+            && settings->outfd != STDERR_FILENO) {
             close(settings->outfd);
         }
         free(settings);
