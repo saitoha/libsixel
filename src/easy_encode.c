@@ -312,7 +312,8 @@ static sixel_dither_t *
 prepare_specified_palette(
     char const *mapfile,
     int reqcolors,
-    unsigned char *bgcolor)
+    unsigned char *bgcolor,
+    int const *cancel_flag)
 {
     int ret = (-1);
 
@@ -328,6 +329,7 @@ prepare_specified_palette(
                                        bgcolor,
                                        LOOP_DISABLE,
                                        load_image_callback_for_palette,
+                                       cancel_flag,
                                        &callback_context);
     if (ret != 0) {
         return NULL;
@@ -340,7 +342,8 @@ prepare_specified_palette(
 static sixel_dither_t *
 prepare_palette(sixel_dither_t *former_dither,
                 sixel_frame_t *frame,
-                sixel_encode_settings_t *psettings)
+                sixel_encode_settings_t *psettings,
+                int const *cancel_flag)
 {
     sixel_dither_t *dither;
     int ret;
@@ -362,7 +365,8 @@ prepare_palette(sixel_dither_t *former_dither,
         }
         dither = prepare_specified_palette(psettings->mapfile,
                                            psettings->reqcolors,
-                                           psettings->bgcolor);
+                                           psettings->bgcolor,
+                                           cancel_flag);
     } else if (psettings->builtin_palette) {
         if (former_dither) {
             return former_dither;
@@ -532,7 +536,7 @@ output_sixel_without_macro(
     sixel_dither_t *dither,
     sixel_output_t *context,
     sixel_encode_settings_t *psettings,
-    int *cancel_flag
+    int const *cancel_flag
 )
 {
     int nret = 0;
@@ -663,7 +667,7 @@ end:
 
 typedef struct sixel_callback_context {
     sixel_encode_settings_t *settings;
-    int *cancel_flag;
+    int const *cancel_flag;
 } sixel_callback_context_t;
 
 
@@ -767,7 +771,8 @@ load_image_callback(sixel_frame_t *frame, void *data)
     }
 
     /* prepare dither context */
-    dither = prepare_palette(dither, frame, psettings);
+    dither = prepare_palette(dither, frame, psettings,
+                             callback_context->cancel_flag);
     if (!dither) {
         nret = (-1);
         goto end;
@@ -876,7 +881,7 @@ int
 sixel_easy_encode(
     char const              /* in */ *filename,
     sixel_encode_settings_t /* in */ *psettings,
-    int                     /* in */ *cancel_flag)
+    int const               /* in */ *cancel_flag)
 {
     int nret = (-1);
     int fuse_palette = 1;
@@ -937,6 +942,7 @@ reload:
                                         psettings->bgcolor,
                                         loop_control,
                                         load_image_callback,
+                                        cancel_flag,
                                         &callback_context);
 
     if (nret != 0) {
