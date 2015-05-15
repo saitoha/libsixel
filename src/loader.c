@@ -143,6 +143,31 @@ memory_write(void *ptr,
 # endif
 
 
+static int
+wait_file(int fd, int usec)
+{
+    fd_set rfds;
+    struct timeval tv;
+    int ret = 0;
+
+#if HAVE_SYS_SELECT_H
+    tv.tv_sec = usec / 1000000;
+    tv.tv_usec = usec % 1000000;
+    FD_ZERO(&rfds);
+    FD_SET(fd, &rfds);
+    ret = select(fd + 1, &rfds, NULL, NULL, &tv);
+#endif  /* HAVE_SYS_SELECT_H */
+    if (ret == 0) {
+        return (1);
+    }
+    if (ret < 0) {
+        return ret;
+    }
+
+    return (0);
+}
+
+
 static FILE *
 open_binary_file(char const *filename)
 {
@@ -166,8 +191,8 @@ open_binary_file(char const *filename)
 #if HAVE_STAT
     if (stat(filename, &sb) != 0) {
 # if HAVE_ERRNO_H
-        fprintf(stderr, "stat() failed.\n" "reason: %s.\n",
-                strerror(errno));
+        fprintf(stderr, "stat(%s) failed.\n" "reason: %s.\n",
+                filename, strerror(errno));
 # endif  /* HAVE_ERRNO_H */
         return NULL;
     }
@@ -190,10 +215,15 @@ open_binary_file(char const *filename)
 
 
 static int
-get_chunk_from_file(char const *filename, chunk_t *pchunk)
+get_chunk_from_file(
+    char const *filename,
+    chunk_t *pchunk,
+    int const *cancel_flag
+)
 {
     FILE *f;
     int n;
+    int ret;
 
     f = open_binary_file(filename);
     if (!f) {
@@ -203,7 +233,8 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
     chunk_init(pchunk, 64 * 1024);
     if (pchunk->buffer == NULL) {
 #if HAVE_ERRNO_H
-        fprintf(stderr, "get_chunk_from_file('%s'): malloc failed.\n" "reason: %s.\n",
+        fprintf(stderr, "get_chunk_from_file('%s'): malloc failed.\n"
+                        "reason: %s.\n",
                 filename, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
         return (-1);
@@ -212,13 +243,28 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
     for (;;) {
         if (pchunk->max_size - pchunk->size < 4096) {
             pchunk->max_size *= 2;
-            pchunk->buffer = (unsigned char *)realloc(pchunk->buffer, pchunk->max_size);
+            pchunk->buffer = (unsigned char *)realloc(pchunk->buffer,
+                                                      pchunk->max_size);
             if (pchunk->buffer == NULL) {
 #if HAVE_ERRNO_H
-                fprintf(stderr, "get_chunk_from_file('%s'): relloc failed.\n" "reason: %s.\n",
+                fprintf(stderr, "get_chunk_from_file('%s'): relloc failed.\n"
+                                "reason: %s.\n",
                         filename, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
                 return (-1);
+            }
+        }
+
+        for (;;) {
+            if (*cancel_flag) {
+                return (-1);
+            }
+            ret = wait_file(fileno(f), 10000);
+            if (ret < 0) {
+                return ret;
+            }
+            if (ret == 0) {
+                break;
             }
         }
         n = fread(pchunk->buffer + pchunk->size, 1, 4096, f);
@@ -235,19 +281,20 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
 }
 
 
-# ifdef HAVE_LIBCURL
 static int
 get_chunk_from_url(char const *url, chunk_t *pchunk)
 {
+# ifdef HAVE_LIBCURL
     CURL *curl;
     CURLcode code;
 
     chunk_init(pchunk, 1024);
     if (pchunk->buffer == NULL) {
-#if HAVE_ERRNO_H
-        fprintf(stderr, "get_chunk_from_url('%s'): malloc failed.\n" "reason: %s.\n",
+#  if HAVE_ERRNO_H
+        fprintf(stderr, "get_chunk_from_url('%s'): malloc failed.\n"
+                        "reason: %s.\n",
                 url, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
+#  endif  /* HAVE_ERRNO_H */
         return (-1);
     }
     curl = curl_easy_init();
@@ -268,8 +315,13 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
     }
     curl_easy_cleanup(curl);
     return 0;
-}
+# else
+    fprintf(stderr, "To specify URI schemes, you have to "
+                    "configure this program with --with-libcurl "
+                    "option at compile time.\n");
+    return (-1);
 # endif  /* HAVE_LIBCURL */
+}
 
 
 # if HAVE_JPEG
@@ -729,19 +781,17 @@ cleanup:
 
 
 static int
-get_chunk(char const *filename, chunk_t *pchunk)
+get_chunk(
+    char const *filename,
+    chunk_t *pchunk,
+    int const *cancel_flag
+)
 {
     if (filename != NULL && strstr(filename, "://")) {
-# ifdef HAVE_LIBCURL
         return get_chunk_from_url(filename, pchunk);
-# else
-        fprintf(stderr, "To specify URI schemes, you have to "
-                        "configure this program with --with-libcurl "
-                        "option at compile time.\n");
-        return (-1);
-# endif  /* HAVE_LIBCURL */
     }
-    return get_chunk_from_file(filename, pchunk);
+
+    return get_chunk_from_file(filename, pchunk, cancel_flag);
 }
 
 
@@ -1319,13 +1369,14 @@ sixel_helper_load_image_file(
     unsigned char             /* in */     *bgcolor,      /* background color */
     int                       /* in */     loop_control,  /* one of enum loopControl */
     sixel_load_image_function /* in */     fn_load,       /* callback */
+    int const                 /* in */     *cancel_flag,  /* cancel flag */
     void                      /* in/out */ *context       /* private data */
 )
 {
     int ret = (-1);
     chunk_t chunk;
 
-    ret = get_chunk(filename, &chunk);
+    ret = get_chunk(filename, &chunk, cancel_flag);
     if (ret != 0) {
         return ret;
     }

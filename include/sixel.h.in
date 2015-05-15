@@ -543,6 +543,7 @@ sixel_helper_load_image_file(
     unsigned char             /* in */     *bgcolor,      /* background color */
     int                       /* in */     loop_control,  /* one of enum loopControl */
     sixel_load_image_function /* in */     fn_load,       /* callback */
+    int const                 /* in */     *cancel_flag,  /* cancel flag */
     void                      /* in/out */ *context);     /* private data for callback */
 
 
@@ -603,7 +604,7 @@ int
 sixel_easy_encode(
     char const              /* in */ *filename,
     sixel_encode_settings_t /* in */ *psettings,
-    int                     /* in */ *cancel_flag);
+    int const               /* in */ *cancel_flag);
 
 #ifdef __cplusplus
 }

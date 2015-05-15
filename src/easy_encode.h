@@ -60,6 +60,7 @@ typedef struct sixel_encode_settings {
     int show_version;
     int show_help;
     unsigned char *bgcolor;
+    int outfd;
 } sixel_encode_settings_t;
 
 #endif /* LIBSIXEL_EASY_ENCODE_H */

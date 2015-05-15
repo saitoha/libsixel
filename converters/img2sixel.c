@@ -89,6 +89,8 @@ void show_help(void)
             "       img2sixel [Options] < imagefile\n"
             "\n"
             "Options:\n"
+            "-o, --outfile              specify output file name.\n"
+            "                           (default:stdout)\n"
             "-7, --7bit-mode            generate a sixel image for 7bit\n"
             "                           terminals or printers (default)\n"
             "-8, --8bit-mode            generate a sixel image for 8bit\n"
@@ -283,12 +285,13 @@ main(int argc, char *argv[])
     int ret;
     int exit_code;
     sixel_encode_settings_t *settings;
-    char const *optstring = "78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:B:C:DVH";
+    char const *optstring = "o:78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:B:C:DVH";
 
     settings = sixel_encode_settings_create();
 
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
+        {"outfile",          no_argument,        &long_opt, 'o'},
         {"7bit-mode",        no_argument,        &long_opt, '7'},
         {"8bit-mode",        no_argument,        &long_opt, '8'},
         {"colors",           required_argument,  &long_opt, 'p'},
@@ -398,7 +401,7 @@ argerr:
                     "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
                     "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
                     "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
-                    "                 [-E encodepolicy] [-B bgcolor] [filename ...]\n"
+                    "                 [-E encodepolicy] [-B bgcolor] [-o outfile] [filename ...]\n"
                     "for more details, type: 'img2sixel -H'.\n");
 
 end:
