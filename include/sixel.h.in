@@ -563,12 +563,12 @@ sixel_helper_write_image_file(
 #endif
 
 
-/* easy encode API */
+/* easy encoder API */
 
 #ifndef LIBSIXEL_EASY_ENCODE_H
 
 /* handle type of dither context object */
-typedef struct sixel_encode_settings { int dummy; } sixel_encode_settings_t;
+typedef struct sixel_encoder { int dummy; } sixel_encoder_t;
 
 #endif  /* LIBSIXEL_EASY_ENCODE_H */
 
@@ -576,47 +576,39 @@ typedef struct sixel_encode_settings { int dummy; } sixel_encode_settings_t;
 extern "C" {
 #endif
 
-/* create settings object */
-sixel_encode_settings_t *
-sixel_encode_settings_create(void);
+/* create encoder object */
+sixel_encoder_t *
+sixel_encoder_create(void);
 
 void
-sixel_encode_settings_ref(sixel_encode_settings_t *settings);
+sixel_encoder_ref(sixel_encoder_t *encoder);
 
 void
-sixel_encode_settings_unref(sixel_encode_settings_t *settings);
-
-/* get show_version flag */
-int
-sixel_encode_settings_has_version(sixel_encode_settings_t *settings);
-
-/* get show_help flag */
-int
-sixel_encode_settings_has_help(sixel_encode_settings_t *settings);
+sixel_encoder_unref(sixel_encoder_t *encoder);
 
 int
-sixel_easy_encode_setopt(
-    sixel_encode_settings_t /* in */ *psettings,
-    int                     /* in */ arg,
-    char                    /* in */ *optarg);
+sixel_encoder_setopt(
+    sixel_encoder_t /* in */ *encoder,
+    int             /* in */ arg,
+    char            /* in */ *optarg);
 
 int
-sixel_easy_encode(
-    char const              /* in */ *filename,
-    sixel_encode_settings_t /* in */ *psettings,
-    int const               /* in */ *cancel_flag);
+sixel_encoder_encode(
+    sixel_encoder_t /* in */ *encoder,
+    char const      /* in */ *filename,
+    int const       /* in */ *cancel_flag);
 
 #ifdef __cplusplus
 }
 #endif
 
 
-/* easy encode API */
+/* easy encoder API */
 
 #ifndef LIBSIXEL_EASY_DECODE_H
 
 /* handle type of dither context object */
-typedef struct sixel_decode_settings { int dummy; } sixel_decode_settings_t;
+typedef struct sixel_decoder { int dummy; } sixel_decoder_t;
 
 #endif  /* LIBSIXEL_EASY_ENCODE_H */
 
@@ -624,33 +616,25 @@ typedef struct sixel_decode_settings { int dummy; } sixel_decode_settings_t;
 extern "C" {
 #endif
 
-/* create settings object */
-sixel_decode_settings_t *
-sixel_decode_settings_create(void);
+/* create decoder object */
+sixel_decoder_t *
+sixel_decoder_create(void);
 
 void
-sixel_decode_settings_ref(sixel_decode_settings_t *settings);
+sixel_decoder_ref(sixel_decoder_t *decoder);
 
 void
-sixel_decode_settings_unref(sixel_decode_settings_t *settings);
-
-/* get show_version flag */
-int
-sixel_decode_settings_has_version(sixel_decode_settings_t *settings);
-
-/* get show_help flag */
-int
-sixel_decode_settings_has_help(sixel_decode_settings_t *settings);
+sixel_decoder_unref(sixel_decoder_t *decoder);
 
 int
-sixel_easy_decode_setopt(
-    sixel_decode_settings_t /* in */ *psettings,
-    int                     /* in */ arg,
-    char                    /* in */ *optarg);
+sixel_decoder_setopt(
+    sixel_decoder_t /* in */ *decoder,
+    int             /* in */ arg,
+    char            /* in */ *optarg);
 
 int
-sixel_easy_decode(
-    sixel_decode_settings_t /* in */ *psettings);
+sixel_decoder_decode(
+    sixel_decoder_t /* in */ *decoder);
 
 #ifdef __cplusplus
 }

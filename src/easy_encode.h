@@ -22,8 +22,8 @@
 #ifndef LIBSIXEL_EASY_ENCODE_H
 #define LIBSIXEL_EASY_ENCODE_H
 
-/* encode settings object */
-typedef struct sixel_encode_settings {
+/* encoder object */
+typedef struct sixel_encoder {
     unsigned int ref;          /* reference counter */
     int reqcolors;
     char *mapfile;
@@ -57,11 +57,9 @@ typedef struct sixel_encode_settings {
     int encode_policy;
     int pipe_mode;
     int verbose;
-    int show_version;
-    int show_help;
     unsigned char *bgcolor;
     int outfd;
-} sixel_encode_settings_t;
+} sixel_encoder_t;
 
 #endif /* LIBSIXEL_EASY_ENCODE_H */
 

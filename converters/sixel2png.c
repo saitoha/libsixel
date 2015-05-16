@@ -103,7 +103,7 @@ int
 main(int argc, char *argv[])
 {
     int n;
-    sixel_decode_settings_t *settings;
+    sixel_decoder_t *decoder;
 #if HAVE_GETOPT_LONG
     int long_opt;
     int option_index;
@@ -120,8 +120,8 @@ main(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 
-    settings = sixel_decode_settings_create();
-    if (settings == NULL) {
+    decoder = sixel_decoder_create();
+    if (decoder == NULL) {
         nret = (-1);
         goto end;
     }
@@ -145,9 +145,18 @@ main(int argc, char *argv[])
         }
 #endif  /* HAVE_GETOPT_LONG */
 
-        nret = sixel_easy_decode_setopt(settings, n, optarg);
-        if (nret != 0) {
-            goto argerr;
+        switch (n) {
+        case 'V':
+            show_version();
+            goto end;
+        case 'H':
+            show_help();
+            goto end;
+        default:
+            nret = sixel_decoder_setopt(decoder, n, optarg);
+            if (nret != 0) {
+                goto argerr;
+            }
         }
 
         if (optind >= argc) {
@@ -156,24 +165,14 @@ main(int argc, char *argv[])
 
     }
 
-    if (sixel_decode_settings_has_version(settings)) {
-        show_version();
-        goto end;
-    }
-
-    if (sixel_decode_settings_has_help(settings)) {
-        show_help();
-        goto end;
-    }
-
     if (optind < argc) {
-        nret = sixel_easy_decode_setopt(settings, 'i', argv[optind++]);
+        nret = sixel_decoder_setopt(decoder, 'i', argv[optind++]);
         if (nret != 0) {
             goto argerr;
         }
     }
     if (optind < argc) {
-        nret = sixel_easy_decode_setopt(settings, 'o', argv[optind++]);
+        nret = sixel_decoder_setopt(decoder, 'o', argv[optind++]);
         if (nret != 0) {
             goto argerr;
         }
@@ -183,14 +182,14 @@ main(int argc, char *argv[])
         goto argerr;
     }
 
-    nret = sixel_easy_decode(settings);
+    nret = sixel_decoder_decode(decoder);
     goto end;
 
 argerr:
     show_help();
 
 end:
-    sixel_decode_settings_unref(settings);
+    sixel_decoder_unref(decoder);
     return nret;
 }
 
