@@ -986,7 +986,7 @@ int
 sixel_encoder_setopt(
     sixel_encoder_t /* in */ *encoder,
     int             /* in */ arg,
-    char            /* in */ *optarg)
+    char const      /* in */ *optarg)
 {
     int number;
     int parsed;
