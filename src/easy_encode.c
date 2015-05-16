@@ -56,6 +56,12 @@
 #if HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
 #endif
+#if HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 
 #include "easy_encode.h"
 #include <sixel.h>
@@ -191,9 +197,7 @@ end:
 static int
 sixel_write_callback(char *data, int size, void *priv)
 {
-    /* unused */ (void) priv;
-
-    return fwrite(data, 1, size, stdout);
+    return write(*(int *)priv, data, size);
 }
 
 
@@ -204,8 +208,6 @@ sixel_hex_write_callback(char *data, int size, void *priv)
     int i;
     int j;
 
-    /* unused */ (void) priv;
-
     for (i = j = 0; i < size; ++i, ++j) {
         hex[j] = (data[i] >> 4) & 0xf;
         hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
@@ -213,7 +215,7 @@ sixel_hex_write_callback(char *data, int size, void *priv)
         hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
     }
 
-    return fwrite(hex, 1, size * 2, stdout);
+    return write(*(int *)priv, hex, size * 2);
 }
 
 
@@ -310,7 +312,8 @@ static sixel_dither_t *
 prepare_specified_palette(
     char const *mapfile,
     int reqcolors,
-    unsigned char *bgcolor)
+    unsigned char *bgcolor,
+    int const *cancel_flag)
 {
     int ret = (-1);
 
@@ -326,6 +329,7 @@ prepare_specified_palette(
                                        bgcolor,
                                        LOOP_DISABLE,
                                        load_image_callback_for_palette,
+                                       cancel_flag,
                                        &callback_context);
     if (ret != 0) {
         return NULL;
@@ -338,7 +342,8 @@ prepare_specified_palette(
 static sixel_dither_t *
 prepare_palette(sixel_dither_t *former_dither,
                 sixel_frame_t *frame,
-                sixel_encode_settings_t *psettings)
+                sixel_encode_settings_t *psettings,
+                int const *cancel_flag)
 {
     sixel_dither_t *dither;
     int ret;
@@ -360,7 +365,8 @@ prepare_palette(sixel_dither_t *former_dither,
         }
         dither = prepare_specified_palette(psettings->mapfile,
                                            psettings->reqcolors,
-                                           psettings->bgcolor);
+                                           psettings->bgcolor,
+                                           cancel_flag);
     } else if (psettings->builtin_palette) {
         if (former_dither) {
             return former_dither;
@@ -501,23 +507,23 @@ print_palette(sixel_dither_t *dither)
 }
 
 
-#if HAVE_SYS_SELECT_H
 static int
 wait_stdin(int usec)
 {
     fd_set rfds;
     struct timeval tv;
-    int ret;
+    int ret = 0;
 
+#if HAVE_SYS_SELECT_H
     tv.tv_sec = usec / 1000000;
     tv.tv_usec = usec % 1000000;
     FD_ZERO(&rfds);
     FD_SET(STDIN_FILENO, &rfds);
     ret = select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
+#endif  /* HAVE_SYS_SELECT_H */
 
     return ret;
 }
-#endif  /* HAVE_SYS_SELECT_H */
 
 
 static int
@@ -530,7 +536,7 @@ output_sixel_without_macro(
     sixel_dither_t *dither,
     sixel_output_t *context,
     sixel_encode_settings_t *psettings,
-    int *cancel_flag
+    int const *cancel_flag
 )
 {
     int nret = 0;
@@ -580,7 +586,7 @@ output_sixel_without_macro(
 
     memcpy(p, buffer, width * height * depth);
 
-    if (*cancel_flag) {
+    if (cancel_flag && *cancel_flag) {
         goto end;
     }
 
@@ -661,7 +667,7 @@ end:
 
 typedef struct sixel_callback_context {
     sixel_encode_settings_t *settings;
-    int *cancel_flag;
+    int const *cancel_flag;
 } sixel_callback_context_t;
 
 
@@ -732,8 +738,9 @@ load_image_callback(sixel_frame_t *frame, void *data)
     sixel_encode_settings_t *psettings;
     sixel_dither_t *dither = NULL;
     sixel_output_t *output = NULL;
-    sixel_callback_context_t *callback_context = (sixel_callback_context_t *)data;
+    sixel_callback_context_t *callback_context;
 
+    callback_context = (sixel_callback_context_t *)data;
     psettings = callback_context->settings;
 
     /* evaluate -w, -h, and -c option: crop/scale input source */
@@ -764,7 +771,8 @@ load_image_callback(sixel_frame_t *frame, void *data)
     }
 
     /* prepare dither context */
-    dither = prepare_palette(dither, frame, psettings);
+    dither = prepare_palette(dither, frame, psettings,
+                             callback_context->cancel_flag);
     if (!dither) {
         nret = (-1);
         goto end;
@@ -788,9 +796,11 @@ load_image_callback(sixel_frame_t *frame, void *data)
     /* create output context */
     if (psettings->fuse_macro || psettings->macro_number >= 0) {
         /* -u or -n option */
-        output = sixel_output_create(sixel_hex_write_callback, stdout);
+        output = sixel_output_create(sixel_hex_write_callback,
+                                     &psettings->outfd);
     } else {
-        output = sixel_output_create(sixel_write_callback, stdout);
+        output = sixel_output_create(sixel_write_callback,
+                                     &psettings->outfd);
     }
     sixel_output_set_8bit_availability(output, psettings->f8bit);
     sixel_output_set_palette_type(output, psettings->palette_type);
@@ -871,7 +881,7 @@ int
 sixel_easy_encode(
     char const              /* in */ *filename,
     sixel_encode_settings_t /* in */ *psettings,
-    int                     /* in */ *cancel_flag)
+    int const               /* in */ *cancel_flag)
 {
     int nret = (-1);
     int fuse_palette = 1;
@@ -932,6 +942,7 @@ reload:
                                         psettings->bgcolor,
                                         loop_control,
                                         load_image_callback,
+                                        cancel_flag,
                                         &callback_context);
 
     if (nret != 0) {
@@ -942,18 +953,16 @@ reload:
 #if HAVE_CLEARERR
         clearerr(stdin);
 #endif  /* HAVE_FSEEK */
-        while (!*cancel_flag) {
-#if HAVE_SYS_SELECT_H
+        while (cancel_flag && !*cancel_flag) {
             nret = wait_stdin(1000000);
             if (nret == (-1)) {
                 goto end;
             }
-#endif  /* HAVE_SYS_SELECT_H */
             if (nret != 0) {
                 break;
             }
         }
-        if (!*cancel_flag) {
+        if (cancel_flag && !*cancel_flag) {
             goto reload;
         }
     }
@@ -976,6 +985,20 @@ sixel_easy_encode_setopt(
     char unit[32];
 
     switch(arg) {
+    case 'o':
+        if (*optarg == '\0') {
+            fprintf(stderr, "Invalid file name.\n");
+            goto argerr;
+        }
+        if (strcmp(optarg, "-") != 0) {
+            if (psettings->outfd) {
+                close(psettings->outfd);
+            }
+            psettings->outfd = open(optarg,
+                                    O_RDWR|O_CREAT|O_NOCTTY,
+                                    S_IREAD|S_IWRITE);
+        }
+        break;
     case '7':
         psettings->f8bit = 0;
         break;
@@ -1384,6 +1407,7 @@ sixel_encode_settings_create(void)
     settings->show_version          = 0;
     settings->show_help             = 0;
     settings->bgcolor               = NULL;
+    settings->outfd                 = STDOUT_FILENO;
 
     return settings;
 }
@@ -1395,6 +1419,11 @@ sixel_encode_settings_destroy(sixel_encode_settings_t *settings)
     if (settings) {
         free(settings->mapfile);
         free(settings->bgcolor);
+        if (settings->outfd
+            && settings->outfd != STDOUT_FILENO
+            && settings->outfd != STDERR_FILENO) {
+            close(settings->outfd);
+        }
         free(settings);
     }
 }
