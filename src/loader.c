@@ -146,9 +146,11 @@ memory_write(void *ptr,
 static int
 wait_file(int fd, int usec)
 {
+#if HAVE_SYS_SELECT_H
     fd_set rfds;
     struct timeval tv;
-    int ret = 0;
+#endif  /* HAVE_SYS_SELECT_H */
+    int ret = 1;
 
 #if HAVE_SYS_SELECT_H
     tv.tv_sec = usec / 1000000;
@@ -316,6 +318,8 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
     curl_easy_cleanup(curl);
     return 0;
 # else
+    (void) url;
+    (void) pchunk;
     fprintf(stderr, "To specify URI schemes, you have to "
                     "configure this program with --with-libcurl "
                     "option at compile time.\n");
