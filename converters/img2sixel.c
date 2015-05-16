@@ -371,6 +371,8 @@ main(int argc, char *argv[])
 # if HAVE_DECL_SIGHUP
     signal(SIGHUP, signal_handler);
 # endif
+#else
+    (void) signal_handler;
 #endif
 
     if (optind == argc) {
