@@ -510,8 +510,10 @@ print_palette(sixel_dither_t *dither)
 static int
 wait_stdin(int usec)
 {
+#if HAVE_SYS_SELECT_H
     fd_set rfds;
     struct timeval tv;
+#endif  /* HAVE_SYS_SELECT_H */
     int ret = 0;
 
 #if HAVE_SYS_SELECT_H
@@ -520,6 +522,8 @@ wait_stdin(int usec)
     FD_ZERO(&rfds);
     FD_SET(STDIN_FILENO, &rfds);
     ret = select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
+#else
+    (void) usec;
 #endif  /* HAVE_SYS_SELECT_H */
 
     return ret;
@@ -995,7 +999,7 @@ sixel_easy_encode_setopt(
                 close(psettings->outfd);
             }
             psettings->outfd = open(optarg,
-                                    O_RDWR|O_CREAT|O_NOCTTY,
+                                    O_RDWR|O_CREAT,
                                     S_IREAD|S_IWRITE);
         }
         break;
