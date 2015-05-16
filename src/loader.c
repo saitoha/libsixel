@@ -158,6 +158,9 @@ wait_file(int fd, int usec)
     FD_ZERO(&rfds);
     FD_SET(fd, &rfds);
     ret = select(fd + 1, &rfds, NULL, NULL, &tv);
+#else
+    (void) fd;
+    (void) usec;
 #endif  /* HAVE_SYS_SELECT_H */
     if (ret == 0) {
         return (1);
