@@ -890,8 +890,7 @@ end:
 int
 sixel_encoder_encode(
     sixel_encoder_t /* in */ *encoder,
-    char const      /* in */ *filename,
-    int const       /* in */ *cancel_flag)
+    char const      /* in */ *filename)
 {
     int nret = (-1);
     int fuse_palette = 1;
@@ -943,7 +942,6 @@ sixel_encoder_encode(
 
 reload:
     callback_context.encoder = encoder;
-    callback_context.cancel_flag = cancel_flag;
 
     nret = sixel_helper_load_image_file(filename,
                                         encoder->fstatic,
@@ -952,7 +950,7 @@ reload:
                                         encoder->bgcolor,
                                         loop_control,
                                         load_image_callback,
-                                        cancel_flag,
+                                        encoder->cancel_flag,
                                         &callback_context);
 
     if (nret != 0) {
@@ -963,7 +961,7 @@ reload:
 #if HAVE_CLEARERR
         clearerr(stdin);
 #endif  /* HAVE_FSEEK */
-        while (cancel_flag && !*cancel_flag) {
+        while (encoder->cancel_flag && !*encoder->cancel_flag) {
             nret = wait_stdin(1000000);
             if (nret == (-1)) {
                 goto end;
@@ -972,7 +970,7 @@ reload:
                 break;
             }
         }
-        if (cancel_flag && !*cancel_flag) {
+        if (!encoder->cancel_flag || !*encoder->cancel_flag) {
             goto reload;
         }
     }
@@ -1410,6 +1408,7 @@ sixel_encoder_create(void)
     encoder->pipe_mode             = 0;
     encoder->bgcolor               = NULL;
     encoder->outfd                 = STDOUT_FILENO;
+    encoder->cancel_flag           = NULL;
 
     return encoder;
 }
@@ -1446,6 +1445,16 @@ sixel_encoder_unref(sixel_encoder_t *encoder)
     if (encoder != NULL && --encoder->ref == 0) {
         sixel_encoder_destroy(encoder);
     }
+}
+
+int
+sixel_encoder_set_cancel_flag(
+    sixel_encoder_t /* in */ *encoder,
+    int             /* in */ *cancel_flag
+)
+{
+    encoder->cancel_flag = cancel_flag;
+    return 0;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
