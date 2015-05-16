@@ -577,7 +577,6 @@ output_sixel_without_macro(
 #if HAVE_USLEEP && HAVE_CLOCK
     start = clock();
 #endif
-    fflush(stdout);
 #if HAVE_USLEEP
     if (!encoder->fignore_delay && delay > 0) {
 # if HAVE_CLOCK
@@ -626,6 +625,7 @@ output_sixel_with_macro(
 {
     int nret = 0;
     int dulation = 0;
+    char buffer[256];
 #if HAVE_USLEEP
     int lag = 0;
 # if HAVE_CLOCK
@@ -638,21 +638,22 @@ output_sixel_with_macro(
 #endif
     if (loop_count == 0) {
         if (encoder->macro_number >= 0) {
-            printf("\033P%d;0;1!z", encoder->macro_number);
+            sprintf(buffer, "\033P%d;0;1!z", encoder->macro_number);
         } else {
-            printf("\033P%d;0;1!z", frame_no);
+            sprintf(buffer, "\033P%d;0;1!z", frame_no);
         }
+        sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
 
         nret = sixel_encode(frame, sx, sy, /* unused */ 3, dither, context);
         if (nret != 0) {
             goto end;
         }
 
-        printf("\033\\");
+        sixel_write_callback("\033\\", 2, &encoder->outfd);
     }
     if (encoder->macro_number < 0) {
-        fflush(stdout);
-        printf("\033[%d*z", frame_no);
+        sprintf(buffer, "\033[%d*z", frame_no);
+        sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
 #if HAVE_USLEEP
         if (delay > 0 && !encoder->fignore_delay) {
 # if HAVE_CLOCK
@@ -682,7 +683,7 @@ typedef struct sixel_callback_context {
 
 
 static void
-scroll_on_demand(sixel_frame_t *frame)
+scroll_on_demand(sixel_encoder_t *encoder, sixel_frame_t *frame)
 {
 #if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
     struct winsize size = {0, 0, 0, 0};
@@ -693,6 +694,7 @@ scroll_on_demand(sixel_frame_t *frame)
     int pixelheight;
     int cellheight;
     int scroll;
+    char buffer[256];
 
     if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)) {
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
@@ -707,8 +709,7 @@ scroll_on_demand(sixel_frame_t *frame)
                 tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
 
                 /* request cursor position report */
-                printf("\033[6n");
-                fflush(stdout);
+                sixel_write_callback("\033[6n", 4, &encoder->outfd);
                 if (wait_stdin(1000 * 1000) != (-1)) { /* wait 1 sec */
                     if (scanf("\033[%d;%dR", &row, &col) == 2) {
                         tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
@@ -716,27 +717,28 @@ scroll_on_demand(sixel_frame_t *frame)
                          cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
                          scroll = cellheight + row - size.ws_row + 1;
                         if (scroll > 0) {
-                            printf("\033[%dS\033[%dA", scroll, scroll);
+                            sprintf(buffer, "\033[%dS\033[%dA", scroll, scroll);
+                            sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
                         }
-                        printf("\0337");
+                        sixel_write_callback("\0337", 2, &encoder->outfd);
                     } else {
-                        printf("\033[H");
+                        sixel_write_callback("\033[H", 3, &encoder->outfd);
                     }
                 } else {
-                    printf("\033[H");
+                    sixel_write_callback("\033[H", 3, &encoder->outfd);
                 }
             } else {
-                printf("\0338");
+                sixel_write_callback("\0338", 2, &encoder->outfd);
             }
         } else {
-            printf("\033[H");
+            sixel_write_callback("\033[H", 3, &encoder->outfd);
         }
     } else {
-        printf("\033[H");
+        sixel_write_callback("\033[H", 3, &encoder->outfd);
     }
 #else
     (void) frame;
-    printf("\033[H");
+    sixel_write_callback("\033[H", 3, &encoder->outfd);
 #endif
 }
 
@@ -819,7 +821,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
     sixel_output_set_encode_policy(output, encoder->encode_policy);
 
     if (sixel_frame_get_multiframe(frame) && !encoder->fstatic) {
-        scroll_on_demand(frame);
+        scroll_on_demand(encoder, frame);
     }
 
     if (callback_context->cancel_flag && *callback_context->cancel_flag) {
@@ -864,16 +866,13 @@ load_image_callback(sixel_frame_t *frame, void *data)
     }
 
     if (callback_context->cancel_flag && *callback_context->cancel_flag) {
-        printf("\x18\x1b\\");
-        fflush(stdout);
+        sixel_write_callback("\x18\033\\", 3, &encoder->outfd);
         nret = SIXEL_INTERRUPTED;
     }
 
     if (nret != 0) {
         goto end;
     }
-
-    fflush(stdout);
 
 end:
     if (output) {
