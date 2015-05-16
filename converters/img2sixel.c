@@ -284,10 +284,10 @@ main(int argc, char *argv[])
 #endif  /* HAVE_GETOPT_LONG */
     int ret;
     int exit_code;
-    sixel_encode_settings_t *settings;
+    sixel_encoder_t *encoder;
     char const *optstring = "o:78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:B:C:DVH";
 
-    settings = sixel_encode_settings_create();
+    encoder = sixel_encoder_create();
 
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
@@ -342,24 +342,22 @@ main(int argc, char *argv[])
             n = long_opt;
         }
 #endif  /* HAVE_GETOPT_LONG */
-        ret = sixel_easy_encode_setopt(settings, n, optarg);
-        if (ret != 0) {
-            goto argerr;
+        switch (n) {
+        case 'V':
+            show_version();
+            exit_code = EXIT_SUCCESS;
+            goto end;
+        case 'H':
+            show_help();
+            exit_code = EXIT_SUCCESS;
+            goto end;
+        default:
+            ret = sixel_encoder_setopt(encoder, n, optarg);
+            if (ret != 0) {
+                goto argerr;
+            }
+            break;
         }
-    }
-
-    /* evaluate the option -v,--version */
-    if (sixel_encode_settings_has_version(settings)) {
-        show_version();
-        exit_code = EXIT_SUCCESS;
-        goto end;
-    }
-
-    /* evaluate the option -h,--help */
-    if (sixel_encode_settings_has_help(settings)) {
-        show_help();
-        exit_code = EXIT_SUCCESS;
-        goto end;
     }
 
     /* set signal handler to handle SIGINT/SIGTERM/SIGHUP */
@@ -376,14 +374,14 @@ main(int argc, char *argv[])
 #endif
 
     if (optind == argc) {
-        ret = sixel_easy_encode(NULL, settings, &signaled);
+        ret = sixel_encoder_encode(encoder, NULL, &signaled);
         if (ret != 0) {
             exit_code = EXIT_FAILURE;
             goto end;
         }
     } else {
         for (n = optind; n < argc; n++) {
-            ret = sixel_easy_encode(argv[n], settings, &signaled);
+            ret = sixel_encoder_encode(encoder, argv[n], &signaled);
             if (ret != 0) {
                 exit_code = EXIT_FAILURE;
                 goto end;
@@ -405,7 +403,7 @@ argerr:
                     "for more details, type: 'img2sixel -H'.\n");
 
 end:
-    sixel_encode_settings_unref(settings);
+    sixel_encoder_unref(encoder);
     return exit_code;
 }
 
