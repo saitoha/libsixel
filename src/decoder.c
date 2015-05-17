@@ -57,7 +57,7 @@
 # include <sys/ioctl.h>
 #endif
 
-#include "easy_decode.h"
+#include "decoder.h"
 #include <sixel.h>
 
 

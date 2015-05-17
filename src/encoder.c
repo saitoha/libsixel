@@ -63,7 +63,7 @@
 # include <fcntl.h>
 #endif
 
-#include "easy_encode.h"
+#include "encoder.h"
 #include <sixel.h>
 
 
