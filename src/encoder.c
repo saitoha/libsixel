@@ -313,6 +313,7 @@ prepare_specified_palette(
     char const *mapfile,
     int reqcolors,
     unsigned char *bgcolor,
+    int finsecure,
     int const *cancel_flag)
 {
     int ret = (-1);
@@ -329,6 +330,7 @@ prepare_specified_palette(
                                        bgcolor,
                                        LOOP_DISABLE,
                                        load_image_callback_for_palette,
+                                       finsecure,
                                        cancel_flag,
                                        &callback_context);
     if (ret != 0) {
@@ -342,8 +344,7 @@ prepare_specified_palette(
 static sixel_dither_t *
 prepare_palette(sixel_dither_t *former_dither,
                 sixel_frame_t *frame,
-                sixel_encoder_t *encoder,
-                int const *cancel_flag)
+                sixel_encoder_t *encoder)
 {
     sixel_dither_t *dither;
     int ret;
@@ -366,7 +367,8 @@ prepare_palette(sixel_dither_t *former_dither,
         dither = prepare_specified_palette(encoder->mapfile,
                                            encoder->reqcolors,
                                            encoder->bgcolor,
-                                           cancel_flag);
+                                           encoder->finsecure,
+                                           encoder->cancel_flag);
     } else if (encoder->builtin_palette) {
         if (former_dither) {
             return former_dither;
@@ -774,8 +776,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
     }
 
     /* prepare dither context */
-    dither = prepare_palette(dither, frame, encoder,
-                             encoder->cancel_flag);
+    dither = prepare_palette(dither, frame, encoder);
     if (!dither) {
         nret = (-1);
         goto end;
@@ -936,6 +937,7 @@ reload:
                                         encoder->bgcolor,
                                         loop_control,
                                         load_image_callback,
+                                        encoder->finsecure,
                                         encoder->cancel_flag,
                                         (void *)encoder);
 
@@ -1228,6 +1230,9 @@ sixel_encoder_setopt(
             goto argerr;
         }
         break;
+    case 'k':
+        encoder->finsecure = 1;
+        break;
     case 'i':
         encoder->finvert = 1;
         break;
@@ -1394,6 +1399,7 @@ sixel_encoder_create(void)
     encoder->pipe_mode             = 0;
     encoder->bgcolor               = NULL;
     encoder->outfd                 = STDOUT_FILENO;
+    encoder->finsecure             = 0;
     encoder->cancel_flag           = NULL;
 
     return encoder;

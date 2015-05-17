@@ -59,6 +59,7 @@ typedef struct sixel_encoder {
     int verbose;
     unsigned char *bgcolor;
     int outfd;
+    int finsecure;
     int *cancel_flag;
 } sixel_encoder_t;
 

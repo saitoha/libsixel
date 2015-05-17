@@ -424,7 +424,7 @@ dist_man_MANS = $(am__append_2) $(am__append_6)
 dist_bashcompletion_DATA = $(am__append_3)
 dist_zshcompletion_DATA = $(am__append_4)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
-CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe
+CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe server.py server.key server.crt
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = img2sixel.c malloc_stub.c malloc_stub.h
 @WANT_IMG2SIXEL_TRUE@img2sixel_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 @WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
@@ -1148,7 +1148,23 @@ test_impl:
 @HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -w32 -B\#fff ../images/pngsuite/background/bgwn6a08.png
 @HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -w32 -B\#fff ../images/pngsuite/background/bgyn6a16.png
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel file:///test)
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel https:///test)
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel file:///$$(pwd)/../images/snake.jpg
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	if which openssl && which python; then \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    openssl genrsa | openssl rsa > server.key; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    openssl req -new -key server.key -subj "/CN=localhost" | openssl x509 -req -signkey server.key > server.crt; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "import BaseHTTPServer as bs, SimpleHTTPServer as ss, ssl" > server.py; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "httpd = bs.HTTPServer(('localhost', 4443), ss.SimpleHTTPRequestHandler)" >> server.py; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "httpd.socket = ssl.wrap_socket(httpd.socket, certfile='server.crt', keyfile='server.key', server_side=True)" >> server.py; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "httpd.handle_request()" >> server.py; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "httpd.handle_request()" >> server.py; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    python server.py& \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    sleep 1; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    ! ./img2sixel 'https://localhost:4443/snake.sixel'; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    sleep 1; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    ./img2sixel -k 'https://localhost:4443/snake.sixel'; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	fi
+@HAVE_CURL_FALSE@@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -k < ../images/snake.jpg
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	test ! $$($(WINE) ./sixel2png -i unknown.sixel)
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	test ! $$($(WINE) ./sixel2png -% < snake.sixel)
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -H

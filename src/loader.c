@@ -289,7 +289,10 @@ get_chunk_from_file(
 
 
 static int
-get_chunk_from_url(char const *url, chunk_t *pchunk)
+get_chunk_from_url(
+    char const *url,
+    chunk_t *pchunk,
+    int finsecure)
 {
 # ifdef HAVE_LIBCURL
     CURL *curl;
@@ -307,7 +310,7 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
     curl = curl_easy_init();
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-    if (strncmp(url, "https://", 8) == 0) {
+    if (finsecure && strncmp(url, "https://", 8) == 0) {
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
     }
@@ -793,11 +796,12 @@ static int
 get_chunk(
     char const *filename,
     chunk_t *pchunk,
+    int finsecure,
     int const *cancel_flag
 )
 {
     if (filename != NULL && strstr(filename, "://")) {
-        return get_chunk_from_url(filename, pchunk);
+        return get_chunk_from_url(filename, pchunk, finsecure);
     }
 
     return get_chunk_from_file(filename, pchunk, cancel_flag);
@@ -1378,6 +1382,7 @@ sixel_helper_load_image_file(
     unsigned char             /* in */     *bgcolor,      /* background color */
     int                       /* in */     loop_control,  /* one of enum loopControl */
     sixel_load_image_function /* in */     fn_load,       /* callback */
+    int                       /* in */     finsecure,     /* true if do not verify SSL */
     int const                 /* in */     *cancel_flag,  /* cancel flag */
     void                      /* in/out */ *context       /* private data */
 )
@@ -1385,7 +1390,7 @@ sixel_helper_load_image_file(
     int ret = (-1);
     chunk_t chunk;
 
-    ret = get_chunk(filename, &chunk, cancel_flag);
+    ret = get_chunk(filename, &chunk, finsecure, cancel_flag);
     if (ret != 0) {
         return ret;
     }

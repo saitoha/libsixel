@@ -5,5 +5,5 @@
   "description": "A lightweight, fast implementation of DEC SIXEL graphics codec",
   "keywords": ["terminal", "graphics", "image", "sixel"],
   "license": "MIT",
-  "install": "./configure --with-libcurl && make install"
+  "install": "./configure && make install"
 }

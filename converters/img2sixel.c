@@ -54,7 +54,6 @@
 
 #include <sixel.h>
 
-
 static
 void show_version(void)
 {
@@ -102,6 +101,9 @@ void show_help(void)
             "-e, --monochrome           output monochrome sixel image\n"
             "                           this option assumes the terminal\n"
             "                           background color is black\n"
+            "-k, --insecure             allow to connect to SSL sites without\n"
+            "                           certs(enabled only when configured\n"
+            "                           with --with-libcurl)\n"
             "-i, --invert               assume the terminal background color\n"
             "                           is white, make sense only when -e\n"
             "                           option is given\n"
@@ -285,7 +287,7 @@ main(int argc, char *argv[])
     int ret;
     int exit_code;
     sixel_encoder_t *encoder;
-    char const *optstring = "o:78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:B:C:DVH";
+    char const *optstring = "o:78p:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:B:C:DVH";
 
     encoder = sixel_encoder_create();
 
@@ -308,6 +310,7 @@ main(int argc, char *argv[])
         {"resampling",       required_argument,  &long_opt, 'r'},
         {"quality",          required_argument,  &long_opt, 'q'},
         {"palette-type",     required_argument,  &long_opt, 't'},
+        {"insecure",         no_argument,        &long_opt, 'k'},
         {"invert",           no_argument,        &long_opt, 'i'},
         {"loop-control",     required_argument,  &long_opt, 'l'},
         {"use-macro",        no_argument,        &long_opt, 'u'},
@@ -403,7 +406,7 @@ main(int argc, char *argv[])
 argerr:
     exit_code = EXIT_FAILURE;
     fprintf(stderr,
-            "usage: img2sixel [-78eIiugvSPDVH] [-p colors] [-m file] [-d diffusiontype]\n"
+            "usage: img2sixel [-78eIkiugvSPDVH] [-p colors] [-m file] [-d diffusiontype]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
             "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
