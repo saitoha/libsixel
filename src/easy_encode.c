@@ -545,8 +545,7 @@ output_sixel_without_macro(
     int delay,
     sixel_dither_t *dither,
     sixel_output_t *context,
-    sixel_encoder_t *encoder,
-    int const *cancel_flag
+    sixel_encoder_t *encoder
 )
 {
     int nret = 0;
@@ -596,7 +595,7 @@ output_sixel_without_macro(
 
     memcpy(p, buffer, width * height * depth);
 
-    if (cancel_flag && *cancel_flag) {
+    if (encoder->cancel_flag && *encoder->cancel_flag) {
         goto end;
     }
 
@@ -675,12 +674,6 @@ end:
 }
 
 
-typedef struct sixel_callback_context {
-    sixel_encoder_t *encoder;
-    int const *cancel_flag;
-} sixel_callback_context_t;
-
-
 static void
 scroll_on_demand(sixel_frame_t *frame)
 {
@@ -748,10 +741,8 @@ load_image_callback(sixel_frame_t *frame, void *data)
     sixel_encoder_t *encoder;
     sixel_dither_t *dither = NULL;
     sixel_output_t *output = NULL;
-    sixel_callback_context_t *callback_context;
 
-    callback_context = (sixel_callback_context_t *)data;
-    encoder = callback_context->encoder;
+    encoder = (sixel_encoder_t *)data;
 
     /* evaluate -w, -h, and -c option: crop/scale input source */
     if (encoder->clipfirst) {
@@ -782,7 +773,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
 
     /* prepare dither context */
     dither = prepare_palette(dither, frame, encoder,
-                             callback_context->cancel_flag);
+                             encoder->cancel_flag);
     if (!dither) {
         nret = (-1);
         goto end;
@@ -822,7 +813,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
         scroll_on_demand(frame);
     }
 
-    if (callback_context->cancel_flag && *callback_context->cancel_flag) {
+    if (encoder->cancel_flag && *encoder->cancel_flag) {
         nret = SIXEL_INTERRUPTED;
         goto end;
     }
@@ -859,11 +850,10 @@ load_image_callback(sixel_frame_t *frame, void *data)
                                           sixel_frame_get_delay(frame),
                                           dither,
                                           output,
-                                          encoder,
-                                          callback_context->cancel_flag);
+                                          encoder);
     }
 
-    if (callback_context->cancel_flag && *callback_context->cancel_flag) {
+    if (encoder->cancel_flag && *encoder->cancel_flag) {
         printf("\x18\x1b\\");
         fflush(stdout);
         nret = SIXEL_INTERRUPTED;
@@ -895,7 +885,6 @@ sixel_encoder_encode(
     int nret = (-1);
     int fuse_palette = 1;
     int loop_control;
-    sixel_callback_context_t callback_context;
 
     if (encoder == NULL) {
         encoder = sixel_encoder_create();
@@ -941,8 +930,6 @@ sixel_encoder_encode(
     }
 
 reload:
-    callback_context.encoder = encoder;
-
     nret = sixel_helper_load_image_file(filename,
                                         encoder->fstatic,
                                         fuse_palette,
@@ -951,7 +938,7 @@ reload:
                                         loop_control,
                                         load_image_callback,
                                         encoder->cancel_flag,
-                                        &callback_context);
+                                        (void *)encoder);
 
     if (nret != 0) {
         goto end;
