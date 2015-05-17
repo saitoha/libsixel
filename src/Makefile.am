@@ -17,6 +17,7 @@ libsixel_la_SOURCES = output.c \
 		frame.c \
 		frame.h \
 		pixelformat.c \
+		pixelformat.h \
 		scale.c \
 		loader.c \
 		frompnm.c \
@@ -47,7 +48,7 @@ libsixel_la_LIBADD = -lm \
 		$(GD_LIBS)
 
 if COND_TESTS
-bin_PROGRAMS = tests
+noinst_PROGRAMS = tests
 tests_SOURCES = tests.c
 tests_CPPFLAGS = -I$(top_builddir)/include/ \
 		 -I$(top_builddir)/src/ $(AM_CPPFLAGS)

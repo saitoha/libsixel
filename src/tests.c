@@ -33,6 +33,7 @@
 
 #include "dither.h"
 #include "quant.h"
+#include "pixelformat.h"
 #include <sixel.h>
 
 #if HAVE_TESTS
@@ -46,6 +47,11 @@ main(int argc, char *argv[])
     (void) argv;
 
     nret = sixel_dither_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    nret = sixel_pixelformat_tests_main();
     if (nret != EXIT_SUCCESS) {
         goto error;
     }

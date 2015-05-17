@@ -23,6 +23,7 @@
 
 #include "sixel.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <memory.h>
 
 
@@ -270,6 +271,62 @@ sixel_helper_normalize_pixelformat(
 
     return 0;
 }
+
+
+#if HAVE_TESTS
+static int
+test1(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = PIXELFORMAT_RGB888;
+    unsigned char src_rgb888[] = { 0x46, 0xf3, 0xe5 };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src_rgb888,
+                                             PIXELFORMAT_RGB888,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        perror(NULL);
+        goto error;
+    }
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+int
+sixel_pixelformat_tests_main(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t i;
+    typedef int (* testcase)(void);
+
+    static testcase const testcases[] = {
+        test1,
+    };
+
+    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
+        nret = testcases[i]();
+        if (nret != EXIT_SUCCESS) {
+            perror(NULL);
+            goto error;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+#endif  /* HAVE_TESTS */
+
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

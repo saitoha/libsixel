@@ -63,6 +63,11 @@ typedef struct sixel_encoder {
     int *cancel_flag;
 } sixel_encoder_t;
 
+#if HAVE_TESTS
+int
+sixel_encoder_tests_main(void);
+#endif
+
 #endif /* LIBSIXEL_EASY_ENCODE_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
