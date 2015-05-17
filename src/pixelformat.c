@@ -36,8 +36,10 @@ get_rgb(unsigned char const *data,
         unsigned char *b)
 {
     unsigned int pixels = 0;
+#if SWAP_BYTES
     unsigned int low;
     unsigned int high;
+#endif
     int count = 0;
 
     while (count < depth) {
@@ -46,11 +48,13 @@ get_rgb(unsigned char const *data,
     }
 
     /* TODO: we should swap bytes (only necessary on LSByte first hardware?) */
+#if SWAP_BYTES
     if (depth == 2) {
         low    = pixels & 0xff;
         high   = (pixels >> 8) & 0xff;
         pixels = (low << 8) | high;
     }
+#endif
 
     switch (pixelformat) {
     case PIXELFORMAT_RGB555:
@@ -64,9 +68,9 @@ get_rgb(unsigned char const *data,
         *b = ((pixels >>  0) & 0x1f) << 3;
         break;
     case PIXELFORMAT_RGB888:
-        *r = (pixels >>  0) & 0xff;
+        *r = (pixels >> 16) & 0xff;
         *g = (pixels >>  8) & 0xff;
-        *b = (pixels >> 16) & 0xff;
+        *b = (pixels >>  0) & 0xff;
         break;
     case PIXELFORMAT_BGR555:
         *r = ((pixels >>  0) & 0x1f) << 3;
@@ -79,9 +83,9 @@ get_rgb(unsigned char const *data,
         *b = ((pixels >> 11) & 0x1f) << 3;
         break;
     case PIXELFORMAT_BGR888:
-        *r = (pixels >> 16) & 0xff;
+        *r = (pixels >>  0) & 0xff;
         *g = (pixels >>  8) & 0xff;
-        *b = (pixels >>  0) & 0xff;
+        *b = (pixels >> 16) & 0xff;
         break;
     case PIXELFORMAT_RGBA8888:
         *r = (pixels >> 24) & 0xff;
@@ -279,24 +283,269 @@ test1(void)
 {
     unsigned char dst[3];
     int dst_pixelformat = PIXELFORMAT_RGB888;
-    unsigned char src_rgb888[] = { 0x46, 0xf3, 0xe5 };
+    int src_pixelformat = PIXELFORMAT_RGB888;
+    unsigned char src[] = { 0x46, 0xf3, 0xe5 };
     int ret = 0;
     
     int nret = EXIT_FAILURE;
 
     ret = sixel_helper_normalize_pixelformat(dst,
                                              &dst_pixelformat,
-                                             src_rgb888,
-                                             PIXELFORMAT_RGB888,
+                                             src,
+                                             src_pixelformat,
                                              1,
                                              1);
     if (ret != 0) {
-        perror(NULL);
         goto error;
     }
-    nret = EXIT_SUCCESS;
+    if (dst_pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if ((dst[0] << 16 | dst[1] << 8 | dst[2]) != (src[0] << 16 | src[1] << 8 | src[2])) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
 
 error:
+    perror("test1");
+    return nret;
+}
+
+
+static int
+test2(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = PIXELFORMAT_RGB888;
+    int src_pixelformat = PIXELFORMAT_RGB555;
+    unsigned char src[] = { 0x47, 0x9c };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if ((dst[0] >> 3 << 10 | dst[1] >> 3 << 5 | dst[2] >> 3) != (src[0] << 8 | src[1])) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test2");
+    return nret;
+}
+
+
+static int
+test3(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = PIXELFORMAT_RGB888;
+    int src_pixelformat = PIXELFORMAT_RGB565;
+    unsigned char src[] = { 0x47, 0x9c };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if ((dst[0] >> 3 << 11 | dst[1] >> 2 << 5 | dst[2] >> 3) != (src[0] << 8 | src[1])) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test3");
+    return nret;
+}
+
+
+static int
+test4(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = PIXELFORMAT_RGB888;
+    int src_pixelformat = PIXELFORMAT_BGR888;
+    unsigned char src[] = { 0x46, 0xf3, 0xe5 };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if ((dst[2] << 16 | dst[1] << 8 | dst[0]) != (src[0] << 16 | src[1] << 8 | src[2])) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test4");
+    return nret;
+}
+
+
+static int
+test5(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = PIXELFORMAT_RGB888;
+    int src_pixelformat = PIXELFORMAT_BGR555;
+    unsigned char src[] = { 0x23, 0xc8 };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if ((dst[2] >> 3 << 10 | dst[1] >> 3 << 5 | dst[0] >> 3) != (src[0] << 8 | src[1])) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test5");
+    return nret;
+}
+
+
+static int
+test6(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = PIXELFORMAT_RGB888;
+    int src_pixelformat = PIXELFORMAT_BGR565;
+    unsigned char src[] = { 0x47, 0x88 };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if ((dst[2] >> 3 << 11 | dst[1] >> 2 << 5 | dst[0] >> 3) != (src[0] << 8 | src[1])) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test6");
+    return nret;
+}
+
+
+static int
+test7(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = PIXELFORMAT_RGB888;
+    int src_pixelformat = PIXELFORMAT_AG88;
+    unsigned char src[] = { 0x47, 0x88 };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if (dst[0] != src[1]) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test7");
+    return nret;
+}
+
+
+static int
+test8(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = PIXELFORMAT_RGB888;
+    int src_pixelformat = PIXELFORMAT_GA88;
+    unsigned char src[] = { 0x47, 0x88 };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if (dst[0] != src[0]) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test8");
     return nret;
 }
 
@@ -310,6 +559,13 @@ sixel_pixelformat_tests_main(void)
 
     static testcase const testcases[] = {
         test1,
+        test2,
+        test3,
+        test4,
+        test5,
+        test6,
+        test7,
+        test8,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
