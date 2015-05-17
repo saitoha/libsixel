@@ -222,7 +222,7 @@ end:
 }
 
 
-int
+SIXELAPI int
 sixel_helper_write_image_file(
     unsigned char  /* in */ *data,        /* source pixel data */
     int            /* in */ width,        /* source data width */

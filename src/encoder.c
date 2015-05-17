@@ -877,100 +877,105 @@ end:
 }
 
 
-int
-sixel_encoder_encode(
-    sixel_encoder_t /* in */ *encoder,
-    char const      /* in */ *filename)
+/* create encoder object */
+SIXELAPI sixel_encoder_t *
+sixel_encoder_create(void)
 {
-    int nret = (-1);
-    int fuse_palette = 1;
-    int loop_control;
+    sixel_encoder_t *encoder;
 
+    encoder = malloc(sizeof(sixel_encoder_t));
     if (encoder == NULL) {
-        encoder = sixel_encoder_create();
-    } else {
-        sixel_encoder_ref(encoder);
+        return NULL;
     }
 
-    loop_control = encoder->loop_mode;
+    encoder->ref                   = 1;
+    encoder->reqcolors             = (-1);
+    encoder->mapfile               = NULL;
+    encoder->monochrome            = 0;
+    encoder->highcolor             = 0;
+    encoder->builtin_palette       = 0;
+    encoder->method_for_diffuse    = DIFFUSE_AUTO;
+    encoder->method_for_largest    = LARGE_AUTO;
+    encoder->method_for_rep        = REP_AUTO;
+    encoder->quality_mode          = QUALITY_AUTO;
+    encoder->method_for_resampling = RES_BILINEAR;
+    encoder->loop_mode             = LOOP_AUTO;
+    encoder->palette_type          = PALETTETYPE_AUTO;
+    encoder->f8bit                 = 0;
+    encoder->finvert               = 0;
+    encoder->fuse_macro            = 0;
+    encoder->fignore_delay         = 0;
+    encoder->complexion            = 1;
+    encoder->fstatic               = 0;
+    encoder->pixelwidth            = -1;
+    encoder->pixelheight           = -1;
+    encoder->percentwidth          = -1;
+    encoder->percentheight         = -1;
+    encoder->clipx                 = 0;
+    encoder->clipy                 = 0;
+    encoder->clipwidth             = 0;
+    encoder->clipheight            = 0;
+    encoder->clipfirst             = 0;
+    encoder->macro_number          = -1;
+    encoder->verbose               = 0;
+    encoder->penetrate_multiplexer = 0;
+    encoder->encode_policy         = ENCODEPOLICY_AUTO;
+    encoder->pipe_mode             = 0;
+    encoder->bgcolor               = NULL;
+    encoder->outfd                 = STDOUT_FILENO;
+    encoder->finsecure             = 0;
+    encoder->cancel_flag           = NULL;
 
-    if (encoder->reqcolors == (-1)) {
-        encoder->reqcolors = SIXEL_PALETTE_MAX;
-    }
-
-    if (encoder->reqcolors < 2) {
-        encoder->reqcolors = 2;
-    }
-
-    if (encoder->palette_type == PALETTETYPE_AUTO) {
-        encoder->palette_type = PALETTETYPE_RGB;
-    }
-
-    if (encoder->mapfile) {
-        fuse_palette = 0;
-    }
-
-    if (encoder->monochrome > 0) {
-        fuse_palette = 0;
-    }
-
-    if (encoder->highcolor > 0) {
-        fuse_palette = 0;
-    }
-
-    if (encoder->builtin_palette > 0) {
-        fuse_palette = 0;
-    }
-
-    if (encoder->percentwidth > 0 ||
-        encoder->percentheight > 0 ||
-        encoder->pixelwidth > 0 ||
-        encoder->pixelheight > 0) {
-        fuse_palette = 0;
-    }
-
-reload:
-    nret = sixel_helper_load_image_file(filename,
-                                        encoder->fstatic,
-                                        fuse_palette,
-                                        encoder->reqcolors,
-                                        encoder->bgcolor,
-                                        loop_control,
-                                        load_image_callback,
-                                        encoder->finsecure,
-                                        encoder->cancel_flag,
-                                        (void *)encoder);
-
-    if (nret != 0) {
-        goto end;
-    }
-
-    if (encoder->pipe_mode) {
-#if HAVE_CLEARERR
-        clearerr(stdin);
-#endif  /* HAVE_FSEEK */
-        while (encoder->cancel_flag && !*encoder->cancel_flag) {
-            nret = wait_stdin(1000000);
-            if (nret == (-1)) {
-                goto end;
-            }
-            if (nret != 0) {
-                break;
-            }
-        }
-        if (!encoder->cancel_flag || !*encoder->cancel_flag) {
-            goto reload;
-        }
-    }
-
-end:
-    sixel_encoder_unref(encoder);
-
-    return nret;
+    return encoder;
 }
 
 
-int
+SIXELAPI void
+sixel_encoder_destroy(sixel_encoder_t *encoder)
+{
+    if (encoder) {
+        free(encoder->mapfile);
+        free(encoder->bgcolor);
+        if (encoder->outfd
+            && encoder->outfd != STDOUT_FILENO
+            && encoder->outfd != STDERR_FILENO) {
+            close(encoder->outfd);
+        }
+        free(encoder);
+    }
+}
+
+
+SIXELAPI void
+sixel_encoder_ref(sixel_encoder_t *encoder)
+{
+    /* TODO: be thread safe */
+    ++encoder->ref;
+}
+
+
+SIXELAPI void
+sixel_encoder_unref(sixel_encoder_t *encoder)
+{
+    /* TODO: be thread safe */
+    if (encoder != NULL && --encoder->ref == 0) {
+        sixel_encoder_destroy(encoder);
+    }
+}
+
+
+SIXELAPI int
+sixel_encoder_set_cancel_flag(
+    sixel_encoder_t /* in */ *encoder,
+    int             /* in */ *cancel_flag
+)
+{
+    encoder->cancel_flag = cancel_flag;
+    return 0;
+}
+
+
+SIXELAPI int
 sixel_encoder_setopt(
     sixel_encoder_t /* in */ *encoder,
     int             /* in */ arg,
@@ -1353,100 +1358,93 @@ argerr:
 }
 
 
-/* create encoder object */
-sixel_encoder_t *
-sixel_encoder_create(void)
-{
-    sixel_encoder_t *encoder;
-
-    encoder = malloc(sizeof(sixel_encoder_t));
-    if (encoder == NULL) {
-        return NULL;
-    }
-
-    encoder->ref                   = 1;
-    encoder->reqcolors             = (-1);
-    encoder->mapfile               = NULL;
-    encoder->monochrome            = 0;
-    encoder->highcolor             = 0;
-    encoder->builtin_palette       = 0;
-    encoder->method_for_diffuse    = DIFFUSE_AUTO;
-    encoder->method_for_largest    = LARGE_AUTO;
-    encoder->method_for_rep        = REP_AUTO;
-    encoder->quality_mode          = QUALITY_AUTO;
-    encoder->method_for_resampling = RES_BILINEAR;
-    encoder->loop_mode             = LOOP_AUTO;
-    encoder->palette_type          = PALETTETYPE_AUTO;
-    encoder->f8bit                 = 0;
-    encoder->finvert               = 0;
-    encoder->fuse_macro            = 0;
-    encoder->fignore_delay         = 0;
-    encoder->complexion            = 1;
-    encoder->fstatic               = 0;
-    encoder->pixelwidth            = -1;
-    encoder->pixelheight           = -1;
-    encoder->percentwidth          = -1;
-    encoder->percentheight         = -1;
-    encoder->clipx                 = 0;
-    encoder->clipy                 = 0;
-    encoder->clipwidth             = 0;
-    encoder->clipheight            = 0;
-    encoder->clipfirst             = 0;
-    encoder->macro_number          = -1;
-    encoder->verbose               = 0;
-    encoder->penetrate_multiplexer = 0;
-    encoder->encode_policy         = ENCODEPOLICY_AUTO;
-    encoder->pipe_mode             = 0;
-    encoder->bgcolor               = NULL;
-    encoder->outfd                 = STDOUT_FILENO;
-    encoder->finsecure             = 0;
-    encoder->cancel_flag           = NULL;
-
-    return encoder;
-}
-
-
-void
-sixel_encoder_destroy(sixel_encoder_t *encoder)
-{
-    if (encoder) {
-        free(encoder->mapfile);
-        free(encoder->bgcolor);
-        if (encoder->outfd
-            && encoder->outfd != STDOUT_FILENO
-            && encoder->outfd != STDERR_FILENO) {
-            close(encoder->outfd);
-        }
-        free(encoder);
-    }
-}
-
-
-void
-sixel_encoder_ref(sixel_encoder_t *encoder)
-{
-    /* TODO: be thread safe */
-    ++encoder->ref;
-}
-
-
-void
-sixel_encoder_unref(sixel_encoder_t *encoder)
-{
-    /* TODO: be thread safe */
-    if (encoder != NULL && --encoder->ref == 0) {
-        sixel_encoder_destroy(encoder);
-    }
-}
-
-int
-sixel_encoder_set_cancel_flag(
+SIXELAPI int
+sixel_encoder_encode(
     sixel_encoder_t /* in */ *encoder,
-    int             /* in */ *cancel_flag
-)
+    char const      /* in */ *filename)
 {
-    encoder->cancel_flag = cancel_flag;
-    return 0;
+    int nret = (-1);
+    int fuse_palette = 1;
+
+    if (encoder == NULL) {
+        encoder = sixel_encoder_create();
+    } else {
+        sixel_encoder_ref(encoder);
+    }
+
+    if (encoder->reqcolors == (-1)) {
+        encoder->reqcolors = SIXEL_PALETTE_MAX;
+    }
+
+    if (encoder->reqcolors < 2) {
+        encoder->reqcolors = 2;
+    }
+
+    if (encoder->palette_type == PALETTETYPE_AUTO) {
+        encoder->palette_type = PALETTETYPE_RGB;
+    }
+
+    if (encoder->mapfile) {
+        fuse_palette = 0;
+    }
+
+    if (encoder->monochrome > 0) {
+        fuse_palette = 0;
+    }
+
+    if (encoder->highcolor > 0) {
+        fuse_palette = 0;
+    }
+
+    if (encoder->builtin_palette > 0) {
+        fuse_palette = 0;
+    }
+
+    if (encoder->percentwidth > 0 ||
+        encoder->percentheight > 0 ||
+        encoder->pixelwidth > 0 ||
+        encoder->pixelheight > 0) {
+        fuse_palette = 0;
+    }
+
+reload:
+    nret = sixel_helper_load_image_file(filename,
+                                        encoder->fstatic,
+                                        fuse_palette,
+                                        encoder->reqcolors,
+                                        encoder->bgcolor,
+                                        encoder->loop_mode,
+                                        load_image_callback,
+                                        encoder->finsecure,
+                                        encoder->cancel_flag,
+                                        (void *)encoder);
+
+    if (nret != 0) {
+        goto end;
+    }
+
+    if (encoder->pipe_mode) {
+#if HAVE_CLEARERR
+        clearerr(stdin);
+#endif  /* HAVE_FSEEK */
+        while (encoder->cancel_flag && !*encoder->cancel_flag) {
+            nret = wait_stdin(1000000);
+            if (nret == (-1)) {
+                goto end;
+            }
+            if (nret != 0) {
+                break;
+            }
+        }
+        if (!encoder->cancel_flag || !*encoder->cancel_flag) {
+            goto reload;
+        }
+    }
+
+end:
+    sixel_encoder_unref(encoder);
+
+    return nret;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */

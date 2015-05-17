@@ -1086,7 +1086,7 @@ lookup_mono_lightbg(unsigned char const * const pixel,
 }
 
 
-unsigned char *
+SIXELAPI unsigned char *
 sixel_quant_make_palette(unsigned char const *data,
                          int length,
                          int pixelformat,
@@ -1126,7 +1126,7 @@ sixel_quant_make_palette(unsigned char const *data,
 }
 
 
-int
+SIXELAPI int
 sixel_quant_apply_palette(unsigned char *data,
                           int width,
                           int height,
@@ -1280,7 +1280,7 @@ sixel_quant_apply_palette(unsigned char *data,
 }
 
 
-void
+SIXELAPI void
 sixel_quant_free_palette(unsigned char * data)
 {
     free(data);

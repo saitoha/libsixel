@@ -35,10 +35,10 @@
 #endif
 
 #include "frame.h"
-#include "sixel.h"
+#include <sixel.h>
 
 
-sixel_frame_t *
+SIXELAPI sixel_frame_t *
 sixel_frame_create(void)
 {
     sixel_frame_t *frame;
@@ -64,7 +64,7 @@ sixel_frame_create(void)
 }
 
 
-void
+SIXELAPI void
 sixel_frame_destroy(sixel_frame_t *frame)
 {
     if (frame) {
@@ -75,7 +75,7 @@ sixel_frame_destroy(sixel_frame_t *frame)
 }
 
 
-void
+SIXELAPI void
 sixel_frame_ref(sixel_frame_t *frame)
 {
     /* TODO: be thread safe */
@@ -83,7 +83,7 @@ sixel_frame_ref(sixel_frame_t *frame)
 }
 
 
-void
+SIXELAPI void
 sixel_frame_unref(sixel_frame_t *frame)
 {
     /* TODO: be thread safe */
@@ -93,7 +93,7 @@ sixel_frame_unref(sixel_frame_t *frame)
 }
 
 
-int
+SIXELAPI int
 sixel_frame_init(
     sixel_frame_t *frame,
     unsigned char *pixels,
@@ -116,7 +116,7 @@ sixel_frame_init(
 
 
 /* get pixels */
-unsigned char *
+SIXELAPI unsigned char *
 sixel_frame_get_pixels(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->pixels;
@@ -124,7 +124,7 @@ sixel_frame_get_pixels(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get palette */
-unsigned char *
+SIXELAPI unsigned char *
 sixel_frame_get_palette(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->palette;
@@ -132,7 +132,7 @@ sixel_frame_get_palette(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get width */
-int
+SIXELAPI int
 sixel_frame_get_width(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->width;
@@ -140,7 +140,7 @@ sixel_frame_get_width(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get height */
-int
+SIXELAPI int
 sixel_frame_get_height(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->height;
@@ -148,7 +148,7 @@ sixel_frame_get_height(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get ncolors */
-int
+SIXELAPI int
 sixel_frame_get_ncolors(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->ncolors;
@@ -156,7 +156,7 @@ sixel_frame_get_ncolors(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get pixelformat */
-int
+SIXELAPI int
 sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->pixelformat;
@@ -164,7 +164,7 @@ sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get transparent */
-int
+SIXELAPI int
 sixel_frame_get_transparent(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->transparent;
@@ -172,7 +172,7 @@ sixel_frame_get_transparent(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get transparent */
-int
+SIXELAPI int
 sixel_frame_get_multiframe(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->multiframe;
@@ -180,7 +180,7 @@ sixel_frame_get_multiframe(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get delay */
-int
+SIXELAPI int
 sixel_frame_get_delay(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->delay;
@@ -188,7 +188,7 @@ sixel_frame_get_delay(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get frame no */
-int
+SIXELAPI int
 sixel_frame_get_frame_no(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->frame_no;
@@ -196,7 +196,7 @@ sixel_frame_get_frame_no(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get loop no */
-int
+SIXELAPI int
 sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->loop_count;
@@ -204,7 +204,7 @@ sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* set palette */
-void
+SIXELAPI void
 sixel_frame_set_palette(
     sixel_frame_t /* in */ *frame,   /* frame object */
     unsigned char /* in */ *palette,
@@ -215,8 +215,8 @@ sixel_frame_set_palette(
 }
 
 
-int
-sixel_strip_alpha(
+SIXELAPI int
+sixel_frame_strip_alpha(
     sixel_frame_t  /* in */ *frame,
     unsigned char  /* in */ *bgcolor
 )
@@ -263,7 +263,7 @@ sixel_strip_alpha(
 }
 
 
-int
+SIXELAPI int
 sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
 {
     unsigned char *normalized_pixels = NULL;
@@ -349,7 +349,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
 }
 
 
-int
+SIXELAPI int
 sixel_frame_resize(
     sixel_frame_t *frame,
     int width,
@@ -430,7 +430,7 @@ clip(unsigned char *pixels,
 }
 
 
-int
+SIXELAPI int
 sixel_frame_clip(
     sixel_frame_t *frame,
     int x,
