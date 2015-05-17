@@ -8,16 +8,16 @@ import ctypes.util
 
 def _load():
     sixel = CDLL(ctypes.util.find_library("sixel"))
-    sixel.sixel_encode_settings_create.restype = c_void_p
-    sixel.sixel_encode_settings_unref.restype = None
-    sixel.sixel_encode_settings_unref.argtypes = [c_void_p]
-    sixel.sixel_easy_encode_setopt.argtypes = [c_void_p, c_int, c_char_p]
-    sixel.sixel_easy_encode.argtypes = [c_char_p, c_void_p, c_void_p]
-    sixel.sixel_decode_settings_create.restype = c_void_p
-    sixel.sixel_decode_settings_unref.restype = None
-    sixel.sixel_decode_settings_unref.argtypes = [c_void_p]
-    sixel.sixel_easy_decode_setopt.argtypes = [c_void_p, c_int, c_char_p]
-    sixel.sixel_easy_decode.argtypes = [c_void_p]
+    sixel.sixel_encoder_create.restype = c_void_p
+    sixel.sixel_encoder_unref.restype = None
+    sixel.sixel_encoder_unref.argtypes = [c_void_p]
+    sixel.sixel_encoder_setopt.argtypes = [c_void_p, c_int, c_char_p]
+    sixel.sixel_encoder_encode.argtypes = [c_void_p, c_char_p]
+    sixel.sixel_decoder_create.restype = c_void_p
+    sixel.sixel_decoder_unref.restype = None
+    sixel.sixel_decoder_unref.argtypes = [c_void_p]
+    sixel.sixel_decoder_setopt.argtypes = [c_void_p, c_int, c_char_p]
+    sixel.sixel_decoder_decode.argtypes = [c_void_p]
 
     return sixel
 
@@ -26,22 +26,22 @@ class EasyEncoder(object):
 
     def __init__(self):
         self._sixel = _load()
-        self._settings = self._sixel.sixel_encode_settings_create()
+        self._encoder = self._sixel.sixel_encoder_create()
 
     def __del__(self):
-        self._sixel.sixel_encode_settings_unref(self._settings)
+        self._sixel.sixel_encoder_unref(self._encoder)
 
     def setopt(self, flag, arg=None):
         flag = ord(flag)
         if arg:
             arg = str(arg)
-        settings = self._settings
-        result = self._sixel.sixel_easy_encode_setopt(settings, flag, arg)
+        settings = self._encoder
+        result = self._sixel.sixel_encoder_setopt(settings, flag, arg)
         if result != 0:
             raise RuntimeError("Invalid option was set.")
 
     def encode(self, filename="-"):
-        result = self._sixel.sixel_easy_encode(filename, self._settings, None)
+        result = self._sixel.sixel_encoder_encode(self._encoder, filename)
         if result != 0:
             raise RuntimeError("Unexpected Error")
 
@@ -65,24 +65,24 @@ class EasyDecoder(object):
 
     def __init__(self):
         self._sixel = _load()
-        self._settings = self._sixel.sixel_decode_settings_create()
+        self._decoder = self._sixel.sixel_decoder_create()
 
     def __del__(self):
-        self._sixel.sixel_decode_settings_unref(self._settings)
+        self._sixel.sixel_decoder_unref(self._decoder)
 
     def setopt(self, flag, arg=None):
         flag = ord(flag)
         if arg:
             arg = str(arg)
-        settings = self._settings
-        result = self._sixel.sixel_easy_decode_setopt(settings, flag, arg)
+        settings = self._decoder
+        result = self._sixel.sixel_decoder_setopt(settings, flag, arg)
         if result != 0:
             raise RuntimeError("Invalid option was set.")
 
     def decode(self, infile=None):
         if infile:
             self.setopt("i", infile)
-        result = self._sixel.sixel_easy_decode(self._settings)
+        result = self._sixel.sixel_decoder_decode(self._decoder)
         if result != 0:
             raise RuntimeError("Unexpected Error")
 
@@ -107,7 +107,7 @@ if __name__ == '__main__':
     import sys
 
     arg1 = "-" if len(sys.argv) < 2 else sys.argv[1]
-#    arg2 = "-" if len(sys.argv) < 3 else sys.argv[2]
     EasyEncoder().test(arg1)
+#    arg2 = "-" if len(sys.argv) < 3 else sys.argv[2]
 #    EasyDecoder().test(arg1, arg2)
 
