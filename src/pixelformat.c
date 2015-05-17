@@ -106,7 +106,7 @@ get_rgb(unsigned char const *data,
 }
 
 
-int
+SIXELAPI int
 sixel_helper_compute_depth(int pixelformat)
 {
     int depth = (-1);  /* unknown */
@@ -222,7 +222,7 @@ expand_palette(unsigned char *dst, unsigned char const *src,
 }
 
 
-int
+SIXELAPI int
 sixel_helper_normalize_pixelformat(
     unsigned char       /* out */ *dst,             /* destination buffer */
     int                 /* out */ *dst_pixelformat, /* converted pixelformat */

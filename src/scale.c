@@ -303,7 +303,7 @@ scale_with_resampling(
 }
 
 
-int
+SIXELAPI int
 sixel_helper_scale_image(
     unsigned char       /* out */ *dst,
     unsigned char const /* in */  *src,                   /* source image data */

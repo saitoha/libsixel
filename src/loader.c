@@ -1035,7 +1035,7 @@ load_with_builtin(
         }
     }
 
-    ret = sixel_strip_alpha(frame, bgcolor);
+    ret = sixel_frame_strip_alpha(frame, bgcolor);
     if (ret != 0) {
         goto error;
     }
@@ -1367,7 +1367,7 @@ load_with_gd(
 
 /* load image from file */
 
-int
+SIXELAPI int
 sixel_helper_load_image_file(
     char const                /* in */     *filename,     /* source file name */
     int                       /* in */     fstatic,       /* whether to extract static image */
