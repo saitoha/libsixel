@@ -209,15 +209,23 @@ init_gif_frame(
     int fuse_palette)
 {
     int i;
+    int ncolors;
 
     frame->delay = pg->delay;
-    frame->ncolors = 2 << (pg->flags & 7);
-    frame->palette = malloc(frame->ncolors * 3);
+    ncolors = 2 << (pg->flags & 7);
+    if (frame->palette == NULL) {
+        frame->palette = malloc(ncolors * 3);
+    } else if (frame->ncolors < ncolors) {
+        free(frame->palette);
+        frame->palette = malloc(ncolors * 3);
+    }
+    frame->ncolors = ncolors;
     if (frame->palette == NULL) {
         return (-1);
     }
     if (frame->ncolors <= reqcolors && fuse_palette) {
         frame->pixelformat = PIXELFORMAT_PAL8;
+        free(frame->pixels);
         frame->pixels = malloc(frame->width * frame->height);
         memcpy(frame->pixels, pg->out, frame->width * frame->height);
 
@@ -547,6 +555,7 @@ load_gif(unsigned char *buffer,
         return SIXEL_FAILED;
     }
     start_mem(&s, buffer, size);
+    memset(&g, 0, sizeof(g));
     ret = load_gif_header(&s, &g);
     if (ret != SIXEL_SUCCESS) {
         goto end;
@@ -611,6 +620,7 @@ load_gif(unsigned char *buffer,
     }
 
 end:
+    sixel_frame_unref(frame);
     free(g.out);
 
     return 0;

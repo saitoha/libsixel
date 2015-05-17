@@ -89,6 +89,8 @@ void show_help(void)
             "       img2sixel [Options] < imagefile\n"
             "\n"
             "Options:\n"
+            "-o, --outfile              specify output file name.\n"
+            "                           (default:stdout)\n"
             "-7, --7bit-mode            generate a sixel image for 7bit\n"
             "                           terminals or printers (default)\n"
             "-8, --8bit-mode            generate a sixel image for 8bit\n"
@@ -282,13 +284,14 @@ main(int argc, char *argv[])
 #endif  /* HAVE_GETOPT_LONG */
     int ret;
     int exit_code;
-    sixel_encode_settings_t *settings;
-    char const *optstring = "78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:B:C:DVH";
+    sixel_encoder_t *encoder;
+    char const *optstring = "o:78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:B:C:DVH";
 
-    settings = sixel_encode_settings_create();
+    encoder = sixel_encoder_create();
 
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
+        {"outfile",          no_argument,        &long_opt, 'o'},
         {"7bit-mode",        no_argument,        &long_opt, '7'},
         {"8bit-mode",        no_argument,        &long_opt, '8'},
         {"colors",           required_argument,  &long_opt, 'p'},
@@ -339,24 +342,22 @@ main(int argc, char *argv[])
             n = long_opt;
         }
 #endif  /* HAVE_GETOPT_LONG */
-        ret = sixel_easy_encode_setopt(settings, n, optarg);
-        if (ret != 0) {
-            goto argerr;
+        switch (n) {
+        case 'V':
+            show_version();
+            exit_code = EXIT_SUCCESS;
+            goto end;
+        case 'H':
+            show_help();
+            exit_code = EXIT_SUCCESS;
+            goto end;
+        default:
+            ret = sixel_encoder_setopt(encoder, n, optarg);
+            if (ret != 0) {
+                goto argerr;
+            }
+            break;
         }
-    }
-
-    /* evaluate the option -v,--version */
-    if (sixel_encode_settings_has_version(settings)) {
-        show_version();
-        exit_code = EXIT_SUCCESS;
-        goto end;
-    }
-
-    /* evaluate the option -h,--help */
-    if (sixel_encode_settings_has_help(settings)) {
-        show_help();
-        exit_code = EXIT_SUCCESS;
-        goto end;
     }
 
     /* set signal handler to handle SIGINT/SIGTERM/SIGHUP */
@@ -371,16 +372,21 @@ main(int argc, char *argv[])
     signal(SIGHUP, signal_handler);
 # endif
 #endif
+    ret = sixel_encoder_set_cancel_flag(encoder, &signaled);
+    if (ret != 0) {
+        exit_code = EXIT_FAILURE;
+        goto end;
+    }
 
     if (optind == argc) {
-        ret = sixel_easy_encode(NULL, settings, &signaled);
+        ret = sixel_encoder_encode(encoder, NULL);
         if (ret != 0) {
             exit_code = EXIT_FAILURE;
             goto end;
         }
     } else {
         for (n = optind; n < argc; n++) {
-            ret = sixel_easy_encode(argv[n], settings, &signaled);
+            ret = sixel_encoder_encode(encoder, argv[n]);
             if (ret != 0) {
                 exit_code = EXIT_FAILURE;
                 goto end;
@@ -394,15 +400,16 @@ main(int argc, char *argv[])
 
 argerr:
     exit_code = EXIT_FAILURE;
-    fprintf(stderr, "usage: img2sixel [-78eIiugvSPDVH] [-p colors] [-m file] [-d diffusiontype]\n"
-                    "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
-                    "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
-                    "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
-                    "                 [-E encodepolicy] [-B bgcolor] [filename ...]\n"
-                    "for more details, type: 'img2sixel -H'.\n");
+    fprintf(stderr,
+            "usage: img2sixel [-78eIiugvSPDVH] [-p colors] [-m file] [-d diffusiontype]\n"
+            "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
+            "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
+            "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
+            "                 [-E encodepolicy] [-B bgcolor] [-o outfile] [filename ...]\n"
+            "for more details, type: 'img2sixel -H'.\n");
 
 end:
-    sixel_encode_settings_unref(settings);
+    sixel_encoder_unref(encoder);
     return exit_code;
 }
 

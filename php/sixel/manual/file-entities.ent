@@ -1,0 +1,5 @@
+<!ENTITY reference.sixel.reference SYSTEM './sixel/reference.xml'>
+<!ENTITY reference.sixel.constants SYSTEM './sixel/constants.xml'>
+<!ENTITY reference.sixel.ini SYSTEM './sixel/ini.xml'>
+<!ENTITY reference.sixel.configure SYSTEM './sixel/configure.xml'>
+<!ENTITY reference.sixel.functions SYSTEM './functions.xml'>
