@@ -25,7 +25,7 @@ none
     <version>0.0.1dev</version>
     <state>devel</state>
     <notes>unknown</notes>
-    <date>2015-05-11</date>
+    <date>2015-05-17</date>
   </release>
   <changelog>
 
@@ -46,8 +46,8 @@ none
       <dir name="tests">
         <file role='test' name='SixelEncoder____construct.phpt'/>
         <file role='test' name='SixelEncoder____destruct.phpt'/>
-        <file role='test' name='SixelEncoder__sixel_easy_encode_setopt.phpt'/>
-        <file role='test' name='SixelEncoder__sixel_easy_encode.phpt'/>
+        <file role='test' name='SixelEncoder__setopt.phpt'/>
+        <file role='test' name='SixelEncoder__encode.phpt'/>
       </dir>
     </dir>
   </filelist>

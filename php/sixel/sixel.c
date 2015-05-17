@@ -36,15 +36,19 @@ PHP_METHOD(SixelEncoder, __construct)
 
 
 	do {
-		sixel_encode_settings_t *settings;
-				settings = sixel_encode_settings_create();
-				if (settings == NULL) {
+		sixel_encoder_t *encoder;
+				encoder = sixel_encoder_create();
+				if (encoder == NULL) {
+#if 0
 					zend_throw_exception_ex(zend_exception_get_default(), 1,
-											"sixel_encode_settings_create() failed. %s:%d", __FILE__, __LINE__);
+											"sixel_encoder_create() failed. %s:%d",
+											__FILE__, __LINE__);
+#endif
 				} else {
 					zval *value = emalloc(sizeof(zval));
-					ZVAL_RESOURCE(value, settings);
-					zend_update_property(_this_ce, getThis(), "settings", sizeof("settings") - 1, value TSRMLS_CC);
+					ZVAL_RESOURCE(value, (long)encoder);
+					zend_update_property(_this_ce, getThis(),
+										 "encoder", sizeof("encoder") - 1, value);
 				}
 	} while (0);
 }
@@ -70,18 +74,19 @@ PHP_METHOD(SixelEncoder, __destruct)
 
 
 	do {
-		zval *settings = zend_read_property(_this_ce, getThis(), "settings", sizeof("settings") - 1, 1 TSRMLS_CC);
-				sixel_encode_settings_unref(Z_RESVAL_P(settings));
-				efree(settings);
+		zval *encoder = zend_read_property(_this_ce, getThis(),
+												   "encoder", sizeof("encoder") - 1, 1);
+				sixel_encoder_unref((sixel_encoder_t *)Z_RESVAL_P(encoder));
+				efree(encoder);
 	} while (0);
 }
 /* }}} __destruct */
 
 
 
-/* {{{ proto void sixel_easy_encode_setopt(string opt[, string arg])
+/* {{{ proto void setopt(string opt[, string arg])
    */
-PHP_METHOD(SixelEncoder, sixel_easy_encode_setopt)
+PHP_METHOD(SixelEncoder, setopt)
 {
 	zend_class_entry * _this_ce;
 
@@ -101,17 +106,18 @@ PHP_METHOD(SixelEncoder, sixel_easy_encode_setopt)
 
 
 	do {
-		zval *settings = zend_read_property(_this_ce, getThis(), "settings", sizeof("settings") - 1, 1 TSRMLS_CC);
-				sixel_easy_encode_setopt(Z_RESVAL_P(settings), *opt, arg);
+		zval *encoder = zend_read_property(_this_ce, getThis(),
+												   "encoder", sizeof("encoder") - 1, 1);
+				sixel_encoder_setopt((sixel_encoder_t *)Z_RESVAL_P(encoder), *opt, arg);
 	} while (0);
 }
-/* }}} sixel_easy_encode_setopt */
+/* }}} setopt */
 
 
 
-/* {{{ proto void sixel_easy_encode(string filename)
+/* {{{ proto void encode(string filename)
    */
-PHP_METHOD(SixelEncoder, sixel_easy_encode)
+PHP_METHOD(SixelEncoder, encode)
 {
 	zend_class_entry * _this_ce;
 
@@ -129,22 +135,26 @@ PHP_METHOD(SixelEncoder, sixel_easy_encode)
 
 
 	do {
-		zval *settings = zend_read_property(_this_ce, getThis(), "settings", sizeof("settings") - 1, 0 TSRMLS_CC);
-				int ret = sixel_easy_encode(filename, Z_RESVAL_P(settings), NULL);
+		zval *encoder = zend_read_property(_this_ce, getThis(),
+												   "encoder", sizeof("encoder") - 1, 1);
+				int ret = sixel_encoder_encode((sixel_encoder_t *)Z_RESVAL_P(encoder), filename);
+#if 0
 				if (ret != 0) {
 					zend_throw_exception_ex(zend_exception_get_default(), 1,
-											"sixel_easy_encode() failed. %s:%d", __FILE__, __LINE__);
+											"sixel_encoder_encode() failed. %s:%d",
+											__FILE__, __LINE__);
 				}
+#endif
 	} while (0);
 }
-/* }}} sixel_easy_encode */
+/* }}} encode */
 
 
 static zend_function_entry SixelEncoder_methods[] = {
 	PHP_ME(SixelEncoder, __construct, NULL, /**/ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	PHP_ME(SixelEncoder, __destruct, NULL, /**/ZEND_ACC_PUBLIC)
-	PHP_ME(SixelEncoder, sixel_easy_encode_setopt, SixelEncoder__sixel_easy_encode_setopt_args, /**/ZEND_ACC_PUBLIC)
-	PHP_ME(SixelEncoder, sixel_easy_encode, SixelEncoder__sixel_easy_encode_args, /**/ZEND_ACC_PUBLIC)
+	PHP_ME(SixelEncoder, setopt, SixelEncoder__setopt_args, /**/ZEND_ACC_PUBLIC)
+	PHP_ME(SixelEncoder, encode, SixelEncoder__encode_args, /**/ZEND_ACC_PUBLIC)
 	{ NULL, NULL, NULL }
 };
 
@@ -239,7 +249,7 @@ PHP_MINFO_FUNCTION(sixel)
 	php_printf("The unknown extension\n");
 	php_info_print_table_start();
 	php_info_print_table_row(2, "Version",PHP_SIXEL_VERSION " (devel)");
-	php_info_print_table_row(2, "Released", "2015-05-11");
+	php_info_print_table_row(2, "Released", "2015-05-17");
 	php_info_print_table_row(2, "CVS Revision", "$Id: $");
 	php_info_print_table_row(2, "Authors", "Unknown User 'unknown@example.com' (lead)\n");
 	php_info_print_table_end();

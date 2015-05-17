@@ -86,23 +86,23 @@ ZEND_END_ARG_INFO()
 #define SixelEncoder____destruct_args NULL
 #endif
 
-PHP_METHOD(SixelEncoder, sixel_easy_encode_setopt);
+PHP_METHOD(SixelEncoder, setopt);
 #if (PHP_MAJOR_VERSION >= 5)
-ZEND_BEGIN_ARG_INFO_EX(SixelEncoder__sixel_easy_encode_setopt_args, ZEND_SEND_BY_VAL, ZEND_RETURN_VALUE, 1)
+ZEND_BEGIN_ARG_INFO_EX(SixelEncoder__setopt_args, ZEND_SEND_BY_VAL, ZEND_RETURN_VALUE, 1)
   ZEND_ARG_INFO(0, opt)
   ZEND_ARG_INFO(0, arg)
 ZEND_END_ARG_INFO()
 #else /* PHP 4.x */
-#define SixelEncoder__sixel_easy_encode_setopt_args NULL
+#define SixelEncoder__setopt_args NULL
 #endif
 
-PHP_METHOD(SixelEncoder, sixel_easy_encode);
+PHP_METHOD(SixelEncoder, encode);
 #if (PHP_MAJOR_VERSION >= 5)
-ZEND_BEGIN_ARG_INFO_EX(SixelEncoder__sixel_easy_encode_args, ZEND_SEND_BY_VAL, ZEND_RETURN_VALUE, 1)
+ZEND_BEGIN_ARG_INFO_EX(SixelEncoder__encode_args, ZEND_SEND_BY_VAL, ZEND_RETURN_VALUE, 1)
   ZEND_ARG_INFO(0, filename)
 ZEND_END_ARG_INFO()
 #else /* PHP 4.x */
-#define SixelEncoder__sixel_easy_encode_args NULL
+#define SixelEncoder__encode_args NULL
 #endif
 
 #ifdef  __cplusplus
