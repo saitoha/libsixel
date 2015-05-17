@@ -81,7 +81,7 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -8 -m ../images/map8-palette.png -Esize ../images/snake.ppm
 	$(WINE) ./img2sixel -7 -m ../images/map16-palette.png -Efast ../images/snake.jpg
 	$(WINE) ./img2sixel -7 -w300 ../images/snake-palette.png
-	$(WINE) ./img2sixel -7 -w100 -h100 -bxterm16 -B#aB3 ../images/snake.pbm
+	$(WINE) ./img2sixel -7 -w100 -h100 -bxterm16 -B\#aB3 ../images/snake.pbm
 	$(WINE) ./img2sixel -I -dstucki -thls ../images/snake.ppm
 	$(WINE) ./img2sixel -bvt340color ../images/snake.ppm
 	$(WINE) ./img2sixel -bvt340mono ../images/snake.tga
@@ -167,6 +167,30 @@ if HAVE_PNG
 	$(WINE) ./img2sixel -c16x16+8+8 ../images/pngsuite/basic/basn4a16.png
 	$(WINE) ./img2sixel -c16x16+8+8 ../images/pngsuite/basic/basn6a08.png
 	$(WINE) ./img2sixel -c16x16+8+8 ../images/pngsuite/basic/basn6a16.png
+	$(WINE) ./img2sixel ../images/pngsuite/background/bgai4a08.png
+	$(WINE) ./img2sixel ../images/pngsuite/background/bgai4a16.png
+	$(WINE) ./img2sixel ../images/pngsuite/background/bgan6a08.png
+	$(WINE) ./img2sixel ../images/pngsuite/background/bgan6a16.png
+	$(WINE) ./img2sixel ../images/pngsuite/background/bgbn4a08.png
+	$(WINE) ./img2sixel ../images/pngsuite/background/bggn4a16.png
+	$(WINE) ./img2sixel ../images/pngsuite/background/bgwn6a08.png
+	$(WINE) ./img2sixel ../images/pngsuite/background/bgyn6a16.png
+	$(WINE) ./img2sixel -B\#fff ../images/pngsuite/background/bgai4a08.png
+	$(WINE) ./img2sixel -B\#fff ../images/pngsuite/background/bgai4a16.png
+	$(WINE) ./img2sixel -B\#fff ../images/pngsuite/background/bgan6a08.png
+	$(WINE) ./img2sixel -B\#fff ../images/pngsuite/background/bgan6a16.png
+	$(WINE) ./img2sixel -B\#fff ../images/pngsuite/background/bgbn4a08.png
+	$(WINE) ./img2sixel -B\#fff ../images/pngsuite/background/bggn4a16.png
+	$(WINE) ./img2sixel -B\#fff ../images/pngsuite/background/bgwn6a08.png
+	$(WINE) ./img2sixel -B\#fff ../images/pngsuite/background/bgyn6a16.png
+	$(WINE) ./img2sixel -w32 -B\#fff ../images/pngsuite/background/bgai4a08.png
+	$(WINE) ./img2sixel -w32 -B\#fff ../images/pngsuite/background/bgai4a16.png
+	$(WINE) ./img2sixel -w32 -B\#fff ../images/pngsuite/background/bgan6a08.png
+	$(WINE) ./img2sixel -w32 -B\#fff ../images/pngsuite/background/bgan6a16.png
+	$(WINE) ./img2sixel -w32 -B\#fff ../images/pngsuite/background/bgbn4a08.png
+	$(WINE) ./img2sixel -w32 -B\#fff ../images/pngsuite/background/bggn4a16.png
+	$(WINE) ./img2sixel -w32 -B\#fff ../images/pngsuite/background/bgwn6a08.png
+	$(WINE) ./img2sixel -w32 -B\#fff ../images/pngsuite/background/bgyn6a16.png
 endif
 if HAVE_CURL
 	test ! $$($(WINE) ./img2sixel file:///test)
