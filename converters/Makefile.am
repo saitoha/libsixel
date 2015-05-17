@@ -210,8 +210,6 @@ if HAVE_CURL
 	    sleep 1; \
 	    ./img2sixel -k 'https://localhost:4443/snake.sixel'; \
 	fi
-else
-	! $(WINE) ./img2sixel -k < ../images/snake.jpg
 endif
 if WANT_SIXEL2PNG
 	test ! $$($(WINE) ./sixel2png -i unknown.sixel)
