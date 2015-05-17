@@ -1164,7 +1164,6 @@ test_impl:
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    sleep 1; \
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    ./img2sixel -k 'https://localhost:4443/snake.sixel'; \
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	fi
-@HAVE_CURL_FALSE@@WANT_IMG2SIXEL_TRUE@	! $(WINE) ./img2sixel -k < ../images/snake.jpg
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	test ! $$($(WINE) ./sixel2png -i unknown.sixel)
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	test ! $$($(WINE) ./sixel2png -% < snake.sixel)
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -H
