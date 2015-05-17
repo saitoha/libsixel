@@ -1,5 +1,5 @@
 .\" vi:set wm=5
-.TH IMG2SIXEL 1 "May 2014"
+.TH IMG2SIXEL 1 "Feb 2015"
 .if n .ds Q \&"
 .if n .ds U \&"
 .if t .ds Q ``
@@ -26,6 +26,9 @@ convert JPEG/PNG images into DEC SIXEL image format.
 .SH "COMMAND-LINE OPTIONS"
 \fIimg2sixel\fP has the following command-line options:
 .TP 5
+.B \-o, \-\-outfile
+specify output file name (default:stdout).
+.TP 5
 .B \-7, \-\-7bit-mode
 generate a sixel image for 7bit terminals or printers (default).
 .TP 5
@@ -40,8 +43,11 @@ transform image colors to match this set of colorsspecify map.
 .TP 5
 .B \-e, \-\-monochrome
 output monochrome sixel image.
-this option assumes the terminal
-background color is black.
+this option assumes the terminal background color is black.
+.TP 5
+.B \-k, \-\-insecure
+allow to connect to SSL sites without certs
+(enabled only when configured with --with-libcurl)
 .TP 5
 .B \-i, \-\-invert
 assume the terminal background color is white.
@@ -221,6 +227,28 @@ fast -> encode as fast as possible
 .br
 size -> encode to as small sixel sequence as possible
 .TP 5
+.B \-B \fIBGCOLOR\fP, \-\-bgcolor=\fIBGCOLOR\fP
+.br
+specify background color
+.br
+\fIBGCOLOR\fP is represented by the following syntax
+.br
+#rgb
+.br
+#rrggbb
+.br
+#rrrgggbbb
+.br
+#rrrrggggbbbb
+.br
+rgb:r/g/b
+.br
+rgb:rr/gg/bb
+.br
+rgb:rrr/ggg/bbb
+.br
+rgb:rrrr/gggg/bbbb
+.TP 5
 .B \-P, \-\-penetrate
 penetrate GNU Screen using DCS pass-through sequence.
 .TP 5
@@ -247,7 +275,7 @@ and imported some code from \fIpnmquant.c (netpbm library)\fP for image quantiza
 
 
 .SH COPYRIGHT
-Copyright (c) 2014 Hayaki Saito
+Copyright (c) 2014-2015 Hayaki Saito
 .PP
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -375,7 +403,15 @@ MagickCore's resize.c.
 .SH CONTRIBUTORS
 .nf
 Araki Ken (@arakiken),
+Markus Elfring (@elfring)
+isaki68k (@isaki68k)
+NOKUBI Takatsugu (@knok)
+mattn (@mattn)
 Iwamoto Kouichi (@ttdoda)
+Izumi Tsutsui (@tsutsui)
+uobikiemukot (@uobikiemukot)
+Vertis Sidus (@vrtsds)
+Bruce Mitchener (@waywardmonkeys)
 Kazuhiro YOSHIKAWA (@yoshikaw)
 .fi
 

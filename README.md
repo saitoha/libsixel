@@ -303,6 +303,9 @@ Options:
 -e, --monochrome           output monochrome sixel image
                            this option assumes the terminal
                            background color is black
+-k, --insecure             allow to connect to SSL sites without
+                           certs(enabled only when configured
+                           with --with-libcurl)
 -i, --invert               assume the terminal background color
                            is white, make sense only when -e
                            option is given
@@ -441,6 +444,18 @@ Options:
                              fast -> encode as fast as possible
                              size -> encode to as small sixel
                                      sequence as possible
+-B BGCOLOR, --bgcolor=BGCOLOR
+                           specify background color
+                           BGCOLOR is represented by the
+                           following syntax
+                             #rgb
+                             #rrggbb
+                             #rrrgggbbb
+                             #rrrrggggbbbb
+                             rgb:r/g/b
+                             rgb:rr/gg/bb
+                             rgb:rrr/ggg/bbb
+                             rgb:rrrr/gggg/bbbb
 -P, --penetrate            penetrate GNU Screen using DCS
                            pass-through sequence
 -D, --pipe-mode            read source images from stdin
@@ -640,6 +655,7 @@ The MIT License (MIT)
 - @isaki68k
 - @knok
 - @mattn
+- @msmhrt
 - @obache
 - @tsutsui
 - @ttdoda
@@ -830,6 +846,18 @@ images/vimperator3.png is in the public domain.
     url: http://quadrantem.com/~k_wizard/vimprtan/
 
 
+#### PngSuite
+
+Images under the directory images/pngsuite/ are imported from
+[PngSuite](http://www.schaik.com/pngsuite/) created by Willem van Schaik.
+
+> Permission to use, copy, modify and distribute these images for any
+> purpose and without fee is hereby granted.
+>
+>
+>(c) Willem van Schaik, 1996, 2011
+
+
 ## References
 
 ### ImageMagick
@@ -967,6 +995,4 @@ img2sixel in reference to the line-up of filters of MagickCore's resize.c.
 
 
 - [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
-
-
 

@@ -22,7 +22,7 @@
  *
  * ******************************************************************************
  *
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -50,9 +50,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <limits.h>
 
-#if defined(HAVE_INTTYPES_H)
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
+#if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
 
@@ -633,7 +636,7 @@ computeHistogram(unsigned char const *data,
     switch (qualityMode) {
     case QUALITY_LOW:
         max_sample = 18383;
-        step = length / depth / max_sample;
+        step = length / depth / max_sample * depth;
         break;
     case QUALITY_HIGH:
         max_sample = 18383;
@@ -1083,7 +1086,7 @@ lookup_mono_lightbg(unsigned char const * const pixel,
 }
 
 
-unsigned char *
+SIXELAPI unsigned char *
 sixel_quant_make_palette(unsigned char const *data,
                          int length,
                          int pixelformat,
@@ -1123,7 +1126,7 @@ sixel_quant_make_palette(unsigned char const *data,
 }
 
 
-int
+SIXELAPI int
 sixel_quant_apply_palette(unsigned char *data,
                           int width,
                           int height,
@@ -1277,7 +1280,7 @@ sixel_quant_apply_palette(unsigned char *data,
 }
 
 
-void
+SIXELAPI void
 sixel_quant_free_palette(unsigned char * data)
 {
     free(data);

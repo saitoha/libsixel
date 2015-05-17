@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,11 +24,24 @@
 #ifndef LIBSIXEL_SIXEL_H
 #define LIBSIXEL_SIXEL_H
 
+#ifdef _WIN32
+# define SIXELAPI __declspec(dllexport)
+#else
+# define SIXELAPI
+#endif
+
 #define LIBSIXEL_VRTSION @PACKAGE_VERSION@
 #define LIBSIXEL_ABI_VRTSION @LS_LTVERSION@
 
-#define SIXEL_OUTPUT_PACKET_SIZE 1024
+#define SIXEL_OUTPUT_PACKET_SIZE 16384
 #define SIXEL_PALETTE_MAX 256
+
+/* output character size */
+enum statusCode {
+    SIXEL_SUCCESS      = 0x0000,                 /* succeeded */
+    SIXEL_FAILED       = 0x1000,                 /* failed */
+    SIXEL_INTERRUPTED  = SIXEL_SUCCESS | 0x001,  /* interrupted by a signal */
+};
 
 /* output character size */
 enum characterSize {
@@ -109,23 +122,11 @@ enum pixelFormat {
     PIXELFORMAT_G4       = FORMATTYPE_GRAYSCALE | 0x02, /* 4bpp grayscale */
 #endif
     PIXELFORMAT_G8       = FORMATTYPE_GRAYSCALE | 0x03, /* 8bpp grayscale */
-#if 0
-    PIXELFORMAT_AG11     = FORMATTYPE_GRAYSCALE | 0x10, /* 2bpp gray+alpha */
-    PIXELFORMAT_AG22     = FORMATTYPE_GRAYSCALE | 0x11, /* 4bpp gray+alpha */
-    PIXELFORMAT_AG44     = FORMATTYPE_GRAYSCALE | 0x12, /* 8bpp gray+alpha */
-#endif
     PIXELFORMAT_AG88     = FORMATTYPE_GRAYSCALE | 0x13, /* 16bpp gray+alpha */
-#if 0
-    PIXELFORMAT_GA11     = FORMATTYPE_GRAYSCALE | 0x20, /* 2bpp gray+alpha */
-    PIXELFORMAT_GA22     = FORMATTYPE_GRAYSCALE | 0x21, /* 4bpp gray+alpha */
-    PIXELFORMAT_GA44     = FORMATTYPE_GRAYSCALE | 0x22, /* 8bpp gray+alpha */
-#endif
     PIXELFORMAT_GA88     = FORMATTYPE_GRAYSCALE | 0x23, /* 16bpp gray+alpha */
-#if 0
-    PIXELFORMAT_PAL1     = FORMATTYPE_PALETTE   | 0x00, /* monochrome */
+    PIXELFORMAT_PAL1     = FORMATTYPE_PALETTE   | 0x00, /* 1bpp palette */
     PIXELFORMAT_PAL2     = FORMATTYPE_PALETTE   | 0x01, /* 2bpp palette */
     PIXELFORMAT_PAL4     = FORMATTYPE_PALETTE   | 0x02, /* 4bpp palette */
-#endif
     PIXELFORMAT_PAL8     = FORMATTYPE_PALETTE   | 0x03, /* 8bpp palette */
 };
 
@@ -181,52 +182,52 @@ extern "C" {
 #endif
 
 /* create output context object */
-sixel_output_t *
+SIXELAPI sixel_output_t *
 sixel_output_create(
     sixel_write_function /* in */ fn_write, /* callback for output sixel */
     void                 /* in */ *priv);   /* private data given as
                                                3rd argument of fn_write */
 /* destroy output context object */
-void
+SIXELAPI void
 sixel_output_destroy(sixel_output_t /* in */ *output); /* output context */
 
 /* increment reference count of output context object (thread-unsafe) */
-void
+SIXELAPI void
 sixel_output_ref(sixel_output_t /* in */ *output);     /* output context */
 
 /* decrement reference count of output context object (thread-unsafe) */
-void
+SIXELAPI void
 sixel_output_unref(sixel_output_t /* in */ *output);   /* output context */
 
-int
+SIXELAPI int
 sixel_output_get_8bit_availability(
     sixel_output_t /* in */ *output);   /* output context */
 
-void
+SIXELAPI void
 sixel_output_set_8bit_availability(
     sixel_output_t /* in */ *output,       /* output context */
     int            /* in */ availability); /* 0: do not use 8bit characters
                                               1: use 8bit characters */
 
-void
+SIXELAPI void
 sixel_output_set_penetrate_multiplexer(
     sixel_output_t /* in */ *output,    /* output context */
     int            /* in */ penetrate); /* 0: penetrate GNU Screen
                                            1: do not penetrate GNU Screen */
 
-void
+SIXELAPI void
 sixel_output_set_skip_dcs_envelope(
     sixel_output_t /* in */ *output,   /* output context */
     int            /* in */ skip);     /* 0: output DCS envelope
                                           1: do not output DCS envelope */
 
-void
+SIXELAPI void
 sixel_output_set_palette_type(
     sixel_output_t /* in */ *output,      /* output context */
     int            /* in */ palettetype); /* PALETTETYPE_RGB: RGB palette
                                              PALETTETYPE_HLS: HLS palette */
 
-void
+SIXELAPI void
 sixel_output_set_encode_policy(
     sixel_output_t /* in */ *output,    /* output context */
     int            /* in */ encode_policy);
@@ -244,27 +245,27 @@ extern "C" {
 #endif
 
 /* create dither context object */
-sixel_dither_t *
+SIXELAPI sixel_dither_t *
 sixel_dither_create(int /* in */ ncolors); /* number of colors */
 
 /* get built-in dither context object */
-sixel_dither_t *
+SIXELAPI sixel_dither_t *
 sixel_dither_get(int builtin_dither); /* ID of built-in dither object */
 
 /* destroy dither context object */
-void
+SIXELAPI void
 sixel_dither_destroy(sixel_dither_t *dither); /* dither context object */
 
 /* increment reference count of dither context object (thread-unsafe) */
-void
+SIXELAPI void
 sixel_dither_ref(sixel_dither_t *dither); /* dither context object */
 
 /* decrement reference count of dither context object (thread-unsafe) */
-void
+SIXELAPI void
 sixel_dither_unref(sixel_dither_t *dither); /* dither context object */
 
 /* initialize internal palette from specified pixel buffer */
-int
+SIXELAPI int
 sixel_dither_initialize(
     sixel_dither_t *dither,          /* dither context object */
     unsigned char /* in */ *data,    /* sample image */
@@ -276,56 +277,62 @@ sixel_dither_initialize(
     int /* in */ quality_mode);      /* quality of histogram processing */
 
 /* set diffusion type, choose from enum methodForDiffuse */
-void
+SIXELAPI void
 sixel_dither_set_diffusion_type(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     int /* in */ method_for_diffuse);  /* one of enum methodForDiffuse */
 
 /* get number of palette colors */
-int
+SIXELAPI int
 sixel_dither_get_num_of_palette_colors(
     sixel_dither_t /* in */ *dither);  /* dither context object */
 
 /* get number of histogram colors */
-int
+SIXELAPI int
 sixel_dither_get_num_of_histogram_colors(
     sixel_dither_t /* in */ *dither);  /* dither context object */
 
-@attr_func_deprecated@ int /* typoed! remains for compatibility. */
+SIXELAPI @attr_func_deprecated@ int /* typoed! remains for compatibility. */
 sixel_dither_get_num_of_histgram_colors(
     sixel_dither_t /* in */ *dither);  /* dither context object */
 
 /* get palette */
-unsigned char *
+SIXELAPI unsigned char *
 sixel_dither_get_palette(
     sixel_dither_t /* in */ *dither);  /* dither context object */
 
 /* set palette */
-void
+SIXELAPI void
 sixel_dither_set_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     unsigned char  /* in */ *palette);
 
-void
+SIXELAPI void
 sixel_dither_set_complexion_score(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     int            /* in */ score);    /* complexion score (>= 1) */
 
-void
+SIXELAPI void
 sixel_dither_set_body_only(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     int            /* in */ bodyonly); /* 0: output palette section(default)
                                           1: do not output palette section */
-void
+SIXELAPI void
 sixel_dither_set_optimize_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     int            /* in */ do_opt);   /* 0: optimize palette size
                                           1: don't optimize palette size */
 /* set pixelformat */
-void
+SIXELAPI void
 sixel_dither_set_pixelformat(
     sixel_dither_t /* in */ *dither,      /* dither context object */
     int            /* in */ pixelformat); /* one of enum pixelFormat */
+
+/* set transparent */
+SIXELAPI void
+sixel_dither_set_transparent(
+    sixel_dither_t /* in */ *dither,      /* dither context object */
+    int            /* in */ transparent); /* transparent color index */
 
 #ifdef __cplusplus
 }
@@ -340,7 +347,7 @@ extern "C" {
 #endif
 
 /* convert pixels into sixel format and write it to output context */
-int
+SIXELAPI int
 sixel_encode(
     unsigned char  /* in */ *pixels,     /* pixel bytes */
     int            /* in */  width,      /* image width */
@@ -350,7 +357,7 @@ sixel_encode(
     sixel_output_t /* in */ *context);   /* output context */
 
 /* convert sixel data into indexed pixel bytes and palette data */
-int
+SIXELAPI int
 sixel_decode(
     unsigned char            /* in */  *sixels,    /* sixel bytes */
     int                      /* in */  size,       /* size of sixel bytes */
@@ -372,37 +379,275 @@ extern "C" {
 #endif
 
 /* compute pixel depth from pixelformat */
-int
+SIXELAPI int
 sixel_helper_compute_depth(
     int /* in */ pixelformat /* one of enum pixelFormat */
 );
 
 /* convert pixelFormat into PIXELFORMAT_RGB888 */
-int
+SIXELAPI int
 sixel_helper_normalize_pixelformat(
-    unsigned char       /* out */ *dst,        /* destination image */
-    unsigned char const /* in */  *src,        /* source image */
-    int                 /* in */  width,       /* source image width */
-    int                 /* in */  height,      /* source image height */
-    int const           /* in */  pixelformat  /* source image pixelformat */
+    unsigned char       /* out */ *dst,             /* destination buffer */
+    int                 /* out */ *dst_pixelformat, /* converted pixelformat */
+    unsigned char const /* in */  *src,             /* source pixels */
+    int                 /* in */  src_pixelformat,  /* format of source image */
+    int                 /* in */  width,            /* width of source image */
+    int                 /* in */  height            /* height of source image */
 );
 
 /* scale image to specified size */
-int
+SIXELAPI int
 sixel_helper_scale_image(
-    unsigned char       /* out */ *dst,
+    unsigned char       /* out */ *dst,                  /* destination buffer */
     unsigned char const /* in */  *src,                  /* source image data */
-    int const           /* in */  srcw,                  /* source image width */
-    int const           /* in */  srch,                  /* source image height */
-    int const           /* in */  pixelformat,           /* one of enum pixelFormat */
-    int const           /* in */  dstw,                  /* destination image width */
-    int const           /* in */  dsth,                  /* destination image height */
-    int const           /* in */  method_for_resampling  /* one of methodForResampling */
+    int                 /* in */  srcw,                  /* source image width */
+    int                 /* in */  srch,                  /* source image height */
+    int                 /* in */  pixelformat,           /* one of enum pixelFormat */
+    int                 /* in */  dstw,                  /* destination image width */
+    int                 /* in */  dsth,                  /* destination image height */
+    int                 /* in */  method_for_resampling  /* one of methodForResampling */
 );
 
 #ifdef __cplusplus
 }
 #endif
+
+
+/* image loader/writer API */
+
+enum imageFormat {
+    FORMAT_GIF   =  0, /* read only */
+    FORMAT_PNG   =  1, /* read/write */
+    FORMAT_BMP   =  2, /* read only */
+    FORMAT_JPG   =  3, /* read only */
+    FORMAT_TGA   =  4, /* read only */
+    FORMAT_WBMP  =  5, /* read only with --with-gd configure option */
+    FORMAT_TIFF  =  6, /* read only */
+    FORMAT_SIXEL =  7, /* read only */
+    FORMAT_PNM   =  8, /* read only */
+    FORMAT_GD2   =  9, /* read only with --with-gd configure option */
+    FORMAT_PSD   = 10, /* read only */
+    FORMAT_HDR   = 11, /* read only */
+};
+
+/* loop mode */
+enum loopControl {
+    LOOP_AUTO    = 0,  /* honer the setting of GIF header */
+    LOOP_FORCE   = 1,  /* always enable loop */
+    LOOP_DISABLE = 2,  /* always disable loop */
+};
+
+#ifndef LIBSIXEL_FRAME_H
+
+/* handle type of dither context object */
+typedef struct sixel_frame { int dummy; } sixel_frame_t;
+
+#endif  /* LIBSIXEL_FRAME_H */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+SIXELAPI unsigned char *
+sixel_frame_get_pixels(sixel_frame_t *frame);
+
+SIXELAPI void
+sixel_frame_ref(sixel_frame_t *frame);
+
+SIXELAPI void
+sixel_frame_unref(sixel_frame_t *frame);
+
+SIXELAPI int
+sixel_frame_init(
+    sixel_frame_t *frame,
+    unsigned char *pixels,
+    int width,
+    int height,
+    int pixelformat,
+    unsigned char *palette,
+    int ncolors
+);
+
+/* get pixels */
+SIXELAPI unsigned char *
+sixel_frame_get_pixels(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get palette */
+SIXELAPI unsigned char *
+sixel_frame_get_palette(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get width */
+SIXELAPI int
+sixel_frame_get_width(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get height */
+SIXELAPI int
+sixel_frame_get_height(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get ncolors */
+SIXELAPI int
+sixel_frame_get_ncolors(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get pixelformat */
+SIXELAPI int
+sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get transparent */
+SIXELAPI int
+sixel_frame_get_transparent(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get transparent */
+SIXELAPI int
+sixel_frame_get_multiframe(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get delay */
+SIXELAPI int
+sixel_frame_get_delay(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get frame no */
+SIXELAPI int
+sixel_frame_get_frame_no(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get loop no */
+SIXELAPI int
+sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* strip alpha from RGBA/ARGB formatted pixbuf */
+SIXELAPI int
+sixel_frame_strip_alpha(
+    sixel_frame_t  /* in */ *frame,
+    unsigned char  /* in */ *bgcolor);
+
+SIXELAPI int
+sixel_frame_resize(
+    sixel_frame_t  /* in */ *frame,
+    int            /* in */ width,
+    int            /* in */ height,
+    int            /* in */ method_for_resampling);
+
+SIXELAPI int
+sixel_frame_clip(
+    sixel_frame_t  /* in */ *frame,
+    int            /* in */ x,
+    int            /* in */ y,
+    int            /* in */ width,
+    int            /* in */ height);
+
+typedef int (* sixel_load_image_function)(
+    sixel_frame_t /* in */     *frame,
+    void          /* in/out */ *context);
+
+SIXELAPI int
+sixel_helper_load_image_file(
+    char const                /* in */     *filename,     /* source file name */
+    int                       /* in */     fstatic,       /* whether to extract static image */
+    int                       /* in */     fuse_palette,  /* whether to use paletted image */
+    int                       /* in */     reqcolors,     /* requested number of colors */
+    unsigned char             /* in */     *bgcolor,      /* background color */
+    int                       /* in */     loop_control,  /* one of enum loopControl */
+    sixel_load_image_function /* in */     fn_load,       /* callback */
+    int                       /* in */     finsecure,     /* true if do not verify SSL */
+    int const                 /* in */     *cancel_flag,  /* cancel flag */
+    void                      /* in/out */ *context);     /* private data for callback */
+
+/* write image to file */
+SIXELAPI int
+sixel_helper_write_image_file(
+    unsigned char  /* in */ *data,        /* source pixel data */
+    int            /* in */ width,        /* source data width */
+    int            /* in */ height,       /* source data height */
+    unsigned char  /* in */ *palette,     /* palette of source data */
+    int            /* in */ pixelformat,  /* source pixelFormat */
+    char const     /* in */ *filename,    /* destination filename */
+    int            /* in */ imageformat); /* one of enum imageformat */
+
+#ifdef __cplusplus
+}
+#endif
+
+
+/* easy encoder API */
+
+#ifndef LIBSIXEL_EASY_ENCODE_H
+
+/* handle type of dither context object */
+typedef struct sixel_encoder { int dummy; } sixel_encoder_t;
+
+#endif  /* LIBSIXEL_EASY_ENCODE_H */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* create encoder object */
+SIXELAPI sixel_encoder_t *
+sixel_encoder_create(void);
+
+SIXELAPI void
+sixel_encoder_ref(sixel_encoder_t *encoder);
+
+SIXELAPI void
+sixel_encoder_unref(sixel_encoder_t *encoder);
+
+SIXELAPI int
+sixel_encoder_set_cancel_flag(
+    sixel_encoder_t /* in */ *encoder,
+    int             /* in */ *cancel_flag);
+
+SIXELAPI int
+sixel_encoder_setopt(
+    sixel_encoder_t /* in */ *encoder,
+    int             /* in */ arg,
+    char const      /* in */ *optarg);
+
+SIXELAPI int
+sixel_encoder_encode(
+    sixel_encoder_t /* in */ *encoder,
+    char const      /* in */ *filename);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+/* easy encoder API */
+
+#ifndef LIBSIXEL_EASY_DECODE_H
+
+/* handle type of dither context object */
+typedef struct sixel_decoder { int dummy; } sixel_decoder_t;
+
+#endif  /* LIBSIXEL_EASY_ENCODE_H */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* create decoder object */
+SIXELAPI sixel_decoder_t *
+sixel_decoder_create(void);
+
+SIXELAPI void
+sixel_decoder_ref(sixel_decoder_t *decoder);
+
+SIXELAPI void
+sixel_decoder_unref(sixel_decoder_t *decoder);
+
+SIXELAPI int
+sixel_decoder_setopt(
+    sixel_decoder_t /* in */ *decoder,
+    int             /* in */ arg,
+    char const      /* in */ *optarg);
+
+SIXELAPI int
+sixel_decoder_decode(
+    sixel_decoder_t /* in */ *decoder);
+
+#ifdef __cplusplus
+}
+#endif
+
+
 
 #endif  /* LIBSIXEL_SIXEL_H */
 

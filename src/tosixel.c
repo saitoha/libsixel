@@ -283,6 +283,90 @@ sixel_encode_header(int width, int height, sixel_output_t *context)
 
 
 static int
+output_rgb_palette_definition(
+    sixel_output_t /* in */ *output,
+    unsigned char  /* in */ *palette,
+    int            /* in */ n,
+    int            /* in */ keycolor
+)
+{
+    int nwrite;
+
+    if (n != keycolor) {
+        /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
+        nwrite = sprintf((char *)output->buffer + output->pos,
+                         "#%d;2;%d;%d;%d",
+                         n,
+                         (palette[n * 3 + 0] * 100 + 127) / 255,
+                         (palette[n * 3 + 1] * 100 + 127) / 255,
+                         (palette[n * 3 + 2] * 100 + 127) / 255);
+        if (nwrite <= 0) {
+            return (-1);
+        }
+        sixel_advance(output, nwrite);
+    }
+
+    return (0);
+}
+
+
+static int
+output_hls_palette_definition(
+    sixel_output_t /* in */ *output,
+    unsigned char  /* in */ *palette,
+    int            /* in */ n,
+    int            /* in */ keycolor
+)
+{
+    int h;
+    int l;
+    int s;
+    int r;
+    int g;
+    int b;
+    int max;
+    int min;
+    int nwrite;
+
+    if (n != keycolor) {
+        r = palette[n * 3 + 0];
+        g = palette[n * 3 + 1];
+        b = palette[n * 3 + 2];
+        max = r > g ? (r > b ? r: b): (g > b ? g: b);
+        min = r < g ? (r < b ? r: b): (g < b ? g: b);
+        l = ((max + min) * 100 + 255) / 510;
+        if (max == min) {
+            h = s = 0;
+        } else {
+            if (l < 50) {
+                s = ((max - min) * 100 + 127) / (max + min);
+            } else {
+                s = ((max - min) * 100 + 127) / ((255 - max) + (255 - min));
+            }
+            if (r == max) {
+                h = 120 + (g - b) * 60 / (max - min);
+            } else if (g == max) {
+                h = 240 + (b - r) * 60 / (max - min);
+            } else if (r < g) /* if (b == max) */ {
+                h = 360 + (r - g) * 60 / (max - min);
+            } else {
+                h = 0 + (r - g) * 60 / (max - min);
+            }
+        }
+        /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
+        nwrite = sprintf((char *)output->buffer + output->pos,
+                         "#%d;1;%d;%d;%d", n, h, l, s);
+        if (nwrite <= 0) {
+            return (-1);
+        }
+        sixel_advance(output, nwrite);
+    }
+
+    return (0);
+}
+
+
+static int
 sixel_encode_body(unsigned char *pixels, int width, int height,
                   unsigned char *palette, int ncolors, int keycolor,
                   int bodyonly, sixel_output_t *context,
@@ -293,7 +377,6 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
     int len, pix;
     unsigned char *map = NULL;
     sixel_node_t *np, *tp, top;
-    int nwrite;
     int nret = (-1);
 
     if (ncolors < 1) {
@@ -315,64 +398,20 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
     memset(map, 0, len);
 #endif
 
-    if (!bodyonly && (ncolors != 2 || keycolor == -1)) {
+    if (!bodyonly && (ncolors != 2 || keycolor == (-1))) {
         if (context->palette_type == PALETTETYPE_HLS) {
             for (n = 0; n < ncolors; n++) {
-                int h;
-                int l;
-                int s;
-                int r, g, b, max, min;
-                if (palstate && palstate[n] != PALETTE_CHANGE) {
-                    continue;
-                }
-                r = palette[n * 3 + 0];
-                g = palette[n * 3 + 1];
-                b = palette[n * 3 + 2];
-                max = r > g ? (r > b ? r: b): (g > b ? g: b);
-                min = r < g ? (r < b ? r: b): (g < b ? g: b);
-                l = ((max + min) * 100 + 255) / 510;
-                if (max == min) {
-                    h = s = 0;
-                } else {
-                    if (l < 50) {
-                        s = ((max - min) * 100 + 127) / (max + min);
-                    } else {
-                        s = ((max - min) * 100 + 127) / ((255 - max) + (255 - min));
-                    }
-                    if (r == max) {
-                        h = 120 + (g - b) * 60 / (max - min);
-                    } else if (g == max) {
-                        h = 240 + (b - r) * 60 / (max - min);
-                    } else if (r < g) /* if (b == max) */ {
-                        h = 360 + (r - g) * 60 / (max - min);
-                    } else {
-                        h = 0 + (r - g) * 60 / (max - min);
-                    }
-                }
-                /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
-                nwrite = sprintf((char *)context->buffer + context->pos,
-                                 "#%d;1;%d;%d;%d", n, h, l, s);
-                if (nwrite <= 0) {
+                nret = output_hls_palette_definition(context, palette, n, keycolor);
+                if (nret != 0) {
                     goto end;
                 }
-                sixel_advance(context, nwrite);
             }
         } else {
             for (n = 0; n < ncolors; n++) {
-                if (palstate && palstate[n] != PALETTE_CHANGE) {
-                    continue;
-                }
-                /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
-                nwrite = sprintf((char *)context->buffer + context->pos,
-                                 "#%d;2;%d;%d;%d",
-                                 n,
-                                 (palette[n * 3 + 0] * 100 + 127) / 255,
-                                 (palette[n * 3 + 1] * 100 + 127) / 255,
-                                 (palette[n * 3 + 2] * 100 + 127) / 255);
-                if (nwrite <= 0) {
+                nret = output_rgb_palette_definition(context, palette, n, keycolor);
+                if (nret != 0) {
                     goto end;
                 }
-                sixel_advance(context, nwrite);
             }
         }
     }
@@ -577,6 +616,23 @@ sixel_encode_dither(unsigned char *pixels, int width, int height,
     int nret = (-1);
 
     switch (dither->pixelformat) {
+    case PIXELFORMAT_PAL1:
+    case PIXELFORMAT_PAL2:
+    case PIXELFORMAT_PAL4:
+        paletted_pixels = malloc(width * height * 3);
+        if (paletted_pixels == NULL) {
+            goto end;
+        }
+        nret = sixel_helper_normalize_pixelformat(paletted_pixels,
+                                                  &dither->pixelformat,
+                                                  pixels,
+                                                  dither->pixelformat,
+                                                  width, height);
+        if (nret != 0) {
+            goto end;
+        }
+        input_pixels = paletted_pixels;
+        break;
     case PIXELFORMAT_PAL8:
     case PIXELFORMAT_G8:
     case PIXELFORMAT_GA88:
@@ -585,7 +641,8 @@ sixel_encode_dither(unsigned char *pixels, int width, int height,
         break;
     default:
         /* apply palette */
-        paletted_pixels = sixel_dither_apply_palette(dither, pixels, width, height);
+        paletted_pixels = sixel_dither_apply_palette(dither, pixels,
+                                                     width, height);
         if (paletted_pixels == NULL) {
             goto end;
         }
@@ -1017,9 +1074,10 @@ sixel_encode_highcolor(unsigned char *pixels, int width, int height,
             goto error;
         }
         nret = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                  &dither->pixelformat,
                                                   pixels,
-                                                  width, height,
-                                                  dither->pixelformat);
+                                                  dither->pixelformat,
+                                                  width, height);
         if (nret != 0) {
             goto error;
         }
@@ -1167,7 +1225,7 @@ error:
 }
 
 
-int
+SIXELAPI int
 sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
              int            /* in */ width,       /* image width */
              int            /* in */ height,      /* image height */

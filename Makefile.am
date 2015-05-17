@@ -15,7 +15,7 @@ all-am:
 check-am:
 
 unittest: all
-	cd converters && $(MAKE) unittest 2>&1 |tee unittest.log
+	cd src && $(MAKE) unittest 2>&1 |tee unittest.log
 
 test: all
 	cd converters && $(MAKE) test 2>&1 |tee ../test.log

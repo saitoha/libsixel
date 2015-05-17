@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -19,38 +19,34 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
+#ifndef LIBSIXEL_FRAME_H
+#define LIBSIXEL_FRAME_H
 
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <limits.h>
+/* frame object */
+typedef struct sixel_frame {
+    unsigned int ref;         /* reference counter */
+    unsigned char *pixels;    /* loaded pixel data */
+    unsigned char *palette;   /* loaded palette data */
+    int width;                /* frame width */
+    int height;               /* frame height */
+    int ncolors;              /* palette colors */
+    int pixelformat;          /* one of enum pixelFormat */
+    int delay;                /* delay in msec */
+    int frame_no;             /* frame number */
+    int loop_count;           /* loop count */
+    int multiframe;           /* whether the image has multiple frames */
+    int transparent;          /* -1(no transparent) or >= 0(index of transparent color) */
+} sixel_frame_t;
 
-#if defined(HAVE_INTTYPES_H)
-# include <inttypes.h>
-#endif
+/* create frame object */
+sixel_frame_t *
+sixel_frame_create(void);
 
-#include "dither.h"
-#include "quant.h"
-#include "sixel.h"
-
-#if HAVE_TESTS
-
-int
-main(int argc, char *argv[])
-{
-    int nret = EXIT_FAILURE;
-    nret = sixel_dither_tests_main(argc, argv);
-    if (nret != EXIT_SUCCESS) {
-        goto error;
-    }
-    puts("done.");
-error:
-    return nret;
+#ifdef __cplusplus
 }
-
 #endif
+
+#endif /* LIBSIXEL_FRAME_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

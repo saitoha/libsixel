@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -35,6 +35,10 @@
 
 #if HAVE_SYS_STAT_H
 # include <sys/stat.h>
+#endif
+
+#if HAVE_UNISTD_H
+# include <unistd.h>
 #endif
 
 #if HAVE_FCNTL_H
@@ -80,8 +84,9 @@
 
 #include <stdio.h>
 #include "frompnm.h"
+#include "fromgif.h"
+#include "frame.h"
 #include <sixel.h>
-#include <sixel-imageio.h>
 
 #define STBI_NO_STDIO 1
 #define STB_IMAGE_IMPLEMENTATION 1
@@ -90,33 +95,38 @@
 
 typedef struct chunk
 {
-    unsigned char* buffer;
+    unsigned char *buffer;
     size_t size;
     size_t max_size;
 } chunk_t;
 
 
 static void
-chunk_init(chunk_t * const pchunk, size_t initial_size)
+chunk_init(chunk_t * const pchunk,
+           size_t initial_size)
 {
     pchunk->max_size = initial_size;
     pchunk->size = 0;
-    pchunk->buffer = malloc(pchunk->max_size);
+    pchunk->buffer = (unsigned char *)malloc(pchunk->max_size);
 }
 
 
+# ifdef HAVE_LIBCURL
 static size_t
-memory_write(void* ptr, size_t size, size_t len, void* memory)
+memory_write(void *ptr,
+             size_t size,
+             size_t len,
+             void *memory)
 {
     size_t nbytes;
-    chunk_t* chunk;
+    chunk_t *chunk;
 
     nbytes = size * len;
     if (nbytes == 0) {
         return 0;
     }
 
-    chunk = (chunk_t*)memory;
+    chunk = (chunk_t *)memory;
 
     if (chunk->max_size <= chunk->size + nbytes) {
         do {
@@ -130,12 +140,46 @@ memory_write(void* ptr, size_t size, size_t len, void* memory)
 
     return nbytes;
 }
+# endif
+
+
+static int
+wait_file(int fd, int usec)
+{
+#if HAVE_SYS_SELECT_H
+    fd_set rfds;
+    struct timeval tv;
+#endif  /* HAVE_SYS_SELECT_H */
+    int ret = 1;
+
+#if HAVE_SYS_SELECT_H
+    tv.tv_sec = usec / 1000000;
+    tv.tv_usec = usec % 1000000;
+    FD_ZERO(&rfds);
+    FD_SET(fd, &rfds);
+    ret = select(fd + 1, &rfds, NULL, NULL, &tv);
+#else
+    (void) fd;
+    (void) usec;
+#endif  /* HAVE_SYS_SELECT_H */
+    if (ret == 0) {
+        return (1);
+    }
+    if (ret < 0) {
+        return ret;
+    }
+
+    return (0);
+}
 
 
 static FILE *
 open_binary_file(char const *filename)
 {
     FILE *f;
+#if HAVE_STAT
+    struct stat sb;
+#endif  /* HAVE_STAT */
 
     if (filename == NULL || strcmp(filename, "-") == 0) {
         /* for windows */
@@ -148,6 +192,21 @@ open_binary_file(char const *filename)
 #endif  /* defined(O_BINARY) */
         return stdin;
     }
+
+#if HAVE_STAT
+    if (stat(filename, &sb) != 0) {
+# if HAVE_ERRNO_H
+        fprintf(stderr, "stat(%s) failed.\n" "reason: %s.\n",
+                filename, strerror(errno));
+# endif  /* HAVE_ERRNO_H */
+        return NULL;
+    }
+    if ((sb.st_mode & S_IFMT) == S_IFDIR) {
+        fprintf(stderr, "'%s' is directory.\n", filename);
+        return NULL;
+    }
+#endif  /* HAVE_STAT */
+
     f = fopen(filename, "rb");
     if (!f) {
 #if HAVE_ERRNO_H
@@ -161,10 +220,15 @@ open_binary_file(char const *filename)
 
 
 static int
-get_chunk_from_file(char const *filename, chunk_t *pchunk)
+get_chunk_from_file(
+    char const *filename,
+    chunk_t *pchunk,
+    int const *cancel_flag
+)
 {
     FILE *f;
     int n;
+    int ret;
 
     f = open_binary_file(filename);
     if (!f) {
@@ -174,7 +238,8 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
     chunk_init(pchunk, 64 * 1024);
     if (pchunk->buffer == NULL) {
 #if HAVE_ERRNO_H
-        fprintf(stderr, "get_chunk_from_file('%s'): malloc failed.\n" "reason: %s.\n",
+        fprintf(stderr, "get_chunk_from_file('%s'): malloc failed.\n"
+                        "reason: %s.\n",
                 filename, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
         return (-1);
@@ -183,13 +248,30 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
     for (;;) {
         if (pchunk->max_size - pchunk->size < 4096) {
             pchunk->max_size *= 2;
-            pchunk->buffer = (unsigned char *)realloc(pchunk->buffer, pchunk->max_size);
+            pchunk->buffer = (unsigned char *)realloc(pchunk->buffer,
+                                                      pchunk->max_size);
             if (pchunk->buffer == NULL) {
 #if HAVE_ERRNO_H
-                fprintf(stderr, "get_chunk_from_file('%s'): relloc failed.\n" "reason: %s.\n",
+                fprintf(stderr, "get_chunk_from_file('%s'): relloc failed.\n"
+                                "reason: %s.\n",
                         filename, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
                 return (-1);
+            }
+        }
+
+        if (isatty(fileno(f))) {
+            for (;;) {
+                if (*cancel_flag) {
+                    return (-1);
+                }
+                ret = wait_file(fileno(f), 10000);
+                if (ret < 0) {
+                    return ret;
+                }
+                if (ret == 0) {
+                    break;
+                }
             }
         }
         n = fread(pchunk->buffer + pchunk->size, 1, 4096, f);
@@ -206,18 +288,29 @@ get_chunk_from_file(char const *filename, chunk_t *pchunk)
 }
 
 
-# ifdef HAVE_LIBCURL
 static int
-get_chunk_from_url(char const *url, chunk_t *pchunk)
+get_chunk_from_url(
+    char const *url,
+    chunk_t *pchunk,
+    int finsecure)
 {
+# ifdef HAVE_LIBCURL
     CURL *curl;
     CURLcode code;
 
     chunk_init(pchunk, 1024);
+    if (pchunk->buffer == NULL) {
+#  if HAVE_ERRNO_H
+        fprintf(stderr, "get_chunk_from_url('%s'): malloc failed.\n"
+                        "reason: %s.\n",
+                url, strerror(errno));
+#  endif  /* HAVE_ERRNO_H */
+        return (-1);
+    }
     curl = curl_easy_init();
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-    if (strncmp(url, "https://", 8) == 0) {
+    if (finsecure && strncmp(url, "https://", 8) == 0) {
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
     }
@@ -232,18 +325,29 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
     }
     curl_easy_cleanup(curl);
     return 0;
-}
+# else
+    (void) url;
+    (void) pchunk;
+    (void) finsecure;
+    fprintf(stderr, "To specify URI schemes, you have to "
+                    "configure this program with --with-libcurl "
+                    "option at compile time.\n");
+    return (-1);
 # endif  /* HAVE_LIBCURL */
+}
 
 
 # if HAVE_JPEG
 /* import from @uobikiemukot's sdump loader.h */
 static unsigned char *
-load_jpeg(unsigned char *data, int datasize,
-          int *pwidth, int *pheight, int *pdepth)
+load_jpeg(unsigned char *data,
+          int datasize,
+          int *pwidth,
+          int *pheight,
+          int *ppixelformat)
 {
     int row_stride, size;
-    unsigned char *result;
+    unsigned char *result = NULL;
     JSAMPARRAY buffer;
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr pub;
@@ -259,13 +363,22 @@ load_jpeg(unsigned char *data, int datasize,
     cinfo.out_color_space = JCS_RGB;
     jpeg_start_decompress(&cinfo);
 
+    if (cinfo.output_components != 3) {
+        fprintf(stderr, "load_jpeg() failed(unknown format).\n");
+        goto end;
+    }
+
+    *ppixelformat = PIXELFORMAT_RGB888;
     *pwidth = cinfo.output_width;
     *pheight = cinfo.output_height;
-    *pdepth = cinfo.output_components;
 
-    size = *pwidth * *pheight * *pdepth;
+    size = *pwidth * *pheight * cinfo.output_components;
     result = (unsigned char *)malloc(size);
     if (result == NULL) {
+#if HAVE_ERRNO_H
+        fprintf(stderr, "load_jpeg() failed.\n" "reason: %s.\n",
+                strerror(errno));
+#endif  /* HAVE_ERRNO_H */
         goto end;
     }
 
@@ -288,7 +401,9 @@ end:
 
 # if HAVE_LIBPNG
 static void
-read_png(png_structp png_ptr, png_bytep data, png_size_t length)
+read_png(png_structp png_ptr,
+         png_bytep data,
+         png_size_t length)
 {
     chunk_t *pchunk = png_get_io_ptr(png_ptr);
     if (length > pchunk->size) {
@@ -302,22 +417,67 @@ read_png(png_structp png_ptr, png_bytep data, png_size_t length)
 }
 
 
+static void
+read_palette(png_structp png_ptr,
+             png_infop info_ptr,
+             unsigned char *palette,
+             int ncolors,
+             png_color *png_palette,
+             png_color_16 *pbackground,
+             int *transparent)
+{
+    png_bytep trans = NULL;
+    int num_trans = 0;
+    int i;
+
+    if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
+        png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, NULL);
+    }
+    if (num_trans > 0) {
+        *transparent = trans[0];
+    }
+    for (i = 0; i < ncolors; ++i) {
+        if (pbackground && i < num_trans) {
+            palette[i * 3 + 0] = ((0xff - trans[i]) * pbackground->red
+                                   + trans[i] * png_palette[i].red) >> 8;
+            palette[i * 3 + 1] = ((0xff - trans[i]) * pbackground->green
+                                   + trans[i] * png_palette[i].green) >> 8;
+            palette[i * 3 + 2] = ((0xff - trans[i]) * pbackground->blue
+                                   + trans[i] * png_palette[i].blue) >> 8;
+        } else {
+            palette[i * 3 + 0] = png_palette[i].red;
+            palette[i * 3 + 1] = png_palette[i].green;
+            palette[i * 3 + 2] = png_palette[i].blue;
+        }
+    }
+}
+
+
+
 static unsigned char *
-load_png(unsigned char *buffer, int size,
-         int *psx, int *psy, int *pcomp,
-         unsigned char **ppalette, int *pncolors,
+load_png(unsigned char *buffer,
+         int size,
+         int *psx,
+         int *psy,
+         unsigned char **ppalette,
+         int *pncolors,
          int reqcolors,
-         int *pixelformat)
+         int *pixelformat,
+         unsigned char *bgcolor,
+         int *transparent)
 {
     chunk_t read_chunk;
     png_uint_32 bitdepth;
-    png_uint_32 palette_bitdepth;
+    png_uint_32 png_status;
     png_structp png_ptr;
     png_infop info_ptr;
     unsigned char **rows = NULL;
     unsigned char *result = NULL;
     png_color *png_palette = NULL;
+    png_color_16 background;
+    png_color_16p default_background;
     int i;
+    int depth;
 
     png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if (!png_ptr) {
@@ -332,94 +492,233 @@ load_png(unsigned char *buffer, int size,
     }
     read_chunk.buffer = buffer;
     read_chunk.size = size;
+
     png_set_read_fn(png_ptr,(png_voidp)&read_chunk, read_png);
     png_read_info(png_ptr, info_ptr);
     *psx = png_get_image_width(png_ptr, info_ptr);
     *psy = png_get_image_height(png_ptr, info_ptr);
     bitdepth = png_get_bit_depth(png_ptr, info_ptr);
     if (bitdepth == 16) {
+#  if HAVE_DEBUG
+        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
+        fprintf(stderr, "stripping to 8bit...\n");
+#  endif
         png_set_strip_16(png_ptr);
+        bitdepth = 8;
     }
+
+    if (bgcolor) {
+        background.red = bgcolor[0];
+        background.green = bgcolor[1];
+        background.blue = bgcolor[2];
+        background.gray = (bgcolor[0] + bgcolor[1] + bgcolor[2]) / 3;
+    } else if (png_get_bKGD(png_ptr, info_ptr, &default_background) == PNG_INFO_bKGD) {
+        memcpy(&background, default_background, sizeof(background));
+    } else {
+        background.red = 0;
+        background.green = 0;
+        background.blue = 0;
+        background.gray = 0;
+    }
+
     switch (png_get_color_type(png_ptr, info_ptr)) {
     case PNG_COLOR_TYPE_PALETTE:
-        palette_bitdepth = png_get_PLTE(png_ptr, info_ptr, &png_palette, pncolors);
-        if (ppalette && png_palette && bitdepth == 8 && palette_bitdepth == 8 && *pncolors <= reqcolors) {
-            *ppalette = malloc(*pncolors * 3);
-            if (*ppalette == NULL) {
-                goto cleanup;
-            }
-            for (i = 0; i < *pncolors; ++i) {
-                (*ppalette)[i * 3 + 0] = png_palette[i].red;
-                (*ppalette)[i * 3 + 1] = png_palette[i].green;
-                (*ppalette)[i * 3 + 2] = png_palette[i].blue;
-            }
-            *pcomp = 1;
-            *pixelformat = PIXELFORMAT_PAL8;
-        } else {
+#  if HAVE_DEBUG
+        fprintf(stderr, "paletted PNG(PNG_COLOR_TYPE_PALETTE)\n");
+#  endif
+        png_status = png_get_PLTE(png_ptr, info_ptr,
+                                  &png_palette, pncolors);
+        if (png_status != PNG_INFO_PLTE || png_palette == NULL) {
+            fprintf(stderr, "PLTE chunk not found\n");
+            goto cleanup;
+        }
+#  if HAVE_DEBUG
+        fprintf(stderr, "palette colors: %d\n", *pncolors);
+        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
+#  endif
+        if (ppalette == NULL || *pncolors > reqcolors) {
+#  if HAVE_DEBUG
+            fprintf(stderr, "detected more colors than reqired(>%d).\n",
+                    reqcolors);
+            fprintf(stderr, "expand to RGB format...\n");
+#  endif
+            png_set_background(png_ptr, &background,
+                               PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
             png_set_palette_to_rgb(png_ptr);
-            *pcomp = 3;
+            png_set_strip_alpha(png_ptr);
             *pixelformat = PIXELFORMAT_RGB888;
+        } else {
+            switch (bitdepth) {
+            case 1:
+                *ppalette = malloc(*pncolors * 3);
+                if (*ppalette == NULL) {
+                    goto cleanup;
+                }
+                read_palette(png_ptr, info_ptr, *ppalette,
+                             *pncolors, png_palette, &background, transparent);
+                *pixelformat = PIXELFORMAT_PAL1;
+                break;
+            case 2:
+                *ppalette = malloc(*pncolors * 3);
+                if (*ppalette == NULL) {
+                    goto cleanup;
+                }
+                read_palette(png_ptr, info_ptr, *ppalette,
+                             *pncolors, png_palette, &background, transparent);
+                *pixelformat = PIXELFORMAT_PAL2;
+                break;
+            case 4:
+                *ppalette = malloc(*pncolors * 3);
+                if (*ppalette == NULL) {
+                    goto cleanup;
+                }
+                read_palette(png_ptr, info_ptr, *ppalette,
+                             *pncolors, png_palette, &background, transparent);
+                *pixelformat = PIXELFORMAT_PAL4;
+                break;
+            case 8:
+                *ppalette = malloc(*pncolors * 3);
+                if (*ppalette == NULL) {
+                    goto cleanup;
+                }
+                read_palette(png_ptr, info_ptr, *ppalette,
+                             *pncolors, png_palette, &background, transparent);
+                *pixelformat = PIXELFORMAT_PAL8;
+                break;
+            default:
+                png_set_background(png_ptr, &background,
+                                   PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+                png_set_palette_to_rgb(png_ptr);
+                *pixelformat = PIXELFORMAT_RGB888;
+                break;
+            }
         }
         break;
     case PNG_COLOR_TYPE_GRAY:
-        switch (bitdepth) {
-        case 1:
-        case 2:
-        case 4:
-#  if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
-            png_set_expand_gray_1_2_4_to_8(png_ptr);
-            *pcomp = 1;
-            *pixelformat = PIXELFORMAT_G8;
-#  elif HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
-            png_set_gray_1_2_4_to_8(png_ptr);
-            *pcomp = 1;
-            *pixelformat = PIXELFORMAT_G8;
-#  else
-            png_set_gray_to_rgb(png_ptr);
-            *pcomp = 3;
-            *pixelformat = PIXELFORMAT_RGB888;
+#  if HAVE_DEBUG
+        fprintf(stderr, "grayscale PNG(PNG_COLOR_TYPE_GRAY)\n");
+        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
 #  endif
-            break;
-
-        case 8:
-            if (ppalette && *pncolors <= 1 << 8) {
-                *pcomp = 1;
-                *pixelformat = PIXELFORMAT_G8;
-            } else {
-                png_set_gray_to_rgb(png_ptr);
-                *pcomp = 3;
-                *pixelformat = PIXELFORMAT_RGB888;
-            }
-            break;
-        default:
+        if (1 << bitdepth > reqcolors) {
+#  if HAVE_DEBUG
+            fprintf(stderr, "detected more colors than reqired(>%d).\n",
+                    reqcolors);
+            fprintf(stderr, "expand into RGB format...\n");
+#  endif
+            png_set_background(png_ptr, &background,
+                               PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
             png_set_gray_to_rgb(png_ptr);
-            *pcomp = 3;
             *pixelformat = PIXELFORMAT_RGB888;
-            break;
+        } else {
+            switch (bitdepth) {
+            case 1:
+            case 2:
+            case 4:
+#  if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
+#   if HAVE_DEBUG
+                fprintf(stderr, "expand %u bpp to 8bpp format...\n",
+                        (unsigned int)bitdepth);
+#   endif
+                png_set_expand_gray_1_2_4_to_8(png_ptr);
+                *pixelformat = PIXELFORMAT_G8;
+#  elif HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
+#   if HAVE_DEBUG
+                fprintf(stderr, "expand %u bpp to 8bpp format...\n",
+                        (unsigned int)bitdepth);
+#   endif
+                png_set_gray_1_2_4_to_8(png_ptr);
+                *pixelformat = PIXELFORMAT_G8;
+#  else
+#   if HAVE_DEBUG
+                fprintf(stderr, "expand into RGB format...\n");
+#   endif
+                png_set_background(png_ptr, &background,
+                                   PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+                png_set_gray_to_rgb(png_ptr);
+                *pixelformat = PIXELFORMAT_RGB888;
+#  endif
+                break;
+            case 8:
+                if (ppalette) {
+                    *pixelformat = PIXELFORMAT_G8;
+                } else {
+#  if HAVE_DEBUG
+                    fprintf(stderr, "expand into RGB format...\n");
+#  endif
+                    png_set_background(png_ptr, &background,
+                                       PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+                    png_set_gray_to_rgb(png_ptr);
+                    *pixelformat = PIXELFORMAT_RGB888;
+                }
+                break;
+            default:
+#  if HAVE_DEBUG
+                fprintf(stderr, "expand into RGB format...\n");
+#  endif
+                png_set_background(png_ptr, &background,
+                                   PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+                png_set_gray_to_rgb(png_ptr);
+                *pixelformat = PIXELFORMAT_RGB888;
+                break;
+            }
         }
         break;
     case PNG_COLOR_TYPE_GRAY_ALPHA:
+#  if HAVE_DEBUG
+        fprintf(stderr, "grayscale-alpha PNG(PNG_COLOR_TYPE_GRAY_ALPHA)\n");
+        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
+        fprintf(stderr, "expand to RGB format...\n");
+#  endif
+        png_set_background(png_ptr, &background,
+                           PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
         png_set_gray_to_rgb(png_ptr);
-        *pcomp = 3;
         *pixelformat = PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB_ALPHA:
-        png_set_strip_alpha(png_ptr);
-        *pcomp = 3;
+#  if HAVE_DEBUG
+        fprintf(stderr, "RGBA PNG(PNG_COLOR_TYPE_RGB_ALPHA)\n");
+        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
+        fprintf(stderr, "expand to RGB format...\n");
+#  endif
+        png_set_background(png_ptr, &background,
+                           PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
         *pixelformat = PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB:
-        *pcomp = 3;
+#  if HAVE_DEBUG
+        fprintf(stderr, "RGB PNG(PNG_COLOR_TYPE_RGB)\n");
+        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
+#  endif
+        png_set_background(png_ptr, &background,
+                           PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
         *pixelformat = PIXELFORMAT_RGB888;
         break;
     default:
         /* unknown format */
         goto cleanup;
     }
-    result = malloc(*pcomp * *psx * *psy);
+    depth = sixel_helper_compute_depth(*pixelformat);
+    result = malloc(*psx * *psy * depth);
+    if (result == NULL) {
+        goto cleanup;
+    }
     rows = malloc(*psy * sizeof(unsigned char *));
-    for (i = 0; i < *psy; ++i) {
-        rows[i] = result + *pcomp * *psx * i;
+    if (rows == NULL) {
+        goto cleanup;
+    }
+    switch (*pixelformat) {
+    case PIXELFORMAT_PAL1:
+    case PIXELFORMAT_PAL2:
+    case PIXELFORMAT_PAL4:
+        for (i = 0; i < *psy; ++i) {
+            rows[i] = result + (depth * *psx * bitdepth + 7) / 8 * i;
+        }
+        break;
+    default:
+        for (i = 0; i < *psy; ++i) {
+            rows[i] = result + depth * *psx * i;
+        }
+        break;
     }
 #if USE_SETJMP && HAVE_SETJMP
     if (setjmp(png_jmpbuf(png_ptr))) {
@@ -439,9 +738,12 @@ cleanup:
 
 
 static unsigned char *
-load_sixel(unsigned char *buffer, int size,
-           int *psx, int *psy, int *pcomp,
-           unsigned char **ppalette, int *pncolors,
+load_sixel(unsigned char *buffer,
+           int size,
+           int *psx,
+           int *psy,
+           unsigned char **ppalette,
+           int *pncolors,
            int reqcolors,
            int *ppixelformat)
 {
@@ -465,41 +767,45 @@ load_sixel(unsigned char *buffer, int size,
     }
     if (ppalette == NULL || colors > reqcolors) {
         *ppixelformat = PIXELFORMAT_RGB888;
-        *pcomp = 3;
-        pixels = malloc(*psx * *psy * *pcomp);
+        pixels = malloc(*psx * *psy * 3);
+        if (pixels == NULL) {
+            goto cleanup;
+        }
         for (i = 0; i < *psx * *psy; ++i) {
             pixels[i * 3 + 0] = palette[p[i] * 3 + 0];
             pixels[i * 3 + 1] = palette[p[i] * 3 + 1];
             pixels[i * 3 + 2] = palette[p[i] * 3 + 2];
         }
-        free(palette);
-        free(p);
     } else {
         *ppixelformat = PIXELFORMAT_PAL8;
-        *pcomp = 1;
         pixels = p;
         *ppalette = palette;
         *pncolors = colors;
+        p = NULL;
+        palette = NULL;
     }
+
+cleanup:
+    free(palette);
+    free(p);
 
     return pixels;
 }
 
 
 static int
-get_chunk(char const *filename, chunk_t *pchunk)
+get_chunk(
+    char const *filename,
+    chunk_t *pchunk,
+    int finsecure,
+    int const *cancel_flag
+)
 {
     if (filename != NULL && strstr(filename, "://")) {
-# ifdef HAVE_LIBCURL
-        return get_chunk_from_url(filename, pchunk);
-# else
-        fprintf(stderr, "To specify URI schemes, you have to "
-                        "configure this program with --with-libcurl "
-                        "option at compile time.\n");
-        return (-1);
-# endif  /* HAVE_LIBCURL */
+        return get_chunk_from_url(filename, pchunk, finsecure);
     }
-    return get_chunk_from_file(filename, pchunk);
+
+    return get_chunk_from_file(filename, pchunk, cancel_flag);
 }
 
 
@@ -602,138 +908,190 @@ chunk_is_jpeg(chunk_t const *chunk)
 #endif  /* HAVE_JPEG */
 
 
-static unsigned char *
-load_with_builtin(chunk_t const *pchunk, int *psx, int *psy,
-                  int *pcomp, int *pstride,
-                  unsigned char **ppalette, int *pncolors,
-                  int *ppixelformat,
-                  int *pframe_count, int *ploop_count, int **ppdelay,
-                  int fstatic, int reqcolors)
+
+int
+load_with_builtin(
+    chunk_t const             /* in */     *pchunk,      /* image data */
+    int                       /* in */     fstatic,      /* static */
+    int                       /* in */     fuse_palette, /* whether to use palette if possible */
+    int                       /* in */     reqcolors,    /* reqcolors */
+    unsigned char             /* in */     *bgcolor,     /* background color */
+    int                       /* in */     loop_control, /* one of enum loop_control */
+    sixel_load_image_function /* in */     fn_load,      /* callback */
+    void                      /* in/out */ *context      /* private data for callback */
+)
 {
-    unsigned char *p;
-    unsigned char *pixels = NULL;
-    static stbi__context s;
-    static stbi__gif g;
-    chunk_t frames;
-    chunk_t delays;
-    int pixelformat = PIXELFORMAT_RGB888;
+    sixel_frame_t *frame = NULL;
+    int ret = (-1);
 
     if (chunk_is_sixel(pchunk)) {
-        pixels = load_sixel(pchunk->buffer, pchunk->size,
-                            psx, psy, pcomp,
-                            ppalette, pncolors, reqcolors,
-                            ppixelformat);
-        if (pixels == NULL) {
-            return NULL;
+        frame = sixel_frame_create();
+        if (frame == NULL) {
+            return SIXEL_FAILED;
         }
-        *pframe_count = 1;
-        *ploop_count = 1;
+        frame->pixels = load_sixel(pchunk->buffer,
+                                   pchunk->size,
+                                   &frame->width,
+                                   &frame->height,
+                                   fuse_palette ? &frame->palette: NULL,
+                                   &frame->ncolors,
+                                   reqcolors,
+                                   &frame->pixelformat);
+        if (frame->pixels == NULL) {
+            goto error;
+        }
     } else if (chunk_is_pnm(pchunk)) {
+        frame = sixel_frame_create();
+        if (frame == NULL) {
+            return SIXEL_FAILED;
+        }
         /* pnm */
-        pixels = load_pnm(pchunk->buffer, pchunk->size,
-                          psx, psy, pcomp, ppalette, pncolors, pixelformat);
-        if (!pixels) {
+        frame->pixels = load_pnm(pchunk->buffer,
+                                 pchunk->size,
+                                 &frame->width,
+                                 &frame->height,
+                                 fuse_palette ? &frame->palette: NULL,
+                                 &frame->ncolors,
+                                 &frame->pixelformat);
+        if (!frame->pixels) {
 #if HAVE_ERRNO_H
             fprintf(stderr, "load_pnm failed.\n" "reason: %s.\n",
                     strerror(errno));
 #endif  /* HAVE_ERRNO_H */
-            return NULL;
+            goto error;
         }
-        *pframe_count = 1;
-        *ploop_count = 1;
     }
 #if HAVE_JPEG
     else if (chunk_is_jpeg(pchunk)) {
-        pixels = load_jpeg(pchunk->buffer, pchunk->size,
-                           psx, psy, pcomp);
-        *pframe_count = 1;
-        *ploop_count = 1;
+        frame = sixel_frame_create();
+        if (frame == NULL) {
+            return SIXEL_FAILED;
+        }
+        frame->pixels = load_jpeg(pchunk->buffer,
+                                  pchunk->size,
+                                  &frame->width,
+                                  &frame->height,
+                                  &frame->pixelformat);
+        if (frame->pixels == NULL) {
+            goto error;
+        }
     }
 #endif  /* HAVE_JPEG */
 #if HAVE_LIBPNG
     else if (chunk_is_png(pchunk)) {
-        pixels = load_png(pchunk->buffer, pchunk->size,
-                          psx, psy, pcomp,
-                          ppalette, pncolors, reqcolors,
-                          ppixelformat);
-        *pframe_count = 1;
-        *ploop_count = 1;
+        frame = sixel_frame_create();
+        if (frame == NULL) {
+            return SIXEL_FAILED;
+        }
+        frame->pixels = load_png(pchunk->buffer,
+                                 pchunk->size,
+                                 &frame->width,
+                                 &frame->height,
+                                 fuse_palette ? &frame->palette: NULL,
+                                 &frame->ncolors,
+                                 reqcolors,
+                                 &frame->pixelformat,
+                                 bgcolor,
+                                 &frame->transparent);
+        if (frame->pixels == NULL) {
+            goto error;
+        }
     }
 #endif  /* HAVE_LIBPNG */
     else if (chunk_is_gif(pchunk)) {
-        chunk_init(&frames, 1024);
-        chunk_init(&delays, 1024);
-        stbi__start_mem(&s, pchunk->buffer, pchunk->size);
-        *pframe_count = 0;
-        memset(&g, 0, sizeof(g));
-
-        for (;;) {
-            p = stbi__gif_load_next(&s, &g, pcomp, 4);
-            if (p == (void *) 1) {
-                /* end of animated gif marker */
-                break;
-            }
-            if (p == 0) {
-                free(frames.buffer);
-                pixels = NULL;
-                break;
-            }
-            *psx = g.w;
-            *psy = g.h;
-            memory_write((void *)p, 1, *psx * *psy * 4, (void *)&frames);
-            memory_write((void *)&g.delay, sizeof(g.delay), 1, (void *)&delays);
-            ++*pframe_count;
-            pixels = frames.buffer;
-            if (fstatic) {
-                break;
-            }
+        ret = load_gif(pchunk->buffer,
+                       pchunk->size,
+                       bgcolor,
+                       reqcolors,
+                       fuse_palette,
+                       fstatic,
+                       loop_control,
+                       fn_load,
+                       context);
+        if (ret != 0) {
+            goto error;
         }
-        *ploop_count = g.loop_count;
-        *ppdelay = (int *)delays.buffer;
-
-        if (!pixels) {
-            fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
-                    stbi_failure_reason());
-            return NULL;
-        }
+        goto end;
     } else {
+        stbi__context s;
+        int depth;
+
+        frame = sixel_frame_create();
+        if (frame == NULL) {
+            return SIXEL_FAILED;
+        }
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);
-        pixels = stbi_load_main(&s, psx, psy, pcomp, 3);
-        if (!pixels) {
+        frame->pixels = stbi_load_main(&s, &frame->width, &frame->height, &depth, 3);
+        if (!frame->pixels) {
             fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
                     stbi_failure_reason());
-            return NULL;
+            goto error;
         }
-        *pframe_count = 1;
-        *ploop_count = 1;
-        *pcomp = 3;  /* reset component to 3 */
+        frame->loop_count = 1;
+
+        switch (depth) {
+        case 1:
+        case 3:
+        case 4:
+            frame->pixelformat = PIXELFORMAT_RGB888;
+            break;
+        default:
+            fprintf(stderr, "load_with_builtin() failed.\n"
+                            "reason: unknown pixel-format.(depth: %d)\n", depth);
+            goto error;
+        }
     }
 
-    *pstride = *pcomp * *psx;
-    return pixels;
+    ret = sixel_frame_strip_alpha(frame, bgcolor);
+    if (ret != 0) {
+        goto error;
+    }
+
+    ret = fn_load(frame, context);
+    if (ret != 0) {
+        goto error;
+    }
+
+error:
+end:
+    sixel_frame_unref(frame);
+
+    return ret;
 }
 
 
 #ifdef HAVE_GDK_PIXBUF2
-static unsigned char *
-load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
-                    int *pcomp, int *pstride, int *pframe_count,
-                    int *ploop_count, int **ppdelay, int fstatic)
+static int
+load_with_gdkpixbuf(
+    chunk_t const             /* in */     *pchunk,      /* image data */
+    int                       /* in */     fstatic,      /* static */
+    int                       /* in */     fuse_palette, /* whether to use palette if possible */
+    int                       /* in */     reqcolors,    /* reqcolors */
+    unsigned char             /* in */     *bgcolor,     /* background color */
+    int                       /* in */     loop_control, /* one of enum loop_control */
+    sixel_load_image_function /* in */     fn_load,      /* callback */
+    void                      /* in/out */ *context      /* private data for callback */
+)
 {
     GdkPixbuf *pixbuf;
     GdkPixbufAnimation *animation;
-    unsigned char *pixels = NULL;
-    unsigned char *p;
     GdkPixbufLoader *loader;
-    chunk_t frames;
-    chunk_t delays;
 #if 1
     GdkPixbufAnimationIter *it;
     GTimeVal time;
-    int delay;
 #endif
+    sixel_frame_t *frame;
+    int stride;
+    int ret = SIXEL_FAILED;
 
-    chunk_init(&frames, 1024);
+    (void) fuse_palette;
+    (void) reqcolors;
+    (void) bgcolor;
+
+    frame = sixel_frame_create();
+    if (frame == NULL) {
+        return SIXEL_FAILED;
+    }
 
 #if (!GLIB_CHECK_VERSION(2, 36, 0))
     g_type_init();
@@ -745,51 +1103,88 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
     if (!animation || fstatic || gdk_pixbuf_animation_is_static_image(animation)) {
         pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
         if (pixbuf == NULL) {
-            return NULL;
+            goto end;
         }
-        p = gdk_pixbuf_get_pixels(pixbuf);
-        *psx = gdk_pixbuf_get_width(pixbuf);
-        *psy = gdk_pixbuf_get_height(pixbuf);
-        *pcomp = gdk_pixbuf_get_has_alpha(pixbuf) ? 4: 3;
-        *pstride = gdk_pixbuf_get_rowstride(pixbuf);
-        *pframe_count = 1;
-        memory_write((void *)p, 1, *psx * *psy * *pcomp, (void *)&frames);
-        pixels = frames.buffer;
+        frame->frame_no = 0;
+        frame->width = gdk_pixbuf_get_width(pixbuf);
+        frame->height = gdk_pixbuf_get_height(pixbuf);
+        stride = gdk_pixbuf_get_rowstride(pixbuf);
+        frame->pixels = malloc(frame->height * stride);
+        if (frame->pixels == NULL) {
+            goto end;
+        }
+        memcpy(frame->pixels, gdk_pixbuf_get_pixels(pixbuf),
+               frame->height * stride);
+        if (gdk_pixbuf_get_has_alpha(pixbuf)) {
+            frame->pixelformat = PIXELFORMAT_RGBA8888;
+        } else {
+            frame->pixelformat = PIXELFORMAT_RGB888;
+        }
+        ret = fn_load(frame, context);
+        if (ret != SIXEL_SUCCESS) {
+            goto end;
+        }
     } else {
-        chunk_init(&delays, 1024);
         g_get_current_time(&time);
 
-        it = gdk_pixbuf_animation_get_iter(animation, &time);
-        *pframe_count = 0;
-        while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
-            delay = gdk_pixbuf_animation_iter_get_delay_time(it);
-            g_time_val_add(&time, delay * 1000);
-            pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
-            p = gdk_pixbuf_get_pixels(pixbuf);
+        frame->frame_no = 0;
 
-            if (pixbuf == NULL) {
-                pixels = NULL;
+        it = gdk_pixbuf_animation_get_iter(animation, &time);
+        for (;;) {
+            while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
+                frame->delay = gdk_pixbuf_animation_iter_get_delay_time(it);
+                g_time_val_add(&time, frame->delay * 1000);
+                frame->delay /= 10;
+                pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
+                if (pixbuf == NULL) {
+                    break;
+                }
+                frame->width = gdk_pixbuf_get_width(pixbuf);
+                frame->height = gdk_pixbuf_get_height(pixbuf);
+                stride = gdk_pixbuf_get_rowstride(pixbuf);
+                frame->pixels = malloc(frame->height * stride);
+                if (frame->pixels == NULL) {
+                    goto end;
+                }
+                memcpy(frame->pixels, gdk_pixbuf_get_pixels(pixbuf),
+                       frame->height * stride);
+                if (gdk_pixbuf_get_has_alpha(pixbuf)) {
+                    frame->pixelformat = PIXELFORMAT_RGBA8888;
+                } else {
+                    frame->pixelformat = PIXELFORMAT_RGB888;
+                }
+                frame->multiframe = 1;
+                gdk_pixbuf_animation_iter_advance(it, &time);
+                ret = fn_load(frame, context);
+                if (ret != SIXEL_SUCCESS) {
+                    goto end;
+                }
+                frame->frame_no++;
+            }
+
+            ++frame->loop_count;
+
+            if (loop_control == LOOP_DISABLE || frame->frame_no == 1) {
                 break;
             }
-            *psx = gdk_pixbuf_get_width(pixbuf);
-            *psy = gdk_pixbuf_get_height(pixbuf);
-            *pcomp = gdk_pixbuf_get_has_alpha(pixbuf) ? 4: 3;
-            *pstride = gdk_pixbuf_get_rowstride(pixbuf);
-            memory_write((void *)p, 1, *psx * *psy * *pcomp, (void *)&frames);
-            delay /= 10;
-            memory_write((void *)&delay, sizeof(delay), 1, (void *)&delays);
-            ++*pframe_count;
-            gdk_pixbuf_animation_iter_advance(it, &time);
-            pixels = frames.buffer;
+            /* TODO: get loop property */
+            if (loop_control == LOOP_AUTO && frame->loop_count == 1) {
+                break;
+            }
         }
-        *ppdelay = (int *)delays.buffer;
-        /* TODO: get loop property */
-        *ploop_count = 0;
     }
+
+    ret = SIXEL_SUCCESS;
+
+end:
     gdk_pixbuf_loader_close(loader, NULL);
     g_object_unref(loader);
+    free(frame->pixels);
+    free(frame->palette);
+    free(frame);
 
-    return pixels;
+    return ret;
+
 }
 #endif  /* HAVE_GDK_PIXBUF2 */
 
@@ -798,92 +1193,113 @@ static int
 detect_file_format(int len, unsigned char *data)
 {
     if (memcmp("TRUEVISION", data + len - 18, 10) == 0) {
-        return FMT_TGA;
+        return FORMAT_TGA;
     }
 
     if (memcmp("GIF", data, 3) == 0) {
-        return FMT_GIF;
+        return FORMAT_GIF;
     }
 
     if (memcmp("\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", data, 8) == 0) {
-        return FMT_PNG;
+        return FORMAT_PNG;
     }
 
     if (memcmp("BM", data, 2) == 0) {
-        return FMT_BMP;
+        return FORMAT_BMP;
     }
 
     if (memcmp("\xFF\xD8", data, 2) == 0) {
-        return FMT_JPG;
+        return FORMAT_JPG;
     }
 
     if (memcmp("\x00\x00", data, 2) == 0) {
-        return FMT_WBMP;
+        return FORMAT_WBMP;
     }
 
     if (memcmp("\x4D\x4D", data, 2) == 0) {
-        return FMT_TIFF;
+        return FORMAT_TIFF;
     }
 
     if (memcmp("\x49\x49", data, 2) == 0) {
-        return FMT_TIFF;
+        return FORMAT_TIFF;
     }
 
     if (memcmp("\033P", data, 2) == 0) {
-        return FMT_SIXEL;
+        return FORMAT_SIXEL;
     }
 
     if (data[0] == 0x90  && (data[len-1] == 0x9C || data[len-2] == 0x9C)) {
-        return FMT_SIXEL;
+        return FORMAT_SIXEL;
     }
 
     if (data[0] == 'P' && data[1] >= '1' && data[1] <= '6') {
-        return FMT_PNM;
+        return FORMAT_PNM;
     }
 
     if (memcmp("gd2", data, 3) == 0) {
-        return FMT_GD2;
+        return FORMAT_GD2;
     }
 
     if (memcmp("8BPS", data, 4) == 0) {
-        return FMT_PSD;
+        return FORMAT_PSD;
     }
 
     if (memcmp("#?RADIANCE\n", data, 11) == 0) {
-        return FMT_HDR;
+        return FORMAT_HDR;
     }
 
     return (-1);
 }
 
 
-static unsigned char *
-load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride)
+static int
+load_with_gd(
+    chunk_t const             /* in */     *pchunk,      /* image data */
+    int                       /* in */     fstatic,      /* static */
+    int                       /* in */     fuse_palette, /* whether to use palette if possible */
+    int                       /* in */     reqcolors,    /* reqcolors */
+    unsigned char             /* in */     *bgcolor,     /* background color */
+    int                       /* in */     loop_control, /* one of enum loop_control */
+    sixel_load_image_function /* in */     fn_load,      /* callback */
+    void                      /* in/out */ *context      /* private data for callback */
+)
 {
-    unsigned char *pixels, *p;
+    unsigned char *p;
     gdImagePtr im;
     int x, y;
     int c;
+    sixel_frame_t *frame;
+
+    (void) fstatic;
+    (void) fuse_palette;
+    (void) reqcolors;
+    (void) bgcolor;
+    (void) loop_control;
+
+    frame = sixel_frame_create();
+    if (frame == NULL) {
+        return SIXEL_FAILED;
+    }
 
     switch(detect_file_format(pchunk->size, pchunk->buffer)) {
 #if 0
 # if HAVE_DECL_GDIMAGECREATEFROMGIFPTR
-        case FMT_GIF:
+        case FORMAT_GIF:
             im = gdImageCreateFromGifPtr(pchunk->size, pchunk->buffer);
             break;
 # endif  /* HAVE_DECL_GDIMAGECREATEFROMGIFPTR */
 #endif
 #if HAVE_DECL_GDIMAGECREATEFROMPNGPTR
-        case FMT_PNG:
+        case FORMAT_PNG:
             im = gdImageCreateFromPngPtr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMPNGPTR */
 #if HAVE_DECL_GDIMAGECREATEFROMBMPPTR
-        case FMT_BMP:
+        case FORMAT_BMP:
             im = gdImageCreateFromBmpPtr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMBMPPTR */
-        case FMT_JPG:
+        case FORMAT_JPG:
 #if HAVE_DECL_GDIMAGECREATEFROMJPEGPTREX
             im = gdImageCreateFromJpegPtrEx(pchunk->size, pchunk->buffer, 1);
 #elif HAVE_DECL_GDIMAGECREATEFROMJPEGPTR
@@ -891,58 +1307,57 @@ load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMJPEGPTREX */
             break;
 #if HAVE_DECL_GDIMAGECREATEFROMTGAPTR
-        case FMT_TGA:
+        case FORMAT_TGA:
             im = gdImageCreateFromTgaPtr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMTGAPTR */
 #if HAVE_DECL_GDIMAGECREATEFROMWBMPPTR
-        case FMT_WBMP:
+        case FORMAT_WBMP:
             im = gdImageCreateFromWBMPPtr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMWBMPPTR */
 #if HAVE_DECL_GDIMAGECREATEFROMTIFFPTR
-        case FMT_TIFF:
+        case FORMAT_TIFF:
             im = gdImageCreateFromTiffPtr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMTIFFPTR */
 #if HAVE_DECL_GDIMAGECREATEFROMGD2PTR
-        case FMT_GD2:
+        case FORMAT_GD2:
             im = gdImageCreateFromGd2Ptr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMGD2PTR */
         default:
-            return NULL;
+            return SIXEL_FAILED;
     }
 
     if (im == NULL) {
-        return NULL;
+        return SIXEL_FAILED;
     }
 
     if (!gdImageTrueColor(im)) {
 #if HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
         if (!gdImagePaletteToTrueColor(im)) {
-            return NULL;
+            return SIXEL_FAILED;
         }
 #else
-        return NULL;
+        return SIXEL_FAILED;
 #endif
     }
 
-    *psx = gdImageSX(im);
-    *psy = gdImageSY(im);
-    *pcomp = 3;
-    *pstride = *psx * *pcomp;
-    p = pixels = malloc(*pstride * *psy);
-    if (p == NULL) {
+    frame->width = gdImageSX(im);
+    frame->height = gdImageSY(im);
+    frame->pixelformat = PIXELFORMAT_RGB888;
+    p = frame->pixels = malloc(frame->width * frame->height * 3);
+    if (frame->pixels == NULL) {
 #if HAVE_ERRNO_H
         fprintf(stderr, "load_with_gd failed.\n" "reason: %s.\n",
                 strerror(errno));
 #endif  /* HAVE_ERRNO_H */
         gdImageDestroy(im);
-        return NULL;
+        return SIXEL_FAILED;
     }
-    for (y = 0; y < *psy; y++) {
-        for (x = 0; x < *psx; x++) {
+    for (y = 0; y < frame->height; y++) {
+        for (x = 0; x < frame->width; x++) {
             c = gdImageTrueColorPixel(im, x, y);
             *p++ = gdTrueColorGetRed(c);
             *p++ = gdTrueColorGetGreen(c);
@@ -950,63 +1365,35 @@ load_with_gd(chunk_t const *pchunk, int *psx, int *psy, int *pcomp, int *pstride
         }
     }
     gdImageDestroy(im);
-    return pixels;
+
+    return fn_load(frame, context);
 }
 
 #endif  /* HAVE_GD */
 
 
-static int
-arrange_pixelformat(unsigned char *pixels, int width, int height)
-{
-    int x;
-    int y;
-    unsigned char *src;
-    unsigned char *dst;
+/* load image from file */
 
-    src = dst = pixels;
-    for (y = 0; y < height; y++) {
-        for (x = 0; x < width; x++) {
-            *(dst++) = *(src++);   /* R */
-            *(dst++) = *(src++);   /* G */
-            *(dst++) = *(src++);   /* B */
-            src++;   /* A */
-        }
-    }
-
-    return 0;
-}
-
-
-int
+SIXELAPI int
 sixel_helper_load_image_file(
-    unsigned char /* out */ **ppixels,     /* loaded pixel data */
-    unsigned char /* out */ **ppalette,    /* loaded palette data */
-    int           /* out */ *psx,          /* image width */
-    int           /* out */ *psy,          /* image height */
-    int           /* out */ *pncolors,     /* palette colors */
-    int           /* out */ *ppixelformat, /* one of enum pixelFormat */
-    int           /* out */ *pframe_count, /* frame count */
-    int           /* out */ *ploop_count,  /* loop count */
-    int           /* out */ **ppdelay,     /* delay for each frames */
-    char const    /* in */  *filename,     /* source file name */
-    int           /* in */  fstatic,       /* whether to extract static image */
-    int           /* in */  reqcolors)     /* requested number of colors */
+    char const                /* in */     *filename,     /* source file name */
+    int                       /* in */     fstatic,       /* whether to extract static image */
+    int                       /* in */     fuse_palette,  /* whether to use paletted image */
+    int                       /* in */     reqcolors,     /* requested number of colors */
+    unsigned char             /* in */     *bgcolor,      /* background color */
+    int                       /* in */     loop_control,  /* one of enum loopControl */
+    sixel_load_image_function /* in */     fn_load,       /* callback */
+    int                       /* in */     finsecure,     /* true if do not verify SSL */
+    int const                 /* in */     *cancel_flag,  /* cancel flag */
+    void                      /* in/out */ *context       /* private data */
+)
 {
-    int comp;
-    int stride = (-1);
     int ret = (-1);
     chunk_t chunk;
 
-    *ppixels = NULL;
-
-    if (ppalette) {
-        *ppalette = NULL;
-    }
-
-    ret = get_chunk(filename, &chunk);
+    ret = get_chunk(filename, &chunk, finsecure, cancel_flag);
     if (ret != 0) {
-        return (-1);
+        return ret;
     }
 
     /* if input date is empty or 1 byte LF, ignore it and return successfully */
@@ -1014,36 +1401,44 @@ sixel_helper_load_image_file(
         return 0;
     }
 
+    ret = (-1);
 #ifdef HAVE_GDK_PIXBUF2
-    if (!*ppixels) {
-        *ppixels = load_with_gdkpixbuf(&chunk, psx, psy, &comp, &stride,
-                                       pframe_count, ploop_count, ppdelay,
-                                       fstatic);
+    if (ret != 0) {
+        ret = load_with_gdkpixbuf(&chunk,
+                                  fstatic,
+                                  fuse_palette,
+                                  reqcolors,
+                                  bgcolor,
+                                  loop_control,
+                                  fn_load,
+                                  context);
     }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
-    if (!*ppixels) {
-        *ppixels = load_with_gd(&chunk, psx, psy, &comp, &stride);
-        *pframe_count = 1;
+    if (!ret != 0) {
+        ret = load_with_gd(&chunk,
+                           fstatic,
+                           fuse_palette,
+                           reqcolors,
+                           bgcolor,
+                           loop_control,
+                           fn_load,
+                           context);
     }
 #endif  /* HAVE_GD */
-    if (!*ppixels) {
-        *ppixels = load_with_builtin(&chunk, psx, psy, &comp, &stride,
-                                     ppalette, pncolors, ppixelformat,
-                                     pframe_count, ploop_count, ppdelay,
-                                     fstatic, reqcolors);
+    if (ret != 0) {
+        ret = load_with_builtin(&chunk,
+                                fstatic,
+                                fuse_palette,
+                                reqcolors,
+                                bgcolor,
+                                loop_control,
+                                fn_load,
+                                context);
     }
     free(chunk.buffer);
-    if (*ppixels && stride > 0 && comp == 4 && (!ppalette || (ppalette && !*ppalette))) {
-        /* RGBA to RGB */
-        ret = arrange_pixelformat(*ppixels, *psx, *psy * *pframe_count);
-        if (ret != 0) {
-            goto end;
-        }
-    }
 
-    if (*ppixels == NULL) {
-        ret = (-1);
+    if (ret != 0) {
         goto end;
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -25,15 +25,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <limits.h>
 
-#if defined(HAVE_INTTYPES_H)
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
+#if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
 
 #include "dither.h"
 #include "quant.h"
-#include "sixel.h"
+#include <sixel.h>
 
 
 static const unsigned char pal_mono_dark[] = {
@@ -158,7 +161,7 @@ static const unsigned char pal_vt340_color[] = {
 };
 
 
-sixel_dither_t *
+SIXELAPI sixel_dither_t *
 sixel_dither_create(int ncolors)
 {
     sixel_dither_t *dither;
@@ -208,7 +211,7 @@ sixel_dither_create(int ncolors)
 }
 
 
-void
+SIXELAPI void
 sixel_dither_destroy(sixel_dither_t *dither)
 {
     if (dither) {
@@ -218,7 +221,7 @@ sixel_dither_destroy(sixel_dither_t *dither)
 }
 
 
-void
+SIXELAPI void
 sixel_dither_ref(sixel_dither_t *dither)
 {
     /* TODO: be thread safe */
@@ -226,7 +229,7 @@ sixel_dither_ref(sixel_dither_t *dither)
 }
 
 
-void
+SIXELAPI void
 sixel_dither_unref(sixel_dither_t *dither)
 {
     /* TODO: be thread safe */
@@ -236,7 +239,7 @@ sixel_dither_unref(sixel_dither_t *dither)
 }
 
 
-sixel_dither_t *
+SIXELAPI sixel_dither_t *
 sixel_dither_get(int builtin_dither)
 {
     unsigned char *palette;
@@ -325,7 +328,7 @@ sixel_dither_set_quality_mode(sixel_dither_t *dither, int quality_mode)
 }
 
 
-int
+SIXELAPI int
 sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
                         int width, int height, int pixelformat,
                         int method_for_largest, int method_for_rep,
@@ -336,15 +339,18 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     unsigned char *input_pixels;
     int nret = (-1);
 
-    /* normalize pixelformat */
-    normalized_pixels = malloc(width * height * 3);
-    if (normalized_pixels == NULL) {
-        goto end;
-    }
-
     if (pixelformat != PIXELFORMAT_RGB888) {
-        nret = sixel_helper_normalize_pixelformat(normalized_pixels, data,
-                                                  width, height, pixelformat);
+
+        /* normalize pixelformat */
+        normalized_pixels = malloc(width * height * 3);
+        if (normalized_pixels == NULL) {
+            goto end;
+        }
+
+        nret = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                  &pixelformat,
+                                                  data, pixelformat,
+                                                  width, height);
         if (nret != 0) {
             goto end;
         }
@@ -384,7 +390,7 @@ end:
 }
 
 
-void
+SIXELAPI void
 sixel_dither_set_diffusion_type(sixel_dither_t *dither, int method_for_diffuse)
 {
     if (method_for_diffuse == DIFFUSE_AUTO) {
@@ -398,7 +404,7 @@ sixel_dither_set_diffusion_type(sixel_dither_t *dither, int method_for_diffuse)
 }
 
 
-int
+SIXELAPI int
 sixel_dither_get_num_of_palette_colors(sixel_dither_t *dither)
 {
     return dither->ncolors;
@@ -406,7 +412,7 @@ sixel_dither_get_num_of_palette_colors(sixel_dither_t *dither)
 
 
 /* get number of histogram colors */
-int
+SIXELAPI int
 sixel_dither_get_num_of_histogram_colors(sixel_dither_t /* in */ *dither)  /* dither context object */
 {
     return dither->origcolors;
@@ -414,14 +420,14 @@ sixel_dither_get_num_of_histogram_colors(sixel_dither_t /* in */ *dither)  /* di
 
 
 /* typoed: remained for keeping compatibility */
-int
+SIXELAPI int
 sixel_dither_get_num_of_histgram_colors(sixel_dither_t /* in */ *dither)  /* dither context object */
 {
     return sixel_dither_get_num_of_histogram_colors(dither);
 }
 
 
-unsigned char *
+SIXELAPI unsigned char *
 sixel_dither_get_palette(sixel_dither_t /* in */ *dither)  /* dither context object */
 {
     return dither->palette;
@@ -429,7 +435,7 @@ sixel_dither_get_palette(sixel_dither_t /* in */ *dither)  /* dither context obj
 
 
 /* set palette */
-void
+SIXELAPI void
 sixel_dither_set_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     unsigned char  /* in */ *palette)
@@ -438,7 +444,7 @@ sixel_dither_set_palette(
 }
 
 
-void
+SIXELAPI void
 sixel_dither_set_complexion_score(sixel_dither_t /* in */ *dither,  /* dither context object */
                                   int            /* in */ score)    /* complexion score (>= 1) */
 {
@@ -446,7 +452,7 @@ sixel_dither_set_complexion_score(sixel_dither_t /* in */ *dither,  /* dither co
 }
 
 
-void
+SIXELAPI void
 sixel_dither_set_body_only(sixel_dither_t /* in */ *dither,     /* dither context object */
                            int            /* in */ bodyonly)    /* 0: output palette section
                                                                    1: do not output palette section  */
@@ -455,7 +461,7 @@ sixel_dither_set_body_only(sixel_dither_t /* in */ *dither,     /* dither contex
 }
 
 
-void
+SIXELAPI void
 sixel_dither_set_optimize_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     int            /* in */ do_opt)    /* 0: optimize palette size
@@ -465,7 +471,7 @@ sixel_dither_set_optimize_palette(
 }
 
 
-void
+SIXELAPI void
 sixel_dither_set_pixelformat(
     sixel_dither_t /* in */ *dither,     /* dither context object */
     int            /* in */ pixelformat) /* one of enum pixelFormat */
@@ -474,7 +480,16 @@ sixel_dither_set_pixelformat(
 }
 
 
-unsigned char *
+SIXELAPI void
+sixel_dither_set_transparent(
+    sixel_dither_t /* in */ *dither,      /* dither context object */
+    int            /* in */ transparent)  /* transparent color index */
+{
+    dither->keycolor = transparent;
+}
+
+
+SIXELAPI unsigned char *
 sixel_dither_apply_palette(sixel_dither_t *dither,
                            unsigned char *pixels,
                            int width, int height)
@@ -516,10 +531,13 @@ sixel_dither_apply_palette(sixel_dither_t *dither,
         if (normalized_pixels == NULL) {
             goto end;
         }
-        sixel_helper_normalize_pixelformat(normalized_pixels,
-                                           pixels,
-                                           width, height,
-                                           dither->pixelformat);
+        ret = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                 &dither->pixelformat,
+                                                 pixels, dither->pixelformat,
+                                                 width, height);
+        if (ret != 0) {
+            goto end;
+        }
         input_pixels = normalized_pixels;
     } else {
         input_pixels = pixels;
@@ -561,6 +579,8 @@ test1(void)
         perror(NULL);
         goto error;
     }
+    sixel_dither_ref(dither);
+    sixel_dither_unref(dither);
     nret = EXIT_SUCCESS;
 
 error:
@@ -593,8 +613,9 @@ error:
     return nret;
 }
 
+
 int
-sixel_dither_tests_main(int argc, char *argv[])
+sixel_dither_tests_main(void)
 {
     int nret = EXIT_FAILURE;
     size_t i;
@@ -604,9 +625,6 @@ sixel_dither_tests_main(int argc, char *argv[])
         test1,
         test2,
     };
-
-    (void) argv;
-    (void) argc;
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
         nret = testcases[i]();
