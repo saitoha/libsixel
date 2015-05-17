@@ -374,16 +374,21 @@ main(int argc, char *argv[])
 #else
     (void) signal_handler;
 #endif
+    ret = sixel_encoder_set_cancel_flag(encoder, &signaled);
+    if (ret != 0) {
+        exit_code = EXIT_FAILURE;
+        goto end;
+    }
 
     if (optind == argc) {
-        ret = sixel_encoder_encode(encoder, NULL, &signaled);
+        ret = sixel_encoder_encode(encoder, NULL);
         if (ret != 0) {
             exit_code = EXIT_FAILURE;
             goto end;
         }
     } else {
         for (n = optind; n < argc; n++) {
-            ret = sixel_encoder_encode(encoder, argv[n], &signaled);
+            ret = sixel_encoder_encode(encoder, argv[n]);
             if (ret != 0) {
                 exit_code = EXIT_FAILURE;
                 goto end;
@@ -397,12 +402,13 @@ main(int argc, char *argv[])
 
 argerr:
     exit_code = EXIT_FAILURE;
-    fprintf(stderr, "usage: img2sixel [-78eIiugvSPDVH] [-p colors] [-m file] [-d diffusiontype]\n"
-                    "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
-                    "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
-                    "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
-                    "                 [-E encodepolicy] [-B bgcolor] [-o outfile] [filename ...]\n"
-                    "for more details, type: 'img2sixel -H'.\n");
+    fprintf(stderr,
+            "usage: img2sixel [-78eIiugvSPDVH] [-p colors] [-m file] [-d diffusiontype]\n"
+            "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
+            "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
+            "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
+            "                 [-E encodepolicy] [-B bgcolor] [-o outfile] [filename ...]\n"
+            "for more details, type: 'img2sixel -H'.\n");
 
 end:
     sixel_encoder_unref(encoder);

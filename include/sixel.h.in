@@ -587,16 +587,21 @@ void
 sixel_encoder_unref(sixel_encoder_t *encoder);
 
 int
+sixel_encoder_set_cancel_flag(
+    sixel_encoder_t /* in */ *encoder,
+    int             /* in */ *cancel_flag
+);
+
+int
 sixel_encoder_setopt(
     sixel_encoder_t /* in */ *encoder,
     int             /* in */ arg,
-    char            /* in */ *optarg);
+    char const      /* in */ *optarg);
 
 int
 sixel_encoder_encode(
     sixel_encoder_t /* in */ *encoder,
-    char const      /* in */ *filename,
-    int const       /* in */ *cancel_flag);
+    char const      /* in */ *filename);
 
 #ifdef __cplusplus
 }
@@ -630,7 +635,7 @@ int
 sixel_decoder_setopt(
     sixel_decoder_t /* in */ *decoder,
     int             /* in */ arg,
-    char            /* in */ *optarg);
+    char const      /* in */ *optarg);
 
 int
 sixel_decoder_decode(

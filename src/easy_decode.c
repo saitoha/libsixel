@@ -166,7 +166,7 @@ int
 sixel_decoder_setopt(
     sixel_decoder_t /* in */ *decoder,
     int             /* in */ arg,
-    char            /* in */ *optarg
+    char const      /* in */ *optarg
 )
 {
     switch(arg) {
