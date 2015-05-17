@@ -261,7 +261,7 @@ get_chunk_from_file(
         }
 
         for (;;) {
-            if (*cancel_flag) {
+            if (cancel_flag && *cancel_flag) {
                 return (-1);
             }
             ret = wait_file(fileno(f), 10000);
