@@ -155,6 +155,7 @@ AC_CHECK_HEADERS([memory.h \
                   stdlib.h \
                   string.h \
                   unistd.h \
+                  stdint.h \
                   sys/unistd.h \
                   getopt.h \
                   sys/types.h \
