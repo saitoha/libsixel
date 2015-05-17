@@ -23,10 +23,10 @@ libsixel_la_SOURCES = output.c \
 		frompnm.h \
                 fromgif.c \
                 fromgif.h \
-		easy_encode.c \
-		easy_encode.h \
-		easy_decode.c \
-		easy_decode.h \
+		encoder.c \
+		encoder.h \
+		decoder.c \
+		decoder.h \
 		stb_image.h \
 		writer.c \
 		stb_image_write.c \
