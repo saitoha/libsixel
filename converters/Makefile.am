@@ -214,9 +214,8 @@ endif
 	    cat ../images/snake.jpg > sixel.pipe; \
 	    echo -n > sixel.pipe; \
 	    sleep 1; \
+	    rm -f sixel.pipe; \
 	fi
-	rm -f sixel.pipe
-	sleep 1
 	grep ^\.B img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > options2.txt
 	grep ' --' shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > options3.txt
 	grep '{-' shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > options4.txt

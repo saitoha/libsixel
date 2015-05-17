@@ -260,16 +260,18 @@ get_chunk_from_file(
             }
         }
 
-        for (;;) {
-            if (cancel_flag && *cancel_flag) {
-                return (-1);
-            }
-            ret = wait_file(fileno(f), 10000);
-            if (ret < 0) {
-                return ret;
-            }
-            if (ret == 0) {
-                break;
+        if (isatty(fileno(f))) {
+            for (;;) {
+                if (*cancel_flag) {
+                    return (-1);
+                }
+                ret = wait_file(fileno(f), 10000);
+                if (ret < 0) {
+                    return ret;
+                }
+                if (ret == 0) {
+                    break;
+                }
             }
         }
         n = fread(pchunk->buffer + pchunk->size, 1, 4096, f);
