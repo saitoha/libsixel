@@ -1,3 +1,7 @@
+2015-05-12  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Stop memory leaks
+
 2015-04-05  Hayaki Saito <user@zuse.jp>
 
   * converters/stb_image.h: Fix an existing bug in stb_image v1.41 of building
