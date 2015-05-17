@@ -328,6 +328,7 @@ get_chunk_from_url(
 # else
     (void) url;
     (void) pchunk;
+    (void) finsecure;
     fprintf(stderr, "To specify URI schemes, you have to "
                     "configure this program with --with-libcurl "
                     "option at compile time.\n");
