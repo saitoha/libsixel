@@ -3,11 +3,13 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [0.20.0], [user@zuse.jp])
-LS_LT_CURRENT=0
-LS_LT_REVISION=0
+AC_INIT([sixel], [1.5.0], [user@zuse.jp])
+LS_LT_CURRENT=1
+LS_LT_REVISION=4
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
+AC_SUBST([PACKAGE_DESCRIPTION],
+         ["A lightweight, fast implementation of DEC SIXEL graphics codec"])
 
 AC_CANONICAL_HOST
 
@@ -16,8 +18,16 @@ LT_INIT
 AC_CONFIG_SRCDIR([src/fromsixel.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
-#AC_ENABLE_SHARED
-#AC_DISABLE_STATIC
+
+AX_GCC_VAR_ATTRIBUTE([deprecated])
+if test x$ax_cv_have_func_attribute_deprecated != x; then
+    AC_SUBST(attr_var_deprecated, [__attribute__\(\(deprecated\)\)])
+fi
+
+AX_GCC_FUNC_ATTRIBUTE([deprecated])
+if test x$ax_cv_have_func_attribute_deprecated != x; then
+    AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
+fi
 
 # Options
 AC_ARG_ENABLE([img2sixel],
@@ -37,7 +47,7 @@ AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
 AC_ARG_WITH([gdk-pixbuf2],
             [AS_HELP_STRING([--with-gdk-pixbuf2],
                             [whether to build with gdk-pixbuf2 (default: no)])],
-            [with_gdk_pixbuf2=yes],
+            [],
             [with_gdk_pixbuf2=no])
 
 AC_ARG_WITH([gd],
@@ -48,15 +58,27 @@ AC_ARG_WITH([gd],
 
 AC_ARG_WITH([libcurl],
             [AS_HELP_STRING([--with-libcurl],
-                            [whether to build with libcurl (default: no)])],
+                            [whether to build with libcurl (default: auto)])],
             [],
-            [with_libcurl=no])
+            [with_libcurl=auto])
 
-AC_ARG_WITH([wic],
-            [AS_HELP_STRING([--with-wic],
-                            [whether to build with windows WIC integration, windows only (default: no)])],
+AC_ARG_WITH([jpeg],
+            [AS_HELP_STRING([--with-jpeg],
+                            [whether to build with libjpeg (default: auto)])],
             [],
-            [with_wic=no])
+            [with_jpeg=auto])
+
+AC_ARG_WITH([png],
+            [AS_HELP_STRING([--with-png],
+                            [whether to build with libpng (default: auto)])],
+            [],
+            [with_png=auto])
+
+#AC_ARG_WITH([wic],
+#            [AS_HELP_STRING([--with-wic],
+#                            [whether to build with windows WIC integration, windows only (default: no)])],
+#            [],
+#            [with_wic=no])
 
 AC_ARG_WITH(pkgconfigdir,
             AC_HELP_STRING([--with-pkgconfigdir],
@@ -66,20 +88,65 @@ AC_ARG_WITH(pkgconfigdir,
 AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
 AC_SUBST(pkgconfigdir)
 
+AC_ARG_WITH(bashcompletiondir,
+            AC_HELP_STRING([--with-bashcompletiondir],
+                           [Use the specified bashcompletion.d]),
+                           [bashcompletiondir=${withval}],
+                           [bashcompletiondir=${datadir}/bash-completion/completions])
+AC_MSG_NOTICE([bash-completion directory is ${bashcompletiondir}])
+AC_SUBST(bashcompletiondir)
+
+AC_ARG_WITH(zshcompletiondir,
+            AC_HELP_STRING([--with-zshcompletiondir],
+                           [Use the specified zshcompletion.d]),
+                           [zshcompletiondir=${withval}],
+                           [zshcompletiondir=${datadir}/zsh/site-functions])
+AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])
+AC_SUBST(zshcompletiondir)
+
+AC_ARG_ENABLE([debug],
+              [AS_HELP_STRING([--enable-debug],
+                              [Use debug macro and specific CFLAGS])],
+              [AC_DEFINE(HAVE_DEBUG, [1], [enable debugging support])],
+              [enable_debug=no])
+AM_CONDITIONAL([COND_DEBUG], [test x$enable_debug != xno])
+
 AC_ARG_ENABLE([gcov],
               [AS_HELP_STRING([--enable-gcov],
-                              [use Gcov to test the test suite])],
-              [enable_gcov=yes],
+                              [Use gcov])],
+              [],
               [enable_gcov=no])
 AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
 
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
-AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
+AS_IF([test x$cross_compile != xyes], [PKG_PROG_PKG_CONFIG], [])
+
+AC_DEFUN([LS_CHECK_CFLAG], [
+   AC_MSG_CHECKING([if $CC supports $1])
+   saved_cflags="$CFLAGS"
+   CFLAGS="$1"
+   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
+                     [AC_MSG_RESULT([yes])
+                      m4_default([$2], :)],
+                     [AC_MSG_RESULT([no])
+                      m4_default([$3], :)])
+   CFLAGS="$saved_cflags"
+])
+
+LS_CHECK_CFLAG([-Wall],[AM_CFLAGS="$AM_CFLAGS -Wall"], [])
+LS_CHECK_CFLAG([-Wextra],[AM_CFLAGS="$AM_CFLAGS -Wextra"], [])
+AS_IF([test x$enable_debug = xyes],
+      [LS_CHECK_CFLAG([-Werror],[AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
+AC_SUBST([AM_CFLAGS])
 
 # For wic integration
-AC_PROG_CXX
+#AC_PROG_CXX
+
+# For test
+AC_CHECK_PROGS(MD5SUM, [md5sum md5])
+AC_SUBST(MD5SUM)
 
 # Checks for libraries.
 
@@ -88,11 +155,20 @@ AC_CHECK_HEADERS([memory.h \
                   stdlib.h \
                   string.h \
                   unistd.h \
+                  sys/unistd.h \
                   getopt.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
-                  errno.h])
+                  errno.h \
+                  limits.h \
+                  sys/time.h \
+                  time.h \
+                  signal.h \
+                  sys/select.h \
+                  sys/signal.h \
+                  termios.h \
+                  sys/ioctl.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
@@ -107,36 +183,59 @@ AC_CHECK_FUNC([memset], [],
               [AC_MSG_ERROR(memset is not available.)])
 
 AC_CHECK_FUNC([getopt_long],
-	      [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])],
+              [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])
+               have_getopt_long=1],
               [AC_CHECK_FUNC([getopt],
-			     [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
-                             [AC_MSG_ERROR(getopt or getopt_long is not available.)
-			     ])
-	      ])
+                             [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
+                             [AC_MSG_ERROR(getopt or getopt_long is not available.)])])
+AM_CONDITIONAL([HAVE_GETOPT_LONG], [test x$have_getopt_long = xyes])
 
-AC_CHECK_FUNCS([memcpy memmove strtol setmode _setmode])
+AC_CHECK_FUNCS([memcpy \
+                memmove \
+                setmode \
+                _setmode \
+                signal \
+                usleep \
+                strdup \
+                strtoul \
+                calloc \
+                clock \
+                clearerr \
+                stat \
+                setjmp \
+                isatty])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
 
-loaders="stb_image"
-have_curl="no"
-have_wic="no"
+AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
+               [
+                   #ifdef HAVE_SIGNAL_H
+                   # include <signal.h>
+                   #elif HAVE_SYS_SIGNAL_H
+                   # include <sys/signal.h>
+                   #endif
+               ])
 
-if test x$with_wic != xno; then
-    AC_CHECK_HEADERS([wincodec.h], [],
-                     [AC_MSG_ERROR([WIC integration: wincodec.h is not avilable.])])
-    AC_CHECK_LIB([ole32], [main], [],
-                 [AC_MSG_ERROR([WIC integration: library ole32 is not avilable.])])
-    AC_CHECK_LIB([uuid], [main], [],
-                 [AC_MSG_ERROR([WIC integration: library uuid is not avilable.])])
-    AC_CHECK_LIB([windowscodecs], [main], [],
-                 [AC_MSG_ERROR([WIC integration: library wincodecs is not avilable.])])
-    have_wic="yes"
-fi
+loaders="stb_image"
+have_curl="no" have_jpeg="no"
+have_png="no"
+#have_wic="no"
+
+#if test x$with_wic != xno; then
+#    AC_CHECK_HEADERS([wincodec.h], [],
+#                     [AC_MSG_ERROR([WIC integration: wincodec.h is not avilable.])])
+#    AC_CHECK_LIB([ole32], [main], [],
+#                 [AC_MSG_ERROR([WIC integration: library ole32 is not avilable.])])
+#    AC_CHECK_LIB([uuid], [main], [],
+#                 [AC_MSG_ERROR([WIC integration: library uuid is not avilable.])])
+#    AC_CHECK_LIB([windowscodecs], [main], [],
+#                 [AC_MSG_ERROR([WIC integration: library wincodecs is not avilable.])])
+#    have_wic="yes"
+#fi
 
 if test x$with_gdk_pixbuf2 != xno; then
-    if test x$have_pkg_config != xno; then
+    if test x${PKG_CONFIG} != x; then
         PKG_CHECK_MODULES([GDK_PIXBUF],
                           [gdk-pixbuf-2.0],
                           [have_gdk_pixbuf2=yes],
@@ -161,30 +260,79 @@ AC_SUBST(GDK_PIXBUF_LIBS)
 
 
 if test x$with_gd != xno; then
+    CFLAGS_BACKUP=$CFLAGS
+    LDFLAGS_BACKUP=$LDFLAGS
+    if test x$with_gd != xyes -a x$with_gd != xauto; then
+        if test ! -d "$with_gd"; then
+            AC_MSG_ERROR(["${with_gd}" is not directory])
+        fi
+        ADDED_CFLAGS="-I${with_gd}/include"
+        ADDED_LIBS="-L${with_gd}/lib -lgd"
+    elif test x${prefix} != x -a x${prefix} != xNONE; then
+        ADDED_CFLAGS="-I${prefix}/include"
+        ADDED_LIBS="-L${prefix}/lib -lgd"
+    else
+        ADDED_CFLAGS="-I/usr/local/include"
+        ADDED_LIBS="-L/usr/local/lib -lgd"
+    fi
+    CFLAGS="${CFLAGS} ${GD_CFLAGS}"
+    LDFLAGS="${LDFLAGS} ${GD_LIBS}"
     AC_CHECK_HEADER([gd.h],
                     [AC_CHECK_LIB([gd],
                                   [gdImageCreateFromGifPtr],
-                                  [have_gd="yes" GD_LIBS=-lgd],
+                                  [have_gd="yes"
+                                   GD_CFLAGS=$ADDED_CFLAGS
+                                   GD_LIBS=$ADDED_LIBS],
                                   [have_gd="no"])])
-    if test x$have_pkg_config != xno; then
-        if test x$have_gd != xyes; then
+    CFLAGS=$CFLAGS_BACKUP
+    LDFLAGS=$LDFLAGS_BACKUP
+    if test x${PKG_CONFIG} != x; then
+        if test x$have_gd != xyes -a ! -d "$with_gd"; then
             PKG_CHECK_MODULES(GD, [gdlib], [have_gd=yes], [have_gd=no])
         fi
     fi
     if test x$have_gd = xyes; then
-        AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromPngPtr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromBmpPtr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromJpegPtrEx],[], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromJpegPtr],  [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromTgaPtr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromWBMPPtr],  [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromTiffPtr],  [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImageCreateFromGd2Ptr],   [], [], [ #include <gd.h> ])
-        AC_CHECK_DECLS([gdImagePaletteToTrueColor], [], [], [ #include <gd.h> ])
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        CFLAGS="$CFLAGS $GD_CFLAGS"
+        LDFLAGS="${LDFLAGS} ${GD_LIBS}"
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromGifPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromBmpPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromPngPtr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromBmpPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromBmpPtr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromJpegPtrEx],
+                     [AC_CHECK_DECLS([gdImageCreateFromJpegPtrEx],[], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromJpegPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromJpegPtr],  [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromTgaPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromTgaPtr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromWBMPPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromWBMPPtr],  [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromTiffPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromTiffPtr], [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImageCreateFromGd2Ptr],
+                     [AC_CHECK_DECLS([gdImageCreateFromGd2Ptr],   [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
+                     [gdImagePaletteToTrueColor],
+                     [AC_CHECK_DECLS([gdImagePaletteToTrueColor], [], [], [ #include <gd.h> ])])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
         loaders="${loaders} gd"
     else
+        GD_CFLAGS=
+        GD_LIBS=
         AC_MSG_ERROR(gd is not available.)
     fi
 
@@ -195,6 +343,10 @@ if test x$with_gd != xno; then
                                        [AC_MSG_ERROR([please install libiconv])])
                          ])
             ;;
+        *-*-interix)
+            AM_CPPFLAGS="-D_ALL_SOURCES"
+            AC_SUBST([AM_CPPFLAGS])
+            ;;
     esac
 
     AC_MSG_NOTICE([gd cflags is ${GD_CFLAGS}])
@@ -204,23 +356,49 @@ AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
 
 if test x$with_libcurl != xno; then
-    AC_CHECK_HEADER([curl/curl.h],
-                    [AC_CHECK_LIB([curl],
-                                  [curl_easy_cleanup],
-                                  [have_curl=yes LIBCURL_LIBS=-lcurl],
-                                  [have_curl=no])])
-    if test x$have_curl != xyes; then
-        if test x$have_pkg_config != xno; then
-            PKG_CHECK_MODULES(LIBCURL,
-                              [libcurl],
-                              [have_curl=yes],
-                              [have_curl=no])
+    if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_libcurl != xyes -a x$with_libcurl != xauto; then
+            if test ! -d "$with_libcurl"; then
+                AC_MSG_ERROR(["${with_libcurl}" is not directory])
+            fi
+            ADDED_CFLAGS="-I${with_libcurl}/include"
+            ADDED_LIBS="-L${with_libcurl}/lib -lcurl"
+        elif test x${prefix} != x -a x${prefix} != xNONE; then
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -lcurl"
+        else
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -lcurl"
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
+        AC_CHECK_HEADER([curl/curl.h],
+                        [AC_CHECK_LIB([curl],
+                                      [curl_easy_cleanup],
+                                      [have_curl=yes
+                                       LIBCURL_CFLAGS=$ADDED_CFLAGS
+                                       LIBCURL_LIBS=$ADDED_LIBS],
+                                      [have_curl=no])])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$have_curl != xyes -a ! -d "$with_libcurl"; then
+            if test x${PKG_CONFIG} != x; then
+                PKG_CHECK_MODULES(LIBCURL,
+                                  [libcurl],
+                                  [have_curl=yes],
+                                  [have_curl=no])
+            fi
         fi
     fi
     if test x$have_curl = xyes; then
         AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
     else
-        AC_MSG_ERROR([unable to find libcurl])
+        if test x$with_libcurl != xauto; then
+            AC_MSG_ERROR([unable to find libcurl])
+        fi
+        AC_MSG_NOTICE([libcurl is not available])
     fi
     AC_MSG_NOTICE([libcurl cflags is ${LIBCURL_CFLAGS}])
     AC_MSG_NOTICE([libcurl libs is ${LIBCURL_LIBS}])
@@ -228,15 +406,129 @@ fi
 AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
 
+if test x$with_jpeg != xno; then
+    if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_jpeg != xyes -a x$with_jpeg != xauto; then
+            if test ! -d "$with_jpeg"; then
+                AC_MSG_ERROR(["${with_jpeg}" is not directory])
+            fi
+            ADDED_CFLAGS="-I${with_jpeg}/include"
+            ADDED_LIBS="-L${with_jpeg}/lib -ljpeg"
+        elif test x${prefix} != x -a x${prefix} != xNONE; then
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -ljpeg"
+        else
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -ljpeg"
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
+        AC_CHECK_HEADER([jpeglib.h],
+                        [AC_CHECK_LIB([jpeg],
+                                      [jpeg_read_header],
+                                      [have_jpeg=yes],
+                                      [have_jpeg=no])])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$have_jpeg != xyes -a ! -d "$with_jpeg"; then
+            if test x${PKG_CONFIG} != x; then
+                PKG_CHECK_MODULES(LIBJPEG,
+                                  [libjpeg],
+                                  [have_jpeg=yes],
+                                  [have_jpeg=no])
+            fi
+        fi
+    fi
+    if test x$have_jpeg = xyes; then
+        LIBJPEG_CFLAGS=$ADDED_CFLAGS
+        LIBJPEG_LIBS=$ADDED_LIBS
+        AC_DEFINE(HAVE_JPEG, 1, [whether jpeg codec library is available])
+        loaders="${loaders} jpeg"
+        AC_MSG_NOTICE([jpeg cflags is ${LIBJPEG_CFLAGS}])
+        AC_MSG_NOTICE([jpeg libs is ${LIBJPEG_LIBS}])
+    else
+        if test x$with_jpeg != xauto; then
+            AC_MSG_ERROR([unable to find jpeg codec library])
+        fi
+        AC_MSG_NOTICE([libjpeg is not available])
+    fi
+fi
+AC_SUBST(LIBJPEG_CFLAGS)
+AC_SUBST(LIBJPEG_LIBS)
+
+if test x$with_png != xno; then
+    if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_png != xyes -a x$with_png != xauto; then
+            if test ! -d "$with_png"; then
+                AC_MSG_ERROR(["${with_png}" is not directory])
+            fi
+            ADDED_CFLAGS="-I${with_png}/include"
+            ADDED_LIBS="-L${with_png}/lib -lpng"
+        elif test x${prefix} != x -a x${prefix} != xNONE; then
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -lpng"
+        else
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -lpng"
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
+        AC_CHECK_HEADER([png.h],
+                        [AC_CHECK_LIB([png],
+                                      [png_check_sig],
+                                      [have_png=yes
+                                       LIBPNG_CFLAGS=$ADDED_CFLAGS
+                                       LIBPNG_LIBS=$ADDED_LIBS],
+                                      [have_png=no])])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$have_png != xyes -a ! -d "$with_png"; then
+            if test x${PKG_CONFIG} != x; then
+                PKG_CHECK_MODULES(LIBPNG,
+                                  [libpng],
+                                  [have_png=yes],
+                                  [have_png=no])
+            fi
+        fi
+    fi
+    if test x$have_png = xyes; then
+        CFLAGS="${CFLAGS} ${LIBPNG_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${LIBPNG_LIBS}"
+        AC_CHECK_DECLS([png_set_gray_1_2_4_to_8, png_set_expand_gray_1_2_4_to_8],
+                       [], [], [ #include <png.h> ])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        AC_DEFINE(HAVE_LIBPNG, 1, [whether libpng is available])
+        loaders="${loaders} png"
+        AC_MSG_NOTICE([libpng cflags is ${LIBPNG_CFLAGS}])
+        AC_MSG_NOTICE([libpng libs is ${LIBPNG_LIBS}])
+    else
+        if test x$with_png != xauto; then
+            AC_MSG_ERROR([unable to find libpng])
+        fi
+        AC_MSG_NOTICE([libpng is not available])
+    fi
+fi
+AC_SUBST(LIBPNG_CFLAGS)
+AC_SUBST(LIBPNG_LIBS)
+
 AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
           ])
 LS_UPDATE_TIMESTAMP
 
+AM_CONDITIONAL([HAVE_JPEG], [test x$have_jpeg = xyes])
+AM_CONDITIONAL([HAVE_PNG], [test x$have_png = xyes])
+AM_CONDITIONAL([HAVE_CURL], [test x$have_curl = xyes])
+
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
-                 wic_install.reg
-                 wic_uninstall.reg
+                 package.json.in
+                 include/sixel.h
                  src/Makefile
                  include/Makefile
                  converters/Makefile])
@@ -249,7 +541,11 @@ echo "libsixel was configured as follows"
 echo ""
 echo "       Loader component    : $loaders"
 echo "       libcurl integration : $have_curl"
-echo "       WIC integration     : $have_wic"
+echo "       pkg-config dir      : $pkgconfigdir"
+echo "       Bash completion dir : $bashcompletiondir"
+echo "       Zsh completion dir  : $zshcompletiondir"
+#echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
+echo "       debugging           : $enable_debug"
 echo ""
 echo ""

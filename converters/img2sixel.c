@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,534 +24,73 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 
-#if defined(HAVE_UNISTD_H)
-# include <unistd.h>  /* getopt */
+#if HAVE_UNISTD_H
+# include <unistd.h>
 #endif
-
-#if defined(HAVE_GETOPT_H)
+#if HAVE_SYS_UNISTD_H
+# include <sys/unistd.h>
+#endif
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#if HAVE_GETOPT_H
 # include <getopt.h>
 #endif
-
-#if defined(HAVE_INTTYPES_H)
+#if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
-
-#if defined(HAVE_ERRNO_H)
+#if HAVE_ERRNO_H
 # include <errno.h>
+#endif
+#if HAVE_SIGNAL_H
+# include <signal.h>
+#endif
+#if HAVE_SYS_SIGNAL_H
+# include <sys/signal.h>
 #endif
 
 #include <sixel.h>
-#include "scale.h"
-#include "quant.h"
-#include "loader.h"
 
 
-static unsigned char *
-prepare_monochrome_palette(finvert)
+static
+void show_version(void)
 {
-    unsigned char *palette;
-
-    palette = malloc(6);
-    if (finvert) {
-        palette[0] = 0xff;
-        palette[1] = 0xff;
-        palette[2] = 0xff;
-        palette[3] = 0x00;
-        palette[4] = 0x00;
-        palette[5] = 0x00;
-    } else {
-        palette[0] = 0x00;
-        palette[1] = 0x00;
-        palette[2] = 0x00;
-        palette[3] = 0xff;
-        palette[4] = 0xff;
-        palette[5] = 0xff;
-    }
-
-    return palette;
+    printf("img2sixel " PACKAGE_VERSION "\n"
+           "Copyright (C) 2014,2015 Hayaki Saito <user@zuse.jp>.\n"
+           "\n"
+           "Permission is hereby granted, free of charge, to any person obtaining a copy of\n"
+           "this software and associated documentation files (the \"Software\"), to deal in\n"
+           "the Software without restriction, including without limitation the rights to\n"
+           "use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\n"
+           "the Software, and to permit persons to whom the Software is furnished to do so,\n"
+           "subject to the following conditions:\n"
+           "\n"
+           "The above copyright notice and this permission notice shall be included in all\n"
+           "copies or substantial portions of the Software.\n"
+           "\n"
+           "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n"
+           "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\n"
+           "FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\n"
+           "COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\n"
+           "IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\n"
+           "CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n"
+          );
 }
 
 
-static unsigned char *
-prepare_specified_palette(char const *mapfile, int reqcolors, int *pncolors)
+static
+void show_help(void)
 {
-    FILE *f;
-    unsigned char *mappixels;
-    unsigned char *palette;
-    int origcolors;
-    int map_sx;
-    int map_sy;
-
-    mappixels = load_image_file(mapfile, &map_sx, &map_sy);
-    if (!mappixels) {
-        return NULL;
-    }
-    palette = LSQ_MakePalette(mappixels, map_sx, map_sy, 3,
-                              reqcolors, pncolors, &origcolors,
-                              LARGE_NORM, REP_CENTER_BOX, QUALITY_HIGH);
-    return palette;
-}
-
-
-static int
-convert_to_sixel(char const *filename, int reqcolors,
-                 char const *mapfile, int monochrome,
-                 enum methodForDiffuse method_for_diffuse,
-                 enum methodForLargest method_for_largest,
-                 enum methodForRep method_for_rep,
-                 enum qualityMode quality_mode,
-                 enum methodForResampling const method_for_resampling,
-                 int f8bit, int finvert,
-                 int pixelwidth, int pixelheight,
-                 int percentwidth, int percentheight)
-{
-    unsigned char *pixels = NULL;
-    unsigned char *scaled_pixels = NULL;
-    unsigned char *mappixels = NULL;
-    unsigned char *palette = NULL;
-    unsigned char *data = NULL;
-    int ncolors;
-    int origcolors;
-    LSImagePtr im = NULL;
-    LSOutputContextPtr context = NULL;
-    int sx, sy;
-    int i;
-    int nret = -1;
-    FILE *f;
-
-    if (reqcolors < 2) {
-        reqcolors = 2;
-    } else if (reqcolors > PALETTE_MAX) {
-        reqcolors = PALETTE_MAX;
-    }
-
-    pixels = load_image_file(filename, &sx, &sy);
-    if (pixels == NULL) {
-        nret = -1;
-        goto end;
-    }
-    /* scaling */
-    if (percentwidth > 0) {
-        pixelwidth = sx * percentwidth / 100;
-    }
-    if (percentheight > 0) {
-        pixelheight = sy * percentheight / 100;
-    }
-    if (pixelwidth > 0 && pixelheight <= 0) {
-        pixelheight = sy * pixelwidth / sx;
-    }
-    if (pixelheight > 0 && pixelwidth <= 0) {
-        pixelwidth = sx * pixelheight / sy;
-    }
-
-    if (pixelwidth > 0 && pixelheight > 0) {
-        scaled_pixels = LSS_scale(pixels, sx, sy, 3,
-                                  pixelwidth, pixelheight,
-                                  method_for_resampling);
-        sx = pixelwidth;
-        sy = pixelheight;
-
-        free(pixels);
-        pixels = scaled_pixels;
-    }
-
-    /* prepare palette */
-    if (monochrome) {
-        palette = prepare_monochrome_palette(finvert);
-        ncolors = 2;
-    } else if (mapfile) {
-        palette = prepare_specified_palette(mapfile, reqcolors, &ncolors);
-    } else {
-        if (method_for_largest == LARGE_AUTO) {
-            method_for_largest = LARGE_NORM;
-        }
-        if (method_for_rep == REP_AUTO) {
-            method_for_rep = REP_CENTER_BOX;
-        }
-        if (quality_mode == QUALITY_AUTO) {
-            quality_mode = reqcolors <= 8 ? QUALITY_HIGH: QUALITY_LOW;
-        }
-        palette = LSQ_MakePalette(pixels, sx, sy, 3,
-                                  reqcolors, &ncolors, &origcolors,
-                                  method_for_largest,
-                                  method_for_rep,
-                                  quality_mode);
-        if (origcolors <= ncolors) {
-            method_for_diffuse = DIFFUSE_NONE;
-        }
-    }
-
-    if (!palette) {
-        nret = -1;
-        goto end;
-    }
-
-    /* apply palette */
-    if (method_for_diffuse == DIFFUSE_AUTO) {
-        method_for_diffuse = DIFFUSE_FS;
-    }
-    data = LSQ_ApplyPalette(pixels, sx, sy, 3,
-                            palette, ncolors,
-                            method_for_diffuse,
-                            /* foptimize */ 1);
-
-    if (!data) {
-        nret = -1;
-        goto end;
-    }
-
-    /* create intermidiate bitmap image */
-    im = LSImage_create(sx, sy, 3, ncolors);
-    if (!im) {
-        nret = -1;
-        goto end;
-    }
-    for (i = 0; i < ncolors; i++) {
-        LSImage_setpalette(im, i,
-                           palette[i * 3],
-                           palette[i * 3 + 1],
-                           palette[i * 3 + 2]);
-    }
-    if (monochrome) {
-        im->keycolor = 0;
-    } else {
-        im->keycolor = -1;
-    }
-    LSImage_setpixels(im, data);
-
-    data = NULL;
-
-    /* convert image object into sixel */
-    context = LSOutputContext_create(putchar, printf);
-    context->has_8bit_control = f8bit;
-    LibSixel_LSImageToSixel(im, context);
-
-    nret = 0;
-
-end:
-    if (data) {
-        free(data);
-    }
-    if (pixels) {
-        free(pixels);
-    }
-    if (mappixels) {
-        free(mappixels);
-    }
-    if (palette) {
-        LSQ_FreePalette(palette);
-    }
-    if (im) {
-        LSImage_destroy(im);
-    }
-    if (context) {
-        LSOutputContext_destroy(context);
-    }
-    return nret;
-}
-
-
-int main(int argc, char *argv[])
-{
-    int n;
-    int filecount = 1;
-    int ncolors = -1;
-    int monochrome = 0;
-    enum methodForResampling method_for_resampling = RES_BILINEAR;
-    enum methodForDiffuse method_for_diffuse = DIFFUSE_AUTO;
-    enum methodForLargest method_for_largest = LARGE_AUTO;
-    enum methodForRep method_for_rep = REP_AUTO;
-    enum qualityMode quality_mode = QUALITY_AUTO;
-    char *mapfile = NULL;
-    int long_opt;
-#if HAVE_GETOPT_LONG
-    int option_index;
-#endif  /* HAVE_GETOPT_LONG */
-    int ret;
-    int exit_code;
-    int f8bit;
-    int finvert;
-    int number;
-    char unit[32];
-    int parsed;
-    int pixelwidth;
-    int pixelheight;
-    int percentwidth;
-    int percentheight;
-    char const *optstring = "78p:m:ed:f:s:w:h:r:q:i";
-
-    f8bit = 0;
-    finvert = 0;
-    pixelwidth = -1;
-    pixelheight = -1;
-    percentwidth = -1;
-    percentheight = -1;
-
-#if HAVE_GETOPT_LONG
-    struct option long_options[] = {
-        {"7bit-mode",    no_argument,        &long_opt, '7'},
-        {"8bit-mode",    no_argument,        &long_opt, '8'},
-        {"colors",       required_argument,  &long_opt, 'p'},
-        {"mapfile",      required_argument,  &long_opt, 'm'},
-        {"monochrome",   no_argument,        &long_opt, 'e'},
-        {"diffusion",    required_argument,  &long_opt, 'd'},
-        {"find-largest", required_argument,  &long_opt, 'f'},
-        {"select-color", required_argument,  &long_opt, 's'},
-        {"width",        required_argument,  &long_opt, 'w'},
-        {"height",       required_argument,  &long_opt, 'h'},
-        {"resampling",   required_argument,  &long_opt, 'r'},
-        {"quality",      required_argument,  &long_opt, 'q'},
-        {"invert",       required_argument,  &long_opt, 'i'},
-        {0, 0, 0, 0}
-    };
-#endif  /* HAVE_GETOPT_LONG */
-
-    for (;;) {
-
-#if HAVE_GETOPT_LONG
-        n = getopt_long(argc, argv, optstring,
-                        long_options, &option_index);
-#else
-        n = getopt(argc, argv, optstring);
-#endif  /* HAVE_GETOPT_LONG */
-        if (n == -1) {
-            break;
-        }
-        if (n == 0) {
-            n = long_opt;
-        }
-        switch(n) {
-        case '7':
-            f8bit = 0;
-            break;
-        case '8':
-            f8bit = 1;
-            break;
-        case 'p':
-            ncolors = atoi(optarg);
-            break;
-        case 'm':
-            mapfile = strdup(optarg);
-            break;
-        case 'e':
-            monochrome = 1;
-            break;
-        case 'd':
-            /* parse --diffusion option */
-            if (optarg) {
-                if (strcmp(optarg, "auto") == 0) {
-                    method_for_diffuse = DIFFUSE_AUTO;
-                } else if (strcmp(optarg, "none") == 0) {
-                    method_for_diffuse = DIFFUSE_NONE;
-                } else if (strcmp(optarg, "fs") == 0) {
-                    method_for_diffuse = DIFFUSE_FS;
-                } else if (strcmp(optarg, "atkinson") == 0) {
-                    method_for_diffuse = DIFFUSE_ATKINSON;
-                } else if (strcmp(optarg, "jajuni") == 0) {
-                    method_for_diffuse = DIFFUSE_JAJUNI;
-                } else if (strcmp(optarg, "stucki") == 0) {
-                    method_for_diffuse = DIFFUSE_STUCKI;
-                } else if (strcmp(optarg, "burkes") == 0) {
-                    method_for_diffuse = DIFFUSE_BURKES;
-                } else {
-                    fprintf(stderr,
-                            "Diffusion method '%s' is not supported.\n",
-                            optarg);
-                    goto argerr;
-                }
-            }
-            break;
-        case 'f':
-            /* parse --find-largest option */
-            if (optarg) {
-                if (strcmp(optarg, "auto") == 0) {
-                    method_for_largest = LARGE_AUTO;
-                } else if (strcmp(optarg, "norm") == 0) {
-                    method_for_largest = LARGE_NORM;
-                } else if (strcmp(optarg, "lum") == 0) {
-                    method_for_largest = LARGE_LUM;
-                } else {
-                    fprintf(stderr,
-                            "Finding method '%s' is not supported.\n",
-                            optarg);
-                    goto argerr;
-                }
-            }
-            break;
-        case 's':
-            /* parse --select-color option */
-            if (optarg) {
-                if (strcmp(optarg, "auto") == 0) {
-                    method_for_rep = REP_AUTO;
-                } else if (strcmp(optarg, "center") == 0) {
-                    method_for_rep = REP_CENTER_BOX;
-                } else if (strcmp(optarg, "average") == 0) {
-                    method_for_rep = REP_AVERAGE_COLORS;
-                } else if (strcmp(optarg, "histgram") == 0) {
-                    method_for_rep = REP_AVERAGE_PIXELS;
-                } else {
-                    fprintf(stderr,
-                            "Finding method '%s' is not supported.\n",
-                            optarg);
-                    goto argerr;
-                }
-            }
-            break;
-        case 'w':
-            parsed = sscanf(optarg, "%d%s", &number, unit);
-            if (parsed == 2 && strcmp(unit, "%") == 0) {
-                pixelwidth = -1;
-                percentwidth = number;
-            } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
-                pixelwidth = number;
-                percentwidth = -1;
-            } else if (strcmp(optarg, "auto") == 0) {
-                pixelwidth = -1;
-                percentwidth = -1;
-            } else {
-                fprintf(stderr,
-                        "Cannot parse -w/--width option.\n");
-                goto argerr;
-            }
-            break;
-        case 'h':
-            parsed = sscanf(optarg, "%d%s", &number, unit);
-            if (parsed == 2 && strcmp(unit, "%") == 0) {
-                pixelheight = -1;
-                percentheight = number;
-            } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
-                pixelheight = number;
-                percentheight = -1;
-            } else if (strcmp(optarg, "auto") == 0) {
-                pixelheight = -1;
-                percentheight = -1;
-            } else {
-                fprintf(stderr,
-                        "Cannot parse -h/--height option.\n");
-                goto argerr;
-            }
-            break;
-        case 'r':
-            /* parse --resampling option */
-            if (!optarg) {  /* default */
-                method_for_resampling = RES_BILINEAR;
-            } else if (strcmp(optarg, "nearest") == 0) {
-                method_for_resampling = RES_NEAREST;
-            } else if (strcmp(optarg, "gaussian") == 0) {
-                method_for_resampling = RES_GAUSSIAN;
-            } else if (strcmp(optarg, "hanning") == 0) {
-                method_for_resampling = RES_HANNING;
-            } else if (strcmp(optarg, "hamming") == 0) {
-                method_for_resampling = RES_HAMMING;
-            } else if (strcmp(optarg, "bilinear") == 0) {
-                method_for_resampling = RES_BILINEAR;
-            } else if (strcmp(optarg, "welsh") == 0) {
-                method_for_resampling = RES_WELSH;
-            } else if (strcmp(optarg, "bicubic") == 0) {
-                method_for_resampling = RES_BICUBIC;
-            } else if (strcmp(optarg, "lanczos2") == 0) {
-                method_for_resampling = RES_LANCZOS2;
-            } else if (strcmp(optarg, "lanczos3") == 0) {
-                method_for_resampling = RES_LANCZOS3;
-            } else if (strcmp(optarg, "lanczos4") == 0) {
-                method_for_resampling = RES_LANCZOS4;
-            } else {
-                fprintf(stderr,
-                        "Resampling method '%s' is not supported.\n",
-                        optarg);
-                goto argerr;
-            }
-            break;
-        case 'q':
-            /* parse --quality option */
-            if (optarg) {
-                if (strcmp(optarg, "auto") == 0) {
-                    quality_mode = QUALITY_AUTO;
-                } else if (strcmp(optarg, "high") == 0) {
-                    quality_mode = QUALITY_HIGH;
-                } else if (strcmp(optarg, "hanning") == 0) {
-                    quality_mode = QUALITY_LOW;
-                } else {
-                    fprintf(stderr,
-                            "Cannot parse quality option.\n");
-                    goto argerr;
-                }
-            }
-            break;
-        case 'i':
-            finvert = 1;
-            break;
-        case '?':
-            goto argerr;
-        default:
-            goto argerr;
-        }
-    }
-    if (ncolors != -1 && mapfile) {
-        fprintf(stderr, "option -p, --colors conflicts "
-                        "with -m, --mapfile.\n");
-        goto argerr;
-    }
-    if (mapfile && monochrome) {
-        fprintf(stderr, "option -m, --mapfile conflicts "
-                        "with -e, --monochrome.\n");
-        goto argerr;
-    }
-    if (monochrome && ncolors != -1) {
-        fprintf(stderr, "option -e, --monochrome conflicts"
-                        " with -p, --colors.\n");
-        goto argerr;
-    }
-
-    if (ncolors == -1) {
-        ncolors = PALETTE_MAX;
-    }
-
-    if (optind == argc) {
-        ret = convert_to_sixel(NULL, ncolors, mapfile,
-                               monochrome,
-                               method_for_diffuse,
-                               method_for_largest,
-                               method_for_rep,
-                               quality_mode,
-                               method_for_resampling,
-                               f8bit, finvert,
-                               pixelwidth, pixelheight,
-                               percentwidth, percentheight);
-        if (ret != 0) {
-            exit_code = EXIT_FAILURE;
-            goto end;
-        }
-    } else {
-        for (n = optind; n < argc; n++) {
-            ret = convert_to_sixel(argv[n], ncolors, mapfile,
-                                   monochrome,
-                                   method_for_diffuse,
-                                   method_for_largest,
-                                   method_for_rep,
-                                   quality_mode,
-                                   method_for_resampling,
-                                   f8bit, finvert,
-                                   pixelwidth, pixelheight,
-                                   percentwidth, percentheight);
-            if (ret != 0) {
-                exit_code = EXIT_FAILURE;
-                goto end;
-            }
-        }
-    }
-    exit_code = EXIT_SUCCESS;
-    goto end;
-
-argerr:
-    exit_code = EXIT_FAILURE;
-    fprintf(stderr,
+    fprintf(stdout,
             "Usage: img2sixel [Options] imagefiles\n"
             "       img2sixel [Options] < imagefile\n"
             "\n"
             "Options:\n"
+            "-o, --outfile              specify output file name.\n"
+            "                           (default:stdout)\n"
             "-7, --7bit-mode            generate a sixel image for 7bit\n"
             "                           terminals or printers (default)\n"
             "-8, --8bit-mode            generate a sixel image for 8bit\n"
@@ -561,11 +100,25 @@ argerr:
             "-m FILE, --mapfile=FILE    transform image colors to match this\n"
             "                           set of colorsspecify map\n"
             "-e, --monochrome           output monochrome sixel image\n"
-            "                           this option assumes the terminal \n"
+            "                           this option assumes the terminal\n"
             "                           background color is black\n"
             "-i, --invert               assume the terminal background color\n"
             "                           is white, make sense only when -e\n"
-            "                           option is given.\n"
+            "                           option is given\n"
+            "-I, --high-color           output 15bpp sixel image\n"
+            "-u, --use-macro            use DECDMAC and DEVINVM sequences to\n"
+            "                           optimize GIF animation rendering\n"
+            "-n MACRONO, --macro-number=MACRONO\n"
+            "                           specify an number argument for\n"
+            "                           DECDMAC and make terminal memorize\n"
+            "                           SIXEL image. No image is shown if this\n"
+            "                           option is specified\n"
+            "-C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE\n"
+            "                           specify an number argument for the\n"
+            "                           score of complexion correction.\n"
+            "                           COMPLEXIONSCORE must be 1 or more.\n"
+            "-g, --ignore-delay         render GIF animation without delay\n"
+            "-S, --static               render animated GIF as a static image\n"
             "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
             "                           choose diffusion method which used\n"
             "                           with -p option (color reduction)\n"
@@ -580,7 +133,7 @@ argerr:
             "                             burkes   -> Burkes' method\n"
             "-f FINDTYPE, --find-largest=FINDTYPE\n"
             "                           choose method for finding the largest\n"
-            "                           dimention of median cut boxes for\n"
+            "                           dimension of median cut boxes for\n"
             "                           splitting, make sense only when -p\n"
             "                           option (color reduction) is\n"
             "                           specified\n"
@@ -599,17 +152,20 @@ argerr:
             "                           when -p option (color reduction) is\n"
             "                           specified\n"
             "                           SELECTTYPE is one of them:\n"
-            "                             auto     -> choose selecting\n"
-            "                                         method automatically\n"
-            "                                         (default)\n"
-            "                             center   -> choose the center of\n"
-            "                                         the box\n"
-            "                             average  -> caclulate the color\n"
-            "                                         average into the box\n"
-            "                             histgram -> similar with average\n"
-            "                                         but considers color\n"
-            "                                         histgram\n"
-            "-w WIDTH, --width=WIDTH    resize image to specific width\n"
+            "                             auto      -> choose selecting\n"
+            "                                          method automatically\n"
+            "                                          (default)\n"
+            "                             center    -> choose the center of\n"
+            "                                          the box\n"
+            "                             average    -> calculate the color\n"
+            "                                          average into the box\n"
+            "                             histogram -> similar with average\n"
+            "                                          but considers color\n"
+            "                                          histogram\n"
+            "-c REGION, --crop=REGION   crop source image to fit the\n"
+            "                           specified geometry. REGION should\n"
+            "                           be formatted as '%%dx%%d+%%d+%%d'\n"
+            "-w WIDTH, --width=WIDTH    resize image to specified width\n"
             "                           WIDTH is represented by the\n"
             "                           following syntax\n"
             "                             auto       -> preserving aspect\n"
@@ -620,7 +176,7 @@ argerr:
             "                                           pixel counts\n"
             "                             <number>px -> scale width with\n"
             "                                           pixel counts\n"
-            "-h HEIGHT, --height=HEIGHT resize image to specific height\n"
+            "-h HEIGHT, --height=HEIGHT resize image to specified height\n"
             "                           HEIGHT is represented by the\n"
             "                           following syntax\n"
             "                             auto       -> preserving aspect\n"
@@ -652,16 +208,210 @@ argerr:
             "                           quanlization.\n"
             "                             auto -> decide quality mode\n"
             "                                     automatically (default)\n"
-            "                             high -> high quality and low\n"
-            "                                     speed mode\n"
             "                             low  -> low quality and high\n"
             "                                     speed mode\n"
+            "                             high -> high quality and low\n"
+            "                                     speed mode\n"
+            "                             full -> full quality and careful\n"
+            "                                     speed mode\n"
+            "-l LOOPMODE, --loop-control=LOOPMODE\n"
+            "                           select loop control mode for GIF\n"
+            "                           animation.\n"
+            "                             auto    -> honor the setting of\n"
+            "                                        GIF header (default)\n"
+            "                             force   -> always enable loop\n"
+            "                             disable -> always disable loop\n"
+            "-t PALETTETYPE, --palette-type=PALETTETYPE\n"
+            "                           select palette color space type\n"
+            "                             auto -> choose palette type\n"
+            "                                     automatically (default)\n"
+            "                             hls  -> use HLS color space\n"
+            "                             rgb  -> use RGB color space\n"
+            "-b BUILTINPALETTE, --builtin-palette=BUILTINPALETTE\n"
+            "                           select built-in palette type\n"
+            "                             xterm16    -> X default 16 color map\n"
+            "                             xterm256   -> X default 256 color map\n"
+            "                             vt340mono  -> VT340 monochrome map\n"
+            "                             vt340color -> VT340 color map\n"
+            "-E ENCODEPOLICY, --encode-policy=ENCODEPOLICY\n"
+            "                           select encoding policy\n"
+            "                             auto -> choose encoding policy\n"
+            "                                     automatically (default)\n"
+            "                             fast -> encode as fast as possible\n"
+            "                             size -> encode to as small sixel\n"
+            "                                     sequence as possible\n"
+            "-B BGCOLOR, --bgcolor=BGCOLOR\n"
+            "                           specify background color\n"
+            "                           BGCOLOR is represented by the\n"
+            "                           following syntax\n"
+            "                             #rgb\n"
+            "                             #rrggbb\n"
+            "                             #rrrgggbbb\n"
+            "                             #rrrrggggbbbb\n"
+            "                             rgb:r/g/b\n"
+            "                             rgb:rr/gg/bb\n"
+            "                             rgb:rrr/ggg/bbb\n"
+            "                             rgb:rrrr/gggg/bbbb\n"
+            "-P, --penetrate            penetrate GNU Screen using DCS\n"
+            "                           pass-through sequence\n"
+            "-D, --pipe-mode            read source images from stdin\n"
+            "                           continuously\n"
+            "-v, --verbose              show debugging info\n"
+            "-V, --version              show version and license info\n"
+            "-H, --help                 show this help\n"
             );
+}
+
+#if HAVE_SIGNAL
+
+static int signaled = 0;
+
+static void
+signal_handler(int sig)
+{
+    signaled = sig;
+}
+
+#endif
+
+int
+main(int argc, char *argv[])
+{
+    int n;
+#if HAVE_GETOPT_LONG
+    int long_opt;
+    int option_index;
+#endif  /* HAVE_GETOPT_LONG */
+    int ret;
+    int exit_code;
+    sixel_encoder_t *encoder;
+    char const *optstring = "o:78p:m:eb:Id:f:s:c:w:h:r:q:il:t:ugvSn:PE:B:C:DVH";
+
+    encoder = sixel_encoder_create();
+
+#if HAVE_GETOPT_LONG
+    struct option long_options[] = {
+        {"outfile",          no_argument,        &long_opt, 'o'},
+        {"7bit-mode",        no_argument,        &long_opt, '7'},
+        {"8bit-mode",        no_argument,        &long_opt, '8'},
+        {"colors",           required_argument,  &long_opt, 'p'},
+        {"mapfile",          required_argument,  &long_opt, 'm'},
+        {"monochrome",       no_argument,        &long_opt, 'e'},
+        {"high-color",       no_argument,        &long_opt, 'I'},
+        {"builtin-palette",  required_argument,  &long_opt, 'b'},
+        {"diffusion",        required_argument,  &long_opt, 'd'},
+        {"find-largest",     required_argument,  &long_opt, 'f'},
+        {"select-color",     required_argument,  &long_opt, 's'},
+        {"crop",             required_argument,  &long_opt, 'c'},
+        {"width",            required_argument,  &long_opt, 'w'},
+        {"height",           required_argument,  &long_opt, 'h'},
+        {"resampling",       required_argument,  &long_opt, 'r'},
+        {"quality",          required_argument,  &long_opt, 'q'},
+        {"palette-type",     required_argument,  &long_opt, 't'},
+        {"invert",           no_argument,        &long_opt, 'i'},
+        {"loop-control",     required_argument,  &long_opt, 'l'},
+        {"use-macro",        no_argument,        &long_opt, 'u'},
+        {"ignore-delay",     no_argument,        &long_opt, 'g'},
+        {"verbose",          no_argument,        &long_opt, 'v'},
+        {"static",           no_argument,        &long_opt, 'S'},
+        {"macro-number",     required_argument,  &long_opt, 'n'},
+        {"penetrate",        no_argument,        &long_opt, 'P'},
+        {"encode-policy",    required_argument,  &long_opt, 'E'},
+        {"bgcolor",          required_argument,  &long_opt, 'B'},
+        {"complexion-score", required_argument,  &long_opt, 'C'},
+        {"pipe-mode",        no_argument,        &long_opt, 'D'},
+        {"version",          no_argument,        &long_opt, 'V'},
+        {"help",             no_argument,        &long_opt, 'H'},
+        {0, 0, 0, 0}
+    };
+#endif  /* HAVE_GETOPT_LONG */
+
+    for (;;) {
+
+#if HAVE_GETOPT_LONG
+        n = getopt_long(argc, argv, optstring,
+                        long_options, &option_index);
+#else
+        n = getopt(argc, argv, optstring);
+#endif  /* HAVE_GETOPT_LONG */
+        if (n == -1) {
+            break;
+        }
+#if HAVE_GETOPT_LONG
+        if (n == 0) {
+            n = long_opt;
+        }
+#endif  /* HAVE_GETOPT_LONG */
+        switch (n) {
+        case 'V':
+            show_version();
+            exit_code = EXIT_SUCCESS;
+            goto end;
+        case 'H':
+            show_help();
+            exit_code = EXIT_SUCCESS;
+            goto end;
+        default:
+            ret = sixel_encoder_setopt(encoder, n, optarg);
+            if (ret != 0) {
+                goto argerr;
+            }
+            break;
+        }
+    }
+
+    /* set signal handler to handle SIGINT/SIGTERM/SIGHUP */
+#if HAVE_SIGNAL
+# if HAVE_DECL_SIGINT
+    signal(SIGINT, signal_handler);
+# endif
+# if HAVE_DECL_SIGTERM
+    signal(SIGTERM, signal_handler);
+# endif
+# if HAVE_DECL_SIGHUP
+    signal(SIGHUP, signal_handler);
+# endif
+#else
+    (void) signal_handler;
+#endif
+    ret = sixel_encoder_set_cancel_flag(encoder, &signaled);
+    if (ret != 0) {
+        exit_code = EXIT_FAILURE;
+        goto end;
+    }
+
+    if (optind == argc) {
+        ret = sixel_encoder_encode(encoder, NULL);
+        if (ret != 0) {
+            exit_code = EXIT_FAILURE;
+            goto end;
+        }
+    } else {
+        for (n = optind; n < argc; n++) {
+            ret = sixel_encoder_encode(encoder, argv[n]);
+            if (ret != 0) {
+                exit_code = EXIT_FAILURE;
+                goto end;
+            }
+        }
+    }
+
+    /* mark as success */
+    exit_code = EXIT_SUCCESS;
+    goto end;
+
+argerr:
+    exit_code = EXIT_FAILURE;
+    fprintf(stderr,
+            "usage: img2sixel [-78eIiugvSPDVH] [-p colors] [-m file] [-d diffusiontype]\n"
+            "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
+            "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
+            "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
+            "                 [-E encodepolicy] [-B bgcolor] [-o outfile] [filename ...]\n"
+            "for more details, type: 'img2sixel -H'.\n");
 
 end:
-    if (mapfile) {
-        free(mapfile);
-    }
+    sixel_encoder_unref(encoder);
     return exit_code;
 }
 
