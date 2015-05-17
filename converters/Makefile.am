@@ -13,7 +13,7 @@ if COND_GCOV
 MAYBE_COVERAGE = --coverage
 endif
 
-CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe
+CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe testfile
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
@@ -41,6 +41,11 @@ test: all test_impl
 
 test_impl:
 if WANT_IMG2SIXEL
+	touch testfile
+	chmod -r testfile
+	test ! $$($(WINE) ./img2sixel testfile)
+	test ! $$($(WINE) ./img2sixel invalid_filename)
+	test ! $$($(WINE) ./img2sixel .)
 	test ! $$($(WINE) ./img2sixel -d invalid_option)
 	test ! $$($(WINE) ./img2sixel -r invalid_option)
 	test ! $$($(WINE) ./img2sixel -s invalid_option)
@@ -57,7 +62,6 @@ if WANT_IMG2SIXEL
 	test ! $$($(WINE) ./img2sixel -B \#0000000000000)
 	test ! $$($(WINE) ./img2sixel -B \#00G)
 	test ! $$($(WINE) ./img2sixel -%)
-	test ! $$($(WINE) ./img2sixel invalid_filename)
 	test ! $$($(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg)
 	test ! $$($(WINE) ./img2sixel -m ../images/map8.png -p 8 ../images/snake.jpg)
 	test ! $$($(WINE) ./img2sixel -m ../images/map8.png -e ../images/snake.jpg)
