@@ -251,6 +251,25 @@ AC_SUBST(GDK_PIXBUF_LIBS)
 
 
 if test x$with_gd != xno; then
+    CFLAGS_BACKUP=$CFLAGS
+    LDFLAGS_BACKUP=$LDFLAGS
+    if test x$with_gd != xyes -a x$with_gd != xauto; then
+        if test ! -d "$with_gd"; then
+            AC_MSG_ERROR(["${with_gd}" is not directory])
+        fi
+        ADDED_CFLAGS="-I${with_gd}/include"
+        ADDED_LIBS="-L${with_gd}/lib -lgd"
+    else
+        if test x${prefix} != x -a x${prefix} != xNONE; then
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -lgd"
+        else
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -lgd"
+        fi
+    fi
+    CFLAGS="${CFLAGS} ${GD_CFLAGS}"
+    LDFLAGS="${LDFLAGS} ${GD_LIBS}"
     AC_CHECK_HEADER([gd.h],
                     [AC_CHECK_LIB([gd],
                                   [gdImageCreateFromGifPtr],
@@ -319,6 +338,25 @@ AC_SUBST(GD_LIBS)
 
 if test x$with_libcurl != xno; then
     if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_libcurl != xyes -a x$with_libcurl != xauto; then
+            if test ! -d "$with_libcurl"; then
+                AC_MSG_ERROR(["${with_libcurl}" is not directory])
+            fi
+            ADDED_CFLAGS="-I${with_libcurl}/include"
+            ADDED_LIBS="-L${with_libcurl}/lib -lcurl"
+        else
+	    if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lcurl"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lcurl"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
         AC_CHECK_HEADER([curl/curl.h],
                         [AC_CHECK_LIB([curl],
                                       [curl_easy_cleanup],
@@ -349,6 +387,25 @@ AC_SUBST(LIBCURL_LIBS)
 
 if test x$with_jpeg != xno; then
     if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_jpeg != xyes -a x$with_jpeg != xauto; then
+            if test ! -d "$with_jpeg"; then
+                AC_MSG_ERROR(["${with_jpeg}" is not directory])
+            fi
+            ADDED_CFLAGS="-I${with_jpeg}/include"
+            ADDED_LIBS="-L${with_jpeg}/lib -ljpeg"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -ljpeg"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -ljpeg"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
         AC_CHECK_HEADER([jpeglib.h],
                         [AC_CHECK_LIB([jpeg],
                                       [jpeg_read_header],
@@ -372,6 +429,25 @@ AC_SUBST(LIBJPEG_LIBS)
 
 if test x$with_png != xno; then
     if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_png != xyes -a x$with_png != xauto; then
+            if test ! -d "$with_png"; then
+                AC_MSG_ERROR(["${with_png}" is not directory])
+            fi
+            ADDED_CFLAGS="-I${with_png}/include"
+            ADDED_LIBS="-L${with_png}/lib -lpng"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lpng"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lpng"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
         AC_CHECK_HEADER([png.h],
                         [AC_CHECK_LIB([png],
                                       [png_check_sig],
