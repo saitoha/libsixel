@@ -21,11 +21,11 @@
 
 #include "config.h"
 
-#include "sixel.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
 
+#include <sixel.h>
 
 static void
 get_rgb(unsigned char const *data,
@@ -550,6 +550,86 @@ error:
 }
 
 
+static int
+test9(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = PIXELFORMAT_RGB888;
+    int src_pixelformat = PIXELFORMAT_RGBA8888;
+    unsigned char src[] = { 0x46, 0xf3, 0xe5, 0xf0 };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if (dst[0] != src[0]) {
+        goto error;
+    }
+    if (dst[1] != src[1]) {
+        goto error;
+    }
+    if (dst[2] != src[2]) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test8");
+    return nret;
+}
+
+
+static int
+test10(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = PIXELFORMAT_RGB888;
+    int src_pixelformat = PIXELFORMAT_ARGB8888;
+    unsigned char src[] = { 0x46, 0xf3, 0xe5, 0xf0 };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if (dst[0] != src[1]) {
+        goto error;
+    }
+    if (dst[1] != src[2]) {
+        goto error;
+    }
+    if (dst[2] != src[3]) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test8");
+    return nret;
+}
+
+
 int
 sixel_pixelformat_tests_main(void)
 {
@@ -566,6 +646,8 @@ sixel_pixelformat_tests_main(void)
         test6,
         test7,
         test8,
+        test9,
+        test10,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
