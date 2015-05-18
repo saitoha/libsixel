@@ -1,3 +1,8 @@
+2015-05-19  Hayaki Saito <user@zuse.jp>
+
+  * configure.ac: Evaluate arguments of --with-xxx option of ./configure more
+  strictly
+
 2015-05-12  Hayaki Saito <user@zuse.jp>
 
   * converters/img2sixel.c: Stop memory leaks
