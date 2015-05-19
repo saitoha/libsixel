@@ -482,6 +482,55 @@ sixel_frame_clip(
 }
 
 
+#if HAVE_TESTS
+static int
+test1(void)
+{
+    sixel_frame_t *frame = NULL;
+    int nret = EXIT_FAILURE;
+
+    frame = sixel_frame_create();
+    if (frame == NULL) {
+        perror(NULL);
+        goto error;
+    }
+    sixel_frame_ref(frame);
+    sixel_frame_unref(frame);
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_frame_unref(frame);
+    return nret;
+}
+
+
+int
+sixel_frame_tests_main(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t i;
+    typedef int (* testcase)(void);
+
+    static testcase const testcases[] = {
+        test1,
+    };
+
+    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
+        nret = testcases[i]();
+        if (nret != EXIT_SUCCESS) {
+            perror(NULL);
+            goto error;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+#endif  /* HAVE_TESTS */
+
+
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
 /* EOF */

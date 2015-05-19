@@ -33,6 +33,7 @@
 
 #include "dither.h"
 #include "quant.h"
+#include "frame.h"
 #include "pixelformat.h"
 #include <sixel.h>
 
@@ -51,10 +52,20 @@ main(int argc, char *argv[])
         goto error;
     }
 
+    puts("done.");
+
     nret = sixel_pixelformat_tests_main();
     if (nret != EXIT_SUCCESS) {
         goto error;
     }
+
+    puts("done.");
+
+    nret = sixel_frame_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
     puts("done.");
 error:
     return nret;

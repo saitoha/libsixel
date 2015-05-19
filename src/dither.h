@@ -55,7 +55,7 @@ sixel_dither_apply_palette(sixel_dither_t *dither,
 
 #if HAVE_TESTS
 int
-sixel_dither_tests_main(void);
+sixel_frame_tests_main(void);
 #endif
 
 #ifdef __cplusplus
