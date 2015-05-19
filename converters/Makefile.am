@@ -58,8 +58,8 @@ if WANT_IMG2SIXEL
 	test ! $$($(WINE) ./img2sixel -b invalid_option)
 	test ! $$($(WINE) ./img2sixel -E invalid_option)
 	test ! $$($(WINE) ./img2sixel -B invalid_option)
-	test ! $$($(WINE) ./img2sixel -B \#00000)
-	test ! $$($(WINE) ./img2sixel -B \#0000000000000)
+	test ! $$($(WINE) ./img2sixel -B \#ffff ../images/map8.png)
+	test ! $$($(WINE) ./img2sixel -B \#0000000000000 ../images/map8.png)
 	test ! $$($(WINE) ./img2sixel -B \#00G)
 	test ! $$($(WINE) ./img2sixel -%)
 	test ! $$($(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg)
@@ -92,7 +92,7 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -I -dstucki -thls -B\#a0B030 ../images/snake.ppm
 	$(WINE) ./img2sixel -bvt340color ../images/snake.ppm
 	$(WINE) ./img2sixel -bvt340mono ../images/snake.tga
-	$(WINE) ./img2sixel -I -8 -dburkes -Bffffffffffff ../images/snake-ascii.ppm
+	$(WINE) ./img2sixel -I -8 -dburkes -B\#ffffffffffff ../images/snake-ascii.ppm
 	$(WINE) ./img2sixel -I -C10 -djajuni ../images/snake.png
 	$(WINE) ./img2sixel -I -Eauto ../images/snake-ascii.pgm
 	$(WINE) ./img2sixel -I -datkinson ../images/snake-ascii.pbm
