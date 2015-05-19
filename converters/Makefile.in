@@ -1173,6 +1173,7 @@ test_impl:
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	fi
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	test ! $$($(WINE) ./sixel2png -i unknown.sixel)
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	test ! $$($(WINE) ./sixel2png -% < snake.sixel)
+@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	test ! $$($(WINE) ./sixel2png invalid_filename < snake.sixel)
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -H
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -V
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png < snake.sixel > snake1.png

@@ -221,6 +221,7 @@ endif
 if WANT_SIXEL2PNG
 	test ! $$($(WINE) ./sixel2png -i unknown.sixel)
 	test ! $$($(WINE) ./sixel2png -% < snake.sixel)
+	test ! $$($(WINE) ./sixel2png invalid_filename < snake.sixel)
 	$(WINE) ./sixel2png -H
 	$(WINE) ./sixel2png -V
 	$(WINE) ./sixel2png < snake.sixel > snake1.png
