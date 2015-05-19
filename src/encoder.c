@@ -177,7 +177,6 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
             (*bgcolor)[2] = (unsigned char)(p[8] << 4 | p[9]);
             break;
         default:
-printf("%ld --- \n", endptr - p);
             ret = (-1);
             goto end;
         }
