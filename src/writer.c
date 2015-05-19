@@ -259,6 +259,55 @@ sixel_helper_write_image_file(
 }
 
 
+#if HAVE_TESTS
+static int
+test1(void)
+{
+    int nret = EXIT_FAILURE;
+    int ret;
+    unsigned char pixels[] = {0xff, 0xff, 0xff};
+
+    ret = sixel_helper_write_image_file(
+        pixels, 1, 1, NULL, PIXELFORMAT_RGB888, "output.gif", FORMAT_GIF);
+
+    if (ret != (-1)) {
+        perror(NULL);
+        goto error;
+    }
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+int
+sixel_writer_tests_main(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t i;
+    typedef int (* testcase)(void);
+
+    static testcase const testcases[] = {
+        test1,
+    };
+
+    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
+        nret = testcases[i]();
+        if (nret != EXIT_SUCCESS) {
+            perror(NULL);
+            goto error;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+#endif  /* HAVE_TESTS */
+
+
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
 /* EOF */

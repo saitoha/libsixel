@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -19,67 +19,23 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
+#ifndef LIBSIXEL_WRITER_H
+#define LIBSIXEL_WRITER_H
 
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <limits.h>
-
-#if HAVE_INTTYPES_H
-# include <inttypes.h>
+#ifdef __cplusplus
+extern "C" {
 #endif
-
-#include "dither.h"
-#include "quant.h"
-#include "frame.h"
-#include "pixelformat.h"
-#include "writer.h"
-#include <sixel.h>
 
 #if HAVE_TESTS
-
 int
-main(int argc, char *argv[])
-{
-    int nret = EXIT_FAILURE;
-
-    (void) argc;
-    (void) argv;
-
-    nret = sixel_dither_tests_main();
-    if (nret != EXIT_SUCCESS) {
-        goto error;
-    }
-
-    puts("done.");
-
-    nret = sixel_pixelformat_tests_main();
-    if (nret != EXIT_SUCCESS) {
-        goto error;
-    }
-
-    puts("done.");
-
-    nret = sixel_frame_tests_main();
-    if (nret != EXIT_SUCCESS) {
-        goto error;
-    }
-
-    puts("done.");
-
-    nret = sixel_writer_tests_main();
-    if (nret != EXIT_SUCCESS) {
-        goto error;
-    }
-
-    puts("done.");
-error:
-    return nret;
-}
-
+sixel_writer_tests_main(void);
 #endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* LIBSIXEL_WRITER_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
