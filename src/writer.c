@@ -281,6 +281,27 @@ error:
 }
 
 
+static int
+test2(void)
+{
+    int nret = EXIT_FAILURE;
+    int ret;
+    unsigned char pixels[] = {0xff, 0xff, 0xff};
+
+    ret = sixel_helper_write_image_file(
+        pixels, 1, 1, NULL, PIXELFORMAT_RGB888, "test-output.png", FORMAT_PNG);
+
+    if (ret != (-1)) {
+        perror(NULL);
+        goto error;
+    }
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
 int
 sixel_writer_tests_main(void)
 {
@@ -290,6 +311,7 @@ sixel_writer_tests_main(void)
 
     static testcase const testcases[] = {
         test1,
+        test2,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

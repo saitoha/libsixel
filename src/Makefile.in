@@ -366,7 +366,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
-CLEANFILES = *.gcno *.gcda *.gcov *.log
+CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.*
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = \
                 output.c \
