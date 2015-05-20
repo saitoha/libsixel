@@ -291,7 +291,7 @@ test2(void)
     ret = sixel_helper_write_image_file(
         pixels, 1, 1, NULL, PIXELFORMAT_RGB888, "test-output.png", FORMAT_PNG);
 
-    if (ret != (-1)) {
+    if (ret != 0) {
         perror(NULL);
         goto error;
     }

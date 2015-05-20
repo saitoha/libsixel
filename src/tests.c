@@ -75,6 +75,13 @@ main(int argc, char *argv[])
     }
 
     puts("done.");
+
+    nret = sixel_quant_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("done.");
 error:
     return nret;
 }
