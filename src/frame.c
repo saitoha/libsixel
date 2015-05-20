@@ -538,6 +538,11 @@ test2(void)
         goto error;
     }
 
+    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+        perror(NULL);
+        goto error;
+    }
+
     if (frame->pixels[0] != (0x43 * 0x32 + 0x10 * (0xff - 0x32)) >> 8) {
         perror(NULL);
         goto error;
@@ -561,6 +566,130 @@ error:
 }
 
 
+static int
+test3(void)
+{
+    sixel_frame_t *frame = NULL;
+    int nret = EXIT_FAILURE;
+    unsigned char *pixels = malloc(4);
+    unsigned char *bgcolor = malloc(3);
+    int ret;
+
+    pixels[0] = 0x43;
+    pixels[1] = 0x89;
+    pixels[2] = 0x97;
+    pixels[3] = 0x32;
+
+    memset(bgcolor, 0x10, 3);
+
+    frame = sixel_frame_create();
+    if (frame == NULL) {
+        perror(NULL);
+        goto error;
+    }
+
+    ret = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_RGBA8888, NULL, 0);
+    if (ret != 0) {
+        perror(NULL);
+        goto error;
+    }
+
+    ret = sixel_frame_strip_alpha(frame, NULL);
+    if (ret != 0) {
+        perror(NULL);
+        goto error;
+    }
+
+    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+        perror(NULL);
+        goto error;
+    }
+
+    if (frame->pixels[0] != 0x43) {
+        perror(NULL);
+        goto error;
+    }
+
+    if (frame->pixels[1] != 0x89) {
+        perror(NULL);
+        goto error;
+    }
+
+    if (frame->pixels[2] != 0x97) {
+        perror(NULL);
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_frame_unref(frame);
+    return nret;
+}
+
+
+static int
+test4(void)
+{
+    sixel_frame_t *frame = NULL;
+    int nret = EXIT_FAILURE;
+    unsigned char *pixels = malloc(4);
+    unsigned char *bgcolor = malloc(3);
+    int ret;
+
+    pixels[0] = 0x43;
+    pixels[1] = 0x89;
+    pixels[2] = 0x97;
+    pixels[3] = 0x32;
+
+    memset(bgcolor, 0x10, 3);
+
+    frame = sixel_frame_create();
+    if (frame == NULL) {
+        perror(NULL);
+        goto error;
+    }
+
+    ret = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_ARGB8888, NULL, 0);
+    if (ret != 0) {
+        perror(NULL);
+        goto error;
+    }
+
+    ret = sixel_frame_strip_alpha(frame, NULL);
+    if (ret != 0) {
+        perror(NULL);
+        goto error;
+    }
+
+    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+        perror(NULL);
+        goto error;
+    }
+
+    if (frame->pixels[0] != 0x89) {
+        perror(NULL);
+        goto error;
+    }
+
+    if (frame->pixels[1] != 0x97) {
+        perror(NULL);
+        goto error;
+    }
+
+    if (frame->pixels[2] != 0x32) {
+        perror(NULL);
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_frame_unref(frame);
+    return nret;
+}
+
+
 int
 sixel_frame_tests_main(void)
 {
@@ -571,6 +700,8 @@ sixel_frame_tests_main(void)
     static testcase const testcases[] = {
         test1,
         test2,
+        test3,
+        test4,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
