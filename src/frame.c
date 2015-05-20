@@ -203,18 +203,6 @@ sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame)  /* frame object */
 }
 
 
-/* set palette */
-SIXELAPI void
-sixel_frame_set_palette(
-    sixel_frame_t /* in */ *frame,   /* frame object */
-    unsigned char /* in */ *palette,
-    int           /* in */ ncolors)
-{
-    frame->palette = palette;
-    frame->ncolors = ncolors;
-}
-
-
 SIXELAPI int
 sixel_frame_strip_alpha(
     sixel_frame_t  /* in */ *frame,
