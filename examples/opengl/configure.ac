@@ -70,7 +70,7 @@ AC_SUBST(GL_CFLAGS)
 AC_SUBST(GL_LIBS)
 
 # Checks for header files.
-#AC_CHECK_HEADERS([memory.h stdlib.h unistd.h])
+AC_CHECK_HEADERS([sys/select.h termios.h fcntl.h sys/ioctl.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
