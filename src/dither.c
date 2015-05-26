@@ -566,6 +566,77 @@ end:
     return dest;
 }
 
+
+#if HAVE_TESTS
+static int
+test1(void)
+{
+    sixel_dither_t *dither = NULL;
+    int nret = EXIT_FAILURE;
+
+    dither = sixel_dither_create(0);
+    if (dither == NULL) {
+        goto error;
+    }
+    sixel_dither_ref(dither);
+    sixel_dither_unref(dither);
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_dither_unref(dither);
+    return nret;
+}
+
+static int
+test2(void)
+{
+    sixel_dither_t *dither = NULL;
+    int colors;
+    int nret = EXIT_FAILURE;
+
+    dither = sixel_dither_create(INT_MAX);
+    if (dither == NULL) {
+        goto error;
+    }
+    sixel_dither_set_body_only(dither, 1);
+    colors = sixel_dither_get_num_of_histogram_colors(dither);
+    if (colors != -1) {
+        goto error;
+    }
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_dither_unref(dither);
+    return nret;
+}
+
+
+int
+sixel_dither_tests_main(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t i;
+    typedef int (* testcase)(void);
+
+    static testcase const testcases[] = {
+        test1,
+        test2,
+    };
+
+    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
+        nret = testcases[i]();
+        if (nret != EXIT_SUCCESS) {
+            goto error;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+#endif  /* HAVE_TESTS */
+
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
 /* EOF */

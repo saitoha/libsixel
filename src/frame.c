@@ -259,6 +259,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     int nret = 0;
     unsigned char *dst;
     unsigned char *src;
+    unsigned char *p;
 
     switch (frame->pixelformat) {
     case PIXELFORMAT_PAL1:
@@ -278,10 +279,10 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             free(normalized_pixels);
             return nret;
         }
-        for (; src != dst + size; ++src) {
-            *dst++ = *(frame->palette + *src * 3 + 0);
-            *dst++ = *(frame->palette + *src * 3 + 1);
-            *dst++ = *(frame->palette + *src * 3 + 2);
+        for (p = src; dst < src; ++p) {
+            *dst++ = *(frame->palette + *p * 3 + 0);
+            *dst++ = *(frame->palette + *p * 3 + 1);
+            *dst++ = *(frame->palette + *p * 3 + 2);
         }
         free(frame->pixels);
         frame->pixels = normalized_pixels;
@@ -468,6 +469,325 @@ sixel_frame_clip(
 
     return ret;
 }
+
+
+#if HAVE_TESTS
+static int
+test1(void)
+{
+    sixel_frame_t *frame = NULL;
+    int nret = EXIT_FAILURE;
+
+    frame = sixel_frame_create();
+    if (frame == NULL) {
+        goto error;
+    }
+    sixel_frame_ref(frame);
+    sixel_frame_unref(frame);
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_frame_unref(frame);
+    return nret;
+}
+
+
+static int
+test2(void)
+{
+    sixel_frame_t *frame = NULL;
+    int nret = EXIT_FAILURE;
+    unsigned char *pixels = malloc(4);
+    unsigned char *bgcolor = malloc(3);
+    int ret;
+
+    pixels[0] = 0x43;
+    pixels[1] = 0x89;
+    pixels[2] = 0x97;
+    pixels[3] = 0x32;
+
+    memset(bgcolor, 0x10, 3);
+
+    frame = sixel_frame_create();
+    if (frame == NULL) {
+        goto error;
+    }
+
+    ret = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_RGBA8888, NULL, 0);
+    if (ret != 0) {
+        goto error;
+    }
+
+    ret = sixel_frame_strip_alpha(frame, bgcolor);
+    if (ret != 0) {
+        goto error;
+    }
+
+    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+
+    if (frame->pixels[0] != (0x43 * 0x32 + 0x10 * (0xff - 0x32)) >> 8) {
+        goto error;
+    }
+
+    if (frame->pixels[1] != (0x89 * 0x32 + 0x10 * (0xff - 0x32)) >> 8) {
+        goto error;
+    }
+
+    if (frame->pixels[2] != (0x97 * 0x32 + 0x10 * (0xff - 0x32)) >> 8) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_frame_unref(frame);
+    return nret;
+}
+
+
+static int
+test3(void)
+{
+    sixel_frame_t *frame = NULL;
+    int nret = EXIT_FAILURE;
+    unsigned char *pixels = malloc(4);
+    int ret;
+
+    pixels[0] = 0x43;
+    pixels[1] = 0x89;
+    pixels[2] = 0x97;
+    pixels[3] = 0x32;
+
+    frame = sixel_frame_create();
+    if (frame == NULL) {
+        goto error;
+    }
+
+    ret = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_RGBA8888, NULL, 0);
+    if (ret != 0) {
+        goto error;
+    }
+
+    ret = sixel_frame_strip_alpha(frame, NULL);
+    if (ret != 0) {
+        goto error;
+    }
+
+    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+
+    if (frame->pixels[0] != 0x43) {
+        goto error;
+    }
+
+    if (frame->pixels[1] != 0x89) {
+        goto error;
+    }
+
+    if (frame->pixels[2] != 0x97) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_frame_unref(frame);
+    return nret;
+}
+
+
+static int
+test4(void)
+{
+    sixel_frame_t *frame = NULL;
+    int nret = EXIT_FAILURE;
+    unsigned char *pixels = malloc(4);
+    int ret;
+
+    pixels[0] = 0x43;
+    pixels[1] = 0x89;
+    pixels[2] = 0x97;
+    pixels[3] = 0x32;
+
+    frame = sixel_frame_create();
+    if (frame == NULL) {
+        goto error;
+    }
+
+    ret = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_ARGB8888, NULL, 0);
+    if (ret != 0) {
+        goto error;
+    }
+
+    ret = sixel_frame_strip_alpha(frame, NULL);
+    if (ret != 0) {
+        goto error;
+    }
+
+    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+
+    if (frame->pixels[0] != 0x89) {
+        goto error;
+    }
+
+    if (frame->pixels[1] != 0x97) {
+        goto error;
+    }
+
+    if (frame->pixels[2] != 0x32) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_frame_unref(frame);
+    return nret;
+}
+
+
+static int
+test5(void)
+{
+    sixel_frame_t *frame = NULL;
+    int nret = EXIT_FAILURE;
+    unsigned char *pixels = malloc(1);
+    unsigned char *palette = malloc(3);
+    int ret;
+
+    palette[0] = 0x43;
+    palette[1] = 0x89;
+    palette[2] = 0x97;
+
+    pixels[0] = 0;
+
+    frame = sixel_frame_create();
+    if (frame == NULL) {
+        goto error;
+    }
+
+    ret = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_PAL8, palette, 1);
+    if (ret != 0) {
+        goto error;
+    }
+
+    ret = sixel_frame_convert_to_rgb888(frame);
+    if (ret != 0) {
+        goto error;
+    }
+
+    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+
+    if (frame->pixels[0] != 0x43) {
+        goto error;
+    }
+
+    if (frame->pixels[1] != 0x89) {
+        goto error;
+    }
+
+    if (frame->pixels[2] != 0x97) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_frame_unref(frame);
+    return nret;
+}
+
+
+static int
+test6(void)
+{
+    sixel_frame_t *frame = NULL;
+    int nret = EXIT_FAILURE;
+    unsigned char *pixels = malloc(6);
+    unsigned char *palette = malloc(3);
+    int ret;
+
+    palette[0] = 0x43;
+    palette[1] = 0x89;
+    palette[2] = 0x97;
+
+    pixels[0] = 0;
+
+    frame = sixel_frame_create();
+    if (frame == NULL) {
+        goto error;
+    }
+
+    ret = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_PAL1, palette, 1);
+    if (ret != 0) {
+        goto error;
+    }
+
+    ret = sixel_frame_convert_to_rgb888(frame);
+    if (ret != 0) {
+        goto error;
+    }
+
+    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+
+    if (frame->pixels[0] != 0x43) {
+        goto error;
+    }
+
+    if (frame->pixels[1] != 0x89) {
+        goto error;
+    }
+
+    if (frame->pixels[2] != 0x97) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_frame_unref(frame);
+    return nret;
+}
+
+
+int
+sixel_frame_tests_main(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t i;
+    typedef int (* testcase)(void);
+
+    static testcase const testcases[] = {
+        test1,
+        test2,
+        test3,
+        test4,
+        test5,
+        test6,
+    };
+
+    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
+        nret = testcases[i]();
+        if (nret != EXIT_SUCCESS) {
+            goto error;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+#endif  /* HAVE_TESTS */
 
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */

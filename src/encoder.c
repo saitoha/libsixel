@@ -1447,6 +1447,54 @@ end:
     return nret;
 }
 
+
+#if HAVE_TESTS
+static int
+test1(void)
+{
+    sixel_encoder_t *encoder = NULL;
+    int nret = EXIT_FAILURE;
+
+    encoder = sixel_encoder_create();
+    if (encoder == NULL) {
+        goto error;
+    }
+    sixel_encoder_ref(encoder);
+    sixel_encoder_unref(encoder);
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_encoder_unref(encoder);
+    return nret;
+}
+
+
+int
+sixel_encoder_tests_main(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t i;
+    typedef int (* testcase)(void);
+
+    static testcase const testcases[] = {
+        test1,
+    };
+
+    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
+        nret = testcases[i]();
+        if (nret != EXIT_SUCCESS) {
+            goto error;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+#endif  /* HAVE_TESTS */
+
+
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
 /* EOF */

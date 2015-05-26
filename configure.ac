@@ -118,6 +118,13 @@ AC_ARG_ENABLE([gcov],
               [enable_gcov=no])
 AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
 
+AC_ARG_ENABLE([tests],
+              [AS_HELP_STRING([--enable-tests],
+                              [Build tests])],
+              [AC_DEFINE(HAVE_TESTS, [1], [enable tests])],
+              [enable_tests=no])
+AM_CONDITIONAL([COND_TESTS], [test x$enable_tests != xno])
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
@@ -548,5 +555,6 @@ echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
+echo "       tests               : $enable_tests"
 echo ""
 echo ""
