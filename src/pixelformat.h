@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -19,27 +19,23 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_LOADER_H
-#define LIBSIXEL_LOADER_H
+#ifndef LIBSIXEL_PIXELFORMAT_H
+#define LIBSIXEL_PIXELFORMAT_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#if HAVE_TESTS
 int
-load_image_file(char const *filename, int *psx, int *psy,
-                unsigned char **ppalette, int *pncolors,
-                int *ppixelformat,
-                int *pframe_count, int *ploop_count, int **ppdelay,
-                int fstatic, int reqcolors,
-                unsigned char **ppixels,
-                unsigned char *bgcolor);
+sixel_pixelformat_tests_main(void);
+#endif
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LIBSIXEL_LOADER_H */
+#endif /* LIBSIXEL_PIXELFORMAT_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

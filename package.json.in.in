@@ -5,5 +5,5 @@
   "description": "@PACKAGE_DESCRIPTION@",
   "keywords": ["terminal", "graphics", "image", "sixel"],
   "license": "MIT",
-  "install": "./configure --with-libcurl && make install"
+  "install": "./configure && make install"
 }

@@ -23,10 +23,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "output.h"
-#include "sixel.h"
+#include <sixel.h>
 
 
-sixel_output_t *
+SIXELAPI sixel_output_t *
 sixel_output_create(sixel_write_function fn_write, void *priv)
 {
     sixel_output_t *output;
@@ -54,14 +54,14 @@ sixel_output_create(sixel_write_function fn_write, void *priv)
 }
 
 
-void
+SIXELAPI void
 sixel_output_destroy(sixel_output_t *output)
 {
     free(output);
 }
 
 
-void
+SIXELAPI void
 sixel_output_ref(sixel_output_t *output)
 {
     /* TODO: be thread-safe */
@@ -69,7 +69,7 @@ sixel_output_ref(sixel_output_t *output)
 }
 
 
-void
+SIXELAPI void
 sixel_output_unref(sixel_output_t *output)
 {
     /* TODO: be thread-safe */
@@ -79,42 +79,42 @@ sixel_output_unref(sixel_output_t *output)
 }
 
 
-int
+SIXELAPI int
 sixel_output_get_8bit_availability(sixel_output_t *output)
 {
     return output->has_8bit_control;
 }
 
 
-void
+SIXELAPI void
 sixel_output_set_8bit_availability(sixel_output_t *output, int availability)
 {
     output->has_8bit_control = availability;
 }
 
 
-void
+SIXELAPI void
 sixel_output_set_penetrate_multiplexer(sixel_output_t *output, int penetrate)
 {
     output->penetrate_multiplexer = penetrate;
 }
 
 
-void
+SIXELAPI void
 sixel_output_set_skip_dcs_envelope(sixel_output_t *output, int skip)
 {
     output->skip_dcs_envelope = skip;
 }
 
 
-void
+SIXELAPI void
 sixel_output_set_palette_type(sixel_output_t *output, int palettetype)
 {
     output->palette_type = palettetype;
 }
 
 
-void
+SIXELAPI void
 sixel_output_set_encode_policy(sixel_output_t *output, int encode_policy)
 {
     output->encode_policy = encode_policy;

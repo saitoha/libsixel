@@ -1,5 +1,5 @@
 --TEST--
-SixelEncoder::sixel_easy_encode() member function
+SixelEncoder::encode() member function
 --SKIPIF--
 <?php 
 

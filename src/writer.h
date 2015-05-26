@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -19,50 +19,23 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_EASY_ENCODE_H
-#define LIBSIXEL_EASY_ENCODE_H
+#ifndef LIBSIXEL_WRITER_H
+#define LIBSIXEL_WRITER_H
 
-/* encoder object */
-typedef struct sixel_encoder {
-    unsigned int ref;          /* reference counter */
-    int reqcolors;
-    char *mapfile;
-    int monochrome;
-    int highcolor;
-    int builtin_palette;
-    int method_for_diffuse;
-    int method_for_largest;
-    int method_for_rep;
-    int quality_mode;
-    int method_for_resampling;
-    int loop_mode;
-    int palette_type;
-    int f8bit;
-    int finvert;
-    int fuse_macro;
-    int fignore_delay;
-    int complexion;
-    int fstatic;
-    int pixelwidth;
-    int pixelheight;
-    int percentwidth;
-    int percentheight;
-    int clipx;
-    int clipy;
-    int clipwidth;
-    int clipheight;
-    int clipfirst;
-    int macro_number;
-    int penetrate_multiplexer;
-    int encode_policy;
-    int pipe_mode;
-    int verbose;
-    unsigned char *bgcolor;
-    int outfd;
-    int *cancel_flag;
-} sixel_encoder_t;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif /* LIBSIXEL_EASY_ENCODE_H */
+#if HAVE_TESTS
+int
+sixel_writer_tests_main(void);
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* LIBSIXEL_WRITER_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

@@ -207,7 +207,7 @@ sixel_getparams(unsigned char *p, int *param, int *len)
 
 /* convert sixel data into indexed pixel bytes and palette data */
 /* TODO: make "free" function as an argument */
-int
+SIXELAPI int
 sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
              int                        /* in */  len,        /* size of sixel bytes */
              unsigned char              /* out */ **pixels,   /* decoded pixels */

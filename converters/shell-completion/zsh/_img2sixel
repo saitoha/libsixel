@@ -105,6 +105,7 @@ _arguments -S -s -A "-*" -S \
   {-p,--colors=}'[specify number of colors to reduce the image to]' \
   {-m,--mapfile=}'[transform image colors to match specified set of colors]':files:_files \
   {-e,--monochrome}'[output monochrome sixel image]' \
+  {-k,--insecure}'[allow to connect to SSL sites without certs]' \
   {-i,--invert}'[assume the terminal background color is white]' \
   {-I,--high-color}'[output 15bpp sixel image]' \
   {-u,--use-macro}'[use DECDMAC and DECINVM for GIF animation]' \

@@ -13,7 +13,7 @@ if COND_GCOV
 MAYBE_COVERAGE = --coverage
 endif
 
-CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe
+CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe server.py server.key server.crt testfile
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
@@ -41,6 +41,11 @@ test: all test_impl
 
 test_impl:
 if WANT_IMG2SIXEL
+	touch testfile
+	chmod -r testfile
+	test ! $$($(WINE) ./img2sixel testfile)
+	test ! $$($(WINE) ./img2sixel invalid_filename)
+	test ! $$($(WINE) ./img2sixel .)
 	test ! $$($(WINE) ./img2sixel -d invalid_option)
 	test ! $$($(WINE) ./img2sixel -r invalid_option)
 	test ! $$($(WINE) ./img2sixel -s invalid_option)
@@ -53,8 +58,10 @@ if WANT_IMG2SIXEL
 	test ! $$($(WINE) ./img2sixel -b invalid_option)
 	test ! $$($(WINE) ./img2sixel -E invalid_option)
 	test ! $$($(WINE) ./img2sixel -B invalid_option)
+	test ! $$($(WINE) ./img2sixel -B \#ffff ../images/map8.png)
+	test ! $$($(WINE) ./img2sixel -B \#0000000000000 ../images/map8.png)
+	test ! $$($(WINE) ./img2sixel -B \#00G)
 	test ! $$($(WINE) ./img2sixel -%)
-	test ! $$($(WINE) ./img2sixel invalid_filename)
 	test ! $$($(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg)
 	test ! $$($(WINE) ./img2sixel -m ../images/map8.png -p 8 ../images/snake.jpg)
 	test ! $$($(WINE) ./img2sixel -m ../images/map8.png -e ../images/snake.jpg)
@@ -73,19 +80,19 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -V
 	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | ./img2sixel | tee snake.sixel
 	$(WINE) ./img2sixel -w50% -h150% -dfs -thls < ../images/snake.jpg -shistogram | tee snake2.sixel
-	$(WINE) ./img2sixel -w2100 -h2100 -bxterm256 < ../images/snake.jpg > snake3.sixel
-	$(WINE) ./img2sixel -w105% -h100 -djajuni -rnearest < ../images/snake.gif
+	$(WINE) ./img2sixel -w2100 -h2100 -djajuni -bxterm256 -o snake3.sixel < ../images/snake.jpg
+	$(WINE) ./img2sixel -w105% -h100 -B\#000000000 -rnearest < ../images/snake.gif
 	$(WINE) ./img2sixel -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto ../images/snake.tga
 	$(WINE) ./img2sixel -p300 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhanning -dstucki -thls ../images/snake.tiff
 	$(WINE) ./img2sixel -8 -qauto -thls -e ../images/snake.pgm
 	$(WINE) ./img2sixel -8 -m ../images/map8-palette.png -Esize ../images/snake.ppm
 	$(WINE) ./img2sixel -7 -m ../images/map16-palette.png -Efast ../images/snake.jpg
 	$(WINE) ./img2sixel -7 -w300 ../images/snake-palette.png
-	$(WINE) ./img2sixel -7 -w100 -h100 -bxterm16 -B\#aB3 ../images/snake.pbm
-	$(WINE) ./img2sixel -I -dstucki -thls ../images/snake.ppm
+	$(WINE) ./img2sixel -7 -w100 -h100 -bxterm16 -B\#aB3 -B\#aB3 ../images/snake.pbm
+	$(WINE) ./img2sixel -I -dstucki -thls -B\#a0B030 ../images/snake.ppm
 	$(WINE) ./img2sixel -bvt340color ../images/snake.ppm
 	$(WINE) ./img2sixel -bvt340mono ../images/snake.tga
-	$(WINE) ./img2sixel -I -8 -dburkes ../images/snake-ascii.ppm
+	$(WINE) ./img2sixel -I -8 -dburkes -B\#ffffffffffff ../images/snake-ascii.ppm
 	$(WINE) ./img2sixel -I -C10 -djajuni ../images/snake.png
 	$(WINE) ./img2sixel -I -Eauto ../images/snake-ascii.pgm
 	$(WINE) ./img2sixel -I -datkinson ../images/snake-ascii.pbm
@@ -96,9 +103,9 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -c200x200+100+100 -w400 ../images/snake-grayscale.png
 	$(WINE) ./img2sixel -I ../images/snake-grayscale.png
 	$(WINE) ./img2sixel -I ../images/snake-grayscale.jpg
-	$(WINE) ./img2sixel -m ../images/map8.six ../images/snake.six
+	$(WINE) ./img2sixel -m ../images/map8.six -m ../images/map8.six ../images/snake.six
 	$(WINE) ./img2sixel -w200 -p8 ../images/snake.six
-	$(WINE) ./img2sixel -c200x200+100+100 ../images/snake.six
+	$(WINE) ./img2sixel -c200x200+2000+2000 ../images/snake.six
 	$(WINE) ./img2sixel -bxterm16 ../images/snake.six
 	$(WINE) ./img2sixel -e ../images/snake.six
 	$(WINE) ./img2sixel -I ../images/snake.six
@@ -194,11 +201,27 @@ if HAVE_PNG
 endif
 if HAVE_CURL
 	test ! $$($(WINE) ./img2sixel file:///test)
+	test ! $$($(WINE) ./img2sixel https:///test)
 	$(WINE) ./img2sixel file:///$$(pwd)/../images/snake.jpg
+	if which openssl && which python; then \
+	    openssl genrsa | openssl rsa > server.key; \
+	    openssl req -new -key server.key -subj "/CN=localhost" | openssl x509 -req -signkey server.key > server.crt; \
+	    echo "import BaseHTTPServer as bs, SimpleHTTPServer as ss, ssl" > server.py; \
+	    echo "httpd = bs.HTTPServer(('localhost', 4443), ss.SimpleHTTPRequestHandler)" >> server.py; \
+	    echo "httpd.socket = ssl.wrap_socket(httpd.socket, certfile='server.crt', keyfile='server.key', server_side=True)" >> server.py; \
+	    echo "httpd.handle_request()" >> server.py; \
+	    echo "httpd.handle_request()" >> server.py; \
+	    python server.py& \
+	    sleep 1; \
+	    ! ./img2sixel 'https://localhost:4443/snake.sixel'; \
+	    sleep 1; \
+	    ./img2sixel -k 'https://localhost:4443/snake.sixel'; \
+	fi
 endif
 if WANT_SIXEL2PNG
 	test ! $$($(WINE) ./sixel2png -i unknown.sixel)
 	test ! $$($(WINE) ./sixel2png -% < snake.sixel)
+	test ! $$($(WINE) ./sixel2png invalid_filename < snake.sixel)
 	$(WINE) ./sixel2png -H
 	$(WINE) ./sixel2png -V
 	$(WINE) ./sixel2png < snake.sixel > snake1.png
@@ -214,9 +237,8 @@ endif
 	    cat ../images/snake.jpg > sixel.pipe; \
 	    echo -n > sixel.pipe; \
 	    sleep 1; \
+	    rm -f sixel.pipe; \
 	fi
-	rm -f sixel.pipe
-	sleep 1
 	grep ^\.B img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > options2.txt
 	grep ' --' shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > options3.txt
 	grep '{-' shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > options4.txt

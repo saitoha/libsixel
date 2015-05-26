@@ -57,7 +57,7 @@
 # include <sys/ioctl.h>
 #endif
 
-#include "easy_decode.h"
+#include "decoder.h"
 #include <sixel.h>
 
 
@@ -74,7 +74,77 @@ arg_strdup(char const *s)
 }
 
 
-int
+/* create decoder object */
+SIXELAPI sixel_decoder_t *
+sixel_decoder_create(void)
+{
+    sixel_decoder_t *decoder;
+
+    decoder = malloc(sizeof(sixel_decoder_t));
+
+    decoder->ref          = 1;
+    decoder->output       = arg_strdup("-");
+    decoder->input        = arg_strdup("-");
+
+    return decoder;
+}
+
+
+SIXELAPI void
+sixel_decoder_destroy(sixel_decoder_t *decoder)
+{
+    if (decoder) {
+        free(decoder->input);
+        free(decoder->output);
+        free(decoder);
+    }
+}
+
+
+SIXELAPI void
+sixel_decoder_ref(sixel_decoder_t *decoder)
+{
+    /* TODO: be thread safe */
+    ++decoder->ref;
+}
+
+
+SIXELAPI void
+sixel_decoder_unref(sixel_decoder_t *decoder)
+{
+    /* TODO: be thread safe */
+    if (decoder != NULL && --decoder->ref == 0) {
+        sixel_decoder_destroy(decoder);
+    }
+}
+
+
+SIXELAPI int
+sixel_decoder_setopt(
+    sixel_decoder_t /* in */ *decoder,
+    int             /* in */ arg,
+    char const      /* in */ *optarg
+)
+{
+    switch(arg) {
+    case 'i':
+        free(decoder->input);
+        decoder->input = arg_strdup(optarg);
+        break;
+    case 'o':
+        free(decoder->output);
+        decoder->output = arg_strdup(optarg);
+        break;
+    case '?':
+    default:
+        return (-1);
+    }
+
+    return 0;
+}
+
+
+SIXELAPI int
 sixel_decoder_decode(
     sixel_decoder_t /* in */ *decoder)
 {
@@ -159,76 +229,6 @@ sixel_decoder_decode(
 end:
     free(pixels);
     return ret;
-}
-
-
-int
-sixel_decoder_setopt(
-    sixel_decoder_t /* in */ *decoder,
-    int             /* in */ arg,
-    char const      /* in */ *optarg
-)
-{
-    switch(arg) {
-    case 'i':
-        free(decoder->input);
-        decoder->input = arg_strdup(optarg);
-        break;
-    case 'o':
-        free(decoder->output);
-        decoder->output = arg_strdup(optarg);
-        break;
-    case '?':
-    default:
-        return (-1);
-    }
-
-    return 0;
-}
-
-
-/* create decoder object */
-sixel_decoder_t *
-sixel_decoder_create(void)
-{
-    sixel_decoder_t *decoder;
-
-    decoder = malloc(sizeof(sixel_decoder_t));
-
-    decoder->ref          = 1;
-    decoder->output       = arg_strdup("-");
-    decoder->input        = arg_strdup("-");
-
-    return decoder;
-}
-
-
-void
-sixel_decoder_destroy(sixel_decoder_t *decoder)
-{
-    if (decoder) {
-        free(decoder->input);
-        free(decoder->output);
-        free(decoder);
-    }
-}
-
-
-void
-sixel_decoder_ref(sixel_decoder_t *decoder)
-{
-    /* TODO: be thread safe */
-    ++decoder->ref;
-}
-
-
-void
-sixel_decoder_unref(sixel_decoder_t *decoder)
-{
-    /* TODO: be thread safe */
-    if (decoder != NULL && --decoder->ref == 0) {
-        sixel_decoder_destroy(decoder);
-    }
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */

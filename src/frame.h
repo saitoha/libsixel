@@ -42,6 +42,11 @@ typedef struct sixel_frame {
 sixel_frame_t *
 sixel_frame_create(void);
 
+#if HAVE_TESTS
+int
+sixel_dither_tests_main(void);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

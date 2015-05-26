@@ -63,7 +63,7 @@
 # include <fcntl.h>
 #endif
 
-#include "easy_encode.h"
+#include "encoder.h"
 #include <sixel.h>
 
 
@@ -313,6 +313,7 @@ prepare_specified_palette(
     char const *mapfile,
     int reqcolors,
     unsigned char *bgcolor,
+    int finsecure,
     int const *cancel_flag)
 {
     int ret = (-1);
@@ -329,6 +330,7 @@ prepare_specified_palette(
                                        bgcolor,
                                        LOOP_DISABLE,
                                        load_image_callback_for_palette,
+                                       finsecure,
                                        cancel_flag,
                                        &callback_context);
     if (ret != 0) {
@@ -342,8 +344,7 @@ prepare_specified_palette(
 static sixel_dither_t *
 prepare_palette(sixel_dither_t *former_dither,
                 sixel_frame_t *frame,
-                sixel_encoder_t *encoder,
-                int const *cancel_flag)
+                sixel_encoder_t *encoder)
 {
     sixel_dither_t *dither;
     int ret;
@@ -366,7 +367,8 @@ prepare_palette(sixel_dither_t *former_dither,
         dither = prepare_specified_palette(encoder->mapfile,
                                            encoder->reqcolors,
                                            encoder->bgcolor,
-                                           cancel_flag);
+                                           encoder->finsecure,
+                                           encoder->cancel_flag);
     } else if (encoder->builtin_palette) {
         if (former_dither) {
             return former_dither;
@@ -576,7 +578,6 @@ output_sixel_without_macro(
 #if HAVE_USLEEP && HAVE_CLOCK
     start = clock();
 #endif
-    fflush(stdout);
 #if HAVE_USLEEP
     if (!encoder->fignore_delay && delay > 0) {
 # if HAVE_CLOCK
@@ -625,6 +626,7 @@ output_sixel_with_macro(
 {
     int nret = 0;
     int dulation = 0;
+    char buffer[256];
 #if HAVE_USLEEP
     int lag = 0;
 # if HAVE_CLOCK
@@ -637,21 +639,22 @@ output_sixel_with_macro(
 #endif
     if (loop_count == 0) {
         if (encoder->macro_number >= 0) {
-            printf("\033P%d;0;1!z", encoder->macro_number);
+            sprintf(buffer, "\033P%d;0;1!z", encoder->macro_number);
         } else {
-            printf("\033P%d;0;1!z", frame_no);
+            sprintf(buffer, "\033P%d;0;1!z", frame_no);
         }
+        sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
 
         nret = sixel_encode(frame, sx, sy, /* unused */ 3, dither, context);
         if (nret != 0) {
             goto end;
         }
 
-        printf("\033\\");
+        sixel_write_callback("\033\\", 2, &encoder->outfd);
     }
     if (encoder->macro_number < 0) {
-        fflush(stdout);
-        printf("\033[%d*z", frame_no);
+        sprintf(buffer, "\033[%d*z", frame_no);
+        sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
 #if HAVE_USLEEP
         if (delay > 0 && !encoder->fignore_delay) {
 # if HAVE_CLOCK
@@ -675,7 +678,7 @@ end:
 
 
 static void
-scroll_on_demand(sixel_frame_t *frame)
+scroll_on_demand(sixel_encoder_t *encoder, sixel_frame_t *frame)
 {
 #if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
     struct winsize size = {0, 0, 0, 0};
@@ -686,6 +689,7 @@ scroll_on_demand(sixel_frame_t *frame)
     int pixelheight;
     int cellheight;
     int scroll;
+    char buffer[256];
 
     if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)) {
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
@@ -700,8 +704,7 @@ scroll_on_demand(sixel_frame_t *frame)
                 tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
 
                 /* request cursor position report */
-                printf("\033[6n");
-                fflush(stdout);
+                sixel_write_callback("\033[6n", 4, &encoder->outfd);
                 if (wait_stdin(1000 * 1000) != (-1)) { /* wait 1 sec */
                     if (scanf("\033[%d;%dR", &row, &col) == 2) {
                         tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
@@ -709,27 +712,28 @@ scroll_on_demand(sixel_frame_t *frame)
                          cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
                          scroll = cellheight + row - size.ws_row + 1;
                         if (scroll > 0) {
-                            printf("\033[%dS\033[%dA", scroll, scroll);
+                            sprintf(buffer, "\033[%dS\033[%dA", scroll, scroll);
+                            sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
                         }
-                        printf("\0337");
+                        sixel_write_callback("\0337", 2, &encoder->outfd);
                     } else {
-                        printf("\033[H");
+                        sixel_write_callback("\033[H", 3, &encoder->outfd);
                     }
                 } else {
-                    printf("\033[H");
+                    sixel_write_callback("\033[H", 3, &encoder->outfd);
                 }
             } else {
-                printf("\0338");
+                sixel_write_callback("\0338", 2, &encoder->outfd);
             }
         } else {
-            printf("\033[H");
+            sixel_write_callback("\033[H", 3, &encoder->outfd);
         }
     } else {
-        printf("\033[H");
+        sixel_write_callback("\033[H", 3, &encoder->outfd);
     }
 #else
     (void) frame;
-    printf("\033[H");
+    sixel_write_callback("\033[H", 3, &encoder->outfd);
 #endif
 }
 
@@ -772,8 +776,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
     }
 
     /* prepare dither context */
-    dither = prepare_palette(dither, frame, encoder,
-                             encoder->cancel_flag);
+    dither = prepare_palette(dither, frame, encoder);
     if (!dither) {
         nret = (-1);
         goto end;
@@ -810,7 +813,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
     sixel_output_set_encode_policy(output, encoder->encode_policy);
 
     if (sixel_frame_get_multiframe(frame) && !encoder->fstatic) {
-        scroll_on_demand(frame);
+        scroll_on_demand(encoder, frame);
     }
 
     if (encoder->cancel_flag && *encoder->cancel_flag) {
@@ -854,16 +857,13 @@ load_image_callback(sixel_frame_t *frame, void *data)
     }
 
     if (encoder->cancel_flag && *encoder->cancel_flag) {
-        printf("\x18\x1b\\");
-        fflush(stdout);
+        sixel_write_callback("\x18\033\\", 3, &encoder->outfd);
         nret = SIXEL_INTERRUPTED;
     }
 
     if (nret != 0) {
         goto end;
     }
-
-    fflush(stdout);
 
 end:
     if (output) {
@@ -877,99 +877,105 @@ end:
 }
 
 
-int
-sixel_encoder_encode(
-    sixel_encoder_t /* in */ *encoder,
-    char const      /* in */ *filename)
+/* create encoder object */
+SIXELAPI sixel_encoder_t *
+sixel_encoder_create(void)
 {
-    int nret = (-1);
-    int fuse_palette = 1;
-    int loop_control;
+    sixel_encoder_t *encoder;
 
+    encoder = malloc(sizeof(sixel_encoder_t));
     if (encoder == NULL) {
-        encoder = sixel_encoder_create();
-    } else {
-        sixel_encoder_ref(encoder);
+        return NULL;
     }
 
-    loop_control = encoder->loop_mode;
+    encoder->ref                   = 1;
+    encoder->reqcolors             = (-1);
+    encoder->mapfile               = NULL;
+    encoder->monochrome            = 0;
+    encoder->highcolor             = 0;
+    encoder->builtin_palette       = 0;
+    encoder->method_for_diffuse    = DIFFUSE_AUTO;
+    encoder->method_for_largest    = LARGE_AUTO;
+    encoder->method_for_rep        = REP_AUTO;
+    encoder->quality_mode          = QUALITY_AUTO;
+    encoder->method_for_resampling = RES_BILINEAR;
+    encoder->loop_mode             = LOOP_AUTO;
+    encoder->palette_type          = PALETTETYPE_AUTO;
+    encoder->f8bit                 = 0;
+    encoder->finvert               = 0;
+    encoder->fuse_macro            = 0;
+    encoder->fignore_delay         = 0;
+    encoder->complexion            = 1;
+    encoder->fstatic               = 0;
+    encoder->pixelwidth            = -1;
+    encoder->pixelheight           = -1;
+    encoder->percentwidth          = -1;
+    encoder->percentheight         = -1;
+    encoder->clipx                 = 0;
+    encoder->clipy                 = 0;
+    encoder->clipwidth             = 0;
+    encoder->clipheight            = 0;
+    encoder->clipfirst             = 0;
+    encoder->macro_number          = -1;
+    encoder->verbose               = 0;
+    encoder->penetrate_multiplexer = 0;
+    encoder->encode_policy         = ENCODEPOLICY_AUTO;
+    encoder->pipe_mode             = 0;
+    encoder->bgcolor               = NULL;
+    encoder->outfd                 = STDOUT_FILENO;
+    encoder->finsecure             = 0;
+    encoder->cancel_flag           = NULL;
 
-    if (encoder->reqcolors == (-1)) {
-        encoder->reqcolors = SIXEL_PALETTE_MAX;
-    }
-
-    if (encoder->reqcolors < 2) {
-        encoder->reqcolors = 2;
-    }
-
-    if (encoder->palette_type == PALETTETYPE_AUTO) {
-        encoder->palette_type = PALETTETYPE_RGB;
-    }
-
-    if (encoder->mapfile) {
-        fuse_palette = 0;
-    }
-
-    if (encoder->monochrome > 0) {
-        fuse_palette = 0;
-    }
-
-    if (encoder->highcolor > 0) {
-        fuse_palette = 0;
-    }
-
-    if (encoder->builtin_palette > 0) {
-        fuse_palette = 0;
-    }
-
-    if (encoder->percentwidth > 0 ||
-        encoder->percentheight > 0 ||
-        encoder->pixelwidth > 0 ||
-        encoder->pixelheight > 0) {
-        fuse_palette = 0;
-    }
-
-reload:
-    nret = sixel_helper_load_image_file(filename,
-                                        encoder->fstatic,
-                                        fuse_palette,
-                                        encoder->reqcolors,
-                                        encoder->bgcolor,
-                                        loop_control,
-                                        load_image_callback,
-                                        encoder->cancel_flag,
-                                        (void *)encoder);
-
-    if (nret != 0) {
-        goto end;
-    }
-
-    if (encoder->pipe_mode) {
-#if HAVE_CLEARERR
-        clearerr(stdin);
-#endif  /* HAVE_FSEEK */
-        while (encoder->cancel_flag && !*encoder->cancel_flag) {
-            nret = wait_stdin(1000000);
-            if (nret == (-1)) {
-                goto end;
-            }
-            if (nret != 0) {
-                break;
-            }
-        }
-        if (!encoder->cancel_flag || !*encoder->cancel_flag) {
-            goto reload;
-        }
-    }
-
-end:
-    sixel_encoder_unref(encoder);
-
-    return nret;
+    return encoder;
 }
 
 
-int
+SIXELAPI void
+sixel_encoder_destroy(sixel_encoder_t *encoder)
+{
+    if (encoder) {
+        free(encoder->mapfile);
+        free(encoder->bgcolor);
+        if (encoder->outfd
+            && encoder->outfd != STDOUT_FILENO
+            && encoder->outfd != STDERR_FILENO) {
+            close(encoder->outfd);
+        }
+        free(encoder);
+    }
+}
+
+
+SIXELAPI void
+sixel_encoder_ref(sixel_encoder_t *encoder)
+{
+    /* TODO: be thread safe */
+    ++encoder->ref;
+}
+
+
+SIXELAPI void
+sixel_encoder_unref(sixel_encoder_t *encoder)
+{
+    /* TODO: be thread safe */
+    if (encoder != NULL && --encoder->ref == 0) {
+        sixel_encoder_destroy(encoder);
+    }
+}
+
+
+SIXELAPI int
+sixel_encoder_set_cancel_flag(
+    sixel_encoder_t /* in */ *encoder,
+    int             /* in */ *cancel_flag
+)
+{
+    encoder->cancel_flag = cancel_flag;
+    return 0;
+}
+
+
+SIXELAPI int
 sixel_encoder_setopt(
     sixel_encoder_t /* in */ *encoder,
     int             /* in */ arg,
@@ -1229,6 +1235,9 @@ sixel_encoder_setopt(
             goto argerr;
         }
         break;
+    case 'k':
+        encoder->finsecure = 1;
+        break;
     case 'i':
         encoder->finvert = 1;
         break;
@@ -1349,100 +1358,142 @@ argerr:
 }
 
 
-/* create encoder object */
-sixel_encoder_t *
-sixel_encoder_create(void)
+SIXELAPI int
+sixel_encoder_encode(
+    sixel_encoder_t /* in */ *encoder,
+    char const      /* in */ *filename)
 {
-    sixel_encoder_t *encoder;
+    int nret = (-1);
+    int fuse_palette = 1;
 
-    encoder = malloc(sizeof(sixel_encoder_t));
     if (encoder == NULL) {
-        return NULL;
+        encoder = sixel_encoder_create();
+    } else {
+        sixel_encoder_ref(encoder);
     }
 
-    encoder->ref                   = 1;
-    encoder->reqcolors             = (-1);
-    encoder->mapfile               = NULL;
-    encoder->monochrome            = 0;
-    encoder->highcolor             = 0;
-    encoder->builtin_palette       = 0;
-    encoder->method_for_diffuse    = DIFFUSE_AUTO;
-    encoder->method_for_largest    = LARGE_AUTO;
-    encoder->method_for_rep        = REP_AUTO;
-    encoder->quality_mode          = QUALITY_AUTO;
-    encoder->method_for_resampling = RES_BILINEAR;
-    encoder->loop_mode             = LOOP_AUTO;
-    encoder->palette_type          = PALETTETYPE_AUTO;
-    encoder->f8bit                 = 0;
-    encoder->finvert               = 0;
-    encoder->fuse_macro            = 0;
-    encoder->fignore_delay         = 0;
-    encoder->complexion            = 1;
-    encoder->fstatic               = 0;
-    encoder->pixelwidth            = -1;
-    encoder->pixelheight           = -1;
-    encoder->percentwidth          = -1;
-    encoder->percentheight         = -1;
-    encoder->clipx                 = 0;
-    encoder->clipy                 = 0;
-    encoder->clipwidth             = 0;
-    encoder->clipheight            = 0;
-    encoder->clipfirst             = 0;
-    encoder->macro_number          = -1;
-    encoder->verbose               = 0;
-    encoder->penetrate_multiplexer = 0;
-    encoder->encode_policy         = ENCODEPOLICY_AUTO;
-    encoder->pipe_mode             = 0;
-    encoder->bgcolor               = NULL;
-    encoder->outfd                 = STDOUT_FILENO;
-    encoder->cancel_flag           = NULL;
+    if (encoder->reqcolors == (-1)) {
+        encoder->reqcolors = SIXEL_PALETTE_MAX;
+    }
 
-    return encoder;
-}
+    if (encoder->reqcolors < 2) {
+        encoder->reqcolors = 2;
+    }
 
+    if (encoder->palette_type == PALETTETYPE_AUTO) {
+        encoder->palette_type = PALETTETYPE_RGB;
+    }
 
-void
-sixel_encoder_destroy(sixel_encoder_t *encoder)
-{
-    if (encoder) {
-        free(encoder->mapfile);
-        free(encoder->bgcolor);
-        if (encoder->outfd
-            && encoder->outfd != STDOUT_FILENO
-            && encoder->outfd != STDERR_FILENO) {
-            close(encoder->outfd);
+    if (encoder->mapfile) {
+        fuse_palette = 0;
+    }
+
+    if (encoder->monochrome > 0) {
+        fuse_palette = 0;
+    }
+
+    if (encoder->highcolor > 0) {
+        fuse_palette = 0;
+    }
+
+    if (encoder->builtin_palette > 0) {
+        fuse_palette = 0;
+    }
+
+    if (encoder->percentwidth > 0 ||
+        encoder->percentheight > 0 ||
+        encoder->pixelwidth > 0 ||
+        encoder->pixelheight > 0) {
+        fuse_palette = 0;
+    }
+
+reload:
+    nret = sixel_helper_load_image_file(filename,
+                                        encoder->fstatic,
+                                        fuse_palette,
+                                        encoder->reqcolors,
+                                        encoder->bgcolor,
+                                        encoder->loop_mode,
+                                        load_image_callback,
+                                        encoder->finsecure,
+                                        encoder->cancel_flag,
+                                        (void *)encoder);
+
+    if (nret != 0) {
+        goto end;
+    }
+
+    if (encoder->pipe_mode) {
+#if HAVE_CLEARERR
+        clearerr(stdin);
+#endif  /* HAVE_FSEEK */
+        while (encoder->cancel_flag && !*encoder->cancel_flag) {
+            nret = wait_stdin(1000000);
+            if (nret == (-1)) {
+                goto end;
+            }
+            if (nret != 0) {
+                break;
+            }
         }
-        free(encoder);
+        if (!encoder->cancel_flag || !*encoder->cancel_flag) {
+            goto reload;
+        }
     }
+
+end:
+    sixel_encoder_unref(encoder);
+
+    return nret;
 }
 
 
-void
-sixel_encoder_ref(sixel_encoder_t *encoder)
+#if HAVE_TESTS
+static int
+test1(void)
 {
-    /* TODO: be thread safe */
-    ++encoder->ref;
-}
+    sixel_encoder_t *encoder = NULL;
+    int nret = EXIT_FAILURE;
 
-
-void
-sixel_encoder_unref(sixel_encoder_t *encoder)
-{
-    /* TODO: be thread safe */
-    if (encoder != NULL && --encoder->ref == 0) {
-        sixel_encoder_destroy(encoder);
+    encoder = sixel_encoder_create();
+    if (encoder == NULL) {
+        goto error;
     }
+    sixel_encoder_ref(encoder);
+    sixel_encoder_unref(encoder);
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_encoder_unref(encoder);
+    return nret;
 }
+
 
 int
-sixel_encoder_set_cancel_flag(
-    sixel_encoder_t /* in */ *encoder,
-    int             /* in */ *cancel_flag
-)
+sixel_encoder_tests_main(void)
 {
-    encoder->cancel_flag = cancel_flag;
-    return 0;
+    int nret = EXIT_FAILURE;
+    size_t i;
+    typedef int (* testcase)(void);
+
+    static testcase const testcases[] = {
+        test1,
+    };
+
+    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
+        nret = testcases[i]();
+        if (nret != EXIT_SUCCESS) {
+            goto error;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
 }
+#endif  /* HAVE_TESTS */
+
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

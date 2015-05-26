@@ -119,6 +119,7 @@ _img2sixel()
                                    -p --colors \
                                    -m --mapfile \
                                    -e --monochrome \
+                                   -k --insecure \
                                    -i --invert \
                                    -I --high-color \
                                    -u --use-macro \

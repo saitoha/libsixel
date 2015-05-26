@@ -260,16 +260,18 @@ get_chunk_from_file(
             }
         }
 
-        for (;;) {
-            if (cancel_flag && *cancel_flag) {
-                return (-1);
-            }
-            ret = wait_file(fileno(f), 10000);
-            if (ret < 0) {
-                return ret;
-            }
-            if (ret == 0) {
-                break;
+        if (isatty(fileno(f))) {
+            for (;;) {
+                if (*cancel_flag) {
+                    return (-1);
+                }
+                ret = wait_file(fileno(f), 10000);
+                if (ret < 0) {
+                    return ret;
+                }
+                if (ret == 0) {
+                    break;
+                }
             }
         }
         n = fread(pchunk->buffer + pchunk->size, 1, 4096, f);
@@ -287,7 +289,10 @@ get_chunk_from_file(
 
 
 static int
-get_chunk_from_url(char const *url, chunk_t *pchunk)
+get_chunk_from_url(
+    char const *url,
+    chunk_t *pchunk,
+    int finsecure)
 {
 # ifdef HAVE_LIBCURL
     CURL *curl;
@@ -305,7 +310,7 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
     curl = curl_easy_init();
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-    if (strncmp(url, "https://", 8) == 0) {
+    if (finsecure && strncmp(url, "https://", 8) == 0) {
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
     }
@@ -323,6 +328,7 @@ get_chunk_from_url(char const *url, chunk_t *pchunk)
 # else
     (void) url;
     (void) pchunk;
+    (void) finsecure;
     fprintf(stderr, "To specify URI schemes, you have to "
                     "configure this program with --with-libcurl "
                     "option at compile time.\n");
@@ -791,11 +797,12 @@ static int
 get_chunk(
     char const *filename,
     chunk_t *pchunk,
+    int finsecure,
     int const *cancel_flag
 )
 {
     if (filename != NULL && strstr(filename, "://")) {
-        return get_chunk_from_url(filename, pchunk);
+        return get_chunk_from_url(filename, pchunk, finsecure);
     }
 
     return get_chunk_from_file(filename, pchunk, cancel_flag);
@@ -1035,7 +1042,7 @@ load_with_builtin(
         }
     }
 
-    ret = sixel_strip_alpha(frame, bgcolor);
+    ret = sixel_frame_strip_alpha(frame, bgcolor);
     if (ret != 0) {
         goto error;
     }
@@ -1367,7 +1374,7 @@ load_with_gd(
 
 /* load image from file */
 
-int
+SIXELAPI int
 sixel_helper_load_image_file(
     char const                /* in */     *filename,     /* source file name */
     int                       /* in */     fstatic,       /* whether to extract static image */
@@ -1376,6 +1383,7 @@ sixel_helper_load_image_file(
     unsigned char             /* in */     *bgcolor,      /* background color */
     int                       /* in */     loop_control,  /* one of enum loopControl */
     sixel_load_image_function /* in */     fn_load,       /* callback */
+    int                       /* in */     finsecure,     /* true if do not verify SSL */
     int const                 /* in */     *cancel_flag,  /* cancel flag */
     void                      /* in/out */ *context       /* private data */
 )
@@ -1383,7 +1391,7 @@ sixel_helper_load_image_file(
     int ret = (-1);
     chunk_t chunk;
 
-    ret = get_chunk(filename, &chunk, cancel_flag);
+    ret = get_chunk(filename, &chunk, finsecure, cancel_flag);
     if (ret != 0) {
         return ret;
     }

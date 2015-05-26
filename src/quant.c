@@ -1086,7 +1086,7 @@ lookup_mono_lightbg(unsigned char const * const pixel,
 }
 
 
-unsigned char *
+SIXELAPI unsigned char *
 sixel_quant_make_palette(unsigned char const *data,
                          int length,
                          int pixelformat,
@@ -1126,7 +1126,7 @@ sixel_quant_make_palette(unsigned char const *data,
 }
 
 
-int
+SIXELAPI int
 sixel_quant_apply_palette(unsigned char *data,
                           int width,
                           int height,
@@ -1280,11 +1280,59 @@ sixel_quant_apply_palette(unsigned char *data,
 }
 
 
-void
+SIXELAPI void
 sixel_quant_free_palette(unsigned char * data)
 {
     free(data);
 }
+
+
+#if HAVE_TESTS
+static int
+test1(void)
+{
+    int nret = EXIT_FAILURE;
+    sample minval[1] = { 1 };
+    sample maxval[1] = { 2 };
+    unsigned int retval;
+
+    retval = largestByLuminosity(minval, maxval, 1);
+    if (retval != 0) {
+        goto error;
+    }
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+int
+sixel_quant_tests_main(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t i;
+    typedef int (* testcase)(void);
+
+    static testcase const testcases[] = {
+        test1,
+    };
+
+    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
+        nret = testcases[i]();
+        if (nret != EXIT_SUCCESS) {
+            goto error;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+#endif  /* HAVE_TESTS */
+
+
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

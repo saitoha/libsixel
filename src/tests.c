@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -19,51 +19,82 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_QUANT_H
-#define LIBSIXEL_QUANT_H
+#include "config.h"
 
-#ifdef __cplusplus
-extern "C" {
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <limits.h>
+
+#if HAVE_INTTYPES_H
+# include <inttypes.h>
 #endif
 
-unsigned char *
-sixel_quant_make_palette(
-    unsigned const char /* in */ *data,  /* data for sampling */
-    int /* in */ length,                 /* data size */
-    int /* in */ depth,
-    int /* in */ reqcolors,
-    int /* in */ *ncolors,
-    int /* in */ *origcolors,
-    int /* in */ methodForLargest,
-    int /* in */ methodForRep,
-    int /* in */ qualityMode);
-
-int
-sixel_quant_apply_palette(unsigned char *data,
-                          int width, int height, int depth,
-                          unsigned char *palette, int reqcolor,
-                          int const methodForDiffuse,
-                          int foptimize,
-                          int foptimize_palette,
-                          int complexion,
-                          unsigned short *cachetable,
-                          int *ncolor,
-                          unsigned char *result);
-
-
-void
-sixel_quant_free_palette(unsigned char * data);
+#include "dither.h"
+#include "quant.h"
+#include "frame.h"
+#include "pixelformat.h"
+#include "writer.h"
+#include "encoder.h"
+#include <sixel.h>
 
 #if HAVE_TESTS
+
 int
-sixel_quant_tests_main(void);
-#endif
+main(int argc, char *argv[])
+{
+    int nret = EXIT_FAILURE;
 
-#ifdef __cplusplus
+    (void) argc;
+    (void) argv;
+
+    nret = sixel_dither_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("done.");
+
+    nret = sixel_pixelformat_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("done.");
+
+    nret = sixel_frame_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("done.");
+
+    nret = sixel_writer_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("done.");
+
+    nret = sixel_quant_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("done.");
+
+    nret = sixel_encoder_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("done.");
+error:
+    return nret;
 }
-#endif
 
-#endif /* LIBSIXEL_QUANT_H */
+#endif
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
