@@ -776,10 +776,15 @@ load_image_callback(sixel_frame_t *frame, void *data)
     }
 
     /* prepare dither context */
-    dither = prepare_palette(dither, frame, encoder);
+    dither = prepare_palette(encoder->dither_cache, frame, encoder);
     if (!dither) {
         nret = (-1);
         goto end;
+    }
+
+    if (encoder->dither_cache != NULL) {
+        encoder->dither_cache = dither;
+        sixel_dither_ref(dither);
     }
 
     /* evaluate -v option: print palette */
@@ -925,6 +930,7 @@ sixel_encoder_create(void)
     encoder->outfd                 = STDOUT_FILENO;
     encoder->finsecure             = 0;
     encoder->cancel_flag           = NULL;
+    encoder->dither_cache          = NULL;
 
     return encoder;
 }
@@ -936,6 +942,7 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
     if (encoder) {
         free(encoder->mapfile);
         free(encoder->bgcolor);
+        sixel_dither_unref(encoder->dither_cache);
         if (encoder->outfd
             && encoder->outfd != STDOUT_FILENO
             && encoder->outfd != STDERR_FILENO) {
