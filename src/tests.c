@@ -36,6 +36,7 @@
 #include "frame.h"
 #include "pixelformat.h"
 #include "writer.h"
+#include "encoder.h"
 #include <sixel.h>
 
 #if HAVE_TESTS
@@ -77,6 +78,13 @@ main(int argc, char *argv[])
     puts("done.");
 
     nret = sixel_quant_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("done.");
+
+    nret = sixel_encoder_tests_main();
     if (nret != EXIT_SUCCESS) {
         goto error;
     }

@@ -80,8 +80,8 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -V
 	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | ./img2sixel | tee snake.sixel
 	$(WINE) ./img2sixel -w50% -h150% -dfs -thls < ../images/snake.jpg -shistogram | tee snake2.sixel
-	$(WINE) ./img2sixel -w2100 -h2100 -bxterm256 -o snake3.sixel < ../images/snake.jpg
-	$(WINE) ./img2sixel -w105% -h100 -djajuni -B\#000000000 -rnearest < ../images/snake.gif
+	$(WINE) ./img2sixel -w2100 -h2100 -djajuni -bxterm256 -o snake3.sixel < ../images/snake.jpg
+	$(WINE) ./img2sixel -w105% -h100 -B\#000000000 -rnearest < ../images/snake.gif
 	$(WINE) ./img2sixel -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto ../images/snake.tga
 	$(WINE) ./img2sixel -p300 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhanning -dstucki -thls ../images/snake.tiff
 	$(WINE) ./img2sixel -8 -qauto -thls -e ../images/snake.pgm

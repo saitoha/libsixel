@@ -271,7 +271,6 @@ test1(void)
         pixels, 1, 1, NULL, PIXELFORMAT_RGB888, "output.gif", FORMAT_GIF);
 
     if (ret != (-1)) {
-        perror(NULL);
         goto error;
     }
     nret = EXIT_SUCCESS;
@@ -292,7 +291,6 @@ test2(void)
         pixels, 1, 1, NULL, PIXELFORMAT_RGB888, "test-output.png", FORMAT_PNG);
 
     if (ret != 0) {
-        perror(NULL);
         goto error;
     }
     nret = EXIT_SUCCESS;
@@ -317,7 +315,6 @@ sixel_writer_tests_main(void)
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
         nret = testcases[i]();
         if (nret != EXIT_SUCCESS) {
-            perror(NULL);
             goto error;
         }
     }

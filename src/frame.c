@@ -487,7 +487,6 @@ test1(void)
     nret = EXIT_SUCCESS;
 
 error:
-    perror(NULL);
     sixel_frame_unref(frame);
     return nret;
 }
@@ -543,7 +542,6 @@ test2(void)
     nret = EXIT_SUCCESS;
 
 error:
-    perror(NULL);
     sixel_frame_unref(frame);
     return nret;
 }
@@ -596,7 +594,6 @@ test3(void)
     nret = EXIT_SUCCESS;
 
 error:
-    perror(NULL);
     sixel_frame_unref(frame);
     return nret;
 }
@@ -649,7 +646,6 @@ test4(void)
     nret = EXIT_SUCCESS;
 
 error:
-    perror(NULL);
     sixel_frame_unref(frame);
     return nret;
 }
@@ -704,7 +700,6 @@ test5(void)
     nret = EXIT_SUCCESS;
 
 error:
-    perror(NULL);
     sixel_frame_unref(frame);
     return nret;
 }
@@ -759,7 +754,6 @@ test6(void)
     nret = EXIT_SUCCESS;
 
 error:
-    perror(NULL);
     sixel_frame_unref(frame);
     return nret;
 }
@@ -791,7 +785,6 @@ sixel_frame_tests_main(void)
     nret = EXIT_SUCCESS;
 
 error:
-    perror(NULL);
     return nret;
 }
 #endif  /* HAVE_TESTS */

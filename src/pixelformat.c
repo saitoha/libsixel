@@ -653,7 +653,6 @@ sixel_pixelformat_tests_main(void)
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
         nret = testcases[i]();
         if (nret != EXIT_SUCCESS) {
-            perror(NULL);
             goto error;
         }
     }

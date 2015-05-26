@@ -576,7 +576,6 @@ test1(void)
 
     dither = sixel_dither_create(0);
     if (dither == NULL) {
-        perror(NULL);
         goto error;
     }
     sixel_dither_ref(dither);
@@ -597,13 +596,11 @@ test2(void)
 
     dither = sixel_dither_create(INT_MAX);
     if (dither == NULL) {
-        perror(NULL);
         goto error;
     }
     sixel_dither_set_body_only(dither, 1);
     colors = sixel_dither_get_num_of_histogram_colors(dither);
     if (colors != -1) {
-        perror(NULL);
         goto error;
     }
     nret = EXIT_SUCCESS;
@@ -629,7 +626,6 @@ sixel_dither_tests_main(void)
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
         nret = testcases[i]();
         if (nret != EXIT_SUCCESS) {
-            perror(NULL);
             goto error;
         }
     }

@@ -1292,9 +1292,12 @@ static int
 test1(void)
 {
     int nret = EXIT_FAILURE;
-    int ret = 0;
+    sample minval[1] = { 1 };
+    sample maxval[1] = { 2 };
+    unsigned int retval;
 
-    if (ret != 0) {
+    retval = largestByLuminosity(minval, maxval, 1);
+    if (retval != 0) {
         goto error;
     }
     nret = EXIT_SUCCESS;
@@ -1318,7 +1321,6 @@ sixel_quant_tests_main(void)
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
         nret = testcases[i]();
         if (nret != EXIT_SUCCESS) {
-            perror(NULL);
             goto error;
         }
     }

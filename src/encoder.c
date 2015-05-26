@@ -1457,7 +1457,6 @@ test1(void)
 
     encoder = sixel_encoder_create();
     if (encoder == NULL) {
-        perror(NULL);
         goto error;
     }
     sixel_encoder_ref(encoder);
@@ -1484,7 +1483,6 @@ sixel_encoder_tests_main(void)
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
         nret = testcases[i]();
         if (nret != EXIT_SUCCESS) {
-            perror(NULL);
             goto error;
         }
     }
