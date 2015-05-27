@@ -15,6 +15,7 @@ Example 1. Install into the python prefixed by '/usr/local' ::
 
     $ git clone https://github.com/saitoha/libsixel.git
     $ cd libsixel 
+    $ git checkout develop  # now available only develop branch
     $ ./configure --enable-python --prefix=/usr/local
     $ make install
 
@@ -22,11 +23,10 @@ Example 2. Install into only current active python ::
 
     $ git clone https://github.com/saitoha/libsixel.git
     $ cd libsixel 
+    $ git checkout develop  # now available only develop branch
     $ ./configure --disable-python
     $ make install  # install libsixel
-
-    $ git clone https://github.com/saitoha/libsixel.git
-    $ cd libsixel/python
+    $ cd python
     $ python setup.py install  # install python module
 
 
