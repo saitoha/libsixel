@@ -1,4 +1,4 @@
-SUBDIRS = include src converters
+SUBDIRS = include src converters python
 DIST_SUBDIRS = $(SUBDIRS)
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
