@@ -11,7 +11,7 @@ libsixel: https://github.com/saitoha/libsixel
 Install
 -------
 
-Example 1. Install into the python prefixed by '/usr/local' ::
+Example 1. Install into the python prefixed with '/usr/local' ::
 
     $ git clone https://github.com/saitoha/libsixel.git
     $ cd libsixel 
