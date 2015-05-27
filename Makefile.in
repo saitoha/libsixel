@@ -193,7 +193,7 @@ CSCOPE = cscope
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(srcdir)/libsixel.pc.in $(srcdir)/package.json.in.in \
 	ChangeLog NEWS compile config.guess config.sub install-sh \
-	ltmain.sh missing
+	ltmain.sh missing py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -311,6 +311,11 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
+PYTHON = @PYTHON@
+PYTHON_EXEC_PREFIX = @PYTHON_EXEC_PREFIX@
+PYTHON_PLATFORM = @PYTHON_PLATFORM@
+PYTHON_PREFIX = @PYTHON_PREFIX@
+PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -364,9 +369,13 @@ pdfdir = @pdfdir@
 
 # pkgconfig
 pkgconfigdir = @pkgconfigdir@
+pkgpyexecdir = @pkgpyexecdir@
+pkgpythondir = @pkgpythondir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+pyexecdir = @pyexecdir@
+pythondir = @pythondir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -376,7 +385,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
-SUBDIRS = include src converters
+SUBDIRS = include src converters python
 DIST_SUBDIRS = $(SUBDIRS)
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = libsixel.pc

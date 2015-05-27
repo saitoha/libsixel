@@ -640,6 +640,17 @@ HAVE_PNG_FALSE
 HAVE_PNG_TRUE
 HAVE_JPEG_FALSE
 HAVE_JPEG_TRUE
+HAVE_PYTHON_FALSE
+HAVE_PYTHON_TRUE
+pkgpyexecdir
+pyexecdir
+pkgpythondir
+pythondir
+PYTHON_PLATFORM
+PYTHON_EXEC_PREFIX
+PYTHON_PREFIX
+PYTHON_VERSION
+PYTHON
 LIBPNG_LIBS
 LIBPNG_CFLAGS
 LIBJPEG_LIBS
@@ -812,6 +823,7 @@ with_png
 with_pkgconfigdir
 with_bashcompletiondir
 with_zshcompletiondir
+enable_python
 enable_debug
 enable_gcov
 enable_tests
@@ -838,7 +850,8 @@ LIBCURL_LIBS
 LIBJPEG_CFLAGS
 LIBJPEG_LIBS
 LIBPNG_CFLAGS
-LIBPNG_LIBS'
+LIBPNG_LIBS
+PYTHON'
 
 
 # Initialize some variables set by options.
@@ -1470,6 +1483,7 @@ Optional Features:
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-img2sixel     whether to build img2sixel (default: yes)
   --disable-sixel2png     whether to build sixel2png (default: yes)
+  --enable-sixel2png      Python bindings (default: yes)
   --enable-debug          Use debug macro and specific CFLAGS
   --enable-gcov           Use gcov
   --enable-tests          Build tests
@@ -1529,6 +1543,7 @@ Some influential environment variables:
   LIBPNG_CFLAGS
               C compiler flags for LIBPNG, overriding pkg-config
   LIBPNG_LIBS linker flags for LIBPNG, overriding pkg-config
+  PYTHON      the Python interpreter
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -12321,6 +12336,14 @@ fi
 $as_echo "$as_me: zsh-completion directory is ${zshcompletiondir}" >&6;}
 
 
+# Check whether --enable-python was given.
+if test "${enable_python+set}" = set; then :
+  enableval=$enable_python;
+else
+  enable_python=yes
+fi
+
+
 # Check whether --enable-debug was given.
 if test "${enable_debug+set}" = set; then :
   enableval=$enable_debug;
@@ -15086,6 +15109,282 @@ fi
 
 
 
+have_python=no
+if test x$enable_python != xno; then
+
+
+
+
+
+
+        if test -n "$PYTHON"; then
+      # If the user set $PYTHON, use it and don't search something else.
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $PYTHON version is >= 2.3" >&5
+$as_echo_n "checking whether $PYTHON version is >= 2.3... " >&6; }
+      prog="import sys
+# split strings by '.' and convert to numeric.  Append some zeros
+# because we need at least 4 digits for the hex conversion.
+# map returns an iterator in Python 3.0 and a list in 2.x
+minver = list(map(int, '2.3'.split('.'))) + [0, 0, 0]
+minverhex = 0
+# xrange is not present in Python 3.0 and range returns an iterator
+for i in list(range(0, 4)): minverhex = (minverhex << 8) + minver[i]
+sys.exit(sys.hexversion < minverhex)"
+  if { echo "$as_me:$LINENO: $PYTHON -c "$prog"" >&5
+   ($PYTHON -c "$prog") >&5 2>&5
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+			       as_fn_error $? "Python interpreter is too old" "$LINENO" 5
+fi
+      am_display_PYTHON=$PYTHON
+    else
+      # Otherwise, try each interpreter until we find one that satisfies
+      # VERSION.
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for a Python interpreter with version >= 2.3" >&5
+$as_echo_n "checking for a Python interpreter with version >= 2.3... " >&6; }
+if ${am_cv_pathless_PYTHON+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+	for am_cv_pathless_PYTHON in python python2 python3 python3.3 python3.2 python3.1 python3.0 python2.7  python2.6 python2.5 python2.4 python2.3 python2.2 python2.1 python2.0 none; do
+	  test "$am_cv_pathless_PYTHON" = none && break
+	  prog="import sys
+# split strings by '.' and convert to numeric.  Append some zeros
+# because we need at least 4 digits for the hex conversion.
+# map returns an iterator in Python 3.0 and a list in 2.x
+minver = list(map(int, '2.3'.split('.'))) + [0, 0, 0]
+minverhex = 0
+# xrange is not present in Python 3.0 and range returns an iterator
+for i in list(range(0, 4)): minverhex = (minverhex << 8) + minver[i]
+sys.exit(sys.hexversion < minverhex)"
+  if { echo "$as_me:$LINENO: $am_cv_pathless_PYTHON -c "$prog"" >&5
+   ($am_cv_pathless_PYTHON -c "$prog") >&5 2>&5
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }; then :
+  break
+fi
+	done
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_pathless_PYTHON" >&5
+$as_echo "$am_cv_pathless_PYTHON" >&6; }
+      # Set $PYTHON to the absolute path of $am_cv_pathless_PYTHON.
+      if test "$am_cv_pathless_PYTHON" = none; then
+	PYTHON=:
+      else
+        # Extract the first word of "$am_cv_pathless_PYTHON", so it can be a program name with args.
+set dummy $am_cv_pathless_PYTHON; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PYTHON+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PYTHON in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PYTHON="$PYTHON" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PYTHON="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PYTHON=$ac_cv_path_PYTHON
+if test -n "$PYTHON"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PYTHON" >&5
+$as_echo "$PYTHON" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+      fi
+      am_display_PYTHON=$am_cv_pathless_PYTHON
+    fi
+
+
+  if test "$PYTHON" = :; then
+      have_python=no
+  else
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $am_display_PYTHON version" >&5
+$as_echo_n "checking for $am_display_PYTHON version... " >&6; }
+if ${am_cv_python_version+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  am_cv_python_version=`$PYTHON -c "import sys; sys.stdout.write(sys.version[:3])"`
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_python_version" >&5
+$as_echo "$am_cv_python_version" >&6; }
+  PYTHON_VERSION=$am_cv_python_version
+
+
+
+  PYTHON_PREFIX='${prefix}'
+
+  PYTHON_EXEC_PREFIX='${exec_prefix}'
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $am_display_PYTHON platform" >&5
+$as_echo_n "checking for $am_display_PYTHON platform... " >&6; }
+if ${am_cv_python_platform+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  am_cv_python_platform=`$PYTHON -c "import sys; sys.stdout.write(sys.platform)"`
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_python_platform" >&5
+$as_echo "$am_cv_python_platform" >&6; }
+  PYTHON_PLATFORM=$am_cv_python_platform
+
+
+  # Just factor out some code duplication.
+  am_python_setup_sysconfig="\
+import sys
+# Prefer sysconfig over distutils.sysconfig, for better compatibility
+# with python 3.x.  See automake bug#10227.
+try:
+    import sysconfig
+except ImportError:
+    can_use_sysconfig = 0
+else:
+    can_use_sysconfig = 1
+# Can't use sysconfig in CPython 2.7, since it's broken in virtualenvs:
+# <https://github.com/pypa/virtualenv/issues/118>
+try:
+    from platform import python_implementation
+    if python_implementation() == 'CPython' and sys.version[:3] == '2.7':
+        can_use_sysconfig = 0
+except ImportError:
+    pass"
+
+
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $am_display_PYTHON script directory" >&5
+$as_echo_n "checking for $am_display_PYTHON script directory... " >&6; }
+if ${am_cv_python_pythondir+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test "x$prefix" = xNONE
+     then
+       am_py_prefix=$ac_default_prefix
+     else
+       am_py_prefix=$prefix
+     fi
+     am_cv_python_pythondir=`$PYTHON -c "
+$am_python_setup_sysconfig
+if can_use_sysconfig:
+    sitedir = sysconfig.get_path('purelib', vars={'base':'$am_py_prefix'})
+else:
+    from distutils import sysconfig
+    sitedir = sysconfig.get_python_lib(0, 0, prefix='$am_py_prefix')
+sys.stdout.write(sitedir)"`
+     case $am_cv_python_pythondir in
+     $am_py_prefix*)
+       am__strip_prefix=`echo "$am_py_prefix" | sed 's|.|.|g'`
+       am_cv_python_pythondir=`echo "$am_cv_python_pythondir" | sed "s,^$am__strip_prefix,$PYTHON_PREFIX,"`
+       ;;
+     *)
+       case $am_py_prefix in
+         /usr|/System*) ;;
+         *)
+	  am_cv_python_pythondir=$PYTHON_PREFIX/lib/python$PYTHON_VERSION/site-packages
+	  ;;
+       esac
+       ;;
+     esac
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_python_pythondir" >&5
+$as_echo "$am_cv_python_pythondir" >&6; }
+  pythondir=$am_cv_python_pythondir
+
+
+
+  pkgpythondir=\${pythondir}/$PACKAGE
+
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $am_display_PYTHON extension module directory" >&5
+$as_echo_n "checking for $am_display_PYTHON extension module directory... " >&6; }
+if ${am_cv_python_pyexecdir+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test "x$exec_prefix" = xNONE
+     then
+       am_py_exec_prefix=$am_py_prefix
+     else
+       am_py_exec_prefix=$exec_prefix
+     fi
+     am_cv_python_pyexecdir=`$PYTHON -c "
+$am_python_setup_sysconfig
+if can_use_sysconfig:
+    sitedir = sysconfig.get_path('platlib', vars={'platbase':'$am_py_prefix'})
+else:
+    from distutils import sysconfig
+    sitedir = sysconfig.get_python_lib(1, 0, prefix='$am_py_prefix')
+sys.stdout.write(sitedir)"`
+     case $am_cv_python_pyexecdir in
+     $am_py_exec_prefix*)
+       am__strip_prefix=`echo "$am_py_exec_prefix" | sed 's|.|.|g'`
+       am_cv_python_pyexecdir=`echo "$am_cv_python_pyexecdir" | sed "s,^$am__strip_prefix,$PYTHON_EXEC_PREFIX,"`
+       ;;
+     *)
+       case $am_py_exec_prefix in
+         /usr|/System*) ;;
+         *)
+	   am_cv_python_pyexecdir=$PYTHON_EXEC_PREFIX/lib/python$PYTHON_VERSION/site-packages
+	   ;;
+       esac
+       ;;
+     esac
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_python_pyexecdir" >&5
+$as_echo "$am_cv_python_pyexecdir" >&6; }
+  pyexecdir=$am_cv_python_pyexecdir
+
+
+
+  pkgpyexecdir=\${pyexecdir}/$PACKAGE
+
+
+    have_python=yes
+  fi
+
+
+    if test x$enable_python = xyes -a x$have_python = xno; then
+        as_fn_error $? "python is not available" "$LINENO" 5
+    fi
+fi
+ if test x$have_python = xyes; then
+  HAVE_PYTHON_TRUE=
+  HAVE_PYTHON_FALSE='#'
+else
+  HAVE_PYTHON_TRUE='#'
+  HAVE_PYTHON_FALSE=
+fi
+
+
 
 
           touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
@@ -15116,7 +15415,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile python/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -15278,6 +15577,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_GETOPT_LONG_TRUE}" && test -z "${HAVE_GETOPT_LONG_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_GETOPT_LONG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_PYTHON_TRUE}" && test -z "${HAVE_PYTHON_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_PYTHON\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_JPEG_TRUE}" && test -z "${HAVE_JPEG_FALSE}"; then
@@ -16177,6 +16480,7 @@ do
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
     "converters/Makefile") CONFIG_FILES="$CONFIG_FILES converters/Makefile" ;;
+    "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -17457,6 +17761,7 @@ echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
+echo "       python bindings     : $have_python"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
 echo "       tests               : $enable_tests"

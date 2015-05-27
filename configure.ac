@@ -104,6 +104,12 @@ AC_ARG_WITH(zshcompletiondir,
 AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])
 AC_SUBST(zshcompletiondir)
 
+AC_ARG_ENABLE([python],
+              [AS_HELP_STRING([--enable-sixel2png],
+                              [Python bindings (default: yes)])],
+              [],
+              [enable_python=yes])
+
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
                               [Use debug macro and specific CFLAGS])],
@@ -524,6 +530,15 @@ fi
 AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBPNG_LIBS)
 
+have_python=no
+if test x$enable_python != xno; then
+    AM_PATH_PYTHON([2.3], [have_python=yes], [have_python=no])
+    if test x$enable_python = xyes -a x$have_python = xno; then
+        AC_MSG_ERROR([python is not available])
+    fi
+fi
+AM_CONDITIONAL([HAVE_PYTHON], [test x$have_python = xyes])
+
 AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
           ])
@@ -539,7 +554,9 @@ AC_CONFIG_FILES([Makefile
                  include/sixel.h
                  src/Makefile
                  include/Makefile
-                 converters/Makefile])
+                 converters/Makefile
+                 python/Makefile
+                ])
 
 AC_OUTPUT
 
@@ -553,6 +570,7 @@ echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
+echo "       python bindings     : $have_python"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
 echo "       tests               : $enable_tests"
