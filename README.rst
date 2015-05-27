@@ -33,9 +33,8 @@ Example 2. Install into only current active python ::
 Code Example
 ------------
 
-encoder
+encoder ::
 
-::
     from libsixel.encoder import Encoder
 
     encoder = Encoder()
@@ -44,9 +43,8 @@ encoder
     encoder.encode("test.png")
 
 
-decoder
+decoder ::
 
-::
     from libsixel.decoder import Decoder
 
     decoder = Decoder()
