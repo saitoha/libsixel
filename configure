@@ -15384,6 +15384,11 @@ else
   HAVE_PYTHON_FALSE=
 fi
 
+if test x$have_python = xyes; then
+    message_python="$have_python: $pythondir"
+else
+    message_python=$have_python
+fi
 
 
 
@@ -17761,7 +17766,7 @@ echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
-echo "       python bindings     : $have_python"
+echo "       python bindings     : $message_python"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
 echo "       tests               : $enable_tests"

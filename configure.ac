@@ -538,6 +538,11 @@ if test x$enable_python != xno; then
     fi
 fi
 AM_CONDITIONAL([HAVE_PYTHON], [test x$have_python = xyes])
+if test x$have_python = xyes; then
+    message_python="$have_python: $pythondir"
+else
+    message_python=$have_python
+fi
 
 AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
@@ -570,7 +575,7 @@ echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
-echo "       python bindings     : $have_python"
+echo "       python bindings     : $message_python"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
 echo "       tests               : $enable_tests"
