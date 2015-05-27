@@ -27,17 +27,17 @@ extern "C" {
 #endif
 
 /* load gif */
-
 int
-load_gif(unsigned char *buffer,
-         int size,
-         unsigned char *bgcolor,
-         int reqcolors,
-         int fuse_palette,
-         int fstatic,
-         int loop_control,
-         void /* in */     *fn_load,     /* callback */
-         void /* in/out */ *context      /* private data for callback */
+load_gif(
+    unsigned char /* in */ *buffer,
+    int           /* in */ size,
+    unsigned char /* in */ *bgcolor,
+    int           /* in */ reqcolors,
+    int           /* in */ fuse_palette,
+    int           /* in */ fstatic,
+    int           /* in */ loop_control,
+    void          /* in */ *fn_load,     /* callback */
+    void          /* in */ *context      /* private data for callback */
 );
 
 #ifdef __cplusplus

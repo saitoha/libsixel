@@ -52,6 +52,12 @@ unsigned char *
 sixel_dither_apply_palette(sixel_dither_t *dither,
                            unsigned char *pixels,
                            int width, int height);
+
+#if HAVE_TESTS
+int
+sixel_frame_tests_main(void);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

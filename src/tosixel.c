@@ -1225,7 +1225,7 @@ error:
 }
 
 
-int
+SIXELAPI int
 sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
              int            /* in */ width,       /* image width */
              int            /* in */ height,      /* image height */

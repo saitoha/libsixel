@@ -3,9 +3,9 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.4.11], [user@zuse.jp])
+AC_INIT([sixel], [1.5.0], [user@zuse.jp])
 LS_LT_CURRENT=1
-LS_LT_REVISION=3
+LS_LT_REVISION=4
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 AC_SUBST([PACKAGE_DESCRIPTION],
@@ -104,6 +104,12 @@ AC_ARG_WITH(zshcompletiondir,
 AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])
 AC_SUBST(zshcompletiondir)
 
+AC_ARG_ENABLE([python],
+              [AS_HELP_STRING([--enable-sixel2png],
+                              [Python bindings (default: yes)])],
+              [],
+              [enable_python=yes])
+
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
                               [Use debug macro and specific CFLAGS])],
@@ -117,6 +123,13 @@ AC_ARG_ENABLE([gcov],
               [],
               [enable_gcov=no])
 AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
+
+AC_ARG_ENABLE([tests],
+              [AS_HELP_STRING([--enable-tests],
+                              [Build tests])],
+              [AC_DEFINE(HAVE_TESTS, [1], [enable tests])],
+              [enable_tests=no])
+AM_CONDITIONAL([COND_TESTS], [test x$enable_tests != xno])
 
 # Checks for programs.
 AC_PROG_CC
@@ -155,6 +168,7 @@ AC_CHECK_HEADERS([memory.h \
                   stdlib.h \
                   string.h \
                   unistd.h \
+                  stdint.h \
                   sys/unistd.h \
                   getopt.h \
                   sys/types.h \
@@ -516,6 +530,20 @@ fi
 AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBPNG_LIBS)
 
+have_python=no
+if test x$enable_python != xno; then
+    AM_PATH_PYTHON([2.3], [have_python=yes], [have_python=no])
+    if test x$enable_python = xyes -a x$have_python = xno; then
+        AC_MSG_ERROR([python is not available])
+    fi
+fi
+AM_CONDITIONAL([HAVE_PYTHON], [test x$have_python = xyes])
+if test x$have_python = xyes; then
+    message_python="$have_python: $pythondir"
+else
+    message_python=$have_python
+fi
+
 AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
           ])
@@ -531,7 +559,9 @@ AC_CONFIG_FILES([Makefile
                  include/sixel.h
                  src/Makefile
                  include/Makefile
-                 converters/Makefile])
+                 converters/Makefile
+                 python/Makefile
+                ])
 
 AC_OUTPUT
 
@@ -545,7 +575,9 @@ echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
+echo "       python bindings     : $message_python"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
+echo "       tests               : $enable_tests"
 echo ""
 echo ""
