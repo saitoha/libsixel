@@ -7,7 +7,7 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libsixel.pc
 
-CLEANFILES = valgrind.log test.log unittest.log
+CLEANFILES = valgrind.log test.log unittest.log test-output.png
 
 all-am:
 	cp package.json.in package.json
