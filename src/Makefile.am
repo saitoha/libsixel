@@ -3,7 +3,7 @@ if COND_GCOV
 MAYBE_COVERAGE = --coverage
 endif
 
-CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.*
+CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* test
 
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = \
