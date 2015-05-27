@@ -389,7 +389,7 @@ SUBDIRS = include src converters python
 DIST_SUBDIRS = $(SUBDIRS)
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = libsixel.pc
-CLEANFILES = valgrind.log test.log unittest.log
+CLEANFILES = valgrind.log test.log unittest.log test-output.png
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 

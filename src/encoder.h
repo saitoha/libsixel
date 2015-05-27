@@ -61,6 +61,7 @@ typedef struct sixel_encoder {
     int outfd;
     int finsecure;
     int *cancel_flag;
+    void *dither_cache;
 } sixel_encoder_t;
 
 #if HAVE_TESTS
