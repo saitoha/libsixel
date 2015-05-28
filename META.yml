@@ -1,0 +1,24 @@
+---
+abstract: 'libsixel binding for Perl'
+author:
+  - unknown
+build_requires:
+  ExtUtils::CBuilder: 0
+  Test::More: 0
+dynamic_config: 0
+generated_by: 'Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921'
+license: mit
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Image-Sixel
+provides:
+  Image::Sixel:
+    file: lib/Image/Sixel.pm
+    version: 0.0_1
+  Image::Sixel::Encoder:
+    file: lib/Image/Sixel/Encoder.pm
+    version: 0
+resources:
+  license: http://opensource.org/licenses/mit-license.php
+version: 0.0_1
