@@ -105,8 +105,8 @@ AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])
 AC_SUBST(zshcompletiondir)
 
 AC_ARG_ENABLE([python],
-              [AS_HELP_STRING([--enable-sixel2png],
-                              [Python bindings (default: yes)])],
+              [AS_HELP_STRING([--enable-python],
+                              [Python interface (default: yes)])],
               [],
               [enable_python=yes])
 
