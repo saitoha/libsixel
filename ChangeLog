@@ -1,4 +1,425 @@
+2015-05-29  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Correct wrong help string of ./configure
+
+  * tools/Makefile.am, tools/Makefile.in, tools/libsixel-config.in: Add missing
+  build files
+
+  * Makefile.am, Makefile.in, configure, configure.ac: Add a helper tool
+  libsixel-config
+
+2015-05-28  Hayaki Saito <user@zuse.jp>
+
+  * src/encoder.c: Don't close STDOUT with -o option
+
+2015-05-27  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, python/README.rst, src/Makefile.am,
+  src/Makefile.in: Show python package path after ./configure is succeeded
+
+  * Makefile.am, Makefile.in: Add test-output.png to CLEANFILES
+
+  * src/Makefile.am, src/Makefile.in: Add src/tests to CLEANFILES
+
+  * python/README.rst: Fix syntax errors of README.rst
+
+  * python/Makefile.am, python/Makefile.in: Add python/Makefile.am
+  python/Makefile.in
+
+  * python/sample1.py: Remove a trivial sample file
+
+  * py-compile: Add py-compile, distributed under special exception to the GNU
+  General Public License
+
+  * python/setup.py: Add setup.py for python bindings
+
+  * python/README.rst: Add README.rst for python bindings
+
+  * python/libsixel/__init__.py, python/libsixel/decoder.py,
+  python/libsixel/encoder.py: Add license blocks to python modules
+
+  * Makefile.am, Makefile.in, aclocal.m4, configure, configure.ac,
+  converters/Makefile.in, include/Makefile.in, src/Makefile.in: Build and
+  install python bindings by 'make install'
+
+  * python/libsixel.py, python/libsixel/__init__.py,
+  python/libsixel/decoder.py, python/libsixel/encoder.py: Update python modules
+
+2015-05-26  Hayaki Saito <user@zuse.jp>
+
+  * src/encoder.c, src/encoder.h: Aggregate a sixel_dither_t instance to
+  encoder object
+
+  * examples/opengl/Makefile.in, examples/opengl/aclocal.m4,
+  examples/opengl/compile, examples/opengl/config.guess,
+  examples/opengl/config.h.in, examples/opengl/config.sub,
+  examples/opengl/configure, examples/opengl/configure.ac,
+  examples/opengl/depcomp, examples/opengl/install-sh, examples/opengl/main.c,
+  examples/opengl/missing: Update OpenGL example: add on-demand scrolling
+  feature
+
+  * Makefile.in, converters/Makefile.am, converters/Makefile.in, src/dither.c,
+  src/encoder.c, src/frame.c, src/pixelformat.c, src/quant.c, src/tests.c,
+  src/writer.c: Add more tests for quant.c and encoder.c
+
+2015-05-25  Hayaki Saito <user@zuse.jp>
+
+  * src/frame.c: Add more tests for frame.c
+
+2015-05-24  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.in, converters/Makefile.am, converters/Makefile.in: Add 'testfile'
+  to CLEANFILES
+
+2015-05-21  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.in, converters/Makefile.in, src/frame.c: Add more tests for
+  frame.c
+
+  * src/frame.c: Drop unused function sixel_frame_set_palette()
+
+  * src/quant.c, src/quant.h, src/tests.c, src/writer.c: Add initial tests for
+  quant.c
+
+2015-05-20  Hayaki Saito <user@zuse.jp>
+
+  * src/encoder.c: Strip extra debug code
+
+  * converters/Makefile.am, converters/Makefile.in, src/encoder.c: Fix broken
+  -B option test
+
+  * src/Makefile.am, src/Makefile.in, src/writer.c: Add more test cases for
+  writer.c
+
+  * src/Makefile.am, src/Makefile.in, src/tests.c, src/writer.c, src/writer.h:
+  Add initial tests for writer.c
+
+  * converters/Makefile.am, converters/Makefile.in: sixel2png: Add test of
+  specifing invalid output file name
+
+  * converters/Makefile.in, src/frame.c: Add more tests for frame.c
+
+2015-05-19  Hayaki Saito <user@zuse.jp>
+
+  * src/dither.h, src/frame.c, src/frame.h, src/tests.c: Add initial test of
+  frame.c
+
+  * src/pixelformat.c: Add more tests for pixelformat.c
+
+2015-05-18  Hayaki Saito <user@zuse.jp>
+
+  * src/pixelformat.h: Add missing header file pixelformat.h
+
+  * src/pixelformat.c: Add more tests for pixelformat.c
+
+  * Makefile.in, src/Makefile.am, src/Makefile.in, src/dither.h, src/encoder.c,
+  src/encoder.h, src/pixelformat.c, src/tests.c: Add tests for pixelformat
+
+  * Makefile.am, Makefile.in: Run unittests on travis
+
+2015-05-17  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.in, configure, configure.ac, src/fromgif.c, src/fromgif.h: Cleanup
+
+  * converters/Makefile.in: Minor fix
+
+  * converters/Makefile.am: Drop a surplus test for -k option
+
+  * src/loader.c: Suppress an unused-parameter gcc warning
+
+  * converters/Makefile.am: Add tests for invalid permission file
+
+  * package.json.in.in: Strip --with-curl from package.json
+
+  * include/sixel.h.in, src/decoder.c, src/dither.c, src/encoder.c,
+  src/frame.c, src/fromsixel.c, src/loader.c, src/output.c, src/pixelformat.c,
+  src/quant.c, src/scale.c, src/tosixel.c, src/writer.c: Add __declspec for
+  mingw
+
+  * converters/Makefile.am: Add test cases for -B and -o option
+
+  * src/Makefile.am, src/Makefile.in, src/decoder.c, src/decoder.h,
+  src/easy_decode.c, src/easy_decode.h, src/easy_encode.c, src/easy_encode.h,
+  src/encoder.c, src/encoder.h: Rename files: easy_encode.c -> encoder.c,
+  easy_decode -> decoder.c
+
+  * python/libsixel.py: Update python-ctypes binding
+
+  * php/sixel/package.xml, php/sixel/package2.xml, php/sixel/php_sixel.h,
+  php/sixel/sixel.c, php/sixel/sixel.xml,
+  php/sixel/tests/SixelEncoder__encode.phpt,
+  php/sixel/tests/SixelEncoder__setopt.phpt,
+  .../tests/SixelEncoder__sixel_easy_encode.phpt,
+  .../SixelEncoder__sixel_easy_encode_setopt.phpt: Update php extension
+
+  * src/loader.c: Fix segmentation error when cancel_flag is not set
+
+  * src/easy_encode.c: Drop sixel_callback_context_t
+
+  * include/sixel.h.in, src/easy_decode.c, src/easy_encode.c: Add const
+  qualifier to some arguments of sixel_{en,de}coder_setopt()
+
+  * converters/img2sixel.c, include/sixel.h.in, src/easy_encode.c,
+  src/easy_encode.h: Add new API sixel_encoder_set_cancel_flag()
+
+  * converters/Makefile.am, converters/Makefile.in, converters/img2sixel.c,
+  src/loader.c: Wait input data with select() only if input file is a tty
+  device
+
+  * include/sixel.h.in, src/easy_encode.c: Use sixel_write_callback() instead
+  of printf() to fix broken -n option
+
+2015-05-16  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c, converters/sixel2png.c, include/sixel.h.in,
+  src/easy_decode.c, src/easy_decode.h, src/easy_encode.c, src/easy_encode.h:
+  Rename easy encoder/decoder structures and releated APIs
+
+  * src/easy_encode.c: Suppress warnings in MinGW environment
+
+  * converters/shell-completion/zsh/_img2sixel: Update zsh completion file
+
+  * converters/shell-completion/bash/img2sixel: Update bash completion file
+
+  * converters/img2sixel.1: Update manpage of img2sixel
+
+  * src/loader.c: Minor fixes
+
+  * src/loader.c: Suppress gcc unused-parameter warnings
+
+2015-05-15  Hayaki Saito <user@zuse.jp>
+
+  * include/sixel.h.in, src/easy_encode.c, src/loader.c: Passes cancel flag to
+  image loader
+
+  * src/easy_encode.c, src/loader.c: Minor fix
+
+  * src/easy_encode.c: Don't close stdout/stderr on exit
+
+2015-05-14  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c, src/easy_encode.c, src/easy_encode.h, src/loader.c:
+  Implement -o(--outfile) option
+
+2015-05-12  Hayaki Saito <user@zuse.jp>
+
+  * converters/Makefile.am, converters/Makefile.in: Add pngsuite background
+  tests
+
+  * src/fromgif.c: Fix leaks around GIF loader
+
+2015-05-11  Hayaki Saito <user@zuse.jp>
+
+  * php/README, php/sixel/.cvsignore, php/sixel/CREDITS,
+  php/sixel/EXPERIMENTAL, php/sixel/README, php/sixel/config.m4,
+  php/sixel/config.w32, php/sixel/manual/file-entities.ent,
+  php/sixel/manual/functions.xml, php/sixel/manual/manual.xml.in,
+  php/sixel/manual/sixel/configure.xml, php/sixel/manual/sixel/constants.xml,
+  php/sixel/manual/sixel/ini.xml, php/sixel/manual/sixel/reference.xml,
+  php/sixel/package.xml, php/sixel/package2.xml, php/sixel/php_sixel.h,
+  php/sixel/sixel.c, php/sixel/sixel.dsp, php/sixel/sixel.xml,
+  php/sixel/tests/SixelEncoder____construct.phpt,
+  php/sixel/tests/SixelEncoder____destruct.phpt,
+  .../tests/SixelEncoder__sixel_easy_encode.phpt,
+  .../SixelEncoder__sixel_easy_encode_setopt.phpt: Add php extension
+
+2015-05-10  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.in, configure, configure.ac, converters/Makefile.in,
+  include/Makefile.in, ltmain.sh, m4/libtool.m4, m4/ltoptions.m4,
+  m4/ltsugar.m4, m4/ltversion.m4, m4/lt~obsolete.m4, package.json,
+  src/Makefile.in: Update package version and libtool version
+
+  * Makefile.in, configure, configure.ac, converters/Makefile.in,
+  include/Makefile.in, ltmain.sh, m4/libtool.m4, m4/ltoptions.m4,
+  m4/ltsugar.m4, m4/ltversion.m4, m4/lt~obsolete.m4, src/Makefile.in: Update
+  package version and libtool version
+
+  * src/easy_encode.c: Fix segmentation errors around evaluating cancel_flag
+
+2015-05-06  Hayaki Saito <user@zuse.jp>
+
+  * src/fromgif.c: Add missing memset() initialization of the structure
+  stbi__gif (for Issue #42, reported by @msmhrt)
+
+2015-05-05  Hayaki Saito <user@zuse.jp>
+
+  * src/Makefile.am, src/Makefile.in, src/loader.c: Use built-in gif loader
+
+  * src/easy_encode.c, src/loader.c: Minor fixes
+
+  * src/fromgif.c, src/fromgif.h: Add new file fromgif.{c,h}
+
+2015-05-04  Hayaki Saito <user@zuse.jp>
+
+  * src/easy_encode.c: Emit CAN(\x18) when received signals
+
+  * src/easy_encode.c: Minor fix around auto-scrolling
+
+  * src/easy_encode.c: Fix a memory leak
+
+2015-05-02  Hayaki Saito <user@zuse.jp>
+
+  * python/libsixel.py: Rename python class names
+
+  * src/easy_encode.c: Suppress a gcc warning [-Werror=unused-variable]
+
+  * src/easy_decode.c, src/easy_decode.h: Add missing files,
+  src/easy_decode.{c,h}
+
+  * src/loader.c: Respect fuse_palette flag when decoding GIF images
+
+2015-04-30  Hayaki Saito <user@zuse.jp>
+
+  * python/libsixel.py, python/sample1.py: Add ctypes(ffi) python binding
+  examples
+
+  * src/easy_encode.c: Minor fixes
+
+  * src/loader.c: Fix leak around playing GIF animation
+
+  * src/frame.c: Resize PAL8 formatted pixel buffer correctly
+
+  * src/easy_encode.c: Strip unused code around resize/crop
+
+  * src/easy_encode.c: Minor fix
+
+  * src/easy_encode.c: Allow NULL as 2nd argument in sixel_easy_encode()
+
+  * converters/sixel2png.c, include/sixel.h.in: Abolish cancel_flag argument of
+  sixel_easy_decode()
+
+  * src/easy_encode.c: Allow NULL as cancel_flag argument in
+  sixel_easy_encode()
+
+  * converters/sixel2png.c, include/sixel.h.in, src/Makefile.am,
+  src/Makefile.in, src/easy_encode.c, src/easy_encode.h: Add easy decode API
+  set
+
+  * converters/Makefile.am, converters/Makefile.in, converters/img2sixel.c,
+  include/sixel.h.in, src/Makefile.am, src/Makefile.in, src/easy_encode.c,
+  src/easy_encode.h, src/frame.c, src/frame.h: Add easy converter API set
+
+2015-04-29  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Clean up
+
+  * src/loader.c: Load paletted PNG with keycolor (for Issue #28)
+
+  * include/sixel.h.in, src/loader.c: Cleanup
+
+  * converters/img2sixel.c, include/sixel.h.in, src/frame.c, src/frame.h: Minor
+  fixes
+
+  * converters/img2sixel.c, include/sixel.h.in, src/Makefile.am,
+  src/Makefile.in, src/loader.c: Introduce frame API
+
+  * src/frame.c, src/frame.h: Add frame.c/frame.h
+
+  * include/sixel.h.in: Add reference counter to struct sixel_frame_t
+
+2015-04-28  Hayaki Saito <user@zuse.jp>
+
+  * libsixel.pc.in: Strip -lsixel-imageio from libsixel.pc
+
+2015-04-26  Hayaki Saito <user@zuse.jp>
+
+  * src/loader.c: Respect -B option regarding with GIF images with transparent
+  index (for Issue #25)
+
+  * src/loader.c: Prevent segmentation fault when receiving SIGINT during
+  playing gif animation
+
+  * converters/img2sixel.c: Handle SIGINT correctly
+
+2015-04-25  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Minor fix
+
+  * src/tosixel.c: Don't output palette definition of the keycolor
+
+  * src/loader.c: Set default transparent color index in with_load_gdkpixbuf()
+  and load_with_gd()
+
+  * converters/img2sixel.c, src/loader.c: Pass the keycolor of gif to the
+  encoder by using sixel_dither_set_transpaernt()
+
+  * include/sixel.h.in, src/dither.c: Add new API:
+  sixel_dither_set_transparent()
+
+  * include/sixel.h.in, src/loader.c: Retrieve transparent color index from gif
+
+2015-04-22  Hayaki Saito <user@zuse.jp>
+
+  * src/loader.c: Convert PIXELFORMAT_ARGB8888 into PIXELFORMAT_RGB888 in
+  sixel_strip_alpha()
+
+2015-04-19  Hayaki Saito <user@zuse.jp>
+
+  * src/loader.c, src/stb_image.h: Load gif as PAL8 pixelformat
+
+2015-04-13  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Fix a gcc warning (unused parameter)
+
+  * Makefile.in, converters/img2sixel.c: Set timeout on waiting CPR response
+
+  * config.h.in, configure, configure.ac, converters/img2sixel.c: Check the
+  availability of isatty(), termios.h, sys/ioctl.h
+
+  * converters/img2sixel.c: Scroll the terminal on demand when playing gif
+  animation
+
+2015-04-12  Hayaki Saito <saitoha@me.com>
+
+  * converters/img2sixel.c, include/sixel.h.in, src/loader.c, src/stb_image.h:
+  Detect if the image has multi-frames by builtin gif loader
+
+  * converters/img2sixel.c, src/loader.c: Fix a double free error in gdk-pixbuf
+  loader
+
+  * src/loader.c: Minor fix
+
+  * src/loader.c: Suppress a GCC warning when specified --with-gdk-pixbuf2
+  configure option
+
+  * converters/img2sixel.c, src/pixelformat.c: Fix broken
+  sixel_helper_normalize_pixelforma(), return dst_pixelformat correctly
+
+2015-04-11  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Fix a memory leak found in cropping routine
+
+  * converters/img2sixel.c: Fix a segmentation error occurs when resizing
+
+  * src/loader.c: Suppress GCC warnings
+
+  * src/loader.c: Support callback loader API with libgd loader
+
+  * src/loader.c: Support callback loader API with gdk-pixbuf loader
+
+2015-04-09  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Implement macro invocation with callback
+
+  * converters/img2sixel.c, include/sixel.h.in, src/loader.c: Fix loop control
+  without macro
+
+  * converters/img2sixel.c, include/sixel.h.in, src/loader.c: Fix broken
+  animation without macro
+
+  * converters/Makefile.am, converters/Makefile.in: Update tests
+
 2015-04-05  Hayaki Saito <user@zuse.jp>
+
+  * converters/stb_image.h: Fix an existing bug in stb_image v1.41 of building
+  color palette, reported by @msmhrt (for Issue #41)
+
+  * converters/img2sixel.c: Don't use fuse_palette flag when using fixed
+  palette
+
+  * converters/img2sixel.c, include/sixel.h.in, src/loader.c: Load image frame
+  with callback function (on progress)
 
   * Makefile.in, configure, configure.ac, converters/Makefile.am,
   converters/Makefile.in, include/Makefile.in, src/Makefile.in: Add tests for
@@ -423,6 +844,10 @@
 
   * src/quant.c: Correct wrong histgram processing (for Issue #26)
 
+2015-02-05  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.in, converters/Makefile.am, converters/Makefile.in: Minor fixes
+
 2015-02-04  Hayaki Saito <user@zuse.jp>
 
   * converters/loader.c, converters/stb_image.h,
@@ -435,6 +860,9 @@
   * examples/opengl/README.md: Add README of OpenGL example
 
   * examples/opengl/main.c: Minor fix
+
+  * converters/Makefile.am, converters/Makefile.in: Add converters/unittest.log
+  to clean targets
 
   * Makefile.in, configure, configure.ac: Detect availabilies for GD functions
   correctly if gd.h is not in default include path
@@ -558,7 +986,17 @@
   * converters/img2sixel.c, converters/scale.c, converters/scale.h: Cleanup
   scale.c
 
+2014-12-28  Hayaki Saito <user@zuse.jp>
+
+  * converters/tests.c: Add missing tests.c
+
+  * .travis.yml, Makefile.am, Makefile.in, converters/Makefile.am,
+  converters/Makefile.in, src/dither.c, src/dither.h: Add basic tests of
+  dither.c
+
 2014-12-26  Hayaki Saito <user@zuse.jp>
+
+  * config.h.in, configure, configure.ac: Add --enable-tests configure option
 
   * converters/img2sixel.c: Minor style improvement
 
@@ -651,7 +1089,22 @@
 
   * src/tosixel.c: Move a long case statement to a new function
 
+  * converters/loader.c: Suppress a clang warning: -Wunused-parameter
+
   * NEWS: Update NEWS
+
+2014-12-04  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Fix a stupid typo
+
+  * README.md, converters/Makefile.am, converters/Makefile.in,
+  converters/img2sixel.1, converters/img2sixel.c, converters/loader.c,
+  converters/loader.h, converters/shell-completion/bash/img2sixel,
+  converters/shell-completion/zsh/_img2sixel: Introduce -k, --insecure option
+  for libcurl integration
+
+  * converters/Makefile.am, converters/Makefile.in: Add test for SSL access
+  with libcurl
 
 2014-12-03  OBATA Akio <obata@lins.jp>
 
