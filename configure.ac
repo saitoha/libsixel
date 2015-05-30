@@ -560,6 +560,8 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  include/Makefile
                  converters/Makefile
+                 tools/Makefile
+                 tools/libsixel-config
                  python/Makefile
                 ])
 
