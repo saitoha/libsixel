@@ -1,0 +1,13 @@
+
+How to Build
+============
+
+$ perl Build.PL
+$ ./Build
+
+
+Install
+=======
+
+$ ./Build test
+$ ./Build install
