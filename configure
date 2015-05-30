@@ -1483,7 +1483,7 @@ Optional Features:
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-img2sixel     whether to build img2sixel (default: yes)
   --disable-sixel2png     whether to build sixel2png (default: yes)
-  --enable-sixel2png      Python bindings (default: yes)
+  --enable-python         Python interface (default: yes)
   --enable-debug          Use debug macro and specific CFLAGS
   --enable-gcov           Use gcov
   --enable-tests          Build tests
@@ -15420,7 +15420,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile python/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile tools/Makefile tools/libsixel-config python/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -16485,6 +16485,8 @@ do
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
     "converters/Makefile") CONFIG_FILES="$CONFIG_FILES converters/Makefile" ;;
+    "tools/Makefile") CONFIG_FILES="$CONFIG_FILES tools/Makefile" ;;
+    "tools/libsixel-config") CONFIG_FILES="$CONFIG_FILES tools/libsixel-config" ;;
     "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;

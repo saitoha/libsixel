@@ -999,7 +999,7 @@ sixel_encoder_setopt(
             goto argerr;
         }
         if (strcmp(optarg, "-") != 0) {
-            if (encoder->outfd) {
+            if (encoder->outfd && encoder->outfd != STDOUT_FILENO) {
                 close(encoder->outfd);
             }
             encoder->outfd = open(optarg,
