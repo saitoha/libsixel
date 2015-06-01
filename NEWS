@@ -1,4 +1,17 @@
                   ------------------------------
+                   What's new in libsixel-1.5 ?
+                  ------------------------------
+* img2sixel: Add -B(--bgcolor) option.
+
+* core: introduce new API for dither object, sixel_dither_set_transparent().
+
+* core: Improve processing quality of loading paletted PNG images.
+
+* core: Improve processing quality and performance of loading GIF images.
+
+* core: Add more high level APIs
+
+                  ------------------------------
                    What's new in libsixel-1.4 ?
                   ------------------------------
 * core: SIXEL encoder supports various pixel formats(thanks to @uobikiemukot).
