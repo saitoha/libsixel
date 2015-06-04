@@ -1083,6 +1083,9 @@ load_with_gdkpixbuf(
     sixel_frame_t *frame;
     int stride;
     int ret = SIXEL_FAILED;
+    unsigned char *p;
+    int i;
+    int depth;
 
     (void) fuse_palette;
     (void) reqcolors;
@@ -1113,13 +1116,25 @@ load_with_gdkpixbuf(
         if (frame->pixels == NULL) {
             goto end;
         }
-        memcpy(frame->pixels, gdk_pixbuf_get_pixels(pixbuf),
-               frame->height * stride);
         if (gdk_pixbuf_get_has_alpha(pixbuf)) {
             frame->pixelformat = PIXELFORMAT_RGBA8888;
+            depth = 4;
         } else {
             frame->pixelformat = PIXELFORMAT_RGB888;
+            depth = 3;
         }
+        p = gdk_pixbuf_get_pixels(pixbuf);
+        if (stride == frame->width * depth) {
+            memcpy(frame->pixels, gdk_pixbuf_get_pixels(pixbuf),
+                   frame->height * stride);
+        } else {
+            for (i = 0; i < frame->height; ++i) {
+                memcpy(frame->pixels + frame->width * depth * i,
+                       p + stride * frame->height * i,
+                       frame->width * depth);
+            }
+        }
+
         ret = fn_load(frame, context);
         if (ret != SIXEL_SUCCESS) {
             goto end;
@@ -1146,12 +1161,23 @@ load_with_gdkpixbuf(
                 if (frame->pixels == NULL) {
                     goto end;
                 }
-                memcpy(frame->pixels, gdk_pixbuf_get_pixels(pixbuf),
-                       frame->height * stride);
                 if (gdk_pixbuf_get_has_alpha(pixbuf)) {
                     frame->pixelformat = PIXELFORMAT_RGBA8888;
+                    depth = 4;
                 } else {
                     frame->pixelformat = PIXELFORMAT_RGB888;
+                    depth = 3;
+                }
+                p = gdk_pixbuf_get_pixels(pixbuf);
+                if (stride == frame->width * depth) {
+                    memcpy(frame->pixels, gdk_pixbuf_get_pixels(pixbuf),
+                           frame->height * stride);
+                } else {
+                    for (i = 0; i < frame->height; ++i) {
+                        memcpy(frame->pixels + frame->width * depth * i,
+                               p + stride * frame->height * i,
+                               frame->width * depth);
+                    }
                 }
                 frame->multiframe = 1;
                 gdk_pixbuf_animation_iter_advance(it, &time);
