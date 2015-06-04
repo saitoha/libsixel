@@ -750,6 +750,7 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
     GdkPixbufAnimation *animation;
     unsigned char *pixels = NULL;
     unsigned char *p;
+    unsigned char *cursor;
     GdkPixbufLoader *loader;
     chunk_t frames;
     chunk_t delays;
@@ -779,7 +780,13 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
         *pcomp = gdk_pixbuf_get_has_alpha(pixbuf) ? 4: 3;
         *pstride = gdk_pixbuf_get_rowstride(pixbuf);
         *pframe_count = 1;
-        memory_write((void *)p, 1, *psx * *psy * *pcomp, (void *)&frames);
+        if (*pstride == *psx * *pcomp) {
+            memory_write((void *)p, 1, *psy * *pstride, (void *)&frames);
+        } else {
+            for (cursor = p; cursor < p + *pstride * *psy; cursor += *pstride) {
+                memory_write((void *)cursor, 1, *psx * *pcomp, (void *)&frames);
+            }
+        }
         pixels = frames.buffer;
     } else {
         chunk_init(&delays, 1024);
@@ -801,7 +808,13 @@ load_with_gdkpixbuf(chunk_t const *pchunk, int *psx, int *psy,
             *psy = gdk_pixbuf_get_height(pixbuf);
             *pcomp = gdk_pixbuf_get_has_alpha(pixbuf) ? 4: 3;
             *pstride = gdk_pixbuf_get_rowstride(pixbuf);
-            memory_write((void *)p, 1, *psx * *psy * *pcomp, (void *)&frames);
+            if (*pstride == *psx * *pcomp) {
+                memory_write((void *)p, 1, *psy * *pstride, (void *)&frames);
+            } else {
+                for (cursor = p; cursor < p + *pstride * *psy; cursor += *pstride) {
+                    memory_write((void *)cursor, 1, *psx * *pcomp, (void *)&frames);
+                }
+            }
             delay /= 10;
             memory_write((void *)&delay, sizeof(delay), 1, (void *)&delays);
             ++*pframe_count;
