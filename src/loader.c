@@ -1130,7 +1130,7 @@ load_with_gdkpixbuf(
         } else {
             for (i = 0; i < frame->height; ++i) {
                 memcpy(frame->pixels + frame->width * depth * i,
-                       p + stride * frame->height * i,
+                       p + stride * i,
                        frame->width * depth);
             }
         }
@@ -1175,7 +1175,7 @@ load_with_gdkpixbuf(
                 } else {
                     for (i = 0; i < frame->height; ++i) {
                         memcpy(frame->pixels + frame->width * depth * i,
-                               p + stride * frame->height * i,
+                               p + stride * i,
                                frame->width * depth);
                     }
                 }
