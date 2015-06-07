@@ -1,6 +1,6 @@
 # NAME
 
-Image::Sixel - The Perl interface for libsixel
+Image::Sixel - The Perl interface for libsixel (A lightweight, fast implementation of DEC SIXEL graphics codec)
 
 # SYNOPSIS
 
@@ -24,7 +24,7 @@ $decoder->decode();
 
 # DESCRIPTION
 
-This perl module privides wrapper interfaces for a part of libsixel functions.
+This perl module provides wrapper objects for part of [libsixel](http://saitoha.github.io/libsixel/) interface.
 
 
 # LICENSE
@@ -51,5 +51,5 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 # AUTHOR
 
-Hayaki Saito <user@zuse.jp>
+Hayaki Saito <saitoha@me.com>
 
