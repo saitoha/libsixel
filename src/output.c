@@ -37,7 +37,7 @@ sixel_output_create(sixel_write_function fn_write, void *priv)
         output->has_8bit_control = 0;
         output->has_sdm_glitch = 0;
         output->skip_dcs_envelope = 0;
-        output->palette_type = PALETTETYPE_AUTO;
+        output->palette_type = SIXEL_PALETTETYPE_AUTO;
         output->fn_write = fn_write;
         output->save_pixel = 0;
         output->save_count = 0;
@@ -47,7 +47,7 @@ sixel_output_create(sixel_write_function fn_write, void *priv)
         output->priv = priv;
         output->pos = 0;
         output->penetrate_multiplexer = 0;
-        output->encode_policy = ENCODEPOLICY_AUTO;
+        output->encode_policy = SIXEL_ENCODEPOLICY_AUTO;
     }
 
     return output;

@@ -225,9 +225,9 @@ prepare_monochrome_palette(int finvert)
     sixel_dither_t *dither;
 
     if (finvert) {
-        dither = sixel_dither_get(BUILTIN_MONO_LIGHT);
+        dither = sixel_dither_get(SIXEL_BUILTIN_MONO_LIGHT);
     } else {
-        dither = sixel_dither_get(BUILTIN_MONO_DARK);
+        dither = sixel_dither_get(SIXEL_BUILTIN_MONO_DARK);
     }
     if (dither == NULL) {
         return NULL;
@@ -267,10 +267,10 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
     callback_context = (sixel_callback_context_for_mapfile_t *)data;
 
     switch (sixel_frame_get_pixelformat(frame)) {
-    case PIXELFORMAT_PAL1:
-    case PIXELFORMAT_PAL2:
-    case PIXELFORMAT_PAL4:
-    case PIXELFORMAT_PAL8:
+    case SIXEL_PIXELFORMAT_PAL1:
+    case SIXEL_PIXELFORMAT_PAL2:
+    case SIXEL_PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_PAL8:
         if (sixel_frame_get_palette(frame) == NULL) {
             goto end;
         }
@@ -293,9 +293,9 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
                                       sixel_frame_get_width(frame),
                                       sixel_frame_get_height(frame),
                                       sixel_frame_get_pixelformat(frame),
-                                      LARGE_NORM,
-                                      REP_CENTER_BOX,
-                                      QUALITY_HIGH);
+                                      SIXEL_LARGE_NORM,
+                                      SIXEL_REP_CENTER_BOX,
+                                      SIXEL_QUALITY_HIGH);
         if (ret != 0) {
             sixel_dither_unref(callback_context->dither);
             goto end;
@@ -328,7 +328,7 @@ prepare_specified_palette(
                                        1,   /* fuse_palette */
                                        256, /* reqcolors */
                                        bgcolor,
-                                       LOOP_DISABLE,
+                                       SIXEL_LOOP_DISABLE,
                                        load_image_callback_for_palette,
                                        finsecure,
                                        cancel_flag,
@@ -374,7 +374,8 @@ prepare_palette(sixel_dither_t *former_dither,
             return former_dither;
         }
         dither = prepare_builtin_palette(encoder->builtin_palette);
-    } else if (sixel_frame_get_palette(frame) && (sixel_frame_get_pixelformat(frame) & FORMATTYPE_PALETTE)) {
+    } else if (sixel_frame_get_palette(frame) &&
+               (sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_PALETTE)) {
         dither = sixel_dither_create(sixel_frame_get_ncolors(frame));
         if (!dither) {
             return NULL;
@@ -384,7 +385,7 @@ prepare_palette(sixel_dither_t *former_dither,
         if (sixel_frame_get_transparent(frame) != (-1)) {
             sixel_dither_set_transparent(dither, sixel_frame_get_transparent(frame));
         }
-    } else if (sixel_frame_get_pixelformat(frame) == PIXELFORMAT_G8) {
+    } else if (sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_G8) {
         dither = sixel_dither_create(-1);
         sixel_dither_set_pixelformat(dither, sixel_frame_get_pixelformat(frame));
     } else {
@@ -409,7 +410,7 @@ prepare_palette(sixel_dither_t *former_dither,
         }
         histogram_colors = sixel_dither_get_num_of_histogram_colors(dither);
         if (histogram_colors <= encoder->reqcolors) {
-            encoder->method_for_diffuse = DIFFUSE_NONE;
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_NONE;
         }
         sixel_dither_set_pixelformat(dither, sixel_frame_get_pixelformat(frame));
     }
@@ -789,7 +790,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
 
     /* evaluate -v option: print palette */
     if (encoder->verbose) {
-        if (!(sixel_frame_get_pixelformat(frame) & FORMATTYPE_GRAYSCALE)) {
+        if (!(sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_GRAYSCALE)) {
             print_palette(dither);
         }
     }
@@ -899,13 +900,13 @@ sixel_encoder_create(void)
     encoder->monochrome            = 0;
     encoder->highcolor             = 0;
     encoder->builtin_palette       = 0;
-    encoder->method_for_diffuse    = DIFFUSE_AUTO;
-    encoder->method_for_largest    = LARGE_AUTO;
-    encoder->method_for_rep        = REP_AUTO;
-    encoder->quality_mode          = QUALITY_AUTO;
-    encoder->method_for_resampling = RES_BILINEAR;
-    encoder->loop_mode             = LOOP_AUTO;
-    encoder->palette_type          = PALETTETYPE_AUTO;
+    encoder->method_for_diffuse    = SIXEL_DIFFUSE_AUTO;
+    encoder->method_for_largest    = SIXEL_LARGE_AUTO;
+    encoder->method_for_rep        = SIXEL_REP_AUTO;
+    encoder->quality_mode          = SIXEL_QUALITY_AUTO;
+    encoder->method_for_resampling = SIXEL_RES_BILINEAR;
+    encoder->loop_mode             = SIXEL_LOOP_AUTO;
+    encoder->palette_type          = SIXEL_PALETTETYPE_AUTO;
     encoder->f8bit                 = 0;
     encoder->finvert               = 0;
     encoder->fuse_macro            = 0;
@@ -924,7 +925,7 @@ sixel_encoder_create(void)
     encoder->macro_number          = -1;
     encoder->verbose               = 0;
     encoder->penetrate_multiplexer = 0;
-    encoder->encode_policy         = ENCODEPOLICY_AUTO;
+    encoder->encode_policy         = SIXEL_ENCODEPOLICY_AUTO;
     encoder->pipe_mode             = 0;
     encoder->bgcolor               = NULL;
     encoder->outfd                 = STDOUT_FILENO;
@@ -1030,13 +1031,13 @@ sixel_encoder_setopt(
         break;
     case 'b':
         if (strcmp(optarg, "xterm16") == 0) {
-            encoder->builtin_palette = BUILTIN_XTERM16;
+            encoder->builtin_palette = SIXEL_BUILTIN_XTERM16;
         } else if (strcmp(optarg, "xterm256") == 0) {
-            encoder->builtin_palette = BUILTIN_XTERM256;
+            encoder->builtin_palette = SIXEL_BUILTIN_XTERM256;
         } else if (strcmp(optarg, "vt340mono") == 0) {
-            encoder->builtin_palette = BUILTIN_VT340_MONO;
+            encoder->builtin_palette = SIXEL_BUILTIN_VT340_MONO;
         } else if (strcmp(optarg, "vt340color") == 0) {
-            encoder->builtin_palette = BUILTIN_VT340_COLOR;
+            encoder->builtin_palette = SIXEL_BUILTIN_VT340_COLOR;
         } else {
             fprintf(stderr,
                     "Cannot parse builtin palette option.\n");
@@ -1046,19 +1047,19 @@ sixel_encoder_setopt(
     case 'd':
         /* parse --diffusion option */
         if (strcmp(optarg, "auto") == 0) {
-            encoder->method_for_diffuse = DIFFUSE_AUTO;
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_AUTO;
         } else if (strcmp(optarg, "none") == 0) {
-            encoder->method_for_diffuse = DIFFUSE_NONE;
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_NONE;
         } else if (strcmp(optarg, "fs") == 0) {
-            encoder->method_for_diffuse = DIFFUSE_FS;
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_FS;
         } else if (strcmp(optarg, "atkinson") == 0) {
-            encoder->method_for_diffuse = DIFFUSE_ATKINSON;
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_ATKINSON;
         } else if (strcmp(optarg, "jajuni") == 0) {
-            encoder->method_for_diffuse = DIFFUSE_JAJUNI;
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_JAJUNI;
         } else if (strcmp(optarg, "stucki") == 0) {
-            encoder->method_for_diffuse = DIFFUSE_STUCKI;
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_STUCKI;
         } else if (strcmp(optarg, "burkes") == 0) {
-            encoder->method_for_diffuse = DIFFUSE_BURKES;
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_BURKES;
         } else {
             fprintf(stderr,
                     "Diffusion method '%s' is not supported.\n",
@@ -1070,11 +1071,11 @@ sixel_encoder_setopt(
         /* parse --find-largest option */
         if (optarg) {
             if (strcmp(optarg, "auto") == 0) {
-                encoder->method_for_largest = LARGE_AUTO;
+                encoder->method_for_largest = SIXEL_LARGE_AUTO;
             } else if (strcmp(optarg, "norm") == 0) {
-                encoder->method_for_largest = LARGE_NORM;
+                encoder->method_for_largest = SIXEL_LARGE_NORM;
             } else if (strcmp(optarg, "lum") == 0) {
-                encoder->method_for_largest = LARGE_LUM;
+                encoder->method_for_largest = SIXEL_LARGE_LUM;
             } else {
                 fprintf(stderr,
                         "Finding method '%s' is not supported.\n",
@@ -1086,14 +1087,14 @@ sixel_encoder_setopt(
     case 's':
         /* parse --select-color option */
         if (strcmp(optarg, "auto") == 0) {
-            encoder->method_for_rep = REP_AUTO;
+            encoder->method_for_rep = SIXEL_REP_AUTO;
         } else if (strcmp(optarg, "center") == 0) {
-            encoder->method_for_rep = REP_CENTER_BOX;
+            encoder->method_for_rep = SIXEL_REP_CENTER_BOX;
         } else if (strcmp(optarg, "average") == 0) {
-            encoder->method_for_rep = REP_AVERAGE_COLORS;
+            encoder->method_for_rep = SIXEL_REP_AVERAGE_COLORS;
         } else if ((strcmp(optarg, "histogram") == 0) ||
                    (strcmp(optarg, "histgram") == 0)) {
-            encoder->method_for_rep = REP_AVERAGE_PIXELS;
+            encoder->method_for_rep = SIXEL_REP_AVERAGE_PIXELS;
         } else {
             fprintf(stderr,
                     "Finding method '%s' is not supported.\n",
@@ -1159,25 +1160,25 @@ sixel_encoder_setopt(
     case 'r':
         /* parse --resampling option */
         if (strcmp(optarg, "nearest") == 0) {
-            encoder->method_for_resampling = RES_NEAREST;
+            encoder->method_for_resampling = SIXEL_RES_NEAREST;
         } else if (strcmp(optarg, "gaussian") == 0) {
-            encoder->method_for_resampling = RES_GAUSSIAN;
+            encoder->method_for_resampling = SIXEL_RES_GAUSSIAN;
         } else if (strcmp(optarg, "hanning") == 0) {
-            encoder->method_for_resampling = RES_HANNING;
+            encoder->method_for_resampling = SIXEL_RES_HANNING;
         } else if (strcmp(optarg, "hamming") == 0) {
-            encoder->method_for_resampling = RES_HAMMING;
+            encoder->method_for_resampling = SIXEL_RES_HAMMING;
         } else if (strcmp(optarg, "bilinear") == 0) {
-            encoder->method_for_resampling = RES_BILINEAR;
+            encoder->method_for_resampling = SIXEL_RES_BILINEAR;
         } else if (strcmp(optarg, "welsh") == 0) {
-            encoder->method_for_resampling = RES_WELSH;
+            encoder->method_for_resampling = SIXEL_RES_WELSH;
         } else if (strcmp(optarg, "bicubic") == 0) {
-            encoder->method_for_resampling = RES_BICUBIC;
+            encoder->method_for_resampling = SIXEL_RES_BICUBIC;
         } else if (strcmp(optarg, "lanczos2") == 0) {
-            encoder->method_for_resampling = RES_LANCZOS2;
+            encoder->method_for_resampling = SIXEL_RES_LANCZOS2;
         } else if (strcmp(optarg, "lanczos3") == 0) {
-            encoder->method_for_resampling = RES_LANCZOS3;
+            encoder->method_for_resampling = SIXEL_RES_LANCZOS3;
         } else if (strcmp(optarg, "lanczos4") == 0) {
-            encoder->method_for_resampling = RES_LANCZOS4;
+            encoder->method_for_resampling = SIXEL_RES_LANCZOS4;
         } else {
             fprintf(stderr,
                     "Resampling method '%s' is not supported.\n",
@@ -1188,13 +1189,13 @@ sixel_encoder_setopt(
     case 'q':
         /* parse --quality option */
         if (strcmp(optarg, "auto") == 0) {
-            encoder->quality_mode = QUALITY_AUTO;
+            encoder->quality_mode = SIXEL_QUALITY_AUTO;
         } else if (strcmp(optarg, "high") == 0) {
-            encoder->quality_mode = QUALITY_HIGH;
+            encoder->quality_mode = SIXEL_QUALITY_HIGH;
         } else if (strcmp(optarg, "low") == 0) {
-            encoder->quality_mode = QUALITY_LOW;
+            encoder->quality_mode = SIXEL_QUALITY_LOW;
         } else if (strcmp(optarg, "full") == 0) {
-            encoder->quality_mode = QUALITY_FULL;
+            encoder->quality_mode = SIXEL_QUALITY_FULL;
         } else {
             fprintf(stderr,
                     "Cannot parse quality option.\n");
@@ -1204,11 +1205,11 @@ sixel_encoder_setopt(
     case 'l':
         /* parse --loop-control option */
         if (strcmp(optarg, "auto") == 0) {
-            encoder->loop_mode = LOOP_AUTO;
+            encoder->loop_mode = SIXEL_LOOP_AUTO;
         } else if (strcmp(optarg, "force") == 0) {
-            encoder->loop_mode = LOOP_FORCE;
+            encoder->loop_mode = SIXEL_LOOP_FORCE;
         } else if (strcmp(optarg, "disable") == 0) {
-            encoder->loop_mode = LOOP_DISABLE;
+            encoder->loop_mode = SIXEL_LOOP_DISABLE;
         } else {
             fprintf(stderr,
                     "Cannot parse loop-control option.\n");
@@ -1218,11 +1219,11 @@ sixel_encoder_setopt(
     case 't':
         /* parse --palette-type option */
         if (strcmp(optarg, "auto") == 0) {
-            encoder->palette_type = PALETTETYPE_AUTO;
+            encoder->palette_type = SIXEL_PALETTETYPE_AUTO;
         } else if (strcmp(optarg, "hls") == 0) {
-            encoder->palette_type = PALETTETYPE_HLS;
+            encoder->palette_type = SIXEL_PALETTETYPE_HLS;
         } else if (strcmp(optarg, "rgb") == 0) {
-            encoder->palette_type = PALETTETYPE_RGB;
+            encoder->palette_type = SIXEL_PALETTETYPE_RGB;
         } else {
             fprintf(stderr,
                     "Cannot parse palette type option.\n");
@@ -1235,7 +1236,7 @@ sixel_encoder_setopt(
             free(encoder->bgcolor);
         }
         if (parse_x_colorspec(optarg, &encoder->bgcolor) == 0) {
-            encoder->palette_type = PALETTETYPE_AUTO;
+            encoder->palette_type = SIXEL_PALETTETYPE_AUTO;
         } else {
             fprintf(stderr,
                     "Cannot parse bgcolor option.\n");
@@ -1271,11 +1272,11 @@ sixel_encoder_setopt(
         break;
     case 'E':
         if (strcmp(optarg, "auto") == 0) {
-            encoder->encode_policy = ENCODEPOLICY_AUTO;
+            encoder->encode_policy = SIXEL_ENCODEPOLICY_AUTO;
         } else if (strcmp(optarg, "fast") == 0) {
-            encoder->encode_policy = ENCODEPOLICY_FAST;
+            encoder->encode_policy = SIXEL_ENCODEPOLICY_FAST;
         } else if (strcmp(optarg, "size") == 0) {
-            encoder->encode_policy = ENCODEPOLICY_SIZE;
+            encoder->encode_policy = SIXEL_ENCODEPOLICY_SIZE;
         } else {
             fprintf(stderr,
                     "Cannot parse encode policy option.\n");
@@ -1387,8 +1388,8 @@ sixel_encoder_encode(
         encoder->reqcolors = 2;
     }
 
-    if (encoder->palette_type == PALETTETYPE_AUTO) {
-        encoder->palette_type = PALETTETYPE_RGB;
+    if (encoder->palette_type == SIXEL_PALETTETYPE_AUTO) {
+        encoder->palette_type = SIXEL_PALETTETYPE_RGB;
     }
 
     if (encoder->mapfile) {

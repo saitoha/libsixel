@@ -221,7 +221,7 @@ init_gif_frame(
         return (-1);
     }
     if (frame->ncolors <= reqcolors && fuse_palette) {
-        frame->pixelformat = PIXELFORMAT_PAL8;
+        frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
         free(frame->pixels);
         frame->pixels = malloc(frame->width * frame->height);
         memcpy(frame->pixels, pg->out, frame->width * frame->height);
@@ -253,7 +253,7 @@ init_gif_frame(
             }
         }
     } else {
-        frame->pixelformat = PIXELFORMAT_RGB888;
+        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
         frame->pixels = malloc(pg->w * pg->h * 3);
         for (i = 0; i < pg->w * pg->h; ++i) {
             frame->pixels[i * 3 + 0] = pg->color_table[pg->out[i] * 3 + 2];
@@ -608,10 +608,10 @@ load_gif(
         if (g.loop_count == (-1)) {
             break;
         }
-        if (loop_control == LOOP_DISABLE || frame->frame_no == 1) {
+        if (loop_control == SIXEL_LOOP_DISABLE || frame->frame_no == 1) {
             break;
         }
-        if (loop_control == LOOP_AUTO && frame->loop_count == g.loop_count) {
+        if (loop_control == SIXEL_LOOP_AUTO && frame->loop_count == g.loop_count) {
             break;
         }
     }

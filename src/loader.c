@@ -368,7 +368,7 @@ load_jpeg(unsigned char *data,
         goto end;
     }
 
-    *ppixelformat = PIXELFORMAT_RGB888;
+    *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
     *pwidth = cinfo.output_width;
     *pheight = cinfo.output_height;
 
@@ -546,7 +546,7 @@ load_png(unsigned char *buffer,
                                PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
             png_set_palette_to_rgb(png_ptr);
             png_set_strip_alpha(png_ptr);
-            *pixelformat = PIXELFORMAT_RGB888;
+            *pixelformat = SIXEL_PIXELFORMAT_RGB888;
         } else {
             switch (bitdepth) {
             case 1:
@@ -556,7 +556,7 @@ load_png(unsigned char *buffer,
                 }
                 read_palette(png_ptr, info_ptr, *ppalette,
                              *pncolors, png_palette, &background, transparent);
-                *pixelformat = PIXELFORMAT_PAL1;
+                *pixelformat = SIXEL_PIXELFORMAT_PAL1;
                 break;
             case 2:
                 *ppalette = malloc(*pncolors * 3);
@@ -565,7 +565,7 @@ load_png(unsigned char *buffer,
                 }
                 read_palette(png_ptr, info_ptr, *ppalette,
                              *pncolors, png_palette, &background, transparent);
-                *pixelformat = PIXELFORMAT_PAL2;
+                *pixelformat = SIXEL_PIXELFORMAT_PAL2;
                 break;
             case 4:
                 *ppalette = malloc(*pncolors * 3);
@@ -574,7 +574,7 @@ load_png(unsigned char *buffer,
                 }
                 read_palette(png_ptr, info_ptr, *ppalette,
                              *pncolors, png_palette, &background, transparent);
-                *pixelformat = PIXELFORMAT_PAL4;
+                *pixelformat = SIXEL_PIXELFORMAT_PAL4;
                 break;
             case 8:
                 *ppalette = malloc(*pncolors * 3);
@@ -583,13 +583,13 @@ load_png(unsigned char *buffer,
                 }
                 read_palette(png_ptr, info_ptr, *ppalette,
                              *pncolors, png_palette, &background, transparent);
-                *pixelformat = PIXELFORMAT_PAL8;
+                *pixelformat = SIXEL_PIXELFORMAT_PAL8;
                 break;
             default:
                 png_set_background(png_ptr, &background,
                                    PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
                 png_set_palette_to_rgb(png_ptr);
-                *pixelformat = PIXELFORMAT_RGB888;
+                *pixelformat = SIXEL_PIXELFORMAT_RGB888;
                 break;
             }
         }
@@ -608,7 +608,7 @@ load_png(unsigned char *buffer,
             png_set_background(png_ptr, &background,
                                PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
             png_set_gray_to_rgb(png_ptr);
-            *pixelformat = PIXELFORMAT_RGB888;
+            *pixelformat = SIXEL_PIXELFORMAT_RGB888;
         } else {
             switch (bitdepth) {
             case 1:
@@ -620,14 +620,14 @@ load_png(unsigned char *buffer,
                         (unsigned int)bitdepth);
 #   endif
                 png_set_expand_gray_1_2_4_to_8(png_ptr);
-                *pixelformat = PIXELFORMAT_G8;
+                *pixelformat = SIXEL_PIXELFORMAT_G8;
 #  elif HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
 #   if HAVE_DEBUG
                 fprintf(stderr, "expand %u bpp to 8bpp format...\n",
                         (unsigned int)bitdepth);
 #   endif
                 png_set_gray_1_2_4_to_8(png_ptr);
-                *pixelformat = PIXELFORMAT_G8;
+                *pixelformat = SIXEL_PIXELFORMAT_G8;
 #  else
 #   if HAVE_DEBUG
                 fprintf(stderr, "expand into RGB format...\n");
@@ -635,12 +635,12 @@ load_png(unsigned char *buffer,
                 png_set_background(png_ptr, &background,
                                    PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
                 png_set_gray_to_rgb(png_ptr);
-                *pixelformat = PIXELFORMAT_RGB888;
+                *pixelformat = SIXEL_PIXELFORMAT_RGB888;
 #  endif
                 break;
             case 8:
                 if (ppalette) {
-                    *pixelformat = PIXELFORMAT_G8;
+                    *pixelformat = SIXEL_PIXELFORMAT_G8;
                 } else {
 #  if HAVE_DEBUG
                     fprintf(stderr, "expand into RGB format...\n");
@@ -648,7 +648,7 @@ load_png(unsigned char *buffer,
                     png_set_background(png_ptr, &background,
                                        PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
                     png_set_gray_to_rgb(png_ptr);
-                    *pixelformat = PIXELFORMAT_RGB888;
+                    *pixelformat = SIXEL_PIXELFORMAT_RGB888;
                 }
                 break;
             default:
@@ -658,7 +658,7 @@ load_png(unsigned char *buffer,
                 png_set_background(png_ptr, &background,
                                    PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
                 png_set_gray_to_rgb(png_ptr);
-                *pixelformat = PIXELFORMAT_RGB888;
+                *pixelformat = SIXEL_PIXELFORMAT_RGB888;
                 break;
             }
         }
@@ -672,7 +672,7 @@ load_png(unsigned char *buffer,
         png_set_background(png_ptr, &background,
                            PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
         png_set_gray_to_rgb(png_ptr);
-        *pixelformat = PIXELFORMAT_RGB888;
+        *pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB_ALPHA:
 #  if HAVE_DEBUG
@@ -682,7 +682,7 @@ load_png(unsigned char *buffer,
 #  endif
         png_set_background(png_ptr, &background,
                            PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
-        *pixelformat = PIXELFORMAT_RGB888;
+        *pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB:
 #  if HAVE_DEBUG
@@ -691,7 +691,7 @@ load_png(unsigned char *buffer,
 #  endif
         png_set_background(png_ptr, &background,
                            PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
-        *pixelformat = PIXELFORMAT_RGB888;
+        *pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     default:
         /* unknown format */
@@ -707,9 +707,9 @@ load_png(unsigned char *buffer,
         goto cleanup;
     }
     switch (*pixelformat) {
-    case PIXELFORMAT_PAL1:
-    case PIXELFORMAT_PAL2:
-    case PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_PAL1:
+    case SIXEL_PIXELFORMAT_PAL2:
+    case SIXEL_PIXELFORMAT_PAL4:
         for (i = 0; i < *psy; ++i) {
             rows[i] = result + (depth * *psx * bitdepth + 7) / 8 * i;
         }
@@ -766,7 +766,7 @@ load_sixel(unsigned char *buffer,
         return NULL;
     }
     if (ppalette == NULL || colors > reqcolors) {
-        *ppixelformat = PIXELFORMAT_RGB888;
+        *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
         pixels = malloc(*psx * *psy * 3);
         if (pixels == NULL) {
             goto cleanup;
@@ -777,7 +777,7 @@ load_sixel(unsigned char *buffer,
             pixels[i * 3 + 2] = palette[p[i] * 3 + 2];
         }
     } else {
-        *ppixelformat = PIXELFORMAT_PAL8;
+        *ppixelformat = SIXEL_PIXELFORMAT_PAL8;
         pixels = p;
         *ppalette = palette;
         *pncolors = colors;
@@ -1033,7 +1033,7 @@ load_with_builtin(
         case 1:
         case 3:
         case 4:
-            frame->pixelformat = PIXELFORMAT_RGB888;
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
             break;
         default:
             fprintf(stderr, "load_with_builtin() failed.\n"
@@ -1117,10 +1117,10 @@ load_with_gdkpixbuf(
             goto end;
         }
         if (gdk_pixbuf_get_has_alpha(pixbuf)) {
-            frame->pixelformat = PIXELFORMAT_RGBA8888;
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
             depth = 4;
         } else {
-            frame->pixelformat = PIXELFORMAT_RGB888;
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
             depth = 3;
         }
         p = gdk_pixbuf_get_pixels(pixbuf);
@@ -1162,10 +1162,10 @@ load_with_gdkpixbuf(
                     goto end;
                 }
                 if (gdk_pixbuf_get_has_alpha(pixbuf)) {
-                    frame->pixelformat = PIXELFORMAT_RGBA8888;
+                    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
                     depth = 4;
                 } else {
-                    frame->pixelformat = PIXELFORMAT_RGB888;
+                    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
                     depth = 3;
                 }
                 p = gdk_pixbuf_get_pixels(pixbuf);
@@ -1372,7 +1372,7 @@ load_with_gd(
 
     frame->width = gdImageSX(im);
     frame->height = gdImageSY(im);
-    frame->pixelformat = PIXELFORMAT_RGB888;
+    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     p = frame->pixels = malloc(frame->width * frame->height * 3);
     if (frame->pixels == NULL) {
 #if HAVE_ERRNO_H
