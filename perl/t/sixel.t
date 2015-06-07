@@ -43,20 +43,3 @@ subtest 'decoder' => sub {
 };
 
 done_testing;
-#subtest 'foo => bar' => sub {
-#  my $encoder = Image::Sixel::Encoder->new;
-#  $encoder->setopt("w", 200);
-#  $encoder->encode("images/egret.jpg");
-#  isa_ok $encoder, 'Image::Sixel::Encoder';
-#};
-
-#
-#
-#my $decoder = Image::Sixel::Decoder->new();
-#isa_ok($decoder, 'Image::Sixel::Decoder');
-#
-#$decoder->setopt("i", "egret.six");
-#$decoder->setopt("o", "egret1.png");
-#$decoder->decode();
-
-#1;

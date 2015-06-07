@@ -17,7 +17,9 @@ $encoder->encode("images/egret.jpg");
 use Image::Sixel;
 
 $decoder = Image::Sixel::Decoder->new();
-$decoder->encode("images/egret.jpg", "egret.png");
+$decoder->setopt("i", "images/egret.six");
+$decoder->setopt("o", "egret.png");
+$decoder->decode();
 ```
 
 # DESCRIPTION
