@@ -8,4 +8,4 @@ Makefile.PL
 MANIFEST			This list of files
 MANIFEST.SKIP
 META.yml
-README
+README.md
