@@ -3,9 +3,9 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.4.5], [user@zuse.jp])
+AC_INIT([sixel], [1.5.0], [user@zuse.jp])
 LS_LT_CURRENT=1
-LS_LT_REVISION=3
+LS_LT_REVISION=4
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 AC_SUBST([PACKAGE_DESCRIPTION],
@@ -104,6 +104,12 @@ AC_ARG_WITH(zshcompletiondir,
 AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])
 AC_SUBST(zshcompletiondir)
 
+AC_ARG_ENABLE([python],
+              [AS_HELP_STRING([--enable-python],
+                              [Python interface (default: yes)])],
+              [],
+              [enable_python=yes])
+
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
                               [Use debug macro and specific CFLAGS])],
@@ -117,6 +123,13 @@ AC_ARG_ENABLE([gcov],
               [],
               [enable_gcov=no])
 AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
+
+AC_ARG_ENABLE([tests],
+              [AS_HELP_STRING([--enable-tests],
+                              [Build tests])],
+              [AC_DEFINE(HAVE_TESTS, [1], [enable tests])],
+              [enable_tests=no])
+AM_CONDITIONAL([COND_TESTS], [test x$enable_tests != xno])
 
 # Checks for programs.
 AC_PROG_CC
@@ -144,6 +157,10 @@ AC_SUBST([AM_CFLAGS])
 # For wic integration
 #AC_PROG_CXX
 
+# For test
+AC_CHECK_PROGS(MD5SUM, [md5sum md5])
+AC_SUBST(MD5SUM)
+
 # Checks for libraries.
 
 # Checks for header files.
@@ -151,17 +168,21 @@ AC_CHECK_HEADERS([memory.h \
                   stdlib.h \
                   string.h \
                   unistd.h \
+                  stdint.h \
                   sys/unistd.h \
                   getopt.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
                   errno.h \
+                  limits.h \
                   sys/time.h \
                   time.h \
                   signal.h \
                   sys/select.h \
-                  sys/signal.h])
+                  sys/signal.h \
+                  termios.h \
+                  sys/ioctl.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
@@ -185,16 +206,18 @@ AM_CONDITIONAL([HAVE_GETOPT_LONG], [test x$have_getopt_long = xyes])
 
 AC_CHECK_FUNCS([memcpy \
                 memmove \
-                strtol \
                 setmode \
                 _setmode \
                 signal \
                 usleep \
                 strdup \
+                strtoul \
                 calloc \
                 clock \
                 clearerr \
-                setjmp])
+                stat \
+                setjmp \
+                isatty])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
@@ -251,17 +274,42 @@ AC_SUBST(GDK_PIXBUF_LIBS)
 
 
 if test x$with_gd != xno; then
+    CFLAGS_BACKUP=$CFLAGS
+    LDFLAGS_BACKUP=$LDFLAGS
+    if test x$with_gd != xyes -a x$with_gd != xauto; then
+        if test ! -d "$with_gd"; then
+            AC_MSG_ERROR(["${with_gd}" is not directory])
+        fi
+        ADDED_CFLAGS="-I${with_gd}/include"
+        ADDED_LIBS="-L${with_gd}/lib -lgd"
+    elif test x${prefix} != x -a x${prefix} != xNONE; then
+        ADDED_CFLAGS="-I${prefix}/include"
+        ADDED_LIBS="-L${prefix}/lib -lgd"
+    else
+        ADDED_CFLAGS="-I/usr/local/include"
+        ADDED_LIBS="-L/usr/local/lib -lgd"
+    fi
+    CFLAGS="${CFLAGS} ${GD_CFLAGS}"
+    LDFLAGS="${LDFLAGS} ${GD_LIBS}"
     AC_CHECK_HEADER([gd.h],
                     [AC_CHECK_LIB([gd],
                                   [gdImageCreateFromGifPtr],
-                                  [have_gd="yes" GD_LIBS=-lgd],
+                                  [have_gd="yes"
+                                   GD_CFLAGS=$ADDED_CFLAGS
+                                   GD_LIBS=$ADDED_LIBS],
                                   [have_gd="no"])])
+    CFLAGS=$CFLAGS_BACKUP
+    LDFLAGS=$LDFLAGS_BACKUP
     if test x${PKG_CONFIG} != x; then
-        if test x$have_gd != xyes; then
+        if test x$have_gd != xyes -a ! -d "$with_gd"; then
             PKG_CHECK_MODULES(GD, [gdlib], [have_gd=yes], [have_gd=no])
         fi
     fi
     if test x$have_gd = xyes; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        CFLAGS="$CFLAGS $GD_CFLAGS"
+        LDFLAGS="${LDFLAGS} ${GD_LIBS}"
         AC_CHECK_LIB([gd],
                      [gdImageCreateFromGifPtr],
                      [AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])])
@@ -292,9 +340,13 @@ if test x$with_gd != xno; then
         AC_CHECK_LIB([gd],
                      [gdImagePaletteToTrueColor],
                      [AC_CHECK_DECLS([gdImagePaletteToTrueColor], [], [], [ #include <gd.h> ])])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
         loaders="${loaders} gd"
     else
+        GD_CFLAGS=
+        GD_LIBS=
         AC_MSG_ERROR(gd is not available.)
     fi
 
@@ -319,12 +371,33 @@ AC_SUBST(GD_LIBS)
 
 if test x$with_libcurl != xno; then
     if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_libcurl != xyes -a x$with_libcurl != xauto; then
+            if test ! -d "$with_libcurl"; then
+                AC_MSG_ERROR(["${with_libcurl}" is not directory])
+            fi
+            ADDED_CFLAGS="-I${with_libcurl}/include"
+            ADDED_LIBS="-L${with_libcurl}/lib -lcurl"
+        elif test x${prefix} != x -a x${prefix} != xNONE; then
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -lcurl"
+        else
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -lcurl"
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
         AC_CHECK_HEADER([curl/curl.h],
                         [AC_CHECK_LIB([curl],
                                       [curl_easy_cleanup],
-                                      [have_curl=yes LIBCURL_LIBS=-lcurl],
+                                      [have_curl=yes
+                                       LIBCURL_CFLAGS=$ADDED_CFLAGS
+                                       LIBCURL_LIBS=$ADDED_LIBS],
                                       [have_curl=no])])
-        if test x$have_curl != xyes; then
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$have_curl != xyes -a ! -d "$with_libcurl"; then
             if test x${PKG_CONFIG} != x; then
                 PKG_CHECK_MODULES(LIBCURL,
                                   [libcurl],
@@ -349,13 +422,42 @@ AC_SUBST(LIBCURL_LIBS)
 
 if test x$with_jpeg != xno; then
     if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_jpeg != xyes -a x$with_jpeg != xauto; then
+            if test ! -d "$with_jpeg"; then
+                AC_MSG_ERROR(["${with_jpeg}" is not directory])
+            fi
+            ADDED_CFLAGS="-I${with_jpeg}/include"
+            ADDED_LIBS="-L${with_jpeg}/lib -ljpeg"
+        elif test x${prefix} != x -a x${prefix} != xNONE; then
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -ljpeg"
+        else
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -ljpeg"
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
         AC_CHECK_HEADER([jpeglib.h],
                         [AC_CHECK_LIB([jpeg],
                                       [jpeg_read_header],
-                                      [have_jpeg=yes LIBJPEG_LIBS=-ljpeg],
+                                      [have_jpeg=yes],
                                       [have_jpeg=no])])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$have_jpeg != xyes -a ! -d "$with_jpeg"; then
+            if test x${PKG_CONFIG} != x; then
+                PKG_CHECK_MODULES(LIBJPEG,
+                                  [libjpeg],
+                                  [have_jpeg=yes],
+                                  [have_jpeg=no])
+            fi
+        fi
     fi
     if test x$have_jpeg = xyes; then
+        LIBJPEG_CFLAGS=$ADDED_CFLAGS
+        LIBJPEG_LIBS=$ADDED_LIBS
         AC_DEFINE(HAVE_JPEG, 1, [whether jpeg codec library is available])
         loaders="${loaders} jpeg"
         AC_MSG_NOTICE([jpeg cflags is ${LIBJPEG_CFLAGS}])
@@ -372,12 +474,33 @@ AC_SUBST(LIBJPEG_LIBS)
 
 if test x$with_png != xno; then
     if test x$build = x$host; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_png != xyes -a x$with_png != xauto; then
+            if test ! -d "$with_png"; then
+                AC_MSG_ERROR(["${with_png}" is not directory])
+            fi
+            ADDED_CFLAGS="-I${with_png}/include"
+            ADDED_LIBS="-L${with_png}/lib -lpng"
+        elif test x${prefix} != x -a x${prefix} != xNONE; then
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -lpng"
+        else
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -lpng"
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
         AC_CHECK_HEADER([png.h],
                         [AC_CHECK_LIB([png],
                                       [png_check_sig],
-                                      [have_png=yes LIBPNG_LIBS=-lpng],
+                                      [have_png=yes
+                                       LIBPNG_CFLAGS=$ADDED_CFLAGS
+                                       LIBPNG_LIBS=$ADDED_LIBS],
                                       [have_png=no])])
-        if test x$have_png != xyes; then
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$have_png != xyes -a ! -d "$with_png"; then
             if test x${PKG_CONFIG} != x; then
                 PKG_CHECK_MODULES(LIBPNG,
                                   [libpng],
@@ -387,11 +510,12 @@ if test x$with_png != xno; then
         fi
     fi
     if test x$have_png = xyes; then
-        CFLAGS_BACKUP=$CFLAGS
-        CFLAGS="$CFLAGS $LIBPNG_CFLAGS"
+        CFLAGS="${CFLAGS} ${LIBPNG_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${LIBPNG_LIBS}"
         AC_CHECK_DECLS([png_set_gray_1_2_4_to_8, png_set_expand_gray_1_2_4_to_8],
                        [], [], [ #include <png.h> ])
         CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
         AC_DEFINE(HAVE_LIBPNG, 1, [whether libpng is available])
         loaders="${loaders} png"
         AC_MSG_NOTICE([libpng cflags is ${LIBPNG_CFLAGS}])
@@ -405,6 +529,20 @@ if test x$with_png != xno; then
 fi
 AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBPNG_LIBS)
+
+have_python=no
+if test x$enable_python != xno; then
+    AM_PATH_PYTHON([2.3], [have_python=yes], [have_python=no])
+    if test x$enable_python = xyes -a x$have_python = xno; then
+        AC_MSG_ERROR([python is not available])
+    fi
+fi
+AM_CONDITIONAL([HAVE_PYTHON], [test x$have_python = xyes])
+if test x$have_python = xyes; then
+    message_python="$have_python: $pythondir"
+else
+    message_python=$have_python
+fi
 
 AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
@@ -421,7 +559,11 @@ AC_CONFIG_FILES([Makefile
                  include/sixel.h
                  src/Makefile
                  include/Makefile
-                 converters/Makefile])
+                 converters/Makefile
+                 tools/Makefile
+                 tools/libsixel-config
+                 python/Makefile
+                ])
 
 AC_OUTPUT
 
@@ -435,7 +577,9 @@ echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
+echo "       python bindings     : $message_python"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
+echo "       tests               : $enable_tests"
 echo ""
 echo ""

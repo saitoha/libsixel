@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -53,9 +53,10 @@ sixel_dither_apply_palette(sixel_dither_t *dither,
                            unsigned char *pixels,
                            int width, int height);
 
+#if HAVE_TESTS
 int
-sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
-                            int width, int height, int const pixelformat);
+sixel_frame_tests_main(void);
+#endif
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -25,15 +25,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <limits.h>
 
-#if defined(HAVE_INTTYPES_H)
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
+#if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
 
 #include "dither.h"
 #include "quant.h"
-#include "sixel.h"
+#include <sixel.h>
 
 
 static const unsigned char pal_mono_dark[] = {
@@ -158,7 +161,7 @@ static const unsigned char pal_vt340_color[] = {
 };
 
 
-sixel_dither_t *
+SIXELAPI sixel_dither_t *
 sixel_dither_create(int ncolors)
 {
     sixel_dither_t *dither;
@@ -169,7 +172,7 @@ sixel_dither_create(int ncolors)
 
     if (ncolors == -1) {
         ncolors = 256;
-        quality_mode = QUALITY_HIGHCOLOR;
+        quality_mode = SIXEL_QUALITY_HIGHCOLOR;
     }
     else {
         if (ncolors > SIXEL_PALETTE_MAX) {
@@ -177,7 +180,7 @@ sixel_dither_create(int ncolors)
         } else if (ncolors < 2) {
             ncolors = 2;
         }
-        quality_mode = QUALITY_LOW;
+        quality_mode = SIXEL_QUALITY_LOW;
     }
     headsize = sizeof(sixel_dither_t);
     datasize = ncolors * 3;
@@ -198,17 +201,17 @@ sixel_dither_create(int ncolors)
     dither->optimize_palette = 0;
     dither->complexion = 1;
     dither->bodyonly = 0;
-    dither->method_for_largest = LARGE_NORM;
-    dither->method_for_rep = REP_CENTER_BOX;
-    dither->method_for_diffuse = DIFFUSE_FS;
+    dither->method_for_largest = SIXEL_LARGE_NORM;
+    dither->method_for_rep = SIXEL_REP_CENTER_BOX;
+    dither->method_for_diffuse = SIXEL_DIFFUSE_FS;
     dither->quality_mode = quality_mode;
-    dither->pixelformat = PIXELFORMAT_RGB888;
+    dither->pixelformat = SIXEL_PIXELFORMAT_RGB888;
 
     return dither;
 }
 
 
-void
+SIXELAPI void
 sixel_dither_destroy(sixel_dither_t *dither)
 {
     if (dither) {
@@ -218,7 +221,7 @@ sixel_dither_destroy(sixel_dither_t *dither)
 }
 
 
-void
+SIXELAPI void
 sixel_dither_ref(sixel_dither_t *dither)
 {
     /* TODO: be thread safe */
@@ -226,7 +229,7 @@ sixel_dither_ref(sixel_dither_t *dither)
 }
 
 
-void
+SIXELAPI void
 sixel_dither_unref(sixel_dither_t *dither)
 {
     /* TODO: be thread safe */
@@ -236,7 +239,7 @@ sixel_dither_unref(sixel_dither_t *dither)
 }
 
 
-sixel_dither_t *
+SIXELAPI sixel_dither_t *
 sixel_dither_get(int builtin_dither)
 {
     unsigned char *palette;
@@ -245,32 +248,32 @@ sixel_dither_get(int builtin_dither)
     sixel_dither_t *dither;
 
     switch (builtin_dither) {
-    case BUILTIN_MONO_DARK:
+    case SIXEL_BUILTIN_MONO_DARK:
         ncolors = 2;
         palette = (unsigned char *)pal_mono_dark;
         keycolor = 0;
         break;
-    case BUILTIN_MONO_LIGHT:
+    case SIXEL_BUILTIN_MONO_LIGHT:
         ncolors = 2;
         palette = (unsigned char *)pal_mono_light;
         keycolor = 0;
         break;
-    case BUILTIN_XTERM16:
+    case SIXEL_BUILTIN_XTERM16:
         ncolors = 16;
         palette = (unsigned char *)pal_xterm256;
         keycolor = (-1);
         break;
-    case BUILTIN_XTERM256:
+    case SIXEL_BUILTIN_XTERM256:
         ncolors = 256;
         palette = (unsigned char *)pal_xterm256;
         keycolor = (-1);
         break;
-    case BUILTIN_VT340_MONO:
+    case SIXEL_BUILTIN_VT340_MONO:
         ncolors = 16;
         palette = (unsigned char *)pal_vt340_mono;
         keycolor = (-1);
         break;
-    case BUILTIN_VT340_COLOR:
+    case SIXEL_BUILTIN_VT340_COLOR:
         ncolors = 16;
         palette = (unsigned char *)pal_vt340_color;
         keycolor = (-1);
@@ -292,132 +295,10 @@ sixel_dither_get(int builtin_dither)
 
 
 static void
-get_rgb(unsigned char *data, int const pixelformat, int depth,
-        unsigned char *r, unsigned char *g, unsigned char *b)
-{
-    unsigned int pixels = 0, low, high;
-    int count = 0;
-
-    while (count < depth) {
-        pixels = *(data + count) | (pixels << 8);
-        count++;
-    }
-
-    /* TODO: we should swap bytes (only necessary on LSByte first hardware?) */
-    if (depth == 2) {
-        low    = pixels & 0xff;
-        high   = (pixels >> 8) & 0xff;
-        pixels = (low << 8) | high;
-    }
-
-    switch (pixelformat) {
-    case PIXELFORMAT_RGB555:
-        *r = ((pixels >> 10) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x1f) << 3;
-        *b = ((pixels >>  0) & 0x1f) << 3;
-        break;
-    case PIXELFORMAT_RGB565:
-        *r = ((pixels >> 11) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x3f) << 2;
-        *b = ((pixels >>  0) & 0x1f) << 3;
-        break;
-    case PIXELFORMAT_RGB888:
-        *r = (pixels >>  0) & 0xff;
-        *g = (pixels >>  8) & 0xff;
-        *b = (pixels >> 16) & 0xff;
-        break;
-    case PIXELFORMAT_BGR555:
-        *r = ((pixels >>  0) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x1f) << 3;
-        *b = ((pixels >> 10) & 0x1f) << 3;
-        break;
-    case PIXELFORMAT_BGR565:
-        *r = ((pixels >>  0) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x3f) << 2;
-        *b = ((pixels >> 11) & 0x1f) << 3;
-        break;
-    case PIXELFORMAT_BGR888:
-        *r = (pixels >> 16) & 0xff;
-        *g = (pixels >>  8) & 0xff;
-        *b = (pixels >>  0) & 0xff;
-        break;
-    case PIXELFORMAT_RGBA8888:
-        *r = (pixels >> 24) & 0xff;
-        *g = (pixels >> 16) & 0xff;
-        *b = (pixels >>  8) & 0xff;
-        break;
-    case PIXELFORMAT_ARGB8888:
-        *r = (pixels >> 16) & 0xff;
-        *g = (pixels >>  8) & 0xff;
-        *b = (pixels >>  0) & 0xff;
-        break;
-    case PIXELFORMAT_GA88:
-        *r = *g = *b = (pixels >> 8) & 0xff;
-        break;
-    case PIXELFORMAT_G8:
-    case PIXELFORMAT_AG88:
-        *r = *g = *b = pixels & 0xff;
-        break;
-    default:
-        *r = *g = *b = 0;
-        break;
-    }
-}
-
-
-int
-sixel_normalize_pixelformat(unsigned char *dst, unsigned char *src,
-                            int width, int height,
-                            int const pixelformat)
-{
-    int x, y, dst_offset, src_offset, depth;
-    unsigned char r, g, b;
-
-    switch (pixelformat) {
-    case PIXELFORMAT_G8:
-        depth = 1;
-        break;
-    case PIXELFORMAT_RGB565:
-    case PIXELFORMAT_RGB555:
-    case PIXELFORMAT_BGR565:
-    case PIXELFORMAT_BGR555:
-    case PIXELFORMAT_GA88:
-    case PIXELFORMAT_AG88:
-        depth = 2;
-        break;
-    case PIXELFORMAT_RGB888:
-    case PIXELFORMAT_BGR888:
-        depth = 3;
-        break;
-    case PIXELFORMAT_RGBA8888:
-    case PIXELFORMAT_ARGB8888:
-        depth = 4;
-        break;
-    default:
-        return (-1);
-    }
-
-    for (y = 0; y < height; y++) {
-        for (x = 0; x < width; x++) {
-            src_offset = depth * (y * width + x);
-            dst_offset = 3 * (y * width + x);
-            get_rgb(src + src_offset, pixelformat, depth, &r, &g, &b);
-
-            *(dst + dst_offset + 0) = r;
-            *(dst + dst_offset + 1) = g;
-            *(dst + dst_offset + 2) = b;
-        }
-    }
-
-    return 0;
-}
-
-
-static void
 sixel_dither_set_method_for_largest(sixel_dither_t *dither, int method_for_largest)
 {
-    if (method_for_largest == LARGE_AUTO) {
-        method_for_largest = LARGE_NORM;
+    if (method_for_largest == SIXEL_LARGE_AUTO) {
+        method_for_largest = SIXEL_LARGE_NORM;
     }
     dither->method_for_largest = method_for_largest;
 }
@@ -426,8 +307,8 @@ sixel_dither_set_method_for_largest(sixel_dither_t *dither, int method_for_large
 static void
 sixel_dither_set_method_for_rep(sixel_dither_t *dither, int method_for_rep)
 {
-    if (method_for_rep == REP_AUTO) {
-        method_for_rep = REP_CENTER_BOX;
+    if (method_for_rep == SIXEL_REP_AUTO) {
+        method_for_rep = SIXEL_REP_CENTER_BOX;
     }
     dither->method_for_rep = method_for_rep;
 }
@@ -436,18 +317,18 @@ sixel_dither_set_method_for_rep(sixel_dither_t *dither, int method_for_rep)
 static void
 sixel_dither_set_quality_mode(sixel_dither_t *dither, int quality_mode)
 {
-    if (quality_mode == QUALITY_AUTO) {
+    if (quality_mode == SIXEL_QUALITY_AUTO) {
         if (dither->ncolors <= 8) {
-            quality_mode = QUALITY_HIGH;
+            quality_mode = SIXEL_QUALITY_HIGH;
         } else {
-            quality_mode = QUALITY_LOW;
+            quality_mode = SIXEL_QUALITY_LOW;
         }
     }
     dither->quality_mode = quality_mode;
 }
 
 
-int
+SIXELAPI int
 sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
                         int width, int height, int pixelformat,
                         int method_for_largest, int method_for_rep,
@@ -458,15 +339,18 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     unsigned char *input_pixels;
     int nret = (-1);
 
-    /* normalize pixelformat */
-    normalized_pixels = malloc(width * height * 3);
-    if (normalized_pixels == NULL) {
-        goto end;
-    }
+    if (pixelformat != SIXEL_PIXELFORMAT_RGB888) {
 
-    if (pixelformat != PIXELFORMAT_RGB888) {
-        nret = sixel_normalize_pixelformat(normalized_pixels, data,
-                                           width, height, pixelformat);
+        /* normalize pixelformat */
+        normalized_pixels = malloc(width * height * 3);
+        if (normalized_pixels == NULL) {
+            goto end;
+        }
+
+        nret = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                  &pixelformat,
+                                                  data, pixelformat,
+                                                  width, height);
         if (nret != 0) {
             goto end;
         }
@@ -481,7 +365,7 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
 
     buf = sixel_quant_make_palette(input_pixels,
                                    width * height * 3,
-                                   PIXELFORMAT_RGB888,
+                                   SIXEL_PIXELFORMAT_RGB888,
                                    dither->reqcolors, &dither->ncolors,
                                    &dither->origcolors,
                                    dither->method_for_largest,
@@ -494,7 +378,7 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
 
     dither->optimized = 1;
     if (dither->origcolors <= dither->ncolors) {
-        dither->method_for_diffuse = DIFFUSE_NONE;
+        dither->method_for_diffuse = SIXEL_DIFFUSE_NONE;
     }
 
     sixel_quant_free_palette(buf);
@@ -506,21 +390,21 @@ end:
 }
 
 
-void
+SIXELAPI void
 sixel_dither_set_diffusion_type(sixel_dither_t *dither, int method_for_diffuse)
 {
-    if (method_for_diffuse == DIFFUSE_AUTO) {
+    if (method_for_diffuse == SIXEL_DIFFUSE_AUTO) {
         if (dither->ncolors > 16) {
-            method_for_diffuse = DIFFUSE_FS;
+            method_for_diffuse = SIXEL_DIFFUSE_FS;
         } else {
-            method_for_diffuse = DIFFUSE_ATKINSON;
+            method_for_diffuse = SIXEL_DIFFUSE_ATKINSON;
         }
     }
     dither->method_for_diffuse = method_for_diffuse;
 }
 
 
-int
+SIXELAPI int
 sixel_dither_get_num_of_palette_colors(sixel_dither_t *dither)
 {
     return dither->ncolors;
@@ -528,7 +412,7 @@ sixel_dither_get_num_of_palette_colors(sixel_dither_t *dither)
 
 
 /* get number of histogram colors */
-int
+SIXELAPI int
 sixel_dither_get_num_of_histogram_colors(sixel_dither_t /* in */ *dither)  /* dither context object */
 {
     return dither->origcolors;
@@ -536,14 +420,14 @@ sixel_dither_get_num_of_histogram_colors(sixel_dither_t /* in */ *dither)  /* di
 
 
 /* typoed: remained for keeping compatibility */
-int
+SIXELAPI int
 sixel_dither_get_num_of_histgram_colors(sixel_dither_t /* in */ *dither)  /* dither context object */
 {
     return sixel_dither_get_num_of_histogram_colors(dither);
 }
 
 
-unsigned char *
+SIXELAPI unsigned char *
 sixel_dither_get_palette(sixel_dither_t /* in */ *dither)  /* dither context object */
 {
     return dither->palette;
@@ -551,7 +435,7 @@ sixel_dither_get_palette(sixel_dither_t /* in */ *dither)  /* dither context obj
 
 
 /* set palette */
-void
+SIXELAPI void
 sixel_dither_set_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     unsigned char  /* in */ *palette)
@@ -560,7 +444,7 @@ sixel_dither_set_palette(
 }
 
 
-void
+SIXELAPI void
 sixel_dither_set_complexion_score(sixel_dither_t /* in */ *dither,  /* dither context object */
                                   int            /* in */ score)    /* complexion score (>= 1) */
 {
@@ -568,7 +452,7 @@ sixel_dither_set_complexion_score(sixel_dither_t /* in */ *dither,  /* dither co
 }
 
 
-void
+SIXELAPI void
 sixel_dither_set_body_only(sixel_dither_t /* in */ *dither,     /* dither context object */
                            int            /* in */ bodyonly)    /* 0: output palette section
                                                                    1: do not output palette section  */
@@ -577,7 +461,7 @@ sixel_dither_set_body_only(sixel_dither_t /* in */ *dither,     /* dither contex
 }
 
 
-void
+SIXELAPI void
 sixel_dither_set_optimize_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     int            /* in */ do_opt)    /* 0: optimize palette size
@@ -587,7 +471,7 @@ sixel_dither_set_optimize_palette(
 }
 
 
-void
+SIXELAPI void
 sixel_dither_set_pixelformat(
     sixel_dither_t /* in */ *dither,     /* dither context object */
     int            /* in */ pixelformat) /* one of enum pixelFormat */
@@ -596,7 +480,16 @@ sixel_dither_set_pixelformat(
 }
 
 
-unsigned char *
+SIXELAPI void
+sixel_dither_set_transparent(
+    sixel_dither_t /* in */ *dither,      /* dither context object */
+    int            /* in */ transparent)  /* transparent color index */
+{
+    dither->keycolor = transparent;
+}
+
+
+SIXELAPI unsigned char *
 sixel_dither_apply_palette(sixel_dither_t *dither,
                            unsigned char *pixels,
                            int width, int height)
@@ -616,7 +509,7 @@ sixel_dither_apply_palette(sixel_dither_t *dither,
     }
 
     /* if quality_mode is full, do not use palette caching */
-    if (dither->quality_mode == QUALITY_FULL) {
+    if (dither->quality_mode == SIXEL_QUALITY_FULL) {
         dither->optimized = 0;
     }
 
@@ -632,16 +525,19 @@ sixel_dither_apply_palette(sixel_dither_t *dither,
         }
     }
 
-    if (dither->pixelformat != PIXELFORMAT_RGB888) {
+    if (dither->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         /* normalize pixelformat */
         normalized_pixels = malloc(width * height * 3);
         if (normalized_pixels == NULL) {
             goto end;
         }
-        sixel_normalize_pixelformat(normalized_pixels,
-                                    pixels,
-                                    width, height,
-                                    dither->pixelformat);
+        ret = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                 &dither->pixelformat,
+                                                 pixels, dither->pixelformat,
+                                                 width, height);
+        if (ret != 0) {
+            goto end;
+        }
         input_pixels = normalized_pixels;
     } else {
         input_pixels = pixels;
@@ -669,6 +565,77 @@ end:
     free(normalized_pixels);
     return dest;
 }
+
+
+#if HAVE_TESTS
+static int
+test1(void)
+{
+    sixel_dither_t *dither = NULL;
+    int nret = EXIT_FAILURE;
+
+    dither = sixel_dither_create(0);
+    if (dither == NULL) {
+        goto error;
+    }
+    sixel_dither_ref(dither);
+    sixel_dither_unref(dither);
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_dither_unref(dither);
+    return nret;
+}
+
+static int
+test2(void)
+{
+    sixel_dither_t *dither = NULL;
+    int colors;
+    int nret = EXIT_FAILURE;
+
+    dither = sixel_dither_create(INT_MAX);
+    if (dither == NULL) {
+        goto error;
+    }
+    sixel_dither_set_body_only(dither, 1);
+    colors = sixel_dither_get_num_of_histogram_colors(dither);
+    if (colors != -1) {
+        goto error;
+    }
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_dither_unref(dither);
+    return nret;
+}
+
+
+int
+sixel_dither_tests_main(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t i;
+    typedef int (* testcase)(void);
+
+    static testcase const testcases[] = {
+        test1,
+        test2,
+    };
+
+    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
+        nret = testcases[i]();
+        if (nret != EXIT_SUCCESS) {
+            goto error;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+#endif  /* HAVE_TESTS */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

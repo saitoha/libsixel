@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -53,6 +53,11 @@ sixel_quant_apply_palette(unsigned char *data,
 
 void
 sixel_quant_free_palette(unsigned char * data);
+
+#if HAVE_TESTS
+int
+sixel_quant_tests_main(void);
+#endif
 
 #ifdef __cplusplus
 }

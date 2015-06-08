@@ -22,7 +22,7 @@
  *
  * ******************************************************************************
  *
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -50,9 +50,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <limits.h>
 
-#if defined(HAVE_INTTYPES_H)
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
+#if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
 
@@ -420,17 +423,17 @@ colormapFromBv(unsigned int const newcolors,
 
     for (bi = 0; bi < boxes; ++bi) {
         switch (methodForRep) {
-        case REP_CENTER_BOX:
+        case SIXEL_REP_CENTER_BOX:
             centerBox(bv[bi].ind, bv[bi].colors,
                       colorfreqtable, depth,
                       colormap.table[bi]->tuple);
             break;
-        case REP_AVERAGE_COLORS:
+        case SIXEL_REP_AVERAGE_COLORS:
             averageColors(bv[bi].ind, bv[bi].colors,
                           colorfreqtable, depth,
                           colormap.table[bi]->tuple);
             break;
-        case REP_AVERAGE_PIXELS:
+        case SIXEL_REP_AVERAGE_PIXELS:
             averagePixels(bv[bi].ind, bv[bi].colors,
                           colorfreqtable, depth,
                           colormap.table[bi]->tuple);
@@ -487,10 +490,10 @@ splitBox(boxVector const bv,
        transforming into luminosities before the comparison.
     */
     switch (methodForLargest) {
-    case LARGE_NORM:
+    case SIXEL_LARGE_NORM:
         largestDimension = largestByNorm(minval, maxval, depth);
         break;
-    case LARGE_LUM:
+    case SIXEL_LARGE_LUM:
         largestDimension = largestByLuminosity(minval, maxval, depth);
         break;
     default:
@@ -501,7 +504,7 @@ splitBox(boxVector const bv,
 
     /* TODO: I think this sort should go after creating a box,
        not before splitting.  Because you need the sort to use
-       the REP_CENTER_BOX method of choosing a color to
+       the SIXEL_REP_CENTER_BOX method of choosing a color to
        represent the final boxes
     */
 
@@ -600,27 +603,6 @@ mediancut(tupletable2 const colorfreqtable,
 
 
 static int
-compute_depth_from_pixelformat(int pixelformat)
-{
-    int depth = (-1);  /* unknown */
-
-    switch (pixelformat) {
-        case PIXELFORMAT_RGB888:
-            depth = 3;
-            break;
-        case PIXELFORMAT_RGB555:
-        case PIXELFORMAT_RGB565:
-            depth = 2;
-            break;
-        default:
-            break;
-    }
-
-    return depth;
-}
-
-
-static int
 computeHash(unsigned char const *data, int const depth)
 {
     int hash = 0;
@@ -639,7 +621,7 @@ computeHistogram(unsigned char const *data,
                  unsigned int length,
                  unsigned long const depth,
                  tupletable2 * const colorfreqtableP,
-                 enum qualityMode const qualityMode)
+                 int const qualityMode)
 {
     typedef unsigned short unit_t;
     unsigned int i, n;
@@ -652,15 +634,15 @@ computeHistogram(unsigned char const *data,
     unsigned int max_sample;
 
     switch (qualityMode) {
-    case QUALITY_LOW:
-        max_sample = 18383;
-        step = length / depth / max_sample;
-        break;
-    case QUALITY_HIGH:
+    case SIXEL_QUALITY_LOW:
         max_sample = 18383;
         step = length / depth / max_sample * depth;
         break;
-    case QUALITY_FULL:
+    case SIXEL_QUALITY_HIGH:
+        max_sample = 18383;
+        step = length / depth / max_sample * depth;
+        break;
+    case SIXEL_QUALITY_FULL:
     default:
         max_sample = 4003079;
         step = length / depth / max_sample * depth;
@@ -731,9 +713,9 @@ computeColorMapFromInput(unsigned char const *data,
                          unsigned int const length,
                          unsigned int const depth,
                          unsigned int const reqColors,
-                         enum methodForLargest const methodForLargest,
-                         enum methodForRep const methodForRep,
-                         enum qualityMode const qualityMode,
+                         int const methodForLargest,
+                         int const methodForRep,
+                         int const qualityMode,
                          tupletable2 * const colormapP,
                          int *origcolors)
 {
@@ -1104,7 +1086,7 @@ lookup_mono_lightbg(unsigned char const * const pixel,
 }
 
 
-unsigned char *
+SIXELAPI unsigned char *
 sixel_quant_make_palette(unsigned char const *data,
                          int length,
                          int pixelformat,
@@ -1117,7 +1099,7 @@ sixel_quant_make_palette(unsigned char const *data,
     int ret;
     unsigned char *palette;
     tupletable2 colormap;
-    int depth = compute_depth_from_pixelformat(pixelformat);
+    int depth = sixel_helper_compute_depth(pixelformat);
 
     if (depth == -1) {
         return NULL;
@@ -1144,7 +1126,7 @@ sixel_quant_make_palette(unsigned char const *data,
 }
 
 
-int
+SIXELAPI int
 sixel_quant_apply_palette(unsigned char *data,
                           int width,
                           int height,
@@ -1179,22 +1161,22 @@ sixel_quant_apply_palette(unsigned char *data,
         f_diffuse = diffuse_none;
     } else {
         switch (methodForDiffuse) {
-        case DIFFUSE_NONE:
+        case SIXEL_DIFFUSE_NONE:
             f_diffuse = diffuse_none;
             break;
-        case DIFFUSE_ATKINSON:
+        case SIXEL_DIFFUSE_ATKINSON:
             f_diffuse = diffuse_atkinson;
             break;
-        case DIFFUSE_FS:
+        case SIXEL_DIFFUSE_FS:
             f_diffuse = diffuse_fs;
             break;
-        case DIFFUSE_JAJUNI:
+        case SIXEL_DIFFUSE_JAJUNI:
             f_diffuse = diffuse_jajuni;
             break;
-        case DIFFUSE_STUCKI:
+        case SIXEL_DIFFUSE_STUCKI:
             f_diffuse = diffuse_stucki;
             break;
-        case DIFFUSE_BURKES:
+        case SIXEL_DIFFUSE_BURKES:
             f_diffuse = diffuse_burkes;
             break;
         default:
@@ -1298,11 +1280,59 @@ sixel_quant_apply_palette(unsigned char *data,
 }
 
 
-void
+SIXELAPI void
 sixel_quant_free_palette(unsigned char * data)
 {
     free(data);
 }
+
+
+#if HAVE_TESTS
+static int
+test1(void)
+{
+    int nret = EXIT_FAILURE;
+    sample minval[1] = { 1 };
+    sample maxval[1] = { 2 };
+    unsigned int retval;
+
+    retval = largestByLuminosity(minval, maxval, 1);
+    if (retval != 0) {
+        goto error;
+    }
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+int
+sixel_quant_tests_main(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t i;
+    typedef int (* testcase)(void);
+
+    static testcase const testcases[] = {
+        test1,
+    };
+
+    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
+        nret = testcases[i]();
+        if (nret != EXIT_SUCCESS) {
+            goto error;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+#endif  /* HAVE_TESTS */
+
+
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
