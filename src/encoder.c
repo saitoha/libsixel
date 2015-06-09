@@ -64,6 +64,7 @@
 #endif
 
 #include "encoder.h"
+#include "rgblookup.h"
 #include <sixel.h>
 
 
@@ -90,8 +91,14 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
     unsigned long v;
     char *endptr;
     char *buf = NULL;
-
-    if (s[0] == 'r' && s[1] == 'g' && s[2] == 'b' && s[3] == ':') {
+    struct color const *pcolor;
+    pcolor = lookup_rgb(s, strlen(s));
+    if (pcolor) {
+        *bgcolor = malloc(3);
+        (*bgcolor)[0] = pcolor->r;
+        (*bgcolor)[1] = pcolor->g;
+        (*bgcolor)[2] = pcolor->b;
+    } else if (s[0] == 'r' && s[1] == 'g' && s[2] == 'b' && s[3] == ':') {
         p = buf = arg_strdup(s + 4);
         while (*p) {
             v = 0;
