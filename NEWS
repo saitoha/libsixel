@@ -5,6 +5,8 @@
 
 * core: Introduce new API for dither object, sixel_dither_set_transparent().
 
+* core: Respect transparency of paletted images(GIF/PNG).
+
 * core: Introduce API set for generic image maniplation:
     sixel_frame_get_pixels()
     sixel_frame_ref()
