@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -19,19 +19,23 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_EASY_DECODE_H
-#define LIBSIXEL_EASY_DECODE_H
+#ifndef LIBSIXEL_WRITER_H
+#define LIBSIXEL_WRITER_H
 
-/* encode settings object */
-typedef struct sixel_decode_settings {
-    unsigned int ref;
-    char *input;
-    char *output;
-    int show_version;
-    int show_help;
-} sixel_decode_settings_t;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif /* LIBSIXEL_EASY_DECODE_H */
+#if HAVE_TESTS
+int
+sixel_writer_tests_main(void);
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* LIBSIXEL_WRITER_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

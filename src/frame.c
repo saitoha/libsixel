@@ -35,10 +35,10 @@
 #endif
 
 #include "frame.h"
-#include "sixel.h"
+#include <sixel.h>
 
 
-sixel_frame_t *
+SIXELAPI sixel_frame_t *
 sixel_frame_create(void)
 {
     sixel_frame_t *frame;
@@ -53,7 +53,7 @@ sixel_frame_create(void)
     frame->width = 0;
     frame->height = 0;
     frame->ncolors = (-1);
-    frame->pixelformat = PIXELFORMAT_RGB888;
+    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     frame->delay = 0;
     frame->frame_no = 0;
     frame->loop_count = 0;
@@ -64,7 +64,7 @@ sixel_frame_create(void)
 }
 
 
-void
+SIXELAPI void
 sixel_frame_destroy(sixel_frame_t *frame)
 {
     if (frame) {
@@ -75,7 +75,7 @@ sixel_frame_destroy(sixel_frame_t *frame)
 }
 
 
-void
+SIXELAPI void
 sixel_frame_ref(sixel_frame_t *frame)
 {
     /* TODO: be thread safe */
@@ -83,7 +83,7 @@ sixel_frame_ref(sixel_frame_t *frame)
 }
 
 
-void
+SIXELAPI void
 sixel_frame_unref(sixel_frame_t *frame)
 {
     /* TODO: be thread safe */
@@ -93,7 +93,7 @@ sixel_frame_unref(sixel_frame_t *frame)
 }
 
 
-int
+SIXELAPI int
 sixel_frame_init(
     sixel_frame_t *frame,
     unsigned char *pixels,
@@ -116,7 +116,7 @@ sixel_frame_init(
 
 
 /* get pixels */
-unsigned char *
+SIXELAPI unsigned char *
 sixel_frame_get_pixels(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->pixels;
@@ -124,7 +124,7 @@ sixel_frame_get_pixels(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get palette */
-unsigned char *
+SIXELAPI unsigned char *
 sixel_frame_get_palette(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->palette;
@@ -132,7 +132,7 @@ sixel_frame_get_palette(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get width */
-int
+SIXELAPI int
 sixel_frame_get_width(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->width;
@@ -140,7 +140,7 @@ sixel_frame_get_width(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get height */
-int
+SIXELAPI int
 sixel_frame_get_height(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->height;
@@ -148,7 +148,7 @@ sixel_frame_get_height(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get ncolors */
-int
+SIXELAPI int
 sixel_frame_get_ncolors(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->ncolors;
@@ -156,7 +156,7 @@ sixel_frame_get_ncolors(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get pixelformat */
-int
+SIXELAPI int
 sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->pixelformat;
@@ -164,7 +164,7 @@ sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get transparent */
-int
+SIXELAPI int
 sixel_frame_get_transparent(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->transparent;
@@ -172,7 +172,7 @@ sixel_frame_get_transparent(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get transparent */
-int
+SIXELAPI int
 sixel_frame_get_multiframe(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->multiframe;
@@ -180,7 +180,7 @@ sixel_frame_get_multiframe(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get delay */
-int
+SIXELAPI int
 sixel_frame_get_delay(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->delay;
@@ -188,7 +188,7 @@ sixel_frame_get_delay(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get frame no */
-int
+SIXELAPI int
 sixel_frame_get_frame_no(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->frame_no;
@@ -196,27 +196,15 @@ sixel_frame_get_frame_no(sixel_frame_t /* in */ *frame)  /* frame object */
 
 
 /* get loop no */
-int
+SIXELAPI int
 sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->loop_count;
 }
 
 
-/* set palette */
-void
-sixel_frame_set_palette(
-    sixel_frame_t /* in */ *frame,   /* frame object */
-    unsigned char /* in */ *palette,
-    int           /* in */ ncolors)
-{
-    frame->palette = palette;
-    frame->ncolors = ncolors;
-}
-
-
-int
-sixel_strip_alpha(
+SIXELAPI int
+sixel_frame_strip_alpha(
     sixel_frame_t  /* in */ *frame,
     unsigned char  /* in */ *bgcolor
 )
@@ -230,8 +218,8 @@ sixel_strip_alpha(
     src = dst = frame->pixels;
 
     switch (frame->pixelformat) {
-    case PIXELFORMAT_RGBA8888:
-    case PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
         for (y = 0; y < frame->height; y++) {
             for (x = 0; x < frame->width; x++) {
                 if (bgcolor) {
@@ -240,12 +228,12 @@ sixel_strip_alpha(
                     *dst++ = (*src++ * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
                     *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
                     src++;
-                } else if (frame->pixelformat == PIXELFORMAT_ARGB8888){
+                } else if (frame->pixelformat == SIXEL_PIXELFORMAT_ARGB8888){
                     src++;            /* A */
                     *dst++ = *src++;  /* R */
                     *dst++ = *src++;  /* G */
                     *dst++ = *src++;  /* B */
-                } else if (frame->pixelformat == PIXELFORMAT_RGBA8888){
+                } else if (frame->pixelformat == SIXEL_PIXELFORMAT_RGBA8888){
                     *dst++ = *src++;  /* R */
                     *dst++ = *src++;  /* G */
                     *dst++ = *src++;  /* B */
@@ -253,7 +241,7 @@ sixel_strip_alpha(
                 }
             }
         }
-        frame->pixelformat = PIXELFORMAT_RGB888;
+        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     default:
         break;
@@ -263,7 +251,7 @@ sixel_strip_alpha(
 }
 
 
-int
+SIXELAPI int
 sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
 {
     unsigned char *normalized_pixels = NULL;
@@ -271,11 +259,12 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     int nret = 0;
     unsigned char *dst;
     unsigned char *src;
+    unsigned char *p;
 
     switch (frame->pixelformat) {
-    case PIXELFORMAT_PAL1:
-    case PIXELFORMAT_PAL2:
-    case PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_PAL1:
+    case SIXEL_PIXELFORMAT_PAL2:
+    case SIXEL_PIXELFORMAT_PAL4:
         size = frame->width * frame->height * 4;
         normalized_pixels = malloc(size);
         src = normalized_pixels + frame->width * frame->height * 3;
@@ -290,16 +279,16 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             free(normalized_pixels);
             return nret;
         }
-        for (; src != dst + size; ++src) {
-            *dst++ = *(frame->palette + *src * 3 + 0);
-            *dst++ = *(frame->palette + *src * 3 + 1);
-            *dst++ = *(frame->palette + *src * 3 + 2);
+        for (p = src; dst < src; ++p) {
+            *dst++ = *(frame->palette + *p * 3 + 0);
+            *dst++ = *(frame->palette + *p * 3 + 1);
+            *dst++ = *(frame->palette + *p * 3 + 2);
         }
         free(frame->pixels);
         frame->pixels = normalized_pixels;
-        frame->pixelformat = PIXELFORMAT_RGB888;
+        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
-    case PIXELFORMAT_PAL8:
+    case SIXEL_PIXELFORMAT_PAL8:
         size = frame->width * frame->height * 3;
         normalized_pixels = malloc(size);
         src = frame->pixels;
@@ -311,19 +300,19 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
         }
         free(frame->pixels);
         frame->pixels = normalized_pixels;
-        frame->pixelformat = PIXELFORMAT_RGB888;
+        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
-    case PIXELFORMAT_RGB888:
+    case SIXEL_PIXELFORMAT_RGB888:
         break;
-    case PIXELFORMAT_G8:
-    case PIXELFORMAT_GA88:
-    case PIXELFORMAT_AG88:
-    case PIXELFORMAT_RGB555:
-    case PIXELFORMAT_RGB565:
-    case PIXELFORMAT_BGR555:
-    case PIXELFORMAT_BGR565:
-    case PIXELFORMAT_RGBA8888:
-    case PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_G8:
+    case SIXEL_PIXELFORMAT_GA88:
+    case SIXEL_PIXELFORMAT_AG88:
+    case SIXEL_PIXELFORMAT_RGB555:
+    case SIXEL_PIXELFORMAT_RGB565:
+    case SIXEL_PIXELFORMAT_BGR555:
+    case SIXEL_PIXELFORMAT_BGR565:
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
         /* normalize pixelformat */
         size = frame->width * frame->height * 3;
         normalized_pixels = malloc(size);
@@ -349,7 +338,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
 }
 
 
-int
+SIXELAPI int
 sixel_frame_resize(
     sixel_frame_t *frame,
     int width,
@@ -411,9 +400,9 @@ clip(unsigned char *pixels,
     /* unused */ (void) cx;
 
     switch (pixelformat) {
-    case PIXELFORMAT_PAL8:
-    case PIXELFORMAT_G8:
-    case PIXELFORMAT_RGB888:
+    case SIXEL_PIXELFORMAT_PAL8:
+    case SIXEL_PIXELFORMAT_G8:
+    case SIXEL_PIXELFORMAT_RGB888:
         dst = pixels;
         src = pixels + cy * sx * depth + cx * depth;
         for (y = 0; y < ch; y++) {
@@ -430,7 +419,7 @@ clip(unsigned char *pixels,
 }
 
 
-int
+SIXELAPI int
 sixel_frame_clip(
     sixel_frame_t *frame,
     int x,
@@ -443,9 +432,9 @@ sixel_frame_clip(
     unsigned char *normalized_pixels;
 
     switch (frame->pixelformat) {
-    case PIXELFORMAT_PAL1:
-    case PIXELFORMAT_PAL2:
-    case PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_PAL1:
+    case SIXEL_PIXELFORMAT_PAL2:
+    case SIXEL_PIXELFORMAT_PAL4:
         normalized_pixels = malloc(frame->width * frame->height);
         ret = sixel_helper_normalize_pixelformat(normalized_pixels,
                                                  &frame->pixelformat,
@@ -480,6 +469,325 @@ sixel_frame_clip(
 
     return ret;
 }
+
+
+#if HAVE_TESTS
+static int
+test1(void)
+{
+    sixel_frame_t *frame = NULL;
+    int nret = EXIT_FAILURE;
+
+    frame = sixel_frame_create();
+    if (frame == NULL) {
+        goto error;
+    }
+    sixel_frame_ref(frame);
+    sixel_frame_unref(frame);
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_frame_unref(frame);
+    return nret;
+}
+
+
+static int
+test2(void)
+{
+    sixel_frame_t *frame = NULL;
+    int nret = EXIT_FAILURE;
+    unsigned char *pixels = malloc(4);
+    unsigned char *bgcolor = malloc(3);
+    int ret;
+
+    pixels[0] = 0x43;
+    pixels[1] = 0x89;
+    pixels[2] = 0x97;
+    pixels[3] = 0x32;
+
+    memset(bgcolor, 0x10, 3);
+
+    frame = sixel_frame_create();
+    if (frame == NULL) {
+        goto error;
+    }
+
+    ret = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_RGBA8888, NULL, 0);
+    if (ret != 0) {
+        goto error;
+    }
+
+    ret = sixel_frame_strip_alpha(frame, bgcolor);
+    if (ret != 0) {
+        goto error;
+    }
+
+    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+
+    if (frame->pixels[0] != (0x43 * 0x32 + 0x10 * (0xff - 0x32)) >> 8) {
+        goto error;
+    }
+
+    if (frame->pixels[1] != (0x89 * 0x32 + 0x10 * (0xff - 0x32)) >> 8) {
+        goto error;
+    }
+
+    if (frame->pixels[2] != (0x97 * 0x32 + 0x10 * (0xff - 0x32)) >> 8) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_frame_unref(frame);
+    return nret;
+}
+
+
+static int
+test3(void)
+{
+    sixel_frame_t *frame = NULL;
+    int nret = EXIT_FAILURE;
+    unsigned char *pixels = malloc(4);
+    int ret;
+
+    pixels[0] = 0x43;
+    pixels[1] = 0x89;
+    pixels[2] = 0x97;
+    pixels[3] = 0x32;
+
+    frame = sixel_frame_create();
+    if (frame == NULL) {
+        goto error;
+    }
+
+    ret = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_RGBA8888, NULL, 0);
+    if (ret != 0) {
+        goto error;
+    }
+
+    ret = sixel_frame_strip_alpha(frame, NULL);
+    if (ret != 0) {
+        goto error;
+    }
+
+    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+
+    if (frame->pixels[0] != 0x43) {
+        goto error;
+    }
+
+    if (frame->pixels[1] != 0x89) {
+        goto error;
+    }
+
+    if (frame->pixels[2] != 0x97) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_frame_unref(frame);
+    return nret;
+}
+
+
+static int
+test4(void)
+{
+    sixel_frame_t *frame = NULL;
+    int nret = EXIT_FAILURE;
+    unsigned char *pixels = malloc(4);
+    int ret;
+
+    pixels[0] = 0x43;
+    pixels[1] = 0x89;
+    pixels[2] = 0x97;
+    pixels[3] = 0x32;
+
+    frame = sixel_frame_create();
+    if (frame == NULL) {
+        goto error;
+    }
+
+    ret = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_ARGB8888, NULL, 0);
+    if (ret != 0) {
+        goto error;
+    }
+
+    ret = sixel_frame_strip_alpha(frame, NULL);
+    if (ret != 0) {
+        goto error;
+    }
+
+    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+
+    if (frame->pixels[0] != 0x89) {
+        goto error;
+    }
+
+    if (frame->pixels[1] != 0x97) {
+        goto error;
+    }
+
+    if (frame->pixels[2] != 0x32) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_frame_unref(frame);
+    return nret;
+}
+
+
+static int
+test5(void)
+{
+    sixel_frame_t *frame = NULL;
+    int nret = EXIT_FAILURE;
+    unsigned char *pixels = malloc(1);
+    unsigned char *palette = malloc(3);
+    int ret;
+
+    palette[0] = 0x43;
+    palette[1] = 0x89;
+    palette[2] = 0x97;
+
+    pixels[0] = 0;
+
+    frame = sixel_frame_create();
+    if (frame == NULL) {
+        goto error;
+    }
+
+    ret = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_PAL8, palette, 1);
+    if (ret != 0) {
+        goto error;
+    }
+
+    ret = sixel_frame_convert_to_rgb888(frame);
+    if (ret != 0) {
+        goto error;
+    }
+
+    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+
+    if (frame->pixels[0] != 0x43) {
+        goto error;
+    }
+
+    if (frame->pixels[1] != 0x89) {
+        goto error;
+    }
+
+    if (frame->pixels[2] != 0x97) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_frame_unref(frame);
+    return nret;
+}
+
+
+static int
+test6(void)
+{
+    sixel_frame_t *frame = NULL;
+    int nret = EXIT_FAILURE;
+    unsigned char *pixels = malloc(6);
+    unsigned char *palette = malloc(3);
+    int ret;
+
+    palette[0] = 0x43;
+    palette[1] = 0x89;
+    palette[2] = 0x97;
+
+    pixels[0] = 0;
+
+    frame = sixel_frame_create();
+    if (frame == NULL) {
+        goto error;
+    }
+
+    ret = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_PAL1, palette, 1);
+    if (ret != 0) {
+        goto error;
+    }
+
+    ret = sixel_frame_convert_to_rgb888(frame);
+    if (ret != 0) {
+        goto error;
+    }
+
+    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+        goto error;
+    }
+
+    if (frame->pixels[0] != 0x43) {
+        goto error;
+    }
+
+    if (frame->pixels[1] != 0x89) {
+        goto error;
+    }
+
+    if (frame->pixels[2] != 0x97) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_frame_unref(frame);
+    return nret;
+}
+
+
+int
+sixel_frame_tests_main(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t i;
+    typedef int (* testcase)(void);
+
+    static testcase const testcases[] = {
+        test1,
+        test2,
+        test3,
+        test4,
+        test5,
+        test6,
+    };
+
+    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
+        nret = testcases[i]();
+        if (nret != EXIT_SUCCESS) {
+            goto error;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+#endif  /* HAVE_TESTS */
 
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */

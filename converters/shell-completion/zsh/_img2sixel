@@ -99,11 +99,13 @@ _encodepolicy() {
 }
 
 _arguments -S -s -A "-*" -S \
+  {-o,--outfile}'[specify output file (default: stdout)]':files:_files \
   {-7,--7bit-mode}'[generate a sixel image for 7bit terminals (default)]' \
   {-8,--8bit-mode}'[generate a sixel image for 8bit terminals]' \
   {-p,--colors=}'[specify number of colors to reduce the image to]' \
   {-m,--mapfile=}'[transform image colors to match specified set of colors]':files:_files \
   {-e,--monochrome}'[output monochrome sixel image]' \
+  {-k,--insecure}'[allow to connect to SSL sites without certs]' \
   {-i,--invert}'[assume the terminal background color is white]' \
   {-I,--high-color}'[output 15bpp sixel image]' \
   {-u,--use-macro}'[use DECDMAC and DECINVM for GIF animation]' \

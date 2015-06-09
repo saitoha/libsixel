@@ -21,10 +21,11 @@
 
 #include "config.h"
 
-#include "sixel.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <memory.h>
 
+#include <sixel.h>
 
 static void
 get_rgb(unsigned char const *data,
@@ -35,8 +36,10 @@ get_rgb(unsigned char const *data,
         unsigned char *b)
 {
     unsigned int pixels = 0;
+#if SWAP_BYTES
     unsigned int low;
     unsigned int high;
+#endif
     int count = 0;
 
     while (count < depth) {
@@ -45,58 +48,60 @@ get_rgb(unsigned char const *data,
     }
 
     /* TODO: we should swap bytes (only necessary on LSByte first hardware?) */
+#if SWAP_BYTES
     if (depth == 2) {
         low    = pixels & 0xff;
         high   = (pixels >> 8) & 0xff;
         pixels = (low << 8) | high;
     }
+#endif
 
     switch (pixelformat) {
-    case PIXELFORMAT_RGB555:
+    case SIXEL_PIXELFORMAT_RGB555:
         *r = ((pixels >> 10) & 0x1f) << 3;
         *g = ((pixels >>  5) & 0x1f) << 3;
         *b = ((pixels >>  0) & 0x1f) << 3;
         break;
-    case PIXELFORMAT_RGB565:
+    case SIXEL_PIXELFORMAT_RGB565:
         *r = ((pixels >> 11) & 0x1f) << 3;
         *g = ((pixels >>  5) & 0x3f) << 2;
         *b = ((pixels >>  0) & 0x1f) << 3;
         break;
-    case PIXELFORMAT_RGB888:
-        *r = (pixels >>  0) & 0xff;
+    case SIXEL_PIXELFORMAT_RGB888:
+        *r = (pixels >> 16) & 0xff;
         *g = (pixels >>  8) & 0xff;
-        *b = (pixels >> 16) & 0xff;
+        *b = (pixels >>  0) & 0xff;
         break;
-    case PIXELFORMAT_BGR555:
+    case SIXEL_PIXELFORMAT_BGR555:
         *r = ((pixels >>  0) & 0x1f) << 3;
         *g = ((pixels >>  5) & 0x1f) << 3;
         *b = ((pixels >> 10) & 0x1f) << 3;
         break;
-    case PIXELFORMAT_BGR565:
+    case SIXEL_PIXELFORMAT_BGR565:
         *r = ((pixels >>  0) & 0x1f) << 3;
         *g = ((pixels >>  5) & 0x3f) << 2;
         *b = ((pixels >> 11) & 0x1f) << 3;
         break;
-    case PIXELFORMAT_BGR888:
-        *r = (pixels >> 16) & 0xff;
+    case SIXEL_PIXELFORMAT_BGR888:
+        *r = (pixels >>  0) & 0xff;
         *g = (pixels >>  8) & 0xff;
-        *b = (pixels >>  0) & 0xff;
+        *b = (pixels >> 16) & 0xff;
         break;
-    case PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_RGBA8888:
         *r = (pixels >> 24) & 0xff;
         *g = (pixels >> 16) & 0xff;
         *b = (pixels >>  8) & 0xff;
         break;
-    case PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
         *r = (pixels >> 16) & 0xff;
         *g = (pixels >>  8) & 0xff;
         *b = (pixels >>  0) & 0xff;
         break;
-    case PIXELFORMAT_GA88:
+    case SIXEL_PIXELFORMAT_GA88:
         *r = *g = *b = (pixels >> 8) & 0xff;
         break;
-    case PIXELFORMAT_G8:
-    case PIXELFORMAT_AG88:
+    case SIXEL_PIXELFORMAT_G8:
+    case SIXEL_PIXELFORMAT_AG88:
         *r = *g = *b = pixels & 0xff;
         break;
     default:
@@ -106,33 +111,33 @@ get_rgb(unsigned char const *data,
 }
 
 
-int
+SIXELAPI int
 sixel_helper_compute_depth(int pixelformat)
 {
     int depth = (-1);  /* unknown */
 
     switch (pixelformat) {
-    case PIXELFORMAT_ARGB8888:
-    case PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_RGBA8888:
         depth = 4;
         break;
-    case PIXELFORMAT_RGB888:
-    case PIXELFORMAT_BGR888:
+    case SIXEL_PIXELFORMAT_RGB888:
+    case SIXEL_PIXELFORMAT_BGR888:
         depth = 3;
         break;
-    case PIXELFORMAT_RGB555:
-    case PIXELFORMAT_RGB565:
-    case PIXELFORMAT_BGR555:
-    case PIXELFORMAT_BGR565:
-    case PIXELFORMAT_AG88:
-    case PIXELFORMAT_GA88:
+    case SIXEL_PIXELFORMAT_RGB555:
+    case SIXEL_PIXELFORMAT_RGB565:
+    case SIXEL_PIXELFORMAT_BGR555:
+    case SIXEL_PIXELFORMAT_BGR565:
+    case SIXEL_PIXELFORMAT_AG88:
+    case SIXEL_PIXELFORMAT_GA88:
         depth = 2;
         break;
-    case PIXELFORMAT_G8:
-    case PIXELFORMAT_PAL1:
-    case PIXELFORMAT_PAL2:
-    case PIXELFORMAT_PAL4:
-    case PIXELFORMAT_PAL8:
+    case SIXEL_PIXELFORMAT_G8:
+    case SIXEL_PIXELFORMAT_PAL1:
+    case SIXEL_PIXELFORMAT_PAL2:
+    case SIXEL_PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_PAL8:
         depth = 1;
         break;
     default:
@@ -181,16 +186,16 @@ expand_palette(unsigned char *dst, unsigned char const *src,
     int bpp;  /* bit per plane */
 
     switch (pixelformat) {
-    case PIXELFORMAT_PAL1:
+    case SIXEL_PIXELFORMAT_PAL1:
         bpp = 1;
         break;
-    case PIXELFORMAT_PAL2:
+    case SIXEL_PIXELFORMAT_PAL2:
         bpp = 2;
         break;
-    case PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_PAL4:
         bpp = 4;
         break;
-    case PIXELFORMAT_PAL8:
+    case SIXEL_PIXELFORMAT_PAL8:
         for (i = 0; i < width * height; ++i, ++src) {
             *dst++ = *src;
         }
@@ -222,7 +227,7 @@ expand_palette(unsigned char *dst, unsigned char const *src,
 }
 
 
-int
+SIXELAPI int
 sixel_helper_normalize_pixelformat(
     unsigned char       /* out */ *dst,             /* destination buffer */
     int                 /* out */ *dst_pixelformat, /* converted pixelformat */
@@ -232,35 +237,35 @@ sixel_helper_normalize_pixelformat(
     int                 /* in */  height)           /* height of source image */
 {
     switch (src_pixelformat) {
-    case PIXELFORMAT_G8:
+    case SIXEL_PIXELFORMAT_G8:
         (void) expand_rgb(dst, src, width, height, src_pixelformat, 1);
-        *dst_pixelformat = PIXELFORMAT_RGB888;
+        *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
-    case PIXELFORMAT_RGB565:
-    case PIXELFORMAT_RGB555:
-    case PIXELFORMAT_BGR565:
-    case PIXELFORMAT_BGR555:
-    case PIXELFORMAT_GA88:
-    case PIXELFORMAT_AG88:
+    case SIXEL_PIXELFORMAT_RGB565:
+    case SIXEL_PIXELFORMAT_RGB555:
+    case SIXEL_PIXELFORMAT_BGR565:
+    case SIXEL_PIXELFORMAT_BGR555:
+    case SIXEL_PIXELFORMAT_GA88:
+    case SIXEL_PIXELFORMAT_AG88:
         (void) expand_rgb(dst, src, width, height, src_pixelformat, 2);
-        *dst_pixelformat = PIXELFORMAT_RGB888;
+        *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
-    case PIXELFORMAT_RGB888:
-    case PIXELFORMAT_BGR888:
+    case SIXEL_PIXELFORMAT_RGB888:
+    case SIXEL_PIXELFORMAT_BGR888:
         (void) expand_rgb(dst, src, width, height, src_pixelformat, 3);
-        *dst_pixelformat = PIXELFORMAT_RGB888;
+        *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
-    case PIXELFORMAT_RGBA8888:
-    case PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
         (void) expand_rgb(dst, src, width, height, src_pixelformat, 4);
-        *dst_pixelformat = PIXELFORMAT_RGB888;
+        *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
-    case PIXELFORMAT_PAL1:
-    case PIXELFORMAT_PAL2:
-    case PIXELFORMAT_PAL4:
-        *dst_pixelformat = PIXELFORMAT_PAL8;
+    case SIXEL_PIXELFORMAT_PAL1:
+    case SIXEL_PIXELFORMAT_PAL2:
+    case SIXEL_PIXELFORMAT_PAL4:
+        *dst_pixelformat = SIXEL_PIXELFORMAT_PAL8;
         return expand_palette(dst, src, width, height, src_pixelformat);
-    case PIXELFORMAT_PAL8:
+    case SIXEL_PIXELFORMAT_PAL8:
         memcpy(dst, src, width * height);
         *dst_pixelformat = src_pixelformat;
         break;
@@ -270,6 +275,395 @@ sixel_helper_normalize_pixelformat(
 
     return 0;
 }
+
+
+#if HAVE_TESTS
+static int
+test1(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    int src_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    unsigned char src[] = { 0x46, 0xf3, 0xe5 };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if ((dst[0] << 16 | dst[1] << 8 | dst[2]) != (src[0] << 16 | src[1] << 8 | src[2])) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test1");
+    return nret;
+}
+
+
+static int
+test2(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    int src_pixelformat = SIXEL_PIXELFORMAT_RGB555;
+    unsigned char src[] = { 0x47, 0x9c };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if ((dst[0] >> 3 << 10 | dst[1] >> 3 << 5 | dst[2] >> 3) != (src[0] << 8 | src[1])) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test2");
+    return nret;
+}
+
+
+static int
+test3(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    int src_pixelformat = SIXEL_PIXELFORMAT_RGB565;
+    unsigned char src[] = { 0x47, 0x9c };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if ((dst[0] >> 3 << 11 | dst[1] >> 2 << 5 | dst[2] >> 3) != (src[0] << 8 | src[1])) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test3");
+    return nret;
+}
+
+
+static int
+test4(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    int src_pixelformat = SIXEL_PIXELFORMAT_BGR888;
+    unsigned char src[] = { 0x46, 0xf3, 0xe5 };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if ((dst[2] << 16 | dst[1] << 8 | dst[0]) != (src[0] << 16 | src[1] << 8 | src[2])) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test4");
+    return nret;
+}
+
+
+static int
+test5(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    int src_pixelformat = SIXEL_PIXELFORMAT_BGR555;
+    unsigned char src[] = { 0x23, 0xc8 };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if ((dst[2] >> 3 << 10 | dst[1] >> 3 << 5 | dst[0] >> 3) != (src[0] << 8 | src[1])) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test5");
+    return nret;
+}
+
+
+static int
+test6(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    int src_pixelformat = SIXEL_PIXELFORMAT_BGR565;
+    unsigned char src[] = { 0x47, 0x88 };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if ((dst[2] >> 3 << 11 | dst[1] >> 2 << 5 | dst[0] >> 3) != (src[0] << 8 | src[1])) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test6");
+    return nret;
+}
+
+
+static int
+test7(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    int src_pixelformat = SIXEL_PIXELFORMAT_AG88;
+    unsigned char src[] = { 0x47, 0x88 };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if (dst[0] != src[1]) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test7");
+    return nret;
+}
+
+
+static int
+test8(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    int src_pixelformat = SIXEL_PIXELFORMAT_GA88;
+    unsigned char src[] = { 0x47, 0x88 };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if (dst[0] != src[0]) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test8");
+    return nret;
+}
+
+
+static int
+test9(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    int src_pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    unsigned char src[] = { 0x46, 0xf3, 0xe5, 0xf0 };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if (dst[0] != src[0]) {
+        goto error;
+    }
+    if (dst[1] != src[1]) {
+        goto error;
+    }
+    if (dst[2] != src[2]) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test8");
+    return nret;
+}
+
+
+static int
+test10(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    int src_pixelformat = SIXEL_PIXELFORMAT_ARGB8888;
+    unsigned char src[] = { 0x46, 0xf3, 0xe5, 0xf0 };
+    int ret = 0;
+    
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if (dst[0] != src[1]) {
+        goto error;
+    }
+    if (dst[1] != src[2]) {
+        goto error;
+    }
+    if (dst[2] != src[3]) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test8");
+    return nret;
+}
+
+
+int
+sixel_pixelformat_tests_main(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t i;
+    typedef int (* testcase)(void);
+
+    static testcase const testcases[] = {
+        test1,
+        test2,
+        test3,
+        test4,
+        test5,
+        test6,
+        test7,
+        test8,
+        test9,
+        test10,
+    };
+
+    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
+        nret = testcases[i]();
+        if (nret != EXIT_SUCCESS) {
+            goto error;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+#endif  /* HAVE_TESTS */
+
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

@@ -57,7 +57,7 @@
 # include <sys/ioctl.h>
 #endif
 
-#include "easy_decode.h"
+#include "decoder.h"
 #include <sixel.h>
 
 
@@ -74,9 +74,79 @@ arg_strdup(char const *s)
 }
 
 
-int
-sixel_easy_decode(
-    sixel_decode_settings_t /* in */ *psettings)
+/* create decoder object */
+SIXELAPI sixel_decoder_t *
+sixel_decoder_create(void)
+{
+    sixel_decoder_t *decoder;
+
+    decoder = malloc(sizeof(sixel_decoder_t));
+
+    decoder->ref          = 1;
+    decoder->output       = arg_strdup("-");
+    decoder->input        = arg_strdup("-");
+
+    return decoder;
+}
+
+
+SIXELAPI void
+sixel_decoder_destroy(sixel_decoder_t *decoder)
+{
+    if (decoder) {
+        free(decoder->input);
+        free(decoder->output);
+        free(decoder);
+    }
+}
+
+
+SIXELAPI void
+sixel_decoder_ref(sixel_decoder_t *decoder)
+{
+    /* TODO: be thread safe */
+    ++decoder->ref;
+}
+
+
+SIXELAPI void
+sixel_decoder_unref(sixel_decoder_t *decoder)
+{
+    /* TODO: be thread safe */
+    if (decoder != NULL && --decoder->ref == 0) {
+        sixel_decoder_destroy(decoder);
+    }
+}
+
+
+SIXELAPI int
+sixel_decoder_setopt(
+    sixel_decoder_t /* in */ *decoder,
+    int             /* in */ arg,
+    char const      /* in */ *optarg
+)
+{
+    switch(arg) {
+    case 'i':
+        free(decoder->input);
+        decoder->input = arg_strdup(optarg);
+        break;
+    case 'o':
+        free(decoder->output);
+        decoder->output = arg_strdup(optarg);
+        break;
+    case '?':
+    default:
+        return (-1);
+    }
+
+    return 0;
+}
+
+
+SIXELAPI int
+sixel_decoder_decode(
+    sixel_decoder_t /* in */ *decoder)
 {
     unsigned char *raw_data;
     int sx, sy;
@@ -90,7 +160,7 @@ sixel_easy_decode(
     unsigned char *pixels = NULL;
     int ret = 0;
 
-    if (strcmp(psettings->input, "-") == 0) {
+    if (strcmp(decoder->input, "-") == 0) {
         /* for windows */
 #if defined(O_BINARY)
 # if HAVE__SETMODE
@@ -101,11 +171,11 @@ sixel_easy_decode(
 #endif  /* defined(O_BINARY) */
         input_fp = stdin;
     } else {
-        input_fp = fopen(psettings->input, "rb");
+        input_fp = fopen(decoder->input, "rb");
         if (!input_fp) {
 #if HAVE_ERRNO_H
             fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
-                    psettings->input, strerror(errno));
+                    decoder->input, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
             return (-1);
         }
@@ -152,109 +222,14 @@ sixel_easy_decode(
     }
 
     ret = sixel_helper_write_image_file(indexed_pixels, sx, sy, palette,
-                                        PIXELFORMAT_PAL8,
-                                        psettings->output,
-                                        FORMAT_PNG);
+                                        SIXEL_PIXELFORMAT_PAL8,
+                                        decoder->output,
+                                        SIXEL_FORMAT_PNG);
 
 end:
     free(pixels);
     return ret;
 }
-
-
-int
-sixel_easy_decode_setopt(
-    sixel_decode_settings_t /* in */ *settings,
-    int                     /* in */ arg,
-    char                    /* in */ *optarg
-)
-{
-    switch(arg) {
-    case 'i':
-        free(settings->input);
-        settings->input = arg_strdup(optarg);
-        break;
-    case 'o':
-        free(settings->output);
-        settings->output = arg_strdup(optarg);
-        break;
-    case 'V':
-        settings->show_version = 1;
-        break;
-    case 'H':
-        settings->show_help = 1;
-        break;
-    case '?':
-    default:
-        return (-1);
-    }
-
-    return 0;
-}
-
-
-/* create settings object */
-sixel_decode_settings_t *
-sixel_decode_settings_create(void)
-{
-    sixel_decode_settings_t *settings;
-
-    settings = malloc(sizeof(sixel_decode_settings_t));
-
-    settings->ref          = 1;
-    settings->output       = arg_strdup("-");
-    settings->input        = arg_strdup("-");
-    settings->show_version = 0;
-    settings->show_help    = 0;
-
-    return settings;
-}
-
-
-void
-sixel_decode_settings_destroy(sixel_decode_settings_t *settings)
-{
-    if (settings) {
-        free(settings->input);
-        free(settings->output);
-        free(settings);
-    }
-}
-
-
-void
-sixel_decode_settings_ref(sixel_decode_settings_t *settings)
-{
-    /* TODO: be thread safe */
-    ++settings->ref;
-}
-
-
-void
-sixel_decode_settings_unref(sixel_decode_settings_t *settings)
-{
-    /* TODO: be thread safe */
-    if (settings != NULL && --settings->ref == 0) {
-        sixel_decode_settings_destroy(settings);
-    }
-}
-
-
-/* get show_version flag */
-int
-sixel_decode_settings_has_version(sixel_decode_settings_t *settings)
-{
-    return settings->show_version;
-}
-
-
-/* get show_help flag */
-int
-sixel_decode_settings_has_help(sixel_decode_settings_t *settings)
-{
-    return settings->show_help;
-}
-
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
