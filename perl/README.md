@@ -1,3 +1,34 @@
+# NAME
+
+Image::Sixel - The Perl interface for libsixel (A lightweight, fast implementation of DEC SIXEL graphics codec)
+
+# SYNOPSIS
+
+```perl
+use Image::Sixel;
+
+$encoder = Image::Sixel::Encoder->new();
+$encoder->setopt("w", 400);
+$encoder->setopt("p", 16);
+$encoder->encode("images/egret.jpg");
+```
+
+```perl
+use Image::Sixel;
+
+$decoder = Image::Sixel::Decoder->new();
+$decoder->setopt("i", "images/egret.six");
+$decoder->setopt("o", "egret.png");
+$decoder->decode();
+```
+
+# DESCRIPTION
+
+This perl module provides wrapper objects for part of [libsixel](http://saitoha.github.io/libsixel/) interface.
+
+
+# LICENSE
+
 Copyright (c) 2014,2015 Hayaki Saito
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -16,3 +47,9 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+# AUTHOR
+
+Hayaki Saito <saitoha@me.com>
+

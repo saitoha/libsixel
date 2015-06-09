@@ -211,7 +211,7 @@ load_pnm(unsigned char *p, int length,
 
     *psx = width;
     *psy = height;
-    *ppixelformat = PIXELFORMAT_RGB888;
+    *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
     return result;
 }
 

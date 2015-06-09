@@ -1,4 +1,10 @@
 /*
+ * This file is derived from "stb_image.h" that is in public domain.
+ * https://github.com/nothings/stb
+ *
+ * Hayaki Saito <user@zuse.jp> modified this and re-licensed
+ * it under the MIT license.
+ *
  * Copyright (c) 2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -86,7 +92,7 @@ typedef struct
 
 /* initialize a memory-decode context */
 static void
-start_mem(gif_context_t *s, uint8_t const *buffer, int len)
+gif_start_mem(gif_context_t *s, uint8_t const *buffer, int len)
 {
     s->img_buffer = s->img_buffer_original = (uint8_t *) buffer;
     s->img_buffer_end = (uint8_t *) buffer+len;
@@ -94,7 +100,7 @@ start_mem(gif_context_t *s, uint8_t const *buffer, int len)
 
 
 static uint8_t
-get8(gif_context_t *s)
+gif_get8(gif_context_t *s)
 {
     if (s->img_buffer < s->img_buffer_end) {
         return *s->img_buffer++;
@@ -104,10 +110,10 @@ get8(gif_context_t *s)
 
 
 static int
-get16le(gif_context_t *s)
+gif_get16le(gif_context_t *s)
 {
-    int z = get8(s);
-    return z + (get8(s) << 8);
+    int z = gif_get8(s);
+    return z + (gif_get8(s) << 8);
 }
 
 
@@ -146,46 +152,46 @@ gif_parse_colortable(
     int i;
 
     for (i = 0; i < num_entries; ++i) {
-        pal[i][2] = get8(s);
-        pal[i][1] = get8(s);
-        pal[i][0] = get8(s);
+        pal[i][2] = gif_get8(s);
+        pal[i][1] = gif_get8(s);
+        pal[i][0] = gif_get8(s);
     }
 }
 
 
 static int
-load_gif_header(
+gif_load_header(
     gif_context_t /* in */ *s,
     gif_t         /* in */ *g)
 {
     uint8_t version;
-    if (get8(s) != 'G') {
+    if (gif_get8(s) != 'G') {
         return (-1);
     }
-    if (get8(s) != 'I') {
+    if (gif_get8(s) != 'I') {
         return (-1);
     }
-    if (get8(s) != 'F') {
+    if (gif_get8(s) != 'F') {
         return (-1);
     }
-    if (get8(s) != '8') {
+    if (gif_get8(s) != '8') {
         return (-1);
     }
 
-    version = get8(s);
+    version = gif_get8(s);
 
     if (version != '7' && version != '9') {
         return (-1);
     }
-    if (get8(s) != 'a') {
+    if (gif_get8(s) != 'a') {
         return (-1);
     }
 
-    g->w = get16le(s);
-    g->h = get16le(s);
-    g->flags = get8(s);
-    g->bgindex = get8(s);
-    g->ratio = get8(s);
+    g->w = gif_get16le(s);
+    g->h = gif_get16le(s);
+    g->flags = gif_get8(s);
+    g->bgindex = gif_get8(s);
+    g->ratio = gif_get8(s);
     g->transparent = -1;
     g->loop_count = -1;
 
@@ -197,8 +203,8 @@ load_gif_header(
 }
 
 
-int
-init_gif_frame(
+static int
+gif_init_frame(
     sixel_frame_t /* in */ *frame,
     gif_t         /* in */ *pg,
     unsigned char /* in */ *bgcolor,
@@ -221,7 +227,7 @@ init_gif_frame(
         return (-1);
     }
     if (frame->ncolors <= reqcolors && fuse_palette) {
-        frame->pixelformat = PIXELFORMAT_PAL8;
+        frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
         free(frame->pixels);
         frame->pixels = malloc(frame->width * frame->height);
         memcpy(frame->pixels, pg->out, frame->width * frame->height);
@@ -253,7 +259,7 @@ init_gif_frame(
             }
         }
     } else {
-        frame->pixelformat = PIXELFORMAT_RGB888;
+        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
         frame->pixels = malloc(pg->w * pg->h * 3);
         for (i = 0; i < pg->w * pg->h; ++i) {
             frame->pixels[i * 3 + 0] = pg->color_table[pg->out[i] * 3 + 2];
@@ -262,7 +268,7 @@ init_gif_frame(
         }
     }
     if (frame->pixels == NULL) {
-        fprintf(stderr, "init_gif_frame() failed.\n");
+        fprintf(stderr, "gif_init_frame() failed.\n");
         return (-1);
     }
     frame->multiframe = (pg->loop_count != (-1));
@@ -272,7 +278,7 @@ init_gif_frame(
 
 
 static void
-out_gif_code(
+gif_out_code(
     gif_t    /* in */ *g,
     uint16_t /* in */ code
 )
@@ -280,7 +286,7 @@ out_gif_code(
     /* recurse to decode the prefixes, since the linked-list is backwards,
        and working backwards through an interleaved image would be nasty */
     if (g->codes[code].prefix >= 0) {
-        out_gif_code(g, g->codes[code].prefix);
+        gif_out_code(g, g->codes[code].prefix);
     }
 
     if (g->cur_y >= g->max_y) {
@@ -304,7 +310,7 @@ out_gif_code(
 
 
 static int
-process_gif_raster(
+gif_process_raster(
     gif_context_t /* in */ *s,
     gif_t         /* in */ *g
 )
@@ -315,7 +321,7 @@ process_gif_raster(
     int32_t codesize, codemask, avail, oldcode, bits, valid_bits, clear;
     gif_lzw *p;
 
-    lzw_cs = get8(s);
+    lzw_cs = gif_get8(s);
     clear = 1 << lzw_cs;
     first = 1;
     codesize = lzw_cs + 1;
@@ -336,13 +342,13 @@ process_gif_raster(
     for(;;) {
         if (valid_bits < codesize) {
             if (len == 0) {
-                len = get8(s); /* start new block */
+                len = gif_get8(s); /* start new block */
                 if (len == 0) {
                     return SIXEL_SUCCESS;
                 }
             }
             --len;
-            bits |= (int32_t) get8(s) << valid_bits;
+            bits |= (int32_t) gif_get8(s) << valid_bits;
             valid_bits += 8;
         } else {
             int32_t code = bits & codemask;
@@ -357,7 +363,7 @@ process_gif_raster(
                 first = 0;
             } else if (code == clear + 1) { /* end of stream code */
                 gif_skip(s, len);
-                while ((len = get8(s)) > 0) {
+                while ((len = gif_get8(s)) > 0) {
                    gif_skip(s,len);
                 }
                 return SIXEL_SUCCESS;
@@ -383,7 +389,7 @@ process_gif_raster(
                     return SIXEL_FAILED;
                 }
 
-                out_gif_code(g, (uint16_t) code);
+                gif_out_code(g, (uint16_t) code);
 
                 if ((avail & codemask) == 0 && avail <= 0x0FFF) {
                     codesize++;
@@ -412,15 +418,15 @@ gif_load_next(
     uint8_t buffer[256];
 
     for (;;) {
-        switch (get8(s)) {
+        switch (gif_get8(s)) {
         case 0x2C: /* Image Descriptor */
         {
             int32_t x, y, w, h;
 
-            x = get16le(s);
-            y = get16le(s);
-            w = get16le(s);
-            h = get16le(s);
+            x = gif_get16le(s);
+            y = gif_get16le(s);
+            w = gif_get16le(s);
+            h = gif_get16le(s);
             if (((x + w) > (g->w)) || ((y + h) > (g->h))) {
                 fprintf(stderr,
                         "Corrupt GIF.\n" "reason: bad Image Descriptor.\n");
@@ -435,7 +441,7 @@ gif_load_next(
             g->cur_x   = g->start_x;
             g->cur_y   = g->start_y;
 
-            g->lflags = get8(s);
+            g->lflags = gif_get8(s);
 
             if (g->lflags & 0x40) {
                 g->step = 8 * g->line_size; /* first interlaced spacing */
@@ -465,41 +471,41 @@ gif_load_next(
                 return SIXEL_FAILED;
             }
 
-            return process_gif_raster(s, g);
+            return gif_process_raster(s, g);
         }
 
         case 0x21: /* Comment Extension. */
         {
             int len;
-            switch (get8(s)) {
+            switch (gif_get8(s)) {
             case 0x01: /* Plain Text Extension */
                 break;
             case 0x21: /* Comment Extension */
                 break;
             case 0xF9: /* Graphic Control Extension */
-                len = get8(s); /* block size */
+                len = gif_get8(s); /* block size */
                 if (len == 4) {
-                    g->eflags = get8(s);
-                    g->delay = get16le(s); /* delay */
-                    g->transparent = get8(s);
+                    g->eflags = gif_get8(s);
+                    g->delay = gif_get16le(s); /* delay */
+                    g->transparent = gif_get8(s);
                 } else {
                     gif_skip(s, len);
                     break;
                 }
                 break;
             case 0xFF: /* Application Extension */
-                len = get8(s); /* block size */
+                len = gif_get8(s); /* block size */
                 gif_getn(s, buffer, len);
                 buffer[len] = 0;
                 if (len == 11 && strcmp((char *)buffer, "NETSCAPE2.0") == 0) {
-                    if (get8(s) == 0x03) {
+                    if (gif_get8(s) == 0x03) {
                         /* loop count */
-                        switch (get8(s)) {
+                        switch (gif_get8(s)) {
                         case 0x00:
                             g->loop_count = 1;
                             break;
                         case 0x01:
-                            g->loop_count = get16le(s);
+                            g->loop_count = gif_get16le(s);
                             break;
                         }
                     }
@@ -508,7 +514,7 @@ gif_load_next(
             default:
                 break;
             }
-            while ((len = get8(s)) != 0) {
+            while ((len = gif_get8(s)) != 0) {
                 gif_skip(s, len);
             }
             break;
@@ -551,9 +557,9 @@ load_gif(
     if (frame == NULL) {
         return SIXEL_FAILED;
     }
-    start_mem(&s, buffer, size);
+    gif_start_mem(&s, buffer, size);
     memset(&g, 0, sizeof(g));
-    ret = load_gif_header(&s, &g);
+    ret = gif_load_header(&s, &g);
     if (ret != SIXEL_SUCCESS) {
         goto end;
     }
@@ -571,7 +577,7 @@ load_gif(
         frame->frame_no = 0;
 
         gif_rewind(&s);
-        ret = load_gif_header(&s, &g);
+        ret = gif_load_header(&s, &g);
         if (ret != 0) {
             goto end;
         }
@@ -587,7 +593,7 @@ load_gif(
                 break;
             }
 
-            ret = init_gif_frame(frame, &g, bgcolor, reqcolors, fuse_palette);
+            ret = gif_init_frame(frame, &g, bgcolor, reqcolors, fuse_palette);
             if (ret != 0) {
                 goto end;
             }
@@ -608,10 +614,10 @@ load_gif(
         if (g.loop_count == (-1)) {
             break;
         }
-        if (loop_control == LOOP_DISABLE || frame->frame_no == 1) {
+        if (loop_control == SIXEL_LOOP_DISABLE || frame->frame_no == 1) {
             break;
         }
-        if (loop_control == LOOP_AUTO && frame->loop_count == g.loop_count) {
+        if (loop_control == SIXEL_LOOP_AUTO && frame->loop_count == g.loop_count) {
             break;
         }
     }

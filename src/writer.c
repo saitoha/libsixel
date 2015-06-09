@@ -84,9 +84,9 @@ write_png_to_file(
     unsigned char *dst;
 
     switch (pixelformat) {
-    case PIXELFORMAT_PAL1:
-    case PIXELFORMAT_PAL2:
-    case PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_PAL1:
+    case SIXEL_PIXELFORMAT_PAL2:
+    case SIXEL_PIXELFORMAT_PAL4:
         new_pixels = malloc(width * height * 4);
         src = new_pixels + width * height * 3;
         dst = pixels = new_pixels;
@@ -104,7 +104,7 @@ write_png_to_file(
             *dst++ = *(palette + *src * 3 + 2);
         }
         break;
-    case PIXELFORMAT_PAL8:
+    case SIXEL_PIXELFORMAT_PAL8:
         src = data;
         dst = pixels = new_pixels = malloc(width * height * 3);
         for (i = 0; i < width * height; ++i, ++src) {
@@ -113,19 +113,19 @@ write_png_to_file(
             *dst++ = *(palette + *src * 3 + 2);
         }
         break;
-    case PIXELFORMAT_RGB888:
+    case SIXEL_PIXELFORMAT_RGB888:
         pixels = data;
         break;
-    case PIXELFORMAT_G8:
-    case PIXELFORMAT_RGB565:
-    case PIXELFORMAT_RGB555:
-    case PIXELFORMAT_BGR565:
-    case PIXELFORMAT_BGR555:
-    case PIXELFORMAT_GA88:
-    case PIXELFORMAT_AG88:
-    case PIXELFORMAT_BGR888:
-    case PIXELFORMAT_RGBA8888:
-    case PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_G8:
+    case SIXEL_PIXELFORMAT_RGB565:
+    case SIXEL_PIXELFORMAT_RGB555:
+    case SIXEL_PIXELFORMAT_BGR565:
+    case SIXEL_PIXELFORMAT_BGR555:
+    case SIXEL_PIXELFORMAT_GA88:
+    case SIXEL_PIXELFORMAT_AG88:
+    case SIXEL_PIXELFORMAT_BGR888:
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
         pixels = new_pixels = malloc(width * height * 3);
         ret = sixel_helper_normalize_pixelformat(pixels,
                                                  &pixelformat,
@@ -235,21 +235,21 @@ sixel_helper_write_image_file(
     int nret = (-1);
 
     switch (imageformat) {
-    case FORMAT_PNG:
+    case SIXEL_FORMAT_PNG:
         nret = write_png_to_file(data, width, height, palette,
                                  pixelformat, filename);
         break;
-    case FORMAT_GIF:
-    case FORMAT_BMP:
-    case FORMAT_JPG:
-    case FORMAT_TGA:
-    case FORMAT_WBMP:
-    case FORMAT_TIFF:
-    case FORMAT_SIXEL:
-    case FORMAT_PNM:
-    case FORMAT_GD2:
-    case FORMAT_PSD:
-    case FORMAT_HDR:
+    case SIXEL_FORMAT_GIF:
+    case SIXEL_FORMAT_BMP:
+    case SIXEL_FORMAT_JPG:
+    case SIXEL_FORMAT_TGA:
+    case SIXEL_FORMAT_WBMP:
+    case SIXEL_FORMAT_TIFF:
+    case SIXEL_FORMAT_SIXEL:
+    case SIXEL_FORMAT_PNM:
+    case SIXEL_FORMAT_GD2:
+    case SIXEL_FORMAT_PSD:
+    case SIXEL_FORMAT_HDR:
     default:
         nret = (-1);
         break;
@@ -268,7 +268,7 @@ test1(void)
     unsigned char pixels[] = {0xff, 0xff, 0xff};
 
     ret = sixel_helper_write_image_file(
-        pixels, 1, 1, NULL, PIXELFORMAT_RGB888, "output.gif", FORMAT_GIF);
+        pixels, 1, 1, NULL, SIXEL_PIXELFORMAT_RGB888, "output.gif", FORMAT_GIF);
 
     if (ret != (-1)) {
         goto error;
@@ -288,7 +288,7 @@ test2(void)
     unsigned char pixels[] = {0xff, 0xff, 0xff};
 
     ret = sixel_helper_write_image_file(
-        pixels, 1, 1, NULL, PIXELFORMAT_RGB888, "test-output.png", FORMAT_PNG);
+        pixels, 1, 1, NULL, SIXEL_PIXELFORMAT_RGB888, "test-output.png", FORMAT_PNG);
 
     if (ret != 0) {
         goto error;

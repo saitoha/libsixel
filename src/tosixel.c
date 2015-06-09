@@ -399,7 +399,7 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
 #endif
 
     if (!bodyonly && (ncolors != 2 || keycolor == (-1))) {
-        if (context->palette_type == PALETTETYPE_HLS) {
+        if (context->palette_type == SIXEL_PALETTETYPE_HLS) {
             for (n = 0; n < ncolors; n++) {
                 nret = output_hls_palette_definition(context, palette, n, keycolor);
                 if (nret != 0) {
@@ -418,7 +418,7 @@ sixel_encode_body(unsigned char *pixels, int width, int height,
 
     for (y = i = 0; y < height; y++) {
         int fillable;
-        if (context->encode_policy != ENCODEPOLICY_SIZE) {
+        if (context->encode_policy != SIXEL_ENCODEPOLICY_SIZE) {
             fillable = 0;
         }
         else if (palstate) {
@@ -616,9 +616,9 @@ sixel_encode_dither(unsigned char *pixels, int width, int height,
     int nret = (-1);
 
     switch (dither->pixelformat) {
-    case PIXELFORMAT_PAL1:
-    case PIXELFORMAT_PAL2:
-    case PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_PAL1:
+    case SIXEL_PIXELFORMAT_PAL2:
+    case SIXEL_PIXELFORMAT_PAL4:
         paletted_pixels = malloc(width * height * 3);
         if (paletted_pixels == NULL) {
             goto end;
@@ -633,10 +633,10 @@ sixel_encode_dither(unsigned char *pixels, int width, int height,
         }
         input_pixels = paletted_pixels;
         break;
-    case PIXELFORMAT_PAL8:
-    case PIXELFORMAT_G8:
-    case PIXELFORMAT_GA88:
-    case PIXELFORMAT_AG88:
+    case SIXEL_PIXELFORMAT_PAL8:
+    case SIXEL_PIXELFORMAT_G8:
+    case SIXEL_PIXELFORMAT_GA88:
+    case SIXEL_PIXELFORMAT_AG88:
         input_pixels = pixels;
         break;
     default:
@@ -1014,32 +1014,32 @@ sixel_apply_15bpp_dither(
 {
     /* apply floyd steinberg dithering */
     switch (method_for_diffuse) {
-    case DIFFUSE_FS:
+    case SIXEL_DIFFUSE_FS:
         if (x < width - 1 && y < height - 1) {
             dither_func_fs(pixels, width);
         }
         break;
-    case DIFFUSE_ATKINSON:
+    case SIXEL_DIFFUSE_ATKINSON:
         if (x < width - 2 && y < height - 2) {
             dither_func_atkinson(pixels, width);
         }
         break;
-    case DIFFUSE_JAJUNI:
+    case SIXEL_DIFFUSE_JAJUNI:
         if (x < width - 2 && y < height - 2) {
             dither_func_jajuni(pixels, width);
         }
         break;
-    case DIFFUSE_STUCKI:
+    case SIXEL_DIFFUSE_STUCKI:
         if (x < width - 2 && y < height - 2) {
             dither_func_stucki(pixels, width);
         }
         break;
-    case DIFFUSE_BURKES:
+    case SIXEL_DIFFUSE_BURKES:
         if (x < width - 2 && y < height - 1) {
             dither_func_burkes(pixels, width);
         }
         break;
-    case DIFFUSE_NONE:
+    case SIXEL_DIFFUSE_NONE:
     default:
         dither_func_none(pixels, width);
         break;
@@ -1067,7 +1067,7 @@ sixel_encode_highcolor(unsigned char *pixels, int width, int height,
                    + maxcolors       /* for rgb2pal */
                    + width * 6;      /* for marks */
 
-    if (dither->pixelformat != PIXELFORMAT_RGB888) {
+    if (dither->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         /* normalize pixelfromat */
         normalized_pixels = malloc(width * height * 3);
         if (normalized_pixels == NULL) {
@@ -1241,7 +1241,7 @@ sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
 
     (void) depth;
 
-    if (dither->quality_mode == QUALITY_HIGHCOLOR) {
+    if (dither->quality_mode == SIXEL_QUALITY_HIGHCOLOR) {
         nret = sixel_encode_highcolor(pixels, width, height,
                                       dither, context);
     } else {

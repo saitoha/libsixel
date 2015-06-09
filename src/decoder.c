@@ -222,9 +222,9 @@ sixel_decoder_decode(
     }
 
     ret = sixel_helper_write_image_file(indexed_pixels, sx, sy, palette,
-                                        PIXELFORMAT_PAL8,
+                                        SIXEL_PIXELFORMAT_PAL8,
                                         decoder->output,
-                                        FORMAT_PNG);
+                                        SIXEL_FORMAT_PNG);
 
 end:
     free(pixels);
