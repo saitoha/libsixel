@@ -933,6 +933,8 @@ sixel_encoder_create(void)
     encoder->cancel_flag           = NULL;
     encoder->dither_cache          = NULL;
 
+    (void) parse_x_colorspec(getenv("SIXEL_BGCOLOR"), &encoder->bgcolor);
+
     return encoder;
 }
 
