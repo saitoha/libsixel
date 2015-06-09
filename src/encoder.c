@@ -1235,9 +1235,7 @@ sixel_encoder_setopt(
         if (encoder->bgcolor) {
             free(encoder->bgcolor);
         }
-        if (parse_x_colorspec(optarg, &encoder->bgcolor) == 0) {
-            encoder->palette_type = SIXEL_PALETTETYPE_AUTO;
-        } else {
+        if (parse_x_colorspec(optarg, &encoder->bgcolor) != 0) {
             fprintf(stderr,
                     "Cannot parse bgcolor option.\n");
             goto argerr;
