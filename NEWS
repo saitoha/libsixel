@@ -50,6 +50,12 @@
 
 * core: Update stb_image_write.h to version 0.94
 
+* Add Perl interface
+
+* Add Python interface
+
+* Add PHP interface
+
 * A lot of bug fixes and minor improvements.
   Thanks to @msmhrt, @ttdoda, and @msmhrt.
 
