@@ -827,15 +827,15 @@ date will be written clearly.
 
 kmiya also said this is compatible with MIT/BSD/GPL.
 
-### stbi-1.41
+### stbi-2.06
 
-This software includes `stbi-1.41` (stb_image.h),
+This software includes `stbi-2.06` (stb_image.h),
 public domain JPEG/PNG reader.
 
 https://github.com/nothings/stb
 
 
-### stbiw-0.92
+### stbiw-0.94
 
 This software includes `stbiw-0.94` (stb_image_write.h),
 public domain PNG/BMP/TGA writer.

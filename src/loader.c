@@ -1021,7 +1021,7 @@ load_with_builtin(
             return SIXEL_FAILED;
         }
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);
-        frame->pixels = stbi_load_main(&s, &frame->width, &frame->height, &depth, 3);
+        frame->pixels = stbi__load_main(&s, &frame->width, &frame->height, &depth, 3);
         if (!frame->pixels) {
             fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
                     stbi_failure_reason());

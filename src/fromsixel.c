@@ -1,5 +1,5 @@
 /*
- * this file is derived from "sixel" original version (2014-3-2)
+ * This file is derived from "sixel" original version (2014-3-2)
  * http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
  *
  * Initial developer of this file is kmiya@culti.
