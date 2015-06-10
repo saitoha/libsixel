@@ -64,6 +64,7 @@
 #endif
 
 #include "encoder.h"
+#include "rgblookup.h"
 #include <sixel.h>
 
 
@@ -90,8 +91,14 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
     unsigned long v;
     char *endptr;
     char *buf = NULL;
-
-    if (s[0] == 'r' && s[1] == 'g' && s[2] == 'b' && s[3] == ':') {
+    struct color const *pcolor;
+    pcolor = lookup_rgb(s, strlen(s));
+    if (pcolor) {
+        *bgcolor = malloc(3);
+        (*bgcolor)[0] = pcolor->r;
+        (*bgcolor)[1] = pcolor->g;
+        (*bgcolor)[2] = pcolor->b;
+    } else if (s[0] == 'r' && s[1] == 'g' && s[2] == 'b' && s[3] == ':') {
         p = buf = arg_strdup(s + 4);
         while (*p) {
             v = 0;
@@ -888,6 +895,7 @@ SIXELAPI sixel_encoder_t *
 sixel_encoder_create(void)
 {
     sixel_encoder_t *encoder;
+    char const *default_color;
 
     encoder = malloc(sizeof(sixel_encoder_t));
     if (encoder == NULL) {
@@ -932,6 +940,11 @@ sixel_encoder_create(void)
     encoder->finsecure             = 0;
     encoder->cancel_flag           = NULL;
     encoder->dither_cache          = NULL;
+
+    default_color = getenv("SIXEL_BGCOLOR");
+    if (default_color) {
+        (void) parse_x_colorspec(default_color, &encoder->bgcolor);
+    }
 
     return encoder;
 }
@@ -1235,9 +1248,7 @@ sixel_encoder_setopt(
         if (encoder->bgcolor) {
             free(encoder->bgcolor);
         }
-        if (parse_x_colorspec(optarg, &encoder->bgcolor) == 0) {
-            encoder->palette_type = SIXEL_PALETTETYPE_AUTO;
-        } else {
+        if (parse_x_colorspec(optarg, &encoder->bgcolor) != 0) {
             fprintf(stderr,
                     "Cannot parse bgcolor option.\n");
             goto argerr;
