@@ -59,9 +59,16 @@ tests_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 tests_LDADD = $(top_builddir)/src/libsixel.la
 endif
 
+dist_man_MANS = sixel.5
+
 unittest: all
 if COND_TESTS
 	./tests
 endif
 
-dist_man_MANS = sixel.5
+gen-rgblookup: rgblookup.gperf
+	gperf -C -N=lookup_rgb --ignore-case -P $< |\
+	sed 's/{""}/\{"", 0, 0, 0\}/g'             |\
+	astyle                                     > rgblookup.h
+
+
