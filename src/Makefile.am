@@ -7,7 +7,7 @@ CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = \
-                output.c \
+		output.c \
 		output.h \
 		fromsixel.c \
 		tosixel.c \
@@ -23,8 +23,8 @@ libsixel_la_SOURCES = \
 		loader.c \
 		frompnm.c \
 		frompnm.h \
-                fromgif.c \
-                fromgif.h \
+		fromgif.c \
+		fromgif.h \
 		encoder.c \
 		encoder.h \
 		decoder.c \
@@ -33,7 +33,8 @@ libsixel_la_SOURCES = \
 		writer.c \
 		writer.h \
 		stb_image_write.c \
-		stb_image_write.h
+		stb_image_write.h \
+		rgblookup.h
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/
 libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(LIBCURL_CFLAGS) \
@@ -58,9 +59,16 @@ tests_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 tests_LDADD = $(top_builddir)/src/libsixel.la
 endif
 
+dist_man_MANS = sixel.5
+
 unittest: all
 if COND_TESTS
 	./tests
 endif
 
-dist_man_MANS = sixel.5
+gen-rgblookup: rgblookup.gperf
+	gperf -C -N lookup_rgb --ignore-case $< |\
+	sed 's/{""}/\{"", 0, 0, 0\}/g'          |\
+	astyle                                  > rgblookup.h
+
+
