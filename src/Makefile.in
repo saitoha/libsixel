@@ -430,6 +430,7 @@ libsixel_la_LIBADD = -lm \
 @COND_TESTS_TRUE@tests_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @COND_TESTS_TRUE@tests_LDADD = $(top_builddir)/src/libsixel.la
 dist_man_MANS = sixel.5
+EXTRA_DIST = rgblookup.gperf
 all: all-am
 
 .SUFFIXES:
