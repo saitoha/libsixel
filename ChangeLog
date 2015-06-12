@@ -1,3 +1,69 @@
+2015-06-11  Hayaki Saito <user@zuse.jp>
+
+  * src/Makefile.am, src/Makefile.in: Add rgblookup.gprf to distributed files
+
+  * src/Makefile.am, src/Makefile.in, src/rgblookup.h: Re-generate rgblookup.h
+
+  * src/rgblookup.gperf: Add gperf file generated from X11's rgb.txt
+
+2015-06-10  Hayaki Saito <user@zuse.jp>
+
+  * src/encoder.c: Fix segfault occurs when environment variable $SIXEL_BGCOLOR
+  is not set
+
+  * src/Makefile.am, src/Makefile.in, src/encoder.c, src/rgblookup.h: Parse X11
+  color name which is specified with -B option
+
+  * src/encoder.c: Introduce SIXEL_BGCOLOR environment (for Issue #27)
+
+  * src/encoder.c: Strip unneeded substitution to palette type option when -B
+  option is specified
+
+2015-06-09  Hayaki Saito <user@zuse.jp>
+
+  * NEWS: Update NEWS
+
+  * NEWS: Update NEWS for release 1.5
+
+  * LICENSE.stb: Update license file of stb
+
+  * src/fromgif.c: gif loader: cleanup
+
+  * src/fromgif.c: gif loader: update license notice
+
+  * src/fromsixel.c: Minor fix
+
+  * patches/applied/stb_image.h.diff: Remove directory "patches"
+
+  * src/loader.c, src/stb_image.h: Update stb_image to version 2.06
+
+2015-06-08  Hayaki Saito <user@zuse.jp>
+
+  * LICENSE: Update LICENCE file
+
+  * include/sixel.h.in, src/decoder.c, src/dither.c, src/encoder.c,
+  src/frame.c, src/fromgif.c, src/frompnm.c, src/loader.c, src/output.c,
+  src/pixelformat.c, src/quant.c, src/scale.c, src/tosixel.c, src/writer.c: Use
+  constant symbols which start with the prefix SIXEL_
+
+  * perl/cpanfile: Add cpanfile for perl interface
+
+2015-06-07  Hayaki Saito <user@zuse.jp>
+
+  * perl/README.md, perl/t/sixel.t: Minor fixes
+
+  * perl/MANIFEST, perl/README, perl/README.md: Rename the README of perl
+  module
+
+2015-06-05  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Copy gdk's pixbuf memory to libsixel-internal chunk
+  with attention to image stride (reported by @ttdoda, Issue #43)
+
+2015-06-02  Hayaki Saito <user@zuse.jp>
+
+  * NEWS: Update NEWS
+
 2015-05-29  Hayaki Saito <user@zuse.jp>
 
   * configure, configure.ac: Correct wrong help string of ./configure
