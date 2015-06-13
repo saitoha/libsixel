@@ -81,13 +81,13 @@ arg_strdup(char const *s)
 }
 
 
-static int
+static SIXELSTATUS
 parse_x_colorspec(char const *s, unsigned char **bgcolor)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     char *p;
     unsigned char components[3];
     int index = 0;
-    int ret = 0;
     unsigned long v;
     char *endptr;
     char *buf = NULL;
@@ -95,6 +95,10 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
     pcolor = lookup_rgb(s, strlen(s));
     if (pcolor) {
         *bgcolor = malloc(3);
+        if (*bgcolor == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         (*bgcolor)[0] = pcolor->r;
         (*bgcolor)[1] = pcolor->g;
         (*bgcolor)[2] = pcolor->b;
@@ -134,10 +138,14 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
             ++p;
         }
         if (index != 3 || *p != '\0' || *p == '/') {
-            ret = (-1);
+            status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
         *bgcolor = malloc(3);
+        if (*bgcolor == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         (*bgcolor)[0] = components[0];
         (*bgcolor)[1] = components[1];
         (*bgcolor)[2] = components[2];
@@ -153,15 +161,19 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
             } else if (*endptr == '\0') {
                 break;
             } else {
-                ret = (-1);
+                status = SIXEL_BAD_ARGUMENT;
                 goto end;
             }
         }
         if (endptr - p > 12) {
-            ret = (-1);
+            status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
         *bgcolor = malloc(3);
+        if (*bgcolor == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         switch (endptr - p) {
         case 3:
             (*bgcolor)[0] = (unsigned char)(p[0] << 4);
@@ -184,20 +196,19 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
             (*bgcolor)[2] = (unsigned char)(p[8] << 4 | p[9]);
             break;
         default:
-            ret = (-1);
+            status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
     } else {
-        ret = (-1);
+        status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
 
-    ret = 0;
-
+    status = SIXEL_OK;
 end:
     free(buf);
 
-    return ret;
+    return status;
 }
 
 
@@ -265,11 +276,11 @@ typedef struct sixel_callback_context_for_mapfile {
 } sixel_callback_context_for_mapfile_t;
 
 
-static int
+static SIXELSTATUS
 load_image_callback_for_palette(sixel_frame_t *frame, void *data)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     sixel_callback_context_for_mapfile_t *callback_context;
-    int ret = (-1);
 
     callback_context = (sixel_callback_context_for_mapfile_t *)data;
 
@@ -287,7 +298,7 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
         }
         sixel_dither_set_palette(callback_context->dither,
                                  sixel_frame_get_palette(frame));
-        ret = 0;
+        status = SIXEL_OK;
         break;
     default:
         callback_context->dither = sixel_dither_create(callback_context->reqcolors);
@@ -295,15 +306,15 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
             goto end;
         }
 
-        ret = sixel_dither_initialize(callback_context->dither,
-                                      sixel_frame_get_pixels(frame),
-                                      sixel_frame_get_width(frame),
-                                      sixel_frame_get_height(frame),
-                                      sixel_frame_get_pixelformat(frame),
-                                      SIXEL_LARGE_NORM,
-                                      SIXEL_REP_CENTER_BOX,
-                                      SIXEL_QUALITY_HIGH);
-        if (ret != 0) {
+        status = sixel_dither_initialize(callback_context->dither,
+                                         sixel_frame_get_pixels(frame),
+                                         sixel_frame_get_width(frame),
+                                         sixel_frame_get_height(frame),
+                                         sixel_frame_get_pixelformat(frame),
+                                         SIXEL_LARGE_NORM,
+                                         SIXEL_REP_CENTER_BOX,
+                                         SIXEL_QUALITY_HIGH);
+        if (SIXEL_FAILED(status)) {
             sixel_dither_unref(callback_context->dither);
             goto end;
         }
@@ -311,117 +322,129 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
     }
 
 end:
-    return ret;
+    return status;
 }
 
 
-static sixel_dither_t *
+static SIXELSTATUS
 prepare_specified_palette(
+    sixel_dither_t **dither,
     char const *mapfile,
     int reqcolors,
     unsigned char *bgcolor,
     int finsecure,
     int const *cancel_flag)
 {
-    int ret = (-1);
+    int status = SIXEL_FALSE;
 
     sixel_callback_context_for_mapfile_t callback_context;
 
     callback_context.reqcolors = reqcolors;
     callback_context.dither = NULL;
 
-    ret = sixel_helper_load_image_file(mapfile,
-                                       1,   /* fstatic */
-                                       1,   /* fuse_palette */
-                                       256, /* reqcolors */
-                                       bgcolor,
-                                       SIXEL_LOOP_DISABLE,
-                                       load_image_callback_for_palette,
-                                       finsecure,
-                                       cancel_flag,
-                                       &callback_context);
-    if (ret != 0) {
-        return NULL;
+    status = sixel_helper_load_image_file(mapfile,
+                                          1,   /* fstatic */
+                                          1,   /* fuse_palette */
+                                          256, /* reqcolors */
+                                          bgcolor,
+                                          SIXEL_LOOP_DISABLE,
+                                          load_image_callback_for_palette,
+                                          finsecure,
+                                          cancel_flag,
+                                          &callback_context);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
-    return callback_context.dither;
+    *dither = callback_context.dither;
+
+    return status;
 }
 
 
-static sixel_dither_t *
-prepare_palette(sixel_dither_t *former_dither,
+static SIXELSTATUS
+prepare_palette(sixel_dither_t **dither,
+                sixel_dither_t *former_dither,
                 sixel_frame_t *frame,
                 sixel_encoder_t *encoder)
 {
-    sixel_dither_t *dither;
-    int ret;
+    SIXELSTATUS status = SIXEL_OK;
     int histogram_colors;
 
     if (encoder->highcolor) {
         if (former_dither) {
-            return former_dither;
+            *dither = former_dither;
+        } else {
+            *dither = sixel_dither_create(-1);
         }
-        dither = sixel_dither_create(-1);
     } else if (encoder->monochrome) {
         if (former_dither) {
-            return former_dither;
+            *dither = former_dither;
+        } else {
+            *dither = prepare_monochrome_palette(encoder->finvert);
         }
-        dither = prepare_monochrome_palette(encoder->finvert);
     } else if (encoder->mapfile) {
         if (former_dither) {
-            return former_dither;
+            *dither = former_dither;
+        } else {
+            status = prepare_specified_palette(dither,
+                                               encoder->mapfile,
+                                               encoder->reqcolors,
+                                               encoder->bgcolor,
+                                               encoder->finsecure,
+                                               encoder->cancel_flag);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
         }
-        dither = prepare_specified_palette(encoder->mapfile,
-                                           encoder->reqcolors,
-                                           encoder->bgcolor,
-                                           encoder->finsecure,
-                                           encoder->cancel_flag);
     } else if (encoder->builtin_palette) {
         if (former_dither) {
-            return former_dither;
+            *dither = former_dither;
+        } else {
+            *dither = prepare_builtin_palette(encoder->builtin_palette);
         }
-        dither = prepare_builtin_palette(encoder->builtin_palette);
     } else if (sixel_frame_get_palette(frame) &&
                (sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_PALETTE)) {
-        dither = sixel_dither_create(sixel_frame_get_ncolors(frame));
-        if (!dither) {
-            return NULL;
+        *dither = sixel_dither_create(sixel_frame_get_ncolors(frame));
+        if (!*dither) {
+            return SIXEL_FALSE;
         }
-        sixel_dither_set_palette(dither, sixel_frame_get_palette(frame));
-        sixel_dither_set_pixelformat(dither, sixel_frame_get_pixelformat(frame));
+        sixel_dither_set_palette(*dither, sixel_frame_get_palette(frame));
+        sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
         if (sixel_frame_get_transparent(frame) != (-1)) {
-            sixel_dither_set_transparent(dither, sixel_frame_get_transparent(frame));
+            sixel_dither_set_transparent(*dither, sixel_frame_get_transparent(frame));
         }
     } else if (sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_G8) {
-        dither = sixel_dither_create(-1);
-        sixel_dither_set_pixelformat(dither, sixel_frame_get_pixelformat(frame));
+        *dither = sixel_dither_create(-1);
+        sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
     } else {
         if (former_dither) {
             sixel_dither_unref(former_dither);
         }
-        dither = sixel_dither_create(encoder->reqcolors);
-        if (!dither) {
-            return NULL;
+        *dither = sixel_dither_create(encoder->reqcolors);
+        if (*dither == NULL) {
+            return SIXEL_BAD_ALLOCATION;
         }
-        ret = sixel_dither_initialize(dither,
-                                      sixel_frame_get_pixels(frame),
-                                      sixel_frame_get_width(frame),
-                                      sixel_frame_get_height(frame),
-                                      sixel_frame_get_pixelformat(frame),
-                                      encoder->method_for_largest,
-                                      encoder->method_for_rep,
-                                      encoder->quality_mode);
-        if (ret != 0) {
-            sixel_dither_unref(dither);
-            return NULL;
+        status = sixel_dither_initialize(*dither,
+                                         sixel_frame_get_pixels(frame),
+                                         sixel_frame_get_width(frame),
+                                         sixel_frame_get_height(frame),
+                                         sixel_frame_get_pixelformat(frame),
+                                         encoder->method_for_largest,
+                                         encoder->method_for_rep,
+                                         encoder->quality_mode);
+        if (SIXEL_FAILED(status)) {
+            sixel_dither_unref(*dither);
+            return SIXEL_FALSE;
         }
-        histogram_colors = sixel_dither_get_num_of_histogram_colors(dither);
+        histogram_colors = sixel_dither_get_num_of_histogram_colors(*dither);
         if (histogram_colors <= encoder->reqcolors) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_NONE;
         }
-        sixel_dither_set_pixelformat(dither, sixel_frame_get_pixelformat(frame));
+        sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
     }
-    return dither;
+
+    return status;
 }
 
 
@@ -785,8 +808,8 @@ load_image_callback(sixel_frame_t *frame, void *data)
     }
 
     /* prepare dither context */
-    dither = prepare_palette(encoder->dither_cache, frame, encoder);
-    if (!dither) {
+    status = prepare_palette(&dither, encoder->dither_cache, frame, encoder);
+    if (SIXEL_FAILED(status)) {
         status = SIXEL_FALSE;
         goto end;
     }

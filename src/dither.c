@@ -328,7 +328,7 @@ sixel_dither_set_quality_mode(sixel_dither_t *dither, int quality_mode)
 }
 
 
-SIXELAPI int
+SIXELAPI SIXELSTATUS
 sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
                         int width, int height, int pixelformat,
                         int method_for_largest, int method_for_rep,
@@ -337,7 +337,7 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     unsigned char *buf = NULL;
     unsigned char *normalized_pixels = NULL;
     unsigned char *input_pixels;
-    int nret = (-1);
+    SIXELSTATUS status = SIXEL_FALSE;
 
     if (pixelformat != SIXEL_PIXELFORMAT_RGB888) {
 
@@ -347,11 +347,11 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
             goto end;
         }
 
-        nret = sixel_helper_normalize_pixelformat(normalized_pixels,
-                                                  &pixelformat,
-                                                  data, pixelformat,
-                                                  width, height);
-        if (nret != 0) {
+        status = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                    &pixelformat,
+                                                    data, pixelformat,
+                                                    width, height);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
         input_pixels = normalized_pixels;
@@ -382,11 +382,11 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     }
 
     sixel_quant_free_palette(buf);
-    nret = 0;
+    status = SIXEL_OK;
 
 end:
     free(normalized_pixels);
-    return nret;
+    return status;
 }
 
 
