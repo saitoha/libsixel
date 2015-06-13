@@ -927,7 +927,7 @@ load_with_builtin(
     if (chunk_is_sixel(pchunk)) {
         frame = sixel_frame_create();
         if (frame == NULL) {
-            return SIXEL_FAILED;
+            return SIXEL_FALSE;
         }
         frame->pixels = load_sixel(pchunk->buffer,
                                    pchunk->size,
@@ -943,7 +943,7 @@ load_with_builtin(
     } else if (chunk_is_pnm(pchunk)) {
         frame = sixel_frame_create();
         if (frame == NULL) {
-            return SIXEL_FAILED;
+            return SIXEL_FALSE;
         }
         /* pnm */
         frame->pixels = load_pnm(pchunk->buffer,
@@ -965,7 +965,7 @@ load_with_builtin(
     else if (chunk_is_jpeg(pchunk)) {
         frame = sixel_frame_create();
         if (frame == NULL) {
-            return SIXEL_FAILED;
+            return SIXEL_FALSE;
         }
         frame->pixels = load_jpeg(pchunk->buffer,
                                   pchunk->size,
@@ -981,7 +981,7 @@ load_with_builtin(
     else if (chunk_is_png(pchunk)) {
         frame = sixel_frame_create();
         if (frame == NULL) {
-            return SIXEL_FAILED;
+            return SIXEL_FALSE;
         }
         frame->pixels = load_png(pchunk->buffer,
                                  pchunk->size,
@@ -1018,7 +1018,7 @@ load_with_builtin(
 
         frame = sixel_frame_create();
         if (frame == NULL) {
-            return SIXEL_FAILED;
+            return SIXEL_FALSE;
         }
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);
         frame->pixels = stbi__load_main(&s, &frame->width, &frame->height, &depth, 3);
@@ -1082,7 +1082,7 @@ load_with_gdkpixbuf(
 #endif
     sixel_frame_t *frame;
     int stride;
-    int ret = SIXEL_FAILED;
+    int ret = SIXEL_FALSE;
     unsigned char *p;
     int i;
     int depth;
@@ -1093,7 +1093,7 @@ load_with_gdkpixbuf(
 
     frame = sixel_frame_create();
     if (frame == NULL) {
-        return SIXEL_FAILED;
+        return SIXEL_FALSE;
     }
 
 #if (!GLIB_CHECK_VERSION(2, 36, 0))
@@ -1304,7 +1304,7 @@ load_with_gd(
 
     frame = sixel_frame_create();
     if (frame == NULL) {
-        return SIXEL_FAILED;
+        return SIXEL_FALSE;
     }
 
     switch(detect_file_format(pchunk->size, pchunk->buffer)) {
@@ -1353,20 +1353,20 @@ load_with_gd(
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMGD2PTR */
         default:
-            return SIXEL_FAILED;
+            return SIXEL_FALSE;
     }
 
     if (im == NULL) {
-        return SIXEL_FAILED;
+        return SIXEL_FALSE;
     }
 
     if (!gdImageTrueColor(im)) {
 #if HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
         if (!gdImagePaletteToTrueColor(im)) {
-            return SIXEL_FAILED;
+            return SIXEL_FALSE;
         }
 #else
-        return SIXEL_FAILED;
+        return SIXEL_FALSE;
 #endif
     }
 
@@ -1380,7 +1380,7 @@ load_with_gd(
                 strerror(errno));
 #endif  /* HAVE_ERRNO_H */
         gdImageDestroy(im);
-        return SIXEL_FAILED;
+        return SIXEL_FALSE;
     }
     for (y = 0; y < frame->height; y++) {
         for (x = 0; x < frame->width; x++) {
@@ -1400,7 +1400,7 @@ load_with_gd(
 
 /* load image from file */
 
-SIXELAPI int
+SIXELAPI SIXELSTATUS
 sixel_helper_load_image_file(
     char const                /* in */     *filename,     /* source file name */
     int                       /* in */     fstatic,       /* whether to extract static image */
