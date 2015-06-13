@@ -289,6 +289,22 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
                                  sixel_frame_get_palette(frame));
         ret = 0;
         break;
+    case SIXEL_PIXELFORMAT_G1:
+        callback_context->dither = sixel_dither_get(SIXEL_BUILTIN_G1);
+        ret = 0;
+        break;
+    case SIXEL_PIXELFORMAT_G2:
+        callback_context->dither = sixel_dither_get(SIXEL_BUILTIN_G2);
+        ret = 0;
+        break;
+    case SIXEL_PIXELFORMAT_G4:
+        callback_context->dither = sixel_dither_get(SIXEL_BUILTIN_G4);
+        ret = 0;
+        break;
+    case SIXEL_PIXELFORMAT_G8:
+        callback_context->dither = sixel_dither_get(SIXEL_BUILTIN_G8);
+        ret = 0;
+        break;
     default:
         callback_context->dither = sixel_dither_create(callback_context->reqcolors);
         if (callback_context->dither == NULL) {
@@ -392,9 +408,23 @@ prepare_palette(sixel_dither_t *former_dither,
         if (sixel_frame_get_transparent(frame) != (-1)) {
             sixel_dither_set_transparent(dither, sixel_frame_get_transparent(frame));
         }
-    } else if (sixel_frame_get_pixelformat(frame) == SIXEL_PIXELFORMAT_G8) {
-        dither = sixel_dither_create(-1);
-        sixel_dither_set_pixelformat(dither, sixel_frame_get_pixelformat(frame));
+    } else if (sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_PALETTE) {
+        switch (sixel_frame_get_pixelformat(frame)) {
+        case SIXEL_PIXELFORMAT_G1:
+            dither = sixel_dither_get(SIXEL_BUILTIN_G1);
+            break;
+        case SIXEL_PIXELFORMAT_G2:
+            dither = sixel_dither_get(SIXEL_BUILTIN_G2);
+            break;
+        case SIXEL_PIXELFORMAT_G4:
+            dither = sixel_dither_get(SIXEL_BUILTIN_G4);
+            break;
+        case SIXEL_PIXELFORMAT_G8:
+            dither = sixel_dither_get(SIXEL_BUILTIN_G8);
+            break;
+        default:
+            return NULL;
+        }
     } else {
         if (former_dither) {
             sixel_dither_unref(former_dither);
