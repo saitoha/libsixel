@@ -909,7 +909,7 @@ chunk_is_jpeg(chunk_t const *chunk)
 
 
 
-int
+static SIXELSTATUS
 load_with_builtin(
     chunk_t const             /* in */     *pchunk,      /* image data */
     int                       /* in */     fstatic,      /* static */
@@ -921,13 +921,14 @@ load_with_builtin(
     void                      /* in/out */ *context      /* private data for callback */
 )
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     sixel_frame_t *frame = NULL;
-    int ret = (-1);
 
     if (chunk_is_sixel(pchunk)) {
         frame = sixel_frame_create();
         if (frame == NULL) {
-            return SIXEL_FALSE;
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
         }
         frame->pixels = load_sixel(pchunk->buffer,
                                    pchunk->size,
@@ -943,7 +944,8 @@ load_with_builtin(
     } else if (chunk_is_pnm(pchunk)) {
         frame = sixel_frame_create();
         if (frame == NULL) {
-            return SIXEL_FALSE;
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
         }
         /* pnm */
         frame->pixels = load_pnm(pchunk->buffer,
@@ -965,7 +967,8 @@ load_with_builtin(
     else if (chunk_is_jpeg(pchunk)) {
         frame = sixel_frame_create();
         if (frame == NULL) {
-            return SIXEL_FALSE;
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
         }
         frame->pixels = load_jpeg(pchunk->buffer,
                                   pchunk->size,
@@ -981,7 +984,8 @@ load_with_builtin(
     else if (chunk_is_png(pchunk)) {
         frame = sixel_frame_create();
         if (frame == NULL) {
-            return SIXEL_FALSE;
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
         }
         frame->pixels = load_png(pchunk->buffer,
                                  pchunk->size,
@@ -999,16 +1003,16 @@ load_with_builtin(
     }
 #endif  /* HAVE_LIBPNG */
     else if (chunk_is_gif(pchunk)) {
-        ret = load_gif(pchunk->buffer,
-                       pchunk->size,
-                       bgcolor,
-                       reqcolors,
-                       fuse_palette,
-                       fstatic,
-                       loop_control,
-                       fn_load,
-                       context);
-        if (ret != 0) {
+        status = load_gif(pchunk->buffer,
+                          pchunk->size,
+                          bgcolor,
+                          reqcolors,
+                          fuse_palette,
+                          fstatic,
+                          loop_control,
+                          fn_load,
+                          context);
+        if (SIXEL_FAILED(status)) {
             goto error;
         }
         goto end;
@@ -1018,7 +1022,8 @@ load_with_builtin(
 
         frame = sixel_frame_create();
         if (frame == NULL) {
-            return SIXEL_FALSE;
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
         }
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);
         frame->pixels = stbi__load_main(&s, &frame->width, &frame->height, &depth, 3);
@@ -1042,13 +1047,13 @@ load_with_builtin(
         }
     }
 
-    ret = sixel_frame_strip_alpha(frame, bgcolor);
-    if (ret != 0) {
+    status = sixel_frame_strip_alpha(frame, bgcolor);
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
 
-    ret = fn_load(frame, context);
-    if (ret != 0) {
+    status = fn_load(frame, context);
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
 
@@ -1056,7 +1061,7 @@ error:
 end:
     sixel_frame_unref(frame);
 
-    return ret;
+    return status;
 }
 
 

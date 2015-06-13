@@ -290,10 +290,12 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
     case SIXEL_PIXELFORMAT_PAL4:
     case SIXEL_PIXELFORMAT_PAL8:
         if (sixel_frame_get_palette(frame) == NULL) {
+            status = SIXEL_LOGIC_ERROR;
             goto end;
         }
         callback_context->dither = sixel_dither_create(sixel_frame_get_ncolors(frame));
         if (callback_context->dither == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
         sixel_dither_set_palette(callback_context->dither,
@@ -303,6 +305,7 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
     default:
         callback_context->dither = sixel_dither_create(callback_context->reqcolors);
         if (callback_context->dither == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
 
@@ -318,6 +321,9 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
             sixel_dither_unref(callback_context->dither);
             goto end;
         }
+
+        status = SIXEL_OK;
+
         break;
     }
 
@@ -810,7 +816,6 @@ load_image_callback(sixel_frame_t *frame, void *data)
     /* prepare dither context */
     status = prepare_palette(&dither, encoder->dither_cache, frame, encoder);
     if (SIXEL_FAILED(status)) {
-        status = SIXEL_FALSE;
         goto end;
     }
 
