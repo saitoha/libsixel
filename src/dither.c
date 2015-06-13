@@ -339,6 +339,8 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     unsigned char *input_pixels;
     SIXELSTATUS status = SIXEL_FALSE;
 
+    sixel_dither_set_pixelformat(dither, pixelformat);
+
     if (pixelformat != SIXEL_PIXELFORMAT_RGB888) {
 
         /* normalize pixelformat */

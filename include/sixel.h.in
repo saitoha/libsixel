@@ -315,7 +315,7 @@ sixel_output_ref(sixel_output_t /* in */ *output);     /* output context */
 SIXELAPI void
 sixel_output_unref(sixel_output_t /* in */ *output);   /* output context */
 
-SIXELAPI SIXELSTATUS
+SIXELAPI int
 sixel_output_get_8bit_availability(
     sixel_output_t /* in */ *output);   /* output context */
 
@@ -399,16 +399,16 @@ sixel_dither_set_diffusion_type(
     int /* in */ method_for_diffuse);  /* one of enum methodForDiffuse */
 
 /* get number of palette colors */
-SIXELAPI SIXELSTATUS
+SIXELAPI int
 sixel_dither_get_num_of_palette_colors(
     sixel_dither_t /* in */ *dither);  /* dither context object */
 
 /* get number of histogram colors */
-SIXELAPI SIXELSTATUS
+SIXELAPI int
 sixel_dither_get_num_of_histogram_colors(
     sixel_dither_t /* in */ *dither);  /* dither context object */
 
-SIXELAPI @attr_func_deprecated@ SIXELSTATUS /* typoed! remains for compatibility. */
+SIXELAPI @attr_func_deprecated@ int /* typoed! remains for compatibility. */
 sixel_dither_get_num_of_histgram_colors(
     sixel_dither_t /* in */ *dither);  /* dither context object */
 
