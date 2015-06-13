@@ -1,3 +1,17 @@
+2015-06-05  Hayaki Saito <user@zuse.jp>
+
+  * converters/loader.c: Copy gdk's pixbuf memory to libsixel-internal chunk
+  with attention to image stride (reported by @ttdoda, Issue #43)
+
+2015-05-19  Hayaki Saito <user@zuse.jp>
+
+  * configure.ac: Evaluate arguments of --with-xxx option of ./configure more
+  strictly
+
+2015-05-12  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c: Stop memory leaks
+
 2015-04-05  Hayaki Saito <user@zuse.jp>
 
   * converters/stb_image.h: Fix an existing bug in stb_image v1.41 of building
