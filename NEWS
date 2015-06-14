@@ -1,4 +1,68 @@
                   ------------------------------
+                   What's new in libsixel-1.5 ?
+                  ------------------------------
+* img2sixel: Add -B(--bgcolor) option.
+
+* core: Introduce new API for dither object, sixel_dither_set_transparent().
+
+* core: Respect transparency of paletted images(GIF/PNG).
+
+* core: Introduce API set for generic image maniplation:
+    sixel_frame_get_pixels()
+    sixel_frame_ref()
+    sixel_frame_unref()
+    sixel_frame_init()
+    sixel_frame_get_pixels()
+    sixel_frame_get_palette()
+    sixel_frame_get_width()
+    sixel_frame_get_height()
+    sixel_frame_get_ncolors()
+    sixel_frame_get_pixelformat()
+    sixel_frame_get_transparent()
+    sixel_frame_get_multiframe()
+    sixel_frame_get_delay()
+    sixel_frame_get_frame_no()
+    sixel_frame_get_loop_no()
+    sixel_frame_strip_alpha()
+    sixel_frame_resize()
+    sixel_frame_clip()
+
+* core: Introduce API set for load/write well-known image formats:
+    sixel_helper_load_image_file()
+    sixel_helper_write_image_file()
+
+* core: Add more high level APIs (File-to-File conversion API):
+    sixel_encoder_create()
+    sixel_encoder_ref()
+    sixel_encoder_unref()
+    sixel_encoder_set_cancel_flag()
+    sixel_encoder_setopt()
+    sixel_encoder_encode()
+    sixel_decoder_create()
+    sixel_decoder_ref()
+    sixel_decoder_unref()
+    sixel_decoder_setopt()
+    sixel_decoder_decode()
+
+* core: Improve processing quality of loading paletted PNG images.
+
+* core: Improve processing quality and performance of loading GIF images.
+
+* core: Update stb_image.h to version 2.06
+
+* core: Update stb_image_write.h to version 0.94
+
+* Add Perl interface
+
+* Add Python interface
+
+* Add PHP interface
+
+* A lot of bug fixes and minor improvements.
+  Thanks to @msmhrt, @ttdoda, and @msmhrt.
+
+
+                  ------------------------------
                    What's new in libsixel-1.4 ?
                   ------------------------------
 * core: SIXEL encoder supports various pixel formats(thanks to @uobikiemukot).
