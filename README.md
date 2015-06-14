@@ -296,6 +296,8 @@ Usage: img2sixel [Options] imagefiles
        img2sixel [Options] < imagefile
 
 Options:
+-o, --outfile              specify output file name.
+                           (default:stdout)
 -7, --7bit-mode            generate a sixel image for 7bit
                            terminals or printers (default)
 -8, --8bit-mode            generate a sixel image for 8bit
@@ -441,6 +443,10 @@ Options:
                              xterm256   -> X default 256 color map
                              vt340mono  -> VT340 monochrome map
                              vt340color -> VT340 color map
+                             gray1      -> 1bit grayscale map
+                             gray2      -> 2bit grayscale map
+                             gray4      -> 4bit grayscale map
+                             gray8      -> 8bit grayscale map
 -E ENCODEPOLICY, --encode-policy=ENCODEPOLICY
                            select encoding policy
                              auto -> choose encoding policy
