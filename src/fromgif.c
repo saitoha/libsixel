@@ -344,7 +344,7 @@ gif_process_raster(
             if (len == 0) {
                 len = gif_get8(s); /* start new block */
                 if (len == 0) {
-                    return SIXEL_SUCCESS;
+                    return SIXEL_OK;
                 }
             }
             --len;
@@ -366,19 +366,19 @@ gif_process_raster(
                 while ((len = gif_get8(s)) > 0) {
                    gif_skip(s,len);
                 }
-                return SIXEL_SUCCESS;
+                return SIXEL_OK;
             } else if (code <= avail) {
                 if (first) {
                     fprintf(stderr,
                             "Corrupt GIF\n" "reason: no clear code\n");
-                    return SIXEL_FAILED;
+                    return SIXEL_FALSE;
                 }
                 if (oldcode >= 0) {
                     p = &g->codes[avail++];
                     if (avail > 4096) {
                         fprintf(stderr,
                                 "Corrupt GIF\n" "reason: too many codes\n");
-                        return SIXEL_FAILED;
+                        return SIXEL_FALSE;
                     }
                     p->prefix = (int16_t) oldcode;
                     p->first = g->codes[oldcode].first;
@@ -386,7 +386,7 @@ gif_process_raster(
                 } else if (code == avail) {
                     fprintf(stderr,
                             "Corrupt GIF\n" "reason: illegal code in raster\n");
-                    return SIXEL_FAILED;
+                    return SIXEL_FALSE;
                 }
 
                 gif_out_code(g, (uint16_t) code);
@@ -400,7 +400,7 @@ gif_process_raster(
             } else {
                 fprintf(stderr,
                         "Corrupt GIF\n" "reason: illegal code in raster\n");
-                return SIXEL_FAILED;
+                return SIXEL_FALSE;
             }
         }
     }
@@ -430,7 +430,7 @@ gif_load_next(
             if (((x + w) > (g->w)) || ((y + h) > (g->h))) {
                 fprintf(stderr,
                         "Corrupt GIF.\n" "reason: bad Image Descriptor.\n");
-                return SIXEL_FAILED;
+                return SIXEL_FALSE;
             }
 
             g->line_size = g->w;
@@ -468,7 +468,7 @@ gif_load_next(
             } else {
                 fprintf(stderr,
                         "Corrupt GIF.\n" "reason: missing color table.\n");
-                return SIXEL_FAILED;
+                return SIXEL_FALSE;
             }
 
             return gif_process_raster(s, g);
@@ -522,20 +522,20 @@ gif_load_next(
 
         case 0x3B: /* gif stream termination code */
             g->is_terminated = 1;
-            return SIXEL_SUCCESS;
+            return SIXEL_OK;
 
         default:
             fprintf(stderr,
                     "Corrupt GIF.\n" "reason: unknown code.\n");
-            return SIXEL_FAILED;
+            return SIXEL_FALSE;
         }
     }
 
-    return SIXEL_SUCCESS;
+    return SIXEL_OK;
 }
 
 
-int
+SIXELSTATUS
 load_gif(
     unsigned char /* in */ *buffer,
     int           /* in */ size,
@@ -550,17 +550,17 @@ load_gif(
 {
     gif_context_t s;
     gif_t g;
-    int ret;
+    SIXELSTATUS status;
     sixel_frame_t *frame;
 
     frame = sixel_frame_create();
     if (frame == NULL) {
-        return SIXEL_FAILED;
+        return SIXEL_FALSE;
     }
     gif_start_mem(&s, buffer, size);
     memset(&g, 0, sizeof(g));
-    ret = gif_load_header(&s, &g);
-    if (ret != SIXEL_SUCCESS) {
+    status = gif_load_header(&s, &g);
+    if (status != SIXEL_OK) {
         goto end;
     }
     frame->width = g.w,
@@ -577,29 +577,29 @@ load_gif(
         frame->frame_no = 0;
 
         gif_rewind(&s);
-        ret = gif_load_header(&s, &g);
-        if (ret != 0) {
+        status = gif_load_header(&s, &g);
+        if (status != SIXEL_OK) {
             goto end;
         }
 
         g.is_terminated = 0;
 
         for (;;) { /* per frame */
-            ret = gif_load_next(&s, &g, bgcolor);
-            if (ret != 0) {
+            status = gif_load_next(&s, &g, bgcolor);
+            if (status != SIXEL_OK) {
                 goto end;
             }
             if (g.is_terminated) {
                 break;
             }
 
-            ret = gif_init_frame(frame, &g, bgcolor, reqcolors, fuse_palette);
-            if (ret != 0) {
+            status = gif_init_frame(frame, &g, bgcolor, reqcolors, fuse_palette);
+            if (status != SIXEL_OK) {
                 goto end;
             }
 
-            ret = ((sixel_load_image_function)fn_load)(frame, context);
-            if (ret != 0) {
+            status = ((sixel_load_image_function)fn_load)(frame, context);
+            if (status != SIXEL_OK) {
                 goto end;
             }
 

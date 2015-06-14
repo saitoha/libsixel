@@ -283,13 +283,12 @@ signal_handler(int sig)
 int
 main(int argc, char *argv[])
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     int n;
 #if HAVE_GETOPT_LONG
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    int ret;
-    int exit_code;
     sixel_encoder_t *encoder;
     char const *optstring = "o:78p:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:B:C:DVH";
 
@@ -352,15 +351,16 @@ main(int argc, char *argv[])
         switch (n) {
         case 'V':
             show_version();
-            exit_code = EXIT_SUCCESS;
+            status = SIXEL_OK;
             goto end;
         case 'H':
             show_help();
-            exit_code = EXIT_SUCCESS;
+            status = SIXEL_OK;
+            goto end;
             goto end;
         default:
-            ret = sixel_encoder_setopt(encoder, n, optarg);
-            if (ret != 0) {
+            status = sixel_encoder_setopt(encoder, n, optarg);
+            if (SIXEL_FAILED(status)) {
                 goto argerr;
             }
             break;
@@ -381,34 +381,30 @@ main(int argc, char *argv[])
 #else
     (void) signal_handler;
 #endif
-    ret = sixel_encoder_set_cancel_flag(encoder, &signaled);
-    if (ret != 0) {
-        exit_code = EXIT_FAILURE;
+    status = sixel_encoder_set_cancel_flag(encoder, &signaled);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
 
     if (optind == argc) {
-        ret = sixel_encoder_encode(encoder, NULL);
-        if (ret != 0) {
-            exit_code = EXIT_FAILURE;
+        status = sixel_encoder_encode(encoder, NULL);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
     } else {
         for (n = optind; n < argc; n++) {
-            ret = sixel_encoder_encode(encoder, argv[n]);
-            if (ret != 0) {
-                exit_code = EXIT_FAILURE;
+            status = sixel_encoder_encode(encoder, argv[n]);
+            if (SIXEL_FAILED(status)) {
                 goto end;
             }
         }
     }
 
     /* mark as success */
-    exit_code = EXIT_SUCCESS;
+    status = SIXEL_OK;
     goto end;
 
 argerr:
-    exit_code = EXIT_FAILURE;
     fprintf(stderr,
             "usage: img2sixel [-78eIkiugvSPDVH] [-p colors] [-m file] [-d diffusiontype]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
@@ -419,7 +415,7 @@ argerr:
 
 end:
     sixel_encoder_unref(encoder);
-    return exit_code;
+    return status;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
