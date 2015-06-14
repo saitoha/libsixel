@@ -173,10 +173,10 @@ wait_file(int fd, int usec)
 }
 
 
-static FILE *
-open_binary_file(char const *filename)
+static SIXELSTATUS
+open_binary_file(FILE **f, char const *filename)
 {
-    FILE *f;
+    SIXELSTATUS status = SIXEL_FALSE;
 #if HAVE_STAT
     struct stat sb;
 #endif  /* HAVE_STAT */
@@ -190,32 +190,41 @@ open_binary_file(char const *filename)
         setmode(fileno(stdin), O_BINARY);
 # endif  /* HAVE_SETMODE */
 #endif  /* defined(O_BINARY) */
-        return stdin;
+        *f = stdin;
+
+        status = SIXEL_OK;
+        goto end;
     }
 
 #if HAVE_STAT
     if (stat(filename, &sb) != 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
 # if HAVE_ERRNO_H
         fprintf(stderr, "stat(%s) failed.\n" "reason: %s.\n",
                 filename, strerror(errno));
 # endif  /* HAVE_ERRNO_H */
-        return NULL;
+        goto end;
     }
     if ((sb.st_mode & S_IFMT) == S_IFDIR) {
         fprintf(stderr, "'%s' is directory.\n", filename);
-        return NULL;
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        goto end;
     }
 #endif  /* HAVE_STAT */
 
-    f = fopen(filename, "rb");
-    if (!f) {
+    *f = fopen(filename, "rb");
+    if (!*f) {
 #if HAVE_ERRNO_H
         fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
                 filename, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
-        return NULL;
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        goto end;
     }
-    return f;
+
+    status = SIXEL_OK;
+end:
+    return status;
 }
 
 
@@ -231,9 +240,9 @@ get_chunk_from_file(
     FILE *f;
     int n;
 
-    f = open_binary_file(filename);
-    if (!f) {
-        return (-1);
+    status = open_binary_file(&f, filename);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     chunk_init(pchunk, 64 * 1024);
@@ -243,7 +252,8 @@ get_chunk_from_file(
                         "reason: %s.\n",
                 filename, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
-        return (-1);
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
 
     for (;;) {
@@ -257,18 +267,21 @@ get_chunk_from_file(
                                 "reason: %s.\n",
                         filename, strerror(errno));
 #endif  /* HAVE_ERRNO_H */
-                return (-1);
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
             }
         }
 
         if (isatty(fileno(f))) {
             for (;;) {
                 if (*cancel_flag) {
-                    return SIXEL_INTERRUPTED;
+                    status = SIXEL_INTERRUPTED;
+                    goto end;
                 }
                 ret = wait_file(fileno(f), 10000);
                 if (ret < 0) {
-                    return SIXEL_RUNTIME_ERROR;
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
                 }
                 if (ret == 0) {
                     break;
@@ -288,6 +301,7 @@ get_chunk_from_file(
 
     status = SIXEL_OK;
 
+end:
     return status;
 }
 
@@ -311,6 +325,7 @@ get_chunk_from_url(
                         "reason: %s.\n",
                 url, strerror(errno));
 #  endif  /* HAVE_ERRNO_H */
+        status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
     curl = curl_easy_init();
@@ -327,6 +342,7 @@ get_chunk_from_url(
         fprintf(stderr, "curl_easy_perform('%s') failed.\n" "code: %d.\n",
                 url, code);
         curl_easy_cleanup(curl);
+        status = SIXEL_CURL_ERROR & (code & 0xff);
         goto end;
     }
     curl_easy_cleanup(curl);
@@ -339,6 +355,7 @@ get_chunk_from_url(
     fprintf(stderr, "To specify URI schemes, you have to "
                     "configure this program with --with-libcurl "
                     "option at compile time.\n");
+    status = SIXEL_NOT_IMPLEMENTED;
 # endif  /* HAVE_LIBCURL */
 
 end:
@@ -810,7 +827,7 @@ get_chunk(
     int const *cancel_flag
 )
 {
-    if (filename == NULL && strstr(filename, "://")) {
+    if (filename != NULL && strstr(filename, "://")) {
         return get_chunk_from_url(filename, pchunk, finsecure);
     }
 
