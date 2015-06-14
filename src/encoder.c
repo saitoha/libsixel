@@ -1081,6 +1081,14 @@ sixel_encoder_setopt(
             encoder->builtin_palette = SIXEL_BUILTIN_VT340_MONO;
         } else if (strcmp(optarg, "vt340color") == 0) {
             encoder->builtin_palette = SIXEL_BUILTIN_VT340_COLOR;
+        } else if (strcmp(optarg, "gray1") == 0) {
+            encoder->builtin_palette = SIXEL_BUILTIN_G1;
+        } else if (strcmp(optarg, "gray2") == 0) {
+            encoder->builtin_palette = SIXEL_BUILTIN_G2;
+        } else if (strcmp(optarg, "gray4") == 0) {
+            encoder->builtin_palette = SIXEL_BUILTIN_G4;
+        } else if (strcmp(optarg, "gray8") == 0) {
+            encoder->builtin_palette = SIXEL_BUILTIN_G8;
         } else {
             fprintf(stderr,
                     "Cannot parse builtin palette option.\n");
