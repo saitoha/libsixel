@@ -1448,15 +1448,24 @@ sixel_helper_load_image_file(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     chunk_t chunk;
+    chunk.buffer = NULL;
+    chunk.size = chunk.max_size = 0;
 
     status = get_chunk(filename, &chunk, finsecure, cancel_flag);
     if (status != SIXEL_OK) {
-        return status;
+        goto end;
     }
 
     /* if input date is empty or 1 byte LF, ignore it and return successfully */
     if (chunk.size == 0 || (chunk.size == 1 && *chunk.buffer == '\n')) {
-        return 0;
+        status = SIXEL_OK;
+        goto end;
+    }
+
+    /* assertion */
+    if (chunk.buffer == NULL || chunk.max_size == 0) {
+        status = SIXEL_LOGIC_ERROR;
+        goto end;
     }
 
     status = SIXEL_FALSE;
