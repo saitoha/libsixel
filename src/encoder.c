@@ -104,6 +104,10 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
         (*bgcolor)[2] = pcolor->b;
     } else if (s[0] == 'r' && s[1] == 'g' && s[2] == 'b' && s[3] == ':') {
         p = buf = arg_strdup(s + 4);
+        if (buf == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         while (*p) {
             v = 0;
             for (endptr = p; endptr - p <= 12; ++endptr) {
@@ -151,6 +155,10 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
         (*bgcolor)[2] = components[2];
     } else if (*s == '#') {
         buf = arg_strdup(s + 1);
+        if (buf == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         for (p = endptr = buf; endptr - p <= 12; ++endptr) {
             if (*endptr >= '0' && *endptr <= '9') {
                 *endptr -= '0';
@@ -1099,6 +1107,10 @@ sixel_encoder_setopt(
             free(encoder->mapfile);
         }
         encoder->mapfile = arg_strdup(optarg);
+        if (encoder->mapfile == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         break;
     case 'e':
         encoder->monochrome = 1;
