@@ -374,7 +374,7 @@ prepare_specified_palette(
                                           finsecure,
                                           cancel_flag,
                                           &callback_context);
-    if (SIXEL_FAILED(status)) {
+    if (status != SIXEL_OK) {
         return status;
     }
 
@@ -415,7 +415,7 @@ prepare_palette(sixel_dither_t **dither,
                                                encoder->bgcolor,
                                                encoder->finsecure,
                                                encoder->cancel_flag);
-            if (SIXEL_FAILED(status)) {
+            if (status != SIXEL_OK) {
                 return status;
             }
         }
@@ -845,7 +845,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
 
     /* prepare dither context */
     status = prepare_palette(&dither, encoder->dither_cache, frame, encoder);
-    if (SIXEL_FAILED(status)) {
+    if (status != SIXEL_OK) {
         goto end;
     }
 
@@ -1504,7 +1504,7 @@ reload:
                                           encoder->finsecure,
                                           encoder->cancel_flag,
                                           (void *)encoder);
-    if (status != 0) {
+    if (status != SIXEL_OK) {
         goto end;
     }
 

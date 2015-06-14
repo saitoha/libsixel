@@ -219,16 +219,17 @@ open_binary_file(char const *filename)
 }
 
 
-static int
+static SIXELSTATUS
 get_chunk_from_file(
     char const *filename,
     chunk_t *pchunk,
     int const *cancel_flag
 )
 {
+    SIXELSTATUS status = SIXEL_FALSE;
+    int ret;
     FILE *f;
     int n;
-    int ret;
 
     f = open_binary_file(filename);
     if (!f) {
@@ -263,11 +264,11 @@ get_chunk_from_file(
         if (isatty(fileno(f))) {
             for (;;) {
                 if (*cancel_flag) {
-                    return (-1);
+                    return SIXEL_INTERRUPTED;
                 }
                 ret = wait_file(fileno(f), 10000);
                 if (ret < 0) {
-                    return ret;
+                    return SIXEL_RUNTIME_ERROR;
                 }
                 if (ret == 0) {
                     break;
@@ -284,16 +285,21 @@ get_chunk_from_file(
     if (f != stdin) {
         fclose(f);
     }
-    return 0;
+
+    status = SIXEL_OK;
+
+    return status;
 }
 
 
-static int
+static SIXELSTATUS
 get_chunk_from_url(
     char const *url,
     chunk_t *pchunk,
     int finsecure)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
+
 # ifdef HAVE_LIBCURL
     CURL *curl;
     CURLcode code;
@@ -305,7 +311,7 @@ get_chunk_from_url(
                         "reason: %s.\n",
                 url, strerror(errno));
 #  endif  /* HAVE_ERRNO_H */
-        return (-1);
+        goto end;
     }
     curl = curl_easy_init();
     curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -321,10 +327,11 @@ get_chunk_from_url(
         fprintf(stderr, "curl_easy_perform('%s') failed.\n" "code: %d.\n",
                 url, code);
         curl_easy_cleanup(curl);
-        return (-1);
+        goto end;
     }
     curl_easy_cleanup(curl);
-    return 0;
+
+    status = SIXEL_OK;
 # else
     (void) url;
     (void) pchunk;
@@ -332,8 +339,10 @@ get_chunk_from_url(
     fprintf(stderr, "To specify URI schemes, you have to "
                     "configure this program with --with-libcurl "
                     "option at compile time.\n");
-    return (-1);
 # endif  /* HAVE_LIBCURL */
+
+end:
+    return status;
 }
 
 
@@ -793,7 +802,7 @@ cleanup:
 }
 
 
-static int
+static SIXELSTATUS
 get_chunk(
     char const *filename,
     chunk_t *pchunk,
@@ -801,7 +810,7 @@ get_chunk(
     int const *cancel_flag
 )
 {
-    if (filename != NULL && strstr(filename, "://")) {
+    if (filename == NULL && strstr(filename, "://")) {
         return get_chunk_from_url(filename, pchunk, finsecure);
     }
 
@@ -1066,7 +1075,7 @@ end:
 
 
 #ifdef HAVE_GDK_PIXBUF2
-static int
+static SIXELSTATUS
 load_with_gdkpixbuf(
     chunk_t const             /* in */     *pchunk,      /* image data */
     int                       /* in */     fstatic,      /* static */
@@ -1087,7 +1096,7 @@ load_with_gdkpixbuf(
 #endif
     sixel_frame_t *frame;
     int stride;
-    int ret = SIXEL_FALSE;
+    int status = SIXEL_FALSE;
     unsigned char *p;
     int i;
     int depth;
@@ -1140,8 +1149,8 @@ load_with_gdkpixbuf(
             }
         }
 
-        ret = fn_load(frame, context);
-        if (ret != SIXEL_OK) {
+        status = fn_load(frame, context);
+        if (status != SIXEL_OK) {
             goto end;
         }
     } else {
@@ -1186,8 +1195,8 @@ load_with_gdkpixbuf(
                 }
                 frame->multiframe = 1;
                 gdk_pixbuf_animation_iter_advance(it, &time);
-                ret = fn_load(frame, context);
-                if (ret != SIXEL_OK) {
+                status = fn_load(frame, context);
+                if (status != SIXEL_OK) {
                     goto end;
                 }
                 frame->frame_no++;
@@ -1205,7 +1214,7 @@ load_with_gdkpixbuf(
         }
     }
 
-    ret = SIXEL_OK;
+    status = SIXEL_OK;
 
 end:
     gdk_pixbuf_loader_close(loader, NULL);
@@ -1214,7 +1223,7 @@ end:
     free(frame->palette);
     free(frame);
 
-    return ret;
+    return status;
 
 }
 #endif  /* HAVE_GDK_PIXBUF2 */
@@ -1419,12 +1428,12 @@ sixel_helper_load_image_file(
     void                      /* in/out */ *context       /* private data */
 )
 {
-    int ret = (-1);
+    SIXELSTATUS status = SIXEL_FALSE;
     chunk_t chunk;
 
-    ret = get_chunk(filename, &chunk, finsecure, cancel_flag);
-    if (ret != 0) {
-        return ret;
+    status = get_chunk(filename, &chunk, finsecure, cancel_flag);
+    if (status != SIXEL_OK) {
+        return status;
     }
 
     /* if input date is empty or 1 byte LF, ignore it and return successfully */
@@ -1432,51 +1441,49 @@ sixel_helper_load_image_file(
         return 0;
     }
 
-    ret = (-1);
+    status = SIXEL_FALSE;
 #ifdef HAVE_GDK_PIXBUF2
-    if (ret != 0) {
-        ret = load_with_gdkpixbuf(&chunk,
-                                  fstatic,
-                                  fuse_palette,
-                                  reqcolors,
-                                  bgcolor,
-                                  loop_control,
-                                  fn_load,
-                                  context);
+    if (SIXEL_FAILED(status)) {
+        status = load_with_gdkpixbuf(&chunk,
+                                     fstatic,
+                                     fuse_palette,
+                                     reqcolors,
+                                     bgcolor,
+                                     loop_control,
+                                     fn_load,
+                                     context);
     }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
-    if (!ret != 0) {
-        ret = load_with_gd(&chunk,
-                           fstatic,
-                           fuse_palette,
-                           reqcolors,
-                           bgcolor,
-                           loop_control,
-                           fn_load,
-                           context);
+    if (SIXEL_FAILED(status)) {
+        status = load_with_gd(&chunk,
+                              fstatic,
+                              fuse_palette,
+                              reqcolors,
+                              bgcolor,
+                              loop_control,
+                              fn_load,
+                              context);
     }
 #endif  /* HAVE_GD */
-    if (ret != 0) {
-        ret = load_with_builtin(&chunk,
-                                fstatic,
-                                fuse_palette,
-                                reqcolors,
-                                bgcolor,
-                                loop_control,
-                                fn_load,
-                                context);
+    if (SIXEL_FAILED(status)) {
+        status = load_with_builtin(&chunk,
+                                   fstatic,
+                                   fuse_palette,
+                                   reqcolors,
+                                   bgcolor,
+                                   loop_control,
+                                   fn_load,
+                                   context);
     }
     free(chunk.buffer);
 
-    if (ret != 0) {
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    ret = 0;
-
 end:
-    return ret;
+    return status;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
