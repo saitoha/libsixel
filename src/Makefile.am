@@ -60,6 +60,7 @@ tests_LDADD = $(top_builddir)/src/libsixel.la
 endif
 
 dist_man_MANS = sixel.5
+EXTRA_DIST = rgblookup.gperf
 
 unittest: all
 if COND_TESTS

@@ -13812,12 +13812,14 @@ if test x$with_gd != xno; then
         fi
         ADDED_CFLAGS="-I${with_gd}/include"
         ADDED_LIBS="-L${with_gd}/lib -lgd"
-    elif test x${prefix} != x -a x${prefix} != xNONE; then
-        ADDED_CFLAGS="-I${prefix}/include"
-        ADDED_LIBS="-L${prefix}/lib -lgd"
     else
-        ADDED_CFLAGS="-I/usr/local/include"
-        ADDED_LIBS="-L/usr/local/lib -lgd"
+        if test x${prefix} != x -a x${prefix} != xNONE; then
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -lgd"
+        else
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -lgd"
+        fi
     fi
     CFLAGS="${CFLAGS} ${GD_CFLAGS}"
     LDFLAGS="${LDFLAGS} ${GD_LIBS}"
@@ -14595,12 +14597,14 @@ if test x$with_libcurl != xno; then
             fi
             ADDED_CFLAGS="-I${with_libcurl}/include"
             ADDED_LIBS="-L${with_libcurl}/lib -lcurl"
-        elif test x${prefix} != x -a x${prefix} != xNONE; then
-            ADDED_CFLAGS="-I${prefix}/include"
-            ADDED_LIBS="-L${prefix}/lib -lcurl"
         else
-            ADDED_CFLAGS="-I/usr/local/include"
-            ADDED_LIBS="-L/usr/local/lib -lcurl"
+	    if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lcurl"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lcurl"
+            fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
         LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
@@ -14760,12 +14764,14 @@ if test x$with_jpeg != xno; then
             fi
             ADDED_CFLAGS="-I${with_jpeg}/include"
             ADDED_LIBS="-L${with_jpeg}/lib -ljpeg"
-        elif test x${prefix} != x -a x${prefix} != xNONE; then
-            ADDED_CFLAGS="-I${prefix}/include"
-            ADDED_LIBS="-L${prefix}/lib -ljpeg"
         else
-            ADDED_CFLAGS="-I/usr/local/include"
-            ADDED_LIBS="-L/usr/local/lib -ljpeg"
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -ljpeg"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -ljpeg"
+            fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
         LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
@@ -14926,12 +14932,14 @@ if test x$with_png != xno; then
             fi
             ADDED_CFLAGS="-I${with_png}/include"
             ADDED_LIBS="-L${with_png}/lib -lpng"
-        elif test x${prefix} != x -a x${prefix} != xNONE; then
-            ADDED_CFLAGS="-I${prefix}/include"
-            ADDED_LIBS="-L${prefix}/lib -lpng"
         else
-            ADDED_CFLAGS="-I/usr/local/include"
-            ADDED_LIBS="-L/usr/local/lib -lpng"
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lpng"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lpng"
+            fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
         LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
