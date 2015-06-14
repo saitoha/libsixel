@@ -87,7 +87,11 @@ _builtinpalette() {
     'xterm16[X default 16 color map]' \
     'xterm256[X default 256 color map]' \
     'vt340mono[VT340 monochrome map]' \
-    'vt340color[VT340 color map]'
+    'vt340color[VT340 color map]' \
+    'gray1[1bit grayscale map]' \
+    'gray2[2bit grayscale map]' \
+    'gray4[4bit grayscale map]' \
+    'gray8[8bit grayscale map]'
 }
 
 _encodepolicy() {

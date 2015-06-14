@@ -102,13 +102,13 @@ show_help(void)
 int
 main(int argc, char *argv[])
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     int n;
     sixel_decoder_t *decoder;
 #if HAVE_GETOPT_LONG
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    int nret = 0;
     char const *optstring = "i:o:VH";
 
 #if HAVE_GETOPT_LONG
@@ -122,7 +122,7 @@ main(int argc, char *argv[])
 
     decoder = sixel_decoder_create();
     if (decoder == NULL) {
-        nret = (-1);
+        status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
 
@@ -135,8 +135,8 @@ main(int argc, char *argv[])
         n = getopt(argc, argv, optstring);
 #endif  /* HAVE_GETOPT_LONG */
 
-        if (n == -1) {
-            nret = (-1);
+        if (n == (-1)) {
+            /* parsed successfully */
             break;
         }
 #if HAVE_GETOPT_LONG
@@ -148,13 +148,15 @@ main(int argc, char *argv[])
         switch (n) {
         case 'V':
             show_version();
+            status = SIXEL_OK;
             goto end;
         case 'H':
             show_help();
+            status = SIXEL_OK;
             goto end;
         default:
-            nret = sixel_decoder_setopt(decoder, n, optarg);
-            if (nret != 0) {
+            status = sixel_decoder_setopt(decoder, n, optarg);
+            if (SIXEL_FAILED(status)) {
                 goto argerr;
             }
         }
@@ -166,23 +168,25 @@ main(int argc, char *argv[])
     }
 
     if (optind < argc) {
-        nret = sixel_decoder_setopt(decoder, 'i', argv[optind++]);
-        if (nret != 0) {
+        status = sixel_decoder_setopt(decoder, 'i', argv[optind++]);
+        if (SIXEL_FAILED(status)) {
             goto argerr;
         }
     }
+
     if (optind < argc) {
-        nret = sixel_decoder_setopt(decoder, 'o', argv[optind++]);
-        if (nret != 0) {
+        status = sixel_decoder_setopt(decoder, 'o', argv[optind++]);
+        if (SIXEL_FAILED(status)) {
             goto argerr;
         }
     }
+
     if (optind != argc) {
-        nret = (-1);
+        status = SIXEL_BAD_ARGUMENT;
         goto argerr;
     }
 
-    nret = sixel_decoder_decode(decoder);
+    status = sixel_decoder_decode(decoder);
     goto end;
 
 argerr:
@@ -190,7 +194,7 @@ argerr:
 
 end:
     sixel_decoder_unref(decoder);
-    return nret;
+    return status;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
