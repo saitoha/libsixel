@@ -1141,7 +1141,7 @@ load_with_gdkpixbuf(
         }
 
         ret = fn_load(frame, context);
-        if (ret != SIXEL_SUCCESS) {
+        if (ret != SIXEL_OK) {
             goto end;
         }
     } else {
@@ -1187,7 +1187,7 @@ load_with_gdkpixbuf(
                 frame->multiframe = 1;
                 gdk_pixbuf_animation_iter_advance(it, &time);
                 ret = fn_load(frame, context);
-                if (ret != SIXEL_SUCCESS) {
+                if (ret != SIXEL_OK) {
                     goto end;
                 }
                 frame->frame_no++;
@@ -1205,7 +1205,7 @@ load_with_gdkpixbuf(
         }
     }
 
-    ret = SIXEL_SUCCESS;
+    ret = SIXEL_OK;
 
 end:
     gdk_pixbuf_loader_close(loader, NULL);
