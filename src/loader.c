@@ -356,6 +356,7 @@ get_chunk_from_url(
                     "configure this program with --with-libcurl "
                     "option at compile time.\n");
     status = SIXEL_NOT_IMPLEMENTED;
+    goto end;
 # endif  /* HAVE_LIBCURL */
 
 end:
