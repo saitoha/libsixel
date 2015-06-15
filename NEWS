@@ -63,6 +63,8 @@
 
 * Add PHP interface
 
+* Add Ruby interface
+
 * Add new build helper program: libsixel-config 
 
 * A lot of bug fixes and minor improvements.
