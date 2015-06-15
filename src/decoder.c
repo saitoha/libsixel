@@ -179,6 +179,7 @@ sixel_decoder_decode(
     unsigned char *palette;
     int ncolors;
     unsigned char *pixels = NULL;
+    char buffer[1024];
 
     if (strcmp(decoder->input, "-") == 0) {
         /* for windows */
@@ -193,11 +194,11 @@ sixel_decoder_decode(
     } else {
         input_fp = fopen(decoder->input, "rb");
         if (!input_fp) {
-#if HAVE_ERRNO_H
-            fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
-                    decoder->input, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-            return (-1);
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            if (sprintf(buffer, "fopen('%s') failed.", decoder->input) != EOF) {
+                sixel_helper_set_additional_message(buffer);
+            }
+            goto end;
         }
     }
 
@@ -205,23 +206,22 @@ sixel_decoder_decode(
     max = 64 * 1024;
 
     if ((raw_data = (unsigned char *)malloc(max)) == NULL) {
-#if HAVE_ERRNO_H
-        fprintf(stderr, "malloc(%d) failed.\n" "reason: %s.\n",
-                max, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-        return (-1);
+        status = SIXEL_BAD_ALLOCATION;
+        if (sprintf(buffer, "malloc(%d) failed.", max) != EOF) {
+            sixel_helper_set_additional_message(buffer);
+        }
+        goto end;
     }
 
     for (;;) {
         if ((max - raw_len) < 4096) {
             max *= 2;
             if ((raw_data = (unsigned char *)realloc(raw_data, max)) == NULL) {
-#if HAVE_ERRNO_H
-                fprintf(stderr, "realloc(raw_data, %d) failed.\n"
-                                "reason: %s.\n",
-                        max, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-                return (-1);
+                status = SIXEL_BAD_ALLOCATION;
+                if (sprintf(buffer, "realloc(raw_data, %d) failed.", max) != EOF) {
+                    sixel_helper_set_additional_message(buffer);
+                }
+                goto end;
             }
         }
         if ((n = fread(raw_data + raw_len, 1, 4096, input_fp)) <= 0)

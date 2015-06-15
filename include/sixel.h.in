@@ -51,6 +51,8 @@ typedef int SIXELSTATUS;
 #define SIXEL_PNG_ERROR         (SIXEL_FALSE         | 0x0700)  /* errors occures in libpng functions */
 #define SIXEL_GDK_ERROR         (SIXEL_FALSE         | 0x0800)  /* errors occures in gdk functions */
 #define SIXEL_GD_ERROR          (SIXEL_FALSE         | 0x0900)  /* errors occures in gd functions */
+#define SIXEL_STBI_ERROR        (SIXEL_FALSE         | 0x0a00)  /* errors occures in stb_image functions */
+#define SIXEL_STBIW_ERROR       (SIXEL_FALSE         | 0x0b00)  /* errors occures in stb_image_write functions */
 
 #define SIXEL_INTERRUPTED       (SIXEL_OK            | 0x0001)  /* interrupted by a signal */
 

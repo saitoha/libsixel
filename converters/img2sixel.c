@@ -42,9 +42,6 @@
 #if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
-#if HAVE_ERRNO_H
-# include <errno.h>
-#endif
 #if HAVE_SIGNAL_H
 # include <signal.h>
 #endif

@@ -1098,6 +1098,7 @@ load_with_gdkpixbuf(
     void                      /* in/out */ *context      /* private data for callback */
 )
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     GdkPixbuf *pixbuf;
     GdkPixbufAnimation *animation;
     GdkPixbufLoader *loader;
@@ -1107,7 +1108,6 @@ load_with_gdkpixbuf(
 #endif
     sixel_frame_t *frame;
     int stride;
-    int status = SIXEL_FALSE;
     unsigned char *p;
     int i;
     int depth;
