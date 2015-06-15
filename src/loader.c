@@ -173,10 +173,11 @@ wait_file(int fd, int usec)
 }
 
 
-static FILE *
-open_binary_file(char const *filename)
+static SIXELSTATUS
+open_binary_file(FILE **f, char const *filename)
 {
-    FILE *f;
+    SIXELSTATUS status = SIXEL_FALSE;
+    char buffer[1024];
 #if HAVE_STAT
     struct stat sb;
 #endif  /* HAVE_STAT */
@@ -190,59 +191,67 @@ open_binary_file(char const *filename)
         setmode(fileno(stdin), O_BINARY);
 # endif  /* HAVE_SETMODE */
 #endif  /* defined(O_BINARY) */
-        return stdin;
+        *f = stdin;
+
+        status = SIXEL_OK;
+        goto end;
     }
 
 #if HAVE_STAT
     if (stat(filename, &sb) != 0) {
-# if HAVE_ERRNO_H
-        fprintf(stderr, "stat(%s) failed.\n" "reason: %s.\n",
-                filename, strerror(errno));
-# endif  /* HAVE_ERRNO_H */
-        return NULL;
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        if (sprintf(buffer, "stat('%s') failed.", filename) != EOF) {
+            sixel_helper_set_additional_message(buffer);
+        }
+        goto end;
     }
     if ((sb.st_mode & S_IFMT) == S_IFDIR) {
-        fprintf(stderr, "'%s' is directory.\n", filename);
-        return NULL;
+        status = SIXEL_BAD_INPUT;
+        if (sprintf(buffer, "'%s' is directory.", filename) != EOF) {
+            sixel_helper_set_additional_message(buffer);
+        }
+        goto end;
     }
 #endif  /* HAVE_STAT */
 
-    f = fopen(filename, "rb");
-    if (!f) {
-#if HAVE_ERRNO_H
-        fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
-                filename, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-        return NULL;
+    *f = fopen(filename, "rb");
+    if (!*f) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        if (sprintf(buffer, "fopen('%s') failed.", filename) != EOF) {
+            sixel_helper_set_additional_message(buffer);
+        }
+        goto end;
     }
-    return f;
+
+    status = SIXEL_OK;
+end:
+    return status;
 }
 
 
-static int
+static SIXELSTATUS
 get_chunk_from_file(
     char const *filename,
     chunk_t *pchunk,
     int const *cancel_flag
 )
 {
+    SIXELSTATUS status = SIXEL_FALSE;
+    int ret;
     FILE *f;
     int n;
-    int ret;
 
-    f = open_binary_file(filename);
-    if (!f) {
-        return (-1);
+    status = open_binary_file(&f, filename);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     chunk_init(pchunk, 64 * 1024);
     if (pchunk->buffer == NULL) {
-#if HAVE_ERRNO_H
-        fprintf(stderr, "get_chunk_from_file('%s'): malloc failed.\n"
-                        "reason: %s.\n",
-                filename, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-        return (-1);
+        sixel_helper_set_additional_message(
+            "get_chunk_from_file: malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
 
     for (;;) {
@@ -251,23 +260,23 @@ get_chunk_from_file(
             pchunk->buffer = (unsigned char *)realloc(pchunk->buffer,
                                                       pchunk->max_size);
             if (pchunk->buffer == NULL) {
-#if HAVE_ERRNO_H
-                fprintf(stderr, "get_chunk_from_file('%s'): relloc failed.\n"
-                                "reason: %s.\n",
-                        filename, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-                return (-1);
+                sixel_helper_set_additional_message(
+                    "get_chunk_from_file: realloc() failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
             }
         }
 
         if (isatty(fileno(f))) {
             for (;;) {
                 if (*cancel_flag) {
-                    return (-1);
+                    status = SIXEL_INTERRUPTED;
+                    goto end;
                 }
                 ret = wait_file(fileno(f), 10000);
                 if (ret < 0) {
-                    return ret;
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
                 }
                 if (ret == 0) {
                     break;
@@ -284,28 +293,33 @@ get_chunk_from_file(
     if (f != stdin) {
         fclose(f);
     }
-    return 0;
+
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
-static int
+static SIXELSTATUS
 get_chunk_from_url(
     char const *url,
     chunk_t *pchunk,
     int finsecure)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
+
 # ifdef HAVE_LIBCURL
     CURL *curl;
     CURLcode code;
+    char buffer[1024];
 
     chunk_init(pchunk, 1024);
     if (pchunk->buffer == NULL) {
-#  if HAVE_ERRNO_H
-        fprintf(stderr, "get_chunk_from_url('%s'): malloc failed.\n"
-                        "reason: %s.\n",
-                url, strerror(errno));
-#  endif  /* HAVE_ERRNO_H */
-        return (-1);
+        sixel_helper_set_additional_message(
+            "get_chunk_from_url: malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
     curl = curl_easy_init();
     curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -318,36 +332,45 @@ get_chunk_from_url(
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)pchunk);
     code = curl_easy_perform(curl);
     if (code != CURLE_OK) {
-        fprintf(stderr, "curl_easy_perform('%s') failed.\n" "code: %d.\n",
-                url, code);
+        status = SIXEL_CURL_ERROR & (code & 0xff);
+        if (sprintf(buffer, "curl_easy_perform('%s') failed.", url) != EOF) {
+            sixel_helper_set_additional_message(buffer);
+        }
         curl_easy_cleanup(curl);
-        return (-1);
+        goto end;
     }
     curl_easy_cleanup(curl);
-    return 0;
+
+    status = SIXEL_OK;
 # else
     (void) url;
     (void) pchunk;
     (void) finsecure;
-    fprintf(stderr, "To specify URI schemes, you have to "
-                    "configure this program with --with-libcurl "
-                    "option at compile time.\n");
-    return (-1);
+    sixel_helper_set_additional_message(
+        "To specify URI schemes, you have to "
+        "configure this program with --with-libcurl "
+        "option at compile time.\n");
+    status = SIXEL_NOT_IMPLEMENTED;
+    goto end;
 # endif  /* HAVE_LIBCURL */
+
+end:
+    return status;
 }
 
 
 # if HAVE_JPEG
 /* import from @uobikiemukot's sdump loader.h */
-static unsigned char *
-load_jpeg(unsigned char *data,
+static SIXELSTATUS
+load_jpeg(unsigned char **result,
+          unsigned char *data,
           int datasize,
           int *pwidth,
           int *pheight,
           int *ppixelformat)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     int row_stride, size;
-    unsigned char *result = NULL;
     JSAMPARRAY buffer;
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr pub;
@@ -364,7 +387,9 @@ load_jpeg(unsigned char *data,
     jpeg_start_decompress(&cinfo);
 
     if (cinfo.output_components != 3) {
-        fprintf(stderr, "load_jpeg() failed(unknown format).\n");
+        sixel_helper_set_additional_message(
+            "load_jpeg: malloc() failed (unknown format).");
+        status = SIXEL_BAD_INPUT;
         goto end;
     }
 
@@ -373,12 +398,11 @@ load_jpeg(unsigned char *data,
     *pheight = cinfo.output_height;
 
     size = *pwidth * *pheight * cinfo.output_components;
-    result = (unsigned char *)malloc(size);
-    if (result == NULL) {
-#if HAVE_ERRNO_H
-        fprintf(stderr, "load_jpeg() failed.\n" "reason: %s.\n",
-                strerror(errno));
-#endif  /* HAVE_ERRNO_H */
+    *result = (unsigned char *)malloc(size);
+    if (*result == NULL) {
+        sixel_helper_set_additional_message(
+            "load_jpeg: malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
 
@@ -387,14 +411,14 @@ load_jpeg(unsigned char *data,
 
     while (cinfo.output_scanline < cinfo.output_height) {
         jpeg_read_scanlines(&cinfo, buffer, 1);
-        memcpy(result + (cinfo.output_scanline - 1) * row_stride, buffer[0], row_stride);
+        memcpy(*result + (cinfo.output_scanline - 1) * row_stride, buffer[0], row_stride);
     }
 
 end:
     jpeg_finish_decompress(&cinfo);
     jpeg_destroy_decompress(&cinfo);
 
-    return result;
+    return status;
 }
 # endif  /* HAVE_JPEG */
 
@@ -737,8 +761,9 @@ cleanup:
 # endif  /* HAVE_PNG */
 
 
-static unsigned char *
-load_sixel(unsigned char *buffer,
+static SIXELSTATUS
+load_sixel(unsigned char **result,
+           unsigned char *buffer,
            int size,
            int *psx,
            int *psy,
@@ -747,38 +772,33 @@ load_sixel(unsigned char *buffer,
            int reqcolors,
            int *ppixelformat)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *p = NULL;
-    unsigned char *pixels = NULL;
     unsigned char *palette = NULL;
     int colors;
     int i;
-    int ret;
 
     /* sixel */
-    ret = sixel_decode(buffer, size,
-                       &p, psx, psy,
-                       &palette, &colors, malloc);
-    if (ret != 0) {
-#if HAVE_ERRNO_H
-            fprintf(stderr, "sixel_decode failed.\n" "reason: %s.\n",
-                    strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-        return NULL;
+    status = sixel_decode(buffer, size,
+                          &p, psx, psy,
+                          &palette, &colors, malloc);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
     if (ppalette == NULL || colors > reqcolors) {
         *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
-        pixels = malloc(*psx * *psy * 3);
-        if (pixels == NULL) {
+        *result = malloc(*psx * *psy * 3);
+        if (*result == NULL) {
             goto cleanup;
         }
         for (i = 0; i < *psx * *psy; ++i) {
-            pixels[i * 3 + 0] = palette[p[i] * 3 + 0];
-            pixels[i * 3 + 1] = palette[p[i] * 3 + 1];
-            pixels[i * 3 + 2] = palette[p[i] * 3 + 2];
+            (*result)[i * 3 + 0] = palette[p[i] * 3 + 0];
+            (*result)[i * 3 + 1] = palette[p[i] * 3 + 1];
+            (*result)[i * 3 + 2] = palette[p[i] * 3 + 2];
         }
     } else {
         *ppixelformat = SIXEL_PIXELFORMAT_PAL8;
-        pixels = p;
+        *result = p;
         *ppalette = palette;
         *pncolors = colors;
         p = NULL;
@@ -789,11 +809,11 @@ cleanup:
     free(palette);
     free(p);
 
-    return pixels;
+    return status;
 }
 
 
-static int
+static SIXELSTATUS
 get_chunk(
     char const *filename,
     chunk_t *pchunk,
@@ -909,7 +929,7 @@ chunk_is_jpeg(chunk_t const *chunk)
 
 
 
-int
+static SIXELSTATUS
 load_with_builtin(
     chunk_t const             /* in */     *pchunk,      /* image data */
     int                       /* in */     fstatic,      /* static */
@@ -921,29 +941,32 @@ load_with_builtin(
     void                      /* in/out */ *context      /* private data for callback */
 )
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     sixel_frame_t *frame = NULL;
-    int ret = (-1);
 
     if (chunk_is_sixel(pchunk)) {
         frame = sixel_frame_create();
         if (frame == NULL) {
-            return SIXEL_FAILED;
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
         }
-        frame->pixels = load_sixel(pchunk->buffer,
-                                   pchunk->size,
-                                   &frame->width,
-                                   &frame->height,
-                                   fuse_palette ? &frame->palette: NULL,
-                                   &frame->ncolors,
-                                   reqcolors,
-                                   &frame->pixelformat);
-        if (frame->pixels == NULL) {
+        status = load_sixel(&frame->pixels,
+                            pchunk->buffer,
+                            pchunk->size,
+                            &frame->width,
+                            &frame->height,
+                            fuse_palette ? &frame->palette: NULL,
+                            &frame->ncolors,
+                            reqcolors,
+                            &frame->pixelformat);
+        if (SIXEL_FAILED(status)) {
             goto error;
         }
     } else if (chunk_is_pnm(pchunk)) {
         frame = sixel_frame_create();
         if (frame == NULL) {
-            return SIXEL_FAILED;
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
         }
         /* pnm */
         frame->pixels = load_pnm(pchunk->buffer,
@@ -954,10 +977,8 @@ load_with_builtin(
                                  &frame->ncolors,
                                  &frame->pixelformat);
         if (!frame->pixels) {
-#if HAVE_ERRNO_H
-            fprintf(stderr, "load_pnm failed.\n" "reason: %s.\n",
-                    strerror(errno));
-#endif  /* HAVE_ERRNO_H */
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message("load_pnm() failed.");
             goto error;
         }
     }
@@ -965,14 +986,16 @@ load_with_builtin(
     else if (chunk_is_jpeg(pchunk)) {
         frame = sixel_frame_create();
         if (frame == NULL) {
-            return SIXEL_FAILED;
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
         }
-        frame->pixels = load_jpeg(pchunk->buffer,
-                                  pchunk->size,
-                                  &frame->width,
-                                  &frame->height,
-                                  &frame->pixelformat);
-        if (frame->pixels == NULL) {
+        status = load_jpeg(&frame->pixels,
+                           pchunk->buffer,
+                           pchunk->size,
+                           &frame->width,
+                           &frame->height,
+                           &frame->pixelformat);
+        if (SIXEL_FAILED(status)) {
             goto error;
         }
     }
@@ -981,7 +1004,8 @@ load_with_builtin(
     else if (chunk_is_png(pchunk)) {
         frame = sixel_frame_create();
         if (frame == NULL) {
-            return SIXEL_FAILED;
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
         }
         frame->pixels = load_png(pchunk->buffer,
                                  pchunk->size,
@@ -999,16 +1023,16 @@ load_with_builtin(
     }
 #endif  /* HAVE_LIBPNG */
     else if (chunk_is_gif(pchunk)) {
-        ret = load_gif(pchunk->buffer,
-                       pchunk->size,
-                       bgcolor,
-                       reqcolors,
-                       fuse_palette,
-                       fstatic,
-                       loop_control,
-                       fn_load,
-                       context);
-        if (ret != 0) {
+        status = load_gif(pchunk->buffer,
+                          pchunk->size,
+                          bgcolor,
+                          reqcolors,
+                          fuse_palette,
+                          fstatic,
+                          loop_control,
+                          fn_load,
+                          context);
+        if (SIXEL_FAILED(status)) {
             goto error;
         }
         goto end;
@@ -1018,7 +1042,8 @@ load_with_builtin(
 
         frame = sixel_frame_create();
         if (frame == NULL) {
-            return SIXEL_FAILED;
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
         }
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);
         frame->pixels = stbi__load_main(&s, &frame->width, &frame->height, &depth, 3);
@@ -1042,13 +1067,13 @@ load_with_builtin(
         }
     }
 
-    ret = sixel_frame_strip_alpha(frame, bgcolor);
-    if (ret != 0) {
+    status = sixel_frame_strip_alpha(frame, bgcolor);
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
 
-    ret = fn_load(frame, context);
-    if (ret != 0) {
+    status = fn_load(frame, context);
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
 
@@ -1056,12 +1081,12 @@ error:
 end:
     sixel_frame_unref(frame);
 
-    return ret;
+    return status;
 }
 
 
 #ifdef HAVE_GDK_PIXBUF2
-static int
+static SIXELSTATUS
 load_with_gdkpixbuf(
     chunk_t const             /* in */     *pchunk,      /* image data */
     int                       /* in */     fstatic,      /* static */
@@ -1073,6 +1098,7 @@ load_with_gdkpixbuf(
     void                      /* in/out */ *context      /* private data for callback */
 )
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     GdkPixbuf *pixbuf;
     GdkPixbufAnimation *animation;
     GdkPixbufLoader *loader;
@@ -1082,7 +1108,6 @@ load_with_gdkpixbuf(
 #endif
     sixel_frame_t *frame;
     int stride;
-    int ret = SIXEL_FAILED;
     unsigned char *p;
     int i;
     int depth;
@@ -1093,7 +1118,7 @@ load_with_gdkpixbuf(
 
     frame = sixel_frame_create();
     if (frame == NULL) {
-        return SIXEL_FAILED;
+        return SIXEL_FALSE;
     }
 
 #if (!GLIB_CHECK_VERSION(2, 36, 0))
@@ -1135,8 +1160,8 @@ load_with_gdkpixbuf(
             }
         }
 
-        ret = fn_load(frame, context);
-        if (ret != SIXEL_SUCCESS) {
+        status = fn_load(frame, context);
+        if (status != SIXEL_OK) {
             goto end;
         }
     } else {
@@ -1181,8 +1206,8 @@ load_with_gdkpixbuf(
                 }
                 frame->multiframe = 1;
                 gdk_pixbuf_animation_iter_advance(it, &time);
-                ret = fn_load(frame, context);
-                if (ret != SIXEL_SUCCESS) {
+                status = fn_load(frame, context);
+                if (status != SIXEL_OK) {
                     goto end;
                 }
                 frame->frame_no++;
@@ -1200,7 +1225,7 @@ load_with_gdkpixbuf(
         }
     }
 
-    ret = SIXEL_SUCCESS;
+    status = SIXEL_OK;
 
 end:
     gdk_pixbuf_loader_close(loader, NULL);
@@ -1209,7 +1234,7 @@ end:
     free(frame->palette);
     free(frame);
 
-    return ret;
+    return status;
 
 }
 #endif  /* HAVE_GDK_PIXBUF2 */
@@ -1304,7 +1329,7 @@ load_with_gd(
 
     frame = sixel_frame_create();
     if (frame == NULL) {
-        return SIXEL_FAILED;
+        return SIXEL_FALSE;
     }
 
     switch(detect_file_format(pchunk->size, pchunk->buffer)) {
@@ -1353,20 +1378,20 @@ load_with_gd(
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMGD2PTR */
         default:
-            return SIXEL_FAILED;
+            return SIXEL_FALSE;
     }
 
     if (im == NULL) {
-        return SIXEL_FAILED;
+        return SIXEL_FALSE;
     }
 
     if (!gdImageTrueColor(im)) {
 #if HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
         if (!gdImagePaletteToTrueColor(im)) {
-            return SIXEL_FAILED;
+            return SIXEL_FALSE;
         }
 #else
-        return SIXEL_FAILED;
+        return SIXEL_FALSE;
 #endif
     }
 
@@ -1375,12 +1400,8 @@ load_with_gd(
     frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     p = frame->pixels = malloc(frame->width * frame->height * 3);
     if (frame->pixels == NULL) {
-#if HAVE_ERRNO_H
-        fprintf(stderr, "load_with_gd failed.\n" "reason: %s.\n",
-                strerror(errno));
-#endif  /* HAVE_ERRNO_H */
         gdImageDestroy(im);
-        return SIXEL_FAILED;
+        return SIXEL_BAD_ALLOCATION;
     }
     for (y = 0; y < frame->height; y++) {
         for (x = 0; x < frame->width; x++) {
@@ -1400,7 +1421,7 @@ load_with_gd(
 
 /* load image from file */
 
-SIXELAPI int
+SIXELAPI SIXELSTATUS
 sixel_helper_load_image_file(
     char const                /* in */     *filename,     /* source file name */
     int                       /* in */     fstatic,       /* whether to extract static image */
@@ -1414,64 +1435,71 @@ sixel_helper_load_image_file(
     void                      /* in/out */ *context       /* private data */
 )
 {
-    int ret = (-1);
+    SIXELSTATUS status = SIXEL_FALSE;
     chunk_t chunk;
+    chunk.buffer = NULL;
+    chunk.size = chunk.max_size = 0;
 
-    ret = get_chunk(filename, &chunk, finsecure, cancel_flag);
-    if (ret != 0) {
-        return ret;
+    status = get_chunk(filename, &chunk, finsecure, cancel_flag);
+    if (status != SIXEL_OK) {
+        goto end;
     }
 
     /* if input date is empty or 1 byte LF, ignore it and return successfully */
     if (chunk.size == 0 || (chunk.size == 1 && *chunk.buffer == '\n')) {
-        return 0;
-    }
-
-    ret = (-1);
-#ifdef HAVE_GDK_PIXBUF2
-    if (ret != 0) {
-        ret = load_with_gdkpixbuf(&chunk,
-                                  fstatic,
-                                  fuse_palette,
-                                  reqcolors,
-                                  bgcolor,
-                                  loop_control,
-                                  fn_load,
-                                  context);
-    }
-#endif  /* HAVE_GDK_PIXBUF2 */
-#if HAVE_GD
-    if (!ret != 0) {
-        ret = load_with_gd(&chunk,
-                           fstatic,
-                           fuse_palette,
-                           reqcolors,
-                           bgcolor,
-                           loop_control,
-                           fn_load,
-                           context);
-    }
-#endif  /* HAVE_GD */
-    if (ret != 0) {
-        ret = load_with_builtin(&chunk,
-                                fstatic,
-                                fuse_palette,
-                                reqcolors,
-                                bgcolor,
-                                loop_control,
-                                fn_load,
-                                context);
-    }
-    free(chunk.buffer);
-
-    if (ret != 0) {
+        status = SIXEL_OK;
         goto end;
     }
 
-    ret = 0;
+    /* assertion */
+    if (chunk.buffer == NULL || chunk.max_size == 0) {
+        status = SIXEL_LOGIC_ERROR;
+        goto end;
+    }
+
+    status = SIXEL_FALSE;
+#ifdef HAVE_GDK_PIXBUF2
+    if (SIXEL_FAILED(status)) {
+        status = load_with_gdkpixbuf(&chunk,
+                                     fstatic,
+                                     fuse_palette,
+                                     reqcolors,
+                                     bgcolor,
+                                     loop_control,
+                                     fn_load,
+                                     context);
+    }
+#endif  /* HAVE_GDK_PIXBUF2 */
+#if HAVE_GD
+    if (SIXEL_FAILED(status)) {
+        status = load_with_gd(&chunk,
+                              fstatic,
+                              fuse_palette,
+                              reqcolors,
+                              bgcolor,
+                              loop_control,
+                              fn_load,
+                              context);
+    }
+#endif  /* HAVE_GD */
+    if (SIXEL_FAILED(status)) {
+        status = load_with_builtin(&chunk,
+                                   fstatic,
+                                   fuse_palette,
+                                   reqcolors,
+                                   bgcolor,
+                                   loop_control,
+                                   fn_load,
+                                   context);
+    }
+    free(chunk.buffer);
+
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
 
 end:
-    return ret;
+    return status;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
