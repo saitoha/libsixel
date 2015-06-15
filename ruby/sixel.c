@@ -67,7 +67,10 @@ sixel_ruby_encoder_setopt(VALUE self, VALUE option, VALUE optval)
                                   *StringValueCStr(option),
                                   StringValueCStr(optval));
     if (SIXEL_FAILED(status)) {
-        rb_raise(rb_eRuntimeError, "sixel_encoder_setopt() failed (%08d).", status);
+        rb_raise(rb_eRuntimeError,
+                 "sixel_encoder_setopt() failed: %s / %s",
+                 sixel_helper_format_error(status),
+                 sixel_helper_get_additional_message());
     }
 
     return Qnil;
@@ -84,7 +87,10 @@ sixel_ruby_encoder_encode(VALUE self, VALUE filename)
     
     status = sixel_encoder_encode(encoder, StringValueCStr(filename));
     if (SIXEL_FAILED(status)) {
-        rb_raise(rb_eRuntimeError, "sixel_encoder_encode() failed (%08d).", status);
+        rb_raise(rb_eRuntimeError,
+                 "sixel_encoder_encode() failed: %s / %s",
+                 sixel_helper_format_error(status),
+                 sixel_helper_get_additional_message());
     }
 
     return Qnil;
@@ -127,7 +133,10 @@ sixel_ruby_decoder_setopt(VALUE self, VALUE option, VALUE optval)
                                   *StringValueCStr(option),
                                   StringValueCStr(optval));
     if (SIXEL_FAILED(status)) {
-        rb_raise(rb_eRuntimeError, "sixel_decoder_setopt() failed (%08d).", status);
+        rb_raise(rb_eRuntimeError,
+                 "sixel_decoder_setopt() failed: %s / %s",
+                 sixel_helper_format_error(status),
+                 sixel_helper_get_additional_message());
     }
 
     return Qnil;
@@ -144,7 +153,10 @@ sixel_ruby_decoder_decode(VALUE self)
     
     status = sixel_decoder_decode(decoder);
     if (SIXEL_FAILED(status)) {
-        rb_raise(rb_eRuntimeError, "sixel_decoder_decode() failed (%08d).", status);
+        rb_raise(rb_eRuntimeError,
+                 "sixel_decoder_decode() failed: %s / %s",
+                 sixel_helper_format_error(status),
+                 sixel_helper_get_additional_message());
     }
 
     return Qnil;
