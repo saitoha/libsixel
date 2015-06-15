@@ -217,6 +217,7 @@ AC_CHECK_FUNCS([memcpy \
                 clearerr \
                 stat \
                 setjmp \
+                strerror \
                 isatty])
 
 # for HDR

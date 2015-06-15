@@ -365,7 +365,7 @@ prepare_specified_palette(
     int finsecure,
     int const *cancel_flag)
 {
-    int status = SIXEL_FALSE;
+    SIXELSTATUS status = SIXEL_FALSE;
 
     sixel_callback_context_for_mapfile_t callback_context;
 

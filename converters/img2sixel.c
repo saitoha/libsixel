@@ -42,9 +42,6 @@
 #if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
-#if HAVE_ERRNO_H
-# include <errno.h>
-#endif
 #if HAVE_SIGNAL_H
 # include <signal.h>
 #endif
@@ -357,7 +354,6 @@ main(int argc, char *argv[])
             show_help();
             status = SIXEL_OK;
             goto end;
-            goto end;
         default:
             status = sixel_encoder_setopt(encoder, n, optarg);
             if (SIXEL_FAILED(status)) {
@@ -383,19 +379,19 @@ main(int argc, char *argv[])
 #endif
     status = sixel_encoder_set_cancel_flag(encoder, &signaled);
     if (SIXEL_FAILED(status)) {
-        goto end;
+        goto error;
     }
 
     if (optind == argc) {
         status = sixel_encoder_encode(encoder, NULL);
         if (SIXEL_FAILED(status)) {
-            goto end;
+            goto error;
         }
     } else {
         for (n = optind; n < argc; n++) {
             status = sixel_encoder_encode(encoder, argv[n]);
             if (SIXEL_FAILED(status)) {
-                goto end;
+                goto error;
             }
         }
     }
@@ -413,6 +409,10 @@ argerr:
             "                 [-E encodepolicy] [-B bgcolor] [-o outfile] [filename ...]\n"
             "for more details, type: 'img2sixel -H'.\n");
 
+error:
+    fprintf(stderr, "%s\nreason: %s\n",
+            sixel_helper_get_additional_message(),
+            sixel_helper_format_error(status));
 end:
     sixel_encoder_unref(encoder);
     return status;
