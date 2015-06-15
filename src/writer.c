@@ -198,9 +198,9 @@ write_png_to_file(
     png_data = stbi_write_png_to_mem(pixels, width * 3,
                                      width, height,
                                      /* STBI_rgb */ 3, &png_len);
-    if (!png_data) {
-        status = SIXEL_STBI_ERROR;
-        sixel_helper_set_additional_message(stbi_failure_reason());
+    if (png_data == NULL) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        sixel_helper_set_additional_message("stbi_write_png_to_mem() failed.");
         goto end;
     }
     write_len = fwrite(png_data, 1, png_len, output_fp);
