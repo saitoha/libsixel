@@ -144,7 +144,8 @@ am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-scale.lo libsixel_la-loader.lo \
 	libsixel_la-frompnm.lo libsixel_la-fromgif.lo \
 	libsixel_la-encoder.lo libsixel_la-decoder.lo \
-	libsixel_la-writer.lo libsixel_la-stb_image_write.lo
+	libsixel_la-writer.lo libsixel_la-stb_image_write.lo \
+	libsixel_la-status.lo
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -405,6 +406,7 @@ libsixel_la_SOURCES = \
 		writer.h \
 		stb_image_write.c \
 		stb_image_write.h \
+		status.c \
 		rgblookup.h
 
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/
@@ -534,6 +536,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-pixelformat.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quant.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-scale.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-status.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-stb_image_write.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-tosixel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-writer.Plo@am__quote@
@@ -664,6 +667,13 @@ libsixel_la-stb_image_write.lo: stb_image_write.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stb_image_write.c' object='libsixel_la-stb_image_write.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-stb_image_write.lo `test -f 'stb_image_write.c' || echo '$(srcdir)/'`stb_image_write.c
+
+libsixel_la-status.lo: status.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-status.lo -MD -MP -MF $(DEPDIR)/libsixel_la-status.Tpo -c -o libsixel_la-status.lo `test -f 'status.c' || echo '$(srcdir)/'`status.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-status.Tpo $(DEPDIR)/libsixel_la-status.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='status.c' object='libsixel_la-status.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-status.lo `test -f 'status.c' || echo '$(srcdir)/'`status.c
 
 tests-tests.o: tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-tests.o -MD -MP -MF $(DEPDIR)/tests-tests.Tpo -c -o tests-tests.o `test -f 'tests.c' || echo '$(srcdir)/'`tests.c
