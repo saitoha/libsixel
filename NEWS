@@ -44,6 +44,11 @@
     sixel_decoder_setopt()
     sixel_decoder_decode()
 
+* core: Introduce newv APIs for semantic error handling:
+    sixel_helper_set_additional_message()
+    sixel_helper_get_additional_message()
+    sixel_helper_format_error()
+
 * core: Improve processing quality of loading paletted PNG images.
 
 * core: Improve processing quality and performance of loading GIF images.
@@ -57,6 +62,8 @@
 * Add Python interface
 
 * Add PHP interface
+
+* Add new build helper program: libsixel-config 
 
 * A lot of bug fixes and minor improvements.
   Thanks to @msmhrt, @ttdoda, and @msmhrt.
