@@ -81,10 +81,15 @@ sixel_decoder_create(void)
     sixel_decoder_t *decoder;
 
     decoder = malloc(sizeof(sixel_decoder_t));
-
-    decoder->ref          = 1;
-    decoder->output       = arg_strdup("-");
-    decoder->input        = arg_strdup("-");
+    if (decoder != NULL) {
+        decoder->ref          = 1;
+        decoder->output       = arg_strdup("-");
+        decoder->input        = arg_strdup("-");
+        if (decoder->output == NULL || decoder->input == NULL) {
+            free(decoder);
+            return NULL;
+        }
+    }
 
     return decoder;
 }
@@ -119,37 +124,53 @@ sixel_decoder_unref(sixel_decoder_t *decoder)
 }
 
 
-SIXELAPI int
+SIXELAPI SIXELSTATUS
 sixel_decoder_setopt(
     sixel_decoder_t /* in */ *decoder,
     int             /* in */ arg,
     char const      /* in */ *optarg
 )
 {
+    SIXELSTATUS status = SIXEL_FALSE;
+
     switch(arg) {
     case 'i':
         free(decoder->input);
         decoder->input = arg_strdup(optarg);
+        if (decoder->input == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         break;
     case 'o':
         free(decoder->output);
         decoder->output = arg_strdup(optarg);
+        if (decoder->input == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         break;
     case '?':
     default:
-        return (-1);
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
     }
 
-    return 0;
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
-SIXELAPI int
+SIXELAPI SIXELSTATUS
 sixel_decoder_decode(
     sixel_decoder_t /* in */ *decoder)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *raw_data;
-    int sx, sy;
+    int sx;
+    int sy;
     int raw_len;
     int max;
     int n;
@@ -158,7 +179,7 @@ sixel_decoder_decode(
     unsigned char *palette;
     int ncolors;
     unsigned char *pixels = NULL;
-    int ret = 0;
+    char buffer[1024];
 
     if (strcmp(decoder->input, "-") == 0) {
         /* for windows */
@@ -173,11 +194,11 @@ sixel_decoder_decode(
     } else {
         input_fp = fopen(decoder->input, "rb");
         if (!input_fp) {
-#if HAVE_ERRNO_H
-            fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
-                    decoder->input, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-            return (-1);
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            if (sprintf(buffer, "fopen('%s') failed.", decoder->input) != EOF) {
+                sixel_helper_set_additional_message(buffer);
+            }
+            goto end;
         }
     }
 
@@ -185,23 +206,22 @@ sixel_decoder_decode(
     max = 64 * 1024;
 
     if ((raw_data = (unsigned char *)malloc(max)) == NULL) {
-#if HAVE_ERRNO_H
-        fprintf(stderr, "malloc(%d) failed.\n" "reason: %s.\n",
-                max, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-        return (-1);
+        status = SIXEL_BAD_ALLOCATION;
+        if (sprintf(buffer, "malloc(%d) failed.", max) != EOF) {
+            sixel_helper_set_additional_message(buffer);
+        }
+        goto end;
     }
 
     for (;;) {
         if ((max - raw_len) < 4096) {
             max *= 2;
             if ((raw_data = (unsigned char *)realloc(raw_data, max)) == NULL) {
-#if HAVE_ERRNO_H
-                fprintf(stderr, "realloc(raw_data, %d) failed.\n"
-                                "reason: %s.\n",
-                        max, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-                return (-1);
+                status = SIXEL_BAD_ALLOCATION;
+                if (sprintf(buffer, "realloc(raw_data, %d) failed.", max) != EOF) {
+                    sixel_helper_set_additional_message(buffer);
+                }
+                goto end;
             }
         }
         if ((n = fread(raw_data + raw_len, 1, 4096, input_fp)) <= 0)
@@ -213,22 +233,27 @@ sixel_decoder_decode(
         fclose(input_fp);
     }
 
-    ret = sixel_decode(raw_data, raw_len, &indexed_pixels,
-                       &sx, &sy, &palette, &ncolors, malloc);
+    status = sixel_decode(raw_data, raw_len, &indexed_pixels,
+                          &sx, &sy, &palette, &ncolors, malloc);
 
-    if (ret != 0) {
+    if (SIXEL_FAILED(status)) {
         fprintf(stderr, "sixel_decode failed.\n");
         goto end;
     }
 
-    ret = sixel_helper_write_image_file(indexed_pixels, sx, sy, palette,
-                                        SIXEL_PIXELFORMAT_PAL8,
-                                        decoder->output,
-                                        SIXEL_FORMAT_PNG);
+    status = sixel_helper_write_image_file(indexed_pixels, sx, sy, palette,
+                                           SIXEL_PIXELFORMAT_PAL8,
+                                           decoder->output,
+                                           SIXEL_FORMAT_PNG);
+
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "sixel_helper_write_image_file failed.\n");
+        goto end;
+    }
 
 end:
     free(pixels);
-    return ret;
+    return status;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */

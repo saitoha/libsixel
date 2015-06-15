@@ -41,11 +41,26 @@
 typedef int SIXELSTATUS;
 #define SIXEL_OK                0x0000                          /* succeeded */
 #define SIXEL_FALSE             0x1000                          /* failed */
+
 #define SIXEL_RUNTIME_ERROR     (SIXEL_FALSE         | 0x0100)  /* runtime error */
 #define SIXEL_LOGIC_ERROR       (SIXEL_FALSE         | 0x0200)  /* logic error */
+#define SIXEL_FEATURE_ERROR     (SIXEL_FALSE         | 0x0300)  /* feature not enabled */
+#define SIXEL_LIBC_ERROR        (SIXEL_FALSE         | 0x0400)  /* errors caused by curl */
+#define SIXEL_CURL_ERROR        (SIXEL_FALSE         | 0x0500)  /* errors occures in libc functions */
+#define SIXEL_JPEG_ERROR        (SIXEL_FALSE         | 0x0600)  /* errors occures in libjpeg functions */
+#define SIXEL_PNG_ERROR         (SIXEL_FALSE         | 0x0700)  /* errors occures in libpng functions */
+#define SIXEL_GDK_ERROR         (SIXEL_FALSE         | 0x0800)  /* errors occures in gdk functions */
+#define SIXEL_GD_ERROR          (SIXEL_FALSE         | 0x0900)  /* errors occures in gd functions */
+#define SIXEL_STBI_ERROR        (SIXEL_FALSE         | 0x0a00)  /* errors occures in stb_image functions */
+#define SIXEL_STBIW_ERROR       (SIXEL_FALSE         | 0x0b00)  /* errors occures in stb_image_write functions */
+
 #define SIXEL_INTERRUPTED       (SIXEL_OK            | 0x0001)  /* interrupted by a signal */
+
 #define SIXEL_BAD_ALLOCATION    (SIXEL_RUNTIME_ERROR | 0x0001)  /* malloc() failed */
 #define SIXEL_BAD_ARGUMENT      (SIXEL_RUNTIME_ERROR | 0x0002)  /* bad argument detected */
+#define SIXEL_BAD_INPUT         (SIXEL_RUNTIME_ERROR | 0x0003)  /* bad input detected */
+
+#define SIXEL_NOT_IMPLEMENTED   (SIXEL_FEATURE_ERROR | 0x0001)  /* feature not implemented */
 
 #define SIXEL_SUCCEEDED(status) (((status) & 0x1000) == 0)
 #define SIXEL_FAILED(status)    (((status) & 0x1000) != 0)
@@ -493,6 +508,20 @@ sixel_decode(
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+SIXELAPI void
+sixel_helper_set_additional_message(
+    const char      /* in */  *message         /* error message */
+);
+
+SIXELAPI char const *
+sixel_helper_get_additional_message(void);
+
+/* convert error status code int formatted string */
+SIXELAPI char const *
+sixel_helper_format_error(
+    SIXELSTATUS     /* in */  status           /* status code */
+);
 
 /* compute pixel depth from pixelformat */
 SIXELAPI SIXELSTATUS
