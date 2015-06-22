@@ -1,6 +1,8 @@
                   ------------------------------
                    What's new in libsixel-1.5 ?
                   ------------------------------
+* img2sixel: Add -k(--insecure) option.
+
 * img2sixel: Add -B(--bgcolor) option.
 
 * core: Introduce new API for dither object, sixel_dither_set_transparent().
@@ -65,7 +67,7 @@
 
 * Add Ruby interface
 
-* Add new build helper program: libsixel-config 
+* Add new build helper program: libsixel-config
 
 * A lot of bug fixes and minor improvements.
   Thanks to @msmhrt, @ttdoda, and @msmhrt.
