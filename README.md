@@ -703,9 +703,32 @@ This package includes a Python module `libsixel`.
 
 ### Build and install Python interface
 
+#### Install into the python prefixed with '/usr/local'
+
 ```
+$ git clone https://github.com/saitoha/libsixel.git
+$ cd libsixel
+$ git checkout develop  # now available only develop branch
+$ ./configure --enable-python --prefix=/usr/local
+$ make install
+```
+
+#### Install into only current active python
+
+```
+$ git clone https://github.com/saitoha/libsixel.git
+$ cd libsixel
+$ git checkout develop  # now available only develop branch
+$ ./configure --disable-python
+$ make install  # install libsixel
 $ cd python
-$ python setup.py install
+$ python setup.py install  # install python module
+```
+
+or
+
+```
+$ easy_install libsixel-python
 ```
 
 ## PHP interface
@@ -720,6 +743,23 @@ $ phpize
 $ ./configure
 $ make install
 ```
+
+## Ruby interface
+
+### Build and install Ruby interface
+
+```
+$ gem install libsixel-ruby
+```
+
+or
+
+```
+$ git submodule update --init
+$ rake compile
+$ rake build install
+```
+
 
 ## Support
 
@@ -758,7 +798,7 @@ The MIT License (MIT)
 ## Contributers and Reviewers
 
 - @arakiken
-- @elfring 
+- @elfring
 - @isaki68k
 - @knok
 - @mattn
@@ -779,7 +819,7 @@ The MIT License (MIT)
 4. Push to the branch (git push origin my-new-feature)
 5. Create a new Pull Request
 
-  
+
 ## Acknowledgment
 
 This software derives from the following implementations.

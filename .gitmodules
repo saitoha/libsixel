@@ -1,0 +1,3 @@
+[submodule "ruby"]
+	path = ruby
+	url = git://github.com/saitoha/libsixel-ruby.git
