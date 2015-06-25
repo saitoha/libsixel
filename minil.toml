@@ -1,0 +1,4 @@
+name = "Image-LibSIXEL"
+# badges = ["travis"]
+module_maker="ModuleBuildTiny"
+
