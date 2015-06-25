@@ -5,16 +5,6 @@
 
 #include <sixel.h>
 
-MODULE = Image::LibSIXEL          PACKAGE = Image::LibSIXEL
-
-void
-_sixel(...)
-PPCODE:
-{
-    PerlIO_printf(PerlIO_stdout(), "Hello, world!\n");
-    XSRETURN(0);
-}
-
 MODULE = Image::LibSIXEL PACKAGE = Image::LibSIXEL::Encoder PREFIX = encoder_
 
 SV *
