@@ -3,7 +3,6 @@
 #include "perl.h"
 #include "XSUB.h"
 
-#include "ppport.h"
 #include <sixel.h>
 
 MODULE = Image::LibSIXEL          PACKAGE = Image::LibSIXEL
