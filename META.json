@@ -31,6 +31,12 @@
             "Module::Build::Tiny" : "0.035"
          }
       },
+      "build" : {
+         "requires" : {
+            "ExtUtils::CBuilder" : "0",
+            "Test::More" : "0"
+         }
+      },
       "develop" : {
          "requires" : {
             "Test::CPAN::Meta" : "0",
