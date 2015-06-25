@@ -10,7 +10,7 @@ use warnings;
 use Test::More;
 
 #use Test::More;
-BEGIN { use_ok('Image::Sixel') };
+BEGIN { use_ok('Image::LibSIXEL') };
 BEGIN {
   unlink "egret.six", "egret.png";
 };
@@ -21,9 +21,9 @@ BEGIN {
 # its man page ( perldoc Test::More ) for help writing this test script.
 
 subtest 'encoder' => sub {
-  use Image::Sixel;
-  my $encoder = Image::Sixel::Encoder->new();
-  isa_ok $encoder, 'Image::Sixel::Encoder';
+  use Image::LibSIXEL;
+  my $encoder = Image::LibSIXEL::Encoder->new();
+  isa_ok $encoder, 'Image::LibSIXEL::Encoder';
   can_ok $encoder, 'setopt', 'encode';
   $encoder->setopt("o", "egret.six");
   $encoder->setopt("w", "200");
@@ -32,9 +32,9 @@ subtest 'encoder' => sub {
 };
 
 subtest 'decoder' => sub {
-  use Image::Sixel;
-  my $decoder = Image::Sixel::Decoder->new;
-  isa_ok $decoder, 'Image::Sixel::Decoder';
+  use Image::LibSIXEL;
+  my $decoder = Image::LibSIXEL::Decoder->new;
+  isa_ok $decoder, 'Image::LibSIXEL::Decoder';
   can_ok $decoder, 'setopt', 'decode';
   $decoder->setopt("i", "images/egret.six");
   $decoder->setopt("o", "egret.png");

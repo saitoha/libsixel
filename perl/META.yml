@@ -1,7 +1,7 @@
 ---
 abstract: 'libsixel binding for Perl'
 author:
-  - unknown
+  - Hayaki Saito
 build_requires:
   ExtUtils::CBuilder: 0
   Test::More: 0
@@ -11,14 +11,14 @@ license: mit
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: 1.4
-name: Image-Sixel
+name: Image-LibSIXEL
 provides:
-  Image::Sixel:
-    file: lib/Image/Sixel.pm
-    version: 0.0_1
-  Image::Sixel::Encoder:
-    file: lib/Image/Sixel/Encoder.pm
+  Image::LibSIXEL:
+    file: lib/Image/LibSIXEL.pm
+    version: 0.01
+  Image::LibSIXEL::Encoder:
+    file: lib/Image/LibSIXEL/Encoder.pm
     version: 0
 resources:
   license: http://opensource.org/licenses/mit-license.php
-version: 0.0_1
+version: 0.01
