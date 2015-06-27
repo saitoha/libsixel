@@ -144,6 +144,9 @@ sixel_helper_format_error(
         case SIXEL_STBIW_ERROR:
             error_string = "stb_image_write error";
             break;
+        case SIXEL_FALSE:
+            error_string = "unknown error (SIXEL_FALSE)";
+            break;
         default:
             error_string = "unknown error";
             break;

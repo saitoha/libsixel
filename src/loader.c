@@ -369,7 +369,7 @@ load_jpeg(unsigned char **result,
           int *pheight,
           int *ppixelformat)
 {
-    SIXELSTATUS status = SIXEL_FALSE;
+    SIXELSTATUS status = SIXEL_JPEG_ERROR;
     int row_stride, size;
     JSAMPARRAY buffer;
     struct jpeg_decompress_struct cinfo;
@@ -405,7 +405,6 @@ load_jpeg(unsigned char **result,
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-
     row_stride = cinfo.output_width * cinfo.output_components;
     buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride, 1);
 
@@ -413,6 +412,8 @@ load_jpeg(unsigned char **result,
         jpeg_read_scanlines(&cinfo, buffer, 1);
         memcpy(*result + (cinfo.output_scanline - 1) * row_stride, buffer[0], row_stride);
     }
+
+    status = SIXEL_OK;
 
 end:
     jpeg_finish_decompress(&cinfo);
@@ -995,6 +996,7 @@ load_with_builtin(
                            &frame->width,
                            &frame->height,
                            &frame->pixelformat);
+
         if (SIXEL_FAILED(status)) {
             goto error;
         }
