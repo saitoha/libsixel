@@ -218,7 +218,8 @@ AC_CHECK_FUNCS([memcpy \
                 stat \
                 setjmp \
                 strerror \
-                isatty])
+                isatty \
+                ldiv])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
