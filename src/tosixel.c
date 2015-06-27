@@ -103,6 +103,7 @@ sixel_puts(char *buffer, char *value, int size)
 }
 
 
+#if HAVE_LDIV
 static int
 sixel_putnum_impl(char *buffer, long value, int pos)
 {
@@ -115,12 +116,21 @@ sixel_putnum_impl(char *buffer, long value, int pos)
     *(buffer + pos) = '0' + r.rem;
     return pos + 1;
 }
+#endif  /* HAVE_LDIV */
 
 
 static int
 sixel_putnum(char *buffer, unsigned int value)
 {
-    return sixel_putnum_impl(buffer, value, 0);
+    int pos;
+
+#if HAVE_LDIV
+    pos = sixel_putnum_impl(buffer, value, 0);
+#else
+    pos = sprintf(buffer, "%d", value);
+#endif  /* HAVE_LDIV */
+
+    return pos;
 }
 
 

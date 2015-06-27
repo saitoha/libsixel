@@ -108,6 +108,9 @@
 /* whether jpeg codec library is available */
 #undef HAVE_JPEG
 
+/* Define to 1 if you have the `ldiv' function. */
+#undef HAVE_LDIV
+
 /* whether libcurl is available */
 #undef HAVE_LIBCURL
 
@@ -163,6 +166,9 @@
 
 /* Define to 1 if you have the `strdup' function. */
 #undef HAVE_STRDUP
+
+/* Define to 1 if you have the `strerror' function. */
+#undef HAVE_STRERROR
 
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
