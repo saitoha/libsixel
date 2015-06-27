@@ -445,7 +445,6 @@ prepare_palette(sixel_dither_t **dither,
             sixel_dither_set_transparent(*dither, sixel_frame_get_transparent(frame));
         }
     } else if (sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_GRAYSCALE) {
-        sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
         switch (sixel_frame_get_pixelformat(frame)) {
         case SIXEL_PIXELFORMAT_G1:
             *dither = sixel_dither_get(SIXEL_BUILTIN_G1);
@@ -462,6 +461,7 @@ prepare_palette(sixel_dither_t **dither,
         default:
             return SIXEL_LOGIC_ERROR;
         }
+        sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
     } else {
         if (former_dither) {
             sixel_dither_unref(former_dither);
