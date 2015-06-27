@@ -61,6 +61,8 @@ if WANT_IMG2SIXEL
 	test ! $$($(WINE) ./img2sixel -B \#ffff ../images/map8.png)
 	test ! $$($(WINE) ./img2sixel -B \#0000000000000 ../images/map8.png)
 	test ! $$($(WINE) ./img2sixel -B \#00G)
+	test ! $$($(WINE) ./img2sixel -B test)
+	test ! $$($(WINE) ./img2sixel -B rgb:11/11)
 	test ! $$($(WINE) ./img2sixel -%)
 	test ! $$($(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg)
 	test ! $$($(WINE) ./img2sixel -m ../images/map8.png -p 8 ../images/snake.jpg)
@@ -79,7 +81,7 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -H
 	$(WINE) ./img2sixel -V
 	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | ./img2sixel | tee snake.sixel
-	$(WINE) ./img2sixel -w50% -h150% -dfs -thls -shistogram < ../images/snake.jpg | tee snake2.sixel
+	$(WINE) ./img2sixel -w50% -h150% -dfs -Bblue -thls -shistogram < ../images/snake.jpg | tee snake2.sixel
 	$(WINE) ./img2sixel -w2100 -h2100 -djajuni -bxterm256 -o snake3.sixel < ../images/snake.jpg
 	$(WINE) ./img2sixel -w105% -h100 -B\#000000000 -rnearest < ../images/snake.gif
 	$(WINE) ./img2sixel -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto ../images/snake.tga
