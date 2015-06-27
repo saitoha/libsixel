@@ -37,6 +37,18 @@
 # include <curl/curl.h>
 #endif
 
+#include "status.h"
+
+#define SIXEL_MESSAGE_OK                ("succeeded")
+#define SIXEL_MESSAGE_INTERRUPTED       ("interrupted by a signal")
+#define SIXEL_MESSAGE_BAD_ALLOCATION    ("runtime error: bad allocation error")
+#define SIXEL_MESSAGE_BAD_ARGUMENT      ("runtime error: bad argument detected")
+#define SIXEL_MESSAGE_BAD_INPUT         ("runtime error: bad input detected")
+#define SIXEL_MESSAGE_RUNTIME_ERROR     ("runtime error")
+#define SIXEL_MESSAGE_LOGIC_ERROR       ("logic error")
+#define SIXEL_MESSAGE_NOT_IMPLEMENTED   ("feature error: not implemented")
+#define SIXEL_MESSAGE_FEATURE_ERROR     ("feature error")
+
 static char g_buffer[1024] = { 0x0 };
 
 SIXELAPI void
@@ -74,11 +86,11 @@ sixel_helper_format_error(
     case SIXEL_OK:
         switch (status) {
         case SIXEL_INTERRUPTED:
-            error_string = "interrupted by a signal";
+            error_string = SIXEL_MESSAGE_INTERRUPTED;
             break;
         case SIXEL_OK:
         default:
-            error_string = "succeeded";
+            error_string = SIXEL_MESSAGE_OK;
             break;
         }
         break;
@@ -87,29 +99,29 @@ sixel_helper_format_error(
         case SIXEL_RUNTIME_ERROR:
             switch (status) {
             case SIXEL_BAD_ALLOCATION:
-                error_string = "runtime error: bad allocation error";
+                error_string = SIXEL_MESSAGE_BAD_ALLOCATION;
                 break;
             case SIXEL_BAD_ARGUMENT:
-                error_string = "runtime error: bad argument detected";
+                error_string = SIXEL_MESSAGE_BAD_ARGUMENT;
                 break;
             case SIXEL_BAD_INPUT:
-                error_string = "runtime error: bad input detected";
+                error_string = SIXEL_MESSAGE_BAD_INPUT;
                 break;
             default:
-                error_string = "runtime error";
+                error_string = SIXEL_MESSAGE_RUNTIME_ERROR;
                 break;
             }
             break;
         case SIXEL_LOGIC_ERROR:
-            error_string = "logic error";
+            error_string = SIXEL_MESSAGE_LOGIC_ERROR;
             break;
         case SIXEL_FEATURE_ERROR:
             switch (status) {
             case SIXEL_NOT_IMPLEMENTED:
-                error_string = "feature error: not implemented";
+                error_string = SIXEL_MESSAGE_NOT_IMPLEMENTED;
                 break;
             default:
-                error_string = "feature error";
+                error_string = SIXEL_MESSAGE_FEATURE_ERROR;
                 break;
             }
             break;
@@ -169,6 +181,58 @@ test1(void)
     if (strcmp(sixel_helper_format_error(SIXEL_OK), "succeeded") == 0) {
         goto error;
     }
+    if (strcmp(sixel_helper_format_error(SIXEL_INTERRUPTED), "interrupted by a signal") == 0) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+error:
+    perror("test1");
+    return nret;
+}
+
+
+static int
+test2(void)
+{
+    int nret = EXIT_FAILURE;
+
+    if (strcmp(sixel_helper_format_error(SIXEL_BAD_ALLOCATION), SIXEL_MESSAGE_BAD_ALLOCATION == 0) {
+        goto error;
+    }
+    if (strcmp(sixel_helper_format_error(SIXEL_BAD_ARGUMENT), SIXEL_MESSAGE_BAD_ARGUMENT) == 0) {
+        goto error;
+    }
+    if (strcmp(sixel_helper_format_error(SIXEL_BAD_INPUT), SIXEL_MESSAGE_BAD_INPUT) == 0) {
+        goto error;
+    }
+    if (strcmp(sixel_helper_format_error(SIXEL_RUNTIME_ERROR), SIXEL_MESSAGE_RUNTIME_ERROR) == 0) {
+        goto error;
+    }
+    if (strcmp(sixel_helper_format_error(SIXEL_LOGIC_ERROR), SIXEL_MESSAGE_LOGIC_ERROR) == 0) {
+        goto error;
+    }
+    if (strcmp(sixel_helper_format_error(SIXEL_NOT_IMPLEMENTED), SIXEL_MESSAGE_NOT_IMPLEMENTED) == 0) {
+        goto error;
+    }
+    if (strcmp(sixel_helper_format_error(SIXEL_FEATURE_ERROR), SIXEL_MESSAGE_FEATURE_ERROR) == 0) {
+        goto error;
+    }
+
+    return EXIT_SUCCESS;
+error:
+    perror("test1");
+    return nret;
+}
+
+
+static int
+test3(void)
+{
+    int nret = EXIT_FAILURE;
+
+    if (strcmp(sixel_helper_format_error(SIXEL_INTERRUPTED), "interrupted by a signal") == 0) {
+        goto error;
+    }
     return EXIT_SUCCESS;
 error:
     perror("test1");
@@ -185,6 +249,7 @@ sixel_status_tests_main(void)
 
     static testcase const testcases[] = {
         test1,
+        test2,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

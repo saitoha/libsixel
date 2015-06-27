@@ -271,13 +271,13 @@ static int
 test1(void)
 {
     int nret = EXIT_FAILURE;
-    int ret;
+    SIXELSTATUS status;
     unsigned char pixels[] = {0xff, 0xff, 0xff};
 
-    ret = sixel_helper_write_image_file(
+    status = sixel_helper_write_image_file(
         pixels, 1, 1, NULL, SIXEL_PIXELFORMAT_RGB888, "output.gif", FORMAT_GIF);
 
-    if (ret != (-1)) {
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
     nret = EXIT_SUCCESS;
@@ -291,13 +291,13 @@ static int
 test2(void)
 {
     int nret = EXIT_FAILURE;
-    int ret;
+    SIXELSTATUS status;
     unsigned char pixels[] = {0xff, 0xff, 0xff};
 
-    ret = sixel_helper_write_image_file(
+    status = sixel_helper_write_image_file(
         pixels, 1, 1, NULL, SIXEL_PIXELFORMAT_RGB888, "test-output.png", FORMAT_PNG);
 
-    if (ret != 0) {
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
     nret = EXIT_SUCCESS;
