@@ -178,10 +178,10 @@ test1(void)
 {
     int nret = EXIT_FAILURE;
 
-    if (strcmp(sixel_helper_format_error(SIXEL_OK), "succeeded") == 0) {
+    if (strcmp(sixel_helper_format_error(SIXEL_OK), SIXEL_MESSAGE_OK) != 0) {
         goto error;
     }
-    if (strcmp(sixel_helper_format_error(SIXEL_INTERRUPTED), "interrupted by a signal") == 0) {
+    if (strcmp(sixel_helper_format_error(SIXEL_INTERRUPTED), SIXEL_MESSAGE_INTERRUPTED) != 0) {
         goto error;
     }
     return EXIT_SUCCESS;
@@ -195,44 +195,28 @@ static int
 test2(void)
 {
     int nret = EXIT_FAILURE;
+    if (strcmp(sixel_helper_format_error(SIXEL_BAD_ALLOCATION), SIXEL_MESSAGE_BAD_ALLOCATION) != 0) {
+        goto error;
+    }
+    if (strcmp(sixel_helper_format_error(SIXEL_BAD_ARGUMENT), SIXEL_MESSAGE_BAD_ARGUMENT) != 0) {
+        goto error;
+    }
+    if (strcmp(sixel_helper_format_error(SIXEL_BAD_INPUT), SIXEL_MESSAGE_BAD_INPUT) != 0) {
+        goto error;
+    }
+    if (strcmp(sixel_helper_format_error(SIXEL_RUNTIME_ERROR), SIXEL_MESSAGE_RUNTIME_ERROR) != 0) {
+        goto error;
+    }
+    if (strcmp(sixel_helper_format_error(SIXEL_LOGIC_ERROR), SIXEL_MESSAGE_LOGIC_ERROR) != 0) {
+        goto error;
+    }
+    if (strcmp(sixel_helper_format_error(SIXEL_NOT_IMPLEMENTED), SIXEL_MESSAGE_NOT_IMPLEMENTED) != 0) {
+        goto error;
+    }
+    if (strcmp(sixel_helper_format_error(SIXEL_FEATURE_ERROR), SIXEL_MESSAGE_FEATURE_ERROR) != 0) {
+        goto error;
+    }
 
-    if (strcmp(sixel_helper_format_error(SIXEL_BAD_ALLOCATION), SIXEL_MESSAGE_BAD_ALLOCATION == 0) {
-        goto error;
-    }
-    if (strcmp(sixel_helper_format_error(SIXEL_BAD_ARGUMENT), SIXEL_MESSAGE_BAD_ARGUMENT) == 0) {
-        goto error;
-    }
-    if (strcmp(sixel_helper_format_error(SIXEL_BAD_INPUT), SIXEL_MESSAGE_BAD_INPUT) == 0) {
-        goto error;
-    }
-    if (strcmp(sixel_helper_format_error(SIXEL_RUNTIME_ERROR), SIXEL_MESSAGE_RUNTIME_ERROR) == 0) {
-        goto error;
-    }
-    if (strcmp(sixel_helper_format_error(SIXEL_LOGIC_ERROR), SIXEL_MESSAGE_LOGIC_ERROR) == 0) {
-        goto error;
-    }
-    if (strcmp(sixel_helper_format_error(SIXEL_NOT_IMPLEMENTED), SIXEL_MESSAGE_NOT_IMPLEMENTED) == 0) {
-        goto error;
-    }
-    if (strcmp(sixel_helper_format_error(SIXEL_FEATURE_ERROR), SIXEL_MESSAGE_FEATURE_ERROR) == 0) {
-        goto error;
-    }
-
-    return EXIT_SUCCESS;
-error:
-    perror("test1");
-    return nret;
-}
-
-
-static int
-test3(void)
-{
-    int nret = EXIT_FAILURE;
-
-    if (strcmp(sixel_helper_format_error(SIXEL_INTERRUPTED), "interrupted by a signal") == 0) {
-        goto error;
-    }
     return EXIT_SUCCESS;
 error:
     perror("test1");

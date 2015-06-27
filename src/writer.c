@@ -277,7 +277,7 @@ test1(void)
     status = sixel_helper_write_image_file(
         pixels, 1, 1, NULL, SIXEL_PIXELFORMAT_RGB888, "output.gif", FORMAT_GIF);
 
-    if (SIXEL_FAILED(status)) {
+    if (!SIXEL_FAILED(status)) {
         goto error;
     }
     nret = EXIT_SUCCESS;
