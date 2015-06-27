@@ -1,3 +1,137 @@
+2015-06-28  Hayaki Saito <user@zuse.jp>
+
+  * src/loader.c: Fix segmentation error when set -e option with loading 1/2/4
+  bpp grayscale image
+
+  * converters/Makefile.am, converters/Makefile.in: Add tests for -B option
+
+  * Makefile.in, config.h.in, configure, configure.ac, src/tosixel.c: Check
+  ldiv() availability with ./configure script
+
+2015-06-27  Hayaki Saito <user@zuse.jp>
+
+  * src/encoder.c: Ammend fix
+
+  * src/encoder.c: Set pixelformat to dither context when input format is
+  grayscale
+
+  * src/loader.c, src/status.c: Fix regression of returning invalid status when
+  using libjpeg
+
+  * src/tosixel.c: Use builtin functions instead of sprintf()
+
+2015-06-26  Hayaki Saito <user@zuse.jp>
+
+  * perl/Build.PL, perl/MANIFEST, perl/META.yml, perl/README.md,
+  perl/lib/Image/LibSIXEL.pm, perl/lib/Image/LibSIXEL.xs,
+  perl/lib/Image/LibSIXEL/Decoder.pm, perl/lib/Image/LibSIXEL/Encoder.pm,
+  perl/lib/Image/Sixel.pm, perl/lib/Image/Sixel.xs,
+  perl/lib/Image/Sixel/Decoder.pm, perl/lib/Image/Sixel/Encoder.pm,
+  perl/t/libsixel.t, perl/t/sixel.t: perl: change module name: Image::Sixel ->
+  Image::LibSIXEL
+
+2015-06-25  Hayaki Saito <user@zuse.jp>
+
+  * php/README, php/sixel/.cvsignore, php/sixel/CREDITS,
+  php/sixel/EXPERIMENTAL, php/sixel/README, php/sixel/config.m4,
+  php/sixel/config.w32, php/sixel/manual/file-entities.ent,
+  php/sixel/manual/functions.xml, php/sixel/manual/manual.xml.in,
+  php/sixel/manual/sixel/configure.xml, php/sixel/manual/sixel/constants.xml,
+  php/sixel/manual/sixel/ini.xml, php/sixel/manual/sixel/reference.xml,
+  php/sixel/package.xml, php/sixel/package2.xml, php/sixel/php_sixel.h,
+  php/sixel/sixel.c, php/sixel/sixel.dsp, php/sixel/sixel.xml,
+  php/sixel/tests/SixelEncoder____construct.phpt,
+  php/sixel/tests/SixelEncoder____destruct.phpt,
+  php/sixel/tests/SixelEncoder__encode.phpt,
+  php/sixel/tests/SixelEncoder__setopt.phpt: Remove php extension directory
+
+  * .gitmodules, ruby: Remove submodule directory
+
+2015-06-23  Hayaki Saito <user@zuse.jp>
+
+  * include/sixel.h.in: core: Add SIXEL_OPTFLAG_xxx definitions
+
+  * NEWS: Update NEWS
+
+  * .gitmodules, ruby: Add dubmodule libsixel-ruby
+
+2015-06-22  Hayaki Saito <user@zuse.jp>
+
+  * ruby/README, ruby/images/egret.jpg, ruby/images/egret.six, ruby/setup.rb,
+  ruby/sixel.c: Drop Ruby interface
+
+2015-06-16  Hayaki Saito <user@zuse.jp>
+
+  * src/writer.c: Fix build error caused by calling undeclared function
+
+  * ruby/sixel.c: ruby: show detailed error messages
+
+  * NEWS: Update NEWS
+
+  * ruby/sixel.c: Minor fix
+
+  * src/status.c: Add missing file: src/status.c
+
+  * converters/img2sixel.c, include/sixel.h.in, src/decoder.c, src/encoder.c,
+  src/loader.c, src/writer.c: Improve error handling
+
+  * Makefile.in, configure, configure.ac, converters/img2sixel.c,
+  include/sixel.h.in, src/Makefile.am, src/Makefile.in, src/loader.c: Introduce
+  newv APIs for semantic error handling: -
+  sixel_helper_set_additional_message() - sixel_helper_get_additional_message()
+  - sixel_helper_format_error()
+
+2015-06-15  Hayaki Saito <user@zuse.jp>
+
+  * src/loader.c: Supperss uninitialized warnings caused by MinGW gcc
+
+2015-06-14  Hayaki Saito <user@zuse.jp>
+
+  * ruby/README, ruby/images/egret.jpg, ruby/images/egret.six, ruby/setup.rb,
+  ruby/sixel.c: Add initial implementation of ruby interface
+
+  * src/decoder.c, src/encoder.c: Handle some ignored allocation errors
+
+  * converters/img2sixel.c, converters/sixel2png.c: Do semantic error handling
+  (on progress)
+
+  * src/loader.c: Suppress unused-label GCC warning
+
+  * src/encoder.c: Do semantic error handling (on progress)
+
+  * include/sixel.h.in, src/loader.c: Handle curl errors
+
+  * src/encoder.c, src/loader.c: Do semantic error handling (on progress)
+
+  * src/loader.c: Fix compile errors caused by missing symbol
+
+  * README.md, converters/Makefile.am, converters/Makefile.in,
+  converters/img2sixel.c, converters/shell-completion/bash/img2sixel,
+  converters/shell-completion/zsh/_img2sixel, src/encoder.c: Add new -b option
+  values: gray1/2/4/8
+
+  * include/sixel.h.in, src/dither.c, src/encoder.c: Add new built-in palette
+  profiles, gray1/2/4/8
+
+  * src/encoder.c, src/loader.c: Do semantic error handling (on progress)
+
+  * examples/opengl/main.c, include/sixel.h.in, src/dither.c, src/tosixel.c: Do
+  semantic error handling (on progress)
+
+2015-06-13  Hayaki Saito <user@zuse.jp>
+
+  * src/dither.c, src/encoder.c: Do semantic error handling (on progress)
+
+  * include/sixel.h.in, src/encoder.c, src/fromgif.c, src/loader.c: Introduce
+  SIXELSTATUS and related macros
+
+  * include/sixel.h.in: Define LIBSIXEL_VERSION and LIBSIXEL_ABI_VERSION as
+  string
+
+  * include/sixel.h.in: Correct typoed version macro
+
+  * include/sixel.h.in: Correct typoed version macro
+
 2015-06-11  Hayaki Saito <user@zuse.jp>
 
   * src/Makefile.am, src/Makefile.in: Add rgblookup.gprf to distributed files
@@ -172,6 +306,9 @@
 
   * src/pixelformat.c: Add more tests for pixelformat.c
 
+  * configure.ac: Evaluate arguments of --with-xxx option of ./configure more
+  strictly
+
 2015-05-18  Hayaki Saito <user@zuse.jp>
 
   * src/pixelformat.h: Add missing header file pixelformat.h
@@ -273,6 +410,8 @@
   tests
 
   * src/fromgif.c: Fix leaks around GIF loader
+
+  * converters/img2sixel.c: Stop memory leaks
 
 2015-05-11  Hayaki Saito <user@zuse.jp>
 
