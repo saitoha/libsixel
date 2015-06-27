@@ -639,29 +639,36 @@ load_png(unsigned char *buffer,
             case 1:
             case 2:
             case 4:
+                if (ppalette) {
 #  if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
 #   if HAVE_DEBUG
-                fprintf(stderr, "expand %u bpp to 8bpp format...\n",
-                        (unsigned int)bitdepth);
+                    fprintf(stderr, "expand %u bpp to 8bpp format...\n",
+                            (unsigned int)bitdepth);
 #   endif
-                png_set_expand_gray_1_2_4_to_8(png_ptr);
-                *pixelformat = SIXEL_PIXELFORMAT_G8;
+                    png_set_expand_gray_1_2_4_to_8(png_ptr);
+                    *pixelformat = SIXEL_PIXELFORMAT_G8;
 #  elif HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
 #   if HAVE_DEBUG
-                fprintf(stderr, "expand %u bpp to 8bpp format...\n",
-                        (unsigned int)bitdepth);
+                    fprintf(stderr, "expand %u bpp to 8bpp format...\n",
+                            (unsigned int)bitdepth);
 #   endif
-                png_set_gray_1_2_4_to_8(png_ptr);
-                *pixelformat = SIXEL_PIXELFORMAT_G8;
+                    png_set_gray_1_2_4_to_8(png_ptr);
+                    *pixelformat = SIXEL_PIXELFORMAT_G8;
 #  else
 #   if HAVE_DEBUG
-                fprintf(stderr, "expand into RGB format...\n");
+                    fprintf(stderr, "expand into RGB format...\n");
 #   endif
-                png_set_background(png_ptr, &background,
-                                   PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
-                png_set_gray_to_rgb(png_ptr);
-                *pixelformat = SIXEL_PIXELFORMAT_RGB888;
+                    png_set_background(png_ptr, &background,
+                                       PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+                    png_set_gray_to_rgb(png_ptr);
+                    *pixelformat = SIXEL_PIXELFORMAT_RGB888;
 #  endif
+                } else {
+                    png_set_background(png_ptr, &background,
+                                       PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+                    png_set_gray_to_rgb(png_ptr);
+                    *pixelformat = SIXEL_PIXELFORMAT_RGB888;
+                }
                 break;
             case 8:
                 if (ppalette) {
