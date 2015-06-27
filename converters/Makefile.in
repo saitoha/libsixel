@@ -1027,6 +1027,8 @@ test_impl:
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -B \#ffff ../images/map8.png)
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -B \#0000000000000 ../images/map8.png)
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -B \#00G)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -B test)
+@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -B rgb:11/11)
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -%)
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg)
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) ./img2sixel -m ../images/map8.png -p 8 ../images/snake.jpg)
@@ -1045,7 +1047,7 @@ test_impl:
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -H
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -V
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | ./img2sixel | tee snake.sixel
-@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -w50% -h150% -dfs -thls -shistogram < ../images/snake.jpg | tee snake2.sixel
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -w50% -h150% -dfs -Bblue -thls -shistogram < ../images/snake.jpg | tee snake2.sixel
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -w2100 -h2100 -djajuni -bxterm256 -o snake3.sixel < ../images/snake.jpg
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -w105% -h100 -B\#000000000 -rnearest < ../images/snake.gif
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto ../images/snake.tga

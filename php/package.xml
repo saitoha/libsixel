@@ -3,10 +3,13 @@
 <package>
 
   <name>sixel</name>
-  <summary>The unknown extension</summary>
+  <summary>PHP interface to libsixel</summary>
   <description>
-none
+    A PHP interface to libsixel.
+    libsixel is a lightweight, fast implementation of DEC SIXEL graphics codec.
   </description>
+
+  <license>PHP</license>
 
   <configureoptions>
    <configureoption name="with-libsixel" default="autodetect" prompt="libsixel installation directory?" />
@@ -14,21 +17,22 @@ none
 
   <maintainers>
     <maintainer>
-      <user>unknown</user>
-      <name>Unknown User</name>
-      <email>unknown@example.com</email>
-      <role>lead</role>
+      <user>saitoha</user>
+      <name>Hayaki Saito</name>
+      <email>saitoha@me.com</email>
+      <role>developer</role>
     </maintainer>
   </maintainers>
 
   <release>
-    <version>0.0.1dev</version>
-    <state>devel</state>
-    <notes>unknown</notes>
-    <date>2015-05-17</date>
+    <version>0.0.1</version>
+    <state>alpha</state>
+    <notes>        Alpha version.
+</notes>
+    <date>2015-06-23</date>
   </release>
   <changelog>
-
+  
   </changelog>
   <deps>
     <dep type="php" rel="ge" version="5.0.0"/>

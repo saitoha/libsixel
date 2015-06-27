@@ -1,8 +1,14 @@
 /*
    +----------------------------------------------------------------------+
-   | unknown license:                                                      |
+   | This source file is subject to version 3.0 of the PHP license,       |
+   | that is bundled with this package in the file LICENSE, and is        |
+   | available through the world-wide-web at the following url:           |
+   | http://www.php.net/license/3_0.txt.                                  |
+   | If you did not receive a copy of the PHP license and are unable to   |
+   | obtain it through the world-wide-web, please send a note to          |
+   | license@php.net so we can mail you a copy immediately.               |
    +----------------------------------------------------------------------+
-   | Authors: Unknown User <unknown@example.com>                          |
+   | Authors: Hayaki Saito <saitoha@me.com>                               |
    +----------------------------------------------------------------------+
 */
 
@@ -246,12 +252,12 @@ PHP_RSHUTDOWN_FUNCTION(sixel)
 /* {{{ PHP_MINFO_FUNCTION */
 PHP_MINFO_FUNCTION(sixel)
 {
-	php_printf("The unknown extension\n");
+	php_printf("PHP interface to libsixel\n");
 	php_info_print_table_start();
-	php_info_print_table_row(2, "Version",PHP_SIXEL_VERSION " (devel)");
-	php_info_print_table_row(2, "Released", "2015-05-17");
+	php_info_print_table_row(2, "Version",PHP_SIXEL_VERSION " (alpha)");
+	php_info_print_table_row(2, "Released", "2015-06-23");
 	php_info_print_table_row(2, "CVS Revision", "$Id: $");
-	php_info_print_table_row(2, "Authors", "Unknown User 'unknown@example.com' (lead)\n");
+	php_info_print_table_row(2, "Authors", "Hayaki Saito 'saitoha@me.com' (developer)\n");
 	php_info_print_table_end();
 	/* add your stuff here */
 

@@ -5,14 +5,16 @@
 <!-- State: experimental -->
 
  <reference xml:id='ref.sixel' xmlns='http://docbook.org/ns/docbook' xmlns:xlink='http://www.w3.org/1999/xlink'>
-  <title>The unknown extension</title>
+  <title>PHP interface to libsixel</title>
   <titleabbrev>sixel</titleabbrev>
 
   <partintro>
    <section id='sixel.intro'>
     &reftitle.intro;
     <para>
-none
+    A PHP interface to libsixel.
+    libsixel is a lightweight, fast implementation of DEC SIXEL graphics codec.
+
     </para>
    </section>
    

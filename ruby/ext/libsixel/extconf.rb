@@ -2,5 +2,5 @@
 
 require "mkmf"
 if have_header('sixel.h') and have_library('sixel')
-  create_makefile("Sixel")
+  create_makefile("libsixel/libsixel")
 end

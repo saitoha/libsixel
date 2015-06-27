@@ -6,7 +6,7 @@
 #include "ppport.h"
 #include <sixel.h>
 
-MODULE = Image::Sixel          PACKAGE = Image::Sixel
+MODULE = Image::LibSIXEL          PACKAGE = Image::LibSIXEL
 
 void
 _sixel(...)
@@ -16,7 +16,7 @@ PPCODE:
     XSRETURN(0);
 }
 
-MODULE = Image::Sixel PACKAGE = Image::Sixel::Encoder PREFIX = encoder_
+MODULE = Image::LibSIXEL PACKAGE = Image::LibSIXEL::Encoder PREFIX = encoder_
 
 SV *
 encoder_new(void)
@@ -101,7 +101,7 @@ encoder_DESTROY(...)
 
 
 
-MODULE = Image::Sixel PACKAGE = Image::Sixel::Decoder PREFIX = decoder_
+MODULE = Image::LibSIXEL PACKAGE = Image::LibSIXEL::Decoder PREFIX = decoder_
 
 SV *
 decoder_new(void)

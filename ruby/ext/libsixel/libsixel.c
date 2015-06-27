@@ -9,10 +9,10 @@
  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
  * the Software, and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -84,7 +84,7 @@ sixel_ruby_encoder_encode(VALUE self, VALUE filename)
     SIXELSTATUS status;
 
     Data_Get_Struct(self, sixel_encoder_t, encoder);
-    
+
     status = sixel_encoder_encode(encoder, StringValueCStr(filename));
     if (SIXEL_FAILED(status)) {
         rb_raise(rb_eRuntimeError,
@@ -150,7 +150,7 @@ sixel_ruby_decoder_decode(VALUE self)
     SIXELSTATUS status;
 
     Data_Get_Struct(self, sixel_decoder_t, decoder);
-    
+
     status = sixel_decoder_decode(decoder);
     if (SIXEL_FAILED(status)) {
         rb_raise(rb_eRuntimeError,
@@ -164,9 +164,9 @@ sixel_ruby_decoder_decode(VALUE self)
 
 
 void
-Init_Sixel()
+Init_libsixel()
 {
-    VALUE mSixel = rb_define_module("Sixel");
+    VALUE mSixel = rb_define_module("Libsixel");
 
     rb_define_singleton_method(mSixel, "version", get_version, 0);
 

@@ -1,22 +1,22 @@
 # NAME
 
-Image::Sixel - The Perl interface for libsixel (A lightweight, fast implementation of DEC SIXEL graphics codec)
+Image::LibSIXEL - The Perl interface for libsixel (A lightweight, fast implementation of DEC SIXEL graphics codec)
 
 # SYNOPSIS
 
 ```perl
-use Image::Sixel;
+use Image::LibSIXEL;
 
-$encoder = Image::Sixel::Encoder->new();
+$encoder = Image::LibSIXEL::Encoder->new();
 $encoder->setopt("w", 400);
 $encoder->setopt("p", 16);
 $encoder->encode("images/egret.jpg");
 ```
 
 ```perl
-use Image::Sixel;
+use Image::LibSIXEL;
 
-$decoder = Image::Sixel::Decoder->new();
+$decoder = Image::LibSIXEL::Decoder->new();
 $decoder->setopt("i", "images/egret.six");
 $decoder->setopt("o", "egret.png");
 $decoder->decode();

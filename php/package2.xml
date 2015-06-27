@@ -10,33 +10,35 @@ http://pear.php.net/dtd/package-2.0.xsd">
   <name>sixel</name>
   <channel>pecl.php.net</channel>
 
-  <summary>The unknown extension</summary>
+  <summary>PHP interface to libsixel</summary>
 
   <description>
-none
+    A PHP interface to libsixel.
+    libsixel is a lightweight, fast implementation of DEC SIXEL graphics codec.
   </description>
 
-  <lead>
-    <name>Unknown User</name>
-    <user>unknown</user>
-    <email>unknown@example.com</email>
+  <developer>
+    <name>Hayaki Saito</name>
+    <user>saitoha</user>
+    <email>saitoha@me.com</email>
     <active>yes</active>
-  </lead>
+  </developer>
 
-  <date>2015-05-17</date>
+  <date>2015-06-23</date>
   <version>
-    <release>0.0.1dev</release>
-    <api>0.0.1dev</api>
+    <release>0.0.1</release>
+    <api>0.0.1</api>
   </version>
   <stability>
-    <release>devel</release>
-    <api>devel</api>
+    <release>alpha</release>
+    <api>alpha</api>
   </stability>
 
-  <license>unknown</license>
+  <license uri="http://php.net/license" filesource="LICENSE">PHP</license>
 
   <notes>
-none
+        Alpha version.
+
   </notes>
 
   <contents>
