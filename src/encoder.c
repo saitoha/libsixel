@@ -630,6 +630,8 @@ output_sixel_without_macro(
     int dulation = 0;
     static unsigned char *p;
     int depth;
+    char message[256];
+    int nwrite;
 #if HAVE_USLEEP
     int lag = 0;
 # if HAVE_CLOCK
@@ -642,8 +644,15 @@ output_sixel_without_macro(
     }
 
     depth = sixel_helper_compute_depth(pixelformat);
-    if (depth == (-1)) {
-        status = SIXEL_FALSE;
+    if (depth < 0) {
+        status = SIXEL_LOGIC_ERROR;
+        nwrite = sprintf(message,
+                         "output_sixel_without_macro: "
+                         "sixel_helper_compute_depth(%08x) failed.",
+                         pixelformat);
+        if (nwrite > 0) {
+            sixel_helper_set_additional_message(message);
+        }
         goto end;
     }
 
@@ -1541,6 +1550,7 @@ sixel_encoder_encode(
     }
 
 reload:
+
     status = sixel_helper_load_image_file(filename,
                                           encoder->fstatic,
                                           fuse_palette,

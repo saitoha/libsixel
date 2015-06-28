@@ -478,9 +478,9 @@ read_palette(png_structp png_ptr,
 }
 
 
-
-static unsigned char *
-load_png(unsigned char *buffer,
+static SIXELSTATUS
+load_png(unsigned char **result,
+         unsigned char *buffer,
          int size,
          int *psx,
          int *psy,
@@ -491,13 +491,13 @@ load_png(unsigned char *buffer,
          unsigned char *bgcolor,
          int *transparent)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     chunk_t read_chunk;
     png_uint_32 bitdepth;
     png_uint_32 png_status;
     png_structp png_ptr;
     png_infop info_ptr;
     unsigned char **rows = NULL;
-    unsigned char *result = NULL;
     png_color *png_palette = NULL;
     png_color_16 background;
     png_color_16p default_background;
@@ -730,12 +730,14 @@ load_png(unsigned char *buffer,
         goto cleanup;
     }
     depth = sixel_helper_compute_depth(*pixelformat);
-    result = malloc(*psx * *psy * depth);
-    if (result == NULL) {
+    *result = malloc(*psx * *psy * depth);
+    if (*result == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
         goto cleanup;
     }
     rows = malloc(*psy * sizeof(unsigned char *));
     if (rows == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
         goto cleanup;
     }
     switch (*pixelformat) {
@@ -743,28 +745,32 @@ load_png(unsigned char *buffer,
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
         for (i = 0; i < *psy; ++i) {
-            rows[i] = result + (depth * *psx * bitdepth + 7) / 8 * i;
+            rows[i] = *result + (depth * *psx * bitdepth + 7) / 8 * i;
         }
         break;
     default:
         for (i = 0; i < *psy; ++i) {
-            rows[i] = result + depth * *psx * i;
+            rows[i] = *result + depth * *psx * i;
         }
         break;
     }
 #if USE_SETJMP && HAVE_SETJMP
     if (setjmp(png_jmpbuf(png_ptr))) {
-        free(result);
-        result = NULL;
+        free(*result);
+        *result = NULL;
+        status = SIXEL_PNG_ERROR;
         goto cleanup;
     }
 #endif  /* HAVE_SETJMP */
     png_read_image(png_ptr, rows);
+
+    status = SIXEL_OK;
+
 cleanup:
     png_destroy_read_struct(&png_ptr, &info_ptr,(png_infopp)0);
     free(rows);
 
-    return result;
+    return status;
 }
 # endif  /* HAVE_PNG */
 
@@ -1016,17 +1022,18 @@ load_with_builtin(
             status = SIXEL_BAD_ALLOCATION;
             goto error;
         }
-        frame->pixels = load_png(pchunk->buffer,
-                                 pchunk->size,
-                                 &frame->width,
-                                 &frame->height,
-                                 fuse_palette ? &frame->palette: NULL,
-                                 &frame->ncolors,
-                                 reqcolors,
-                                 &frame->pixelformat,
-                                 bgcolor,
-                                 &frame->transparent);
-        if (frame->pixels == NULL) {
+        status = load_png(&frame->pixels,
+                          pchunk->buffer,
+                          pchunk->size,
+                          &frame->width,
+                          &frame->height,
+                          fuse_palette ? &frame->palette: NULL,
+                          &frame->ncolors,
+                          reqcolors,
+                          &frame->pixelformat,
+                          bgcolor,
+                          &frame->transparent);
+        if (SIXEL_FAILED(status)) {
             goto error;
         }
     }

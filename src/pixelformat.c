@@ -133,6 +133,9 @@ sixel_helper_compute_depth(int pixelformat)
     case SIXEL_PIXELFORMAT_GA88:
         depth = 2;
         break;
+    case SIXEL_PIXELFORMAT_G1:
+    case SIXEL_PIXELFORMAT_G2:
+    case SIXEL_PIXELFORMAT_G4:
     case SIXEL_PIXELFORMAT_G8:
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
@@ -148,7 +151,7 @@ sixel_helper_compute_depth(int pixelformat)
 }
 
 
-static int
+static void
 expand_rgb(unsigned char *dst,
            unsigned char const *src,
            int width, int height,
@@ -171,15 +174,14 @@ expand_rgb(unsigned char *dst,
             *(dst + dst_offset + 2) = b;
         }
     }
-
-    return 0;
 }
 
 
-static int
+static SIXELSTATUS
 expand_palette(unsigned char *dst, unsigned char const *src,
                int width, int height, int const pixelformat)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     int x;
     int y;
     int i;
@@ -187,21 +189,29 @@ expand_palette(unsigned char *dst, unsigned char const *src,
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
+    case SIXEL_PIXELFORMAT_G1:
         bpp = 1;
         break;
     case SIXEL_PIXELFORMAT_PAL2:
+    case SIXEL_PIXELFORMAT_G2:
         bpp = 2;
         break;
     case SIXEL_PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_G4:
         bpp = 4;
         break;
     case SIXEL_PIXELFORMAT_PAL8:
+    case SIXEL_PIXELFORMAT_G8:
         for (i = 0; i < width * height; ++i, ++src) {
             *dst++ = *src;
         }
-        return 0;
+        status = SIXEL_OK;
+        goto end;
     default:
-        return (-1);
+        status = SIXEL_BAD_ARGUMENT;
+        sixel_helper_set_additional_message(
+            "expand_palette: invalid pixelformat.");
+        goto end;
     }
 
 #if HAVE_DEBUG
@@ -223,11 +233,15 @@ expand_palette(unsigned char *dst, unsigned char const *src,
             src++;
         }
     }
-    return 0;
+
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
-SIXELAPI int
+SIXELAPI SIXELSTATUS
 sixel_helper_normalize_pixelformat(
     unsigned char       /* out */ *dst,             /* destination buffer */
     int                 /* out */ *dst_pixelformat, /* converted pixelformat */
@@ -236,9 +250,11 @@ sixel_helper_normalize_pixelformat(
     int                 /* in */  width,            /* width of source image */
     int                 /* in */  height)           /* height of source image */
 {
+    SIXELSTATUS status = SIXEL_FALSE;
+
     switch (src_pixelformat) {
     case SIXEL_PIXELFORMAT_G8:
-        (void) expand_rgb(dst, src, width, height, src_pixelformat, 1);
+        expand_rgb(dst, src, width, height, src_pixelformat, 1);
         *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     case SIXEL_PIXELFORMAT_RGB565:
@@ -247,33 +263,50 @@ sixel_helper_normalize_pixelformat(
     case SIXEL_PIXELFORMAT_BGR555:
     case SIXEL_PIXELFORMAT_GA88:
     case SIXEL_PIXELFORMAT_AG88:
-        (void) expand_rgb(dst, src, width, height, src_pixelformat, 2);
+        expand_rgb(dst, src, width, height, src_pixelformat, 2);
         *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     case SIXEL_PIXELFORMAT_RGB888:
     case SIXEL_PIXELFORMAT_BGR888:
-        (void) expand_rgb(dst, src, width, height, src_pixelformat, 3);
+        expand_rgb(dst, src, width, height, src_pixelformat, 3);
         *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     case SIXEL_PIXELFORMAT_RGBA8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
-        (void) expand_rgb(dst, src, width, height, src_pixelformat, 4);
+        expand_rgb(dst, src, width, height, src_pixelformat, 4);
         *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
         *dst_pixelformat = SIXEL_PIXELFORMAT_PAL8;
-        return expand_palette(dst, src, width, height, src_pixelformat);
+        status = expand_palette(dst, src, width, height, src_pixelformat);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
+    case SIXEL_PIXELFORMAT_G1:
+    case SIXEL_PIXELFORMAT_G2:
+    case SIXEL_PIXELFORMAT_G4:
+        *dst_pixelformat = SIXEL_PIXELFORMAT_G8;
+        status = expand_palette(dst, src, width, height, src_pixelformat);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
     case SIXEL_PIXELFORMAT_PAL8:
         memcpy(dst, src, width * height);
         *dst_pixelformat = src_pixelformat;
         break;
     default:
-        return (-1);
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
     }
 
-    return 0;
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
