@@ -139,7 +139,6 @@ sixel_helper_format_error(
             len = strlen(p) + 1;
             memcpy(buffer, p, len < sizeof(buffer) ? len: sizeof(buffer) - 1);
             buffer[sizeof(buffer) - 1] = 0;
-            free((char *)p);
             error_string = buffer;
             break;
 #ifdef HAVE_LIBCURL
