@@ -147,9 +147,9 @@ sixel_helper_format_error(
             error_string = curl_easy_strerror(status & 0xff);
             break;
 #endif
-#ifdef HAVE_LIBJPEG
+#ifdef HAVE_JPEG
         case SIXEL_JPEG_ERROR:
-            error_string = SIXEL_MESSAGE_LIBJPEG_ERROR;
+            error_string = SIXEL_MESSAGE_JPEG_ERROR;
             break;
 #endif
 #ifdef HAVE_LIBPNG
@@ -265,25 +265,33 @@ test2(void)
     }
 #endif
 
+#if HAVE_JPEG
     message = sixel_helper_format_error(SIXEL_JPEG_ERROR);
     if (strcmp(message, SIXEL_MESSAGE_JPEG_ERROR) != 0) {
         goto error;
     }
+#endif
 
+#if HAVE_LIBPNG
     message = sixel_helper_format_error(SIXEL_PNG_ERROR);
     if (strcmp(message, SIXEL_MESSAGE_PNG_ERROR) != 0) {
         goto error;
     }
+#endif
 
+#if HAVE_GD
     message = sixel_helper_format_error(SIXEL_GD_ERROR);
     if (strcmp(message, SIXEL_MESSAGE_GD_ERROR) != 0) {
         goto error;
     }
+#endif
 
+#if HAVE_GDK_PIXBUF2
     message = sixel_helper_format_error(SIXEL_GDK_ERROR);
     if (strcmp(message, SIXEL_MESSAGE_GDK_ERROR) != 0) {
         goto error;
     }
+#endif
 
     message = sixel_helper_format_error(SIXEL_STBI_ERROR);
     if (strcmp(message, SIXEL_MESSAGE_STBI_ERROR) != 0) {
