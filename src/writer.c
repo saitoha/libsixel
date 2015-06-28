@@ -92,7 +92,17 @@ write_png_to_file(
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
+        if (palette == NULL) {
+            status = SIXEL_BAD_ARGUMENT;
+            sixel_helper_set_additional_message(
+                "write_png_to_file: no palette is given");
+            return status;
+        }
         new_pixels = malloc(width * height * 4);
+        if (new_pixels == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            return status;
+        }
         src = new_pixels + width * height * 3;
         dst = pixels = new_pixels;
         status = sixel_helper_normalize_pixelformat(src,
@@ -110,8 +120,18 @@ write_png_to_file(
         }
         break;
     case SIXEL_PIXELFORMAT_PAL8:
+        if (palette == NULL) {
+            status = SIXEL_BAD_ARGUMENT;
+            sixel_helper_set_additional_message(
+                "write_png_to_file: no palette is given");
+            return status;
+        }
         src = data;
         dst = pixels = new_pixels = malloc(width * height * 3);
+        if (new_pixels == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            return status;
+        }
         for (i = 0; i < width * height; ++i, ++src) {
             *dst++ = *(palette + *src * 3 + 0);
             *dst++ = *(palette + *src * 3 + 1);
@@ -122,6 +142,26 @@ write_png_to_file(
         pixels = data;
         break;
     case SIXEL_PIXELFORMAT_G8:
+        src = data;
+        dst = pixels = new_pixels = malloc(width * height * 3);
+        if (new_pixels == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            return status;
+        }
+        if (palette) {
+            for (i = 0; i < width * height; ++i, ++src) {
+                *dst++ = *(palette + *src * 3 + 0);
+                *dst++ = *(palette + *src * 3 + 1);
+                *dst++ = *(palette + *src * 3 + 2);
+            }
+        } else {
+            for (i = 0; i < width * height; ++i, ++src) {
+                *dst++ = *src;
+                *dst++ = *src;
+                *dst++ = *src;
+            }
+        }
+        break;
     case SIXEL_PIXELFORMAT_RGB565:
     case SIXEL_PIXELFORMAT_RGB555:
     case SIXEL_PIXELFORMAT_BGR565:
@@ -132,6 +172,10 @@ write_png_to_file(
     case SIXEL_PIXELFORMAT_RGBA8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
         pixels = new_pixels = malloc(width * height * 3);
+        if (new_pixels == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            return status;
+        }
         status = sixel_helper_normalize_pixelformat(pixels,
                                                     &pixelformat,
                                                     data,
@@ -165,6 +209,10 @@ write_png_to_file(
 
 #if HAVE_LIBPNG
     rows = malloc(height * sizeof(unsigned char *));
+    if (rows == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        return status;
+    }
     for (y = 0; y < height; ++y) {
         rows[y] = pixels + width * 3 * y;
     }
@@ -307,6 +355,57 @@ error:
 }
 
 
+static int
+test3(void)
+{
+    int nret = EXIT_FAILURE;
+    SIXELSTATUS status;
+    unsigned char pixels[] = {0x00, 0x7f, 0xff};
+    sixel_dither_t *dither = sixel_dither_get(SIXEL_BUILTIN_G8);
+
+    status = sixel_helper_write_image_file(
+        pixels, 1, 1, NULL, SIXEL_PIXELFORMAT_G8, "test-output.png", FORMAT_PNG);
+
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_helper_write_image_file(
+        pixels, 1, 1, sixel_dither_get_palette(dither),
+        SIXEL_PIXELFORMAT_G8, "test-output.png", FORMAT_PNG);
+
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+static int
+test4(void)
+{
+    int nret = EXIT_FAILURE;
+    SIXELSTATUS status;
+    unsigned char pixels[] = {0xa0};
+    sixel_dither_t *dither = sixel_dither_get(SIXEL_BUILTIN_MONO_DARK);
+
+    status = sixel_helper_write_image_file(
+        pixels, 1, 1, sixel_dither_get_palette(dither),
+        SIXEL_PIXELFORMAT_PAL1, "test-output.png", FORMAT_PNG);
+
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
 int
 sixel_writer_tests_main(void)
 {
@@ -317,6 +416,8 @@ sixel_writer_tests_main(void)
     static testcase const testcases[] = {
         test1,
         test2,
+        test3,
+        test4,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
