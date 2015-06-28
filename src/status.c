@@ -40,6 +40,8 @@
 #include "status.h"
 
 #define SIXEL_MESSAGE_OK                ("succeeded")
+#define SIXEL_MESSAGE_FALSE             ("unexpected error (SIXEL_FALSE)");
+#define SIXEL_MESSAGE_UNEXPECTED        ("unexpected error")
 #define SIXEL_MESSAGE_INTERRUPTED       ("interrupted by a signal")
 #define SIXEL_MESSAGE_BAD_ALLOCATION    ("runtime error: bad allocation error")
 #define SIXEL_MESSAGE_BAD_ARGUMENT      ("runtime error: bad argument detected")
@@ -48,6 +50,13 @@
 #define SIXEL_MESSAGE_LOGIC_ERROR       ("logic error")
 #define SIXEL_MESSAGE_NOT_IMPLEMENTED   ("feature error: not implemented")
 #define SIXEL_MESSAGE_FEATURE_ERROR     ("feature error")
+#define SIXEL_MESSAGE_STBI_ERROR        ("stb_image error")
+#define SIXEL_MESSAGE_STBIW_ERROR       ("stb_image_write error")
+#define SIXEL_MESSAGE_JPEG_ERROR        ("libjpeg error")
+#define SIXEL_MESSAGE_PNG_ERROR         ("libpng error")
+#define SIXEL_MESSAGE_GDK_ERROR         ("GDK error")
+#define SIXEL_MESSAGE_GD_ERROR          ("GD error")
+
 
 static char g_buffer[1024] = { 0x0 };
 
@@ -138,34 +147,42 @@ sixel_helper_format_error(
             error_string = curl_easy_strerror(status & 0xff);
             break;
 #endif
+#ifdef HAVE_LIBJPEG
         case SIXEL_JPEG_ERROR:
-            error_string = "jpeg error";
+            error_string = SIXEL_MESSAGE_LIBJPEG_ERROR;
             break;
+#endif
+#ifdef HAVE_LIBPNG
         case SIXEL_PNG_ERROR:
-            error_string = "png error";
+            error_string = SIXEL_MESSAGE_PNG_ERROR;
             break;
+#endif
+#ifdef HAVE_GDK_PIXBUF2
         case SIXEL_GDK_ERROR:
-            error_string = "gdk error";
+            error_string = SIXEL_MESSAGE_GDK_ERROR";
             break;
+#endif
+#ifdef HAVE_GD
         case SIXEL_GD_ERROR:
-            error_string = "gd error";
+            error_string = SIXEL_MESSAGE_GD_ERROR;
             break;
+#endif
         case SIXEL_STBI_ERROR:
-            error_string = "stb_image error";
+            error_string = SIXEL_MESSAGE_STBI_ERROR;
             break;
         case SIXEL_STBIW_ERROR:
-            error_string = "stb_image_write error";
+            error_string = SIXEL_MESSAGE_STBIW_ERROR;
             break;
         case SIXEL_FALSE:
-            error_string = "unknown error (SIXEL_FALSE)";
+            error_string = SIXEL_MESSAGE_FALSE;
             break;
         default:
-            error_string = "unknown error";
+            error_string = SIXEL_MESSAGE_UNEXPECTED;
             break;
         }
         break;
     default:
-        error_string = "unknown error";
+        error_string = SIXEL_MESSAGE_UNEXPECTED;
         break;
     }
     return error_string;
@@ -177,11 +194,15 @@ static int
 test1(void)
 {
     int nret = EXIT_FAILURE;
+    char const *message;
 
-    if (strcmp(sixel_helper_format_error(SIXEL_OK), SIXEL_MESSAGE_OK) != 0) {
+    message = sixel_helper_format_error(SIXEL_OK);
+    if (strcmp(message, SIXEL_MESSAGE_OK) != 0) {
         goto error;
     }
-    if (strcmp(sixel_helper_format_error(SIXEL_INTERRUPTED), SIXEL_MESSAGE_INTERRUPTED) != 0) {
+
+    message = sixel_helper_format_error(SIXEL_INTERRUPTED);
+    if (strcmp(message, SIXEL_MESSAGE_INTERRUPTED) != 0) {
         goto error;
     }
     return EXIT_SUCCESS;
@@ -195,31 +216,88 @@ static int
 test2(void)
 {
     int nret = EXIT_FAILURE;
-    if (strcmp(sixel_helper_format_error(SIXEL_BAD_ALLOCATION), SIXEL_MESSAGE_BAD_ALLOCATION) != 0) {
+    char const *message;
+
+    message = sixel_helper_format_error(SIXEL_BAD_ALLOCATION);
+    if (strcmp(message, SIXEL_MESSAGE_BAD_ALLOCATION) != 0) {
         goto error;
     }
-    if (strcmp(sixel_helper_format_error(SIXEL_BAD_ARGUMENT), SIXEL_MESSAGE_BAD_ARGUMENT) != 0) {
+
+    message = sixel_helper_format_error(SIXEL_BAD_ARGUMENT);
+    if (strcmp(message, SIXEL_MESSAGE_BAD_ARGUMENT) != 0) {
         goto error;
     }
-    if (strcmp(sixel_helper_format_error(SIXEL_BAD_INPUT), SIXEL_MESSAGE_BAD_INPUT) != 0) {
+
+    message = sixel_helper_format_error(SIXEL_BAD_INPUT);
+    if (strcmp(message, SIXEL_MESSAGE_BAD_INPUT) != 0) {
         goto error;
     }
-    if (strcmp(sixel_helper_format_error(SIXEL_RUNTIME_ERROR), SIXEL_MESSAGE_RUNTIME_ERROR) != 0) {
+
+    message = sixel_helper_format_error(SIXEL_RUNTIME_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_RUNTIME_ERROR) != 0) {
         goto error;
     }
-    if (strcmp(sixel_helper_format_error(SIXEL_LOGIC_ERROR), SIXEL_MESSAGE_LOGIC_ERROR) != 0) {
+
+    message = sixel_helper_format_error(SIXEL_LOGIC_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_LOGIC_ERROR) != 0) {
         goto error;
     }
-    if (strcmp(sixel_helper_format_error(SIXEL_NOT_IMPLEMENTED), SIXEL_MESSAGE_NOT_IMPLEMENTED) != 0) {
+
+    message = sixel_helper_format_error(SIXEL_NOT_IMPLEMENTED);
+    if (strcmp(message, SIXEL_MESSAGE_NOT_IMPLEMENTED) != 0) {
         goto error;
     }
-    if (strcmp(sixel_helper_format_error(SIXEL_FEATURE_ERROR), SIXEL_MESSAGE_FEATURE_ERROR) != 0) {
+
+    message = sixel_helper_format_error(SIXEL_FEATURE_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_FEATURE_ERROR) != 0) {
+        goto error;
+    }
+
+    message = sixel_helper_format_error(SIXEL_LIBC_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_UNEXPECTED) == 0) {
+        goto error;
+    }
+
+#ifdef HAVE_LIBCURL
+    message = sixel_helper_format_error(SIXEL_CURL_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_UNEXPECTED) == 0) {
+        goto error;
+    }
+#endif
+
+    message = sixel_helper_format_error(SIXEL_JPEG_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_JPEG_ERROR) != 0) {
+        goto error;
+    }
+
+    message = sixel_helper_format_error(SIXEL_PNG_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_PNG_ERROR) != 0) {
+        goto error;
+    }
+
+    message = sixel_helper_format_error(SIXEL_GD_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_GD_ERROR) != 0) {
+        goto error;
+    }
+
+    message = sixel_helper_format_error(SIXEL_GDK_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_GDK_ERROR) != 0) {
+        goto error;
+    }
+
+    message = sixel_helper_format_error(SIXEL_STBI_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_STBI_ERROR) != 0) {
+        goto error;
+    }
+
+    message = sixel_helper_format_error(SIXEL_STBIW_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_STBIW_ERROR) != 0) {
         goto error;
     }
 
     return EXIT_SUCCESS;
 error:
-    perror("test1");
+    perror("test2");
     return nret;
 }
 
