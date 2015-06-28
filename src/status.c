@@ -159,7 +159,7 @@ sixel_helper_format_error(
 #endif
 #ifdef HAVE_GDK_PIXBUF2
         case SIXEL_GDK_ERROR:
-            error_string = SIXEL_MESSAGE_GDK_ERROR";
+            error_string = SIXEL_MESSAGE_GDK_ERROR;
             break;
 #endif
 #ifdef HAVE_GD
