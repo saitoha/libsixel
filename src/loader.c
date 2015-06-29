@@ -388,7 +388,7 @@ load_jpeg(unsigned char **result,
 
     if (cinfo.output_components != 3) {
         sixel_helper_set_additional_message(
-            "load_jpeg: malloc() failed (unknown format).");
+            "load_jpeg: unknown pixel format.");
         status = SIXEL_BAD_INPUT;
         goto end;
     }
@@ -400,9 +400,9 @@ load_jpeg(unsigned char **result,
     size = *pwidth * *pheight * cinfo.output_components;
     *result = (unsigned char *)malloc(size);
     if (*result == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
         sixel_helper_set_additional_message(
             "load_jpeg: malloc() failed.");
-        status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
     row_stride = cinfo.output_width * cinfo.output_components;
@@ -577,6 +577,7 @@ load_png(unsigned char **result,
             case 1:
                 *ppalette = malloc(*pncolors * 3);
                 if (*ppalette == NULL) {
+                    status = SIXEL_BAD_ALLOCATION;
                     goto cleanup;
                 }
                 read_palette(png_ptr, info_ptr, *ppalette,
@@ -586,6 +587,7 @@ load_png(unsigned char **result,
             case 2:
                 *ppalette = malloc(*pncolors * 3);
                 if (*ppalette == NULL) {
+                    status = SIXEL_BAD_ALLOCATION;
                     goto cleanup;
                 }
                 read_palette(png_ptr, info_ptr, *ppalette,
@@ -595,6 +597,7 @@ load_png(unsigned char **result,
             case 4:
                 *ppalette = malloc(*pncolors * 3);
                 if (*ppalette == NULL) {
+                    status = SIXEL_BAD_ALLOCATION;
                     goto cleanup;
                 }
                 read_palette(png_ptr, info_ptr, *ppalette,
@@ -604,6 +607,7 @@ load_png(unsigned char **result,
             case 8:
                 *ppalette = malloc(*pncolors * 3);
                 if (*ppalette == NULL) {
+                    status = SIXEL_BAD_ALLOCATION;
                     goto cleanup;
                 }
                 read_palette(png_ptr, info_ptr, *ppalette,
@@ -803,6 +807,7 @@ load_sixel(unsigned char **result,
         *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
         *result = malloc(*psx * *psy * 3);
         if (*result == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
             goto cleanup;
         }
         for (i = 0; i < *psx * *psy; ++i) {
@@ -1155,6 +1160,7 @@ load_with_gdkpixbuf(
         stride = gdk_pixbuf_get_rowstride(pixbuf);
         frame->pixels = malloc(frame->height * stride);
         if (frame->pixels == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
         if (gdk_pixbuf_get_has_alpha(pixbuf)) {
@@ -1200,6 +1206,7 @@ load_with_gdkpixbuf(
                 stride = gdk_pixbuf_get_rowstride(pixbuf);
                 frame->pixels = malloc(frame->height * stride);
                 if (frame->pixels == NULL) {
+                    status = SIXEL_BAD_ALLOCATION;
                     goto end;
                 }
                 if (gdk_pixbuf_get_has_alpha(pixbuf)) {
@@ -1319,7 +1326,7 @@ detect_file_format(int len, unsigned char *data)
 }
 
 
-static int
+static SIXELSTATUS
 load_with_gd(
     chunk_t const             /* in */     *pchunk,      /* image data */
     int                       /* in */     fstatic,      /* static */
@@ -1331,6 +1338,7 @@ load_with_gd(
     void                      /* in/out */ *context      /* private data for callback */
 )
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *p;
     gdImagePtr im;
     int x, y;
@@ -1345,7 +1353,8 @@ load_with_gd(
 
     frame = sixel_frame_create();
     if (frame == NULL) {
-        return SIXEL_FALSE;
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
 
     switch(detect_file_format(pchunk->size, pchunk->buffer)) {
@@ -1416,6 +1425,7 @@ load_with_gd(
     frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     p = frame->pixels = malloc(frame->width * frame->height * 3);
     if (frame->pixels == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
         gdImageDestroy(im);
         return SIXEL_BAD_ALLOCATION;
     }

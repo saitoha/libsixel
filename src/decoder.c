@@ -237,7 +237,6 @@ sixel_decoder_decode(
                           &sx, &sy, &palette, &ncolors, malloc);
 
     if (SIXEL_FAILED(status)) {
-        fprintf(stderr, "sixel_decode failed.\n");
         goto end;
     }
 
@@ -247,7 +246,6 @@ sixel_decoder_decode(
                                            SIXEL_FORMAT_PNG);
 
     if (SIXEL_FAILED(status)) {
-        fprintf(stderr, "sixel_helper_write_image_file failed.\n");
         goto end;
     }
 
