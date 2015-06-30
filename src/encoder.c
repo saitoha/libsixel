@@ -280,6 +280,8 @@ prepare_builtin_palette(
         goto end;
     }
 
+    status = SIXEL_OK;
+
 end:
     return status;
 }
