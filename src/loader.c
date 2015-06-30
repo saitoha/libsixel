@@ -506,12 +506,16 @@ load_png(unsigned char **result,
 
     png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if (!png_ptr) {
-        fprintf(stderr, "png_create_read_struct failed.\n");
+        sixel_helper_set_additional_message(
+            "png_create_read_struct() failed.");
+        status = SIXEL_PNG_ERROR;
         goto cleanup;
     }
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
-        fprintf(stderr, "png_create_info_struct failed.\n");
+        sixel_helper_set_additional_message(
+            "png_create_info_struct() failed.");
+        status = SIXEL_PNG_ERROR;
         png_destroy_read_struct(&png_ptr, (png_infopp)0, (png_infopp)0);
         goto cleanup;
     }
@@ -554,7 +558,9 @@ load_png(unsigned char **result,
         png_status = png_get_PLTE(png_ptr, info_ptr,
                                   &png_palette, pncolors);
         if (png_status != PNG_INFO_PLTE || png_palette == NULL) {
-            fprintf(stderr, "PLTE chunk not found\n");
+            sixel_helper_set_additional_message(
+                "PLTE chunk not found");
+            status = SIXEL_PNG_ERROR;
             goto cleanup;
         }
 #  if HAVE_DEBUG
@@ -801,14 +807,14 @@ load_sixel(unsigned char **result,
                           &p, psx, psy,
                           &palette, &colors, malloc);
     if (SIXEL_FAILED(status)) {
-        return status;
+        goto end;
     }
     if (ppalette == NULL || colors > reqcolors) {
         *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
         *result = malloc(*psx * *psy * 3);
         if (*result == NULL) {
             status = SIXEL_BAD_ALLOCATION;
-            goto cleanup;
+            goto end;
         }
         for (i = 0; i < *psx * *psy; ++i) {
             (*result)[i * 3 + 0] = palette[p[i] * 3 + 0];
@@ -824,7 +830,7 @@ load_sixel(unsigned char **result,
         palette = NULL;
     }
 
-cleanup:
+end:
     free(palette);
     free(p);
 
@@ -962,12 +968,16 @@ load_with_builtin(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_frame_t *frame = NULL;
+    char message[256];
+    int nwrite;
 
     if (chunk_is_sixel(pchunk)) {
         frame = sixel_frame_create();
         if (frame == NULL) {
+            sixel_helper_set_additional_message(
+                "malloc() failed in load_with_builtin().");
             status = SIXEL_BAD_ALLOCATION;
-            goto error;
+            goto end;
         }
         status = load_sixel(&frame->pixels,
                             pchunk->buffer,
@@ -979,13 +989,13 @@ load_with_builtin(
                             reqcolors,
                             &frame->pixelformat);
         if (SIXEL_FAILED(status)) {
-            goto error;
+            goto end;
         }
     } else if (chunk_is_pnm(pchunk)) {
         frame = sixel_frame_create();
         if (frame == NULL) {
             status = SIXEL_BAD_ALLOCATION;
-            goto error;
+            goto end;
         }
         /* pnm */
         frame->pixels = load_pnm(pchunk->buffer,
@@ -998,7 +1008,7 @@ load_with_builtin(
         if (!frame->pixels) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message("load_pnm() failed.");
-            goto error;
+            goto end;
         }
     }
 #if HAVE_JPEG
@@ -1006,7 +1016,7 @@ load_with_builtin(
         frame = sixel_frame_create();
         if (frame == NULL) {
             status = SIXEL_BAD_ALLOCATION;
-            goto error;
+            goto end;
         }
         status = load_jpeg(&frame->pixels,
                            pchunk->buffer,
@@ -1016,7 +1026,7 @@ load_with_builtin(
                            &frame->pixelformat);
 
         if (SIXEL_FAILED(status)) {
-            goto error;
+            goto end;
         }
     }
 #endif  /* HAVE_JPEG */
@@ -1025,7 +1035,7 @@ load_with_builtin(
         frame = sixel_frame_create();
         if (frame == NULL) {
             status = SIXEL_BAD_ALLOCATION;
-            goto error;
+            goto end;
         }
         status = load_png(&frame->pixels,
                           pchunk->buffer,
@@ -1039,7 +1049,7 @@ load_with_builtin(
                           bgcolor,
                           &frame->transparent);
         if (SIXEL_FAILED(status)) {
-            goto error;
+            goto end;
         }
     }
 #endif  /* HAVE_LIBPNG */
@@ -1054,7 +1064,7 @@ load_with_builtin(
                           fn_load,
                           context);
         if (SIXEL_FAILED(status)) {
-            goto error;
+            goto end;
         }
         goto end;
     } else {
@@ -1064,14 +1074,14 @@ load_with_builtin(
         frame = sixel_frame_create();
         if (frame == NULL) {
             status = SIXEL_BAD_ALLOCATION;
-            goto error;
+            goto end;
         }
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);
         frame->pixels = stbi__load_main(&s, &frame->width, &frame->height, &depth, 3);
         if (!frame->pixels) {
-            fprintf(stderr, "stbi_load_from_file failed.\n" "reason: %s.\n",
-                    stbi_failure_reason());
-            goto error;
+            sixel_helper_set_additional_message(stbi_failure_reason());
+            status = SIXEL_STBI_ERROR;
+            goto end;
         }
         frame->loop_count = 1;
 
@@ -1082,23 +1092,27 @@ load_with_builtin(
             frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
             break;
         default:
-            fprintf(stderr, "load_with_builtin() failed.\n"
-                            "reason: unknown pixel-format.(depth: %d)\n", depth);
-            goto error;
+            nwrite = sprintf(message,
+                             "load_with_builtin() failed.\n"
+                             "reason: unknown pixel-format.(depth: %d)\n",
+                             depth);
+            if (nwrite > 0) {
+                sixel_helper_set_additional_message(message);
+            }
+            goto end;
         }
     }
 
     status = sixel_frame_strip_alpha(frame, bgcolor);
     if (SIXEL_FAILED(status)) {
-        goto error;
+        goto end;
     }
 
     status = fn_load(frame, context);
     if (SIXEL_FAILED(status)) {
-        goto error;
+        goto end;
     }
 
-error:
 end:
     sixel_frame_unref(frame);
 
@@ -1403,20 +1417,29 @@ load_with_gd(
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMGD2PTR */
         default:
-            return SIXEL_FALSE;
+            status = SIXEL_GD_ERROR;
+            sixel_helper_set_additional_message(
+                "unexpected image format detected.");
+            goto end;
     }
 
     if (im == NULL) {
-        return SIXEL_FALSE;
+        status = SIXEL_GD_ERROR;
+        /* TODO: retrieve error detail */
+        goto end;
     }
 
     if (!gdImageTrueColor(im)) {
 #if HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
         if (!gdImagePaletteToTrueColor(im)) {
-            return SIXEL_FALSE;
+            status = SIXEL_GD_ERROR;
+            /* TODO: retrieve error detail */
+            goto end;
         }
 #else
-        return SIXEL_FALSE;
+        status = SIXEL_GD_ERROR;
+        /* TODO: retrieve error detail */
+        goto end;
 #endif
     }
 
@@ -1427,7 +1450,7 @@ load_with_gd(
     if (frame->pixels == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         gdImageDestroy(im);
-        return SIXEL_BAD_ALLOCATION;
+        goto end;
     }
     for (y = 0; y < frame->height; y++) {
         for (x = 0; x < frame->width; x++) {
@@ -1439,7 +1462,15 @@ load_with_gd(
     }
     gdImageDestroy(im);
 
-    return fn_load(frame, context);
+    status = fn_load(frame, context);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 #endif  /* HAVE_GD */

@@ -203,7 +203,7 @@ gif_load_header(
 }
 
 
-static int
+static SIXELSTATUS
 gif_init_frame(
     sixel_frame_t /* in */ *frame,
     gif_t         /* in */ *pg,
@@ -211,6 +211,7 @@ gif_init_frame(
     int           /* in */ reqcolors,
     int           /* in */ fuse_palette)
 {
+    SIXELSTATUS status = SIXEL_OK;
     int i;
     int ncolors;
 
@@ -222,14 +223,21 @@ gif_init_frame(
         free(frame->palette);
         frame->palette = malloc(ncolors * 3);
     }
-    frame->ncolors = ncolors;
     if (frame->palette == NULL) {
-        return (-1);
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
+    frame->ncolors = ncolors;
     if (frame->ncolors <= reqcolors && fuse_palette) {
         frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
         free(frame->pixels);
         frame->pixels = malloc(frame->width * frame->height);
+        if (frame->pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "malloc() failed in gif_init_frame().");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         memcpy(frame->pixels, pg->out, frame->width * frame->height);
 
         for (i = 0; i < frame->ncolors; ++i) {
@@ -261,19 +269,24 @@ gif_init_frame(
     } else {
         frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
         frame->pixels = malloc(pg->w * pg->h * 3);
+        if (frame->pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "malloc() failed in gif_init_frame().");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         for (i = 0; i < pg->w * pg->h; ++i) {
             frame->pixels[i * 3 + 0] = pg->color_table[pg->out[i] * 3 + 2];
             frame->pixels[i * 3 + 1] = pg->color_table[pg->out[i] * 3 + 1];
             frame->pixels[i * 3 + 2] = pg->color_table[pg->out[i] * 3 + 0];
         }
     }
-    if (frame->pixels == NULL) {
-        fprintf(stderr, "gif_init_frame() failed.\n");
-        return (-1);
-    }
     frame->multiframe = (pg->loop_count != (-1));
 
-    return 0;
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
@@ -309,12 +322,13 @@ gif_out_code(
 }
 
 
-static int
+static SIXELSTATUS
 gif_process_raster(
     gif_context_t /* in */ *s,
     gif_t         /* in */ *g
 )
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     uint8_t lzw_cs;
     int32_t len, code;
     uint32_t first;
@@ -351,7 +365,7 @@ gif_process_raster(
             bits |= (int32_t) gif_get8(s) << valid_bits;
             valid_bits += 8;
         } else {
-            int32_t code = bits & codemask;
+            code = bits & codemask;
             bits >>= codesize;
             valid_bits -= codesize;
             /* @OPTIMIZE: is there some way we can accelerate the non-clear path? */
@@ -369,24 +383,27 @@ gif_process_raster(
                 return SIXEL_OK;
             } else if (code <= avail) {
                 if (first) {
-                    fprintf(stderr,
-                            "Corrupt GIF\n" "reason: no clear code\n");
-                    return SIXEL_FALSE;
+                    sixel_helper_set_additional_message(
+                        "corrupt GIF (reason: no clear code).");
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
                 }
                 if (oldcode >= 0) {
                     p = &g->codes[avail++];
                     if (avail > 4096) {
-                        fprintf(stderr,
-                                "Corrupt GIF\n" "reason: too many codes\n");
-                        return SIXEL_FALSE;
+                        sixel_helper_set_additional_message(
+                            "corrupt GIF(reason: too many codes).");
+                        status = SIXEL_RUNTIME_ERROR;
+                        goto end;
                     }
                     p->prefix = (int16_t) oldcode;
                     p->first = g->codes[oldcode].first;
                     p->suffix = (code == avail) ? p->first : g->codes[code].first;
                 } else if (code == avail) {
-                    fprintf(stderr,
-                            "Corrupt GIF\n" "reason: illegal code in raster\n");
-                    return SIXEL_FALSE;
+                    sixel_helper_set_additional_message(
+                        "corrupt GIF (reason: illegal code in raster).");
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
                 }
 
                 gif_out_code(g, (uint16_t) code);
@@ -398,23 +415,30 @@ gif_process_raster(
 
                 oldcode = code;
             } else {
-                fprintf(stderr,
-                        "Corrupt GIF\n" "reason: illegal code in raster\n");
-                return SIXEL_FALSE;
+                sixel_helper_set_additional_message(
+                    "corrupt GIF (reason: illegal code in raster).");
+                status = SIXEL_RUNTIME_ERROR;
+                goto end;
             }
         }
     }
+
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
 /* this function is ported from stb_image.h */
-static int
+static SIXELSTATUS
 gif_load_next(
     gif_context_t /* in */ *s,
     gif_t         /* in */ *g,
     uint8_t       /* in */ *bgcolor
 )
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     uint8_t buffer[256];
 
     for (;;) {
@@ -428,9 +452,10 @@ gif_load_next(
             w = gif_get16le(s);
             h = gif_get16le(s);
             if (((x + w) > (g->w)) || ((y + h) > (g->h))) {
-                fprintf(stderr,
-                        "Corrupt GIF.\n" "reason: bad Image Descriptor.\n");
-                return SIXEL_FALSE;
+                sixel_helper_set_additional_message(
+                    "corrupt GIF (reason: bad Image Descriptor).");
+                status = SIXEL_RUNTIME_ERROR;
+                goto end;
             }
 
             g->line_size = g->w;
@@ -466,12 +491,16 @@ gif_load_next(
                 }
                 g->color_table = (uint8_t *)g->pal;
             } else {
-                fprintf(stderr,
-                        "Corrupt GIF.\n" "reason: missing color table.\n");
-                return SIXEL_FALSE;
+                sixel_helper_set_additional_message(
+                    "corrupt GIF (reason: missing color table).");
+                status = SIXEL_RUNTIME_ERROR;
+                goto end;
             }
 
-            return gif_process_raster(s, g);
+            status = gif_process_raster(s, g);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
         }
 
         case 0x21: /* Comment Extension. */
@@ -522,16 +551,21 @@ gif_load_next(
 
         case 0x3B: /* gif stream termination code */
             g->is_terminated = 1;
-            return SIXEL_OK;
+            status = SIXEL_OK;
+            goto end;
 
         default:
-            fprintf(stderr,
-                    "Corrupt GIF.\n" "reason: unknown code.\n");
-            return SIXEL_FALSE;
+            sixel_helper_set_additional_message(
+                "corrupt GIF (reason: unknown code).");
+            status = SIXEL_RUNTIME_ERROR;
+            goto end;
         }
     }
 
-    return SIXEL_OK;
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
