@@ -1,4 +1,45 @@
+2015-07-05  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.c, examples/opengl/main.c, src/encoder.c: Minor fixes
+
+2015-07-01  Hayaki Saito <user@zuse.jp>
+
+  * src/encoder.c: Fix a bug of returning wrong status in
+  prepare_builtin_palette()
+
+2015-06-30  Hayaki Saito <user@zuse.jp>
+
+  * src/fromgif.c, src/loader.c, src/quant.c: Minor improvements
+
+2015-06-29  Hayaki Saito <user@zuse.jp>
+
+  * src/encoder.c: Use sixel_helper_set_additional_message() instead of using
+  stderr printing
+
+  * src/decoder.c, src/dither.c, src/encoder.c, src/loader.c: Minor
+  improvements
+
 2015-06-28  Hayaki Saito <user@zuse.jp>
+
+  * src/encoder.c, src/frame.c, src/loader.c, src/pixelformat.c: Minor
+  improvements
+
+  * src/writer.c: Add more tests for status.c
+
+  * src/status.c: Strip extra free() call
+
+  * src/status.c: Strip extra '"' character
+
+  * src/status.c: Update tests
+
+  * src/writer.c: Add more error handling and tests to writer.c
+
+  * src/status.c: Update tests in status.c
+
+  * src/status.c, src/writer.c: Update tests
+
+  * src/Makefile.am, src/Makefile.in, src/status.c, src/status.h, src/tests.c,
+  src/writer.c: Add more tests
 
   * src/loader.c: Fix segmentation error when set -e option with loading 1/2/4
   bpp grayscale image
