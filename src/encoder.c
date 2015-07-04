@@ -1542,7 +1542,7 @@ sixel_encoder_encode(
     sixel_encoder_t /* in */ *encoder,
     char const      /* in */ *filename)
 {
-    SIXELSTATUS status = (-1);
+    SIXELSTATUS status = SIXEL_FALSE;
     int fuse_palette = 1;
 
     if (encoder == NULL) {

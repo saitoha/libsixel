@@ -410,9 +410,9 @@ argerr:
             "for more details, type: 'img2sixel -H'.\n");
 
 error:
-    fprintf(stderr, "%s\nreason: %s\n",
-            sixel_helper_get_additional_message(),
-            sixel_helper_format_error(status));
+    fprintf(stderr, "%s\n%s\n",
+            sixel_helper_format_error(status),
+            sixel_helper_get_additional_message());
 end:
     sixel_encoder_unref(encoder);
     return status;
