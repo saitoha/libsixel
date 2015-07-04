@@ -29,6 +29,23 @@ if test x$ax_cv_have_func_attribute_deprecated != x; then
     AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
 fi
 
+CFLAGS_BACKUP=$CFLAGS
+CFLAGS="$CFLAGS -Werror"
+AC_TRY_COMPILE(
+  [
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic pop
+    #pragma GCC diagnostic ignored "-Wtypedef-redefinition"
+  ],
+  [
+    typedef int foo;
+    typedef int foo;
+  ],
+  [AC_DEFINE(HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION,
+             1,
+             [define 1 if GCC supports -Wtypedef-redefinition])])
+CFLAGS=$CFLAGS_BACKUP
+
 # Options
 AC_ARG_ENABLE([img2sixel],
               [AS_HELP_STRING([--disable-img2sixel],
@@ -384,7 +401,7 @@ if test x$with_libcurl != xno; then
             ADDED_CFLAGS="-I${with_libcurl}/include"
             ADDED_LIBS="-L${with_libcurl}/lib -lcurl"
         else
-	    if test x${prefix} != x -a x${prefix} != xNONE; then
+            if test x${prefix} != x -a x${prefix} != xNONE; then
                 ADDED_CFLAGS="-I${prefix}/include"
                 ADDED_LIBS="-L${prefix}/lib -lcurl"
             else

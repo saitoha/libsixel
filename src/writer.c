@@ -323,7 +323,13 @@ test1(void)
     unsigned char pixels[] = {0xff, 0xff, 0xff};
 
     status = sixel_helper_write_image_file(
-        pixels, 1, 1, NULL, SIXEL_PIXELFORMAT_RGB888, "output.gif", FORMAT_GIF);
+        pixels,
+        1,
+        1,
+        NULL,
+        SIXEL_PIXELFORMAT_RGB888,
+        "output.gif",
+        SIXEL_FORMAT_GIF);
 
     if (!SIXEL_FAILED(status)) {
         goto error;
@@ -343,7 +349,13 @@ test2(void)
     unsigned char pixels[] = {0xff, 0xff, 0xff};
 
     status = sixel_helper_write_image_file(
-        pixels, 1, 1, NULL, SIXEL_PIXELFORMAT_RGB888, "test-output.png", FORMAT_PNG);
+        pixels,
+        1,
+        1,
+        NULL,
+        SIXEL_PIXELFORMAT_RGB888,
+        "test-output.png",
+        SIXEL_FORMAT_PNG);
 
     if (SIXEL_FAILED(status)) {
         goto error;
@@ -364,15 +376,26 @@ test3(void)
     sixel_dither_t *dither = sixel_dither_get(SIXEL_BUILTIN_G8);
 
     status = sixel_helper_write_image_file(
-        pixels, 1, 1, NULL, SIXEL_PIXELFORMAT_G8, "test-output.png", FORMAT_PNG);
+        pixels,
+        1,
+        1,
+        NULL,
+        SIXEL_PIXELFORMAT_G8,
+        "test-output.png",
+        SIXEL_FORMAT_PNG);
 
     if (SIXEL_FAILED(status)) {
         goto error;
     }
 
     status = sixel_helper_write_image_file(
-        pixels, 1, 1, sixel_dither_get_palette(dither),
-        SIXEL_PIXELFORMAT_G8, "test-output.png", FORMAT_PNG);
+        pixels,
+        1,
+        1,
+        sixel_dither_get_palette(dither),
+        SIXEL_PIXELFORMAT_G8,
+        "test-output.png",
+        SIXEL_FORMAT_PNG);
 
     if (SIXEL_FAILED(status)) {
         goto error;
@@ -393,15 +416,25 @@ test4(void)
     sixel_dither_t *dither = sixel_dither_get(SIXEL_BUILTIN_MONO_DARK);
 
     status = sixel_helper_write_image_file(
-        pixels, 1, 1, sixel_dither_get_palette(dither),
-        SIXEL_PIXELFORMAT_PAL1, "test-output.png", FORMAT_PNG);
+        pixels,
+        1,
+        1,
+        sixel_dither_get_palette(dither),
+        SIXEL_PIXELFORMAT_PAL1,
+        "test-output.png",
+        SIXEL_FORMAT_PNG);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
 
     status = sixel_helper_write_image_file(
-        pixels, 1, 1, NULL,
-        SIXEL_PIXELFORMAT_PAL1, "test-output.png", FORMAT_PNG);
+        pixels,
+        1,
+        1,
+        NULL,
+        SIXEL_PIXELFORMAT_PAL1,
+        "test-output.png",
+        SIXEL_FORMAT_PNG);
     if (status != SIXEL_BAD_ARGUMENT) {
         goto error;
     }
@@ -422,15 +455,25 @@ test5(void)
     sixel_dither_t *dither = sixel_dither_get(SIXEL_BUILTIN_XTERM256);
 
     status = sixel_helper_write_image_file(
-        pixels, 1, 1, sixel_dither_get_palette(dither),
-        SIXEL_PIXELFORMAT_PAL8, "test-output.png", FORMAT_PNG);
+        pixels,
+        1,
+        1,
+        sixel_dither_get_palette(dither),
+        SIXEL_PIXELFORMAT_PAL8,
+        "test-output.png",
+        SIXEL_FORMAT_PNG);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
 
     status = sixel_helper_write_image_file(
-        pixels, 1, 1, NULL,
-        SIXEL_PIXELFORMAT_PAL8, "test-output.png", FORMAT_PNG);
+        pixels,
+        1,
+        1,
+        NULL,
+        SIXEL_PIXELFORMAT_PAL8,
+        "test-output.png",
+        SIXEL_FORMAT_PNG);
     if (status != SIXEL_BAD_ARGUMENT) {
         goto error;
     }
@@ -450,8 +493,13 @@ test6(void)
     unsigned char pixels[] = {0x00, 0x7f, 0xff};
 
     status = sixel_helper_write_image_file(
-        pixels, 1, 1, NULL,
-        SIXEL_PIXELFORMAT_BGR888, "test-output.png", FORMAT_PNG);
+        pixels,
+        1,
+        1,
+        NULL,
+        SIXEL_PIXELFORMAT_BGR888,
+        "test-output.png",
+        SIXEL_FORMAT_PNG);
 
     if (SIXEL_FAILED(status)) {
         goto error;

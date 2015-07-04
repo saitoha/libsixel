@@ -63,7 +63,14 @@
 #include "stb_image.h"
 
 #ifdef HAVE_GDK_PIXBUF2
+# if HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wtypedef-redefinition"
+# endif
 # include <gdk-pixbuf/gdk-pixbuf.h>
+# if HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
+#   pragma GCC diagnostic pop
+# endif
 #endif
 
 #ifdef HAVE_GD
@@ -127,12 +134,18 @@ memory_write(void *ptr,
     }
 
     chunk = (chunk_t *)memory;
+    if (chunk->buffer == NULL) {
+        return 0;
+    }
 
     if (chunk->max_size <= chunk->size + nbytes) {
         do {
             chunk->max_size *= 2;
         } while (chunk->max_size <= chunk->size + nbytes);
         chunk->buffer = (unsigned char*)realloc(chunk->buffer, chunk->max_size);
+        if (chunk->buffer == NULL) {
+            return 0;
+        }
     }
 
     memcpy(chunk->buffer + chunk->size, ptr, nbytes);
@@ -1252,11 +1265,11 @@ load_with_gdkpixbuf(
 
             ++frame->loop_count;
 
-            if (loop_control == LOOP_DISABLE || frame->frame_no == 1) {
+            if (loop_control == SIXEL_LOOP_DISABLE || frame->frame_no == 1) {
                 break;
             }
             /* TODO: get loop property */
-            if (loop_control == LOOP_AUTO && frame->loop_count == 1) {
+            if (loop_control == SIXEL_LOOP_AUTO && frame->loop_count == 1) {
                 break;
             }
         }
@@ -1281,59 +1294,59 @@ static int
 detect_file_format(int len, unsigned char *data)
 {
     if (memcmp("TRUEVISION", data + len - 18, 10) == 0) {
-        return FORMAT_TGA;
+        return SIXEL_FORMAT_TGA;
     }
 
     if (memcmp("GIF", data, 3) == 0) {
-        return FORMAT_GIF;
+        return SIXEL_FORMAT_GIF;
     }
 
     if (memcmp("\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", data, 8) == 0) {
-        return FORMAT_PNG;
+        return SIXEL_FORMAT_PNG;
     }
 
     if (memcmp("BM", data, 2) == 0) {
-        return FORMAT_BMP;
+        return SIXEL_FORMAT_BMP;
     }
 
     if (memcmp("\xFF\xD8", data, 2) == 0) {
-        return FORMAT_JPG;
+        return SIXEL_FORMAT_JPG;
     }
 
     if (memcmp("\x00\x00", data, 2) == 0) {
-        return FORMAT_WBMP;
+        return SIXEL_FORMAT_WBMP;
     }
 
     if (memcmp("\x4D\x4D", data, 2) == 0) {
-        return FORMAT_TIFF;
+        return SIXEL_FORMAT_TIFF;
     }
 
     if (memcmp("\x49\x49", data, 2) == 0) {
-        return FORMAT_TIFF;
+        return SIXEL_FORMAT_TIFF;
     }
 
     if (memcmp("\033P", data, 2) == 0) {
-        return FORMAT_SIXEL;
+        return SIXEL_FORMAT_SIXEL;
     }
 
     if (data[0] == 0x90  && (data[len-1] == 0x9C || data[len-2] == 0x9C)) {
-        return FORMAT_SIXEL;
+        return SIXEL_FORMAT_SIXEL;
     }
 
     if (data[0] == 'P' && data[1] >= '1' && data[1] <= '6') {
-        return FORMAT_PNM;
+        return SIXEL_FORMAT_PNM;
     }
 
     if (memcmp("gd2", data, 3) == 0) {
-        return FORMAT_GD2;
+        return SIXEL_FORMAT_GD2;
     }
 
     if (memcmp("8BPS", data, 4) == 0) {
-        return FORMAT_PSD;
+        return SIXEL_FORMAT_PSD;
     }
 
     if (memcmp("#?RADIANCE\n", data, 11) == 0) {
-        return FORMAT_HDR;
+        return SIXEL_FORMAT_HDR;
     }
 
     return (-1);
@@ -1371,25 +1384,25 @@ load_with_gd(
         goto end;
     }
 
-    switch(detect_file_format(pchunk->size, pchunk->buffer)) {
+    switch (detect_file_format(pchunk->size, pchunk->buffer)) {
 #if 0
 # if HAVE_DECL_GDIMAGECREATEFROMGIFPTR
-        case FORMAT_GIF:
+        case SIXEL_FORMAT_GIF:
             im = gdImageCreateFromGifPtr(pchunk->size, pchunk->buffer);
             break;
 # endif  /* HAVE_DECL_GDIMAGECREATEFROMGIFPTR */
 #endif
 #if HAVE_DECL_GDIMAGECREATEFROMPNGPTR
-        case FORMAT_PNG:
+        case SIXEL_FORMAT_PNG:
             im = gdImageCreateFromPngPtr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMPNGPTR */
 #if HAVE_DECL_GDIMAGECREATEFROMBMPPTR
-        case FORMAT_BMP:
+        case SIXEL_FORMAT_BMP:
             im = gdImageCreateFromBmpPtr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMBMPPTR */
-        case FORMAT_JPG:
+        case SIXEL_FORMAT_JPG:
 #if HAVE_DECL_GDIMAGECREATEFROMJPEGPTREX
             im = gdImageCreateFromJpegPtrEx(pchunk->size, pchunk->buffer, 1);
 #elif HAVE_DECL_GDIMAGECREATEFROMJPEGPTR
@@ -1397,22 +1410,22 @@ load_with_gd(
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMJPEGPTREX */
             break;
 #if HAVE_DECL_GDIMAGECREATEFROMTGAPTR
-        case FORMAT_TGA:
+        case SIXEL_FORMAT_TGA:
             im = gdImageCreateFromTgaPtr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMTGAPTR */
 #if HAVE_DECL_GDIMAGECREATEFROMWBMPPTR
-        case FORMAT_WBMP:
+        case SIXEL_FORMAT_WBMP:
             im = gdImageCreateFromWBMPPtr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMWBMPPTR */
 #if HAVE_DECL_GDIMAGECREATEFROMTIFFPTR
-        case FORMAT_TIFF:
+        case SIXEL_FORMAT_TIFF:
             im = gdImageCreateFromTiffPtr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMTIFFPTR */
 #if HAVE_DECL_GDIMAGECREATEFROMGD2PTR
-        case FORMAT_GD2:
+        case SIXEL_FORMAT_GD2:
             im = gdImageCreateFromGd2Ptr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMGD2PTR */
