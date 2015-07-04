@@ -38,6 +38,7 @@
 #include "writer.h"
 #include "encoder.h"
 #include "status.h"
+#include "loader.h"
 #include <sixel.h>
 
 #if HAVE_TESTS
@@ -50,54 +51,61 @@ main(int argc, char *argv[])
     (void) argc;
     (void) argv;
 
+    nret = sixel_loader_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("loader ok.");
+
     nret = sixel_dither_tests_main();
     if (nret != EXIT_SUCCESS) {
         goto error;
     }
 
-    puts("done.");
+    puts("dither ok.");
 
     nret = sixel_pixelformat_tests_main();
     if (nret != EXIT_SUCCESS) {
         goto error;
     }
 
-    puts("done.");
+    puts("pixelformat ok.");
 
     nret = sixel_frame_tests_main();
     if (nret != EXIT_SUCCESS) {
         goto error;
     }
 
-    puts("done.");
+    puts("frame ok.");
 
     nret = sixel_writer_tests_main();
     if (nret != EXIT_SUCCESS) {
         goto error;
     }
 
-    puts("done.");
+    puts("writer ok.");
 
     nret = sixel_quant_tests_main();
     if (nret != EXIT_SUCCESS) {
         goto error;
     }
 
-    puts("done.");
+    puts("quant ok.");
 
     nret = sixel_encoder_tests_main();
     if (nret != EXIT_SUCCESS) {
         goto error;
     }
 
-    puts("done.");
+    puts("encoder ok.");
 
     nret = sixel_status_tests_main();
     if (nret != EXIT_SUCCESS) {
         goto error;
     }
 
-    puts("done.");
+    puts("status ok.");
 error:
     return nret;
 }

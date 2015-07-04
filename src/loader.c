@@ -128,6 +128,9 @@ memory_write(void *ptr,
     size_t nbytes;
     chunk_t *chunk;
 
+    if (ptr == NULL || memory == NULL) {
+        return 0;
+    }
     nbytes = size * len;
     if (nbytes == 0) {
         return 0;
@@ -1571,6 +1574,65 @@ sixel_helper_load_image_file(
 end:
     return status;
 }
+
+
+#if HAVE_TESTS
+static int
+test1(void)
+{
+    int nret = EXIT_FAILURE;
+    chunk_t chunk = {0, 0, 0};
+    unsigned char *ptr = malloc(16);
+    int nread;
+
+    nread = memory_write(NULL, 1, 1, NULL);
+    if (nread != 0) {
+        goto error;
+    }
+
+    nread = memory_write(ptr, 1, 1, &chunk);
+    if (nread != 0) {
+        goto error;
+    }
+
+    nread = memory_write(ptr, 0, 1, &chunk);
+    if (nread != 0) {
+        goto error;
+    }
+    nret = EXIT_SUCCESS;
+
+error:
+    free(ptr);
+    return nret;
+}
+
+
+int
+sixel_loader_tests_main(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t i;
+    typedef int (* testcase)(void);
+
+    static testcase const testcases[] = {
+        test1,
+    };
+
+    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
+        nret = testcases[i]();
+        if (nret != EXIT_SUCCESS) {
+            goto error;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+#endif  /* HAVE_TESTS */
+
+
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

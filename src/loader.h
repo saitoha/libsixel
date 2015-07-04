@@ -19,17 +19,15 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_DECODER_H
-#define LIBSIXEL_DECODER_H
+#ifndef LIBSIXEL_LOADER_H
+#define LIBSIXEL_LOADER_H
 
-/* encode settings object */
-typedef struct sixel_decoder {
-    unsigned int ref;
-    char *input;
-    char *output;
-} sixel_decoder_t;
+#if HAVE_TESTS
+int
+sixel_loader_tests_main(void);
+#endif
 
-#endif /* LIBSIXEL_DECODER_H */
+#endif /* LIBSIXEL_LOADER_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

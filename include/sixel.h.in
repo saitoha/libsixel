@@ -896,12 +896,12 @@ sixel_helper_write_image_file(
 
 /* easy encoder API */
 
-#ifndef LIBSIXEL_EASY_ENCODE_H
+#ifndef LIBSIXEL_ENCODER_H
 
 /* handle type of dither context object */
 typedef struct sixel_encoder { int dummy; } sixel_encoder_t;
 
-#endif  /* LIBSIXEL_EASY_ENCODE_H */
+#endif  /* LIBSIXEL_ENCODER_H */
 
 #ifdef __cplusplus
 extern "C" {
@@ -940,12 +940,12 @@ sixel_encoder_encode(
 
 /* easy encoder API */
 
-#ifndef LIBSIXEL_EASY_DECODE_H
+#ifndef LIBSIXEL_DECODER_H
 
 /* handle type of dither context object */
 typedef struct sixel_decoder { int dummy; } sixel_decoder_t;
 
-#endif  /* LIBSIXEL_EASY_ENCODE_H */
+#endif  /* LIBSIXEL_DECODER_H */
 
 #ifdef __cplusplus
 extern "C" {
