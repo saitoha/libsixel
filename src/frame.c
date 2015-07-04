@@ -251,12 +251,12 @@ sixel_frame_strip_alpha(
 }
 
 
-SIXELAPI int
+SIXELAPI SIXELSTATUS
 sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *normalized_pixels = NULL;
     int size;
-    int nret = 0;
     unsigned char *dst;
     unsigned char *src;
     unsigned char *p;
@@ -269,15 +269,15 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
         normalized_pixels = malloc(size);
         src = normalized_pixels + frame->width * frame->height * 3;
         dst = normalized_pixels;
-        nret = sixel_helper_normalize_pixelformat(src,
-                                                  &frame->pixelformat,
-                                                  frame->pixels,
-                                                  frame->pixelformat,
-                                                  frame->width,
-                                                  frame->height);
-        if (nret != 0) {
+        status = sixel_helper_normalize_pixelformat(src,
+                                                    &frame->pixelformat,
+                                                    frame->pixels,
+                                                    frame->pixelformat,
+                                                    frame->width,
+                                                    frame->height);
+        if (SIXEL_FAILED(status)) {
             free(normalized_pixels);
-            return nret;
+            goto end;
         }
         for (p = src; dst < src; ++p) {
             *dst++ = *(frame->palette + *p * 3 + 0);
@@ -316,29 +316,34 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
         /* normalize pixelformat */
         size = frame->width * frame->height * 3;
         normalized_pixels = malloc(size);
-        nret = sixel_helper_normalize_pixelformat(normalized_pixels,
-                                                  &frame->pixelformat,
-                                                  frame->pixels,
-                                                  frame->pixelformat,
-                                                  frame->width,
-                                                  frame->height);
-        if (nret != 0) {
-           free(normalized_pixels);
-            return nret;
+        status = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                    &frame->pixelformat,
+                                                    frame->pixels,
+                                                    frame->pixelformat,
+                                                    frame->width,
+                                                    frame->height);
+        if (SIXEL_FAILED(status)) {
+            free(normalized_pixels);
+            goto end;
         }
         free(frame->pixels);
         frame->pixels = normalized_pixels;
         break;
     default:
-        fprintf(stderr, "do_resize: invalid pixelformat.\n");
-        return (-1);
+        status = SIXEL_LOGIC_ERROR;
+        sixel_helper_set_additional_message(
+            "do_resize: invalid pixelformat.");
+        goto end;
     }
 
-    return nret;
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
-SIXELAPI int
+SIXELAPI SIXELSTATUS
 sixel_frame_resize(
     sixel_frame_t *frame,
     int width,
@@ -346,41 +351,44 @@ sixel_frame_resize(
     int method_for_resampling
 )
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     int size;
     unsigned char *scaled_frame = NULL;
-    int nret;
 
-    nret = sixel_frame_convert_to_rgb888(frame);
-    if (nret != 0) {
-        return nret;
+    status = sixel_frame_convert_to_rgb888(frame);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     size = width * height * 3;
     scaled_frame = malloc(size);
-
     if (scaled_frame == NULL) {
-        return (-1);
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
 
-    nret = sixel_helper_scale_image(
+    status = sixel_helper_scale_image(
         scaled_frame,
         frame->pixels, frame->width, frame->height, 3,
         width,
         height,
         method_for_resampling);
-    if (nret != 0) {
-        return nret;
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
     free(frame->pixels);
     frame->pixels = scaled_frame;
     frame->width = width;
     frame->height = height;
 
-    return nret;
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
-static int
+static SIXELSTATUS
 clip(unsigned char *pixels,
      int sx,
      int sy,
@@ -390,10 +398,13 @@ clip(unsigned char *pixels,
      int cw,
      int ch)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     int y;
     unsigned char *src;
     unsigned char *dst;
-    int depth = sixel_helper_compute_depth(pixelformat);
+    int depth;
+    char message[256];
+    int nwrite;
 
     /* unused */ (void) sx;
     /* unused */ (void) sy;
@@ -403,6 +414,19 @@ clip(unsigned char *pixels,
     case SIXEL_PIXELFORMAT_PAL8:
     case SIXEL_PIXELFORMAT_G8:
     case SIXEL_PIXELFORMAT_RGB888:
+        depth = sixel_helper_compute_depth(pixelformat);
+        if (depth < 0) {
+            status = SIXEL_LOGIC_ERROR;
+            nwrite = sprintf(message,
+                             "clip: "
+                             "sixel_helper_compute_depth(%08x) failed.",
+                             pixelformat);
+            if (nwrite > 0) {
+                sixel_helper_set_additional_message(message);
+            }
+            goto end;
+        }
+
         dst = pixels;
         src = pixels + cy * sx * depth + cx * depth;
         for (y = 0; y < ch; y++) {
@@ -410,16 +434,28 @@ clip(unsigned char *pixels,
             dst += (cw * depth);
             src += (sx * depth);
         }
+
+        status = SIXEL_OK;
+
         break;
     default:
-        return (-1);
+        status = SIXEL_BAD_ARGUMENT;
+        nwrite = sprintf(message,
+                         "clip: "
+                         "invalid pixelformat(%08x) is specified.",
+                         pixelformat);
+        if (nwrite > 0) {
+            sixel_helper_set_additional_message(message);
+        }
+        break;
     }
 
-    return 0;
+end:
+    return status;
 }
 
 
-SIXELAPI int
+SIXELAPI SIXELSTATUS
 sixel_frame_clip(
     sixel_frame_t *frame,
     int x,
@@ -428,23 +464,26 @@ sixel_frame_clip(
     int height
 )
 {
-    int ret = 0;
+    SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *normalized_pixels;
 
     switch (frame->pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_G1:
+    case SIXEL_PIXELFORMAT_G2:
+    case SIXEL_PIXELFORMAT_G4:
         normalized_pixels = malloc(frame->width * frame->height);
-        ret = sixel_helper_normalize_pixelformat(normalized_pixels,
-                                                 &frame->pixelformat,
-                                                 frame->pixels,
-                                                 frame->pixelformat,
-                                                 frame->width,
-                                                 frame->height);
-        if (ret != 0) {
+        status = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                    &frame->pixelformat,
+                                                    frame->pixels,
+                                                    frame->pixelformat,
+                                                    frame->width,
+                                                    frame->height);
+        if (SIXEL_FAILED(status)) {
             free(normalized_pixels);
-            return ret;
+            goto end;
         }
         free(frame->pixels);
         frame->pixels = normalized_pixels;
@@ -453,21 +492,24 @@ sixel_frame_clip(
         break;
     }
 
-    ret = clip(frame->pixels,
-               frame->width,
-               frame->height,
-               frame->pixelformat,
-               x,
-               y,
-               width,
-               height);
-    if (ret != 0) {
-        return ret;
+    status = clip(frame->pixels,
+                  frame->width,
+                  frame->height,
+                  frame->pixelformat,
+                  x,
+                  y,
+                  width,
+                  height);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
     frame->width = width;
     frame->height = height;
 
-    return ret;
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
@@ -499,7 +541,7 @@ test2(void)
     int nret = EXIT_FAILURE;
     unsigned char *pixels = malloc(4);
     unsigned char *bgcolor = malloc(3);
-    int ret;
+    SIXELSTATUS status;
 
     pixels[0] = 0x43;
     pixels[1] = 0x89;
@@ -513,13 +555,13 @@ test2(void)
         goto error;
     }
 
-    ret = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_RGBA8888, NULL, 0);
-    if (ret != 0) {
+    status = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_RGBA8888, NULL, 0);
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
 
-    ret = sixel_frame_strip_alpha(frame, bgcolor);
-    if (ret != 0) {
+    status = sixel_frame_strip_alpha(frame, bgcolor);
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
 
@@ -553,7 +595,7 @@ test3(void)
     sixel_frame_t *frame = NULL;
     int nret = EXIT_FAILURE;
     unsigned char *pixels = malloc(4);
-    int ret;
+    SIXELSTATUS status;
 
     pixels[0] = 0x43;
     pixels[1] = 0x89;
@@ -565,13 +607,13 @@ test3(void)
         goto error;
     }
 
-    ret = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_RGBA8888, NULL, 0);
-    if (ret != 0) {
+    status = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_RGBA8888, NULL, 0);
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
 
-    ret = sixel_frame_strip_alpha(frame, NULL);
-    if (ret != 0) {
+    status = sixel_frame_strip_alpha(frame, NULL);
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
 
@@ -605,7 +647,7 @@ test4(void)
     sixel_frame_t *frame = NULL;
     int nret = EXIT_FAILURE;
     unsigned char *pixels = malloc(4);
-    int ret;
+    SIXELSTATUS status;
 
     pixels[0] = 0x43;
     pixels[1] = 0x89;
@@ -617,13 +659,13 @@ test4(void)
         goto error;
     }
 
-    ret = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_ARGB8888, NULL, 0);
-    if (ret != 0) {
+    status = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_ARGB8888, NULL, 0);
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
 
-    ret = sixel_frame_strip_alpha(frame, NULL);
-    if (ret != 0) {
+    status = sixel_frame_strip_alpha(frame, NULL);
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
 
@@ -658,7 +700,7 @@ test5(void)
     int nret = EXIT_FAILURE;
     unsigned char *pixels = malloc(1);
     unsigned char *palette = malloc(3);
-    int ret;
+    SIXELSTATUS status;
 
     palette[0] = 0x43;
     palette[1] = 0x89;
@@ -671,13 +713,13 @@ test5(void)
         goto error;
     }
 
-    ret = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_PAL8, palette, 1);
-    if (ret != 0) {
+    status = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_PAL8, palette, 1);
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
 
-    ret = sixel_frame_convert_to_rgb888(frame);
-    if (ret != 0) {
+    status = sixel_frame_convert_to_rgb888(frame);
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
 
@@ -712,7 +754,7 @@ test6(void)
     int nret = EXIT_FAILURE;
     unsigned char *pixels = malloc(6);
     unsigned char *palette = malloc(3);
-    int ret;
+    SIXELSTATUS status;
 
     palette[0] = 0x43;
     palette[1] = 0x89;
@@ -725,13 +767,13 @@ test6(void)
         goto error;
     }
 
-    ret = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_PAL1, palette, 1);
-    if (ret != 0) {
+    status = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_PAL1, palette, 1);
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
 
-    ret = sixel_frame_convert_to_rgb888(frame);
-    if (ret != 0) {
+    status = sixel_frame_convert_to_rgb888(frame);
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
 

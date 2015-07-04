@@ -496,6 +496,9 @@ int main(int argc, char** argv)
         status = output_sixel(pixbuf, width, height, ncolors,
                               SIXEL_PIXELFORMAT_RGB888);
         if (SIXEL_FAILED(status)) {
+            fprintf(stderr, "%s\n%s\n",
+                    sixel_helper_format_error(status),
+                    sixel_helper_get_additional_message());
             break;
         }
     }

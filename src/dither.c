@@ -249,7 +249,8 @@ static const unsigned char pal_vt340_color[] = {
 
 
 SIXELAPI sixel_dither_t *
-sixel_dither_create(int ncolors)
+sixel_dither_create(
+    int     /* in */ ncolors)
 {
     sixel_dither_t *dither;
     int headsize;
@@ -274,32 +275,32 @@ sixel_dither_create(int ncolors)
     wholesize = headsize + datasize;
 
     dither = malloc(wholesize);
-    if (dither == NULL) {
-        return NULL;
+    if (dither != NULL) {
+        dither->ref = 1;
+        dither->palette = (unsigned char*)(dither + 1);
+        dither->cachetable = NULL;
+        dither->reqcolors = ncolors;
+        dither->ncolors = ncolors;
+        dither->origcolors = (-1);
+        dither->keycolor = (-1);
+        dither->optimized = 0;
+        dither->optimize_palette = 0;
+        dither->complexion = 1;
+        dither->bodyonly = 0;
+        dither->method_for_largest = SIXEL_LARGE_NORM;
+        dither->method_for_rep = SIXEL_REP_CENTER_BOX;
+        dither->method_for_diffuse = SIXEL_DIFFUSE_FS;
+        dither->quality_mode = quality_mode;
+        dither->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     }
-    dither->ref = 1;
-    dither->palette = (unsigned char*)(dither + 1);
-    dither->cachetable = NULL;
-    dither->reqcolors = ncolors;
-    dither->ncolors = ncolors;
-    dither->origcolors = (-1);
-    dither->keycolor = (-1);
-    dither->optimized = 0;
-    dither->optimize_palette = 0;
-    dither->complexion = 1;
-    dither->bodyonly = 0;
-    dither->method_for_largest = SIXEL_LARGE_NORM;
-    dither->method_for_rep = SIXEL_REP_CENTER_BOX;
-    dither->method_for_diffuse = SIXEL_DIFFUSE_FS;
-    dither->quality_mode = quality_mode;
-    dither->pixelformat = SIXEL_PIXELFORMAT_RGB888;
 
     return dither;
 }
 
 
 SIXELAPI void
-sixel_dither_destroy(sixel_dither_t *dither)
+sixel_dither_destroy(
+    sixel_dither_t  /* in */ *dither)
 {
     if (dither) {
         free(dither->cachetable);
@@ -309,7 +310,8 @@ sixel_dither_destroy(sixel_dither_t *dither)
 
 
 SIXELAPI void
-sixel_dither_ref(sixel_dither_t *dither)
+sixel_dither_ref(
+    sixel_dither_t  /* in */ *dither)
 {
     /* TODO: be thread safe */
     ++dither->ref;
@@ -317,7 +319,8 @@ sixel_dither_ref(sixel_dither_t *dither)
 
 
 SIXELAPI void
-sixel_dither_unref(sixel_dither_t *dither)
+sixel_dither_unref(
+    sixel_dither_t  /* in */ *dither)
 {
     /* TODO: be thread safe */
     if (dither != NULL && --dither->ref == 0) {
@@ -327,12 +330,13 @@ sixel_dither_unref(sixel_dither_t *dither)
 
 
 SIXELAPI sixel_dither_t *
-sixel_dither_get(int builtin_dither)
+sixel_dither_get(
+    int     /* in */ builtin_dither)
 {
     unsigned char *palette;
     int ncolors;
     int keycolor;
-    sixel_dither_t *dither;
+    sixel_dither_t *dither = NULL;
 
     switch (builtin_dither) {
     case SIXEL_BUILTIN_MONO_DARK:
@@ -386,7 +390,7 @@ sixel_dither_get(int builtin_dither)
         keycolor = (-1);
         break;
     default:
-        return NULL;
+        goto end;
     }
 
     dither = sixel_dither_create(ncolors);
@@ -397,12 +401,15 @@ sixel_dither_get(int builtin_dither)
         dither->optimize_palette = 0;
     }
 
+end:
     return dither;
 }
 
 
 static void
-sixel_dither_set_method_for_largest(sixel_dither_t *dither, int method_for_largest)
+sixel_dither_set_method_for_largest(
+    sixel_dither_t  /* in */ *dither,
+    int             /* in */ method_for_largest)
 {
     if (method_for_largest == SIXEL_LARGE_AUTO) {
         method_for_largest = SIXEL_LARGE_NORM;
@@ -412,7 +419,9 @@ sixel_dither_set_method_for_largest(sixel_dither_t *dither, int method_for_large
 
 
 static void
-sixel_dither_set_method_for_rep(sixel_dither_t *dither, int method_for_rep)
+sixel_dither_set_method_for_rep(
+    sixel_dither_t  /* in */ *dither,
+    int             /* in */ method_for_rep)
 {
     if (method_for_rep == SIXEL_REP_AUTO) {
         method_for_rep = SIXEL_REP_CENTER_BOX;
@@ -422,7 +431,9 @@ sixel_dither_set_method_for_rep(sixel_dither_t *dither, int method_for_rep)
 
 
 static void
-sixel_dither_set_quality_mode(sixel_dither_t *dither, int quality_mode)
+sixel_dither_set_quality_mode(
+    sixel_dither_t  /* in */  *dither,
+    int             /* in */  quality_mode)
 {
     if (quality_mode == SIXEL_QUALITY_AUTO) {
         if (dither->ncolors <= 8) {
@@ -436,10 +447,15 @@ sixel_dither_set_quality_mode(sixel_dither_t *dither, int quality_mode)
 
 
 SIXELAPI SIXELSTATUS
-sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
-                        int width, int height, int pixelformat,
-                        int method_for_largest, int method_for_rep,
-                        int quality_mode)
+sixel_dither_initialize(
+    sixel_dither_t  /* in */ *dither,
+    unsigned char   /* in */ *data,
+    int             /* in */ width,
+    int             /* in */ height,
+    int             /* in */ pixelformat,
+    int             /* in */ method_for_largest,
+    int             /* in */ method_for_rep,
+    int             /* in */ quality_mode)
 {
     unsigned char *buf = NULL;
     unsigned char *normalized_pixels = NULL;
@@ -456,10 +472,13 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
             goto end;
         }
 
-        status = sixel_helper_normalize_pixelformat(normalized_pixels,
-                                                    &pixelformat,
-                                                    data, pixelformat,
-                                                    width, height);
+        status = sixel_helper_normalize_pixelformat(
+            normalized_pixels,
+            &pixelformat,
+            data,
+            pixelformat,
+            width,
+            height);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -475,7 +494,8 @@ sixel_dither_initialize(sixel_dither_t *dither, unsigned char *data,
     buf = sixel_quant_make_palette(input_pixels,
                                    width * height * 3,
                                    SIXEL_PIXELFORMAT_RGB888,
-                                   dither->reqcolors, &dither->ncolors,
+                                   dither->reqcolors,
+                                   &dither->ncolors,
                                    &dither->origcolors,
                                    dither->method_for_largest,
                                    dither->method_for_rep,
@@ -500,7 +520,9 @@ end:
 
 
 SIXELAPI void
-sixel_dither_set_diffusion_type(sixel_dither_t *dither, int method_for_diffuse)
+sixel_dither_set_diffusion_type(
+    sixel_dither_t  /* in */ *dither,
+    int             /* in */ method_for_diffuse)
 {
     if (method_for_diffuse == SIXEL_DIFFUSE_AUTO) {
         if (dither->ncolors > 16) {
@@ -514,7 +536,8 @@ sixel_dither_set_diffusion_type(sixel_dither_t *dither, int method_for_diffuse)
 
 
 SIXELAPI int
-sixel_dither_get_num_of_palette_colors(sixel_dither_t *dither)
+sixel_dither_get_num_of_palette_colors(
+    sixel_dither_t  /* in */ *dither)
 {
     return dither->ncolors;
 }
@@ -522,7 +545,8 @@ sixel_dither_get_num_of_palette_colors(sixel_dither_t *dither)
 
 /* get number of histogram colors */
 SIXELAPI int
-sixel_dither_get_num_of_histogram_colors(sixel_dither_t /* in */ *dither)  /* dither context object */
+sixel_dither_get_num_of_histogram_colors(
+    sixel_dither_t /* in */ *dither)  /* dither context object */
 {
     return dither->origcolors;
 }
@@ -530,14 +554,16 @@ sixel_dither_get_num_of_histogram_colors(sixel_dither_t /* in */ *dither)  /* di
 
 /* typoed: remained for keeping compatibility */
 SIXELAPI int
-sixel_dither_get_num_of_histgram_colors(sixel_dither_t /* in */ *dither)  /* dither context object */
+sixel_dither_get_num_of_histgram_colors(
+    sixel_dither_t /* in */ *dither)  /* dither context object */
 {
     return sixel_dither_get_num_of_histogram_colors(dither);
 }
 
 
 SIXELAPI unsigned char *
-sixel_dither_get_palette(sixel_dither_t /* in */ *dither)  /* dither context object */
+sixel_dither_get_palette(
+    sixel_dither_t /* in */ *dither)  /* dither context object */
 {
     return dither->palette;
 }
@@ -554,17 +580,19 @@ sixel_dither_set_palette(
 
 
 SIXELAPI void
-sixel_dither_set_complexion_score(sixel_dither_t /* in */ *dither,  /* dither context object */
-                                  int            /* in */ score)    /* complexion score (>= 1) */
+sixel_dither_set_complexion_score(
+    sixel_dither_t /* in */ *dither,  /* dither context object */
+    int            /* in */ score)    /* complexion score (>= 1) */
 {
     dither->complexion = score;
 }
 
 
 SIXELAPI void
-sixel_dither_set_body_only(sixel_dither_t /* in */ *dither,     /* dither context object */
-                           int            /* in */ bodyonly)    /* 0: output palette section
-                                                                   1: do not output palette section  */
+sixel_dither_set_body_only(
+    sixel_dither_t /* in */ *dither,     /* dither context object */
+    int            /* in */ bodyonly)    /* 0: output palette section
+                                            1: do not output palette section  */
 {
     dither->bodyonly = bodyonly;
 }
@@ -599,9 +627,11 @@ sixel_dither_set_transparent(
 
 
 SIXELAPI unsigned char *
-sixel_dither_apply_palette(sixel_dither_t *dither,
-                           unsigned char *pixels,
-                           int width, int height)
+sixel_dither_apply_palette(
+    sixel_dither_t  /* in */ *dither,
+    unsigned char   /* in */ *pixels,
+    int             /* in */ width,
+    int             /* in */ height)
 {
     int ret;
     int bufsize;
@@ -614,7 +644,7 @@ sixel_dither_apply_palette(sixel_dither_t *dither,
     bufsize = width * height * sizeof(unsigned char);
     dest = malloc(bufsize);
     if (dest == NULL) {
-        return NULL;
+        goto end;
     }
 
     /* if quality_mode is full, do not use palette caching */

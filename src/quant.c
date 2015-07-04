@@ -124,16 +124,29 @@ compareplane(const void * const arg1,
 static int
 sumcompare(const void * const b1, const void * const b2)
 {
-    return(((boxVector)b2)->sum - ((boxVector)b1)->sum);
+    return ((boxVector)b2)->sum - ((boxVector)b1)->sum;
 }
 
 
-static tupletable
-alloctupletable(unsigned int const depth, unsigned int const size)
+static SIXELSTATUS
+alloctupletable(
+    tupletable          /* out */ *result,
+    unsigned int const  /* in */  depth,
+    unsigned int const  /* in */  size)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
+    char message[256];
+    int nwrite;
+
     if (UINT_MAX / sizeof(struct tupleint) < size) {
-        quant_trace(stderr, "size %u is too big for arithmetic\n", size);
-        return NULL;
+        nwrite = sprintf(message,
+                         "size %u is too big for arithmetic",
+                         size);
+        if (nwrite > 0) {
+            sixel_helper_set_additional_message(message);
+        }
+        status = SIXEL_RUNTIME_ERROR;
+        goto end;
     }
 
     unsigned int const mainTableSize = size * sizeof(struct tupleint *);
@@ -146,19 +159,28 @@ alloctupletable(unsigned int const depth, unsigned int const size)
        as a single malloc block and suballocate internally.
     */
     if ((UINT_MAX - mainTableSize) / tupleIntSize < size) {
-        quant_trace(stderr, "size %u is too big for arithmetic\n", size);
-        return NULL;
+        nwrite = sprintf(message,
+                         "size %u is too big for arithmetic",
+                         size);
+        if (nwrite > 0) {
+            sixel_helper_set_additional_message(message);
+        }
+        status = SIXEL_RUNTIME_ERROR;
+        goto end;
     }
 
     unsigned int const allocSize = mainTableSize + size * tupleIntSize;
     void * pool;
 
     pool = malloc(allocSize);
-
-    if (!pool) {
-        quant_trace(stderr, "Unable to allocate %u bytes for a %u-entry "
-                    "tuple table\n", allocSize, size);
-        return NULL;
+    if (pool == NULL) {
+        sprintf(message,
+                "unable to allocate %u bytes for a %u-entry "
+                "tuple table",
+                 allocSize, size);
+        sixel_helper_set_additional_message(message);
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
     tupletable const tbl = (tupletable) pool;
 
@@ -168,9 +190,13 @@ alloctupletable(unsigned int const depth, unsigned int const size)
         tbl[i] = (struct tupleint *)
             ((char*)pool + mainTableSize + i * tupleIntSize);
 
-    return tbl;
-}
+    *result = tbl;
 
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
 
 
 /*
@@ -182,11 +208,15 @@ alloctupletable(unsigned int const depth, unsigned int const size)
 static tupletable2
 newColorMap(unsigned int const newcolors, unsigned int const depth)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     tupletable2 colormap;
     unsigned int i;
 
     colormap.size = 0;
-    colormap.table = alloctupletable(depth, newcolors);
+    status = alloctupletable(&colormap.table, depth, newcolors);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
     if (colormap.table) {
         for (i = 0; i < newcolors; ++i) {
             unsigned int plane;
@@ -196,6 +226,7 @@ newColorMap(unsigned int const newcolors, unsigned int const depth)
         colormap.size = newcolors;
     }
 
+end:
     return colormap;
 }
 
@@ -448,7 +479,7 @@ colormapFromBv(unsigned int const newcolors,
 }
 
 
-static int
+static SIXELSTATUS
 splitBox(boxVector const bv,
          unsigned int *const boxesP,
          unsigned int const bi,
@@ -465,6 +496,7 @@ splitBox(boxVector const bv,
 
    Assume the box contains at least two colors.
 -----------------------------------------------------------------------------*/
+    SIXELSTATUS status = SIXEL_FALSE;
     unsigned int const boxStart = bv[bi].ind;
     unsigned int const boxSize  = bv[bi].colors;
     unsigned int const sm       = bv[bi].sum;
@@ -497,9 +529,10 @@ splitBox(boxVector const bv,
         largestDimension = largestByLuminosity(minval, maxval, depth);
         break;
     default:
-        quant_trace(stderr, "Internal error: invalid value of methodForLargest: %d\n",
-                    methodForLargest);
-        return -1;
+        sixel_helper_set_additional_message(
+            "Internal error: invalid value of methodForLargest.");
+        status = SIXEL_LOGIC_ERROR;
+        goto end;
     }
 
     /* TODO: I think this sort should go after creating a box,
@@ -537,12 +570,16 @@ splitBox(boxVector const bv,
     bv[*boxesP].sum = sm - lowersum;
     ++(*boxesP);
     qsort((char*) bv, *boxesP, sizeof(struct box), sumcompare);
-    return 0;
+
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
 
-static int
+static SIXELSTATUS
 mediancut(tupletable2 const colorfreqtable,
           unsigned int const depth,
           unsigned int const newcolors,
@@ -565,7 +602,7 @@ mediancut(tupletable2 const colorfreqtable,
     int multicolorBoxesExist;
     unsigned int i;
     unsigned int sum;
-    int nret = (-1);
+    SIXELSTATUS status = SIXEL_FALSE;
 
     sum = 0;
 
@@ -576,29 +613,38 @@ mediancut(tupletable2 const colorfreqtable,
     /* There is at least one box that contains at least 2 colors; ergo,
        there is more splitting we can do.  */
     bv = newBoxVector(colorfreqtable.size, sum, newcolors);
-    if (bv) {
-        boxes = 1;
-        multicolorBoxesExist = (colorfreqtable.size > 1);
+    if (bv == NULL) {
+        goto end;
+    }
+    boxes = 1;
+    multicolorBoxesExist = (colorfreqtable.size > 1);
 
-        /* Main loop: split boxes until we have enough. */
-        while (boxes < newcolors && multicolorBoxesExist) {
-            /* Find the first splittable box. */
-            for (bi = 0; bi < boxes && bv[bi].colors < 2; ++bi)
-                ;
-            if (bi >= boxes) {
-                multicolorBoxesExist = 0;
-            } else {
-                splitBox(bv, &boxes, bi, colorfreqtable, depth, methodForLargest);
+    /* Main loop: split boxes until we have enough. */
+    while (boxes < newcolors && multicolorBoxesExist) {
+        /* Find the first splittable box. */
+        for (bi = 0; bi < boxes && bv[bi].colors < 2; ++bi)
+            ;
+        if (bi >= boxes) {
+            multicolorBoxesExist = 0;
+        } else {
+            status = splitBox(bv, &boxes, bi,
+                              colorfreqtable, depth,
+                              methodForLargest);
+            if (SIXEL_FAILED(status)) {
+                goto end;
             }
         }
-        *colormapP = colormapFromBv(newcolors, bv, boxes,
-                                    colorfreqtable, depth,
-                                    methodForRep);
-
-        free(bv);
-        nret = 0;
     }
-    return nret;
+    *colormapP = colormapFromBv(newcolors, bv, boxes,
+                                colorfreqtable, depth,
+                                methodForRep);
+
+    free(bv);
+
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
@@ -616,17 +662,18 @@ computeHash(unsigned char const *data, int const depth)
 }
 
 
-static int
-computeHistogram(unsigned char const *data,
-                 unsigned int length,
-                 unsigned long const depth,
-                 tupletable2 * const colorfreqtableP,
-                 int const qualityMode)
+static SIXELSTATUS
+computeHistogram(unsigned char const    /* in */  *data,
+                 unsigned int           /* in */  length,
+                 unsigned long const    /* in */  depth,
+                 tupletable2 * const    /* out */ colorfreqtableP,
+                 int const              /* in */  qualityMode)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     typedef unsigned short unit_t;
     unsigned int i, n;
-    unit_t *histogram;
-    unit_t *refmap;
+    unit_t *histogram = NULL;
+    unit_t *refmap = NULL;
     unit_t *ref;
     unit_t *it;
     unsigned int index;
@@ -664,17 +711,21 @@ computeHistogram(unsigned char const *data,
 #else
     histogram = malloc((1 << depth * 5) * sizeof(unit_t));
 #endif
-    if (!histogram) {
-        quant_trace(stderr, "Unable to allocate memory for histogram.\n");
-        return (-1);
+    if (histogram == NULL) {
+        sixel_helper_set_additional_message(
+            "unable to allocate memory for histogram.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
 #if !HAVE_CALLOC
     memset(histogram, 0, (1 << depth * 5) * sizeof(unit_t));
 #endif
     it = ref = refmap = (unsigned short *)malloc((1 << depth * 5) * sizeof(unit_t));
     if (!it) {
-        quant_trace(stderr, "Unable to allocate memory for lookup table.\n");
-        return (-1);
+        sixel_helper_set_additional_message(
+            "unable to allocate memory for lookup table.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
 
     for (i = 0; i < length - depth; i += step) {
@@ -688,7 +739,10 @@ computeHistogram(unsigned char const *data,
     }
 
     colorfreqtableP->size = ref - refmap;
-    colorfreqtableP->table = alloctupletable(depth, ref - refmap);
+    status = alloctupletable(&colorfreqtableP->table, depth, ref - refmap);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
     for (i = 0; i < colorfreqtableP->size; ++i) {
         if (histogram[refmap[i]] > 0) {
             colorfreqtableP->table[i]->value = histogram[refmap[i]];
@@ -700,11 +754,15 @@ computeHistogram(unsigned char const *data,
         it++;
     }
 
+    quant_trace(stderr, "%u colors found\n", colorfreqtableP->size);
+
+    status = SIXEL_OK;
+
+end:
     free(refmap);
     free(histogram);
 
-    quant_trace(stderr, "%u colors found\n", colorfreqtableP->size);
-    return 0;
+    return status;
 }
 
 
@@ -738,14 +796,15 @@ computeColorMapFromInput(unsigned char const *data,
    *formatP and *freqPamP.  (This information is not really
    relevant to our colormap mission; just a fringe benefit).
 -----------------------------------------------------------------------------*/
-    tupletable2 colorfreqtable;
+    SIXELSTATUS status = SIXEL_FALSE;
+    tupletable2 colorfreqtable = {0, NULL};
     unsigned int i;
     unsigned int n;
-    int ret;
 
-    ret = computeHistogram(data, length, depth, &colorfreqtable, qualityMode);
-    if (ret != 0) {
-        return (-1);
+    status = computeHistogram(data, length, depth,
+                              &colorfreqtable, qualityMode);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
     if (origcolors) {
         *origcolors = colorfreqtable.size;
@@ -756,7 +815,10 @@ computeColorMapFromInput(unsigned char const *data,
                     "Keeping same colors.\n", reqColors);
         /* *colormapP = colorfreqtable; */
         colormapP->size = colorfreqtable.size;
-        colormapP->table = alloctupletable(depth, colorfreqtable.size);
+        status = alloctupletable(&colormapP->table, depth, colorfreqtable.size);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         for (i = 0; i < colorfreqtable.size; ++i) {
             colormapP->table[i]->value = colorfreqtable.table[i]->value;
             for (n = 0; n < depth; ++n) {
@@ -765,16 +827,19 @@ computeColorMapFromInput(unsigned char const *data,
         }
     } else {
         quant_trace(stderr, "choosing %d colors...\n", reqColors);
-        ret = mediancut(colorfreqtable, depth, reqColors,
-                        methodForLargest, methodForRep, colormapP);
-        if (ret != 0) {
-            return (-1);
+        status = mediancut(colorfreqtable, depth, reqColors,
+                           methodForLargest, methodForRep, colormapP);
+        if (SIXEL_FAILED(status)) {
+            goto end;
         }
         quant_trace(stderr, "%d colors are choosed.\n", colorfreqtable.size);
     }
 
+    status = SIXEL_OK;
+
+end:
     free(colorfreqtable.table);
-    return 0;
+    return status;
 }
 
 
@@ -1095,7 +1160,8 @@ sixel_quant_make_palette(unsigned char const *data,
                          int methodForRep,
                          int qualityMode)
 {
-    int i, n;
+    int i;
+    int n;
     int ret;
     unsigned char *palette;
     tupletable2 colormap;

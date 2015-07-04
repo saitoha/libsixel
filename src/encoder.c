@@ -245,36 +245,45 @@ sixel_hex_write_callback(char *data, int size, void *priv)
 }
 
 
-static sixel_dither_t *
-prepare_monochrome_palette(int finvert)
+static SIXELSTATUS
+prepare_monochrome_palette(sixel_dither_t **dither, int finvert)
 {
-    sixel_dither_t *dither;
+    SIXELSTATUS status = SIXEL_FALSE;
 
     if (finvert) {
-        dither = sixel_dither_get(SIXEL_BUILTIN_MONO_LIGHT);
+        *dither = sixel_dither_get(SIXEL_BUILTIN_MONO_LIGHT);
     } else {
-        dither = sixel_dither_get(SIXEL_BUILTIN_MONO_DARK);
+        *dither = sixel_dither_get(SIXEL_BUILTIN_MONO_DARK);
     }
-    if (dither == NULL) {
-        return NULL;
+    if (*dither == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
 
-    return dither;
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
-static sixel_dither_t *
-prepare_builtin_palette(int builtin_palette)
+static SIXELSTATUS
+prepare_builtin_palette(
+    sixel_dither_t /* out */ **dither,
+    int            /* in */  builtin_palette)
 {
-    sixel_dither_t *dither;
+    SIXELSTATUS status = SIXEL_FALSE;
 
-    dither = sixel_dither_get(builtin_palette);
-
-    if (dither == NULL) {
-        return NULL;
+    *dither = sixel_dither_get(builtin_palette);
+    if (*dither == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
 
-    return dither;
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
@@ -301,7 +310,8 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
             status = SIXEL_LOGIC_ERROR;
             goto end;
         }
-        callback_context->dither = sixel_dither_create(sixel_frame_get_ncolors(frame));
+        callback_context->dither
+            = sixel_dither_create(sixel_frame_get_ncolors(frame));
         if (callback_context->dither == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto end;
@@ -327,7 +337,8 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
         status = SIXEL_OK;
         break;
     default:
-        callback_context->dither = sixel_dither_create(callback_context->reqcolors);
+        callback_context->dither
+            = sixel_dither_create(callback_context->reqcolors);
         if (callback_context->dither == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto end;
@@ -398,7 +409,7 @@ prepare_palette(sixel_dither_t **dither,
                 sixel_frame_t *frame,
                 sixel_encoder_t *encoder)
 {
-    SIXELSTATUS status = SIXEL_OK;
+    SIXELSTATUS status = SIXEL_FALSE;
     int histogram_colors;
 
     if (encoder->highcolor) {
@@ -406,12 +417,20 @@ prepare_palette(sixel_dither_t **dither,
             *dither = former_dither;
         } else {
             *dither = sixel_dither_create(-1);
+            if (*dither == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
         }
     } else if (encoder->monochrome) {
         if (former_dither) {
             *dither = former_dither;
         } else {
-            *dither = prepare_monochrome_palette(encoder->finvert);
+            status = prepare_monochrome_palette(dither,
+                                                encoder->finvert);
+            if (status != SIXEL_OK) {
+                goto end;
+            }
         }
     } else if (encoder->mapfile) {
         if (former_dither) {
@@ -424,20 +443,25 @@ prepare_palette(sixel_dither_t **dither,
                                                encoder->finsecure,
                                                encoder->cancel_flag);
             if (status != SIXEL_OK) {
-                return status;
+                goto end;
             }
         }
     } else if (encoder->builtin_palette) {
         if (former_dither) {
             *dither = former_dither;
         } else {
-            *dither = prepare_builtin_palette(encoder->builtin_palette);
+            status = prepare_builtin_palette(
+                dither, encoder->builtin_palette);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
         }
     } else if (sixel_frame_get_palette(frame) &&
                (sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_PALETTE)) {
         *dither = sixel_dither_create(sixel_frame_get_ncolors(frame));
         if (!*dither) {
-            return SIXEL_FALSE;
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
         }
         sixel_dither_set_palette(*dither, sixel_frame_get_palette(frame));
         sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
@@ -459,7 +483,8 @@ prepare_palette(sixel_dither_t **dither,
             *dither = sixel_dither_get(SIXEL_BUILTIN_G8);
             break;
         default:
-            return SIXEL_LOGIC_ERROR;
+            status = SIXEL_LOGIC_ERROR;
+            goto end;
         }
         sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
     } else {
@@ -468,7 +493,8 @@ prepare_palette(sixel_dither_t **dither,
         }
         *dither = sixel_dither_create(encoder->reqcolors);
         if (*dither == NULL) {
-            return SIXEL_BAD_ALLOCATION;
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
         }
         status = sixel_dither_initialize(*dither,
                                          sixel_frame_get_pixels(frame),
@@ -480,7 +506,7 @@ prepare_palette(sixel_dither_t **dither,
                                          encoder->quality_mode);
         if (SIXEL_FAILED(status)) {
             sixel_dither_unref(*dither);
-            return SIXEL_FALSE;
+            goto end;
         }
         histogram_colors = sixel_dither_get_num_of_histogram_colors(*dither);
         if (histogram_colors <= encoder->reqcolors) {
@@ -489,6 +515,9 @@ prepare_palette(sixel_dither_t **dither,
         sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
     }
 
+    status = SIXEL_OK;
+
+end:
     return status;
 }
 
@@ -630,6 +659,8 @@ output_sixel_without_macro(
     int dulation = 0;
     static unsigned char *p;
     int depth;
+    char message[256];
+    int nwrite;
 #if HAVE_USLEEP
     int lag = 0;
 # if HAVE_CLOCK
@@ -642,8 +673,15 @@ output_sixel_without_macro(
     }
 
     depth = sixel_helper_compute_depth(pixelformat);
-    if (depth == (-1)) {
-        status = SIXEL_FALSE;
+    if (depth < 0) {
+        status = SIXEL_LOGIC_ERROR;
+        nwrite = sprintf(message,
+                         "output_sixel_without_macro: "
+                         "sixel_helper_compute_depth(%08x) failed.",
+                         pixelformat);
+        if (nwrite > 0) {
+            sixel_helper_set_additional_message(message);
+        }
         goto end;
     }
 
@@ -1081,7 +1119,8 @@ sixel_encoder_setopt(
     switch(arg) {
     case 'o':
         if (*optarg == '\0') {
-            fprintf(stderr, "Invalid file name.\n");
+            sixel_helper_set_additional_message(
+                "no file name specified.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
@@ -1137,8 +1176,8 @@ sixel_encoder_setopt(
         } else if (strcmp(optarg, "gray8") == 0) {
             encoder->builtin_palette = SIXEL_BUILTIN_G8;
         } else {
-            fprintf(stderr,
-                    "Cannot parse builtin palette option.\n");
+            sixel_helper_set_additional_message(
+                    "cannot parse builtin palette option.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
@@ -1160,9 +1199,8 @@ sixel_encoder_setopt(
         } else if (strcmp(optarg, "burkes") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_BURKES;
         } else {
-            fprintf(stderr,
-                    "Diffusion method '%s' is not supported.\n",
-                    optarg);
+            sixel_helper_set_additional_message(
+                "specified diffusion method is not supported.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
@@ -1177,9 +1215,8 @@ sixel_encoder_setopt(
             } else if (strcmp(optarg, "lum") == 0) {
                 encoder->method_for_largest = SIXEL_LARGE_LUM;
             } else {
-                fprintf(stderr,
-                        "Finding method '%s' is not supported.\n",
-                        optarg);
+                sixel_helper_set_additional_message(
+                    "specified finding method is not supported.");
                 status = SIXEL_BAD_ARGUMENT;
                 goto end;
             }
@@ -1197,9 +1234,8 @@ sixel_encoder_setopt(
                    (strcmp(optarg, "histgram") == 0)) {
             encoder->method_for_rep = SIXEL_REP_AVERAGE_PIXELS;
         } else {
-            fprintf(stderr,
-                    "Finding method '%s' is not supported.\n",
-                    optarg);
+            sixel_helper_set_additional_message(
+                "specified finding method is not supported.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
@@ -1234,8 +1270,8 @@ sixel_encoder_setopt(
             encoder->pixelwidth = (-1);
             encoder->percentwidth = (-1);
         } else {
-            fprintf(stderr,
-                    "Cannot parse -w/--width option.\n");
+            sixel_helper_set_additional_message(
+                "cannot parse -w/--width option.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
@@ -1255,8 +1291,8 @@ sixel_encoder_setopt(
             encoder->pixelheight = (-1);
             encoder->percentheight = (-1);
         } else {
-            fprintf(stderr,
-                    "Cannot parse -h/--height option.\n");
+            sixel_helper_set_additional_message(
+                "cannot parse -h/--height option.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
@@ -1287,9 +1323,8 @@ sixel_encoder_setopt(
         } else if (strcmp(optarg, "lanczos4") == 0) {
             encoder->method_for_resampling = SIXEL_RES_LANCZOS4;
         } else {
-            fprintf(stderr,
-                    "Resampling method '%s' is not supported.\n",
-                    optarg);
+            sixel_helper_set_additional_message(
+                "specified desampling method is not supported.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
@@ -1305,8 +1340,8 @@ sixel_encoder_setopt(
         } else if (strcmp(optarg, "full") == 0) {
             encoder->quality_mode = SIXEL_QUALITY_FULL;
         } else {
-            fprintf(stderr,
-                    "Cannot parse quality option.\n");
+            sixel_helper_set_additional_message(
+                "cannot parse quality option.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
@@ -1320,8 +1355,8 @@ sixel_encoder_setopt(
         } else if (strcmp(optarg, "disable") == 0) {
             encoder->loop_mode = SIXEL_LOOP_DISABLE;
         } else {
-            fprintf(stderr,
-                    "Cannot parse loop-control option.\n");
+            sixel_helper_set_additional_message(
+                "cannot parse loop-control option.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
@@ -1335,8 +1370,8 @@ sixel_encoder_setopt(
         } else if (strcmp(optarg, "rgb") == 0) {
             encoder->palette_type = SIXEL_PALETTETYPE_RGB;
         } else {
-            fprintf(stderr,
-                    "Cannot parse palette type option.\n");
+            sixel_helper_set_additional_message(
+                "cannot parse palette type option.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
@@ -1347,8 +1382,8 @@ sixel_encoder_setopt(
             free(encoder->bgcolor);
         }
         if (parse_x_colorspec(optarg, &encoder->bgcolor) != 0) {
-            fprintf(stderr,
-                    "Cannot parse bgcolor option.\n");
+            sixel_helper_set_additional_message(
+                "cannot parse bgcolor option.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
@@ -1389,8 +1424,8 @@ sixel_encoder_setopt(
         } else if (strcmp(optarg, "size") == 0) {
             encoder->encode_policy = SIXEL_ENCODEPOLICY_SIZE;
         } else {
-            fprintf(stderr,
-                    "Cannot parse encode policy option.\n");
+            sixel_helper_set_additional_message(
+                "cannot parse encode policy option.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
@@ -1398,8 +1433,8 @@ sixel_encoder_setopt(
     case 'C':
         encoder->complexion = atoi(optarg);
         if (encoder->complexion < 1) {
-            fprintf(stderr,
-                    "complexion parameter must be 1 or more.\n");
+            sixel_helper_set_additional_message(
+                "complexion parameter must be 1 or more.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
@@ -1410,76 +1445,87 @@ sixel_encoder_setopt(
     case '?':  /* unknown option */
     default:
         /* exit if unknown options are specified */
-        fprintf(stderr,
-                "Unknwon option '-%c' is specified.\n", arg);
+        sixel_helper_set_additional_message(
+            "unknwon option is specified.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
 
     /* detects arguments conflictions */
     if (encoder->reqcolors != -1 && encoder->mapfile) {
-        fprintf(stderr, "option -p, --colors conflicts "
-                        "with -m, --mapfile.\n");
+        sixel_helper_set_additional_message(
+            "option -p, --colors conflicts "
+            "with -m, --mapfile.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
     if (encoder->mapfile && encoder->monochrome) {
-        fprintf(stderr, "option -m, --mapfile conflicts "
-                        "with -e, --monochrome.\n");
+        sixel_helper_set_additional_message(
+            "option -m, --mapfile conflicts "
+            "with -e, --monochrome.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
     if (encoder->monochrome && encoder->reqcolors != (-1)) {
-        fprintf(stderr, "option -e, --monochrome conflicts"
-                        " with -p, --colors.\n");
+        sixel_helper_set_additional_message(
+            "option -e, --monochrome conflicts"
+            " with -p, --colors.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
     if (encoder->monochrome && encoder->highcolor) {
-        fprintf(stderr, "option -e, --monochrome conflicts"
-                        " with -I, --high-color.\n");
+        sixel_helper_set_additional_message(
+            "option -e, --monochrome conflicts"
+            " with -I, --high-color.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
     if (encoder->reqcolors != (-1) && encoder->highcolor) {
-        fprintf(stderr, "option -p, --colors conflicts"
-                        " with -I, --high-color.\n");
+        sixel_helper_set_additional_message(
+            "option -p, --colors conflicts"
+            " with -I, --high-color.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
     if (encoder->mapfile && encoder->highcolor) {
-        fprintf(stderr, "option -m, --mapfile conflicts"
-                        " with -I, --high-color.\n");
+        sixel_helper_set_additional_message(
+            "option -m, --mapfile conflicts"
+            " with -I, --high-color.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
     if (encoder->builtin_palette && encoder->highcolor) {
-        fprintf(stderr, "option -b, --builtin-palette conflicts"
-                        " with -I, --high-color.\n");
+        sixel_helper_set_additional_message(
+            "option -b, --builtin-palette conflicts"
+            " with -I, --high-color.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
     if (encoder->monochrome && encoder->builtin_palette) {
-        fprintf(stderr, "option -e, --monochrome conflicts"
-                        " with -b, --builtin-palette.\n");
+        sixel_helper_set_additional_message(
+            "option -e, --monochrome conflicts"
+            " with -b, --builtin-palette.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
     if (encoder->mapfile && encoder->builtin_palette) {
-        fprintf(stderr, "option -m, --mapfile conflicts"
-                        " with -b, --builtin-palette.\n");
+        sixel_helper_set_additional_message(
+            "option -m, --mapfile conflicts"
+            " with -b, --builtin-palette.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
     if (encoder->reqcolors != (-1) && encoder->builtin_palette) {
-        fprintf(stderr, "option -p, --colors conflicts"
-                        " with -b, --builtin-palette.\n");
+        sixel_helper_set_additional_message(
+            "option -p, --colors conflicts"
+            " with -b, --builtin-palette.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
     if (encoder->f8bit && encoder->penetrate_multiplexer) {
-        fprintf(stderr, "option -8 --8bit-mode conflicts"
-                        " with -P, --penetrate.\n");
+        sixel_helper_set_additional_message(
+            "option -8 --8bit-mode conflicts"
+            " with -P, --penetrate.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -1496,7 +1542,7 @@ sixel_encoder_encode(
     sixel_encoder_t /* in */ *encoder,
     char const      /* in */ *filename)
 {
-    SIXELSTATUS status = (-1);
+    SIXELSTATUS status = SIXEL_FALSE;
     int fuse_palette = 1;
 
     if (encoder == NULL) {
@@ -1541,6 +1587,7 @@ sixel_encoder_encode(
     }
 
 reload:
+
     status = sixel_helper_load_image_file(filename,
                                           encoder->fstatic,
                                           fuse_palette,
