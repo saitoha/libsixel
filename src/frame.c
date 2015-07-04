@@ -555,7 +555,13 @@ test2(void)
         goto error;
     }
 
-    status = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_RGBA8888, NULL, 0);
+    status = sixel_frame_init(frame,
+                              pixels,
+                              1,
+                              1,
+                              SIXEL_PIXELFORMAT_RGBA8888,
+                              NULL,
+                              0);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -565,7 +571,7 @@ test2(void)
         goto error;
     }
 
-    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+    if (frame->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         goto error;
     }
 
@@ -607,7 +613,13 @@ test3(void)
         goto error;
     }
 
-    status = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_RGBA8888, NULL, 0);
+    status = sixel_frame_init(frame,
+                              pixels,
+                              1,
+                              1,
+                              SIXEL_PIXELFORMAT_RGBA8888,
+                              NULL,
+                              0);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -617,7 +629,7 @@ test3(void)
         goto error;
     }
 
-    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+    if (frame->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         goto error;
     }
 
@@ -659,7 +671,13 @@ test4(void)
         goto error;
     }
 
-    status = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_ARGB8888, NULL, 0);
+    status = sixel_frame_init(frame,
+                              pixels,
+                              1,
+                              1,
+                              SIXEL_PIXELFORMAT_ARGB8888,
+                              NULL,
+                              0);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -669,7 +687,7 @@ test4(void)
         goto error;
     }
 
-    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+    if (frame->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         goto error;
     }
 
@@ -713,7 +731,13 @@ test5(void)
         goto error;
     }
 
-    status = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_PAL8, palette, 1);
+    status = sixel_frame_init(frame,
+                              pixels,
+                              1,
+                              1,
+                              SIXEL_PIXELFORMAT_PAL8,
+                              palette,
+                              1);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -723,7 +747,7 @@ test5(void)
         goto error;
     }
 
-    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+    if (frame->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         goto error;
     }
 
@@ -767,7 +791,13 @@ test6(void)
         goto error;
     }
 
-    status = sixel_frame_init(frame, pixels, 1, 1, PIXELFORMAT_PAL1, palette, 1);
+    status = sixel_frame_init(frame,
+                              pixels,
+                              1,
+                              1,
+                              SIXEL_PIXELFORMAT_PAL1,
+                              palette,
+                              1);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -777,7 +807,7 @@ test6(void)
         goto error;
     }
 
-    if (frame->pixelformat != PIXELFORMAT_RGB888) {
+    if (frame->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         goto error;
     }
 

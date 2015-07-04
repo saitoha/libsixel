@@ -72,6 +72,9 @@
    don't. */
 #undef HAVE_DECL_SIGTERM
 
+/* define 1 if GCC supports -Wtypedef-redefinition */
+#undef HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 

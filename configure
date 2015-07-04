@@ -12216,6 +12216,34 @@ if test x$ax_cv_have_func_attribute_deprecated != x; then
 
 fi
 
+CFLAGS_BACKUP=$CFLAGS
+CFLAGS="$CFLAGS -Werror"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic pop
+    #pragma GCC diagnostic ignored "-Wtypedef-redefinition"
+
+int
+main ()
+{
+
+    typedef int foo;
+    typedef int foo;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+CFLAGS=$CFLAGS_BACKUP
+
 # Options
 # Check whether --enable-img2sixel was given.
 if test "${enable_img2sixel+set}" = set; then :
@@ -14600,7 +14628,7 @@ if test x$with_libcurl != xno; then
             ADDED_CFLAGS="-I${with_libcurl}/include"
             ADDED_LIBS="-L${with_libcurl}/lib -lcurl"
         else
-	    if test x${prefix} != x -a x${prefix} != xNONE; then
+            if test x${prefix} != x -a x${prefix} != xNONE; then
                 ADDED_CFLAGS="-I${prefix}/include"
                 ADDED_LIBS="-L${prefix}/lib -lcurl"
             else
