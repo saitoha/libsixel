@@ -192,7 +192,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_COMPLEXION_SCORE ('C')  /* -C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE:
                                                  specify an number argument for the score of
                                                  complexion correction. */
-#define SIXEL_OPTFLAG_IGNORE_DELAY     ('u')  /* -g, --ignore-delay: render GIF animation without delay */
+#define SIXEL_OPTFLAG_IGNORE_DELAY     ('g')  /* -g, --ignore-delay: render GIF animation without delay */
 #define SIXEL_OPTFLAG_STATIC           ('S')  /* -S, --static: render animated GIF as a static image */
 #define SIXEL_OPTFLAG_DIFFUSION        ('d')  /* -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE:
                                                  choose diffusion method which used with -p option.
