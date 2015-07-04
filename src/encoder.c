@@ -810,13 +810,12 @@ scroll_on_demand(
     char buffer[256];
     int result;
 
-    if (!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO)) {
+    if (!isatty(STDIN_FILENO) || !isatty(encoder->outfd)) {
         sixel_write_callback("\033[H", 3, &encoder->outfd);
         status = SIXEL_OK;
         goto end;
     }
-puts("a1");fflush(0);
-    result = ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
+    result = ioctl(encoder->outfd, TIOCGWINSZ, &size);
     if (result != 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message("ioctl() failed.");
@@ -1712,6 +1711,24 @@ error:
 }
 
 
+static int
+test3(void)
+{
+    int nret = EXIT_FAILURE;
+    int result;
+
+    result = wait_stdin(1000);
+    if (result != 0) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
 int
 sixel_encoder_tests_main(void)
 {
@@ -1721,7 +1738,8 @@ sixel_encoder_tests_main(void)
 
     static testcase const testcases[] = {
         test1,
-        test2
+        test2,
+        test3
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
