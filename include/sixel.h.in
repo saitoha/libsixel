@@ -776,25 +776,28 @@ typedef struct sixel_frame { int dummy; } sixel_frame_t;
 extern "C" {
 #endif
 
+/* create frame object */
+sixel_frame_t *
+sixel_frame_create(void);
+
 SIXELAPI unsigned char *
-sixel_frame_get_pixels(sixel_frame_t *frame);
+sixel_frame_get_pixels(sixel_frame_t /* in */ *frame);
 
 SIXELAPI void
-sixel_frame_ref(sixel_frame_t *frame);
+sixel_frame_ref(sixel_frame_t /* in */ *frame);
 
 SIXELAPI void
-sixel_frame_unref(sixel_frame_t *frame);
+sixel_frame_unref(sixel_frame_t /* in */ *frame);
 
 SIXELAPI SIXELSTATUS
 sixel_frame_init(
-    sixel_frame_t *frame,
-    unsigned char *pixels,
-    int width,
-    int height,
-    int pixelformat,
-    unsigned char *palette,
-    int ncolors
-);
+    sixel_frame_t   /* in */ *frame,
+    unsigned char   /* in */ *pixels,
+    int             /* in */ width,
+    int             /* in */ height,
+    int             /* in */ pixelformat,
+    unsigned char   /* in */ *palette,
+    int             /* in */ ncolors);
 
 /* get pixels */
 SIXELAPI unsigned char *
@@ -912,10 +915,10 @@ SIXELAPI sixel_encoder_t *
 sixel_encoder_create(void);
 
 SIXELAPI void
-sixel_encoder_ref(sixel_encoder_t *encoder);
+sixel_encoder_ref(sixel_encoder_t /* in */ *encoder);
 
 SIXELAPI void
-sixel_encoder_unref(sixel_encoder_t *encoder);
+sixel_encoder_unref(sixel_encoder_t /* in */ *encoder);
 
 SIXELAPI SIXELSTATUS
 sixel_encoder_set_cancel_flag(

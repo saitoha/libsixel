@@ -792,9 +792,12 @@ end:
 }
 
 
-static void
-scroll_on_demand(sixel_encoder_t *encoder, sixel_frame_t *frame)
+static SIXELSTATUS
+scroll_on_demand(
+    sixel_encoder_t /* in */ *encoder,
+    sixel_frame_t   /* in */ *frame)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
 #if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
     struct winsize size = {0, 0, 0, 0};
     struct termios old_termios;
@@ -805,51 +808,69 @@ scroll_on_demand(sixel_encoder_t *encoder, sixel_frame_t *frame)
     int cellheight;
     int scroll;
     char buffer[256];
+    int result;
 
-    if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)) {
-        ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
-        if (size.ws_ypixel > 0) {
-            if (sixel_frame_get_loop_no(frame) == 0 && sixel_frame_get_frame_no(frame) == 0) {
-                /* set the terminal to cbreak mode */
-                tcgetattr(STDIN_FILENO, &old_termios);
-                memcpy(&new_termios, &old_termios, sizeof(old_termios));
-                new_termios.c_lflag &= ~(ECHO | ICANON);
-                new_termios.c_cc[VMIN] = 1;
-                new_termios.c_cc[VTIME] = 0;
-                tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
-
-                /* request cursor position report */
-                sixel_write_callback("\033[6n", 4, &encoder->outfd);
-                if (wait_stdin(1000 * 1000) != (-1)) { /* wait 1 sec */
-                    if (scanf("\033[%d;%dR", &row, &col) == 2) {
-                        tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
-                         pixelheight = sixel_frame_get_height(frame);
-                         cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
-                         scroll = cellheight + row - size.ws_row + 1;
-                        if (scroll > 0) {
-                            sprintf(buffer, "\033[%dS\033[%dA", scroll, scroll);
-                            sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
-                        }
-                        sixel_write_callback("\0337", 2, &encoder->outfd);
-                    } else {
-                        sixel_write_callback("\033[H", 3, &encoder->outfd);
-                    }
-                } else {
-                    sixel_write_callback("\033[H", 3, &encoder->outfd);
-                }
-            } else {
-                sixel_write_callback("\0338", 2, &encoder->outfd);
-            }
-        } else {
-            sixel_write_callback("\033[H", 3, &encoder->outfd);
-        }
-    } else {
+    if (!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO)) {
         sixel_write_callback("\033[H", 3, &encoder->outfd);
+        status = SIXEL_OK;
+        goto end;
     }
+puts("a1");fflush(0);
+    result = ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
+    if (result != 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        sixel_helper_set_additional_message("ioctl() failed.");
+        goto end;
+    }
+    if (size.ws_ypixel <= 0) {
+        sixel_write_callback("\033[H", 3, &encoder->outfd);
+        status = SIXEL_OK;
+        goto end;
+    }
+    if (sixel_frame_get_loop_no(frame) != 0 ||
+        sixel_frame_get_frame_no(frame) != 0) {
+        sixel_write_callback("\0338", 2, &encoder->outfd);
+        status = SIXEL_OK;
+        goto end;
+    }
+    /* set the terminal to cbreak mode */
+    tcgetattr(STDIN_FILENO, &old_termios);
+    memcpy(&new_termios, &old_termios, sizeof(old_termios));
+    new_termios.c_lflag &= ~(ECHO | ICANON);
+    new_termios.c_cc[VMIN] = 1;
+    new_termios.c_cc[VTIME] = 0;
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
+
+    /* request cursor position report */
+    sixel_write_callback("\033[6n", 4, &encoder->outfd);
+    if (wait_stdin(1000 * 1000) == (-1)) { /* wait 1 sec */
+        sixel_write_callback("\033[H", 3, &encoder->outfd);
+        status = SIXEL_OK;
+        goto end;
+    }
+    if (scanf("\033[%d;%dR", &row, &col) != 2) {
+        sixel_write_callback("\033[H", 3, &encoder->outfd);
+        status = SIXEL_OK;
+        goto end;
+    }
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
+    pixelheight = sixel_frame_get_height(frame);
+    cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
+    scroll = cellheight + row - size.ws_row + 1;
+    if (scroll > 0) {
+        sprintf(buffer, "\033[%dS\033[%dA", scroll, scroll);
+        sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
+    }
+    sixel_write_callback("\0337", 2, &encoder->outfd);
 #else
     (void) frame;
     sixel_write_callback("\033[H", 3, &encoder->outfd);
 #endif
+
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
@@ -932,7 +953,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
     sixel_output_set_encode_policy(output, encoder->encode_policy);
 
     if (sixel_frame_get_multiframe(frame) && !encoder->fstatic) {
-        scroll_on_demand(encoder, frame);
+        (void) scroll_on_demand(encoder, frame);
     }
 
     if (encoder->cancel_flag && *encoder->cancel_flag) {
@@ -1648,6 +1669,49 @@ error:
 }
 
 
+static int
+test2(void)
+{
+    int nret = EXIT_FAILURE;
+    SIXELSTATUS status;
+    sixel_encoder_t *encoder = NULL;
+    sixel_frame_t *frame = NULL;
+
+    encoder = sixel_encoder_create();
+    if (encoder == NULL) {
+        goto error;
+    }
+
+    frame = sixel_frame_create();
+    if (encoder == NULL) {
+        goto error;
+    }
+
+    status = sixel_frame_init(frame,
+                              malloc(3),
+                              1,
+                              1,
+                              SIXEL_PIXELFORMAT_RGB888,
+                              NULL,
+                              0);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = scroll_on_demand(encoder, frame);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_encoder_unref(encoder);
+    sixel_frame_unref(frame);
+    return nret;
+}
+
+
 int
 sixel_encoder_tests_main(void)
 {
@@ -1657,6 +1721,7 @@ sixel_encoder_tests_main(void)
 
     static testcase const testcases[] = {
         test1,
+        test2
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
