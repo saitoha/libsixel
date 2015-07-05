@@ -81,14 +81,6 @@ typedef struct
 
 
 /* initialize a memory-decode context */
-static void
-gif_start_mem(gif_context_t *s, unsigned char const *buffer, int len)
-{
-    s->img_buffer = s->img_buffer_original = (unsigned char *) buffer;
-    s->img_buffer_end = (unsigned char *) buffer+len;
-}
-
-
 static unsigned char
 gif_get8(gif_context_t *s)
 {
@@ -104,20 +96,6 @@ gif_get16le(gif_context_t *s)
 {
     int z = gif_get8(s);
     return z + (gif_get8(s) << 8);
-}
-
-
-static void
-gif_skip(gif_context_t *s, int n)
-{
-    s->img_buffer += n;
-}
-
-
-static void
-gif_rewind(gif_context_t *s)
-{
-    s->img_buffer = s->img_buffer_original;
 }
 
 
@@ -175,7 +153,7 @@ gif_load_header(
     g->loop_count = (-1);
 
     if (g->flags & 0x80) {
-        gif_parse_colortable(s,g->pal, 2 << (g->flags & 7));
+        gif_parse_colortable(s, g->pal, 2 << (g->flags & 7));
     }
 
     status = SIXEL_OK;
@@ -358,9 +336,9 @@ gif_process_raster(
                 oldcode = -1;
                 first = 0;
             } else if (code == clear + 1) { /* end of stream code */
-                gif_skip(s, len);
+                s->img_buffer += len;
                 while ((len = gif_get8(s)) > 0) {
-                   gif_skip(s,len);
+                    s->img_buffer += len;
                 }
                 return SIXEL_OK;
             } else if (code <= avail) {
@@ -500,7 +478,7 @@ gif_load_next(
                     g->delay = gif_get16le(s); /* delay */
                     g->transparent = gif_get8(s);
                 } else {
-                    gif_skip(s, len);
+                    s->img_buffer += len;
                     break;
                 }
                 break;
@@ -531,7 +509,7 @@ gif_load_next(
                 break;
             }
             while ((len = gif_get8(s)) != 0) {
-                gif_skip(s, len);
+                s->img_buffer += len;
             }
             break;
 
@@ -579,7 +557,8 @@ load_gif(
     if (frame == NULL) {
         goto end;
     }
-    gif_start_mem(&s, buffer, size);
+    s.img_buffer = s.img_buffer_original = (unsigned char *)buffer;
+    s.img_buffer_end = (unsigned char *)buffer + size;
     memset(&g, 0, sizeof(g));
     status = gif_load_header(&s, &g);
     if (status != SIXEL_OK) {
@@ -599,7 +578,7 @@ load_gif(
 
         frame->frame_no = 0;
 
-        gif_rewind(&s);
+        s.img_buffer = s.img_buffer_original;
         status = gif_load_header(&s, &g);
         if (status != SIXEL_OK) {
             goto end;
@@ -663,7 +642,6 @@ test1(void)
 
     nret = EXIT_SUCCESS;
 
-error:
     return nret;
 }
 
@@ -692,8 +670,6 @@ error:
     return nret;
 }
 #endif  /* HAVE_TESTS */
-
-
 
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
