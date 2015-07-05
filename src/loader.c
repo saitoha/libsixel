@@ -1585,6 +1585,7 @@ test1(void)
     unsigned char *ptr = malloc(16);
     int nread;
 
+#ifdef HAVE_LIBCURL
     nread = memory_write(NULL, 1, 1, NULL);
     if (nread != 0) {
         goto error;
@@ -1599,6 +1600,7 @@ test1(void)
     if (nread != 0) {
         goto error;
     }
+#endif  /* HAVE_LIBCURL */
     nret = EXIT_SUCCESS;
 
 error:
