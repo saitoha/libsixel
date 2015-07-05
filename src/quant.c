@@ -811,7 +811,8 @@ computeColorMapFromInput(unsigned char const *data,
     }
 
     if (colorfreqtable.size <= reqColors) {
-        quant_trace(stderr, "Image already has few enough colors (<=%d).  "
+        quant_trace(stderr,
+                    "Image already has few enough colors (<=%d).  "
                     "Keeping same colors.\n", reqColors);
         /* *colormapP = colorfreqtable; */
         colormapP->size = colorfreqtable.size;

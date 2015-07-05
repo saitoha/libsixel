@@ -1744,6 +1744,16 @@ test4(void)
     status = sixel_encoder_setopt(encoder,
                                   SIXEL_OPTFLAG_LOOPMODE,
                                   "force");
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_encoder_setopt(encoder,
+                                  SIXEL_OPTFLAG_PIPE_MODE,
+                                  "force");
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
 
     nret = EXIT_SUCCESS;
 

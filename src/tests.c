@@ -39,6 +39,7 @@
 #include "encoder.h"
 #include "status.h"
 #include "loader.h"
+#include "fromgif.h"
 #include <sixel.h>
 
 #if HAVE_TESTS
@@ -50,6 +51,13 @@ main(int argc, char *argv[])
 
     (void) argc;
     (void) argv;
+
+    nret = sixel_fromgif_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("fromgif ok.");
 
     nret = sixel_loader_tests_main();
     if (nret != EXIT_SUCCESS) {
