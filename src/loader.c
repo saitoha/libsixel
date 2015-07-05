@@ -1581,11 +1581,12 @@ static int
 test1(void)
 {
     int nret = EXIT_FAILURE;
-    chunk_t chunk = {0, 0, 0};
     unsigned char *ptr = malloc(16);
-    int nread;
 
 #ifdef HAVE_LIBCURL
+    chunk_t chunk = {0, 0, 0};
+    int nread;
+
     nread = memory_write(NULL, 1, 1, NULL);
     if (nread != 0) {
         goto error;
@@ -1600,6 +1601,9 @@ test1(void)
     if (nread != 0) {
         goto error;
     }
+#else
+    nret = EXIT_SUCCESS;
+    goto error; 
 #endif  /* HAVE_LIBCURL */
     nret = EXIT_SUCCESS;
 
