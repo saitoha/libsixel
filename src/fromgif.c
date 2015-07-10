@@ -463,7 +463,7 @@ gif_load_next(
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
-            break;
+            goto end;
 
         case 0x21: /* Comment Extension. */
             switch (gif_get8(s)) {
@@ -484,7 +484,7 @@ gif_load_next(
                 break;
             case 0xFF: /* Application Extension */
                 len = gif_get8(s); /* block size */
-                if (s->img_buffer + len <= s->img_buffer_end) {
+                if (s->img_buffer + len > s->img_buffer_end) {
                     status = SIXEL_RUNTIME_ERROR;
                     goto end;
                 }
