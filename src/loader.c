@@ -1053,6 +1053,7 @@ load_with_builtin(
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
+
         status = load_png(&frame->pixels,
                           pchunk->buffer,
                           pchunk->size,
@@ -1193,7 +1194,7 @@ load_with_gdkpixbuf(
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        if (gdk_pixbuf_get_has_alpha(pixbuf)) {
+        if (stride / frame->width == 4) {
             frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
             depth = 4;
         } else {
@@ -1211,7 +1212,6 @@ load_with_gdkpixbuf(
                        frame->width * depth);
             }
         }
-
         status = fn_load(frame, context);
         if (status != SIXEL_OK) {
             goto end;

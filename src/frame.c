@@ -203,12 +203,13 @@ sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame)  /* frame object */
 }
 
 
-SIXELAPI int
+SIXELAPI SIXELSTATUS
 sixel_frame_strip_alpha(
     sixel_frame_t  /* in */ *frame,
     unsigned char  /* in */ *bgcolor
 )
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     int x;
     int y;
     unsigned char *src;
@@ -247,7 +248,9 @@ sixel_frame_strip_alpha(
         break;
     }
 
-    return 0;
+    status = SIXEL_OK;
+
+    return status;
 }
 
 
