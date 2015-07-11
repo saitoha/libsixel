@@ -742,6 +742,7 @@ output_sixel_with_macro(
     SIXELSTATUS status = SIXEL_OK;
     int dulation = 0;
     char buffer[256];
+    int nwrite;
 #if HAVE_USLEEP
     int lag = 0;
 # if HAVE_CLOCK
@@ -754,22 +755,51 @@ output_sixel_with_macro(
 #endif
     if (loop_count == 0) {
         if (encoder->macro_number >= 0) {
-            sprintf(buffer, "\033P%d;0;1!z", encoder->macro_number);
+            nwrite = sprintf(buffer, "\033P%d;0;1!z", encoder->macro_number);
         } else {
-            sprintf(buffer, "\033P%d;0;1!z", frame_no);
+            nwrite = sprintf(buffer, "\033P%d;0;1!z", frame_no);
         }
-        sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "load_image_callback: sprintf() failed.");
+            goto end;
+        }
+        nwrite = sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "output_sixel_with_macro: sixel_write_callback() failed.");
+            goto end;
+        }
 
         status = sixel_encode(frame, sx, sy, /* unused */ 3, dither, context);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
 
-        sixel_write_callback("\033\\", 2, &encoder->outfd);
+        nwrite = sixel_write_callback("\033\\", 2, &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "output_sixel_with_macro: sixel_write_callback() failed.");
+            goto end;
+        }
     }
     if (encoder->macro_number < 0) {
-        sprintf(buffer, "\033[%d*z", frame_no);
-        sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
+        nwrite = sprintf(buffer, "\033[%d*z", frame_no);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "output_sixel_with_macro: sprintf() failed.");
+        }
+        nwrite = sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "output_sixel_with_macro: sixel_write_callback() failed.");
+            goto end;
+        }
 #if HAVE_USLEEP
         if (delay > 0 && !encoder->fignore_delay) {
 # if HAVE_CLOCK
@@ -809,9 +839,16 @@ scroll_on_demand(
     int scroll;
     char buffer[256];
     int result;
+    int nwrite;
 
     if (!isatty(STDIN_FILENO) || !isatty(encoder->outfd)) {
-        sixel_write_callback("\033[H", 3, &encoder->outfd);
+        nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "scroll_on_demand: sixel_write_callback() failed.");
+            goto end;
+        }
         status = SIXEL_OK;
         goto end;
     }
@@ -822,13 +859,25 @@ scroll_on_demand(
         goto end;
     }
     if (size.ws_ypixel <= 0) {
-        sixel_write_callback("\033[H", 3, &encoder->outfd);
+        nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "scroll_on_demand: sixel_write_callback() failed.");
+            goto end;
+        }
         status = SIXEL_OK;
         goto end;
     }
     if (sixel_frame_get_loop_no(frame) != 0 ||
         sixel_frame_get_frame_no(frame) != 0) {
-        sixel_write_callback("\0338", 2, &encoder->outfd);
+        nwrite = sixel_write_callback("\0338", 2, &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "scroll_on_demand: sixel_write_callback() failed.");
+            goto end;
+        }
         status = SIXEL_OK;
         goto end;
     }
@@ -841,14 +890,32 @@ scroll_on_demand(
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
 
     /* request cursor position report */
-    sixel_write_callback("\033[6n", 4, &encoder->outfd);
+    nwrite = sixel_write_callback("\033[6n", 4, &encoder->outfd);
+    if (nwrite < 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        sixel_helper_set_additional_message(
+            "scroll_on_demand: sixel_write_callback() failed.");
+        goto end;
+    }
     if (wait_stdin(1000 * 1000) == (-1)) { /* wait 1 sec */
-        sixel_write_callback("\033[H", 3, &encoder->outfd);
+        nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "scroll_on_demand: sixel_write_callback() failed.");
+            goto end;
+        }
         status = SIXEL_OK;
         goto end;
     }
     if (scanf("\033[%d;%dR", &row, &col) != 2) {
-        sixel_write_callback("\033[H", 3, &encoder->outfd);
+        nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "scroll_on_demand: sixel_write_callback() failed.");
+            goto end;
+        }
         status = SIXEL_OK;
         goto end;
     }
@@ -857,13 +924,36 @@ scroll_on_demand(
     cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
     scroll = cellheight + row - size.ws_row + 1;
     if (scroll > 0) {
-        sprintf(buffer, "\033[%dS\033[%dA", scroll, scroll);
-        sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
+        nwrite = sprintf(buffer, "\033[%dS\033[%dA", scroll, scroll);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "scroll_on_demand: sprintf() failed.");
+        }
+        nwrite = sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "scroll_on_demand: sixel_write_callback() failed.");
+            goto end;
+        }
     }
-    sixel_write_callback("\0337", 2, &encoder->outfd);
+    nwrite = sixel_write_callback("\0337", 2, &encoder->outfd);
+    if (nwrite < 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        sixel_helper_set_additional_message(
+            "scroll_on_demand: sixel_write_callback() failed.");
+        goto end;
+    }
 #else
     (void) frame;
-    sixel_write_callback("\033[H", 3, &encoder->outfd);
+    nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
+    if (nwrite < 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        sixel_helper_set_additional_message(
+            "scroll_on_demand: sixel_write_callback() failed.");
+        goto end;
+    }
 #endif
 
     status = SIXEL_OK;
@@ -880,6 +970,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
     sixel_encoder_t *encoder;
     sixel_dither_t *dither = NULL;
     sixel_output_t *output = NULL;
+    int nwrite;
 
     encoder = (sixel_encoder_t *)data;
 
@@ -996,7 +1087,13 @@ load_image_callback(sixel_frame_t *frame, void *data)
     }
 
     if (encoder->cancel_flag && *encoder->cancel_flag) {
-        sixel_write_callback("\x18\033\\", 3, &encoder->outfd);
+        nwrite = sixel_write_callback("\x18\033\\", 3, &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "load_image_callback: sixel_write_callback() failed.");
+            goto end;
+        }
         status = SIXEL_INTERRUPTED;
     }
 
