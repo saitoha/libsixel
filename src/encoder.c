@@ -828,6 +828,7 @@ scroll_on_demand(
     sixel_frame_t   /* in */ *frame)
 {
     SIXELSTATUS status = SIXEL_FALSE;
+    int nwrite;
 #if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
     struct winsize size = {0, 0, 0, 0};
     struct termios old_termios;
@@ -839,7 +840,6 @@ scroll_on_demand(
     int scroll;
     char buffer[256];
     int result;
-    int nwrite;
 
     if (!isatty(STDIN_FILENO) || !isatty(encoder->outfd)) {
         nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
