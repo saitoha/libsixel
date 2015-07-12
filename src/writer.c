@@ -96,12 +96,14 @@ write_png_to_file(
             status = SIXEL_BAD_ARGUMENT;
             sixel_helper_set_additional_message(
                 "write_png_to_file: no palette is given");
-            return status;
+            goto end;
         }
         new_pixels = malloc(width * height * 4);
         if (new_pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
-            return status;
+            sixel_helper_set_additional_message(
+                "write_png_to_file: malloc() failed");
+            goto end;
         }
         src = new_pixels + width * height * 3;
         dst = pixels = new_pixels;
@@ -124,13 +126,15 @@ write_png_to_file(
             status = SIXEL_BAD_ARGUMENT;
             sixel_helper_set_additional_message(
                 "write_png_to_file: no palette is given");
-            return status;
+            goto end;
         }
         src = data;
         dst = pixels = new_pixels = malloc(width * height * 3);
         if (new_pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
-            return status;
+            sixel_helper_set_additional_message(
+                "write_png_to_file: malloc() failed");
+            goto end;
         }
         for (i = 0; i < width * height; ++i, ++src) {
             *dst++ = *(palette + *src * 3 + 0);
@@ -146,7 +150,9 @@ write_png_to_file(
         dst = pixels = new_pixels = malloc(width * height * 3);
         if (new_pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
-            return status;
+            sixel_helper_set_additional_message(
+                "write_png_to_file: malloc() failed");
+            goto end;
         }
         if (palette) {
             for (i = 0; i < width * height; ++i, ++src) {
@@ -174,7 +180,9 @@ write_png_to_file(
         pixels = new_pixels = malloc(width * height * 3);
         if (new_pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
-            return status;
+            sixel_helper_set_additional_message(
+                "write_png_to_file: malloc() failed");
+            goto end;
         }
         status = sixel_helper_normalize_pixelformat(pixels,
                                                     &pixelformat,
@@ -211,7 +219,9 @@ write_png_to_file(
     rows = malloc(height * sizeof(unsigned char *));
     if (rows == NULL) {
         status = SIXEL_BAD_ALLOCATION;
-        return status;
+        sixel_helper_set_additional_message(
+            "write_png_to_file: malloc() failed");
+        goto end;
     }
     for (y = 0; y < height; ++y) {
         rows[y] = pixels + width * 3 * y;
@@ -267,7 +277,9 @@ end:
     }
 #if HAVE_LIBPNG
     free(rows);
-    png_destroy_write_struct(&png_ptr, &info_ptr);
+    if (png_ptr) {
+        png_destroy_write_struct(&png_ptr, &info_ptr);
+    }
 #else
     free(png_data);
 #endif  /* HAVE_LIBPNG */
