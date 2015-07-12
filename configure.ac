@@ -191,6 +191,7 @@ AC_CHECK_HEADERS([memory.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
+                  io.h \
                   errno.h \
                   limits.h \
                   sys/time.h \
