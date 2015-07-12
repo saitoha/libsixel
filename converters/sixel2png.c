@@ -38,6 +38,10 @@
 # include <fcntl.h>
 #endif
 
+#if HAVE_IO_H
+# include <io.h>
+#endif
+
 #if HAVE_UNISTD_H
 # include <unistd.h>  /* getopt */
 #endif
