@@ -19,39 +19,38 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_FRAME_H
-#define LIBSIXEL_FRAME_H
+#ifndef LIBSIXEL_CHUNK_H
+#define LIBSIXEL_CHUNK_H
 
-/* frame object */
-typedef struct sixel_frame {
-    unsigned int ref;         /* reference counter */
-    unsigned char *pixels;    /* loaded pixel data */
-    unsigned char *palette;   /* loaded palette data */
-    int width;                /* frame width */
-    int height;               /* frame height */
-    int ncolors;              /* palette colors */
-    int pixelformat;          /* one of enum pixelFormat */
-    int delay;                /* delay in msec */
-    int frame_no;             /* frame number */
-    int loop_count;           /* loop count */
-    int multiframe;           /* whether the image has multiple frames */
-    int transparent;          /* -1(no transparent) or >= 0(index of transparent color) */
-} sixel_frame_t;
+/* chunk object */
+typedef struct sixel_chunk
+{
+    unsigned char *buffer;
+    size_t size;
+    size_t max_size;
+} sixel_chunk_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#if HAVE_TESTS
-int
-sixel_dither_tests_main(void);
-#endif
+SIXELSTATUS
+sixel_chunk_new(
+    sixel_chunk_t   /* out */ **ppchunk,
+    char const      /* in */  *filename,
+    int             /* in */  finsecure,
+    int const       /* in */  *cancel_flag);
+
+
+void
+sixel_chunk_destroy(
+    sixel_chunk_t * const /* in */ pchunk);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LIBSIXEL_FRAME_H */
+#endif /* LIBSIXEL_CHUNK_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
