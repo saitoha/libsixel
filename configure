@@ -13300,6 +13300,7 @@ for ac_header in memory.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
+                  io.h \
                   errno.h \
                   sys/time.h \
                   time.h \
