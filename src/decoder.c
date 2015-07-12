@@ -56,6 +56,9 @@
 #if HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
 #endif
+#if HAVE_IO_H
+# include <io.h>
+#endif
 
 #include "decoder.h"
 #include <sixel.h>
