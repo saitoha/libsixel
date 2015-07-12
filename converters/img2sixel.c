@@ -262,6 +262,20 @@ void show_help(void)
             "-v, --verbose              show debugging info\n"
             "-V, --version              show version and license info\n"
             "-H, --help                 show this help\n"
+            "\n"
+            "Environment variables:\n"
+            "SIXEL_BGCOLOR              specify background color.\n"
+            "                           overrided by -B(--bgcolor) option.\n"
+            "                           represented by the following\n"
+            "                           syntax:\n"
+            "                             #rgb\n"
+            "                             #rrggbb\n"
+            "                             #rrrgggbbb\n"
+            "                             #rrrrggggbbbb\n"
+            "                             rgb:r/g/b\n"
+            "                             rgb:rr/gg/bb\n"
+            "                             rgb:rrr/ggg/bbb\n"
+            "                             rgb:rrrr/gggg/bbbb\n"
             );
 }
 

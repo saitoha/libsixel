@@ -473,6 +473,20 @@ Options:
 -v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
+
+Environment variables:
+SIXEL_BGCOLOR              specify background color.
+                           overrided by -B(--bgcolor) option.
+                           represented by the following
+                           syntax:
+                             #rgb
+                             #rrggbb
+                             #rrrgggbbb
+                             #rrrrggggbbbb
+                             rgb:r/g/b
+                             rgb:rr/gg/bb
+                             rgb:rrr/ggg/bbb
+                             rgb:rrrr/gggg/bbbb
 ```
 
 Convert a jpeg image file into a sixel file
