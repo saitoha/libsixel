@@ -42,6 +42,10 @@
 # include <fcntl.h>
 #endif
 
+#if HAVE_IO_H
+# include <io.h>
+#endif
+
 #if !defined(HAVE_MEMCPY)
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
 #endif

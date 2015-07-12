@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.4.12], [user@zuse.jp])
+AC_INIT([sixel], [1.4.13], [user@zuse.jp])
 LS_LT_CURRENT=1
 LS_LT_REVISION=3
 LS_LT_AGE=0
@@ -156,6 +156,7 @@ AC_CHECK_HEADERS([memory.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
+                  io.h \
                   errno.h \
                   sys/time.h \
                   time.h \
@@ -273,8 +274,12 @@ if test x$with_gd != xno; then
     AC_CHECK_HEADER([gd.h],
                     [AC_CHECK_LIB([gd],
                                   [gdImageCreateFromGifPtr],
-                                  [have_gd="yes" GD_LIBS=-lgd],
+                                  [have_gd="yes"
+                                   GD_CFLAGS=$ADDED_CFLAGS
+                                   GD_LIBS=$ADDED_LIBS],
                                   [have_gd="no"])])
+    CFLAGS=$CFLAGS_BACKUP
+    LDFLAGS=$LDFLAGS_BACKUP
     if test x${PKG_CONFIG} != x; then
         if test x$have_gd != xyes; then
             PKG_CHECK_MODULES(GD, [gdlib], [have_gd=yes], [have_gd=no])
@@ -360,8 +365,12 @@ if test x$with_libcurl != xno; then
         AC_CHECK_HEADER([curl/curl.h],
                         [AC_CHECK_LIB([curl],
                                       [curl_easy_cleanup],
-                                      [have_curl=yes LIBCURL_LIBS=-lcurl],
+                                      [have_curl=yes
+                                       LIBCURL_CFLAGS=$ADDED_CFLAGS
+                                       LIBCURL_LIBS=$ADDED_LIBS],
                                       [have_curl=no])])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_curl != xyes; then
             if test x${PKG_CONFIG} != x; then
                 PKG_CHECK_MODULES(LIBCURL,
@@ -409,8 +418,12 @@ if test x$with_jpeg != xno; then
         AC_CHECK_HEADER([jpeglib.h],
                         [AC_CHECK_LIB([jpeg],
                                       [jpeg_read_header],
-                                      [have_jpeg=yes LIBJPEG_LIBS=-ljpeg],
+                                      [have_jpeg=yes
+                                       LIBJPEG_CFLAGS=$ADDED_CFLAGS
+                                       LIBJPEG_LIBS=$ADDED_LIBS],
                                       [have_jpeg=no])])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
     fi
     if test x$have_jpeg = xyes; then
         AC_DEFINE(HAVE_JPEG, 1, [whether jpeg codec library is available])
@@ -451,8 +464,12 @@ if test x$with_png != xno; then
         AC_CHECK_HEADER([png.h],
                         [AC_CHECK_LIB([png],
                                       [png_check_sig],
-                                      [have_png=yes LIBPNG_LIBS=-lpng],
+                                      [have_png=yes
+                                       LIBPNG_CFLAGS=$ADDED_CFLAGS
+                                       LIBPNG_LIBS=$ADDED_LIBS],
                                       [have_png=no])])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_png != xyes; then
             if test x${PKG_CONFIG} != x; then
                 PKG_CHECK_MODULES(LIBPNG,

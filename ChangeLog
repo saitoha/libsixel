@@ -1,3 +1,11 @@
+2015-07-12  Hayaki Saito <user@zuse.jp>
+
+  * config.h.in, configure, configure.ac, converters/loader.c: Add missing
+  header: _setmode() requires <io.h> inclusion
+
+  * Makefile.in, configure, configure.ac: Hotfix for broken
+  libcurl/libpng/libjpeg detection
+
 2015-06-05  Hayaki Saito <user@zuse.jp>
 
   * converters/loader.c: Copy gdk's pixbuf memory to libsixel-internal chunk
