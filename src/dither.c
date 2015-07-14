@@ -274,7 +274,7 @@ sixel_dither_create(
     datasize = ncolors * 3;
     wholesize = headsize + datasize;
 
-    dither = malloc(wholesize);
+    dither = (sixel_dither_t *)malloc(wholesize);
     if (dither != NULL) {
         dither->ref = 1;
         dither->palette = (unsigned char*)(dither + 1);
@@ -467,7 +467,7 @@ sixel_dither_initialize(
     if (pixelformat != SIXEL_PIXELFORMAT_RGB888) {
 
         /* normalize pixelformat */
-        normalized_pixels = malloc(width * height * 3);
+        normalized_pixels = (unsigned char *)malloc(width * height * 3);
         if (normalized_pixels == NULL) {
             goto end;
         }
@@ -642,7 +642,7 @@ sixel_dither_apply_palette(
     unsigned char *input_pixels;
 
     bufsize = width * height * sizeof(unsigned char);
-    dest = malloc(bufsize);
+    dest = (unsigned char *)malloc(bufsize);
     if (dest == NULL) {
         goto end;
     }
@@ -656,9 +656,9 @@ sixel_dither_apply_palette(
         if (dither->palette != pal_mono_dark && dither->palette != pal_mono_light) {
             cachesize = (1 << 3 * 5) * sizeof(unsigned short);
 #if HAVE_CALLOC
-            dither->cachetable = calloc(cachesize, 1);
+            dither->cachetable = (unsigned short *)calloc(cachesize, 1);
 #else
-            dither->cachetable = malloc(cachesize);
+            dither->cachetable = (unsigned short *)malloc(cachesize);
             memset(dither->cachetable, 0, cachesize);
 #endif
         }
@@ -666,7 +666,7 @@ sixel_dither_apply_palette(
 
     if (dither->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         /* normalize pixelformat */
-        normalized_pixels = malloc(width * height * 3);
+        normalized_pixels = (unsigned char *)malloc(width * height * 3);
         if (normalized_pixels == NULL) {
             goto end;
         }

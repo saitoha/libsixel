@@ -22,9 +22,17 @@
 #ifndef LIBSIXEL_LOADER_H
 #define LIBSIXEL_LOADER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if HAVE_TESTS
 int
 sixel_loader_tests_main(void);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* LIBSIXEL_LOADER_H */

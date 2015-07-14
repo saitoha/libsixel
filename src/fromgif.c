@@ -178,10 +178,10 @@ gif_init_frame(
     frame->delay = pg->delay;
     ncolors = 2 << (pg->flags & 7);
     if (frame->palette == NULL) {
-        frame->palette = malloc(ncolors * 3);
+        frame->palette = (unsigned char *)malloc(ncolors * 3);
     } else if (frame->ncolors < ncolors) {
         free(frame->palette);
-        frame->palette = malloc(ncolors * 3);
+        frame->palette = (unsigned char *)malloc(ncolors * 3);
     }
     if (frame->palette == NULL) {
         status = SIXEL_BAD_ALLOCATION;
@@ -191,7 +191,7 @@ gif_init_frame(
     if (frame->ncolors <= reqcolors && fuse_palette) {
         frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
         free(frame->pixels);
-        frame->pixels = malloc(frame->width * frame->height);
+        frame->pixels = (unsigned char *)malloc(frame->width * frame->height);
         if (frame->pixels == NULL) {
             sixel_helper_set_additional_message(
                 "malloc() failed in gif_init_frame().");
@@ -228,7 +228,7 @@ gif_init_frame(
         }
     } else {
         frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        frame->pixels = malloc(pg->w * pg->h * 3);
+        frame->pixels = (unsigned char *)malloc(pg->w * pg->h * 3);
         if (frame->pixels == NULL) {
             sixel_helper_set_additional_message(
                 "malloc() failed in gif_init_frame().");

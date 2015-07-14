@@ -40,12 +40,10 @@ load_gif(
     void          /* in */ *context      /* private data for callback */
 );
 
-
 #if HAVE_TESTS
 int
 sixel_fromgif_tests_main(void);
 #endif
-
 
 #ifdef __cplusplus
 }

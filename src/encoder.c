@@ -73,7 +73,7 @@ arg_strdup(char const *s)
 {
     char *p;
 
-    p = malloc(strlen(s) + 1);
+    p = (char *)malloc(strlen(s) + 1);
     if (p) {
         strcpy(p, s);
     }
@@ -94,7 +94,7 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
     struct color const *pcolor;
     pcolor = lookup_rgb(s, strlen(s));
     if (pcolor) {
-        *bgcolor = malloc(3);
+        *bgcolor = (unsigned char *)malloc(3);
         if (*bgcolor == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto end;
@@ -145,7 +145,7 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
-        *bgcolor = malloc(3);
+        *bgcolor = (unsigned char *)malloc(3);
         if (*bgcolor == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto end;
@@ -177,7 +177,7 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
-        *bgcolor = malloc(3);
+        *bgcolor = (unsigned char *)malloc(3);
         if (*bgcolor == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto end;
@@ -685,7 +685,7 @@ output_sixel_without_macro(
         goto end;
     }
 
-    p = malloc(width * height * depth);
+    p = (unsigned char *)malloc(width * height * depth);
     if (p == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto end;
@@ -1120,7 +1120,7 @@ sixel_encoder_create(void)
     sixel_encoder_t *encoder;
     char const *default_color;
 
-    encoder = malloc(sizeof(sixel_encoder_t));
+    encoder = (sixel_encoder_t *)malloc(sizeof(sixel_encoder_t));
     if (encoder == NULL) {
         return NULL;
     }
@@ -1784,7 +1784,7 @@ test2(void)
     }
 
     status = sixel_frame_init(frame,
-                              malloc(3),
+                              (unsigned char *)malloc(3),
                               1,
                               1,
                               SIXEL_PIXELFORMAT_RGB888,

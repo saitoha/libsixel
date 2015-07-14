@@ -50,9 +50,10 @@ enum {
 /* implementation */
 
 static void
-penetrate(sixel_output_t *context, int nwrite,
-          char *dcs_start,
-          char *dcs_end,
+penetrate(sixel_output_t *context,
+          int nwrite,
+          char const *dcs_start,
+          char const *dcs_end,
           int const dcs_start_size,
           int const dcs_end_size)
 {
@@ -61,11 +62,11 @@ penetrate(sixel_output_t *context, int nwrite,
                         - dcs_start_size - dcs_end_size;
 
     for (pos = 0; pos < nwrite; pos += splitsize) {
-        context->fn_write(dcs_start, dcs_end_size, context->priv);
+        context->fn_write((char *)dcs_start, dcs_end_size, context->priv);
         context->fn_write(((char *)context->buffer) + pos,
                           nwrite - pos < splitsize ? nwrite - pos: splitsize,
                           context->priv);
-        context->fn_write(dcs_end, dcs_end_size, context->priv);
+        context->fn_write((char *)dcs_end, dcs_end_size, context->priv);
     }
 }
 
@@ -75,9 +76,12 @@ sixel_advance(sixel_output_t *context, int nwrite)
 {
     if ((context->pos += nwrite) >= SIXEL_OUTPUT_PACKET_SIZE) {
         if (context->penetrate_multiplexer) {
-            penetrate(context, SIXEL_OUTPUT_PACKET_SIZE,
-                      DCS_START_7BIT, DCS_END_7BIT,
-                      DCS_START_7BIT_SIZE, DCS_END_7BIT_SIZE);
+            penetrate(context,
+                      SIXEL_OUTPUT_PACKET_SIZE,
+                      DCS_START_7BIT,
+                      DCS_END_7BIT,
+                      DCS_START_7BIT_SIZE,
+                      DCS_END_7BIT_SIZE);
         } else {
             context->fn_write((char *)context->buffer,
                               SIXEL_OUTPUT_PACKET_SIZE, context->priv);
@@ -97,9 +101,9 @@ sixel_putc(char *buffer, unsigned char value)
 
 
 static void
-sixel_puts(char *buffer, char *value, int size)
+sixel_puts(char *buffer, char const *value, int size)
 {
-    memcpy(buffer, value, size);
+    memcpy(buffer, (void *)value, size);
 }
 
 
@@ -286,11 +290,13 @@ sixel_encode_header(int width, int height, sixel_output_t *context)
     if (!context->skip_dcs_envelope) {
         if (context->has_8bit_control) {
             sixel_puts((char *)context->buffer + context->pos,
-                       DCS_START_8BIT, DCS_START_8BIT_SIZE);
+                       DCS_START_8BIT,
+                       DCS_START_8BIT_SIZE);
             sixel_advance(context, DCS_START_8BIT_SIZE);
         } else {
             sixel_puts((char *)context->buffer + context->pos,
-                       DCS_START_7BIT, DCS_START_7BIT_SIZE);
+                       DCS_START_7BIT,
+                       DCS_START_7BIT_SIZE);
             sixel_advance(context, DCS_START_7BIT_SIZE);
         }
     }
@@ -692,9 +698,11 @@ sixel_encode_footer(sixel_output_t *context)
     if (context->pos > 0) {
         if (context->penetrate_multiplexer) {
             penetrate(context, context->pos,
-                      DCS_START_7BIT, DCS_END_7BIT,
-                      DCS_START_7BIT_SIZE, DCS_END_7BIT_SIZE);
-            context->fn_write(DCS_7BIT("\033") DCS_7BIT("\\"),
+                      DCS_START_7BIT,
+                      DCS_END_7BIT,
+                      DCS_START_7BIT_SIZE,
+                      DCS_END_7BIT_SIZE);
+            context->fn_write((char *)DCS_7BIT("\033") DCS_7BIT("\\"),
                               (DCS_START_7BIT_SIZE + 1 + DCS_END_7BIT_SIZE) * 2,
                               context->priv);
         }
@@ -721,7 +729,7 @@ sixel_encode_dither(unsigned char *pixels, int width, int height,
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
-        paletted_pixels = malloc(width * height * 3);
+        paletted_pixels = (unsigned char *)malloc(width * height * 3);
         if (paletted_pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto end;
@@ -1189,7 +1197,7 @@ sixel_encode_highcolor(unsigned char *pixels, int width, int height,
 
     if (dither->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         /* normalize pixelfromat */
-        normalized_pixels = malloc(width * height * 3);
+        normalized_pixels = (unsigned char *)malloc(width * height * 3);
         if (normalized_pixels == NULL) {
             goto error;
         }
@@ -1336,7 +1344,7 @@ sixel_encode_highcolor(unsigned char *pixels, int width, int height,
             }
 
             if (++mod_y == 6) {
-                mptr = memset(marks, 0, width * 6);
+                mptr = (unsigned char *)memset(marks, 0, width * 6);
                 mod_y = 0;
             }
         }

@@ -112,9 +112,9 @@ static int
 compareplane(const void * const arg1,
              const void * const arg2)
 {
-
-    const struct tupleint * const * const comparandPP  = arg1;
-    const struct tupleint * const * const comparatorPP = arg2;
+    typedef const struct tupleint * const * const sortarg;
+    sortarg comparandPP  = (sortarg) arg1;
+    sortarg comparatorPP = (sortarg) arg2;
 
     return (*comparandPP)->tuple[compareplanePlane] -
         (*comparatorPP)->tuple[compareplanePlane];
@@ -137,6 +137,12 @@ alloctupletable(
     SIXELSTATUS status = SIXEL_FALSE;
     char message[256];
     int nwrite;
+    unsigned int mainTableSize;
+    unsigned int tupleIntSize;
+    unsigned int allocSize;
+    void * pool;
+    tupletable tbl;
+    unsigned int i;
 
     if (UINT_MAX / sizeof(struct tupleint) < size) {
         nwrite = sprintf(message,
@@ -149,9 +155,8 @@ alloctupletable(
         goto end;
     }
 
-    unsigned int const mainTableSize = size * sizeof(struct tupleint *);
-    unsigned int const tupleIntSize =
-        sizeof(struct tupleint) - sizeof(sample)
+    mainTableSize = size * sizeof(struct tupleint *);
+    tupleIntSize = sizeof(struct tupleint) - sizeof(sample)
         + depth * sizeof(sample);
 
     /* To save the enormous amount of time it could take to allocate
@@ -169,8 +174,7 @@ alloctupletable(
         goto end;
     }
 
-    unsigned int const allocSize = mainTableSize + size * tupleIntSize;
-    void * pool;
+    allocSize = mainTableSize + size * tupleIntSize;
 
     pool = malloc(allocSize);
     if (pool == NULL) {
@@ -182,9 +186,7 @@ alloctupletable(
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    tupletable const tbl = (tupletable) pool;
-
-    unsigned int i;
+    tbl = (tupletable) pool;
 
     for (i = 0; i < size; ++i)
         tbl[i] = (struct tupleint *)
@@ -707,9 +709,9 @@ computeHistogram(unsigned char const    /* in */  *data,
     quant_trace(stderr, "making histogram...\n");
 
 #if HAVE_CALLOC
-    histogram = calloc(1 << depth * 5, sizeof(unit_t));
+    histogram = (unit_t *)calloc(1 << depth * 5, sizeof(unit_t));
 #else
-    histogram = malloc((1 << depth * 5) * sizeof(unit_t));
+    histogram = (unit_t *)malloc((1 << depth * 5) * sizeof(unit_t));
 #endif
     if (histogram == NULL) {
         sixel_helper_set_additional_message(
@@ -1181,7 +1183,7 @@ sixel_quant_make_palette(unsigned char const *data,
     }
     *ncolors = colormap.size;
     quant_trace(stderr, "tupletable size: %d\n", *ncolors);
-    palette = malloc(*ncolors * depth);
+    palette = (unsigned char *)malloc(*ncolors * depth);
     for (i = 0; i < *ncolors; i++) {
         for (n = 0; n < depth; ++n) {
             palette[i * depth + n] = colormap.table[i]->tuple[n];
@@ -1282,9 +1284,9 @@ sixel_quant_apply_palette(unsigned char *data,
     indextable = cachetable;
     if (cachetable == NULL && f_lookup == lookup_fast) {
 #if !HAVE_CALLOC
-        indextable = malloc((1 << depth * 5) * sizeof(unsigned short));
+        indextable = (unsigned short *)malloc((1 << depth * 5) * sizeof(unsigned short));
 #else
-        indextable = calloc(1 << depth * 5, sizeof(unsigned short));
+        indextable = (unsigned short *)calloc(1 << depth * 5, sizeof(unsigned short));
 #endif
         if (!indextable) {
             quant_trace(stderr, "Unable to allocate memory for indextable.\n");

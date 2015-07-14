@@ -217,19 +217,33 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
              int                        /* out */ *ncolors,   /* palette size (<= 256) */
              sixel_allocator_function   /* out */ allocator)  /* malloc function */
 {
-    int n, i, r, g, b, sixel_vertical_mask, c;
-    int posision_x, posision_y;
-    int max_x, max_y;
-    int attributed_pan, attributed_pad;
-    int attributed_ph, attributed_pv;
-    int repeat_count, color_index;
+    int n;
+    int i;
+    int r;
+    int g;
+    int b;
+    int sixel_vertical_mask;
+    int c;
+    int posision_x;
+    int posision_y;
+    int max_x;
+    int max_y;
+    int attributed_pan;
+    int attributed_pad;
+    int attributed_ph;
+    int attributed_pv;
+    int repeat_count;
+    int color_index;
     int max_color_index;
     int background_color_index;
     int param[10];
     int sixel_palet[SIXEL_PALETTE_MAX];
-    unsigned char *imbuf, *dmbuf;
-    int imsx, imsy;
-    int dmsx, dmsy;
+    unsigned char *imbuf;
+    unsigned char *dmbuf;
+    int imsx;
+    int imsy;
+    int dmsx;
+    int dmsy;
     int y;
 
     (void) len;
@@ -246,7 +260,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
     imsx = 2048;
     imsy = 2048;
-    imbuf = malloc(imsx * imsy);
+    imbuf = (unsigned char *)malloc(imsx * imsy);
 
     if (imbuf == NULL) {
         return (-1);
@@ -361,7 +375,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
             if (imsx < attributed_ph || imsy < attributed_pv) {
                 dmsx = imsx > attributed_ph ? imsx : attributed_ph;
                 dmsy = imsy > attributed_pv ? imsy : attributed_pv;
-                dmbuf = malloc(dmsx * dmsy);
+                dmbuf = (unsigned char *)malloc(dmsx * dmsy);
                 if (dmbuf == NULL) {
                     free(imbuf);
                     return (-1);
@@ -435,7 +449,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
                 dmsx = nx;
                 dmsy = ny;
-                dmbuf = malloc(dmsx * dmsy);
+                dmbuf = (unsigned char *)malloc(dmsx * dmsy);
                 if (dmbuf == NULL) {
                     free(imbuf);
                     return (-1);
@@ -518,7 +532,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     if (imsx > max_x || imsy > max_y) {
         dmsx = max_x;
         dmsy = max_y;
-        if ((dmbuf = malloc(dmsx * dmsy)) == NULL) {
+        if ((dmbuf = (unsigned char *)malloc(dmsx * dmsy)) == NULL) {
             free(imbuf);
             return (-1);
         }
@@ -535,13 +549,13 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     *pheight = imsy;
     *ncolors = max_color_index + 1;
     if (allocator) {
-        *pixels = allocator(imsx * imsy);
+        *pixels = (unsigned char *)allocator(imsx * imsy);
         memcpy(*pixels, imbuf, imsx * imsy);
         free(imbuf);
-        *palette = allocator(*ncolors * 3);
+        *palette = (unsigned char *)allocator(*ncolors * 3);
     } else {
         *pixels = imbuf;
-        *palette = malloc(*ncolors * 3);
+        *palette = (unsigned char *)malloc(*ncolors * 3);
     }
     for (n = 0; n < *ncolors; ++n) {
         (*palette)[n * 3 + 0] = sixel_palet[n] >> 16 & 0xff;

@@ -27,9 +27,6 @@ extern "C" {
 #endif
 
 /* exported functions */
-
-/* image scaling api */
-
 unsigned char *
 load_pnm(unsigned char *p, int len,
          int *psx, int *psy,
