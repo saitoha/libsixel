@@ -830,7 +830,7 @@ tty_cbreak(struct termios *old_termios, struct termios *new_termios)
     int ret;
 
     /* set the terminal to cbreak mode */
-    ret = tcgetattr(STDIN_FILENO, &old_termios);
+    ret = tcgetattr(STDIN_FILENO, old_termios);
     if (ret != 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message(
@@ -838,12 +838,12 @@ tty_cbreak(struct termios *old_termios, struct termios *new_termios)
         goto end;
     }
 
-    (void) memcpy(&new_termios, &old_termios, sizeof(old_termios));
-    new_termios.c_lflag &= ~(ECHO | ICANON);
-    new_termios.c_cc[VMIN] = 1;
-    new_termios.c_cc[VTIME] = 0;
+    (void) memcpy(new_termios, old_termios, sizeof(*old_termios));
+    new_termios->c_lflag &= ~(ECHO | ICANON);
+    new_termios->c_cc[VMIN] = 1;
+    new_termios->c_cc[VTIME] = 0;
 
-    ret = tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
+    ret = tcsetattr(STDIN_FILENO, TCSAFLUSH, new_termios);
     if (ret != 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message(
@@ -866,7 +866,7 @@ tty_restore(struct termios *old_termios)
     SIXELSTATUS status = SIXEL_FALSE;
     int ret;
 
-    ret = tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
+    ret = tcsetattr(STDIN_FILENO, TCSAFLUSH, old_termios);
     if (ret != 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message(
@@ -952,7 +952,7 @@ scroll_on_demand(
     }
 
     /* set the terminal to cbreak mode */
-    status = tty_cbreak(&old_termios, &new_termios)
+    status = tty_cbreak(&old_termios, &new_termios);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -993,7 +993,7 @@ scroll_on_demand(
     }
 
     /* restore the terminal mode */
-    status = tty_restore(&old_termios)
+    status = tty_restore(&old_termios);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
