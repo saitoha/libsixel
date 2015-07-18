@@ -823,6 +823,62 @@ end:
 
 
 static SIXELSTATUS
+tty_cbreak(struct termios *old_termios, struct termios *new_termios)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    int ret;
+
+    /* set the terminal to cbreak mode */
+    ret = tcgetattr(STDIN_FILENO, &old_termios);
+    if (ret != 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        sixel_helper_set_additional_message(
+            "tty_cbreak: tcgetattr() failed.");
+        goto end;
+    }
+
+    (void) memcpy(&new_termios, &old_termios, sizeof(old_termios));
+    new_termios.c_lflag &= ~(ECHO | ICANON);
+    new_termios.c_cc[VMIN] = 1;
+    new_termios.c_cc[VTIME] = 0;
+
+    ret = tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
+    if (ret != 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        sixel_helper_set_additional_message(
+            "tty_cbreak: tcsetattr() failed.");
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+
+static SIXELSTATUS
+tty_restore(struct termios *old_termios)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    int ret;
+
+    ret = tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
+    if (ret != 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        sixel_helper_set_additional_message(
+            "tty_restore: tcsetattr() failed.");
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+
+static SIXELSTATUS
 scroll_on_demand(
     sixel_encoder_t /* in */ *encoder,
     sixel_frame_t   /* in */ *frame)
@@ -841,6 +897,7 @@ scroll_on_demand(
     char buffer[256];
     int result;
 
+    /* confirm I/O file descriptors are tty devices */
     if (!isatty(STDIN_FILENO) || !isatty(encoder->outfd)) {
         nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
         if (nwrite < 0) {
@@ -852,12 +909,17 @@ scroll_on_demand(
         status = SIXEL_OK;
         goto end;
     }
+
+    /* request terminal size to tty device with TIOCGWINSZ ioctl */
     result = ioctl(encoder->outfd, TIOCGWINSZ, &size);
     if (result != 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message("ioctl() failed.");
         goto end;
     }
+
+    /* if we can not retrieve terminal pixel size over TIOCGWINSZ ioctl,
+       return immediatly */
     if (size.ws_ypixel <= 0) {
         nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
         if (nwrite < 0) {
@@ -869,6 +931,9 @@ scroll_on_demand(
         status = SIXEL_OK;
         goto end;
     }
+
+    /* if input source is animation and frame No. is more than 1,
+       output DECSC sequence */
     if (sixel_frame_get_loop_no(frame) != 0 ||
         sixel_frame_get_frame_no(frame) != 0) {
         nwrite = sixel_write_callback("\0338", 2, &encoder->outfd);
@@ -881,13 +946,12 @@ scroll_on_demand(
         status = SIXEL_OK;
         goto end;
     }
+
     /* set the terminal to cbreak mode */
-    tcgetattr(STDIN_FILENO, &old_termios);
-    memcpy(&new_termios, &old_termios, sizeof(old_termios));
-    new_termios.c_lflag &= ~(ECHO | ICANON);
-    new_termios.c_cc[VMIN] = 1;
-    new_termios.c_cc[VTIME] = 0;
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
+    status = tty_cbreak(&old_termios, &new_termios)
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
 
     /* request cursor position report */
     nwrite = sixel_write_callback("\033[6n", 4, &encoder->outfd);
@@ -897,7 +961,9 @@ scroll_on_demand(
             "scroll_on_demand: sixel_write_callback() failed.");
         goto end;
     }
-    if (wait_stdin(1000 * 1000) == (-1)) { /* wait 1 sec */
+
+    /* wait cursor position report */
+    if (wait_stdin(1000 * 1000) == (-1)) { /* wait up to 1 sec */
         nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
@@ -908,6 +974,8 @@ scroll_on_demand(
         status = SIXEL_OK;
         goto end;
     }
+
+    /* scan cursor position report */
     if (scanf("\033[%d;%dR", &row, &col) != 2) {
         nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
         if (nwrite < 0) {
@@ -919,7 +987,14 @@ scroll_on_demand(
         status = SIXEL_OK;
         goto end;
     }
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
+
+    /* restore the terminal mode */
+    status = tty_restore(&old_termios)
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    /* calculate scrolling amount in pixels */
     pixelheight = sixel_frame_get_height(frame);
     cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
     scroll = cellheight + row - size.ws_row + 1;
@@ -938,6 +1013,8 @@ scroll_on_demand(
             goto end;
         }
     }
+
+    /* emit DECSC sequence */
     nwrite = sixel_write_callback("\0337", 2, &encoder->outfd);
     if (nwrite < 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
@@ -963,6 +1040,7 @@ end:
 }
 
 
+/* called when image loader component load a image frame */
 static SIXELSTATUS
 load_image_callback(sixel_frame_t *frame, void *data)
 {
@@ -1173,7 +1251,7 @@ sixel_encoder_create(void)
 }
 
 
-SIXELAPI void
+static void
 sixel_encoder_destroy(sixel_encoder_t *encoder)
 {
     if (encoder) {
