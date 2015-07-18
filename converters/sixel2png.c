@@ -57,91 +57,6 @@
 #include <sixel.h>
 
 
-static int
-sixel_to_png(char const *input, char const *output)
-{
-    unsigned char *raw_data;
-    int sx, sy;
-    int raw_len;
-    int max;
-    int n;
-    FILE *input_fp = NULL;
-    unsigned char *indexed_pixels;
-    unsigned char *palette;
-    int ncolors;
-    unsigned char *pixels = NULL;
-    int ret = 0;
-
-    if (strcmp(input, "-") == 0) {
-        /* for windows */
-#if defined(O_BINARY)
-# if HAVE__SETMODE
-        _setmode(fileno(stdin), O_BINARY);
-# elif HAVE_SETMODE
-        setmode(fileno(stdin), O_BINARY);
-# endif  /* HAVE_SETMODE */
-#endif  /* defined(O_BINARY) */
-        input_fp = stdin;
-    } else {
-        input_fp = fopen(input, "rb");
-        if (!input_fp) {
-#if HAVE_ERRNO_H
-            fprintf(stderr, "fopen('%s') failed.\n" "reason: %s.\n",
-                    input, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-            return (-1);
-        }
-    }
-
-    raw_len = 0;
-    max = 64 * 1024;
-
-    if ((raw_data = (unsigned char *)malloc(max)) == NULL) {
-#if HAVE_ERRNO_H
-        fprintf(stderr, "malloc(%d) failed.\n" "reason: %s.\n",
-                max, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-        return (-1);
-    }
-
-    for (;;) {
-        if ((max - raw_len) < 4096) {
-            max *= 2;
-            if ((raw_data = (unsigned char *)realloc(raw_data, max)) == NULL) {
-#if HAVE_ERRNO_H
-                fprintf(stderr, "realloc(raw_data, %d) failed.\n"
-                                "reason: %s.\n",
-                        max, strerror(errno));
-#endif  /* HAVE_ERRNO_H */
-                return (-1);
-            }
-        }
-        if ((n = fread(raw_data + raw_len, 1, 4096, input_fp)) <= 0)
-            break;
-        raw_len += n;
-    }
-
-    if (input_fp != stdout) {
-        fclose(input_fp);
-    }
-
-    ret = sixel_decode(raw_data, raw_len, &indexed_pixels,
-                       &sx, &sy, &palette, &ncolors, malloc);
-
-    if (ret != 0) {
-        fprintf(stderr, "sixel_decode failed.\n");
-        goto end;
-    }
-
-    ret = sixel_helper_write_image_file(indexed_pixels, sx, sy, palette,
-                                        PIXELFORMAT_PAL8, output, FORMAT_PNG);
-
-end:
-    free(pixels);
-    return ret;
-}
-
-
 static
 void show_version(void)
 {
@@ -184,30 +99,16 @@ show_help(void)
 }
 
 
-static char *
-arg_strdup(char const *s)
-{
-    char *p;
-
-    p = malloc(strlen(s) + 1);
-    if (p) {
-        strcpy(p, s);
-    }
-    return p;
-}
-
-
 int
 main(int argc, char *argv[])
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     int n;
-    char *output = arg_strdup("-");
-    char *input = arg_strdup("-");
+    sixel_decoder_t *decoder;
 #if HAVE_GETOPT_LONG
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    int nret = 0;
     char const *optstring = "i:o:VH";
 
 #if HAVE_GETOPT_LONG
@@ -218,6 +119,13 @@ main(int argc, char *argv[])
         {"help",         no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}
     };
+
+    decoder = sixel_decoder_create();
+    if (decoder == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
 #endif  /* HAVE_GETOPT_LONG */
     for (;;) {
 #if HAVE_GETOPT_LONG
@@ -227,8 +135,8 @@ main(int argc, char *argv[])
         n = getopt(argc, argv, optstring);
 #endif  /* HAVE_GETOPT_LONG */
 
-        if (n == -1) {
-            nret = (-1);
+        if (n == (-1)) {
+            /* parsed successfully */
             break;
         }
 #if HAVE_GETOPT_LONG
@@ -236,54 +144,57 @@ main(int argc, char *argv[])
             n = long_opt;
         }
 #endif  /* HAVE_GETOPT_LONG */
-        switch(n) {
-        case 'i':
-            free(input);
-            input = arg_strdup(optarg);
-            break;
-        case 'o':
-            free(output);
-            output = arg_strdup(optarg);
-            break;
+
+        switch (n) {
         case 'V':
             show_version();
+            status = SIXEL_OK;
             goto end;
         case 'H':
             show_help();
+            status = SIXEL_OK;
             goto end;
-        case '?':
         default:
-            nret = (-1);
-            goto argerr;
+            status = sixel_decoder_setopt(decoder, n, optarg);
+            if (SIXEL_FAILED(status)) {
+                goto argerr;
+            }
         }
+
         if (optind >= argc) {
             break;
         }
+
     }
 
-    if (strcmp(input, "-") == 0 && optind < argc) {
-        free(input);
-        input = arg_strdup(argv[optind++]);
+    if (optind < argc) {
+        status = sixel_decoder_setopt(decoder, 'i', argv[optind++]);
+        if (SIXEL_FAILED(status)) {
+            goto argerr;
+        }
     }
-    if (strcmp(output, "-") == 0 && optind < argc) {
-        free(output);
-        output = arg_strdup(argv[optind++]);
+
+    if (optind < argc) {
+        status = sixel_decoder_setopt(decoder, 'o', argv[optind++]);
+        if (SIXEL_FAILED(status)) {
+            goto argerr;
+        }
     }
+
     if (optind != argc) {
-        nret = (-1);
+        status = SIXEL_BAD_ARGUMENT;
         goto argerr;
     }
 
-    nret = sixel_to_png(input, output);
+    status = sixel_decoder_decode(decoder);
     goto end;
 
 argerr:
     show_help();
 
 end:
-    free(input);
-    free(output);
-    return nret;
+    sixel_decoder_unref(decoder);
+    return status;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */

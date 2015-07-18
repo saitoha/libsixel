@@ -26,6 +26,9 @@ convert JPEG/PNG images into DEC SIXEL image format.
 .SH "COMMAND-LINE OPTIONS"
 \fIimg2sixel\fP has the following command-line options:
 .TP 5
+.B \-o, \-\-outfile
+specify output file name (default:stdout).
+.TP 5
 .B \-7, \-\-7bit-mode
 generate a sixel image for 7bit terminals or printers (default).
 .TP 5
@@ -40,8 +43,11 @@ transform image colors to match this set of colorsspecify map.
 .TP 5
 .B \-e, \-\-monochrome
 output monochrome sixel image.
-this option assumes the terminal
-background color is black.
+this option assumes the terminal background color is black.
+.TP 5
+.B \-k, \-\-insecure
+allow to connect to SSL sites without certs
+(enabled only when configured with --with-libcurl)
 .TP 5
 .B \-i, \-\-invert
 assume the terminal background color is white.
@@ -257,6 +263,35 @@ show version and license info.
 .TP 5
 .B \-H, \-\-help
 print help.
+
+.SH "ENVIRONMENT VARIABLES"
+\fIimg2sixel\fP has the following command-line options:
+.TP 5
+.B SIXEL_BGCOLOR
+.br
+specify background color.
+.br
+overrided by -B(--bgcolor) option.
+.br
+represented by the following syntax:
+.br
+#rgb
+.br
+#rrggbb
+.br
+#rrrgggbbb
+.br
+#rrrrggggbbbb
+.br
+rgb:r/g/b
+.br
+rgb:rr/gg/bb
+.br
+rgb:rrr/ggg/bbb
+.br
+rgb:rrrr/gggg/bbbb
+.br
+
 
 .SH "SEE ALSO"
 sixel(5) sixel2png(1)

@@ -54,6 +54,11 @@ sixel_quant_apply_palette(unsigned char *data,
 void
 sixel_quant_free_palette(unsigned char * data);
 
+#if HAVE_TESTS
+int
+sixel_quant_tests_main(void);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

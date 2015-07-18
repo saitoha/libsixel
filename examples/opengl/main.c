@@ -36,6 +36,16 @@
 #include <unistd.h>
 #include <memory.h>
 #include <math.h>
+#if HAVE_TERMIOS_H
+# include <termios.h>
+#endif
+#if HAVE_SYS_IOCTL_H
+# include <sys/ioctl.h>
+#endif
+#if HAVE_SYS_SELECT_H
+#include <sys/select.h>
+#endif
+
 
 #ifndef M_PI
 # define M_PI 3.1415926535897932386
@@ -314,34 +324,114 @@ sixel_write(char *data, int size, void *priv)
 }
 
 
-static int
+static SIXELSTATUS
 output_sixel(unsigned char *pixbuf, int width, int height,
-             int ncolors, int depth)
+             int ncolors, int pixelformat)
 {
     sixel_output_t *context;
     sixel_dither_t *dither;
-    int ret;
+    SIXELSTATUS status;
 
+#if USE_OSMESA
+    pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+#endif
     context = sixel_output_create(sixel_write, stdout);
     dither = sixel_dither_create(ncolors);
-#if USE_OSMESA
-    sixel_dither_set_pixelformat(dither, PIXELFORMAT_RGBA8888);
-#endif
-    ret = sixel_dither_initialize(dither, pixbuf, width, height, depth,
-                                  LARGE_AUTO, REP_AUTO, QUALITY_AUTO);
-    if (ret != 0)
-        return ret;
-    ret = sixel_encode(pixbuf, width, height, depth, dither, context);
-    if (ret != 0)
-        return ret;
+    status = sixel_dither_initialize(dither, pixbuf,
+                                     width, height,
+                                     pixelformat,
+                                     SIXEL_LARGE_AUTO,
+                                     SIXEL_REP_AUTO,
+                                     SIXEL_QUALITY_AUTO);
+    if (SIXEL_FAILED(status))
+        return status;
+    status = sixel_encode(pixbuf, width, height,
+                          pixelformat, dither, context);
+    if (SIXEL_FAILED(status))
+        return status;
     sixel_output_unref(context);
     sixel_dither_unref(dither);
 
-    return 0;
+    return status;
+}
+
+static int
+wait_stdin(int usec)
+{
+#if HAVE_SYS_SELECT_H
+    fd_set rfds;
+    struct timeval tv;
+#endif  /* HAVE_SYS_SELECT_H */
+    int ret = 0;
+
+#if HAVE_SYS_SELECT_H
+    tv.tv_sec = usec / 1000000;
+    tv.tv_usec = usec % 1000000;
+    FD_ZERO(&rfds);
+    FD_SET(STDIN_FILENO, &rfds);
+    ret = select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
+#else
+    (void) usec;
+#endif  /* HAVE_SYS_SELECT_H */
+
+    return ret;
+}
+
+static void
+scroll_on_demand(int pixelheight)
+{
+#if HAVE_SYS_IOCTL_H
+    struct winsize size = {0, 0, 0, 0};
+#endif
+#if HAVE_TERMIOS_H
+    struct termios old_termios;
+    struct termios new_termios;
+#endif
+    int row = 0;
+    int col = 0;
+    int cellheight;
+    int scroll;
+
+#if HAVE_SYS_IOCTL_H
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
+    if (size.ws_ypixel <= 0) {
+        printf("\033[H\0337");
+        return;
+    }
+# if HAVE_TERMIOS_H
+    /* set the terminal to cbreak mode */
+    tcgetattr(STDIN_FILENO, &old_termios);
+    memcpy(&new_termios, &old_termios, sizeof(old_termios));
+    new_termios.c_lflag &= ~(ECHO | ICANON);
+    new_termios.c_cc[VMIN] = 1;
+    new_termios.c_cc[VTIME] = 0;
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
+
+    /* request cursor position report */
+    printf("\033[6n");
+    if (wait_stdin(1000 * 1000) != (-1)) { /* wait 1 sec */
+        if (scanf("\033[%d;%dR", &row, &col) == 2) {
+            cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
+            scroll = cellheight + row - size.ws_row;
+            printf("\033[%dS\033[%dA", scroll, scroll);
+            printf("\0337");
+        } else {
+            printf("\033[H\0337");
+        }
+    }
+
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
+# else
+    printf("\033[H\0337");
+# endif  /* HAVE_TERMIOS_H */
+#else
+    printf("\033[H\0337");
+#endif  /* HAVE_SYS_IOCTL_H */
 }
 
 int main(int argc, char** argv)
 {
+    SIXELSTATUS status;
     unsigned char *pixbuf;
 
     int width = 400;
@@ -355,6 +445,8 @@ int main(int argc, char** argv)
        return (-1);
     if (setup(width, height) != 0)
        return (-1);
+
+    scroll_on_demand(height);
 
     glShadeModel(GL_SMOOTH);
     glClearColor(0, 0, 0, 0);
@@ -395,13 +487,20 @@ int main(int argc, char** argv)
         if (signaled)
             break;
 
-        printf("\e[3;3H");
+        printf("\0338");
 #if USE_OSMESA
         pixbuf = pbuffer;
 #else
         glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixbuf);
 #endif
-        output_sixel(pixbuf, width, height, ncolors, /* unused */ 3);
+        status = output_sixel(pixbuf, width, height, ncolors,
+                              SIXEL_PIXELFORMAT_RGB888);
+        if (SIXEL_FAILED(status)) {
+            fprintf(stderr, "%s\n%s\n",
+                    sixel_helper_format_error(status),
+                    sixel_helper_get_additional_message());
+            break;
+        }
     }
 
 #if !defined(USE_OSMESA)

@@ -3,9 +3,9 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.4.11], [user@zuse.jp])
+AC_INIT([sixel], [1.5.0], [user@zuse.jp])
 LS_LT_CURRENT=1
-LS_LT_REVISION=3
+LS_LT_REVISION=4
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 AC_SUBST([PACKAGE_DESCRIPTION],
@@ -28,6 +28,23 @@ AX_GCC_FUNC_ATTRIBUTE([deprecated])
 if test x$ax_cv_have_func_attribute_deprecated != x; then
     AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
 fi
+
+CFLAGS_BACKUP=$CFLAGS
+CFLAGS="$CFLAGS -Werror"
+AC_TRY_COMPILE(
+  [
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic pop
+    #pragma GCC diagnostic ignored "-Wtypedef-redefinition"
+  ],
+  [
+    typedef int foo;
+    typedef int foo;
+  ],
+  [AC_DEFINE(HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION,
+             1,
+             [define 1 if GCC supports -Wtypedef-redefinition])])
+CFLAGS=$CFLAGS_BACKUP
 
 # Options
 AC_ARG_ENABLE([img2sixel],
@@ -104,6 +121,12 @@ AC_ARG_WITH(zshcompletiondir,
 AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])
 AC_SUBST(zshcompletiondir)
 
+AC_ARG_ENABLE([python],
+              [AS_HELP_STRING([--enable-python],
+                              [Python interface (default: yes)])],
+              [],
+              [enable_python=yes])
+
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
                               [Use debug macro and specific CFLAGS])],
@@ -117,6 +140,13 @@ AC_ARG_ENABLE([gcov],
               [],
               [enable_gcov=no])
 AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
+
+AC_ARG_ENABLE([tests],
+              [AS_HELP_STRING([--enable-tests],
+                              [Build tests])],
+              [AC_DEFINE(HAVE_TESTS, [1], [enable tests])],
+              [enable_tests=no])
+AM_CONDITIONAL([COND_TESTS], [test x$enable_tests != xno])
 
 # Checks for programs.
 AC_PROG_CC
@@ -155,18 +185,22 @@ AC_CHECK_HEADERS([memory.h \
                   stdlib.h \
                   string.h \
                   unistd.h \
+                  stdint.h \
                   sys/unistd.h \
                   getopt.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
+                  io.h \
                   errno.h \
                   limits.h \
                   sys/time.h \
                   time.h \
                   signal.h \
                   sys/select.h \
-                  sys/signal.h])
+                  sys/signal.h \
+                  termios.h \
+                  sys/ioctl.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
@@ -200,7 +234,10 @@ AC_CHECK_FUNCS([memcpy \
                 clock \
                 clearerr \
                 stat \
-                setjmp])
+                setjmp \
+                strerror \
+                isatty \
+                ldiv])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
@@ -265,12 +302,14 @@ if test x$with_gd != xno; then
         fi
         ADDED_CFLAGS="-I${with_gd}/include"
         ADDED_LIBS="-L${with_gd}/lib -lgd"
-    elif test x${prefix} != x -a x${prefix} != xNONE; then
-        ADDED_CFLAGS="-I${prefix}/include"
-        ADDED_LIBS="-L${prefix}/lib -lgd"
     else
-        ADDED_CFLAGS="-I/usr/local/include"
-        ADDED_LIBS="-L/usr/local/lib -lgd"
+        if test x${prefix} != x -a x${prefix} != xNONE; then
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -lgd"
+        else
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -lgd"
+        fi
     fi
     CFLAGS="${CFLAGS} ${GD_CFLAGS}"
     LDFLAGS="${LDFLAGS} ${GD_LIBS}"
@@ -362,12 +401,14 @@ if test x$with_libcurl != xno; then
             fi
             ADDED_CFLAGS="-I${with_libcurl}/include"
             ADDED_LIBS="-L${with_libcurl}/lib -lcurl"
-        elif test x${prefix} != x -a x${prefix} != xNONE; then
-            ADDED_CFLAGS="-I${prefix}/include"
-            ADDED_LIBS="-L${prefix}/lib -lcurl"
         else
-            ADDED_CFLAGS="-I/usr/local/include"
-            ADDED_LIBS="-L/usr/local/lib -lcurl"
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lcurl"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lcurl"
+            fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
         LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
@@ -413,12 +454,14 @@ if test x$with_jpeg != xno; then
             fi
             ADDED_CFLAGS="-I${with_jpeg}/include"
             ADDED_LIBS="-L${with_jpeg}/lib -ljpeg"
-        elif test x${prefix} != x -a x${prefix} != xNONE; then
-            ADDED_CFLAGS="-I${prefix}/include"
-            ADDED_LIBS="-L${prefix}/lib -ljpeg"
         else
-            ADDED_CFLAGS="-I/usr/local/include"
-            ADDED_LIBS="-L/usr/local/lib -ljpeg"
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -ljpeg"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -ljpeg"
+            fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
         LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
@@ -465,12 +508,14 @@ if test x$with_png != xno; then
             fi
             ADDED_CFLAGS="-I${with_png}/include"
             ADDED_LIBS="-L${with_png}/lib -lpng"
-        elif test x${prefix} != x -a x${prefix} != xNONE; then
-            ADDED_CFLAGS="-I${prefix}/include"
-            ADDED_LIBS="-L${prefix}/lib -lpng"
         else
-            ADDED_CFLAGS="-I/usr/local/include"
-            ADDED_LIBS="-L/usr/local/lib -lpng"
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lpng"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lpng"
+            fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
         LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
@@ -513,6 +558,20 @@ fi
 AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBPNG_LIBS)
 
+have_python=no
+if test x$enable_python != xno; then
+    AM_PATH_PYTHON([2.3], [have_python=yes], [have_python=no])
+    if test x$enable_python = xyes -a x$have_python = xno; then
+        AC_MSG_ERROR([python is not available])
+    fi
+fi
+AM_CONDITIONAL([HAVE_PYTHON], [test x$have_python = xyes])
+if test x$have_python = xyes; then
+    message_python="$have_python: $pythondir"
+else
+    message_python=$have_python
+fi
+
 AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
           ])
@@ -528,7 +587,11 @@ AC_CONFIG_FILES([Makefile
                  include/sixel.h
                  src/Makefile
                  include/Makefile
-                 converters/Makefile])
+                 converters/Makefile
+                 tools/Makefile
+                 tools/libsixel-config
+                 python/Makefile
+                ])
 
 AC_OUTPUT
 
@@ -542,7 +605,9 @@ echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
+echo "       python bindings     : $message_python"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
+echo "       tests               : $enable_tests"
 echo ""
 echo ""

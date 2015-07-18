@@ -303,7 +303,7 @@ scale_with_resampling(
 }
 
 
-int
+SIXELAPI int
 sixel_helper_scale_image(
     unsigned char       /* out */ *dst,
     unsigned char const /* in */  *src,                   /* source image data */
@@ -320,7 +320,7 @@ sixel_helper_scale_image(
     int new_pixelformat;
 
     if (depth != 3) {
-        new_src = malloc(srcw * srch * 3);
+        new_src = (unsigned char *)malloc(srcw * srch * 3);
         if (new_src == NULL) {
             return (-1);
         }
@@ -340,42 +340,42 @@ sixel_helper_scale_image(
 
     /* choose re-sampling strategy */
     switch (method_for_resampling) {
-    case RES_NEAREST:
+    case SIXEL_RES_NEAREST:
         scale_without_resampling(dst, src, srcw, srch, dstw, dsth, depth);
         break;
-    case RES_GAUSSIAN:
+    case SIXEL_RES_GAUSSIAN:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
                               gaussian, 1.0);
         break;
-    case RES_HANNING:
+    case SIXEL_RES_HANNING:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
                               hanning, 1.0);
         break;
-    case RES_HAMMING:
+    case SIXEL_RES_HAMMING:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
                               hamming, 1.0);
         break;
-    case RES_WELSH:
+    case SIXEL_RES_WELSH:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
                               welsh, 1.0);
         break;
-    case RES_BICUBIC:
+    case SIXEL_RES_BICUBIC:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
                               bicubic, 2.0);
         break;
-    case RES_LANCZOS2:
+    case SIXEL_RES_LANCZOS2:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
                               lanczos2, 3.0);
         break;
-    case RES_LANCZOS3:
+    case SIXEL_RES_LANCZOS3:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
                               lanczos3, 3.0);
         break;
-    case RES_LANCZOS4:
+    case SIXEL_RES_LANCZOS4:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
                               lanczos4, 4.0);
         break;
-    case RES_BILINEAR:
+    case SIXEL_RES_BILINEAR:
     default:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
                               bilinear, 1.0);

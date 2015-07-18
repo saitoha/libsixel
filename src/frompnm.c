@@ -136,7 +136,7 @@ load_pnm(unsigned char *p, int length,
         return NULL;
     }
 
-    result = malloc(width * height * 3 + 1);
+    result = (unsigned char *)malloc(width * height * 3 + 1);
     if (result == NULL) {
         return NULL;
     }
@@ -211,7 +211,7 @@ load_pnm(unsigned char *p, int length,
 
     *psx = width;
     *psy = height;
-    *ppixelformat = PIXELFORMAT_RGB888;
+    *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
     return result;
 }
 
