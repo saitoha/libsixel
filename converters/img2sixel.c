@@ -388,13 +388,13 @@ main(int argc, char *argv[])
 # if HAVE_DECL_SIGHUP
     signal(SIGHUP, signal_handler);
 # endif
-#else
-    (void) signal_handler;
-#endif
     status = sixel_encoder_set_cancel_flag(encoder, &signaled);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
+#else
+    (void) signal_handler;
+#endif
 
     if (optind == argc) {
         status = sixel_encoder_encode(encoder, NULL);
