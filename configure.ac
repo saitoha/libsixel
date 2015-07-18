@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.5.0], [user@zuse.jp])
+AC_INIT([sixel], [1.5.0], [saitoha@me.com])
 LS_LT_CURRENT=1
 LS_LT_REVISION=4
 LS_LT_AGE=0
@@ -191,6 +191,7 @@ AC_CHECK_HEADERS([memory.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
+                  io.h \
                   errno.h \
                   limits.h \
                   sys/time.h \

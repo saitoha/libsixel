@@ -73,7 +73,7 @@ arg_strdup(char const *s)
 {
     char *p;
 
-    p = malloc(strlen(s) + 1);
+    p = (char *)malloc(strlen(s) + 1);
     if (p) {
         strcpy(p, s);
     }
@@ -94,7 +94,7 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
     struct color const *pcolor;
     pcolor = lookup_rgb(s, strlen(s));
     if (pcolor) {
-        *bgcolor = malloc(3);
+        *bgcolor = (unsigned char *)malloc(3);
         if (*bgcolor == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto end;
@@ -145,7 +145,7 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
-        *bgcolor = malloc(3);
+        *bgcolor = (unsigned char *)malloc(3);
         if (*bgcolor == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto end;
@@ -177,7 +177,7 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
-        *bgcolor = malloc(3);
+        *bgcolor = (unsigned char *)malloc(3);
         if (*bgcolor == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto end;
@@ -685,7 +685,7 @@ output_sixel_without_macro(
         goto end;
     }
 
-    p = malloc(width * height * depth);
+    p = (unsigned char *)malloc(width * height * depth);
     if (p == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto end;
@@ -742,6 +742,7 @@ output_sixel_with_macro(
     SIXELSTATUS status = SIXEL_OK;
     int dulation = 0;
     char buffer[256];
+    int nwrite;
 #if HAVE_USLEEP
     int lag = 0;
 # if HAVE_CLOCK
@@ -754,22 +755,51 @@ output_sixel_with_macro(
 #endif
     if (loop_count == 0) {
         if (encoder->macro_number >= 0) {
-            sprintf(buffer, "\033P%d;0;1!z", encoder->macro_number);
+            nwrite = sprintf(buffer, "\033P%d;0;1!z", encoder->macro_number);
         } else {
-            sprintf(buffer, "\033P%d;0;1!z", frame_no);
+            nwrite = sprintf(buffer, "\033P%d;0;1!z", frame_no);
         }
-        sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "load_image_callback: sprintf() failed.");
+            goto end;
+        }
+        nwrite = sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "output_sixel_with_macro: sixel_write_callback() failed.");
+            goto end;
+        }
 
         status = sixel_encode(frame, sx, sy, /* unused */ 3, dither, context);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
 
-        sixel_write_callback("\033\\", 2, &encoder->outfd);
+        nwrite = sixel_write_callback("\033\\", 2, &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "output_sixel_with_macro: sixel_write_callback() failed.");
+            goto end;
+        }
     }
     if (encoder->macro_number < 0) {
-        sprintf(buffer, "\033[%d*z", frame_no);
-        sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
+        nwrite = sprintf(buffer, "\033[%d*z", frame_no);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "output_sixel_with_macro: sprintf() failed.");
+        }
+        nwrite = sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "output_sixel_with_macro: sixel_write_callback() failed.");
+            goto end;
+        }
 #if HAVE_USLEEP
         if (delay > 0 && !encoder->fignore_delay) {
 # if HAVE_CLOCK
@@ -792,9 +822,13 @@ end:
 }
 
 
-static void
-scroll_on_demand(sixel_encoder_t *encoder, sixel_frame_t *frame)
+static SIXELSTATUS
+scroll_on_demand(
+    sixel_encoder_t /* in */ *encoder,
+    sixel_frame_t   /* in */ *frame)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
+    int nwrite;
 #if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
     struct winsize size = {0, 0, 0, 0};
     struct termios old_termios;
@@ -805,51 +839,127 @@ scroll_on_demand(sixel_encoder_t *encoder, sixel_frame_t *frame)
     int cellheight;
     int scroll;
     char buffer[256];
+    int result;
 
-    if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)) {
-        ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
-        if (size.ws_ypixel > 0) {
-            if (sixel_frame_get_loop_no(frame) == 0 && sixel_frame_get_frame_no(frame) == 0) {
-                /* set the terminal to cbreak mode */
-                tcgetattr(STDIN_FILENO, &old_termios);
-                memcpy(&new_termios, &old_termios, sizeof(old_termios));
-                new_termios.c_lflag &= ~(ECHO | ICANON);
-                new_termios.c_cc[VMIN] = 1;
-                new_termios.c_cc[VTIME] = 0;
-                tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
-
-                /* request cursor position report */
-                sixel_write_callback("\033[6n", 4, &encoder->outfd);
-                if (wait_stdin(1000 * 1000) != (-1)) { /* wait 1 sec */
-                    if (scanf("\033[%d;%dR", &row, &col) == 2) {
-                        tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
-                         pixelheight = sixel_frame_get_height(frame);
-                         cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
-                         scroll = cellheight + row - size.ws_row + 1;
-                        if (scroll > 0) {
-                            sprintf(buffer, "\033[%dS\033[%dA", scroll, scroll);
-                            sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
-                        }
-                        sixel_write_callback("\0337", 2, &encoder->outfd);
-                    } else {
-                        sixel_write_callback("\033[H", 3, &encoder->outfd);
-                    }
-                } else {
-                    sixel_write_callback("\033[H", 3, &encoder->outfd);
-                }
-            } else {
-                sixel_write_callback("\0338", 2, &encoder->outfd);
-            }
-        } else {
-            sixel_write_callback("\033[H", 3, &encoder->outfd);
+    if (!isatty(STDIN_FILENO) || !isatty(encoder->outfd)) {
+        nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "scroll_on_demand: sixel_write_callback() failed.");
+            goto end;
         }
-    } else {
-        sixel_write_callback("\033[H", 3, &encoder->outfd);
+        status = SIXEL_OK;
+        goto end;
+    }
+    result = ioctl(encoder->outfd, TIOCGWINSZ, &size);
+    if (result != 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        sixel_helper_set_additional_message("ioctl() failed.");
+        goto end;
+    }
+    if (size.ws_ypixel <= 0) {
+        nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "scroll_on_demand: sixel_write_callback() failed.");
+            goto end;
+        }
+        status = SIXEL_OK;
+        goto end;
+    }
+    if (sixel_frame_get_loop_no(frame) != 0 ||
+        sixel_frame_get_frame_no(frame) != 0) {
+        nwrite = sixel_write_callback("\0338", 2, &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "scroll_on_demand: sixel_write_callback() failed.");
+            goto end;
+        }
+        status = SIXEL_OK;
+        goto end;
+    }
+    /* set the terminal to cbreak mode */
+    tcgetattr(STDIN_FILENO, &old_termios);
+    memcpy(&new_termios, &old_termios, sizeof(old_termios));
+    new_termios.c_lflag &= ~(ECHO | ICANON);
+    new_termios.c_cc[VMIN] = 1;
+    new_termios.c_cc[VTIME] = 0;
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
+
+    /* request cursor position report */
+    nwrite = sixel_write_callback("\033[6n", 4, &encoder->outfd);
+    if (nwrite < 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        sixel_helper_set_additional_message(
+            "scroll_on_demand: sixel_write_callback() failed.");
+        goto end;
+    }
+    if (wait_stdin(1000 * 1000) == (-1)) { /* wait 1 sec */
+        nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "scroll_on_demand: sixel_write_callback() failed.");
+            goto end;
+        }
+        status = SIXEL_OK;
+        goto end;
+    }
+    if (scanf("\033[%d;%dR", &row, &col) != 2) {
+        nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "scroll_on_demand: sixel_write_callback() failed.");
+            goto end;
+        }
+        status = SIXEL_OK;
+        goto end;
+    }
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
+    pixelheight = sixel_frame_get_height(frame);
+    cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
+    scroll = cellheight + row - size.ws_row + 1;
+    if (scroll > 0) {
+        nwrite = sprintf(buffer, "\033[%dS\033[%dA", scroll, scroll);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "scroll_on_demand: sprintf() failed.");
+        }
+        nwrite = sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "scroll_on_demand: sixel_write_callback() failed.");
+            goto end;
+        }
+    }
+    nwrite = sixel_write_callback("\0337", 2, &encoder->outfd);
+    if (nwrite < 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        sixel_helper_set_additional_message(
+            "scroll_on_demand: sixel_write_callback() failed.");
+        goto end;
     }
 #else
     (void) frame;
-    sixel_write_callback("\033[H", 3, &encoder->outfd);
+    nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
+    if (nwrite < 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        sixel_helper_set_additional_message(
+            "scroll_on_demand: sixel_write_callback() failed.");
+        goto end;
+    }
 #endif
+
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
@@ -860,6 +970,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
     sixel_encoder_t *encoder;
     sixel_dither_t *dither = NULL;
     sixel_output_t *output = NULL;
+    int nwrite;
 
     encoder = (sixel_encoder_t *)data;
 
@@ -932,7 +1043,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
     sixel_output_set_encode_policy(output, encoder->encode_policy);
 
     if (sixel_frame_get_multiframe(frame) && !encoder->fstatic) {
-        scroll_on_demand(encoder, frame);
+        (void) scroll_on_demand(encoder, frame);
     }
 
     if (encoder->cancel_flag && *encoder->cancel_flag) {
@@ -976,7 +1087,13 @@ load_image_callback(sixel_frame_t *frame, void *data)
     }
 
     if (encoder->cancel_flag && *encoder->cancel_flag) {
-        sixel_write_callback("\x18\033\\", 3, &encoder->outfd);
+        nwrite = sixel_write_callback("\x18\033\\", 3, &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "load_image_callback: sixel_write_callback() failed.");
+            goto end;
+        }
         status = SIXEL_INTERRUPTED;
     }
 
@@ -1003,7 +1120,7 @@ sixel_encoder_create(void)
     sixel_encoder_t *encoder;
     char const *default_color;
 
-    encoder = malloc(sizeof(sixel_encoder_t));
+    encoder = (sixel_encoder_t *)malloc(sizeof(sixel_encoder_t));
     if (encoder == NULL) {
         return NULL;
     }
@@ -1117,7 +1234,7 @@ sixel_encoder_setopt(
     char unit[32];
 
     switch(arg) {
-    case 'o':
+    case SIXEL_OPTFLAG_OUTFILE:  /* o */
         if (*optarg == '\0') {
             sixel_helper_set_additional_message(
                 "no file name specified.");
@@ -1133,16 +1250,16 @@ sixel_encoder_setopt(
                                   S_IREAD|S_IWRITE);
         }
         break;
-    case '7':
+    case SIXEL_OPTFLAG_7BIT_MODE:  /* 7 */
         encoder->f8bit = 0;
         break;
-    case '8':
+    case SIXEL_OPTFLAG_8BIT_MODE:  /* 8 */
         encoder->f8bit = 1;
         break;
-    case 'p':
+    case SIXEL_OPTFLAG_COLORS:  /* p */
         encoder->reqcolors = atoi(optarg);
         break;
-    case 'm':
+    case SIXEL_OPTFLAG_MAPFILE:  /* m */
         if (encoder->mapfile) {
             free(encoder->mapfile);
         }
@@ -1152,13 +1269,13 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
-    case 'e':
+    case SIXEL_OPTFLAG_MONOCHROME:  /* e */
         encoder->monochrome = 1;
         break;
-    case 'I':
+    case SIXEL_OPTFLAG_HIGH_COLOR:  /* I */
         encoder->highcolor = 1;
         break;
-    case 'b':
+    case SIXEL_OPTFLAG_BUILTIN_PALETTE:  /* b */
         if (strcmp(optarg, "xterm16") == 0) {
             encoder->builtin_palette = SIXEL_BUILTIN_XTERM16;
         } else if (strcmp(optarg, "xterm256") == 0) {
@@ -1182,7 +1299,7 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
-    case 'd':
+    case SIXEL_OPTFLAG_DIFFUSION:  /* d */
         /* parse --diffusion option */
         if (strcmp(optarg, "auto") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_AUTO;
@@ -1205,7 +1322,7 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
-    case 'f':
+    case SIXEL_OPTFLAG_FIND_LARGEST:  /* f */
         /* parse --find-largest option */
         if (optarg) {
             if (strcmp(optarg, "auto") == 0) {
@@ -1222,7 +1339,7 @@ sixel_encoder_setopt(
             }
         }
         break;
-    case 's':
+    case SIXEL_OPTFLAG_SELECT_COLOR:  /* s */
         /* parse --select-color option */
         if (strcmp(optarg, "auto") == 0) {
             encoder->method_for_rep = SIXEL_REP_AUTO;
@@ -1240,7 +1357,7 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
-    case 'c':
+    case SIXEL_OPTFLAG_CROP:  /* c */
         number = sscanf(optarg, "%dx%d+%d+%d",
                         &encoder->clipwidth, &encoder->clipheight,
                         &encoder->clipx, &encoder->clipy);
@@ -1258,7 +1375,7 @@ sixel_encoder_setopt(
         }
         encoder->clipfirst = 0;
         break;
-    case 'w':
+    case SIXEL_OPTFLAG_WIDTH:  /* w */
         parsed = sscanf(optarg, "%d%2s", &number, unit);
         if (parsed == 2 && strcmp(unit, "%") == 0) {
             encoder->pixelwidth = (-1);
@@ -1279,7 +1396,7 @@ sixel_encoder_setopt(
             encoder->clipfirst = 1;
         }
         break;
-    case 'h':
+    case SIXEL_OPTFLAG_HEIGHT:  /* h */
         parsed = sscanf(optarg, "%d%2s", &number, unit);
         if (parsed == 2 && strcmp(unit, "%") == 0) {
             encoder->pixelheight = (-1);
@@ -1300,7 +1417,7 @@ sixel_encoder_setopt(
             encoder->clipfirst = 1;
         }
         break;
-    case 'r':
+    case SIXEL_OPTFLAG_RESAMPLING:  /* r */
         /* parse --resampling option */
         if (strcmp(optarg, "nearest") == 0) {
             encoder->method_for_resampling = SIXEL_RES_NEAREST;
@@ -1329,7 +1446,7 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
-    case 'q':
+    case SIXEL_OPTFLAG_QUALITY:  /* q */
         /* parse --quality option */
         if (strcmp(optarg, "auto") == 0) {
             encoder->quality_mode = SIXEL_QUALITY_AUTO;
@@ -1346,7 +1463,7 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
-    case 'l':
+    case SIXEL_OPTFLAG_LOOPMODE:  /* l */
         /* parse --loop-control option */
         if (strcmp(optarg, "auto") == 0) {
             encoder->loop_mode = SIXEL_LOOP_AUTO;
@@ -1361,7 +1478,7 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
-    case 't':
+    case SIXEL_OPTFLAG_PALETTE_TYPE:  /* t */
         /* parse --palette-type option */
         if (strcmp(optarg, "auto") == 0) {
             encoder->palette_type = SIXEL_PALETTETYPE_AUTO;
@@ -1376,7 +1493,7 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
-    case 'B':
+    case SIXEL_OPTFLAG_BGCOLOR:  /* B */
         /* parse --bgcolor option */
         if (encoder->bgcolor) {
             free(encoder->bgcolor);
@@ -1388,35 +1505,35 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
-    case 'k':
+    case SIXEL_OPTFLAG_INSECURE:  /* k */
         encoder->finsecure = 1;
         break;
-    case 'i':
+    case SIXEL_OPTFLAG_INVERT:  /* i */
         encoder->finvert = 1;
         break;
-    case 'u':
+    case SIXEL_OPTFLAG_USE_MACRO:  /* u */
         encoder->fuse_macro = 1;
         break;
-    case 'n':
+    case SIXEL_OPTFLAG_MACRO_NUMBER:  /* n */
         encoder->macro_number = atoi(optarg);
         if (encoder->macro_number < 0) {
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
         break;
-    case 'g':
+    case SIXEL_OPTFLAG_IGNORE_DELAY:  /* g */
         encoder->fignore_delay = 1;
         break;
-    case 'v':
+    case SIXEL_OPTFLAG_VERBOSE:  /* v */
         encoder->verbose = 1;
         break;
-    case 'S':
+    case SIXEL_OPTFLAG_STATIC:  /* S */
         encoder->fstatic = 1;
         break;
-    case 'P':
+    case SIXEL_OPTFLAG_PENETRATE:  /* P */
         encoder->penetrate_multiplexer = 1;
         break;
-    case 'E':
+    case SIXEL_OPTFLAG_ENCODE_POLICY:  /* E */
         if (strcmp(optarg, "auto") == 0) {
             encoder->encode_policy = SIXEL_ENCODEPOLICY_AUTO;
         } else if (strcmp(optarg, "fast") == 0) {
@@ -1430,7 +1547,7 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
-    case 'C':
+    case SIXEL_OPTFLAG_COMPLEXION_SCORE:  /* C */
         encoder->complexion = atoi(optarg);
         if (encoder->complexion < 1) {
             sixel_helper_set_additional_message(
@@ -1439,7 +1556,7 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
-    case 'D':
+    case SIXEL_OPTFLAG_PIPE_MODE:  /* D */
         encoder->pipe_mode = 1;
         break;
     case '?':  /* unknown option */
@@ -1631,8 +1748,8 @@ end:
 static int
 test1(void)
 {
-    sixel_encoder_t *encoder = NULL;
     int nret = EXIT_FAILURE;
+    sixel_encoder_t *encoder = NULL;
 
     encoder = sixel_encoder_create();
     if (encoder == NULL) {
@@ -1640,6 +1757,101 @@ test1(void)
     }
     sixel_encoder_ref(encoder);
     sixel_encoder_unref(encoder);
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_encoder_unref(encoder);
+    return nret;
+}
+
+
+static int
+test2(void)
+{
+    int nret = EXIT_FAILURE;
+    SIXELSTATUS status;
+    sixel_encoder_t *encoder = NULL;
+    sixel_frame_t *frame = NULL;
+
+    encoder = sixel_encoder_create();
+    if (encoder == NULL) {
+        goto error;
+    }
+
+    frame = sixel_frame_create();
+    if (encoder == NULL) {
+        goto error;
+    }
+
+    status = sixel_frame_init(frame,
+                              (unsigned char *)malloc(3),
+                              1,
+                              1,
+                              SIXEL_PIXELFORMAT_RGB888,
+                              NULL,
+                              0);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = scroll_on_demand(encoder, frame);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_encoder_unref(encoder);
+    sixel_frame_unref(frame);
+    return nret;
+}
+
+
+static int
+test3(void)
+{
+    int nret = EXIT_FAILURE;
+    int result;
+
+    result = wait_stdin(1000);
+    if (result != 0) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+static int
+test4(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_encoder_t *encoder = NULL;
+    SIXELSTATUS status;
+
+    encoder = sixel_encoder_create();
+    if (encoder == NULL) {
+        goto error;
+    }
+
+    status = sixel_encoder_setopt(encoder,
+                                  SIXEL_OPTFLAG_LOOPMODE,
+                                  "force");
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_encoder_setopt(encoder,
+                                  SIXEL_OPTFLAG_PIPE_MODE,
+                                  "force");
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
     nret = EXIT_SUCCESS;
 
 error:
@@ -1657,6 +1869,9 @@ sixel_encoder_tests_main(void)
 
     static testcase const testcases[] = {
         test1,
+        test2,
+        test3,
+        test4
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

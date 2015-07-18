@@ -320,7 +320,7 @@ sixel_helper_scale_image(
     int new_pixelformat;
 
     if (depth != 3) {
-        new_src = malloc(srcw * srch * 3);
+        new_src = (unsigned char *)malloc(srcw * srch * 3);
         if (new_src == NULL) {
             return (-1);
         }

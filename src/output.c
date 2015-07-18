@@ -30,8 +30,9 @@ SIXELAPI sixel_output_t *
 sixel_output_create(sixel_write_function fn_write, void *priv)
 {
     sixel_output_t *output;
+    size_t size = sizeof(sixel_output_t) + SIXEL_OUTPUT_PACKET_SIZE * 2;
 
-    output = malloc(sizeof(sixel_output_t) + SIXEL_OUTPUT_PACKET_SIZE * 2);
+    output = (sixel_output_t *)malloc(size);
     if (output) {
         output->ref = 1;
         output->has_8bit_control = 0;

@@ -20,7 +20,10 @@ libsixel_la_SOURCES = \
 		pixelformat.c \
 		pixelformat.h \
 		scale.c \
+		chunk.c \
+		chunk.h \
 		loader.c \
+		loader.h \
 		frompnm.c \
 		frompnm.h \
 		fromgif.c \

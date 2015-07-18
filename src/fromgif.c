@@ -2,7 +2,7 @@
  * This file is derived from "stb_image.h" that is in public domain.
  * https://github.com/nothings/stb
  *
- * Hayaki Saito <user@zuse.jp> modified this and re-licensed
+ * Hayaki Saito <saitoha@me.com> modified this and re-licensed
  * it under the MIT license.
  *
  * Copyright (c) 2015 Hayaki Saito
@@ -25,22 +25,13 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include "frame.h"
 #include <sixel.h>
-
-#if HAVE_STDINT_H
-# include <stdint.h>
-#else
-typedef unsigned char  uint8_t;
-typedef unsigned short uint16_t;
-typedef   signed short int16_t;
-typedef unsigned int   uint32_t;
-typedef   signed int   int32_t;
-#endif
 
 /*
  * gif_context_t struct and start_xxx functions
@@ -50,32 +41,32 @@ typedef   signed int   int32_t;
  */
 typedef struct
 {
-   uint32_t img_x, img_y;
+   unsigned int img_x, img_y;
    int img_n, img_out_n;
 
    int buflen;
-   uint8_t buffer_start[128];
+   unsigned char buffer_start[128];
 
-   uint8_t *img_buffer, *img_buffer_end;
-   uint8_t *img_buffer_original;
+   unsigned char *img_buffer, *img_buffer_end;
+   unsigned char *img_buffer_original;
 } gif_context_t;
 
 typedef struct
 {
-   int16_t prefix;
-   uint8_t first;
-   uint8_t suffix;
+   signed short prefix;
+   unsigned char first;
+   unsigned char suffix;
 } gif_lzw;
 
 typedef struct
 {
    int w, h;
-   uint8_t *out;  /* output buffer (always 4 components) */
+   unsigned char *out;  /* output buffer (always 4 components) */
    int flags, bgindex, ratio, transparent, eflags;
-   uint8_t pal[256][3];
-   uint8_t lpal[256][3];
+   unsigned char pal[256][3];
+   unsigned char lpal[256][3];
    gif_lzw codes[4096];
-   uint8_t *color_table;
+   unsigned char *color_table;
    int parse, step;
    int lflags;
    int start_x, start_y;
@@ -89,17 +80,8 @@ typedef struct
 } gif_t;
 
 
-
 /* initialize a memory-decode context */
-static void
-gif_start_mem(gif_context_t *s, uint8_t const *buffer, int len)
-{
-    s->img_buffer = s->img_buffer_original = (uint8_t *) buffer;
-    s->img_buffer_end = (uint8_t *) buffer+len;
-}
-
-
-static uint8_t
+static unsigned char
 gif_get8(gif_context_t *s)
 {
     if (s->img_buffer < s->img_buffer_end) {
@@ -117,36 +99,10 @@ gif_get16le(gif_context_t *s)
 }
 
 
-static int
-gif_getn(gif_context_t *s, uint8_t *buffer, int n)
-{
-   if (s->img_buffer+n <= s->img_buffer_end) {
-      memcpy(buffer, s->img_buffer, n);
-      s->img_buffer += n;
-      return 1;
-   } else
-      return 0;
-}
-
-
-static void
-gif_skip(gif_context_t *s, int n)
-{
-    s->img_buffer += n;
-}
-
-
-static void
-gif_rewind(gif_context_t *s)
-{
-    s->img_buffer = s->img_buffer_original;
-}
-
-
 static void
 gif_parse_colortable(
     gif_context_t /* in */ *s,
-    uint8_t       /* in */ pal[256][3],
+    unsigned char       /* in */ pal[256][3],
     int           /* in */ num_entries)
 {
     int i;
@@ -159,32 +115,33 @@ gif_parse_colortable(
 }
 
 
-static int
+static SIXELSTATUS
 gif_load_header(
     gif_context_t /* in */ *s,
     gif_t         /* in */ *g)
 {
-    uint8_t version;
+    SIXELSTATUS status = SIXEL_FALSE;
+    unsigned char version;
     if (gif_get8(s) != 'G') {
-        return (-1);
+        goto end;
     }
     if (gif_get8(s) != 'I') {
-        return (-1);
+        goto end;
     }
     if (gif_get8(s) != 'F') {
-        return (-1);
+        goto end;
     }
     if (gif_get8(s) != '8') {
-        return (-1);
+        goto end;
     }
 
     version = gif_get8(s);
 
     if (version != '7' && version != '9') {
-        return (-1);
+        goto end;
     }
     if (gif_get8(s) != 'a') {
-        return (-1);
+        goto end;
     }
 
     g->w = gif_get16le(s);
@@ -192,14 +149,17 @@ gif_load_header(
     g->flags = gif_get8(s);
     g->bgindex = gif_get8(s);
     g->ratio = gif_get8(s);
-    g->transparent = -1;
-    g->loop_count = -1;
+    g->transparent = (-1);
+    g->loop_count = (-1);
 
     if (g->flags & 0x80) {
-        gif_parse_colortable(s,g->pal, 2 << (g->flags & 7));
+        gif_parse_colortable(s, g->pal, 2 << (g->flags & 7));
     }
 
-    return 0;
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
@@ -218,10 +178,10 @@ gif_init_frame(
     frame->delay = pg->delay;
     ncolors = 2 << (pg->flags & 7);
     if (frame->palette == NULL) {
-        frame->palette = malloc(ncolors * 3);
+        frame->palette = (unsigned char *)malloc(ncolors * 3);
     } else if (frame->ncolors < ncolors) {
         free(frame->palette);
-        frame->palette = malloc(ncolors * 3);
+        frame->palette = (unsigned char *)malloc(ncolors * 3);
     }
     if (frame->palette == NULL) {
         status = SIXEL_BAD_ALLOCATION;
@@ -231,7 +191,7 @@ gif_init_frame(
     if (frame->ncolors <= reqcolors && fuse_palette) {
         frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
         free(frame->pixels);
-        frame->pixels = malloc(frame->width * frame->height);
+        frame->pixels = (unsigned char *)malloc(frame->width * frame->height);
         if (frame->pixels == NULL) {
             sixel_helper_set_additional_message(
                 "malloc() failed in gif_init_frame().");
@@ -268,7 +228,7 @@ gif_init_frame(
         }
     } else {
         frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        frame->pixels = malloc(pg->w * pg->h * 3);
+        frame->pixels = (unsigned char *)malloc(pg->w * pg->h * 3);
         if (frame->pixels == NULL) {
             sixel_helper_set_additional_message(
                 "malloc() failed in gif_init_frame().");
@@ -292,8 +252,8 @@ end:
 
 static void
 gif_out_code(
-    gif_t    /* in */ *g,
-    uint16_t /* in */ code
+    gif_t           /* in */ *g,
+    unsigned short  /* in */ code
 )
 {
     /* recurse to decode the prefixes, since the linked-list is backwards,
@@ -329,10 +289,10 @@ gif_process_raster(
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    uint8_t lzw_cs;
-    int32_t len, code;
-    uint32_t first;
-    int32_t codesize, codemask, avail, oldcode, bits, valid_bits, clear;
+    unsigned char lzw_cs;
+    signed int len, code;
+    unsigned int first;
+    signed int codesize, codemask, avail, oldcode, bits, valid_bits, clear;
     gif_lzw *p;
 
     lzw_cs = gif_get8(s);
@@ -344,13 +304,13 @@ gif_process_raster(
     valid_bits = 0;
     for (code = 0; code < clear; code++) {
         g->codes[code].prefix = -1;
-        g->codes[code].first = (uint8_t) code;
-        g->codes[code].suffix = (uint8_t) code;
+        g->codes[code].first = (unsigned char) code;
+        g->codes[code].suffix = (unsigned char) code;
     }
 
     /* support no starting clear code */
     avail = clear + 2;
-    oldcode = -1;
+    oldcode = (-1);
 
     len = 0;
     for(;;) {
@@ -362,7 +322,7 @@ gif_process_raster(
                 }
             }
             --len;
-            bits |= (int32_t) gif_get8(s) << valid_bits;
+            bits |= (signed int) gif_get8(s) << valid_bits;
             valid_bits += 8;
         } else {
             code = bits & codemask;
@@ -376,9 +336,9 @@ gif_process_raster(
                 oldcode = -1;
                 first = 0;
             } else if (code == clear + 1) { /* end of stream code */
-                gif_skip(s, len);
+                s->img_buffer += len;
                 while ((len = gif_get8(s)) > 0) {
-                   gif_skip(s,len);
+                    s->img_buffer += len;
                 }
                 return SIXEL_OK;
             } else if (code <= avail) {
@@ -396,7 +356,7 @@ gif_process_raster(
                         status = SIXEL_RUNTIME_ERROR;
                         goto end;
                     }
-                    p->prefix = (int16_t) oldcode;
+                    p->prefix = (signed short) oldcode;
                     p->first = g->codes[oldcode].first;
                     p->suffix = (code == avail) ? p->first : g->codes[code].first;
                 } else if (code == avail) {
@@ -406,7 +366,7 @@ gif_process_raster(
                     goto end;
                 }
 
-                gif_out_code(g, (uint16_t) code);
+                gif_out_code(g, (unsigned short) code);
 
                 if ((avail & codemask) == 0 && avail <= 0x0FFF) {
                     codesize++;
@@ -435,18 +395,20 @@ static SIXELSTATUS
 gif_load_next(
     gif_context_t /* in */ *s,
     gif_t         /* in */ *g,
-    uint8_t       /* in */ *bgcolor
+    unsigned char /* in */ *bgcolor
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    uint8_t buffer[256];
+    unsigned char buffer[256];
+    int x;
+    int y;
+    int w;
+    int h;
+    int len;
 
     for (;;) {
         switch (gif_get8(s)) {
         case 0x2C: /* Image Descriptor */
-        {
-            int32_t x, y, w, h;
-
             x = gif_get16le(s);
             y = gif_get16le(s);
             w = gif_get16le(s);
@@ -480,7 +442,7 @@ gif_load_next(
                 gif_parse_colortable(s,
                                      g->lpal,
                                      2 << (g->lflags & 7));
-                g->color_table = (uint8_t *) g->lpal;
+                g->color_table = (unsigned char *) g->lpal;
             } else if (g->flags & 0x80) {
                 if (g->transparent >= 0 && (g->eflags & 0x01)) {
                    if (bgcolor) {
@@ -489,7 +451,7 @@ gif_load_next(
                        g->pal[g->transparent][2] = bgcolor[0];
                    }
                 }
-                g->color_table = (uint8_t *)g->pal;
+                g->color_table = (unsigned char *)g->pal;
             } else {
                 sixel_helper_set_additional_message(
                     "corrupt GIF (reason: missing color table).");
@@ -501,11 +463,9 @@ gif_load_next(
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
-        }
+            goto end;
 
         case 0x21: /* Comment Extension. */
-        {
-            int len;
             switch (gif_get8(s)) {
             case 0x01: /* Plain Text Extension */
                 break;
@@ -518,13 +478,18 @@ gif_load_next(
                     g->delay = gif_get16le(s); /* delay */
                     g->transparent = gif_get8(s);
                 } else {
-                    gif_skip(s, len);
+                    s->img_buffer += len;
                     break;
                 }
                 break;
             case 0xFF: /* Application Extension */
                 len = gif_get8(s); /* block size */
-                gif_getn(s, buffer, len);
+                if (s->img_buffer + len > s->img_buffer_end) {
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
+                }
+                memcpy(buffer, s->img_buffer, len);
+                s->img_buffer += len;
                 buffer[len] = 0;
                 if (len == 11 && strcmp((char *)buffer, "NETSCAPE2.0") == 0) {
                     if (gif_get8(s) == 0x03) {
@@ -544,10 +509,9 @@ gif_load_next(
                 break;
             }
             while ((len = gif_get8(s)) != 0) {
-                gif_skip(s, len);
+                s->img_buffer += len;
             }
             break;
-        }
 
         case 0x3B: /* gif stream termination code */
             g->is_terminated = 1;
@@ -584,14 +548,17 @@ load_gif(
 {
     gif_context_t s;
     gif_t g;
-    SIXELSTATUS status;
+    SIXELSTATUS status = SIXEL_FALSE;
     sixel_frame_t *frame;
+
+    g.out = NULL;
 
     frame = sixel_frame_create();
     if (frame == NULL) {
-        return SIXEL_FALSE;
+        goto end;
     }
-    gif_start_mem(&s, buffer, size);
+    s.img_buffer = s.img_buffer_original = (unsigned char *)buffer;
+    s.img_buffer_end = (unsigned char *)buffer + size;
     memset(&g, 0, sizeof(g));
     status = gif_load_header(&s, &g);
     if (status != SIXEL_OK) {
@@ -599,8 +566,9 @@ load_gif(
     }
     frame->width = g.w,
     frame->height = g.h,
-    g.out = (uint8_t *)malloc(g.w * g.h);
+    g.out = (unsigned char *)malloc(g.w * g.h);
     if (g.out == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
 
@@ -610,7 +578,7 @@ load_gif(
 
         frame->frame_no = 0;
 
-        gif_rewind(&s);
+        s.img_buffer = s.img_buffer_original;
         status = gif_load_header(&s, &g);
         if (status != SIXEL_OK) {
             goto end;
@@ -645,14 +613,16 @@ load_gif(
 
         ++frame->loop_count;
 
-        if (g.loop_count == (-1)) {
+        if (g.loop_count < 0) {
             break;
         }
         if (loop_control == SIXEL_LOOP_DISABLE || frame->frame_no == 1) {
             break;
         }
-        if (loop_control == SIXEL_LOOP_AUTO && frame->loop_count == g.loop_count) {
-            break;
+        if (loop_control == SIXEL_LOOP_AUTO) {
+            if (frame->loop_count == g.loop_count) {
+                break;
+            }
         }
     }
 
@@ -660,8 +630,47 @@ end:
     sixel_frame_unref(frame);
     free(g.out);
 
-    return 0;
+    return status;
 }
+
+
+#if HAVE_TESTS
+static int
+test1(void)
+{
+    int nret = EXIT_FAILURE;
+
+    nret = EXIT_SUCCESS;
+
+    return nret;
+}
+
+
+int
+sixel_fromgif_tests_main(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t i;
+    typedef int (* testcase)(void);
+
+    static testcase const testcases[] = {
+        test1,
+    };
+
+    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
+        nret = testcases[i]();
+        if (nret != EXIT_SUCCESS) {
+            goto error;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+#endif  /* HAVE_TESTS */
+
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

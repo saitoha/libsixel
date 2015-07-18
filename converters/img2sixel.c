@@ -55,7 +55,7 @@ static
 void show_version(void)
 {
     printf("img2sixel " PACKAGE_VERSION "\n"
-           "Copyright (C) 2014,2015 Hayaki Saito <user@zuse.jp>.\n"
+           "Copyright (C) 2014,2015 Hayaki Saito <saitoha@me.com>.\n"
            "\n"
            "Permission is hereby granted, free of charge, to any person obtaining a copy of\n"
            "this software and associated documentation files (the \"Software\"), to deal in\n"
@@ -262,6 +262,20 @@ void show_help(void)
             "-v, --verbose              show debugging info\n"
             "-V, --version              show version and license info\n"
             "-H, --help                 show this help\n"
+            "\n"
+            "Environment variables:\n"
+            "SIXEL_BGCOLOR              specify background color.\n"
+            "                           overrided by -B(--bgcolor) option.\n"
+            "                           represented by the following\n"
+            "                           syntax:\n"
+            "                             #rgb\n"
+            "                             #rrggbb\n"
+            "                             #rrrgggbbb\n"
+            "                             #rrrrggggbbbb\n"
+            "                             rgb:r/g/b\n"
+            "                             rgb:rr/gg/bb\n"
+            "                             rgb:rrr/ggg/bbb\n"
+            "                             rgb:rrrr/gggg/bbbb\n"
             );
 }
 

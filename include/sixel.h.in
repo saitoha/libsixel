@@ -192,7 +192,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_COMPLEXION_SCORE ('C')  /* -C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE:
                                                  specify an number argument for the score of
                                                  complexion correction. */
-#define SIXEL_OPTFLAG_IGNORE_DELAY     ('u')  /* -g, --ignore-delay: render GIF animation without delay */
+#define SIXEL_OPTFLAG_IGNORE_DELAY     ('g')  /* -g, --ignore-delay: render GIF animation without delay */
 #define SIXEL_OPTFLAG_STATIC           ('S')  /* -S, --static: render animated GIF as a static image */
 #define SIXEL_OPTFLAG_DIFFUSION        ('d')  /* -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE:
                                                  choose diffusion method which used with -p option.
@@ -776,25 +776,28 @@ typedef struct sixel_frame { int dummy; } sixel_frame_t;
 extern "C" {
 #endif
 
+/* create frame object */
+sixel_frame_t *
+sixel_frame_create(void);
+
 SIXELAPI unsigned char *
-sixel_frame_get_pixels(sixel_frame_t *frame);
+sixel_frame_get_pixels(sixel_frame_t /* in */ *frame);
 
 SIXELAPI void
-sixel_frame_ref(sixel_frame_t *frame);
+sixel_frame_ref(sixel_frame_t /* in */ *frame);
 
 SIXELAPI void
-sixel_frame_unref(sixel_frame_t *frame);
+sixel_frame_unref(sixel_frame_t /* in */ *frame);
 
 SIXELAPI SIXELSTATUS
 sixel_frame_init(
-    sixel_frame_t *frame,
-    unsigned char *pixels,
-    int width,
-    int height,
-    int pixelformat,
-    unsigned char *palette,
-    int ncolors
-);
+    sixel_frame_t   /* in */ *frame,
+    unsigned char   /* in */ *pixels,
+    int             /* in */ width,
+    int             /* in */ height,
+    int             /* in */ pixelformat,
+    unsigned char   /* in */ *palette,
+    int             /* in */ ncolors);
 
 /* get pixels */
 SIXELAPI unsigned char *
@@ -896,12 +899,12 @@ sixel_helper_write_image_file(
 
 /* easy encoder API */
 
-#ifndef LIBSIXEL_EASY_ENCODE_H
+#ifndef LIBSIXEL_ENCODER_H
 
 /* handle type of dither context object */
 typedef struct sixel_encoder { int dummy; } sixel_encoder_t;
 
-#endif  /* LIBSIXEL_EASY_ENCODE_H */
+#endif  /* LIBSIXEL_ENCODER_H */
 
 #ifdef __cplusplus
 extern "C" {
@@ -912,10 +915,10 @@ SIXELAPI sixel_encoder_t *
 sixel_encoder_create(void);
 
 SIXELAPI void
-sixel_encoder_ref(sixel_encoder_t *encoder);
+sixel_encoder_ref(sixel_encoder_t /* in */ *encoder);
 
 SIXELAPI void
-sixel_encoder_unref(sixel_encoder_t *encoder);
+sixel_encoder_unref(sixel_encoder_t /* in */ *encoder);
 
 SIXELAPI SIXELSTATUS
 sixel_encoder_set_cancel_flag(
@@ -940,12 +943,12 @@ sixel_encoder_encode(
 
 /* easy encoder API */
 
-#ifndef LIBSIXEL_EASY_DECODE_H
+#ifndef LIBSIXEL_DECODER_H
 
 /* handle type of dither context object */
 typedef struct sixel_decoder { int dummy; } sixel_decoder_t;
 
-#endif  /* LIBSIXEL_EASY_ENCODE_H */
+#endif  /* LIBSIXEL_DECODER_H */
 
 #ifdef __cplusplus
 extern "C" {

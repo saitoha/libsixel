@@ -40,11 +40,16 @@ load_gif(
     void          /* in */ *context      /* private data for callback */
 );
 
+#if HAVE_TESTS
+int
+sixel_fromgif_tests_main(void);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LIBSIXEL_FROMGIF */
+#endif /* LIBSIXEL_FROMGIF_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

@@ -19,25 +19,38 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_FROMPNM_H
-#define LIBSIXEL_FROMPNM_H
+#ifndef LIBSIXEL_CHUNK_H
+#define LIBSIXEL_CHUNK_H
+
+/* chunk object */
+typedef struct sixel_chunk
+{
+    unsigned char *buffer;
+    size_t size;
+    size_t max_size;
+} sixel_chunk_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* exported functions */
-unsigned char *
-load_pnm(unsigned char *p, int len,
-         int *psx, int *psy,
-         unsigned char **ppalette, int *pncolors,
-         int *ppixelformat);
+SIXELSTATUS
+sixel_chunk_new(
+    sixel_chunk_t   /* out */ **ppchunk,
+    char const      /* in */  *filename,
+    int             /* in */  finsecure,
+    int const       /* in */  *cancel_flag);
+
+
+void
+sixel_chunk_destroy(
+    sixel_chunk_t * const /* in */ pchunk);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LIBSIXEL_FROMPNM_H */
+#endif /* LIBSIXEL_CHUNK_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

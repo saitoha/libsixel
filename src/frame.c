@@ -43,7 +43,7 @@ sixel_frame_create(void)
 {
     sixel_frame_t *frame;
 
-    frame = malloc(sizeof(sixel_frame_t));
+    frame = (sixel_frame_t *)malloc(sizeof(sixel_frame_t));
     if (frame == NULL) {
         return NULL;
     }
@@ -203,12 +203,13 @@ sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame)  /* frame object */
 }
 
 
-SIXELAPI int
+SIXELAPI SIXELSTATUS
 sixel_frame_strip_alpha(
     sixel_frame_t  /* in */ *frame,
     unsigned char  /* in */ *bgcolor
 )
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     int x;
     int y;
     unsigned char *src;
@@ -247,7 +248,9 @@ sixel_frame_strip_alpha(
         break;
     }
 
-    return 0;
+    status = SIXEL_OK;
+
+    return status;
 }
 
 
@@ -266,7 +269,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
         size = frame->width * frame->height * 4;
-        normalized_pixels = malloc(size);
+        normalized_pixels = (unsigned char *)malloc(size);
         src = normalized_pixels + frame->width * frame->height * 3;
         dst = normalized_pixels;
         status = sixel_helper_normalize_pixelformat(src,
@@ -290,7 +293,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
         break;
     case SIXEL_PIXELFORMAT_PAL8:
         size = frame->width * frame->height * 3;
-        normalized_pixels = malloc(size);
+        normalized_pixels = (unsigned char *)malloc(size);
         src = frame->pixels;
         dst = normalized_pixels;
         for (; dst != normalized_pixels + size; ++src) {
@@ -315,7 +318,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     case SIXEL_PIXELFORMAT_ARGB8888:
         /* normalize pixelformat */
         size = frame->width * frame->height * 3;
-        normalized_pixels = malloc(size);
+        normalized_pixels = (unsigned char *)malloc(size);
         status = sixel_helper_normalize_pixelformat(normalized_pixels,
                                                     &frame->pixelformat,
                                                     frame->pixels,
@@ -361,7 +364,7 @@ sixel_frame_resize(
     }
 
     size = width * height * 3;
-    scaled_frame = malloc(size);
+    scaled_frame = (unsigned char *)malloc(size);
     if (scaled_frame == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto end;
@@ -474,7 +477,7 @@ sixel_frame_clip(
     case SIXEL_PIXELFORMAT_G1:
     case SIXEL_PIXELFORMAT_G2:
     case SIXEL_PIXELFORMAT_G4:
-        normalized_pixels = malloc(frame->width * frame->height);
+        normalized_pixels = (unsigned char *)malloc(frame->width * frame->height);
         status = sixel_helper_normalize_pixelformat(normalized_pixels,
                                                     &frame->pixelformat,
                                                     frame->pixels,

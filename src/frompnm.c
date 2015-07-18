@@ -136,7 +136,7 @@ load_pnm(unsigned char *p, int length,
         return NULL;
     }
 
-    result = malloc(width * height * 3 + 1);
+    result = (unsigned char *)malloc(width * height * 3 + 1);
     if (result == NULL) {
         return NULL;
     }

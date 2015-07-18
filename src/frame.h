@@ -38,9 +38,9 @@ typedef struct sixel_frame {
     int transparent;          /* -1(no transparent) or >= 0(index of transparent color) */
 } sixel_frame_t;
 
-/* create frame object */
-sixel_frame_t *
-sixel_frame_create(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #if HAVE_TESTS
 int

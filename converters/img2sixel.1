@@ -264,6 +264,35 @@ show version and license info.
 print help.
 
 
+.SH "ENVIRONMENT VARIABLES"
+\fIimg2sixel\fP has the following command-line options:
+.TP 5
+.B SIXEL_BGCOLOR
+.br
+specify background color.
+.br
+overrided by -B(--bgcolor) option.
+.br
+represented by the following syntax:
+.br
+#rgb
+.br
+#rrggbb
+.br
+#rrrgggbbb
+.br
+#rrrrggggbbbb
+.br
+rgb:r/g/b
+.br
+rgb:rr/gg/bb
+.br
+rgb:rrr/ggg/bbb
+.br
+rgb:rrrr/gggg/bbbb
+.br
+
+
 .SH Image loaders
 
 \fIimg2sixel\fP includes two or more image decoder components.
@@ -454,6 +483,6 @@ Kazuhiro YOSHIKAWA (@yoshikaw)
 .PD
 .IP \(bu
 Send bug-reports, fixes, enhancements to
-.BR user@zuse.jp .
+.BR saitoha@me.com.jp
 
 .\" end of man page

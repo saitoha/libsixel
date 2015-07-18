@@ -19,25 +19,23 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_FROMPNM_H
-#define LIBSIXEL_FROMPNM_H
+#ifndef LIBSIXEL_LOADER_H
+#define LIBSIXEL_LOADER_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* exported functions */
-unsigned char *
-load_pnm(unsigned char *p, int len,
-         int *psx, int *psy,
-         unsigned char **ppalette, int *pncolors,
-         int *ppixelformat);
+#if HAVE_TESTS
+int
+sixel_loader_tests_main(void);
+#endif
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LIBSIXEL_FROMPNM_H */
+#endif /* LIBSIXEL_LOADER_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

@@ -22,10 +22,6 @@
 #ifndef LIBSIXEL_OUTPUT_H
 #define LIBSIXEL_OUTPUT_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct sixel_node {
     struct sixel_node *next;
     int pal;
@@ -80,10 +76,6 @@ typedef struct sixel_output {
     unsigned char buffer[1];
 
 } sixel_output_t;
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* LIBSIXEL_OUTPUT_H */
 

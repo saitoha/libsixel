@@ -19,8 +19,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_EASY_DECODE_H
-#define LIBSIXEL_EASY_DECODE_H
+#ifndef LIBSIXEL_DECODER_H
+#define LIBSIXEL_DECODER_H
 
 /* encode settings object */
 typedef struct sixel_decoder {
@@ -29,7 +29,7 @@ typedef struct sixel_decoder {
     char *output;
 } sixel_decoder_t;
 
-#endif /* LIBSIXEL_EASY_DECODE_H */
+#endif /* LIBSIXEL_DECODER_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

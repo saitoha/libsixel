@@ -22,9 +22,17 @@
 #ifndef LIBSIXEL_STATUS_H
 #define LIBSIXEL_STATUS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if HAVE_TESTS
 int
 sixel_status_tests_main(void);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* LIBSIXEL_STATUS_H */
