@@ -822,6 +822,7 @@ end:
 }
 
 
+#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
 static SIXELSTATUS
 tty_cbreak(struct termios *old_termios, struct termios *new_termios)
 {
@@ -855,8 +856,10 @@ tty_cbreak(struct termios *old_termios, struct termios *new_termios)
 end:
     return status;
 }
+#endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY */
 
 
+#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
 static SIXELSTATUS
 tty_restore(struct termios *old_termios)
 {
@@ -876,6 +879,7 @@ tty_restore(struct termios *old_termios)
 end:
     return status;
 }
+#endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY */
 
 
 static SIXELSTATUS
@@ -1031,7 +1035,7 @@ scroll_on_demand(
             "scroll_on_demand: sixel_write_callback() failed.");
         goto end;
     }
-#endif
+#endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY */
 
     status = SIXEL_OK;
 
