@@ -46,6 +46,12 @@ void
 sixel_chunk_destroy(
     sixel_chunk_t * const /* in */ pchunk);
 
+
+#if HAVE_TESTS
+int
+sixel_chunk_tests_main(void);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

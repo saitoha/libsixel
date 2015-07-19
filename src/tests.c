@@ -41,6 +41,7 @@
 #include "loader.h"
 #include "fromgif.h"
 #include <sixel.h>
+#include "chunk.h"
 
 #if HAVE_TESTS
 

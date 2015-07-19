@@ -1269,28 +1269,9 @@ test1(void)
     int nret = EXIT_FAILURE;
     unsigned char *ptr = malloc(16);
 
-#ifdef HAVE_LIBCURL
-    sixel_chunk_t chunk = {0, 0, 0};
-    int nread;
-
-    nread = memory_write(NULL, 1, 1, NULL);
-    if (nread != 0) {
-        goto error;
-    }
-
-    nread = memory_write(ptr, 1, 1, &chunk);
-    if (nread != 0) {
-        goto error;
-    }
-
-    nread = memory_write(ptr, 0, 1, &chunk);
-    if (nread != 0) {
-        goto error;
-    }
-#else
     nret = EXIT_SUCCESS;
     goto error; 
-#endif  /* HAVE_LIBCURL */
+
     nret = EXIT_SUCCESS;
 
 error:
