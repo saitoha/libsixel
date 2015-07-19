@@ -1200,7 +1200,9 @@ SIXELAPI sixel_encoder_t *
 sixel_encoder_create(void)
 {
     sixel_encoder_t *encoder;
-    char const *default_color;
+    char const *env_default_bgcolor;
+    char const *env_default_ncolors;
+    int ncolors;
 
     encoder = (sixel_encoder_t *)malloc(sizeof(sixel_encoder_t));
     if (encoder == NULL) {
@@ -1246,9 +1248,17 @@ sixel_encoder_create(void)
     encoder->cancel_flag           = NULL;
     encoder->dither_cache          = NULL;
 
-    default_color = getenv("SIXEL_BGCOLOR");
-    if (default_color) {
-        (void) parse_x_colorspec(default_color, &encoder->bgcolor);
+    env_default_bgcolor = getenv("SIXEL_BGCOLOR");
+    if (env_default_bgcolor) {
+        (void) parse_x_colorspec(env_default_bgcolor, &encoder->bgcolor);
+    }
+
+    env_default_ncolors = getenv("SIXEL_COLORS");
+    if (env_default_ncolors) {
+        ncolors = atoi(env_default_ncolors);
+        if (ncolors > 1 && ncolors <= 256) {
+            encoder->reqcolors = ncolors;
+        }
     }
 
     return encoder;
