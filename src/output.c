@@ -22,8 +22,8 @@
 #include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "output.h"
 #include <sixel.h>
+#include "output.h"
 
 
 SIXELAPI sixel_output_t *

@@ -26,9 +26,9 @@
 # include <inttypes.h>
 #endif
 
+#include <sixel.h>
 #include "output.h"
 #include "dither.h"
-#include "sixel.h"
 
 #define DCS_START_7BIT       "\033P"
 #define DCS_START_7BIT_SIZE  (sizeof(DCS_START_7BIT) - 1)

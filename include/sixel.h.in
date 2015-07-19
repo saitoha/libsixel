@@ -470,24 +470,11 @@ enum methodForResampling {
 };
 #endif
 
-#ifndef LIBSIXEL_DITHER_H
-
-/* handle type of dither context object */
-typedef struct sixel_dither { int dummy; } sixel_dither_t;
-
-#endif /* SIXEL_DITHER_H */
-
-#ifndef LIBSIXEL_OUTPUT_H
-
-typedef int (* sixel_write_function)(char *data, int size, void *priv);
-
-/* handle type of output context object */
-typedef struct sixel_output { int dummy; } sixel_output_t;
-
-#endif  /* LIBSIXEL_OUTPUT_H */
-
-
 /* output context manipulation API */
+
+struct sixel_output;
+typedef struct sixel_output sixel_output_t;
+typedef int (* sixel_write_function)(char *data, int size, void *priv);
 
 #ifdef __cplusplus
 extern "C" {
@@ -551,6 +538,10 @@ sixel_output_set_encode_policy(
 
 
 /* color quantization API */
+
+/* handle type of dither context object */
+struct sixel_dither;
+typedef struct sixel_dither sixel_dither_t;
 
 #ifdef __cplusplus
 extern "C" {

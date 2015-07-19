@@ -56,8 +56,8 @@
 # include <inttypes.h>
 #endif
 
+#include <sixel.h>
 #include "output.h"
-#include "sixel.h"
 
 #define RGB(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
 

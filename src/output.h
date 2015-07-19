@@ -30,9 +30,7 @@ typedef struct sixel_node {
     unsigned char *map;
 } sixel_node_t;
 
-typedef int (* sixel_write_function)(char *data, int size, void *priv);
-
-typedef struct sixel_output {
+struct sixel_output {
 
     int ref;
 
@@ -75,7 +73,7 @@ typedef struct sixel_output {
     int pos;
     unsigned char buffer[1];
 
-} sixel_output_t;
+};
 
 #endif /* LIBSIXEL_OUTPUT_H */
 

@@ -23,7 +23,7 @@
 #define LIBSIXEL_DITHER_H
 
 /* dither context object */
-typedef struct sixel_dither {
+struct sixel_dither {
     unsigned int ref;           /* reference counter */
     unsigned char *palette;     /* palette definition */
     unsigned short *cachetable; /* cache table */
@@ -41,7 +41,7 @@ typedef struct sixel_dither {
     int quality_mode;           /* quality of histogram */
     int keycolor;               /* background color */
     int pixelformat;            /* pixelformat for internal processing */
-} sixel_dither_t;
+};
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,7 +49,7 @@ extern "C" {
 
 /* apply palette */
 unsigned char *
-sixel_dither_apply_palette(sixel_dither_t *dither,
+sixel_dither_apply_palette(struct sixel_dither *dither,
                            unsigned char *pixels,
                            int width, int height);
 
