@@ -276,6 +276,9 @@ void show_help(void)
             "                             rgb:rr/gg/bb\n"
             "                             rgb:rrr/ggg/bbb\n"
             "                             rgb:rrrr/gggg/bbbb\n"
+            "SIXEL_COLORS               specify number of colors to reduce\n"
+            "                           the image to (default=256)\n"
+            "                           overrided by -p(--colors) option.\n"
             );
 }
 

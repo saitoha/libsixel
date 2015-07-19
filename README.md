@@ -487,6 +487,9 @@ SIXEL_BGCOLOR              specify background color.
                              rgb:rr/gg/bb
                              rgb:rrr/ggg/bbb
                              rgb:rrrr/gggg/bbbb
+SIXEL_COLORS               specify number of colors to reduce
+                           the image to (default=256)
+                           overrided by -p(--colors) option.
 ```
 
 Convert a jpeg image file into a sixel file
