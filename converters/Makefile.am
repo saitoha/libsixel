@@ -239,8 +239,9 @@ endif
 	rm -f sixel.pipe
 	if test "$(WINE)" = "" && which mkfifo; then \
 	    mkfifo sixel.pipe; \
-	    test -e sixel.pipe && ($(WINE) ./img2sixel -D < sixel.pipe&); \
+	    ($(WINE) ./img2sixel -D < sixel.pipe&); \
 	    cat ../images/snake.jpg > sixel.pipe; \
+	    sleep 1; \
 	    echo -n > sixel.pipe; \
 	    sleep 1; \
 	    rm -f sixel.pipe; \

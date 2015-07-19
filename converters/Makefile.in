@@ -1199,8 +1199,9 @@ test_impl:
 @WANT_IMG2SIXEL_TRUE@	rm -f sixel.pipe
 @WANT_IMG2SIXEL_TRUE@	if test "$(WINE)" = "" && which mkfifo; then \
 @WANT_IMG2SIXEL_TRUE@	    mkfifo sixel.pipe; \
-@WANT_IMG2SIXEL_TRUE@	    test -e sixel.pipe && ($(WINE) ./img2sixel -D < sixel.pipe&); \
+@WANT_IMG2SIXEL_TRUE@	    ($(WINE) ./img2sixel -D < sixel.pipe&); \
 @WANT_IMG2SIXEL_TRUE@	    cat ../images/snake.jpg > sixel.pipe; \
+@WANT_IMG2SIXEL_TRUE@	    sleep 1; \
 @WANT_IMG2SIXEL_TRUE@	    echo -n > sixel.pipe; \
 @WANT_IMG2SIXEL_TRUE@	    sleep 1; \
 @WANT_IMG2SIXEL_TRUE@	    rm -f sixel.pipe; \
