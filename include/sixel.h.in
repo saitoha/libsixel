@@ -756,12 +756,9 @@ enum loopControl {
 };
 #endif
 
-#ifndef LIBSIXEL_FRAME_H
-
 /* handle type of dither context object */
-typedef struct sixel_frame { int dummy; } sixel_frame_t;
-
-#endif  /* LIBSIXEL_FRAME_H */
+struct sixel_frame;
+typedef struct sixel_frame sixel_frame_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -890,12 +887,9 @@ sixel_helper_write_image_file(
 
 /* easy encoder API */
 
-#ifndef LIBSIXEL_ENCODER_H
-
 /* handle type of dither context object */
-typedef struct sixel_encoder { int dummy; } sixel_encoder_t;
-
-#endif  /* LIBSIXEL_ENCODER_H */
+struct sixel_encoder;
+typedef struct sixel_encoder sixel_encoder_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -934,12 +928,9 @@ sixel_encoder_encode(
 
 /* easy encoder API */
 
-#ifndef LIBSIXEL_DECODER_H
-
 /* handle type of dither context object */
-typedef struct sixel_decoder { int dummy; } sixel_decoder_t;
-
-#endif  /* LIBSIXEL_DECODER_H */
+struct sixel_decoder;
+typedef struct sixel_decoder sixel_decoder_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -968,8 +959,6 @@ sixel_decoder_decode(
 #ifdef __cplusplus
 }
 #endif
-
-
 
 #endif  /* LIBSIXEL_SIXEL_H */
 

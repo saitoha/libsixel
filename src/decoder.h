@@ -23,11 +23,11 @@
 #define LIBSIXEL_DECODER_H
 
 /* encode settings object */
-typedef struct sixel_decoder {
+struct sixel_decoder {
     unsigned int ref;
     char *input;
     char *output;
-} sixel_decoder_t;
+};
 
 #endif /* LIBSIXEL_DECODER_H */
 

@@ -60,8 +60,8 @@
 # include <io.h>
 #endif
 
-#include "decoder.h"
 #include <sixel.h>
+#include "decoder.h"
 
 
 static char *

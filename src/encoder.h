@@ -23,7 +23,7 @@
 #define LIBSIXEL_ENCODER_H
 
 /* encoder object */
-typedef struct sixel_encoder {
+struct sixel_encoder {
     unsigned int ref;          /* reference counter */
     int reqcolors;
     char *mapfile;
@@ -62,7 +62,7 @@ typedef struct sixel_encoder {
     int finsecure;
     int *cancel_flag;
     void *dither_cache;
-} sixel_encoder_t;
+};
 
 #if HAVE_TESTS
 int

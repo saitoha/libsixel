@@ -31,6 +31,7 @@
 # include <inttypes.h>
 #endif
 
+#include <sixel.h>
 #include "dither.h"
 #include "quant.h"
 #include "frame.h"
@@ -40,7 +41,6 @@
 #include "status.h"
 #include "loader.h"
 #include "fromgif.h"
-#include <sixel.h>
 #include "chunk.h"
 
 #if HAVE_TESTS

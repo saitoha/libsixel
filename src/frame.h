@@ -23,7 +23,7 @@
 #define LIBSIXEL_FRAME_H
 
 /* frame object */
-typedef struct sixel_frame {
+struct sixel_frame {
     unsigned int ref;         /* reference counter */
     unsigned char *pixels;    /* loaded pixel data */
     unsigned char *palette;   /* loaded palette data */
@@ -36,7 +36,7 @@ typedef struct sixel_frame {
     int loop_count;           /* loop count */
     int multiframe;           /* whether the image has multiple frames */
     int transparent;          /* -1(no transparent) or >= 0(index of transparent color) */
-} sixel_frame_t;
+};
 
 #ifdef __cplusplus
 extern "C" {

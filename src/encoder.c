@@ -63,9 +63,9 @@
 # include <fcntl.h>
 #endif
 
+#include <sixel.h>
 #include "encoder.h"
 #include "rgblookup.h"
-#include <sixel.h>
 
 
 static char *

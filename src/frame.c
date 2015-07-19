@@ -34,8 +34,8 @@
 # include <inttypes.h>
 #endif
 
-#include "frame.h"
 #include <sixel.h>
+#include "frame.h"
 
 
 SIXELAPI sixel_frame_t *
