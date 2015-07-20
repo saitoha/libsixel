@@ -115,6 +115,13 @@ main(int argc, char *argv[])
     }
 
     puts("status ok.");
+
+    nret = sixel_chunk_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("chunk ok.");
 error:
     return nret;
 }
