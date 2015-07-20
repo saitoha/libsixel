@@ -65,8 +65,8 @@
 # define O_BINARY _O_BINARY
 #endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 
-#include <sixel.h>
 #include "chunk.h"
+#include "allocator.h"
 
 static SIXELSTATUS
 sixel_chunk_init(
@@ -77,7 +77,8 @@ sixel_chunk_init(
 
     pchunk->max_size = initial_size;
     pchunk->size = 0;
-    pchunk->buffer = (unsigned char *)malloc(pchunk->max_size);
+    pchunk->buffer
+        = (unsigned char *)pchunk->allocator->fn_malloc(pchunk->max_size);
 
     if (pchunk->buffer == NULL) {
         sixel_helper_set_additional_message(
@@ -165,7 +166,9 @@ wait_file(int fd, int usec)
 
 
 static SIXELSTATUS
-open_binary_file(FILE **f, char const *filename)
+open_binary_file(
+    FILE        /* out */   **f,
+    char const  /* in */    *filename)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     char buffer[1024];
@@ -337,21 +340,24 @@ end:
 
 SIXELSTATUS
 sixel_chunk_new(
-    sixel_chunk_t   /* out */ **ppchunk,
-    char const      /* in */  *filename,
-    int             /* in */  finsecure,
-    int const       /* in */  *cancel_flag
-)
+    sixel_chunk_t       /* out */   **ppchunk,
+    char const          /* in */    *filename,
+    int                 /* in */    finsecure,
+    int const           /* in */    *cancel_flag,
+    sixel_allocator_t   /* in */    *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
-    *ppchunk = (sixel_chunk_t *)malloc(sizeof(sixel_chunk_t));
+    *ppchunk = (sixel_chunk_t *)allocator->fn_malloc(sizeof(sixel_chunk_t));
     if (*ppchunk == NULL) {
         sixel_helper_set_additional_message(
             "sixel_chunk_new: malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
+
+    /* set allocator to chunk object */
+    (*ppchunk)->allocator = allocator;
 
     status = sixel_chunk_init(*ppchunk, 1024 * 32);
     if (SIXEL_FAILED(status)) {
@@ -379,10 +385,10 @@ sixel_chunk_destroy(
     sixel_chunk_t * const /* in */ pchunk)
 {
     if (pchunk) {
-        free(pchunk->buffer);
+        pchunk->allocator->fn_free(pchunk->buffer);
         pchunk->buffer = NULL;
+        pchunk->allocator->fn_free(pchunk);
     }
-    free(pchunk);
 }
 
 
@@ -394,7 +400,7 @@ test1(void)
     unsigned char *ptr = malloc(16);
 
 #ifdef HAVE_LIBCURL
-    sixel_chunk_t chunk = {0, 0, 0};
+    sixel_chunk_t chunk = {0, 0, 0, NULL};
     int nread;
 
     nread = memory_write(NULL, 1, 1, NULL);

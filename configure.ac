@@ -46,6 +46,23 @@ AC_TRY_COMPILE(
              [define 1 if GCC supports -Wtypedef-redefinition])])
 CFLAGS=$CFLAGS_BACKUP
 
+CFLAGS_BACKUP=$CFLAGS
+CFLAGS="$CFLAGS -Werror"
+AC_TRY_COMPILE(
+  [
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic pop
+    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    __attribute__((deprecated)) void test(void) {}
+  ],
+  [
+    test();
+  ],
+  [AC_DEFINE(HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS,
+             1,
+             [define 1 if GCC supports -Wdeprecated-declarations])])
+CFLAGS=$CFLAGS_BACKUP
+
 # Options
 AC_ARG_ENABLE([img2sixel],
               [AS_HELP_STRING([--disable-img2sixel],

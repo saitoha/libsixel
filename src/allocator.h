@@ -19,59 +19,19 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_ENCODER_H
-#define LIBSIXEL_ENCODER_H
+#ifndef LIBSIXEL_ALLOCATOR_H
+#define LIBSIXEL_ALLOCATOR_H
 
-/* encoder object */
-struct sixel_encoder {
-    unsigned int ref;               /* reference counter */
-    sixel_allocator_t *allocator;   /* allocator object */
-    int reqcolors;
-    char *mapfile;
-    int monochrome;
-    int highcolor;
-    int builtin_palette;
-    int method_for_diffuse;
-    int method_for_largest;
-    int method_for_rep;
-    int quality_mode;
-    int method_for_resampling;
-    int loop_mode;
-    int palette_type;
-    int f8bit;
-    int finvert;
-    int fuse_macro;
-    int fignore_delay;
-    int complexion;
-    int fstatic;
-    int pixelwidth;
-    int pixelheight;
-    int percentwidth;
-    int percentheight;
-    int clipx;
-    int clipy;
-    int clipwidth;
-    int clipheight;
-    int clipfirst;
-    int macro_number;
-    int penetrate_multiplexer;
-    int encode_policy;
-    int pipe_mode;
-    int verbose;
-    unsigned char *bgcolor;
-    int outfd;
-    int finsecure;
-    int *cancel_flag;
-    void *dither_cache;
+#include <sixel.h>
+
+struct sixel_allocator {
+    sixel_malloc_t fn_malloc;
+    sixel_realloc_t fn_realloc;
+    sixel_free_t fn_free;
 };
 
-#if HAVE_TESTS
-int
-sixel_encoder_tests_main(void);
-#endif
+#endif /* LIBSIXEL_ALLOCATOR_H */
 
-#endif /* LIBSIXEL_ENCODER_H */
-
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
+/* Hello emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
 /* EOF */

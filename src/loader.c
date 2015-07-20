@@ -1193,13 +1193,14 @@ sixel_helper_load_image_file(
     sixel_load_image_function /* in */     fn_load,       /* callback */
     int                       /* in */     finsecure,     /* true if do not verify SSL */
     int const                 /* in */     *cancel_flag,  /* cancel flag */
-    void                      /* in/out */ *context       /* private data */
+    void                      /* in/out */ *context,      /* private data */
+    sixel_allocator_t         /* in */     *allocator     /* allocator object */
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_chunk_t *pchunk = NULL;
 
-    status = sixel_chunk_new(&pchunk, filename, finsecure, cancel_flag);
+    status = sixel_chunk_new(&pchunk, filename, finsecure, cancel_flag, allocator);
     if (status != SIXEL_OK) {
         goto end;
     }

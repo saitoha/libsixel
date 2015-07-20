@@ -303,7 +303,14 @@ main(int argc, char *argv[])
     sixel_encoder_t *encoder;
     char const *optstring = "o:78p:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:B:C:DVH";
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     encoder = sixel_encoder_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
 
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
