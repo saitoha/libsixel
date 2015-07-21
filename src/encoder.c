@@ -1236,6 +1236,15 @@ sixel_encoder_new(
     char const *env_default_ncolors;
     int ncolors;
 
+    if (allocator == NULL) {
+        status = sixel_allocator_new(&allocator, malloc, realloc, free);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    } else {
+        sixel_allocator_ref(allocator);
+    }
+
     *ppencoder
         = (sixel_encoder_t *)allocator->fn_malloc(sizeof(sixel_encoder_t));
     if (*ppencoder == NULL) {
@@ -1283,6 +1292,7 @@ sixel_encoder_new(
     (*ppencoder)->finsecure             = 0;
     (*ppencoder)->cancel_flag           = NULL;
     (*ppencoder)->dither_cache          = NULL;
+    (*ppencoder)->allocator             = allocator;
 
     env_default_bgcolor = getenv("SIXEL_BGCOLOR");
     if (env_default_bgcolor) {
@@ -1302,25 +1312,21 @@ sixel_encoder_new(
         }
     }
 
+    status = SIXEL_OK;
+
 end:
     return status;
 }
 
 
 /* create encoder object */
-SIXELAPI sixel_encoder_t *
+SIXELAPI /* deprecated */ sixel_encoder_t *
 sixel_encoder_create(void)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    sixel_encoder_t *encoder;
-    sixel_allocator_t *allocator;
+    sixel_encoder_t *encoder = NULL;
 
-    status = sixel_allocator_new(&allocator, malloc, realloc, free);
-    if (SIXEL_FAILED(status)) {
-        return NULL;
-    }
-
-    status = sixel_encoder_new(&encoder, allocator);
+    status = sixel_encoder_new(&encoder, NULL);
     if (SIXEL_FAILED(status)) {
         return NULL;
     }
@@ -1342,6 +1348,7 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
             close(encoder->outfd);
         }
         encoder->allocator->fn_free(encoder);
+        sixel_allocator_unref(encoder->allocator);
     }
 }
 
@@ -1832,6 +1839,12 @@ sixel_encoder_encode(
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic pop
 #endif
+        if (encoder == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode: sixel_encoder_create() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
     } else {
         sixel_encoder_ref(encoder);
     }

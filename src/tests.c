@@ -42,6 +42,7 @@
 #include "loader.h"
 #include "fromgif.h"
 #include "chunk.h"
+#include "allocator.h"
 
 #if HAVE_TESTS
 
@@ -122,6 +123,14 @@ main(int argc, char *argv[])
     }
 
     puts("chunk ok.");
+
+    nret = sixel_allocator_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("allocator ok.");
+
 error:
     return nret;
 }

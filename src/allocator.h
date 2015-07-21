@@ -25,10 +25,16 @@
 #include <sixel.h>
 
 struct sixel_allocator {
+    unsigned int ref;           /* reference counter */
     sixel_malloc_t fn_malloc;
     sixel_realloc_t fn_realloc;
     sixel_free_t fn_free;
 };
+
+#if HAVE_TESTS
+int
+sixel_allocator_tests_main(void);
+#endif
 
 #endif /* LIBSIXEL_ALLOCATOR_H */
 

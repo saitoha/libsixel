@@ -488,8 +488,13 @@ sixel_allocator_new(
     sixel_realloc_t     /* in */  fn_realloc,
     sixel_free_t        /* in */  fn_free);
 
-void
-sixel_allocator_destroy(sixel_allocator_t *allocator);
+
+SIXELAPI void
+sixel_allocator_ref(sixel_allocator_t *allocator);
+
+
+SIXELAPI void
+sixel_allocator_unref(sixel_allocator_t *allocator);
 
 #ifdef __cplusplus
 }

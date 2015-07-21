@@ -46,6 +46,13 @@ sixel_allocator_new(
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
+    if (ppallocator == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_allocator_new: given argument ppallocator is null.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
     if (fn_malloc == NULL) {
         sixel_helper_set_additional_message(
             "sixel_allocator_new: given argument fn_malloc is null.");
@@ -75,19 +82,42 @@ sixel_allocator_new(
         goto end;
     }
 
-    (*ppallocator)->fn_malloc = fn_malloc;
-    (*ppallocator)->fn_realloc = fn_realloc;
-    (*ppallocator)->fn_free = fn_free;
+    (*ppallocator)->ref         = 1;
+    (*ppallocator)->fn_malloc   = fn_malloc;
+    (*ppallocator)->fn_realloc  = fn_realloc;
+    (*ppallocator)->fn_free     = fn_free;
+
+    status = SIXEL_OK;
 
 end:
     return status;
 }
 
 
-void
-sixel_allocator_destroy(sixel_allocator_t *allocator)
+static void
+sixel_allocator_destroy(
+    sixel_allocator_t   /* in */ *allocator)   /* allocator object to
+                                                  be destroyed */
 {
     allocator->fn_free(allocator);
+}
+
+
+SIXELAPI void
+sixel_allocator_ref(sixel_allocator_t *allocator)
+{
+    /* TODO: be thread safe */
+    ++allocator->ref;
+}
+
+
+SIXELAPI void
+sixel_allocator_unref(sixel_allocator_t *allocator)
+{
+    /* TODO: be thread safe */
+    if (allocator != NULL && --allocator->ref == 0) {
+        sixel_allocator_destroy(allocator);
+    }
 }
 
 
@@ -131,6 +161,66 @@ rpl_posix_memalign(void **memptr, size_t alignment, size_t size)
 }
 #endif
 
+
+#if HAVE_TESTS
+static int
+test1(void)
+{
+    int nret = EXIT_FAILURE;
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator = NULL;
+
+    status = sixel_allocator_new(NULL, malloc, realloc, free);
+    if (status != SIXEL_BAD_ARGUMENT) {
+        goto error;
+    }
+
+    status = sixel_allocator_new(&allocator, NULL, realloc, free);
+    if (status != SIXEL_BAD_ARGUMENT) {
+        goto error;
+    }
+
+    status = sixel_allocator_new(&allocator, malloc, NULL, free);
+    if (status != SIXEL_BAD_ARGUMENT) {
+        goto error;
+    }
+
+    status = sixel_allocator_new(&allocator, malloc, realloc, NULL);
+    if (status != SIXEL_BAD_ARGUMENT) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+int
+sixel_allocator_tests_main(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t i;
+    typedef int (* testcase)(void);
+
+    static testcase const testcases[] = {
+        test1,
+    };
+
+    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
+        nret = testcases[i]();
+        if (nret != EXIT_SUCCESS) {
+            goto error;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+#endif  /* HAVE_TESTS */
 
 
 /* Hello emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
