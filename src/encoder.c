@@ -65,7 +65,6 @@
 
 #include <sixel.h>
 #include "encoder.h"
-#include "allocator.h"
 #include "rgblookup.h"
 
 
@@ -77,7 +76,7 @@ arg_strdup(
 {
     char *p;
 
-    p = (char *)allocator->fn_malloc(strlen(s) + 1);
+    p = (char *)sixel_allocator_malloc(allocator, strlen(s) + 1);
     if (p) {
         strcpy(p, s);
     }
@@ -102,10 +101,10 @@ parse_x_colorspec(
     struct color const *pcolor;
     pcolor = lookup_rgb(s, strlen(s));
     if (pcolor) {
-        *bgcolor = (unsigned char *)allocator->fn_malloc(3);
+        *bgcolor = (unsigned char *)sixel_allocator_malloc(allocator, 3);
         if (*bgcolor == NULL) {
             sixel_helper_set_additional_message(
-                "parse_x_colorspec: allocator->fn_malloc() failed.");
+                "parse_x_colorspec: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -116,7 +115,7 @@ parse_x_colorspec(
         p = buf = arg_strdup(s + 4, allocator);
         if (buf == NULL) {
             sixel_helper_set_additional_message(
-                "parse_x_colorspec: allocator->fn_malloc() failed.");
+                "parse_x_colorspec: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -157,10 +156,10 @@ parse_x_colorspec(
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
-        *bgcolor = (unsigned char *)allocator->fn_malloc(3);
+        *bgcolor = (unsigned char *)sixel_allocator_malloc(allocator, 3);
         if (*bgcolor == NULL) {
             sixel_helper_set_additional_message(
-                "parse_x_colorspec: allocator->fn_malloc() failed.");
+                "parse_x_colorspec: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -171,7 +170,7 @@ parse_x_colorspec(
         buf = arg_strdup(s + 1, allocator);
         if (buf == NULL) {
             sixel_helper_set_additional_message(
-                "parse_x_colorspec: allocator->fn_malloc() failed.");
+                "parse_x_colorspec: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -193,8 +192,10 @@ parse_x_colorspec(
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
-        *bgcolor = (unsigned char *)allocator->fn_malloc(3);
+        *bgcolor = (unsigned char *)sixel_allocator_malloc(allocator, 3);
         if (*bgcolor == NULL) {
+            sixel_helper_set_additional_message(
+                "parse_x_colorspec: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -230,7 +231,7 @@ parse_x_colorspec(
 
     status = SIXEL_OK;
 end:
-    allocator->fn_free(buf);
+    sixel_allocator_free(allocator, buf);
 
     return status;
 }
@@ -711,10 +712,10 @@ output_sixel_without_macro(
         goto end;
     }
 
-    p = (unsigned char *)encoder->allocator->fn_malloc(width * height * depth);
+    p = (unsigned char *)sixel_allocator_malloc(encoder->allocator, width * height * depth);
     if (p == NULL) {
         sixel_helper_set_additional_message(
-            "output_sixel_without_macro: allocator->fn_malloc() failed.");
+            "output_sixel_without_macro: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -749,7 +750,7 @@ output_sixel_without_macro(
     }
 
 end:
-    encoder->allocator->fn_free(p);
+    sixel_allocator_free(encoder->allocator, p);
 
     return status;
 }
@@ -1246,10 +1247,10 @@ sixel_encoder_new(
     }
 
     *ppencoder
-        = (sixel_encoder_t *)allocator->fn_malloc(sizeof(sixel_encoder_t));
+        = (sixel_encoder_t *)sixel_allocator_malloc(allocator, sizeof(sixel_encoder_t));
     if (*ppencoder == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_encoder_new: allocator->fn_malloc() failed.");
+            "sixel_encoder_new: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -1339,15 +1340,15 @@ static void
 sixel_encoder_destroy(sixel_encoder_t *encoder)
 {
     if (encoder) {
-        encoder->allocator->fn_free(encoder->mapfile);
-        encoder->allocator->fn_free(encoder->bgcolor);
+        sixel_allocator_free(encoder->allocator, encoder->mapfile);
+        sixel_allocator_free(encoder->allocator, encoder->bgcolor);
         sixel_dither_unref(encoder->dither_cache);
         if (encoder->outfd
             && encoder->outfd != STDOUT_FILENO
             && encoder->outfd != STDERR_FILENO) {
             close(encoder->outfd);
         }
-        encoder->allocator->fn_free(encoder);
+        sixel_allocator_free(encoder->allocator, encoder);
         sixel_allocator_unref(encoder->allocator);
     }
 }
@@ -1424,12 +1425,12 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_MAPFILE:  /* m */
         if (encoder->mapfile) {
-            encoder->allocator->fn_free(encoder->mapfile);
+            sixel_allocator_free(encoder->allocator, encoder->mapfile);
         }
         encoder->mapfile = arg_strdup(optarg, encoder->allocator);
         if (encoder->mapfile == NULL) {
             sixel_helper_set_additional_message(
-                "sixel_encoder_setopt: allocator->fn_malloc() failed.");
+                "sixel_encoder_setopt: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -1661,7 +1662,7 @@ sixel_encoder_setopt(
     case SIXEL_OPTFLAG_BGCOLOR:  /* B */
         /* parse --bgcolor option */
         if (encoder->bgcolor) {
-            encoder->allocator->fn_free(encoder->bgcolor);
+            sixel_allocator_free(encoder->allocator, encoder->bgcolor);
         }
         status = parse_x_colorspec(&encoder->bgcolor,
                                    optarg,
@@ -1960,6 +1961,7 @@ test2(void)
     SIXELSTATUS status;
     sixel_encoder_t *encoder = NULL;
     sixel_frame_t *frame = NULL;
+    unsigned char *buffer;
 
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic push
@@ -1978,8 +1980,12 @@ test2(void)
         goto error;
     }
 
+    buffer = (unsigned char *)sixel_allocator_malloc(encoder->allocator, 3);
+    if (buffer == NULL) {
+        goto error;
+    }
     status = sixel_frame_init(frame,
-                              (unsigned char *)encoder->allocator->fn_malloc(3),
+                              buffer,
                               1,
                               1,
                               SIXEL_PIXELFORMAT_RGB888,

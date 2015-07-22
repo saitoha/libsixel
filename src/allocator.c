@@ -37,12 +37,13 @@
 #include "allocator.h"
 
 
+/* create allocator object */
 SIXELSTATUS
 sixel_allocator_new(
-    sixel_allocator_t   /* out */ **ppallocator,
-    sixel_malloc_t      /* in */  fn_malloc,
-    sixel_realloc_t     /* in */  fn_realloc,
-    sixel_free_t        /* in */  fn_free)
+    sixel_allocator_t   /* out */ **ppallocator,  /* allocator object to be created */
+    sixel_malloc_t      /* in */  fn_malloc,      /* custom malloc() function */
+    sixel_realloc_t     /* in */  fn_realloc,     /* custom realloc() function */
+    sixel_free_t        /* in */  fn_free)        /* custom free() function */
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
@@ -94,30 +95,67 @@ end:
 }
 
 
+/* destruct allocator object */
 static void
 sixel_allocator_destroy(
-    sixel_allocator_t   /* in */ *allocator)   /* allocator object to
-                                                  be destroyed */
+    sixel_allocator_t /* in */ *allocator)  /* allocator object to
+                                               be destroyed */
 {
     allocator->fn_free(allocator);
 }
 
 
+/* increase reference count of allocatort object (thread-unsafe) */
 SIXELAPI void
-sixel_allocator_ref(sixel_allocator_t *allocator)
+sixel_allocator_ref(
+    sixel_allocator_t /* in */ *allocator)  /* allocator object to be
+                                               increment reference counter */
 {
     /* TODO: be thread safe */
     ++allocator->ref;
 }
 
 
+/* decrease reference count of output context object (thread-unsafe) */
 SIXELAPI void
-sixel_allocator_unref(sixel_allocator_t *allocator)
+sixel_allocator_unref(
+    sixel_allocator_t /* in */ *allocator)  /* allocator object to be unreference */
 {
     /* TODO: be thread safe */
     if (allocator != NULL && --allocator->ref == 0) {
         sixel_allocator_destroy(allocator);
     }
+}
+
+
+/* call custom malloc() */
+SIXELAPI void *
+sixel_allocator_malloc(
+    sixel_allocator_t   /* in */ *allocator,  /* allocator object */
+    size_t              /* in */ n)           /* allocation size */
+{
+    return allocator->fn_malloc(n);
+}
+
+
+/* call custom realloc() */
+SIXELAPI void *
+sixel_allocator_realloc(
+    sixel_allocator_t   /* in */ *allocator,  /* allocator object */
+    void                /* in */ *p,          /* existing buffer to be re-allocated */
+    size_t              /* in */ n)           /* re-allocation size */
+{
+    return allocator->fn_realloc(p, n);
+}
+
+
+/* call custom free() */
+SIXELAPI void
+sixel_allocator_free(
+    sixel_allocator_t   /* in */ *allocator,  /* allocator object */
+    void                /* in */ *p)          /* existing buffer to be freed */
+{
+    return allocator->fn_free(p);
 }
 
 

@@ -481,20 +481,42 @@ typedef struct sixel_allocator sixel_allocator_t;
 extern "C" {
 #endif
 
+/* create allocator object */
 SIXELSTATUS
 sixel_allocator_new(
-    sixel_allocator_t   /* out */ **ppallocator,
-    sixel_malloc_t      /* in */  fn_malloc,
-    sixel_realloc_t     /* in */  fn_realloc,
-    sixel_free_t        /* in */  fn_free);
+    sixel_allocator_t   /* out */ **ppallocator,  /* allocator object to be created */
+    sixel_malloc_t      /* in */  fn_malloc,      /* custom malloc() function */
+    sixel_realloc_t     /* in */  fn_realloc,     /* custom realloc() function */
+    sixel_free_t        /* in */  fn_free);       /* custom free() function */
 
-
+/* increase reference count of allocatort object (thread-unsafe) */
 SIXELAPI void
-sixel_allocator_ref(sixel_allocator_t *allocator);
+sixel_allocator_ref(
+    sixel_allocator_t /* in */ *allocator);  /* allocator object to be
+                                                increment reference counter */
 
-
+/* decrease reference count of output context object (thread-unsafe) */
 SIXELAPI void
 sixel_allocator_unref(sixel_allocator_t *allocator);
+
+/* call custom malloc() */
+SIXELAPI void *
+sixel_allocator_malloc(
+    sixel_allocator_t   /* in */ *allocator,  /* allocator object */
+    size_t              /* in */ n);          /* allocation size */
+
+/* call custom realloc() */
+SIXELAPI void *
+sixel_allocator_realloc(
+    sixel_allocator_t   /* in */ *allocator,  /* allocator object */
+    void                /* in */ *p,          /* existing buffer to be re-allocated */
+    size_t              /* in */ n);          /* re-allocation size */
+
+/* call custom free() */
+SIXELAPI void
+sixel_allocator_free(
+    sixel_allocator_t   /* in */ *allocator,  /* allocator object */
+    void                /* in */ *p);         /* existing buffer to be freed */
 
 #ifdef __cplusplus
 }
@@ -520,30 +542,34 @@ sixel_output_create(
 SIXELAPI void
 sixel_output_destroy(sixel_output_t /* in */ *output); /* output context */
 
-/* increment reference count of output context object (thread-unsafe) */
+/* increase reference count of output context object (thread-unsafe) */
 SIXELAPI void
 sixel_output_ref(sixel_output_t /* in */ *output);     /* output context */
 
-/* decrement reference count of output context object (thread-unsafe) */
+/* decrease reference count of output context object (thread-unsafe) */
 SIXELAPI void
 sixel_output_unref(sixel_output_t /* in */ *output);   /* output context */
 
+/* set 8bit output mode which indicates whether it uses C1 control characters */
 SIXELAPI int
 sixel_output_get_8bit_availability(
     sixel_output_t /* in */ *output);   /* output context */
 
+/* get 8bit output mode state */
 SIXELAPI void
 sixel_output_set_8bit_availability(
     sixel_output_t /* in */ *output,       /* output context */
     int            /* in */ availability); /* 0: do not use 8bit characters
                                               1: use 8bit characters */
 
+/* set GNU Screen penetration feature enable or disable */
 SIXELAPI void
 sixel_output_set_penetrate_multiplexer(
     sixel_output_t /* in */ *output,    /* output context */
     int            /* in */ penetrate); /* 0: penetrate GNU Screen
                                            1: do not penetrate GNU Screen */
 
+/* set whether we emit DCS envelope */
 SIXELAPI void
 sixel_output_set_skip_dcs_envelope(
     sixel_output_t /* in */ *output,   /* output context */
@@ -589,11 +615,11 @@ sixel_dither_get(int builtin_dither); /* ID of built-in dither object */
 SIXELAPI void
 sixel_dither_destroy(sixel_dither_t *dither); /* dither context object */
 
-/* increment reference count of dither context object (thread-unsafe) */
+/* increase reference count of dither context object (thread-unsafe) */
 SIXELAPI void
 sixel_dither_ref(sixel_dither_t *dither); /* dither context object */
 
-/* decrement reference count of dither context object (thread-unsafe) */
+/* decrease reference count of dither context object (thread-unsafe) */
 SIXELAPI void
 sixel_dither_unref(sixel_dither_t *dither); /* dither context object */
 
