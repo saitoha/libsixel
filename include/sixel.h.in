@@ -569,7 +569,7 @@ sixel_output_set_penetrate_multiplexer(
     int            /* in */ penetrate); /* 0: penetrate GNU Screen
                                            1: do not penetrate GNU Screen */
 
-/* set whether we emit DCS envelope */
+/* set whether we skip DCS envelope */
 SIXELAPI void
 sixel_output_set_skip_dcs_envelope(
     sixel_output_t /* in */ *output,   /* output context */

@@ -1339,17 +1339,20 @@ sixel_encoder_create(void)
 static void
 sixel_encoder_destroy(sixel_encoder_t *encoder)
 {
+    sixel_allocator_t *allocator;
+
     if (encoder) {
-        sixel_allocator_free(encoder->allocator, encoder->mapfile);
-        sixel_allocator_free(encoder->allocator, encoder->bgcolor);
+        allocator = encoder->allocator;
+        sixel_allocator_free(allocator, encoder->mapfile);
+        sixel_allocator_free(allocator, encoder->bgcolor);
         sixel_dither_unref(encoder->dither_cache);
         if (encoder->outfd
             && encoder->outfd != STDOUT_FILENO
             && encoder->outfd != STDERR_FILENO) {
             close(encoder->outfd);
         }
-        sixel_allocator_free(encoder->allocator, encoder);
-        sixel_allocator_unref(encoder->allocator);
+        sixel_allocator_free(allocator, encoder);
+        sixel_allocator_unref(allocator);
     }
 }
 

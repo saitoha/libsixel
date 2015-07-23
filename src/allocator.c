@@ -101,7 +101,9 @@ sixel_allocator_destroy(
     sixel_allocator_t /* in */ *allocator)  /* allocator object to
                                                be destroyed */
 {
-    allocator->fn_free(allocator);
+    sixel_free_t fn_free = allocator->fn_free;
+
+    fn_free(allocator);
 }
 
 
