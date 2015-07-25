@@ -2080,6 +2080,35 @@ error:
 }
 
 
+static int
+test5(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_encoder_t *encoder = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+
+    status = sixel_allocator_new(&allocator, malloc, realloc, free);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_encoder_new(&encoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    sixel_encoder_ref(encoder);
+    sixel_encoder_unref(encoder);
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_encoder_unref(encoder);
+    return nret;
+}
+
+
+
 int
 sixel_encoder_tests_main(void)
 {
@@ -2091,7 +2120,8 @@ sixel_encoder_tests_main(void)
         test1,
         test2,
         test3,
-        test4
+        test4,
+        test5
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
