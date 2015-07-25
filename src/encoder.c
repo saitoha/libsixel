@@ -237,6 +237,7 @@ end:
 }
 
 
+/* generic writer function for passing to sixel_output_create() */
 static int
 sixel_write_callback(char *data, int size, void *priv)
 {
@@ -244,8 +245,12 @@ sixel_write_callback(char *data, int size, void *priv)
 }
 
 
+/* the writer function with hex-encoding for passing to sixel_output_create() */
 static int
-sixel_hex_write_callback(char *data, int size, void *priv)
+sixel_hex_write_callback(
+    char    /* in */ *data,
+    int     /* in */ size,
+    void    /* in */ *priv)
 {
     char hex[SIXEL_OUTPUT_PACKET_SIZE * 2];
     int i;
@@ -262,8 +267,11 @@ sixel_hex_write_callback(char *data, int size, void *priv)
 }
 
 
+/* returns monochrome dithering context object */
 static SIXELSTATUS
-prepare_monochrome_palette(sixel_dither_t **dither, int finvert)
+prepare_monochrome_palette(
+    sixel_dither_t  /* out */ **dither,
+     int            /* in */  finvert)
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
@@ -284,6 +292,7 @@ end:
 }
 
 
+/* returns dithering context object with specified builtin palette */
 static SIXELSTATUS
 prepare_builtin_palette(
     sixel_dither_t /* out */ **dither,
