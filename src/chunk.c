@@ -78,7 +78,7 @@ sixel_chunk_init(
     pchunk->max_size = initial_size;
     pchunk->size = 0;
     pchunk->buffer
-        = (unsigned char *)pchunk->allocator->fn_malloc(pchunk->max_size);
+        = (unsigned char *)sixel_allocator_malloc(pchunk->allocator, pchunk->max_size);
 
     if (pchunk->buffer == NULL) {
         sixel_helper_set_additional_message(
@@ -96,40 +96,45 @@ end:
 
 # ifdef HAVE_LIBCURL
 static size_t
-memory_write(void *ptr,
-             size_t size,
-             size_t len,
-             void *memory)
+memory_write(void   /* in */ *ptr,
+             size_t /* in */ size,
+             size_t /* in */ len,
+             void   /* in */ *memory)
 {
-    size_t nbytes;
+    size_t nbytes = 0;
     sixel_chunk_t *chunk;
 
     if (ptr == NULL || memory == NULL) {
-        return 0;
-    }
-    nbytes = size * len;
-    if (nbytes == 0) {
-        return 0;
+        goto end;
     }
 
     chunk = (sixel_chunk_t *)memory;
     if (chunk->buffer == NULL) {
-        return 0;
+        goto end;
+    }
+
+    nbytes = size * len;
+    if (nbytes == 0) {
+        goto end;
     }
 
     if (chunk->max_size <= chunk->size + nbytes) {
         do {
             chunk->max_size *= 2;
         } while (chunk->max_size <= chunk->size + nbytes);
-        chunk->buffer = (unsigned char*)realloc(chunk->buffer, chunk->max_size);
+        chunk->buffer = (unsigned char*)sixel_allocator_realloc(chunk->allocator,
+                                                                chunk->buffer,
+                                                                chunk->max_size);
         if (chunk->buffer == NULL) {
-            return 0;
+            nbytes = 0;
+            goto end;
         }
     }
 
     memcpy(chunk->buffer + chunk->size, ptr, nbytes);
     chunk->size += nbytes;
 
+end:
     return nbytes;
 }
 # endif
@@ -243,8 +248,9 @@ sixel_chunk_from_file(
     for (;;) {
         if (pchunk->max_size - pchunk->size < 4096) {
             pchunk->max_size *= 2;
-            pchunk->buffer = (unsigned char *)realloc(pchunk->buffer,
-                                                      pchunk->max_size);
+            pchunk->buffer = (unsigned char *)sixel_allocator_realloc(pchunk->allocator,
+                                                                      pchunk->buffer,
+                                                                      pchunk->max_size);
             if (pchunk->buffer == NULL) {
                 sixel_helper_set_additional_message(
                     "sixel_chunk_from_file: realloc() failed.");
@@ -348,10 +354,24 @@ sixel_chunk_new(
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
-    *ppchunk = (sixel_chunk_t *)allocator->fn_malloc(sizeof(sixel_chunk_t));
+    if (ppchunk == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_chunk_new: ppchunk is null.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    if (allocator == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_chunk_new: allocator is null.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    *ppchunk = (sixel_chunk_t *)sixel_allocator_malloc(allocator, sizeof(sixel_chunk_t));
     if (*ppchunk == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_chunk_new: malloc() failed.");
+            "sixel_chunk_new: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -429,6 +449,30 @@ error:
 }
 
 
+static int
+test2(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_chunk_t *chunk;
+    SIXELSTATUS status = SIXEL_FALSE;
+
+    status = sixel_chunk_new(&chunk, NULL, 0, NULL, NULL);
+    if (status != SIXEL_BAD_ARGUMENT) {
+        goto error;
+    }
+
+    status = sixel_chunk_new(NULL, NULL, 0, NULL, NULL);
+    if (status != SIXEL_BAD_ARGUMENT) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
 int
 sixel_chunk_tests_main(void)
 {
@@ -438,6 +482,7 @@ sixel_chunk_tests_main(void)
 
     static testcase const testcases[] = {
         test1,
+        test2,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
