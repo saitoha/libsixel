@@ -1000,7 +1000,12 @@ extern "C" {
 #endif
 
 /* create decoder object */
-SIXELAPI sixel_decoder_t *
+SIXELAPI SIXELSTATUS
+sixel_decoder_new(
+    sixel_decoder_t    /* out */ **ppdecoder,  /* decoder object to be created */
+    sixel_allocator_t  /* in */  *allocator);  /* allocator, null if you use
+                                                  default allocator */
+SIXELAPI @attr_func_deprecated@ sixel_decoder_t *
 sixel_decoder_create(void);
 
 SIXELAPI void
