@@ -73,6 +73,7 @@
 #include "chunk.h"
 #include "frompnm.h"
 #include "fromgif.h"
+#include "allocator.h"
 
 #define STBI_NO_STDIO 1
 #define STB_IMAGE_IMPLEMENTATION 1
@@ -87,7 +88,8 @@ load_jpeg(unsigned char **result,
           int datasize,
           int *pwidth,
           int *pheight,
-          int *ppixelformat)
+          int *ppixelformat,
+          sixel_allocator_t *allocator)
 {
     SIXELSTATUS status = SIXEL_JPEG_ERROR;
     int row_stride, size;
@@ -118,11 +120,11 @@ load_jpeg(unsigned char **result,
     *pheight = cinfo.output_height;
 
     size = *pwidth * *pheight * cinfo.output_components;
-    *result = (unsigned char *)malloc(size);
+    *result = (unsigned char *)sixel_allocator_malloc(allocator, size);
     if (*result == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         sixel_helper_set_additional_message(
-            "load_jpeg: malloc() failed.");
+            "load_jpeg: sixel_allocator_malloc() failed.");
         goto end;
     }
     row_stride = cinfo.output_width * cinfo.output_components;
@@ -199,17 +201,18 @@ read_palette(png_structp png_ptr,
 
 
 static SIXELSTATUS
-load_png(unsigned char **result,
-         unsigned char *buffer,
-         int size,
-         int *psx,
-         int *psy,
-         unsigned char **ppalette,
-         int *pncolors,
-         int reqcolors,
-         int *pixelformat,
-         unsigned char *bgcolor,
-         int *transparent)
+load_png(unsigned char      /* out */ **result,
+         unsigned char      /* in */  *buffer,
+         int                /* in */  size,
+         int                /* out */ *psx,
+         int                /* out */ *psy,
+         unsigned char      /* out */ **ppalette,
+         int                /* out */ *pncolors,
+         int                /* in */  reqcolors,
+         int                /* out */ *pixelformat,
+         unsigned char      /* out */ *bgcolor,
+         int                /* out */ *transparent,
+         sixel_allocator_t  /* in */  *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_chunk_t read_chunk;
@@ -301,7 +304,7 @@ load_png(unsigned char **result,
         } else {
             switch (bitdepth) {
             case 1:
-                *ppalette = (unsigned char *)malloc(*pncolors * 3);
+                *ppalette = (unsigned char *)sixel_allocator_malloc(allocator, *pncolors * 3);
                 if (*ppalette == NULL) {
                     status = SIXEL_BAD_ALLOCATION;
                     goto cleanup;
@@ -311,7 +314,7 @@ load_png(unsigned char **result,
                 *pixelformat = SIXEL_PIXELFORMAT_PAL1;
                 break;
             case 2:
-                *ppalette = (unsigned char *)malloc(*pncolors * 3);
+                *ppalette = (unsigned char *)sixel_allocator_malloc(allocator, *pncolors * 3);
                 if (*ppalette == NULL) {
                     status = SIXEL_BAD_ALLOCATION;
                     goto cleanup;
@@ -321,7 +324,7 @@ load_png(unsigned char **result,
                 *pixelformat = SIXEL_PIXELFORMAT_PAL2;
                 break;
             case 4:
-                *ppalette = (unsigned char *)malloc(*pncolors * 3);
+                *ppalette = (unsigned char *)sixel_allocator_malloc(allocator, *pncolors * 3);
                 if (*ppalette == NULL) {
                     status = SIXEL_BAD_ALLOCATION;
                     goto cleanup;
@@ -331,7 +334,7 @@ load_png(unsigned char **result,
                 *pixelformat = SIXEL_PIXELFORMAT_PAL4;
                 break;
             case 8:
-                *ppalette = (unsigned char *)malloc(*pncolors * 3);
+                *ppalette = (unsigned char *)sixel_allocator_malloc(allocator, *pncolors * 3);
                 if (*ppalette == NULL) {
                     status = SIXEL_BAD_ALLOCATION;
                     goto cleanup;
@@ -460,12 +463,12 @@ load_png(unsigned char **result,
         goto cleanup;
     }
     depth = sixel_helper_compute_depth(*pixelformat);
-    *result = (unsigned char *)malloc(*psx * *psy * depth);
+    *result = (unsigned char *)sixel_allocator_malloc(allocator, *psx * *psy * depth);
     if (*result == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto cleanup;
     }
-    rows = (unsigned char **)malloc(*psy * sizeof(unsigned char *));
+    rows = (unsigned char **)sixel_allocator_malloc(allocator, *psy * sizeof(unsigned char *));
     if (rows == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto cleanup;
@@ -486,7 +489,7 @@ load_png(unsigned char **result,
     }
 #if USE_SETJMP && HAVE_SETJMP
     if (setjmp(png_jmpbuf(png_ptr))) {
-        free(*result);
+        sixel_allocator_free(allocator, *result);
         *result = NULL;
         status = SIXEL_PNG_ERROR;
         goto cleanup;
@@ -498,7 +501,7 @@ load_png(unsigned char **result,
 
 cleanup:
     png_destroy_read_struct(&png_ptr, &info_ptr,(png_infopp)0);
-    free(rows);
+    sixel_allocator_free(allocator, rows);
 
     return status;
 }
@@ -506,15 +509,16 @@ cleanup:
 
 
 static SIXELSTATUS
-load_sixel(unsigned char **result,
-           unsigned char *buffer,
-           int size,
-           int *psx,
-           int *psy,
-           unsigned char **ppalette,
-           int *pncolors,
-           int reqcolors,
-           int *ppixelformat)
+load_sixel(unsigned char        /* out */ **result,
+           unsigned char        /* in */  *buffer,
+           int                  /* in */  size,
+           int                  /* out */ *psx,
+           int                  /* out */ *psy,
+           unsigned char        /* out */ **ppalette,
+           int                  /* out */ *pncolors,
+           int                  /* in */  reqcolors,
+           int                  /* out */ *ppixelformat,
+           sixel_allocator_t    /* in */  *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *p = NULL;
@@ -525,13 +529,13 @@ load_sixel(unsigned char **result,
     /* sixel */
     status = sixel_decode(buffer, size,
                           &p, psx, psy,
-                          &palette, &colors, malloc);
+                          &palette, &colors, allocator->fn_malloc);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
     if (ppalette == NULL || colors > reqcolors) {
         *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
-        *result = (unsigned char *)malloc(*psx * *psy * 3);
+        *result = (unsigned char *)sixel_allocator_malloc(allocator, *psx * *psy * 3);
         if (*result == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto end;
@@ -551,8 +555,8 @@ load_sixel(unsigned char **result,
     }
 
 end:
-    free(palette);
-    free(p);
+    sixel_allocator_free(allocator, palette);
+    sixel_allocator_free(allocator, p);
 
     return status;
 }
@@ -691,7 +695,8 @@ load_with_builtin(
                             fuse_palette ? &frame->palette: NULL,
                             &frame->ncolors,
                             reqcolors,
-                            &frame->pixelformat);
+                            &frame->pixelformat,
+                            pchunk->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -727,7 +732,8 @@ load_with_builtin(
                            pchunk->size,
                            &frame->width,
                            &frame->height,
-                           &frame->pixelformat);
+                           &frame->pixelformat,
+                           pchunk->allocator);
 
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -752,7 +758,8 @@ load_with_builtin(
                           reqcolors,
                           &frame->pixelformat,
                           bgcolor,
-                          &frame->transparent);
+                          &frame->transparent,
+                          pchunk->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -877,7 +884,7 @@ load_with_gdkpixbuf(
         frame->width = gdk_pixbuf_get_width(pixbuf);
         frame->height = gdk_pixbuf_get_height(pixbuf);
         stride = gdk_pixbuf_get_rowstride(pixbuf);
-        frame->pixels = malloc(frame->height * stride);
+        frame->pixels = sixel_allocator_malloc(pchunk->allocator, frame->height * stride);
         if (frame->pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto end;
@@ -922,7 +929,7 @@ load_with_gdkpixbuf(
                 frame->width = gdk_pixbuf_get_width(pixbuf);
                 frame->height = gdk_pixbuf_get_height(pixbuf);
                 stride = gdk_pixbuf_get_rowstride(pixbuf);
-                frame->pixels = malloc(frame->height * stride);
+                frame->pixels = sixel_allocator_malloc(pchunk->allocator, frame->height * stride);
                 if (frame->pixels == NULL) {
                     status = SIXEL_BAD_ALLOCATION;
                     goto end;
@@ -971,9 +978,9 @@ load_with_gdkpixbuf(
 end:
     gdk_pixbuf_loader_close(loader, NULL);
     g_object_unref(loader);
-    free(frame->pixels);
-    free(frame->palette);
-    free(frame);
+    sixel_allocator_free(pchunk->allocator, frame->pixels);
+    sixel_allocator_free(pchunk->allocator, frame->palette);
+    sixel_allocator_free(pchunk->allocator, frame);
 
     return status;
 
@@ -1150,7 +1157,7 @@ load_with_gd(
     frame->width = gdImageSX(im);
     frame->height = gdImageSY(im);
     frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    p = frame->pixels = malloc(frame->width * frame->height * 3);
+    p = frame->pixels = sixel_allocator_malloc(pchunk->allocator, frame->width * frame->height * 3);
     if (frame->pixels == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         gdImageDestroy(im);
