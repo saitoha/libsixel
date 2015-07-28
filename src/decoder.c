@@ -84,7 +84,7 @@ strdup_with_allocator(
 SIXELAPI SIXELSTATUS
 sixel_decoder_new(
     sixel_decoder_t    /* out */ **ppdecoder,  /* decoder object to be created */
-    sixel_allocator_t  /* in */  *allocator)  /* allocator, null if you use
+    sixel_allocator_t  /* in */  *allocator)   /* allocator, null if you use
                                                   default allocator */
 {
     SIXELSTATUS status = SIXEL_FALSE;

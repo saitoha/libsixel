@@ -820,12 +820,15 @@ typedef struct sixel_frame sixel_frame_t;
 extern "C" {
 #endif
 
-/* create frame object */
+/* constructor of frame object */
+SIXELAPI SIXELSTATUS
+sixel_frame_new(
+    sixel_frame_t       /* out */ **ppframe,    /* frame object to be created */
+    sixel_allocator_t   /* in */  *allocator);  /* allocator, null if you use
+                                                   default allocator */
+
 sixel_frame_t *
 sixel_frame_create(void);
-
-SIXELAPI unsigned char *
-sixel_frame_get_pixels(sixel_frame_t /* in */ *frame);
 
 SIXELAPI void
 sixel_frame_ref(sixel_frame_t /* in */ *frame);
@@ -833,15 +836,17 @@ sixel_frame_ref(sixel_frame_t /* in */ *frame);
 SIXELAPI void
 sixel_frame_unref(sixel_frame_t /* in */ *frame);
 
+/* initialize frame object with a pixel buffer */
 SIXELAPI SIXELSTATUS
 sixel_frame_init(
-    sixel_frame_t   /* in */ *frame,
-    unsigned char   /* in */ *pixels,
-    int             /* in */ width,
-    int             /* in */ height,
-    int             /* in */ pixelformat,
-    unsigned char   /* in */ *palette,
-    int             /* in */ ncolors);
+    sixel_frame_t   /* in */ *frame,        /* frame object to be initialize */
+    unsigned char   /* in */ *pixels,       /* pixel buffer */
+    int             /* in */ width,         /* pixel width of buffer */
+    int             /* in */ height,        /* pixel height of buffer */
+    int             /* in */ pixelformat,   /* pixelformat of buffer */
+    unsigned char   /* in */ *palette,      /* palette for buffer or NULL */
+    int             /* in */ ncolors        /* number of palette colors or (-1) */
+);
 
 /* get pixels */
 SIXELAPI unsigned char *
