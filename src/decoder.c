@@ -94,10 +94,13 @@ sixel_decoder_new(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+    } else {
+        sixel_allocator_ref(allocator);
     }
 
     *ppdecoder = sixel_allocator_malloc(allocator, sizeof(sixel_decoder_t));
     if (*ppdecoder == NULL) {
+        sixel_allocator_unref(allocator);
         goto end;
     }
 
@@ -108,9 +111,11 @@ sixel_decoder_new(
 
     if ((*ppdecoder)->output == NULL || (*ppdecoder)->input == NULL) {
         sixel_decoder_unref(*ppdecoder);
+        *ppdecoder = NULL;
         sixel_helper_set_additional_message(
             "sixel_decoder_new: strdup_with_allocator() failed.");
         status = SIXEL_BAD_ALLOCATION;
+        sixel_allocator_unref(allocator);
         goto end;
     }
 
@@ -138,10 +143,14 @@ end:
 SIXELAPI void
 sixel_decoder_destroy(sixel_decoder_t *decoder)
 {
+    sixel_allocator_t *allocator;
+
     if (decoder) {
-        free(decoder->input);
-        free(decoder->output);
-        free(decoder);
+        allocator = decoder->allocator;
+        sixel_allocator_free(allocator, decoder->input);
+        sixel_allocator_free(allocator, decoder->output);
+        sixel_allocator_free(allocator, decoder);
+        sixel_allocator_unref(allocator);
     }
 }
 
@@ -173,6 +182,8 @@ sixel_decoder_setopt(
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
+    sixel_decoder_ref(decoder);
+
     switch(arg) {
     case 'i':
         free(decoder->input);
@@ -199,6 +210,8 @@ sixel_decoder_setopt(
     status = SIXEL_OK;
 
 end:
+    sixel_decoder_unref(decoder);
+
     return status;
 }
 
@@ -220,6 +233,8 @@ sixel_decoder_decode(
     int ncolors;
     unsigned char *pixels = NULL;
     char buffer[1024];
+
+    sixel_decoder_ref(decoder);
 
     if (strcmp(decoder->input, "-") == 0) {
         /* for windows */
@@ -264,8 +279,9 @@ sixel_decoder_decode(
                 goto end;
             }
         }
-        if ((n = fread(raw_data + raw_len, 1, 4096, input_fp)) <= 0)
+        if ((n = fread(raw_data + raw_len, 1, 4096, input_fp)) <= 0) {
             break;
+        }
         raw_len += n;
     }
 
@@ -292,6 +308,8 @@ sixel_decoder_decode(
 
 end:
     sixel_allocator_free(decoder->allocator, pixels);
+    sixel_decoder_ref(decoder);
+
     return status;
 }
 

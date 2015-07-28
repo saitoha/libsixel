@@ -1261,6 +1261,7 @@ sixel_encoder_new(
         sixel_helper_set_additional_message(
             "sixel_encoder_new: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
+        sixel_allocator_unref(allocator);
         goto end;
     }
 
@@ -1308,8 +1309,11 @@ sixel_encoder_new(
     if (env_default_bgcolor) {
         status = parse_x_colorspec(&(*ppencoder)->bgcolor,
                                    env_default_bgcolor,
-                                   (*ppencoder)->allocator);
+                                   allocator);
         if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(allocator, *ppencoder);
+            sixel_allocator_unref(allocator);
+            *ppencoder = NULL;
             goto end;
         }
     }
@@ -1321,6 +1325,8 @@ sixel_encoder_new(
             (*ppencoder)->reqcolors = ncolors;
         }
     }
+
+    sixel_allocator_ref(allocator);
 
     status = SIXEL_OK;
 
@@ -1408,6 +1414,8 @@ sixel_encoder_setopt(
     int number;
     int parsed;
     char unit[32];
+
+    sixel_encoder_ref(encoder);
 
     switch(arg) {
     case SIXEL_OPTFLAG_OUTFILE:  /* o */
@@ -1831,6 +1839,8 @@ sixel_encoder_setopt(
     status = SIXEL_OK;
 
 end:
+    sixel_encoder_unref(encoder);
+
     return status;
 }
 

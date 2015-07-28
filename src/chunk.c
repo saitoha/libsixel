@@ -102,9 +102,8 @@ sixel_chunk_destroy(
 
     if (pchunk) {
         allocator = pchunk->allocator;
-        allocator->fn_free(pchunk->buffer);
-        pchunk->buffer = NULL;
-        allocator->fn_free(pchunk);
+        sixel_allocator_free(allocator, pchunk->buffer);
+        sixel_allocator_free(allocator, pchunk);
         sixel_allocator_unref(allocator);
     }
 }
@@ -398,6 +397,7 @@ sixel_chunk_new(
     status = sixel_chunk_init(*ppchunk, 1024 * 32);
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, *ppchunk);
+        *ppchunk = NULL;
         goto end;
     }
 
@@ -410,6 +410,7 @@ sixel_chunk_new(
     }
     if (SIXEL_FAILED(status)) {
         sixel_chunk_destroy(*ppchunk);
+        *ppchunk = NULL;
         goto end;
     }
 
