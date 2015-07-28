@@ -94,6 +94,22 @@ end:
 }
 
 
+void
+sixel_chunk_destroy(
+    sixel_chunk_t * const /* in */ pchunk)
+{
+    sixel_allocator_t *allocator;
+
+    if (pchunk) {
+        allocator = pchunk->allocator;
+        allocator->fn_free(pchunk->buffer);
+        pchunk->buffer = NULL;
+        allocator->fn_free(pchunk);
+        sixel_allocator_unref(allocator);
+    }
+}
+
+
 # ifdef HAVE_LIBCURL
 static size_t
 memory_write(void   /* in */ *ptr,
@@ -381,8 +397,11 @@ sixel_chunk_new(
 
     status = sixel_chunk_init(*ppchunk, 1024 * 32);
     if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, *ppchunk);
         goto end;
     }
+
+    sixel_allocator_ref(allocator);
 
     if (filename != NULL && strstr(filename, "://")) {
         status = sixel_chunk_from_url(filename, *ppchunk, finsecure);
@@ -390,6 +409,7 @@ sixel_chunk_new(
         status = sixel_chunk_from_file(filename, *ppchunk, cancel_flag);
     }
     if (SIXEL_FAILED(status)) {
+        sixel_chunk_destroy(*ppchunk);
         goto end;
     }
 
@@ -397,18 +417,6 @@ sixel_chunk_new(
 
 end:
     return status;
-}
-
-
-void
-sixel_chunk_destroy(
-    sixel_chunk_t * const /* in */ pchunk)
-{
-    if (pchunk) {
-        pchunk->allocator->fn_free(pchunk->buffer);
-        pchunk->buffer = NULL;
-        pchunk->allocator->fn_free(pchunk);
-    }
 }
 
 
