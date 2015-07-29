@@ -680,11 +680,8 @@ load_with_builtin(
     int nwrite;
 
     if (chunk_is_sixel(pchunk)) {
-        frame = sixel_frame_create();
-        if (frame == NULL) {
-            sixel_helper_set_additional_message(
-                "malloc() failed in load_with_builtin().");
-            status = SIXEL_BAD_ALLOCATION;
+        status = sixel_frame_new(&frame, pchunk->allocator);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
         status = load_sixel(&frame->pixels,
@@ -701,9 +698,8 @@ load_with_builtin(
             goto end;
         }
     } else if (chunk_is_pnm(pchunk)) {
-        frame = sixel_frame_create();
-        if (frame == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
+        status = sixel_frame_new(&frame, pchunk->allocator);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
         /* pnm */
@@ -722,9 +718,8 @@ load_with_builtin(
     }
 #if HAVE_JPEG
     else if (chunk_is_jpeg(pchunk)) {
-        frame = sixel_frame_create();
-        if (frame == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
+        status = sixel_frame_new(&frame, pchunk->allocator);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
         status = load_jpeg(&frame->pixels,
@@ -742,12 +737,10 @@ load_with_builtin(
 #endif  /* HAVE_JPEG */
 #if HAVE_LIBPNG
     else if (chunk_is_png(pchunk)) {
-        frame = sixel_frame_create();
-        if (frame == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
+        status = sixel_frame_new(&frame, pchunk->allocator);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
-
         status = load_png(&frame->pixels,
                           pchunk->buffer,
                           pchunk->size,
@@ -783,9 +776,8 @@ load_with_builtin(
         stbi__context s;
         int depth;
 
-        frame = sixel_frame_create();
-        if (frame == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
+        status = sixel_frame_new(&frame, pchunk->allocator);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);
@@ -848,12 +840,12 @@ load_with_gdkpixbuf(
     SIXELSTATUS status = SIXEL_FALSE;
     GdkPixbuf *pixbuf;
     GdkPixbufAnimation *animation;
-    GdkPixbufLoader *loader;
+    GdkPixbufLoader *loader = NULL;
 #if 1
     GdkPixbufAnimationIter *it;
     GTimeVal time;
 #endif
-    sixel_frame_t *frame;
+    sixel_frame_t *frame = NULL;
     int stride;
     unsigned char *p;
     int i;
@@ -863,9 +855,9 @@ load_with_gdkpixbuf(
     (void) reqcolors;
     (void) bgcolor;
 
-    frame = sixel_frame_create();
-    if (frame == NULL) {
-        return SIXEL_FALSE;
+    status = sixel_frame_new(&frame, pchunk->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
 #if (!GLIB_CHECK_VERSION(2, 36, 0))
@@ -976,11 +968,13 @@ load_with_gdkpixbuf(
     status = SIXEL_OK;
 
 end:
-    gdk_pixbuf_loader_close(loader, NULL);
-    g_object_unref(loader);
-    sixel_allocator_free(pchunk->allocator, frame->pixels);
-    sixel_allocator_free(pchunk->allocator, frame->palette);
-    sixel_allocator_free(pchunk->allocator, frame);
+    if (frame) {
+        gdk_pixbuf_loader_close(loader, NULL);
+        g_object_unref(loader);
+        sixel_allocator_free(pchunk->allocator, frame->pixels);
+        sixel_allocator_free(pchunk->allocator, frame->palette);
+        sixel_allocator_free(pchunk->allocator, frame);
+    }
 
     return status;
 

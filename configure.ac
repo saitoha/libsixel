@@ -254,6 +254,7 @@ AC_CHECK_FUNCS([memcpy \
                 setjmp \
                 strerror \
                 isatty \
+                strncmp \
                 ldiv])
 
 # for HDR

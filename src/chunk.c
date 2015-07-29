@@ -68,6 +68,8 @@
 #include "chunk.h"
 #include "allocator.h"
 
+
+/* initialize chunk object with specified size */
 static SIXELSTATUS
 sixel_chunk_init(
     sixel_chunk_t * const /* in */ pchunk,
@@ -243,6 +245,7 @@ end:
 }
 
 
+/* get chunk date from specified local file path */
 static SIXELSTATUS
 sixel_chunk_from_file(
     char const      /* in */ *filename,
@@ -254,6 +257,7 @@ sixel_chunk_from_file(
     int ret;
     FILE *f;
     int n;
+    int const bucket_size = 4096;
 
     status = open_binary_file(&f, filename);
     if (SIXEL_FAILED(status)) {
@@ -261,14 +265,14 @@ sixel_chunk_from_file(
     }
 
     for (;;) {
-        if (pchunk->max_size - pchunk->size < 4096) {
+        if (pchunk->max_size - pchunk->size < bucket_size) {
             pchunk->max_size *= 2;
             pchunk->buffer = (unsigned char *)sixel_allocator_realloc(pchunk->allocator,
                                                                       pchunk->buffer,
                                                                       pchunk->max_size);
             if (pchunk->buffer == NULL) {
                 sixel_helper_set_additional_message(
-                    "sixel_chunk_from_file: realloc() failed.");
+                    "sixel_chunk_from_file: sixel_allocator_realloc() failed.");
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
             }
@@ -282,6 +286,8 @@ sixel_chunk_from_file(
                 }
                 ret = wait_file(fileno(f), 10000);
                 if (ret < 0) {
+                    sixel_helper_set_additional_message(
+                        "sixel_chunk_from_file: wait_file() failed.");
                     status = SIXEL_RUNTIME_ERROR;
                     goto end;
                 }
@@ -308,38 +314,76 @@ end:
 }
 
 
+/* get chunk of specified resource over libcurl function */
 static SIXELSTATUS
 sixel_chunk_from_url(
-    char const *url,
-    sixel_chunk_t *pchunk,
-    int finsecure)
+    char const      /* in */ *url,
+    sixel_chunk_t   /* in */ *pchunk,
+    int             /* in */ finsecure)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-
 # ifdef HAVE_LIBCURL
-    CURL *curl;
+    CURL *curl = NULL;
     CURLcode code;
-    char buffer[1024];
 
     curl = curl_easy_init();
-    curl_easy_setopt(curl, CURLOPT_URL, url);
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-    if (finsecure && strncmp(url, "https://", 8) == 0) {
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    if (curl == NULL) {
+        status = SIXEL_CURL_ERROR & CURLE_FAILED_INIT;
+        sixel_helper_set_additional_message("curl_easy_init() failed.");
+        goto end;
     }
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, memory_write);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)pchunk);
+
+    code = curl_easy_setopt(curl, CURLOPT_URL, url);
+    if (code != CURLE_OK) {
+        status = SIXEL_CURL_ERROR & (code & 0xff);
+        sixel_helper_set_additional_message("curl_easy_setopt(CURLOPT_FOLLOWLOCATION) failed.");
+        goto end;
+    }
+
+    code = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    if (code != CURLE_OK) {
+        status = SIXEL_CURL_ERROR & (code & 0xff);
+        sixel_helper_set_additional_message("curl_easy_setopt(CURLOPT_FOLLOWLOCATION) failed.");
+        goto end;
+    }
+
+    if (finsecure && strncmp(url, "https://", 8) == 0) {
+        code = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        if (code != CURLE_OK) {
+            status = SIXEL_CURL_ERROR & (code & 0xff);
+            sixel_helper_set_additional_message("curl_easy_setopt(CURLOPT_SSL_VERIFYPEER) failed.");
+            goto end;
+        }
+
+        code = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        if (code != CURLE_OK) {
+            status = SIXEL_CURL_ERROR & (code & 0xff);
+            sixel_helper_set_additional_message("curl_easy_setopt(CURLOPT_SSL_VERIFYHOST) failed.");
+            goto end;
+        }
+
+    }
+
+    code = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, memory_write);
+    if (code != CURLE_OK) {
+        status = SIXEL_CURL_ERROR & (code & 0xff);
+        sixel_helper_set_additional_message("curl_easy_setopt(CURLOPT_WRITEFUNCTION) failed.");
+        goto end;
+    }
+
+    code = curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)pchunk);
+    if (code != CURLE_OK) {
+        status = SIXEL_CURL_ERROR & (code & 0xff);
+        sixel_helper_set_additional_message("curl_easy_setopt(CURLOPT_WRITEDATA) failed.");
+        goto end;
+    }
+
     code = curl_easy_perform(curl);
     if (code != CURLE_OK) {
         status = SIXEL_CURL_ERROR & (code & 0xff);
-        if (sprintf(buffer, "curl_easy_perform('%s') failed.", url) != EOF) {
-            sixel_helper_set_additional_message(buffer);
-        }
-        curl_easy_cleanup(curl);
+        sixel_helper_set_additional_message("curl_easy_perform() failed.");
         goto end;
     }
-    curl_easy_cleanup(curl);
 
     status = SIXEL_OK;
 # else
@@ -355,6 +399,11 @@ sixel_chunk_from_url(
 # endif  /* HAVE_LIBCURL */
 
 end:
+# ifdef HAVE_LIBCURL
+    if (curl) {
+        curl_easy_cleanup(curl);
+    }
+# endif  /* HAVE_LIBCURL */
     return status;
 }
 
