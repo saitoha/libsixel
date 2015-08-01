@@ -767,7 +767,8 @@ load_with_builtin(
                           fstatic,
                           loop_control,
                           (void *)fn_load,
-                          context);
+                          context,
+                          pchunk->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }

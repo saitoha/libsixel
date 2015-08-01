@@ -31,7 +31,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "frame.h"
-#include <sixel.h>
+#include "fromgif.h"
 
 /*
  * gif_context_t struct and start_xxx functions
@@ -178,10 +178,10 @@ gif_init_frame(
     frame->delay = pg->delay;
     ncolors = 2 << (pg->flags & 7);
     if (frame->palette == NULL) {
-        frame->palette = (unsigned char *)malloc(ncolors * 3);
+        frame->palette = (unsigned char *)sixel_allocator_malloc(frame->allocator, ncolors * 3);
     } else if (frame->ncolors < ncolors) {
-        free(frame->palette);
-        frame->palette = (unsigned char *)malloc(ncolors * 3);
+        sixel_allocator_free(frame->allocator, frame->palette);
+        frame->palette = (unsigned char *)sixel_allocator_malloc(frame->allocator, ncolors * 3);
     }
     if (frame->palette == NULL) {
         status = SIXEL_BAD_ALLOCATION;
@@ -190,11 +190,12 @@ gif_init_frame(
     frame->ncolors = ncolors;
     if (frame->ncolors <= reqcolors && fuse_palette) {
         frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
-        free(frame->pixels);
-        frame->pixels = (unsigned char *)malloc(frame->width * frame->height);
+        sixel_allocator_free(frame->allocator, frame->pixels);
+        frame->pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator,
+                                                                frame->width * frame->height);
         if (frame->pixels == NULL) {
             sixel_helper_set_additional_message(
-                "malloc() failed in gif_init_frame().");
+                "sixel_allocator_malloc() failed in gif_init_frame().");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -228,10 +229,11 @@ gif_init_frame(
         }
     } else {
         frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        frame->pixels = (unsigned char *)malloc(pg->w * pg->h * 3);
+        frame->pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator,
+                                                                pg->w * pg->h * 3);
         if (frame->pixels == NULL) {
             sixel_helper_set_additional_message(
-                "malloc() failed in gif_init_frame().");
+                "sixel_allocator_malloc() failed in gif_init_frame().");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -535,16 +537,16 @@ end:
 
 SIXELSTATUS
 load_gif(
-    unsigned char /* in */ *buffer,
-    int           /* in */ size,
-    unsigned char /* in */ *bgcolor,
-    int           /* in */ reqcolors,
-    int           /* in */ fuse_palette,
-    int           /* in */ fstatic,
-    int           /* in */ loop_control,
-    void          /* in */ *fn_load,     /* callback */
-    void          /* in */ *context      /* private data for callback */
-)
+    unsigned char       /* in */ *buffer,
+    int                 /* in */ size,
+    unsigned char       /* in */ *bgcolor,
+    int                 /* in */ reqcolors,
+    int                 /* in */ fuse_palette,
+    int                 /* in */ fstatic,
+    int                 /* in */ loop_control,
+    void                /* in */ *fn_load,     /* callback */
+    void                /* in */ *context,     /* private data for callback */
+    sixel_allocator_t   /* in */ *allocator)   /* allocator object */
 {
     gif_context_t s;
     gif_t g;
@@ -553,8 +555,8 @@ load_gif(
 
     g.out = NULL;
 
-    frame = sixel_frame_create();
-    if (frame == NULL) {
+    status = sixel_frame_new(&frame, allocator);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
     s.img_buffer = s.img_buffer_original = (unsigned char *)buffer;
@@ -566,7 +568,7 @@ load_gif(
     }
     frame->width = g.w,
     frame->height = g.h,
-    g.out = (unsigned char *)malloc(g.w * g.h);
+    g.out = (unsigned char *)sixel_allocator_malloc(allocator, g.w * g.h);
     if (g.out == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto end;
@@ -628,7 +630,7 @@ load_gif(
 
 end:
     sixel_frame_unref(frame);
-    free(g.out);
+    sixel_allocator_free(frame->allocator, g.out);
 
     return status;
 }
