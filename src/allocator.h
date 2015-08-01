@@ -27,6 +27,7 @@
 struct sixel_allocator {
     unsigned int ref;           /* reference counter */
     sixel_malloc_t fn_malloc;
+    sixel_calloc_t fn_calloc;
     sixel_realloc_t fn_realloc;
     sixel_free_t fn_free;
 };

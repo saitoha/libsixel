@@ -60,6 +60,7 @@ main(int argc, char *argv[])
     }
 
     puts("fromgif ok.");
+    fflush(stdout);
 
     nret = sixel_loader_tests_main();
     if (nret != EXIT_SUCCESS) {
@@ -67,6 +68,7 @@ main(int argc, char *argv[])
     }
 
     puts("loader ok.");
+    fflush(stdout);
 
     nret = sixel_dither_tests_main();
     if (nret != EXIT_SUCCESS) {
@@ -74,6 +76,7 @@ main(int argc, char *argv[])
     }
 
     puts("dither ok.");
+    fflush(stdout);
 
     nret = sixel_pixelformat_tests_main();
     if (nret != EXIT_SUCCESS) {
@@ -81,6 +84,7 @@ main(int argc, char *argv[])
     }
 
     puts("pixelformat ok.");
+    fflush(stdout);
 
     nret = sixel_frame_tests_main();
     if (nret != EXIT_SUCCESS) {
@@ -88,6 +92,7 @@ main(int argc, char *argv[])
     }
 
     puts("frame ok.");
+    fflush(stdout);
 
     nret = sixel_writer_tests_main();
     if (nret != EXIT_SUCCESS) {
@@ -95,6 +100,7 @@ main(int argc, char *argv[])
     }
 
     puts("writer ok.");
+    fflush(stdout);
 
     nret = sixel_quant_tests_main();
     if (nret != EXIT_SUCCESS) {
@@ -102,6 +108,7 @@ main(int argc, char *argv[])
     }
 
     puts("quant ok.");
+    fflush(stdout);
 
     nret = sixel_encoder_tests_main();
     if (nret != EXIT_SUCCESS) {
@@ -109,6 +116,7 @@ main(int argc, char *argv[])
     }
 
     puts("encoder ok.");
+    fflush(stdout);
 
     nret = sixel_status_tests_main();
     if (nret != EXIT_SUCCESS) {
@@ -116,6 +124,7 @@ main(int argc, char *argv[])
     }
 
     puts("status ok.");
+    fflush(stdout);
 
     nret = sixel_chunk_tests_main();
     if (nret != EXIT_SUCCESS) {
@@ -123,6 +132,7 @@ main(int argc, char *argv[])
     }
 
     puts("chunk ok.");
+    fflush(stdout);
 
     nret = sixel_allocator_tests_main();
     if (nret != EXIT_SUCCESS) {
@@ -130,6 +140,7 @@ main(int argc, char *argv[])
     }
 
     puts("allocator ok.");
+    fflush(stdout);
 
 error:
     return nret;

@@ -46,7 +46,7 @@ sixel_frame_new(
     SIXELSTATUS status = SIXEL_FALSE;
 
     if (allocator == NULL) {
-        status = sixel_allocator_new(&allocator, malloc, realloc, free);
+        status = sixel_allocator_new(&allocator, malloc, calloc, realloc, free);
         if (SIXEL_FAILED(status)) {
             goto end;
         }

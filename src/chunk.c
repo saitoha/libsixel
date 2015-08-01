@@ -84,7 +84,7 @@ sixel_chunk_init(
 
     if (pchunk->buffer == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_chunk_init: malloc() failed.");
+            "sixel_chunk_init: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }

@@ -470,9 +470,10 @@ enum methodForResampling {
 };
 #endif
 
-typedef void *(* sixel_malloc_t)(size_t n);
-typedef void *(* sixel_realloc_t)(void *p, size_t n);
-typedef void (* sixel_free_t)(void *p);
+typedef void *(* sixel_malloc_t)(size_t);
+typedef void *(* sixel_calloc_t)(size_t, size_t);
+typedef void *(* sixel_realloc_t)(void *, size_t);
+typedef void (* sixel_free_t)(void *);
 
 struct sixel_allocator;
 typedef struct sixel_allocator sixel_allocator_t;
@@ -486,6 +487,7 @@ SIXELSTATUS
 sixel_allocator_new(
     sixel_allocator_t   /* out */ **ppallocator,  /* allocator object to be created */
     sixel_malloc_t      /* in */  fn_malloc,      /* custom malloc() function */
+    sixel_calloc_t      /* in */  fn_calloc,      /* custom calloc() function */
     sixel_realloc_t     /* in */  fn_realloc,     /* custom realloc() function */
     sixel_free_t        /* in */  fn_free);       /* custom free() function */
 
@@ -504,6 +506,13 @@ SIXELAPI void *
 sixel_allocator_malloc(
     sixel_allocator_t   /* in */ *allocator,  /* allocator object */
     size_t              /* in */ n);          /* allocation size */
+
+/* call custom calloc() */
+SIXELAPI void *
+sixel_allocator_calloc(
+    sixel_allocator_t   /* in */ *allocator,  /* allocator object */
+    size_t              /* in */ nelm,        /* allocation size */
+    size_t              /* in */ elsize);     /* allocation size */
 
 /* call custom realloc() */
 SIXELAPI void *

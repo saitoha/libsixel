@@ -90,7 +90,7 @@ sixel_decoder_new(
     SIXELSTATUS status = SIXEL_FALSE;
 
     if (allocator == NULL) {
-        status = sixel_allocator_new(&allocator, malloc, realloc, free);
+        status = sixel_allocator_new(&allocator, malloc, calloc, realloc, free);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -262,7 +262,7 @@ sixel_decoder_decode(
 
     if ((raw_data = (unsigned char *)sixel_allocator_malloc(decoder->allocator, max)) == NULL) {
         status = SIXEL_BAD_ALLOCATION;
-        if (sprintf(buffer, "malloc(%d) failed.", max) != EOF) {
+        if (sprintf(buffer, "sixel_allocator_malloc(%d) failed.", max) != EOF) {
             sixel_helper_set_additional_message(buffer);
         }
         goto end;

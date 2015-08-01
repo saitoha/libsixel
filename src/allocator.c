@@ -42,6 +42,7 @@ SIXELSTATUS
 sixel_allocator_new(
     sixel_allocator_t   /* out */ **ppallocator,  /* allocator object to be created */
     sixel_malloc_t      /* in */  fn_malloc,      /* custom malloc() function */
+    sixel_calloc_t      /* in */  fn_calloc,      /* custom calloc() function */
     sixel_realloc_t     /* in */  fn_realloc,     /* custom realloc() function */
     sixel_free_t        /* in */  fn_free)        /* custom free() function */
 {
@@ -55,24 +56,19 @@ sixel_allocator_new(
     }
 
     if (fn_malloc == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_allocator_new: given argument fn_malloc is null.");
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
+        fn_malloc = malloc;
+    }
+
+    if (fn_calloc == NULL) {
+        fn_calloc = calloc;
     }
 
     if (fn_realloc == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_allocator_new: given argument fn_realloc is null.");
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
+        fn_realloc = realloc;
     }
 
     if (fn_free == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_allocator_new: given argument fn_free is null.");
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
+        fn_free = free;
     }
 
     *ppallocator = fn_malloc(sizeof(sixel_allocator_t));
@@ -85,6 +81,7 @@ sixel_allocator_new(
 
     (*ppallocator)->ref         = 1;
     (*ppallocator)->fn_malloc   = fn_malloc;
+    (*ppallocator)->fn_calloc   = fn_calloc;
     (*ppallocator)->fn_realloc  = fn_realloc;
     (*ppallocator)->fn_free     = fn_free;
 
@@ -136,7 +133,39 @@ sixel_allocator_malloc(
     sixel_allocator_t   /* in */ *allocator,  /* allocator object */
     size_t              /* in */ n)           /* allocation size */
 {
-    return allocator->fn_malloc(n);
+    void *p = NULL;
+
+    if (allocator->fn_malloc) {
+        p = allocator->fn_malloc(n);
+    }
+
+    return p;
+}
+
+
+/* call custom calloc() */
+SIXELAPI void *
+sixel_allocator_calloc(
+    sixel_allocator_t   /* in */ *allocator,  /* allocator object */
+    size_t              /* in */ nelm,        /* number of elements */
+    size_t              /* in */ elsize)      /* size of element */
+{
+    void *p = NULL;
+
+    if (allocator->fn_calloc) {
+        p = allocator->fn_calloc(nelm, elsize);
+        if (p) {
+            goto end;
+        }
+    }
+
+    p = allocator->fn_malloc(nelm * elsize);
+    if (p) {
+        memset(p, 0x00, nelm * elsize);
+    }
+
+end:
+    return p;
 }
 
 
@@ -147,7 +176,13 @@ sixel_allocator_realloc(
     void                /* in */ *p,          /* existing buffer to be re-allocated */
     size_t              /* in */ n)           /* re-allocation size */
 {
-    return allocator->fn_realloc(p, n);
+    void *result = NULL;
+
+    if (allocator->fn_realloc) {
+        result = allocator->fn_realloc(p, n);
+    }
+
+    return result;
 }
 
 
@@ -157,7 +192,9 @@ sixel_allocator_free(
     sixel_allocator_t   /* in */ *allocator,  /* allocator object */
     void                /* in */ *p)          /* existing buffer to be freed */
 {
-    return allocator->fn_free(p);
+    if (allocator->fn_free) {
+        allocator->fn_free(p);
+    }
 }
 
 
@@ -210,23 +247,28 @@ test1(void)
     SIXELSTATUS status;
     sixel_allocator_t *allocator = NULL;
 
-    status = sixel_allocator_new(NULL, malloc, realloc, free);
+    status = sixel_allocator_new(NULL, malloc, calloc, realloc, free);
     if (status != SIXEL_BAD_ARGUMENT) {
         goto error;
     }
 
-    status = sixel_allocator_new(&allocator, NULL, realloc, free);
-    if (status != SIXEL_BAD_ARGUMENT) {
+    status = sixel_allocator_new(&allocator, NULL, calloc, realloc, free);
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
 
-    status = sixel_allocator_new(&allocator, malloc, NULL, free);
-    if (status != SIXEL_BAD_ARGUMENT) {
+    status = sixel_allocator_new(&allocator, malloc, NULL, realloc, free);
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
 
-    status = sixel_allocator_new(&allocator, malloc, realloc, NULL);
-    if (status != SIXEL_BAD_ARGUMENT) {
+    status = sixel_allocator_new(&allocator, malloc, calloc, NULL, free);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_allocator_new(&allocator, malloc, calloc, realloc, NULL);
+    if (SIXEL_FAILED(status)) {
         goto error;
     }
 

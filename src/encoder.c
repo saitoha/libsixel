@@ -1247,7 +1247,7 @@ sixel_encoder_new(
     int ncolors;
 
     if (allocator == NULL) {
-        status = sixel_allocator_new(&allocator, malloc, realloc, free);
+        status = sixel_allocator_new(&allocator, malloc, calloc, realloc, free);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -2098,7 +2098,7 @@ test5(void)
     sixel_allocator_t *allocator = NULL;
     SIXELSTATUS status;
 
-    status = sixel_allocator_new(&allocator, malloc, realloc, free);
+    status = sixel_allocator_new(&allocator, malloc, calloc, realloc, free);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
