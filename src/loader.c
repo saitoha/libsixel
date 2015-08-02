@@ -724,16 +724,16 @@ load_with_builtin(
             goto end;
         }
         /* pnm */
-        frame->pixels = load_pnm(pchunk->buffer,
-                                 pchunk->size,
-                                 &frame->width,
-                                 &frame->height,
-                                 fuse_palette ? &frame->palette: NULL,
-                                 &frame->ncolors,
-                                 &frame->pixelformat);
-        if (!frame->pixels) {
-            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-            sixel_helper_set_additional_message("load_pnm() failed.");
+        status = load_pnm(pchunk->buffer,
+                          pchunk->size,
+                          frame->allocator,
+                          &frame->pixels,
+                          &frame->width,
+                          &frame->height,
+                          fuse_palette ? &frame->palette: NULL,
+                          &frame->ncolors,
+                          &frame->pixelformat);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
     }
@@ -839,6 +839,8 @@ load_with_builtin(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+
+    status = SIXEL_OK;
 
 end:
     sixel_frame_unref(frame);
