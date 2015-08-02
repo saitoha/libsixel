@@ -446,10 +446,14 @@ sixel_frame_resize(
 
     status = sixel_helper_scale_image(
         scaled_frame,
-        frame->pixels, frame->width, frame->height, 3,
+        frame->pixels,
+        frame->width,
+        frame->height,
+        3,
         width,
         height,
-        method_for_resampling);
+        method_for_resampling,
+        frame->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }

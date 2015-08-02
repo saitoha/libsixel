@@ -807,7 +807,8 @@ sixel_helper_scale_image(
     int                 /* in */  pixelformat,           /* one of enum pixelFormat */
     int                 /* in */  dstw,                  /* destination image width */
     int                 /* in */  dsth,                  /* destination image height */
-    int                 /* in */  method_for_resampling  /* one of methodForResampling */
+    int                 /* in */  method_for_resampling, /* one of methodForResampling */
+    sixel_allocator_t   /* in */  *allocator             /* allocator object */
 );
 
 #ifdef __cplusplus
