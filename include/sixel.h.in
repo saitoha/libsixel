@@ -751,9 +751,9 @@ sixel_decode_raw(
     int                 /* out */ *pheight,     /* image height */
     unsigned char       /* out */ **palette,    /* ARGB palette */
     int                 /* out */ *ncolors,     /* palette size (<= 256) */
-    sixel_allocator_t   /* in */  *allocator);  /* allocator object */
+    sixel_allocator_t   /* in */  *allocator);  /* allocator object or null */
 
-SIXELAPI SIXELSTATUS
+SIXELAPI @attr_func_deprecated@ SIXELSTATUS
 sixel_decode(
     unsigned char            /* in */  *sixels,    /* sixel bytes */
     int                      /* in */  size,       /* size of sixel bytes */

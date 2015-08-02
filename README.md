@@ -683,19 +683,17 @@ sixel_output_unref(sixel_output_t /* in */ *output);   /* output context */
 `sixel_decode` function converts SIXEL into indexed bitmap bytes with its palette.
 
 ```
-/* malloc(3) compatible function */
-typedef void * (* sixel_allocator_function)(size_t size);
-
 /* convert sixel data into indexed pixel bytes and palette data */
-int
-sixel_decode(unsigned char              /* in */  *sixels,    /* sixel bytes */
-             int                        /* in */  size,       /* size of sixel bytes */
-             unsigned char              /* out */ **pixels,   /* decoded pixels */
-             int                        /* out */ *pwidth,    /* image width */
-             int                        /* out */ *pheight,   /* image height */
-             unsigned char              /* out */ **palette,  /* RGBA palette */
-             int                        /* out */ *ncolors,   /* palette size (<= 256) */
-             sixel_allocator_function   /* out */ allocator); /* malloc function */
+SIXELAPI SIXELSTATUS
+sixel_decode_raw(
+    unsigned char       /* in */  *p,           /* sixel bytes */
+    int                 /* in */  len,          /* size of sixel bytes */
+    unsigned char       /* out */ **pixels,     /* decoded pixels */
+    int                 /* out */ *pwidth,      /* image width */
+    int                 /* out */ *pheight,     /* image height */
+    unsigned char       /* out */ **palette,    /* ARGB palette */
+    int                 /* out */ *ncolors,     /* palette size (<= 256) */
+    sixel_allocator_t   /* in */  *allocator);  /* allocator object */
 ```
 
 ## Perl interface

@@ -548,9 +548,9 @@ load_sixel(unsigned char        /* out */ **result,
     int i;
 
     /* sixel */
-    status = sixel_decode(buffer, size,
-                          &p, psx, psy,
-                          &palette, &colors, allocator->fn_malloc);
+    status = sixel_decode_raw(buffer, size,
+                              &p, psx, psy,
+                              &palette, &colors, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
