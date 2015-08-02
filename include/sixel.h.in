@@ -491,7 +491,7 @@ sixel_allocator_new(
     sixel_realloc_t     /* in */  fn_realloc,     /* custom realloc() function */
     sixel_free_t        /* in */  fn_free);       /* custom free() function */
 
-/* increase reference count of allocatort object (thread-unsafe) */
+/* increase reference count of allocator object (thread-unsafe) */
 SIXELAPI void
 sixel_allocator_ref(
     sixel_allocator_t /* in */ *allocator);  /* allocator object to be
@@ -1002,26 +1002,32 @@ sixel_encoder_new(
     sixel_allocator_t   /* in */  *allocator); /* allocator, null if you use
                                                   default allocator */
 
+/* deprecated version of sixel_decoder_new() */
 SIXELAPI @attr_func_deprecated@ sixel_encoder_t *
 sixel_encoder_create(void);
 
+/* increase reference count of encoder object (thread-unsafe) */
 SIXELAPI void
 sixel_encoder_ref(sixel_encoder_t /* in */ *encoder);
 
+/* decrease reference count of encoder object (thread-unsafe) */
 SIXELAPI void
 sixel_encoder_unref(sixel_encoder_t /* in */ *encoder);
 
+/* set cancel state flag to encoder object */
 SIXELAPI SIXELSTATUS
 sixel_encoder_set_cancel_flag(
     sixel_encoder_t /* in */ *encoder,
     int             /* in */ *cancel_flag);
 
+/* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS
 sixel_encoder_setopt(
     sixel_encoder_t /* in */ *encoder,
     int             /* in */ arg,
     char const      /* in */ *optarg);
 
+/* load source data from specified file and encode it to SIXEL format */
 SIXELAPI SIXELSTATUS
 sixel_encoder_encode(
     sixel_encoder_t /* in */ *encoder,
@@ -1049,21 +1055,27 @@ sixel_decoder_new(
     sixel_allocator_t  /* in */  *allocator);  /* allocator, null if you use
                                                   default allocator */
 
+/* deprecated version of sixel_decoder_new() */
 SIXELAPI @attr_func_deprecated@ sixel_decoder_t *
 sixel_decoder_create(void);
 
+/* increase reference count of decoder object (thread-unsafe) */
 SIXELAPI void
 sixel_decoder_ref(sixel_decoder_t *decoder);
 
+/* decrease reference count of decoder object (thread-unsafe) */
 SIXELAPI void
 sixel_decoder_unref(sixel_decoder_t *decoder);
 
+/* set an option flag to decoder object */
 SIXELAPI SIXELSTATUS
 sixel_decoder_setopt(
-    sixel_decoder_t /* in */ *decoder,
-    int             /* in */ arg,
-    char const      /* in */ *optarg);
+    sixel_decoder_t /* in */ *decoder,  /* decoder object */
+    int             /* in */ arg,       /* one of SIXEL_OPTFLAG_*** */
+    char const      /* in */ *optarg);  /* null or an argument of optflag */
 
+/* load source data from stdin or the file specified with
+   SIXEL_OPTFLAG_INPUT flag, and decode it */
 SIXELAPI SIXELSTATUS
 sixel_decoder_decode(
     sixel_decoder_t /* in */ *decoder);
