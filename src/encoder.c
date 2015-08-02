@@ -801,7 +801,7 @@ output_sixel_with_macro(
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
-                "load_image_callback: sprintf() failed.");
+                "output_sixel_with_macro: sprintf() failed.");
             goto end;
         }
         nwrite = sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);

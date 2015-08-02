@@ -542,6 +542,15 @@ extern "C" {
 #endif
 
 /* create output context object */
+SIXELAPI SIXELSTATUS
+sixel_output_new(
+    sixel_output_t          /* out */ **output,     /* output object to be created */
+    sixel_write_function    /* in */  fn_write,     /* callback for output sixel */
+    void                    /* in */ *priv,         /* private data given as
+                                                       3rd argument of fn_write */
+    sixel_allocator_t       /* in */  *allocator);  /* allocator, null if you use
+                                                       default allocator */
+
 SIXELAPI sixel_output_t *
 sixel_output_create(
     sixel_write_function /* in */ fn_write, /* callback for output sixel */

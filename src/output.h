@@ -33,6 +33,7 @@ typedef struct sixel_node {
 struct sixel_output {
 
     int ref;
+    sixel_allocator_t *allocator;
 
     /* compatiblity flags */
 
@@ -72,7 +73,6 @@ struct sixel_output {
     void *priv;
     int pos;
     unsigned char buffer[1];
-
 };
 
 #endif /* LIBSIXEL_OUTPUT_H */
