@@ -431,6 +431,7 @@ error:
     fprintf(stderr, "%s\n%s\n",
             sixel_helper_format_error(status),
             sixel_helper_get_additional_message());
+    status = (-1);
 end:
     sixel_encoder_unref(encoder);
     return status;

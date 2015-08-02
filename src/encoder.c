@@ -316,6 +316,7 @@ end:
 typedef struct sixel_callback_context_for_mapfile {
     int reqcolors;
     sixel_dither_t *dither;
+    sixel_allocator_t *allocator;
 } sixel_callback_context_for_mapfile_t;
 
 
@@ -336,10 +337,11 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
             status = SIXEL_LOGIC_ERROR;
             goto end;
         }
-        callback_context->dither
-            = sixel_dither_create(sixel_frame_get_ncolors(frame));
-        if (callback_context->dither == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
+        status = sixel_dither_new(
+            &callback_context->dither,
+            sixel_frame_get_ncolors(frame),
+            callback_context->allocator);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
         sixel_dither_set_palette(callback_context->dither,
@@ -363,10 +365,11 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
         status = SIXEL_OK;
         break;
     default:
-        callback_context->dither
-            = sixel_dither_create(callback_context->reqcolors);
-        if (callback_context->dither == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
+        status = sixel_dither_new(
+            &callback_context->dither,
+            callback_context->reqcolors,
+            callback_context->allocator);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
 
@@ -409,6 +412,7 @@ prepare_specified_palette(
 
     callback_context.reqcolors = reqcolors;
     callback_context.dither = NULL;
+    callback_context.allocator = allocator;
 
     status = sixel_helper_load_image_file(mapfile,
                                           1,   /* fstatic */
@@ -444,9 +448,8 @@ prepare_palette(sixel_dither_t **dither,
         if (former_dither) {
             *dither = former_dither;
         } else {
-            *dither = sixel_dither_create(-1);
-            if (*dither == NULL) {
-                status = SIXEL_BAD_ALLOCATION;
+            status = sixel_dither_new(dither, (-1), encoder->allocator);
+            if (SIXEL_FAILED(status)) {
                 goto end;
             }
         }
@@ -487,9 +490,9 @@ prepare_palette(sixel_dither_t **dither,
         }
     } else if (sixel_frame_get_palette(frame) &&
                (sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_PALETTE)) {
-        *dither = sixel_dither_create(sixel_frame_get_ncolors(frame));
-        if (!*dither) {
-            status = SIXEL_BAD_ALLOCATION;
+        status = sixel_dither_new(dither, sixel_frame_get_ncolors(frame),
+                                  encoder->allocator);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
         sixel_dither_set_palette(*dither, sixel_frame_get_palette(frame));
@@ -520,9 +523,8 @@ prepare_palette(sixel_dither_t **dither,
         if (former_dither) {
             sixel_dither_unref(former_dither);
         }
-        *dither = sixel_dither_create(encoder->reqcolors);
-        if (*dither == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
+        status = sixel_dither_new(dither, encoder->reqcolors, encoder->allocator);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
         status = sixel_dither_initialize(*dither,
@@ -1254,7 +1256,7 @@ sixel_encoder_new(
     int ncolors;
 
     if (allocator == NULL) {
-        status = sixel_allocator_new(&allocator, malloc, calloc, realloc, free);
+        status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -1263,7 +1265,8 @@ sixel_encoder_new(
     }
 
     *ppencoder
-        = (sixel_encoder_t *)sixel_allocator_malloc(allocator, sizeof(sixel_encoder_t));
+        = (sixel_encoder_t *)sixel_allocator_malloc(allocator,
+                                                    sizeof(sixel_encoder_t));
     if (*ppencoder == NULL) {
         sixel_helper_set_additional_message(
             "sixel_encoder_new: sixel_allocator_malloc() failed.");
@@ -2105,7 +2108,7 @@ test5(void)
     sixel_allocator_t *allocator = NULL;
     SIXELSTATUS status;
 
-    status = sixel_allocator_new(&allocator, malloc, calloc, realloc, free);
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
     }

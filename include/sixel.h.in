@@ -630,7 +630,7 @@ sixel_dither_new(
                                                     default allocator */
 
 /* create dither context object */
-SIXELAPI sixel_dither_t *
+SIXELAPI @attr_func_deprecated@ sixel_dither_t *
 sixel_dither_create(int /* in */ ncolors); /* number of colors */
 
 /* get built-in dither context object */

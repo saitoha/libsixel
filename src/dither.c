@@ -270,7 +270,7 @@ sixel_dither_new(
     }
 
     if (allocator == NULL) {
-        status = sixel_allocator_new(&allocator, malloc, calloc, realloc, free);
+        status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
         if (SIXEL_FAILED(status)) {
             *ppdither = NULL;
             goto end;
@@ -320,6 +320,8 @@ sixel_dither_new(
     (*ppdither)->quality_mode = quality_mode;
     (*ppdither)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     (*ppdither)->allocator = allocator;
+
+    status = SIXEL_OK;
 
 end:
     return status;
@@ -384,6 +386,7 @@ SIXELAPI sixel_dither_t *
 sixel_dither_get(
     int     /* in */ builtin_dither)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *palette;
     int ncolors;
     int keycolor;
@@ -444,13 +447,16 @@ sixel_dither_get(
         goto end;
     }
 
-    dither = sixel_dither_create(ncolors);
-    if (dither) {
-        dither->palette = palette;
-        dither->keycolor = keycolor;
-        dither->optimized = 1;
-        dither->optimize_palette = 0;
+    status = sixel_dither_new(&dither, ncolors, NULL);
+    if (SIXEL_FAILED(status)) {
+        dither = NULL;
+        goto end;
     }
+
+    dither->palette = palette;
+    dither->keycolor = keycolor;
+    dither->optimized = 1;
+    dither->optimize_palette = 0;
 
 end:
     return dither;
@@ -800,7 +806,14 @@ test1(void)
     sixel_dither_t *dither = NULL;
     int nret = EXIT_FAILURE;
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     dither = sixel_dither_create(0);
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
     if (dither == NULL) {
         goto error;
     }
@@ -820,7 +833,14 @@ test2(void)
     int colors;
     int nret = EXIT_FAILURE;
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     dither = sixel_dither_create(INT_MAX);
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
     if (dither == NULL) {
         goto error;
     }
