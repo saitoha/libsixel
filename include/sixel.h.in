@@ -864,8 +864,7 @@ sixel_frame_new(
     sixel_frame_t       /* out */ **ppframe,    /* frame object to be created */
     sixel_allocator_t   /* in */  *allocator);  /* allocator, null if you use
                                                    default allocator */
-
-sixel_frame_t *
+SIXELAPI @attr_func_deprecated@ sixel_frame_t *
 sixel_frame_create(void);
 
 SIXELAPI void

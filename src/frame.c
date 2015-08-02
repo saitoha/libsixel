@@ -83,7 +83,7 @@ end:
 }
 
 
-SIXELAPI sixel_frame_t *
+SIXELAPI /* deprecated */ sixel_frame_t *
 sixel_frame_create(void)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -608,7 +608,14 @@ test1(void)
     sixel_frame_t *frame = NULL;
     int nret = EXIT_FAILURE;
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     frame = sixel_frame_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
     if (frame == NULL) {
         goto error;
     }
@@ -638,7 +645,15 @@ test2(void)
 
     memset(bgcolor, 0x10, 3);
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     frame = sixel_frame_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
+
     if (frame == NULL) {
         goto error;
     }
@@ -696,7 +711,14 @@ test3(void)
     pixels[2] = 0x97;
     pixels[3] = 0x32;
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     frame = sixel_frame_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
     if (frame == NULL) {
         goto error;
     }
@@ -754,7 +776,14 @@ test4(void)
     pixels[2] = 0x97;
     pixels[3] = 0x32;
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     frame = sixel_frame_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
     if (frame == NULL) {
         goto error;
     }
@@ -814,7 +843,14 @@ test5(void)
 
     pixels[0] = 0;
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     frame = sixel_frame_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
     if (frame == NULL) {
         goto error;
     }
@@ -874,7 +910,14 @@ test6(void)
 
     pixels[0] = 0;
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     frame = sixel_frame_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
     if (frame == NULL) {
         goto error;
     }

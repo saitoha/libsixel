@@ -2007,7 +2007,14 @@ test2(void)
         goto error;
     }
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     frame = sixel_frame_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
     if (encoder == NULL) {
         goto error;
     }
