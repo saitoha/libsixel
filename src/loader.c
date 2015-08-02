@@ -1087,7 +1087,7 @@ load_with_gd(
     gdImagePtr im;
     int x, y;
     int c;
-    sixel_frame_t *frame;
+    sixel_frame_t *frame = NULL;
 
     (void) fstatic;
     (void) fuse_palette;
@@ -1095,9 +1095,8 @@ load_with_gd(
     (void) bgcolor;
     (void) loop_control;
 
-    frame = sixel_frame_create();
-    if (frame == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
+    status = sixel_frame_new(&frame, pchunk->allocator);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
 
