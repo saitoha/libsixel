@@ -251,10 +251,10 @@ static const unsigned char pal_vt340_color[] = {
 /* create dither context object */
 SIXELAPI SIXELSTATUS
 sixel_dither_new(
-    sixel_dither_t      /* out */   **ppdither, /* dither object to be created */
-    int                 /* in */    ncolors,    /* required colors */
-    sixel_allocator_t   /* in */    *allocator) /* allocator, null if you use
-                                                  default allocator */
+    sixel_dither_t    /* out */ **ppdither, /* dither object to be created */
+    int               /* in */  ncolors,    /* required colors */
+    sixel_allocator_t /* in */  *allocator) /* allocator, null if you use
+                                               default allocator */
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int headsize;

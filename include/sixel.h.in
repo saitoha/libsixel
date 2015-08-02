@@ -551,7 +551,7 @@ sixel_output_new(
     sixel_allocator_t       /* in */  *allocator);  /* allocator, null if you use
                                                        default allocator */
 
-SIXELAPI sixel_output_t *
+SIXELAPI @attr_func_deprecated@ sixel_output_t *
 sixel_output_create(
     sixel_write_function /* in */ fn_write, /* callback for output sixel */
     void                 /* in */ *priv);   /* private data given as
@@ -620,6 +620,14 @@ typedef struct sixel_dither sixel_dither_t;
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* create dither context object */
+SIXELAPI SIXELSTATUS
+sixel_dither_new(
+    sixel_dither_t      /* out */   **ppdither,  /* dither object to be created */
+    int                 /* in */    ncolors,     /* required colors */
+    sixel_allocator_t   /* in */    *allocator); /* allocator, null if you use
+                                                    default allocator */
 
 /* create dither context object */
 SIXELAPI sixel_dither_t *
@@ -1041,6 +1049,7 @@ sixel_decoder_new(
     sixel_decoder_t    /* out */ **ppdecoder,  /* decoder object to be created */
     sixel_allocator_t  /* in */  *allocator);  /* allocator, null if you use
                                                   default allocator */
+
 SIXELAPI @attr_func_deprecated@ sixel_decoder_t *
 sixel_decoder_create(void);
 

@@ -237,7 +237,7 @@ end:
 }
 
 
-/* generic writer function for passing to sixel_output_create() */
+/* generic writer function for passing to sixel_output_new() */
 static int
 sixel_write_callback(char *data, int size, void *priv)
 {
@@ -245,7 +245,7 @@ sixel_write_callback(char *data, int size, void *priv)
 }
 
 
-/* the writer function with hex-encoding for passing to sixel_output_create() */
+/* the writer function with hex-encoding for passing to sixel_output_new() */
 static int
 sixel_hex_write_callback(
     char    /* in */ *data,
@@ -1151,11 +1151,18 @@ load_image_callback(sixel_frame_t *frame, void *data)
     /* create output context */
     if (encoder->fuse_macro || encoder->macro_number >= 0) {
         /* -u or -n option */
-        output = sixel_output_create(sixel_hex_write_callback,
-                                     &encoder->outfd);
+        status = sixel_output_new(&output,
+                                  sixel_hex_write_callback,
+                                  &encoder->outfd,
+                                  encoder->allocator);
     } else {
-        output = sixel_output_create(sixel_write_callback,
-                                     &encoder->outfd);
+        status = sixel_output_new(&output,
+                                  sixel_write_callback,
+                                  &encoder->outfd,
+                                  encoder->allocator);
+    }
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
     sixel_output_set_8bit_availability(output, encoder->f8bit);
     sixel_output_set_palette_type(output, encoder->palette_type);
