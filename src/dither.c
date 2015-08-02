@@ -555,16 +555,18 @@ sixel_dither_initialize(
     sixel_dither_set_method_for_rep(dither, method_for_rep);
     sixel_dither_set_quality_mode(dither, quality_mode);
 
-    buf = sixel_quant_make_palette(input_pixels,
-                                   width * height * 3,
-                                   SIXEL_PIXELFORMAT_RGB888,
-                                   dither->reqcolors,
-                                   &dither->ncolors,
-                                   &dither->origcolors,
-                                   dither->method_for_largest,
-                                   dither->method_for_rep,
-                                   dither->quality_mode);
-    if (buf == NULL) {
+    status = sixel_quant_make_palette(&buf,
+                                      input_pixels,
+                                      width * height * 3,
+                                      SIXEL_PIXELFORMAT_RGB888,
+                                      dither->reqcolors,
+                                      &dither->ncolors,
+                                      &dither->origcolors,
+                                      dither->method_for_largest,
+                                      dither->method_for_rep,
+                                      dither->quality_mode,
+                                      dither->allocator);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
     memcpy(dither->palette, buf, dither->ncolors * 3);
@@ -574,7 +576,7 @@ sixel_dither_initialize(
         dither->method_for_diffuse = SIXEL_DIFFUSE_NONE;
     }
 
-    sixel_quant_free_palette(buf);
+    sixel_quant_free_palette(buf, dither->allocator);
     status = SIXEL_OK;
 
 end:
@@ -764,7 +766,8 @@ sixel_dither_apply_palette(
         input_pixels = pixels;
     }
 
-    status = sixel_quant_apply_palette(input_pixels,
+    status = sixel_quant_apply_palette(dest,
+                                       input_pixels,
                                        width, height, 3,
                                        dither->palette,
                                        dither->ncolors,
@@ -774,7 +777,7 @@ sixel_dither_apply_palette(
                                        dither->complexion,
                                        dither->cachetable,
                                        &ncolors,
-                                       dest);
+                                       dither->allocator);
     if (SIXEL_FAILED(status)) {
         free(dest);
         dest = NULL;

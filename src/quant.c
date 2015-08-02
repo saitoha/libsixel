@@ -60,7 +60,6 @@
 #endif
 
 #include "quant.h"
-#include "sixel.h"
 
 #if HAVE_DEBUG
 #define quant_trace fprintf
@@ -132,7 +131,8 @@ static SIXELSTATUS
 alloctupletable(
     tupletable          /* out */ *result,
     unsigned int const  /* in */  depth,
-    unsigned int const  /* in */  size)
+    unsigned int const  /* in */  size,
+    sixel_allocator_t   /* in */  *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     char message[256];
@@ -176,7 +176,7 @@ alloctupletable(
 
     allocSize = mainTableSize + size * tupleIntSize;
 
-    pool = malloc(allocSize);
+    pool = sixel_allocator_malloc(allocator, allocSize);
     if (pool == NULL) {
         sprintf(message,
                 "unable to allocate %u bytes for a %u-entry "
@@ -208,14 +208,14 @@ end:
 */
 
 static tupletable2
-newColorMap(unsigned int const newcolors, unsigned int const depth)
+newColorMap(unsigned int const newcolors, unsigned int const depth, sixel_allocator_t *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     tupletable2 colormap;
     unsigned int i;
 
     colormap.size = 0;
-    status = alloctupletable(&colormap.table, depth, newcolors);
+    status = alloctupletable(&colormap.table, depth, newcolors, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -234,11 +234,16 @@ end:
 
 
 static boxVector
-newBoxVector(int const colors, int const sum, int const newcolors)
+newBoxVector(
+    int const           /* in */ colors,
+    int const           /* in */ sum,
+    int const           /* in */ newcolors,
+    sixel_allocator_t   /* in */ *allocator)
 {
     boxVector bv;
 
-    bv = (boxVector)malloc(sizeof(struct box) * newcolors);
+    bv = (boxVector)sixel_allocator_malloc(allocator,
+                                           sizeof(struct box) * newcolors);
     if (bv == NULL) {
         quant_trace(stderr, "out of memory allocating box vector table\n");
         return NULL;
@@ -436,7 +441,8 @@ colormapFromBv(unsigned int const newcolors,
                unsigned int const boxes,
                tupletable2 const colorfreqtable,
                unsigned int const depth,
-               int const methodForRep)
+               int const methodForRep,
+               sixel_allocator_t *allocator)
 {
     /*
     ** Ok, we've got enough boxes.  Now choose a representative color for
@@ -449,7 +455,7 @@ colormapFromBv(unsigned int const newcolors,
     tupletable2 colormap;
     unsigned int bi;
 
-    colormap = newColorMap(newcolors, depth);
+    colormap = newColorMap(newcolors, depth, allocator);
     if (!colormap.size) {
         return colormap;
     }
@@ -587,7 +593,8 @@ mediancut(tupletable2 const colorfreqtable,
           unsigned int const newcolors,
           int const methodForLargest,
           int const methodForRep,
-          tupletable2 *const colormapP)
+          tupletable2 *const colormapP,
+          sixel_allocator_t *allocator)
 {
 /*----------------------------------------------------------------------------
    Compute a set of only 'newcolors' colors that best represent an
@@ -614,7 +621,7 @@ mediancut(tupletable2 const colorfreqtable,
 
     /* There is at least one box that contains at least 2 colors; ergo,
        there is more splitting we can do.  */
-    bv = newBoxVector(colorfreqtable.size, sum, newcolors);
+    bv = newBoxVector(colorfreqtable.size, sum, newcolors, allocator);
     if (bv == NULL) {
         goto end;
     }
@@ -639,9 +646,9 @@ mediancut(tupletable2 const colorfreqtable,
     }
     *colormapP = colormapFromBv(newcolors, bv, boxes,
                                 colorfreqtable, depth,
-                                methodForRep);
+                                methodForRep, allocator);
 
-    free(bv);
+    sixel_allocator_free(allocator, bv);
 
     status = SIXEL_OK;
 
@@ -669,7 +676,8 @@ computeHistogram(unsigned char const    /* in */  *data,
                  unsigned int           /* in */  length,
                  unsigned long const    /* in */  depth,
                  tupletable2 * const    /* out */ colorfreqtableP,
-                 int const              /* in */  qualityMode)
+                 int const              /* in */  qualityMode,
+                 sixel_allocator_t      /* in */  *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     typedef unsigned short unit_t;
@@ -708,21 +716,18 @@ computeHistogram(unsigned char const    /* in */  *data,
 
     quant_trace(stderr, "making histogram...\n");
 
-#if HAVE_CALLOC
-    histogram = (unit_t *)calloc(1 << depth * 5, sizeof(unit_t));
-#else
-    histogram = (unit_t *)malloc((1 << depth * 5) * sizeof(unit_t));
-#endif
+    histogram = (unit_t *)sixel_allocator_calloc(allocator,
+                                                 1 << depth * 5,
+                                                 sizeof(unit_t));
     if (histogram == NULL) {
         sixel_helper_set_additional_message(
             "unable to allocate memory for histogram.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-#if !HAVE_CALLOC
-    memset(histogram, 0, (1 << depth * 5) * sizeof(unit_t));
-#endif
-    it = ref = refmap = (unsigned short *)malloc((1 << depth * 5) * sizeof(unit_t));
+    it = ref = refmap
+        = (unsigned short *)sixel_allocator_malloc(allocator,
+                                                   (1 << depth * 5) * sizeof(unit_t));
     if (!it) {
         sixel_helper_set_additional_message(
             "unable to allocate memory for lookup table.");
@@ -741,7 +746,7 @@ computeHistogram(unsigned char const    /* in */  *data,
     }
 
     colorfreqtableP->size = ref - refmap;
-    status = alloctupletable(&colorfreqtableP->table, depth, ref - refmap);
+    status = alloctupletable(&colorfreqtableP->table, depth, ref - refmap, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -761,8 +766,8 @@ computeHistogram(unsigned char const    /* in */  *data,
     status = SIXEL_OK;
 
 end:
-    free(refmap);
-    free(histogram);
+    sixel_allocator_free(allocator, refmap);
+    sixel_allocator_free(allocator, histogram);
 
     return status;
 }
@@ -777,7 +782,8 @@ computeColorMapFromInput(unsigned char const *data,
                          int const methodForRep,
                          int const qualityMode,
                          tupletable2 * const colormapP,
-                         int *origcolors)
+                         int *origcolors,
+                         sixel_allocator_t *allocator)
 {
 /*----------------------------------------------------------------------------
    Produce a colormap containing the best colors to represent the
@@ -804,7 +810,7 @@ computeColorMapFromInput(unsigned char const *data,
     unsigned int n;
 
     status = computeHistogram(data, length, depth,
-                              &colorfreqtable, qualityMode);
+                              &colorfreqtable, qualityMode, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -818,7 +824,7 @@ computeColorMapFromInput(unsigned char const *data,
                     "Keeping same colors.\n", reqColors);
         /* *colormapP = colorfreqtable; */
         colormapP->size = colorfreqtable.size;
-        status = alloctupletable(&colormapP->table, depth, colorfreqtable.size);
+        status = alloctupletable(&colormapP->table, depth, colorfreqtable.size, allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -831,7 +837,7 @@ computeColorMapFromInput(unsigned char const *data,
     } else {
         quant_trace(stderr, "choosing %d colors...\n", reqColors);
         status = mediancut(colorfreqtable, depth, reqColors,
-                           methodForLargest, methodForRep, colormapP);
+                           methodForLargest, methodForRep, colormapP, allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -841,7 +847,7 @@ computeColorMapFromInput(unsigned char const *data,
     status = SIXEL_OK;
 
 end:
-    free(colorfreqtable.table);
+    sixel_allocator_free(allocator, colorfreqtable.table);
     return status;
 }
 
@@ -1154,63 +1160,78 @@ lookup_mono_lightbg(unsigned char const * const pixel,
 }
 
 
-SIXELAPI unsigned char *
-sixel_quant_make_palette(unsigned char const *data,
-                         int length,
-                         int pixelformat,
-                         int reqcolors, int *ncolors, int *origcolors,
-                         int methodForLargest,
-                         int methodForRep,
-                         int qualityMode)
+SIXELSTATUS
+sixel_quant_make_palette(
+    unsigned char          /* out */ **result,
+    unsigned char const    /* in */  *data,
+    int                    /* in */  length,
+    int                    /* in */  pixelformat,
+    int                    /* in */  reqcolors,
+    int                    /* in */  *ncolors,
+    int                    /* in */  *origcolors,
+    int                    /* in */  methodForLargest,
+    int                    /* in */  methodForRep,
+    int                    /* in */  qualityMode,
+    sixel_allocator_t      /* in */  *allocator)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     int i;
     int n;
     int ret;
-    unsigned char *palette;
     tupletable2 colormap;
-    int depth = sixel_helper_compute_depth(pixelformat);
+    int depth;
 
-    if (depth == -1) {
-        return NULL;
+    depth = sixel_helper_compute_depth(pixelformat);
+    if (depth == (-1)) {
+        *result = NULL;
+        goto end;
     }
 
     ret = computeColorMapFromInput(data, length, depth,
                                    reqcolors, methodForLargest,
                                    methodForRep, qualityMode,
-                                   &colormap, origcolors);
+                                   &colormap, origcolors, allocator);
     if (ret != 0) {
-        return NULL;
+        *result = NULL;
+        goto end;
     }
     *ncolors = colormap.size;
     quant_trace(stderr, "tupletable size: %d\n", *ncolors);
-    palette = (unsigned char *)malloc(*ncolors * depth);
+    *result = (unsigned char *)sixel_allocator_malloc(allocator, *ncolors * depth);
     for (i = 0; i < *ncolors; i++) {
         for (n = 0; n < depth; ++n) {
-            palette[i * depth + n] = colormap.table[i]->tuple[n];
+            (*result)[i * depth + n] = colormap.table[i]->tuple[n];
         }
     }
 
-    free(colormap.table);
-    return palette;
+    sixel_allocator_free(allocator, colormap.table);
+
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
-SIXELAPI int
-sixel_quant_apply_palette(unsigned char *data,
-                          int width,
-                          int height,
-                          int depth,
-                          unsigned char *palette,
-                          int reqcolor,
-                          int methodForDiffuse,
-                          int foptimize,
-                          int foptimize_palette,
-                          int complexion,
-                          unsigned short *cachetable,
-                          int *ncolors,
-                          unsigned char *result)
+SIXELSTATUS
+sixel_quant_apply_palette(
+    unsigned char     /* out */ *result,
+    unsigned char     /* in */  *data,
+    int               /* in */  width,
+    int               /* in */  height,
+    int               /* in */  depth,
+    unsigned char     /* in */  *palette,
+    int               /* in */  reqcolor,
+    int               /* in */  methodForDiffuse,
+    int               /* in */  foptimize,
+    int               /* in */  foptimize_palette,
+    int               /* in */  complexion,
+    unsigned short    /* in */  *cachetable,
+    int               /* in */  *ncolors,
+    sixel_allocator_t /* in */  *allocator)
 {
     typedef int component_t;
+    SIXELSTATUS status = SIXEL_FALSE;
     int pos, n, x, y, sum1, sum2;
     component_t offset;
     int index;
@@ -1283,18 +1304,13 @@ sixel_quant_apply_palette(unsigned char *data,
 
     indextable = cachetable;
     if (cachetable == NULL && f_lookup == lookup_fast) {
-#if !HAVE_CALLOC
-        indextable = (unsigned short *)malloc((1 << depth * 5) * sizeof(unsigned short));
-#else
-        indextable = (unsigned short *)calloc(1 << depth * 5, sizeof(unsigned short));
-#endif
+        indextable = (unsigned short *)sixel_allocator_calloc(allocator,
+                                                              1 << depth * 5,
+                                                              sizeof(unsigned short));
         if (!indextable) {
             quant_trace(stderr, "Unable to allocate memory for indextable.\n");
-            return (-1);
+            goto end;
         }
-#if !HAVE_CALLOC
-        memset(indextable, 0x00, (1 << depth * 5) * sizeof(unsigned short));
-#endif
     }
 
     if (foptimize_palette) {
@@ -1342,17 +1358,22 @@ sixel_quant_apply_palette(unsigned char *data,
     }
 
     if (cachetable == NULL) {
-        free(indextable);
+        sixel_allocator_free(allocator, indextable);
     }
 
-    return 0;
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
-SIXELAPI void
-sixel_quant_free_palette(unsigned char * data)
+void
+sixel_quant_free_palette(
+    unsigned char       /* in */ *data,
+    sixel_allocator_t   /* in */ *allocator)
 {
-    free(data);
+    sixel_allocator_free(allocator, data);
 }
 
 
