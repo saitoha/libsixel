@@ -207,16 +207,18 @@ sixel_getparams(unsigned char *p, int *param, int *len)
 
 /* convert sixel data into indexed pixel bytes and palette data */
 /* TODO: make "free" function as an argument */
-SIXELAPI int
-sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
-             int                        /* in */  len,        /* size of sixel bytes */
-             unsigned char              /* out */ **pixels,   /* decoded pixels */
-             int                        /* out */ *pwidth,    /* image width */
-             int                        /* out */ *pheight,   /* image height */
-             unsigned char              /* out */ **palette,  /* ARGB palette */
-             int                        /* out */ *ncolors,   /* palette size (<= 256) */
-             sixel_allocator_function   /* out */ allocator)  /* malloc function */
+SIXELAPI SIXELSTATUS
+sixel_decode2(
+    unsigned char       /* in */  *p,         /* sixel bytes */
+    int                 /* in */  len,        /* size of sixel bytes */
+    unsigned char       /* out */ **pixels,   /* decoded pixels */
+    int                 /* out */ *pwidth,    /* image width */
+    int                 /* out */ *pheight,   /* image height */
+    unsigned char       /* out */ **palette,  /* ARGB palette */
+    int                 /* out */ *ncolors,   /* palette size (<= 256) */
+    sixel_allocator_t   /* in */  *allocator) /* allocator object */
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     int n;
     int i;
     int r;
@@ -248,22 +250,40 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
     (void) len;
 
-    posision_x = posision_y = 0;
-    max_x = max_y = 0;
+    if (pixels == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    posision_x = 0;
+    posision_y = 0;
+    max_x = 0;
+    max_y = 0;
     attributed_pan = 2;
     attributed_pad = 1;
-    attributed_ph = attributed_pv = 0;
+    attributed_ph = 0;
+    attributed_pv = 0;
     repeat_count = 1;
     color_index = 15;
     max_color_index = 2;
     background_color_index = 0;
 
+    if (allocator == NULL) {
+        status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    } else {
+        sixel_allocator_ref(allocator);
+    }
+
+    *pixels = NULL;
     imsx = 2048;
     imsy = 2048;
-    imbuf = (unsigned char *)malloc(imsx * imsy);
-
+    imbuf = (unsigned char *)sixel_allocator_malloc(allocator, imsx * imsy);
     if (imbuf == NULL) {
-        return (-1);
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
 
     for (n = 0; n < 16; n++) {
@@ -375,16 +395,17 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
             if (imsx < attributed_ph || imsy < attributed_pv) {
                 dmsx = imsx > attributed_ph ? imsx : attributed_ph;
                 dmsy = imsy > attributed_pv ? imsy : attributed_pv;
-                dmbuf = (unsigned char *)malloc(dmsx * dmsy);
+                dmbuf = (unsigned char *)sixel_allocator_malloc(allocator, dmsx * dmsy);
                 if (dmbuf == NULL) {
-                    free(imbuf);
-                    return (-1);
+                    sixel_allocator_free(allocator, imbuf);
+                    status = SIXEL_BAD_ALLOCATION;
+                    goto end;
                 }
                 memset(dmbuf, background_color_index, dmsx * dmsy);
                 for (y = 0; y < imsy; ++y) {
                     memcpy(dmbuf + dmsx * y, imbuf + imsx * y, imsx);
                 }
-                free(imbuf);
+                sixel_allocator_free(allocator, imbuf);
                 imsx = dmsx;
                 imsy = dmsy;
                 imbuf = dmbuf;
@@ -449,16 +470,16 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 
                 dmsx = nx;
                 dmsy = ny;
-                dmbuf = (unsigned char *)malloc(dmsx * dmsy);
+                dmbuf = (unsigned char *)sixel_allocator_malloc(allocator, dmsx * dmsy);
                 if (dmbuf == NULL) {
-                    free(imbuf);
-                    return (-1);
+                    sixel_allocator_free(allocator, imbuf);
+                    goto end;
                 }
                 memset(dmbuf, background_color_index, dmsx * dmsy);
                 for (y = 0; y < imsy; ++y) {
                     memcpy(dmbuf + dmsx * y, imbuf + imsx * y, imsx);
                 }
-                free(imbuf);
+                sixel_allocator_free(allocator, imbuf);
                 imsx = dmsx;
                 imsy = dmsy;
                 imbuf = dmbuf;
@@ -532,9 +553,11 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     if (imsx > max_x || imsy > max_y) {
         dmsx = max_x;
         dmsy = max_y;
-        if ((dmbuf = (unsigned char *)malloc(dmsx * dmsy)) == NULL) {
-            free(imbuf);
-            return (-1);
+        dmbuf = (unsigned char *)sixel_allocator_malloc(allocator, dmsx * dmsy);
+        if (dmbuf == NULL) {
+            sixel_allocator_free(allocator, imbuf);
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
         }
         for (y = 0; y < dmsy; ++y) {
             memcpy(dmbuf + dmsx * y, imbuf + imsx * y, dmsx);
@@ -545,24 +568,57 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
         imbuf = dmbuf;
     }
 
-    *pwidth = imsx;
-    *pheight = imsy;
     *ncolors = max_color_index + 1;
-    if (allocator) {
-        *pixels = (unsigned char *)allocator(imsx * imsy);
-        memcpy(*pixels, imbuf, imsx * imsy);
-        free(imbuf);
-        *palette = (unsigned char *)allocator(*ncolors * 3);
-    } else {
-        *pixels = imbuf;
-        *palette = (unsigned char *)malloc(*ncolors * 3);
+    *palette = (unsigned char *)sixel_allocator_malloc(allocator, *ncolors * 3);
+    if (palette == NULL) {
+        sixel_allocator_free(allocator, imbuf);
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
     for (n = 0; n < *ncolors; ++n) {
         (*palette)[n * 3 + 0] = sixel_palet[n] >> 16 & 0xff;
         (*palette)[n * 3 + 1] = sixel_palet[n] >> 8 & 0xff;
         (*palette)[n * 3 + 2] = sixel_palet[n] & 0xff;
     }
-    return 0;
+
+    *pwidth = imsx;
+    *pheight = imsy;
+    *pixels = imbuf;
+
+    status = SIXEL_OK;
+
+end:
+    sixel_allocator_ref(allocator);
+    return status;
+}
+
+
+SIXELAPI SIXELSTATUS
+sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
+             int                        /* in */  len,        /* size of sixel bytes */
+             unsigned char              /* out */ **pixels,   /* decoded pixels */
+             int                        /* out */ *pwidth,    /* image width */
+             int                        /* out */ *pheight,   /* image height */
+             unsigned char              /* out */ **palette,  /* ARGB palette */
+             int                        /* out */ *ncolors,   /* palette size (<= 256) */
+             sixel_allocator_function   /* in */  fn_malloc)  /* malloc function */
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_allocator_t *allocator = NULL;
+
+    status = sixel_allocator_new(&allocator, fn_malloc, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_decode2(p, len, pixels, pwidth, pheight, palette, ncolors, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+end:
+    sixel_allocator_unref(allocator);
+    return status;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
