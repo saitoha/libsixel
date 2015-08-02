@@ -257,7 +257,7 @@ sixel_chunk_from_file(
     int ret;
     FILE *f;
     int n;
-    int const bucket_size = 4096;
+    size_t const bucket_size = 4096;
 
     status = open_binary_file(&f, filename);
     if (SIXEL_FAILED(status)) {
