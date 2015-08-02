@@ -61,7 +61,6 @@
 #endif
 
 #include "decoder.h"
-#include "allocator.h"
 
 
 static char *
@@ -289,10 +288,15 @@ sixel_decoder_decode(
         fclose(input_fp);
     }
 
-    status = sixel_decode(raw_data, raw_len, &indexed_pixels,
-                          &sx, &sy, &palette, &ncolors,
-                          decoder->allocator->fn_malloc);
-
+    status = sixel_decode_raw(
+        raw_data,
+        raw_len,
+        &indexed_pixels,
+        &sx,
+        &sy,
+        &palette,
+        &ncolors,
+        decoder->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -300,7 +304,8 @@ sixel_decoder_decode(
     status = sixel_helper_write_image_file(indexed_pixels, sx, sy, palette,
                                            SIXEL_PIXELFORMAT_PAL8,
                                            decoder->output,
-                                           SIXEL_FORMAT_PNG);
+                                           SIXEL_FORMAT_PNG,
+                                           decoder->allocator);
 
     if (SIXEL_FAILED(status)) {
         goto end;

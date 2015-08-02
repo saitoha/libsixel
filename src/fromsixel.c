@@ -208,7 +208,7 @@ sixel_getparams(unsigned char *p, int *param, int *len)
 /* convert sixel data into indexed pixel bytes and palette data */
 /* TODO: make "free" function as an argument */
 SIXELAPI SIXELSTATUS
-sixel_decode2(
+sixel_decode_raw(
     unsigned char       /* in */  *p,         /* sixel bytes */
     int                 /* in */  len,        /* size of sixel bytes */
     unsigned char       /* out */ **pixels,   /* decoded pixels */
@@ -611,7 +611,7 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
         goto end;
     }
 
-    status = sixel_decode2(p, len, pixels, pwidth, pheight, palette, ncolors, allocator);
+    status = sixel_decode_raw(p, len, pixels, pwidth, pheight, palette, ncolors, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }

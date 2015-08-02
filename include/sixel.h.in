@@ -726,6 +726,17 @@ sixel_encode(
 
 /* convert sixel data into indexed pixel bytes and palette data */
 SIXELAPI SIXELSTATUS
+sixel_decode_raw(
+    unsigned char       /* in */  *p,           /* sixel bytes */
+    int                 /* in */  len,          /* size of sixel bytes */
+    unsigned char       /* out */ **pixels,     /* decoded pixels */
+    int                 /* out */ *pwidth,      /* image width */
+    int                 /* out */ *pheight,     /* image height */
+    unsigned char       /* out */ **palette,    /* ARGB palette */
+    int                 /* out */ *ncolors,     /* palette size (<= 256) */
+    sixel_allocator_t   /* in */  *allocator);  /* allocator object */
+
+SIXELAPI SIXELSTATUS
 sixel_decode(
     unsigned char            /* in */  *sixels,    /* sixel bytes */
     int                      /* in */  size,       /* size of sixel bytes */
@@ -734,7 +745,7 @@ sixel_decode(
     int                      /* out */ *pheight,   /* image height */
     unsigned char            /* out */ **palette,  /* RGBA palette */
     int                      /* out */ *ncolors,   /* palette size (<= 256) */
-    sixel_allocator_function /* out */ allocator); /* malloc function */
+    sixel_allocator_function /* in */  fn_malloc); /* malloc function */
 
 #ifdef __cplusplus
 }
@@ -943,13 +954,14 @@ sixel_helper_load_image_file(
 /* write image to file */
 SIXELAPI SIXELSTATUS
 sixel_helper_write_image_file(
-    unsigned char  /* in */ *data,        /* source pixel data */
-    int            /* in */ width,        /* source data width */
-    int            /* in */ height,       /* source data height */
-    unsigned char  /* in */ *palette,     /* palette of source data */
-    int            /* in */ pixelformat,  /* source pixelFormat */
-    char const     /* in */ *filename,    /* destination filename */
-    int            /* in */ imageformat); /* one of enum imageformat */
+    unsigned char       /* in */ *data,        /* source pixel data */
+    int                 /* in */ width,        /* source data width */
+    int                 /* in */ height,       /* source data height */
+    unsigned char       /* in */ *palette,     /* palette of source data */
+    int                 /* in */ pixelformat,  /* source pixelFormat */
+    char const          /* in */ *filename,    /* destination filename */
+    int                 /* in */ imageformat,  /* one of enum imageformat */
+    sixel_allocator_t   /* in */ *allocator);  /* allocator object */
 
 #ifdef __cplusplus
 }
