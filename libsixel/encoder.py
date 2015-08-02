@@ -22,7 +22,6 @@
 
 from . import _sixel
 from . import *
-from ctypes import c_void_p, byref
 
 class Encoder(object):
 
