@@ -296,6 +296,7 @@ sixel_dither_new(
 
     *ppdither = (sixel_dither_t *)sixel_allocator_malloc(allocator, wholesize);
     if (*ppdither == NULL) {
+        sixel_allocator_unref(allocator);
         sixel_helper_set_additional_message(
             "sixel_dither_new: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
@@ -321,9 +322,6 @@ sixel_dither_new(
     (*ppdither)->allocator = allocator;
 
 end:
-    if (allocator) {
-        sixel_allocator_unref(allocator);
-    }
     return status;
 }
 

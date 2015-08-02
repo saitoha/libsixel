@@ -20,6 +20,7 @@
  */
 
 #include <stdlib.h>
+#include <assert.h>
 #include "config.h"
 
 #if HAVE_SYS_TYPES_H
@@ -98,9 +99,11 @@ sixel_allocator_destroy(
     sixel_allocator_t /* in */ *allocator)  /* allocator object to
                                                be destroyed */
 {
-    sixel_free_t fn_free = allocator->fn_free;
+    /* precondition */
+    assert(allocator);
+    assert(allocator->fn_free);
 
-    fn_free(allocator);
+    allocator->fn_free(allocator);
 }
 
 
@@ -110,6 +113,9 @@ sixel_allocator_ref(
     sixel_allocator_t /* in */ *allocator)  /* allocator object to be
                                                increment reference counter */
 {
+    /* precondition */
+    assert(allocator);
+
     /* TODO: be thread safe */
     ++allocator->ref;
 }
@@ -121,8 +127,12 @@ sixel_allocator_unref(
     sixel_allocator_t /* in */ *allocator)  /* allocator object to be unreference */
 {
     /* TODO: be thread safe */
-    if (allocator != NULL && --allocator->ref == 0) {
-        sixel_allocator_destroy(allocator);
+    if (allocator) {
+        assert(allocator->ref > 0);
+        --allocator->ref;
+        if (allocator->ref == 0) {
+            sixel_allocator_destroy(allocator);
+        }
     }
 }
 
@@ -133,13 +143,11 @@ sixel_allocator_malloc(
     sixel_allocator_t   /* in */ *allocator,  /* allocator object */
     size_t              /* in */ n)           /* allocation size */
 {
-    void *p = NULL;
+    /* precondition */
+    assert(allocator);
+    assert(allocator->fn_malloc);
 
-    if (allocator->fn_malloc) {
-        p = allocator->fn_malloc(n);
-    }
-
-    return p;
+    return allocator->fn_malloc(n);
 }
 
 
@@ -150,22 +158,11 @@ sixel_allocator_calloc(
     size_t              /* in */ nelm,        /* number of elements */
     size_t              /* in */ elsize)      /* size of element */
 {
-    void *p = NULL;
+    /* precondition */
+    assert(allocator);
+    assert(allocator->fn_calloc);
 
-    if (allocator->fn_calloc) {
-        p = allocator->fn_calloc(nelm, elsize);
-        if (p) {
-            goto end;
-        }
-    }
-
-    p = allocator->fn_malloc(nelm * elsize);
-    if (p) {
-        memset(p, 0x00, nelm * elsize);
-    }
-
-end:
-    return p;
+    return allocator->fn_calloc(nelm, elsize);
 }
 
 
@@ -176,13 +173,11 @@ sixel_allocator_realloc(
     void                /* in */ *p,          /* existing buffer to be re-allocated */
     size_t              /* in */ n)           /* re-allocation size */
 {
-    void *result = NULL;
+    /* precondition */
+    assert(allocator);
+    assert(allocator->fn_realloc);
 
-    if (allocator->fn_realloc) {
-        result = allocator->fn_realloc(p, n);
-    }
-
-    return result;
+    return allocator->fn_realloc(p, n);
 }
 
 
@@ -192,9 +187,11 @@ sixel_allocator_free(
     sixel_allocator_t   /* in */ *allocator,  /* allocator object */
     void                /* in */ *p)          /* existing buffer to be freed */
 {
-    if (allocator->fn_free) {
-        allocator->fn_free(p);
-    }
+    /* precondition */
+    assert(allocator);
+    assert(allocator->fn_free);
+
+    allocator->fn_free(p);
 }
 
 
