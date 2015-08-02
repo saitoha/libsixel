@@ -41,9 +41,6 @@
 # define memmove(d, s, n) (bcopy ((s), (d), (n)))
 #endif
 
-#define STBI_NO_STDIO 1
-#include "stb_image.h"
-
 #ifdef HAVE_GDK_PIXBUF2
 # if HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
 #   pragma GCC diagnostic push
@@ -74,6 +71,30 @@
 #include "frompnm.h"
 #include "fromgif.h"
 #include "allocator.h"
+
+sixel_allocator_t *stbi_allocator;
+
+void *
+stbi_malloc(size_t n)
+{
+    return sixel_allocator_malloc(stbi_allocator, n);
+}
+
+void *
+stbi_realloc(void *p, size_t n)
+{
+    return sixel_allocator_realloc(stbi_allocator, p, n);
+}
+
+void
+stbi_free(void *p)
+{
+    return sixel_allocator_free(stbi_allocator, p);
+}
+
+#define STBI_MALLOC stbi_malloc
+#define STBI_REALLOC stbi_realloc
+#define STBI_FREE stbi_free
 
 #define STBI_NO_STDIO 1
 #define STB_IMAGE_IMPLEMENTATION 1
@@ -781,6 +802,7 @@ load_with_builtin(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        stbi_allocator = pchunk->allocator;
         stbi__start_mem(&s, pchunk->buffer, pchunk->size);
         frame->pixels = stbi__load_main(&s, &frame->width, &frame->height, &depth, 3);
         if (!frame->pixels) {
