@@ -22,11 +22,14 @@
 #ifndef LIBSIXEL_DECODER_H
 #define LIBSIXEL_DECODER_H
 
+#include <sixel.h>
+
 /* encode settings object */
 struct sixel_decoder {
     unsigned int ref;
     char *input;
     char *output;
+    sixel_allocator_t *allocator;
 };
 
 #endif /* LIBSIXEL_DECODER_H */

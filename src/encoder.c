@@ -69,11 +69,14 @@
 
 
 static char *
-arg_strdup(char const *s)
+arg_strdup(
+    char const          /* in */ *s,          /* source buffer */
+    sixel_allocator_t   /* in */ *allocator)  /* allocator object for
+                                                 destination buffer */
 {
     char *p;
 
-    p = (char *)malloc(strlen(s) + 1);
+    p = (char *)sixel_allocator_malloc(allocator, strlen(s) + 1);
     if (p) {
         strcpy(p, s);
     }
@@ -82,7 +85,11 @@ arg_strdup(char const *s)
 
 
 static SIXELSTATUS
-parse_x_colorspec(char const *s, unsigned char **bgcolor)
+parse_x_colorspec(
+    unsigned char       /* out */ **bgcolor,     /* destination buffer */
+    char const          /* in */  *s,            /* source buffer */
+    sixel_allocator_t   /* in */  *allocator)    /* allocator object for
+                                                    destination buffer */
 {
     SIXELSTATUS status = SIXEL_FALSE;
     char *p;
@@ -94,8 +101,10 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
     struct color const *pcolor;
     pcolor = lookup_rgb(s, strlen(s));
     if (pcolor) {
-        *bgcolor = (unsigned char *)malloc(3);
+        *bgcolor = (unsigned char *)sixel_allocator_malloc(allocator, 3);
         if (*bgcolor == NULL) {
+            sixel_helper_set_additional_message(
+                "parse_x_colorspec: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -103,8 +112,10 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
         (*bgcolor)[1] = pcolor->g;
         (*bgcolor)[2] = pcolor->b;
     } else if (s[0] == 'r' && s[1] == 'g' && s[2] == 'b' && s[3] == ':') {
-        p = buf = arg_strdup(s + 4);
+        p = buf = arg_strdup(s + 4, allocator);
         if (buf == NULL) {
+            sixel_helper_set_additional_message(
+                "parse_x_colorspec: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -145,8 +156,10 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
-        *bgcolor = (unsigned char *)malloc(3);
+        *bgcolor = (unsigned char *)sixel_allocator_malloc(allocator, 3);
         if (*bgcolor == NULL) {
+            sixel_helper_set_additional_message(
+                "parse_x_colorspec: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -154,8 +167,10 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
         (*bgcolor)[1] = components[1];
         (*bgcolor)[2] = components[2];
     } else if (*s == '#') {
-        buf = arg_strdup(s + 1);
+        buf = arg_strdup(s + 1, allocator);
         if (buf == NULL) {
+            sixel_helper_set_additional_message(
+                "parse_x_colorspec: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -177,8 +192,10 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
-        *bgcolor = (unsigned char *)malloc(3);
+        *bgcolor = (unsigned char *)sixel_allocator_malloc(allocator, 3);
         if (*bgcolor == NULL) {
+            sixel_helper_set_additional_message(
+                "parse_x_colorspec: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -214,12 +231,13 @@ parse_x_colorspec(char const *s, unsigned char **bgcolor)
 
     status = SIXEL_OK;
 end:
-    free(buf);
+    sixel_allocator_free(allocator, buf);
 
     return status;
 }
 
 
+/* generic writer function for passing to sixel_output_create() */
 static int
 sixel_write_callback(char *data, int size, void *priv)
 {
@@ -227,8 +245,12 @@ sixel_write_callback(char *data, int size, void *priv)
 }
 
 
+/* the writer function with hex-encoding for passing to sixel_output_create() */
 static int
-sixel_hex_write_callback(char *data, int size, void *priv)
+sixel_hex_write_callback(
+    char    /* in */ *data,
+    int     /* in */ size,
+    void    /* in */ *priv)
 {
     char hex[SIXEL_OUTPUT_PACKET_SIZE * 2];
     int i;
@@ -245,8 +267,11 @@ sixel_hex_write_callback(char *data, int size, void *priv)
 }
 
 
+/* returns monochrome dithering context object */
 static SIXELSTATUS
-prepare_monochrome_palette(sixel_dither_t **dither, int finvert)
+prepare_monochrome_palette(
+    sixel_dither_t  /* out */ **dither,
+     int            /* in */  finvert)
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
@@ -267,6 +292,7 @@ end:
 }
 
 
+/* returns dithering context object with specified builtin palette */
 static SIXELSTATUS
 prepare_builtin_palette(
     sixel_dither_t /* out */ **dither,
@@ -374,7 +400,8 @@ prepare_specified_palette(
     int reqcolors,
     unsigned char *bgcolor,
     int finsecure,
-    int const *cancel_flag)
+    int const *cancel_flag,
+    sixel_allocator_t *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
@@ -392,7 +419,8 @@ prepare_specified_palette(
                                           load_image_callback_for_palette,
                                           finsecure,
                                           cancel_flag,
-                                          &callback_context);
+                                          &callback_context,
+                                          allocator);
     if (status != SIXEL_OK) {
         return status;
     }
@@ -441,7 +469,8 @@ prepare_palette(sixel_dither_t **dither,
                                                encoder->reqcolors,
                                                encoder->bgcolor,
                                                encoder->finsecure,
-                                               encoder->cancel_flag);
+                                               encoder->cancel_flag,
+                                               encoder->allocator);
             if (status != SIXEL_OK) {
                 goto end;
             }
@@ -645,15 +674,14 @@ wait_stdin(int usec)
 
 static SIXELSTATUS
 output_sixel_without_macro(
-    unsigned char *buffer,
-    int width,
-    int height,
-    int pixelformat,
-    int delay,
-    sixel_dither_t *dither,
-    sixel_output_t *context,
-    sixel_encoder_t *encoder
-)
+    unsigned char       /* in */ *buffer,
+    int                 /* in */ width,
+    int                 /* in */ height,
+    int                 /* in */ pixelformat,
+    int                 /* in */ delay,
+    sixel_dither_t      /* in */ *dither,
+    sixel_output_t      /* in */ *output,
+    sixel_encoder_t     /* in */ *encoder)
 {
     SIXELSTATUS status = SIXEL_OK;
     int dulation = 0;
@@ -667,6 +695,14 @@ output_sixel_without_macro(
     clock_t start;
 # endif
 #endif
+
+    if (encoder == NULL) {
+        sixel_helper_set_additional_message(
+            "output_sixel_without_macro: encoder object is null.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    
     if (!encoder->mapfile && !encoder->monochrome
             && !encoder->highcolor && !encoder->builtin_palette) {
         sixel_dither_set_optimize_palette(dither, 1);
@@ -685,8 +721,10 @@ output_sixel_without_macro(
         goto end;
     }
 
-    p = (unsigned char *)malloc(width * height * depth);
+    p = (unsigned char *)sixel_allocator_malloc(encoder->allocator, width * height * depth);
     if (p == NULL) {
+        sixel_helper_set_additional_message(
+            "output_sixel_without_macro: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -715,13 +753,14 @@ output_sixel_without_macro(
         goto end;
     }
 
-    status = sixel_encode(p, width, height, depth, dither, context);
+    status = sixel_encode(p, width, height, depth, dither, output);
     if (status != 0) {
         goto end;
     }
 
 end:
-    free(p);
+    sixel_allocator_free(encoder->allocator, p);
+
     return status;
 }
 
@@ -735,7 +774,7 @@ output_sixel_with_macro(
     int frame_no,
     int loop_count,
     sixel_dither_t *dither,
-    sixel_output_t *context,
+    sixel_output_t *output,
     sixel_encoder_t *encoder
 )
 {
@@ -762,7 +801,7 @@ output_sixel_with_macro(
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
-                "load_image_callback: sprintf() failed.");
+                "output_sixel_with_macro: sprintf() failed.");
             goto end;
         }
         nwrite = sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
@@ -773,7 +812,7 @@ output_sixel_with_macro(
             goto end;
         }
 
-        status = sixel_encode(frame, sx, sy, /* unused */ 3, dither, context);
+        status = sixel_encode(frame, sx, sy, /* unused */ 3, dither, output);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -1196,69 +1235,116 @@ end:
 
 
 /* create encoder object */
-SIXELAPI sixel_encoder_t *
-sixel_encoder_create(void)
+SIXELAPI SIXELSTATUS
+sixel_encoder_new(
+    sixel_encoder_t     /* out */ **ppencoder, /* encoder object to be created */
+    sixel_allocator_t   /* in */  *allocator)  /* allocator, null if you use
+                                                  default allocator */
 {
-    sixel_encoder_t *encoder;
+    SIXELSTATUS status = SIXEL_FALSE;
     char const *env_default_bgcolor;
     char const *env_default_ncolors;
     int ncolors;
 
-    encoder = (sixel_encoder_t *)malloc(sizeof(sixel_encoder_t));
-    if (encoder == NULL) {
-        return NULL;
+    if (allocator == NULL) {
+        status = sixel_allocator_new(&allocator, malloc, calloc, realloc, free);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    } else {
+        sixel_allocator_ref(allocator);
     }
 
-    encoder->ref                   = 1;
-    encoder->reqcolors             = (-1);
-    encoder->mapfile               = NULL;
-    encoder->monochrome            = 0;
-    encoder->highcolor             = 0;
-    encoder->builtin_palette       = 0;
-    encoder->method_for_diffuse    = SIXEL_DIFFUSE_AUTO;
-    encoder->method_for_largest    = SIXEL_LARGE_AUTO;
-    encoder->method_for_rep        = SIXEL_REP_AUTO;
-    encoder->quality_mode          = SIXEL_QUALITY_AUTO;
-    encoder->method_for_resampling = SIXEL_RES_BILINEAR;
-    encoder->loop_mode             = SIXEL_LOOP_AUTO;
-    encoder->palette_type          = SIXEL_PALETTETYPE_AUTO;
-    encoder->f8bit                 = 0;
-    encoder->finvert               = 0;
-    encoder->fuse_macro            = 0;
-    encoder->fignore_delay         = 0;
-    encoder->complexion            = 1;
-    encoder->fstatic               = 0;
-    encoder->pixelwidth            = -1;
-    encoder->pixelheight           = -1;
-    encoder->percentwidth          = -1;
-    encoder->percentheight         = -1;
-    encoder->clipx                 = 0;
-    encoder->clipy                 = 0;
-    encoder->clipwidth             = 0;
-    encoder->clipheight            = 0;
-    encoder->clipfirst             = 0;
-    encoder->macro_number          = -1;
-    encoder->verbose               = 0;
-    encoder->penetrate_multiplexer = 0;
-    encoder->encode_policy         = SIXEL_ENCODEPOLICY_AUTO;
-    encoder->pipe_mode             = 0;
-    encoder->bgcolor               = NULL;
-    encoder->outfd                 = STDOUT_FILENO;
-    encoder->finsecure             = 0;
-    encoder->cancel_flag           = NULL;
-    encoder->dither_cache          = NULL;
+    *ppencoder
+        = (sixel_encoder_t *)sixel_allocator_malloc(allocator, sizeof(sixel_encoder_t));
+    if (*ppencoder == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_new: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        sixel_allocator_unref(allocator);
+        goto end;
+    }
+
+    (*ppencoder)->ref                   = 1;
+    (*ppencoder)->reqcolors             = (-1);
+    (*ppencoder)->mapfile               = NULL;
+    (*ppencoder)->monochrome            = 0;
+    (*ppencoder)->highcolor             = 0;
+    (*ppencoder)->builtin_palette       = 0;
+    (*ppencoder)->method_for_diffuse    = SIXEL_DIFFUSE_AUTO;
+    (*ppencoder)->method_for_largest    = SIXEL_LARGE_AUTO;
+    (*ppencoder)->method_for_rep        = SIXEL_REP_AUTO;
+    (*ppencoder)->quality_mode          = SIXEL_QUALITY_AUTO;
+    (*ppencoder)->method_for_resampling = SIXEL_RES_BILINEAR;
+    (*ppencoder)->loop_mode             = SIXEL_LOOP_AUTO;
+    (*ppencoder)->palette_type          = SIXEL_PALETTETYPE_AUTO;
+    (*ppencoder)->f8bit                 = 0;
+    (*ppencoder)->finvert               = 0;
+    (*ppencoder)->fuse_macro            = 0;
+    (*ppencoder)->fignore_delay         = 0;
+    (*ppencoder)->complexion            = 1;
+    (*ppencoder)->fstatic               = 0;
+    (*ppencoder)->pixelwidth            = -1;
+    (*ppencoder)->pixelheight           = -1;
+    (*ppencoder)->percentwidth          = -1;
+    (*ppencoder)->percentheight         = -1;
+    (*ppencoder)->clipx                 = 0;
+    (*ppencoder)->clipy                 = 0;
+    (*ppencoder)->clipwidth             = 0;
+    (*ppencoder)->clipheight            = 0;
+    (*ppencoder)->clipfirst             = 0;
+    (*ppencoder)->macro_number          = -1;
+    (*ppencoder)->verbose               = 0;
+    (*ppencoder)->penetrate_multiplexer = 0;
+    (*ppencoder)->encode_policy         = SIXEL_ENCODEPOLICY_AUTO;
+    (*ppencoder)->pipe_mode             = 0;
+    (*ppencoder)->bgcolor               = NULL;
+    (*ppencoder)->outfd                 = STDOUT_FILENO;
+    (*ppencoder)->finsecure             = 0;
+    (*ppencoder)->cancel_flag           = NULL;
+    (*ppencoder)->dither_cache          = NULL;
+    (*ppencoder)->allocator             = allocator;
 
     env_default_bgcolor = getenv("SIXEL_BGCOLOR");
     if (env_default_bgcolor) {
-        (void) parse_x_colorspec(env_default_bgcolor, &encoder->bgcolor);
+        status = parse_x_colorspec(&(*ppencoder)->bgcolor,
+                                   env_default_bgcolor,
+                                   allocator);
+        if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(allocator, *ppencoder);
+            sixel_allocator_unref(allocator);
+            *ppencoder = NULL;
+            goto end;
+        }
     }
 
     env_default_ncolors = getenv("SIXEL_COLORS");
     if (env_default_ncolors) {
         ncolors = atoi(env_default_ncolors);
         if (ncolors > 1 && ncolors <= 256) {
-            encoder->reqcolors = ncolors;
+            (*ppencoder)->reqcolors = ncolors;
         }
+    }
+
+    sixel_allocator_ref(allocator);
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+
+/* create encoder object */
+SIXELAPI /* deprecated */ sixel_encoder_t *
+sixel_encoder_create(void)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_encoder_t *encoder = NULL;
+
+    status = sixel_encoder_new(&encoder, NULL);
+    if (SIXEL_FAILED(status)) {
+        return NULL;
     }
 
     return encoder;
@@ -1268,16 +1354,20 @@ sixel_encoder_create(void)
 static void
 sixel_encoder_destroy(sixel_encoder_t *encoder)
 {
+    sixel_allocator_t *allocator;
+
     if (encoder) {
-        free(encoder->mapfile);
-        free(encoder->bgcolor);
+        allocator = encoder->allocator;
+        sixel_allocator_free(allocator, encoder->mapfile);
+        sixel_allocator_free(allocator, encoder->bgcolor);
         sixel_dither_unref(encoder->dither_cache);
         if (encoder->outfd
             && encoder->outfd != STDOUT_FILENO
             && encoder->outfd != STDERR_FILENO) {
             close(encoder->outfd);
         }
-        free(encoder);
+        sixel_allocator_free(allocator, encoder);
+        sixel_allocator_unref(allocator);
     }
 }
 
@@ -1325,6 +1415,8 @@ sixel_encoder_setopt(
     int parsed;
     char unit[32];
 
+    sixel_encoder_ref(encoder);
+
     switch(arg) {
     case SIXEL_OPTFLAG_OUTFILE:  /* o */
         if (*optarg == '\0') {
@@ -1353,10 +1445,12 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_MAPFILE:  /* m */
         if (encoder->mapfile) {
-            free(encoder->mapfile);
+            sixel_allocator_free(encoder->allocator, encoder->mapfile);
         }
-        encoder->mapfile = arg_strdup(optarg);
+        encoder->mapfile = arg_strdup(optarg, encoder->allocator);
         if (encoder->mapfile == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_setopt: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -1588,9 +1682,12 @@ sixel_encoder_setopt(
     case SIXEL_OPTFLAG_BGCOLOR:  /* B */
         /* parse --bgcolor option */
         if (encoder->bgcolor) {
-            free(encoder->bgcolor);
+            sixel_allocator_free(encoder->allocator, encoder->bgcolor);
         }
-        if (parse_x_colorspec(optarg, &encoder->bgcolor) != 0) {
+        status = parse_x_colorspec(&encoder->bgcolor,
+                                   optarg,
+                                   encoder->allocator);
+        if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
                 "cannot parse bgcolor option.");
             status = SIXEL_BAD_ARGUMENT;
@@ -1742,6 +1839,8 @@ sixel_encoder_setopt(
     status = SIXEL_OK;
 
 end:
+    sixel_encoder_unref(encoder);
+
     return status;
 }
 
@@ -1755,7 +1854,20 @@ sixel_encoder_encode(
     int fuse_palette = 1;
 
     if (encoder == NULL) {
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
         encoder = sixel_encoder_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
+        if (encoder == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode: sixel_encoder_create() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
     } else {
         sixel_encoder_ref(encoder);
     }
@@ -1796,7 +1908,6 @@ sixel_encoder_encode(
     }
 
 reload:
-
     status = sixel_helper_load_image_file(filename,
                                           encoder->fstatic,
                                           fuse_palette,
@@ -1806,7 +1917,8 @@ reload:
                                           load_image_callback,
                                           encoder->finsecure,
                                           encoder->cancel_flag,
-                                          (void *)encoder);
+                                          (void *)encoder,
+                                          encoder->allocator);
     if (status != SIXEL_OK) {
         goto end;
     }
@@ -1843,7 +1955,14 @@ test1(void)
     int nret = EXIT_FAILURE;
     sixel_encoder_t *encoder = NULL;
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     encoder = sixel_encoder_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
     if (encoder == NULL) {
         goto error;
     }
@@ -1864,8 +1983,16 @@ test2(void)
     SIXELSTATUS status;
     sixel_encoder_t *encoder = NULL;
     sixel_frame_t *frame = NULL;
+    unsigned char *buffer;
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     encoder = sixel_encoder_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
     if (encoder == NULL) {
         goto error;
     }
@@ -1875,8 +2002,12 @@ test2(void)
         goto error;
     }
 
+    buffer = (unsigned char *)sixel_allocator_malloc(encoder->allocator, 3);
+    if (buffer == NULL) {
+        goto error;
+    }
     status = sixel_frame_init(frame,
-                              (unsigned char *)malloc(3),
+                              buffer,
                               1,
                               1,
                               SIXEL_PIXELFORMAT_RGB888,
@@ -1925,7 +2056,14 @@ test4(void)
     sixel_encoder_t *encoder = NULL;
     SIXELSTATUS status;
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     encoder = sixel_encoder_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
     if (encoder == NULL) {
         goto error;
     }
@@ -1952,6 +2090,35 @@ error:
 }
 
 
+static int
+test5(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_encoder_t *encoder = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+
+    status = sixel_allocator_new(&allocator, malloc, calloc, realloc, free);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_encoder_new(&encoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    sixel_encoder_ref(encoder);
+    sixel_encoder_unref(encoder);
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_encoder_unref(encoder);
+    return nret;
+}
+
+
+
 int
 sixel_encoder_tests_main(void)
 {
@@ -1963,7 +2130,8 @@ sixel_encoder_tests_main(void)
         test1,
         test2,
         test3,
-        test4
+        test4,
+        test5
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

@@ -65,9 +65,11 @@
 # define O_BINARY _O_BINARY
 #endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 
-#include <sixel.h>
 #include "chunk.h"
+#include "allocator.h"
 
+
+/* initialize chunk object with specified size */
 static SIXELSTATUS
 sixel_chunk_init(
     sixel_chunk_t * const /* in */ pchunk,
@@ -77,11 +79,12 @@ sixel_chunk_init(
 
     pchunk->max_size = initial_size;
     pchunk->size = 0;
-    pchunk->buffer = (unsigned char *)malloc(pchunk->max_size);
+    pchunk->buffer
+        = (unsigned char *)sixel_allocator_malloc(pchunk->allocator, pchunk->max_size);
 
     if (pchunk->buffer == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_chunk_init: malloc() failed.");
+            "sixel_chunk_init: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -93,42 +96,62 @@ end:
 }
 
 
+void
+sixel_chunk_destroy(
+    sixel_chunk_t * const /* in */ pchunk)
+{
+    sixel_allocator_t *allocator;
+
+    if (pchunk) {
+        allocator = pchunk->allocator;
+        sixel_allocator_free(allocator, pchunk->buffer);
+        sixel_allocator_free(allocator, pchunk);
+        sixel_allocator_unref(allocator);
+    }
+}
+
+
 # ifdef HAVE_LIBCURL
 static size_t
-memory_write(void *ptr,
-             size_t size,
-             size_t len,
-             void *memory)
+memory_write(void   /* in */ *ptr,
+             size_t /* in */ size,
+             size_t /* in */ len,
+             void   /* in */ *memory)
 {
-    size_t nbytes;
+    size_t nbytes = 0;
     sixel_chunk_t *chunk;
 
     if (ptr == NULL || memory == NULL) {
-        return 0;
-    }
-    nbytes = size * len;
-    if (nbytes == 0) {
-        return 0;
+        goto end;
     }
 
     chunk = (sixel_chunk_t *)memory;
     if (chunk->buffer == NULL) {
-        return 0;
+        goto end;
+    }
+
+    nbytes = size * len;
+    if (nbytes == 0) {
+        goto end;
     }
 
     if (chunk->max_size <= chunk->size + nbytes) {
         do {
             chunk->max_size *= 2;
         } while (chunk->max_size <= chunk->size + nbytes);
-        chunk->buffer = (unsigned char*)realloc(chunk->buffer, chunk->max_size);
+        chunk->buffer = (unsigned char*)sixel_allocator_realloc(chunk->allocator,
+                                                                chunk->buffer,
+                                                                chunk->max_size);
         if (chunk->buffer == NULL) {
-            return 0;
+            nbytes = 0;
+            goto end;
         }
     }
 
     memcpy(chunk->buffer + chunk->size, ptr, nbytes);
     chunk->size += nbytes;
 
+end:
     return nbytes;
 }
 # endif
@@ -165,7 +188,9 @@ wait_file(int fd, int usec)
 
 
 static SIXELSTATUS
-open_binary_file(FILE **f, char const *filename)
+open_binary_file(
+    FILE        /* out */   **f,
+    char const  /* in */    *filename)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     char buffer[1024];
@@ -220,6 +245,7 @@ end:
 }
 
 
+/* get chunk date from specified local file path */
 static SIXELSTATUS
 sixel_chunk_from_file(
     char const      /* in */ *filename,
@@ -231,6 +257,7 @@ sixel_chunk_from_file(
     int ret;
     FILE *f;
     int n;
+    size_t const bucket_size = 4096;
 
     status = open_binary_file(&f, filename);
     if (SIXEL_FAILED(status)) {
@@ -238,13 +265,14 @@ sixel_chunk_from_file(
     }
 
     for (;;) {
-        if (pchunk->max_size - pchunk->size < 4096) {
+        if (pchunk->max_size - pchunk->size < bucket_size) {
             pchunk->max_size *= 2;
-            pchunk->buffer = (unsigned char *)realloc(pchunk->buffer,
-                                                      pchunk->max_size);
+            pchunk->buffer = (unsigned char *)sixel_allocator_realloc(pchunk->allocator,
+                                                                      pchunk->buffer,
+                                                                      pchunk->max_size);
             if (pchunk->buffer == NULL) {
                 sixel_helper_set_additional_message(
-                    "sixel_chunk_from_file: realloc() failed.");
+                    "sixel_chunk_from_file: sixel_allocator_realloc() failed.");
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
             }
@@ -258,6 +286,8 @@ sixel_chunk_from_file(
                 }
                 ret = wait_file(fileno(f), 10000);
                 if (ret < 0) {
+                    sixel_helper_set_additional_message(
+                        "sixel_chunk_from_file: wait_file() failed.");
                     status = SIXEL_RUNTIME_ERROR;
                     goto end;
                 }
@@ -284,38 +314,76 @@ end:
 }
 
 
+/* get chunk of specified resource over libcurl function */
 static SIXELSTATUS
 sixel_chunk_from_url(
-    char const *url,
-    sixel_chunk_t *pchunk,
-    int finsecure)
+    char const      /* in */ *url,
+    sixel_chunk_t   /* in */ *pchunk,
+    int             /* in */ finsecure)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-
 # ifdef HAVE_LIBCURL
-    CURL *curl;
+    CURL *curl = NULL;
     CURLcode code;
-    char buffer[1024];
 
     curl = curl_easy_init();
-    curl_easy_setopt(curl, CURLOPT_URL, url);
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-    if (finsecure && strncmp(url, "https://", 8) == 0) {
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    if (curl == NULL) {
+        status = SIXEL_CURL_ERROR & CURLE_FAILED_INIT;
+        sixel_helper_set_additional_message("curl_easy_init() failed.");
+        goto end;
     }
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, memory_write);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)pchunk);
+
+    code = curl_easy_setopt(curl, CURLOPT_URL, url);
+    if (code != CURLE_OK) {
+        status = SIXEL_CURL_ERROR & (code & 0xff);
+        sixel_helper_set_additional_message("curl_easy_setopt(CURLOPT_FOLLOWLOCATION) failed.");
+        goto end;
+    }
+
+    code = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    if (code != CURLE_OK) {
+        status = SIXEL_CURL_ERROR & (code & 0xff);
+        sixel_helper_set_additional_message("curl_easy_setopt(CURLOPT_FOLLOWLOCATION) failed.");
+        goto end;
+    }
+
+    if (finsecure && strncmp(url, "https://", 8) == 0) {
+        code = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        if (code != CURLE_OK) {
+            status = SIXEL_CURL_ERROR & (code & 0xff);
+            sixel_helper_set_additional_message("curl_easy_setopt(CURLOPT_SSL_VERIFYPEER) failed.");
+            goto end;
+        }
+
+        code = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        if (code != CURLE_OK) {
+            status = SIXEL_CURL_ERROR & (code & 0xff);
+            sixel_helper_set_additional_message("curl_easy_setopt(CURLOPT_SSL_VERIFYHOST) failed.");
+            goto end;
+        }
+
+    }
+
+    code = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, memory_write);
+    if (code != CURLE_OK) {
+        status = SIXEL_CURL_ERROR & (code & 0xff);
+        sixel_helper_set_additional_message("curl_easy_setopt(CURLOPT_WRITEFUNCTION) failed.");
+        goto end;
+    }
+
+    code = curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)pchunk);
+    if (code != CURLE_OK) {
+        status = SIXEL_CURL_ERROR & (code & 0xff);
+        sixel_helper_set_additional_message("curl_easy_setopt(CURLOPT_WRITEDATA) failed.");
+        goto end;
+    }
+
     code = curl_easy_perform(curl);
     if (code != CURLE_OK) {
         status = SIXEL_CURL_ERROR & (code & 0xff);
-        if (sprintf(buffer, "curl_easy_perform('%s') failed.", url) != EOF) {
-            sixel_helper_set_additional_message(buffer);
-        }
-        curl_easy_cleanup(curl);
+        sixel_helper_set_additional_message("curl_easy_perform() failed.");
         goto end;
     }
-    curl_easy_cleanup(curl);
 
     status = SIXEL_OK;
 # else
@@ -331,32 +399,58 @@ sixel_chunk_from_url(
 # endif  /* HAVE_LIBCURL */
 
 end:
+# ifdef HAVE_LIBCURL
+    if (curl) {
+        curl_easy_cleanup(curl);
+    }
+# endif  /* HAVE_LIBCURL */
     return status;
 }
 
 
 SIXELSTATUS
 sixel_chunk_new(
-    sixel_chunk_t   /* out */ **ppchunk,
-    char const      /* in */  *filename,
-    int             /* in */  finsecure,
-    int const       /* in */  *cancel_flag
-)
+    sixel_chunk_t       /* out */   **ppchunk,
+    char const          /* in */    *filename,
+    int                 /* in */    finsecure,
+    int const           /* in */    *cancel_flag,
+    sixel_allocator_t   /* in */    *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
-    *ppchunk = (sixel_chunk_t *)malloc(sizeof(sixel_chunk_t));
+    if (ppchunk == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_chunk_new: ppchunk is null.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    if (allocator == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_chunk_new: allocator is null.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    *ppchunk = (sixel_chunk_t *)sixel_allocator_malloc(allocator, sizeof(sixel_chunk_t));
     if (*ppchunk == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_chunk_new: malloc() failed.");
+            "sixel_chunk_new: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
 
+    /* set allocator to chunk object */
+    (*ppchunk)->allocator = allocator;
+
     status = sixel_chunk_init(*ppchunk, 1024 * 32);
     if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, *ppchunk);
+        *ppchunk = NULL;
         goto end;
     }
+
+    sixel_allocator_ref(allocator);
 
     if (filename != NULL && strstr(filename, "://")) {
         status = sixel_chunk_from_url(filename, *ppchunk, finsecure);
@@ -364,6 +458,8 @@ sixel_chunk_new(
         status = sixel_chunk_from_file(filename, *ppchunk, cancel_flag);
     }
     if (SIXEL_FAILED(status)) {
+        sixel_chunk_destroy(*ppchunk);
+        *ppchunk = NULL;
         goto end;
     }
 
@@ -371,18 +467,6 @@ sixel_chunk_new(
 
 end:
     return status;
-}
-
-
-void
-sixel_chunk_destroy(
-    sixel_chunk_t * const /* in */ pchunk)
-{
-    if (pchunk) {
-        free(pchunk->buffer);
-        pchunk->buffer = NULL;
-    }
-    free(pchunk);
 }
 
 
@@ -394,7 +478,7 @@ test1(void)
     unsigned char *ptr = malloc(16);
 
 #ifdef HAVE_LIBCURL
-    sixel_chunk_t chunk = {0, 0, 0};
+    sixel_chunk_t chunk = {0, 0, 0, NULL};
     int nread;
 
     nread = memory_write(NULL, 1, 1, NULL);
@@ -423,6 +507,30 @@ error:
 }
 
 
+static int
+test2(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_chunk_t *chunk;
+    SIXELSTATUS status = SIXEL_FALSE;
+
+    status = sixel_chunk_new(&chunk, NULL, 0, NULL, NULL);
+    if (status != SIXEL_BAD_ARGUMENT) {
+        goto error;
+    }
+
+    status = sixel_chunk_new(NULL, NULL, 0, NULL, NULL);
+    if (status != SIXEL_BAD_ARGUMENT) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
 int
 sixel_chunk_tests_main(void)
 {
@@ -432,6 +540,7 @@ sixel_chunk_tests_main(void)
 
     static testcase const testcases[] = {
         test1,
+        test2,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

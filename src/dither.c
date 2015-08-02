@@ -248,21 +248,41 @@ static const unsigned char pal_vt340_color[] = {
 };
 
 
-SIXELAPI sixel_dither_t *
-sixel_dither_create(
-    int     /* in */ ncolors)
+/* create dither context object */
+SIXELAPI SIXELSTATUS
+sixel_dither_new(
+    sixel_dither_t      /* out */   **ppdither, /* dither object to be created */
+    int                 /* in */    ncolors,    /* required colors */
+    sixel_allocator_t   /* in */    *allocator) /* allocator, null if you use
+                                                  default allocator */
 {
-    sixel_dither_t *dither;
+    SIXELSTATUS status = SIXEL_FALSE;
     int headsize;
     int datasize;
     int wholesize;
     int quality_mode;
 
-    if (ncolors == -1) {
+    if (ppdither == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_dither_new: ppdither is null.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    if (allocator == NULL) {
+        status = sixel_allocator_new(&allocator, malloc, calloc, realloc, free);
+        if (SIXEL_FAILED(status)) {
+            *ppdither = NULL;
+            goto end;
+        }
+    } else {
+        sixel_allocator_ref(allocator);
+    }
+
+    if (ncolors == (-1)) {
         ncolors = 256;
         quality_mode = SIXEL_QUALITY_HIGHCOLOR;
-    }
-    else {
+    } else {
         if (ncolors > SIXEL_PALETTE_MAX) {
             ncolors = 256;
         } else if (ncolors < 2) {
@@ -274,26 +294,52 @@ sixel_dither_create(
     datasize = ncolors * 3;
     wholesize = headsize + datasize;
 
-    dither = (sixel_dither_t *)malloc(wholesize);
-    if (dither != NULL) {
-        dither->ref = 1;
-        dither->palette = (unsigned char*)(dither + 1);
-        dither->cachetable = NULL;
-        dither->reqcolors = ncolors;
-        dither->ncolors = ncolors;
-        dither->origcolors = (-1);
-        dither->keycolor = (-1);
-        dither->optimized = 0;
-        dither->optimize_palette = 0;
-        dither->complexion = 1;
-        dither->bodyonly = 0;
-        dither->method_for_largest = SIXEL_LARGE_NORM;
-        dither->method_for_rep = SIXEL_REP_CENTER_BOX;
-        dither->method_for_diffuse = SIXEL_DIFFUSE_FS;
-        dither->quality_mode = quality_mode;
-        dither->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    *ppdither = (sixel_dither_t *)sixel_allocator_malloc(allocator, wholesize);
+    if (*ppdither == NULL) {
+        sixel_allocator_unref(allocator);
+        sixel_helper_set_additional_message(
+            "sixel_dither_new: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
 
+    (*ppdither)->ref = 1;
+    (*ppdither)->palette = (unsigned char*)(*ppdither + 1);
+    (*ppdither)->cachetable = NULL;
+    (*ppdither)->reqcolors = ncolors;
+    (*ppdither)->ncolors = ncolors;
+    (*ppdither)->origcolors = (-1);
+    (*ppdither)->keycolor = (-1);
+    (*ppdither)->optimized = 0;
+    (*ppdither)->optimize_palette = 0;
+    (*ppdither)->complexion = 1;
+    (*ppdither)->bodyonly = 0;
+    (*ppdither)->method_for_largest = SIXEL_LARGE_NORM;
+    (*ppdither)->method_for_rep = SIXEL_REP_CENTER_BOX;
+    (*ppdither)->method_for_diffuse = SIXEL_DIFFUSE_FS;
+    (*ppdither)->quality_mode = quality_mode;
+    (*ppdither)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    (*ppdither)->allocator = allocator;
+
+end:
+    return status;
+}
+
+
+/* create dither context object (deprecated) */
+SIXELAPI sixel_dither_t *
+sixel_dither_create(
+    int     /* in */ ncolors)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_dither_t *dither = NULL;
+
+    status = sixel_dither_new(&dither, ncolors, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+end:
     return dither;
 }
 
@@ -302,9 +348,14 @@ SIXELAPI void
 sixel_dither_destroy(
     sixel_dither_t  /* in */ *dither)
 {
+    sixel_allocator_t *allocator;
+
     if (dither) {
-        free(dither->cachetable);
-        free(dither);
+        allocator = dither->allocator;
+        sixel_allocator_free(allocator, dither->cachetable);
+        dither->cachetable = NULL;
+        sixel_allocator_free(allocator, dither);
+        sixel_allocator_unref(allocator);
     }
 }
 
@@ -462,13 +513,26 @@ sixel_dither_initialize(
     unsigned char *input_pixels;
     SIXELSTATUS status = SIXEL_FALSE;
 
+    if (dither == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_dither_new: dither is null.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    sixel_dither_ref(dither);
+
     sixel_dither_set_pixelformat(dither, pixelformat);
 
     if (pixelformat != SIXEL_PIXELFORMAT_RGB888) {
 
         /* normalize pixelformat */
-        normalized_pixels = (unsigned char *)malloc(width * height * 3);
+        normalized_pixels
+            = (unsigned char *)sixel_allocator_malloc(dither->allocator, width * height * 3);
         if (normalized_pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_dither_initialize: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
 
@@ -491,16 +555,18 @@ sixel_dither_initialize(
     sixel_dither_set_method_for_rep(dither, method_for_rep);
     sixel_dither_set_quality_mode(dither, quality_mode);
 
-    buf = sixel_quant_make_palette(input_pixels,
-                                   width * height * 3,
-                                   SIXEL_PIXELFORMAT_RGB888,
-                                   dither->reqcolors,
-                                   &dither->ncolors,
-                                   &dither->origcolors,
-                                   dither->method_for_largest,
-                                   dither->method_for_rep,
-                                   dither->quality_mode);
-    if (buf == NULL) {
+    status = sixel_quant_make_palette(&buf,
+                                      input_pixels,
+                                      width * height * 3,
+                                      SIXEL_PIXELFORMAT_RGB888,
+                                      dither->reqcolors,
+                                      &dither->ncolors,
+                                      &dither->origcolors,
+                                      dither->method_for_largest,
+                                      dither->method_for_rep,
+                                      dither->quality_mode,
+                                      dither->allocator);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
     memcpy(dither->palette, buf, dither->ncolors * 3);
@@ -510,11 +576,12 @@ sixel_dither_initialize(
         dither->method_for_diffuse = SIXEL_DIFFUSE_NONE;
     }
 
-    sixel_quant_free_palette(buf);
+    sixel_quant_free_palette(buf, dither->allocator);
     status = SIXEL_OK;
 
 end:
     free(normalized_pixels);
+    sixel_dither_unref(dither);
     return status;
 }
 
@@ -633,17 +700,28 @@ sixel_dither_apply_palette(
     int             /* in */ width,
     int             /* in */ height)
 {
-    int ret;
+    SIXELSTATUS status = SIXEL_FALSE;
     int bufsize;
-    int cachesize;
-    unsigned char *dest;
+    unsigned char *dest = NULL;
     int ncolors;
     unsigned char *normalized_pixels = NULL;
     unsigned char *input_pixels;
 
+    if (dither == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_dither_apply_palette: dither is null.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    sixel_dither_ref(dither);
+
     bufsize = width * height * sizeof(unsigned char);
-    dest = (unsigned char *)malloc(bufsize);
+    dest = (unsigned char *)sixel_allocator_malloc(dither->allocator, bufsize);
     if (dest == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_dither_new: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
 
@@ -654,27 +732,33 @@ sixel_dither_apply_palette(
 
     if (dither->cachetable == NULL && dither->optimized) {
         if (dither->palette != pal_mono_dark && dither->palette != pal_mono_light) {
-            cachesize = (1 << 3 * 5) * sizeof(unsigned short);
-#if HAVE_CALLOC
-            dither->cachetable = (unsigned short *)calloc(cachesize, 1);
-#else
-            dither->cachetable = (unsigned short *)malloc(cachesize);
-            memset(dither->cachetable, 0, cachesize);
-#endif
+            dither->cachetable = (unsigned short *)sixel_allocator_calloc(dither->allocator,
+                                                                          1 << 3 * 5,
+                                                                          sizeof(unsigned short));
+            if (dither->cachetable == NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_dither_new: sixel_allocator_calloc() failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
         }
     }
 
     if (dither->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         /* normalize pixelformat */
-        normalized_pixels = (unsigned char *)malloc(width * height * 3);
+        normalized_pixels
+            = (unsigned char *)sixel_allocator_malloc(dither->allocator, width * height * 3);
         if (normalized_pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_dither_new: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        ret = sixel_helper_normalize_pixelformat(normalized_pixels,
-                                                 &dither->pixelformat,
-                                                 pixels, dither->pixelformat,
-                                                 width, height);
-        if (ret != 0) {
+        status = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                    &dither->pixelformat,
+                                                    pixels, dither->pixelformat,
+                                                    width, height);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
         input_pixels = normalized_pixels;
@@ -682,26 +766,29 @@ sixel_dither_apply_palette(
         input_pixels = pixels;
     }
 
-    ret = sixel_quant_apply_palette(input_pixels,
-                                    width, height, 3,
-                                    dither->palette,
-                                    dither->ncolors,
-                                    dither->method_for_diffuse,
-                                    dither->optimized,
-                                    dither->optimize_palette,
-                                    dither->complexion,
-                                    dither->cachetable,
-                                    &ncolors,
-                                    dest);
-    if (ret != 0) {
+    status = sixel_quant_apply_palette(dest,
+                                       input_pixels,
+                                       width, height, 3,
+                                       dither->palette,
+                                       dither->ncolors,
+                                       dither->method_for_diffuse,
+                                       dither->optimized,
+                                       dither->optimize_palette,
+                                       dither->complexion,
+                                       dither->cachetable,
+                                       &ncolors,
+                                       dither->allocator);
+    if (SIXEL_FAILED(status)) {
         free(dest);
         dest = NULL;
+        goto end;
     }
 
     dither->ncolors = ncolors;
 
 end:
     free(normalized_pixels);
+    sixel_dither_unref(dither);
     return dest;
 }
 

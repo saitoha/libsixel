@@ -22,6 +22,8 @@
 #ifndef LIBSIXEL_FROMGIF_H
 #define LIBSIXEL_FROMGIF_H
 
+#include <sixel.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -29,15 +31,16 @@ extern "C" {
 /* load gif */
 int
 load_gif(
-    unsigned char /* in */ *buffer,
-    int           /* in */ size,
-    unsigned char /* in */ *bgcolor,
-    int           /* in */ reqcolors,
-    int           /* in */ fuse_palette,
-    int           /* in */ fstatic,
-    int           /* in */ loop_control,
-    void          /* in */ *fn_load,     /* callback */
-    void          /* in */ *context      /* private data for callback */
+    unsigned char       /* in */ *buffer,
+    int                 /* in */ size,
+    unsigned char       /* in */ *bgcolor,
+    int                 /* in */ reqcolors,
+    int                 /* in */ fuse_palette,
+    int                 /* in */ fstatic,
+    int                 /* in */ loop_control,
+    void                /* in */ *fn_load,     /* callback */
+    void                /* in */ *context,     /* private data for callback */
+    sixel_allocator_t   /* in */ *allocator    /* allocator object */
 );
 
 #if HAVE_TESTS

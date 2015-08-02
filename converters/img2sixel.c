@@ -51,6 +51,7 @@
 
 #include <sixel.h>
 
+/* output version info to STDOUT */
 static
 void show_version(void)
 {
@@ -77,6 +78,7 @@ void show_version(void)
 }
 
 
+/* output help messages to STDOUT */
 static
 void show_help(void)
 {
@@ -300,11 +302,8 @@ main(int argc, char *argv[])
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    sixel_encoder_t *encoder;
+    sixel_encoder_t *encoder = NULL;
     char const *optstring = "o:78p:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:B:C:DVH";
-
-    encoder = sixel_encoder_create();
-
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",          no_argument,        &long_opt, 'o'},
@@ -342,6 +341,11 @@ main(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
+
+    status = sixel_encoder_new(&encoder, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
 
     for (;;) {
 

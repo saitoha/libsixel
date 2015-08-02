@@ -22,43 +22,87 @@
 #include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <sixel.h>
 #include "output.h"
+
+
+SIXELAPI SIXELSTATUS
+sixel_output_new(
+    sixel_output_t          /* out */ **output,
+    sixel_write_function    /* in */  fn_write,
+    void                    /* in */  *priv,
+    sixel_allocator_t       /* in */  *allocator)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    size_t size;
+
+    if (allocator == NULL) {
+        status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    } else {
+        sixel_allocator_ref(allocator);
+    }
+    size = sizeof(sixel_output_t) + SIXEL_OUTPUT_PACKET_SIZE * 2;
+
+    *output = (sixel_output_t *)sixel_allocator_malloc(allocator, size);
+    if (*output == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    (*output)->ref = 1;
+    (*output)->has_8bit_control = 0;
+    (*output)->has_sdm_glitch = 0;
+    (*output)->skip_dcs_envelope = 0;
+    (*output)->palette_type = SIXEL_PALETTETYPE_AUTO;
+    (*output)->fn_write = fn_write;
+    (*output)->save_pixel = 0;
+    (*output)->save_count = 0;
+    (*output)->active_palette = (-1);
+    (*output)->node_top = NULL;
+    (*output)->node_free = NULL;
+    (*output)->priv = priv;
+    (*output)->pos = 0;
+    (*output)->penetrate_multiplexer = 0;
+    (*output)->encode_policy = SIXEL_ENCODEPOLICY_AUTO;
+    (*output)->allocator = allocator;
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
 
 
 SIXELAPI sixel_output_t *
 sixel_output_create(sixel_write_function fn_write, void *priv)
 {
-    sixel_output_t *output;
-    size_t size = sizeof(sixel_output_t) + SIXEL_OUTPUT_PACKET_SIZE * 2;
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_output_t *output = NULL;
 
-    output = (sixel_output_t *)malloc(size);
-    if (output) {
-        output->ref = 1;
-        output->has_8bit_control = 0;
-        output->has_sdm_glitch = 0;
-        output->skip_dcs_envelope = 0;
-        output->palette_type = SIXEL_PALETTETYPE_AUTO;
-        output->fn_write = fn_write;
-        output->save_pixel = 0;
-        output->save_count = 0;
-        output->active_palette = (-1);
-        output->node_top = NULL;
-        output->node_free = NULL;
-        output->priv = priv;
-        output->pos = 0;
-        output->penetrate_multiplexer = 0;
-        output->encode_policy = SIXEL_ENCODEPOLICY_AUTO;
+    status = sixel_output_new(&output, fn_write, priv, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
+end:
     return output;
 }
 
-
+ 
 SIXELAPI void
 sixel_output_destroy(sixel_output_t *output)
 {
-    free(output);
+    sixel_allocator_t *allocator;
+
+    if (output) {
+        allocator = output->allocator;
+        sixel_allocator_free(allocator, output);
+        sixel_allocator_unref(allocator);
+    }
 }
 
 
@@ -74,8 +118,12 @@ SIXELAPI void
 sixel_output_unref(sixel_output_t *output)
 {
     /* TODO: be thread-safe */
-    if (output && --output->ref == 0) {
-        sixel_output_destroy(output);
+    if (output) {
+        assert(output->ref > 0);
+        output->ref--;
+        if (output->ref == 0) {
+            sixel_output_destroy(output);
+        }
     }
 }
 

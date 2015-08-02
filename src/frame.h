@@ -22,20 +22,23 @@
 #ifndef LIBSIXEL_FRAME_H
 #define LIBSIXEL_FRAME_H
 
+#include <sixel.h>
+
 /* frame object */
 struct sixel_frame {
-    unsigned int ref;         /* reference counter */
-    unsigned char *pixels;    /* loaded pixel data */
-    unsigned char *palette;   /* loaded palette data */
-    int width;                /* frame width */
-    int height;               /* frame height */
-    int ncolors;              /* palette colors */
-    int pixelformat;          /* one of enum pixelFormat */
-    int delay;                /* delay in msec */
-    int frame_no;             /* frame number */
-    int loop_count;           /* loop count */
-    int multiframe;           /* whether the image has multiple frames */
-    int transparent;          /* -1(no transparent) or >= 0(index of transparent color) */
+    unsigned int ref;               /* reference counter */
+    unsigned char *pixels;          /* loaded pixel data */
+    unsigned char *palette;         /* loaded palette data */
+    int width;                      /* frame width */
+    int height;                     /* frame height */
+    int ncolors;                    /* palette colors */
+    int pixelformat;                /* one of enum pixelFormat */
+    int delay;                      /* delay in msec */
+    int frame_no;                   /* frame number */
+    int loop_count;                 /* loop count */
+    int multiframe;                 /* whether the image has multiple frames */
+    int transparent;                /* -1(no transparent) or >= 0(index of transparent color) */
+    sixel_allocator_t *allocator;   /* allocator object */
 };
 
 #ifdef __cplusplus

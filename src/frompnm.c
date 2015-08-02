@@ -51,17 +51,32 @@ pnm_get_line(unsigned char *p, unsigned char *end, unsigned char *line)
 }
 
 
-unsigned char *
-load_pnm(unsigned char *p, int length,
-         int *psx, int *psy,
-         unsigned char **ppalette, int *pncolors,
-         int *ppixelformat)
+SIXELSTATUS
+load_pnm(unsigned char      /* in */  *p,
+         int                /* in */  length,
+         sixel_allocator_t  /* in */  *allocator,
+         unsigned char      /* out */ **result,
+         int                /* out */ *psx,
+         int                /* out */ *psy,
+         unsigned char      /* out */ **ppalette,
+         int                /* out */ *pncolors,
+         int                /* out */ *ppixelformat)
 {
-    int n, i, b, x, y, component[3];
-    int ascii, maps;
-    int width, height, deps;
-    unsigned char *result;
-    unsigned char *s, *end, tmp[256];
+    SIXELSTATUS status = SIXEL_FALSE;
+    int n;
+    int i;
+    int b;
+    int x;
+    int y;
+    int component[3];
+    int ascii;
+    int maps;
+    int width;
+    int height;
+    int deps;
+    unsigned char *s;
+    unsigned char *end;
+    unsigned char tmp[256];
 
     (void) ppalette;
     (void) pncolors;
@@ -71,9 +86,13 @@ load_pnm(unsigned char *p, int length,
 
     end = p + length;
     p = pnm_get_line(p, end, tmp);
+    *result = NULL;
 
     if (tmp[0] != 'P') {
-        return NULL;
+        status = SIXEL_RUNTIME_ERROR;
+        sixel_helper_set_additional_message(
+            "load_pnm: first character is not 'P'.");
+        goto end;
     }
 
     switch(tmp[1]) {
@@ -102,7 +121,10 @@ load_pnm(unsigned char *p, int length,
         maps  = 2;
         break;
     default:
-        return NULL;
+        status = SIXEL_RUNTIME_ERROR;
+        sixel_helper_set_additional_message(
+            "load_pnm: unknown ppm format.");
+        goto end;
     }
 
     p = pnm_get_line(p, end, tmp);
@@ -133,15 +155,22 @@ load_pnm(unsigned char *p, int length,
     }
 
     if (width < 1 || height < 1 || deps < 1) {
-        return NULL;
+        status = SIXEL_RUNTIME_ERROR;
+        sixel_helper_set_additional_message(
+            "load_pnm: invalid data detected.");
+        goto end;
     }
 
-    result = (unsigned char *)malloc(width * height * 3 + 1);
-    if (result == NULL) {
-        return NULL;
+    *result = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                      width * height * 3 + 1);
+    if (*result == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        sixel_helper_set_additional_message(
+            "load_pnm: sixel_allocator_malloc() failed.");
+        goto end;
     }
 
-    memset(result, 0, width * height * 3 + 1);
+    memset(*result, 0, width * height * 3 + 1);
 
     for (y = 0 ; y < height ; y++) {
         for (x = 0 ; x < width ; x++) {
@@ -203,16 +232,20 @@ load_pnm(unsigned char *p, int length,
                 break;
             }
 
-            *(result + (y * width + x) * 3 + 0) = component[0];
-            *(result + (y * width + x) * 3 + 1) = component[1];
-            *(result + (y * width + x) * 3 + 2) = component[2];
+            *(*result + (y * width + x) * 3 + 0) = component[0];
+            *(*result + (y * width + x) * 3 + 1) = component[1];
+            *(*result + (y * width + x) * 3 + 2) = component[2];
         }
     }
 
     *psx = width;
     *psy = height;
     *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
-    return result;
+
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
