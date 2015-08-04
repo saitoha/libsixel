@@ -87,7 +87,6 @@ write_png_to_file(
     int i;
     unsigned char *src;
     unsigned char *dst;
-    char buffer[1024];
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
@@ -210,9 +209,7 @@ write_png_to_file(
         output_fp = fopen(filename, "wb");
         if (!output_fp) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-            if (sprintf(buffer, "fopen('%s') failed.", filename) != EOF) {
-                sixel_helper_set_additional_message(buffer);
-            }
+            sixel_helper_set_additional_message("fopen() failed.");
             goto end;
         }
     }

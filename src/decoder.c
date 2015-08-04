@@ -261,7 +261,8 @@ sixel_decoder_decode(
     raw_len = 0;
     max = 64 * 1024;
 
-    if ((raw_data = (unsigned char *)sixel_allocator_malloc(decoder->allocator, max)) == NULL) {
+    raw_data = (unsigned char *)sixel_allocator_malloc(decoder->allocator, max);
+    if (raw_data == NULL) {
         sixel_helper_set_additional_message(
             "sixel_decoder_decode: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;

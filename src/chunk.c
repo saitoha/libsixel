@@ -193,7 +193,6 @@ open_binary_file(
     char const  /* in */    *filename)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    char buffer[1024];
 #if HAVE_STAT
     struct stat sb;
 #endif  /* HAVE_STAT */
@@ -216,16 +215,12 @@ open_binary_file(
 #if HAVE_STAT
     if (stat(filename, &sb) != 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-        if (sprintf(buffer, "stat('%s') failed.", filename) != EOF) {
-            sixel_helper_set_additional_message(buffer);
-        }
+        sixel_helper_set_additional_message("stat() failed.");
         goto end;
     }
     if ((sb.st_mode & S_IFMT) == S_IFDIR) {
         status = SIXEL_BAD_INPUT;
-        if (sprintf(buffer, "'%s' is directory.", filename) != EOF) {
-            sixel_helper_set_additional_message(buffer);
-        }
+        sixel_helper_set_additional_message("specified path is directory.");
         goto end;
     }
 #endif  /* HAVE_STAT */
@@ -233,13 +228,12 @@ open_binary_file(
     *f = fopen(filename, "rb");
     if (!*f) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-        if (sprintf(buffer, "fopen('%s') failed.", filename) != EOF) {
-            sixel_helper_set_additional_message(buffer);
-        }
+        sixel_helper_set_additional_message("fopen() failed.");
         goto end;
     }
 
     status = SIXEL_OK;
+
 end:
     return status;
 }
