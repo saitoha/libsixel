@@ -281,7 +281,9 @@ prepare_monochrome_palette(
         *dither = sixel_dither_get(SIXEL_BUILTIN_MONO_DARK);
     }
     if (*dither == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
+        sixel_helper_set_additional_message(
+            "prepare_monochrome_palette: sixel_dither_get() failed.");
+        status = SIXEL_RUNTIME_ERROR;
         goto end;
     }
 
@@ -302,7 +304,9 @@ prepare_builtin_palette(
 
     *dither = sixel_dither_get(builtin_palette);
     if (*dither == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
+        sixel_helper_set_additional_message(
+            "prepare_builtin_palette: sixel_dither_get() failed.");
+        status = SIXEL_RUNTIME_ERROR;
         goto end;
     }
 

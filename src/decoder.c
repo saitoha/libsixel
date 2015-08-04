@@ -188,6 +188,8 @@ sixel_decoder_setopt(
         free(decoder->input);
         decoder->input = strdup_with_allocator(optarg, decoder->allocator);
         if (decoder->input == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_decoder_setopt: strdup_with_allocator() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -196,6 +198,8 @@ sixel_decoder_setopt(
         free(decoder->output);
         decoder->output = strdup_with_allocator(optarg, decoder->allocator);
         if (decoder->input == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_decoder_setopt: strdup_with_allocator() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -231,7 +235,6 @@ sixel_decoder_decode(
     unsigned char *palette;
     int ncolors;
     unsigned char *pixels = NULL;
-    char buffer[1024];
 
     sixel_decoder_ref(decoder);
 
@@ -248,10 +251,9 @@ sixel_decoder_decode(
     } else {
         input_fp = fopen(decoder->input, "rb");
         if (!input_fp) {
+            sixel_helper_set_additional_message(
+                "sixel_decoder_decode: fopen() failed.");
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-            if (sprintf(buffer, "fopen('%s') failed.", decoder->input) != EOF) {
-                sixel_helper_set_additional_message(buffer);
-            }
             goto end;
         }
     }
@@ -260,21 +262,20 @@ sixel_decoder_decode(
     max = 64 * 1024;
 
     if ((raw_data = (unsigned char *)sixel_allocator_malloc(decoder->allocator, max)) == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_decoder_decode: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
-        if (sprintf(buffer, "sixel_allocator_malloc(%d) failed.", max) != EOF) {
-            sixel_helper_set_additional_message(buffer);
-        }
         goto end;
     }
 
     for (;;) {
         if ((max - raw_len) < 4096) {
             max *= 2;
-            if ((raw_data = (unsigned char *)realloc(raw_data, max)) == NULL) {
+            raw_data = (unsigned char *)sixel_allocator_realloc(decoder->allocator, raw_data, max);
+            if (raw_data == NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_decoder_decode: sixel_allocator_realloc() failed.");
                 status = SIXEL_BAD_ALLOCATION;
-                if (sprintf(buffer, "realloc(raw_data, %d) failed.", max) != EOF) {
-                    sixel_helper_set_additional_message(buffer);
-                }
                 goto end;
             }
         }

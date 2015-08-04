@@ -494,6 +494,8 @@ sixel_encode_body(
                                                   len,
                                                   sizeof(unsigned char));
     if (map == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_body: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -575,6 +577,8 @@ sixel_encode_body(
                     np = (sixel_node_t *)sixel_allocator_malloc(allocator,
                                                                 sizeof(sixel_node_t));
                     if (np == NULL) {
+                        sixel_helper_set_additional_message(
+                            "sixel_encode_body: sixel_allocator_malloc() failed.");
                         status = SIXEL_BAD_ALLOCATION;
                         goto end;
                     }
@@ -737,6 +741,8 @@ sixel_encode_dither(
         paletted_pixels = (unsigned char *)sixel_allocator_malloc(dither->allocator,
                                                                   width * height * 3);
         if (paletted_pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encode_dither: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }

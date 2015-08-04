@@ -184,6 +184,8 @@ gif_init_frame(
         frame->palette = (unsigned char *)sixel_allocator_malloc(frame->allocator, ncolors * 3);
     }
     if (frame->palette == NULL) {
+        sixel_helper_set_additional_message(
+            "gif_init_frame: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -570,6 +572,8 @@ load_gif(
     frame->height = g.h,
     g.out = (unsigned char *)sixel_allocator_malloc(allocator, g.w * g.h);
     if (g.out == NULL) {
+        sixel_helper_set_additional_message(
+            "load_gif: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }

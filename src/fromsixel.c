@@ -282,6 +282,8 @@ sixel_decode_raw(
     imsy = 2048;
     imbuf = (unsigned char *)sixel_allocator_malloc(allocator, imsx * imsy);
     if (imbuf == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_deocde_raw: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -398,6 +400,8 @@ sixel_decode_raw(
                 dmbuf = (unsigned char *)sixel_allocator_malloc(allocator, dmsx * dmsy);
                 if (dmbuf == NULL) {
                     sixel_allocator_free(allocator, imbuf);
+                    sixel_helper_set_additional_message(
+                        "sixel_deocde_raw: sixel_allocator_malloc() failed.");
                     status = SIXEL_BAD_ALLOCATION;
                     goto end;
                 }
@@ -556,6 +560,8 @@ sixel_decode_raw(
         dmbuf = (unsigned char *)sixel_allocator_malloc(allocator, dmsx * dmsy);
         if (dmbuf == NULL) {
             sixel_allocator_free(allocator, imbuf);
+            sixel_helper_set_additional_message(
+                "sixel_deocde_raw: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -572,6 +578,8 @@ sixel_decode_raw(
     *palette = (unsigned char *)sixel_allocator_malloc(allocator, *ncolors * 3);
     if (palette == NULL) {
         sixel_allocator_free(allocator, imbuf);
+        sixel_helper_set_additional_message(
+            "sixel_deocde_raw: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }

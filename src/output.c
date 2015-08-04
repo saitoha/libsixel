@@ -49,6 +49,8 @@ sixel_output_new(
 
     *output = (sixel_output_t *)sixel_allocator_malloc(allocator, size);
     if (*output == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_output_new: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
