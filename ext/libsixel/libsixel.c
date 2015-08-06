@@ -42,8 +42,16 @@ static VALUE
 sixel_ruby_encoder_alloc(VALUE klass)
 {
     sixel_encoder_t *encoder;
+    SIXELSTATUS status;
 
-    encoder = sixel_encoder_create();
+    status = sixel_encoder_new(&encoder, NULL);
+    if (SIXEL_FAILED(status)) {
+        rb_raise(rb_eRuntimeError,
+                 "sixel_encoder_new() failed: %s / %s",
+                 sixel_helper_format_error(status),
+                 sixel_helper_get_additional_message());
+    }
+
     return Data_Wrap_Struct(klass, NULL, sixel_ruby_encoder_free, encoder);
 }
 
@@ -108,8 +116,16 @@ static VALUE
 sixel_ruby_decoder_alloc(VALUE klass)
 {
     sixel_decoder_t *decoder;
+    SIXELSTATUS status;
 
-    decoder = sixel_decoder_create();
+    status = sixel_decoder_new(&decoder, NULL);
+    if (SIXEL_FAILED(status)) {
+        rb_raise(rb_eRuntimeError,
+                 "sixel_encoder_encode() failed: %s / %s",
+                 sixel_helper_format_error(status),
+                 sixel_helper_get_additional_message());
+    }
+
     return Data_Wrap_Struct(klass, NULL, sixel_ruby_decoder_free, decoder);
 }
 
