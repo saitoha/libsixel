@@ -39,6 +39,8 @@ libsixel_la_SOURCES = \
 		stb_image_write.h \
 		status.c \
 		status.h \
+		allocator.c \
+		allocator.h \
 		rgblookup.h
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/
 libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \

@@ -22,16 +22,23 @@
 #ifndef LIBSIXEL_FROMPNM_H
 #define LIBSIXEL_FROMPNM_H
 
+#include <sixel.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* exported functions */
-unsigned char *
-load_pnm(unsigned char *p, int len,
-         int *psx, int *psy,
-         unsigned char **ppalette, int *pncolors,
-         int *ppixelformat);
+SIXELSTATUS
+load_pnm(unsigned char      /* in */  *p,
+         int                /* in */  len,
+         sixel_allocator_t  /* in */  *allocator,
+         unsigned char      /* out */ **result,
+         int                /* out */ *psx,
+         int                /* out */ *psy,
+         unsigned char      /* out */ **ppalette,
+         int                /* out */ *pncolors,
+         int                /* out */ *ppixelformat);
 
 #ifdef __cplusplus
 }

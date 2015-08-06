@@ -72,6 +72,9 @@
    don't. */
 #undef HAVE_DECL_SIGTERM
 
+/* define 1 if GCC supports -Wdeprecated-declarations */
+#undef HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+
 /* define 1 if GCC supports -Wtypedef-redefinition */
 #undef HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
 

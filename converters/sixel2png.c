@@ -120,9 +120,8 @@ main(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 
-    decoder = sixel_decoder_create();
-    if (decoder == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
+    status = sixel_decoder_new(&decoder, NULL);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
 

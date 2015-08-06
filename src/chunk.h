@@ -22,12 +22,15 @@
 #ifndef LIBSIXEL_CHUNK_H
 #define LIBSIXEL_CHUNK_H
 
+#include <sixel.h>
+
 /* chunk object */
 typedef struct sixel_chunk
 {
     unsigned char *buffer;
     size_t size;
     size_t max_size;
+    sixel_allocator_t *allocator;
 } sixel_chunk_t;
 
 #ifdef __cplusplus
@@ -36,15 +39,22 @@ extern "C" {
 
 SIXELSTATUS
 sixel_chunk_new(
-    sixel_chunk_t   /* out */ **ppchunk,
-    char const      /* in */  *filename,
-    int             /* in */  finsecure,
-    int const       /* in */  *cancel_flag);
+    sixel_chunk_t       /* out */   **ppchunk,
+    char const          /* in */    *filename,
+    int                 /* in */    finsecure,
+    int const           /* in */    *cancel_flag,
+    sixel_allocator_t   /* in */    *allocator);
 
 
 void
 sixel_chunk_destroy(
     sixel_chunk_t * const /* in */ pchunk);
+
+
+#if HAVE_TESTS
+int
+sixel_chunk_tests_main(void);
+#endif
 
 #ifdef __cplusplus
 }
