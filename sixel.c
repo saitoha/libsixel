@@ -42,16 +42,19 @@ PHP_METHOD(SixelEncoder, __construct)
 
 
 	do {
-		sixel_encoder_t *encoder;
-				encoder = sixel_encoder_create();
-				if (encoder == NULL) {
+		SIXELSTATUS status;
+				sixel_encoder_t *encoder;
+				zval *value;
+				status = sixel_encoder_new(&encoder, NULL);
+				if (SIXEL_FAILED(status)) {
 #if 0
 					zend_throw_exception_ex(zend_exception_get_default(), 1,
-											"sixel_encoder_create() failed. %s:%d",
+											"sixel_encoder_new() failed: %s (%s:%d)",
+											sixel_helper_format_error(status),
 											__FILE__, __LINE__);
 #endif
 				} else {
-					zval *value = emalloc(sizeof(zval));
+					value = emalloc(sizeof(zval));
 					ZVAL_RESOURCE(value, (long)encoder);
 					zend_update_property(_this_ce, getThis(),
 										 "encoder", sizeof("encoder") - 1, value);
@@ -80,8 +83,9 @@ PHP_METHOD(SixelEncoder, __destruct)
 
 
 	do {
-		zval *encoder = zend_read_property(_this_ce, getThis(),
-												   "encoder", sizeof("encoder") - 1, 1);
+		zval *encoder;
+				encoder = zend_read_property(_this_ce, getThis(),
+											 "encoder", sizeof("encoder") - 1, 1);
 				sixel_encoder_unref((sixel_encoder_t *)Z_RESVAL_P(encoder));
 				efree(encoder);
 	} while (0);
@@ -112,9 +116,19 @@ PHP_METHOD(SixelEncoder, setopt)
 
 
 	do {
-		zval *encoder = zend_read_property(_this_ce, getThis(),
-												   "encoder", sizeof("encoder") - 1, 1);
-				sixel_encoder_setopt((sixel_encoder_t *)Z_RESVAL_P(encoder), *opt, arg);
+		SIXELSTATUS status;
+				zval *encoder;
+				encoder = zend_read_property(_this_ce, getThis(),
+											 "encoder", sizeof("encoder") - 1, 1);
+				status = sixel_encoder_setopt((sixel_encoder_t *)Z_RESVAL_P(encoder), *opt, arg);
+#if 0
+				if (SIXEL_FAILED(status) {
+					zend_throw_exception_ex(zend_exception_get_default(), 1,
+											"sixel_encoder_encode() failed: %s (%s:%d)",
+											sixel_helper_format_error(status),
+											__FILE__, __LINE__);
+				}
+#endif
 	} while (0);
 }
 /* }}} setopt */
@@ -141,13 +155,16 @@ PHP_METHOD(SixelEncoder, encode)
 
 
 	do {
-		zval *encoder = zend_read_property(_this_ce, getThis(),
-												   "encoder", sizeof("encoder") - 1, 1);
-				int ret = sixel_encoder_encode((sixel_encoder_t *)Z_RESVAL_P(encoder), filename);
+		SIXELSTATUS status;
+				zval *encoder;
+				encoder = zend_read_property(_this_ce, getThis(),
+											 "encoder", sizeof("encoder") - 1, 1);
+				status = sixel_encoder_encode((sixel_encoder_t *)Z_RESVAL_P(encoder), filename);
 #if 0
-				if (ret != 0) {
+				if (SIXEL_FAILED(status) {
 					zend_throw_exception_ex(zend_exception_get_default(), 1,
-											"sixel_encoder_encode() failed. %s:%d",
+											"sixel_encoder_encode() failed: %s (%s:%d)",
+											sixel_helper_format_error(status),
 											__FILE__, __LINE__);
 				}
 #endif
