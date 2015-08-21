@@ -10,12 +10,12 @@
  *
  * He declares this is compatible with MIT/BSD/GPL.
  *
- * Hayaki Saito <user@zuse.jp> modified this and re-licensed
+ * Hayaki Saito <saitoha@me.com> modified this and re-licensed
  * it under the MIT license.
  *
  * The helper function hls2rgb is imported from Xterm pl#310.
  * This is originally written by Ross Combs.
- * Hayaki Saito <user@zuse.jp> slightly modified this.
+ * Hayaki Saito <saitoha@me.com> slightly modified this.
  *
  * -------------------------------------------------------------------------
  * Copyright 2013,2014 by Ross Combs

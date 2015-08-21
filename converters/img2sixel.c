@@ -56,7 +56,7 @@ static
 void show_version(void)
 {
     printf("img2sixel " PACKAGE_VERSION "\n"
-           "Copyright (C) 2014,2015 Hayaki Saito <user@zuse.jp>.\n"
+           "Copyright (C) 2014,2015 Hayaki Saito <saitoha@me.com>.\n"
            "\n"
            "Permission is hereby granted, free of charge, to any person obtaining a copy of\n"
            "this software and associated documentation files (the \"Software\"), to deal in\n"

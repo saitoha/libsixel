@@ -2,7 +2,7 @@
  * This file is derived from "stb_image.h" that is in public domain.
  * https://github.com/nothings/stb
  *
- * Hayaki Saito <user@zuse.jp> modified this and re-licensed
+ * Hayaki Saito <saitoha@me.com> modified this and re-licensed
  * it under the MIT license.
  *
  * Copyright (c) 2015 Hayaki Saito

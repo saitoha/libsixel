@@ -10,7 +10,7 @@
  *
  * He declares this is compatible with MIT/BSD/GPL.
  *
- * Hayaki Saito (user@zuse.jp) modified this and re-licensed
+ * Hayaki Saito (saitoha@me.com) modified this and re-licensed
  * it under the MIT license.
  *
  * Araki Ken added high-color encoding mode(sixel_encode_highcolor)
