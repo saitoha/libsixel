@@ -1,4 +1,234 @@
+2015-08-22  Hayaki Saito <user@zuse.jp>
+
+  * NEWS: Update NEWS
+
+2015-08-08  Hayaki Saito <user@zuse.jp>
+
+  * MANIFEST: Update MANIFEST
+
+  * lib/Image/LibSIXEL.xs: Use sixel_encoder_new/sixel_decoder_new
+
+  * builder/MyBuilder.pm, minil.toml: Add custom builder
+
+2015-08-07  Hayaki Saito <user@zuse.jp>
+
+  * ext/libsixel/libsixel.c, lib/libsixel/version.rb: Use
+  sixel_encoder_new/sixel_decoder_new
+
+2015-08-04  Hayaki Saito <user@zuse.jp>
+
+  * src/chunk.c, src/decoder.c, src/writer.c: Use fixed error message in some
+  case to prevent buffer overflow
+
+  * src/decoder.c, src/encoder.c, src/fromgif.c, src/frompnm.c,
+  src/fromsixel.c, src/loader.c, src/output.c, src/tosixel.c: Set additional
+  messages when bad allocation error occured
+
+2015-08-03  Hayaki Saito <user@zuse.jp>
+
+  * src/loader.c: Suppress warning for using deprecated function
+
+  * libsixel/__init__.py, libsixel/decoder.py, libsixel/encoder.py: Add some
+  wrapper functions and constants
+
+2015-08-02  Hayaki Saito <user@zuse.jp>
+
+  * README.md, include/sixel.h.in, src/loader.c: Make sixel_decode() as
+  deprecated
+
+  * include/sixel.h.in, src/encoder.c, src/frame.c: Make sixel_frame_create()
+  as deprecated
+
+  * converters/img2sixel.c, include/sixel.h.in, src/dither.c, src/encoder.c:
+  Make sixel_dither_create() as deprecated
+
+  * include/sixel.h.in, src/dither.c, src/encoder.c: Mark sixel_dither_create()
+  function as deprecated
+
+  * include/sixel.h.in, src/frame.c, src/scale.c: Use allocator object in
+  scale.c
+
+  * include/sixel.h.in, src/encoder.c, src/output.c, src/output.h: Use
+  allocator object in output.c
+
+  * src/tosixel.c: Use allocator object in tosixel.c
+
+  * include/sixel.h.in, src/decoder.c, src/fromsixel.c, src/writer.c: Use
+  allocator object in writer.c
+
+  * src/fromsixel.c: Use allocator object in fromsixel.c
+
+  * src/chunk.c: Suppress a sign-compare warnings
+
+  * src/frompnm.c, src/frompnm.h, src/loader.c: Use allocator object in
+  frompnm.c
+
+  * src/loader.c: Use allocator object in STBI loader
+
+  * src/dither.c, src/quant.c, src/quant.h: Use allocator object in quant.c
+
+  * src/allocator.c, src/dither.c: Amend fix for miss-operation of reference
+  counter
+
+  * src/fromgif.c, src/fromgif.h, src/loader.c: Use allocator object in
+  fromgif.c
+
+  * include/sixel.h.in, src/allocator.c, src/allocator.h, src/chunk.c,
+  src/decoder.c, src/dither.c, src/dither.h, src/encoder.c, src/frame.c,
+  src/status.c, src/tests.c: Add new allocator API: sixel_allocator_calloc()
+
+2015-07-29  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, src/chunk.c, src/loader.c: Add more handlers for
+  libcurl errors
+
+  * src/chunk.c, src/decoder.c, src/encoder.c: Fix leaks and segmentation
+  faults
+
+  * src/chunk.c: Fix leaks around chunk object initialization
+
+  * include/sixel.h.in, src/decoder.c, src/frame.c, src/frame.h: Use allocator
+  in frame.c
+
+  * src/loader.c: Use allocator in loader.c
+
+2015-07-28  Hayaki Saito <user@zuse.jp>
+
+  * src/chunk.c: Minor fixes around chunk.c
+
+  * converters/img2sixel.c: Use sixel_encoder_new() in img2sixel
+
+  * converters/sixel2png.c, include/sixel.h.in, src/decoder.c, src/decoder.h:
+  Introduce sixel_decoder_new(), the constructor of decoder with custom
+  allocator
+
+2015-07-25  Hayaki Saito <user@zuse.jp>
+
+  * src/encoder.c: Additional test for encoder.c
+
+  * src/encoder.c: Minor fixes
+
+2015-07-23  Hayaki Saito <user@zuse.jp>
+
+  * include/sixel.h.in, src/allocator.c, src/encoder.c: Fix memory access
+  violation issue
+
+2015-07-22  Hayaki Saito <user@zuse.jp>
+
+  * include/sixel.h.in, src/allocator.c, src/encoder.c: Add APIs for calling
+  custom allocator functions
+
+  * include/sixel.h.in, src/allocator.c, src/allocator.h, src/encoder.c,
+  src/tests.c: Introduce reference counter to allocator object
+
+2015-07-21  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.in, config.h.in, configure, configure.ac, converters/img2sixel.c,
+  include/sixel.h.in, src/Makefile.am, src/Makefile.in, src/allocator.c,
+  src/allocator.h, src/chunk.c, src/chunk.h, src/encoder.c, src/encoder.h,
+  src/loader.c: Introduce allocator object
+
+2015-07-20  Hayaki Saito <user@zuse.jp>
+
+  * src/tests.c: Enable tests for chunk.c
+
+  * include/sixel.h.in, src/decoder.c, src/decoder.h, src/encoder.c,
+  src/encoder.h, src/frame.c, src/frame.h, src/tests.c: Minor fixes
+
+  * include/sixel.h.in, src/dither.h, src/fromsixel.c, src/output.c,
+  src/output.h, src/tosixel.c: Minor fixes
+
+  * src/chunk.c, src/chunk.h, src/loader.c, src/tests.c: Suppress build
+  warning: implicit-function-declaration
+
+  * converters/Makefile.am, converters/Makefile.in: Fix travis build again
+
+2015-07-19  Hayaki Saito <user@zuse.jp>
+
+  * converters/Makefile.am, converters/Makefile.in: Try to fix broken travis
+  build
+
+  * LICENSE.stb: Add license notice of src/fromgif.c
+
+  * converters/img2sixel.1: Add documentation for the environment variables
+  $SIXEL_COLORS
+
+  * src/encoder.c: Introduce SIXEL_COLORS environment (for Issue #27)
+
+  * converters/img2sixel.c: Minor fix
+
+2015-07-18  Hayaki Saito <user@zuse.jp>
+
+  * src/encoder.c: Ammend fixes
+
+  * src/encoder.c: Minor fixes
+
+  * src/encoder.c: Minor fixes for encoder.c
+
+2015-07-14  Hayaki Saito <user@zuse.jp>
+
+  * src/dither.c, src/encoder.c, src/frame.c, src/fromgif.c, src/fromgif.h,
+  src/frompnm.c, src/frompnm.h, src/fromsixel.c, src/loader.c, src/loader.h,
+  src/output.c, src/output.h, src/quant.c, src/scale.c, src/status.h,
+  src/tosixel.c: Minor fixes
+
+2015-07-13  Hayaki Saito <user@zuse.jp>
+
+  * src/loader.c: Add missing stdio.h inclusion to loader.c
+
+  * src/Makefile.am, src/Makefile.in, src/chunk.c, src/chunk.h, src/frame.h,
+  src/loader.c: Add chunk.c/chunk.h
+
+  * src/loader.c: Minor fixes around sixel_chunk_t
+
+2015-07-12  Hayaki Saito <user@zuse.jp>
+
+  * src/writer.c: Minor fixes
+
+  * README.md, converters/img2sixel.1, converters/img2sixel.c: Add
+  documentation of the environment variables $SIXEL_BGCOLOR
+
+  * src/decoder.c: Add missing header io.h to decoder.c
+
+  * config.h.in, configure, configure.ac, src/loader.c: Add missing header:
+  _setmode() requires <io.h> inclusion
+
+  * src/encoder.c: Build fix for MinGW environment
+
+  * src/encoder.c: Add error handling for sixel_write_callback() and sprintf()
+
+2015-07-11  Hayaki Saito <user@zuse.jp>
+
+  * src/frame.c, src/loader.c: Minor fixes
+
+  * src/fromgif.c: Fix broken GIF loader
+
 2015-07-05  Hayaki Saito <user@zuse.jp>
+
+  * src/fromgif.c: Minor fixes
+
+  * src/loader.c: Suppress gcc warnings
+
+  * src/loader.c: Don't test memory_write() function if libcurl integration is
+  not enabled
+
+  * src/fromgif.c: Add missing "config.h" inclusion to fromgif.c
+
+  * src/encoder.c, src/fromgif.c, src/fromgif.h, src/quant.c, src/tests.c:
+  Minor fixes
+
+  * include/sixel.h.in, src/encoder.c: Add more tests for encoder.c
+
+  * src/encoder.c: Add more tests for encoder.c
+
+  * include/sixel.h.in, src/encoder.c, src/frame.h: Add tests for encoder.c
+
+  * include/sixel.h.in, src/Makefile.am, src/decoder.h, src/encoder.h,
+  src/loader.c, src/loader.h, src/tests.c: Add initial tests for loader.c
+
+  * Makefile.in, config.h.in, configure, configure.ac, src/frame.c,
+  src/loader.c, src/writer.c: Checks availability of #pragma GCC diagnostic
+  ignored "-Wtypedef-redefinition"
 
   * converters/img2sixel.c, examples/opengl/main.c, src/encoder.c: Minor fixes
 
@@ -63,6 +293,17 @@
 
 2015-06-26  Hayaki Saito <user@zuse.jp>
 
+  * META.json, META.yml: Update META.json/META.yml
+
+  * Build.PL: Update Build.PL for linking to libsixel
+
+  * lib/Image/LibSIXEL.xs: Remove debugging code
+
+  * lib/Image/LibSIXEL.xs: Remove include derective "ppport.h"
+
+  * Build.PL, Changes, META.json, README.md, minil.toml: Add missing files:
+  minil.toml and Changes
+
   * perl/Build.PL, perl/MANIFEST, perl/META.yml, perl/README.md,
   perl/lib/Image/LibSIXEL.pm, perl/lib/Image/LibSIXEL.xs,
   perl/lib/Image/LibSIXEL/Decoder.pm, perl/lib/Image/LibSIXEL/Encoder.pm,
@@ -70,6 +311,12 @@
   perl/lib/Image/Sixel/Decoder.pm, perl/lib/Image/Sixel/Encoder.pm,
   perl/t/libsixel.t, perl/t/sixel.t: perl: change module name: Image::Sixel ->
   Image::LibSIXEL
+
+  * Build.PL, MANIFEST, META.yml, README.md, lib/Image/LibSIXEL.pm,
+  lib/Image/LibSIXEL.xs, lib/Image/LibSIXEL/Decoder.pm,
+  lib/Image/LibSIXEL/Encoder.pm, lib/Image/Sixel.pm, lib/Image/Sixel.xs,
+  lib/Image/Sixel/Decoder.pm, lib/Image/Sixel/Encoder.pm, t/libsixel.t,
+  t/sixel.t: perl: change module name: Image::Sixel -> Image::LibSIXEL
 
 2015-06-25  Hayaki Saito <user@zuse.jp>
 
@@ -221,11 +468,17 @@
   src/pixelformat.c, src/quant.c, src/scale.c, src/tosixel.c, src/writer.c: Use
   constant symbols which start with the prefix SIXEL_
 
+  * cpanfile: Add cpanfile for perl interface
+
   * perl/cpanfile: Add cpanfile for perl interface
 
 2015-06-07  Hayaki Saito <user@zuse.jp>
 
+  * README.md, t/sixel.t: Minor fixes
+
   * perl/README.md, perl/t/sixel.t: Minor fixes
+
+  * MANIFEST, README, README.md: Rename the README of perl module
 
   * perl/MANIFEST, perl/README, perl/README.md: Rename the README of perl
   module
@@ -255,6 +508,8 @@
 
 2015-05-27  Hayaki Saito <user@zuse.jp>
 
+  * README.rst: Show python package path after ./configure is succeeded
+
   * configure, configure.ac, python/README.rst, src/Makefile.am,
   src/Makefile.in: Show python package path after ./configure is succeeded
 
@@ -264,17 +519,30 @@
 
   * python/README.rst: Fix syntax errors of README.rst
 
+  * README.rst: Fix syntax errors of README.rst
+
   * python/Makefile.am, python/Makefile.in: Add python/Makefile.am
   python/Makefile.in
 
+  * Makefile.am, Makefile.in: Add python/Makefile.am python/Makefile.in
+
   * python/sample1.py: Remove a trivial sample file
+
+  * sample1.py: Remove a trivial sample file
 
   * py-compile: Add py-compile, distributed under special exception to the GNU
   General Public License
 
+  * setup.py: Add setup.py for python bindings
+
   * python/setup.py: Add setup.py for python bindings
 
+  * README.rst: Add README.rst for python bindings
+
   * python/README.rst: Add README.rst for python bindings
+
+  * libsixel/__init__.py, libsixel/decoder.py, libsixel/encoder.py: Add license
+  blocks to python modules
 
   * python/libsixel/__init__.py, python/libsixel/decoder.py,
   python/libsixel/encoder.py: Add license blocks to python modules
@@ -282,6 +550,9 @@
   * Makefile.am, Makefile.in, aclocal.m4, configure, configure.ac,
   converters/Makefile.in, include/Makefile.in, src/Makefile.in: Build and
   install python bindings by 'make install'
+
+  * libsixel.py, libsixel/__init__.py, libsixel/decoder.py,
+  libsixel/encoder.py: Update python modules
 
   * python/libsixel.py, python/libsixel/__init__.py,
   python/libsixel/decoder.py, python/libsixel/encoder.py: Update python modules
@@ -386,6 +657,8 @@
   src/easy_decode.c, src/easy_decode.h, src/easy_encode.c, src/easy_encode.h,
   src/encoder.c, src/encoder.h: Rename files: easy_encode.c -> encoder.c,
   easy_decode -> decoder.c
+
+  * libsixel.py: Update python-ctypes binding
 
   * python/libsixel.py: Update python-ctypes binding
 
@@ -506,6 +779,8 @@
 
 2015-05-02  Hayaki Saito <user@zuse.jp>
 
+  * libsixel.py: Rename python class names
+
   * python/libsixel.py: Rename python class names
 
   * src/easy_encode.c: Suppress a gcc warning [-Werror=unused-variable]
@@ -516,6 +791,8 @@
   * src/loader.c: Respect fuse_palette flag when decoding GIF images
 
 2015-04-30  Hayaki Saito <user@zuse.jp>
+
+  * libsixel.py, sample1.py: Add ctypes(ffi) python binding examples
 
   * python/libsixel.py, python/sample1.py: Add ctypes(ffi) python binding
   examples

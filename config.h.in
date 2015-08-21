@@ -185,6 +185,9 @@
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
+/* Define to 1 if you have the `strncmp' function. */
+#undef HAVE_STRNCMP
+
 /* Define to 1 if you have the `strtol' function. */
 #undef HAVE_STRTOL
 
