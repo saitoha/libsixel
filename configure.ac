@@ -486,7 +486,9 @@ if test x$with_jpeg != xno; then
         AC_CHECK_HEADER([jpeglib.h],
                         [AC_CHECK_LIB([jpeg],
                                       [jpeg_read_header],
-                                      [have_jpeg=yes],
+                                      [have_jpeg=yes
+                                       LIBJPEG_CFLAGS=$ADDED_CFLAGS
+                                       LIBJPEG_LIBS=$ADDED_LIBS],
                                       [have_jpeg=no])])
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP

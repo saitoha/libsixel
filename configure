@@ -14876,6 +14876,8 @@ fi
 $as_echo "$ac_cv_lib_jpeg_jpeg_read_header" >&6; }
 if test "x$ac_cv_lib_jpeg_jpeg_read_header" = xyes; then :
   have_jpeg=yes
+                                       LIBJPEG_CFLAGS=$ADDED_CFLAGS
+                                       LIBJPEG_LIBS=$ADDED_LIBS
 else
   have_jpeg=no
 fi
