@@ -243,7 +243,7 @@ You can install libsixel via the following package systems.
 - [Homebrew tap](https://github.com/aki017/homebrew-sixel)
 - [yacp](https://github.com/fd00/yacp/tree/master/libsixel)
 - [Debian](https://packages.debian.org/search?searchon=names&keywords=libsixel)
-- [AUR](https://aur.archlinux.org/packages/libsixel/)
+- [AUR](https://aur.archlinux.org/packages/libsixel-git/)
 - [Portage](http://packages.gentoo.org/package/media-libs/libsixel)
 - [Ubuntu](https://launchpad.net/ubuntu/+source/libsixel)
 
