@@ -1,0 +1,28 @@
+---
+abstract: 'libsixel binding for Perl'
+author:
+  - Hayaki Saito
+build_requires:
+  ExtUtils::CBuilder: 0
+  Test::More: 0
+dynamic_config: 0
+generated_by: 'Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921'
+license: mit
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Image-LibSIXEL
+provides:
+  Image::LibSIXEL:
+    file: lib/Image/LibSIXEL.pm
+    version: 0.01
+  Image::LibSIXEL::Encoder:
+    file: lib/Image/LibSIXEL/Encoder.pm
+    version: 0
+resources:
+  bugtracker: https://github.com/saitoha/libsixel-perl/issues
+  homepage: https://github.com/saitoha/libsixel-perl
+  license: http://opensource.org/licenses/mit-license.php
+version: 0.01
+x_contributors:
+  - 'Hayaki Saito <saitoha@me.com>'

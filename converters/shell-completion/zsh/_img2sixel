@@ -87,7 +87,11 @@ _builtinpalette() {
     'xterm16[X default 16 color map]' \
     'xterm256[X default 256 color map]' \
     'vt340mono[VT340 monochrome map]' \
-    'vt340color[VT340 color map]'
+    'vt340color[VT340 color map]' \
+    'gray1[1bit grayscale map]' \
+    'gray2[2bit grayscale map]' \
+    'gray4[4bit grayscale map]' \
+    'gray8[8bit grayscale map]'
 }
 
 _encodepolicy() {
@@ -99,11 +103,13 @@ _encodepolicy() {
 }
 
 _arguments -S -s -A "-*" -S \
+  {-o,--outfile}'[specify output file (default: stdout)]':files:_files \
   {-7,--7bit-mode}'[generate a sixel image for 7bit terminals (default)]' \
   {-8,--8bit-mode}'[generate a sixel image for 8bit terminals]' \
   {-p,--colors=}'[specify number of colors to reduce the image to]' \
   {-m,--mapfile=}'[transform image colors to match specified set of colors]':files:_files \
   {-e,--monochrome}'[output monochrome sixel image]' \
+  {-k,--insecure}'[allow to connect to SSL sites without certs]' \
   {-i,--invert}'[assume the terminal background color is white]' \
   {-I,--high-color}'[output 15bpp sixel image]' \
   {-u,--use-macro}'[use DECDMAC and DECINVM for GIF animation]' \
@@ -123,6 +129,7 @@ _arguments -S -s -A "-*" -S \
   {-t,--palette-type=}'[select palette color space type]':palettetype:_palettetype \
   {-b,--builtin-palette=}'[select built-in palette type]':builtinpalette:_builtinpalette \
   {-E,--encode-policy=}'[select encoding policy]':encodepolicy:_encodepolicy \
+  {-B,--bgcolor=}'[select background color]' \
   {-P,--penetrate}'[penetrate GNU Screen using DCS pass-through sequence]' \
   {-D,--pipe-mode}'[read source images from stdin continuously]' \
   {-v,--verbose}'[show debugging information]' \

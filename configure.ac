@@ -3,9 +3,9 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.4.13], [user@zuse.jp])
+AC_INIT([sixel], [1.5.0], [saitoha@me.com])
 LS_LT_CURRENT=1
-LS_LT_REVISION=3
+LS_LT_REVISION=4
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 AC_SUBST([PACKAGE_DESCRIPTION],
@@ -28,6 +28,40 @@ AX_GCC_FUNC_ATTRIBUTE([deprecated])
 if test x$ax_cv_have_func_attribute_deprecated != x; then
     AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
 fi
+
+CFLAGS_BACKUP=$CFLAGS
+CFLAGS="$CFLAGS -Werror"
+AC_TRY_COMPILE(
+  [
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic pop
+    #pragma GCC diagnostic ignored "-Wtypedef-redefinition"
+  ],
+  [
+    typedef int foo;
+    typedef int foo;
+  ],
+  [AC_DEFINE(HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION,
+             1,
+             [define 1 if GCC supports -Wtypedef-redefinition])])
+CFLAGS=$CFLAGS_BACKUP
+
+CFLAGS_BACKUP=$CFLAGS
+CFLAGS="$CFLAGS -Werror"
+AC_TRY_COMPILE(
+  [
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic pop
+    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    __attribute__((deprecated)) void test(void) {}
+  ],
+  [
+    test();
+  ],
+  [AC_DEFINE(HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS,
+             1,
+             [define 1 if GCC supports -Wdeprecated-declarations])])
+CFLAGS=$CFLAGS_BACKUP
 
 # Options
 AC_ARG_ENABLE([img2sixel],
@@ -104,6 +138,12 @@ AC_ARG_WITH(zshcompletiondir,
 AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])
 AC_SUBST(zshcompletiondir)
 
+AC_ARG_ENABLE([python],
+              [AS_HELP_STRING([--enable-python],
+                              [Python interface (default: yes)])],
+              [],
+              [enable_python=yes])
+
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
                               [Use debug macro and specific CFLAGS])],
@@ -117,6 +157,13 @@ AC_ARG_ENABLE([gcov],
               [],
               [enable_gcov=no])
 AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
+
+AC_ARG_ENABLE([tests],
+              [AS_HELP_STRING([--enable-tests],
+                              [Build tests])],
+              [AC_DEFINE(HAVE_TESTS, [1], [enable tests])],
+              [enable_tests=no])
+AM_CONDITIONAL([COND_TESTS], [test x$enable_tests != xno])
 
 # Checks for programs.
 AC_PROG_CC
@@ -144,6 +191,10 @@ AC_SUBST([AM_CFLAGS])
 # For wic integration
 #AC_PROG_CXX
 
+# For test
+AC_CHECK_PROGS(MD5SUM, [md5sum md5])
+AC_SUBST(MD5SUM)
+
 # Checks for libraries.
 
 # Checks for header files.
@@ -151,6 +202,7 @@ AC_CHECK_HEADERS([memory.h \
                   stdlib.h \
                   string.h \
                   unistd.h \
+                  stdint.h \
                   sys/unistd.h \
                   getopt.h \
                   sys/types.h \
@@ -158,11 +210,14 @@ AC_CHECK_HEADERS([memory.h \
                   fcntl.h \
                   io.h \
                   errno.h \
+                  limits.h \
                   sys/time.h \
                   time.h \
                   signal.h \
                   sys/select.h \
-                  sys/signal.h])
+                  sys/signal.h \
+                  termios.h \
+                  sys/ioctl.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL
@@ -186,16 +241,21 @@ AM_CONDITIONAL([HAVE_GETOPT_LONG], [test x$have_getopt_long = xyes])
 
 AC_CHECK_FUNCS([memcpy \
                 memmove \
-                strtol \
                 setmode \
                 _setmode \
                 signal \
                 usleep \
                 strdup \
+                strtoul \
                 calloc \
                 clock \
                 clearerr \
-                setjmp])
+                stat \
+                setjmp \
+                strerror \
+                isatty \
+                strncmp \
+                ldiv])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
@@ -281,11 +341,15 @@ if test x$with_gd != xno; then
     CFLAGS=$CFLAGS_BACKUP
     LDFLAGS=$LDFLAGS_BACKUP
     if test x${PKG_CONFIG} != x; then
-        if test x$have_gd != xyes; then
+        if test x$have_gd != xyes -a ! -d "$with_gd"; then
             PKG_CHECK_MODULES(GD, [gdlib], [have_gd=yes], [have_gd=no])
         fi
     fi
     if test x$have_gd = xyes; then
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        CFLAGS="$CFLAGS $GD_CFLAGS"
+        LDFLAGS="${LDFLAGS} ${GD_LIBS}"
         AC_CHECK_LIB([gd],
                      [gdImageCreateFromGifPtr],
                      [AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])])
@@ -316,9 +380,13 @@ if test x$with_gd != xno; then
         AC_CHECK_LIB([gd],
                      [gdImagePaletteToTrueColor],
                      [AC_CHECK_DECLS([gdImagePaletteToTrueColor], [], [], [ #include <gd.h> ])])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
         loaders="${loaders} gd"
     else
+        GD_CFLAGS=
+        GD_LIBS=
         AC_MSG_ERROR(gd is not available.)
     fi
 
@@ -352,7 +420,7 @@ if test x$with_libcurl != xno; then
             ADDED_CFLAGS="-I${with_libcurl}/include"
             ADDED_LIBS="-L${with_libcurl}/lib -lcurl"
         else
-	    if test x${prefix} != x -a x${prefix} != xNONE; then
+            if test x${prefix} != x -a x${prefix} != xNONE; then
                 ADDED_CFLAGS="-I${prefix}/include"
                 ADDED_LIBS="-L${prefix}/lib -lcurl"
             else
@@ -371,7 +439,7 @@ if test x$with_libcurl != xno; then
                                       [have_curl=no])])
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP
-        if test x$have_curl != xyes; then
+        if test x$have_curl != xyes -a ! -d "$with_libcurl"; then
             if test x${PKG_CONFIG} != x; then
                 PKG_CHECK_MODULES(LIBCURL,
                                   [libcurl],
@@ -424,8 +492,18 @@ if test x$with_jpeg != xno; then
                                       [have_jpeg=no])])
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP
+        if test x$have_jpeg != xyes -a ! -d "$with_jpeg"; then
+            if test x${PKG_CONFIG} != x; then
+                PKG_CHECK_MODULES(LIBJPEG,
+                                  [libjpeg],
+                                  [have_jpeg=yes],
+                                  [have_jpeg=no])
+            fi
+        fi
     fi
     if test x$have_jpeg = xyes; then
+        LIBJPEG_CFLAGS=$ADDED_CFLAGS
+        LIBJPEG_LIBS=$ADDED_LIBS
         AC_DEFINE(HAVE_JPEG, 1, [whether jpeg codec library is available])
         loaders="${loaders} jpeg"
         AC_MSG_NOTICE([jpeg cflags is ${LIBJPEG_CFLAGS}])
@@ -470,7 +548,7 @@ if test x$with_png != xno; then
                                       [have_png=no])])
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP
-        if test x$have_png != xyes; then
+        if test x$have_png != xyes -a ! -d "$with_png"; then
             if test x${PKG_CONFIG} != x; then
                 PKG_CHECK_MODULES(LIBPNG,
                                   [libpng],
@@ -480,11 +558,12 @@ if test x$with_png != xno; then
         fi
     fi
     if test x$have_png = xyes; then
-        CFLAGS_BACKUP=$CFLAGS
-        CFLAGS="$CFLAGS $LIBPNG_CFLAGS"
+        CFLAGS="${CFLAGS} ${LIBPNG_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${LIBPNG_LIBS}"
         AC_CHECK_DECLS([png_set_gray_1_2_4_to_8, png_set_expand_gray_1_2_4_to_8],
                        [], [], [ #include <png.h> ])
         CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
         AC_DEFINE(HAVE_LIBPNG, 1, [whether libpng is available])
         loaders="${loaders} png"
         AC_MSG_NOTICE([libpng cflags is ${LIBPNG_CFLAGS}])
@@ -498,6 +577,20 @@ if test x$with_png != xno; then
 fi
 AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBPNG_LIBS)
+
+have_python=no
+if test x$enable_python != xno; then
+    AM_PATH_PYTHON([2.3], [have_python=yes], [have_python=no])
+    if test x$enable_python = xyes -a x$have_python = xno; then
+        AC_MSG_ERROR([python is not available])
+    fi
+fi
+AM_CONDITIONAL([HAVE_PYTHON], [test x$have_python = xyes])
+if test x$have_python = xyes; then
+    message_python="$have_python: $pythondir"
+else
+    message_python=$have_python
+fi
 
 AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
@@ -514,7 +607,11 @@ AC_CONFIG_FILES([Makefile
                  include/sixel.h
                  src/Makefile
                  include/Makefile
-                 converters/Makefile])
+                 converters/Makefile
+                 tools/Makefile
+                 tools/libsixel-config
+                 python/Makefile
+                ])
 
 AC_OUTPUT
 
@@ -528,7 +625,9 @@ echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
+echo "       python bindings     : $message_python"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
+echo "       tests               : $enable_tests"
 echo ""
 echo ""

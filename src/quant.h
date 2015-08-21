@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -26,33 +26,50 @@
 extern "C" {
 #endif
 
-unsigned char *
-sixel_quant_make_palette(
-    unsigned const char /* in */ *data,  /* data for sampling */
-    int /* in */ length,                 /* data size */
-    int /* in */ depth,
-    int /* in */ reqcolors,
-    int /* in */ *ncolors,
-    int /* in */ *origcolors,
-    int /* in */ methodForLargest,
-    int /* in */ methodForRep,
-    int /* in */ qualityMode);
+#include <sixel.h>
 
-int
-sixel_quant_apply_palette(unsigned char *data,
-                          int width, int height, int depth,
-                          unsigned char *palette, int reqcolor,
-                          int const methodForDiffuse,
-                          int foptimize,
-                          int foptimize_palette,
-                          int complexion,
-                          unsigned short *cachetable,
-                          int *ncolor,
-                          unsigned char *result);
+SIXELSTATUS
+sixel_quant_make_palette(
+    unsigned char           /* out */ **result,
+    unsigned const char     /* in */  *data,             /* data for sampling */
+    int                     /* in */  length,            /* data size */
+    int                     /* in */  depth,
+    int                     /* in */  reqcolors,
+    int                     /* in */  *ncolors,
+    int                     /* in */  *origcolors,
+    int                     /* in */  methodForLargest,
+    int                     /* in */  methodForRep,
+    int                     /* in */  qualityMode,
+    sixel_allocator_t       /* in */  *allocator);
+
+
+SIXELSTATUS
+sixel_quant_apply_palette(
+    unsigned char       /* out */ *result,
+    unsigned char       /* in */  *data,
+    int                 /* in */  width,
+    int                 /* in */  height,
+    int                 /* in */  depth,
+    unsigned char       /* in */  *palette,
+    int                 /* in */  reqcolor,
+    int const           /* in */  methodForDiffuse,
+    int                 /* in */  foptimize,
+    int                 /* in */  foptimize_palette,
+    int                 /* in */  complexion,
+    unsigned short      /* in */  *cachetable,
+    int                 /* in */  *ncolor,
+    sixel_allocator_t   /* in */  *allocator);
 
 
 void
-sixel_quant_free_palette(unsigned char * data);
+sixel_quant_free_palette(
+    unsigned char       /* in */ *data,
+    sixel_allocator_t   /* in */ *allocator);
+
+#if HAVE_TESTS
+int
+sixel_quant_tests_main(void);
+#endif
 
 #ifdef __cplusplus
 }

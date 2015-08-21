@@ -1,11 +1,10 @@
 
 This software includes some part of stb(https://github.com/nothings/stb),
 
-- converters/stb_image.h: public domain JPEG/PNG reader.
-- converters/stb_image_write.h: public domain PNG/BMP/TGA writer.
+- src/stb_image.h: public domain JPEG/PNG reader.
+- src/stb_image_write.h: public domain PNG/BMP/TGA writer.
+- src/fromgif.c: derived from stb_image.h
 
 These great works is written by Sean Barrett(@nothings) and some contributers.
 
-Hayaki Saito(@saitoha) applied a small fix(patches/applied/stb_image.h.diff) for stb_image.h.
-That patch is also in public domain.
-
+src/fromgif.c is origined from some part of stb_image.h.

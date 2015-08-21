@@ -72,6 +72,12 @@
    don't. */
 #undef HAVE_DECL_SIGTERM
 
+/* define 1 if GCC supports -Wdeprecated-declarations */
+#undef HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+
+/* define 1 if GCC supports -Wtypedef-redefinition */
+#undef HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
@@ -105,8 +111,14 @@
 /* Define to 1 if you have the <io.h> header file. */
 #undef HAVE_IO_H
 
+/* Define to 1 if you have the `isatty' function. */
+#undef HAVE_ISATTY
+
 /* whether jpeg codec library is available */
 #undef HAVE_JPEG
+
+/* Define to 1 if you have the `ldiv' function. */
+#undef HAVE_LDIV
 
 /* whether libcurl is available */
 #undef HAVE_LIBCURL
@@ -116,6 +128,9 @@
 
 /* whether libpng is available */
 #undef HAVE_LIBPNG
+
+/* Define to 1 if you have the <limits.h> header file. */
+#undef HAVE_LIMITS_H
 
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
@@ -149,6 +164,9 @@
 /* Define to 1 if you have the <signal.h> header file. */
 #undef HAVE_SIGNAL_H
 
+/* Define to 1 if you have the `stat' function. */
+#undef HAVE_STAT
+
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
@@ -158,14 +176,26 @@
 /* Define to 1 if you have the `strdup' function. */
 #undef HAVE_STRDUP
 
+/* Define to 1 if you have the `strerror' function. */
+#undef HAVE_STRERROR
+
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
 
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
+/* Define to 1 if you have the `strncmp' function. */
+#undef HAVE_STRNCMP
+
 /* Define to 1 if you have the `strtol' function. */
 #undef HAVE_STRTOL
+
+/* Define to 1 if you have the `strtoul' function. */
+#undef HAVE_STRTOUL
+
+/* Define to 1 if you have the <sys/ioctl.h> header file. */
+#undef HAVE_SYS_IOCTL_H
 
 /* Define to 1 if you have the <sys/select.h> header file. */
 #undef HAVE_SYS_SELECT_H
@@ -184,6 +214,12 @@
 
 /* Define to 1 if you have the <sys/unistd.h> header file. */
 #undef HAVE_SYS_UNISTD_H
+
+/* Define to 1 if you have the <termios.h> header file. */
+#undef HAVE_TERMIOS_H
+
+/* enable tests */
+#undef HAVE_TESTS
 
 /* Define to 1 if you have the <time.h> header file. */
 #undef HAVE_TIME_H

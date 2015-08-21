@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014,2015 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,10 +22,6 @@
 #ifndef LIBSIXEL_OUTPUT_H
 #define LIBSIXEL_OUTPUT_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct sixel_node {
     struct sixel_node *next;
     int pal;
@@ -34,11 +30,10 @@ typedef struct sixel_node {
     unsigned char *map;
 } sixel_node_t;
 
-typedef int (* sixel_write_function)(char *data, int size, void *priv);
-
-typedef struct sixel_output {
+struct sixel_output {
 
     int ref;
+    sixel_allocator_t *allocator;
 
     /* compatiblity flags */
 
@@ -78,12 +73,7 @@ typedef struct sixel_output {
     void *priv;
     int pos;
     unsigned char buffer[1];
-
-} sixel_output_t;
-
-#ifdef __cplusplus
-}
-#endif
+};
 
 #endif /* LIBSIXEL_OUTPUT_H */
 
