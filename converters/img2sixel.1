@@ -1,5 +1,5 @@
 .\" vi:set wm=5
-.TH IMG2SIXEL 1 "May 2014"
+.TH IMG2SIXEL 1 "Feb 2015"
 .if n .ds Q \&"
 .if n .ds U \&"
 .if t .ds Q ``
@@ -19,12 +19,14 @@ img2sixel \- image converter to DEC SIXEL graphics
 
 
 .SH DESCRIPTION
-.I img2sixel
-convert JPEG/PNG images into DEC SIXEL image format.
+\fIimg2sixel\fP converts various images into high quality DEC SIXEL image format.
 
 
 .SH "COMMAND-LINE OPTIONS"
 \fIimg2sixel\fP has the following command-line options:
+.TP 5
+.B \-o, \-\-outfile
+specify output file name (default:stdout).
 .TP 5
 .B \-7, \-\-7bit-mode
 generate a sixel image for 7bit terminals or printers (default).
@@ -40,8 +42,11 @@ transform image colors to match this set of colorsspecify map.
 .TP 5
 .B \-e, \-\-monochrome
 output monochrome sixel image.
-this option assumes the terminal
-background color is black.
+this option assumes the terminal background color is black.
+.TP 5
+.B \-k, \-\-insecure
+allow to connect to SSL sites without certs
+(enabled only when configured with --with-libcurl)
 .TP 5
 .B \-i, \-\-invert
 assume the terminal background color is white.
@@ -76,9 +81,9 @@ auto     -> choose diffusion type automatically (default)
 .br
 none     -> do not diffusion
 .br
-fs       -> Bill Atkinson's method
+fs       -> Floyd-Steinberg method
 .br
-atkinson -> Floyd-Steinberg method
+atkinson -> Bill Atkinson's method
 .br
 jajuni   -> Jarvis, Judice & Ninke
 .br
@@ -221,6 +226,28 @@ fast -> encode as fast as possible
 .br
 size -> encode to as small sixel sequence as possible
 .TP 5
+.B \-B \fIBGCOLOR\fP, \-\-bgcolor=\fIBGCOLOR\fP
+.br
+specify background color
+.br
+\fIBGCOLOR\fP is represented by the following syntax
+.br
+#rgb
+.br
+#rrggbb
+.br
+#rrrgggbbb
+.br
+#rrrrggggbbbb
+.br
+rgb:r/g/b
+.br
+rgb:rr/gg/bb
+.br
+rgb:rrr/ggg/bbb
+.br
+rgb:rrrr/gggg/bbbb
+.TP 5
 .B \-P, \-\-penetrate
 penetrate GNU Screen using DCS pass-through sequence.
 .TP 5
@@ -236,18 +263,128 @@ show version and license info.
 .B \-H, \-\-help
 print help.
 
+
+.SH "ENVIRONMENT VARIABLES"
+\fIimg2sixel\fP has the following command-line options:
+.TP 5
+.B SIXEL_BGCOLOR
+.br
+specify background color.
+.br
+overrided by -B(--bgcolor) option.
+.br
+represented by the following syntax:
+.br
+#rgb
+.br
+#rrggbb
+.br
+#rrrgggbbb
+.br
+#rrrrggggbbbb
+.br
+rgb:r/g/b
+.br
+rgb:rr/gg/bb
+.br
+rgb:rrr/ggg/bbb
+.br
+rgb:rrrr/gggg/bbbb
+.br
+.TP 5
+.B SIXEL_NCOLORS
+.br
+specify number of colors to reduce the image to (default=256).
+.br
+overrided by -p(--colors) option.
+.br
+
+
+.SH Image loaders
+
+\fIimg2sixel\fP includes two or more image decoder components.
+
+.TP 5
+.B stb_image
+
+\fIlibsixel\fP includes \fIstb_image\fP, a public domain image loader.
+.br
+\fIimg2sixel\fP uses it as default built-in image decoder.
+It can decode almost all images. but a few images can not be decoded by its limitations.
+
+.B Supported source formats:
+   JPEG baseline & progressive (12 bpc/arithmetic not supported, same as stock IJG lib)
+   PNG 1/2/4/8-bit-per-channel
+   TGA (not sure what subset, if a subset)
+   BMP non-1bpp, non-RLE
+   PSD (composited view only, no extra channels)
+   GIF/Animated GIF
+   PIC (Softimage PIC)
+   PNM (PPM and PGM binary only)
+
+.B Limitations:
+   no 16-bit-per-channel PNG
+   no 12-bit-per-channel JPEG
+   no JPEGs with arithmetic coding / JPEG 2000
+   no 1-bit BMP
+
+.TP 5
+.B libpng
+
+   If \fIlibpng\fP library is linked at compile time, \fIimg2sixel\fP uses it for decoding PNG image.
+
+.TP 5
+.B libjpeg
+
+   If \fIlibjpeg\fP library is linked at compile time, \fIimg2sixel\fP uses it for decoding JPEG image.
+
+.TP 5
+.B gdk-pixbuf2
+
+   If \fIgdk-pixbuf2\fP library is linked at compile time, \fIimg2sixel\fP uses it automatically in some cases.
+
+.TP 5
+.B GD
+
+   If \fIGD\fP library is linked at compile time, \fIimg2sixel\fP uses it automatically in some cases.
+
+.TP 5
+.B libsixel
+
+   \fIimg2sixel\fP can load SIXEL as source image format, because it uses \fIlibsixel\fP as a SIXEL image decoder.
+
+
+.SH HISTORY
+
+Former SIXEL encoders(such as \fIppmtosixel\fP) are mainly designed for dot-matrix printers.
+They minimize the amount of printer-head movement distance.
+But nowadays this method did not represent the best performance for displaying sixel data on terminal emulators.
+Encoded SIXEL data for VT-2xx/VT-3xx terminals were found in 80's Usenet,
+But the technology of how to create them seems to be lost.
+
+\fBkmiya's sixel\fP(kmiya,2014) introduces an efficient encoding method which is re-designed for terminal emulators to
+optimize the overhead of transporting SIXEL with keeping compatibility with former SIXEL terminal.
+Now \fIlibsixel\fP and \fIImageMagick\fP's sixel coder follow it.
+
+\fBAraki Ken\fP, known as the maintainer of mlterm, proposed the method for more compressed SIXEL encoding.
+Now \fIlibsixel\fP adopted that method.
+\fBAraki Ken\fP describes about the way to generate high quality SIXEL.
+
+See http://mlterm.sourceforge.net/libsixel.pdf(in Japanese).
+
+
 .SH "SEE ALSO"
 sixel(5) sixel2png(1)
 
 
 .SH AUTHORS
 \fIimg2sixel\fP is maintained by Hayaki Saito.
-We imported whole code of \fIstbi-1.41\fP, written by Sean Barrett and its contributers, for loading PNG/JPEG images,
+We imported whole code of \fIstb_image v2.02\fP, written by Sean Barrett and its contributers, for loading various images,
 and imported some code from \fIpnmquant.c (netpbm library)\fP for image quantization.
 
 
 .SH COPYRIGHT
-Copyright (c) 2014 Hayaki Saito
+Copyright (c) 2014-2015 Hayaki Saito
 .PP
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -270,8 +407,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 This software derives from the following implementations.
 .br
 .TP 5
-.B stbi-1.41
-This software includes \fIstbi-1.41\fP (stb_image.h),
+.B stb_image-v2.02
+This software includes \fIstb_image-v2.02\fP (stb_image.h),
 a public domain JPEG/PNG reader.
 .br
 .B https://github.com/nothings/stb
@@ -299,45 +436,6 @@ that the above copyright notice appear in all copies and that both that
 copyright notice and this permission notice appear in supporting
 documentation.  This software is provided "as is" without express or
 implied warranty.
-\fP
-
-.TP 5
-.B monosixel (arakiken's tw)
-
-The pattern dither algorithm implemented in quant.c is imported from
-\fImonosixel/main.c\fP in \fIarakiken's tw "sixel" branch\fP.
-.br
-https://bitbucket.org/arakiken/tw/branch/sixel
-.br
-This tool is written by Araki Ken, and we regard it as a derivative of.
-original tw, created by Sho Hashimoto.
-.br
-\fB
-.br
-Copyright (c) 2012 Sho Hashimoto
-.br
-.br
-Copyright (c) 2014 Araki Ken
-.br
-.br
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-.br
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-.br
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 \fP
 
 .TP 5
@@ -374,8 +472,16 @@ MagickCore's resize.c.
 
 .SH CONTRIBUTORS
 .nf
-Araki Ken (@arakiken),
+Araki Ken (@arakiken)
+Markus Elfring (@elfring)
+isaki (@isaki68k)
+NOKUBI Takatsugu (@knok)
+Yasuhiro MATSUMOTO (@mattn)
+Izumi Tsutsui (@tsutsui)
 Iwamoto Kouichi (@ttdoda)
+haru (@uobikiemukot)
+Vertis Sidus (@vrtsds)
+Bruce Mitchener (@waywardmonkeys)
 Kazuhiro YOSHIKAWA (@yoshikaw)
 .fi
 
@@ -384,6 +490,6 @@ Kazuhiro YOSHIKAWA (@yoshikaw)
 .PD
 .IP \(bu
 Send bug-reports, fixes, enhancements to
-.BR user@zuse.jp .
+.BR saitoha@me.com.jp
 
 .\" end of man page

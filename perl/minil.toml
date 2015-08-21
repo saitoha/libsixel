@@ -1,0 +1,8 @@
+name = "Image-LibSIXEL"
+# badges = ["travis"]
+module_maker="ModuleBuildTiny"
+
+[build]
+build_class = "builder::MyBuilder"
+
+

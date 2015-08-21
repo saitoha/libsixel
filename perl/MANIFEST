@@ -1,0 +1,12 @@
+Build.PL
+lib/Image/LibSIXEL.xs
+lib/Image/LibSIXEL.pm
+lib/Image/LibSIXEL/Encoder.pm
+lib/Image/LibSIXEL/Decoder.pm
+t/libsixel.t
+LICENSE
+Makefile.PL
+MANIFEST			This list of files
+MANIFEST.SKIP
+META.yml
+README.md

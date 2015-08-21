@@ -54,8 +54,8 @@ wic_install.reg
 wic_uninstall.reg
 libsixel.pc
 package.json.in
-include/sixel.h
-converters/snake.png
+include/*.h
 converters/img2sixel
 converters/sixel2png
-converters/snake.sixel
+converters/*.sixel
+converters/*.png

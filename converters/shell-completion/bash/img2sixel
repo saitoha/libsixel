@@ -95,7 +95,11 @@ _img2sixel()
         COMPREPLY=( $( compgen -W 'xterm16 \
                                    xterm256 \
                                    vt340mono \
-                                   vt340color' -- "$cur" ) )
+                                   vt340color \
+                                   gray1 \
+                                   gray2 \
+                                   gray4 \
+                                   gray8 ' -- "$cur" ) )
         return 0
         ;;
     -E|--encode-policy)
@@ -104,16 +108,22 @@ _img2sixel()
                                    size' -- "$cur" ) )
         return 0
         ;;
+    -o|--outfile)
+        _filedir
+        return 0
+        ;;
     esac
 
     case "$cur" in
     -*)
         COMPREPLY=( $( compgen -W '
+                                   -o --outfile \
                                    -7 --7bit-mode \
                                    -8 --8bit-mode \
                                    -p --colors \
                                    -m --mapfile \
                                    -e --monochrome \
+                                   -k --insecure \
                                    -i --invert \
                                    -I --high-color \
                                    -u --use-macro \
@@ -133,6 +143,7 @@ _img2sixel()
                                    -t --palette-type \
                                    -b --builtin-palette \
                                    -E --encode-policy \
+                                   -B --bgcolor \
                                    -P --penetrate \
                                    -D --pipe-mode \
                                    -v --verbose \
