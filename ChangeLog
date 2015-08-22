@@ -190,8 +190,16 @@
 
   * src/decoder.c: Add missing header io.h to decoder.c
 
+  * converters/sixel2png.c: Add missing header io.h to sixel2png.c
+
   * config.h.in, configure, configure.ac, src/loader.c: Add missing header:
   _setmode() requires <io.h> inclusion
+
+  * config.h.in, configure, configure.ac, converters/loader.c: Add missing
+  header: _setmode() requires <io.h> inclusion
+
+  * Makefile.in, configure, configure.ac: Hotfix for broken
+  libcurl/libpng/libjpeg detection
 
   * src/encoder.c: Build fix for MinGW environment
 
