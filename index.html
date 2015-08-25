@@ -1,33 +1,36 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
+
   <head>
-    <meta charset="utf-8">
+    <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>libsixel by saitoha</title>
+    <meta name="description" content="libsixel : The new standard of SIXEL development">
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>libsixel</title>
   </head>
+
   <body>
-    <div class="wrapper">
-      <header>
-        <h1>libsixel</h1>
-        <p>A lightweight, fast implementation of DEC SIXEL graphics codec</p>
 
-        <p class="view"><a href="https://github.com/saitoha/libsixel">View the Project on GitHub <small>saitoha/libsixel</small></a></p>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/saitoha/libsixel">View on GitHub</a>
 
+          <h1 id="project_title">libsixel</h1>
+          <h2 id="project_tagline">The new standard of SIXEL development</h2>
 
-        <ul>
-          <li><a href="https://github.com/saitoha/libsixel/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/saitoha/libsixel/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/saitoha/libsixel">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/saitoha/libsixel/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/saitoha/libsixel/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
         <h1>
 <a id="libsixel" class="anchor" href="#libsixel" aria-hidden="true"><span class="octicon octicon-link"></span></a>libsixel</h1>
 
@@ -50,7 +53,7 @@ So if you want to view a SIXEL image file, all you have to do is "cat" it to you
 <h2>
 <a id="sixel-animation" class="anchor" href="#sixel-animation" aria-hidden="true"><span class="octicon octicon-link"></span></a>SIXEL Animation</h2>
 
-<p>img2sixel(1) can decode GIF animation.</p>
+<p><code>img2sixel(1)</code> can decode GIF animation.</p>
 
 <p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixel.gif" alt="Animation"></p>
 
@@ -69,7 +72,7 @@ So if you want to view a SIXEL image file, all you have to do is "cat" it to you
 
 <p><a href="https://github.com/saitoha/SDL1.2-SIXEL">SDL1.2-SIXEL</a> project makes enable you to operate various GUI applications on the terminal.</p>
 
-<p>You can play "The Battle for Wesnoth" over SIXEL protocol.</p>
+<p>You can play "<code>The Battle for Wesnoth</code>" over SIXEL protocol.</p>
 
 <p><a href="http://youtu.be/aMUkN7TSct4"><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/wesnoth.png" alt="SDL1.2-SIXEL WESNOTH"></a></p>
 
@@ -91,7 +94,7 @@ So if you want to view a SIXEL image file, all you have to do is "cat" it to you
 <h3>
 <a id="w3m-integration" class="anchor" href="#w3m-integration" aria-hidden="true"><span class="octicon octicon-link"></span></a>W3M integration</h3>
 
-<p>img2sixel(1) can be integrated with <a href="https://bitbucket.org/arakiken/w3m/branch/remoteimg">Arakiken's w3m fork(remoteimg branch)</a>.</p>
+<p><code>img2sixel(1)</code> can be integrated with <a href="https://bitbucket.org/arakiken/w3m/branch/remoteimg">Arakiken's w3m fork(remoteimg branch)</a>.</p>
 
 <p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel.png" alt="w3m-sixel"></p>
 
@@ -183,39 +186,39 @@ Now libsixel and ImageMagick's sixel coder follow it.</p>
 <h3>
 <a id="high-quality-quantization" class="anchor" href="#high-quality-quantization" aria-hidden="true"><span class="octicon octicon-link"></span></a>High quality quantization</h3>
 
-<p>img2sixel(1) supports color image quantization. It works well even if few number of colors are allowed.</p>
+<p><code>img2sixel(1)</code> supports color image quantization. It works well even if few number of colors are allowed.</p>
 
 <ul>
 <li>
-<p>ppmtosixel (netpbm)</p>
+<p><code>ppmtosixel</code> (<code>netpbm</code>)</p>
 
 <p>$ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel</p>
 
 <p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel.png" alt="ppmtosixel"></p>
 </li>
 <li>
-<p>ppmtosixel with Floyd–Steinberg dithering (netpbm)</p>
+<p><code>ppmtosixel</code> with Floyd–Steinberg dithering (<code>netpbm</code>)</p>
 
 <p>$ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel</p>
 
 <p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel2.png" alt="ppmtosixel"></p>
 </li>
 <li>
-<p>kmiya's sixel</p>
+<p>kmiya's <code>sixel</code></p>
 
 <p>$ sixel -p16 images/snake.jpg</p>
 
 <p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixel.png" alt="kmiya's sixel"></p>
 </li>
 <li>
-<p>PySixel (sixelconv command)</p>
+<p>PySixel (<code>sixelconv</code> command)</p>
 
 <p>$ sixelconv -n16 images/snake.jpg</p>
 
 <p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixelconv.png" alt="PySixel"></p>
 </li>
 <li>
-<p>libsixel (img2sixel command)</p>
+<p>libsixel (<code>img2sixel</code> command)</p>
 
 <p>$ img2sixel -p16 images/snake.jpg</p>
 
@@ -254,11 +257,11 @@ Now libsixel and ImageMagick's sixel coder follow it.</p>
 <p>Works on each of X, win32/cygwin, framebuffer version.</p>
 </li>
 <li>
-<p>XTerm (compiled with --enable-sixel option)</p>
+<p>XTerm (compiled with <code>--enable-sixel</code> option)</p>
 
 <p><a href="http://invisible-island.net/xterm/">http://invisible-island.net/xterm/</a></p>
 
-<p>You should launch xterm with "-ti 340" option. The SIXEL palette is limited to a maximum of 16 colors.</p>
+<p>You should launch xterm with "<code>-ti 340</code>" option. The SIXEL palette is limited to a maximum of 16 colors.</p>
 </li>
 <li>
 <p>yaft</p>
@@ -292,7 +295,7 @@ Now libsixel and ImageMagick's sixel coder follow it.</p>
 <li><a href="https://github.com/aki017/homebrew-sixel">Homebrew tap</a></li>
 <li><a href="https://github.com/fd00/yacp/tree/master/libsixel">yacp</a></li>
 <li><a href="https://packages.debian.org/search?searchon=names&amp;keywords=libsixel">Debian</a></li>
-<li><a href="https://aur.archlinux.org/packages/libsixel/">AUR</a></li>
+<li><a href="https://aur.archlinux.org/packages/libsixel-git/">AUR</a></li>
 <li><a href="http://packages.gentoo.org/package/media-libs/libsixel">Portage</a></li>
 <li><a href="https://launchpad.net/ubuntu/+source/libsixel">Ubuntu</a></li>
 </ul>
@@ -318,6 +321,10 @@ $ make
 --with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
 --with-bashcompletiondir  specify bashcompletion.d
 --with-zshcompletiondir   specify zshcompletion.d
+--enable-python           Python interface (default: yes)
+--enable-debug            Use debug macro and specific CFLAGS
+--enable-gcov             Use gcov
+--enable-tests            Build tests
 </code></pre>
 
 <p>For more information, see "./configure --help".</p>
@@ -341,6 +348,8 @@ $ make
        img2sixel [Options] &lt; imagefile
 
 Options:
+-o, --outfile              specify output file name.
+                           (default:stdout)
 -7, --7bit-mode            generate a sixel image for 7bit
                            terminals or printers (default)
 -8, --8bit-mode            generate a sixel image for 8bit
@@ -352,6 +361,9 @@ Options:
 -e, --monochrome           output monochrome sixel image
                            this option assumes the terminal
                            background color is black
+-k, --insecure             allow to connect to SSL sites without
+                           certs(enabled only when configured
+                           with --with-libcurl)
 -i, --invert               assume the terminal background color
                            is white, make sense only when -e
                            option is given
@@ -483,6 +495,10 @@ Options:
                              xterm256   -&gt; X default 256 color map
                              vt340mono  -&gt; VT340 monochrome map
                              vt340color -&gt; VT340 color map
+                             gray1      -&gt; 1bit grayscale map
+                             gray2      -&gt; 2bit grayscale map
+                             gray4      -&gt; 4bit grayscale map
+                             gray8      -&gt; 8bit grayscale map
 -E ENCODEPOLICY, --encode-policy=ENCODEPOLICY
                            select encoding policy
                              auto -&gt; choose encoding policy
@@ -490,6 +506,18 @@ Options:
                              fast -&gt; encode as fast as possible
                              size -&gt; encode to as small sixel
                                      sequence as possible
+-B BGCOLOR, --bgcolor=BGCOLOR
+                           specify background color
+                           BGCOLOR is represented by the
+                           following syntax
+                             #rgb
+                             #rrggbb
+                             #rrrgggbbb
+                             #rrrrggggbbbb
+                             rgb:r/g/b
+                             rgb:rr/gg/bb
+                             rgb:rrr/ggg/bbb
+                             rgb:rrrr/gggg/bbbb
 -P, --penetrate            penetrate GNU Screen using DCS
                            pass-through sequence
 -D, --pipe-mode            read source images from stdin
@@ -497,6 +525,20 @@ Options:
 -v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
+
+Environment variables:
+SIXEL_BGCOLOR              specify background color.
+                           overrided by -B(--bgcolor) option.
+                           represented by the following
+                           syntax:
+                             #rgb
+                             #rrggbb
+                             #rrrgggbbb
+                             #rrrrggggbbbb
+                             rgb:r/g/b
+                             rgb:rr/gg/bb
+                             rgb:rrr/ggg/bbb
+                             rgb:rrrr/gggg/bbbb
 </code></pre>
 
 <p>Convert a jpeg image file into a sixel file</p>
@@ -533,7 +575,86 @@ Options:
 </code></pre>
 
 <h2>
-<a id="usage-of-conversion-api-13" class="anchor" href="#usage-of-conversion-api-13" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage of conversion API 1.3</h2>
+<a id="the-high-level-conversion-api" class="anchor" href="#the-high-level-conversion-api" aria-hidden="true"><span class="octicon octicon-link"></span></a>The high-level conversion API</h2>
+
+<p>The high-livel API provides File-to-File conversion features.</p>
+
+<h3>
+<a id="encoder" class="anchor" href="#encoder" aria-hidden="true"><span class="octicon octicon-link"></span></a>Encoder</h3>
+
+<p>The sixel encoder object and related functions provides almost same features as <code>img2sixel</code>.</p>
+
+<div class="highlight highlight-C"><pre><span class="pl-c">/* create encoder object */</span>
+SIXELAPI SIXELSTATUS
+<span class="pl-en">sixel_encoder_new</span>(
+    <span class="pl-c1">sixel_encoder_t</span>     <span class="pl-c">/* out */</span> **ppencoder, <span class="pl-c">/* encoder object to be created */</span>
+    <span class="pl-c1">sixel_allocator_t</span>   <span class="pl-c">/* in */</span>  *allocator); <span class="pl-c">/* allocator, null if you use</span>
+<span class="pl-c">                                                  default allocator */</span>
+
+<span class="pl-c">/* increase reference count of encoder object (thread-unsafe) */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_encoder_ref</span>(<span class="pl-c1">sixel_encoder_t</span> <span class="pl-c">/* in */</span> *encoder);
+
+<span class="pl-c">/* decrease reference count of encoder object (thread-unsafe) */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_encoder_unref</span>(<span class="pl-c1">sixel_encoder_t</span> <span class="pl-c">/* in */</span> *encoder);
+
+<span class="pl-c">/* set cancel state flag to encoder object */</span>
+SIXELAPI SIXELSTATUS
+<span class="pl-en">sixel_encoder_set_cancel_flag</span>(
+    <span class="pl-c1">sixel_encoder_t</span> <span class="pl-c">/* in */</span> *encoder,
+    <span class="pl-k">int</span>             <span class="pl-c">/* in */</span> *cancel_flag);
+
+<span class="pl-c">/* set an option flag to encoder object */</span>
+SIXELAPI SIXELSTATUS
+<span class="pl-en">sixel_encoder_setopt</span>(
+    <span class="pl-c1">sixel_encoder_t</span> <span class="pl-c">/* in */</span> *encoder,
+    <span class="pl-k">int</span>             <span class="pl-c">/* in */</span> arg,
+    <span class="pl-k">char</span> <span class="pl-k">const</span>      <span class="pl-c">/* in */</span> *<span class="pl-c1">optarg</span>);
+
+<span class="pl-c">/* load source data from specified file and encode it to SIXEL format */</span>
+SIXELAPI SIXELSTATUS
+<span class="pl-en">sixel_encoder_encode</span>(
+    <span class="pl-c1">sixel_encoder_t</span> <span class="pl-c">/* in */</span> *encoder,
+    <span class="pl-k">char</span> <span class="pl-k">const</span>      <span class="pl-c">/* in */</span> *filename);</pre></div>
+
+<h3>
+<a id="decoder" class="anchor" href="#decoder" aria-hidden="true"><span class="octicon octicon-link"></span></a>Decoder</h3>
+
+<p>The sixel decoder object and related functions provides almost same features as <code>sixel2png</code>.</p>
+
+<div class="highlight highlight-C"><pre><span class="pl-c">/* create decoder object */</span>
+SIXELAPI SIXELSTATUS
+<span class="pl-en">sixel_decoder_new</span>(
+    <span class="pl-c1">sixel_decoder_t</span>    <span class="pl-c">/* out */</span> **ppdecoder,  <span class="pl-c">/* decoder object to be created */</span>
+    <span class="pl-c1">sixel_allocator_t</span>  <span class="pl-c">/* in */</span>  *allocator);  <span class="pl-c">/* allocator, null if you use</span>
+<span class="pl-c">                                                  default allocator */</span>
+
+<span class="pl-c">/* increase reference count of decoder object (thread-unsafe) */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_decoder_ref</span>(<span class="pl-c1">sixel_decoder_t</span> *decoder);
+
+<span class="pl-c">/* decrease reference count of decoder object (thread-unsafe) */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_decoder_unref</span>(<span class="pl-c1">sixel_decoder_t</span> *decoder);
+
+<span class="pl-c">/* set an option flag to decoder object */</span>
+SIXELAPI SIXELSTATUS
+<span class="pl-en">sixel_decoder_setopt</span>(
+    <span class="pl-c1">sixel_decoder_t</span> <span class="pl-c">/* in */</span> *decoder,  <span class="pl-c">/* decoder object */</span>
+    <span class="pl-k">int</span>             <span class="pl-c">/* in */</span> arg,       <span class="pl-c">/* one of SIXEL_OPTFLAG_*** */</span>
+    <span class="pl-k">char</span> <span class="pl-k">const</span>      <span class="pl-c">/* in */</span> *<span class="pl-c1">optarg</span>);  <span class="pl-c">/* null or an argument of optflag */</span>
+
+<span class="pl-c">/* load source data from stdin or the file specified with</span>
+<span class="pl-c">   SIXEL_OPTFLAG_INPUT flag, and decode it */</span>
+SIXELAPI SIXELSTATUS
+<span class="pl-en">sixel_decoder_decode</span>(
+    <span class="pl-c1">sixel_decoder_t</span> <span class="pl-c">/* in */</span> *decoder);</pre></div>
+
+<h2>
+<a id="the-low-level-conversion-api" class="anchor" href="#the-low-level-conversion-api" aria-hidden="true"><span class="octicon octicon-link"></span></a>The low-level conversion API</h2>
+
+<p>The low-livel API provides Bytes-to-Bytes conversion features.</p>
 
 <p>The Whole API is described <a href="https://github.com/saitoha/libsixel/blob/master/include/sixel.h.in">here</a>.</p>
 
@@ -541,34 +662,32 @@ Options:
 <a id="example" class="anchor" href="#example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example</h3>
 
 <p>If you use OSX, a tiny example is available
-<a href="https://github.com/saitoha/libsixel/blob/master/examples/osx/opengl/">here</a>.</p>
+<a href="https://github.com/saitoha/libsixel/blob/master/examples/opengl/">here</a>.</p>
 
 <p><img src="https://raw.githubusercontent.com/saitoha/libsixel/data/data/example_opengl.gif" alt="opengl example"></p>
 
 <h3>
 <a id="bitmap-to-sixel" class="anchor" href="#bitmap-to-sixel" aria-hidden="true"><span class="octicon octicon-link"></span></a>Bitmap to SIXEL</h3>
 
-<p><em>sixel_encode</em> function converts bitmap array into SIXEL format.</p>
+<p><code>sixel_encode</code> function converts bitmap array into SIXEL format.</p>
 
-<div class="highlight highlight-C"><pre><span class="pl-c">/* converter API */</span>
-
-<span class="pl-c">/* convert pixels into sixel format and write it to output context */</span>
-<span class="pl-st">int</span>
+<div class="highlight highlight-C"><pre><span class="pl-c">/* convert pixels into sixel format and write it to output context */</span>
+SIXELAPI SIXELSTATUS
 <span class="pl-en">sixel_encode</span>(
-    <span class="pl-st">unsigned</span> <span class="pl-st">char</span>  <span class="pl-c">/* in */</span> *pixels,     <span class="pl-c">/* pixel bytes */</span>
-    <span class="pl-st">int</span>            <span class="pl-c">/* in */</span>  width,      <span class="pl-c">/* image width */</span>
-    <span class="pl-st">int</span>            <span class="pl-c">/* in */</span>  height,     <span class="pl-c">/* image height */</span>
-    <span class="pl-st">int</span>            <span class="pl-c">/* in */</span>  depth,      <span class="pl-c">/* color depth: now unused */</span>
-    <span class="pl-s3">sixel_dither_t</span> <span class="pl-c">/* in */</span> *dither,     <span class="pl-c">/* dither context */</span>
-    <span class="pl-s3">sixel_output_t</span> <span class="pl-c">/* in */</span> *context);   <span class="pl-c">/* output context */</span></pre></div>
+    <span class="pl-k">unsigned</span> <span class="pl-k">char</span>  <span class="pl-c">/* in */</span> *pixels,     <span class="pl-c">/* pixel bytes */</span>
+    <span class="pl-k">int</span>            <span class="pl-c">/* in */</span>  width,      <span class="pl-c">/* image width */</span>
+    <span class="pl-k">int</span>            <span class="pl-c">/* in */</span>  height,     <span class="pl-c">/* image height */</span>
+    <span class="pl-k">int</span>            <span class="pl-c">/* in */</span>  depth,      <span class="pl-c">/* color depth: now unused */</span>
+    <span class="pl-c1">sixel_dither_t</span> <span class="pl-c">/* in */</span> *dither,     <span class="pl-c">/* dither context */</span>
+    <span class="pl-c1">sixel_output_t</span> <span class="pl-c">/* in */</span> *context);   <span class="pl-c">/* output context */</span></pre></div>
 
 <p>To use this function, you have to initialize two objects,</p>
 
 <ul>
 <li>
-<em>sixel_dither_t</em> (dithering context object)</li>
+<code>sixel_dither_t</code> (dithering context object)</li>
 <li>
-<em>sixel_output_t</em> (output context object)</li>
+<code>sixel_output_t</code> (output context object)</li>
 </ul>
 
 <h4>
@@ -577,74 +696,254 @@ Options:
 <p>Here is a part of APIs for dithering context manipulation.</p>
 
 <div class="highlight highlight-C"><pre><span class="pl-c">/* create dither context object */</span>
-<span class="pl-s3">sixel_dither_t</span> *
-<span class="pl-en">sixel_dither_create</span>(<span class="pl-st">int</span> <span class="pl-c">/* in */</span> ncolors); <span class="pl-c">/* number of colors */</span>
+SIXELAPI SIXELSTATUS
+<span class="pl-en">sixel_dither_new</span>(
+    <span class="pl-c1">sixel_dither_t</span>      <span class="pl-c">/* out */</span>   **ppdither,  <span class="pl-c">/* dither object to be created */</span>
+    <span class="pl-k">int</span>                 <span class="pl-c">/* in */</span>    ncolors,     <span class="pl-c">/* required colors */</span>
+    <span class="pl-c1">sixel_allocator_t</span>   <span class="pl-c">/* in */</span>    *allocator); <span class="pl-c">/* allocator, null if you use</span>
+<span class="pl-c">                                                    default allocator */</span>
 
 <span class="pl-c">/* get built-in dither context object */</span>
-<span class="pl-s3">sixel_dither_t</span> *
-<span class="pl-en">sixel_dither_get</span>(<span class="pl-st">int</span> builtin_dither); <span class="pl-c">/* ID of built-in dither object */</span>
+SIXELAPI <span class="pl-c1">sixel_dither_t</span> *
+<span class="pl-en">sixel_dither_get</span>(<span class="pl-k">int</span> builtin_dither); <span class="pl-c">/* ID of built-in dither object */</span>
 
-<span class="pl-c">/* increment reference count of dither context object (thread-unsafe) */</span>
-<span class="pl-st">void</span>
-<span class="pl-en">sixel_dither_ref</span>(<span class="pl-s3">sixel_dither_t</span> *dither); <span class="pl-c">/* dither context object */</span>
+<span class="pl-c">/* destroy dither context object */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_dither_destroy</span>(<span class="pl-c1">sixel_dither_t</span> *dither); <span class="pl-c">/* dither context object */</span>
 
-<span class="pl-c">/* decrement reference count of dither context object (thread-unsafe) */</span>
-<span class="pl-st">void</span>
-<span class="pl-en">sixel_dither_unref</span>(<span class="pl-s3">sixel_dither_t</span> *dither); <span class="pl-c">/* dither context object */</span>
+<span class="pl-c">/* increase reference count of dither context object (thread-unsafe) */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_dither_ref</span>(<span class="pl-c1">sixel_dither_t</span> *dither); <span class="pl-c">/* dither context object */</span>
+
+<span class="pl-c">/* decrease reference count of dither context object (thread-unsafe) */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_dither_unref</span>(<span class="pl-c1">sixel_dither_t</span> *dither); <span class="pl-c">/* dither context object */</span>
 
 <span class="pl-c">/* initialize internal palette from specified pixel buffer */</span>
-<span class="pl-st">int</span>
+SIXELAPI SIXELSTATUS
 <span class="pl-en">sixel_dither_initialize</span>(
-    <span class="pl-s3">sixel_dither_t</span> *dither,          <span class="pl-c">/* dither context object */</span>
-    <span class="pl-st">unsigned</span> <span class="pl-st">char</span> <span class="pl-c">/* in */</span> *data,    <span class="pl-c">/* sample image */</span>
-    <span class="pl-st">int</span> <span class="pl-c">/* in */</span> width,              <span class="pl-c">/* image width */</span>
-    <span class="pl-st">int</span> <span class="pl-c">/* in */</span> height,             <span class="pl-c">/* image height */</span>
-    <span class="pl-st">int</span> <span class="pl-c">/* in */</span> pixelformat,        <span class="pl-c">/* one of enum pixelFormat */</span>
-    <span class="pl-st">int</span> <span class="pl-c">/* in */</span> method_for_largest, <span class="pl-c">/* method for finding the largest dimension */</span>
-    <span class="pl-st">int</span> <span class="pl-c">/* in */</span> method_for_rep,     <span class="pl-c">/* method for choosing a color from the box */</span>
-    <span class="pl-st">int</span> <span class="pl-c">/* in */</span> quality_mode);      <span class="pl-c">/* quality of histogram processing */</span></pre></div>
+    <span class="pl-c1">sixel_dither_t</span> *dither,          <span class="pl-c">/* dither context object */</span>
+    <span class="pl-k">unsigned</span> <span class="pl-k">char</span> <span class="pl-c">/* in */</span> *data,    <span class="pl-c">/* sample image */</span>
+    <span class="pl-k">int</span> <span class="pl-c">/* in */</span> width,              <span class="pl-c">/* image width */</span>
+    <span class="pl-k">int</span> <span class="pl-c">/* in */</span> height,             <span class="pl-c">/* image height */</span>
+    <span class="pl-k">int</span> <span class="pl-c">/* in */</span> pixelformat,        <span class="pl-c">/* one of enum pixelFormat */</span>
+    <span class="pl-k">int</span> <span class="pl-c">/* in */</span> method_for_largest, <span class="pl-c">/* method for finding the largest dimension */</span>
+    <span class="pl-k">int</span> <span class="pl-c">/* in */</span> method_for_rep,     <span class="pl-c">/* method for choosing a color from the box */</span>
+    <span class="pl-k">int</span> <span class="pl-c">/* in */</span> quality_mode);      <span class="pl-c">/* quality of histogram processing */</span>
+
+<span class="pl-c">/* set diffusion type, choose from enum methodForDiffuse */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_dither_set_diffusion_type</span>(
+    <span class="pl-c1">sixel_dither_t</span> <span class="pl-c">/* in */</span> *dither,   <span class="pl-c">/* dither context object */</span>
+    <span class="pl-k">int</span> <span class="pl-c">/* in */</span> method_for_diffuse);  <span class="pl-c">/* one of enum methodForDiffuse */</span>
+
+<span class="pl-c">/* get number of palette colors */</span>
+SIXELAPI <span class="pl-k">int</span>
+<span class="pl-en">sixel_dither_get_num_of_palette_colors</span>(
+    <span class="pl-c1">sixel_dither_t</span> <span class="pl-c">/* in */</span> *dither);  <span class="pl-c">/* dither context object */</span>
+
+<span class="pl-c">/* get number of histogram colors */</span>
+SIXELAPI <span class="pl-k">int</span>
+<span class="pl-en">sixel_dither_get_num_of_histogram_colors</span>(
+    <span class="pl-c1">sixel_dither_t</span> <span class="pl-c">/* in */</span> *dither);  <span class="pl-c">/* dither context object */</span>
+
+<span class="pl-c">/* get palette */</span>
+SIXELAPI <span class="pl-k">unsigned</span> <span class="pl-k">char</span> *
+<span class="pl-en">sixel_dither_get_palette</span>(
+    <span class="pl-c1">sixel_dither_t</span> <span class="pl-c">/* in */</span> *dither);  <span class="pl-c">/* dither context object */</span>
+
+<span class="pl-c">/* set palette */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_dither_set_palette</span>(
+    <span class="pl-c1">sixel_dither_t</span> <span class="pl-c">/* in */</span> *dither,   <span class="pl-c">/* dither context object */</span>
+    <span class="pl-k">unsigned</span> <span class="pl-k">char</span>  <span class="pl-c">/* in */</span> *palette);
+
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_dither_set_complexion_score</span>(
+    <span class="pl-c1">sixel_dither_t</span> <span class="pl-c">/* in */</span> *dither,   <span class="pl-c">/* dither context object */</span>
+    <span class="pl-k">int</span>            <span class="pl-c">/* in */</span> score);    <span class="pl-c">/* complexion score (&gt;= 1) */</span>
+
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_dither_set_body_only</span>(
+    <span class="pl-c1">sixel_dither_t</span> <span class="pl-c">/* in */</span> *dither,   <span class="pl-c">/* dither context object */</span>
+    <span class="pl-k">int</span>            <span class="pl-c">/* in */</span> bodyonly); <span class="pl-c">/* 0: output palette section(default)</span>
+<span class="pl-c">                                          1: do not output palette section */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_dither_set_optimize_palette</span>(
+    <span class="pl-c1">sixel_dither_t</span> <span class="pl-c">/* in */</span> *dither,   <span class="pl-c">/* dither context object */</span>
+    <span class="pl-k">int</span>            <span class="pl-c">/* in */</span> do_opt);   <span class="pl-c">/* 0: optimize palette size</span>
+<span class="pl-c">                                          1: don't optimize palette size */</span>
+<span class="pl-c">/* set pixelformat */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_dither_set_pixelformat</span>(
+    <span class="pl-c1">sixel_dither_t</span> <span class="pl-c">/* in */</span> *dither,      <span class="pl-c">/* dither context object */</span>
+    <span class="pl-k">int</span>            <span class="pl-c">/* in */</span> pixelformat); <span class="pl-c">/* one of enum pixelFormat */</span>
+
+<span class="pl-c">/* set transparent */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_dither_set_transparent</span>(
+    <span class="pl-c1">sixel_dither_t</span> <span class="pl-c">/* in */</span> *dither,      <span class="pl-c">/* dither context object */</span>
+    <span class="pl-k">int</span>            <span class="pl-c">/* in */</span> transparent); <span class="pl-c">/* transparent color index */</span></pre></div>
 
 <h4>
 <a id="output-context" class="anchor" href="#output-context" aria-hidden="true"><span class="octicon octicon-link"></span></a>Output context</h4>
 
 <p>Here is a part of APIs for output context manipulation.</p>
 
-<div class="highlight highlight-C"><pre><span class="pl-st">typedef</span> <span class="pl-en">int</span> (* sixel_write_function)(<span class="pl-st">char</span> *data, <span class="pl-st">int</span> size, <span class="pl-st">void</span> *priv);
+<div class="highlight highlight-C"><pre><span class="pl-c">/* create output context object */</span>
+SIXELAPI SIXELSTATUS
+<span class="pl-en">sixel_output_new</span>(
+    <span class="pl-c1">sixel_output_t</span>          <span class="pl-c">/* out */</span> **output,     <span class="pl-c">/* output object to be created */</span>
+    sixel_write_function    <span class="pl-c">/* in */</span>  fn_write,     <span class="pl-c">/* callback for output sixel */</span>
+    <span class="pl-k">void</span>                    <span class="pl-c">/* in */</span> *priv,         <span class="pl-c">/* private data given as</span>
+<span class="pl-c">                                                       3rd argument of fn_write */</span>
+    <span class="pl-c1">sixel_allocator_t</span>       <span class="pl-c">/* in */</span>  *allocator);  <span class="pl-c">/* allocator, null if you use</span>
+<span class="pl-c">                                                       default allocator */</span>
 
-<span class="pl-c">/* create output context object */</span>
-<span class="pl-s3">sixel_output_t</span> *<span class="pl-s">const</span>
-<span class="pl-en">sixel_output_create</span>(
-    sixel_write_function <span class="pl-c">/* in */</span> fn_write, <span class="pl-c">/* callback function for output sixel */</span>
-    <span class="pl-st">void</span> <span class="pl-c">/* in */</span> *priv                     <span class="pl-c">/* private data given as</span>
-<span class="pl-c">);                                             3rd argument of fn_write */</span>
+<span class="pl-c">/* destroy output context object */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_output_destroy</span>(<span class="pl-c1">sixel_output_t</span> <span class="pl-c">/* in */</span> *output); <span class="pl-c">/* output context */</span>
 
-<span class="pl-c">/* increment reference count of output context object (thread-unsafe) */</span>
-<span class="pl-st">void</span>
-<span class="pl-en">sixel_output_ref</span>(<span class="pl-s3">sixel_output_t</span> <span class="pl-c">/* in */</span> *output);     <span class="pl-c">/* output context */</span>
+<span class="pl-c">/* increase reference count of output context object (thread-unsafe) */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_output_ref</span>(<span class="pl-c1">sixel_output_t</span> <span class="pl-c">/* in */</span> *output);     <span class="pl-c">/* output context */</span>
 
-<span class="pl-c">/* decrement reference count of output context object (thread-unsafe) */</span>
-<span class="pl-st">void</span>
-<span class="pl-en">sixel_output_unref</span>(<span class="pl-s3">sixel_output_t</span> <span class="pl-c">/* in */</span> *output);   <span class="pl-c">/* output context */</span>
-</pre></div>
+<span class="pl-c">/* decrease reference count of output context object (thread-unsafe) */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_output_unref</span>(<span class="pl-c1">sixel_output_t</span> <span class="pl-c">/* in */</span> *output);   <span class="pl-c">/* output context */</span>
+
+<span class="pl-c">/* set 8bit output mode which indicates whether it uses C1 control characters */</span>
+SIXELAPI <span class="pl-k">int</span>
+<span class="pl-en">sixel_output_get_8bit_availability</span>(
+    <span class="pl-c1">sixel_output_t</span> <span class="pl-c">/* in */</span> *output);   <span class="pl-c">/* output context */</span>
+
+<span class="pl-c">/* get 8bit output mode state */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_output_set_8bit_availability</span>(
+    <span class="pl-c1">sixel_output_t</span> <span class="pl-c">/* in */</span> *output,       <span class="pl-c">/* output context */</span>
+    <span class="pl-k">int</span>            <span class="pl-c">/* in */</span> availability); <span class="pl-c">/* 0: do not use 8bit characters</span>
+<span class="pl-c">                                              1: use 8bit characters */</span>
+
+<span class="pl-c">/* set GNU Screen penetration feature enable or disable */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_output_set_penetrate_multiplexer</span>(
+    <span class="pl-c1">sixel_output_t</span> <span class="pl-c">/* in */</span> *output,    <span class="pl-c">/* output context */</span>
+    <span class="pl-k">int</span>            <span class="pl-c">/* in */</span> penetrate); <span class="pl-c">/* 0: penetrate GNU Screen</span>
+<span class="pl-c">                                           1: do not penetrate GNU Screen */</span>
+
+<span class="pl-c">/* set whether we skip DCS envelope */</span>
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_output_set_skip_dcs_envelope</span>(
+    <span class="pl-c1">sixel_output_t</span> <span class="pl-c">/* in */</span> *output,   <span class="pl-c">/* output context */</span>
+    <span class="pl-k">int</span>            <span class="pl-c">/* in */</span> skip);     <span class="pl-c">/* 0: output DCS envelope</span>
+<span class="pl-c">                                          1: do not output DCS envelope */</span>
+
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_output_set_palette_type</span>(
+    <span class="pl-c1">sixel_output_t</span> <span class="pl-c">/* in */</span> *output,      <span class="pl-c">/* output context */</span>
+    <span class="pl-k">int</span>            <span class="pl-c">/* in */</span> palettetype); <span class="pl-c">/* PALETTETYPE_RGB: RGB palette</span>
+<span class="pl-c">                                             PALETTETYPE_HLS: HLS palette */</span>
+
+SIXELAPI <span class="pl-k">void</span>
+<span class="pl-en">sixel_output_set_encode_policy</span>(
+    <span class="pl-c1">sixel_output_t</span> <span class="pl-c">/* in */</span> *output,    <span class="pl-c">/* output context */</span>
+    <span class="pl-k">int</span>            <span class="pl-c">/* in */</span> encode_policy);</pre></div>
 
 <h3>
 <a id="sixel-to-indexed-bitmap" class="anchor" href="#sixel-to-indexed-bitmap" aria-hidden="true"><span class="octicon octicon-link"></span></a>SIXEL to indexed bitmap</h3>
 
-<p><em>sixel_decode</em> function converts SIXEL into indexed bitmap bytes with its palette.</p>
+<p><code>sixel_decode</code> function converts SIXEL into indexed bitmap bytes with its palette.</p>
 
-<pre><code>/* malloc(3) compatible function */
-typedef void * (* sixel_allocator_function)(size_t size);
+<pre><code>/* convert sixel data into indexed pixel bytes and palette data */
+SIXELAPI SIXELSTATUS
+sixel_decode_raw(
+    unsigned char       /* in */  *p,           /* sixel bytes */
+    int                 /* in */  len,          /* size of sixel bytes */
+    unsigned char       /* out */ **pixels,     /* decoded pixels */
+    int                 /* out */ *pwidth,      /* image width */
+    int                 /* out */ *pheight,     /* image height */
+    unsigned char       /* out */ **palette,    /* ARGB palette */
+    int                 /* out */ *ncolors,     /* palette size (&lt;= 256) */
+    sixel_allocator_t   /* in */  *allocator);  /* allocator object */
+</code></pre>
 
-/* convert sixel data into indexed pixel bytes and palette data */
-int
-sixel_decode(unsigned char              /* in */  *sixels,    /* sixel bytes */
-             int                        /* in */  size,       /* size of sixel bytes */
-             unsigned char              /* out */ **pixels,   /* decoded pixels */
-             int                        /* out */ *pwidth,    /* image width */
-             int                        /* out */ *pheight,   /* image height */
-             unsigned char              /* out */ **palette,  /* RGBA palette */
-             int                        /* out */ *ncolors,   /* palette size (&lt;= 256) */
-             sixel_allocator_function   /* out */ allocator); /* malloc function */
+<h2>
+<a id="perl-interface" class="anchor" href="#perl-interface" aria-hidden="true"><span class="octicon octicon-link"></span></a>Perl interface</h2>
+
+<p>This package includes a perl module <code>Image::Sixel</code>.</p>
+
+<h3>
+<a id="build-and-install-perl-interface" class="anchor" href="#build-and-install-perl-interface" aria-hidden="true"><span class="octicon octicon-link"></span></a>Build and install Perl interface</h3>
+
+<pre><code>$ cd perl
+$ perl Build.PL
+$ ./Build test
+$ ./Build install
+</code></pre>
+
+<h2>
+<a id="python-interface" class="anchor" href="#python-interface" aria-hidden="true"><span class="octicon octicon-link"></span></a>Python interface</h2>
+
+<p>This package includes a Python module <code>libsixel</code>.</p>
+
+<h3>
+<a id="build-and-install-python-interface" class="anchor" href="#build-and-install-python-interface" aria-hidden="true"><span class="octicon octicon-link"></span></a>Build and install Python interface</h3>
+
+<h4>
+<a id="install-into-the-python-prefixed-with-usrlocal" class="anchor" href="#install-into-the-python-prefixed-with-usrlocal" aria-hidden="true"><span class="octicon octicon-link"></span></a>Install into the python prefixed with '/usr/local'</h4>
+
+<pre><code>$ git clone https://github.com/saitoha/libsixel.git
+$ cd libsixel
+$ git checkout develop  # now available only develop branch
+$ ./configure --enable-python --prefix=/usr/local
+$ make install
+</code></pre>
+
+<h4>
+<a id="install-into-only-current-active-python" class="anchor" href="#install-into-only-current-active-python" aria-hidden="true"><span class="octicon octicon-link"></span></a>Install into only current active python</h4>
+
+<pre><code>$ git clone https://github.com/saitoha/libsixel.git
+$ cd libsixel
+$ git checkout develop  # now available only develop branch
+$ ./configure --disable-python
+$ make install  # install libsixel
+$ cd python
+$ python setup.py install  # install python module
+</code></pre>
+
+<p>or</p>
+
+<pre><code>$ easy_install libsixel-python
+</code></pre>
+
+<h2>
+<a id="php-interface" class="anchor" href="#php-interface" aria-hidden="true"><span class="octicon octicon-link"></span></a>PHP interface</h2>
+
+<p>This package includes a PHP module <code>sixel</code>.</p>
+
+<h3>
+<a id="build-and-install-php-interface" class="anchor" href="#build-and-install-php-interface" aria-hidden="true"><span class="octicon octicon-link"></span></a>Build and install PHP interface</h3>
+
+<pre><code>$ cd php/sixel
+$ phpize
+$ ./configure
+$ make install
+</code></pre>
+
+<h2>
+<a id="ruby-interface" class="anchor" href="#ruby-interface" aria-hidden="true"><span class="octicon octicon-link"></span></a>Ruby interface</h2>
+
+<h3>
+<a id="build-and-install-ruby-interface" class="anchor" href="#build-and-install-ruby-interface" aria-hidden="true"><span class="octicon octicon-link"></span></a>Build and install Ruby interface</h3>
+
+<pre><code>$ gem install libsixel-ruby
+</code></pre>
+
+<p>or</p>
+
+<pre><code>$ git submodule update --init
+$ rake compile
+$ rake build install
 </code></pre>
 
 <h2>
@@ -688,11 +987,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
 
 <ul>
 <li><a href="https://github.com/arakiken" class="user-mention">@arakiken</a></li>
-<li>
-<a href="https://github.com/elfring" class="user-mention">@elfring</a> </li>
+<li><a href="https://github.com/elfring" class="user-mention">@elfring</a></li>
 <li><a href="https://github.com/isaki68k" class="user-mention">@isaki68k</a></li>
 <li><a href="https://github.com/knok" class="user-mention">@knok</a></li>
 <li><a href="https://github.com/mattn" class="user-mention">@mattn</a></li>
+<li><a href="https://github.com/msmhrt" class="user-mention">@msmhrt</a></li>
 <li><a href="https://github.com/obache" class="user-mention">@obache</a></li>
 <li><a href="https://github.com/tsutsui" class="user-mention">@tsutsui</a></li>
 <li><a href="https://github.com/ttdoda" class="user-mention">@ttdoda</a></li>
@@ -701,6 +1000,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
 <li><a href="https://github.com/waywardmonkeys" class="user-mention">@waywardmonkeys</a></li>
 <li><a href="https://github.com/yoshikaw" class="user-mention">@yoshikaw</a></li>
 </ul>
+
+<h2>
+<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributing</h2>
+
+<ol>
+<li>Fork it ( <a href="https://github.com/saitoha/libsixel/fork/">https://github.com/saitoha/libsixel/fork/</a> )</li>
+<li>Create your feature branch (git checkout -b my-new-feature)</li>
+<li>Commit your changes (git commit -am 'Add some feature')</li>
+<li>Push to the branch (git push origin my-new-feature)</li>
+<li>Create a new Pull Request</li>
+</ol>
 
 <h2>
 <a id="acknowledgment" class="anchor" href="#acknowledgment" aria-hidden="true"><span class="octicon octicon-link"></span></a>Acknowledgment</h2>
@@ -756,17 +1066,17 @@ date will be written clearly.
 <p>kmiya also said this is compatible with MIT/BSD/GPL.</p>
 
 <h3>
-<a id="stbi-141" class="anchor" href="#stbi-141" aria-hidden="true"><span class="octicon octicon-link"></span></a>stbi-1.41</h3>
+<a id="stbi-206" class="anchor" href="#stbi-206" aria-hidden="true"><span class="octicon octicon-link"></span></a>stbi-2.06</h3>
 
-<p>This software includes <em>stbi-1.41</em> (stb_image.h),
+<p>This software includes <code>stbi-2.06</code> (stb_image.h),
 public domain JPEG/PNG reader.</p>
 
 <p><a href="https://github.com/nothings/stb">https://github.com/nothings/stb</a></p>
 
 <h3>
-<a id="stbiw-092" class="anchor" href="#stbiw-092" aria-hidden="true"><span class="octicon octicon-link"></span></a>stbiw-0.92</h3>
+<a id="stbiw-094" class="anchor" href="#stbiw-094" aria-hidden="true"><span class="octicon octicon-link"></span></a>stbiw-0.94</h3>
 
-<p>This software includes <em>stbiw-0.94</em> (stb_image_write.h),
+<p>This software includes <code>stbiw-0.94</code> (stb_image_write.h),
 public domain PNG/BMP/TGA writer.</p>
 
 <p><a href="https://github.com/nothings/stb">https://github.com/nothings/stb</a></p>
@@ -775,11 +1085,11 @@ public domain PNG/BMP/TGA writer.</p>
 <a id="pnmquantc-netpbm-library" class="anchor" href="#pnmquantc-netpbm-library" aria-hidden="true"><span class="octicon octicon-link"></span></a>pnmquant.c (netpbm library)</h3>
 
 <p>The implementation of median cut algorithm for color quantization in quant.c
-is imported from <em>pnmcolormap</em> included in <em>netpbm library</em>.</p>
+is imported from <code>pnmcolormap</code> included in <code>netpbm library</code>.</p>
 
 <p><a href="http://netpbm.sourceforge.net/">http://netpbm.sourceforge.net/</a></p>
 
-<p><em>pnmcolormap</em> was derived from <em>ppmquant</em>, originally written by Jef Poskanzer.</p>
+<p><code>pnmcolormap</code> was derived from <code>ppmquant</code>, originally written by Jef Poskanzer.</p>
 
 <blockquote>
 <p>Copyright (C) 1989, 1991 by Jef Poskanzer.
@@ -831,8 +1141,8 @@ warranty.</p>
 <h3>
 <a id="graphicsc-from-xterm-pl310" class="anchor" href="#graphicsc-from-xterm-pl310" aria-hidden="true"><span class="octicon octicon-link"></span></a>graphics.c (from Xterm pl#310)</h3>
 
-<p>The helper function <em>hls2rgb</em> in <em>src/fromsixel.c</em> is imported from
-<em>graphics.c</em> in <a href="http://invisible-island.net/xterm/">Xterm pl#310</a>,
+<p>The helper function <code>hls2rgb</code> in <code>src/fromsixel.c</code> is imported from
+<code>graphics.c</code> in <a href="http://invisible-island.net/xterm/">Xterm pl#310</a>,
 originally written by Ross Combs.</p>
 
 <blockquote>
@@ -901,6 +1211,19 @@ url: <a href="http://public-domain-photos.com/animals/snake-4.htm">http://public
 url: http://quadrantem.com/~k_wizard/vimprtan/
 </code></pre>
 
+<h4>
+<a id="pngsuite" class="anchor" href="#pngsuite" aria-hidden="true"><span class="octicon octicon-link"></span></a>PngSuite</h4>
+
+<p>Images under the directory images/pngsuite/ are imported from
+<a href="http://www.schaik.com/pngsuite/">PngSuite</a> created by Willem van Schaik.</p>
+
+<blockquote>
+<p>Permission to use, copy, modify and distribute these images for any
+purpose and without fee is hereby granted.</p>
+
+<p>(c) Willem van Schaik, 1996, 2011</p>
+</blockquote>
+
 <h2>
 <a id="references" class="anchor" href="#references" aria-hidden="true"><span class="octicon octicon-link"></span></a>References</h2>
 
@@ -908,7 +1231,7 @@ url: http://quadrantem.com/~k_wizard/vimprtan/
 <a id="imagemagick" class="anchor" href="#imagemagick" aria-hidden="true"><span class="octicon octicon-link"></span></a>ImageMagick</h3>
 
 <p>We are greatly inspired by the quality of ImageMagick and added some resampling filters to
-img2sixel in reference to the line-up of filters of MagickCore's resize.c.</p>
+<code>img2sixel</code> in reference to the line-up of filters of MagickCore's resize.c.</p>
 
 <pre><code>http://www.imagemagick.org/api/MagickCore/resize_8c_source.html
 </code></pre>
@@ -1045,12 +1368,17 @@ Currently runs on QEMU(i386), without any filesystem or network.</p>
 <li><p><a href="http://t.co/zTC7LhRbBc">SIXEL to PostScript converter</a></p></li>
 </ul>
       </section>
-      <footer>
-        <p>This project is maintained by <a href="https://github.com/saitoha">saitoha</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">libsixel maintained by <a href="https://github.com/saitoha">saitoha</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
-    <script src="javascripts/scale.fix.js"></script>
+
     
+
   </body>
 </html>
