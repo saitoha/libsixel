@@ -379,7 +379,7 @@ def sixel_encoder_setopt(encoder, flag, arg=None):
     _sixel.sixel_encoder_setopt.argtypes = [c_void_p, c_int, c_char_p]
     flag = ord(flag)
     if arg:
-        arg = str(arg)
+        arg = str(arg).encode('utf-8')
     status = _sixel.sixel_encoder_setopt(encoder, flag, arg)
     if SIXEL_FAILED(status):
         message = sixel_helper_format_error(status)
@@ -387,9 +387,12 @@ def sixel_encoder_setopt(encoder, flag, arg=None):
 
 
 def sixel_encoder_encode(encoder, filename):
+    import locale
+    language, encoding = locale.getdefaultlocale()
+
     _sixel.sixel_encoder_encode.restype = c_int
     _sixel.sixel_encoder_encode.argtypes = [c_void_p, c_char_p]
-    status = _sixel.sixel_encoder_encode(encoder, filename)
+    status = _sixel.sixel_encoder_encode(encoder, filename.encode(encoding))
     if SIXEL_FAILED(status):
         message = sixel_helper_format_error(status)
         raise RuntimeError(message)
@@ -423,7 +426,7 @@ def sixel_decoder_setopt(decoder, flag, arg=None):
     _sixel.sixel_decoder_setopt.argtypes = [c_void_p, c_int, c_char_p]
     flag = ord(flag)
     if arg:
-        arg = str(arg)
+        arg = str(arg).encode('utf-8')
     status = _sixel.sixel_decoder_setopt(decoder, flag, arg)
     if SIXEL_FAILED(status):
         message = sixel_helper_format_error(status)
