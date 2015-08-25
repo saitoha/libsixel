@@ -26,7 +26,7 @@ from . import *
 class Decoder(object):
 
     def __init__(self):
-	self._decoder = sixel_decoder_new()
+        self._decoder = sixel_decoder_new()
 
     def __del__(self):
         sixel_decoder_unref(self._decoder)
