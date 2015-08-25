@@ -15,7 +15,6 @@ Example 1. Install into the python prefixed with '/usr/local' ::
 
     $ git clone https://github.com/saitoha/libsixel.git
     $ cd libsixel 
-    $ git checkout develop  # now available only develop branch
     $ ./configure --enable-python --prefix=/usr/local
     $ make install
 
@@ -23,7 +22,6 @@ Example 2. Install into only current active python ::
 
     $ git clone https://github.com/saitoha/libsixel.git
     $ cd libsixel 
-    $ git checkout develop  # now available only develop branch
     $ ./configure --disable-python
     $ make install  # install libsixel
     $ cd python
@@ -35,19 +33,20 @@ Code Example
 
 encoder ::
 
-    from libsixel.encoder import Encoder
+    from libsixel.encoder import Encoder, SIXEL_OPTFLAG_WIDTH, SIXEL_OPTFLAG_COLORS
 
     encoder = Encoder()
-    encoder.setopt("w", "300")
-    encoder.setopt("p", "16")
+    encoder.setopt(SIXEL_OPTFLAG_WIDTH, "300")
+    encoder.setopt(SIXEL_OPTFLAG_COLORS, "16")
     encoder.encode("test.png")
 
 
 decoder ::
 
-    from libsixel.decoder import Decoder
+    from libsixel.decoder import Decoder, SIXEL_OPTFLAG_INPUT, SIXEL_OPTFLAG_OUTPUT
 
     decoder = Decoder()
-    decoder.setopt("i", "test.six")
-    decoder.setopt("o", "test.png")
+    decoder.setopt(SIXEL_OPTFLAG_INPUT, "test.six")
+    decoder.setopt(SIXEL_OPTFLAG_OUTPUT, "test.png")
     decoder.decode()
+
