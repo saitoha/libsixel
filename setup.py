@@ -24,7 +24,7 @@ setup(name                  = 'libsixel-python',
                                'License :: OSI Approved :: MIT License',
                                'Programming Language :: Python'
                                ],
-      keywords              = 'skk japanese terminal',
+      keywords              = 'sixel libsixel terminal codec',
       author                = __author__,
       author_email          = 'saitoha@me.com',
       url                   = 'https://github.com/saitoha/libsixel',
