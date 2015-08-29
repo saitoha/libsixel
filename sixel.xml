@@ -16,12 +16,12 @@
     </maintainer>
   </maintainers>
 
-  <license>PHP</license>
+  <license>MIT</license>
 
   <release>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <state>alpha</state>
-    <date>2015-06-23</date>
+    <date>2015-08-30</date>
     <notes>
         Alpha version.
     </notes>
