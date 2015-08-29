@@ -9,7 +9,7 @@
     libsixel is a lightweight, fast implementation of DEC SIXEL graphics codec.
   </description>
 
-  <license>PHP</license>
+  <license>MIT</license>
 
   <configureoptions>
    <configureoption name="with-libsixel" default="autodetect" prompt="libsixel installation directory?" />
@@ -25,11 +25,11 @@
   </maintainers>
 
   <release>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <state>alpha</state>
     <notes>        Alpha version.
 </notes>
-    <date>2015-06-23</date>
+    <date>2015-08-30</date>
   </release>
   <changelog>
   
