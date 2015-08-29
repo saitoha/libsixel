@@ -24,9 +24,9 @@ http://pear.php.net/dtd/package-2.0.xsd">
     <active>yes</active>
   </developer>
 
-  <date>2015-06-23</date>
+  <date>2015-08-30</date>
   <version>
-    <release>0.0.1</release>
+    <release>0.0.2</release>
     <api>0.0.1</api>
   </version>
   <stability>
@@ -34,7 +34,7 @@ http://pear.php.net/dtd/package-2.0.xsd">
     <api>alpha</api>
   </stability>
 
-  <license uri="http://php.net/license" filesource="LICENSE">PHP</license>
+  <license uri="http://opensource.org/licenses/MIT" filesource="LICENSE">MIT</license>
 
   <notes>
         Alpha version.

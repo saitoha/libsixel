@@ -1,16 +1,23 @@
 /*
-   +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
-   | that is bundled with this package in the file LICENSE, and is        |
-   | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
-   | If you did not receive a copy of the PHP license and are unable to   |
-   | obtain it through the world-wide-web, please send a note to          |
-   | license@php.net so we can mail you a copy immediately.               |
-   +----------------------------------------------------------------------+
-   | Authors: Hayaki Saito <saitoha@me.com>                               |
-   +----------------------------------------------------------------------+
-*/
+ * Copyright (c) 2015 Hayaki Saito
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 
 /* $ Id: $ */ 
 
@@ -42,16 +49,19 @@ PHP_METHOD(SixelEncoder, __construct)
 
 
 	do {
-		sixel_encoder_t *encoder;
-				encoder = sixel_encoder_create();
-				if (encoder == NULL) {
+		SIXELSTATUS status;
+				sixel_encoder_t *encoder;
+				zval *value;
+				status = sixel_encoder_new(&encoder, NULL);
+				if (SIXEL_FAILED(status)) {
 #if 0
 					zend_throw_exception_ex(zend_exception_get_default(), 1,
-											"sixel_encoder_create() failed. %s:%d",
+											"sixel_encoder_new() failed: %s (%s:%d)",
+											sixel_helper_format_error(status),
 											__FILE__, __LINE__);
 #endif
 				} else {
-					zval *value = emalloc(sizeof(zval));
+					value = emalloc(sizeof(zval));
 					ZVAL_RESOURCE(value, (long)encoder);
 					zend_update_property(_this_ce, getThis(),
 										 "encoder", sizeof("encoder") - 1, value);
@@ -80,8 +90,9 @@ PHP_METHOD(SixelEncoder, __destruct)
 
 
 	do {
-		zval *encoder = zend_read_property(_this_ce, getThis(),
-												   "encoder", sizeof("encoder") - 1, 1);
+		zval *encoder;
+				encoder = zend_read_property(_this_ce, getThis(),
+											 "encoder", sizeof("encoder") - 1, 1);
 				sixel_encoder_unref((sixel_encoder_t *)Z_RESVAL_P(encoder));
 				efree(encoder);
 	} while (0);
@@ -112,9 +123,19 @@ PHP_METHOD(SixelEncoder, setopt)
 
 
 	do {
-		zval *encoder = zend_read_property(_this_ce, getThis(),
-												   "encoder", sizeof("encoder") - 1, 1);
-				sixel_encoder_setopt((sixel_encoder_t *)Z_RESVAL_P(encoder), *opt, arg);
+		SIXELSTATUS status;
+				zval *encoder;
+				encoder = zend_read_property(_this_ce, getThis(),
+											 "encoder", sizeof("encoder") - 1, 1);
+				status = sixel_encoder_setopt((sixel_encoder_t *)Z_RESVAL_P(encoder), *opt, arg);
+#if 0
+				if (SIXEL_FAILED(status) {
+					zend_throw_exception_ex(zend_exception_get_default(), 1,
+											"sixel_encoder_encode() failed: %s (%s:%d)",
+											sixel_helper_format_error(status),
+											__FILE__, __LINE__);
+				}
+#endif
 	} while (0);
 }
 /* }}} setopt */
@@ -141,13 +162,16 @@ PHP_METHOD(SixelEncoder, encode)
 
 
 	do {
-		zval *encoder = zend_read_property(_this_ce, getThis(),
-												   "encoder", sizeof("encoder") - 1, 1);
-				int ret = sixel_encoder_encode((sixel_encoder_t *)Z_RESVAL_P(encoder), filename);
+		SIXELSTATUS status;
+				zval *encoder;
+				encoder = zend_read_property(_this_ce, getThis(),
+											 "encoder", sizeof("encoder") - 1, 1);
+				status = sixel_encoder_encode((sixel_encoder_t *)Z_RESVAL_P(encoder), filename);
 #if 0
-				if (ret != 0) {
+				if (SIXEL_FAILED(status) {
 					zend_throw_exception_ex(zend_exception_get_default(), 1,
-											"sixel_encoder_encode() failed. %s:%d",
+											"sixel_encoder_encode() failed: %s (%s:%d)",
+											sixel_helper_format_error(status),
 											__FILE__, __LINE__);
 				}
 #endif
