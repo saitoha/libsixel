@@ -12396,8 +12396,6 @@ $as_echo "$as_me: zsh-completion directory is ${zshcompletiondir}" >&6;}
 # Check whether --enable-python was given.
 if test "${enable_python+set}" = set; then :
   enableval=$enable_python;
-else
-  enable_python=yes
 fi
 
 

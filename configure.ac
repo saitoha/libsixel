@@ -142,7 +142,7 @@ AC_ARG_ENABLE([python],
               [AS_HELP_STRING([--enable-python],
                               [Python interface (default: yes)])],
               [],
-              [enable_python=yes])
+              [])
 
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
