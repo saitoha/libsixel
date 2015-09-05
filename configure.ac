@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.5.1], [saitoha@me.com])
+AC_INIT([sixel], [1.5.3], [saitoha@me.com])
 LS_LT_CURRENT=1
 LS_LT_REVISION=4
 LS_LT_AGE=0
@@ -142,7 +142,7 @@ AC_ARG_ENABLE([python],
               [AS_HELP_STRING([--enable-python],
                               [Python interface (default: yes)])],
               [],
-              [enable_python=yes])
+              [])
 
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
