@@ -1,6 +1,29 @@
+2015-09-04  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: Let it build without python
+
+  * tools/libsixel-config.in: Add --datarootdir option to libsixel-config
+
+2015-08-30  Hayaki Saito <user@zuse.jp>
+
+  * LICENSE, README.rst, setup.py: Include license file
+
+  * LICENSE, package.xml, package2.xml, php_sixel.h, sixel.c, sixel.xml: Change
+  the license to MIT
+
+2015-08-26  Hayaki Saito <user@zuse.jp>
+
+  * libsixel/__init__.py, libsixel/decoder.py, libsixel/encoder.py: Support
+  various python versions, 2.5 to 3.4
+
+  * libsixel/decoder.py: Fix inconsistent use of tabs and spaces in indentation
+
 2015-08-22  Hayaki Saito <user@zuse.jp>
 
   * NEWS: Update NEWS
+
+  * sixel.c, sixel.xml: Use sixel_encoder_new() instead of
+  sixel_encoder_create()
 
 2015-08-08  Hayaki Saito <user@zuse.jp>
 
@@ -190,8 +213,16 @@
 
   * src/decoder.c: Add missing header io.h to decoder.c
 
+  * converters/sixel2png.c: Add missing header io.h to sixel2png.c
+
   * config.h.in, configure, configure.ac, src/loader.c: Add missing header:
   _setmode() requires <io.h> inclusion
+
+  * config.h.in, configure, configure.ac, converters/loader.c: Add missing
+  header: _setmode() requires <io.h> inclusion
+
+  * Makefile.in, configure, configure.ac: Hotfix for broken
+  libcurl/libpng/libjpeg detection
 
   * src/encoder.c: Build fix for MinGW environment
 
