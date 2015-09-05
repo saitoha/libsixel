@@ -21,12 +21,12 @@
 #
 
 from . import _sixel
-from . import *
+from libsixel import *
 
 class Decoder(object):
 
     def __init__(self):
-	self._decoder = sixel_decoder_new()
+        self._decoder = sixel_decoder_new()
 
     def __del__(self):
         sixel_decoder_unref(self._decoder)
@@ -50,8 +50,8 @@ class Decoder(object):
         try:
             while t.is_alive():
                 t.join(1)
-        except KeyboardInterrupt as e:
-            print "\033\\\033[Jcanceled."
+        except KeyboardInterrupt:
+            print("\033\\\033[Jcanceled.")
 
 
 if __name__ == '__main__':

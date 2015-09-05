@@ -21,7 +21,7 @@
 #
 
 from . import _sixel
-from . import *
+from libsixel import *
 
 class Encoder(object):
 
@@ -49,8 +49,8 @@ class Encoder(object):
         try:
             while t.is_alive():
                 t.join(1)
-        except KeyboardInterrupt as e:
-            print "\033\\\033[Jcanceled."
+        except KeyboardInterrupt:
+            print("\033\\\033[Jcanceled.")
 
 
 if __name__ == '__main__':

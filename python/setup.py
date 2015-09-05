@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
-__version__ = '0.1.0'
+__version__ = '0.3.0'
 __license__ = 'MIT'
 __author__ = 'Hayaki Saito'
 
@@ -24,7 +24,7 @@ setup(name                  = 'libsixel-python',
                                'License :: OSI Approved :: MIT License',
                                'Programming Language :: Python'
                                ],
-      keywords              = 'skk japanese terminal',
+      keywords              = 'sixel libsixel terminal codec',
       author                = __author__,
       author_email          = 'saitoha@me.com',
       url                   = 'https://github.com/saitoha/libsixel',
