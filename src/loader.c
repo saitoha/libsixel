@@ -99,6 +99,10 @@ stbi_free(void *p)
 #define STBI_NO_STDIO 1
 #define STB_IMAGE_IMPLEMENTATION 1
 
+#if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wstrict-overflow"
+#endif
 #if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wswitch-default"
@@ -119,6 +123,9 @@ stbi_free(void *p)
 # pragma GCC diagnostic pop
 #endif
 #if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
+# pragma GCC diagnostic pop
+#endif
+#if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
 # pragma GCC diagnostic pop
 #endif
 
