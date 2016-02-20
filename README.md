@@ -614,7 +614,7 @@ The Whole API is described [here](https://github.com/saitoha/libsixel/blob/maste
 
 ### Example
 
-If you use OSX, a tiny example is available
+A tiny example is available
 [here](https://github.com/saitoha/libsixel/blob/master/examples/opengl/).
 
   ![opengl example](https://raw.githubusercontent.com/saitoha/libsixel/data/data/example_opengl.gif)
