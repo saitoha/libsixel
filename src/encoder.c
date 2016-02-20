@@ -95,7 +95,7 @@ parse_x_colorspec(
     SIXELSTATUS status = SIXEL_FALSE;
     char *p;
     unsigned char components[3];
-    int index = 0;
+    int component_index = 0;
     unsigned long v;
     char *endptr;
     char *buf = NULL;
@@ -140,9 +140,9 @@ parse_x_colorspec(
                 break;
             }
             v = v << ((4 - (endptr - p)) * 4) >> 8;
-            components[index++] = (unsigned char)v;
+            components[component_index++] = (unsigned char)v;
             p = endptr;
-            if (index == 3) {
+            if (component_index == 3) {
                 break;
             }
             if (*p == '\0') {
@@ -153,7 +153,7 @@ parse_x_colorspec(
             }
             ++p;
         }
-        if (index != 3 || *p != '\0' || *p == '/') {
+        if (component_index != 3 || *p != '\0' || *p == '/') {
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
