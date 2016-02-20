@@ -279,7 +279,6 @@ findBoxBoundaries(tupletable2  const colorfreqtable,
     }
 
     for (i = 1; i < boxSize; ++i) {
-        unsigned int plane;
         for (plane = 0; plane < depth; ++plane) {
             sample const v = colorfreqtable.table[boxStart + i]->tuple[plane];
             if (v < minval[plane]) minval[plane] = v;
@@ -421,7 +420,6 @@ averagePixels(int const boxStart,
 
     for (plane = 0; plane < depth; ++plane) {
         sample sum;
-        int i;
 
         sum = 0;
 
