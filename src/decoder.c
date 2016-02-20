@@ -328,6 +328,119 @@ end:
     return status;
 }
 
+
+#if HAVE_TESTS
+static int
+test1(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_decoder_t *decoder = NULL;
+
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+    decoder = sixel_decoder_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
+    if (decoder == NULL) {
+        goto error;
+    }
+    sixel_decoder_ref(decoder);
+    sixel_decoder_unref(decoder);
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_decoder_unref(decoder);
+    return nret;
+}
+
+
+static int
+test2(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_decoder_t *decoder = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_new(&decoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    sixel_decoder_ref(decoder);
+    sixel_decoder_unref(decoder);
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_decoder_unref(decoder);
+    return nret;
+}
+
+
+static int
+test3(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_decoder_t *decoder = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+
+    sixel_debug_malloc_counter = 1;
+
+    status = sixel_allocator_new(&allocator, sixel_bad_malloc, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_new(&decoder, allocator);
+    if (status != SIXEL_BAD_ALLOCATION) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+int
+sixel_decoder_tests_main(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t i;
+    typedef int (* testcase)(void);
+
+    static testcase const testcases[] = {
+        test1,
+        test2,
+        test3
+    };
+
+    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
+        nret = testcases[i]();
+        if (nret != EXIT_SUCCESS) {
+            goto error;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+#endif  /* HAVE_TESTS */
+
+
+
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
 /* EOF */
