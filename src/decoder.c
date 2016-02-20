@@ -101,6 +101,9 @@ sixel_decoder_new(
     *ppdecoder = sixel_allocator_malloc(allocator, sizeof(sixel_decoder_t));
     if (*ppdecoder == NULL) {
         sixel_allocator_unref(allocator);
+        sixel_helper_set_additional_message(
+            "sixel_decoder_new: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
 
@@ -118,6 +121,8 @@ sixel_decoder_new(
         sixel_allocator_unref(allocator);
         goto end;
     }
+
+    status = SIXEL_OK;
 
 end:
     return status;
