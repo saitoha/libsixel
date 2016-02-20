@@ -208,7 +208,7 @@ sixel_decoder_setopt(
     case SIXEL_OPTFLAG_OUTPUT:  /* o */
         free(decoder->output);
         decoder->output = strdup_with_allocator(value, decoder->allocator);
-        if (decoder->input == NULL) {
+        if (decoder->output == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_decoder_setopt: strdup_with_allocator() failed.");
             status = SIXEL_BAD_ALLOCATION;
@@ -464,8 +464,6 @@ test5(void)
         goto error;
     }
 
-    decoder->input = NULL;
-
     status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT, "/");
     if (status != SIXEL_BAD_ALLOCATION) {
         goto error;
@@ -480,6 +478,37 @@ error:
 
 static int
 test6(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_decoder_t *decoder = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+
+    sixel_debug_malloc_counter = 3;
+
+    status = sixel_allocator_new(&allocator, sixel_bad_malloc, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_new(&decoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_OUTPUT, "/");
+    if (status != SIXEL_BAD_ALLOCATION) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+static int
+test7(void)
 {
     int nret = EXIT_FAILURE;
     sixel_decoder_t *decoder = NULL;
@@ -512,6 +541,43 @@ error:
 }
 
 
+static int
+test8(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_decoder_t *decoder = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+
+    sixel_debug_malloc_counter = 5;
+
+    status = sixel_allocator_new(&allocator, sixel_bad_malloc, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_new(&decoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT, "../images/map8.six");
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_decode(decoder);
+    if (status != SIXEL_BAD_ALLOCATION) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
 int
 sixel_decoder_tests_main(void)
 {
@@ -525,7 +591,9 @@ sixel_decoder_tests_main(void)
         test3,
         test4,
         test5,
-        test6
+        test6,
+        test7,
+        test8
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
