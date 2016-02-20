@@ -84,6 +84,7 @@ arg_strdup(
 }
 
 
+/* An clone function of XColorSpec() of xlib */
 static SIXELSTATUS
 parse_x_colorspec(
     unsigned char       /* out */ **bgcolor,     /* destination buffer */
@@ -680,11 +681,7 @@ wait_stdin(int usec)
 
 static SIXELSTATUS
 output_sixel_without_macro(
-    unsigned char       /* in */ *buffer,
-    int                 /* in */ width,
-    int                 /* in */ height,
-    int                 /* in */ pixelformat,
-    int                 /* in */ delay,
+    sixel_frame_t       /* in */ *frame,
     sixel_dither_t      /* in */ *dither,
     sixel_output_t      /* in */ *output,
     sixel_encoder_t     /* in */ *encoder)
@@ -696,11 +693,16 @@ output_sixel_without_macro(
     char message[256];
     int nwrite;
 #if HAVE_USLEEP
+    int delay;
     int lag = 0;
 # if HAVE_CLOCK
     clock_t start;
 # endif
 #endif
+    unsigned char *pixbuf;
+    int width;
+    int height;
+    int pixelformat;
 
     if (encoder == NULL) {
         sixel_helper_set_additional_message(
@@ -714,6 +716,7 @@ output_sixel_without_macro(
         sixel_dither_set_optimize_palette(dither, 1);
     }
 
+    pixelformat = sixel_frame_get_pixelformat(frame);
     depth = sixel_helper_compute_depth(pixelformat);
     if (depth < 0) {
         status = SIXEL_LOGIC_ERROR;
@@ -727,6 +730,8 @@ output_sixel_without_macro(
         goto end;
     }
 
+    width = sixel_frame_get_width(frame);
+    height = sixel_frame_get_height(frame);
     p = (unsigned char *)sixel_allocator_malloc(encoder->allocator, width * height * depth);
     if (p == NULL) {
         sixel_helper_set_additional_message(
@@ -738,6 +743,7 @@ output_sixel_without_macro(
     start = clock();
 #endif
 #if HAVE_USLEEP
+    delay = sixel_frame_get_delay(frame);
     if (!encoder->fignore_delay && delay > 0) {
 # if HAVE_CLOCK
         dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
@@ -753,7 +759,8 @@ output_sixel_without_macro(
     }
 #endif
 
-    memcpy(p, buffer, width * height * depth);
+    pixbuf = sixel_frame_get_pixels(frame);
+    memcpy(p, pixbuf, width * height * depth);
 
     if (encoder->cancel_flag && *encoder->cancel_flag) {
         goto end;
@@ -773,16 +780,10 @@ end:
 
 static SIXELSTATUS
 output_sixel_with_macro(
-    unsigned char *frame,
-    int sx,
-    int sy,
-    int delay,
-    int frame_no,
-    int loop_count,
-    sixel_dither_t *dither,
-    sixel_output_t *output,
-    sixel_encoder_t *encoder
-)
+    sixel_frame_t   /* in */ *frame,
+    sixel_dither_t  /* in */ *dither,
+    sixel_output_t  /* in */ *output,
+    sixel_encoder_t /* in */ *encoder)
 {
     SIXELSTATUS status = SIXEL_OK;
     int dulation = 0;
@@ -794,15 +795,21 @@ output_sixel_with_macro(
     clock_t start;
 # endif
 #endif
+    unsigned char *pixbuf;
+    int width;
+    int height;
+#if HAVE_USLEEP
+    int delay;
+#endif
 
 #if HAVE_USLEEP && HAVE_CLOCK
     start = clock();
 #endif
-    if (loop_count == 0) {
+    if (sixel_frame_get_loop_no(frame) == 0) {
         if (encoder->macro_number >= 0) {
             nwrite = sprintf(buffer, "\033P%d;0;1!z", encoder->macro_number);
         } else {
-            nwrite = sprintf(buffer, "\033P%d;0;1!z", frame_no);
+            nwrite = sprintf(buffer, "\033P%d;0;1!z", sixel_frame_get_frame_no(frame));
         }
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
@@ -818,7 +825,10 @@ output_sixel_with_macro(
             goto end;
         }
 
-        status = sixel_encode(frame, sx, sy, /* unused */ 3, dither, output);
+        pixbuf = sixel_frame_get_pixels(frame),
+        width = sixel_frame_get_width(frame),
+        height = sixel_frame_get_height(frame),
+        status = sixel_encode(pixbuf, width, height, /* unused */ 3, dither, output);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -832,7 +842,7 @@ output_sixel_with_macro(
         }
     }
     if (encoder->macro_number < 0) {
-        nwrite = sprintf(buffer, "\033[%d*z", frame_no);
+        nwrite = sprintf(buffer, "\033[%d*z", sixel_frame_get_frame_no(frame));
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
@@ -846,6 +856,7 @@ output_sixel_with_macro(
             goto end;
         }
 #if HAVE_USLEEP
+        delay = sixel_frame_get_delay(frame);
         if (delay > 0 && !encoder->fignore_delay) {
 # if HAVE_CLOCK
             dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
@@ -1188,36 +1199,13 @@ load_image_callback(sixel_frame_t *frame, void *data)
     /* output sixel: junction of multi-frame processing strategy */
     if (encoder->fuse_macro) {  /* -u option */
         /* use macro */
-        status = output_sixel_with_macro(sixel_frame_get_pixels(frame),
-                                         sixel_frame_get_width(frame),
-                                         sixel_frame_get_height(frame),
-                                         sixel_frame_get_delay(frame),
-                                         sixel_frame_get_frame_no(frame),
-                                         sixel_frame_get_loop_no(frame),
-                                         dither,
-                                         output,
-                                         encoder);
+        status = output_sixel_with_macro(frame, dither, output, encoder);
     } else if (encoder->macro_number >= 0) { /* -n option */
         /* use macro */
-        status = output_sixel_with_macro(sixel_frame_get_pixels(frame),
-                                         sixel_frame_get_width(frame),
-                                         sixel_frame_get_height(frame),
-                                         sixel_frame_get_delay(frame),
-                                         sixel_frame_get_frame_no(frame),
-                                         sixel_frame_get_loop_no(frame),
-                                         dither,
-                                         output,
-                                         encoder);
+        status = output_sixel_with_macro(frame, dither, output, encoder);
     } else {
         /* do not use macro */
-        status = output_sixel_without_macro(sixel_frame_get_pixels(frame),
-                                            sixel_frame_get_width(frame),
-                                            sixel_frame_get_height(frame),
-                                            sixel_frame_get_pixelformat(frame),
-                                            sixel_frame_get_delay(frame),
-                                            dither,
-                                            output,
-                                            encoder);
+        status = output_sixel_without_macro(frame, dither, output, encoder);
     }
 
     if (encoder->cancel_flag && *encoder->cancel_flag) {
