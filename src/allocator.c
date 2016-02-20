@@ -195,12 +195,12 @@ sixel_allocator_free(
 
 
 #if HAVE_TESTS
+volatile int sixel_debug_malloc_counter;
+
 void *
 sixel_bad_malloc(size_t size)
 {
-    (void) size;
-
-    return NULL;
+    return sixel_debug_malloc_counter-- < 0 ? NULL: malloc(size);
 }
 
 
@@ -285,6 +285,27 @@ error:
 }
 
 
+static int
+test2(void)
+{
+    int nret = EXIT_FAILURE;
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator = NULL;
+
+    sixel_debug_malloc_counter = 1;
+
+    status = sixel_allocator_new(&allocator, sixel_bad_malloc, calloc, realloc, free);
+    if (status == SIXEL_BAD_ALLOCATION) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
 int
 sixel_allocator_tests_main(void)
 {
@@ -294,6 +315,7 @@ sixel_allocator_tests_main(void)
 
     static testcase const testcases[] = {
         test1,
+        test2
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

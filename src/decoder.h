@@ -32,6 +32,11 @@ struct sixel_decoder {
     sixel_allocator_t *allocator;
 };
 
+#if HAVE_TESTS
+int
+sixel_decoder_tests_main(void);
+#endif
+
 #endif /* LIBSIXEL_DECODER_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
