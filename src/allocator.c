@@ -37,7 +37,6 @@
 
 #include "allocator.h"
 
-
 /* create allocator object */
 SIXELSTATUS
 sixel_allocator_new(
@@ -197,19 +196,29 @@ sixel_allocator_free(
 
 #if HAVE_TESTS
 void *
-sixel_bad_malloc(size_t n)
+sixel_bad_malloc(size_t size)
 {
-    (void) n;
+    (void) size;
 
     return NULL;
 }
 
 
 void *
-sixel_bad_realloc(void *p, size_t n)
+sixel_bad_calloc(size_t count, size_t size)
 {
-    (void) p;
-    (void) n;
+    (void) count;
+    (void) size;
+
+    return NULL;
+}
+
+
+void *
+sixel_bad_realloc(void *ptr, size_t size)
+{
+    (void) ptr;
+    (void) size;
 
     return NULL;
 }
