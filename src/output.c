@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -27,6 +27,7 @@
 #include "output.h"
 
 
+/* create new output context object */
 SIXELAPI SIXELSTATUS
 sixel_output_new(
     sixel_output_t          /* out */ **output,
@@ -79,6 +80,7 @@ end:
 }
 
 
+/* deprecated: create an output object */
 SIXELAPI sixel_output_t *
 sixel_output_create(sixel_write_function fn_write, void *priv)
 {
@@ -95,6 +97,7 @@ end:
 }
 
  
+/* destroy output context object */
 SIXELAPI void
 sixel_output_destroy(sixel_output_t *output)
 {
@@ -108,6 +111,7 @@ sixel_output_destroy(sixel_output_t *output)
 }
 
 
+/* increase reference count of output context object (thread-unsafe) */
 SIXELAPI void
 sixel_output_ref(sixel_output_t *output)
 {
@@ -116,6 +120,7 @@ sixel_output_ref(sixel_output_t *output)
 }
 
 
+/* decrease reference count of output context object (thread-unsafe) */
 SIXELAPI void
 sixel_output_unref(sixel_output_t *output)
 {
@@ -130,6 +135,7 @@ sixel_output_unref(sixel_output_t *output)
 }
 
 
+/* get 8bit output mode which indicates whether it uses C1 control characters */
 SIXELAPI int
 sixel_output_get_8bit_availability(sixel_output_t *output)
 {
@@ -137,6 +143,7 @@ sixel_output_get_8bit_availability(sixel_output_t *output)
 }
 
 
+/* set 8bit output mode state */
 SIXELAPI void
 sixel_output_set_8bit_availability(sixel_output_t *output, int availability)
 {
@@ -144,6 +151,7 @@ sixel_output_set_8bit_availability(sixel_output_t *output, int availability)
 }
 
 
+/* set GNU Screen penetration feature enable or disable */
 SIXELAPI void
 sixel_output_set_penetrate_multiplexer(sixel_output_t *output, int penetrate)
 {
@@ -151,6 +159,7 @@ sixel_output_set_penetrate_multiplexer(sixel_output_t *output, int penetrate)
 }
 
 
+/* set whether we skip DCS envelope */
 SIXELAPI void
 sixel_output_set_skip_dcs_envelope(sixel_output_t *output, int skip)
 {
@@ -158,6 +167,7 @@ sixel_output_set_skip_dcs_envelope(sixel_output_t *output, int skip)
 }
 
 
+/* set palette type: RGB or HLS */
 SIXELAPI void
 sixel_output_set_palette_type(sixel_output_t *output, int palettetype)
 {
@@ -165,6 +175,7 @@ sixel_output_set_palette_type(sixel_output_t *output, int palettetype)
 }
 
 
+/* set encodeing policy: auto, fast or size */
 SIXELAPI void
 sixel_output_set_encode_policy(sixel_output_t *output, int encode_policy)
 {

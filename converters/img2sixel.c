@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -112,14 +112,16 @@ void show_help(void)
             "-n MACRONO, --macro-number=MACRONO\n"
             "                           specify an number argument for\n"
             "                           DECDMAC and make terminal memorize\n"
-            "                           SIXEL image. No image is shown if this\n"
-            "                           option is specified\n"
+            "                           SIXEL image. No image is shown if\n"
+            "                           this option is specified\n"
             "-C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE\n"
             "                           specify an number argument for the\n"
             "                           score of complexion correction.\n"
             "                           COMPLEXIONSCORE must be 1 or more.\n"
             "-g, --ignore-delay         render GIF animation without delay\n"
             "-S, --static               render animated GIF as a static image\n"
+            );
+    fprintf(stdout,
             "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
             "                           choose diffusion method which used\n"
             "                           with -p option (color reduction)\n"
@@ -177,6 +179,8 @@ void show_help(void)
             "                                           pixel counts\n"
             "                             <number>px -> scale width with\n"
             "                                           pixel counts\n"
+            );
+    fprintf(stdout,
             "-h HEIGHT, --height=HEIGHT resize image to specified height\n"
             "                           HEIGHT is represented by the\n"
             "                           following syntax\n"
@@ -222,6 +226,8 @@ void show_help(void)
             "                                        GIF header (default)\n"
             "                             force   -> always enable loop\n"
             "                             disable -> always disable loop\n"
+            );
+    fprintf(stdout,
             "-t PALETTETYPE, --palette-type=PALETTETYPE\n"
             "                           select palette color space type\n"
             "                             auto -> choose palette type\n"

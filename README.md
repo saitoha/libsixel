@@ -115,7 +115,7 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
 
 #### [sayaka-chan](https://github.com/isaki68k/sayaka/)
 
-  [sayaka-chan](https://github.com/isaki68k/sayaka/) works with libsixel inline-image extension.
+  [sayaka-chan](https://github.com/isaki68k/sayaka/)(PHP version) works with libsixel inline-image extension.
 
   SIXEL works with old powerless machines such as [NetBSD/x68k](http://wiki.netbsd.org/ports/x68k/) (here is SHARP X68030 with 060turbo):
 
@@ -1184,6 +1184,11 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 - [monosixel in arakiken's tw](https://bitbucket.org/arakiken/tw/branch/sixel)
 
   A monochrome SIXEL converter
+
+
+- [sixelv in sayaka-chan Vala version](https://github.com/isaki68k/sayaka/blob/master/vala/sixelv.vala)
+
+  sayaka-chan(Vala version) also includes SIXEL converter.
 
 
 - [xpr(x11-apps)](ftp://ftp.x.org/pub/unsupported/programs/xpr/)

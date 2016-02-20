@@ -5,7 +5,7 @@
  * Hayaki Saito <saitoha@me.com> modified this and re-licensed
  * it under the MIT license.
  *
- * Copyright (c) 2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -504,6 +504,9 @@ gif_load_next(
                             break;
                         case 0x01:
                             g->loop_count = gif_get16le(s);
+                            break;
+                        default:
+                            g->loop_count = 1;
                             break;
                         }
                     }

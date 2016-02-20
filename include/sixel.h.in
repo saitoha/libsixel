@@ -527,6 +527,17 @@ sixel_allocator_free(
     sixel_allocator_t   /* in */ *allocator,  /* allocator object */
     void                /* in */ *p);         /* existing buffer to be freed */
 
+#if HAVE_TESTS
+void *
+sixel_bad_malloc(size_t size);
+
+void *
+sixel_bad_calloc(size_t count, size_t size);
+
+void *
+sixel_bad_realloc(void *ptr, size_t size);
+#endif  /* HAVE_TESTS */
+
 #ifdef __cplusplus
 }
 #endif
@@ -541,7 +552,7 @@ typedef int (* sixel_write_function)(char *data, int size, void *priv);
 extern "C" {
 #endif
 
-/* create output context object */
+/* create new output context object */
 SIXELAPI SIXELSTATUS
 sixel_output_new(
     sixel_output_t          /* out */ **output,     /* output object to be created */
@@ -551,6 +562,7 @@ sixel_output_new(
     sixel_allocator_t       /* in */  *allocator);  /* allocator, null if you use
                                                        default allocator */
 
+/* deprecated: create an output object */
 SIXELAPI @attr_func_deprecated@ sixel_output_t *
 sixel_output_create(
     sixel_write_function /* in */ fn_write, /* callback for output sixel */
@@ -568,12 +580,12 @@ sixel_output_ref(sixel_output_t /* in */ *output);     /* output context */
 SIXELAPI void
 sixel_output_unref(sixel_output_t /* in */ *output);   /* output context */
 
-/* set 8bit output mode which indicates whether it uses C1 control characters */
+/* get 8bit output mode which indicates whether it uses C1 control characters */
 SIXELAPI int
 sixel_output_get_8bit_availability(
     sixel_output_t /* in */ *output);   /* output context */
 
-/* get 8bit output mode state */
+/* set 8bit output mode state */
 SIXELAPI void
 sixel_output_set_8bit_availability(
     sixel_output_t /* in */ *output,       /* output context */
@@ -594,12 +606,14 @@ sixel_output_set_skip_dcs_envelope(
     int            /* in */ skip);     /* 0: output DCS envelope
                                           1: do not output DCS envelope */
 
+/* set palette type: RGB or HLS */
 SIXELAPI void
 sixel_output_set_palette_type(
     sixel_output_t /* in */ *output,      /* output context */
     int            /* in */ palettetype); /* PALETTETYPE_RGB: RGB palette
                                              PALETTETYPE_HLS: HLS palette */
 
+/* set encodeing policy: auto, fast or size */
 SIXELAPI void
 sixel_output_set_encode_policy(
     sixel_output_t /* in */ *output,    /* output context */
@@ -864,12 +878,15 @@ sixel_frame_new(
     sixel_frame_t       /* out */ **ppframe,    /* frame object to be created */
     sixel_allocator_t   /* in */  *allocator);  /* allocator, null if you use
                                                    default allocator */
+/* deprecated version of sixel_frame_new() */
 SIXELAPI @attr_func_deprecated@ sixel_frame_t *
 sixel_frame_create(void);
 
+/* increase reference count of frame object (thread-unsafe) */
 SIXELAPI void
 sixel_frame_ref(sixel_frame_t /* in */ *frame);
 
+/* decrease reference count of frame object (thread-unsafe) */
 SIXELAPI void
 sixel_frame_unref(sixel_frame_t /* in */ *frame);
 
@@ -935,6 +952,7 @@ sixel_frame_strip_alpha(
     sixel_frame_t  /* in */ *frame,
     unsigned char  /* in */ *bgcolor);
 
+/* resize a frame to given size with specified resampling filter */
 SIXELAPI SIXELSTATUS
 sixel_frame_resize(
     sixel_frame_t  /* in */ *frame,
@@ -942,6 +960,7 @@ sixel_frame_resize(
     int            /* in */ height,
     int            /* in */ method_for_resampling);
 
+/* clip frame */
 SIXELAPI SIXELSTATUS
 sixel_frame_clip(
     sixel_frame_t  /* in */ *frame,

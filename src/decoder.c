@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -63,6 +63,7 @@
 #include "decoder.h"
 
 
+/* original version of strdup(1) with allocator object */
 static char *
 strdup_with_allocator(
     char const          /* in */ *s,          /* source buffer */
@@ -100,6 +101,9 @@ sixel_decoder_new(
     *ppdecoder = sixel_allocator_malloc(allocator, sizeof(sixel_decoder_t));
     if (*ppdecoder == NULL) {
         sixel_allocator_unref(allocator);
+        sixel_helper_set_additional_message(
+            "sixel_decoder_new: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
 
@@ -118,11 +122,14 @@ sixel_decoder_new(
         goto end;
     }
 
+    status = SIXEL_OK;
+
 end:
     return status;
 }
 
 
+/* deprecated version of sixel_decoder_new() */
 SIXELAPI /* deprecated */ sixel_decoder_t *
 sixel_decoder_create(void)
 {
@@ -139,7 +146,8 @@ end:
 }
 
 
-SIXELAPI void
+/* destroy a decoder object */
+static void
 sixel_decoder_destroy(sixel_decoder_t *decoder)
 {
     sixel_allocator_t *allocator;
@@ -154,6 +162,7 @@ sixel_decoder_destroy(sixel_decoder_t *decoder)
 }
 
 
+/* increase reference count of decoder object (thread-unsafe) */
 SIXELAPI void
 sixel_decoder_ref(sixel_decoder_t *decoder)
 {
@@ -162,6 +171,7 @@ sixel_decoder_ref(sixel_decoder_t *decoder)
 }
 
 
+/* decrease reference count of decoder object (thread-unsafe) */
 SIXELAPI void
 sixel_decoder_unref(sixel_decoder_t *decoder)
 {
@@ -172,11 +182,12 @@ sixel_decoder_unref(sixel_decoder_t *decoder)
 }
 
 
+/* set an option flag to decoder object */
 SIXELAPI SIXELSTATUS
 sixel_decoder_setopt(
     sixel_decoder_t /* in */ *decoder,
     int             /* in */ arg,
-    char const      /* in */ *optarg
+    char const      /* in */ *value
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -186,7 +197,7 @@ sixel_decoder_setopt(
     switch(arg) {
     case 'i':
         free(decoder->input);
-        decoder->input = strdup_with_allocator(optarg, decoder->allocator);
+        decoder->input = strdup_with_allocator(value, decoder->allocator);
         if (decoder->input == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_decoder_setopt: strdup_with_allocator() failed.");
@@ -196,7 +207,7 @@ sixel_decoder_setopt(
         break;
     case 'o':
         free(decoder->output);
-        decoder->output = strdup_with_allocator(optarg, decoder->allocator);
+        decoder->output = strdup_with_allocator(value, decoder->allocator);
         if (decoder->input == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_decoder_setopt: strdup_with_allocator() failed.");
@@ -219,6 +230,8 @@ end:
 }
 
 
+/* load source data from stdin or the file specified with
+   SIXEL_OPTFLAG_INPUT flag, and decode it */
 SIXELAPI SIXELSTATUS
 sixel_decoder_decode(
     sixel_decoder_t /* in */ *decoder)
