@@ -36,7 +36,14 @@
 #if HAVE_LIBPNG
 # include <png.h>
 #else
+# if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wswitch-default"
+# endif
 # include "stb_image_write.h"
+# if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
+#  pragma GCC diagnostic pop
+# endif
 #endif
 
 #include <sixel.h>
