@@ -208,7 +208,7 @@ sixel_decoder_setopt(
     case SIXEL_OPTFLAG_OUTPUT:  /* o */
         free(decoder->output);
         decoder->output = strdup_with_allocator(value, decoder->allocator);
-        if (decoder->input == NULL) {
+        if (decoder->output == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_decoder_setopt: strdup_with_allocator() failed.");
             status = SIXEL_BAD_ALLOCATION;
