@@ -505,6 +505,9 @@ gif_load_next(
                         case 0x01:
                             g->loop_count = gif_get16le(s);
                             break;
+                        default:
+                            g->loop_count = 1;
+                            break;
                         }
                     }
                 }
