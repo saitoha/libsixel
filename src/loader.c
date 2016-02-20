@@ -89,7 +89,7 @@ stbi_realloc(void *p, size_t n)
 void
 stbi_free(void *p)
 {
-    return sixel_allocator_free(stbi_allocator, p);
+    sixel_allocator_free(stbi_allocator, p);
 }
 
 #define STBI_MALLOC stbi_malloc
