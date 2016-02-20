@@ -31,6 +31,10 @@
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
+#if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wstrict-overflow"
+#endif
 #if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wswitch-default"
@@ -38,6 +42,10 @@
 #include "stb_image_write.h"
 #if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
 # pragma GCC diagnostic pop
+#endif
+#if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wstrict-overflow"
 #endif
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
