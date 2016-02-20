@@ -186,12 +186,18 @@ LS_CHECK_CFLAG([-Wall],[AM_CFLAGS="$AM_CFLAGS -Wall"], [])
 LS_CHECK_CFLAG([-Wextra],[AM_CFLAGS="$AM_CFLAGS -Wextra"], [])
 LS_CHECK_CFLAG([-Wpedantic],[AM_CFLAGS="$AM_CFLAGS -Wpedantic"], [])
 LS_CHECK_CFLAG([-Wstrict-overflow],[AM_CFLAGS="$AM_CFLAGS -Wstrict-overflow"], [])
-LS_CHECK_CFLAG([-Wshadow], [AM_CFLAGS="$AM_CFLAGS -Wshadow"], [])
 LS_CHECK_CFLAG([-fng-strict-aliasing],[AM_CFLAGS="$AM_CFLAGS -fng-strict-aliasing"], [])
-LS_CHECK_CFLAG([-Wdouble-promotion],[AM_CFLAGS="$AM_CFLAGS -Wdouble-promotion"], [])
 LS_CHECK_CFLAG([-Wformat=2],[AM_CFLAGS="$AM_CFLAGS -Wformat=2"], [])
-LS_CHECK_CFLAG([-Wswitch-default],[AM_CFLAGS="$AM_CFLAGS -Wswitch-default"], [])
-LS_CHECK_CFLAG([-Wuninitialized],[AM_CFLAGS="$AM_CFLAGS -Wuninitialized"], [])
+LS_CHECK_CFLAG([-Wuninitialized], [AM_CFLAGS="$AM_CFLAGS -Wuninitialized"], [])
+LS_CHECK_CFLAG([-Wshadow],
+               [AM_CFLAGS="$AM_CFLAGS -Wshadow"
+                AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW, 1, [define 1 if GCC supports -Wshadow])])
+LS_CHECK_CFLAG([-Wdouble-promotion],
+               [AM_CFLAGS="$AM_CFLAGS -Wdouble-promotion"
+                AC_DEFINE(HAVE_DIAGNOSTIC_DOUBLE_PROMOTION, 1, [define 1 if GCC supports -Wdouble-promotion])])
+LS_CHECK_CFLAG([-Wswitch-default],
+               [AM_CFLAGS="$AM_CFLAGS -Wswitch-default"
+                AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT, 1, [define 1 if GCC supports -Wswitch-default])])
 AS_IF([test x$enable_debug = xyes],
       [LS_CHECK_CFLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
 AC_SUBST([AM_CFLAGS])

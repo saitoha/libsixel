@@ -13417,34 +13417,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    CFLAGS="$saved_cflags"
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wshadow" >&5
-$as_echo_n "checking if $CC supports -Wshadow... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-Wshadow -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Wshadow"
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-                      :
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-   CFLAGS="$saved_cflags"
-
-
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CC supports -fng-strict-aliasing" >&5
 $as_echo_n "checking if $CC supports -fng-strict-aliasing... " >&6; }
    saved_cflags="$CFLAGS"
@@ -13464,34 +13436,6 @@ if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
                       AM_CFLAGS="$AM_CFLAGS -fng-strict-aliasing"
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-                      :
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-   CFLAGS="$saved_cflags"
-
-
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wdouble-promotion" >&5
-$as_echo_n "checking if $CC supports -Wdouble-promotion... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-Wdouble-promotion -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Wdouble-promotion"
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -13529,34 +13473,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    CFLAGS="$saved_cflags"
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wswitch-default" >&5
-$as_echo_n "checking if $CC supports -Wswitch-default... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-Wswitch-default -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Wswitch-default"
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-                      :
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-   CFLAGS="$saved_cflags"
-
-
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wuninitialized" >&5
 $as_echo_n "checking if $CC supports -Wuninitialized... " >&6; }
    saved_cflags="$CFLAGS"
@@ -13576,6 +13492,99 @@ if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
                       AM_CFLAGS="$AM_CFLAGS -Wuninitialized"
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+                      :
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+   CFLAGS="$saved_cflags"
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wshadow" >&5
+$as_echo_n "checking if $CC supports -Wshadow... " >&6; }
+   saved_cflags="$CFLAGS"
+   CFLAGS="-Wshadow -Werror"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+                      AM_CFLAGS="$AM_CFLAGS -Wshadow"
+
+$as_echo "#define HAVE_DIAGNOSTIC_SHADOW 1" >>confdefs.h
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+                      :
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+   CFLAGS="$saved_cflags"
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wdouble-promotion" >&5
+$as_echo_n "checking if $CC supports -Wdouble-promotion... " >&6; }
+   saved_cflags="$CFLAGS"
+   CFLAGS="-Wdouble-promotion -Werror"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+                      AM_CFLAGS="$AM_CFLAGS -Wdouble-promotion"
+
+$as_echo "#define HAVE_DIAGNOSTIC_DOUBLE_PROMOTION 1" >>confdefs.h
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+                      :
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+   CFLAGS="$saved_cflags"
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wswitch-default" >&5
+$as_echo_n "checking if $CC supports -Wswitch-default... " >&6; }
+   saved_cflags="$CFLAGS"
+   CFLAGS="-Wswitch-default -Werror"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+                      AM_CFLAGS="$AM_CFLAGS -Wswitch-default"
+
+$as_echo "#define HAVE_DIAGNOSTIC_SWITCH_DEFAULT 1" >>confdefs.h
+
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }

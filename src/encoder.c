@@ -2072,12 +2072,12 @@ test4(void)
     SIXELSTATUS status;
 
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
     encoder = sixel_encoder_create();
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-#  pragma GCC diagnostic pop
+# pragma GCC diagnostic pop
 #endif
     if (encoder == NULL) {
         goto error;

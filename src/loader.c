@@ -98,7 +98,29 @@ stbi_free(void *p)
 
 #define STBI_NO_STDIO 1
 #define STB_IMAGE_IMPLEMENTATION 1
+
+#if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wswitch-default"
+#endif
+#if HAVE_DIAGNOSTIC_SHADOW
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wshadow"
+#endif
+#if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdouble-promotion"
+#endif
 #include "stb_image.h"
+#if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
+# pragma GCC diagnostic pop
+#endif
+#if HAVE_DIAGNOSTIC_SHADOW
+# pragma GCC diagnostic pop
+#endif
+#if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
+# pragma GCC diagnostic pop
+#endif
 
 
 # if HAVE_JPEG
