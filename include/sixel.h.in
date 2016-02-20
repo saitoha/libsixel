@@ -528,6 +528,8 @@ sixel_allocator_free(
     void                /* in */ *p);         /* existing buffer to be freed */
 
 #if HAVE_TESTS
+extern volatile int sixel_debug_malloc_counter;
+
 void *
 sixel_bad_malloc(size_t size);
 
