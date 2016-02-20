@@ -417,6 +417,101 @@ error:
 }
 
 
+static int
+test4(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_decoder_t *decoder = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+
+    sixel_debug_malloc_counter = 2;
+
+    status = sixel_allocator_new(&allocator, sixel_bad_malloc, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_new(&decoder, allocator);
+    if (status != SIXEL_BAD_ALLOCATION) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+static int
+test5(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_decoder_t *decoder = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+
+    sixel_debug_malloc_counter = 3;
+
+    status = sixel_allocator_new(&allocator, sixel_bad_malloc, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_new(&decoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    decoder->input = NULL;
+
+    status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT, "/");
+    if (status != SIXEL_BAD_ALLOCATION) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+static int
+test6(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_decoder_t *decoder = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_new(&decoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT, "../images/file");
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_decode(decoder);
+    if ((status >> 8) != (SIXEL_LIBC_ERROR >> 8)) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
 int
 sixel_decoder_tests_main(void)
 {
@@ -427,7 +522,10 @@ sixel_decoder_tests_main(void)
     static testcase const testcases[] = {
         test1,
         test2,
-        test3
+        test3,
+        test4,
+        test5,
+        test6
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
