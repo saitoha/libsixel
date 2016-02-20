@@ -1,7 +1,7 @@
 /**
  * Example program for libsixel-OpenGL integration
  *
- * Hayaki Saito <user@zuse.jp>
+ * Hayaki Saito <saitoha@me.com>
  *
  * I declared this program is in Public Domain (CC0 - "No Rights Reserved"),
  * This file is offered AS-IS, without any warranty.
@@ -324,30 +324,35 @@ sixel_write(char *data, int size, void *priv)
 }
 
 
-static int
+static SIXELSTATUS
 output_sixel(unsigned char *pixbuf, int width, int height,
-             int ncolors, int depth)
+             int ncolors, int pixelformat)
 {
     sixel_output_t *context;
     sixel_dither_t *dither;
-    int ret;
+    SIXELSTATUS status;
 
+#if USE_OSMESA
+    pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+#endif
     context = sixel_output_create(sixel_write, stdout);
     dither = sixel_dither_create(ncolors);
-#if USE_OSMESA
-    sixel_dither_set_pixelformat(dither, PIXELFORMAT_RGBA8888);
-#endif
-    ret = sixel_dither_initialize(dither, pixbuf, width, height, depth,
-                                  LARGE_AUTO, REP_AUTO, QUALITY_AUTO);
-    if (ret != 0)
-        return ret;
-    ret = sixel_encode(pixbuf, width, height, depth, dither, context);
-    if (ret != 0)
-        return ret;
+    status = sixel_dither_initialize(dither, pixbuf,
+                                     width, height,
+                                     pixelformat,
+                                     SIXEL_LARGE_AUTO,
+                                     SIXEL_REP_AUTO,
+                                     SIXEL_QUALITY_AUTO);
+    if (SIXEL_FAILED(status))
+        return status;
+    status = sixel_encode(pixbuf, width, height,
+                          pixelformat, dither, context);
+    if (SIXEL_FAILED(status))
+        return status;
     sixel_output_unref(context);
     sixel_dither_unref(dither);
 
-    return 0;
+    return status;
 }
 
 static int
@@ -426,6 +431,7 @@ scroll_on_demand(int pixelheight)
 
 int main(int argc, char** argv)
 {
+    SIXELSTATUS status;
     unsigned char *pixbuf;
 
     int width = 400;
@@ -487,14 +493,21 @@ int main(int argc, char** argv)
 #else
         glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixbuf);
 #endif
-        output_sixel(pixbuf, width, height, ncolors, /* unused */ 3);
+        status = output_sixel(pixbuf, width, height, ncolors,
+                              SIXEL_PIXELFORMAT_RGB888);
+        if (SIXEL_FAILED(status)) {
+            fprintf(stderr, "%s\n%s\n",
+                    sixel_helper_format_error(status),
+                    sixel_helper_get_additional_message());
+            break;
+        }
     }
 
 #if !defined(USE_OSMESA)
     free(pixbuf);
 #endif
 
-    printf("\e\\");
+    printf("\033\\");
 
     if (cleanup() != 0)
        return (-1);

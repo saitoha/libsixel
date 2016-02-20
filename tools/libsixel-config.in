@@ -9,6 +9,7 @@ libdir=@libdir@
 include_dir=@includedir@
 bindir=@bindir@
 datadir=@datadir@
+datarootdir=@datarootdir@
 mandir=@mandir@
 
 LANG=C;		export LANG
@@ -47,6 +48,9 @@ while test $# -gt 0; do
 		;;
 	--datadir)
 		echo "${datadir}"
+		;;
+	--datarootdir)
+		echo "${datarootdir}"
 		;;
 	--libdir)
 		echo "${libdir}"

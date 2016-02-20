@@ -42,9 +42,6 @@
 #if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
-#if HAVE_ERRNO_H
-# include <errno.h>
-#endif
 #if HAVE_SIGNAL_H
 # include <signal.h>
 #endif
@@ -54,11 +51,12 @@
 
 #include <sixel.h>
 
+/* output version info to STDOUT */
 static
 void show_version(void)
 {
     printf("img2sixel " PACKAGE_VERSION "\n"
-           "Copyright (C) 2014,2015 Hayaki Saito <user@zuse.jp>.\n"
+           "Copyright (C) 2014,2015 Hayaki Saito <saitoha@me.com>.\n"
            "\n"
            "Permission is hereby granted, free of charge, to any person obtaining a copy of\n"
            "this software and associated documentation files (the \"Software\"), to deal in\n"
@@ -80,6 +78,7 @@ void show_version(void)
 }
 
 
+/* output help messages to STDOUT */
 static
 void show_help(void)
 {
@@ -235,6 +234,10 @@ void show_help(void)
             "                             xterm256   -> X default 256 color map\n"
             "                             vt340mono  -> VT340 monochrome map\n"
             "                             vt340color -> VT340 color map\n"
+            "                             gray1      -> 1bit grayscale map\n"
+            "                             gray2      -> 2bit grayscale map\n"
+            "                             gray4      -> 4bit grayscale map\n"
+            "                             gray8      -> 8bit grayscale map\n"
             "-E ENCODEPOLICY, --encode-policy=ENCODEPOLICY\n"
             "                           select encoding policy\n"
             "                             auto -> choose encoding policy\n"
@@ -261,6 +264,20 @@ void show_help(void)
             "-v, --verbose              show debugging info\n"
             "-V, --version              show version and license info\n"
             "-H, --help                 show this help\n"
+            "\n"
+            "Environment variables:\n"
+            "SIXEL_BGCOLOR              specify background color.\n"
+            "                           overrided by -B(--bgcolor) option.\n"
+            "                           represented by the following\n"
+            "                           syntax:\n"
+            "                             #rgb\n"
+            "                             #rrggbb\n"
+            "                             #rrrgggbbb\n"
+            "                             #rrrrggggbbbb\n"
+            "                             rgb:r/g/b\n"
+            "                             rgb:rr/gg/bb\n"
+            "                             rgb:rrr/ggg/bbb\n"
+            "                             rgb:rrrr/gggg/bbbb\n"
             );
 }
 
@@ -279,18 +296,14 @@ signal_handler(int sig)
 int
 main(int argc, char *argv[])
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     int n;
 #if HAVE_GETOPT_LONG
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    int ret;
-    int exit_code;
-    sixel_encoder_t *encoder;
+    sixel_encoder_t *encoder = NULL;
     char const *optstring = "o:78p:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:B:C:DVH";
-
-    encoder = sixel_encoder_create();
-
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",          no_argument,        &long_opt, 'o'},
@@ -329,6 +342,11 @@ main(int argc, char *argv[])
     };
 #endif  /* HAVE_GETOPT_LONG */
 
+    status = sixel_encoder_new(&encoder, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
     for (;;) {
 
 #if HAVE_GETOPT_LONG
@@ -348,15 +366,15 @@ main(int argc, char *argv[])
         switch (n) {
         case 'V':
             show_version();
-            exit_code = EXIT_SUCCESS;
+            status = SIXEL_OK;
             goto end;
         case 'H':
             show_help();
-            exit_code = EXIT_SUCCESS;
+            status = SIXEL_OK;
             goto end;
         default:
-            ret = sixel_encoder_setopt(encoder, n, optarg);
-            if (ret != 0) {
+            status = sixel_encoder_setopt(encoder, n, optarg);
+            if (SIXEL_FAILED(status)) {
                 goto argerr;
             }
             break;
@@ -374,37 +392,33 @@ main(int argc, char *argv[])
 # if HAVE_DECL_SIGHUP
     signal(SIGHUP, signal_handler);
 # endif
+    status = sixel_encoder_set_cancel_flag(encoder, &signaled);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
 #else
     (void) signal_handler;
 #endif
-    ret = sixel_encoder_set_cancel_flag(encoder, &signaled);
-    if (ret != 0) {
-        exit_code = EXIT_FAILURE;
-        goto end;
-    }
 
     if (optind == argc) {
-        ret = sixel_encoder_encode(encoder, NULL);
-        if (ret != 0) {
-            exit_code = EXIT_FAILURE;
-            goto end;
+        status = sixel_encoder_encode(encoder, NULL);
+        if (SIXEL_FAILED(status)) {
+            goto error;
         }
     } else {
         for (n = optind; n < argc; n++) {
-            ret = sixel_encoder_encode(encoder, argv[n]);
-            if (ret != 0) {
-                exit_code = EXIT_FAILURE;
-                goto end;
+            status = sixel_encoder_encode(encoder, argv[n]);
+            if (SIXEL_FAILED(status)) {
+                goto error;
             }
         }
     }
 
     /* mark as success */
-    exit_code = EXIT_SUCCESS;
+    status = SIXEL_OK;
     goto end;
 
 argerr:
-    exit_code = EXIT_FAILURE;
     fprintf(stderr,
             "usage: img2sixel [-78eIkiugvSPDVH] [-p colors] [-m file] [-d diffusiontype]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
@@ -413,9 +427,14 @@ argerr:
             "                 [-E encodepolicy] [-B bgcolor] [-o outfile] [filename ...]\n"
             "for more details, type: 'img2sixel -H'.\n");
 
+error:
+    fprintf(stderr, "%s\n%s\n",
+            sixel_helper_format_error(status),
+            sixel_helper_get_additional_message());
+    status = (-1);
 end:
     sixel_encoder_unref(encoder);
-    return exit_code;
+    return status;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */

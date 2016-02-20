@@ -19,12 +19,13 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_EASY_ENCODE_H
-#define LIBSIXEL_EASY_ENCODE_H
+#ifndef LIBSIXEL_ENCODER_H
+#define LIBSIXEL_ENCODER_H
 
 /* encoder object */
-typedef struct sixel_encoder {
-    unsigned int ref;          /* reference counter */
+struct sixel_encoder {
+    unsigned int ref;               /* reference counter */
+    sixel_allocator_t *allocator;   /* allocator object */
     int reqcolors;
     char *mapfile;
     int monochrome;
@@ -62,14 +63,14 @@ typedef struct sixel_encoder {
     int finsecure;
     int *cancel_flag;
     void *dither_cache;
-} sixel_encoder_t;
+};
 
 #if HAVE_TESTS
 int
 sixel_encoder_tests_main(void);
 #endif
 
-#endif /* LIBSIXEL_EASY_ENCODE_H */
+#endif /* LIBSIXEL_ENCODER_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.5.0], [user@zuse.jp])
+AC_INIT([sixel], [1.5.3], [saitoha@me.com])
 LS_LT_CURRENT=1
 LS_LT_REVISION=4
 LS_LT_AGE=0
@@ -28,6 +28,40 @@ AX_GCC_FUNC_ATTRIBUTE([deprecated])
 if test x$ax_cv_have_func_attribute_deprecated != x; then
     AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
 fi
+
+CFLAGS_BACKUP=$CFLAGS
+CFLAGS="$CFLAGS -Werror"
+AC_TRY_COMPILE(
+  [
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic pop
+    #pragma GCC diagnostic ignored "-Wtypedef-redefinition"
+  ],
+  [
+    typedef int foo;
+    typedef int foo;
+  ],
+  [AC_DEFINE(HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION,
+             1,
+             [define 1 if GCC supports -Wtypedef-redefinition])])
+CFLAGS=$CFLAGS_BACKUP
+
+CFLAGS_BACKUP=$CFLAGS
+CFLAGS="$CFLAGS -Werror"
+AC_TRY_COMPILE(
+  [
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic pop
+    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    __attribute__((deprecated)) void test(void) {}
+  ],
+  [
+    test();
+  ],
+  [AC_DEFINE(HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS,
+             1,
+             [define 1 if GCC supports -Wdeprecated-declarations])])
+CFLAGS=$CFLAGS_BACKUP
 
 # Options
 AC_ARG_ENABLE([img2sixel],
@@ -108,7 +142,7 @@ AC_ARG_ENABLE([python],
               [AS_HELP_STRING([--enable-python],
                               [Python interface (default: yes)])],
               [],
-              [enable_python=yes])
+              [])
 
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
@@ -174,6 +208,7 @@ AC_CHECK_HEADERS([memory.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
+                  io.h \
                   errno.h \
                   limits.h \
                   sys/time.h \
@@ -217,7 +252,10 @@ AC_CHECK_FUNCS([memcpy \
                 clearerr \
                 stat \
                 setjmp \
-                isatty])
+                strerror \
+                isatty \
+                strncmp \
+                ldiv])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
@@ -282,12 +320,14 @@ if test x$with_gd != xno; then
         fi
         ADDED_CFLAGS="-I${with_gd}/include"
         ADDED_LIBS="-L${with_gd}/lib -lgd"
-    elif test x${prefix} != x -a x${prefix} != xNONE; then
-        ADDED_CFLAGS="-I${prefix}/include"
-        ADDED_LIBS="-L${prefix}/lib -lgd"
     else
-        ADDED_CFLAGS="-I/usr/local/include"
-        ADDED_LIBS="-L/usr/local/lib -lgd"
+        if test x${prefix} != x -a x${prefix} != xNONE; then
+            ADDED_CFLAGS="-I${prefix}/include"
+            ADDED_LIBS="-L${prefix}/lib -lgd"
+        else
+            ADDED_CFLAGS="-I/usr/local/include"
+            ADDED_LIBS="-L/usr/local/lib -lgd"
+        fi
     fi
     CFLAGS="${CFLAGS} ${GD_CFLAGS}"
     LDFLAGS="${LDFLAGS} ${GD_LIBS}"
@@ -379,12 +419,14 @@ if test x$with_libcurl != xno; then
             fi
             ADDED_CFLAGS="-I${with_libcurl}/include"
             ADDED_LIBS="-L${with_libcurl}/lib -lcurl"
-        elif test x${prefix} != x -a x${prefix} != xNONE; then
-            ADDED_CFLAGS="-I${prefix}/include"
-            ADDED_LIBS="-L${prefix}/lib -lcurl"
         else
-            ADDED_CFLAGS="-I/usr/local/include"
-            ADDED_LIBS="-L/usr/local/lib -lcurl"
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lcurl"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lcurl"
+            fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
         LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
@@ -430,19 +472,23 @@ if test x$with_jpeg != xno; then
             fi
             ADDED_CFLAGS="-I${with_jpeg}/include"
             ADDED_LIBS="-L${with_jpeg}/lib -ljpeg"
-        elif test x${prefix} != x -a x${prefix} != xNONE; then
-            ADDED_CFLAGS="-I${prefix}/include"
-            ADDED_LIBS="-L${prefix}/lib -ljpeg"
         else
-            ADDED_CFLAGS="-I/usr/local/include"
-            ADDED_LIBS="-L/usr/local/lib -ljpeg"
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -ljpeg"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -ljpeg"
+            fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
         LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
         AC_CHECK_HEADER([jpeglib.h],
                         [AC_CHECK_LIB([jpeg],
                                       [jpeg_read_header],
-                                      [have_jpeg=yes],
+                                      [have_jpeg=yes
+                                       LIBJPEG_CFLAGS=$ADDED_CFLAGS
+                                       LIBJPEG_LIBS=$ADDED_LIBS],
                                       [have_jpeg=no])])
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP
@@ -482,12 +528,14 @@ if test x$with_png != xno; then
             fi
             ADDED_CFLAGS="-I${with_png}/include"
             ADDED_LIBS="-L${with_png}/lib -lpng"
-        elif test x${prefix} != x -a x${prefix} != xNONE; then
-            ADDED_CFLAGS="-I${prefix}/include"
-            ADDED_LIBS="-L${prefix}/lib -lpng"
         else
-            ADDED_CFLAGS="-I/usr/local/include"
-            ADDED_LIBS="-L/usr/local/lib -lpng"
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lpng"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lpng"
+            fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
         LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
