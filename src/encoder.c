@@ -441,10 +441,10 @@ prepare_specified_palette(
 
 
 static SIXELSTATUS
-prepare_palette(sixel_dither_t **dither,
-                sixel_dither_t *former_dither,
-                sixel_frame_t *frame,
-                sixel_encoder_t *encoder)
+prepare_palette(sixel_dither_t  /* out */ **dither,
+                sixel_dither_t  /* in */  *former_dither,
+                sixel_frame_t   /* in */  *frame,
+                sixel_encoder_t /* in */  *encoder)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int histogram_colors;
@@ -558,11 +558,11 @@ end:
 }
 
 
+/* resize a frame with settings of specified encoder object */
 static SIXELSTATUS
 do_resize(
-    sixel_frame_t *frame,
-    sixel_encoder_t *encoder
-)
+    sixel_frame_t   /* in */    *frame,
+    sixel_encoder_t /* in */    *encoder)
 {
     SIXELSTATUS status = SIXEL_OK;
 
@@ -596,11 +596,11 @@ do_resize(
 }
 
 
+/* crip a frame with settings of specified encoder object */
 static SIXELSTATUS
-do_crop(
-    sixel_frame_t *frame,
-    sixel_encoder_t *encoder
-)
+do_clip(
+    sixel_frame_t   /* in */    *frame,
+    sixel_encoder_t /* in */    *encoder)
 {
     SIXELSTATUS status = SIXEL_OK;
     int width;
@@ -1115,7 +1115,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
     /* evaluate -w, -h, and -c option: crop/scale input source */
     if (encoder->clipfirst) {
         /* clipping */
-        status = do_crop(frame, encoder);
+        status = do_clip(frame, encoder);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -1133,7 +1133,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
         }
 
         /* clipping */
-        status = do_crop(frame, encoder);
+        status = do_clip(frame, encoder);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -1353,6 +1353,7 @@ sixel_encoder_create(void)
 }
 
 
+/* destroy encoder object */
 static void
 sixel_encoder_destroy(sixel_encoder_t *encoder)
 {
@@ -1374,6 +1375,7 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
 }
 
 
+/* increase reference count of encoder object (thread-unsafe) */
 SIXELAPI void
 sixel_encoder_ref(sixel_encoder_t *encoder)
 {
@@ -1382,6 +1384,7 @@ sixel_encoder_ref(sixel_encoder_t *encoder)
 }
 
 
+/* decrease reference count of encoder object (thread-unsafe) */
 SIXELAPI void
 sixel_encoder_unref(sixel_encoder_t *encoder)
 {
@@ -1392,6 +1395,7 @@ sixel_encoder_unref(sixel_encoder_t *encoder)
 }
 
 
+/* set cancel state flag to encoder object */
 SIXELAPI SIXELSTATUS
 sixel_encoder_set_cancel_flag(
     sixel_encoder_t /* in */ *encoder,
@@ -1406,6 +1410,7 @@ sixel_encoder_set_cancel_flag(
 }
 
 
+/* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS
 sixel_encoder_setopt(
     sixel_encoder_t /* in */ *encoder,
@@ -1847,6 +1852,7 @@ end:
 }
 
 
+/* load source data from specified file and encode it to SIXEL format */
 SIXELAPI SIXELSTATUS
 sixel_encoder_encode(
     sixel_encoder_t /* in */ *encoder,

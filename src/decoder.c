@@ -63,6 +63,7 @@
 #include "decoder.h"
 
 
+/* original version of strdup(1) with allocator object */
 static char *
 strdup_with_allocator(
     char const          /* in */ *s,          /* source buffer */
@@ -123,6 +124,7 @@ end:
 }
 
 
+/* deprecated version of sixel_decoder_new() */
 SIXELAPI /* deprecated */ sixel_decoder_t *
 sixel_decoder_create(void)
 {
@@ -139,7 +141,8 @@ end:
 }
 
 
-SIXELAPI void
+/* destroy a decoder object */
+static void
 sixel_decoder_destroy(sixel_decoder_t *decoder)
 {
     sixel_allocator_t *allocator;
@@ -154,6 +157,7 @@ sixel_decoder_destroy(sixel_decoder_t *decoder)
 }
 
 
+/* increase reference count of decoder object (thread-unsafe) */
 SIXELAPI void
 sixel_decoder_ref(sixel_decoder_t *decoder)
 {
@@ -162,6 +166,7 @@ sixel_decoder_ref(sixel_decoder_t *decoder)
 }
 
 
+/* decrease reference count of decoder object (thread-unsafe) */
 SIXELAPI void
 sixel_decoder_unref(sixel_decoder_t *decoder)
 {
@@ -172,6 +177,7 @@ sixel_decoder_unref(sixel_decoder_t *decoder)
 }
 
 
+/* set an option flag to decoder object */
 SIXELAPI SIXELSTATUS
 sixel_decoder_setopt(
     sixel_decoder_t /* in */ *decoder,
@@ -219,6 +225,8 @@ end:
 }
 
 
+/* load source data from stdin or the file specified with
+   SIXEL_OPTFLAG_INPUT flag, and decode it */
 SIXELAPI SIXELSTATUS
 sixel_decoder_decode(
     sixel_decoder_t /* in */ *decoder)
