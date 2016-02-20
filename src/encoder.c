@@ -1422,7 +1422,7 @@ SIXELAPI SIXELSTATUS
 sixel_encoder_setopt(
     sixel_encoder_t /* in */ *encoder,
     int             /* in */ arg,
-    char const      /* in */ *optarg)
+    char const      /* in */ *value)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int number;
@@ -1433,17 +1433,17 @@ sixel_encoder_setopt(
 
     switch(arg) {
     case SIXEL_OPTFLAG_OUTFILE:  /* o */
-        if (*optarg == '\0') {
+        if (*value == '\0') {
             sixel_helper_set_additional_message(
                 "no file name specified.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
-        if (strcmp(optarg, "-") != 0) {
+        if (strcmp(value, "-") != 0) {
             if (encoder->outfd && encoder->outfd != STDOUT_FILENO) {
                 close(encoder->outfd);
             }
-            encoder->outfd = open(optarg,
+            encoder->outfd = open(value,
                                   O_RDWR|O_CREAT,
                                   S_IREAD|S_IWRITE);
         }
@@ -1455,13 +1455,13 @@ sixel_encoder_setopt(
         encoder->f8bit = 1;
         break;
     case SIXEL_OPTFLAG_COLORS:  /* p */
-        encoder->reqcolors = atoi(optarg);
+        encoder->reqcolors = atoi(value);
         break;
     case SIXEL_OPTFLAG_MAPFILE:  /* m */
         if (encoder->mapfile) {
             sixel_allocator_free(encoder->allocator, encoder->mapfile);
         }
-        encoder->mapfile = arg_strdup(optarg, encoder->allocator);
+        encoder->mapfile = arg_strdup(value, encoder->allocator);
         if (encoder->mapfile == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_encoder_setopt: sixel_allocator_malloc() failed.");
@@ -1476,21 +1476,21 @@ sixel_encoder_setopt(
         encoder->highcolor = 1;
         break;
     case SIXEL_OPTFLAG_BUILTIN_PALETTE:  /* b */
-        if (strcmp(optarg, "xterm16") == 0) {
+        if (strcmp(value, "xterm16") == 0) {
             encoder->builtin_palette = SIXEL_BUILTIN_XTERM16;
-        } else if (strcmp(optarg, "xterm256") == 0) {
+        } else if (strcmp(value, "xterm256") == 0) {
             encoder->builtin_palette = SIXEL_BUILTIN_XTERM256;
-        } else if (strcmp(optarg, "vt340mono") == 0) {
+        } else if (strcmp(value, "vt340mono") == 0) {
             encoder->builtin_palette = SIXEL_BUILTIN_VT340_MONO;
-        } else if (strcmp(optarg, "vt340color") == 0) {
+        } else if (strcmp(value, "vt340color") == 0) {
             encoder->builtin_palette = SIXEL_BUILTIN_VT340_COLOR;
-        } else if (strcmp(optarg, "gray1") == 0) {
+        } else if (strcmp(value, "gray1") == 0) {
             encoder->builtin_palette = SIXEL_BUILTIN_G1;
-        } else if (strcmp(optarg, "gray2") == 0) {
+        } else if (strcmp(value, "gray2") == 0) {
             encoder->builtin_palette = SIXEL_BUILTIN_G2;
-        } else if (strcmp(optarg, "gray4") == 0) {
+        } else if (strcmp(value, "gray4") == 0) {
             encoder->builtin_palette = SIXEL_BUILTIN_G4;
-        } else if (strcmp(optarg, "gray8") == 0) {
+        } else if (strcmp(value, "gray8") == 0) {
             encoder->builtin_palette = SIXEL_BUILTIN_G8;
         } else {
             sixel_helper_set_additional_message(
@@ -1501,19 +1501,19 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_DIFFUSION:  /* d */
         /* parse --diffusion option */
-        if (strcmp(optarg, "auto") == 0) {
+        if (strcmp(value, "auto") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_AUTO;
-        } else if (strcmp(optarg, "none") == 0) {
+        } else if (strcmp(value, "none") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_NONE;
-        } else if (strcmp(optarg, "fs") == 0) {
+        } else if (strcmp(value, "fs") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_FS;
-        } else if (strcmp(optarg, "atkinson") == 0) {
+        } else if (strcmp(value, "atkinson") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_ATKINSON;
-        } else if (strcmp(optarg, "jajuni") == 0) {
+        } else if (strcmp(value, "jajuni") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_JAJUNI;
-        } else if (strcmp(optarg, "stucki") == 0) {
+        } else if (strcmp(value, "stucki") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_STUCKI;
-        } else if (strcmp(optarg, "burkes") == 0) {
+        } else if (strcmp(value, "burkes") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_BURKES;
         } else {
             sixel_helper_set_additional_message(
@@ -1524,12 +1524,12 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_FIND_LARGEST:  /* f */
         /* parse --find-largest option */
-        if (optarg) {
-            if (strcmp(optarg, "auto") == 0) {
+        if (value) {
+            if (strcmp(value, "auto") == 0) {
                 encoder->method_for_largest = SIXEL_LARGE_AUTO;
-            } else if (strcmp(optarg, "norm") == 0) {
+            } else if (strcmp(value, "norm") == 0) {
                 encoder->method_for_largest = SIXEL_LARGE_NORM;
-            } else if (strcmp(optarg, "lum") == 0) {
+            } else if (strcmp(value, "lum") == 0) {
                 encoder->method_for_largest = SIXEL_LARGE_LUM;
             } else {
                 sixel_helper_set_additional_message(
@@ -1541,14 +1541,14 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_SELECT_COLOR:  /* s */
         /* parse --select-color option */
-        if (strcmp(optarg, "auto") == 0) {
+        if (strcmp(value, "auto") == 0) {
             encoder->method_for_rep = SIXEL_REP_AUTO;
-        } else if (strcmp(optarg, "center") == 0) {
+        } else if (strcmp(value, "center") == 0) {
             encoder->method_for_rep = SIXEL_REP_CENTER_BOX;
-        } else if (strcmp(optarg, "average") == 0) {
+        } else if (strcmp(value, "average") == 0) {
             encoder->method_for_rep = SIXEL_REP_AVERAGE_COLORS;
-        } else if ((strcmp(optarg, "histogram") == 0) ||
-                   (strcmp(optarg, "histgram") == 0)) {
+        } else if ((strcmp(value, "histogram") == 0) ||
+                   (strcmp(value, "histgram") == 0)) {
             encoder->method_for_rep = SIXEL_REP_AVERAGE_PIXELS;
         } else {
             sixel_helper_set_additional_message(
@@ -1558,7 +1558,7 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_CROP:  /* c */
-        number = sscanf(optarg, "%dx%d+%d+%d",
+        number = sscanf(value, "%dx%d+%d+%d",
                         &encoder->clipwidth, &encoder->clipheight,
                         &encoder->clipx, &encoder->clipy);
         if (number != 4) {
@@ -1576,14 +1576,14 @@ sixel_encoder_setopt(
         encoder->clipfirst = 0;
         break;
     case SIXEL_OPTFLAG_WIDTH:  /* w */
-        parsed = sscanf(optarg, "%d%2s", &number, unit);
+        parsed = sscanf(value, "%d%2s", &number, unit);
         if (parsed == 2 && strcmp(unit, "%") == 0) {
             encoder->pixelwidth = (-1);
             encoder->percentwidth = number;
         } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
             encoder->pixelwidth = number;
             encoder->percentwidth = (-1);
-        } else if (strcmp(optarg, "auto") == 0) {
+        } else if (strcmp(value, "auto") == 0) {
             encoder->pixelwidth = (-1);
             encoder->percentwidth = (-1);
         } else {
@@ -1597,14 +1597,14 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_HEIGHT:  /* h */
-        parsed = sscanf(optarg, "%d%2s", &number, unit);
+        parsed = sscanf(value, "%d%2s", &number, unit);
         if (parsed == 2 && strcmp(unit, "%") == 0) {
             encoder->pixelheight = (-1);
             encoder->percentheight = number;
         } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
             encoder->pixelheight = number;
             encoder->percentheight = (-1);
-        } else if (strcmp(optarg, "auto") == 0) {
+        } else if (strcmp(value, "auto") == 0) {
             encoder->pixelheight = (-1);
             encoder->percentheight = (-1);
         } else {
@@ -1619,25 +1619,25 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_RESAMPLING:  /* r */
         /* parse --resampling option */
-        if (strcmp(optarg, "nearest") == 0) {
+        if (strcmp(value, "nearest") == 0) {
             encoder->method_for_resampling = SIXEL_RES_NEAREST;
-        } else if (strcmp(optarg, "gaussian") == 0) {
+        } else if (strcmp(value, "gaussian") == 0) {
             encoder->method_for_resampling = SIXEL_RES_GAUSSIAN;
-        } else if (strcmp(optarg, "hanning") == 0) {
+        } else if (strcmp(value, "hanning") == 0) {
             encoder->method_for_resampling = SIXEL_RES_HANNING;
-        } else if (strcmp(optarg, "hamming") == 0) {
+        } else if (strcmp(value, "hamming") == 0) {
             encoder->method_for_resampling = SIXEL_RES_HAMMING;
-        } else if (strcmp(optarg, "bilinear") == 0) {
+        } else if (strcmp(value, "bilinear") == 0) {
             encoder->method_for_resampling = SIXEL_RES_BILINEAR;
-        } else if (strcmp(optarg, "welsh") == 0) {
+        } else if (strcmp(value, "welsh") == 0) {
             encoder->method_for_resampling = SIXEL_RES_WELSH;
-        } else if (strcmp(optarg, "bicubic") == 0) {
+        } else if (strcmp(value, "bicubic") == 0) {
             encoder->method_for_resampling = SIXEL_RES_BICUBIC;
-        } else if (strcmp(optarg, "lanczos2") == 0) {
+        } else if (strcmp(value, "lanczos2") == 0) {
             encoder->method_for_resampling = SIXEL_RES_LANCZOS2;
-        } else if (strcmp(optarg, "lanczos3") == 0) {
+        } else if (strcmp(value, "lanczos3") == 0) {
             encoder->method_for_resampling = SIXEL_RES_LANCZOS3;
-        } else if (strcmp(optarg, "lanczos4") == 0) {
+        } else if (strcmp(value, "lanczos4") == 0) {
             encoder->method_for_resampling = SIXEL_RES_LANCZOS4;
         } else {
             sixel_helper_set_additional_message(
@@ -1648,13 +1648,13 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_QUALITY:  /* q */
         /* parse --quality option */
-        if (strcmp(optarg, "auto") == 0) {
+        if (strcmp(value, "auto") == 0) {
             encoder->quality_mode = SIXEL_QUALITY_AUTO;
-        } else if (strcmp(optarg, "high") == 0) {
+        } else if (strcmp(value, "high") == 0) {
             encoder->quality_mode = SIXEL_QUALITY_HIGH;
-        } else if (strcmp(optarg, "low") == 0) {
+        } else if (strcmp(value, "low") == 0) {
             encoder->quality_mode = SIXEL_QUALITY_LOW;
-        } else if (strcmp(optarg, "full") == 0) {
+        } else if (strcmp(value, "full") == 0) {
             encoder->quality_mode = SIXEL_QUALITY_FULL;
         } else {
             sixel_helper_set_additional_message(
@@ -1665,11 +1665,11 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_LOOPMODE:  /* l */
         /* parse --loop-control option */
-        if (strcmp(optarg, "auto") == 0) {
+        if (strcmp(value, "auto") == 0) {
             encoder->loop_mode = SIXEL_LOOP_AUTO;
-        } else if (strcmp(optarg, "force") == 0) {
+        } else if (strcmp(value, "force") == 0) {
             encoder->loop_mode = SIXEL_LOOP_FORCE;
-        } else if (strcmp(optarg, "disable") == 0) {
+        } else if (strcmp(value, "disable") == 0) {
             encoder->loop_mode = SIXEL_LOOP_DISABLE;
         } else {
             sixel_helper_set_additional_message(
@@ -1680,11 +1680,11 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_PALETTE_TYPE:  /* t */
         /* parse --palette-type option */
-        if (strcmp(optarg, "auto") == 0) {
+        if (strcmp(value, "auto") == 0) {
             encoder->palette_type = SIXEL_PALETTETYPE_AUTO;
-        } else if (strcmp(optarg, "hls") == 0) {
+        } else if (strcmp(value, "hls") == 0) {
             encoder->palette_type = SIXEL_PALETTETYPE_HLS;
-        } else if (strcmp(optarg, "rgb") == 0) {
+        } else if (strcmp(value, "rgb") == 0) {
             encoder->palette_type = SIXEL_PALETTETYPE_RGB;
         } else {
             sixel_helper_set_additional_message(
@@ -1699,7 +1699,7 @@ sixel_encoder_setopt(
             sixel_allocator_free(encoder->allocator, encoder->bgcolor);
         }
         status = parse_x_colorspec(&encoder->bgcolor,
-                                   optarg,
+                                   value,
                                    encoder->allocator);
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
@@ -1718,7 +1718,7 @@ sixel_encoder_setopt(
         encoder->fuse_macro = 1;
         break;
     case SIXEL_OPTFLAG_MACRO_NUMBER:  /* n */
-        encoder->macro_number = atoi(optarg);
+        encoder->macro_number = atoi(value);
         if (encoder->macro_number < 0) {
             status = SIXEL_BAD_ARGUMENT;
             goto end;
@@ -1737,11 +1737,11 @@ sixel_encoder_setopt(
         encoder->penetrate_multiplexer = 1;
         break;
     case SIXEL_OPTFLAG_ENCODE_POLICY:  /* E */
-        if (strcmp(optarg, "auto") == 0) {
+        if (strcmp(value, "auto") == 0) {
             encoder->encode_policy = SIXEL_ENCODEPOLICY_AUTO;
-        } else if (strcmp(optarg, "fast") == 0) {
+        } else if (strcmp(value, "fast") == 0) {
             encoder->encode_policy = SIXEL_ENCODEPOLICY_FAST;
-        } else if (strcmp(optarg, "size") == 0) {
+        } else if (strcmp(value, "size") == 0) {
             encoder->encode_policy = SIXEL_ENCODEPOLICY_SIZE;
         } else {
             sixel_helper_set_additional_message(
@@ -1751,7 +1751,7 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_COMPLEXION_SCORE:  /* C */
-        encoder->complexion = atoi(optarg);
+        encoder->complexion = atoi(value);
         if (encoder->complexion < 1) {
             sixel_helper_set_additional_message(
                 "complexion parameter must be 1 or more.");

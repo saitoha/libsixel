@@ -176,7 +176,7 @@ SIXELAPI SIXELSTATUS
 sixel_decoder_setopt(
     sixel_decoder_t /* in */ *decoder,
     int             /* in */ arg,
-    char const      /* in */ *optarg
+    char const      /* in */ *value
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -186,7 +186,7 @@ sixel_decoder_setopt(
     switch(arg) {
     case 'i':
         free(decoder->input);
-        decoder->input = strdup_with_allocator(optarg, decoder->allocator);
+        decoder->input = strdup_with_allocator(value, decoder->allocator);
         if (decoder->input == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_decoder_setopt: strdup_with_allocator() failed.");
@@ -196,7 +196,7 @@ sixel_decoder_setopt(
         break;
     case 'o':
         free(decoder->output);
-        decoder->output = strdup_with_allocator(optarg, decoder->allocator);
+        decoder->output = strdup_with_allocator(value, decoder->allocator);
         if (decoder->input == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_decoder_setopt: strdup_with_allocator() failed.");
