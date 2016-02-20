@@ -195,7 +195,7 @@ sixel_decoder_setopt(
     sixel_decoder_ref(decoder);
 
     switch(arg) {
-    case 'i':
+    case SIXEL_OPTFLAG_INPUT:  /* i */
         free(decoder->input);
         decoder->input = strdup_with_allocator(value, decoder->allocator);
         if (decoder->input == NULL) {
@@ -205,7 +205,7 @@ sixel_decoder_setopt(
             goto end;
         }
         break;
-    case 'o':
+    case SIXEL_OPTFLAG_OUTPUT:  /* o */
         free(decoder->output);
         decoder->output = strdup_with_allocator(value, decoder->allocator);
         if (decoder->input == NULL) {

@@ -175,7 +175,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_LOOP_DISABLE         2   /* always disable loop */
 
 /* setopt flags */
-#define SIXEL_OPTFLAG_INPUT            ('i')  /* -o, --input: specify input file name. */
+#define SIXEL_OPTFLAG_INPUT            ('i')  /* -i, --input: specify input file name. */
 #define SIXEL_OPTFLAG_OUTPUT           ('o')  /* -o, --output: specify output file name. */
 #define SIXEL_OPTFLAG_OUTFILE          ('o')  /* -o, --outfile: specify output file name. */
 #define SIXEL_OPTFLAG_7BIT_MODE        ('7')  /* -7, --7bit-mode: for 7bit terminals or printers (default) */
