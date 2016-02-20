@@ -911,7 +911,7 @@ load_with_gdkpixbuf(
     GdkPixbufLoader *loader = NULL;
 #if 1
     GdkPixbufAnimationIter *it;
-    GTimeVal time;
+    GTimeVal time_val;
 #endif
     sixel_frame_t *frame = NULL;
     int stride;
@@ -931,7 +931,7 @@ load_with_gdkpixbuf(
 #if (!GLIB_CHECK_VERSION(2, 36, 0))
     g_type_init();
 #endif
-    g_get_current_time(&time);
+    g_get_current_time(&time_val);
     loader = gdk_pixbuf_loader_new();
     gdk_pixbuf_loader_write(loader, pchunk->buffer, pchunk->size, NULL);
     animation = gdk_pixbuf_loader_get_animation(loader);
@@ -974,15 +974,15 @@ load_with_gdkpixbuf(
             goto end;
         }
     } else {
-        g_get_current_time(&time);
+        g_get_current_time(&time_val);
 
         frame->frame_no = 0;
 
-        it = gdk_pixbuf_animation_get_iter(animation, &time);
+        it = gdk_pixbuf_animation_get_iter(animation, &time_val);
         for (;;) {
             while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
                 frame->delay = gdk_pixbuf_animation_iter_get_delay_time(it);
-                g_time_val_add(&time, frame->delay * 1000);
+                g_time_val_add(&time_val, frame->delay * 1000);
                 frame->delay /= 10;
                 pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
                 if (pixbuf == NULL) {
@@ -1017,7 +1017,7 @@ load_with_gdkpixbuf(
                     }
                 }
                 frame->multiframe = 1;
-                gdk_pixbuf_animation_iter_advance(it, &time);
+                gdk_pixbuf_animation_iter_advance(it, &time_val);
                 status = fn_load(frame, context);
                 if (status != SIXEL_OK) {
                     goto end;
