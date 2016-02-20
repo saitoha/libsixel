@@ -507,7 +507,7 @@ splitBox(boxVector const bv,
     unsigned int const boxSize  = bv[bi].colors;
     unsigned int const sm       = bv[bi].sum;
 
-    unsigned int const max_depth = 16;
+    enum { max_depth= 16 };
     sample minval[max_depth];
     sample maxval[max_depth];
 
