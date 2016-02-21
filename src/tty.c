@@ -284,8 +284,9 @@ sixel_tty_scroll(
             "sixel_tty_scroll: f_write() failed.");
         goto end;
     }
-#else
-    (void) frame;
+#else  /* mingw */
+    (void) height;
+    (void) is_animation;
     nwrite = f_write("\033[H", 3, &outfd);
     if (nwrite < 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
