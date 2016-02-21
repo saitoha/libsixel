@@ -200,7 +200,7 @@ volatile int sixel_debug_malloc_counter;
 void *
 sixel_bad_malloc(size_t size)
 {
-    return sixel_debug_malloc_counter-- < 0 ? NULL: malloc(size);
+    return sixel_debug_malloc_counter-- == 0 ? NULL: malloc(size);
 }
 
 

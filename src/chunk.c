@@ -505,7 +505,7 @@ static int
 test2(void)
 {
     int nret = EXIT_FAILURE;
-    sixel_chunk_t *chunk;
+    sixel_chunk_t *chunk = NULL;
     SIXELSTATUS status = SIXEL_FALSE;
 
     status = sixel_chunk_new(&chunk, NULL, 0, NULL, NULL);
@@ -515,6 +515,59 @@ test2(void)
 
     status = sixel_chunk_new(NULL, NULL, 0, NULL, NULL);
     if (status != SIXEL_BAD_ARGUMENT) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+static int
+test3(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_chunk_t *chunk;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status = SIXEL_FALSE;
+
+    sixel_debug_malloc_counter = 1;
+
+    status = sixel_allocator_new(&allocator, sixel_bad_malloc, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_chunk_new(&chunk, "../images/map8.six", 0, NULL, allocator);
+    if (status != SIXEL_BAD_ALLOCATION) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+static int
+test4(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_chunk_t *chunk;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status = SIXEL_FALSE;
+
+    sixel_debug_malloc_counter = 2;
+
+    status = sixel_allocator_new(&allocator, sixel_bad_malloc, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    status = sixel_chunk_new(&chunk, "../images/map8.six", 0, NULL, allocator);
+    if (status != SIXEL_BAD_ALLOCATION) {
         goto error;
     }
 
@@ -535,6 +588,8 @@ sixel_chunk_tests_main(void)
     static testcase const testcases[] = {
         test1,
         test2,
+        test3,
+        test4,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
