@@ -34,6 +34,7 @@
 #define LIBSIXEL_ABI_VERSION "@LS_LTVERSION@"
 
 #define SIXEL_OUTPUT_PACKET_SIZE     16384
+#define SIXEL_PALETTE_MIN            2
 #define SIXEL_PALETTE_MAX            256
 #define SIXEL_USE_DEPRECATED_SYMBOLS 1
 
@@ -112,6 +113,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_FORMATTYPE_COLOR     (0)
 #define SIXEL_FORMATTYPE_GRAYSCALE (1 << 6)
 #define SIXEL_FORMATTYPE_PALETTE   (1 << 7)
+
 /* pixelformat type of input image
    NOTE: for compatibility, the value of PIXELFORAMT_COLOR_RGB888 must be 3 */
 #define SIXEL_PIXELFORMAT_RGB555   (SIXEL_FORMATTYPE_COLOR     | 0x01) /* 15bpp */
