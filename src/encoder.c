@@ -35,9 +35,6 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#if HAVE_SYS_SELECT_H
-#include <sys/select.h>
-#endif
 #if HAVE_TIME_H
 # include <time.h>
 #endif
@@ -50,12 +47,6 @@
 #if HAVE_ERRNO_H
 # include <errno.h>
 #endif
-#if HAVE_TERMIOS_H
-# include <termios.h>
-#endif
-#if HAVE_SYS_IOCTL_H
-# include <sys/ioctl.h>
-#endif
 #if HAVE_SYS_STAT_H
 # include <sys/stat.h>
 #endif
@@ -64,6 +55,7 @@
 #endif
 
 #include <sixel.h>
+#include "tty.h"
 #include "encoder.h"
 #include "rgblookup.h"
 
@@ -325,12 +317,16 @@ typedef struct sixel_callback_context_for_mapfile {
 } sixel_callback_context_for_mapfile_t;
 
 
+/* callback function for sixel_helper_load_image_file() */
 static SIXELSTATUS
-load_image_callback_for_palette(sixel_frame_t *frame, void *data)
+load_image_callback_for_palette(
+    sixel_frame_t   /* in */    *frame, /* frame object from image loader */
+    void            /* in */    *data)  /* private data */
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_callback_context_for_mapfile_t *callback_context;
 
+    /* get callback context object from the private data */
     callback_context = (sixel_callback_context_for_mapfile_t *)data;
 
     switch (sixel_frame_get_pixelformat(frame)) {
@@ -342,6 +338,7 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
             status = SIXEL_LOGIC_ERROR;
             goto end;
         }
+        /* create new dither object */
         status = sixel_dither_new(
             &callback_context->dither,
             sixel_frame_get_ncolors(frame),
@@ -349,27 +346,40 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+
+        /* use palette which is extracted from the image */
         sixel_dither_set_palette(callback_context->dither,
                                  sixel_frame_get_palette(frame));
+        /* success */
         status = SIXEL_OK;
         break;
     case SIXEL_PIXELFORMAT_G1:
+        /* use 1bpp grayscale builtin palette */
         callback_context->dither = sixel_dither_get(SIXEL_BUILTIN_G1);
+        /* success */
         status = SIXEL_OK;
         break;
     case SIXEL_PIXELFORMAT_G2:
+        /* use 2bpp grayscale builtin palette */
+        callback_context->dither = sixel_dither_get(SIXEL_BUILTIN_G1);
         callback_context->dither = sixel_dither_get(SIXEL_BUILTIN_G2);
+        /* success */
         status = SIXEL_OK;
         break;
     case SIXEL_PIXELFORMAT_G4:
+        /* use 4bpp grayscale builtin palette */
         callback_context->dither = sixel_dither_get(SIXEL_BUILTIN_G4);
+        /* success */
         status = SIXEL_OK;
         break;
     case SIXEL_PIXELFORMAT_G8:
+        /* use 8bpp grayscale builtin palette */
         callback_context->dither = sixel_dither_get(SIXEL_BUILTIN_G8);
+        /* success */
         status = SIXEL_OK;
         break;
     default:
+        /* create new dither object */
         status = sixel_dither_new(
             &callback_context->dither,
             callback_context->reqcolors,
@@ -378,6 +388,7 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
             goto end;
         }
 
+        /* create adaptive palette from given frame object */
         status = sixel_dither_initialize(callback_context->dither,
                                          sixel_frame_get_pixels(frame),
                                          sixel_frame_get_width(frame),
@@ -391,6 +402,7 @@ load_image_callback_for_palette(sixel_frame_t *frame, void *data)
             goto end;
         }
 
+        /* success */
         status = SIXEL_OK;
 
         break;
@@ -401,6 +413,7 @@ end:
 }
 
 
+/* create palette from specified map file */
 static SIXELSTATUS
 sixel_prepare_specified_palette(
     sixel_dither_t  /* out */   **dither,
@@ -434,6 +447,7 @@ sixel_prepare_specified_palette(
 }
 
 
+/* create dither object */
 static SIXELSTATUS
 sixel_prepare_palette(sixel_dither_t  /* out */ **dither,
                       sixel_frame_t   /* in */  *frame,
@@ -442,7 +456,8 @@ sixel_prepare_palette(sixel_dither_t  /* out */ **dither,
     SIXELSTATUS status = SIXEL_FALSE;
     int histogram_colors;
 
-    if (encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
+    switch (encoder->color_option) {
+    case SIXEL_COLOR_OPTION_HIGHCOLOR:
         if (encoder->dither_cache) {
             *dither = encoder->dither_cache;
             status = SIXEL_OK;
@@ -450,9 +465,7 @@ sixel_prepare_palette(sixel_dither_t  /* out */ **dither,
             status = sixel_dither_new(dither, (-1), encoder->allocator);
         }
         goto end;
-    }
-
-    if (encoder->color_option == SIXEL_COLOR_OPTION_MONOCHROME) {
+    case SIXEL_COLOR_OPTION_MONOCHROME:
         if (encoder->dither_cache) {
             *dither = encoder->dither_cache;
             status = SIXEL_OK;
@@ -460,9 +473,7 @@ sixel_prepare_palette(sixel_dither_t  /* out */ **dither,
             status = sixel_prepare_monochrome_palette(dither, encoder->finvert);
         }
         goto end;
-    }
-
-    if (encoder->color_option == SIXEL_COLOR_OPTION_MAPFILE) {
+    case SIXEL_COLOR_OPTION_MAPFILE:
         if (encoder->dither_cache) {
             *dither = encoder->dither_cache;
             status = SIXEL_OK;
@@ -470,9 +481,7 @@ sixel_prepare_palette(sixel_dither_t  /* out */ **dither,
             status = sixel_prepare_specified_palette(dither, encoder);
         }
         goto end;
-    }
-
-    if (encoder->color_option == SIXEL_COLOR_OPTION_BUILTIN) {
+    case SIXEL_COLOR_OPTION_BUILTIN:
         if (encoder->dither_cache) {
             *dither = encoder->dither_cache;
             status = SIXEL_OK;
@@ -480,6 +489,9 @@ sixel_prepare_palette(sixel_dither_t  /* out */ **dither,
             status = sixel_prepare_builtin_palette(dither, encoder->builtin_palette);
         }
         goto end;
+    case SIXEL_COLOR_OPTION_DEFAULT:
+    default:
+        break;
     }
 
     if (sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_PALETTE) {
@@ -685,31 +697,8 @@ sixel_debug_print_palette(sixel_dither_t *dither)
 }
 
 
-static int
-sixel_wait_stdin(int usec)
-{
-#if HAVE_SYS_SELECT_H
-    fd_set rfds;
-    struct timeval tv;
-#endif  /* HAVE_SYS_SELECT_H */
-    int ret = 0;
-
-#if HAVE_SYS_SELECT_H
-    tv.tv_sec = usec / 1000000;
-    tv.tv_usec = usec % 1000000;
-    FD_ZERO(&rfds);
-    FD_SET(STDIN_FILENO, &rfds);
-    ret = select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
-#else
-    (void) usec;
-#endif  /* HAVE_SYS_SELECT_H */
-
-    return ret;
-}
-
-
 static SIXELSTATUS
-output_sixel_without_macro(
+sixel_encoder_without_macro(
     sixel_frame_t       /* in */ *frame,
     sixel_dither_t      /* in */ *dither,
     sixel_output_t      /* in */ *output,
@@ -735,7 +724,7 @@ output_sixel_without_macro(
 
     if (encoder == NULL) {
         sixel_helper_set_additional_message(
-            "output_sixel_without_macro: encoder object is null.");
+            "sixel_encoder_without_macro: encoder object is null.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -749,7 +738,7 @@ output_sixel_without_macro(
     if (depth < 0) {
         status = SIXEL_LOGIC_ERROR;
         nwrite = sprintf(message,
-                         "output_sixel_without_macro: "
+                         "sixel_encoder_without_macro: "
                          "sixel_helper_compute_depth(%08x) failed.",
                          pixelformat);
         if (nwrite > 0) {
@@ -763,7 +752,7 @@ output_sixel_without_macro(
     p = (unsigned char *)sixel_allocator_malloc(encoder->allocator, width * height * depth);
     if (p == NULL) {
         sixel_helper_set_additional_message(
-            "output_sixel_without_macro: sixel_allocator_malloc() failed.");
+            "sixel_encoder_without_macro: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -807,7 +796,7 @@ end:
 
 
 static SIXELSTATUS
-output_sixel_with_macro(
+sixel_encoder_output_with_macro(
     sixel_frame_t   /* in */ *frame,
     sixel_dither_t  /* in */ *dither,
     sixel_output_t  /* in */ *output,
@@ -842,14 +831,14 @@ output_sixel_with_macro(
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
-                "output_sixel_with_macro: sprintf() failed.");
+                "sixel_encoder_output_with_macro: sprintf() failed.");
             goto end;
         }
         nwrite = sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
-                "output_sixel_with_macro: sixel_write_callback() failed.");
+                "sixel_encoder_output_with_macro: sixel_write_callback() failed.");
             goto end;
         }
 
@@ -865,7 +854,7 @@ output_sixel_with_macro(
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
-                "output_sixel_with_macro: sixel_write_callback() failed.");
+                "sixel_encoder_output_with_macro: sixel_write_callback() failed.");
             goto end;
         }
     }
@@ -874,13 +863,13 @@ output_sixel_with_macro(
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
-                "output_sixel_with_macro: sprintf() failed.");
+                "sixel_encoder_output_with_macro: sprintf() failed.");
         }
         nwrite = sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
-                "output_sixel_with_macro: sixel_write_callback() failed.");
+                "sixel_encoder_output_with_macro: sixel_write_callback() failed.");
             goto end;
         }
 #if HAVE_USLEEP
@@ -906,228 +895,6 @@ end:
 }
 
 
-#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
-static SIXELSTATUS
-sixel_tty_cbreak(struct termios *old_termios, struct termios *new_termios)
-{
-    SIXELSTATUS status = SIXEL_FALSE;
-    int ret;
-
-    /* set the terminal to cbreak mode */
-    ret = tcgetattr(STDIN_FILENO, old_termios);
-    if (ret != 0) {
-        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-        sixel_helper_set_additional_message(
-            "sixel_tty_cbreak: tcgetattr() failed.");
-        goto end;
-    }
-
-    (void) memcpy(new_termios, old_termios, sizeof(*old_termios));
-    new_termios->c_lflag &= ~(ECHO | ICANON);
-    new_termios->c_cc[VMIN] = 1;
-    new_termios->c_cc[VTIME] = 0;
-
-    ret = tcsetattr(STDIN_FILENO, TCSAFLUSH, new_termios);
-    if (ret != 0) {
-        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-        sixel_helper_set_additional_message(
-            "sixel_tty_cbreak: tcsetattr() failed.");
-        goto end;
-    }
-
-    status = SIXEL_OK;
-
-end:
-    return status;
-}
-#endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY */
-
-
-#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
-static SIXELSTATUS
-sixel_tty_restore(struct termios *old_termios)
-{
-    SIXELSTATUS status = SIXEL_FALSE;
-    int ret;
-
-    ret = tcsetattr(STDIN_FILENO, TCSAFLUSH, old_termios);
-    if (ret != 0) {
-        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-        sixel_helper_set_additional_message(
-            "sixel_tty_restore: tcsetattr() failed.");
-        goto end;
-    }
-
-    status = SIXEL_OK;
-
-end:
-    return status;
-}
-#endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY */
-
-
-static SIXELSTATUS
-sixel_scroll_on_demand(
-    sixel_encoder_t /* in */ *encoder,
-    sixel_frame_t   /* in */ *frame)
-{
-    SIXELSTATUS status = SIXEL_FALSE;
-    int nwrite;
-#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
-    struct winsize size = {0, 0, 0, 0};
-    struct termios old_termios;
-    struct termios new_termios;
-    int row = 0;
-    int col = 0;
-    int pixelheight;
-    int cellheight;
-    int scroll;
-    char buffer[256];
-    int result;
-
-    /* confirm I/O file descriptors are tty devices */
-    if (!isatty(STDIN_FILENO) || !isatty(encoder->outfd)) {
-        nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
-        if (nwrite < 0) {
-            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-            sixel_helper_set_additional_message(
-                "sixel_scroll_on_demand: sixel_write_callback() failed.");
-            goto end;
-        }
-        status = SIXEL_OK;
-        goto end;
-    }
-
-    /* request terminal size to tty device with TIOCGWINSZ ioctl */
-    result = ioctl(encoder->outfd, TIOCGWINSZ, &size);
-    if (result != 0) {
-        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-        sixel_helper_set_additional_message("ioctl() failed.");
-        goto end;
-    }
-
-    /* if we can not retrieve terminal pixel size over TIOCGWINSZ ioctl,
-       return immediatly */
-    if (size.ws_ypixel <= 0) {
-        nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
-        if (nwrite < 0) {
-            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-            sixel_helper_set_additional_message(
-                "sixel_scroll_on_demand: sixel_write_callback() failed.");
-            goto end;
-        }
-        status = SIXEL_OK;
-        goto end;
-    }
-
-    /* if input source is animation and frame No. is more than 1,
-       output DECSC sequence */
-    if (sixel_frame_get_loop_no(frame) != 0 ||
-        sixel_frame_get_frame_no(frame) != 0) {
-        nwrite = sixel_write_callback("\0338", 2, &encoder->outfd);
-        if (nwrite < 0) {
-            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-            sixel_helper_set_additional_message(
-                "sixel_scroll_on_demand: sixel_write_callback() failed.");
-            goto end;
-        }
-        status = SIXEL_OK;
-        goto end;
-    }
-
-    /* set the terminal to cbreak mode */
-    status = sixel_tty_cbreak(&old_termios, &new_termios);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    /* request cursor position report */
-    nwrite = sixel_write_callback("\033[6n", 4, &encoder->outfd);
-    if (nwrite < 0) {
-        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-        sixel_helper_set_additional_message(
-            "sixel_scroll_on_demand: sixel_write_callback() failed.");
-        goto end;
-    }
-
-    /* wait cursor position report */
-    if (sixel_wait_stdin(1000 * 1000) == (-1)) { /* wait up to 1 sec */
-        nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
-        if (nwrite < 0) {
-            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-            sixel_helper_set_additional_message(
-                "sixel_scroll_on_demand: sixel_write_callback() failed.");
-            goto end;
-        }
-        status = SIXEL_OK;
-        goto end;
-    }
-
-    /* scan cursor position report */
-    if (scanf("\033[%d;%dR", &row, &col) != 2) {
-        nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
-        if (nwrite < 0) {
-            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-            sixel_helper_set_additional_message(
-                "sixel_scroll_on_demand: sixel_write_callback() failed.");
-            goto end;
-        }
-        status = SIXEL_OK;
-        goto end;
-    }
-
-    /* restore the terminal mode */
-    status = sixel_tty_restore(&old_termios);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    /* calculate scrolling amount in pixels */
-    pixelheight = sixel_frame_get_height(frame);
-    cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
-    scroll = cellheight + row - size.ws_row + 1;
-    if (scroll > 0) {
-        nwrite = sprintf(buffer, "\033[%dS\033[%dA", scroll, scroll);
-        if (nwrite < 0) {
-            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-            sixel_helper_set_additional_message(
-                "sixel_scroll_on_demand: sprintf() failed.");
-        }
-        nwrite = sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
-        if (nwrite < 0) {
-            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-            sixel_helper_set_additional_message(
-                "sixel_scroll_on_demand: sixel_write_callback() failed.");
-            goto end;
-        }
-    }
-
-    /* emit DECSC sequence */
-    nwrite = sixel_write_callback("\0337", 2, &encoder->outfd);
-    if (nwrite < 0) {
-        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-        sixel_helper_set_additional_message(
-            "sixel_scroll_on_demand: sixel_write_callback() failed.");
-        goto end;
-    }
-#else
-    (void) frame;
-    nwrite = sixel_write_callback("\033[H", 3, &encoder->outfd);
-    if (nwrite < 0) {
-        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-        sixel_helper_set_additional_message(
-            "sixel_scroll_on_demand: sixel_write_callback() failed.");
-        goto end;
-    }
-#endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY */
-
-    status = SIXEL_OK;
-
-end:
-    return status;
-}
-
-
 /* called when image loader component load a image frame */
 static SIXELSTATUS
 load_image_callback(sixel_frame_t *frame, void *data)
@@ -1136,6 +903,8 @@ load_image_callback(sixel_frame_t *frame, void *data)
     sixel_encoder_t *encoder;
     sixel_dither_t *dither = NULL;
     sixel_output_t *output = NULL;
+    int height;
+    int is_animation = 0;
     int nwrite;
 
     encoder = (sixel_encoder_t *)data;
@@ -1216,7 +985,11 @@ load_image_callback(sixel_frame_t *frame, void *data)
     sixel_output_set_encode_policy(output, encoder->encode_policy);
 
     if (sixel_frame_get_multiframe(frame) && !encoder->fstatic) {
-        (void) sixel_scroll_on_demand(encoder, frame);
+        if (sixel_frame_get_loop_no(frame) != 0 || sixel_frame_get_frame_no(frame) != 0) {
+            is_animation = 1;
+        }
+        height = sixel_frame_get_height(frame);
+        (void) sixel_tty_scroll(sixel_write_callback, encoder->outfd, height, is_animation);
     }
 
     if (encoder->cancel_flag && *encoder->cancel_flag) {
@@ -1227,13 +1000,13 @@ load_image_callback(sixel_frame_t *frame, void *data)
     /* output sixel: junction of multi-frame processing strategy */
     if (encoder->fuse_macro) {  /* -u option */
         /* use macro */
-        status = output_sixel_with_macro(frame, dither, output, encoder);
+        status = sixel_encoder_output_with_macro(frame, dither, output, encoder);
     } else if (encoder->macro_number >= 0) { /* -n option */
         /* use macro */
-        status = output_sixel_with_macro(frame, dither, output, encoder);
+        status = sixel_encoder_output_with_macro(frame, dither, output, encoder);
     } else {
         /* do not use macro */
-        status = output_sixel_without_macro(frame, dither, output, encoder);
+        status = sixel_encoder_without_macro(frame, dither, output, encoder);
     }
 
     if (encoder->cancel_flag && *encoder->cancel_flag) {
@@ -1921,7 +1694,7 @@ reload:
         clearerr(stdin);
 #endif  /* HAVE_FSEEK */
         while (encoder->cancel_flag && !*encoder->cancel_flag) {
-            status = sixel_wait_stdin(1000000);
+            status = sixel_tty_wait_stdin(1000000);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
@@ -1979,6 +1752,8 @@ test2(void)
     sixel_encoder_t *encoder = NULL;
     sixel_frame_t *frame = NULL;
     unsigned char *buffer;
+    int height = 0;
+    int is_animation = 0;
 
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic push
@@ -2008,18 +1783,20 @@ test2(void)
     if (buffer == NULL) {
         goto error;
     }
-    status = sixel_frame_init(frame,
-                              buffer,
-                              1,
-                              1,
+    status = sixel_frame_init(frame, buffer, 1, 1,
                               SIXEL_PIXELFORMAT_RGB888,
-                              NULL,
-                              0);
+                              NULL, 0);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
 
-    status = sixel_scroll_on_demand(encoder, frame);
+    if (sixel_frame_get_loop_no(frame) != 0 || sixel_frame_get_frame_no(frame) != 0) {
+        is_animation = 1;
+    }
+
+    height = sixel_frame_get_height(frame);
+
+    status = sixel_tty_scroll(sixel_write_callback, encoder->outfd, height, is_animation);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -2039,7 +1816,7 @@ test3(void)
     int nret = EXIT_FAILURE;
     int result;
 
-    result = sixel_wait_stdin(1000);
+    result = sixel_tty_wait_stdin(1000);
     if (result != 0) {
         goto error;
     }
@@ -2118,7 +1895,6 @@ error:
     sixel_encoder_unref(encoder);
     return nret;
 }
-
 
 
 int
