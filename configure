@@ -14273,9 +14273,9 @@ _ACEOF
 
 fi
 
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromBmpPtr in -lgd" >&5
-$as_echo_n "checking for gdImageCreateFromBmpPtr in -lgd... " >&6; }
-if ${ac_cv_lib_gd_gdImageCreateFromBmpPtr+:} false; then :
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromPngPtr in -lgd" >&5
+$as_echo_n "checking for gdImageCreateFromPngPtr in -lgd... " >&6; }
+if ${ac_cv_lib_gd_gdImageCreateFromPngPtr+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -14289,27 +14289,27 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char gdImageCreateFromBmpPtr ();
+char gdImageCreateFromPngPtr ();
 int
 main ()
 {
-return gdImageCreateFromBmpPtr ();
+return gdImageCreateFromPngPtr ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_gd_gdImageCreateFromBmpPtr=yes
+  ac_cv_lib_gd_gdImageCreateFromPngPtr=yes
 else
-  ac_cv_lib_gd_gdImageCreateFromBmpPtr=no
+  ac_cv_lib_gd_gdImageCreateFromPngPtr=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImageCreateFromBmpPtr" >&5
-$as_echo "$ac_cv_lib_gd_gdImageCreateFromBmpPtr" >&6; }
-if test "x$ac_cv_lib_gd_gdImageCreateFromBmpPtr" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImageCreateFromPngPtr" >&5
+$as_echo "$ac_cv_lib_gd_gdImageCreateFromPngPtr" >&6; }
+if test "x$ac_cv_lib_gd_gdImageCreateFromPngPtr" = xyes; then :
   ac_fn_c_check_decl "$LINENO" "gdImageCreateFromPngPtr" "ac_cv_have_decl_gdImageCreateFromPngPtr" " #include <gd.h>
 "
 if test "x$ac_cv_have_decl_gdImageCreateFromPngPtr" = xyes; then :
