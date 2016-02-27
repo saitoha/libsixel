@@ -354,7 +354,7 @@ if test x$with_gd != xno; then
                      [gdImageCreateFromGifPtr],
                      [AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])])
         AC_CHECK_LIB([gd],
-                     [gdImageCreateFromBmpPtr],
+                     [gdImageCreateFromPngPtr],
                      [AC_CHECK_DECLS([gdImageCreateFromPngPtr],   [], [], [ #include <gd.h> ])])
         AC_CHECK_LIB([gd],
                      [gdImageCreateFromBmpPtr],
