@@ -931,20 +931,20 @@ The MIT License (MIT)
 
 ## Contributers and Reviewers
 
-- @arakiken
-- @elfring
-- @hattya
-- @isaki68k
-- @knok
-- @mattn
-- @msmhrt
-- @obache
-- @tsutsui
-- @ttdoda
-- @uobikiemukot
-- @vrtsds
-- @waywardmonkeys
-- @yoshikaw
+- [@arakiken](https://github.com/arakiken/)
+- [@elfring](https://github.com/elfring/)
+- [@hattya](https://github.com/hattya/)
+- [@isaki68k](https://github.com/isaki68k/)
+- [@knok](https://github.com/knok/)
+- [@mattn](https://github.com/mattn/)
+- [@msmhrt](https://github.com/msmhrt/)
+- [@obache](https://github.com/obache/)
+- [@tsutsui](https://github.com/tsutsui/)
+- [@ttdoda](https://github.com/ttdoda/)
+- [@uobikiemukot](https://github.com/uobikiemukot/)
+- [@vrtsds](https://github.com/vrtsds/)
+- [@waywardmonkeys](https://github.com/waywardmonkeys/)
+- [@yoshikaw](https://github.com/yoshikaw/)
 
 ## Contributing
 
