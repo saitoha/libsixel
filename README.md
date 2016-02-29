@@ -933,6 +933,7 @@ The MIT License (MIT)
 
 - @arakiken
 - @elfring
+- @hattya
 - @isaki68k
 - @knok
 - @mattn
