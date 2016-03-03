@@ -725,7 +725,7 @@ chunk_is_jpeg(sixel_chunk_t const *chunk)
 #endif  /* HAVE_JPEG */
 
 
-
+/* load images using builtin image loaders */
 static SIXELSTATUS
 load_with_builtin(
     sixel_chunk_t const       /* in */     *pchunk,      /* image data */
