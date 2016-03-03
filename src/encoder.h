@@ -64,6 +64,7 @@ struct sixel_encoder {
     int encode_policy;
     int pipe_mode;
     int verbose;
+    int has_gri_arg_limit;
     unsigned char *bgcolor;
     int outfd;
     int finsecure;
