@@ -152,6 +152,17 @@ sixel_output_set_8bit_availability(sixel_output_t *output, int availability)
 }
 
 
+/* set whether limit arguments of DECGRI('!') to 255 */
+SIXELAPI void
+sixel_output_set_gri_arg_limit(
+    sixel_output_t /* in */ *output, /* output context */
+    int            /* in */ value)   /* 0: don't limit arguments of DECGRI
+                                        1: limit arguments of DECGRI to 255 */
+{
+    output->has_gri_arg_limit = value;
+}
+
+
 /* set GNU Screen penetration feature enable or disable */
 SIXELAPI void
 sixel_output_set_penetrate_multiplexer(sixel_output_t *output, int penetrate)
