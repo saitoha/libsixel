@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -37,8 +37,30 @@
 # include <curl/curl.h>
 #endif
 
+#include "status.h"
+
+#define SIXEL_MESSAGE_OK                ("succeeded")
+#define SIXEL_MESSAGE_FALSE             ("unexpected error (SIXEL_FALSE)");
+#define SIXEL_MESSAGE_UNEXPECTED        ("unexpected error")
+#define SIXEL_MESSAGE_INTERRUPTED       ("interrupted by a signal")
+#define SIXEL_MESSAGE_BAD_ALLOCATION    ("runtime error: bad allocation error")
+#define SIXEL_MESSAGE_BAD_ARGUMENT      ("runtime error: bad argument detected")
+#define SIXEL_MESSAGE_BAD_INPUT         ("runtime error: bad input detected")
+#define SIXEL_MESSAGE_RUNTIME_ERROR     ("runtime error")
+#define SIXEL_MESSAGE_LOGIC_ERROR       ("logic error")
+#define SIXEL_MESSAGE_NOT_IMPLEMENTED   ("feature error: not implemented")
+#define SIXEL_MESSAGE_FEATURE_ERROR     ("feature error")
+#define SIXEL_MESSAGE_STBI_ERROR        ("stb_image error")
+#define SIXEL_MESSAGE_STBIW_ERROR       ("stb_image_write error")
+#define SIXEL_MESSAGE_JPEG_ERROR        ("libjpeg error")
+#define SIXEL_MESSAGE_PNG_ERROR         ("libpng error")
+#define SIXEL_MESSAGE_GDK_ERROR         ("GDK error")
+#define SIXEL_MESSAGE_GD_ERROR          ("GD error")
+
+
 static char g_buffer[1024] = { 0x0 };
 
+/* set detailed error message (thread-unsafe) */
 SIXELAPI void
 sixel_helper_set_additional_message(
     const char      /* in */  *message         /* error message */
@@ -52,6 +74,7 @@ sixel_helper_set_additional_message(
 }
 
 
+/* get detailed error message (thread-unsafe) */
 SIXELAPI char const *
 sixel_helper_get_additional_message(void)
 {
@@ -74,11 +97,11 @@ sixel_helper_format_error(
     case SIXEL_OK:
         switch (status) {
         case SIXEL_INTERRUPTED:
-            error_string = "interrupted by a signal";
+            error_string = SIXEL_MESSAGE_INTERRUPTED;
             break;
         case SIXEL_OK:
         default:
-            error_string = "succeeded";
+            error_string = SIXEL_MESSAGE_OK;
             break;
         }
         break;
@@ -87,29 +110,29 @@ sixel_helper_format_error(
         case SIXEL_RUNTIME_ERROR:
             switch (status) {
             case SIXEL_BAD_ALLOCATION:
-                error_string = "runtime error: bad allocation error";
+                error_string = SIXEL_MESSAGE_BAD_ALLOCATION;
                 break;
             case SIXEL_BAD_ARGUMENT:
-                error_string = "runtime error: bad argument detected";
+                error_string = SIXEL_MESSAGE_BAD_ARGUMENT;
                 break;
             case SIXEL_BAD_INPUT:
-                error_string = "runtime error: bad input detected";
+                error_string = SIXEL_MESSAGE_BAD_INPUT;
                 break;
             default:
-                error_string = "runtime error";
+                error_string = SIXEL_MESSAGE_RUNTIME_ERROR;
                 break;
             }
             break;
         case SIXEL_LOGIC_ERROR:
-            error_string = "logic error";
+            error_string = SIXEL_MESSAGE_LOGIC_ERROR;
             break;
         case SIXEL_FEATURE_ERROR:
             switch (status) {
             case SIXEL_NOT_IMPLEMENTED:
-                error_string = "feature error: not implemented";
+                error_string = SIXEL_MESSAGE_NOT_IMPLEMENTED;
                 break;
             default:
-                error_string = "feature error";
+                error_string = SIXEL_MESSAGE_FEATURE_ERROR;
                 break;
             }
             break;
@@ -118,7 +141,6 @@ sixel_helper_format_error(
             len = strlen(p) + 1;
             memcpy(buffer, p, len < sizeof(buffer) ? len: sizeof(buffer) - 1);
             buffer[sizeof(buffer) - 1] = 0;
-            free((char *)p);
             error_string = buffer;
             break;
 #ifdef HAVE_LIBCURL
@@ -126,31 +148,42 @@ sixel_helper_format_error(
             error_string = curl_easy_strerror(status & 0xff);
             break;
 #endif
+#ifdef HAVE_JPEG
         case SIXEL_JPEG_ERROR:
-            error_string = "jpeg error";
+            error_string = SIXEL_MESSAGE_JPEG_ERROR;
             break;
+#endif
+#ifdef HAVE_LIBPNG
         case SIXEL_PNG_ERROR:
-            error_string = "png error";
+            error_string = SIXEL_MESSAGE_PNG_ERROR;
             break;
+#endif
+#ifdef HAVE_GDK_PIXBUF2
         case SIXEL_GDK_ERROR:
-            error_string = "gdk error";
+            error_string = SIXEL_MESSAGE_GDK_ERROR;
             break;
+#endif
+#ifdef HAVE_GD
         case SIXEL_GD_ERROR:
-            error_string = "gd error";
+            error_string = SIXEL_MESSAGE_GD_ERROR;
             break;
+#endif
         case SIXEL_STBI_ERROR:
-            error_string = "stb_image error";
+            error_string = SIXEL_MESSAGE_STBI_ERROR;
             break;
         case SIXEL_STBIW_ERROR:
-            error_string = "stb_image_write error";
+            error_string = SIXEL_MESSAGE_STBIW_ERROR;
+            break;
+        case SIXEL_FALSE:
+            error_string = SIXEL_MESSAGE_FALSE;
             break;
         default:
-            error_string = "unknown error";
+            error_string = SIXEL_MESSAGE_UNEXPECTED;
             break;
         }
         break;
     default:
-        error_string = "unknown error";
+        error_string = SIXEL_MESSAGE_UNEXPECTED;
         break;
     }
     return error_string;
@@ -162,13 +195,118 @@ static int
 test1(void)
 {
     int nret = EXIT_FAILURE;
+    char const *message;
 
-    if (strcmp(sixel_helper_format_error(SIXEL_OK), "succeeded") == 0) {
+    message = sixel_helper_format_error(SIXEL_OK);
+    if (strcmp(message, SIXEL_MESSAGE_OK) != 0) {
+        goto error;
+    }
+
+    message = sixel_helper_format_error(SIXEL_INTERRUPTED);
+    if (strcmp(message, SIXEL_MESSAGE_INTERRUPTED) != 0) {
         goto error;
     }
     return EXIT_SUCCESS;
 error:
     perror("test1");
+    return nret;
+}
+
+
+static int
+test2(void)
+{
+    int nret = EXIT_FAILURE;
+    char const *message;
+
+    message = sixel_helper_format_error(SIXEL_BAD_ALLOCATION);
+    if (strcmp(message, SIXEL_MESSAGE_BAD_ALLOCATION) != 0) {
+        goto error;
+    }
+
+    message = sixel_helper_format_error(SIXEL_BAD_ARGUMENT);
+    if (strcmp(message, SIXEL_MESSAGE_BAD_ARGUMENT) != 0) {
+        goto error;
+    }
+
+    message = sixel_helper_format_error(SIXEL_BAD_INPUT);
+    if (strcmp(message, SIXEL_MESSAGE_BAD_INPUT) != 0) {
+        goto error;
+    }
+
+    message = sixel_helper_format_error(SIXEL_RUNTIME_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_RUNTIME_ERROR) != 0) {
+        goto error;
+    }
+
+    message = sixel_helper_format_error(SIXEL_LOGIC_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_LOGIC_ERROR) != 0) {
+        goto error;
+    }
+
+    message = sixel_helper_format_error(SIXEL_NOT_IMPLEMENTED);
+    if (strcmp(message, SIXEL_MESSAGE_NOT_IMPLEMENTED) != 0) {
+        goto error;
+    }
+
+    message = sixel_helper_format_error(SIXEL_FEATURE_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_FEATURE_ERROR) != 0) {
+        goto error;
+    }
+
+    message = sixel_helper_format_error(SIXEL_LIBC_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_UNEXPECTED) == 0) {
+        goto error;
+    }
+
+#ifdef HAVE_LIBCURL
+    message = sixel_helper_format_error(SIXEL_CURL_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_UNEXPECTED) == 0) {
+        goto error;
+    }
+#endif
+
+#if HAVE_JPEG
+    message = sixel_helper_format_error(SIXEL_JPEG_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_JPEG_ERROR) != 0) {
+        goto error;
+    }
+#endif
+
+#if HAVE_LIBPNG
+    message = sixel_helper_format_error(SIXEL_PNG_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_PNG_ERROR) != 0) {
+        goto error;
+    }
+#endif
+
+#if HAVE_GD
+    message = sixel_helper_format_error(SIXEL_GD_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_GD_ERROR) != 0) {
+        goto error;
+    }
+#endif
+
+#if HAVE_GDK_PIXBUF2
+    message = sixel_helper_format_error(SIXEL_GDK_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_GDK_ERROR) != 0) {
+        goto error;
+    }
+#endif
+
+    message = sixel_helper_format_error(SIXEL_STBI_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_STBI_ERROR) != 0) {
+        goto error;
+    }
+
+    message = sixel_helper_format_error(SIXEL_STBIW_ERROR);
+    if (strcmp(message, SIXEL_MESSAGE_STBIW_ERROR) != 0) {
+        goto error;
+    }
+
+    return EXIT_SUCCESS;
+error:
+    perror("test2");
     return nret;
 }
 
@@ -182,6 +320,7 @@ sixel_status_tests_main(void)
 
     static testcase const testcases[] = {
         test1,
+        test2,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

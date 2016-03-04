@@ -61,25 +61,20 @@ if WANT_IMG2SIXEL
 	test ! $$($(WINE) ./img2sixel -B \#ffff ../images/map8.png)
 	test ! $$($(WINE) ./img2sixel -B \#0000000000000 ../images/map8.png)
 	test ! $$($(WINE) ./img2sixel -B \#00G)
+	test ! $$($(WINE) ./img2sixel -B test)
+	test ! $$($(WINE) ./img2sixel -B rgb:11/11)
 	test ! $$($(WINE) ./img2sixel -%)
 	test ! $$($(WINE) ./img2sixel -m invalid_filename ../images/snake.jpg)
-	test ! $$($(WINE) ./img2sixel -m ../images/map8.png -p 8 ../images/snake.jpg)
-	test ! $$($(WINE) ./img2sixel -m ../images/map8.png -e ../images/snake.jpg)
 	test ! $$($(WINE) ./img2sixel -p16 -e ../images/snake.jpg)
 	test ! $$($(WINE) ./img2sixel -I -C0 ../images/snake.png)
-	test ! $$($(WINE) ./img2sixel -I -e ../images/snake.png)
 	test ! $$($(WINE) ./img2sixel -I -p8 ../images/snake.png)
-	test ! $$($(WINE) ./img2sixel -I -m ../images/map8.png ../images/snake.png)
-	test ! $$($(WINE) ./img2sixel -I -bxterm16 ../images/snake.png)
-	test ! $$($(WINE) ./img2sixel -e -bxterm256 ../images/snake.png)
 	test ! $$($(WINE) ./img2sixel -p64 -bxterm256 ../images/snake.png)
-	test ! $$($(WINE) ./img2sixel -m ../images/map16.png -bxterm256 ../images/snake.png)
 	test ! $$($(WINE) ./img2sixel -8 -P ../images/snake.png)
 	test ! $$(echo -n a | $(WINE) ./img2sixel)
 	$(WINE) ./img2sixel -H
 	$(WINE) ./img2sixel -V
 	$(WINE) ./img2sixel ../images/snake.jpg -datkinson -flum -saverage | ./img2sixel | tee snake.sixel
-	$(WINE) ./img2sixel -w50% -h150% -dfs -thls -shistogram < ../images/snake.jpg | tee snake2.sixel
+	$(WINE) ./img2sixel -w50% -h150% -dfs -Bblue -thls -shistogram < ../images/snake.jpg | tee snake2.sixel
 	$(WINE) ./img2sixel -w2100 -h2100 -djajuni -bxterm256 -o snake3.sixel < ../images/snake.jpg
 	$(WINE) ./img2sixel -w105% -h100 -B\#000000000 -rnearest < ../images/snake.gif
 	$(WINE) ./img2sixel -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto ../images/snake.tga
@@ -235,14 +230,15 @@ if WANT_SIXEL2PNG
 endif
 	$(WINE) ./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options1.txt
 	rm -f sixel.pipe
-	if test "$(WINE)" = "" && which mkfifo; then \
+	if test "$(WINE)" = "" && which mkfifo && which pkill; then \
 	    mkfifo sixel.pipe; \
-	    test -e sixel.pipe && ($(WINE) ./img2sixel -D < sixel.pipe&); \
+	    ($(WINE) ./img2sixel -D < sixel.pipe&); \
 	    cat ../images/snake.jpg > sixel.pipe; \
 	    echo -n > sixel.pipe; \
 	    sleep 1; \
 	    rm -f sixel.pipe; \
-	fi
+	    pkill img2sixel; \
+	fi || true
 	grep ^\.B img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > options2.txt
 	grep ' --' shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > options3.txt
 	grep '{-' shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > options4.txt

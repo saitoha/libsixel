@@ -264,6 +264,42 @@ show version and license info.
 print help.
 
 
+.SH "ENVIRONMENT VARIABLES"
+\fIimg2sixel\fP has the following command-line options:
+.TP 5
+.B SIXEL_BGCOLOR
+.br
+specify background color.
+.br
+overrided by -B(--bgcolor) option.
+.br
+represented by the following syntax:
+.br
+#rgb
+.br
+#rrggbb
+.br
+#rrrgggbbb
+.br
+#rrrrggggbbbb
+.br
+rgb:r/g/b
+.br
+rgb:rr/gg/bb
+.br
+rgb:rrr/ggg/bbb
+.br
+rgb:rrrr/gggg/bbbb
+.br
+.TP 5
+.B SIXEL_NCOLORS
+.br
+specify number of colors to reduce the image to (default=256).
+.br
+overrided by -p(--colors) option.
+.br
+
+
 .SH Image loaders
 
 \fIimg2sixel\fP includes two or more image decoder components.
@@ -343,7 +379,7 @@ sixel(5) sixel2png(1)
 
 .SH AUTHORS
 \fIimg2sixel\fP is maintained by Hayaki Saito.
-We imported whole code of \fIstb_image v2.02\fP, written by Sean Barrett and its contributers, for loading various images,
+We imported whole code of \fIstb_image v2.10\fP, written by Sean Barrett and its contributers, for loading various images,
 and imported some code from \fIpnmquant.c (netpbm library)\fP for image quantization.
 
 
@@ -438,9 +474,12 @@ MagickCore's resize.c.
 .nf
 Araki Ken (@arakiken)
 Markus Elfring (@elfring)
+Akinori Hattori (@hattya)
 isaki (@isaki68k)
 NOKUBI Takatsugu (@knok)
 Yasuhiro MATSUMOTO (@mattn)
+Masami HIRATA(@msmhrt)
+OBATA Akio (@obache)
 Izumi Tsutsui (@tsutsui)
 Iwamoto Kouichi (@ttdoda)
 haru (@uobikiemukot)
@@ -454,6 +493,6 @@ Kazuhiro YOSHIKAWA (@yoshikaw)
 .PD
 .IP \(bu
 Send bug-reports, fixes, enhancements to
-.BR user@zuse.jp .
+.BR saitoha@me.com.jp
 
 .\" end of man page

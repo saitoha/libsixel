@@ -72,6 +72,27 @@
    don't. */
 #undef HAVE_DECL_SIGTERM
 
+/* define 1 if GCC supports -Wdeprecated-declarations */
+#undef HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+
+/* define 1 if GCC supports -Wdouble-promotion */
+#undef HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
+
+/* define 1 if GCC supports -Wshadow */
+#undef HAVE_DIAGNOSTIC_SHADOW
+
+/* define 1 if GCC supports -Wstrict_overeflow */
+#undef HAVE_DIAGNOSTIC_STRICT_OVERFLOW
+
+/* define 1 if GCC supports -Wswitch-default */
+#undef HAVE_DIAGNOSTIC_SWITCH_DEFAULT
+
+/* define 1 if GCC supports -Wtypedef-redefinition */
+#undef HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
+
+/* define 1 if GCC supports -Wuninitialized */
+#undef HAVE_DIAGNOSTIC_UNINITIALIZED
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
@@ -102,11 +123,17 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the <io.h> header file. */
+#undef HAVE_IO_H
+
 /* Define to 1 if you have the `isatty' function. */
 #undef HAVE_ISATTY
 
 /* whether jpeg codec library is available */
 #undef HAVE_JPEG
+
+/* Define to 1 if you have the `ldiv' function. */
+#undef HAVE_LDIV
 
 /* whether libcurl is available */
 #undef HAVE_LIBCURL
@@ -164,11 +191,17 @@
 /* Define to 1 if you have the `strdup' function. */
 #undef HAVE_STRDUP
 
+/* Define to 1 if you have the `strerror' function. */
+#undef HAVE_STRERROR
+
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
 
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
+
+/* Define to 1 if you have the `strncmp' function. */
+#undef HAVE_STRNCMP
 
 /* Define to 1 if you have the `strtol' function. */
 #undef HAVE_STRTOL

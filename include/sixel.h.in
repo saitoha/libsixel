@@ -34,6 +34,7 @@
 #define LIBSIXEL_ABI_VERSION "@LS_LTVERSION@"
 
 #define SIXEL_OUTPUT_PACKET_SIZE     16384
+#define SIXEL_PALETTE_MIN            2
 #define SIXEL_PALETTE_MAX            256
 #define SIXEL_USE_DEPRECATED_SYMBOLS 1
 
@@ -112,6 +113,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_FORMATTYPE_COLOR     (0)
 #define SIXEL_FORMATTYPE_GRAYSCALE (1 << 6)
 #define SIXEL_FORMATTYPE_PALETTE   (1 << 7)
+
 /* pixelformat type of input image
    NOTE: for compatibility, the value of PIXELFORAMT_COLOR_RGB888 must be 3 */
 #define SIXEL_PIXELFORMAT_RGB555   (SIXEL_FORMATTYPE_COLOR     | 0x01) /* 15bpp */
@@ -175,7 +177,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_LOOP_DISABLE         2   /* always disable loop */
 
 /* setopt flags */
-#define SIXEL_OPTFLAG_INPUT            ('i')  /* -o, --input: specify input file name. */
+#define SIXEL_OPTFLAG_INPUT            ('i')  /* -i, --input: specify input file name. */
 #define SIXEL_OPTFLAG_OUTPUT           ('o')  /* -o, --output: specify output file name. */
 #define SIXEL_OPTFLAG_OUTFILE          ('o')  /* -o, --outfile: specify output file name. */
 #define SIXEL_OPTFLAG_7BIT_MODE        ('7')  /* -7, --7bit-mode: for 7bit terminals or printers (default) */
@@ -192,7 +194,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_COMPLEXION_SCORE ('C')  /* -C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE:
                                                  specify an number argument for the score of
                                                  complexion correction. */
-#define SIXEL_OPTFLAG_IGNORE_DELAY     ('u')  /* -g, --ignore-delay: render GIF animation without delay */
+#define SIXEL_OPTFLAG_IGNORE_DELAY     ('g')  /* -g, --ignore-delay: render GIF animation without delay */
 #define SIXEL_OPTFLAG_STATIC           ('S')  /* -S, --static: render animated GIF as a static image */
 #define SIXEL_OPTFLAG_DIFFUSION        ('d')  /* -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE:
                                                  choose diffusion method which used with -p option.
@@ -470,31 +472,102 @@ enum methodForResampling {
 };
 #endif
 
-#ifndef LIBSIXEL_DITHER_H
+typedef void *(* sixel_malloc_t)(size_t);
+typedef void *(* sixel_calloc_t)(size_t, size_t);
+typedef void *(* sixel_realloc_t)(void *, size_t);
+typedef void (* sixel_free_t)(void *);
 
-/* handle type of dither context object */
-typedef struct sixel_dither { int dummy; } sixel_dither_t;
-
-#endif /* SIXEL_DITHER_H */
-
-#ifndef LIBSIXEL_OUTPUT_H
-
-typedef int (* sixel_write_function)(char *data, int size, void *priv);
-
-/* handle type of output context object */
-typedef struct sixel_output { int dummy; } sixel_output_t;
-
-#endif  /* LIBSIXEL_OUTPUT_H */
-
-
-/* output context manipulation API */
+struct sixel_allocator;
+typedef struct sixel_allocator sixel_allocator_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* create output context object */
-SIXELAPI sixel_output_t *
+/* create allocator object */
+SIXELSTATUS
+sixel_allocator_new(
+    sixel_allocator_t   /* out */ **ppallocator,  /* allocator object to be created */
+    sixel_malloc_t      /* in */  fn_malloc,      /* custom malloc() function */
+    sixel_calloc_t      /* in */  fn_calloc,      /* custom calloc() function */
+    sixel_realloc_t     /* in */  fn_realloc,     /* custom realloc() function */
+    sixel_free_t        /* in */  fn_free);       /* custom free() function */
+
+/* increase reference count of allocator object (thread-unsafe) */
+SIXELAPI void
+sixel_allocator_ref(
+    sixel_allocator_t /* in */ *allocator);  /* allocator object to be
+                                                increment reference counter */
+
+/* decrease reference count of output context object (thread-unsafe) */
+SIXELAPI void
+sixel_allocator_unref(sixel_allocator_t *allocator);
+
+/* call custom malloc() */
+SIXELAPI void *
+sixel_allocator_malloc(
+    sixel_allocator_t   /* in */ *allocator,  /* allocator object */
+    size_t              /* in */ n);          /* allocation size */
+
+/* call custom calloc() */
+SIXELAPI void *
+sixel_allocator_calloc(
+    sixel_allocator_t   /* in */ *allocator,  /* allocator object */
+    size_t              /* in */ nelm,        /* allocation size */
+    size_t              /* in */ elsize);     /* allocation size */
+
+/* call custom realloc() */
+SIXELAPI void *
+sixel_allocator_realloc(
+    sixel_allocator_t   /* in */ *allocator,  /* allocator object */
+    void                /* in */ *p,          /* existing buffer to be re-allocated */
+    size_t              /* in */ n);          /* re-allocation size */
+
+/* call custom free() */
+SIXELAPI void
+sixel_allocator_free(
+    sixel_allocator_t   /* in */ *allocator,  /* allocator object */
+    void                /* in */ *p);         /* existing buffer to be freed */
+
+#if HAVE_TESTS
+extern volatile int sixel_debug_malloc_counter;
+
+void *
+sixel_bad_malloc(size_t size);
+
+void *
+sixel_bad_calloc(size_t count, size_t size);
+
+void *
+sixel_bad_realloc(void *ptr, size_t size);
+#endif  /* HAVE_TESTS */
+
+#ifdef __cplusplus
+}
+#endif
+
+/* output context manipulation API */
+
+struct sixel_output;
+typedef struct sixel_output sixel_output_t;
+typedef int (* sixel_write_function)(char *data, int size, void *priv);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* create new output context object */
+SIXELAPI SIXELSTATUS
+sixel_output_new(
+    sixel_output_t          /* out */ **output,     /* output object to be created */
+    sixel_write_function    /* in */  fn_write,     /* callback for output sixel */
+    void                    /* in */ *priv,         /* private data given as
+                                                       3rd argument of fn_write */
+    sixel_allocator_t       /* in */  *allocator);  /* allocator, null if you use
+                                                       default allocator */
+
+/* deprecated: create an output object */
+SIXELAPI @attr_func_deprecated@ sixel_output_t *
 sixel_output_create(
     sixel_write_function /* in */ fn_write, /* callback for output sixel */
     void                 /* in */ *priv);   /* private data given as
@@ -503,42 +576,48 @@ sixel_output_create(
 SIXELAPI void
 sixel_output_destroy(sixel_output_t /* in */ *output); /* output context */
 
-/* increment reference count of output context object (thread-unsafe) */
+/* increase reference count of output context object (thread-unsafe) */
 SIXELAPI void
 sixel_output_ref(sixel_output_t /* in */ *output);     /* output context */
 
-/* decrement reference count of output context object (thread-unsafe) */
+/* decrease reference count of output context object (thread-unsafe) */
 SIXELAPI void
 sixel_output_unref(sixel_output_t /* in */ *output);   /* output context */
 
+/* get 8bit output mode which indicates whether it uses C1 control characters */
 SIXELAPI int
 sixel_output_get_8bit_availability(
     sixel_output_t /* in */ *output);   /* output context */
 
+/* set 8bit output mode state */
 SIXELAPI void
 sixel_output_set_8bit_availability(
     sixel_output_t /* in */ *output,       /* output context */
     int            /* in */ availability); /* 0: do not use 8bit characters
                                               1: use 8bit characters */
 
+/* set GNU Screen penetration feature enable or disable */
 SIXELAPI void
 sixel_output_set_penetrate_multiplexer(
     sixel_output_t /* in */ *output,    /* output context */
     int            /* in */ penetrate); /* 0: penetrate GNU Screen
                                            1: do not penetrate GNU Screen */
 
+/* set whether we skip DCS envelope */
 SIXELAPI void
 sixel_output_set_skip_dcs_envelope(
     sixel_output_t /* in */ *output,   /* output context */
     int            /* in */ skip);     /* 0: output DCS envelope
                                           1: do not output DCS envelope */
 
+/* set palette type: RGB or HLS */
 SIXELAPI void
 sixel_output_set_palette_type(
     sixel_output_t /* in */ *output,      /* output context */
     int            /* in */ palettetype); /* PALETTETYPE_RGB: RGB palette
                                              PALETTETYPE_HLS: HLS palette */
 
+/* set encodeing policy: auto, fast or size */
 SIXELAPI void
 sixel_output_set_encode_policy(
     sixel_output_t /* in */ *output,    /* output context */
@@ -552,12 +631,24 @@ sixel_output_set_encode_policy(
 
 /* color quantization API */
 
+/* handle type of dither context object */
+struct sixel_dither;
+typedef struct sixel_dither sixel_dither_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* create dither context object */
-SIXELAPI sixel_dither_t *
+SIXELAPI SIXELSTATUS
+sixel_dither_new(
+    sixel_dither_t      /* out */   **ppdither,  /* dither object to be created */
+    int                 /* in */    ncolors,     /* required colors */
+    sixel_allocator_t   /* in */    *allocator); /* allocator, null if you use
+                                                    default allocator */
+
+/* create dither context object */
+SIXELAPI @attr_func_deprecated@ sixel_dither_t *
 sixel_dither_create(int /* in */ ncolors); /* number of colors */
 
 /* get built-in dither context object */
@@ -568,11 +659,11 @@ sixel_dither_get(int builtin_dither); /* ID of built-in dither object */
 SIXELAPI void
 sixel_dither_destroy(sixel_dither_t *dither); /* dither context object */
 
-/* increment reference count of dither context object (thread-unsafe) */
+/* increase reference count of dither context object (thread-unsafe) */
 SIXELAPI void
 sixel_dither_ref(sixel_dither_t *dither); /* dither context object */
 
-/* decrement reference count of dither context object (thread-unsafe) */
+/* decrease reference count of dither context object (thread-unsafe) */
 SIXELAPI void
 sixel_dither_unref(sixel_dither_t *dither); /* dither context object */
 
@@ -670,6 +761,17 @@ sixel_encode(
 
 /* convert sixel data into indexed pixel bytes and palette data */
 SIXELAPI SIXELSTATUS
+sixel_decode_raw(
+    unsigned char       /* in */  *p,           /* sixel bytes */
+    int                 /* in */  len,          /* size of sixel bytes */
+    unsigned char       /* out */ **pixels,     /* decoded pixels */
+    int                 /* out */ *pwidth,      /* image width */
+    int                 /* out */ *pheight,     /* image height */
+    unsigned char       /* out */ **palette,    /* ARGB palette */
+    int                 /* out */ *ncolors,     /* palette size (<= 256) */
+    sixel_allocator_t   /* in */  *allocator);  /* allocator object or null */
+
+SIXELAPI @attr_func_deprecated@ SIXELSTATUS
 sixel_decode(
     unsigned char            /* in */  *sixels,    /* sixel bytes */
     int                      /* in */  size,       /* size of sixel bytes */
@@ -678,7 +780,7 @@ sixel_decode(
     int                      /* out */ *pheight,   /* image height */
     unsigned char            /* out */ **palette,  /* RGBA palette */
     int                      /* out */ *ncolors,   /* palette size (<= 256) */
-    sixel_allocator_function /* out */ allocator); /* malloc function */
+    sixel_allocator_function /* in */  fn_malloc); /* malloc function */
 
 #ifdef __cplusplus
 }
@@ -731,7 +833,8 @@ sixel_helper_scale_image(
     int                 /* in */  pixelformat,           /* one of enum pixelFormat */
     int                 /* in */  dstw,                  /* destination image width */
     int                 /* in */  dsth,                  /* destination image height */
-    int                 /* in */  method_for_resampling  /* one of methodForResampling */
+    int                 /* in */  method_for_resampling, /* one of methodForResampling */
+    sixel_allocator_t   /* in */  *allocator             /* allocator object */
 );
 
 #ifdef __cplusplus
@@ -765,35 +868,42 @@ enum loopControl {
 };
 #endif
 
-#ifndef LIBSIXEL_FRAME_H
-
 /* handle type of dither context object */
-typedef struct sixel_frame { int dummy; } sixel_frame_t;
-
-#endif  /* LIBSIXEL_FRAME_H */
+struct sixel_frame;
+typedef struct sixel_frame sixel_frame_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-SIXELAPI unsigned char *
-sixel_frame_get_pixels(sixel_frame_t *frame);
+/* constructor of frame object */
+SIXELAPI SIXELSTATUS
+sixel_frame_new(
+    sixel_frame_t       /* out */ **ppframe,    /* frame object to be created */
+    sixel_allocator_t   /* in */  *allocator);  /* allocator, null if you use
+                                                   default allocator */
+/* deprecated version of sixel_frame_new() */
+SIXELAPI @attr_func_deprecated@ sixel_frame_t *
+sixel_frame_create(void);
 
+/* increase reference count of frame object (thread-unsafe) */
 SIXELAPI void
-sixel_frame_ref(sixel_frame_t *frame);
+sixel_frame_ref(sixel_frame_t /* in */ *frame);
 
+/* decrease reference count of frame object (thread-unsafe) */
 SIXELAPI void
-sixel_frame_unref(sixel_frame_t *frame);
+sixel_frame_unref(sixel_frame_t /* in */ *frame);
 
+/* initialize frame object with a pixel buffer */
 SIXELAPI SIXELSTATUS
 sixel_frame_init(
-    sixel_frame_t *frame,
-    unsigned char *pixels,
-    int width,
-    int height,
-    int pixelformat,
-    unsigned char *palette,
-    int ncolors
+    sixel_frame_t   /* in */ *frame,        /* frame object to be initialize */
+    unsigned char   /* in */ *pixels,       /* pixel buffer */
+    int             /* in */ width,         /* pixel width of buffer */
+    int             /* in */ height,        /* pixel height of buffer */
+    int             /* in */ pixelformat,   /* pixelformat of buffer */
+    unsigned char   /* in */ *palette,      /* palette for buffer or NULL */
+    int             /* in */ ncolors        /* number of palette colors or (-1) */
 );
 
 /* get pixels */
@@ -846,6 +956,7 @@ sixel_frame_strip_alpha(
     sixel_frame_t  /* in */ *frame,
     unsigned char  /* in */ *bgcolor);
 
+/* resize a frame to given size with specified resampling filter */
 SIXELAPI SIXELSTATUS
 sixel_frame_resize(
     sixel_frame_t  /* in */ *frame,
@@ -853,6 +964,7 @@ sixel_frame_resize(
     int            /* in */ height,
     int            /* in */ method_for_resampling);
 
+/* clip frame */
 SIXELAPI SIXELSTATUS
 sixel_frame_clip(
     sixel_frame_t  /* in */ *frame,
@@ -876,18 +988,20 @@ sixel_helper_load_image_file(
     sixel_load_image_function /* in */     fn_load,       /* callback */
     int                       /* in */     finsecure,     /* true if do not verify SSL */
     int const                 /* in */     *cancel_flag,  /* cancel flag */
-    void                      /* in/out */ *context);     /* private data for callback */
+    void                      /* in/out */ *context,      /* private data for callback */
+    sixel_allocator_t         /* in */     *allocator);   /* allocator object */
 
 /* write image to file */
 SIXELAPI SIXELSTATUS
 sixel_helper_write_image_file(
-    unsigned char  /* in */ *data,        /* source pixel data */
-    int            /* in */ width,        /* source data width */
-    int            /* in */ height,       /* source data height */
-    unsigned char  /* in */ *palette,     /* palette of source data */
-    int            /* in */ pixelformat,  /* source pixelFormat */
-    char const     /* in */ *filename,    /* destination filename */
-    int            /* in */ imageformat); /* one of enum imageformat */
+    unsigned char       /* in */ *data,        /* source pixel data */
+    int                 /* in */ width,        /* source data width */
+    int                 /* in */ height,       /* source data height */
+    unsigned char       /* in */ *palette,     /* palette of source data */
+    int                 /* in */ pixelformat,  /* source pixelFormat */
+    char const          /* in */ *filename,    /* destination filename */
+    int                 /* in */ imageformat,  /* one of enum imageformat */
+    sixel_allocator_t   /* in */ *allocator);  /* allocator object */
 
 #ifdef __cplusplus
 }
@@ -896,38 +1010,47 @@ sixel_helper_write_image_file(
 
 /* easy encoder API */
 
-#ifndef LIBSIXEL_EASY_ENCODE_H
-
 /* handle type of dither context object */
-typedef struct sixel_encoder { int dummy; } sixel_encoder_t;
-
-#endif  /* LIBSIXEL_EASY_ENCODE_H */
+struct sixel_encoder;
+typedef struct sixel_encoder sixel_encoder_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* create encoder object */
-SIXELAPI sixel_encoder_t *
+SIXELAPI SIXELSTATUS
+sixel_encoder_new(
+    sixel_encoder_t     /* out */ **ppencoder, /* encoder object to be created */
+    sixel_allocator_t   /* in */  *allocator); /* allocator, null if you use
+                                                  default allocator */
+
+/* deprecated version of sixel_decoder_new() */
+SIXELAPI @attr_func_deprecated@ sixel_encoder_t *
 sixel_encoder_create(void);
 
+/* increase reference count of encoder object (thread-unsafe) */
 SIXELAPI void
-sixel_encoder_ref(sixel_encoder_t *encoder);
+sixel_encoder_ref(sixel_encoder_t /* in */ *encoder);
 
+/* decrease reference count of encoder object (thread-unsafe) */
 SIXELAPI void
-sixel_encoder_unref(sixel_encoder_t *encoder);
+sixel_encoder_unref(sixel_encoder_t /* in */ *encoder);
 
+/* set cancel state flag to encoder object */
 SIXELAPI SIXELSTATUS
 sixel_encoder_set_cancel_flag(
     sixel_encoder_t /* in */ *encoder,
     int             /* in */ *cancel_flag);
 
+/* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS
 sixel_encoder_setopt(
     sixel_encoder_t /* in */ *encoder,
     int             /* in */ arg,
     char const      /* in */ *optarg);
 
+/* load source data from specified file and encode it to SIXEL format */
 SIXELAPI SIXELSTATUS
 sixel_encoder_encode(
     sixel_encoder_t /* in */ *encoder,
@@ -940,33 +1063,42 @@ sixel_encoder_encode(
 
 /* easy encoder API */
 
-#ifndef LIBSIXEL_EASY_DECODE_H
-
 /* handle type of dither context object */
-typedef struct sixel_decoder { int dummy; } sixel_decoder_t;
-
-#endif  /* LIBSIXEL_EASY_ENCODE_H */
+struct sixel_decoder;
+typedef struct sixel_decoder sixel_decoder_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* create decoder object */
-SIXELAPI sixel_decoder_t *
+SIXELAPI SIXELSTATUS
+sixel_decoder_new(
+    sixel_decoder_t    /* out */ **ppdecoder,  /* decoder object to be created */
+    sixel_allocator_t  /* in */  *allocator);  /* allocator, null if you use
+                                                  default allocator */
+
+/* deprecated version of sixel_decoder_new() */
+SIXELAPI @attr_func_deprecated@ sixel_decoder_t *
 sixel_decoder_create(void);
 
+/* increase reference count of decoder object (thread-unsafe) */
 SIXELAPI void
 sixel_decoder_ref(sixel_decoder_t *decoder);
 
+/* decrease reference count of decoder object (thread-unsafe) */
 SIXELAPI void
 sixel_decoder_unref(sixel_decoder_t *decoder);
 
+/* set an option flag to decoder object */
 SIXELAPI SIXELSTATUS
 sixel_decoder_setopt(
-    sixel_decoder_t /* in */ *decoder,
-    int             /* in */ arg,
-    char const      /* in */ *optarg);
+    sixel_decoder_t /* in */ *decoder,  /* decoder object */
+    int             /* in */ arg,       /* one of SIXEL_OPTFLAG_*** */
+    char const      /* in */ *optarg);  /* null or an argument of optflag */
 
+/* load source data from stdin or the file specified with
+   SIXEL_OPTFLAG_INPUT flag, and decode it */
 SIXELAPI SIXELSTATUS
 sixel_decoder_decode(
     sixel_decoder_t /* in */ *decoder);
@@ -974,8 +1106,6 @@ sixel_decoder_decode(
 #ifdef __cplusplus
 }
 #endif
-
-
 
 #endif  /* LIBSIXEL_SIXEL_H */
 

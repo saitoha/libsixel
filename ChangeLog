@@ -1,4 +1,56 @@
+2015-06-23  Hayaki Saito <user@zuse.jp>
+
+  * include/sixel.h.in: core: Add SIXEL_OPTFLAG_xxx definitions
+
+  * .gitmodules, ruby: Add dubmodule libsixel-ruby
+
+2015-06-22  Hayaki Saito <user@zuse.jp>
+
+  * ruby/README, ruby/images/egret.jpg, ruby/images/egret.six, ruby/setup.rb,
+  ruby/sixel.c: Drop Ruby interface
+
+2015-06-16  Hayaki Saito <user@zuse.jp>
+
+  * src/writer.c: Fix build error caused by calling undeclared function
+
+  * ruby/sixel.c: ruby: show detailed error messages
+
+  * ruby/sixel.c: Minor fix
+
+  * src/status.c: Add missing file: src/status.c
+
+  * converters/img2sixel.c, include/sixel.h.in, src/decoder.c, src/encoder.c,
+  src/loader.c, src/writer.c: Improve error handling
+
+  * Makefile.in, configure, configure.ac, converters/img2sixel.c,
+  include/sixel.h.in, src/Makefile.am, src/Makefile.in, src/loader.c: Introduce
+  newv APIs for semantic error handling: -
+  sixel_helper_set_additional_message() - sixel_helper_get_additional_message()
+  - sixel_helper_format_error()
+
+2015-06-15  Hayaki Saito <user@zuse.jp>
+
+  * src/loader.c: Supperss uninitialized warnings caused by MinGW gcc
+
 2015-06-14  Hayaki Saito <user@zuse.jp>
+
+  * ruby/README, ruby/images/egret.jpg, ruby/images/egret.six, ruby/setup.rb,
+  ruby/sixel.c: Add initial implementation of ruby interface
+
+  * src/decoder.c, src/encoder.c: Handle some ignored allocation errors
+
+  * converters/img2sixel.c, converters/sixel2png.c: Do semantic error handling
+  (on progress)
+
+  * src/loader.c: Suppress unused-label GCC warning
+
+  * src/encoder.c: Do semantic error handling (on progress)
+
+  * include/sixel.h.in, src/loader.c: Handle curl errors
+
+  * src/encoder.c, src/loader.c: Do semantic error handling (on progress)
+
+  * src/loader.c: Fix compile errors caused by missing symbol
 
   * README.md, converters/Makefile.am, converters/Makefile.in,
   converters/img2sixel.c, converters/shell-completion/bash/img2sixel,
@@ -25,6 +77,8 @@
 
   * include/sixel.h.in: Correct typoed version macro
 
+  * include/sixel.h.in: Correct typoed version macro
+
 2015-06-11  Hayaki Saito <user@zuse.jp>
 
   * src/Makefile.am, src/Makefile.in: Add rgblookup.gprf to distributed files
@@ -47,6 +101,10 @@
   option is specified
 
 2015-06-09  Hayaki Saito <user@zuse.jp>
+
+  * NEWS: Update NEWS
+
+  * NEWS: Update NEWS for release 1.5
 
   * LICENSE.stb: Update license file of stb
 
@@ -82,6 +140,10 @@
 
   * converters/loader.c: Copy gdk's pixbuf memory to libsixel-internal chunk
   with attention to image stride (reported by @ttdoda, Issue #43)
+
+2015-06-02  Hayaki Saito <user@zuse.jp>
+
+  * NEWS: Update NEWS
 
 2015-05-29  Hayaki Saito <user@zuse.jp>
 
@@ -804,6 +866,9 @@
   * converters/loader.c: Suppress printf() formatter warings
 
   * converters/loader.c, src/dither.c: Add logging
+
+  * converters/img2sixel.1: Add descriptions about source image formats to
+  manpage of img2sixel(for Issue #24)
 
 2015-02-18  Hayaki Saito <user@zuse.jp>
 
@@ -1786,6 +1851,8 @@
   * converters/loader.c: Interpret an image expanded by png_set_palette_to_rgb
   as a 3-channel image
 
+  * converters/img2sixel.1: Delete duplicated contributers
+
   * config.h.in, configure, configure.ac, converters/img2sixel.c,
   converters/loader.c, converters/loader.h: Use clearerr instead of fseek
 
@@ -1842,6 +1909,13 @@
 2014-10-29  Hayaki Saito <user@zuse.jp>
 
   * src/image.c: Remove unused source file image.c
+
+2014-10-28  Hayaki Saito <user@zuse.jp>
+
+  * converters/img2sixel.1: Add contributers
+
+  * converters/img2sixel.1: Correct swapped explanation of dithering methods
+  atkinson and fs
 
 2014-10-27  Vertis Sidus <vrtsds@users.noreply.github.com>
 

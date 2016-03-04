@@ -20,7 +20,10 @@ libsixel_la_SOURCES = \
 		pixelformat.c \
 		pixelformat.h \
 		scale.c \
+		chunk.c \
+		chunk.h \
 		loader.c \
+		loader.h \
 		frompnm.c \
 		frompnm.h \
 		fromgif.c \
@@ -35,6 +38,11 @@ libsixel_la_SOURCES = \
 		stb_image_write.c \
 		stb_image_write.h \
 		status.c \
+		status.h \
+		allocator.c \
+		allocator.h \
+		tty.c \
+		tty.h \
 		rgblookup.h
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/
 libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
