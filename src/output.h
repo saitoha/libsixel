@@ -45,6 +45,10 @@ struct sixel_output {
      * 1: the terminal does not have sixel scrolling */
     unsigned char has_sixel_scrolling;
 
+    /* 1: the argument of repeat introducer(DECGRI) is not limitted
+       0: the argument of repeat introducer(DECGRI) is limitted 255 */
+    unsigned char has_gri_arg_limit;
+
     /* 0: DECSDM set (CSI ? 80 h) enables sixel scrolling
        1: DECSDM set (CSI ? 80 h) disables sixel scrolling */
     unsigned char has_sdm_glitch;

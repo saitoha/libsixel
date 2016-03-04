@@ -144,15 +144,16 @@ sixel_put_flash(sixel_output_t *const context)
     int n;
     int nwrite;
 
-#if defined(USE_VT240)        /* VT240 Max 255 ? */
-    while (context->save_count > 255) {
-        sixel_putstr(context->buffer + context->pos, "!255", 4);
-        sixel_advance(context, 4);
-        sixel_putc((char *)context->buffer + context->pos, context->save_pixel);
-        sixel_advance(context, 1);
-        context->save_count -= 255;
+    if (context->has_gri_arg_limit) {  /* VT240 Max 255 ? */
+        while (context->save_count > 255) {
+            /* argument of DECGRI('!') is limitted to 255 in real VT */
+            sixel_puts((char *)context->buffer + context->pos, "!255", 4);
+            sixel_advance(context, 4);
+            sixel_putc((char *)context->buffer + context->pos, context->save_pixel);
+            sixel_advance(context, 1);
+            context->save_count -= 255;
+        }
     }
-#endif  /* defined(USE_VT240) */
 
     if (context->save_count > 3) {
         /* DECGRI Graphics Repeat Introducer ! Pn Ch */
