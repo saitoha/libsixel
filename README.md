@@ -302,6 +302,7 @@ Options:
                            terminals or printers (default)
 -8, --8bit-mode            generate a sixel image for 8bit
                            terminals or printers
+-R, --gri-limit            limit arguments of DECGRI('!') to 255
 -p COLORS, --colors=COLORS specify number of colors to reduce
                            the image to (default=256)
 -m FILE, --mapfile=FILE    transform image colors to match this
@@ -321,8 +322,8 @@ Options:
 -n MACRONO, --macro-number=MACRONO
                            specify an number argument for
                            DECDMAC and make terminal memorize
-                           SIXEL image. No image is shown if this
-                           option is specified
+                           SIXEL image. No image is shown if
+                           this option is specified
 -C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE
                            specify an number argument for the
                            score of complexion correction.
@@ -931,19 +932,20 @@ The MIT License (MIT)
 
 ## Contributers and Reviewers
 
-- @arakiken
-- @elfring
-- @isaki68k
-- @knok
-- @mattn
-- @msmhrt
-- @obache
-- @tsutsui
-- @ttdoda
-- @uobikiemukot
-- @vrtsds
-- @waywardmonkeys
-- @yoshikaw
+- [@arakiken](https://github.com/arakiken/)
+- [@elfring](https://github.com/elfring/)
+- [@hattya](https://github.com/hattya/)
+- [@isaki68k](https://github.com/isaki68k/)
+- [@knok](https://github.com/knok/)
+- [@mattn](https://github.com/mattn/)
+- [@msmhrt](https://github.com/msmhrt/)
+- [@obache](https://github.com/obache/)
+- [@tsutsui](https://github.com/tsutsui/)
+- [@ttdoda](https://github.com/ttdoda/)
+- [@uobikiemukot](https://github.com/uobikiemukot/)
+- [@vrtsds](https://github.com/vrtsds/)
+- [@waywardmonkeys](https://github.com/waywardmonkeys/)
+- [@yoshikaw](https://github.com/yoshikaw/)
 
 ## Contributing
 

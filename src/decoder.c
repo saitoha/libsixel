@@ -90,7 +90,7 @@ sixel_decoder_new(
     SIXELSTATUS status = SIXEL_FALSE;
 
     if (allocator == NULL) {
-        status = sixel_allocator_new(&allocator, malloc, calloc, realloc, free);
+        status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -367,15 +367,9 @@ test2(void)
 {
     int nret = EXIT_FAILURE;
     sixel_decoder_t *decoder = NULL;
-    sixel_allocator_t *allocator = NULL;
     SIXELSTATUS status;
 
-    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
-    if (SIXEL_FAILED(status)) {
-        goto error;
-    }
-
-    status = sixel_decoder_new(&decoder, allocator);
+    status = sixel_decoder_new(&decoder, NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -452,19 +446,16 @@ test5(void)
     sixel_allocator_t *allocator = NULL;
     SIXELSTATUS status;
 
-    sixel_debug_malloc_counter = 3;
+    sixel_debug_malloc_counter = 4;
 
     status = sixel_allocator_new(&allocator, sixel_bad_malloc, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
-
     status = sixel_decoder_new(&decoder, allocator);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
-
-    decoder->input = NULL;
 
     status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT, "/");
     if (status != SIXEL_BAD_ALLOCATION) {
@@ -486,6 +477,38 @@ test6(void)
     sixel_allocator_t *allocator = NULL;
     SIXELSTATUS status;
 
+    sixel_debug_malloc_counter = 4;
+
+    status = sixel_allocator_new(&allocator, sixel_bad_malloc, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_new(&decoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_OUTPUT, "/");
+    if (status != SIXEL_BAD_ALLOCATION) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+static int
+test7(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_decoder_t *decoder = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
@@ -495,6 +518,7 @@ test6(void)
     if (SIXEL_FAILED(status)) {
         goto error;
     }
+
     status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT, "../images/file");
     if (SIXEL_FAILED(status)) {
         goto error;
@@ -502,6 +526,43 @@ test6(void)
 
     status = sixel_decoder_decode(decoder);
     if ((status >> 8) != (SIXEL_LIBC_ERROR >> 8)) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+static int
+test8(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_decoder_t *decoder = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+
+    sixel_debug_malloc_counter = 5;
+
+    status = sixel_allocator_new(&allocator, sixel_bad_malloc, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_new(&decoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT, "../images/map8.six");
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_decode(decoder);
+    if (status != SIXEL_BAD_ALLOCATION) {
         goto error;
     }
 
@@ -525,7 +586,9 @@ sixel_decoder_tests_main(void)
         test3,
         test4,
         test5,
-        test6
+        test6,
+        test7,
+        test8
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
@@ -541,8 +604,6 @@ error:
     return nret;
 }
 #endif  /* HAVE_TESTS */
-
-
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

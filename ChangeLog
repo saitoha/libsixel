@@ -1,3 +1,7 @@
+2016-02-27  Akinori Hattori <hattya@gentoo.org>
+
+  * configure, configure.ac: Fix check for gdImageCreateFromPngPtr availability
+
 2016-02-21  Hayaki Saito <user@zuse.jp>
 
   * src/decoder.c: Fix bad initialization check of decoder object
