@@ -1165,6 +1165,7 @@ lookup_mono_lightbg(unsigned char const * const pixel,
 }
 
 
+/* choose colors using median-cut method */
 SIXELSTATUS
 sixel_quant_make_palette(
     unsigned char          /* out */ **result,
@@ -1218,6 +1219,7 @@ end:
 }
 
 
+/* apply color palette into specified pixel buffers */
 SIXELSTATUS
 sixel_quant_apply_palette(
     unsigned char     /* out */ *result,
