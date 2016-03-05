@@ -302,6 +302,7 @@ Options:
                            terminals or printers (default)
 -8, --8bit-mode            generate a sixel image for 8bit
                            terminals or printers
+-R, --gri-limit            limit arguments of DECGRI('!') to 255
 -p COLORS, --colors=COLORS specify number of colors to reduce
                            the image to (default=256)
 -m FILE, --mapfile=FILE    transform image colors to match this
@@ -321,8 +322,8 @@ Options:
 -n MACRONO, --macro-number=MACRONO
                            specify an number argument for
                            DECDMAC and make terminal memorize
-                           SIXEL image. No image is shown if this
-                           option is specified
+                           SIXEL image. No image is shown if
+                           this option is specified
 -C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE
                            specify an number argument for the
                            score of complexion correction.

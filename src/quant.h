@@ -28,6 +28,7 @@ extern "C" {
 
 #include <sixel.h>
 
+/* choose colors using median-cut method */
 SIXELSTATUS
 sixel_quant_make_palette(
     unsigned char           /* out */ **result,
@@ -43,6 +44,7 @@ sixel_quant_make_palette(
     sixel_allocator_t       /* in */  *allocator);
 
 
+/* apply color palette into specified pixel buffers */
 SIXELSTATUS
 sixel_quant_apply_palette(
     unsigned char       /* out */ *result,
@@ -61,6 +63,7 @@ sixel_quant_apply_palette(
     sixel_allocator_t   /* in */  *allocator);
 
 
+/* deallocate specified palette */
 void
 sixel_quant_free_palette(
     unsigned char       /* in */ *data,

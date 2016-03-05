@@ -979,6 +979,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
         goto end;
     }
     sixel_output_set_8bit_availability(output, encoder->f8bit);
+    sixel_output_set_gri_arg_limit(output, encoder->has_gri_arg_limit);
     sixel_output_set_palette_type(output, encoder->palette_type);
     sixel_output_set_penetrate_multiplexer(
         output, encoder->penetrate_multiplexer);
@@ -1081,6 +1082,7 @@ sixel_encoder_new(
     (*ppencoder)->loop_mode             = SIXEL_LOOP_AUTO;
     (*ppencoder)->palette_type          = SIXEL_PALETTETYPE_AUTO;
     (*ppencoder)->f8bit                 = 0;
+    (*ppencoder)->has_gri_arg_limit     = 0;
     (*ppencoder)->finvert               = 0;
     (*ppencoder)->fuse_macro            = 0;
     (*ppencoder)->fignore_delay         = 0;
@@ -1249,6 +1251,9 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_8BIT_MODE:  /* 8 */
         encoder->f8bit = 1;
+        break;
+    case SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT:  /* R */
+        encoder->has_gri_arg_limit = 1;
         break;
     case SIXEL_OPTFLAG_COLORS:  /* p */
         encoder->reqcolors = atoi(value);
