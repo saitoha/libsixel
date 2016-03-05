@@ -106,6 +106,7 @@ _arguments -S -s -A "-*" -S \
   {-o,--outfile}'[specify output file (default: stdout)]':files:_files \
   {-7,--7bit-mode}'[generate a sixel image for 7bit terminals (default)]' \
   {-8,--8bit-mode}'[generate a sixel image for 8bit terminals]' \
+  {-R,--gri-limit}'[limit arguments of DECGRI(!) to 255]' \
   {-p,--colors=}'[specify number of colors to reduce the image to]' \
   {-m,--mapfile=}'[transform image colors to match specified set of colors]':files:_files \
   {-e,--monochrome}'[output monochrome sixel image]' \
