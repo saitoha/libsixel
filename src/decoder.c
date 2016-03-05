@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -63,6 +63,7 @@
 #include "decoder.h"
 
 
+/* original version of strdup(1) with allocator object */
 static char *
 strdup_with_allocator(
     char const          /* in */ *s,          /* source buffer */
@@ -100,6 +101,9 @@ sixel_decoder_new(
     *ppdecoder = sixel_allocator_malloc(allocator, sizeof(sixel_decoder_t));
     if (*ppdecoder == NULL) {
         sixel_allocator_unref(allocator);
+        sixel_helper_set_additional_message(
+            "sixel_decoder_new: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
 
@@ -118,11 +122,14 @@ sixel_decoder_new(
         goto end;
     }
 
+    status = SIXEL_OK;
+
 end:
     return status;
 }
 
 
+/* deprecated version of sixel_decoder_new() */
 SIXELAPI /* deprecated */ sixel_decoder_t *
 sixel_decoder_create(void)
 {
@@ -139,7 +146,8 @@ end:
 }
 
 
-SIXELAPI void
+/* destroy a decoder object */
+static void
 sixel_decoder_destroy(sixel_decoder_t *decoder)
 {
     sixel_allocator_t *allocator;
@@ -154,6 +162,7 @@ sixel_decoder_destroy(sixel_decoder_t *decoder)
 }
 
 
+/* increase reference count of decoder object (thread-unsafe) */
 SIXELAPI void
 sixel_decoder_ref(sixel_decoder_t *decoder)
 {
@@ -162,6 +171,7 @@ sixel_decoder_ref(sixel_decoder_t *decoder)
 }
 
 
+/* decrease reference count of decoder object (thread-unsafe) */
 SIXELAPI void
 sixel_decoder_unref(sixel_decoder_t *decoder)
 {
@@ -172,11 +182,12 @@ sixel_decoder_unref(sixel_decoder_t *decoder)
 }
 
 
+/* set an option flag to decoder object */
 SIXELAPI SIXELSTATUS
 sixel_decoder_setopt(
     sixel_decoder_t /* in */ *decoder,
     int             /* in */ arg,
-    char const      /* in */ *optarg
+    char const      /* in */ *value
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -184,9 +195,9 @@ sixel_decoder_setopt(
     sixel_decoder_ref(decoder);
 
     switch(arg) {
-    case 'i':
+    case SIXEL_OPTFLAG_INPUT:  /* i */
         free(decoder->input);
-        decoder->input = strdup_with_allocator(optarg, decoder->allocator);
+        decoder->input = strdup_with_allocator(value, decoder->allocator);
         if (decoder->input == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_decoder_setopt: strdup_with_allocator() failed.");
@@ -194,10 +205,10 @@ sixel_decoder_setopt(
             goto end;
         }
         break;
-    case 'o':
+    case SIXEL_OPTFLAG_OUTPUT:  /* o */
         free(decoder->output);
-        decoder->output = strdup_with_allocator(optarg, decoder->allocator);
-        if (decoder->input == NULL) {
+        decoder->output = strdup_with_allocator(value, decoder->allocator);
+        if (decoder->output == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_decoder_setopt: strdup_with_allocator() failed.");
             status = SIXEL_BAD_ALLOCATION;
@@ -219,6 +230,8 @@ end:
 }
 
 
+/* load source data from stdin or the file specified with
+   SIXEL_OPTFLAG_INPUT flag, and decode it */
 SIXELAPI SIXELSTATUS
 sixel_decoder_decode(
     sixel_decoder_t /* in */ *decoder)
@@ -319,6 +332,217 @@ end:
 
     return status;
 }
+
+
+#if HAVE_TESTS
+static int
+test1(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_decoder_t *decoder = NULL;
+
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+    decoder = sixel_decoder_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
+    if (decoder == NULL) {
+        goto error;
+    }
+    sixel_decoder_ref(decoder);
+    sixel_decoder_unref(decoder);
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_decoder_unref(decoder);
+    return nret;
+}
+
+
+static int
+test2(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_decoder_t *decoder = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_new(&decoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    sixel_decoder_ref(decoder);
+    sixel_decoder_unref(decoder);
+    nret = EXIT_SUCCESS;
+
+error:
+    sixel_decoder_unref(decoder);
+    return nret;
+}
+
+
+static int
+test3(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_decoder_t *decoder = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+
+    sixel_debug_malloc_counter = 1;
+
+    status = sixel_allocator_new(&allocator, sixel_bad_malloc, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_new(&decoder, allocator);
+    if (status != SIXEL_BAD_ALLOCATION) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+static int
+test4(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_decoder_t *decoder = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+
+    sixel_debug_malloc_counter = 2;
+
+    status = sixel_allocator_new(&allocator, sixel_bad_malloc, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_new(&decoder, allocator);
+    if (status != SIXEL_BAD_ALLOCATION) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+static int
+test5(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_decoder_t *decoder = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+
+    sixel_debug_malloc_counter = 3;
+
+    status = sixel_allocator_new(&allocator, sixel_bad_malloc, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_new(&decoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    decoder->input = NULL;
+
+    status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT, "/");
+    if (status != SIXEL_BAD_ALLOCATION) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+static int
+test6(void)
+{
+    int nret = EXIT_FAILURE;
+    sixel_decoder_t *decoder = NULL;
+    sixel_allocator_t *allocator = NULL;
+    SIXELSTATUS status;
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_new(&decoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT, "../images/file");
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_decoder_decode(decoder);
+    if ((status >> 8) != (SIXEL_LIBC_ERROR >> 8)) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
+int
+sixel_decoder_tests_main(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t i;
+    typedef int (* testcase)(void);
+
+    static testcase const testcases[] = {
+        test1,
+        test2,
+        test3,
+        test4,
+        test5,
+        test6
+    };
+
+    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
+        nret = testcases[i]();
+        if (nret != EXIT_SUCCESS) {
+            goto error;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+#endif  /* HAVE_TESTS */
+
+
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

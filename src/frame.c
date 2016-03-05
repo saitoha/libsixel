@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -114,6 +114,7 @@ sixel_frame_destroy(sixel_frame_t /* in */ *frame)
 }
 
 
+/* increase reference count of frame object (thread-unsafe) */
 SIXELAPI void
 sixel_frame_ref(sixel_frame_t *frame)
 {
@@ -122,6 +123,7 @@ sixel_frame_ref(sixel_frame_t *frame)
 }
 
 
+/* decrease reference count of frame object (thread-unsafe) */
 SIXELAPI void
 sixel_frame_unref(sixel_frame_t *frame)
 {
@@ -247,6 +249,7 @@ sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame)  /* frame object */
 }
 
 
+/* strip alpha from RGBA/ARGB formatted pixbuf */
 SIXELAPI SIXELSTATUS
 sixel_frame_strip_alpha(
     sixel_frame_t  /* in */ *frame,
@@ -302,7 +305,7 @@ sixel_frame_strip_alpha(
 }
 
 
-SIXELAPI SIXELSTATUS
+static SIXELSTATUS
 sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -416,6 +419,7 @@ end:
 }
 
 
+/* resize a frame to given size with specified resampling filter */
 SIXELAPI SIXELSTATUS
 sixel_frame_resize(
     sixel_frame_t *frame,
@@ -538,6 +542,7 @@ end:
 }
 
 
+/* clip frame */
 SIXELAPI SIXELSTATUS
 sixel_frame_clip(
     sixel_frame_t *frame,

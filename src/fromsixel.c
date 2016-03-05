@@ -350,6 +350,9 @@ sixel_decode_raw(
                     case 9:
                         attributed_pad = 1;
                         break;
+                    default:
+                        attributed_pad = 2;
+                        break;
                     }
                 }
 

@@ -173,7 +173,7 @@ AS_IF([test x$cross_compile != xyes], [PKG_PROG_PKG_CONFIG], [])
 AC_DEFUN([LS_CHECK_CFLAG], [
    AC_MSG_CHECKING([if $CC supports $1])
    saved_cflags="$CFLAGS"
-   CFLAGS="$1"
+   CFLAGS="$1 -Werror"
    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
                      [AC_MSG_RESULT([yes])
                       m4_default([$2], :)],
@@ -184,8 +184,25 @@ AC_DEFUN([LS_CHECK_CFLAG], [
 
 LS_CHECK_CFLAG([-Wall],[AM_CFLAGS="$AM_CFLAGS -Wall"], [])
 LS_CHECK_CFLAG([-Wextra],[AM_CFLAGS="$AM_CFLAGS -Wextra"], [])
+LS_CHECK_CFLAG([-Wpedantic],[AM_CFLAGS="$AM_CFLAGS -Wpedantic"], [])
+LS_CHECK_CFLAG([-Wformat=2],[AM_CFLAGS="$AM_CFLAGS -Wformat=2"], [])
+LS_CHECK_CFLAG([-Wuninitialized],
+               [AM_CFLAGS="$AM_CFLAGS -Wuninitialized"]
+                AC_DEFINE(HAVE_DIAGNOSTIC_UNINITIALIZED, 1, [define 1 if GCC supports -Wuninitialized])])
+LS_CHECK_CFLAG([-Wstrict-overflow],
+               [AM_CFLAGS="$AM_CFLAGS -Wstrict-overflow"
+                AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW, 1, [define 1 if GCC supports -Wstrict_overeflow])])
+LS_CHECK_CFLAG([-Wshadow],
+               [AM_CFLAGS="$AM_CFLAGS -Wshadow"
+                AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW, 1, [define 1 if GCC supports -Wshadow])])
+LS_CHECK_CFLAG([-Wdouble-promotion],
+               [AM_CFLAGS="$AM_CFLAGS -Wdouble-promotion"
+                AC_DEFINE(HAVE_DIAGNOSTIC_DOUBLE_PROMOTION, 1, [define 1 if GCC supports -Wdouble-promotion])])
+LS_CHECK_CFLAG([-Wswitch-default],
+               [AM_CFLAGS="$AM_CFLAGS -Wswitch-default"
+                AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT, 1, [define 1 if GCC supports -Wswitch-default])])
 AS_IF([test x$enable_debug = xyes],
-      [LS_CHECK_CFLAG([-Werror],[AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
+      [LS_CHECK_CFLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
 AC_SUBST([AM_CFLAGS])
 
 # For wic integration
