@@ -1,56 +1,10 @@
-2016-03-06  Hayaki Saito <user@zuse.jp>
-
-  * Makefile.in, README.md, converters/img2sixel.1,
-  converters/shell-completion/bash/img2sixel,
-  converters/shell-completion/zsh/_img2sixel: Add -R option stuff to README,
-  manpage, shell-completion
-
-2016-03-03  Hayaki Saito <user@zuse.jp>
-
-  * Makefile.in, configure, configure.ac, package.json: Update ABI version
-
-  * converters/img2sixel.c, include/sixel.h.in, src/encoder.c, src/encoder.h:
-  New option -R, --gri-limit
-
-  * Makefile.in, include/sixel.h.in, src/output.c: New API:
-  sixel_output_set_gri_arg_limit()
-
-  * Makefile.in, configure, configure.ac, package.json: Update ABI version
-
-  * include/sixel.h.in, src/encoder.c, src/loader.c, src/tosixel.c: Add new
-  API: sixel_encoder_encode_bytes
-
-2016-02-29  Hayaki Saito <user@zuse.jp>
-
-  * README.md: Add @hattya to contributers list
-
-2016-02-27  Hayaki Saito <user@zuse.jp>
-
-  * Makefile.in, src/output.c, src/output.h, src/quant.c, src/quant.h,
-  src/tosixel.c: Introduce DECGRI('!') compatibility flag
-
 2016-02-27  Akinori Hattori <hattya@gentoo.org>
 
   * configure, configure.ac: Fix check for gdImageCreateFromPngPtr availability
 
-2016-02-22  Hayaki Saito <user@zuse.jp>
-
-  * src/tty.c: Fix compile error on MinGW environment
-
-  * src/Makefile.am, src/Makefile.in, src/encoder.c, src/tty.c, src/tty.h: Add
-  tty.c and tty.h
-
-  * converters/Makefile.am, converters/Makefile.in, include/sixel.h.in,
-  src/encoder.c, src/encoder.h: Solve encoder option confliction between
-  -m/-e/-I/-b
-
 2016-02-21  Hayaki Saito <user@zuse.jp>
 
-  * src/allocator.c, src/chunk.c, src/decoder.c: Add more tests
-
-  * src/encoder.c: Minor fixes in encoder.c
-
-  * src/decoder.c: Add more tests for decoder.c
+  * src/decoder.c: Fix bad initialization check of decoder object
 
   * Makefile.in, src/decoder.c: Add more tests for decoder.c
 
