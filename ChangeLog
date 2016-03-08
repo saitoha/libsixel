@@ -1,3 +1,98 @@
+2016-02-27  Akinori Hattori <hattya@gentoo.org>
+
+  * configure, configure.ac: Fix check for gdImageCreateFromPngPtr availability
+
+2016-02-21  Hayaki Saito <user@zuse.jp>
+
+  * src/decoder.c: Fix bad initialization check of decoder object
+
+  * Makefile.in, src/decoder.c: Add more tests for decoder.c
+
+  * include/sixel.h.in, src/decoder.c: Minor fixes for decoder.c
+
+  * src/decoder.c, src/decoder.h, src/tests.c: Add tests for decoder.c
+
+  * include/sixel.h.in, src/allocator.c: Add an allocation test with bad
+  allocator
+
+  * src/decoder.c: Fix bad initalization problem of decoder object
+
+2016-02-20  Hayaki Saito <user@zuse.jp>
+
+  * include/sixel.h.in, src/allocator.c: Publish bad allocators to test
+  functions
+
+  * src/stb_image_write.c: Ignore strict-overflow warnings in stb_image_write.h
+
+  * src/stb_image_write.c, src/writer.c: Amend fix of 39042435e
+
+  * src/writer.c: Suppress GCC warnings against stb_image_write.h
+
+  * src/loader.c: Suppress warnings caused by shadowing global declarations
+
+  * src/writer.c: Suppress a warning caused by missing default case in switch
+  statement
+
+  * src/encoder.c, src/scale.c: Suppress warnings caused by shadowing global
+  declarations
+
+  * src/fromgif.c: Suppress a warning caused by missing default case in switch
+  statement
+
+  * src/frompnm.c: Suppress warnings caused by shadowing global declarations
+
+  * config.h.in, configure, configure.ac, src/loader.c: Amend fix for
+  suppressing GCC warnings against stb_image.h
+
+  * Makefile.in, config.h.in, configure, configure.ac, src/encoder.c,
+  src/loader.c: Suppress GCC warnings against stb_image.h
+
+  * src/quant.c: Suppress warnings caused by shadowing global declarations
+
+  * src/fromsixel.c: Suppress a warning caused by missing default case in
+  switch statement
+
+  * include/sixel.h.in, src/decoder.c, src/encoder.c, src/frame.c,
+  src/output.c: Add some comments to functions
+
+  * LICENSE, converters/img2sixel.c, converters/malloc_stub.c,
+  converters/malloc_stub.h, converters/sixel2png.c,
+  python/libsixel/__init__.py, python/libsixel/decoder.py,
+  python/libsixel/encoder.py, src/allocator.c, src/allocator.h, src/chunk.c,
+  src/chunk.h, src/decoder.c, src/decoder.h, src/dither.c, src/dither.h,
+  src/encoder.c, src/encoder.h, src/frame.c, src/frame.h, src/fromgif.c,
+  src/fromgif.h, src/frompnm.c, src/frompnm.h, src/loader.c, src/loader.h,
+  src/output.c, src/output.h, src/pixelformat.c, src/pixelformat.h,
+  src/quant.c, src/quant.h, src/scale.c, src/status.c, src/status.h,
+  src/stb_image_write.c, src/tests.c, src/writer.c, src/writer.h: Update
+  copyright notice
+
+  * src/encoder.c: Minor improvements for encoder.c
+
+  * Makefile.in, configure, configure.ac: Add some gcc/clang warning option
+  flags to CFLAGS
+
+  * converters/img2sixel.c: Fix a overlength-strings warnings
+
+  * src/loader.c: Fix for a warning with gcc -Wpedantic option
+
+  * src/decoder.c, src/encoder.c: Fix warnings of declaration shadows a local
+  variable
+
+  * LICENSE.stb: Update LICENSE file of stb project
+
+  * src/stb_image_write.h: Upgrade stb_image_write.h to v1.01
+
+  * src/stb_image.h: Upgrade stb_image to 2.10
+
+  * src/quant.c: Fix a gnu-folding-constant warning
+
+  * src/quant.c: Fix warnings of declaration shadows a local variable
+
+2016-02-17  Hayaki Saito <user@zuse.jp>
+
+  * README.md: README Minor fixes
+
 2015-09-04  Hayaki Saito <user@zuse.jp>
 
   * configure, configure.ac: Let it build without python

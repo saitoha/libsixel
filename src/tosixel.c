@@ -50,7 +50,7 @@ enum {
 /* implementation */
 
 static void
-penetrate(sixel_output_t *context,
+penetrate(sixel_output_t *output,
           int nwrite,
           char const *dcs_start,
           char const *dcs_end,
@@ -62,33 +62,33 @@ penetrate(sixel_output_t *context,
                         - dcs_start_size - dcs_end_size;
 
     for (pos = 0; pos < nwrite; pos += splitsize) {
-        context->fn_write((char *)dcs_start, dcs_end_size, context->priv);
-        context->fn_write(((char *)context->buffer) + pos,
+        output->fn_write((char *)dcs_start, dcs_end_size, output->priv);
+        output->fn_write(((char *)output->buffer) + pos,
                           nwrite - pos < splitsize ? nwrite - pos: splitsize,
-                          context->priv);
-        context->fn_write((char *)dcs_end, dcs_end_size, context->priv);
+                          output->priv);
+        output->fn_write((char *)dcs_end, dcs_end_size, output->priv);
     }
 }
 
 
 static void
-sixel_advance(sixel_output_t *context, int nwrite)
+sixel_advance(sixel_output_t *output, int nwrite)
 {
-    if ((context->pos += nwrite) >= SIXEL_OUTPUT_PACKET_SIZE) {
-        if (context->penetrate_multiplexer) {
-            penetrate(context,
+    if ((output->pos += nwrite) >= SIXEL_OUTPUT_PACKET_SIZE) {
+        if (output->penetrate_multiplexer) {
+            penetrate(output,
                       SIXEL_OUTPUT_PACKET_SIZE,
                       DCS_START_7BIT,
                       DCS_END_7BIT,
                       DCS_START_7BIT_SIZE,
                       DCS_END_7BIT_SIZE);
         } else {
-            context->fn_write((char *)context->buffer,
-                              SIXEL_OUTPUT_PACKET_SIZE, context->priv);
+            output->fn_write((char *)output->buffer,
+                              SIXEL_OUTPUT_PACKET_SIZE, output->priv);
         }
-        memcpy(context->buffer,
-               context->buffer + SIXEL_OUTPUT_PACKET_SIZE,
-               (context->pos -= SIXEL_OUTPUT_PACKET_SIZE));
+        memcpy(output->buffer,
+               output->buffer + SIXEL_OUTPUT_PACKET_SIZE,
+               (output->pos -= SIXEL_OUTPUT_PACKET_SIZE));
     }
 }
 
@@ -139,46 +139,46 @@ sixel_putnum(char *buffer, unsigned int value)
 
 
 static SIXELSTATUS
-sixel_put_flash(sixel_output_t *const context)
+sixel_put_flash(sixel_output_t *const output)
 {
     int n;
     int nwrite;
 
-    if (context->has_gri_arg_limit) {  /* VT240 Max 255 ? */
-        while (context->save_count > 255) {
+    if (output->has_gri_arg_limit) {  /* VT240 Max 255 ? */
+        while (output->save_count > 255) {
             /* argument of DECGRI('!') is limitted to 255 in real VT */
-            sixel_puts((char *)context->buffer + context->pos, "!255", 4);
-            sixel_advance(context, 4);
-            sixel_putc((char *)context->buffer + context->pos, context->save_pixel);
-            sixel_advance(context, 1);
-            context->save_count -= 255;
+            sixel_puts((char *)output->buffer + output->pos, "!255", 4);
+            sixel_advance(output, 4);
+            sixel_putc((char *)output->buffer + output->pos, output->save_pixel);
+            sixel_advance(output, 1);
+            output->save_count -= 255;
         }
     }
 
-    if (context->save_count > 3) {
+    if (output->save_count > 3) {
         /* DECGRI Graphics Repeat Introducer ! Pn Ch */
-        sixel_putc((char *)context->buffer + context->pos, '!');
-        sixel_advance(context, 1);
-        nwrite = sixel_putnum((char *)context->buffer + context->pos, context->save_count);
-        sixel_advance(context, nwrite);
-        sixel_putc((char *)context->buffer + context->pos, context->save_pixel);
-        sixel_advance(context, 1);
+        sixel_putc((char *)output->buffer + output->pos, '!');
+        sixel_advance(output, 1);
+        nwrite = sixel_putnum((char *)output->buffer + output->pos, output->save_count);
+        sixel_advance(output, nwrite);
+        sixel_putc((char *)output->buffer + output->pos, output->save_pixel);
+        sixel_advance(output, 1);
     } else {
-        for (n = 0; n < context->save_count; n++) {
-            context->buffer[context->pos] = (char)context->save_pixel;
-            sixel_advance(context, 1);
+        for (n = 0; n < output->save_count; n++) {
+            output->buffer[output->pos] = (char)output->save_pixel;
+            sixel_advance(output, 1);
         }
     }
 
-    context->save_pixel = 0;
-    context->save_count = 0;
+    output->save_pixel = 0;
+    output->save_count = 0;
 
     return 0;
 }
 
 
 static SIXELSTATUS
-sixel_put_pixel(sixel_output_t *const context, int pix)
+sixel_put_pixel(sixel_output_t *const output, int pix)
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
@@ -188,15 +188,15 @@ sixel_put_pixel(sixel_output_t *const context, int pix)
 
     pix += '?';
 
-    if (pix == context->save_pixel) {
-        context->save_count++;
+    if (pix == output->save_pixel) {
+        output->save_count++;
     } else {
-        status = sixel_put_flash(context);
+        status = sixel_put_flash(output);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        context->save_pixel = pix;
-        context->save_count = 1;
+        output->save_pixel = pix;
+        output->save_count = 1;
     }
 
     status = SIXEL_OK;
@@ -205,14 +205,33 @@ end:
     return status;
 }
 
+static SIXELSTATUS
+sixel_node_new(sixel_node_t **np, sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+
+    *np = (sixel_node_t *)sixel_allocator_malloc(allocator,
+                                                 sizeof(sixel_node_t));
+    if (np == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_node_new: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
 
 static void
-sixel_node_del(sixel_output_t *const context, sixel_node_t *np)
+sixel_node_del(sixel_output_t *const output, sixel_node_t *np)
 {
     sixel_node_t *tp;
 
-    if ((tp = context->node_top) == np) {
-        context->node_top = np->next;
+    if ((tp = output->node_top) == np) {
+        output->node_top = np->next;
     } else {
         while (tp->next != NULL) {
             if (tp->next == np) {
@@ -223,13 +242,13 @@ sixel_node_del(sixel_output_t *const context, sixel_node_t *np)
         }
     }
 
-    np->next = context->node_free;
-    context->node_free = np;
+    np->next = output->node_free;
+    output->node_free = np;
 }
 
 
 static SIXELSTATUS
-sixel_put_node(sixel_output_t *const context,
+sixel_put_node(sixel_output_t *const output,
                int *x,
                sixel_node_t *np,
                int ncolors,
@@ -238,20 +257,20 @@ sixel_put_node(sixel_output_t *const context,
     SIXELSTATUS status = SIXEL_FALSE;
     int nwrite;
 
-    if (ncolors != 2 || keycolor == -1) {
+    if (ncolors != 2 || keycolor == (-1)) {
         /* designate palette index */
-        if (context->active_palette != np->pal) {
-            sixel_putc((char *)context->buffer + context->pos, '#');
-            sixel_advance(context, 1);
-            nwrite = sixel_putnum((char *)context->buffer + context->pos, np->pal);
-            sixel_advance(context, nwrite);
-            context->active_palette = np->pal;
+        if (output->active_palette != np->pal) {
+            sixel_putc((char *)output->buffer + output->pos, '#');
+            sixel_advance(output, 1);
+            nwrite = sixel_putnum((char *)output->buffer + output->pos, np->pal);
+            sixel_advance(output, nwrite);
+            output->active_palette = np->pal;
         }
     }
 
     for (; *x < np->sx; ++*x) {
         if (*x != keycolor) {
-            status = sixel_put_pixel(context, 0);
+            status = sixel_put_pixel(output, 0);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
@@ -260,14 +279,14 @@ sixel_put_node(sixel_output_t *const context,
 
     for (; *x < np->mx; ++*x) {
         if (*x != keycolor) {
-            status = sixel_put_pixel(context, np->map[*x]);
+            status = sixel_put_pixel(output, np->map[*x]);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
         }
     }
 
-    status = sixel_put_flash(context);
+    status = sixel_put_flash(output);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -278,7 +297,7 @@ end:
 
 
 static SIXELSTATUS
-sixel_encode_header(int width, int height, sixel_output_t *context)
+sixel_encode_header(int width, int height, sixel_output_t *output)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int nwrite;
@@ -286,19 +305,19 @@ sixel_encode_header(int width, int height, sixel_output_t *context)
     int pcount = 3;
     int use_raster_attributes = 1;
 
-    context->pos = 0;
+    output->pos = 0;
 
-    if (!context->skip_dcs_envelope) {
-        if (context->has_8bit_control) {
-            sixel_puts((char *)context->buffer + context->pos,
+    if (!output->skip_dcs_envelope) {
+        if (output->has_8bit_control) {
+            sixel_puts((char *)output->buffer + output->pos,
                        DCS_START_8BIT,
                        DCS_START_8BIT_SIZE);
-            sixel_advance(context, DCS_START_8BIT_SIZE);
+            sixel_advance(output, DCS_START_8BIT_SIZE);
         } else {
-            sixel_puts((char *)context->buffer + context->pos,
+            sixel_puts((char *)output->buffer + output->pos,
                        DCS_START_7BIT,
                        DCS_START_7BIT_SIZE);
-            sixel_advance(context, DCS_START_7BIT_SIZE);
+            sixel_advance(output, DCS_START_7BIT_SIZE);
         }
     }
 
@@ -313,34 +332,34 @@ sixel_encode_header(int width, int height, sixel_output_t *context)
     }
 
     if (pcount > 0) {
-        nwrite = sixel_putnum((char *)context->buffer + context->pos, p[0]);
-        sixel_advance(context, nwrite);
+        nwrite = sixel_putnum((char *)output->buffer + output->pos, p[0]);
+        sixel_advance(output, nwrite);
         if (pcount > 1) {
-            sixel_putc((char *)context->buffer + context->pos, ';');
-            sixel_advance(context, 1);
-            nwrite = sixel_putnum((char *)context->buffer + context->pos, p[1]);
-            sixel_advance(context, nwrite);
+            sixel_putc((char *)output->buffer + output->pos, ';');
+            sixel_advance(output, 1);
+            nwrite = sixel_putnum((char *)output->buffer + output->pos, p[1]);
+            sixel_advance(output, nwrite);
             if (pcount > 2) {
-                sixel_putc((char *)context->buffer + context->pos, ';');
-                sixel_advance(context, 1);
-                nwrite = sixel_putnum((char *)context->buffer + context->pos, p[2]);
-                sixel_advance(context, nwrite);
+                sixel_putc((char *)output->buffer + output->pos, ';');
+                sixel_advance(output, 1);
+                nwrite = sixel_putnum((char *)output->buffer + output->pos, p[2]);
+                sixel_advance(output, nwrite);
             }
         }
     }
 
-    sixel_putc((char *)context->buffer + context->pos, 'q');
-    sixel_advance(context, 1);
+    sixel_putc((char *)output->buffer + output->pos, 'q');
+    sixel_advance(output, 1);
 
     if (use_raster_attributes) {
-        sixel_puts((char *)context->buffer + context->pos, "\"1;1;", 5);
-        sixel_advance(context, 5);
-        nwrite = sixel_putnum((char *)context->buffer + context->pos, width);
-        sixel_advance(context, nwrite);
-        sixel_putc((char *)context->buffer + context->pos, ';');
-        sixel_advance(context, 1);
-        nwrite = sixel_putnum((char *)context->buffer + context->pos, height);
-        sixel_advance(context, nwrite);
+        sixel_puts((char *)output->buffer + output->pos, "\"1;1;", 5);
+        sixel_advance(output, 5);
+        nwrite = sixel_putnum((char *)output->buffer + output->pos, width);
+        sixel_advance(output, nwrite);
+        sixel_putc((char *)output->buffer + output->pos, ';');
+        sixel_advance(output, 1);
+        nwrite = sixel_putnum((char *)output->buffer + output->pos, height);
+        sixel_advance(output, nwrite);
     }
 
     status = SIXEL_OK;
@@ -522,8 +541,7 @@ sixel_encode_body(
     for (y = i = 0; y < height; y++) {
         if (output->encode_policy != SIXEL_ENCODEPOLICY_SIZE) {
             fillable = 0;
-        }
-        else if (palstate) {
+        } else if (palstate) {
             /* high color sixel */
             pix = pixels[(y - i) * width];
             if (pix < 0 || pix >= ncolors || pix == keycolor) {
@@ -536,7 +554,7 @@ sixel_encode_body(
             fillable = 1;
         }
         for (x = 0; x < width; x++) {
-            pix = pixels[y * width + x];
+            pix = pixels[y * width + x];  /* color index */
             if (pix >= 0 && pix < ncolors && pix != keycolor) {
                 map[pix * width + x] |= (1 << i);
             }
@@ -575,12 +593,8 @@ sixel_encode_body(
                 if ((np = output->node_free) != NULL) {
                     output->node_free = np->next;
                 } else {
-                    np = (sixel_node_t *)sixel_allocator_malloc(allocator,
-                                                                sizeof(sixel_node_t));
-                    if (np == NULL) {
-                        sixel_helper_set_additional_message(
-                            "sixel_encode_body: sixel_allocator_malloc() failed.");
-                        status = SIXEL_BAD_ALLOCATION;
+                    status = sixel_node_new(&np, allocator);
+                    if (SIXEL_FAILED(status)) {
                         goto end;
                     }
                 }
@@ -1327,8 +1341,7 @@ sixel_encode_highcolor(unsigned char *pixels, int width, int height,
             if (++y >= height) {
                 if (dirty) {
                     mod_y = 5;
-                }
-                else {
+                } else {
                     goto end;
                 }
             }
@@ -1406,26 +1419,26 @@ sixel_encode(unsigned char  /* in */ *pixels,     /* pixel bytes */
              int            /* in */ width,       /* image width */
              int            /* in */ height,      /* image height */
              int const      /* in */ depth,       /* color depth */
-             sixel_dither_t /* in */ *dither,     /* dither context */
-             sixel_output_t /* in */ *context)    /* output context */
+             sixel_dither_t /* in */ *dither,     /* dither output */
+             sixel_output_t /* in */ *output)    /* output output */
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
     /* TODO: reference counting should be thread-safe */
     sixel_dither_ref(dither);
-    sixel_output_ref(context);
+    sixel_output_ref(output);
 
     (void) depth;
 
     if (dither->quality_mode == SIXEL_QUALITY_HIGHCOLOR) {
         status = sixel_encode_highcolor(pixels, width, height,
-                                        dither, context);
+                                        dither, output);
     } else {
         status = sixel_encode_dither(pixels, width, height,
-                                     dither, context);
+                                     dither, output);
     }
 
-    sixel_output_unref(context);
+    sixel_output_unref(output);
     sixel_dither_unref(dither);
 
     return status;
