@@ -670,12 +670,13 @@ computeHash(unsigned char const *data, int const depth)
 
 
 static SIXELSTATUS
-computeHistogram(unsigned char const    /* in */  *data,
-                 unsigned int           /* in */  length,
-                 unsigned long const    /* in */  depth,
-                 tupletable2 * const    /* out */ colorfreqtableP,
-                 int const              /* in */  qualityMode,
-                 sixel_allocator_t      /* in */  *allocator)
+compute_histogram(
+    tupletable2 * const    /* out */ colorfreqtableP,   /* histgram */
+    unsigned char const    /* in */  *data,             /* source pixel bytes */
+    unsigned int           /* in */  length,            /* size of source bytes */
+    unsigned long const    /* in */  depth,             /* color depth in bytes */
+    int const              /* in */  qualityMode,       /* quality mode */
+    sixel_allocator_t      /* in */  *allocator)        /* an allocator object */
 {
     SIXELSTATUS status = SIXEL_FALSE;
     typedef unsigned short unit_t;
@@ -771,17 +772,18 @@ end:
 }
 
 
-static int
-computeColorMapFromInput(unsigned char const *data,
-                         unsigned int const length,
-                         unsigned int const depth,
-                         unsigned int const reqColors,
-                         int const methodForLargest,
-                         int const methodForRep,
-                         int const qualityMode,
-                         tupletable2 * const colormapP,
-                         int *origcolors,
-                         sixel_allocator_t *allocator)
+static SIXELSTATUS
+compute_palette(
+    tupletable2 * const /* out */   colormapP,          /* calculated palette */
+    int                 /* out */   *origcolors,        /* number of colors in source image */
+    unsigned char const /* in */    *data,              /* source image */
+    unsigned int const  /* in */    length,
+    unsigned int const  /* in */    depth,
+    unsigned int const  /* in */    reqColors,
+    int const           /* in */    methodForLargest,
+    int const           /* in */    methodForRep,
+    int const           /* in */    qualityMode,
+    sixel_allocator_t   /* in */    *allocator)         /* an allocator object */
 {
 /*----------------------------------------------------------------------------
    Produce a colormap containing the best colors to represent the
@@ -807,8 +809,8 @@ computeColorMapFromInput(unsigned char const *data,
     unsigned int i;
     unsigned int n;
 
-    status = computeHistogram(data, length, depth,
-                              &colorfreqtable, qualityMode, allocator);
+    status = compute_histogram(&colorfreqtable, data, length, depth,
+                               qualityMode, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1183,7 +1185,6 @@ sixel_quant_make_palette(
     SIXELSTATUS status = SIXEL_FALSE;
     int i;
     int n;
-    int ret;
     tupletable2 colormap;
     int depth;
 
@@ -1193,11 +1194,10 @@ sixel_quant_make_palette(
         goto end;
     }
 
-    ret = computeColorMapFromInput(data, length, depth,
-                                   reqcolors, methodForLargest,
-                                   methodForRep, qualityMode,
-                                   &colormap, origcolors, allocator);
-    if (ret != 0) {
+    status = compute_palette(&colormap, origcolors, data, length, depth,
+                             reqcolors, methodForLargest,
+                             methodForRep, qualityMode, allocator);
+    if (SIXEL_FAILED(status)) {
         *result = NULL;
         goto end;
     }
@@ -1432,5 +1432,5 @@ error:
 
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
-/* vim: set expandtab ts=4 : */
+/* vim: set expandtab ts=4 sw=4 : */
 /* EOF */
