@@ -584,6 +584,111 @@ end:
 }
 
 
+static SIXELSTATUS
+k_means(tupletable2 const colorfreqtable,
+        unsigned int const depth,
+        unsigned int const newcolors,
+        int const methodForLargest,
+        int const methodForRep,
+        tupletable2 *const colormapP,
+        sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    int n;
+    int sum;
+    tupletable2 clustermap;
+    int i;
+    int j;
+    int map[256][4];
+
+    clustermap.size = newcolors;
+    status = alloctupletable(&clustermap.table, depth, newcolors, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    memset(map, 0, 256 * 4);
+    for (i = 0; i < colorfreqtable.size; ++i) {
+        struct tupleint *t = colorfreqtable.table[i];
+        map[i % newcolors][0] += t->tuple[0];
+        map[i % newcolors][1] += t->tuple[1];
+        map[i % newcolors][2] += t->tuple[2];
+        map[i % newcolors][3]++;
+    }
+    for (n = 0; n < newcolors; ++n) {
+        struct tupleint *t = clustermap.table[n];
+        t->tuple[0] = map[n][0] / map[n][3];
+        t->tuple[1] = map[n][1] / map[n][3];
+        t->tuple[2] = map[n][2] / map[n][3];
+        t->value = n;
+        map[n][0] = 0;
+        map[n][1] = 0;
+        map[n][2] = 0;
+        map[n][3] = 0;
+    }
+ 
+    for (j = 0; j < 1000; ++j) {
+        memset(map, 0, 256 * 4);
+        for (i = 0; i < colorfreqtable.size; ++i) {
+            struct tupleint *t = colorfreqtable.table[n];
+            int distant = INT_MAX;
+            for (n = 0; n < clustermap.size; ++n) {
+                struct tupleint *t0 = clustermap.table[n];
+                int dr = t->tuple[0] - t0->tuple[0];
+                int dg = t->tuple[1] - t0->tuple[1];
+                int db = t->tuple[2] - t0->tuple[2];
+                if (distant < dr * dr + dg * dg + db * db) {
+                    t->value = n;
+                }
+            }
+            map[t->value][0] += t->tuple[0];
+            map[t->value][1] += t->tuple[1];
+            map[t->value][2] += t->tuple[2];
+            map[t->value][3]++;
+        }
+        for (n = 0; n < clustermap.size; ++n) {
+            struct tupleint *t = clustermap.table[n];
+            if (map[n][3]) {
+                t->tuple[0] = map[n][0] / map[n][3];
+                t->tuple[1] = map[n][1] / map[n][3];
+                t->tuple[2] = map[n][2] / map[n][3];
+                t->value = n;
+            }
+        }
+    }
+
+//    for (i = 0; i < colorfreqtable.size; ++i) {
+//        printf("(%u, %u, %u) -> %d\n",
+//               (int)colorfreqtable.table[i]->tuple[0],
+//               (int)colorfreqtable.table[i]->tuple[1],
+//               (int)colorfreqtable.table[i]->tuple[2],
+//               (int)colorfreqtable.table[i]->value
+//               );
+//    }
+//
+//    for (;;) {
+//
+//    for (i = 0; i < colorfreqtable.size; ++i) {
+//        colorfreqtable.table[i]->value = n++ % newcolors;
+//    }
+//    }
+    *colormapP = clustermap;
+    for (i = 0; i < newcolors; ++i) {
+        printf("(%u, %u, %u) -> %d\n",
+               (int)colormapP->table[i]->tuple[0],
+               (int)colormapP->table[i]->tuple[1],
+               (int)colormapP->table[i]->tuple[2],
+               (int)colormapP->table[i]->value
+               );
+    }
+
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+
+}
 
 static SIXELSTATUS
 mediancut(tupletable2 const colorfreqtable,
@@ -603,13 +708,13 @@ mediancut(tupletable2 const colorfreqtable,
 
    As a side effect, sort 'colorfreqtable'.
 -----------------------------------------------------------------------------*/
+    SIXELSTATUS status = SIXEL_FALSE;
     boxVector bv;
     unsigned int bi;
     unsigned int boxes;
     int multicolorBoxesExist;
     unsigned int i;
     unsigned int sum;
-    SIXELSTATUS status = SIXEL_FALSE;
 
     sum = 0;
 
@@ -836,8 +941,13 @@ compute_palette(
         }
     } else {
         quant_trace(stderr, "choosing %d colors...\n", reqColors);
-        status = mediancut(colorfreqtable, depth, reqColors,
-                           methodForLargest, methodForRep, colormapP, allocator);
+        if (1) {
+            status = mediancut(colorfreqtable, depth, reqColors,
+                               methodForLargest, methodForRep, colormapP, allocator);
+        } else {
+            status = k_means(colorfreqtable, depth, reqColors,
+                             methodForLargest, methodForRep, colormapP, allocator);
+        }
         if (SIXEL_FAILED(status)) {
             goto end;
         }
