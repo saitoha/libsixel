@@ -591,6 +591,7 @@ sixel_encoder_do_resize(
     src_width = sixel_frame_get_width(frame);
     src_height = sixel_frame_get_height(frame);
 
+    /* settings around scaling */
     dst_width = encoder->pixelwidth;    /* may be -1 (default) */
     dst_height = encoder->pixelheight;  /* may be -1 (default) */
 
@@ -636,40 +637,44 @@ sixel_encoder_do_clip(
     sixel_frame_t   /* in */    *frame)     /* frame object to be resized */
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int width;
-    int height;
+    int src_width;
+    int src_height;
+    int clip_x;
+    int clip_y;
+    int clip_w;
+    int clip_h;
 
     /* get frame width and height */
-    width = sixel_frame_get_width(frame);
-    height = sixel_frame_get_height(frame);
+    src_width = sixel_frame_get_width(frame);
+    src_height = sixel_frame_get_height(frame);
 
-    /* clipping */
+    /* settings around clipping */
+    clip_x = encoder->clipx;
+    clip_y = encoder->clipy;
+    clip_w = encoder->clipwidth;
+    clip_h = encoder->clipheight;
 
     /* adjust clipping width with comparing it to frame width */
-    if (encoder->clipwidth + encoder->clipx > width) {
-        if (encoder->clipx > width) {
-            encoder->clipwidth = 0;
+    if (clip_w + clip_x > src_width) {
+        if (clip_x > src_width) {
+            clip_w = 0;
         } else {
-            encoder->clipwidth = width - encoder->clipx;
+            clip_w = src_width - clip_x;
         }
     }
 
     /* adjust clipping height with comparing it to frame height */
-    if (encoder->clipheight + encoder->clipy > height) {
-        if (encoder->clipy > height) {
-            encoder->clipheight = 0;
+    if (clip_h + clip_y > src_height) {
+        if (clip_y > src_height) {
+            clip_h = 0;
         } else {
-            encoder->clipheight = height - encoder->clipy;
+            clip_h = src_height - clip_y;
         }
     }
 
     /* do clipping */
-    if (encoder->clipwidth > 0 && encoder->clipheight > 0) {
-        status = sixel_frame_clip(frame,
-                                  encoder->clipx,
-                                  encoder->clipy,
-                                  encoder->clipwidth,
-                                  encoder->clipheight);
+    if (clip_w > 0 && clip_h > 0) {
+        status = sixel_frame_clip(frame, clip_x, clip_y, clip_w, clip_h);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -684,7 +689,9 @@ end:
 
 
 static void
-sixel_debug_print_palette(sixel_dither_t *dither)
+sixel_debug_print_palette(
+    sixel_dither_t /* in */ *dither /* dithering object */
+)
 {
     unsigned char *palette;
     int i;
@@ -724,6 +731,7 @@ sixel_encoder_without_macro(
     int width;
     int height;
     int pixelformat;
+    int size;
 
     if (encoder == NULL) {
         sixel_helper_set_additional_message(
@@ -752,7 +760,8 @@ sixel_encoder_without_macro(
 
     width = sixel_frame_get_width(frame);
     height = sixel_frame_get_height(frame);
-    p = (unsigned char *)sixel_allocator_malloc(encoder->allocator, width * height * depth);
+    size = width * height * depth;
+    p = (unsigned char *)sixel_allocator_malloc(encoder->allocator, size);
     if (p == NULL) {
         sixel_helper_set_additional_message(
             "sixel_encoder_without_macro: sixel_allocator_malloc() failed.");
