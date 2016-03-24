@@ -582,36 +582,39 @@ sixel_encoder_do_resize(
     sixel_frame_t   /* in */    *frame)     /* frame object to be resized */
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int width;
-    int height;
+    int src_width;
+    int src_height;
+    int dst_width;
+    int dst_height;
 
     /* get frame width and height */
-    width = sixel_frame_get_width(frame);
-    height = sixel_frame_get_height(frame);
+    src_width = sixel_frame_get_width(frame);
+    src_height = sixel_frame_get_height(frame);
+
+    dst_width = encoder->pixelwidth;    /* may be -1 (default) */
+    dst_height = encoder->pixelheight;  /* may be -1 (default) */
 
     /* if the encoder has percentwidth or percentheight property,
        convert them to pixelwidth / pixelheight */
     if (encoder->percentwidth > 0) {
-        encoder->pixelwidth = width * encoder->percentwidth / 100;
+        dst_width = src_width * encoder->percentwidth / 100;
     }
     if (encoder->percentheight > 0) {
-        encoder->pixelheight = height * encoder->percentheight / 100;
+        dst_height = src_height * encoder->percentheight / 100;
     }
 
     /* if only either width or height is set, set also the other
        to retain frame aspect ratio */
-    if (encoder->pixelwidth > 0 && encoder->pixelheight <= 0) {
-        encoder->pixelheight = height * encoder->pixelwidth / width;
+    if (encoder->pixelwidth > 0 && dst_height <= 0) {
+        dst_height = src_height * encoder->pixelwidth / src_width;
     }
-    if (encoder->pixelheight > 0 && encoder->pixelwidth <= 0) {
-        encoder->pixelwidth = width * encoder->pixelheight / height;
+    if (encoder->pixelheight > 0 && dst_width <= 0) {
+        dst_width = src_width * encoder->pixelheight / src_height;
     }
 
     /* do resize */
-    if (encoder->pixelwidth > 0 && encoder->pixelheight > 0) {
-        status = sixel_frame_resize(frame,
-                                    encoder->pixelwidth,
-                                    encoder->pixelheight,
+    if (dst_width > 0 && dst_height > 0) {
+        status = sixel_frame_resize(frame, dst_width, dst_height,
                                     encoder->method_for_resampling);
         if (SIXEL_FAILED(status)) {
             goto end;
