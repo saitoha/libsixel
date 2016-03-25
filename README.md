@@ -31,6 +31,7 @@ Now Youtube video streaming is available over SIXEL protocol by [FFmpeg-SIXEL](h
 
   [![FFmpeg-SIXEL](https://raw.githubusercontent.com/saitoha/libsixel/data/data/ffmpeg.png)](http://youtu.be/hqMh47lYHlc)
 
+Above demo only uses 16 color registers.
 
 ### SDL integration: Gaming, Virtualization, ...etc.
 
@@ -210,13 +211,28 @@ Now SIXEL feature is supported by the following terminals.
 
   [http://mlterm.sourceforge.net/](http://mlterm.sourceforge.net/)
 
-  Works on each of X, win32/cygwin, framebuffer version.
+  Works on each of X, WIN32 GDI, framebuffer, Android, Cocoa version.
 
 - XTerm (compiled with `--enable-sixel` option)
 
   [http://invisible-island.net/xterm/](http://invisible-island.net/xterm/)
 
-  You should launch xterm with "`-ti 340`" option. The SIXEL palette is limited to a maximum of 16 colors.
+  You should launch xterm with "`-ti 340`" option.
+  The SIXEL palette is limited to a maximum of 16 colors.
+  To avoid this limitation, Try
+
+```sh
+$ echo "XTerm*decTerminalID: vt340" >> $HOME/.Xresources
+$ echo "XTerm*numColorRegisters: 256" >>  $HOME/.Xresources
+$ xrdb $HOME/.Xresources
+$ xterm
+```
+
+  or
+
+```sh
+$ xterm -xrm "XTerm*decTerminalID: vt340" -xrm "XTerm*numColorRegisters: 256"
+```
 
 - yaft
 
@@ -971,7 +987,7 @@ derived from kmiya's "*sixel*" original version (2014-3-2)
 
 This work is written by kmiya@ culti. He distributes it under very permissive license.
 
-The original license text(in Japanese only) is:
+The original license text(in Japanese) is:
 
 ```
 このプログラム及びソースコードの使用について個人・商用を問わず
