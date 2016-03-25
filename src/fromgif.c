@@ -615,7 +615,7 @@ load_gif(
             }
 
             if (fstatic) {
-                break;
+                goto end;
             }
             ++frame->frame_no;
         }
