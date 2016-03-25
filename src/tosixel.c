@@ -207,6 +207,25 @@ end:
     return status;
 }
 
+static SIXELSTATUS
+sixel_node_new(sixel_node_t **np, sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+
+    *np = (sixel_node_t *)sixel_allocator_malloc(allocator,
+                                                 sizeof(sixel_node_t));
+    if (np == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_node_new: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
 
 static void
 sixel_node_del(sixel_output_t *const output, sixel_node_t *np)
@@ -240,7 +259,7 @@ sixel_put_node(sixel_output_t *const output,
     SIXELSTATUS status = SIXEL_FALSE;
     int nwrite;
 
-    if (ncolors != 2 || keycolor == -1) {
+    if (ncolors != 2 || keycolor == (-1)) {
         /* designate palette index */
         if (output->active_palette != np->pal) {
             sixel_putc((char *)output->buffer + output->pos, '#');
@@ -537,7 +556,7 @@ sixel_encode_body(
             fillable = 1;
         }
         for (x = 0; x < width; x++) {
-            pix = pixels[y * width + x];
+            pix = pixels[y * width + x];  /* color index */
             if (pix >= 0 && pix < ncolors && pix != keycolor) {
                 map[pix * width + x] |= (1 << i);
             }
@@ -576,12 +595,8 @@ sixel_encode_body(
                 if ((np = output->node_free) != NULL) {
                     output->node_free = np->next;
                 } else {
-                    np = (sixel_node_t *)sixel_allocator_malloc(allocator,
-                                                                sizeof(sixel_node_t));
-                    if (np == NULL) {
-                        sixel_helper_set_additional_message(
-                            "sixel_encode_body: sixel_allocator_malloc() failed.");
-                        status = SIXEL_BAD_ALLOCATION;
+                    status = sixel_node_new(&np, allocator);
+                    if (SIXEL_FAILED(status)) {
                         goto end;
                     }
                 }
