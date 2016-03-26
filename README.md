@@ -128,6 +128,13 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
   ![ite(4)](https://raw.githubusercontent.com/saitoha/libsixel/data/data/ite.png)
 
 
+#### [sixelPreviewer](https://github.com/mikoto2000/sixelPreviewer)
+
+  A simple scripts for realtime edit-previewing for dot, svg, markdown, ...etc.
+
+  ![sixelpreviewer](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixelpreviewer.jpg)
+
+
 ## Highlighted features
 
 ### Improved compression
