@@ -571,8 +571,6 @@ load_gif(
     if (status != SIXEL_OK) {
         goto end;
     }
-    frame->width = g.w,
-    frame->height = g.h,
     g.out = (unsigned char *)sixel_allocator_malloc(allocator, g.w * g.h);
     if (g.out == NULL) {
         sixel_helper_set_additional_message(
@@ -604,6 +602,8 @@ load_gif(
                 break;
             }
 
+            frame->width = g.w;
+            frame->height = g.h;
             status = gif_init_frame(frame, &g, bgcolor, reqcolors, fuse_palette);
             if (status != SIXEL_OK) {
                 goto end;
@@ -615,7 +615,7 @@ load_gif(
             }
 
             if (fstatic) {
-                break;
+                goto end;
             }
             ++frame->frame_no;
         }

@@ -39,13 +39,19 @@
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wswitch-default"
 #endif
+#if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdouble-promotion"
+#endif
 #include "stb_image_write.h"
-#if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
+#if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
 # pragma GCC diagnostic pop
 #endif
 #if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wstrict-overflow"
+# pragma GCC diagnostic pop
+#endif
+#if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
+# pragma GCC diagnostic pop
 #endif
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */

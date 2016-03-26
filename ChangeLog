@@ -1,8 +1,102 @@
+2016-03-25  Hayaki Saito <user@zuse.jp>
+
+  * src/fromgif.c: Fix broken -S option
+
+  * README.md: Add a notaion for avoiding xterm's color register limitation
+  (suggested by @ismail in #47)
+
+  * src/stb_image_write.c: Ignore -Wdouble-promotion warnings during including
+  stb_image_write.h
+
+2016-03-24  Hayaki Saito <user@zuse.jp>
+
+  * src/encoder.c: Don't reset encoder->pixel{width,height} in clipping
+  function
+
+  * src/encoder.c: Don't reset encoder->pixel{width,height} in scaling function
+
+  * src/fromgif.c: Fix broken resize feature for animated GIF
+
+2016-03-23  Hayaki Saito <user@zuse.jp>
+
+  * include/sixel.h.in: Suppress a warning(-Wundef) when including sixel.h
+
+2016-03-09  Hayaki Saito <user@zuse.jp>
+
+  * src/tosixel.c: cleanup
+
+2016-03-07  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac: update ABI version
+
+2016-03-06  Hayaki Saito <user@zuse.jp>
+
+  * configure, configure.ac, package.json: Update ABI version
+
+  * include/sixel.h.in, src/frame.c, src/pixelformat.c, src/writer.c: Add
+  support for new pixelformat ABGR/BGRA
+
+  * NEWS: Update NEWS
+
+  * Makefile.in, README.md, converters/img2sixel.1,
+  converters/shell-completion/bash/img2sixel,
+  converters/shell-completion/zsh/_img2sixel: Add -R option stuff to README,
+  manpage, shell-completion
+
+2016-03-05  Hayaki Saito <user@zuse.jp>
+
+  * README.md, converters/img2sixel.1, converters/sixel2png.1: Update
+  descriptions in README and manpage for stbi/stbiw
+
+  * converters/img2sixel.1, converters/sixel2png.1: Update contributors section
+  of manpages
+
+2016-03-03  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.in, configure, configure.ac, package.json: Update ABI version
+
+  * converters/img2sixel.c, include/sixel.h.in, src/encoder.c, src/encoder.h:
+  New option -R, --gri-limit
+
+  * Makefile.in, include/sixel.h.in, src/output.c: New API:
+  sixel_output_set_gri_arg_limit()
+
+  * Makefile.in, configure, configure.ac, package.json: Update ABI version
+
+  * include/sixel.h.in, src/encoder.c, src/loader.c, src/tosixel.c: Add new
+  API: sixel_encoder_encode_bytes
+
+2016-02-29  Hayaki Saito <user@zuse.jp>
+
+  * README.md: Add @hattya to contributers list
+
+2016-02-27  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.in, src/output.c, src/output.h, src/quant.c, src/quant.h,
+  src/tosixel.c: Introduce DECGRI('!') compatibility flag
+
 2016-02-27  Akinori Hattori <hattya@gentoo.org>
 
   * configure, configure.ac: Fix check for gdImageCreateFromPngPtr availability
 
+2016-02-22  Hayaki Saito <user@zuse.jp>
+
+  * src/tty.c: Fix compile error on MinGW environment
+
+  * src/Makefile.am, src/Makefile.in, src/encoder.c, src/tty.c, src/tty.h: Add
+  tty.c and tty.h
+
+  * converters/Makefile.am, converters/Makefile.in, include/sixel.h.in,
+  src/encoder.c, src/encoder.h: Solve encoder option confliction between
+  -m/-e/-I/-b
+
 2016-02-21  Hayaki Saito <user@zuse.jp>
+
+  * src/allocator.c, src/chunk.c, src/decoder.c: Add more tests
+
+  * src/encoder.c: Minor fixes in encoder.c
+
+  * src/decoder.c: Add more tests for decoder.c
 
   * src/decoder.c: Fix bad initialization check of decoder object
 
