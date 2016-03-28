@@ -97,6 +97,16 @@ get_rgb(unsigned char const *data,
         *g = (pixels >>  8) & 0xff;
         *b = (pixels >>  0) & 0xff;
         break;
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        *r = (pixels >>  8) & 0xff;
+        *g = (pixels >> 16) & 0xff;
+        *b = (pixels >> 24) & 0xff;
+        break;
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        *r = (pixels >>  0) & 0xff;
+        *g = (pixels >>  8) & 0xff;
+        *b = (pixels >> 16) & 0xff;
+        break;
     case SIXEL_PIXELFORMAT_GA88:
         *r = *g = *b = (pixels >> 8) & 0xff;
         break;
@@ -119,6 +129,8 @@ sixel_helper_compute_depth(int pixelformat)
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_ARGB8888:
     case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
         depth = 4;
         break;
     case SIXEL_PIXELFORMAT_RGB888:
@@ -273,6 +285,8 @@ sixel_helper_normalize_pixelformat(
         break;
     case SIXEL_PIXELFORMAT_RGBA8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
         expand_rgb(dst, src, width, height, src_pixelformat, 4);
         *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;

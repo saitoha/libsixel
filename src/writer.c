@@ -178,6 +178,8 @@ write_png_to_file(
     case SIXEL_PIXELFORMAT_BGR888:
     case SIXEL_PIXELFORMAT_RGBA8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
         pixels = new_pixels = sixel_allocator_malloc(allocator, width * height * 3);
         if (new_pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
