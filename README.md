@@ -1052,8 +1052,8 @@ https://github.com/nothings/stb
 > distribute, and modify this file as you see fit.
 
 
-### stbiw-1.01
-This software includes `stb-image-write-v1.01` (stb_image_write.h),
+### stbiw-1.02
+This software includes `stb-image-write-v1.02` (stb_image_write.h),
 public domain PNG/BMP/TGA writer.
 
 https://github.com/nothings/stb
