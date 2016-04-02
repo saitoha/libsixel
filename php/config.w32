@@ -1,0 +1,8 @@
+// $ Id: $
+// vim:ft=javascript
+
+ARG_ENABLE('sixel' , 'PHP interface to libsixel', 'no');
+if (PHP_SIXEL == "yes") {
+  EXTENSION("sixel", "sixel.c");
+  AC_DEFINE("HAVE_SIXEL", 1, "sixel support");
+}

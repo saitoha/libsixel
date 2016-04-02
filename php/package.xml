@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<!DOCTYPE package SYSTEM "http://pear.php.net/dtd/package-1.0">
+<package>
+
+  <name>sixel</name>
+  <summary>PHP interface to libsixel</summary>
+  <description>
+    A PHP interface to libsixel.
+    libsixel is a lightweight, fast implementation of DEC SIXEL graphics codec.
+  </description>
+
+  <license>MIT</license>
+
+  <configureoptions>
+   <configureoption name="with-libsixel" default="autodetect" prompt="libsixel installation directory?" />
+  </configureoptions>
+
+  <maintainers>
+    <maintainer>
+      <user>saitoha</user>
+      <name>Hayaki Saito</name>
+      <email>saitoha@me.com</email>
+      <role>developer</role>
+    </maintainer>
+  </maintainers>
+
+  <release>
+    <version>0.0.2</version>
+    <state>alpha</state>
+    <notes>        Alpha version.
+</notes>
+    <date>2015-08-30</date>
+  </release>
+  <changelog>
+  
+  </changelog>
+  <deps>
+    <dep type="php" rel="ge" version="5.0.0"/>
+  </deps>
+
+  <filelist>
+    <dir name="/">
+      <file role='doc' name='EXPERIMENTAL'/>
+      <file role='doc' name='CREDITS'/>
+      <file role='src' name='config.m4'/>
+      <file role='src' name='sixel.dsp'/>
+      <file role='src' name='config.w32'/>
+      <file role='src' name='sixel.c'/>
+      <file role='src' name='php_sixel.h'/>
+      <dir name="tests">
+        <file role='test' name='SixelEncoder____construct.phpt'/>
+        <file role='test' name='SixelEncoder____destruct.phpt'/>
+        <file role='test' name='SixelEncoder__setopt.phpt'/>
+        <file role='test' name='SixelEncoder__encode.phpt'/>
+      </dir>
+    </dir>
+  </filelist>
+</package>

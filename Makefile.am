@@ -1,4 +1,4 @@
-SUBDIRS = include src converters
+SUBDIRS = include src converters tools python
 DIST_SUBDIRS = $(SUBDIRS)
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
@@ -7,30 +7,37 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libsixel.pc
 
-CLEANFILES = libsixel.pc wic_install.reg wic_uninstall.reg valgrind.log
+CLEANFILES = valgrind.log test.log unittest.log test-output.png
+
+all-am:
+	cp package.json.in package.json
+
+check-am:
+
+unittest: all
+	cd src && $(MAKE) unittest 2>&1 |tee unittest.log
 
 test: all
-	$(MAKE) test -C converters > test.log
+	cd src && $(MAKE) unittest 2>&1 |tee ../test.log
+	cd converters && $(MAKE) test 2>&1 |tee -a ../test.log
 
 winetest: all
-	$(MAKE) winetest -C converters
+	cd converters && $(MAKE) winetest
 
 valgrind: all
-	valgrind --leak-check=full --show-leachable=no --error-limit=no img2sixel images/snake.jpg -dfs 2>&1 \
+	valgrind --leak-check=full --show-reachable=no --error-limit=no img2sixel images/snake.jpg -dfs 2>&1 \
 		| grep ^== \
-		> tee valgrind.log
-	grep "definitely lost: 0 bytes in 0 blocks" valgrind.log
-	grep "indirectly lost: 0 bytes in 0 blocks" valgrind.log
+		| tee valgrind.log
+	grep "All heap blocks were freed" valgrind.log || \
+		grep "definitely lost: 0 bytes in 0 blocks" valgrind.log
+	grep "All heap blocks were freed" valgrind.log || \
+		grep "indirectly lost: 0 bytes in 0 blocks" valgrind.log
 
-coveralls: test
-	rm -rf gcovtmp
-	mkdir gcovtmp
-	cp src/*.{c,cc,gcno,gcda} converters/*.{c,h,gcno,gcda} .coveralls.yml gcovtmp/
-	cd gcovtmp && coveralls -e sixel_orig -e include -e m4
-	rm -rf gcovtmp
+coveralls:
+	coveralls -e sixel_orig -e include -e m4 \
+		-e stb_image.h -e stb_image_write.h
 
 coveralls-dryrun: test
-	rm -rf gcovtmp
-	mkdir gcovtmp
-	cp src/*.{c,cc,gcno,gcda} converters/*.{c,h,gcno,gcda} .coveralls.yml gcovtmp/
-	cd gcovtmp && coveralls -e sixel_orig -e include -e m4 --dryrun
+	coveralls -e sixel_orig -e include -e m4 \
+		-e stb_image.h -e stb_image_write.h \
+		--dryrun

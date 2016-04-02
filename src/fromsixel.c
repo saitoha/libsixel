@@ -1,5 +1,5 @@
 /*
- * this file is derived from "sixel" original version (2014-3-2)
+ * This file is derived from "sixel" original version (2014-3-2)
  * http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
  *
  * Initial developer of this file is kmiya@culti.
@@ -10,29 +10,62 @@
  *
  * He declares this is compatible with MIT/BSD/GPL.
  *
- * Hayaki Saito <user@zuse.jp> modified this and re-licensed
+ * Hayaki Saito <saitoha@me.com> modified this and re-licensed
  * it under the MIT license.
  *
+ * The helper function hls2rgb is imported from Xterm pl#310.
+ * This is originally written by Ross Combs.
+ * Hayaki Saito <saitoha@me.com> slightly modified this.
+ *
+ * -------------------------------------------------------------------------
+ * Copyright 2013,2014 by Ross Combs
+ *
+ *                         All Rights Reserved
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the name(s) of the above copyright
+ * holders shall not be used in advertising or otherwise to promote the
+ * sale, use or other dealings in this Software without prior written
+ * authorization.
+ * -------------------------------------------------------------------------
  */
 #include "config.h"
 #include <stdlib.h>  /* NULL */
 #include <ctype.h>   /* isdigit */
+#include <string.h>  /* memcpy */
 
 #if defined(HAVE_INTTYPES_H)
 # include <inttypes.h>
 #endif
 
-#include "sixel.h"
+#include <sixel.h>
+#include "output.h"
 
 #define RGB(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
-
-#define RGBA(r, g, b, a) (((a) << 24) + ((r) << 16) + ((g) << 8) +  (b))
 
 #define PALVAL(n,a,m) (((n) * (a) + ((m) / 2)) / (m))
 
 #define XRGB(r,g,b) RGB(PALVAL(r, 255, 100), PALVAL(g, 255, 100), PALVAL(b, 255, 100))
 
-static int const ColTab[] = {
+static int const color_table[] = {
     XRGB(0,  0,  0),   /*  0 Black    */
     XRGB(20, 20, 80),  /*  1 Blue     */
     XRGB(80, 13, 13),  /*  2 Red      */
@@ -52,60 +85,93 @@ static int const ColTab[] = {
 };
 
 
+/*
+ * Primary color hues:
+ *  blue:    0 degrees
+ *  red:   120 degrees
+ *  green: 240 degrees
+ */
 static int
-HueToRGB(int n1, int n2, int hue)
+hls2rgb(int hue, int lum, int sat)
 {
-    const int HLSMAX = 100;
-
-    if (hue < 0) {
-        hue += HLSMAX;
-    }
-
-    if (hue > HLSMAX) {
-        hue -= HLSMAX;
-    }
-
-    if (hue < (HLSMAX / 6)) {
-        return (n1 + (((n2 - n1) * hue + (HLSMAX / 12)) / (HLSMAX / 6)));
-    }
-    if (hue < (HLSMAX / 2)) {
-        return (n2);
-    }
-    if (hue < ((HLSMAX * 2) / 3)) {
-        return (n1 + (((n2 - n1) * (((HLSMAX * 2) / 3) - hue) + (HLSMAX / 12))/(HLSMAX / 6)));
-    }
-    return (n1);
-}
-
-
-static int
-HLStoRGB(int hue, int lum, int sat)
-{
-    int R, G, B;
-    int Magic1, Magic2;
-    const int RGBMAX = 255;
-    const int HLSMAX = 100;
+    double hs = (hue + 240) % 360;
+    double hv = hs / 360.0;
+    double lv = lum / 100.0;
+    double sv = sat / 100.0;
+    double c, x, m, c2;
+    double r1, g1, b1;
+    int r, g, b;
+    int hpi;
 
     if (sat == 0) {
-        R = G = B = (lum * RGBMAX) / HLSMAX;
-    } else {
-        if (lum <= (HLSMAX / 2)) {
-            Magic2 = (lum * (HLSMAX + sat) + (HLSMAX / 2)) / HLSMAX;
-        } else {
-            Magic2 = lum + sat - ((lum * sat) + (HLSMAX / 2)) / HLSMAX;
-        }
-        Magic1 = 2 * lum - Magic2;
-
-        R = (HueToRGB(Magic1, Magic2, hue + (HLSMAX / 3)) * RGBMAX + (HLSMAX / 2)) / HLSMAX;
-        G = (HueToRGB(Magic1, Magic2, hue) * RGBMAX + (HLSMAX / 2)) / HLSMAX;
-        B = (HueToRGB(Magic1, Magic2, hue - (HLSMAX / 3)) * RGBMAX + (HLSMAX/2)) / HLSMAX;
+        r = g = b = lum * 255 / 100;
+        return RGB(r, g, b);
     }
-    return RGB(R, G, B);
+
+    if ((c2 = ((2.0 * lv) - 1.0)) < 0.0)
+        c2 = -c2;
+    c = (1.0 - c2) * sv;
+    hpi = (int) (hv * 6.0);
+    x = (hpi & 1) ? c : 0.0;
+    m = lv - 0.5 * c;
+
+    switch (hpi) {
+    case 0:
+        r1 = c;
+        g1 = x;
+        b1 = 0.0;
+        break;
+    case 1:
+        r1 = x;
+        g1 = c;
+        b1 = 0.0;
+        break;
+    case 2:
+        r1 = 0.0;
+        g1 = c;
+        b1 = x;
+        break;
+    case 3:
+        r1 = 0.0;
+        g1 = x;
+        b1 = c;
+        break;
+    case 4:
+        r1 = x;
+        g1 = 0.0;
+        b1 = c;
+        break;
+    case 5:
+        r1 = c;
+        g1 = 0.0;
+        b1 = x;
+        break;
+    default:
+        return RGB(255, 255, 255);
+    }
+
+    r = (short) ((r1 + m) * 100.0 + 0.5);
+    g = (short) ((g1 + m) * 100.0 + 0.5);
+    b = (short) ((b1 + m) * 100.0 + 0.5);
+
+    if (r < 0)
+        r = 0;
+    else if (r > 100)
+        r = 100;
+    if (g < 0)
+        g = 0;
+    else if (g > 100)
+        g = 100;
+    if (b < 0)
+        b = 0;
+    else if (b > 100)
+        b = 100;
+    return RGB(r * 255 / 100, g * 255 / 100, b * 255 / 100);
 }
 
 
 static unsigned char *
-GetParam(unsigned char *p, int *param, int *len)
+sixel_getparams(unsigned char *p, int *param, int *len)
 {
     int n;
 
@@ -139,61 +205,111 @@ GetParam(unsigned char *p, int *param, int *len)
 }
 
 
-LSImagePtr
-LibSixel_SixelToLSImage(unsigned char *p, int len)
+/* convert sixel data into indexed pixel bytes and palette data */
+/* TODO: make "free" function as an argument */
+SIXELAPI SIXELSTATUS
+sixel_decode_raw(
+    unsigned char       /* in */  *p,         /* sixel bytes */
+    int                 /* in */  len,        /* size of sixel bytes */
+    unsigned char       /* out */ **pixels,   /* decoded pixels */
+    int                 /* out */ *pwidth,    /* image width */
+    int                 /* out */ *pheight,   /* image height */
+    unsigned char       /* out */ **palette,  /* ARGB palette */
+    int                 /* out */ *ncolors,   /* palette size (<= 256) */
+    sixel_allocator_t   /* in */  *allocator) /* allocator object */
 {
-    int n, i, a, b, c;
-    int px, py;
-    int mx, my;
-    int ax, ay;
-    int tx, ty;
-    int rep, col, bc, id;
+    SIXELSTATUS status = SIXEL_FALSE;
+    int n;
+    int i;
+    int r;
+    int g;
+    int b;
+    int sixel_vertical_mask;
+    int c;
+    int posision_x;
+    int posision_y;
+    int max_x;
+    int max_y;
+    int attributed_pan;
+    int attributed_pad;
+    int attributed_ph;
+    int attributed_pv;
+    int repeat_count;
+    int color_index;
+    int max_color_index;
+    int background_color_index;
     int param[10];
-    LSImagePtr im, dm;
-    unsigned char *s;
-    static char pam[256];
-    static char gra[256];
-    int sixel_palet[PALETTE_MAX];
+    int sixel_palet[SIXEL_PALETTE_MAX];
+    unsigned char *imbuf;
+    unsigned char *dmbuf;
+    int imsx;
+    int imsy;
+    int dmsx;
+    int dmsy;
+    int y;
 
-    px = py = 0;
-    mx = my = 0;
-    ax = 2;
-    ay = 1;
-    tx = ty = 0;
-    rep = 1;
-    col = 0;
-    bc = 0;
+    (void) len;
 
-    if ((im = LSImage_create(2048, 2048, 3, -1)) == NULL) {
-        return NULL;
+    if (pixels == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    posision_x = 0;
+    posision_y = 0;
+    max_x = 0;
+    max_y = 0;
+    attributed_pan = 2;
+    attributed_pad = 1;
+    attributed_ph = 0;
+    attributed_pv = 0;
+    repeat_count = 1;
+    color_index = 15;
+    max_color_index = 2;
+    background_color_index = 0;
+
+    if (allocator == NULL) {
+        status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    } else {
+        sixel_allocator_ref(allocator);
+    }
+
+    *pixels = NULL;
+    imsx = 2048;
+    imsy = 2048;
+    imbuf = (unsigned char *)sixel_allocator_malloc(allocator, imsx * imsy);
+    if (imbuf == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_deocde_raw: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
 
     for (n = 0; n < 16; n++) {
-        sixel_palet[n] = ColTab[n];
+        sixel_palet[n] = color_table[n];
     }
 
     /* colors 16-231 are a 6x6x6 color cube */
-    for (a = 0; a < 6; a++) {
-        for (b = 0; b < 6; b++) {
-            for (c = 0; c < 6; c++) {
-                sixel_palet[n++] = RGB(a * 51, b * 51, c * 51);
+    for (r = 0; r < 6; r++) {
+        for (g = 0; g < 6; g++) {
+            for (b = 0; b < 6; b++) {
+                sixel_palet[n++] = RGB(r * 51, g * 51, b * 51);
             }
         }
     }
     /* colors 232-255 are a grayscale ramp, intentionally leaving out */
-    for (a = 0; a < 24; a++) {
-        sixel_palet[n++] = RGB(a * 11, a * 11, a * 11);
+    for (i = 0; i < 24; i++) {
+        sixel_palet[n++] = RGB(i * 11, i * 11, i * 11);
     }
 
-    bc = RGBA(0, 0, 0, 127);
-
-    for (; n < PALETTE_MAX; n++) {
+    for (; n < SIXEL_PALETTE_MAX; n++) {
         sixel_palet[n] = RGB(255, 255, 255);
     }
 
-    LSImage_fill(im, bc);
-
-    pam[0] = gra[0] = '\0';
+    memset(imbuf, background_color_index, imsx * imsy);
 
     while (*p != '\0') {
         if ((p[0] == '\033' && p[1] == 'P') || *p == 0x90) {
@@ -201,47 +317,41 @@ LibSixel_SixelToLSImage(unsigned char *p, int len)
                 p++;
             }
 
-            s = ++p;
-            p = GetParam(p, param, &n);
-            if (s < p) {
-                for (i = 0; i < 255 && s < p;) {
-                    pam[i++] = *(s++);
-                }
-                pam[i] = '\0';
-            }
-
+            p = sixel_getparams(++p, param, &n);
             if (*p == 'q') {
                 p++;
-
                 if (n > 0) {        /* Pn1 */
                     switch(param[0]) {
                     case 0:
                     case 1:
-                        ay = 2;
+                        attributed_pad = 2;
                         break;
                     case 2:
-                        ay = 5;
+                        attributed_pad = 5;
                         break;
                     case 3:
-                        ay = 4;
+                        attributed_pad = 4;
                         break;
                     case 4:
-                        ay = 4;
+                        attributed_pad = 4;
                         break;
                     case 5:
-                        ay = 3;
+                        attributed_pad = 3;
                         break;
                     case 6:
-                        ay = 3;
+                        attributed_pad = 3;
                         break;
                     case 7:
-                        ay = 2;
+                        attributed_pad = 2;
                         break;
                     case 8:
-                        ay = 2;
+                        attributed_pad = 2;
                         break;
                     case 9:
-                        ay = 1;
+                        attributed_pad = 1;
+                        break;
+                    default:
+                        attributed_pad = 2;
                         break;
                     }
                 }
@@ -250,10 +360,14 @@ LibSixel_SixelToLSImage(unsigned char *p, int len)
                     if (param[2] == 0) {
                         param[2] = 10;
                     }
-                    ax = ax * param[2] / 10;
-                    ay = ay * param[2] / 10;
-                    if (ax <= 0) ax = 1;
-                    if (ay <= 0) ay = 1;
+                    attributed_pan = attributed_pan * param[2] / 10;
+                    attributed_pad = attributed_pad * param[2] / 10;
+                    if (attributed_pan <= 0) {
+                        attributed_pan = 1;
+                    }
+                    if (attributed_pad <= 0) {
+                        attributed_pad = 1;
+                    }
                 }
             }
 
@@ -261,52 +375,66 @@ LibSixel_SixelToLSImage(unsigned char *p, int len)
             break;
         } else if (*p == '"') {
             /* DECGRA Set Raster Attributes " Pan; Pad; Ph; Pv */
-            s = p++;
-            p = GetParam(p, param, &n);
-            if (s < p) {
-                for (i = 0; i < 255 && s < p;) {
-                    gra[i++] = *(s++);
-                }
-                gra[i] = '\0';
+            p = sixel_getparams(p + 1, param, &n);
+
+            if (n > 0) {
+                attributed_pad = param[0];
+            }
+            if (n > 1) {
+                attributed_pan = param[1];
+            }
+            if (n > 2 && param[2] > 0) {
+                attributed_ph = param[2];
+            }
+            if (n > 3 && param[3] > 0) {
+                attributed_pv = param[3];
             }
 
-            if (n > 0) ay = param[0];
-            if (n > 1) ax = param[1];
-            if (n > 2 && param[2] > 0) tx = param[2];
-            if (n > 3 && param[3] > 0) ty = param[3];
+            if (attributed_pan <= 0) {
+                attributed_pan = 1;
+            }
+            if (attributed_pad <= 0) {
+                attributed_pad = 1;
+            }
 
-            if (ax <= 0) ax = 1;
-            if (ay <= 0) ay = 1;
-
-            if (im->sx < tx || im->sy < ty) {
-                dm = LSImage_create(im->sx > tx ? im->sx : tx,
-                                    im->sy > ty ? im->sy : ty, 3, -1);
-                if (dm == NULL) {
-                    return NULL;
+            if (imsx < attributed_ph || imsy < attributed_pv) {
+                dmsx = imsx > attributed_ph ? imsx : attributed_ph;
+                dmsy = imsy > attributed_pv ? imsy : attributed_pv;
+                dmbuf = (unsigned char *)sixel_allocator_malloc(allocator, dmsx * dmsy);
+                if (dmbuf == NULL) {
+                    sixel_allocator_free(allocator, imbuf);
+                    sixel_helper_set_additional_message(
+                        "sixel_deocde_raw: sixel_allocator_malloc() failed.");
+                    status = SIXEL_BAD_ALLOCATION;
+                    goto end;
                 }
-                LSImage_fill(dm, bc);
-                LSImage_copy(dm, im, im->sx, im->sy);
-                LSImage_destroy(im);
-                im = dm;
+                memset(dmbuf, background_color_index, dmsx * dmsy);
+                for (y = 0; y < imsy; ++y) {
+                    memcpy(dmbuf + dmsx * y, imbuf + imsx * y, imsx);
+                }
+                sixel_allocator_free(allocator, imbuf);
+                imsx = dmsx;
+                imsy = dmsy;
+                imbuf = dmbuf;
             }
 
         } else if (*p == '!') {
             /* DECGRI Graphics Repeat Introducer ! Pn Ch */
-            p = GetParam(++p, param, &n);
+            p = sixel_getparams(p + 1, param, &n);
 
             if (n > 0) {
-                rep = param[0];
+                repeat_count = param[0];
             }
 
         } else if (*p == '#') {
             /* DECGCI Graphics Color Introducer # Pc; Pu; Px; Py; Pz */
-            p = GetParam(++p, param, &n);
+            p = sixel_getparams(++p, param, &n);
 
             if (n > 0) {
-                if ((col = param[0]) < 0) {
-                    col = 0;
-                } else if (col >= PALETTE_MAX) {
-                    col = PALETTE_MAX - 1;
+                if ((color_index = param[0]) < 0) {
+                    color_index = 0;
+                } else if (color_index >= SIXEL_PALETTE_MAX) {
+                    color_index = SIXEL_PALETTE_MAX - 1;
                 }
             }
 
@@ -315,122 +443,193 @@ LibSixel_SixelToLSImage(unsigned char *p, int len)
                     if (param[2] > 360) param[2] = 360;
                     if (param[3] > 100) param[3] = 100;
                     if (param[4] > 100) param[4] = 100;
-                    sixel_palet[col] = HLStoRGB(param[2] * 100 / 360, param[3], param[4]);
+                    sixel_palet[color_index] = hls2rgb(param[2], param[3], param[4]);
                 } else if (param[1] == 2) {    /* RGB */
                     if (param[2] > 100) param[2] = 100;
                     if (param[3] > 100) param[3] = 100;
                     if (param[4] > 100) param[4] = 100;
-                    sixel_palet[col] = XRGB(param[2], param[3], param[4]);
+                    sixel_palet[color_index] = XRGB(param[2], param[3], param[4]);
                 }
             }
 
         } else if (*p == '$') {
             /* DECGCR Graphics Carriage Return */
             p++;
-            px = 0;
-            rep = 1;
+            posision_x = 0;
+            repeat_count = 1;
 
         } else if (*p == '-') {
             /* DECGNL Graphics Next Line */
             p++;
-            px  = 0;
-            py += 6;
-            rep = 1;
+            posision_x = 0;
+            posision_y += 6;
+            repeat_count = 1;
 
         } else if (*p >= '?' && *p <= '\177') {
-            if (im->sx < (px + rep) || im->sy < (py + 6)) {
-                int nx = im->sx * 2;
-                int ny = im->sy * 2;
+            if (imsx < (posision_x + repeat_count) || imsy < (posision_y + 6)) {
+                int nx = imsx * 2;
+                int ny = imsy * 2;
 
-                while (nx < (px + rep) || ny < (py + 6)) {
+                while (nx < (posision_x + repeat_count) || ny < (posision_y + 6)) {
                     nx *= 2;
                     ny *= 2;
                 }
 
-                if ((dm = LSImage_create(nx, ny, 3, -1)) == NULL) {
-                    return NULL;
+                dmsx = nx;
+                dmsy = ny;
+                dmbuf = (unsigned char *)sixel_allocator_malloc(allocator, dmsx * dmsy);
+                if (dmbuf == NULL) {
+                    sixel_allocator_free(allocator, imbuf);
+                    goto end;
                 }
-                LSImage_fill(dm, bc);
-                LSImage_copy(dm, im, im->sx, im->sy);
-                LSImage_destroy(im);
-                im = dm;
+                memset(dmbuf, background_color_index, dmsx * dmsy);
+                for (y = 0; y < imsy; ++y) {
+                    memcpy(dmbuf + dmsx * y, imbuf + imsx * y, imsx);
+                }
+                sixel_allocator_free(allocator, imbuf);
+                imsx = dmsx;
+                imsy = dmsy;
+                imbuf = dmbuf;
             }
 
+            if (color_index > max_color_index) {
+                max_color_index = color_index;
+            }
             if ((b = *(p++) - '?') == 0) {
-                px += rep;
+                posision_x += repeat_count;
 
             } else {
-                a = 0x01;
+                sixel_vertical_mask = 0x01;
 
-                if (rep <= 1) {
+                if (repeat_count <= 1) {
                     for (i = 0; i < 6; i++) {
-                        if ((b & a) != 0) {
-                            LSImage_setpixel(im, px, py + i, sixel_palet[col]);
-                            if (mx < px) {
-                                mx = px;
+                        if ((b & sixel_vertical_mask) != 0) {
+                            imbuf[imsx * (posision_y + i) + posision_x] = color_index;
+                            if (max_x < posision_x) {
+                                max_x = posision_x;
                             }
-                            if (my < (py + i)) {
-                                my = py + i;
+                            if (max_y < (posision_y + i)) {
+                                max_y = posision_y + i;
                             }
                         }
-                        a <<= 1;
+                        sixel_vertical_mask <<= 1;
                     }
-                    px += 1;
+                    posision_x += 1;
 
-                } else { /* rep > 1 */
+                } else { /* repeat_count > 1 */
                     for (i = 0; i < 6; i++) {
-                        if ((b & a) != 0) {
-                            c = a << 1;
+                        if ((b & sixel_vertical_mask) != 0) {
+                            c = sixel_vertical_mask << 1;
                             for (n = 1; (i + n) < 6; n++) {
                                 if ((b & c) == 0) {
                                     break;
                                 }
                                 c <<= 1;
                             }
-                            LSImage_fillrectangle(im, px, py + i,
-                                                  px + rep - 1,
-                                                  py + i + n - 1,
-                                                  sixel_palet[col]);
-
-                            if (mx < (px + rep - 1)) {
-                                mx = px + rep - 1;
+                            for (y = posision_y + i; y < posision_y + i + n; ++y) {
+                                memset(imbuf + imsx * y + posision_x, color_index, repeat_count);
                             }
-                            if (my < (py + i + n - 1)) {
-                                my = py + i + n - 1;
+                            if (max_x < (posision_x + repeat_count - 1)) {
+                                max_x = posision_x + repeat_count - 1;
+                            }
+                            if (max_y < (posision_y + i + n - 1)) {
+                                max_y = posision_y + i + n - 1;
                             }
 
                             i += (n - 1);
-                            a <<= (n - 1);
+                            sixel_vertical_mask <<= (n - 1);
                         }
-                        a <<= 1;
+                        sixel_vertical_mask <<= 1;
                     }
-                    px += rep;
+                    posision_x += repeat_count;
                 }
             }
-            rep = 1;
-
+            repeat_count = 1;
         } else {
             p++;
         }
     }
 
-    if (++mx < tx) {
-        mx = tx;
+    if (++max_x < attributed_ph) {
+        max_x = attributed_ph;
     }
-    if (++my < ty) {
-        my = ty;
+    if (++max_y < attributed_pv) {
+        max_y = attributed_pv;
     }
 
-    if (im->sx > mx || im->sy > my) {
-        if ((dm = LSImage_create(mx, my, 3, -1)) == NULL) {
-            return NULL;
+    if (imsx > max_x || imsy > max_y) {
+        dmsx = max_x;
+        dmsy = max_y;
+        dmbuf = (unsigned char *)sixel_allocator_malloc(allocator, dmsx * dmsy);
+        if (dmbuf == NULL) {
+            sixel_allocator_free(allocator, imbuf);
+            sixel_helper_set_additional_message(
+                "sixel_deocde_raw: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
         }
-        LSImage_copy(dm, im, dm->sx, dm->sy);
-        LSImage_destroy(im);
-        im = dm;
+        for (y = 0; y < dmsy; ++y) {
+            memcpy(dmbuf + dmsx * y, imbuf + imsx * y, dmsx);
+        }
+        free(imbuf);
+        imsx = dmsx;
+        imsy = dmsy;
+        imbuf = dmbuf;
     }
 
-    return im;
+    *ncolors = max_color_index + 1;
+    *palette = (unsigned char *)sixel_allocator_malloc(allocator, *ncolors * 3);
+    if (palette == NULL) {
+        sixel_allocator_free(allocator, imbuf);
+        sixel_helper_set_additional_message(
+            "sixel_deocde_raw: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    for (n = 0; n < *ncolors; ++n) {
+        (*palette)[n * 3 + 0] = sixel_palet[n] >> 16 & 0xff;
+        (*palette)[n * 3 + 1] = sixel_palet[n] >> 8 & 0xff;
+        (*palette)[n * 3 + 2] = sixel_palet[n] & 0xff;
+    }
+
+    *pwidth = imsx;
+    *pheight = imsy;
+    *pixels = imbuf;
+
+    status = SIXEL_OK;
+
+end:
+    sixel_allocator_ref(allocator);
+    return status;
+}
+
+
+SIXELAPI SIXELSTATUS
+sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
+             int                        /* in */  len,        /* size of sixel bytes */
+             unsigned char              /* out */ **pixels,   /* decoded pixels */
+             int                        /* out */ *pwidth,    /* image width */
+             int                        /* out */ *pheight,   /* image height */
+             unsigned char              /* out */ **palette,  /* ARGB palette */
+             int                        /* out */ *ncolors,   /* palette size (<= 256) */
+             sixel_allocator_function   /* in */  fn_malloc)  /* malloc function */
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_allocator_t *allocator = NULL;
+
+    status = sixel_allocator_new(&allocator, fn_malloc, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_decode_raw(p, len, pixels, pwidth, pheight, palette, ncolors, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+end:
+    sixel_allocator_unref(allocator);
+    return status;
 }
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
