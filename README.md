@@ -1038,9 +1038,9 @@ date will be written clearly.
 kmiya also said this is compatible with MIT/BSD/GPL.
 
 
-### stbi-2.10
+### stbi-2.12
 
-This software includes `stb-image-v2.10` (stb_image.h),
+This software includes `stb-image-v2.12` (stb_image.h),
 public domain JPEG/PNG reader.
 
 https://github.com/nothings/stb

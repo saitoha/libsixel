@@ -317,16 +317,14 @@ It can decode almost all images. but a few images can not be decoded by its limi
 
 .B Supported source formats:
    JPEG baseline & progressive (12 bpc/arithmetic not supported, same as stock IJG lib)
-   PNG 1/2/4/8-bit-per-channel
+   PNG 1/2/4/8/16-bit-per-channel
    TGA (not sure what subset, if a subset)
    BMP non-1bpp, non-RLE
    PSD (composited view only, no extra channels)
-   GIF/Animated GIF
    PIC (Softimage PIC)
    PNM (PPM and PGM binary only)
 
 .B Limitations:
-   no 16-bit-per-channel PNG
    no 12-bit-per-channel JPEG
    no JPEGs with arithmetic coding / JPEG 2000
    no 1-bit BMP
@@ -382,7 +380,7 @@ sixel(5) sixel2png(1)
 
 .SH AUTHORS
 \fIimg2sixel\fP is maintained by Hayaki Saito.
-We imported whole code of \fIstb_image v2.10\fP, written by Sean Barrett and its contributers, for loading various images,
+We imported whole code of \fIstb_image v2.12\fP, written by Sean Barrett and its contributers, for loading various images,
 and imported some code from \fIpnmquant.c (netpbm library)\fP for image quantization.
 
 
@@ -410,8 +408,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 This software derives from the following implementations.
 .br
 .TP 5
-.B stb_image-v2.02
-This software includes \fIstb_image-v2.02\fP (stb_image.h),
+.B stb_image-v2.12
+This software includes \fIstb_image-v2.12\fP (stb_image.h),
 a public domain JPEG/PNG reader.
 .br
 .B https://github.com/nothings/stb
