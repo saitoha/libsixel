@@ -5,7 +5,7 @@
  * Hayaki Saito <saitoha@me.com> modified this and re-licensed
  * it under the MIT license.
  *
- * Copyright (c) 2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -505,6 +505,9 @@ gif_load_next(
                         case 0x01:
                             g->loop_count = gif_get16le(s);
                             break;
+                        default:
+                            g->loop_count = 1;
+                            break;
                         }
                     }
                 }
@@ -568,8 +571,6 @@ load_gif(
     if (status != SIXEL_OK) {
         goto end;
     }
-    frame->width = g.w,
-    frame->height = g.h,
     g.out = (unsigned char *)sixel_allocator_malloc(allocator, g.w * g.h);
     if (g.out == NULL) {
         sixel_helper_set_additional_message(
@@ -601,6 +602,8 @@ load_gif(
                 break;
             }
 
+            frame->width = g.w;
+            frame->height = g.h;
             status = gif_init_frame(frame, &g, bgcolor, reqcolors, fuse_palette);
             if (status != SIXEL_OK) {
                 goto end;
@@ -612,7 +615,7 @@ load_gif(
             }
 
             if (fstatic) {
-                break;
+                goto end;
             }
             ++frame->frame_no;
         }

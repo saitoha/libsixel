@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -114,6 +114,7 @@ sixel_frame_destroy(sixel_frame_t /* in */ *frame)
 }
 
 
+/* increase reference count of frame object (thread-unsafe) */
 SIXELAPI void
 sixel_frame_ref(sixel_frame_t *frame)
 {
@@ -122,6 +123,7 @@ sixel_frame_ref(sixel_frame_t *frame)
 }
 
 
+/* decrease reference count of frame object (thread-unsafe) */
 SIXELAPI void
 sixel_frame_unref(sixel_frame_t *frame)
 {
@@ -247,6 +249,7 @@ sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame)  /* frame object */
 }
 
 
+/* strip alpha from RGBA/ARGB/BGRA/ABGR formatted pixbuf */
 SIXELAPI SIXELSTATUS
 sixel_frame_strip_alpha(
     sixel_frame_t  /* in */ *frame,
@@ -254,8 +257,7 @@ sixel_frame_strip_alpha(
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int x;
-    int y;
+    int i;
     unsigned char *src;
     unsigned char *dst;
     unsigned char alpha;
@@ -264,34 +266,92 @@ sixel_frame_strip_alpha(
 
     src = dst = frame->pixels;
 
-    switch (frame->pixelformat) {
-    case SIXEL_PIXELFORMAT_RGBA8888:
-    case SIXEL_PIXELFORMAT_ARGB8888:
-        for (y = 0; y < frame->height; y++) {
-            for (x = 0; x < frame->width; x++) {
-                if (bgcolor) {
-                    alpha = src[3];
-                    *dst++ = (*src++ * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
-                    *dst++ = (*src++ * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
-                    *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
-                    src++;
-                } else if (frame->pixelformat == SIXEL_PIXELFORMAT_ARGB8888){
-                    src++;            /* A */
-                    *dst++ = *src++;  /* R */
-                    *dst++ = *src++;  /* G */
-                    *dst++ = *src++;  /* B */
-                } else if (frame->pixelformat == SIXEL_PIXELFORMAT_RGBA8888){
-                    *dst++ = *src++;  /* R */
-                    *dst++ = *src++;  /* G */
-                    *dst++ = *src++;  /* B */
-                    src++;            /* A */
-                }
+    if (bgcolor) {
+        switch (frame->pixelformat) {
+        case SIXEL_PIXELFORMAT_ARGB8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                alpha = src[0];
+                *dst++ = (*src++ * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+                *dst++ = (*src++ * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+                *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+                src++;
             }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_RGBA8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                alpha = src[3];
+                *dst++ = (*src++ * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+                *dst++ = (*src++ * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+                *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+                src++;
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_ABGR8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                alpha = src[0];
+                *dst++ = (src[3] * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+                *dst++ = (src[2] * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+                *dst++ = (src[1] * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+                src += 4;
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_BGRA8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                alpha = src[3];
+                *dst++ = (src[2] * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+                *dst++ = (src[1] * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+                *dst++ = (src[0] * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+                src += 4;
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        default:
+            break;
         }
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        break;
-    default:
-        break;
+    } else {
+        switch (frame->pixelformat) {
+        case SIXEL_PIXELFORMAT_ARGB8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                src++;            /* A */
+                *dst++ = *src++;  /* R */
+                *dst++ = *src++;  /* G */
+                *dst++ = *src++;  /* B */
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_RGBA8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                *dst++ = *src++;  /* R */
+                *dst++ = *src++;  /* G */
+                *dst++ = *src++;  /* B */
+                src++;            /* A */
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_ABGR8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                *dst++ = src[3];  /* R */
+                *dst++ = src[2];  /* G */
+                *dst++ = src[1];  /* B */
+                src += 4;
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_BGRA8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                *dst++ = src[2];  /* R */
+                *dst++ = src[1];  /* G */
+                *dst++ = src[0];  /* B */
+                src += 4;
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        default:
+            break;
+        }
     }
 
     status = SIXEL_OK;
@@ -302,7 +362,7 @@ sixel_frame_strip_alpha(
 }
 
 
-SIXELAPI SIXELSTATUS
+static SIXELSTATUS
 sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -416,6 +476,7 @@ end:
 }
 
 
+/* resize a frame to given size with specified resampling filter */
 SIXELAPI SIXELSTATUS
 sixel_frame_resize(
     sixel_frame_t *frame,
@@ -538,6 +599,7 @@ end:
 }
 
 
+/* clip frame */
 SIXELAPI SIXELSTATUS
 sixel_frame_clip(
     sixel_frame_t *frame,

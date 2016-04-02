@@ -41,6 +41,8 @@ libsixel_la_SOURCES = \
 		status.h \
 		allocator.c \
 		allocator.h \
+		tty.c \
+		tty.h \
 		rgblookup.h
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/
 libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \

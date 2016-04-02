@@ -75,8 +75,23 @@
 /* define 1 if GCC supports -Wdeprecated-declarations */
 #undef HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 
+/* define 1 if GCC supports -Wdouble-promotion */
+#undef HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
+
+/* define 1 if GCC supports -Wshadow */
+#undef HAVE_DIAGNOSTIC_SHADOW
+
+/* define 1 if GCC supports -Wstrict_overeflow */
+#undef HAVE_DIAGNOSTIC_STRICT_OVERFLOW
+
+/* define 1 if GCC supports -Wswitch-default */
+#undef HAVE_DIAGNOSTIC_SWITCH_DEFAULT
+
 /* define 1 if GCC supports -Wtypedef-redefinition */
 #undef HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
+
+/* define 1 if GCC supports -Wuninitialized */
+#undef HAVE_DIAGNOSTIC_UNINITIALIZED
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H

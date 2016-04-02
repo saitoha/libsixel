@@ -22,7 +22,7 @@
  *
  * ******************************************************************************
  *
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -279,7 +279,6 @@ findBoxBoundaries(tupletable2  const colorfreqtable,
     }
 
     for (i = 1; i < boxSize; ++i) {
-        unsigned int plane;
         for (plane = 0; plane < depth; ++plane) {
             sample const v = colorfreqtable.table[boxStart + i]->tuple[plane];
             if (v < minval[plane]) minval[plane] = v;
@@ -421,7 +420,6 @@ averagePixels(int const boxStart,
 
     for (plane = 0; plane < depth; ++plane) {
         sample sum;
-        int i;
 
         sum = 0;
 
@@ -509,7 +507,7 @@ splitBox(boxVector const bv,
     unsigned int const boxSize  = bv[bi].colors;
     unsigned int const sm       = bv[bi].sum;
 
-    unsigned int const max_depth = 16;
+    enum { max_depth= 16 };
     sample minval[max_depth];
     sample maxval[max_depth];
 
@@ -686,7 +684,7 @@ computeHistogram(unsigned char const    /* in */  *data,
     unit_t *refmap = NULL;
     unit_t *ref;
     unit_t *it;
-    unsigned int index;
+    unsigned int bucket_index;
     unsigned int step;
     unsigned int max_sample;
 
@@ -736,12 +734,12 @@ computeHistogram(unsigned char const    /* in */  *data,
     }
 
     for (i = 0; i < length - depth; i += step) {
-        index = computeHash(data + i, 3);
-        if (histogram[index] == 0) {
-            *ref++ = index;
+        bucket_index = computeHash(data + i, 3);
+        if (histogram[bucket_index] == 0) {
+            *ref++ = bucket_index;
         }
-        if (histogram[index] < (1 << sizeof(unsigned short) * 8) - 1) {
-            histogram[index]++;
+        if (histogram[bucket_index] < (1 << sizeof(unsigned short) * 8) - 1) {
+            histogram[bucket_index]++;
         }
     }
 
@@ -852,15 +850,20 @@ end:
 }
 
 
+/* diffuse error energy to surround pixels */
 static void
-error_diffuse(unsigned char *data, int pos, int depth,
-              int offset, int mul, int div)
+error_diffuse(unsigned char /* in */    *data,      /* base address of pixel buffer */
+              int           /* in */    pos,        /* address of the destination pixel */
+              int           /* in */    depth,      /* color depth in bytes */
+              int           /* in */    error,      /* error energy */
+              int           /* in */    numerator,  /* numerator of diffusion coefficient */
+              int           /* in */    denominator /* denominator of diffusion coefficient */)
 {
     int c;
 
     data += pos * depth;
 
-    c = *data + offset * mul / div;
+    c = *data + error * numerator / denominator;
     if (c < 0) {
         c = 0;
     }
@@ -873,7 +876,7 @@ error_diffuse(unsigned char *data, int pos, int depth,
 
 static void
 diffuse_none(unsigned char *data, int width, int height,
-             int x, int y, int depth, int offset)
+             int x, int y, int depth, int error)
 {
     /* unused */ (void) data;
     /* unused */ (void) width;
@@ -881,13 +884,13 @@ diffuse_none(unsigned char *data, int width, int height,
     /* unused */ (void) x;
     /* unused */ (void) y;
     /* unused */ (void) depth;
-    /* unused */ (void) offset;
+    /* unused */ (void) error;
 }
 
 
 static void
 diffuse_fs(unsigned char *data, int width, int height,
-           int x, int y, int depth, int offset)
+           int x, int y, int depth, int error)
 {
     int pos;
 
@@ -898,21 +901,21 @@ diffuse_fs(unsigned char *data, int width, int height,
      *  3/16    5/48    1/16
      */
     if (x < width - 1 && y < height - 1) {
-        /* add offset to the right cell */
-        error_diffuse(data, pos + width * 0 + 1, depth, offset, 7, 16);
-        /* add offset to the left-bottom cell */
-        error_diffuse(data, pos + width * 1 - 1, depth, offset, 3, 16);
-        /* add offset to the bottom cell */
-        error_diffuse(data, pos + width * 1 + 0, depth, offset, 5, 16);
-        /* add offset to the right-bottom cell */
-        error_diffuse(data, pos + width * 1 + 1, depth, offset, 1, 16);
+        /* add error to the right cell */
+        error_diffuse(data, pos + width * 0 + 1, depth, error, 7, 16);
+        /* add error to the left-bottom cell */
+        error_diffuse(data, pos + width * 1 - 1, depth, error, 3, 16);
+        /* add error to the bottom cell */
+        error_diffuse(data, pos + width * 1 + 0, depth, error, 5, 16);
+        /* add error to the right-bottom cell */
+        error_diffuse(data, pos + width * 1 + 1, depth, error, 1, 16);
     }
 }
 
 
 static void
 diffuse_atkinson(unsigned char *data, int width, int height,
-                 int x, int y, int depth, int offset)
+                 int x, int y, int depth, int error)
 {
     int pos;
 
@@ -924,25 +927,25 @@ diffuse_atkinson(unsigned char *data, int width, int height,
      *           1/8
      */
     if (y < height - 2) {
-        /* add offset to the right cell */
-        error_diffuse(data, pos + width * 0 + 1, depth, offset, 1, 8);
-        /* add offset to the 2th right cell */
-        error_diffuse(data, pos + width * 0 + 2, depth, offset, 1, 8);
-        /* add offset to the left-bottom cell */
-        error_diffuse(data, pos + width * 1 - 1, depth, offset, 1, 8);
-        /* add offset to the bottom cell */
-        error_diffuse(data, pos + width * 1 + 0, depth, offset, 1, 8);
-        /* add offset to the right-bottom cell */
-        error_diffuse(data, pos + width * 1 + 1, depth, offset, 1, 8);
-        /* add offset to the 2th bottom cell */
-        error_diffuse(data, pos + width * 2 + 0, depth, offset, 1, 8);
+        /* add error to the right cell */
+        error_diffuse(data, pos + width * 0 + 1, depth, error, 1, 8);
+        /* add error to the 2th right cell */
+        error_diffuse(data, pos + width * 0 + 2, depth, error, 1, 8);
+        /* add error to the left-bottom cell */
+        error_diffuse(data, pos + width * 1 - 1, depth, error, 1, 8);
+        /* add error to the bottom cell */
+        error_diffuse(data, pos + width * 1 + 0, depth, error, 1, 8);
+        /* add error to the right-bottom cell */
+        error_diffuse(data, pos + width * 1 + 1, depth, error, 1, 8);
+        /* add error to the 2th bottom cell */
+        error_diffuse(data, pos + width * 2 + 0, depth, error, 1, 8);
     }
 }
 
 
 static void
 diffuse_jajuni(unsigned char *data, int width, int height,
-               int x, int y, int depth, int offset)
+               int x, int y, int depth, int error)
 {
     int pos;
 
@@ -954,25 +957,25 @@ diffuse_jajuni(unsigned char *data, int width, int height,
      *  1/48    3/48    5/48    3/48    1/48
      */
     if (pos < (height - 2) * width - 2) {
-        error_diffuse(data, pos + width * 0 + 1, depth, offset, 7, 48);
-        error_diffuse(data, pos + width * 0 + 2, depth, offset, 5, 48);
-        error_diffuse(data, pos + width * 1 - 2, depth, offset, 3, 48);
-        error_diffuse(data, pos + width * 1 - 1, depth, offset, 5, 48);
-        error_diffuse(data, pos + width * 1 + 0, depth, offset, 7, 48);
-        error_diffuse(data, pos + width * 1 + 1, depth, offset, 5, 48);
-        error_diffuse(data, pos + width * 1 + 2, depth, offset, 3, 48);
-        error_diffuse(data, pos + width * 2 - 2, depth, offset, 1, 48);
-        error_diffuse(data, pos + width * 2 - 1, depth, offset, 3, 48);
-        error_diffuse(data, pos + width * 2 + 0, depth, offset, 5, 48);
-        error_diffuse(data, pos + width * 2 + 1, depth, offset, 3, 48);
-        error_diffuse(data, pos + width * 2 + 2, depth, offset, 1, 48);
+        error_diffuse(data, pos + width * 0 + 1, depth, error, 7, 48);
+        error_diffuse(data, pos + width * 0 + 2, depth, error, 5, 48);
+        error_diffuse(data, pos + width * 1 - 2, depth, error, 3, 48);
+        error_diffuse(data, pos + width * 1 - 1, depth, error, 5, 48);
+        error_diffuse(data, pos + width * 1 + 0, depth, error, 7, 48);
+        error_diffuse(data, pos + width * 1 + 1, depth, error, 5, 48);
+        error_diffuse(data, pos + width * 1 + 2, depth, error, 3, 48);
+        error_diffuse(data, pos + width * 2 - 2, depth, error, 1, 48);
+        error_diffuse(data, pos + width * 2 - 1, depth, error, 3, 48);
+        error_diffuse(data, pos + width * 2 + 0, depth, error, 5, 48);
+        error_diffuse(data, pos + width * 2 + 1, depth, error, 3, 48);
+        error_diffuse(data, pos + width * 2 + 2, depth, error, 1, 48);
     }
 }
 
 
 static void
 diffuse_stucki(unsigned char *data, int width, int height,
-               int x, int y, int depth, int offset)
+               int x, int y, int depth, int error)
 {
     int pos;
 
@@ -984,25 +987,25 @@ diffuse_stucki(unsigned char *data, int width, int height,
      *  1/48    2/48    4/48    2/48    1/48
      */
     if (pos < (height - 2) * width - 2) {
-        error_diffuse(data, pos + width * 0 + 1, depth, offset, 1, 6);
-        error_diffuse(data, pos + width * 0 + 2, depth, offset, 1, 12);
-        error_diffuse(data, pos + width * 1 - 2, depth, offset, 1, 24);
-        error_diffuse(data, pos + width * 1 - 1, depth, offset, 1, 12);
-        error_diffuse(data, pos + width * 1 + 0, depth, offset, 1, 6);
-        error_diffuse(data, pos + width * 1 + 1, depth, offset, 1, 12);
-        error_diffuse(data, pos + width * 1 + 2, depth, offset, 1, 24);
-        error_diffuse(data, pos + width * 2 - 2, depth, offset, 1, 48);
-        error_diffuse(data, pos + width * 2 - 1, depth, offset, 1, 24);
-        error_diffuse(data, pos + width * 2 + 0, depth, offset, 1, 12);
-        error_diffuse(data, pos + width * 2 + 1, depth, offset, 1, 24);
-        error_diffuse(data, pos + width * 2 + 2, depth, offset, 1, 48);
+        error_diffuse(data, pos + width * 0 + 1, depth, error, 1, 6);
+        error_diffuse(data, pos + width * 0 + 2, depth, error, 1, 12);
+        error_diffuse(data, pos + width * 1 - 2, depth, error, 1, 24);
+        error_diffuse(data, pos + width * 1 - 1, depth, error, 1, 12);
+        error_diffuse(data, pos + width * 1 + 0, depth, error, 1, 6);
+        error_diffuse(data, pos + width * 1 + 1, depth, error, 1, 12);
+        error_diffuse(data, pos + width * 1 + 2, depth, error, 1, 24);
+        error_diffuse(data, pos + width * 2 - 2, depth, error, 1, 48);
+        error_diffuse(data, pos + width * 2 - 1, depth, error, 1, 24);
+        error_diffuse(data, pos + width * 2 + 0, depth, error, 1, 12);
+        error_diffuse(data, pos + width * 2 + 1, depth, error, 1, 24);
+        error_diffuse(data, pos + width * 2 + 2, depth, error, 1, 48);
     }
 }
 
 
 static void
 diffuse_burkes(unsigned char *data, int width, int height,
-               int x, int y, int depth, int offset)
+               int x, int y, int depth, int error)
 {
     int pos;
 
@@ -1013,17 +1016,18 @@ diffuse_burkes(unsigned char *data, int width, int height,
      *  1/16    2/16    4/16    2/16    1/16
      */
     if (pos < (height - 1) * width - 2) {
-        error_diffuse(data, pos + width * 0 + 1, depth, offset, 1, 4);
-        error_diffuse(data, pos + width * 0 + 2, depth, offset, 1, 8);
-        error_diffuse(data, pos + width * 1 - 2, depth, offset, 1, 16);
-        error_diffuse(data, pos + width * 1 - 1, depth, offset, 1, 8);
-        error_diffuse(data, pos + width * 1 + 0, depth, offset, 1, 4);
-        error_diffuse(data, pos + width * 1 + 1, depth, offset, 1, 8);
-        error_diffuse(data, pos + width * 1 + 2, depth, offset, 1, 16);
+        error_diffuse(data, pos + width * 0 + 1, depth, error, 1, 4);
+        error_diffuse(data, pos + width * 0 + 2, depth, error, 1, 8);
+        error_diffuse(data, pos + width * 1 - 2, depth, error, 1, 16);
+        error_diffuse(data, pos + width * 1 - 1, depth, error, 1, 8);
+        error_diffuse(data, pos + width * 1 + 0, depth, error, 1, 4);
+        error_diffuse(data, pos + width * 1 + 1, depth, error, 1, 8);
+        error_diffuse(data, pos + width * 1 + 2, depth, error, 1, 16);
     }
 }
 
 
+/* lookup closest color from palette with "normal" strategy */
 static int
 lookup_normal(unsigned char const * const pixel,
               int const depth,
@@ -1032,14 +1036,14 @@ lookup_normal(unsigned char const * const pixel,
               unsigned short * const cachetable,
               int const complexion)
 {
-    int index;
+    int result;
     int diff;
     int r;
     int i;
     int n;
     int distant;
 
-    index = -1;
+    result = (-1);
     diff = INT_MAX;
 
     /* don't use cachetable in 'normal' strategy */
@@ -1055,14 +1059,15 @@ lookup_normal(unsigned char const * const pixel,
         }
         if (distant < diff) {
             diff = distant;
-            index = i;
+            result = i;
         }
     }
 
-    return index;
+    return result;
 }
 
 
+/* lookup closest color from palette with "fast" strategy */
 static int
 lookup_fast(unsigned char const * const pixel,
             int const depth,
@@ -1071,8 +1076,8 @@ lookup_fast(unsigned char const * const pixel,
             unsigned short * const cachetable,
             int const complexion)
 {
+    int result;
     int hash;
-    int index;
     int diff;
     int cache;
     int i;
@@ -1081,7 +1086,7 @@ lookup_fast(unsigned char const * const pixel,
     /* don't use depth in 'fast' strategy because it's always 3 */
     (void) depth;
 
-    index = -1;
+    result = (-1);
     diff = INT_MAX;
     hash = computeHash(pixel, 3);
 
@@ -1105,12 +1110,12 @@ lookup_fast(unsigned char const * const pixel,
 #endif
         if (distant < diff) {
             diff = distant;
-            index = i;
+            result = i;
         }
     }
-    cachetable[hash] = index + 1;
+    cachetable[hash] = result + 1;
 
-    return index;
+    return result;
 }
 
 
@@ -1160,6 +1165,7 @@ lookup_mono_lightbg(unsigned char const * const pixel,
 }
 
 
+/* choose colors using median-cut method */
 SIXELSTATUS
 sixel_quant_make_palette(
     unsigned char          /* out */ **result,
@@ -1213,6 +1219,7 @@ end:
 }
 
 
+/* apply color palette into specified pixel buffers */
 SIXELSTATUS
 sixel_quant_apply_palette(
     unsigned char     /* out */ *result,
@@ -1234,7 +1241,7 @@ sixel_quant_apply_palette(
     SIXELSTATUS status = SIXEL_FALSE;
     int pos, n, x, y, sum1, sum2;
     component_t offset;
-    int index;
+    int color_index;
     unsigned short *indextable;
     unsigned char new_palette[256 * 4];
     unsigned short migration_map[256];
@@ -1322,20 +1329,20 @@ sixel_quant_apply_palette(
         for (y = 0; y < height; ++y) {
             for (x = 0; x < width; ++x) {
                 pos = y * width + x;
-                index = f_lookup(data + (pos * depth), depth,
-                                 palette, reqcolor, indextable, complexion);
-                if (migration_map[index] == 0) {
+                color_index = f_lookup(data + (pos * depth), depth,
+                                       palette, reqcolor, indextable, complexion);
+                if (migration_map[color_index] == 0) {
                     result[pos] = *ncolors;
                     for (n = 0; n < depth; ++n) {
-                        new_palette[*ncolors * depth + n] = palette[index * depth + n];
+                        new_palette[*ncolors * depth + n] = palette[color_index * depth + n];
                     }
                     ++*ncolors;
-                    migration_map[index] = *ncolors;
+                    migration_map[color_index] = *ncolors;
                 } else {
-                    result[pos] = migration_map[index] - 1;
+                    result[pos] = migration_map[color_index] - 1;
                 }
                 for (n = 0; n < depth; ++n) {
-                    offset = data[pos * depth + n] - palette[index * depth + n];
+                    offset = data[pos * depth + n] - palette[color_index * depth + n];
                     f_diffuse(data + n, width, height, x, y, depth, offset);
                 }
             }
@@ -1345,11 +1352,11 @@ sixel_quant_apply_palette(
         for (y = 0; y < height; ++y) {
             for (x = 0; x < width; ++x) {
                 pos = y * width + x;
-                index = f_lookup(data + (pos * depth), depth,
+                color_index = f_lookup(data + (pos * depth), depth,
                                  palette, reqcolor, indextable, complexion);
-                result[pos] = index;
+                result[pos] = color_index;
                 for (n = 0; n < depth; ++n) {
-                    offset = data[pos * depth + n] - palette[index * depth + n];
+                    offset = data[pos * depth + n] - palette[color_index * depth + n];
                     f_diffuse(data + n, width, height, x, y, depth, offset);
                 }
             }

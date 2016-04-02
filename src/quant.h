@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -28,6 +28,7 @@ extern "C" {
 
 #include <sixel.h>
 
+/* choose colors using median-cut method */
 SIXELSTATUS
 sixel_quant_make_palette(
     unsigned char           /* out */ **result,
@@ -43,6 +44,7 @@ sixel_quant_make_palette(
     sixel_allocator_t       /* in */  *allocator);
 
 
+/* apply color palette into specified pixel buffers */
 SIXELSTATUS
 sixel_quant_apply_palette(
     unsigned char       /* out */ *result,
@@ -61,6 +63,7 @@ sixel_quant_apply_palette(
     sixel_allocator_t   /* in */  *allocator);
 
 
+/* deallocate specified palette */
 void
 sixel_quant_free_palette(
     unsigned char       /* in */ *data,

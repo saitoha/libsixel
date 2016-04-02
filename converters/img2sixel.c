@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -93,6 +93,7 @@ void show_help(void)
             "                           terminals or printers (default)\n"
             "-8, --8bit-mode            generate a sixel image for 8bit\n"
             "                           terminals or printers\n"
+            "-R, --gri-limit            limit arguments of DECGRI('!') to 255\n"
             "-p COLORS, --colors=COLORS specify number of colors to reduce\n"
             "                           the image to (default=256)\n"
             "-m FILE, --mapfile=FILE    transform image colors to match this\n"
@@ -112,14 +113,16 @@ void show_help(void)
             "-n MACRONO, --macro-number=MACRONO\n"
             "                           specify an number argument for\n"
             "                           DECDMAC and make terminal memorize\n"
-            "                           SIXEL image. No image is shown if this\n"
-            "                           option is specified\n"
+            "                           SIXEL image. No image is shown if\n"
+            "                           this option is specified\n"
             "-C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE\n"
             "                           specify an number argument for the\n"
             "                           score of complexion correction.\n"
             "                           COMPLEXIONSCORE must be 1 or more.\n"
             "-g, --ignore-delay         render GIF animation without delay\n"
             "-S, --static               render animated GIF as a static image\n"
+            );
+    fprintf(stdout,
             "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
             "                           choose diffusion method which used\n"
             "                           with -p option (color reduction)\n"
@@ -177,6 +180,8 @@ void show_help(void)
             "                                           pixel counts\n"
             "                             <number>px -> scale width with\n"
             "                                           pixel counts\n"
+            );
+    fprintf(stdout,
             "-h HEIGHT, --height=HEIGHT resize image to specified height\n"
             "                           HEIGHT is represented by the\n"
             "                           following syntax\n"
@@ -222,6 +227,8 @@ void show_help(void)
             "                                        GIF header (default)\n"
             "                             force   -> always enable loop\n"
             "                             disable -> always disable loop\n"
+            );
+    fprintf(stdout,
             "-t PALETTETYPE, --palette-type=PALETTETYPE\n"
             "                           select palette color space type\n"
             "                             auto -> choose palette type\n"
@@ -303,12 +310,13 @@ main(int argc, char *argv[])
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     sixel_encoder_t *encoder = NULL;
-    char const *optstring = "o:78p:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:B:C:DVH";
+    char const *optstring = "o:78Rp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:B:C:DVH";
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",          no_argument,        &long_opt, 'o'},
         {"7bit-mode",        no_argument,        &long_opt, '7'},
         {"8bit-mode",        no_argument,        &long_opt, '8'},
+        {"gri-limit",        no_argument,        &long_opt, 'R'},
         {"colors",           required_argument,  &long_opt, 'p'},
         {"mapfile",          required_argument,  &long_opt, 'm'},
         {"monochrome",       no_argument,        &long_opt, 'e'},

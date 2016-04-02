@@ -34,6 +34,9 @@ generate a sixel image for 7bit terminals or printers (default).
 .B \-8, \-\-8bit-mode
 generate a sixel image for 8bit terminals or printers.
 .TP 5
+.B \-R, \-\-gri-limit
+limit arguments of DECGRI('!') to 255.
+.TP 5
 .B \-p \fICOLORS\fP, \-\-colors=\fICOLORS\fP
 specify number of colors to reduce the image to (default=256).
 .TP 5
@@ -379,7 +382,7 @@ sixel(5) sixel2png(1)
 
 .SH AUTHORS
 \fIimg2sixel\fP is maintained by Hayaki Saito.
-We imported whole code of \fIstb_image v2.02\fP, written by Sean Barrett and its contributers, for loading various images,
+We imported whole code of \fIstb_image v2.10\fP, written by Sean Barrett and its contributers, for loading various images,
 and imported some code from \fIpnmquant.c (netpbm library)\fP for image quantization.
 
 
@@ -474,9 +477,12 @@ MagickCore's resize.c.
 .nf
 Araki Ken (@arakiken)
 Markus Elfring (@elfring)
+Akinori Hattori (@hattya)
 isaki (@isaki68k)
 NOKUBI Takatsugu (@knok)
 Yasuhiro MATSUMOTO (@mattn)
+Masami HIRATA(@msmhrt)
+OBATA Akio (@obache)
 Izumi Tsutsui (@tsutsui)
 Iwamoto Kouichi (@ttdoda)
 haru (@uobikiemukot)

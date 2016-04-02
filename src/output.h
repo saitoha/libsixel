@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -44,6 +44,10 @@ struct sixel_output {
     /* 0: the terminal has sixel scrolling
      * 1: the terminal does not have sixel scrolling */
     unsigned char has_sixel_scrolling;
+
+    /* 1: the argument of repeat introducer(DECGRI) is not limitted
+       0: the argument of repeat introducer(DECGRI) is limitted 255 */
+    unsigned char has_gri_arg_limit;
 
     /* 0: DECSDM set (CSI ? 80 h) enables sixel scrolling
        1: DECSDM set (CSI ? 80 h) disables sixel scrolling */

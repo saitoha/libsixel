@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -38,6 +38,7 @@
 #include "pixelformat.h"
 #include "writer.h"
 #include "encoder.h"
+#include "decoder.h"
 #include "status.h"
 #include "loader.h"
 #include "fromgif.h"
@@ -116,6 +117,14 @@ main(int argc, char *argv[])
     }
 
     puts("encoder ok.");
+    fflush(stdout);
+
+    nret = sixel_decoder_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("decoder ok.");
     fflush(stdout);
 
     nret = sixel_status_tests_main();

@@ -1,4 +1,24 @@
                   ------------------------------
+                   What's new in libsixel-1.6 ?
+                  ------------------------------
+* img2sixel: Add -R(--gri-limit) option.
+
+* configure: Fix check for gdImageCreateFromPngPtr availability(thanks to @hattya).
+
+* core: Upgrade stb_image to 2.10.
+
+* core: Upgrade stb_image_write.h to v1.01.
+
+* libsixel-config: Add --datarootdir option to libsixel-config.
+
+* img2sixel: Solve encoder option confliction between -m/-e/-I/-b.
+
+* core: Introduce new API for output object, sixel_output_set_gri_arg_limit().
+
+* core: Add new API: sixel_encoder_encode_bytes().
+
+
+                  ------------------------------
                    What's new in libsixel-1.5 ?
                   ------------------------------
 * img2sixel: Add -k(--insecure) option.
