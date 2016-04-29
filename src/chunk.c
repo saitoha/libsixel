@@ -170,7 +170,14 @@ wait_file(int fd, int usec)
     tv.tv_sec = usec / 1000000;
     tv.tv_usec = usec % 1000000;
     FD_ZERO(&rfds);
+#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
     FD_SET(fd, &rfds);
+#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
+# pragma GCC diagnostic pop
+#endif
     ret = select(fd + 1, &rfds, NULL, NULL, &tv);
 #else
     (void) fd;
