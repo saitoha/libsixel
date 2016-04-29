@@ -96,14 +96,14 @@ sixel_advance(sixel_output_t *output, int nwrite)
 
 
 static void
-sixel_putc(char *buffer, unsigned char value)
+sixel_putc(unsigned char *buffer, unsigned char value)
 {
     *buffer = value;
 }
 
 
 static void
-sixel_puts(char *buffer, char const *value, int size)
+sixel_puts(unsigned char *buffer, char const *value, int size)
 {
     memcpy(buffer, (void *)value, size);
 }
@@ -126,7 +126,7 @@ sixel_putnum_impl(char *buffer, long value, int pos)
 
 
 static int
-sixel_putnum(char *buffer, unsigned int value)
+sixel_putnum(char *buffer, int value)
 {
     int pos;
 
@@ -149,9 +149,9 @@ sixel_put_flash(sixel_output_t *const output)
     if (output->has_gri_arg_limit) {  /* VT240 Max 255 ? */
         while (output->save_count > 255) {
             /* argument of DECGRI('!') is limitted to 255 in real VT */
-            sixel_puts((char *)output->buffer + output->pos, "!255", 4);
+            sixel_puts(output->buffer + output->pos, "!255", 4);
             sixel_advance(output, 4);
-            sixel_putc((char *)output->buffer + output->pos, output->save_pixel);
+            sixel_putc(output->buffer + output->pos, output->save_pixel);
             sixel_advance(output, 1);
             output->save_count -= 255;
         }
@@ -159,15 +159,15 @@ sixel_put_flash(sixel_output_t *const output)
 
     if (output->save_count > 3) {
         /* DECGRI Graphics Repeat Introducer ! Pn Ch */
-        sixel_putc((char *)output->buffer + output->pos, '!');
+        sixel_putc(output->buffer + output->pos, '!');
         sixel_advance(output, 1);
         nwrite = sixel_putnum((char *)output->buffer + output->pos, output->save_count);
         sixel_advance(output, nwrite);
-        sixel_putc((char *)output->buffer + output->pos, output->save_pixel);
+        sixel_putc(output->buffer + output->pos, output->save_pixel);
         sixel_advance(output, 1);
     } else {
         for (n = 0; n < output->save_count; n++) {
-            output->buffer[output->pos] = (char)output->save_pixel;
+            output->buffer[output->pos] = output->save_pixel;
             sixel_advance(output, 1);
         }
     }
@@ -262,7 +262,7 @@ sixel_put_node(sixel_output_t *const output,
     if (ncolors != 2 || keycolor == (-1)) {
         /* designate palette index */
         if (output->active_palette != np->pal) {
-            sixel_putc((char *)output->buffer + output->pos, '#');
+            sixel_putc(output->buffer + output->pos, '#');
             sixel_advance(output, 1);
             nwrite = sixel_putnum((char *)output->buffer + output->pos, np->pal);
             sixel_advance(output, nwrite);
@@ -311,12 +311,12 @@ sixel_encode_header(int width, int height, sixel_output_t *output)
 
     if (!output->skip_dcs_envelope) {
         if (output->has_8bit_control) {
-            sixel_puts((char *)output->buffer + output->pos,
+            sixel_puts(output->buffer + output->pos,
                        DCS_START_8BIT,
                        DCS_START_8BIT_SIZE);
             sixel_advance(output, DCS_START_8BIT_SIZE);
         } else {
-            sixel_puts((char *)output->buffer + output->pos,
+            sixel_puts(output->buffer + output->pos,
                        DCS_START_7BIT,
                        DCS_START_7BIT_SIZE);
             sixel_advance(output, DCS_START_7BIT_SIZE);
@@ -337,12 +337,12 @@ sixel_encode_header(int width, int height, sixel_output_t *output)
         nwrite = sixel_putnum((char *)output->buffer + output->pos, p[0]);
         sixel_advance(output, nwrite);
         if (pcount > 1) {
-            sixel_putc((char *)output->buffer + output->pos, ';');
+            sixel_putc(output->buffer + output->pos, ';');
             sixel_advance(output, 1);
             nwrite = sixel_putnum((char *)output->buffer + output->pos, p[1]);
             sixel_advance(output, nwrite);
             if (pcount > 2) {
-                sixel_putc((char *)output->buffer + output->pos, ';');
+                sixel_putc(output->buffer + output->pos, ';');
                 sixel_advance(output, 1);
                 nwrite = sixel_putnum((char *)output->buffer + output->pos, p[2]);
                 sixel_advance(output, nwrite);
@@ -350,15 +350,15 @@ sixel_encode_header(int width, int height, sixel_output_t *output)
         }
     }
 
-    sixel_putc((char *)output->buffer + output->pos, 'q');
+    sixel_putc(output->buffer + output->pos, 'q');
     sixel_advance(output, 1);
 
     if (use_raster_attributes) {
-        sixel_puts((char *)output->buffer + output->pos, "\"1;1;", 5);
+        sixel_puts(output->buffer + output->pos, "\"1;1;", 5);
         sixel_advance(output, 5);
         nwrite = sixel_putnum((char *)output->buffer + output->pos, width);
         sixel_advance(output, nwrite);
-        sixel_putc((char *)output->buffer + output->pos, ';');
+        sixel_putc(output->buffer + output->pos, ';');
         sixel_advance(output, 1);
         nwrite = sixel_putnum((char *)output->buffer + output->pos, height);
         sixel_advance(output, nwrite);
@@ -383,21 +383,21 @@ output_rgb_palette_definition(
 
     if (n != keycolor) {
         /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
-        sixel_putc((char *)output->buffer + output->pos, '#');
+        sixel_putc(output->buffer + output->pos, '#');
         sixel_advance(output, 1);
         nwrite = sixel_putnum((char *)output->buffer + output->pos, n);
         sixel_advance(output, nwrite);
-        sixel_puts((char *)output->buffer + output->pos, ";2;", 3);
+        sixel_puts(output->buffer + output->pos, ";2;", 3);
         sixel_advance(output, 3);
         nwrite = sixel_putnum((char *)output->buffer + output->pos,
                               (palette[n * 3 + 0] * 100 + 127) / 255);
         sixel_advance(output, nwrite);
-        sixel_putc((char *)output->buffer + output->pos, ';');
+        sixel_putc(output->buffer + output->pos, ';');
         sixel_advance(output, 1);
         nwrite = sixel_putnum((char *)output->buffer + output->pos,
                               (palette[n * 3 + 1] * 100 + 127) / 255);
         sixel_advance(output, nwrite);
-        sixel_putc((char *)output->buffer + output->pos, ';');
+        sixel_putc(output->buffer + output->pos, ';');
         sixel_advance(output, 1);
         nwrite = sixel_putnum((char *)output->buffer + output->pos,
                               (palette[n * 3 + 2] * 100 + 127) / 255);
@@ -455,19 +455,19 @@ output_hls_palette_definition(
             }
         }
         /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
-        sixel_putc((char *)output->buffer + output->pos, '#');
+        sixel_putc(output->buffer + output->pos, '#');
         sixel_advance(output, 1);
         nwrite = sixel_putnum((char *)output->buffer + output->pos, n);
         sixel_advance(output, nwrite);
-        sixel_puts((char *)output->buffer + output->pos, ";1;", 3);
+        sixel_puts(output->buffer + output->pos, ";1;", 3);
         sixel_advance(output, 3);
         nwrite = sixel_putnum((char *)output->buffer + output->pos, h);
         sixel_advance(output, nwrite);
-        sixel_putc((char *)output->buffer + output->pos, ';');
+        sixel_putc(output->buffer + output->pos, ';');
         sixel_advance(output, 1);
         nwrite = sixel_putnum((char *)output->buffer + output->pos, l);
         sixel_advance(output, nwrite);
-        sixel_putc((char *)output->buffer + output->pos, ';');
+        sixel_putc(output->buffer + output->pos, ';');
         sixel_advance(output, 1);
         nwrite = sixel_putnum((char *)output->buffer + output->pos, s);
         sixel_advance(output, nwrite);
@@ -513,7 +513,7 @@ sixel_encode_body(
     output->active_palette = (-1);
 
     map = (unsigned char *)sixel_allocator_calloc(allocator,
-                                                  len,
+                                                  (size_t)len,
                                                   sizeof(unsigned char));
     if (map == NULL) {
         sixel_helper_set_additional_message(
@@ -706,11 +706,11 @@ sixel_encode_footer(sixel_output_t *output)
 
     if (!output->skip_dcs_envelope && !output->penetrate_multiplexer) {
         if (output->has_8bit_control) {
-            sixel_puts((char *)output->buffer + output->pos,
+            sixel_puts(output->buffer + output->pos,
                        DCS_END_8BIT, DCS_END_8BIT_SIZE);
             sixel_advance(output, DCS_END_8BIT_SIZE);
         } else {
-            sixel_puts((char *)output->buffer + output->pos,
+            sixel_puts(output->buffer + output->pos,
                        DCS_END_7BIT, DCS_END_7BIT_SIZE);
             sixel_advance(output, DCS_END_7BIT_SIZE);
         }
@@ -755,7 +755,7 @@ sixel_encode_dither(
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
         paletted_pixels = (unsigned char *)sixel_allocator_malloc(dither->allocator,
-                                                                  width * height * 3);
+                                                                  (size_t)(width * height * 3));
         if (paletted_pixels == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_encode_dither: sixel_allocator_malloc() failed.");
@@ -1239,7 +1239,7 @@ sixel_encode_highcolor(
     if (dither->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         /* normalize pixelfromat */
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(dither->allocator,
-                                                                    width * height * 3);
+                                                                    (size_t)(width * height * 3));
         if (normalized_pixels == NULL) {
             goto error;
         }
@@ -1254,7 +1254,7 @@ sixel_encode_highcolor(
         pixels = normalized_pixels;
     }
     paletted_pixels = (unsigned char *)sixel_allocator_malloc(dither->allocator,
-                                                              whole_size);
+                                                              (size_t)whole_size);
     if (paletted_pixels == NULL) {
         goto error;
     }

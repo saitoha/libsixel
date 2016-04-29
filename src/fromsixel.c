@@ -280,7 +280,7 @@ sixel_decode_raw(
     *pixels = NULL;
     imsx = 2048;
     imsy = 2048;
-    imbuf = (unsigned char *)sixel_allocator_malloc(allocator, imsx * imsy);
+    imbuf = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(imsx * imsy));
     if (imbuf == NULL) {
         sixel_helper_set_additional_message(
             "sixel_deocde_raw: sixel_allocator_malloc() failed.");
@@ -400,7 +400,7 @@ sixel_decode_raw(
             if (imsx < attributed_ph || imsy < attributed_pv) {
                 dmsx = imsx > attributed_ph ? imsx : attributed_ph;
                 dmsy = imsy > attributed_pv ? imsy : attributed_pv;
-                dmbuf = (unsigned char *)sixel_allocator_malloc(allocator, dmsx * dmsy);
+                dmbuf = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(dmsx * dmsy));
                 if (dmbuf == NULL) {
                     sixel_allocator_free(allocator, imbuf);
                     sixel_helper_set_additional_message(
@@ -477,7 +477,7 @@ sixel_decode_raw(
 
                 dmsx = nx;
                 dmsy = ny;
-                dmbuf = (unsigned char *)sixel_allocator_malloc(allocator, dmsx * dmsy);
+                dmbuf = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(dmsx * dmsy));
                 if (dmbuf == NULL) {
                     sixel_allocator_free(allocator, imbuf);
                     goto end;
@@ -560,7 +560,7 @@ sixel_decode_raw(
     if (imsx > max_x || imsy > max_y) {
         dmsx = max_x;
         dmsy = max_y;
-        dmbuf = (unsigned char *)sixel_allocator_malloc(allocator, dmsx * dmsy);
+        dmbuf = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(dmsx * dmsy));
         if (dmbuf == NULL) {
             sixel_allocator_free(allocator, imbuf);
             sixel_helper_set_additional_message(
@@ -578,7 +578,7 @@ sixel_decode_raw(
     }
 
     *ncolors = max_color_index + 1;
-    *palette = (unsigned char *)sixel_allocator_malloc(allocator, *ncolors * 3);
+    *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(*ncolors * 3));
     if (palette == NULL) {
         sixel_allocator_free(allocator, imbuf);
         sixel_helper_set_additional_message(

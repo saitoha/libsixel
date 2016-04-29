@@ -257,9 +257,9 @@ sixel_dither_new(
                                                default allocator */
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int headsize;
-    int datasize;
-    int wholesize;
+    size_t headsize;
+    size_t datasize;
+    size_t wholesize;
     int quality_mode;
 
     if (ppdither == NULL) {
@@ -291,7 +291,7 @@ sixel_dither_new(
         quality_mode = SIXEL_QUALITY_LOW;
     }
     headsize = sizeof(sixel_dither_t);
-    datasize = ncolors * 3;
+    datasize = (size_t)(ncolors * 3);
     wholesize = headsize + datasize;
 
     *ppdither = (sixel_dither_t *)sixel_allocator_malloc(allocator, wholesize);
@@ -534,7 +534,7 @@ sixel_dither_initialize(
 
         /* normalize pixelformat */
         normalized_pixels
-            = (unsigned char *)sixel_allocator_malloc(dither->allocator, width * height * 3);
+            = (unsigned char *)sixel_allocator_malloc(dither->allocator, (size_t)(width * height * 3));
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_dither_initialize: sixel_allocator_malloc() failed.");
@@ -563,11 +563,11 @@ sixel_dither_initialize(
 
     status = sixel_quant_make_palette(&buf,
                                       input_pixels,
-                                      width * height * 3,
+                                      (unsigned int)(width * height * 3),
                                       SIXEL_PIXELFORMAT_RGB888,
-                                      dither->reqcolors,
-                                      &dither->ncolors,
-                                      &dither->origcolors,
+                                      (unsigned int)dither->reqcolors,
+                                      (unsigned int *)&dither->ncolors,
+                                      (unsigned int *)&dither->origcolors,
                                       dither->method_for_largest,
                                       dither->method_for_rep,
                                       dither->quality_mode,
@@ -707,7 +707,7 @@ sixel_dither_apply_palette(
     int             /* in */ height)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int bufsize;
+    size_t bufsize;
     unsigned char *dest = NULL;
     int ncolors;
     unsigned char *normalized_pixels = NULL;
@@ -722,7 +722,7 @@ sixel_dither_apply_palette(
 
     sixel_dither_ref(dither);
 
-    bufsize = width * height * sizeof(unsigned char);
+    bufsize = (size_t)(width * height) * sizeof(unsigned char);
     dest = (unsigned char *)sixel_allocator_malloc(dither->allocator, bufsize);
     if (dest == NULL) {
         sixel_helper_set_additional_message(
@@ -753,7 +753,7 @@ sixel_dither_apply_palette(
     if (dither->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         /* normalize pixelformat */
         normalized_pixels
-            = (unsigned char *)sixel_allocator_malloc(dither->allocator, width * height * 3);
+            = (unsigned char *)sixel_allocator_malloc(dither->allocator, (size_t)(width * height * 3));
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_dither_new: sixel_allocator_malloc() failed.");

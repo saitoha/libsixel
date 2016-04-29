@@ -186,12 +186,15 @@ LS_CHECK_CFLAG([-Wall],[AM_CFLAGS="$AM_CFLAGS -Wall"], [])
 LS_CHECK_CFLAG([-Wextra],[AM_CFLAGS="$AM_CFLAGS -Wextra"], [])
 LS_CHECK_CFLAG([-Wpedantic],[AM_CFLAGS="$AM_CFLAGS -Wpedantic"], [])
 LS_CHECK_CFLAG([-Wformat=2],[AM_CFLAGS="$AM_CFLAGS -Wformat=2"], [])
+LS_CHECK_CFLAG([-Wconversion],
+               [AM_CFLAGS="$AM_CFLAGS -Wsign-conversion"]
+                AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION, 1, [define 1 if GCC supports -Wsign-conversion])])
 LS_CHECK_CFLAG([-Wuninitialized],
                [AM_CFLAGS="$AM_CFLAGS -Wuninitialized"]
                 AC_DEFINE(HAVE_DIAGNOSTIC_UNINITIALIZED, 1, [define 1 if GCC supports -Wuninitialized])])
 LS_CHECK_CFLAG([-Wstrict-overflow],
                [AM_CFLAGS="$AM_CFLAGS -Wstrict-overflow"
-                AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW, 1, [define 1 if GCC supports -Wstrict_overeflow])])
+                AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW, 1, [define 1 if GCC supports -Wstrict-overeflow])])
 LS_CHECK_CFLAG([-Wshadow],
                [AM_CFLAGS="$AM_CFLAGS -Wshadow"
                 AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW, 1, [define 1 if GCC supports -Wshadow])])

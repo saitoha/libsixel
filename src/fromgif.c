@@ -178,10 +178,10 @@ gif_init_frame(
     frame->delay = pg->delay;
     ncolors = 2 << (pg->flags & 7);
     if (frame->palette == NULL) {
-        frame->palette = (unsigned char *)sixel_allocator_malloc(frame->allocator, ncolors * 3);
+        frame->palette = (unsigned char *)sixel_allocator_malloc(frame->allocator, (size_t)(ncolors * 3));
     } else if (frame->ncolors < ncolors) {
         sixel_allocator_free(frame->allocator, frame->palette);
-        frame->palette = (unsigned char *)sixel_allocator_malloc(frame->allocator, ncolors * 3);
+        frame->palette = (unsigned char *)sixel_allocator_malloc(frame->allocator, (size_t)(ncolors * 3));
     }
     if (frame->palette == NULL) {
         sixel_helper_set_additional_message(
@@ -194,7 +194,7 @@ gif_init_frame(
         frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
         sixel_allocator_free(frame->allocator, frame->pixels);
         frame->pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator,
-                                                                frame->width * frame->height);
+                                                                (size_t)(frame->width * frame->height));
         if (frame->pixels == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_allocator_malloc() failed in gif_init_frame().");
@@ -232,7 +232,7 @@ gif_init_frame(
     } else {
         frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
         frame->pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator,
-                                                                pg->w * pg->h * 3);
+                                                                (size_t)(pg->w * pg->h * 3));
         if (frame->pixels == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_allocator_malloc() failed in gif_init_frame().");
@@ -263,7 +263,7 @@ gif_out_code(
     /* recurse to decode the prefixes, since the linked-list is backwards,
        and working backwards through an interleaved image would be nasty */
     if (g->codes[code].prefix >= 0) {
-        gif_out_code(g, g->codes[code].prefix);
+        gif_out_code(g, (unsigned short)g->codes[code].prefix);
     }
 
     if (g->cur_y >= g->max_y) {
@@ -571,7 +571,7 @@ load_gif(
     if (status != SIXEL_OK) {
         goto end;
     }
-    g.out = (unsigned char *)sixel_allocator_malloc(allocator, g.w * g.h);
+    g.out = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(g.w * g.h));
     if (g.out == NULL) {
         sixel_helper_set_additional_message(
             "load_gif: sixel_allocator_malloc() failed.");

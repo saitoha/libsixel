@@ -162,7 +162,7 @@ load_pnm(unsigned char      /* in */  *p,
     }
 
     *result = (unsigned char *)sixel_allocator_malloc(allocator,
-                                                      width * height * 3 + 1);
+                                                      (size_t)(width * height * 3 + 1));
     if (*result == NULL) {
         sixel_helper_set_additional_message(
             "load_pnm: sixel_allocator_malloc() failed.");

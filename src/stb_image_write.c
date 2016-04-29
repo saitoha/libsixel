@@ -31,6 +31,10 @@
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
+#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
 #if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wstrict-overflow"
@@ -51,6 +55,9 @@
 # pragma GCC diagnostic pop
 #endif
 #if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
+# pragma GCC diagnostic pop
+#endif
+#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
 # pragma GCC diagnostic pop
 #endif
 

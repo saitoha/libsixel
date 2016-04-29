@@ -294,7 +294,7 @@ sixel_chunk_from_file(
         if (n <= 0) {
             break;
         }
-        pchunk->size += n;
+        pchunk->size += (size_t)n;
     }
 
     if (f != stdin) {
