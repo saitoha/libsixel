@@ -13417,10 +13417,10 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    CFLAGS="$saved_cflags"
 
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wconversion" >&5
-$as_echo_n "checking if $CC supports -Wconversion... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wsign-conversion" >&5
+$as_echo_n "checking if $CC supports -Wsign-conversion... " >&6; }
    saved_cflags="$CFLAGS"
-   CFLAGS="-Wconversion -Werror"
+   CFLAGS="-Wsign-conversion -Werror"
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 

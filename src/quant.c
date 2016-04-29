@@ -111,12 +111,15 @@ static int
 compareplane(const void * const arg1,
              const void * const arg2)
 {
+    int lhs, rhs;
+
     typedef const struct tupleint * const * const sortarg;
     sortarg comparandPP  = (sortarg) arg1;
     sortarg comparatorPP = (sortarg) arg2;
+    lhs = (int)(*comparandPP)->tuple[compareplanePlane];
+    rhs = (int)(*comparatorPP)->tuple[compareplanePlane];
 
-    return (*comparandPP)->tuple[compareplanePlane] -
-        (*comparatorPP)->tuple[compareplanePlane];
+    return lhs - rhs;
 }
 
 
@@ -739,7 +742,7 @@ computeHistogram(unsigned char const    /* in */  *data,
         if (histogram[bucket_index] == 0) {
             *ref++ = bucket_index;
         }
-        if (histogram[bucket_index] < (1 << sizeof(unsigned short) * 8) - 1) {
+        if (histogram[bucket_index] < (unsigned int)(1 << sizeof(unsigned short) * 8) - 1) {
             histogram[bucket_index]++;
         }
     }
