@@ -726,7 +726,7 @@ computeHistogram(unsigned char const    /* in */  *data,
     }
     it = ref = refmap
         = (unsigned short *)sixel_allocator_malloc(allocator,
-                                                   (1 << depth * 5) * sizeof(unit_t));
+                                                   (size_t)(1 << depth * 5) * sizeof(unit_t));
     if (!it) {
         sixel_helper_set_additional_message(
             "unable to allocate memory for lookup table.");
