@@ -791,7 +791,7 @@ sixel_encoder_without_macro(
 #endif
 
     pixbuf = sixel_frame_get_pixels(frame);
-    memcpy(p, pixbuf, width * height * depth);
+    memcpy(p, pixbuf, (size_t)(width * height * depth));
 
     if (encoder->cancel_flag && *encoder->cancel_flag) {
         goto end;

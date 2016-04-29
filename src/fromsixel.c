@@ -309,7 +309,7 @@ sixel_decode_raw(
         sixel_palet[n] = RGB(255, 255, 255);
     }
 
-    memset(imbuf, background_color_index, imsx * imsy);
+    memset(imbuf, background_color_index, (size_t)(imsx * imsy));
 
     while (*p != '\0') {
         if ((p[0] == '\033' && p[1] == 'P') || *p == 0x90) {
@@ -408,9 +408,9 @@ sixel_decode_raw(
                     status = SIXEL_BAD_ALLOCATION;
                     goto end;
                 }
-                memset(dmbuf, background_color_index, dmsx * dmsy);
+                memset(dmbuf, background_color_index, (size_t)(dmsx * dmsy));
                 for (y = 0; y < imsy; ++y) {
-                    memcpy(dmbuf + dmsx * y, imbuf + imsx * y, imsx);
+                    memcpy(dmbuf + dmsx * y, imbuf + imsx * y, (size_t)imsx);
                 }
                 sixel_allocator_free(allocator, imbuf);
                 imsx = dmsx;
@@ -482,9 +482,9 @@ sixel_decode_raw(
                     sixel_allocator_free(allocator, imbuf);
                     goto end;
                 }
-                memset(dmbuf, background_color_index, dmsx * dmsy);
+                memset(dmbuf, background_color_index, (size_t)(dmsx * dmsy));
                 for (y = 0; y < imsy; ++y) {
-                    memcpy(dmbuf + dmsx * y, imbuf + imsx * y, imsx);
+                    memcpy(dmbuf + dmsx * y, imbuf + imsx * y, (size_t)imsx);
                 }
                 sixel_allocator_free(allocator, imbuf);
                 imsx = dmsx;
@@ -527,7 +527,7 @@ sixel_decode_raw(
                                 c <<= 1;
                             }
                             for (y = posision_y + i; y < posision_y + i + n; ++y) {
-                                memset(imbuf + imsx * y + posision_x, color_index, repeat_count);
+                                memset(imbuf + imsx * y + posision_x, color_index, (size_t)repeat_count);
                             }
                             if (max_x < (posision_x + repeat_count - 1)) {
                                 max_x = posision_x + repeat_count - 1;
@@ -569,7 +569,7 @@ sixel_decode_raw(
             goto end;
         }
         for (y = 0; y < dmsy; ++y) {
-            memcpy(dmbuf + dmsx * y, imbuf + imsx * y, dmsx);
+            memcpy(dmbuf + dmsx * y, imbuf + imsx * y, (size_t)dmsx);
         }
         free(imbuf);
         imsx = dmsx;

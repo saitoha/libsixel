@@ -201,7 +201,7 @@ gif_init_frame(
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        memcpy(frame->pixels, pg->out, frame->width * frame->height);
+        memcpy(frame->pixels, pg->out, (size_t)(frame->width * frame->height));
 
         for (i = 0; i < frame->ncolors; ++i) {
             frame->palette[i * 3 + 0] = pg->color_table[i * 3 + 2];
@@ -492,7 +492,7 @@ gif_load_next(
                     status = SIXEL_RUNTIME_ERROR;
                     goto end;
                 }
-                memcpy(buffer, s->img_buffer, len);
+                memcpy(buffer, s->img_buffer, (size_t)len);
                 s->img_buffer += len;
                 buffer[len] = 0;
                 if (len == 11 && strcmp((char *)buffer, "NETSCAPE2.0") == 0) {

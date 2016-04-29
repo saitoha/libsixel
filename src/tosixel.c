@@ -90,7 +90,7 @@ sixel_advance(sixel_output_t *output, int nwrite)
         }
         memcpy(output->buffer,
                output->buffer + SIXEL_OUTPUT_PACKET_SIZE,
-               (output->pos -= SIXEL_OUTPUT_PACKET_SIZE));
+               (size_t)(output->pos -= SIXEL_OUTPUT_PACKET_SIZE));
     }
 }
 
@@ -105,7 +105,7 @@ sixel_putc(unsigned char *buffer, unsigned char value)
 static void
 sixel_puts(unsigned char *buffer, char const *value, int size)
 {
-    memcpy(buffer, (void *)value, size);
+    memcpy(buffer, (void *)value, (size_t)size);
 }
 
 
@@ -643,7 +643,7 @@ sixel_encode_body(
             }
 
             if (fillable) {
-                memset(np->map + np->sx, (1 << i) - 1, np->mx - np->sx);
+                memset(np->map + np->sx, (1 << i) - 1, (size_t)(np->mx - np->sx));
             }
             status = sixel_put_node(output, &x, np, ncolors, keycolor);
             if (SIXEL_FAILED(status)) {
@@ -660,7 +660,7 @@ sixel_encode_body(
                 }
 
                 if (fillable) {
-                    memset(np->map + np->sx, (1 << i) - 1, np->mx - np->sx);
+                    memset(np->map + np->sx, (1 << i) - 1, (size_t)(np->mx - np->sx));
                 }
                 status = sixel_put_node(output, &x, np, ncolors, keycolor);
                 if (SIXEL_FAILED(status)) {
@@ -675,7 +675,7 @@ sixel_encode_body(
         }
 
         i = 0;
-        memset(map, 0, len);
+        memset(map, 0, (size_t)len);
     }
 
     if (palstate) {
@@ -1259,7 +1259,7 @@ sixel_encode_highcolor(
         goto error;
     }
     rgbhit = paletted_pixels + width * height;
-    memset(rgbhit, 0, maxcolors * 2 + width * 6);
+    memset(rgbhit, 0, (size_t)(maxcolors * 2 + width * 6));
     rgb2pal = rgbhit + maxcolors;
     marks = rgb2pal + maxcolors;
     output_count = 0;
@@ -1370,7 +1370,7 @@ next:
         }
 
         if (++mod_y == 6) {
-            mptr = (unsigned char *)memset(marks, 0, width * 6);
+            mptr = (unsigned char *)memset(marks, 0, (size_t)(width * 6));
             mod_y = 0;
         }
     }

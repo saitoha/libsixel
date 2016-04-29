@@ -575,7 +575,7 @@ sixel_dither_initialize(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    memcpy(dither->palette, buf, dither->ncolors * 3);
+    memcpy(dither->palette, buf, (size_t)(dither->ncolors * 3));
 
     dither->optimized = 1;
     if (dither->origcolors <= dither->ncolors) {
@@ -648,7 +648,7 @@ sixel_dither_set_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     unsigned char  /* in */ *palette)
 {
-    memcpy(dither->palette, palette, dither->ncolors * 3);
+    memcpy(dither->palette, palette, (size_t)(dither->ncolors * 3));
 }
 
 

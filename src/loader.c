@@ -37,10 +37,6 @@
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
 #endif
 
-#if !defined(HAVE_MEMMOVE)
-# define memmove(d, s, n) (bcopy ((s), (d), (n)))
-#endif
-
 #ifdef HAVE_GDK_PIXBUF2
 # if HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
 #   pragma GCC diagnostic push
@@ -976,12 +972,12 @@ load_with_gdkpixbuf(
         p = gdk_pixbuf_get_pixels(pixbuf);
         if (stride == frame->width * depth) {
             memcpy(frame->pixels, gdk_pixbuf_get_pixels(pixbuf),
-                   frame->height * stride);
+                   (size_t)(frame->height * stride));
         } else {
             for (i = 0; i < frame->height; ++i) {
                 memcpy(frame->pixels + frame->width * depth * i,
                        p + stride * i,
-                       frame->width * depth);
+                       (size_t)(frame->width * depth));
             }
         }
         status = fn_load(frame, context);
@@ -1023,12 +1019,12 @@ load_with_gdkpixbuf(
                 p = gdk_pixbuf_get_pixels(pixbuf);
                 if (stride == frame->width * depth) {
                     memcpy(frame->pixels, gdk_pixbuf_get_pixels(pixbuf),
-                           frame->height * stride);
+                           (size_t)(frame->height * stride));
                 } else {
                     for (i = 0; i < frame->height; ++i) {
                         memcpy(frame->pixels + frame->width * depth * i,
                                p + stride * i,
-                               frame->width * depth);
+                               (size_t)(frame->width * depth));
                     }
                 }
                 frame->multiframe = 1;
