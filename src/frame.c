@@ -36,6 +36,10 @@
 
 #include "frame.h"
 
+#if !defined(HAVE_MEMMOVE)
+# define memmove(d, s, n) (bcopy ((s), (d), (n)))
+#endif
+
 /* constructor of frame object */
 SIXELAPI SIXELSTATUS
 sixel_frame_new(
@@ -574,7 +578,7 @@ clip(unsigned char *pixels,
         dst = pixels;
         src = pixels + cy * sx * depth + cx * depth;
         for (y = 0; y < ch; y++) {
-            memmove(dst, src, cw * depth);
+            memmove(dst, src, (size_t)(cw * depth));
             dst += (cw * depth);
             src += (sx * depth);
         }
