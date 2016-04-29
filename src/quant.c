@@ -716,7 +716,7 @@ computeHistogram(unsigned char const    /* in */  *data,
     quant_trace(stderr, "making histogram...\n");
 
     histogram = (unit_t *)sixel_allocator_calloc(allocator,
-                                                 1 << depth * 5,
+                                                 (size_t)(1 << depth * 5),
                                                  sizeof(unit_t));
     if (histogram == NULL) {
         sixel_helper_set_additional_message(
@@ -1316,7 +1316,7 @@ sixel_quant_apply_palette(
     indextable = cachetable;
     if (cachetable == NULL && f_lookup == lookup_fast) {
         indextable = (unsigned short *)sixel_allocator_calloc(allocator,
-                                                              1 << depth * 5,
+                                                              (size_t)(1 << depth * 5),
                                                               sizeof(unsigned short));
         if (!indextable) {
             quant_trace(stderr, "Unable to allocate memory for indextable.\n");

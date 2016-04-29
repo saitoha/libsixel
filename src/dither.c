@@ -739,7 +739,7 @@ sixel_dither_apply_palette(
     if (dither->cachetable == NULL && dither->optimized) {
         if (dither->palette != pal_mono_dark && dither->palette != pal_mono_light) {
             dither->cachetable = (unsigned short *)sixel_allocator_calloc(dither->allocator,
-                                                                          1 << 3 * 5,
+                                                                          (size_t)(1 << 3 * 5),
                                                                           sizeof(unsigned short));
             if (dither->cachetable == NULL) {
                 sixel_helper_set_additional_message(
