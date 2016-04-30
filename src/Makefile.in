@@ -146,7 +146,8 @@ am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-fromgif.lo libsixel_la-encoder.lo \
 	libsixel_la-decoder.lo libsixel_la-writer.lo \
 	libsixel_la-stb_image_write.lo libsixel_la-status.lo \
-	libsixel_la-allocator.lo libsixel_la-tty.lo
+	libsixel_la-malloc_stub.lo libsixel_la-allocator.lo \
+	libsixel_la-tty.lo
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -367,6 +368,7 @@ program_transform_name = @program_transform_name@
 psdir = @psdir@
 pyexecdir = @pyexecdir@
 pythondir = @pythondir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -412,6 +414,8 @@ libsixel_la_SOURCES = \
 		stb_image_write.h \
 		status.c \
 		status.h \
+		malloc_stub.c \
+		malloc_stub.h \
 		allocator.c \
 		allocator.h \
 		tty.c \
@@ -543,6 +547,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompnm.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromsixel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-malloc_stub.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-output.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-pixelformat.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quant.Plo@am__quote@
@@ -693,6 +698,13 @@ libsixel_la-status.lo: status.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='status.c' object='libsixel_la-status.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-status.lo `test -f 'status.c' || echo '$(srcdir)/'`status.c
+
+libsixel_la-malloc_stub.lo: malloc_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-malloc_stub.lo -MD -MP -MF $(DEPDIR)/libsixel_la-malloc_stub.Tpo -c -o libsixel_la-malloc_stub.lo `test -f 'malloc_stub.c' || echo '$(srcdir)/'`malloc_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-malloc_stub.Tpo $(DEPDIR)/libsixel_la-malloc_stub.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='malloc_stub.c' object='libsixel_la-malloc_stub.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-malloc_stub.lo `test -f 'malloc_stub.c' || echo '$(srcdir)/'`malloc_stub.c
 
 libsixel_la-allocator.lo: allocator.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-allocator.lo -MD -MP -MF $(DEPDIR)/libsixel_la-allocator.Tpo -c -o libsixel_la-allocator.lo `test -f 'allocator.c' || echo '$(srcdir)/'`allocator.c

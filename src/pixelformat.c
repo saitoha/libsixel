@@ -309,7 +309,7 @@ sixel_helper_normalize_pixelformat(
         }
         break;
     case SIXEL_PIXELFORMAT_PAL8:
-        memcpy(dst, src, width * height);
+        memcpy(dst, src, (size_t)(width * height));
         *dst_pixelformat = src_pixelformat;
         break;
     default:
