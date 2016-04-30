@@ -267,8 +267,8 @@ write_png_to_file(
         sixel_helper_set_additional_message("stbi_write_png_to_mem() failed.");
         goto end;
     }
-    write_len = fwrite(png_data, 1, (size_t)png_len, output_fp);
-    if (write_len < 0) {
+    write_len = (int)fwrite(png_data, 1, (size_t)png_len, output_fp);
+    if (write_len <= 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message("fwrite() failed.");
         goto end;

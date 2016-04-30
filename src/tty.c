@@ -267,7 +267,7 @@ sixel_tty_scroll(
             sixel_helper_set_additional_message(
                 "sixel_tty_scroll: sprintf() failed.");
         }
-        nwrite = f_write(buffer, strlen(buffer), &outfd);
+        nwrite = f_write(buffer, (int)strlen(buffer), &outfd);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(

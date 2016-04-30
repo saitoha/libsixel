@@ -257,7 +257,7 @@ sixel_chunk_from_file(
     SIXELSTATUS status = SIXEL_FALSE;
     int ret;
     FILE *f;
-    int n;
+    size_t n;
     size_t const bucket_size = 4096;
 
     status = open_binary_file(&f, filename);
@@ -298,10 +298,10 @@ sixel_chunk_from_file(
             }
         }
         n = fread(pchunk->buffer + pchunk->size, 1, 4096, f);
-        if (n <= 0) {
+        if (n == 0) {
             break;
         }
-        pchunk->size += (size_t)n;
+        pchunk->size += n;
     }
 
     if (f != stdin) {
