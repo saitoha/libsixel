@@ -1,0 +1,5 @@
+all:
+	cc $$(libsixel-config --cflags) main.c -o demo $$(libsixel-config --libs)
+
+run: all
+	./demo
