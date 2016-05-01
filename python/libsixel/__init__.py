@@ -420,23 +420,28 @@ def sixel_encoder_encode_bytes(encoder, buf, width, height, pixelformat, palette
     if depth <= 0:
         raise ValueError("invalid pixelformat value : %d" % pixelformat)
 
-    if buf.len < width * height * depth:
+    if len(buf) < width * height * depth:
         raise ValueError("buf.len is too short : %d < %d * %d * %d" % (buf.len, width, height, depth))
 
-    if buf.readonly:
+    if not hasattr(buf, "readonly") or buf.readonly:
         cbuf = c_void_p.from_buffer_copy(buf)
     else:
         cbuf = c_void_p.from_buffer(buf)
 
-    if palette.readonly:
-        cpalette = c_void_p.from_buffer_copy(palette)
+    if palette:
+        if not hasattr(palette, "readonly") or buf.readonly:
+            cpalette = c_void_p.from_buffer_copy(palette)
+        else:
+            cpalette = c_void_p.from_buffer(palette)
+        cpalettelen = len(palette)
     else:
-        cpalette = c_void_p.from_buffer(palette)
+        cpalette = None
+        cpalettelen = None
 
     _sixel.sixel_encoder_encode_bytes.restype = c_int
     _sixel.sixel_encoder_encode.argtypes = [c_void_p, c_void_p, c_int, c_int, c_int, c_void_p, c_int]
 
-    status = _sixel.sixel_encoder_encode_bytes(encoder, buf, width, height, pixelformat, cpalette, cpalette.len)
+    status = _sixel.sixel_encoder_encode_bytes(encoder, buf, width, height, pixelformat, cpalette, cpalettelen)
     if SIXEL_FAILED(status):
         message = sixel_helper_format_error(status)
         raise RuntimeError(message)
