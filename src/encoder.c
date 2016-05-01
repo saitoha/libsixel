@@ -792,7 +792,7 @@ sixel_encoder_without_macro(
     delay = sixel_frame_get_delay(frame);
     if (delay > 0 && !encoder->fignore_delay) {
 # if HAVE_CLOCK
-        dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - (int)lag;
+        dulation = (int)((clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC) - (int)lag;
         lag = 0;
 # else
         dulation = 0;
@@ -905,7 +905,7 @@ sixel_encoder_output_with_macro(
         delay = sixel_frame_get_delay(frame);
         if (delay > 0 && !encoder->fignore_delay) {
 # if HAVE_CLOCK
-            dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - (int)lag;
+            dulation = (int)((clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC) - (int)lag;
             lag = 0;
 # else
             dulation = 0;
