@@ -118,11 +118,11 @@ sixel_parse_x_colorspec(
             v = 0;
             for (endptr = p; endptr - p <= 12; ++endptr) {
                 if (*endptr >= '0' && *endptr <= '9') {
-                    v = (v << 4) | (*endptr - '0');
+                    v = (v << 4) | (unsigned long)(*endptr - '0');
                 } else if (*endptr >= 'a' && *endptr <= 'f') {
-                    v = (v << 4) | (*endptr - 'a' + 10);
+                    v = (v << 4) | (unsigned long)(*endptr - 'a' + 10);
                 } else if (*endptr >= 'A' && *endptr <= 'F') {
-                    v = (v << 4) | (*endptr - 'A' + 10);
+                    v = (v << 4) | (unsigned long)(*endptr - 'A' + 10);
                 } else {
                     break;
                 }
@@ -236,7 +236,7 @@ end:
 static int
 sixel_write_callback(char *data, int size, void *priv)
 {
-    return write(*(int *)priv, data, size);
+    return write(*(int *)priv, data, (size_t)size);
 }
 
 
@@ -258,7 +258,7 @@ sixel_hex_write_callback(
         hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
     }
 
-    return write(*(int *)priv, hex, size * 2);
+    return write(*(int *)priv, hex, (size_t)(size * 2));
 }
 
 
@@ -724,7 +724,7 @@ sixel_encoder_without_macro(
     int nwrite;
 #if HAVE_USLEEP
     int delay;
-    int lag = 0;
+    useconds_t lag = 0;
 # if HAVE_CLOCK
     clock_t start;
 # endif
@@ -733,7 +733,7 @@ sixel_encoder_without_macro(
     int width;
     int height;
     int pixelformat;
-    int size;
+    size_t size;
 
     if (encoder == NULL) {
         sixel_helper_set_additional_message(
@@ -762,7 +762,7 @@ sixel_encoder_without_macro(
 
     width = sixel_frame_get_width(frame);
     height = sixel_frame_get_height(frame);
-    size = width * height * depth;
+    size = (size_t)(width * height * depth);
     p = (unsigned char *)sixel_allocator_malloc(encoder->allocator, size);
     if (p == NULL) {
         sixel_helper_set_additional_message(
@@ -783,15 +783,15 @@ sixel_encoder_without_macro(
         dulation = 0;
 # endif
         if (dulation < 10000 * delay) {
-            usleep(10000 * delay - dulation);
+            usleep((useconds_t)(10000 * delay - dulation));
         } else {
-            lag = 10000 * delay - dulation;
+            lag = (useconds_t)(10000 * delay - dulation);
         }
     }
 #endif
 
     pixbuf = sixel_frame_get_pixels(frame);
-    memcpy(p, pixbuf, width * height * depth);
+    memcpy(p, pixbuf, (size_t)(width * height * depth));
 
     if (encoder->cancel_flag && *encoder->cancel_flag) {
         goto end;
@@ -821,7 +821,7 @@ sixel_encoder_output_with_macro(
     char buffer[256];
     int nwrite;
 #if HAVE_USLEEP
-    int lag = 0;
+    useconds_t lag = 0;
 # if HAVE_CLOCK
     clock_t start;
 # endif
@@ -896,9 +896,9 @@ sixel_encoder_output_with_macro(
             dulation = 0;
 # endif
             if (dulation < 10000 * delay) {
-                usleep(10000 * delay - dulation);
+                usleep((useconds_t)(10000 * delay - dulation));
             } else {
-                lag = 10000 * delay - dulation;
+                lag = (useconds_t)(10000 * delay - dulation);
             }
         }
 #endif

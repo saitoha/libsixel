@@ -817,7 +817,7 @@ sixel_helper_format_error(
 );
 
 /* compute pixel depth from pixelformat */
-SIXELAPI SIXELSTATUS
+SIXELAPI int
 sixel_helper_compute_depth(
     int /* in */ pixelformat /* one of enum pixelFormat */
 );

@@ -75,9 +75,9 @@ static inline void quant_trace(FILE *f, ...) { (void) f; }
 
 typedef struct box* boxVector;
 struct box {
-    int ind;
-    int colors;
-    int sum;
+    unsigned int ind;
+    unsigned int colors;
+    unsigned int sum;
 };
 
 typedef unsigned long sample;
@@ -88,7 +88,7 @@ struct tupleint {
        would find in a tuple table or tuple hash.
        Note that this is a variable length structure.
     */
-    int value;
+    unsigned int value;
     sample tuple[1];
     /* This is actually a variable size array -- its size is the
        depth of the tuple in question.  Some compilers do not let us
@@ -111,19 +111,22 @@ static int
 compareplane(const void * const arg1,
              const void * const arg2)
 {
+    int lhs, rhs;
+
     typedef const struct tupleint * const * const sortarg;
     sortarg comparandPP  = (sortarg) arg1;
     sortarg comparatorPP = (sortarg) arg2;
+    lhs = (int)(*comparandPP)->tuple[compareplanePlane];
+    rhs = (int)(*comparatorPP)->tuple[compareplanePlane];
 
-    return (*comparandPP)->tuple[compareplanePlane] -
-        (*comparatorPP)->tuple[compareplanePlane];
+    return lhs - rhs;
 }
 
 
 static int
 sumcompare(const void * const b1, const void * const b2)
 {
-    return ((boxVector)b2)->sum - ((boxVector)b1)->sum;
+    return (int)((boxVector)b2)->sum - (int)((boxVector)b1)->sum;
 }
 
 
@@ -235,15 +238,15 @@ end:
 
 static boxVector
 newBoxVector(
-    int const           /* in */ colors,
-    int const           /* in */ sum,
-    int const           /* in */ newcolors,
+    unsigned int const  /* in */ colors,
+    unsigned int const  /* in */ sum,
+    unsigned int const  /* in */ newcolors,
     sixel_allocator_t   /* in */ *allocator)
 {
     boxVector bv;
 
     bv = (boxVector)sixel_allocator_malloc(allocator,
-                                           sizeof(struct box) * newcolors);
+                                           sizeof(struct box) * (size_t)newcolors);
     if (bv == NULL) {
         quant_trace(stderr, "out of memory allocating box vector table\n");
         return NULL;
@@ -350,23 +353,22 @@ largestByLuminosity(sample minval[], sample maxval[], unsigned int const depth)
 
 
 static void
-centerBox(int          const boxStart,
-          int          const boxSize,
+centerBox(unsigned int const boxStart,
+          unsigned int const boxSize,
           tupletable2  const colorfreqtable,
           unsigned int const depth,
           tuple        const newTuple)
 {
 
     unsigned int plane;
+    sample minval, maxval;
+    unsigned int i;
 
     for (plane = 0; plane < depth; ++plane) {
-        int minval, maxval;
-        int i;
-
         minval = maxval = colorfreqtable.table[boxStart]->tuple[plane];
 
         for (i = 1; i < boxSize; ++i) {
-            int const v = colorfreqtable.table[boxStart + i]->tuple[plane];
+            sample v = colorfreqtable.table[boxStart + i]->tuple[plane];
             minval = minval < v ? minval: v;
             maxval = maxval > v ? maxval: v;
         }
@@ -377,22 +379,22 @@ centerBox(int          const boxStart,
 
 
 static void
-averageColors(int          const boxStart,
-              int          const boxSize,
+averageColors(unsigned int const boxStart,
+              unsigned int const boxSize,
               tupletable2  const colorfreqtable,
               unsigned int const depth,
               tuple        const newTuple)
 {
     unsigned int plane;
+    sample sum;
+    unsigned int i;
 
     for (plane = 0; plane < depth; ++plane) {
-        sample sum;
-        int i;
-
         sum = 0;
 
-        for (i = 0; i < boxSize; ++i)
-            sum += colorfreqtable.table[boxStart+i]->tuple[plane];
+        for (i = 0; i < boxSize; ++i) {
+            sum += colorfreqtable.table[boxStart + i]->tuple[plane];
+        }
 
         newTuple[plane] = sum / boxSize;
     }
@@ -401,8 +403,8 @@ averageColors(int          const boxStart,
 
 
 static void
-averagePixels(int const boxStart,
-              int const boxSize,
+averagePixels(unsigned int const boxStart,
+              unsigned int const boxSize,
               tupletable2 const colorfreqtable,
               unsigned int const depth,
               tuple const newTuple)
@@ -411,21 +413,23 @@ averagePixels(int const boxStart,
     unsigned int n;
         /* Number of tuples represented by the box */
     unsigned int plane;
-    int i;
+    unsigned int i;
 
     /* Count the tuples in question */
     n = 0;  /* initial value */
-    for (i = 0; i < boxSize; ++i)
-        n += colorfreqtable.table[boxStart + i]->value;
+    for (i = 0; i < boxSize; ++i) {
+        n += (unsigned int)colorfreqtable.table[boxStart + i]->value;
+    }
 
     for (plane = 0; plane < depth; ++plane) {
         sample sum;
 
         sum = 0;
 
-        for (i = 0; i < boxSize; ++i)
-            sum += colorfreqtable.table[boxStart+i]->tuple[plane]
-                * colorfreqtable.table[boxStart+i]->value;
+        for (i = 0; i < boxSize; ++i) {
+            sum += colorfreqtable.table[boxStart + i]->tuple[plane]
+                * (unsigned int)colorfreqtable.table[boxStart + i]->value;
+        }
 
         newTuple[plane] = sum / n;
     }
@@ -655,14 +659,14 @@ end:
 }
 
 
-static int
-computeHash(unsigned char const *data, int const depth)
+static unsigned int
+computeHash(unsigned char const *data, unsigned int const depth)
 {
-    int hash = 0;
-    int n;
+    unsigned int hash = 0;
+    unsigned int n;
 
     for (n = 0; n < depth; n++) {
-        hash |= data[depth - 1 - n] >> 3 << n * 5;
+        hash |= (unsigned int)(data[depth - 1 - n] >> 3) << n * 5;
     }
 
     return hash;
@@ -715,7 +719,7 @@ computeHistogram(unsigned char const    /* in */  *data,
     quant_trace(stderr, "making histogram...\n");
 
     histogram = (unit_t *)sixel_allocator_calloc(allocator,
-                                                 1 << depth * 5,
+                                                 (size_t)(1 << depth * 5),
                                                  sizeof(unit_t));
     if (histogram == NULL) {
         sixel_helper_set_additional_message(
@@ -725,7 +729,7 @@ computeHistogram(unsigned char const    /* in */  *data,
     }
     it = ref = refmap
         = (unsigned short *)sixel_allocator_malloc(allocator,
-                                                   (1 << depth * 5) * sizeof(unit_t));
+                                                   (size_t)(1 << depth * 5) * sizeof(unit_t));
     if (!it) {
         sixel_helper_set_additional_message(
             "unable to allocate memory for lookup table.");
@@ -738,7 +742,7 @@ computeHistogram(unsigned char const    /* in */  *data,
         if (histogram[bucket_index] == 0) {
             *ref++ = bucket_index;
         }
-        if (histogram[bucket_index] < (1 << sizeof(unsigned short) * 8) - 1) {
+        if (histogram[bucket_index] < (unsigned int)(1 << sizeof(unsigned short) * 8) - 1) {
             histogram[bucket_index]++;
         }
     }
@@ -753,7 +757,7 @@ computeHistogram(unsigned char const    /* in */  *data,
             colorfreqtableP->table[i]->value = histogram[refmap[i]];
             for (n = 0; n < depth; n++) {
                 colorfreqtableP->table[i]->tuple[depth - 1 - n]
-                    = (*it >> n * 5 & 0x1f) << 3;
+                    = (sample)((*it >> n * 5 & 0x1f) << 3);
             }
         }
         it++;
@@ -780,7 +784,7 @@ computeColorMapFromInput(unsigned char const *data,
                          int const methodForRep,
                          int const qualityMode,
                          tupletable2 * const colormapP,
-                         int *origcolors,
+                         unsigned int *origcolors,
                          sixel_allocator_t *allocator)
 {
 /*----------------------------------------------------------------------------
@@ -1077,7 +1081,7 @@ lookup_fast(unsigned char const * const pixel,
             int const complexion)
 {
     int result;
-    int hash;
+    unsigned int hash;
     int diff;
     int cache;
     int i;
@@ -1170,28 +1174,31 @@ SIXELSTATUS
 sixel_quant_make_palette(
     unsigned char          /* out */ **result,
     unsigned char const    /* in */  *data,
-    int                    /* in */  length,
+    unsigned int           /* in */  length,
     int                    /* in */  pixelformat,
-    int                    /* in */  reqcolors,
-    int                    /* in */  *ncolors,
-    int                    /* in */  *origcolors,
+    unsigned int           /* in */  reqcolors,
+    unsigned int           /* in */  *ncolors,
+    unsigned int           /* in */  *origcolors,
     int                    /* in */  methodForLargest,
     int                    /* in */  methodForRep,
     int                    /* in */  qualityMode,
     sixel_allocator_t      /* in */  *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int i;
-    int n;
+    unsigned int i;
+    unsigned int n;
     int ret;
     tupletable2 colormap;
-    int depth;
+    unsigned int depth;
+    int result_depth;
 
-    depth = sixel_helper_compute_depth(pixelformat);
-    if (depth == (-1)) {
+    result_depth = sixel_helper_compute_depth(pixelformat);
+    if (result_depth <= 0) {
         *result = NULL;
         goto end;
     }
+
+    depth = (unsigned int)result_depth;
 
     ret = computeColorMapFromInput(data, length, depth,
                                    reqcolors, methodForLargest,
@@ -1312,7 +1319,7 @@ sixel_quant_apply_palette(
     indextable = cachetable;
     if (cachetable == NULL && f_lookup == lookup_fast) {
         indextable = (unsigned short *)sixel_allocator_calloc(allocator,
-                                                              1 << depth * 5,
+                                                              (size_t)(1 << depth * 5),
                                                               sizeof(unsigned short));
         if (!indextable) {
             quant_trace(stderr, "Unable to allocate memory for indextable.\n");
@@ -1347,7 +1354,7 @@ sixel_quant_apply_palette(
                 }
             }
         }
-        memcpy(palette, new_palette, *ncolors * depth);
+        memcpy(palette, new_palette, (size_t)(*ncolors * depth));
     } else {
         for (y = 0; y < height; ++y) {
             for (x = 0; x < width; ++x) {

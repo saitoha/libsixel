@@ -63,7 +63,7 @@ sixel_tty_cbreak(struct termios *old_termios, struct termios *new_termios)
     }
 
     (void) memcpy(new_termios, old_termios, sizeof(*old_termios));
-    new_termios->c_lflag &= ~(ECHO | ICANON);
+    new_termios->c_lflag &= (tcflag_t)~(ECHO | ICANON);
     new_termios->c_cc[VMIN] = 1;
     new_termios->c_cc[VTIME] = 0;
 
