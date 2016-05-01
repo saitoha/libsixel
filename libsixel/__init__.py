@@ -20,7 +20,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-from ctypes import cdll, c_void_p, c_int, c_char_p, POINTER, byref
+from ctypes import cdll, c_void_p, c_int, c_byte, c_char_p, POINTER, byref
 from ctypes.util import find_library
 
 SIXEL_OK              = 0x0000
@@ -429,14 +429,11 @@ def sixel_encoder_encode_bytes(encoder, buf, width, height, pixelformat, palette
         cbuf = c_void_p.from_buffer(buf)
 
     if palette:
-        if not hasattr(palette, "readonly") or buf.readonly:
-            cpalette = c_void_p.from_buffer_copy(palette)
-        else:
-            cpalette = c_void_p.from_buffer(palette)
         cpalettelen = len(palette)
+        cpalette = (c_byte * cpalettelen)(*palette)
     else:
-        cpalette = None
         cpalettelen = None
+        cpalette = None
 
     _sixel.sixel_encoder_encode_bytes.restype = c_int
     _sixel.sixel_encoder_encode.argtypes = [c_void_p, c_void_p, c_int, c_int, c_int, c_void_p, c_int]
