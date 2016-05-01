@@ -565,6 +565,12 @@ clean-local:
 
 check: check-am
 
+build-testdata:
+	python -c "import PIL"  # confirm PIL is installed
+	python -c "from PIL import Image; print(Image.open('../images/snake.png').tobytes())" > ../images/snake.dump-rgb888
+	python -c "from PIL import Image; print(Image.open('../images/snake-palette.png').tobytes())" > ../images/snake.dump-pal8-body
+	python -c "from PIL import Image; print(''.join(map(chr, Image.open('../images/snake-palette.png').getpalette())))" > ../images/snake.dump-pal8-pal
+
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
