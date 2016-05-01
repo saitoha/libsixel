@@ -539,6 +539,10 @@ end:
     return status;
 }
 
+typedef union _fn_pointer {
+    sixel_load_image_function fn;
+    void *                    p;
+} fn_pointer;
 
 SIXELSTATUS
 load_gif(
@@ -557,7 +561,9 @@ load_gif(
     gif_t g;
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_frame_t *frame;
+    fn_pointer fnp;
 
+    fnp.p = fn_load;
     g.out = NULL;
 
     status = sixel_frame_new(&frame, allocator);
@@ -609,7 +615,7 @@ load_gif(
                 goto end;
             }
 
-            status = ((sixel_load_image_function)fn_load)(frame, context);
+            status = fnp.fn(frame, context);
             if (status != SIXEL_OK) {
                 goto end;
             }

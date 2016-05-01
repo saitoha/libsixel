@@ -735,6 +735,10 @@ chunk_is_jpeg(sixel_chunk_t const *chunk)
 }
 #endif  /* HAVE_JPEG */
 
+typedef union _fn_pointer {
+    sixel_load_image_function fn;
+    void *                    p;
+} fn_pointer;
 
 /* load images using builtin image loaders */
 static SIXELSTATUS
@@ -753,6 +757,7 @@ load_with_builtin(
     sixel_frame_t *frame = NULL;
     char message[256];
     int nwrite;
+    fn_pointer fnp;
 
     if (chunk_is_sixel(pchunk)) {
         status = sixel_frame_new(&frame, pchunk->allocator);
@@ -761,7 +766,7 @@ load_with_builtin(
         }
         status = load_sixel(&frame->pixels,
                             pchunk->buffer,
-                            pchunk->size,
+                            (int)pchunk->size,
                             &frame->width,
                             &frame->height,
                             fuse_palette ? &frame->palette: NULL,
@@ -779,7 +784,7 @@ load_with_builtin(
         }
         /* pnm */
         status = load_pnm(pchunk->buffer,
-                          pchunk->size,
+                          (int)pchunk->size,
                           frame->allocator,
                           &frame->pixels,
                           &frame->width,
@@ -834,14 +839,15 @@ load_with_builtin(
     }
 #endif  /* HAVE_LIBPNG */
     else if (chunk_is_gif(pchunk)) {
+        fnp.fn = fn_load;
         status = load_gif(pchunk->buffer,
-                          pchunk->size,
+                          (int)pchunk->size,
                           bgcolor,
                           reqcolors,
                           fuse_palette,
                           fstatic,
                           loop_control,
-                          (void *)fn_load,
+                          fnp.p,
                           context,
                           pchunk->allocator);
         if (SIXEL_FAILED(status)) {
@@ -857,7 +863,7 @@ load_with_builtin(
             goto end;
         }
         stbi_allocator = pchunk->allocator;
-        stbi__start_mem(&s, pchunk->buffer, pchunk->size);
+        stbi__start_mem(&s, pchunk->buffer, (int)pchunk->size);
         frame->pixels = stbi__load_main(&s, &frame->width, &frame->height, &depth, 3);
         if (!frame->pixels) {
             sixel_helper_set_additional_message(stbi_failure_reason());

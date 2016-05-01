@@ -1323,7 +1323,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 - [mandel4](http://kildall.apana.org.au/~cjb/mandel5.c)
 
-  A mandelbrot program for (colour) sixel-supporting terminals, written by Chris Baird <cjb@brushtail.apana.org.au> 1987-2015
+  A mandelbrot program for (colour) sixel-supporting terminals, written by Chris Baird <cjb at brushtail.apana.org.au> 1987-2015
 
   ![mandel4](https://raw.githubusercontent.com/saitoha/libsixel/data/data/mandel.png)
 

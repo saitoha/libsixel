@@ -236,7 +236,15 @@ end:
 static int
 sixel_write_callback(char *data, int size, void *priv)
 {
-    return write(*(int *)priv, data, (size_t)size);
+    int result;
+
+#if defined(__MINGW64__)
+    result = write(*(int *)priv, data, (unsigned int)size);
+#else
+    result = write(*(int *)priv, data, (size_t)size);
+#endif
+
+    return result;
 }
 
 
@@ -250,6 +258,7 @@ sixel_hex_write_callback(
     char hex[SIXEL_OUTPUT_PACKET_SIZE * 2];
     int i;
     int j;
+    int result;
 
     for (i = j = 0; i < size; ++i, ++j) {
         hex[j] = (data[i] >> 4) & 0xf;
@@ -258,7 +267,13 @@ sixel_hex_write_callback(
         hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
     }
 
-    return write(*(int *)priv, hex, (size_t)(size * 2));
+#if defined(__MINGW64__)
+    result = write(*(int *)priv, hex, (unsigned int)(size * 2));
+#else
+    result = write(*(int *)priv, hex, (size_t)(size * 2));
+#endif
+
+    return result;
 }
 
 
@@ -777,7 +792,7 @@ sixel_encoder_without_macro(
     delay = sixel_frame_get_delay(frame);
     if (delay > 0 && !encoder->fignore_delay) {
 # if HAVE_CLOCK
-        dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
+        dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - (int)lag;
         lag = 0;
 # else
         dulation = 0;
@@ -848,7 +863,7 @@ sixel_encoder_output_with_macro(
                 "sixel_encoder_output_with_macro: sprintf() failed.");
             goto end;
         }
-        nwrite = sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
+        nwrite = sixel_write_callback(buffer, (int)strlen(buffer), &encoder->outfd);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
@@ -879,7 +894,7 @@ sixel_encoder_output_with_macro(
             sixel_helper_set_additional_message(
                 "sixel_encoder_output_with_macro: sprintf() failed.");
         }
-        nwrite = sixel_write_callback(buffer, strlen(buffer), &encoder->outfd);
+        nwrite = sixel_write_callback(buffer, (int)strlen(buffer), &encoder->outfd);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
@@ -890,7 +905,7 @@ sixel_encoder_output_with_macro(
         delay = sixel_frame_get_delay(frame);
         if (delay > 0 && !encoder->fignore_delay) {
 # if HAVE_CLOCK
-            dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - lag;
+            dulation = (clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC - (int)lag;
             lag = 0;
 # else
             dulation = 0;

@@ -293,7 +293,7 @@ sixel_decoder_decode(
                 goto end;
             }
         }
-        if ((n = fread(raw_data + raw_len, 1, 4096, input_fp)) <= 0) {
+        if ((n = (int)fread(raw_data + raw_len, 1, 4096, input_fp)) <= 0) {
             break;
         }
         raw_len += n;
