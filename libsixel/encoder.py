@@ -40,7 +40,7 @@ class Encoder(object):
     def test(self, filename):
         import threading
 
-        self.setopt(SIXEL_OPTFALG_COLORS, 16)
+        self.setopt(SIXEL_OPTFLAG_COLORS, 16)
         self.setopt(SIXEL_OPTFLAG_DIFFUSION, "atkinson")
         self.setopt(SIXEL_OPTFLAG_WIDTH, 200)
         t = threading.Thread(target=self.encode, args=[filename])
