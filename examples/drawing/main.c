@@ -1,13 +1,11 @@
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <getopt.h>
-#include <sixel.h>
+#include <unistd.h>
 #include <termios.h>
-#include <errno.h>
 #include <string.h>
 #include <sys/select.h>
 #include <sys/ioctl.h>
+#include <sixel.h>
 
 static int
 wait_stdin(int usec)

@@ -3,3 +3,6 @@ all:
 
 run: all
 	./demo
+
+clean:
+	rm -vf ./demo
