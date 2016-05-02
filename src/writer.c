@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -178,6 +178,8 @@ write_png_to_file(
     case SIXEL_PIXELFORMAT_BGR888:
     case SIXEL_PIXELFORMAT_RGBA8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
         pixels = new_pixels = sixel_allocator_malloc(allocator, width * height * 3);
         if (new_pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
@@ -194,6 +196,11 @@ write_png_to_file(
             goto end;
         }
         break;
+    default:
+        status = SIXEL_BAD_ARGUMENT;
+        sixel_helper_set_additional_message(
+            "write_png_to_file: unkown pixelformat is specified");
+        goto end;
     }
 
     if (strcmp(filename, "-") == 0) {

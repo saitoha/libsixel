@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,14 +22,20 @@
 #ifndef LIBSIXEL_ENCODER_H
 #define LIBSIXEL_ENCODER_H
 
+/* palette type */
+#define SIXEL_COLOR_OPTION_DEFAULT          0   /* use default settings */
+#define SIXEL_COLOR_OPTION_MONOCHROME       1   /* use monochrome palette */
+#define SIXEL_COLOR_OPTION_BUILTIN          2   /* use builtin palette */
+#define SIXEL_COLOR_OPTION_MAPFILE          3   /* use mapfile option */
+#define SIXEL_COLOR_OPTION_HIGHCOLOR        4   /* use highcolor option */
+
 /* encoder object */
 struct sixel_encoder {
     unsigned int ref;               /* reference counter */
     sixel_allocator_t *allocator;   /* allocator object */
     int reqcolors;
+    int color_option;
     char *mapfile;
-    int monochrome;
-    int highcolor;
     int builtin_palette;
     int method_for_diffuse;
     int method_for_largest;
@@ -58,6 +64,7 @@ struct sixel_encoder {
     int encode_policy;
     int pipe_mode;
     int verbose;
+    int has_gri_arg_limit;
     unsigned char *bgcolor;
     int outfd;
     int finsecure;

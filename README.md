@@ -31,6 +31,7 @@ Now Youtube video streaming is available over SIXEL protocol by [FFmpeg-SIXEL](h
 
   [![FFmpeg-SIXEL](https://raw.githubusercontent.com/saitoha/libsixel/data/data/ffmpeg.png)](http://youtu.be/hqMh47lYHlc)
 
+Above demo only uses 16 color registers.
 
 ### SDL integration: Gaming, Virtualization, ...etc.
 
@@ -115,7 +116,7 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
 
 #### [sayaka-chan](https://github.com/isaki68k/sayaka/)
 
-  [sayaka-chan](https://github.com/isaki68k/sayaka/) works with libsixel inline-image extension.
+  [sayaka-chan](https://github.com/isaki68k/sayaka/)(PHP version) works with libsixel inline-image extension.
 
   SIXEL works with old powerless machines such as [NetBSD/x68k](http://wiki.netbsd.org/ports/x68k/) (here is SHARP X68030 with 060turbo):
 
@@ -125,6 +126,18 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
   [a patch for ite(4)](https://github.com/isaki68k/misc/blob/master/NetBSD/patch/x68k-ite-sixel.diff).
 
   ![ite(4)](https://raw.githubusercontent.com/saitoha/libsixel/data/data/ite.png)
+
+
+### Other
+
+#### [sdump](https://github.com/uobikiemukot/sdump)
+
+  A sixel image dumper, provides pdf previewer.
+
+
+#### [sixelPreviewer](https://github.com/mikoto2000/sixelPreviewer)
+
+  A simple scripts for realtime edit-previewing for dot, svg, markdown, ...etc.
 
 
 ## Highlighted features
@@ -210,13 +223,28 @@ Now SIXEL feature is supported by the following terminals.
 
   [http://mlterm.sourceforge.net/](http://mlterm.sourceforge.net/)
 
-  Works on each of X, win32/cygwin, framebuffer version.
+  Works on each of X, WIN32 GDI, framebuffer, Android, Cocoa version.
 
 - XTerm (compiled with `--enable-sixel` option)
 
   [http://invisible-island.net/xterm/](http://invisible-island.net/xterm/)
 
-  You should launch xterm with "`-ti 340`" option. The SIXEL palette is limited to a maximum of 16 colors.
+  You should launch xterm with "`-ti 340`" option.
+  The SIXEL palette is limited to a maximum of 16 colors.
+  To avoid this limitation, Try
+
+```sh
+$ echo "XTerm*decTerminalID: vt340" >> $HOME/.Xresources
+$ echo "XTerm*numColorRegisters: 256" >>  $HOME/.Xresources
+$ xrdb $HOME/.Xresources
+$ xterm
+```
+
+  or
+
+```sh
+$ xterm -xrm "XTerm*decTerminalID: vt340" -xrm "XTerm*numColorRegisters: 256"
+```
 
 - yaft
 
@@ -302,6 +330,7 @@ Options:
                            terminals or printers (default)
 -8, --8bit-mode            generate a sixel image for 8bit
                            terminals or printers
+-R, --gri-limit            limit arguments of DECGRI('!') to 255
 -p COLORS, --colors=COLORS specify number of colors to reduce
                            the image to (default=256)
 -m FILE, --mapfile=FILE    transform image colors to match this
@@ -321,8 +350,8 @@ Options:
 -n MACRONO, --macro-number=MACRONO
                            specify an number argument for
                            DECDMAC and make terminal memorize
-                           SIXEL image. No image is shown if this
-                           option is specified
+                           SIXEL image. No image is shown if
+                           this option is specified
 -C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE
                            specify an number argument for the
                            score of complexion correction.
@@ -614,7 +643,7 @@ The Whole API is described [here](https://github.com/saitoha/libsixel/blob/maste
 
 ### Example
 
-If you use OSX, a tiny example is available
+A tiny example is available
 [here](https://github.com/saitoha/libsixel/blob/master/examples/opengl/).
 
   ![opengl example](https://raw.githubusercontent.com/saitoha/libsixel/data/data/example_opengl.gif)
@@ -931,19 +960,20 @@ The MIT License (MIT)
 
 ## Contributers and Reviewers
 
-- @arakiken
-- @elfring
-- @isaki68k
-- @knok
-- @mattn
-- @msmhrt
-- @obache
-- @tsutsui
-- @ttdoda
-- @uobikiemukot
-- @vrtsds
-- @waywardmonkeys
-- @yoshikaw
+- [@arakiken](https://github.com/arakiken/)
+- [@elfring](https://github.com/elfring/)
+- [@hattya](https://github.com/hattya/)
+- [@isaki68k](https://github.com/isaki68k/)
+- [@knok](https://github.com/knok/)
+- [@mattn](https://github.com/mattn/)
+- [@msmhrt](https://github.com/msmhrt/)
+- [@obache](https://github.com/obache/)
+- [@tsutsui](https://github.com/tsutsui/)
+- [@ttdoda](https://github.com/ttdoda/)
+- [@uobikiemukot](https://github.com/uobikiemukot/)
+- [@vrtsds](https://github.com/vrtsds/)
+- [@waywardmonkeys](https://github.com/waywardmonkeys/)
+- [@yoshikaw](https://github.com/yoshikaw/)
 
 ## Contributing
 
@@ -969,7 +999,7 @@ derived from kmiya's "*sixel*" original version (2014-3-2)
 
 This work is written by kmiya@ culti. He distributes it under very permissive license.
 
-The original license text(in Japanese only) is:
+The original license text(in Japanese) is:
 
 ```
 このプログラム及びソースコードの使用について個人・商用を問わず
@@ -1007,20 +1037,32 @@ date will be written clearly.
 
 kmiya also said this is compatible with MIT/BSD/GPL.
 
-### stbi-2.06
 
-This software includes `stbi-2.06` (stb_image.h),
+### stbi-2.10
+
+This software includes `stb-image-v2.10` (stb_image.h),
 public domain JPEG/PNG reader.
 
 https://github.com/nothings/stb
 
+> LICENSE
+>
+> This software is in the public domain. Where that dedication is not
+> recognized, you are granted a perpetual, irrevocable license to copy,
+> distribute, and modify this file as you see fit.
 
-### stbiw-0.94
 
-This software includes `stbiw-0.94` (stb_image_write.h),
+### stbiw-1.01
+This software includes `stb-image-write-v1.01` (stb_image_write.h),
 public domain PNG/BMP/TGA writer.
 
 https://github.com/nothings/stb
+
+> LICENSE
+>
+> This software is in the public domain. Where that dedication is not
+> recognized, you are granted a perpetual, irrevocable license to copy,
+> distribute, and modify this file as you see fit.
 
 
 ### pnmquant.c (netpbm library)
@@ -1186,6 +1228,11 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   A monochrome SIXEL converter
 
 
+- [sixelv in sayaka-chan Vala version](https://github.com/isaki68k/sayaka/blob/master/vala/sixelv.vala)
+
+  sayaka-chan(Vala version) also includes SIXEL converter.
+
+
 - [xpr(x11-apps)](ftp://ftp.x.org/pub/unsupported/programs/xpr/)
 
   xpr(1) can convert a xwd(X window dump) format image into a sixel
@@ -1272,6 +1319,13 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   This web page can decode SIXEL images (written in javascript).
 
   ![SIXEL image viewer ](https://raw.githubusercontent.com/saitoha/libsixel/data/data/js-sixel.png)
+
+
+- [mandel4](http://kildall.apana.org.au/~cjb/mandel5.c)
+
+  A mandelbrot program for (colour) sixel-supporting terminals, written by Chris Baird <cjb at brushtail.apana.org.au> 1987-2015
+
+  ![mandel4](https://raw.githubusercontent.com/saitoha/libsixel/data/data/mandel.png)
 
 
 - [SixelGraphics.jl(written in Julia)](https://github.com/olofsen/SixelGraphics.jl)

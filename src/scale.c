@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -200,15 +200,15 @@ scale_without_resampling(
     int x;
     int y;
     int i;
-    int index;
+    int pos;
 
     for (h = 0; h < dsth; h++) {
         for (w = 0; w < dstw; w++) {
             x = w * srcw / dstw;
             y = h * srch / dsth;
             for (i = 0; i < depth; i++) {
-                index = (y * srcw + x) * depth + i;
-                dst[(h * dstw + w) * depth + i] = src[index];
+                pos = (y * srcw + x) * depth + i;
+                dst[(h * dstw + w) * depth + i] = src[pos];
             }
         }
     }
@@ -234,7 +234,7 @@ scale_with_resampling(
     int x;
     int y;
     int i;
-    int index;
+    int pos;
     int x_first, x_last, y_first, y_last;
     double center_x, center_y;
     double diff_x, diff_y;
@@ -284,8 +284,8 @@ scale_with_resampling(
                     }
                     weight = f_resample(fabs(diff_x)) * f_resample(fabs(diff_y));
                     for (i = 0; i < depth; i++) {
-                        index = (y * srcw + x) * depth + i;
-                        offsets[i] += src[index] * weight;
+                        pos = (y * srcw + x) * depth + i;
+                        offsets[i] += src[pos] * weight;
                     }
                     total += weight;
                 }
@@ -294,8 +294,8 @@ scale_with_resampling(
             /* normalize */
             if (total > 0.0) {
                 for (i = 0; i < depth; i++) {
-                    index = (h * dstw + w) * depth + i;
-                    dst[index] = normalize(offsets[i], total);
+                    pos = (h * dstw + w) * depth + i;
+                    dst[pos] = normalize(offsets[i], total);
                 }
             }
         }

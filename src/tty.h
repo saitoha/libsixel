@@ -19,48 +19,20 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_CHUNK_H
-#define LIBSIXEL_CHUNK_H
-
-#include <sixel.h>
-
-/* chunk object */
-typedef struct sixel_chunk
-{
-    unsigned char *buffer;
-    size_t size;
-    size_t max_size;
-    sixel_allocator_t *allocator;
-} sixel_chunk_t;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef LIBSIXEL_TTY_H
+#define LIBSIXEL_TTY_H
 
 SIXELSTATUS
-sixel_chunk_new(
-    sixel_chunk_t       /* out */   **ppchunk,
-    char const          /* in */    *filename,
-    int                 /* in */    finsecure,
-    int const           /* in */    *cancel_flag,
-    sixel_allocator_t   /* in */    *allocator);
+sixel_tty_wait_stdin(int usec);
 
+SIXELSTATUS
+sixel_tty_scroll(
+    sixel_write_function f_write,
+    int outfd,
+    int height,
+    int is_animation);
 
-void
-sixel_chunk_destroy(
-    sixel_chunk_t * const /* in */ pchunk);
-
-
-#if HAVE_TESTS
-int
-sixel_chunk_tests_main(void);
-#endif
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* LIBSIXEL_CHUNK_H */
+#endif /* LIBSIXEL_TTY_H */
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
