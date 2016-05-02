@@ -39,6 +39,8 @@ libsixel_la_SOURCES = \
 		stb_image_write.h \
 		status.c \
 		status.h \
+		malloc_stub.c \
+		malloc_stub.h \
 		allocator.c \
 		allocator.h \
 		tty.c \

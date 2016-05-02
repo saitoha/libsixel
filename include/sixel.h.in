@@ -532,7 +532,7 @@ sixel_allocator_free(
     sixel_allocator_t   /* in */ *allocator,  /* allocator object */
     void                /* in */ *p);         /* existing buffer to be freed */
 
-#if HAVE_TESTS
+#ifdef HAVE_TESTS
 extern volatile int sixel_debug_malloc_counter;
 
 void *
@@ -817,7 +817,7 @@ sixel_helper_format_error(
 );
 
 /* compute pixel depth from pixelformat */
-SIXELAPI SIXELSTATUS
+SIXELAPI int
 sixel_helper_compute_depth(
     int /* in */ pixelformat /* one of enum pixelFormat */
 );

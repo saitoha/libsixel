@@ -14,3 +14,5 @@ endif
 
 EXTRA_DIST = \
     setup.py
+
+check: check-am
