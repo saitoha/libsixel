@@ -36,6 +36,10 @@
 
 #include "frame.h"
 
+#if !defined(HAVE_MEMMOVE)
+# define memmove(d, s, n) (bcopy ((s), (d), (n)))
+#endif
+
 /* constructor of frame object */
 SIXELAPI SIXELSTATUS
 sixel_frame_new(
@@ -249,7 +253,7 @@ sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame)  /* frame object */
 }
 
 
-/* strip alpha from RGBA/ARGB formatted pixbuf */
+/* strip alpha from RGBA/ARGB/BGRA/ABGR formatted pixbuf */
 SIXELAPI SIXELSTATUS
 sixel_frame_strip_alpha(
     sixel_frame_t  /* in */ *frame,
@@ -257,8 +261,7 @@ sixel_frame_strip_alpha(
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int x;
-    int y;
+    int i;
     unsigned char *src;
     unsigned char *dst;
     unsigned char alpha;
@@ -267,34 +270,92 @@ sixel_frame_strip_alpha(
 
     src = dst = frame->pixels;
 
-    switch (frame->pixelformat) {
-    case SIXEL_PIXELFORMAT_RGBA8888:
-    case SIXEL_PIXELFORMAT_ARGB8888:
-        for (y = 0; y < frame->height; y++) {
-            for (x = 0; x < frame->width; x++) {
-                if (bgcolor) {
-                    alpha = src[3];
-                    *dst++ = (*src++ * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
-                    *dst++ = (*src++ * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
-                    *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
-                    src++;
-                } else if (frame->pixelformat == SIXEL_PIXELFORMAT_ARGB8888){
-                    src++;            /* A */
-                    *dst++ = *src++;  /* R */
-                    *dst++ = *src++;  /* G */
-                    *dst++ = *src++;  /* B */
-                } else if (frame->pixelformat == SIXEL_PIXELFORMAT_RGBA8888){
-                    *dst++ = *src++;  /* R */
-                    *dst++ = *src++;  /* G */
-                    *dst++ = *src++;  /* B */
-                    src++;            /* A */
-                }
+    if (bgcolor) {
+        switch (frame->pixelformat) {
+        case SIXEL_PIXELFORMAT_ARGB8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                alpha = src[0];
+                *dst++ = (*src++ * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+                *dst++ = (*src++ * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+                *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+                src++;
             }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_RGBA8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                alpha = src[3];
+                *dst++ = (*src++ * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+                *dst++ = (*src++ * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+                *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+                src++;
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_ABGR8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                alpha = src[0];
+                *dst++ = (src[3] * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+                *dst++ = (src[2] * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+                *dst++ = (src[1] * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+                src += 4;
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_BGRA8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                alpha = src[3];
+                *dst++ = (src[2] * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+                *dst++ = (src[1] * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+                *dst++ = (src[0] * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+                src += 4;
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        default:
+            break;
         }
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        break;
-    default:
-        break;
+    } else {
+        switch (frame->pixelformat) {
+        case SIXEL_PIXELFORMAT_ARGB8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                src++;            /* A */
+                *dst++ = *src++;  /* R */
+                *dst++ = *src++;  /* G */
+                *dst++ = *src++;  /* B */
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_RGBA8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                *dst++ = *src++;  /* R */
+                *dst++ = *src++;  /* G */
+                *dst++ = *src++;  /* B */
+                src++;            /* A */
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_ABGR8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                *dst++ = src[3];  /* R */
+                *dst++ = src[2];  /* G */
+                *dst++ = src[1];  /* B */
+                src += 4;
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_BGRA8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                *dst++ = src[2];  /* R */
+                *dst++ = src[1];  /* G */
+                *dst++ = src[0];  /* B */
+                src += 4;
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        default:
+            break;
+        }
     }
 
     status = SIXEL_OK;
@@ -310,7 +371,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *normalized_pixels = NULL;
-    int size;
+    size_t size;
     unsigned char *dst;
     unsigned char *src;
     unsigned char *p;
@@ -321,7 +382,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
-        size = frame->width * frame->height * 4;
+        size = (size_t)(frame->width * frame->height * 4);
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
@@ -351,7 +412,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
         frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     case SIXEL_PIXELFORMAT_PAL8:
-        size = frame->width * frame->height * 3;
+        size = (size_t)(frame->width * frame->height * 3);
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
@@ -382,7 +443,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     case SIXEL_PIXELFORMAT_RGBA8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
         /* normalize pixelformat */
-        size = frame->width * frame->height * 3;
+        size = (size_t)(frame->width * frame->height * 3);
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
@@ -429,7 +490,7 @@ sixel_frame_resize(
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int size;
+    size_t size;
     unsigned char *scaled_frame = NULL;
 
     sixel_frame_ref(frame);
@@ -439,7 +500,7 @@ sixel_frame_resize(
         goto end;
     }
 
-    size = width * height * 3;
+    size = (size_t)(width * height * 3);
     scaled_frame = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
     if (scaled_frame == NULL) {
         sixel_helper_set_additional_message(
@@ -517,7 +578,7 @@ clip(unsigned char *pixels,
         dst = pixels;
         src = pixels + cy * sx * depth + cx * depth;
         for (y = 0; y < ch; y++) {
-            memmove(dst, src, cw * depth);
+            memmove(dst, src, (size_t)(cw * depth));
             dst += (cw * depth);
             src += (sx * depth);
         }
@@ -565,7 +626,7 @@ sixel_frame_clip(
     case SIXEL_PIXELFORMAT_G2:
     case SIXEL_PIXELFORMAT_G4:
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator,
-                                                                    frame->width * frame->height);
+                                                                    (size_t)(frame->width * frame->height));
         status = sixel_helper_normalize_pixelformat(normalized_pixels,
                                                     &frame->pixelformat,
                                                     frame->pixels,

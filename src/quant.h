@@ -33,11 +33,11 @@ SIXELSTATUS
 sixel_quant_make_palette(
     unsigned char           /* out */ **result,
     unsigned const char     /* in */  *data,             /* data for sampling */
-    int                     /* in */  length,            /* data size */
-    int                     /* in */  depth,
-    int                     /* in */  reqcolors,
-    int                     /* in */  *ncolors,
-    int                     /* in */  *origcolors,
+    unsigned int            /* in */  length,            /* data size */
+    int                     /* in */  pixelformat,
+    unsigned int            /* in */  reqcolors,
+    unsigned int            /* in */  *ncolors,
+    unsigned int            /* in */  *origcolors,
     int                     /* in */  methodForLargest,
     int                     /* in */  methodForRep,
     int                     /* in */  qualityMode,
@@ -51,7 +51,7 @@ sixel_quant_apply_palette(
     unsigned char       /* in */  *data,
     int                 /* in */  width,
     int                 /* in */  height,
-    int                 /* in */  depth,
+    int                 /* in */  pixelformat,
     unsigned char       /* in */  *palette,
     int                 /* in */  reqcolor,
     int const           /* in */  methodForDiffuse,

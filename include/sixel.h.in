@@ -124,6 +124,8 @@ typedef int SIXELSTATUS;
 #define SIXEL_PIXELFORMAT_BGR888   (SIXEL_FORMATTYPE_COLOR     | 0x06) /* 24bpp */
 #define SIXEL_PIXELFORMAT_ARGB8888 (SIXEL_FORMATTYPE_COLOR     | 0x10) /* 32bpp */
 #define SIXEL_PIXELFORMAT_RGBA8888 (SIXEL_FORMATTYPE_COLOR     | 0x11) /* 32bpp */
+#define SIXEL_PIXELFORMAT_ABGR8888 (SIXEL_FORMATTYPE_COLOR     | 0x12) /* 32bpp */
+#define SIXEL_PIXELFORMAT_BGRA8888 (SIXEL_FORMATTYPE_COLOR     | 0x13) /* 32bpp */
 #define SIXEL_PIXELFORMAT_G1       (SIXEL_FORMATTYPE_GRAYSCALE | 0x00) /* 1bpp grayscale */
 #define SIXEL_PIXELFORMAT_G2       (SIXEL_FORMATTYPE_GRAYSCALE | 0x01) /* 2bpp grayscale */
 #define SIXEL_PIXELFORMAT_G4       (SIXEL_FORMATTYPE_GRAYSCALE | 0x02) /* 4bpp grayscale */
@@ -530,7 +532,7 @@ sixel_allocator_free(
     sixel_allocator_t   /* in */ *allocator,  /* allocator object */
     void                /* in */ *p);         /* existing buffer to be freed */
 
-#if HAVE_TESTS
+#ifdef HAVE_TESTS
 extern volatile int sixel_debug_malloc_counter;
 
 void *
@@ -815,7 +817,7 @@ sixel_helper_format_error(
 );
 
 /* compute pixel depth from pixelformat */
-SIXELAPI SIXELSTATUS
+SIXELAPI int
 sixel_helper_compute_depth(
     int /* in */ pixelformat /* one of enum pixelFormat */
 );
@@ -1063,6 +1065,17 @@ SIXELAPI SIXELSTATUS
 sixel_encoder_encode(
     sixel_encoder_t /* in */ *encoder,
     char const      /* in */ *filename);
+
+/* encode specified pixel data to SIXEL format */
+SIXELAPI SIXELSTATUS
+sixel_encoder_encode_bytes(
+    sixel_encoder_t     /* in */    *encoder,
+    unsigned char       /* in */    *bytes,
+    int                 /* in */    width,
+    int                 /* in */    height,
+    int                 /* in */    pixelformat,
+    unsigned char       /* in */    *palette,
+    int                 /* in */    ncolors);
 
 #ifdef __cplusplus
 }

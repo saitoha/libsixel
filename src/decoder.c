@@ -72,7 +72,7 @@ strdup_with_allocator(
 {
     char *p;
 
-    p = (char *)sixel_allocator_malloc(allocator, strlen(s) + 1);
+    p = (char *)sixel_allocator_malloc(allocator, (size_t)(strlen(s) + 1));
     if (p) {
         strcpy(p, s);
     }
@@ -274,7 +274,7 @@ sixel_decoder_decode(
     raw_len = 0;
     max = 64 * 1024;
 
-    raw_data = (unsigned char *)sixel_allocator_malloc(decoder->allocator, max);
+    raw_data = (unsigned char *)sixel_allocator_malloc(decoder->allocator, (size_t)max);
     if (raw_data == NULL) {
         sixel_helper_set_additional_message(
             "sixel_decoder_decode: sixel_allocator_malloc() failed.");
@@ -285,7 +285,7 @@ sixel_decoder_decode(
     for (;;) {
         if ((max - raw_len) < 4096) {
             max *= 2;
-            raw_data = (unsigned char *)sixel_allocator_realloc(decoder->allocator, raw_data, max);
+            raw_data = (unsigned char *)sixel_allocator_realloc(decoder->allocator, raw_data, (size_t)max);
             if (raw_data == NULL) {
                 sixel_helper_set_additional_message(
                     "sixel_decoder_decode: sixel_allocator_realloc() failed.");
@@ -293,7 +293,7 @@ sixel_decoder_decode(
                 goto end;
             }
         }
-        if ((n = fread(raw_data + raw_len, 1, 4096, input_fp)) <= 0) {
+        if ((n = (int)fread(raw_data + raw_len, 1, 4096, input_fp)) <= 0) {
             break;
         }
         raw_len += n;

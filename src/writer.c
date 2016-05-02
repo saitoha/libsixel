@@ -98,7 +98,7 @@ write_png_to_file(
                 "write_png_to_file: no palette is given");
             goto end;
         }
-        new_pixels = sixel_allocator_malloc(allocator, width * height * 4);
+        new_pixels = sixel_allocator_malloc(allocator, (size_t)(width * height * 4));
         if (new_pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             sixel_helper_set_additional_message(
@@ -129,7 +129,7 @@ write_png_to_file(
             goto end;
         }
         src = data;
-        dst = pixels = new_pixels = sixel_allocator_malloc(allocator, width * height * 3);
+        dst = pixels = new_pixels = sixel_allocator_malloc(allocator, (size_t)(width * height * 3));
         if (new_pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             sixel_helper_set_additional_message(
@@ -148,7 +148,7 @@ write_png_to_file(
     case SIXEL_PIXELFORMAT_G8:
         src = data;
         dst = pixels = new_pixels
-            = sixel_allocator_malloc(allocator, width * height * 3);
+            = sixel_allocator_malloc(allocator, (size_t)(width * height * 3));
         if (new_pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             sixel_helper_set_additional_message(
@@ -178,7 +178,9 @@ write_png_to_file(
     case SIXEL_PIXELFORMAT_BGR888:
     case SIXEL_PIXELFORMAT_RGBA8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
-        pixels = new_pixels = sixel_allocator_malloc(allocator, width * height * 3);
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        pixels = new_pixels = sixel_allocator_malloc(allocator, (size_t)(width * height * 3));
         if (new_pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             sixel_helper_set_additional_message(
@@ -220,7 +222,7 @@ write_png_to_file(
     }
 
 #if HAVE_LIBPNG
-    rows = sixel_allocator_malloc(allocator, height * sizeof(unsigned char *));
+    rows = sixel_allocator_malloc(allocator, (size_t)height * sizeof(unsigned char *));
     if (rows == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         sixel_helper_set_additional_message(
@@ -250,7 +252,7 @@ write_png_to_file(
     }
 # endif
     png_init_io(png_ptr, output_fp);
-    png_set_IHDR(png_ptr, info_ptr, width, height,
+    png_set_IHDR(png_ptr, info_ptr, (png_uint_32)width, (png_uint_32)height,
                  /* bit_depth */ 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
                  PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
     png_write_info(png_ptr, info_ptr);
@@ -265,8 +267,8 @@ write_png_to_file(
         sixel_helper_set_additional_message("stbi_write_png_to_mem() failed.");
         goto end;
     }
-    write_len = fwrite(png_data, 1, png_len, output_fp);
-    if (write_len < 0) {
+    write_len = (int)fwrite(png_data, 1, (size_t)png_len, output_fp);
+    if (write_len <= 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message("fwrite() failed.");
         goto end;
