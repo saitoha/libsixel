@@ -1,5 +1,5 @@
-OpenGL Example
-==============
+Drawing Example
+===============
 
 This example suggests how to implement the interaction among SIXEL terminals and pointer devices.
 
