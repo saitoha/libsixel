@@ -20,7 +20,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-from ctypes import cdll, c_void_p, c_int, c_char_p, POINTER, byref
+from ctypes import cdll, c_void_p, c_int, c_byte, c_char_p, POINTER, byref
 from ctypes.util import find_library
 
 SIXEL_OK              = 0x0000
@@ -343,14 +343,24 @@ SIXEL_OPTFLAG_HELP             = 'H'  # -H, --help: show this help
 if not find_library('sixel'):
     raise ImportError("libsixel not found.")
 
+# load shared library
 _sixel = cdll.LoadLibrary(find_library('sixel'))
 
+# convert error status code int formatted string
 def sixel_helper_format_error(status):
     _sixel.sixel_helper_format_error.restype = c_char_p;
     _sixel.sixel_helper_format_error.argtypes = [c_int];
     return _sixel.sixel_helper_format_error(status)
 
 
+# compute pixel depth from pixelformat
+def sixel_helper_compute_depth(pixelformat):
+    _sixel.sixel_helper_compute_depth.restype = c_int
+    _sixel.sixel_encoder_encode.argtypes = [c_int]
+    return _sixel.sixel_helper_compute_depth(pixelformat)
+
+
+# create encoder object
 def sixel_encoder_new(allocator=c_void_p(None)):
     _sixel.sixel_encoder_new.restype = c_int
     _sixel.sixel_encoder_new.argtypes = [POINTER(c_void_p), c_void_p]
@@ -362,18 +372,21 @@ def sixel_encoder_new(allocator=c_void_p(None)):
     return encoder
 
 
+# increase reference count of encoder object (thread-unsafe)
 def sixel_encoder_ref(encoder):
     _sixel.sixel_encoder_ref.restype = None
     _sixel.sixel_encoder_ref.argtypes = [c_void_p]
     _sixel.sixel_encoder_ref(encoder)
 
 
+# decrease reference count of encoder object (thread-unsafe)
 def sixel_encoder_unref(encoder):
     _sixel.sixel_encoder_unref.restype = None
     _sixel.sixel_encoder_unref.argtypes = [c_void_p]
     _sixel.sixel_encoder_unref(encoder)
 
 
+# set an option flag to encoder object
 def sixel_encoder_setopt(encoder, flag, arg=None):
     _sixel.sixel_encoder_setopt.restype = c_int
     _sixel.sixel_encoder_setopt.argtypes = [c_void_p, c_int, c_char_p]
@@ -386,6 +399,7 @@ def sixel_encoder_setopt(encoder, flag, arg=None):
         raise RuntimeError(message)
 
 
+# load source data from specified file and encode it to SIXEL format
 def sixel_encoder_encode(encoder, filename):
     import locale
     language, encoding = locale.getdefaultlocale()
@@ -398,6 +412,39 @@ def sixel_encoder_encode(encoder, filename):
         raise RuntimeError(message)
 
 
+# encode specified pixel data to SIXEL format
+def sixel_encoder_encode_bytes(encoder, buf, width, height, pixelformat, palette):
+
+    depth = sixel_helper_compute_depth(pixelformat)
+
+    if depth <= 0:
+        raise ValueError("invalid pixelformat value : %d" % pixelformat)
+
+    if len(buf) < width * height * depth:
+        raise ValueError("buf.len is too short : %d < %d * %d * %d" % (buf.len, width, height, depth))
+
+    if not hasattr(buf, "readonly") or buf.readonly:
+        cbuf = c_void_p.from_buffer_copy(buf)
+    else:
+        cbuf = c_void_p.from_buffer(buf)
+
+    if palette:
+        cpalettelen = len(palette)
+        cpalette = (c_byte * cpalettelen)(*palette)
+    else:
+        cpalettelen = None
+        cpalette = None
+
+    _sixel.sixel_encoder_encode_bytes.restype = c_int
+    _sixel.sixel_encoder_encode.argtypes = [c_void_p, c_void_p, c_int, c_int, c_int, c_void_p, c_int]
+
+    status = _sixel.sixel_encoder_encode_bytes(encoder, buf, width, height, pixelformat, cpalette, cpalettelen)
+    if SIXEL_FAILED(status):
+        message = sixel_helper_format_error(status)
+        raise RuntimeError(message)
+
+
+# create decoder object
 def sixel_decoder_new(allocator=c_void_p(None)):
     _sixel.sixel_decoder_new.restype = c_int
     _sixel.sixel_decoder_new.argtypes = [POINTER(c_void_p), c_void_p]
@@ -409,18 +456,21 @@ def sixel_decoder_new(allocator=c_void_p(None)):
     return decoder
 
 
+# increase reference count of decoder object (thread-unsafe)
 def sixel_decoder_ref(decoder):
     _sixel.sixel_decoder_ref.restype = None
     _sixel.sixel_decoder_ref.argtypes = [c_void_p]
     _sixel.sixel_decoder_ref(decoder)
 
 
+# decrease reference count of decoder object (thread-unsafe)
 def sixel_decoder_unref(decoder):
     _sixel.sixel_decoder_unref.restype = None
     _sixel.sixel_decoder_unref.argtypes = [c_void_p]
     _sixel.sixel_decoder_unref(decoder)
 
 
+# set an option flag to decoder object
 def sixel_decoder_setopt(decoder, flag, arg=None):
     _sixel.sixel_decoder_setopt.restype = c_int
     _sixel.sixel_decoder_setopt.argtypes = [c_void_p, c_int, c_char_p]
@@ -433,6 +483,7 @@ def sixel_decoder_setopt(decoder, flag, arg=None):
         raise RuntimeError(message)
 
 
+# load source data from stdin or the file
 def sixel_decoder_decode(decoder, infile=None):
     _sixel.sixel_decoder_decode.restype = c_int
     _sixel.sixel_decoder_decode.argtypes = [c_void_p]
