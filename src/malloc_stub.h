@@ -19,48 +19,27 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
+#ifndef MALLOC_STUB_H
+#define MALLOC_STUB_H
 
-#if !defined(HAVE_MEMCPY)
-# define memcpy(d, s, n) (bcopy ((s), (d), (n)))
-#endif
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif  /* HAVE_SYS_TYPES_H */
 
-#if !defined(HAVE_MEMMOVE)
-# define memmove(d, s, n) (bcopy ((s), (d), (n)))
-#endif
+#if !HAVE_MALLOC
+void * rpl_malloc(size_t n);
+#endif /* !HAVE_MALLOC */
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
+#if !HAVE_REALLOC
+void * rpl_realloc(void *p, size_t n);
+#endif /* !HAVE_REALLOC */
 
-#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wsign-conversion"
-#endif
-#if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wstrict-overflow"
-#endif
-#if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wswitch-default"
-#endif
-#if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdouble-promotion"
-#endif
-#include "stb_image_write.h"
-#if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
-# pragma GCC diagnostic pop
-#endif
-#if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
-# pragma GCC diagnostic pop
-#endif
-#if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
-# pragma GCC diagnostic pop
-#endif
-#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
-# pragma GCC diagnostic pop
+#if 0
+int rpl_posix_memalign(void **memptr, size_t alignment, size_t size);
 #endif
 
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
+#endif /* MALLOC_STUB_H */
+
+/* Hello emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */
 /* EOF */
