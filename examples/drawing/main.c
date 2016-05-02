@@ -7,6 +7,64 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/select.h>
+#include <sys/ioctl.h>
+
+static int
+wait_stdin(int usec)
+{
+    fd_set rfds;
+    struct timeval tv;
+    int ret = 0;
+
+    tv.tv_sec = usec / 1000000;
+    tv.tv_usec = usec % 1000000;
+    FD_ZERO(&rfds);
+    FD_SET(STDIN_FILENO, &rfds);
+    ret = select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
+
+    return ret;
+}
+
+static int
+scroll_on_demand(int pixelheight)
+{
+    struct winsize size = {0, 0, 0, 0};
+    struct termios old_termios;
+    struct termios new_termios;
+    int row = 0;
+    int col = 0;
+    int cellheight;
+    int scroll;
+
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
+    if (size.ws_ypixel <= 0) {
+        printf("\033[H\0337");
+        return 0;
+    }
+    /* set the terminal to cbreak mode */
+    tcgetattr(STDIN_FILENO, &old_termios);
+    memcpy(&new_termios, &old_termios, sizeof(old_termios));
+    new_termios.c_lflag &= ~(ECHO | ICANON);
+    new_termios.c_cc[VMIN] = 1;
+    new_termios.c_cc[VTIME] = 0;
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
+
+    /* request cursor position report */
+    printf("\033[6n");
+    if (wait_stdin(1000 * 1000) != (-1)) { /* wait 1 sec */
+        if (scanf("\033[%d;%dR", &row, &col) == 2) {
+            cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
+            scroll = cellheight + row - size.ws_row;
+            printf("\033[%dS\033[%dA", scroll, scroll);
+            printf("\0337");
+        } else {
+            printf("\033[H\0337");
+        }
+    }
+
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
+    return size.ws_ypixel / size.ws_row * (row - (scroll < 0 ? 0: scroll) - 1);
+}
 
 static int sixel_write(char *data, int size, void *priv)
 {
@@ -37,8 +95,10 @@ int main(int argc, char **argv)
     int params_idx = 0;
     int ibytes;
     int state;
+    int offset;
 
-    printf("\033[?8452h" "\033[?1070l" "\033[1;1'z");
+    printf("\033[?8452h" "\033[1;1'z");
+    offset = scroll_on_demand(height);
 
     buf = calloc(1, width * height);
 
@@ -52,7 +112,7 @@ int main(int argc, char **argv)
     new_termios.c_cc[VMIN] = 1;
     new_termios.c_cc[VTIME] = 0;
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
-    printf("\033[?25l\033[H");
+    printf("\033[?25l\0338");
     enum {
         STATE_GROUND            = 0,
         STATE_ESC               = 1,
@@ -76,14 +136,9 @@ int main(int argc, char **argv)
     }
 
     for (state = STATE_GROUND;;) {
-
         printf("\033['|");
-       	fflush(stdout);
-        tv.tv_sec = 0;
-        tv.tv_usec = 10000;
-        FD_ZERO(&rfds);
-        FD_SET(STDIN_FILENO, &rfds);
-        if (select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv) < 0)
+        fflush(stdout);
+        if (wait_stdin(10000) < 0)
             goto end;
         n = read(STDIN_FILENO, ibuf, sizeof(ibuf));
         for (p = ibuf; p < ibuf + n; ++p) {
@@ -91,11 +146,7 @@ int main(int argc, char **argv)
             case STATE_GROUND:
                 switch (*p) {
                 case 0x03:  /*  */
-                    tv.tv_sec = 0;
-                    tv.tv_usec = 10000;
-                    FD_ZERO(&rfds);
-                    FD_SET(STDIN_FILENO, &rfds);
-                    if (select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv) > 0)
+                    if (wait_stdin(10000) >= 0)
                         n = read(STDIN_FILENO, ibuf, sizeof(ibuf));
                     goto end;
                     break;
@@ -160,7 +211,7 @@ int main(int argc, char **argv)
             case STATE_CSI_PARAMETER:
                 /*
                  * parse control sequence
-                 * 
+                 *
                  * CSI P ... P I ... I F
                  *     ^
                  */
@@ -234,9 +285,9 @@ int main(int argc, char **argv)
                     ibytes = ibytes << 8 | *p;
                     state = STATE_GROUND;
                     if (ibytes == ('&' << 8 | 'w') && params_idx >= 4) {
-                        y1 = params[2];			     
-                        x1 = params[3];			     
-                        if ((x0 != x1 || y0 != y1) && x1 < width && y1 < height) {
+                        y1 = params[2] - offset;
+                        x1 = params[3];
+                        if ((x0 != x1 || y0 != y1) && x1 >= 0 && y1 >= 0 && x1 < width && y1 < height) {
                             if (x0 > 0 && y0 > 0 && params[1] == 4) {
                                 int dx = x0 > x1 ? x0 - x1 : x1 - x0;
                                 int dy = y0 > y1 ? y0 - y1 : y1 - y0;
@@ -244,7 +295,7 @@ int main(int argc, char **argv)
                                 int sy = y0 < y1 ? 1 : -1;
                                 int err = dx - dy;
                                 int e2;
-                                
+
                                 while (1) {
                                     buf[width * y0 + x0] = 0xff;
                                     if (x0 == x1 && y0 == y1)
@@ -259,7 +310,7 @@ int main(int argc, char **argv)
                                         y0 += sy;
                                     }
                                 }
-                                printf("\033[H");
+                                printf("\0338");
                                 status = sixel_encode(buf, width, height, 0, dither, output);
                                 if (SIXEL_FAILED(status)) {
                                     goto end;
@@ -268,7 +319,7 @@ int main(int argc, char **argv)
                             }
                             x0 = x1;
                             y0 = y1;
-                        } 
+                        }
                     }
                     break;
                 default:
@@ -340,7 +391,7 @@ int main(int argc, char **argv)
         }
     }
 end:
-    printf("\033[?25h\033c");
+    printf("\033[?25h");
     fflush(stdout);
     tcsetattr(STDIN_FILENO, TCSADRAIN, &old_termios);
 
