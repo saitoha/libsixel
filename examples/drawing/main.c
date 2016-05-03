@@ -1,3 +1,13 @@
+/**
+ * Example program for DEC Locator Mode integration
+ *
+ * Hayaki Saito <saitoha@me.com>
+ *
+ * I declared this program is in Public Domain (CC0 - "No Rights Reserved"),
+ * This file is offered AS-IS, without any warranty.
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -7,28 +17,70 @@
 #include <sys/ioctl.h>
 #include <sixel.h>
 
+struct canvas {
+    int width;
+    int height;
+    unsigned char *buf;
+    int x0;
+    int y0;
+    int x1;
+    int y1;
+};
+
+static int
+canvas_init(struct canvas *c, int width, int height)
+{
+    c->width = width;
+    c->height = height;
+    c->x1 = (-1);
+    c->y1 = (-1);
+    c->x0 = (-1);
+    c->y0 = (-1);
+    c->buf = calloc(1, width * height);
+
+    return 0;
+}
+
+
+static void
+canvas_deinit(struct canvas *c)
+{
+    free(c->buf);
+}
+
+
+static void
+canvas_point(struct canvas *c, int x, int y)
+{
+    c->x1 = x;
+    c->y1 = y;
+}
+
+
+static void
+canvas_sync(struct canvas *c)
+{
+    c->x0 = c->x1;
+    c->y0 = c->y1;
+}
+
 static int
 wait_stdin(int usec)
 {
     fd_set rfds;
     struct timeval tv;
-    int ret = 0;
 
     tv.tv_sec = usec / 1000000;
     tv.tv_usec = usec % 1000000;
     FD_ZERO(&rfds);
     FD_SET(STDIN_FILENO, &rfds);
-    ret = select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
-
-    return ret;
+    return select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
 }
 
 static int
 scroll_on_demand(int pixelheight)
 {
     struct winsize size = {0, 0, 0, 0};
-    struct termios old_termios;
-    struct termios new_termios;
     int row = 0;
     int col = 0;
     int cellheight;
@@ -39,29 +91,52 @@ scroll_on_demand(int pixelheight)
         printf("\033[H\0337");
         return 0;
     }
-    /* set the terminal to cbreak mode */
-    tcgetattr(STDIN_FILENO, &old_termios);
-    memcpy(&new_termios, &old_termios, sizeof(old_termios));
-    new_termios.c_lflag &= ~(ECHO | ICANON);
-    new_termios.c_cc[VMIN] = 1;
-    new_termios.c_cc[VTIME] = 0;
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
-
     /* request cursor position report */
     printf("\033[6n");
-    if (wait_stdin(1000 * 1000) != (-1)) { /* wait 1 sec */
-        if (scanf("\033[%d;%dR", &row, &col) == 2) {
-            cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
-            scroll = cellheight + row - size.ws_row;
-            printf("\033[%dS\033[%dA", scroll, scroll);
-            printf("\0337");
-        } else {
-            printf("\033[H\0337");
-        }
-    }
+    if (wait_stdin(1000 * 1000) < 0)  /* wait 1 sec */
+        goto err;
+    if (scanf("\033[%d;%dR", &row, &col) != 2)
+        goto err;
+    cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
+    scroll = cellheight + row - size.ws_row;
+    printf("\033[%dS\033[%dA", scroll, scroll);
+    printf("\0337");
 
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
     return size.ws_ypixel / size.ws_row * (row - (scroll < 0 ? 0: scroll) - 1);
+
+err:
+    printf("\033[H\0337");
+    return 0;
+}
+
+static int tty_raw(struct termios *old_termios)
+{
+    struct termios new_termios;
+    int ret;
+
+    ret = tcgetattr(STDIN_FILENO, old_termios);
+    if (ret < 0)
+        return ret;
+    memcpy(&new_termios, old_termios, sizeof(*old_termios));
+    new_termios.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+    new_termios.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
+    new_termios.c_cflag &= ~(CSIZE | PARENB);
+    new_termios.c_cflag |= CS8;
+    new_termios.c_oflag &= ~(OPOST);
+    new_termios.c_cc[VMIN] = 1;
+    new_termios.c_cc[VTIME] = 0;
+    ret = tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
+    if (ret < 0)
+        return ret;
+
+    printf("\033[?25l\0338");
+
+    return 0;
+}
+
+static void tty_restore(struct termios *old_termios)
+{
+    (void) tcsetattr(STDIN_FILENO, TCSADRAIN, old_termios);
 }
 
 static int sixel_write(char *data, int size, void *priv)
@@ -69,22 +144,80 @@ static int sixel_write(char *data, int size, void *priv)
     return fwrite(data, 1, size, (FILE *)priv);
 }
 
+static int draw_line(struct canvas const *c)
+{
+    int dx;
+    int dy;
+    int sx;
+    int sy;
+    int err;
+    int err2;
+    int x0;
+    int y0;
+    int x1;
+    int y1;
+
+    if (c->x0 < 0 || c->y0 < 0 || c->x0 >= c->width || c->y0 >= c->height)
+        return 1;
+
+    x0 = c->x0;
+    y0 = c->y0;
+    x1 = c->x1;
+    y1 = c->y1;
+
+    if (x1 < 0)
+        x1 = 0;
+    if (y1 < 0)
+        y1 = 0;
+    if (x1 >= c->width)
+        x1 = c->width - 1;
+    if (y1 >= c->height)
+        y1 = c->height - 1;
+    if (x0 == x1 && y0 == y1)
+        return 1;
+
+    dx = x0 > x1 ? x0 - x1 : x1 - x0;
+    dy = y0 > y1 ? y0 - y1 : y1 - y0;
+    sx = x0 < x1 ? 1 : -1;
+    sy = y0 < y1 ? 1 : -1;
+    err = dx - dy;
+
+    for (;;) {
+        c->buf[c->width * y0 + x0] = 0xff;
+        if (x0 == x1 && y0 == y1)
+            break;
+        err2 = 2 * err;
+        if (err2 > - dy) {
+            err -= dy;
+            x0 += sx;
+        }
+        if (err2 < dx) {
+            err += dx;
+            y0 += sy;
+        }
+    }
+
+    return 0;
+}
+
+enum {
+    STATE_GROUND            = 0,
+    STATE_ESC               = 1,
+    STATE_ESC_INTERMEDIATE  = 2,
+    STATE_CSI_PARAMETER     = 3,
+    STATE_CSI_INTERMEDIATE  = 4,
+    STATE_SS                = 5,
+    STATE_OSC               = 6,
+    STATE_STR               = 7
+};
+
 int main(int argc, char **argv)
 {
-    int width = 640;
-    int height = 480;
-    unsigned char *buf;
     SIXELSTATUS status = SIXEL_FALSE;
+    struct canvas c;
     sixel_output_t *output = NULL;
     sixel_dither_t *dither = NULL;
     struct termios old_termios;
-    struct termios new_termios;
-    int x1 = 1000;
-    int y1 = 1000;
-    int x0 = (-1);
-    int y0 = (-1);
-    fd_set rfds;
-    struct timeval tv;
     unsigned char ibuf[256];
     unsigned char *p;
     int n;
@@ -96,42 +229,22 @@ int main(int argc, char **argv)
     int offset;
 
     printf("\033[?8452h" "\033[1;1'z");
-    offset = scroll_on_demand(height);
+    (void) tty_raw(&old_termios);
 
-    buf = calloc(1, width * height);
+    if (canvas_init(&c, 640, 480) != 0)
+        return (-1);
 
-    tcgetattr(STDIN_FILENO, &old_termios);
-    memcpy(&new_termios, &old_termios, sizeof(old_termios));
-    new_termios.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-    new_termios.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
-    new_termios.c_cflag &= ~(CSIZE | PARENB);
-    new_termios.c_cflag |= CS8;
-    new_termios.c_oflag &= ~(OPOST);
-    new_termios.c_cc[VMIN] = 1;
-    new_termios.c_cc[VTIME] = 0;
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
-    printf("\033[?25l\0338");
-    enum {
-        STATE_GROUND            = 0,
-        STATE_ESC               = 1,
-        STATE_ESC_INTERMEDIATE  = 2,
-        STATE_CSI_PARAMETER     = 3,
-        STATE_CSI_INTERMEDIATE  = 4,
-        STATE_SS                = 5,
-        STATE_OSC               = 6,
-        STATE_STR               = 7
-    };
+    offset = scroll_on_demand(c.height);
 
     status = sixel_output_new(&output, sixel_write, stdout, NULL);
-    if (SIXEL_FAILED(status)) {
+    if (SIXEL_FAILED(status))
         goto end;
-    }
+
     dither = sixel_dither_get(SIXEL_BUILTIN_G8);
     sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_G8);
-    status = sixel_encode(buf, width, height, 0, dither, output);
-    if (SIXEL_FAILED(status)) {
+    status = sixel_encode(c.buf, c.width, c.height, 0, dither, output);
+    if (SIXEL_FAILED(status))
         goto end;
-    }
 
     for (state = STATE_GROUND;;) {
         printf("\033['|");
@@ -283,41 +396,15 @@ int main(int argc, char **argv)
                     ibytes = ibytes << 8 | *p;
                     state = STATE_GROUND;
                     if (ibytes == ('&' << 8 | 'w') && params_idx >= 4) {
-                        y1 = params[2] - offset;
-                        x1 = params[3];
-                        if ((x0 != x1 || y0 != y1) && x1 >= 0 && y1 >= 0 && x1 < width && y1 < height) {
-                            if (x0 > 0 && y0 > 0 && params[1] == 4) {
-                                int dx = x0 > x1 ? x0 - x1 : x1 - x0;
-                                int dy = y0 > y1 ? y0 - y1 : y1 - y0;
-                                int sx = x0 < x1 ? 1 : -1;
-                                int sy = y0 < y1 ? 1 : -1;
-                                int err = dx - dy;
-                                int e2;
-
-                                while (1) {
-                                    buf[width * y0 + x0] = 0xff;
-                                    if (x0 == x1 && y0 == y1)
-                                        break;
-                                    e2 = 2 * err;
-                                    if (e2 > - dy) {
-                                        err -= dy;
-                                        x0 += sx;
-                                    }
-                                    if (e2 < dx) {
-                                        err += dx;
-                                        y0 += sy;
-                                    }
-                                }
-                                printf("\0338");
-                                status = sixel_encode(buf, width, height, 0, dither, output);
-                                if (SIXEL_FAILED(status)) {
-                                    goto end;
-                                }
-
+                        canvas_point(&c, params[3], params[2] - offset);
+                        if (params[1] == 4 && draw_line(&c) == 0) {
+                            printf("\0338");
+                            status = sixel_encode(c.buf, c.width, c.height, 0, dither, output);
+                            if (SIXEL_FAILED(status)) {
+                                goto end;
                             }
-                            x0 = x1;
-                            y0 = y1;
                         }
+                        canvas_sync(&c);
                     }
                     break;
                 default:
@@ -391,9 +478,9 @@ int main(int argc, char **argv)
 end:
     printf("\033[?25h");
     fflush(stdout);
-    tcsetattr(STDIN_FILENO, TCSADRAIN, &old_termios);
+    tty_restore(&old_termios);
 
-    free(buf);
+    canvas_deinit(&c);
 
     printf("\n");
 
