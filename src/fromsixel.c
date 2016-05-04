@@ -210,8 +210,113 @@ typedef struct image_buffer {
     int height;
 } image_buffer_t;
 
+
+SIXELAPI SIXELSTATUS
+image_buffer_init(
+    image_buffer_t     *buffer,
+    int                 width,
+    int                 height,
+    int                 bgindex,
+    sixel_allocator_t  *allocator)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    size_t size;
+
+    size = (size_t)(width * height);
+    buffer->width = width;
+    buffer->height = height;
+    buffer->data = (unsigned char *)sixel_allocator_malloc(allocator, size);
+
+    if (buffer->data == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_deocde_raw: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    memset(buffer->data, bgindex, size);
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+
+SIXELAPI void
+image_buffer_deinit(image_buffer_t *buffer, sixel_allocator_t *allocator)
+{
+    sixel_allocator_free(allocator, buffer->data);
+}
+
+
+SIXELAPI SIXELSTATUS
+image_buffer_resize(
+    image_buffer_t     *buffer,
+    int                 width,
+    int                 height,
+    int                 bgindex,
+    sixel_allocator_t  *allocator)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    size_t size;
+    unsigned char *alt_buffer;
+    int n;
+    int min_height;
+
+    size = (size_t)(width * height);
+    alt_buffer = (unsigned char *)sixel_allocator_malloc(allocator, size);
+    if (alt_buffer == NULL) {
+        /* free source buffer */
+        sixel_allocator_free(allocator, buffer->data);
+        buffer->data = NULL;
+        sixel_helper_set_additional_message(
+            "image_buffer_resize: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    min_height = height > buffer->height ? buffer->height: height;
+    if (width > buffer->width) {  /* if width is extended */
+        for (n = 0; n < min_height; ++n) {
+            /* copy from source buffer */
+            memcpy(alt_buffer + width * n,
+                   buffer->data + buffer->width * n,
+                   (size_t)buffer->width);
+            /* fill extended area with background color */
+            memset(alt_buffer + width * n + buffer->width,
+                   bgindex,
+                   width - buffer->width);
+        }
+    } else {
+        for (n = 0; n < min_height; ++n) {
+            /* copy from source buffer */
+            memcpy(alt_buffer + width * n,
+                   buffer->data + buffer->width * n,
+                   (size_t)width);
+        }
+    }
+
+    if (height > buffer->height) {  /* if height is extended */
+        /* fill extended area with background color */
+        memset(alt_buffer + width * buffer->height,
+               bgindex,
+               (size_t)(width * (height - buffer->height)));
+    }
+
+    /* free source buffer */
+    sixel_allocator_free(allocator, buffer->data);
+
+    buffer->data = alt_buffer;
+    buffer->width = width;
+    buffer->height = height;
+
+    status = SIXEL_OK;
+end:
+    return status;
+}
+
+
 /* convert sixel data into indexed pixel bytes and palette data */
-/* TODO: make "free" function as an argument */
 SIXELAPI SIXELSTATUS
 sixel_decode_raw(
     unsigned char       /* in */  *p,         /* sixel bytes */
@@ -231,6 +336,7 @@ sixel_decode_raw(
     int b;
     int sixel_vertical_mask;
     int c;
+    int y;
     int posision_x;
     int posision_y;
     int max_x;
@@ -242,13 +348,11 @@ sixel_decode_raw(
     int repeat_count;
     int color_index;
     int max_color_index;
-    int background_color_index;
+    int bgindex;
     int param[10];
     int sixel_palet[SIXEL_PALETTE_MAX];
-    unsigned char *dmbuf;
     int dmsx;
     int dmsy;
-    int y;
     image_buffer_t pbuffer;
 
     (void) len;
@@ -269,9 +373,11 @@ sixel_decode_raw(
     repeat_count = 1;
     color_index = 15;
     max_color_index = 2;
-    background_color_index = 0;
+    bgindex = 0;
+    *pixels = NULL;
 
-    if (allocator == NULL) {
+    /* initialize allocator */
+    if (allocator == NULL) {  /* create an allocator */
         status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -280,19 +386,13 @@ sixel_decode_raw(
         sixel_allocator_ref(allocator);
     }
 
-    *pixels = NULL;
-    pbuffer.width = 2048;
-    pbuffer.height = 2048;
-    pbuffer.data = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(pbuffer.width * pbuffer.height));
-
-    if (pbuffer.data == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_deocde_raw: sixel_allocator_malloc() failed.");
-        status = SIXEL_BAD_ALLOCATION;
+    /* buffer initialization */
+    status = image_buffer_init(&pbuffer, 2048, 2048, bgindex, allocator);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
-    memset(pbuffer.data, background_color_index, (size_t)(pbuffer.width * pbuffer.height));
 
+    /* palette initialization */
     for (n = 0; n < 16; n++) {
         sixel_palet[n] = color_table[n];
     }
@@ -403,22 +503,10 @@ sixel_decode_raw(
             if (pbuffer.width < attributed_ph || pbuffer.height < attributed_pv) {
                 dmsx = pbuffer.width > attributed_ph ? pbuffer.width : attributed_ph;
                 dmsy = pbuffer.height > attributed_pv ? pbuffer.height : attributed_pv;
-                dmbuf = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(dmsx * dmsy));
-                if (dmbuf == NULL) {
-                    sixel_allocator_free(allocator, pbuffer.data);
-                    sixel_helper_set_additional_message(
-                        "sixel_deocde_raw: sixel_allocator_malloc() failed.");
-                    status = SIXEL_BAD_ALLOCATION;
+                status = image_buffer_resize(&pbuffer, dmsx, dmsy, bgindex, allocator);
+                if (SIXEL_FAILED(status)) {
                     goto end;
                 }
-                memset(dmbuf, background_color_index, (size_t)(dmsx * dmsy));
-                for (y = 0; y < pbuffer.height; ++y) {
-                    memcpy(dmbuf + dmsx * y, pbuffer.data + pbuffer.width * y, (size_t)pbuffer.width);
-                }
-                sixel_allocator_free(allocator, pbuffer.data);
-                pbuffer.width = dmsx;
-                pbuffer.height = dmsy;
-                pbuffer.data = dmbuf;
             }
 
         } else if (*p == '!') {
@@ -470,29 +558,16 @@ sixel_decode_raw(
 
         } else if (*p >= '?' && *p <= '\177') {
             if (pbuffer.width < (posision_x + repeat_count) || pbuffer.height < (posision_y + 6)) {
-                int nx = pbuffer.width * 2;
-                int ny = pbuffer.height * 2;
-
-                while (nx < (posision_x + repeat_count) || ny < (posision_y + 6)) {
-                    nx *= 2;
-                    ny *= 2;
+                dmsx = pbuffer.width * 2;
+                dmsy = pbuffer.height * 2;
+                while (dmsx < (posision_x + repeat_count) || dmsy < (posision_y + 6)) {
+                    dmsx *= 2;
+                    dmsy *= 2;
                 }
-
-                dmsx = nx;
-                dmsy = ny;
-                dmbuf = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(dmsx * dmsy));
-                if (dmbuf == NULL) {
-                    sixel_allocator_free(allocator, pbuffer.data);
+                status = image_buffer_resize(&pbuffer, dmsx, dmsy, bgindex, allocator);
+                if (SIXEL_FAILED(status)) {
                     goto end;
                 }
-                memset(dmbuf, background_color_index, (size_t)(dmsx * dmsy));
-                for (y = 0; y < pbuffer.height; ++y) {
-                    memcpy(dmbuf + dmsx * y, pbuffer.data + pbuffer.width * y, (size_t)pbuffer.width);
-                }
-                sixel_allocator_free(allocator, pbuffer.data);
-                pbuffer.width = dmsx;
-                pbuffer.height = dmsy;
-                pbuffer.data = dmbuf;
             }
 
             if (color_index > max_color_index) {
@@ -561,23 +636,10 @@ sixel_decode_raw(
     }
 
     if (pbuffer.width > max_x || pbuffer.height > max_y) {
-        dmsx = max_x;
-        dmsy = max_y;
-        dmbuf = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(dmsx * dmsy));
-        if (dmbuf == NULL) {
-            sixel_allocator_free(allocator, pbuffer.data);
-            sixel_helper_set_additional_message(
-                "sixel_deocde_raw: sixel_allocator_malloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
+        status = image_buffer_resize(&pbuffer, max_x, max_y, bgindex, allocator);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
-        for (y = 0; y < dmsy; ++y) {
-            memcpy(dmbuf + dmsx * y, pbuffer.data + pbuffer.width * y, (size_t)dmsx);
-        }
-        free(pbuffer.data);
-        pbuffer.width = dmsx;
-        pbuffer.height = dmsy;
-        pbuffer.data = dmbuf;
     }
 
     *ncolors = max_color_index + 1;
@@ -600,7 +662,6 @@ sixel_decode_raw(
     *pixels = pbuffer.data;
 
     status = SIXEL_OK;
-
 end:
     sixel_allocator_ref(allocator);
     return status;
