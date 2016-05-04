@@ -65,6 +65,8 @@
 
 #define XRGB(r,g,b) RGB(PALVAL(r, 255, 100), PALVAL(g, 255, 100), PALVAL(b, 255, 100))
 
+#define DECSIXEL_PARAMS_MAX 16
+
 static int const color_table[] = {
     XRGB(0,  0,  0),   /*  0 Black    */
     XRGB(20, 20, 80),  /*  1 Blue     */
@@ -90,6 +92,24 @@ typedef struct image_buffer {
     int width;
     int height;
 } image_buffer_t;
+
+
+typedef struct parser_context {
+    int posision_x;
+    int posision_y;
+    int max_x;
+    int max_y;
+    int attributed_pan;
+    int attributed_pad;
+    int attributed_ph;
+    int attributed_pv;
+    int repeat_count;
+    int color_index;
+    int max_color_index;
+    int bgindex;
+    int params[DECSIXEL_PARAMS_MAX];
+    int palette[SIXEL_PALETTE_MAX];
+} parser_context_t;
 
 
 /*
@@ -178,7 +198,7 @@ hls2rgb(int hue, int lum, int sat)
 
 
 static unsigned char *
-sixel_getparams(unsigned char *p, int *param, int *len)
+sixel_getparams(unsigned char *p, int *params, int *len)
 {
     int n;
 
@@ -191,8 +211,8 @@ sixel_getparams(unsigned char *p, int *param, int *len)
             for (n = 0; isdigit(*p); p++) {
                 n = n * 10 + (*p - '0');
             }
-            if (*len < 10) {
-                param[(*len)++] = n;
+            if (*len < DECSIXEL_PARAMS_MAX) {
+                params[(*len)++] = n;
             }
             while (*p == ' ' || *p == '\t') {
                 p++;
@@ -201,13 +221,14 @@ sixel_getparams(unsigned char *p, int *param, int *len)
                 p++;
             }
         } else if (*p == ';') {
-            if (*len < 10) {
-                param[(*len)++] = 0;
+            if (*len < DECSIXEL_PARAMS_MAX) {
+                params[(*len)++] = 0;
             }
             p++;
         } else
             break;
     }
+
     return p;
 }
 
@@ -311,6 +332,57 @@ end:
 }
 
 
+static SIXELSTATUS
+parser_context_init(parser_context_t *state)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    int i;
+    int n;
+    int r;
+    int g;
+    int b;
+
+    state->posision_x = 0;
+    state->posision_y = 0;
+    state->max_x = 0;
+    state->max_y = 0;
+    state->attributed_pan = 2;
+    state->attributed_pad = 1;
+    state->attributed_ph = 0;
+    state->attributed_pv = 0;
+    state->repeat_count = 1;
+    state->color_index = 15;
+    state->max_color_index = 2;
+    state->bgindex = 0;
+
+    /* palette initialization */
+    for (n = 0; n < 16; n++) {
+        state->palette[n] = color_table[n];
+    }
+
+    /* colors 16-231 are a 6x6x6 color cube */
+    for (r = 0; r < 6; r++) {
+        for (g = 0; g < 6; g++) {
+            for (b = 0; b < 6; b++) {
+                state->palette[n++] = RGB(r * 51, g * 51, b * 51);
+            }
+        }
+    }
+    /* colors 232-255 are a grayscale ramp, intentionally leaving out */
+    for (i = 0; i < 24; i++) {
+        state->palette[n++] = RGB(i * 11, i * 11, i * 11);
+    }
+
+    for (; n < SIXEL_PALETTE_MAX; n++) {
+        state->palette[n] = RGB(255, 255, 255);
+    }
+
+    status = SIXEL_OK;
+
+    return status;
+}
+
+
 /* convert sixel data into indexed pixel bytes and palette data */
 SIXELAPI SIXELSTATUS
 sixel_decode_raw(
@@ -326,50 +398,59 @@ sixel_decode_raw(
     SIXELSTATUS status = SIXEL_FALSE;
     int n;
     int i;
-    int r;
-    int g;
-    int b;
-    int sixel_vertical_mask;
-    int c;
     int y;
-    int posision_x;
-    int posision_y;
-    int max_x;
-    int max_y;
-    int attributed_pan;
-    int attributed_pad;
-    int attributed_ph;
-    int attributed_pv;
-    int repeat_count;
-    int color_index;
-    int max_color_index;
-    int bgindex;
-    int param[10];
-    int sixel_palet[SIXEL_PALETTE_MAX];
+    int bits;
+    int sixel_vertical_mask;
     int sx;
     int sy;
+    int c;
+
     image_buffer_t pbuffer;
+    parser_context_t state;
 
     (void) len;
 
     if (pixels == NULL) {
         status = SIXEL_BAD_ARGUMENT;
+        sixel_helper_set_additional_message(
+            "sixel_deocde_raw: given argument pixels is null.");
         goto end;
     }
 
-    posision_x = 0;
-    posision_y = 0;
-    max_x = 0;
-    max_y = 0;
-    attributed_pan = 2;
-    attributed_pad = 1;
-    attributed_ph = 0;
-    attributed_pv = 0;
-    repeat_count = 1;
-    color_index = 15;
-    max_color_index = 2;
-    bgindex = 0;
+    if (pwidth == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        sixel_helper_set_additional_message(
+            "sixel_deocde_raw: given argument pwidth is null.");
+        goto end;
+    }
+
+    if (pheight == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        sixel_helper_set_additional_message(
+            "sixel_deocde_raw: given argument pheight is null.");
+        goto end;
+    }
+
+    if (ncolors == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        sixel_helper_set_additional_message(
+            "sixel_deocde_raw: given argument ncolors is null.");
+        goto end;
+    }
+
+    if (palette == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        sixel_helper_set_additional_message(
+            "sixel_deocde_raw: given argument palette is null.");
+        goto end;
+    }
+
+    /* initialize return values */
     *pixels = NULL;
+    *pwidth = (-1);
+    *pheight = (-1);
+    *ncolors = 0;
+    *palette = NULL;
 
     /* initialize allocator */
     if (allocator == NULL) {  /* create an allocator */
@@ -381,32 +462,16 @@ sixel_decode_raw(
         sixel_allocator_ref(allocator);
     }
 
-    /* buffer initialization */
-    status = image_buffer_init(&pbuffer, 2048, 2048, bgindex, allocator);
+    /* parser context initialization */
+    status = parser_context_init(&state);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    /* palette initialization */
-    for (n = 0; n < 16; n++) {
-        sixel_palet[n] = color_table[n];
-    }
-
-    /* colors 16-231 are a 6x6x6 color cube */
-    for (r = 0; r < 6; r++) {
-        for (g = 0; g < 6; g++) {
-            for (b = 0; b < 6; b++) {
-                sixel_palet[n++] = RGB(r * 51, g * 51, b * 51);
-            }
-        }
-    }
-    /* colors 232-255 are a grayscale ramp, intentionally leaving out */
-    for (i = 0; i < 24; i++) {
-        sixel_palet[n++] = RGB(i * 11, i * 11, i * 11);
-    }
-
-    for (; n < SIXEL_PALETTE_MAX; n++) {
-        sixel_palet[n] = RGB(255, 255, 255);
+    /* buffer initialization */
+    status = image_buffer_init(&pbuffer, 2048, 2048, state.bgindex, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     while (*p != '\0') {
@@ -415,56 +480,56 @@ sixel_decode_raw(
                 p++;
             }
 
-            p = sixel_getparams(++p, param, &n);
+            p = sixel_getparams(++p, state.params, &n);
             if (*p == 'q') {
                 p++;
                 if (n > 0) {        /* Pn1 */
-                    switch(param[0]) {
+                    switch(state.params[0]) {
                     case 0:
                     case 1:
-                        attributed_pad = 2;
+                        state.attributed_pad = 2;
                         break;
                     case 2:
-                        attributed_pad = 5;
+                        state.attributed_pad = 5;
                         break;
                     case 3:
-                        attributed_pad = 4;
+                        state.attributed_pad = 4;
                         break;
                     case 4:
-                        attributed_pad = 4;
+                        state.attributed_pad = 4;
                         break;
                     case 5:
-                        attributed_pad = 3;
+                        state.attributed_pad = 3;
                         break;
                     case 6:
-                        attributed_pad = 3;
+                        state.attributed_pad = 3;
                         break;
                     case 7:
-                        attributed_pad = 2;
+                        state.attributed_pad = 2;
                         break;
                     case 8:
-                        attributed_pad = 2;
+                        state.attributed_pad = 2;
                         break;
                     case 9:
-                        attributed_pad = 1;
+                        state.attributed_pad = 1;
                         break;
                     default:
-                        attributed_pad = 2;
+                        state.attributed_pad = 2;
                         break;
                     }
                 }
 
                 if (n > 2) {        /* Pn3 */
-                    if (param[2] == 0) {
-                        param[2] = 10;
+                    if (state.params[2] == 0) {
+                        state.params[2] = 10;
                     }
-                    attributed_pan = attributed_pan * param[2] / 10;
-                    attributed_pad = attributed_pad * param[2] / 10;
-                    if (attributed_pan <= 0) {
-                        attributed_pan = 1;
+                    state.attributed_pan = state.attributed_pan * state.params[2] / 10;
+                    state.attributed_pad = state.attributed_pad * state.params[2] / 10;
+                    if (state.attributed_pan <= 0) {
+                        state.attributed_pan = 1;
                     }
-                    if (attributed_pad <= 0) {
-                        attributed_pad = 1;
+                    if (state.attributed_pad <= 0) {
+                        state.attributed_pad = 1;
                     }
                 }
             }
@@ -473,32 +538,32 @@ sixel_decode_raw(
             break;
         } else if (*p == '"') {
             /* DECGRA Set Raster Attributes " Pan; Pad; Ph; Pv */
-            p = sixel_getparams(p + 1, param, &n);
+            p = sixel_getparams(p + 1, state.params, &n);
 
             if (n > 0) {
-                attributed_pad = param[0];
+                state.attributed_pad = state.params[0];
             }
             if (n > 1) {
-                attributed_pan = param[1];
+                state.attributed_pan = state.params[1];
             }
-            if (n > 2 && param[2] > 0) {
-                attributed_ph = param[2];
+            if (n > 2 && state.params[2] > 0) {
+                state.attributed_ph = state.params[2];
             }
-            if (n > 3 && param[3] > 0) {
-                attributed_pv = param[3];
-            }
-
-            if (attributed_pan <= 0) {
-                attributed_pan = 1;
-            }
-            if (attributed_pad <= 0) {
-                attributed_pad = 1;
+            if (n > 3 && state.params[3] > 0) {
+                state.attributed_pv = state.params[3];
             }
 
-            if (pbuffer.width < attributed_ph || pbuffer.height < attributed_pv) {
-                sx = pbuffer.width > attributed_ph ? pbuffer.width : attributed_ph;
-                sy = pbuffer.height > attributed_pv ? pbuffer.height : attributed_pv;
-                status = image_buffer_resize(&pbuffer, sx, sy, bgindex, allocator);
+            if (state.attributed_pan <= 0) {
+                state.attributed_pan = 1;
+            }
+            if (state.attributed_pad <= 0) {
+                state.attributed_pad = 1;
+            }
+
+            if (pbuffer.width < state.attributed_ph || pbuffer.height < state.attributed_pv) {
+                sx = pbuffer.width > state.attributed_ph ? pbuffer.width : state.attributed_ph;
+                sy = pbuffer.height > state.attributed_pv ? pbuffer.height : state.attributed_pv;
+                status = image_buffer_resize(&pbuffer, sx, sy, state.bgindex, allocator);
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }
@@ -506,107 +571,123 @@ sixel_decode_raw(
 
         } else if (*p == '!') {
             /* DECGRI Graphics Repeat Introducer ! Pn Ch */
-            p = sixel_getparams(p + 1, param, &n);
+            p = sixel_getparams(p + 1, state.params, &n);
 
             if (n > 0) {
-                repeat_count = param[0];
+                state.repeat_count = state.params[0];
             }
 
         } else if (*p == '#') {
             /* DECGCI Graphics Color Introducer # Pc; Pu; Px; Py; Pz */
-            p = sixel_getparams(++p, param, &n);
+            p = sixel_getparams(++p, state.params, &n);
 
             if (n > 0) {
-                if ((color_index = param[0]) < 0) {
-                    color_index = 0;
-                } else if (color_index >= SIXEL_PALETTE_MAX) {
-                    color_index = SIXEL_PALETTE_MAX - 1;
+                if ((state.color_index = state.params[0]) < 0) {
+                    state.color_index = 0;
+                } else if (state.color_index >= SIXEL_PALETTE_MAX) {
+                    state.color_index = SIXEL_PALETTE_MAX - 1;
                 }
             }
 
             if (n > 4) {
-                if (param[1] == 1) {            /* HLS */
-                    if (param[2] > 360) param[2] = 360;
-                    if (param[3] > 100) param[3] = 100;
-                    if (param[4] > 100) param[4] = 100;
-                    sixel_palet[color_index] = hls2rgb(param[2], param[3], param[4]);
-                } else if (param[1] == 2) {    /* RGB */
-                    if (param[2] > 100) param[2] = 100;
-                    if (param[3] > 100) param[3] = 100;
-                    if (param[4] > 100) param[4] = 100;
-                    sixel_palet[color_index] = XRGB(param[2], param[3], param[4]);
+                if (state.params[1] == 1) {            /* HLS */
+                    if (state.params[2] > 360) {
+                        state.params[2] = 360;
+                    }
+                    if (state.params[3] > 100) {
+                        state.params[3] = 100;
+                    }
+                    if (state.params[4] > 100) {
+                        state.params[4] = 100;
+                    }
+                    state.palette[state.color_index]
+                        = hls2rgb(state.params[2], state.params[3], state.params[4]);
+                } else if (state.params[1] == 2) {    /* RGB */
+                    if (state.params[2] > 100) {
+                        state.params[2] = 100;
+                    }
+                    if (state.params[3] > 100) {
+                        state.params[3] = 100;
+                    }
+                    if (state.params[4] > 100) {
+                        state.params[4] = 100;
+                    }
+                    state.palette[state.color_index]
+                        = XRGB(state.params[2], state.params[3], state.params[4]);
                 }
             }
 
         } else if (*p == '$') {
             /* DECGCR Graphics Carriage Return */
             p++;
-            posision_x = 0;
-            repeat_count = 1;
+            state.posision_x = 0;
+            state.repeat_count = 1;
 
         } else if (*p == '-') {
             /* DECGNL Graphics Next Line */
             p++;
-            posision_x = 0;
-            posision_y += 6;
-            repeat_count = 1;
+            state.posision_x = 0;
+            state.posision_y += 6;
+            state.repeat_count = 1;
 
         } else if (*p >= '?' && *p <= '\177') {
-            if (pbuffer.width < (posision_x + repeat_count) || pbuffer.height < (posision_y + 6)) {
+            if (pbuffer.width < (state.posision_x + state.repeat_count) ||
+                pbuffer.height < (state.posision_y + 6)) {
                 sx = pbuffer.width * 2;
                 sy = pbuffer.height * 2;
-                while (sx < (posision_x + repeat_count) || sy < (posision_y + 6)) {
+                while (sx < (state.posision_x + state.repeat_count) ||
+                       sy < (state.posision_y + 6)) {
                     sx *= 2;
                     sy *= 2;
                 }
-                status = image_buffer_resize(&pbuffer, sx, sy, bgindex, allocator);
+                status = image_buffer_resize(&pbuffer, sx, sy, state.bgindex, allocator);
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }
             }
 
-            if (color_index > max_color_index) {
-                max_color_index = color_index;
+            if (state.color_index > state.max_color_index) {
+                state.max_color_index = state.color_index;
             }
-            if ((b = *(p++) - '?') == 0) {
-                posision_x += repeat_count;
+            if ((bits = *(p++) - '?') == 0) {
+                state.posision_x += state.repeat_count;
 
             } else {
                 sixel_vertical_mask = 0x01;
 
-                if (repeat_count <= 1) {
+                if (state.repeat_count <= 1) {
                     for (i = 0; i < 6; i++) {
-                        if ((b & sixel_vertical_mask) != 0) {
-                            pbuffer.data[pbuffer.width * (posision_y + i) + posision_x] = color_index;
-                            if (max_x < posision_x) {
-                                max_x = posision_x;
+                        if ((bits & sixel_vertical_mask) != 0) {
+                            pbuffer.data[pbuffer.width * (state.posision_y + i) + state.posision_x] = state.color_index;
+                            if (state.max_x < state.posision_x) {
+                                state.max_x = state.posision_x;
                             }
-                            if (max_y < (posision_y + i)) {
-                                max_y = posision_y + i;
+                            if (state.max_y < (state.posision_y + i)) {
+                                state.max_y = state.posision_y + i;
                             }
                         }
                         sixel_vertical_mask <<= 1;
                     }
-                    posision_x += 1;
+                    state.posision_x += 1;
 
-                } else { /* repeat_count > 1 */
+                } else { /* state.repeat_count > 1 */
                     for (i = 0; i < 6; i++) {
-                        if ((b & sixel_vertical_mask) != 0) {
+                        if ((bits & sixel_vertical_mask) != 0) {
                             c = sixel_vertical_mask << 1;
                             for (n = 1; (i + n) < 6; n++) {
-                                if ((b & c) == 0) {
+                                if ((bits & c) == 0) {
                                     break;
                                 }
                                 c <<= 1;
                             }
-                            for (y = posision_y + i; y < posision_y + i + n; ++y) {
-                                memset(pbuffer.data + pbuffer.width * y + posision_x, color_index, (size_t)repeat_count);
+                            for (y = state.posision_y + i; y < state.posision_y + i + n; ++y) {
+                                memset(pbuffer.data + pbuffer.width * y + state.posision_x, state.color_index, (size_t)state.repeat_count);
                             }
-                            if (max_x < (posision_x + repeat_count - 1)) {
-                                max_x = posision_x + repeat_count - 1;
+                            if (state.max_x < (state.posision_x + state.repeat_count - 1)) {
+                                state.max_x = state.posision_x + state.repeat_count - 1;
                             }
-                            if (max_y < (posision_y + i + n - 1)) {
-                                max_y = posision_y + i + n - 1;
+                            if (state.max_y < (state.posision_y + i + n - 1)) {
+                                state.max_y = state.posision_y + i + n - 1;
                             }
 
                             i += (n - 1);
@@ -614,30 +695,30 @@ sixel_decode_raw(
                         }
                         sixel_vertical_mask <<= 1;
                     }
-                    posision_x += repeat_count;
+                    state.posision_x += state.repeat_count;
                 }
             }
-            repeat_count = 1;
+            state.repeat_count = 1;
         } else {
             p++;
         }
     }
 
-    if (++max_x < attributed_ph) {
-        max_x = attributed_ph;
+    if (++state.max_x < state.attributed_ph) {
+        state.max_x = state.attributed_ph;
     }
-    if (++max_y < attributed_pv) {
-        max_y = attributed_pv;
+    if (++state.max_y < state.attributed_pv) {
+        state.max_y = state.attributed_pv;
     }
 
-    if (pbuffer.width > max_x || pbuffer.height > max_y) {
-        status = image_buffer_resize(&pbuffer, max_x, max_y, bgindex, allocator);
+    if (pbuffer.width > state.max_x || pbuffer.height > state.max_y) {
+        status = image_buffer_resize(&pbuffer, state.max_x, state.max_y, state.bgindex, allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
     }
 
-    *ncolors = max_color_index + 1;
+    *ncolors = state.max_color_index + 1;
     *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(*ncolors * 3));
     if (palette == NULL) {
         sixel_allocator_free(allocator, pbuffer.data);
@@ -647,9 +728,9 @@ sixel_decode_raw(
         goto end;
     }
     for (n = 0; n < *ncolors; ++n) {
-        (*palette)[n * 3 + 0] = sixel_palet[n] >> 16 & 0xff;
-        (*palette)[n * 3 + 1] = sixel_palet[n] >> 8 & 0xff;
-        (*palette)[n * 3 + 2] = sixel_palet[n] & 0xff;
+        (*palette)[n * 3 + 0] = state.palette[n] >> 16 & 0xff;
+        (*palette)[n * 3 + 1] = state.palette[n] >> 8 & 0xff;
+        (*palette)[n * 3 + 2] = state.palette[n] & 0xff;
     }
 
     *pwidth = pbuffer.width;
