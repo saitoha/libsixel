@@ -725,7 +725,7 @@ sixel_debug_print_palette(
 
 
 static SIXELSTATUS
-sixel_encoder_without_macro(
+sixel_encoder_output_without_macro(
     sixel_frame_t       /* in */ *frame,
     sixel_dither_t      /* in */ *dither,
     sixel_output_t      /* in */ *output,
@@ -752,7 +752,7 @@ sixel_encoder_without_macro(
 
     if (encoder == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_encoder_without_macro: encoder object is null.");
+            "sixel_encoder_output_without_macro: encoder object is null.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -766,7 +766,7 @@ sixel_encoder_without_macro(
     if (depth < 0) {
         status = SIXEL_LOGIC_ERROR;
         nwrite = sprintf(message,
-                         "sixel_encoder_without_macro: "
+                         "sixel_encoder_output_without_macro: "
                          "sixel_helper_compute_depth(%08x) failed.",
                          pixelformat);
         if (nwrite > 0) {
@@ -781,7 +781,7 @@ sixel_encoder_without_macro(
     p = (unsigned char *)sixel_allocator_malloc(encoder->allocator, size);
     if (p == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_encoder_without_macro: sixel_allocator_malloc() failed.");
+            "sixel_encoder_output_without_macro: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -1034,7 +1034,7 @@ sixel_encoder_encode_frame(
         status = sixel_encoder_output_with_macro(frame, dither, output, encoder);
     } else {
         /* do not use macro */
-        status = sixel_encoder_without_macro(frame, dither, output, encoder);
+        status = sixel_encoder_output_without_macro(frame, dither, output, encoder);
     }
 
     if (encoder->cancel_flag && *encoder->cancel_flag) {
