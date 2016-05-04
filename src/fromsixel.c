@@ -301,7 +301,7 @@ image_buffer_resize(
             /* fill extended area with background color */
             memset(alt_buffer + width * n + buffer->width,
                    bgindex,
-                   width - buffer->width);
+                   (size_t)(width - buffer->width));
         }
     } else {
         for (n = 0; n < min_height; ++n) {
