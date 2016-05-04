@@ -85,6 +85,13 @@ static int const color_table[] = {
 };
 
 
+typedef struct image_buffer {
+    unsigned char *data;
+    int width;
+    int height;
+} image_buffer_t;
+
+
 /*
  * Primary color hues:
  *  blue:    0 degrees
@@ -204,14 +211,9 @@ sixel_getparams(unsigned char *p, int *param, int *len)
     return p;
 }
 
-typedef struct image_buffer {
-    unsigned char *data;
-    int width;
-    int height;
-} image_buffer_t;
 
 
-SIXELAPI SIXELSTATUS
+static SIXELSTATUS
 image_buffer_init(
     image_buffer_t     *buffer,
     int                 width,
@@ -242,14 +244,7 @@ end:
 }
 
 
-SIXELAPI void
-image_buffer_deinit(image_buffer_t *buffer, sixel_allocator_t *allocator)
-{
-    sixel_allocator_free(allocator, buffer->data);
-}
-
-
-SIXELAPI SIXELSTATUS
+static SIXELSTATUS
 image_buffer_resize(
     image_buffer_t     *buffer,
     int                 width,
@@ -351,8 +346,8 @@ sixel_decode_raw(
     int bgindex;
     int param[10];
     int sixel_palet[SIXEL_PALETTE_MAX];
-    int dmsx;
-    int dmsy;
+    int sx;
+    int sy;
     image_buffer_t pbuffer;
 
     (void) len;
@@ -501,9 +496,9 @@ sixel_decode_raw(
             }
 
             if (pbuffer.width < attributed_ph || pbuffer.height < attributed_pv) {
-                dmsx = pbuffer.width > attributed_ph ? pbuffer.width : attributed_ph;
-                dmsy = pbuffer.height > attributed_pv ? pbuffer.height : attributed_pv;
-                status = image_buffer_resize(&pbuffer, dmsx, dmsy, bgindex, allocator);
+                sx = pbuffer.width > attributed_ph ? pbuffer.width : attributed_ph;
+                sy = pbuffer.height > attributed_pv ? pbuffer.height : attributed_pv;
+                status = image_buffer_resize(&pbuffer, sx, sy, bgindex, allocator);
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }
@@ -558,13 +553,13 @@ sixel_decode_raw(
 
         } else if (*p >= '?' && *p <= '\177') {
             if (pbuffer.width < (posision_x + repeat_count) || pbuffer.height < (posision_y + 6)) {
-                dmsx = pbuffer.width * 2;
-                dmsy = pbuffer.height * 2;
-                while (dmsx < (posision_x + repeat_count) || dmsy < (posision_y + 6)) {
-                    dmsx *= 2;
-                    dmsy *= 2;
+                sx = pbuffer.width * 2;
+                sy = pbuffer.height * 2;
+                while (sx < (posision_x + repeat_count) || sy < (posision_y + 6)) {
+                    sx *= 2;
+                    sy *= 2;
                 }
-                status = image_buffer_resize(&pbuffer, dmsx, dmsy, bgindex, allocator);
+                status = image_buffer_resize(&pbuffer, sx, sy, bgindex, allocator);
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }
