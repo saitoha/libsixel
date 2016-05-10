@@ -815,6 +815,9 @@ sixel_decode_raw_impl(
                 break;
             }
             break;
+        default:
+            p++;
+            break;
         }
     }
 
