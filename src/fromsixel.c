@@ -495,7 +495,7 @@ sixel_decode_raw_impl(
                     }
                 }
 
-                if (n > 2) {
+                if (context->nparams > 2) {
                     /* Pn3 */
                     if (context->params[2] == 0) {
                         context->params[2] = 10;
