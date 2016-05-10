@@ -244,21 +244,27 @@ image_buffer_init(
     memset(image->data, bgindex, size);
 
     /* palette initialization */
-    for (n = 0; n < 16; n++)
+    for (n = 0; n < 16; n++) {
         image->palette[n] = color_table[n];
+    }
 
     /* colors 16-231 are a 6x6x6 color cube */
-    for (r = 0; r < 6; r++)
-        for (g = 0; g < 6; g++)
-            for (b = 0; b < 6; b++)
+    for (r = 0; r < 6; r++) {
+        for (g = 0; g < 6; g++) {
+            for (b = 0; b < 6; b++) {
                 image->palette[n++] = RGB(r * 51, g * 51, b * 51);
+            }
+        }
+    }
 
     /* colors 232-255 are a grayscale ramp, intentionally leaving out */
-    for (i = 0; i < 24; i++)
+    for (i = 0; i < 24; i++) {
         image->palette[n++] = RGB(i * 11, i * 11, i * 11);
+    }
 
-    for (; n < SIXEL_PALETTE_MAX; n++)
+    for (; n < SIXEL_PALETTE_MAX; n++) {
         image->palette[n] = RGB(255, 255, 255);
+    }
 
     status = SIXEL_OK;
 
@@ -585,8 +591,9 @@ sixel_decode_raw_impl(
                                     if (context->max_x < context->pos_x) {
                                         context->max_x = context->pos_x;
                                     }
-                                    if (context->max_y < (context->pos_y + i))
+                                    if (context->max_y < (context->pos_y + i)) {
                                         context->max_y = context->pos_y + i;
+                                    }
                                 }
                                 sixel_vertical_mask <<= 1;
                             }
@@ -597,18 +604,22 @@ sixel_decode_raw_impl(
                                 if ((bits & sixel_vertical_mask) != 0) {
                                     c = sixel_vertical_mask << 1;
                                     for (n = 1; (i + n) < 6; n++) {
-                                        if ((bits & c) == 0)
+                                        if ((bits & c) == 0) {
                                             break;
+                                        }
                                         c <<= 1;
                                     }
-                                    for (y = context->pos_y + i; y < context->pos_y + i + n; ++y)
+                                    for (y = context->pos_y + i; y < context->pos_y + i + n; ++y) {
                                         memset (image->data + image->width * y + context->pos_x,
                                                 context->color_index,
                                                 (size_t)context->repeat_count);
-                                    if (context->max_x < (context->pos_x + context->repeat_count - 1))
+                                    }
+                                    if (context->max_x < (context->pos_x + context->repeat_count - 1)) {
                                         context->max_x = context->pos_x + context->repeat_count - 1;
-                                    if (context->max_y < (context->pos_y + i + n - 1))
+                                    }
+                                    if (context->max_y < (context->pos_y + i + n - 1)) {
                                         context->max_y = context->pos_y + i + n - 1;
+                                    }
                                     i += (n - 1);
                                     sixel_vertical_mask <<= (n - 1);
                                 }
@@ -816,7 +827,6 @@ sixel_decode_raw_impl(
             }
             break;
         default:
-            p++;
             break;
         }
     }
