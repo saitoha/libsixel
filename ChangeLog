@@ -1,3 +1,118 @@
+2016-05-10  Hayaki Saito <saitoha@me.com>
+
+  * src/fromsixel.c: Add missing default case for switching by parser state
+
+2016-05-08  Hayaki Saito <saitoha@me.com>
+
+  * src/fromsixel.c: decoder: parse SIXEL without forward tracking to prevent
+  access violation
+
+2016-05-07  Hayaki Saito <saitoha@me.com>
+
+  * converters/img2sixel.1: Fix typoed email address
+
+2016-05-05  Hayaki Saito <user@zuse.jp>
+
+  * src/fromsixel.c: Suppress a sign-conversion warning
+
+  * src/fromsixel.c: Introduce parser_context_t structure for internal use in
+  sixel_decode_raw()
+
+  * src/fromsixel.c: Remove external linkage of image_buffer_* functions
+
+  * src/fromsixel.c: Tune buffer resize operations
+
+  * src/Makefile.in, src/fromsixel.c: Introduce image_buffer_t structure for
+  internal use in sixel_decode_raw()
+
+2016-05-04  Hayaki Saito <user@zuse.jp>
+
+  * src/encoder.c: Change function name: sixel_encoder_without_macro to
+  sixel_encoder_output_without_macro
+
+2016-05-03  Hayaki Saito <user@zuse.jp>
+
+  * src/tosixel.c: Minor fix
+
+  * examples/drawing/Makefile, examples/drawing/main.c: drawing example: clean
+  up
+
+  * examples/drawing/Makefile, examples/drawing/main.c: drawing example: fix
+  for linux
+
+  * examples/drawing/main.c, src/Makefile.in: drawing example: scroll on demand
+  before drawing canvas
+
+2016-05-02  Hayaki Saito <user@zuse.jp>
+
+  * examples/drawing/Makefile, examples/drawing/README.md,
+  examples/drawing/main.c, examples/opengl/README.md: Add drawing example
+
+  * python/libsixel/__init__.py: Process list-based palette correctly in
+  encode.encode_bytes()
+
+2016-05-01  Hayaki Saito <user@zuse.jp>
+
+  * python/libsixel/__init__.py: Accept string buffer as 1st argument of
+  encoder.encode_bytes()
+
+  * python/Makefile.am, python/Makefile.in, src/encoder.c: Suppress a
+  sign-conversion warning on OSX
+
+  * python/libsixel/__init__.py, python/libsixel/encoder.py: Add
+  encoder.encode_bytes method introduced from libsixel 1.6
+
+  * python/libsixel/encoder.py: Fix a typo pointed out by @ignisan
+
+2016-05-01  vagrant <vagrant@ubuntu-16.localdomain>
+
+  * src/Makefile.in, src/chunk.c, src/decoder.c, src/encoder.c, src/fromgif.c,
+  src/loader.c, src/quant.c, src/tty.c, src/writer.c: Suppress sign-conversion
+  warnings in MinGW environment
+
+  * src/Makefile.am, src/Makefile.in, src/allocator.c, src/malloc_stub.c,
+  src/malloc_stub.h: Add missing rpl_malloc()/rpl_free() function
+
+2016-04-30  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.in, configure, configure.ac, src/quant.c: Suppress sign-conversion
+  warnings in MinGW environment
+
+  * src/writer.c: Suppress -Wsign-conversion in 3rd argument of fwrite()
+
+  * src/chunk.c: Avoid a warning when using FD_SET() with -Wsign-conversion and
+  _FORTIFY_SOURCE
+
+  * src/pixelformat.c: Suppress -Wsign-conversion in 3rd argument of memcpy()
+
+  * src/frame.c: Suppress -Wsign-conversion in 3rd argument of memmove()
+
+  * src/quant.c: Minor fix
+
+  * src/dither.c, src/quant.c: Suppress -Wsign-conversion in 2rd argument of
+  sixel_allocator_calloc()
+
+  * src/dither.c, src/encoder.c, src/fromgif.c, src/frompnm.c, src/fromsixel.c,
+  src/loader.c, src/quant.c, src/tosixel.c: Suppress -Wsign-conversion in 3rd
+  argument of memcpy()/memset()
+
+2016-04-29  Hayaki Saito <user@zuse.jp>
+
+  * Makefile.in, aclocal.m4, config.h.in, configure, configure.ac,
+  include/sixel.h.in, src/chunk.c, src/decoder.c, src/dither.c, src/encoder.c,
+  src/frame.c, src/fromgif.c, src/frompnm.c, src/fromsixel.c, src/loader.c,
+  src/quant.c, src/quant.h, src/scale.c, src/stb_image_write.c, src/tosixel.c,
+  src/tty.c, src/writer.c: Add -Wsign-conversion compile flags and fix implicit
+  type sign-conversions
+
+2016-04-03  Hayaki Saito <user@zuse.jp>
+
+  * src/stb_image_write.h: Update stb_image_write to v1.02
+
+  * README.md, converters/img2sixel.1: Update manpage and README
+
+  * src/stb_image.h: Update stb_image to v2.12
+
 2016-03-25  Hayaki Saito <user@zuse.jp>
 
   * src/fromgif.c: Fix broken -S option
