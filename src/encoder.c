@@ -464,11 +464,12 @@ sixel_prepare_specified_palette(
 }
 
 
-/* create dither object */
+/* create dither object from a frame */
 static SIXELSTATUS
-sixel_prepare_palette(sixel_dither_t  /* out */ **dither,
-                      sixel_frame_t   /* in */  *frame,
-                      sixel_encoder_t /* in */  *encoder)
+sixel_encoder_prepare_palette(
+    sixel_encoder_t *encoder,  /* encoder object */
+    sixel_frame_t   *frame,    /* input frame object */
+    sixel_dither_t  **dither)  /* dither object to be created from the frame */
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int histogram_colors;
@@ -926,12 +927,12 @@ end:
 
 static SIXELSTATUS
 sixel_encoder_encode_frame(
-    sixel_encoder_t /* in */    *encoder,
-    sixel_frame_t   /* in */    *frame)
+    sixel_encoder_t *encoder,
+    sixel_frame_t   *frame,
+    sixel_output_t  *output)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_dither_t *dither = NULL;
-    sixel_output_t *output = NULL;
     int height;
     int is_animation = 0;
     int nwrite;
@@ -964,7 +965,7 @@ sixel_encoder_encode_frame(
     }
 
     /* prepare dither context */
-    status = sixel_prepare_palette(&dither, frame, encoder);
+    status = sixel_encoder_prepare_palette(encoder, frame, &dither);
     if (status != SIXEL_OK) {
         goto end;
     }
@@ -989,22 +990,27 @@ sixel_encoder_encode_frame(
         sixel_dither_set_complexion_score(dither, encoder->complexion);
     }
 
-    /* create output context */
-    if (encoder->fuse_macro || encoder->macro_number >= 0) {
-        /* -u or -n option */
-        status = sixel_output_new(&output,
-                                  sixel_hex_write_callback,
-                                  &encoder->outfd,
-                                  encoder->allocator);
+    if (output) {
+        sixel_output_ref(output);
     } else {
-        status = sixel_output_new(&output,
-                                  sixel_write_callback,
-                                  &encoder->outfd,
-                                  encoder->allocator);
+        /* create output context */
+        if (encoder->fuse_macro || encoder->macro_number >= 0) {
+            /* -u or -n option */
+            status = sixel_output_new(&output,
+                                      sixel_hex_write_callback,
+                                      &encoder->outfd,
+                                      encoder->allocator);
+        } else {
+            status = sixel_output_new(&output,
+                                      sixel_write_callback,
+                                      &encoder->outfd,
+                                      encoder->allocator);
+        }
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
+
     sixel_output_set_8bit_availability(output, encoder->f8bit);
     sixel_output_set_gri_arg_limit(output, encoder->has_gri_arg_limit);
     sixel_output_set_palette_type(output, encoder->palette_type);
@@ -1651,15 +1657,16 @@ end:
 static SIXELSTATUS
 load_image_callback(sixel_frame_t *frame, void *data)
 {
-    return sixel_encoder_encode_frame((sixel_encoder_t *)data, frame);
+    return sixel_encoder_encode_frame((sixel_encoder_t *)data, frame, NULL);
 }
 
 
-/* load source data from specified file and encode it to SIXEL format */
+/* load source data from specified file and encode it to SIXEL format
+ * output to encoder->outfd */
 SIXELAPI SIXELSTATUS
 sixel_encoder_encode(
-    sixel_encoder_t /* in */ *encoder,
-    char const      /* in */ *filename)
+    sixel_encoder_t *encoder,   /* encoder object */
+    char const      *filename)  /* input filename */
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int fuse_palette = 1;
@@ -1756,7 +1763,8 @@ end:
 }
 
 
-/* encode specified pixel data to SIXEL format */
+/* encode specified pixel data to SIXEL format
+ * output to encoder->outfd */
 SIXELAPI SIXELSTATUS
 sixel_encoder_encode_bytes(
     sixel_encoder_t     /* in */    *encoder,
@@ -1786,7 +1794,50 @@ sixel_encoder_encode_bytes(
         goto end;
     }
 
-    status = sixel_encoder_encode_frame(encoder, frame);
+    status = sixel_encoder_encode_frame(encoder, frame, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+
+/* encode specified pixel data to SIXEL format */
+SIXELAPI SIXELSTATUS
+sixel_encoder_encode_bytes_to_output(
+    sixel_encoder_t *encoder,
+    unsigned char   *bytes,
+    int              width,
+    int              height,
+    int              pixelformat,
+    unsigned char   *palette,
+    int              ncolors,
+    sixel_output_t  *output)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_frame_t *frame;
+
+    if (encoder == NULL || bytes == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    status = sixel_frame_new(&frame, encoder->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_frame_init(frame, bytes, width, height,
+                              pixelformat, palette, ncolors);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_encoder_encode_frame(encoder, frame, output);
     if (SIXEL_FAILED(status)) {
         goto end;
     }

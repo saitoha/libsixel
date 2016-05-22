@@ -13,7 +13,7 @@
  * Hayaki Saito <saitoha@me.com> modified this and re-licensed
  * it under the MIT license.
  *
- * The helper function hls2rgb is imported from Xterm pl#310.
+ * The helper function hls_to_rgb is imported from Xterm pl#310.
  * This is originally written by Ross Combs.
  * Hayaki Saito <saitoha@me.com> slightly modified this.
  *
@@ -59,31 +59,31 @@
 #include <sixel.h>
 #include "output.h"
 
-#define RGB(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
+#define SIXEL_RGB(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
 
 #define PALVAL(n,a,m) (((n) * (a) + ((m) / 2)) / (m))
 
-#define XRGB(r,g,b) RGB(PALVAL(r, 255, 100), PALVAL(g, 255, 100), PALVAL(b, 255, 100))
+#define SIXEL_XRGB(r,g,b) SIXEL_RGB(PALVAL(r, 255, 100), PALVAL(g, 255, 100), PALVAL(b, 255, 100))
 
 #define DECSIXEL_PARAMS_MAX 16
 
-static int const color_table[] = {
-    XRGB(0,  0,  0),   /*  0 Black    */
-    XRGB(20, 20, 80),  /*  1 Blue     */
-    XRGB(80, 13, 13),  /*  2 Red      */
-    XRGB(20, 80, 20),  /*  3 Green    */
-    XRGB(80, 20, 80),  /*  4 Magenta  */
-    XRGB(20, 80, 80),  /*  5 Cyan     */
-    XRGB(80, 80, 20),  /*  6 Yellow   */
-    XRGB(53, 53, 53),  /*  7 Gray 50% */
-    XRGB(26, 26, 26),  /*  8 Gray 25% */
-    XRGB(33, 33, 60),  /*  9 Blue*    */
-    XRGB(60, 26, 26),  /* 10 Red*     */
-    XRGB(33, 60, 33),  /* 11 Green*   */
-    XRGB(60, 33, 60),  /* 12 Magenta* */
-    XRGB(33, 60, 60),  /* 13 Cyan*    */
-    XRGB(60, 60, 33),  /* 14 Yellow*  */
-    XRGB(80, 80, 80),  /* 15 Gray 75% */
+static int const sixel_default_color_table[] = {
+    SIXEL_XRGB(0,  0,  0),   /*  0 Black    */
+    SIXEL_XRGB(20, 20, 80),  /*  1 Blue     */
+    SIXEL_XRGB(80, 13, 13),  /*  2 Red      */
+    SIXEL_XRGB(20, 80, 20),  /*  3 Green    */
+    SIXEL_XRGB(80, 20, 80),  /*  4 Magenta  */
+    SIXEL_XRGB(20, 80, 80),  /*  5 Cyan     */
+    SIXEL_XRGB(80, 80, 20),  /*  6 Yellow   */
+    SIXEL_XRGB(53, 53, 53),  /*  7 Gray 50% */
+    SIXEL_XRGB(26, 26, 26),  /*  8 Gray 25% */
+    SIXEL_XRGB(33, 33, 60),  /*  9 Blue*    */
+    SIXEL_XRGB(60, 26, 26),  /* 10 Red*     */
+    SIXEL_XRGB(33, 60, 33),  /* 11 Green*   */
+    SIXEL_XRGB(60, 33, 60),  /* 12 Magenta* */
+    SIXEL_XRGB(33, 60, 60),  /* 13 Cyan*    */
+    SIXEL_XRGB(60, 60, 33),  /* 14 Yellow*  */
+    SIXEL_XRGB(80, 80, 80),  /* 15 Gray 75% */
 };
 
 
@@ -131,7 +131,7 @@ typedef struct parser_context {
  *  green: 240 degrees
  */
 static int
-hls2rgb(int hue, int lum, int sat)
+hls_to_rgb(int hue, int lum, int sat)
 {
     double hs = (hue + 240) % 360;
     double hv = hs / 360.0;
@@ -144,7 +144,7 @@ hls2rgb(int hue, int lum, int sat)
 
     if (sat == 0) {
         r = g = b = lum * 255 / 100;
-        return RGB(r, g, b);
+        return SIXEL_RGB(r, g, b);
     }
 
     if ((c2 = ((2.0 * lv) - 1.0)) < 0.0) {
@@ -187,7 +187,7 @@ hls2rgb(int hue, int lum, int sat)
         b1 = x;
         break;
     default:
-        return RGB(255, 255, 255);
+        return SIXEL_RGB(255, 255, 255);
     }
 
     r = (int) ((r1 + m) * 100.0 + 0.5);
@@ -209,7 +209,7 @@ hls2rgb(int hue, int lum, int sat)
     } else if (b > 100) {
         b = 100;
     }
-    return RGB(r * 255 / 100, g * 255 / 100, b * 255 / 100);
+    return SIXEL_RGB(r * 255 / 100, g * 255 / 100, b * 255 / 100);
 }
 
 
@@ -229,7 +229,7 @@ image_buffer_init(
     int g;
     int b;
 
-    size = (size_t)(width * height);
+    size = (size_t)(width * height) * sizeof(unsigned char);
     image->width = width;
     image->height = height;
     image->data = (unsigned char *)sixel_allocator_malloc(allocator, size);
@@ -245,25 +245,25 @@ image_buffer_init(
 
     /* palette initialization */
     for (n = 0; n < 16; n++) {
-        image->palette[n] = color_table[n];
+        image->palette[n] = sixel_default_color_table[n];
     }
 
     /* colors 16-231 are a 6x6x6 color cube */
     for (r = 0; r < 6; r++) {
         for (g = 0; g < 6; g++) {
             for (b = 0; b < 6; b++) {
-                image->palette[n++] = RGB(r * 51, g * 51, b * 51);
+                image->palette[n++] = SIXEL_RGB(r * 51, g * 51, b * 51);
             }
         }
     }
 
     /* colors 232-255 are a grayscale ramp, intentionally leaving out */
     for (i = 0; i < 24; i++) {
-        image->palette[n++] = RGB(i * 11, i * 11, i * 11);
+        image->palette[n++] = SIXEL_RGB(i * 11, i * 11, i * 11);
     }
 
     for (; n < SIXEL_PALETTE_MAX; n++) {
-        image->palette[n] = RGB(255, 255, 255);
+        image->palette[n] = SIXEL_RGB(255, 255, 255);
     }
 
     status = SIXEL_OK;
@@ -475,20 +475,14 @@ sixel_decode_raw_impl(
                         context->attributed_pad = 5;
                         break;
                     case 3:
-                        context->attributed_pad = 4;
-                        break;
                     case 4:
                         context->attributed_pad = 4;
                         break;
                     case 5:
-                        context->attributed_pad = 3;
-                        break;
                     case 6:
                         context->attributed_pad = 3;
                         break;
                     case 7:
-                        context->attributed_pad = 2;
-                        break;
                     case 8:
                         context->attributed_pad = 2;
                         break;
@@ -561,7 +555,7 @@ sixel_decode_raw_impl(
                 p++;
                 break;
             default:
-                if (*p >= '?' && *p < '~') {
+                if (*p >= '?' && *p < '~') {  /* sixel characters */
                     if (image->width < (context->pos_x + context->repeat_count) || image->height < (context->pos_y + 6)) {
                         sx = image->width * 2;
                         sy = image->height * 2;
@@ -610,9 +604,9 @@ sixel_decode_raw_impl(
                                         c <<= 1;
                                     }
                                     for (y = context->pos_y + i; y < context->pos_y + i + n; ++y) {
-                                        memset (image->data + image->width * y + context->pos_x,
-                                                context->color_index,
-                                                (size_t)context->repeat_count);
+                                        memset(image->data + image->width * y + context->pos_x,
+                                               context->color_index,
+                                               (size_t)context->repeat_count);
                                     }
                                     if (context->max_x < (context->pos_x + context->repeat_count - 1)) {
                                         context->max_x = context->pos_x + context->repeat_count - 1;
@@ -807,7 +801,7 @@ sixel_decode_raw_impl(
                             context->params[4] = 100;
                         }
                         image->palette[context->color_index]
-                            = hls2rgb (context->params[2], context->params[3], context->params[4]);
+                            = hls_to_rgb(context->params[2], context->params[3], context->params[4]);
                     } else if (context->params[1] == 2) {
                         /* RGB */
                         if (context->params[2] > 100) {
@@ -820,7 +814,7 @@ sixel_decode_raw_impl(
                             context->params[4] = 100;
                         }
                         image->palette[context->color_index]
-                            = XRGB(context->params[2], context->params[3], context->params[4]);
+                            = SIXEL_XRGB(context->params[2], context->params[3], context->params[4]);
                     }
                 }
                 break;
