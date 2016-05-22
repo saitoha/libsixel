@@ -1,27 +1,13 @@
-OpenGL Example
-==============
+Drawing Example
+===============
 
-This example suggests how to port your OpenGL application to SIXEL terminal.
+This example suggests how to implement the interaction among SIXEL terminals and pointer devices.
 
 
 How to Build
 ------------
 
-Linux/BSDs:
-
-  1. Install OSMesa package on your distribution
-
-      $ sudo apt-get install libosmesa6-dev 
-
-  2. Build
-
-      $ ./configure && make
-
-OSX:
-
-  1. Build
-
-      $ ./configure && make
+  $ make
 
 
 Run (only works on SIXEL terminals)
