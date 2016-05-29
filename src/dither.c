@@ -687,6 +687,23 @@ sixel_dither_set_pixelformat(
     int            /* in */ pixelformat) /* one of enum pixelFormat */
 {
     dither->pixelformat = pixelformat;
+
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_G1:
+        dither->ncolors = 2;
+        dither->palette = (unsigned char *)pal_gray_1bit;
+        break;
+    case SIXEL_PIXELFORMAT_G2:
+        dither->ncolors = 4;
+        dither->palette = (unsigned char *)pal_gray_2bit;
+        break;
+    case SIXEL_PIXELFORMAT_G4:
+        dither->ncolors = 16;
+        dither->palette = (unsigned char *)pal_gray_4bit;
+        break;
+    default:
+        break;
+    }
 }
 
 
