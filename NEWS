@@ -1,4 +1,12 @@
                   ------------------------------
+                   What's new in libsixel-1.7 ?
+                  ------------------------------
+
+* core: Upgrade stb_image to 2.12.
+
+* core: Upgrade stb_image_write.h to v1.02.
+
+                  ------------------------------
                    What's new in libsixel-1.6 ?
                   ------------------------------
 * img2sixel: Add -R(--gri-limit) option.
