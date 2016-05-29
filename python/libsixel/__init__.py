@@ -444,11 +444,112 @@ def sixel_output_set_encode_policy(output):
     _sixel.sixel_output_set_encode_policy(output)
 
 
+# create dither context object
+def sixel_dither_new(ncolors, allocator=None):
+    _sixel.sixel_dither_new.restype = c_int
+    _sixel.sixel_dither_new.argtypes = [POINTER(c_void_p), c_int, c_void_p]
+    dither = c_void_p(None)
+    status = _sixel.sixel_dither_new(byref(dither), ncolors, allocator)
+    if SIXEL_FAILED(status):
+        message = sixel_helper_format_error(status)
+        raise RuntimeError(message)
+    return dither
+
+
 # get built-in dither context object
 def sixel_dither_get(builtin_dither):
     _sixel.sixel_dither_get.restype = c_void_p
     _sixel.sixel_dither_get.argtypes = [c_int]
     return _sixel.sixel_dither_get(builtin_dither)
+
+
+# destroy dither context object
+def sixel_dither_destroy(dither):
+    _sixel.sixel_dither_destroy.restype = None
+    _sixel.sixel_dither_destroy.argtypes = [c_void_p]
+    return _sixel.sixel_dither_destroy(dither)
+
+
+# increase reference count of dither context object (thread-unsafe)
+def sixel_dither_ref(dither):
+    _sixel.sixel_dither_ref.restype = None
+    _sixel.sixel_dither_ref.argtypes = [c_void_p]
+    return _sixel.sixel_dither_ref(dither)
+
+
+# decrease reference count of dither context object (thread-unsafe)
+def sixel_dither_unref(dither):
+    _sixel.sixel_dither_unref.restype = None
+    _sixel.sixel_dither_unref.argtypes = [c_void_p]
+    return _sixel.sixel_dither_unref(dither)
+
+
+# initialize internal palette from specified pixel buffer
+def sixel_dither_initialize(dither, data, width, height, pixelformat,
+                            method_for_largest=SIXEL_LARGE_AUTO,
+                            method_for_rep=SIXEL_REP_AUTO,
+                            quality_mode=SIXEL_QUALITY_AUTO):
+    _sixel.sixel_dither_initialize.restype = c_int
+    _sixel.sixel_dither_initialize.argtypes = [c_void_p, c_char_p, c_int, c_int, c_int,
+                                              c_int, c_int, c_int]
+    status = _sixel.sixel_dither_initialize(dither, data, width, height, pixelformat,
+                                            method_for_largest,
+                                            method_for_rep,
+                                            quality_mode)
+    if SIXEL_FAILED(status):
+        message = sixel_helper_format_error(status)
+        raise RuntimeError(message)
+
+
+# set diffusion type, choose from enum methodForDiffuse
+def sixel_dither_set_diffusion_type(dither, method_for_diffuse):
+    _sixel.sixel_dither_set_diffusion_type.restype = None
+    _sixel.sixel_dither_set_diffusion_type.argtypes = [c_void_p, c_int]
+    _sixel.sixel_dither_set_diffusion_type(dither, method_for_diffuse)
+
+
+# get number of palette colors
+def sixel_dither_get_num_of_palette_colors(dither):
+    _sixel.sixel_dither_get_num_of_palette_colors.restype = c_int
+    _sixel.sixel_dither_get_num_of_palette_colors.argtypes = [c_void_p]
+    return _sixel.sixel_dither_get_num_of_palette_colors(dither)
+
+
+# get number of histogram colors */
+def sixel_dither_get_num_of_histogram_colors(dither):
+    _sixel.sixel_dither_get_num_of_histogram_colors.restype = c_int
+    _sixel.sixel_dither_get_num_of_histogram_colors.argtypes = [c_void_p]
+    return _sixel.sixel_dither_get_num_of_histogram_colors(dither)
+
+
+def sixel_dither_set_complexion_score(dither, score):
+    _sixel.sixel_dither_set_complexion_score.restype = None
+    _sixel.sixel_dither_set_complexion_score.argtypes = [c_void_p, c_int]
+    _sixel.sixel_dither_set_complexion_score(dither, score)
+
+
+def sixel_dither_set_body_only(dither, bodyonly):
+    _sixel.sixel_dither_set_body_only.restype = None
+    _sixel.sixel_dither_set_body_only.argtypes = [c_void_p, c_int]
+    _sixel.sixel_dither_set_body_only(dither, bodyonly)
+
+
+def sixel_dither_set_optimize_palette(dither, do_opt):
+    _sixel.sixel_dither_set_optimize_palette.restype = None
+    _sixel.sixel_dither_set_optimize_palette.argtypes = [c_void_p, c_int]
+    _sixel.sixel_dither_set_optimize_palette(dither, do_opt)
+
+
+def sixel_dither_set_pixelformat(dither, pixelformat):
+    _sixel.sixel_dither_set_pixelformat.restype = None
+    _sixel.sixel_dither_set_pixelformat.argtypes = [c_void_p, c_int]
+    _sixel.sixel_dither_set_pixelformat(dither, pixelformat)
+
+
+def sixel_dither_set_transparent(dither, transparent):
+    _sixel.sixel_dither_set_transparent.restype = None
+    _sixel.sixel_dither_set_transparent.argtypes = [c_void_p, c_int]
+    _sixel.sixel_dither_set_transparent(dither, transparent)
 
 
 # convert pixels into sixel format and write it to output context
