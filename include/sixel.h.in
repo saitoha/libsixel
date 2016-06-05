@@ -1066,7 +1066,8 @@ sixel_encoder_encode(
     sixel_encoder_t /* in */ *encoder,
     char const      /* in */ *filename);
 
-/* encode specified pixel data to SIXEL format */
+/* encode specified pixel data to SIXEL format
+ * output to encoder->outfd */
 SIXELAPI SIXELSTATUS
 sixel_encoder_encode_bytes(
     sixel_encoder_t     /* in */    *encoder,
