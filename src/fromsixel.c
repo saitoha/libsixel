@@ -49,6 +49,7 @@
  */
 #include "config.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <ctype.h>   /* isdigit */
 #include <string.h>  /* memcpy */
 
@@ -357,7 +358,7 @@ parser_context_init(parser_context_t *context)
     context->attributed_pv = 0;
     context->repeat_count = 1;
     context->color_index = 15;
-    context->bgindex = 0;
+    context->bgindex = (-1);
     context->nparams = 0;
     context->param = 0;
 
@@ -401,9 +402,8 @@ sixel_decode_raw_impl(
                 p++;
                 break;
             case 0x9c:
-                status = SIXEL_OK;
                 p++;
-                goto end;
+                goto finalize;
             default:
                 p++;
                 break;
@@ -414,9 +414,8 @@ sixel_decode_raw_impl(
             switch (*p) {
             case '\\':
             case 0x9c:
-                status = SIXEL_OK;
                 p++;
-                goto end;
+                goto finalize;
             case 'P':
                 context->param = -1;
                 context->state = PS_DCS;
@@ -515,7 +514,7 @@ sixel_decode_raw_impl(
                 break;
             default:
                 p++;
-                goto end;
+                break;
             }
             break;
 
@@ -817,6 +816,7 @@ sixel_decode_raw_impl(
         }
     }
 
+finalize:
     if (++context->max_x < context->attributed_ph) {
         context->max_x = context->attributed_ph;
     }
