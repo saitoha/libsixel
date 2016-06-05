@@ -390,7 +390,6 @@ sixel_dither_get(
     unsigned char *palette;
     int ncolors;
     int keycolor;
-    int pixelformat;
     sixel_dither_t *dither = NULL;
 
     switch (builtin_dither) {
@@ -398,61 +397,51 @@ sixel_dither_get(
         ncolors = 2;
         palette = (unsigned char *)pal_mono_dark;
         keycolor = 0;
-        pixelformat = SIXEL_PIXELFORMAT_PAL1;
         break;
     case SIXEL_BUILTIN_MONO_LIGHT:
         ncolors = 2;
         palette = (unsigned char *)pal_mono_light;
         keycolor = 0;
-        pixelformat = SIXEL_PIXELFORMAT_PAL1;
         break;
     case SIXEL_BUILTIN_XTERM16:
         ncolors = 16;
         palette = (unsigned char *)pal_xterm256;
         keycolor = (-1);
-        pixelformat = SIXEL_PIXELFORMAT_PAL4;
         break;
     case SIXEL_BUILTIN_XTERM256:
         ncolors = 256;
         palette = (unsigned char *)pal_xterm256;
         keycolor = (-1);
-        pixelformat = SIXEL_PIXELFORMAT_PAL8;
         break;
     case SIXEL_BUILTIN_VT340_MONO:
         ncolors = 16;
         palette = (unsigned char *)pal_vt340_mono;
         keycolor = (-1);
-        pixelformat = SIXEL_PIXELFORMAT_PAL4;
         break;
     case SIXEL_BUILTIN_VT340_COLOR:
         ncolors = 16;
         palette = (unsigned char *)pal_vt340_color;
         keycolor = (-1);
-        pixelformat = SIXEL_PIXELFORMAT_PAL4;
         break;
     case SIXEL_BUILTIN_G1:
         ncolors = 2;
         palette = (unsigned char *)pal_gray_1bit;
         keycolor = (-1);
-        pixelformat = SIXEL_PIXELFORMAT_G1;
         break;
     case SIXEL_BUILTIN_G2:
         ncolors = 4;
         palette = (unsigned char *)pal_gray_2bit;
         keycolor = (-1);
-        pixelformat = SIXEL_PIXELFORMAT_G2;
         break;
     case SIXEL_BUILTIN_G4:
         ncolors = 16;
         palette = (unsigned char *)pal_gray_4bit;
         keycolor = (-1);
-        pixelformat = SIXEL_PIXELFORMAT_G4;
         break;
     case SIXEL_BUILTIN_G8:
         ncolors = 256;
         palette = (unsigned char *)pal_gray_8bit;
         keycolor = (-1);
-        pixelformat = SIXEL_PIXELFORMAT_G8;
         break;
     default:
         goto end;
@@ -468,7 +457,6 @@ sixel_dither_get(
     dither->keycolor = keycolor;
     dither->optimized = 1;
     dither->optimize_palette = 0;
-    dither->pixelformat = pixelformat;
 
 end:
     return dither;
@@ -700,27 +688,6 @@ sixel_dither_set_pixelformat(
     int            /* in */ pixelformat) /* one of enum pixelFormat */
 {
     dither->pixelformat = pixelformat;
-
-    switch (pixelformat) {
-    case SIXEL_PIXELFORMAT_G1:
-        dither->ncolors = 2;
-        dither->palette = (unsigned char *)pal_gray_1bit;
-        break;
-    case SIXEL_PIXELFORMAT_G2:
-        dither->ncolors = 4;
-        dither->palette = (unsigned char *)pal_gray_2bit;
-        break;
-    case SIXEL_PIXELFORMAT_G4:
-        dither->ncolors = 16;
-        dither->palette = (unsigned char *)pal_gray_4bit;
-        break;
-    case SIXEL_PIXELFORMAT_G8:
-        dither->ncolors = 256;
-        dither->palette = (unsigned char *)pal_gray_8bit;
-        break;
-    default:
-        break;
-    }
 }
 
 
