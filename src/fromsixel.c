@@ -573,7 +573,9 @@ sixel_decode_raw_impl(
                         image->ncolors = context->color_index;
                     }
 
-                    if ((bits = *p - '?') == 0) {
+                    bits = *p - '?';
+
+                    if (bits == 0) {
                         context->pos_x += context->repeat_count;
                     } else {
                         sixel_vertical_mask = 0x01;
