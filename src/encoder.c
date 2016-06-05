@@ -297,8 +297,6 @@ sixel_prepare_monochrome_palette(
         goto end;
     }
 
-    sixel_dither_set_pixelformat(*dither, SIXEL_PIXELFORMAT_RGB888);
-
     status = SIXEL_OK;
 
 end:
@@ -321,8 +319,6 @@ sixel_prepare_builtin_palette(
         status = SIXEL_RUNTIME_ERROR;
         goto end;
     }
-
-    sixel_dither_set_pixelformat(*dither, SIXEL_PIXELFORMAT_RGB888);
 
     status = SIXEL_OK;
 
