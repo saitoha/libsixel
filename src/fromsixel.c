@@ -555,7 +555,7 @@ sixel_decode_raw_impl(
                 p++;
                 break;
             default:
-                if (*p >= '?' && *p < '~') {  /* sixel characters */
+                if (*p >= '?' && *p <= '~') {  /* sixel characters */
                     if (image->width < (context->pos_x + context->repeat_count) || image->height < (context->pos_y + 6)) {
                         sx = image->width * 2;
                         sy = image->height * 2;
