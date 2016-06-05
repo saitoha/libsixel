@@ -1,5 +1,11 @@
 2016-06-06  Hayaki Saito <saitoha@me.com>
 
+  * src/fromsixel.c: Don't skip image finalization
+
+  * src/dither.c, src/encoder.c: Minor fixes
+
+  * src/encoder.c: Minor fixes
+
   * src/fromsixel.c: Change default allocation size of image object to 1x1
 
   * src/fromsixel.c: Strip an unused case label
