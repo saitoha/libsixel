@@ -725,17 +725,7 @@ sixel_decode_raw_impl(
                 context->param = context->param * 10 + *p - '0';
                 p++;
                 break;
-            case ';':
-                if (context->nparams < DECSIXEL_PARAMS_MAX) {
-                    context->params[context->nparams++] = context->param;
-                }
-                context->param = 0;
-                p++;
-                break;
             default:
-                if (context->nparams < DECSIXEL_PARAMS_MAX) {
-                    context->params[context->nparams++] = context->param;
-                }
                 context->repeat_count = context->param;
                 if (context->repeat_count == 0) {
                     context->repeat_count = 1;
