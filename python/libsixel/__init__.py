@@ -522,6 +522,20 @@ def sixel_dither_get_num_of_histogram_colors(dither):
     return _sixel.sixel_dither_get_num_of_histogram_colors(dither)
 
 
+def sixel_dither_get_palette(dither):
+    _sixel.sixel_dither_get_palette.restype = c_char_p
+    _sixel.sixel_dither_get_palette.argtypes = [c_void_p]
+    cpalette = _sixel.sixel_dither_get_palette(dither)
+    return [ord(c) for c in cpalette]
+
+
+def sixel_dither_set_palette(dither, palette):
+    _sixel.sixel_dither_set_palette.restype = None
+    _sixel.sixel_dither_set_palette.argtypes = [c_void_p, c_char_p]
+    cpalette = ''.join(map(chr, palette))
+    _sixel.sixel_dither_set_palette(dither, cpalette)
+
+
 def sixel_dither_set_complexion_score(dither, score):
     _sixel.sixel_dither_set_complexion_score.restype = None
     _sixel.sixel_dither_set_complexion_score.argtypes = [c_void_p, c_int]

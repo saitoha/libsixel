@@ -555,7 +555,7 @@ sixel_decode_raw_impl(
                 p++;
                 break;
             default:
-                if (*p >= '?' && *p < '~') {  /* sixel characters */
+                if (*p >= '?' && *p <= '~') {  /* sixel characters */
                     if (image->width < (context->pos_x + context->repeat_count) || image->height < (context->pos_y + 6)) {
                         sx = image->width * 2;
                         sy = image->height * 2;
@@ -573,7 +573,9 @@ sixel_decode_raw_impl(
                         image->ncolors = context->color_index;
                     }
 
-                    if ((bits = *p - '?') == 0) {
+                    bits = *p - '?';
+
+                    if (bits == 0) {
                         context->pos_x += context->repeat_count;
                     } else {
                         sixel_vertical_mask = 0x01;
@@ -723,17 +725,7 @@ sixel_decode_raw_impl(
                 context->param = context->param * 10 + *p - '0';
                 p++;
                 break;
-            case ';':
-                if (context->nparams < DECSIXEL_PARAMS_MAX) {
-                    context->params[context->nparams++] = context->param;
-                }
-                context->param = 0;
-                p++;
-                break;
             default:
-                if (context->nparams < DECSIXEL_PARAMS_MAX) {
-                    context->params[context->nparams++] = context->param;
-                }
                 context->repeat_count = context->param;
                 if (context->repeat_count == 0) {
                     context->repeat_count = 1;
@@ -881,7 +873,7 @@ sixel_decode_raw(
     }
 
     /* buffer initialization */
-    status = image_buffer_init(&image, 2048, 2048, context.bgindex, allocator);
+    status = image_buffer_init(&image, 1, 1, context.bgindex, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
