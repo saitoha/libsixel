@@ -1806,50 +1806,6 @@ end:
 }
 
 
-/* encode specified pixel data to SIXEL format */
-SIXELAPI SIXELSTATUS
-sixel_encoder_encode_bytes_to_output(
-    sixel_encoder_t *encoder,
-    unsigned char   *bytes,
-    int              width,
-    int              height,
-    int              pixelformat,
-    unsigned char   *palette,
-    int              ncolors,
-    sixel_output_t  *output)
-{
-    SIXELSTATUS status = SIXEL_FALSE;
-    sixel_frame_t *frame;
-
-    if (encoder == NULL || bytes == NULL) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
-
-    status = sixel_frame_new(&frame, encoder->allocator);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    status = sixel_frame_init(frame, bytes, width, height,
-                              pixelformat, palette, ncolors);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    status = sixel_encoder_encode_frame(encoder, frame, output);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    status = SIXEL_OK;
-
-end:
-    return status;
-}
-
-
-
 #if HAVE_TESTS
 static int
 test1(void)

@@ -755,6 +755,9 @@ sixel_encode_dither(
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_G1:
+    case SIXEL_PIXELFORMAT_G2:
+    case SIXEL_PIXELFORMAT_G4:
         paletted_pixels = (unsigned char *)sixel_allocator_malloc(dither->allocator,
                                                                   (size_t)(width * height * 3));
         if (paletted_pixels == NULL) {
