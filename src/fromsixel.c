@@ -873,7 +873,7 @@ sixel_decode_raw(
     }
 
     /* buffer initialization */
-    status = image_buffer_init(&image, 2048, 2048, context.bgindex, allocator);
+    status = image_buffer_init(&image, 1, 1, context.bgindex, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
