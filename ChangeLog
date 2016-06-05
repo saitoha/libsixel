@@ -1,4 +1,33 @@
+2016-06-05  Hayaki Saito <saitoha@me.com>
+
+  * python/libsixel/__init__.py: Add
+  sixel_dither_get_palette()/sixel_dither_set_palette()
+
+  * src/dither.c: Set pixelformat in sixel_dither_get()
+
+2016-05-30  Hayaki Saito <saitoha@me.com>
+
+  * python/libsixel/__init__.py: Add python interfaces for dither object
+
+  * src/dither.c, src/tosixel.c: Fix for loading G1/G2/G4 pixel format
+
+  * include/sixel.h.in, src/encoder.c: Drop
+  sixel_encoder_encode_bytes_to_output()
+
+  * NEWS: Update NEWS
+
+2016-05-23  Hayaki Saito <saitoha@me.com>
+
+  * python/libsixel/__init__.py: Add sixel_output_* functions to python
+  interface
+
+2016-05-22  Hayaki Saito <saitoha@me.com>
+
+  * src/encoder.c, src/fromsixel.c: Minor fixes
+
 2016-05-10  Hayaki Saito <saitoha@me.com>
+
+  * src/fromsixel.c: Fix wrong DCS parameter parsing
 
   * src/fromsixel.c: Add missing default case for switching by parser state
 
