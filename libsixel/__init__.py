@@ -444,6 +444,18 @@ def sixel_output_set_encode_policy(output):
     _sixel.sixel_output_set_encode_policy(output)
 
 
+# create dither context object
+def sixel_dither_new(ncolors, allocator=None):
+    _sixel.sixel_dither_new.restype = c_int
+    _sixel.sixel_dither_new.argtypes = [POINTER(c_void_p), c_int, c_void_p]
+    dither = c_void_p(None)
+    status = _sixel.sixel_dither_new(byref(dither), ncolors, allocator)
+    if SIXEL_FAILED(status):
+        message = sixel_helper_format_error(status)
+        raise RuntimeError(message)
+    return dither
+
+
 # get built-in dither context object
 def sixel_dither_get(builtin_dither):
     _sixel.sixel_dither_get.restype = c_void_p
