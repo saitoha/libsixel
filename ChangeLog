@@ -1,5 +1,7 @@
 2016-06-06  Hayaki Saito <saitoha@me.com>
 
+  * examples/python/README.md, examples/python/converter.py: Add python example
+
   * src/fromsixel.c: Don't skip image finalization
 
   * src/dither.c, src/encoder.c: Minor fixes
