@@ -3,7 +3,7 @@ Drawing Example
 
 This example suggests how to implement the interaction among SIXEL terminals and pointer devices.
 
-[![drawing](https://raw.githubusercontent.com/saitoha/libsixel/data/data/drawing.png)](https://youtu.be/2-2FnoZp4Z0)
+  [![drawing](https://raw.githubusercontent.com/saitoha/libsixel/data/data/drawing.png)](https://youtu.be/2-2FnoZp4Z0)
 
 
 Requirements
