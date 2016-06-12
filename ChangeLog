@@ -1,3 +1,11 @@
+2016-06-12  Hayaki Saito <saitoha@me.com>
+
+  * converters/Makefile.am, converters/Makefile.in: converters: replace
+  relative path "../" to $(top_srcdir)
+
+  * src/Makefile.am, src/Makefile.in: Add -no-undefined option to LDFLAGS of
+  libsixel
+
 2016-06-06  Hayaki Saito <saitoha@me.com>
 
   * examples/python/README.md, examples/python/converter.py: Add python example
