@@ -6,6 +6,22 @@
 
 * core: Upgrade stb_image_write.h to v1.02.
 
+* core: introduce canonical/fast decoder to prevent segmentation faults
+
+* python: add row level API functions to python interface
+
+* img2sixel: fix broken -S option
+
+* img2sixel: fix broken animated GIF resizing feature
+
+* example: add example/drawing
+
+* example: add example/python
+
+* converters: Makefile tweak from yacp(thanks to @fd00)
+  https://github.com/fd00/yacp/blob/896e9bd819b373e8e99fefcec12bd85c73e7f123/libsixel/libsixel-1.6.0-1bl1.src.patch
+
+
                   ------------------------------
                    What's new in libsixel-1.6 ?
                   ------------------------------
