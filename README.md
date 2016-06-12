@@ -643,10 +643,27 @@ The Whole API is described [here](https://github.com/saitoha/libsixel/blob/maste
 
 ### Example
 
-A tiny example is available
-[here](https://github.com/saitoha/libsixel/blob/master/examples/opengl/).
+#### OpenGL
+
+[OpenGL example](https://github.com/saitoha/libsixel/blob/master/examples/opengl/)
+suggests how to port your OpenGL application to SIXEL terminal.
 
   ![opengl example](https://raw.githubusercontent.com/saitoha/libsixel/data/data/example_opengl.gif)
+
+
+#### Drawing
+
+[Drawing example](https://github.com/saitoha/libsixel/blob/master/examples/drawing/)
+suggests how to implement the interaction among SIXEL terminals and pointer devices.
+
+  [![drawing](https://raw.githubusercontent.com/saitoha/libsixel/data/data/drawing.png)](https://youtu.be/2-2FnoZp4Z0)
+
+
+#### Python
+
+[Python example](https://github.com/saitoha/libsixel/blob/master/examples/python/)
+suggests how to convert PIL images into SIXEL using libsixel python interface.
+
 
 ### Bitmap to SIXEL
 
