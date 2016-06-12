@@ -4,6 +4,12 @@ Python Example
 This example suggests how to convert PIL images into SIXEL using libsixel python interface.
 
 
+Requirements
+------------
+
+PIL (Python Imaging Library) or its compatible library
+
+
 Run (only works on SIXEL terminals)
 -----------------------------------
 
