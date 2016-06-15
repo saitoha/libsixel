@@ -3,9 +3,9 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.6.1], [saitoha@me.com])
+AC_INIT([sixel], [1.7.0], [saitoha@me.com])
 LS_LT_CURRENT=1
-LS_LT_REVISION=5
+LS_LT_REVISION=6
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 AC_SUBST([PACKAGE_DESCRIPTION],
@@ -186,12 +186,15 @@ LS_CHECK_CFLAG([-Wall],[AM_CFLAGS="$AM_CFLAGS -Wall"], [])
 LS_CHECK_CFLAG([-Wextra],[AM_CFLAGS="$AM_CFLAGS -Wextra"], [])
 LS_CHECK_CFLAG([-Wpedantic],[AM_CFLAGS="$AM_CFLAGS -Wpedantic"], [])
 LS_CHECK_CFLAG([-Wformat=2],[AM_CFLAGS="$AM_CFLAGS -Wformat=2"], [])
+LS_CHECK_CFLAG([-Wsign-conversion],
+               [AM_CFLAGS="$AM_CFLAGS -Wsign-conversion"]
+                AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION, 1, [define 1 if GCC supports -Wsign-conversion])])
 LS_CHECK_CFLAG([-Wuninitialized],
                [AM_CFLAGS="$AM_CFLAGS -Wuninitialized"]
                 AC_DEFINE(HAVE_DIAGNOSTIC_UNINITIALIZED, 1, [define 1 if GCC supports -Wuninitialized])])
 LS_CHECK_CFLAG([-Wstrict-overflow],
                [AM_CFLAGS="$AM_CFLAGS -Wstrict-overflow"
-                AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW, 1, [define 1 if GCC supports -Wstrict_overeflow])])
+                AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW, 1, [define 1 if GCC supports -Wstrict-overeflow])])
 LS_CHECK_CFLAG([-Wshadow],
                [AM_CFLAGS="$AM_CFLAGS -Wshadow"
                 AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW, 1, [define 1 if GCC supports -Wshadow])])

@@ -274,6 +274,7 @@ You can install libsixel via the following package systems.
 - [AUR](https://aur.archlinux.org/packages/libsixel-git/)
 - [Portage](http://packages.gentoo.org/package/media-libs/libsixel)
 - [Ubuntu](https://launchpad.net/ubuntu/+source/libsixel)
+- [NixOS](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/libraries/libsixel/default.nix)
 
 
 ### Build from source package
@@ -641,12 +642,29 @@ The low-livel API provides Bytes-to-Bytes conversion features.
 
 The Whole API is described [here](https://github.com/saitoha/libsixel/blob/master/include/sixel.h.in).
 
-### Example
+### Examples
 
-A tiny example is available
-[here](https://github.com/saitoha/libsixel/blob/master/examples/opengl/).
+#### OpenGL
+
+[OpenGL example](https://github.com/saitoha/libsixel/blob/master/examples/opengl/)
+suggests how to port your OpenGL application to SIXEL terminal.
 
   ![opengl example](https://raw.githubusercontent.com/saitoha/libsixel/data/data/example_opengl.gif)
+
+
+#### Drawing
+
+[Drawing example](https://github.com/saitoha/libsixel/blob/master/examples/drawing/)
+suggests how to implement the interaction among SIXEL terminals and pointer devices.
+
+  [![drawing](https://raw.githubusercontent.com/saitoha/libsixel/data/data/drawing.png)](https://youtu.be/2-2FnoZp4Z0)
+
+
+#### Python
+
+[Python example](https://github.com/saitoha/libsixel/blob/master/examples/python/)
+suggests how to convert PIL images into SIXEL using libsixel python interface.
+
 
 ### Bitmap to SIXEL
 
@@ -962,6 +980,7 @@ The MIT License (MIT)
 
 - [@arakiken](https://github.com/arakiken/)
 - [@elfring](https://github.com/elfring/)
+- [@fd00](https://github.com/fd00/)
 - [@hattya](https://github.com/hattya/)
 - [@isaki68k](https://github.com/isaki68k/)
 - [@knok](https://github.com/knok/)
@@ -1038,9 +1057,9 @@ date will be written clearly.
 kmiya also said this is compatible with MIT/BSD/GPL.
 
 
-### stbi-2.10
+### stbi-2.12
 
-This software includes `stb-image-v2.10` (stb_image.h),
+This software includes `stb-image-v2.12` (stb_image.h),
 public domain JPEG/PNG reader.
 
 https://github.com/nothings/stb
@@ -1052,8 +1071,8 @@ https://github.com/nothings/stb
 > distribute, and modify this file as you see fit.
 
 
-### stbiw-1.01
-This software includes `stb-image-write-v1.01` (stb_image_write.h),
+### stbiw-1.02
+This software includes `stb-image-write-v1.02` (stb_image_write.h),
 public domain PNG/BMP/TGA writer.
 
 https://github.com/nothings/stb
@@ -1323,7 +1342,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 - [mandel4](http://kildall.apana.org.au/~cjb/mandel5.c)
 
-  A mandelbrot program for (colour) sixel-supporting terminals, written by Chris Baird <cjb at brushtail.apana.org.au> 1987-2015
+  A mandelbrot program for (colour) sixel-supporting terminals, written by Chris Baird
 
   ![mandel4](https://raw.githubusercontent.com/saitoha/libsixel/data/data/mandel.png)
 

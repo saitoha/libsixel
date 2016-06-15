@@ -36,6 +36,10 @@
 
 #include "frame.h"
 
+#if !defined(HAVE_MEMMOVE)
+# define memmove(d, s, n) (bcopy ((s), (d), (n)))
+#endif
+
 /* constructor of frame object */
 SIXELAPI SIXELSTATUS
 sixel_frame_new(
@@ -367,7 +371,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *normalized_pixels = NULL;
-    int size;
+    size_t size;
     unsigned char *dst;
     unsigned char *src;
     unsigned char *p;
@@ -378,7 +382,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
-        size = frame->width * frame->height * 4;
+        size = (size_t)(frame->width * frame->height * 4);
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
@@ -408,7 +412,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
         frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     case SIXEL_PIXELFORMAT_PAL8:
-        size = frame->width * frame->height * 3;
+        size = (size_t)(frame->width * frame->height * 3);
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
@@ -439,7 +443,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     case SIXEL_PIXELFORMAT_RGBA8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
         /* normalize pixelformat */
-        size = frame->width * frame->height * 3;
+        size = (size_t)(frame->width * frame->height * 3);
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
@@ -486,7 +490,7 @@ sixel_frame_resize(
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int size;
+    size_t size;
     unsigned char *scaled_frame = NULL;
 
     sixel_frame_ref(frame);
@@ -496,7 +500,7 @@ sixel_frame_resize(
         goto end;
     }
 
-    size = width * height * 3;
+    size = (size_t)(width * height * 3);
     scaled_frame = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
     if (scaled_frame == NULL) {
         sixel_helper_set_additional_message(
@@ -574,7 +578,7 @@ clip(unsigned char *pixels,
         dst = pixels;
         src = pixels + cy * sx * depth + cx * depth;
         for (y = 0; y < ch; y++) {
-            memmove(dst, src, cw * depth);
+            memmove(dst, src, (size_t)(cw * depth));
             dst += (cw * depth);
             src += (sx * depth);
         }
@@ -622,7 +626,7 @@ sixel_frame_clip(
     case SIXEL_PIXELFORMAT_G2:
     case SIXEL_PIXELFORMAT_G4:
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator,
-                                                                    frame->width * frame->height);
+                                                                    (size_t)(frame->width * frame->height));
         status = sixel_helper_normalize_pixelformat(normalized_pixels,
                                                     &frame->pixelformat,
                                                     frame->pixels,
