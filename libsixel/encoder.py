@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2014,2015 Hayaki Saito
+# Copyright (c) 2014-2016 Hayaki Saito
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -37,10 +37,13 @@ class Encoder(object):
     def encode(self, filename="-"):
         sixel_encoder_encode(self._encoder, filename)
 
+    def encode_bytes(self, buf, width, height, pixelformat, palette):
+        sixel_encoder_encode_bytes(self._encoder, buf, width, height, pixelformat, palette)
+
     def test(self, filename):
         import threading
 
-        self.setopt(SIXEL_OPTFALG_COLORS, 16)
+        self.setopt(SIXEL_OPTFLAG_COLORS, 16)
         self.setopt(SIXEL_OPTFLAG_DIFFUSION, "atkinson")
         self.setopt(SIXEL_OPTFLAG_WIDTH, 200)
         t = threading.Thread(target=self.encode, args=[filename])
