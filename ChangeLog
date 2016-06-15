@@ -1,4 +1,24 @@
+2016-06-15  Hayaki Saito <saitoha@me.com>
+
+  * python/setup.py: Update Python interface version
+
+  * converters/Makefile.am, converters/Makefile.in: Add missing '$(WINE)' in
+  Makefile to prevent access violation error in mingw-w64 build
+
+  * .travis.yml: display log with tail -n50
+
+  * .travis.yml: travis: display whole error log
+
 2016-06-12  Hayaki Saito <saitoha@me.com>
+
+  * README.md: Minor fixes
+
+  * examples/drawing/README.md, examples/opengl/README.md: Minor fixes
+
+  * NEWS: Update NEWS
+
+  * configure, configure.ac, package.json: Update package version to 1.7.0,
+  libtool version to 1.6.0
 
   * converters/Makefile.am, converters/Makefile.in: converters: replace
   relative path "../" to $(top_srcdir)
