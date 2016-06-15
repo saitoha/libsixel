@@ -73,7 +73,7 @@ if WANT_IMG2SIXEL
 	test ! $$(echo -n a | $(WINE) ./img2sixel)
 	$(WINE) ./img2sixel -H
 	$(WINE) ./img2sixel -V
-	$(WINE) ./img2sixel $(top_srcdir)/images/snake.jpg -datkinson -flum -saverage | ./img2sixel | tee snake.sixel
+	$(WINE) ./img2sixel $(top_srcdir)/images/snake.jpg -datkinson -flum -saverage | $(WINE) ./img2sixel | tee snake.sixel
 	$(WINE) ./img2sixel -w50% -h150% -dfs -Bblue -thls -shistogram < $(top_srcdir)/images/snake.jpg | tee snake2.sixel
 	$(WINE) ./img2sixel -w2100 -h2100 -djajuni -bxterm256 -o snake3.sixel < $(top_srcdir)/images/snake.jpg
 	$(WINE) ./img2sixel -w105% -h100 -B\#000000000 -rnearest < $(top_srcdir)/images/snake.gif
@@ -212,9 +212,9 @@ if HAVE_CURL
 	    echo "httpd.handle_request()" >> server.py; \
 	    python server.py& \
 	    sleep 1; \
-	    ! ./img2sixel 'https://localhost:4443/snake.sixel'; \
+	    ! $(WINE) ./img2sixel 'https://localhost:4443/snake.sixel'; \
 	    sleep 1; \
-	    ./img2sixel -k 'https://localhost:4443/snake.sixel'; \
+	    $(WINE) ./img2sixel -k 'https://localhost:4443/snake.sixel'; \
 	fi
 endif
 if WANT_SIXEL2PNG
