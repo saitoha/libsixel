@@ -39,7 +39,7 @@ before_script:
 script:
   - "make"
   - "sudo make install"
-  - "make test | tee log | grep succeeded || (cat log|tail -n5; exit 1)"
+  - "make test | tee log | grep succeeded || (cat log; exit 1)"
 
 after_success:
   - "make valgrind || (cat valgrind.log && exit 1)"
