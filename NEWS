@@ -6,7 +6,7 @@
 
 * core: Upgrade stb_image_write.h to v1.02.
 
-* core: introduce canonical/fast decoder to prevent segmentation faults
+* core: introduce canonical,fast decoder to prevent segmentation faults
 
 * python: add row level API functions to python interface
 

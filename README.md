@@ -274,6 +274,7 @@ You can install libsixel via the following package systems.
 - [AUR](https://aur.archlinux.org/packages/libsixel-git/)
 - [Portage](http://packages.gentoo.org/package/media-libs/libsixel)
 - [Ubuntu](https://launchpad.net/ubuntu/+source/libsixel)
+- [NixOS](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/libraries/libsixel/default.nix)
 
 
 ### Build from source package
@@ -641,7 +642,7 @@ The low-livel API provides Bytes-to-Bytes conversion features.
 
 The Whole API is described [here](https://github.com/saitoha/libsixel/blob/master/include/sixel.h.in).
 
-### Example
+### Examples
 
 #### OpenGL
 
@@ -979,6 +980,7 @@ The MIT License (MIT)
 
 - [@arakiken](https://github.com/arakiken/)
 - [@elfring](https://github.com/elfring/)
+- [@fd00](https://github.com/fd00/)
 - [@hattya](https://github.com/hattya/)
 - [@isaki68k](https://github.com/isaki68k/)
 - [@knok](https://github.com/knok/)
