@@ -228,7 +228,7 @@ end:
 }
 
 static void
-sixel_node_del(sixel_output_t *const output, sixel_node_t *np)
+sixel_node_del(sixel_output_t *output, sixel_node_t *np)
 {
     sixel_node_t *tp;
 
@@ -250,11 +250,12 @@ sixel_node_del(sixel_output_t *const output, sixel_node_t *np)
 
 
 static SIXELSTATUS
-sixel_put_node(sixel_output_t *const output,
-               int *x,
-               sixel_node_t *np,
-               int ncolors,
-               int keycolor)
+sixel_put_node(
+    sixel_output_t /* in */     *output,  /* output context */
+    int            /* in/out */ *x,       /* header position */
+    sixel_node_t   /* in */     *np,      /* node object */
+    int            /* in */     ncolors,  /* number of palette colors */
+    int            /* in */     keycolor) /* transparent color number */
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int nwrite;
@@ -754,6 +755,9 @@ sixel_encode_dither(
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_G1:
+    case SIXEL_PIXELFORMAT_G2:
+    case SIXEL_PIXELFORMAT_G4:
         paletted_pixels = (unsigned char *)sixel_allocator_malloc(dither->allocator,
                                                                   (size_t)(width * height * 3));
         if (paletted_pixels == NULL) {

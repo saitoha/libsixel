@@ -37,6 +37,9 @@ class Encoder(object):
     def encode(self, filename="-"):
         sixel_encoder_encode(self._encoder, filename)
 
+    def encode_bytes(self, buf, width, height, pixelformat, palette):
+        sixel_encoder_encode_bytes(self._encoder, buf, width, height, pixelformat, palette)
+
     def test(self, filename):
         import threading
 

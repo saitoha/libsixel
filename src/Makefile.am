@@ -53,7 +53,7 @@ libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(LIBJPEG_CFLAGS) \
 		$(GDK_PIXBUF_CFLAGS) \
 		$(GD_CFLAGS)
-libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION)
+libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION)
 libsixel_la_LIBADD = -lm \
 		$(LIBCURL_LIBS) \
 		$(LIBPNG_LIBS) \

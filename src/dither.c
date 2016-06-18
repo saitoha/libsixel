@@ -634,6 +634,7 @@ sixel_dither_get_num_of_histgram_colors(
 }
 
 
+/* get palette */
 SIXELAPI unsigned char *
 sixel_dither_get_palette(
     sixel_dither_t /* in */ *dither)  /* dither context object */
