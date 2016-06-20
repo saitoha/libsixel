@@ -1,35 +1,19 @@
-OpenGL Example
+Python Example
 ==============
 
-This example suggests how to port your OpenGL application to SIXEL terminal.
-
-  ![opengl](https://raw.githubusercontent.com/saitoha/libsixel/data/data/example_opengl.gif)
+This example suggests how to convert PIL images into SIXEL using libsixel python interface.
 
 
-How to Build
+Requirements
 ------------
 
-Linux/BSDs:
-
-  1. Install OSMesa package on your distribution
-
-      $ sudo apt-get install libosmesa6-dev 
-
-  2. Build
-
-      $ ./configure && make
-
-OSX:
-
-  1. Build
-
-      $ ./configure && make
+PIL (Python Imaging Library) or its compatible library
 
 
 Run (only works on SIXEL terminals)
 -----------------------------------
 
-  $ ./demo
+  $ ./converter.py
 
 
 License
