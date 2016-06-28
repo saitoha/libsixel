@@ -3,9 +3,9 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.5.0], [user@zuse.jp])
+AC_INIT([sixel], [1.7.0], [saitoha@me.com])
 LS_LT_CURRENT=1
-LS_LT_REVISION=4
+LS_LT_REVISION=6
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 AC_SUBST([PACKAGE_DESCRIPTION],
@@ -28,6 +28,40 @@ AX_GCC_FUNC_ATTRIBUTE([deprecated])
 if test x$ax_cv_have_func_attribute_deprecated != x; then
     AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
 fi
+
+CFLAGS_BACKUP=$CFLAGS
+CFLAGS="$CFLAGS -Werror"
+AC_TRY_COMPILE(
+  [
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic pop
+    #pragma GCC diagnostic ignored "-Wtypedef-redefinition"
+  ],
+  [
+    typedef int foo;
+    typedef int foo;
+  ],
+  [AC_DEFINE(HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION,
+             1,
+             [define 1 if GCC supports -Wtypedef-redefinition])])
+CFLAGS=$CFLAGS_BACKUP
+
+CFLAGS_BACKUP=$CFLAGS
+CFLAGS="$CFLAGS -Werror"
+AC_TRY_COMPILE(
+  [
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic pop
+    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    __attribute__((deprecated)) void test(void) {}
+  ],
+  [
+    test();
+  ],
+  [AC_DEFINE(HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS,
+             1,
+             [define 1 if GCC supports -Wdeprecated-declarations])])
+CFLAGS=$CFLAGS_BACKUP
 
 # Options
 AC_ARG_ENABLE([img2sixel],
@@ -108,7 +142,7 @@ AC_ARG_ENABLE([python],
               [AS_HELP_STRING([--enable-python],
                               [Python interface (default: yes)])],
               [],
-              [enable_python=yes])
+              [])
 
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
@@ -139,7 +173,7 @@ AS_IF([test x$cross_compile != xyes], [PKG_PROG_PKG_CONFIG], [])
 AC_DEFUN([LS_CHECK_CFLAG], [
    AC_MSG_CHECKING([if $CC supports $1])
    saved_cflags="$CFLAGS"
-   CFLAGS="$1"
+   CFLAGS="$1 -Werror"
    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
                      [AC_MSG_RESULT([yes])
                       m4_default([$2], :)],
@@ -150,8 +184,28 @@ AC_DEFUN([LS_CHECK_CFLAG], [
 
 LS_CHECK_CFLAG([-Wall],[AM_CFLAGS="$AM_CFLAGS -Wall"], [])
 LS_CHECK_CFLAG([-Wextra],[AM_CFLAGS="$AM_CFLAGS -Wextra"], [])
+LS_CHECK_CFLAG([-Wpedantic],[AM_CFLAGS="$AM_CFLAGS -Wpedantic"], [])
+LS_CHECK_CFLAG([-Wformat=2],[AM_CFLAGS="$AM_CFLAGS -Wformat=2"], [])
+LS_CHECK_CFLAG([-Wsign-conversion],
+               [AM_CFLAGS="$AM_CFLAGS -Wsign-conversion"]
+                AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION, 1, [define 1 if GCC supports -Wsign-conversion])])
+LS_CHECK_CFLAG([-Wuninitialized],
+               [AM_CFLAGS="$AM_CFLAGS -Wuninitialized"]
+                AC_DEFINE(HAVE_DIAGNOSTIC_UNINITIALIZED, 1, [define 1 if GCC supports -Wuninitialized])])
+LS_CHECK_CFLAG([-Wstrict-overflow],
+               [AM_CFLAGS="$AM_CFLAGS -Wstrict-overflow"
+                AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW, 1, [define 1 if GCC supports -Wstrict-overeflow])])
+LS_CHECK_CFLAG([-Wshadow],
+               [AM_CFLAGS="$AM_CFLAGS -Wshadow"
+                AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW, 1, [define 1 if GCC supports -Wshadow])])
+LS_CHECK_CFLAG([-Wdouble-promotion],
+               [AM_CFLAGS="$AM_CFLAGS -Wdouble-promotion"
+                AC_DEFINE(HAVE_DIAGNOSTIC_DOUBLE_PROMOTION, 1, [define 1 if GCC supports -Wdouble-promotion])])
+LS_CHECK_CFLAG([-Wswitch-default],
+               [AM_CFLAGS="$AM_CFLAGS -Wswitch-default"
+                AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT, 1, [define 1 if GCC supports -Wswitch-default])])
 AS_IF([test x$enable_debug = xyes],
-      [LS_CHECK_CFLAG([-Werror],[AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
+      [LS_CHECK_CFLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
 AC_SUBST([AM_CFLAGS])
 
 # For wic integration
@@ -174,6 +228,7 @@ AC_CHECK_HEADERS([memory.h \
                   sys/types.h \
                   sys/stat.h \
                   fcntl.h \
+                  io.h \
                   errno.h \
                   limits.h \
                   sys/time.h \
@@ -218,7 +273,9 @@ AC_CHECK_FUNCS([memcpy \
                 stat \
                 setjmp \
                 strerror \
-                isatty])
+                isatty \
+                strncmp \
+                ldiv])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
@@ -317,7 +374,7 @@ if test x$with_gd != xno; then
                      [gdImageCreateFromGifPtr],
                      [AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])])
         AC_CHECK_LIB([gd],
-                     [gdImageCreateFromBmpPtr],
+                     [gdImageCreateFromPngPtr],
                      [AC_CHECK_DECLS([gdImageCreateFromPngPtr],   [], [], [ #include <gd.h> ])])
         AC_CHECK_LIB([gd],
                      [gdImageCreateFromBmpPtr],
@@ -383,7 +440,7 @@ if test x$with_libcurl != xno; then
             ADDED_CFLAGS="-I${with_libcurl}/include"
             ADDED_LIBS="-L${with_libcurl}/lib -lcurl"
         else
-	    if test x${prefix} != x -a x${prefix} != xNONE; then
+            if test x${prefix} != x -a x${prefix} != xNONE; then
                 ADDED_CFLAGS="-I${prefix}/include"
                 ADDED_LIBS="-L${prefix}/lib -lcurl"
             else
@@ -449,7 +506,9 @@ if test x$with_jpeg != xno; then
         AC_CHECK_HEADER([jpeglib.h],
                         [AC_CHECK_LIB([jpeg],
                                       [jpeg_read_header],
-                                      [have_jpeg=yes],
+                                      [have_jpeg=yes
+                                       LIBJPEG_CFLAGS=$ADDED_CFLAGS
+                                       LIBJPEG_LIBS=$ADDED_LIBS],
                                       [have_jpeg=no])])
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP

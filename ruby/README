@@ -1,8 +1,0 @@
-Build and Install
-=================
-
-```
-$ ruby setup.rb
-$ make install
-```
-

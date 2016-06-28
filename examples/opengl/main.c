@@ -1,7 +1,7 @@
 /**
  * Example program for libsixel-OpenGL integration
  *
- * Hayaki Saito <user@zuse.jp>
+ * Hayaki Saito <saitoha@me.com>
  *
  * I declared this program is in Public Domain (CC0 - "No Rights Reserved"),
  * This file is offered AS-IS, without any warranty.
@@ -496,6 +496,9 @@ int main(int argc, char** argv)
         status = output_sixel(pixbuf, width, height, ncolors,
                               SIXEL_PIXELFORMAT_RGB888);
         if (SIXEL_FAILED(status)) {
+            fprintf(stderr, "%s\n%s\n",
+                    sixel_helper_format_error(status),
+                    sixel_helper_get_additional_message());
             break;
         }
     }
@@ -504,7 +507,7 @@ int main(int argc, char** argv)
     free(pixbuf);
 #endif
 
-    printf("\e\\");
+    printf("\033\\");
 
     if (cleanup() != 0)
        return (-1);

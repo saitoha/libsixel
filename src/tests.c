@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -31,13 +31,19 @@
 # include <inttypes.h>
 #endif
 
+#include <sixel.h>
 #include "dither.h"
 #include "quant.h"
 #include "frame.h"
 #include "pixelformat.h"
 #include "writer.h"
 #include "encoder.h"
-#include <sixel.h>
+#include "decoder.h"
+#include "status.h"
+#include "loader.h"
+#include "fromgif.h"
+#include "chunk.h"
+#include "allocator.h"
 
 #if HAVE_TESTS
 
@@ -49,47 +55,102 @@ main(int argc, char *argv[])
     (void) argc;
     (void) argv;
 
+    nret = sixel_fromgif_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("fromgif ok.");
+    fflush(stdout);
+
+    nret = sixel_loader_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("loader ok.");
+    fflush(stdout);
+
     nret = sixel_dither_tests_main();
     if (nret != EXIT_SUCCESS) {
         goto error;
     }
 
-    puts("done.");
+    puts("dither ok.");
+    fflush(stdout);
 
     nret = sixel_pixelformat_tests_main();
     if (nret != EXIT_SUCCESS) {
         goto error;
     }
 
-    puts("done.");
+    puts("pixelformat ok.");
+    fflush(stdout);
 
     nret = sixel_frame_tests_main();
     if (nret != EXIT_SUCCESS) {
         goto error;
     }
 
-    puts("done.");
+    puts("frame ok.");
+    fflush(stdout);
 
     nret = sixel_writer_tests_main();
     if (nret != EXIT_SUCCESS) {
         goto error;
     }
 
-    puts("done.");
+    puts("writer ok.");
+    fflush(stdout);
 
     nret = sixel_quant_tests_main();
     if (nret != EXIT_SUCCESS) {
         goto error;
     }
 
-    puts("done.");
+    puts("quant ok.");
+    fflush(stdout);
 
     nret = sixel_encoder_tests_main();
     if (nret != EXIT_SUCCESS) {
         goto error;
     }
 
-    puts("done.");
+    puts("encoder ok.");
+    fflush(stdout);
+
+    nret = sixel_decoder_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("decoder ok.");
+    fflush(stdout);
+
+    nret = sixel_status_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("status ok.");
+    fflush(stdout);
+
+    nret = sixel_chunk_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("chunk ok.");
+    fflush(stdout);
+
+    nret = sixel_allocator_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        goto error;
+    }
+
+    puts("allocator ok.");
+    fflush(stdout);
+
 error:
     return nret;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -200,15 +200,15 @@ scale_without_resampling(
     int x;
     int y;
     int i;
-    int index;
+    int pos;
 
     for (h = 0; h < dsth; h++) {
         for (w = 0; w < dstw; w++) {
             x = w * srcw / dstw;
             y = h * srch / dsth;
             for (i = 0; i < depth; i++) {
-                index = (y * srcw + x) * depth + i;
-                dst[(h * dstw + w) * depth + i] = src[index];
+                pos = (y * srcw + x) * depth + i;
+                dst[(h * dstw + w) * depth + i] = src[pos];
             }
         }
     }
@@ -234,7 +234,7 @@ scale_with_resampling(
     int x;
     int y;
     int i;
-    int index;
+    int pos;
     int x_first, x_last, y_first, y_last;
     double center_x, center_y;
     double diff_x, diff_y;
@@ -284,8 +284,8 @@ scale_with_resampling(
                     }
                     weight = f_resample(fabs(diff_x)) * f_resample(fabs(diff_y));
                     for (i = 0; i < depth; i++) {
-                        index = (y * srcw + x) * depth + i;
-                        offsets[i] += src[index] * weight;
+                        pos = (y * srcw + x) * depth + i;
+                        offsets[i] += src[pos] * weight;
                     }
                     total += weight;
                 }
@@ -294,8 +294,8 @@ scale_with_resampling(
             /* normalize */
             if (total > 0.0) {
                 for (i = 0; i < depth; i++) {
-                    index = (h * dstw + w) * depth + i;
-                    dst[index] = normalize(offsets[i], total);
+                    pos = (h * dstw + w) * depth + i;
+                    dst[pos] = normalize(offsets[i], total);
                 }
             }
         }
@@ -312,7 +312,8 @@ sixel_helper_scale_image(
     int                 /* in */  pixelformat,            /* one of enum pixelFormat */
     int                 /* in */  dstw,                   /* destination image width */
     int                 /* in */  dsth,                   /* destination image height */
-    int                 /* in */  method_for_resampling)  /* one of methodForResampling */
+    int                 /* in */  method_for_resampling,  /* one of methodForResampling */
+    sixel_allocator_t   /* in */  *allocator)             /* allocator object */
 {
     int const depth = sixel_helper_compute_depth(pixelformat);
     unsigned char *new_src = NULL;
@@ -320,7 +321,7 @@ sixel_helper_scale_image(
     int new_pixelformat;
 
     if (depth != 3) {
-        new_src = malloc(srcw * srch * 3);
+        new_src = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(srcw * srch * 3));
         if (new_src == NULL) {
             return (-1);
         }
@@ -329,7 +330,7 @@ sixel_helper_scale_image(
                                                   src, pixelformat,
                                                   srcw, srch);
         if (nret != 0) {
-            free(new_src);
+            sixel_allocator_free(allocator, new_src);
             return (-1);
         }
 

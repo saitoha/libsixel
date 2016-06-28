@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension name="sixel" version="1.0.0">
+
+  <summary>PHP interface to libsixel</summary>
+  <description>
+    A PHP interface to libsixel.
+    libsixel is a lightweight, fast implementation of DEC SIXEL graphics codec.
+  </description>
+
+  <maintainers>
+    <maintainer>
+      <user>saitoha</user>
+      <name>Hayaki Saito</name>
+      <email>saitoha@me.com</email>
+      <role>developer</role>
+    </maintainer>
+  </maintainers>
+
+  <license>MIT</license>
+
+  <release>
+    <version>0.0.2</version>
+    <state>alpha</state>
+    <date>2015-08-30</date>
+    <notes>
+        Alpha version.
+    </notes>
+  </release>
+
+  <changelog>
+  </changelog>
+
+  <deps language="c" platform="all">
+    <with name="libsixel" mode="pkg-config" version="1.5">
+      <header name="sixel.h"/>
+    </with>
+  </deps>
+
+  <class name="SixelEncoder">
+
+    <function name="__construct" access="public">
+      <proto>object __construct()</proto>
+      <code><?data
+        SIXELSTATUS status;
+        sixel_encoder_t *encoder;
+        zval *value;
+        status = sixel_encoder_new(&encoder, NULL);
+        if (SIXEL_FAILED(status)) {
+#if 0
+            zend_throw_exception_ex(zend_exception_get_default(), 1,
+                                    "sixel_encoder_new() failed: %s (%s:%d)",
+                                    sixel_helper_format_error(status),
+                                    __FILE__, __LINE__);
+#endif
+        } else {
+            value = emalloc(sizeof(zval));
+            ZVAL_RESOURCE(value, (long)encoder);
+            zend_update_property(_this_ce, getThis(),
+                                 "encoder", sizeof("encoder") - 1, value);
+        }
+      ?></code>
+    </function>
+
+    <function name="__destruct" access="public">
+      <proto>object __destruct()</proto>
+      <code><?data
+        zval *encoder;
+        encoder = zend_read_property(_this_ce, getThis(),
+                                     "encoder", sizeof("encoder") - 1, 1);
+        sixel_encoder_unref((sixel_encoder_t *)Z_RESVAL_P(encoder));
+        efree(encoder);
+      ?></code>
+    </function>
+
+    <function name="setopt" access="public">
+      <proto>void setopt(string opt[, string arg])</proto>
+      <code><?data
+        SIXELSTATUS status;
+        zval *encoder;
+        encoder = zend_read_property(_this_ce, getThis(),
+                                     "encoder", sizeof("encoder") - 1, 1);
+        status = sixel_encoder_setopt((sixel_encoder_t *)Z_RESVAL_P(encoder), *opt, arg);
+#if 0
+        if (SIXEL_FAILED(status) {
+            zend_throw_exception_ex(zend_exception_get_default(), 1,
+                                    "sixel_encoder_encode() failed: %s (%s:%d)",
+                                    sixel_helper_format_error(status),
+                                    __FILE__, __LINE__);
+        }
+#endif
+      ?></code>
+    </function>
+
+    <function name="encode" access="public">
+      <proto>void encode(string filename)</proto>
+      <code><?data
+        SIXELSTATUS status;
+        zval *encoder;
+        encoder = zend_read_property(_this_ce, getThis(),
+                                     "encoder", sizeof("encoder") - 1, 1);
+        status = sixel_encoder_encode((sixel_encoder_t *)Z_RESVAL_P(encoder), filename);
+#if 0
+        if (SIXEL_FAILED(status) {
+            zend_throw_exception_ex(zend_exception_get_default(), 1,
+                                    "sixel_encoder_encode() failed: %s (%s:%d)",
+                                    sixel_helper_format_error(status),
+                                    __FILE__, __LINE__);
+        }
+#endif
+      ?></code>
+    </function>
+  </class>
+</extension>

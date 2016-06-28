@@ -1,0 +1,76 @@
+{
+   "abstract" : "The Perl interface for libsixel (A lightweight, fast implementation of DEC SIXEL graphics codec)",
+   "author" : [
+      "Hayaki Saito <saitoha@me.com>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Minilla/v2.4.1, CPAN::Meta::Converter version 2.150001",
+   "license" : [
+      "unknown"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "Image-LibSIXEL",
+   "no_index" : {
+      "directory" : [
+         "t",
+         "xt",
+         "inc",
+         "share",
+         "eg",
+         "examples",
+         "author",
+         "builder"
+      ]
+   },
+   "prereqs" : {
+      "configure" : {
+         "requires" : {
+            "Module::Build::Tiny" : "0.035"
+         }
+      },
+      "build" : {
+         "requires" : {
+            "ExtUtils::CBuilder" : "0",
+            "Test::More" : "0"
+         }
+      },
+      "develop" : {
+         "requires" : {
+            "Test::CPAN::Meta" : "0",
+            "Test::MinimumVersion::Fast" : "0.04",
+            "Test::PAUSE::Permissions" : "0.04",
+            "Test::Pod" : "1.41",
+            "Test::Spellunker" : "v0.2.7"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "perl" : "5.012001"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Test::More" : "0.98"
+         }
+      }
+   },
+   "release_status" : "unstable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/saitoha/libsixel-perl/issues"
+      },
+      "homepage" : "https://github.com/saitoha/libsixel-perl",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/saitoha/libsixel-perl.git",
+         "web" : "https://github.com/saitoha/libsixel-perl"
+      }
+   },
+   "version" : "0.01",
+   "x_contributors" : [
+      "Hayaki Saito <user@zuse.jp>"
+   ]
+}

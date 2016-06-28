@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -38,6 +38,10 @@
 # include <fcntl.h>
 #endif
 
+#if HAVE_IO_H
+# include <io.h>
+#endif
+
 #if HAVE_UNISTD_H
 # include <unistd.h>  /* getopt */
 #endif
@@ -61,7 +65,7 @@ static
 void show_version(void)
 {
     printf("sixel2png " PACKAGE_VERSION "\n"
-           "Copyright (C) 2014,2015 Hayaki Saito <user@zuse.jp>.\n"
+           "Copyright (C) 2014,2015 Hayaki Saito <saitoha@me.com>.\n"
            "\n"
            "Permission is hereby granted, free of charge, to any person obtaining a copy of\n"
            "this software and associated documentation files (the \"Software\"), to deal in\n"
@@ -120,9 +124,8 @@ main(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 
-    decoder = sixel_decoder_create();
-    if (decoder == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
+    status = sixel_decoder_new(&decoder, NULL);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
 

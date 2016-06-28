@@ -3,6 +3,8 @@ OpenGL Example
 
 This example suggests how to port your OpenGL application to SIXEL terminal.
 
+  ![opengl](https://raw.githubusercontent.com/saitoha/libsixel/data/data/example_opengl.gif)
+
 
 How to Build
 ------------
@@ -32,7 +34,7 @@ Run (only works on SIXEL terminals)
 
 License
 --------
-Hayaki Saito <user@zuse.jp>
+Hayaki Saito <saitoha@me.com>
 
 I declared main.c is in Public Domain (CC0 - "No Rights Reserved").
 This example is offered AS-IS, without any warranty.

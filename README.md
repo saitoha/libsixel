@@ -31,6 +31,7 @@ Now Youtube video streaming is available over SIXEL protocol by [FFmpeg-SIXEL](h
 
   [![FFmpeg-SIXEL](https://raw.githubusercontent.com/saitoha/libsixel/data/data/ffmpeg.png)](http://youtu.be/hqMh47lYHlc)
 
+Above demo only uses 16 color registers.
 
 ### SDL integration: Gaming, Virtualization, ...etc.
 
@@ -115,7 +116,7 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
 
 #### [sayaka-chan](https://github.com/isaki68k/sayaka/)
 
-  [sayaka-chan](https://github.com/isaki68k/sayaka/) works with libsixel inline-image extension.
+  [sayaka-chan](https://github.com/isaki68k/sayaka/)(PHP version) works with libsixel inline-image extension.
 
   SIXEL works with old powerless machines such as [NetBSD/x68k](http://wiki.netbsd.org/ports/x68k/) (here is SHARP X68030 with 060turbo):
 
@@ -125,6 +126,18 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
   [a patch for ite(4)](https://github.com/isaki68k/misc/blob/master/NetBSD/patch/x68k-ite-sixel.diff).
 
   ![ite(4)](https://raw.githubusercontent.com/saitoha/libsixel/data/data/ite.png)
+
+
+### Other
+
+#### [sdump](https://github.com/uobikiemukot/sdump)
+
+  A sixel image dumper, provides pdf previewer.
+
+
+#### [sixelPreviewer](https://github.com/mikoto2000/sixelPreviewer)
+
+  A simple scripts for realtime edit-previewing for dot, svg, markdown, ...etc.
 
 
 ## Highlighted features
@@ -210,13 +223,28 @@ Now SIXEL feature is supported by the following terminals.
 
   [http://mlterm.sourceforge.net/](http://mlterm.sourceforge.net/)
 
-  Works on each of X, win32/cygwin, framebuffer version.
+  Works on each of X, WIN32 GDI, framebuffer, Android, Cocoa version.
 
 - XTerm (compiled with `--enable-sixel` option)
 
   [http://invisible-island.net/xterm/](http://invisible-island.net/xterm/)
 
-  You should launch xterm with "`-ti 340`" option. The SIXEL palette is limited to a maximum of 16 colors.
+  You should launch xterm with "`-ti 340`" option.
+  The SIXEL palette is limited to a maximum of 16 colors.
+  To avoid this limitation, Try
+
+```sh
+$ echo "XTerm*decTerminalID: vt340" >> $HOME/.Xresources
+$ echo "XTerm*numColorRegisters: 256" >>  $HOME/.Xresources
+$ xrdb $HOME/.Xresources
+$ xterm
+```
+
+  or
+
+```sh
+$ xterm -xrm "XTerm*decTerminalID: vt340" -xrm "XTerm*numColorRegisters: 256"
+```
 
 - yaft
 
@@ -243,9 +271,10 @@ You can install libsixel via the following package systems.
 - [Homebrew tap](https://github.com/aki017/homebrew-sixel)
 - [yacp](https://github.com/fd00/yacp/tree/master/libsixel)
 - [Debian](https://packages.debian.org/search?searchon=names&keywords=libsixel)
-- [AUR](https://aur.archlinux.org/packages/libsixel/)
+- [AUR](https://aur.archlinux.org/packages/libsixel-git/)
 - [Portage](http://packages.gentoo.org/package/media-libs/libsixel)
 - [Ubuntu](https://launchpad.net/ubuntu/+source/libsixel)
+- [NixOS](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/libraries/libsixel/default.nix)
 
 
 ### Build from source package
@@ -302,6 +331,7 @@ Options:
                            terminals or printers (default)
 -8, --8bit-mode            generate a sixel image for 8bit
                            terminals or printers
+-R, --gri-limit            limit arguments of DECGRI('!') to 255
 -p COLORS, --colors=COLORS specify number of colors to reduce
                            the image to (default=256)
 -m FILE, --mapfile=FILE    transform image colors to match this
@@ -321,8 +351,8 @@ Options:
 -n MACRONO, --macro-number=MACRONO
                            specify an number argument for
                            DECDMAC and make terminal memorize
-                           SIXEL image. No image is shown if this
-                           option is specified
+                           SIXEL image. No image is shown if
+                           this option is specified
 -C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE
                            specify an number argument for the
                            score of complexion correction.
@@ -473,6 +503,20 @@ Options:
 -v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
+
+Environment variables:
+SIXEL_BGCOLOR              specify background color.
+                           overrided by -B(--bgcolor) option.
+                           represented by the following
+                           syntax:
+                             #rgb
+                             #rrggbb
+                             #rrrgggbbb
+                             #rrrrggggbbbb
+                             rgb:r/g/b
+                             rgb:rr/gg/bb
+                             rgb:rrr/ggg/bbb
+                             rgb:rrrr/gggg/bbbb
 ```
 
 Convert a jpeg image file into a sixel file
@@ -523,22 +567,35 @@ The sixel encoder object and related functions provides almost same features as 
 
 ```C
 /* create encoder object */
-SIXELAPI sixel_encoder_t *
-sixel_encoder_create(void);
+SIXELAPI SIXELSTATUS
+sixel_encoder_new(
+    sixel_encoder_t     /* out */ **ppencoder, /* encoder object to be created */
+    sixel_allocator_t   /* in */  *allocator); /* allocator, null if you use
+                                                  default allocator */
 
+/* increase reference count of encoder object (thread-unsafe) */
 SIXELAPI void
-sixel_encoder_ref(sixel_encoder_t *encoder);
+sixel_encoder_ref(sixel_encoder_t /* in */ *encoder);
 
+/* decrease reference count of encoder object (thread-unsafe) */
 SIXELAPI void
-sixel_encoder_unref(sixel_encoder_t *encoder);
+sixel_encoder_unref(sixel_encoder_t /* in */ *encoder);
 
-SIXELAPI int
+/* set cancel state flag to encoder object */
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_cancel_flag(
+    sixel_encoder_t /* in */ *encoder,
+    int             /* in */ *cancel_flag);
+
+/* set an option flag to encoder object */
+SIXELAPI SIXELSTATUS
 sixel_encoder_setopt(
     sixel_encoder_t /* in */ *encoder,
     int             /* in */ arg,
     char const      /* in */ *optarg);
 
-SIXELAPI int
+/* load source data from specified file and encode it to SIXEL format */
+SIXELAPI SIXELSTATUS
 sixel_encoder_encode(
     sixel_encoder_t /* in */ *encoder,
     char const      /* in */ *filename);
@@ -550,22 +607,30 @@ The sixel decoder object and related functions provides almost same features as 
 
 ```C
 /* create decoder object */
-SIXELAPI sixel_decoder_t *
-sixel_decoder_create(void);
+SIXELAPI SIXELSTATUS
+sixel_decoder_new(
+    sixel_decoder_t    /* out */ **ppdecoder,  /* decoder object to be created */
+    sixel_allocator_t  /* in */  *allocator);  /* allocator, null if you use
+                                                  default allocator */
 
+/* increase reference count of decoder object (thread-unsafe) */
 SIXELAPI void
 sixel_decoder_ref(sixel_decoder_t *decoder);
 
+/* decrease reference count of decoder object (thread-unsafe) */
 SIXELAPI void
 sixel_decoder_unref(sixel_decoder_t *decoder);
 
-SIXELAPI int
+/* set an option flag to decoder object */
+SIXELAPI SIXELSTATUS
 sixel_decoder_setopt(
-    sixel_decoder_t /* in */ *decoder,
-    int             /* in */ arg,
-    char const      /* in */ *optarg);
+    sixel_decoder_t /* in */ *decoder,  /* decoder object */
+    int             /* in */ arg,       /* one of SIXEL_OPTFLAG_*** */
+    char const      /* in */ *optarg);  /* null or an argument of optflag */
 
-SIXELAPI int
+/* load source data from stdin or the file specified with
+   SIXEL_OPTFLAG_INPUT flag, and decode it */
+SIXELAPI SIXELSTATUS
 sixel_decoder_decode(
     sixel_decoder_t /* in */ *decoder);
 ```
@@ -577,22 +642,37 @@ The low-livel API provides Bytes-to-Bytes conversion features.
 
 The Whole API is described [here](https://github.com/saitoha/libsixel/blob/master/include/sixel.h.in).
 
-### Example
+### Examples
 
-If you use OSX, a tiny example is available
-[here](https://github.com/saitoha/libsixel/blob/master/examples/opengl/).
+#### OpenGL
+
+[OpenGL example](https://github.com/saitoha/libsixel/blob/master/examples/opengl/)
+suggests how to port your OpenGL application to SIXEL terminal.
 
   ![opengl example](https://raw.githubusercontent.com/saitoha/libsixel/data/data/example_opengl.gif)
+
+
+#### Drawing
+
+[Drawing example](https://github.com/saitoha/libsixel/blob/master/examples/drawing/)
+suggests how to implement the interaction among SIXEL terminals and pointer devices.
+
+  [![drawing](https://raw.githubusercontent.com/saitoha/libsixel/data/data/drawing.png)](https://youtu.be/2-2FnoZp4Z0)
+
+
+#### Python
+
+[Python example](https://github.com/saitoha/libsixel/blob/master/examples/python/)
+suggests how to convert PIL images into SIXEL using libsixel python interface.
+
 
 ### Bitmap to SIXEL
 
 `sixel_encode` function converts bitmap array into SIXEL format.
 
 ```C
-/* converter API */
-
 /* convert pixels into sixel format and write it to output context */
-int
+SIXELAPI SIXELSTATUS
 sixel_encode(
     unsigned char  /* in */ *pixels,     /* pixel bytes */
     int            /* in */  width,      /* image width */
@@ -612,23 +692,31 @@ Here is a part of APIs for dithering context manipulation.
 
 ```C
 /* create dither context object */
-sixel_dither_t *
-sixel_dither_create(int /* in */ ncolors); /* number of colors */
+SIXELAPI SIXELSTATUS
+sixel_dither_new(
+    sixel_dither_t      /* out */   **ppdither,  /* dither object to be created */
+    int                 /* in */    ncolors,     /* required colors */
+    sixel_allocator_t   /* in */    *allocator); /* allocator, null if you use
+                                                    default allocator */
 
 /* get built-in dither context object */
-sixel_dither_t *
+SIXELAPI sixel_dither_t *
 sixel_dither_get(int builtin_dither); /* ID of built-in dither object */
 
-/* increment reference count of dither context object (thread-unsafe) */
-void
+/* destroy dither context object */
+SIXELAPI void
+sixel_dither_destroy(sixel_dither_t *dither); /* dither context object */
+
+/* increase reference count of dither context object (thread-unsafe) */
+SIXELAPI void
 sixel_dither_ref(sixel_dither_t *dither); /* dither context object */
 
-/* decrement reference count of dither context object (thread-unsafe) */
-void
+/* decrease reference count of dither context object (thread-unsafe) */
+SIXELAPI void
 sixel_dither_unref(sixel_dither_t *dither); /* dither context object */
 
 /* initialize internal palette from specified pixel buffer */
-int
+SIXELAPI SIXELSTATUS
 sixel_dither_initialize(
     sixel_dither_t *dither,          /* dither context object */
     unsigned char /* in */ *data,    /* sample image */
@@ -638,6 +726,60 @@ sixel_dither_initialize(
     int /* in */ method_for_largest, /* method for finding the largest dimension */
     int /* in */ method_for_rep,     /* method for choosing a color from the box */
     int /* in */ quality_mode);      /* quality of histogram processing */
+
+/* set diffusion type, choose from enum methodForDiffuse */
+SIXELAPI void
+sixel_dither_set_diffusion_type(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    int /* in */ method_for_diffuse);  /* one of enum methodForDiffuse */
+
+/* get number of palette colors */
+SIXELAPI int
+sixel_dither_get_num_of_palette_colors(
+    sixel_dither_t /* in */ *dither);  /* dither context object */
+
+/* get number of histogram colors */
+SIXELAPI int
+sixel_dither_get_num_of_histogram_colors(
+    sixel_dither_t /* in */ *dither);  /* dither context object */
+
+/* get palette */
+SIXELAPI unsigned char *
+sixel_dither_get_palette(
+    sixel_dither_t /* in */ *dither);  /* dither context object */
+
+/* set palette */
+SIXELAPI void
+sixel_dither_set_palette(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    unsigned char  /* in */ *palette);
+
+SIXELAPI void
+sixel_dither_set_complexion_score(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    int            /* in */ score);    /* complexion score (>= 1) */
+
+SIXELAPI void
+sixel_dither_set_body_only(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    int            /* in */ bodyonly); /* 0: output palette section(default)
+                                          1: do not output palette section */
+SIXELAPI void
+sixel_dither_set_optimize_palette(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    int            /* in */ do_opt);   /* 0: optimize palette size
+                                          1: don't optimize palette size */
+/* set pixelformat */
+SIXELAPI void
+sixel_dither_set_pixelformat(
+    sixel_dither_t /* in */ *dither,      /* dither context object */
+    int            /* in */ pixelformat); /* one of enum pixelFormat */
+
+/* set transparent */
+SIXELAPI void
+sixel_dither_set_transparent(
+    sixel_dither_t /* in */ *dither,      /* dither context object */
+    int            /* in */ transparent); /* transparent color index */
 ```
 
 #### Output context
@@ -645,23 +787,64 @@ sixel_dither_initialize(
 Here is a part of APIs for output context manipulation.
 
 ```C
-typedef int (* sixel_write_function)(char *data, int size, void *priv);
-
 /* create output context object */
-sixel_output_t *const
-sixel_output_create(
-    sixel_write_function /* in */ fn_write, /* callback function for output sixel */
-    void /* in */ *priv                     /* private data given as
-);                                             3rd argument of fn_write */
+SIXELAPI SIXELSTATUS
+sixel_output_new(
+    sixel_output_t          /* out */ **output,     /* output object to be created */
+    sixel_write_function    /* in */  fn_write,     /* callback for output sixel */
+    void                    /* in */ *priv,         /* private data given as
+                                                       3rd argument of fn_write */
+    sixel_allocator_t       /* in */  *allocator);  /* allocator, null if you use
+                                                       default allocator */
 
-/* increment reference count of output context object (thread-unsafe) */
-void
+/* destroy output context object */
+SIXELAPI void
+sixel_output_destroy(sixel_output_t /* in */ *output); /* output context */
+
+/* increase reference count of output context object (thread-unsafe) */
+SIXELAPI void
 sixel_output_ref(sixel_output_t /* in */ *output);     /* output context */
 
-/* decrement reference count of output context object (thread-unsafe) */
-void
+/* decrease reference count of output context object (thread-unsafe) */
+SIXELAPI void
 sixel_output_unref(sixel_output_t /* in */ *output);   /* output context */
 
+/* set 8bit output mode which indicates whether it uses C1 control characters */
+SIXELAPI int
+sixel_output_get_8bit_availability(
+    sixel_output_t /* in */ *output);   /* output context */
+
+/* get 8bit output mode state */
+SIXELAPI void
+sixel_output_set_8bit_availability(
+    sixel_output_t /* in */ *output,       /* output context */
+    int            /* in */ availability); /* 0: do not use 8bit characters
+                                              1: use 8bit characters */
+
+/* set GNU Screen penetration feature enable or disable */
+SIXELAPI void
+sixel_output_set_penetrate_multiplexer(
+    sixel_output_t /* in */ *output,    /* output context */
+    int            /* in */ penetrate); /* 0: penetrate GNU Screen
+                                           1: do not penetrate GNU Screen */
+
+/* set whether we skip DCS envelope */
+SIXELAPI void
+sixel_output_set_skip_dcs_envelope(
+    sixel_output_t /* in */ *output,   /* output context */
+    int            /* in */ skip);     /* 0: output DCS envelope
+                                          1: do not output DCS envelope */
+
+SIXELAPI void
+sixel_output_set_palette_type(
+    sixel_output_t /* in */ *output,      /* output context */
+    int            /* in */ palettetype); /* PALETTETYPE_RGB: RGB palette
+                                             PALETTETYPE_HLS: HLS palette */
+
+SIXELAPI void
+sixel_output_set_encode_policy(
+    sixel_output_t /* in */ *output,    /* output context */
+    int            /* in */ encode_policy);
 ```
 
 ### SIXEL to indexed bitmap
@@ -669,19 +852,17 @@ sixel_output_unref(sixel_output_t /* in */ *output);   /* output context */
 `sixel_decode` function converts SIXEL into indexed bitmap bytes with its palette.
 
 ```
-/* malloc(3) compatible function */
-typedef void * (* sixel_allocator_function)(size_t size);
-
 /* convert sixel data into indexed pixel bytes and palette data */
-int
-sixel_decode(unsigned char              /* in */  *sixels,    /* sixel bytes */
-             int                        /* in */  size,       /* size of sixel bytes */
-             unsigned char              /* out */ **pixels,   /* decoded pixels */
-             int                        /* out */ *pwidth,    /* image width */
-             int                        /* out */ *pheight,   /* image height */
-             unsigned char              /* out */ **palette,  /* RGBA palette */
-             int                        /* out */ *ncolors,   /* palette size (<= 256) */
-             sixel_allocator_function   /* out */ allocator); /* malloc function */
+SIXELAPI SIXELSTATUS
+sixel_decode_raw(
+    unsigned char       /* in */  *p,           /* sixel bytes */
+    int                 /* in */  len,          /* size of sixel bytes */
+    unsigned char       /* out */ **pixels,     /* decoded pixels */
+    int                 /* out */ *pwidth,      /* image width */
+    int                 /* out */ *pheight,     /* image height */
+    unsigned char       /* out */ **palette,    /* ARGB palette */
+    int                 /* out */ *ncolors,     /* palette size (<= 256) */
+    sixel_allocator_t   /* in */  *allocator);  /* allocator object */
 ```
 
 ## Perl interface
@@ -703,9 +884,32 @@ This package includes a Python module `libsixel`.
 
 ### Build and install Python interface
 
+#### Install into the python prefixed with '/usr/local'
+
 ```
+$ git clone https://github.com/saitoha/libsixel.git
+$ cd libsixel
+$ git checkout develop  # now available only develop branch
+$ ./configure --enable-python --prefix=/usr/local
+$ make install
+```
+
+#### Install into only current active python
+
+```
+$ git clone https://github.com/saitoha/libsixel.git
+$ cd libsixel
+$ git checkout develop  # now available only develop branch
+$ ./configure --disable-python
+$ make install  # install libsixel
 $ cd python
-$ python setup.py install
+$ python setup.py install  # install python module
+```
+
+or
+
+```
+$ easy_install libsixel-python
 ```
 
 ## PHP interface
@@ -720,6 +924,23 @@ $ phpize
 $ ./configure
 $ make install
 ```
+
+## Ruby interface
+
+### Build and install Ruby interface
+
+```
+$ gem install libsixel-ruby
+```
+
+or
+
+```
+$ git submodule update --init
+$ rake compile
+$ rake build install
+```
+
 
 ## Support
 
@@ -757,19 +978,21 @@ The MIT License (MIT)
 
 ## Contributers and Reviewers
 
-- @arakiken
-- @elfring 
-- @isaki68k
-- @knok
-- @mattn
-- @msmhrt
-- @obache
-- @tsutsui
-- @ttdoda
-- @uobikiemukot
-- @vrtsds
-- @waywardmonkeys
-- @yoshikaw
+- [@arakiken](https://github.com/arakiken/)
+- [@elfring](https://github.com/elfring/)
+- [@fd00](https://github.com/fd00/)
+- [@hattya](https://github.com/hattya/)
+- [@isaki68k](https://github.com/isaki68k/)
+- [@knok](https://github.com/knok/)
+- [@mattn](https://github.com/mattn/)
+- [@msmhrt](https://github.com/msmhrt/)
+- [@obache](https://github.com/obache/)
+- [@tsutsui](https://github.com/tsutsui/)
+- [@ttdoda](https://github.com/ttdoda/)
+- [@uobikiemukot](https://github.com/uobikiemukot/)
+- [@vrtsds](https://github.com/vrtsds/)
+- [@waywardmonkeys](https://github.com/waywardmonkeys/)
+- [@yoshikaw](https://github.com/yoshikaw/)
 
 ## Contributing
 
@@ -779,7 +1002,7 @@ The MIT License (MIT)
 4. Push to the branch (git push origin my-new-feature)
 5. Create a new Pull Request
 
-  
+
 ## Acknowledgment
 
 This software derives from the following implementations.
@@ -795,7 +1018,7 @@ derived from kmiya's "*sixel*" original version (2014-3-2)
 
 This work is written by kmiya@ culti. He distributes it under very permissive license.
 
-The original license text(in Japanese only) is:
+The original license text(in Japanese) is:
 
 ```
 このプログラム及びソースコードの使用について個人・商用を問わず
@@ -833,20 +1056,32 @@ date will be written clearly.
 
 kmiya also said this is compatible with MIT/BSD/GPL.
 
-### stbi-2.06
 
-This software includes `stbi-2.06` (stb_image.h),
+### stbi-2.12
+
+This software includes `stb-image-v2.12` (stb_image.h),
 public domain JPEG/PNG reader.
 
 https://github.com/nothings/stb
 
+> LICENSE
+>
+> This software is in the public domain. Where that dedication is not
+> recognized, you are granted a perpetual, irrevocable license to copy,
+> distribute, and modify this file as you see fit.
 
-### stbiw-0.94
 
-This software includes `stbiw-0.94` (stb_image_write.h),
+### stbiw-1.02
+This software includes `stb-image-write-v1.02` (stb_image_write.h),
 public domain PNG/BMP/TGA writer.
 
 https://github.com/nothings/stb
+
+> LICENSE
+>
+> This software is in the public domain. Where that dedication is not
+> recognized, you are granted a perpetual, irrevocable license to copy,
+> distribute, and modify this file as you see fit.
 
 
 ### pnmquant.c (netpbm library)
@@ -1012,6 +1247,11 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   A monochrome SIXEL converter
 
 
+- [sixelv in sayaka-chan Vala version](https://github.com/isaki68k/sayaka/blob/master/vala/sixelv.vala)
+
+  sayaka-chan(Vala version) also includes SIXEL converter.
+
+
 - [xpr(x11-apps)](ftp://ftp.x.org/pub/unsupported/programs/xpr/)
 
   xpr(1) can convert a xwd(X window dump) format image into a sixel
@@ -1098,6 +1338,13 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   This web page can decode SIXEL images (written in javascript).
 
   ![SIXEL image viewer ](https://raw.githubusercontent.com/saitoha/libsixel/data/data/js-sixel.png)
+
+
+- [mandel4](http://kildall.apana.org.au/~cjb/mandel5.c)
+
+  A mandelbrot program for (colour) sixel-supporting terminals, written by Chris Baird
+
+  ![mandel4](https://raw.githubusercontent.com/saitoha/libsixel/data/data/mandel.png)
 
 
 - [SixelGraphics.jl(written in Julia)](https://github.com/olofsen/SixelGraphics.jl)

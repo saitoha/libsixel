@@ -22,7 +22,7 @@
  *
  * ******************************************************************************
  *
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -60,7 +60,6 @@
 #endif
 
 #include "quant.h"
-#include "sixel.h"
 
 #if HAVE_DEBUG
 #define quant_trace fprintf
@@ -76,9 +75,9 @@ static inline void quant_trace(FILE *f, ...) { (void) f; }
 
 typedef struct box* boxVector;
 struct box {
-    int ind;
-    int colors;
-    int sum;
+    unsigned int ind;
+    unsigned int colors;
+    unsigned int sum;
 };
 
 typedef unsigned long sample;
@@ -89,7 +88,7 @@ struct tupleint {
        would find in a tuple table or tuple hash.
        Note that this is a variable length structure.
     */
-    int value;
+    unsigned int value;
     sample tuple[1];
     /* This is actually a variable size array -- its size is the
        depth of the tuple in question.  Some compilers do not let us
@@ -112,33 +111,55 @@ static int
 compareplane(const void * const arg1,
              const void * const arg2)
 {
+    int lhs, rhs;
 
-    const struct tupleint * const * const comparandPP  = arg1;
-    const struct tupleint * const * const comparatorPP = arg2;
+    typedef const struct tupleint * const * const sortarg;
+    sortarg comparandPP  = (sortarg) arg1;
+    sortarg comparatorPP = (sortarg) arg2;
+    lhs = (int)(*comparandPP)->tuple[compareplanePlane];
+    rhs = (int)(*comparatorPP)->tuple[compareplanePlane];
 
-    return (*comparandPP)->tuple[compareplanePlane] -
-        (*comparatorPP)->tuple[compareplanePlane];
+    return lhs - rhs;
 }
 
 
 static int
 sumcompare(const void * const b1, const void * const b2)
 {
-    return(((boxVector)b2)->sum - ((boxVector)b1)->sum);
+    return (int)((boxVector)b2)->sum - (int)((boxVector)b1)->sum;
 }
 
 
-static tupletable
-alloctupletable(unsigned int const depth, unsigned int const size)
+static SIXELSTATUS
+alloctupletable(
+    tupletable          /* out */ *result,
+    unsigned int const  /* in */  depth,
+    unsigned int const  /* in */  size,
+    sixel_allocator_t   /* in */  *allocator)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
+    char message[256];
+    int nwrite;
+    unsigned int mainTableSize;
+    unsigned int tupleIntSize;
+    unsigned int allocSize;
+    void * pool;
+    tupletable tbl;
+    unsigned int i;
+
     if (UINT_MAX / sizeof(struct tupleint) < size) {
-        quant_trace(stderr, "size %u is too big for arithmetic\n", size);
-        return NULL;
+        nwrite = sprintf(message,
+                         "size %u is too big for arithmetic",
+                         size);
+        if (nwrite > 0) {
+            sixel_helper_set_additional_message(message);
+        }
+        status = SIXEL_RUNTIME_ERROR;
+        goto end;
     }
 
-    unsigned int const mainTableSize = size * sizeof(struct tupleint *);
-    unsigned int const tupleIntSize =
-        sizeof(struct tupleint) - sizeof(sample)
+    mainTableSize = size * sizeof(struct tupleint *);
+    tupleIntSize = sizeof(struct tupleint) - sizeof(sample)
         + depth * sizeof(sample);
 
     /* To save the enormous amount of time it could take to allocate
@@ -146,31 +167,41 @@ alloctupletable(unsigned int const depth, unsigned int const size)
        as a single malloc block and suballocate internally.
     */
     if ((UINT_MAX - mainTableSize) / tupleIntSize < size) {
-        quant_trace(stderr, "size %u is too big for arithmetic\n", size);
-        return NULL;
+        nwrite = sprintf(message,
+                         "size %u is too big for arithmetic",
+                         size);
+        if (nwrite > 0) {
+            sixel_helper_set_additional_message(message);
+        }
+        status = SIXEL_RUNTIME_ERROR;
+        goto end;
     }
 
-    unsigned int const allocSize = mainTableSize + size * tupleIntSize;
-    void * pool;
+    allocSize = mainTableSize + size * tupleIntSize;
 
-    pool = malloc(allocSize);
-
-    if (!pool) {
-        quant_trace(stderr, "Unable to allocate %u bytes for a %u-entry "
-                    "tuple table\n", allocSize, size);
-        return NULL;
+    pool = sixel_allocator_malloc(allocator, allocSize);
+    if (pool == NULL) {
+        sprintf(message,
+                "unable to allocate %u bytes for a %u-entry "
+                "tuple table",
+                 allocSize, size);
+        sixel_helper_set_additional_message(message);
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
-    tupletable const tbl = (tupletable) pool;
-
-    unsigned int i;
+    tbl = (tupletable) pool;
 
     for (i = 0; i < size; ++i)
         tbl[i] = (struct tupleint *)
             ((char*)pool + mainTableSize + i * tupleIntSize);
 
-    return tbl;
-}
+    *result = tbl;
 
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
 
 
 /*
@@ -180,13 +211,17 @@ alloctupletable(unsigned int const depth, unsigned int const size)
 */
 
 static tupletable2
-newColorMap(unsigned int const newcolors, unsigned int const depth)
+newColorMap(unsigned int const newcolors, unsigned int const depth, sixel_allocator_t *allocator)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     tupletable2 colormap;
     unsigned int i;
 
     colormap.size = 0;
-    colormap.table = alloctupletable(depth, newcolors);
+    status = alloctupletable(&colormap.table, depth, newcolors, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
     if (colormap.table) {
         for (i = 0; i < newcolors; ++i) {
             unsigned int plane;
@@ -196,16 +231,22 @@ newColorMap(unsigned int const newcolors, unsigned int const depth)
         colormap.size = newcolors;
     }
 
+end:
     return colormap;
 }
 
 
 static boxVector
-newBoxVector(int const colors, int const sum, int const newcolors)
+newBoxVector(
+    unsigned int const  /* in */ colors,
+    unsigned int const  /* in */ sum,
+    unsigned int const  /* in */ newcolors,
+    sixel_allocator_t   /* in */ *allocator)
 {
     boxVector bv;
 
-    bv = (boxVector)malloc(sizeof(struct box) * newcolors);
+    bv = (boxVector)sixel_allocator_malloc(allocator,
+                                           sizeof(struct box) * (size_t)newcolors);
     if (bv == NULL) {
         quant_trace(stderr, "out of memory allocating box vector table\n");
         return NULL;
@@ -241,7 +282,6 @@ findBoxBoundaries(tupletable2  const colorfreqtable,
     }
 
     for (i = 1; i < boxSize; ++i) {
-        unsigned int plane;
         for (plane = 0; plane < depth; ++plane) {
             sample const v = colorfreqtable.table[boxStart + i]->tuple[plane];
             if (v < minval[plane]) minval[plane] = v;
@@ -313,23 +353,22 @@ largestByLuminosity(sample minval[], sample maxval[], unsigned int const depth)
 
 
 static void
-centerBox(int          const boxStart,
-          int          const boxSize,
+centerBox(unsigned int const boxStart,
+          unsigned int const boxSize,
           tupletable2  const colorfreqtable,
           unsigned int const depth,
           tuple        const newTuple)
 {
 
     unsigned int plane;
+    sample minval, maxval;
+    unsigned int i;
 
     for (plane = 0; plane < depth; ++plane) {
-        int minval, maxval;
-        int i;
-
         minval = maxval = colorfreqtable.table[boxStart]->tuple[plane];
 
         for (i = 1; i < boxSize; ++i) {
-            int const v = colorfreqtable.table[boxStart + i]->tuple[plane];
+            sample v = colorfreqtable.table[boxStart + i]->tuple[plane];
             minval = minval < v ? minval: v;
             maxval = maxval > v ? maxval: v;
         }
@@ -340,22 +379,22 @@ centerBox(int          const boxStart,
 
 
 static void
-averageColors(int          const boxStart,
-              int          const boxSize,
+averageColors(unsigned int const boxStart,
+              unsigned int const boxSize,
               tupletable2  const colorfreqtable,
               unsigned int const depth,
               tuple        const newTuple)
 {
     unsigned int plane;
+    sample sum;
+    unsigned int i;
 
     for (plane = 0; plane < depth; ++plane) {
-        sample sum;
-        int i;
-
         sum = 0;
 
-        for (i = 0; i < boxSize; ++i)
-            sum += colorfreqtable.table[boxStart+i]->tuple[plane];
+        for (i = 0; i < boxSize; ++i) {
+            sum += colorfreqtable.table[boxStart + i]->tuple[plane];
+        }
 
         newTuple[plane] = sum / boxSize;
     }
@@ -364,8 +403,8 @@ averageColors(int          const boxStart,
 
 
 static void
-averagePixels(int const boxStart,
-              int const boxSize,
+averagePixels(unsigned int const boxStart,
+              unsigned int const boxSize,
               tupletable2 const colorfreqtable,
               unsigned int const depth,
               tuple const newTuple)
@@ -374,22 +413,23 @@ averagePixels(int const boxStart,
     unsigned int n;
         /* Number of tuples represented by the box */
     unsigned int plane;
-    int i;
+    unsigned int i;
 
     /* Count the tuples in question */
     n = 0;  /* initial value */
-    for (i = 0; i < boxSize; ++i)
-        n += colorfreqtable.table[boxStart + i]->value;
+    for (i = 0; i < boxSize; ++i) {
+        n += (unsigned int)colorfreqtable.table[boxStart + i]->value;
+    }
 
     for (plane = 0; plane < depth; ++plane) {
         sample sum;
-        int i;
 
         sum = 0;
 
-        for (i = 0; i < boxSize; ++i)
-            sum += colorfreqtable.table[boxStart+i]->tuple[plane]
-                * colorfreqtable.table[boxStart+i]->value;
+        for (i = 0; i < boxSize; ++i) {
+            sum += colorfreqtable.table[boxStart + i]->tuple[plane]
+                * (unsigned int)colorfreqtable.table[boxStart + i]->value;
+        }
 
         newTuple[plane] = sum / n;
     }
@@ -403,7 +443,8 @@ colormapFromBv(unsigned int const newcolors,
                unsigned int const boxes,
                tupletable2 const colorfreqtable,
                unsigned int const depth,
-               int const methodForRep)
+               int const methodForRep,
+               sixel_allocator_t *allocator)
 {
     /*
     ** Ok, we've got enough boxes.  Now choose a representative color for
@@ -416,7 +457,7 @@ colormapFromBv(unsigned int const newcolors,
     tupletable2 colormap;
     unsigned int bi;
 
-    colormap = newColorMap(newcolors, depth);
+    colormap = newColorMap(newcolors, depth, allocator);
     if (!colormap.size) {
         return colormap;
     }
@@ -448,7 +489,7 @@ colormapFromBv(unsigned int const newcolors,
 }
 
 
-static int
+static SIXELSTATUS
 splitBox(boxVector const bv,
          unsigned int *const boxesP,
          unsigned int const bi,
@@ -465,11 +506,12 @@ splitBox(boxVector const bv,
 
    Assume the box contains at least two colors.
 -----------------------------------------------------------------------------*/
+    SIXELSTATUS status = SIXEL_FALSE;
     unsigned int const boxStart = bv[bi].ind;
     unsigned int const boxSize  = bv[bi].colors;
     unsigned int const sm       = bv[bi].sum;
 
-    unsigned int const max_depth = 16;
+    enum { max_depth= 16 };
     sample minval[max_depth];
     sample maxval[max_depth];
 
@@ -497,9 +539,10 @@ splitBox(boxVector const bv,
         largestDimension = largestByLuminosity(minval, maxval, depth);
         break;
     default:
-        quant_trace(stderr, "Internal error: invalid value of methodForLargest: %d\n",
-                    methodForLargest);
-        return -1;
+        sixel_helper_set_additional_message(
+            "Internal error: invalid value of methodForLargest.");
+        status = SIXEL_LOGIC_ERROR;
+        goto end;
     }
 
     /* TODO: I think this sort should go after creating a box,
@@ -537,18 +580,23 @@ splitBox(boxVector const bv,
     bv[*boxesP].sum = sm - lowersum;
     ++(*boxesP);
     qsort((char*) bv, *boxesP, sizeof(struct box), sumcompare);
-    return 0;
+
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
 
-static int
+static SIXELSTATUS
 mediancut(tupletable2 const colorfreqtable,
           unsigned int const depth,
           unsigned int const newcolors,
           int const methodForLargest,
           int const methodForRep,
-          tupletable2 *const colormapP)
+          tupletable2 *const colormapP,
+          sixel_allocator_t *allocator)
 {
 /*----------------------------------------------------------------------------
    Compute a set of only 'newcolors' colors that best represent an
@@ -565,7 +613,7 @@ mediancut(tupletable2 const colorfreqtable,
     int multicolorBoxesExist;
     unsigned int i;
     unsigned int sum;
-    int nret = (-1);
+    SIXELSTATUS status = SIXEL_FALSE;
 
     sum = 0;
 
@@ -575,61 +623,72 @@ mediancut(tupletable2 const colorfreqtable,
 
     /* There is at least one box that contains at least 2 colors; ergo,
        there is more splitting we can do.  */
-    bv = newBoxVector(colorfreqtable.size, sum, newcolors);
-    if (bv) {
-        boxes = 1;
-        multicolorBoxesExist = (colorfreqtable.size > 1);
+    bv = newBoxVector(colorfreqtable.size, sum, newcolors, allocator);
+    if (bv == NULL) {
+        goto end;
+    }
+    boxes = 1;
+    multicolorBoxesExist = (colorfreqtable.size > 1);
 
-        /* Main loop: split boxes until we have enough. */
-        while (boxes < newcolors && multicolorBoxesExist) {
-            /* Find the first splittable box. */
-            for (bi = 0; bi < boxes && bv[bi].colors < 2; ++bi)
-                ;
-            if (bi >= boxes) {
-                multicolorBoxesExist = 0;
-            } else {
-                splitBox(bv, &boxes, bi, colorfreqtable, depth, methodForLargest);
+    /* Main loop: split boxes until we have enough. */
+    while (boxes < newcolors && multicolorBoxesExist) {
+        /* Find the first splittable box. */
+        for (bi = 0; bi < boxes && bv[bi].colors < 2; ++bi)
+            ;
+        if (bi >= boxes) {
+            multicolorBoxesExist = 0;
+        } else {
+            status = splitBox(bv, &boxes, bi,
+                              colorfreqtable, depth,
+                              methodForLargest);
+            if (SIXEL_FAILED(status)) {
+                goto end;
             }
         }
-        *colormapP = colormapFromBv(newcolors, bv, boxes,
-                                    colorfreqtable, depth,
-                                    methodForRep);
-
-        free(bv);
-        nret = 0;
     }
-    return nret;
+    *colormapP = colormapFromBv(newcolors, bv, boxes,
+                                colorfreqtable, depth,
+                                methodForRep, allocator);
+
+    sixel_allocator_free(allocator, bv);
+
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
-static int
-computeHash(unsigned char const *data, int const depth)
+static unsigned int
+computeHash(unsigned char const *data, unsigned int const depth)
 {
-    int hash = 0;
-    int n;
+    unsigned int hash = 0;
+    unsigned int n;
 
     for (n = 0; n < depth; n++) {
-        hash |= data[depth - 1 - n] >> 3 << n * 5;
+        hash |= (unsigned int)(data[depth - 1 - n] >> 3) << n * 5;
     }
 
     return hash;
 }
 
 
-static int
-computeHistogram(unsigned char const *data,
-                 unsigned int length,
-                 unsigned long const depth,
-                 tupletable2 * const colorfreqtableP,
-                 int const qualityMode)
+static SIXELSTATUS
+computeHistogram(unsigned char const    /* in */  *data,
+                 unsigned int           /* in */  length,
+                 unsigned long const    /* in */  depth,
+                 tupletable2 * const    /* out */ colorfreqtableP,
+                 int const              /* in */  qualityMode,
+                 sixel_allocator_t      /* in */  *allocator)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
     typedef unsigned short unit_t;
     unsigned int i, n;
-    unit_t *histogram;
-    unit_t *refmap;
+    unit_t *histogram = NULL;
+    unit_t *refmap = NULL;
     unit_t *ref;
     unit_t *it;
-    unsigned int index;
+    unsigned int bucket_index;
     unsigned int step;
     unsigned int max_sample;
 
@@ -659,52 +718,60 @@ computeHistogram(unsigned char const *data,
 
     quant_trace(stderr, "making histogram...\n");
 
-#if HAVE_CALLOC
-    histogram = calloc(1 << depth * 5, sizeof(unit_t));
-#else
-    histogram = malloc((1 << depth * 5) * sizeof(unit_t));
-#endif
-    if (!histogram) {
-        quant_trace(stderr, "Unable to allocate memory for histogram.\n");
-        return (-1);
+    histogram = (unit_t *)sixel_allocator_calloc(allocator,
+                                                 (size_t)(1 << depth * 5),
+                                                 sizeof(unit_t));
+    if (histogram == NULL) {
+        sixel_helper_set_additional_message(
+            "unable to allocate memory for histogram.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
-#if !HAVE_CALLOC
-    memset(histogram, 0, (1 << depth * 5) * sizeof(unit_t));
-#endif
-    it = ref = refmap = (unsigned short *)malloc((1 << depth * 5) * sizeof(unit_t));
+    it = ref = refmap
+        = (unsigned short *)sixel_allocator_malloc(allocator,
+                                                   (size_t)(1 << depth * 5) * sizeof(unit_t));
     if (!it) {
-        quant_trace(stderr, "Unable to allocate memory for lookup table.\n");
-        return (-1);
+        sixel_helper_set_additional_message(
+            "unable to allocate memory for lookup table.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
 
     for (i = 0; i < length - depth; i += step) {
-        index = computeHash(data + i, 3);
-        if (histogram[index] == 0) {
-            *ref++ = index;
+        bucket_index = computeHash(data + i, 3);
+        if (histogram[bucket_index] == 0) {
+            *ref++ = bucket_index;
         }
-        if (histogram[index] < (1 << sizeof(unsigned short) * 8) - 1) {
-            histogram[index]++;
+        if (histogram[bucket_index] < (unsigned int)(1 << sizeof(unsigned short) * 8) - 1) {
+            histogram[bucket_index]++;
         }
     }
 
-    colorfreqtableP->size = ref - refmap;
-    colorfreqtableP->table = alloctupletable(depth, ref - refmap);
+    colorfreqtableP->size = (unsigned int)(ref - refmap);
+    status = alloctupletable(&colorfreqtableP->table, depth, (unsigned int)(ref - refmap), allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
     for (i = 0; i < colorfreqtableP->size; ++i) {
         if (histogram[refmap[i]] > 0) {
             colorfreqtableP->table[i]->value = histogram[refmap[i]];
             for (n = 0; n < depth; n++) {
                 colorfreqtableP->table[i]->tuple[depth - 1 - n]
-                    = (*it >> n * 5 & 0x1f) << 3;
+                    = (sample)((*it >> n * 5 & 0x1f) << 3);
             }
         }
         it++;
     }
 
-    free(refmap);
-    free(histogram);
-
     quant_trace(stderr, "%u colors found\n", colorfreqtableP->size);
-    return 0;
+
+    status = SIXEL_OK;
+
+end:
+    sixel_allocator_free(allocator, refmap);
+    sixel_allocator_free(allocator, histogram);
+
+    return status;
 }
 
 
@@ -717,7 +784,8 @@ computeColorMapFromInput(unsigned char const *data,
                          int const methodForRep,
                          int const qualityMode,
                          tupletable2 * const colormapP,
-                         int *origcolors)
+                         unsigned int *origcolors,
+                         sixel_allocator_t *allocator)
 {
 /*----------------------------------------------------------------------------
    Produce a colormap containing the best colors to represent the
@@ -738,25 +806,30 @@ computeColorMapFromInput(unsigned char const *data,
    *formatP and *freqPamP.  (This information is not really
    relevant to our colormap mission; just a fringe benefit).
 -----------------------------------------------------------------------------*/
-    tupletable2 colorfreqtable;
+    SIXELSTATUS status = SIXEL_FALSE;
+    tupletable2 colorfreqtable = {0, NULL};
     unsigned int i;
     unsigned int n;
-    int ret;
 
-    ret = computeHistogram(data, length, depth, &colorfreqtable, qualityMode);
-    if (ret != 0) {
-        return (-1);
+    status = computeHistogram(data, length, depth,
+                              &colorfreqtable, qualityMode, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
     if (origcolors) {
         *origcolors = colorfreqtable.size;
     }
 
     if (colorfreqtable.size <= reqColors) {
-        quant_trace(stderr, "Image already has few enough colors (<=%d).  "
+        quant_trace(stderr,
+                    "Image already has few enough colors (<=%d).  "
                     "Keeping same colors.\n", reqColors);
         /* *colormapP = colorfreqtable; */
         colormapP->size = colorfreqtable.size;
-        colormapP->table = alloctupletable(depth, colorfreqtable.size);
+        status = alloctupletable(&colormapP->table, depth, colorfreqtable.size, allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         for (i = 0; i < colorfreqtable.size; ++i) {
             colormapP->table[i]->value = colorfreqtable.table[i]->value;
             for (n = 0; n < depth; ++n) {
@@ -765,28 +838,36 @@ computeColorMapFromInput(unsigned char const *data,
         }
     } else {
         quant_trace(stderr, "choosing %d colors...\n", reqColors);
-        ret = mediancut(colorfreqtable, depth, reqColors,
-                        methodForLargest, methodForRep, colormapP);
-        if (ret != 0) {
-            return (-1);
+        status = mediancut(colorfreqtable, depth, reqColors,
+                           methodForLargest, methodForRep, colormapP, allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
         }
         quant_trace(stderr, "%d colors are choosed.\n", colorfreqtable.size);
     }
 
-    free(colorfreqtable.table);
-    return 0;
+    status = SIXEL_OK;
+
+end:
+    sixel_allocator_free(allocator, colorfreqtable.table);
+    return status;
 }
 
 
+/* diffuse error energy to surround pixels */
 static void
-error_diffuse(unsigned char *data, int pos, int depth,
-              int offset, int mul, int div)
+error_diffuse(unsigned char /* in */    *data,      /* base address of pixel buffer */
+              int           /* in */    pos,        /* address of the destination pixel */
+              int           /* in */    depth,      /* color depth in bytes */
+              int           /* in */    error,      /* error energy */
+              int           /* in */    numerator,  /* numerator of diffusion coefficient */
+              int           /* in */    denominator /* denominator of diffusion coefficient */)
 {
     int c;
 
     data += pos * depth;
 
-    c = *data + offset * mul / div;
+    c = *data + error * numerator / denominator;
     if (c < 0) {
         c = 0;
     }
@@ -799,7 +880,7 @@ error_diffuse(unsigned char *data, int pos, int depth,
 
 static void
 diffuse_none(unsigned char *data, int width, int height,
-             int x, int y, int depth, int offset)
+             int x, int y, int depth, int error)
 {
     /* unused */ (void) data;
     /* unused */ (void) width;
@@ -807,13 +888,13 @@ diffuse_none(unsigned char *data, int width, int height,
     /* unused */ (void) x;
     /* unused */ (void) y;
     /* unused */ (void) depth;
-    /* unused */ (void) offset;
+    /* unused */ (void) error;
 }
 
 
 static void
 diffuse_fs(unsigned char *data, int width, int height,
-           int x, int y, int depth, int offset)
+           int x, int y, int depth, int error)
 {
     int pos;
 
@@ -824,21 +905,21 @@ diffuse_fs(unsigned char *data, int width, int height,
      *  3/16    5/48    1/16
      */
     if (x < width - 1 && y < height - 1) {
-        /* add offset to the right cell */
-        error_diffuse(data, pos + width * 0 + 1, depth, offset, 7, 16);
-        /* add offset to the left-bottom cell */
-        error_diffuse(data, pos + width * 1 - 1, depth, offset, 3, 16);
-        /* add offset to the bottom cell */
-        error_diffuse(data, pos + width * 1 + 0, depth, offset, 5, 16);
-        /* add offset to the right-bottom cell */
-        error_diffuse(data, pos + width * 1 + 1, depth, offset, 1, 16);
+        /* add error to the right cell */
+        error_diffuse(data, pos + width * 0 + 1, depth, error, 7, 16);
+        /* add error to the left-bottom cell */
+        error_diffuse(data, pos + width * 1 - 1, depth, error, 3, 16);
+        /* add error to the bottom cell */
+        error_diffuse(data, pos + width * 1 + 0, depth, error, 5, 16);
+        /* add error to the right-bottom cell */
+        error_diffuse(data, pos + width * 1 + 1, depth, error, 1, 16);
     }
 }
 
 
 static void
 diffuse_atkinson(unsigned char *data, int width, int height,
-                 int x, int y, int depth, int offset)
+                 int x, int y, int depth, int error)
 {
     int pos;
 
@@ -850,25 +931,25 @@ diffuse_atkinson(unsigned char *data, int width, int height,
      *           1/8
      */
     if (y < height - 2) {
-        /* add offset to the right cell */
-        error_diffuse(data, pos + width * 0 + 1, depth, offset, 1, 8);
-        /* add offset to the 2th right cell */
-        error_diffuse(data, pos + width * 0 + 2, depth, offset, 1, 8);
-        /* add offset to the left-bottom cell */
-        error_diffuse(data, pos + width * 1 - 1, depth, offset, 1, 8);
-        /* add offset to the bottom cell */
-        error_diffuse(data, pos + width * 1 + 0, depth, offset, 1, 8);
-        /* add offset to the right-bottom cell */
-        error_diffuse(data, pos + width * 1 + 1, depth, offset, 1, 8);
-        /* add offset to the 2th bottom cell */
-        error_diffuse(data, pos + width * 2 + 0, depth, offset, 1, 8);
+        /* add error to the right cell */
+        error_diffuse(data, pos + width * 0 + 1, depth, error, 1, 8);
+        /* add error to the 2th right cell */
+        error_diffuse(data, pos + width * 0 + 2, depth, error, 1, 8);
+        /* add error to the left-bottom cell */
+        error_diffuse(data, pos + width * 1 - 1, depth, error, 1, 8);
+        /* add error to the bottom cell */
+        error_diffuse(data, pos + width * 1 + 0, depth, error, 1, 8);
+        /* add error to the right-bottom cell */
+        error_diffuse(data, pos + width * 1 + 1, depth, error, 1, 8);
+        /* add error to the 2th bottom cell */
+        error_diffuse(data, pos + width * 2 + 0, depth, error, 1, 8);
     }
 }
 
 
 static void
 diffuse_jajuni(unsigned char *data, int width, int height,
-               int x, int y, int depth, int offset)
+               int x, int y, int depth, int error)
 {
     int pos;
 
@@ -880,25 +961,25 @@ diffuse_jajuni(unsigned char *data, int width, int height,
      *  1/48    3/48    5/48    3/48    1/48
      */
     if (pos < (height - 2) * width - 2) {
-        error_diffuse(data, pos + width * 0 + 1, depth, offset, 7, 48);
-        error_diffuse(data, pos + width * 0 + 2, depth, offset, 5, 48);
-        error_diffuse(data, pos + width * 1 - 2, depth, offset, 3, 48);
-        error_diffuse(data, pos + width * 1 - 1, depth, offset, 5, 48);
-        error_diffuse(data, pos + width * 1 + 0, depth, offset, 7, 48);
-        error_diffuse(data, pos + width * 1 + 1, depth, offset, 5, 48);
-        error_diffuse(data, pos + width * 1 + 2, depth, offset, 3, 48);
-        error_diffuse(data, pos + width * 2 - 2, depth, offset, 1, 48);
-        error_diffuse(data, pos + width * 2 - 1, depth, offset, 3, 48);
-        error_diffuse(data, pos + width * 2 + 0, depth, offset, 5, 48);
-        error_diffuse(data, pos + width * 2 + 1, depth, offset, 3, 48);
-        error_diffuse(data, pos + width * 2 + 2, depth, offset, 1, 48);
+        error_diffuse(data, pos + width * 0 + 1, depth, error, 7, 48);
+        error_diffuse(data, pos + width * 0 + 2, depth, error, 5, 48);
+        error_diffuse(data, pos + width * 1 - 2, depth, error, 3, 48);
+        error_diffuse(data, pos + width * 1 - 1, depth, error, 5, 48);
+        error_diffuse(data, pos + width * 1 + 0, depth, error, 7, 48);
+        error_diffuse(data, pos + width * 1 + 1, depth, error, 5, 48);
+        error_diffuse(data, pos + width * 1 + 2, depth, error, 3, 48);
+        error_diffuse(data, pos + width * 2 - 2, depth, error, 1, 48);
+        error_diffuse(data, pos + width * 2 - 1, depth, error, 3, 48);
+        error_diffuse(data, pos + width * 2 + 0, depth, error, 5, 48);
+        error_diffuse(data, pos + width * 2 + 1, depth, error, 3, 48);
+        error_diffuse(data, pos + width * 2 + 2, depth, error, 1, 48);
     }
 }
 
 
 static void
 diffuse_stucki(unsigned char *data, int width, int height,
-               int x, int y, int depth, int offset)
+               int x, int y, int depth, int error)
 {
     int pos;
 
@@ -910,25 +991,25 @@ diffuse_stucki(unsigned char *data, int width, int height,
      *  1/48    2/48    4/48    2/48    1/48
      */
     if (pos < (height - 2) * width - 2) {
-        error_diffuse(data, pos + width * 0 + 1, depth, offset, 1, 6);
-        error_diffuse(data, pos + width * 0 + 2, depth, offset, 1, 12);
-        error_diffuse(data, pos + width * 1 - 2, depth, offset, 1, 24);
-        error_diffuse(data, pos + width * 1 - 1, depth, offset, 1, 12);
-        error_diffuse(data, pos + width * 1 + 0, depth, offset, 1, 6);
-        error_diffuse(data, pos + width * 1 + 1, depth, offset, 1, 12);
-        error_diffuse(data, pos + width * 1 + 2, depth, offset, 1, 24);
-        error_diffuse(data, pos + width * 2 - 2, depth, offset, 1, 48);
-        error_diffuse(data, pos + width * 2 - 1, depth, offset, 1, 24);
-        error_diffuse(data, pos + width * 2 + 0, depth, offset, 1, 12);
-        error_diffuse(data, pos + width * 2 + 1, depth, offset, 1, 24);
-        error_diffuse(data, pos + width * 2 + 2, depth, offset, 1, 48);
+        error_diffuse(data, pos + width * 0 + 1, depth, error, 1, 6);
+        error_diffuse(data, pos + width * 0 + 2, depth, error, 1, 12);
+        error_diffuse(data, pos + width * 1 - 2, depth, error, 1, 24);
+        error_diffuse(data, pos + width * 1 - 1, depth, error, 1, 12);
+        error_diffuse(data, pos + width * 1 + 0, depth, error, 1, 6);
+        error_diffuse(data, pos + width * 1 + 1, depth, error, 1, 12);
+        error_diffuse(data, pos + width * 1 + 2, depth, error, 1, 24);
+        error_diffuse(data, pos + width * 2 - 2, depth, error, 1, 48);
+        error_diffuse(data, pos + width * 2 - 1, depth, error, 1, 24);
+        error_diffuse(data, pos + width * 2 + 0, depth, error, 1, 12);
+        error_diffuse(data, pos + width * 2 + 1, depth, error, 1, 24);
+        error_diffuse(data, pos + width * 2 + 2, depth, error, 1, 48);
     }
 }
 
 
 static void
 diffuse_burkes(unsigned char *data, int width, int height,
-               int x, int y, int depth, int offset)
+               int x, int y, int depth, int error)
 {
     int pos;
 
@@ -939,17 +1020,18 @@ diffuse_burkes(unsigned char *data, int width, int height,
      *  1/16    2/16    4/16    2/16    1/16
      */
     if (pos < (height - 1) * width - 2) {
-        error_diffuse(data, pos + width * 0 + 1, depth, offset, 1, 4);
-        error_diffuse(data, pos + width * 0 + 2, depth, offset, 1, 8);
-        error_diffuse(data, pos + width * 1 - 2, depth, offset, 1, 16);
-        error_diffuse(data, pos + width * 1 - 1, depth, offset, 1, 8);
-        error_diffuse(data, pos + width * 1 + 0, depth, offset, 1, 4);
-        error_diffuse(data, pos + width * 1 + 1, depth, offset, 1, 8);
-        error_diffuse(data, pos + width * 1 + 2, depth, offset, 1, 16);
+        error_diffuse(data, pos + width * 0 + 1, depth, error, 1, 4);
+        error_diffuse(data, pos + width * 0 + 2, depth, error, 1, 8);
+        error_diffuse(data, pos + width * 1 - 2, depth, error, 1, 16);
+        error_diffuse(data, pos + width * 1 - 1, depth, error, 1, 8);
+        error_diffuse(data, pos + width * 1 + 0, depth, error, 1, 4);
+        error_diffuse(data, pos + width * 1 + 1, depth, error, 1, 8);
+        error_diffuse(data, pos + width * 1 + 2, depth, error, 1, 16);
     }
 }
 
 
+/* lookup closest color from palette with "normal" strategy */
 static int
 lookup_normal(unsigned char const * const pixel,
               int const depth,
@@ -958,14 +1040,14 @@ lookup_normal(unsigned char const * const pixel,
               unsigned short * const cachetable,
               int const complexion)
 {
-    int index;
+    int result;
     int diff;
     int r;
     int i;
     int n;
     int distant;
 
-    index = -1;
+    result = (-1);
     diff = INT_MAX;
 
     /* don't use cachetable in 'normal' strategy */
@@ -981,14 +1063,15 @@ lookup_normal(unsigned char const * const pixel,
         }
         if (distant < diff) {
             diff = distant;
-            index = i;
+            result = i;
         }
     }
 
-    return index;
+    return result;
 }
 
 
+/* lookup closest color from palette with "fast" strategy */
 static int
 lookup_fast(unsigned char const * const pixel,
             int const depth,
@@ -997,8 +1080,8 @@ lookup_fast(unsigned char const * const pixel,
             unsigned short * const cachetable,
             int const complexion)
 {
-    int hash;
-    int index;
+    int result;
+    unsigned int hash;
     int diff;
     int cache;
     int i;
@@ -1007,7 +1090,7 @@ lookup_fast(unsigned char const * const pixel,
     /* don't use depth in 'fast' strategy because it's always 3 */
     (void) depth;
 
-    index = -1;
+    result = (-1);
     diff = INT_MAX;
     hash = computeHash(pixel, 3);
 
@@ -1031,12 +1114,12 @@ lookup_fast(unsigned char const * const pixel,
 #endif
         if (distant < diff) {
             diff = distant;
-            index = i;
+            result = i;
         }
     }
-    cachetable[hash] = index + 1;
+    cachetable[hash] = result + 1;
 
-    return index;
+    return result;
 }
 
 
@@ -1086,65 +1169,86 @@ lookup_mono_lightbg(unsigned char const * const pixel,
 }
 
 
-SIXELAPI unsigned char *
-sixel_quant_make_palette(unsigned char const *data,
-                         int length,
-                         int pixelformat,
-                         int reqcolors, int *ncolors, int *origcolors,
-                         int methodForLargest,
-                         int methodForRep,
-                         int qualityMode)
+/* choose colors using median-cut method */
+SIXELSTATUS
+sixel_quant_make_palette(
+    unsigned char          /* out */ **result,
+    unsigned char const    /* in */  *data,
+    unsigned int           /* in */  length,
+    int                    /* in */  pixelformat,
+    unsigned int           /* in */  reqcolors,
+    unsigned int           /* in */  *ncolors,
+    unsigned int           /* in */  *origcolors,
+    int                    /* in */  methodForLargest,
+    int                    /* in */  methodForRep,
+    int                    /* in */  qualityMode,
+    sixel_allocator_t      /* in */  *allocator)
 {
-    int i, n;
+    SIXELSTATUS status = SIXEL_FALSE;
+    unsigned int i;
+    unsigned int n;
     int ret;
-    unsigned char *palette;
     tupletable2 colormap;
-    int depth = sixel_helper_compute_depth(pixelformat);
+    unsigned int depth;
+    int result_depth;
 
-    if (depth == -1) {
-        return NULL;
+    result_depth = sixel_helper_compute_depth(pixelformat);
+    if (result_depth <= 0) {
+        *result = NULL;
+        goto end;
     }
+
+    depth = (unsigned int)result_depth;
 
     ret = computeColorMapFromInput(data, length, depth,
                                    reqcolors, methodForLargest,
                                    methodForRep, qualityMode,
-                                   &colormap, origcolors);
+                                   &colormap, origcolors, allocator);
     if (ret != 0) {
-        return NULL;
+        *result = NULL;
+        goto end;
     }
     *ncolors = colormap.size;
     quant_trace(stderr, "tupletable size: %d\n", *ncolors);
-    palette = malloc(*ncolors * depth);
+    *result = (unsigned char *)sixel_allocator_malloc(allocator, *ncolors * depth);
     for (i = 0; i < *ncolors; i++) {
         for (n = 0; n < depth; ++n) {
-            palette[i * depth + n] = colormap.table[i]->tuple[n];
+            (*result)[i * depth + n] = colormap.table[i]->tuple[n];
         }
     }
 
-    free(colormap.table);
-    return palette;
+    sixel_allocator_free(allocator, colormap.table);
+
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
-SIXELAPI int
-sixel_quant_apply_palette(unsigned char *data,
-                          int width,
-                          int height,
-                          int depth,
-                          unsigned char *palette,
-                          int reqcolor,
-                          int methodForDiffuse,
-                          int foptimize,
-                          int foptimize_palette,
-                          int complexion,
-                          unsigned short *cachetable,
-                          int *ncolors,
-                          unsigned char *result)
+/* apply color palette into specified pixel buffers */
+SIXELSTATUS
+sixel_quant_apply_palette(
+    unsigned char     /* out */ *result,
+    unsigned char     /* in */  *data,
+    int               /* in */  width,
+    int               /* in */  height,
+    int               /* in */  depth,
+    unsigned char     /* in */  *palette,
+    int               /* in */  reqcolor,
+    int               /* in */  methodForDiffuse,
+    int               /* in */  foptimize,
+    int               /* in */  foptimize_palette,
+    int               /* in */  complexion,
+    unsigned short    /* in */  *cachetable,
+    int               /* in */  *ncolors,
+    sixel_allocator_t /* in */  *allocator)
 {
     typedef int component_t;
+    SIXELSTATUS status = SIXEL_FALSE;
     int pos, n, x, y, sum1, sum2;
     component_t offset;
-    int index;
+    int color_index;
     unsigned short *indextable;
     unsigned char new_palette[256 * 4];
     unsigned short migration_map[256];
@@ -1214,18 +1318,13 @@ sixel_quant_apply_palette(unsigned char *data,
 
     indextable = cachetable;
     if (cachetable == NULL && f_lookup == lookup_fast) {
-#if !HAVE_CALLOC
-        indextable = malloc((1 << depth * 5) * sizeof(unsigned short));
-#else
-        indextable = calloc(1 << depth * 5, sizeof(unsigned short));
-#endif
+        indextable = (unsigned short *)sixel_allocator_calloc(allocator,
+                                                              (size_t)(1 << depth * 5),
+                                                              sizeof(unsigned short));
         if (!indextable) {
             quant_trace(stderr, "Unable to allocate memory for indextable.\n");
-            return (-1);
+            goto end;
         }
-#if !HAVE_CALLOC
-        memset(indextable, 0x00, (1 << depth * 5) * sizeof(unsigned short));
-#endif
     }
 
     if (foptimize_palette) {
@@ -1237,34 +1336,34 @@ sixel_quant_apply_palette(unsigned char *data,
         for (y = 0; y < height; ++y) {
             for (x = 0; x < width; ++x) {
                 pos = y * width + x;
-                index = f_lookup(data + (pos * depth), depth,
-                                 palette, reqcolor, indextable, complexion);
-                if (migration_map[index] == 0) {
+                color_index = f_lookup(data + (pos * depth), depth,
+                                       palette, reqcolor, indextable, complexion);
+                if (migration_map[color_index] == 0) {
                     result[pos] = *ncolors;
                     for (n = 0; n < depth; ++n) {
-                        new_palette[*ncolors * depth + n] = palette[index * depth + n];
+                        new_palette[*ncolors * depth + n] = palette[color_index * depth + n];
                     }
                     ++*ncolors;
-                    migration_map[index] = *ncolors;
+                    migration_map[color_index] = *ncolors;
                 } else {
-                    result[pos] = migration_map[index] - 1;
+                    result[pos] = migration_map[color_index] - 1;
                 }
                 for (n = 0; n < depth; ++n) {
-                    offset = data[pos * depth + n] - palette[index * depth + n];
+                    offset = data[pos * depth + n] - palette[color_index * depth + n];
                     f_diffuse(data + n, width, height, x, y, depth, offset);
                 }
             }
         }
-        memcpy(palette, new_palette, *ncolors * depth);
+        memcpy(palette, new_palette, (size_t)(*ncolors * depth));
     } else {
         for (y = 0; y < height; ++y) {
             for (x = 0; x < width; ++x) {
                 pos = y * width + x;
-                index = f_lookup(data + (pos * depth), depth,
+                color_index = f_lookup(data + (pos * depth), depth,
                                  palette, reqcolor, indextable, complexion);
-                result[pos] = index;
+                result[pos] = color_index;
                 for (n = 0; n < depth; ++n) {
-                    offset = data[pos * depth + n] - palette[index * depth + n];
+                    offset = data[pos * depth + n] - palette[color_index * depth + n];
                     f_diffuse(data + n, width, height, x, y, depth, offset);
                 }
             }
@@ -1273,17 +1372,22 @@ sixel_quant_apply_palette(unsigned char *data,
     }
 
     if (cachetable == NULL) {
-        free(indextable);
+        sixel_allocator_free(allocator, indextable);
     }
 
-    return 0;
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
-SIXELAPI void
-sixel_quant_free_palette(unsigned char * data)
+void
+sixel_quant_free_palette(
+    unsigned char       /* in */ *data,
+    sixel_allocator_t   /* in */ *allocator)
 {
-    free(data);
+    sixel_allocator_free(allocator, data);
 }
 
 
