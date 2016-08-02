@@ -59,7 +59,7 @@ You can run QEMU on SIXEL terminals.
 
 ### W3M integration
 
-`img2sixel(1)` can be integrated with [Arakiken's w3m fork(remoteimg branch)](https://bitbucket.org/arakiken/w3m/branch/remoteimg).
+`img2sixel(1)` can be integrated with [Debian's w3m](https://tracker.debian.org/pkg/w3m)(maintained by [Tatsuya Kinoshita](https://github.com/tats)) that includes patches for *-sixel* option derived from [Arakiken's w3m fork(remoteimg branch)](https://bitbucket.org/arakiken/w3m/branch/remoteimg).
 
   ![w3m-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel.png)
 
