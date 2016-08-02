@@ -15699,7 +15699,9 @@ fi
 
 
 
-          touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
+          touch -c aclocal.m4 Makefile.in configure config.h.in \
+                   converters/Makefile.in include/Makefile.in \
+                   python/Makefile.in src/Makefile.in tools/Makefile.in
 
 
  if test x$have_jpeg = xyes; then

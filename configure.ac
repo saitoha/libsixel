@@ -613,7 +613,9 @@ else
 fi
 
 AC_DEFUN([LS_UPDATE_TIMESTAMP], [
-          touch aclocal.m4 Makefile.in */Makefile.in configure config.h.in
+          touch -c aclocal.m4 Makefile.in configure config.h.in \
+                   converters/Makefile.in include/Makefile.in \
+                   python/Makefile.in src/Makefile.in tools/Makefile.in
           ])
 LS_UPDATE_TIMESTAMP
 
