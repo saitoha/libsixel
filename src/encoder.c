@@ -990,6 +990,8 @@ sixel_encoder_encode_frame(
         sixel_dither_set_complexion_score(dither, encoder->complexion);
     }
 
+    sixel_dither_set_pixelformat(dither, sixel_frame_get_pixelformat(frame));
+
     if (output) {
         sixel_output_ref(output);
     } else {

@@ -1033,34 +1033,34 @@ diffuse_burkes(unsigned char *data, int width, int height,
 
 /* lookup closest color from palette with "normal" strategy */
 static int
-lookup_normal(unsigned char const * const pixel,
-              int const depth,
-              unsigned char const * const palette,
-              int const reqcolor,
-              unsigned short * const cachetable,
-              int const complexion)
+lookup_rgb888_normal(unsigned char const * const pixel,
+                     int const pixelformat,
+                     unsigned char const * const palette,
+                     int const reqcolor,
+                     unsigned short * const cachetable,
+                     int const complexion)
 {
     int result;
     int diff;
     int r;
     int i;
-    int n;
     int distant;
 
     result = (-1);
     diff = INT_MAX;
 
     /* don't use cachetable in 'normal' strategy */
+    (void) pixelformat;
     (void) cachetable;
 
     for (i = 0; i < reqcolor; i++) {
         distant = 0;
-        r = pixel[0] - palette[i * depth + 0];
+        r = pixel[0] - palette[i * 3 + 0];
         distant += r * r * complexion;
-        for (n = 1; n < depth; ++n) {
-            r = pixel[n] - palette[i * depth + n];
-            distant += r * r;
-        }
+        r = pixel[1] - palette[i * 3 + 1];
+        distant += r * r;
+        r = pixel[2] - palette[i * 3 + 2];
+        distant += r * r;
         if (distant < diff) {
             diff = distant;
             result = i;
@@ -1071,14 +1071,214 @@ lookup_normal(unsigned char const * const pixel,
 }
 
 
-/* lookup closest color from palette with "fast" strategy */
 static int
-lookup_fast(unsigned char const * const pixel,
-            int const depth,
+lookup_bgr888_normal(unsigned char const * const pixel,
+                     int const pixelformat,
+                     unsigned char const * const palette,
+                     int const reqcolor,
+                     unsigned short * const cachetable,
+                     int const complexion)
+{
+    int result;
+    int diff;
+    int r;
+    int i;
+    int distant;
+
+    result = (-1);
+    diff = INT_MAX;
+
+    /* don't use cachetable in 'normal' strategy */
+    (void) pixelformat;
+    (void) cachetable;
+
+    for (i = 0; i < reqcolor; i++) {
+        distant = 0;
+        r = pixel[2] - palette[i * 3 + 0];
+        distant += r * r;
+        r = pixel[1] - palette[i * 3 + 1];
+        distant += r * r;
+        r = pixel[0] - palette[i * 3 + 2];
+        distant += r * r * complexion;
+        if (distant < diff) {
+            diff = distant;
+            result = i;
+        }
+    }
+
+    return result;
+}
+
+
+/* lookup closest color in RGBA pixels from RGB palette */
+static int
+lookup_rgba(unsigned char const * const pixel,
+            int const pixelformat,
             unsigned char const * const palette,
             int const reqcolor,
             unsigned short * const cachetable,
             int const complexion)
+{
+    int result;
+    int diff;
+    int r;
+    int i;
+    int distant;
+
+    result = (-1);
+    diff = INT_MAX;
+
+    /* don't use cachetable in 'normal' strategy */
+    (void) pixelformat;
+    (void) cachetable;
+
+    if (pixel[3] == 0) {
+        result = reqcolor - 1;
+    } else {
+        for (i = 0; i < reqcolor; i++) {
+            distant = 0;
+            r = pixel[0] - palette[i * 3 + 0];
+            distant += r * r * complexion;
+            r = pixel[1] - palette[i * 3 + 1];
+            distant += r * r;
+            r = pixel[2] - palette[i * 3 + 2];
+            distant += r * r;
+            if (distant < diff) {
+                diff = distant;
+                result = i;
+            }
+        }
+    }
+
+    return result;
+}
+
+/* lookup closest color in ARGB pixels from RGB palette */
+static int
+lookup_argb(unsigned char const * const pixel,
+            int const pixelformat,
+            unsigned char const * const palette,
+            int const reqcolor,
+            unsigned short * const cachetable,
+            int const complexion)
+{
+    int result;
+    int diff;
+    int r;
+    int i;
+    int distant;
+
+    result = (-1);
+    diff = INT_MAX;
+
+    /* don't use cachetable in 'normal' strategy */
+    (void) pixelformat;
+    (void) cachetable;
+
+    for (i = 0; i < reqcolor; i++) {
+        distant = 0;
+        r = pixel[1] - palette[i * 3 + 0];
+        distant += r * r * complexion;
+        r = pixel[2] - palette[i * 3 + 1];
+        distant += r * r;
+        r = pixel[3] - palette[i * 3 + 2];
+        distant += r * r * complexion;
+        if (distant < diff) {
+            diff = distant;
+            result = i;
+        }
+    }
+
+    return result;
+}
+
+/* lookup closest color in BGRA pixels from RGB palette */
+static int
+lookup_bgra(unsigned char const * const pixel,
+            int const pixelformat,
+            unsigned char const * const palette,
+            int const reqcolor,
+            unsigned short * const cachetable,
+            int const complexion)
+{
+    int result;
+    int diff;
+    int r;
+    int i;
+    int distant;
+
+    result = (-1);
+    diff = INT_MAX;
+
+    /* don't use cachetable in 'normal' strategy */
+    (void) pixelformat;
+    (void) cachetable;
+
+    for (i = 0; i < reqcolor; i++) {
+        distant = 0;
+        r = pixel[2] - palette[i * 3 + 0];
+        distant += r * r;
+        r = pixel[1] - palette[i * 3 + 1];
+        distant += r * r;
+        r = pixel[0] - palette[i * 3 + 2];
+        distant += r * r * complexion;
+        if (distant < diff) {
+            diff = distant;
+            result = i;
+        }
+    }
+
+    return result;
+}
+
+/* lookup closest color in ABGR pixels from RGB palette */
+static int
+lookup_abgr(unsigned char const * const pixel,
+            int const pixelformat,
+            unsigned char const * const palette,
+            int const reqcolor,
+            unsigned short * const cachetable,
+            int const complexion)
+{
+    int result;
+    int diff;
+    int r;
+    int i;
+    int distant;
+
+    result = (-1);
+    diff = INT_MAX;
+
+    /* don't use cachetable in 'normal' strategy */
+    (void) pixelformat;
+    (void) cachetable;
+
+    for (i = 0; i < reqcolor; i++) {
+        distant = 0;
+        r = pixel[3] - palette[i * 3 + 0];
+        distant += r * r * complexion;
+        r = pixel[2] - palette[i * 3 + 1];
+        distant += r * r;
+        r = pixel[1] - palette[i * 3 + 2];
+        distant += r * r * complexion;
+        if (distant < diff) {
+            diff = distant;
+            result = i;
+        }
+    }
+
+    return result;
+}
+
+
+/* lookup closest color from the palette with "fast" strategy */
+static int
+lookup_rgb888_fast(unsigned char const * const pixel,
+                   int const pixelformat,
+                   unsigned char const * const palette,
+                   int const reqcolor,
+                   unsigned short * const cachetable,
+                   int const complexion)
 {
     int result;
     unsigned int hash;
@@ -1087,8 +1287,8 @@ lookup_fast(unsigned char const * const pixel,
     int i;
     int distant;
 
-    /* don't use depth in 'fast' strategy because it's always 3 */
-    (void) depth;
+    /* don't use pixelformat in 'fast' strategy because it's always RGB888 */
+    (void) pixelformat;
 
     result = (-1);
     diff = INT_MAX;
@@ -1100,18 +1300,9 @@ lookup_fast(unsigned char const * const pixel,
     }
     /* collision */
     for (i = 0; i < reqcolor; i++) {
-        distant = 0;
-#if 0
-        for (n = 0; n < 3; ++n) {
-            r = pixel[n] - palette[i * 3 + n];
-            distant += r * r;
-        }
-#elif 1  /* complexion correction */
         distant = (pixel[0] - palette[i * 3 + 0]) * (pixel[0] - palette[i * 3 + 0]) * complexion
                 + (pixel[1] - palette[i * 3 + 1]) * (pixel[1] - palette[i * 3 + 1])
-                + (pixel[2] - palette[i * 3 + 2]) * (pixel[2] - palette[i * 3 + 2])
-                ;
-#endif
+                + (pixel[2] - palette[i * 3 + 2]) * (pixel[2] - palette[i * 3 + 2]);
         if (distant < diff) {
             diff = distant;
             result = i;
@@ -1125,47 +1316,88 @@ lookup_fast(unsigned char const * const pixel,
 
 static int
 lookup_mono_darkbg(unsigned char const * const pixel,
-                   int const depth,
+                   int const pixelformat,
                    unsigned char const * const palette,
                    int const reqcolor,
                    unsigned short * const cachetable,
                    int const complexion)
 {
-    int n;
     int distant;
 
+    /* unused */ (void) reqcolor;
     /* unused */ (void) palette;
     /* unused */ (void) cachetable;
     /* unused */ (void) complexion;
 
     distant = 0;
-    for (n = 0; n < depth; ++n) {
-        distant += pixel[n];
+
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+    case SIXEL_PIXELFORMAT_BGR888:
+        distant += pixel[0];
+        distant += pixel[1];
+        distant += pixel[2];
+        break;
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        distant += pixel[0];
+        distant += pixel[1];
+        distant += pixel[2];
+        break;
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        distant += pixel[1];
+        distant += pixel[2];
+        distant += pixel[3];
+        break;
+    default:
+        break;
     }
-    return distant >= 128 * reqcolor ? 1: 0;
+    return distant < 128 * 3 ? 0: 1;
 }
 
 
 static int
 lookup_mono_lightbg(unsigned char const * const pixel,
-                    int const depth,
+                    int const pixelformat,
                     unsigned char const * const palette,
                     int const reqcolor,
                     unsigned short * const cachetable,
                     int const complexion)
 {
-    int n;
     int distant;
 
+    /* unused */ (void) reqcolor;
     /* unused */ (void) palette;
     /* unused */ (void) cachetable;
     /* unused */ (void) complexion;
 
     distant = 0;
-    for (n = 0; n < depth; ++n) {
-        distant += pixel[n];
+
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+    case SIXEL_PIXELFORMAT_BGR888:
+        distant += pixel[0];
+        distant += pixel[1];
+        distant += pixel[2];
+        break;
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        distant += pixel[0];
+        distant += pixel[1];
+        distant += pixel[2];
+        break;
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        distant += pixel[1];
+        distant += pixel[2];
+        distant += pixel[3];
+        break;
+    default:
+        break;
     }
-    return distant < 128 * reqcolor ? 1: 0;
+
+    return distant < 128 * 3 ? 1: 0;
 }
 
 
@@ -1196,6 +1428,19 @@ sixel_quant_make_palette(
     if (result_depth <= 0) {
         *result = NULL;
         goto end;
+    }
+
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        if (reqcolors == 256) {
+            reqcolors--;
+        }
+        break;
+    default:
+        break;
     }
 
     depth = (unsigned int)result_depth;
@@ -1230,10 +1475,11 @@ end:
 SIXELSTATUS
 sixel_quant_apply_palette(
     unsigned char     /* out */ *result,
+    int               /* out */ *keycolor,
     unsigned char     /* in */  *data,
     int               /* in */  width,
     int               /* in */  height,
-    int               /* in */  depth,
+    int               /* in */  pixelformat,
     unsigned char     /* in */  *palette,
     int               /* in */  reqcolor,
     int               /* in */  methodForDiffuse,
@@ -1246,11 +1492,17 @@ sixel_quant_apply_palette(
 {
     typedef int component_t;
     SIXELSTATUS status = SIXEL_FALSE;
-    int pos, n, x, y, sum1, sum2;
+    int pos;
+    int n;
+    int x;
+    int y;
+    int sum1;
+    int sum2;
+    int depth;
     component_t offset;
     int color_index;
     unsigned short *indextable;
-    unsigned char new_palette[256 * 4];
+    unsigned char new_palette[256 * 3];
     unsigned short migration_map[256];
     void (*f_diffuse)(unsigned char *data, int width, int height,
                       int x, int y, int depth, int offset);
@@ -1261,9 +1513,46 @@ sixel_quant_apply_palette(
                     unsigned short * const cachetable,
                     int const complexion);
 
-    if (depth != 3) {
-        f_diffuse = diffuse_none;
-    } else {
+    f_lookup = NULL;
+    f_diffuse = NULL;
+
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+        if (foptimize) {
+            f_lookup = lookup_rgb888_fast;
+        } else {
+            f_lookup = lookup_rgb888_normal;
+        }
+        break;
+    case SIXEL_PIXELFORMAT_BGR888:
+        f_lookup = lookup_bgr888_normal;
+        break;
+    case SIXEL_PIXELFORMAT_RGBA8888:
+        f_diffuse = diffuse_atkinson;
+        *keycolor = reqcolor - 1;
+        f_lookup = lookup_rgba;
+        foptimize_palette = 0;
+        break;
+    case SIXEL_PIXELFORMAT_ARGB8888:
+        *keycolor = reqcolor - 1;
+        f_lookup = lookup_argb;
+        foptimize_palette = 0;
+        break;
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        *keycolor = reqcolor - 1;
+        f_lookup = lookup_abgr;
+        foptimize_palette = 0;
+        break;
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        *keycolor = reqcolor - 1;
+        f_lookup = lookup_bgra;
+        foptimize_palette = 0;
+        break;
+    default:
+        goto end;
+    }
+
+    if (f_diffuse == NULL) {
         switch (methodForDiffuse) {
         case SIXEL_DIFFUSE_NONE:
             f_diffuse = diffuse_none;
@@ -1292,14 +1581,14 @@ sixel_quant_apply_palette(
         }
     }
 
-    f_lookup = NULL;
+    depth = sixel_helper_compute_depth(pixelformat);
     if (reqcolor == 2) {
         sum1 = 0;
         sum2 = 0;
-        for (n = 0; n < depth; ++n) {
+        for (n = 0; n < 3; ++n) {
             sum1 += palette[n];
         }
-        for (n = depth; n < depth + depth; ++n) {
+        for (n = 3; n < 3 + 3; ++n) {
             sum2 += palette[n];
         }
         if (sum1 == 0 && sum2 == 255 * 3) {
@@ -1308,16 +1597,9 @@ sixel_quant_apply_palette(
             f_lookup = lookup_mono_lightbg;
         }
     }
-    if (f_lookup == NULL) {
-        if (foptimize && depth == 3) {
-            f_lookup = lookup_fast;
-        } else {
-            f_lookup = lookup_normal;
-        }
-    }
 
     indextable = cachetable;
-    if (cachetable == NULL && f_lookup == lookup_fast) {
+    if (cachetable == NULL && f_lookup == lookup_rgb888_fast) {
         indextable = (unsigned short *)sixel_allocator_calloc(allocator,
                                                               (size_t)(1 << depth * 5),
                                                               sizeof(unsigned short));
@@ -1330,39 +1612,39 @@ sixel_quant_apply_palette(
     if (foptimize_palette) {
         *ncolors = 0;
 
-        memset(new_palette, 0x00, sizeof(256 * depth));
+        memset(new_palette, 0x00, sizeof(256 * 3));
         memset(migration_map, 0x00, sizeof(migration_map));
 
         for (y = 0; y < height; ++y) {
             for (x = 0; x < width; ++x) {
                 pos = y * width + x;
-                color_index = f_lookup(data + (pos * depth), depth,
+                color_index = f_lookup(data + (pos * depth), pixelformat,
                                        palette, reqcolor, indextable, complexion);
                 if (migration_map[color_index] == 0) {
                     result[pos] = *ncolors;
-                    for (n = 0; n < depth; ++n) {
-                        new_palette[*ncolors * depth + n] = palette[color_index * depth + n];
+                    for (n = 0; n < 3; ++n) {
+                        new_palette[*ncolors * 3 + n] = palette[color_index * 3 + n];
                     }
                     ++*ncolors;
                     migration_map[color_index] = *ncolors;
                 } else {
                     result[pos] = migration_map[color_index] - 1;
                 }
-                for (n = 0; n < depth; ++n) {
-                    offset = data[pos * depth + n] - palette[color_index * depth + n];
+                for (n = 0; n < 3; ++n) {
+                    offset = data[pos * 3 + n] - palette[color_index * 3 + n];
                     f_diffuse(data + n, width, height, x, y, depth, offset);
                 }
             }
         }
-        memcpy(palette, new_palette, (size_t)(*ncolors * depth));
+        memcpy(palette, new_palette, (size_t)(*ncolors * 3));
     } else {
         for (y = 0; y < height; ++y) {
             for (x = 0; x < width; ++x) {
                 pos = y * width + x;
-                color_index = f_lookup(data + (pos * depth), depth,
-                                 palette, reqcolor, indextable, complexion);
+                color_index = f_lookup(data + (pos * depth), pixelformat,
+                                       palette, reqcolor, indextable, complexion);
                 result[pos] = color_index;
-                for (n = 0; n < depth; ++n) {
+                for (n = 0; n < 3; ++n) {
                     offset = data[pos * depth + n] - palette[color_index * depth + n];
                     f_diffuse(data + n, width, height, x, y, depth, offset);
                 }

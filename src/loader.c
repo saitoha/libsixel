@@ -512,11 +512,8 @@ load_png(unsigned char      /* out */ **result,
 #  if HAVE_DEBUG
         fprintf(stderr, "RGBA PNG(PNG_COLOR_TYPE_RGB_ALPHA)\n");
         fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
-        fprintf(stderr, "expand to RGB format...\n");
 #  endif
-        png_set_background(png_ptr, &background,
-                           PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
-        *pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        *pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
         break;
     case PNG_COLOR_TYPE_RGB:
 #  if HAVE_DEBUG
@@ -743,14 +740,14 @@ typedef union _fn_pointer {
 /* load images using builtin image loaders */
 static SIXELSTATUS
 load_with_builtin(
-    sixel_chunk_t const       /* in */     *pchunk,      /* image data */
-    int                       /* in */     fstatic,      /* static */
-    int                       /* in */     fuse_palette, /* whether to use palette if possible */
-    int                       /* in */     reqcolors,    /* reqcolors */
-    unsigned char             /* in */     *bgcolor,     /* background color */
-    int                       /* in */     loop_control, /* one of enum loop_control */
-    sixel_load_image_function /* in */     fn_load,      /* callback */
-    void                      /* in/out */ *context      /* private data for callback */
+    sixel_chunk_t const       /* in */     *pchunk,         /* image data */
+    int                       /* in */     fstatic,         /* static */
+    int                       /* in */     fuse_palette,    /* whether to use palette if possible */
+    int                       /* in */     reqcolors,       /* reqcolors */
+    unsigned char             /* in */     *bgcolor,        /* background color */
+    int                       /* in */     loop_control,    /* one of enum loop_control */
+    sixel_load_image_function /* in */     fn_load,         /* callback */
+    void                      /* in/out */ *context         /* private data for callback */
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -890,9 +887,25 @@ load_with_builtin(
         }
     }
 
-    status = sixel_frame_strip_alpha(frame, bgcolor);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    switch (frame->pixelformat) {
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+#if HAVE_DEBUG
+        fprintf(stderr, "apply background...\n");
+#endif
+        status = sixel_frame_apply_background(frame, bgcolor);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
+    default:
+        status = sixel_frame_strip_alpha(frame, bgcolor);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
     }
 
     status = fn_load(frame, context);
@@ -1275,17 +1288,17 @@ end:
 
 SIXELAPI SIXELSTATUS
 sixel_helper_load_image_file(
-    char const                /* in */     *filename,     /* source file name */
-    int                       /* in */     fstatic,       /* whether to extract static image */
-    int                       /* in */     fuse_palette,  /* whether to use paletted image */
-    int                       /* in */     reqcolors,     /* requested number of colors */
-    unsigned char             /* in */     *bgcolor,      /* background color */
-    int                       /* in */     loop_control,  /* one of enum loopControl */
-    sixel_load_image_function /* in */     fn_load,       /* callback */
-    int                       /* in */     finsecure,     /* true if do not verify SSL */
-    int const                 /* in */     *cancel_flag,  /* cancel flag */
-    void                      /* in/out */ *context,      /* private data */
-    sixel_allocator_t         /* in */     *allocator     /* allocator object */
+    char const                /* in */     *filename,       /* source file name */
+    int                       /* in */     fstatic,         /* whether to extract static image */
+    int                       /* in */     fuse_palette,    /* whether to use paletted image */
+    int                       /* in */     reqcolors,       /* requested number of colors */
+    unsigned char             /* in */     *bgcolor,        /* background color */
+    int                       /* in */     loop_control,    /* one of enum loopControl */
+    sixel_load_image_function /* in */     fn_load,         /* callback */
+    int                       /* in */     finsecure,       /* true if do not verify SSL */
+    int const                 /* in */     *cancel_flag,    /* cancel flag */
+    void                      /* in/out */ *context,        /* private data */
+    sixel_allocator_t         /* in */     *allocator       /* allocator object */
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;

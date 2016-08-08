@@ -48,6 +48,7 @@ sixel_quant_make_palette(
 SIXELSTATUS
 sixel_quant_apply_palette(
     unsigned char       /* out */ *result,
+    int                 /* out */ *keycolor,
     unsigned char       /* in */  *data,
     int                 /* in */  width,
     int                 /* in */  height,

@@ -517,6 +517,7 @@ sixel_dither_initialize(
     unsigned char *buf = NULL;
     unsigned char *normalized_pixels = NULL;
     unsigned char *input_pixels;
+    int depth;
     SIXELSTATUS status = SIXEL_FALSE;
 
     if (dither == NULL) {
@@ -527,8 +528,6 @@ sixel_dither_initialize(
     }
 
     sixel_dither_ref(dither);
-
-    sixel_dither_set_pixelformat(dither, pixelformat);
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_RGB888:
@@ -559,6 +558,14 @@ sixel_dither_initialize(
         break;
     }
 
+    depth = sixel_helper_compute_depth(pixelformat);
+    if (depth < 0) {
+        sixel_helper_set_additional_message(
+            "sixel_dither_initialize: invalid pixelformat(%02x) specified.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+    }
+    sixel_dither_set_pixelformat(dither, pixelformat);
     sixel_dither_set_method_for_largest(dither, method_for_largest);
     sixel_dither_set_method_for_rep(dither, method_for_rep);
     sixel_dither_set_quality_mode(dither, quality_mode);
@@ -566,7 +573,7 @@ sixel_dither_initialize(
     status = sixel_quant_make_palette(&buf,
                                       input_pixels,
                                       (unsigned int)(width * height * 3),
-                                      SIXEL_PIXELFORMAT_RGB888,
+                                      pixelformat,
                                       (unsigned int)dither->reqcolors,
                                       (unsigned int *)&dither->ncolors,
                                       (unsigned int *)&dither->origcolors,
@@ -720,7 +727,6 @@ sixel_dither_apply_palette(
     SIXELSTATUS status = SIXEL_FALSE;
     size_t bufsize;
     unsigned char *dest = NULL;
-    int ncolors;
     unsigned char *normalized_pixels = NULL;
     unsigned char *input_pixels;
 
@@ -761,7 +767,17 @@ sixel_dither_apply_palette(
         }
     }
 
-    if (dither->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+    switch (dither->pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+        input_pixels = pixels;
+        break;
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        input_pixels = pixels;
+        break;
+    default:
         /* normalize pixelformat */
         normalized_pixels
             = (unsigned char *)sixel_allocator_malloc(dither->allocator, (size_t)(width * height * 3));
@@ -779,13 +795,14 @@ sixel_dither_apply_palette(
             goto end;
         }
         input_pixels = normalized_pixels;
-    } else {
-        input_pixels = pixels;
+        break;
     }
 
     status = sixel_quant_apply_palette(dest,
+                                       &dither->keycolor,
                                        input_pixels,
-                                       width, height, 3,
+                                       width, height,
+                                       dither->pixelformat,
                                        dither->palette,
                                        dither->ncolors,
                                        dither->method_for_diffuse,
@@ -793,15 +810,13 @@ sixel_dither_apply_palette(
                                        dither->optimize_palette,
                                        dither->complexion,
                                        dither->cachetable,
-                                       &ncolors,
+                                       &dither->ncolors,
                                        dither->allocator);
     if (SIXEL_FAILED(status)) {
         free(dest);
         dest = NULL;
         goto end;
     }
-
-    dither->ncolors = ncolors;
 
 end:
     free(normalized_pixels);

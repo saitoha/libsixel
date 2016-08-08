@@ -654,6 +654,9 @@ clip(unsigned char *pixels,
     case SIXEL_PIXELFORMAT_PAL8:
     case SIXEL_PIXELFORMAT_G8:
     case SIXEL_PIXELFORMAT_RGB888:
+    case SIXEL_PIXELFORMAT_BGR888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_RGBA8888:
         depth = sixel_helper_compute_depth(pixelformat);
         if (depth < 0) {
             status = SIXEL_LOGIC_ERROR;
