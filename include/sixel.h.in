@@ -969,6 +969,12 @@ sixel_frame_strip_alpha(
     sixel_frame_t  /* in */ *frame,
     unsigned char  /* in */ *bgcolor);
 
+/* apply background color to RGBA/ARGB formatted pixbuf */
+SIXELAPI int
+sixel_frame_apply_background(
+    sixel_frame_t  /* in */ *frame,
+    unsigned char  /* in */ *bgcolor);
+
 /* resize a frame to given size with specified resampling filter */
 SIXELAPI SIXELSTATUS
 sixel_frame_resize(
