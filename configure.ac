@@ -275,7 +275,8 @@ AC_CHECK_FUNCS([memcpy \
                 strerror \
                 isatty \
                 strncmp \
-                ldiv])
+                ldiv \
+                fabs])
 
 # for HDR
 AC_CHECK_FUNCS([strtol pow])

@@ -59,7 +59,7 @@ sixel_frame_new(
     *ppframe = (sixel_frame_t *)sixel_allocator_malloc(allocator, sizeof(sixel_frame_t));
     if (*ppframe == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_frame_resize: sixel_allocator_malloc() failed.");
+            "sixel_frame_new: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -583,18 +583,35 @@ sixel_frame_resize(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     size_t size;
-    unsigned char *scaled_frame = NULL;
+    unsigned char *scaled_buf = NULL;
+    int depth;
 
     sixel_frame_ref(frame);
 
-    status = sixel_frame_convert_to_rgb888(frame);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    switch (frame->pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+    case SIXEL_PIXELFORMAT_BGR888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        break;
+    default:
+        status = sixel_frame_convert_to_rgb888(frame);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
     }
 
-    size = (size_t)(width * height * 3);
-    scaled_frame = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
-    if (scaled_frame == NULL) {
+    depth = sixel_helper_compute_depth(frame->pixelformat);
+    if (depth < 0) {
+        status = SIXEL_LOGIC_ERROR;
+        goto end;
+    }
+    size = (size_t)(width * height * depth);
+    scaled_buf = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
+    if (scaled_buf == NULL) {
         sixel_helper_set_additional_message(
             "sixel_frame_resize: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
@@ -602,11 +619,11 @@ sixel_frame_resize(
     }
 
     status = sixel_helper_scale_image(
-        scaled_frame,
+        scaled_buf,
         frame->pixels,
         frame->width,
         frame->height,
-        3,
+        frame->pixelformat,
         width,
         height,
         method_for_resampling,
@@ -615,7 +632,7 @@ sixel_frame_resize(
         goto end;
     }
     sixel_allocator_free(frame->allocator, frame->pixels);
-    frame->pixels = scaled_frame;
+    frame->pixels = scaled_buf;
     frame->width = width;
     frame->height = height;
 

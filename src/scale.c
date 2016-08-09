@@ -282,7 +282,12 @@ scale_with_resampling(
                     } else {
                         diff_y = (y + 0.5) * dsth / srch - center_y;
                     }
+#if HAVE_FABS
                     weight = f_resample(fabs(diff_x)) * f_resample(fabs(diff_y));
+#else
+                    weight = f_resample(diff_x < 0 ? - diff_x: diff_x)
+                           * f_resample(diff_y < 0 ? - diff_y: diff_y);
+#endif
                     for (i = 0; i < depth; i++) {
                         pos = (y * srcw + x) * depth + i;
                         offsets[i] += src[pos] * weight;
@@ -315,29 +320,44 @@ sixel_helper_scale_image(
     int                 /* in */  method_for_resampling,  /* one of methodForResampling */
     sixel_allocator_t   /* in */  *allocator)             /* allocator object */
 {
-    int const depth = sixel_helper_compute_depth(pixelformat);
+    int depth;
     unsigned char *new_src = NULL;
-    int nret;
+    SIXELSTATUS status = (-1);
     int new_pixelformat;
+    size_t new_size;
 
-    if (depth != 3) {
-        new_src = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(srcw * srch * 3));
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+    case SIXEL_PIXELFORMAT_BGR888:
+        new_pixelformat = pixelformat;
+        break;
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        new_pixelformat = pixelformat;
+        break;
+    default:
+        new_size = (size_t)(srcw * srch * 3);
+        new_src = (unsigned char *)sixel_allocator_malloc(allocator, new_size);
         if (new_src == NULL) {
-            return (-1);
+            goto end;
         }
-        nret = sixel_helper_normalize_pixelformat(new_src,
-                                                  &new_pixelformat,
-                                                  src, pixelformat,
-                                                  srcw, srch);
-        if (nret != 0) {
+        status = sixel_helper_normalize_pixelformat(new_src,
+                                                    &new_pixelformat,
+                                                    src, pixelformat,
+                                                    srcw, srch);
+        if (SIXEL_FAILED(status)) {
             sixel_allocator_free(allocator, new_src);
-            return (-1);
+            goto end;
         }
 
         src = new_src;
-    } else {
-        new_pixelformat = pixelformat;
+
+        break;
     }
+
+    depth = sixel_helper_compute_depth(pixelformat);
 
     /* choose re-sampling strategy */
     switch (method_for_resampling) {
@@ -383,6 +403,7 @@ sixel_helper_scale_image(
         break;
     }
 
+end:
     free(new_src);
     return 0;
 }

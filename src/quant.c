@@ -1133,7 +1133,7 @@ lookup_rgba(unsigned char const * const pixel,
     (void) cachetable;
 
     if (pixel[3] == 0) {
-        result = reqcolor - 1;
+        result = reqcolor > 255 ? 255: reqcolor;
     } else {
         for (i = 0; i < reqcolor; i++) {
             distant = 0;
@@ -1175,17 +1175,21 @@ lookup_argb(unsigned char const * const pixel,
     (void) pixelformat;
     (void) cachetable;
 
-    for (i = 0; i < reqcolor; i++) {
-        distant = 0;
-        r = pixel[1] - palette[i * 3 + 0];
-        distant += r * r * complexion;
-        r = pixel[2] - palette[i * 3 + 1];
-        distant += r * r;
-        r = pixel[3] - palette[i * 3 + 2];
-        distant += r * r * complexion;
-        if (distant < diff) {
-            diff = distant;
-            result = i;
+    if (pixel[0] == 0) {
+        result = reqcolor > 255 ? 255: reqcolor;
+    } else {
+        for (i = 0; i < reqcolor; i++) {
+            distant = 0;
+            r = pixel[1] - palette[i * 3 + 0];
+            distant += r * r * complexion;
+            r = pixel[2] - palette[i * 3 + 1];
+            distant += r * r;
+            r = pixel[3] - palette[i * 3 + 2];
+            distant += r * r * complexion;
+            if (distant < diff) {
+                diff = distant;
+                result = i;
+            }
         }
     }
 
@@ -1214,17 +1218,21 @@ lookup_bgra(unsigned char const * const pixel,
     (void) pixelformat;
     (void) cachetable;
 
-    for (i = 0; i < reqcolor; i++) {
-        distant = 0;
-        r = pixel[2] - palette[i * 3 + 0];
-        distant += r * r;
-        r = pixel[1] - palette[i * 3 + 1];
-        distant += r * r;
-        r = pixel[0] - palette[i * 3 + 2];
-        distant += r * r * complexion;
-        if (distant < diff) {
-            diff = distant;
-            result = i;
+    if (pixel[3] == 0) {
+        result = reqcolor > 255 ? 255: reqcolor;
+    } else {
+        for (i = 0; i < reqcolor; i++) {
+            distant = 0;
+            r = pixel[2] - palette[i * 3 + 0];
+            distant += r * r;
+            r = pixel[1] - palette[i * 3 + 1];
+            distant += r * r;
+            r = pixel[0] - palette[i * 3 + 2];
+            distant += r * r * complexion;
+            if (distant < diff) {
+                diff = distant;
+                result = i;
+            }
         }
     }
 
@@ -1253,17 +1261,21 @@ lookup_abgr(unsigned char const * const pixel,
     (void) pixelformat;
     (void) cachetable;
 
-    for (i = 0; i < reqcolor; i++) {
-        distant = 0;
-        r = pixel[3] - palette[i * 3 + 0];
-        distant += r * r * complexion;
-        r = pixel[2] - palette[i * 3 + 1];
-        distant += r * r;
-        r = pixel[1] - palette[i * 3 + 2];
-        distant += r * r * complexion;
-        if (distant < diff) {
-            diff = distant;
-            result = i;
+    if (pixel[3] == 0) {
+        result = reqcolor > 255 ? 255: reqcolor;
+    } else {
+        for (i = 0; i < reqcolor; i++) {
+            distant = 0;
+            r = pixel[3] - palette[i * 3 + 0];
+            distant += r * r * complexion;
+            r = pixel[2] - palette[i * 3 + 1];
+            distant += r * r;
+            r = pixel[1] - palette[i * 3 + 2];
+            distant += r * r * complexion;
+            if (distant < diff) {
+                diff = distant;
+                result = i;
+            }
         }
     }
 
@@ -1528,23 +1540,22 @@ sixel_quant_apply_palette(
         f_lookup = lookup_bgr888_normal;
         break;
     case SIXEL_PIXELFORMAT_RGBA8888:
-        f_diffuse = diffuse_atkinson;
-        *keycolor = reqcolor - 1;
+        *keycolor = reqcolor == 256 ? 255: reqcolor;
         f_lookup = lookup_rgba;
         foptimize_palette = 0;
         break;
     case SIXEL_PIXELFORMAT_ARGB8888:
-        *keycolor = reqcolor - 1;
+        *keycolor = reqcolor == 256 ? 255: reqcolor;
         f_lookup = lookup_argb;
         foptimize_palette = 0;
         break;
     case SIXEL_PIXELFORMAT_ABGR8888:
-        *keycolor = reqcolor - 1;
+        *keycolor = reqcolor == 256 ? 255: reqcolor;
         f_lookup = lookup_abgr;
         foptimize_palette = 0;
         break;
     case SIXEL_PIXELFORMAT_BGRA8888:
-        *keycolor = reqcolor - 1;
+        *keycolor = reqcolor == 256 ? 255: reqcolor;
         f_lookup = lookup_bgra;
         foptimize_palette = 0;
         break;
@@ -1631,7 +1642,7 @@ sixel_quant_apply_palette(
                     result[pos] = migration_map[color_index] - 1;
                 }
                 for (n = 0; n < 3; ++n) {
-                    offset = data[pos * 3 + n] - palette[color_index * 3 + n];
+                    offset = data[pos * depth + n] - palette[color_index * 3 + n];
                     f_diffuse(data + n, width, height, x, y, depth, offset);
                 }
             }
@@ -1644,9 +1655,11 @@ sixel_quant_apply_palette(
                 color_index = f_lookup(data + (pos * depth), pixelformat,
                                        palette, reqcolor, indextable, complexion);
                 result[pos] = color_index;
-                for (n = 0; n < 3; ++n) {
-                    offset = data[pos * depth + n] - palette[color_index * depth + n];
-                    f_diffuse(data + n, width, height, x, y, depth, offset);
+                if (color_index != *keycolor) {
+                    for (n = 0; n < 3; ++n) {
+                        offset = data[pos * depth + n] - palette[color_index * 3 + n];
+                        f_diffuse(data + n, width, height, x, y, depth, offset);
+                    }
                 }
             }
         }
