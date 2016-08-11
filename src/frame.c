@@ -367,7 +367,7 @@ sixel_frame_strip_alpha(
 
 
 /* strip alpha from RGBA/ARGB/BGRA/ABGR formatted pixbuf */
-SIXELAPI SIXELSTATUS
+SIXELSTATUS
 sixel_frame_apply_background(
     sixel_frame_t  /* in */ *frame,
     unsigned char  /* in */ *bgcolor
@@ -458,8 +458,8 @@ sixel_frame_apply_background(
 }
 
 
-SIXELSTATUS
-sixel_frame_normalize(sixel_frame_t /*in */ *frame)
+SIXELAPI SIXELSTATUS
+sixel_frame_normalize(sixel_frame_t /* in */ *frame)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *normalized_pixels = NULL;

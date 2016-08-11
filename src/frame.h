@@ -45,6 +45,12 @@ struct sixel_frame {
 extern "C" {
 #endif
 
+/* apply background color to RGBA/ARGB formatted pixbuf */
+SIXELSTATUS
+sixel_frame_apply_background(
+    sixel_frame_t  /* in */ *frame,
+    unsigned char  /* in */ *bgcolor);
+
 #if HAVE_TESTS
 int
 sixel_dither_tests_main(void);

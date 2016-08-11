@@ -964,18 +964,12 @@ SIXELAPI int
 sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame);  /* frame object */
 
 /* convert pixel format to normalized format, RGB888/RGBA8888 */
-SIXELSTATUS
-sixel_frame_normalize(sixel_frame_t /*in */ *frame);
+SIXELAPI SIXELSTATUS
+sixel_frame_normalize(sixel_frame_t /* in */ *frame);
 
 /* strip alpha from RGBA/ARGB formatted pixbuf */
 SIXELAPI int
 sixel_frame_strip_alpha(
-    sixel_frame_t  /* in */ *frame,
-    unsigned char  /* in */ *bgcolor);
-
-/* apply background color to RGBA/ARGB formatted pixbuf */
-SIXELAPI int
-sixel_frame_apply_background(
     sixel_frame_t  /* in */ *frame,
     unsigned char  /* in */ *bgcolor);
 
