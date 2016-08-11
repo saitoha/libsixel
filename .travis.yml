@@ -1,6 +1,9 @@
 
 language: c
 
+os:
+  - linux
+
 env:
   - XCC=gcc HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= LIBCURL=--without-libcurl JPEG=--without-jpeg PNG=--without-png
   - XCC=clang HOST= PREFIX=/usr DEBUG="--enable--tests --enable-debug" WINE= LIBCURL=--without-libcurl JPEG=--without-jpeg PNG=--without-png
@@ -20,18 +23,18 @@ env:
 
 before_install:
   - "sudo apt-get -qq update --force-yes > /dev/null"
-  - "if [ x$GDKPIXBUF != x ]; then sudo apt-get -qq install pkg-config libgdk-pixbuf2.0-dev; fi"
-  - "if [ x$GD != x ]; then sudo apt-get -qq install libgd2-xpm-dev; fi"
-  - "if [ x$LIBCURL != x ]; then sudo apt-get -qq install libcurl4-openssl-dev; fi"
-  - "if [ x$WINE = x ]; then sudo apt-get install -qq valgrind > /dev/null; fi"
-  - "if [ x$WINE != x ]; then sudo apt-get install -qq wine > /dev/null; fi"
-  - "if [ x$XCC = xclang ]; then sudo apt-get install -qq clang; fi"
-  - "if [ x$XCC = xgcc ]; then sudo apt-get install -qq gcc; fi"
-  - "if [ x$XCC = xi686-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-i686 binutils-mingw-w64-i686; fi"
-  - "if [ x$XCC = xi586-mingw32msvc-gcc ]; then sudo apt-get install -qq mingw32; fi"
-  - "if [ x$XCC = xx86_64-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64; fi"
-  - "if [ x$GCOV != x ]; then sudo apt-get install libyaml-dev; fi"
-  - "if [ x$GCOV != x ]; then sudo pip install cpp-coveralls pyyaml; fi"
+  - "if [ x$TRAVIS_OS_NAME = xlinux -a x$GDKPIXBUF != x ]; then sudo apt-get -qq install pkg-config libgdk-pixbuf2.0-dev; fi"
+  - "if [ x$TRAVIS_OS_NAME = xlinux -a x$GD != x ]; then sudo apt-get -qq install libgd2-xpm-dev; fi"
+  - "if [ x$TRAVIS_OS_NAME = xlinux -a x$LIBCURL != x ]; then sudo apt-get -qq install libcurl4-openssl-dev; fi"
+  - "if [ x$TRAVIS_OS_NAME = xlinux -a x$WINE = x ]; then sudo apt-get install -qq valgrind > /dev/null; fi"
+  - "if [ x$TRAVIS_OS_NAME = xlinux -a x$WINE != x ]; then sudo apt-get install -qq wine > /dev/null; fi"
+  - "if [ x$TRAVIS_OS_NAME = xlinux -a x$XCC = xclang ]; then sudo apt-get install -qq clang; fi"
+  - "if [ x$TRAVIS_OS_NAME = xlinux -a x$XCC = xgcc ]; then sudo apt-get install -qq gcc; fi"
+  - "if [ x$TRAVIS_OS_NAME = xlinux -a x$XCC = xi686-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-i686 binutils-mingw-w64-i686; fi"
+  - "if [ x$TRAVIS_OS_NAME = xlinux -a x$XCC = xi586-mingw32msvc-gcc ]; then sudo apt-get install -qq mingw32; fi"
+  - "if [ x$TRAVIS_OS_NAME = xlinux -a x$XCC = xx86_64-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64; fi"
+  - "if [ x$TRAVIS_OS_NAME = xlinux -a x$GCOV != x ]; then sudo apt-get install libyaml-dev; fi"
+  - "if [ x$TRAVIS_OS_NAME = xlinux -a x$GCOV != x ]; then sudo pip install cpp-coveralls pyyaml; fi"
 
 before_script:
   - "CC=$XCC ./configure --prefix=${PREFIX} ${DEBUG} ${HOST} ${GDKPIXBUF} ${GD} ${LIBCURL} ${PNG} ${JPEG} ${GCOV} ${STATIC}"
