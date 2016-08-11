@@ -94,6 +94,8 @@ stbi_free(void *p)
 
 #define STBI_NO_STDIO 1
 #define STB_IMAGE_IMPLEMENTATION 1
+#define STBI_NO_GIF
+#define STBI_NO_PNM
 
 #if HAVE_DIAGNOSTIC_SIGN_CONVERSION
 # pragma GCC diagnostic push
