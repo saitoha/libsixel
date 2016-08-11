@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,12 +22,20 @@
 #ifndef LIBSIXEL_DECODER_H
 #define LIBSIXEL_DECODER_H
 
+#include <sixel.h>
+
 /* encode settings object */
-typedef struct sixel_decoder {
+struct sixel_decoder {
     unsigned int ref;
     char *input;
     char *output;
-} sixel_decoder_t;
+    sixel_allocator_t *allocator;
+};
+
+#if HAVE_TESTS
+int
+sixel_decoder_tests_main(void);
+#endif
 
 #endif /* LIBSIXEL_DECODER_H */
 

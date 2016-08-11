@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2014,2015 Hayaki Saito
+# Copyright (c) 2014-2016 Hayaki Saito
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -21,96 +21,39 @@
 #
 
 from . import _sixel
+from libsixel import *
 
 class Encoder(object):
 
     def __init__(self):
-        from ctypes import c_void_p, c_int, c_char_p
-
-        _sixel.sixel_encoder_create.restype = c_void_p
-        _sixel.sixel_encoder_unref.restype = None
-        _sixel.sixel_encoder_unref.argtypes = [c_void_p]
-        _sixel.sixel_encoder_setopt.argtypes = [c_void_p, c_int, c_char_p]
-        _sixel.sixel_encoder_encode.argtypes = [c_void_p, c_char_p]
-        self._encoder = _sixel.sixel_encoder_create()
+        self._encoder = sixel_encoder_new()
 
     def __del__(self):
-        _sixel.sixel_encoder_unref(self._encoder)
+        sixel_encoder_unref(self._encoder)
 
     def setopt(self, flag, arg=None):
-        flag = ord(flag)
-        if arg:
-            arg = str(arg)
-        settings = self._encoder
-        result = _sixel.sixel_encoder_setopt(settings, flag, arg)
-        if result != 0:
-            raise RuntimeError("Invalid option was set.")
+        sixel_encoder_setopt(self._encoder, flag, arg)
 
     def encode(self, filename="-"):
-        result = _sixel.sixel_encoder_encode(self._encoder, filename)
-        if result != 0:
-            raise RuntimeError("Unexpected Error")
+        sixel_encoder_encode(self._encoder, filename)
+
+    def encode_bytes(self, buf, width, height, pixelformat, palette):
+        sixel_encoder_encode_bytes(self._encoder, buf, width, height, pixelformat, palette)
 
     def test(self, filename):
         import threading
 
-        self.setopt("p", 16)
-        self.setopt("d", "atkinson")
-        self.setopt("w", "200")
+        self.setopt(SIXEL_OPTFLAG_COLORS, 16)
+        self.setopt(SIXEL_OPTFLAG_DIFFUSION, "atkinson")
+        self.setopt(SIXEL_OPTFLAG_WIDTH, 200)
         t = threading.Thread(target=self.encode, args=[filename])
         t.daemon = True
         t.start()
         try:
             while t.is_alive():
                 t.join(1)
-        except KeyboardInterrupt as e:
-            print "\033\\\033[Jcanceled."
-
-
-class Decoder(object):
-
-    def __init__(self):
-        _sixel.sixel_decoder_create.restype = c_void_p
-        _sixel.sixel_decoder_unref.restype = None
-        _sixel.sixel_decoder_unref.argtypes = [c_void_p]
-        _sixel.sixel_decoder_setopt.argtypes = [c_void_p, c_int, c_char_p]
-        _sixel.sixel_decoder_decode.argtypes = [c_void_p]
-        self._decoder = _sixel.sixel_decoder_create()
-
-    def __del__(self):
-        _sixel.sixel_decoder_unref(self._decoder)
-
-    def setopt(self, flag, arg=None):
-        flag = ord(flag)
-        if arg:
-            arg = str(arg)
-        settings = self._decoder
-        result = _sixel.sixel_decoder_setopt(settings, flag, arg)
-        if result != 0:
-            raise RuntimeError("Invalid option was set.")
-
-    def decode(self, infile=None):
-        if infile:
-            self.setopt("i", infile)
-        result = _sixel.sixel_decoder_decode(self._decoder)
-        if result != 0:
-            raise RuntimeError("Unexpected Error")
-
-    def test(self, infile=None, outfile=None):
-        import threading
-
-        if infile:
-            self.setopt("i", infile)
-        if outfile:
-            self.setopt("o", outfile)
-        t = threading.Thread(target=self.decode)
-        t.daemon = True
-        t.start()
-        try:
-            while t.is_alive():
-                t.join(1)
-        except KeyboardInterrupt as e:
-            print "\033\\\033[Jcanceled."
+        except KeyboardInterrupt:
+            print("\033\\\033[Jcanceled.")
 
 
 if __name__ == '__main__':

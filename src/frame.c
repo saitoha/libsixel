@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -35,46 +35,90 @@
 #endif
 
 #include "frame.h"
-#include <sixel.h>
+
+#if !defined(HAVE_MEMMOVE)
+# define memmove(d, s, n) (bcopy ((s), (d), (n)))
+#endif
+
+/* constructor of frame object */
+SIXELAPI SIXELSTATUS
+sixel_frame_new(
+    sixel_frame_t       /* out */ **ppframe,    /* frame object to be created */
+    sixel_allocator_t   /* in */  *allocator)   /* allocator, null if you use
+                                                   default allocator */
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+
+    if (allocator == NULL) {
+        status = sixel_allocator_new(&allocator, malloc, calloc, realloc, free);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+
+    *ppframe = (sixel_frame_t *)sixel_allocator_malloc(allocator, sizeof(sixel_frame_t));
+    if (*ppframe == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    (*ppframe)->ref = 1;
+    (*ppframe)->pixels = NULL;
+    (*ppframe)->palette = NULL;
+    (*ppframe)->width = 0;
+    (*ppframe)->height = 0;
+    (*ppframe)->ncolors = (-1);
+    (*ppframe)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    (*ppframe)->delay = 0;
+    (*ppframe)->frame_no = 0;
+    (*ppframe)->loop_count = 0;
+    (*ppframe)->multiframe = 0;
+    (*ppframe)->transparent = (-1);
+    (*ppframe)->allocator = allocator;
+
+    sixel_allocator_ref(allocator);
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
 
 
-SIXELAPI sixel_frame_t *
+SIXELAPI /* deprecated */ sixel_frame_t *
 sixel_frame_create(void)
 {
-    sixel_frame_t *frame;
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_frame_t *frame = NULL;
 
-    frame = (sixel_frame_t *)malloc(sizeof(sixel_frame_t));
-    if (frame == NULL) {
-        return NULL;
+    status = sixel_frame_new(&frame, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
-    frame->ref = 1;
-    frame->pixels = NULL;
-    frame->palette = NULL;
-    frame->width = 0;
-    frame->height = 0;
-    frame->ncolors = (-1);
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    frame->delay = 0;
-    frame->frame_no = 0;
-    frame->loop_count = 0;
-    frame->multiframe = 0;
-    frame->transparent = (-1);
 
+end:
     return frame;
 }
 
 
-SIXELAPI void
-sixel_frame_destroy(sixel_frame_t *frame)
+static void
+sixel_frame_destroy(sixel_frame_t /* in */ *frame)
 {
+    sixel_allocator_t *allocator = NULL;
+
     if (frame) {
-        free(frame->pixels);
-        free(frame->palette);
-        free(frame);
+        allocator = frame->allocator;
+        sixel_allocator_free(allocator, frame->pixels);
+        sixel_allocator_free(allocator, frame->palette);
+        sixel_allocator_free(allocator, frame);
+        sixel_allocator_unref(allocator);
     }
 }
 
 
+/* increase reference count of frame object (thread-unsafe) */
 SIXELAPI void
 sixel_frame_ref(sixel_frame_t *frame)
 {
@@ -83,6 +127,7 @@ sixel_frame_ref(sixel_frame_t *frame)
 }
 
 
+/* decrease reference count of frame object (thread-unsafe) */
 SIXELAPI void
 sixel_frame_unref(sixel_frame_t *frame)
 {
@@ -93,17 +138,20 @@ sixel_frame_unref(sixel_frame_t *frame)
 }
 
 
-SIXELAPI int
+/* initialize frame object with a pixel buffer */
+SIXELAPI SIXELSTATUS
 sixel_frame_init(
-    sixel_frame_t *frame,
-    unsigned char *pixels,
-    int width,
-    int height,
-    int pixelformat,
-    unsigned char *palette,
-    int ncolors
+    sixel_frame_t   /* in */ *frame,        /* frame object to be initialize */
+    unsigned char   /* in */ *pixels,       /* pixel buffer */
+    int             /* in */ width,         /* pixel width of buffer */
+    int             /* in */ height,        /* pixel height of buffer */
+    int             /* in */ pixelformat,   /* pixelformat of buffer */
+    unsigned char   /* in */ *palette,      /* palette for buffer or NULL */
+    int             /* in */ ncolors        /* number of palette colors or (-1) */
 )
 {
+    sixel_frame_ref(frame);
+
     frame->pixels = pixels;
     frame->width = width;
     frame->height = height;
@@ -111,7 +159,9 @@ sixel_frame_init(
     frame->palette = palette;
     frame->ncolors = ncolors;
 
-    return 0;
+    sixel_frame_unref(frame);
+
+    return SIXEL_OK;
 }
 
 
@@ -203,6 +253,7 @@ sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame)  /* frame object */
 }
 
 
+/* strip alpha from RGBA/ARGB/BGRA/ABGR formatted pixbuf */
 SIXELAPI SIXELSTATUS
 sixel_frame_strip_alpha(
     sixel_frame_t  /* in */ *frame,
@@ -210,66 +261,135 @@ sixel_frame_strip_alpha(
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int x;
-    int y;
+    int i;
     unsigned char *src;
     unsigned char *dst;
     unsigned char alpha;
 
+    sixel_frame_ref(frame);
+
     src = dst = frame->pixels;
 
-    switch (frame->pixelformat) {
-    case SIXEL_PIXELFORMAT_RGBA8888:
-    case SIXEL_PIXELFORMAT_ARGB8888:
-        for (y = 0; y < frame->height; y++) {
-            for (x = 0; x < frame->width; x++) {
-                if (bgcolor) {
-                    alpha = src[3];
-                    *dst++ = (*src++ * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
-                    *dst++ = (*src++ * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
-                    *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
-                    src++;
-                } else if (frame->pixelformat == SIXEL_PIXELFORMAT_ARGB8888){
-                    src++;            /* A */
-                    *dst++ = *src++;  /* R */
-                    *dst++ = *src++;  /* G */
-                    *dst++ = *src++;  /* B */
-                } else if (frame->pixelformat == SIXEL_PIXELFORMAT_RGBA8888){
-                    *dst++ = *src++;  /* R */
-                    *dst++ = *src++;  /* G */
-                    *dst++ = *src++;  /* B */
-                    src++;            /* A */
-                }
+    if (bgcolor) {
+        switch (frame->pixelformat) {
+        case SIXEL_PIXELFORMAT_ARGB8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                alpha = src[0];
+                *dst++ = (*src++ * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+                *dst++ = (*src++ * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+                *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+                src++;
             }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_RGBA8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                alpha = src[3];
+                *dst++ = (*src++ * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+                *dst++ = (*src++ * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+                *dst++ = (*src++ * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+                src++;
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_ABGR8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                alpha = src[0];
+                *dst++ = (src[3] * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+                *dst++ = (src[2] * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+                *dst++ = (src[1] * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+                src += 4;
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_BGRA8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                alpha = src[3];
+                *dst++ = (src[2] * alpha + bgcolor[0] * (0xff - alpha)) >> 8;
+                *dst++ = (src[1] * alpha + bgcolor[1] * (0xff - alpha)) >> 8;
+                *dst++ = (src[0] * alpha + bgcolor[2] * (0xff - alpha)) >> 8;
+                src += 4;
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        default:
+            break;
         }
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        break;
-    default:
-        break;
+    } else {
+        switch (frame->pixelformat) {
+        case SIXEL_PIXELFORMAT_ARGB8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                src++;            /* A */
+                *dst++ = *src++;  /* R */
+                *dst++ = *src++;  /* G */
+                *dst++ = *src++;  /* B */
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_RGBA8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                *dst++ = *src++;  /* R */
+                *dst++ = *src++;  /* G */
+                *dst++ = *src++;  /* B */
+                src++;            /* A */
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_ABGR8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                *dst++ = src[3];  /* R */
+                *dst++ = src[2];  /* G */
+                *dst++ = src[1];  /* B */
+                src += 4;
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PIXELFORMAT_BGRA8888:
+            for (i = 0; i < frame->height * frame->width; i++) {
+                *dst++ = src[2];  /* R */
+                *dst++ = src[1];  /* G */
+                *dst++ = src[0];  /* B */
+                src += 4;
+            }
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        default:
+            break;
+        }
     }
 
     status = SIXEL_OK;
+
+    sixel_frame_unref(frame);
 
     return status;
 }
 
 
-SIXELAPI SIXELSTATUS
+static SIXELSTATUS
 sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *normalized_pixels = NULL;
-    int size;
+    size_t size;
     unsigned char *dst;
     unsigned char *src;
     unsigned char *p;
+
+    sixel_frame_ref(frame);
 
     switch (frame->pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
-        size = frame->width * frame->height * 4;
-        normalized_pixels = (unsigned char *)malloc(size);
+        size = (size_t)(frame->width * frame->height * 4);
+        normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
+        if (normalized_pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_frame_convert_to_rgb888: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         src = normalized_pixels + frame->width * frame->height * 3;
         dst = normalized_pixels;
         status = sixel_helper_normalize_pixelformat(src,
@@ -279,7 +399,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
                                                     frame->width,
                                                     frame->height);
         if (SIXEL_FAILED(status)) {
-            free(normalized_pixels);
+            sixel_allocator_free(frame->allocator, normalized_pixels);
             goto end;
         }
         for (p = src; dst < src; ++p) {
@@ -287,13 +407,19 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             *dst++ = *(frame->palette + *p * 3 + 1);
             *dst++ = *(frame->palette + *p * 3 + 2);
         }
-        free(frame->pixels);
+        sixel_allocator_free(frame->allocator, frame->pixels);
         frame->pixels = normalized_pixels;
         frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     case SIXEL_PIXELFORMAT_PAL8:
-        size = frame->width * frame->height * 3;
-        normalized_pixels = (unsigned char *)malloc(size);
+        size = (size_t)(frame->width * frame->height * 3);
+        normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
+        if (normalized_pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_frame_convert_to_rgb888: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         src = frame->pixels;
         dst = normalized_pixels;
         for (; dst != normalized_pixels + size; ++src) {
@@ -301,7 +427,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             *dst++ = frame->palette[*src * 3 + 1];
             *dst++ = frame->palette[*src * 3 + 2];
         }
-        free(frame->pixels);
+        sixel_allocator_free(frame->allocator, frame->pixels);
         frame->pixels = normalized_pixels;
         frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
@@ -317,8 +443,14 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     case SIXEL_PIXELFORMAT_RGBA8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
         /* normalize pixelformat */
-        size = frame->width * frame->height * 3;
-        normalized_pixels = (unsigned char *)malloc(size);
+        size = (size_t)(frame->width * frame->height * 3);
+        normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
+        if (normalized_pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_frame_convert_to_rgb888: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         status = sixel_helper_normalize_pixelformat(normalized_pixels,
                                                     &frame->pixelformat,
                                                     frame->pixels,
@@ -326,10 +458,10 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
                                                     frame->width,
                                                     frame->height);
         if (SIXEL_FAILED(status)) {
-            free(normalized_pixels);
+            sixel_allocator_free(frame->allocator, normalized_pixels);
             goto end;
         }
-        free(frame->pixels);
+        sixel_allocator_free(frame->allocator, frame->pixels);
         frame->pixels = normalized_pixels;
         break;
     default:
@@ -342,10 +474,13 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     status = SIXEL_OK;
 
 end:
+    sixel_frame_unref(frame);
+
     return status;
 }
 
 
+/* resize a frame to given size with specified resampling filter */
 SIXELAPI SIXELSTATUS
 sixel_frame_resize(
     sixel_frame_t *frame,
@@ -355,31 +490,39 @@ sixel_frame_resize(
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int size;
+    size_t size;
     unsigned char *scaled_frame = NULL;
+
+    sixel_frame_ref(frame);
 
     status = sixel_frame_convert_to_rgb888(frame);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    size = width * height * 3;
-    scaled_frame = (unsigned char *)malloc(size);
+    size = (size_t)(width * height * 3);
+    scaled_frame = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
     if (scaled_frame == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
 
     status = sixel_helper_scale_image(
         scaled_frame,
-        frame->pixels, frame->width, frame->height, 3,
+        frame->pixels,
+        frame->width,
+        frame->height,
+        3,
         width,
         height,
-        method_for_resampling);
+        method_for_resampling,
+        frame->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    free(frame->pixels);
+    sixel_allocator_free(frame->allocator, frame->pixels);
     frame->pixels = scaled_frame;
     frame->width = width;
     frame->height = height;
@@ -387,6 +530,8 @@ sixel_frame_resize(
     status = SIXEL_OK;
 
 end:
+    sixel_frame_unref(frame);
+
     return status;
 }
 
@@ -433,7 +578,7 @@ clip(unsigned char *pixels,
         dst = pixels;
         src = pixels + cy * sx * depth + cx * depth;
         for (y = 0; y < ch; y++) {
-            memmove(dst, src, cw * depth);
+            memmove(dst, src, (size_t)(cw * depth));
             dst += (cw * depth);
             src += (sx * depth);
         }
@@ -458,6 +603,7 @@ end:
 }
 
 
+/* clip frame */
 SIXELAPI SIXELSTATUS
 sixel_frame_clip(
     sixel_frame_t *frame,
@@ -470,6 +616,8 @@ sixel_frame_clip(
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *normalized_pixels;
 
+    sixel_frame_ref(frame);
+
     switch (frame->pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
@@ -477,7 +625,8 @@ sixel_frame_clip(
     case SIXEL_PIXELFORMAT_G1:
     case SIXEL_PIXELFORMAT_G2:
     case SIXEL_PIXELFORMAT_G4:
-        normalized_pixels = (unsigned char *)malloc(frame->width * frame->height);
+        normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator,
+                                                                    (size_t)(frame->width * frame->height));
         status = sixel_helper_normalize_pixelformat(normalized_pixels,
                                                     &frame->pixelformat,
                                                     frame->pixels,
@@ -485,10 +634,10 @@ sixel_frame_clip(
                                                     frame->width,
                                                     frame->height);
         if (SIXEL_FAILED(status)) {
-            free(normalized_pixels);
+            sixel_allocator_free(frame->allocator, normalized_pixels);
             goto end;
         }
-        free(frame->pixels);
+        sixel_allocator_free(frame->allocator, frame->pixels);
         frame->pixels = normalized_pixels;
         break;
     default:
@@ -512,6 +661,8 @@ sixel_frame_clip(
     status = SIXEL_OK;
 
 end:
+    sixel_frame_unref(frame);
+
     return status;
 }
 
@@ -523,7 +674,14 @@ test1(void)
     sixel_frame_t *frame = NULL;
     int nret = EXIT_FAILURE;
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     frame = sixel_frame_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
     if (frame == NULL) {
         goto error;
     }
@@ -553,7 +711,15 @@ test2(void)
 
     memset(bgcolor, 0x10, 3);
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     frame = sixel_frame_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
+
     if (frame == NULL) {
         goto error;
     }
@@ -611,7 +777,14 @@ test3(void)
     pixels[2] = 0x97;
     pixels[3] = 0x32;
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     frame = sixel_frame_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
     if (frame == NULL) {
         goto error;
     }
@@ -669,7 +842,14 @@ test4(void)
     pixels[2] = 0x97;
     pixels[3] = 0x32;
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     frame = sixel_frame_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
     if (frame == NULL) {
         goto error;
     }
@@ -729,7 +909,14 @@ test5(void)
 
     pixels[0] = 0;
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     frame = sixel_frame_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
     if (frame == NULL) {
         goto error;
     }
@@ -789,7 +976,14 @@ test6(void)
 
     pixels[0] = 0;
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     frame = sixel_frame_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma GCC diagnostic pop
+#endif
     if (frame == NULL) {
         goto error;
     }

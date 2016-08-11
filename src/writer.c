@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -62,12 +62,13 @@ stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes,
 
 static SIXELSTATUS
 write_png_to_file(
-    unsigned char  /* in */ *data,         /* source pixel data */
-    int            /* in */ width,         /* source data width */
-    int            /* in */ height,        /* source data height */
-    unsigned char  /* in */ *palette,      /* palette of source data */
-    int            /* in */ pixelformat,   /* source pixelFormat */
-    char const     /* in */ *filename)     /* destination filename */
+    unsigned char       /* in */ *data,         /* source pixel data */
+    int                 /* in */ width,         /* source data width */
+    int                 /* in */ height,        /* source data height */
+    unsigned char       /* in */ *palette,      /* palette of source data */
+    int                 /* in */ pixelformat,   /* source pixelFormat */
+    char const          /* in */ *filename,     /* destination filename */
+    sixel_allocator_t   /* in */ *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     FILE *output_fp = NULL;
@@ -86,7 +87,6 @@ write_png_to_file(
     int i;
     unsigned char *src;
     unsigned char *dst;
-    char buffer[1024];
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
@@ -98,11 +98,11 @@ write_png_to_file(
                 "write_png_to_file: no palette is given");
             goto end;
         }
-        new_pixels = malloc(width * height * 4);
+        new_pixels = sixel_allocator_malloc(allocator, (size_t)(width * height * 4));
         if (new_pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             sixel_helper_set_additional_message(
-                "write_png_to_file: malloc() failed");
+                "write_png_to_file: sixel_allocator_malloc() failed");
             goto end;
         }
         src = new_pixels + width * height * 3;
@@ -129,11 +129,11 @@ write_png_to_file(
             goto end;
         }
         src = data;
-        dst = pixels = new_pixels = malloc(width * height * 3);
+        dst = pixels = new_pixels = sixel_allocator_malloc(allocator, (size_t)(width * height * 3));
         if (new_pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             sixel_helper_set_additional_message(
-                "write_png_to_file: malloc() failed");
+                "write_png_to_file: sixel_allocator_malloc() failed");
             goto end;
         }
         for (i = 0; i < width * height; ++i, ++src) {
@@ -147,11 +147,12 @@ write_png_to_file(
         break;
     case SIXEL_PIXELFORMAT_G8:
         src = data;
-        dst = pixels = new_pixels = malloc(width * height * 3);
+        dst = pixels = new_pixels
+            = sixel_allocator_malloc(allocator, (size_t)(width * height * 3));
         if (new_pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             sixel_helper_set_additional_message(
-                "write_png_to_file: malloc() failed");
+                "write_png_to_file: sixel_allocator_malloc() failed");
             goto end;
         }
         if (palette) {
@@ -177,11 +178,13 @@ write_png_to_file(
     case SIXEL_PIXELFORMAT_BGR888:
     case SIXEL_PIXELFORMAT_RGBA8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
-        pixels = new_pixels = malloc(width * height * 3);
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        pixels = new_pixels = sixel_allocator_malloc(allocator, (size_t)(width * height * 3));
         if (new_pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             sixel_helper_set_additional_message(
-                "write_png_to_file: malloc() failed");
+                "write_png_to_file: sixel_allocator_malloc() failed");
             goto end;
         }
         status = sixel_helper_normalize_pixelformat(pixels,
@@ -193,6 +196,11 @@ write_png_to_file(
             goto end;
         }
         break;
+    default:
+        status = SIXEL_BAD_ARGUMENT;
+        sixel_helper_set_additional_message(
+            "write_png_to_file: unkown pixelformat is specified");
+        goto end;
     }
 
     if (strcmp(filename, "-") == 0) {
@@ -208,19 +216,17 @@ write_png_to_file(
         output_fp = fopen(filename, "wb");
         if (!output_fp) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-            if (sprintf(buffer, "fopen('%s') failed.", filename) != EOF) {
-                sixel_helper_set_additional_message(buffer);
-            }
+            sixel_helper_set_additional_message("fopen() failed.");
             goto end;
         }
     }
 
 #if HAVE_LIBPNG
-    rows = malloc(height * sizeof(unsigned char *));
+    rows = sixel_allocator_malloc(allocator, (size_t)height * sizeof(unsigned char *));
     if (rows == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         sixel_helper_set_additional_message(
-            "write_png_to_file: malloc() failed");
+            "write_png_to_file: sixel_allocator_malloc() failed");
         goto end;
     }
     for (y = 0; y < height; ++y) {
@@ -246,7 +252,7 @@ write_png_to_file(
     }
 # endif
     png_init_io(png_ptr, output_fp);
-    png_set_IHDR(png_ptr, info_ptr, width, height,
+    png_set_IHDR(png_ptr, info_ptr, (png_uint_32)width, (png_uint_32)height,
                  /* bit_depth */ 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
                  PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
     png_write_info(png_ptr, info_ptr);
@@ -261,8 +267,8 @@ write_png_to_file(
         sixel_helper_set_additional_message("stbi_write_png_to_mem() failed.");
         goto end;
     }
-    write_len = fwrite(png_data, 1, png_len, output_fp);
-    if (write_len < 0) {
+    write_len = (int)fwrite(png_data, 1, (size_t)png_len, output_fp);
+    if (write_len <= 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message("fwrite() failed.");
         goto end;
@@ -276,14 +282,14 @@ end:
         fclose(output_fp);
     }
 #if HAVE_LIBPNG
-    free(rows);
+    sixel_allocator_free(allocator, rows);
     if (png_ptr) {
         png_destroy_write_struct(&png_ptr, &info_ptr);
     }
 #else
-    free(png_data);
+    sixel_allocator_free(allocator, png_data);
 #endif  /* HAVE_LIBPNG */
-    free(new_pixels);
+    sixel_allocator_free(allocator, new_pixels);
 
     return status;
 }
@@ -291,20 +297,30 @@ end:
 
 SIXELAPI SIXELSTATUS
 sixel_helper_write_image_file(
-    unsigned char  /* in */ *data,        /* source pixel data */
-    int            /* in */ width,        /* source data width */
-    int            /* in */ height,       /* source data height */
-    unsigned char  /* in */ *palette,     /* palette of source data */
-    int            /* in */ pixelformat,  /* source pixelFormat */
-    char const     /* in */ *filename,    /* destination filename */
-    int            /* in */ imageformat)  /* destination imageformat */
+    unsigned char       /* in */ *data,        /* source pixel data */
+    int                 /* in */ width,        /* source data width */
+    int                 /* in */ height,       /* source data height */
+    unsigned char       /* in */ *palette,     /* palette of source data */
+    int                 /* in */ pixelformat,  /* source pixelFormat */
+    char const          /* in */ *filename,    /* destination filename */
+    int                 /* in */ imageformat,  /* destination imageformat */
+    sixel_allocator_t   /* in */ *allocator)   /* allocator object */
 {
     SIXELSTATUS status = SIXEL_FALSE;
+
+    if (allocator == NULL) {
+        status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    } else {
+        sixel_allocator_ref(allocator);
+    }
 
     switch (imageformat) {
     case SIXEL_FORMAT_PNG:
         status = write_png_to_file(data, width, height, palette,
-                                   pixelformat, filename);
+                                   pixelformat, filename, allocator);
         break;
     case SIXEL_FORMAT_GIF:
     case SIXEL_FORMAT_BMP:
@@ -319,9 +335,12 @@ sixel_helper_write_image_file(
     case SIXEL_FORMAT_HDR:
     default:
         status = SIXEL_NOT_IMPLEMENTED;
+        goto end;
         break;
     }
 
+end:
+    sixel_allocator_unref(allocator);
     return status;
 }
 
@@ -341,7 +360,8 @@ test1(void)
         NULL,
         SIXEL_PIXELFORMAT_RGB888,
         "output.gif",
-        SIXEL_FORMAT_GIF);
+        SIXEL_FORMAT_GIF,
+        NULL);
 
     if (!SIXEL_FAILED(status)) {
         goto error;
@@ -367,7 +387,8 @@ test2(void)
         NULL,
         SIXEL_PIXELFORMAT_RGB888,
         "test-output.png",
-        SIXEL_FORMAT_PNG);
+        SIXEL_FORMAT_PNG,
+        NULL);
 
     if (SIXEL_FAILED(status)) {
         goto error;
@@ -394,7 +415,8 @@ test3(void)
         NULL,
         SIXEL_PIXELFORMAT_G8,
         "test-output.png",
-        SIXEL_FORMAT_PNG);
+        SIXEL_FORMAT_PNG,
+        NULL);
 
     if (SIXEL_FAILED(status)) {
         goto error;
@@ -407,7 +429,8 @@ test3(void)
         sixel_dither_get_palette(dither),
         SIXEL_PIXELFORMAT_G8,
         "test-output.png",
-        SIXEL_FORMAT_PNG);
+        SIXEL_FORMAT_PNG,
+        NULL);
 
     if (SIXEL_FAILED(status)) {
         goto error;
@@ -434,7 +457,8 @@ test4(void)
         sixel_dither_get_palette(dither),
         SIXEL_PIXELFORMAT_PAL1,
         "test-output.png",
-        SIXEL_FORMAT_PNG);
+        SIXEL_FORMAT_PNG,
+        NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -446,7 +470,8 @@ test4(void)
         NULL,
         SIXEL_PIXELFORMAT_PAL1,
         "test-output.png",
-        SIXEL_FORMAT_PNG);
+        SIXEL_FORMAT_PNG,
+        NULL);
     if (status != SIXEL_BAD_ARGUMENT) {
         goto error;
     }
@@ -473,7 +498,8 @@ test5(void)
         sixel_dither_get_palette(dither),
         SIXEL_PIXELFORMAT_PAL8,
         "test-output.png",
-        SIXEL_FORMAT_PNG);
+        SIXEL_FORMAT_PNG,
+        NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -485,7 +511,8 @@ test5(void)
         NULL,
         SIXEL_PIXELFORMAT_PAL8,
         "test-output.png",
-        SIXEL_FORMAT_PNG);
+        SIXEL_FORMAT_PNG,
+        NULL);
     if (status != SIXEL_BAD_ARGUMENT) {
         goto error;
     }
@@ -511,7 +538,8 @@ test6(void)
         NULL,
         SIXEL_PIXELFORMAT_BGR888,
         "test-output.png",
-        SIXEL_FORMAT_PNG);
+        SIXEL_FORMAT_PNG,
+        NULL);
 
     if (SIXEL_FAILED(status)) {
         goto error;

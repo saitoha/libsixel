@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -30,11 +30,10 @@ typedef struct sixel_node {
     unsigned char *map;
 } sixel_node_t;
 
-typedef int (* sixel_write_function)(char *data, int size, void *priv);
-
-typedef struct sixel_output {
+struct sixel_output {
 
     int ref;
+    sixel_allocator_t *allocator;
 
     /* compatiblity flags */
 
@@ -45,6 +44,10 @@ typedef struct sixel_output {
     /* 0: the terminal has sixel scrolling
      * 1: the terminal does not have sixel scrolling */
     unsigned char has_sixel_scrolling;
+
+    /* 1: the argument of repeat introducer(DECGRI) is not limitted
+       0: the argument of repeat introducer(DECGRI) is limitted 255 */
+    unsigned char has_gri_arg_limit;
 
     /* 0: DECSDM set (CSI ? 80 h) enables sixel scrolling
        1: DECSDM set (CSI ? 80 h) disables sixel scrolling */
@@ -74,8 +77,7 @@ typedef struct sixel_output {
     void *priv;
     int pos;
     unsigned char buffer[1];
-
-} sixel_output_t;
+};
 
 #endif /* LIBSIXEL_OUTPUT_H */
 

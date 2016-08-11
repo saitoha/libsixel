@@ -39,6 +39,12 @@ libsixel_la_SOURCES = \
 		stb_image_write.h \
 		status.c \
 		status.h \
+		malloc_stub.c \
+		malloc_stub.h \
+		allocator.c \
+		allocator.h \
+		tty.c \
+		tty.h \
 		rgblookup.h
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/
 libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
@@ -47,7 +53,7 @@ libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(LIBJPEG_CFLAGS) \
 		$(GDK_PIXBUF_CFLAGS) \
 		$(GD_CFLAGS)
-libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION)
+libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION)
 libsixel_la_LIBADD = -lm \
 		$(LIBCURL_LIBS) \
 		$(LIBPNG_LIBS) \

@@ -20,5 +20,9 @@ provides:
     file: lib/Image/LibSIXEL/Encoder.pm
     version: 0
 resources:
+  bugtracker: https://github.com/saitoha/libsixel-perl/issues
+  homepage: https://github.com/saitoha/libsixel-perl
   license: http://opensource.org/licenses/mit-license.php
 version: 0.01
+x_contributors:
+  - 'Hayaki Saito <saitoha@me.com>'

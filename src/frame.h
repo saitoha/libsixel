@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,21 +22,24 @@
 #ifndef LIBSIXEL_FRAME_H
 #define LIBSIXEL_FRAME_H
 
+#include <sixel.h>
+
 /* frame object */
-typedef struct sixel_frame {
-    unsigned int ref;         /* reference counter */
-    unsigned char *pixels;    /* loaded pixel data */
-    unsigned char *palette;   /* loaded palette data */
-    int width;                /* frame width */
-    int height;               /* frame height */
-    int ncolors;              /* palette colors */
-    int pixelformat;          /* one of enum pixelFormat */
-    int delay;                /* delay in msec */
-    int frame_no;             /* frame number */
-    int loop_count;           /* loop count */
-    int multiframe;           /* whether the image has multiple frames */
-    int transparent;          /* -1(no transparent) or >= 0(index of transparent color) */
-} sixel_frame_t;
+struct sixel_frame {
+    unsigned int ref;               /* reference counter */
+    unsigned char *pixels;          /* loaded pixel data */
+    unsigned char *palette;         /* loaded palette data */
+    int width;                      /* frame width */
+    int height;                     /* frame height */
+    int ncolors;                    /* palette colors */
+    int pixelformat;                /* one of enum pixelFormat */
+    int delay;                      /* delay in msec */
+    int frame_no;                   /* frame number */
+    int loop_count;                 /* loop count */
+    int multiframe;                 /* whether the image has multiple frames */
+    int transparent;                /* -1(no transparent) or >= 0(index of transparent color) */
+    sixel_allocator_t *allocator;   /* allocator object */
+};
 
 #ifdef __cplusplus
 extern "C" {

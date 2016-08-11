@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -31,7 +31,35 @@
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
+#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
+#if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wstrict-overflow"
+#endif
+#if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wswitch-default"
+#endif
+#if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdouble-promotion"
+#endif
 #include "stb_image_write.h"
+#if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
+# pragma GCC diagnostic pop
+#endif
+#if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
+# pragma GCC diagnostic pop
+#endif
+#if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
+# pragma GCC diagnostic pop
+#endif
+#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
+# pragma GCC diagnostic pop
+#endif
 
 /* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
 /* vim: set expandtab ts=4 : */

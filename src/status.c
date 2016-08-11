@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -60,6 +60,7 @@
 
 static char g_buffer[1024] = { 0x0 };
 
+/* set detailed error message (thread-unsafe) */
 SIXELAPI void
 sixel_helper_set_additional_message(
     const char      /* in */  *message         /* error message */
@@ -73,6 +74,7 @@ sixel_helper_set_additional_message(
 }
 
 
+/* get detailed error message (thread-unsafe) */
 SIXELAPI char const *
 sixel_helper_get_additional_message(void)
 {

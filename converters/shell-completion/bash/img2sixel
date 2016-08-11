@@ -120,6 +120,7 @@ _img2sixel()
                                    -o --outfile \
                                    -7 --7bit-mode \
                                    -8 --8bit-mode \
+                                   -R --gri-limit \
                                    -p --colors \
                                    -m --mapfile \
                                    -e --monochrome \
