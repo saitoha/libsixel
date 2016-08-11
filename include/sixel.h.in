@@ -963,6 +963,10 @@ sixel_frame_get_frame_no(sixel_frame_t /* in */ *frame);  /* frame object */
 SIXELAPI int
 sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame);  /* frame object */
 
+/* convert pixel format to normalized format, RGB888/RGBA8888 */
+SIXELSTATUS
+sixel_frame_normalize(sixel_frame_t /*in */ *frame);
+
 /* strip alpha from RGBA/ARGB formatted pixbuf */
 SIXELAPI int
 sixel_frame_strip_alpha(

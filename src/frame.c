@@ -458,8 +458,8 @@ sixel_frame_apply_background(
 }
 
 
-static SIXELSTATUS
-sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
+SIXELSTATUS
+sixel_frame_normalize(sixel_frame_t /*in */ *frame)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *normalized_pixels = NULL;
@@ -478,7 +478,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
-                "sixel_frame_convert_to_rgb888: sixel_allocator_malloc() failed.");
+                "sixel_frame_normalize: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -508,7 +508,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
-                "sixel_frame_convert_to_rgb888: sixel_allocator_malloc() failed.");
+                "sixel_frame_normalize: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -525,6 +525,9 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
         break;
     case SIXEL_PIXELFORMAT_RGB888:
         break;
+    case SIXEL_PIXELFORMAT_G1:
+    case SIXEL_PIXELFORMAT_G2:
+    case SIXEL_PIXELFORMAT_G4:
     case SIXEL_PIXELFORMAT_G8:
     case SIXEL_PIXELFORMAT_GA88:
     case SIXEL_PIXELFORMAT_AG88:
@@ -532,14 +535,12 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     case SIXEL_PIXELFORMAT_RGB565:
     case SIXEL_PIXELFORMAT_BGR555:
     case SIXEL_PIXELFORMAT_BGR565:
-    case SIXEL_PIXELFORMAT_RGBA8888:
-    case SIXEL_PIXELFORMAT_ARGB8888:
         /* normalize pixelformat */
         size = (size_t)(frame->width * frame->height * 3);
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
-                "sixel_frame_convert_to_rgb888: sixel_allocator_malloc() failed.");
+                "sixel_frame_normalize: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -597,7 +598,7 @@ sixel_frame_resize(
     case SIXEL_PIXELFORMAT_BGRA8888:
         break;
     default:
-        status = sixel_frame_convert_to_rgb888(frame);
+        status = sixel_frame_normalize(frame);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -739,6 +740,12 @@ sixel_frame_clip(
     case SIXEL_PIXELFORMAT_G4:
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator,
                                                                     (size_t)(frame->width * frame->height));
+        if (normalized_pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_frame_new: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         status = sixel_helper_normalize_pixelformat(normalized_pixels,
                                                     &frame->pixelformat,
                                                     frame->pixels,
@@ -1044,7 +1051,7 @@ test5(void)
         goto error;
     }
 
-    status = sixel_frame_convert_to_rgb888(frame);
+    status = sixel_frame_normalize(frame);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -1111,7 +1118,7 @@ test6(void)
         goto error;
     }
 
-    status = sixel_frame_convert_to_rgb888(frame);
+    status = sixel_frame_normalize(frame);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
