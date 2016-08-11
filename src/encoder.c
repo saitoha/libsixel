@@ -473,6 +473,9 @@ sixel_encoder_prepare_palette(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int histogram_colors;
+    int pixelformat;
+
+    pixelformat = sixel_frame_get_pixelformat(frame);
 
     switch (encoder->color_option) {
     case SIXEL_COLOR_OPTION_HIGHCOLOR:
@@ -482,7 +485,7 @@ sixel_encoder_prepare_palette(
         } else {
             status = sixel_dither_new(dither, (-1), encoder->allocator);
         }
-        goto end;
+        goto normalize;
     case SIXEL_COLOR_OPTION_MONOCHROME:
         if (encoder->dither_cache) {
             *dither = encoder->dither_cache;
@@ -490,7 +493,7 @@ sixel_encoder_prepare_palette(
         } else {
             status = sixel_prepare_monochrome_palette(dither, encoder->finvert);
         }
-        goto end;
+        goto normalize;
     case SIXEL_COLOR_OPTION_MAPFILE:
         if (encoder->dither_cache) {
             *dither = encoder->dither_cache;
@@ -498,7 +501,7 @@ sixel_encoder_prepare_palette(
         } else {
             status = sixel_prepare_specified_palette(dither, encoder);
         }
-        goto end;
+        goto normalize;
     case SIXEL_COLOR_OPTION_BUILTIN:
         if (encoder->dither_cache) {
             *dither = encoder->dither_cache;
@@ -506,13 +509,13 @@ sixel_encoder_prepare_palette(
         } else {
             status = sixel_prepare_builtin_palette(dither, encoder->builtin_palette);
         }
-        goto end;
+        goto normalize;
     case SIXEL_COLOR_OPTION_DEFAULT:
     default:
         break;
     }
 
-    if (sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_PALETTE) {
+    if (pixelformat & SIXEL_FORMATTYPE_PALETTE) {
         if (!sixel_frame_get_palette(frame)) {
             status = SIXEL_LOGIC_ERROR;
             goto end;
@@ -523,7 +526,7 @@ sixel_encoder_prepare_palette(
             goto end;
         }
         sixel_dither_set_palette(*dither, sixel_frame_get_palette(frame));
-        sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
+        sixel_dither_set_pixelformat(*dither, pixelformat);
         if (sixel_frame_get_transparent(frame) != (-1)) {
             sixel_dither_set_transparent(*dither, sixel_frame_get_transparent(frame));
         }
@@ -533,8 +536,8 @@ sixel_encoder_prepare_palette(
         goto end;
     }
 
-    if (sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_GRAYSCALE) {
-        switch (sixel_frame_get_pixelformat(frame)) {
+    if (pixelformat & SIXEL_FORMATTYPE_GRAYSCALE) {
+        switch (pixelformat) {
         case SIXEL_PIXELFORMAT_G1:
             *dither = sixel_dither_get(SIXEL_BUILTIN_G1);
             break;
@@ -555,7 +558,7 @@ sixel_encoder_prepare_palette(
         if (*dither && encoder->dither_cache) {
             sixel_dither_unref(encoder->dither_cache);
         }
-        sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
+        sixel_dither_set_pixelformat(*dither, pixelformat);
         status = SIXEL_OK;
         goto end;
     }
@@ -571,7 +574,7 @@ sixel_encoder_prepare_palette(
                                      sixel_frame_get_pixels(frame),
                                      sixel_frame_get_width(frame),
                                      sixel_frame_get_height(frame),
-                                     sixel_frame_get_pixelformat(frame),
+                                     pixelformat,
                                      encoder->method_for_largest,
                                      encoder->method_for_rep,
                                      encoder->quality_mode);
@@ -584,8 +587,26 @@ sixel_encoder_prepare_palette(
     if (histogram_colors <= encoder->reqcolors) {
         encoder->method_for_diffuse = SIXEL_DIFFUSE_NONE;
     }
-    sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
+    sixel_dither_set_pixelformat(*dither, pixelformat);
 
+    status = SIXEL_OK;
+
+normalize:
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_PAL1:
+    case SIXEL_PIXELFORMAT_PAL2:
+    case SIXEL_PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_PAL8:
+    case SIXEL_PIXELFORMAT_G1:
+    case SIXEL_PIXELFORMAT_G2:
+    case SIXEL_PIXELFORMAT_G4:
+    case SIXEL_PIXELFORMAT_G8:
+        /* normalize pixelformat */
+        status = sixel_frame_normalize(frame);
+        break;
+    default:
+        break;
+    }
     status = SIXEL_OK;
 
 end:

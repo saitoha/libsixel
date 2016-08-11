@@ -755,6 +755,9 @@ load_with_builtin(
     char message[256];
     int nwrite;
     fn_pointer fnp;
+    stbi__context s;
+    int depth;
+    int x, y;
 
     if (chunk_is_sixel(pchunk)) {
         status = sixel_frame_new(&frame, pchunk->allocator);
@@ -852,16 +855,18 @@ load_with_builtin(
         }
         goto end;
     } else {
-        stbi__context s;
-        int depth;
-
         status = sixel_frame_new(&frame, pchunk->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
         stbi_allocator = pchunk->allocator;
         stbi__start_mem(&s, pchunk->buffer, (int)pchunk->size);
-        frame->pixels = stbi__load_main(&s, &frame->width, &frame->height, &depth, 3);
+        if (!stbi__info_main(&s, &x, &y, &depth)) {
+            sixel_helper_set_additional_message(stbi_failure_reason());
+            status = SIXEL_STBI_ERROR;
+            goto end;
+        }
+        frame->pixels = stbi__load_main(&s, &frame->width, &frame->height, &depth, depth);
         if (!frame->pixels) {
             sixel_helper_set_additional_message(stbi_failure_reason());
             status = SIXEL_STBI_ERROR;
@@ -871,9 +876,13 @@ load_with_builtin(
 
         switch (depth) {
         case 1:
+            frame->pixelformat = SIXEL_PIXELFORMAT_G8;
+            break;
         case 3:
-        case 4:
             frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case 4:
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
             break;
         default:
             nwrite = sprintf(message,
