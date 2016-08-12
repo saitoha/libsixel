@@ -58,7 +58,7 @@ before_install:
   - "if [ x$TRAVIS_OS_NAME = xlinux ]; then sudo apt-get -qq update --force-yes > /dev/null; fi"
   - "if [ x$TRAVIS_OS_NAME = xosx ]; then brew update; fi"
   - "if [ x$TRAVIS_OS_NAME = xlinux -a x$GDKPIXBUF != x ]; then sudo apt-get -qq install pkg-config libgdk-pixbuf2.0-dev; fi"
-  - "if [ x$TRAVIS_OS_NAME = xosx -a x$GDKPIXBUF != x ]; then brew install pkg-config libgdk-pixbuf; fi"
+  - "if [ x$TRAVIS_OS_NAME = xosx -a x$GDKPIXBUF != x ]; then brew install pkg-config gdk-pixbuf; fi"
   - "if [ x$TRAVIS_OS_NAME = xlinux -a x$GD != x ]; then sudo apt-get -qq install libgd2-xpm-dev; fi"
   - "if [ x$TRAVIS_OS_NAME = xosx -a x$GD != x ]; then brew install pkg-config gd; fi"
   - "if [ x$TRAVIS_OS_NAME = xlinux -a x$LIBCURL != x ]; then sudo apt-get -qq install libcurl4-openssl-dev; fi"
