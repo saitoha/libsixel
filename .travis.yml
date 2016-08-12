@@ -2,6 +2,7 @@
 language: c
 
 matrix:
+  include:
   - os: linux
     env: XCC=gcc HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= LIBCURL=--without-libcurl JPEG=--without-jpeg PNG=--without-png
   - os: linux
