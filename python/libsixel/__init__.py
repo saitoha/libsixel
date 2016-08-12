@@ -20,7 +20,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-from ctypes import cdll, c_void_p, c_int, c_char_p, POINTER, byref
+from ctypes import cdll, c_void_p, c_int, c_byte, c_char_p, POINTER, byref, CFUNCTYPE, string_at
 from ctypes.util import find_library
 
 SIXEL_OK              = 0x0000
@@ -343,14 +343,237 @@ SIXEL_OPTFLAG_HELP             = 'H'  # -H, --help: show this help
 if not find_library('sixel'):
     raise ImportError("libsixel not found.")
 
+# load shared library
 _sixel = cdll.LoadLibrary(find_library('sixel'))
 
+# convert error status code int formatted string
 def sixel_helper_format_error(status):
     _sixel.sixel_helper_format_error.restype = c_char_p;
     _sixel.sixel_helper_format_error.argtypes = [c_int];
     return _sixel.sixel_helper_format_error(status)
 
 
+# compute pixel depth from pixelformat
+def sixel_helper_compute_depth(pixelformat):
+    _sixel.sixel_helper_compute_depth.restype = c_int
+    _sixel.sixel_encoder_encode.argtypes = [c_int]
+    return _sixel.sixel_helper_compute_depth(pixelformat)
+
+
+# create new output context object
+def sixel_output_new(fn_write, priv=None, allocator=c_void_p(None)):
+    def _fn_write_local(data, size, priv_from_c):
+        fn_write(string_at(data, size), priv)
+        return size
+    sixel_write_function = CFUNCTYPE(c_int, c_char_p, c_int, c_void_p)
+    _sixel.sixel_output_new.restype = c_int
+    _sixel.sixel_output_new.argtypes = [POINTER(c_void_p), sixel_write_function, c_void_p, c_void_p]
+    output = c_void_p(None)
+    _fn_write = sixel_write_function(_fn_write_local)
+    _fn_write.restype = c_int
+    _fn_write.argtypes = [sixel_write_function, c_void_p, c_void_p]
+    status = _sixel.sixel_output_new(byref(output), _fn_write, c_void_p(None), allocator)
+    if SIXEL_FAILED(status):
+        message = sixel_helper_format_error(status)
+        raise RuntimeError(message)
+    output.__fn_write = _fn_write
+    return output
+
+
+# increase reference count of output object (thread-unsafe)
+def sixel_output_ref(output):
+    _sixel.sixel_output_ref.restype = None
+    _sixel.sixel_output_ref.argtypes = [c_void_p]
+    _sixel.sixel_output_ref(output)
+
+
+# decrease reference count of output object (thread-unsafe)
+def sixel_output_unref(output):
+    _sixel.sixel_output_unref.restype = None
+    _sixel.sixel_output_unref.argtypes = [c_void_p]
+    _sixel.sixel_output_unref(output)
+    output.__fn_write = None
+
+
+# get 8bit output mode which indicates whether it uses C1 control characters
+def sixel_output_get_8bit_availability(output):
+    _sixel.sixel_output_get_8bit_availability.restype = None
+    _sixel.sixel_output_get_8bit_availability.argtypes = [c_void_p]
+    _sixel.sixel_output_get_8bit_availability(output)
+
+
+# set 8bit output mode state
+def sixel_output_set_8bit_availability(output):
+    _sixel.sixel_output_set_8bit_availability.restype = None
+    _sixel.sixel_output_set_8bit_availability.argtypes = [c_void_p, c_int]
+    _sixel.sixel_output_set_8bit_availability(output)
+
+
+# set whether limit arguments of DECGRI('!') to 255
+def sixel_output_set_gri_arg_limit(output):
+    _sixel.sixel_output_set_gri_arg_limit.restype = None
+    _sixel.sixel_output_set_gri_arg_limit.argtypes = [c_void_p, c_int]
+    _sixel.sixel_output_set_gri_arg_limit(output)
+
+
+# set GNU Screen penetration feature enable or disable
+def sixel_output_set_penetrate_multiplexer(output):
+    _sixel.sixel_output_set_penetrate_multiplexer.restype = None
+    _sixel.sixel_output_set_penetrate_multiplexer.argtypes = [c_void_p, c_int]
+    _sixel.sixel_output_set_penetrate_multiplexer(output)
+
+
+# set whether we skip DCS envelope
+def sixel_output_set_skip_dcs_envelope(output):
+    _sixel.sixel_output_set_skip_dcs_envelope.restype = None
+    _sixel.sixel_output_set_skip_dcs_envelope.argtypes = [c_void_p, c_int]
+    _sixel.sixel_output_set_skip_dcs_envelope(output)
+
+
+# set palette type: RGB or HLS
+def sixel_output_set_palette_type(output):
+    _sixel.sixel_output_set_palette_type.restype = None
+    _sixel.sixel_output_set_palette_type.argtypes = [c_void_p, c_int]
+    _sixel.sixel_output_set_palette_type(output)
+
+
+# set encodeing policy: auto, fast or size
+def sixel_output_set_encode_policy(output):
+    _sixel.sixel_output_set_encode_policy.restype = None
+    _sixel.sixel_output_set_encode_policy.argtypes = [c_void_p, c_int]
+    _sixel.sixel_output_set_encode_policy(output)
+
+
+# create dither context object
+def sixel_dither_new(ncolors, allocator=None):
+    _sixel.sixel_dither_new.restype = c_int
+    _sixel.sixel_dither_new.argtypes = [POINTER(c_void_p), c_int, c_void_p]
+    dither = c_void_p(None)
+    status = _sixel.sixel_dither_new(byref(dither), ncolors, allocator)
+    if SIXEL_FAILED(status):
+        message = sixel_helper_format_error(status)
+        raise RuntimeError(message)
+    return dither
+
+
+# get built-in dither context object
+def sixel_dither_get(builtin_dither):
+    _sixel.sixel_dither_get.restype = c_void_p
+    _sixel.sixel_dither_get.argtypes = [c_int]
+    return _sixel.sixel_dither_get(builtin_dither)
+
+
+# destroy dither context object
+def sixel_dither_destroy(dither):
+    _sixel.sixel_dither_destroy.restype = None
+    _sixel.sixel_dither_destroy.argtypes = [c_void_p]
+    return _sixel.sixel_dither_destroy(dither)
+
+
+# increase reference count of dither context object (thread-unsafe)
+def sixel_dither_ref(dither):
+    _sixel.sixel_dither_ref.restype = None
+    _sixel.sixel_dither_ref.argtypes = [c_void_p]
+    return _sixel.sixel_dither_ref(dither)
+
+
+# decrease reference count of dither context object (thread-unsafe)
+def sixel_dither_unref(dither):
+    _sixel.sixel_dither_unref.restype = None
+    _sixel.sixel_dither_unref.argtypes = [c_void_p]
+    return _sixel.sixel_dither_unref(dither)
+
+
+# initialize internal palette from specified pixel buffer
+def sixel_dither_initialize(dither, data, width, height, pixelformat,
+                            method_for_largest=SIXEL_LARGE_AUTO,
+                            method_for_rep=SIXEL_REP_AUTO,
+                            quality_mode=SIXEL_QUALITY_AUTO):
+    _sixel.sixel_dither_initialize.restype = c_int
+    _sixel.sixel_dither_initialize.argtypes = [c_void_p, c_char_p, c_int, c_int, c_int,
+                                              c_int, c_int, c_int]
+    status = _sixel.sixel_dither_initialize(dither, data, width, height, pixelformat,
+                                            method_for_largest,
+                                            method_for_rep,
+                                            quality_mode)
+    if SIXEL_FAILED(status):
+        message = sixel_helper_format_error(status)
+        raise RuntimeError(message)
+
+
+# set diffusion type, choose from enum methodForDiffuse
+def sixel_dither_set_diffusion_type(dither, method_for_diffuse):
+    _sixel.sixel_dither_set_diffusion_type.restype = None
+    _sixel.sixel_dither_set_diffusion_type.argtypes = [c_void_p, c_int]
+    _sixel.sixel_dither_set_diffusion_type(dither, method_for_diffuse)
+
+
+# get number of palette colors
+def sixel_dither_get_num_of_palette_colors(dither):
+    _sixel.sixel_dither_get_num_of_palette_colors.restype = c_int
+    _sixel.sixel_dither_get_num_of_palette_colors.argtypes = [c_void_p]
+    return _sixel.sixel_dither_get_num_of_palette_colors(dither)
+
+
+# get number of histogram colors */
+def sixel_dither_get_num_of_histogram_colors(dither):
+    _sixel.sixel_dither_get_num_of_histogram_colors.restype = c_int
+    _sixel.sixel_dither_get_num_of_histogram_colors.argtypes = [c_void_p]
+    return _sixel.sixel_dither_get_num_of_histogram_colors(dither)
+
+
+def sixel_dither_get_palette(dither):
+    _sixel.sixel_dither_get_palette.restype = c_char_p
+    _sixel.sixel_dither_get_palette.argtypes = [c_void_p]
+    cpalette = _sixel.sixel_dither_get_palette(dither)
+    return [ord(c) for c in cpalette]
+
+
+def sixel_dither_set_palette(dither, palette):
+    _sixel.sixel_dither_set_palette.restype = None
+    _sixel.sixel_dither_set_palette.argtypes = [c_void_p, c_char_p]
+    cpalette = ''.join(map(chr, palette))
+    _sixel.sixel_dither_set_palette(dither, cpalette)
+
+
+def sixel_dither_set_complexion_score(dither, score):
+    _sixel.sixel_dither_set_complexion_score.restype = None
+    _sixel.sixel_dither_set_complexion_score.argtypes = [c_void_p, c_int]
+    _sixel.sixel_dither_set_complexion_score(dither, score)
+
+
+def sixel_dither_set_body_only(dither, bodyonly):
+    _sixel.sixel_dither_set_body_only.restype = None
+    _sixel.sixel_dither_set_body_only.argtypes = [c_void_p, c_int]
+    _sixel.sixel_dither_set_body_only(dither, bodyonly)
+
+
+def sixel_dither_set_optimize_palette(dither, do_opt):
+    _sixel.sixel_dither_set_optimize_palette.restype = None
+    _sixel.sixel_dither_set_optimize_palette.argtypes = [c_void_p, c_int]
+    _sixel.sixel_dither_set_optimize_palette(dither, do_opt)
+
+
+def sixel_dither_set_pixelformat(dither, pixelformat):
+    _sixel.sixel_dither_set_pixelformat.restype = None
+    _sixel.sixel_dither_set_pixelformat.argtypes = [c_void_p, c_int]
+    _sixel.sixel_dither_set_pixelformat(dither, pixelformat)
+
+
+def sixel_dither_set_transparent(dither, transparent):
+    _sixel.sixel_dither_set_transparent.restype = None
+    _sixel.sixel_dither_set_transparent.argtypes = [c_void_p, c_int]
+    _sixel.sixel_dither_set_transparent(dither, transparent)
+
+
+# convert pixels into sixel format and write it to output context
+def sixel_encode(pixels, width, height, depth, dither, output):
+    _sixel.sixel_encode.restype = c_int
+    _sixel.sixel_encode.argtypes = [c_char_p, c_int, c_int, c_int, c_void_p, c_void_p]
+    return _sixel.sixel_encode(pixels, width, height, depth, dither, output)
+
+
+# create encoder object
 def sixel_encoder_new(allocator=c_void_p(None)):
     _sixel.sixel_encoder_new.restype = c_int
     _sixel.sixel_encoder_new.argtypes = [POINTER(c_void_p), c_void_p]
@@ -362,18 +585,21 @@ def sixel_encoder_new(allocator=c_void_p(None)):
     return encoder
 
 
+# increase reference count of encoder object (thread-unsafe)
 def sixel_encoder_ref(encoder):
     _sixel.sixel_encoder_ref.restype = None
     _sixel.sixel_encoder_ref.argtypes = [c_void_p]
     _sixel.sixel_encoder_ref(encoder)
 
 
+# decrease reference count of encoder object (thread-unsafe)
 def sixel_encoder_unref(encoder):
     _sixel.sixel_encoder_unref.restype = None
     _sixel.sixel_encoder_unref.argtypes = [c_void_p]
     _sixel.sixel_encoder_unref(encoder)
 
 
+# set an option flag to encoder object
 def sixel_encoder_setopt(encoder, flag, arg=None):
     _sixel.sixel_encoder_setopt.restype = c_int
     _sixel.sixel_encoder_setopt.argtypes = [c_void_p, c_int, c_char_p]
@@ -386,6 +612,7 @@ def sixel_encoder_setopt(encoder, flag, arg=None):
         raise RuntimeError(message)
 
 
+# load source data from specified file and encode it to SIXEL format
 def sixel_encoder_encode(encoder, filename):
     import locale
     language, encoding = locale.getdefaultlocale()
@@ -398,6 +625,39 @@ def sixel_encoder_encode(encoder, filename):
         raise RuntimeError(message)
 
 
+# encode specified pixel data to SIXEL format
+def sixel_encoder_encode_bytes(encoder, buf, width, height, pixelformat, palette):
+
+    depth = sixel_helper_compute_depth(pixelformat)
+
+    if depth <= 0:
+        raise ValueError("invalid pixelformat value : %d" % pixelformat)
+
+    if len(buf) < width * height * depth:
+        raise ValueError("buf.len is too short : %d < %d * %d * %d" % (buf.len, width, height, depth))
+
+    if not hasattr(buf, "readonly") or buf.readonly:
+        cbuf = c_void_p.from_buffer_copy(buf)
+    else:
+        cbuf = c_void_p.from_buffer(buf)
+
+    if palette:
+        cpalettelen = len(palette)
+        cpalette = (c_byte * cpalettelen)(*palette)
+    else:
+        cpalettelen = None
+        cpalette = None
+
+    _sixel.sixel_encoder_encode_bytes.restype = c_int
+    _sixel.sixel_encoder_encode.argtypes = [c_void_p, c_void_p, c_int, c_int, c_int, c_void_p, c_int]
+
+    status = _sixel.sixel_encoder_encode_bytes(encoder, buf, width, height, pixelformat, cpalette, cpalettelen)
+    if SIXEL_FAILED(status):
+        message = sixel_helper_format_error(status)
+        raise RuntimeError(message)
+
+
+# create decoder object
 def sixel_decoder_new(allocator=c_void_p(None)):
     _sixel.sixel_decoder_new.restype = c_int
     _sixel.sixel_decoder_new.argtypes = [POINTER(c_void_p), c_void_p]
@@ -409,18 +669,21 @@ def sixel_decoder_new(allocator=c_void_p(None)):
     return decoder
 
 
+# increase reference count of decoder object (thread-unsafe)
 def sixel_decoder_ref(decoder):
     _sixel.sixel_decoder_ref.restype = None
     _sixel.sixel_decoder_ref.argtypes = [c_void_p]
     _sixel.sixel_decoder_ref(decoder)
 
 
+# decrease reference count of decoder object (thread-unsafe)
 def sixel_decoder_unref(decoder):
     _sixel.sixel_decoder_unref.restype = None
     _sixel.sixel_decoder_unref.argtypes = [c_void_p]
     _sixel.sixel_decoder_unref(decoder)
 
 
+# set an option flag to decoder object
 def sixel_decoder_setopt(decoder, flag, arg=None):
     _sixel.sixel_decoder_setopt.restype = c_int
     _sixel.sixel_decoder_setopt.argtypes = [c_void_p, c_int, c_char_p]
@@ -433,6 +696,7 @@ def sixel_decoder_setopt(decoder, flag, arg=None):
         raise RuntimeError(message)
 
 
+# load source data from stdin or the file
 def sixel_decoder_decode(decoder, infile=None):
     _sixel.sixel_decoder_decode.restype = c_int
     _sixel.sixel_decoder_decode.argtypes = [c_void_p]

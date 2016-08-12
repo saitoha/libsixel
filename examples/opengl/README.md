@@ -3,6 +3,8 @@ OpenGL Example
 
 This example suggests how to port your OpenGL application to SIXEL terminal.
 
+  ![opengl](https://raw.githubusercontent.com/saitoha/libsixel/data/data/example_opengl.gif)
+
 
 How to Build
 ------------
