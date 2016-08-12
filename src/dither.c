@@ -530,8 +530,11 @@ sixel_dither_initialize(
 
     sixel_dither_set_pixelformat(dither, pixelformat);
 
-    if (pixelformat != SIXEL_PIXELFORMAT_RGB888) {
-
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+        input_pixels = data;
+        break;
+    default:
         /* normalize pixelformat */
         normalized_pixels
             = (unsigned char *)sixel_allocator_malloc(dither->allocator, (size_t)(width * height * 3));
@@ -553,8 +556,7 @@ sixel_dither_initialize(
             goto end;
         }
         input_pixels = normalized_pixels;
-    } else {
-        input_pixels = data;
+        break;
     }
 
     sixel_dither_set_method_for_largest(dither, method_for_largest);
@@ -592,6 +594,7 @@ end:
 }
 
 
+/* set diffusion type, choose from enum methodForDiffuse */
 SIXELAPI void
 sixel_dither_set_diffusion_type(
     sixel_dither_t  /* in */ *dither,
@@ -608,6 +611,7 @@ sixel_dither_set_diffusion_type(
 }
 
 
+/* get number of palette colors */
 SIXELAPI int
 sixel_dither_get_num_of_palette_colors(
     sixel_dither_t  /* in */ *dither)
@@ -634,6 +638,7 @@ sixel_dither_get_num_of_histgram_colors(
 }
 
 
+/* get palette */
 SIXELAPI unsigned char *
 sixel_dither_get_palette(
     sixel_dither_t /* in */ *dither)  /* dither context object */
@@ -652,6 +657,7 @@ sixel_dither_set_palette(
 }
 
 
+/* set the factor of complexion color correcting */
 SIXELAPI void
 sixel_dither_set_complexion_score(
     sixel_dither_t /* in */ *dither,  /* dither context object */
@@ -661,6 +667,7 @@ sixel_dither_set_complexion_score(
 }
 
 
+/* set whether omitting palette difinition */
 SIXELAPI void
 sixel_dither_set_body_only(
     sixel_dither_t /* in */ *dither,     /* dither context object */
@@ -671,6 +678,7 @@ sixel_dither_set_body_only(
 }
 
 
+/* set whether optimize palette size */
 SIXELAPI void
 sixel_dither_set_optimize_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
@@ -681,6 +689,7 @@ sixel_dither_set_optimize_palette(
 }
 
 
+/* set pixelformat */
 SIXELAPI void
 sixel_dither_set_pixelformat(
     sixel_dither_t /* in */ *dither,     /* dither context object */
@@ -690,6 +699,7 @@ sixel_dither_set_pixelformat(
 }
 
 
+/* set transparent */
 SIXELAPI void
 sixel_dither_set_transparent(
     sixel_dither_t /* in */ *dither,      /* dither context object */
@@ -699,6 +709,7 @@ sixel_dither_set_transparent(
 }
 
 
+/* set transparent */
 SIXELAPI unsigned char *
 sixel_dither_apply_palette(
     sixel_dither_t  /* in */ *dither,
