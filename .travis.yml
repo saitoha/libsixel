@@ -55,7 +55,8 @@ matrix:
     env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= JPEG="--with-jpeg" PNG="--with-png" LIBCURL="--with-libcurl" GCOV="--enable-gcov" STATIC="--disable-shared"
 
 before_install:
-  - "sudo apt-get -qq update --force-yes > /dev/null"
+  - "if [ x$TRAVIS_OS_NAME = xlinux ]; then sudo apt-get -qq update --force-yes > /dev/null; done"
+  - "if [ x$TRAVIS_OS_NAME = xosx ]; then brew update; done"
   - "if [ x$TRAVIS_OS_NAME = xlinux -a x$GDKPIXBUF != x ]; then sudo apt-get -qq install pkg-config libgdk-pixbuf2.0-dev; fi"
   - "if [ x$TRAVIS_OS_NAME = xosx -a x$GDKPIXBUF != x ]; then brew install pkg-config libgdk-pixbuf; fi"
   - "if [ x$TRAVIS_OS_NAME = xlinux -a x$GD != x ]; then sudo apt-get -qq install libgd2-xpm-dev; fi"
