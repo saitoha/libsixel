@@ -58,7 +58,6 @@ before_install:
   - "if [ x$TRAVIS_OS_NAME = xlinux ]; then sudo apt-get -qq update --force-yes > /dev/null; fi"
   - "if [ x$TRAVIS_OS_NAME = xosx ]; then brew update; fi"
   - "if [ x$TRAVIS_OS_NAME = xlinux -a x$GDKPIXBUFx$GD != xx ]; then sudo apt-get -qq install pkg-config; fi"
-  - "if [ x$TRAVIS_OS_NAME = xosx -a x$GDKPIXBUFx$GD != xx ]; then brew install pkg-config; fi"
   - "if [ x$TRAVIS_OS_NAME = xlinux -a x$GDKPIXBUF != x ]; then sudo apt-get -qq install libgdk-pixbuf2.0-dev; fi"
   - "if [ x$TRAVIS_OS_NAME = xosx -a x$GDKPIXBUF != x ]; then brew install gdk-pixbuf; fi"
   - "if [ x$TRAVIS_OS_NAME = xlinux -a x$GD != x ]; then sudo apt-get -qq install libgd2-xpm-dev; fi"
