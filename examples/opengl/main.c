@@ -412,7 +412,7 @@ scroll_on_demand(int pixelheight)
     if (wait_stdin(1000 * 1000) != (-1)) { /* wait 1 sec */
         if (scanf("\033[%d;%dR", &row, &col) == 2) {
             cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
-            scroll = cellheight + row - size.ws_row;
+            scroll = cellheight + row - size.ws_row + 1;
             printf("\033[%dS\033[%dA", scroll, scroll);
             printf("\0337");
         } else {
