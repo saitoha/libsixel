@@ -10,8 +10,12 @@ s = BytesIO()
 file = sys.argv[1]
 image = Image.open(file)
 width, height = image.size
-data = image.tostring()
+try:
+    data = image.tobytes()
+except NotImplementedError:
+    data = image.tostring()
 output = sixel_output_new(lambda data, s: s.write(data), s)
+
 try:
     if image.mode == 'RGBA':
         dither = sixel_dither_new(256)
