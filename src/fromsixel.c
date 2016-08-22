@@ -131,85 +131,89 @@ typedef struct parser_context {
  *  red:   120 degrees
  *  green: 240 degrees
  */
+static void
+hls2rgb(int h, int l, int s, short *r, short *g, short *b)
+{
+    const int hs = (int)(((h + 240) % 360) / 60.0 + 0.75);
+    const double lv = l / 100.0;
+    const double sv = s / 100.0;
+    double c, x, m, c2;
+    double r1, g1, b1;
+
+    if (s == 0) {
+	*r = *g = *b = (short) l;
+	return;
+    }
+
+    c2 = (2.0 * lv) - 1.0;
+    if (c2 < 0.0)
+	c2 = -c2;
+    c = (1.0 - c2) * sv;
+    x = (hs & 1) ? c : 0.0;
+    m = lv - 0.5 * c;
+
+    switch (hs) {
+    case 0:
+	r1 = c;
+	g1 = x;
+	b1 = 0.0;
+	break;
+    case 1:
+	r1 = x;
+	g1 = c;
+	b1 = 0.0;
+	break;
+    case 2:
+	r1 = 0.0;
+	g1 = c;
+	b1 = x;
+	break;
+    case 3:
+	r1 = 0.0;
+	g1 = x;
+	b1 = c;
+	break;
+    case 4:
+	r1 = x;
+	g1 = 0.0;
+	b1 = c;
+	break;
+    case 5:
+	r1 = c;
+	g1 = 0.0;
+	b1 = x;
+	break;
+    default:
+	*r = (short) 100;
+	*g = (short) 100;
+	*b = (short) 100;
+	return;
+    }
+
+    *r = (short) ((r1 + m) * 100.0 + 0.5);
+    *g = (short) ((g1 + m) * 100.0 + 0.5);
+    *b = (short) ((b1 + m) * 100.0 + 0.5);
+
+    if (*r < 0)
+	*r = 0;
+    else if (*r > 100)
+	*r = 100;
+    if (*g < 0)
+	*g = 0;
+    else if (*g > 100)
+	*g = 100;
+    if (*b < 0)
+	*b = 0;
+    else if (*b > 100)
+	*b = 100;
+}
+
 static int
 hls_to_rgb(int hue, int lum, int sat)
 {
-    double hs = (hue + 240) % 360;
-    double hv = hs / 360.0;
-    double lv = lum / 100.0;
-    double sv = sat / 100.0;
-    double c, x, m, c2;
-    double r1, g1, b1;
-    int r, g, b;
-    int hpi;
+    short r, g, b;
 
-    if (sat == 0) {
-        r = g = b = lum * 255 / 100;
-        return SIXEL_RGB(r, g, b);
-    }
-
-    if ((c2 = ((2.0 * lv) - 1.0)) < 0.0) {
-        c2 = -c2;
-    }
-    c = (1.0 - c2) * sv;
-    hpi = (int) (hv * 6.0);
-    x = (hpi & 1) ? c : 0.0;
-    m = lv - 0.5 * c;
-
-    switch (hpi) {
-    case 0:
-        r1 = c;
-        g1 = x;
-        b1 = 0.0;
-        break;
-    case 1:
-        r1 = x;
-        g1 = c;
-        b1 = 0.0;
-        break;
-    case 2:
-        r1 = 0.0;
-        g1 = c;
-        b1 = x;
-        break;
-    case 3:
-        r1 = 0.0;
-        g1 = x;
-        b1 = c;
-        break;
-    case 4:
-        r1 = x;
-        g1 = 0.0;
-        b1 = c;
-        break;
-    case 5:
-        r1 = c;
-        g1 = 0.0;
-        b1 = x;
-        break;
-    default:
-        return SIXEL_RGB(255, 255, 255);
-    }
-
-    r = (int) ((r1 + m) * 100.0 + 0.5);
-    g = (int) ((g1 + m) * 100.0 + 0.5);
-    b = (int) ((b1 + m) * 100.0 + 0.5);
-
-    if (r < 0) {
-        r = 0;
-    } else if (r > 100) {
-        r = 100;
-    }
-    if (g < 0) {
-        g = 0;
-    } else if (g > 100) {
-        g = 100;
-    }
-    if (b < 0) {
-        b = 0;
-    } else if (b > 100) {
-        b = 100;
-    }
+    hls2rgb(hue, lum, sat, &r, &g, &b);
     return SIXEL_RGB(r * 255 / 100, g * 255 / 100, b * 255 / 100);
 }
 
