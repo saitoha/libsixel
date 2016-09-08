@@ -128,7 +128,7 @@ sixel_tty_wait_stdin(int usec)
     if (ret != 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message(
-            "sixel_tty_wait_stdin: selet() failed.");
+            "sixel_tty_wait_stdin: select() failed.");
         goto end;
     }
 
