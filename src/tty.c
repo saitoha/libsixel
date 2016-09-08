@@ -128,10 +128,7 @@ sixel_tty_wait_stdin(int usec)
     FD_ZERO(&rfds);
     FD_SET(STDIN_FILENO, &rfds);
     ret = select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
-#else
-    (void) usec;
-#endif  /* HAVE_SYS_SELECT_H */
-    if (ret != 0) {
+    if (ret < 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message(
             "sixel_tty_wait_stdin: select() failed.");
@@ -140,6 +137,10 @@ sixel_tty_wait_stdin(int usec)
 
     /* success */
     status = SIXEL_OK;
+#else
+    (void) ret;
+    (void) usec;
+#endif  /* HAVE_SYS_SELECT_H */
 
 end:
     return status;
@@ -232,7 +233,9 @@ sixel_tty_scroll(
     }
 
     /* wait cursor position report */
-    if (sixel_tty_wait_stdin(1000 * 1000) == (-1)) { /* wait up to 1 sec */
+    if (SIXEL_FAILED(sixel_tty_wait_stdin(1000 * 1000))) { /* wait up to 1 sec */
+        /* If we can't get any response from the terminal,
+         * move cursor to (1, 1). */
         nwrite = f_write("\033[H", 3, &outfd);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
