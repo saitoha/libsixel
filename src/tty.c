@@ -118,8 +118,8 @@ sixel_tty_wait_stdin(int usec)
 #if HAVE_SYS_SELECT_H
     fd_set rfds;
     struct timeval tv;
-#endif  /* HAVE_SYS_SELECT_H */
     int ret = 0;
+#endif  /* HAVE_SYS_SELECT_H */
     SIXELSTATUS status = SIXEL_FALSE;
 
 #if HAVE_SYS_SELECT_H
@@ -138,7 +138,6 @@ sixel_tty_wait_stdin(int usec)
     /* success */
     status = SIXEL_OK;
 #else
-    (void) ret;
     (void) usec;
 #endif  /* HAVE_SYS_SELECT_H */
 
