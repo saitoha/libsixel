@@ -139,6 +139,7 @@ sixel_tty_wait_stdin(int usec)
     status = SIXEL_OK;
 #else
     (void) usec;
+    goto end;
 #endif  /* HAVE_SYS_SELECT_H */
 
 end:
