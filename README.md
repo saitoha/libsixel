@@ -229,7 +229,7 @@ Now SIXEL feature is supported by the following terminals.
 
   [http://invisible-island.net/xterm/](http://invisible-island.net/xterm/)
 
-  You should launch xterm with "`-ti 340`" option.
+  You should launch xterm with "`-ti vt340`" option.
   The SIXEL palette is limited to a maximum of 16 colors.
   To avoid this limitation, Try
 
