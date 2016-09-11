@@ -642,8 +642,8 @@ load_gif(
     }
 
 end:
-    sixel_frame_unref(frame);
     sixel_allocator_free(frame->allocator, g.out);
+    sixel_frame_unref(frame);
 
     return status;
 }
