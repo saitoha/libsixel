@@ -51,15 +51,17 @@ You can run QEMU on SIXEL terminals.
 
 Furthermore some information of SIXEL-ready SDL applications are reported.
 
-- [NetSurf](https://www.reddit.com/r/commandline/comments/4qyb90/netsurf_a_graphical_browser_on_xterm_using_sixel/) [screenshot](http://imgur.com/a/Y6xH6)
+- [NetSurf](https://www.reddit.com/r/commandline/comments/4qyb90/netsurf_a_graphical_browser_on_xterm_using_sixel/)
+  ([screenshot](http://imgur.com/a/Y6xH6))
 
-- [Green PDF Viewer](https://www.reddit.com/r/commandline/comments/4oldf5/view_pdfs_in_terminal_requires_nixos_latest_git/) [screenshot](https://m.reddit.com/r/commandline/comments/4oldf5/view_pdfs_in_terminal_requires_nixos_latest_git/)
+- [Green PDF Viewer](https://www.reddit.com/r/commandline/comments/4oldf5/view_pdfs_in_terminal_requires_nixos_latest_git/)
+  ([screenshot](https://m.reddit.com/r/commandline/comments/4oldf5/view_pdfs_in_terminal_requires_nixos_latest_git/))
 
 - [DOOM](https://www.libsdl.org/projects/doom/)
-  [tweet](https://twitter.com/rattcv/status/775213402130046977)
+  ([tweet](https://twitter.com/rattcv/status/775213402130046977))
 
 - [firesdl](https://github.com/klange/firesdl)
-  [movie](https://www.youtube.com/watch?v=XubH2W39Xtc)
+  ([movie](https://www.youtube.com/watch?v=XubH2W39Xtc))
 
 
 ### X11 on SIXEL terminals
