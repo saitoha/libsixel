@@ -118,8 +118,8 @@ sixel_tty_wait_stdin(int usec)
 #if HAVE_SYS_SELECT_H
     fd_set rfds;
     struct timeval tv;
-#endif  /* HAVE_SYS_SELECT_H */
     int ret = 0;
+#endif  /* HAVE_SYS_SELECT_H */
     SIXELSTATUS status = SIXEL_FALSE;
 
 #if HAVE_SYS_SELECT_H
@@ -128,10 +128,7 @@ sixel_tty_wait_stdin(int usec)
     FD_ZERO(&rfds);
     FD_SET(STDIN_FILENO, &rfds);
     ret = select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
-#else
-    (void) usec;
-#endif  /* HAVE_SYS_SELECT_H */
-    if (ret != 0) {
+    if (ret < 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message(
             "sixel_tty_wait_stdin: select() failed.");
@@ -140,6 +137,10 @@ sixel_tty_wait_stdin(int usec)
 
     /* success */
     status = SIXEL_OK;
+#else
+    (void) usec;
+    goto end;
+#endif  /* HAVE_SYS_SELECT_H */
 
 end:
     return status;
@@ -232,7 +233,9 @@ sixel_tty_scroll(
     }
 
     /* wait cursor position report */
-    if (sixel_tty_wait_stdin(1000 * 1000) == (-1)) { /* wait up to 1 sec */
+    if (SIXEL_FAILED(sixel_tty_wait_stdin(1000 * 1000))) { /* wait up to 1 sec */
+        /* If we can't get any response from the terminal,
+         * move cursor to (1, 1). */
         nwrite = f_write("\033[H", 3, &outfd);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
@@ -308,6 +311,11 @@ end:
     return status;
 }
 
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
-/* vim: set expandtab ts=4 : */
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */
