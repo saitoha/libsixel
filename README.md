@@ -49,6 +49,18 @@ You can run QEMU on SIXEL terminals.
 
   [![SDL1.2-SIXEL XSDL](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsdl.png)](http://youtu.be/UOTMGdUPYRo)
 
+Furthermore some information of SIXEL-ready SDL applications are reported.
+
+- [NetSurf](https://www.reddit.com/r/commandline/comments/4qyb90/netsurf_a_graphical_browser_on_xterm_using_sixel/) [screenshot](http://imgur.com/a/Y6xH6)
+
+- [Green PDF Viewer](https://www.reddit.com/r/commandline/comments/4oldf5/view_pdfs_in_terminal_requires_nixos_latest_git/) [screenshot](https://m.reddit.com/r/commandline/comments/4oldf5/view_pdfs_in_terminal_requires_nixos_latest_git/)
+
+- [DOOM](https://www.libsdl.org/projects/doom/)
+  [tweet](https://twitter.com/rattcv/status/775213402130046977)
+
+- [firesdl](https://github.com/klange/firesdl)
+  [movie](https://www.youtube.com/watch?v=XubH2W39Xtc)
+
 
 ### X11 on SIXEL terminals
 
@@ -130,14 +142,14 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
 
 ### Other
 
+#### [sixelPreviewer](https://github.com/mikoto2000/sixelPreviewer)
+
+  Simple scripts and development environment for realtime edit-previewing for dot, svg, markdown, ...etc.
+  [![sixelPreviewer](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixelpreviewer.png)](https://youtu.be/iPzHWPGWHV4)
+
 #### [sdump](https://github.com/uobikiemukot/sdump)
 
   A sixel image dumper, provides pdf previewer.
-
-
-#### [sixelPreviewer](https://github.com/mikoto2000/sixelPreviewer)
-
-  A simple scripts for realtime edit-previewing for dot, svg, markdown, ...etc.
 
 
 ## Highlighted features
@@ -215,10 +227,6 @@ Now SIXEL feature is supported by the following terminals.
 
   [http://nanno.dip.jp/softlib/man/rlogin/](http://nanno.dip.jp/softlib/man/rlogin/)
 
-- tanasinn (Works with firefox)
-
-  [http://zuse.jp/tanasinn/](http://zuse.jp/tanasinn/)
-
 - mlterm
 
   [http://mlterm.sourceforge.net/](http://mlterm.sourceforge.net/)
@@ -229,7 +237,7 @@ Now SIXEL feature is supported by the following terminals.
 
   [http://invisible-island.net/xterm/](http://invisible-island.net/xterm/)
 
-  You should launch xterm with "`-ti 340`" option.
+  You should launch xterm with "`-ti vt340`" option.
   The SIXEL palette is limited to a maximum of 16 colors.
   To avoid this limitation, Try
 
@@ -257,6 +265,10 @@ $ xterm -xrm "XTerm*decTerminalID: vt340" -xrm "XTerm*numColorRegisters: 256"
 - seq2gif (ttyrec to GIF converter)
 
   [https://github.com/saitoha/seq2gif](https://github.com/saitoha/seq2gif)
+
+- Mintty (>= 2.6.0)
+
+  [https://mintty.github.io/](https://mintty.github.io/)
 
 
 ## Install
@@ -1358,4 +1370,9 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 
 - [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
+
+
+- [sixelplot](https://github.com/kktk-KO/sixelplot)
+
+  thin-wrapper for pysixel and matplotlib
 

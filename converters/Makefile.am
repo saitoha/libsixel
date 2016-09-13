@@ -239,9 +239,9 @@ endif
 	    rm -f sixel.pipe; \
 	    pkill img2sixel; \
 	fi || true
-	grep ^\.B img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > options2.txt
-	grep ' --' shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > options3.txt
-	grep '{-' shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > options4.txt
+	grep ^\.B $(top_srcdir)/converters/img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > options2.txt
+	grep ' --' $(top_srcdir)/converters/shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > options3.txt
+	grep '{-' $(top_srcdir)/converters/shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > options4.txt
 	diff options1.txt options2.txt
 	diff options2.txt options3.txt
 	diff options3.txt options4.txt

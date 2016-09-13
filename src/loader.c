@@ -94,6 +94,8 @@ stbi_free(void *p)
 
 #define STBI_NO_STDIO 1
 #define STB_IMAGE_IMPLEMENTATION 1
+#define STBI_NO_GIF
+#define STBI_NO_PNM
 
 #if HAVE_DIAGNOSTIC_SIGN_CONVERSION
 # pragma GCC diagnostic push
@@ -138,7 +140,7 @@ stbi_free(void *p)
 static SIXELSTATUS
 load_jpeg(unsigned char **result,
           unsigned char *data,
-          int datasize,
+          size_t datasize,
           int *pwidth,
           int *pheight,
           int *ppixelformat,
@@ -151,17 +153,10 @@ load_jpeg(unsigned char **result,
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr pub;
 
-    if (datasize <= 0) {
-        sixel_helper_set_additional_message(
-            "load_jpeg: datasize must be greater than 0.");
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
-
     cinfo.err = jpeg_std_error(&pub);
 
     jpeg_create_decompress(&cinfo);
-    jpeg_mem_src(&cinfo, data, (unsigned int)datasize);
+    jpeg_mem_src(&cinfo, data, datasize);
     jpeg_read_header(&cinfo, TRUE);
 
     /* disable colormap (indexed color), grayscale -> rgb */
