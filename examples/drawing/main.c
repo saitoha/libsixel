@@ -228,7 +228,7 @@ int main(int argc, char **argv)
     int state;
     int offset;
 
-    printf("\033[?8452h" "\033[1;1'z");
+    printf("\033[?1;3;256S" "\033[?8452h" "\033[1;1'z");
     (void) tty_raw(&old_termios);
 
     if (canvas_init(&c, 640, 480) != 0)
