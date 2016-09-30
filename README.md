@@ -235,7 +235,7 @@ Now SIXEL feature is supported by the following terminals.
 
   Works on each of X, WIN32 GDI, framebuffer, Android, Cocoa version.
 
-- XTerm (compiled with `--enable-sixel` option)
+- XTerm (compiled with `--enable-sixel-graphics` option)
 
   [http://invisible-island.net/xterm/](http://invisible-island.net/xterm/)
 
