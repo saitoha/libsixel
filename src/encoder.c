@@ -1351,6 +1351,10 @@ sixel_encoder_setopt(
             encoder->method_for_diffuse = SIXEL_DIFFUSE_STUCKI;
         } else if (strcmp(value, "burkes") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_BURKES;
+        } else if (strcmp(value, "a_dither") == 0) {
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_A_DITHER;
+        } else if (strcmp(value, "x_dither") == 0) {
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_X_DITHER;
         } else {
             sixel_helper_set_additional_message(
                 "specified diffusion method is not supported.");

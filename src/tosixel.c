@@ -824,7 +824,6 @@ end:
     return status;
 }
 
-
 static void
 dither_func_none(unsigned char *data, int width)
 {
@@ -1166,6 +1165,37 @@ dither_func_burkes(unsigned char *data, int width)
     data[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
 }
 
+static void
+dither_func_a_dither(unsigned char *data, int width, int x, int y)
+{  
+  (void) width;
+  int c;
+  for (c = 0; c < 3; c ++)
+  {
+    float value, mask = (((x + c * 17) + y * 236) * 119) & 255;
+    mask = ((mask - 128) / 256.0f) ;
+    value = data[c] + mask;
+    if (value < 0) value = 0;
+    value = value > 255 ? 255 : value;
+    data[c] = value;
+  }
+}
+
+static void
+dither_func_x_dither(unsigned char *data, int width, int x, int y)
+{  
+  (void) width;
+  int c;
+  for (c = 0; c < 3; c ++)
+  {
+    float value, mask = (((x + c * 17) ^ y * 236) * 1234) & 511;
+    mask = ((mask - 128) / 512.0f) ;
+    value = data[c] + mask;
+    if (value < 0) value = 0;
+    value = value > 255 ? 255 : value;
+    data[c] = value;
+  }
+}
 
 static void
 sixel_apply_15bpp_dither(
@@ -1199,6 +1229,12 @@ sixel_apply_15bpp_dither(
         if (x < width - 2 && y < height - 1) {
             dither_func_burkes(pixels, width);
         }
+        break;
+    case SIXEL_DIFFUSE_A_DITHER:
+        dither_func_a_dither(pixels, width, x, y);
+        break;
+    case SIXEL_DIFFUSE_X_DITHER:
+        dither_func_x_dither(pixels, width, x, y);
         break;
     case SIXEL_DIFFUSE_NONE:
     default:
@@ -1282,12 +1318,13 @@ next:
             if (*mptr) {
                 *dst = 255;
             } else {
-                pix = ((pixels[0] & 0xf8) << 7) |
-                      ((pixels[1] & 0xf8) << 2) |
-                      ((pixels[2] >> 3) & 0x1f);
                 sixel_apply_15bpp_dither(pixels,
                                          x, y, width, height,
                                          dither->method_for_diffuse);
+                pix = ((pixels[0] & 0xf8) << 7) |
+                      ((pixels[1] & 0xf8) << 2) |
+                      ((pixels[2] >> 3) & 0x1f);
+
                 if (!rgbhit[pix]) {
                     while (1) {
                         if (nextpal >= 255) {

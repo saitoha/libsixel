@@ -1030,6 +1030,15 @@ diffuse_burkes(unsigned char *data, int width, int height,
     }
 }
 
+static float mask_a (int x, int y, int c)
+{
+  return ((((x + c * 67) + y * 236) * 119) & 255 ) / 128.0 - 1.0;
+}
+
+static float mask_x (int x, int y, int c)
+{
+  return ((((x + c * 29) ^ y* 149) * 1234) & 511 ) / 256.0 - 1.0;
+}
 
 /* lookup closest color from palette with "normal" strategy */
 static int
@@ -1252,8 +1261,9 @@ sixel_quant_apply_palette(
     unsigned short *indextable;
     unsigned char new_palette[256 * 4];
     unsigned short migration_map[256];
+    float (*f_mask) (int x, int y, int c) = NULL;
     void (*f_diffuse)(unsigned char *data, int width, int height,
-                      int x, int y, int depth, int offset);
+                      int x, int y, int depth, int offset) = diffuse_none;
     int (*f_lookup)(unsigned char const * const pixel,
                     int const depth,
                     unsigned char const * const palette,
@@ -1282,6 +1292,12 @@ sixel_quant_apply_palette(
             break;
         case SIXEL_DIFFUSE_BURKES:
             f_diffuse = diffuse_burkes;
+            break;
+        case SIXEL_DIFFUSE_A_DITHER:
+            f_mask  = mask_a;
+            break;
+        case SIXEL_DIFFUSE_X_DITHER:
+            f_mask  = mask_x;
             break;
         default:
             quant_trace(stderr, "Internal error: invalid value of"
@@ -1333,29 +1349,74 @@ sixel_quant_apply_palette(
         memset(new_palette, 0x00, sizeof(256 * depth));
         memset(migration_map, 0x00, sizeof(migration_map));
 
-        for (y = 0; y < height; ++y) {
-            for (x = 0; x < width; ++x) {
-                pos = y * width + x;
-                color_index = f_lookup(data + (pos * depth), depth,
-                                       palette, reqcolor, indextable, complexion);
-                if (migration_map[color_index] == 0) {
-                    result[pos] = *ncolors;
-                    for (n = 0; n < depth; ++n) {
-                        new_palette[*ncolors * depth + n] = palette[color_index * depth + n];
+        if (f_mask) {
+            for (y = 0; y < height; ++y) {
+                for (x = 0; x < width; ++x) {
+                    unsigned char copy[depth];
+                    int d;
+                    pos = y * width + x;
+                    for (d = 0; d < depth; d ++)
+                    {
+                      int val = data[pos * depth + d] + f_mask (x, y, d) * 32;
+                      copy[d] = val < 0 ? 0 : val > 255 ? 255 : val;
                     }
-                    ++*ncolors;
-                    migration_map[color_index] = *ncolors;
-                } else {
-                    result[pos] = migration_map[color_index] - 1;
-                }
-                for (n = 0; n < depth; ++n) {
-                    offset = data[pos * depth + n] - palette[color_index * depth + n];
-                    f_diffuse(data + n, width, height, x, y, depth, offset);
+                    color_index = f_lookup(copy, depth,
+                                           palette, reqcolor, indextable, complexion);
+                    if (migration_map[color_index] == 0) {
+                        result[pos] = *ncolors;
+                        for (n = 0; n < depth; ++n) {
+                            new_palette[*ncolors * depth + n] = palette[color_index * depth + n];
+                        }
+                        ++*ncolors;
+                        migration_map[color_index] = *ncolors;
+                    } else {
+                        result[pos] = migration_map[color_index] - 1;
+                    }
                 }
             }
+            memcpy(palette, new_palette, (size_t)(*ncolors * depth));
         }
-        memcpy(palette, new_palette, (size_t)(*ncolors * depth));
+        else
+        {
+           for (y = 0; y < height; ++y) {
+               for (x = 0; x < width; ++x) {
+                   pos = y * width + x;
+                   color_index = f_lookup(data + (pos * depth), depth,
+                                          palette, reqcolor, indextable, complexion);
+                   if (migration_map[color_index] == 0) {
+                       result[pos] = *ncolors;
+                       for (n = 0; n < depth; ++n) {
+                           new_palette[*ncolors * depth + n] = palette[color_index * depth + n];
+                       }
+                       ++*ncolors;
+                       migration_map[color_index] = *ncolors;
+                   } else {
+                       result[pos] = migration_map[color_index] - 1;
+                   }
+                   for (n = 0; n < depth; ++n) {
+                       offset = data[pos * depth + n] - palette[color_index * depth + n];
+                       f_diffuse(data + n, width, height, x, y, depth, offset);
+                   }
+               }
+           }
+           memcpy(palette, new_palette, (size_t)(*ncolors * depth));
+        }
     } else {
+       if (f_mask) {
+           for (y = 0; y < height; ++y) {
+               for (x = 0; x < width; ++x) {
+                    unsigned char copy[depth];int d;
+                    pos = y * width + x;
+                    for (d = 0; d < depth; d ++)
+                    {
+                      int val = data[pos * depth + d] + f_mask (x, y, d) * 32;
+                      copy[d] = val < 0 ? 0 : val > 255 ? 255 : val;
+                    }
+                    result[pos] = f_lookup(copy, depth,
+                                           palette, reqcolor, indextable, complexion);
+                }
+            }
+       }else {
         for (y = 0; y < height; ++y) {
             for (x = 0; x < width; ++x) {
                 pos = y * width + x;
@@ -1367,7 +1428,8 @@ sixel_quant_apply_palette(
                     f_diffuse(data + n, width, height, x, y, depth, offset);
                 }
             }
-        }
+          }
+       }
         *ncolors = reqcolor;
     }
 
