@@ -328,7 +328,7 @@ sixel_decoder_decode(
 
 end:
     sixel_allocator_free(decoder->allocator, pixels);
-    sixel_decoder_ref(decoder);
+    sixel_decoder_unref(decoder);
 
     return status;
 }
