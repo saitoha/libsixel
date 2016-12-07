@@ -204,6 +204,9 @@ LS_CHECK_CFLAG([-Wdouble-promotion],
 LS_CHECK_CFLAG([-Wswitch-default],
                [AM_CFLAGS="$AM_CFLAGS -Wswitch-default"
                 AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT, 1, [define 1 if GCC supports -Wswitch-default])])
+LS_CHECK_CFLAG([-Bsymbolic],
+               [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
+                AC_DEFINE(HAVE_BSYMBOLIC, 1, [define 1 if GCC supports -Bsymbolic])])
 AS_IF([test x$enable_debug = xyes],
       [LS_CHECK_CFLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
 AC_SUBST([AM_CFLAGS])
