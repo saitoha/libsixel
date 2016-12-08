@@ -41,6 +41,8 @@ test: all test_impl
 
 test_impl:
 if WANT_IMG2SIXEL
+
+	@echo '[test1] invalid option handling'
 	touch testfile
 	chmod -r testfile
 	test ! $$($(WINE) ./img2sixel testfile)
@@ -70,9 +72,15 @@ if WANT_IMG2SIXEL
 	test ! $$($(WINE) ./img2sixel -I -p8 $(top_srcdir)/images/snake.png)
 	test ! $$($(WINE) ./img2sixel -p64 -bxterm256 $(top_srcdir)/images/snake.png)
 	test ! $$($(WINE) ./img2sixel -8 -P $(top_srcdir)/images/snake.png)
+
+	@echo '[test2] STDIN handling'
 	test ! $$(echo -n a | $(WINE) ./img2sixel)
+
+	@echo '[test3] print information'
 	$(WINE) ./img2sixel -H
 	$(WINE) ./img2sixel -V
+
+	@echo '[test4] conversion options'
 	$(WINE) ./img2sixel $(top_srcdir)/images/snake.jpg -datkinson -flum -saverage | $(WINE) ./img2sixel | tee snake.sixel
 	$(WINE) ./img2sixel -w50% -h150% -dfs -Bblue -thls -shistogram < $(top_srcdir)/images/snake.jpg | tee snake2.sixel
 	$(WINE) ./img2sixel -w2100 -h2100 -djajuni -bxterm256 -o snake3.sixel < $(top_srcdir)/images/snake.jpg
@@ -119,21 +127,34 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -e -h140 -rlanczos4 -P $(top_srcdir)/images/snake.jpg
 	$(WINE) ./img2sixel -e -i -P $(top_srcdir)/images/snake.jpg > /dev/null
 	$(WINE) ./img2sixel -w2047 -h2047 $(top_srcdir)/images/snake.png | $(WINE) ./img2sixel > /dev/null
+
+	@echo '[test5] DCS arguments handling'
 	seq 0 10 | while read i; do \
 	    seq 0 2 | while read j; do \
-		    $(WINE) ./img2sixel $(top_srcdir)/images/map8.png | \
+	            $(WINE) ./img2sixel $(top_srcdir)/images/map8.png | \
 	            sed "s/Pq/P$${i};;$${j}q/" | \
 	            $(WINE) ./img2sixel; \
 	    done; \
 	done
+
+	@echo
+	@echo '[test6] DCS format variations'
 	$(WINE) ./img2sixel $(top_srcdir)/images/snake.png| sed 's/C/C:/g'| tr : '\t'| $(WINE) ./img2sixel
 	$(WINE) ./img2sixel $(top_srcdir)/images/snake.png| sed 's/"1;1;600;450/"1;1;700;500/'| $(WINE) ./img2sixel
+
+	@echo
+	@echo '[test7] animation'
 	$(WINE) ./img2sixel -ldisable -dnone -u -lauto $(top_srcdir)/images/seq2gif.gif
 	$(WINE) ./img2sixel -ldisable -dnone -g $(top_srcdir)/images/seq2gif.gif
 	$(WINE) ./img2sixel -ldisable -dnone -u -g $(top_srcdir)/images/seq2gif.gif
 	$(WINE) ./img2sixel -S -datkinson $(top_srcdir)/images/seq2gif.gif
+
+	@echo
+	@echo '[test8] progressive jpeg'
 	$(WINE) ./img2sixel $(top_srcdir)/images/snake-progressive.jpg
 if HAVE_PNG
+	@echo
+	@echo '[test9] various PNG'
 	$(WINE) ./img2sixel $(top_srcdir)/images/pngsuite/basic/basn0g01.png
 	$(WINE) ./img2sixel $(top_srcdir)/images/pngsuite/basic/basn0g02.png
 	$(WINE) ./img2sixel $(top_srcdir)/images/pngsuite/basic/basn0g04.png
@@ -199,6 +220,8 @@ if HAVE_PNG
 	$(WINE) ./img2sixel -w32 -B\#fff $(top_srcdir)/images/pngsuite/background/bgyn6a16.png
 endif
 if HAVE_CURL
+	@echo
+	@echo '[test10] curl'
 	test ! $$($(WINE) ./img2sixel file:///test)
 	test ! $$($(WINE) ./img2sixel https:///test)
 	$(WINE) ./img2sixel file:///$$(pwd)/$(top_srcdir)/images/snake.jpg
@@ -218,6 +241,7 @@ if HAVE_CURL
 	fi
 endif
 if WANT_SIXEL2PNG
+	@echo '[test11] sixel2png'
 	test ! $$($(WINE) ./sixel2png -i unknown.sixel)
 	test ! $$($(WINE) ./sixel2png -% < snake.sixel)
 	test ! $$($(WINE) ./sixel2png invalid_filename < snake.sixel)
@@ -228,7 +252,7 @@ if WANT_SIXEL2PNG
 	$(WINE) ./sixel2png - - < snake3.sixel > snake3.png
 	$(WINE) ./sixel2png -i snake.sixel -o snake4.png
 endif
-	$(WINE) ./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options1.txt
+	@echo '[test12] continuous pipe mode'
 	rm -f sixel.pipe
 	if test "$(WINE)" = "" && which mkfifo && which pkill; then \
 	    mkfifo sixel.pipe; \
@@ -236,9 +260,14 @@ endif
 	    cat $(top_srcdir)/images/snake.jpg > sixel.pipe; \
 	    echo -n > sixel.pipe; \
 	    sleep 1; \
-	    rm -f sixel.pipe; \
 	    pkill img2sixel; \
+	    sleep 1; \
+	    pkill img2sixel; \
+	    rm -f sixel.pipe; \
 	fi || true
+
+	@echo '[test13] documentation'
+	$(WINE) ./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options1.txt
 	grep ^\.B $(top_srcdir)/converters/img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > options2.txt
 	grep ' --' $(top_srcdir)/converters/shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > options3.txt
 	grep '{-' $(top_srcdir)/converters/shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > options4.txt
@@ -246,7 +275,7 @@ endif
 	diff options2.txt options3.txt
 	diff options3.txt options4.txt
 endif
-	@echo succeeded
+	@echo '[succeeded]'
 
 winetest: all
 	WINE=wine $(MAKE) test
