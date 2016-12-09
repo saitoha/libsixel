@@ -258,9 +258,10 @@ endif
 	    mkfifo sixel.pipe; \
 	    ($(WINE) ./img2sixel -D < sixel.pipe&); \
 	    cat $(top_srcdir)/images/snake.jpg > sixel.pipe; \
-	    echo -n > sixel.pipe; \
+	    echo > sixel.pipe; \
 	    sleep 1; \
 	    pkill img2sixel; \
+	    echo > sixel.pipe; \
 	    sleep 1; \
 	    pkill img2sixel; \
 	    rm -f sixel.pipe; \

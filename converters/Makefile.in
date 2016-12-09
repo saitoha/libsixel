@@ -1218,9 +1218,10 @@ test_impl:
 @WANT_IMG2SIXEL_TRUE@	    mkfifo sixel.pipe; \
 @WANT_IMG2SIXEL_TRUE@	    ($(WINE) ./img2sixel -D < sixel.pipe&); \
 @WANT_IMG2SIXEL_TRUE@	    cat $(top_srcdir)/images/snake.jpg > sixel.pipe; \
-@WANT_IMG2SIXEL_TRUE@	    echo -n > sixel.pipe; \
+@WANT_IMG2SIXEL_TRUE@	    echo > sixel.pipe; \
 @WANT_IMG2SIXEL_TRUE@	    sleep 1; \
 @WANT_IMG2SIXEL_TRUE@	    pkill img2sixel; \
+@WANT_IMG2SIXEL_TRUE@	    echo > sixel.pipe; \
 @WANT_IMG2SIXEL_TRUE@	    sleep 1; \
 @WANT_IMG2SIXEL_TRUE@	    pkill img2sixel; \
 @WANT_IMG2SIXEL_TRUE@	    rm -f sixel.pipe; \
