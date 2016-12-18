@@ -272,6 +272,10 @@ $ xterm -xrm "XTerm*decTerminalID: vt340" -xrm "XTerm*numColorRegisters: 256"
 
   [https://mintty.github.io/](https://mintty.github.io/)
 
+- cancer
+
+  [https://github.com/meh/cancer](https://github.com/meh/cancer)
+
 
 ## Install
 
