@@ -632,6 +632,7 @@ end:
 }
 
 
+/* detect whether given chunk is sixel stream */
 static int
 chunk_is_sixel(sixel_chunk_t const *chunk)
 {
@@ -668,6 +669,7 @@ chunk_is_sixel(sixel_chunk_t const *chunk)
 }
 
 
+/* detect whether given chunk is PNM stream */
 static int
 chunk_is_pnm(sixel_chunk_t const *chunk)
 {
@@ -684,6 +686,7 @@ chunk_is_pnm(sixel_chunk_t const *chunk)
 
 
 #if HAVE_LIBPNG
+/* detect whether given chunk is PNG stream */
 static int
 chunk_is_png(sixel_chunk_t const *chunk)
 {
@@ -698,6 +701,7 @@ chunk_is_png(sixel_chunk_t const *chunk)
 #endif  /* HAVE_LIBPNG */
 
 
+/* detect whether given chunk is GIF stream */
 static int
 chunk_is_gif(sixel_chunk_t const *chunk)
 {
@@ -717,6 +721,7 @@ chunk_is_gif(sixel_chunk_t const *chunk)
 
 
 #if HAVE_JPEG
+/* detect whether given chunk is JPEG stream */
 static int
 chunk_is_jpeg(sixel_chunk_t const *chunk)
 {
