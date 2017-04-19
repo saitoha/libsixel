@@ -98,9 +98,11 @@ It also works with [ranger](https://github.com/hut/ranger).
 
 ### X11 on SIXEL terminals
 
-[XSIXEL](https://github.com/saitoha/xserver-sixel) is a kdrive server implementation for SIXEL terminals.
+[Xsixel](https://github.com/saitoha/xserver-sixel) is a kdrive server implementation for SIXEL terminals.
 
-  ![XSIXEL](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel.png)
+  ![Xsixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel.png)
+
+  ![Xsixel Blue Print](https://raw.githubusercontent.com/saitoha/libsixel/data/data/HowToBuildTerminalGUI.png)
 
 
 ### GNU Screen integration
@@ -1025,6 +1027,7 @@ The MIT License (MIT)
 - [@obache](https://github.com/obache/)
 - [@tsutsui](https://github.com/tsutsui/)
 - [@ttdoda](https://github.com/ttdoda/)
+- [@turenar](https://github.com/turenar/)
 - [@uobikiemukot](https://github.com/uobikiemukot/)
 - [@vrtsds](https://github.com/vrtsds/)
 - [@waywardmonkeys](https://github.com/waywardmonkeys/)
