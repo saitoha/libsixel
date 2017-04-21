@@ -518,7 +518,7 @@ sixel_encode_body(
                                                   sizeof(unsigned char));
     if (map == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_encode_body: sixel_allocator_malloc() failed.");
+            "sixel_encode_body: sixel_allocator_calloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }

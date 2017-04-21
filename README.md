@@ -64,11 +64,15 @@ Furthermore some information of SIXEL-ready SDL applications are reported.
   ([movie](https://www.youtube.com/watch?v=XubH2W39Xtc))
 
 
-### X11 on SIXEL terminals
+### Langage Bindings
 
-[XSIXEL](https://github.com/saitoha/xserver-sixel) is a kdrive server implementation for SIXEL terminals.
+#### [libsixel-python](https://pypi.python.org/pypi/libsixel-python/0.4.0)
 
-  ![XSIXEL](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel.png)
+  [converter.py](https://github.com/saitoha/libsixel/blob/master/examples/python/converter.py) example depends on it.
+
+#### [mruby-sixel](https://github.com/kjunichi/mruby-sixel)
+
+  Used by [mruby-webcam](https://github.com/kjunichi/mruby-webcam).
 
 
 ### W3M integration
@@ -83,6 +87,15 @@ He wrote a w3mimgdisplay compatible program [yaimg-sixel](https://github.com/uob
 It also works with [ranger](https://github.com/hut/ranger).
 
   ![w3m-yaimg-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-yaimg-sixel.jpg)
+
+
+### X11 on SIXEL terminals
+
+[Xsixel](https://github.com/saitoha/xserver-sixel) is a kdrive server implementation for SIXEL terminals.
+
+  ![Xsixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel.png)
+
+  ![Xsixel Blue Print](https://raw.githubusercontent.com/saitoha/libsixel/data/data/HowToBuildTerminalGUI.png)
 
 
 ### GNU Screen integration
@@ -152,6 +165,22 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
 #### [sdump](https://github.com/uobikiemukot/sdump)
 
   A sixel image dumper, provides pdf previewer.
+
+#### [sixelSPAD](https://github.com/nilqed/sixelSPAD)
+
+  [screenshot](https://nilqed.github.io/drawfe/)
+
+  Includes 2 commands [fricas2sixel](https://github.com/nilqed/sixelSPAD/blob/master/bin/fricas2sixel)
+  and [latex2sixel](https://github.com/nilqed/sixelSPAD/blob/master/bin/latex2sixel).
+
+  ![latex2sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/latex2sixel.jpg)
+
+#### [Neofetch](https://github.com/dylanaraps/neofetch)
+
+  Now `sixel` backend is implemented.
+  See https://github.com/dylanaraps/neofetch/wiki/Image-Backends#sixel
+
+  ![neofetch](https://raw.githubusercontent.com/saitoha/libsixel/data/data/neofetch.jpg)
 
 
 ## Highlighted features
@@ -272,6 +301,9 @@ $ xterm -xrm "XTerm*decTerminalID: vt340" -xrm "XTerm*numColorRegisters: 256"
 
   [https://mintty.github.io/](https://mintty.github.io/)
 
+- cancer
+  [https://github.com/meh/cancer/](https://github.com/meh/cancer)
+
 
 ## Install
 
@@ -289,6 +321,7 @@ You can install libsixel via the following package systems.
 - [Portage](http://packages.gentoo.org/package/media-libs/libsixel)
 - [Ubuntu](https://launchpad.net/ubuntu/+source/libsixel)
 - [NixOS](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/libraries/libsixel/default.nix)
+- [OpenBSD Ports](http://openports.se/graphics/libsixel)
 
 
 ### Build from source package
@@ -1003,6 +1036,7 @@ The MIT License (MIT)
 - [@obache](https://github.com/obache/)
 - [@tsutsui](https://github.com/tsutsui/)
 - [@ttdoda](https://github.com/ttdoda/)
+- [@turenar](https://github.com/turenar/)
 - [@uobikiemukot](https://github.com/uobikiemukot/)
 - [@vrtsds](https://github.com/vrtsds/)
 - [@waywardmonkeys](https://github.com/waywardmonkeys/)
@@ -1266,6 +1300,16 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   sayaka-chan(Vala version) also includes SIXEL converter.
 
 
+- [rust-sixel](https://github.com/meh/rust-sixel)
+
+  A SIXEL encoder written in rust.
+
+
+- [ff2sixel](https://github.com/labdsf/ff2sixel)
+
+  An utility to convert farbfeld images to Sixels.
+
+
 - [xpr(x11-apps)](ftp://ftp.x.org/pub/unsupported/programs/xpr/)
 
   xpr(1) can convert a xwd(X window dump) format image into a sixel
@@ -1277,7 +1321,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 - [GNUPLOT](http://www.gnuplot.info/)
 
-  Recent version of GNUPLOT supports new terminal driver "sixel".
+  Recent version of GNUPLOT supports new terminal driver "sixel" / "sixelgd".
 
   ![GNUPLOT](https://raw.githubusercontent.com/saitoha/libsixel/data/data/gnuplot.png)
 
@@ -1377,4 +1421,10 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 - [sixelplot](https://github.com/kktk-KO/sixelplot)
 
   thin-wrapper for pysixel and matplotlib
+
+- [ame.sh](https://github.com/hamano/ame.sh)
+
+- [matplotlib-sixel](https://github.com/koppa/matplotlib-sixel)
+
+- [gr framework](http://gr-framework.org/)
 
