@@ -73,15 +73,6 @@ Furthermore some information of SIXEL-ready SDL applications are reported.
   Used by [mruby-webcam](https://github.com/kjunichi/mruby-webcam).
 
 
-Some software uses `img2sixel` as an image backend
-
-- [sixelSPAD](https://nilqed.github.io/drawfe/)
-
-- [Neofetch](https://github.com/dylanaraps/neofetch)
-
-  https://github.com/dylanaraps/neofetch/wiki/Image-Backends#sixel
-
-
 ### W3M integration
 
 `img2sixel(1)` can be integrated with [Debian's w3m](https://tracker.debian.org/pkg/w3m)(maintained by [Tatsuya Kinoshita](https://github.com/tats)) that includes patches for *-sixel* option derived from [Arakiken's w3m fork(remoteimg branch)](https://bitbucket.org/arakiken/w3m/branch/remoteimg).
@@ -172,6 +163,22 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
 #### [sdump](https://github.com/uobikiemukot/sdump)
 
   A sixel image dumper, provides pdf previewer.
+
+#### [sixelSPAD](https://github.com/nilqed/sixelSPAD)
+
+  [screenshot](https://nilqed.github.io/drawfe/)
+
+  Includes 2 commands [fricas2sixel](https://github.com/nilqed/sixelSPAD/blob/master/bin/fricas2sixel)
+  and [latex2sixel](https://github.com/nilqed/sixelSPAD/blob/master/bin/latex2sixel).
+
+  ![latex2sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/latex2sixel.jpg)
+
+#### [Neofetch](https://github.com/dylanaraps/neofetch)
+
+  Now `sixel` backend is implemented.
+  See https://github.com/dylanaraps/neofetch/wiki/Image-Backends#sixel
+
+  ![neofetch](https://raw.githubusercontent.com/saitoha/libsixel/data/data/neofetch.jpg)
 
 
 ## Highlighted features
