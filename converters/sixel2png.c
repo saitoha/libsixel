@@ -229,6 +229,12 @@ main(int argc, char *argv[])
 argerr:
     show_help();
 
+error:
+    fprintf(stderr, "%s\n%s\n",
+            sixel_helper_format_error(status),
+            sixel_helper_get_additional_message());
+    status = (-1);
+
 end:
     sixel_decoder_unref(decoder);
     return status;
