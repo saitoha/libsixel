@@ -66,10 +66,12 @@ Furthermore some information of SIXEL-ready SDL applications are reported.
 
 ### Langage Bindings
 
-- [libsixel-python](https://pypi.python.org/pypi/libsixel-python/0.4.0)
+#### [libsixel-python](https://pypi.python.org/pypi/libsixel-python/0.4.0)
+
   [converter.py](https://github.com/saitoha/libsixel/blob/master/examples/python/converter.py) example depends on it.
 
-- [mruby-sixel](https://github.com/kjunichi/mruby-sixel)
+#### [mruby-sixel](https://github.com/kjunichi/mruby-sixel)
+
   Used by [mruby-webcam](https://github.com/kjunichi/mruby-webcam).
 
 
