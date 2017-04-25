@@ -1167,7 +1167,7 @@ dither_func_burkes(unsigned char *data, int width)
 
 static void
 dither_func_a_dither(unsigned char *data, int width, int x, int y)
-{  
+{
   (void) width;
   int c;
   for (c = 0; c < 3; c ++)
@@ -1183,7 +1183,7 @@ dither_func_a_dither(unsigned char *data, int width, int x, int y)
 
 static void
 dither_func_x_dither(unsigned char *data, int width, int x, int y)
-{  
+{
   (void) width;
   int c;
   for (c = 0; c < 3; c ++)
