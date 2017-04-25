@@ -1282,12 +1282,12 @@ next:
             if (*mptr) {
                 *dst = 255;
             } else {
-                pix = ((pixels[0] & 0xf8) << 7) |
-                      ((pixels[1] & 0xf8) << 2) |
-                      ((pixels[2] >> 3) & 0x1f);
                 sixel_apply_15bpp_dither(pixels,
                                          x, y, width, height,
                                          dither->method_for_diffuse);
+                pix = ((pixels[0] & 0xf8) << 7) |
+                      ((pixels[1] & 0xf8) << 2) |
+                      ((pixels[2] >> 3) & 0x1f);
                 if (!rgbhit[pix]) {
                     while (1) {
                         if (nextpal >= 255) {
