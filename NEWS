@@ -1,7 +1,14 @@
+
+                  ------------------------------
+                   What's new in libsixel-1.8 ?
+                  ------------------------------
+* core: Upgrade stb_image to 2.15.
+
+* core: Introduce new dithering method, a_dither / x_dither (http://pippin.gimp.org/a_dither/). Thanks to @hodefoting.
+
                   ------------------------------
                    What's new in libsixel-1.7 ?
                   ------------------------------
-
 * core: Upgrade stb_image to 2.12.
 
 * core: Upgrade stb_image_write.h to v1.02.
