@@ -170,7 +170,14 @@ wait_file(int fd, int usec)
     tv.tv_sec = usec / 1000000;
     tv.tv_usec = usec % 1000000;
     FD_ZERO(&rfds);
+#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
     FD_SET(fd, &rfds);
+#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
+# pragma GCC diagnostic pop
+#endif
     ret = select(fd + 1, &rfds, NULL, NULL, &tv);
 #else
     (void) fd;
@@ -250,7 +257,7 @@ sixel_chunk_from_file(
     SIXELSTATUS status = SIXEL_FALSE;
     int ret;
     FILE *f;
-    int n;
+    size_t n;
     size_t const bucket_size = 4096;
 
     status = open_binary_file(&f, filename);
@@ -291,7 +298,7 @@ sixel_chunk_from_file(
             }
         }
         n = fread(pchunk->buffer + pchunk->size, 1, 4096, f);
-        if (n <= 0) {
+        if (n == 0) {
             break;
         }
         pchunk->size += n;
@@ -606,7 +613,11 @@ error:
 }
 #endif  /* HAVE_TESTS */
 
-
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
-/* vim: set expandtab ts=4 : */
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */

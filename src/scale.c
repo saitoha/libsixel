@@ -321,7 +321,7 @@ sixel_helper_scale_image(
     int new_pixelformat;
 
     if (depth != 3) {
-        new_src = (unsigned char *)sixel_allocator_malloc(allocator, srcw * srch * 3);
+        new_src = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(srcw * srch * 3));
         if (new_src == NULL) {
             return (-1);
         }
@@ -387,6 +387,11 @@ sixel_helper_scale_image(
     return 0;
 }
 
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
-/* vim: set expandtab ts=4 : */
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */

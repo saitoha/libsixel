@@ -162,7 +162,7 @@ load_pnm(unsigned char      /* in */  *p,
     }
 
     *result = (unsigned char *)sixel_allocator_malloc(allocator,
-                                                      width * height * 3 + 1);
+                                                      (size_t)(width * height * 3 + 1));
     if (*result == NULL) {
         sixel_helper_set_additional_message(
             "load_pnm: sixel_allocator_malloc() failed.");
@@ -170,7 +170,7 @@ load_pnm(unsigned char      /* in */  *p,
         goto end;
     }
 
-    memset(*result, 0, width * height * 3 + 1);
+    memset(*result, 0, (size_t)(width * height * 3 + 1));
 
     for (y = 0 ; y < height ; y++) {
         for (x = 0 ; x < width ; x++) {
@@ -253,6 +253,11 @@ end:
     return status;
 }
 
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
-/* vim: set expandtab ts=4 : */
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */

@@ -31,6 +31,10 @@
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
+#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
 #if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wstrict-overflow"
@@ -53,7 +57,15 @@
 #if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
 # pragma GCC diagnostic pop
 #endif
+#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
+# pragma GCC diagnostic pop
+#endif
 
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
-/* vim: set expandtab ts=4 : */
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */

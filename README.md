@@ -49,17 +49,35 @@ You can run QEMU on SIXEL terminals.
 
   [![SDL1.2-SIXEL XSDL](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsdl.png)](http://youtu.be/UOTMGdUPYRo)
 
+Furthermore some information of SIXEL-ready SDL applications are reported.
 
-### X11 on SIXEL terminals
+- [NetSurf](https://www.reddit.com/r/commandline/comments/4qyb90/netsurf_a_graphical_browser_on_xterm_using_sixel/)
+  ([screenshot](http://imgur.com/a/Y6xH6))
 
-[XSIXEL](https://github.com/saitoha/xserver-sixel) is a kdrive server implementation for SIXEL terminals.
+- [Green PDF Viewer](https://www.reddit.com/r/commandline/comments/4oldf5/view_pdfs_in_terminal_requires_nixos_latest_git/)
+  ([screenshot](https://m.reddit.com/r/commandline/comments/4oldf5/view_pdfs_in_terminal_requires_nixos_latest_git/))
 
-  ![XSIXEL](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel.png)
+- [DOOM](https://www.libsdl.org/projects/doom/)
+  ([tweet](https://twitter.com/rattcv/status/775213402130046977))
+
+- [firesdl](https://github.com/klange/firesdl)
+  ([movie](https://www.youtube.com/watch?v=XubH2W39Xtc))
+
+
+### Langage Bindings
+
+#### [libsixel-python](https://pypi.python.org/pypi/libsixel-python/0.4.0)
+
+  [converter.py](https://github.com/saitoha/libsixel/blob/master/examples/python/converter.py) example depends on it.
+
+#### [mruby-sixel](https://github.com/kjunichi/mruby-sixel)
+
+  Used by [mruby-webcam](https://github.com/kjunichi/mruby-webcam).
 
 
 ### W3M integration
 
-`img2sixel(1)` can be integrated with [Arakiken's w3m fork(remoteimg branch)](https://bitbucket.org/arakiken/w3m/branch/remoteimg).
+`img2sixel(1)` can be integrated with [Debian's w3m](https://tracker.debian.org/pkg/w3m)(maintained by [Tatsuya Kinoshita](https://github.com/tats)) that includes patches for *-sixel* option derived from [Arakiken's w3m fork(remoteimg branch)](https://bitbucket.org/arakiken/w3m/branch/remoteimg).
 
   ![w3m-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-sixel.png)
 
@@ -69,6 +87,15 @@ He wrote a w3mimgdisplay compatible program [yaimg-sixel](https://github.com/uob
 It also works with [ranger](https://github.com/hut/ranger).
 
   ![w3m-yaimg-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-yaimg-sixel.jpg)
+
+
+### X11 on SIXEL terminals
+
+[Xsixel](https://github.com/saitoha/xserver-sixel) is a kdrive server implementation for SIXEL terminals.
+
+  ![Xsixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel.png)
+
+  ![Xsixel Blue Print](https://raw.githubusercontent.com/saitoha/libsixel/data/data/HowToBuildTerminalGUI.png)
 
 
 ### GNU Screen integration
@@ -130,14 +157,30 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
 
 ### Other
 
+#### [sixelPreviewer](https://github.com/mikoto2000/sixelPreviewer)
+
+  Simple scripts and development environment for realtime edit-previewing for dot, svg, markdown, ...etc.
+  [![sixelPreviewer](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixelpreviewer.png)](https://youtu.be/iPzHWPGWHV4)
+
 #### [sdump](https://github.com/uobikiemukot/sdump)
 
   A sixel image dumper, provides pdf previewer.
 
+#### [sixelSPAD](https://github.com/nilqed/sixelSPAD)
 
-#### [sixelPreviewer](https://github.com/mikoto2000/sixelPreviewer)
+  [screenshot](https://nilqed.github.io/drawfe/)
 
-  A simple scripts for realtime edit-previewing for dot, svg, markdown, ...etc.
+  Includes 2 commands [fricas2sixel](https://github.com/nilqed/sixelSPAD/blob/master/bin/fricas2sixel)
+  and [latex2sixel](https://github.com/nilqed/sixelSPAD/blob/master/bin/latex2sixel).
+
+  ![latex2sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/latex2sixel.jpg)
+
+#### [Neofetch](https://github.com/dylanaraps/neofetch)
+
+  Now `sixel` backend is implemented.
+  See https://github.com/dylanaraps/neofetch/wiki/Image-Backends#sixel
+
+  ![neofetch](https://raw.githubusercontent.com/saitoha/libsixel/data/data/neofetch.jpg)
 
 
 ## Highlighted features
@@ -215,21 +258,17 @@ Now SIXEL feature is supported by the following terminals.
 
   [http://nanno.dip.jp/softlib/man/rlogin/](http://nanno.dip.jp/softlib/man/rlogin/)
 
-- tanasinn (Works with firefox)
-
-  [http://zuse.jp/tanasinn/](http://zuse.jp/tanasinn/)
-
 - mlterm
 
   [http://mlterm.sourceforge.net/](http://mlterm.sourceforge.net/)
 
   Works on each of X, WIN32 GDI, framebuffer, Android, Cocoa version.
 
-- XTerm (compiled with `--enable-sixel` option)
+- XTerm (compiled with `--enable-sixel-graphics` option)
 
   [http://invisible-island.net/xterm/](http://invisible-island.net/xterm/)
 
-  You should launch xterm with "`-ti 340`" option.
+  You should launch xterm with "`-ti vt340`" option.
   The SIXEL palette is limited to a maximum of 16 colors.
   To avoid this limitation, Try
 
@@ -258,6 +297,13 @@ $ xterm -xrm "XTerm*decTerminalID: vt340" -xrm "XTerm*numColorRegisters: 256"
 
   [https://github.com/saitoha/seq2gif](https://github.com/saitoha/seq2gif)
 
+- Mintty (>= 2.6.0)
+
+  [https://mintty.github.io/](https://mintty.github.io/)
+
+- cancer
+  [https://github.com/meh/cancer/](https://github.com/meh/cancer)
+
 
 ## Install
 
@@ -274,6 +320,8 @@ You can install libsixel via the following package systems.
 - [AUR](https://aur.archlinux.org/packages/libsixel-git/)
 - [Portage](http://packages.gentoo.org/package/media-libs/libsixel)
 - [Ubuntu](https://launchpad.net/ubuntu/+source/libsixel)
+- [NixOS](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/libraries/libsixel/default.nix)
+- [OpenBSD Ports](http://openports.se/graphics/libsixel)
 
 
 ### Build from source package
@@ -641,12 +689,29 @@ The low-livel API provides Bytes-to-Bytes conversion features.
 
 The Whole API is described [here](https://github.com/saitoha/libsixel/blob/master/include/sixel.h.in).
 
-### Example
+### Examples
 
-A tiny example is available
-[here](https://github.com/saitoha/libsixel/blob/master/examples/opengl/).
+#### OpenGL
+
+[OpenGL example](https://github.com/saitoha/libsixel/blob/master/examples/opengl/)
+suggests how to port your OpenGL application to SIXEL terminal.
 
   ![opengl example](https://raw.githubusercontent.com/saitoha/libsixel/data/data/example_opengl.gif)
+
+
+#### Drawing
+
+[Drawing example](https://github.com/saitoha/libsixel/blob/master/examples/drawing/)
+suggests how to implement the interaction among SIXEL terminals and pointer devices.
+
+  [![drawing](https://raw.githubusercontent.com/saitoha/libsixel/data/data/drawing.png)](https://youtu.be/2-2FnoZp4Z0)
+
+
+#### Python
+
+[Python example](https://github.com/saitoha/libsixel/blob/master/examples/python/)
+suggests how to convert PIL images into SIXEL using libsixel python interface.
+
 
 ### Bitmap to SIXEL
 
@@ -962,6 +1027,7 @@ The MIT License (MIT)
 
 - [@arakiken](https://github.com/arakiken/)
 - [@elfring](https://github.com/elfring/)
+- [@fd00](https://github.com/fd00/)
 - [@hattya](https://github.com/hattya/)
 - [@isaki68k](https://github.com/isaki68k/)
 - [@knok](https://github.com/knok/)
@@ -970,6 +1036,7 @@ The MIT License (MIT)
 - [@obache](https://github.com/obache/)
 - [@tsutsui](https://github.com/tsutsui/)
 - [@ttdoda](https://github.com/ttdoda/)
+- [@turenar](https://github.com/turenar/)
 - [@uobikiemukot](https://github.com/uobikiemukot/)
 - [@vrtsds](https://github.com/vrtsds/)
 - [@waywardmonkeys](https://github.com/waywardmonkeys/)
@@ -1052,8 +1119,8 @@ https://github.com/nothings/stb
 > distribute, and modify this file as you see fit.
 
 
-### stbiw-1.01
-This software includes `stb-image-write-v1.01` (stb_image_write.h),
+### stbiw-1.02
+This software includes `stb-image-write-v1.02` (stb_image_write.h),
 public domain PNG/BMP/TGA writer.
 
 https://github.com/nothings/stb
@@ -1233,6 +1300,16 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   sayaka-chan(Vala version) also includes SIXEL converter.
 
 
+- [rust-sixel](https://github.com/meh/rust-sixel)
+
+  A SIXEL encoder written in rust.
+
+
+- [ff2sixel](https://github.com/labdsf/ff2sixel)
+
+  An utility to convert farbfeld images to Sixels.
+
+
 - [xpr(x11-apps)](ftp://ftp.x.org/pub/unsupported/programs/xpr/)
 
   xpr(1) can convert a xwd(X window dump) format image into a sixel
@@ -1244,7 +1321,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 - [GNUPLOT](http://www.gnuplot.info/)
 
-  Recent version of GNUPLOT supports new terminal driver "sixel".
+  Recent version of GNUPLOT supports new terminal driver "sixel" / "sixelgd".
 
   ![GNUPLOT](https://raw.githubusercontent.com/saitoha/libsixel/data/data/gnuplot.png)
 
@@ -1323,7 +1400,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 - [mandel4](http://kildall.apana.org.au/~cjb/mandel5.c)
 
-  A mandelbrot program for (colour) sixel-supporting terminals, written by Chris Baird <cjb@brushtail.apana.org.au> 1987-2015
+  A mandelbrot program for (colour) sixel-supporting terminals, written by Chris Baird
 
   ![mandel4](https://raw.githubusercontent.com/saitoha/libsixel/data/data/mandel.png)
 
@@ -1339,4 +1416,15 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 
 - [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
+
+
+- [sixelplot](https://github.com/kktk-KO/sixelplot)
+
+  thin-wrapper for pysixel and matplotlib
+
+- [ame.sh](https://github.com/hamano/ame.sh)
+
+- [matplotlib-sixel](https://github.com/koppa/matplotlib-sixel)
+
+- [gr framework](http://gr-framework.org/)
 
