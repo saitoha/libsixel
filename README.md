@@ -66,9 +66,11 @@ Furthermore some information of SIXEL-ready SDL applications are reported.
 
 ### X11 on SIXEL terminals
 
-[XSIXEL](https://github.com/saitoha/xserver-sixel) is a kdrive server implementation for SIXEL terminals.
+[Xsixel](https://github.com/saitoha/xserver-sixel) is a kdrive server implementation for SIXEL terminals.
 
-  ![XSIXEL](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel.png)
+  ![Xsixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel.png)
+
+  ![Xsixel Blue Print](https://raw.githubusercontent.com/saitoha/libsixel/data/data/HowToBuildTerminalGUI.png)
 
 
 ### W3M integration
@@ -235,7 +237,7 @@ Now SIXEL feature is supported by the following terminals.
 
   Works on each of X, WIN32 GDI, framebuffer, Android, Cocoa version.
 
-- XTerm (compiled with `--enable-sixel` option)
+- XTerm (compiled with `--enable-sixel-graphics` option)
 
   [http://invisible-island.net/xterm/](http://invisible-island.net/xterm/)
 
@@ -271,6 +273,10 @@ $ xterm -xrm "XTerm*decTerminalID: vt340" -xrm "XTerm*numColorRegisters: 256"
 - Mintty (>= 2.6.0)
 
   [https://mintty.github.io/](https://mintty.github.io/)
+
+- cancer
+
+  [https://github.com/meh/cancer](https://github.com/meh/cancer)
 
 
 ## Install
@@ -1003,6 +1009,7 @@ The MIT License (MIT)
 - [@obache](https://github.com/obache/)
 - [@tsutsui](https://github.com/tsutsui/)
 - [@ttdoda](https://github.com/ttdoda/)
+- [@turenar](https://github.com/turenar/)
 - [@uobikiemukot](https://github.com/uobikiemukot/)
 - [@vrtsds](https://github.com/vrtsds/)
 - [@waywardmonkeys](https://github.com/waywardmonkeys/)
