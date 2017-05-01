@@ -59,3 +59,4 @@ converters/img2sixel
 converters/sixel2png
 converters/*.sixel
 converters/*.png
+tools/libsixel-config

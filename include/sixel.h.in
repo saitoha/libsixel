@@ -720,16 +720,19 @@ sixel_dither_set_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     unsigned char  /* in */ *palette);
 
+/* set the factor of complexion color correcting */
 SIXELAPI void
 sixel_dither_set_complexion_score(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     int            /* in */ score);    /* complexion score (>= 1) */
 
+/* set whether omitting palette difinition */
 SIXELAPI void
 sixel_dither_set_body_only(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     int            /* in */ bodyonly); /* 0: output palette section(default)
                                           1: do not output palette section */
+/* set whether optimize palette size */
 SIXELAPI void
 sixel_dither_set_optimize_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
@@ -1131,6 +1134,11 @@ sixel_decoder_decode(
 
 #endif  /* LIBSIXEL_SIXEL_H */
 
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
-/* vim: set expandtab ts=4 : */
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */

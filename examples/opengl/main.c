@@ -1,10 +1,40 @@
 /**
  * Example program for libsixel-OpenGL integration
+ * examples/opengl/main.c
  *
- * Hayaki Saito <saitoha@me.com>
+ * GLX pbuffer initialization part is originally written by
+ * Brian Paul for the "OpenGL and Window System Integration"
+ * course presented at SIGGRAPH '97.  Updated on 5 October 2002.
  *
- * I declared this program is in Public Domain (CC0 - "No Rights Reserved"),
- * This file is offered AS-IS, without any warranty.
+ * Updated on 31 January 2004 to use native GLX by
+ * Andrew P. Lentvorski, Jr. <bsder@allcaps.org>
+ *
+ * Hayaki Saito <saitoha@me.com> added OSMesa and OSX pbuffer
+ * initialization code.
+ *
+ * original source:
+ * https://cgit.freedesktop.org/mesa/demos/tree/src/xdemos/glxpbdemo.c
+ *
+ * original license:
+ *
+ * Copyright (C) 1999-2007  Brian Paul   All Rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * BRIAN PAUL BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
@@ -46,7 +76,6 @@
 #include <sys/select.h>
 #endif
 
-
 #ifndef M_PI
 # define M_PI 3.1415926535897932386
 #endif
@@ -66,12 +95,14 @@ static GLXContext context;
 #endif
 static volatile int signaled = 0;
 
-static void sighandler(int sig)
+static void
+sighandler(int sig)
 {
     signaled = sig;
 }
 
-static int setup(int width, int height)
+static int
+setup(int width, int height)
 {
 #if USE_OSMESA
     const size_t size = width * height * 4;
@@ -120,48 +151,23 @@ static int setup(int width, int height)
        fprintf(stderr, "CGLSetPBuffer failed, err %d\n", e);
        return e;
     }
-    return kCGLNoError;
+    return (int)kCGLNoError;
 #elif USE_GLX
-    /* Open the X display */
-    display = XOpenDisplay(NULL);
-    if (!display) {
-       printf("Error: couldn't open default X display.\n");
-       return (-1);
-    }
-
-    /* Get default screen */
-    int screen = DefaultScreen(display);
-
+    int result = (-1);
     char *glxversion;
- 
-    glxversion = (char *) glXGetClientString(display, GLX_VERSION);
-    if (!(strstr(glxversion, "1.3") || strstr(glxversion, "1.4"))) {
-       XCloseDisplay(display);
-       return (-1);
-    }
-
-    glxversion = (char *) glXQueryServerString(display, screen, GLX_VERSION);
-    if (!(strstr(glxversion, "1.3") || strstr(glxversion, "1.4"))) {
-       XCloseDisplay(display);
-       return (-1);
-    }
-
-    /* Create Pbuffer */
-    GLXFBConfig *fbConfigs;
+    int screen;
+    GLXFBConfig *fbConfigs = NULL;
     GLXFBConfig chosenFBConfig;
     GLXFBConfig fbconfig = 0;
     GLXPbuffer pbuffer = None;
-
     int nConfigs;
     int fbconfigid;
-
     int fbAttribs[] = {
        GLX_RENDER_TYPE, GLX_RGBA_BIT,
        GLX_DEPTH_SIZE, 1,
        GLX_DRAWABLE_TYPE, GLX_PIXMAP_BIT | GLX_PBUFFER_BIT,
        None
     };
-
     int pbAttribs[] = {
        GLX_PBUFFER_WIDTH, 0,
        GLX_PBUFFER_HEIGHT, 0,
@@ -170,58 +176,65 @@ static int setup(int width, int height)
        None
     };
 
+    /* Open the X display */
+    display = XOpenDisplay(NULL);
+    if (!display) {
+       fprintf(stderr, "Error: couldn't open default X display.\n");
+       goto end;
+    }
+
+    /* Get default screen */
+    screen = DefaultScreen(display);
+    glxversion = (char *) glXGetClientString(display, GLX_VERSION);
+    if (!(strstr(glxversion, "1.3") || strstr(glxversion, "1.4"))) {
+       goto end;
+    }
+    glxversion = (char *) glXQueryServerString(display, screen, GLX_VERSION);
+    if (!(strstr(glxversion, "1.3") || strstr(glxversion, "1.4"))) {
+       goto end;
+    }
+
+    /* Create Pbuffer */
     pbAttribs[1] = width;
     pbAttribs[3] = height;
 
     fbConfigs = glXChooseFBConfig(display, screen, fbAttribs, &nConfigs);
-
     if (0 == nConfigs || !fbConfigs) {
-       printf("Error: glxChooseFBConfig failed\n");
+       fprintf(stderr, "Error: glxChooseFBConfig failed\n");
        XFree(fbConfigs);
-       XCloseDisplay(display);
-       return (-1);
+       goto end;
     }
-
     chosenFBConfig = fbConfigs[0];
-
     glXGetFBConfigAttrib(display, chosenFBConfig, GLX_FBCONFIG_ID, &fbconfigid);
-    printf("Chose 0x%x as fbconfigid\n", fbconfigid);
 
     /* Create the pbuffer using first fbConfig in the list that works. */
     pbuffer = glXCreatePbuffer(display, chosenFBConfig, pbAttribs);
-
     if (pbuffer) {
        fbconfig = chosenFBConfig;
     }
-
     XFree(fbConfigs);
-
     if (pbuffer == None) {
-       printf("Error: couldn't create pbuffer\n");
-       XCloseDisplay(display);
-       return (-1);
+       fprintf(stderr, "Error: couldn't create pbuffer\n");
+       goto end;
     }
-
     /* Create GLX context */
     context = glXCreateNewContext(display, fbconfig, GLX_RGBA_TYPE, NULL, True);
-    if (context) {
-       if (!glXIsDirect(display, context)) {
-          printf("Warning: using indirect GLXContext\n");
-       }
+    if (!context) {
+       fprintf(stderr, "Error: Couldn't create GLXContext\n");
+       goto end;
     }
-    else {
-       printf("Error: Couldn't create GLXContext\n");
-       XCloseDisplay(display);
-       return (-1);
-    }
-
     /* Bind context to pbuffer */
     if (!glXMakeCurrent(display, pbuffer, context)) {
-       printf("Error: glXMakeCurrent failed\n");
-       XCloseDisplay(display);
-       return (-1);
+       fprintf(stderr, "Error: glXMakeCurrent failed\n");
+       goto end;
     }
-    return 0;
+    result = 0;
+end:
+    if (fbConfigs)
+       XFree(fbConfigs);
+    if (display)
+       XCloseDisplay(display);
+    return result;
 #else
     /* TODO: pbuffer initialization */
     return 0;
@@ -246,7 +259,6 @@ cleanup(void)
 #endif
     return 0;
 }
-
 
 static int
 draw_scene(void)
@@ -355,6 +367,7 @@ output_sixel(unsigned char *pixbuf, int width, int height,
     return status;
 }
 
+
 static int
 wait_stdin(int usec)
 {
@@ -412,7 +425,7 @@ scroll_on_demand(int pixelheight)
     if (wait_stdin(1000 * 1000) != (-1)) { /* wait 1 sec */
         if (scanf("\033[%d;%dR", &row, &col) == 2) {
             cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
-            scroll = cellheight + row - size.ws_row;
+            scroll = cellheight + row - size.ws_row + 1;
             printf("\033[%dS\033[%dA", scroll, scroll);
             printf("\0337");
         } else {
@@ -429,7 +442,9 @@ scroll_on_demand(int pixelheight)
 #endif  /* HAVE_SYS_IOCTL_H */
 }
 
-int main(int argc, char** argv)
+
+int
+main(int argc, char** argv)
 {
     SIXELSTATUS status;
     unsigned char *pixbuf;

@@ -328,7 +328,7 @@ sixel_decoder_decode(
 
 end:
     sixel_allocator_free(decoder->allocator, pixels);
-    sixel_decoder_ref(decoder);
+    sixel_decoder_unref(decoder);
 
     return status;
 }
@@ -605,6 +605,11 @@ error:
 }
 #endif  /* HAVE_TESTS */
 
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
-/* vim: set expandtab ts=4 : */
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */
