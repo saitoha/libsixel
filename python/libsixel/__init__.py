@@ -72,6 +72,8 @@ SIXEL_DIFFUSE_FS        = 0x3  # diffuse with Floyd-Steinberg method
 SIXEL_DIFFUSE_JAJUNI    = 0x4  # diffuse with Jarvis, Judice & Ninke method
 SIXEL_DIFFUSE_STUCKI    = 0x5  # diffuse with Stucki's method
 SIXEL_DIFFUSE_BURKES    = 0x6  # diffuse with Burkes' method
+SIXEL_DIFFUSE_A_DITHER  = 0x7  # diffuse with pippin's a_dither method
+SIXEL_DIFFUSE_X_DITHER  = 0x8  # diffuse with pippin's x_dither method
 
 # quality modes
 SIXEL_QUALITY_AUTO      = 0x0  # choose quality mode automatically
