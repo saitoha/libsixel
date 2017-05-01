@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* define 1 if GCC supports -Bsymbolic */
+#undef HAVE_BSYMBOLIC
+
 /* Define to 1 if you have the `calloc' function. */
 #undef HAVE_CALLOC
 
@@ -95,6 +98,9 @@
 
 /* define 1 if GCC supports -Wuninitialized */
 #undef HAVE_DIAGNOSTIC_UNINITIALIZED
+
+/* define 1 if GCC supports -Wunused-function */
+#undef HAVE_DIAGNOSTIC_UNUSED_FUNCTION
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H

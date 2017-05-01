@@ -117,7 +117,14 @@ stbi_free(void *p)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wdouble-promotion"
 #endif
+# if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused-function"
+#endif
 #include "stb_image.h"
+#if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
+# pragma GCC diagnostic pop
+#endif
 #if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
 # pragma GCC diagnostic pop
 #endif
@@ -864,7 +871,7 @@ load_with_builtin(
         }
         stbi_allocator = pchunk->allocator;
         stbi__start_mem(&s, pchunk->buffer, (int)pchunk->size);
-        frame->pixels = stbi__load_main(&s, &frame->width, &frame->height, &depth, 3);
+        frame->pixels = stbi__load_and_postprocess_8bit(&s, &frame->width, &frame->height, &depth, 3);
         if (!frame->pixels) {
             sixel_helper_set_additional_message(stbi_failure_reason());
             status = SIXEL_STBI_ERROR;

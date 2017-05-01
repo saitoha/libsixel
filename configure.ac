@@ -204,6 +204,9 @@ LS_CHECK_CFLAG([-Wdouble-promotion],
 LS_CHECK_CFLAG([-Wswitch-default],
                [AM_CFLAGS="$AM_CFLAGS -Wswitch-default"
                 AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT, 1, [define 1 if GCC supports -Wswitch-default])])
+LS_CHECK_CFLAG([-Wunused-function],
+               [AM_CFLAGS="$AM_CFLAGS -Wunused-function"
+                AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_FUNCTION, 1, [define 1 if GCC supports -Wunused-function])])
 LS_CHECK_CFLAG([-Bsymbolic],
                [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
                 AC_DEFINE(HAVE_BSYMBOLIC, 1, [define 1 if GCC supports -Bsymbolic])])
