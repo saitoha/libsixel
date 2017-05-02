@@ -1165,37 +1165,50 @@ dither_func_burkes(unsigned char *data, int width)
     data[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
 }
 
+
 static void
 dither_func_a_dither(unsigned char *data, int width, int x, int y)
 {
-  (void) width;
-  int c;
-  for (c = 0; c < 3; c ++)
-  {
-    float value, mask = (((x + c * 17) + y * 236) * 119) & 255;
-    mask = ((mask - 128) / 256.0f) ;
-    value = data[c] + mask;
-    if (value < 0) value = 0;
-    value = value > 255 ? 255 : value;
-    data[c] = value;
-  }
+    int c;
+    float value;
+    float mask;
+
+    (void) width; /* unused */
+
+    for (c = 0; c < 3; c ++) {
+        mask = (((x + c * 17) + y * 236) * 119) & 255;
+        mask = ((mask - 128) / 256.0f) ;
+        value = data[c] + mask;
+        if (value < 0) {
+            value = 0;
+        }
+        value = value > 255 ? 255 : value;
+        data[c] = value;
+    }
 }
+
 
 static void
 dither_func_x_dither(unsigned char *data, int width, int x, int y)
 {
-  (void) width;
-  int c;
-  for (c = 0; c < 3; c ++)
-  {
-    float value, mask = (((x + c * 17) ^ y * 236) * 1234) & 511;
-    mask = ((mask - 128) / 512.0f) ;
-    value = data[c] + mask;
-    if (value < 0) value = 0;
-    value = value > 255 ? 255 : value;
-    data[c] = value;
-  }
+    int c;
+    float value;
+    float mask;
+
+    (void) width;  /* unused */
+
+    for (c = 0; c < 3; c ++) {
+        mask = (((x + c * 17) ^ y * 236) * 1234) & 511;
+        mask = ((mask - 128) / 512.0f) ;
+        value = data[c] + mask;
+        if (value < 0) {
+            value = 0;
+        }
+        value = value > 255 ? 255 : value;
+        data[c] = value;
+    }
 }
+
 
 static void
 sixel_apply_15bpp_dither(
