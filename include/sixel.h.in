@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014-2017 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -89,8 +89,8 @@ typedef int SIXELSTATUS;
 #define SIXEL_DIFFUSE_JAJUNI      0x4  /* diffuse with Jarvis, Judice & Ninke method */
 #define SIXEL_DIFFUSE_STUCKI      0x5  /* diffuse with Stucki's method */
 #define SIXEL_DIFFUSE_BURKES      0x6  /* diffuse with Burkes' method */
-#define SIXEL_DIFFUSE_A_DITHER    0x7  /* diffuse with pippin's a_dither method */
-#define SIXEL_DIFFUSE_X_DITHER    0x8  /* diffuse with pippin's x_dither method */
+#define SIXEL_DIFFUSE_A_DITHER    0x7  /* positionally stable arithmetic dither */
+#define SIXEL_DIFFUSE_X_DITHER    0x8  /* positionally stable arithmetic xor based dither */
 
 /* quality modes */
 #define SIXEL_QUALITY_AUTO        0x0  /* choose quality mode automatically */
@@ -101,7 +101,7 @@ typedef int SIXELSTATUS;
 
 /* built-in dither */
 #define SIXEL_BUILTIN_MONO_DARK   0x0  /* monochrome terminal with dark background */
-#define SIXEL_BUILTIN_MONO_LIGHT  0x1  /* monochrome terminal with dark background */
+#define SIXEL_BUILTIN_MONO_LIGHT  0x1  /* monochrome terminal with light background */
 #define SIXEL_BUILTIN_XTERM16     0x2  /* xterm 16color */
 #define SIXEL_BUILTIN_XTERM256    0x3  /* xterm 256color */
 #define SIXEL_BUILTIN_VT340_MONO  0x4  /* vt340 monochrome */
@@ -212,6 +212,10 @@ typedef int SIXELSTATUS;
                                                     jajuni   -> Jarvis, Judice & Ninke
                                                     stucki   -> Stucki's method
                                                     burkes   -> Burkes' method
+                                                    a_dither -> positionally stable
+                                                                arithmetic dither
+                                                    a_dither -> positionally stable
+                                                                arithmetic xor based dither
                                                 */
 #define SIXEL_OPTFLAG_FIND_LARGEST      ('f')  /* -f FINDTYPE, --find-largest=FINDTYPE:
                                                   choose method for finding the largest

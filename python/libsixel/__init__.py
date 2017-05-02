@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2014-2016 Hayaki Saito
+# Copyright (c) 2014-2017 Hayaki Saito
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -72,8 +72,8 @@ SIXEL_DIFFUSE_FS        = 0x3  # diffuse with Floyd-Steinberg method
 SIXEL_DIFFUSE_JAJUNI    = 0x4  # diffuse with Jarvis, Judice & Ninke method
 SIXEL_DIFFUSE_STUCKI    = 0x5  # diffuse with Stucki's method
 SIXEL_DIFFUSE_BURKES    = 0x6  # diffuse with Burkes' method
-SIXEL_DIFFUSE_A_DITHER  = 0x7  # diffuse with pippin's a_dither method
-SIXEL_DIFFUSE_X_DITHER  = 0x8  # diffuse with pippin's x_dither method
+SIXEL_DIFFUSE_A_DITHER  = 0x7  # positionally stable arithmetic dither
+SIXEL_DIFFUSE_X_DITHER  = 0x8  # positionally stable arithmetic xor based dither
 
 # quality modes
 SIXEL_QUALITY_AUTO      = 0x0  # choose quality mode automatically
@@ -84,7 +84,7 @@ SIXEL_QUALITY_HIGHCOLOR = 0x4  # high color
 
 # built-in dither
 SIXEL_BUILTIN_MONO_DARK   = 0x0  # monochrome terminal with dark background
-SIXEL_BUILTIN_MONO_LIGHT  = 0x1  # monochrome terminal with dark background
+SIXEL_BUILTIN_MONO_LIGHT  = 0x1  # monochrome terminal with light background
 SIXEL_BUILTIN_XTERM16     = 0x2  # xterm 16color
 SIXEL_BUILTIN_XTERM256    = 0x3  # xterm 256color
 SIXEL_BUILTIN_VT340_MONO  = 0x4  # vt340 monochrome
@@ -192,6 +192,10 @@ SIXEL_OPTFLAG_DIFFUSION        = 'd'  # -d DIFFUSIONTYPE, --diffusion=DIFFUSIONT
                                       #            jajuni   -> Jarvis, Judice & Ninke
                                       #            stucki   -> Stucki's method
                                       #            burkes   -> Burkes' method
+                                      #            a_dither -> positionally stable
+                                      #                        arithmetic dither
+                                      #            x_dither -> positionally stable
+                                      #                        arithmetic xor based dither
 
 SIXEL_OPTFLAG_FIND_LARGEST     = 'f'  # -f FINDTYPE, --find-largest=FINDTYPE:
                                       #         choose method for finding the largest
