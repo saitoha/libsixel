@@ -14038,8 +14038,8 @@ if test x$with_gdk_pixbuf2 != xno; then
     if test x${PKG_CONFIG} != x; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GDK_PIXBUF" >&5
-$as_echo_n "checking for GDK_PIXBUF... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdk-pixbuf-2.0" >&5
+$as_echo_n "checking for gdk-pixbuf-2.0... " >&6; }
 
 if test -n "$GDK_PIXBUF_CFLAGS"; then
     pkg_cv_GDK_PIXBUF_CFLAGS="$GDK_PIXBUF_CFLAGS"
@@ -14079,7 +14079,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -14097,7 +14097,7 @@ fi
 
 	have_gdk_pixbuf2=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	have_gdk_pixbuf2=no
 else
@@ -14206,8 +14206,8 @@ fi
         if test x$have_gd != xyes -a ! -d "$with_gd"; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GD" >&5
-$as_echo_n "checking for GD... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for gdlib" >&5
+$as_echo_n "checking for gdlib... " >&6; }
 
 if test -n "$GD_CFLAGS"; then
     pkg_cv_GD_CFLAGS="$GD_CFLAGS"
@@ -14247,7 +14247,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -14265,7 +14265,7 @@ fi
 
 	have_gd=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	have_gd=no
 else
@@ -14991,8 +14991,8 @@ fi
             if test x${PKG_CONFIG} != x; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBCURL" >&5
-$as_echo_n "checking for LIBCURL... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libcurl" >&5
+$as_echo_n "checking for libcurl... " >&6; }
 
 if test -n "$LIBCURL_CFLAGS"; then
     pkg_cv_LIBCURL_CFLAGS="$LIBCURL_CFLAGS"
@@ -15032,7 +15032,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -15050,7 +15050,7 @@ fi
 
 	have_curl=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	have_curl=no
 else
@@ -15158,8 +15158,8 @@ fi
             if test x${PKG_CONFIG} != x; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBJPEG" >&5
-$as_echo_n "checking for LIBJPEG... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libjpeg" >&5
+$as_echo_n "checking for libjpeg... " >&6; }
 
 if test -n "$LIBJPEG_CFLAGS"; then
     pkg_cv_LIBJPEG_CFLAGS="$LIBJPEG_CFLAGS"
@@ -15199,7 +15199,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -15217,7 +15217,7 @@ fi
 
 	have_jpeg=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	have_jpeg=no
 else
@@ -15328,8 +15328,8 @@ fi
             if test x${PKG_CONFIG} != x; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBPNG" >&5
-$as_echo_n "checking for LIBPNG... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libpng" >&5
+$as_echo_n "checking for libpng... " >&6; }
 
 if test -n "$LIBPNG_CFLAGS"; then
     pkg_cv_LIBPNG_CFLAGS="$LIBPNG_CFLAGS"
@@ -15369,7 +15369,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -15387,7 +15387,7 @@ fi
 
 	have_png=no
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	have_png=no
 else

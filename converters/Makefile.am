@@ -98,8 +98,8 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel $(top_srcdir)/images/snake-grayscale.png
 	$(WINE) ./img2sixel -m $(top_srcdir)/images/map8-palette.png $(top_srcdir)/images/snake-grayscale.png
 	$(WINE) ./img2sixel -m $(top_srcdir)/images/snake-grayscale.png $(top_srcdir)/images/snake.png
-	$(WINE) ./img2sixel -c200x200+100+100 $(top_srcdir)/images/snake-grayscale.png
-	$(WINE) ./img2sixel -c200x200+100+100 -w400 $(top_srcdir)/images/snake-grayscale.png
+	$(WINE) ./img2sixel -c200x200+100+100 -dx_dither $(top_srcdir)/images/snake-grayscale.png
+	$(WINE) ./img2sixel -c200x200+100+100 -w400 -da_dither $(top_srcdir)/images/snake-grayscale.png
 	$(WINE) ./img2sixel -I $(top_srcdir)/images/snake-grayscale.png
 	$(WINE) ./img2sixel -I $(top_srcdir)/images/snake-grayscale.jpg
 	$(WINE) ./img2sixel -m $(top_srcdir)/images/map8.six -m $(top_srcdir)/images/map8.six $(top_srcdir)/images/snake.six
@@ -108,6 +108,8 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -bxterm16 $(top_srcdir)/images/snake.six
 	$(WINE) ./img2sixel -e $(top_srcdir)/images/snake.six
 	$(WINE) ./img2sixel -I $(top_srcdir)/images/snake.six
+	$(WINE) ./img2sixel -I -da_dither -w100 $(top_srcdir)/images/snake.six
+	$(WINE) ./img2sixel -I -dx_dither -h100 $(top_srcdir)/images/snake.six
 	$(WINE) ./img2sixel -I -c2000x100+40+20 -wauto -h200 -qhigh -dfs -rbilinear -trgb $(top_srcdir)/images/snake.ppm
 	$(WINE) ./img2sixel -I -v -w200 -hauto -c100x1000+40+20 -qlow -dnone -rhamming -thls $(top_srcdir)/images/snake.bmp
 	$(WINE) ./img2sixel -m $(top_srcdir)/images/map8.png -w200 -fauto -rwelsh $(top_srcdir)/images/egret.jpg
