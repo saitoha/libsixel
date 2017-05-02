@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016 Hayaki Saito
+ * Copyright (c) 2014-2017 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -814,7 +814,7 @@ sixel_encoder_output_without_macro(
     }
 
     status = sixel_encode(p, width, height, depth, dither, output);
-    if (status != 0) {
+    if (status != SIXEL_OK) {
         goto end;
     }
 
@@ -1351,6 +1351,10 @@ sixel_encoder_setopt(
             encoder->method_for_diffuse = SIXEL_DIFFUSE_STUCKI;
         } else if (strcmp(value, "burkes") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_BURKES;
+        } else if (strcmp(value, "a_dither") == 0) {
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_A_DITHER;
+        } else if (strcmp(value, "x_dither") == 0) {
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_X_DITHER;
         } else {
             sixel_helper_set_additional_message(
                 "specified diffusion method is not supported.");
@@ -2017,6 +2021,11 @@ error:
 #endif  /* HAVE_TESTS */
 
 
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
 /* vim: set expandtab ts=4 : */
 /* EOF */
