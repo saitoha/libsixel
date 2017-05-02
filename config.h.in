@@ -99,6 +99,9 @@
 /* define 1 if GCC supports -Wuninitialized */
 #undef HAVE_DIAGNOSTIC_UNINITIALIZED
 
+/* define 1 if GCC supports -Wunused-function */
+#undef HAVE_DIAGNOSTIC_UNUSED_FUNCTION
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
