@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.7.2], [saitoha@me.com])
+AC_INIT([sixel], [1.7.3], [saitoha@me.com])
 LS_LT_CURRENT=1
 LS_LT_REVISION=6
 LS_LT_AGE=0
@@ -204,6 +204,9 @@ LS_CHECK_CFLAG([-Wdouble-promotion],
 LS_CHECK_CFLAG([-Wswitch-default],
                [AM_CFLAGS="$AM_CFLAGS -Wswitch-default"
                 AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT, 1, [define 1 if GCC supports -Wswitch-default])])
+LS_CHECK_CFLAG([-Bsymbolic],
+               [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
+                AC_DEFINE(HAVE_BSYMBOLIC, 1, [define 1 if GCC supports -Bsymbolic])])
 AS_IF([test x$enable_debug = xyes],
       [LS_CHECK_CFLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
 AC_SUBST([AM_CFLAGS])
