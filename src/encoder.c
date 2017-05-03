@@ -1275,7 +1275,7 @@ sixel_encoder_setopt(
                 close(encoder->outfd);
             }
             encoder->outfd = open(value,
-                                  O_RDWR|O_CREAT,
+                                  O_RDWR|O_CREAT|O_TRUNC,
                                   S_IREAD|S_IWRITE);
         }
         break;
