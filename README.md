@@ -545,8 +545,8 @@ Options:
                              rgb:rrrr/gggg/bbbb
 -P, --penetrate            penetrate GNU Screen using DCS
                            pass-through sequence
--D, --pipe-mode            read source images from stdin
-                           continuously
+-D, --pipe-mode            [[deprecated]] read source images from
+                           stdin continuously
 -v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
@@ -564,6 +564,7 @@ SIXEL_BGCOLOR              specify background color.
                              rgb:rr/gg/bb
                              rgb:rrr/ggg/bbb
                              rgb:rrrr/gggg/bbbb
+
 ```
 
 Convert a jpeg image file into a sixel file
