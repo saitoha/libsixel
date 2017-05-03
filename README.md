@@ -420,7 +420,7 @@ Options:
                              burkes   -> Burkes' method
                              a_dither -> positionally stable
                                          arithmetic dither
-                             a_dither -> positionally stable
+                             x_dither -> positionally stable
                                          arithmetic xor based dither
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
