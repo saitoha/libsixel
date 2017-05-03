@@ -170,7 +170,7 @@ void show_help(void)
             "                             burkes   -> Burkes' method\n"
             "                             a_dither -> positionally stable\n"
             "                                         arithmetic dither\n"
-            "                             a_dither -> positionally stable\n"
+            "                             x_dither -> positionally stable\n"
             "                                         arithmetic xor based dither\n"
             "-f FINDTYPE, --find-largest=FINDTYPE\n"
             "                           choose method for finding the largest\n"
