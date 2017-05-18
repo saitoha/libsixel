@@ -259,10 +259,10 @@ endif
 	    ($(WINE) ./img2sixel -D < sixel.pipe&); \
 	    cat $(top_srcdir)/images/snake.jpg > sixel.pipe; \
 	    echo > sixel.pipe; \
-	    sleep 1; \
+	    sleep 2; \
 	    pkill img2sixel; \
 	    echo > sixel.pipe; \
-	    sleep 1; \
+	    sleep 2; \
 	    pkill img2sixel; \
 	    rm -f sixel.pipe; \
 	fi || true
