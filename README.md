@@ -1305,6 +1305,11 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   A SIXEL encoder written in rust.
 
 
+- [forth-sixel](https://hub.darcs.net/pointfree/forth-sixel)
+
+  A SIXEL encoder written in forth.
+
+
 - [ff2sixel](https://github.com/labdsf/ff2sixel)
 
   An utility to convert farbfeld images to Sixels.
