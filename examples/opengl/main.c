@@ -340,15 +340,19 @@ static SIXELSTATUS
 output_sixel(unsigned char *pixbuf, int width, int height,
              int ncolors, int pixelformat)
 {
-    sixel_output_t *context;
-    sixel_dither_t *dither;
+    sixel_output_t *context = NULL;
+    sixel_dither_t *dither = NULL;
     SIXELSTATUS status;
 
 #if USE_OSMESA
     pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
 #endif
-    context = sixel_output_create(sixel_write, stdout);
-    dither = sixel_dither_create(ncolors);
+    status = sixel_output_new(&context, sixel_write, stdout, NULL);
+    if (SIXEL_FAILED(status))
+        goto end;
+    status = sixel_dither_new(&dither, ncolors, NULL);
+    if (SIXEL_FAILED(status))
+        goto end;
     status = sixel_dither_initialize(dither, pixbuf,
                                      width, height,
                                      pixelformat,
@@ -356,11 +360,13 @@ output_sixel(unsigned char *pixbuf, int width, int height,
                                      SIXEL_REP_AUTO,
                                      SIXEL_QUALITY_AUTO);
     if (SIXEL_FAILED(status))
-        return status;
+        goto end;
     status = sixel_encode(pixbuf, width, height,
                           pixelformat, dither, context);
     if (SIXEL_FAILED(status))
-        return status;
+        goto end;
+
+end:
     sixel_output_unref(context);
     sixel_dither_unref(dither);
 
