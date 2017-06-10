@@ -74,6 +74,18 @@ Furthermore some information of SIXEL-ready SDL applications are reported.
 
   Used by [mruby-webcam](https://github.com/kjunichi/mruby-webcam).
 
+#### [libsixel-p6](https://github.com/timo/libsixel-p6)
+
+  A [perl6](https://perl6.org/) bindings for libsixel
+
+#### [sixel-sys](https://github.com/AdnoC/sixel-sys)
+
+  [Rust](https://www.rust-lang.org/) FFI bindings for libsixel
+
+#### [sixel-rs](https://github.com/AdnoC/sixel-rs)
+
+  A safe [Rust](https://www.rust-lang.org/) wrapper for libsixel
+
 
 ### W3M integration
 
