@@ -15,6 +15,8 @@
  * original source:
  * https://cgit.freedesktop.org/mesa/demos/tree/src/xdemos/glxpbdemo.c
  *
+ * This file is distributed under the same licence as original's one.
+ *
  * original license:
  *
  * Copyright (C) 1999-2007  Brian Paul   All Rights Reserved.
@@ -347,7 +349,7 @@ output_sixel(unsigned char *pixbuf, int width, int height,
 #if USE_OSMESA
     pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
 #endif
-    status = sixel_output_new(&context, sixel_write, stdout, NULL);
+    status = sixel_output_new(&output, sixel_write, stdout, NULL);
     if (SIXEL_FAILED(status))
         goto end;
     status = sixel_dither_new(&dither, ncolors, NULL);
@@ -362,12 +364,12 @@ output_sixel(unsigned char *pixbuf, int width, int height,
     if (SIXEL_FAILED(status))
         goto end;
     status = sixel_encode(pixbuf, width, height,
-                          pixelformat, dither, context);
+                          pixelformat, dither, output);
     if (SIXEL_FAILED(status))
         goto end;
 
 end:
-    sixel_output_unref(context);
+    sixel_output_unref(output);
     sixel_dither_unref(dither);
 
     return status;
