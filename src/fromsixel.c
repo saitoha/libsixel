@@ -153,7 +153,7 @@ hls_to_rgb(int hue, int lum, int sat)
     }
     c = (1.0 - c2) * sv;
     hpi = (int) (hv * 6.0);
-    x = (hpi & 1) ? c : 0.0;
+    x = c * (((hpi & 1) << 1) - 1) * ((hpi + (hpi & 1)) - hs / 60.0);
     m = lv - 0.5 * c;
 
     switch (hpi) {
