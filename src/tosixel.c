@@ -441,9 +441,9 @@ output_hls_palette_definition(
             h = s = 0;
         } else {
             if (l < 50) {
-                s = ((max - min) * 100 + 127) / (max + min);
+                s = ((max - min) * 100) / (max + min);
             } else {
-                s = ((max - min) * 100 + 127) / ((255 - max) + (255 - min));
+                s = ((max - min) * 100) / ((255 - max) + (255 - min));
             }
             if (r == max) {
                 h = 120 + (g - b) * 60 / (max - min);
