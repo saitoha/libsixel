@@ -1250,8 +1250,8 @@ sixel_quant_apply_palette(
     component_t offset;
     int color_index;
     unsigned short *indextable;
-    unsigned char new_palette[256 * 4];
-    unsigned short migration_map[256];
+    unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
+    unsigned short migration_map[SIXEL_PALETTE_MAX];
     void (*f_diffuse)(unsigned char *data, int width, int height,
                       int x, int y, int depth, int offset);
     int (*f_lookup)(unsigned char const * const pixel,
@@ -1330,7 +1330,7 @@ sixel_quant_apply_palette(
     if (foptimize_palette) {
         *ncolors = 0;
 
-        memset(new_palette, 0x00, sizeof(256 * depth));
+        memset(new_palette, 0x00, sizeof(SIXEL_PALETTE_MAX * depth));
         memset(migration_map, 0x00, sizeof(migration_map));
 
         for (y = 0; y < height; ++y) {

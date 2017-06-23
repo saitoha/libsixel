@@ -446,7 +446,7 @@ sixel_prepare_specified_palette(
     status = sixel_helper_load_image_file(encoder->mapfile,
                                           1,   /* fstatic */
                                           1,   /* fuse_palette */
-                                          256, /* reqcolors */
+                                          SIXEL_PALETTE_MAX, /* reqcolors */
                                           encoder->bgcolor,
                                           SIXEL_LOOP_DISABLE,
                                           load_image_callback_for_palette,
@@ -1160,7 +1160,7 @@ sixel_encoder_new(
     env_default_ncolors = getenv("SIXEL_COLORS");
     if (env_default_ncolors) {
         ncolors = atoi(env_default_ncolors); /* may overflow */
-        if (ncolors > 1 && ncolors <= 256) {
+        if (ncolors > 1 && ncolors <= SIXEL_PALETTE_MAX) {
             (*ppencoder)->reqcolors = ncolors;
         }
     }

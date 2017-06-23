@@ -1221,8 +1221,8 @@ sixel_encode_highcolor(
     unsigned char *marks;
     unsigned char *rgbhit;
     unsigned char *rgb2pal;
-    unsigned char palhitcount[256];
-    unsigned char palstate[256];
+    unsigned char palhitcount[SIXEL_PALETTE_MAX];
+    unsigned char palstate[SIXEL_PALETTE_MAX];
     int output_count;
     int const maxcolors = 1 << 15;
     int whole_size = width * height  /* for paletted_pixels */
