@@ -47,7 +47,7 @@ sixel_quant_make_palette(
 /* apply color palette into specified pixel buffers */
 SIXELSTATUS
 sixel_quant_apply_palette(
-    unsigned char       /* out */ *result,
+    sixel_index_t       /* out */ *result,
     unsigned char       /* in */  *data,
     int                 /* in */  width,
     int                 /* in */  height,

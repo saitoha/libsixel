@@ -710,7 +710,7 @@ sixel_dither_set_transparent(
 
 
 /* set transparent */
-SIXELAPI unsigned char *
+SIXELAPI sixel_index_t *
 sixel_dither_apply_palette(
     sixel_dither_t  /* in */ *dither,
     unsigned char   /* in */ *pixels,
@@ -719,7 +719,7 @@ sixel_dither_apply_palette(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     size_t bufsize;
-    unsigned char *dest = NULL;
+    sixel_index_t *dest = NULL;
     int ncolors;
     unsigned char *normalized_pixels = NULL;
     unsigned char *input_pixels;
@@ -733,8 +733,8 @@ sixel_dither_apply_palette(
 
     sixel_dither_ref(dither);
 
-    bufsize = (size_t)(width * height) * sizeof(unsigned char);
-    dest = (unsigned char *)sixel_allocator_malloc(dither->allocator, bufsize);
+    bufsize = (size_t)(width * height) * sizeof(sixel_index_t);
+    dest = (sixel_index_t *)sixel_allocator_malloc(dither->allocator, bufsize);
     if (dest == NULL) {
         sixel_helper_set_additional_message(
             "sixel_dither_new: sixel_allocator_malloc() failed.");
