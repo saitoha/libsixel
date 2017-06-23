@@ -736,7 +736,8 @@ sixel_encoder_output_without_macro(
     int dulation = 0;
     static unsigned char *p;
     int depth;
-    char message[256];
+    enum { message_buffer_size = 256 };
+    char message[message_buffer_size];
     int nwrite;
 #if HAVE_USLEEP
     int delay;
@@ -834,7 +835,8 @@ sixel_encoder_output_with_macro(
 {
     SIXELSTATUS status = SIXEL_OK;
     int dulation = 0;
-    char buffer[256];
+    enum { message_buffer_size = 256 };
+    char buffer[message_buffer_size];
     int nwrite;
 #if HAVE_USLEEP
     useconds_t lag = 0;
