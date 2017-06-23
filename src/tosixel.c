@@ -502,7 +502,7 @@ sixel_encode_body(
     int mx;
     int len;
     int pix;
-    unsigned char *map = NULL;
+    char *map = NULL;
     sixel_node_t *np, *tp, top;
     int fillable;
 
@@ -513,9 +513,9 @@ sixel_encode_body(
     len = ncolors * width;
     output->active_palette = (-1);
 
-    map = (unsigned char *)sixel_allocator_calloc(allocator,
-                                                  (size_t)len,
-                                                  sizeof(unsigned char));
+    map = (char *)sixel_allocator_calloc(allocator,
+                                         (size_t)len,
+                                         sizeof(char));
     if (map == NULL) {
         sixel_helper_set_additional_message(
             "sixel_encode_body: sixel_allocator_calloc() failed.");

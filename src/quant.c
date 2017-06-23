@@ -138,7 +138,8 @@ alloctupletable(
     sixel_allocator_t   /* in */  *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    char message[256];
+    enum { message_buffer_size = 256 };
+    char message[message_buffer_size];
     int nwrite;
     unsigned int mainTableSize;
     unsigned int tupleIntSize;
