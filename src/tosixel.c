@@ -64,7 +64,7 @@ sixel_penetrate(
                         - dcs_start_size - dcs_end_size;
 
     for (pos = 0; pos < nwrite; pos += splitsize) {
-        output->fn_write((char *)dcs_start, dcs_end_size, output->priv);
+        output->fn_write((char *)dcs_start, dcs_start_size, output->priv);
         output->fn_write(((char *)output->buffer) + pos,
                           nwrite - pos < splitsize ? nwrite - pos: splitsize,
                           output->priv);
