@@ -13305,6 +13305,34 @@ fi
 
 
 
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CC supports -std=c99" >&5
+$as_echo_n "checking if $CC supports -std=c99... " >&6; }
+   saved_cflags="$CFLAGS"
+   CFLAGS="-std=c99 -Werror"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+                      AM_CFLAGS="$AM_CFLAGS -std=c99"
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+                      :
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+   CFLAGS="$saved_cflags"
+
+
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wall" >&5
 $as_echo_n "checking if $CC supports -Wall... " >&6; }
    saved_cflags="$CFLAGS"
@@ -15521,7 +15549,7 @@ if ${am_cv_pathless_PYTHON+:} false; then :
   $as_echo_n "(cached) " >&6
 else
 
-	for am_cv_pathless_PYTHON in python python2 python3 python3.3 python3.2 python3.1 python3.0 python2.7  python2.6 python2.5 python2.4 python2.3 python2.2 python2.1 python2.0 none; do
+	for am_cv_pathless_PYTHON in python python2 python3 python3.5 python3.4 python3.3 python3.2 python3.1 python3.0 python2.7  python2.6 python2.5 python2.4 python2.3 python2.2 python2.1 python2.0 none; do
 	  test "$am_cv_pathless_PYTHON" = none && break
 	  prog="import sys
 # split strings by '.' and convert to numeric.  Append some zeros
