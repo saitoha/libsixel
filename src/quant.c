@@ -22,7 +22,7 @@
  *
  * ******************************************************************************
  *
- * Copyright (c) 2014-2017 Hayaki Saito
+ * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -1279,26 +1279,34 @@ sixel_quant_apply_palette(
         switch (methodForDiffuse) {
         case SIXEL_DIFFUSE_NONE:
             f_diffuse = diffuse_none;
+            f_mask = mask_a;
             break;
         case SIXEL_DIFFUSE_ATKINSON:
             f_diffuse = diffuse_atkinson;
+            f_mask = mask_a;
             break;
         case SIXEL_DIFFUSE_FS:
             f_diffuse = diffuse_fs;
+            f_mask = mask_a;
             break;
         case SIXEL_DIFFUSE_JAJUNI:
             f_diffuse = diffuse_jajuni;
+            f_mask = mask_a;
             break;
         case SIXEL_DIFFUSE_STUCKI:
             f_diffuse = diffuse_stucki;
+            f_mask = mask_a;
             break;
         case SIXEL_DIFFUSE_BURKES:
             f_diffuse = diffuse_burkes;
+            f_mask = mask_a;
             break;
         case SIXEL_DIFFUSE_A_DITHER:
+            f_diffuse = diffuse_none;
             f_mask = mask_a;
             break;
         case SIXEL_DIFFUSE_X_DITHER:
+            f_diffuse = diffuse_none;
             f_mask = mask_x;
             break;
         default:
@@ -1306,6 +1314,7 @@ sixel_quant_apply_palette(
                                 " methodForDiffuse: %d\n",
                         methodForDiffuse);
             f_diffuse = diffuse_none;
+            f_mask = mask_a;
             break;
         }
     }
