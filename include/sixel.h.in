@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014,2015 Hayaki Saito
+ * Copyright (c) 2014,2015-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -364,7 +364,7 @@ typedef int SIXELSTATUS;
 /* output character size */
 enum characterSize {
     CSIZE_7BIT = 0,  /* 7bit character */
-    CSIZE_8BIT = 1,  /* 8bit character */
+    CSIZE_8BIT = 1   /* 8bit character */
 };
 
 /* method for finding the largest dimension for splitting,
@@ -403,7 +403,7 @@ enum qualityMode {
     QUALITY_HIGH      = 1, /* high quality palette construction */
     QUALITY_LOW       = 2, /* low quality palette construction */
     QUALITY_FULL      = 3, /* full quality palette construction */
-    QUALITY_HIGHCOLOR = 4, /* high color */
+    QUALITY_HIGHCOLOR = 4  /* high color */
 };
 
 /* built-in dither */
@@ -413,14 +413,14 @@ enum builtinDither {
     BUILTIN_XTERM16     = 2, /* xterm 16color */
     BUILTIN_XTERM256    = 3, /* xterm 256color */
     BUILTIN_VT340_MONO  = 4, /* vt340 monochrome */
-    BUILTIN_VT340_COLOR = 5, /* vt340 color */
+    BUILTIN_VT340_COLOR = 5  /* vt340 color */
 };
 
 /* offset value of enum pixelFormat */
 enum formatType {
     FORMATTYPE_COLOR     = 0,
     FORMATTYPE_GRAYSCALE = 1 << 6,
-    FORMATTYPE_PALETTE   = 1 << 7,
+    FORMATTYPE_PALETTE   = 1 << 7
 };
 
 /* pixelformat type of input image
@@ -443,21 +443,21 @@ enum pixelFormat {
     PIXELFORMAT_PAL1     = FORMATTYPE_PALETTE   | 0x00, /* 1bpp palette */
     PIXELFORMAT_PAL2     = FORMATTYPE_PALETTE   | 0x01, /* 2bpp palette */
     PIXELFORMAT_PAL4     = FORMATTYPE_PALETTE   | 0x02, /* 4bpp palette */
-    PIXELFORMAT_PAL8     = FORMATTYPE_PALETTE   | 0x03, /* 8bpp palette */
+    PIXELFORMAT_PAL8     = FORMATTYPE_PALETTE   | 0x03  /* 8bpp palette */
 };
 
 /* palette type */
 enum paletteType {
     PALETTETYPE_AUTO = 0,     /* choose palette type automatically */
     PALETTETYPE_HLS  = 1,     /* HLS colorspace */
-    PALETTETYPE_RGB  = 2,     /* RGB colorspace */
+    PALETTETYPE_RGB  = 2      /* RGB colorspace */
 };
 
 /* policies of SIXEL encoding */
 enum encodePolicy {
     ENCODEPOLICY_AUTO = 0,    /* choose encoding policy automatically */
     ENCODEPOLICY_FAST = 1,    /* encode as fast as possible */
-    ENCODEPOLICY_SIZE = 2,    /* encode to as small sixel sequence as possible */
+    ENCODEPOLICY_SIZE = 2     /* encode to as small sixel sequence as possible */
 };
 
 /* method for re-sampling */
@@ -471,7 +471,7 @@ enum methodForResampling {
     RES_BICUBIC  = 6,  /* Use bicubic filter */
     RES_LANCZOS2 = 7,  /* Use lanczos-2 filter */
     RES_LANCZOS3 = 8,  /* Use lanczos-3 filter */
-    RES_LANCZOS4 = 9,  /* Use lanczos-4 filter */
+    RES_LANCZOS4 = 9   /* Use lanczos-4 filter */
 };
 #endif
 
@@ -870,14 +870,14 @@ enum imageFormat {
     FORMAT_PNM   =  8, /* read only */
     FORMAT_GD2   =  9, /* read only with --with-gd configure option */
     FORMAT_PSD   = 10, /* read only */
-    FORMAT_HDR   = 11, /* read only */
+    FORMAT_HDR   = 11  /* read only */
 };
 
 /* loop mode */
 enum loopControl {
     LOOP_AUTO    = 0,  /* honer the setting of GIF header */
     LOOP_FORCE   = 1,  /* always enable loop */
-    LOOP_DISABLE = 2,  /* always disable loop */
+    LOOP_DISABLE = 2   /* always disable loop */
 };
 #endif
 
