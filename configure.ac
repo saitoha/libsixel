@@ -182,6 +182,7 @@ AC_DEFUN([LS_CHECK_CFLAG], [
    CFLAGS="$saved_cflags"
 ])
 
+LS_CHECK_CFLAG([-std=c99], [AM_CFLAGS="$AM_CFLAGS -std=c99"], [])
 LS_CHECK_CFLAG([-Wall],[AM_CFLAGS="$AM_CFLAGS -Wall"], [])
 LS_CHECK_CFLAG([-Wextra],[AM_CFLAGS="$AM_CFLAGS -Wextra"], [])
 LS_CHECK_CFLAG([-Wpedantic],[AM_CFLAGS="$AM_CFLAGS -Wpedantic"], [])
