@@ -53,6 +53,10 @@
 # include <curl/curl.h>
 #endif
 
+#if HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#endif
+
 #if !defined(HAVE_MEMCPY)
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
 #endif
