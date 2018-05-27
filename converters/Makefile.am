@@ -279,7 +279,7 @@ endif
 	diff options1.txt options2.txt
 	diff options2.txt options3.txt
 	diff options3.txt options4.txt
-endif
+
 	@echo '[succeeded]'
 
 winetest: all
