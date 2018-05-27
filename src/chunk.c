@@ -53,6 +53,10 @@
 # include <curl/curl.h>
 #endif
 
+#if HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#endif
+
 #if !defined(HAVE_MEMCPY)
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
 #endif
@@ -225,7 +229,7 @@ open_binary_file(
         sixel_helper_set_additional_message("stat() failed.");
         goto end;
     }
-    if ((sb.st_mode & S_IFMT) == S_IFDIR) {
+    if (S_ISDIR(sb.st_mode)) {
         status = SIXEL_BAD_INPUT;
         sixel_helper_set_additional_message("specified path is directory.");
         goto end;

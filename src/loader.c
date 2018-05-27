@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016 Hayaki Saito
+ * Copyright (c) 2014-2017 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -117,7 +117,14 @@ stbi_free(void *p)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wdouble-promotion"
 #endif
+# if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused-function"
+#endif
 #include "stb_image.h"
+#if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
+# pragma GCC diagnostic pop
+#endif
 #if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
 # pragma GCC diagnostic pop
 #endif
@@ -632,6 +639,7 @@ end:
 }
 
 
+/* detect whether given chunk is sixel stream */
 static int
 chunk_is_sixel(sixel_chunk_t const *chunk)
 {
@@ -668,6 +676,7 @@ chunk_is_sixel(sixel_chunk_t const *chunk)
 }
 
 
+/* detect whether given chunk is PNM stream */
 static int
 chunk_is_pnm(sixel_chunk_t const *chunk)
 {
@@ -684,6 +693,7 @@ chunk_is_pnm(sixel_chunk_t const *chunk)
 
 
 #if HAVE_LIBPNG
+/* detect whether given chunk is PNG stream */
 static int
 chunk_is_png(sixel_chunk_t const *chunk)
 {
@@ -698,6 +708,7 @@ chunk_is_png(sixel_chunk_t const *chunk)
 #endif  /* HAVE_LIBPNG */
 
 
+/* detect whether given chunk is GIF stream */
 static int
 chunk_is_gif(sixel_chunk_t const *chunk)
 {
@@ -717,6 +728,7 @@ chunk_is_gif(sixel_chunk_t const *chunk)
 
 
 #if HAVE_JPEG
+/* detect whether given chunk is JPEG stream */
 static int
 chunk_is_jpeg(sixel_chunk_t const *chunk)
 {
@@ -859,7 +871,7 @@ load_with_builtin(
         }
         stbi_allocator = pchunk->allocator;
         stbi__start_mem(&s, pchunk->buffer, (int)pchunk->size);
-        frame->pixels = stbi__load_main(&s, &frame->width, &frame->height, &depth, 3);
+        frame->pixels = stbi__load_and_postprocess_8bit(&s, &frame->width, &frame->height, &depth, 3);
         if (!frame->pixels) {
             sixel_helper_set_additional_message(stbi_failure_reason());
             status = SIXEL_STBI_ERROR;

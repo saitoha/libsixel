@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016 Hayaki Saito
+ * Copyright (c) 2014-2017 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -56,7 +56,40 @@ static
 void show_version(void)
 {
     printf("img2sixel " PACKAGE_VERSION "\n"
-           "Copyright (C) 2014,2015 Hayaki Saito <saitoha@me.com>.\n"
+           "\n"
+           "configured with:\n"
+           "  libcurl: "
+#ifdef HAVE_LIBCURL
+           "yes\n"
+#else
+           "no\n"
+#endif
+           "  libpng: "
+#ifdef HAVE_LIBPNG
+           "yes\n"
+#else
+           "no\n"
+#endif
+           "  libjpeg: "
+#ifdef HAVE_JPEG
+           "yes\n"
+#else
+           "no\n"
+#endif
+           "  gdk-pixbuf2: "
+#ifdef HAVE_GDK_PIXBUF2
+           "yes\n"
+#else
+           "no\n"
+#endif
+           "  GD: "
+#ifdef HAVE_GD
+           "yes\n"
+#else
+           "no\n"
+#endif
+           "\n"
+           "Copyright (C) 2014-2017 Hayaki Saito <saitoha@me.com>.\n"
            "\n"
            "Permission is hereby granted, free of charge, to any person obtaining a copy of\n"
            "this software and associated documentation files (the \"Software\"), to deal in\n"
@@ -135,6 +168,10 @@ void show_help(void)
             "                             jajuni   -> Jarvis, Judice & Ninke\n"
             "                             stucki   -> Stucki's method\n"
             "                             burkes   -> Burkes' method\n"
+            "                             a_dither -> positionally stable\n"
+            "                                         arithmetic dither\n"
+            "                             x_dither -> positionally stable\n"
+            "                                         arithmetic xor based dither\n"
             "-f FINDTYPE, --find-largest=FINDTYPE\n"
             "                           choose method for finding the largest\n"
             "                           dimension of median cut boxes for\n"
@@ -305,11 +342,11 @@ main(int argc, char *argv[])
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int n;
+    sixel_encoder_t *encoder = NULL;
 #if HAVE_GETOPT_LONG
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    sixel_encoder_t *encoder = NULL;
     char const *optstring = "o:78Rp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:B:C:DVH";
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
@@ -363,7 +400,8 @@ main(int argc, char *argv[])
 #else
         n = getopt(argc, argv, optstring);
 #endif  /* HAVE_GETOPT_LONG */
-        if (n == -1) {
+
+        if (n == (-1)) {
             break;
         }
 #if HAVE_GETOPT_LONG
@@ -371,6 +409,7 @@ main(int argc, char *argv[])
             n = long_opt;
         }
 #endif  /* HAVE_GETOPT_LONG */
+
         switch (n) {
         case 'V':
             show_version();
