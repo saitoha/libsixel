@@ -254,6 +254,7 @@ if WANT_SIXEL2PNG
 	$(WINE) ./sixel2png - - < snake3.sixel > snake3.png
 	$(WINE) ./sixel2png -i snake.sixel -o snake4.png
 endif
+if 0
 	@echo '[test12] continuous pipe mode'
 	rm -f sixel.pipe
 	if test "$(WINE)" = "" && which mkfifo && which pkill; then \
@@ -268,6 +269,7 @@ endif
 	    pkill img2sixel; \
 	    rm -f sixel.pipe; \
 	fi || true
+endif
 
 	@echo '[test13] documentation'
 	$(WINE) ./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options1.txt

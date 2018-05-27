@@ -304,7 +304,7 @@ void show_help(void)
             "-P, --penetrate            penetrate GNU Screen using DCS\n"
             "                           pass-through sequence\n"
             "-D, --pipe-mode            read source images from stdin\n"
-            "                           continuously\n"
+            "                           continuously (deprecated)\n"
             "-v, --verbose              show debugging info\n"
             "-V, --version              show version and license info\n"
             "-H, --help                 show this help\n"
