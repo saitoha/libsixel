@@ -13304,7 +13304,7 @@ fi
 
 
 
-CFLAGS="$CFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=200809L"
+CPPFLAGS="$CPPFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=200809L"
 
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CC supports -std=c99" >&5
 $as_echo_n "checking if $CC supports -std=c99... " >&6; }
