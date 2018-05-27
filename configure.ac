@@ -182,7 +182,7 @@ AC_DEFUN([LS_CHECK_CFLAG], [
    CFLAGS="$saved_cflags"
 ])
 
-CPPFLAGS="$CPPFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=200809L"
+CPPFLAGS="$CPPFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L"
 LS_CHECK_CFLAG([-std=c99], [CFLAGS="$CFLAGS -std=c99"], [])
 LS_CHECK_CFLAG([-Wall],[AM_CFLAGS="$AM_CFLAGS -Wall"], [])
 LS_CHECK_CFLAG([-Wextra],[AM_CFLAGS="$AM_CFLAGS -Wextra"], [])
@@ -271,7 +271,7 @@ AC_CHECK_FUNCS([memcpy \
                 setmode \
                 _setmode \
                 signal \
-                usleep \
+                nanosleep \
                 strdup \
                 strtoul \
                 calloc \
