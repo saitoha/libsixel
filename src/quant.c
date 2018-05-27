@@ -1256,12 +1256,13 @@ sixel_quant_apply_palette(
     sixel_allocator_t /* in */  *allocator)
 {
     typedef int component_t;
+    enum { max_depth = 4 };
     SIXELSTATUS status = SIXEL_FALSE;
     int pos, n, x, y, sum1, sum2;
     component_t offset;
     int color_index;
     unsigned short *indextable;
-    unsigned char new_palette[256 * 4];
+    unsigned char new_palette[256 * max_depth];
     unsigned short migration_map[256];
     float (*f_mask) (int x, int y, int c) = NULL;
     void (*f_diffuse)(unsigned char *data, int width, int height,
@@ -1363,7 +1364,7 @@ sixel_quant_apply_palette(
         if (f_mask) {
             for (y = 0; y < height; ++y) {
                 for (x = 0; x < width; ++x) {
-                    unsigned char copy[depth];
+                    unsigned char copy[max_depth];
                     int d;
                     int val;
 
@@ -1415,7 +1416,7 @@ sixel_quant_apply_palette(
         if (f_mask) {
             for (y = 0; y < height; ++y) {
                 for (x = 0; x < width; ++x) {
-                    unsigned char copy[depth];
+                    unsigned char copy[max_depth];
                     int d;
                     int val;
 

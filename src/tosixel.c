@@ -43,8 +43,8 @@
 #define SCREEN_PACKET_SIZE   256
 
 enum {
-    PALETTE_HIT = 1,
-    PALETTE_CHANGE = 2,
+    PALETTE_HIT    = 1,
+    PALETTE_CHANGE = 2
 };
 
 /* implementation */

@@ -1276,7 +1276,7 @@ sixel_encoder_setopt(
             }
             encoder->outfd = open(value,
                                   O_RDWR|O_CREAT|O_TRUNC,
-                                  S_IREAD|S_IWRITE);
+                                  S_IRUSR|S_IWUSR);
         }
         break;
     case SIXEL_OPTFLAG_7BIT_MODE:  /* 7 */

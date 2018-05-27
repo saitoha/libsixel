@@ -103,7 +103,7 @@ typedef enum parse_state {
     PS_DECSIXEL   = 3,  /* DECSIXEL body part ", $, -, ? ... ~ */
     PS_DECGRA     = 4,  /* DECGRA Set Raster Attributes " Pan; Pad; Ph; Pv */
     PS_DECGRI     = 5,  /* DECGRI Graphics Repeat Introducer ! Pn Ch */
-    PS_DECGCI     = 6,  /* DECGCI Graphics Color Introducer # Pc; Pu; Px; Py; Pz */
+    PS_DECGCI     = 6   /* DECGCI Graphics Color Introducer # Pc; Pu; Px; Py; Pz */
 } parse_state_t;
 
 typedef struct parser_context {
