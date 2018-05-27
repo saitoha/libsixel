@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.7.3], [saitoha@me.com])
+AC_INIT([sixel], [1.8.0], [saitoha@me.com])
 LS_LT_CURRENT=1
 LS_LT_REVISION=6
 LS_LT_AGE=0
@@ -182,9 +182,10 @@ AC_DEFUN([LS_CHECK_CFLAG], [
    CFLAGS="$saved_cflags"
 ])
 
+CPPFLAGS="$CPPFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L"
+LS_CHECK_CFLAG([-std=c99], [CFLAGS="$CFLAGS -std=c99"], [])
 LS_CHECK_CFLAG([-Wall],[AM_CFLAGS="$AM_CFLAGS -Wall"], [])
 LS_CHECK_CFLAG([-Wextra],[AM_CFLAGS="$AM_CFLAGS -Wextra"], [])
-LS_CHECK_CFLAG([-Wpedantic],[AM_CFLAGS="$AM_CFLAGS -Wpedantic"], [])
 LS_CHECK_CFLAG([-Wformat=2],[AM_CFLAGS="$AM_CFLAGS -Wformat=2"], [])
 LS_CHECK_CFLAG([-Wsign-conversion],
                [AM_CFLAGS="$AM_CFLAGS -Wsign-conversion"]
@@ -204,6 +205,9 @@ LS_CHECK_CFLAG([-Wdouble-promotion],
 LS_CHECK_CFLAG([-Wswitch-default],
                [AM_CFLAGS="$AM_CFLAGS -Wswitch-default"
                 AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT, 1, [define 1 if GCC supports -Wswitch-default])])
+LS_CHECK_CFLAG([-Wunused-function],
+               [AM_CFLAGS="$AM_CFLAGS -Wunused-function"
+                AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_FUNCTION, 1, [define 1 if GCC supports -Wunused-function])])
 LS_CHECK_CFLAG([-Bsymbolic],
                [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
                 AC_DEFINE(HAVE_BSYMBOLIC, 1, [define 1 if GCC supports -Bsymbolic])])
@@ -267,7 +271,7 @@ AC_CHECK_FUNCS([memcpy \
                 setmode \
                 _setmode \
                 signal \
-                usleep \
+                nanosleep \
                 strdup \
                 strtoul \
                 calloc \

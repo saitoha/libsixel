@@ -353,16 +353,12 @@ gif_process_raster(
                     goto end;
                 }
                 if (oldcode >= 0) {
-                    p = &g->codes[avail++];
-                    if (avail > 4096) {
-                        sixel_helper_set_additional_message(
-                            "corrupt GIF(reason: too many codes).");
-                        status = SIXEL_RUNTIME_ERROR;
-                        goto end;
+                    if (avail < 4096) {
+                        p = &g->codes[avail++];
+                        p->prefix = (signed short) oldcode;
+                        p->first = g->codes[oldcode].first;
+                        p->suffix = (code == avail) ? p->first : g->codes[code].first;
                     }
-                    p->prefix = (signed short) oldcode;
-                    p->first = g->codes[oldcode].first;
-                    p->suffix = (code == avail) ? p->first : g->codes[code].first;
                 } else if (code == avail) {
                     sixel_helper_set_additional_message(
                         "corrupt GIF (reason: illegal code in raster).");

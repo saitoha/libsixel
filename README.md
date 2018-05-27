@@ -418,6 +418,10 @@ Options:
                              jajuni   -> Jarvis, Judice & Ninke
                              stucki   -> Stucki's method
                              burkes   -> Burkes' method
+                             a_dither -> positionally stable
+                                         arithmetic dither
+                             x_dither -> positionally stable
+                                         arithmetic xor based dither
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
                            dimension of median cut boxes for
@@ -546,7 +550,7 @@ Options:
 -P, --penetrate            penetrate GNU Screen using DCS
                            pass-through sequence
 -D, --pipe-mode            read source images from stdin
-                           continuously
+                           continuously (deprecated)
 -v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
@@ -1041,6 +1045,9 @@ The MIT License (MIT)
 - [@vrtsds](https://github.com/vrtsds/)
 - [@waywardmonkeys](https://github.com/waywardmonkeys/)
 - [@yoshikaw](https://github.com/yoshikaw/)
+- [@turenar](https://github.com/turenar/)
+- [@mame](https://github.com/mame/)
+- [@hodefoting](https://github.com/hodefoting/)
 
 ## Contributing
 
