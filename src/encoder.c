@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017 Hayaki Saito
+ * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -733,14 +733,15 @@ sixel_encoder_output_without_macro(
     sixel_encoder_t     /* in */ *encoder)
 {
     SIXELSTATUS status = SIXEL_OK;
-    int dulation = 0;
     static unsigned char *p;
     int depth;
     char message[256];
     int nwrite;
-#if HAVE_USLEEP
+#if HAVE_NANOSLEEP
+    int dulation;
     int delay;
-    useconds_t lag = 0;
+    int lag = 0;
+    struct timespec tv;
 # if HAVE_CLOCK
     clock_t start;
 # endif
@@ -786,10 +787,10 @@ sixel_encoder_output_without_macro(
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-#if HAVE_USLEEP && HAVE_CLOCK
+#if HAVE_NANOSLEEP && HAVE_CLOCK
     start = clock();
 #endif
-#if HAVE_USLEEP
+#if HAVE_NANOSLEEP
     delay = sixel_frame_get_delay(frame);
     if (delay > 0 && !encoder->fignore_delay) {
 # if HAVE_CLOCK
@@ -799,9 +800,11 @@ sixel_encoder_output_without_macro(
         dulation = 0;
 # endif
         if (dulation < 10000 * delay) {
-            usleep((useconds_t)(10000 * delay - dulation));
+            tv.tv_sec = 0;
+            tv.tv_nsec = (long)((10000 * delay - dulation) * 1000);
+            nanosleep(&tv, NULL);
         } else {
-            lag = (useconds_t)(10000 * delay - dulation);
+            lag = (int)(10000 * delay - dulation);
         }
     }
 #endif
@@ -833,11 +836,12 @@ sixel_encoder_output_with_macro(
     sixel_encoder_t /* in */ *encoder)
 {
     SIXELSTATUS status = SIXEL_OK;
-    int dulation = 0;
     char buffer[256];
     int nwrite;
-#if HAVE_USLEEP
-    useconds_t lag = 0;
+#if HAVE_NANOSLEEP
+    int dulation;
+    int lag = 0;
+    struct timespec tv;
 # if HAVE_CLOCK
     clock_t start;
 # endif
@@ -845,11 +849,11 @@ sixel_encoder_output_with_macro(
     unsigned char *pixbuf;
     int width;
     int height;
-#if HAVE_USLEEP
+#if HAVE_NANOSLEEP
     int delay;
 #endif
 
-#if HAVE_USLEEP && HAVE_CLOCK
+#if HAVE_NANOSLEEP && HAVE_CLOCK
     start = clock();
 #endif
     if (sixel_frame_get_loop_no(frame) == 0) {
@@ -902,7 +906,7 @@ sixel_encoder_output_with_macro(
                 "sixel_encoder_output_with_macro: sixel_write_callback() failed.");
             goto end;
         }
-#if HAVE_USLEEP
+#if HAVE_NANOSLEEP
         delay = sixel_frame_get_delay(frame);
         if (delay > 0 && !encoder->fignore_delay) {
 # if HAVE_CLOCK
@@ -912,9 +916,11 @@ sixel_encoder_output_with_macro(
             dulation = 0;
 # endif
             if (dulation < 10000 * delay) {
-                usleep((useconds_t)(10000 * delay - dulation));
+                tv.tv_sec = 0;
+                tv.tv_nsec = (long)((10000 * delay - dulation) * 1000);
+                nanosleep(&tv, NULL);
             } else {
-                lag = (useconds_t)(10000 * delay - dulation);
+                lag = (int)(10000 * delay - dulation);
             }
         }
 #endif
@@ -1991,7 +1997,7 @@ error:
 }
 
 
-int
+SIXELAPI int
 sixel_encoder_tests_main(void)
 {
     int nret = EXIT_FAILURE;

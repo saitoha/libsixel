@@ -182,20 +182,20 @@ AC_DEFUN([LS_CHECK_CFLAG], [
    CFLAGS="$saved_cflags"
 ])
 
-CPPFLAGS="$CPPFLAGS -D_POSIX_SOURCE -D_BSD_SOURCE"
+CPPFLAGS="$CPPFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L"
 LS_CHECK_CFLAG([-std=c99], [CFLAGS="$CFLAGS -std=c99"], [])
 LS_CHECK_CFLAG([-Wall],[AM_CFLAGS="$AM_CFLAGS -Wall"], [])
 LS_CHECK_CFLAG([-Wextra],[AM_CFLAGS="$AM_CFLAGS -Wextra"], [])
 LS_CHECK_CFLAG([-Wformat=2],[AM_CFLAGS="$AM_CFLAGS -Wformat=2"], [])
 LS_CHECK_CFLAG([-Wsign-conversion],
-               [AM_CFLAGS="$AM_CFLAGS -Wsign-conversion"]
+               [AM_CFLAGS="$AM_CFLAGS -Wsign-conversion"
                 AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION, 1, [define 1 if GCC supports -Wsign-conversion])])
 LS_CHECK_CFLAG([-Wuninitialized],
-               [AM_CFLAGS="$AM_CFLAGS -Wuninitialized"]
+               [AM_CFLAGS="$AM_CFLAGS -Wuninitialized"
                 AC_DEFINE(HAVE_DIAGNOSTIC_UNINITIALIZED, 1, [define 1 if GCC supports -Wuninitialized])])
 LS_CHECK_CFLAG([-Wstrict-overflow],
-               [AM_CFLAGS="$AM_CFLAGS -Wstrict-overflow"
-                AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW, 1, [define 1 if GCC supports -Wstrict-overeflow])])
+               [AM_CFLAGS="$AM_CFLAGS -Wstrict-overflow=1"
+                AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW, 1, [define 1 if GCC supports -Wstrict-overeflow=1])])
 LS_CHECK_CFLAG([-Wshadow],
                [AM_CFLAGS="$AM_CFLAGS -Wshadow"
                 AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW, 1, [define 1 if GCC supports -Wshadow])])
@@ -271,7 +271,7 @@ AC_CHECK_FUNCS([memcpy \
                 setmode \
                 _setmode \
                 signal \
-                usleep \
+                nanosleep \
                 strdup \
                 strtoul \
                 calloc \

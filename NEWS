@@ -4,7 +4,8 @@
                   ------------------------------
 * core: Upgrade stb_image to 2.15.
 
-* core: Introduce new dithering method, a_dither / x_dither (http://pippin.gimp.org/a_dither/).        Thanks to @hodefoting.
+* core: Introduce new dithering method, a_dither / x_dither (http://pippin.gimp.org/a_dither/).
+        Thanks to @hodefoting.
 
 * core: Fix wrong HLS color handling
 
@@ -14,8 +15,11 @@
              https://www.w3.org/Graphics/GIF/spec-gif89a.txt.
              Thanks to @mame.
 
+* img2sixel: Marks -D option (read source images from stdin continuously) as deprecated
+
 * Some bug fixes and minor improvements.
   Thanks to @ttdoda.
+
 
                   ------------------------------
                    What's new in libsixel-1.7 ?

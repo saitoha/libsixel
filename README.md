@@ -550,7 +550,7 @@ Options:
 -P, --penetrate            penetrate GNU Screen using DCS
                            pass-through sequence
 -D, --pipe-mode            read source images from stdin
-                           continuously
+                           continuously (deprecated)
 -v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
@@ -1045,6 +1045,9 @@ The MIT License (MIT)
 - [@vrtsds](https://github.com/vrtsds/)
 - [@waywardmonkeys](https://github.com/waywardmonkeys/)
 - [@yoshikaw](https://github.com/yoshikaw/)
+- [@turenar](https://github.com/turenar/)
+- [@mame](https://github.com/mame/)
+- [@hodefoting](https://github.com/hodefoting/)
 
 ## Contributing
 
