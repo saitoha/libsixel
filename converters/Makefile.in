@@ -1007,6 +1007,7 @@ check: test_impl
 test: all test_impl
 
 test_impl:
+	@echo '[start]'
 
 @WANT_IMG2SIXEL_TRUE@	@echo '[test1] invalid option handling'
 @WANT_IMG2SIXEL_TRUE@	touch testfile
@@ -1214,20 +1215,6 @@ test_impl:
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png < snake2.sixel > snake2.png
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png - - < snake3.sixel > snake3.png
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) ./sixel2png -i snake.sixel -o snake4.png
-@WANT_IMG2SIXEL_TRUE@	@echo '[test12] continuous pipe mode'
-@WANT_IMG2SIXEL_TRUE@	rm -f sixel.pipe
-@WANT_IMG2SIXEL_TRUE@	if test "$(WINE)" = "" && which mkfifo && which pkill; then \
-@WANT_IMG2SIXEL_TRUE@	    mkfifo sixel.pipe; \
-@WANT_IMG2SIXEL_TRUE@	    ($(WINE) ./img2sixel -D < sixel.pipe&); \
-@WANT_IMG2SIXEL_TRUE@	    cat $(top_srcdir)/images/snake.jpg > sixel.pipe; \
-@WANT_IMG2SIXEL_TRUE@	    echo > sixel.pipe; \
-@WANT_IMG2SIXEL_TRUE@	    sleep 2; \
-@WANT_IMG2SIXEL_TRUE@	    pkill img2sixel; \
-@WANT_IMG2SIXEL_TRUE@	    echo > sixel.pipe; \
-@WANT_IMG2SIXEL_TRUE@	    sleep 2; \
-@WANT_IMG2SIXEL_TRUE@	    pkill img2sixel; \
-@WANT_IMG2SIXEL_TRUE@	    rm -f sixel.pipe; \
-@WANT_IMG2SIXEL_TRUE@	fi || true
 
 @WANT_IMG2SIXEL_TRUE@	@echo '[test13] documentation'
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options1.txt
@@ -1237,6 +1224,7 @@ test_impl:
 @WANT_IMG2SIXEL_TRUE@	diff options1.txt options2.txt
 @WANT_IMG2SIXEL_TRUE@	diff options2.txt options3.txt
 @WANT_IMG2SIXEL_TRUE@	diff options3.txt options4.txt
+
 	@echo '[succeeded]'
 
 winetest: all

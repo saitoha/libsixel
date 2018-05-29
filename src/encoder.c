@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017 Hayaki Saito
+ * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -733,12 +733,12 @@ sixel_encoder_output_without_macro(
     sixel_encoder_t     /* in */ *encoder)
 {
     SIXELSTATUS status = SIXEL_OK;
-    int dulation = 0;
     static unsigned char *p;
     int depth;
     char message[256];
     int nwrite;
 #if HAVE_NANOSLEEP
+    int dulation;
     int delay;
     int lag = 0;
     struct timespec tv;
@@ -836,10 +836,10 @@ sixel_encoder_output_with_macro(
     sixel_encoder_t /* in */ *encoder)
 {
     SIXELSTATUS status = SIXEL_OK;
-    int dulation = 0;
     char buffer[256];
     int nwrite;
 #if HAVE_NANOSLEEP
+    int dulation;
     int lag = 0;
     struct timespec tv;
 # if HAVE_CLOCK
@@ -1997,7 +1997,7 @@ error:
 }
 
 
-int
+SIXELAPI int
 sixel_encoder_tests_main(void)
 {
     int nret = EXIT_FAILURE;

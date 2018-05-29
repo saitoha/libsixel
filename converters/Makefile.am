@@ -40,6 +40,7 @@ check: test_impl
 test: all test_impl
 
 test_impl:
+	@echo '[start]'
 if WANT_IMG2SIXEL
 
 	@echo '[test1] invalid option handling'
