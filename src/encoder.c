@@ -983,7 +983,7 @@ sixel_encoder_encode_frame(
 
     /* evaluate -v option: print palette */
     if (encoder->verbose) {
-        if (!(sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_GRAYSCALE)) {
+        if ((sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_PALETTE)) {
             sixel_debug_print_palette(dither);
         }
     }
