@@ -18,7 +18,14 @@
 * img2sixel: Marks -D option (read source images from stdin continuously) as deprecated
 
 * Some bug fixes and minor improvements.
-  Thanks to @ttdoda.
+  Thanks to @set135, @ttdoda.
+
+* Announcement for package maintainers:
+  Immutable tarball is provided, because GitHub auto-generated tarball may be not immutable.
+
+    https://github.com/saitoha/libsixel/releases/download/v1.8.0/libsixel-1.8.0.tar.gz
+
+  For details, see https://github.com/saitoha/libsixel/issues/64 .
 
 
                   ------------------------------
