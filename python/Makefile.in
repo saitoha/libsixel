@@ -561,7 +561,7 @@ uninstall-am: uninstall-libsixelPYTHON
 
 
 clean-local:
-	-rm -rf libsixel_python.egg-info build dist
+	rm -rf libsixel_python.egg-info build dist
 
 check: check-am
 

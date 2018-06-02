@@ -2,7 +2,7 @@
 CLEANFILES=libsixel/*.pyc
 
 clean-local:
-	-rm -rf libsixel_python.egg-info build dist
+	rm -rf libsixel_python.egg-info build dist
 
 if HAVE_PYTHON
 libsixeldir = $(pythondir)/libsixel
