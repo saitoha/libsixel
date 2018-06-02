@@ -323,12 +323,20 @@ load_png(unsigned char      /* out */ **result,
     }
 
     if (bgcolor) {
+#  if HAVE_DEBUG
+        fprintf(stderr, "background color is specified [%02x, %02x, %02x]\n",
+                bgcolor[0], bgcolor[1], bgcolor[2]);
+#  endif
         background.red = bgcolor[0];
         background.green = bgcolor[1];
         background.blue = bgcolor[2];
         background.gray = (bgcolor[0] + bgcolor[1] + bgcolor[2]) / 3;
     } else if (png_get_bKGD(png_ptr, info_ptr, &default_background) == PNG_INFO_bKGD) {
         memcpy(&background, default_background, sizeof(background));
+#  if HAVE_DEBUG
+        fprintf(stderr, "background color is found [%02x, %02x, %02x]\n",
+                background.red, background.green, background.blue);
+#  endif
     } else {
         background.red = 0;
         background.green = 0;
