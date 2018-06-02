@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017 Hayaki Saito
+ * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -89,7 +89,7 @@ void show_version(void)
            "no\n"
 #endif
            "\n"
-           "Copyright (C) 2014-2017 Hayaki Saito <saitoha@me.com>.\n"
+           "Copyright (C) 2014-2018 Hayaki Saito <saitoha@me.com>.\n"
            "\n"
            "Permission is hereby granted, free of charge, to any person obtaining a copy of\n"
            "this software and associated documentation files (the \"Software\"), to deal in\n"
