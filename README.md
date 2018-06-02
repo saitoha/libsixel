@@ -1345,7 +1345,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 - [GNUPLOT](http://www.gnuplot.info/)
 
-  Recent version of GNUPLOT supports new terminal driver "sixel" / "sixelgd".
+  Recent version of GNUPLOT supports new terminal driver "sixeltek(sixel)" / "sixelgd".
 
   ![GNUPLOT](https://raw.githubusercontent.com/saitoha/libsixel/data/data/gnuplot.png)
 
