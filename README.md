@@ -169,15 +169,6 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
 
 ### Other
 
-#### [sixelPreviewer](https://github.com/mikoto2000/sixelPreviewer)
-
-  Simple scripts and development environment for realtime edit-previewing for dot, svg, markdown, ...etc.
-  [![sixelPreviewer](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixelpreviewer.png)](https://youtu.be/iPzHWPGWHV4)
-
-#### [sdump](https://github.com/uobikiemukot/sdump)
-
-  A sixel image dumper, provides pdf previewer.
-
 #### [sixelSPAD](https://github.com/nilqed/sixelSPAD)
 
   [screenshot](https://nilqed.github.io/drawfe/)
@@ -192,7 +183,22 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
   Now `sixel` backend is implemented.
   See https://github.com/dylanaraps/neofetch/wiki/Image-Backends#sixel
 
-  ![neofetch](https://raw.githubusercontent.com/saitoha/libsixel/data/data/neofetch.jpg)
+  ![neofetch](https://raw.githubusercontent.com/saitoha/libsixel/data/data/neofetch.png)
+  
+#### [termplay](https://github.com/jD91mZM2/termplay)
+
+  Depends on [sixel-sys](https://github.com/AdnoC/sixel-sys), `--converter=sixel` option is supported.
+
+  [![termplay](https://github.com/saitoha/libsixel/blob/data/data/termplay.png)](https://youtu.be/sOHU1b-Ih90)
+
+#### [sixelPreviewer](https://github.com/mikoto2000/sixelPreviewer)
+
+  Simple scripts and development environment for realtime edit-previewing for dot, svg, markdown, ...etc.
+  [![sixelPreviewer](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixelpreviewer.png)](https://youtu.be/iPzHWPGWHV4)
+
+#### [sdump](https://github.com/uobikiemukot/sdump)
+
+  A sixel image dumper, provides pdf previewer.
 
 
 ## Highlighted features
@@ -1370,6 +1376,23 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   ![ImageMagick](https://raw.githubusercontent.com/saitoha/libsixel/data/data/imagemagick.png)
 
 
+- [lsix](https://github.com/hackerb9/lsix)
+
+  Like "ls", but for images. Shows thumbnails in terminal using sixel graphics. 
+  ![lsix](https://raw.githubusercontent.com/saitoha/libsixel/data/data/lsix.jpg)
+
+
+- [sixeldraw](https://github.com/aiju/sixeldraw)
+
+  Sixel support for p9p devdraw
+  
+  cmapcube on xterm with DEVDRAW=sixeldraw
+  [![sixeldraw2](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixeldraw2.png)](https://youtu.be/EOvSrt7Yi00)
+  
+  acme on xterm with DEVDRAW=sixeldraw SNARF=1
+  [![sixeldraw1](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixeldraw1.png)](https://youtu.be/eGjSEjxiDjE)
+  
+
 - [ZX81 Emulator](http://rullf2.xs4all.nl/sg/zx81ce.html)
 
   A ZX81 emulator producing Sixel Image Files
@@ -1445,6 +1468,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 - [sixelplot](https://github.com/kktk-KO/sixelplot)
 
   thin-wrapper for pysixel and matplotlib
+
 
 - [ame.sh](https://github.com/hamano/ame.sh)
 
