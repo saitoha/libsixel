@@ -184,7 +184,7 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
   See https://github.com/dylanaraps/neofetch/wiki/Image-Backends#sixel
 
   ![neofetch](https://raw.githubusercontent.com/saitoha/libsixel/data/data/neofetch.png)
-  
+
 #### [termplay](https://github.com/jD91mZM2/termplay)
 
   Depends on [sixel-sys](https://github.com/AdnoC/sixel-sys), `--converter=sixel` option is supported.
@@ -1341,6 +1341,11 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   An utility to convert farbfeld images to Sixels.
 
 
+- [tv](https://github.com/hodefoting/tv)
+
+  terminal/commandline image viewer
+
+
 - [xpr(x11-apps)](ftp://ftp.x.org/pub/unsupported/programs/xpr/)
 
   xpr(1) can convert a xwd(X window dump) format image into a sixel
@@ -1379,20 +1384,20 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 - [lsix](https://github.com/hackerb9/lsix)
 
-  Like "ls", but for images. Shows thumbnails in terminal using sixel graphics. 
+  Like "ls", but for images. Shows thumbnails in terminal using sixel graphics.
   ![lsix](https://raw.githubusercontent.com/saitoha/libsixel/data/data/lsix.jpg)
 
 
 - [sixeldraw](https://github.com/aiju/sixeldraw)
 
   Sixel support for p9p devdraw
-  
+
   cmapcube on xterm with DEVDRAW=sixeldraw
   [![sixeldraw2](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixeldraw2.png)](https://youtu.be/EOvSrt7Yi00)
-  
+
   acme on xterm with DEVDRAW=sixeldraw SNARF=1
   [![sixeldraw1](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixeldraw1.png)](https://youtu.be/eGjSEjxiDjE)
-  
+
 
 - [ZX81 Emulator](http://rullf2.xs4all.nl/sg/zx81ce.html)
 
