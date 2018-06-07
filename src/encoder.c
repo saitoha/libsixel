@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016 Hayaki Saito
+ * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -733,14 +733,15 @@ sixel_encoder_output_without_macro(
     sixel_encoder_t     /* in */ *encoder)
 {
     SIXELSTATUS status = SIXEL_OK;
-    int dulation = 0;
     static unsigned char *p;
     int depth;
     char message[256];
     int nwrite;
-#if HAVE_USLEEP
+#if HAVE_NANOSLEEP
+    int dulation;
     int delay;
-    useconds_t lag = 0;
+    int lag = 0;
+    struct timespec tv;
 # if HAVE_CLOCK
     clock_t start;
 # endif
@@ -786,10 +787,10 @@ sixel_encoder_output_without_macro(
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-#if HAVE_USLEEP && HAVE_CLOCK
+#if HAVE_NANOSLEEP && HAVE_CLOCK
     start = clock();
 #endif
-#if HAVE_USLEEP
+#if HAVE_NANOSLEEP
     delay = sixel_frame_get_delay(frame);
     if (delay > 0 && !encoder->fignore_delay) {
 # if HAVE_CLOCK
@@ -799,9 +800,11 @@ sixel_encoder_output_without_macro(
         dulation = 0;
 # endif
         if (dulation < 10000 * delay) {
-            usleep((useconds_t)(10000 * delay - dulation));
+            tv.tv_sec = 0;
+            tv.tv_nsec = (long)((10000 * delay - dulation) * 1000);
+            nanosleep(&tv, NULL);
         } else {
-            lag = (useconds_t)(10000 * delay - dulation);
+            lag = (int)(10000 * delay - dulation);
         }
     }
 #endif
@@ -814,7 +817,7 @@ sixel_encoder_output_without_macro(
     }
 
     status = sixel_encode(p, width, height, depth, dither, output);
-    if (status != 0) {
+    if (status != SIXEL_OK) {
         goto end;
     }
 
@@ -833,11 +836,12 @@ sixel_encoder_output_with_macro(
     sixel_encoder_t /* in */ *encoder)
 {
     SIXELSTATUS status = SIXEL_OK;
-    int dulation = 0;
     char buffer[256];
     int nwrite;
-#if HAVE_USLEEP
-    useconds_t lag = 0;
+#if HAVE_NANOSLEEP
+    int dulation;
+    int lag = 0;
+    struct timespec tv;
 # if HAVE_CLOCK
     clock_t start;
 # endif
@@ -845,11 +849,11 @@ sixel_encoder_output_with_macro(
     unsigned char *pixbuf;
     int width;
     int height;
-#if HAVE_USLEEP
+#if HAVE_NANOSLEEP
     int delay;
 #endif
 
-#if HAVE_USLEEP && HAVE_CLOCK
+#if HAVE_NANOSLEEP && HAVE_CLOCK
     start = clock();
 #endif
     if (sixel_frame_get_loop_no(frame) == 0) {
@@ -902,7 +906,7 @@ sixel_encoder_output_with_macro(
                 "sixel_encoder_output_with_macro: sixel_write_callback() failed.");
             goto end;
         }
-#if HAVE_USLEEP
+#if HAVE_NANOSLEEP
         delay = sixel_frame_get_delay(frame);
         if (delay > 0 && !encoder->fignore_delay) {
 # if HAVE_CLOCK
@@ -912,9 +916,11 @@ sixel_encoder_output_with_macro(
             dulation = 0;
 # endif
             if (dulation < 10000 * delay) {
-                usleep((useconds_t)(10000 * delay - dulation));
+                tv.tv_sec = 0;
+                tv.tv_nsec = (long)((10000 * delay - dulation) * 1000);
+                nanosleep(&tv, NULL);
             } else {
-                lag = (useconds_t)(10000 * delay - dulation);
+                lag = (int)(10000 * delay - dulation);
             }
         }
 #endif
@@ -977,7 +983,7 @@ sixel_encoder_encode_frame(
 
     /* evaluate -v option: print palette */
     if (encoder->verbose) {
-        if (!(sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_GRAYSCALE)) {
+        if ((sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_PALETTE)) {
             sixel_debug_print_palette(dither);
         }
     }
@@ -1275,8 +1281,8 @@ sixel_encoder_setopt(
                 close(encoder->outfd);
             }
             encoder->outfd = open(value,
-                                  O_RDWR|O_CREAT,
-                                  S_IREAD|S_IWRITE);
+                                  O_RDWR|O_CREAT|O_TRUNC,
+                                  S_IRUSR|S_IWUSR);
         }
         break;
     case SIXEL_OPTFLAG_7BIT_MODE:  /* 7 */
@@ -1351,6 +1357,10 @@ sixel_encoder_setopt(
             encoder->method_for_diffuse = SIXEL_DIFFUSE_STUCKI;
         } else if (strcmp(value, "burkes") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_BURKES;
+        } else if (strcmp(value, "a_dither") == 0) {
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_A_DITHER;
+        } else if (strcmp(value, "x_dither") == 0) {
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_X_DITHER;
         } else {
             sixel_helper_set_additional_message(
                 "specified diffusion method is not supported.");
@@ -1987,7 +1997,7 @@ error:
 }
 
 
-int
+SIXELAPI int
 sixel_encoder_tests_main(void)
 {
     int nret = EXIT_FAILURE;
@@ -2017,6 +2027,11 @@ error:
 #endif  /* HAVE_TESTS */
 
 
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
 /* vim: set expandtab ts=4 : */
 /* EOF */

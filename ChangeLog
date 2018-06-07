@@ -1,3 +1,80 @@
+2017-06-22  Hayaki Saito <saitoha@me.com>
+
+	* src/fromsixel.c: Fix wrong HLS color handling
+
+2018-05-11  IWAMOTO Kouichi <sue@iwmt.org>
+
+	* src/tosixel.c: fix to use dcs_end_size with dcs_start  use
+	  dcs_start_size instead of dcs_end_size.
+
+2018-04-04  Yusuke Endoh <mame@ruby-lang.org>
+
+	* src/fromgif.c: Allow a deferred clear code in a GIF format
+	  img2sixel says `corrupt GIF(reason: too many codes)` but this is a
+	  wrong behavior.  GIF decoder must do nothing when the table is
+	  full. See Section "DEFERRED CLEAR CODE IN LZW COMPRESSION" in [this
+	  document](https://www.w3.org/Graphics/GIF/spec-gif89a.txt).
+
+2017-05-03  Hayaki Saito <saitoha@me.com>
+
+	* README.md: Fix stupid typo, a_dither -> x_dither.
+	* converters/shell-completion/bash/img2sixel, converters/shell-
+	  completion/zsh/_img2sixel: Add shell completion info -d option
+	  arguments a_dither/x_dither.
+	* converters/img2sixel.c: Fix typo a_dither -> x_dither
+	* src/encoder.c: Fix for Issue #57, lack of O_TRUNC when open() is
+	  called. Thanks to @set135.
+
+2017-05-02  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in, aclocal.m4, config.h.in, configure,
+	  converters/Makefile.am, converters/Makefile.in: Add tests for
+	  a_dither/x_dither
+	* src/encoder.c, src/quant.c, src/tosixel.c: Style fixes
+	* converters/img2sixel.c, include/sixel.h.in,
+	  python/libsixel/__init__.py, src/encoder.c: Update comments and
+	  help information
+	* Makefile.in, aclocal.m4, config.h.in, configure, configure.ac,
+	  package.json: Update package version to 1.8.0
+	* NEWS: Update NEWS
+	* include/sixel.h.in, python/libsixel/__init__.py: Add constants
+	  SIXEL_DIFFUSE_{A,X}_DITHER to python interface
+	* src/loader.c: Minor fix
+	* Makefile.in, aclocal.m4, config.h.in, configure: pkg-config v0.29.2
+	* Makefile.in, aclocal.m4, config.h.in, configure, configure.ac,
+	  src/loader.c, src/stb_image.h: Use stb_image v2.15
+
+2017-04-25  Hayaki Saito <saitoha@me.com>
+
+	* src/tosixel.c: Fixed a bug that makes 15bpp dither no effect.
+	* src/tosixel.c: Strip trailing spaces
+
+2017-04-21  Hayaki Saito <saitoha@me.com>
+
+	* converters/sixel2png.c: Show error details when sixel2png fails
+	* README.md: Amend fixes
+	* README.md: More information
+
+2017-04-19  Hayaki Saito <saitoha@me.com>
+
+	* README.md: Additional catching-up
+	* README.md: Catching up
+
+2017-04-11  Hayaki Saito <saitoha@me.com>
+
+	* src/sixel.5: Fix a type fixed a typo pointed out by
+	  @silverhammermba(#58).
+	* converters/img2sixel.c, converters/sixel2png.c, src/loader.c: Print
+	  configuration info about libsixel, with "img2sixel -V"
+
+2016-12-18  Hayaki Saito <saitoha@me.com>
+
+	* README.md: Update README
+
+2016-12-10  Hayaki Saito <saitoha@me.com>
+
+	* ChangeLog, Makefile.in: Update ChangeLog
+
 2016-12-08  Hayaki Saito <saitoha@me.com>
 
 	* Makefile.in, README.md, configure, configure.ac, package.json:
@@ -12,8 +89,20 @@
 	* .travis.yml: travis: change --prefix path to /usr/local in OSX
 	  build
 
+2016-10-08  Øyvind Kolås <pippin@gimp.org>
+
+	* include/sixel.h.in, src/encoder.c, src/quant.c, src/tosixel.c: add
+	  positional/ordered dithers a_dither and x_dither  These are
+	  dithering methods arising from searching the paramater spaces for
+	  simple 2d pattern / pseudo random number generators - optimizing a
+	  fitness metric of both statistical measures and human perceptual
+	  preference - see http://pippin.gimp.org/a_dither/ - these dithering
+	  methods are similar to other AM/FM hybrid digital halftoning
+	  methods.
+
 2016-10-10  Hayaki Saito <saitoha@me.com>
 
+	* src/tosixel.c: Small fix for wrong error message
 	* configure, configure.ac: Build with -Bsymbolic option if it's
 	  available
 

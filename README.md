@@ -64,13 +64,27 @@ Furthermore some information of SIXEL-ready SDL applications are reported.
   ([movie](https://www.youtube.com/watch?v=XubH2W39Xtc))
 
 
-### X11 on SIXEL terminals
+### Langage Bindings
 
-[Xsixel](https://github.com/saitoha/xserver-sixel) is a kdrive server implementation for SIXEL terminals.
+#### [libsixel-python](https://pypi.python.org/pypi/libsixel-python/0.4.0)
 
-  ![Xsixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel.png)
+  [converter.py](https://github.com/saitoha/libsixel/blob/master/examples/python/converter.py) example depends on it.
 
-  ![Xsixel Blue Print](https://raw.githubusercontent.com/saitoha/libsixel/data/data/HowToBuildTerminalGUI.png)
+#### [mruby-sixel](https://github.com/kjunichi/mruby-sixel)
+
+  Used by [mruby-webcam](https://github.com/kjunichi/mruby-webcam).
+
+#### [libsixel-p6](https://github.com/timo/libsixel-p6)
+
+  A [perl6](https://perl6.org/) bindings for libsixel
+
+#### [sixel-sys](https://github.com/AdnoC/sixel-sys)
+
+  [Rust](https://www.rust-lang.org/) FFI bindings for libsixel
+
+#### [sixel-rs](https://github.com/AdnoC/sixel-rs)
+
+  A safe [Rust](https://www.rust-lang.org/) wrapper for libsixel
 
 
 ### W3M integration
@@ -85,6 +99,15 @@ He wrote a w3mimgdisplay compatible program [yaimg-sixel](https://github.com/uob
 It also works with [ranger](https://github.com/hut/ranger).
 
   ![w3m-yaimg-sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/w3m-yaimg-sixel.jpg)
+
+
+### X11 on SIXEL terminals
+
+[Xsixel](https://github.com/saitoha/xserver-sixel) is a kdrive server implementation for SIXEL terminals.
+
+  ![Xsixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel.png)
+
+  ![Xsixel Blue Print](https://raw.githubusercontent.com/saitoha/libsixel/data/data/HowToBuildTerminalGUI.png)
 
 
 ### GNU Screen integration
@@ -145,6 +168,28 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
 
 
 ### Other
+
+#### [sixelSPAD](https://github.com/nilqed/sixelSPAD)
+
+  [screenshot](https://nilqed.github.io/drawfe/)
+
+  Includes 2 commands [fricas2sixel](https://github.com/nilqed/sixelSPAD/blob/master/bin/fricas2sixel)
+  and [latex2sixel](https://github.com/nilqed/sixelSPAD/blob/master/bin/latex2sixel).
+
+  ![latex2sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/latex2sixel.jpg)
+
+#### [Neofetch](https://github.com/dylanaraps/neofetch)
+
+  Now `sixel` backend is implemented.
+  See https://github.com/dylanaraps/neofetch/wiki/Image-Backends#sixel
+
+  ![neofetch](https://raw.githubusercontent.com/saitoha/libsixel/data/data/neofetch.png)
+
+#### [termplay](https://github.com/jD91mZM2/termplay)
+
+  Depends on [sixel-sys](https://github.com/AdnoC/sixel-sys), `--converter=sixel` option is supported.
+
+  [![termplay](https://github.com/saitoha/libsixel/blob/data/data/termplay.png)](https://youtu.be/sOHU1b-Ih90)
 
 #### [sixelPreviewer](https://github.com/mikoto2000/sixelPreviewer)
 
@@ -275,8 +320,7 @@ $ xterm -xrm "XTerm*decTerminalID: vt340" -xrm "XTerm*numColorRegisters: 256"
   [https://mintty.github.io/](https://mintty.github.io/)
 
 - cancer
-
-  [https://github.com/meh/cancer](https://github.com/meh/cancer)
+  [https://github.com/meh/cancer/](https://github.com/meh/cancer)
 
 
 ## Install
@@ -295,6 +339,8 @@ You can install libsixel via the following package systems.
 - [Portage](http://packages.gentoo.org/package/media-libs/libsixel)
 - [Ubuntu](https://launchpad.net/ubuntu/+source/libsixel)
 - [NixOS](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/libraries/libsixel/default.nix)
+- [OpenBSD Ports](http://openports.se/graphics/libsixel)
+- [Fedora Copr](https://copr.fedorainfracloud.org/coprs/saahriktu/libsixel/)
 
 
 ### Build from source package
@@ -391,6 +437,10 @@ Options:
                              jajuni   -> Jarvis, Judice & Ninke
                              stucki   -> Stucki's method
                              burkes   -> Burkes' method
+                             a_dither -> positionally stable
+                                         arithmetic dither
+                             x_dither -> positionally stable
+                                         arithmetic xor based dither
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
                            dimension of median cut boxes for
@@ -519,7 +569,7 @@ Options:
 -P, --penetrate            penetrate GNU Screen using DCS
                            pass-through sequence
 -D, --pipe-mode            read source images from stdin
-                           continuously
+                           continuously (deprecated)
 -v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
@@ -1014,6 +1064,9 @@ The MIT License (MIT)
 - [@vrtsds](https://github.com/vrtsds/)
 - [@waywardmonkeys](https://github.com/waywardmonkeys/)
 - [@yoshikaw](https://github.com/yoshikaw/)
+- [@turenar](https://github.com/turenar/)
+- [@mame](https://github.com/mame/)
+- [@hodefoting](https://github.com/hodefoting/)
 
 ## Contributing
 
@@ -1273,6 +1326,26 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   sayaka-chan(Vala version) also includes SIXEL converter.
 
 
+- [rust-sixel](https://github.com/meh/rust-sixel)
+
+  A SIXEL encoder written in rust.
+
+
+- [forth-sixel](https://hub.darcs.net/pointfree/forth-sixel)
+
+  A SIXEL encoder written in forth.
+
+
+- [ff2sixel](https://github.com/labdsf/ff2sixel)
+
+  An utility to convert farbfeld images to Sixels.
+
+
+- [tv](https://github.com/hodefoting/tv)
+
+  terminal/commandline image viewer
+
+
 - [xpr(x11-apps)](ftp://ftp.x.org/pub/unsupported/programs/xpr/)
 
   xpr(1) can convert a xwd(X window dump) format image into a sixel
@@ -1284,7 +1357,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 - [GNUPLOT](http://www.gnuplot.info/)
 
-  Recent version of GNUPLOT supports new terminal driver "sixel".
+  Recent version of GNUPLOT supports new terminal driver "sixeltek(sixel)" / "sixelgd".
 
   ![GNUPLOT](https://raw.githubusercontent.com/saitoha/libsixel/data/data/gnuplot.png)
 
@@ -1307,6 +1380,23 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   Recent version of ImageMagick provides SIXEL coder. It's also available over commandline tools.
 
   ![ImageMagick](https://raw.githubusercontent.com/saitoha/libsixel/data/data/imagemagick.png)
+
+
+- [lsix](https://github.com/hackerb9/lsix)
+
+  Like "ls", but for images. Shows thumbnails in terminal using sixel graphics.
+  ![lsix](https://raw.githubusercontent.com/saitoha/libsixel/data/data/lsix.jpg)
+
+
+- [sixeldraw](https://github.com/aiju/sixeldraw)
+
+  Sixel support for p9p devdraw
+
+  cmapcube on xterm with DEVDRAW=sixeldraw
+  [![sixeldraw2](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixeldraw2.png)](https://youtu.be/EOvSrt7Yi00)
+
+  acme on xterm with DEVDRAW=sixeldraw SNARF=1
+  [![sixeldraw1](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixeldraw1.png)](https://youtu.be/eGjSEjxiDjE)
 
 
 - [ZX81 Emulator](http://rullf2.xs4all.nl/sg/zx81ce.html)
@@ -1384,4 +1474,11 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 - [sixelplot](https://github.com/kktk-KO/sixelplot)
 
   thin-wrapper for pysixel and matplotlib
+
+
+- [ame.sh](https://github.com/hamano/ame.sh)
+
+- [matplotlib-sixel](https://github.com/koppa/matplotlib-sixel)
+
+- [gr framework](http://gr-framework.org/)
 

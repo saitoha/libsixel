@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016 Hayaki Saito
+ * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -51,6 +51,10 @@
 
 #ifdef HAVE_LIBCURL
 # include <curl/curl.h>
+#endif
+
+#if HAVE_SYS_SELECT_H
+# include <sys/select.h>
 #endif
 
 #if !defined(HAVE_MEMCPY)
@@ -225,7 +229,7 @@ open_binary_file(
         sixel_helper_set_additional_message("stat() failed.");
         goto end;
     }
-    if ((sb.st_mode & S_IFMT) == S_IFDIR) {
+    if (S_ISDIR(sb.st_mode)) {
         status = SIXEL_BAD_INPUT;
         sixel_helper_set_additional_message("specified path is directory.");
         goto end;
@@ -585,7 +589,7 @@ error:
 }
 
 
-int
+SIXELAPI int
 sixel_chunk_tests_main(void)
 {
     int nret = EXIT_FAILURE;
