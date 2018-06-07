@@ -1,5 +1,5 @@
  
- Derived from ppmquant, originally by Jef Poskanzer.
+ src/quant.c is derived from ppmquant, originally by Jef Poskanzer.
  
  Copyright (C) 1989, 1991 by Jef Poskanzer.
  Copyright (C) 2001 by Bryan Henderson.

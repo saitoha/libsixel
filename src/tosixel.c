@@ -43,8 +43,8 @@
 #define SCREEN_PACKET_SIZE   256
 
 enum {
-    PALETTE_HIT = 1,
-    PALETTE_CHANGE = 2,
+    PALETTE_HIT    = 1,
+    PALETTE_CHANGE = 2
 };
 
 /* implementation */
@@ -64,7 +64,7 @@ sixel_penetrate(
                         - dcs_start_size - dcs_end_size;
 
     for (pos = 0; pos < nwrite; pos += splitsize) {
-        output->fn_write((char *)dcs_start, dcs_end_size, output->priv);
+        output->fn_write((char *)dcs_start, dcs_start_size, output->priv);
         output->fn_write(((char *)output->buffer) + pos,
                           nwrite - pos < splitsize ? nwrite - pos: splitsize,
                           output->priv);
@@ -518,7 +518,7 @@ sixel_encode_body(
                                                   sizeof(unsigned char));
     if (map == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_encode_body: sixel_allocator_malloc() failed.");
+            "sixel_encode_body: sixel_allocator_calloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -823,7 +823,6 @@ end:
 
     return status;
 }
-
 
 static void
 dither_func_none(unsigned char *data, int width)
@@ -1168,6 +1167,50 @@ dither_func_burkes(unsigned char *data, int width)
 
 
 static void
+dither_func_a_dither(unsigned char *data, int width, int x, int y)
+{
+    int c;
+    float value;
+    float mask;
+
+    (void) width; /* unused */
+
+    for (c = 0; c < 3; c ++) {
+        mask = (((x + c * 17) + y * 236) * 119) & 255;
+        mask = ((mask - 128) / 256.0f) ;
+        value = data[c] + mask;
+        if (value < 0) {
+            value = 0;
+        }
+        value = value > 255 ? 255 : value;
+        data[c] = value;
+    }
+}
+
+
+static void
+dither_func_x_dither(unsigned char *data, int width, int x, int y)
+{
+    int c;
+    float value;
+    float mask;
+
+    (void) width;  /* unused */
+
+    for (c = 0; c < 3; c ++) {
+        mask = (((x + c * 17) ^ y * 236) * 1234) & 511;
+        mask = ((mask - 128) / 512.0f) ;
+        value = data[c] + mask;
+        if (value < 0) {
+            value = 0;
+        }
+        value = value > 255 ? 255 : value;
+        data[c] = value;
+    }
+}
+
+
+static void
 sixel_apply_15bpp_dither(
     unsigned char *pixels,
     int x, int y, int width, int height,
@@ -1199,6 +1242,12 @@ sixel_apply_15bpp_dither(
         if (x < width - 2 && y < height - 1) {
             dither_func_burkes(pixels, width);
         }
+        break;
+    case SIXEL_DIFFUSE_A_DITHER:
+        dither_func_a_dither(pixels, width, x, y);
+        break;
+    case SIXEL_DIFFUSE_X_DITHER:
+        dither_func_x_dither(pixels, width, x, y);
         break;
     case SIXEL_DIFFUSE_NONE:
     default:
@@ -1282,12 +1331,13 @@ next:
             if (*mptr) {
                 *dst = 255;
             } else {
-                pix = ((pixels[0] & 0xf8) << 7) |
-                      ((pixels[1] & 0xf8) << 2) |
-                      ((pixels[2] >> 3) & 0x1f);
                 sixel_apply_15bpp_dither(pixels,
                                          x, y, width, height,
                                          dither->method_for_diffuse);
+                pix = ((pixels[0] & 0xf8) << 7) |
+                      ((pixels[1] & 0xf8) << 2) |
+                      ((pixels[2] >> 3) & 0x1f);
+
                 if (!rgbhit[pix]) {
                     while (1) {
                         if (nextpal >= 255) {

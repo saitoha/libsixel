@@ -6,51 +6,51 @@ matrix:
   - os: linux
     env: XCC=gcc HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= LIBCURL=--without-libcurl JPEG=--without-jpeg PNG=--without-png
   - os: linux
-    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable--tests --enable-debug" WINE= LIBCURL=--without-libcurl JPEG=--without-jpeg PNG=--without-png
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= LIBCURL=--without-libcurl JPEG=--without-jpeg PNG=--without-png
   - os: osx
     env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable-tests --enable-debug" WINE= LIBCURL=--without-libcurl JPEG=--without-jpeg PNG=--without-png
   - os: linux
-    env: XCC=i686-w64-mingw32-gcc HOST="--host=i686-w64-mingw32" PREFIX="/usr/i686-w64-mingw32" DEBUG="--enable--tests --enable-debug" WINE=wine
+    env: XCC=i686-w64-mingw32-gcc HOST="--host=i686-w64-mingw32" PREFIX="/usr/i686-w64-mingw32" DEBUG="--enable-tests --enable-debug" WINE=wine
   - os: linux
     env: XCC=i586-mingw32msvc-gcc HOST="--host=i586-mingw32msvc" PREFIX="/usr/i586-mingw32msvc" WINE=wine
   - os: linux
-    env: XCC=x86_64-w64-mingw32-gcc HOST="--host=x86_64-w64-mingw32" PREFIX="/usr/x86_64-w64-mingw32" DEBUG="--enable--tests --enable-debug" WINE=wine64
+    env: XCC=x86_64-w64-mingw32-gcc HOST="--host=x86_64-w64-mingw32" PREFIX="/usr/x86_64-w64-mingw32" DEBUG="--enable-tests --enable-debug" WINE=wine64
   - os: linux
-    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable--tests --enable-debug" WINE= JPEG="--with-jpeg" PNG="--with-png"
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= JPEG="--with-jpeg" PNG="--with-png"
   - os: osx
-    env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable--tests --enable-debug" WINE= JPEG="--with-jpeg" PNG="--with-png"
+    env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable-tests --enable-debug" WINE= JPEG="--with-jpeg" PNG="--with-png"
   - os: linux
-    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable--tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" JPEG=--without-jpeg PNG=--without-png
-  - os: osx
-    env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable--tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" JPEG=--without-jpeg PNG=--without-png
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" JPEG=--without-jpeg PNG=--without-png
+#  - os: osx
+#    env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable-tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" JPEG=--without-jpeg PNG=--without-png
   - os: linux
-    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable--tests --enable-debug" WINE= LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
   - os: osx
-    env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable--tests --enable-debug" WINE= LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
+    env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable-tests --enable-debug" WINE= LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
   - os: linux
-    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable--tests --enable-debug" WINE= GD="--with-gd" JPEG=--without-jpeg PNG=--without-png
-  - os: osx
-    env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable--tests --enable-debug" WINE= GD="--with-gd" JPEG=--without-jpeg PNG=--without-png
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= GD="--with-gd" JPEG=--without-jpeg PNG=--without-png
+#  - os: osx
+#    env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable-tests --enable-debug" WINE= GD="--with-gd" JPEG=--without-jpeg PNG=--without-png
   - os: linux
-    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable--tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
-  - os: osx
-    env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable--tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
+#  - os: osx
+#    env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable-tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
   - os: linux
-    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable--tests --enable-debug" WINE= GD="--with-gd" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
-  - os: osx
-    env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable--tests --enable-debug" WINE= GD="--with-gd" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= GD="--with-gd" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
+#  - os: osx
+#    env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable-tests --enable-debug" WINE= GD="--with-gd" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
   - os: linux
-    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable--tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" JPEG=--without-jpeg PNG=--without-png
-  - os: osx
-    env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable--tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" JPEG=--without-jpeg PNG=--without-png
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" JPEG=--without-jpeg PNG=--without-png
+#  - os: osx
+#    env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable-tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" JPEG=--without-jpeg PNG=--without-png
   - os: linux
-    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable--tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
-  - os: osx
-    env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable--tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
+#  - os: osx
+#    env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable-tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
   - os: linux
-    env: XCC=gcc HOST= PREFIX=/usr DEBUG="--enable--tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" JPEG="--with-jpeg" PNG="--with-png" LIBCURL="--with-libcurl"
+    env: XCC=gcc HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" JPEG="--with-jpeg" PNG="--with-png" LIBCURL="--with-libcurl"
   - os: osx
-    env: XCC=gcc HOST= PREFIX=/usr/local DEBUG="--enable--tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" JPEG="--with-jpeg" PNG="--with-png" LIBCURL="--with-libcurl"
+    env: XCC=gcc HOST= PREFIX=/usr/local DEBUG="--enable-tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" JPEG="--with-jpeg" PNG="--with-png" LIBCURL="--with-libcurl"
   - os: linux
     env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= JPEG="--with-jpeg" PNG="--with-png" LIBCURL="--with-libcurl" GCOV="--enable-gcov" STATIC="--disable-shared"
 
@@ -81,7 +81,7 @@ before_script:
 script:
   - "make"
   - "sudo make install"
-  - "make test | tee log | grep succeeded || (cat log|tail -n50; exit 1)"
+  - "make test | tee log | grep ^\\\\[ || (cat log|tail -n50; exit 1)"
 
 after_success:
   - "make valgrind || (cat valgrind.log && exit 1)"

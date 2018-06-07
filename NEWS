@@ -1,7 +1,43 @@
+
+                  ------------------------------
+                   What's new in libsixel-1.8 ?
+                  ------------------------------
+* core: Upgrade stb_image to 2.19.
+
+* core: Introduce new dithering method, a_dither / x_dither (http://pippin.gimp.org/a_dither/).
+        Thanks to @hodefoting.
+        https://github.com/saitoha/libsixel/pull/53
+
+* core: Fix wrong HLS color handling.
+        https://github.com/saitoha/libsixel/commit/0fb35d22e7ba4ed8bce3be42791e6b39c3187b89
+
+* core: Improve quality of 15bpp(hi-color mode) dither.
+        https://github.com/saitoha/libsixel/commit/42f34283defea67c2d6294af4bd7dcb4fdf9f046
+
+* img2sixel: Allow a deferred clear code in a GIF format
+             GIF decoder must do nothing when the table is full.
+             See Section "DEFERRED CLEAR CODE IN LZW COMPRESSION" in
+             https://www.w3.org/Graphics/GIF/spec-gif89a.txt.
+             Thanks to @mame.
+             https://github.com/saitoha/libsixel/pull/63
+
+* img2sixel: Marks -D option (read source images from stdin continuously) as deprecated
+             https://github.com/saitoha/libsixel/commit/9c8ffa62203899d866fc28e3ab7c6dfd9a0019b1
+
+* Some bug fixes and minor improvements.
+  Thanks to @set135, @ttdoda.
+
+* Announcement for package maintainers:
+  Immutable tarball is provided, because GitHub auto-generated tarball may be not immutable.
+
+    https://github.com/saitoha/libsixel/releases/download/v1.8.0/libsixel-1.8.0.tar.gz
+
+  For details, see https://github.com/saitoha/libsixel/issues/64 .
+
+
                   ------------------------------
                    What's new in libsixel-1.7 ?
                   ------------------------------
-
 * core: Upgrade stb_image to 2.12.
 
 * core: Upgrade stb_image_write.h to v1.02.
