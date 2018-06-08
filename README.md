@@ -169,15 +169,6 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
 
 ### Other
 
-#### [sixelPreviewer](https://github.com/mikoto2000/sixelPreviewer)
-
-  Simple scripts and development environment for realtime edit-previewing for dot, svg, markdown, ...etc.
-  [![sixelPreviewer](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixelpreviewer.png)](https://youtu.be/iPzHWPGWHV4)
-
-#### [sdump](https://github.com/uobikiemukot/sdump)
-
-  A sixel image dumper, provides pdf previewer.
-
 #### [sixelSPAD](https://github.com/nilqed/sixelSPAD)
 
   [screenshot](https://nilqed.github.io/drawfe/)
@@ -192,7 +183,22 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
   Now `sixel` backend is implemented.
   See https://github.com/dylanaraps/neofetch/wiki/Image-Backends#sixel
 
-  ![neofetch](https://raw.githubusercontent.com/saitoha/libsixel/data/data/neofetch.jpg)
+  ![neofetch](https://raw.githubusercontent.com/saitoha/libsixel/data/data/neofetch.png)
+
+#### [termplay](https://github.com/jD91mZM2/termplay)
+
+  Depends on [sixel-sys](https://github.com/AdnoC/sixel-sys), `--converter=sixel` option is supported.
+
+  [![termplay](https://github.com/saitoha/libsixel/blob/data/data/termplay.png)](https://youtu.be/sOHU1b-Ih90)
+
+#### [sixelPreviewer](https://github.com/mikoto2000/sixelPreviewer)
+
+  Simple scripts and development environment for realtime edit-previewing for dot, svg, markdown, ...etc.
+  [![sixelPreviewer](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixelpreviewer.png)](https://youtu.be/iPzHWPGWHV4)
+
+#### [sdump](https://github.com/uobikiemukot/sdump)
+
+  A sixel image dumper, provides pdf previewer.
 
 
 ## Highlighted features
@@ -334,6 +340,7 @@ You can install libsixel via the following package systems.
 - [Ubuntu](https://launchpad.net/ubuntu/+source/libsixel)
 - [NixOS](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/libraries/libsixel/default.nix)
 - [OpenBSD Ports](http://openports.se/graphics/libsixel)
+- [Fedora Copr](https://copr.fedorainfracloud.org/coprs/saahriktu/libsixel/)
 
 
 ### Build from source package
@@ -430,6 +437,10 @@ Options:
                              jajuni   -> Jarvis, Judice & Ninke
                              stucki   -> Stucki's method
                              burkes   -> Burkes' method
+                             a_dither -> positionally stable
+                                         arithmetic dither
+                             x_dither -> positionally stable
+                                         arithmetic xor based dither
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
                            dimension of median cut boxes for
@@ -558,7 +569,7 @@ Options:
 -P, --penetrate            penetrate GNU Screen using DCS
                            pass-through sequence
 -D, --pipe-mode            read source images from stdin
-                           continuously
+                           continuously (deprecated)
 -v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
@@ -1053,6 +1064,9 @@ The MIT License (MIT)
 - [@vrtsds](https://github.com/vrtsds/)
 - [@waywardmonkeys](https://github.com/waywardmonkeys/)
 - [@yoshikaw](https://github.com/yoshikaw/)
+- [@turenar](https://github.com/turenar/)
+- [@mame](https://github.com/mame/)
+- [@hodefoting](https://github.com/hodefoting/)
 
 ## Contributing
 
@@ -1327,6 +1341,11 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   An utility to convert farbfeld images to Sixels.
 
 
+- [tv](https://github.com/hodefoting/tv)
+
+  terminal/commandline image viewer
+
+
 - [xpr(x11-apps)](ftp://ftp.x.org/pub/unsupported/programs/xpr/)
 
   xpr(1) can convert a xwd(X window dump) format image into a sixel
@@ -1338,7 +1357,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 - [GNUPLOT](http://www.gnuplot.info/)
 
-  Recent version of GNUPLOT supports new terminal driver "sixel" / "sixelgd".
+  Recent version of GNUPLOT supports new terminal driver "sixeltek(sixel)" / "sixelgd".
 
   ![GNUPLOT](https://raw.githubusercontent.com/saitoha/libsixel/data/data/gnuplot.png)
 
@@ -1361,6 +1380,23 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   Recent version of ImageMagick provides SIXEL coder. It's also available over commandline tools.
 
   ![ImageMagick](https://raw.githubusercontent.com/saitoha/libsixel/data/data/imagemagick.png)
+
+
+- [lsix](https://github.com/hackerb9/lsix)
+
+  Like "ls", but for images. Shows thumbnails in terminal using sixel graphics.
+  ![lsix](https://raw.githubusercontent.com/saitoha/libsixel/data/data/lsix.jpg)
+
+
+- [sixeldraw](https://github.com/aiju/sixeldraw)
+
+  Sixel support for p9p devdraw
+
+  cmapcube on xterm with DEVDRAW=sixeldraw
+  [![sixeldraw2](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixeldraw2.png)](https://youtu.be/EOvSrt7Yi00)
+
+  acme on xterm with DEVDRAW=sixeldraw SNARF=1
+  [![sixeldraw1](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixeldraw1.png)](https://youtu.be/eGjSEjxiDjE)
 
 
 - [ZX81 Emulator](http://rullf2.xs4all.nl/sg/zx81ce.html)
@@ -1438,6 +1474,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 - [sixelplot](https://github.com/kktk-KO/sixelplot)
 
   thin-wrapper for pysixel and matplotlib
+
 
 - [ame.sh](https://github.com/hamano/ame.sh)
 

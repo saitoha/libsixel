@@ -22,7 +22,9 @@ _diffusiontype() {
     "atkinson[Bill Atkinson's method]" \
     'jajuni[Jarvis, Judice & Ninke method]' \
     "stucki[Stucki's method]" \
-    "burkes[Burkes' method]"
+    "burkes[Burkes' method]" \
+    'a_dither[positionally stable arithmetic dither]' \
+    'x_dither[positionally stable arithmetic xor based dither]'
 }
 
 _findtype() {

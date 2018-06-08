@@ -5,7 +5,7 @@
  * Hayaki Saito <saitoha@me.com> modified this and re-licensed
  * it under the MIT license.
  *
- * Copyright (c) 2014-2016 Hayaki Saito
+ * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -353,16 +353,12 @@ gif_process_raster(
                     goto end;
                 }
                 if (oldcode >= 0) {
-                    p = &g->codes[avail++];
-                    if (avail > 4096) {
-                        sixel_helper_set_additional_message(
-                            "corrupt GIF(reason: too many codes).");
-                        status = SIXEL_RUNTIME_ERROR;
-                        goto end;
+                    if (avail < 4096) {
+                        p = &g->codes[avail++];
+                        p->prefix = (signed short) oldcode;
+                        p->first = g->codes[oldcode].first;
+                        p->suffix = (code == avail) ? p->first : g->codes[code].first;
                     }
-                    p->prefix = (signed short) oldcode;
-                    p->first = g->codes[oldcode].first;
-                    p->suffix = (code == avail) ? p->first : g->codes[code].first;
                 } else if (code == avail) {
                     sixel_helper_set_additional_message(
                         "corrupt GIF (reason: illegal code in raster).");
@@ -661,7 +657,7 @@ test1(void)
 }
 
 
-int
+SIXELAPI int
 sixel_fromgif_tests_main(void)
 {
     int nret = EXIT_FAILURE;

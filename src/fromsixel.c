@@ -103,7 +103,7 @@ typedef enum parse_state {
     PS_DECSIXEL   = 3,  /* DECSIXEL body part ", $, -, ? ... ~ */
     PS_DECGRA     = 4,  /* DECGRA Set Raster Attributes " Pan; Pad; Ph; Pv */
     PS_DECGRI     = 5,  /* DECGRI Graphics Repeat Introducer ! Pn Ch */
-    PS_DECGCI     = 6,  /* DECGCI Graphics Color Introducer # Pc; Pu; Px; Py; Pz */
+    PS_DECGCI     = 6   /* DECGCI Graphics Color Introducer # Pc; Pu; Px; Py; Pz */
 } parse_state_t;
 
 typedef struct parser_context {
@@ -153,7 +153,7 @@ hls_to_rgb(int hue, int lum, int sat)
     }
     c = (1.0 - c2) * sv;
     hpi = (int) (hv * 6.0);
-    x = (hpi & 1) ? c : 0.0;
+    x = c * (((hpi & 1) << 1) - 1) * ((hpi + (hpi & 1)) - hs / 60.0);
     m = lv - 0.5 * c;
 
     switch (hpi) {
