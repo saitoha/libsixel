@@ -161,27 +161,22 @@ end:
 # endif
 
 
-static int
-wait_file(int fd, int usec)
-{
-#if HAVE_SYS_SELECT_H
-    fd_set rfds;
-    struct timeval tv;
-#endif  /* HAVE_SYS_SELECT_H */
-    int ret = 1;
-
-#if HAVE_SYS_SELECT_H
-    tv.tv_sec = usec / 1000000;
-    tv.tv_usec = usec % 1000000;
-    FD_ZERO(&rfds);
 #if HAVE_DIAGNOSTIC_SIGN_CONVERSION
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
+static int
+wait_file(int fd, int usec)
+{
+    int ret = 1;
+#if HAVE_SYS_SELECT_H
+    fd_set rfds;
+    struct timeval tv;
+
+    tv.tv_sec = usec / 1000000;
+    tv.tv_usec = usec % 1000000;
+    FD_ZERO(&rfds);
     FD_SET(fd, &rfds);
-#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
-# pragma GCC diagnostic pop
-#endif
     ret = select(fd + 1, &rfds, NULL, NULL, &tv);
 #else
     (void) fd;
@@ -196,6 +191,9 @@ wait_file(int fd, int usec)
 
     return (0);
 }
+#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
+# pragma GCC diagnostic pop
+#endif
 
 
 static SIXELSTATUS
