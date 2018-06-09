@@ -258,12 +258,12 @@ sixel_chunk_from_file(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int ret;
-    FILE *f;
+    FILE *f = NULL;
     size_t n;
     size_t const bucket_size = 4096;
 
     status = open_binary_file(&f, filename);
-    if (SIXEL_FAILED(status)) {
+    if (SIXEL_FAILED(status) || f == NULL) {
         goto end;
     }
 
