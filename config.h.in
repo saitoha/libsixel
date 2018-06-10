@@ -87,7 +87,7 @@
 /* define 1 if GCC supports -Wsign-conversion */
 #undef HAVE_DIAGNOSTIC_SIGN_CONVERSION
 
-/* define 1 if GCC supports -Wstrict-overeflow */
+/* define 1 if GCC supports -Wstrict-overeflow=1 */
 #undef HAVE_DIAGNOSTIC_STRICT_OVERFLOW
 
 /* define 1 if GCC supports -Wswitch-default */
