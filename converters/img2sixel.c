@@ -633,15 +633,24 @@ main(int argc, char *argv[])
                 arg = str_escape(optarg, escape_char, use_multibyte);
                 switch (generation_lang) {
                 case LANG_C:
-                    printf("    status = %s(encoder, %s, \"%s\");\n",
-                           "sixel_encoder_setopt", optflag_map[n], arg);
+                    if (arg == NULL) {
+                        printf("    status = %s(encoder, %s, NULL);\n",
+                               "sixel_encoder_setopt", optflag_map[n]);
+                    } else {
+                        printf("    status = %s(encoder, %s, \"%s\");\n",
+                               "sixel_encoder_setopt", optflag_map[n], arg);
+                    }
                     printf("    if (SIXEL_FAILED(status)) {\n");
                     printf("        goto error;\n");
                     printf("    }\n");
                     break;
                 case LANG_PYTHON2:
                 case LANG_PYTHON3:
-                    printf("encoder.setopt(%s, '%s');\n", optflag_map[n], arg);
+                    if (arg == NULL) {
+                        printf("encoder.setopt(%s);\n", optflag_map[n]);
+                    } else {
+                        printf("encoder.setopt(%s, '%s');\n", optflag_map[n], arg);
+                    }
                     break;
                 default:
                     break;
