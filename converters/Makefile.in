@@ -1046,6 +1046,9 @@ test_impl:
 @WANT_IMG2SIXEL_TRUE@	@echo '[test3] print information'
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -H
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -V
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -G c -7 -p16
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -G python2 -dfs -e
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -G python3 -w100
 
 @WANT_IMG2SIXEL_TRUE@	@echo '[test4] conversion options'
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel $(top_srcdir)/images/snake.jpg -datkinson -flum -saverage | $(WINE) ./img2sixel | tee snake.sixel

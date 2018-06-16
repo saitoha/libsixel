@@ -1271,6 +1271,8 @@ sixel_encoder_setopt(
     sixel_encoder_ref(encoder);
 
     switch(arg) {
+
+    /* SIXEL_OPTFLAG_OUTFILE -> outfd */
     case SIXEL_OPTFLAG_OUTFILE:  /* o */
         if (*value == '\0') {
             sixel_helper_set_additional_message(
@@ -1287,18 +1289,28 @@ sixel_encoder_setopt(
                                   S_IRUSR|S_IWUSR);
         }
         break;
+
+    /* SIXEL_OPTFLAG_7BIT_MODE -> f8bit */
     case SIXEL_OPTFLAG_7BIT_MODE:  /* 7 */
         encoder->f8bit = 0;
         break;
+
+    /* SIXEL_OPTFLAG_8BIT_MODE -> f8bit */
     case SIXEL_OPTFLAG_8BIT_MODE:  /* 8 */
         encoder->f8bit = 1;
         break;
+
+    /* SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT -> has_gri_arg_limit */
     case SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT:  /* R */
         encoder->has_gri_arg_limit = 1;
         break;
+
+    /* SIXEL_OPTFLAG_COLORS -> reqcolors */
     case SIXEL_OPTFLAG_COLORS:  /* p */
         encoder->reqcolors = atoi(value);
         break;
+
+    /* SIXEL_OPTFLAG_MAPFILE -> mapfile */
     case SIXEL_OPTFLAG_MAPFILE:  /* m */
         if (encoder->mapfile) {
             sixel_allocator_free(encoder->allocator, encoder->mapfile);
@@ -1312,12 +1324,18 @@ sixel_encoder_setopt(
         }
         encoder->color_option = SIXEL_COLOR_OPTION_MAPFILE;
         break;
+
+    /* SIXEL_OPTFLAG_MONOCHROME -> color_option */
     case SIXEL_OPTFLAG_MONOCHROME:  /* e */
         encoder->color_option = SIXEL_COLOR_OPTION_MONOCHROME;
         break;
+
+    /* SIXEL_OPTFLAG_HIGH_COLOR -> color_option */
     case SIXEL_OPTFLAG_HIGH_COLOR:  /* I */
         encoder->color_option = SIXEL_COLOR_OPTION_HIGHCOLOR;
         break;
+
+    /* SIXEL_OPTFLAG_BUILTIN_PALETTE -> builtin_palette */
     case SIXEL_OPTFLAG_BUILTIN_PALETTE:  /* b */
         if (strcmp(value, "xterm16") == 0) {
             encoder->builtin_palette = SIXEL_BUILTIN_XTERM16;
@@ -1343,6 +1361,8 @@ sixel_encoder_setopt(
         }
         encoder->color_option = SIXEL_COLOR_OPTION_BUILTIN;
         break;
+
+    /* SIXEL_OPTFLAG_DIFFUSION -> method_for_diffuse */
     case SIXEL_OPTFLAG_DIFFUSION:  /* d */
         /* parse --diffusion option */
         if (strcmp(value, "auto") == 0) {
@@ -1370,6 +1390,8 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
+
+    /* SIXEL_OPTFLAG_FIND_LARGEST -> method_for_largest */
     case SIXEL_OPTFLAG_FIND_LARGEST:  /* f */
         /* parse --find-largest option */
         if (value) {
@@ -1387,6 +1409,8 @@ sixel_encoder_setopt(
             }
         }
         break;
+
+    /* SIXEL_OPTFLAG_SELECT_COLOR -> method_for_rep */
     case SIXEL_OPTFLAG_SELECT_COLOR:  /* s */
         /* parse --select-color option */
         if (strcmp(value, "auto") == 0) {
@@ -1405,6 +1429,8 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
+
+    /* SIXEL_OPTFLAG_CROP -> clipwidth, clipheight, clipx, clipy, clipfirst */
     case SIXEL_OPTFLAG_CROP:  /* c */
         number = sscanf(value, "%dx%d+%d+%d",
                         &encoder->clipwidth, &encoder->clipheight,
@@ -1423,6 +1449,8 @@ sixel_encoder_setopt(
         }
         encoder->clipfirst = 0;
         break;
+
+    /* SIXEL_OPTFLAG_WIDTH -> pixelwidth, percentwidth */
     case SIXEL_OPTFLAG_WIDTH:  /* w */
         parsed = sscanf(value, "%d%2s", &number, unit);
         if (parsed == 2 && strcmp(unit, "%") == 0) {
@@ -1444,6 +1472,8 @@ sixel_encoder_setopt(
             encoder->clipfirst = 1;
         }
         break;
+
+    /* SIXEL_OPTFLAG_WIDTH -> pixelheight, percentheight */
     case SIXEL_OPTFLAG_HEIGHT:  /* h */
         parsed = sscanf(value, "%d%2s", &number, unit);
         if (parsed == 2 && strcmp(unit, "%") == 0) {
@@ -1465,6 +1495,8 @@ sixel_encoder_setopt(
             encoder->clipfirst = 1;
         }
         break;
+
+    /* SIXEL_OPTFLAG_RESAMPLING -> method_for_resampling */
     case SIXEL_OPTFLAG_RESAMPLING:  /* r */
         /* parse --resampling option */
         if (strcmp(value, "nearest") == 0) {
@@ -1494,6 +1526,8 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
+
+    /* SIXEL_OPTFLAG_QUALITY -> quality_mode */
     case SIXEL_OPTFLAG_QUALITY:  /* q */
         /* parse --quality option */
         if (strcmp(value, "auto") == 0) {
@@ -1511,6 +1545,8 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
+
+    /* SIXEL_OPTFLAG_LOOPMODE -> quality_mode */
     case SIXEL_OPTFLAG_LOOPMODE:  /* l */
         /* parse --loop-control option */
         if (strcmp(value, "auto") == 0) {
@@ -1526,6 +1562,8 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
+
+    /* SIXEL_OPTFLAG_PALETTE_TYPE -> palette_type */
     case SIXEL_OPTFLAG_PALETTE_TYPE:  /* t */
         /* parse --palette-type option */
         if (strcmp(value, "auto") == 0) {
@@ -1541,6 +1579,8 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
+
+    /* SIXEL_OPTFLAG_BGCOLOR -> bgcolor */
     case SIXEL_OPTFLAG_BGCOLOR:  /* B */
         /* parse --bgcolor option */
         if (encoder->bgcolor) {
@@ -1556,15 +1596,23 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
+
+    /* SIXEL_OPTFLAG_INSECURE -> finsecure */
     case SIXEL_OPTFLAG_INSECURE:  /* k */
         encoder->finsecure = 1;
         break;
+
+    /* SIXEL_OPTFLAG_INVERT -> finvert */
     case SIXEL_OPTFLAG_INVERT:  /* i */
         encoder->finvert = 1;
         break;
+
+    /* SIXEL_OPTFLAG_USE_MACRO -> fuse_macro */
     case SIXEL_OPTFLAG_USE_MACRO:  /* u */
         encoder->fuse_macro = 1;
         break;
+
+    /* SIXEL_OPTFLAG_MACRO_NUMBER -> macro_number */
     case SIXEL_OPTFLAG_MACRO_NUMBER:  /* n */
         encoder->macro_number = atoi(value);
         if (encoder->macro_number < 0) {
@@ -1572,18 +1620,28 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
+
+    /* SIXEL_OPTFLAG_IGNORE_DELAY -> fignore_delay */
     case SIXEL_OPTFLAG_IGNORE_DELAY:  /* g */
         encoder->fignore_delay = 1;
         break;
+
+    /* SIXEL_OPTFLAG_VERBOSE -> verbose */
     case SIXEL_OPTFLAG_VERBOSE:  /* v */
         encoder->verbose = 1;
         break;
+
+    /* SIXEL_OPTFLAG_STATIC -> fstatic */
     case SIXEL_OPTFLAG_STATIC:  /* S */
         encoder->fstatic = 1;
         break;
+
+    /* SIXEL_OPTFLAG_PENETRATE -> penetrate_multiplexer */
     case SIXEL_OPTFLAG_PENETRATE:  /* P */
         encoder->penetrate_multiplexer = 1;
         break;
+
+    /* SIXEL_OPTFLAG_PENETRATE -> encode_policy */
     case SIXEL_OPTFLAG_ENCODE_POLICY:  /* E */
         if (strcmp(value, "auto") == 0) {
             encoder->encode_policy = SIXEL_ENCODEPOLICY_AUTO;
@@ -1598,6 +1656,8 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
+
+    /* SIXEL_OPTFLAG_COMPLEXION_SCORE -> complexion */
     case SIXEL_OPTFLAG_COMPLEXION_SCORE:  /* C */
         encoder->complexion = atoi(value);
         if (encoder->complexion < 1) {
@@ -1607,9 +1667,12 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
+
+    /* SIXEL_OPTFLAG_PIPE_MODE -> pipe_mode */
     case SIXEL_OPTFLAG_PIPE_MODE:  /* D */
         encoder->pipe_mode = 1;
         break;
+
     case '?':  /* unknown option */
     default:
         /* exit if unknown options are specified */

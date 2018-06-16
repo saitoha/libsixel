@@ -114,6 +114,12 @@ _img2sixel()
         _filedir
         return 0
         ;;
+    -G|--generate-source)
+        COMPREPLY=( $( compgen -W 'c \
+                                   python2 \
+                                   python3' -- "$cur" ) )
+        return 0
+        ;;
     esac
 
     case "$cur" in
@@ -152,6 +158,7 @@ _img2sixel()
                                    -v --verbose \
                                    -V --version \
                                    -H --help \
+                                   -G --generate-code \
                                   ' -- "$cur" ))
         ;;
     *)

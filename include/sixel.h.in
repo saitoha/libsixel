@@ -365,6 +365,14 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_VERBOSE           ('v')  /* -v, --verbose: show debugging info */
 #define SIXEL_OPTFLAG_VERSION           ('V')  /* -V, --version: show version and license info */
 #define SIXEL_OPTFLAG_HELP              ('H')  /* -H, --help: show this help */
+#define SIXEL_OPTFLAG_GENERATE_CODE     ('G')  /* -G LANG, --generate-code=LANG:
+                                                 generate code equivalent to given
+                                                 command-line options in specified
+                                                 language
+                                                   c -> generate C code
+                                                   python2 -> generate code for python2
+                                                   python3 -> generate code for python3
+                                                */
 
 #if SIXEL_USE_DEPRECATED_SYMBOLS
 /* output character size */

@@ -104,6 +104,14 @@ _encodepolicy() {
     'size[encode to as small sixel sequence as possible]'
 }
 
+_generatecode() {
+  _values \
+    'LANG' \
+    'c[generate C code]' \
+    'python2[generate code for python2]' \
+    'python3[generate code for python3]'
+}
+
 _arguments -S -s -A "-*" -S \
   {-o,--outfile}'[specify output file (default: stdout)]':files:_files \
   {-7,--7bit-mode}'[generate a sixel image for 7bit terminals (default)]' \
@@ -138,6 +146,7 @@ _arguments -S -s -A "-*" -S \
   {-v,--verbose}'[show debugging information]' \
   {-V,--version}'[show version and license information]' \
   {-H,--help}'[show help]' \
+  {-G,--generate-code=}'[generate code equivalent to given command-line':generatecode:_generatecode \
   '*:files:_files' \
   && return 0
 

@@ -80,6 +80,9 @@ if WANT_IMG2SIXEL
 	@echo '[test3] print information'
 	$(WINE) ./img2sixel -H
 	$(WINE) ./img2sixel -V
+	$(WINE) ./img2sixel -G c -7 -p16
+	$(WINE) ./img2sixel -G python2 -dfs -e
+	$(WINE) ./img2sixel -G python3 -w100
 
 	@echo '[test4] conversion options'
 	$(WINE) ./img2sixel $(top_srcdir)/images/snake.jpg -datkinson -flum -saverage | $(WINE) ./img2sixel | tee snake.sixel
