@@ -97,7 +97,7 @@ end:
     return output;
 }
 
- 
+
 /* destroy output context object */
 SIXELAPI void
 sixel_output_destroy(sixel_output_t *output)

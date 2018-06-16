@@ -1377,7 +1377,7 @@ test1(void)
     unsigned char *ptr = malloc(16);
 
     nret = EXIT_SUCCESS;
-    goto error; 
+    goto error;
 
     nret = EXIT_SUCCESS;
 

@@ -759,7 +759,7 @@ sixel_encoder_output_without_macro(
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
-    
+
     if (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT) {
         sixel_dither_set_optimize_palette(dither, 1);
     }
