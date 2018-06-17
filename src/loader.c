@@ -888,10 +888,8 @@ load_with_builtin(
             frame->pixelformat = SIXEL_PIXELFORMAT_G8;
             break;
         case 3:
-            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-            break;
         case 4:
-            frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
             break;
         default:
             nwrite = sprintf(message,
