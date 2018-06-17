@@ -47,7 +47,7 @@ sixel_quant_make_palette(
 /* apply color palette into specified pixel buffers */
 SIXELSTATUS
 sixel_quant_apply_palette(
-    unsigned char       /* out */ *result,
+    sixel_index_t       /* out */ *result,
     int                 /* out */ *keycolor,
     unsigned char       /* in */  *data,
     int                 /* in */  width,
@@ -81,6 +81,11 @@ sixel_quant_tests_main(void);
 
 #endif /* LIBSIXEL_QUANT_H */
 
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
-/* vim: set expandtab ts=4 : */
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */

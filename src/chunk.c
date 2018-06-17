@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016 Hayaki Saito
+ * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -51,6 +51,10 @@
 
 #ifdef HAVE_LIBCURL
 # include <curl/curl.h>
+#endif
+
+#if HAVE_SYS_SELECT_H
+# include <sys/select.h>
 #endif
 
 #if !defined(HAVE_MEMCPY)
@@ -157,27 +161,22 @@ end:
 # endif
 
 
-static int
-wait_file(int fd, int usec)
-{
-#if HAVE_SYS_SELECT_H
-    fd_set rfds;
-    struct timeval tv;
-#endif  /* HAVE_SYS_SELECT_H */
-    int ret = 1;
-
-#if HAVE_SYS_SELECT_H
-    tv.tv_sec = usec / 1000000;
-    tv.tv_usec = usec % 1000000;
-    FD_ZERO(&rfds);
 #if HAVE_DIAGNOSTIC_SIGN_CONVERSION
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
+static int
+wait_file(int fd, int usec)
+{
+    int ret = 1;
+#if HAVE_SYS_SELECT_H
+    fd_set rfds;
+    struct timeval tv;
+
+    tv.tv_sec = usec / 1000000;
+    tv.tv_usec = usec % 1000000;
+    FD_ZERO(&rfds);
     FD_SET(fd, &rfds);
-#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
-# pragma GCC diagnostic pop
-#endif
     ret = select(fd + 1, &rfds, NULL, NULL, &tv);
 #else
     (void) fd;
@@ -192,6 +191,9 @@ wait_file(int fd, int usec)
 
     return (0);
 }
+#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
+# pragma GCC diagnostic pop
+#endif
 
 
 static SIXELSTATUS
@@ -225,7 +227,7 @@ open_binary_file(
         sixel_helper_set_additional_message("stat() failed.");
         goto end;
     }
-    if ((sb.st_mode & S_IFMT) == S_IFDIR) {
+    if (S_ISDIR(sb.st_mode)) {
         status = SIXEL_BAD_INPUT;
         sixel_helper_set_additional_message("specified path is directory.");
         goto end;
@@ -256,12 +258,12 @@ sixel_chunk_from_file(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int ret;
-    FILE *f;
+    FILE *f = NULL;
     size_t n;
     size_t const bucket_size = 4096;
 
     status = open_binary_file(&f, filename);
-    if (SIXEL_FAILED(status)) {
+    if (SIXEL_FAILED(status) || f == NULL) {
         goto end;
     }
 
@@ -585,7 +587,7 @@ error:
 }
 
 
-int
+SIXELAPI int
 sixel_chunk_tests_main(void)
 {
     int nret = EXIT_FAILURE;
@@ -613,7 +615,11 @@ error:
 }
 #endif  /* HAVE_TESTS */
 
-
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
-/* vim: set expandtab ts=4 : */
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */

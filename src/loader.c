@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016 Hayaki Saito
+ * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -117,7 +117,14 @@ stbi_free(void *p)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wdouble-promotion"
 #endif
+# if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused-function"
+#endif
 #include "stb_image.h"
+#if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
+# pragma GCC diagnostic pop
+#endif
 #if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
 # pragma GCC diagnostic pop
 #endif
@@ -316,12 +323,20 @@ load_png(unsigned char      /* out */ **result,
     }
 
     if (bgcolor) {
+#  if HAVE_DEBUG
+        fprintf(stderr, "background color is specified [%02x, %02x, %02x]\n",
+                bgcolor[0], bgcolor[1], bgcolor[2]);
+#  endif
         background.red = bgcolor[0];
         background.green = bgcolor[1];
         background.blue = bgcolor[2];
         background.gray = (bgcolor[0] + bgcolor[1] + bgcolor[2]) / 3;
     } else if (png_get_bKGD(png_ptr, info_ptr, &default_background) == PNG_INFO_bKGD) {
         memcpy(&background, default_background, sizeof(background));
+#  if HAVE_DEBUG
+        fprintf(stderr, "background color is found [%02x, %02x, %02x]\n",
+                background.red, background.green, background.blue);
+#  endif
     } else {
         background.red = 0;
         background.green = 0;
@@ -629,6 +644,7 @@ end:
 }
 
 
+/* detect whether given chunk is sixel stream */
 static int
 chunk_is_sixel(sixel_chunk_t const *chunk)
 {
@@ -665,6 +681,7 @@ chunk_is_sixel(sixel_chunk_t const *chunk)
 }
 
 
+/* detect whether given chunk is PNM stream */
 static int
 chunk_is_pnm(sixel_chunk_t const *chunk)
 {
@@ -681,6 +698,7 @@ chunk_is_pnm(sixel_chunk_t const *chunk)
 
 
 #if HAVE_LIBPNG
+/* detect whether given chunk is PNG stream */
 static int
 chunk_is_png(sixel_chunk_t const *chunk)
 {
@@ -695,6 +713,7 @@ chunk_is_png(sixel_chunk_t const *chunk)
 #endif  /* HAVE_LIBPNG */
 
 
+/* detect whether given chunk is GIF stream */
 static int
 chunk_is_gif(sixel_chunk_t const *chunk)
 {
@@ -714,6 +733,7 @@ chunk_is_gif(sixel_chunk_t const *chunk)
 
 
 #if HAVE_JPEG
+/* detect whether given chunk is JPEG stream */
 static int
 chunk_is_jpeg(sixel_chunk_t const *chunk)
 {
@@ -752,7 +772,6 @@ load_with_builtin(
     fn_pointer fnp;
     stbi__context s;
     int depth;
-    int x, y;
 
     if (chunk_is_sixel(pchunk)) {
         status = sixel_frame_new(&frame, pchunk->allocator);
@@ -856,12 +875,7 @@ load_with_builtin(
         }
         stbi_allocator = pchunk->allocator;
         stbi__start_mem(&s, pchunk->buffer, (int)pchunk->size);
-        if (!stbi__info_main(&s, &x, &y, &depth)) {
-            sixel_helper_set_additional_message(stbi_failure_reason());
-            status = SIXEL_STBI_ERROR;
-            goto end;
-        }
-        frame->pixels = stbi__load_main(&s, &frame->width, &frame->height, &depth, depth);
+        frame->pixels = stbi__load_and_postprocess_8bit(&s, &frame->width, &frame->height, &depth, 3);
         if (!frame->pixels) {
             sixel_helper_set_additional_message(stbi_failure_reason());
             status = SIXEL_STBI_ERROR;
@@ -1379,7 +1393,7 @@ test1(void)
     unsigned char *ptr = malloc(16);
 
     nret = EXIT_SUCCESS;
-    goto error; 
+    goto error;
 
     nret = EXIT_SUCCESS;
 
@@ -1389,7 +1403,7 @@ error:
 }
 
 
-int
+SIXELAPI int
 sixel_loader_tests_main(void)
 {
     int nret = EXIT_FAILURE;
@@ -1414,7 +1428,11 @@ error:
 }
 #endif  /* HAVE_TESTS */
 
-
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
-/* vim: set expandtab ts=4 : */
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */

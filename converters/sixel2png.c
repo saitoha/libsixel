@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016 Hayaki Saito
+ * Copyright (c) 2014-2017 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -60,12 +60,45 @@
 
 #include <sixel.h>
 
-
+/* output version info to STDOUT */
 static
 void show_version(void)
 {
     printf("sixel2png " PACKAGE_VERSION "\n"
-           "Copyright (C) 2014,2015 Hayaki Saito <saitoha@me.com>.\n"
+           "\n"
+           "configured with:\n"
+           "  libcurl: "
+#ifdef HAVE_LIBCURL
+           "yes\n"
+#else
+           "no\n"
+#endif
+           "  libpng: "
+#ifdef HAVE_LIBPNG
+           "yes\n"
+#else
+           "no\n"
+#endif
+           "  libjpeg: "
+#ifdef HAVE_JPEG
+           "yes\n"
+#else
+           "no\n"
+#endif
+           "  gdk-pixbuf2: "
+#ifdef HAVE_GDK_PIXBUF2
+           "yes\n"
+#else
+           "no\n"
+#endif
+           "  GD: "
+#ifdef HAVE_GD
+           "yes\n"
+#else
+           "no\n"
+#endif
+           "\n"
+           "Copyright (C) 2014-2017 Hayaki Saito <saitoha@me.com>.\n"
            "\n"
            "Permission is hereby granted, free of charge, to any person obtaining a copy of\n"
            "this software and associated documentation files (the \"Software\"), to deal in\n"
@@ -123,14 +156,15 @@ main(int argc, char *argv[])
         {"help",         no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}
     };
+#endif  /* HAVE_GETOPT_LONG */
 
     status = sixel_decoder_new(&decoder, NULL);
     if (SIXEL_FAILED(status)) {
-        goto end;
+        goto error;
     }
 
-#endif  /* HAVE_GETOPT_LONG */
     for (;;) {
+
 #if HAVE_GETOPT_LONG
         n = getopt_long(argc, argv, optstring,
                         long_options, &option_index);
@@ -195,11 +229,22 @@ main(int argc, char *argv[])
 argerr:
     show_help();
 
+error:
+    fprintf(stderr, "%s\n%s\n",
+            sixel_helper_format_error(status),
+            sixel_helper_get_additional_message());
+    status = (-1);
+
 end:
     sixel_decoder_unref(decoder);
     return status;
 }
 
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
-/* vim: set expandtab ts=4 : */
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */

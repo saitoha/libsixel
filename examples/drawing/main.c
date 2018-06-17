@@ -77,6 +77,7 @@ wait_stdin(int usec)
     return select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
 }
 
+
 static int
 scroll_on_demand(int pixelheight)
 {
@@ -109,7 +110,9 @@ err:
     return 0;
 }
 
-static int tty_raw(struct termios *old_termios)
+/* set terminal into raw mode. */
+static int
+tty_raw(struct termios *old_termios)
 {
     struct termios new_termios;
     int ret;
@@ -228,7 +231,7 @@ int main(int argc, char **argv)
     int state;
     int offset;
 
-    printf("\033[?8452h" "\033[1;1'z");
+    printf("\033[?1;3;256S" "\033[?8452h" "\033[1;1'z");
     (void) tty_raw(&old_termios);
 
     if (canvas_init(&c, 640, 480) != 0)

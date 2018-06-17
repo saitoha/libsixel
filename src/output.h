@@ -27,7 +27,7 @@ typedef struct sixel_node {
     int pal;
     int sx;
     int mx;
-    unsigned char *map;
+    char *map;
 } sixel_node_t;
 
 struct sixel_output {
@@ -81,6 +81,11 @@ struct sixel_output {
 
 #endif /* LIBSIXEL_OUTPUT_H */
 
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
-/* vim: set expandtab ts=4 : */
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */

@@ -22,7 +22,7 @@
  *
  * ******************************************************************************
  *
- * Copyright (c) 2014-2016 Hayaki Saito
+ * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -138,7 +138,8 @@ alloctupletable(
     sixel_allocator_t   /* in */  *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    char message[256];
+    enum { message_buffer_size = 256 };
+    char message[message_buffer_size];
     int nwrite;
     unsigned int mainTableSize;
     unsigned int tupleIntSize;
@@ -1030,6 +1031,17 @@ diffuse_burkes(unsigned char *data, int width, int height,
     }
 }
 
+static float
+mask_a (int x, int y, int c)
+{
+    return ((((x + c * 67) + y * 236) * 119) & 255 ) / 128.0 - 1.0;
+}
+
+static float
+mask_x (int x, int y, int c)
+{
+    return ((((x + c * 29) ^ y* 149) * 1234) & 511 ) / 256.0 - 1.0;
+}
 
 /* lookup closest color from palette with "normal" strategy */
 static int
@@ -1486,7 +1498,7 @@ end:
 /* apply color palette into specified pixel buffers */
 SIXELSTATUS
 sixel_quant_apply_palette(
-    unsigned char     /* out */ *result,
+    sixel_index_t     /* out */ *result,
     int               /* out */ *keycolor,
     unsigned char     /* in */  *data,
     int               /* in */  width,
@@ -1503,6 +1515,7 @@ sixel_quant_apply_palette(
     sixel_allocator_t /* in */  *allocator)
 {
     typedef int component_t;
+    enum { max_depth = 4 };
     SIXELSTATUS status = SIXEL_FALSE;
     int pos;
     int n;
@@ -1514,8 +1527,9 @@ sixel_quant_apply_palette(
     component_t offset;
     int color_index;
     unsigned short *indextable;
-    unsigned char new_palette[256 * 3];
-    unsigned short migration_map[256];
+    unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
+    unsigned short migration_map[SIXEL_PALETTE_MAX];
+    float (*f_mask) (int x, int y, int c) = NULL;
     void (*f_diffuse)(unsigned char *data, int width, int height,
                       int x, int y, int depth, int offset);
     int (*f_lookup)(unsigned char const * const pixel,
@@ -1583,6 +1597,14 @@ sixel_quant_apply_palette(
         case SIXEL_DIFFUSE_BURKES:
             f_diffuse = diffuse_burkes;
             break;
+        case SIXEL_DIFFUSE_A_DITHER:
+            f_diffuse = diffuse_none;
+            f_mask = mask_a;
+            break;
+        case SIXEL_DIFFUSE_X_DITHER:
+            f_diffuse = diffuse_none;
+            f_mask = mask_x;
+            break;
         default:
             quant_trace(stderr, "Internal error: invalid value of"
                                 " methodForDiffuse: %d\n",
@@ -1623,41 +1645,86 @@ sixel_quant_apply_palette(
     if (foptimize_palette) {
         *ncolors = 0;
 
-        memset(new_palette, 0x00, sizeof(256 * 3));
+        memset(new_palette, 0x00, sizeof(SIXEL_PALETTE_MAX * depth));
         memset(migration_map, 0x00, sizeof(migration_map));
 
-        for (y = 0; y < height; ++y) {
-            for (x = 0; x < width; ++x) {
-                pos = y * width + x;
-                color_index = f_lookup(data + (pos * depth), pixelformat,
-                                       palette, reqcolor, indextable, complexion);
-                if (migration_map[color_index] == 0) {
-                    result[pos] = *ncolors;
-                    for (n = 0; n < 3; ++n) {
-                        new_palette[*ncolors * 3 + n] = palette[color_index * 3 + n];
+        if (f_mask) {
+            for (y = 0; y < height; ++y) {
+                for (x = 0; x < width; ++x) {
+                    unsigned char copy[max_depth];
+                    int d;
+                    int val;
+
+                    pos = y * width + x;
+                    for (d = 0; d < depth; d ++) {
+                        val = data[pos * depth + d] + f_mask(x, y, d) * 32;
+                        copy[d] = val < 0 ? 0 : val > 255 ? 255 : val;
                     }
-                    ++*ncolors;
-                    migration_map[color_index] = *ncolors;
-                } else {
-                    result[pos] = migration_map[color_index] - 1;
-                }
-                for (n = 0; n < 3; ++n) {
-                    offset = data[pos * depth + n] - palette[color_index * 3 + n];
-                    f_diffuse(data + n, width, height, x, y, depth, offset);
+                    color_index = f_lookup(copy, depth,
+                                           palette, reqcolor, indextable, complexion);
+                    if (migration_map[color_index] == 0) {
+                        result[pos] = *ncolors;
+                        for (n = 0; n < depth; ++n) {
+                            new_palette[*ncolors * depth + n] = palette[color_index * depth + n];
+                        }
+                        ++*ncolors;
+                        migration_map[color_index] = *ncolors;
+                    } else {
+                        result[pos] = migration_map[color_index] - 1;
+                    }
                 }
             }
+            memcpy(palette, new_palette, (size_t)(*ncolors * depth));
+        } else {
+            for (y = 0; y < height; ++y) {
+                for (x = 0; x < width; ++x) {
+                    pos = y * width + x;
+                    color_index = f_lookup(data + (pos * depth), depth,
+                                           palette, reqcolor, indextable, complexion);
+                    if (migration_map[color_index] == 0) {
+                        result[pos] = *ncolors;
+                        for (n = 0; n < depth; ++n) {
+                            new_palette[*ncolors * depth + n] = palette[color_index * depth + n];
+                        }
+                        ++*ncolors;
+                        migration_map[color_index] = *ncolors;
+                    } else {
+                        result[pos] = migration_map[color_index] - 1;
+                    }
+                    for (n = 0; n < depth; ++n) {
+                        offset = data[pos * depth + n] - palette[color_index * depth + n];
+                        f_diffuse(data + n, width, height, x, y, depth, offset);
+                    }
+                }
+            }
+            memcpy(palette, new_palette, (size_t)(*ncolors * depth));
         }
-        memcpy(palette, new_palette, (size_t)(*ncolors * 3));
     } else {
-        for (y = 0; y < height; ++y) {
-            for (x = 0; x < width; ++x) {
-                pos = y * width + x;
-                color_index = f_lookup(data + (pos * depth), pixelformat,
-                                       palette, reqcolor, indextable, complexion);
-                result[pos] = color_index;
-                if (color_index != *keycolor) {
-                    for (n = 0; n < 3; ++n) {
-                        offset = data[pos * depth + n] - palette[color_index * 3 + n];
+        if (f_mask) {
+            for (y = 0; y < height; ++y) {
+                for (x = 0; x < width; ++x) {
+                    unsigned char copy[max_depth];
+                    int d;
+                    int val;
+
+                    pos = y * width + x;
+                    for (d = 0; d < depth; d ++) {
+                        val = data[pos * depth + d] + f_mask(x, y, d) * 32;
+                        copy[d] = val < 0 ? 0 : val > 255 ? 255 : val;
+                    }
+                    result[pos] = f_lookup(copy, depth,
+                                           palette, reqcolor, indextable, complexion);
+                }
+            }
+        } else {
+            for (y = 0; y < height; ++y) {
+                for (x = 0; x < width; ++x) {
+                    pos = y * width + x;
+                    color_index = f_lookup(data + (pos * depth), depth,
+                                           palette, reqcolor, indextable, complexion);
+                    result[pos] = color_index;
+                    for (n = 0; n < depth; ++n) {
+                        offset = data[pos * depth + n] - palette[color_index * depth + n];
                         f_diffuse(data + n, width, height, x, y, depth, offset);
                     }
                 }
@@ -1706,7 +1773,7 @@ error:
 }
 
 
-int
+SIXELAPI int
 sixel_quant_tests_main(void)
 {
     int nret = EXIT_FAILURE;
@@ -1731,8 +1798,11 @@ error:
 }
 #endif  /* HAVE_TESTS */
 
-
-
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
-/* vim: set expandtab ts=4 : */
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */

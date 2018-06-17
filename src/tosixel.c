@@ -43,8 +43,8 @@
 #define SCREEN_PACKET_SIZE   256
 
 enum {
-    PALETTE_HIT = 1,
-    PALETTE_CHANGE = 2,
+    PALETTE_HIT    = 1,
+    PALETTE_CHANGE = 2
 };
 
 /* implementation */
@@ -64,7 +64,7 @@ sixel_penetrate(
                         - dcs_start_size - dcs_end_size;
 
     for (pos = 0; pos < nwrite; pos += splitsize) {
-        output->fn_write((char *)dcs_start, dcs_end_size, output->priv);
+        output->fn_write((char *)dcs_start, dcs_start_size, output->priv);
         output->fn_write(((char *)output->buffer) + pos,
                           nwrite - pos < splitsize ? nwrite - pos: splitsize,
                           output->priv);
@@ -441,9 +441,9 @@ output_hls_palette_definition(
             h = s = 0;
         } else {
             if (l < 50) {
-                s = ((max - min) * 100 + 127) / (max + min);
+                s = ((max - min) * 100) / (max + min);
             } else {
-                s = ((max - min) * 100 + 127) / ((255 - max) + (255 - min));
+                s = ((max - min) * 100) / ((255 - max) + (255 - min));
             }
             if (r == max) {
                 h = 120 + (g - b) * 60 / (max - min);
@@ -481,7 +481,7 @@ output_hls_palette_definition(
 
 static SIXELSTATUS
 sixel_encode_body(
-    unsigned char       /* in */ *pixels,
+    sixel_index_t       /* in */ *pixels,
     int                 /* in */ width,
     int                 /* in */ height,
     unsigned char       /* in */ *palette,
@@ -502,7 +502,7 @@ sixel_encode_body(
     int mx;
     int len;
     int pix;
-    unsigned char *map = NULL;
+    char *map = NULL;
     sixel_node_t *np, *tp, top;
     int fillable;
 
@@ -513,12 +513,12 @@ sixel_encode_body(
     len = ncolors * width;
     output->active_palette = (-1);
 
-    map = (unsigned char *)sixel_allocator_calloc(allocator,
-                                                  (size_t)len,
-                                                  sizeof(unsigned char));
+    map = (char *)sixel_allocator_calloc(allocator,
+                                         (size_t)len,
+                                         sizeof(char));
     if (map == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_encode_body: sixel_allocator_malloc() failed.");
+            "sixel_encode_body: sixel_allocator_calloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -748,8 +748,9 @@ sixel_encode_dither(
     sixel_output_t  /* in */ *output)   /* output context */
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    unsigned char *paletted_pixels = NULL;
-    unsigned char *input_pixels;
+    sixel_index_t *paletted_pixels = NULL;
+    sixel_index_t *input_pixels;
+    size_t bufsize;
 
     switch (dither->pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
@@ -758,8 +759,8 @@ sixel_encode_dither(
     case SIXEL_PIXELFORMAT_G1:
     case SIXEL_PIXELFORMAT_G2:
     case SIXEL_PIXELFORMAT_G4:
-        paletted_pixels = (unsigned char *)sixel_allocator_malloc(dither->allocator,
-                                                                  (size_t)(width * height * 3));
+        bufsize = (sizeof(sixel_index_t) * (size_t)(width * height * 3));
+        paletted_pixels = (sixel_index_t *)sixel_allocator_malloc(dither->allocator, bufsize);
         if (paletted_pixels == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_encode_dither: sixel_allocator_malloc() failed.");
@@ -823,7 +824,6 @@ end:
 
     return status;
 }
-
 
 static void
 dither_func_none(unsigned char *data, int width)
@@ -1168,6 +1168,50 @@ dither_func_burkes(unsigned char *data, int width)
 
 
 static void
+dither_func_a_dither(unsigned char *data, int width, int x, int y)
+{
+    int c;
+    float value;
+    float mask;
+
+    (void) width; /* unused */
+
+    for (c = 0; c < 3; c ++) {
+        mask = (((x + c * 17) + y * 236) * 119) & 255;
+        mask = ((mask - 128) / 256.0f) ;
+        value = data[c] + mask;
+        if (value < 0) {
+            value = 0;
+        }
+        value = value > 255 ? 255 : value;
+        data[c] = value;
+    }
+}
+
+
+static void
+dither_func_x_dither(unsigned char *data, int width, int x, int y)
+{
+    int c;
+    float value;
+    float mask;
+
+    (void) width;  /* unused */
+
+    for (c = 0; c < 3; c ++) {
+        mask = (((x + c * 17) ^ y * 236) * 1234) & 511;
+        mask = ((mask - 128) / 512.0f) ;
+        value = data[c] + mask;
+        if (value < 0) {
+            value = 0;
+        }
+        value = value > 255 ? 255 : value;
+        data[c] = value;
+    }
+}
+
+
+static void
 sixel_apply_15bpp_dither(
     unsigned char *pixels,
     int x, int y, int width, int height,
@@ -1200,6 +1244,12 @@ sixel_apply_15bpp_dither(
             dither_func_burkes(pixels, width);
         }
         break;
+    case SIXEL_DIFFUSE_A_DITHER:
+        dither_func_a_dither(pixels, width, x, y);
+        break;
+    case SIXEL_DIFFUSE_X_DITHER:
+        dither_func_x_dither(pixels, width, x, y);
+        break;
     case SIXEL_DIFFUSE_NONE:
     default:
         dither_func_none(pixels, width);
@@ -1215,14 +1265,14 @@ sixel_encode_highcolor(
         )
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    unsigned char *paletted_pixels = NULL;
+    sixel_index_t *paletted_pixels = NULL;
     unsigned char *normalized_pixels = NULL;
     /* Mark sixel line pixels which have been already drawn. */
     unsigned char *marks;
     unsigned char *rgbhit;
     unsigned char *rgb2pal;
-    unsigned char palhitcount[256];
-    unsigned char palstate[256];
+    unsigned char palhitcount[SIXEL_PALETTE_MAX];
+    unsigned char palstate[SIXEL_PALETTE_MAX];
     int output_count;
     int const maxcolors = 1 << 15;
     int whole_size = width * height  /* for paletted_pixels */
@@ -1257,7 +1307,7 @@ sixel_encode_highcolor(
         }
         pixels = normalized_pixels;
     }
-    paletted_pixels = (unsigned char *)sixel_allocator_malloc(dither->allocator,
+    paletted_pixels = (sixel_index_t *)sixel_allocator_malloc(dither->allocator,
                                                               (size_t)whole_size);
     if (paletted_pixels == NULL) {
         goto error;
@@ -1282,12 +1332,13 @@ next:
             if (*mptr) {
                 *dst = 255;
             } else {
-                pix = ((pixels[0] & 0xf8) << 7) |
-                      ((pixels[1] & 0xf8) << 2) |
-                      ((pixels[2] >> 3) & 0x1f);
                 sixel_apply_15bpp_dither(pixels,
                                          x, y, width, height,
                                          dither->method_for_diffuse);
+                pix = ((pixels[0] & 0xf8) << 7) |
+                      ((pixels[1] & 0xf8) << 2) |
+                      ((pixels[2] >> 3) & 0x1f);
+
                 if (!rgbhit[pix]) {
                     while (1) {
                         if (nextpal >= 255) {
@@ -1445,6 +1496,11 @@ sixel_encode(
     return status;
 }
 
-/* emacs, -*- Mode: C; tab-width: 4; indent-tabs-mode: nil -*- */
-/* vim: set expandtab ts=4 sw=4 sts=0 : */
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */
