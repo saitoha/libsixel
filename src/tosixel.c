@@ -441,9 +441,9 @@ output_hls_palette_definition(
             h = s = 0;
         } else {
             if (l < 50) {
-                s = ((max - min) * 100 + 127) / (max + min);
+                s = ((max - min) * 100) / (max + min);
             } else {
-                s = ((max - min) * 100 + 127) / ((255 - max) + (255 - min));
+                s = ((max - min) * 100) / ((255 - max) + (255 - min));
             }
             if (r == max) {
                 h = 120 + (g - b) * 60 / (max - min);
@@ -481,7 +481,7 @@ output_hls_palette_definition(
 
 static SIXELSTATUS
 sixel_encode_body(
-    unsigned char       /* in */ *pixels,
+    sixel_index_t       /* in */ *pixels,
     int                 /* in */ width,
     int                 /* in */ height,
     unsigned char       /* in */ *palette,
@@ -748,8 +748,9 @@ sixel_encode_dither(
     sixel_output_t  /* in */ *output)   /* output context */
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    unsigned char *paletted_pixels = NULL;
-    unsigned char *input_pixels;
+    sixel_index_t *paletted_pixels = NULL;
+    sixel_index_t *input_pixels;
+    size_t bufsize;
 
     switch (dither->pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
@@ -758,8 +759,8 @@ sixel_encode_dither(
     case SIXEL_PIXELFORMAT_G1:
     case SIXEL_PIXELFORMAT_G2:
     case SIXEL_PIXELFORMAT_G4:
-        paletted_pixels = (unsigned char *)sixel_allocator_malloc(dither->allocator,
-                                                                  (size_t)(width * height * 3));
+        bufsize = (sizeof(sixel_index_t) * (size_t)(width * height * 3));
+        paletted_pixels = (sixel_index_t *)sixel_allocator_malloc(dither->allocator, bufsize);
         if (paletted_pixels == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_encode_dither: sixel_allocator_malloc() failed.");
@@ -1264,14 +1265,14 @@ sixel_encode_highcolor(
         )
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    unsigned char *paletted_pixels = NULL;
+    sixel_index_t *paletted_pixels = NULL;
     unsigned char *normalized_pixels = NULL;
     /* Mark sixel line pixels which have been already drawn. */
     unsigned char *marks;
     unsigned char *rgbhit;
     unsigned char *rgb2pal;
-    unsigned char palhitcount[256];
-    unsigned char palstate[256];
+    unsigned char palhitcount[SIXEL_PALETTE_MAX];
+    unsigned char palstate[SIXEL_PALETTE_MAX];
     int output_count;
     int const maxcolors = 1 << 15;
     int whole_size = width * height  /* for paletted_pixels */
@@ -1306,7 +1307,7 @@ sixel_encode_highcolor(
         }
         pixels = normalized_pixels;
     }
-    paletted_pixels = (unsigned char *)sixel_allocator_malloc(dither->allocator,
+    paletted_pixels = (sixel_index_t *)sixel_allocator_malloc(dither->allocator,
                                                               (size_t)whole_size);
     if (paletted_pixels == NULL) {
         goto error;
