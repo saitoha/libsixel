@@ -1197,10 +1197,11 @@ Some parts of converters/loader.c are imported from @uobikiemukot's
 
 ### ax_gcc_var_attribute / ax_gcc_func_attribute
 
-These are useful m4 macros for detecting some GCC attributes.
+These are useful m4 macros for detecting some GCC attributes / built-in functions.
 
 http://www.gnu.org/software/autoconf-archive/ax_gcc_var_attribute.html
 http://www.gnu.org/software/autoconf-archive/ax_gcc_func_attribute.html
+http://www.gnu.org/software/autoconf-archive/ax_gcc_builtin.html
 
 > Copyright (c) 2013 Gabriele Svelto <gabriele.svelto@gmail.com>
 >
