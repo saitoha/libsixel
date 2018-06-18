@@ -260,6 +260,10 @@
 /* Define to 1 if you have the `_setmode' function. */
 #undef HAVE__SETMODE
 
+/* Define to 1 if the system has the `__builtin_unreachable' built-in function
+   */
+#undef HAVE___BUILTIN_UNREACHABLE
+
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 

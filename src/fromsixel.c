@@ -148,6 +148,11 @@ hls_to_rgb(int hue, int lum, int sat)
         g = min;
         b = (min + (max - min) * ((360 - hue) / 60.0));
         break;
+    default:
+#if HAVE___BUILTIN_UNREACHABLE
+        __builtin_unreachable();
+#endif
+        break;
     }
 
     return SIXEL_XRGB(r, g, b);
