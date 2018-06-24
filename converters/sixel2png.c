@@ -224,6 +224,10 @@ main(int argc, char *argv[])
     }
 
     status = sixel_decoder_decode(decoder);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
     goto end;
 
 argerr:
