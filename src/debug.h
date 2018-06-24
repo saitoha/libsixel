@@ -19,10 +19,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_DITHER_H
-#define LIBSIXEL_DITHER_H
+#ifndef LIBSIXEL_DEBUG_H
+#define LIBSIXEL_DEBUG_H
 
-#if HAVE_DEBUG
+//#if HAVE_DEBUG
 
 # if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
 #  pragma GCC diagnostic push
@@ -44,9 +44,9 @@ bt(void)
 #  pragma GCC diagnostic pop
 # endif
 
-#endif
+#endif /* LIBSIXEL_DEBUG_H */
 
-#endif /* LIBSIXEL_DITHER_H */
+//#endif
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */
