@@ -661,13 +661,18 @@ end:
 
 
 static unsigned int
-computeHash(unsigned char const *data, unsigned int const depth)
+computeHash(unsigned char const *data,
+            unsigned int const depth,
+            unsigned int const bits_precision)
 {
     unsigned int hash = 0;
     unsigned int n;
 
     for (n = 0; n < depth; n++) {
-        hash |= (unsigned int)(data[depth - 1 - n] >> 3) << n * 5;
+        hash |= (unsigned int)(
+            data[depth - 1 - n]
+                >> (8 - bits_precision)
+        ) << n * bits_precision;
     }
 
     return hash;
@@ -680,88 +685,166 @@ computeHistogram(unsigned char const    /* in */  *data,
                  unsigned long const    /* in */  depth,
                  tupletable2 * const    /* out */ colorfreqtableP,
                  int const              /* in */  qualityMode,
+                 unsigned int const     /* in */  bits_precision,
                  sixel_allocator_t      /* in */  *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    typedef unsigned short unit_t;
     unsigned int i, n;
-    unit_t *histogram = NULL;
-    unit_t *refmap = NULL;
-    unit_t *ref;
-    unit_t *it;
+    typedef union variant {
+        uint32_t *p32;
+        uint16_t *p16;
+        void *p;
+    } variant_t;
+    variant_t histogram = { NULL };
+    variant_t refmap = { NULL };
+    variant_t ref;
+    variant_t it;
     unsigned int bucket_index;
     unsigned int step;
     unsigned int max_sample;
+    unsigned int unit_size;
+
+    switch (bits_precision) {
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+        unit_size = 2;
+        break;
+    case 6:
+    case 7:
+    case 8:
+        unit_size = 4;
+        break;
+    default:
+        sixel_helper_set_additional_message(
+            "Internal error: invalid value of bits_precision.");
+        status = SIXEL_LOGIC_ERROR;
+        goto end;
+    }
 
     switch (qualityMode) {
     case SIXEL_QUALITY_LOW:
         max_sample = 18383;
         step = length / depth / max_sample * depth;
+        if (length < max_sample * depth) {
+            step = 6 * depth;
+        }
         break;
     case SIXEL_QUALITY_HIGH:
         max_sample = 18383;
         step = length / depth / max_sample * depth;
+        if (length < max_sample * depth) {
+            step = 6 * depth;
+        }
         break;
     case SIXEL_QUALITY_FULL:
     default:
-        max_sample = 4003079;
-        step = length / depth / max_sample * depth;
+        step = 1;
         break;
-    }
-
-    if (length < max_sample * depth) {
-        step = 6 * depth;
     }
 
     if (step <= 0) {
         step = depth;
     }
-
     quant_trace(stderr, "making histogram...\n");
 
-    histogram = (unit_t *)sixel_allocator_calloc(allocator,
-                                                 (size_t)(1 << depth * 5),
-                                                 sizeof(unit_t));
-    if (histogram == NULL) {
+    histogram.p
+        = sixel_allocator_calloc(
+            allocator,
+            (size_t)(1 << depth * bits_precision),
+            unit_size);
+    if (histogram.p == NULL) {
         sixel_helper_set_additional_message(
             "unable to allocate memory for histogram.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    it = ref = refmap
-        = (unsigned short *)sixel_allocator_malloc(allocator,
-                                                   (size_t)(1 << depth * 5) * sizeof(unit_t));
-    if (!it) {
+    it.p = ref.p = refmap.p = sixel_allocator_malloc(
+        allocator,
+        (size_t)(1 << depth * bits_precision) * unit_size);
+    if (!it.p) {
         sixel_helper_set_additional_message(
             "unable to allocate memory for lookup table.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
 
-    for (i = 0; i < length - depth; i += step) {
-        bucket_index = computeHash(data + i, 3);
-        if (histogram[bucket_index] == 0) {
-            *ref++ = bucket_index;
-        }
-        if (histogram[bucket_index] < (unsigned int)(1 << sizeof(unsigned short) * 8) - 1) {
-            histogram[bucket_index]++;
-        }
-    }
-
-    colorfreqtableP->size = (unsigned int)(ref - refmap);
-    status = alloctupletable(&colorfreqtableP->table, depth, (unsigned int)(ref - refmap), allocator);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-    for (i = 0; i < colorfreqtableP->size; ++i) {
-        if (histogram[refmap[i]] > 0) {
-            colorfreqtableP->table[i]->value = histogram[refmap[i]];
-            for (n = 0; n < depth; n++) {
-                colorfreqtableP->table[i]->tuple[depth - 1 - n]
-                    = (sample)((*it >> n * 5 & 0x1f) << 3);
+    switch (unit_size) {
+    case 4:
+        for (i = 0; i < length - depth; i += step) {
+            bucket_index = computeHash(data + i, 3, bits_precision);
+            if (histogram.p32[bucket_index] == 0) {
+                *ref.p32++ = bucket_index;
+            }
+            if (histogram.p32[bucket_index] < 65535) {
+                histogram.p32[bucket_index]++;
             }
         }
-        it++;
+
+        colorfreqtableP->size = (unsigned int)(ref.p32 - refmap.p32);
+        status = alloctupletable(
+            &colorfreqtableP->table,
+            depth,
+            (unsigned int)(ref.p32 - refmap.p32),
+            allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        for (i = 0; i < colorfreqtableP->size; ++i) {
+            if (histogram.p32[refmap.p32[i]] > 0) {
+                colorfreqtableP->table[i]->value = histogram.p32[refmap.p32[i]];
+                for (n = 0; n < depth; n++) {
+                    colorfreqtableP->table[i]->tuple[depth - 1 - n]
+                        = (sample)((
+                            *it.p32 >> n * bits_precision & 0xff
+                                     >> (8 - bits_precision)
+                          ) << (8 - bits_precision));
+                }
+            }
+            it.p32++;
+        }
+        break;
+    case 2:
+        for (i = 0; i < length - depth; i += step) {
+            bucket_index = computeHash(data + i, 3, bits_precision);
+            if (histogram.p16[bucket_index] == 0) {
+                *ref.p16++ = bucket_index;
+            }
+            if (histogram.p16[bucket_index] < 65535) {
+                histogram.p16[bucket_index]++;
+            }
+        }
+
+        colorfreqtableP->size = (unsigned int)(ref.p16 - refmap.p16);
+        status = alloctupletable(
+            &colorfreqtableP->table,
+            depth,
+            (unsigned int)(ref.p16 - refmap.p16),
+            allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        for (i = 0; i < colorfreqtableP->size; ++i) {
+            if (histogram.p16[refmap.p16[i]] > 0) {
+                colorfreqtableP->table[i]->value = histogram.p16[refmap.p16[i]];
+                for (n = 0; n < depth; n++) {
+                    colorfreqtableP->table[i]->tuple[depth - 1 - n]
+                        = (sample)((
+                            *it.p16 >> n * bits_precision & 0xff
+                                    >> (8 - bits_precision)
+                          ) << (8 - bits_precision));
+                }
+            }
+            it.p16++;
+        }
+        break;
+    default:
+        sixel_helper_set_additional_message(
+            "Internal error: invalid value of bits_precision.");
+        status = SIXEL_LOGIC_ERROR;
+        goto end;
     }
 
     quant_trace(stderr, "%u colors found\n", colorfreqtableP->size);
@@ -769,8 +852,8 @@ computeHistogram(unsigned char const    /* in */  *data,
     status = SIXEL_OK;
 
 end:
-    sixel_allocator_free(allocator, refmap);
-    sixel_allocator_free(allocator, histogram);
+    sixel_allocator_free(allocator, refmap.p);
+    sixel_allocator_free(allocator, histogram.p);
 
     return status;
 }
@@ -811,9 +894,22 @@ computeColorMapFromInput(unsigned char const *data,
     tupletable2 colorfreqtable = {0, NULL};
     unsigned int i;
     unsigned int n;
+    unsigned int bits_precision;
 
-    status = computeHistogram(data, length, depth,
-                              &colorfreqtable, qualityMode, allocator);
+    if (reqColors <= 256) {
+        bits_precision = 5;
+    } else {
+        bits_precision = 8;
+    }
+
+    status = computeHistogram(
+        data,
+        length,
+        depth,
+        &colorfreqtable,
+        qualityMode,
+        bits_precision,
+        allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -827,7 +923,11 @@ computeColorMapFromInput(unsigned char const *data,
                     "Keeping same colors.\n", reqColors);
         /* *colormapP = colorfreqtable; */
         colormapP->size = colorfreqtable.size;
-        status = alloctupletable(&colormapP->table, depth, colorfreqtable.size, allocator);
+        status = alloctupletable(
+            &colormapP->table,
+            depth,
+            colorfreqtable.size,
+            allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -1050,7 +1150,8 @@ lookup_normal(unsigned char const * const pixel,
               unsigned char const * const palette,
               int const reqcolor,
               unsigned short * const cachetable,
-              int const complexion)
+              int const complexion,
+              unsigned int const bits_precision)
 {
     int result;
     int diff;
@@ -1064,6 +1165,7 @@ lookup_normal(unsigned char const * const pixel,
 
     /* don't use cachetable in 'normal' strategy */
     (void) cachetable;
+    (void) bits_precision;
 
     for (i = 0; i < reqcolor; i++) {
         distant = 0;
@@ -1090,7 +1192,8 @@ lookup_fast(unsigned char const * const pixel,
             unsigned char const * const palette,
             int const reqcolor,
             unsigned short * const cachetable,
-            int const complexion)
+            int const complexion,
+            unsigned int const bits_precision)
 {
     int result;
     unsigned int hash;
@@ -1104,8 +1207,7 @@ lookup_fast(unsigned char const * const pixel,
 
     result = (-1);
     diff = INT_MAX;
-    hash = computeHash(pixel, 3);
-
+    hash = computeHash(pixel, 3, bits_precision);
     cache = cachetable[hash];
     if (cache) {  /* fast lookup */
         return cache - 1;
@@ -1141,7 +1243,8 @@ lookup_mono_darkbg(unsigned char const * const pixel,
                    unsigned char const * const palette,
                    int const reqcolor,
                    unsigned short * const cachetable,
-                   int const complexion)
+                   int const complexion,
+                   unsigned int const bits_precision)
 {
     int n;
     int distant;
@@ -1149,6 +1252,7 @@ lookup_mono_darkbg(unsigned char const * const pixel,
     /* unused */ (void) palette;
     /* unused */ (void) cachetable;
     /* unused */ (void) complexion;
+    /* unused */ (void) bits_precision;
 
     distant = 0;
     for (n = 0; n < depth; ++n) {
@@ -1164,7 +1268,8 @@ lookup_mono_lightbg(unsigned char const * const pixel,
                     unsigned char const * const palette,
                     int const reqcolor,
                     unsigned short * const cachetable,
-                    int const complexion)
+                    int const complexion,
+                    unsigned int const bits_precision)
 {
     int n;
     int distant;
@@ -1172,6 +1277,7 @@ lookup_mono_lightbg(unsigned char const * const pixel,
     /* unused */ (void) palette;
     /* unused */ (void) cachetable;
     /* unused */ (void) complexion;
+    /* unused */ (void) bits_precision;
 
     distant = 0;
     for (n = 0; n < depth; ++n) {
@@ -1263,8 +1369,9 @@ sixel_quant_apply_palette(
     component_t offset;
     int color_index;
     unsigned short *indextable;
-    unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
+    unsigned char new_palette[SIXEL_PALETTE_MAX * max_depth];
     unsigned short migration_map[SIXEL_PALETTE_MAX];
+    unsigned int bits_precision;
     float (*f_mask) (int x, int y, int c) = NULL;
     void (*f_diffuse)(unsigned char *data, int width, int height,
                       int x, int y, int depth, int offset);
@@ -1273,7 +1380,14 @@ sixel_quant_apply_palette(
                     unsigned char const * const palette,
                     int const reqcolor,
                     unsigned short * const cachetable,
-                    int const complexion);
+                    int const complexion,
+                    unsigned int const bits_precision);
+
+    if (reqcolor <= 256) {
+        bits_precision = 5;
+    } else {
+        bits_precision = 8;
+    }
 
     if (depth != 3) {
         f_diffuse = diffuse_none;
@@ -1341,7 +1455,7 @@ sixel_quant_apply_palette(
     indextable = cachetable;
     if (cachetable == NULL && f_lookup == lookup_fast) {
         indextable = (unsigned short *)sixel_allocator_calloc(allocator,
-                                                              (size_t)(1 << depth * 5),
+                                                              (size_t)(1 << depth * 8) + 1,
                                                               sizeof(unsigned short));
         if (!indextable) {
             quant_trace(stderr, "Unable to allocate memory for indextable.\n");
@@ -1368,7 +1482,7 @@ sixel_quant_apply_palette(
                         copy[d] = val < 0 ? 0 : val > 255 ? 255 : val;
                     }
                     color_index = f_lookup(copy, depth,
-                                           palette, reqcolor, indextable, complexion);
+                                           palette, reqcolor, indextable, complexion, bits_precision);
                     if (migration_map[color_index] == 0) {
                         result[pos] = *ncolors;
                         for (n = 0; n < depth; ++n) {
@@ -1387,7 +1501,7 @@ sixel_quant_apply_palette(
                 for (x = 0; x < width; ++x) {
                     pos = y * width + x;
                     color_index = f_lookup(data + (pos * depth), depth,
-                                           palette, reqcolor, indextable, complexion);
+                                           palette, reqcolor, indextable, complexion, bits_precision);
                     if (migration_map[color_index] == 0) {
                         result[pos] = *ncolors;
                         for (n = 0; n < depth; ++n) {
@@ -1420,7 +1534,7 @@ sixel_quant_apply_palette(
                         copy[d] = val < 0 ? 0 : val > 255 ? 255 : val;
                     }
                     result[pos] = f_lookup(copy, depth,
-                                           palette, reqcolor, indextable, complexion);
+                                           palette, reqcolor, indextable, complexion, bits_precision);
                 }
             }
         } else {
@@ -1428,7 +1542,7 @@ sixel_quant_apply_palette(
                 for (x = 0; x < width; ++x) {
                     pos = y * width + x;
                     color_index = f_lookup(data + (pos * depth), depth,
-                                           palette, reqcolor, indextable, complexion);
+                                           palette, reqcolor, indextable, complexion, bits_precision);
                     result[pos] = color_index;
                     for (n = 0; n < depth; ++n) {
                         offset = data[pos * depth + n] - palette[color_index * depth + n];

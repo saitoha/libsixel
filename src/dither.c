@@ -723,6 +723,7 @@ sixel_dither_apply_palette(
     int ncolors;
     unsigned char *normalized_pixels = NULL;
     unsigned char *input_pixels;
+    size_t cachetable_size;
 
     if (dither == NULL) {
         sixel_helper_set_additional_message(
@@ -748,10 +749,16 @@ sixel_dither_apply_palette(
     }
 
     if (dither->cachetable == NULL && dither->optimized) {
+        if (dither->reqcolors <= 256) {
+            cachetable_size = 1 << 3 * 5;
+        } else {
+            cachetable_size = 1 << 3 * 8;
+        }
         if (dither->palette != pal_mono_dark && dither->palette != pal_mono_light) {
-            dither->cachetable = (unsigned short *)sixel_allocator_calloc(dither->allocator,
-                                                                          (size_t)(1 << 3 * 5),
-                                                                          sizeof(unsigned short));
+            dither->cachetable = (unsigned short *)sixel_allocator_calloc(
+                dither->allocator,
+                cachetable_size,
+                sizeof(unsigned short));
             if (dither->cachetable == NULL) {
                 sixel_helper_set_additional_message(
                     "sixel_dither_new: sixel_allocator_calloc() failed.");
