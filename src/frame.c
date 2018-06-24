@@ -382,6 +382,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_PAL8:
         size = (size_t)(frame->width * frame->height * 4);
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
@@ -411,7 +412,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
         frame->pixels = normalized_pixels;
         frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
-    case SIXEL_PIXELFORMAT_PAL8:
+    case SIXEL_PIXELFORMAT_PAL16:
         size = (size_t)(frame->width * frame->height * 3);
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
@@ -560,6 +561,7 @@ clip(unsigned char *pixels,
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_PAL8:
+    case SIXEL_PIXELFORMAT_PAL16:
     case SIXEL_PIXELFORMAT_G8:
     case SIXEL_PIXELFORMAT_RGB888:
         depth = sixel_helper_compute_depth(pixelformat);
@@ -615,6 +617,7 @@ sixel_frame_clip(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *normalized_pixels;
+    size_t new_size = (size_t)(frame->width * frame->height) * sizeof(sixel_index_t);
 
     sixel_frame_ref(frame);
 
@@ -622,11 +625,12 @@ sixel_frame_clip(
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_PAL8:
     case SIXEL_PIXELFORMAT_G1:
     case SIXEL_PIXELFORMAT_G2:
     case SIXEL_PIXELFORMAT_G4:
-        normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator,
-                                                                    (size_t)(frame->width * frame->height));
+        normalized_pixels
+            = (unsigned char *)sixel_allocator_malloc(frame->allocator, new_size);
         status = sixel_helper_normalize_pixelformat(normalized_pixels,
                                                     &frame->pixelformat,
                                                     frame->pixels,

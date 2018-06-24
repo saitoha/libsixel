@@ -142,6 +142,27 @@ write_png_to_file(
             *dst++ = *(palette + *src * 3 + 2);
         }
         break;
+    case SIXEL_PIXELFORMAT_PAL16:
+        if (palette == NULL) {
+            status = SIXEL_BAD_ARGUMENT;
+            sixel_helper_set_additional_message(
+                "write_png_to_file: no palette is given");
+            goto end;
+        }
+        src = data;
+        dst = pixels = new_pixels = sixel_allocator_malloc(allocator, (size_t)(width * height * 3));
+        if (new_pixels == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "write_png_to_file: sixel_allocator_malloc() failed");
+            goto end;
+        }
+        for (i = 0; i < width * height; ++i, src += 2) {
+            *dst++ = *(palette + (*((unsigned short *)src) ) * 3 + 0);
+            *dst++ = *(palette + (*((unsigned short *)src) ) * 3 + 1);
+            *dst++ = *(palette + (*((unsigned short *)src) ) * 3 + 2);
+        }
+        break;
     case SIXEL_PIXELFORMAT_RGB888:
         pixels = data;
         break;
