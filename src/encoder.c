@@ -59,6 +59,9 @@
 #include "encoder.h"
 #include "rgblookup.h"
 
+#include <assert.h>
+int malloc_zone_check(void *);
+
 
 static char *
 arg_strdup(
@@ -1702,9 +1705,9 @@ sixel_encoder_encode(
         sixel_encoder_ref(encoder);
     }
 
-    /* if required color is not set, set the max value */
+    /* if required color is not set, set the default value */
     if (encoder->reqcolors == (-1)) {
-        encoder->reqcolors = SIXEL_PALETTE_MAX;
+        encoder->reqcolors = SIXEL_PALETTE_DEFAULT;
     }
 
     /* if required color is less then 2, set the min value */
