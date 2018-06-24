@@ -26,6 +26,7 @@
 #include <memory.h>
 
 #include <sixel.h>
+#include "debug.h"
 
 static void
 get_rgb(unsigned char const *data,
@@ -199,7 +200,7 @@ expand_palette(sixel_index_t *dst, unsigned char const *src,
     int y;
     int i;
     int bpp;  /* bit per plane */
-    int to_bpp = 8;
+    int to_bpp = 16;
     sixel_index_t *p = (sixel_index_t *)src;
 
     switch (pixelformat) {
@@ -298,7 +299,7 @@ sixel_helper_normalize_pixelformat(
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
-        *dst_pixelformat = SIXEL_PIXELFORMAT_PAL8;
+        *dst_pixelformat = SIXEL_PIXELFORMAT_PAL16;
         status = expand_palette((sixel_index_t *)dst, src, width, height, src_pixelformat);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -315,7 +316,7 @@ sixel_helper_normalize_pixelformat(
         break;
     case SIXEL_PIXELFORMAT_G8:
     case SIXEL_PIXELFORMAT_PAL8:
-        *dst_pixelformat = SIXEL_PIXELFORMAT_PAL8;
+        *dst_pixelformat = SIXEL_PIXELFORMAT_PAL16;
         status = expand_palette((sixel_index_t *)dst, src, width, height, src_pixelformat);
         if (SIXEL_FAILED(status)) {
             goto end;
