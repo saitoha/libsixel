@@ -140,6 +140,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_PIXELFORMAT_PAL2     (SIXEL_FORMATTYPE_PALETTE   | 0x01) /* 2bpp palette */
 #define SIXEL_PIXELFORMAT_PAL4     (SIXEL_FORMATTYPE_PALETTE   | 0x02) /* 4bpp palette */
 #define SIXEL_PIXELFORMAT_PAL8     (SIXEL_FORMATTYPE_PALETTE   | 0x03) /* 8bpp palette */
+#define SIXEL_PIXELFORMAT_PAL16    (SIXEL_FORMATTYPE_PALETTE   | 0x04) /* 16bpp palette */
 
 /* palette type */
 #define SIXEL_PALETTETYPE_AUTO     0   /* choose palette type automatically */
