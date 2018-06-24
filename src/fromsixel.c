@@ -25,6 +25,7 @@
 
 #include <sixel.h>
 #include "output.h"
+#include "debug.h"
 
 #define SIXEL_RGB(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
 
