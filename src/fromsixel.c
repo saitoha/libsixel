@@ -303,7 +303,7 @@ parser_context_init(parser_context_t *context)
     context->attributed_pv = 0;
     context->repeat_count = 1;
     context->color_index = 15;
-    context->bgindex = 0x0000;
+    context->bgindex = 0;
     context->nparams = 0;
     context->param = 0;
 
@@ -311,6 +311,7 @@ parser_context_init(parser_context_t *context)
 
     return status;
 }
+
 
 static int
 bits_height(int bits) {
@@ -740,12 +741,11 @@ sixel_decode_raw_impl(
                 context->param = 0;
 
                 if (context->nparams > 0) {
-                    context->color_index = context->params[0];
+                    context->color_index = context->params[0] + 1;
                     if (context->color_index < 0) {
                         context->color_index = 0;
                     } else if (context->color_index >= SIXEL_PALETTE_MAX) {
-                        //context->color_index = SIXEL_PALETTE_MAX - 1;
-                        context->color_index = 0;
+                        context->color_index = SIXEL_PALETTE_MAX - 1;
                     }
                 }
 

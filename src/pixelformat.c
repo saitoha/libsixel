@@ -200,7 +200,7 @@ expand_palette(sixel_index_t *dst, unsigned char const *src,
     int y;
     int i;
     int bpp;  /* bit per plane */
-    int to_bpp = 16;
+    int to_bpp = sizeof(sixel_index_t) * 8;
     sixel_index_t *p = (sixel_index_t *)src;
 
     switch (pixelformat) {
@@ -299,7 +299,19 @@ sixel_helper_normalize_pixelformat(
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
-        *dst_pixelformat = SIXEL_PIXELFORMAT_PAL16;
+        switch (sizeof(sixel_index_t)) {
+        case 1:
+            *dst_pixelformat = SIXEL_PIXELFORMAT_PAL8;
+            break;
+        case 2:
+            *dst_pixelformat = SIXEL_PIXELFORMAT_PAL16;
+            break;
+        default:
+            sixel_helper_set_additional_message(
+                "Internal error: invalid value of bits_precision.");
+            status = SIXEL_LOGIC_ERROR;
+            goto end;
+        }
         status = expand_palette((sixel_index_t *)dst, src, width, height, src_pixelformat);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -316,9 +328,22 @@ sixel_helper_normalize_pixelformat(
         break;
     case SIXEL_PIXELFORMAT_G8:
     case SIXEL_PIXELFORMAT_PAL8:
-        *dst_pixelformat = SIXEL_PIXELFORMAT_PAL16;
-        status = expand_palette((sixel_index_t *)dst, src, width, height, src_pixelformat);
-        if (SIXEL_FAILED(status)) {
+        switch (sizeof(sixel_index_t)) {
+        case 1:
+            memcpy(dst, src, sizeof(sixel_index_t) * (size_t)(width * height));
+            *dst_pixelformat = src_pixelformat;
+            break;
+        case 2:
+            *dst_pixelformat = SIXEL_PIXELFORMAT_PAL16;
+            status = expand_palette((sixel_index_t *)dst, src, width, height, src_pixelformat);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            break;
+        default:
+            sixel_helper_set_additional_message(
+                "Internal error: invalid value of bits_precision.");
+            status = SIXEL_LOGIC_ERROR;
             goto end;
         }
         break;

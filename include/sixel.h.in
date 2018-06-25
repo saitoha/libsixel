@@ -37,8 +37,8 @@ typedef unsigned short sixel_index_t;
 
 #define SIXEL_OUTPUT_PACKET_SIZE     16384
 #define SIXEL_PALETTE_MIN            2
-#define SIXEL_PALETTE_MAX            65535
 #define SIXEL_PALETTE_DEFAULT        256
+#define SIXEL_PALETTE_MAX            65535   /* index 0 is reserved for transparent color */
 #define SIXEL_USE_DEPRECATED_SYMBOLS 1
 
 /* return value */

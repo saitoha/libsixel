@@ -633,7 +633,11 @@ load_sixel(unsigned char        /* out */ **result,
             (*result)[i * 3 + 2] = palette[p[i] * 3 + 2];
         }
     } else {
-        *ppixelformat = SIXEL_PIXELFORMAT_PAL16;
+        if (sizeof(sixel_index_t) == 2) {
+          *ppixelformat = SIXEL_PIXELFORMAT_PAL16;
+        } else {
+          *ppixelformat = SIXEL_PIXELFORMAT_PAL8;
+        }
         *result = (unsigned char *)p;
         *ppalette = palette;
         *pncolors = colors;
