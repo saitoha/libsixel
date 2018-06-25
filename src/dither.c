@@ -743,13 +743,8 @@ sixel_dither_apply_palette(
         goto end;
     }
 
-    /* if quality_mode is full, do not use palette caching */
-    if (dither->quality_mode == SIXEL_QUALITY_FULL) {
-        dither->optimized = 0;
-    }
-
     if (dither->cachetable == NULL && dither->optimized) {
-        if (dither->reqcolors <= 256) {
+        if (dither->reqcolors <= 256 && dither->quality_mode != SIXEL_QUALITY_FULL) {
             cachetable_size = 1 << 3 * 5;
         } else {
             cachetable_size = 1 << 3 * 8;

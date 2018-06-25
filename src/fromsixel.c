@@ -54,9 +54,8 @@ static int const sixel_default_color_table[] = {
     SIXEL_XRGB(80, 80, 80),  /* 15 Gray 75% */
 };
 
-
 typedef struct image_buffer {
-    unsigned char *data;
+    sixel_index_t *data;
     int width;
     int height;
     int palette[SIXEL_PALETTE_MAX];
@@ -176,10 +175,10 @@ image_buffer_init(
     int g;
     int b;
 
-    size = (size_t)(width * height) * sizeof(unsigned char);
+    size = (size_t)(width * height) * sizeof(sixel_index_t);
     image->width = width;
     image->height = height;
-    image->data = (unsigned char *)sixel_allocator_malloc(allocator, size);
+    image->data = (sixel_index_t *)sixel_allocator_malloc(allocator, size);
     image->ncolors = 2;
 
     if (image->data == NULL) {
@@ -210,7 +209,7 @@ image_buffer_init(
     }
 
     for (; n < SIXEL_PALETTE_MAX; n++) {
-        image->palette[n] = SIXEL_RGB(255, 255, 255);
+        image->palette[n] = SIXEL_RGB(0, 0, 0);
     }
 
     status = SIXEL_OK;
@@ -230,12 +229,12 @@ image_buffer_resize(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     size_t size;
-    unsigned char *alt_buffer;
+    sixel_index_t *alt_buffer;
     int n;
     int min_height;
 
-    size = (size_t)(width * height);
-    alt_buffer = (unsigned char *)sixel_allocator_malloc(allocator, size);
+    size = (size_t)(width * height) * sizeof(sixel_index_t);
+    alt_buffer = (sixel_index_t *)sixel_allocator_malloc(allocator, size);
     if (alt_buffer == NULL) {
         /* free source image */
         sixel_allocator_free(allocator, image->data);
@@ -252,18 +251,18 @@ image_buffer_resize(
             /* copy from source image */
             memcpy(alt_buffer + width * n,
                    image->data + image->width * n,
-                   (size_t)image->width);
+                   (size_t)image->width * sizeof(sixel_index_t));
             /* fill extended area with background color */
             memset(alt_buffer + width * n + image->width,
                    bgindex,
-                   (size_t)(width - image->width));
+                   (size_t)(width - image->width) * sizeof(sixel_index_t));
         }
     } else {
         for (n = 0; n < min_height; ++n) {
             /* copy from source image */
             memcpy(alt_buffer + width * n,
                    image->data + image->width * n,
-                   (size_t)width);
+                   (size_t)width * sizeof(sixel_index_t));
         }
     }
 
@@ -271,7 +270,7 @@ image_buffer_resize(
         /* fill extended area with background color */
         memset(alt_buffer + width * image->height,
                bgindex,
-               (size_t)(width * (height - image->height)));
+               (size_t)(width * (height - image->height)) * sizeof(sixel_index_t));
     }
 
     /* free source image */
@@ -304,7 +303,7 @@ parser_context_init(parser_context_t *context)
     context->attributed_pv = 0;
     context->repeat_count = 1;
     context->color_index = 15;
-    context->bgindex = (-1);
+    context->bgindex = 0x0000;
     context->nparams = 0;
     context->param = 0;
 
@@ -315,7 +314,7 @@ parser_context_init(parser_context_t *context)
 
 
 /* convert sixel data into indexed pixel bytes and palette data */
-SIXELAPI SIXELSTATUS
+static SIXELSTATUS
 sixel_decode_raw_impl(
     unsigned char     *p,         /* sixel bytes */
     int                len,       /* size of sixel bytes */
@@ -551,9 +550,9 @@ sixel_decode_raw_impl(
                                         c <<= 1;
                                     }
                                     for (y = context->pos_y + i; y < context->pos_y + i + n; ++y) {
-                                        memset(image->data + image->width * y + context->pos_x,
-                                               context->color_index,
-                                               (size_t)context->repeat_count);
+                                        for (int g = 0 ; g < context->repeat_count; ++g) {
+                                            image->data[image->width * y + context->pos_x + g] = context->color_index;
+                                        }
                                     }
                                     if (context->max_x < (context->pos_x + context->repeat_count - 1)) {
                                         context->max_x = context->pos_x + context->repeat_count - 1;
@@ -721,7 +720,8 @@ sixel_decode_raw_impl(
                     if (context->color_index < 0) {
                         context->color_index = 0;
                     } else if (context->color_index >= SIXEL_PALETTE_MAX) {
-                        context->color_index = SIXEL_PALETTE_MAX - 1;
+                        //context->color_index = SIXEL_PALETTE_MAX - 1;
+                        context->color_index = 0;
                     }
                 }
 
@@ -787,14 +787,14 @@ end:
 
 /* convert sixel data into indexed pixel bytes and palette data */
 SIXELAPI SIXELSTATUS
-sixel_decode_raw(
+sixel_decode_wide(
     unsigned char       /* in */  *p,           /* sixel bytes */
     int                 /* in */  len,          /* size of sixel bytes */
-    unsigned char       /* out */ **pixels,     /* decoded pixels */
+    sixel_index_t       /* out */ **pixels,     /* decoded pixels */
     int                 /* out */ *pwidth,      /* image width */
     int                 /* out */ *pheight,     /* image height */
-    unsigned char       /* out */ **palette,    /* ARGB palette */
-    int                 /* out */ *ncolors,     /* palette size (<= 256) */
+    unsigned char       /* out */ **palette,    /* RGB palette */
+    int                 /* out */ *ncolors,     /* palette size (<= 65535) */
     sixel_allocator_t   /* in */  *allocator)   /* allocator object or null */
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -828,7 +828,6 @@ sixel_decode_raw(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-
     *ncolors = image.ncolors + 1;
     *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(*ncolors * 3));
     if (palette == NULL) {
@@ -856,6 +855,49 @@ end:
 }
 
 
+/* convert sixel data into indexed pixel bytes and palette data */
+SIXELAPI SIXELSTATUS
+sixel_decode_raw(
+    unsigned char       /* in */  *p,           /* sixel bytes */
+    int                 /* in */  len,          /* size of sixel bytes */
+    unsigned char       /* out */ **pixels,     /* decoded pixels */
+    int                 /* out */ *pwidth,      /* image width */
+    int                 /* out */ *pheight,     /* image height */
+    unsigned char       /* out */ **palette,    /* ARGB palette */
+    int                 /* out */ *ncolors,     /* palette size (<= 256) */
+    sixel_allocator_t   /* in */  *allocator)   /* allocator object or null */
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_index_t *wide_pixels = NULL;
+    unsigned char *narrow_pixels = NULL;
+    int n;
+
+    status = sixel_decode_wide(p, len, &wide_pixels, pwidth, pheight, palette, ncolors, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    narrow_pixels = sixel_allocator_malloc(
+        allocator,
+        (size_t)(*pwidth * *pheight) * sizeof(unsigned char));
+    if (narrow_pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_decode_raw_wide: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    for (n = 0; n < *pwidth * *pheight; ++n) {
+        narrow_pixels[n] = wide_pixels[n];
+    }
+
+    *pixels = narrow_pixels;
+
+end:
+    sixel_allocator_free(allocator, wide_pixels);
+    return status;
+}
+
 /* deprecated */
 SIXELAPI SIXELSTATUS
 sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
@@ -869,9 +911,6 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_allocator_t *allocator = NULL;
-    parser_context_t context;
-    image_buffer_t image;
-    int n;
 
     status = sixel_allocator_new(&allocator, fn_malloc, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {
@@ -879,43 +918,10 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
         goto end;
     }
 
-    /* parser context initialization */
-    status = parser_context_init(&context);
+    status = sixel_decode_raw(p, len, pixels, pwidth, pheight, palette, ncolors, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-
-    /* buffer initialization */
-    status = image_buffer_init(&image, 2048, 2048, context.bgindex, allocator);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    status = sixel_decode_raw_impl(p, len, &image, &context, allocator);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    *ncolors = image.ncolors + 1;
-    *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(*ncolors * 3));
-    if (palette == NULL) {
-        sixel_allocator_free(allocator, image.data);
-        sixel_helper_set_additional_message(
-            "sixel_deocde_raw: sixel_allocator_malloc() failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
-    for (n = 0; n < *ncolors; ++n) {
-        (*palette)[n * 3 + 0] = image.palette[n] >> 16 & 0xff;
-        (*palette)[n * 3 + 1] = image.palette[n] >> 8 & 0xff;
-        (*palette)[n * 3 + 2] = image.palette[n] & 0xff;
-    }
-
-    *pwidth = image.width;
-    *pheight = image.height;
-    *pixels = image.data;
-
-    status = SIXEL_OK;
 
 end:
     sixel_allocator_unref(allocator);

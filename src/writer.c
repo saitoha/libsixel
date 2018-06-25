@@ -40,6 +40,7 @@
 #endif
 
 #include <sixel.h>
+#include "debug.h"
 
 #if !defined(HAVE_MEMCPY)
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
@@ -157,12 +158,14 @@ write_png_to_file(
                 "write_png_to_file: sixel_allocator_malloc() failed");
             goto end;
         }
-        for (i = 0; i < width * height; ++i, src += 2) {
-            *dst++ = *(palette + (*((unsigned short *)src) ) * 3 + 0);
-            *dst++ = *(palette + (*((unsigned short *)src) ) * 3 + 1);
-            *dst++ = *(palette + (*((unsigned short *)src) ) * 3 + 2);
+        for (i = 0; i < width * height; ++i, src += sizeof(sixel_index_t)) {
+            *dst++ = *(palette + *(sixel_index_t *)src * 3 + 0);
+            *dst++ = *(palette + *(sixel_index_t *)src * 3 + 1);
+            *dst++ = *(palette + *(sixel_index_t *)src * 3 + 2);
         }
         break;
+
+
     case SIXEL_PIXELFORMAT_RGB888:
         pixels = data;
         break;

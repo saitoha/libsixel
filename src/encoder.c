@@ -354,6 +354,7 @@ load_image_callback_for_palette(
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
     case SIXEL_PIXELFORMAT_PAL8:
+    case SIXEL_PIXELFORMAT_PAL16:
         if (sixel_frame_get_palette(frame) == NULL) {
             status = SIXEL_LOGIC_ERROR;
             goto end;

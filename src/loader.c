@@ -67,6 +67,7 @@
 #include "frompnm.h"
 #include "fromgif.h"
 #include "allocator.h"
+#include "debug.h"
 
 sixel_allocator_t *stbi_allocator;
 
@@ -604,18 +605,19 @@ load_sixel(unsigned char        /* out */ **result,
            sixel_allocator_t    /* in */  *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    unsigned char *p = NULL;
+    sixel_index_t *p = NULL;
     unsigned char *palette = NULL;
     int colors;
     int i;
 
     /* sixel */
-    status = sixel_decode_raw(buffer, size,
-                              &p, psx, psy,
-                              &palette, &colors, allocator);
+    status = sixel_decode_wide(buffer, size,
+                               &p, psx, psy,
+                               &palette, &colors, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+
     if (ppalette == NULL || colors > reqcolors) {
         *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
         *result = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(*psx * *psy * 3));
@@ -631,8 +633,8 @@ load_sixel(unsigned char        /* out */ **result,
             (*result)[i * 3 + 2] = palette[p[i] * 3 + 2];
         }
     } else {
-        *ppixelformat = SIXEL_PIXELFORMAT_PAL8;
-        *result = p;
+        *ppixelformat = SIXEL_PIXELFORMAT_PAL16;
+        *result = (unsigned char *)p;
         *ppalette = palette;
         *pncolors = colors;
         p = NULL;

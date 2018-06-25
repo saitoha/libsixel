@@ -244,7 +244,7 @@ sixel_decoder_decode(
     int max;
     int n;
     FILE *input_fp = NULL;
-    unsigned char *indexed_pixels;
+    sixel_index_t *indexed_pixels;
     unsigned char *palette;
     int ncolors;
     unsigned char *pixels = NULL;
@@ -303,7 +303,7 @@ sixel_decoder_decode(
         fclose(input_fp);
     }
 
-    status = sixel_decode_raw(
+    status = sixel_decode_wide(
         raw_data,
         raw_len,
         &indexed_pixels,
@@ -316,8 +316,8 @@ sixel_decoder_decode(
         goto end;
     }
 
-    status = sixel_helper_write_image_file(indexed_pixels, sx, sy, palette,
-                                           SIXEL_PIXELFORMAT_PAL8,
+    status = sixel_helper_write_image_file((unsigned char *)indexed_pixels, sx, sy, palette,
+                                           SIXEL_PIXELFORMAT_PAL16,
                                            decoder->output,
                                            SIXEL_FORMAT_PNG,
                                            decoder->allocator);

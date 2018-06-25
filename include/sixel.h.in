@@ -786,6 +786,18 @@ sixel_encode(
 
 /* convert sixel data into indexed pixel bytes and palette data */
 SIXELAPI SIXELSTATUS
+sixel_decode_wide(
+    unsigned char       /* in */  *p,           /* sixel bytes */
+    int                 /* in */  len,          /* size of sixel bytes */
+    sixel_index_t       /* out */ **pixels,     /* decoded pixels */
+    int                 /* out */ *pwidth,      /* image width */
+    int                 /* out */ *pheight,     /* image height */
+    unsigned char       /* out */ **palette,    /* ARGB palette */
+    int                 /* out */ *ncolors,     /* palette size (<= 256) */
+    sixel_allocator_t   /* in */  *allocator);  /* allocator object or null */
+
+/* convert sixel data into indexed pixel bytes and palette data */
+SIXELAPI /* @attr_func_deprecated@ */ SIXELSTATUS
 sixel_decode_raw(
     unsigned char       /* in */  *p,           /* sixel bytes */
     int                 /* in */  len,          /* size of sixel bytes */

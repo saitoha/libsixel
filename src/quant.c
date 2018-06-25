@@ -741,7 +741,7 @@ computeHistogram(unsigned char const    /* in */  *data,
         break;
     case SIXEL_QUALITY_FULL:
     default:
-        step = 1;
+        step = 3;
         break;
     }
 
