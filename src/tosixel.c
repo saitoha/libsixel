@@ -546,7 +546,7 @@ sixel_encode_body(
             fillable = 0;
         } else if (palstate) {
             /* high color sixel */
-            pix = pixels[(y - i) * width];
+            pix = (int)pixels[(y - i) * width];
             if (pix >= ncolors) {
                 fillable = 0;
             } else {
@@ -557,7 +557,7 @@ sixel_encode_body(
             fillable = 1;
         }
         for (x = 0; x < width; x++) {
-            pix = pixels[y * width + x];  /* color index */
+            pix = (int)pixels[y * width + x];  /* color index */
             if (pix >= 0 && pix < ncolors && pix != keycolor) {
                 map[pix * width + x] |= (1 << i);
             }
@@ -1370,7 +1370,7 @@ next:
                                    ((pal[1] & 0xf8) << 2) |
                                    ((pal[2] >> 3) & 0x1f)] = 0;
                         }
-                        *dst = rgb2pal[pix] = nextpal++;
+                        *dst = rgb2pal[pix] = (sixel_index_t)nextpal++;
                         *mptr = 1;
                         palstate[*dst] = PALETTE_CHANGE;
                         palhitcount[*dst] = 1;

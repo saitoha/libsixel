@@ -1484,7 +1484,7 @@ sixel_quant_apply_palette(
                     color_index = f_lookup(copy, depth,
                                            palette, reqcolor, indextable, complexion, bits_precision);
                     if (migration_map[color_index] == 0) {
-                        result[pos] = *ncolors;
+                        result[pos] = (sixel_index_t)*ncolors;
                         for (n = 0; n < depth; ++n) {
                             new_palette[*ncolors * depth + n] = palette[color_index * depth + n];
                         }
@@ -1503,7 +1503,7 @@ sixel_quant_apply_palette(
                     color_index = f_lookup(data + (pos * depth), depth,
                                            palette, reqcolor, indextable, complexion, bits_precision);
                     if (migration_map[color_index] == 0) {
-                        result[pos] = *ncolors;
+                        result[pos] = (sixel_index_t)*ncolors;
                         for (n = 0; n < depth; ++n) {
                             new_palette[*ncolors * depth + n] = palette[color_index * depth + n];
                         }
@@ -1533,17 +1533,17 @@ sixel_quant_apply_palette(
                         val = data[pos * depth + d] + f_mask(x, y, d) * 32;
                         copy[d] = val < 0 ? 0 : val > 255 ? 255 : val;
                     }
-                    result[pos] = f_lookup(copy, depth,
-                                           palette, reqcolor, indextable, complexion, bits_precision);
+                    result[pos] = (sixel_index_t)f_lookup(
+                        copy, depth, palette, reqcolor, indextable, complexion, bits_precision);
                 }
             }
         } else {
             for (y = 0; y < height; ++y) {
                 for (x = 0; x < width; ++x) {
                     pos = y * width + x;
-                    color_index = f_lookup(data + (pos * depth), depth,
-                                           palette, reqcolor, indextable, complexion, bits_precision);
-                    result[pos] = color_index;
+                    color_index = f_lookup(
+                        data + (pos * depth), depth, palette, reqcolor, indextable, complexion, bits_precision);
+                    result[pos] = (sixel_index_t)color_index;
                     for (n = 0; n < depth; ++n) {
                         offset = data[pos * depth + n] - palette[color_index * depth + n];
                         f_diffuse(data + n, width, height, x, y, depth, offset);

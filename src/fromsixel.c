@@ -312,6 +312,32 @@ parser_context_init(parser_context_t *context)
     return status;
 }
 
+static int
+bits_height(int bits) {
+    static int height[] = {
+        /* ? */ 0,
+        /* @ */ 1,
+        /* A */ 2, /* B */ 2,
+        /* C */ 3, /* D */ 3, /* E */ 3, /* F */ 3,
+        /* G */ 4, /* H */ 4, /* I */ 4, /* J */ 4,
+        /* K */ 4, /* L */ 4, /* M */ 4, /* N */ 4,
+        /* O */ 5, /* P */ 5, /* Q */ 5, /* R */ 5,
+        /* S,*/ 5, /* T */ 5, /* U */ 5, /* V */ 5,
+        /* W */ 5, /* X */ 5, /* Y */ 5, /* Z */ 5,
+        /* [ */ 5, /* \ */ 5, /* ] */ 5, /* ^ */ 5,
+        /* _ */ 5, /* ` */ 5, /* a */ 5, /* b */ 5,
+        /* c */ 5, /* d */ 5, /* e */ 5, /* f */ 5,
+        /* g */ 5, /* h */ 5, /* i */ 5, /* j */ 5,
+        /* k */ 5, /* l */ 5, /* m */ 5, /* n */ 5,
+        /* o */ 5, /* p */ 5, /* q */ 5, /* r */ 5,
+        /* s */ 5, /* t */ 5, /* u */ 5, /* v */ 5,
+        /* w */ 5, /* x */ 5, /* y */ 5, /* z */ 5,
+        /* { */ 5, /* | */ 5, /* } */ 5, /* ~ */ 5
+    };
+
+    return height[bits];
+}
+
 
 /* convert sixel data into indexed pixel bytes and palette data */
 static SIXELSTATUS
@@ -527,12 +553,9 @@ sixel_decode_raw_impl(
                             for (i = 0; i < 6; i++) {
                                 if ((bits & sixel_vertical_mask) != 0) {
                                     pos = image->width * (context->pos_y + i) + context->pos_x;
-                                    image->data[pos] = context->color_index;
+                                    image->data[pos] = (sixel_index_t)context->color_index;
                                     if (context->max_x < context->pos_x) {
                                         context->max_x = context->pos_x;
-                                    }
-                                    if (context->max_y < (context->pos_y + i)) {
-                                        context->max_y = context->pos_y + i;
                                     }
                                 }
                                 sixel_vertical_mask <<= 1;
@@ -551,14 +574,8 @@ sixel_decode_raw_impl(
                                     }
                                     for (y = context->pos_y + i; y < context->pos_y + i + n; ++y) {
                                         for (int g = 0 ; g < context->repeat_count; ++g) {
-                                            image->data[image->width * y + context->pos_x + g] = context->color_index;
+                                            image->data[image->width * y + context->pos_x + g] = (sixel_index_t)context->color_index;
                                         }
-                                    }
-                                    if (context->max_x < (context->pos_x + context->repeat_count - 1)) {
-                                        context->max_x = context->pos_x + context->repeat_count - 1;
-                                    }
-                                    if (context->max_y < (context->pos_y + i + n - 1)) {
-                                        context->max_y = context->pos_y + i + n - 1;
                                     }
                                     i += (n - 1);
                                     sixel_vertical_mask <<= (n - 1);
@@ -566,9 +583,16 @@ sixel_decode_raw_impl(
                                 sixel_vertical_mask <<= 1;
                             }
                             context->pos_x += context->repeat_count;
+                            if (context->max_x < (context->pos_x + context->repeat_count - 1)) {
+                                context->max_x = context->pos_x + context->repeat_count - 1;
+                            }
                         }
                     }
                     context->repeat_count = 1;
+                    n = bits_height(bits);
+                    if (context->max_y < context->pos_y + n) {
+                        context->max_y += context->pos_x + n;
+                    }
                 }
                 p++;
                 break;
