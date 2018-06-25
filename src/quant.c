@@ -138,7 +138,8 @@ alloctupletable(
     sixel_allocator_t   /* in */  *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    char message[256];
+    enum { message_buffer_size = 256 };
+    char message[message_buffer_size];
     int nwrite;
     unsigned int mainTableSize;
     unsigned int tupleIntSize;
@@ -1240,7 +1241,7 @@ end:
 /* apply color palette into specified pixel buffers */
 SIXELSTATUS
 sixel_quant_apply_palette(
-    unsigned char     /* out */ *result,
+    sixel_index_t     /* out */ *result,
     unsigned char     /* in */  *data,
     int               /* in */  width,
     int               /* in */  height,
@@ -1262,8 +1263,8 @@ sixel_quant_apply_palette(
     component_t offset;
     int color_index;
     unsigned short *indextable;
-    unsigned char new_palette[256 * max_depth];
-    unsigned short migration_map[256];
+    unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
+    unsigned short migration_map[SIXEL_PALETTE_MAX];
     float (*f_mask) (int x, int y, int c) = NULL;
     void (*f_diffuse)(unsigned char *data, int width, int height,
                       int x, int y, int depth, int offset);
@@ -1351,7 +1352,7 @@ sixel_quant_apply_palette(
     if (foptimize_palette) {
         *ncolors = 0;
 
-        memset(new_palette, 0x00, sizeof(256 * depth));
+        memset(new_palette, 0x00, sizeof(SIXEL_PALETTE_MAX * depth));
         memset(migration_map, 0x00, sizeof(migration_map));
 
         if (f_mask) {

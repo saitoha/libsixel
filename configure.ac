@@ -29,6 +29,8 @@ if test x$ax_cv_have_func_attribute_deprecated != x; then
     AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
 fi
 
+AX_GCC_BUILTIN([__builtin_unreachable])
+
 CFLAGS_BACKUP=$CFLAGS
 CFLAGS="$CFLAGS -Werror"
 AC_TRY_COMPILE(

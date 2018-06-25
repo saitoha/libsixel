@@ -11,41 +11,7 @@
  * He declares this is compatible with MIT/BSD/GPL.
  *
  * Hayaki Saito <saitoha@me.com> modified this and re-licensed
- * it under the MIT license.
- *
- * The helper function hls_to_rgb is imported from Xterm pl#310.
- * This is originally written by Ross Combs.
- * Hayaki Saito <saitoha@me.com> slightly modified this.
- *
- * -------------------------------------------------------------------------
- * Copyright 2013,2014 by Ross Combs
- *
- *                         All Rights Reserved
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- * IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * Except as contained in this notice, the name(s) of the above copyright
- * holders shall not be used in advertising or otherwise to promote the
- * sale, use or other dealings in this Software without prior written
- * authorization.
- * -------------------------------------------------------------------------
+ * it to the MIT license.
  */
 #include "config.h"
 #include <stdlib.h>
@@ -134,83 +100,62 @@ typedef struct parser_context {
 static int
 hls_to_rgb(int hue, int lum, int sat)
 {
-    double hs = (hue + 240) % 360;
-    double hv = hs / 360.0;
-    double lv = lum / 100.0;
-    double sv = sat / 100.0;
-    double c, x, m, c2;
-    double r1, g1, b1;
+    double min, max;
     int r, g, b;
-    int hpi;
 
     if (sat == 0) {
-        r = g = b = lum * 255 / 100;
-        return SIXEL_RGB(r, g, b);
+        r = g = b = lum;
     }
 
-    if ((c2 = ((2.0 * lv) - 1.0)) < 0.0) {
-        c2 = -c2;
-    }
-    c = (1.0 - c2) * sv;
-    hpi = (int) (hv * 6.0);
-    x = c * (((hpi & 1) << 1) - 1) * ((hpi + (hpi & 1)) - hs / 60.0);
-    m = lv - 0.5 * c;
+    /* https://wikimedia.org/api/rest_v1/media/math/render/svg/17e876f7e3260ea7fed73f69e19c71eb715dd09d */
+    max = lum + sat * (1.0 - (lum > 50 ? (((lum << 2) / 100.0) - 1.0): - (2 * (lum / 100.0) - 1.0))) / 2.0;
 
-    switch (hpi) {
-    case 0:
-        r1 = c;
-        g1 = x;
-        b1 = 0.0;
+    /* https://wikimedia.org/api/rest_v1/media/math/render/svg/f6721b57985ad83db3d5b800dc38c9980eedde1d */
+    min = lum - sat * (1.0 - (lum > 50 ? (((lum << 2) / 100.0) - 1.0): - (2 * (lum / 100.0) - 1.0))) / 2.0;
+
+    /* sixel hue color ring is roteted -120 degree from nowdays general one. */
+    hue = (hue + 240) % 360;
+
+    /* https://wikimedia.org/api/rest_v1/media/math/render/svg/937e8abdab308a22ff99de24d645ec9e70f1e384 */
+    switch (hue / 60) {
+    case 0:  /* 0 <= hue < 60 */
+        r = max;
+        g = (min + (max - min) * (hue / 60.0));
+        b = min;
         break;
-    case 1:
-        r1 = x;
-        g1 = c;
-        b1 = 0.0;
+    case 1:  /* 60 <= hue < 120 */
+        r = min + (max - min) * ((120 - hue) / 60.0);
+        g = max;
+        b = min;
         break;
-    case 2:
-        r1 = 0.0;
-        g1 = c;
-        b1 = x;
+    case 2:  /* 120 <= hue < 180 */
+        r = min;
+        g = max;
+        b = (min + (max - min) * ((hue - 120) / 60.0));
         break;
-    case 3:
-        r1 = 0.0;
-        g1 = x;
-        b1 = c;
+    case 3:  /* 180 <= hue < 240 */
+        r = min;
+        g = (min + (max - min) * ((240 - hue) / 60.0));
+        b = max;
         break;
-    case 4:
-        r1 = x;
-        g1 = 0.0;
-        b1 = c;
+    case 4:  /* 240 <= hue < 300 */
+        r = (min + (max - min) * ((hue - 240) / 60.0));
+        g = min;
+        b = max;
         break;
-    case 5:
-        r1 = c;
-        g1 = 0.0;
-        b1 = x;
+    case 5:  /* 300 <= hue < 360 */
+        r = max;
+        g = min;
+        b = (min + (max - min) * ((360 - hue) / 60.0));
         break;
     default:
-        return SIXEL_RGB(255, 255, 255);
+#if HAVE___BUILTIN_UNREACHABLE
+        __builtin_unreachable();
+#endif
+        break;
     }
 
-    r = (int) ((r1 + m) * 100.0 + 0.5);
-    g = (int) ((g1 + m) * 100.0 + 0.5);
-    b = (int) ((b1 + m) * 100.0 + 0.5);
-
-    if (r < 0) {
-        r = 0;
-    } else if (r > 100) {
-        r = 100;
-    }
-    if (g < 0) {
-        g = 0;
-    } else if (g > 100) {
-        g = 100;
-    }
-    if (b < 0) {
-        b = 0;
-    } else if (b > 100) {
-        b = 100;
-    }
-    return SIXEL_RGB(r * 255 / 100, g * 255 / 100, b * 255 / 100);
+    return SIXEL_XRGB(r, g, b);
 }
 
 

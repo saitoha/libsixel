@@ -303,8 +303,8 @@ void show_help(void)
             "                             rgb:rrrr/gggg/bbbb\n"
             "-P, --penetrate            penetrate GNU Screen using DCS\n"
             "                           pass-through sequence\n"
-            "-D, --pipe-mode            read source images from stdin\n"
-            "                           continuously (deprecated)\n"
+            "-D, --pipe-mode            [[deprecated]] read source images from\n"
+            "                           stdin continuously\n"
             "-v, --verbose              show debugging info\n"
             "-V, --version              show version and license info\n"
             "-H, --help                 show this help\n"
@@ -380,7 +380,7 @@ main(int argc, char *argv[])
         {"encode-policy",    required_argument,  &long_opt, 'E'},
         {"bgcolor",          required_argument,  &long_opt, 'B'},
         {"complexion-score", required_argument,  &long_opt, 'C'},
-        {"pipe-mode",        no_argument,        &long_opt, 'D'},
+        {"pipe-mode",        no_argument,        &long_opt, 'D'}, /* deprecated */
         {"version",          no_argument,        &long_opt, 'V'},
         {"help",             no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}

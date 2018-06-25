@@ -333,7 +333,7 @@ test1(void)
     int src_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     unsigned char src[] = { 0x46, 0xf3, 0xe5 };
     int ret = 0;
-    
+
     int nret = EXIT_FAILURE;
 
     ret = sixel_helper_normalize_pixelformat(dst,
@@ -367,7 +367,7 @@ test2(void)
     int src_pixelformat = SIXEL_PIXELFORMAT_RGB555;
     unsigned char src[] = { 0x47, 0x9c };
     int ret = 0;
-    
+
     int nret = EXIT_FAILURE;
 
     ret = sixel_helper_normalize_pixelformat(dst,
@@ -401,7 +401,7 @@ test3(void)
     int src_pixelformat = SIXEL_PIXELFORMAT_RGB565;
     unsigned char src[] = { 0x47, 0x9c };
     int ret = 0;
-    
+
     int nret = EXIT_FAILURE;
 
     ret = sixel_helper_normalize_pixelformat(dst,
@@ -435,7 +435,7 @@ test4(void)
     int src_pixelformat = SIXEL_PIXELFORMAT_BGR888;
     unsigned char src[] = { 0x46, 0xf3, 0xe5 };
     int ret = 0;
-    
+
     int nret = EXIT_FAILURE;
 
     ret = sixel_helper_normalize_pixelformat(dst,
@@ -469,7 +469,7 @@ test5(void)
     int src_pixelformat = SIXEL_PIXELFORMAT_BGR555;
     unsigned char src[] = { 0x23, 0xc8 };
     int ret = 0;
-    
+
     int nret = EXIT_FAILURE;
 
     ret = sixel_helper_normalize_pixelformat(dst,
@@ -503,7 +503,7 @@ test6(void)
     int src_pixelformat = SIXEL_PIXELFORMAT_BGR565;
     unsigned char src[] = { 0x47, 0x88 };
     int ret = 0;
-    
+
     int nret = EXIT_FAILURE;
 
     ret = sixel_helper_normalize_pixelformat(dst,
@@ -537,7 +537,7 @@ test7(void)
     int src_pixelformat = SIXEL_PIXELFORMAT_AG88;
     unsigned char src[] = { 0x47, 0x88 };
     int ret = 0;
-    
+
     int nret = EXIT_FAILURE;
 
     ret = sixel_helper_normalize_pixelformat(dst,
@@ -571,7 +571,7 @@ test8(void)
     int src_pixelformat = SIXEL_PIXELFORMAT_GA88;
     unsigned char src[] = { 0x47, 0x88 };
     int ret = 0;
-    
+
     int nret = EXIT_FAILURE;
 
     ret = sixel_helper_normalize_pixelformat(dst,
@@ -605,7 +605,7 @@ test9(void)
     int src_pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
     unsigned char src[] = { 0x46, 0xf3, 0xe5, 0xf0 };
     int ret = 0;
-    
+
     int nret = EXIT_FAILURE;
 
     ret = sixel_helper_normalize_pixelformat(dst,
@@ -645,7 +645,7 @@ test10(void)
     int src_pixelformat = SIXEL_PIXELFORMAT_ARGB8888;
     unsigned char src[] = { 0x46, 0xf3, 0xe5, 0xf0 };
     int ret = 0;
-    
+
     int nret = EXIT_FAILURE;
 
     ret = sixel_helper_normalize_pixelformat(dst,

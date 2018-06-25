@@ -446,7 +446,7 @@ sixel_prepare_specified_palette(
     status = sixel_helper_load_image_file(encoder->mapfile,
                                           1,   /* fstatic */
                                           1,   /* fuse_palette */
-                                          256, /* reqcolors */
+                                          SIXEL_PALETTE_MAX, /* reqcolors */
                                           encoder->bgcolor,
                                           SIXEL_LOOP_DISABLE,
                                           load_image_callback_for_palette,
@@ -735,7 +735,8 @@ sixel_encoder_output_without_macro(
     SIXELSTATUS status = SIXEL_OK;
     static unsigned char *p;
     int depth;
-    char message[256];
+    enum { message_buffer_size = 256 };
+    char message[message_buffer_size];
     int nwrite;
 #if HAVE_NANOSLEEP
     int dulation;
@@ -758,7 +759,7 @@ sixel_encoder_output_without_macro(
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
-    
+
     if (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT) {
         sixel_dither_set_optimize_palette(dither, 1);
     }
@@ -836,7 +837,8 @@ sixel_encoder_output_with_macro(
     sixel_encoder_t /* in */ *encoder)
 {
     SIXELSTATUS status = SIXEL_OK;
-    char buffer[256];
+    enum { message_buffer_size = 256 };
+    char buffer[message_buffer_size];
     int nwrite;
 #if HAVE_NANOSLEEP
     int dulation;
@@ -1166,7 +1168,7 @@ sixel_encoder_new(
     env_default_ncolors = getenv("SIXEL_COLORS");
     if (env_default_ncolors) {
         ncolors = atoi(env_default_ncolors); /* may overflow */
-        if (ncolors > 1 && ncolors <= 256) {
+        if (ncolors > 1 && ncolors <= SIXEL_PALETTE_MAX) {
             (*ppencoder)->reqcolors = ncolors;
         }
     }

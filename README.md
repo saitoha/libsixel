@@ -568,8 +568,8 @@ Options:
                              rgb:rrrr/gggg/bbbb
 -P, --penetrate            penetrate GNU Screen using DCS
                            pass-through sequence
--D, --pipe-mode            read source images from stdin
-                           continuously (deprecated)
+-D, --pipe-mode            [[deprecated]] read source images from
+                           stdin continuously
 -v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
@@ -587,6 +587,7 @@ SIXEL_BGCOLOR              specify background color.
                              rgb:rr/gg/bb
                              rgb:rrr/ggg/bbb
                              rgb:rrrr/gggg/bbbb
+
 ```
 
 Convert a jpeg image file into a sixel file
@@ -1196,10 +1197,11 @@ Some parts of converters/loader.c are imported from @uobikiemukot's
 
 ### ax_gcc_var_attribute / ax_gcc_func_attribute
 
-These are useful m4 macros for detecting some GCC attributes.
+These are useful m4 macros for detecting some GCC attributes / built-in functions.
 
 http://www.gnu.org/software/autoconf-archive/ax_gcc_var_attribute.html
 http://www.gnu.org/software/autoconf-archive/ax_gcc_func_attribute.html
+http://www.gnu.org/software/autoconf-archive/ax_gcc_builtin.html
 
 > Copyright (c) 2013 Gabriele Svelto <gabriele.svelto@gmail.com>
 >
