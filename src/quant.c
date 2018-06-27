@@ -246,8 +246,9 @@ newBoxVector(
 {
     boxVector bv;
 
-    bv = (boxVector)sixel_allocator_malloc(allocator,
-                                           sizeof(struct box) * (size_t)newcolors);
+    bv = (boxVector)sixel_allocator_malloc(
+        allocator,
+        sizeof(struct box) * (size_t)newcolors);
     if (bv == NULL) {
         quant_trace(stderr, "out of memory allocating box vector table\n");
         return NULL;
@@ -726,14 +727,14 @@ computeHistogram(unsigned char const    /* in */  *data,
 
     switch (qualityMode) {
     case SIXEL_QUALITY_LOW:
-        max_sample = 18383;
+        max_sample = length / depth / 10;
         step = length / depth / max_sample * depth;
         if (length < max_sample * depth) {
             step = 6 * depth;
         }
         break;
     case SIXEL_QUALITY_HIGH:
-        max_sample = 18383;
+        max_sample = length / depth / 50;
         step = length / depth / max_sample * depth;
         if (length < max_sample * depth) {
             step = 6 * depth;
@@ -741,7 +742,7 @@ computeHistogram(unsigned char const    /* in */  *data,
         break;
     case SIXEL_QUALITY_FULL:
     default:
-        step = 3;
+        step = depth;
         break;
     }
 
@@ -778,7 +779,7 @@ computeHistogram(unsigned char const    /* in */  *data,
             if (histogram.p32[bucket_index] == 0) {
                 *ref.p32++ = bucket_index;
             }
-            if (histogram.p32[bucket_index] < 65535) {
+            if (histogram.p32[bucket_index] < UINT_MAX) {
                 histogram.p32[bucket_index]++;
             }
         }
@@ -896,7 +897,7 @@ computeColorMapFromInput(unsigned char const *data,
     unsigned int n;
     unsigned int bits_precision;
 
-    if (reqColors <= 256) {
+    if (reqColors <= 256 && qualityMode != SIXEL_QUALITY_FULL) {
         bits_precision = 5;
     } else {
         bits_precision = 8;
@@ -938,13 +939,11 @@ computeColorMapFromInput(unsigned char const *data,
             }
         }
     } else {
-        quant_trace(stderr, "choosing %d colors...\n", reqColors);
         status = mediancut(colorfreqtable, depth, reqColors,
                            methodForLargest, methodForRep, colormapP, allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        quant_trace(stderr, "%d colors are choosed.\n", colorfreqtable.size);
     }
 
     status = SIXEL_OK;
@@ -1143,7 +1142,7 @@ mask_x (int x, int y, int c)
     return ((((x + c * 29) ^ y* 149) * 1234) & 511 ) / 256.0 - 1.0;
 }
 
-/* lookup closest color from palette with "normal" strategy */
+/* lookup closest color from palette with "normal" strategy (without chache) */
 static int
 lookup_normal(unsigned char const * const pixel,
               int const depth,
@@ -1185,7 +1184,7 @@ lookup_normal(unsigned char const * const pixel,
 }
 
 
-/* lookup closest color from palette with "fast" strategy */
+/* lookup closest color from palette with "fast" strategy (using cache). */
 static int
 lookup_fast(unsigned char const * const pixel,
             int const depth,
@@ -1201,6 +1200,7 @@ lookup_fast(unsigned char const * const pixel,
     int cache;
     int i;
     int distant;
+    int rdiff, gdiff, bdiff;
 
     /* don't use depth in 'fast' strategy because it's always 3 */
     (void) depth;
@@ -1214,19 +1214,22 @@ lookup_fast(unsigned char const * const pixel,
     }
     /* collision */
     for (i = 0; i < reqcolor; i++) {
-        distant = 0;
 #if 0
+        distant = 0;
         for (n = 0; n < 3; ++n) {
             r = pixel[n] - palette[i * 3 + n];
             distant += r * r;
         }
-#elif 1  /* complexion correction */
-        distant = (pixel[0] - palette[i * 3 + 0]) * (pixel[0] - palette[i * 3 + 0]) * complexion
-                + (pixel[1] - palette[i * 3 + 1]) * (pixel[1] - palette[i * 3 + 1])
-                + (pixel[2] - palette[i * 3 + 2]) * (pixel[2] - palette[i * 3 + 2])
-                ;
+#else  /* complexion correction */
+        rdiff = pixel[0] - palette[i * 3 + 0];
+        gdiff = pixel[1] - palette[i * 3 + 1];
+        bdiff = pixel[2] - palette[i * 3 + 2];
+        distant = rdiff * rdiff * complexion + gdiff * gdiff + bdiff * bdiff;
 #endif
-        if (distant < diff) {
+        if (distant == 0) {
+            result = i;
+            break;
+        } else if (distant < diff) {
             diff = distant;
             result = i;
         }
@@ -1305,10 +1308,12 @@ sixel_quant_make_palette(
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned int i;
     unsigned int n;
+    unsigned char *p;
     int ret;
     tupletable2 colormap;
     unsigned int depth;
     int result_depth;
+    unsigned int result_colors;
 
     result_depth = sixel_helper_compute_depth(pixelformat);
     if (result_depth <= 0) {
@@ -1326,16 +1331,31 @@ sixel_quant_make_palette(
         *result = NULL;
         goto end;
     }
-    *ncolors = colormap.size;
-    quant_trace(stderr, "tupletable size: %d\n", *ncolors);
-    *result = (unsigned char *)sixel_allocator_malloc(allocator, *ncolors * depth);
-    for (i = 0; i < *ncolors; i++) {
+
+    quant_trace(stderr, "choosing %d colors...\n", colormap.size);
+    p = *result = (unsigned char *)sixel_allocator_malloc(allocator, colormap.size * depth);
+    result_colors = 0;
+    for (i = 0; i < colormap.size; i++) {
+        static unsigned int cache = UINT_MAX;
+        unsigned int hash;
         for (n = 0; n < depth; ++n) {
-            (*result)[i * depth + n] = colormap.table[i]->tuple[n];
+            *p++ = colormap.table[i]->tuple[n];
         }
+        hash = (unsigned int)((*(p - 1) << 16) | *(p - 2) << 8 | *(p - 3));
+        if (hash == cache) {
+            p -= depth;
+            continue;
+        }
+        if (++result_colors == colormap.size) {
+            break;
+        }
+        cache = hash;
     }
+    quant_trace(stderr, "%d colors are choosed.\n", result_colors);
 
     sixel_allocator_free(allocator, colormap.table);
+
+    *ncolors = result_colors;
 
     status = SIXEL_OK;
 
@@ -1355,6 +1375,7 @@ sixel_quant_apply_palette(
     unsigned char     /* in */  *palette,
     int               /* in */  reqcolor,
     int               /* in */  methodForDiffuse,
+    int               /* in */  qualityMode,
     int               /* in */  foptimize,
     int               /* in */  foptimize_palette,
     int               /* in */  complexion,
@@ -1383,7 +1404,7 @@ sixel_quant_apply_palette(
                     int const complexion,
                     unsigned int const bits_precision);
 
-    if (reqcolor <= 256) {
+    if (reqcolor <= 256 && qualityMode != SIXEL_QUALITY_FULL) {
         bits_precision = 5;
     } else {
         bits_precision = 8;
@@ -1554,6 +1575,8 @@ sixel_quant_apply_palette(
         *ncolors = reqcolor;
     }
 
+    quant_trace(stderr, "reqcolor: %d\n", reqcolor);
+    quant_trace(stderr, "ncolors: %d\n", *ncolors);
     if (cachetable == NULL) {
         sixel_allocator_free(allocator, indextable);
     }

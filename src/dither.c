@@ -791,6 +791,7 @@ sixel_dither_apply_palette(
                                        dither->palette,
                                        dither->ncolors,
                                        dither->method_for_diffuse,
+                                       dither->quality_mode,
                                        dither->optimized,
                                        dither->optimize_palette,
                                        dither->complexion,
