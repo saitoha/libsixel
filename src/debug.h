@@ -22,20 +22,30 @@
 #ifndef LIBSIXEL_DEBUG_H
 #define LIBSIXEL_DEBUG_H
 
-//#if HAVE_DEBUG
+#if HAVE_DEBUG
 
 # if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wunused-function"
-# endif
+# endif  /* HAVE_DIAGNOSTIC_UNUSED_FUNCTION */
 
-#include <execinfo.h>
+# if HAVE_EXECINFO_H
+#  include <execinfo.h>
+# endif  /* HAVE_EXECINFO_H */
+
+# if HAVE_UNISTD_H
+#  include <unistd.h>
+# endif  /* HAVE_UNISTD_H */
+
 static void
 bt(void)
 {
     void *trace[128];
 
-    backtrace_symbols_fd(trace, backtrace(trace, sizeof(trace) / sizeof(trace[0])), 1);
+    backtrace_symbols_fd(
+        trace,
+        backtrace(trace, sizeof(trace) / sizeof(trace[0])),
+        STDERR_FILENO);
 
     exit(1);
 }
@@ -44,9 +54,9 @@ bt(void)
 #  pragma GCC diagnostic pop
 # endif
 
-#endif /* LIBSIXEL_DEBUG_H */
+#endif
 
-//#endif
+#endif /* LIBSIXEL_DEBUG_H */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

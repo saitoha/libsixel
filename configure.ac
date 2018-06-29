@@ -246,6 +246,7 @@ AC_CHECK_HEADERS([memory.h \
                   sys/select.h \
                   sys/signal.h \
                   termios.h \
+                  execinfo.h \
                   sys/ioctl.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
