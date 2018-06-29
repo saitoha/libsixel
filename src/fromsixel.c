@@ -352,6 +352,7 @@ sixel_decode_raw_impl(
     SIXELSTATUS status = SIXEL_FALSE;
     int n;
     int i;
+    int j;
     int y;
     int bits;
     int sixel_vertical_mask;
@@ -574,8 +575,8 @@ sixel_decode_raw_impl(
                                         c <<= 1;
                                     }
                                     for (y = context->pos_y + i; y < context->pos_y + i + n; ++y) {
-                                        for (int g = 0 ; g < context->repeat_count; ++g) {
-                                            image->data[image->width * y + context->pos_x + g] = (sixel_index_t)context->color_index;
+                                        for (j = 0 ; j < context->repeat_count; ++j) {
+                                            image->data[image->width * y + context->pos_x + j] = (sixel_index_t)context->color_index;
                                         }
                                     }
                                     i += (n - 1);
