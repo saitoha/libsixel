@@ -341,6 +341,7 @@ You can install libsixel via the following package systems.
 - [NixOS](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/libraries/libsixel/default.nix)
 - [OpenBSD Ports](http://openports.se/graphics/libsixel)
 - [Fedora Copr](https://copr.fedorainfracloud.org/coprs/saahriktu/libsixel/)
+- [SlackBuilds](https://slackbuilds.org/repository/14.2/libraries/libsixel/)
 
 
 ### Build from source package
