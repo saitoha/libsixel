@@ -14,7 +14,7 @@
 * core: Improve quality of 15bpp(hi-color mode) dither.
         https://github.com/saitoha/libsixel/commit/42f34283defea67c2d6294af4bd7dcb4fdf9f046
 
-* core: Fix memory leak problems, Thanks to @fCorleone.
+* core: Fix memory leak problems(CVE-2018-14072, CVE-2018-14073), Thanks to @fCorleone.
         https://github.com/saitoha/libsixel/commit/f94bc6fec696abd77be275226f28409602bd1f27
         https://github.com/saitoha/libsixel/commit/84ed0bc35e273ebd0a7fbc9d8f8669f7cf5f5612
 
