@@ -235,7 +235,9 @@ load_pnm(unsigned char      /* in */  *p,
                     }
                     n = 0;
                     if (maps == 0) {
-                        n = *s++ == '0';
+                        n = *s == '0';
+                        if (*s != '\0')
+                            s++;
                     } else {
                         while (isdigit(*s) && n >= 0) {
                             n = n * 10 + (*s++ - '0');
