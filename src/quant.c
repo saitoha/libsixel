@@ -1274,6 +1274,15 @@ sixel_quant_apply_palette(
                     unsigned short * const cachetable,
                     int const complexion);
 
+    /* check bad reqcolor */
+    if (reqcolor < 1) {
+        status = SIXEL_BAD_ARGUMENT;
+        sixel_helper_set_additional_message(
+            "sixel_quant_apply_palette: "
+            "a bad argument is detected, reqcolor < 0.");
+        goto end;
+    }
+
     if (depth != 3) {
         f_diffuse = diffuse_none;
     } else {
