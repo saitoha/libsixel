@@ -63,19 +63,7 @@ libsixel_la_LIBADD = -lm \
 
 if COND_TESTS
 noinst_PROGRAMS = tests
-tests_SOURCES = tests.c \
-                allocator.c \
-                chunk.c \
-                decoder.c \
-                dither.c \
-                encoder.c \
-                frame.c \
-                fromgif.c \
-                loader.c \
-                pixelformat.c \
-                quant.c \
-                status.c \
-                writer.c
+tests_SOURCES = tests.c
 tests_CPPFLAGS = -I$(top_builddir)/include/ \
 		 -I$(top_builddir)/src/ $(AM_CPPFLAGS)
 tests_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
