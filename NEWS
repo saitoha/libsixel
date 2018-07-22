@@ -14,6 +14,16 @@
 * core: Improve quality of 15bpp(hi-color mode) dither.
         https://github.com/saitoha/libsixel/commit/42f34283defea67c2d6294af4bd7dcb4fdf9f046
 
+* core: Fix memory leak problems, Thanks to @fCorleone.
+        https://github.com/saitoha/libsixel/commit/f94bc6fec696abd77be275226f28409602bd1f27
+        https://github.com/saitoha/libsixel/commit/84ed0bc35e273ebd0a7fbc9d8f8669f7cf5f5612
+
+* core: Fix some heap buffer-overflow problems, Thanks to @fgeek.
+        https://github.com/saitoha/libsixel/commit/6a19d99f95dafbbb50facf9267497afbcfba5731
+        https://github.com/saitoha/libsixel/commit/0d70e046437370c86696f2ed38ac0413855d98ce
+        https://github.com/saitoha/libsixel/commit/438188c1f8b418a38674364cf5c126ef3ed4166a
+        https://github.com/saitoha/libsixel/commit/ba21bb94d68f8bf7dc590400a707753f5d5c4709
+
 * img2sixel: Allow a deferred clear code in a GIF format
              GIF decoder must do nothing when the table is full.
              See Section "DEFERRED CLEAR CODE IN LZW COMPRESSION" in
@@ -25,7 +35,7 @@
              https://github.com/saitoha/libsixel/commit/9c8ffa62203899d866fc28e3ab7c6dfd9a0019b1
 
 * Some bug fixes and minor improvements.
-  Thanks to @set135, @ttdoda.
+  Thanks to @set135, @ttdoda, @tsutsui.
 
 * Announcement for package maintainers:
   Immutable tarball is provided, because GitHub auto-generated tarball may be not immutable.
