@@ -157,8 +157,19 @@ am__v_lt_1 =
 libsixel_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libsixel_la_CFLAGS) \
 	$(CFLAGS) $(libsixel_la_LDFLAGS) $(LDFLAGS) -o $@
-am__tests_SOURCES_DIST = tests.c
-@COND_TESTS_TRUE@am_tests_OBJECTS = tests-tests.$(OBJEXT)
+am__tests_SOURCES_DIST = tests.c allocator.c chunk.c decoder.c \
+	dither.c encoder.c frame.c fromgif.c loader.c pixelformat.c \
+	quant.c status.c writer.c
+@COND_TESTS_TRUE@am_tests_OBJECTS = tests-tests.$(OBJEXT) \
+@COND_TESTS_TRUE@	tests-allocator.$(OBJEXT) \
+@COND_TESTS_TRUE@	tests-chunk.$(OBJEXT) tests-decoder.$(OBJEXT) \
+@COND_TESTS_TRUE@	tests-dither.$(OBJEXT) \
+@COND_TESTS_TRUE@	tests-encoder.$(OBJEXT) tests-frame.$(OBJEXT) \
+@COND_TESTS_TRUE@	tests-fromgif.$(OBJEXT) \
+@COND_TESTS_TRUE@	tests-loader.$(OBJEXT) \
+@COND_TESTS_TRUE@	tests-pixelformat.$(OBJEXT) \
+@COND_TESTS_TRUE@	tests-quant.$(OBJEXT) tests-status.$(OBJEXT) \
+@COND_TESTS_TRUE@	tests-writer.$(OBJEXT)
 tests_OBJECTS = $(am_tests_OBJECTS)
 @COND_TESTS_TRUE@tests_DEPENDENCIES = $(top_builddir)/src/libsixel.la
 tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -198,7 +209,14 @@ am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-stb_image_write.Plo \
 	./$(DEPDIR)/libsixel_la-tosixel.Plo \
 	./$(DEPDIR)/libsixel_la-tty.Plo \
-	./$(DEPDIR)/libsixel_la-writer.Plo ./$(DEPDIR)/tests-tests.Po
+	./$(DEPDIR)/libsixel_la-writer.Plo \
+	./$(DEPDIR)/tests-allocator.Po ./$(DEPDIR)/tests-chunk.Po \
+	./$(DEPDIR)/tests-decoder.Po ./$(DEPDIR)/tests-dither.Po \
+	./$(DEPDIR)/tests-encoder.Po ./$(DEPDIR)/tests-frame.Po \
+	./$(DEPDIR)/tests-fromgif.Po ./$(DEPDIR)/tests-loader.Po \
+	./$(DEPDIR)/tests-pixelformat.Po ./$(DEPDIR)/tests-quant.Po \
+	./$(DEPDIR)/tests-status.Po ./$(DEPDIR)/tests-tests.Po \
+	./$(DEPDIR)/tests-writer.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -457,7 +475,20 @@ libsixel_la_LIBADD = -lm \
 		$(GDK_PIXBUF_LIBS) \
 		$(GD_LIBS)
 
-@COND_TESTS_TRUE@tests_SOURCES = tests.c
+@COND_TESTS_TRUE@tests_SOURCES = tests.c \
+@COND_TESTS_TRUE@                allocator.c \
+@COND_TESTS_TRUE@                chunk.c \
+@COND_TESTS_TRUE@                decoder.c \
+@COND_TESTS_TRUE@                dither.c \
+@COND_TESTS_TRUE@                encoder.c \
+@COND_TESTS_TRUE@                frame.c \
+@COND_TESTS_TRUE@                fromgif.c \
+@COND_TESTS_TRUE@                loader.c \
+@COND_TESTS_TRUE@                pixelformat.c \
+@COND_TESTS_TRUE@                quant.c \
+@COND_TESTS_TRUE@                status.c \
+@COND_TESTS_TRUE@                writer.c
+
 @COND_TESTS_TRUE@tests_CPPFLAGS = -I$(top_builddir)/include/ \
 @COND_TESTS_TRUE@		 -I$(top_builddir)/src/ $(AM_CPPFLAGS)
 
@@ -576,7 +607,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-tosixel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-tty.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-writer.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests-allocator.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests-chunk.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests-decoder.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests-dither.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests-encoder.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests-frame.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests-fromgif.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests-loader.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests-pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests-quant.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests-status.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests-tests.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests-writer.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -758,6 +801,174 @@ tests-tests.obj: tests.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests.c' object='tests-tests.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-tests.obj `if test -f 'tests.c'; then $(CYGPATH_W) 'tests.c'; else $(CYGPATH_W) '$(srcdir)/tests.c'; fi`
+
+tests-allocator.o: allocator.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-allocator.o -MD -MP -MF $(DEPDIR)/tests-allocator.Tpo -c -o tests-allocator.o `test -f 'allocator.c' || echo '$(srcdir)/'`allocator.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-allocator.Tpo $(DEPDIR)/tests-allocator.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='allocator.c' object='tests-allocator.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-allocator.o `test -f 'allocator.c' || echo '$(srcdir)/'`allocator.c
+
+tests-allocator.obj: allocator.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-allocator.obj -MD -MP -MF $(DEPDIR)/tests-allocator.Tpo -c -o tests-allocator.obj `if test -f 'allocator.c'; then $(CYGPATH_W) 'allocator.c'; else $(CYGPATH_W) '$(srcdir)/allocator.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-allocator.Tpo $(DEPDIR)/tests-allocator.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='allocator.c' object='tests-allocator.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-allocator.obj `if test -f 'allocator.c'; then $(CYGPATH_W) 'allocator.c'; else $(CYGPATH_W) '$(srcdir)/allocator.c'; fi`
+
+tests-chunk.o: chunk.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-chunk.o -MD -MP -MF $(DEPDIR)/tests-chunk.Tpo -c -o tests-chunk.o `test -f 'chunk.c' || echo '$(srcdir)/'`chunk.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-chunk.Tpo $(DEPDIR)/tests-chunk.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='chunk.c' object='tests-chunk.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-chunk.o `test -f 'chunk.c' || echo '$(srcdir)/'`chunk.c
+
+tests-chunk.obj: chunk.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-chunk.obj -MD -MP -MF $(DEPDIR)/tests-chunk.Tpo -c -o tests-chunk.obj `if test -f 'chunk.c'; then $(CYGPATH_W) 'chunk.c'; else $(CYGPATH_W) '$(srcdir)/chunk.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-chunk.Tpo $(DEPDIR)/tests-chunk.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='chunk.c' object='tests-chunk.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-chunk.obj `if test -f 'chunk.c'; then $(CYGPATH_W) 'chunk.c'; else $(CYGPATH_W) '$(srcdir)/chunk.c'; fi`
+
+tests-decoder.o: decoder.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-decoder.o -MD -MP -MF $(DEPDIR)/tests-decoder.Tpo -c -o tests-decoder.o `test -f 'decoder.c' || echo '$(srcdir)/'`decoder.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-decoder.Tpo $(DEPDIR)/tests-decoder.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder.c' object='tests-decoder.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-decoder.o `test -f 'decoder.c' || echo '$(srcdir)/'`decoder.c
+
+tests-decoder.obj: decoder.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-decoder.obj -MD -MP -MF $(DEPDIR)/tests-decoder.Tpo -c -o tests-decoder.obj `if test -f 'decoder.c'; then $(CYGPATH_W) 'decoder.c'; else $(CYGPATH_W) '$(srcdir)/decoder.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-decoder.Tpo $(DEPDIR)/tests-decoder.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder.c' object='tests-decoder.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-decoder.obj `if test -f 'decoder.c'; then $(CYGPATH_W) 'decoder.c'; else $(CYGPATH_W) '$(srcdir)/decoder.c'; fi`
+
+tests-dither.o: dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-dither.o -MD -MP -MF $(DEPDIR)/tests-dither.Tpo -c -o tests-dither.o `test -f 'dither.c' || echo '$(srcdir)/'`dither.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-dither.Tpo $(DEPDIR)/tests-dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither.c' object='tests-dither.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-dither.o `test -f 'dither.c' || echo '$(srcdir)/'`dither.c
+
+tests-dither.obj: dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-dither.obj -MD -MP -MF $(DEPDIR)/tests-dither.Tpo -c -o tests-dither.obj `if test -f 'dither.c'; then $(CYGPATH_W) 'dither.c'; else $(CYGPATH_W) '$(srcdir)/dither.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-dither.Tpo $(DEPDIR)/tests-dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither.c' object='tests-dither.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-dither.obj `if test -f 'dither.c'; then $(CYGPATH_W) 'dither.c'; else $(CYGPATH_W) '$(srcdir)/dither.c'; fi`
+
+tests-encoder.o: encoder.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-encoder.o -MD -MP -MF $(DEPDIR)/tests-encoder.Tpo -c -o tests-encoder.o `test -f 'encoder.c' || echo '$(srcdir)/'`encoder.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-encoder.Tpo $(DEPDIR)/tests-encoder.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder.c' object='tests-encoder.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-encoder.o `test -f 'encoder.c' || echo '$(srcdir)/'`encoder.c
+
+tests-encoder.obj: encoder.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-encoder.obj -MD -MP -MF $(DEPDIR)/tests-encoder.Tpo -c -o tests-encoder.obj `if test -f 'encoder.c'; then $(CYGPATH_W) 'encoder.c'; else $(CYGPATH_W) '$(srcdir)/encoder.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-encoder.Tpo $(DEPDIR)/tests-encoder.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder.c' object='tests-encoder.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-encoder.obj `if test -f 'encoder.c'; then $(CYGPATH_W) 'encoder.c'; else $(CYGPATH_W) '$(srcdir)/encoder.c'; fi`
+
+tests-frame.o: frame.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-frame.o -MD -MP -MF $(DEPDIR)/tests-frame.Tpo -c -o tests-frame.o `test -f 'frame.c' || echo '$(srcdir)/'`frame.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-frame.Tpo $(DEPDIR)/tests-frame.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frame.c' object='tests-frame.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-frame.o `test -f 'frame.c' || echo '$(srcdir)/'`frame.c
+
+tests-frame.obj: frame.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-frame.obj -MD -MP -MF $(DEPDIR)/tests-frame.Tpo -c -o tests-frame.obj `if test -f 'frame.c'; then $(CYGPATH_W) 'frame.c'; else $(CYGPATH_W) '$(srcdir)/frame.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-frame.Tpo $(DEPDIR)/tests-frame.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frame.c' object='tests-frame.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-frame.obj `if test -f 'frame.c'; then $(CYGPATH_W) 'frame.c'; else $(CYGPATH_W) '$(srcdir)/frame.c'; fi`
+
+tests-fromgif.o: fromgif.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-fromgif.o -MD -MP -MF $(DEPDIR)/tests-fromgif.Tpo -c -o tests-fromgif.o `test -f 'fromgif.c' || echo '$(srcdir)/'`fromgif.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-fromgif.Tpo $(DEPDIR)/tests-fromgif.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fromgif.c' object='tests-fromgif.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-fromgif.o `test -f 'fromgif.c' || echo '$(srcdir)/'`fromgif.c
+
+tests-fromgif.obj: fromgif.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-fromgif.obj -MD -MP -MF $(DEPDIR)/tests-fromgif.Tpo -c -o tests-fromgif.obj `if test -f 'fromgif.c'; then $(CYGPATH_W) 'fromgif.c'; else $(CYGPATH_W) '$(srcdir)/fromgif.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-fromgif.Tpo $(DEPDIR)/tests-fromgif.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fromgif.c' object='tests-fromgif.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-fromgif.obj `if test -f 'fromgif.c'; then $(CYGPATH_W) 'fromgif.c'; else $(CYGPATH_W) '$(srcdir)/fromgif.c'; fi`
+
+tests-loader.o: loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-loader.o -MD -MP -MF $(DEPDIR)/tests-loader.Tpo -c -o tests-loader.o `test -f 'loader.c' || echo '$(srcdir)/'`loader.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-loader.Tpo $(DEPDIR)/tests-loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader.c' object='tests-loader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-loader.o `test -f 'loader.c' || echo '$(srcdir)/'`loader.c
+
+tests-loader.obj: loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-loader.obj -MD -MP -MF $(DEPDIR)/tests-loader.Tpo -c -o tests-loader.obj `if test -f 'loader.c'; then $(CYGPATH_W) 'loader.c'; else $(CYGPATH_W) '$(srcdir)/loader.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-loader.Tpo $(DEPDIR)/tests-loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader.c' object='tests-loader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-loader.obj `if test -f 'loader.c'; then $(CYGPATH_W) 'loader.c'; else $(CYGPATH_W) '$(srcdir)/loader.c'; fi`
+
+tests-pixelformat.o: pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-pixelformat.o -MD -MP -MF $(DEPDIR)/tests-pixelformat.Tpo -c -o tests-pixelformat.o `test -f 'pixelformat.c' || echo '$(srcdir)/'`pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-pixelformat.Tpo $(DEPDIR)/tests-pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='pixelformat.c' object='tests-pixelformat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-pixelformat.o `test -f 'pixelformat.c' || echo '$(srcdir)/'`pixelformat.c
+
+tests-pixelformat.obj: pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-pixelformat.obj -MD -MP -MF $(DEPDIR)/tests-pixelformat.Tpo -c -o tests-pixelformat.obj `if test -f 'pixelformat.c'; then $(CYGPATH_W) 'pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-pixelformat.Tpo $(DEPDIR)/tests-pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='pixelformat.c' object='tests-pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-pixelformat.obj `if test -f 'pixelformat.c'; then $(CYGPATH_W) 'pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/pixelformat.c'; fi`
+
+tests-quant.o: quant.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-quant.o -MD -MP -MF $(DEPDIR)/tests-quant.Tpo -c -o tests-quant.o `test -f 'quant.c' || echo '$(srcdir)/'`quant.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-quant.Tpo $(DEPDIR)/tests-quant.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant.c' object='tests-quant.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-quant.o `test -f 'quant.c' || echo '$(srcdir)/'`quant.c
+
+tests-quant.obj: quant.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-quant.obj -MD -MP -MF $(DEPDIR)/tests-quant.Tpo -c -o tests-quant.obj `if test -f 'quant.c'; then $(CYGPATH_W) 'quant.c'; else $(CYGPATH_W) '$(srcdir)/quant.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-quant.Tpo $(DEPDIR)/tests-quant.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant.c' object='tests-quant.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-quant.obj `if test -f 'quant.c'; then $(CYGPATH_W) 'quant.c'; else $(CYGPATH_W) '$(srcdir)/quant.c'; fi`
+
+tests-status.o: status.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-status.o -MD -MP -MF $(DEPDIR)/tests-status.Tpo -c -o tests-status.o `test -f 'status.c' || echo '$(srcdir)/'`status.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-status.Tpo $(DEPDIR)/tests-status.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='status.c' object='tests-status.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-status.o `test -f 'status.c' || echo '$(srcdir)/'`status.c
+
+tests-status.obj: status.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-status.obj -MD -MP -MF $(DEPDIR)/tests-status.Tpo -c -o tests-status.obj `if test -f 'status.c'; then $(CYGPATH_W) 'status.c'; else $(CYGPATH_W) '$(srcdir)/status.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-status.Tpo $(DEPDIR)/tests-status.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='status.c' object='tests-status.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-status.obj `if test -f 'status.c'; then $(CYGPATH_W) 'status.c'; else $(CYGPATH_W) '$(srcdir)/status.c'; fi`
+
+tests-writer.o: writer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-writer.o -MD -MP -MF $(DEPDIR)/tests-writer.Tpo -c -o tests-writer.o `test -f 'writer.c' || echo '$(srcdir)/'`writer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-writer.Tpo $(DEPDIR)/tests-writer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer.c' object='tests-writer.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-writer.o `test -f 'writer.c' || echo '$(srcdir)/'`writer.c
+
+tests-writer.obj: writer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-writer.obj -MD -MP -MF $(DEPDIR)/tests-writer.Tpo -c -o tests-writer.obj `if test -f 'writer.c'; then $(CYGPATH_W) 'writer.c'; else $(CYGPATH_W) '$(srcdir)/writer.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-writer.Tpo $(DEPDIR)/tests-writer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer.c' object='tests-writer.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-writer.obj `if test -f 'writer.c'; then $(CYGPATH_W) 'writer.c'; else $(CYGPATH_W) '$(srcdir)/writer.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -957,7 +1168,19 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-tosixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-tty.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-writer.Plo
+	-rm -f ./$(DEPDIR)/tests-allocator.Po
+	-rm -f ./$(DEPDIR)/tests-chunk.Po
+	-rm -f ./$(DEPDIR)/tests-decoder.Po
+	-rm -f ./$(DEPDIR)/tests-dither.Po
+	-rm -f ./$(DEPDIR)/tests-encoder.Po
+	-rm -f ./$(DEPDIR)/tests-frame.Po
+	-rm -f ./$(DEPDIR)/tests-fromgif.Po
+	-rm -f ./$(DEPDIR)/tests-loader.Po
+	-rm -f ./$(DEPDIR)/tests-pixelformat.Po
+	-rm -f ./$(DEPDIR)/tests-quant.Po
+	-rm -f ./$(DEPDIR)/tests-status.Po
 	-rm -f ./$(DEPDIR)/tests-tests.Po
+	-rm -f ./$(DEPDIR)/tests-writer.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1023,7 +1246,19 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-tosixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-tty.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-writer.Plo
+	-rm -f ./$(DEPDIR)/tests-allocator.Po
+	-rm -f ./$(DEPDIR)/tests-chunk.Po
+	-rm -f ./$(DEPDIR)/tests-decoder.Po
+	-rm -f ./$(DEPDIR)/tests-dither.Po
+	-rm -f ./$(DEPDIR)/tests-encoder.Po
+	-rm -f ./$(DEPDIR)/tests-frame.Po
+	-rm -f ./$(DEPDIR)/tests-fromgif.Po
+	-rm -f ./$(DEPDIR)/tests-loader.Po
+	-rm -f ./$(DEPDIR)/tests-pixelformat.Po
+	-rm -f ./$(DEPDIR)/tests-quant.Po
+	-rm -f ./$(DEPDIR)/tests-status.Po
 	-rm -f ./$(DEPDIR)/tests-tests.Po
+	-rm -f ./$(DEPDIR)/tests-writer.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
