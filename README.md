@@ -9,7 +9,7 @@ libsixel
 This package provides encoder/decoder implementation for DEC SIXEL graphics, and
 some converter programs.
 
-[![img2sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/libsixel-1.png)](https://youtu.be/0SasrQ7pnbA)
+![img2sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/libsixel-1.png)(https://youtu.be/0SasrQ7pnbA)
 
 SIXEL is one of image formats for printer and terminal imaging introduced by
 Digital Equipment Corp. (DEC).
@@ -18,7 +18,7 @@ So if you want to view a SIXEL image file, all you have to do is "cat" it to you
 
 On 80's real hardware terminals, it tooks unbearable long waiting times to display images.
 
-![vt330sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/vt330sixel.png)
+[![vt330sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/vt330sixel.png)](https://youtu.be/0SasrQ7pnbA)
 
 But nowdays, with high-speed CPU and broadband network, we got the chance to develop a new scope of SIXELs.
 
