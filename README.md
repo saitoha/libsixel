@@ -9,12 +9,18 @@ libsixel
 This package provides encoder/decoder implementation for DEC SIXEL graphics, and
 some converter programs.
 
-![img2sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/libsixel-1.png)
+![img2sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/libsixel-1.png)(https://youtu.be/0SasrQ7pnbA)
 
 SIXEL is one of image formats for printer and terminal imaging introduced by
 Digital Equipment Corp. (DEC).
 Its data scheme is represented as a terminal-friendly escape sequence.
 So if you want to view a SIXEL image file, all you have to do is "cat" it to your terminal.
+
+On 80's real hardware terminals, it tooks unbearable long waiting times to display images.
+
+[![vt330sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/vt330sixel.png)](https://youtu.be/0SasrQ7pnbA)
+
+But nowdays, with high-speed CPU and broadband network, we got the chance to develop a new scope of SIXELs.
 
 ## SIXEL Animation
 
@@ -200,7 +206,12 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
 
   A sixel image dumper, provides pdf previewer.
 
+### [RetroArch](https://github.com/libretro/RetroArch)
 
+  SIXEL video driver is provided if you build it with `--enable-sixel` option.
+  ([screenshot](https://imgur.com/lf3bh2S))
+  
+  
 ## Highlighted features
 
 ### Improved compression
@@ -220,40 +231,6 @@ Now libsixel and ImageMagick's sixel coder follow it.
 ### High quality quantization
 
 `img2sixel(1)` supports color image quantization. It works well even if few number of colors are allowed.
-
-- `ppmtosixel` (`netpbm`)
-
-    $ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel
-
-  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel.png)
-
-
-- `ppmtosixel` with Floyd–Steinberg dithering (`netpbm`)
-
-    $ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel
-
-  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel2.png)
-
-
-- kmiya's `sixel`
-
-    $ sixel -p16 images/snake.jpg
-
-  ![kmiya's sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixel.png)
-
-
-- PySixel (`sixelconv` command)
-
-    $ sixelconv -n16 images/snake.jpg
-
-  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixelconv.png)
-
-
-- libsixel (`img2sixel` command)
-
-    $ img2sixel -p16 images/snake.jpg
-
-  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_libsixel.png)
 
 
 ## Terminal requirements
@@ -342,7 +319,6 @@ You can install libsixel via the following package systems.
 - [OpenBSD Ports](http://openports.se/graphics/libsixel)
 - [Fedora Copr](https://copr.fedorainfracloud.org/coprs/saahriktu/libsixel/)
 - [SlackBuilds](https://slackbuilds.org/repository/14.2/libraries/libsixel/)
-
 
 ### Build from source package
 
