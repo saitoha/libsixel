@@ -737,7 +737,7 @@ computeHistogram(unsigned char const    /* in */  *data,
         goto end;
     }
 
-    for (i = 0; i < length - depth; i += step) {
+    for (i = 0; i < length; i += step) {
         bucket_index = computeHash(data + i, 3);
         if (histogram[bucket_index] == 0) {
             *ref++ = bucket_index;
