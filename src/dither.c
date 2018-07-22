@@ -279,7 +279,7 @@ sixel_dither_new(
         sixel_allocator_ref(allocator);
     }
 
-    if (ncolors == (-1)) {
+    if (ncolors < 0) {
         ncolors = 256;
         quality_mode = SIXEL_QUALITY_HIGHCOLOR;
     } else {
