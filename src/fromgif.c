@@ -420,14 +420,14 @@ gif_load_next(
 
     for (;;) {
         switch (gif_get8(s)) {
-        case 0x2C: /* Image Descriptor */
-            x = gif_get16le(s);
-            y = gif_get16le(s);
-            w = gif_get16le(s);
-            h = gif_get16le(s);
+        case 0x2C:  /* Image Separator (1 byte) */
+            x = gif_get16le(s);  /* Image Left Position (2 bytes)*/
+            y = gif_get16le(s);  /* Image Top Position (2 bytes) */
+            w = gif_get16le(s);  /* Image Width (2 bytes) */
+            h = gif_get16le(s);  /* Image Height (2 bytes) */
             if (((x + w) > (g->w)) || ((y + h) > (g->h))) {
                 sixel_helper_set_additional_message(
-                    "corrupt GIF (reason: bad Image Descriptor).");
+                    "corrupt GIF (reason: bad Image Separator).");
                 status = SIXEL_RUNTIME_ERROR;
                 goto end;
             }
@@ -440,16 +440,29 @@ gif_load_next(
             g->cur_x   = g->start_x;
             g->cur_y   = g->start_y;
 
+            /* Packed Fields (1 byte)
+             * +-+-+-+--+---+
+             * | | | |  |   |
+             * +-+-+-+--+---+
+             *  | | |  |  |
+             *  | | |  |  +- Size of Local Color Table (3 bits)
+             *  | | |  +- Reserved (2 bits)
+             *  | | +- Sort Flag (1 bit)
+             *  | +- Interlace Flag (1 bit)
+             *  +- Local Color Table Flag (1 bit)
+             */
             g->lflags = gif_get8(s);
 
+            /* Interlace Flag */
             if (g->lflags & 0x40) {
-                g->step = 8 * g->line_size; /* first interlaced spacing */
+                g->step = 8 * g->line_size;  /* first interlaced spacing */
                 g->parse = 3;
             } else {
                 g->step = g->line_size;
                 g->parse = 0;
             }
 
+            /* Local Color Table Flag */
             if (g->lflags & 0x80) {
                 gif_parse_colortable(s,
                                      g->lpal,
@@ -477,13 +490,13 @@ gif_load_next(
             }
             goto end;
 
-        case 0x21: /* Comment Extension. */
+        case 0x21:  /* Comment Extension. */
             switch (gif_get8(s)) {
-            case 0x01: /* Plain Text Extension */
+            case 0x01:  /* Plain Text Extension */
                 break;
-            case 0x21: /* Comment Extension */
+            case 0x21:  /* Comment Extension */
                 break;
-            case 0xF9: /* Graphic Control Extension */
+            case 0xF9:  /* Graphic Control Extension */
                 len = gif_get8(s); /* block size */
                 if (len == 4) {
                     g->eflags = gif_get8(s);
@@ -494,8 +507,8 @@ gif_load_next(
                     break;
                 }
                 break;
-            case 0xFF: /* Application Extension */
-                len = gif_get8(s); /* block size */
+            case 0xFF:  /* Application Extension */
+                len = gif_get8(s);  /* block size */
                 if (s->img_buffer + len > s->img_buffer_end) {
                     status = SIXEL_RUNTIME_ERROR;
                     goto end;
@@ -528,7 +541,7 @@ gif_load_next(
             }
             break;
 
-        case 0x3B: /* gif stream termination code */
+        case 0x3B:  /* gif stream termination code */
             g->is_terminated = 1;
             status = SIXEL_OK;
             goto end;
