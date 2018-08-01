@@ -58,6 +58,10 @@ typedef struct
    unsigned char suffix;
 } gif_lzw;
 
+enum {
+   gif_lzw_max_code_size = 12
+};
+
 typedef struct
 {
    int w, h;
@@ -65,7 +69,7 @@ typedef struct
    int flags, bgindex, ratio, transparent, eflags;
    unsigned char pal[256][3];
    unsigned char lpal[256][3];
-   gif_lzw codes[4096];
+   gif_lzw codes[1 << gif_lzw_max_code_size];
    unsigned char *color_table;
    int parse, step;
    int lflags;
@@ -299,7 +303,15 @@ gif_process_raster(
     signed int codesize, codemask, avail, oldcode, bits, valid_bits, clear;
     gif_lzw *p;
 
+    /* LZW Minimum Code Size */
     lzw_cs = gif_get8(s);
+    if (lzw_cs > gif_lzw_max_code_size) {
+        sixel_helper_set_additional_message(
+            "Unsupported GIF (LZW code size)");
+        status = SIXEL_RUNTIME_ERROR;
+        goto end;
+    }
+
     clear = 1 << lzw_cs;
     first = 1;
     codesize = lzw_cs + 1;
@@ -353,7 +365,7 @@ gif_process_raster(
                     goto end;
                 }
                 if (oldcode >= 0) {
-                    if (avail < 4096) {
+                    if (avail < (1 << gif_lzw_max_code_size)) {
                         p = &g->codes[avail++];
                         p->prefix = (signed short) oldcode;
                         p->first = g->codes[oldcode].first;
