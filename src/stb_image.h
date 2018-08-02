@@ -2017,6 +2017,7 @@ static int stbi__jpeg_decode_block_prog_dc(stbi__jpeg *j, short data[64], stbi__
       // first scan for DC coefficient, must be first
       memset(data,0,64*sizeof(data[0])); // 0 all the ac values now
       t = stbi__jpeg_huff_decode(j, hdc);
+      if (t < 0 || t >= 16) return stbi__err("bad huffman code","Corrupt JPEG");
       diff = t ? stbi__extend_receive(j, t) : 0;
 
       dc = j->img_comp[b].dc_pred + diff;
