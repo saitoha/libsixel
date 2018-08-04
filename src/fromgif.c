@@ -72,6 +72,7 @@ typedef struct
    int start_x, start_y;
    int max_x, max_y;
    int cur_x, cur_y;
+   int actual_width, actual_height;
    int line_size;
    int loop_count;
    int delay;
@@ -270,7 +271,14 @@ gif_out_code(
         return;
     }
 
-    g->out[g->cur_x + g->cur_y] = g->codes[code].suffix;
+    g->out[g->cur_x + g->cur_y * g->line_size] = g->codes[code].suffix;
+    if (g->cur_x >= g->actual_width) {
+        g->actual_width = g->cur_x + 1;
+    }
+    if (g->cur_y >= g->actual_height) {
+        g->actual_height = g->cur_y + 1;
+    }
+
     g->cur_x++;
 
     if (g->cur_x >= g->max_x) {
@@ -278,7 +286,7 @@ gif_out_code(
         g->cur_y += g->step;
 
         while (g->cur_y >= g->max_y && g->parse > 0) {
-            g->step = (1 << g->parse) * g->line_size;
+            g->step = 1 << g->parse;
             g->cur_y = g->start_y + (g->step >> 1);
             --g->parse;
         }
@@ -422,19 +430,21 @@ gif_load_next(
 
             g->line_size = g->w;
             g->start_x = x;
-            g->start_y = y * g->line_size;
+            g->start_y = y;
             g->max_x   = g->start_x + w;
-            g->max_y   = g->start_y + h * g->line_size;
+            g->max_y   = g->start_y + h;
             g->cur_x   = g->start_x;
             g->cur_y   = g->start_y;
+            g->actual_width   = g->start_x;
+            g->actual_height   = g->start_y;
 
             g->lflags = gif_get8(s);
 
             if (g->lflags & 0x40) {
-                g->step = 8 * g->line_size; /* first interlaced spacing */
+                g->step = 8; /* first interlaced spacing */
                 g->parse = 3;
             } else {
-                g->step = g->line_size;
+                g->step = 1;
                 g->parse = 0;
             }
 
@@ -604,8 +614,8 @@ load_gif(
                 break;
             }
 
-            frame->width = g.w;
-            frame->height = g.h;
+            frame->width = g.actual_width;
+            frame->height = g.actual_height;
             status = gif_init_frame(frame, &g, bgcolor, reqcolors, fuse_palette);
             if (status != SIXEL_OK) {
                 goto end;
