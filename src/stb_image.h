@@ -5666,6 +5666,7 @@ static int stbi__psd_decode_rle(stbi__context *s, stbi_uc *p, int pixelCount)
 
    count = 0;
    while ((nleft = pixelCount - count) > 0) {
+      if (stbi__at_eof(s))   return 0;
       len = stbi__get8(s);
       if (len == 128) {
          // No-op.
@@ -5780,7 +5781,6 @@ static void *stbi__psd_load(stbi__context *s, int *x, int *y, int *comp, int req
 
    // Initialize the data to zero.
    //memset( out, 0, pixelCount * 4 );
-
    // Finally, the image data.
    if (compression) {
       // RLE as used by .PSD and .TIFF
@@ -5835,8 +5835,10 @@ static void *stbi__psd_load(stbi__context *s, int *x, int *y, int *comp, int req
          } else {
             if (ri->bits_per_channel == 16) {    // output bpc
                stbi__uint16 *q = ((stbi__uint16 *) out) + channel;
-               for (i = 0; i < pixelCount; i++, q += 4)
+               for (i = 0; i < pixelCount; i++, q += 4) {
+                  if (stbi__at_eof(s))   return stbi__errpuc("bad file","PSD file too short");
                   *q = (stbi__uint16) stbi__get16be(s);
+               }
             } else {
                stbi_uc *p = out+channel;
                if (bitdepth == 16) {  // input bpc
