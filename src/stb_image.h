@@ -5842,11 +5842,15 @@ static void *stbi__psd_load(stbi__context *s, int *x, int *y, int *comp, int req
             } else {
                stbi_uc *p = out+channel;
                if (bitdepth == 16) {  // input bpc
-                  for (i = 0; i < pixelCount; i++, p += 4)
+                  for (i = 0; i < pixelCount; i++, p += 4) {
+                     if (stbi__at_eof(s))   return stbi__errpuc("bad file","PSD file too short");
                      *p = (stbi_uc) (stbi__get16be(s) >> 8);
+                  }
                } else {
-                  for (i = 0; i < pixelCount; i++, p += 4)
+                  for (i = 0; i < pixelCount; i++, p += 4) {
+                     if (stbi__at_eof(s))   return stbi__errpuc("bad file","PSD file too short");
                      *p = stbi__get8(s);
+                  }
                }
             }
          }
