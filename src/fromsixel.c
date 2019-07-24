@@ -884,7 +884,10 @@ sixel_decode_raw(
     }
 
     *ncolors = image.ncolors + 1;
-    *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(*ncolors * 3));
+    int alloc_size = *ncolors;
+    if (alloc_size < 256) // memory access range should be 0 <= 255 (in write_png_to_file)
+        alloc_size = 256;
+    *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(alloc_size * 3));
     if (palette == NULL) {
         sixel_allocator_free(allocator, image.data);
         sixel_helper_set_additional_message(
