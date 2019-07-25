@@ -572,6 +572,10 @@ sixel_decode_raw_impl(
                         image->ncolors = context->color_index;
                     }
 
+                    if (context->pos_x < 0 || context->pos_y < 0) {
+                        status = SIXEL_BAD_INPUT;
+                        goto end;
+                    }
                     bits = *p - '?';
 
                     if (bits == 0) {
