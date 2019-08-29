@@ -195,6 +195,12 @@ load_jpeg(unsigned char **result,
 
     while (cinfo.output_scanline < cinfo.output_height) {
         jpeg_read_scanlines(&cinfo, buffer, 1);
+        if (cinfo.err->num_warnings > 0) {
+            sixel_helper_set_additional_message(
+                "jpeg_read_scanlines: error/warining occuered.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
         memcpy(*result + (cinfo.output_scanline - 1) * row_stride, buffer[0], row_stride);
     }
 
