@@ -729,6 +729,10 @@ sixel_decode_raw_impl(
                 if (context->repeat_count == 0) {
                     context->repeat_count = 1;
                 }
+                if (context->repeat_count > 0xffff) { /* check too huge number */
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
                 context->state = PS_DECSIXEL;
                 context->param = 0;
                 context->nparams = 0;
