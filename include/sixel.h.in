@@ -60,6 +60,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_BAD_ALLOCATION    (SIXEL_RUNTIME_ERROR | 0x0001)  /* malloc() failed */
 #define SIXEL_BAD_ARGUMENT      (SIXEL_RUNTIME_ERROR | 0x0002)  /* bad argument detected */
 #define SIXEL_BAD_INPUT         (SIXEL_RUNTIME_ERROR | 0x0003)  /* bad input detected */
+#define SIXEL_BAD_INTEGER_OVERFLOW (SIXEL_RUNTIME_ERROR | 0x0004)  /* integer overflow */
 
 #define SIXEL_NOT_IMPLEMENTED   (SIXEL_FEATURE_ERROR | 0x0001)  /* feature not implemented */
 
