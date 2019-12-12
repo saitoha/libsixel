@@ -11,8 +11,8 @@ matrix:
     env: XCC=clang HOST= PREFIX=/usr/local DEBUG="--enable-tests --enable-debug" WINE= LIBCURL=--without-libcurl JPEG=--without-jpeg PNG=--without-png
   - os: linux
     env: XCC=i686-w64-mingw32-gcc HOST="--host=i686-w64-mingw32" PREFIX="/usr/i686-w64-mingw32" DEBUG="--enable-tests --enable-debug" WINE=wine
-  - os: linux
-    env: XCC=i586-mingw32msvc-gcc HOST="--host=i586-mingw32msvc" PREFIX="/usr/i586-mingw32msvc" WINE=wine
+#t  - os: linux
+#    env: XCC=i586-mingw32msvc-gcc HOST="--host=i586-mingw32msvc" PREFIX="/usr/i586-mingw32msvc" WINE=wine
   - os: linux
     env: XCC=x86_64-w64-mingw32-gcc HOST="--host=x86_64-w64-mingw32" PREFIX="/usr/x86_64-w64-mingw32" DEBUG="--enable-tests --enable-debug" WINE=wine64
   - os: linux
