@@ -9,12 +9,18 @@ libsixel
 This package provides encoder/decoder implementation for DEC SIXEL graphics, and
 some converter programs.
 
-![img2sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/libsixel-1.png)
+![img2sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/libsixel-1.png)(https://youtu.be/0SasrQ7pnbA)
 
 SIXEL is one of image formats for printer and terminal imaging introduced by
 Digital Equipment Corp. (DEC).
 Its data scheme is represented as a terminal-friendly escape sequence.
 So if you want to view a SIXEL image file, all you have to do is "cat" it to your terminal.
+
+On 80's real hardware terminals, it tooks unbearable long waiting times to display images.
+
+[![vt330sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/vt330sixel.png)](https://youtu.be/0SasrQ7pnbA)
+
+But nowdays, with high-speed CPU and broadband network, we got the chance to develop a new scope of SIXELs.
 
 ## SIXEL Animation
 
@@ -73,6 +79,18 @@ Furthermore some information of SIXEL-ready SDL applications are reported.
 #### [mruby-sixel](https://github.com/kjunichi/mruby-sixel)
 
   Used by [mruby-webcam](https://github.com/kjunichi/mruby-webcam).
+
+#### [libsixel-p6](https://github.com/timo/libsixel-p6)
+
+  A [perl6](https://perl6.org/) bindings for libsixel
+
+#### [sixel-sys](https://github.com/AdnoC/sixel-sys)
+
+  [Rust](https://www.rust-lang.org/) FFI bindings for libsixel
+
+#### [sixel-rs](https://github.com/AdnoC/sixel-rs)
+
+  A safe [Rust](https://www.rust-lang.org/) wrapper for libsixel
 
 
 ### W3M integration
@@ -157,15 +175,6 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
 
 ### Other
 
-#### [sixelPreviewer](https://github.com/mikoto2000/sixelPreviewer)
-
-  Simple scripts and development environment for realtime edit-previewing for dot, svg, markdown, ...etc.
-  [![sixelPreviewer](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixelpreviewer.png)](https://youtu.be/iPzHWPGWHV4)
-
-#### [sdump](https://github.com/uobikiemukot/sdump)
-
-  A sixel image dumper, provides pdf previewer.
-
 #### [sixelSPAD](https://github.com/nilqed/sixelSPAD)
 
   [screenshot](https://nilqed.github.io/drawfe/)
@@ -180,9 +189,29 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
   Now `sixel` backend is implemented.
   See https://github.com/dylanaraps/neofetch/wiki/Image-Backends#sixel
 
-  ![neofetch](https://raw.githubusercontent.com/saitoha/libsixel/data/data/neofetch.jpg)
+  ![neofetch](https://raw.githubusercontent.com/saitoha/libsixel/data/data/neofetch.png)
 
+#### [termplay](https://github.com/jD91mZM2/termplay)
 
+  Depends on [sixel-sys](https://github.com/AdnoC/sixel-sys), `--converter=sixel` option is supported.
+
+  [![termplay](https://github.com/saitoha/libsixel/blob/data/data/termplay.png)](https://youtu.be/sOHU1b-Ih90)
+
+#### [sixelPreviewer](https://github.com/mikoto2000/sixelPreviewer)
+
+  Simple scripts and development environment for realtime edit-previewing for dot, svg, markdown, ...etc.
+  [![sixelPreviewer](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixelpreviewer.png)](https://youtu.be/iPzHWPGWHV4)
+
+#### [sdump](https://github.com/uobikiemukot/sdump)
+
+  A sixel image dumper, provides pdf previewer.
+
+### [RetroArch](https://github.com/libretro/RetroArch)
+
+  SIXEL video driver is provided if you build it with `--enable-sixel` option.
+  ([screenshot](https://imgur.com/lf3bh2S))
+  
+  
 ## Highlighted features
 
 ### Improved compression
@@ -202,40 +231,6 @@ Now libsixel and ImageMagick's sixel coder follow it.
 ### High quality quantization
 
 `img2sixel(1)` supports color image quantization. It works well even if few number of colors are allowed.
-
-- `ppmtosixel` (`netpbm`)
-
-    $ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel
-
-  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel.png)
-
-
-- `ppmtosixel` with Floyd–Steinberg dithering (`netpbm`)
-
-    $ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel
-
-  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel2.png)
-
-
-- kmiya's `sixel`
-
-    $ sixel -p16 images/snake.jpg
-
-  ![kmiya's sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixel.png)
-
-
-- PySixel (`sixelconv` command)
-
-    $ sixelconv -n16 images/snake.jpg
-
-  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixelconv.png)
-
-
-- libsixel (`img2sixel` command)
-
-    $ img2sixel -p16 images/snake.jpg
-
-  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_libsixel.png)
 
 
 ## Terminal requirements
@@ -322,7 +317,8 @@ You can install libsixel via the following package systems.
 - [Ubuntu](https://launchpad.net/ubuntu/+source/libsixel)
 - [NixOS](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/libraries/libsixel/default.nix)
 - [OpenBSD Ports](http://openports.se/graphics/libsixel)
-
+- [Fedora Copr](https://copr.fedorainfracloud.org/coprs/saahriktu/libsixel/)
+- [SlackBuilds](https://slackbuilds.org/repository/14.2/libraries/libsixel/)
 
 ### Build from source package
 
@@ -550,7 +546,7 @@ Options:
 -P, --penetrate            penetrate GNU Screen using DCS
                            pass-through sequence
 -D, --pipe-mode            read source images from stdin
-                           continuously
+                           continuously (deprecated)
 -v, --verbose              show debugging info
 -V, --version              show version and license info
 -H, --help                 show this help
@@ -1045,6 +1041,9 @@ The MIT License (MIT)
 - [@vrtsds](https://github.com/vrtsds/)
 - [@waywardmonkeys](https://github.com/waywardmonkeys/)
 - [@yoshikaw](https://github.com/yoshikaw/)
+- [@turenar](https://github.com/turenar/)
+- [@mame](https://github.com/mame/)
+- [@hodefoting](https://github.com/hodefoting/)
 
 ## Contributing
 
@@ -1309,9 +1308,19 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   A SIXEL encoder written in rust.
 
 
+- [forth-sixel](https://hub.darcs.net/pointfree/forth-sixel)
+
+  A SIXEL encoder written in forth.
+
+
 - [ff2sixel](https://github.com/labdsf/ff2sixel)
 
   An utility to convert farbfeld images to Sixels.
+
+
+- [tv](https://github.com/hodefoting/tv)
+
+  terminal/commandline image viewer
 
 
 - [xpr(x11-apps)](ftp://ftp.x.org/pub/unsupported/programs/xpr/)
@@ -1325,7 +1334,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 - [GNUPLOT](http://www.gnuplot.info/)
 
-  Recent version of GNUPLOT supports new terminal driver "sixel" / "sixelgd".
+  Recent version of GNUPLOT supports new terminal driver "sixeltek(sixel)" / "sixelgd".
 
   ![GNUPLOT](https://raw.githubusercontent.com/saitoha/libsixel/data/data/gnuplot.png)
 
@@ -1348,6 +1357,23 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   Recent version of ImageMagick provides SIXEL coder. It's also available over commandline tools.
 
   ![ImageMagick](https://raw.githubusercontent.com/saitoha/libsixel/data/data/imagemagick.png)
+
+
+- [lsix](https://github.com/hackerb9/lsix)
+
+  Like "ls", but for images. Shows thumbnails in terminal using sixel graphics.
+  ![lsix](https://raw.githubusercontent.com/saitoha/libsixel/data/data/lsix.jpg)
+
+
+- [sixeldraw](https://github.com/aiju/sixeldraw)
+
+  Sixel support for p9p devdraw
+
+  cmapcube on xterm with DEVDRAW=sixeldraw
+  [![sixeldraw2](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixeldraw2.png)](https://youtu.be/EOvSrt7Yi00)
+
+  acme on xterm with DEVDRAW=sixeldraw SNARF=1
+  [![sixeldraw1](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixeldraw1.png)](https://youtu.be/eGjSEjxiDjE)
 
 
 - [ZX81 Emulator](http://rullf2.xs4all.nl/sg/zx81ce.html)
@@ -1425,6 +1451,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 - [sixelplot](https://github.com/kktk-KO/sixelplot)
 
   thin-wrapper for pysixel and matplotlib
+
 
 - [ame.sh](https://github.com/hamano/ame.sh)
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016 Hayaki Saito
+ * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -161,27 +161,22 @@ end:
 # endif
 
 
-static int
-wait_file(int fd, int usec)
-{
-#if HAVE_SYS_SELECT_H
-    fd_set rfds;
-    struct timeval tv;
-#endif  /* HAVE_SYS_SELECT_H */
-    int ret = 1;
-
-#if HAVE_SYS_SELECT_H
-    tv.tv_sec = usec / 1000000;
-    tv.tv_usec = usec % 1000000;
-    FD_ZERO(&rfds);
 #if HAVE_DIAGNOSTIC_SIGN_CONVERSION
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
+static int
+wait_file(int fd, int usec)
+{
+    int ret = 1;
+#if HAVE_SYS_SELECT_H
+    fd_set rfds;
+    struct timeval tv;
+
+    tv.tv_sec = usec / 1000000;
+    tv.tv_usec = usec % 1000000;
+    FD_ZERO(&rfds);
     FD_SET(fd, &rfds);
-#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
-# pragma GCC diagnostic pop
-#endif
     ret = select(fd + 1, &rfds, NULL, NULL, &tv);
 #else
     (void) fd;
@@ -196,6 +191,9 @@ wait_file(int fd, int usec)
 
     return (0);
 }
+#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
+# pragma GCC diagnostic pop
+#endif
 
 
 static SIXELSTATUS
@@ -260,12 +258,12 @@ sixel_chunk_from_file(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int ret;
-    FILE *f;
+    FILE *f = NULL;
     size_t n;
     size_t const bucket_size = 4096;
 
     status = open_binary_file(&f, filename);
-    if (SIXEL_FAILED(status)) {
+    if (SIXEL_FAILED(status) || f == NULL) {
         goto end;
     }
 
@@ -589,7 +587,7 @@ error:
 }
 
 
-int
+SIXELAPI int
 sixel_chunk_tests_main(void)
 {
     int nret = EXIT_FAILURE;

@@ -40,6 +40,7 @@ check: test_impl
 test: all test_impl
 
 test_impl:
+	@echo '[start]'
 if WANT_IMG2SIXEL
 
 	@echo '[test1] invalid option handling'
@@ -254,20 +255,6 @@ if WANT_SIXEL2PNG
 	$(WINE) ./sixel2png - - < snake3.sixel > snake3.png
 	$(WINE) ./sixel2png -i snake.sixel -o snake4.png
 endif
-	@echo '[test12] continuous pipe mode'
-	rm -f sixel.pipe
-	if test "$(WINE)" = "" && which mkfifo && which pkill; then \
-	    mkfifo sixel.pipe; \
-	    ($(WINE) ./img2sixel -D < sixel.pipe&); \
-	    cat $(top_srcdir)/images/snake.jpg > sixel.pipe; \
-	    echo > sixel.pipe; \
-	    sleep 2; \
-	    pkill img2sixel; \
-	    echo > sixel.pipe; \
-	    sleep 2; \
-	    pkill img2sixel; \
-	    rm -f sixel.pipe; \
-	fi || true
 
 	@echo '[test13] documentation'
 	$(WINE) ./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options1.txt
@@ -278,6 +265,7 @@ endif
 	diff options2.txt options3.txt
 	diff options3.txt options4.txt
 endif
+
 	@echo '[succeeded]'
 
 winetest: all

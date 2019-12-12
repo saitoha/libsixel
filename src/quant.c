@@ -737,7 +737,7 @@ computeHistogram(unsigned char const    /* in */  *data,
         goto end;
     }
 
-    for (i = 0; i < length - depth; i += step) {
+    for (i = 0; i < length; i += step) {
         bucket_index = computeHash(data + i, 3);
         if (histogram[bucket_index] == 0) {
             *ref++ = bucket_index;
@@ -1274,33 +1274,36 @@ sixel_quant_apply_palette(
                     unsigned short * const cachetable,
                     int const complexion);
 
+    /* check bad reqcolor */
+    if (reqcolor < 1) {
+        status = SIXEL_BAD_ARGUMENT;
+        sixel_helper_set_additional_message(
+            "sixel_quant_apply_palette: "
+            "a bad argument is detected, reqcolor < 0.");
+        goto end;
+    }
+
     if (depth != 3) {
         f_diffuse = diffuse_none;
     } else {
         switch (methodForDiffuse) {
         case SIXEL_DIFFUSE_NONE:
             f_diffuse = diffuse_none;
-            f_mask = mask_a;
             break;
         case SIXEL_DIFFUSE_ATKINSON:
             f_diffuse = diffuse_atkinson;
-            f_mask = mask_a;
             break;
         case SIXEL_DIFFUSE_FS:
             f_diffuse = diffuse_fs;
-            f_mask = mask_a;
             break;
         case SIXEL_DIFFUSE_JAJUNI:
             f_diffuse = diffuse_jajuni;
-            f_mask = mask_a;
             break;
         case SIXEL_DIFFUSE_STUCKI:
             f_diffuse = diffuse_stucki;
-            f_mask = mask_a;
             break;
         case SIXEL_DIFFUSE_BURKES:
             f_diffuse = diffuse_burkes;
-            f_mask = mask_a;
             break;
         case SIXEL_DIFFUSE_A_DITHER:
             f_diffuse = diffuse_none;
@@ -1315,7 +1318,6 @@ sixel_quant_apply_palette(
                                 " methodForDiffuse: %d\n",
                         methodForDiffuse);
             f_diffuse = diffuse_none;
-            f_mask = mask_a;
             break;
         }
     }
@@ -1486,7 +1488,7 @@ error:
 }
 
 
-int
+SIXELAPI int
 sixel_quant_tests_main(void)
 {
     int nret = EXIT_FAILURE;

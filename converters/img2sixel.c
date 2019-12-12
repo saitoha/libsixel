@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017 Hayaki Saito
+ * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -89,7 +89,7 @@ void show_version(void)
            "no\n"
 #endif
            "\n"
-           "Copyright (C) 2014-2017 Hayaki Saito <saitoha@me.com>.\n"
+           "Copyright (C) 2014-2018 Hayaki Saito <saitoha@me.com>.\n"
            "\n"
            "Permission is hereby granted, free of charge, to any person obtaining a copy of\n"
            "this software and associated documentation files (the \"Software\"), to deal in\n"
@@ -304,7 +304,7 @@ void show_help(void)
             "-P, --penetrate            penetrate GNU Screen using DCS\n"
             "                           pass-through sequence\n"
             "-D, --pipe-mode            read source images from stdin\n"
-            "                           continuously\n"
+            "                           continuously (deprecated)\n"
             "-v, --verbose              show debugging info\n"
             "-V, --version              show version and license info\n"
             "-H, --help                 show this help\n"

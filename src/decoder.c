@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016 Hayaki Saito
+ * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -237,17 +237,16 @@ sixel_decoder_decode(
     sixel_decoder_t /* in */ *decoder)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    unsigned char *raw_data;
+    unsigned char *raw_data = NULL;
     int sx;
     int sy;
     int raw_len;
     int max;
     int n;
     FILE *input_fp = NULL;
-    unsigned char *indexed_pixels;
-    unsigned char *palette;
+    unsigned char *indexed_pixels = NULL;
+    unsigned char *palette = NULL;
     int ncolors;
-    unsigned char *pixels = NULL;
 
     sixel_decoder_ref(decoder);
 
@@ -327,7 +326,9 @@ sixel_decoder_decode(
     }
 
 end:
-    sixel_allocator_free(decoder->allocator, pixels);
+    sixel_allocator_free(decoder->allocator, raw_data);
+    sixel_allocator_free(decoder->allocator, indexed_pixels);
+    sixel_allocator_free(decoder->allocator, palette);
     sixel_decoder_unref(decoder);
 
     return status;
@@ -573,7 +574,7 @@ error:
 }
 
 
-int
+SIXELAPI int
 sixel_decoder_tests_main(void)
 {
     int nret = EXIT_FAILURE;

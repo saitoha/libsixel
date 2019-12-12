@@ -109,6 +109,8 @@ SIXEL_PIXELFORMAT_BGR565   = (SIXEL_FORMATTYPE_COLOR     | 0x05) # 16bpp
 SIXEL_PIXELFORMAT_BGR888   = (SIXEL_FORMATTYPE_COLOR     | 0x06) # 24bpp
 SIXEL_PIXELFORMAT_ARGB8888 = (SIXEL_FORMATTYPE_COLOR     | 0x10) # 32bpp
 SIXEL_PIXELFORMAT_RGBA8888 = (SIXEL_FORMATTYPE_COLOR     | 0x11) # 32bpp
+SIXEL_PIXELFORMAT_ABGR8888 = (SIXEL_FORMATTYPE_COLOR     | 0x12) # 32bpp
+SIXEL_PIXELFORMAT_BGRA8888 = (SIXEL_FORMATTYPE_COLOR     | 0x13) # 32bpp
 SIXEL_PIXELFORMAT_G1       = (SIXEL_FORMATTYPE_GRAYSCALE | 0x00) # 1bpp grayscale
 SIXEL_PIXELFORMAT_G2       = (SIXEL_FORMATTYPE_GRAYSCALE | 0x01) # 2bpp grayscale
 SIXEL_PIXELFORMAT_G4       = (SIXEL_FORMATTYPE_GRAYSCALE | 0x02) # 4bpp grayscale
@@ -340,7 +342,7 @@ SIXEL_OPTFLAG_BGCOLOR          = 'B'  # -B BGCOLOR, --bgcolor=BGCOLOR:
 SIXEL_OPTFLAG_PENETRATE        = 'P'  # -P, --penetrate:
                                       #        penetrate GNU Screen using DCS
                                       #        pass-through sequence
-SIXEL_OPTFLAG_PIPE_MODE        = 'D'  # -D, --pipe-mode:
+SIXEL_OPTFLAG_PIPE_MODE        = 'D'  # -D, --pipe-mode: (deprecated)
                                       #         read source images from stdin continuously
 SIXEL_OPTFLAG_VERBOSE          = 'v'  # -v, --verbose: show debugging info
 SIXEL_OPTFLAG_VERSION          = 'V'  # -V, --version: show version and license info

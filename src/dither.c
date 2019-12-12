@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016 Hayaki Saito
+ * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -279,7 +279,7 @@ sixel_dither_new(
         sixel_allocator_ref(allocator);
     }
 
-    if (ncolors == (-1)) {
+    if (ncolors < 0) {
         ncolors = 256;
         quality_mode = SIXEL_QUALITY_HIGHCOLOR;
     } else {
@@ -868,7 +868,7 @@ error:
 }
 
 
-int
+SIXELAPI int
 sixel_dither_tests_main(void)
 {
     int nret = EXIT_FAILURE;
