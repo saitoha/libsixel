@@ -941,10 +941,11 @@ load_with_gdkpixbuf(
     GdkPixbuf *pixbuf;
     GdkPixbufAnimation *animation;
     GdkPixbufLoader *loader = NULL;
-#if 1
     GdkPixbufAnimationIter *it;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     GTimeVal time_val;
-#endif
+#pragma GCC diagnostic pop
     sixel_frame_t *frame = NULL;
     int stride;
     unsigned char *p;
@@ -963,7 +964,10 @@ load_with_gdkpixbuf(
 #if (!GLIB_CHECK_VERSION(2, 36, 0))
     g_type_init();
 #endif
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     g_get_current_time(&time_val);
+#pragma GCC diagnostic pop
     loader = gdk_pixbuf_loader_new();
     gdk_pixbuf_loader_write(loader, pchunk->buffer, pchunk->size, NULL);
     animation = gdk_pixbuf_loader_get_animation(loader);
@@ -1006,7 +1010,10 @@ load_with_gdkpixbuf(
             goto end;
         }
     } else {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         g_get_current_time(&time_val);
+#pragma GCC diagnostic pop
 
         frame->frame_no = 0;
 
@@ -1014,7 +1021,10 @@ load_with_gdkpixbuf(
         for (;;) {
             while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
                 frame->delay = gdk_pixbuf_animation_iter_get_delay_time(it);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
                 g_time_val_add(&time_val, frame->delay * 1000);
+#pragma GCC diagnostic pop
                 frame->delay /= 10;
                 pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
                 if (pixbuf == NULL) {
