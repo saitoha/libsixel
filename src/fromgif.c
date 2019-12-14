@@ -58,6 +58,10 @@ typedef struct
    unsigned char suffix;
 } gif_lzw;
 
+enum {
+   gif_lzw_max_code_size = 12
+};
+
 typedef struct
 {
    int w, h;
@@ -65,13 +69,14 @@ typedef struct
    int flags, bgindex, ratio, transparent, eflags;
    unsigned char pal[256][3];
    unsigned char lpal[256][3];
-   gif_lzw codes[4096];
+   gif_lzw codes[1 << gif_lzw_max_code_size];
    unsigned char *color_table;
    int parse, step;
    int lflags;
    int start_x, start_y;
    int max_x, max_y;
    int cur_x, cur_y;
+   int actual_width, actual_height;
    int line_size;
    int loop_count;
    int delay;
@@ -270,7 +275,14 @@ gif_out_code(
         return;
     }
 
-    g->out[g->cur_x + g->cur_y] = g->codes[code].suffix;
+    g->out[g->cur_x + g->cur_y * g->line_size] = g->codes[code].suffix;
+    if (g->cur_x >= g->actual_width) {
+        g->actual_width = g->cur_x + 1;
+    }
+    if (g->cur_y >= g->actual_height) {
+        g->actual_height = g->cur_y + 1;
+    }
+
     g->cur_x++;
 
     if (g->cur_x >= g->max_x) {
@@ -278,7 +290,7 @@ gif_out_code(
         g->cur_y += g->step;
 
         while (g->cur_y >= g->max_y && g->parse > 0) {
-            g->step = (1 << g->parse) * g->line_size;
+            g->step = 1 << g->parse;
             g->cur_y = g->start_y + (g->step >> 1);
             --g->parse;
         }
@@ -299,7 +311,15 @@ gif_process_raster(
     signed int codesize, codemask, avail, oldcode, bits, valid_bits, clear;
     gif_lzw *p;
 
+    /* LZW Minimum Code Size */
     lzw_cs = gif_get8(s);
+    if (lzw_cs > gif_lzw_max_code_size) {
+        sixel_helper_set_additional_message(
+            "Unsupported GIF (LZW code size)");
+        status = SIXEL_RUNTIME_ERROR;
+        goto end;
+    }
+
     clear = 1 << lzw_cs;
     first = 1;
     codesize = lzw_cs + 1;
@@ -353,7 +373,7 @@ gif_process_raster(
                     goto end;
                 }
                 if (oldcode >= 0) {
-                    if (avail < 4096) {
+                    if (avail < (1 << gif_lzw_max_code_size)) {
                         p = &g->codes[avail++];
                         p->prefix = (signed short) oldcode;
                         p->first = g->codes[oldcode].first;
@@ -408,36 +428,51 @@ gif_load_next(
 
     for (;;) {
         switch (gif_get8(s)) {
-        case 0x2C: /* Image Descriptor */
-            x = gif_get16le(s);
-            y = gif_get16le(s);
-            w = gif_get16le(s);
-            h = gif_get16le(s);
+        case 0x2C:  /* Image Separator (1 byte) */
+            x = gif_get16le(s);  /* Image Left Position (2 bytes)*/
+            y = gif_get16le(s);  /* Image Top Position (2 bytes) */
+            w = gif_get16le(s);  /* Image Width (2 bytes) */
+            h = gif_get16le(s);  /* Image Height (2 bytes) */
             if (((x + w) > (g->w)) || ((y + h) > (g->h))) {
                 sixel_helper_set_additional_message(
-                    "corrupt GIF (reason: bad Image Descriptor).");
+                    "corrupt GIF (reason: bad Image Separator).");
                 status = SIXEL_RUNTIME_ERROR;
                 goto end;
             }
 
             g->line_size = g->w;
             g->start_x = x;
-            g->start_y = y * g->line_size;
+            g->start_y = y;
             g->max_x   = g->start_x + w;
-            g->max_y   = g->start_y + h * g->line_size;
+            g->max_y   = g->start_y + h;
             g->cur_x   = g->start_x;
             g->cur_y   = g->start_y;
+            g->actual_width   = g->start_x;
+            g->actual_height   = g->start_y;
 
+            /* Packed Fields (1 byte)
+             * +-+-+-+--+---+
+             * | | | |  |   |
+             * +-+-+-+--+---+
+             *  | | |  |  |
+             *  | | |  |  +- Size of Local Color Table (3 bits)
+             *  | | |  +- Reserved (2 bits)
+             *  | | +- Sort Flag (1 bit)
+             *  | +- Interlace Flag (1 bit)
+             *  +- Local Color Table Flag (1 bit)
+             */
             g->lflags = gif_get8(s);
 
+            /* Interlace Flag */
             if (g->lflags & 0x40) {
-                g->step = 8 * g->line_size; /* first interlaced spacing */
+                g->step = 8; /* first interlaced spacing */
                 g->parse = 3;
             } else {
-                g->step = g->line_size;
+                g->step = 1;
                 g->parse = 0;
             }
 
+            /* Local Color Table Flag */
             if (g->lflags & 0x80) {
                 gif_parse_colortable(s,
                                      g->lpal,
@@ -465,13 +500,13 @@ gif_load_next(
             }
             goto end;
 
-        case 0x21: /* Comment Extension. */
+        case 0x21:  /* Comment Extension. */
             switch (gif_get8(s)) {
-            case 0x01: /* Plain Text Extension */
+            case 0x01:  /* Plain Text Extension */
                 break;
-            case 0x21: /* Comment Extension */
+            case 0x21:  /* Comment Extension */
                 break;
-            case 0xF9: /* Graphic Control Extension */
+            case 0xF9:  /* Graphic Control Extension */
                 len = gif_get8(s); /* block size */
                 if (len == 4) {
                     g->eflags = gif_get8(s);
@@ -482,8 +517,8 @@ gif_load_next(
                     break;
                 }
                 break;
-            case 0xFF: /* Application Extension */
-                len = gif_get8(s); /* block size */
+            case 0xFF:  /* Application Extension */
+                len = gif_get8(s);  /* block size */
                 if (s->img_buffer + len > s->img_buffer_end) {
                     status = SIXEL_RUNTIME_ERROR;
                     goto end;
@@ -516,7 +551,7 @@ gif_load_next(
             }
             break;
 
-        case 0x3B: /* gif stream termination code */
+        case 0x3B:  /* gif stream termination code */
             g->is_terminated = 1;
             status = SIXEL_OK;
             goto end;
@@ -604,8 +639,8 @@ load_gif(
                 break;
             }
 
-            frame->width = g.w;
-            frame->height = g.h;
+            frame->width = g.actual_width;
+            frame->height = g.actual_height;
             status = gif_init_frame(frame, &g, bgcolor, reqcolors, fuse_palette);
             if (status != SIXEL_OK) {
                 goto end;
