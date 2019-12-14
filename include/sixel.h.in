@@ -366,6 +366,9 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_VERSION           ('V')  /* -V, --version: show version and license info */
 #define SIXEL_OPTFLAG_HELP              ('H')  /* -H, --help: show this help */
 
+#define SIXEL_WIDTH_LIMIT               1000000
+#define SIXEL_HEIGHT_LIMIT              1000000
+
 #if SIXEL_USE_DEPRECATED_SYMBOLS
 /* output character size */
 enum characterSize {
