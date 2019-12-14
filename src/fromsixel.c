@@ -290,7 +290,7 @@ image_buffer_resize(
 
     size = (size_t)(width * height);
     alt_buffer = (unsigned char *)sixel_allocator_malloc(allocator, size);
-    if (alt_buffer == NULL) {
+    if (alt_buffer == NULL || size == 0) {
         /* free source image */
         sixel_allocator_free(allocator, image->data);
         image->data = NULL;
