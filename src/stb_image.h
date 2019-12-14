@@ -5569,6 +5569,7 @@ static void *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int req
          //   OK, if I need to read a pixel, do it now
          if ( read_next_pixel )
          {
+            if (stbi__at_eof(s))   return stbi__errpuc("bad file","TGA file too short");
             //   load however much data we did have
             if ( tga_indexed )
             {
