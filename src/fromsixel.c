@@ -52,6 +52,7 @@
 #include <stdio.h>
 #include <ctype.h>   /* isdigit */
 #include <string.h>  /* memcpy */
+#include <limits.h>
 
 #if defined(HAVE_INTTYPES_H)
 # include <inttypes.h>
@@ -367,6 +368,16 @@ parser_context_init(parser_context_t *context)
     return status;
 }
 
+SIXELSTATUS safe_addition_for_params(parser_context_t *context, unsigned char *p){
+    int x;
+
+    x = *p - '0'; /* 0 <= x <= 9 */
+    if ((context->param > INT_MAX / 10) || (x > INT_MAX - context->param * 10)) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    context->param = context->param * 10 + x;
+    return SIXEL_OK;
+}
 
 /* convert sixel data into indexed pixel bytes and palette data */
 SIXELAPI SIXELSTATUS
@@ -446,7 +457,10 @@ sixel_decode_raw_impl(
                 if (context->param < 0) {
                     context->param = 0;
                 }
-                context->param = context->param * 10 + *p - '0';
+                status = safe_addition_for_params(context, p);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
                 p++;
                 break;
             case ';':
@@ -651,7 +665,10 @@ sixel_decode_raw_impl(
             case '7':
             case '8':
             case '9':
-                context->param = context->param * 10 + *p - '0';
+                status = safe_addition_for_params(context, p);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
                 p++;
                 break;
             case ';':
@@ -725,7 +742,10 @@ sixel_decode_raw_impl(
             case '7':
             case '8':
             case '9':
-                context->param = context->param * 10 + *p - '0';
+                status = safe_addition_for_params(context, p);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
                 p++;
                 break;
             default:
@@ -761,7 +781,10 @@ sixel_decode_raw_impl(
             case '7':
             case '8':
             case '9':
-                context->param = context->param * 10 + *p - '0';
+                status = safe_addition_for_params(context, p);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
                 p++;
                 break;
             case ';':

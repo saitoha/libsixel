@@ -166,7 +166,7 @@ load_pnm(unsigned char      /* in */  *p,
     height = 0;
     for (; *s >= '0' && *s <= '9'; ++s) {
         height = height * 10 + (*s - '0');
-        if (width > PNM_MAX_WIDTH) {
+        if (height > PNM_MAX_HEIGHT) {
             status = SIXEL_RUNTIME_ERROR;
             sprintf(
               message,
@@ -193,7 +193,7 @@ load_pnm(unsigned char      /* in */  *p,
         for (; *s >= '0' && *s <= '9'; ++s) {
             deps = deps * 10 + (*s - '0');
         }
-        if (width > PNM_MAX_WIDTH) {
+        if (deps > PNM_MAX_DEPTH) {
             status = SIXEL_RUNTIME_ERROR;
             sprintf(
               message,
