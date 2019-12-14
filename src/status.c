@@ -68,6 +68,8 @@ sixel_helper_set_additional_message(
 {
     size_t len;
 
+    if (message == 0)
+        return;
     len = strlen(message);
     memcpy(g_buffer, message, len < sizeof(g_buffer) ? len: sizeof(g_buffer) - 1);
     g_buffer[sizeof(g_buffer) - 1] = 0;
