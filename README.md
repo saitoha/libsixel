@@ -299,6 +299,18 @@ $ xterm -xrm "XTerm*decTerminalID: vt340" -xrm "XTerm*numColorRegisters: 256"
 - cancer
   [https://github.com/meh/cancer/](https://github.com/meh/cancer)
 
+- wezterm
+  [https://github.com/wez/wezterm](https://github.com/wez/wezterm)
+
+- aminal
+  [https://github.com/liamg/aminal](https://github.com/liamg/aminal)
+
+- iTerm2 (>= 3.0.0)
+  [https://gitlab.com/gnachman/iterm2](https://gitlab.com/gnachman/iterm2)
+
+- st-sixel
+  [https://github.com/galatolofederico/st-sixel](https://github.com/galatolofederico/st-sixel)
+
 
 ## Install
 
@@ -309,7 +321,7 @@ You can install libsixel via the following package systems.
 - [FreeBSD ports](http://portsmon.freebsd.org/portoverview.py?category=graphics&portname=libsixel)
 - [DPorts](https://github.com/DragonFlyBSD/DPorts/tree/master/graphics/libsixel)
 - [pkgsrc](http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/graphics/libsixel/)
-- [Homebrew tap](https://github.com/aki017/homebrew-sixel)
+- [Homebrew](https://formulae.brew.sh/formula/libsixel)
 - [yacp](https://github.com/fd00/yacp/tree/master/libsixel)
 - [Debian](https://packages.debian.org/search?searchon=names&keywords=libsixel)
 - [AUR](https://aur.archlinux.org/packages/libsixel-git/)
@@ -1044,6 +1056,12 @@ The MIT License (MIT)
 - [@turenar](https://github.com/turenar/)
 - [@mame](https://github.com/mame/)
 - [@hodefoting](https://github.com/hodefoting/)
+- [@fCorleone](@https://github.com/fCorleone)
+- [@fgeek](https://github.com/fgeek/)
+- [@HongxuChen](https://github.com/HongxuChen/)
+- [@YourButterfly](https://github.com/YourButterfly/)
+- [@nluedtke](https://github.com/nluedtke/)
+- [@cool-tomato](https://github.com/cool-tomato/)
 
 ## Contributing
 
@@ -1459,3 +1477,36 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 - [gr framework](http://gr-framework.org/)
 
+- [o2sh/onefetch](https://github.com/o2sh/onefetch)
+
+- [lesnitsky/sixel-decoder](https://github.com/lesnitsky/sixel-decoder)
+
+- [unhappychoice/irasutoya-cli](https://github.com/unhappychoice/irasutoya-cli)
+
+- [ushitora-anqou/tinysixel](https://github.com/ushitora-anqou/tinysixel)
+
+- [adzierzanowski/timg](https://github.com/adzierzanowski/timg)
+
+- [SAT1226/Minase](https://github.com/SAT1226/Minase)
+
+- [danr/neptyne](https://github.com/danr/neptyne)
+
+- [klamonte/jexer](https://github.com/klamonte/jexer)
+
+- [ar90n/teimpy](https://github.com/ar90n/teimpy)
+
+- [fastai](https://github.com/fastai/fastai)
+
+- [coderobe/crixel](https://github.com/coderobe/crixel)
+
+- [itchyny/mkrg](https://github.com/itchyny/mkrg)
+
+- [tshort/SixelTerm.jl](https://github.com/tshort/SixelTerm.jl)
+
+- [dsanson/termpdf](https://github.com/dsanson/termpdf)
+
+- [otiai10/amesh](https://github.com/otiai10/amesh)
+
+- [hpjansson/chafa](https://github.com/hpjansson/chafa)
+
+- [m-j-w/TerminalGraphics.jl](https://github.com/m-j-w/TerminalGraphics.jl)

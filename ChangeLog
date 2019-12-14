@@ -1,3 +1,186 @@
+2019-12-13  Hayaki Saito <saitoha@me.com>
+
+  * src/loader.c: Suppress glib deprecated warnings
+
+  * .travis.yml: Ammend fix for e18ebe6
+
+  * .travis.yml: Drop mingw32 build
+
+  * src/loader.c: Suppress glib deprecated warnings
+
+  * .travis.yml: Ammend fix for e18ebe6
+
+  * .travis.yml: Drop mingw32 build
+
+  * src/loader.c: Suppress glib deprecated warnings
+
+  * .travis.yml: Ammend fix for e18ebe6
+
+  * .travis.yml: Drop mingw32 build
+
+  * src/loader.c: Suppress glib deprecated warnings
+
+  * .travis.yml: Ammend fix for e18ebe6
+
+  * .travis.yml: Drop mingw32 build
+
+  * src/loader.c: Suppress glib deprecated warnings
+
+  * .travis.yml: Ammend fix for e18ebe6
+
+  * src/loader.c: Suppress glib deprecated warnings
+
+  * .travis.yml: Ammend fix for e18ebe6
+
+  * .travis.yml: Drop mingw32 build
+
+  * src/loader.c: Suppress glib deprecated warnings
+
+  * .travis.yml: Ammend fix for e18ebe6
+
+  * .travis.yml: Drop mingw32 build
+
+  * src/loader.c: Suppress glib deprecated warnings
+
+  * .travis.yml: Ammend fix for e18ebe6
+
+  * .travis.yml: Drop mingw32 build
+
+  * src/loader.c: Suppress glib deprecated warnings
+
+  * .travis.yml: Ammend fix for e18ebe6
+
+  * .travis.yml: Drop mingw32 build
+
+  * src/loader.c: Suppress glib deprecated warnings
+
+  * .travis.yml: Ammend fix for e18ebe6
+
+  * .travis.yml: Drop mingw32 build
+
+  * src/loader.c: Suppress glib deprecated warnings
+
+  * .travis.yml: Ammend fix for e18ebe6
+
+  * .travis.yml: Drop mingw32 build
+
+  * src/loader.c: Suppress glib deprecated warnings
+
+  * .travis.yml: Ammend fix for e18ebe6
+
+  * .travis.yml: Drop mingw32 build
+
+  * src/loader.c: Suppress glib deprecated warnings
+
+  * .travis.yml: Ammend fix for e18ebe6
+
+  * .travis.yml: Drop mingw32 build
+
+  * src/loader.c: Suppress glib deprecated warnings
+
+  * .travis.yml: Ammend fix for e18ebe6
+
+  * .travis.yml: Drop mingw32 build
+
+  * .travis.yml: Drop mingw32 build
+
+2019-12-02  pwd <weidangpeng@gmail.com>
+
+  * src/fromsixel.c: use function safe_addition_for_params to check integer
+  overflow
+
+  * src/frompnm.c: fix issue that the width and the deps miss checks
+
+  * include/sixel.h.in, src/status.c: define macro SIXEL_BAD_INTEGER_OVERFLOW
+  for integer
+
+  * src/tosixel.c: check integer overflow in 'map[pix * width + x] |= (1 <<
+  i);'
+
+2019-08-29  Takatsugu Nokubi <takatsugu.nokubi@robotfund.co.jp>
+
+  * src/loader.c: check jpeg decoder error
+
+  * src/fromsixel.c: check size, fix issue #83
+
+2019-08-01  Takatsugu Nokubi <takatsugu.nokubi@robotfund.co.jp>
+
+  * include/sixel.h.in, src/decoder.c: add limitation to width and height
+
+2019-07-25  Takatsugu Nokubi <takatsugu.nokubi@robotfund.co.jp>
+
+  * src/fromsixel.c: position error check
+
+2019-07-24  Takatsugu Nokubi <takatsugu.nokubi@robotfund.co.jp>
+
+  * src/fromsixel.c: prevent to access heap overflow
+
+2019-07-23  Takatsugu Nokubi <takatsugu.nokubi@robotfund.co.jp>
+
+  * src/stb_image.h: assign default error message
+
+2019-07-08  Takatsugu Nokubi <takatsugu.nokubi@robotfund.co.jp>
+
+  * src/allocator.c: Add malloc size check
+
+  * src/fromsixel.c: size check
+
+2019-07-07  Takatsugu Nokubi <takatsugu.nokubi@robotfund.co.jp>
+
+  * src/status.c: no op when message is NULL
+
+2018-08-06  Hayaki Saito <saitoha@me.com>
+
+  * src/stb_image.h: stb_image: fix for #76 POC h050. detect bad PSD file.
+
+2018-08-05  Hayaki Saito <saitoha@me.com>
+
+  * src/stb_image.h: stb_image: fix for #76 POC h010. detect bad PSD file
+  which has fake size declaration in its image header
+
+  * src/stb_image.h: stb_image: fix for #76 POC h002. detect bad TGA file
+  which has fake size declaration in its image header
+
+  * src/fromgif.c: GIF loader: fix for #76 POC h001. don't believe image size
+  declared in the header, use actual size.
+  https://github.com/saitoha/libsixel/issues/76
+
+2018-08-03  Hayaki Saito <saitoha@me.com>
+
+  * src/stb_image.h: Quickfix for issue #72: validate huffman code
+  https://github.com/saitoha/libsixel/issues/72
+
+2018-08-02  Hayaki Saito <saitoha@me.com>
+
+  * src/fromgif.c: gif loader: add some comments
+
+  * src/fromgif.c: gif loader: check LZW code size (Issue #75)
+
+2018-07-23  Hayaki Saito <saitoha@me.com>
+
+  * src/Makefile.am, src/Makefile.in: Amend travis build fixes again
+
+  * src/Makefile.am, src/Makefile.in: Amend fix for travis build
+
+  * src/Makefile.am, src/Makefile.in: Travis build fixes
+
+  * NEWS: Update NEWS
+
+  * README.md: Update README.md
+
+  * README.md: Update README.md
+
+  * README.md: Update README.md
+
+  * Makefile.in, README.md, aclocal.m4, compile, config.guess, config.sub,
+  configure, configure.ac, converters/Makefile.in, depcomp,
+  include/Makefile.in, install-sh, missing, package.json, py-compile,
+  python/Makefile.in, src/Makefile.in, tools/Makefile.in: Bump version 1.8.2
+
+  * NEWS: Update NEWS
+
+  * ChangeLog: Update ChangeLog
+
 2018-06-10  Hayaki Saito <saitoha@me.com>
 
   * converters/img2sixel.1: Fix a typo: a_dither -> x_dither(issue #66)
