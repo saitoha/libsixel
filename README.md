@@ -1044,6 +1044,11 @@ The MIT License (MIT)
 - [@turenar](https://github.com/turenar/)
 - [@mame](https://github.com/mame/)
 - [@hodefoting](https://github.com/hodefoting/)
+- [@fgeek](https://github.com/fgeek/)
+- [@HongxuChen](https://github.com/HongxuChen/)
+- [@YourButterfly](https://github.com/YourButterfly/)
+- [@nluedtke](https://github.com/nluedtke/)
+- [@cool-tomato](https://github.com/cool-tomato/)
 
 ## Contributing
 
