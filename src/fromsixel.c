@@ -231,7 +231,7 @@ image_buffer_init(
     int g;
     int b;
 
-    size = (size_t)(width * height) * sizeof(unsigned char);
+    size = (size_t)(width) * (size_t)height * sizeof(unsigned char);
     image->width = width;
     image->height = height;
     image->data = (unsigned char *)sixel_allocator_malloc(allocator, size);
@@ -289,7 +289,7 @@ image_buffer_resize(
     int n;
     int min_height;
 
-    size = (size_t)(width * height);
+    size = (size_t)width * (size_t)height;
     alt_buffer = (unsigned char *)sixel_allocator_malloc(allocator, size);
     if (alt_buffer == NULL || size == 0) {
         /* free source image */
