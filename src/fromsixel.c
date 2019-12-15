@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <ctype.h>   /* isdigit */
 #include <string.h>  /* memcpy */
+#include <limits.h>
 
 #if defined(HAVE_INTTYPES_H)
 # include <inttypes.h>
@@ -235,7 +236,7 @@ image_buffer_resize(
 
     size = (size_t)(width * height);
     alt_buffer = (unsigned char *)sixel_allocator_malloc(allocator, size);
-    if (alt_buffer == NULL) {
+    if (alt_buffer == NULL || size == 0) {
         /* free source image */
         sixel_allocator_free(allocator, image->data);
         image->data = NULL;
@@ -312,6 +313,16 @@ parser_context_init(parser_context_t *context)
     return status;
 }
 
+SIXELSTATUS safe_addition_for_params(parser_context_t *context, unsigned char *p){
+    int x;
+
+    x = *p - '0'; /* 0 <= x <= 9 */
+    if ((context->param > INT_MAX / 10) || (x > INT_MAX - context->param * 10)) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    context->param = context->param * 10 + x;
+    return SIXEL_OK;
+}
 
 /* convert sixel data into indexed pixel bytes and palette data */
 SIXELAPI SIXELSTATUS
@@ -391,7 +402,10 @@ sixel_decode_raw_impl(
                 if (context->param < 0) {
                     context->param = 0;
                 }
-                context->param = context->param * 10 + *p - '0';
+                status = safe_addition_for_params(context, p);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
                 p++;
                 break;
             case ';':
@@ -517,6 +531,10 @@ sixel_decode_raw_impl(
                         image->ncolors = context->color_index;
                     }
 
+                    if (context->pos_x < 0 || context->pos_y < 0) {
+                        status = SIXEL_BAD_INPUT;
+                        goto end;
+                    }
                     bits = *p - '?';
 
                     if (bits == 0) {
@@ -592,7 +610,10 @@ sixel_decode_raw_impl(
             case '7':
             case '8':
             case '9':
-                context->param = context->param * 10 + *p - '0';
+                status = safe_addition_for_params(context, p);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
                 p++;
                 break;
             case ';':
@@ -666,13 +687,20 @@ sixel_decode_raw_impl(
             case '7':
             case '8':
             case '9':
-                context->param = context->param * 10 + *p - '0';
+                status = safe_addition_for_params(context, p);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
                 p++;
                 break;
             default:
                 context->repeat_count = context->param;
                 if (context->repeat_count == 0) {
                     context->repeat_count = 1;
+                }
+                if (context->repeat_count > 0xffff) { /* check too huge number */
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
                 }
                 context->state = PS_DECSIXEL;
                 context->param = 0;
@@ -698,7 +726,10 @@ sixel_decode_raw_impl(
             case '7':
             case '8':
             case '9':
-                context->param = context->param * 10 + *p - '0';
+                status = safe_addition_for_params(context, p);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
                 p++;
                 break;
             case ';':
@@ -829,7 +860,10 @@ sixel_decode_raw(
     }
 
     *ncolors = image.ncolors + 1;
-    *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(*ncolors * 3));
+    int alloc_size = *ncolors;
+    if (alloc_size < 256) // memory access range should be 0 <= 255 (in write_png_to_file)
+        alloc_size = 256;
+    *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(alloc_size * 3));
     if (palette == NULL) {
         sixel_allocator_free(allocator, image.data);
         sixel_helper_set_additional_message(
