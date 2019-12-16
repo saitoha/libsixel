@@ -269,6 +269,19 @@ read_palette(png_structp png_ptr,
 }
 
 
+jmp_buf jump_buffer;
+
+/* libpng error handler */
+static void
+png_error_callback(png_structp png_ptr, png_const_charp error_message)
+{
+    (void) png_ptr;
+
+    sixel_helper_set_additional_message(error_message);
+    longjmp(jump_buffer, (-1));
+}
+
+
 static SIXELSTATUS
 load_png(unsigned char      /* out */ **result,
          unsigned char      /* in */  *buffer,
@@ -296,7 +309,13 @@ load_png(unsigned char      /* out */ **result,
     int i;
     int depth;
 
-    png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (setjmp(jump_buffer) != 0) {
+      status = SIXEL_PNG_ERROR;
+      goto cleanup;
+    }
+
+    png_ptr = png_create_read_struct(
+        PNG_LIBPNG_VER_STRING, NULL, &png_error_callback, NULL);
     if (!png_ptr) {
         sixel_helper_set_additional_message(
             "png_create_read_struct() failed.");
