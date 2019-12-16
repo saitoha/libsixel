@@ -368,7 +368,9 @@ parser_context_init(parser_context_t *context)
     return status;
 }
 
-SIXELSTATUS safe_addition_for_params(parser_context_t *context, unsigned char *p){
+static SIXELSTATUS
+safe_addition_for_params(parser_context_t *context, unsigned char *p)
+{
     int x;
 
     x = *p - '0'; /* 0 <= x <= 9 */
