@@ -296,13 +296,13 @@ load_png(unsigned char      /* out */ **result,
          int                /* out */ *transparent,
          sixel_allocator_t  /* in */  *allocator)
 {
-    SIXELSTATUS status = SIXEL_FALSE;
+    SIXELSTATUS status;
     sixel_chunk_t read_chunk;
     png_uint_32 bitdepth;
     png_uint_32 png_status;
     png_structp png_ptr;
     png_infop info_ptr;
-    unsigned char **rows = NULL;
+    unsigned char **rows;
     png_color *png_palette = NULL;
     png_color_16 background;
     png_color_16p default_background;
@@ -313,6 +313,9 @@ load_png(unsigned char      /* out */ **result,
       status = SIXEL_PNG_ERROR;
       goto cleanup;
     }
+
+    status = SIXEL_FALSE;
+    rows = NULL;
 
     png_ptr = png_create_read_struct(
         PNG_LIBPNG_VER_STRING, NULL, &png_error_callback, NULL);
