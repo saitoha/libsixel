@@ -753,8 +753,10 @@ sixel_decode_raw_impl(
                 if (context->repeat_count == 0) {
                     context->repeat_count = 1;
                 }
-                if (context->repeat_count > 0xffff) { /* check too huge number */
+                if (context->repeat_count > 0xffff) {  /* check too huge number */
                     status = SIXEL_BAD_INPUT;
+                    sixel_helper_set_additional_message(
+                        "sixel_decode_raw_impl: dtected too huge repeat parameter.");
                     goto end;
                 }
                 context->state = PS_DECSIXEL;
