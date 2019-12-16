@@ -231,7 +231,39 @@ image_buffer_init(
     int g;
     int b;
 
-    size = (size_t)(width * height) * sizeof(unsigned char);
+    /* check parameters */
+    if (width <= 0) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height <= 0) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (width > SIXEL_WIDTH_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given width parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    size = (size_t)(width) * (size_t)height * sizeof(unsigned char);
     image->width = width;
     image->height = height;
     image->data = (unsigned char *)sixel_allocator_malloc(allocator, size);
@@ -289,7 +321,39 @@ image_buffer_resize(
     int n;
     int min_height;
 
-    size = (size_t)(width * height);
+    /* check parameters */
+    if (width <= 0) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height <= 0) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (width > SIXEL_WIDTH_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given width parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    size = (size_t)width * (size_t)height;
     alt_buffer = (unsigned char *)sixel_allocator_malloc(allocator, size);
     if (alt_buffer == NULL || size == 0) {
         /* free source image */
