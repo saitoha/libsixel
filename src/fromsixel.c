@@ -432,16 +432,27 @@ parser_context_init(parser_context_t *context)
     return status;
 }
 
-SIXELSTATUS safe_addition_for_params(parser_context_t *context, unsigned char *p){
+
+static SIXELSTATUS
+safe_addition_for_params(parser_context_t *context, unsigned char *p)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
     int x;
 
     x = *p - '0'; /* 0 <= x <= 9 */
     if ((context->param > INT_MAX / 10) || (x > INT_MAX - context->param * 10)) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        sixel_helper_set_additional_message(
+            "safe_addition_for_params: ingeger overflow detected.");
+        goto end;
     }
     context->param = context->param * 10 + x;
-    return SIXEL_OK;
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
+
 
 /* convert sixel data into indexed pixel bytes and palette data */
 SIXELAPI SIXELSTATUS
@@ -817,8 +828,10 @@ sixel_decode_raw_impl(
                 if (context->repeat_count == 0) {
                     context->repeat_count = 1;
                 }
-                if (context->repeat_count > 0xffff) { /* check too huge number */
+                if (context->repeat_count > 0xffff) {  /* check too huge number */
                     status = SIXEL_BAD_INPUT;
+                    sixel_helper_set_additional_message(
+                        "sixel_decode_raw_impl: detected too huge repeat parameter.");
                     goto end;
                 }
                 context->state = PS_DECSIXEL;
