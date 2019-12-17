@@ -369,26 +369,26 @@ image_buffer_resize(
     if (width > image->width) {  /* if width is extended */
         for (n = 0; n < min_height; ++n) {
             /* copy from source image */
-            memcpy(alt_buffer + width * n,
-                   image->data + image->width * n,
+            memcpy(alt_buffer + (size_t)width * n,
+                   image->data + (size_t)image->width * n,
                    (size_t)image->width);
             /* fill extended area with background color */
-            memset(alt_buffer + width * n + image->width,
+            memset(alt_buffer + (size_t)width * n + image->width,
                    bgindex,
                    (size_t)(width - image->width));
         }
     } else {
         for (n = 0; n < min_height; ++n) {
             /* copy from source image */
-            memcpy(alt_buffer + width * n,
-                   image->data + image->width * n,
+            memcpy(alt_buffer + (size_t)width * n,
+                   image->data + (size_t)image->width * n,
                    (size_t)width);
         }
     }
 
     if (height > image->height) {  /* if height is extended */
         /* fill extended area with background color */
-        memset(alt_buffer + width * image->height,
+        memset(alt_buffer + (size_t)width * image->height,
                bgindex,
                (size_t)(width * (height - image->height)));
     }
@@ -472,7 +472,7 @@ sixel_decode_raw_impl(
     int sx;
     int sy;
     int c;
-    int pos;
+    size_t pos;
     unsigned char *p0 = p;
 
     while (p < p0 + len) {
@@ -674,7 +674,7 @@ sixel_decode_raw_impl(
                         if (context->repeat_count <= 1) {
                             for (i = 0; i < 6; i++) {
                                 if ((bits & sixel_vertical_mask) != 0) {
-                                    pos = image->width * (context->pos_y + i) + context->pos_x;
+                                    pos = (size_t)image->width * (context->pos_y + i) + context->pos_x;
                                     image->data[pos] = context->color_index;
                                     if (context->max_x < context->pos_x) {
                                         context->max_x = context->pos_x;
