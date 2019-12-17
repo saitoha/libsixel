@@ -302,10 +302,14 @@ load_png(unsigned char      /* out */ **result,
     png_uint_32 png_status;
     png_structp png_ptr;
     png_infop info_ptr;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wclobbered"
+#ifdef HAVE_DIAGNOSTIC_CLOBBERED
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wclobbered"
+#endif
     unsigned char **rows;
-#pragma GCC diagnostic pop
+#ifdef HAVE_DIAGNOSTIC_CLOBBERED
+# pragma GCC diagnostic pop
+#endif
     png_color *png_palette = NULL;
     png_color_16 background;
     png_color_16p default_background;
