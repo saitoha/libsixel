@@ -561,12 +561,18 @@ sixel_encode_body(
         for (x = 0; x < width; x++) {
             if (y > INT_MAX / width) {
                 /* integer overflow */
+                sixel_helper_set_additional_message(
+                    "sixel_encode_body: integer overflow detected."
+                    " (y > INT_MAX)");
                 status = SIXEL_BAD_INTEGER_OVERFLOW;
                 goto end;
             }
             check_integer_overflow = y * width;
             if (check_integer_overflow > INT_MAX - x) {
                 /* integer overflow */
+                sixel_helper_set_additional_message(
+                    "sixel_encode_body: integer overflow detected."
+                    " (y * width > INT_MAX - x)");
                 status = SIXEL_BAD_INTEGER_OVERFLOW;
                 goto end;
             }
@@ -574,12 +580,18 @@ sixel_encode_body(
             if (pix >= 0 && pix < ncolors && pix != keycolor) {
                 if (pix > INT_MAX / width) {
                     /* integer overflow */
+                    sixel_helper_set_additional_message(
+                        "sixel_encode_body: integer overflow detected."
+                        " (pix > INT_MAX / width)");
                     status = SIXEL_BAD_INTEGER_OVERFLOW;
                     goto end;
                 }
                 check_integer_overflow = pix * width;
                 if (check_integer_overflow > INT_MAX - x) {
                     /* integer overflow */
+                    sixel_helper_set_additional_message(
+                        "sixel_encode_body: integer overflow detected."
+                        " (pix * width > INT_MAX - x)");
                     status = SIXEL_BAD_INTEGER_OVERFLOW;
                     goto end;
                 }
