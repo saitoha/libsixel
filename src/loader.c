@@ -269,16 +269,12 @@ read_palette(png_structp png_ptr,
 }
 
 
-jmp_buf jump_buffer;
-
 /* libpng error handler */
 static void
 png_error_callback(png_structp png_ptr, png_const_charp error_message)
 {
-    (void) png_ptr;
-
     sixel_helper_set_additional_message(error_message);
-    longjmp(jump_buffer, (-1));
+    longjmp(png_jmpbuf(png_ptr), (-1));
 }
 
 
@@ -296,23 +292,35 @@ load_png(unsigned char      /* out */ **result,
          int                /* out */ *transparent,
          sixel_allocator_t  /* in */  *allocator)
 {
-    SIXELSTATUS status = SIXEL_FALSE;
+    SIXELSTATUS status;
     sixel_chunk_t read_chunk;
     png_uint_32 bitdepth;
     png_uint_32 png_status;
     png_structp png_ptr;
     png_infop info_ptr;
-    unsigned char **rows = NULL;
+#ifdef HAVE_DIAGNOSTIC_CLOBBERED
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wclobbered"
+#endif
+    unsigned char **rows;
     png_color *png_palette = NULL;
     png_color_16 background;
     png_color_16p default_background;
     int i;
     int depth;
 
-    if (setjmp(jump_buffer) != 0) {
-      status = SIXEL_PNG_ERROR;
-      goto cleanup;
+#if USE_SETJMP && HAVE_SETJMP
+    if (setjmp(png_jmpbuf(png_ptr)) != 0) {
+        sixel_allocator_free(allocator, *result);
+        *result = NULL;
+        status = SIXEL_PNG_ERROR;
+        goto cleanup;
     }
+#endif  /* HAVE_SETJMP */
+
+    status = SIXEL_FALSE;
+    rows = NULL;
+    *result = NULL;
 
     png_ptr = png_create_read_struct(
         PNG_LIBPNG_VER_STRING, NULL, &png_error_callback, NULL);
@@ -595,14 +603,7 @@ load_png(unsigned char      /* out */ **result,
         }
         break;
     }
-#if USE_SETJMP && HAVE_SETJMP
-    if (setjmp(png_jmpbuf(png_ptr))) {
-        sixel_allocator_free(allocator, *result);
-        *result = NULL;
-        status = SIXEL_PNG_ERROR;
-        goto cleanup;
-    }
-#endif  /* HAVE_SETJMP */
+
     png_read_image(png_ptr, rows);
 
     status = SIXEL_OK;
@@ -613,6 +614,10 @@ cleanup:
 
     return status;
 }
+#ifdef HAVE_DIAGNOSTIC_CLOBBERED
+# pragma GCC diagnostic pop
+#endif
+
 # endif  /* HAVE_PNG */
 
 
