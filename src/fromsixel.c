@@ -379,7 +379,7 @@ safe_addition_for_params(parser_context_t *context, unsigned char *p)
     if ((context->param > INT_MAX / 10) || (x > INT_MAX - context->param * 10)) {
         status = SIXEL_BAD_INTEGER_OVERFLOW;
         sixel_helper_set_additional_message(
-            "safe_addition_for_params: ingeger overflow dtected.");
+            "safe_addition_for_params: ingeger overflow detected.");
         goto end;
     }
     context->param = context->param * 10 + x;
@@ -767,7 +767,7 @@ sixel_decode_raw_impl(
                 if (context->repeat_count > 0xffff) {  /* check too huge number */
                     status = SIXEL_BAD_INPUT;
                     sixel_helper_set_additional_message(
-                        "sixel_decode_raw_impl: dtected too huge repeat parameter.");
+                        "sixel_decode_raw_impl: detected too huge repeat parameter.");
                     goto end;
                 }
                 context->state = PS_DECSIXEL;
