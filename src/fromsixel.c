@@ -644,13 +644,18 @@ sixel_decode_raw_impl(
                 break;
             default:
                 if (*p >= '?' && *p <= '~') {  /* sixel characters */
-                    if (image->width < (context->pos_x + context->repeat_count) || image->height < (context->pos_y + 6)) {
-                        sx = image->width * 2;
-                        sy = image->height * 2;
-                        while (sx < (context->pos_x + context->repeat_count) || sy < (context->pos_y + 6)) {
-                            sx *= 2;
-                            sy *= 2;
-                        }
+
+                    sx = image->width;
+                    while (sx < context->pos_x + context->repeat_count) {
+                        sx *= 2;
+                    }
+
+                    sy = image->height;
+                    while (sy < context->pos_y + 6) {
+                        sy *= 2;
+                    }
+
+                    if (sx > image->width || sy > image->height) {
                         status = image_buffer_resize(image, sx, sy, context->bgindex, allocator);
                         if (SIXEL_FAILED(status)) {
                             goto end;
