@@ -231,7 +231,39 @@ image_buffer_init(
     int g;
     int b;
 
-    size = (size_t)(width * height) * sizeof(unsigned char);
+    /* check parameters */
+    if (width <= 0) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height <= 0) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (width > SIXEL_WIDTH_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given width parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    size = (size_t)(width) * (size_t)height * sizeof(unsigned char);
     image->width = width;
     image->height = height;
     image->data = (unsigned char *)sixel_allocator_malloc(allocator, size);
@@ -289,7 +321,39 @@ image_buffer_resize(
     int n;
     int min_height;
 
-    size = (size_t)(width * height);
+    /* check parameters */
+    if (width <= 0) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height <= 0) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (width > SIXEL_WIDTH_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given width parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    size = (size_t)width * (size_t)height;
     alt_buffer = (unsigned char *)sixel_allocator_malloc(allocator, size);
     if (alt_buffer == NULL || size == 0) {
         /* free source image */
@@ -305,28 +369,28 @@ image_buffer_resize(
     if (width > image->width) {  /* if width is extended */
         for (n = 0; n < min_height; ++n) {
             /* copy from source image */
-            memcpy(alt_buffer + width * n,
-                   image->data + image->width * n,
+            memcpy(alt_buffer + (size_t)width * (size_t)n,
+                   image->data + (size_t)image->width * (size_t)n,
                    (size_t)image->width);
             /* fill extended area with background color */
-            memset(alt_buffer + width * n + image->width,
+            memset(alt_buffer + (size_t)width * (size_t)n + (size_t)image->width,
                    bgindex,
                    (size_t)(width - image->width));
         }
     } else {
         for (n = 0; n < min_height; ++n) {
             /* copy from source image */
-            memcpy(alt_buffer + width * n,
-                   image->data + image->width * n,
+            memcpy(alt_buffer + (size_t)width * (size_t)n,
+                   image->data + (size_t)image->width * (size_t)n,
                    (size_t)width);
         }
     }
 
     if (height > image->height) {  /* if height is extended */
         /* fill extended area with background color */
-        memset(alt_buffer + width * image->height,
+        memset(alt_buffer + (size_t)width * (size_t)image->height,
                bgindex,
-               (size_t)(width * (height - image->height)));
+               (size_t)width * (size_t)(height - image->height));
     }
 
     /* free source image */
@@ -368,16 +432,27 @@ parser_context_init(parser_context_t *context)
     return status;
 }
 
-SIXELSTATUS safe_addition_for_params(parser_context_t *context, unsigned char *p){
+
+static SIXELSTATUS
+safe_addition_for_params(parser_context_t *context, unsigned char *p)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
     int x;
 
     x = *p - '0'; /* 0 <= x <= 9 */
     if ((context->param > INT_MAX / 10) || (x > INT_MAX - context->param * 10)) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        sixel_helper_set_additional_message(
+            "safe_addition_for_params: ingeger overflow detected.");
+        goto end;
     }
     context->param = context->param * 10 + x;
-    return SIXEL_OK;
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
+
 
 /* convert sixel data into indexed pixel bytes and palette data */
 SIXELAPI SIXELSTATUS
@@ -397,7 +472,7 @@ sixel_decode_raw_impl(
     int sx;
     int sy;
     int c;
-    int pos;
+    size_t pos;
     unsigned char *p0 = p;
 
     while (p < p0 + len) {
@@ -569,13 +644,18 @@ sixel_decode_raw_impl(
                 break;
             default:
                 if (*p >= '?' && *p <= '~') {  /* sixel characters */
-                    if (image->width < (context->pos_x + context->repeat_count) || image->height < (context->pos_y + 6)) {
-                        sx = image->width * 2;
-                        sy = image->height * 2;
-                        while (sx < (context->pos_x + context->repeat_count) || sy < (context->pos_y + 6)) {
-                            sx *= 2;
-                            sy *= 2;
-                        }
+
+                    sx = image->width;
+                    while (sx < context->pos_x + context->repeat_count) {
+                        sx *= 2;
+                    }
+
+                    sy = image->height;
+                    while (sy < context->pos_y + 6) {
+                        sy *= 2;
+                    }
+
+                    if (sx > image->width || sy > image->height) {
                         status = image_buffer_resize(image, sx, sy, context->bgindex, allocator);
                         if (SIXEL_FAILED(status)) {
                             goto end;
@@ -599,7 +679,7 @@ sixel_decode_raw_impl(
                         if (context->repeat_count <= 1) {
                             for (i = 0; i < 6; i++) {
                                 if ((bits & sixel_vertical_mask) != 0) {
-                                    pos = image->width * (context->pos_y + i) + context->pos_x;
+                                    pos = (size_t)image->width * (size_t)(context->pos_y + i) + (size_t)context->pos_x;
                                     image->data[pos] = context->color_index;
                                     if (context->max_x < context->pos_x) {
                                         context->max_x = context->pos_x;
@@ -623,7 +703,7 @@ sixel_decode_raw_impl(
                                         c <<= 1;
                                     }
                                     for (y = context->pos_y + i; y < context->pos_y + i + n; ++y) {
-                                        memset(image->data + image->width * y + context->pos_x,
+                                        memset(image->data + (size_t)image->width * (size_t)y + (size_t)context->pos_x,
                                                context->color_index,
                                                (size_t)context->repeat_count);
                                     }
@@ -753,8 +833,10 @@ sixel_decode_raw_impl(
                 if (context->repeat_count == 0) {
                     context->repeat_count = 1;
                 }
-                if (context->repeat_count > 0xffff) { /* check too huge number */
+                if (context->repeat_count > 0xffff) {  /* check too huge number */
                     status = SIXEL_BAD_INPUT;
+                    sixel_helper_set_additional_message(
+                        "sixel_decode_raw_impl: detected too huge repeat parameter.");
                     goto end;
                 }
                 context->state = PS_DECSIXEL;
@@ -916,8 +998,10 @@ sixel_decode_raw(
 
     *ncolors = image.ncolors + 1;
     int alloc_size = *ncolors;
-    if (alloc_size < 256) // memory access range should be 0 <= 255 (in write_png_to_file)
-        alloc_size = 256;
+    if (alloc_size < SIXEL_PALETTE_MAX) {
+        /* memory access range should be 0 <= 255 */
+        alloc_size = SIXEL_PALETTE_MAX;
+    }
     *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(alloc_size * 3));
     if (palette == NULL) {
         sixel_allocator_free(allocator, image.data);

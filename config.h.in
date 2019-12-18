@@ -75,6 +75,9 @@
    don't. */
 #undef HAVE_DECL_SIGTERM
 
+/* define 1 if GCC supports -Wclobbered */
+#undef HAVE_DIAGNOSTIC_CLOBBERED
+
 /* define 1 if GCC supports -Wdeprecated-declarations */
 #undef HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 
