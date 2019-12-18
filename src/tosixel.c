@@ -1431,7 +1431,7 @@ next:
                 goto end;
             }
         }
-        if (dirty && mod_y == 5) {
+        if (dirty && (mod_y == 5 || y >= height)) {
             orig_height = height;
 
             if (output_count++ == 0) {
@@ -1454,6 +1454,9 @@ next:
             if (SIXEL_FAILED(status)) {
                 goto error;
             }
+            if (y >= orig_height) {
+              goto end;
+            }
             pixels -= (6 * width * 3);
             height = orig_height - height + 6;
             goto next;
@@ -1464,6 +1467,7 @@ next:
             mod_y = 0;
         }
     }
+
     goto next;
 
 end:

@@ -231,7 +231,39 @@ image_buffer_init(
     int g;
     int b;
 
-    size = (size_t)(width * height) * sizeof(unsigned char);
+    /* check parameters */
+    if (width <= 0) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height <= 0) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (width > SIXEL_WIDTH_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given width parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    size = (size_t)(width) * (size_t)height * sizeof(unsigned char);
     image->width = width;
     image->height = height;
     image->data = (unsigned char *)sixel_allocator_malloc(allocator, size);
@@ -289,7 +321,39 @@ image_buffer_resize(
     int n;
     int min_height;
 
-    size = (size_t)(width * height);
+    /* check parameters */
+    if (width <= 0) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height <= 0) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (width > SIXEL_WIDTH_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given width parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    size = (size_t)width * (size_t)height;
     alt_buffer = (unsigned char *)sixel_allocator_malloc(allocator, size);
     if (alt_buffer == NULL || size == 0) {
         /* free source image */
@@ -305,28 +369,28 @@ image_buffer_resize(
     if (width > image->width) {  /* if width is extended */
         for (n = 0; n < min_height; ++n) {
             /* copy from source image */
-            memcpy(alt_buffer + width * n,
-                   image->data + image->width * n,
+            memcpy(alt_buffer + (size_t)width * (size_t)n,
+                   image->data + (size_t)image->width * (size_t)n,
                    (size_t)image->width);
             /* fill extended area with background color */
-            memset(alt_buffer + width * n + image->width,
+            memset(alt_buffer + (size_t)width * (size_t)n + (size_t)image->width,
                    bgindex,
                    (size_t)(width - image->width));
         }
     } else {
         for (n = 0; n < min_height; ++n) {
             /* copy from source image */
-            memcpy(alt_buffer + width * n,
-                   image->data + image->width * n,
+            memcpy(alt_buffer + (size_t)width * (size_t)n,
+                   image->data + (size_t)image->width * (size_t)n,
                    (size_t)width);
         }
     }
 
     if (height > image->height) {  /* if height is extended */
         /* fill extended area with background color */
-        memset(alt_buffer + width * image->height,
+        memset(alt_buffer + (size_t)width * (size_t)image->height,
                bgindex,
-               (size_t)(width * (height - image->height)));
+               (size_t)width * (size_t)(height - image->height));
     }
 
     /* free source image */
@@ -408,7 +472,7 @@ sixel_decode_raw_impl(
     int sx;
     int sy;
     int c;
-    int pos;
+    size_t pos;
     unsigned char *p0 = p;
 
     while (p < p0 + len) {
@@ -610,7 +674,7 @@ sixel_decode_raw_impl(
                         if (context->repeat_count <= 1) {
                             for (i = 0; i < 6; i++) {
                                 if ((bits & sixel_vertical_mask) != 0) {
-                                    pos = image->width * (context->pos_y + i) + context->pos_x;
+                                    pos = (size_t)image->width * (size_t)(context->pos_y + i) + (size_t)context->pos_x;
                                     image->data[pos] = context->color_index;
                                     if (context->max_x < context->pos_x) {
                                         context->max_x = context->pos_x;
@@ -634,7 +698,7 @@ sixel_decode_raw_impl(
                                         c <<= 1;
                                     }
                                     for (y = context->pos_y + i; y < context->pos_y + i + n; ++y) {
-                                        memset(image->data + image->width * y + context->pos_x,
+                                        memset(image->data + (size_t)image->width * (size_t)y + (size_t)context->pos_x,
                                                context->color_index,
                                                (size_t)context->repeat_count);
                                     }
@@ -929,8 +993,10 @@ sixel_decode_raw(
 
     *ncolors = image.ncolors + 1;
     int alloc_size = *ncolors;
-    if (alloc_size < 256) // memory access range should be 0 <= 255 (in write_png_to_file)
-        alloc_size = 256;
+    if (alloc_size < SIXEL_PALETTE_MAX) {
+        /* memory access range should be 0 <= 255 */
+        alloc_size = SIXEL_PALETTE_MAX;
+    }
     *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(alloc_size * 3));
     if (palette == NULL) {
         sixel_allocator_free(allocator, image.data);
