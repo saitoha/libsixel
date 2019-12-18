@@ -1,4 +1,13 @@
+2019-12-19  Hayaki Saito <saitoha@me.com>
+
+  * src/fromsixel.c: sixel decoder: extend image width and height separately
+
 2019-12-18  Hayaki Saito <saitoha@me.com>
+
+  * Makefile.in, configure, configure.ac, package.json: Bump the package
+  version
+
+  * ChangeLog: Update ChangeLog
 
   * src/fromsixel.c: Suppress gcc -Wsign-conversion warnings
 
