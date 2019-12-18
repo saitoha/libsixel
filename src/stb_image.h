@@ -5051,7 +5051,7 @@ static int stbi__shiftsigned(int v, int shift, int bits)
       v >>= shift;
    STBI_ASSERT(v >= 0 && v < 256);
    v >>= (8-bits);
-   STBI_ASSERT(bits >= 0 && bits <= 8);
+   if (bits < 0 || bits > 8) return (0);  /* error */
    return (int) ((unsigned) v * mul_table[bits]) >> shift_table[bits];
 }
 
@@ -5280,12 +5280,16 @@ static void *stbi__bmp_load(stbi__context *s, int *x, int *y, int *comp, int req
             int bpp = info.bpp;
             for (i=0; i < (int) s->img_x; ++i) {
                stbi__uint32 v = (bpp == 16 ? (stbi__uint32) stbi__get16le(s) : stbi__get32le(s));
-               unsigned int a;
-               out[z++] = STBI__BYTECAST(stbi__shiftsigned(v & mr, rshift, rcount));
-               out[z++] = STBI__BYTECAST(stbi__shiftsigned(v & mg, gshift, gcount));
-               out[z++] = STBI__BYTECAST(stbi__shiftsigned(v & mb, bshift, bcount));
+               unsigned int r, g, b, a;
+               r = stbi__shiftsigned(v & mr, rshift, rcount);
+               g = stbi__shiftsigned(v & mg, gshift, gcount);
+               b = stbi__shiftsigned(v & mb, bshift, bcount);
                a = (ma ? stbi__shiftsigned(v & ma, ashift, acount) : 255);
                all_a |= a;
+               if (!r || !g || !b || !a) { STBI_FREE(out); return stbi__errpuc("bad masks", "Corrupt BMP"); }
+               out[z++] = STBI__BYTECAST(r);
+               out[z++] = STBI__BYTECAST(g);
+               out[z++] = STBI__BYTECAST(b);
                if (target == 4) out[z++] = STBI__BYTECAST(a);
             }
          }

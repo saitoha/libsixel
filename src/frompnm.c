@@ -36,13 +36,15 @@ pnm_get_line(unsigned char *p, unsigned char *end, unsigned char *line)
     int n;
 
     do {
+        /* read the line */
         for (n = 0 ; p < end && *p >= ' '; p++) {
             if (n < 255) {
                 line[n++] = *p;
             }
         }
 
-        if (p < end && *p == '\n') {
+        /* skip invald characters */
+        if (p < end && *p < ' ') {
             p++;
         }
 

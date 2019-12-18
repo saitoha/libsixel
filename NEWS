@@ -2,6 +2,32 @@
                   ------------------------------
                    What's new in libsixel-1.8 ?
                   ------------------------------
+* Security fix for CVE-2019-11024 (#85), recursive loop problem,
+  reported by @Loginsoft-Research.
+
+* Security fix for #73, illegal memory access problem,
+  reported by @HongxuChen.
+
+* Security fix for #89, core dumped issue,
+  reported by @niugx.
+
+* Security fix for #107, large memory allocation problem,
+  reported by @cuanduo.
+
+* Security fix for #114, heap-buffer-overflow problem,
+  reported by @SuhwanSong.
+
+* Security fix for #116, heap-buffer-overflow problem,
+  reported by @SuhwanSong.
+
+* Security fix for #118, heap-buffer-overflow problem,
+  reported by @SuhwanSong.
+
+* Security fix for #121, heap-buffer-overflow problem,
+  reported by @gutiniao
+
+* Security fix for #73, illegal memory access problem,
+  reported by @HongxuChen.
 
 * Security fix for CVE-2018-19757 (#79), NULL pointer dereference problem,
   reported by @nluedtke and fixed by @knok (#91, #94).
