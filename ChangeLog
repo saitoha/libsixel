@@ -1,3 +1,77 @@
+2019-12-18  Hayaki Saito <saitoha@me.com>
+
+  * src/fromsixel.c: Suppress gcc -Wsign-conversion warnings
+
+  * README.md: Update README
+
+  * src/stb_image.h: Raise an error instead of assert() when wrong color mask
+  is detected (#89)
+
+  * src/fromsixel.c: Prevent integer overflow reported in #118, thanks to
+  @SuhwanSong
+
+2019-12-17  Hayaki Saito <saitoha@me.com>
+
+  * src/fromsixel.c: Fix typo
+
+  * converters/sixel2png.c: sixel2png: fix misssing error handling
+
+  * src/tosixel.c: Add additional error message for SIXEL_BAD_INTEGER_OVERFLOW
+
+  * src/frompnm.c: Fix for infinite recursive loop problem in load_pnm()
+  (#85), Thanks to @Loginsoft-Research
+
+  * src/loader.c: Try to suppress gcc -Wclobbered warnings again
+
+  * Makefile.in, config.h.in, configure, configure.ac, src/loader.c: Check
+  availability of -Wclobbered
+
+  * src/loader.c: Try to suppress gcc -Wclobbered warnings again
+
+  * Makefile.in, src/loader.c: Suppress gcc -Werror=clobbered warnings
+
+2019-12-16  Hayaki Saito <saitoha@me.com>
+
+  * src/fromsixel.c: Add error message for 1377517
+
+  * src/fromsixel.c: Make safe_addition_for_params() as a static function
+
+  * Makefile.in, src/fromsixel.c: Add error message for 9c013f2
+
+  * README.md: Update README: add more projects using sixels
+
+  * src/tosixel.c: Fix access violation problem on high color mode (#116),
+  Thanks to SuhwanSong
+
+  * src/dither.c: Use SIXEL_PALETTE_MAX instead of 256
+
+  * src/fromsixel.c: Use SIXEL_PALETTE_MAX instead of 256
+
+2019-12-15  Hayaki Saito <saitoha@me.com>
+
+  * src/fromsixel.c: Add invalid parameter check at image_buffer_init() /
+  image_buffer_resize() (#107)
+
+  * Makefile.in, src/fromsixel.c: Avoid huge memory allocation caused by
+  integer overflow problems
+
+  * src/loader.c: Handle libpng error message (#73), thanks to HongxuChen
+
+  * src/dither.c: Avoid illegal memory access problem with 1 color paletted
+  png(#73), Thanks to HongxuChen.
+
+  * README.md: Update README
+
+  * README.md: Update README
+
+  * configure, configure.ac, package.json: Bump version
+
+  * README.md, converters/img2sixel.1: Update contributers section
+
+  * NEWS: Update NEWS
+
+  * ChangeLog: Update ChangeLog
+
 2019-12-13  Hayaki Saito <saitoha@me.com>
 
   * src/loader.c: Suppress glib deprecated warnings
