@@ -299,6 +299,9 @@ $ xterm -xrm "XTerm*decTerminalID: vt340" -xrm "XTerm*numColorRegisters: 256"
 - cancer
   [https://github.com/meh/cancer/](https://github.com/meh/cancer)
 
+- MacTerm
+  [https://github.com/kmgrant/macterm](https://github.com/kmgrant/macterm)
+
 - wezterm
   [https://github.com/wez/wezterm](https://github.com/wez/wezterm)
 
@@ -310,6 +313,15 @@ $ xterm -xrm "XTerm*decTerminalID: vt340" -xrm "XTerm*numColorRegisters: 256"
 
 - st-sixel
   [https://github.com/galatolofederico/st-sixel](https://github.com/galatolofederico/st-sixel)
+
+- DomTerm
+  [https://github.com/PerBothner/DomTerm](https://github.com/PerBothner/DomTerm)
+
+- yaft-cocoa
+  [https://github.com/uobikiemukot/yaft-cocoa](https://github.com/uobikiemukot/yaft-cocoa)
+
+- toyterm
+  [https://github.com/algon-320/toyterm](https://github.com/algon-320/toyterm)
 
 
 ## Install
@@ -1510,3 +1522,25 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 - [hpjansson/chafa](https://github.com/hpjansson/chafa)
 
 - [m-j-w/TerminalGraphics.jl](https://github.com/m-j-w/TerminalGraphics.jl)
+
+- [MIC-DKFZ/niicat](https://github.com/MIC-DKFZ/niicat)
+
+- [libretro/RetroArch](https://github.com/libretro/RetroArch)
+
+- [jerch/node-sixel](https://github.com/jerch/node-sixel)
+
+- [nikiroo/fanfix](https://github.com/nikiroo/fanfix)
+
+- [mattn/longcat](https://github.com/mattn/longcat)
+
+- [ismail-yilmaz/upp-components/CtrlLib/Terminal/](https://github.com/ismail-yilmaz/upp-components/tree/master/CtrlLib/Terminal)
+
+- [schrmh/pdfgrepSIXEL](schrmh/pdfgrepSIXEL)
+
+- [ar90n/teimpy](https://github.com/ar90n/teimpy)
+
+- [vifm/vifm](https://github.com/vifm/vifm)
+
+- [ktye/iv](https://github.com/ktye/iv/commit/815e06ed776dde3deca0fdba35da5f0b431a69bf)
+
+- [Delta/longdog](https://github.com/0Delta/longdog)
