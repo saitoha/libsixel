@@ -46,6 +46,7 @@
 #define SIXEL_MESSAGE_BAD_ALLOCATION    ("runtime error: bad allocation error")
 #define SIXEL_MESSAGE_BAD_ARGUMENT      ("runtime error: bad argument detected")
 #define SIXEL_MESSAGE_BAD_INPUT         ("runtime error: bad input detected")
+#define SIXEL_MESSAGE_BAD_INTEGER_OVERFLOW  ("runtime error: integer overflow")
 #define SIXEL_MESSAGE_RUNTIME_ERROR     ("runtime error")
 #define SIXEL_MESSAGE_LOGIC_ERROR       ("logic error")
 #define SIXEL_MESSAGE_NOT_IMPLEMENTED   ("feature error: not implemented")
@@ -68,6 +69,8 @@ sixel_helper_set_additional_message(
 {
     size_t len;
 
+    if (message == 0)
+        return;
     len = strlen(message);
     memcpy(g_buffer, message, len < sizeof(g_buffer) ? len: sizeof(g_buffer) - 1);
     g_buffer[sizeof(g_buffer) - 1] = 0;
@@ -117,6 +120,9 @@ sixel_helper_format_error(
                 break;
             case SIXEL_BAD_INPUT:
                 error_string = SIXEL_MESSAGE_BAD_INPUT;
+                break;
+            case SIXEL_BAD_INTEGER_OVERFLOW:
+                error_string = SIXEL_MESSAGE_BAD_INTEGER_OVERFLOW;
                 break;
             default:
                 error_string = SIXEL_MESSAGE_RUNTIME_ERROR;

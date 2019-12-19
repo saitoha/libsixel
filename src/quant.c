@@ -738,7 +738,7 @@ computeHistogram(unsigned char const    /* in */  *data,
         goto end;
     }
 
-    for (i = 0; i < length - depth; i += step) {
+    for (i = 0; i < length; i += step) {
         bucket_index = computeHash(data + i, 3);
         if (histogram[bucket_index] == 0) {
             *ref++ = bucket_index;
@@ -1274,6 +1274,15 @@ sixel_quant_apply_palette(
                     int const reqcolor,
                     unsigned short * const cachetable,
                     int const complexion);
+
+    /* check bad reqcolor */
+    if (reqcolor < 1) {
+        status = SIXEL_BAD_ARGUMENT;
+        sixel_helper_set_additional_message(
+            "sixel_quant_apply_palette: "
+            "a bad argument is detected, reqcolor < 0.");
+        goto end;
+    }
 
     if (depth != 3) {
         f_diffuse = diffuse_none;

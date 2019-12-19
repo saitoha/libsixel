@@ -279,14 +279,17 @@ sixel_dither_new(
         sixel_allocator_ref(allocator);
     }
 
-    if (ncolors == (-1)) {
+    if (ncolors < 0) {
         ncolors = SIXEL_PALETTE_MAX;
         quality_mode = SIXEL_QUALITY_HIGHCOLOR;
     } else {
         if (ncolors > SIXEL_PALETTE_MAX) {
             ncolors = SIXEL_PALETTE_MAX;
-        } else if (ncolors < 2) {
-            ncolors = 2;
+        } else if (ncolors < 1) {
+            status = SIXEL_BAD_INPUT;
+            sixel_helper_set_additional_message(
+                "sixel_dither_new: palette colors must be more than 0");
+            goto end;
         }
         quality_mode = SIXEL_QUALITY_LOW;
     }

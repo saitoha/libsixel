@@ -9,12 +9,18 @@ libsixel
 This package provides encoder/decoder implementation for DEC SIXEL graphics, and
 some converter programs.
 
-![img2sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/libsixel-1.png)
+![img2sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/libsixel-1.png)(https://youtu.be/0SasrQ7pnbA)
 
 SIXEL is one of image formats for printer and terminal imaging introduced by
 Digital Equipment Corp. (DEC).
 Its data scheme is represented as a terminal-friendly escape sequence.
 So if you want to view a SIXEL image file, all you have to do is "cat" it to your terminal.
+
+On 80's real hardware terminals, it tooks unbearable long waiting times to display images.
+
+[![vt330sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/vt330sixel.png)](https://youtu.be/0SasrQ7pnbA)
+
+But nowdays, with high-speed CPU and broadband network, we got the chance to develop a new scope of SIXELs.
 
 ## SIXEL Animation
 
@@ -200,7 +206,12 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
 
   A sixel image dumper, provides pdf previewer.
 
+### [RetroArch](https://github.com/libretro/RetroArch)
 
+  SIXEL video driver is provided if you build it with `--enable-sixel` option.
+  ([screenshot](https://imgur.com/lf3bh2S))
+  
+  
 ## Highlighted features
 
 ### Improved compression
@@ -220,40 +231,6 @@ Now libsixel and ImageMagick's sixel coder follow it.
 ### High quality quantization
 
 `img2sixel(1)` supports color image quantization. It works well even if few number of colors are allowed.
-
-- `ppmtosixel` (`netpbm`)
-
-    $ jpegtopnm images/snake.jpg | pnmquant 16 | ppmtosixel
-
-  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel.png)
-
-
-- `ppmtosixel` with Floyd–Steinberg dithering (`netpbm`)
-
-    $ jpegtopnm images/snake.jpg | pnmquant 16 -floyd | ppmtosixel
-
-  ![ppmtosixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_ppmtosixel2.png)
-
-
-- kmiya's `sixel`
-
-    $ sixel -p16 images/snake.jpg
-
-  ![kmiya's sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixel.png)
-
-
-- PySixel (`sixelconv` command)
-
-    $ sixelconv -n16 images/snake.jpg
-
-  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_sixelconv.png)
-
-
-- libsixel (`img2sixel` command)
-
-    $ img2sixel -p16 images/snake.jpg
-
-  ![PySixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/q_libsixel.png)
 
 
 ## Terminal requirements
@@ -322,6 +299,30 @@ $ xterm -xrm "XTerm*decTerminalID: vt340" -xrm "XTerm*numColorRegisters: 256"
 - cancer
   [https://github.com/meh/cancer/](https://github.com/meh/cancer)
 
+- MacTerm
+  [https://github.com/kmgrant/macterm](https://github.com/kmgrant/macterm)
+
+- wezterm
+  [https://github.com/wez/wezterm](https://github.com/wez/wezterm)
+
+- aminal
+  [https://github.com/liamg/aminal](https://github.com/liamg/aminal)
+
+- iTerm2 (>= 3.0.0)
+  [https://gitlab.com/gnachman/iterm2](https://gitlab.com/gnachman/iterm2)
+
+- st-sixel
+  [https://github.com/galatolofederico/st-sixel](https://github.com/galatolofederico/st-sixel)
+
+- DomTerm
+  [https://github.com/PerBothner/DomTerm](https://github.com/PerBothner/DomTerm)
+
+- yaft-cocoa
+  [https://github.com/uobikiemukot/yaft-cocoa](https://github.com/uobikiemukot/yaft-cocoa)
+
+- toyterm
+  [https://github.com/algon-320/toyterm](https://github.com/algon-320/toyterm)
+
 
 ## Install
 
@@ -332,7 +333,7 @@ You can install libsixel via the following package systems.
 - [FreeBSD ports](http://portsmon.freebsd.org/portoverview.py?category=graphics&portname=libsixel)
 - [DPorts](https://github.com/DragonFlyBSD/DPorts/tree/master/graphics/libsixel)
 - [pkgsrc](http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/graphics/libsixel/)
-- [Homebrew tap](https://github.com/aki017/homebrew-sixel)
+- [Homebrew](https://formulae.brew.sh/formula/libsixel)
 - [yacp](https://github.com/fd00/yacp/tree/master/libsixel)
 - [Debian](https://packages.debian.org/search?searchon=names&keywords=libsixel)
 - [AUR](https://aur.archlinux.org/packages/libsixel-git/)
@@ -341,7 +342,7 @@ You can install libsixel via the following package systems.
 - [NixOS](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/libraries/libsixel/default.nix)
 - [OpenBSD Ports](http://openports.se/graphics/libsixel)
 - [Fedora Copr](https://copr.fedorainfracloud.org/coprs/saahriktu/libsixel/)
-
+- [SlackBuilds](https://slackbuilds.org/repository/14.2/libraries/libsixel/)
 
 ### Build from source package
 
@@ -1068,6 +1069,12 @@ The MIT License (MIT)
 - [@turenar](https://github.com/turenar/)
 - [@mame](https://github.com/mame/)
 - [@hodefoting](https://github.com/hodefoting/)
+- [@fCorleone](@https://github.com/fCorleone)
+- [@fgeek](https://github.com/fgeek/)
+- [@HongxuChen](https://github.com/HongxuChen/)
+- [@YourButterfly](https://github.com/YourButterfly/)
+- [@nluedtke](https://github.com/nluedtke/)
+- [@cool-tomato](https://github.com/cool-tomato/)
 
 ## Contributing
 
@@ -1484,3 +1491,58 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 - [gr framework](http://gr-framework.org/)
 
+- [o2sh/onefetch](https://github.com/o2sh/onefetch)
+
+- [lesnitsky/sixel-decoder](https://github.com/lesnitsky/sixel-decoder)
+
+- [unhappychoice/irasutoya-cli](https://github.com/unhappychoice/irasutoya-cli)
+
+- [ushitora-anqou/tinysixel](https://github.com/ushitora-anqou/tinysixel)
+
+- [adzierzanowski/timg](https://github.com/adzierzanowski/timg)
+
+- [SAT1226/Minase](https://github.com/SAT1226/Minase)
+
+- [danr/neptyne](https://github.com/danr/neptyne)
+
+- [klamonte/jexer](https://github.com/klamonte/jexer)
+
+- [ar90n/teimpy](https://github.com/ar90n/teimpy)
+
+- [fastai](https://github.com/fastai/fastai)
+
+- [coderobe/crixel](https://github.com/coderobe/crixel)
+
+- [itchyny/mkrg](https://github.com/itchyny/mkrg)
+
+- [tshort/SixelTerm.jl](https://github.com/tshort/SixelTerm.jl)
+
+- [dsanson/termpdf](https://github.com/dsanson/termpdf)
+
+- [otiai10/amesh](https://github.com/otiai10/amesh)
+
+- [hpjansson/chafa](https://github.com/hpjansson/chafa)
+
+- [m-j-w/TerminalGraphics.jl](https://github.com/m-j-w/TerminalGraphics.jl)
+
+- [MIC-DKFZ/niicat](https://github.com/MIC-DKFZ/niicat)
+
+- [libretro/RetroArch](https://github.com/libretro/RetroArch)
+
+- [jerch/node-sixel](https://github.com/jerch/node-sixel)
+
+- [nikiroo/fanfix](https://github.com/nikiroo/fanfix)
+
+- [mattn/longcat](https://github.com/mattn/longcat)
+
+- [ismail-yilmaz/upp-components/CtrlLib/Terminal/](https://github.com/ismail-yilmaz/upp-components/tree/master/CtrlLib/Terminal)
+
+- [schrmh/pdfgrepSIXEL](schrmh/pdfgrepSIXEL)
+
+- [ar90n/teimpy](https://github.com/ar90n/teimpy)
+
+- [vifm/vifm](https://github.com/vifm/vifm)
+
+- [ktye/iv](https://github.com/ktye/iv/commit/815e06ed776dde3deca0fdba35da5f0b431a69bf)
+
+- [Delta/longdog](https://github.com/0Delta/longdog)

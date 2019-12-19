@@ -225,6 +225,7 @@ sixel_parse_x_colorspec(
     }
 
     status = SIXEL_OK;
+
 end:
     sixel_allocator_free(allocator, buf);
 
@@ -1157,10 +1158,7 @@ sixel_encoder_new(
                                          env_default_bgcolor,
                                          allocator);
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(allocator, *ppencoder);
-            sixel_allocator_unref(allocator);
-            *ppencoder = NULL;
-            goto end;
+            goto error;
         }
     }
 
@@ -1173,10 +1171,15 @@ sixel_encoder_new(
         }
     }
 
-    sixel_allocator_ref(allocator);
-
     /* success */
     status = SIXEL_OK;
+
+    goto end;
+
+error:
+    sixel_allocator_free(allocator, *ppencoder);
+    sixel_allocator_unref(allocator);
+    *ppencoder = NULL;
 
 end:
     return status;

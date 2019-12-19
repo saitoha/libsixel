@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.8.1], [saitoha@me.com])
+AC_INIT([sixel], [1.8.4], [saitoha@me.com])
 LS_LT_CURRENT=1
 LS_LT_REVISION=6
 LS_LT_AGE=0
@@ -210,6 +210,9 @@ LS_CHECK_CFLAG([-Wswitch-default],
 LS_CHECK_CFLAG([-Wunused-function],
                [AM_CFLAGS="$AM_CFLAGS -Wunused-function"
                 AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_FUNCTION, 1, [define 1 if GCC supports -Wunused-function])])
+LS_CHECK_CFLAG([-Wclobbered],
+               [AM_CFLAGS="$AM_CFLAGS -Wclobbered"
+                AC_DEFINE(HAVE_DIAGNOSTIC_CLOBBERED, 1, [define 1 if GCC supports -Wclobbered])])
 LS_CHECK_CFLAG([-Bsymbolic],
                [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
                 AC_DEFINE(HAVE_BSYMBOLIC, 1, [define 1 if GCC supports -Bsymbolic])])

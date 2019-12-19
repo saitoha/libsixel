@@ -26,6 +26,9 @@
 #include <ctype.h>
 #include <sixel.h>
 
+#define PNM_MAX_WIDTH  (1 << 16)
+#define PNM_MAX_HEIGHT (1 << 16)
+#define PNM_MAX_DEPTH  (1 << 16)
 
 static unsigned char *
 pnm_get_line(unsigned char *p, unsigned char *end, unsigned char *line)
@@ -33,13 +36,15 @@ pnm_get_line(unsigned char *p, unsigned char *end, unsigned char *line)
     int n;
 
     do {
+        /* read the line */
         for (n = 0 ; p < end && *p >= ' '; p++) {
             if (n < 255) {
                 line[n++] = *p;
             }
         }
 
-        if (p < end && *p == '\n') {
+        /* skip invald characters */
+        if (p < end && *p < ' ') {
             p++;
         }
 
@@ -74,6 +79,7 @@ load_pnm(unsigned char      /* in */  *p,
     int width;
     int height;
     int deps;
+    char message[256];
     unsigned char *s;
     unsigned char *end;
     unsigned char tmp[256];
@@ -97,72 +103,117 @@ load_pnm(unsigned char      /* in */  *p,
 
     switch(tmp[1]) {
     case '1':
+        /* Portable bitmap - ASCII */
         ascii = 1;
         maps  = 0;
         break;
     case '2':
+        /* Portable graymap - ASCII */
         ascii = 1;
         maps  = 1;
         break;
     case '3':
+        /* Portable pixmap - ASCII */
         ascii = 1;
         maps  = 2;
         break;
     case '4':
+        /* Portable bitmap - Binary */
         ascii = 0;
         maps  = 0;
         break;
     case '5':
+        /* Portable graymap - Binary */
         ascii = 0;
         maps  = 1;
         break;
     case '6':
+        /* Portable pixmap - Binary */
         ascii = 0;
         maps  = 2;
         break;
     default:
-        status = SIXEL_RUNTIME_ERROR;
-        sixel_helper_set_additional_message(
-            "load_pnm: unknown ppm format.");
-        goto end;
+        goto unknown;
     }
 
     p = pnm_get_line(p, end, tmp);
+    if (p == end) {
+        /* check empty content */
+        /* Issue 71: https://github.com/saitoha/libsixel/issues/71 */
+        goto invalid;
+    }
 
     s = tmp;
+
+    /* parse width */
     width = 0;
-    while (isdigit(*s) && width >= 0) {
-        width = width * 10 + (*s++ - '0');
+    for (; *s >= '0' && *s <= '9'; ++s) {
+        width = width * 10 + (*s - '0');
+        if (width > PNM_MAX_WIDTH) {
+            status = SIXEL_RUNTIME_ERROR;
+            sprintf(
+              message,
+              "load_pnm: image width exceeds the limit %d.",
+              PNM_MAX_WIDTH);
+            sixel_helper_set_additional_message(message);
+            goto end;
+        }
     }
+
     while (*s == ' ') {
         s++;
     }
+
+    /* parse height */
     height = 0;
-    while (isdigit(*s) && height >= 0) {
-        height = height * 10 + (*s++ - '0');
+    for (; *s >= '0' && *s <= '9'; ++s) {
+        height = height * 10 + (*s - '0');
+        if (height > PNM_MAX_HEIGHT) {
+            status = SIXEL_RUNTIME_ERROR;
+            sprintf(
+              message,
+              "load_pnm: image height exceeds the limit %d.",
+              PNM_MAX_HEIGHT);
+            sixel_helper_set_additional_message(message);
+            goto end;
+        }
     }
+
     while (*s != '\0') {
         s++;
     }
 
     if (maps > 0) {
         p = pnm_get_line(p, end, tmp);
+        if (p == end) {
+            /* check empty content */
+            /* Issue 71: https://github.com/saitoha/libsixel/issues/71 */
+            goto invalid;
+        }
         s = tmp;
         deps = 0;
-        while (isdigit(*s) && deps >= 0) {
-            deps = deps * 10 + (*s++ - '0');
+        for (; *s >= '0' && *s <= '9'; ++s) {
+            deps = deps * 10 + (*s - '0');
+        }
+        if (deps > PNM_MAX_DEPTH) {
+            status = SIXEL_RUNTIME_ERROR;
+            sprintf(
+              message,
+              "load_pnm: image depth exceeds the limit %d.",
+              PNM_MAX_DEPTH);
+            sixel_helper_set_additional_message(message);
+            goto end;
         }
     }
 
     if (width < 1 || height < 1 || deps < 1) {
-        status = SIXEL_RUNTIME_ERROR;
-        sixel_helper_set_additional_message(
-            "load_pnm: invalid data detected.");
-        goto end;
+        goto invalid;
     }
 
-    *result = (unsigned char *)sixel_allocator_malloc(allocator,
-                                                      (size_t)(width * height * 3 + 1));
+    *result = (unsigned char *)sixel_allocator_malloc(
+        allocator,
+        (size_t)(width * height * 3 + 1));
+
     if (*result == NULL) {
         sixel_helper_set_additional_message(
             "load_pnm: sixel_allocator_malloc() failed.");
@@ -186,7 +237,9 @@ load_pnm(unsigned char      /* in */  *p,
                     }
                     n = 0;
                     if (maps == 0) {
-                        n = *s++ == '0';
+                        n = *s == '0';
+                        if (*s != '\0')
+                            s++;
                     } else {
                         while (isdigit(*s) && n >= 0) {
                             n = n * 10 + (*s++ - '0');
@@ -231,10 +284,7 @@ load_pnm(unsigned char      /* in */  *p,
                 component[2] = (component[2] * 255 / deps);
                 break;
             default:
-                status = SIXEL_RUNTIME_ERROR;
-                sixel_helper_set_additional_message(
-                    "load_pnm: unknown ppm format.");
-                goto end;
+                goto unknown;
             }
 
             *(*result + (y * width + x) * 3 + 0) = component[0];
@@ -248,6 +298,23 @@ load_pnm(unsigned char      /* in */  *p,
     *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
 
     status = SIXEL_OK;
+    goto end;
+
+unknown:
+    status = SIXEL_RUNTIME_ERROR;
+    sixel_helper_set_additional_message(
+        "load_pnm: unknown ppm format.");
+    sixel_allocator_free(allocator, *result);
+    *result = NULL;
+    goto end;
+
+invalid:
+    status = SIXEL_RUNTIME_ERROR;
+    sixel_helper_set_additional_message(
+        "load_pnm: invalid data detected.");
+    sixel_allocator_free(allocator, *result);
+    *result = NULL;
+    goto end;
 
 end:
     return status;
