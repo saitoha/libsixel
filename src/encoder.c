@@ -568,6 +568,7 @@ sixel_encoder_prepare_palette(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+
     status = sixel_dither_initialize(*dither,
                                      sixel_frame_get_pixels(frame),
                                      sixel_frame_get_width(frame),

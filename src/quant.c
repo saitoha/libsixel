@@ -749,6 +749,7 @@ computeHistogram(unsigned char const    /* in */  *data,
     }
 
     colorfreqtableP->size = (unsigned int)(ref - refmap);
+
     status = alloctupletable(&colorfreqtableP->table, depth, (unsigned int)(ref - refmap), allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
