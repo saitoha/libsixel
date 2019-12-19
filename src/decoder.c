@@ -237,17 +237,16 @@ sixel_decoder_decode(
     sixel_decoder_t /* in */ *decoder)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    unsigned char *raw_data;
+    unsigned char *raw_data = NULL;
     int sx;
     int sy;
     int raw_len;
     int max;
     int n;
     FILE *input_fp = NULL;
-    unsigned char *indexed_pixels;
-    unsigned char *palette;
+    unsigned char *indexed_pixels = NULL;
+    unsigned char *palette = NULL;
     int ncolors;
-    unsigned char *pixels = NULL;
 
     sixel_decoder_ref(decoder);
 
@@ -316,6 +315,11 @@ sixel_decoder_decode(
         goto end;
     }
 
+    if (sx > SIXEL_WIDTH_LIMIT || sy > SIXEL_HEIGHT_LIMIT) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
     status = sixel_helper_write_image_file(indexed_pixels, sx, sy, palette,
                                            SIXEL_PIXELFORMAT_PAL8,
                                            decoder->output,
@@ -327,7 +331,9 @@ sixel_decoder_decode(
     }
 
 end:
-    sixel_allocator_free(decoder->allocator, pixels);
+    sixel_allocator_free(decoder->allocator, raw_data);
+    sixel_allocator_free(decoder->allocator, indexed_pixels);
+    sixel_allocator_free(decoder->allocator, palette);
     sixel_decoder_unref(decoder);
 
     return status;

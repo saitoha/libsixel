@@ -262,6 +262,7 @@ sixel_dither_new(
     size_t wholesize;
     int quality_mode;
 
+    /* ensure given pointer is not null */
     if (ppdither == NULL) {
         sixel_helper_set_additional_message(
             "sixel_dither_new: ppdither is null.");
@@ -279,14 +280,18 @@ sixel_dither_new(
         sixel_allocator_ref(allocator);
     }
 
-    if (ncolors == (-1)) {
+    if (ncolors < 0) {
         ncolors = SIXEL_PALETTE_MAX;
         quality_mode = SIXEL_QUALITY_HIGHCOLOR;
     } else {
         if (ncolors > SIXEL_PALETTE_MAX) {
-            ncolors = SIXEL_PALETTE_MAX;
-        } else if (ncolors < 2) {
-            ncolors = 2;
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        } else if (ncolors < 1) {
+            status = SIXEL_BAD_INPUT;
+            sixel_helper_set_additional_message(
+                "sixel_dither_new: palette colors must be more than 0");
+            goto end;
         }
         quality_mode = SIXEL_QUALITY_LOW;
     }
@@ -520,6 +525,7 @@ sixel_dither_initialize(
     int depth;
     SIXELSTATUS status = SIXEL_FALSE;
 
+    /* ensure dither object is not null */
     if (dither == NULL) {
         sixel_helper_set_additional_message(
             "sixel_dither_new: dither is null.");
@@ -527,6 +533,7 @@ sixel_dither_initialize(
         goto end;
     }
 
+    /* increment ref count */
     sixel_dither_ref(dither);
 
     switch (pixelformat) {
@@ -596,7 +603,10 @@ sixel_dither_initialize(
 
 end:
     free(normalized_pixels);
+
+    /* decrement ref count */
     sixel_dither_unref(dither);
+
     return status;
 }
 
@@ -730,6 +740,7 @@ sixel_dither_apply_palette(
     unsigned char *normalized_pixels = NULL;
     unsigned char *input_pixels;
 
+    /* ensure dither object is not null */
     if (dither == NULL) {
         sixel_helper_set_additional_message(
             "sixel_dither_apply_palette: dither is null.");

@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #if defined(HAVE_INTTYPES_H)
 # include <inttypes.h>
@@ -503,6 +504,7 @@ sixel_encode_body(
     int len;
     int pix;
     char *map = NULL;
+    int check_integer_overflow;
     sixel_node_t *np, *tp, top;
     int fillable;
 
@@ -557,8 +559,42 @@ sixel_encode_body(
             fillable = 1;
         }
         for (x = 0; x < width; x++) {
-            pix = pixels[y * width + x];  /* color index */
+            if (y > INT_MAX / width) {
+                /* integer overflow */
+                sixel_helper_set_additional_message(
+                    "sixel_encode_body: integer overflow detected."
+                    " (y > INT_MAX)");
+                status = SIXEL_BAD_INTEGER_OVERFLOW;
+                goto end;
+            }
+            check_integer_overflow = y * width;
+            if (check_integer_overflow > INT_MAX - x) {
+                /* integer overflow */
+                sixel_helper_set_additional_message(
+                    "sixel_encode_body: integer overflow detected."
+                    " (y * width > INT_MAX - x)");
+                status = SIXEL_BAD_INTEGER_OVERFLOW;
+                goto end;
+            }
+            pix = pixels[check_integer_overflow + x];  /* color index */
             if (pix >= 0 && pix < ncolors && pix != keycolor) {
+                if (pix > INT_MAX / width) {
+                    /* integer overflow */
+                    sixel_helper_set_additional_message(
+                        "sixel_encode_body: integer overflow detected."
+                        " (pix > INT_MAX / width)");
+                    status = SIXEL_BAD_INTEGER_OVERFLOW;
+                    goto end;
+                }
+                check_integer_overflow = pix * width;
+                if (check_integer_overflow > INT_MAX - x) {
+                    /* integer overflow */
+                    sixel_helper_set_additional_message(
+                        "sixel_encode_body: integer overflow detected."
+                        " (pix * width > INT_MAX - x)");
+                    status = SIXEL_BAD_INTEGER_OVERFLOW;
+                    goto end;
+                }
                 map[pix * width + x] |= (1 << i);
             }
             else if (!palstate) {
@@ -1396,7 +1432,7 @@ next:
                 goto end;
             }
         }
-        if (dirty && mod_y == 5) {
+        if (dirty && (mod_y == 5 || y >= height)) {
             orig_height = height;
 
             if (output_count++ == 0) {
@@ -1419,6 +1455,9 @@ next:
             if (SIXEL_FAILED(status)) {
                 goto error;
             }
+            if (y >= orig_height) {
+              goto end;
+            }
             pixels -= (6 * width * 3);
             height = orig_height - height + 6;
             goto next;
@@ -1429,6 +1468,7 @@ next:
             mod_y = 0;
         }
     }
+
     goto next;
 
 end:

@@ -738,7 +738,7 @@ computeHistogram(unsigned char const    /* in */  *data,
         goto end;
     }
 
-    for (i = 0; i < length - depth; i += step) {
+    for (i = 0; i < length; i += step) {
         bucket_index = computeHash(data + i, 3);
         if (histogram[bucket_index] == 0) {
             *ref++ = bucket_index;
@@ -749,6 +749,7 @@ computeHistogram(unsigned char const    /* in */  *data,
     }
 
     colorfreqtableP->size = (unsigned int)(ref - refmap);
+
     status = alloctupletable(&colorfreqtableP->table, depth, (unsigned int)(ref - refmap), allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -1531,16 +1532,24 @@ sixel_quant_apply_palette(
     unsigned short migration_map[SIXEL_PALETTE_MAX];
     float (*f_mask) (int x, int y, int c) = NULL;
     void (*f_diffuse)(unsigned char *data, int width, int height,
-                      int x, int y, int depth, int offset);
+                      int x, int y, int depth, int offset) = NULL;
     int (*f_lookup)(unsigned char const * const pixel,
                     int const depth,
                     unsigned char const * const palette,
                     int const reqcolor,
                     unsigned short * const cachetable,
-                    int const complexion);
+                    int const complexion) = NULL;
 
-    f_lookup = NULL;
-    f_diffuse = NULL;
+    /* check bad reqcolor */
+    if (reqcolor < 1) {
+        status = SIXEL_BAD_ARGUMENT;
+        sixel_helper_set_additional_message(
+            "sixel_quant_apply_palette: "
+            "a bad argument is detected, reqcolor < 0.");
+        goto end;
+    }
+
+    depth = sixel_helper_compute_depth(pixelformat);
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_RGB888:
@@ -1577,7 +1586,7 @@ sixel_quant_apply_palette(
         goto end;
     }
 
-    if (f_diffuse == NULL) {
+    if (f_diffuse == NULL && depth == 3) {
         switch (methodForDiffuse) {
         case SIXEL_DIFFUSE_NONE:
             f_diffuse = diffuse_none;
@@ -1614,7 +1623,10 @@ sixel_quant_apply_palette(
         }
     }
 
-    depth = sixel_helper_compute_depth(pixelformat);
+    if (f_diffuse == NULL) {
+        f_diffuse = diffuse_none;
+    }
+
     if (reqcolor == 2) {
         sum1 = 0;
         sum2 = 0;

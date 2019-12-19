@@ -15,8 +15,6 @@
  * original source:
  * https://cgit.freedesktop.org/mesa/demos/tree/src/xdemos/glxpbdemo.c
  *
- * This file is distributed under the same licence as original's one.
- *
  * original license:
  *
  * Copyright (C) 1999-2007  Brian Paul   All Rights Reserved.
@@ -68,6 +66,7 @@
 #include <unistd.h>
 #include <memory.h>
 #include <math.h>
+#include <errno.h>
 #if HAVE_TERMIOS_H
 # include <termios.h>
 #endif
@@ -331,46 +330,27 @@ draw_scene(void)
 }
 
 
-static int
-sixel_write(char *data, int size, void *priv)
-{
-    return fwrite(data, 1, size, (FILE *)priv);
-}
-
-
 static SIXELSTATUS
 output_sixel(unsigned char *pixbuf, int width, int height,
-             int ncolors, int pixelformat)
+             int pixelformat, int ncolors)
 {
-    sixel_output_t *context = NULL;
-    sixel_dither_t *dither = NULL;
+    sixel_encoder_t *encoder;
     SIXELSTATUS status;
+    char opt[256];
 
-#if USE_OSMESA
-    pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-#endif
-    status = sixel_output_new(&output, sixel_write, stdout, NULL);
+    status = sixel_encoder_new(&encoder, NULL);
     if (SIXEL_FAILED(status))
-        goto end;
-    status = sixel_dither_new(&dither, ncolors, NULL);
+        return status;
+    if (sprintf(opt, "%d", ncolors) <= 0)
+        return SIXEL_LIBC_ERROR | (errno | 0xff);
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_COLORS, opt);
     if (SIXEL_FAILED(status))
-        goto end;
-    status = sixel_dither_initialize(dither, pixbuf,
-                                     width, height,
-                                     pixelformat,
-                                     SIXEL_LARGE_AUTO,
-                                     SIXEL_REP_AUTO,
-                                     SIXEL_QUALITY_AUTO);
+        return status;
+    status = sixel_encoder_encode_bytes(
+        encoder, pixbuf, width, height, pixelformat, NULL, (-1));
     if (SIXEL_FAILED(status))
-        goto end;
-    status = sixel_encode(pixbuf, width, height,
-                          pixelformat, dither, output);
-    if (SIXEL_FAILED(status))
-        goto end;
-
-end:
-    sixel_output_unref(output);
-    sixel_dither_unref(dither);
+        return status;
+    sixel_encoder_unref(encoder);
 
     return status;
 }
@@ -511,13 +491,20 @@ main(int argc, char** argv)
             break;
 
         printf("\0338");
+        fflush(stdout);
 #if USE_OSMESA
         pixbuf = pbuffer;
 #else
         glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixbuf);
 #endif
-        status = output_sixel(pixbuf, width, height, ncolors,
-                              SIXEL_PIXELFORMAT_RGB888);
+        status = output_sixel(
+            pixbuf, width, height,
+#if USE_OSMESA
+            SIXEL_PIXELFORMAT_RGBA8888,
+#else
+            SIXEL_PIXELFORMAT_RGB888,
+#endif
+            ncolors);
         if (SIXEL_FAILED(status)) {
             fprintf(stderr, "%s\n%s\n",
                     sixel_helper_format_error(status),
