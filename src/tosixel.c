@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #if defined(HAVE_INTTYPES_H)
 # include <inttypes.h>
@@ -441,9 +442,9 @@ output_hls_palette_definition(
             h = s = 0;
         } else {
             if (l < 50) {
-                s = ((max - min) * 100 + 127) / (max + min);
+                s = ((max - min) * 100) / (max + min);
             } else {
-                s = ((max - min) * 100 + 127) / ((255 - max) + (255 - min));
+                s = ((max - min) * 100) / ((255 - max) + (255 - min));
             }
             if (r == max) {
                 h = 120 + (g - b) * 60 / (max - min);
@@ -481,7 +482,7 @@ output_hls_palette_definition(
 
 static SIXELSTATUS
 sixel_encode_body(
-    unsigned char       /* in */ *pixels,
+    sixel_index_t       /* in */ *pixels,
     int                 /* in */ width,
     int                 /* in */ height,
     unsigned char       /* in */ *palette,
@@ -503,6 +504,7 @@ sixel_encode_body(
     int len;
     int pix;
     char *map = NULL;
+    int check_integer_overflow;
     sixel_node_t *np, *tp, top;
     int fillable;
 
@@ -557,8 +559,42 @@ sixel_encode_body(
             fillable = 1;
         }
         for (x = 0; x < width; x++) {
-            pix = pixels[y * width + x];  /* color index */
+            if (y > INT_MAX / width) {
+                /* integer overflow */
+                sixel_helper_set_additional_message(
+                    "sixel_encode_body: integer overflow detected."
+                    " (y > INT_MAX)");
+                status = SIXEL_BAD_INTEGER_OVERFLOW;
+                goto end;
+            }
+            check_integer_overflow = y * width;
+            if (check_integer_overflow > INT_MAX - x) {
+                /* integer overflow */
+                sixel_helper_set_additional_message(
+                    "sixel_encode_body: integer overflow detected."
+                    " (y * width > INT_MAX - x)");
+                status = SIXEL_BAD_INTEGER_OVERFLOW;
+                goto end;
+            }
+            pix = pixels[check_integer_overflow + x];  /* color index */
             if (pix >= 0 && pix < ncolors && pix != keycolor) {
+                if (pix > INT_MAX / width) {
+                    /* integer overflow */
+                    sixel_helper_set_additional_message(
+                        "sixel_encode_body: integer overflow detected."
+                        " (pix > INT_MAX / width)");
+                    status = SIXEL_BAD_INTEGER_OVERFLOW;
+                    goto end;
+                }
+                check_integer_overflow = pix * width;
+                if (check_integer_overflow > INT_MAX - x) {
+                    /* integer overflow */
+                    sixel_helper_set_additional_message(
+                        "sixel_encode_body: integer overflow detected."
+                        " (pix * width > INT_MAX - x)");
+                    status = SIXEL_BAD_INTEGER_OVERFLOW;
+                    goto end;
+                }
                 map[pix * width + x] |= (1 << i);
             }
             else if (!palstate) {
@@ -748,8 +784,9 @@ sixel_encode_dither(
     sixel_output_t  /* in */ *output)   /* output context */
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    unsigned char *paletted_pixels = NULL;
-    unsigned char *input_pixels;
+    sixel_index_t *paletted_pixels = NULL;
+    sixel_index_t *input_pixels;
+    size_t bufsize;
 
     switch (dither->pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
@@ -758,8 +795,8 @@ sixel_encode_dither(
     case SIXEL_PIXELFORMAT_G1:
     case SIXEL_PIXELFORMAT_G2:
     case SIXEL_PIXELFORMAT_G4:
-        paletted_pixels = (unsigned char *)sixel_allocator_malloc(dither->allocator,
-                                                                  (size_t)(width * height * 3));
+        bufsize = (sizeof(sixel_index_t) * (size_t)(width * height * 3));
+        paletted_pixels = (sixel_index_t *)sixel_allocator_malloc(dither->allocator, bufsize);
         if (paletted_pixels == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_encode_dither: sixel_allocator_malloc() failed.");
@@ -1264,14 +1301,14 @@ sixel_encode_highcolor(
         )
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    unsigned char *paletted_pixels = NULL;
+    sixel_index_t *paletted_pixels = NULL;
     unsigned char *normalized_pixels = NULL;
     /* Mark sixel line pixels which have been already drawn. */
     unsigned char *marks;
     unsigned char *rgbhit;
     unsigned char *rgb2pal;
-    unsigned char palhitcount[256];
-    unsigned char palstate[256];
+    unsigned char palhitcount[SIXEL_PALETTE_MAX];
+    unsigned char palstate[SIXEL_PALETTE_MAX];
     int output_count;
     int const maxcolors = 1 << 15;
     int whole_size = width * height  /* for paletted_pixels */
@@ -1306,7 +1343,7 @@ sixel_encode_highcolor(
         }
         pixels = normalized_pixels;
     }
-    paletted_pixels = (unsigned char *)sixel_allocator_malloc(dither->allocator,
+    paletted_pixels = (sixel_index_t *)sixel_allocator_malloc(dither->allocator,
                                                               (size_t)whole_size);
     if (paletted_pixels == NULL) {
         goto error;
@@ -1395,7 +1432,7 @@ next:
                 goto end;
             }
         }
-        if (dirty && mod_y == 5) {
+        if (dirty && (mod_y == 5 || y >= height)) {
             orig_height = height;
 
             if (output_count++ == 0) {
@@ -1418,6 +1455,9 @@ next:
             if (SIXEL_FAILED(status)) {
                 goto error;
             }
+            if (y >= orig_height) {
+              goto end;
+            }
             pixels -= (6 * width * 3);
             height = orig_height - height + 6;
             goto next;
@@ -1428,6 +1468,7 @@ next:
             mod_y = 0;
         }
     }
+
     goto next;
 
 end:

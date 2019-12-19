@@ -738,7 +738,7 @@ computeHistogram(unsigned char const    /* in */  *data,
         goto end;
     }
 
-    for (i = 0; i < length - depth; i += step) {
+    for (i = 0; i < length; i += step) {
         bucket_index = computeHash(data + i, 3);
         if (histogram[bucket_index] == 0) {
             *ref++ = bucket_index;
@@ -749,6 +749,7 @@ computeHistogram(unsigned char const    /* in */  *data,
     }
 
     colorfreqtableP->size = (unsigned int)(ref - refmap);
+
     status = alloctupletable(&colorfreqtableP->table, depth, (unsigned int)(ref - refmap), allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -1241,7 +1242,7 @@ end:
 /* apply color palette into specified pixel buffers */
 SIXELSTATUS
 sixel_quant_apply_palette(
-    unsigned char     /* out */ *result,
+    sixel_index_t     /* out */ *result,
     unsigned char     /* in */  *data,
     int               /* in */  width,
     int               /* in */  height,
@@ -1263,8 +1264,8 @@ sixel_quant_apply_palette(
     component_t offset;
     int color_index;
     unsigned short *indextable;
-    unsigned char new_palette[256 * max_depth];
-    unsigned short migration_map[256];
+    unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
+    unsigned short migration_map[SIXEL_PALETTE_MAX];
     float (*f_mask) (int x, int y, int c) = NULL;
     void (*f_diffuse)(unsigned char *data, int width, int height,
                       int x, int y, int depth, int offset);
@@ -1274,6 +1275,15 @@ sixel_quant_apply_palette(
                     int const reqcolor,
                     unsigned short * const cachetable,
                     int const complexion);
+
+    /* check bad reqcolor */
+    if (reqcolor < 1) {
+        status = SIXEL_BAD_ARGUMENT;
+        sixel_helper_set_additional_message(
+            "sixel_quant_apply_palette: "
+            "a bad argument is detected, reqcolor < 0.");
+        goto end;
+    }
 
     if (depth != 3) {
         f_diffuse = diffuse_none;
@@ -1352,7 +1362,7 @@ sixel_quant_apply_palette(
     if (foptimize_palette) {
         *ncolors = 0;
 
-        memset(new_palette, 0x00, sizeof(256 * depth));
+        memset(new_palette, 0x00, sizeof(SIXEL_PALETTE_MAX * depth));
         memset(migration_map, 0x00, sizeof(migration_map));
 
         if (f_mask) {

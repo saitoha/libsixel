@@ -845,6 +845,8 @@ static const char *stbi__g_failure_reason;
 
 STBIDEF const char *stbi_failure_reason(void)
 {
+   if (stbi__g_failure_reason == NULL)
+      stbi__g_failure_reason = "unknwon error, refer error message before assignment";
    return stbi__g_failure_reason;
 }
 
@@ -1495,7 +1497,7 @@ static int stbi__get16le(stbi__context *s)
 static stbi__uint32 stbi__get32le(stbi__context *s)
 {
    stbi__uint32 z = stbi__get16le(s);
-   return z + (stbi__get16le(s) << 16);
+   return z + ((stbi__uint32)stbi__get16le(s) << 16);
 }
 #endif
 
@@ -1960,7 +1962,7 @@ static int stbi__jpeg_decode_block(stbi__jpeg *j, short data[64], stbi__huffman 
 
    if (j->code_bits < 16) stbi__grow_buffer_unsafe(j);
    t = stbi__jpeg_huff_decode(j, hdc);
-   if (t < 0) return stbi__err("bad huffman code","Corrupt JPEG");
+   if (t < 0 || t >= 16) return stbi__err("bad huffman code","Corrupt JPEG");
 
    // 0 all the ac values now so we can do it 32-bits at a time
    memset(data,0,64*sizeof(data[0]));
@@ -2017,6 +2019,7 @@ static int stbi__jpeg_decode_block_prog_dc(stbi__jpeg *j, short data[64], stbi__
       // first scan for DC coefficient, must be first
       memset(data,0,64*sizeof(data[0])); // 0 all the ac values now
       t = stbi__jpeg_huff_decode(j, hdc);
+      if (t < 0 || t >= 16) return stbi__err("bad huffman code","Corrupt JPEG");
       diff = t ? stbi__extend_receive(j, t) : 0;
 
       dc = j->img_comp[b].dc_pred + diff;
@@ -3063,7 +3066,7 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
       z->img_comp[i].coeff = 0;
       z->img_comp[i].raw_coeff = 0;
       z->img_comp[i].linebuf = NULL;
-      z->img_comp[i].raw_data = stbi__malloc_mad2(z->img_comp[i].w2, z->img_comp[i].h2, 15);
+      z->img_comp[i].raw_data = stbi__malloc_mad2(z->img_comp[i].w2, z->img_comp[i].h2 + 1, 15);
       if (z->img_comp[i].raw_data == NULL)
          return stbi__free_jpeg_components(z, i+1, stbi__err("outofmem", "Out of memory"));
       // align blocks for idct using mmx/sse
@@ -5048,7 +5051,7 @@ static int stbi__shiftsigned(int v, int shift, int bits)
       v >>= shift;
    STBI_ASSERT(v >= 0 && v < 256);
    v >>= (8-bits);
-   STBI_ASSERT(bits >= 0 && bits <= 8);
+   if (bits < 0 || bits > 8) return (0);  /* error */
    return (int) ((unsigned) v * mul_table[bits]) >> shift_table[bits];
 }
 
@@ -5277,12 +5280,16 @@ static void *stbi__bmp_load(stbi__context *s, int *x, int *y, int *comp, int req
             int bpp = info.bpp;
             for (i=0; i < (int) s->img_x; ++i) {
                stbi__uint32 v = (bpp == 16 ? (stbi__uint32) stbi__get16le(s) : stbi__get32le(s));
-               unsigned int a;
-               out[z++] = STBI__BYTECAST(stbi__shiftsigned(v & mr, rshift, rcount));
-               out[z++] = STBI__BYTECAST(stbi__shiftsigned(v & mg, gshift, gcount));
-               out[z++] = STBI__BYTECAST(stbi__shiftsigned(v & mb, bshift, bcount));
+               unsigned int r, g, b, a;
+               r = stbi__shiftsigned(v & mr, rshift, rcount);
+               g = stbi__shiftsigned(v & mg, gshift, gcount);
+               b = stbi__shiftsigned(v & mb, bshift, bcount);
                a = (ma ? stbi__shiftsigned(v & ma, ashift, acount) : 255);
                all_a |= a;
+               if (!r || !g || !b || !a) { STBI_FREE(out); return stbi__errpuc("bad masks", "Corrupt BMP"); }
+               out[z++] = STBI__BYTECAST(r);
+               out[z++] = STBI__BYTECAST(g);
+               out[z++] = STBI__BYTECAST(b);
                if (target == 4) out[z++] = STBI__BYTECAST(a);
             }
          }
@@ -5566,6 +5573,7 @@ static void *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int req
          //   OK, if I need to read a pixel, do it now
          if ( read_next_pixel )
          {
+            if (stbi__at_eof(s))   return stbi__errpuc("bad file","TGA file too short");
             //   load however much data we did have
             if ( tga_indexed )
             {
@@ -5666,6 +5674,7 @@ static int stbi__psd_decode_rle(stbi__context *s, stbi_uc *p, int pixelCount)
 
    count = 0;
    while ((nleft = pixelCount - count) > 0) {
+      if (stbi__at_eof(s))   return 0;
       len = stbi__get8(s);
       if (len == 128) {
          // No-op.
@@ -5780,7 +5789,6 @@ static void *stbi__psd_load(stbi__context *s, int *x, int *y, int *comp, int req
 
    // Initialize the data to zero.
    //memset( out, 0, pixelCount * 4 );
-
    // Finally, the image data.
    if (compression) {
       // RLE as used by .PSD and .TIFF
@@ -5835,16 +5843,22 @@ static void *stbi__psd_load(stbi__context *s, int *x, int *y, int *comp, int req
          } else {
             if (ri->bits_per_channel == 16) {    // output bpc
                stbi__uint16 *q = ((stbi__uint16 *) out) + channel;
-               for (i = 0; i < pixelCount; i++, q += 4)
+               for (i = 0; i < pixelCount; i++, q += 4) {
+                  if (stbi__at_eof(s))   return stbi__errpuc("bad file","PSD file too short");
                   *q = (stbi__uint16) stbi__get16be(s);
+               }
             } else {
                stbi_uc *p = out+channel;
                if (bitdepth == 16) {  // input bpc
-                  for (i = 0; i < pixelCount; i++, p += 4)
+                  for (i = 0; i < pixelCount; i++, p += 4) {
+                     if (stbi__at_eof(s))   return stbi__errpuc("bad file","PSD file too short");
                      *p = (stbi_uc) (stbi__get16be(s) >> 8);
+                  }
                } else {
-                  for (i = 0; i < pixelCount; i++, p += 4)
+                  for (i = 0; i < pixelCount; i++, p += 4) {
+                     if (stbi__at_eof(s))   return stbi__errpuc("bad file","PSD file too short");
                      *p = stbi__get8(s);
+                  }
                }
             }
          }

@@ -11,47 +11,14 @@
  * He declares this is compatible with MIT/BSD/GPL.
  *
  * Hayaki Saito <saitoha@me.com> modified this and re-licensed
- * it under the MIT license.
- *
- * The helper function hls_to_rgb is imported from Xterm pl#310.
- * This is originally written by Ross Combs.
- * Hayaki Saito <saitoha@me.com> slightly modified this.
- *
- * -------------------------------------------------------------------------
- * Copyright 2013,2014 by Ross Combs
- *
- *                         All Rights Reserved
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- * IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * Except as contained in this notice, the name(s) of the above copyright
- * holders shall not be used in advertising or otherwise to promote the
- * sale, use or other dealings in this Software without prior written
- * authorization.
- * -------------------------------------------------------------------------
+ * it to the MIT license.
  */
 #include "config.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>   /* isdigit */
 #include <string.h>  /* memcpy */
+#include <limits.h>
 
 #if defined(HAVE_INTTYPES_H)
 # include <inttypes.h>
@@ -134,83 +101,62 @@ typedef struct parser_context {
 static int
 hls_to_rgb(int hue, int lum, int sat)
 {
-    double hs = (hue + 240) % 360;
-    double hv = hs / 360.0;
-    double lv = lum / 100.0;
-    double sv = sat / 100.0;
-    double c, x, m, c2;
-    double r1, g1, b1;
+    double min, max;
     int r, g, b;
-    int hpi;
 
     if (sat == 0) {
-        r = g = b = lum * 255 / 100;
-        return SIXEL_RGB(r, g, b);
+        r = g = b = lum;
     }
 
-    if ((c2 = ((2.0 * lv) - 1.0)) < 0.0) {
-        c2 = -c2;
-    }
-    c = (1.0 - c2) * sv;
-    hpi = (int) (hv * 6.0);
-    x = c * (((hpi & 1) << 1) - 1) * ((hpi + (hpi & 1)) - hs / 60.0);
-    m = lv - 0.5 * c;
+    /* https://wikimedia.org/api/rest_v1/media/math/render/svg/17e876f7e3260ea7fed73f69e19c71eb715dd09d */
+    max = lum + sat * (1.0 - (lum > 50 ? (((lum << 2) / 100.0) - 1.0): - (2 * (lum / 100.0) - 1.0))) / 2.0;
 
-    switch (hpi) {
-    case 0:
-        r1 = c;
-        g1 = x;
-        b1 = 0.0;
+    /* https://wikimedia.org/api/rest_v1/media/math/render/svg/f6721b57985ad83db3d5b800dc38c9980eedde1d */
+    min = lum - sat * (1.0 - (lum > 50 ? (((lum << 2) / 100.0) - 1.0): - (2 * (lum / 100.0) - 1.0))) / 2.0;
+
+    /* sixel hue color ring is roteted -120 degree from nowdays general one. */
+    hue = (hue + 240) % 360;
+
+    /* https://wikimedia.org/api/rest_v1/media/math/render/svg/937e8abdab308a22ff99de24d645ec9e70f1e384 */
+    switch (hue / 60) {
+    case 0:  /* 0 <= hue < 60 */
+        r = max;
+        g = (min + (max - min) * (hue / 60.0));
+        b = min;
         break;
-    case 1:
-        r1 = x;
-        g1 = c;
-        b1 = 0.0;
+    case 1:  /* 60 <= hue < 120 */
+        r = min + (max - min) * ((120 - hue) / 60.0);
+        g = max;
+        b = min;
         break;
-    case 2:
-        r1 = 0.0;
-        g1 = c;
-        b1 = x;
+    case 2:  /* 120 <= hue < 180 */
+        r = min;
+        g = max;
+        b = (min + (max - min) * ((hue - 120) / 60.0));
         break;
-    case 3:
-        r1 = 0.0;
-        g1 = x;
-        b1 = c;
+    case 3:  /* 180 <= hue < 240 */
+        r = min;
+        g = (min + (max - min) * ((240 - hue) / 60.0));
+        b = max;
         break;
-    case 4:
-        r1 = x;
-        g1 = 0.0;
-        b1 = c;
+    case 4:  /* 240 <= hue < 300 */
+        r = (min + (max - min) * ((hue - 240) / 60.0));
+        g = min;
+        b = max;
         break;
-    case 5:
-        r1 = c;
-        g1 = 0.0;
-        b1 = x;
+    case 5:  /* 300 <= hue < 360 */
+        r = max;
+        g = min;
+        b = (min + (max - min) * ((360 - hue) / 60.0));
         break;
     default:
-        return SIXEL_RGB(255, 255, 255);
+#if HAVE___BUILTIN_UNREACHABLE
+        __builtin_unreachable();
+#endif
+        break;
     }
 
-    r = (int) ((r1 + m) * 100.0 + 0.5);
-    g = (int) ((g1 + m) * 100.0 + 0.5);
-    b = (int) ((b1 + m) * 100.0 + 0.5);
-
-    if (r < 0) {
-        r = 0;
-    } else if (r > 100) {
-        r = 100;
-    }
-    if (g < 0) {
-        g = 0;
-    } else if (g > 100) {
-        g = 100;
-    }
-    if (b < 0) {
-        b = 0;
-    } else if (b > 100) {
-        b = 100;
-    }
-    return SIXEL_RGB(r * 255 / 100, g * 255 / 100, b * 255 / 100);
+    return SIXEL_XRGB(r, g, b);
 }
 
 
@@ -230,7 +176,39 @@ image_buffer_init(
     int g;
     int b;
 
-    size = (size_t)(width * height) * sizeof(unsigned char);
+    /* check parameters */
+    if (width <= 0) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height <= 0) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (width > SIXEL_WIDTH_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given width parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    size = (size_t)(width) * (size_t)height * sizeof(unsigned char);
     image->width = width;
     image->height = height;
     image->data = (unsigned char *)sixel_allocator_malloc(allocator, size);
@@ -288,9 +266,41 @@ image_buffer_resize(
     int n;
     int min_height;
 
-    size = (size_t)(width * height);
+    /* check parameters */
+    if (width <= 0) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height <= 0) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (width > SIXEL_WIDTH_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given width parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "image_buffer_init: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    size = (size_t)width * (size_t)height;
     alt_buffer = (unsigned char *)sixel_allocator_malloc(allocator, size);
-    if (alt_buffer == NULL) {
+    if (alt_buffer == NULL || size == 0) {
         /* free source image */
         sixel_allocator_free(allocator, image->data);
         image->data = NULL;
@@ -304,28 +314,28 @@ image_buffer_resize(
     if (width > image->width) {  /* if width is extended */
         for (n = 0; n < min_height; ++n) {
             /* copy from source image */
-            memcpy(alt_buffer + width * n,
-                   image->data + image->width * n,
+            memcpy(alt_buffer + (size_t)width * (size_t)n,
+                   image->data + (size_t)image->width * (size_t)n,
                    (size_t)image->width);
             /* fill extended area with background color */
-            memset(alt_buffer + width * n + image->width,
+            memset(alt_buffer + (size_t)width * (size_t)n + (size_t)image->width,
                    bgindex,
                    (size_t)(width - image->width));
         }
     } else {
         for (n = 0; n < min_height; ++n) {
             /* copy from source image */
-            memcpy(alt_buffer + width * n,
-                   image->data + image->width * n,
+            memcpy(alt_buffer + (size_t)width * (size_t)n,
+                   image->data + (size_t)image->width * (size_t)n,
                    (size_t)width);
         }
     }
 
     if (height > image->height) {  /* if height is extended */
         /* fill extended area with background color */
-        memset(alt_buffer + width * image->height,
+        memset(alt_buffer + (size_t)width * (size_t)image->height,
                bgindex,
-               (size_t)(width * (height - image->height)));
+               (size_t)width * (size_t)(height - image->height));
     }
 
     /* free source image */
@@ -368,6 +378,27 @@ parser_context_init(parser_context_t *context)
 }
 
 
+static SIXELSTATUS
+safe_addition_for_params(parser_context_t *context, unsigned char *p)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    int x;
+
+    x = *p - '0'; /* 0 <= x <= 9 */
+    if ((context->param > INT_MAX / 10) || (x > INT_MAX - context->param * 10)) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        sixel_helper_set_additional_message(
+            "safe_addition_for_params: ingeger overflow detected.");
+        goto end;
+    }
+    context->param = context->param * 10 + x;
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+
 /* convert sixel data into indexed pixel bytes and palette data */
 SIXELAPI SIXELSTATUS
 sixel_decode_raw_impl(
@@ -386,7 +417,7 @@ sixel_decode_raw_impl(
     int sx;
     int sy;
     int c;
-    int pos;
+    size_t pos;
     unsigned char *p0 = p;
 
     while (p < p0 + len) {
@@ -446,7 +477,10 @@ sixel_decode_raw_impl(
                 if (context->param < 0) {
                     context->param = 0;
                 }
-                context->param = context->param * 10 + *p - '0';
+                status = safe_addition_for_params(context, p);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
                 p++;
                 break;
             case ';':
@@ -555,13 +589,18 @@ sixel_decode_raw_impl(
                 break;
             default:
                 if (*p >= '?' && *p <= '~') {  /* sixel characters */
-                    if (image->width < (context->pos_x + context->repeat_count) || image->height < (context->pos_y + 6)) {
-                        sx = image->width * 2;
-                        sy = image->height * 2;
-                        while (sx < (context->pos_x + context->repeat_count) || sy < (context->pos_y + 6)) {
-                            sx *= 2;
-                            sy *= 2;
-                        }
+
+                    sx = image->width;
+                    while (sx < context->pos_x + context->repeat_count) {
+                        sx *= 2;
+                    }
+
+                    sy = image->height;
+                    while (sy < context->pos_y + 6) {
+                        sy *= 2;
+                    }
+
+                    if (sx > image->width || sy > image->height) {
                         status = image_buffer_resize(image, sx, sy, context->bgindex, allocator);
                         if (SIXEL_FAILED(status)) {
                             goto end;
@@ -572,6 +611,10 @@ sixel_decode_raw_impl(
                         image->ncolors = context->color_index;
                     }
 
+                    if (context->pos_x < 0 || context->pos_y < 0) {
+                        status = SIXEL_BAD_INPUT;
+                        goto end;
+                    }
                     bits = *p - '?';
 
                     if (bits == 0) {
@@ -581,7 +624,7 @@ sixel_decode_raw_impl(
                         if (context->repeat_count <= 1) {
                             for (i = 0; i < 6; i++) {
                                 if ((bits & sixel_vertical_mask) != 0) {
-                                    pos = image->width * (context->pos_y + i) + context->pos_x;
+                                    pos = (size_t)image->width * (size_t)(context->pos_y + i) + (size_t)context->pos_x;
                                     image->data[pos] = context->color_index;
                                     if (context->max_x < context->pos_x) {
                                         context->max_x = context->pos_x;
@@ -605,7 +648,7 @@ sixel_decode_raw_impl(
                                         c <<= 1;
                                     }
                                     for (y = context->pos_y + i; y < context->pos_y + i + n; ++y) {
-                                        memset(image->data + image->width * y + context->pos_x,
+                                        memset(image->data + (size_t)image->width * (size_t)y + (size_t)context->pos_x,
                                                context->color_index,
                                                (size_t)context->repeat_count);
                                     }
@@ -647,7 +690,10 @@ sixel_decode_raw_impl(
             case '7':
             case '8':
             case '9':
-                context->param = context->param * 10 + *p - '0';
+                status = safe_addition_for_params(context, p);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
                 p++;
                 break;
             case ';':
@@ -721,13 +767,22 @@ sixel_decode_raw_impl(
             case '7':
             case '8':
             case '9':
-                context->param = context->param * 10 + *p - '0';
+                status = safe_addition_for_params(context, p);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
                 p++;
                 break;
             default:
                 context->repeat_count = context->param;
                 if (context->repeat_count == 0) {
                     context->repeat_count = 1;
+                }
+                if (context->repeat_count > 0xffff) {  /* check too huge number */
+                    status = SIXEL_BAD_INPUT;
+                    sixel_helper_set_additional_message(
+                        "sixel_decode_raw_impl: detected too huge repeat parameter.");
+                    goto end;
                 }
                 context->state = PS_DECSIXEL;
                 context->param = 0;
@@ -753,7 +808,10 @@ sixel_decode_raw_impl(
             case '7':
             case '8':
             case '9':
-                context->param = context->param * 10 + *p - '0';
+                status = safe_addition_for_params(context, p);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
                 p++;
                 break;
             case ';':
@@ -884,7 +942,12 @@ sixel_decode_raw(
     }
 
     *ncolors = image.ncolors + 1;
-    *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(*ncolors * 3));
+    int alloc_size = *ncolors;
+    if (alloc_size < SIXEL_PALETTE_MAX) {
+        /* memory access range should be 0 <= 255 */
+        alloc_size = SIXEL_PALETTE_MAX;
+    }
+    *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(alloc_size * 3));
     if (palette == NULL) {
         sixel_allocator_free(allocator, image.data);
         sixel_helper_set_additional_message(
