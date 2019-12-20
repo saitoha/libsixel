@@ -34,10 +34,7 @@ valgrind: all
 		grep "indirectly lost: 0 bytes in 0 blocks" valgrind.log
 
 coveralls:
-	coveralls -e sixel_orig -e include -e m4 \
-		-e stb_image.h -e stb_image_write.h
+	coveralls -e config.h -e stb_image.h -e stb_image_write.h -e examples -e include -e perl -e php -e ruby -e wic
 
 coveralls-dryrun: test
-	coveralls -e sixel_orig -e include -e m4 \
-		-e stb_image.h -e stb_image_write.h \
-		--dryrun
+	coveralls -e config.h -e stb_image.h -e stb_image_write.h -e examples -e include -e perl -e php -e ruby -e wic --dryrun
