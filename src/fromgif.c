@@ -614,6 +614,7 @@ load_gif(
     s.img_buffer = s.img_buffer_original = (unsigned char *)buffer;
     s.img_buffer_end = (unsigned char *)buffer + size;
     memset(&g, 0, sizeof(g));
+    g.delay = SIXEL_DEFALUT_GIF_DELAY;
     status = gif_load_header(&s, &g);
     if (status != SIXEL_OK) {
         goto end;
