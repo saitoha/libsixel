@@ -420,6 +420,7 @@ gif_load_next(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char buffer[256];
+    unsigned char c;
     int x;
     int y;
     int w;
@@ -427,7 +428,7 @@ gif_load_next(
     int len;
 
     for (;;) {
-        switch (gif_get8(s)) {
+        switch ((c = gif_get8(s))) {
         case 0x2C:  /* Image Separator (1 byte) */
             x = gif_get16le(s);  /* Image Left Position (2 bytes)*/
             y = gif_get16le(s);  /* Image Top Position (2 bytes) */
@@ -544,10 +545,20 @@ gif_load_next(
                 }
                 break;
             default:
+                len = gif_get8(s);  /* block size */
+                if (s->img_buffer + len > s->img_buffer_end) {
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
+                }
+                memcpy(buffer, s->img_buffer, (size_t)len);
+                s->img_buffer += len;
                 break;
             }
-            while ((len = gif_get8(s)) != 0) {
-                s->img_buffer += len;
+            if ((c = gif_get8(s)) != 0x00) {
+                sprintf((char *)buffer, "missing valid block terminator (unknown code %02x).", c);
+                sixel_helper_set_additional_message((char *)buffer);
+                status = SIXEL_RUNTIME_ERROR;
+                goto end;
             }
             break;
 
@@ -557,8 +568,8 @@ gif_load_next(
             goto end;
 
         default:
-            sixel_helper_set_additional_message(
-                "corrupt GIF (reason: unknown code).");
+            sprintf((char *)buffer, "corrupt GIF (reason: unknown code %02x).", c);
+            sixel_helper_set_additional_message((char *)buffer);
             status = SIXEL_RUNTIME_ERROR;
             goto end;
         }
@@ -595,7 +606,6 @@ load_gif(
     fn_pointer fnp;
 
     fnp.p = fn_load;
-    g.out = NULL;
 
     status = sixel_frame_new(&frame, allocator);
     if (SIXEL_FAILED(status)) {
