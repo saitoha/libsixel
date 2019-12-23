@@ -152,6 +152,11 @@ sixel_allocator_malloc(
             "sixel_allocator_malloc: called with n == 0");
         return NULL;
     }
+
+    if (n > SIXEL_ALLOCATE_BYTES_MAX) {
+        return NULL;
+    }
+
     return allocator->fn_malloc(n);
 }
 
@@ -163,9 +168,23 @@ sixel_allocator_calloc(
     size_t              /* in */ nelm,        /* number of elements */
     size_t              /* in */ elsize)      /* size of element */
 {
+    size_t n;
+
     /* precondition */
     assert(allocator);
     assert(allocator->fn_calloc);
+
+    n = nelm * elsize;
+
+    if (n == 0) {
+        sixel_helper_set_additional_message(
+            "sixel_allocator_malloc: called with n == 0");
+        return NULL;
+    }
+
+    if (n > SIXEL_ALLOCATE_BYTES_MAX) {
+        return NULL;
+    }
 
     return allocator->fn_calloc(nelm, elsize);
 }
@@ -181,6 +200,16 @@ sixel_allocator_realloc(
     /* precondition */
     assert(allocator);
     assert(allocator->fn_realloc);
+
+    if (n == 0) {
+        sixel_helper_set_additional_message(
+            "sixel_allocator_malloc: called with n == 0");
+        return NULL;
+    }
+
+    if (n > SIXEL_ALLOCATE_BYTES_MAX) {
+        return NULL;
+    }
 
     return allocator->fn_realloc(p, n);
 }
