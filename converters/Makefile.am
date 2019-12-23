@@ -84,10 +84,10 @@ if WANT_IMG2SIXEL
 	@echo '[test4] conversion options'
 	$(WINE) ./img2sixel $(top_srcdir)/images/snake.jpg -datkinson -flum -saverage | $(WINE) ./img2sixel | tee snake.sixel
 	$(WINE) ./img2sixel -w50% -h150% -dfs -Bblue -thls -shistogram < $(top_srcdir)/images/snake.jpg | tee snake2.sixel
-	$(WINE) ./img2sixel -w2100 -h2100 -djajuni -bxterm256 -o snake3.sixel < $(top_srcdir)/images/snake.jpg
+	$(WINE) ./img2sixel -w210 -h210 -djajuni -bxterm256 -o snake3.sixel < $(top_srcdir)/images/snake.jpg
 	$(WINE) ./img2sixel -w105% -h100 -B\#000000000 -rnearest < $(top_srcdir)/images/snake.gif
 	$(WINE) ./img2sixel -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto $(top_srcdir)/images/snake.tga
-	$(WINE) ./img2sixel -p300 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhanning -dstucki -thls $(top_srcdir)/images/snake.tiff
+	$(WINE) ./img2sixel -p200 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhanning -dstucki -thls $(top_srcdir)/images/snake.tiff
 	$(WINE) ./img2sixel -8 -qauto -thls -e $(top_srcdir)/images/snake.pgm
 	$(WINE) ./img2sixel -8 -m $(top_srcdir)/images/map8-palette.png -Esize $(top_srcdir)/images/snake.ppm
 	$(WINE) ./img2sixel -7 -m $(top_srcdir)/images/map16-palette.png -Efast $(top_srcdir)/images/snake.jpg
@@ -129,7 +129,7 @@ if WANT_IMG2SIXEL
 	$(WINE) ./img2sixel -p 1 -h100 -n1 $(top_srcdir)/images/snake.jpg && printf '\033[*1z'
 	$(WINE) ./img2sixel -e -h140 -rlanczos4 -P $(top_srcdir)/images/snake.jpg
 	$(WINE) ./img2sixel -e -i -P $(top_srcdir)/images/snake.jpg > /dev/null
-	$(WINE) ./img2sixel -w2047 -h2047 $(top_srcdir)/images/snake.png | $(WINE) ./img2sixel > /dev/null
+	$(WINE) ./img2sixel -w204 -h204 $(top_srcdir)/images/snake.png | $(WINE) ./img2sixel > /dev/null
 
 	@echo '[test5] DCS arguments handling'
 	seq 0 10 | while read i; do \
