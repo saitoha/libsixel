@@ -13667,7 +13667,6 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Wunused-function"
 
 $as_echo "#define HAVE_DIAGNOSTIC_UNUSED_FUNCTION 1" >>confdefs.h
 
@@ -13698,9 +13697,38 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Wclobbered"
 
 $as_echo "#define HAVE_DIAGNOSTIC_CLOBBERED 1" >>confdefs.h
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+                      :
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+   CFLAGS="$saved_cflags"
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wunused-but-set-variable" >&5
+$as_echo_n "checking if $CC supports -Wunused-but-set-variable... " >&6; }
+   saved_cflags="$CFLAGS"
+   CFLAGS="-Wunused-but-set-variable -Werror"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+$as_echo "#define HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE 1" >>confdefs.h
 
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5

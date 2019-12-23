@@ -94,6 +94,7 @@ stbi_free(void *p)
 
 #define STBI_NO_STDIO 1
 #define STB_IMAGE_IMPLEMENTATION 1
+#define STBI_FAILURE_USERMSG 1
 #define STBI_NO_GIF
 #define STBI_NO_PNM
 
@@ -121,7 +122,14 @@ stbi_free(void *p)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wunused-function"
 #endif
+# if HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#endif
 #include "stb_image.h"
+#if HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE
+# pragma GCC diagnostic pop
+#endif
 #if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
 # pragma GCC diagnostic pop
 #endif

@@ -102,6 +102,9 @@
 /* define 1 if GCC supports -Wuninitialized */
 #undef HAVE_DIAGNOSTIC_UNINITIALIZED
 
+/* define 1 if GCC supports -Wunused-but-set-variable */
+#undef HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE
+
 /* define 1 if GCC supports -Wunused-function */
 #undef HAVE_DIAGNOSTIC_UNUSED_FUNCTION
 
