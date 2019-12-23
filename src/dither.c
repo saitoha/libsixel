@@ -832,7 +832,7 @@ test1(void)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
-    dither = sixel_dither_create(0);
+    dither = sixel_dither_create(2);
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic pop
 #endif

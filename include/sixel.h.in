@@ -372,6 +372,8 @@ typedef int SIXELSTATUS;
 #define SIXEL_WIDTH_LIMIT               1000000
 #define SIXEL_HEIGHT_LIMIT              1000000
 
+#define SIXEL_DEFALUT_GIF_DELAY         1
+
 #if SIXEL_USE_DEPRECATED_SYMBOLS
 /* output character size */
 enum characterSize {
