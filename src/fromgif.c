@@ -604,6 +604,7 @@ load_gif(
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_frame_t *frame;
     fn_pointer fnp;
+    char message[256];
 
     fnp.p = fn_load;
 
@@ -619,10 +620,12 @@ load_gif(
     if (status != SIXEL_OK) {
         goto end;
     }
-    g.out = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(g.w * g.h));
+    g.out = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)g.w * (size_t)g.h);
     if (g.out == NULL) {
-        sixel_helper_set_additional_message(
-            "load_gif: sixel_allocator_malloc() failed.");
+        sprintf(message,
+                "load_gif: sixel_allocator_malloc() failed. size=%zu.",
+                (size_t)g.max_x * (size_t)g.max_y);
+        sixel_helper_set_additional_message(message);
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
