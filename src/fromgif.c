@@ -181,7 +181,7 @@ gif_init_frame(
     int ncolors;
 
     frame->delay = pg->delay;
-    ncolors = 2 << (pg->flags & 7);
+    ncolors = 2 << (((pg->lflags & 0x80) ? pg->lflags : pg->flags) & 7);
     if (frame->palette == NULL) {
         frame->palette = (unsigned char *)sixel_allocator_malloc(frame->allocator, (size_t)(ncolors * 3));
     } else if (frame->ncolors < ncolors) {
