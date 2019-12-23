@@ -275,7 +275,7 @@ gif_out_code(
         return;
     }
 
-    g->out[g->cur_x + g->cur_y * g->line_size] = g->codes[code].suffix;
+    g->out[g->cur_x + g->cur_y * g->max_x] = g->codes[code].suffix;
     if (g->cur_x >= g->actual_width) {
         g->actual_width = g->cur_x + 1;
     }
@@ -433,7 +433,7 @@ gif_load_next(
             y = gif_get16le(s);  /* Image Top Position (2 bytes) */
             w = gif_get16le(s);  /* Image Width (2 bytes) */
             h = gif_get16le(s);  /* Image Height (2 bytes) */
-            if (((x + w) > (g->w)) || ((y + h) > (g->h))) {
+            if (x >= g->w || y >= g->h || x + w > g->w || y + h > g->h) {
                 sixel_helper_set_additional_message(
                     "corrupt GIF (reason: bad Image Separator).");
                 status = SIXEL_RUNTIME_ERROR;
