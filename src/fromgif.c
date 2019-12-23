@@ -504,6 +504,10 @@ gif_load_next(
                     g->delay = gif_get16le(s); /* delay */
                     g->transparent = gif_get8(s);
                 } else {
+                    if (s->img_buffer + len > s->img_buffer_end) {
+                        status = SIXEL_RUNTIME_ERROR;
+                        goto end;
+                    }
                     s->img_buffer += len;
                     break;
                 }
