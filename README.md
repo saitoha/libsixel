@@ -299,6 +299,9 @@ $ xterm -xrm "XTerm*decTerminalID: vt340" -xrm "XTerm*numColorRegisters: 256"
 - cancer
   [https://github.com/meh/cancer/](https://github.com/meh/cancer)
 
+- MacTerm
+  [https://github.com/kmgrant/macterm](https://github.com/kmgrant/macterm)
+
 - wezterm
   [https://github.com/wez/wezterm](https://github.com/wez/wezterm)
 
@@ -316,6 +319,9 @@ $ xterm -xrm "XTerm*decTerminalID: vt340" -xrm "XTerm*numColorRegisters: 256"
 
 - yaft-cocoa
   [https://github.com/uobikiemukot/yaft-cocoa](https://github.com/uobikiemukot/yaft-cocoa)
+
+- toyterm
+  [https://github.com/algon-320/toyterm](https://github.com/algon-320/toyterm)
 
 
 ## Install
@@ -1536,3 +1542,5 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 - [vifm/vifm](https://github.com/vifm/vifm)
 
 - [ktye/iv](https://github.com/ktye/iv/commit/815e06ed776dde3deca0fdba35da5f0b431a69bf)
+
+- [Delta/longdog](https://github.com/0Delta/longdog)

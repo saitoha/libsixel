@@ -307,7 +307,6 @@ gif_process_raster(
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char lzw_cs;
     signed int len, code;
-    unsigned int first;
     signed int codesize, codemask, avail, oldcode, bits, valid_bits, clear;
     gif_lzw *p;
 
@@ -321,7 +320,6 @@ gif_process_raster(
     }
 
     clear = 1 << lzw_cs;
-    first = 1;
     codesize = lzw_cs + 1;
     codemask = (1 << codesize) - 1;
     bits = 0;
@@ -358,7 +356,6 @@ gif_process_raster(
                 codemask = (1 << codesize) - 1;
                 avail = clear + 2;
                 oldcode = -1;
-                first = 0;
             } else if (code == clear + 1) { /* end of stream code */
                 s->img_buffer += len;
                 while ((len = gif_get8(s)) > 0) {
@@ -366,12 +363,6 @@ gif_process_raster(
                 }
                 return SIXEL_OK;
             } else if (code <= avail) {
-                if (first) {
-                    sixel_helper_set_additional_message(
-                        "corrupt GIF (reason: no clear code).");
-                    status = SIXEL_RUNTIME_ERROR;
-                    goto end;
-                }
                 if (oldcode >= 0) {
                     if (avail < (1 << gif_lzw_max_code_size)) {
                         p = &g->codes[avail++];
