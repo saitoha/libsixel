@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 #include "frame.h"
 #include "fromgif.h"
 
@@ -179,14 +180,16 @@ gif_init_frame(
     SIXELSTATUS status = SIXEL_OK;
     int i;
     int ncolors;
+    size_t palette_size, frame_size;
 
     frame->delay = pg->delay;
     ncolors = 2 << (pg->flags & 7);
+    palette_size = (size_t)ncolors * 3;
     if (frame->palette == NULL) {
-        frame->palette = (unsigned char *)sixel_allocator_malloc(frame->allocator, (size_t)(ncolors * 3));
+        frame->palette = (unsigned char *)sixel_allocator_malloc(frame->allocator, palette_size);
     } else if (frame->ncolors < ncolors) {
         sixel_allocator_free(frame->allocator, frame->palette);
-        frame->palette = (unsigned char *)sixel_allocator_malloc(frame->allocator, (size_t)(ncolors * 3));
+        frame->palette = (unsigned char *)sixel_allocator_malloc(frame->allocator, palette_size);
     }
     if (frame->palette == NULL) {
         sixel_helper_set_additional_message(
@@ -198,15 +201,15 @@ gif_init_frame(
     if (frame->ncolors <= reqcolors && fuse_palette) {
         frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
         sixel_allocator_free(frame->allocator, frame->pixels);
-        frame->pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator,
-                                                                (size_t)(frame->width * frame->height));
+        frame_size = (size_t)frame->width * (size_t)frame->height;
+        frame->pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, frame_size);
         if (frame->pixels == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_allocator_malloc() failed in gif_init_frame().");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        memcpy(frame->pixels, pg->out, (size_t)(frame->width * frame->height));
+        memcpy(frame->pixels, pg->out, frame_size);
 
         for (i = 0; i < frame->ncolors; ++i) {
             frame->palette[i * 3 + 0] = pg->color_table[i * 3 + 2];
@@ -236,8 +239,8 @@ gif_init_frame(
         }
     } else {
         frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        frame->pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator,
-                                                                (size_t)(pg->w * pg->h * 3));
+        frame_size = (size_t)pg->w * (size_t)pg->h * 3;
+        frame->pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, frame_size);
         if (frame->pixels == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_allocator_malloc() failed in gif_init_frame().");
