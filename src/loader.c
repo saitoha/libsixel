@@ -1331,21 +1331,27 @@ end:
 SIXELAPI SIXELSTATUS
 sixel_helper_load_image_file(
     char const                /* in */     *filename,     /* source file name */
-    int                       /* in */     fstatic,       /* whether to extract static image */
-    int                       /* in */     fuse_palette,  /* whether to use paletted image */
-    int                       /* in */     reqcolors,     /* requested number of colors */
-    unsigned char             /* in */     *bgcolor,      /* background color */
+    int                       /* in */     fstatic,       /* whether to extract static image from animated gif */
+    int                       /* in */     fuse_palette,  /* whether to use paletted image, set non-zero value to try to get paletted image */
+    int                       /* in */     reqcolors,     /* requested number of colors, should be equal or less than SIXEL_PALETTE_MAX */
+    unsigned char             /* in */     *bgcolor,      /* background color, may be NULL */
     int                       /* in */     loop_control,  /* one of enum loopControl */
     sixel_load_image_function /* in */     fn_load,       /* callback */
     int                       /* in */     finsecure,     /* true if do not verify SSL */
-    int const                 /* in */     *cancel_flag,  /* cancel flag */
-    void                      /* in/out */ *context,      /* private data */
-    sixel_allocator_t         /* in */     *allocator     /* allocator object */
+    int const                 /* in */     *cancel_flag,  /* cancel flag, may be NULL */
+    void                      /* in/out */ *context,      /* private data which is passed to callback function as an argument, may be NULL */
+    sixel_allocator_t         /* in */     *allocator     /* allocator object, may be NULL */
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_chunk_t *pchunk = NULL;
 
+    /* normalize reqested colors */
+    if (reqcolors > SIXEL_PALETTE_MAX) {
+        reqcolors = SIXEL_PALETTE_MAX;
+    }
+
+    /* create new chunk object from file */
     status = sixel_chunk_new(&pchunk, filename, finsecure, cancel_flag, allocator);
     if (status != SIXEL_OK) {
         goto end;
