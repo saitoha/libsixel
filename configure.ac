@@ -274,6 +274,7 @@ AC_CHECK_FUNCS([memcpy \
                 clearerr \
                 stat \
                 setjmp \
+                longjmp \
                 strerror \
                 isatty \
                 strncmp \
