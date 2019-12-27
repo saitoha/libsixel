@@ -1,4 +1,58 @@
+2019-12-27  Hayaki Saito <saitoha@me.com>
+
+  * Makefile.in, config.h.in, configure, configure.ac, src/loader.c: Avoid
+  illegal longjump() call (#124)
+
+  * Makefile.in, configure, configure.ac: Strip unnecessary CFLAGS options
+
+2019-12-25  Hayaki Saito <saitoha@me.com>
+
+  * src/fromgif.c: GIF loader: avoid segfault caused by an integer overflow
+  problem(#125, reported by @cuanduo).
+
+  * src/loader.c: Image loader: normalize requested colors to prevent integer
+  overflow
+
+2019-12-23  Hayaki Saito <saitoha@me.com>
+
+  * src/fromgif.c: Minor fixes in load_gif().
+
+  * src/fromgif.c: GIF loader: check bad image separator, ensure left/top
+  offset of image don't reach image margins (#122)
+
+  * include/sixel.h.in, src/fromgif.c: GIF loader: set default gif delay
+
+  * src/fromgif.c: GIF loader: skip unknown extension block
+
+  * src/fromgif.c: Avoid a buffer overflow problem on reading graphic control
+  extension block
+
+  * Makefile.in, converters/Makefile.am, converters/Makefile.in,
+  src/fromgif.c: GIF loader: consider frame-local color table for deciding the
+  number of output colors
+
+  * src/fromgif.c: Strip first flag check in LZW compression function for
+  issue #118
+
+2019-12-21  Hayaki Saito <saitoha@me.com>
+
+  * src/stb_image.h: Fix memory leak in STBI PSD loader
+
+2019-12-20  Hayaki Saito <saitoha@me.com>
+
+  * src/fromsixel.c: Fix memory leak problem in fromsixel.c (#120)
+
+2019-12-21  Hayaki Saito <saitoha@me.com>
+
+  * Makefile.am: Fix coveralls optoins
+
+  * src/dither.c: Fix broken unittest
+
 2019-12-19  Hayaki Saito <saitoha@me.com>
+
+  * NEWS: Update NEWS
+
+  * ChangeLog: Update ChangeLog
 
   * src/fromsixel.c: sixel decoder: extend image width and height separately
 
