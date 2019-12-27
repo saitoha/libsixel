@@ -268,13 +268,18 @@ read_palette(png_structp png_ptr,
     }
 }
 
+jmp_buf jmpbuf;
 
 /* libpng error handler */
 static void
 png_error_callback(png_structp png_ptr, png_const_charp error_message)
 {
+    (void) png_ptr;
+
     sixel_helper_set_additional_message(error_message);
-    longjmp(png_jmpbuf(png_ptr), (-1));
+#if HAVE_SETJMP && HAVE_LONGJMP
+    longjmp(jmpbuf, 1);
+#endif  /* HAVE_SETJMP && HAVE_LONGJMP */
 }
 
 
@@ -309,14 +314,14 @@ load_png(unsigned char      /* out */ **result,
     int i;
     int depth;
 
-#if USE_SETJMP && HAVE_SETJMP
-    if (setjmp(png_jmpbuf(png_ptr)) != 0) {
+#if HAVE_SETJMP && HAVE_LONGJMP
+    if (setjmp(jmpbuf) != 0) {
         sixel_allocator_free(allocator, *result);
         *result = NULL;
         status = SIXEL_PNG_ERROR;
         goto cleanup;
     }
-#endif  /* HAVE_SETJMP */
+#endif  /* HAVE_SETJMP && HAVE_LONGJMP */
 
     status = SIXEL_FALSE;
     rows = NULL;
@@ -330,6 +335,16 @@ load_png(unsigned char      /* out */ **result,
         status = SIXEL_PNG_ERROR;
         goto cleanup;
     }
+
+#if HAVE_SETJMP
+    if (setjmp(png_jmpbuf(png_ptr)) != 0) {
+        sixel_allocator_free(allocator, *result);
+        *result = NULL;
+        status = SIXEL_PNG_ERROR;
+        goto cleanup;
+    }
+#endif  /* HAVE_SETJMP */
+
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
         sixel_helper_set_additional_message(
