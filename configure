@@ -13436,7 +13436,6 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Wsign-conversion"
 
 $as_echo "#define HAVE_DIAGNOSTIC_SIGN_CONVERSION 1" >>confdefs.h
 
@@ -13467,7 +13466,6 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Wuninitialized"
 
 $as_echo "#define HAVE_DIAGNOSTIC_UNINITIALIZED 1" >>confdefs.h
 
@@ -13498,7 +13496,6 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Wstrict-overflow=1"
 
 $as_echo "#define HAVE_DIAGNOSTIC_STRICT_OVERFLOW 1" >>confdefs.h
 
@@ -13529,7 +13526,6 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Wshadow"
 
 $as_echo "#define HAVE_DIAGNOSTIC_SHADOW 1" >>confdefs.h
 
@@ -13560,7 +13556,6 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Wdouble-promotion"
 
 $as_echo "#define HAVE_DIAGNOSTIC_DOUBLE_PROMOTION 1" >>confdefs.h
 
@@ -13591,7 +13586,6 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Wswitch-default"
 
 $as_echo "#define HAVE_DIAGNOSTIC_SWITCH_DEFAULT 1" >>confdefs.h
 
@@ -13622,7 +13616,6 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Wunused-function"
 
 $as_echo "#define HAVE_DIAGNOSTIC_UNUSED_FUNCTION 1" >>confdefs.h
 
@@ -13653,7 +13646,6 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Wclobbered"
 
 $as_echo "#define HAVE_DIAGNOSTIC_CLOBBERED 1" >>confdefs.h
 

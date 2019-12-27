@@ -188,29 +188,21 @@ LS_CHECK_CFLAG([-Wall],[AM_CFLAGS="$AM_CFLAGS -Wall"], [])
 LS_CHECK_CFLAG([-Wextra],[AM_CFLAGS="$AM_CFLAGS -Wextra"], [])
 LS_CHECK_CFLAG([-Wformat=2],[AM_CFLAGS="$AM_CFLAGS -Wformat=2"], [])
 LS_CHECK_CFLAG([-Wsign-conversion],
-               [AM_CFLAGS="$AM_CFLAGS -Wsign-conversion"
-                AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION, 1, [define 1 if GCC supports -Wsign-conversion])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION, 1, [define 1 if GCC supports -Wsign-conversion])])
 LS_CHECK_CFLAG([-Wuninitialized],
-               [AM_CFLAGS="$AM_CFLAGS -Wuninitialized"
-                AC_DEFINE(HAVE_DIAGNOSTIC_UNINITIALIZED, 1, [define 1 if GCC supports -Wuninitialized])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_UNINITIALIZED, 1, [define 1 if GCC supports -Wuninitialized])])
 LS_CHECK_CFLAG([-Wstrict-overflow],
-               [AM_CFLAGS="$AM_CFLAGS -Wstrict-overflow=1"
-                AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW, 1, [define 1 if GCC supports -Wstrict-overeflow=1])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW, 1, [define 1 if GCC supports -Wstrict-overeflow=1])])
 LS_CHECK_CFLAG([-Wshadow],
-               [AM_CFLAGS="$AM_CFLAGS -Wshadow"
-                AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW, 1, [define 1 if GCC supports -Wshadow])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW, 1, [define 1 if GCC supports -Wshadow])])
 LS_CHECK_CFLAG([-Wdouble-promotion],
-               [AM_CFLAGS="$AM_CFLAGS -Wdouble-promotion"
-                AC_DEFINE(HAVE_DIAGNOSTIC_DOUBLE_PROMOTION, 1, [define 1 if GCC supports -Wdouble-promotion])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_DOUBLE_PROMOTION, 1, [define 1 if GCC supports -Wdouble-promotion])])
 LS_CHECK_CFLAG([-Wswitch-default],
-               [AM_CFLAGS="$AM_CFLAGS -Wswitch-default"
-                AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT, 1, [define 1 if GCC supports -Wswitch-default])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT, 1, [define 1 if GCC supports -Wswitch-default])])
 LS_CHECK_CFLAG([-Wunused-function],
-               [AM_CFLAGS="$AM_CFLAGS -Wunused-function"
-                AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_FUNCTION, 1, [define 1 if GCC supports -Wunused-function])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_FUNCTION, 1, [define 1 if GCC supports -Wunused-function])])
 LS_CHECK_CFLAG([-Wclobbered],
-               [AM_CFLAGS="$AM_CFLAGS -Wclobbered"
-                AC_DEFINE(HAVE_DIAGNOSTIC_CLOBBERED, 1, [define 1 if GCC supports -Wclobbered])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_CLOBBERED, 1, [define 1 if GCC supports -Wclobbered])])
 LS_CHECK_CFLAG([-Bsymbolic],
                [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
                 AC_DEFINE(HAVE_BSYMBOLIC, 1, [define 1 if GCC supports -Bsymbolic])])
