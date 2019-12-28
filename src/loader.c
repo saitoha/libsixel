@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2018 Hayaki Saito
+ * Copyright (c) 2014-2019 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -268,13 +268,18 @@ read_palette(png_structp png_ptr,
     }
 }
 
+jmp_buf jmpbuf;
 
 /* libpng error handler */
 static void
 png_error_callback(png_structp png_ptr, png_const_charp error_message)
 {
+    (void) png_ptr;
+
     sixel_helper_set_additional_message(error_message);
-    longjmp(png_jmpbuf(png_ptr), (-1));
+#if HAVE_SETJMP && HAVE_LONGJMP
+    longjmp(jmpbuf, 1);
+#endif  /* HAVE_SETJMP && HAVE_LONGJMP */
 }
 
 
@@ -309,14 +314,14 @@ load_png(unsigned char      /* out */ **result,
     int i;
     int depth;
 
-#if USE_SETJMP && HAVE_SETJMP
-    if (setjmp(png_jmpbuf(png_ptr)) != 0) {
+#if HAVE_SETJMP && HAVE_LONGJMP
+    if (setjmp(jmpbuf) != 0) {
         sixel_allocator_free(allocator, *result);
         *result = NULL;
         status = SIXEL_PNG_ERROR;
         goto cleanup;
     }
-#endif  /* HAVE_SETJMP */
+#endif  /* HAVE_SETJMP && HAVE_LONGJMP */
 
     status = SIXEL_FALSE;
     rows = NULL;
@@ -330,6 +335,16 @@ load_png(unsigned char      /* out */ **result,
         status = SIXEL_PNG_ERROR;
         goto cleanup;
     }
+
+#if HAVE_SETJMP
+    if (setjmp(png_jmpbuf(png_ptr)) != 0) {
+        sixel_allocator_free(allocator, *result);
+        *result = NULL;
+        status = SIXEL_PNG_ERROR;
+        goto cleanup;
+    }
+#endif  /* HAVE_SETJMP */
+
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
         sixel_helper_set_additional_message(
@@ -1331,21 +1346,27 @@ end:
 SIXELAPI SIXELSTATUS
 sixel_helper_load_image_file(
     char const                /* in */     *filename,     /* source file name */
-    int                       /* in */     fstatic,       /* whether to extract static image */
-    int                       /* in */     fuse_palette,  /* whether to use paletted image */
-    int                       /* in */     reqcolors,     /* requested number of colors */
-    unsigned char             /* in */     *bgcolor,      /* background color */
+    int                       /* in */     fstatic,       /* whether to extract static image from animated gif */
+    int                       /* in */     fuse_palette,  /* whether to use paletted image, set non-zero value to try to get paletted image */
+    int                       /* in */     reqcolors,     /* requested number of colors, should be equal or less than SIXEL_PALETTE_MAX */
+    unsigned char             /* in */     *bgcolor,      /* background color, may be NULL */
     int                       /* in */     loop_control,  /* one of enum loopControl */
     sixel_load_image_function /* in */     fn_load,       /* callback */
     int                       /* in */     finsecure,     /* true if do not verify SSL */
-    int const                 /* in */     *cancel_flag,  /* cancel flag */
-    void                      /* in/out */ *context,      /* private data */
-    sixel_allocator_t         /* in */     *allocator     /* allocator object */
+    int const                 /* in */     *cancel_flag,  /* cancel flag, may be NULL */
+    void                      /* in/out */ *context,      /* private data which is passed to callback function as an argument, may be NULL */
+    sixel_allocator_t         /* in */     *allocator     /* allocator object, may be NULL */
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_chunk_t *pchunk = NULL;
 
+    /* normalize reqested colors */
+    if (reqcolors > SIXEL_PALETTE_MAX) {
+        reqcolors = SIXEL_PALETTE_MAX;
+    }
+
+    /* create new chunk object from file */
     status = sixel_chunk_new(&pchunk, filename, finsecure, cancel_flag, allocator);
     if (status != SIXEL_OK) {
         goto end;
