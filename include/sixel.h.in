@@ -33,10 +33,13 @@
 #define LIBSIXEL_VERSION "@PACKAGE_VERSION@"
 #define LIBSIXEL_ABI_VERSION "@LS_LTVERSION@"
 
+typedef unsigned char sixel_index_t;
+
 #define SIXEL_OUTPUT_PACKET_SIZE     16384
 #define SIXEL_PALETTE_MIN            2
 #define SIXEL_PALETTE_MAX            256
 #define SIXEL_USE_DEPRECATED_SYMBOLS 1
+#define SIXEL_ALLOCATE_BYTES_MAX     10248UL * 1024UL * 128UL   /* up to 128M */
 
 /* return value */
 typedef int SIXELSTATUS;
@@ -694,14 +697,14 @@ sixel_dither_unref(sixel_dither_t *dither); /* dither context object */
 /* initialize internal palette from specified pixel buffer */
 SIXELAPI SIXELSTATUS
 sixel_dither_initialize(
-    sixel_dither_t *dither,          /* dither context object */
-    unsigned char /* in */ *data,    /* sample image */
-    int /* in */ width,              /* image width */
-    int /* in */ height,             /* image height */
-    int /* in */ pixelformat,        /* one of enum pixelFormat */
-    int /* in */ method_for_largest, /* method for finding the largest dimension */
-    int /* in */ method_for_rep,     /* method for choosing a color from the box */
-    int /* in */ quality_mode);      /* quality of histogram processing */
+    sixel_dither_t *dither,                    /* dither context object */
+    unsigned char /* in */ *data,              /* sample image */
+    int           /* in */ width,              /* image width */
+    int           /* in */ height,             /* image height */
+    int           /* in */ pixelformat,        /* one of enum pixelFormat */
+    int           /* in */ method_for_largest, /* method for finding the largest dimension */
+    int           /* in */ method_for_rep,     /* method for choosing a color from the box */
+    int           /* in */ quality_mode);      /* quality of histogram processing */
 
 /* set diffusion type, choose from enum methodForDiffuse */
 SIXELAPI void

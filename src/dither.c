@@ -262,6 +262,7 @@ sixel_dither_new(
     size_t wholesize;
     int quality_mode;
 
+    /* ensure given pointer is not null */
     if (ppdither == NULL) {
         sixel_helper_set_additional_message(
             "sixel_dither_new: ppdither is null.");
@@ -285,7 +286,7 @@ sixel_dither_new(
     } else {
         if (ncolors > SIXEL_PALETTE_MAX) {
             status = SIXEL_BAD_INPUT;
-            ncolors = SIXEL_PALETTE_MAX;
+            goto end;
         } else if (ncolors < 1) {
             status = SIXEL_BAD_INPUT;
             sixel_helper_set_additional_message(
@@ -523,6 +524,7 @@ sixel_dither_initialize(
     unsigned char *input_pixels;
     SIXELSTATUS status = SIXEL_FALSE;
 
+    /* ensure dither object is not null */
     if (dither == NULL) {
         sixel_helper_set_additional_message(
             "sixel_dither_new: dither is null.");
@@ -530,6 +532,7 @@ sixel_dither_initialize(
         goto end;
     }
 
+    /* increment ref count */
     sixel_dither_ref(dither);
 
     sixel_dither_set_pixelformat(dither, pixelformat);
@@ -593,7 +596,10 @@ sixel_dither_initialize(
 
 end:
     free(normalized_pixels);
+
+    /* decrement ref count */
     sixel_dither_unref(dither);
+
     return status;
 }
 
@@ -714,7 +720,7 @@ sixel_dither_set_transparent(
 
 
 /* set transparent */
-SIXELAPI unsigned char *
+SIXELAPI sixel_index_t *
 sixel_dither_apply_palette(
     sixel_dither_t  /* in */ *dither,
     unsigned char   /* in */ *pixels,
@@ -723,11 +729,12 @@ sixel_dither_apply_palette(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     size_t bufsize;
-    unsigned char *dest = NULL;
+    sixel_index_t *dest = NULL;
     int ncolors;
     unsigned char *normalized_pixels = NULL;
     unsigned char *input_pixels;
 
+    /* ensure dither object is not null */
     if (dither == NULL) {
         sixel_helper_set_additional_message(
             "sixel_dither_apply_palette: dither is null.");
@@ -737,8 +744,8 @@ sixel_dither_apply_palette(
 
     sixel_dither_ref(dither);
 
-    bufsize = (size_t)(width * height) * sizeof(unsigned char);
-    dest = (unsigned char *)sixel_allocator_malloc(dither->allocator, bufsize);
+    bufsize = (size_t)(width * height) * sizeof(sixel_index_t);
+    dest = (sixel_index_t *)sixel_allocator_malloc(dither->allocator, bufsize);
     if (dest == NULL) {
         sixel_helper_set_additional_message(
             "sixel_dither_new: sixel_allocator_malloc() failed.");
