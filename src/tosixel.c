@@ -795,7 +795,7 @@ sixel_encode_dither(
     case SIXEL_PIXELFORMAT_G1:
     case SIXEL_PIXELFORMAT_G2:
     case SIXEL_PIXELFORMAT_G4:
-        bufsize = (sizeof(sixel_index_t) * (size_t)(width * height * 3));
+        bufsize = (sizeof(sixel_index_t) * (size_t)width * (size_t)height * 3UL);
         paletted_pixels = (sixel_index_t *)sixel_allocator_malloc(dither->allocator, bufsize);
         if (paletted_pixels == NULL) {
             sixel_helper_set_additional_message(
@@ -1516,11 +1516,27 @@ sixel_encode(
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
+    (void) depth;
+
     /* TODO: reference counting should be thread-safe */
     sixel_dither_ref(dither);
     sixel_output_ref(output);
 
-    (void) depth;
+    if (width < 1) {
+        sixel_helper_set_additional_message(
+            "sixel_encode: bad width parameter."
+            " (width < 1)");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    if (height < 1) {
+        sixel_helper_set_additional_message(
+            "sixel_encode: bad height parameter."
+            " (height < 1)");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
 
     if (dither->quality_mode == SIXEL_QUALITY_HIGHCOLOR) {
         status = sixel_encode_highcolor(pixels, width, height,
@@ -1530,6 +1546,7 @@ sixel_encode(
                                      dither, output);
     }
 
+end:
     sixel_output_unref(output);
     sixel_dither_unref(dither);
 
