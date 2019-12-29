@@ -317,6 +317,46 @@ sixel_helper_write_image_file(
         sixel_allocator_ref(allocator);
     }
 
+    if (width > SIXEL_WIDTH_LIMIT) {
+        sixel_helper_set_additional_message(
+            "sixel_encode: bad width parameter."
+            " (width > SIXEL_WIDTH_LIMIT)");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    if (width > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "sixel_encode: bad width parameter."
+            " (width > SIXEL_HEIGHT_LIMIT)");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    if (height < 1) {
+        sixel_helper_set_additional_message(
+            "sixel_encode: bad height parameter."
+            " (height < 1)");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    if (width < 1) {
+        sixel_helper_set_additional_message(
+            "sixel_encode: bad width parameter."
+            " (width < 1)");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    if (height < 1) {
+        sixel_helper_set_additional_message(
+            "sixel_encode: bad height parameter."
+            " (height < 1)");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
     switch (imageformat) {
     case SIXEL_FORMAT_PNG:
         status = write_png_to_file(data, width, height, palette,
