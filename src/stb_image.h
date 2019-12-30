@@ -5045,13 +5045,13 @@ static int stbi__shiftsigned(int v, int shift, int bits)
    static unsigned int shift_table[9] = {
       0, 0,0,1,0,2,4,6,0,
    };
+   if (bits < 0 || bits > 8) return (0);  /* error */
    if (shift < 0)
       v <<= -shift;
    else
       v >>= shift;
-   STBI_ASSERT(v >= 0 && v < 256);
+   if (v < 0 || v >= 256) return (0);
    v >>= (8-bits);
-   if (bits < 0 || bits > 8) return (0);  /* error */
    return (int) ((unsigned) v * mul_table[bits]) >> shift_table[bits];
 }
 
