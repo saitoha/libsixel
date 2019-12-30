@@ -40,6 +40,8 @@ typedef unsigned char sixel_index_t;
 #define SIXEL_PALETTE_MAX            256
 #define SIXEL_USE_DEPRECATED_SYMBOLS 1
 #define SIXEL_ALLOCATE_BYTES_MAX     10248UL * 1024UL * 128UL   /* up to 128M */
+#define SIXEL_WIDTH_LIMIT            1000000
+#define SIXEL_HEIGHT_LIMIT           1000000
 
 /* return value */
 typedef int SIXELSTATUS;
@@ -369,9 +371,6 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_VERBOSE           ('v')  /* -v, --verbose: show debugging info */
 #define SIXEL_OPTFLAG_VERSION           ('V')  /* -V, --version: show version and license info */
 #define SIXEL_OPTFLAG_HELP              ('H')  /* -H, --help: show this help */
-
-#define SIXEL_WIDTH_LIMIT               1000000
-#define SIXEL_HEIGHT_LIMIT              1000000
 
 #define SIXEL_DEFALUT_GIF_DELAY         1
 
