@@ -23,7 +23,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#if HAVE_MEMORY_H
 #include <memory.h>
+#endif  /* HAVE_MEMORY_H */
 
 #include <sixel.h>
 

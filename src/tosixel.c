@@ -18,14 +18,21 @@
  *
  */
 #include "config.h"
+#if HAVE_STDIO_H
 #include <stdio.h>
+#endif  /* HAVE_STDIO_H */
+#if HAVE_STDLIB_H
 #include <stdlib.h>
+#endif  /* HAVE_STDLIB_H */
+#if HAVE_STRING_H
 #include <string.h>
+#endif  /* HAVE_STRING_H */
+#if HAVE_LIMITS_H
 #include <limits.h>
-
-#if defined(HAVE_INTTYPES_H)
+#endif  /* HAVE_LIMITS_H */
+#if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif
+#endif  /* HAVE_INTTYPES_H */
 
 #include <sixel.h>
 #include "output.h"

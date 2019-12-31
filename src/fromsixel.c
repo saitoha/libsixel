@@ -18,11 +18,14 @@
 #include <stdio.h>
 #include <ctype.h>   /* isdigit */
 #include <string.h>  /* memcpy */
-#include <limits.h>
 
-#if defined(HAVE_INTTYPES_H)
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif  /* HAVE_LIMITS_H */
+
+#if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif
+#endif  /* HAVE_INTTYPES_H */
 
 #include <sixel.h>
 #include "output.h"

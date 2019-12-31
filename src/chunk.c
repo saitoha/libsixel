@@ -23,39 +23,33 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-
+#if HAVE_STRING_H
+# include <string.h>
+#endif  /* HAVE_STRING_H */
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
-#endif
-
+#endif  /* HAVE_SYS_TYPES_H */
 #if HAVE_SYS_STAT_H
 # include <sys/stat.h>
-#endif
-
+#endif  /* HAVE_SYS_STAT_H */
 #if HAVE_UNISTD_H
 # include <unistd.h>
-#endif
-
+#endif  /* HAVE_UNISTD_H */
 #if HAVE_FCNTL_H
 # include <fcntl.h>
-#endif
-
+#endif  /* HAVE_FCNTL_H */
 #if HAVE_IO_H
 # include <io.h>
-#endif
-
+#endif  /* HAVE_IO_H */
 #ifdef HAVE_ERRNO_H
 # include <errno.h>
-#endif
-
+#endif  /* HAVE_ERRNO_H */
 #ifdef HAVE_LIBCURL
 # include <curl/curl.h>
-#endif
-
+#endif  /* HAVE_LIBCURL */
 #if HAVE_SYS_SELECT_H
 # include <sys/select.h>
-#endif
+#endif  /* HAVE_SYS_SELECT_H */
 
 #if !defined(HAVE_MEMCPY)
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
