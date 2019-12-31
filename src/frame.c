@@ -21,18 +21,20 @@
 
 #include "config.h"
 
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-
+#if STDC_HEADERS
+# include <string.h>
+# include <stdlib.h>
+# include <stdio.h>
+#endif  /* STDC_HEADERS */
+#if HAVE_MATH_H
+# include <math.h>
+#endif  /* HAVE_MATH_H */
 #if HAVE_LIMITS_H
 # include <limits.h>
-#endif
-
+#endif  /* HAVE_LIMITS_H */
 #if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif
+#endif  /* HAVE_INTTYPES_H */
 
 #include "frame.h"
 

@@ -21,8 +21,10 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+#if STDC_HEADERS
+# include <stdio.h>
+# include <stdlib.h>
+#endif  /* STDC_HEADERS */
 #if HAVE_STRING_H
 # include <string.h>
 #endif  /* HAVE_STRING_H */

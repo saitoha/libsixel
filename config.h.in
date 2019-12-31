@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if you have the <assert.h> header file. */
+#undef HAVE_ASSERT_H
+
 /* define 1 if GCC supports -Bsymbolic */
 #undef HAVE_BSYMBOLIC
 
@@ -11,6 +14,9 @@
 
 /* Define to 1 if you have the `clock' function. */
 #undef HAVE_CLOCK
+
+/* Define to 1 if you have the <ctype.h> header file. */
+#undef HAVE_CTYPE_H
 
 /* enable debugging support */
 #undef HAVE_DEBUG
@@ -174,6 +180,9 @@
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
 #undef HAVE_MALLOC
+
+/* Define to 1 if you have the <math.h> header file. */
+#undef HAVE_MATH_H
 
 /* Define to 1 if you have the `memcpy' function. */
 #undef HAVE_MEMCPY

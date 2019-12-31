@@ -21,11 +21,9 @@
 
 #include "config.h"
 
-#if HAVE_STDIO_H
-#include <stdio.h>
-#endif  /* HAVE_STDIO_H */
-#if HAVE_STDLIB_H
-#include <stdlib.h>
+#if STDC_HEADERS
+# include <stdio.h>
+# include <stdlib.h>
 #endif  /* HAVE_STDLIB_H */
 #if HAVE_STRING_H
 # include <string.h>

@@ -20,9 +20,15 @@
  */
 
 #include "config.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+
+#if STDC_HEADERS
+# include <stdio.h>
+# include <stdlib.h>
+#endif  /* STDC_HEADERS */
+#if HAVE_ASSERT_H
+# include <assert.h>
+#endif  /* HAVE_ASSERT_H */
+
 #include <sixel.h>
 #include "output.h"
 

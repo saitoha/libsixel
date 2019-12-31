@@ -20,10 +20,19 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include "config.h"
+
+#if STDC_HEADERS
+# include <stdio.h>
+# include <stdlib.h>
+#endif  /* STDC_HEADERS */
+#if HAVE_STRING_H
+# include <string.h>
+#endif  /* HAVE_STRING_H */
+#if HAVE_CTYPE_H
+# include <ctype.h>
+#endif  /* HAVE_CTYPE_H */
+
 #include <sixel.h>
 
 #define PNM_MAX_WIDTH  (1 << 16)

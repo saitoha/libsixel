@@ -227,11 +227,15 @@ AC_SUBST(MD5SUM)
 # Check math library
 AC_CHECK_LIB([m], [floor])
 
- Checks for libraries.
+# Checks for libraries.
+
+AC_HEADER_STDC
 
 # Checks for header files.
-AC_CHECK_HEADERS([memory.h \
-                  stdlib.h \
+AC_CHECK_HEADERS([assert.h \
+                  math.h \
+                  ctype.h \
+                  memory.h \
                   string.h \
                   unistd.h \
                   stdint.h \

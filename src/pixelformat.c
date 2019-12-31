@@ -21,10 +21,12 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+#if STDC_HEADERS
+# include <stdio.h>
+# include <stdlib.h>
+#endif  /* STDC_HEADERS */
 #if HAVE_MEMORY_H
-#include <memory.h>
+# include <memory.h>
 #endif  /* HAVE_MEMORY_H */
 
 #include <sixel.h>

@@ -21,14 +21,13 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+#if STDC_HEADERS
+# include <stdio.h>
+# include <stdlib.h>
+#endif  /* STDC_HEADERS */
 #if HAVE_MEMORY_H
 # include <memory.h>
 #endif  /* HAVE_MEMORY_H */
-
-#include <sixel.h>
-
 #ifdef HAVE_STRING_H
 # include <string.h>
 #endif  /* HAVE_STRING_H */
@@ -39,6 +38,7 @@
 # include <curl/curl.h>
 #endif  /* HAVE_LIBCURL */
 
+#include <sixel.h>
 #include "status.h"
 
 #define SIXEL_MESSAGE_OK                    ("succeeded")

@@ -19,18 +19,20 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <assert.h>
 #include "config.h"
 
+#if STDC_HEADERS
+# include <stdlib.h>
+#endif  /* STDC_HEADERS */
+#if HAVE_ASSERT_H
+# include <assert.h>
+#endif  /* HAVE_ASSERT_H */
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif  /* HAVE_SYS_TYPES_H */
-
 #if HAVE_ERRNO_H
 # include <errno.h>
 #endif  /* HAVE_ERRNO_H */
-
 #if HAVE_MEMORY_H
 # include <memory.h>
 #endif  /* HAVE_MEMORY_H */
