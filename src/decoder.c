@@ -315,6 +315,11 @@ sixel_decoder_decode(
         goto end;
     }
 
+    if (sx > SIXEL_WIDTH_LIMIT || sy > SIXEL_HEIGHT_LIMIT) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
     status = sixel_helper_write_image_file(indexed_pixels, sx, sy, palette,
                                            SIXEL_PIXELFORMAT_PAL8,
                                            decoder->output,

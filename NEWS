@@ -2,6 +2,73 @@
                   ------------------------------
                    What's new in libsixel-1.8 ?
                   ------------------------------
+* Security fix for CVE-2019-11024 (#85), recursive loop problem,
+  reported by @Loginsoft-Research.
+
+* Security fix for #73, illegal memory access problem,
+  reported by @HongxuChen.
+
+* Security fix for #89, core dumped issue,
+  reported by @niugx.
+
+* Security fix for #107, large memory allocation problem,
+  reported by @cuanduo.
+
+* Security fix for #114, heap-buffer-overflow problem,
+  reported by @SuhwanSong.
+
+* Security fix for #116, heap-buffer-overflow problem,
+  reported by @SuhwanSong.
+
+* Security fix for #118, heap-buffer-overflow problem,
+  reported by @SuhwanSong.
+
+* Security fix for #121, heap-buffer-overflow problem,
+  reported by @gutiniao
+
+* Security fix for #73, illegal memory access problem,
+  reported by @HongxuChen.
+
+* Security fix for CVE-2018-19757 (#79), NULL pointer dereference problem,
+  reported by @nluedtke and fixed by @knok (#91, #94).
+
+* Security fix for CVE-2018-19762 (#81), heap-based buffer overflow problem,
+  reported by @nluedtke and fixed by @knok (#92).
+
+* Security fix for CVE-2018-19756 (#80), heap-based buffer over-read problem,
+  reported by @nluedtke and fixed by @knok (#93).
+
+* Security fix for CVE-2018-19763 (#82), heap-based buffer over-read problem,
+  reported by @nluedtke and fixed by @knok (#95).
+
+* Security fix for CVE-2018-19761, illegal address access, fixed by @knok (#96).
+
+* Security fix for CVE-2018-19759, heap-based buffer over-read problem, fixed by @knok (#98).
+
+* Security fix for CVE-2018-3753 (#83), infinite loop problem,
+  reported by @cool-tomato and fixed by @knok (#99).
+
+* Security fix for CVE-2018-19759 (#102),
+  heap-based buffer over-read that will cause a denial of service.
+  reported and fixed by @YourButterfly. (#106)
+
+* Security fix for CVE-2019-19635 (#103), heap-based buffer overflow,
+  reported and fixed by @YourButterfly. (#106)
+
+* Security fix for CVE-2019-19636 (#104) and CVE-2019-19637 (#105), integer overflow problem.
+  reported and fixed by @YourButterfly. (#106)
+
+* gif loader: check LZW code size (Issue #75), Thanks to @HongxuChen.
+              https://github.com/saitoha/libsixel/commit/7808a06b88c11dbc502318cdd51fa374f8cd47ee
+
+* core: Fix a global-buffer-overflow problem (Issue #72), Thanks to @fgeek.
+        https://github.com/saitoha/libsixel/commit/c868b59ec89bdb24c42a0de89e5319a989076c66
+
+* core: Fix unexpected hangs/performance issues (Issue #76), Thanks to @HongxuChen.
+        https://github.com/saitoha/libsixel/commit/88561b7a810017b91d26b6273323dde4b6f9b273
+        https://github.com/saitoha/libsixel/commit/2d3d9ffe8ab886b7bc670fd896d63c628436cc66
+        https://github.com/saitoha/libsixel/commit/c9363cd1d5929e1d721af9f09633061dfa8152fe
+
 * core: Upgrade stb_image to 2.19.
 
 * core: Introduce new dithering method, a_dither / x_dither (http://pippin.gimp.org/a_dither/).

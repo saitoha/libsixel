@@ -195,6 +195,12 @@ load_jpeg(unsigned char **result,
 
     while (cinfo.output_scanline < cinfo.output_height) {
         jpeg_read_scanlines(&cinfo, buffer, 1);
+        if (cinfo.err->num_warnings > 0) {
+            sixel_helper_set_additional_message(
+                "jpeg_read_scanlines: error/warining occuered.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
         memcpy(*result + (cinfo.output_scanline - 1) * row_stride, buffer[0], row_stride);
     }
 
@@ -263,6 +269,15 @@ read_palette(png_structp png_ptr,
 }
 
 
+/* libpng error handler */
+static void
+png_error_callback(png_structp png_ptr, png_const_charp error_message)
+{
+    sixel_helper_set_additional_message(error_message);
+    longjmp(png_jmpbuf(png_ptr), (-1));
+}
+
+
 static SIXELSTATUS
 load_png(unsigned char      /* out */ **result,
          unsigned char      /* in */  *buffer,
@@ -277,20 +292,38 @@ load_png(unsigned char      /* out */ **result,
          int                /* out */ *transparent,
          sixel_allocator_t  /* in */  *allocator)
 {
-    SIXELSTATUS status = SIXEL_FALSE;
+    SIXELSTATUS status;
     sixel_chunk_t read_chunk;
     png_uint_32 bitdepth;
     png_uint_32 png_status;
     png_structp png_ptr;
     png_infop info_ptr;
-    unsigned char **rows = NULL;
+#ifdef HAVE_DIAGNOSTIC_CLOBBERED
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wclobbered"
+#endif
+    unsigned char **rows;
     png_color *png_palette = NULL;
     png_color_16 background;
     png_color_16p default_background;
     int i;
     int depth;
 
-    png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+#if USE_SETJMP && HAVE_SETJMP
+    if (setjmp(png_jmpbuf(png_ptr)) != 0) {
+        sixel_allocator_free(allocator, *result);
+        *result = NULL;
+        status = SIXEL_PNG_ERROR;
+        goto cleanup;
+    }
+#endif  /* HAVE_SETJMP */
+
+    status = SIXEL_FALSE;
+    rows = NULL;
+    *result = NULL;
+
+    png_ptr = png_create_read_struct(
+        PNG_LIBPNG_VER_STRING, NULL, &png_error_callback, NULL);
     if (!png_ptr) {
         sixel_helper_set_additional_message(
             "png_create_read_struct() failed.");
@@ -570,14 +603,7 @@ load_png(unsigned char      /* out */ **result,
         }
         break;
     }
-#if USE_SETJMP && HAVE_SETJMP
-    if (setjmp(png_jmpbuf(png_ptr))) {
-        sixel_allocator_free(allocator, *result);
-        *result = NULL;
-        status = SIXEL_PNG_ERROR;
-        goto cleanup;
-    }
-#endif  /* HAVE_SETJMP */
+
     png_read_image(png_ptr, rows);
 
     status = SIXEL_OK;
@@ -588,6 +614,10 @@ cleanup:
 
     return status;
 }
+#ifdef HAVE_DIAGNOSTIC_CLOBBERED
+# pragma GCC diagnostic pop
+#endif
+
 # endif  /* HAVE_PNG */
 
 
@@ -941,10 +971,11 @@ load_with_gdkpixbuf(
     GdkPixbuf *pixbuf;
     GdkPixbufAnimation *animation;
     GdkPixbufLoader *loader = NULL;
-#if 1
     GdkPixbufAnimationIter *it;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     GTimeVal time_val;
-#endif
+#pragma GCC diagnostic pop
     sixel_frame_t *frame = NULL;
     int stride;
     unsigned char *p;
@@ -963,7 +994,10 @@ load_with_gdkpixbuf(
 #if (!GLIB_CHECK_VERSION(2, 36, 0))
     g_type_init();
 #endif
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     g_get_current_time(&time_val);
+#pragma GCC diagnostic pop
     loader = gdk_pixbuf_loader_new();
     gdk_pixbuf_loader_write(loader, pchunk->buffer, pchunk->size, NULL);
     animation = gdk_pixbuf_loader_get_animation(loader);
@@ -1006,7 +1040,10 @@ load_with_gdkpixbuf(
             goto end;
         }
     } else {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         g_get_current_time(&time_val);
+#pragma GCC diagnostic pop
 
         frame->frame_no = 0;
 
@@ -1014,7 +1051,10 @@ load_with_gdkpixbuf(
         for (;;) {
             while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
                 frame->delay = gdk_pixbuf_animation_iter_get_delay_time(it);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
                 g_time_val_add(&time_val, frame->delay * 1000);
+#pragma GCC diagnostic pop
                 frame->delay /= 10;
                 pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
                 if (pixbuf == NULL) {
