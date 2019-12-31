@@ -21,22 +21,19 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
+#if STDC_HEADERS
+# include <stdio.h>
+# include <stdlib.h>
+#endif
+#if HAVE_STRING_H
+# include <string.h>
+#endif
 #if HAVE_UNISTD_H
 # include <unistd.h>
 #endif
-
-#ifdef HAVE_ERRNO_H
+#if HAVE_ERRNO_H
 # include <errno.h>
 #endif
-
-#if !defined(HAVE_MEMCPY)
-# define memcpy(d, s, n) (bcopy ((s), (d), (n)))
-#endif
-
 #ifdef HAVE_GDK_PIXBUF2
 # if HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
 #   pragma GCC diagnostic push
@@ -47,19 +44,19 @@
 #   pragma GCC diagnostic pop
 # endif
 #endif
-
-#ifdef HAVE_GD
+#if HAVE_GD
 # include <gd.h>
 #endif
-
-#ifdef HAVE_LIBPNG
+#if HAVE_LIBPNG
 # include <png.h>
 #endif  /* HAVE_LIBPNG */
-
 #if HAVE_JPEG
-# include <stdio.h>
 # include <jpeglib.h>
 #endif  /* HAVE_JPEG */
+
+#if !defined(HAVE_MEMCPY)
+# define memcpy(d, s, n) (bcopy ((s), (d), (n)))
+#endif
 
 #include "frame.h"
 #include <sixel.h>

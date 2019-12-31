@@ -21,42 +21,44 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-
-#include <sixel.h>
-
+#if STDC_HEADERS
+# include <stdio.h>
+# include <stdlib.h>
+#endif  /* STDC_HEADERS */
+#if HAVE_MEMORY_H
+# include <memory.h>
+#endif  /* HAVE_MEMORY_H */
 #ifdef HAVE_STRING_H
 # include <string.h>
-#endif
+#endif  /* HAVE_STRING_H */
 #ifdef HAVE_ERRNO_H
 # include <errno.h>
-#endif
+#endif  /* HAVE_ERRNO_H */
 #ifdef HAVE_LIBCURL
 # include <curl/curl.h>
-#endif
+#endif  /* HAVE_LIBCURL */
 
+#include <sixel.h>
 #include "status.h"
 
-#define SIXEL_MESSAGE_OK                ("succeeded")
-#define SIXEL_MESSAGE_FALSE             ("unexpected error (SIXEL_FALSE)");
-#define SIXEL_MESSAGE_UNEXPECTED        ("unexpected error")
-#define SIXEL_MESSAGE_INTERRUPTED       ("interrupted by a signal")
-#define SIXEL_MESSAGE_BAD_ALLOCATION    ("runtime error: bad allocation error")
-#define SIXEL_MESSAGE_BAD_ARGUMENT      ("runtime error: bad argument detected")
-#define SIXEL_MESSAGE_BAD_INPUT         ("runtime error: bad input detected")
+#define SIXEL_MESSAGE_OK                    ("succeeded")
+#define SIXEL_MESSAGE_FALSE                 ("unexpected error (SIXEL_FALSE)");
+#define SIXEL_MESSAGE_UNEXPECTED            ("unexpected error")
+#define SIXEL_MESSAGE_INTERRUPTED           ("interrupted by a signal")
+#define SIXEL_MESSAGE_BAD_ALLOCATION        ("runtime error: bad allocation error")
+#define SIXEL_MESSAGE_BAD_ARGUMENT          ("runtime error: bad argument detected")
+#define SIXEL_MESSAGE_BAD_INPUT             ("runtime error: bad input detected")
 #define SIXEL_MESSAGE_BAD_INTEGER_OVERFLOW  ("runtime error: integer overflow")
-#define SIXEL_MESSAGE_RUNTIME_ERROR     ("runtime error")
-#define SIXEL_MESSAGE_LOGIC_ERROR       ("logic error")
-#define SIXEL_MESSAGE_NOT_IMPLEMENTED   ("feature error: not implemented")
-#define SIXEL_MESSAGE_FEATURE_ERROR     ("feature error")
-#define SIXEL_MESSAGE_STBI_ERROR        ("stb_image error")
-#define SIXEL_MESSAGE_STBIW_ERROR       ("stb_image_write error")
-#define SIXEL_MESSAGE_JPEG_ERROR        ("libjpeg error")
-#define SIXEL_MESSAGE_PNG_ERROR         ("libpng error")
-#define SIXEL_MESSAGE_GDK_ERROR         ("GDK error")
-#define SIXEL_MESSAGE_GD_ERROR          ("GD error")
+#define SIXEL_MESSAGE_RUNTIME_ERROR         ("runtime error")
+#define SIXEL_MESSAGE_LOGIC_ERROR           ("logic error")
+#define SIXEL_MESSAGE_NOT_IMPLEMENTED       ("feature error: not implemented")
+#define SIXEL_MESSAGE_FEATURE_ERROR         ("feature error")
+#define SIXEL_MESSAGE_STBI_ERROR            ("stb_image error")
+#define SIXEL_MESSAGE_STBIW_ERROR           ("stb_image_write error")
+#define SIXEL_MESSAGE_JPEG_ERROR            ("libjpeg error")
+#define SIXEL_MESSAGE_PNG_ERROR             ("libpng error")
+#define SIXEL_MESSAGE_GDK_ERROR             ("GDK error")
+#define SIXEL_MESSAGE_GD_ERROR              ("GD error")
 
 
 static char g_buffer[1024] = { 0x0 };

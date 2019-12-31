@@ -21,23 +21,24 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
+#if STDC_HEADERS
+# include <stdio.h>
+# include <stdlib.h>
+#endif  /* STDC_HEADERS */
+#if HAVE_STRING_H
+# include <string.h>
+#endif  /* HAVE_STRING_H */
 #if HAVE_SETJMP_H
 # include <setjmp.h>
-#endif
-
+#endif  /* HAVE_SETJMP_H */
 #if HAVE_ERRNO_H
 # include <errno.h>
-#endif
-
+#endif  /* HAVE_ERRNO_H */
 #if HAVE_LIBPNG
 # include <png.h>
 #else
 # include "stb_image_write.h"
-#endif
+#endif  /* HAVE_LIBPNG */
 
 #include <sixel.h>
 

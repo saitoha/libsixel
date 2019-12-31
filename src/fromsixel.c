@@ -14,15 +14,23 @@
  * it to the MIT license.
  */
 #include "config.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <ctype.h>   /* isdigit */
-#include <string.h>  /* memcpy */
-#include <limits.h>
 
-#if defined(HAVE_INTTYPES_H)
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stdio.h>
+#endif  /* STDC_HEADERS */
+#if HAVE_CTYPE_H
+# include <ctype.h>   /* isdigit */
+#endif  /* HAVE_CTYPE_H */
+#if HAVE_STRING_H
+# include <string.h>  /* memcpy */
+#endif  /* HAVE_STRING_H */
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif  /* HAVE_LIMITS_H */
+#if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif
+#endif  /* HAVE_INTTYPES_H */
 
 #include <sixel.h>
 #include "output.h"
