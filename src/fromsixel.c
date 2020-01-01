@@ -197,12 +197,6 @@ image_buffer_init(
         status = SIXEL_BAD_INPUT;
         goto end;
     }
-    if (height > SIXEL_HEIGHT_LIMIT) {
-        sixel_helper_set_additional_message(
-            "image_buffer_init: given height parameter is too huge.");
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
     if (width > SIXEL_WIDTH_LIMIT) {
         sixel_helper_set_additional_message(
             "image_buffer_init: given width parameter is too huge.");

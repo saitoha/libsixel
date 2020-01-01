@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2018 Hayaki Saito
+ * Copyright (c) 2014-2020 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -152,7 +152,35 @@ sixel_frame_init(
     int             /* in */ ncolors        /* number of palette colors or (-1) */
 )
 {
+    SIXELSTATUS status = SIXEL_FALSE;
+
     sixel_frame_ref(frame);
+
+    /* check parameters */
+    if (width <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_init: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (width > SIXEL_WIDTH_LIMIT) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_init: given width parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_init: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
 
     frame->pixels = pixels;
     frame->width = width;
@@ -161,9 +189,12 @@ sixel_frame_init(
     frame->palette = palette;
     frame->ncolors = ncolors;
 
+    status = SIXEL_OK;
+
+end:
     sixel_frame_unref(frame);
 
-    return SIXEL_OK;
+    return status;
 }
 
 
@@ -481,7 +512,6 @@ end:
     return status;
 }
 
-
 /* resize a frame to given size with specified resampling filter */
 SIXELAPI SIXELSTATUS
 sixel_frame_resize(
@@ -497,12 +527,38 @@ sixel_frame_resize(
 
     sixel_frame_ref(frame);
 
+    /* check parameters */
+    if (width <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (width > SIXEL_WIDTH_LIMIT) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize: given width parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
     status = sixel_frame_convert_to_rgb888(frame);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    size = (size_t)(width * height * 3);
+    size = (size_t)width * (size_t)height * 3UL;
     scaled_frame = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
     if (scaled_frame == NULL) {
         sixel_helper_set_additional_message(
@@ -619,6 +675,32 @@ sixel_frame_clip(
     unsigned char *normalized_pixels;
 
     sixel_frame_ref(frame);
+
+    /* check parameters */
+    if (width <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_clip: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_clip: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (width > SIXEL_WIDTH_LIMIT) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_clip: given width parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_clip: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
 
     switch (frame->pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
