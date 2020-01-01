@@ -26,11 +26,21 @@
  */
 
 #include "config.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <assert.h>
+
+#if STDC_HEADERS
+# include <stdio.h>
+# include <stdlib.h>
+#endif  /* STDC_HEADERS */
+#if HAVE_STRING_H
+# include <string.h>
+#endif  /* HAVE_STRING_H */
+#if HAVE_CTYPE_H
+# include <ctype.h>
+#endif  /* HAVE_CTYPE_H */
+#if HAVE_ASSERT_H
+# include <assert.h>
+#endif  /* HAVE_ASSERT_H */
+
 #include "frame.h"
 #include "fromgif.h"
 

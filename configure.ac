@@ -168,8 +168,13 @@ AC_ARG_ENABLE([tests],
 AM_CONDITIONAL([COND_TESTS], [test x$enable_tests != xno])
 
 # Checks for programs.
+AC_PROG_AWK
 AC_PROG_CC
+AC_PROG_CPP
 AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+
 AS_IF([test x$cross_compile != xyes], [PKG_PROG_PKG_CONFIG], [])
 
 AC_DEFUN([LS_CHECK_CFLAG], [
@@ -219,11 +224,18 @@ AC_SUBST([AM_CFLAGS])
 AC_CHECK_PROGS(MD5SUM, [md5sum md5])
 AC_SUBST(MD5SUM)
 
+# Check math library
+AC_CHECK_LIB([m], [floor])
+
 # Checks for libraries.
 
+AC_HEADER_STDC
+
 # Checks for header files.
-AC_CHECK_HEADERS([memory.h \
-                  stdlib.h \
+AC_CHECK_HEADERS([assert.h \
+                  math.h \
+                  ctype.h \
+                  memory.h \
                   string.h \
                   unistd.h \
                   stdint.h \
@@ -241,12 +253,17 @@ AC_CHECK_HEADERS([memory.h \
                   sys/select.h \
                   sys/signal.h \
                   termios.h \
-                  sys/ioctl.h])
+                  sys/ioctl.h \
+                  inttypes.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-#AC_CHECK_HEADER_STDBOOL
-#AC_TYPE_SIZE_T
-#AC_TYPE_UINT8_T
+AC_CHECK_HEADER_STDBOOL
+AC_C_INLINE
+AC_TYPE_INT16_T
+AC_TYPE_INT32_T
+AC_TYPE_SIZE_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
 
 # Checks for library functions.
 AC_FUNC_MALLOC
@@ -265,6 +282,7 @@ AM_CONDITIONAL([HAVE_GETOPT_LONG], [test x$have_getopt_long = xyes])
 
 AC_CHECK_FUNCS([memcpy \
                 memmove \
+                memset \
                 setmode \
                 _setmode \
                 signal \
@@ -280,8 +298,16 @@ AC_CHECK_FUNCS([memcpy \
                 strerror \
                 isatty \
                 strncmp \
-                ldiv])
-
+                ldiv \
+                floor \
+                localeconv \
+                pow \
+                select \
+                sqrt \
+                strchr \
+                strerror \
+                strstr \
+                strtol])
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
 

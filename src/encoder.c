@@ -21,38 +21,41 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
+#if STDC_HEADERS
+# include <stdio.h>
+# include <stdlib.h>
+# include <stdarg.h>
+#endif  /* STDC_HEADERS */
+# if HAVE_STRING_H
 #include <string.h>
-
+#endif  /* HAVE_STRING_H */
 #if HAVE_UNISTD_H
 # include <unistd.h>
-#endif
+#endif  /* HAVE_UNISTD_H */
 #if HAVE_SYS_UNISTD_H
 # include <sys/unistd.h>
-#endif
+#endif  /* HAVE_SYS_UNISTD_H */
 #if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
+# include <sys/types.h>
+#endif  /* HAVE_SYS_TYPES_H */
 #if HAVE_TIME_H
 # include <time.h>
-#endif
+#endif  /* HAVE_TIME_H */
 #if HAVE_SYS_TIME_H
 # include <sys/time.h>
-#endif
+#endif  /* HAVE_SYS_TIME_H */
 #if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif
+#endif  /* HAVE_INTTYPES_H */
 #if HAVE_ERRNO_H
 # include <errno.h>
-#endif
+#endif  /* HAVE_ERRNO_H */
 #if HAVE_SYS_STAT_H
 # include <sys/stat.h>
-#endif
+#endif  /* HAVE_SYS_STAT_H */
 #if HAVE_FCNTL_H
 # include <fcntl.h>
-#endif
+#endif  /* HAVE_FCNTL_H */
 
 #include <sixel.h>
 #include "tty.h"
