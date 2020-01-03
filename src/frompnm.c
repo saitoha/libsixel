@@ -20,10 +20,19 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include "config.h"
+
+#if STDC_HEADERS
+# include <stdio.h>
+# include <stdlib.h>
+#endif  /* STDC_HEADERS */
+#if HAVE_STRING_H
+# include <string.h>
+#endif  /* HAVE_STRING_H */
+#if HAVE_CTYPE_H
+# include <ctype.h>
+#endif  /* HAVE_CTYPE_H */
+
 #include <sixel.h>
 
 #define PNM_MAX_WIDTH  (1 << 16)
@@ -83,6 +92,7 @@ load_pnm(unsigned char      /* in */  *p,
     unsigned char *s;
     unsigned char *end;
     unsigned char tmp[256];
+    size_t size;
 
     (void) ppalette;
     (void) pncolors;
@@ -210,9 +220,8 @@ load_pnm(unsigned char      /* in */  *p,
         goto invalid;
     }
 
-    *result = (unsigned char *)sixel_allocator_malloc(
-        allocator,
-        (size_t)(width * height * 3 + 1));
+    size = (size_t)width * (size_t)height * 3 + 1;
+    *result = (unsigned char *)sixel_allocator_malloc(allocator, size);
 
     if (*result == NULL) {
         sixel_helper_set_additional_message(
@@ -221,7 +230,7 @@ load_pnm(unsigned char      /* in */  *p,
         goto end;
     }
 
-    memset(*result, 0, (size_t)(width * height * 3 + 1));
+    (void) memset(*result, 0, size);
 
     for (y = 0 ; y < height ; y++) {
         for (x = 0 ; x < width ; x++) {

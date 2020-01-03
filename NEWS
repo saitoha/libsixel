@@ -2,6 +2,30 @@
                   ------------------------------
                    What's new in libsixel-1.8 ?
                   ------------------------------
+* Security fix for CVE-2019-20205 (#127), integer overflow problem,
+  reported by @sleicasper.
+
+* Security fix for CVE-2019-20056 (#126), assertion failure problem,
+  reported by @sleicasper.
+
+* Security fix for CVE-2019-20094 (#125), heap overflow problem,
+  reported by @cuanduo.
+
+* Security fix for #124, illegal longjump() call problem,
+  reported by @cuanduo.
+
+* Serucity fix for #74 and #123, access violation problem,
+  reported by @HongxuChen and SuhwanSong.
+
+* Security fix for #122, heap overflow problem,
+  reported by @SuhwanSong.
+
+* Security fix for CVE-2019-20023(#117, #119, #120), memory leaks problem,
+  reported by @SuhwanSong and @gutiniao.
+
+* Strip first flag check in LZW compression function for issue #118,
+  reported by @yoichi
+
 * Security fix for CVE-2019-11024 (#85), recursive loop problem,
   reported by @Loginsoft-Research.
 

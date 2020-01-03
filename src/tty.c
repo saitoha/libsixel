@@ -21,34 +21,37 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
+#if STDC_HEADERS
+# include <stdio.h>
+# include <stdlib.h>
+#endif  /* HAVE_STDLIB_H */
+#if HAVE_STRING_H
+# include <string.h>
+#endif  /* HAVE_STRING_H */
 #if HAVE_SYS_TIME_H
 # include <sys/time.h>
-#endif
+#endif  /* HAVE_SYS_TIME_H */
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
-#endif
+#endif  /* HAVE_SYS_TYPES_H */
 #if HAVE_UNISTD_H
 # include <unistd.h>
-#endif
+#endif  /* HAVE_UNISTD_H */
 #if HAVE_SYS_UNISTD_H
 # include <sys/unistd.h>
-#endif
+#endif  /* HAVE_SYS_UNISTD_H */
 #if HAVE_SYS_SELECT_H
 # include <sys/select.h>
-#endif
+#endif  /* HAVE_SYS_SELECT_H */
 #if HAVE_ERRNO_H
 # include <errno.h>
-#endif
+#endif  /* HAVE_ERRNO_H */
 #if HAVE_TERMIOS_H
 # include <termios.h>
-#endif
+#endif  /* HAVE_TERMIOS_H */
 #if HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
-#endif
+#endif  /* HAVE_SYS_IOCTL_H */
 
 #include <sixel.h>
 

@@ -27,7 +27,7 @@ typedef struct sixel_node {
     int pal;
     int sx;
     int mx;
-    unsigned char *map;
+    char *map;
 } sixel_node_t;
 
 struct sixel_output {
