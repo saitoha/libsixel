@@ -21,13 +21,16 @@
 
 #include "config.h"
 
-#define _USE_MATH_DEFINES  /* for MSVC */
-#include <math.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+#endif  /* STDC_HEADERS */
+#if HAVE_MATH_H
+# define _USE_MATH_DEFINES  /* for MSVC */
+# include <math.h>
+#endif  /* HAVE_MATH_H */
 #ifndef M_PI
 # define M_PI 3.14159265358979323846
 #endif
-
-#include <stdlib.h>
 
 #include <sixel.h>
 

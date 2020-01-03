@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2018 Hayaki Saito
+ * Copyright (c) 2014-2019 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,38 +21,41 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
+#if STDC_HEADERS
+# include <stdio.h>
+# include <stdlib.h>
+# include <stdarg.h>
+#endif  /* STDC_HEADERS */
+# if HAVE_STRING_H
 #include <string.h>
-
+#endif  /* HAVE_STRING_H */
 #if HAVE_UNISTD_H
 # include <unistd.h>
-#endif
+#endif  /* HAVE_UNISTD_H */
 #if HAVE_SYS_UNISTD_H
 # include <sys/unistd.h>
-#endif
+#endif  /* HAVE_SYS_UNISTD_H */
 #if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
+# include <sys/types.h>
+#endif  /* HAVE_SYS_TYPES_H */
 #if HAVE_TIME_H
 # include <time.h>
-#endif
+#endif  /* HAVE_TIME_H */
 #if HAVE_SYS_TIME_H
 # include <sys/time.h>
-#endif
+#endif  /* HAVE_SYS_TIME_H */
 #if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif
+#endif  /* HAVE_INTTYPES_H */
 #if HAVE_ERRNO_H
 # include <errno.h>
-#endif
+#endif  /* HAVE_ERRNO_H */
 #if HAVE_SYS_STAT_H
 # include <sys/stat.h>
-#endif
+#endif  /* HAVE_SYS_STAT_H */
 #if HAVE_FCNTL_H
 # include <fcntl.h>
-#endif
+#endif  /* HAVE_FCNTL_H */
 
 #include <sixel.h>
 #include "tty.h"
@@ -447,7 +450,7 @@ sixel_prepare_specified_palette(
     status = sixel_helper_load_image_file(encoder->mapfile,
                                           1,   /* fstatic */
                                           1,   /* fuse_palette */
-                                          256, /* reqcolors */
+                                          SIXEL_PALETTE_MAX, /* reqcolors */
                                           encoder->bgcolor,
                                           SIXEL_LOOP_DISABLE,
                                           load_image_callback_for_palette,
@@ -568,6 +571,7 @@ sixel_encoder_prepare_palette(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+
     status = sixel_dither_initialize(*dither,
                                      sixel_frame_get_pixels(frame),
                                      sixel_frame_get_width(frame),
@@ -736,7 +740,8 @@ sixel_encoder_output_without_macro(
     SIXELSTATUS status = SIXEL_OK;
     static unsigned char *p;
     int depth;
-    char message[256];
+    enum { message_buffer_size = 256 };
+    char message[message_buffer_size];
     int nwrite;
 #if HAVE_NANOSLEEP
     int dulation;
@@ -759,7 +764,7 @@ sixel_encoder_output_without_macro(
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
-    
+
     if (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT) {
         sixel_dither_set_optimize_palette(dither, 1);
     }
@@ -837,7 +842,8 @@ sixel_encoder_output_with_macro(
     sixel_encoder_t /* in */ *encoder)
 {
     SIXELSTATUS status = SIXEL_OK;
-    char buffer[256];
+    enum { message_buffer_size = 256 };
+    char buffer[message_buffer_size];
     int nwrite;
 #if HAVE_NANOSLEEP
     int dulation;
@@ -1164,7 +1170,7 @@ sixel_encoder_new(
     env_default_ncolors = getenv("SIXEL_COLORS");
     if (env_default_ncolors) {
         ncolors = atoi(env_default_ncolors); /* may overflow */
-        if (ncolors > 1 && ncolors <= 256) {
+        if (ncolors > 1 && ncolors <= SIXEL_PALETTE_MAX) {
             (*ppencoder)->reqcolors = ncolors;
         }
     }

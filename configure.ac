@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.8.4], [saitoha@me.com])
+AC_INIT([sixel], [1.8.5], [saitoha@me.com])
 LS_LT_CURRENT=1
 LS_LT_REVISION=6
 LS_LT_AGE=0
@@ -28,6 +28,8 @@ AX_GCC_FUNC_ATTRIBUTE([deprecated])
 if test x$ax_cv_have_func_attribute_deprecated != x; then
     AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
 fi
+
+AX_GCC_BUILTIN([__builtin_unreachable])
 
 CFLAGS_BACKUP=$CFLAGS
 CFLAGS="$CFLAGS -Werror"
@@ -166,8 +168,13 @@ AC_ARG_ENABLE([tests],
 AM_CONDITIONAL([COND_TESTS], [test x$enable_tests != xno])
 
 # Checks for programs.
+AC_PROG_AWK
 AC_PROG_CC
+AC_PROG_CPP
 AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+
 AS_IF([test x$cross_compile != xyes], [PKG_PROG_PKG_CONFIG], [])
 
 AC_DEFUN([LS_CHECK_CFLAG], [
@@ -188,29 +195,21 @@ LS_CHECK_CFLAG([-Wall],[AM_CFLAGS="$AM_CFLAGS -Wall"], [])
 LS_CHECK_CFLAG([-Wextra],[AM_CFLAGS="$AM_CFLAGS -Wextra"], [])
 LS_CHECK_CFLAG([-Wformat=2],[AM_CFLAGS="$AM_CFLAGS -Wformat=2"], [])
 LS_CHECK_CFLAG([-Wsign-conversion],
-               [AM_CFLAGS="$AM_CFLAGS -Wsign-conversion"
-                AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION, 1, [define 1 if GCC supports -Wsign-conversion])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION, 1, [define 1 if GCC supports -Wsign-conversion])])
 LS_CHECK_CFLAG([-Wuninitialized],
-               [AM_CFLAGS="$AM_CFLAGS -Wuninitialized"
-                AC_DEFINE(HAVE_DIAGNOSTIC_UNINITIALIZED, 1, [define 1 if GCC supports -Wuninitialized])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_UNINITIALIZED, 1, [define 1 if GCC supports -Wuninitialized])])
 LS_CHECK_CFLAG([-Wstrict-overflow],
-               [AM_CFLAGS="$AM_CFLAGS -Wstrict-overflow=1"
-                AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW, 1, [define 1 if GCC supports -Wstrict-overeflow=1])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW, 1, [define 1 if GCC supports -Wstrict-overeflow=1])])
 LS_CHECK_CFLAG([-Wshadow],
-               [AM_CFLAGS="$AM_CFLAGS -Wshadow"
-                AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW, 1, [define 1 if GCC supports -Wshadow])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW, 1, [define 1 if GCC supports -Wshadow])])
 LS_CHECK_CFLAG([-Wdouble-promotion],
-               [AM_CFLAGS="$AM_CFLAGS -Wdouble-promotion"
-                AC_DEFINE(HAVE_DIAGNOSTIC_DOUBLE_PROMOTION, 1, [define 1 if GCC supports -Wdouble-promotion])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_DOUBLE_PROMOTION, 1, [define 1 if GCC supports -Wdouble-promotion])])
 LS_CHECK_CFLAG([-Wswitch-default],
-               [AM_CFLAGS="$AM_CFLAGS -Wswitch-default"
-                AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT, 1, [define 1 if GCC supports -Wswitch-default])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT, 1, [define 1 if GCC supports -Wswitch-default])])
 LS_CHECK_CFLAG([-Wunused-function],
-               [AM_CFLAGS="$AM_CFLAGS -Wunused-function"
-                AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_FUNCTION, 1, [define 1 if GCC supports -Wunused-function])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_FUNCTION, 1, [define 1 if GCC supports -Wunused-function])])
 LS_CHECK_CFLAG([-Wclobbered],
-               [AM_CFLAGS="$AM_CFLAGS -Wclobbered"
-                AC_DEFINE(HAVE_DIAGNOSTIC_CLOBBERED, 1, [define 1 if GCC supports -Wclobbered])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_CLOBBERED, 1, [define 1 if GCC supports -Wclobbered])])
 LS_CHECK_CFLAG([-Bsymbolic],
                [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
                 AC_DEFINE(HAVE_BSYMBOLIC, 1, [define 1 if GCC supports -Bsymbolic])])
@@ -225,11 +224,18 @@ AC_SUBST([AM_CFLAGS])
 AC_CHECK_PROGS(MD5SUM, [md5sum md5])
 AC_SUBST(MD5SUM)
 
+# Check math library
+AC_CHECK_LIB([m], [floor])
+
 # Checks for libraries.
 
+AC_HEADER_STDC
+
 # Checks for header files.
-AC_CHECK_HEADERS([memory.h \
-                  stdlib.h \
+AC_CHECK_HEADERS([assert.h \
+                  math.h \
+                  ctype.h \
+                  memory.h \
                   string.h \
                   unistd.h \
                   stdint.h \
@@ -247,12 +253,17 @@ AC_CHECK_HEADERS([memory.h \
                   sys/select.h \
                   sys/signal.h \
                   termios.h \
-                  sys/ioctl.h])
+                  sys/ioctl.h \
+                  inttypes.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-#AC_CHECK_HEADER_STDBOOL
-#AC_TYPE_SIZE_T
-#AC_TYPE_UINT8_T
+AC_CHECK_HEADER_STDBOOL
+AC_C_INLINE
+AC_TYPE_INT16_T
+AC_TYPE_INT32_T
+AC_TYPE_SIZE_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
 
 # Checks for library functions.
 AC_FUNC_MALLOC
@@ -271,6 +282,7 @@ AM_CONDITIONAL([HAVE_GETOPT_LONG], [test x$have_getopt_long = xyes])
 
 AC_CHECK_FUNCS([memcpy \
                 memmove \
+                memset \
                 setmode \
                 _setmode \
                 signal \
@@ -282,11 +294,20 @@ AC_CHECK_FUNCS([memcpy \
                 clearerr \
                 stat \
                 setjmp \
+                longjmp \
                 strerror \
                 isatty \
                 strncmp \
-                ldiv])
-
+                ldiv \
+                floor \
+                localeconv \
+                pow \
+                select \
+                sqrt \
+                strchr \
+                strerror \
+                strstr \
+                strtol])
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
 

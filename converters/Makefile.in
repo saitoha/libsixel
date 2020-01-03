@@ -99,7 +99,8 @@ bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 subdir = converters
 SUBDIRS =
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_func_attribute.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
+	$(top_srcdir)/m4/ax_gcc_func_attribute.m4 \
 	$(top_srcdir)/m4/ax_gcc_var_attribute.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
 	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
@@ -1070,10 +1071,10 @@ test_impl:
 @WANT_IMG2SIXEL_TRUE@	@echo '[test4] conversion options'
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel $(top_srcdir)/images/snake.jpg -datkinson -flum -saverage | $(WINE) ./img2sixel | tee snake.sixel
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -w50% -h150% -dfs -Bblue -thls -shistogram < $(top_srcdir)/images/snake.jpg | tee snake2.sixel
-@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -w2100 -h2100 -djajuni -bxterm256 -o snake3.sixel < $(top_srcdir)/images/snake.jpg
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -w210 -h210 -djajuni -bxterm256 -o snake3.sixel < $(top_srcdir)/images/snake.jpg
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -w105% -h100 -B\#000000000 -rnearest < $(top_srcdir)/images/snake.gif
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto $(top_srcdir)/images/snake.tga
-@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -p300 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhanning -dstucki -thls $(top_srcdir)/images/snake.tiff
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -p200 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhanning -dstucki -thls $(top_srcdir)/images/snake.tiff
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -8 -qauto -thls -e $(top_srcdir)/images/snake.pgm
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -8 -m $(top_srcdir)/images/map8-palette.png -Esize $(top_srcdir)/images/snake.ppm
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -7 -m $(top_srcdir)/images/map16-palette.png -Efast $(top_srcdir)/images/snake.jpg
@@ -1115,7 +1116,7 @@ test_impl:
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -p 1 -h100 -n1 $(top_srcdir)/images/snake.jpg && printf '\033[*1z'
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -e -h140 -rlanczos4 -P $(top_srcdir)/images/snake.jpg
 @WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -e -i -P $(top_srcdir)/images/snake.jpg > /dev/null
-@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -w2047 -h2047 $(top_srcdir)/images/snake.png | $(WINE) ./img2sixel > /dev/null
+@WANT_IMG2SIXEL_TRUE@	$(WINE) ./img2sixel -w204 -h204 $(top_srcdir)/images/snake.png | $(WINE) ./img2sixel > /dev/null
 
 @WANT_IMG2SIXEL_TRUE@	@echo '[test5] DCS arguments handling'
 @WANT_IMG2SIXEL_TRUE@	seq 0 10 | while read i; do \

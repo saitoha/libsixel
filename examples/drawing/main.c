@@ -77,6 +77,7 @@ wait_stdin(int usec)
     return select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
 }
 
+
 static int
 scroll_on_demand(int pixelheight)
 {
@@ -109,7 +110,9 @@ err:
     return 0;
 }
 
-static int tty_raw(struct termios *old_termios)
+/* set terminal into raw mode. */
+static int
+tty_raw(struct termios *old_termios)
 {
     struct termios new_termios;
     int ret;

@@ -19,18 +19,20 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <assert.h>
 #include "config.h"
 
+#if STDC_HEADERS
+# include <stdlib.h>
+#endif  /* STDC_HEADERS */
+#if HAVE_ASSERT_H
+# include <assert.h>
+#endif  /* HAVE_ASSERT_H */
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif  /* HAVE_SYS_TYPES_H */
-
 #if HAVE_ERRNO_H
 # include <errno.h>
 #endif  /* HAVE_ERRNO_H */
-
 #if HAVE_MEMORY_H
 # include <memory.h>
 #endif  /* HAVE_MEMORY_H */
@@ -152,6 +154,11 @@ sixel_allocator_malloc(
             "sixel_allocator_malloc: called with n == 0");
         return NULL;
     }
+
+    if (n > SIXEL_ALLOCATE_BYTES_MAX) {
+        return NULL;
+    }
+
     return allocator->fn_malloc(n);
 }
 
@@ -163,9 +170,23 @@ sixel_allocator_calloc(
     size_t              /* in */ nelm,        /* number of elements */
     size_t              /* in */ elsize)      /* size of element */
 {
+    size_t n;
+
     /* precondition */
     assert(allocator);
     assert(allocator->fn_calloc);
+
+    n = nelm * elsize;
+
+    if (n == 0) {
+        sixel_helper_set_additional_message(
+            "sixel_allocator_malloc: called with n == 0");
+        return NULL;
+    }
+
+    if (n > SIXEL_ALLOCATE_BYTES_MAX) {
+        return NULL;
+    }
 
     return allocator->fn_calloc(nelm, elsize);
 }
@@ -181,6 +202,16 @@ sixel_allocator_realloc(
     /* precondition */
     assert(allocator);
     assert(allocator->fn_realloc);
+
+    if (n == 0) {
+        sixel_helper_set_additional_message(
+            "sixel_allocator_malloc: called with n == 0");
+        return NULL;
+    }
+
+    if (n > SIXEL_ALLOCATE_BYTES_MAX) {
+        return NULL;
+    }
 
     return allocator->fn_realloc(p, n);
 }

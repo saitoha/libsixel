@@ -1,4 +1,109 @@
+2020-01-03  Hayaki Saito <saitoha@me.com>
+
+  * include/sixel.h.in, python/libsixel/__init__.py: Update python interface
+
+2020-01-01  Hayaki Saito <saitoha@me.com>
+
+  * .travis.yml: travis: drop "--with-gdk-pixbuf2" build on osx
+
+  * src/frame.c, src/fromsixel.c: Prevent an integer overflow problem(#127)
+
+2019-12-30  Hayaki Saito <saitoha@me.com>
+
+  * src/stb_image.h: Fix for CVE-2019-20056, assertion failure problem(#126).
+  Thanks to @sleicasper
+
+2020-01-01  Hayaki Saito <saitoha@me.com>
+
+  * config.h.in, configure, configure.ac, src/allocator.c, src/chunk.c,
+  src/decoder.c, src/dither.c, src/encoder.c, src/frame.c, src/fromgif.c,
+  src/frompnm.c, src/fromsixel.c, src/loader.c, src/malloc_stub.c,
+  src/output.c, src/pixelformat.c, src/quant.c, src/scale.c, src/status.c,
+  src/tests.c, src/tosixel.c, src/tty.c, src/writer.c: Build fixes
+
+2019-12-31  Hayaki Saito <saitoha@me.com>
+
+  * Makefile.in, config.h.in, configure, configure.ac, src/chunk.c,
+  src/decoder.c, src/fromsixel.c, src/malloc_stub.c, src/pixelformat.c,
+  src/status.c, src/stb_image.h, src/tests.c, src/tosixel.c, src/tty.c: Minor
+  update of configure checks
+
+2019-12-29  Hayaki Saito <saitoha@me.com>
+
+  * include/sixel.h.in, src/frompnm.c, src/writer.c: Add some input param
+  checks to sixel_helper_write_image_file()
+
+  * src/tosixel.c: Add some input param checks to sixel_encode()
+
+  * ChangeLog: Update Changelog
+
+2019-12-28  Hayaki Saito <saitoha@me.com>
+
+  * src/encoder.c, src/loader.c, src/output.c, src/pixelformat.c: Strip
+  trailing spaces
+
+  * configure, configure.ac, package.json: Bump version
+
+  * ChangeLog, Makefile.in: Update ChangeLog
+
+2019-12-27  Hayaki Saito <saitoha@me.com>
+
+  * Makefile.in, config.h.in, configure, configure.ac, src/loader.c: Avoid
+  illegal longjump() call (#124)
+
+  * Makefile.in, configure, configure.ac: Strip unnecessary CFLAGS options
+
+2019-12-25  Hayaki Saito <saitoha@me.com>
+
+  * src/fromgif.c: GIF loader: avoid segfault caused by an integer overflow
+  problem(#125, reported by @cuanduo).
+
+  * src/loader.c: Image loader: normalize requested colors to prevent integer
+  overflow
+
+2019-12-23  Hayaki Saito <saitoha@me.com>
+
+  * include/sixel.h.in, src/allocator.c: Introduce SIXEL_ALLOCATE_BYTES_MAX
+  macro and limit allocation size to 128MB(#74)
+
+  * src/fromgif.c: Minor fixes in load_gif().
+
+  * src/fromgif.c: GIF loader: check bad image separator, ensure left/top
+  offset of image don't reach image margins (#122)
+
+  * include/sixel.h.in, src/fromgif.c: GIF loader: set default gif delay
+
+  * src/fromgif.c: GIF loader: skip unknown extension block
+
+  * src/fromgif.c: Avoid a buffer overflow problem on reading graphic control
+  extension block
+
+  * Makefile.in, converters/Makefile.am, converters/Makefile.in,
+  src/fromgif.c: GIF loader: consider frame-local color table for deciding the
+  number of output colors
+
+  * src/fromgif.c: Strip first flag check in LZW compression function for
+  issue #118
+
+2019-12-21  Hayaki Saito <saitoha@me.com>
+
+  * src/stb_image.h: Fix memory leak in STBI PSD loader
+
+2019-12-20  Hayaki Saito <saitoha@me.com>
+
+  * src/fromsixel.c: Fix memory leak problem in fromsixel.c (#120)
+
+2019-12-21  Hayaki Saito <saitoha@me.com>
+
+  * Makefile.am: Fix coveralls optoins
+
+  * src/dither.c: Fix broken unittest
+
 2019-12-19  Hayaki Saito <saitoha@me.com>
+
+  * NEWS: Update NEWS
+
+  * ChangeLog: Update ChangeLog
 
   * src/fromsixel.c: sixel decoder: extend image width and height separately
 
@@ -68,6 +173,11 @@
 
   * src/dither.c: Avoid illegal memory access problem with 1 color paletted
   png(#73), Thanks to HongxuChen.
+
+  * Makefile.in, aclocal.m4, configure, converters/Makefile.in,
+  include/Makefile.in, m4/ax_gcc_builtin.m4, python/Makefile.in,
+  src/Makefile.in, tools/Makefile.in: Add missing m4 macro
+  m4/ax_gcc_builtin.m4
 
   * README.md: Update README
 
@@ -164,6 +274,8 @@
   * .travis.yml: Ammend fix for e18ebe6
 
   * .travis.yml: Drop mingw32 build
+
+  * .travis.yml: Ammend fix for e18ebe6
 
   * .travis.yml: Drop mingw32 build
 
@@ -287,6 +399,8 @@
   * src/decoder.c: Fix memory leak problems reported in #67
   https://github.com/saitoha/libsixel/issues/67
 
+  * src/dither.c, src/encoder.c, src/quant.c: Add some comments
+
   * src/dither.c, src/quant.c: Issue #68: check invalid color number(<1)
   https://github.com/saitoha/libsixel/issues/68
 
@@ -296,7 +410,35 @@
   * src/frompnm.c: Prevent stack-buffer-overflow reported in #71
   https://github.com/saitoha/libsixel/issues/71
 
+2018-06-25  Hayaki Saito <saitoha@me.com>
+
+  * src/stb_image.h: Prevent occurence of UndefinedBehaviorSanitizer in
+  stb_image
+
+2018-06-19  Hayaki Saito <saitoha@me.com>
+
+  * Makefile.in, aclocal.m4, config.h.in, configure, configure.ac,
+  converters/Makefile.in, include/Makefile.in, python/Makefile.in,
+  src/Makefile.in, src/fromsixel.c, tools/Makefile.in: Add missing default
+  case in RGB to HLS converter
+
+2018-06-18  Hayaki Saito <saitoha@me.com>
+
+  * README.md: Add ax_gcc_builtin.m4 for checking GCC built-in functions
+
+2018-06-17  Hayaki Saito <saitoha@me.com>
+
+  * src/encoder.c, src/loader.c, src/output.c, src/pixelformat.c: Strip
+  trailing spaces
+
+2018-06-14  Hayaki Saito <saitoha@me.com>
+
+  * examples/opengl/main.c: example/opengl: use high level API,
+  sixel_encoder_encode_bytes() instead of sixel_encode()
+
 2018-06-10  Hayaki Saito <saitoha@me.com>
+
+  * converters/img2sixel.1: Fix a typo: a_dither -> x_dither(issue #66)
 
   * Makefile.in, config.h.in, configure, configure.ac, package.json: Bump
   version: 1.8.1
@@ -438,7 +580,54 @@
   CODE IN LZW COMPRESSION" in [this
   document](https://www.w3.org/Graphics/GIF/spec-gif89a.txt).
 
+2018-03-17  Hayaki Saito <saitoha@me.com>
+
+  * Makefile.in, aclocal.m4, compile, config.guess, config.sub, configure,
+  converters/Makefile.in, depcomp, include/Makefile.in, install-sh, missing,
+  py-compile, python/Makefile.in, src/Makefile.in, tools/Makefile.in: Update
+  autotools version
+
+2017-06-22  Hayaki Saito <saitoha@me.com>
+
+  * src/fromsixel.c: Fix wrong HLS color handling
+
+2017-06-23  Hayaki Saito <saitoha@me.com>
+
+  * LICENSE.xterm, src/fromsixel.c: Rewrinte HLS handling function
+  hls_to_rgb()
+
+  * include/sixel.h.in, src/dither.c, src/dither.h, src/quant.c, src/quant.h,
+  src/tosixel.c: Introduce new meta type sixel_index_t (now equals unsigned
+  char)
+
+  * src/output.h, src/tosixel.c: sixel_node_t::map should be represented as
+  7bit character, not 8bit
+
+  * src/encoder.c, src/quant.c: Add annotations for some fixed buffer size
+
+  * src/dither.c, src/encoder.c, src/quant.c, src/tosixel.c: Respect to
+  constant value SIXEL_PALETTE_MAX
+
+  * src/tosixel.c: Prevent HLS saturation parameter overflow(>100)
+
+2017-06-22  Hayaki Saito <saitoha@me.com>
+
+  * src/fromsixel.c: Fix wrong HLS color handling
+
+2017-06-10  Hayaki Saito <saitoha@me.com>
+
+  * README.md: Update README for adding some language bindings
+
+  * examples/drawing/main.c, examples/opengl/main.c, src/output.c: Example:
+  Minor fixes
+
+2017-06-03  Hayaki Saito <saitoha@me.com>
+
+  * examples/opengl/main.c: demo/opengl: don't use deplecated API functions
+
 2017-05-18  Hayaki Saito <saitoha@me.com>
+
+  * README.md: README: add mention for forth-sixel
 
   * converters/Makefile.am, converters/Makefile.in: Minor fixes
 
@@ -451,6 +640,9 @@
   option arguments a_dither/x_dither.
 
   * converters/img2sixel.c: Fix typo a_dither -> x_dither
+
+  * README.md, converters/img2sixel.1, converters/img2sixel.c: Mark -D,
+  --pipe-mode option as deprecated.
 
   * .travis.yml: Reduce test cases for OSX.
 
