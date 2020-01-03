@@ -1,3 +1,42 @@
+2020-01-03  Hayaki Saito <saitoha@me.com>
+
+  * include/sixel.h.in, python/libsixel/__init__.py: Update python interface
+
+2020-01-01  Hayaki Saito <saitoha@me.com>
+
+  * .travis.yml: travis: drop "--with-gdk-pixbuf2" build on osx
+
+  * src/frame.c, src/fromsixel.c: Prevent an integer overflow problem(#127)
+
+2019-12-30  Hayaki Saito <saitoha@me.com>
+
+  * src/stb_image.h: Fix for CVE-2019-20056, assertion failure problem(#126).
+  Thanks to @sleicasper
+
+2020-01-01  Hayaki Saito <saitoha@me.com>
+
+  * config.h.in, configure, configure.ac, src/allocator.c, src/chunk.c,
+  src/decoder.c, src/dither.c, src/encoder.c, src/frame.c, src/fromgif.c,
+  src/frompnm.c, src/fromsixel.c, src/loader.c, src/malloc_stub.c,
+  src/output.c, src/pixelformat.c, src/quant.c, src/scale.c, src/status.c,
+  src/tests.c, src/tosixel.c, src/tty.c, src/writer.c: Build fixes
+
+2019-12-31  Hayaki Saito <saitoha@me.com>
+
+  * Makefile.in, config.h.in, configure, configure.ac, src/chunk.c,
+  src/decoder.c, src/fromsixel.c, src/malloc_stub.c, src/pixelformat.c,
+  src/status.c, src/stb_image.h, src/tests.c, src/tosixel.c, src/tty.c: Minor
+  update of configure checks
+
+2019-12-29  Hayaki Saito <saitoha@me.com>
+
+  * include/sixel.h.in, src/frompnm.c, src/writer.c: Add some input param
+  checks to sixel_helper_write_image_file()
+
+  * src/tosixel.c: Add some input param checks to sixel_encode()
+
+  * ChangeLog: Update Changelog
+
 2019-12-28  Hayaki Saito <saitoha@me.com>
 
   * src/encoder.c, src/loader.c, src/output.c, src/pixelformat.c: Strip
@@ -235,6 +274,8 @@
   * .travis.yml: Ammend fix for e18ebe6
 
   * .travis.yml: Drop mingw32 build
+
+  * .travis.yml: Ammend fix for e18ebe6
 
   * .travis.yml: Drop mingw32 build
 
