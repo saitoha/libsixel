@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2018 Hayaki Saito
+ * Copyright (c) 2014-2019 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -21,9 +21,13 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
+#if STDC_HEADERS
+# include <stdio.h>
+# include <stdlib.h>
+#endif  /* STDC_HEADERS */
+#if HAVE_MEMORY_H
+# include <memory.h>
+#endif  /* HAVE_MEMORY_H */
 
 #include <sixel.h>
 

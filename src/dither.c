@@ -21,18 +21,22 @@
 
 #include "config.h"
 
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stdio.h>
+#endif  /* STDC_HEADERS */
+#if HAVE_MATH_H
+# include <math.h>
+#endif  /* HAVE_MATH_H */
+#if HAVE_STRING_H
+# include <string.h>
+#endif  /* HAVE_STRING_H */
 #if HAVE_LIMITS_H
 # include <limits.h>
-#endif
-
+#endif  /* HAVE_LIMITS_H */
 #if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif
+#endif  /* HAVE_INTTYPES_H */
 
 #include "dither.h"
 #include "quant.h"
@@ -285,7 +289,8 @@ sixel_dither_new(
         quality_mode = SIXEL_QUALITY_HIGHCOLOR;
     } else {
         if (ncolors > SIXEL_PALETTE_MAX) {
-            ncolors = SIXEL_PALETTE_MAX;
+            status = SIXEL_BAD_INPUT;
+            goto end;
         } else if (ncolors < 1) {
             status = SIXEL_BAD_INPUT;
             sixel_helper_set_additional_message(
@@ -831,7 +836,7 @@ test1(void)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
-    dither = sixel_dither_create(0);
+    dither = sixel_dither_create(2);
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic pop
 #endif

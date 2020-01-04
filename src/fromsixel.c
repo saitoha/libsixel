@@ -14,15 +14,23 @@
  * it to the MIT license.
  */
 #include "config.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <ctype.h>   /* isdigit */
-#include <string.h>  /* memcpy */
-#include <limits.h>
 
-#if defined(HAVE_INTTYPES_H)
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stdio.h>
+#endif  /* STDC_HEADERS */
+#if HAVE_CTYPE_H
+# include <ctype.h>   /* isdigit */
+#endif  /* HAVE_CTYPE_H */
+#if HAVE_STRING_H
+# include <string.h>  /* memcpy */
+#endif  /* HAVE_STRING_H */
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif  /* HAVE_LIMITS_H */
+#if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif
+#endif  /* HAVE_INTTYPES_H */
 
 #include <sixel.h>
 #include "output.h"
@@ -186,12 +194,6 @@ image_buffer_init(
     if (height <= 0) {
         sixel_helper_set_additional_message(
             "image_buffer_init: an invalid width parameter detected.");
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
-    if (height > SIXEL_HEIGHT_LIMIT) {
-        sixel_helper_set_additional_message(
-            "image_buffer_init: given height parameter is too huge.");
         status = SIXEL_BAD_INPUT;
         goto end;
     }
@@ -914,31 +916,33 @@ sixel_decode_raw(
     image_buffer_t image;
     int n;
 
+    image.data = NULL;
+
     if (allocator) {
         sixel_allocator_ref(allocator);
     } else {
         status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
         if (SIXEL_FAILED(status)) {
             allocator = NULL;
-            goto end;
+            goto error;
         }
     }
 
     /* parser context initialization */
     status = parser_context_init(&context);
     if (SIXEL_FAILED(status)) {
-        goto end;
+        goto error;
     }
 
     /* buffer initialization */
     status = image_buffer_init(&image, 1, 1, context.bgindex, allocator);
     if (SIXEL_FAILED(status)) {
-        goto end;
+        goto error;
     }
 
     status = sixel_decode_raw_impl(p, len, &image, &context, allocator);
     if (SIXEL_FAILED(status)) {
-        goto end;
+        goto error;
     }
 
     *ncolors = image.ncolors + 1;
@@ -953,7 +957,7 @@ sixel_decode_raw(
         sixel_helper_set_additional_message(
             "sixel_deocde_raw: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
-        goto end;
+        goto error;
     }
     for (n = 0; n < *ncolors; ++n) {
         (*palette)[n * 3 + 0] = image.palette[n] >> 16 & 0xff;
@@ -966,6 +970,11 @@ sixel_decode_raw(
     *pixels = image.data;
 
     status = SIXEL_OK;
+    goto end;
+
+error:
+    free(image.data);
+    image.data = NULL;
 
 end:
     sixel_allocator_unref(allocator);

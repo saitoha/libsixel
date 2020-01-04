@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2014-2017 Hayaki Saito
+# Copyright (c) 2014-2020 Hayaki Saito
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -23,28 +23,43 @@
 from ctypes import cdll, c_void_p, c_int, c_byte, c_char_p, POINTER, byref, CFUNCTYPE, string_at
 from ctypes.util import find_library
 
+# limitations
+SIXEL_OUTPUT_PACKET_SIZE     = 16384
+SIXEL_PALETTE_MIN            = 2
+SIXEL_PALETTE_MAX            = 256
+SIXEL_USE_DEPRECATED_SYMBOLS = 1
+SIXEL_ALLOCATE_BYTES_MAX     = 10248 * 1024 * 128  # up to 128M
+SIXEL_WIDTH_LIMIT            = 1000000
+SIXEL_HEIGHT_LIMIT           = 1000000
+
+# loader settings
+SIXEL_DEFALUT_GIF_DELAY      = 1
+
+# return value
 SIXEL_OK              = 0x0000
 SIXEL_FALSE           = 0x1000
 
-SIXEL_RUNTIME_ERROR   = (SIXEL_FALSE         | 0x0100)  # runtime error
-SIXEL_LOGIC_ERROR     = (SIXEL_FALSE         | 0x0200)  # logic error
-SIXEL_FEATURE_ERROR   = (SIXEL_FALSE         | 0x0300)  # feature not enabled
-SIXEL_LIBC_ERROR      = (SIXEL_FALSE         | 0x0400)  # errors caused by curl
-SIXEL_CURL_ERROR      = (SIXEL_FALSE         | 0x0500)  # errors occures in libc functions
-SIXEL_JPEG_ERROR      = (SIXEL_FALSE         | 0x0600)  # errors occures in libjpeg functions
-SIXEL_PNG_ERROR       = (SIXEL_FALSE         | 0x0700)  # errors occures in libpng functions
-SIXEL_GDK_ERROR       = (SIXEL_FALSE         | 0x0800)  # errors occures in gdk functions
-SIXEL_GD_ERROR        = (SIXEL_FALSE         | 0x0900)  # errors occures in gd functions
-SIXEL_STBI_ERROR      = (SIXEL_FALSE         | 0x0a00)  # errors occures in stb_image functions
-SIXEL_STBIW_ERROR     = (SIXEL_FALSE         | 0x0b00)  # errors occures in stb_image_write functions
+# error codes
+SIXEL_RUNTIME_ERROR        = (SIXEL_FALSE         | 0x0100)  # runtime error
+SIXEL_LOGIC_ERROR          = (SIXEL_FALSE         | 0x0200)  # logic error
+SIXEL_FEATURE_ERROR        = (SIXEL_FALSE         | 0x0300)  # feature not enabled
+SIXEL_LIBC_ERROR           = (SIXEL_FALSE         | 0x0400)  # errors caused by curl
+SIXEL_CURL_ERROR           = (SIXEL_FALSE         | 0x0500)  # errors occures in libc functions
+SIXEL_JPEG_ERROR           = (SIXEL_FALSE         | 0x0600)  # errors occures in libjpeg functions
+SIXEL_PNG_ERROR            = (SIXEL_FALSE         | 0x0700)  # errors occures in libpng functions
+SIXEL_GDK_ERROR            = (SIXEL_FALSE         | 0x0800)  # errors occures in gdk functions
+SIXEL_GD_ERROR             = (SIXEL_FALSE         | 0x0900)  # errors occures in gd functions
+SIXEL_STBI_ERROR           = (SIXEL_FALSE         | 0x0a00)  # errors occures in stb_image functions
+SIXEL_STBIW_ERROR          = (SIXEL_FALSE         | 0x0b00)  # errors occures in stb_image_write functions
 
-SIXEL_INTERRUPTED     = (SIXEL_OK            | 0x0001)  # interrupted by a signal
+SIXEL_INTERRUPTED          = (SIXEL_OK            | 0x0001)  # interrupted by a signal
 
-SIXEL_BAD_ALLOCATION  = (SIXEL_RUNTIME_ERROR | 0x0001)  # malloc() failed
-SIXEL_BAD_ARGUMENT    = (SIXEL_RUNTIME_ERROR | 0x0002)  # bad argument detected
-SIXEL_BAD_INPUT       = (SIXEL_RUNTIME_ERROR | 0x0003)  # bad input detected
+SIXEL_BAD_ALLOCATION       = (SIXEL_RUNTIME_ERROR | 0x0001)  # malloc() failed
+SIXEL_BAD_ARGUMENT         = (SIXEL_RUNTIME_ERROR | 0x0002)  # bad argument detected
+SIXEL_BAD_INPUT            = (SIXEL_RUNTIME_ERROR | 0x0003)  # bad input detected
+SIXEL_BAD_INTEGER_OVERFLOW = (SIXEL_RUNTIME_ERROR | 0x0004)  /* integer overflow */
 
-SIXEL_NOT_IMPLEMENTED = (SIXEL_FEATURE_ERROR | 0x0001)  # feature not implemented
+SIXEL_NOT_IMPLEMENTED      = (SIXEL_FEATURE_ERROR | 0x0001)  # feature not implemented
 
 def SIXEL_SUCCEEDED(status):
     return (((status) & 0x1000) == 0)
