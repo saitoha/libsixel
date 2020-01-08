@@ -3,6 +3,9 @@ DIST_SUBDIRS = $(SUBDIRS)
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
+srcdir=@srcdir@
+VPATH=@VPATH@
+
 # pkgconfig
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libsixel.pc

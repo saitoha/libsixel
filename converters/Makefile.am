@@ -1,5 +1,8 @@
 DIST_SUBDIRS = $(SUBDIRS)
 
+srcdir=@srcdir@
+VPATH=@VPATH@
+
 bin_PROGRAMS =
 dist_man_MANS =
 
@@ -17,22 +20,22 @@ CLEANFILES = *.gcno *.gcda *.gcov *.png *.sixel *.txt *.pipe server.py server.ke
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
-img2sixel_SOURCES = img2sixel.c malloc_stub.c malloc_stub.h
+img2sixel_SOURCES = $(srcdir)/img2sixel.c $(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h
 img2sixel_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 img2sixel_LDADD = $(top_builddir)/src/libsixel.la
-dist_man_MANS += img2sixel.1
-dist_bashcompletion_DATA += shell-completion/bash/img2sixel
-dist_zshcompletion_DATA += shell-completion/zsh/_img2sixel
+dist_man_MANS += $(srcdir)/img2sixel.1
+dist_bashcompletion_DATA += $(srcdir)/shell-completion/bash/img2sixel
+dist_zshcompletion_DATA += $(srcdir)/shell-completion/zsh/_img2sixel
 endif
 
 if WANT_SIXEL2PNG
 bin_PROGRAMS += sixel2png
-sixel2png_SOURCES = sixel2png.c malloc_stub.c malloc_stub.h
+sixel2png_SOURCES = $(srcdir)/sixel2png.c $(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h
 sixel2png_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 sixel2png_LDADD = $(top_builddir)/src/libsixel.la
-dist_man_MANS += sixel2png.1
+dist_man_MANS += $(srcdir)/sixel2png.1
 endif
 
 check: test_impl
@@ -258,9 +261,9 @@ endif
 
 	@echo '[test13] documentation'
 	$(WINE) ./img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > options1.txt
-	grep ^\.B $(top_srcdir)/converters/img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > options2.txt
-	grep ' --' $(top_srcdir)/converters/shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > options3.txt
-	grep '{-' $(top_srcdir)/converters/shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > options4.txt
+	grep ^\.B $(srcdir)/img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > options2.txt
+	grep ' --' $(srcdir)/shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > options3.txt
+	grep '{-' $(srcdir)/shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > options4.txt
 	diff options1.txt options2.txt
 	diff options2.txt options3.txt
 	diff options3.txt options4.txt
