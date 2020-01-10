@@ -1,28 +1,31 @@
+#
+# @configure_input@
+#
 SUBDIRS = include src converters tools python
 DIST_SUBDIRS = $(SUBDIRS)
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
-srcdir=@srcdir@
-VPATH=@VPATH@
+srcdir = @srcdir@
+VPATH = @srcdir@
 
 # pkgconfig
 pkgconfigdir = @pkgconfigdir@
-pkgconfig_DATA = libsixel.pc
+pkgconfig_DATA = $(builddir)/libsixel.pc
 
-CLEANFILES = valgrind.log test.log unittest.log test-output.png
+CLEANFILES = $(builddir)/valgrind.log $(builddir)/test.log $(builddir)/unittest.log
 
 all-am:
-	cp package.json.in package.json
+	cp $(builddir)/package.json.in $(builddir)/package.json
 
 check-am:
 
 unittest: all
-	cd src && $(MAKE) unittest 2>&1 |tee unittest.log
+	cd $(srcdir)/src && $(MAKE) unittest 2>&1 |tee $(builddir)/unittest.log
 
 test: all
-	cd src && $(MAKE) unittest 2>&1 |tee ../test.log
-	cd converters && $(MAKE) test 2>&1 |tee -a ../test.log
+	cd src && $(MAKE) unittest 2>&1 |tee $(builddir)/test.log
+	cd converters && $(MAKE) test 2>&1 |tee -a $(builddir)/test.log
 
 winetest: all
 	cd converters && $(MAKE) winetest
@@ -30,10 +33,10 @@ winetest: all
 valgrind: all
 	valgrind --leak-check=full --show-reachable=no --error-limit=no img2sixel images/snake.jpg -dfs 2>&1 \
 		| grep ^== \
-		| tee valgrind.log
-	grep "All heap blocks were freed" valgrind.log || \
+		| tee $(builddir)/valgrind.log
+	grep "All heap blocks were freed" $(builddir)/valgrind.log || \
 		grep "definitely lost: 0 bytes in 0 blocks" valgrind.log
-	grep "All heap blocks were freed" valgrind.log || \
+	grep "All heap blocks were freed" $(builddir)/valgrind.log || \
 		grep "indirectly lost: 0 bytes in 0 blocks" valgrind.log
 
 coveralls:

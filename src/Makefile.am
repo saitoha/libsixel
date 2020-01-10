@@ -1,6 +1,11 @@
 
-srcdir=@srcdir@
-VPATH=@VPATH@
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+top_builddir = @top_builddir@
+builddir = @builddir@
 
 if COND_GCOV
 MAYBE_COVERAGE = --coverage
@@ -66,24 +71,24 @@ libsixel_la_LIBADD = -lm \
 
 if COND_TESTS
 noinst_PROGRAMS = tests
-tests_SOURCES = tests.c
+tests_SOURCES = $(srcdir)/tests.c
 tests_CPPFLAGS = -I$(top_builddir)/include/ \
 		 -I$(top_builddir)/src/ $(AM_CPPFLAGS)
 tests_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
-tests_LDADD = libsixel.la
+tests_LDADD = $(top_builddir)/src/libsixel.la
 endif
 
 dist_man_MANS = $(srcdir)/sixel.5
-EXTRA_DIST = rgblookup.gperf
+EXTRA_DIST = $(srcdir)/rgblookup.gperf
 
 unittest: all
 if COND_TESTS
-	./tests
+	$(srcdir)/tests
 endif
 
-gen-rgblookup: rgblookup.gperf
+gen-rgblookup: $(srcdir)/rgblookup.gperf
 	gperf -C -N lookup_rgb --ignore-case $< |\
 	sed 's/{""}/\{"", 0, 0, 0\}/g'          |\
-	astyle                                  > rgblookup.h
+	astyle                                  > $(srcdir)/rgblookup.h
 
 
