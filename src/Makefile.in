@@ -15,7 +15,6 @@
 @SET_MAKE@
 
 
-VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
     false; \
@@ -158,10 +157,10 @@ am__v_lt_1 =
 libsixel_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libsixel_la_CFLAGS) \
 	$(CFLAGS) $(libsixel_la_LDFLAGS) $(LDFLAGS) -o $@
-am__tests_SOURCES_DIST = tests.c
+am__tests_SOURCES_DIST = $(srcdir)/tests.c
 @COND_TESTS_TRUE@am_tests_OBJECTS = tests-tests.$(OBJEXT)
 tests_OBJECTS = $(am_tests_OBJECTS)
-@COND_TESTS_TRUE@tests_DEPENDENCIES = libsixel.la
+@COND_TESTS_TRUE@tests_DEPENDENCIES = $(srcdir)/libsixel.la
 tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(tests_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -251,6 +250,7 @@ CTAGS = ctags
 am__DIST_COMMON = $(dist_man_MANS) $(srcdir)/Makefile.in \
 	$(top_srcdir)/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+VPATH = @srcdir@
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_CFLAGS = @AM_CFLAGS@
@@ -402,45 +402,45 @@ zshcompletiondir = @zshcompletiondir@
 CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = \
-		output.c \
-		output.h \
-		fromsixel.c \
-		tosixel.c \
-		quant.c \
-		quant.h \
-		dither.c \
-		dither.h \
-		frame.c \
-		frame.h \
-		pixelformat.c \
-		pixelformat.h \
-		scale.c \
-		chunk.c \
-		chunk.h \
-		loader.c \
-		loader.h \
-		frompnm.c \
-		frompnm.h \
-		fromgif.c \
-		fromgif.h \
-		encoder.c \
-		encoder.h \
-		decoder.c \
-		decoder.h \
-		stb_image.h \
-		writer.c \
-		writer.h \
-		stb_image_write.c \
-		stb_image_write.h \
-		status.c \
-		status.h \
-		malloc_stub.c \
-		malloc_stub.h \
-		allocator.c \
-		allocator.h \
-		tty.c \
-		tty.h \
-		rgblookup.h
+		$(srcdir)/output.c \
+		$(srcdir)/output.h \
+		$(srcdir)/fromsixel.c \
+		$(srcdir)/tosixel.c \
+		$(srcdir)/quant.c \
+		$(srcdir)/quant.h \
+		$(srcdir)/dither.c \
+		$(srcdir)/dither.h \
+		$(srcdir)/frame.c \
+		$(srcdir)/frame.h \
+		$(srcdir)/pixelformat.c \
+		$(srcdir)/pixelformat.h \
+		$(srcdir)/scale.c \
+		$(srcdir)/chunk.c \
+		$(srcdir)/chunk.h \
+		$(srcdir)/loader.c \
+		$(srcdir)/loader.h \
+		$(srcdir)/frompnm.c \
+		$(srcdir)/frompnm.h \
+		$(srcdir)/fromgif.c \
+		$(srcdir)/fromgif.h \
+		$(srcdir)/encoder.c \
+		$(srcdir)/encoder.h \
+		$(srcdir)/decoder.c \
+		$(srcdir)/decoder.h \
+		$(srcdir)/stb_image.h \
+		$(srcdir)/writer.c \
+		$(srcdir)/writer.h \
+		$(srcdir)/stb_image_write.c \
+		$(srcdir)/stb_image_write.h \
+		$(srcdir)/status.c \
+		$(srcdir)/status.h \
+		$(srcdir)/malloc_stub.c \
+		$(srcdir)/malloc_stub.h \
+		$(srcdir)/allocator.c \
+		$(srcdir)/allocator.h \
+		$(srcdir)/tty.c \
+		$(srcdir)/tty.h \
+		$(srcdir)/rgblookup.h
 
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/
 libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
@@ -458,14 +458,14 @@ libsixel_la_LIBADD = -lm \
 		$(GDK_PIXBUF_LIBS) \
 		$(GD_LIBS)
 
-@COND_TESTS_TRUE@tests_SOURCES = tests.c
+@COND_TESTS_TRUE@tests_SOURCES = $(srcdir)/tests.c
 @COND_TESTS_TRUE@tests_CPPFLAGS = -I$(top_builddir)/include/ \
 @COND_TESTS_TRUE@		 -I$(top_builddir)/src/ $(AM_CPPFLAGS)
 
 @COND_TESTS_TRUE@tests_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
-@COND_TESTS_TRUE@tests_LDADD = libsixel.la
-dist_man_MANS = sixel.5
-EXTRA_DIST = rgblookup.gperf
+@COND_TESTS_TRUE@tests_LDADD = $(srcdir)/libsixel.la
+dist_man_MANS = $(srcdir)/sixel.5
+EXTRA_DIST = $(srcdir)/rgblookup.gperf
 all: all-am
 
 .SUFFIXES:
@@ -586,22 +586,25 @@ $(am__depfiles_remade):
 am--depfiles: $(am__depfiles_remade)
 
 .c.o:
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ $<
 
 .c.obj:
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .c.lo:
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
@@ -1067,12 +1070,12 @@ uninstall-man: uninstall-man5
 
 
 unittest: all
-@COND_TESTS_TRUE@	./tests
+@COND_TESTS_TRUE@	$(srcdir)/tests
 
-gen-rgblookup: rgblookup.gperf
+gen-rgblookup: $(srcdir)/rgblookup.gperf
 	gperf -C -N lookup_rgb --ignore-case $< |\
 	sed 's/{""}/\{"", 0, 0, 0\}/g'          |\
-	astyle                                  > rgblookup.h
+	astyle                                  > $(srcdir)/rgblookup.h
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
