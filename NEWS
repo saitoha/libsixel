@@ -3,9 +3,9 @@
                    What's new in libsixel-1.8 ?
                   ------------------------------
 
-* python: Fix broken python interface
+* python: Fix broken python interface problem(#128), reported by @fd00.
 
-* build: Introduce VPATH build support(#56)
+* build: Introduce VPATH build support(#56), suggested by @tkelman.
 
 * Security fix for CVE-2019-20205 (#127), integer overflow problem,
   reported by @sleicasper.
