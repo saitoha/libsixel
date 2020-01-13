@@ -160,7 +160,7 @@ libsixel_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 am__tests_SOURCES_DIST = $(srcdir)/tests.c
 @COND_TESTS_TRUE@am_tests_OBJECTS = tests-tests.$(OBJEXT)
 tests_OBJECTS = $(am_tests_OBJECTS)
-@COND_TESTS_TRUE@tests_DEPENDENCIES = $(top_builddir)/src/libsixel.la
+@COND_TESTS_TRUE@tests_DEPENDENCIES = $(srcdir)/libsixel.la
 tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(tests_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -463,7 +463,7 @@ libsixel_la_LIBADD = -lm \
 @COND_TESTS_TRUE@		 -I$(top_builddir)/src/ $(AM_CPPFLAGS)
 
 @COND_TESTS_TRUE@tests_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
-@COND_TESTS_TRUE@tests_LDADD = $(top_builddir)/src/libsixel.la
+@COND_TESTS_TRUE@tests_LDADD = $(srcdir)/libsixel.la
 dist_man_MANS = $(srcdir)/sixel.5
 EXTRA_DIST = $(srcdir)/rgblookup.gperf
 all: all-am
