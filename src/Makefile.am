@@ -75,7 +75,7 @@ tests_SOURCES = $(srcdir)/tests.c
 tests_CPPFLAGS = -I$(top_builddir)/include/ \
 		 -I$(top_builddir)/src/ $(AM_CPPFLAGS)
 tests_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
-tests_LDADD = $(top_builddir)/src/libsixel.la
+tests_LDADD = $(srcdir)/libsixel.la
 endif
 
 dist_man_MANS = $(srcdir)/sixel.5
