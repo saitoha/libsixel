@@ -1,4 +1,26 @@
+2020-01-12  Hayaki Saito <saitoha@me.com>
+
+  * converters/Makefile.am, converters/Makefile.in, src/loader.c: More tweaks
+  for vpath build
+
+2020-01-11  Hayaki Saito <saitoha@me.com>
+
+  * Makefile.am, Makefile.in, configure.ac, converters/Makefile.am,
+  converters/Makefile.in, python/libsixel/__init__.py, src/Makefile.am,
+  src/Makefile.in: Additional fixes for VPATH build(#56)
+
+  * python/libsixel/__init__.py: Fix broken python interface
+
+2020-01-09  Hayaki Saito <saitoha@me.com>
+
+  * Makefile.am, Makefile.in, converters/Makefile.am, converters/Makefile.in,
+  src/Makefile.am, src/Makefile.in: Initial support for VPATH build(#56)
+
 2020-01-03  Hayaki Saito <saitoha@me.com>
+
+  * NEWS: Update NEWS
+
+  * ChangeLog: Update ChangeLog
 
   * include/sixel.h.in, python/libsixel/__init__.py: Update python interface
 
@@ -65,6 +87,9 @@
 
   * include/sixel.h.in, src/allocator.c: Introduce SIXEL_ALLOCATE_BYTES_MAX
   macro and limit allocation size to 128MB(#74)
+
+  * config.h.in, configure, configure.ac, src/loader.c: Make stb_image errors
+  more detailed
 
   * src/fromgif.c: Minor fixes in load_gif().
 

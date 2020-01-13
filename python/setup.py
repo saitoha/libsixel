@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 __license__ = 'MIT'
 __author__ = 'Hayaki Saito'
 
@@ -17,7 +17,7 @@ setup(name                  = 'libsixel-python',
       description           = 'libsixel binding for Python',
       long_description      = long_description,
       py_modules            = ['libsixel'],
-      classifiers           = ['Development Status :: 4 - Beta',
+      classifiers           = ['Development Status :: 4 - Production/Stable',
                                'Topic :: Terminals',
                                'Environment :: Console',
                                'Intended Audience :: End Users/Desktop',
