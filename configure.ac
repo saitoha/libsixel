@@ -13,7 +13,7 @@ AC_SUBST([PACKAGE_DESCRIPTION],
 
 AC_CANONICAL_HOST
 
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([foreign subdir-objects])
 LT_INIT
 AC_CONFIG_SRCDIR([src/fromsixel.c])
 AC_CONFIG_HEADERS([config.h])
@@ -210,6 +210,8 @@ LS_CHECK_CFLAG([-Wunused-function],
                [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_FUNCTION, 1, [define 1 if GCC supports -Wunused-function])])
 LS_CHECK_CFLAG([-Wclobbered],
                [AC_DEFINE(HAVE_DIAGNOSTIC_CLOBBERED, 1, [define 1 if GCC supports -Wclobbered])])
+LS_CHECK_CFLAG([-Wunused-but-set-variable],
+               [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE, 1, [define 1 if GCC supports -Wunused-but-set-variable])])
 LS_CHECK_CFLAG([-Bsymbolic],
                [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
                 AC_DEFINE(HAVE_BSYMBOLIC, 1, [define 1 if GCC supports -Bsymbolic])])
