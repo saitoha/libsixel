@@ -638,7 +638,7 @@ cleanup:
 # pragma GCC diagnostic pop
 #endif
 
-# endif  /* HAVE_PNG */
+# endif  /* HAVE_LIBPNG */
 
 
 static SIXELSTATUS

@@ -57,7 +57,7 @@ SIXEL_INTERRUPTED          = (SIXEL_OK            | 0x0001)  # interrupted by a 
 SIXEL_BAD_ALLOCATION       = (SIXEL_RUNTIME_ERROR | 0x0001)  # malloc() failed
 SIXEL_BAD_ARGUMENT         = (SIXEL_RUNTIME_ERROR | 0x0002)  # bad argument detected
 SIXEL_BAD_INPUT            = (SIXEL_RUNTIME_ERROR | 0x0003)  # bad input detected
-SIXEL_BAD_INTEGER_OVERFLOW = (SIXEL_RUNTIME_ERROR | 0x0004)  /* integer overflow */
+SIXEL_BAD_INTEGER_OVERFLOW = (SIXEL_RUNTIME_ERROR | 0x0004)  # integer overflow
 
 SIXEL_NOT_IMPLEMENTED      = (SIXEL_FEATURE_ERROR | 0x0001)  # feature not implemented
 
