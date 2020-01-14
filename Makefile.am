@@ -4,6 +4,9 @@
 SUBDIRS = include src converters tools python
 DIST_SUBDIRS = $(SUBDIRS)
 
+EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
+	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb
+
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 srcdir = @srcdir@
