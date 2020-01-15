@@ -30,7 +30,9 @@ CLEANFILES = *.gcno *.gcda *.gcov \
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
-img2sixel_SOURCES = $(srcdir)/img2sixel.c $(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h
+img2sixel_SOURCES = img2sixel.c \
+		    malloc_stub.c \
+		    malloc_stub.h
 img2sixel_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 img2sixel_LDADD = $(top_builddir)/src/libsixel.la
@@ -41,7 +43,9 @@ endif
 
 if WANT_SIXEL2PNG
 bin_PROGRAMS += sixel2png
-sixel2png_SOURCES = $(srcdir)/sixel2png.c $(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h
+sixel2png_SOURCES = sixel2png.c \
+		    malloc_stub.c \
+		    malloc_stub.h
 sixel2png_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 sixel2png_LDADD = $(top_builddir)/src/libsixel.la

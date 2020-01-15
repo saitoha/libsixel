@@ -15,45 +15,45 @@ CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = \
-		$(srcdir)/output.c \
-		$(srcdir)/output.h \
-		$(srcdir)/fromsixel.c \
-		$(srcdir)/tosixel.c \
-		$(srcdir)/quant.c \
-		$(srcdir)/quant.h \
-		$(srcdir)/dither.c \
-		$(srcdir)/dither.h \
-		$(srcdir)/frame.c \
-		$(srcdir)/frame.h \
-		$(srcdir)/pixelformat.c \
-		$(srcdir)/pixelformat.h \
-		$(srcdir)/scale.c \
-		$(srcdir)/chunk.c \
-		$(srcdir)/chunk.h \
-		$(srcdir)/loader.c \
-		$(srcdir)/loader.h \
-		$(srcdir)/frompnm.c \
-		$(srcdir)/frompnm.h \
-		$(srcdir)/fromgif.c \
-		$(srcdir)/fromgif.h \
-		$(srcdir)/encoder.c \
-		$(srcdir)/encoder.h \
-		$(srcdir)/decoder.c \
-		$(srcdir)/decoder.h \
-		$(srcdir)/stb_image.h \
-		$(srcdir)/writer.c \
-		$(srcdir)/writer.h \
-		$(srcdir)/stb_image_write.c \
-		$(srcdir)/stb_image_write.h \
-		$(srcdir)/status.c \
-		$(srcdir)/status.h \
-		$(srcdir)/malloc_stub.c \
-		$(srcdir)/malloc_stub.h \
-		$(srcdir)/allocator.c \
-		$(srcdir)/allocator.h \
-		$(srcdir)/tty.c \
-		$(srcdir)/tty.h \
-		$(srcdir)/rgblookup.h
+		output.c \
+		output.h \
+		fromsixel.c \
+		tosixel.c \
+		quant.c \
+		quant.h \
+		dither.c \
+		dither.h \
+		frame.c \
+		frame.h \
+		pixelformat.c \
+		pixelformat.h \
+		scale.c \
+		chunk.c \
+		chunk.h \
+		loader.c \
+		loader.h \
+		frompnm.c \
+		frompnm.h \
+		fromgif.c \
+		fromgif.h \
+		encoder.c \
+		encoder.h \
+		decoder.c \
+		decoder.h \
+		stb_image.h \
+		writer.c \
+		writer.h \
+		stb_image_write.c \
+		stb_image_write.h \
+		status.c \
+		status.h \
+		malloc_stub.c \
+		malloc_stub.h \
+		allocator.c \
+		allocator.h \
+		tty.c \
+		tty.h \
+		rgblookup.h
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/
 libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(LIBCURL_CFLAGS) \
@@ -71,15 +71,15 @@ libsixel_la_LIBADD = -lm \
 
 if COND_TESTS
 noinst_PROGRAMS = tests
-tests_SOURCES = $(srcdir)/tests.c
+tests_SOURCES = tests.c
 tests_CPPFLAGS = -I$(top_builddir)/include/ \
 		 -I$(top_builddir)/src/ $(AM_CPPFLAGS)
 tests_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 tests_LDADD = $(srcdir)/libsixel.la
 endif
 
-dist_man_MANS = $(srcdir)/sixel.5
-EXTRA_DIST = $(srcdir)/rgblookup.gperf
+dist_man_MANS = sixel.5
+EXTRA_DIST = rgblookup.gperf
 
 unittest: all
 if COND_TESTS
