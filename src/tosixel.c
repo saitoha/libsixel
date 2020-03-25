@@ -787,6 +787,7 @@ sixel_encode_footer(sixel_output_t *output)
     return status;
 }
 
+
 static SIXELSTATUS
 sixel_encode_body_ormode(
     uint8_t             /* in */ *pixels,
