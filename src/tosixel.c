@@ -850,8 +850,6 @@ sixel_encode_body_ormode(
 
     if (cur_h > height) {
         for (plane = 0; plane < nplanes; plane++) {
-            int pix;
-
             sixel_putc(output->buffer + output->pos, '#');
             sixel_advance(output, 1);
             nwrite = sixel_putnum((char *)output->buffer + output->pos, 1 << plane);
@@ -859,7 +857,7 @@ sixel_encode_body_ormode(
 
             buf_p = buf;
             for (x = 0; x < width; x++) {
-                pix = ((buf_p[0] >> plane) & 0x1);
+                int pix = ((buf_p[0] >> plane) & 0x1);
 
                 switch(cur_h - height) {
                 case 1:
