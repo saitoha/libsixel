@@ -513,7 +513,6 @@ sixel_encode_body(
     int sx;
     int mx;
     int len;
-    int pix;
     char *map = NULL;
     int check_integer_overflow;
     sixel_node_t *np, *tp, top;
@@ -555,6 +554,8 @@ sixel_encode_body(
     }
 
     for (y = i = 0; y < height; y++) {
+        int pix;
+
         if (output->encode_policy != SIXEL_ENCODEPOLICY_SIZE) {
             fillable = 0;
         } else if (palstate) {
@@ -822,7 +823,7 @@ sixel_encode_body_ormode(
         for (plane = 0; plane < nplanes; plane++) {
             sixel_putc(output->buffer + output->pos, '#');
             sixel_advance(output, 1);
-            nwrite = sixel_putnum(output->buffer + output->pos, 1 << plane);
+            nwrite = sixel_putnum((char *)output->buffer + output->pos, 1 << plane);
             sixel_advance(output, nwrite);
 
             buf_p = buf;
@@ -853,7 +854,7 @@ sixel_encode_body_ormode(
 
             sixel_putc(output->buffer + output->pos, '#');
             sixel_advance(output, 1);
-            nwrite = sixel_putnum(output->buffer + output->pos, 1 << plane);
+            nwrite = sixel_putnum((char *)output->buffer + output->pos, 1 << plane);
             sixel_advance(output, nwrite);
 
             buf_p = buf;
