@@ -200,6 +200,7 @@ sixel_output_set_ormode(sixel_output_t *output, int ormode)
     output->ormode = ormode;
 }
 
+
 /* set encodeing policy: auto, fast or size */
 SIXELAPI void
 sixel_output_set_encode_policy(sixel_output_t *output, int encode_policy)

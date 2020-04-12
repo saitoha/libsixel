@@ -648,6 +648,11 @@ sixel_output_set_palette_type(
     int            /* in */ palettetype); /* PALETTETYPE_RGB: RGB palette
                                              PALETTETYPE_HLS: HLS palette */
 
+SIXELAPI void
+sixel_output_set_ormode(
+    sixel_output_t /* in */ *output,    /* output context */
+    int /* in */ ormode);
+
 /* set encodeing policy: auto, fast or size */
 SIXELAPI void
 sixel_output_set_encode_policy(
