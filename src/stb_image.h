@@ -850,7 +850,7 @@ static const char *stbi__g_failure_reason;
 STBIDEF const char *stbi_failure_reason(void)
 {
    if (stbi__g_failure_reason == NULL)
-      stbi__g_failure_reason = "unknwon error, refer error message before assignment";
+      stbi__g_failure_reason = "unknown error, refer error message before assignment";
    return stbi__g_failure_reason;
 }
 
