@@ -1630,7 +1630,7 @@ sixel_encoder_setopt(
     default:
         /* exit if unknown options are specified */
         sixel_helper_set_additional_message(
-            "unknwon option is specified.");
+            "unknown option is specified.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
