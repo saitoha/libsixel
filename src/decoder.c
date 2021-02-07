@@ -324,7 +324,7 @@ sixel_decoder_decode(
     }
 
     status = sixel_helper_write_image_file(indexed_pixels, sx, sy, palette,
-                                           SIXEL_PIXELFORMAT_PAL8,
+                                           SIXEL_PIXELFORMAT_RGB888,
                                            decoder->output,
                                            SIXEL_FORMAT_PNG,
                                            decoder->allocator);
