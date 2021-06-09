@@ -312,7 +312,7 @@ load_png(unsigned char      /* out */ **result,
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wclobbered"
 #endif
-    unsigned char **rows;
+    unsigned char **rows = NULL;
     png_color *png_palette = NULL;
     png_color_16 background;
     png_color_16p default_background;
@@ -329,7 +329,6 @@ load_png(unsigned char      /* out */ **result,
 #endif  /* HAVE_SETJMP && HAVE_LONGJMP */
 
     status = SIXEL_FALSE;
-    rows = NULL;
     *result = NULL;
 
     png_ptr = png_create_read_struct(
@@ -337,6 +336,14 @@ load_png(unsigned char      /* out */ **result,
     if (!png_ptr) {
         sixel_helper_set_additional_message(
             "png_create_read_struct() failed.");
+        status = SIXEL_PNG_ERROR;
+        goto cleanup;
+    }
+
+    // The minimum valid PNG is 67 bytes.
+    // https://garethrees.org/2007/11/14/pngcrush/
+    if (size < 67) {
+        sixel_helper_set_additional_message("PNG data too small to be valid!");
         status = SIXEL_PNG_ERROR;
         goto cleanup;
     }
@@ -349,6 +356,7 @@ load_png(unsigned char      /* out */ **result,
         goto cleanup;
     }
 #endif  /* HAVE_SETJMP */
+
 
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
@@ -630,7 +638,10 @@ load_png(unsigned char      /* out */ **result,
 
 cleanup:
     png_destroy_read_struct(&png_ptr, &info_ptr,(png_infopp)0);
-    sixel_allocator_free(allocator, rows);
+
+    if (rows != NULL) {
+        sixel_allocator_free(allocator, rows);
+    }
 
     return status;
 }
