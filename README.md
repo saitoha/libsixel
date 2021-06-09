@@ -4,6 +4,10 @@ libsixel
 [![Build Status](https://travis-ci.org/saitoha/libsixel.svg?branch=master)](https://travis-ci.org/saitoha/libsixel)
 [![Coverage Status](https://coveralls.io/repos/saitoha/libsixel/badge.png?branch=master)](https://coveralls.io/r/saitoha/libsixel?branch=master)
 
+## This is a fork
+
+This is a fork with various improvements and security patches. Hayaki Saito, the project's originator and long-time maintainer, disappeared in 1/2020. It's unknown what happened to him, he no longer even posts on Twitter. This is a continuation by the community. Fredrick R. Brennan (@ctrlcctrlv) is lead maintainer. For more information see [saitoha/libsixel issue №154](https://github.com/saitoha/libsixel/issues/154).
+
 ## What is this?
 
 This package provides encoder/decoder implementation for DEC SIXEL graphics, and
