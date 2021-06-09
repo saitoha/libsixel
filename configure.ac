@@ -1,15 +1,15 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.60])
+AC_PREREQ([2.71])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.8.6], [saitoha@me.com])
+AC_INIT([sixel],[1.9.0],[copypaste@kittens.ph])
 LS_LT_CURRENT=1
-LS_LT_REVISION=6
+LS_LT_REVISION=9
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 AC_SUBST([PACKAGE_DESCRIPTION],
-         ["A lightweight, fast implementation of DEC SIXEL graphics codec"])
+         ["A lightweight, fast C implementation of DEC SIXEL graphics codec"])
 
 AC_CANONICAL_HOST
 
@@ -33,36 +33,30 @@ AX_GCC_BUILTIN([__builtin_unreachable])
 
 CFLAGS_BACKUP=$CFLAGS
 CFLAGS="$CFLAGS -Werror"
-AC_TRY_COMPILE(
-  [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     #pragma GCC diagnostic push
     #pragma GCC diagnostic pop
     #pragma GCC diagnostic ignored "-Wtypedef-redefinition"
-  ],
-  [
+  ]], [[
     typedef int foo;
     typedef int foo;
-  ],
-  [AC_DEFINE(HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION,
+  ]])],[AC_DEFINE(HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION,
              1,
-             [define 1 if GCC supports -Wtypedef-redefinition])])
+             [define 1 if GCC supports -Wtypedef-redefinition])],[])
 CFLAGS=$CFLAGS_BACKUP
 
 CFLAGS_BACKUP=$CFLAGS
 CFLAGS="$CFLAGS -Werror"
-AC_TRY_COMPILE(
-  [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     #pragma GCC diagnostic push
     #pragma GCC diagnostic pop
     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     __attribute__((deprecated)) void test(void) {}
-  ],
-  [
+  ]], [[
     test();
-  ],
-  [AC_DEFINE(HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS,
+  ]])],[AC_DEFINE(HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS,
              1,
-             [define 1 if GCC supports -Wdeprecated-declarations])])
+             [define 1 if GCC supports -Wdeprecated-declarations])],[])
 CFLAGS=$CFLAGS_BACKUP
 
 # Options
@@ -117,24 +111,21 @@ AC_ARG_WITH([png],
 #            [with_wic=no])
 
 AC_ARG_WITH(pkgconfigdir,
-            AC_HELP_STRING([--with-pkgconfigdir],
-                           [Use the specified pkgconfig dir (default is libdir/pkgconfig)]),
+            AS_HELP_STRING([--with-pkgconfigdir],[Use the specified pkgconfig dir (default is libdir/pkgconfig)]),
                            [pkgconfigdir=${withval}],
                            [pkgconfigdir=${libdir}/pkgconfig])
 AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
 AC_SUBST(pkgconfigdir)
 
 AC_ARG_WITH(bashcompletiondir,
-            AC_HELP_STRING([--with-bashcompletiondir],
-                           [Use the specified bashcompletion.d]),
+            AS_HELP_STRING([--with-bashcompletiondir],[Use the specified bashcompletion.d]),
                            [bashcompletiondir=${withval}],
                            [bashcompletiondir=${datadir}/bash-completion/completions])
 AC_MSG_NOTICE([bash-completion directory is ${bashcompletiondir}])
 AC_SUBST(bashcompletiondir)
 
 AC_ARG_WITH(zshcompletiondir,
-            AC_HELP_STRING([--with-zshcompletiondir],
-                           [Use the specified zshcompletion.d]),
+            AS_HELP_STRING([--with-zshcompletiondir],[Use the specified zshcompletion.d]),
                            [zshcompletiondir=${withval}],
                            [zshcompletiondir=${datadir}/zsh/site-functions])
 AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])
@@ -231,7 +222,15 @@ AC_CHECK_LIB([m], [floor])
 
 # Checks for libraries.
 
-AC_HEADER_STDC
+m4_warn([obsolete],
+[The preprocessor macro `STDC_HEADERS' is obsolete.
+  Except in unusual embedded environments, you can safely include all
+  ISO C90 headers unconditionally.])dnl
+# Autoupdate added the next two lines to ensure that your configure
+# script's behavior did not change.  They are probably safe to remove.
+AC_CHECK_INCLUDES_DEFAULT
+AC_PROG_EGREP
+
 
 # Checks for header files.
 AC_CHECK_HEADERS([assert.h \
