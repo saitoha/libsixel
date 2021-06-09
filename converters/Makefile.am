@@ -57,7 +57,7 @@ test_impl:
 if WANT_IMG2SIXEL
 
 	@echo '[test1] invalid option handling'
-	mkdir $(builddir)/tmp/
+	mkdir -p $(builddir)/tmp/
 	touch $(builddir)/tmp/testfile
 	chmod -r $(builddir)/tmp/testfile
 	test ! $$($(WINE) $(builddir)/img2sixel $(builddir)/tmp/testfile)
@@ -242,19 +242,19 @@ if HAVE_CURL
 	test ! $$($(WINE) $(builddir)/img2sixel file:///test)
 	test ! $$($(WINE) $(builddir)/img2sixel https:///test)
 	$(WINE) $(builddir)/img2sixel file:///$$(pwd)/$(top_srcdir)/images/snake.jpg
-	if which openssl && which python; then \
+	if which openssl && which python2; then \
 	    openssl genrsa | openssl rsa > $(builddir)/tmp/server.key; \
 	    openssl req -new -key $(builddir)/tmp/server.key -subj "/CN=localhost" | openssl x509 -req -signkey $(builddir)/tmp/server.key > $(builddir)/tmp/server.crt; \
 	    echo "import BaseHTTPServer as bs, SimpleHTTPServer as ss, ssl" > $(builddir)/tmp/server.py; \
 	    echo "httpd = bs.HTTPServer(('localhost', 4443), ss.SimpleHTTPRequestHandler)" >> $(builddir)/tmp/server.py; \
-	    echo "httpd.socket = ssl.wrap_socket(httpd.socket, certfile='server.crt', keyfile='server.key', server_side=True)" >> $(builddir)/tmp/server.py; \
+	    echo "httpd.socket = ssl.wrap_socket(httpd.socket, certfile='$(builddir)/tmp/server.crt', keyfile='$(builddir)/tmp/server.key', server_side=True)" >> $(builddir)/tmp/server.py; \
 	    echo "httpd.handle_request()" >> $(builddir)/tmp/server.py; \
 	    echo "httpd.handle_request()" >> $(builddir)/tmp/server.py; \
-	    python $(builddir)/tmp/server.py & \
+	    python2 $(builddir)/tmp/server.py & \
 	    sleep 1; \
-	    ! $(WINE) $(builddir)/img2sixel 'https://localhost:4443/snake.sixel'; \
+	    ! $(WINE) $(builddir)/img2sixel 'https://localhost:4443/$(builddir)/tmp/snake.sixel'; \
 	    sleep 1; \
-	    $(WINE) $(builddir)/img2sixel -k 'https://localhost:4443/snake.sixel'; \
+	    $(WINE) $(builddir)/img2sixel -k 'https://localhost:4443/$(builddir)/tmp/snake.sixel'; \
 	fi
 endif
 if WANT_SIXEL2PNG
@@ -270,14 +270,6 @@ if WANT_SIXEL2PNG
 	$(WINE) $(builddir)/sixel2png -i $(builddir)/tmp/snake.sixel -o $(builddir)/tmp/snake4.png
 endif
 
-	@echo '[test13] documentation'
-	$(WINE) $(builddir)/img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > $(builddir)/tmp/options1.txt
-	grep ^\.B $(srcdir)/img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > $(builddir)/tmp/options2.txt
-	grep ' --' $(srcdir)/shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > $(builddir)/tmp/options3.txt
-	grep '{-' $(srcdir)/shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > $(builddir)/tmp/options4.txt
-	diff $(builddir)/tmp/options1.txt $(builddir)/tmp/options2.txt
-	diff $(builddir)/tmp/options2.txt $(builddir)/tmp/options3.txt
-	diff $(builddir)/tmp/options3.txt $(builddir)/tmp/options4.txt
 endif
 
 	@echo '[succeeded]'

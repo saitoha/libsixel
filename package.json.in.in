@@ -1,7 +1,7 @@
 {
   "name": "libsixel",
   "version": "@PACKAGE_VERSION@",
-  "repo": "saitoha/libsixel",
+  "repo": "libsixel/libsixel",
   "description": "@PACKAGE_DESCRIPTION@",
   "keywords": ["terminal", "graphics", "image", "sixel"],
   "license": "MIT",

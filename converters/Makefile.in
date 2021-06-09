@@ -1048,7 +1048,7 @@ test_impl:
 	@echo '[start]'
 
 @WANT_IMG2SIXEL_TRUE@	@echo '[test1] invalid option handling'
-@WANT_IMG2SIXEL_TRUE@	mkdir $(builddir)/tmp/
+@WANT_IMG2SIXEL_TRUE@	mkdir -p $(builddir)/tmp/
 @WANT_IMG2SIXEL_TRUE@	touch $(builddir)/tmp/testfile
 @WANT_IMG2SIXEL_TRUE@	chmod -r $(builddir)/tmp/testfile
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel $(builddir)/tmp/testfile)
@@ -1230,19 +1230,19 @@ test_impl:
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel file:///test)
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel https:///test)
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel file:///$$(pwd)/$(top_srcdir)/images/snake.jpg
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	if which openssl && which python; then \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	if which openssl && which python2; then \
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    openssl genrsa | openssl rsa > $(builddir)/tmp/server.key; \
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    openssl req -new -key $(builddir)/tmp/server.key -subj "/CN=localhost" | openssl x509 -req -signkey $(builddir)/tmp/server.key > $(builddir)/tmp/server.crt; \
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "import BaseHTTPServer as bs, SimpleHTTPServer as ss, ssl" > $(builddir)/tmp/server.py; \
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "httpd = bs.HTTPServer(('localhost', 4443), ss.SimpleHTTPRequestHandler)" >> $(builddir)/tmp/server.py; \
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "httpd.socket = ssl.wrap_socket(httpd.socket, certfile='server.crt', keyfile='server.key', server_side=True)" >> $(builddir)/tmp/server.py; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "httpd.socket = ssl.wrap_socket(httpd.socket, certfile='$(builddir)/tmp/server.crt', keyfile='$(builddir)/tmp/server.key', server_side=True)" >> $(builddir)/tmp/server.py; \
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "httpd.handle_request()" >> $(builddir)/tmp/server.py; \
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "httpd.handle_request()" >> $(builddir)/tmp/server.py; \
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    python $(builddir)/tmp/server.py & \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    python2 $(builddir)/tmp/server.py & \
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    sleep 1; \
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    ! $(WINE) $(builddir)/img2sixel 'https://localhost:4443/snake.sixel'; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    ! $(WINE) $(builddir)/img2sixel 'https://localhost:4443/$(builddir)/tmp/snake.sixel'; \
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    sleep 1; \
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    $(WINE) $(builddir)/img2sixel -k 'https://localhost:4443/snake.sixel'; \
+@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    $(WINE) $(builddir)/img2sixel -k 'https://localhost:4443/$(builddir)/tmp/snake.sixel'; \
 @HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	fi
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	@echo '[test11] sixel2png'
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	test ! $$($(WINE) $(builddir)/sixel2png -i $(builddir)/tmp/unknown.sixel)
@@ -1254,15 +1254,6 @@ test_impl:
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) $(builddir)/sixel2png < $(builddir)/tmp/snake2.sixel > $(builddir)/tmp/snake2.png
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) $(builddir)/sixel2png - - < $(builddir)/tmp/snake3.sixel > $(builddir)/tmp/snake3.png
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) $(builddir)/sixel2png -i $(builddir)/tmp/snake.sixel -o $(builddir)/tmp/snake4.png
-
-@WANT_IMG2SIXEL_TRUE@	@echo '[test13] documentation'
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > $(builddir)/tmp/options1.txt
-@WANT_IMG2SIXEL_TRUE@	grep ^\.B $(srcdir)/img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > $(builddir)/tmp/options2.txt
-@WANT_IMG2SIXEL_TRUE@	grep ' --' $(srcdir)/shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > $(builddir)/tmp/options3.txt
-@WANT_IMG2SIXEL_TRUE@	grep '{-' $(srcdir)/shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > $(builddir)/tmp/options4.txt
-@WANT_IMG2SIXEL_TRUE@	diff $(builddir)/tmp/options1.txt $(builddir)/tmp/options2.txt
-@WANT_IMG2SIXEL_TRUE@	diff $(builddir)/tmp/options2.txt $(builddir)/tmp/options3.txt
-@WANT_IMG2SIXEL_TRUE@	diff $(builddir)/tmp/options3.txt $(builddir)/tmp/options4.txt
 
 	@echo '[succeeded]'
 
