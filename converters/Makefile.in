@@ -133,7 +133,7 @@ am__v_lt_0 = --silent
 am__v_lt_1 = 
 img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(img2sixel_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(img2sixel_LDFLAGS) $(LDFLAGS) -o $@
 am__sixel2png_SOURCES_DIST = $(srcdir)/sixel2png.c \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h
 @WANT_SIXEL2PNG_TRUE@am_sixel2png_OBJECTS =  \
@@ -144,7 +144,7 @@ sixel2png_OBJECTS = $(am_sixel2png_OBJECTS)
 @WANT_SIXEL2PNG_TRUE@	$(top_builddir)/src/libsixel.la
 sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sixel2png_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(sixel2png_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -457,10 +457,12 @@ CLEANFILES = *.gcno *.gcda *.gcov \
 @WANT_IMG2SIXEL_TRUE@img2sixel_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 @WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la
+@WANT_IMG2SIXEL_TRUE@img2sixel_LDFLAGS = -static
 @WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = $(srcdir)/sixel2png.c $(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h
 @WANT_SIXEL2PNG_TRUE@sixel2png_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 @WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la
+@WANT_SIXEL2PNG_TRUE@sixel2png_LDFLAGS = -static
 all: all-recursive
 
 .SUFFIXES:

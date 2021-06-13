@@ -34,6 +34,7 @@ img2sixel_SOURCES = $(srcdir)/img2sixel.c $(srcdir)/malloc_stub.c $(srcdir)/mall
 img2sixel_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 img2sixel_LDADD = $(top_builddir)/src/libsixel.la
+img2sixel_LDFLAGS = -static
 dist_man_MANS += $(srcdir)/img2sixel.1
 dist_bashcompletion_DATA += $(srcdir)/shell-completion/bash/img2sixel
 dist_zshcompletion_DATA += $(srcdir)/shell-completion/zsh/_img2sixel
@@ -45,6 +46,7 @@ sixel2png_SOURCES = $(srcdir)/sixel2png.c $(srcdir)/malloc_stub.c $(srcdir)/mall
 sixel2png_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 sixel2png_LDADD = $(top_builddir)/src/libsixel.la
+sixel2png_LDFLAGS = -static
 dist_man_MANS += $(srcdir)/sixel2png.1
 endif
 
