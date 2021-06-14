@@ -39,7 +39,7 @@ But nowdays, with high-speed CPU and broadband network, we got the chance to dev
 
 Now Youtube video streaming is available over SIXEL protocol by [FFmpeg-SIXEL](https://github.com/saitoha/FFmpeg-SIXEL) project.
 
-  [![FFmpeg-SIXEL](https://raw.githubusercontent.com/saitoha/libsixel/data/data/ffmpeg.png)](http://youtu.be/hqMh47lYHlc)
+  [![FFmpeg-SIXEL](https://raw.githubusercontent.com/saitoha/libsixel/data/data/ffmpeg.png)](https://youtu.be/hqMh47lYHlc)
 
 Above demo only uses 16 color registers.
 
@@ -49,20 +49,20 @@ Above demo only uses 16 color registers.
 
 You can play "`The Battle for Wesnoth`" over SIXEL protocol.
 
-  [![SDL1.2-SIXEL WESNOTH](https://raw.githubusercontent.com/saitoha/libsixel/data/data/wesnoth.png)](http://youtu.be/aMUkN7TSct4)
+  [![SDL1.2-SIXEL WESNOTH](https://raw.githubusercontent.com/saitoha/libsixel/data/data/wesnoth.png)](https://youtu.be/aMUkN7TSct4)
 
 You can run QEMU on SIXEL terminals.
 
-  [![SDL1.2-SIXEL QEMU](https://raw.githubusercontent.com/saitoha/libsixel/data/data/qemu.png)](http://youtu.be/X6M5tgNjEuQ)
+  [![SDL1.2-SIXEL QEMU](https://raw.githubusercontent.com/saitoha/libsixel/data/data/qemu.png)](https://youtu.be/X6M5tgNjEuQ)
 
 [SDL1.2-SIXEL](https://github.com/saitoha/SDL1.2-SIXEL) can collaborate with [XSDL-SIXEL](https://github.com/saitoha/xserver-xsdl-sixel).
 
-  [![SDL1.2-SIXEL XSDL](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsdl.png)](http://youtu.be/UOTMGdUPYRo)
+  [![SDL1.2-SIXEL XSDL](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsdl.png)](https://youtu.be/UOTMGdUPYRo)
 
 Furthermore some information of SIXEL-ready SDL applications are reported.
 
 - [NetSurf](https://www.reddit.com/r/commandline/comments/4qyb90/netsurf_a_graphical_browser_on_xterm_using_sixel/)
-  ([screenshot](http://imgur.com/a/Y6xH6))
+  ([screenshot](https://imgur.com/a/Y6xH6))
 
 - [Green PDF Viewer](https://www.reddit.com/r/commandline/comments/4oldf5/view_pdfs_in_terminal_requires_nixos_latest_git/)
   ([screenshot](https://m.reddit.com/r/commandline/comments/4oldf5/view_pdfs_in_terminal_requires_nixos_latest_git/))
@@ -133,7 +133,7 @@ GUI flavored SIXEL applications will integrated with existing terminal applicati
 
   ![xsixel-screen](https://raw.githubusercontent.com/saitoha/libsixel/data/data/xsixel-on-screen.png)
 
-See also on [youtube](http://youtu.be/QQAqe32VkFg).
+See also on [youtube](https://youtu.be/QQAqe32VkFg).
 
 ### Twitter client integration
 
@@ -141,15 +141,15 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
 
 #### [arakiken's mikutterm(mikutterm-sixel)](https://bitbucket.org/arakiken/mikutterm/branch/sixel)
 
-  Now [mikutter](http://mikutter.hachune.net/) + [mikutterm](https://bitbucket.org/arakiken/mikutterm) works with libsixel inline-image extension.
+  Now [mikutter](https://mikutter.hachune.net/) + [mikutterm](https://bitbucket.org/arakiken/mikutterm) works with libsixel inline-image extension.
 
   SIXEL works with old powerless machines such as
 
-  [NetBSD/luna68k](http://wiki.netbsd.org/ports/luna68k/) (here is OMRON LUNA-II):
+  [NetBSD/luna68k](https://wiki.netbsd.org/ports/luna68k/) (here is OMRON LUNA-II):
 
   ![mikutterm-netbsd-luna68k](https://raw.githubusercontent.com/saitoha/libsixel/data/data/mikutterm-netbsd-luna68k.jpg)
 
-  [NetBSD/hp300](http://wiki.netbsd.org/ports/hp300/) (here is HP9000/425e):
+  [NetBSD/hp300](https://wiki.netbsd.org/ports/hp300/) (here is HP9000/425e):
 
   ![mikutterm-netbsd-hp9000](https://raw.githubusercontent.com/saitoha/libsixel/data/data/mikutterm-netbsd-hp9000.jpg)
 
@@ -158,7 +158,7 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
 
   [arakiken's tw(tw-sixel)](https://bitbucket.org/arakiken/tw/branch/sixel) works with libsixel inline-image extension.
 
-  SIXEL works with old powerless machines such as [OpenBSD/luna88k](http://www.openbsd.org/luna88k.html) (here is OMRON LUNA-88K2 MC88100@33MHz):
+  SIXEL works with old powerless machines such as [OpenBSD/luna88k](https://www.openbsd.org/luna88k.html) (here is OMRON LUNA-88K2 MC88100@33MHz):
 
   ![mikutterm-netbsd-hp9000](https://raw.githubusercontent.com/saitoha/libsixel/data/data/tw-openbsd-luna88k.jpg)
 
@@ -167,7 +167,7 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
 
   [sayaka-chan](https://github.com/isaki68k/sayaka/)(PHP version) works with libsixel inline-image extension.
 
-  SIXEL works with old powerless machines such as [NetBSD/x68k](http://wiki.netbsd.org/ports/x68k/) (here is SHARP X68030 with 060turbo):
+  SIXEL works with old powerless machines such as [NetBSD/x68k](https://wiki.netbsd.org/ports/x68k/) (here is SHARP X68030 with 060turbo):
 
   ![sayaka-chan](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sayaka-netbsd-x68k.jpg)
 
@@ -220,16 +220,16 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
 
 ### Improved compression
 
-Former sixel encoders(such as [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html)) are mainly designed for dot-matrix printers.
+Former sixel encoders(such as [ppmtosixel](https://netpbm.sourceforge.net/doc/ppmtosixel.html)) are mainly designed for dot-matrix printers.
 They minimize the amount of printer-head movement distance.
 But nowadays this method did not represent the best performance for displaying sixel data on terminal emulators.
 SIXEL data for terminals were found in 80's Usenet, but the technology of how to create them seems to be lost.
-[kmiya's sixel](http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz) introduces the encoding method which is re-designed
+[kmiya's sixel](https://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz) introduces the encoding method which is re-designed
 for terminal emulators to optimize the overhead of transporting SIXEL with keeping compatibility with former SIXEL terminal.
 Now libsixel and ImageMagick's sixel coder follow it.
 
 @arakiken, known as the maintainer of mlterm, describes about the way to generate high quality SIXEL, which is adopted by libsixel
-([http://mlterm.sourceforge.net/libsixel.pdf](http://mlterm.sourceforge.net/libsixel.pdf), in Japanese).
+([https://mlterm.sourceforge.net/libsixel.pdf](https://mlterm.sourceforge.net/libsixel.pdf), in Japanese).
 
 
 ### High quality quantization
@@ -255,17 +255,17 @@ Now SIXEL feature is supported by the following terminals.
 
 - RLogin (Japanese terminal emulator)
 
-  [http://nanno.dip.jp/softlib/man/rlogin/](http://nanno.dip.jp/softlib/man/rlogin/)
+  [https://nanno.dip.jp/softlib/man/rlogin/](https://nanno.dip.jp/softlib/man/rlogin/)
 
 - mlterm
 
-  [http://mlterm.sourceforge.net/](http://mlterm.sourceforge.net/)
+  [https://mlterm.sourceforge.net/](https://mlterm.sourceforge.net/)
 
   Works on each of X, WIN32 GDI, framebuffer, Android, Cocoa version.
 
 - XTerm (compiled with `--enable-sixel-graphics` option)
 
-  [http://invisible-island.net/xterm/](http://invisible-island.net/xterm/)
+  [https://invisible-island.net/xterm/](https://invisible-island.net/xterm/)
 
   You should launch xterm with "`-ti vt340`" option.
   The SIXEL palette is limited to a maximum of 16 colors.
@@ -334,17 +334,17 @@ $ xterm -xrm "XTerm*decTerminalID: vt340" -xrm "XTerm*numColorRegisters: 256"
 
 You can install libsixel via the following package systems.
 
-- [FreeBSD ports](http://portsmon.freebsd.org/portoverview.py?category=graphics&portname=libsixel)
+- [FreeBSD ports](https://portsmon.freebsd.org/portoverview.py?category=graphics&portname=libsixel)
 - [DPorts](https://github.com/DragonFlyBSD/DPorts/tree/master/graphics/libsixel)
-- [pkgsrc](http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/graphics/libsixel/)
+- [pkgsrc](https://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/graphics/libsixel/)
 - [Homebrew](https://formulae.brew.sh/formula/libsixel)
 - [yacp](https://github.com/fd00/yacp/tree/master/libsixel)
 - [Debian](https://packages.debian.org/search?searchon=names&keywords=libsixel)
 - [AUR](https://aur.archlinux.org/packages/libsixel-git/)
-- [Portage](http://packages.gentoo.org/package/media-libs/libsixel)
+- [Portage](https://packages.gentoo.org/package/media-libs/libsixel)
 - [Ubuntu](https://launchpad.net/ubuntu/+source/libsixel)
 - [NixOS](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/libraries/libsixel/default.nix)
-- [OpenBSD Ports](http://openports.se/graphics/libsixel)
+- [OpenBSD Ports](https://openports.se/graphics/libsixel)
 - [Fedora Copr](https://copr.fedorainfracloud.org/coprs/saahriktu/libsixel/)
 - [SlackBuilds](https://slackbuilds.org/repository/14.2/libraries/libsixel/)
 
@@ -1098,7 +1098,7 @@ This software derives from the following implementations.
 src/tosixel.c, src/fromsixel.c, and some part of converters/loader.c are
 derived from kmiya's "*sixel*" original version (2014-3-2)
 
-  Package: http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
+  Package: https://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz
 
   Unofficial repo: https://github.com/saitoha/sixel
 
@@ -1175,7 +1175,7 @@ https://github.com/nothings/stb
 The implementation of median cut algorithm for color quantization in quant.c
 is imported from `pnmcolormap` included in `netpbm library`.
 
-http://netpbm.sourceforge.net/
+https://netpbm.sourceforge.net/
 
 `pnmcolormap` was derived from `ppmquant`, originally written by Jef Poskanzer.
 
@@ -1210,9 +1210,9 @@ Some parts of converters/loader.c are imported from @uobikiemukot's
 
 These are useful m4 macros for detecting some GCC attributes / built-in functions.
 
-http://www.gnu.org/software/autoconf-archive/ax_gcc_var_attribute.html
-http://www.gnu.org/software/autoconf-archive/ax_gcc_func_attribute.html
-http://www.gnu.org/software/autoconf-archive/ax_gcc_builtin.html
+https://www.gnu.org/software/autoconf-archive/ax_gcc_var_attribute.html
+https://www.gnu.org/software/autoconf-archive/ax_gcc_func_attribute.html
+https://www.gnu.org/software/autoconf-archive/ax_gcc_builtin.html
 
 > Copyright (c) 2013 Gabriele Svelto <gabriele.svelto@gmail.com>
 >
@@ -1225,7 +1225,7 @@ http://www.gnu.org/software/autoconf-archive/ax_gcc_builtin.html
 ### graphics.c (from Xterm pl#310)
 
 The helper function `hls2rgb` in `src/fromsixel.c` is imported from
-`graphics.c` in [Xterm pl#310](http://invisible-island.net/xterm/),
+`graphics.c` in [Xterm pl#310](https://invisible-island.net/xterm/),
 originally written by Ross Combs.
 
 > Copyright 2013,2014 by Ross Combs
@@ -1259,21 +1259,21 @@ originally written by Ross Combs.
 
 ### test images
 
-#### http://public-domain-photos.com/
+#### https://public-domain-photos.com/
 
 The following test images in "image/" directory came from PUBLIC-DOMAIN-PHOTOS.com.
 
 - images/egret.jpg
 
     author: Jon Sullivan
-    url: http://public-domain-photos.com/animals/egret-4.htm
+    url: https://public-domain-photos.com/animals/egret-4.htm
 
 - images/snake.jpg
 
     author: Jon Sullivan
-    url: http://public-domain-photos.com/animals/snake-4.htm
+    url: https://public-domain-photos.com/animals/snake-4.htm
 
-These are in the [public domain](http://creativecommons.org/licenses/publicdomain/).
+These are in the [public domain](https://creativecommons.org/licenses/publicdomain/).
 
 
 #### vimperator3.png (mascot of vimperator)
@@ -1281,13 +1281,13 @@ These are in the [public domain](http://creativecommons.org/licenses/publicdomai
 images/vimperator3.png is in the public domain.
 
     author: @k_wizard
-    url: http://quadrantem.com/~k_wizard/vimprtan/
+    url: https://quadrantem.com/~k_wizard/vimprtan/
 
 
 #### PngSuite
 
 Images under the directory images/pngsuite/ are imported from
-[PngSuite](http://www.schaik.com/pngsuite/) created by Willem van Schaik.
+[PngSuite](https://www.schaik.com/pngsuite/) created by Willem van Schaik.
 
 > Permission to use, copy, modify and distribute these images for any
 > purpose and without fee is hereby granted.
@@ -1303,18 +1303,18 @@ Images under the directory images/pngsuite/ are imported from
 We are greatly inspired by the quality of ImageMagick and added some resampling filters to
 `img2sixel` in reference to the line-up of filters of MagickCore's resize.c.
 
-    http://www.imagemagick.org/api/MagickCore/resize_8c_source.html
+    https://www.imagemagick.org/api/MagickCore/resize_8c_source.html
 
 
 ## Similar software
 
-- [netpbm](http://netpbm.sourceforge.net/)
+- [netpbm](https://netpbm.sourceforge.net/)
 
-  You can get SIXEL graphics using [ppmtosixel](http://netpbm.sourceforge.net/doc/ppmtosixel.html)
-  or [pbmtoln03](http://netpbm.sourceforge.net/doc/ppmtosixel.html).
+  You can get SIXEL graphics using [ppmtosixel](https://netpbm.sourceforge.net/doc/ppmtosixel.html)
+  or [pbmtoln03](https://netpbm.sourceforge.net/doc/ppmtosixel.html).
 
 
-- [kmiya's sixel](http://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz)
+- [kmiya's sixel](https://nanno.dip.jp/softlib/man/rlogin/sixel.tar.gz)
 
   libgd based SIXEL converter
 
@@ -1324,7 +1324,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   Python implementation of SIXEL converter
 
 
-- [ImageMagick](http://www.imagemagick.org/)
+- [ImageMagick](https://www.imagemagick.org/)
 
   Now SIXEL coder is available in svn trunk and V6 branch.
 
@@ -1368,14 +1368,14 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 ## Other software supporting SIXEL
 
-- [GNUPLOT](http://www.gnuplot.info/)
+- [GNUPLOT](https://www.gnuplot.info/)
 
   Recent version of GNUPLOT supports new terminal driver "sixeltek(sixel)" / "sixelgd".
 
   ![GNUPLOT](https://raw.githubusercontent.com/saitoha/libsixel/data/data/gnuplot.png)
 
 
-- [ghostscript](http://www.ghostscript.com/)
+- [ghostscript](https://www.ghostscript.com/)
 
   You can emit SIXEL images with LN03 / LN50 / LA75 driver.
 
@@ -1388,7 +1388,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   ![GhostScript](https://raw.githubusercontent.com/saitoha/libsixel/data/data/gs.png)
 
 
-- [ImageMagick](http://www.imagemagick.org/)
+- [ImageMagick](https://www.imagemagick.org/)
 
   Recent version of ImageMagick provides SIXEL coder. It's also available over commandline tools.
 
@@ -1412,7 +1412,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   [![sixeldraw1](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixeldraw1.png)](https://youtu.be/eGjSEjxiDjE)
 
 
-- [ZX81 Emulator](http://rullf2.xs4all.nl/sg/zx81ce.html)
+- [ZX81 Emulator](https://rullf2.xs4all.nl/sg/zx81ce.html)
 
   A ZX81 emulator producing Sixel Image Files
 
@@ -1447,7 +1447,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
   ![Animation](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixelslide.png)
 
-  cf. http://www.slideshare.net/syuu1228/presentation-on-your-terminal
+  cf. https://www.slideshare.net/syuu1228/presentation-on-your-terminal
 
 
 - [GraphicConverter](https://itunes.apple.com/jp/app/graphicconverter-9/id736099092?mt=12)
@@ -1457,14 +1457,14 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   ![GraphicConverter](https://raw.githubusercontent.com/saitoha/libsixel/data/data/graphicconverter.png)
 
 
-- [SIXEL image viewer](http://rullf2.xs4all.nl/sg/sg.html)
+- [SIXEL image viewer](https://rullf2.xs4all.nl/sg/sg.html)
 
   This web page can decode SIXEL images (written in javascript).
 
   ![SIXEL image viewer ](https://raw.githubusercontent.com/saitoha/libsixel/data/data/js-sixel.png)
 
 
-- [mandel4](http://kildall.apana.org.au/~cjb/mandel5.c)
+- [mandel4](https://kildall.apana.org.au/~cjb/mandel5.c)
 
   A mandelbrot program for (colour) sixel-supporting terminals, written by Chris Baird
 
@@ -1478,10 +1478,10 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
   ![SixelGraphics.jl](https://raw.githubusercontent.com/saitoha/libsixel/data/data/julia.png)
 
 
-- ![PGPLOT](http://www.astro.caltech.edu/~tjp/pgplot/)
+- ![PGPLOT](https://www.astro.caltech.edu/~tjp/pgplot/)
 
 
-- [SIXEL to PostScript converter](http://t.co/zTC7LhRbBc)
+- [SIXEL to PostScript converter](https://t.co/zTC7LhRbBc)
 
 
 - [sixelplot](https://github.com/kktk-KO/sixelplot)
@@ -1493,7 +1493,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 - [matplotlib-sixel](https://github.com/koppa/matplotlib-sixel)
 
-- [gr framework](http://gr-framework.org/)
+- [gr framework](https://gr-framework.org/)
 
 - [o2sh/onefetch](https://github.com/o2sh/onefetch)
 
@@ -1541,7 +1541,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 - [ismail-yilmaz/upp-components/CtrlLib/Terminal/](https://github.com/ismail-yilmaz/upp-components/tree/master/CtrlLib/Terminal)
 
-- [schrmh/pdfgrepSIXEL](schrmh/pdfgrepSIXEL)
+- [schrmh/pdfgrepSIXEL](https://github.com/schrmh/pdfgrepSIXEL)
 
 - [ar90n/teimpy](https://github.com/ar90n/teimpy)
 
