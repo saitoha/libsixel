@@ -1,8 +1,8 @@
 libsixel
 ========
 
-[![Build Status](https://travis-ci.org/saitoha/libsixel.svg?branch=master)](https://travis-ci.org/saitoha/libsixel)
-[![Coverage Status](https://coveralls.io/repos/saitoha/libsixel/badge.png?branch=master)](https://coveralls.io/r/saitoha/libsixel?branch=master)
+[![Build Status](https://travis-ci.org/libsixel/libsixel.svg?branch=master)](https://travis-ci.org/libsixel/libsixel)
+[![Coverage Status](https://coveralls.io/repos/libsixel/libsixel/badge.png?branch=master)](https://coveralls.io/r/libsixel/libsixel?branch=master)
 
 ## This is a fork
 
@@ -1079,10 +1079,12 @@ The MIT License (MIT)
 - [@YourButterfly](https://github.com/YourButterfly/)
 - [@nluedtke](https://github.com/nluedtke/)
 - [@cool-tomato](https://github.com/cool-tomato/)
+- [@ctrlcctrlv](https://github.com/ctrlcctrlv)
+- [@dankamongmen](https://github.com/dankamongmen)
 
 ## Contributing
 
-1. Fork it ( https://github.com/saitoha/libsixel/fork/ )
+1. Fork it ( https://github.com/libsixel/libsixel/fork/ )
 2. Create your feature branch (git checkout -b my-new-feature)
 3. Commit your changes (git commit -am 'Add some feature')
 4. Push to the branch (git push origin my-new-feature)
@@ -1510,6 +1512,8 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 - [danr/neptyne](https://github.com/danr/neptyne)
 
 - [klamonte/jexer](https://github.com/klamonte/jexer)
+
+- [dankamongmen/notcurses](https://github.com/dankamongmen/notcurses)
 
 - [ar90n/teimpy](https://github.com/ar90n/teimpy)
 
