@@ -1,8 +1,7 @@
 libsixel
 ========
 
-[![Build Status](https://travis-ci.org/libsixel/libsixel.svg?branch=master)](https://travis-ci.org/libsixel/libsixel)
-[![Coverage Status](https://coveralls.io/repos/libsixel/libsixel/badge.png?branch=master)](https://coveralls.io/r/libsixel/libsixel?branch=master)
+[![Build Status](https://github.com/libsixel/libsixel/actions/workflows/build.yml/badge.svg)](https://github.com/libsixel/libsixel/actions/)
 
 ## This is a fork
 
