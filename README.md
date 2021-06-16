@@ -350,42 +350,35 @@ You can install libsixel via the following package systems.
 
 ### Build from source package
 
+As of libsixel 2.0, Meson is used to build, not GNU Autotools.
+
 ```
-$ ./configure
-$ make
-# make install
+$ meson setup build
+$ meson install -C build
 ```
 
 #### Build with optional packages
 
-You can configure with the following options
+You can use the following options at build time to influence the build. During the `meson build` step, pass e.g. `-Dlibcurl=enabled` to enable cURL.
 
-```
---with-libcurl            build with libcurl (default: auto)
---with-gd                 build with libgd (default: no)
---with-gdk-pixbuf2        build with gdk-pixbuf2 (default: no)
---with-jpeg               build with libjpeg (default: auto)
---with-png                build with libpng (default: auto)
---with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
---with-bashcompletiondir  specify bashcompletion.d
---with-zshcompletiondir   specify zshcompletion.d
---enable-python           Python interface (default: yes)
---enable-debug            Use debug macro and specific CFLAGS
---enable-gcov             Use gcov
---enable-tests            Build tests
-```
+<table>
+<th>Option name</th><th>Former GNU Autotools equivalent</th><th>Description</th><th>Default?</th>
+<td>img2sixel</td><td>`--enable-img2sixel`</td><td>Build binary `img2sixel`</td><td>Yes</td>
+<td>sixel2png</td><td>`--enable-sixel2png`</td><td>Build binary `sixel2png`</td><td>Yes</td>
+<td>gdk-pixbuf2</td><td>`--with-gdk-pixbuf2`</td><td>Whether to build in gdk-pixbuf2 support</td><td>No</td>
+<td>gd</td><td>`--with-gd`</td><td>Whether to build in gd support (adds more image formats)</td><td>Auto</td>
+<td>libcurl</td><td>`--with-libcurl`</td><td>build with cURL (allows input filenames to binaries/API to be URLs)</td><td>No</td>
+<td>jpeg</td><td>`--with-jpeg`</td><td>Whether to build with libjpeg support</td><td>Auto</td>
+<td>png</td><td>`--with-png`</td><td>Whether to build with libpng support</td><td>Auto</td>
+<td>gcov</td><td>`--enable-gcov`</td><td>Build gcov coverage tests</td><td>No</td>
+<td>tests</td><td>`--enable-tests`</td><td>Build tests (requires `bash`)</td><td>No</td>
+<td>python2</td><td>`--enable-python`</td><td>Build Python library integration</td><td>No</td>
+<td>pkg\_config\_path</td><td>`--with-pkgconfigdir`</td><td>`pkg-config` search directory</td><td>Set by Meson</td>
+</table>
 
-For more information, see "./configure --help".
+As well, several directories can be configured, most importantly `prefix`. Non-standard directories you can change are `bashcompletiondir` and `zshcompletiondir`.
 
-
-##### Cross compiling with MinGW
-
-You can build a windows binary in cross-build environment.
-
-```
-$ CC=i686-w64-mingw32-gcc cross_compile=yes ./configure --host=i686-w64-mingw32
-$ make
-```
+Note: Before libsixel 2.0, Python was installed by default. This was disabled because it requires root on most systems for the Python module to be discoverable. Pass `-Dpython2=enabled` to install it.
 
 ## Usage of command line tools
 

@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,24 +22,13 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdlib.h>
-#endif  /* STDC_HEADERS */
-#if HAVE_ASSERT_H
 # include <assert.h>
-#endif  /* HAVE_ASSERT_H */
-#if HAVE_SYS_TYPES_H
 # include <sys/types.h>
-#endif  /* HAVE_SYS_TYPES_H */
-#if HAVE_ERRNO_H
 # include <errno.h>
-#endif  /* HAVE_ERRNO_H */
-#if HAVE_MEMORY_H
 # include <memory.h>
-#endif  /* HAVE_MEMORY_H */
 
 #include "allocator.h"
-#include "malloc_stub.h"
 
 /* create allocator object */
 SIXELSTATUS

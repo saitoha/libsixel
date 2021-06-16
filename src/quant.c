@@ -22,6 +22,7 @@
  *
  * ******************************************************************************
  *
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -46,22 +47,12 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdlib.h>
 # include <stdio.h>
-#endif  /* STDC_HEADERS */
-#if HAVE_STRING_H
 # include <string.h>
-#endif  /* HAVE_STRING_H */
-#if HAVE_MATH_H
 #include <math.h>
-#endif  /* HAVE_MATH_H */
-#if HAVE_LIMITS_H
 # include <limits.h>
-#endif  /* HAVE_MATH_H */
-#if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif  /* HAVE_MATH_H */
 
 #include "quant.h"
 

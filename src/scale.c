@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,13 +22,9 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdlib.h>
-#endif  /* STDC_HEADERS */
-#if HAVE_MATH_H
 # define _USE_MATH_DEFINES  /* for MSVC */
 # include <math.h>
-#endif  /* HAVE_MATH_H */
 #ifndef M_PI
 # define M_PI 3.14159265358979323846
 #endif

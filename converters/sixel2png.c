@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2017 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -20,43 +21,28 @@
  */
 
 #include "config.h"
-#include "malloc_stub.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>  /* strcpy */
 
-#if HAVE_SYS_TYPES_H
 # include <sys/types.h>
-#endif
 
-#if HAVE_SYS_STAT_H
 # include <sys/stat.h>
-#endif
 
-#if HAVE_FCNTL_H
 # include <fcntl.h>
-#endif
 
 #if HAVE_IO_H
 # include <io.h>
 #endif
 
-#if HAVE_UNISTD_H
 # include <unistd.h>  /* getopt */
-#endif
 
-#if HAVE_GETOPT_H
 # include <getopt.h>
-#endif
 
-#if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif
 
-#if HAVE_ERRNO_H
 # include <errno.h>
-#endif
 
 #include <sixel.h>
 
@@ -142,13 +128,13 @@ main(int argc, char *argv[])
     SIXELSTATUS status = SIXEL_FALSE;
     int n;
     sixel_decoder_t *decoder;
-#if HAVE_GETOPT_LONG
+#ifdef HAVE_GETOPT_LONG
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     char const *optstring = "i:o:VH";
 
-#if HAVE_GETOPT_LONG
+#ifdef HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"input",        required_argument,  &long_opt, 'i'},
         {"output",       required_argument,  &long_opt, 'o'},
@@ -165,7 +151,7 @@ main(int argc, char *argv[])
 
     for (;;) {
 
-#if HAVE_GETOPT_LONG
+#ifdef HAVE_GETOPT_LONG
         n = getopt_long(argc, argv, optstring,
                         long_options, &option_index);
 #else
@@ -176,7 +162,7 @@ main(int argc, char *argv[])
             /* parsed successfully */
             break;
         }
-#if HAVE_GETOPT_LONG
+#ifdef HAVE_GETOPT_LONG
         if (n == 0) {
             n = long_opt;
         }

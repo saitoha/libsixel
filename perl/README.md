@@ -23,6 +23,7 @@ http://saitoha.github.io/libsixel/
 
 # LICENSE
 
+Copyright (c) 2021 libsixel developers. See `AUTHORS` file.<br>
 Copyright (c) 2014,2015 Hayaki Saito
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of

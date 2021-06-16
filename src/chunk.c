@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,45 +22,20 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdio.h>
 # include <stdlib.h>
-#endif  /* STDC_HEADERS */
-#if HAVE_STRING_H
 # include <string.h>
-#endif  /* HAVE_STRING_H */
-#if HAVE_SYS_TYPES_H
 # include <sys/types.h>
-#endif  /* HAVE_SYS_TYPES_H */
-#if HAVE_SYS_STAT_H
 # include <sys/stat.h>
-#endif  /* HAVE_SYS_STAT_H */
-#if HAVE_UNISTD_H
 # include <unistd.h>
-#endif  /* HAVE_UNISTD_H */
-#if HAVE_FCNTL_H
 # include <fcntl.h>
-#endif  /* HAVE_FCNTL_H */
-#if HAVE_IO_H
-# include <io.h>
-#endif  /* HAVE_IO_H */
-#ifdef HAVE_ERRNO_H
 # include <errno.h>
-#endif  /* HAVE_ERRNO_H */
 #ifdef HAVE_LIBCURL
 # include <curl/curl.h>
 #endif  /* HAVE_LIBCURL */
-#if HAVE_SYS_SELECT_H
 # include <sys/select.h>
-#endif  /* HAVE_SYS_SELECT_H */
 
-#if !defined(HAVE_MEMCPY)
-# define memcpy(d, s, n) (bcopy ((s), (d), (n)))
-#endif
 
-#if !defined(HAVE_MEMMOVE)
-# define memmove(d, s, n) (bcopy ((s), (d), (n)))
-#endif
 
 #if !defined(O_BINARY) && defined(_O_BINARY)
 # define O_BINARY _O_BINARY
@@ -165,7 +141,6 @@ static int
 wait_file(int fd, int usec)
 {
     int ret = 1;
-#if HAVE_SYS_SELECT_H
     fd_set rfds;
     struct timeval tv;
 
@@ -174,10 +149,6 @@ wait_file(int fd, int usec)
     FD_ZERO(&rfds);
     FD_SET(fd, &rfds);
     ret = select(fd + 1, &rfds, NULL, NULL, &tv);
-#else
-    (void) fd;
-    (void) usec;
-#endif  /* HAVE_SYS_SELECT_H */
     if (ret == 0) {
         return (1);
     }
@@ -198,16 +169,14 @@ open_binary_file(
     char const  /* in */    *filename)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-#if HAVE_STAT
     struct stat sb;
-#endif  /* HAVE_STAT */
 
     if (filename == NULL || strcmp(filename, "-") == 0) {
         /* for windows */
 #if defined(O_BINARY)
 # if HAVE__SETMODE
         _setmode(fileno(stdin), O_BINARY);
-# elif HAVE_SETMODE
+# else
         setmode(fileno(stdin), O_BINARY);
 # endif  /* HAVE_SETMODE */
 #endif  /* defined(O_BINARY) */
@@ -217,7 +186,6 @@ open_binary_file(
         goto end;
     }
 
-#if HAVE_STAT
     if (stat(filename, &sb) != 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message("stat() failed.");
@@ -228,7 +196,6 @@ open_binary_file(
         sixel_helper_set_additional_message("specified path is directory.");
         goto end;
     }
-#endif  /* HAVE_STAT */
 
     *f = fopen(filename, "rb");
     if (!*f) {

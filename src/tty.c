@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,37 +22,17 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdio.h>
 # include <stdlib.h>
-#endif  /* HAVE_STDLIB_H */
-#if HAVE_STRING_H
 # include <string.h>
-#endif  /* HAVE_STRING_H */
-#if HAVE_SYS_TIME_H
 # include <sys/time.h>
-#endif  /* HAVE_SYS_TIME_H */
-#if HAVE_SYS_TYPES_H
 # include <sys/types.h>
-#endif  /* HAVE_SYS_TYPES_H */
-#if HAVE_UNISTD_H
 # include <unistd.h>
-#endif  /* HAVE_UNISTD_H */
-#if HAVE_SYS_UNISTD_H
 # include <sys/unistd.h>
-#endif  /* HAVE_SYS_UNISTD_H */
-#if HAVE_SYS_SELECT_H
 # include <sys/select.h>
-#endif  /* HAVE_SYS_SELECT_H */
-#if HAVE_ERRNO_H
 # include <errno.h>
-#endif  /* HAVE_ERRNO_H */
-#if HAVE_TERMIOS_H
 # include <termios.h>
-#endif  /* HAVE_TERMIOS_H */
-#if HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
-#endif  /* HAVE_SYS_IOCTL_H */
 
 #include <sixel.h>
 
@@ -118,14 +99,11 @@ end:
 SIXELSTATUS
 sixel_tty_wait_stdin(int usec)
 {
-#if HAVE_SYS_SELECT_H
     fd_set rfds;
     struct timeval tv;
     int ret = 0;
-#endif  /* HAVE_SYS_SELECT_H */
     SIXELSTATUS status = SIXEL_FALSE;
 
-#if HAVE_SYS_SELECT_H
     tv.tv_sec = usec / 1000000;
     tv.tv_usec = usec % 1000000;
     FD_ZERO(&rfds);
@@ -140,10 +118,6 @@ sixel_tty_wait_stdin(int usec)
 
     /* success */
     status = SIXEL_OK;
-#else
-    (void) usec;
-    goto end;
-#endif  /* HAVE_SYS_SELECT_H */
 
 end:
     return status;

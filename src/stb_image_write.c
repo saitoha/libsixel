@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,45 +22,23 @@
 
 #include "config.h"
 
-#if !defined(HAVE_MEMCPY)
-# define memcpy(d, s, n) (bcopy ((s), (d), (n)))
-#endif
 
-#if !defined(HAVE_MEMMOVE)
-# define memmove(d, s, n) (bcopy ((s), (d), (n)))
-#endif
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
-#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wsign-conversion"
-#endif
-#if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wstrict-overflow"
-#endif
-#if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wswitch-default"
-#endif
-#if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wdouble-promotion"
-#endif
 #include "stb_image_write.h"
-#if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
 # pragma GCC diagnostic pop
-#endif
-#if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
 # pragma GCC diagnostic pop
-#endif
-#if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
 # pragma GCC diagnostic pop
-#endif
-#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
 # pragma GCC diagnostic pop
-#endif
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

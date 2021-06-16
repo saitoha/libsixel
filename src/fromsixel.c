@@ -12,25 +12,18 @@
  *
  * Hayaki Saito <saitoha@me.com> modified this and re-licensed
  * it to the MIT license.
+ *
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
+ * Copyright (c) 2014-2020 Hayaki Saito
  */
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdlib.h>
 # include <stdio.h>
-#endif  /* STDC_HEADERS */
-#if HAVE_CTYPE_H
 # include <ctype.h>   /* isdigit */
-#endif  /* HAVE_CTYPE_H */
-#if HAVE_STRING_H
 # include <string.h>  /* memcpy */
-#endif  /* HAVE_STRING_H */
-#if HAVE_LIMITS_H
 # include <limits.h>
-#endif  /* HAVE_LIMITS_H */
-#if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif  /* HAVE_INTTYPES_H */
 
 #include <sixel.h>
 #include "output.h"
@@ -158,9 +151,7 @@ hls_to_rgb(int hue, int lum, int sat)
         b = (min + (max - min) * ((360 - hue) / 60.0));
         break;
     default:
-#if HAVE___BUILTIN_UNREACHABLE
         __builtin_unreachable();
-#endif
         break;
     }
 

@@ -6,24 +6,24 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
-        run: sudo apt install libpng-dev libjpeg-dev libgd-dev libcurl4-openssl-dev libgdk-pixbuf2.0-dev libpython2-dev
-      - name: ./configure
-        run: ./configure --enable-python --enable-tests --with-gdk-pixbuf2 --with-gd --with-libcurl --with-jpeg --with-png
+        run: sudo apt install libpng-dev libjpeg-dev libgd-dev libcurl4-openssl-dev libgdk-pixbuf2.0-dev libpython2-dev python2 libbsd-dev meson ninja-build
+      - name: Set up Meson
+        run: meson setup build -Dbuildtype=debug -Dlibcurl=enabled -Dgd=enabled -Dgdk-pixbuf2=enabled -Dtests=enabled
       - name: make
-        run: make
+        run: (cd build; ninja)
       - name: make check
-        run: make check
+        run: (cd build; ninja test)
       - name: Move artifacts
-        run: mv src/.libs/libsixel.so .
-        run: mv src/libsixel.la .
-        run: mv converters/img2sixel .
-        run: mv converters/sixel2png .
+        run: cp build/src/libsixel.so . &&
+             cp build/converters/img2sixel . &&
+             cp build/converters/sixel2png . &&
+             cp build/tools/libsixel-config .
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: libsixel_linux
           path: |
             libsixel.so
-            libsixel.la
             img2sixel
             sixel2png
+            libsixel-config

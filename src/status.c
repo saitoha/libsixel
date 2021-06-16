@@ -21,19 +21,11 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdio.h>
 # include <stdlib.h>
-#endif  /* STDC_HEADERS */
-#if HAVE_MEMORY_H
 # include <memory.h>
-#endif  /* HAVE_MEMORY_H */
-#ifdef HAVE_STRING_H
 # include <string.h>
-#endif  /* HAVE_STRING_H */
-#ifdef HAVE_ERRNO_H
 # include <errno.h>
-#endif  /* HAVE_ERRNO_H */
 #ifdef HAVE_LIBCURL
 # include <curl/curl.h>
 #endif  /* HAVE_LIBCURL */

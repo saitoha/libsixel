@@ -11,22 +11,7 @@ libsixel: https://github.com/saitoha/libsixel
 Install
 -------
 
-Example 1. Install into the python prefixed with '/usr/local' ::
-
-    $ git clone https://github.com/saitoha/libsixel.git
-    $ cd libsixel 
-    $ ./configure --enable-python --prefix=/usr/local
-    $ make install
-
-Example 2. Install into only current active python ::
-
-    $ git clone https://github.com/saitoha/libsixel.git
-    $ cd libsixel 
-    $ ./configure --disable-python
-    $ make install  # install libsixel
-    $ cd python
-    $ python setup.py install  # install python module
-
+The Python module, which uses `ctypes`, will be installed if `-Dpython=enabled` is passed to `meson` during build (it is by default).
 
 Code Example
 ------------
@@ -54,8 +39,9 @@ decoder ::
 License
 -------
 
-The MIT lisence ::
+The MIT license ::
 
+    Copyright (c) 2021 libsixel developers. See `AUTHORS` file.
     Copyright (c) 2014-2020 Hayaki Saito
     
     Permission is hereby granted, free of charge, to any person obtaining a copy of

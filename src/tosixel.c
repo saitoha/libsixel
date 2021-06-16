@@ -16,22 +16,16 @@
  * Araki Ken added high-color encoding mode(sixel_encode_highcolor)
  * extension.
  *
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
+ * Copyright (c) 2014-2020 kmiya@culti, Araki Ken, Hayaki Saito
  */
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdio.h>
 # include <stdlib.h>
-#endif  /* HAVE_STDLIB_H */
-#if HAVE_STRING_H
 # include <string.h>
-#endif  /* HAVE_STRING_H */
-#if HAVE_LIMITS_H
 # include <limits.h>
-#endif  /* HAVE_LIMITS_H */
-#if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif  /* HAVE_INTTYPES_H */
 
 #include <sixel.h>
 #include "output.h"
@@ -116,7 +110,6 @@ sixel_puts(unsigned char *buffer, char const *value, int size)
 }
 
 
-#if HAVE_LDIV
 static int
 sixel_putnum_impl(char *buffer, long value, int pos)
 {
@@ -129,7 +122,6 @@ sixel_putnum_impl(char *buffer, long value, int pos)
     *(buffer + pos) = '0' + r.rem;
     return pos + 1;
 }
-#endif  /* HAVE_LDIV */
 
 
 static int
@@ -137,11 +129,7 @@ sixel_putnum(char *buffer, int value)
 {
     int pos;
 
-#if HAVE_LDIV
     pos = sixel_putnum_impl(buffer, value, 0);
-#else
-    pos = sprintf(buffer, "%d", value);
-#endif  /* HAVE_LDIV */
 
     return pos;
 }
@@ -860,20 +848,20 @@ sixel_encode_body_ormode(
                 int pix = ((buf_p[0] >> plane) & 0x1);
 
                 switch(cur_h - height) {
-                case 1:
-                    pix |= (((buf_p[width * 4] >> plane) << 4) & 0x10);
-                    /* Fall through */
-                case 2:
-                    pix |= (((buf_p[width * 3] >> plane) << 3) & 0x8);
-                    /* Fall through */
-                case 3:
-                    pix |= (((buf_p[width * 2] >> plane) << 2) & 0x4);
-                    /* Fall through */
-                case 4:
-                    pix |= (((buf_p[width] >> plane) << 1) & 0x2);
-                    /* Fall through */
+                    case 1:
+                        pix |= (((buf_p[width * 4] >> plane) << 4) & 0x10);
+                        /* Fall through */
+                    case 2:
+                        pix |= (((buf_p[width * 3] >> plane) << 3) & 0x8);
+                        /* Fall through */
+                    case 3:
+                        pix |= (((buf_p[width * 2] >> plane) << 2) & 0x4);
+                        /* Fall through */
+                    case 4:
+                    default:
+                        pix |= (((buf_p[width] >> plane) << 1) & 0x2);
+                        /* Fall through */
                 }
-
                 sixel_put_pixel(output, pix);
             }
             status = sixel_put_flash(output);

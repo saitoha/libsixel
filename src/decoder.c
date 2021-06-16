@@ -21,44 +21,20 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdio.h>
 # include <stdlib.h>
 # include <stdarg.h>
-#endif  /* STDC_HEADERS */
-#if HAVE_STRING_H
 # include <string.h>
-#endif  /* HAVE_STRING_H */
-#if HAVE_UNISTD_H
 # include <unistd.h>
-#endif  /* HAVE_UNISTD_H */
-#if HAVE_SYS_UNISTD_H
 # include <sys/unistd.h>
-#endif  /* HAVE_UNISTD_H */
-#if HAVE_SYS_TYPES_H
 #include <sys/types.h>
-#endif  /* HAVE_SYS_TYPES_H */
-#if HAVE_SYS_SELECT_H
 #include <sys/select.h>
-#endif  /* HAVE_SYS_SELECT_H */
-#if HAVE_TIME_H
 # include <time.h>
-#endif  /* HAVE_TIME_H */
-#if HAVE_SYS_TIME_H
 # include <sys/time.h>
-#endif  /* HAVE_SYS_TIME_H */
-#if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif  /* HAVE_INTTYPES_H */
-#if HAVE_ERRNO_H
 # include <errno.h>
-#endif  /* HAVE_ERRNO_H */
-#if HAVE_TERMIOS_H
 # include <termios.h>
-#endif  /* HAVE_TERMIOS_H */
-#if HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
-#endif  /* HAVE_SYS_IOCTL_H */
 #if HAVE_IO_H
 # include <io.h>
 #endif  /* HAVE_IO_H */
@@ -258,7 +234,7 @@ sixel_decoder_decode(
 #if defined(O_BINARY)
 # if HAVE__SETMODE
         _setmode(fileno(stdin), O_BINARY);
-# elif HAVE_SETMODE
+# else
         setmode(fileno(stdin), O_BINARY);
 # endif  /* HAVE_SETMODE */
 #endif  /* defined(O_BINARY) */
@@ -350,14 +326,10 @@ test1(void)
     int nret = EXIT_FAILURE;
     sixel_decoder_t *decoder = NULL;
 
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
     decoder = sixel_decoder_create();
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic pop
-#endif
     if (decoder == NULL) {
         goto error;
     }

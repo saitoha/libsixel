@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,22 +22,12 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdlib.h>
 # include <stdio.h>
-#endif  /* STDC_HEADERS */
-#if HAVE_MATH_H
 # include <math.h>
-#endif  /* HAVE_MATH_H */
-#if HAVE_STRING_H
 # include <string.h>
-#endif  /* HAVE_STRING_H */
-#if HAVE_LIMITS_H
 # include <limits.h>
-#endif  /* HAVE_LIMITS_H */
-#if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif  /* HAVE_INTTYPES_H */
 
 #include "dither.h"
 #include "quant.h"
@@ -832,14 +823,10 @@ test1(void)
     sixel_dither_t *dither = NULL;
     int nret = EXIT_FAILURE;
 
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
     dither = sixel_dither_create(2);
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic pop
-#endif
     if (dither == NULL) {
         goto error;
     }
@@ -859,14 +846,10 @@ test2(void)
     int colors;
     int nret = EXIT_FAILURE;
 
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
     dither = sixel_dither_create(INT_MAX);
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic pop
-#endif
     if (dither == NULL) {
         goto error;
     }

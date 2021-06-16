@@ -5,6 +5,7 @@
  * Hayaki Saito <saitoha@me.com> modified this and re-licensed
  * it under the MIT license.
  *
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -27,19 +28,11 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdio.h>
 # include <stdlib.h>
-#endif  /* STDC_HEADERS */
-#if HAVE_STRING_H
 # include <string.h>
-#endif  /* HAVE_STRING_H */
-#if HAVE_CTYPE_H
 # include <ctype.h>
-#endif  /* HAVE_CTYPE_H */
-#if HAVE_ASSERT_H
 # include <assert.h>
-#endif  /* HAVE_ASSERT_H */
 
 #include "frame.h"
 #include "fromgif.h"

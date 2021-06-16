@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2020 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -31,7 +32,10 @@
 #endif
 
 #define LIBSIXEL_VERSION "@PACKAGE_VERSION@"
+#define PACKAGE_VERSION LIBSIXEL_VERSION
 #define LIBSIXEL_ABI_VERSION "@LS_LTVERSION@"
+#define LS_LTVERSION LIBSIXEL_ABI_VERSION
+#define PACKAGE_DESCRIPTION "@PACKAGE_DESCRIPTION@"
 
 typedef unsigned char sixel_index_t;
 
@@ -591,7 +595,7 @@ sixel_output_new(
                                                        default allocator */
 
 /* deprecated: create an output object */
-SIXELAPI @attr_func_deprecated@ sixel_output_t *
+SIXELAPI __attribute__((deprecated)) sixel_output_t *
 sixel_output_create(
     sixel_write_function /* in */ fn_write, /* callback for output sixel */
     void                 /* in */ *priv);   /* private data given as
@@ -684,7 +688,7 @@ sixel_dither_new(
                                                     default allocator */
 
 /* create dither context object */
-SIXELAPI @attr_func_deprecated@ sixel_dither_t *
+SIXELAPI __attribute__((deprecated)) sixel_dither_t *
 sixel_dither_create(int /* in */ ncolors); /* number of colors */
 
 /* get built-in dither context object */
@@ -731,7 +735,7 @@ SIXELAPI int
 sixel_dither_get_num_of_histogram_colors(
     sixel_dither_t /* in */ *dither);  /* dither context object */
 
-SIXELAPI @attr_func_deprecated@ int /* typoed! remains for compatibility. */
+SIXELAPI __attribute__((deprecated)) int /* typoed! remains for compatibility. */
 sixel_dither_get_num_of_histgram_colors(
     sixel_dither_t /* in */ *dither);  /* dither context object */
 
@@ -810,7 +814,7 @@ sixel_decode_raw(
     int                 /* out */ *ncolors,     /* palette size (<= 256) */
     sixel_allocator_t   /* in */  *allocator);  /* allocator object or null */
 
-SIXELAPI @attr_func_deprecated@ SIXELSTATUS
+SIXELAPI __attribute__((deprecated)) SIXELSTATUS
 sixel_decode(
     unsigned char            /* in */  *sixels,    /* sixel bytes */
     int                      /* in */  size,       /* size of sixel bytes */
@@ -922,7 +926,7 @@ sixel_frame_new(
     sixel_allocator_t   /* in */  *allocator);  /* allocator, null if you use
                                                    default allocator */
 /* deprecated version of sixel_frame_new() */
-SIXELAPI @attr_func_deprecated@ sixel_frame_t *
+SIXELAPI __attribute__((deprecated)) sixel_frame_t *
 sixel_frame_create(void);
 
 /* increase reference count of frame object (thread-unsafe) */
@@ -1065,7 +1069,7 @@ sixel_encoder_new(
                                                   default allocator */
 
 /* deprecated version of sixel_decoder_new() */
-SIXELAPI @attr_func_deprecated@ sixel_encoder_t *
+SIXELAPI __attribute__((deprecated)) sixel_encoder_t *
 sixel_encoder_create(void);
 
 /* increase reference count of encoder object (thread-unsafe) */
@@ -1130,7 +1134,7 @@ sixel_decoder_new(
                                                   default allocator */
 
 /* deprecated version of sixel_decoder_new() */
-SIXELAPI @attr_func_deprecated@ sixel_decoder_t *
+SIXELAPI __attribute__((deprecated)) sixel_decoder_t *
 sixel_decoder_create(void);
 
 /* increase reference count of decoder object (thread-unsafe) */

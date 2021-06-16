@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,19 +22,13 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdio.h>
 # include <stdlib.h>
-#endif  /* STDC_HEADERS */
-#if HAVE_STRING_H
 # include <string.h>
-#endif  /* HAVE_STRING_H */
 #if HAVE_SETJMP_H
 # include <setjmp.h>
 #endif  /* HAVE_SETJMP_H */
-#if HAVE_ERRNO_H
 # include <errno.h>
-#endif  /* HAVE_ERRNO_H */
 #if HAVE_LIBPNG
 # include <png.h>
 #else
@@ -42,13 +37,7 @@
 
 #include <sixel.h>
 
-#if !defined(HAVE_MEMCPY)
-# define memcpy(d, s, n) (bcopy ((s), (d), (n)))
-#endif
 
-#if !defined(HAVE_MEMMOVE)
-# define memmove(d, s, n) (bcopy ((s), (d), (n)))
-#endif
 
 #if !defined(O_BINARY) && defined(_O_BINARY)
 # define O_BINARY _O_BINARY
@@ -208,7 +197,7 @@ write_png_to_file(
 #if defined(O_BINARY)
 # if HAVE__SETMODE
         _setmode(fileno(stdout), O_BINARY);
-# elif HAVE_SETMODE
+# else
         setmode(fileno(stdout), O_BINARY);
 # endif  /* HAVE_SETMODE */
 #endif  /* defined(O_BINARY) */

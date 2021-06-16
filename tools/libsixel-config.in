@@ -1,6 +1,8 @@
 #!/bin/sh
 #
-# Author: Hayaki Saito, 2015
+# Authors:
+# Hayaki Saito, 2015
+# Fredrick R. Brennan & libsixel developers (see AUTHORS), 2021-
 #
 
 prefix=@prefix@

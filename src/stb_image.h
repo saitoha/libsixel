@@ -103,6 +103,15 @@ RECENT REVISION HISTORY:
     Blazej Dariusz Roszkowski                                     github:Michaelangel007
 */
 
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wsign-conversion"
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wstrict-overflow"
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wswitch-default"
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdouble-promotion"
+
 #ifndef STBI_INCLUDE_STB_IMAGE_H
 #define STBI_INCLUDE_STB_IMAGE_H
 
@@ -507,9 +516,7 @@ STBIDEF int   stbi_zlib_decode_noheader_buffer(char *obuffer, int olen, const ch
 
 
 #include <stdarg.h>
-#if HAVE_STDDEF_H
 #include <stddef.h> // ptrdiff_t on osx
-#endif  /* HAVE_STDDEF_H */
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
@@ -545,9 +552,7 @@ typedef   signed short stbi__int16;
 typedef unsigned int   stbi__uint32;
 typedef   signed int   stbi__int32;
 #else
-#if HAVE_STDINT_H
 # include <stdint.h>
-#endif
 typedef uint16_t stbi__uint16;
 typedef int16_t  stbi__int16;
 typedef uint32_t stbi__uint32;
@@ -7489,3 +7494,8 @@ ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------------
 */
+
+# pragma GCC diagnostic pop
+# pragma GCC diagnostic pop
+# pragma GCC diagnostic pop
+# pragma GCC diagnostic pop
