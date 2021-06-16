@@ -1,6 +1,8 @@
 libsixel
 ========
 
+![logo](https://avatars.githubusercontent.com/u/85618227)
+
 [![Build Status](https://github.com/libsixel/libsixel/actions/workflows/build.yml/badge.svg)](https://github.com/libsixel/libsixel/actions/)
 
 ## This is a fork
