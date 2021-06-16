@@ -362,18 +362,18 @@ $ meson install -C build
 You can use the following options at build time to influence the build. During the `meson build` step, pass e.g. `-Dlibcurl=enabled` to enable cURL.
 
 <table>
-<th>Option name</th><th>Former GNU Autotools equivalent</th><th>Description</th><th>Default?</th>
-<td>img2sixel</td><td>`--enable-img2sixel`</td><td>Build binary `img2sixel`</td><td>Yes</td>
-<td>sixel2png</td><td>`--enable-sixel2png`</td><td>Build binary `sixel2png`</td><td>Yes</td>
-<td>gdk-pixbuf2</td><td>`--with-gdk-pixbuf2`</td><td>Whether to build in gdk-pixbuf2 support</td><td>No</td>
-<td>gd</td><td>`--with-gd`</td><td>Whether to build in gd support (adds more image formats)</td><td>Auto</td>
-<td>libcurl</td><td>`--with-libcurl`</td><td>build with cURL (allows input filenames to binaries/API to be URLs)</td><td>No</td>
-<td>jpeg</td><td>`--with-jpeg`</td><td>Whether to build with libjpeg support</td><td>Auto</td>
-<td>png</td><td>`--with-png`</td><td>Whether to build with libpng support</td><td>Auto</td>
-<td>gcov</td><td>`--enable-gcov`</td><td>Build gcov coverage tests</td><td>No</td>
-<td>tests</td><td>`--enable-tests`</td><td>Build tests (requires `bash`)</td><td>No</td>
-<td>python2</td><td>`--enable-python`</td><td>Build Python library integration</td><td>No</td>
-<td>pkg\_config\_path</td><td>`--with-pkgconfigdir`</td><td>`pkg-config` search directory</td><td>Set by Meson</td>
+<tr><th>Option name</th><th>Former GNU Autotools equivalent</th><th>Description</th><th>Default?</th></tr>
+<tr><td>img2sixel</td><td>`--enable-img2sixel`</td><td>Build binary `img2sixel`</td><td>Yes</td></tr>
+<tr><td>sixel2png</td><td>`--enable-sixel2png`</td><td>Build binary `sixel2png`</td><td>Yes</td></tr>
+<tr><td>gdk-pixbuf2</td><td>`--with-gdk-pixbuf2`</td><td>Whether to build in gdk-pixbuf2 support</td><td>No</td></tr>
+<tr><td>gd</td><td>`--with-gd`</td><td>Whether to build in gd support (adds more image formats)</td><td>Auto</td></tr>
+<tr><td>libcurl</td><td>`--with-libcurl`</td><td>build with cURL (allows input filenames to binaries/API to be URLs)</td><td>No</td></tr>
+<tr><td>jpeg</td><td>`--with-jpeg`</td><td>Whether to build with libjpeg support</td><td>Auto</td></tr>
+<tr><td>png</td><td>`--with-png`</td><td>Whether to build with libpng support</td><td>Auto</td></tr>
+<tr><td>gcov</td><td>`--enable-gcov`</td><td>Build gcov coverage tests</td><td>No</td></tr>
+<tr><td>tests</td><td>`--enable-tests`</td><td>Build tests (requires `bash`)</td><td>No</td></tr>
+<tr><td>python2</td><td>`--enable-python`</td><td>Build Python library integration</td><td>No</td></tr>
+<tr><td>pkg\_config\_path</td><td>`--with-pkgconfigdir`</td><td>`pkg-config` search directory</td><td>Set by Meson</td></tr>
 </table>
 
 As well, several directories can be configured, most importantly `prefix`. Non-standard directories you can change are `bashcompletiondir` and `zshcompletiondir`.
