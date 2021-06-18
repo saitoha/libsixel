@@ -16,7 +16,7 @@ test_env.set('BUILDDIR', meson.current_build_dir())
 test_env.set('TOP_SRCDIR', meson.source_root())
 
 if get_option('img2sixel').enabled()
-  e = executable('img2sixel', 'img2sixel.c', include_directories: [inc, inc_config], link_with: libsixel)
+  e = executable('img2sixel', 'img2sixel.c', include_directories: [inc, inc_config], link_with: libsixel, install: true)
   install_man('img2sixel.1')
 
   if get_option('tests').enabled()
@@ -26,7 +26,7 @@ if get_option('img2sixel').enabled()
 endif
 
 if get_option('sixel2png').enabled()
-  executable('sixel2png', 'sixel2png.c', include_directories: [inc, inc_config], link_with: libsixel)
+  executable('sixel2png', 'sixel2png.c', include_directories: [inc, inc_config], link_with: libsixel, install: true)
   install_man('sixel2png.1')
 
   if get_option('tests').enabled()
