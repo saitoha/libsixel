@@ -92,6 +92,9 @@ Furthermore some information of SIXEL-ready SDL applications are reported.
 
   A safe [Rust](https://www.rust-lang.org/) wrapper for libsixel
 
+#### [id-sixel](https://github.com/Kaiepi/id-sixel)
+
+  Total [Idris 2](https://github.com/idris-lang/Idris2/) bindings for libsixel
 
 ### W3M integration
 
