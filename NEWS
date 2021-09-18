@@ -1,3 +1,8 @@
+* libsixel 1.10.1 (2021-09-18)
+ * new maintainer, nick black <dankamongmen@gmail.com>
+ * fix two use-after-free()s, one found by @a4865g ("WuLearn") and one
+   found by myself. initialize the `out` buffer of `gif_t` objects.
+
 
                   ------------------------------
                    What's new in libsixel-1.9 ?
