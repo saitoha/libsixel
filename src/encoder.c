@@ -560,7 +560,6 @@ sixel_encoder_prepare_palette(
                                      encoder->method_for_rep,
                                      encoder->quality_mode);
     if (SIXEL_FAILED(status)) {
-        sixel_dither_unref(*dither);
         goto end;
     }
 
