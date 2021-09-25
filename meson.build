@@ -17,13 +17,6 @@ libsixel_deps = []
 
 cc = meson.get_compiler('c')
 
-if host_machine.system() == 'linux'
-  message('Not on BSD, checking for libbsd.so')
-  has_bsd = cc.find_library('bsd')
-  cc.has_header('bsd/unistd.h')
-  libsixel_deps += [has_bsd]
-endif
-
 cc.has_function('unreachable')
 
 conf_data = configuration_data({'_POSIX_C_SOURCE': '199309L'})
