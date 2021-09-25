@@ -1,8 +1,7 @@
 echo '[start]'
 
 test -z "$1"; HAVE_PNG=$?
-test -z "$2"; HAVE_CURL=$?
-test ! -z "$3"; BE_SILENT=$?
+test ! -z "$2"; BE_SILENT=$?
 
 echo '[test1] invalid option handling'
 mkdir -p ${BUILDDIR}/tmp/
@@ -189,26 +188,4 @@ eval ${BUILDDIR}/img2sixel -w32 -B\#fff ${TOP_SRCDIR}/images/pngsuite/background
 eval ${BUILDDIR}/img2sixel -w32 -B\#fff ${TOP_SRCDIR}/images/pngsuite/background/bggn4a16.png $SILENT
 eval ${BUILDDIR}/img2sixel -w32 -B\#fff ${TOP_SRCDIR}/images/pngsuite/background/bgwn6a08.png $SILENT
 eval ${BUILDDIR}/img2sixel -w32 -B\#fff ${TOP_SRCDIR}/images/pngsuite/background/bgyn6a16.png $SILENT
-fi
-if test HAVE_CURL; then
-echo
-echo '[test10] curl'
-test ! $(${BUILDDIR}/img2sixel file:///test)
-test ! $(${BUILDDIR}/img2sixel https:///test)
-eval ${BUILDDIR}/img2sixel file:///$(pwd)/${TOP_SRCDIR}/images/snake.jpg $SILENT
-if test $(which openssl) && test $(which python2); then \
-    openssl genrsa | openssl rsa > ${BUILDDIR}/tmp/server.key; \
-    openssl req -new -key ${BUILDDIR}/tmp/server.key -subj "/CN=localhost" | openssl x509 -req -signkey ${BUILDDIR}/tmp/server.key > ${BUILDDIR}/tmp/server.crt; \
-    echo "import BaseHTTPServer as bs, SimpleHTTPServer as ss, ssl" > ${BUILDDIR}/tmp/server.py; \
-    echo "httpd = bs.HTTPServer(('localhost', 4443), ss.SimpleHTTPRequestHandler)" >> ${BUILDDIR}/tmp/server.py; \
-    echo "httpd.socket = ssl.wrap_socket(httpd.socket, certfile='${BUILDDIR}/tmp/server.crt', keyfile='${BUILDDIR}/tmp/server.key', server_side=True)" >> ${BUILDDIR}/tmp/server.py; \
-    echo "httpd.handle_request()" >> ${BUILDDIR}/tmp/server.py; \
-    echo "httpd.handle_request()" >> ${BUILDDIR}/tmp/server.py; \
-    python2 ${BUILDDIR}/tmp/server.py & \
-    sleep 1; \
-    ! ${BUILDDIR}/img2sixel 'https://localhost:4443/${BUILDDIR}/tmp/snake.sixel'; \
-    sleep 1; \
-    eval ${BUILDDIR}/img2sixel -k 'https://localhost:4443/${BUILDDIR}/tmp/snake.sixel' $SILENT; \
-fi
-
 fi
