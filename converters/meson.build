@@ -3,11 +3,6 @@ if get_option('png').enabled()
 else
   has_png = ''
 endif
-if get_option('libcurl').enabled()
-  has_libcurl = 'true'
-else
-  has_libcurl = ''
-endif
 
 bash_for_tests = find_program('bash', required: get_option('tests').enabled())
 
@@ -21,7 +16,7 @@ if get_option('img2sixel').enabled()
 
   if get_option('tests').enabled()
     warning('Note: tests currently require the Bourne-Again Shell (bash)')
-    test('img2sixel tests', bash_for_tests, args: ['./img2sixel_tests.sh', has_png, has_libcurl, 'silent'], is_parallel: false, workdir: '/'.join([meson.source_root(), 'converters']), priority: 1, timeout: 120, env: test_env)
+    test('img2sixel tests', bash_for_tests, args: ['./img2sixel_tests.sh', has_png, 'silent'], is_parallel: false, workdir: '/'.join([meson.source_root(), 'converters']), priority: 1, timeout: 120, env: test_env)
   endif
 endif
 
@@ -30,7 +25,7 @@ if get_option('sixel2png').enabled()
   install_man('sixel2png.1')
 
   if get_option('tests').enabled()
-    test('sixel2png tests', bash_for_tests, args: ['./sixel2png_tests.sh', has_png, has_libcurl, 'silent'], is_parallel: false, workdir: '/'.join([meson.source_root(), 'converters']), priority: 0, env: test_env)
+    test('sixel2png tests', bash_for_tests, args: ['./sixel2png_tests.sh', has_png, 'silent'], is_parallel: false, workdir: '/'.join([meson.source_root(), 'converters']), priority: 0, env: test_env)
   endif
 endif
 
