@@ -6,9 +6,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
-        run: sudo apt install libpng-dev libjpeg-dev libgd-dev libcurl-dev libgdk-pixbuf2.0-dev meson ninja-build
+        run: sudo apt install libpng-dev libjpeg-dev libgd-dev libgdk-pixbuf2.0-dev meson ninja-build
       - name: Set up Meson
-        run: meson setup build -Dbuildtype=debug -Dlibcurl=enabled -Dgd=enabled -Dgdk-pixbuf2=enabled -Dtests=enabled
+        run: meson setup build -Dbuildtype=debug -Dgd=enabled -Dgdk-pixbuf2=enabled -Dtests=enabled
       - name: make
         run: (cd build; ninja)
       - name: make check
