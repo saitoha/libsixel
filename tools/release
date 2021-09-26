@@ -14,7 +14,7 @@ git clean -f -d -x
 MESON=meson.build
 
 grep $OLDVERSION "$MESON" > /dev/null || { echo "Couldn't find OLDVERSION ($OLDVERSION) in $MESON" >&2 ; exit 1 ; }
-sed -i -e "s/$OLDVERSION/$VERSION" $MESON
+sed -i -e "s/$OLDVERSION/$VERSION/" $MESON
 
 git commit -a -m v$VERSION
 git push
