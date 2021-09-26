@@ -17,13 +17,6 @@ libsixel_deps = []
 
 cc = meson.get_compiler('c')
 
-if host_machine.system() == 'linux'
-  message('Not on BSD, checking for libbsd.so')
-  has_bsd = cc.find_library('bsd')
-  cc.has_header('bsd/unistd.h')
-  libsixel_deps += [has_bsd]
-endif
-
 cc.has_function('unreachable')
 
 conf_data = configuration_data({'_POSIX_C_SOURCE': '199309L'})
@@ -78,7 +71,6 @@ needed_headers = [
   'sys/types.h',
   'sys/stat.h',
   'fcntl.h',
-  'sys/io.h',
   'errno.h',
   'limits.h',
   'sys/time.h',
@@ -96,41 +88,8 @@ cc.has_function('realloc')
 cc.has_function('memset')
 have_getopt_long = cc.has_function('getopt_long')
 
-needed_functions = [
-  'memcpy',
-  'memmove',
-  'memset',
-  'setmode',
-  'signal',
-  'nanosleep',
-  'strdup',
-  'strtoul',
-  'calloc',
-  'clock',
-  'clearerr',
-  'stat',
-  'setjmp',
-  'longjmp',
-  'strerror',
-  'isatty',
-  'strncmp',
-  'ldiv',
-  'floor',
-  'localeconv',
-  'pow',
-  'select',
-  'sqrt',
-  'strchr',
-  'strstr',
-  'strtol',
-]
-
 foreach a : needed_headers
   assert(cc.has_header(a), 'Needed header not found')
-endforeach
-
-foreach a : needed_functions
-  assert(cc.has_function(a, args: ['-lbsd']), 'Needed function not found')
 endforeach
 
 gdkpixbuf2_found = dependency('gdk-pixbuf-2.0', required: get_option('gdk-pixbuf2'))
