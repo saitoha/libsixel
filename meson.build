@@ -93,24 +93,24 @@ png_dep = dependency('libpng', required: get_option('png'))
 pymod = import('python')
 python2_installation = pymod.find_installation('python2', required: get_option('python2'))
 
-if get_option('libcurl').enabled() and curl_dep.found()
+if curl_dep.found()
   conf_data.set('HAVE_LIBCURL', true)
   libsixel_deps += [curl_dep]
 endif
 
-if get_option('jpeg').enabled() and jpeg_dep.found()
+if jpeg_dep.found()
   conf_data.set('HAVE_JPEG', true)
   libsixel_deps += [jpeg_dep]
 endif
 
-if get_option('png').enabled() and png_dep.found()
+if png_dep.found()
   conf_data.set('HAVE_PNG', true)
   libsixel_deps += [png_dep]
 endif
 
 loaders = ['stb-image']
 
-if get_option('gd').enabled() and gd_dep.found()
+if gd_dep.found()
   conf_data.set('HAVE_GD', true)
   libsixel_deps += [gd_dep]
   loaders += ['gd']
@@ -130,7 +130,7 @@ if get_option('gd').enabled() and gd_dep.found()
   endforeach
 endif
 
-if get_option('gdk-pixbuf2').enabled() and gdkpixbuf2_dep.found()
+if gdkpixbuf2_dep.found()
   conf_data.set('HAVE_GDK_PIXBUF2', true)
   libsixel_deps += [gdkpixbuf2_dep]
   loaders += ['gdk-pixbuf2']
@@ -148,7 +148,7 @@ subdir('src')
 subdir('converters')
 subdir('tools')
 
-if get_option('python2').enabled() and python2_installation.found()
+if python2_installation.found()
   subdir('python')
 endif
 
