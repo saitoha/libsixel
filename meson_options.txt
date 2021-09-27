@@ -5,7 +5,6 @@ option('gd', type: 'feature', value: 'auto', description: 'Whether to build in g
 option('libcurl', type: 'feature', value: 'disabled', description: 'Whether to build in curl support (allows input filenames to be URL\'s)')
 option('jpeg', type: 'feature', value: 'auto', description: 'Whether to parse jpeg inputs with libjpeg')
 option('png', type: 'feature', value: 'auto', description: 'Whether to parse png inputs with libpng')
-option('gcov', type: 'feature', value: 'disabled', description: 'Build gcov coverage tests')
 option('tests', type: 'feature', value: 'disabled', description: 'Build tests')
 
 option('python2', type: 'feature', value: 'disabled', description: 'Whether to enable Python library integration (2.x+)')

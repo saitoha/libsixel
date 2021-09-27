@@ -49,12 +49,6 @@ endforeach
 
 add_global_arguments(c_args, language: 'c')
 
-if get_option('gcov').enabled()
-  add_global_arguments('--coverage', language: 'c')
-  add_global_link_arguments('--coverage', language: 'c')
-endif
-
-
 libm_found = cc.find_library('m')
 libsixel_deps += [libm_found]
 
@@ -170,9 +164,8 @@ libsixel was configured as follows
        Bash completion dir : @3@
        Zsh completion dir  : @4@
        python bindings     : @5@
-       gcov integration    : @6@
-       build type          : @7@
-       tests               : @8@
+       build type          : @6@
+       tests               : @7@
 
   '''.format(
     get_option('prefix'),
@@ -181,7 +174,6 @@ libsixel was configured as follows
     bashcompletiondir,
     zshcompletiondir,
     python2_installation.found().to_string(),
-    get_option('gcov').enabled(),
     get_option('buildtype'),
     get_option('tests').enabled()
   )
