@@ -167,19 +167,17 @@ libsixel was configured as follows
        Install prefix      : @0@
        Loader component    : @1@
        libcurl integration : @2@
-       pkg-config dir      : @3@
-       Bash completion dir : @4@
-       Zsh completion dir  : @5@
-       python bindings     : @6@
-       gcov integration    : @7@
-       build type          : @8@
-       tests               : @9@
+       Bash completion dir : @3@
+       Zsh completion dir  : @4@
+       python bindings     : @5@
+       gcov integration    : @6@
+       build type          : @7@
+       tests               : @8@
 
   '''.format(
     get_option('prefix'),
     ' '.join(loaders),
     curl_found.found(),
-    get_option('pkg_config_path'),
     bashcompletiondir,
     zshcompletiondir,
     python2_installation.found().to_string(),
