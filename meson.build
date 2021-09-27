@@ -98,12 +98,12 @@ if get_option('libcurl').enabled() and curl_dep.found()
   libsixel_deps += [curl_dep]
 endif
 
-if get_option('jpeg').enabled() and jpeg_dep
+if get_option('jpeg').enabled() and jpeg_dep.found()
   conf_data.set('HAVE_JPEG', true)
   libsixel_deps += [jpeg_dep]
 endif
 
-if get_option('png').enabled() and png_dep
+if get_option('png').enabled() and png_dep.found()
   conf_data.set('HAVE_PNG', true)
   libsixel_deps += [png_dep]
 endif
