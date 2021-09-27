@@ -49,8 +49,8 @@ endforeach
 
 add_global_arguments(c_args, language: 'c')
 
-libm_found = cc.find_library('m')
-libsixel_deps += [libm_found]
+libm_dep = cc.find_library('m')
+libsixel_deps += [libm_dep]
 
 needed_headers = [
   'assert.h',
@@ -85,34 +85,34 @@ foreach a : needed_headers
   assert(cc.has_header(a), 'Needed header not found')
 endforeach
 
-gdkpixbuf2_found = dependency('gdk-pixbuf-2.0', required: get_option('gdk-pixbuf2'))
-gd_found = cc.find_library('gd', required: get_option('gd'))
-curl_found = dependency('libcurl', required: get_option('libcurl'))
-jpeg_found = dependency('libjpeg', required: get_option('jpeg'))
-png_found = dependency('libpng', required: get_option('png'))
+gdkpixbuf2_dep = dependency('gdk-pixbuf-2.0', required: get_option('gdk-pixbuf2'))
+gd_dep = cc.find_library('gd', required: get_option('gd'))
+curl_dep = dependency('libcurl', required: get_option('libcurl'))
+jpeg_dep = dependency('libjpeg', required: get_option('jpeg'))
+png_dep = dependency('libpng', required: get_option('png'))
 pymod = import('python')
 python2_installation = pymod.find_installation('python2', required: get_option('python2'))
 
-if get_option('libcurl').enabled() and curl_found.found()
+if get_option('libcurl').enabled() and curl_dep.found()
   conf_data.set('HAVE_LIBCURL', true)
-  libsixel_deps += [curl_found]
+  libsixel_deps += [curl_dep]
 endif
 
-if get_option('jpeg').enabled() and jpeg_found
+if get_option('jpeg').enabled() and jpeg_dep
   conf_data.set('HAVE_JPEG', true)
-  libsixel_deps += [jpeg_found]
+  libsixel_deps += [jpeg_dep]
 endif
 
-if get_option('png').enabled() and png_found
+if get_option('png').enabled() and png_dep
   conf_data.set('HAVE_PNG', true)
-  libsixel_deps += [png_found]
+  libsixel_deps += [png_dep]
 endif
 
 loaders = ['stb-image']
 
-if get_option('gd').enabled() and gd_found.found()
+if get_option('gd').enabled() and gd_dep.found()
   conf_data.set('HAVE_GD', true)
-  libsixel_deps += [gd_found]
+  libsixel_deps += [gd_dep]
   loaders += ['gd']
 
   gd_funcs = [
@@ -124,15 +124,15 @@ if get_option('gd').enabled() and gd_found.found()
   ]
 
   foreach f : gd_funcs
-    if cc.has_function(f, dependencies: gd_found)
+    if cc.has_function(f, dependencies: gd_dep)
       conf_data.set('HAVE_DECL_@0@'.format(f.to_upper()), true)
     endif
   endforeach
 endif
 
-if get_option('gdk-pixbuf2').enabled() and gdkpixbuf2_found.found()
+if get_option('gdk-pixbuf2').enabled() and gdkpixbuf2_dep.found()
   conf_data.set('HAVE_GDK_PIXBUF2', true)
-  libsixel_deps += [gdkpixbuf2_found]
+  libsixel_deps += [gdkpixbuf2_dep]
   loaders += ['gdk-pixbuf2']
 endif
 
@@ -170,7 +170,7 @@ libsixel was configured as follows
   '''.format(
     get_option('prefix'),
     ' '.join(loaders),
-    curl_found.found(),
+    curl_dep.found(),
     bashcompletiondir,
     zshcompletiondir,
     python2_installation.found().to_string(),
