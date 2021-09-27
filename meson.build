@@ -13,8 +13,6 @@ else
   zshcompletiondir = get_option('zshcompletiondir')
 endif
 
-libsixel_deps = []
-
 cc = meson.get_compiler('c')
 
 cc.has_function('unreachable')
@@ -49,9 +47,6 @@ endforeach
 
 add_global_arguments(c_args, language: 'c')
 
-libm_dep = cc.find_library('m', required: false)
-libsixel_deps += [libm_dep]
-
 needed_headers = [
   'assert.h',
   'math.h',
@@ -85,6 +80,8 @@ foreach a : needed_headers
   assert(cc.has_header(a), 'Needed header not found')
 endforeach
 
+libm_dep = cc.find_library('m', required: false)
+
 gdkpixbuf2_dep = dependency('gdk-pixbuf-2.0', required: get_option('gdk-pixbuf2'))
 gd_dep = cc.find_library('gd', required: get_option('gd'))
 curl_dep = dependency('libcurl', required: get_option('libcurl'))
@@ -93,26 +90,24 @@ png_dep = dependency('libpng', required: get_option('png'))
 pymod = import('python')
 python2_installation = pymod.find_installation('python2', required: get_option('python2'))
 
+libsixel_deps = [libm_dep, curl_dep, jpeg_dep, png_dep, gd_dep]
+
 if curl_dep.found()
   conf_data.set('HAVE_LIBCURL', true)
-  libsixel_deps += [curl_dep]
 endif
 
 if jpeg_dep.found()
   conf_data.set('HAVE_JPEG', true)
-  libsixel_deps += [jpeg_dep]
 endif
 
 if png_dep.found()
   conf_data.set('HAVE_PNG', true)
-  libsixel_deps += [png_dep]
 endif
 
 loaders = ['stb-image']
 
 if gd_dep.found()
   conf_data.set('HAVE_GD', true)
-  libsixel_deps += [gd_dep]
   loaders += ['gd']
 
   gd_funcs = [
@@ -132,7 +127,6 @@ endif
 
 if gdkpixbuf2_dep.found()
   conf_data.set('HAVE_GDK_PIXBUF2', true)
-  libsixel_deps += [gdkpixbuf2_dep]
   loaders += ['gdk-pixbuf2']
 endif
 
