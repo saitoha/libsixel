@@ -49,7 +49,7 @@ endforeach
 
 add_global_arguments(c_args, language: 'c')
 
-libm_dep = cc.find_library('m')
+libm_dep = cc.find_library('m', required: false)
 libsixel_deps += [libm_dep]
 
 needed_headers = [
