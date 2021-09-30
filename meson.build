@@ -66,7 +66,6 @@ needed_headers = [
   'string.h',
   'unistd.h',
   'stdint.h',
-  'sys/unistd.h',
   'getopt.h',
   'sys/types.h',
   'sys/stat.h',

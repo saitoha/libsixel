@@ -27,7 +27,6 @@
 # include <stdarg.h>
 #include <string.h>
 # include <unistd.h>
-# include <sys/unistd.h>
 # include <sys/types.h>
 # include <time.h>
 # include <sys/time.h>

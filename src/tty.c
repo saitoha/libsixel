@@ -28,7 +28,6 @@
 # include <sys/time.h>
 # include <sys/types.h>
 # include <unistd.h>
-# include <sys/unistd.h>
 # include <sys/select.h>
 # include <errno.h>
 # include <termios.h>
