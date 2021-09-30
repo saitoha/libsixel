@@ -28,7 +28,7 @@
 #include <sixel.h>
 #include "output.h"
 
-#define SIXEL_RGB(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
+#define SIXEL_RGB(r, g, b) (((r) << 16u) + ((g) << 8u) + (b))
 
 #define PALVAL(n,a,m) (((n) * (a) + ((m) / 2)) / (m))
 
@@ -170,7 +170,6 @@ image_buffer_init(
     SIXELSTATUS status = SIXEL_FALSE;
     size_t size;
     int i;
-    int n;
     int r;
     int g;
     int b;
@@ -215,6 +214,7 @@ image_buffer_init(
     }
     memset(image->data, bgindex, size);
 
+    unsigned n;
     /* palette initialization */
     for (n = 0; n < 16; n++) {
         image->palette[n] = sixel_default_color_table[n];
@@ -224,7 +224,7 @@ image_buffer_init(
     for (r = 0; r < 6; r++) {
         for (g = 0; g < 6; g++) {
             for (b = 0; b < 6; b++) {
-                image->palette[n++] = SIXEL_RGB(r * 51, g * 51, b * 51);
+                image->palette[n++] = SIXEL_RGB(r * 42, g * 42, b * 42);
             }
         }
     }
@@ -234,8 +234,8 @@ image_buffer_init(
         image->palette[n++] = SIXEL_RGB(i * 11, i * 11, i * 11);
     }
 
-    for (; n < SIXEL_PALETTE_MAX; n++) {
-        image->palette[n] = SIXEL_RGB(255, 255, 255);
+    while (n < SIXEL_PALETTE_MAX) {
+        image->palette[n++] = SIXEL_RGB(255, 255, 255);
     }
 
     status = SIXEL_OK;
