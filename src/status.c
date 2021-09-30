@@ -266,28 +266,28 @@ test2(void)
     }
 #endif
 
-#if HAVE_JPEG
+#ifdef HAVE_JPEG
     message = sixel_helper_format_error(SIXEL_JPEG_ERROR);
     if (strcmp(message, SIXEL_MESSAGE_JPEG_ERROR) != 0) {
         goto error;
     }
 #endif
 
-#if HAVE_LIBPNG
+#ifdef HAVE_LIBPNG
     message = sixel_helper_format_error(SIXEL_PNG_ERROR);
     if (strcmp(message, SIXEL_MESSAGE_PNG_ERROR) != 0) {
         goto error;
     }
 #endif
 
-#if HAVE_GD
+#ifdef HAVE_GD
     message = sixel_helper_format_error(SIXEL_GD_ERROR);
     if (strcmp(message, SIXEL_MESSAGE_GD_ERROR) != 0) {
         goto error;
     }
 #endif
 
-#if HAVE_GDK_PIXBUF2
+#ifdef HAVE_GDK_PIXBUF2
     message = sixel_helper_format_error(SIXEL_GDK_ERROR);
     if (strcmp(message, SIXEL_MESSAGE_GDK_ERROR) != 0) {
         goto error;

@@ -30,7 +30,7 @@
 #ifdef HAVE_GDK_PIXBUF2
 //#   pragma GCC diagnostic push
 //#   pragma GCC diagnostic ignored "-Wtypedef-redefinition"
-# include <gdk-pixbuf/gdk-pixbuf.h>
+# include <gdk-pixbuf-2.0/gdk-pixbuf.h>
 //#   pragma GCC diagnostic pop
 #endif
 #ifdef HAVE_GD
@@ -109,7 +109,7 @@ stbi_free(void *p)
 #endif
 
 
-# if HAVE_JPEG
+#ifdef HAVE_JPEG
 /* import from @uobikiemukot's sdump loader.h */
 static SIXELSTATUS
 load_jpeg(unsigned char **result,
