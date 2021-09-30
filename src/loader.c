@@ -30,7 +30,7 @@
 #ifdef HAVE_GDK_PIXBUF2
 //#   pragma GCC diagnostic push
 //#   pragma GCC diagnostic ignored "-Wtypedef-redefinition"
-# include <gdk-pixbuf-2.0/gdk-pixbuf.h>
+# include <gdk-pixbuf-2.0/gdk-pixbuf/gdk-pixbuf.h>
 //#   pragma GCC diagnostic pop
 #endif
 #ifdef HAVE_GD
