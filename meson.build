@@ -90,7 +90,7 @@ png_dep = dependency('libpng', required: get_option('png'))
 pymod = import('python')
 python2_installation = pymod.find_installation('python2', required: get_option('python2'))
 
-libsixel_deps = [libm_dep, curl_dep, jpeg_dep, png_dep, gd_dep]
+libsixel_deps = [libm_dep, curl_dep, jpeg_dep, png_dep, gd_dep, gdkpixbuf2_dep]
 
 if curl_dep.found()
   conf_data.set('HAVE_LIBCURL', true)
