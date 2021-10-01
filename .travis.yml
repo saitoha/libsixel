@@ -109,8 +109,8 @@ before_install:
   - "if [ x$TRAVIS_OS_NAME = xlinux -a x$XCC = xx86_64-w64-mingw32-gcc ]; then sudo apt-get install -qq gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64; fi"
   - "if [ x$TRAVIS_OS_NAME = xlinux -a x$GCOV != x ]; then sudo apt-get install libyaml-dev; fi"
   - "if [ x$TRAVIS_OS_NAME = xosx -a x$GCOV != x ]; then brew install libyaml; fi"
-  - "if [ x$TRAVIS_OS_NAME = xlinux -a x$GCOV != x ]; then sudo pip install cpp-coveralls pyyaml; fi"
-  - "if [ x$TRAVIS_OS_NAME = xosx -a x$GCOV != x ]; then pip install cpp-coveralls pyyaml; fi"
+  - "if [ x$TRAVIS_OS_NAME = xlinux -a x$GCOV != x ]; then sudo pip3 install cpp-coveralls pyyaml; fi"
+  - "if [ x$TRAVIS_OS_NAME = xosx -a x$GCOV != x ]; then pip3 install cpp-coveralls pyyaml; fi"
 
 before_script:
   - "CC=$XCC ./configure --prefix=${PREFIX} ${DEBUG} ${HOST} ${GDKPIXBUF} ${GD} ${LIBCURL} ${PNG} ${JPEG} ${GCOV} ${STATIC}"
