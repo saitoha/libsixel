@@ -1,3 +1,8 @@
+* libsixel 1.10.2 (2021-10-01)
+ * new maintainer, @wsluser
+ * Update python bindings to use python3. Python 3.9 is preferred. File issues
+   if bugs are found in python 3.6-8.
+   
 * libsixel 1.10.1 (2021-09-18)
  * new maintainer, nick black <dankamongmen@gmail.com>
  * fix two use-after-free()s, one found by @a4865g ("WuLearn") and one
