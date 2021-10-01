@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2014-2016 Hayaki Saito
 #
@@ -23,7 +23,7 @@
 from . import _sixel
 from libsixel import *
 
-class Encoder(object):
+class Encoder:
 
     def __init__(self):
         self._encoder = sixel_encoder_new()
