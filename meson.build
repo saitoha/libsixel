@@ -87,8 +87,8 @@ gd_dep = cc.find_library('gd', required: get_option('gd'))
 curl_dep = dependency('libcurl', required: get_option('libcurl'))
 jpeg_dep = dependency('libjpeg', required: get_option('jpeg'))
 png_dep = dependency('libpng', required: get_option('png'))
-pymod = import('python')
-python2_installation = pymod.find_installation('python2', required: get_option('python2'))
+pymod = import('python3')
+python3_installation = pymod.find_installation('python3', required: get_option('python3'))
 
 libsixel_deps = [libm_dep, curl_dep, jpeg_dep, png_dep, gd_dep, gdkpixbuf2_dep]
 
@@ -142,8 +142,8 @@ subdir('src')
 subdir('converters')
 subdir('tools')
 
-if python2_installation.found()
-  subdir('python')
+if python3_installation.found()
+  subdir('python3')
 endif
 
 warning('Perl, PHP and Ruby modules are available but not installed by Meson. If you want them, please refer to their individual installation directories for instructions after building libsixel.')
@@ -167,7 +167,7 @@ libsixel was configured as follows
     curl_dep.found(),
     bashcompletiondir,
     zshcompletiondir,
-    python2_installation.found().to_string(),
+    python3_installation.found().to_string(),
     get_option('buildtype'),
     get_option('tests').enabled()
   )
