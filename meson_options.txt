@@ -7,7 +7,7 @@ option('jpeg', type: 'feature', value: 'auto', description: 'Whether to parse jp
 option('png', type: 'feature', value: 'auto', description: 'Whether to parse png inputs with libpng')
 option('tests', type: 'feature', value: 'disabled', description: 'Build tests')
 
-option('python2', type: 'feature', value: 'disabled', description: 'Whether to enable Python library integration (2.x+)')
+option('python3', type: 'feature', value: 'disabled', description: 'Whether to enable Python library integration (3.x+)')
 
 option('bashcompletiondir', type: 'string', value: '', description: 'Use the specified bash completion dir. Default: $datadir/bash-completion/completions')
 option('zshcompletiondir', type: 'string', value: '', description: 'Use the specified zsh completion dir. Default: $datadir/zsh/site-functions')
