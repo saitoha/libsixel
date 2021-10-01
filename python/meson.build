@@ -4,4 +4,4 @@ sources = [
   'libsixel/decoder.py'
 ]
 
-python2_installation.install_sources(sources, subdir: join_paths([python2_installation.get_path('platlib'), 'libsixel']))
+python3_installation.install_sources(sources, subdir: join_paths([python3_installation.get_path('platlib'), 'libsixel']))
