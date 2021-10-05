@@ -293,7 +293,7 @@ You can use the following options at build time to influence the build. During t
 |png|`--with-png`|Whether to build with libpng support|Auto|
 |gcov|`--enable-gcov`|Build gcov coverage tests|No|
 |tests|`--enable-tests`|Build tests (requires `bash`)|No|
-|python3|`--enable-python3`|Build Python library integration|No|
+|python3|`--enable-python`|Build Python library integration|No|
 |pkg\_config\_path|`--with-pkgconfigdir`|`pkg-config` search directory|Set by Meson|
 
 As well, several directories can be configured, most importantly `prefix`. Non-standard directories you can change are `bashcompletiondir` and `zshcompletiondir`.
