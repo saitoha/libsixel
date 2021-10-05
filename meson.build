@@ -87,10 +87,9 @@ gd_dep = cc.find_library('gd', required: get_option('gd'))
 curl_dep = dependency('libcurl', required: get_option('libcurl'))
 jpeg_dep = dependency('libjpeg', required: get_option('jpeg'))
 png_dep = dependency('libpng', required: get_option('png'))
-pymod = import('python3')
-python3_installation = pymod.find_installation('python3', required: get_option('python3'))
+python3_dep = dependency('python3', required: get_option('python'))
 
-libsixel_deps = [libm_dep, curl_dep, jpeg_dep, png_dep, gd_dep, gdkpixbuf2_dep]
+libsixel_deps = [libm_dep, curl_dep, jpeg_dep, png_dep, gd_dep, gdkpixbuf2_dep, python3_dep]
 
 if curl_dep.found()
   conf_data.set('HAVE_LIBCURL', true)
@@ -142,7 +141,7 @@ subdir('src')
 subdir('converters')
 subdir('tools')
 
-if python3_installation.found()
+if python3_dep.found()
   subdir('python3')
 endif
 
