@@ -166,7 +166,7 @@ libsixel was configured as follows
     curl_dep.found(),
     bashcompletiondir,
     zshcompletiondir,
-    python3_installation.found().to_string(),
+    python3_dep.found().to_string(),
     get_option('buildtype'),
     get_option('tests').enabled()
   )
