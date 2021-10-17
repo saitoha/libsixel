@@ -21,7 +21,7 @@ sources = [
   'writer.c'
 ]
 
-libsixel = both_libraries('sixel',
+libsixel = library('sixel',
   sources,
   include_directories: [inc, inc_config],
   dependencies: libsixel_deps,
