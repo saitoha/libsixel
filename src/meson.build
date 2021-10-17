@@ -34,4 +34,4 @@ libsixel_dep = declare_dependency(
 )
 
 pkgconfig = import('pkgconfig')
-pkgconfig.generate(libsixel, name: 'libsixel', description: pkg_description, libraries: '-lsixel')
+pkgconfig.generate(libsixel, name: 'libsixel', description: pkg_description)
