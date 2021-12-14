@@ -153,7 +153,7 @@ sixel_helper_format_error(
             error_string = SIXEL_MESSAGE_JPEG_ERROR;
             break;
 #endif
-#ifdef HAVE_LIBPNG
+#ifdef HAVE_PNG
         case SIXEL_PNG_ERROR:
             error_string = SIXEL_MESSAGE_PNG_ERROR;
             break;
@@ -273,7 +273,7 @@ test2(void)
     }
 #endif
 
-#ifdef HAVE_LIBPNG
+#ifdef HAVE_PNG
     message = sixel_helper_format_error(SIXEL_PNG_ERROR);
     if (strcmp(message, SIXEL_MESSAGE_PNG_ERROR) != 0) {
         goto error;

@@ -36,9 +36,9 @@
 #ifdef HAVE_GD
 # include <gd.h>
 #endif
-#ifdef HAVE_LIBPNG
+#ifdef HAVE_PNG
 # include <png.h>
-#endif  /* HAVE_LIBPNG */
+#endif  /* HAVE_PNG */
 #ifdef HAVE_JPEG
 # include <jpeglib.h>
 #endif  /* HAVE_JPEG */
@@ -81,10 +81,8 @@ stbi_free(void *p)
 #define STBI_NO_GIF
 #define STBI_NO_PNM
 
-#ifdef HAVE_DIAGNOSTIC_SIGN_CONVERSION
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wsign-conversion"
-#endif
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wstrict-overflow"
 # pragma GCC diagnostic push
@@ -182,7 +180,7 @@ end:
 # endif  /* HAVE_JPEG */
 
 
-# if HAVE_LIBPNG
+# ifdef HAVE_PNG
 static void
 read_png(png_structp png_ptr,
          png_bytep data,
@@ -601,7 +599,7 @@ cleanup:
 }
 # pragma GCC diagnostic pop
 
-# endif  /* HAVE_LIBPNG */
+# endif  /* HAVE_PNG */
 
 
 static SIXELSTATUS
@@ -713,7 +711,7 @@ chunk_is_pnm(sixel_chunk_t const *chunk)
 }
 
 
-#ifdef HAVE_LIBPNG
+#ifdef HAVE_PNG
 /* detect whether given chunk is PNG stream */
 static int
 chunk_is_png(sixel_chunk_t const *chunk)
@@ -726,7 +724,7 @@ chunk_is_png(sixel_chunk_t const *chunk)
     }
     return 0;
 }
-#endif  /* HAVE_LIBPNG */
+#endif  /* HAVE_PNG */
 
 
 /* detect whether given chunk is GIF stream */
@@ -843,7 +841,7 @@ load_with_builtin(
         }
     }
 #endif  /* HAVE_JPEG */
-#ifdef HAVE_LIBPNG
+#ifdef HAVE_PNG
     else if (chunk_is_png(pchunk)) {
         status = sixel_frame_new(&frame, pchunk->allocator);
         if (SIXEL_FAILED(status)) {
@@ -865,7 +863,7 @@ load_with_builtin(
             goto end;
         }
     }
-#endif  /* HAVE_LIBPNG */
+#endif  /* HAVE_PNG */
     else if (chunk_is_gif(pchunk)) {
         fnp.fn = fn_load;
         status = load_gif(pchunk->buffer,

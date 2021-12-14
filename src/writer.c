@@ -25,15 +25,15 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <string.h>
-#if HAVE_SETJMP_H
+#ifdef HAVE_SETJMP_H
 # include <setjmp.h>
 #endif  /* HAVE_SETJMP_H */
 # include <errno.h>
-#if HAVE_LIBPNG
+#ifdef HAVE_PNG
 # include <png.h>
 #else
 # include "stb_image_write.h"
-#endif  /* HAVE_LIBPNG */
+#endif  /* HAVE_PNG */
 
 #include <sixel.h>
 
@@ -43,12 +43,6 @@
 # define O_BINARY _O_BINARY
 #endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 
-
-#if !HAVE_LIBPNG
-unsigned char *
-stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes,
-                      int x, int y, int n, int *out_len);
-#endif
 
 static SIXELSTATUS
 write_png_to_file(
@@ -64,7 +58,7 @@ write_png_to_file(
     FILE *output_fp = NULL;
     unsigned char *pixels = NULL;
     unsigned char *new_pixels = NULL;
-#if HAVE_LIBPNG
+#ifdef HAVE_PNG
     int y;
     png_structp png_ptr = NULL;
     png_infop info_ptr = NULL;
@@ -73,7 +67,7 @@ write_png_to_file(
     unsigned char *png_data = NULL;
     int png_len;
     int write_len;
-#endif  /* HAVE_LIBPNG */
+#endif  /* HAVE_PNG */
     int i;
     unsigned char *src;
     unsigned char *dst;
@@ -211,7 +205,7 @@ write_png_to_file(
         }
     }
 
-#if HAVE_LIBPNG
+#ifdef HAVE_PNG
     rows = sixel_allocator_malloc(allocator, (size_t)height * sizeof(unsigned char *));
     if (rows == NULL) {
         status = SIXEL_BAD_ALLOCATION;
@@ -263,7 +257,7 @@ write_png_to_file(
         sixel_helper_set_additional_message("fwrite() failed.");
         goto end;
     }
-#endif  /* HAVE_LIBPNG */
+#endif  /* HAVE_PNG */
 
     status = SIXEL_OK;
 
@@ -271,14 +265,14 @@ end:
     if (output_fp && output_fp != stdout) {
         fclose(output_fp);
     }
-#if HAVE_LIBPNG
+#ifdef HAVE_PNG
     sixel_allocator_free(allocator, rows);
     if (png_ptr) {
         png_destroy_write_struct(&png_ptr, &info_ptr);
     }
 #else
     sixel_allocator_free(allocator, png_data);
-#endif  /* HAVE_LIBPNG */
+#endif  /* HAVE_PNG */
     sixel_allocator_free(allocator, new_pixels);
 
     return status;
