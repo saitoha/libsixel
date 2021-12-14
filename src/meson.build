@@ -14,7 +14,6 @@ sources = [
   'quant.c',
   'scale.c',
   'status.c',
-  'stb_image_write.c',
   'tests.c',
   'tosixel.c',
   'tty.c',
