@@ -91,6 +91,10 @@ Furthermore some information of SIXEL-ready SDL applications are reported.
 #### [sixel-rs](https://github.com/AdnoC/sixel-rs)
 
   A safe [Rust](https://www.rust-lang.org/) wrapper for libsixel
+  
+#### [Sixel.jl](https://github.com/johnnychen94/Sixel.jl)
+
+  A [Julia](https://julialang.org/) wrapper for libsixel
 
 
 ### W3M integration
