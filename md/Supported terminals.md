@@ -67,11 +67,11 @@ $ xterm -xrm "XTerm*decTerminalID: vt340" -xrm "XTerm*numColorRegisters: 256"
 - MacTerm
   [https://github.com/kmgrant/macterm](https://github.com/kmgrant/macterm)
 
-- wezterm
+- WezTerm
   [https://github.com/wez/wezterm](https://github.com/wez/wezterm)
 
-- aminal
-  [https://github.com/liamg/aminal](https://github.com/liamg/aminal)
+- Darktile
+  [https://github.com/liamg/darktile](https://github.com/liamg/darktile)
 
 - iTerm2 (>= 3.0.0)
   [https://gitlab.com/gnachman/iterm2](https://gitlab.com/gnachman/iterm2)
