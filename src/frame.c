@@ -553,6 +553,11 @@ sixel_frame_resize(
         goto end;
     }
 
+    if (width == frame->width && height == frame->height) {
+        /* nothing to do */
+        goto out;
+    }
+
     status = sixel_frame_convert_to_rgb888(frame);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -585,6 +590,7 @@ sixel_frame_resize(
     frame->width = width;
     frame->height = height;
 
+out:
     status = SIXEL_OK;
 
 end:
