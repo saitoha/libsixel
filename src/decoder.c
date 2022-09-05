@@ -26,17 +26,23 @@
 # include <stdarg.h>
 # include <string.h>
 # include <unistd.h>
-#include <sys/types.h>
-#include <sys/select.h>
+# include <sys/types.h>
+#if HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#endif
 # include <time.h>
 # include <sys/time.h>
 # include <inttypes.h>
 # include <errno.h>
+#if HAVE_TERMIOS_H
 # include <termios.h>
+#endif
+#if HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
+#endif
 #if HAVE_IO_H
 # include <io.h>
-#endif  /* HAVE_IO_H */
+#endif
 
 #include "decoder.h"
 

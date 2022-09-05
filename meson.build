@@ -1,4 +1,4 @@
-project('libsixel', ['c'], version: '1.10.2', license: 'MIT', default_options: ['buildtype=release', 'c_std=c99', 'warning_level=3'])
+project('libsixel', ['c'], version: '1.10.3', license: 'MIT', default_options: ['buildtype=release', 'c_std=c99', 'warning_level=3'])
 
 datadir = get_option('datadir')
 if (get_option('bashcompletiondir') == '')
@@ -64,10 +64,6 @@ needed_headers = [
   'sys/time.h',
   'time.h',
   'signal.h',
-  'sys/select.h',
-  'sys/signal.h',
-  'termios.h',
-  'sys/ioctl.h',
   'inttypes.h'
 ]
 
@@ -79,6 +75,11 @@ have_getopt_long = cc.has_function('getopt_long')
 foreach a : needed_headers
   assert(cc.has_header(a), 'Needed header not found')
 endforeach
+
+conf_data.set10('HAVE_SYS_SELECT_H', cc.has_header('sys/select.h'))
+conf_data.set10('HAVE_SYS_SIGNAL_H', cc.has_header('sys/signal.h'))
+conf_data.set10('HAVE_SYS_IOCTL_H', cc.has_header('sys/ioctl.h'))
+conf_data.set10('HAVE_TERMIOS_H', cc.has_header('termios.h'))
 
 libm_dep = cc.find_library('m', required: false)
 

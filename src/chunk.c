@@ -32,8 +32,10 @@
 # include <errno.h>
 #ifdef HAVE_LIBCURL
 # include <curl/curl.h>
-#endif  /* HAVE_LIBCURL */
+#endif
+#if HAVE_SYS_SELECT_H
 # include <sys/select.h>
+#endif
 
 
 
@@ -141,6 +143,7 @@ static int
 wait_file(int fd, int usec)
 {
     int ret = 1;
+#if HAVE_SYS_SELECT_H
     fd_set rfds;
     struct timeval tv;
 
@@ -149,6 +152,10 @@ wait_file(int fd, int usec)
     FD_ZERO(&rfds);
     FD_SET(fd, &rfds);
     ret = select(fd + 1, &rfds, NULL, NULL, &tv);
+#else
+    (void) fd;
+    (void) usec;
+#endif
     if (ret == 0) {
         return (1);
     }

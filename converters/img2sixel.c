@@ -32,8 +32,9 @@
 # include <getopt.h>
 # include <inttypes.h>
 # include <signal.h>
+#if HAVE_SYS_SIGNAL_H
 # include <sys/signal.h>
-
+#endif
 #include <sixel.h>
 
 /* output version info to STDOUT */
@@ -311,6 +312,7 @@ void show_help(void)
             );
 }
 
+#if HAVE_SYS_SIGNAL_H
 
 static int signaled = 0;
 
@@ -320,6 +322,7 @@ signal_handler(int sig)
     signaled = sig;
 }
 
+#endif
 
 int
 main(int argc, char *argv[])
@@ -413,6 +416,8 @@ main(int argc, char *argv[])
         }
     }
 
+#if HAVE_SYS_SIGNAL_H
+
     /* set signal handler to handle SIGINT/SIGTERM/SIGHUP */
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
@@ -421,6 +426,8 @@ main(int argc, char *argv[])
     if (SIXEL_FAILED(status)) {
         goto error;
     }
+
+#endif
 
     if (optind == argc) {
         status = sixel_encoder_encode(encoder, NULL);
