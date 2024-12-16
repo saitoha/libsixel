@@ -343,6 +343,7 @@ You can install libsixel via the following package systems.
 - [OpenBSD Ports](http://openports.se/graphics/libsixel)
 - [Fedora Copr](https://copr.fedorainfracloud.org/coprs/saahriktu/libsixel/)
 - [SlackBuilds](https://slackbuilds.org/repository/14.2/libraries/libsixel/)
+- [MacPorts](https://ports.macports.org/port/libsixel)
 
 ### Build from source package
 
