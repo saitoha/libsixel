@@ -1757,6 +1757,7 @@ static unsigned char *stbi__convert_format(unsigned char *data, int img_n, int r
    int i,j;
    unsigned char *good;
 
+   if (data == NULL) return data;
    if (req_comp == img_n) return data;
    STBI_ASSERT(req_comp >= 1 && req_comp <= 4);
 
