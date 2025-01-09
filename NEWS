@@ -1,3 +1,7 @@
+* libsixel 1.10.4 (2025-01-09)
+ * Some bugfixes and protections. Thanks, @hzeller! Anyone interested in
+   maintaining this benighted package ought contact me.
+   
 * libsixel 1.10.2 (2021-10-08)
  * Update python bindings to use python3. Python 3.9 is preferred. File issues
    if bugs are found in python 3.6-8. Thanks, @wsluser
