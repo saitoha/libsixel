@@ -32,6 +32,7 @@
 #ifdef HAVE_PNG
 # include <png.h>
 #else
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 # include "stb_image_write.h"
 #endif  /* HAVE_PNG */
 

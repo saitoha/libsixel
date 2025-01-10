@@ -28,10 +28,16 @@
 # include <sys/time.h>
 # include <sys/types.h>
 # include <unistd.h>
+#if HAVE_SYS_SELECT_H
 # include <sys/select.h>
+#endif
 # include <errno.h>
+#if HAVE_TERMIOS_H
 # include <termios.h>
+#endif
+#if HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
+#endif
 
 #include <sixel.h>
 
@@ -98,10 +104,11 @@ end:
 SIXELSTATUS
 sixel_tty_wait_stdin(int usec)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
+#if HAVE_SYS_SELECT_H
     fd_set rfds;
     struct timeval tv;
     int ret = 0;
-    SIXELSTATUS status = SIXEL_FALSE;
 
     tv.tv_sec = usec / 1000000;
     tv.tv_usec = usec % 1000000;
@@ -117,6 +124,10 @@ sixel_tty_wait_stdin(int usec)
 
     /* success */
     status = SIXEL_OK;
+#else
+    (void) usec;
+    goto end;
+#endif
 
 end:
     return status;
