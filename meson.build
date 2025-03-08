@@ -85,7 +85,6 @@ libm_dep = cc.find_library('m', required: false)
 
 gdkpixbuf2_dep = dependency('gdk-pixbuf-2.0', required: get_option('gdk-pixbuf2'))
 gd_dep = dependency('gdlib', required: get_option('gd'))
-#gd_dep = cc.find_library('gd', required: get_option('gd'))
 curl_dep = dependency('libcurl', required: get_option('libcurl'))
 jpeg_dep = dependency('libjpeg', required: get_option('jpeg'))
 png_dep = dependency('libpng', required: get_option('png'))
