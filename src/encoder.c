@@ -462,6 +462,13 @@ sixel_prepare_specified_palette(
         return status;
     }
 
+    if (!callback_context.dither) {
+        sixel_helper_set_additional_message(
+            "sixel_prepare_specified_palette() failed.\n"
+            "reason: mapfile is empty.");
+        return SIXEL_BAD_INPUT;
+    }
+
     *dither = callback_context.dither;
 
     return status;
