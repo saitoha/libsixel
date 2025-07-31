@@ -21,19 +21,11 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdio.h>
 # include <stdlib.h>
-#endif  /* STDC_HEADERS */
-#if HAVE_MEMORY_H
 # include <memory.h>
-#endif  /* HAVE_MEMORY_H */
-#ifdef HAVE_STRING_H
 # include <string.h>
-#endif  /* HAVE_STRING_H */
-#ifdef HAVE_ERRNO_H
 # include <errno.h>
-#endif  /* HAVE_ERRNO_H */
 #ifdef HAVE_LIBCURL
 # include <curl/curl.h>
 #endif  /* HAVE_LIBCURL */
@@ -161,7 +153,7 @@ sixel_helper_format_error(
             error_string = SIXEL_MESSAGE_JPEG_ERROR;
             break;
 #endif
-#ifdef HAVE_LIBPNG
+#ifdef HAVE_PNG
         case SIXEL_PNG_ERROR:
             error_string = SIXEL_MESSAGE_PNG_ERROR;
             break;
@@ -274,28 +266,28 @@ test2(void)
     }
 #endif
 
-#if HAVE_JPEG
+#ifdef HAVE_JPEG
     message = sixel_helper_format_error(SIXEL_JPEG_ERROR);
     if (strcmp(message, SIXEL_MESSAGE_JPEG_ERROR) != 0) {
         goto error;
     }
 #endif
 
-#if HAVE_LIBPNG
+#ifdef HAVE_PNG
     message = sixel_helper_format_error(SIXEL_PNG_ERROR);
     if (strcmp(message, SIXEL_MESSAGE_PNG_ERROR) != 0) {
         goto error;
     }
 #endif
 
-#if HAVE_GD
+#ifdef HAVE_GD
     message = sixel_helper_format_error(SIXEL_GD_ERROR);
     if (strcmp(message, SIXEL_MESSAGE_GD_ERROR) != 0) {
         goto error;
     }
 #endif
 
-#if HAVE_GDK_PIXBUF2
+#ifdef HAVE_GDK_PIXBUF2
     message = sixel_helper_format_error(SIXEL_GDK_ERROR);
     if (strcmp(message, SIXEL_MESSAGE_GDK_ERROR) != 0) {
         goto error;

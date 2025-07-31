@@ -67,15 +67,9 @@
 #include <memory.h>
 #include <math.h>
 #include <errno.h>
-#if HAVE_TERMIOS_H
 # include <termios.h>
-#endif
-#if HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
-#endif
-#if HAVE_SYS_SELECT_H
 #include <sys/select.h>
-#endif
 
 #ifndef M_PI
 # define M_PI 3.1415926535897932386
@@ -359,21 +353,15 @@ output_sixel(unsigned char *pixbuf, int width, int height,
 static int
 wait_stdin(int usec)
 {
-#if HAVE_SYS_SELECT_H
     fd_set rfds;
     struct timeval tv;
-#endif  /* HAVE_SYS_SELECT_H */
     int ret = 0;
 
-#if HAVE_SYS_SELECT_H
     tv.tv_sec = usec / 1000000;
     tv.tv_usec = usec % 1000000;
     FD_ZERO(&rfds);
     FD_SET(STDIN_FILENO, &rfds);
     ret = select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv);
-#else
-    (void) usec;
-#endif  /* HAVE_SYS_SELECT_H */
 
     return ret;
 }
@@ -381,25 +369,19 @@ wait_stdin(int usec)
 static void
 scroll_on_demand(int pixelheight)
 {
-#if HAVE_SYS_IOCTL_H
     struct winsize size = {0, 0, 0, 0};
-#endif
-#if HAVE_TERMIOS_H
     struct termios old_termios;
     struct termios new_termios;
-#endif
     int row = 0;
     int col = 0;
     int cellheight;
     int scroll;
 
-#if HAVE_SYS_IOCTL_H
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
     if (size.ws_ypixel <= 0) {
         printf("\033[H\0337");
         return;
     }
-# if HAVE_TERMIOS_H
     /* set the terminal to cbreak mode */
     tcgetattr(STDIN_FILENO, &old_termios);
     memcpy(&new_termios, &old_termios, sizeof(old_termios));
@@ -422,12 +404,6 @@ scroll_on_demand(int pixelheight)
     }
 
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
-# else
-    printf("\033[H\0337");
-# endif  /* HAVE_TERMIOS_H */
-#else
-    printf("\033[H\0337");
-#endif  /* HAVE_SYS_IOCTL_H */
 }
 
 

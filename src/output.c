@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2019 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,13 +22,9 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdio.h>
 # include <stdlib.h>
-#endif  /* STDC_HEADERS */
-#if HAVE_ASSERT_H
 # include <assert.h>
-#endif  /* HAVE_ASSERT_H */
 
 #include <sixel.h>
 #include "output.h"
@@ -78,6 +75,7 @@ sixel_output_new(
     (*output)->pos = 0;
     (*output)->penetrate_multiplexer = 0;
     (*output)->encode_policy = SIXEL_ENCODEPOLICY_AUTO;
+    (*output)->ormode = 0;
     (*output)->allocator = allocator;
 
     status = SIXEL_OK;
@@ -190,6 +188,13 @@ SIXELAPI void
 sixel_output_set_palette_type(sixel_output_t *output, int palettetype)
 {
     output->palette_type = palettetype;
+}
+
+
+SIXELAPI void
+sixel_output_set_ormode(sixel_output_t *output, int ormode)
+{
+    output->ormode = ormode;
 }
 
 

@@ -1,0 +1,13 @@
+option('img2sixel', type: 'feature', value: 'enabled', description: 'Whether to build img2sixel, example sixel encoder from image')
+option('sixel2png', type: 'feature', value: 'enabled', description: 'Whether to build sixel2png, example sixel decoder to PNG image')
+option('gdk-pixbuf2', type: 'feature', value: 'disabled', description: 'Whether to build in gdk-pixbuf2 support')
+option('gd', type: 'feature', value: 'auto', description: 'Whether to build in gd support (adds more image formats)')
+option('libcurl', type: 'feature', value: 'disabled', description: 'Whether to build in curl support (allows input filenames to be URL\'s)')
+option('jpeg', type: 'feature', value: 'auto', description: 'Whether to parse jpeg inputs with libjpeg')
+option('png', type: 'feature', value: 'auto', description: 'Whether to parse png inputs with libpng')
+option('tests', type: 'feature', value: 'disabled', description: 'Build tests')
+
+option('python', type: 'feature', value: 'disabled', description: 'Whether to enable Python library integration (3.x+)')
+
+option('bashcompletiondir', type: 'string', value: '', description: 'Use the specified bash completion dir. Default: $datadir/bash-completion/completions')
+option('zshcompletiondir', type: 'string', value: '', description: 'Use the specified zsh completion dir. Default: $datadir/zsh/site-functions')

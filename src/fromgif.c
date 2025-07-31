@@ -5,6 +5,7 @@
  * Hayaki Saito <saitoha@me.com> modified this and re-licensed
  * it under the MIT license.
  *
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -27,19 +28,11 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdio.h>
 # include <stdlib.h>
-#endif  /* STDC_HEADERS */
-#if HAVE_STRING_H
 # include <string.h>
-#endif  /* HAVE_STRING_H */
-#if HAVE_CTYPE_H
 # include <ctype.h>
-#endif  /* HAVE_CTYPE_H */
-#if HAVE_ASSERT_H
 # include <assert.h>
-#endif  /* HAVE_ASSERT_H */
 
 #include "frame.h"
 #include "fromgif.h"
@@ -69,9 +62,8 @@ typedef struct
    unsigned char suffix;
 } gif_lzw;
 
-enum {
-   gif_lzw_max_code_size = 12
-};
+#define GIF_LZW_MAX_CODE_SIZE 12
+#define GIF_LZW_MAX 0xFFF // 0b1111_1111_1111
 
 typedef struct
 {
@@ -80,7 +72,7 @@ typedef struct
    int flags, bgindex, ratio, transparent, eflags;
    unsigned char pal[256][3];
    unsigned char lpal[256][3];
-   gif_lzw codes[1 << gif_lzw_max_code_size];
+   gif_lzw codes[1 << GIF_LZW_MAX_CODE_SIZE];
    unsigned char *color_table;
    int parse, step;
    int lflags;
@@ -272,12 +264,17 @@ end:
 }
 
 
-static void
+static SIXELSTATUS
 gif_out_code(
     gif_t           /* in */ *g,
     unsigned short  /* in */ code
 )
 {
+    if (code > GIF_LZW_MAX) {
+        sixel_helper_set_additional_message("gif_out_code() failed; GIF file corrupt");
+        return SIXEL_RUNTIME_ERROR;
+    }
+
     /* recurse to decode the prefixes, since the linked-list is backwards,
        and working backwards through an interleaved image would be nasty */
     if (g->codes[code].prefix >= 0) {
@@ -285,7 +282,7 @@ gif_out_code(
     }
 
     if (g->cur_y >= g->max_y) {
-        return;
+        return SIXEL_OK;
     }
 
     g->out[g->cur_x + g->cur_y * g->max_x] = g->codes[code].suffix;
@@ -308,6 +305,8 @@ gif_out_code(
             --g->parse;
         }
     }
+
+    return SIXEL_OK;
 }
 
 
@@ -325,7 +324,7 @@ gif_process_raster(
 
     /* LZW Minimum Code Size */
     lzw_cs = gif_get8(s);
-    if (lzw_cs > gif_lzw_max_code_size) {
+    if (lzw_cs > GIF_LZW_MAX_CODE_SIZE) {
         sixel_helper_set_additional_message(
             "Unsupported GIF (LZW code size)");
         status = SIXEL_RUNTIME_ERROR;
@@ -377,7 +376,7 @@ gif_process_raster(
                 return SIXEL_OK;
             } else if (code <= avail) {
                 if (oldcode >= 0) {
-                    if (avail < (1 << gif_lzw_max_code_size)) {
+                    if (avail < (1 << GIF_LZW_MAX_CODE_SIZE)) {
                         p = &g->codes[avail++];
                         p->prefix = (signed short) oldcode;
                         p->first = g->codes[oldcode].first;
@@ -390,7 +389,10 @@ gif_process_raster(
                     goto end;
                 }
 
-                gif_out_code(g, (unsigned short) code);
+                status = gif_out_code(g, (unsigned short) code);
+                if (status != SIXEL_OK) {
+                    goto end;
+                }
 
                 if ((avail & codemask) == 0 && avail <= 0x0FFF) {
                     codesize++;
@@ -628,15 +630,17 @@ load_gif(
     if (status != SIXEL_OK) {
         goto end;
     }
-    g.out = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)g.w * (size_t)g.h);
+    size_t bytes = (size_t)g.w * (size_t)g.h;
+    g.out = (unsigned char *)sixel_allocator_malloc(allocator, bytes);
     if (g.out == NULL) {
         sprintf(message,
                 "load_gif: sixel_allocator_malloc() failed. size=%zu.",
-                (size_t)g.max_x * (size_t)g.max_y);
+                bytes);
         sixel_helper_set_additional_message(message);
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
+    memset(g.out, 0, bytes);
 
     frame->loop_count = 0;
 

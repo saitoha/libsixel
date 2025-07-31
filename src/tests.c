@@ -21,22 +21,14 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdlib.h>
 # include <stdio.h>
-#endif  /* STDC_HEADERS */
 #if HAVE_STDRING_H
 # include <string.h>
 #endif  /* HAVE_STRING_H */
-#if HAVE_MATH_H
 # include <math.h>
-#endif  /* HAVE_MATH_H */
-#if HAVE_LIMITS_H
 # include <limits.h>
-#endif  /* HAVE_LIMITS_H */
-#if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif  /* HAVE_INTTYPES_H */
 
 #include <sixel.h>
 #include "dither.h"

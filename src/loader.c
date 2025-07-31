@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2019 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,42 +22,27 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdio.h>
 # include <stdlib.h>
-#endif
-#if HAVE_STRING_H
 # include <string.h>
-#endif
-#if HAVE_UNISTD_H
 # include <unistd.h>
-#endif
-#if HAVE_ERRNO_H
 # include <errno.h>
-#endif
 #ifdef HAVE_GDK_PIXBUF2
-# if HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
-#   pragma GCC diagnostic push
-#   pragma GCC diagnostic ignored "-Wtypedef-redefinition"
-# endif
+//#   pragma GCC diagnostic push
+//#   pragma GCC diagnostic ignored "-Wtypedef-redefinition"
 # include <gdk-pixbuf/gdk-pixbuf.h>
-# if HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
-#   pragma GCC diagnostic pop
-# endif
+//#   pragma GCC diagnostic pop
 #endif
-#if HAVE_GD
+#ifdef HAVE_GD
 # include <gd.h>
 #endif
-#if HAVE_LIBPNG
+#ifdef HAVE_PNG
 # include <png.h>
-#endif  /* HAVE_LIBPNG */
-#if HAVE_JPEG
+#endif  /* HAVE_PNG */
+#ifdef HAVE_JPEG
 # include <jpeglib.h>
 #endif  /* HAVE_JPEG */
 
-#if !defined(HAVE_MEMCPY)
-# define memcpy(d, s, n) (bcopy ((s), (d), (n)))
-#endif
 
 #include "frame.h"
 #include <sixel.h>
@@ -95,59 +81,33 @@ stbi_free(void *p)
 #define STBI_NO_GIF
 #define STBI_NO_PNM
 
-#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wsign-conversion"
-#endif
-#if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wstrict-overflow"
-#endif
-#if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wswitch-default"
-#endif
-#if HAVE_DIAGNOSTIC_SHADOW
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wshadow"
-#endif
-#if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wdouble-promotion"
-#endif
-# if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wunused-function"
-#endif
-# if HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-#endif
 #include "stb_image.h"
-#if HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE
 # pragma GCC diagnostic pop
-#endif
-#if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
 # pragma GCC diagnostic pop
-#endif
-#if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
 # pragma GCC diagnostic pop
-#endif
-#if HAVE_DIAGNOSTIC_SHADOW
 # pragma GCC diagnostic pop
-#endif
-#if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
 # pragma GCC diagnostic pop
-#endif
-#if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
 # pragma GCC diagnostic pop
-#endif
-#if HAVE_DIAGNOSTIC_SIGN_CONVERSION
+#ifdef HAVE_DIAGNOSTIC_SIGN_CONVERSION
 # pragma GCC diagnostic pop
 #endif
 
 
-# if HAVE_JPEG
+#ifdef HAVE_JPEG
 /* import from @uobikiemukot's sdump loader.h */
 static SIXELSTATUS
 load_jpeg(unsigned char **result,
@@ -220,7 +180,7 @@ end:
 # endif  /* HAVE_JPEG */
 
 
-# if HAVE_LIBPNG
+# ifdef HAVE_PNG
 static void
 read_png(png_structp png_ptr,
          png_bytep data,
@@ -282,9 +242,7 @@ png_error_callback(png_structp png_ptr, png_const_charp error_message)
     (void) png_ptr;
 
     sixel_helper_set_additional_message(error_message);
-#if HAVE_SETJMP && HAVE_LONGJMP
     longjmp(jmpbuf, 1);
-#endif  /* HAVE_SETJMP && HAVE_LONGJMP */
 }
 
 
@@ -308,28 +266,23 @@ load_png(unsigned char      /* out */ **result,
     png_uint_32 png_status;
     png_structp png_ptr;
     png_infop info_ptr;
-#ifdef HAVE_DIAGNOSTIC_CLOBBERED
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wclobbered"
-#endif
-    unsigned char **rows;
+    unsigned char **rows = NULL;
     png_color *png_palette = NULL;
     png_color_16 background;
     png_color_16p default_background;
     int i;
     int depth;
 
-#if HAVE_SETJMP && HAVE_LONGJMP
     if (setjmp(jmpbuf) != 0) {
         sixel_allocator_free(allocator, *result);
         *result = NULL;
         status = SIXEL_PNG_ERROR;
         goto cleanup;
     }
-#endif  /* HAVE_SETJMP && HAVE_LONGJMP */
 
     status = SIXEL_FALSE;
-    rows = NULL;
     *result = NULL;
 
     png_ptr = png_create_read_struct(
@@ -341,14 +294,21 @@ load_png(unsigned char      /* out */ **result,
         goto cleanup;
     }
 
-#if HAVE_SETJMP
+    // The minimum valid PNG is 67 bytes.
+    // https://garethrees.org/2007/11/14/pngcrush/
+    if (size < 67) {
+        sixel_helper_set_additional_message("PNG data too small to be valid!");
+        status = SIXEL_PNG_ERROR;
+        goto cleanup;
+    }
+
     if (setjmp(png_jmpbuf(png_ptr)) != 0) {
         sixel_allocator_free(allocator, *result);
         *result = NULL;
         status = SIXEL_PNG_ERROR;
         goto cleanup;
     }
-#endif  /* HAVE_SETJMP */
+
 
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
@@ -630,15 +590,16 @@ load_png(unsigned char      /* out */ **result,
 
 cleanup:
     png_destroy_read_struct(&png_ptr, &info_ptr,(png_infopp)0);
-    sixel_allocator_free(allocator, rows);
+
+    if (rows != NULL) {
+        sixel_allocator_free(allocator, rows);
+    }
 
     return status;
 }
-#ifdef HAVE_DIAGNOSTIC_CLOBBERED
 # pragma GCC diagnostic pop
-#endif
 
-# endif  /* HAVE_LIBPNG */
+# endif  /* HAVE_PNG */
 
 
 static SIXELSTATUS
@@ -750,7 +711,7 @@ chunk_is_pnm(sixel_chunk_t const *chunk)
 }
 
 
-#if HAVE_LIBPNG
+#ifdef HAVE_PNG
 /* detect whether given chunk is PNG stream */
 static int
 chunk_is_png(sixel_chunk_t const *chunk)
@@ -763,7 +724,7 @@ chunk_is_png(sixel_chunk_t const *chunk)
     }
     return 0;
 }
-#endif  /* HAVE_LIBPNG */
+#endif  /* HAVE_PNG */
 
 
 /* detect whether given chunk is GIF stream */
@@ -785,7 +746,7 @@ chunk_is_gif(sixel_chunk_t const *chunk)
 }
 
 
-#if HAVE_JPEG
+#ifdef HAVE_JPEG
 /* detect whether given chunk is JPEG stream */
 static int
 chunk_is_jpeg(sixel_chunk_t const *chunk)
@@ -861,7 +822,7 @@ load_with_builtin(
             goto end;
         }
     }
-#if HAVE_JPEG
+#ifdef HAVE_JPEG
     else if (chunk_is_jpeg(pchunk)) {
         status = sixel_frame_new(&frame, pchunk->allocator);
         if (SIXEL_FAILED(status)) {
@@ -880,7 +841,7 @@ load_with_builtin(
         }
     }
 #endif  /* HAVE_JPEG */
-#if HAVE_LIBPNG
+#ifdef HAVE_PNG
     else if (chunk_is_png(pchunk)) {
         status = sixel_frame_new(&frame, pchunk->allocator);
         if (SIXEL_FAILED(status)) {
@@ -902,7 +863,7 @@ load_with_builtin(
             goto end;
         }
     }
-#endif  /* HAVE_LIBPNG */
+#endif  /* HAVE_PNG */
     else if (chunk_is_gif(pchunk)) {
         fnp.fn = fn_load;
         status = load_gif(pchunk->buffer,
@@ -1241,45 +1202,45 @@ load_with_gd(
 
     switch (detect_file_format(pchunk->size, pchunk->buffer)) {
 #if 0
-# if HAVE_DECL_GDIMAGECREATEFROMGIFPTR
+#ifdef HAVE_DECL_GDIMAGECREATEFROMGIFPTR
         case SIXEL_FORMAT_GIF:
             im = gdImageCreateFromGifPtr(pchunk->size, pchunk->buffer);
             break;
 # endif  /* HAVE_DECL_GDIMAGECREATEFROMGIFPTR */
 #endif
-#if HAVE_DECL_GDIMAGECREATEFROMPNGPTR
+#ifdef HAVE_DECL_GDIMAGECREATEFROMPNGPTR
         case SIXEL_FORMAT_PNG:
             im = gdImageCreateFromPngPtr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMPNGPTR */
-#if HAVE_DECL_GDIMAGECREATEFROMBMPPTR
+#ifdef HAVE_DECL_GDIMAGECREATEFROMBMPPTR
         case SIXEL_FORMAT_BMP:
             im = gdImageCreateFromBmpPtr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMBMPPTR */
         case SIXEL_FORMAT_JPG:
-#if HAVE_DECL_GDIMAGECREATEFROMJPEGPTREX
+#ifdef HAVE_DECL_GDIMAGECREATEFROMJPEGPTREX
             im = gdImageCreateFromJpegPtrEx(pchunk->size, pchunk->buffer, 1);
 #elif HAVE_DECL_GDIMAGECREATEFROMJPEGPTR
             im = gdImageCreateFromJpegPtr(pchunk->size, pchunk->buffer);
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMJPEGPTREX */
             break;
-#if HAVE_DECL_GDIMAGECREATEFROMTGAPTR
+#ifdef HAVE_DECL_GDIMAGECREATEFROMTGAPTR
         case SIXEL_FORMAT_TGA:
             im = gdImageCreateFromTgaPtr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMTGAPTR */
-#if HAVE_DECL_GDIMAGECREATEFROMWBMPPTR
+#ifdef HAVE_DECL_GDIMAGECREATEFROMWBMPPTR
         case SIXEL_FORMAT_WBMP:
             im = gdImageCreateFromWBMPPtr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMWBMPPTR */
-#if HAVE_DECL_GDIMAGECREATEFROMTIFFPTR
+#ifdef HAVE_DECL_GDIMAGECREATEFROMTIFFPTR
         case SIXEL_FORMAT_TIFF:
             im = gdImageCreateFromTiffPtr(pchunk->size, pchunk->buffer);
             break;
 #endif  /* HAVE_DECL_GDIMAGECREATEFROMTIFFPTR */
-#if HAVE_DECL_GDIMAGECREATEFROMGD2PTR
+#ifdef HAVE_DECL_GDIMAGECREATEFROMGD2PTR
         case SIXEL_FORMAT_GD2:
             im = gdImageCreateFromGd2Ptr(pchunk->size, pchunk->buffer);
             break;
@@ -1298,7 +1259,7 @@ load_with_gd(
     }
 
     if (!gdImageTrueColor(im)) {
-#if HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
+#ifdef HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
         if (!gdImagePaletteToTrueColor(im)) {
             status = SIXEL_GD_ERROR;
             /* TODO: retrieve error detail */
@@ -1402,7 +1363,7 @@ sixel_helper_load_image_file(
                                      context);
     }
 #endif  /* HAVE_GDK_PIXBUF2 */
-#if HAVE_GD
+#ifdef HAVE_GD
     if (SIXEL_FAILED(status)) {
         status = load_with_gd(pchunk,
                               fstatic,
@@ -1435,7 +1396,7 @@ end:
 }
 
 
-#if HAVE_TESTS
+#ifdef HAVE_TESTS
 static int
 test1(void)
 {

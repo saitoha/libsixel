@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2014 kmiya@culti
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2016 Hayaki Saito
+ * Copyright (c) 2014 kmiya@culti
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,16 +23,10 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdio.h>
 # include <stdlib.h>
-#endif  /* STDC_HEADERS */
-#if HAVE_STRING_H
 # include <string.h>
-#endif  /* HAVE_STRING_H */
-#if HAVE_CTYPE_H
 # include <ctype.h>
-#endif  /* HAVE_CTYPE_H */
 
 #include <sixel.h>
 

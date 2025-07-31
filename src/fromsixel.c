@@ -12,30 +12,23 @@
  *
  * Hayaki Saito <saitoha@me.com> modified this and re-licensed
  * it to the MIT license.
+ *
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
+ * Copyright (c) 2014-2020 Hayaki Saito
  */
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdlib.h>
 # include <stdio.h>
-#endif  /* STDC_HEADERS */
-#if HAVE_CTYPE_H
 # include <ctype.h>   /* isdigit */
-#endif  /* HAVE_CTYPE_H */
-#if HAVE_STRING_H
 # include <string.h>  /* memcpy */
-#endif  /* HAVE_STRING_H */
-#if HAVE_LIMITS_H
 # include <limits.h>
-#endif  /* HAVE_LIMITS_H */
-#if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif  /* HAVE_INTTYPES_H */
 
 #include <sixel.h>
 #include "output.h"
 
-#define SIXEL_RGB(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
+#define SIXEL_RGB(r, g, b) (((r) << 16u) + ((g) << 8u) + (b))
 
 #define PALVAL(n,a,m) (((n) * (a) + ((m) / 2)) / (m))
 
@@ -122,7 +115,7 @@ hls_to_rgb(int hue, int lum, int sat)
     /* https://wikimedia.org/api/rest_v1/media/math/render/svg/f6721b57985ad83db3d5b800dc38c9980eedde1d */
     min = lum - sat * (1.0 - (lum > 50 ? (((lum << 2) / 100.0) - 1.0): - (2 * (lum / 100.0) - 1.0))) / 2.0;
 
-    /* sixel hue color ring is roteted -120 degree from nowdays general one. */
+    /* sixel hue color ring is rotated -120 degree from one generally used today. */
     hue = (hue + 240) % 360;
 
     /* https://wikimedia.org/api/rest_v1/media/math/render/svg/937e8abdab308a22ff99de24d645ec9e70f1e384 */
@@ -158,9 +151,7 @@ hls_to_rgb(int hue, int lum, int sat)
         b = (min + (max - min) * ((360 - hue) / 60.0));
         break;
     default:
-#if HAVE___BUILTIN_UNREACHABLE
         __builtin_unreachable();
-#endif
         break;
     }
 
@@ -179,7 +170,6 @@ image_buffer_init(
     SIXELSTATUS status = SIXEL_FALSE;
     size_t size;
     int i;
-    int n;
     int r;
     int g;
     int b;
@@ -224,6 +214,7 @@ image_buffer_init(
     }
     memset(image->data, bgindex, size);
 
+    unsigned n;
     /* palette initialization */
     for (n = 0; n < 16; n++) {
         image->palette[n] = sixel_default_color_table[n];
@@ -233,7 +224,7 @@ image_buffer_init(
     for (r = 0; r < 6; r++) {
         for (g = 0; g < 6; g++) {
             for (b = 0; b < 6; b++) {
-                image->palette[n++] = SIXEL_RGB(r * 51, g * 51, b * 51);
+                image->palette[n++] = SIXEL_RGB(r * 42, g * 42, b * 42);
             }
         }
     }
@@ -243,8 +234,8 @@ image_buffer_init(
         image->palette[n++] = SIXEL_RGB(i * 11, i * 11, i * 11);
     }
 
-    for (; n < SIXEL_PALETTE_MAX; n++) {
-        image->palette[n] = SIXEL_RGB(255, 255, 255);
+    while (n < SIXEL_PALETTE_MAX) {
+        image->palette[n++] = SIXEL_RGB(255, 255, 255);
     }
 
     status = SIXEL_OK;

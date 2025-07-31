@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2019 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,47 +22,64 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <stdio.h>
 # include <stdlib.h>
 # include <stdarg.h>
-#endif  /* STDC_HEADERS */
-# if HAVE_STRING_H
 #include <string.h>
-#endif  /* HAVE_STRING_H */
-#if HAVE_UNISTD_H
 # include <unistd.h>
-#endif  /* HAVE_UNISTD_H */
-#if HAVE_SYS_UNISTD_H
-# include <sys/unistd.h>
-#endif  /* HAVE_SYS_UNISTD_H */
-#if HAVE_SYS_TYPES_H
 # include <sys/types.h>
-#endif  /* HAVE_SYS_TYPES_H */
-#if HAVE_TIME_H
 # include <time.h>
-#endif  /* HAVE_TIME_H */
-#if HAVE_SYS_TIME_H
 # include <sys/time.h>
-#endif  /* HAVE_SYS_TIME_H */
-#if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif  /* HAVE_INTTYPES_H */
-#if HAVE_ERRNO_H
 # include <errno.h>
-#endif  /* HAVE_ERRNO_H */
-#if HAVE_SYS_STAT_H
 # include <sys/stat.h>
-#endif  /* HAVE_SYS_STAT_H */
-#if HAVE_FCNTL_H
 # include <fcntl.h>
-#endif  /* HAVE_FCNTL_H */
 
 #include <sixel.h>
 #include "tty.h"
 #include "encoder.h"
 #include "rgblookup.h"
 
+
+#ifdef _WIN32
+#include <windows.h>
+#include <errno.h>
+
+
+int nanosleep(const struct timespec *req, struct timespec *rem) {
+    if (req == NULL || req->tv_sec < 0 || req->tv_nsec < 0 || req->tv_nsec >= 1000000000L) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    // Convert to 100-nanosecond intervals (Windows FILETIME units)
+    LONGLONG nanoseconds = req->tv_sec * 1000000000LL + req->tv_nsec;
+    LARGE_INTEGER dueTime;
+    dueTime.QuadPart = -(nanoseconds / 100); // Negative for relative time
+
+    HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
+    if (timer == NULL) {
+        errno = EFAULT; // Approximate error
+        return -1;
+    }
+
+    if (!SetWaitableTimer(timer, &dueTime, 0, NULL, NULL, FALSE)) {
+        CloseHandle(timer);
+        errno = EFAULT;
+        return -1;
+    }
+
+    WaitForSingleObject(timer, INFINITE);
+    CloseHandle(timer);
+
+    // No interruption handling, so rem is unchanged
+    if (rem != NULL) {
+        rem->tv_sec = 0;
+        rem->tv_nsec = 0;
+    }
+    return 0;
+}
+#endif
 
 static char *
 arg_strdup(
@@ -581,7 +599,6 @@ sixel_encoder_prepare_palette(
                                      encoder->method_for_rep,
                                      encoder->quality_mode);
     if (SIXEL_FAILED(status)) {
-        sixel_dither_unref(*dither);
         goto end;
     }
 
@@ -743,15 +760,11 @@ sixel_encoder_output_without_macro(
     enum { message_buffer_size = 256 };
     char message[message_buffer_size];
     int nwrite;
-#if HAVE_NANOSLEEP
     int dulation;
     int delay;
     int lag = 0;
     struct timespec tv;
-# if HAVE_CLOCK
     clock_t start;
-# endif
-#endif
     unsigned char *pixbuf;
     int width;
     int height;
@@ -793,18 +806,11 @@ sixel_encoder_output_without_macro(
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-#if HAVE_NANOSLEEP && HAVE_CLOCK
     start = clock();
-#endif
-#if HAVE_NANOSLEEP
     delay = sixel_frame_get_delay(frame);
     if (delay > 0 && !encoder->fignore_delay) {
-# if HAVE_CLOCK
         dulation = (int)((clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC) - (int)lag;
         lag = 0;
-# else
-        dulation = 0;
-# endif
         if (dulation < 10000 * delay) {
             tv.tv_sec = 0;
             tv.tv_nsec = (long)((10000 * delay - dulation) * 1000);
@@ -813,7 +819,6 @@ sixel_encoder_output_without_macro(
             lag = (int)(10000 * delay - dulation);
         }
     }
-#endif
 
     pixbuf = sixel_frame_get_pixels(frame);
     memcpy(p, pixbuf, (size_t)(width * height * depth));
@@ -845,24 +850,16 @@ sixel_encoder_output_with_macro(
     enum { message_buffer_size = 256 };
     char buffer[message_buffer_size];
     int nwrite;
-#if HAVE_NANOSLEEP
     int dulation;
     int lag = 0;
     struct timespec tv;
-# if HAVE_CLOCK
     clock_t start;
-# endif
-#endif
     unsigned char *pixbuf;
     int width;
     int height;
-#if HAVE_NANOSLEEP
     int delay;
-#endif
 
-#if HAVE_NANOSLEEP && HAVE_CLOCK
     start = clock();
-#endif
     if (sixel_frame_get_loop_no(frame) == 0) {
         if (encoder->macro_number >= 0) {
             nwrite = sprintf(buffer, "\033P%d;0;1!z", encoder->macro_number);
@@ -913,15 +910,10 @@ sixel_encoder_output_with_macro(
                 "sixel_encoder_output_with_macro: sixel_write_callback() failed.");
             goto end;
         }
-#if HAVE_NANOSLEEP
         delay = sixel_frame_get_delay(frame);
         if (delay > 0 && !encoder->fignore_delay) {
-# if HAVE_CLOCK
             dulation = (int)((clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC) - (int)lag;
             lag = 0;
-# else
-            dulation = 0;
-# endif
             if (dulation < 10000 * delay) {
                 tv.tv_sec = 0;
                 tv.tv_nsec = (long)((10000 * delay - dulation) * 1000);
@@ -930,7 +922,6 @@ sixel_encoder_output_with_macro(
                 lag = (int)(10000 * delay - dulation);
             }
         }
-#endif
     }
 
 end:
@@ -1030,6 +1021,7 @@ sixel_encoder_encode_frame(
     sixel_output_set_penetrate_multiplexer(
         output, encoder->penetrate_multiplexer);
     sixel_output_set_encode_policy(output, encoder->encode_policy);
+    sixel_output_set_ormode(output, encoder->ormode);
 
     if (sixel_frame_get_multiframe(frame) && !encoder->fstatic) {
         if (sixel_frame_get_loop_no(frame) != 0 || sixel_frame_get_frame_no(frame) != 0) {
@@ -1147,6 +1139,7 @@ sixel_encoder_new(
     (*ppencoder)->verbose               = 0;
     (*ppencoder)->penetrate_multiplexer = 0;
     (*ppencoder)->encode_policy         = SIXEL_ENCODEPOLICY_AUTO;
+    (*ppencoder)->ormode                = 0;
     (*ppencoder)->pipe_mode             = 0;
     (*ppencoder)->bgcolor               = NULL;
     (*ppencoder)->outfd                 = STDOUT_FILENO;
@@ -1552,6 +1545,7 @@ sixel_encoder_setopt(
         /* parse --bgcolor option */
         if (encoder->bgcolor) {
             sixel_allocator_free(encoder->allocator, encoder->bgcolor);
+            encoder->bgcolor = NULL;
         }
         status = sixel_parse_x_colorspec(&encoder->bgcolor,
                                          value,
@@ -1605,6 +1599,9 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
+    case SIXEL_OPTFLAG_ORMODE:  /* O */
+        encoder->ormode = 1;
+        break;
     case SIXEL_OPTFLAG_COMPLEXION_SCORE:  /* C */
         encoder->complexion = atoi(value);
         if (encoder->complexion < 1) {
@@ -1621,7 +1618,7 @@ sixel_encoder_setopt(
     default:
         /* exit if unknown options are specified */
         sixel_helper_set_additional_message(
-            "unknwon option is specified.");
+            "unknown option is specified.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -1691,14 +1688,10 @@ sixel_encoder_encode(
     int fuse_palette = 1;
 
     if (encoder == NULL) {
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
         encoder = sixel_encoder_create();
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic pop
-#endif
         if (encoder == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_encoder_encode: sixel_encoder_create() failed.");
@@ -1832,14 +1825,10 @@ test1(void)
     int nret = EXIT_FAILURE;
     sixel_encoder_t *encoder = NULL;
 
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
     encoder = sixel_encoder_create();
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic pop
-#endif
     if (encoder == NULL) {
         goto error;
     }
@@ -1864,26 +1853,18 @@ test2(void)
     int height = 0;
     int is_animation = 0;
 
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
     encoder = sixel_encoder_create();
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic pop
-#endif
     if (encoder == NULL) {
         goto error;
     }
 
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
     frame = sixel_frame_create();
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic pop
-#endif
     if (encoder == NULL) {
         goto error;
     }
@@ -1944,14 +1925,10 @@ test4(void)
     sixel_encoder_t *encoder = NULL;
     SIXELSTATUS status;
 
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
     encoder = sixel_encoder_create();
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 # pragma GCC diagnostic pop
-#endif
     if (encoder == NULL) {
         goto error;
     }

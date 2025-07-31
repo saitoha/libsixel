@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2020 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,26 +22,15 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
 # include <string.h>
 # include <stdlib.h>
 # include <stdio.h>
-#endif  /* STDC_HEADERS */
-#if HAVE_MATH_H
 # include <math.h>
-#endif  /* HAVE_MATH_H */
-#if HAVE_LIMITS_H
 # include <limits.h>
-#endif  /* HAVE_LIMITS_H */
-#if HAVE_INTTYPES_H
 # include <inttypes.h>
-#endif  /* HAVE_INTTYPES_H */
 
 #include "frame.h"
 
-#if !defined(HAVE_MEMMOVE)
-# define memmove(d, s, n) (bcopy ((s), (d), (n)))
-#endif
 
 /* constructor of frame object */
 SIXELAPI SIXELSTATUS
@@ -758,14 +748,10 @@ test1(void)
     sixel_frame_t *frame = NULL;
     int nret = EXIT_FAILURE;
 
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
     frame = sixel_frame_create();
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic pop
-#endif
     if (frame == NULL) {
         goto error;
     }
@@ -795,14 +781,10 @@ test2(void)
 
     memset(bgcolor, 0x10, 3);
 
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
     frame = sixel_frame_create();
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic pop
-#endif
 
     if (frame == NULL) {
         goto error;
@@ -861,14 +843,10 @@ test3(void)
     pixels[2] = 0x97;
     pixels[3] = 0x32;
 
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
     frame = sixel_frame_create();
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic pop
-#endif
     if (frame == NULL) {
         goto error;
     }
@@ -926,14 +904,10 @@ test4(void)
     pixels[2] = 0x97;
     pixels[3] = 0x32;
 
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
     frame = sixel_frame_create();
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic pop
-#endif
     if (frame == NULL) {
         goto error;
     }
@@ -993,14 +967,10 @@ test5(void)
 
     pixels[0] = 0;
 
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
     frame = sixel_frame_create();
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic pop
-#endif
     if (frame == NULL) {
         goto error;
     }
@@ -1060,14 +1030,10 @@ test6(void)
 
     pixels[0] = 0;
 
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
     frame = sixel_frame_create();
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 #  pragma GCC diagnostic pop
-#endif
     if (frame == NULL) {
         goto error;
     }

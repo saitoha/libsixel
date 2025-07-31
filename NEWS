@@ -1,3 +1,29 @@
+* libsixel 1.10.4 (2025-01-09)
+ * Some bugfixes and protections. Thanks, @hzeller! Anyone interested in
+   maintaining this benighted package ought contact me.
+   
+* libsixel 1.10.2 (2021-10-08)
+ * Update python bindings to use python3. Python 3.9 is preferred. File issues
+   if bugs are found in python 3.6-8. Thanks, @wsluser
+   
+* libsixel 1.10.1 (2021-09-18)
+ * new maintainer, nick black <dankamongmen@gmail.com>
+ * fix two use-after-free()s, one found by @a4865g ("WuLearn") and one
+   found by myself. initialize the `out` buffer of `gif_t` objects.
+
+
+                  ------------------------------
+                   What's new in libsixel-1.9 ?
+                  ------------------------------
+
+* new maintainer: Fredrick R. Brennan <copypaste@kittens.ph>
+
+* two CVE's fixed: CVE-2020-11721; CVE-2020-19668. Thanks @sleicasper,
+  @peanuts62.
+
+* merged 6 pull requests waiting for over a year upstream. One major feature:
+  addition of "OR mode", supported in NetBSD. Thanks, @arakiken! Other
+  contributors: @auppal, @johnnychen94, @dthadi3, @ttoda, @paulhfischer.
 
                   ------------------------------
                    What's new in libsixel-1.8 ?
