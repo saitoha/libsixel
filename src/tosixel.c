@@ -315,6 +315,11 @@ sixel_encode_header(int width, int height, sixel_output_t *output)
     int pcount = 3;
     int use_raster_attributes = 1;
 
+    if (output->ormode) {
+        p[0] = 7;
+        p[1] = 5;
+    }
+
     output->pos = 0;
 
     if (!output->skip_dcs_envelope) {
@@ -508,7 +513,6 @@ sixel_encode_body(
     int sx;
     int mx;
     int len;
-    int pix;
     char *map = NULL;
     int check_integer_overflow;
     sixel_node_t *np, *tp, top;
@@ -550,6 +554,8 @@ sixel_encode_body(
     }
 
     for (y = i = 0; y < height; y++) {
+        int pix;
+
         if (output->encode_policy != SIXEL_ENCODEPOLICY_SIZE) {
             fillable = 0;
         } else if (palstate) {
@@ -780,6 +786,109 @@ sixel_encode_footer(sixel_output_t *output)
     return status;
 }
 
+static SIXELSTATUS
+sixel_encode_body_ormode(
+    uint8_t             /* in */ *pixels,
+    int                 /* in */ width,
+    int                 /* in */ height,
+    unsigned char       /* in */ *palette,
+    int                 /* in */ ncolors,
+    int                 /* in */ keycolor,
+    sixel_output_t      /* in */ *output)
+{
+    SIXELSTATUS status;
+    int n;
+    int nplanes;
+    uint8_t *buf = pixels;
+    uint8_t *buf_p;
+    int x;
+    int cur_h;
+    int nwrite;
+    int plane;
+
+    for (n = 0; n < ncolors; n++) {
+        status = output_rgb_palette_definition(output, palette, n, keycolor);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+
+    for (nplanes = 8; nplanes > 1; nplanes--) {
+        if (ncolors > (1 << (nplanes - 1))) {
+            break;
+        }
+    }
+
+    for (cur_h = 6; cur_h <= height; cur_h += 6) {
+        for (plane = 0; plane < nplanes; plane++) {
+            sixel_putc(output->buffer + output->pos, '#');
+            sixel_advance(output, 1);
+            nwrite = sixel_putnum((char *)output->buffer + output->pos, 1 << plane);
+            sixel_advance(output, nwrite);
+
+            buf_p = buf;
+            for (x = 0; x < width; x++, buf_p++) {
+                sixel_put_pixel(output,
+                                ((buf_p[0] >> plane) & 0x1) |
+                                (((buf_p[width] >> plane) << 1) & 0x2) |
+                                (((buf_p[width * 2] >> plane) << 2) & 0x4) |
+                                (((buf_p[width * 3] >> plane) << 3) & 0x8) |
+                                (((buf_p[width * 4] >> plane) << 4) & 0x10) |
+                                (((buf_p[width * 5] >> plane) << 5) & 0x20));
+            }
+            status = sixel_put_flash(output);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            sixel_putc(output->buffer + output->pos, '$');
+            sixel_advance(output, 1);
+        }
+        sixel_putc(output->buffer + output->pos, '-');
+        sixel_advance(output, 1);
+        buf += (width * 6);
+	}
+
+    if (cur_h > height) {
+        for (plane = 0; plane < nplanes; plane++) {
+            sixel_putc(output->buffer + output->pos, '#');
+            sixel_advance(output, 1);
+            nwrite = sixel_putnum((char *)output->buffer + output->pos, 1 << plane);
+            sixel_advance(output, nwrite);
+
+            buf_p = buf;
+            for (x = 0; x < width; x++) {
+                int pix = ((buf_p[0] >> plane) & 0x1);
+
+                switch(cur_h - height) {
+                case 1:
+                    pix |= (((buf_p[width * 4] >> plane) << 4) & 0x10);
+                    /* Fall through */
+                case 2:
+                    pix |= (((buf_p[width * 3] >> plane) << 3) & 0x8);
+                    /* Fall through */
+                case 3:
+                    pix |= (((buf_p[width * 2] >> plane) << 2) & 0x4);
+                    /* Fall through */
+                case 4:
+                    pix |= (((buf_p[width] >> plane) << 1) & 0x2);
+                    /* Fall through */
+                }
+
+                sixel_put_pixel(output, pix);
+            }
+            status = sixel_put_flash(output);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+
+            sixel_putc(output->buffer + output->pos, '$');
+            sixel_advance(output, 1);
+        }
+    }
+
+    return 0;
+}
+
 
 static SIXELSTATUS
 sixel_encode_dither(
@@ -842,16 +951,27 @@ sixel_encode_dither(
         goto end;
     }
 
-    status = sixel_encode_body(input_pixels,
-                               width,
-                               height,
-                               dither->palette,
-                               dither->ncolors,
-                               dither->keycolor,
-                               dither->bodyonly,
-                               output,
-                               NULL,
-                               dither->allocator);
+    if (output->ormode) {
+        status = sixel_encode_body_ormode(input_pixels,
+                                          width,
+                                          height,
+                                          dither->palette,
+                                          dither->ncolors,
+                                          dither->keycolor,
+                                          output);
+    } else {
+        status = sixel_encode_body(input_pixels,
+                                   width,
+                                   height,
+                                   dither->palette,
+                                   dither->ncolors,
+                                   dither->keycolor,
+                                   dither->bodyonly,
+                                   output,
+                                   NULL,
+                                   dither->allocator);
+    }
+
     if (SIXEL_FAILED(status)) {
         goto end;
     }

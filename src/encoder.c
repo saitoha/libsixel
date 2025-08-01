@@ -1030,6 +1030,7 @@ sixel_encoder_encode_frame(
     sixel_output_set_penetrate_multiplexer(
         output, encoder->penetrate_multiplexer);
     sixel_output_set_encode_policy(output, encoder->encode_policy);
+    sixel_output_set_ormode(output, encoder->ormode);
 
     if (sixel_frame_get_multiframe(frame) && !encoder->fstatic) {
         if (sixel_frame_get_loop_no(frame) != 0 || sixel_frame_get_frame_no(frame) != 0) {
@@ -1147,6 +1148,7 @@ sixel_encoder_new(
     (*ppencoder)->verbose               = 0;
     (*ppencoder)->penetrate_multiplexer = 0;
     (*ppencoder)->encode_policy         = SIXEL_ENCODEPOLICY_AUTO;
+    (*ppencoder)->ormode                = 0;
     (*ppencoder)->pipe_mode             = 0;
     (*ppencoder)->bgcolor               = NULL;
     (*ppencoder)->outfd                 = STDOUT_FILENO;
@@ -1604,6 +1606,9 @@ sixel_encoder_setopt(
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
+        break;
+    case SIXEL_OPTFLAG_ORMODE:  /* O */
+        encoder->ormode = 1;
         break;
     case SIXEL_OPTFLAG_COMPLEXION_SCORE:  /* C */
         encoder->complexion = atoi(value);
