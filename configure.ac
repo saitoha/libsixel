@@ -323,7 +323,8 @@ AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
                ])
 
 loaders="stb_image"
-have_curl="no" have_jpeg="no"
+have_curl="no"
+have_jpeg="no"
 have_png="no"
 #have_wic="no"
 

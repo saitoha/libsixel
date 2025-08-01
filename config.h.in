@@ -6,13 +6,13 @@
 /* define 1 if GCC supports -Bsymbolic */
 #undef HAVE_BSYMBOLIC
 
-/* Define to 1 if you have the `calloc' function. */
+/* Define to 1 if you have the 'calloc' function. */
 #undef HAVE_CALLOC
 
-/* Define to 1 if you have the `clearerr' function. */
+/* Define to 1 if you have the 'clearerr' function. */
 #undef HAVE_CLEARERR
 
-/* Define to 1 if you have the `clock' function. */
+/* Define to 1 if you have the 'clock' function. */
 #undef HAVE_CLOCK
 
 /* Define to 1 if you have the <ctype.h> header file. */
@@ -21,63 +21,63 @@
 /* enable debugging support */
 #undef HAVE_DEBUG
 
-/* Define to 1 if you have the declaration of `gdImageCreateFromBmpPtr', and
+/* Define to 1 if you have the declaration of 'gdImageCreateFromBmpPtr', and
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMBMPPTR
 
-/* Define to 1 if you have the declaration of `gdImageCreateFromGd2Ptr', and
+/* Define to 1 if you have the declaration of 'gdImageCreateFromGd2Ptr', and
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMGD2PTR
 
-/* Define to 1 if you have the declaration of `gdImageCreateFromGifPtr', and
+/* Define to 1 if you have the declaration of 'gdImageCreateFromGifPtr', and
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMGIFPTR
 
-/* Define to 1 if you have the declaration of `gdImageCreateFromJpegPtr', and
+/* Define to 1 if you have the declaration of 'gdImageCreateFromJpegPtr', and
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMJPEGPTR
 
-/* Define to 1 if you have the declaration of `gdImageCreateFromJpegPtrEx',
+/* Define to 1 if you have the declaration of 'gdImageCreateFromJpegPtrEx',
    and to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMJPEGPTREX
 
-/* Define to 1 if you have the declaration of `gdImageCreateFromPngPtr', and
+/* Define to 1 if you have the declaration of 'gdImageCreateFromPngPtr', and
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMPNGPTR
 
-/* Define to 1 if you have the declaration of `gdImageCreateFromTgaPtr', and
+/* Define to 1 if you have the declaration of 'gdImageCreateFromTgaPtr', and
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMTGAPTR
 
-/* Define to 1 if you have the declaration of `gdImageCreateFromTiffPtr', and
+/* Define to 1 if you have the declaration of 'gdImageCreateFromTiffPtr', and
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMTIFFPTR
 
-/* Define to 1 if you have the declaration of `gdImageCreateFromWBMPPtr', and
+/* Define to 1 if you have the declaration of 'gdImageCreateFromWBMPPtr', and
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMWBMPPTR
 
-/* Define to 1 if you have the declaration of `gdImagePaletteToTrueColor', and
+/* Define to 1 if you have the declaration of 'gdImagePaletteToTrueColor', and
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
 
 /* Define to 1 if you have the declaration of
-   `png_set_expand_gray_1_2_4_to_8', and to 0 if you don't. */
+   'png_set_expand_gray_1_2_4_to_8', and to 0 if you don't. */
 #undef HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
 
-/* Define to 1 if you have the declaration of `png_set_gray_1_2_4_to_8', and
+/* Define to 1 if you have the declaration of 'png_set_gray_1_2_4_to_8', and
    to 0 if you don't. */
 #undef HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
 
-/* Define to 1 if you have the declaration of `SIGHUP', and to 0 if you don't.
+/* Define to 1 if you have the declaration of 'SIGHUP', and to 0 if you don't.
    */
 #undef HAVE_DECL_SIGHUP
 
-/* Define to 1 if you have the declaration of `SIGINT', and to 0 if you don't.
+/* Define to 1 if you have the declaration of 'SIGINT', and to 0 if you don't.
    */
 #undef HAVE_DECL_SIGINT
 
-/* Define to 1 if you have the declaration of `SIGTERM', and to 0 if you
+/* Define to 1 if you have the declaration of 'SIGTERM', and to 0 if you
    don't. */
 #undef HAVE_DECL_SIGTERM
 
@@ -123,7 +123,7 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
-/* Define to 1 if you have the `floor' function. */
+/* Define to 1 if you have the 'floor' function. */
 #undef HAVE_FLOOR
 
 /* Define to 1 if the system has the `deprecated' function attribute */
@@ -150,22 +150,22 @@
 /* Define to 1 if you have the <io.h> header file. */
 #undef HAVE_IO_H
 
-/* Define to 1 if you have the `isatty' function. */
+/* Define to 1 if you have the 'isatty' function. */
 #undef HAVE_ISATTY
 
 /* whether jpeg codec library is available */
 #undef HAVE_JPEG
 
-/* Define to 1 if you have the `ldiv' function. */
+/* Define to 1 if you have the 'ldiv' function. */
 #undef HAVE_LDIV
 
 /* whether libcurl is available */
 #undef HAVE_LIBCURL
 
-/* Define to 1 if you have the `iconv' library (-liconv). */
+/* Define to 1 if you have the 'iconv' library (-liconv). */
 #undef HAVE_LIBICONV
 
-/* Define to 1 if you have the `m' library (-lm). */
+/* Define to 1 if you have the 'm' library (-lm). */
 #undef HAVE_LIBM
 
 /* whether libpng is available */
@@ -174,75 +174,78 @@
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 
-/* Define to 1 if you have the `localeconv' function. */
+/* Define to 1 if you have the 'localeconv' function. */
 #undef HAVE_LOCALECONV
 
-/* Define to 1 if you have the `longjmp' function. */
+/* Define to 1 if you have the 'longjmp' function. */
 #undef HAVE_LONGJMP
 
-/* Define to 1 if your system has a GNU libc compatible `malloc' function, and
+/* Define to 1 if your system has a GNU libc compatible 'malloc' function, and
    to 0 otherwise. */
 #undef HAVE_MALLOC
 
 /* Define to 1 if you have the <math.h> header file. */
 #undef HAVE_MATH_H
 
-/* Define to 1 if you have the `memcpy' function. */
+/* Define to 1 if you have the 'memcpy' function. */
 #undef HAVE_MEMCPY
 
-/* Define to 1 if you have the `memmove' function. */
+/* Define to 1 if you have the 'memmove' function. */
 #undef HAVE_MEMMOVE
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
-/* Define to 1 if you have the `memset' function. */
+/* Define to 1 if you have the 'memset' function. */
 #undef HAVE_MEMSET
 
-/* Define to 1 if you have the `nanosleep' function. */
+/* Define to 1 if you have the 'nanosleep' function. */
 #undef HAVE_NANOSLEEP
 
-/* Define to 1 if you have the `pow' function. */
+/* Define to 1 if you have the 'pow' function. */
 #undef HAVE_POW
 
-/* Define to 1 if your system has a GNU libc compatible `realloc' function,
+/* Define to 1 if your system has a GNU libc compatible 'realloc' function,
    and to 0 otherwise. */
 #undef HAVE_REALLOC
 
-/* Define to 1 if you have the `select' function. */
+/* Define to 1 if you have the 'select' function. */
 #undef HAVE_SELECT
 
-/* Define to 1 if you have the `setjmp' function. */
+/* Define to 1 if you have the 'setjmp' function. */
 #undef HAVE_SETJMP
 
-/* Define to 1 if you have the `setmode' function. */
+/* Define to 1 if you have the 'setmode' function. */
 #undef HAVE_SETMODE
 
-/* Define to 1 if you have the `signal' function. */
+/* Define to 1 if you have the 'signal' function. */
 #undef HAVE_SIGNAL
 
 /* Define to 1 if you have the <signal.h> header file. */
 #undef HAVE_SIGNAL_H
 
-/* Define to 1 if you have the `sqrt' function. */
+/* Define to 1 if you have the 'sqrt' function. */
 #undef HAVE_SQRT
 
-/* Define to 1 if you have the `stat' function. */
+/* Define to 1 if you have the 'stat' function. */
 #undef HAVE_STAT
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
+
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
-/* Define to 1 if you have the `strchr' function. */
+/* Define to 1 if you have the 'strchr' function. */
 #undef HAVE_STRCHR
 
-/* Define to 1 if you have the `strdup' function. */
+/* Define to 1 if you have the 'strdup' function. */
 #undef HAVE_STRDUP
 
-/* Define to 1 if you have the `strerror' function. */
+/* Define to 1 if you have the 'strerror' function. */
 #undef HAVE_STRERROR
 
 /* Define to 1 if you have the <strings.h> header file. */
@@ -251,16 +254,16 @@
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
-/* Define to 1 if you have the `strncmp' function. */
+/* Define to 1 if you have the 'strncmp' function. */
 #undef HAVE_STRNCMP
 
-/* Define to 1 if you have the `strstr' function. */
+/* Define to 1 if you have the 'strstr' function. */
 #undef HAVE_STRSTR
 
-/* Define to 1 if you have the `strtol' function. */
+/* Define to 1 if you have the 'strtol' function. */
 #undef HAVE_STRTOL
 
-/* Define to 1 if you have the `strtoul' function. */
+/* Define to 1 if you have the 'strtoul' function. */
 #undef HAVE_STRTOUL
 
 /* Define to 1 if you have the <sys/ioctl.h> header file. */
@@ -299,10 +302,10 @@
 /* Define to 1 if the system has the `deprecated' variable attribute */
 #undef HAVE_VAR_ATTRIBUTE_DEPRECATED
 
-/* Define to 1 if the system has the type `_Bool'. */
+/* Define to 1 if the system has the type '_Bool'. */
 #undef HAVE__BOOL
 
-/* Define to 1 if you have the `_setmode' function. */
+/* Define to 1 if you have the '_setmode' function. */
 #undef HAVE__SETMODE
 
 /* Define to 1 if the system has the `__builtin_unreachable' built-in function
@@ -333,7 +336,9 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Define to 1 if you have the ANSI C header files. */
+/* Define to 1 if all of the C89 standard headers exist (not just the ones
+   required in a freestanding environment). This macro is provided for
+   backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
 
 /* Version number of package */
@@ -344,7 +349,7 @@
    #define below would cause a syntax error. */
 #undef _UINT32_T
 
-/* Define to `__inline__' or `__inline' if that's what the C compiler
+/* Define to '__inline__' or '__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
 #ifndef __cplusplus
 #undef inline
@@ -364,7 +369,7 @@
 /* Define to rpl_realloc if the replacement function should be used. */
 #undef realloc
 
-/* Define to `unsigned int' if <sys/types.h> does not define. */
+/* Define as 'unsigned int' if <stddef.h> doesn't define. */
 #undef size_t
 
 /* Define to the type of an unsigned integer type of width exactly 16 bits if
