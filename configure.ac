@@ -556,8 +556,6 @@ if test x$with_jpeg != xno; then
         fi
     fi
     if test x$have_jpeg = xyes; then
-        LIBJPEG_CFLAGS=$ADDED_CFLAGS
-        LIBJPEG_LIBS=$ADDED_LIBS
         AC_DEFINE(HAVE_JPEG, 1, [whether jpeg codec library is available])
         loaders="${loaders} jpeg"
         AC_MSG_NOTICE([jpeg cflags is ${LIBJPEG_CFLAGS}])
