@@ -1,5 +1,5 @@
-/* C code produced by gperf version 3.0.3 */
-/* Command-line: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/gperf -C -N lookup_rgb --ignore-case rgblookup.gperf  */
+/* ANSI-C code produced by gperf version 3.0.3 */
+/* Command-line: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/gperf -C -N lookup_rgb --ignore-case --language=ANSI-C rgblookup.gperf  */
 /* Computed positions: -k'1,3,5-9,12-15,$' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -26,7 +26,7 @@
       && ('w' == 119) && ('x' == 120) && ('y' == 121) && ('z' == 122) \
       && ('{' == 123) && ('|' == 124) && ('}' == 125) && ('~' == 126))
 /* The character set is not based on ISO-646.  */
-error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
+#error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
 #endif
 
 #line 2 "rgblookup.gperf"
@@ -72,9 +72,7 @@ static unsigned char gperf_downcase[256] =
 #ifndef GPERF_CASE_STRCMP
 #define GPERF_CASE_STRCMP 1
 static int
-gperf_case_strcmp (s1, s2)
-register const char *s1;
-register const char *s2;
+gperf_case_strcmp (register const char *s1, register const char *s2)
 {
     for (;;)
     {
@@ -95,9 +93,7 @@ inline
 #endif
 #endif
 static unsigned int
-hash (str, len)
-register const char *str;
-register unsigned int len;
+hash (register const char *str, register unsigned int len)
 {
     static const unsigned short asso_values[] =
     {
@@ -174,9 +170,7 @@ register unsigned int len;
 }
 
 const struct color *
-lookup_rgb (str, len)
-register const char *str;
-register unsigned int len;
+lookup_rgb (register const char *str, register unsigned int len)
 {
     static const struct color wordlist[] =
     {
