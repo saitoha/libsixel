@@ -57,7 +57,7 @@ test_impl:
 if WANT_IMG2SIXEL
 
 	@echo '[test1] invalid option handling'
-	mkdir $(builddir)/tmp/
+	mkdir -p $(builddir)/tmp/
 	touch $(builddir)/tmp/testfile
 	chmod -r $(builddir)/tmp/testfile
 	test ! $$($(WINE) $(builddir)/img2sixel $(builddir)/tmp/testfile)

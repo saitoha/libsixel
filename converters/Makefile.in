@@ -1049,7 +1049,7 @@ test_impl:
 	@echo '[start]'
 
 @WANT_IMG2SIXEL_TRUE@	@echo '[test1] invalid option handling'
-@WANT_IMG2SIXEL_TRUE@	mkdir $(builddir)/tmp/
+@WANT_IMG2SIXEL_TRUE@	mkdir -p $(builddir)/tmp/
 @WANT_IMG2SIXEL_TRUE@	touch $(builddir)/tmp/testfile
 @WANT_IMG2SIXEL_TRUE@	chmod -r $(builddir)/tmp/testfile
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel $(builddir)/tmp/testfile)
