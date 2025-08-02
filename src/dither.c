@@ -727,7 +727,7 @@ sixel_dither_set_transparent(
 SIXELAPI sixel_index_t *
 sixel_dither_apply_palette(
     sixel_dither_t  /* in */ *dither,
-    unsigned char   /* in */ *pixels,
+    sixel_index_t   /* in */ *pixels,
     int             /* in */ width,
     int             /* in */ height)
 {
@@ -735,8 +735,8 @@ sixel_dither_apply_palette(
     size_t bufsize;
     sixel_index_t *dest = NULL;
     int ncolors;
-    unsigned char *normalized_pixels = NULL;
-    unsigned char *input_pixels;
+    sixel_index_t *normalized_pixels = NULL;
+    sixel_index_t *input_pixels;
 
     /* ensure dither object is not null */
     if (dither == NULL) {
@@ -779,16 +779,16 @@ sixel_dither_apply_palette(
     if (dither->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         /* normalize pixelformat */
         normalized_pixels
-            = (unsigned char *)sixel_allocator_malloc(dither->allocator, (size_t)(width * height * 3));
+            = (sixel_index_t *)sixel_allocator_malloc(dither->allocator, (size_t)(sizeof(sixel_index_t) * (size_t)(width * height * 3)));
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_dither_new: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        status = sixel_helper_normalize_pixelformat(normalized_pixels,
+        status = sixel_helper_normalize_pixelformat((unsigned char *)normalized_pixels,
                                                     &dither->pixelformat,
-                                                    pixels, dither->pixelformat,
+                                                    (unsigned char *)pixels, dither->pixelformat,
                                                     width, height);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -799,7 +799,7 @@ sixel_dither_apply_palette(
     }
 
     status = sixel_quant_apply_palette(dest,
-                                       input_pixels,
+                                       (unsigned char *)input_pixels,
                                        width, height, 3,
                                        dither->palette,
                                        dither->ncolors,

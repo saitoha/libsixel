@@ -809,7 +809,7 @@ sixel_encode_dither(
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        status = sixel_helper_normalize_pixelformat(paletted_pixels,
+        status = sixel_helper_normalize_pixelformat((unsigned char *)paletted_pixels,
                                                     &dither->pixelformat,
                                                     pixels,
                                                     dither->pixelformat,
@@ -823,11 +823,11 @@ sixel_encode_dither(
     case SIXEL_PIXELFORMAT_G8:
     case SIXEL_PIXELFORMAT_GA88:
     case SIXEL_PIXELFORMAT_AG88:
-        input_pixels = pixels;
+        input_pixels = (sixel_index_t *)pixels;
         break;
     default:
         /* apply palette */
-        paletted_pixels = sixel_dither_apply_palette(dither, pixels,
+        paletted_pixels = (sixel_index_t *)sixel_dither_apply_palette(dither, (sixel_index_t *)pixels,
                                                      width, height);
         if (paletted_pixels == NULL) {
             status = SIXEL_RUNTIME_ERROR;
@@ -1310,9 +1310,9 @@ sixel_encode_highcolor(
     sixel_index_t *paletted_pixels = NULL;
     unsigned char *normalized_pixels = NULL;
     /* Mark sixel line pixels which have been already drawn. */
-    unsigned char *marks;
-    unsigned char *rgbhit;
-    unsigned char *rgb2pal;
+    sixel_index_t *marks;
+    sixel_index_t *rgbhit;
+    sixel_index_t *rgb2pal;
     unsigned char palhitcount[SIXEL_PALETTE_MAX];
     unsigned char palstate[SIXEL_PALETTE_MAX];
     int output_count;
@@ -1322,8 +1322,8 @@ sixel_encode_highcolor(
                    + maxcolors       /* for rgb2pal */
                    + width * 6;      /* for marks */
     int x, y;
-    unsigned char *dst;
-    unsigned char *mptr;
+    sixel_index_t *dst;
+    sixel_index_t *mptr;
     int dirty;
     int mod_y;
     int nextpal;
@@ -1470,7 +1470,7 @@ next:
         }
 
         if (++mod_y == 6) {
-            mptr = (unsigned char *)memset(marks, 0, (size_t)(width * 6));
+            mptr = (sixel_index_t *)memset(marks, 0, (size_t)(sizeof(sixel_index_t) * (size_t)width * 6));
             mod_y = 0;
         }
     }

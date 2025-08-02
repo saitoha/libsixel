@@ -33,12 +33,12 @@
 #define LIBSIXEL_VERSION "@PACKAGE_VERSION@"
 #define LIBSIXEL_ABI_VERSION "@LS_LTVERSION@"
 
-typedef unsigned char sixel_index_t;
+typedef unsigned short sixel_index_t;
 
 /* limitations */
 #define SIXEL_OUTPUT_PACKET_SIZE     16384
 #define SIXEL_PALETTE_MIN            2
-#define SIXEL_PALETTE_MAX            256
+#define SIXEL_PALETTE_MAX            1024
 #define SIXEL_USE_DEPRECATED_SYMBOLS 1
 #define SIXEL_ALLOCATE_BYTES_MAX     10248UL * 1024UL * 128UL   /* up to 128M */
 #define SIXEL_WIDTH_LIMIT            1000000

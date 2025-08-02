@@ -53,7 +53,7 @@ extern "C" {
 /* apply palette */
 sixel_index_t *
 sixel_dither_apply_palette(struct sixel_dither /* in */ *dither,
-                           unsigned char       /* in */ *pixels,
+                           sixel_index_t       /* in */ *pixels,
                            int                 /* in */ width,
                            int                 /* in */ height);
 
