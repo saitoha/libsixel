@@ -99,6 +99,7 @@ if WANT_IMG2SIXEL
 	$(WINE) $(builddir)/img2sixel $(srcdir)/images/snake.jpg -datkinson -flum -saverage | $(WINE) $(builddir)/img2sixel | tee $(builddir)/tmp/snake.sixel
 	$(WINE) $(builddir)/img2sixel -w50% -h150% -dfs -Bblue -thls -shistogram < $(top_srcdir)/images/snake.jpg | tee $(builddir)/tmp/snake2.sixel
 	$(WINE) $(builddir)/img2sixel -w210 -h210 -djajuni -bxterm256 -o $(builddir)/tmp/snake3.sixel < $(top_srcdir)/images/snake.jpg
+	$(WINE) $(builddir)/img2sixel --height=100 --diffusion=atkinson --outfile=$(builddir)/tmp/snake4.sixel < $(top_srcdir)/images/snake.jpg
 	$(WINE) $(builddir)/img2sixel -w105% -h100 -B\#000000000 -rnearest < $(top_srcdir)/images/snake.gif
 	$(WINE) $(builddir)/img2sixel -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto $(top_srcdir)/images/snake.tga
 	$(WINE) $(builddir)/img2sixel -p200 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhanning -dstucki -thls $(top_srcdir)/images/snake.tiff
