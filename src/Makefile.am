@@ -86,8 +86,10 @@ if COND_TESTS
 	$(srcdir)/tests
 endif
 
+GPERF_OPT=--ignore-case --language=ANSI-C
+
 gen-rgblookup: $(srcdir)/rgblookup.gperf
-	gperf -C -N lookup_rgb --ignore-case $< |\
+	gperf -C -N lookup_rgb $(GPERF_OPT) $<  |\
 	sed 's/{""}/\{"", 0, 0, 0\}/g'          |\
 	astyle                                  > $(srcdir)/rgblookup.h
 
