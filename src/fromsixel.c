@@ -117,10 +117,10 @@ hls_to_rgb(int hue, int lum, int sat)
     }
 
     /* https://wikimedia.org/api/rest_v1/media/math/render/svg/17e876f7e3260ea7fed73f69e19c71eb715dd09d */
-    max = lum + sat * (1.0 - (lum > 50 ? (((lum << 2) / 100.0) - 1.0): - (2 * (lum / 100.0) - 1.0))) / 2.0;
+    max = lum + sat * (1.0 - (lum > 50 ? (2 * (lum / 100.0) - 1.0): - (2 * (lum / 100.0) - 1.0))) / 2.0;
 
     /* https://wikimedia.org/api/rest_v1/media/math/render/svg/f6721b57985ad83db3d5b800dc38c9980eedde1d */
-    min = lum - sat * (1.0 - (lum > 50 ? (((lum << 2) / 100.0) - 1.0): - (2 * (lum / 100.0) - 1.0))) / 2.0;
+    min = lum - sat * (1.0 - (lum > 50 ? (2 * (lum / 100.0) - 1.0): - (2 * (lum / 100.0) - 1.0))) / 2.0;
 
     /* sixel hue color ring is roteted -120 degree from nowdays general one. */
     hue = (hue + 240) % 360;
