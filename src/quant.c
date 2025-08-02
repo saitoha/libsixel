@@ -700,23 +700,17 @@ computeHistogram(unsigned char const    /* in */  *data,
     switch (qualityMode) {
     case SIXEL_QUALITY_LOW:
         max_sample = 18383;
-        step = length / depth / max_sample * depth;
         break;
     case SIXEL_QUALITY_HIGH:
-        max_sample = 18383;
-        step = length / depth / max_sample * depth;
+        max_sample = 1118383;
         break;
     case SIXEL_QUALITY_FULL:
     default:
         max_sample = 4003079;
-        step = length / depth / max_sample * depth;
         break;
     }
 
-    if (length < max_sample * depth) {
-        step = 6 * depth;
-    }
-
+    step = length / depth / max_sample * depth;
     if (step <= 0) {
         step = depth;
     }
