@@ -350,7 +350,7 @@ main(int argc, char *argv[])
     char const *optstring = "o:78Rp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:B:C:DVH";
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
-        {"outfile",          no_argument,        &long_opt, 'o'},
+        {"outfile",          required_argument,  &long_opt, 'o'},
         {"7bit-mode",        no_argument,        &long_opt, '7'},
         {"8bit-mode",        no_argument,        &long_opt, '8'},
         {"gri-limit",        no_argument,        &long_opt, 'R'},
