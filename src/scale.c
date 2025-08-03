@@ -207,8 +207,8 @@ scale_without_resampling(
 
     for (h = 0; h < dsth; h++) {
         for (w = 0; w < dstw; w++) {
-            x = w * srcw / dstw;
-            y = h * srch / dsth;
+            x = (long)w * srcw / dstw;
+            y = (long)h * srch / dsth;
             for (i = 0; i < depth; i++) {
                 pos = (y * srcw + x) * depth + i;
                 dst[(h * dstw + w) * depth + i] = src[pos];
