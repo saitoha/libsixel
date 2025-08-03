@@ -987,6 +987,7 @@ sixel_encoder_encode_frame(
     /* prepare dither context */
     status = sixel_encoder_prepare_palette(encoder, frame, &dither);
     if (status != SIXEL_OK) {
+        dither = NULL;
         goto end;
     }
 
