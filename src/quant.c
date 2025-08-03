@@ -1283,6 +1283,13 @@ sixel_quant_apply_palette(
         goto end;
     }
 
+    /* NOTE: diffuse_jajuni, diffuse_stucki, and diffuse_burkes reference at
+     * minimum the position pos + width * 1 - 2, so width must be at least 2
+     * to avoid underflow.
+     * On the other hand, diffuse_fs and diffuse_atkinson
+     * reference pos + width * 1 - 1, but since these functions are only called
+     * when width >= 1, they do not cause underflow.
+     */
     if (depth != 3) {
         f_diffuse = diffuse_none;
     } else {
@@ -1297,13 +1304,16 @@ sixel_quant_apply_palette(
             f_diffuse = diffuse_fs;
             break;
         case SIXEL_DIFFUSE_JAJUNI:
-            f_diffuse = diffuse_jajuni;
+            /* fallback to diffuse_none if width < 2 */
+            f_diffuse = width >= 2 ? diffuse_jajuni: diffuse_none;
             break;
         case SIXEL_DIFFUSE_STUCKI:
-            f_diffuse = diffuse_stucki;
+            /* fallback to diffuse_none if width < 2 */
+            f_diffuse = width >= 2 ? diffuse_stucki: diffuse_none;
             break;
         case SIXEL_DIFFUSE_BURKES:
-            f_diffuse = diffuse_burkes;
+            /* fallback to diffuse_none if width < 2 */
+            f_diffuse = width >= 2 ? diffuse_burkes: diffuse_none;
             break;
         case SIXEL_DIFFUSE_A_DITHER:
             f_diffuse = diffuse_none;
