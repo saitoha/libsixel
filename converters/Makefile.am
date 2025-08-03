@@ -87,6 +87,7 @@ if WANT_IMG2SIXEL
 	test ! $$($(WINE) $(builddir)/img2sixel -I -p8 $(top_srcdir)/images/snake.png)
 	test ! $$($(WINE) $(builddir)/img2sixel -p64 -bxterm256 $(top_srcdir)/images/snake.png)
 	test ! $$($(WINE) $(builddir)/img2sixel -8 -P $(top_srcdir)/images/snake.png)
+	$(WINE) $(builddir)/img2sixel -B "#000" -B ""; test $$? == 255
 
 	@echo '[test2] STDIN handling'
 	test ! $$(echo -n a | $(WINE) $(builddir)/img2sixel)
