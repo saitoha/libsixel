@@ -1559,6 +1559,7 @@ sixel_encoder_setopt(
         /* parse --bgcolor option */
         if (encoder->bgcolor) {
             sixel_allocator_free(encoder->allocator, encoder->bgcolor);
+            encoder->bgcolor = NULL;
         }
         status = sixel_parse_x_colorspec(&encoder->bgcolor,
                                          value,
