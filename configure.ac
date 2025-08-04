@@ -33,16 +33,16 @@ AX_GCC_BUILTIN([__builtin_unreachable])
 
 CFLAGS_BACKUP=$CFLAGS
 CFLAGS="$CFLAGS -Werror"
-AC_TRY_COMPILE(
-  [
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic pop
-    #pragma GCC diagnostic ignored "-Wtypedef-redefinition"
-  ],
-  [
-    typedef int foo;
-    typedef int foo;
-  ],
+AC_COMPILE_IFELSE(
+  [AC_LANG_PROGRAM([
+                     #pragma GCC diagnostic push
+                     #pragma GCC diagnostic pop
+                     #pragma GCC diagnostic ignored "-Wtypedef-redefinition"
+                   ],
+                   [
+                     typedef int foo;
+                     typedef int foo;
+                   ])],
   [AC_DEFINE(HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION,
              1,
              [define 1 if GCC supports -Wtypedef-redefinition])])
@@ -50,16 +50,16 @@ CFLAGS=$CFLAGS_BACKUP
 
 CFLAGS_BACKUP=$CFLAGS
 CFLAGS="$CFLAGS -Werror"
-AC_TRY_COMPILE(
-  [
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic pop
-    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    __attribute__((deprecated)) void test(void) {}
-  ],
-  [
-    test();
-  ],
+AC_COMPILE_IFELSE(
+  [AC_LANG_PROGRAM([
+                     #pragma GCC diagnostic push
+                     #pragma GCC diagnostic pop
+                     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+                     __attribute__((deprecated)) void test(void) {}
+                   ],
+                   [
+                     test();
+                   ])],
   [AC_DEFINE(HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS,
              1,
              [define 1 if GCC supports -Wdeprecated-declarations])])

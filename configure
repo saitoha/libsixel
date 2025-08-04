@@ -14280,16 +14280,16 @@ CFLAGS="$CFLAGS -Werror"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic pop
-    #pragma GCC diagnostic ignored "-Wtypedef-redefinition"
+                     #pragma GCC diagnostic push
+                     #pragma GCC diagnostic pop
+                     #pragma GCC diagnostic ignored "-Wtypedef-redefinition"
 
 int
 main (void)
 {
 
-    typedef int foo;
-    typedef int foo;
+                     typedef int foo;
+                     typedef int foo;
 
   ;
   return 0;
@@ -14309,16 +14309,16 @@ CFLAGS="$CFLAGS -Werror"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic pop
-    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    __attribute__((deprecated)) void test(void) {}
+                     #pragma GCC diagnostic push
+                     #pragma GCC diagnostic pop
+                     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+                     __attribute__((deprecated)) void test(void) {}
 
 int
 main (void)
 {
 
-    test();
+                     test();
 
   ;
   return 0;
