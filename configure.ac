@@ -117,7 +117,7 @@ AC_ARG_WITH([png],
 #            [with_wic=no])
 
 AC_ARG_WITH(pkgconfigdir,
-            AC_HELP_STRING([--with-pkgconfigdir],
+            AS_HELP_STRING([--with-pkgconfigdir],
                            [Use the specified pkgconfig dir (default is libdir/pkgconfig)]),
                            [pkgconfigdir=${withval}],
                            [pkgconfigdir=${libdir}/pkgconfig])
@@ -125,7 +125,7 @@ AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
 AC_SUBST(pkgconfigdir)
 
 AC_ARG_WITH(bashcompletiondir,
-            AC_HELP_STRING([--with-bashcompletiondir],
+            AS_HELP_STRING([--with-bashcompletiondir],
                            [Use the specified bashcompletion.d]),
                            [bashcompletiondir=${withval}],
                            [bashcompletiondir=${datadir}/bash-completion/completions])
@@ -133,7 +133,7 @@ AC_MSG_NOTICE([bash-completion directory is ${bashcompletiondir}])
 AC_SUBST(bashcompletiondir)
 
 AC_ARG_WITH(zshcompletiondir,
-            AC_HELP_STRING([--with-zshcompletiondir],
+            AS_HELP_STRING([--with-zshcompletiondir],
                            [Use the specified zshcompletion.d]),
                            [zshcompletiondir=${withval}],
                            [zshcompletiondir=${datadir}/zsh/site-functions])
