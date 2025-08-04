@@ -1262,9 +1262,9 @@ test_impl:
 @WANT_IMG2SIXEL_TRUE@	grep ^\.B $(srcdir)/img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > $(builddir)/tmp/options2.txt
 @WANT_IMG2SIXEL_TRUE@	grep ' --' $(srcdir)/shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > $(builddir)/tmp/options3.txt
 @WANT_IMG2SIXEL_TRUE@	grep '{-' $(srcdir)/shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > $(builddir)/tmp/options4.txt
-@WANT_IMG2SIXEL_TRUE@	diff $(builddir)/tmp/options1.txt $(builddir)/tmp/options2.txt
-@WANT_IMG2SIXEL_TRUE@	diff $(builddir)/tmp/options2.txt $(builddir)/tmp/options3.txt
-@WANT_IMG2SIXEL_TRUE@	diff $(builddir)/tmp/options3.txt $(builddir)/tmp/options4.txt
+@WANT_IMG2SIXEL_TRUE@	if which diff; then diff $(builddir)/tmp/options1.txt $(builddir)/tmp/options2.txt; fi
+@WANT_IMG2SIXEL_TRUE@	if which diff; then diff $(builddir)/tmp/options2.txt $(builddir)/tmp/options3.txt; fi
+@WANT_IMG2SIXEL_TRUE@	if which diff; then diff $(builddir)/tmp/options3.txt $(builddir)/tmp/options4.txt; fi
 
 	@echo '[succeeded]'
 
