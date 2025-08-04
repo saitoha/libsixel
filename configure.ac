@@ -175,7 +175,11 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
-AS_IF([test x$cross_compile != xyes], [PKG_PROG_PKG_CONFIG], [])
+AS_IF([test x$cross_compile != xyes],
+      [PKG_PROG_PKG_CONFIG([],
+                           [AC_MSG_WARN([pkg-config not found, continuing without it])
+                            PKG_CONFIG=false])],
+      [])
 
 AC_DEFUN([LS_CHECK_CFLAG], [
    AC_MSG_CHECKING([if $CC supports $1])

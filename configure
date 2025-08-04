@@ -15854,7 +15854,9 @@ printf "%s\n" "no" >&6; }
 	fi
 fi
 if test -z "$PKG_CONFIG"; then
-	as_fn_error $? "pkg-config not found" "$LINENO" 5
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: pkg-config not found, continuing without it" >&5
+printf "%s\n" "$as_me: WARNING: pkg-config not found, continuing without it" >&2;}
+                            PKG_CONFIG=false
 fi
 fi
 
