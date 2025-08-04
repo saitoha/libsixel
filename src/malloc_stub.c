@@ -21,9 +21,9 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
-# include <stdlib.h>
-#endif  /* STDC_HEADERS */
+/* STDC_HEADERS */
+#include <stdlib.h>
+
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif  /* HAVE_SYS_TYPES_H */

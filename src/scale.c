@@ -21,9 +21,9 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
-# include <stdlib.h>
-#endif  /* STDC_HEADERS */
+/* STDC_HEADERS */
+#include <stdlib.h>
+
 #if HAVE_MATH_H
 # define _USE_MATH_DEFINES  /* for MSVC */
 # include <math.h>

@@ -21,9 +21,9 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
-# include <stdlib.h>
-#endif  /* STDC_HEADERS */
+/* STDC_HEADERS */
+#include <stdlib.h>
+
 #if HAVE_ASSERT_H
 # include <assert.h>
 #endif  /* HAVE_ASSERT_H */

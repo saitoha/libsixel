@@ -21,10 +21,10 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
-# include <stdio.h>
-# include <stdlib.h>
-#endif  /* STDC_HEADERS */
+/* STDC_HEADERS */
+#include <stdio.h>
+#include <stdlib.h>
+
 #if HAVE_MEMORY_H
 # include <memory.h>
 #endif  /* HAVE_MEMORY_H */

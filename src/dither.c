@@ -21,10 +21,9 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stdio.h>
-#endif  /* STDC_HEADERS */
+#include <stdlib.h>
+#include <stdio.h>
+
 #if HAVE_MATH_H
 # include <math.h>
 #endif  /* HAVE_MATH_H */

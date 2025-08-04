@@ -21,10 +21,10 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
+/* STDC_HEADERS */
 # include <stdio.h>
 # include <stdlib.h>
-#endif  /* STDC_HEADERS */
+
 #if HAVE_ASSERT_H
 # include <assert.h>
 #endif  /* HAVE_ASSERT_H */
