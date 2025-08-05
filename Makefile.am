@@ -63,5 +63,14 @@ coveralls:
 coveralls-dryrun: test
 	coveralls -e config.h -e stb_image.h -e stb_image_write.h -e examples -e include -e perl -e php -e ruby -e wic --dryrun
 
+issue-131:
+	converters/img2sixel --high-color tests/issue/131/2020-01-30-img2sixel.gif
+
 issue-150:
 	converters/img2sixel -i tests/issue/150/poc -o tmp.sixel
+
+issue-163:
+	converters/img2sixel tests/issue/163/poc0
+
+issue-163-vexe:
+	AFL_USE_ASAN=1 CC=clang CFLAGS="-fsanitize=address -O0 -g" tools/vexe --disable-shared ubuntu issue-163

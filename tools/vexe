@@ -70,6 +70,9 @@ eval "pp__os_${arg__os}='#'"
 
 cd "$(git rev-parse --show-toplevel || dirname "${0}")" && {
 
+[[ "${CC}" = clang ]] && {
+    pp__build_clang="#"
+}
 [[ "${CC}" = x86_64-w64-mingw32-gcc ]] || [[ "${opt__configure}" =~ --host=x86_64-w64-mingw32 ]] && {
     pp__build_x86_64_w64_mingw32_gcc="#"
     [[ "$(./config.guess)" = x86_64-w64-mingw32 ]] || {
@@ -118,6 +121,9 @@ RUN dpkg --add-architecture i386
   "}
 RUN apt update
 RUN apt install -y build-essential zip
+  ${pp__build_clang:+"
+RUN apt install -y clang
+  "}
   ${pp__build_x86_64_w64_mingw32_gcc:+"
 RUN apt install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
 RUN apt install -y wine64
@@ -202,7 +208,7 @@ RUN CC="${CC}" CPP="${CPP}" \
     ./configure ${opt__configure}
 RUN make
 ${pp__cross_compile:-"
-RUN make install
+RUN AFL_USE_ASAN=${AFL_USE_ASAN} make install
 RUN ldconfig || true
 RUN img2sixel -V
 "}

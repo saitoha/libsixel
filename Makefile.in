@@ -191,7 +191,7 @@ am__define_uniq_tagged_files = \
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(srcdir)/libsixel.pc.in $(srcdir)/package.json.in.in \
 	ChangeLog NEWS README.md compile config.guess config.sub \
-	install-sh ltmain.sh missing py-compile
+	depcomp install-sh ltmain.sh missing py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -980,8 +980,17 @@ coveralls:
 coveralls-dryrun: test
 	coveralls -e config.h -e stb_image.h -e stb_image_write.h -e examples -e include -e perl -e php -e ruby -e wic --dryrun
 
+issue-131:
+	converters/img2sixel --high-color tests/issue/131/2020-01-30-img2sixel.gif
+
 issue-150:
 	converters/img2sixel -i tests/issue/150/poc -o tmp.sixel
+
+issue-163:
+	converters/img2sixel tests/issue/163/poc0
+
+issue-163-vexe:
+	AFL_USE_ASAN=1 CC=clang CFLAGS="-fsanitize=address -O0 -g" tools/vexe --disable-shared ubuntu issue-163
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
