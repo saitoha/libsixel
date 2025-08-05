@@ -23,6 +23,21 @@ all-am:
 
 check-am:
 
+dist-windows: dist-zip
+	mkdir -p @PACKAGE_NAME@-@PACKAGE_VERSION@/bin-windows
+	cp converters/*.exe @PACKAGE_NAME@-@PACKAGE_VERSION@/bin-windows/
+	zip -u @PACKAGE_NAME@-@PACKAGE_VERSION@.zip @PACKAGE_NAME@-@PACKAGE_VERSION@/bin-windows/*.exe
+	mv -v @PACKAGE_NAME@-@PACKAGE_VERSION@.zip \
+	    lib@PACKAGE_NAME@-@PACKAGE_VERSION@-$$(./config.status --config|tr \  \\n|grep ^--host|cut -f2 -d=).zip
+
+dist-windows-i686-vexe:
+	tools/vexe --host=i686-w64-mingw32 debian tools/dist/dist-windows
+	docker ps -a --filter ancestor=libsixel-debian --format '{{.ID}}' | xargs -I{} docker cp {}:/tmp/libsixel/libsixel-1.8.6-i686-w64-mingw32.zip .
+
+dist-windows-x86_64-vexe:
+	tools/vexe --host=x86_64-w64-mingw32 debian tools/dist/dist-windows
+	docker ps -a --filter ancestor=libsixel-debian --format '{{.ID}}' | xargs -I{} docker cp {}:/tmp/libsixel/libsixel-1.8.6-x86_64-w64-mingw32.zip .
+
 unittest: all
 	cd $(srcdir)/src && $(MAKE) unittest 2>&1 |tee $(builddir)/unittest.log
 

@@ -1,0 +1,213 @@
+#!/bin/bash
+#
+# Adding tests on your favorite Docker image here will help
+# improve support for installing and running libsixel in that
+# environment.
+#
+# ex.1) Cross building and do make check
+#
+#     # 64bit
+#     $ tools/vexe --host=x86_64-w64-mingw32 debian tests/generic/make_check
+#
+#     # 32bit
+#     $ tools/vexe --debug --host=x86_64-w64-mingw32 debian tests/generic/make_check
+#
+# ex.2) Cross building and do make check
+#
+#     # 64bit
+#     $ tools/vexe --host=x86_64-w64-mingw32 debian tests/generic/make_check
+#
+#     # 32bit
+#     $ tools/vexe --debug --host=x86_64-w64-mingw32 debian tests/generic/make_check
+#set -e
+
+# ref. https://chitoku.jp/programming/bash-getopts-long-options
+while getopts h-: opt; do
+    optarg="${OPTARG}"
+    [[ "$opt" = - ]] &&
+        opt="-${OPTARG%%=*}" &&
+        optarg="${OPTARG/${OPTARG%%=*}/}" &&
+    case "-${opt}" in
+        --debug)
+            dockeropt__debug=-"${opt}"
+            ;;
+        --force-disable-src-cache)
+            pp__force_disable_src_cache=1
+            ;;
+        -p|--platform)
+            opt__platform="${optarg}"
+            ;;
+        --with-png)
+            if [[ "${optarg}" = yes ]] || [[ "${optarg}" = "" ]]; then
+                pp__with_png="#"
+            fi
+            ;;
+    esac
+
+    case "-${opt}" in
+        --build|--host|--*prefix|--enable-*|--disable-*|--with-*|--without-*|--*dir|--program-*)
+            opt__configure="${opt__configure} -${opt}${optarg:+${optarg}}"
+            ;;
+        --*)
+            echo "$0: illegal option -- ${opt##-}" >&2
+            exit 1
+            ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+[[ -n "${arg__os:=${1}}" ]]
+[[ -n "${arg__script:=${2}}" ]]
+
+echo os: "${arg__os}" >&2
+echo script: "${arg__script}" >&2
+
+eval "pp__os_${arg__os}='#'"
+
+# Make the tag string
+# ex. libsixel-alpine-tagXXX
+: "${dockeropt__tag:=libsixel-"${arg__os}"}"
+
+cd "$(git rev-parse --show-toplevel || dirname "${0}")" && {
+
+[[ "${CC}" = x86_64-w64-mingw32-gcc ]] || [[ "${opt__configure}" =~ --host=x86_64-w64-mingw32 ]] && {
+    pp__build_x86_64_w64_mingw32_gcc="#"
+    [[ "$(./config.guess)" = x86_64-w64-mingw32 ]] || {
+        pp__cross_compile="#"
+        rt__wine=wine64
+        dockeropt__platform="--platform linux/amd64"
+        opt__configure="${opt__configure} --disable-shared --enable-static"
+    }
+}
+[[ "${CC}" = i686-w64-mingw32-gcc ]] || [[ "${opt__configure}" =~ --host=i686-w64-mingw32 ]] && {
+    pp__build_i686_w64_mingw32_gcc="#"
+    [[ "$(./config.guess)" = i686-w64-mingw32 ]] || {
+        pp__cross_compile="#"
+        rt__wine=wine
+        dockeropt__platform="--platform linux/amd64"
+        # Enforce static linking as libgcc_s_dw2-1.dll.a is not provided by the
+        # i686-w64-mingw32-gcc package.
+        opt__configure="${opt__configure} --disable-shared --enable-static"
+    }
+}
+
+# make distclean || :
+
+: "${dockeropt__platform:="${opt__platform:+linux/"${opt__platform}"}"}"
+
+# workaround: We cannot find multi-arch slackware...
+: "${pp__os_slackware+:+"${dockeropt__platform:="--platform linux/amd64"}"}"
+
+# shellcheck disable=SC2086
+docker build . \
+    ${dockeropt__debug} \
+    ${dockeropt__platform} \
+    -t "${dockeropt__tag}" \
+    -f - << __Dockerfile__
+#
+# Step 1: Base image and build essentials
+#
+${pp__os_alpine:+"
+FROM alpine:latest
+RUN apk add --no-cache build-base
+"}
+${pp__os_ubuntu:+"
+FROM ubuntu:24.04
+  ${pp__build_i686_w64_mingw32_gcc:+"
+RUN dpkg --add-architecture i386
+  "}
+RUN apt update
+RUN apt install -y build-essential zip
+  ${pp__build_x86_64_w64_mingw32_gcc:+"
+RUN apt install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
+RUN apt install -y wine64
+RUN ln -s /usr/lib/wine/wine64 /usr/local/bin/wine64
+  "}
+  ${pp__build_i686_w64_mingw32_gcc:+"
+RUN apt install -y gcc-mingw-w64-i686 binutils-mingw-w64-i686
+RUN apt install -y wine32
+RUN ln -s /usr/lib/wine/wine32 /usr/local/bin/wine32
+  "}
+  ${pp__with_curl:+"
+RUN apt install -y libcurl-devel
+  "}
+  ${pp__with_png:+"
+RUN apt install -y libpng-devel
+  "}
+  ${pp__with_jpeg:+"
+RUN apt install -y libjpeg-devel
+  "}
+"}
+${pp__os_debian:+"
+FROM debian:bookworm-slim
+  ${pp__build_i686_w64_mingw32_gcc:+"
+RUN dpkg --add-architecture i386
+  "}
+RUN apt update
+RUN apt install -y build-essential zip
+  ${pp__build_x86_64_w64_mingw32_gcc:+"
+RUN apt install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
+RUN apt install -y wine64
+RUN ln -s /usr/lib/wine/wine64 /usr/local/bin/wine64
+  "}
+  ${pp__build_i686_w64_mingw32_gcc:+"
+RUN apt install -y gcc-mingw-w64-i686 binutils-mingw-w64-i686
+RUN apt install -y wine32
+RUN ln -s /usr/lib/wine/wine32 /usr/local/bin/wine32
+  "}
+  ${pp__with_curl:+"
+RUN apt install -y libcurl-devel
+  "}
+  ${pp__with_png:+"
+RUN apt install -y libpng-devel
+  "}
+  ${pp__with_jpeg:+"
+RUN apt install -y libjpeg-devel
+  "}
+"}
+${pp__os_ubi8:+"
+FROM redhat/ubi8-minimal 
+RUN microdnf install -y gcc make glibc-devel
+"}
+${pp__os_ubi9:+"
+FROM redhat/ubi9-minimal 
+RUN microdnf install -y gcc make glibc-devel
+"}
+${pp__os_gentoo:+"
+FROM gentoo/stage3
+"}
+${pp__os_slackware:+"
+FROM andy5995/slackware-build-essential:15.0
+"}
+
+
+#
+# Step 3: Copy the source files, then build and install
+#
+${pp__force_disable_src_cache+:"
+ARG CACHEBUST=1
+"}
+COPY . /tmp/libsixel
+WORKDIR /tmp/libsixel
+RUN CC="${CC}" CPP="${CPP}" \
+    CFLAGS="${CFLAGS}" CPPFLAGS="${CPPFLAGS}" \
+    LDFALGS="${LDFLAGS}" LIBS="${LIBS}" \
+    LT_SYS_LIBRARY_PATH="${LT_SYS_LIBRARY_PATH}" \
+    ./configure ${opt__configure}
+RUN make
+${pp__cross_compile:-"
+RUN make install
+RUN ldconfig || true
+RUN img2sixel -V
+"}
+__Dockerfile__
+}
+
+# shellcheck disable=SC2086
+docker run -it \
+        -e WINE="${rt__wine}" \
+        -e WINEEXT="${rt__wine:+.exe}" \
+        libsixel-"${arg__os}" \
+        bash "${arg__script}"
+
+# vim: set et:
