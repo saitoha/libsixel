@@ -191,7 +191,7 @@ am__define_uniq_tagged_files = \
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(srcdir)/libsixel.pc.in $(srcdir)/package.json.in.in \
 	ChangeLog NEWS README.md compile config.guess config.sub \
-	install-sh ltmain.sh missing py-compile
+	depcomp install-sh ltmain.sh missing py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -985,6 +985,12 @@ issue-131:
 
 issue-150:
 	converters/img2sixel -i tests/issue/150/poc -o tmp.sixel
+
+issue-156:
+	converters/img2sixel -o ./a.sixel -7 -p 1 -C 5 -d stucki -E size -i tests/issue/156/poc -o tmp.sixel
+
+issue-156-vexe:
+	AFL_USE_ASAN=1 CC=clang CFLAGS="-fsanitize=address -O0 -g" tools/vexe --disable-shared ubuntu issue-156
 
 issue-163:
 	converters/img2sixel tests/issue/163/poc0

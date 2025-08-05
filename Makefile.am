@@ -69,6 +69,12 @@ issue-131:
 issue-150:
 	converters/img2sixel -i tests/issue/150/poc -o tmp.sixel
 
+issue-156:
+	converters/img2sixel -o ./a.sixel -7 -p 1 -C 5 -d stucki -E size -i tests/issue/156/poc -o tmp.sixel
+
+issue-156-vexe:
+	AFL_USE_ASAN=1 CC=clang CFLAGS="-fsanitize=address -O0 -g" tools/vexe --disable-shared ubuntu issue-156
+
 issue-163:
 	converters/img2sixel tests/issue/163/poc0
 
