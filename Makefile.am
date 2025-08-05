@@ -62,3 +62,6 @@ coveralls:
 
 coveralls-dryrun: test
 	coveralls -e config.h -e stb_image.h -e stb_image_write.h -e examples -e include -e perl -e php -e ruby -e wic --dryrun
+
+issue-150:
+	converters/img2sixel -i tests/issue/150/poc -o tmp.sixel
