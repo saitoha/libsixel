@@ -191,7 +191,7 @@ am__define_uniq_tagged_files = \
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(srcdir)/libsixel.pc.in $(srcdir)/package.json.in.in \
 	ChangeLog NEWS README.md compile config.guess config.sub \
-	depcomp install-sh ltmain.sh missing py-compile
+	install-sh ltmain.sh missing py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -997,6 +997,12 @@ issue-165:
 
 issue-165-vexe:
 	tools/vexe --without-png ubuntu issue-165
+
+libsixel-libsixel-issue-73:
+	converters/img2sixel tests/issue/libsixel-libsixel/73/stbi_1561_poc.bin
+
+libsixel-libsixel-issue-51:
+	converters/img2sixel tests/issue/libsixel-libsixel/51/stbi_1561_poc\ 2.bin
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

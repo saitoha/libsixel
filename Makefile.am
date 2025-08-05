@@ -80,3 +80,9 @@ issue-165:
 
 issue-165-vexe:
 	tools/vexe --without-png ubuntu issue-165
+
+libsixel-libsixel-issue-73:
+	converters/img2sixel tests/issue/libsixel-libsixel/73/stbi_1561_poc.bin
+
+libsixel-libsixel-issue-51:
+	converters/img2sixel tests/issue/libsixel-libsixel/51/stbi_1561_poc\ 2.bin
