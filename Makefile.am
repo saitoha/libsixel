@@ -66,6 +66,9 @@ coveralls-dryrun: test
 issue-131:
 	converters/img2sixel --high-color tests/issue/131/2020-01-30-img2sixel.gif
 
+issue-136:
+	converters/img2sixel -8 tests/issue/136/poc
+
 issue-150:
 	converters/img2sixel -i tests/issue/150/poc -o tmp.sixel
 
