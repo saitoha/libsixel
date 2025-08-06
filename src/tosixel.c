@@ -1310,20 +1310,20 @@ sixel_encode_highcolor(
     sixel_index_t *paletted_pixels = NULL;
     unsigned char *normalized_pixels = NULL;
     /* Mark sixel line pixels which have been already drawn. */
-    sixel_index_t *marks;
-    sixel_index_t *rgbhit;
+    unsigned char *marks;
+    unsigned char *rgbhit;
     sixel_index_t *rgb2pal;
     unsigned char palhitcount[SIXEL_PALETTE_MAX];
     unsigned char palstate[SIXEL_PALETTE_MAX];
     int output_count;
     int const maxcolors = 1 << 15;
-    int whole_size = width * height  /* for paletted_pixels */
-                   + maxcolors       /* for rgbhit */
-                   + maxcolors       /* for rgb2pal */
-                   + width * 6;      /* for marks */
+    int whole_size = width * height * sizeof(sixel_index_t)  /* for paletted_pixels */
+                   + maxcolors                               /* for rgbhit */
+                   + maxcolors * sizeof(sixel_index_t)       /* for rgb2pal */
+                   + width * 6;                              /* for marks */
     int x, y;
     sixel_index_t *dst;
-    sixel_index_t *mptr;
+    unsigned char *mptr;
     int dirty;
     int mod_y;
     int nextpal;
@@ -1354,10 +1354,10 @@ sixel_encode_highcolor(
     if (paletted_pixels == NULL) {
         goto error;
     }
-    rgbhit = paletted_pixels + width * height;
-    memset(rgbhit, 0, (size_t)(maxcolors * 2 + width * 6));
-    rgb2pal = rgbhit + maxcolors;
-    marks = rgb2pal + maxcolors;
+    rgbhit = (unsigned char *)(paletted_pixels + width * height);
+    memset(rgbhit, 0, (size_t)(maxcolors + maxcolors * sizeof(sixel_index_t) + width * 6));
+    rgb2pal = (sixel_index_t *)(rgbhit + maxcolors);
+    marks = (unsigned char *)(rgb2pal + maxcolors);
     output_count = 0;
 
 next:
@@ -1470,7 +1470,7 @@ next:
         }
 
         if (++mod_y == 6) {
-            mptr = (sixel_index_t *)memset(marks, 0, (size_t)(sizeof(sixel_index_t) * (size_t)width * 6));
+            mptr = memset(marks, 0, (size_t)(width * 6));
             mod_y = 0;
         }
     }
