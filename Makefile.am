@@ -4,6 +4,9 @@
 SUBDIRS = include src converters tools python
 DIST_SUBDIRS = $(SUBDIRS)
 
+EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
+	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb
+
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 srcdir = @srcdir@
@@ -19,6 +22,21 @@ all-am:
 	cp $(builddir)/package.json.in $(builddir)/package.json
 
 check-am:
+
+dist-windows: dist-zip
+	mkdir -p @PACKAGE_NAME@-@PACKAGE_VERSION@/bin-windows
+	cp converters/*.exe @PACKAGE_NAME@-@PACKAGE_VERSION@/bin-windows/
+	zip -u @PACKAGE_NAME@-@PACKAGE_VERSION@.zip @PACKAGE_NAME@-@PACKAGE_VERSION@/bin-windows/*.exe
+	mv -v @PACKAGE_NAME@-@PACKAGE_VERSION@.zip \
+	    lib@PACKAGE_NAME@-@PACKAGE_VERSION@-$$(./config.status --config|tr \  \\n|grep ^--host|cut -f2 -d=).zip
+
+dist-windows-i686-vexe:
+	tools/vexe --host=i686-w64-mingw32 debian dist-windows
+	docker ps -a --filter ancestor=libsixel-debian --format '{{.ID}}' | xargs -I{} docker cp {}:/tmp/libsixel/libsixel-1.8.6-i686-w64-mingw32.zip .
+
+dist-windows-x86_64-vexe:
+	tools/vexe --host=x86_64-w64-mingw32 debian dist-windows
+	docker ps -a --filter ancestor=libsixel-debian --format '{{.ID}}' | xargs -I{} docker cp {}:/tmp/libsixel/libsixel-1.8.6-x86_64-w64-mingw32.zip .
 
 unittest: all
 	cd $(srcdir)/src && $(MAKE) unittest 2>&1 |tee $(builddir)/unittest.log
@@ -44,3 +62,33 @@ coveralls:
 
 coveralls-dryrun: test
 	coveralls -e config.h -e stb_image.h -e stb_image_write.h -e examples -e include -e perl -e php -e ruby -e wic --dryrun
+
+issue-131:
+	converters/img2sixel --high-color tests/issue/131/2020-01-30-img2sixel.gif
+
+issue-150:
+	converters/img2sixel -i tests/issue/150/poc -o tmp.sixel
+
+issue-156:
+	converters/img2sixel -o ./a.sixel -7 -p 1 -C 5 -d stucki -E size -i tests/issue/156/poc -o tmp.sixel
+
+issue-156-vexe:
+	AFL_USE_ASAN=1 CC=clang CFLAGS="-fsanitize=address -O0 -g" tools/vexe --disable-shared ubuntu issue-156
+
+issue-163:
+	converters/img2sixel tests/issue/163/poc0
+
+issue-163-vexe:
+	AFL_USE_ASAN=1 CC=clang CFLAGS="-fsanitize=address -O0 -g" tools/vexe --disable-shared ubuntu issue-163
+
+issue-165:
+	converters/img2sixel tests/issue/165/poc
+
+issue-165-vexe:
+	tools/vexe --without-png ubuntu issue-165
+
+libsixel-libsixel-issue-73:
+	converters/img2sixel tests/issue/libsixel-libsixel/73/stbi_1561_poc.bin
+
+libsixel-libsixel-issue-51:
+	converters/img2sixel tests/issue/libsixel-libsixel/51/stbi_1561_poc\ 2.bin

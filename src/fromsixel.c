@@ -15,10 +15,10 @@
  */
 #include "config.h"
 
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stdio.h>
-#endif  /* STDC_HEADERS */
+/* STDC_HEADERS */
+#include <stdlib.h>
+#include <stdio.h>
+
 #if HAVE_CTYPE_H
 # include <ctype.h>   /* isdigit */
 #endif  /* HAVE_CTYPE_H */

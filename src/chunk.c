@@ -21,10 +21,10 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
-# include <stdio.h>
-# include <stdlib.h>
-#endif  /* STDC_HEADERS */
+/* STDC_HEADERS */
+#include <stdio.h>
+#include <stdlib.h>
+
 #if HAVE_STRING_H
 # include <string.h>
 #endif  /* HAVE_STRING_H */
@@ -349,7 +349,7 @@ sixel_chunk_from_url(
     }
 
     code = curl_easy_setopt(curl, CURLOPT_USERAGENT,
-        "libsixel/" LIBSIXEL_VERSION);
+                            "libsixel/" LIBSIXEL_VERSION);
     if (code != CURLE_OK) {
         status = SIXEL_CURL_ERROR & (code & 0xff);
         sixel_helper_set_additional_message(

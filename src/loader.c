@@ -21,10 +21,10 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
-# include <stdio.h>
-# include <stdlib.h>
-#endif
+/* STDC_HEADERS */
+#include <stdio.h>
+#include <stdlib.h>
+
 #if HAVE_STRING_H
 # include <string.h>
 #endif
@@ -184,6 +184,11 @@ load_jpeg(unsigned char **result,
     }
 
     *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
+
+    if (cinfo.output_width > INT_MAX || cinfo.output_height > INT_MAX) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
     *pwidth = (int)cinfo.output_width;
     *pheight = (int)cinfo.output_height;
 
@@ -312,10 +317,12 @@ load_png(unsigned char      /* out */ **result,
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wclobbered"
 #endif
-    unsigned char **rows;
+    unsigned char **rows = NULL;
     png_color *png_palette = NULL;
     png_color_16 background;
     png_color_16p default_background;
+    png_uint_32 width;
+    png_uint_32 height;
     int i;
     int depth;
 
@@ -329,7 +336,6 @@ load_png(unsigned char      /* out */ **result,
 #endif  /* HAVE_SETJMP && HAVE_LONGJMP */
 
     status = SIXEL_FALSE;
-    rows = NULL;
     *result = NULL;
 
     png_ptr = png_create_read_struct(
@@ -337,6 +343,14 @@ load_png(unsigned char      /* out */ **result,
     if (!png_ptr) {
         sixel_helper_set_additional_message(
             "png_create_read_struct() failed.");
+        status = SIXEL_PNG_ERROR;
+        goto cleanup;
+    }
+
+    // The minimum valid PNG is 67 bytes.
+    // https://garethrees.org/2007/11/14/pngcrush/
+    if (size < 67) {
+        sixel_helper_set_additional_message("PNG data too small to be valid!");
         status = SIXEL_PNG_ERROR;
         goto cleanup;
     }
@@ -349,6 +363,7 @@ load_png(unsigned char      /* out */ **result,
         goto cleanup;
     }
 #endif  /* HAVE_SETJMP */
+
 
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
@@ -363,8 +378,18 @@ load_png(unsigned char      /* out */ **result,
 
     png_set_read_fn(png_ptr,(png_voidp)&read_chunk, read_png);
     png_read_info(png_ptr, info_ptr);
-    *psx = (int)png_get_image_width(png_ptr, info_ptr);
-    *psy = (int)png_get_image_height(png_ptr, info_ptr);
+
+    width = png_get_image_width(png_ptr, info_ptr);
+    height = png_get_image_height(png_ptr, info_ptr);
+
+    if (width > INT_MAX || height > INT_MAX) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto cleanup;
+    }
+
+    *psx = (int)width;
+    *psy = (int)height;
+
     bitdepth = png_get_bit_depth(png_ptr, info_ptr);
     if (bitdepth == 16) {
 #  if HAVE_DEBUG
@@ -630,7 +655,10 @@ load_png(unsigned char      /* out */ **result,
 
 cleanup:
     png_destroy_read_struct(&png_ptr, &info_ptr,(png_infopp)0);
-    sixel_allocator_free(allocator, rows);
+
+    if (rows != NULL) {
+        sixel_allocator_free(allocator, rows);
+    }
 
     return status;
 }
@@ -829,6 +857,10 @@ load_with_builtin(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        if (pchunk->size > INT_MAX) {
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto end;
+        }
         status = load_sixel(&frame->pixels,
                             pchunk->buffer,
                             (int)pchunk->size,
@@ -845,6 +877,10 @@ load_with_builtin(
     } else if (chunk_is_pnm(pchunk)) {
         status = sixel_frame_new(&frame, pchunk->allocator);
         if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        if (pchunk->size > INT_MAX) {
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
             goto end;
         }
         /* pnm */
@@ -905,6 +941,10 @@ load_with_builtin(
 #endif  /* HAVE_LIBPNG */
     else if (chunk_is_gif(pchunk)) {
         fnp.fn = fn_load;
+        if (pchunk->size > INT_MAX) {
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto end;
+        }
         status = load_gif(pchunk->buffer,
                           (int)pchunk->size,
                           bgcolor,
@@ -928,6 +968,10 @@ load_with_builtin(
             goto end;
         }
         stbi_allocator = pchunk->allocator;
+        if (pchunk->size > INT_MAX) {
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto end;
+        }
         stbi__start_mem(&s, pchunk->buffer, (int)pchunk->size);
         frame->pixels = stbi__load_and_postprocess_8bit(&s, &frame->width, &frame->height, &depth, 3);
         if (!frame->pixels) {

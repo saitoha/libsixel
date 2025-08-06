@@ -21,11 +21,11 @@
 
 #include "config.h"
 
-#if STDC_HEADERS
-# include <stdio.h>
-# include <stdlib.h>
-# include <stdarg.h>
-#endif  /* STDC_HEADERS */
+/* STDC_HEADERS */
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+
 # if HAVE_STRING_H
 #include <string.h>
 #endif  /* HAVE_STRING_H */
@@ -987,6 +987,7 @@ sixel_encoder_encode_frame(
     /* prepare dither context */
     status = sixel_encoder_prepare_palette(encoder, frame, &dither);
     if (status != SIXEL_OK) {
+        dither = NULL;
         goto end;
     }
 
@@ -1559,6 +1560,7 @@ sixel_encoder_setopt(
         /* parse --bgcolor option */
         if (encoder->bgcolor) {
             sixel_allocator_free(encoder->allocator, encoder->bgcolor);
+            encoder->bgcolor = NULL;
         }
         status = sixel_parse_x_colorspec(&encoder->bgcolor,
                                          value,
@@ -1628,7 +1630,7 @@ sixel_encoder_setopt(
     default:
         /* exit if unknown options are specified */
         sixel_helper_set_additional_message(
-            "unknwon option is specified.");
+            "unknown option is specified.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }

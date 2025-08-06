@@ -33,16 +33,16 @@ AX_GCC_BUILTIN([__builtin_unreachable])
 
 CFLAGS_BACKUP=$CFLAGS
 CFLAGS="$CFLAGS -Werror"
-AC_TRY_COMPILE(
-  [
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic pop
-    #pragma GCC diagnostic ignored "-Wtypedef-redefinition"
-  ],
-  [
-    typedef int foo;
-    typedef int foo;
-  ],
+AC_COMPILE_IFELSE(
+  [AC_LANG_PROGRAM([
+                     #pragma GCC diagnostic push
+                     #pragma GCC diagnostic pop
+                     #pragma GCC diagnostic ignored "-Wtypedef-redefinition"
+                   ],
+                   [
+                     typedef int foo;
+                     typedef int foo;
+                   ])],
   [AC_DEFINE(HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION,
              1,
              [define 1 if GCC supports -Wtypedef-redefinition])])
@@ -50,16 +50,16 @@ CFLAGS=$CFLAGS_BACKUP
 
 CFLAGS_BACKUP=$CFLAGS
 CFLAGS="$CFLAGS -Werror"
-AC_TRY_COMPILE(
-  [
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic pop
-    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    __attribute__((deprecated)) void test(void) {}
-  ],
-  [
-    test();
-  ],
+AC_COMPILE_IFELSE(
+  [AC_LANG_PROGRAM([
+                     #pragma GCC diagnostic push
+                     #pragma GCC diagnostic pop
+                     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+                     __attribute__((deprecated)) void test(void) {}
+                   ],
+                   [
+                     test();
+                   ])],
   [AC_DEFINE(HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS,
              1,
              [define 1 if GCC supports -Wdeprecated-declarations])])
@@ -117,7 +117,7 @@ AC_ARG_WITH([png],
 #            [with_wic=no])
 
 AC_ARG_WITH(pkgconfigdir,
-            AC_HELP_STRING([--with-pkgconfigdir],
+            AS_HELP_STRING([--with-pkgconfigdir],
                            [Use the specified pkgconfig dir (default is libdir/pkgconfig)]),
                            [pkgconfigdir=${withval}],
                            [pkgconfigdir=${libdir}/pkgconfig])
@@ -125,7 +125,7 @@ AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
 AC_SUBST(pkgconfigdir)
 
 AC_ARG_WITH(bashcompletiondir,
-            AC_HELP_STRING([--with-bashcompletiondir],
+            AS_HELP_STRING([--with-bashcompletiondir],
                            [Use the specified bashcompletion.d]),
                            [bashcompletiondir=${withval}],
                            [bashcompletiondir=${datadir}/bash-completion/completions])
@@ -133,7 +133,7 @@ AC_MSG_NOTICE([bash-completion directory is ${bashcompletiondir}])
 AC_SUBST(bashcompletiondir)
 
 AC_ARG_WITH(zshcompletiondir,
-            AC_HELP_STRING([--with-zshcompletiondir],
+            AS_HELP_STRING([--with-zshcompletiondir],
                            [Use the specified zshcompletion.d]),
                            [zshcompletiondir=${withval}],
                            [zshcompletiondir=${datadir}/zsh/site-functions])
@@ -175,7 +175,11 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
-AS_IF([test x$cross_compile != xyes], [PKG_PROG_PKG_CONFIG], [])
+AS_IF([test x$cross_compile != xyes],
+      [PKG_PROG_PKG_CONFIG([],
+                           [AC_MSG_WARN([pkg-config not found, continuing without it])
+                            PKG_CONFIG=false])],
+      [])
 
 AC_DEFUN([LS_CHECK_CFLAG], [
    AC_MSG_CHECKING([if $CC supports $1])
@@ -228,10 +232,6 @@ AC_SUBST(MD5SUM)
 
 # Check math library
 AC_CHECK_LIB([m], [floor])
-
-# Checks for libraries.
-
-AC_HEADER_STDC
 
 # Checks for header files.
 AC_CHECK_HEADERS([assert.h \
