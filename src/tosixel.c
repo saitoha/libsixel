@@ -279,20 +279,16 @@ sixel_put_node(
     }
 
     for (; *x < np->sx; ++*x) {
-        if (*x != keycolor) {
-            status = sixel_put_pixel(output, 0);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
+        status = sixel_put_pixel(output, 0);
+        if (SIXEL_FAILED(status)) {
+            goto end;
         }
     }
 
     for (; *x < np->mx; ++*x) {
-        if (*x != keycolor) {
-            status = sixel_put_pixel(output, np->map[*x]);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
+        status = sixel_put_pixel(output, np->map[*x]);
+        if (SIXEL_FAILED(status)) {
+            goto end;
         }
     }
 
