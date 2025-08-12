@@ -744,9 +744,9 @@ sixel_debug_print_palette(
     fprintf(stderr, "palette:\n");
     for (i = 0; i < sixel_dither_get_num_of_palette_colors(dither); ++i) {
         fprintf(stderr, "%d: #%02x%02x%02x\n", i,
+                palette[i * 3 + 0],
                 palette[i * 3 + 1],
-                palette[i * 3 + 2],
-                palette[i * 3 + 3]);
+                palette[i * 3 + 2]);
     }
 }
 

@@ -102,6 +102,9 @@ issue-167:
 issue-167-vexe:
 	tools/vexe --platform=amd64 ubuntu issue-167
 
+issue-200:
+	converters/img2sixel --7bit-mode -8 --invert --palette-type=auto --verbose tests/issue/200/POC_img2sixel_heap_buffer_overflow -o /dev/null
+
 libsixel-libsixel-issue-73:
 	converters/img2sixel tests/issue/libsixel-libsixel/73/stbi_1561_poc.bin
 
