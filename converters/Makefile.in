@@ -1079,7 +1079,6 @@ test_impl:
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -I -p8 $(top_srcdir)/images/snake.png)
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -p64 -bxterm256 $(top_srcdir)/images/snake.png)
 @WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -8 -P $(top_srcdir)/images/snake.png)
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B "#000" -B ""; test $$? = 255 -o $$? = 127
 
 @WANT_IMG2SIXEL_TRUE@	@echo '[test2] STDIN handling'
 @WANT_IMG2SIXEL_TRUE@	test ! $$(echo -n a | $(WINE) $(builddir)/img2sixel$(WINEEXT))
@@ -1257,8 +1256,12 @@ test_impl:
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) $(builddir)/sixel2png$(WINEEXT) < $(builddir)/tmp/snake2.sixel > $(builddir)/tmp/snake2.png
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) $(builddir)/sixel2png$(WINEEXT) - - < $(builddir)/tmp/snake3.sixel > $(builddir)/tmp/snake3.png
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) $(builddir)/sixel2png$(WINEEXT) -i $(builddir)/tmp/snake.sixel -o $(builddir)/tmp/snake4.png
+@WANT_IMG2SIXEL_TRUE@	@echo '[test13] regression test'
+@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B "#000" -B ""; test $$? = 255 -o $$? = 127
+@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) ../tests/issue/167/poc -h128 ; test $$? = 255 -o $$? = 127
+@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) ../tests/issue/166/poc -w128 ; test $$? = 255 -o $$? = 127
 
-@WANT_IMG2SIXEL_TRUE@	@echo '[test13] documentation'
+@WANT_IMG2SIXEL_TRUE@	@echo '[test14] documentation'
 @WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > $(builddir)/tmp/options1.txt
 @WANT_IMG2SIXEL_TRUE@	grep ^\.B $(srcdir)/img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > $(builddir)/tmp/options2.txt
 @WANT_IMG2SIXEL_TRUE@	grep ' --' $(srcdir)/shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > $(builddir)/tmp/options3.txt

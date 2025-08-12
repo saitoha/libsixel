@@ -621,6 +621,20 @@ sixel_encoder_do_resize(
     src_width = sixel_frame_get_width(frame);
     src_height = sixel_frame_get_height(frame);
 
+    if (src_width < 1) {
+         sixel_helper_set_additional_message(
+             "sixel_encoder_do_resize: "
+             "detected a frame with a non-positive width.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (src_height < 1) {
+         sixel_helper_set_additional_message(
+             "sixel_encoder_do_resize: "
+             "detected a frame with a non-positive height.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
     /* settings around scaling */
     dst_width = encoder->pixelwidth;    /* may be -1 (default) */
     dst_height = encoder->pixelheight;  /* may be -1 (default) */

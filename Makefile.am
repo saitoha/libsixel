@@ -90,6 +90,18 @@ issue-165:
 issue-165-vexe:
 	tools/vexe --without-png ubuntu issue-165
 
+issue-166:
+	converters/img2sixel ../tests/issue/166/poc -w128 ; test $$? = 255 -o $$? = 127
+
+issue-166-vexe:
+	tools/vexe --platform=amd64 ubuntu issue-166
+
+issue-167:
+	converters/img2sixel ../tests/issue/167/poc -h128 ; test $$? = 255 -o $$? = 127
+
+issue-167-vexe:
+	tools/vexe --platform=amd64 ubuntu issue-167
+
 libsixel-libsixel-issue-73:
 	converters/img2sixel tests/issue/libsixel-libsixel/73/stbi_1561_poc.bin
 
