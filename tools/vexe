@@ -43,7 +43,7 @@ while getopts h-: opt; do
             pp__force_disable_src_cache=1
             ;;
         -p|--platform)
-            opt__platform="${optarg}"
+            opt__platform="${optarg#=}"
             ;;
         --require-valgrind)
             pp__valgrind=1
@@ -96,7 +96,7 @@ cd "$(git rev-parse --show-toplevel || dirname "${0}")" && {
 
 # make distclean || :
 
-: "${dockeropt__platform:="${opt__platform:+linux/"${opt__platform}"}"}"
+: "${dockeropt__platform:="--platform ${opt__platform:+linux/"${opt__platform}"}"}"
 
 # workaround: We cannot find multi-arch slackware...
 : "${pp__os_slackware+:+"${dockeropt__platform:="--platform linux/amd64"}"}"
