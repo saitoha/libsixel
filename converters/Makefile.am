@@ -89,7 +89,6 @@ if WANT_IMG2SIXEL
 	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -I -p8 $(top_srcdir)/images/snake.png)
 	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -p64 -bxterm256 $(top_srcdir)/images/snake.png)
 	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -8 -P $(top_srcdir)/images/snake.png)
-	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B "#000" -B ""; test $$? = 255 -o $$? = 127
 
 	@echo '[test2] STDIN handling'
 	test ! $$(echo -n a | $(WINE) $(builddir)/img2sixel$(WINEEXT))
@@ -273,8 +272,12 @@ if WANT_SIXEL2PNG
 	$(WINE) $(builddir)/sixel2png$(WINEEXT) - - < $(builddir)/tmp/snake3.sixel > $(builddir)/tmp/snake3.png
 	$(WINE) $(builddir)/sixel2png$(WINEEXT) -i $(builddir)/tmp/snake.sixel -o $(builddir)/tmp/snake4.png
 endif
+	@echo '[test13] regression test'
+	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B "#000" -B ""; test $$? = 255 -o $$? = 127
+	$(WINE) $(builddir)/img2sixel$(WINEEXT) ../tests/issue/167/poc -h128 ; test $$? = 255 -o $$? = 127
+	$(WINE) $(builddir)/img2sixel$(WINEEXT) ../tests/issue/166/poc -w128 ; test $$? = 255 -o $$? = 127
 
-	@echo '[test13] documentation'
+	@echo '[test14] documentation'
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > $(builddir)/tmp/options1.txt
 	grep ^\.B $(srcdir)/img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > $(builddir)/tmp/options2.txt
 	grep ' --' $(srcdir)/shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > $(builddir)/tmp/options3.txt
