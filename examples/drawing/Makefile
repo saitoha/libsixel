@@ -4,5 +4,11 @@ all:
 run: all
 	./demo
 
+run-dec: all
+	./demo dec
+
+run-sgr: all
+	./demo sgr
+
 clean:
 	rm -vf ./demo

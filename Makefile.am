@@ -32,11 +32,11 @@ dist-windows: dist-zip
 
 dist-windows-i686-vexe:
 	tools/vexe --host=i686-w64-mingw32 debian dist-windows
-	docker ps -a --filter ancestor=libsixel-debian --format '{{.ID}}' | xargs -I{} docker cp {}:/tmp/libsixel/libsixel-1.8.6-i686-w64-mingw32.zip .
+	docker ps -a --filter ancestor=libsixel-debian --format '{{.ID}}' | xargs -I{} docker cp {}:/tmp/libsixel/@PACKAGE_NAME@-@PACKAGE_VERSION@-i686-w64-mingw32.zip .
 
 dist-windows-x86_64-vexe:
 	tools/vexe --host=x86_64-w64-mingw32 debian dist-windows
-	docker ps -a --filter ancestor=libsixel-debian --format '{{.ID}}' | xargs -I{} docker cp {}:/tmp/libsixel/libsixel-1.8.6-x86_64-w64-mingw32.zip .
+	docker ps -a --filter ancestor=libsixel-debian --format '{{.ID}}' | xargs -I{} docker cp {}:/tmp/libsixel/@PACKAGE_NAME@-@PACKAGE_VERSION@-x86_64-w64-mingw32.zip .
 
 unittest: all
 	cd $(srcdir)/src && $(MAKE) unittest 2>&1 |tee $(builddir)/unittest.log
@@ -65,6 +65,9 @@ coveralls-dryrun: test
 
 issue-131:
 	converters/img2sixel --high-color tests/issue/131/2020-01-30-img2sixel.gif
+
+issue-136:
+	converters/img2sixel -8 tests/issue/136/poc
 
 issue-150:
 	converters/img2sixel -i tests/issue/150/poc -o tmp.sixel

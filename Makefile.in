@@ -191,7 +191,7 @@ am__define_uniq_tagged_files = \
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(srcdir)/libsixel.pc.in $(srcdir)/package.json.in.in \
 	ChangeLog NEWS README.md compile config.guess config.sub \
-	depcomp install-sh ltmain.sh missing py-compile
+	install-sh ltmain.sh missing py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -949,11 +949,11 @@ dist-windows: dist-zip
 
 dist-windows-i686-vexe:
 	tools/vexe --host=i686-w64-mingw32 debian dist-windows
-	docker ps -a --filter ancestor=libsixel-debian --format '{{.ID}}' | xargs -I{} docker cp {}:/tmp/libsixel/libsixel-1.8.6-i686-w64-mingw32.zip .
+	docker ps -a --filter ancestor=libsixel-debian --format '{{.ID}}' | xargs -I{} docker cp {}:/tmp/libsixel/@PACKAGE_NAME@-@PACKAGE_VERSION@-i686-w64-mingw32.zip .
 
 dist-windows-x86_64-vexe:
 	tools/vexe --host=x86_64-w64-mingw32 debian dist-windows
-	docker ps -a --filter ancestor=libsixel-debian --format '{{.ID}}' | xargs -I{} docker cp {}:/tmp/libsixel/libsixel-1.8.6-x86_64-w64-mingw32.zip .
+	docker ps -a --filter ancestor=libsixel-debian --format '{{.ID}}' | xargs -I{} docker cp {}:/tmp/libsixel/@PACKAGE_NAME@-@PACKAGE_VERSION@-x86_64-w64-mingw32.zip .
 
 unittest: all
 	cd $(srcdir)/src && $(MAKE) unittest 2>&1 |tee $(builddir)/unittest.log
@@ -982,6 +982,9 @@ coveralls-dryrun: test
 
 issue-131:
 	converters/img2sixel --high-color tests/issue/131/2020-01-30-img2sixel.gif
+
+issue-136:
+	converters/img2sixel -8 tests/issue/136/poc
 
 issue-150:
 	converters/img2sixel -i tests/issue/150/poc -o tmp.sixel

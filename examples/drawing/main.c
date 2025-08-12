@@ -1,5 +1,5 @@
 /**
- * Example program for DEC Locator Mode integration
+ * An example program demonstrating the integration of DEC Locator Mode and SGR-Pixels
  *
  * Hayaki Saito <saitoha@me.com>
  *
@@ -65,6 +65,14 @@ canvas_sync(struct canvas *c)
 }
 
 static int
+canvas_redraw(struct canvas *c, sixel_dither_t *dither, sixel_output_t *output) {
+    printf("\0338");
+    if (SIXEL_FAILED(sixel_encode(c->buf, c->width, c->height, 0, dither, output)))
+        return 1;
+    return 0;
+}
+
+static int
 wait_stdin(int usec)
 {
     fd_set rfds;
@@ -88,13 +96,11 @@ scroll_on_demand(int pixelheight)
     int scroll;
 
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
-    if (size.ws_ypixel <= 0) {
-        printf("\033[H\0337");
-        return 0;
-    }
+    if (size.ws_ypixel <= 0)
+        goto err;
     /* request cursor position report */
     printf("\033[6n");
-    if (wait_stdin(1000 * 1000) < 0)  /* wait 1 sec */
+    if (wait_stdin(1000 * 1000) <= 0)  /* wait 1 sec */
         goto err;
     if (scanf("\033[%d;%dR", &row, &col) != 2)
         goto err;
@@ -131,8 +137,6 @@ tty_raw(struct termios *old_termios)
     ret = tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
     if (ret < 0)
         return ret;
-
-    printf("\033[?25l\0338");
 
     return 0;
 }
@@ -204,6 +208,12 @@ static int draw_line(struct canvas const *c)
 }
 
 enum {
+    MODE_AUTO = 0,
+    MODE_SGR  = 1,
+    MODE_DEC  = 2
+};
+
+enum {
     STATE_GROUND            = 0,
     STATE_ESC               = 1,
     STATE_ESC_INTERMEDIATE  = 2,
@@ -214,10 +224,116 @@ enum {
     STATE_STR               = 7
 };
 
+int has_sixel_capability()
+{
+    unsigned char ibuf[256];
+    unsigned char *p;
+    int param = 0;
+    int n;
+    int has_4 = 0;
+
+    printf("\033[c");  /* DA1 query */
+    fflush(stdout);
+
+    if (wait_stdin(10000) <= 0)
+        goto failed;
+    if ((n = read(STDIN_FILENO, ibuf, sizeof(ibuf))) < 0)
+        goto failed;
+    if (n >= sizeof(ibuf))
+        goto failed;
+    ibuf[n] = '\0';
+    if (n < 4)
+        goto failed;
+
+    if (*(p = ibuf) != '\033' || *++p != '[' || *++p != '?')
+        goto failed;
+
+    while (*++p) {
+        switch (*p) {
+            case 0x30 ... 0x39:  /* parameter, 0 to 9 */
+                param = param * 10 + *p - 0x30;
+                break;
+            case 0x3b:           /* separator, ; */
+                if (param == 4)
+                    has_4 = 1;
+                param = 0;
+                break;
+            case 0x63:           /* DA response final byte "c" */
+                if (param == 4)
+                    has_4 = 1;
+                if (has_4)
+                    goto success;
+            case 0x3a:           /* separator, : */
+            default:
+                /* invalid response */
+                goto failed;
+        }
+    }
+
+failed:
+    return 0;
+
+success:
+    return 1;
+}
+
+int has_sgr_pixels()
+{
+    unsigned char ibuf[256];
+    int n;
+
+    printf("\033[?1016$p");
+    fflush(stdout);
+
+    if (wait_stdin(10000) <= 0)
+        goto failed;
+    if ((n = read(STDIN_FILENO, ibuf, sizeof(ibuf))) < 0)
+        goto failed;
+    if (n >= sizeof(ibuf))
+        goto failed;
+
+    ibuf[n] = '\0';
+    if (strcmp((const char *)ibuf, "\033[?1016;2$y") != 0)
+        if (strcmp((const char *)ibuf, "\033[?1016;1$y") != 0)
+            goto failed;
+
+    return 1;
+
+failed:
+    return 0;
+}
+
+
+int has_dec_locator()
+{
+    unsigned char ibuf[256];
+    int n;
+
+    printf("\033[?55n");
+    fflush(stdout);
+
+    if (wait_stdin(10000) < 0)
+        goto failed;
+    if ((n = read(STDIN_FILENO, ibuf, sizeof(ibuf))) < 0)
+        goto failed;
+    if (n >= sizeof(ibuf))
+        goto failed;
+
+    ibuf[n] = '\0';
+    if (strcmp((const char *)ibuf, "\033[?50n") != 0)
+        goto failed;
+
+    return 1;
+
+failed:
+    return 0;
+}
+
+
 int main(int argc, char **argv)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    struct canvas c;
+    struct canvas c = {0, 0, NULL, 0, 0, 0, 0};
     sixel_output_t *output = NULL;
     sixel_dither_t *dither = NULL;
     struct termios old_termios;
@@ -230,9 +346,35 @@ int main(int argc, char **argv)
     int ibytes;
     int state;
     int offset;
+    int mode = 0;
+    int reqmode = MODE_AUTO;
 
-    printf("\033[?1;3;256S" "\033[?8452h" "\033[1;1'z");
+    if (argc > 1) {
+        if (strcmp(argv[1], "sgr") == 0)
+            reqmode = MODE_SGR;
+        else if (strcmp(argv[1], "dec") == 0)
+            reqmode = MODE_DEC;
+    }
+
     (void) tty_raw(&old_termios);
+
+    if (! has_sixel_capability())
+        goto end;
+
+    if (reqmode != MODE_DEC && has_sgr_pixels()) {
+        printf("\033[?1000;1003;1016h");
+        mode = MODE_SGR;
+        printf("\033]2;SGR-pixels reporting mode\007");
+    } else if (reqmode != MODE_SGR && has_dec_locator()) {
+        printf("\033[1;1'z");
+        mode = MODE_DEC;
+        printf("\033]2;DEC locator mode\007");
+    } else {
+        goto end;
+    }
+
+    printf("\033[?25l" "\0338");
+    printf("\033[?1;3;256S" "\033[?80;8452h");
 
     if (canvas_init(&c, 640, 480) != 0)
         return (-1);
@@ -249,12 +391,18 @@ int main(int argc, char **argv)
     if (SIXEL_FAILED(status))
         goto end;
 
+    /* initial drawing */
+    canvas_redraw(&c, dither, output);
+
     for (state = STATE_GROUND;;) {
-        printf("\033['|");
-        fflush(stdout);
-        if (wait_stdin(10000) < 0)
+        if (mode == MODE_DEC) {
+            printf("\033['|");
+            fflush(stdout);
+            if (wait_stdin(10000) < 0)
+                goto end;
+        }
+        if ((n = read(STDIN_FILENO, ibuf, sizeof(ibuf))) < 0)
             goto end;
-        n = read(STDIN_FILENO, ibuf, sizeof(ibuf));
         for (p = ibuf; p < ibuf + n; ++p) {
             switch (state) {
             case STATE_GROUND:
@@ -355,7 +503,7 @@ int main(int argc, char **argv)
                 case 0x3a:           /* separator, : */
                     ibytes = ibytes << 8;
                     break;
-                case 0x3b:           /* separator, : to ; */
+                case 0x3b:           /* separator, ; */
                     params[params_idx++] = param;
                     param = 0;
                     break;
@@ -363,6 +511,17 @@ int main(int argc, char **argv)
                     ibytes = ibytes << 8 | *p;
                     break;
                 case 0x40 ... 0x4f:  /* Final byte, @ to ~ */
+                    params[params_idx++] = param;
+                    ibytes = ibytes << 8 | *p;
+                    state = STATE_GROUND;
+                    if (ibytes == ('<' << 8 | 'M') && params_idx >= 3) {
+                        /* printf("\033]2;%d;%d;%d\007", params[0], params[1], params[2]); fflush(stdout); */
+                        canvas_point(&c, params[1], params[2] - offset);
+                        if (params[0] == 32 && draw_line(&c) == 0)
+                            if (canvas_redraw(&c, dither, output) != 0)
+                                goto end;
+                        canvas_sync(&c);
+                    }
                 default:
                     state = STATE_GROUND;
                     break;
@@ -400,13 +559,9 @@ int main(int argc, char **argv)
                     state = STATE_GROUND;
                     if (ibytes == ('&' << 8 | 'w') && params_idx >= 4) {
                         canvas_point(&c, params[3], params[2] - offset);
-                        if (params[1] == 4 && draw_line(&c) == 0) {
-                            printf("\0338");
-                            status = sixel_encode(c.buf, c.width, c.height, 0, dither, output);
-                            if (SIXEL_FAILED(status)) {
+                        if (params[1] == 4 && draw_line(&c) == 0)
+                            if (canvas_redraw(&c, dither, output) != 0)
                                 goto end;
-                            }
-                        }
                         canvas_sync(&c);
                     }
                     break;
@@ -478,9 +633,16 @@ int main(int argc, char **argv)
             }
         }
     }
+
 end:
-    printf("\033[?25h");
+    /* clean up */
+    printf("\033[?25h\033]2;\007");
+    if (mode == MODE_DEC)
+        printf("\033[0;1'z");
+    else if (mode == MODE_SGR)
+        printf("\033[?1000;1003;1016l");
     fflush(stdout);
+
     tty_restore(&old_termios);
 
     canvas_deinit(&c);
@@ -490,4 +652,5 @@ end:
     return 0;
 }
 
+/* vim: set et ts=4 */
 /* EOF */
