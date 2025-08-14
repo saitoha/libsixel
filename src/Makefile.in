@@ -138,6 +138,7 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-fromsixel.lo libsixel_la-tosixel.lo \
@@ -340,6 +341,10 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+WIC_CFLAGS = @WIC_CFLAGS@
+WIC_LIBS = @WIC_LIBS@
+WINHTTP_CFLAGS = @WINHTTP_CFLAGS@
+WINHTTP_LIBS = @WINHTTP_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -451,18 +456,22 @@ libsixel_la_SOURCES = \
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/
 libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(LIBCURL_CFLAGS) \
+		$(WINHTTP_CFLAGS) \
 		$(LIBPNG_CFLAGS) \
 		$(LIBJPEG_CFLAGS) \
 		$(GDK_PIXBUF_CFLAGS) \
-		$(GD_CFLAGS)
+		$(GD_CFLAGS) \
+		$(WIC_CFLAGS)
 
 libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION)
 libsixel_la_LIBADD = -lm \
 		$(LIBCURL_LIBS) \
+		$(WINHTTP_LIBS) \
 		$(LIBPNG_LIBS) \
 		$(LIBJPEG_LIBS) \
 		$(GDK_PIXBUF_LIBS) \
-		$(GD_LIBS)
+		$(GD_LIBS) \
+		$(WIC_LIBS)
 
 @COND_TESTS_TRUE@tests_SOURCES = $(srcdir)/tests.c
 @COND_TESTS_TRUE@tests_CPPFLAGS = -I$(top_builddir)/include/ \

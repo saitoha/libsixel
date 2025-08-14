@@ -1189,7 +1189,7 @@ end:
 }
 #endif  /* HAVE_GDK_PIXBUF2 */
 
-#ifdef HAVE_GD
+#if HAVE_GD
 static int
 detect_file_format(int len, unsigned char *data)
 {
@@ -1251,7 +1251,9 @@ detect_file_format(int len, unsigned char *data)
 
     return (-1);
 }
+#endif /* HAVE_GD */
 
+#if HAVE_GD
 
 static SIXELSTATUS
 load_with_gd(
@@ -1389,6 +1391,178 @@ end:
 
 #endif  /* HAVE_GD */
 
+#if HAVE_WIC
+
+#include <windows.h>
+#include <wincodec.h>
+
+SIXELSTATUS
+load_with_wic(
+    sixel_chunk_t const       /* in */     *pchunk,      /* image data */
+    int                       /* in */     fstatic,      /* static */
+    int                       /* in */     fuse_palette, /* whether to use palette if possible */
+    int                       /* in */     reqcolors,    /* reqcolors */
+    unsigned char             /* in */     *bgcolor,     /* background color */
+    int                       /* in */     loop_control, /* one of enum loop_control */
+    sixel_load_image_function /* in */     fn_load,      /* callback */
+    void                      /* in/out */ *context      /* private data for callback */
+)
+{
+    HRESULT hr = E_FAIL;
+    SIXELSTATUS status = SIXEL_FALSE;
+    IWICImagingFactory     *factory  = NULL;
+    IWICStream             *stream   = NULL;
+    IWICBitmapDecoder      *decoder  = NULL;
+    IWICBitmapFrameDecode  *wicframe = NULL;
+    IWICFormatConverter    *conv     = NULL;
+    IWICBitmapSource       *src      = NULL;
+    sixel_frame_t *frame = NULL;
+    int comp = 4;
+
+    (void) fstatic;
+    (void) reqcolors;
+    (void) bgcolor;
+    (void) loop_control;
+
+    if (fuse_palette) {
+        return status;
+    }
+
+    if (memcmp("GIF", pchunk->buffer, 3) == 0) {
+        return status;
+    }
+
+    hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+    if (FAILED(hr) && hr != RPC_E_CHANGED_MODE) {
+        return status;
+	}
+
+    status = sixel_frame_new(&frame, pchunk->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    hr = CoCreateInstance(&CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER,
+                          &IID_IWICImagingFactory, (void**)&factory);
+    if (FAILED(hr)) {
+		goto end;
+	}
+
+    hr = factory->lpVtbl->CreateStream(factory, &stream);
+    if (FAILED(hr)) {
+		goto end;
+	}
+
+    hr = stream->lpVtbl->InitializeFromMemory(
+        stream, (BYTE*)pchunk->buffer, (DWORD)pchunk->size);
+    if (FAILED(hr)) {
+		goto end;
+	}
+
+    hr = factory->lpVtbl->CreateDecoderFromStream(
+				    factory, (IStream*)stream, NULL,
+                    WICDecodeMetadataCacheOnDemand, &decoder);
+    if (FAILED(hr)) {
+		goto end;
+	}
+
+    hr = decoder->lpVtbl->GetFrame(decoder, 0, &wicframe);
+    if (FAILED(hr)) {
+		goto end;
+	}
+
+    hr = factory->lpVtbl->CreateFormatConverter(factory, &conv);
+    if (FAILED(hr)) {
+		goto end;
+	}
+
+    hr = conv->lpVtbl->Initialize(conv, (IWICBitmapSource*)wicframe,
+                                  &GUID_WICPixelFormat32bppRGBA,
+                                  WICBitmapDitherTypeNone, NULL, 0.0,
+                                  WICBitmapPaletteTypeCustom);
+    if (FAILED(hr)) {
+		goto end;
+	}
+
+    src = (IWICBitmapSource*)conv;
+
+    hr = src->lpVtbl->GetSize(
+        src, (UINT *)&frame->width, (UINT *)&frame->height);
+    if (FAILED(hr)) {
+        goto end;
+    }
+
+    /* check size */
+    if (frame->width <= 0) {
+        sixel_helper_set_additional_message(
+            "load_with_wic: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (frame->height <= 0) {
+        sixel_helper_set_additional_message(
+            "load_with_wic: an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (frame->width > SIXEL_WIDTH_LIMIT) {
+        sixel_helper_set_additional_message(
+            "load_with_wic: given width parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (frame->height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "load_with_wic: given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    frame->pixels = sixel_allocator_malloc(
+        pchunk->allocator,
+        (size_t)(frame->height * frame->width * comp));
+
+    WICRect rc = (WICRect){ 0, 0, (INT)frame->width, (INT)frame->height };
+    hr = src->lpVtbl->CopyPixels(
+        src,
+        &rc,                                        /* prc */
+        frame->width * comp,                        /* cbStride */
+        (UINT)frame->width * frame->height * comp,  /* cbBufferSize */
+        frame->pixels);                             /* pbBuffer */
+    if (FAILED(hr)) {
+        goto end;
+    }
+
+    status = fn_load(frame, context);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+end:
+    if (conv) {
+         conv->lpVtbl->Release(conv);
+    }
+    if (wicframe) {
+         wicframe->lpVtbl->Release(wicframe);
+    }
+    if (stream) {
+         stream->lpVtbl->Release(stream);
+    }
+    if (factory) {
+         factory->lpVtbl->Release(factory);
+    }
+
+    CoUninitialize();
+
+    if (FAILED(hr)) {
+        return SIXEL_FALSE;
+    }
+
+    return SIXEL_OK;
+}
+
+#endif /* HAVE_WIC */
 
 /* load image from file */
 
@@ -1434,6 +1608,18 @@ sixel_helper_load_image_file(
     }
 
     status = SIXEL_FALSE;
+#ifdef HAVE_WIC
+    if (SIXEL_FAILED(status)) {
+        status = load_with_wic(pchunk,
+                               fstatic,
+                               fuse_palette,
+                               reqcolors,
+                               bgcolor,
+                               loop_control,
+                               fn_load,
+                               context);
+    }
+#endif  /* HAVE_WIC */
 #ifdef HAVE_GDK_PIXBUF2
     if (SIXEL_FAILED(status)) {
         status = load_with_gdkpixbuf(pchunk,
