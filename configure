@@ -657,8 +657,6 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 HAVE_PYTHON_FALSE
 HAVE_PYTHON_TRUE
-HAVE_WICCODEC_FALSE
-HAVE_WICCODEC_TRUE
 HAVE_WIC_FALSE
 HAVE_WIC_TRUE
 HAVE_PNG_FALSE
@@ -669,16 +667,6 @@ HAVE_WINHTTP_FALSE
 HAVE_WINHTTP_TRUE
 HAVE_CURL_FALSE
 HAVE_CURL_TRUE
-HAVE_RUBY_FALSE
-HAVE_RUBY_TRUE
-RUBY_SITE_LIBDIR
-RUBY_EXT_DLEXT
-RUBY_EXT_LDFLAGS
-RUBY_EXT_CPPFLAGS
-RUBY_EXT_LIB
-RUBY_EXT_INC
-RUBY_VERSION
-RUBY
 pkgpyexecdir
 pyexecdir
 pkgpythondir
@@ -688,8 +676,6 @@ PYTHON_PREFIX
 PYTHON_PLATFORM
 PYTHON_VERSION
 PYTHON
-HAVE_WIC_FALSE
-HAVE_WIC_TRUE
 WIC_LIBS
 WIC_CFLAGS
 LIBPNG_LIBS
@@ -892,6 +878,8 @@ with_libcurl
 with_jpeg
 with_png
 with_winpthread
+with_wic
+with_winhttp
 with_pkgconfigdir
 with_bashcompletiondir
 with_zshcompletiondir
@@ -1611,6 +1599,10 @@ Optional Packages:
   --with-jpeg             whether to build with libjpeg (default: auto)
   --with-png              whether to build with libpng (default: auto)
   --with-winpthread       whether to build with libwinpthread (default: no)
+  --with-wic              whether to build with Windows Imaging Component
+                          (WIC), windows only (default: auto)
+  --with-winhttp          whether to build with WinHTTP, windows only
+                          (default: auto)
   --with-pkgconfigdir     Use the specified pkgconfig dir (default is
                           libdir/pkgconfig)
   --with-bashcompletiondir=DIR
@@ -14777,11 +14769,27 @@ esac
 fi
 
 
-#AC_ARG_WITH([wic],
-#            [AS_HELP_STRING([--with-wic],
-#                            [whether to build with windows WIC integration, windows only (default: no)])],
-#            [],
-#            [with_wic=no])
+
+# Check whether --with-wic was given.
+if test ${with_wic+y}
+then :
+  withval=$with_wic;
+else case e in #(
+  e) with_wic=auto ;;
+esac
+fi
+
+
+
+# Check whether --with-winhttp was given.
+if test ${with_winhttp+y}
+then :
+  withval=$with_winhttp;
+else case e in #(
+  e) with_wic=auto ;;
+esac
+fi
+
 
 
 # Check whether --with-pkgconfigdir was given.
@@ -18557,6 +18565,8 @@ have_png="no"
 have_winpthread="no"
 have_wic="no"
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gdk-pixbuf2" >&5
+printf %s "checking for gdk-pixbuf2... " >&6; }
 if test x$with_gdk_pixbuf2 != xno; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gdk-pixbuf2" >&5
 printf "%s\n" "$as_me: checking for gdk-pixbuf2" >&6;}
@@ -18655,181 +18665,9 @@ fi
 
 
 
-
-if test x$with_coregraphics != xno; then
-    saved_LIBS="$LIBS"
-    LIBS="$LIBS -framework CoreGraphics -framework ImageIO"
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <CoreGraphics/CoreGraphics.h>
-                           #include <ImageIO/ImageIO.h>
-int
-main (void)
-{
-CGImageRef image = NULL;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  have_coregraphics=yes
-else case e in #(
-  e) have_coregraphics=no ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-    LIBS="$saved_LIBS"
-    if test x$have_coregraphics = xyes; then
-
-printf "%s\n" "#define HAVE_COREGRAPHICS 1" >>confdefs.h
-
-        COREGRAPHICS_LIBS="-framework CoreFoundation -framework CoreGraphics -framework ImageIO"
-        COREGRAPHICS_CFLAGS=""
-        loaders="${loaders} coregraphics"
-        LIBS_PRIVATE="$LIBS_PRIVATE $COREGRAPHICS_LIBS"
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: coregraphics libs is ${COREGRAPHICS_LIBS}" >&5
-printf "%s\n" "$as_me: coregraphics libs is ${COREGRAPHICS_LIBS}" >&6;}
-    elif test x$with_coregraphics = xyes; then
-        as_fn_error $? "unable to find CoreGraphics" "$LINENO" 5
-    fi
-fi
-
-
-
-APPLE_QUICKLOOK_EXTENSION_LIBS=""
-APPLE_QUICKLOOK_REGISTER_LIBS=""
-APPLE_QUICKLOOK_OBJCFLAGS="-fobjc-arc -fmodules"
-have_quicklook_extension=no
-message_quicklook_extension=no
-case $host_os in
-  darwin*)
-    if test x$enable_quicklook_extension != xno; then
-        quicklook_os_version_ok=yes
-        quicklook_os_reason="requires macOS 10.15 or newer"
-        macos_product_version=""
-        if command -v sw_vers >/dev/null 2>&1; then
-            macos_product_version=`sw_vers -productVersion 2>/dev/null`
-        fi
-        if test "x$macos_product_version" != x; then
-            macos_version_major=`echo "$macos_product_version" | awk -F. '{print $1}'`
-            macos_version_minor=`echo "$macos_product_version" | awk -F. '{print ($2 != "" ? $2 : 0)}'`
-            case $macos_version_major in
-              ''|*!0-9*)
-                quicklook_os_version_ok=no
-                quicklook_os_reason="unable to parse macOS version ($macos_product_version)"
-                ;;
-              10)
-                case $macos_version_minor in ''|*!0-9*) macos_version_minor=0 ;; esac
-                if test "$macos_version_minor" -lt 15; then
-                    quicklook_os_version_ok=no
-                fi
-                ;;
-              *)
-                if test "$macos_version_major" -lt 10; then
-                    quicklook_os_version_ok=no
-                fi
-                ;;
-            esac
-        else
-            quicklook_os_version_ok=no
-            quicklook_os_reason="unable to determine macOS version"
-        fi
-
-        if test x$quicklook_os_version_ok != xyes; then
-            if test x$enable_quicklook_extension = xyes; then
-                as_fn_error $? "Quick Look extension requires macOS 10.15 or newer ($quicklook_os_reason)" "$LINENO" 5
-            else
-                message_quicklook_extension="no (${quicklook_os_reason})"
-            fi
-        else
-        ac_ext=m
-ac_cpp='$OBJCPP $CPPFLAGS'
-ac_compile='$OBJC -c $OBJCFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$OBJC -o conftest$ac_exeext $OBJCFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_objc_compiler_gnu
-
-        saved_LIBS="$LIBS"
-        added_LIBS=
-        added_LIBS="$added_LIBS -framework Foundation "
-        added_LIBS="$added_LIBS -framework AppKit "
-        added_LIBS="$added_LIBS -framework QuickLookUI "
-        added_LIBS="$added_LIBS -framework QuickLookThumbnailing "
-        added_LIBS="$added_LIBS -framework UniformTypeIdentifiers "
-        added_LIBS="$added_LIBS -framework CoreGraphics "
-        added_LIBS="$added_LIBS -framework ImageIO "
-        LIBS="$LIBS $added_LIBS"
-
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#import <Foundation/Foundation.h>
-#import <AppKit/AppKit.h>
-#import <QuickLookUI/QuickLookUI.h>
-#import <QuickLookThumbnailing/QuickLookThumbnailing.h>
-#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
-int
-main (void)
-{
-QLThumbnailReply *reply = nil; (void)reply;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_objc_try_link "$LINENO"
-then :
-  have_quicklook_extension=yes
-else case e in #(
-  e) have_quicklook_extension=no ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-        LIBS="$saved_LIBS"
-        ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-        if test x$have_quicklook_extension = xyes; then
-            APPLE_QUICKLOOK_EXTENSION_LIBS="$added_LIBS"
-            APPLE_QUICKLOOK_REGISTER_LIBS=
-            APPLE_QUICKLOOK_REGISTER_LIBS="$APPLE_QUICKLOOK_REGISTER_LIBS -framework Foundation "
-            APPLE_QUICKLOOK_REGISTER_LIBS="$APPLE_QUICKLOOK_REGISTER_LIBS -framework CoreServices "
-            APPLE_QUICKLOOK_REGISTER_LIBS="$APPLE_QUICKLOOK_REGISTER_LIBS -framework UniformTypeIdentifiers "
-            message_quicklook_extension=yes
-        elif test x$enable_quicklook_extension = xyes; then
-            as_fn_error $? "Quick Look extension requested, but required frameworks were not found" "$LINENO" 5
-        else
-            message_quicklook_extension="no (required frameworks unavailable)"
-        fi
-    fi
-    fi
-    ;;
-  *)
-    if test x$enable_quicklook_extension = xyes; then
-        as_fn_error $? "Quick Look extension requires macOS" "$LINENO" 5
-    fi
-    ;;
-esac
-
-
-
-
- if test x$have_quicklook_extension = xyes; then
-  HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE=
-  HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE='#'
-else
-  HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE='#'
-  HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE=
-fi
-
-
-if test x$with_gd != xno && test "x$using_cl" != "xyes"; then
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GD" >&5
-printf "%s\n" "$as_me: checking for GD" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GD" >&5
+printf %s "checking for GD... " >&6; }
+if test x$with_gd != xno; then
     CFLAGS_BACKUP=$CFLAGS
     LDFLAGS_BACKUP=$LDFLAGS
     if test x$with_gd != xyes -a x$with_gd != xauto; then
@@ -19766,7 +19604,9 @@ fi
 
 
 
-if test x$with_libcurl != xno && test "x$using_cl" != "xyes"; then
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libcurl" >&5
+printf %s "checking for libcurl... " >&6; }
+if test x$with_libcurl != xno; then
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libcurl" >&5
 printf "%s\n" "$as_me: checking for libcurl" >&6;}
@@ -19926,13 +19766,7 @@ fi
         fi
     fi
     if test x$have_curl = xyes; then
-        if test x${net} = x; then
-            net="libcurl"
-        else
-            net="${net} libcurl"
-        fi
-        REQUIRES_PRIVATE="$REQUIRES_PRIVATE libcurl"
-        LIBS_PRIVATE="$LIBS_PRIVATE $LIBCURL_LIBS"
+        net="${net} libcurl"
 
 printf "%s\n" "#define HAVE_LIBCURL 1" >>confdefs.h
 
@@ -19949,41 +19783,28 @@ fi
 
 
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for WinHTTP" >&5
+printf %s "checking for WinHTTP... " >&6; }
 if test x$with_winhttp != xno; then
     case "$host_os" in
     mingw* | cygwin* | msys*)
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for WinHTTP" >&5
-printf "%s\n" "$as_me: checking for WinHTTP" >&6;}
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: checking on Windows host" >&5
+printf "%s\n" "checking on Windows host" >&6; }
         CFLAGS_BACKUP="$CFLAGS"
         LIBS_BACKUP="$LIBS"
-        if test x$with_winhttp != xyes -a x$with_winhttp != xauto; then
-            if test ! -d "$with_winhttp"; then
-                as_fn_error $? "\"${with_winhttp}\" is not directory" "$LINENO" 5
+        if test x$with_png != xyes -a x$with_png != xauto; then
+            if test ! -d "$with_png"; then
+                as_fn_error $? "\"${with_png}\" is not directory" "$LINENO" 5
             fi
-            if test "x${using_cl}" = xyes; then
-                ADDED_CFLAGS="-I${with_winhttp}\include"
-                ADDED_LIBS="-lwinhttp"
-            else
-                ADDED_CFLAGS="-I${with_winhttp}/include"
-                ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
-            fi
+            ADDED_CFLAGS="-I${with_winhttp}/include"
+            ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
         else
             if test x${prefix} != x -a x${prefix} != xNONE; then
-                if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lwinhttp"
-                else
-                    ADDED_CFLAGS="-I${prefix}/include"
-                    ADDED_LIBS="-L${prefix}/lib -lwinhttp"
-                fi
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lwinhttp"
             else
-                if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lwinhttp"
-                else
-                    ADDED_CFLAGS="-I/usr/local/include"
-                    ADDED_LIBS="-L/usr/local/lib -lwinhttp"
-                fi
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lwinhttp"
             fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
@@ -20056,52 +19877,43 @@ then :
 
 else case e in #(
   e) have_winhttp=no
-                           { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: library winhttp is not avilable." >&5
-printf "%s\n" "$as_me: WARNING: library winhttp is not avilable." >&2;}
-                           ;;
+                           as_fn_error $? "library wincodecs is not avilable." "$LINENO" 5 ;;
 esac
 fi
 
 else case e in #(
   e) have_winhttp=no
-             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: windows.h or winhttp.h is not avilable." >&5
-printf "%s\n" "$as_me: WARNING: windows.h or winhttp.h is not avilable." >&2;}
-             ;;
+             as_fn_error $? "windows.h or winhttp.h is not avilable." "$LINENO" 5 ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-        CFLAGS=$CFLAGS_BACKUP
-        LIBS=$LIBS_BACKUP
-
-        if test "x$have_winhttp" = "xyes"
-then :
-
-printf "%s\n" "#define HAVE_WINHTTP 1" >>confdefs.h
-
-               if test x${net} = x; then
-                   net="winhttp"
-               else
-                   net="${net} winhttp"
-               fi
-               WINHTTP_CFLAGS=$ADDED_CFLAGS
-               WINHTTP_LIBS=$ADDED_LIBS
-fi
-
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: winhttp cflags is ${WINHTTP_CFLAGS}" >&5
-printf "%s\n" "$as_me: winhttp cflags is ${WINHTTP_CFLAGS}" >&6;}
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: winhttp libs is ${WINHTTP_LIBS}" >&5
-printf "%s\n" "$as_me: winhttp libs is ${WINHTTP_LIBS}" >&6;}
         ;;
     *)
         have_winhttp=no
         ;;
     esac
+    CFLAGS=$CFLAGS_BACKUP
+    LIBS=$LIBS_BACKUP
+    if test "x$have_winhttp" = "xyes"
+then :
+
+printf "%s\n" "#define HAVE_WINHTTP 1" >>confdefs.h
+
+           net="${net} winhttp"
+           WINHTTP_CFLAGS=$ADDED_CFLAGS
+           WINHTTP_LIBS=$ADDED_LIBS
+           { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WinHTTP is available" >&5
+printf "%s\n" "$as_me: WinHTTP is available" >&6;}
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WinHTTP is not available" >&5
+printf "%s\n" "$as_me: WinHTTP is not available" >&6;} ;;
+esac
+fi
 fi
 
 
 
-
-if test x$with_jpeg != xno && test "x$using_cl" != "xyes"; then
+if test x$with_jpeg != xno; then
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for jpeg" >&5
 printf "%s\n" "$as_me: checking for jpeg" >&6;}
@@ -20732,14 +20544,6 @@ esac
 fi
 fi
 
-
- if test x$have_wic = xyes; then
-  HAVE_WIC_TRUE=
-  HAVE_WIC_FALSE='#'
-else
-  HAVE_WIC_TRUE='#'
-  HAVE_WIC_FALSE=
-fi
 
 
 have_python=no
@@ -21491,14 +21295,6 @@ else
   HAVE_WIC_FALSE=
 fi
 
- if test x$have_wiccodec = xyes; then
-  HAVE_WICCODEC_TRUE=
-  HAVE_WICCODEC_FALSE='#'
-else
-  HAVE_WICCODEC_TRUE='#'
-  HAVE_WICCODEC_FALSE=
-fi
-
  if test x$have_python = xyes; then
   HAVE_PYTHON_TRUE=
   HAVE_PYTHON_FALSE='#'
@@ -21718,12 +21514,12 @@ if test -z "${REGISTER_DLL_TRUE}" && test -z "${REGISTER_DLL_FALSE}"; then
   as_fn_error $? "conditional \"REGISTER_DLL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${HAVE_WIC_TRUE}" && test -z "${HAVE_WIC_FALSE}"; then
-  as_fn_error $? "conditional \"HAVE_WIC\" was never defined.
+if test -z "${HAVE_CURL_TRUE}" && test -z "${HAVE_CURL_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_CURL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${HAVE_PYTHON_TRUE}" && test -z "${HAVE_PYTHON_FALSE}"; then
-  as_fn_error $? "conditional \"HAVE_PYTHON\" was never defined.
+if test -z "${HAVE_WINHTTP_TRUE}" && test -z "${HAVE_WINHTTP_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_WINHTTP\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_JPEG_TRUE}" && test -z "${HAVE_JPEG_FALSE}"; then
@@ -21736,6 +21532,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_WIC_TRUE}" && test -z "${HAVE_WIC_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_WIC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_PYTHON_TRUE}" && test -z "${HAVE_PYTHON_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_PYTHON\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_WICCODEC_TRUE}" && test -z "${HAVE_WICCODEC_FALSE}"; then
@@ -23957,7 +23757,7 @@ echo ""
 echo "libsixel was configured as follows"
 echo ""
 echo "       Loader component    : $loaders"
-echo "       libcurl integration : $have_curl"
+echo "       Network access      : $net"
 echo "       libwinpthread       : $have_winpthread"
 echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $message_bashcompletiondir"

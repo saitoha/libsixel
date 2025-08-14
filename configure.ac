@@ -180,11 +180,17 @@ AC_ARG_WITH([winpthread],
             [],
             [with_winpthread=no])
 
-#AC_ARG_WITH([wic],
-#            [AS_HELP_STRING([--with-wic],
-#                            [whether to build with windows WIC integration, windows only (default: no)])],
-#            [],
-#            [with_wic=no])
+AC_ARG_WITH([wic],
+            [AS_HELP_STRING([--with-wic],
+                            [whether to build with Windows Imaging Component (WIC), windows only (default: auto)])],
+            [],
+            [with_wic=auto])
+
+AC_ARG_WITH([winhttp],
+            [AS_HELP_STRING([--with-winhttp],
+                            [whether to build with WinHTTP, windows only (default: auto)])],
+            [],
+            [with_wic=auto])
 
 AC_ARG_WITH(pkgconfigdir,
             AS_HELP_STRING([--with-pkgconfigdir],
@@ -485,6 +491,7 @@ have_png="no"
 have_winpthread="no"
 have_wic="no"
 
+AC_MSG_CHECKING([for gdk-pixbuf2])
 if test x$with_gdk_pixbuf2 != xno; then
     AC_MSG_NOTICE([checking for gdk-pixbuf2])
     if test x${PKG_CONFIG} != x; then
@@ -512,128 +519,8 @@ fi
 AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
 
-if test x$with_coregraphics != xno; then
-    saved_LIBS="$LIBS"
-    LIBS="$LIBS -framework CoreGraphics -framework ImageIO"
-    AC_LINK_IFELSE(
-        [AC_LANG_PROGRAM([[#include <CoreGraphics/CoreGraphics.h>
-                           #include <ImageIO/ImageIO.h>]],
-                         [[CGImageRef image = NULL;]])],
-        [have_coregraphics=yes],
-        [have_coregraphics=no])
-    LIBS="$saved_LIBS"
-    if test x$have_coregraphics = xyes; then
-        AC_DEFINE(HAVE_COREGRAPHICS, 1, [whether CoreGraphics is available])
-        COREGRAPHICS_LIBS="-framework CoreFoundation -framework CoreGraphics -framework ImageIO"
-        COREGRAPHICS_CFLAGS=""
-        loaders="${loaders} coregraphics"
-        LIBS_PRIVATE="$LIBS_PRIVATE $COREGRAPHICS_LIBS"
-        AC_MSG_NOTICE([coregraphics libs is ${COREGRAPHICS_LIBS}])
-    elif test x$with_coregraphics = xyes; then
-        AC_MSG_ERROR([unable to find CoreGraphics])
-    fi
-fi
-AC_SUBST(COREGRAPHICS_CFLAGS)
-AC_SUBST(COREGRAPHICS_LIBS)
-
-APPLE_QUICKLOOK_EXTENSION_LIBS=""
-APPLE_QUICKLOOK_REGISTER_LIBS=""
-APPLE_QUICKLOOK_OBJCFLAGS="-fobjc-arc -fmodules"
-have_quicklook_extension=no
-message_quicklook_extension=no
-case $host_os in
-  darwin*)
-    if test x$enable_quicklook_extension != xno; then
-        quicklook_os_version_ok=yes
-        quicklook_os_reason="requires macOS 10.15 or newer"
-        macos_product_version=""
-        if command -v sw_vers >/dev/null 2>&1; then
-            macos_product_version=`sw_vers -productVersion 2>/dev/null`
-        fi
-        if test "x$macos_product_version" != x; then
-            macos_version_major=`echo "$macos_product_version" | awk -F. '{print $1}'`
-            macos_version_minor=`echo "$macos_product_version" | awk -F. '{print ($2 != "" ? $2 : 0)}'`
-            case $macos_version_major in
-              ''|*[!0-9]*)
-                quicklook_os_version_ok=no
-                quicklook_os_reason="unable to parse macOS version ($macos_product_version)"
-                ;;
-              10)
-                case $macos_version_minor in ''|*[!0-9]*) macos_version_minor=0 ;; esac
-                if test "$macos_version_minor" -lt 15; then
-                    quicklook_os_version_ok=no
-                fi
-                ;;
-              *)
-                if test "$macos_version_major" -lt 10; then
-                    quicklook_os_version_ok=no
-                fi
-                ;;
-            esac
-        else
-            quicklook_os_version_ok=no
-            quicklook_os_reason="unable to determine macOS version"
-        fi
-
-        if test x$quicklook_os_version_ok != xyes; then
-            if test x$enable_quicklook_extension = xyes; then
-                AC_MSG_ERROR([Quick Look extension requires macOS 10.15 or newer ($quicklook_os_reason)])
-            else
-                message_quicklook_extension="no (${quicklook_os_reason})"
-            fi
-        else
-        AC_LANG_PUSH([Objective C])
-        saved_LIBS="$LIBS"
-        added_LIBS=
-        added_LIBS="$added_LIBS -framework Foundation "
-        added_LIBS="$added_LIBS -framework AppKit "
-        added_LIBS="$added_LIBS -framework QuickLookUI "
-        added_LIBS="$added_LIBS -framework QuickLookThumbnailing "
-        added_LIBS="$added_LIBS -framework UniformTypeIdentifiers "
-        added_LIBS="$added_LIBS -framework CoreGraphics "
-        added_LIBS="$added_LIBS -framework ImageIO "
-        LIBS="$LIBS $added_LIBS"
-        AC_LINK_IFELSE(
-            [AC_LANG_PROGRAM([[
-#import <Foundation/Foundation.h>
-#import <AppKit/AppKit.h>
-#import <QuickLookUI/QuickLookUI.h>
-#import <QuickLookThumbnailing/QuickLookThumbnailing.h>
-#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>]],
-                             [[QLThumbnailReply *reply = nil; (void)reply;]])],
-            [have_quicklook_extension=yes],
-            [have_quicklook_extension=no])
-        LIBS="$saved_LIBS"
-        AC_LANG_POP([Objective C])
-        if test x$have_quicklook_extension = xyes; then
-            APPLE_QUICKLOOK_EXTENSION_LIBS="$added_LIBS"
-            APPLE_QUICKLOOK_REGISTER_LIBS=
-            APPLE_QUICKLOOK_REGISTER_LIBS="$APPLE_QUICKLOOK_REGISTER_LIBS -framework Foundation "
-            APPLE_QUICKLOOK_REGISTER_LIBS="$APPLE_QUICKLOOK_REGISTER_LIBS -framework CoreServices "
-            APPLE_QUICKLOOK_REGISTER_LIBS="$APPLE_QUICKLOOK_REGISTER_LIBS -framework UniformTypeIdentifiers "
-            message_quicklook_extension=yes
-        elif test x$enable_quicklook_extension = xyes; then
-            AC_MSG_ERROR([Quick Look extension requested, but required frameworks were not found])
-        else
-            message_quicklook_extension="no (required frameworks unavailable)"
-        fi
-    fi
-    fi
-    ;;
-  *)
-    if test x$enable_quicklook_extension = xyes; then
-        AC_MSG_ERROR([Quick Look extension requires macOS])
-    fi
-    ;;
-esac
-
-AC_SUBST(APPLE_QUICKLOOK_EXTENSION_LIBS)
-AC_SUBST(APPLE_QUICKLOOK_REGISTER_LIBS)
-AC_SUBST(APPLE_QUICKLOOK_OBJCFLAGS)
-AM_CONDITIONAL([HAVE_APPLE_QUICKLOOK_EXTENSION], [test x$have_quicklook_extension = xyes])
-
-if test x$with_gd != xno && test "x$using_cl" != "xyes"; then
-    AC_MSG_NOTICE([checking for GD])
+AC_MSG_CHECKING([for GD])
+if test x$with_gd != xno; then
     CFLAGS_BACKUP=$CFLAGS
     LDFLAGS_BACKUP=$LDFLAGS
     if test x$with_gd != xyes -a x$with_gd != xauto; then
@@ -736,7 +623,8 @@ fi
 AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
 
-if test x$with_libcurl != xno && test "x$using_cl" != "xyes"; then
+AC_MSG_CHECKING([for libcurl])
+if test x$with_libcurl != xno; then
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for libcurl])
         CFLAGS_BACKUP=$CFLAGS
@@ -777,13 +665,7 @@ if test x$with_libcurl != xno && test "x$using_cl" != "xyes"; then
         fi
     fi
     if test x$have_curl = xyes; then
-        if test x${net} = x; then
-            net="libcurl"
-        else
-            net="${net} libcurl"
-        fi
-        REQUIRES_PRIVATE="$REQUIRES_PRIVATE libcurl"
-        LIBS_PRIVATE="$LIBS_PRIVATE $LIBCURL_LIBS"
+        net="${net} libcurl"
         AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
     else
         if test x$with_libcurl != xauto; then
@@ -796,40 +678,26 @@ fi
 AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
 
+AC_MSG_CHECKING([for WinHTTP])
 if test x$with_winhttp != xno; then
     case "$host_os" in
     mingw* | cygwin* | msys*)
-        AC_MSG_NOTICE([checking for WinHTTP])
+        AC_MSG_RESULT([checking on Windows host])
         CFLAGS_BACKUP="$CFLAGS"
         LIBS_BACKUP="$LIBS"
-        if test x$with_winhttp != xyes -a x$with_winhttp != xauto; then
-            if test ! -d "$with_winhttp"; then
-                AC_MSG_ERROR(["${with_winhttp}" is not directory])
+        if test x$with_png != xyes -a x$with_png != xauto; then
+            if test ! -d "$with_png"; then
+                AC_MSG_ERROR(["${with_png}" is not directory])
             fi
-            if test "x${using_cl}" = xyes; then
-                ADDED_CFLAGS="-I${with_winhttp}\include"
-                ADDED_LIBS="-lwinhttp"
-            else
-                ADDED_CFLAGS="-I${with_winhttp}/include"
-                ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
-            fi
+            ADDED_CFLAGS="-I${with_winhttp}/include"
+            ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
         else
             if test x${prefix} != x -a x${prefix} != xNONE; then
-                if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lwinhttp"
-                else
-                    ADDED_CFLAGS="-I${prefix}/include"
-                    ADDED_LIBS="-L${prefix}/lib -lwinhttp"
-                fi
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lwinhttp"
             else
-                if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lwinhttp"
-                else
-                    ADDED_CFLAGS="-I/usr/local/include"
-                    ADDED_LIBS="-L/usr/local/lib -lwinhttp"
-                fi
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lwinhttp"
             fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
@@ -844,40 +712,30 @@ if test x$with_winhttp != xno; then
                           [WinHttpOpen],
                           [],
                           [have_winhttp=no
-                           AC_MSG_WARN([library winhttp is not avilable.])
-                          ])],
+                           AC_MSG_ERROR([library wincodecs is not avilable.])])],
             [have_winhttp=no
-             AC_MSG_WARN([windows.h or winhttp.h is not avilable.])
-            ])
-        CFLAGS=$CFLAGS_BACKUP
-        LIBS=$LIBS_BACKUP
-
-        AS_IF([test "x$have_winhttp" = "xyes"],
-              [AC_DEFINE([HAVE_WINHTTP],
-                         [1],
-                         [whether WinHTTP is available])
-               if test x${net} = x; then
-                   net="winhttp"
-               else
-                   net="${net} winhttp"
-               fi
-               WINHTTP_CFLAGS=$ADDED_CFLAGS
-               WINHTTP_LIBS=$ADDED_LIBS],
-              [])
-
-        AC_MSG_NOTICE([winhttp cflags is ${WINHTTP_CFLAGS}])
-        AC_MSG_NOTICE([winhttp libs is ${WINHTTP_LIBS}])
+             AC_MSG_ERROR([windows.h or winhttp.h is not avilable.])])
         ;;
     *)
         have_winhttp=no
         ;;
     esac
+    CFLAGS=$CFLAGS_BACKUP
+    LIBS=$LIBS_BACKUP
+    AS_IF([test "x$have_winhttp" = "xyes"],
+          [AC_DEFINE([HAVE_WINHTTP],
+                     [1],
+                     [whether WinHTTP is available])
+           net="${net} winhttp"
+           WINHTTP_CFLAGS=$ADDED_CFLAGS
+           WINHTTP_LIBS=$ADDED_LIBS
+           AC_MSG_NOTICE([WinHTTP is available])],
+          [AC_MSG_NOTICE([WinHTTP is not available])])
 fi
-
 AC_SUBST(WINHTTP_CFLAGS)
 AC_SUBST(WINHTTP_LIBS)
 
-if test x$with_jpeg != xno && test "x$using_cl" != "xyes"; then
+if test x$with_jpeg != xno; then
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for jpeg])
         CFLAGS_BACKUP=$CFLAGS
@@ -1073,7 +931,6 @@ if test x$with_wic != xno; then
 fi
 AC_SUBST(WIC_CFLAGS)
 AC_SUBST(WIC_LIBS)
-AM_CONDITIONAL([HAVE_WIC], [test x$have_wic = xyes])
 
 have_python=no
 if test x$enable_python != xno; then
@@ -1133,7 +990,6 @@ AM_CONDITIONAL([HAVE_WINHTTP], [test x$have_wic = xyes])
 AM_CONDITIONAL([HAVE_JPEG], [test x$have_jpeg = xyes])
 AM_CONDITIONAL([HAVE_PNG], [test x$have_png = xyes])
 AM_CONDITIONAL([HAVE_WIC], [test x$have_wic = xyes])
-AM_CONDITIONAL([HAVE_WICCODEC], [test x$have_wiccodec = xyes])
 AM_CONDITIONAL([HAVE_PYTHON], [test x$have_python = xyes])
 
 AC_CONFIG_FILES([Makefile
@@ -1193,7 +1049,7 @@ echo ""
 echo "libsixel was configured as follows"
 echo ""
 echo "       Loader component    : $loaders"
-echo "       libcurl integration : $have_curl"
+echo "       Network access      : $net"
 echo "       libwinpthread       : $have_winpthread"
 echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $message_bashcompletiondir"

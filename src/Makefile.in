@@ -139,7 +139,8 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-fromsixel.lo libsixel_la-tosixel.lo \
 	libsixel_la-quant.lo libsixel_la-dither.lo \
@@ -362,6 +363,8 @@ STRIP = @STRIP@
 VERSION = @VERSION@
 WIC_CFLAGS = @WIC_CFLAGS@
 WIC_LIBS = @WIC_LIBS@
+WINHTTP_CFLAGS = @WINHTTP_CFLAGS@
+WINHTTP_LIBS = @WINHTTP_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
