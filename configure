@@ -672,6 +672,10 @@ PYTHON_PREFIX
 PYTHON_PLATFORM
 PYTHON_VERSION
 PYTHON
+HAVE_WIC_FALSE
+HAVE_WIC_TRUE
+WIC_LIBS
+WIC_CFLAGS
 LIBPNG_LIBS
 LIBPNG_CFLAGS
 LIBJPEG_LIBS
@@ -6549,7 +6553,7 @@ mingw* | windows* | pw32*)
     lt_cv_file_magic_cmd='func_win32_libid'
   else
     # Keep this pattern in sync with the one in func_win32_libid.
-    lt_cv_deplibs_check_method='file_magic file format (pei*-i386(.*architecture: i386)?|pe-arm-wince|pe-x86-64|pe-aarch64)'
+    lt_cv_deplibs_check_method='file_magic file format (pei*-i386(.*architecture: i386)?|pe-arm-wince|pe-x86-64|pe-aarch64|coff-arm|coff-arm64|coff-i386|coff-x86-64)'
     lt_cv_file_magic_cmd='$OBJDUMP -f'
   fi
   ;;
@@ -12121,7 +12125,7 @@ cygwin* | mingw* | windows* | pw32* | cegcc*)
     case $host_os in
     cygwin*)
       # Cygwin DLLs use 'cyg' prefix rather than 'lib'
-      soname_spec='`echo $libname | $SED -e 's/^lib/cyg/'``echo $release | $SED -e 's/[.]/-/g'`$versuffix$shared_ext'
+      soname_spec='`echo $libname | $SED -e 's/^lib/msys-/'``echo $release | $SED -e 's/[.]/-/g'`$versuffix$shared_ext'
 
       sys_lib_search_path_spec="$sys_lib_search_path_spec /usr/lib/w32api"
       ;;
@@ -17284,19 +17288,7 @@ loaders="stb_image"
 have_curl="no"
 have_jpeg="no"
 have_png="no"
-#have_wic="no"
-
-#if test x$with_wic != xno; then
-#    AC_CHECK_HEADERS([wincodec.h], [],
-#                     [AC_MSG_ERROR([WIC integration: wincodec.h is not avilable.])])
-#    AC_CHECK_LIB([ole32], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library ole32 is not avilable.])])
-#    AC_CHECK_LIB([uuid], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library uuid is not avilable.])])
-#    AC_CHECK_LIB([windowscodecs], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library wincodecs is not avilable.])])
-#    have_wic="yes"
-#fi
+have_wic="no"
 
 if test x$with_gdk_pixbuf2 != xno; then
     if test x${PKG_CONFIG} != x; then
@@ -18827,6 +18819,175 @@ fi
 
 
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Windows Imaging Component (WIC)" >&5
+printf %s "checking for Windows Imaging Component (WIC)... " >&6; }
+if test x$with_wic != xno; then
+    case "$host_os" in
+    mingw* | cygwin* | msys*)
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: checking on Windows host" >&5
+printf "%s\n" "checking on Windows host" >&6; }
+        CFLAGS_BACKUP="$CFLAGS"
+        LIBS_BACKUP="$LIBS"
+        if test x$with_png != xyes -a x$with_png != xauto; then
+            if test ! -d "$with_png"; then
+                as_fn_error $? "\"${with_png}\" is not directory" "$LINENO" 5
+            fi
+            ADDED_CFLAGS="-I${with_wic}/include"
+            ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LIBS="${LIBS} ${ADDED_LIBS}"
+        have_wic=yes
+               for ac_header in windows.h wincodec.h
+do :
+  as_ac_Header=`printf "%s\n" "ac_cv_header_$ac_header" | sed "$as_sed_sh"`
+ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"
+then :
+  cat >>confdefs.h <<_ACEOF
+#define `printf "%s\n" "HAVE_$ac_header" | sed "$as_sed_cpp"` 1
+_ACEOF
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for main in -lole32" >&5
+printf %s "checking for main in -lole32... " >&6; }
+if test ${ac_cv_lib_ole32_main+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-lole32  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main (void)
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_ole32_main=yes
+else case e in #(
+  e) ac_cv_lib_ole32_main=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ole32_main" >&5
+printf "%s\n" "$ac_cv_lib_ole32_main" >&6; }
+if test "x$ac_cv_lib_ole32_main" = xyes
+then :
+  printf "%s\n" "#define HAVE_LIBOLE32 1" >>confdefs.h
+
+  LIBS="-lole32 $LIBS"
+
+else case e in #(
+  e) have_wic=no
+                                        as_fn_error $? "library ole32 is not avilable." "$LINENO" 5 ;;
+esac
+fi
+
+                          { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for main in -lwindowscodecs" >&5
+printf %s "checking for main in -lwindowscodecs... " >&6; }
+if test ${ac_cv_lib_windowscodecs_main+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-lwindowscodecs  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main (void)
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_windowscodecs_main=yes
+else case e in #(
+  e) ac_cv_lib_windowscodecs_main=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_windowscodecs_main" >&5
+printf "%s\n" "$ac_cv_lib_windowscodecs_main" >&6; }
+if test "x$ac_cv_lib_windowscodecs_main" = xyes
+then :
+  printf "%s\n" "#define HAVE_LIBWINDOWSCODECS 1" >>confdefs.h
+
+  LIBS="-lwindowscodecs $LIBS"
+
+else case e in #(
+  e) have_wic=no
+                                        as_fn_error $? "library wincodecs is not avilable." "$LINENO" 5 ;;
+esac
+fi
+
+else case e in #(
+  e) have_wic=no
+                          as_fn_error $? "windows.h or wincodec.h is not avilable." "$LINENO" 5 ;;
+esac
+fi
+
+done
+        ;;
+    *)
+        have_wic=no
+        ;;
+    esac
+    CFLAGS=$CFLAGS_BACKUP
+    LIBS=$LIBS_BACKUP
+    if test "x$have_wic" = "xyes"
+then :
+
+printf "%s\n" "#define HAVE_WIC 1" >>confdefs.h
+
+           loaders="${loaders} wic"
+           WIC_CFLAGS=$ADDED_CFLAGS
+           WIC_LIBS=$ADDED_LIBS
+           { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WIC is available" >&5
+printf "%s\n" "$as_me: WIC is available" >&6;}
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WIC is not available" >&5
+printf "%s\n" "$as_me: WIC is not available" >&6;} ;;
+esac
+fi
+fi
+
+
+ if test x$have_wic = xyes; then
+  HAVE_WIC_TRUE=
+  HAVE_WIC_FALSE='#'
+else
+  HAVE_WIC_TRUE='#'
+  HAVE_WIC_FALSE=
+fi
+
+
 have_python=no
 if test x$enable_python != xno; then
 
@@ -19484,6 +19645,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_GETOPT_LONG_TRUE}" && test -z "${HAVE_GETOPT_LONG_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_GETOPT_LONG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_WIC_TRUE}" && test -z "${HAVE_WIC_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_WIC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_PYTHON_TRUE}" && test -z "${HAVE_PYTHON_FALSE}"; then
