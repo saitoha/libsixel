@@ -1720,7 +1720,7 @@ sixel_encoder_encode(
 
     /* if required color is not set, set the max value */
     if (encoder->reqcolors == (-1)) {
-        encoder->reqcolors = SIXEL_PALETTE_MAX;
+        encoder->reqcolors = SIXEL_PALETTE_SIZE_DEFAULT;
     }
 
     /* if required color is less then 2, set the min value */
