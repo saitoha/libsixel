@@ -177,6 +177,9 @@
 /* Define to 1 if you have the 'windowscodecs' library (-lwindowscodecs). */
 #undef HAVE_LIBWINDOWSCODECS
 
+/* Define to 1 if you have the 'winhttp' library (-lwinhttp). */
+#undef HAVE_LIBWINHTTP
+
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 
@@ -316,6 +319,9 @@
 
 /* Define to 1 if you have the <windows.h> header file. */
 #undef HAVE_WINDOWS_H
+
+/* whether WinHTTP is available */
+#undef HAVE_WINHTTP
 
 /* Define to 1 if the system has the type '_Bool'. */
 #undef HAVE__BOOL
