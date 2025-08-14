@@ -1372,242 +1372,6 @@ end:
 }
 #endif  /* HAVE_GDK_PIXBUF2 */
 
-#ifdef HAVE_COREGRAPHICS
-static SIXELSTATUS
-load_with_coregraphics(
-    sixel_chunk_t const       /* in */     *pchunk,
-    int                       /* in */     fstatic,
-    int                       /* in */     fuse_palette,
-    int                       /* in */     reqcolors,
-    unsigned char             /* in */     *bgcolor,
-    int                       /* in */     loop_control,
-    sixel_load_image_function /* in */     fn_load,
-    void                      /* in/out */ *context)
-{
-    SIXELSTATUS status = SIXEL_FALSE;
-    sixel_frame_t *frame = NULL;
-    CFDataRef data = NULL;
-    CGImageSourceRef source = NULL;
-    CGImageRef image = NULL;
-    CGColorSpaceRef color_space = NULL;
-    CGContextRef ctx = NULL;
-    size_t stride;
-    size_t frame_count;
-    int anim_loop_count = (-1);
-    CFDictionaryRef props = NULL;
-    CFDictionaryRef anim_dict;
-    CFNumberRef loop_num;
-    CFDictionaryRef frame_props;
-    CFDictionaryRef frame_anim_dict;
-    CFNumberRef delay_num;
-    double delay_sec;
-    size_t i;
-
-    (void) fuse_palette;
-    (void) reqcolors;
-    (void) bgcolor;
-
-    status = sixel_frame_new(&frame, pchunk->allocator);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    data = CFDataCreate(kCFAllocatorDefault,
-                        pchunk->buffer,
-                        (CFIndex)pchunk->size);
-    if (! data) {
-        status = SIXEL_FALSE;
-        goto end;
-    }
-
-    source = CGImageSourceCreateWithData(data, NULL);
-    if (! source) {
-        status = SIXEL_FALSE;
-        goto end;
-    }
-
-    frame_count = CGImageSourceGetCount(source);
-    if (! frame_count) {
-        status = SIXEL_FALSE;
-        goto end;
-    }
-    if (fstatic) {
-        frame_count = 1;
-    }
-
-    props = CGImageSourceCopyProperties(source, NULL);
-    if (props) {
-        anim_dict = (CFDictionaryRef)CFDictionaryGetValue(
-            props, kCGImagePropertyGIFDictionary);
-        if (anim_dict) {
-            loop_num = (CFNumberRef)CFDictionaryGetValue(
-                anim_dict, kCGImagePropertyGIFLoopCount);
-            if (loop_num) {
-                CFNumberGetValue(loop_num, kCFNumberIntType, &anim_loop_count);
-            }
-        }
-        CFRelease(props);
-    }
-
-    color_space = CGColorSpaceCreateDeviceRGB();
-    if (! color_space) {
-        status = SIXEL_FALSE;
-        goto end;
-    }
-
-    frame->loop_count = 0;
-
-    for (;;) {
-        frame->frame_no = 0;
-        for (i = 0; i < frame_count; ++i) {
-            delay_sec = 0.0;
-            frame_props = CGImageSourceCopyPropertiesAtIndex(
-                source, (CFIndex)i, NULL);
-            if (frame_props) {
-                frame_anim_dict = (CFDictionaryRef)CFDictionaryGetValue(
-                    frame_props, kCGImagePropertyGIFDictionary);
-                if (frame_anim_dict) {
-                    delay_num = (CFNumberRef)CFDictionaryGetValue(
-                        frame_anim_dict, kCGImagePropertyGIFUnclampedDelayTime);
-                    if (! delay_num) {
-                        delay_num = (CFNumberRef)CFDictionaryGetValue(
-                            frame_anim_dict, kCGImagePropertyGIFDelayTime);
-                    }
-                    if (delay_num) {
-                        CFNumberGetValue(delay_num,
-                                         kCFNumberDoubleType,
-                                         &delay_sec);
-                    }
-                }
-#if defined(kCGImagePropertyPNGDictionary) && \
-    defined(kCGImagePropertyAPNGUnclampedDelayTime) && \
-    defined(kCGImagePropertyAPNGDelayTime)
-                if (delay_sec <= 0.0) {
-                    CFDictionaryRef png_frame = (CFDictionaryRef)CFDictionaryGetValue(
-                        frame_props, kCGImagePropertyPNGDictionary);
-                    if (png_frame) {
-                        delay_num = (CFNumberRef)CFDictionaryGetValue(
-                            png_frame, kCGImagePropertyAPNGUnclampedDelayTime);
-                        if (! delay_num) {
-                            delay_num = (CFNumberRef)CFDictionaryGetValue(
-                                png_frame, kCGImagePropertyAPNGDelayTime);
-                        }
-                        if (delay_num) {
-                            CFNumberGetValue(delay_num,
-                                             kCFNumberDoubleType,
-                                             &delay_sec);
-                        }
-                    }
-                }
-#endif
-                CFRelease(frame_props);
-            }
-            if (delay_sec <= 0.0) {
-                delay_sec = 0.1;
-            }
-            frame->delay = (int)(delay_sec * 100.0 + 0.5);
-            if (frame->delay < 1) {
-                frame->delay = 1;
-            }
-
-            image = CGImageSourceCreateImageAtIndex(source, (CFIndex)i, NULL);
-            if (! image) {
-                status = SIXEL_FALSE;
-                goto end;
-            }
-
-            frame->width = (int)CGImageGetWidth(image);
-            frame->height = (int)CGImageGetHeight(image);
-            frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-            stride = (size_t)frame->width * 4;
-            frame->pixels = sixel_allocator_malloc(
-                pchunk->allocator, (size_t)(frame->height * stride));
-
-            if (frame->pixels == NULL) {
-                sixel_helper_set_additional_message(
-                    "load_with_coregraphics: sixel_allocator_malloc() failed.");
-                status = SIXEL_BAD_ALLOCATION;
-                CGImageRelease(image);
-                goto end;
-            }
-
-            ctx = CGBitmapContextCreate(frame->pixels,
-                                        frame->width,
-                                        frame->height,
-                                        8,
-                                        stride,
-                                        color_space,
-                                        kCGImageAlphaPremultipliedLast |
-                                            kCGBitmapByteOrder32Big);
-            if (!ctx) {
-                CGImageRelease(image);
-                goto end;
-            }
-
-            CGContextDrawImage(ctx,
-                               CGRectMake(0, 0, frame->width, frame->height),
-                               image);
-            CGContextRelease(ctx);
-            ctx = NULL;
-
-            frame->multiframe = (frame_count > 1);
-            status = fn_load(frame, context);
-            sixel_allocator_free(pchunk->allocator, frame->pixels);
-            frame->pixels = NULL;
-            CGImageRelease(image);
-            image = NULL;
-            if (status != SIXEL_OK) {
-                goto end;
-            }
-            ++frame->frame_no;
-        }
-
-        ++frame->loop_count;
-
-        if (frame_count <= 1) {
-            break;
-        }
-        if (loop_control == SIXEL_LOOP_DISABLE) {
-            break;
-        }
-        if (loop_control == SIXEL_LOOP_AUTO) {
-            if (anim_loop_count < 0) {
-                break;
-            }
-            if (anim_loop_count > 0 && frame->loop_count >= anim_loop_count) {
-                break;
-            }
-            continue;
-        }
-    }
-
-    status = SIXEL_OK;
-
-end:
-    if (ctx) {
-        CGContextRelease(ctx);
-    }
-    if (color_space) {
-        CGColorSpaceRelease(color_space);
-    }
-    if (image) {
-        CGImageRelease(image);
-    }
-    if (source) {
-        CFRelease(source);
-    }
-    if (data) {
-        CFRelease(data);
-    }
-    if (frame) {
-        sixel_allocator_free(pchunk->allocator, frame->pixels);
-        sixel_allocator_free(pchunk->allocator, frame->palette);
-        sixel_allocator_free(pchunk->allocator, frame);
-    }
-    return status;
-}
-#endif  /* HAVE_COREGRAPHICS */
-
 #if HAVE_GD
 static int
 detect_file_format(int len, unsigned char *data)
@@ -1920,35 +1684,34 @@ load_with_wic(
     void                      /* in/out */ *context      /* private data for callback */
 )
 {
-    HRESULT                 hr         = E_FAIL;
-    SIXELSTATUS             status     = SIXEL_FALSE;
-    IWICImagingFactory     *factory    = NULL;
-    IWICStream             *stream     = NULL;
-    IWICBitmapDecoder      *decoder    = NULL;
-    IWICBitmapFrameDecode  *wicframe   = NULL;
-    IWICFormatConverter    *conv       = NULL;
-    IWICBitmapSource       *src        = NULL;
-    IWICPalette            *wicpalette = NULL;
-    WICColor               *wiccolors  = NULL;
-    IWICMetadataQueryReader *qdecoder  = NULL;
-    IWICMetadataQueryReader *qframe    = NULL;
-    UINT                    ncolors    = 0;
-    sixel_frame_t          *frame      = NULL;
-    int                     comp       = 4;
-    UINT                    actual     = 0;
-    UINT                    i;
-    UINT                    frame_count = 0;
-    int                     anim_loop_count = (-1);
-    int                     is_gif;
-    WICColor                c;
+    HRESULT hr = E_FAIL;
+    SIXELSTATUS status = SIXEL_FALSE;
+    IWICImagingFactory     *factory  = NULL;
+    IWICStream             *stream   = NULL;
+    IWICBitmapDecoder      *decoder  = NULL;
+    IWICBitmapFrameDecode  *wicframe = NULL;
+    IWICFormatConverter    *conv     = NULL;
+    IWICBitmapSource       *src      = NULL;
+    sixel_frame_t *frame = NULL;
+    int comp = 4;
 
+    (void) fstatic;
     (void) reqcolors;
     (void) bgcolor;
+    (void) loop_control;
+
+    if (fuse_palette) {
+        return status;
+    }
+
+    if (memcmp("GIF", pchunk->buffer, 3) == 0) {
+        return status;
+    }
 
     hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
     if (FAILED(hr) && hr != RPC_E_CHANGED_MODE) {
         return status;
-    }
+	}
 
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
@@ -1958,267 +1721,46 @@ load_with_wic(
     hr = CoCreateInstance(&CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER,
                           &IID_IWICImagingFactory, (void**)&factory);
     if (FAILED(hr)) {
-        goto end;
-    }
+		goto end;
+	}
 
     hr = factory->lpVtbl->CreateStream(factory, &stream);
     if (FAILED(hr)) {
-        goto end;
-    }
+		goto end;
+	}
 
-    hr = stream->lpVtbl->InitializeFromMemory(stream,
-                                              (BYTE*)pchunk->buffer,
-                                              (DWORD)pchunk->size);
+    hr = stream->lpVtbl->InitializeFromMemory(
+        stream, (BYTE*)pchunk->buffer, (DWORD)pchunk->size);
     if (FAILED(hr)) {
-        goto end;
-    }
+		goto end;
+	}
 
-    hr = factory->lpVtbl->CreateDecoderFromStream(factory,
-                                                  (IStream*)stream,
-                                                  NULL,
-                                                  WICDecodeMetadataCacheOnDemand,
-                                                  &decoder);
+    hr = factory->lpVtbl->CreateDecoderFromStream(
+				    factory, (IStream*)stream, NULL,
+                    WICDecodeMetadataCacheOnDemand, &decoder);
     if (FAILED(hr)) {
-        goto end;
-    }
-
-    is_gif = (memcmp("GIF", pchunk->buffer, 3) == 0);
-
-    if (is_gif) {
-        hr = decoder->lpVtbl->GetFrameCount(decoder, &frame_count);
-        if (FAILED(hr)) {
-            goto end;
-        }
-        if (fstatic) {
-            frame_count = 1;
-        }
-
-        hr = decoder->lpVtbl->GetMetadataQueryReader(decoder, &qdecoder);
-        if (SUCCEEDED(hr)) {
-            PROPVARIANT pv;
-            PropVariantInit(&pv);
-            hr = qdecoder->lpVtbl->GetMetadataByName(
-                qdecoder,
-                L"/appext/Application/NETSCAPE2.0/Loop",
-                &pv);
-            if (SUCCEEDED(hr) && pv.vt == VT_UI2) {
-                anim_loop_count = pv.uiVal;
-            }
-            PropVariantClear(&pv);
-            qdecoder->lpVtbl->Release(qdecoder);
-            qdecoder = NULL;
-        }
-
-        frame->loop_count = 0;
-        for (;;) {
-            frame->frame_no = 0;
-            for (i = 0; i < frame_count; ++i) {
-                hr = decoder->lpVtbl->GetFrame(decoder, i, &wicframe);
-                if (FAILED(hr)) {
-                    goto end;
-                }
-
-                hr = factory->lpVtbl->CreateFormatConverter(factory, &conv);
-                if (FAILED(hr)) {
-                    goto end;
-                }
-                hr = conv->lpVtbl->Initialize(conv,
-                                              (IWICBitmapSource*)wicframe,
-                                              &GUID_WICPixelFormat32bppRGBA,
-                                              WICBitmapDitherTypeNone,
-                                              NULL,
-                                              0.0,
-                                              WICBitmapPaletteTypeCustom);
-                if (FAILED(hr)) {
-                    goto end;
-                }
-
-                src = (IWICBitmapSource*)conv;
-                comp = 4;
-                frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-
-                hr = src->lpVtbl->GetSize(
-                    src,
-                    (UINT *)&frame->width,
-                    (UINT *)&frame->height);
-                if (FAILED(hr)) {
-                    goto end;
-                }
-
-                if (frame->width <= 0 || frame->height <= 0 ||
-                    frame->width > SIXEL_WIDTH_LIMIT ||
-                    frame->height > SIXEL_HEIGHT_LIMIT) {
-                    sixel_helper_set_additional_message(
-                        "load_with_wic: an invalid width or height parameter detected.");
-                    status = SIXEL_BAD_INPUT;
-                    goto end;
-                }
-
-                frame->pixels = sixel_allocator_malloc(
-                    pchunk->allocator,
-                    (size_t)(frame->height * frame->width * comp));
-                if (frame->pixels == NULL) {
-                    hr = E_OUTOFMEMORY;
-                    goto end;
-                }
-
-                {
-                    WICRect rc = { 0, 0, (INT)frame->width, (INT)frame->height };
-                    hr = src->lpVtbl->CopyPixels(
-                        src,
-                        &rc,
-                        frame->width * comp,
-                        (UINT)frame->width * frame->height * comp,
-                        frame->pixels);
-                    if (FAILED(hr)) {
-                        goto end;
-                    }
-                }
-
-                frame->delay = 0;
-                hr = wicframe->lpVtbl->GetMetadataQueryReader(wicframe, &qframe);
-                if (SUCCEEDED(hr)) {
-                    PROPVARIANT pv;
-                    PropVariantInit(&pv);
-                    hr = qframe->lpVtbl->GetMetadataByName(
-                        qframe,
-                        L"/grctlext/Delay",
-                        &pv);
-                    if (SUCCEEDED(hr) && pv.vt == VT_UI2) {
-                        frame->delay = (int)(pv.uiVal) * 10;
-                    }
-                    PropVariantClear(&pv);
-                    qframe->lpVtbl->Release(qframe);
-                    qframe = NULL;
-                }
-
-                frame->multiframe = 1;
-                status = fn_load(frame, context);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-                frame->pixels = NULL;
-                frame->palette = NULL;
-
-                if (conv) {
-                    conv->lpVtbl->Release(conv);
-                    conv = NULL;
-                }
-                if (wicframe) {
-                    wicframe->lpVtbl->Release(wicframe);
-                    wicframe = NULL;
-                }
-
-                frame->frame_no++;
-            }
-
-            ++frame->loop_count;
-
-            if (anim_loop_count < 0) {
-                break;
-            }
-            if (loop_control == SIXEL_LOOP_DISABLE || frame->frame_no == 1) {
-                break;
-            }
-            if (loop_control == SIXEL_LOOP_AUTO &&
-                frame->loop_count == anim_loop_count) {
-                break;
-            }
-        }
-
-        status = SIXEL_OK;
-        goto end;
-    }
+		goto end;
+	}
 
     hr = decoder->lpVtbl->GetFrame(decoder, 0, &wicframe);
     if (FAILED(hr)) {
-        goto end;
-    }
+		goto end;
+	}
 
-    if (fuse_palette) {
-        hr = factory->lpVtbl->CreatePalette(factory, &wicpalette);
-        if (SUCCEEDED(hr)) {
-            hr = wicframe->lpVtbl->CopyPalette(wicframe, wicpalette);
-        }
-        if (SUCCEEDED(hr)) {
-            hr = wicpalette->lpVtbl->GetColorCount(wicpalette, &ncolors);
-        }
-        if (SUCCEEDED(hr) && ncolors > 0 && ncolors <= 256) {
-            hr = factory->lpVtbl->CreateFormatConverter(factory, &conv);
-            if (SUCCEEDED(hr)) {
-                hr = conv->lpVtbl->Initialize(conv,
-                                              (IWICBitmapSource*)wicframe,
-                                              &GUID_WICPixelFormat8bppIndexed,
-                                              WICBitmapDitherTypeNone,
-                                              wicpalette,
-                                              0.0,
-                                              WICBitmapPaletteTypeCustom);
-            }
-            if (SUCCEEDED(hr)) {
-                src = (IWICBitmapSource*)conv;
-                comp = 1;
-                frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
-                frame->palette = sixel_allocator_malloc(
-                    pchunk->allocator,
-                    (size_t)ncolors * 3);
-                if (frame->palette == NULL) {
-                    hr = E_OUTOFMEMORY;
-                } else {
-                    wiccolors = (WICColor *)sixel_allocator_malloc(
-                        pchunk->allocator,
-                        (size_t)ncolors * sizeof(WICColor));
-                    if (wiccolors == NULL) {
-                        hr = E_OUTOFMEMORY;
-                    } else {
-                        actual = 0;
-                        hr = wicpalette->lpVtbl->GetColors(
-                            wicpalette, ncolors, wiccolors, &actual);
-                        if (SUCCEEDED(hr) && actual == ncolors) {
-                            for (i = 0; i < ncolors; ++i) {
-                                c = wiccolors[i];
-                                frame->palette[i * 3 + 0] = (unsigned char)((c >> 16) & 0xFF);
-                                frame->palette[i * 3 + 1] = (unsigned char)((c >> 8) & 0xFF);
-                                frame->palette[i * 3 + 2] = (unsigned char)(c & 0xFF);
-                            }
-                            frame->ncolors = (int)ncolors;
-                        } else {
-                            hr = E_FAIL;
-                        }
-                    }
-                }
-            }
-            if (FAILED(hr)) {
-                if (conv) {
-                    conv->lpVtbl->Release(conv);
-                    conv = NULL;
-                }
-                sixel_allocator_free(pchunk->allocator, frame->palette);
-                frame->palette = NULL;
-                sixel_allocator_free(pchunk->allocator, wiccolors);
-                wiccolors = NULL;
-                src = NULL;
-            }
-        }
-    }
+    hr = factory->lpVtbl->CreateFormatConverter(factory, &conv);
+    if (FAILED(hr)) {
+		goto end;
+	}
 
-    if (src == NULL) {
-        hr = factory->lpVtbl->CreateFormatConverter(factory, &conv);
-        if (FAILED(hr)) {
-            goto end;
-        }
+    hr = conv->lpVtbl->Initialize(conv, (IWICBitmapSource*)wicframe,
+                                  &GUID_WICPixelFormat32bppRGBA,
+                                  WICBitmapDitherTypeNone, NULL, 0.0,
+                                  WICBitmapPaletteTypeCustom);
+    if (FAILED(hr)) {
+		goto end;
+	}
 
-        hr = conv->lpVtbl->Initialize(conv, (IWICBitmapSource*)wicframe,
-                                      &GUID_WICPixelFormat32bppRGBA,
-                                      WICBitmapDitherTypeNone, NULL, 0.0,
-                                      WICBitmapPaletteTypeCustom);
-        if (FAILED(hr)) {
-            goto end;
-        }
-
-        src = (IWICBitmapSource*)conv;
-        comp = 4;
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-    }
+    src = (IWICBitmapSource*)conv;
 
     hr = src->lpVtbl->GetSize(
         src, (UINT *)&frame->width, (UINT *)&frame->height);
@@ -2252,21 +1794,20 @@ load_with_wic(
         goto end;
     }
 
+    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
     frame->pixels = sixel_allocator_malloc(
         pchunk->allocator,
         (size_t)(frame->height * frame->width * comp));
 
-    {
-        WICRect rc = { 0, 0, (INT)frame->width, (INT)frame->height };
-        hr = src->lpVtbl->CopyPixels(
-            src,
-            &rc,                                        /* prc */
-            frame->width * comp,                        /* cbStride */
-            (UINT)frame->width * frame->height * comp,  /* cbBufferSize */
-            frame->pixels);                             /* pbBuffer */
-        if (FAILED(hr)) {
-            goto end;
-        }
+    WICRect rc = (WICRect){ 0, 0, (INT)frame->width, (INT)frame->height };
+    hr = src->lpVtbl->CopyPixels(
+        src,
+        &rc,                                        /* prc */
+        frame->width * comp,                        /* cbStride */
+        (UINT)frame->width * frame->height * comp,  /* cbBufferSize */
+        frame->pixels);                             /* pbBuffer */
+    if (FAILED(hr)) {
+        goto end;
     }
 
     status = fn_load(frame, context);
@@ -2278,20 +1819,8 @@ end:
     if (conv) {
          conv->lpVtbl->Release(conv);
     }
-    if (wicpalette) {
-         wicpalette->lpVtbl->Release(wicpalette);
-    }
-    if (wiccolors) {
-         sixel_allocator_free(pchunk->allocator, wiccolors);
-    }
     if (wicframe) {
          wicframe->lpVtbl->Release(wicframe);
-    }
-    if (qdecoder) {
-         qdecoder->lpVtbl->Release(qdecoder);
-    }
-    if (qframe) {
-         qframe->lpVtbl->Release(qframe);
     }
     if (stream) {
          stream->lpVtbl->Release(stream);
@@ -2299,7 +1828,6 @@ end:
     if (factory) {
          factory->lpVtbl->Release(factory);
     }
-    sixel_frame_unref(frame);
 
     CoUninitialize();
 
@@ -2357,8 +1885,7 @@ sixel_helper_load_image_file(
 
     status = SIXEL_FALSE;
 #ifdef HAVE_WIC
-    if (SIXEL_FAILED(status) && !chunk_is_gif(pchunk)) {
-        loader_trace_try("wic");
+    if (SIXEL_FAILED(status)) {
         status = load_with_wic(pchunk,
                                fstatic,
                                fuse_palette,
@@ -2367,23 +1894,8 @@ sixel_helper_load_image_file(
                                loop_control,
                                fn_load,
                                context);
-        loader_trace_result("wic", status);
     }
 #endif  /* HAVE_WIC */
-#ifdef HAVE_COREGRAPHICS
-    if (SIXEL_FAILED(status)) {
-        loader_trace_try("coregraphics");
-        status = load_with_coregraphics(pchunk,
-                                        fstatic,
-                                        fuse_palette,
-                                        reqcolors,
-                                        bgcolor,
-                                        loop_control,
-                                        fn_load,
-                                        context);
-        loader_trace_result("coregraphics", status);
-    }
-#endif  /* HAVE_COREGRAPHICS */
 #ifdef HAVE_GDK_PIXBUF2
     if (SIXEL_FAILED(status)) {
         loader_trace_try("gdk-pixbuf2");
