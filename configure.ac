@@ -409,19 +409,7 @@ have_curl="no"
 have_jpeg="no"
 have_png="no"
 have_winpthread="no"
-#have_wic="no"
-
-#if test x$with_wic != xno; then
-#    AC_CHECK_HEADERS([wincodec.h], [],
-#                     [AC_MSG_ERROR([WIC integration: wincodec.h is not avilable.])])
-#    AC_CHECK_LIB([ole32], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library ole32 is not avilable.])])
-#    AC_CHECK_LIB([uuid], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library uuid is not avilable.])])
-#    AC_CHECK_LIB([windowscodecs], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library wincodecs is not avilable.])])
-#    have_wic="yes"
-#fi
+have_wic="no"
 
 if test x$with_gdk_pixbuf2 != xno; then
     if test x${PKG_CONFIG} != x; then
@@ -732,6 +720,65 @@ if test x$with_winpthread != xno; then
     fi
 fi
 
+AC_MSG_CHECKING([for Windows Imaging Component (WIC)])
+if test x$with_wic != xno; then
+    case "$host_os" in
+    mingw* | cygwin* | msys*)
+        AC_MSG_RESULT([checking on Windows host])
+        CFLAGS_BACKUP="$CFLAGS"
+        LIBS_BACKUP="$LIBS"
+        if test x$with_png != xyes -a x$with_png != xauto; then
+            if test ! -d "$with_png"; then
+                AC_MSG_ERROR(["${with_png}" is not directory])
+            fi
+            ADDED_CFLAGS="-I${with_wic}/include"
+            ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LIBS="${LIBS} ${ADDED_LIBS}"
+        have_wic=yes
+        AC_CHECK_HEADERS([windows.h wincodec.h],
+                         [AC_CHECK_LIB([ole32],
+                                       [main],
+                                       [],
+                                       [have_wic=no
+                                        AC_MSG_ERROR([library ole32 is not avilable.])])
+                          AC_CHECK_LIB([windowscodecs],
+                                       [main],
+                                       [],
+                                       [have_wic=no
+                                        AC_MSG_ERROR([library wincodecs is not avilable.])])],
+                         [have_wic=no
+                          AC_MSG_ERROR([windows.h or wincodec.h is not avilable.])])
+        ;;
+    *)
+        have_wic=no
+        ;;
+    esac
+    CFLAGS=$CFLAGS_BACKUP
+    LIBS=$LIBS_BACKUP
+    AS_IF([test "x$have_wic" = "xyes"],
+          [AC_DEFINE([HAVE_WIC],
+                     [1],
+                     [whether Windows Imaging Component (WIC) is available])
+           loaders="${loaders} wic"
+           WIC_CFLAGS=$ADDED_CFLAGS
+           WIC_LIBS=$ADDED_LIBS
+           AC_MSG_NOTICE([WIC is available])],
+          [AC_MSG_NOTICE([WIC is not available])])
+fi
+AC_SUBST(WIC_CFLAGS)
+AC_SUBST(WIC_LIBS)
+AM_CONDITIONAL([HAVE_WIC], [test x$have_wic = xyes])
+
 have_python=no
 if test x$enable_python != xno; then
     AM_PATH_PYTHON([2.3], [have_python=yes], [have_python=no])
@@ -788,3 +835,4 @@ echo "       debugging           : $enable_debug"
 echo "       tests               : $enable_tests"
 echo ""
 echo ""
+dnl :vim set et:
