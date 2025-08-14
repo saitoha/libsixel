@@ -436,6 +436,7 @@ have_winhttp="no"
 have_coregraphics="no"
 have_libwinpthread="no"
 
+AC_MSG_CHECKING([for gdk-pixbuf2])
 if test x$with_gdk_pixbuf2 != xno; then
     AC_MSG_NOTICE([checking for gdk-pixbuf2])
     if test x${PKG_CONFIG} != x; then
@@ -583,6 +584,7 @@ fi
 AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
 
+AC_MSG_CHECKING([for libcurl])
 if test x$with_libcurl != xno; then
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for libcurl])

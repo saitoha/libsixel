@@ -17576,6 +17576,8 @@ have_winhttp="no"
 have_coregraphics="no"
 have_libwinpthread="no"
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gdk-pixbuf2" >&5
+printf %s "checking for gdk-pixbuf2... " >&6; }
 if test x$with_gdk_pixbuf2 != xno; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gdk-pixbuf2" >&5
 printf "%s\n" "$as_me: checking for gdk-pixbuf2" >&6;}
@@ -18593,6 +18595,8 @@ fi
 
 
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libcurl" >&5
+printf %s "checking for libcurl... " >&6; }
 if test x$with_libcurl != xno; then
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libcurl" >&5
