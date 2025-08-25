@@ -937,6 +937,13 @@ sixel_frame_init(
     int             /* in */ ncolors        /* number of palette colors or (-1) */
 );
 
+/* release pixels:
+   call this method if you want user code to retain ownership of the pixels
+   passed to sixel_frame_init (i.e., prevent the frame from freeing the pixel
+   memory when the frame object is destroyed) */
+SIXELAPI void
+sixel_frame_release_pixels(sixel_frame_t /* in */ *frame);  /* frame object */
+
 /* get pixels */
 SIXELAPI unsigned char *
 sixel_frame_get_pixels(sixel_frame_t /* in */ *frame);  /* frame object */

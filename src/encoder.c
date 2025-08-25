@@ -971,6 +971,8 @@ sixel_encoder_encode_frame(
     int is_animation = 0;
     int nwrite;
 
+    sixel_frame_ref(frame);
+
     /* evaluate -w, -h, and -c option: crop/scale input source */
     if (encoder->clipfirst) {
         /* clipping */
@@ -1094,6 +1096,9 @@ sixel_encoder_encode_frame(
     }
 
 end:
+    if (frame) {
+        sixel_frame_unref(frame);
+    }
     if (output) {
         sixel_output_unref(output);
     }
@@ -1818,7 +1823,9 @@ sixel_encoder_encode_bytes(
     int                 /* in */    ncolors)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    sixel_frame_t *frame;
+    sixel_frame_t *frame = NULL;
+
+    sixel_encoder_ref(encoder);
 
     if (encoder == NULL || bytes == NULL) {
         status = SIXEL_BAD_ARGUMENT;
@@ -1844,6 +1851,10 @@ sixel_encoder_encode_bytes(
     status = SIXEL_OK;
 
 end:
+    sixel_frame_release_pixels(frame);
+    sixel_frame_unref(frame);
+    sixel_encoder_unref(encoder);
+
     return status;
 }
 

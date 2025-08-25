@@ -56,6 +56,8 @@ sixel_frame_new(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+    } else {
+        sixel_allocator_ref(allocator);
     }
 
     *ppframe = (sixel_frame_t *)sixel_allocator_malloc(allocator, sizeof(sixel_frame_t));
@@ -79,8 +81,6 @@ sixel_frame_new(
     (*ppframe)->multiframe = 0;
     (*ppframe)->transparent = (-1);
     (*ppframe)->allocator = allocator;
-
-    sixel_allocator_ref(allocator);
 
     status = SIXEL_OK;
 
@@ -195,6 +195,16 @@ end:
     sixel_frame_unref(frame);
 
     return status;
+}
+
+
+/* release ownership of pixels */
+SIXELAPI void
+sixel_frame_release_pixels(sixel_frame_t /* in */ *frame)  /* frame object */
+{
+    if (frame) {
+        frame->pixels = NULL;
+    }
 }
 
 
