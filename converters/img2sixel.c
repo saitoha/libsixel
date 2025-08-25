@@ -346,10 +346,10 @@ signal_handler(int sig)
 
 #endif
 
-#if HAVE_WINDOWS_H
 static void
 set_console_mode(void)
 {
+#if HAVE_WINDOWS_H
     DWORD mode = 0;
     HANDLE hStdout;
 
@@ -358,8 +358,8 @@ set_console_mode(void)
     mode = mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     SetConsoleMode(hStdout, mode);
     SetConsoleCP(437);   /* IBM 437 !! */
-}
 #endif
+}
 
 int
 main(int argc, char *argv[])
