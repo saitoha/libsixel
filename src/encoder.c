@@ -63,6 +63,47 @@
 #include "rgblookup.h"
 
 
+#ifdef _WIN32
+#include <windows.h>
+#include <errno.h>
+
+
+int nanosleep(const struct timespec *req, struct timespec *rem) {
+    if (req == NULL || req->tv_sec < 0 || req->tv_nsec < 0 || req->tv_nsec >= 1000000000L) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    // Convert to 100-nanosecond intervals (Windows FILETIME units)
+    LONGLONG nanoseconds = req->tv_sec * 1000000000LL + req->tv_nsec;
+    LARGE_INTEGER dueTime;
+    dueTime.QuadPart = -(nanoseconds / 100); // Negative for relative time
+
+    HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
+    if (timer == NULL) {
+        errno = EFAULT; // Approximate error
+        return -1;
+    }
+
+    if (!SetWaitableTimer(timer, &dueTime, 0, NULL, NULL, FALSE)) {
+        CloseHandle(timer);
+        errno = EFAULT;
+        return -1;
+    }
+
+    WaitForSingleObject(timer, INFINITE);
+    CloseHandle(timer);
+
+    // No interruption handling, so rem is unchanged
+    if (rem != NULL) {
+        rem->tv_sec = 0;
+        rem->tv_nsec = 0;
+    }
+    return 0;
+}
+#endif
+
+
 static char *
 arg_strdup(
     char const          /* in */ *s,          /* source buffer */

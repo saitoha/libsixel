@@ -1,0 +1,161 @@
+name: Libsixel Build
+
+on:
+  push:
+    branches: ['*']
+  pull_request:
+    branches: ['*']
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: windows-latest
+            sys: MINGW64
+          - os: windows-latest
+            sys: UCRT64
+          - os: windows-latest
+            sys: CLANG64
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libpng-dev libjpeg-dev libgd-dev libgdk-pixbuf2.0-dev libcurl4-openssl-dev autoconf automake libtool
+
+    - name: Install dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew install autoconf automake libtool libpng jpeg gd gdk-pixbuf
+
+    - name: Setup MSYS2 (Windows)
+      if: runner.os == 'Windows'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.sys }}
+        update: true
+        install: >-
+          autoconf
+          automake
+          libtool
+        pacboy: >-
+          libpng:p
+          libjpeg-turbo:p
+          libgd:p
+          gdk-pixbuf2:p
+          cc:p
+          curl:p
+
+    - name: Configure and build (non-Windows)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        ./autogen.sh
+        ./configure --enable-tests --with-gdk-pixbuf2 --with-gd --with-libcurl --with-png --with-jpeg
+        make
+
+    - name: Configure and build (Windows)
+      if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: |
+        ./autogen.sh
+        ./configure --enable-tests --with-gdk-pixbuf2 --with-gd --with-libcurl --with-png --with-jpeg
+        make
+
+    - name: Run tests (non-Windows)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: make check
+
+    - name: Run tests (Windows)
+      if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: make check
+
+    - name: Install artifacts (non-Windows)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        mkdir -p install
+        make install DESTDIR=$(pwd)/install
+
+    - name: Install artifacts (Windows)
+      if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: |
+        mkdir -p install
+        make install DESTDIR=$(pwd)/install
+
+    - name: Package artifacts (non-Windows)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        tar -czvf libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.tar.gz -C install .
+
+    - name: Package artifacts (Windows)
+      if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: |
+        tar -czvf libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.tar.gz -C install .
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}
+        path: libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.tar.gz
+        retention-days: 7
+        overwrite: true
+        compression-level: 0
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'  # Only run on push, not PRs
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          pattern: libsixel-*
+          merge-multiple: true
+
+      - name: Debug downloaded artifacts
+        shell: bash
+        run: |
+          echo "Downloaded files:"
+          find artifacts -type f -exec ls -lh {} \; || echo "No files found"
+          echo ""
+          echo "Artifacts directory size:"
+          du -sh artifacts || echo "No artifacts directory found"
+
+      - name: Create and publish nightly pre-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="nightly-latest"
+          # Delete existing release if it exists
+          if gh release view "$TAG_NAME" --repo ${{ github.repository }} >/dev/null 2>&1; then
+            gh release delete "$TAG_NAME" --yes --repo ${{ github.repository }}
+            echo "Deleted existing release $TAG_NAME"
+          fi
+          # Create and publish the new pre-release with artifacts
+          gh release create "$TAG_NAME" \
+            --title "Libsixel Nightly Latest Pre-release" \
+            --notes "Latest pre-release build from commit ${{ github.sha }} on branch ${{ github.ref_name }}. Updated on: ${{ github.event.head_commit.timestamp }}" \
+            --prerelease \
+            artifacts/libsixel-*.tar.gz
