@@ -65,6 +65,14 @@ AC_COMPILE_IFELSE(
              [define 1 if GCC supports -Wdeprecated-declarations])])
 CFLAGS=$CFLAGS_BACKUP
 
+case "$host_os" in
+    mingw*)
+    target_mingw=yes
+    ;;
+esac
+
+AM_CONDITIONAL(WIN_SUBSYSTEM, test x${target_mingw} = xyes)
+
 # Options
 AC_ARG_ENABLE([img2sixel],
               [AS_HELP_STRING([--disable-img2sixel],
@@ -256,7 +264,8 @@ AC_CHECK_HEADERS([assert.h \
                   sys/signal.h \
                   termios.h \
                   sys/ioctl.h \
-                  inttypes.h])
+                  inttypes.h \
+                  windows.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL
@@ -309,7 +318,9 @@ AC_CHECK_FUNCS([memcpy \
                 strchr \
                 strerror \
                 strstr \
-                strtol])
+                strtol \
+                fsync \
+                _commit])
 # for HDR
 AC_CHECK_FUNCS([strtol pow])
 
