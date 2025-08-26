@@ -346,21 +346,6 @@ signal_handler(int sig)
 
 #endif
 
-static void
-set_console_mode(void)
-{
-#if HAVE_WINDOWS_H
-    DWORD mode = 0;
-    HANDLE hStdout;
-
-    hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-    GetConsoleMode(hStdout, &mode);
-    mode = mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-    SetConsoleMode(hStdout, mode);
-    SetConsoleCP(437);   /* IBM 437 !! */
-#endif
-}
-
 int
 main(int argc, char *argv[])
 {
@@ -471,7 +456,9 @@ main(int argc, char *argv[])
     (void) signal_handler;
 #endif
 
-    set_console_mode();
+#if HAVE_WINDOWS_H
+    AttachConsole(ATTACH_PARENT_PROCESS);
+#endif
 
     if (optind == argc) {
         status = sixel_encoder_encode(encoder, NULL);
