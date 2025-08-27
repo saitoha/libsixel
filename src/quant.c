@@ -1011,18 +1011,18 @@ diffuse_jajuni(unsigned char *data, int width, int height,
      *  1/48    3/48    5/48    3/48    1/48
      */
     if (x < width - 2 && y < height - 2) {
-        error_diffuse_precise(data, pos + width * 0 + 1, depth, error, 7, 48);
-        error_diffuse_precise(data, pos + width * 0 + 2, depth, error, 5, 48);
-        error_diffuse_precise(data, pos + width * 1 - 2, depth, error, 3, 48);
-        error_diffuse_precise(data, pos + width * 1 - 1, depth, error, 5, 48);
-        error_diffuse_precise(data, pos + width * 1 + 0, depth, error, 7, 48);
-        error_diffuse_precise(data, pos + width * 1 + 1, depth, error, 5, 48);
-        error_diffuse_precise(data, pos + width * 1 + 2, depth, error, 3, 48);
-        error_diffuse_precise(data, pos + width * 2 - 2, depth, error, 1, 48);
-        error_diffuse_precise(data, pos + width * 2 - 1, depth, error, 3, 48);
-        error_diffuse_precise(data, pos + width * 2 + 0, depth, error, 5, 48);
-        error_diffuse_precise(data, pos + width * 2 + 1, depth, error, 3, 48);
-        error_diffuse_precise(data, pos + width * 2 + 2, depth, error, 1, 48);
+        error_diffuse(data, pos + width * 0 + 1, depth, error, 7, 48);
+        error_diffuse(data, pos + width * 0 + 2, depth, error, 5, 48);
+        error_diffuse(data, pos + width * 1 - 2, depth, error, 3, 48);
+        error_diffuse(data, pos + width * 1 - 1, depth, error, 5, 48);
+        error_diffuse(data, pos + width * 1 + 0, depth, error, 7, 48);
+        error_diffuse(data, pos + width * 1 + 1, depth, error, 5, 48);
+        error_diffuse(data, pos + width * 1 + 2, depth, error, 3, 48);
+        error_diffuse(data, pos + width * 2 - 2, depth, error, 1, 48);
+        error_diffuse(data, pos + width * 2 - 1, depth, error, 3, 48);
+        error_diffuse(data, pos + width * 2 + 0, depth, error, 5, 48);
+        error_diffuse(data, pos + width * 2 + 1, depth, error, 3, 48);
+        error_diffuse(data, pos + width * 2 + 2, depth, error, 1, 48);
     }
 }
 
@@ -1038,20 +1038,20 @@ diffuse_stucki(unsigned char *data, int width, int height,
      *  2/48    4/48    8/48    4/48    2/48
      *  1/48    2/48    4/48    2/48    1/48
      */
-    if (x < width - 2 && y < height - 2) {
+    if (x < height - 2 && y < width - 2) {
         pos = y * width + x;
-        error_diffuse_precise(data, pos + width * 0 + 1, depth, error, 1, 6);
-        error_diffuse_precise(data, pos + width * 0 + 2, depth, error, 1, 12);
-        error_diffuse_precise(data, pos + width * 1 - 2, depth, error, 1, 24);
-        error_diffuse_precise(data, pos + width * 1 - 1, depth, error, 1, 12);
-        error_diffuse_precise(data, pos + width * 1 + 0, depth, error, 1, 6);
-        error_diffuse_precise(data, pos + width * 1 + 1, depth, error, 1, 12);
-        error_diffuse_precise(data, pos + width * 1 + 2, depth, error, 1, 24);
-        error_diffuse_precise(data, pos + width * 2 - 2, depth, error, 1, 48);
-        error_diffuse_precise(data, pos + width * 2 - 1, depth, error, 1, 24);
-        error_diffuse_precise(data, pos + width * 2 + 0, depth, error, 1, 12);
-        error_diffuse_precise(data, pos + width * 2 + 1, depth, error, 1, 24);
-        error_diffuse_precise(data, pos + width * 2 + 2, depth, error, 1, 48);
+        error_diffuse(data, pos + width * 0 + 1, depth, error, 1, 6);
+        error_diffuse(data, pos + width * 0 + 2, depth, error, 1, 12);
+        error_diffuse(data, pos + width * 1 - 2, depth, error, 1, 24);
+        error_diffuse(data, pos + width * 1 - 1, depth, error, 1, 12);
+        error_diffuse(data, pos + width * 1 + 0, depth, error, 1, 6);
+        error_diffuse(data, pos + width * 1 + 1, depth, error, 1, 12);
+        error_diffuse(data, pos + width * 1 + 2, depth, error, 1, 24);
+        error_diffuse(data, pos + width * 2 - 2, depth, error, 1, 48);
+        error_diffuse(data, pos + width * 2 - 1, depth, error, 1, 24);
+        error_diffuse(data, pos + width * 2 + 0, depth, error, 1, 12);
+        error_diffuse(data, pos + width * 2 + 1, depth, error, 1, 24);
+        error_diffuse(data, pos + width * 2 + 2, depth, error, 1, 48);
     }
 }
 
@@ -1103,6 +1103,33 @@ diffuse_lso1(unsigned char *data, int width, int height,
         error_diffuse_fast(data, pos + width * 1 + 0, depth, error, 4, 8);
         error_diffuse_fast(data, pos + width * 1 + 1, depth, error, 1, 8);
         error_diffuse_fast(data, pos + width * 2 + 0, depth, error, 2, 8);
+    }
+}
+
+static void
+diffuse_lso1(unsigned char *data, int width, int height,
+             int x, int y, int depth, int error)
+{
+    int pos;
+
+    pos = y * width + x;
+
+    /* lso1 (libsixel original) method:
+     *
+     * libsixel-specific error diffusion (dithering) to improve sixel
+     * compression; by steering error propagation so out-of-palette
+     * intermediate colors render as horizontal bands rather than grainy
+     * noise, we increase RLE more effective.
+     *
+     *          curr
+     *   1/8    4/8    1/8
+     *          2/8
+     */
+    if (x < width - 1 && y < height - 2) {
+        error_diffuse(data, pos + width * 1 - 1, depth, error, 1, 8);
+        error_diffuse(data, pos + width * 1 + 0, depth, error, 4, 8);
+        error_diffuse(data, pos + width * 1 + 1, depth, error, 1, 8);
+        error_diffuse(data, pos + width * 2 + 0, depth, error, 2, 8);
     }
 }
 
