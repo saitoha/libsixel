@@ -172,6 +172,7 @@ void show_help(void)
             "                                         arithmetic dither\n"
             "                             x_dither -> positionally stable\n"
             "                                         arithmetic xor based dither\n"
+            "                             lso1     -> libsixel's original method\n"
             "-f FINDTYPE, --find-largest=FINDTYPE\n"
             "                           choose method for finding the largest\n"
             "                           dimension of median cut boxes for\n"
