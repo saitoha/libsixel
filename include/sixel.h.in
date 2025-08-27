@@ -101,6 +101,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_DIFFUSE_BURKES      0x6  /* diffuse with Burkes' method */
 #define SIXEL_DIFFUSE_A_DITHER    0x7  /* positionally stable arithmetic dither */
 #define SIXEL_DIFFUSE_X_DITHER    0x8  /* positionally stable arithmetic xor based dither */
+#define SIXEL_DIFFUSE_LSO1        0x9  /* diffuse with libsixel's original method */
 
 /* quality modes */
 #define SIXEL_QUALITY_AUTO        0x0  /* choose quality mode automatically */
@@ -415,7 +416,8 @@ enum methodForDiffuse {
     DIFFUSE_STUCKI   = 5, /* diffuse with Stucki's method */
     DIFFUSE_BURKES   = 6, /* diffuse with Burkes' method */
     DIFFUSE_A_DITHER = 7, /* positionally stable arithmetic dither */
-    DIFFUSE_X_DITHER = 8  /* positionally stable arithmetic xor based dither */
+    DIFFUSE_X_DITHER = 8, /* positionally stable arithmetic xor based dither */
+    DIFFUSE_LSO1     = 9  /* libsixel original diffusion method */
 };
 
 /* quality modes */
