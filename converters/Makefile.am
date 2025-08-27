@@ -100,6 +100,11 @@ if WANT_IMG2SIXEL
 	@echo '[test4] conversion options'
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(srcdir)/images/snake.jpg -datkinson -flum -saverage | $(WINE) $(builddir)/img2sixel$(WINEEXT) | tee $(builddir)/tmp/snake.sixel
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w50% -h150% -dfs -Bblue -thls -shistogram < $(top_srcdir)/images/snake.jpg | tee $(builddir)/tmp/snake2.sixel
+	$(WINE) printf '\033Pq"1;1;1;1!6~\033\\' | $(builddir)/img2sixel$(WINEEXT) -r nearest -w200% | tr \# \\n | tail -n+3 | od -An -tx1 | tr -d \  | xargs test 302131327e2d2131327e1b5c =
+	$(WINE) printf '\033Pq"1;1;1;1!6~\033\\' | $(builddir)/img2sixel$(WINEEXT) -r nearest -h200% | tr \# \\n | tail -n+3 | od -An -tx1 | tr -d \  | xargs test 302131327e2d2131327e1b5c =
+	$(WINE) printf '\033Pq"1;1;1;1!6~\033\\' | $(builddir)/img2sixel$(WINEEXT) -r nearest -h200% -wauto | tr \# \\n | tail -n+3 | od -An -tx1 | tr -d \  | xargs test 302131327e2d2131327e1b5c =
+	$(WINE) printf '\033Pq"1;1;1;1!6~\033\\' | $(builddir)/img2sixel$(WINEEXT) -r nearest -hauto -w12 | tr \# \\n | tail -n+3 | od -An -tx1 | tr -d \  | xargs test 302131327e2d2131327e1b5c =
+	$(WINE) printf '\033Pq"1;1;1;1!6~\033\\' | $(builddir)/img2sixel$(WINEEXT) -r nearest -h12 -w200% | tr \# \\n | tail -n+3 | od -An -tx1 | tr -d \  | xargs test 302131327e2d2131327e1b5c =
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w210 -h210 -djajuni -bxterm256 -o $(builddir)/tmp/snake3.sixel < $(top_srcdir)/images/snake.jpg
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) --height=100 --diffusion=atkinson --outfile=$(builddir)/tmp/snake4.sixel < $(top_srcdir)/images/snake.jpg
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w105% -h100 -B\#000000000 -rnearest < $(top_srcdir)/images/snake.gif

@@ -650,11 +650,11 @@ sixel_encoder_do_resize(
 
     /* if only either width or height is set, set also the other
        to retain frame aspect ratio */
-    if (encoder->pixelwidth > 0 && dst_height <= 0) {
-        dst_height = src_height * encoder->pixelwidth / src_width;
+    if (dst_width > 0 && dst_height <= 0) {
+        dst_height = src_height * dst_width / src_width;
     }
-    if (encoder->pixelheight > 0 && dst_width <= 0) {
-        dst_width = src_width * encoder->pixelheight / src_height;
+    if (dst_height > 0 && dst_width <= 0) {
+        dst_width = src_width * dst_height / src_height;
     }
 
     /* do resize */
