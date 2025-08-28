@@ -1818,7 +1818,7 @@ sixel_encoder_encode_bytes(
     int                 /* in */    ncolors)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    sixel_frame_t *frame;
+    sixel_frame_t *frame = NULL;
 
     if (encoder == NULL || bytes == NULL) {
         status = SIXEL_BAD_ARGUMENT;
@@ -1844,6 +1844,13 @@ sixel_encoder_encode_bytes(
     status = SIXEL_OK;
 
 end:
+    /* we need to free the frame before exiting, but we can't use the
+       sixel_frame_destroy function, because that will also attempt to
+       free the pixels and palette, which we don't own */
+    if (frame != NULL && encoder->allocator != NULL) {
+        sixel_allocator_free(encoder->allocator, frame);
+        sixel_allocator_unref(encoder->allocator);
+    }
     return status;
 }
 
