@@ -35,6 +35,8 @@ jobs:
         update: true
         install: >-
           base-devel
+        pacboy: >-
+          cc:p
 
     - name: Configure and build (non-Windows)
       if: runner.os != 'Windows'
@@ -48,7 +50,7 @@ jobs:
       shell: msys2 {0}
       run: |
         ./configure --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-static --disable-shared --disable-dependency-tracking
-        LDFLAGS=-Wl,-static
+        make LDFLAGS=-Wl,-static
 
     - name: Run tests (non-Windows)
       if: runner.os != 'Windows'
