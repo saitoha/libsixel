@@ -33,6 +33,8 @@ jobs:
       with:
         msystem: ${{ matrix.sys }}
         update: true
+        install: >-
+          base-devel
         pacboy: >-
           cc:p
 
