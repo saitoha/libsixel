@@ -27,50 +27,28 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install dependencies (Ubuntu)
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libpng-dev libjpeg-dev libgd-dev libgdk-pixbuf2.0-dev libcurl4-openssl-dev autoconf automake libtool
-
-    - name: Install dependencies (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        brew install autoconf automake libtool libpng jpeg gd gdk-pixbuf
-
     - name: Setup MSYS2 (Windows)
       if: runner.os == 'Windows'
       uses: msys2/setup-msys2@v2
       with:
         msystem: ${{ matrix.sys }}
         update: true
-        install: >-
-          autoconf
-          automake
-          libtool
         pacboy: >-
-          libpng:p
-          libjpeg-turbo:p
-          libgd:p
-          gdk-pixbuf2:p
           cc:p
-          curl:p
 
     - name: Configure and build (non-Windows)
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        ./autogen.sh
-        ./configure --enable-tests --with-gdk-pixbuf2 --with-gd --with-libcurl --with-png --with-jpeg
+        ./configure --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python
         make
 
     - name: Configure and build (Windows)
       if: runner.os == 'Windows'
       shell: msys2 {0}
       run: |
-        ./autogen.sh
-        ./configure --enable-tests --with-gdk-pixbuf2 --with-gd --with-libcurl --with-png --with-jpeg
-        make
+        ./configure --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-static --disable-shared
+        LDFLAGS=-Wl,-static
 
     - name: Run tests (non-Windows)
       if: runner.os != 'Windows'
@@ -100,13 +78,15 @@ jobs:
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        tar -czvf libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.tar.gz -C install .
+        make dist
+        mv sixel-*.tar.gz install/libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.tar.gz
 
     - name: Package artifacts (Windows)
       if: runner.os == 'Windows'
       shell: msys2 {0}
       run: |
-        tar -czvf libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.tar.gz -C install .
+        make dist
+        mv sixel-*.tar.gz install/libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.tar.gz
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
