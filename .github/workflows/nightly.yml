@@ -1,20 +1,21 @@
-name: libsixel Build
+name: libsixel Nightly build (scheduled pre-release)
 
 on:
-  push:
-    branches: ['*']
-  pull_request:
-    branches: ['*']
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch: {}
 
 permissions:
   contents: write
-  packages: write
 
 jobs:
-  build:
+  nightly:
+    name: ${{ matrix.branch }} • ${{ matrix.os }} ${{ matrix.sys || 'native' }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
+        branch: [master, develop]
         os: [ubuntu-latest, macos-latest]
         include:
           - os: windows-latest
@@ -28,6 +29,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        ref: ${{ matrix.branch }}
 
     - name: Setup MSYS2 (Windows)
       if: runner.os == 'Windows'
@@ -45,78 +47,68 @@ jobs:
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        ./configure --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --disable-dependency-tracking
-        make
+        ./configure \
+            --without-png \
+            --without-jpeg \
+            --without-libcurl \
+            --without-bashcompletiondir \
+            --without-zshcompletiondir \
+            --disable-python \
+            --disable-dependency-tracking
+        make -j$(getconf _NPROCESSORS_ONLN)
+        make check
+        mkdir -p libsixel
+        make install DESTDIR=$(pwd)/libsixel
+        cp README.md LICENSE* libsixel/
+        zip -r libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
 
     - name: Configure and build (Windows)
       if: runner.os == 'Windows'
       shell: msys2 {0}
       run: |
-        ./configure --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-static --disable-shared --disable-dependency-tracking
-        make LDFLAGS="-Wl,-static -lwinpthread"
-
-    - name: Run tests (non-Windows)
-      if: runner.os != 'Windows'
-      shell: bash
-      run: make check
-
-    - name: Run tests (Windows)
-      if: runner.os == 'Windows'
-      shell: msys2 {0}
-      run: make check
-
-    - name: Install artifacts (non-Windows)
-      if: runner.os != 'Windows'
-      shell: bash
-      run: |
+        ./configure LDFLAGS="-Wl,-static -lwinpthread" \
+            --without-png \
+            --without-jpeg \
+            --without-libcurl \
+            --without-bashcompletiondir \
+            --without-zshcompletiondir \
+            --disable-python \
+            --enable-static \
+            --disable-shared \
+            --disable-dependency-tracking
+        make -j$(getconf _NPROCESSORS_ONLN)
+        make check
         mkdir -p libsixel
         make install DESTDIR=$(pwd)/libsixel
         cp README.md LICENSE* libsixel/
-
-    - name: Install artifacts (Windows)
-      if: runner.os == 'Windows'
-      shell: msys2 {0}
-      run: |
-        mkdir -p libsixel
-        make install DESTDIR=$(pwd)/libsixel
-        cp README.md LICENSE* libsixel/
-
-    - name: Package artifacts (non-Windows)
-      if: runner.os != 'Windows'
-      shell: bash
-      run: |
-        zip -r libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
-
-    - name: Package artifacts (Windows)
-      if: runner.os == 'Windows'
-      shell: msys2 {0}
-      run: |
-        zip -r libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
+        zip -r libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}
-        path: libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip
+        name: libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}
+        path: libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip
         retention-days: 7
         overwrite: true
         compression-level: 0
 
   release:
-    needs: build
+    needs: nightly
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'  # Only run on push, not PRs
+    strategy:
+      matrix:
+        branch: [master, develop]
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Download build artifacts
+      - name: Download build artifacts for ${{ matrix.branch }}
         uses: actions/download-artifact@v4
         with:
           path: artifacts/
-          pattern: libsixel-*
+          pattern: libsixel-${{ matrix.branch }}-*
           merge-multiple: true
 
       - name: Debug downloaded artifacts
@@ -128,7 +120,7 @@ jobs:
           echo "Artifacts directory size:"
           du -sh artifacts || echo "No artifacts directory found"
 
-      - name: Create and publish nightly pre-release
+      - name: Create and publish nightly pre-release for ${{ matrix.branch }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -144,3 +136,11 @@ jobs:
             --notes "Latest pre-release build from commit ${{ github.sha }} on branch ${{ github.ref_name }}. Updated on: ${{ github.event.head_commit.timestamp }}" \
             --prerelease \
             artifacts/libsixel-*.zip
+
+# emacs Local Variables:
+# emacs mode: c
+# emacs tab-width: 4
+# emacs indent-tabs-mode: nil
+# emacs c-basic-offset: 4
+# emacs End:
+# vim: set ft=awk et ts=4 sw=0 sts=-1 fdm=marker fdl=0:
