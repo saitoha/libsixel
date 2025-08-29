@@ -83,3 +83,11 @@ jobs:
       if: runner.os == 'Windows'
       shell: msys2 {0}
       run: make check
+
+# emacs Local Variables:
+# emacs mode: c
+# emacs tab-width: 4
+# emacs indent-tabs-mode: nil
+# emacs c-basic-offset: 4
+# emacs End:
+# vim: set ft=awk et ts=4 sw=0 sts=-1 fdm=marker fdl=0:

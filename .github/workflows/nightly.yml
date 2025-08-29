@@ -3,7 +3,16 @@ name: libsixel Nightly build (scheduled pre-release)
 on:
   schedule:
     - cron: "0 0 * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Target branch for nightly build"
+        required: true
+        default: "master"
+        type: choice
+        options:
+          - master
+          - develop
 
 permissions:
   contents: write
