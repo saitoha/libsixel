@@ -34,7 +34,7 @@ jobs:
         msystem: ${{ matrix.sys }}
         update: true
         install: >-
-          base-devel
+          make
         pacboy: >-
           cc:p
 
@@ -81,14 +81,14 @@ jobs:
       shell: bash
       run: |
         make dist
-        mv sixel-*.tar.gz install/libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.tar.gz
+        mv sixel-*.tar.gz libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.tar.gz
 
     - name: Package artifacts (Windows)
       if: runner.os == 'Windows'
       shell: msys2 {0}
       run: |
         make dist
-        mv sixel-*.tar.gz install/libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.tar.gz
+        mv sixel-*.tar.gz libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.tar.gz
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
