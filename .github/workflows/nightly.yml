@@ -16,14 +16,26 @@ jobs:
       fail-fast: false
       matrix:
         branch: [master, develop]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         include:
           - os: windows-latest
             sys: MINGW64
+            branch: master
           - os: windows-latest
             sys: UCRT64
+            branch: master
           - os: windows-latest
             sys: CLANG64
+            branch: master
+          - os: windows-latest
+            sys: MINGW64
+            branch: develop
+          - os: windows-latest
+            sys: UCRT64
+            branch: develop
+          - os: windows-latest
+            sys: CLANG64
+            branch: develop
 
     steps:
     - uses: actions/checkout@v4
@@ -60,7 +72,7 @@ jobs:
         mkdir -p libsixel
         make install DESTDIR=$(pwd)/libsixel
         cp README.md LICENSE* libsixel/
-        zip -r libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
+        zip -r libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
 
     - name: Configure and build (Windows)
       if: runner.os == 'Windows'
