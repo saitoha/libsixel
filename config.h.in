@@ -199,7 +199,7 @@
 /* Define to 1 if you have the 'memset' function. */
 #undef HAVE_MEMSET
 
-/* Define to 1 if you have the 'nanosleep' function. */
+/* Define if nanosleep exists */
 #undef HAVE_NANOSLEEP
 
 /* Define to 1 if you have the 'pow' function. */
