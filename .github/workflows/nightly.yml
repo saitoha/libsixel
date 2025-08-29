@@ -107,20 +107,20 @@ jobs:
   release:
     needs: nightly
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        branch: [master, develop]
+    concurrency:
+      group: nightly-release-aggregate
+      cancel-in-progress: false
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Download build artifacts for ${{ matrix.branch }}
+      - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts/
-          pattern: libsixel-${{ matrix.branch }}-*
+          pattern: libsixel-*
           merge-multiple: true
 
       - name: Debug downloaded artifacts
@@ -132,22 +132,27 @@ jobs:
           echo "Artifacts directory size:"
           du -sh artifacts || echo "No artifacts directory found"
 
-      - name: Create and publish nightly pre-release for ${{ matrix.branch }}
+      - name: Create and publish nightly pre-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG_NAME="nightly-latest"
-          # Delete existing release if it exists
           if gh release view "$TAG_NAME" --repo ${{ github.repository }} >/dev/null 2>&1; then
-            gh release delete "$TAG_NAME" --yes --repo ${{ github.repository }}
-            echo "Deleted existing release $TAG_NAME"
+            echo "Updating existing $TAG_NAME"
+            gh release edit "$TAG_NAME" \
+              --title "libsixel Nightly (aggregate)" \
+              --notes "Nightly from multiple branches/OS. Generated on $(date -u +'%Y-%m-%dT%H:%M:%SZ') (UTC)" \
+              --prerelease \
+              --repo ${{ github.repository }}
+          else
+            echo "Creating $TAG_NAME"
+            gh release create "$TAG_NAME" \
+              --title "libsixel Nightly" \
+              --notes "Aggregated nightly from multiple branches/OS. Generated on $(date -u +'%Y-%m-%dT%H:%M:%SZ') (UTC)" \
+              --prerelease \
+              --repo ${{ github.repository }}
           fi
-          # Create and publish the new pre-release with artifacts
-          gh release create "$TAG_NAME" \
-            --title "libsixel Nightly Latest Pre-release" \
-            --notes "Latest pre-release build from commit ${{ github.sha }} on branch ${{ github.ref_name }}. Updated on: ${{ github.event.head_commit.timestamp }}" \
-            --prerelease \
-            artifacts/libsixel-*.zip
+          gh release upload "$TAG_NAME" artifacts/**/*.zip --clobber --repo ${{ github.repository }}
 
 # emacs Local Variables:
 # emacs mode: c
