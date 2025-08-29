@@ -1,4 +1,4 @@
-name: Libsixel Build
+name: libsixel Build
 
 on:
   push:
@@ -37,6 +37,7 @@ jobs:
         update: true
         install: >-
           make
+          zip
         pacboy: >-
           cc:p
 
@@ -68,35 +69,35 @@ jobs:
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        mkdir -p install
-        make install DESTDIR=$(pwd)/install
+        mkdir -p libsixel
+        make install DESTDIR=$(pwd)/libsixel
+        cp README.md LICENSE* libsixel/
 
     - name: Install artifacts (Windows)
       if: runner.os == 'Windows'
       shell: msys2 {0}
       run: |
-        mkdir -p install
-        make install DESTDIR=$(pwd)/install
+        mkdir -p libsixel
+        make install DESTDIR=$(pwd)/libsixel
+        cp README.md LICENSE* libsixel/
 
     - name: Package artifacts (non-Windows)
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        make dist
-        mv sixel-*.tar.gz libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.tar.gz
+        zip -r libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
 
     - name: Package artifacts (Windows)
       if: runner.os == 'Windows'
       shell: msys2 {0}
       run: |
-        make dist
-        mv sixel-*.tar.gz libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.tar.gz
+        zip -r libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}
-        path: libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.tar.gz
+        path: libsixel-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip
         retention-days: 7
         overwrite: true
         compression-level: 0
@@ -139,7 +140,7 @@ jobs:
           fi
           # Create and publish the new pre-release with artifacts
           gh release create "$TAG_NAME" \
-            --title "Libsixel Nightly Latest Pre-release" \
+            --title "libsixel Nightly Latest Pre-release" \
             --notes "Latest pre-release build from commit ${{ github.sha }} on branch ${{ github.ref_name }}. Updated on: ${{ github.event.head_commit.timestamp }}" \
             --prerelease \
-            artifacts/libsixel-*.tar.gz
+            artifacts/libsixel-*.zip
