@@ -117,9 +117,9 @@ if WANT_IMG2SIXEL
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) -bgray2 -w120 $(top_srcdir)/images/snake.tga
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) -bgray4 -w120 $(top_srcdir)/images/snake.tga
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) -bgray8 -w120 $(top_srcdir)/images/snake.tga
-#	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I -8 -dburkes -B\#ffffffffffff $(top_srcdir)/images/snake-ascii.ppm
+	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I -8 -dburkes -B\#ffffffffffff $(top_srcdir)/images/snake-ascii.ppm
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I -C10 -djajuni $(top_srcdir)/images/snake.png
-#	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I -Eauto $(top_srcdir)/images/snake-ascii.pgm
+	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I -Eauto $(top_srcdir)/images/snake-ascii.pgm
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I -datkinson $(top_srcdir)/images/snake-ascii.pbm
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/snake-grayscale.png
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) -m $(top_srcdir)/images/map8-palette.png $(top_srcdir)/images/snake-grayscale.png
