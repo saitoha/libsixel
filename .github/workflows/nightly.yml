@@ -140,7 +140,7 @@ jobs:
           if gh release view "$TAG_NAME" --repo ${{ github.repository }} >/dev/null 2>&1; then
             echo "Updating existing $TAG_NAME"
             gh release edit "$TAG_NAME" \
-              --title "libsixel Nightly (aggregate)" \
+              --title "libsixel Nightly" \
               --notes "Nightly from multiple branches/OS. Generated on $(date -u +'%Y-%m-%dT%H:%M:%SZ') (UTC)" \
               --prerelease \
               --repo ${{ github.repository }}
@@ -148,11 +148,11 @@ jobs:
             echo "Creating $TAG_NAME"
             gh release create "$TAG_NAME" \
               --title "libsixel Nightly" \
-              --notes "Aggregated nightly from multiple branches/OS. Generated on $(date -u +'%Y-%m-%dT%H:%M:%SZ') (UTC)" \
+              --notes "Nightly from multiple branches/OS. Generated on $(date -u +'%Y-%m-%dT%H:%M:%SZ') (UTC)" \
               --prerelease \
               --repo ${{ github.repository }}
           fi
-          gh release upload "$TAG_NAME" artifacts/**/*.zip --clobber --repo ${{ github.repository }}
+          gh release upload "$TAG_NAME" artifacts/*.zip --clobber --repo ${{ github.repository }}
 
 # emacs Local Variables:
 # emacs mode: c
