@@ -24,11 +24,11 @@
 /* STDC_HEADERS */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-#if HAVE_STRING_H
-# include <string.h>
-#endif  /* HAVE_STRING_H */
-#if HAVE_SYS_TIME_H
+#if HAVE_TIME_H
+# include <time.h>
+#elif HAVE_SYS_TIME_H
 # include <sys/time.h>
 #endif  /* HAVE_SYS_TIME_H */
 #if HAVE_SYS_TYPES_H
@@ -36,8 +36,7 @@
 #endif  /* HAVE_SYS_TYPES_H */
 #if HAVE_UNISTD_H
 # include <unistd.h>
-#endif  /* HAVE_UNISTD_H */
-#if HAVE_SYS_UNISTD_H
+#elif HAVE_SYS_UNISTD_H
 # include <sys/unistd.h>
 #endif  /* HAVE_SYS_UNISTD_H */
 #if HAVE_SYS_SELECT_H

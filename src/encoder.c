@@ -31,8 +31,7 @@
 #endif  /* HAVE_STRING_H */
 #if HAVE_UNISTD_H
 # include <unistd.h>
-#endif  /* HAVE_UNISTD_H */
-#if HAVE_SYS_UNISTD_H
+#elif HAVE_SYS_UNISTD_H
 # include <sys/unistd.h>
 #endif  /* HAVE_SYS_UNISTD_H */
 #if HAVE_SYS_TYPES_H
@@ -40,8 +39,7 @@
 #endif  /* HAVE_SYS_TYPES_H */
 #if HAVE_TIME_H
 # include <time.h>
-#endif  /* HAVE_TIME_H */
-#if HAVE_SYS_TIME_H
+#elif HAVE_SYS_TIME_H
 # include <sys/time.h>
 #endif  /* HAVE_SYS_TIME_H */
 #if HAVE_INTTYPES_H
@@ -56,11 +54,63 @@
 #if HAVE_FCNTL_H
 # include <fcntl.h>
 #endif  /* HAVE_FCNTL_H */
+#if HAVE_ERRNO_H
+# include <errno.h>
+#endif  /* HAVE_ERRNO_H */
 
 #include <sixel.h>
 #include "tty.h"
 #include "encoder.h"
 #include "rgblookup.h"
+
+
+#if defined(_WIN32)
+
+# include <windows.h>
+
+# if !defined(HAVE_NANOSLEEP)
+#define HAVE_NANOSLEEP 1
+static int
+nanosleep(const struct timespec *req, struct timespec *rem)
+{
+    LONGLONG nanoseconds;
+    LARGE_INTEGER dueTime;
+
+    if (req == NULL || req->tv_sec < 0 || req->tv_nsec < 0 ||
+        req->tv_nsec >= 1000000000L) {
+        errno = EINVAL;
+        return (-1);
+    }
+
+    /* Convert to 100-nanosecond intervals (Windows FILETIME units) */
+    nanoseconds = req->tv_sec * 1000000000LL + req->tv_nsec;
+    dueTime.QuadPart = -(nanoseconds / 100); /* Negative for relative time */
+
+    HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
+    if (timer == NULL) {
+        errno = EFAULT;  /* Approximate error */
+        return (-1);
+    }
+
+    if (!SetWaitableTimer(timer, &dueTime, 0, NULL, NULL, FALSE)) {
+        CloseHandle(timer);
+        errno = EFAULT;
+        return (-1);
+    }
+
+    (void) WaitForSingleObject(timer, INFINITE);
+    (void) CloseHandle(timer);
+
+    /* No interruption handling, so rem is unchanged */
+    if (rem != NULL) {
+        rem->tv_sec = 0;
+        rem->tv_nsec = 0;
+    }
+
+    return (0);
+}
+# endif  /* HAVE_NANOSLEEP */
+#endif /* _WIN32 */
 
 
 static char *

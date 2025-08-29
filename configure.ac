@@ -238,7 +238,6 @@ AC_CHECK_HEADERS([assert.h \
                   math.h \
                   ctype.h \
                   memory.h \
-                  string.h \
                   unistd.h \
                   stdint.h \
                   sys/unistd.h \
@@ -288,7 +287,6 @@ AC_CHECK_FUNCS([memcpy \
                 setmode \
                 _setmode \
                 signal \
-                nanosleep \
                 strdup \
                 strtoul \
                 calloc \
@@ -310,8 +308,10 @@ AC_CHECK_FUNCS([memcpy \
                 strerror \
                 strstr \
                 strtol])
-# for HDR
-AC_CHECK_FUNCS([strtol pow])
+
+AC_SEARCH_LIBS([nanosleep], [winpthread rt pthread],
+  [AC_DEFINE([HAVE_NANOSLEEP],[1],[Define if nanosleep exists])],
+  [AC_MSG_WARN([Define to 1 if you have the 'nanosleep' function.])])
 
 AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
                [

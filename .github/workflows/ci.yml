@@ -1,0 +1,93 @@
+name: libsixel CI (build & test)
+
+on:
+  push:
+    branches: ['*']
+  pull_request:
+    branches: ['*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: windows-latest
+            sys: MINGW64
+          - os: windows-latest
+            sys: UCRT64
+          - os: windows-latest
+            sys: CLANG64
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup MSYS2 (Windows)
+      if: runner.os == 'Windows'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.sys }}
+        update: true
+        install: >-
+          make
+          zip
+        pacboy: >-
+          cc:p
+
+    - name: Configure and build (non-Windows)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        ./configure \
+            --without-png \
+            --without-jpeg \
+            --without-libcurl \
+            --without-bashcompletiondir \
+            --without-zshcompletiondir \
+            --disable-python \
+            --disable-dependency-tracking
+        make
+
+    - name: Configure and build (Windows)
+      if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: |
+        ./configure LDFLAGS="-Wl,-static -lwinpthread" \
+            --without-png \
+            --without-jpeg \
+            --without-libcurl \
+            --without-bashcompletiondir \
+            --without-zshcompletiondir \
+            --disable-python \
+            --enable-static \
+            --disable-shared \
+            --disable-dependency-tracking
+        make 
+
+    - name: Run tests (non-Windows)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: make check
+
+    - name: Run tests (Windows)
+      if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: make check
+
+# emacs Local Variables:
+# emacs mode: c
+# emacs tab-width: 4
+# emacs indent-tabs-mode: nil
+# emacs c-basic-offset: 4
+# emacs End:
+# vim: set ft=awk et ts=4 sw=0 sts=-1 fdm=marker fdl=0:
