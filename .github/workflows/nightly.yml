@@ -4,15 +4,6 @@ on:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
-    inputs:
-      branch:
-        description: "Target branch for nightly build"
-        required: true
-        default: "master"
-        type: choice
-        options:
-          - master
-          - develop
 
 permissions:
   contents: write
@@ -25,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         branch: [master, develop]
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         include:
           - os: windows-latest
             sys: MINGW64
