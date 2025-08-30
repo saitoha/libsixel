@@ -22,20 +22,10 @@ AC_CONFIG_SRCDIR([src/fromsixel.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
-AS_IF([test -z "$CC" && { test "x$MSYSTEM" = "xCLANG64" || test "x$MSYSTEM" = "xCLANGARM64"; }], [
-  AC_CHECK_TOOLS([CC],  [clang clang.exe],  [gcc])
-])
-AC_PROG_AWK
-AC_PROG_CC
-AS_CASE([$host_os],
-        [darwin*],
-        [AC_PROG_OBJC],
-        [*],
-        [AM_CONDITIONAL([am__fastdepOBJC], [false])])
-AC_PROG_CPP
-AC_PROG_INSTALL
-AC_PROG_LN_S
-AC_PROG_MAKE_SET
+AX_GCC_VAR_ATTRIBUTE([deprecated])
+if test x$ax_cv_have_var_attribute_deprecated != x; then
+    AC_SUBST(attr_var_deprecated, [__attribute__\(\(deprecated\)\)])
+fi
 
 # Detect Microsoft Visual C compiler
 case "$CC" in
@@ -51,6 +41,27 @@ case "$CC" in
     ;;
 esac
 AM_CONDITIONAL([USING_CL], [test "x$using_cl" = "xyes"])
+
+AC_CACHE_CHECK(
+  [whether the compiler can silence -Wtypedef-redefinition via pragmas],
+  [ac_cv_have_diag_typedef_redef],
+  [
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   AC_COMPILE_IFELSE(
+     [AC_LANG_SOURCE([[
+       #if defined(__clang__) || defined(__GNUC__)
+       #pragma clang diagnostic push
+       #pragma clang diagnostic ignored "-Wtypedef-redefinition"
+       typedef int foo;
+       typedef int foo;
+       #pragma clang diagnostic pop
+       #endif
+     ]])],
+     [ac_cv_have_diag_typedef_redef=yes],
+     [ac_cv_have_diag_typedef_redef=no])
+   CFLAGS="$ac_save_CFLAGS"
+  ])
 
 AC_CACHE_CHECK(
   [whether the compiler can silence -Wtypedef-redefinition via pragmas],
@@ -165,21 +176,15 @@ AC_ARG_WITH([png],
 
 AC_ARG_WITH([winpthread],
             [AS_HELP_STRING([--with-winpthread],
-                            [whether to build with libwinpthread, windows only (default: no)])],
+                            [whether to build with libwinpthread (default: no)])],
             [],
             [with_winpthread=no])
 
-AC_ARG_WITH([wic],
-            [AS_HELP_STRING([--with-wic],
-                            [whether to build with Windows Imaging Component (WIC), windows only (default: auto)])],
-            [],
-            [with_wic=auto])
-
-AC_ARG_WITH([winhttp],
-            [AS_HELP_STRING([--with-winhttp],
-                            [whether to build with WinHTTP, windows only (default: auto)])],
-            [],
-            [with_winhttp=auto])
+#AC_ARG_WITH([wic],
+#            [AS_HELP_STRING([--with-wic],
+#                            [whether to build with windows WIC integration, windows only (default: no)])],
+#            [],
+#            [with_wic=no])
 
 AC_ARG_WITH(pkgconfigdir,
             AS_HELP_STRING([--with-pkgconfigdir],
@@ -286,107 +291,86 @@ AC_DEFUN([LS_CHECK_CFLAG],
                 [m4_default([$3], :)])
          ])
 
-if test "x$using_cl" = "xyes"; then
-  CPPFLAGS="$CPPFLAGS -D_CRT_SECURE_NO_WARNINGS"
-  CFLAGS="$CFLAGS -nologo"
-  AC_DEFINE([HAVE_MSVC], [1], [Define if building with MSVC])
-else
-  AX_GCC_VAR_ATTRIBUTE([deprecated])
-  if test x$ax_cv_have_var_attribute_deprecated != x; then
-      AC_SUBST(attr_var_deprecated, [__attribute__\(\(deprecated\)\)])
-  fi
-  AX_GCC_FUNC_ATTRIBUTE([deprecated])
-  if test x$ax_cv_have_func_attribute_deprecated != x; then
-      AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
-  fi
-  AX_GCC_BUILTIN([__builtin_unreachable])
-  LS_CHECK_CFLAG([-std=c99],
-                 [CFLAGS="$CFLAGS -std=c99"],
-                 [],
-                 [std_c99])
-  LS_CHECK_CFLAG([-Wall],
-                 [AM_CFLAGS="$AM_CFLAGS -Wall"],
-                 [],
-                 [wall])
-  LS_CHECK_CFLAG([-Wextra],
-                 [AM_CFLAGS="$AM_CFLAGS -Wextra"],
-                 [],
-                 [wextra])
-  LS_CHECK_CFLAG([-Wformat=2],
-                 [AM_CFLAGS="$AM_CFLAGS -Wformat=2"],
-                 [],
-                 [wformat_2])
-  LS_CHECK_CFLAG([-Wsign-conversion],
-                 [AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION,
-                            [1],
-                            [define 1 if GCC supports -Wsign-conversion])],
-                 [],
-                 [wsign_conversion])
-  LS_CHECK_CFLAG([-Wuninitialized],
-                 [AC_DEFINE(HAVE_DIAGNOSTIC_UNINITIALIZED,
-                            [1],
-                            [define 1 if GCC supports -Wuninitialized])],
-                 [],
-                 [wuninitialized])
-  LS_CHECK_CFLAG([-Wstrict-overflow],
-                 [AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW,
-                            [1],
-                            [define 1 if GCC supports -Wstrict-overeflow=1])],
-                 [],
-                 [wstrict_overflow])
-  LS_CHECK_CFLAG([-Wshadow],
-                 [AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW,
-                            [1],
-                            [define 1 if GCC supports -Wshadow])],
-                 [],
-                 [wshadow])
-  LS_CHECK_CFLAG([-Wdouble-promotion],
-                 [AC_DEFINE(HAVE_DIAGNOSTIC_DOUBLE_PROMOTION,
-                            [1],
-                            [define 1 if GCC supports -Wdouble-promotion])],
-                 [],
-                 [wdouble_promotions])
-  LS_CHECK_CFLAG([-Wswitch-default],
-                 [AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT,
-                            [1],
-                            [define 1 if GCC supports -Wswitch-default])],
-                 [],
-                 [wswitch_default])
-  LS_CHECK_CFLAG([-Wunused-function],
-                 [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_FUNCTION,
-                            [1],
-                            [define 1 if GCC supports -Wunused-function])],
-                 [],
-                 [wunused_function])
-  LS_CHECK_CFLAG([-Wclobbered],
-                 [AC_DEFINE(HAVE_DIAGNOSTIC_CLOBBERED,
-                            [1],
-                            [define 1 if GCC supports -Wclobbered])],
-                 [],
-                 [wclobbered])
-  LS_CHECK_CFLAG([-Wunused-but-set-variable],
-                 [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE,
-                            [1],
-                            [define 1 if GCC supports -Wunused-but-set-variable])],
-                 [],
-                 [wunused_but_set_variable])
-  LS_CHECK_CFLAG([-Bsymbolic],
-                 [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
-                  AC_DEFINE(HAVE_BSYMBOLIC,
-                            [1],
-                            [define 1 if GCC supports -Bsymbolic])],
-                 [],
-                 [bsymbolic])
-  LS_CHECK_CFLAG([-fno-emulated-tls],
-                 [AM_CFLAGS="$AM_CFLAGS -Bfno-emulated-tls"
-                  AC_DEFINE(HAVE_FNO_EMULATED_TLS,
-                            [1],
-                            [define 1 if GCC supports -fno-emulated-tls])],
-                 [],
-                 [fno_emulated_tls])
-  AS_IF([test x$enable_debug = xyes],
-        [LS_CHECK_CFLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
-fi
+CPPFLAGS="$CPPFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L"
+LS_CHECK_CFLAG([-std=c99],
+               [CFLAGS="$CFLAGS -std=c99"],
+               [],
+               [std_c99])
+LS_CHECK_CFLAG([-Wall],
+               [AM_CFLAGS="$AM_CFLAGS -Wall"],
+               [],
+               [wall])
+LS_CHECK_CFLAG([-Wextra],
+               [AM_CFLAGS="$AM_CFLAGS -Wextra"],
+               [],
+               [wextra])
+LS_CHECK_CFLAG([-Wformat=2],
+               [AM_CFLAGS="$AM_CFLAGS -Wformat=2"],
+               [],
+               [wformat_2])
+LS_CHECK_CFLAG([-Wsign-conversion],
+               [AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION,
+                          [1],
+                          [define 1 if GCC supports -Wsign-conversion])],
+               [],
+               [wsign_conversion])
+LS_CHECK_CFLAG([-Wuninitialized],
+               [AC_DEFINE(HAVE_DIAGNOSTIC_UNINITIALIZED,
+                          [1],
+                          [define 1 if GCC supports -Wuninitialized])],
+               [],
+               [wuninitialized])
+LS_CHECK_CFLAG([-Wstrict-overflow],
+               [AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW,
+                          [1],
+                          [define 1 if GCC supports -Wstrict-overeflow=1])],
+               [],
+               [wstrict_overflow])
+LS_CHECK_CFLAG([-Wshadow],
+               [AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW,
+                          [1],
+                          [define 1 if GCC supports -Wshadow])],
+               [],
+               [wshadow])
+LS_CHECK_CFLAG([-Wdouble-promotion],
+               [AC_DEFINE(HAVE_DIAGNOSTIC_DOUBLE_PROMOTION,
+                          [1],
+                          [define 1 if GCC supports -Wdouble-promotion])],
+               [],
+               [wdouble_promotions])
+LS_CHECK_CFLAG([-Wswitch-default],
+               [AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT,
+                          [1],
+                          [define 1 if GCC supports -Wswitch-default])],
+               [],
+               [wswitch_default])
+LS_CHECK_CFLAG([-Wunused-function],
+               [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_FUNCTION,
+                          [1],
+                          [define 1 if GCC supports -Wunused-function])],
+               [],
+               [wunused_function])
+LS_CHECK_CFLAG([-Wclobbered],
+               [AC_DEFINE(HAVE_DIAGNOSTIC_CLOBBERED,
+                          [1],
+                          [define 1 if GCC supports -Wclobbered])],
+               [],
+               [wclobbered])
+LS_CHECK_CFLAG([-Wunused-but-set-variable],
+               [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE,
+                          [1],
+                          [define 1 if GCC supports -Wunused-but-set-variable])],
+               [],
+               [wunused_but_set_variable])
+LS_CHECK_CFLAG([-Bsymbolic],
+               [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
+                AC_DEFINE(HAVE_BSYMBOLIC,
+                          [1],
+                          [define 1 if GCC supports -Bsymbolic])],
+               [],
+               [bsymbolic])
+AS_IF([test x$enable_debug = xyes],
+      [LS_CHECK_CFLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
 AC_SUBST([AM_CFLAGS])
 
 # For test
@@ -478,14 +462,6 @@ AC_CHECK_FUNCS([assert \
                 strstr \
                 strtol])
 
-case "${host_os}" in
-  mingw*)
-    ;;
-  *)
-    AC_CHECK_FUNCS([clock nanosleep])
-    ;;
-esac
-
 AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
                [
                    #ifdef HAVE_SIGNAL_H
@@ -499,11 +475,8 @@ loaders="stb_image"
 have_curl="no"
 have_jpeg="no"
 have_png="no"
-have_winpthread="no"
-have_wic="no"
-have_coregraphics="no"
-have_sse2=no
-have_neon=no
+have_libwinpthread="no"
+#have_wic="no"
 
 REQUIRES_PRIVATE=""
 LIBS_PRIVATE="$LIBS"
@@ -1020,9 +993,8 @@ fi
 AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBPNG_LIBS)
 
-if test x$with_winpthread != xno && test "x$using_cl" != "xyes"; then
+if test x$with_winpthread != xno; then
     if test x$build = x$host; then
-        AC_MSG_NOTICE([checking for winpthread])
         AC_SEARCH_LIBS([nanosleep],
                        [winpthread],
                        [AC_DEFINE([HAVE_NANOSLEEP],
@@ -1031,253 +1003,11 @@ if test x$with_winpthread != xno && test "x$using_cl" != "xyes"; then
                         AC_DEFINE([HAVE_CLOCK],
                                   [1],
                                   [Define if clock exists])
-                        AC_DEFINE([WITH_WINPTHREAD],
-                                  [1],
-                                  [Define if libwinpthread is available])
                         have_winpthread=yes
                        ],
-                       [have_winpthread=yes])
-        AS_IF([test "x$have_winpthread" = "xyes"],
-              [AC_MSG_NOTICE([libpng cflags is ${LIBPNG_CFLAGS}])
-               AC_MSG_NOTICE([libpng libs is ${LIBPNG_LIBS}])],
-              [AC_MSG_NOTICE([libpng libs is not available])])
+                       [AC_MSG_ERROR([winpthread is not available])])
     fi
 fi
-
-if test x$with_wic != xno; then
-    case "$host_os" in
-    mingw* | cygwin* | msys* | msvc*)
-        AC_MSG_NOTICE([checking for Windows Imaging Component (WIC)])
-        CFLAGS_BACKUP="$CFLAGS"
-        LIBS_BACKUP="$LIBS"
-        if test x$with_wic != xyes -a x$with_wic != xauto; then
-            if test ! -d "$with_wic"; then
-                AC_MSG_ERROR(["${with_wic}" is not directory])
-            fi
-            if test "x${using_cl}" = xyes; then
-                ADDED_CFLAGS="-I${with_wic}\include"
-                ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs -lshlwapi -luuid"
-            else
-                ADDED_CFLAGS="-I${with_wic}/include"
-                ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
-            fi
-        else
-            if test x${prefix} != x -a x${prefix} != xNONE; then
-                if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lole32 -lwindowscodecs -lshlwapi -luuid"
-                else
-                    ADDED_CFLAGS="-I${prefix}/include"
-                    ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
-                fi
-            else
-                if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lole32 -lwindowscodecs -lshlwapi -luuid"
-                else
-                    ADDED_CFLAGS="-I/usr/local/include"
-                    ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
-                fi
-            fi
-        fi
-        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
-        LIBS="${LIBS} ${ADDED_LIBS}"
-        have_wic=yes
-        AC_CHECK_HEADERS([windows.h wincodec.h],
-                         [AC_CHECK_LIB([ole32],
-                                       [main],
-                                       [],
-                                       [have_wic=no])
-                          AC_CHECK_LIB([windowscodecs],
-                                       [main],
-                                       [],
-                                       [have_wic=no])],
-                         [have_wic=no])
-        AS_IF([test "x$have_wic" = "xyes"],
-              [AC_DEFINE([HAVE_WIC],
-                         [1],
-                         [whether Windows Imaging Component (WIC) is available])
-               loaders="${loaders} wic"
-               LIBS_PRIVATE="$LIBS_PRIVATE $WIC_LIBS"
-               WIC_CFLAGS=$ADDED_CFLAGS
-               WIC_LIBS=$ADDED_LIBS
-               AC_MSG_NOTICE([WIC cflags is ${WIC_CFLAGS}])
-               AC_MSG_NOTICE([WIC libs is ${WIC_LIBS}])],
-              [AC_MSG_NOTICE([WIC is not available])])
-        ;;
-    *)
-        have_wic=no
-        ;;
-    esac
-    CFLAGS=$CFLAGS_BACKUP
-    LIBS=$LIBS_BACKUP
-fi
-AC_SUBST(WIC_CFLAGS)
-AC_SUBST(WIC_LIBS)
-
-AC_SUBST(REQUIRES_PRIVATE)
-AC_SUBST(LIBS_PRIVATE)
-
-if test "x${enable_simd}" = xno; then
-    message_simd=no
-else
-    case "${host_cpu}" in
-    x86_64|amd64)
-        have_sse2=yes
-        ;;
-
-    i*86)
-        if x$ac_cv_header_emmintrin_h = xyes; then
-            AC_MSG_CHECKING([whether the compiler supports -msse2 and <emmintrin.h>])
-            saved_CFLAGS="$CFLAGS"
-            CFLAGS="$CFLAGS -msse2"
-            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-                                #include <emmintrin.h>
-                              ]], [[
-                                __m128i a = _mm_setzero_si128();
-                                (void)a;
-                                return 0;
-                              ]])],
-                              [have_sse2=yes],
-                              [have_sse2=no])
-            CFLAGS="$saved_CFLAGS"
-            AC_MSG_RESULT([$have_sse2])
-            if test "x$have_sse2" = xyes; then
-                AM_CFLAGS="$AM_CFLAGS -msse2"
-            fi
-        fi
-        ;;
-
-    aarch64|arm64)
-        have_neon=yes
-        ;;
-
-    arm*|aarch32)
-        if x$ac_cv_header_arm_neon_h = xyes; then
-            AC_MSG_CHECKING([whether the compiler supports -mfpu=neon and <arm_neon.h>])
-            saved_CFLAGS="$CFLAGS"
-            CFLAGS="$CFLAGS -mfpu=neon"
-            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-                                #include <arm_neon.h>
-                              ]], [[
-                                int32x4_t v = vdupq_n_s32(0);
-                                (void) v;
-                                return 0;
-                              ]])],
-                              [have_neon=yes],
-                              [have_neon=no])
-            CFLAGS="$saved_CFLAGS"
-            AC_MSG_RESULT([$have_neon])
-            if test "x$have_neon" = xyes; then
-                AM_CFLAGS="$AM_CFLAGS -mfpu=neon"
-            fi
-        fi
-        ;;
-
-    *)
-        ;;
-
-    esac
-fi
-
-if test "x$have_sse2" = xyes; then
-    AC_DEFINE([HAVE_SSE2], [1], [Define if SSE2 is available])
-    message_simd=sse2
-fi
-if test "x$have_neon" = xyes; then
-    AC_DEFINE([HAVE_NEON], [1], [Define if NEON is available])
-    message_simd=neon
-fi
-
-if test "x$enable_simd" = xyes; then
-    if test "x$have_sse2" != xyes && test "x$have_neon" != xyes; then
-        AC_MSG_ERROR([SIMD header is not found])
-    fi
-fi
-
-if test "x${enable_wiccodec}" = xno; then
-    message_wiccodec=no
-else
-    case "${host_os}" in
-      mingw* | msvc*)
-        message_wiccodec=yes
-        have_wiccodec=yes
-        if test x${have_wic} = xyes; then
-            if test "x${using_cl}" = xyes; then
-                WICCODEC_CFLAGS="$WIC_CFLAGS"
-                WICCODEC_LIBS="$WIC_LIBS -ladvapi32 -luser32"
-            else
-                WICCODEC_CFLAGS="$WIC_CFLAGS"
-                WICCODEC_LIBS="$WIC_LIBS"
-            fi
-            AC_CHECK_HEADER([wincodecsdk.h],
-                            [],
-                            [message_wiccodec=no
-                             have_wiccodec=no])
-        else
-            AC_MSG_NOTICE([checking for Windows Imaging Component (WIC)])
-            CFLAGS_BACKUP="$CFLAGS"
-            LIBS_BACKUP="$LIBS"
-            if test x${prefix} != x -a x${prefix} != xNONE; then
-                if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lole32 -lwindowscodecs -ladvapi32 -luser32"
-                else
-                    ADDED_CFLAGS="-I${prefix}/include"
-                    ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
-                fi
-            else
-                if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lole32 -lwindowscodecs -ladvapi32 -luser32"
-                else
-                    ADDED_CFLAGS="-I/usr/local/include"
-                    ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
-                fi
-            fi
-            CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
-            LIBS="${LIBS} ${ADDED_LIBS}"
-            AC_CHECK_HEADERS([windows.h wincodec.h wincodecsdk.h],
-                             [AC_CHECK_LIB([ole32],
-                                           [main],
-                                           [],
-                                           [message_wiccodec=no
-                                            have_wiccodec=no])
-                              AC_CHECK_LIB([windowscodecs],
-                                           [main],
-                                           [],
-                                           [message_wiccodec=no
-                                            have_wiccodec=no])],
-                             [message_wiccodec=no
-                              have_wiccodec=no])
-            WICCODEC_CFLAGS="$ADDED_CFLAGS"
-            WICCODEC_LIBS="$ADDED_LIBS"
-            CFLAGS=$CFLAGS_BACKUP
-            LIBS=$CFLAGS_LIBS
-        fi
-        if test "x${have_wiccodec}" = xyes; then
-            AC_DEFINE([HAVE_WICCODEC], [1],  [define 1 if wic codec support is enabled])
-        fi
-        ;;
-      *)
-        if test "x${enable_wiccodec}" = xyes; then
-            AC_MSG_ERROR([--enable-wiccodec option is available only MinGW target])
-        fi
-        message_wiccodec=no
-        have_wiccodec=no
-        ;;
-    esac
-fi
-AC_SUBST(WICCODEC_CFLAGS)
-AC_SUBST(WICCODEC_LIBS)
-
-if test x$enable_register_dll = xyes; then
-    if test "x${have_wiccodec}" != xyes; then
-        AC_MSG_ERROR([--enable-register-dll requires WIC codec support])
-    fi
-fi
-
-AM_CONDITIONAL([REGISTER_DLL], [test x$enable_register_dll = xyes])
 
 have_python=no
 if test x$enable_python != xno; then
@@ -1397,7 +1127,7 @@ echo ""
 echo "libsixel was configured as follows"
 echo ""
 echo "       Loader component    : $loaders"
-echo "       Network access      : $net"
+echo "       libcurl integration : $have_curl"
 echo "       libwinpthread       : $have_winpthread"
 echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $message_bashcompletiondir"

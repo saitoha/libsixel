@@ -137,6 +137,12 @@ typedef long clock_win_t;
 # endif
 # define CLOCKS_PER_SEC 1000
 
+typedef long clock_win_t;
+# if defined(CLOCKS_PER_SEC)
+#  undef CLOCKS_PER_SEC
+# endif
+# define CLOCKS_PER_SEC 1000
+
 # if !defined(HAVE_NANOSLEEP)
 # define HAVE_NANOSLEEP_WIN 1
 static int
