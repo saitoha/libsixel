@@ -128,6 +128,9 @@
 /* Define to 1 if you have the 'floor' function. */
 #undef HAVE_FLOOR
 
+/* define 1 if GCC supports -fno-emulated-tls */
+#undef HAVE_FNO_EMULATED_TLS
+
 /* Define to 1 if the system has the `deprecated' function attribute */
 #undef HAVE_FUNC_ATTRIBUTE_DEPRECATED
 
@@ -345,6 +348,9 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* Define if libwinpthread is available */
+#undef WITH_WINPTHREAD
 
 /* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
    <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the

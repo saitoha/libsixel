@@ -16489,6 +16489,49 @@ else case e in #(
 esac
 fi
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -fno-emulated-tls" >&5
+printf %s "checking if $CC supports -fno-emulated-tls... " >&6; }
+if test ${ac_cv_cc_flag_fno_emulated_tls+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-fno-emulated-tls -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ac_cv_cc_flag_fno_emulated_tls=yes
+else case e in #(
+  e) ac_cv_cc_flag_fno_emulated_tls=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_fno_emulated_tls" >&5
+printf "%s\n" "$ac_cv_cc_flag_fno_emulated_tls" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_fno_emulated_tls\" = xyes
+then :
+  AM_CFLAGS="$AM_CFLAGS -Bfno-emulated-tls"
+
+printf "%s\n" "#define HAVE_FNO_EMULATED_TLS 1" >>confdefs.h
+
+else case e in #(
+  e) : ;;
+esac
+fi
+
 if test x$enable_debug = xyes
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Werror" >&5
@@ -17447,7 +17490,7 @@ loaders="stb_image"
 have_curl="no"
 have_jpeg="no"
 have_png="no"
-have_libwinpthread="no"
+have_winpthread="no"
 #have_wic="no"
 
 #if test x$with_wic != xno; then
@@ -19062,6 +19105,9 @@ printf "%s\n" "#define HAVE_NANOSLEEP 1" >>confdefs.h
 
 
 printf "%s\n" "#define HAVE_CLOCK 1" >>confdefs.h
+
+
+printf "%s\n" "#define WITH_WINPTHREAD 1" >>confdefs.h
 
                         have_winpthread=yes
 
