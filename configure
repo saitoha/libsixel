@@ -1557,7 +1557,8 @@ Optional Packages:
   --with-libcurl          whether to build with libcurl (default: auto)
   --with-jpeg             whether to build with libjpeg (default: auto)
   --with-png              whether to build with libpng (default: auto)
-  --with-winpthread       whether to build with libwinpthread (default: no)
+  --with-winpthread       whether to build with libwinpthread, windows only
+                          (default: no)
   --with-wic              whether to build with Windows Imaging Component
                           (WIC), windows only (default: auto)
   --with-winhttp          whether to build with WinHTTP, windows only
