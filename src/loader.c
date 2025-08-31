@@ -92,6 +92,9 @@ stbi_free(void *p)
 #define STBI_NO_STDIO 1
 #define STB_IMAGE_IMPLEMENTATION 1
 #define STBI_FAILURE_USERMSG 1
+#if defined(_WIN32)
+# define STBI_NO_THREAD_LOCALS 1  /* no tls */
+#endif
 #define STBI_NO_GIF
 #define STBI_NO_PNM
 
