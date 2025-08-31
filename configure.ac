@@ -20,7 +20,7 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
 AX_GCC_VAR_ATTRIBUTE([deprecated])
-if test x$ax_cv_have_func_attribute_deprecated != x; then
+if test x$ax_cv_have_var_attribute_deprecated != x; then
     AC_SUBST(attr_var_deprecated, [__attribute__\(\(deprecated\)\)])
 fi
 
@@ -31,39 +31,59 @@ fi
 
 AX_GCC_BUILTIN([__builtin_unreachable])
 
-CFLAGS_BACKUP=$CFLAGS
-CFLAGS="$CFLAGS -Werror"
-AC_COMPILE_IFELSE(
-  [AC_LANG_PROGRAM([
-                     #pragma GCC diagnostic push
-                     #pragma GCC diagnostic pop
-                     #pragma GCC diagnostic ignored "-Wtypedef-redefinition"
-                   ],
-                   [
-                     typedef int foo;
-                     typedef int foo;
-                   ])],
-  [AC_DEFINE(HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION,
-             1,
-             [define 1 if GCC supports -Wtypedef-redefinition])])
-CFLAGS=$CFLAGS_BACKUP
+AC_CACHE_CHECK(
+  [whether the compiler can silence -Wtypedef-redefinition via pragmas],
+  [ac_cv_have_diag_typedef_redef],
+  [
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   AC_COMPILE_IFELSE(
+     [AC_LANG_SOURCE([[
+       #if defined(__clang__) || defined(__GNUC__)
+       #pragma clang diagnostic push
+       #pragma clang diagnostic ignored "-Wtypedef-redefinition"
+       typedef int foo;
+       typedef int foo;
+       #pragma clang diagnostic pop
+       #endif
+     ]])],
+     [ac_cv_have_diag_typedef_redef=yes],
+     [ac_cv_have_diag_typedef_redef=no])
+   CFLAGS="$ac_save_CFLAGS"
+  ])
 
-CFLAGS_BACKUP=$CFLAGS
-CFLAGS="$CFLAGS -Werror"
-AC_COMPILE_IFELSE(
-  [AC_LANG_PROGRAM([
-                     #pragma GCC diagnostic push
-                     #pragma GCC diagnostic pop
-                     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-                     __attribute__((deprecated)) void test(void) {}
-                   ],
-                   [
-                     test();
-                   ])],
-  [AC_DEFINE(HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS,
-             1,
-             [define 1 if GCC supports -Wdeprecated-declarations])])
-CFLAGS=$CFLAGS_BACKUP
+AS_IF([test "x$ac_cv_have_diag_typedef_redef" = "xyes"], [
+  AC_DEFINE([HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION],
+            [1],
+            [Define to 1 if the compiler can ignore -Wtypedef-redefinition via pragmas])
+])
+
+AC_CACHE_CHECK(
+  [whether the compiler can silence -Wdeprecated-declarations],
+  [ac_cv_have_diag_deprecated_declarations],
+  [
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   AC_COMPILE_IFELSE(
+     [AC_LANG_SOURCE([[
+       #if defined(__clang__) || defined(__GNUC__)
+       #pragma clang diagnostic push
+       #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+       typedef int foo;
+       typedef int foo;
+       #pragma clang diagnostic pop
+       #endif
+     ]])],
+     [ac_cv_have_diag_deprecated_declarations=yes],
+     [ac_cv_have_diag_deprecated_declarations=no])
+   CFLAGS="$ac_save_CFLAGS"
+  ])
+
+AS_IF([test "x$ac_cv_have_diag_deprecated_declarations" = "xyes"], [
+  AC_DEFINE([HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS],
+            [1],
+            [Define to 1 if the compiler can ignore -Wdeprecated-declarations via pragmas])
+])
 
 # Options
 AC_ARG_ENABLE([img2sixel],
@@ -109,6 +129,12 @@ AC_ARG_WITH([png],
                             [whether to build with libpng (default: auto)])],
             [],
             [with_png=auto])
+
+AC_ARG_WITH([winpthread],
+            [AS_HELP_STRING([--with-winpthread],
+                            [whether to build with libwinpthread (default: no)])],
+            [],
+            [with_winpthread=no])
 
 #AC_ARG_WITH([wic],
 #            [AS_HELP_STRING([--with-wic],
@@ -181,44 +207,105 @@ AS_IF([test x$cross_compile != xyes],
                             PKG_CONFIG=false])],
       [])
 
-AC_DEFUN([LS_CHECK_CFLAG], [
-   AC_MSG_CHECKING([if $CC supports $1])
-   saved_cflags="$CFLAGS"
-   CFLAGS="$1 -Werror"
-   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
-                     [AC_MSG_RESULT([yes])
-                      m4_default([$2], :)],
-                     [AC_MSG_RESULT([no])
-                      m4_default([$3], :)])
-   CFLAGS="$saved_cflags"
-])
+AC_DEFUN([LS_CHECK_CFLAG],
+         [AC_CACHE_CHECK([if $CC supports $1],
+                         [ac_cv_cc_flag_[]AS_TR_SH([$4])],
+                         [saved_cflags="$CFLAGS"
+                          CFLAGS="$1 -Werror"
+                          AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
+                                            [ac_cv_cc_flag_$4=yes],
+                                            [ac_cv_cc_flag_$4=no])
+                          CFLAGS="$saved_cflags"])
+          AS_IF([eval test \"x\$ac_cv_cc_flag_[]AS_TR_SH([$4])\" = xyes],
+                [m4_default([$2], :)],
+                [m4_default([$3], :)])
+         ])
 
 CPPFLAGS="$CPPFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L"
-LS_CHECK_CFLAG([-std=c99], [CFLAGS="$CFLAGS -std=c99"], [])
-LS_CHECK_CFLAG([-Wall],[AM_CFLAGS="$AM_CFLAGS -Wall"], [])
-LS_CHECK_CFLAG([-Wextra],[AM_CFLAGS="$AM_CFLAGS -Wextra"], [])
-LS_CHECK_CFLAG([-Wformat=2],[AM_CFLAGS="$AM_CFLAGS -Wformat=2"], [])
+LS_CHECK_CFLAG([-std=c99],
+               [CFLAGS="$CFLAGS -std=c99"],
+               [],
+               [std_c99])
+LS_CHECK_CFLAG([-Wall],
+               [AM_CFLAGS="$AM_CFLAGS -Wall"],
+               [],
+               [wall])
+LS_CHECK_CFLAG([-Wextra],
+               [AM_CFLAGS="$AM_CFLAGS -Wextra"],
+               [],
+               [wextra])
+LS_CHECK_CFLAG([-Wformat=2],
+               [AM_CFLAGS="$AM_CFLAGS -Wformat=2"],
+               [],
+               [wformat_2])
 LS_CHECK_CFLAG([-Wsign-conversion],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION, 1, [define 1 if GCC supports -Wsign-conversion])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION,
+                          [1],
+                          [define 1 if GCC supports -Wsign-conversion])],
+               [],
+               [wsign_conversion])
 LS_CHECK_CFLAG([-Wuninitialized],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_UNINITIALIZED, 1, [define 1 if GCC supports -Wuninitialized])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_UNINITIALIZED,
+                          [1],
+                          [define 1 if GCC supports -Wuninitialized])],
+               [],
+               [wuninitialized])
 LS_CHECK_CFLAG([-Wstrict-overflow],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW, 1, [define 1 if GCC supports -Wstrict-overeflow=1])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW,
+                          [1],
+                          [define 1 if GCC supports -Wstrict-overeflow=1])],
+               [],
+               [wstrict_overflow])
 LS_CHECK_CFLAG([-Wshadow],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW, 1, [define 1 if GCC supports -Wshadow])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW,
+                          [1],
+                          [define 1 if GCC supports -Wshadow])],
+               [],
+               [wshadow])
 LS_CHECK_CFLAG([-Wdouble-promotion],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_DOUBLE_PROMOTION, 1, [define 1 if GCC supports -Wdouble-promotion])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_DOUBLE_PROMOTION,
+                          [1],
+                          [define 1 if GCC supports -Wdouble-promotion])],
+               [],
+               [wdouble_promotions])
 LS_CHECK_CFLAG([-Wswitch-default],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT, 1, [define 1 if GCC supports -Wswitch-default])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT,
+                          [1],
+                          [define 1 if GCC supports -Wswitch-default])],
+               [],
+               [wswitch_default])
 LS_CHECK_CFLAG([-Wunused-function],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_FUNCTION, 1, [define 1 if GCC supports -Wunused-function])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_FUNCTION,
+                          [1],
+                          [define 1 if GCC supports -Wunused-function])],
+               [],
+               [wunused_function])
 LS_CHECK_CFLAG([-Wclobbered],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_CLOBBERED, 1, [define 1 if GCC supports -Wclobbered])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_CLOBBERED,
+                          [1],
+                          [define 1 if GCC supports -Wclobbered])],
+               [],
+               [wclobbered])
 LS_CHECK_CFLAG([-Wunused-but-set-variable],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE, 1, [define 1 if GCC supports -Wunused-but-set-variable])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE,
+                          [1],
+                          [define 1 if GCC supports -Wunused-but-set-variable])],
+               [],
+               [wunused_but_set_variable])
 LS_CHECK_CFLAG([-Bsymbolic],
                [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
-                AC_DEFINE(HAVE_BSYMBOLIC, 1, [define 1 if GCC supports -Bsymbolic])])
+                AC_DEFINE(HAVE_BSYMBOLIC,
+                          [1],
+                          [define 1 if GCC supports -Bsymbolic])],
+               [],
+               [bsymbolic])
+LS_CHECK_CFLAG([-fno-emulated-tls],
+               [AM_CFLAGS="$AM_CFLAGS -Bfno-emulated-tls"
+                AC_DEFINE(HAVE_FNO_EMULATED_TLS,
+                          [1],
+                          [define 1 if GCC supports -fno-emulated-tls])],
+               [],
+               [fno_emulated_tls])
 AS_IF([test x$enable_debug = xyes],
       [LS_CHECK_CFLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
 AC_SUBST([AM_CFLAGS])
@@ -290,7 +377,6 @@ AC_CHECK_FUNCS([memcpy \
                 strdup \
                 strtoul \
                 calloc \
-                clock \
                 clearerr \
                 stat \
                 setjmp \
@@ -309,10 +395,6 @@ AC_CHECK_FUNCS([memcpy \
                 strstr \
                 strtol])
 
-AC_SEARCH_LIBS([nanosleep], [winpthread rt pthread],
-  [AC_DEFINE([HAVE_NANOSLEEP],[1],[Define if nanosleep exists])],
-  [AC_MSG_WARN([Define to 1 if you have the 'nanosleep' function.])])
-
 AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
                [
                    #ifdef HAVE_SIGNAL_H
@@ -326,6 +408,7 @@ loaders="stb_image"
 have_curl="no"
 have_jpeg="no"
 have_png="no"
+have_winpthread="no"
 #have_wic="no"
 
 #if test x$with_wic != xno; then
@@ -630,6 +713,25 @@ fi
 AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBPNG_LIBS)
 
+if test x$with_winpthread != xno; then
+    if test x$build = x$host; then
+        AC_SEARCH_LIBS([nanosleep],
+                       [winpthread],
+                       [AC_DEFINE([HAVE_NANOSLEEP],
+                                  [1],
+                                  [Define if nanosleep exists])
+                        AC_DEFINE([HAVE_CLOCK],
+                                  [1],
+                                  [Define if clock exists])
+                        AC_DEFINE([WITH_WINPTHREAD],
+                                  [1],
+                                  [Define if libwinpthread is available])
+                        have_winpthread=yes
+                       ],
+                       [AC_MSG_ERROR([winpthread is not available])])
+    fi
+fi
+
 have_python=no
 if test x$enable_python != xno; then
     AM_PATH_PYTHON([2.3], [have_python=yes], [have_python=no])
@@ -675,6 +777,7 @@ echo "libsixel was configured as follows"
 echo ""
 echo "       Loader component    : $loaders"
 echo "       libcurl integration : $have_curl"
+echo "       libwinpthread       : $have_winpthread"
 echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
