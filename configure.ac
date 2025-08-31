@@ -132,7 +132,7 @@ AC_ARG_WITH([png],
 
 AC_ARG_WITH([winpthread],
             [AS_HELP_STRING([--with-winpthread],
-                            [whether to build with libwinpthread (default: no)])],
+                            [whether to build with libwinpthread, windows only (default: no)])],
             [],
             [with_winpthread=no])
 
