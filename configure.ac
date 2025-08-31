@@ -369,6 +369,13 @@ LS_CHECK_CFLAG([-Bsymbolic],
                           [define 1 if GCC supports -Bsymbolic])],
                [],
                [bsymbolic])
+LS_CHECK_CFLAG([-fno-emulated-tls],
+               [AM_CFLAGS="$AM_CFLAGS -Bfno-emulated-tls"
+                AC_DEFINE(HAVE_FNO_EMULATED_TLS,
+                          [1],
+                          [define 1 if GCC supports -fno-emulated-tls])],
+               [],
+               [fno_emulated_tls])
 AS_IF([test x$enable_debug = xyes],
       [LS_CHECK_CFLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
 AC_SUBST([AM_CFLAGS])
@@ -475,7 +482,7 @@ loaders="stb_image"
 have_curl="no"
 have_jpeg="no"
 have_png="no"
-have_libwinpthread="no"
+have_winpthread="no"
 #have_wic="no"
 
 REQUIRES_PRIVATE=""
@@ -1003,6 +1010,9 @@ if test x$with_winpthread != xno; then
                         AC_DEFINE([HAVE_CLOCK],
                                   [1],
                                   [Define if clock exists])
+                        AC_DEFINE([WITH_WINPTHREAD],
+                                  [1],
+                                  [Define if libwinpthread is available])
                         have_winpthread=yes
                        ],
                        [AC_MSG_ERROR([winpthread is not available])])
