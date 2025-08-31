@@ -655,14 +655,18 @@ ac_unique_file="src/fromsixel.c"
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
-HAVE_CURL_FALSE
-HAVE_CURL_TRUE
+HAVE_PYTHON_FALSE
+HAVE_PYTHON_TRUE
+HAVE_WIC_FALSE
+HAVE_WIC_TRUE
 HAVE_PNG_FALSE
 HAVE_PNG_TRUE
 HAVE_JPEG_FALSE
 HAVE_JPEG_TRUE
-HAVE_PYTHON_FALSE
-HAVE_PYTHON_TRUE
+HAVE_WINHTTP_FALSE
+HAVE_WINHTTP_TRUE
+HAVE_CURL_FALSE
+HAVE_CURL_TRUE
 pkgpyexecdir
 pyexecdir
 pkgpythondir
@@ -672,10 +676,14 @@ PYTHON_PREFIX
 PYTHON_PLATFORM
 PYTHON_VERSION
 PYTHON
+WIC_LIBS
+WIC_CFLAGS
 LIBPNG_LIBS
 LIBPNG_CFLAGS
 LIBJPEG_LIBS
 LIBJPEG_CFLAGS
+WINHTTP_LIBS
+WINHTTP_CFLAGS
 LIBCURL_LIBS
 LIBCURL_CFLAGS
 AM_CPPFLAGS
@@ -851,6 +859,8 @@ with_libcurl
 with_jpeg
 with_png
 with_winpthread
+with_wic
+with_winhttp
 with_pkgconfigdir
 with_bashcompletiondir
 with_zshcompletiondir
@@ -1548,6 +1558,10 @@ Optional Packages:
   --with-jpeg             whether to build with libjpeg (default: auto)
   --with-png              whether to build with libpng (default: auto)
   --with-winpthread       whether to build with libwinpthread (default: no)
+  --with-wic              whether to build with Windows Imaging Component
+                          (WIC), windows only (default: auto)
+  --with-winhttp          whether to build with WinHTTP, windows only
+                          (default: auto)
   --with-pkgconfigdir     Use the specified pkgconfig dir (default is
                           libdir/pkgconfig)
   --with-bashcompletiondir
@@ -6551,7 +6565,7 @@ mingw* | windows* | pw32*)
     lt_cv_file_magic_cmd='func_win32_libid'
   else
     # Keep this pattern in sync with the one in func_win32_libid.
-    lt_cv_deplibs_check_method='file_magic file format (pei*-i386(.*architecture: i386)?|pe-arm-wince|pe-x86-64|pe-aarch64|coff-arm|coff-arm64|coff-i386|coff-x86-64)'
+    lt_cv_deplibs_check_method='file_magic file format (pei*-i386(.*architecture: i386)?|pe-arm-wince|pe-x86-64|pe-aarch64)'
     lt_cv_file_magic_cmd='$OBJDUMP -f'
   fi
   ;;
@@ -12123,7 +12137,7 @@ cygwin* | mingw* | windows* | pw32* | cegcc*)
     case $host_os in
     cygwin*)
       # Cygwin DLLs use 'cyg' prefix rather than 'lib'
-      soname_spec='`echo $libname | $SED -e 's/^lib/msys-/'``echo $release | $SED -e 's/[.]/-/g'`$versuffix$shared_ext'
+      soname_spec='`echo $libname | $SED -e 's/^lib/cyg/'``echo $release | $SED -e 's/[.]/-/g'`$versuffix$shared_ext'
 
       sys_lib_search_path_spec="$sys_lib_search_path_spec /usr/lib/w32api"
       ;;
@@ -14470,11 +14484,27 @@ esac
 fi
 
 
-#AC_ARG_WITH([wic],
-#            [AS_HELP_STRING([--with-wic],
-#                            [whether to build with windows WIC integration, windows only (default: no)])],
-#            [],
-#            [with_wic=no])
+
+# Check whether --with-wic was given.
+if test ${with_wic+y}
+then :
+  withval=$with_wic;
+else case e in #(
+  e) with_wic=auto ;;
+esac
+fi
+
+
+
+# Check whether --with-winhttp was given.
+if test ${with_winhttp+y}
+then :
+  withval=$with_winhttp;
+else case e in #(
+  e) with_wic=auto ;;
+esac
+fi
+
 
 
 # Check whether --with-pkgconfigdir was given.
@@ -17491,20 +17521,11 @@ have_curl="no"
 have_jpeg="no"
 have_png="no"
 have_winpthread="no"
-#have_wic="no"
+have_wic="auto"
+have_winhttp="auto"
 
-#if test x$with_wic != xno; then
-#    AC_CHECK_HEADERS([wincodec.h], [],
-#                     [AC_MSG_ERROR([WIC integration: wincodec.h is not avilable.])])
-#    AC_CHECK_LIB([ole32], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library ole32 is not avilable.])])
-#    AC_CHECK_LIB([uuid], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library uuid is not avilable.])])
-#    AC_CHECK_LIB([windowscodecs], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library wincodecs is not avilable.])])
-#    have_wic="yes"
-#fi
-
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gdk-pixbuf2" >&5
+printf %s "checking for gdk-pixbuf2... " >&6; }
 if test x$with_gdk_pixbuf2 != xno; then
     if test x${PKG_CONFIG} != x; then
 
@@ -17601,7 +17622,8 @@ fi
 
 
 
-
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GD" >&5
+printf %s "checking for GD... " >&6; }
 if test x$with_gd != xno; then
     CFLAGS_BACKUP=$CFLAGS
     LDFLAGS_BACKUP=$LDFLAGS
@@ -18479,6 +18501,8 @@ fi
 
 
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libcurl" >&5
+printf %s "checking for libcurl... " >&6; }
 if test x$with_libcurl != xno; then
     if test x$build = x$host; then
         CFLAGS_BACKUP=$CFLAGS
@@ -18637,6 +18661,11 @@ fi
         fi
     fi
     if test x$have_curl = xyes; then
+        if test x${net} = x; then
+            net="libcurl"
+        else
+            net="${net} libcurl"
+        fi
 
 printf "%s\n" "#define HAVE_LIBCURL 1" >>confdefs.h
 
@@ -18651,6 +18680,140 @@ printf "%s\n" "$as_me: libcurl is not available" >&6;}
 printf "%s\n" "$as_me: libcurl cflags is ${LIBCURL_CFLAGS}" >&6;}
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libcurl libs is ${LIBCURL_LIBS}" >&5
 printf "%s\n" "$as_me: libcurl libs is ${LIBCURL_LIBS}" >&6;}
+fi
+
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for WinHTTP" >&5
+printf %s "checking for WinHTTP... " >&6; }
+if test x$with_winhttp != xno; then
+    case "$host_os" in
+    mingw* | cygwin* | msys*)
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: checking on Windows host" >&5
+printf "%s\n" "checking on Windows host" >&6; }
+        CFLAGS_BACKUP="$CFLAGS"
+        LIBS_BACKUP="$LIBS"
+        if test x$with_png != xyes -a x$with_png != xauto; then
+            if test ! -d "$with_png"; then
+                as_fn_error $? "\"${with_png}\" is not directory" "$LINENO" 5
+            fi
+            ADDED_CFLAGS="-I${with_winhttp}/include"
+            ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lwinhttp"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lwinhttp"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LIBS="${LIBS} ${ADDED_LIBS}"
+        have_winhttp=yes
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+              #include <windows.h>
+              #include <winhttp.h>
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for WinHttpOpen in -lwinhttp" >&5
+printf %s "checking for WinHttpOpen in -lwinhttp... " >&6; }
+if test ${ac_cv_lib_winhttp_WinHttpOpen+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-lwinhttp  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.
+   The 'extern "C"' is for builds by C++ compilers;
+   although this is not generally supported in C code supporting it here
+   has little cost and some practical benefit (sr 110532).  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char WinHttpOpen (void);
+int
+main (void)
+{
+return WinHttpOpen ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_winhttp_WinHttpOpen=yes
+else case e in #(
+  e) ac_cv_lib_winhttp_WinHttpOpen=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_winhttp_WinHttpOpen" >&5
+printf "%s\n" "$ac_cv_lib_winhttp_WinHttpOpen" >&6; }
+if test "x$ac_cv_lib_winhttp_WinHttpOpen" = xyes
+then :
+  printf "%s\n" "#define HAVE_LIBWINHTTP 1" >>confdefs.h
+
+  LIBS="-lwinhttp $LIBS"
+
+else case e in #(
+  e) have_winhttp=no
+                           as_fn_error $? "library wincodecs is not avilable." "$LINENO" 5 ;;
+esac
+fi
+
+else case e in #(
+  e) have_winhttp=no
+             as_fn_error $? "windows.h or winhttp.h is not avilable." "$LINENO" 5 ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+        ;;
+    *)
+        have_winhttp=no
+        ;;
+    esac
+    CFLAGS=$CFLAGS_BACKUP
+    LIBS=$LIBS_BACKUP
+    if test "x$have_winhttp" = "xyes"
+then :
+
+printf "%s\n" "#define HAVE_WINHTTP 1" >>confdefs.h
+
+           if test x${net} = x; then
+               net="winhttp"
+           else
+               net="${net} winhttp"
+           fi
+           WINHTTP_CFLAGS=$ADDED_CFLAGS
+           WINHTTP_LIBS=$ADDED_LIBS
+           { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WinHTTP is available" >&5
+printf "%s\n" "$as_me: WinHTTP is available" >&6;}
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WinHTTP is not available" >&5
+printf "%s\n" "$as_me: WinHTTP is not available" >&6;} ;;
+esac
+fi
 fi
 
 
@@ -19119,6 +19282,167 @@ fi
     fi
 fi
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Windows Imaging Component (WIC)" >&5
+printf %s "checking for Windows Imaging Component (WIC)... " >&6; }
+if test x$with_wic != xno; then
+    case "$host_os" in
+    mingw* | cygwin* | msys*)
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: checking on Windows host" >&5
+printf "%s\n" "checking on Windows host" >&6; }
+        CFLAGS_BACKUP="$CFLAGS"
+        LIBS_BACKUP="$LIBS"
+        if test x$with_png != xyes -a x$with_png != xauto; then
+            if test ! -d "$with_png"; then
+                as_fn_error $? "\"${with_png}\" is not directory" "$LINENO" 5
+            fi
+            ADDED_CFLAGS="-I${with_wic}/include"
+            ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LIBS="${LIBS} ${ADDED_LIBS}"
+        have_wic=yes
+               for ac_header in windows.h wincodec.h
+do :
+  as_ac_Header=`printf "%s\n" "ac_cv_header_$ac_header" | sed "$as_sed_sh"`
+ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"
+then :
+  cat >>confdefs.h <<_ACEOF
+#define `printf "%s\n" "HAVE_$ac_header" | sed "$as_sed_cpp"` 1
+_ACEOF
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for main in -lole32" >&5
+printf %s "checking for main in -lole32... " >&6; }
+if test ${ac_cv_lib_ole32_main+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-lole32  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main (void)
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_ole32_main=yes
+else case e in #(
+  e) ac_cv_lib_ole32_main=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ole32_main" >&5
+printf "%s\n" "$ac_cv_lib_ole32_main" >&6; }
+if test "x$ac_cv_lib_ole32_main" = xyes
+then :
+  printf "%s\n" "#define HAVE_LIBOLE32 1" >>confdefs.h
+
+  LIBS="-lole32 $LIBS"
+
+else case e in #(
+  e) have_wic=no
+                                        as_fn_error $? "library ole32 is not avilable." "$LINENO" 5 ;;
+esac
+fi
+
+                          { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for main in -lwindowscodecs" >&5
+printf %s "checking for main in -lwindowscodecs... " >&6; }
+if test ${ac_cv_lib_windowscodecs_main+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-lwindowscodecs  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main (void)
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_windowscodecs_main=yes
+else case e in #(
+  e) ac_cv_lib_windowscodecs_main=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_windowscodecs_main" >&5
+printf "%s\n" "$ac_cv_lib_windowscodecs_main" >&6; }
+if test "x$ac_cv_lib_windowscodecs_main" = xyes
+then :
+  printf "%s\n" "#define HAVE_LIBWINDOWSCODECS 1" >>confdefs.h
+
+  LIBS="-lwindowscodecs $LIBS"
+
+else case e in #(
+  e) have_wic=no
+                                        as_fn_error $? "library wincodecs is not avilable." "$LINENO" 5 ;;
+esac
+fi
+
+else case e in #(
+  e) have_wic=no
+                          as_fn_error $? "windows.h or wincodec.h is not avilable." "$LINENO" 5 ;;
+esac
+fi
+
+done
+        ;;
+    *)
+        have_wic=no
+        ;;
+    esac
+    CFLAGS=$CFLAGS_BACKUP
+    LIBS=$LIBS_BACKUP
+    if test "x$have_wic" = "xyes"
+then :
+
+printf "%s\n" "#define HAVE_WIC 1" >>confdefs.h
+
+           loaders="${loaders} wic"
+           WIC_CFLAGS=$ADDED_CFLAGS
+           WIC_LIBS=$ADDED_LIBS
+           { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WIC is available" >&5
+printf "%s\n" "$as_me: WIC is available" >&6;}
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WIC is not available" >&5
+printf "%s\n" "$as_me: WIC is not available" >&6;} ;;
+esac
+fi
+fi
+
+
+
 have_python=no
 if test x$enable_python != xno; then
 
@@ -19556,14 +19880,6 @@ printf "%s\n" "$am_cv_python_pyexecdir" >&6; }
         as_fn_error $? "python is not available" "$LINENO" 5
     fi
 fi
- if test x$have_python = xyes; then
-  HAVE_PYTHON_TRUE=
-  HAVE_PYTHON_FALSE='#'
-else
-  HAVE_PYTHON_TRUE='#'
-  HAVE_PYTHON_FALSE=
-fi
-
 if test x$have_python = xyes; then
     message_python="$have_python: $pythondir"
 else
@@ -19576,6 +19892,22 @@ fi
                    converters/Makefile.in include/Makefile.in \
                    python/Makefile.in src/Makefile.in tools/Makefile.in
 
+
+ if test x$have_curl = xyes; then
+  HAVE_CURL_TRUE=
+  HAVE_CURL_FALSE='#'
+else
+  HAVE_CURL_TRUE='#'
+  HAVE_CURL_FALSE=
+fi
+
+ if test x$have_wic = xyes; then
+  HAVE_WINHTTP_TRUE=
+  HAVE_WINHTTP_FALSE='#'
+else
+  HAVE_WINHTTP_TRUE='#'
+  HAVE_WINHTTP_FALSE=
+fi
 
  if test x$have_jpeg = xyes; then
   HAVE_JPEG_TRUE=
@@ -19593,12 +19925,20 @@ else
   HAVE_PNG_FALSE=
 fi
 
- if test x$have_curl = xyes; then
-  HAVE_CURL_TRUE=
-  HAVE_CURL_FALSE='#'
+ if test x$have_wic = xyes; then
+  HAVE_WIC_TRUE=
+  HAVE_WIC_FALSE='#'
 else
-  HAVE_CURL_TRUE='#'
-  HAVE_CURL_FALSE=
+  HAVE_WIC_TRUE='#'
+  HAVE_WIC_FALSE=
+fi
+
+ if test x$have_python = xyes; then
+  HAVE_PYTHON_TRUE=
+  HAVE_PYTHON_FALSE='#'
+else
+  HAVE_PYTHON_TRUE='#'
+  HAVE_PYTHON_FALSE=
 fi
 
 
@@ -19778,8 +20118,12 @@ if test -z "${HAVE_GETOPT_LONG_TRUE}" && test -z "${HAVE_GETOPT_LONG_FALSE}"; th
   as_fn_error $? "conditional \"HAVE_GETOPT_LONG\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${HAVE_PYTHON_TRUE}" && test -z "${HAVE_PYTHON_FALSE}"; then
-  as_fn_error $? "conditional \"HAVE_PYTHON\" was never defined.
+if test -z "${HAVE_CURL_TRUE}" && test -z "${HAVE_CURL_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_CURL\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_WINHTTP_TRUE}" && test -z "${HAVE_WINHTTP_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_WINHTTP\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_JPEG_TRUE}" && test -z "${HAVE_JPEG_FALSE}"; then
@@ -19790,8 +20134,12 @@ if test -z "${HAVE_PNG_TRUE}" && test -z "${HAVE_PNG_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_PNG\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${HAVE_CURL_TRUE}" && test -z "${HAVE_CURL_FALSE}"; then
-  as_fn_error $? "conditional \"HAVE_CURL\" was never defined.
+if test -z "${HAVE_WIC_TRUE}" && test -z "${HAVE_WIC_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_WIC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_PYTHON_TRUE}" && test -z "${HAVE_PYTHON_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_PYTHON\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -21966,7 +22314,7 @@ echo ""
 echo "libsixel was configured as follows"
 echo ""
 echo "       Loader component    : $loaders"
-echo "       libcurl integration : $have_curl"
+echo "       Network access      : $net"
 echo "       libwinpthread       : $have_winpthread"
 echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
