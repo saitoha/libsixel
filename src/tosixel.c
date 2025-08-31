@@ -844,7 +844,7 @@ sixel_encode_body_ormode(
         buf += (width * 6);
 	}
 
-    if (cur_h > height) {
+    if (cur_h - height < 6) {
         for (plane = 0; plane < nplanes; plane++) {
             sixel_putc(output->buffer + output->pos, '#');
             sixel_advance(output, 1);
@@ -852,7 +852,7 @@ sixel_encode_body_ormode(
             sixel_advance(output, nwrite);
 
             buf_p = buf;
-            for (x = 0; x < width; x++) {
+            for (x = 0; x < width; x++, buf_p++) {
                 int pix = ((buf_p[0] >> plane) & 0x1);
 
                 switch(cur_h - height) {
@@ -868,6 +868,8 @@ sixel_encode_body_ormode(
                 case 4:
                     pix |= (((buf_p[width] >> plane) << 1) & 0x2);
                     /* Fall through */
+                default:
+                    break;
                 }
 
                 sixel_put_pixel(output, pix);
