@@ -930,7 +930,7 @@ diffuse_atkinson(unsigned char *data, int width, int height,
      *   1/8     1/8    1/8
      *           1/8
      */
-    if (y < height - 2) {
+    if (x < width - 2 && y < height - 2) {
         /* add error to the right cell */
         error_diffuse(data, pos + width * 0 + 1, depth, error, 1, 8);
         /* add error to the 2th right cell */
@@ -960,7 +960,7 @@ diffuse_jajuni(unsigned char *data, int width, int height,
      *  3/48    5/48    7/48    5/48    3/48
      *  1/48    3/48    5/48    3/48    1/48
      */
-    if (pos < (height - 2) * width - 2) {
+    if (x < width - 2 && y < height - 2) {
         error_diffuse(data, pos + width * 0 + 1, depth, error, 7, 48);
         error_diffuse(data, pos + width * 0 + 2, depth, error, 5, 48);
         error_diffuse(data, pos + width * 1 - 2, depth, error, 3, 48);
@@ -983,14 +983,13 @@ diffuse_stucki(unsigned char *data, int width, int height,
 {
     int pos;
 
-    pos = y * width + x;
-
     /* Stucki's Method
      *                  curr    8/48    4/48
      *  2/48    4/48    8/48    4/48    2/48
      *  1/48    2/48    4/48    2/48    1/48
      */
-    if (pos < (height - 2) * width - 2) {
+    if (x < height - 2 && y < width - 2) {
+        pos = y * width + x;
         error_diffuse(data, pos + width * 0 + 1, depth, error, 1, 6);
         error_diffuse(data, pos + width * 0 + 2, depth, error, 1, 12);
         error_diffuse(data, pos + width * 1 - 2, depth, error, 1, 24);
@@ -1027,6 +1026,33 @@ diffuse_burkes(unsigned char *data, int width, int height,
         error_diffuse(data, pos + width * 1 + 0, depth, error, 1, 4);
         error_diffuse(data, pos + width * 1 + 1, depth, error, 1, 8);
         error_diffuse(data, pos + width * 1 + 2, depth, error, 1, 16);
+    }
+}
+
+static void
+diffuse_lso1(unsigned char *data, int width, int height,
+             int x, int y, int depth, int error)
+{
+    int pos;
+
+    pos = y * width + x;
+
+    /* lso1 (libsixel original) method:
+     *
+     * libsixel-specific error diffusion (dithering) to improve sixel
+     * compression; by steering error propagation so out-of-palette
+     * intermediate colors render as horizontal bands rather than grainy
+     * noise, we increase RLE more effective.
+     *
+     *          curr
+     *   1/8    4/8    1/8
+     *          2/8
+     */
+    if (x < width - 1 && y < height - 2) {
+        error_diffuse(data, pos + width * 1 - 1, depth, error, 1, 8);
+        error_diffuse(data, pos + width * 1 + 0, depth, error, 4, 8);
+        error_diffuse(data, pos + width * 1 + 1, depth, error, 1, 8);
+        error_diffuse(data, pos + width * 2 + 0, depth, error, 2, 8);
     }
 }
 
@@ -1304,16 +1330,16 @@ sixel_quant_apply_palette(
             f_diffuse = diffuse_fs;
             break;
         case SIXEL_DIFFUSE_JAJUNI:
-            /* fallback to diffuse_none if width < 2 */
-            f_diffuse = width >= 2 ? diffuse_jajuni: diffuse_none;
+            f_diffuse = diffuse_jajuni;
             break;
         case SIXEL_DIFFUSE_STUCKI:
-            /* fallback to diffuse_none if width < 2 */
-            f_diffuse = width >= 2 ? diffuse_stucki: diffuse_none;
+            f_diffuse = diffuse_stucki;
             break;
         case SIXEL_DIFFUSE_BURKES:
-            /* fallback to diffuse_none if width < 2 */
-            f_diffuse = width >= 2 ? diffuse_burkes: diffuse_none;
+            f_diffuse = diffuse_burkes;
+            break;
+        case SIXEL_DIFFUSE_LSO1:
+            f_diffuse = diffuse_lso1;
             break;
         case SIXEL_DIFFUSE_A_DITHER:
             f_diffuse = diffuse_none;
