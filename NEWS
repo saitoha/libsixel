@@ -1,6 +1,95 @@
+                  ------------------------------
+                   What's new in libsixel-1.8.7
+                  ------------------------------
+
+  for a comprehensive view of security-fix progress, see the page below
+  https://github.com/saitoha/libsixel/discussions/203
+
+* fix invalid pointer access in encoder.c (#193, #195)
+  Thanks to @momo-trip, @akinomyoga
+
+* fix wrong HLS to RGB conversion. (#191)
+  Thanks to @gnachman, @j4james
+
+* fix NULL pointer dereference problem in img2sixel.c (#192)
+  Thanks to @momo-trip, @akinomyoga
+
+* fix double free problem in encoder.c (#194)
+  Thanks to @momo-trip
+
+* Serucity fix for #200, heap buffer overflow in debug palette function.
+  Thanks to @err2zero
+
+* add EXTRA_DIST for LICENSE files (#129)
+  Thanks to @ttdoda
+
+* Travis-ci: added support for ppc64le (#140)
+  Thanks to @dthadi3
+
+* export sixel_allocator_new to dll (#151)
+  Thanks to @johnnychen94
+
+* README: Add Idris 2 language bindings (#155)
+  Thanks to @Kaiepi
+
+* performance: If width and height are unchanged, nothing to do. (#170)
+  Thanks to @rokuyama
+
+* README: add MacPorts to install options (#183)
+  Thanks to @barracuda156
+
+* fix for bash completion (#189)
+  Thanks to @rcorre
+
+* Add backport feature (nanosleep) for windows, github actions CI (#202)
+  Thanks to @Kreijstal
+
+* README: update NixOS link (#204)
+  Thanks to @max-amb
+
+* build: Remove override of $LIBJPEG_CFLAGS and $LIBJPEG_LIBS set by PKG_CHECK_MODULES()
+
+* fix Problems with the dithering palette calculation (#188)
+  Thanks to @gnachman, @j4james
+
+* fix SEGV error in sixel_encoder_setopt (#174)
+  Thanks to @shinibufa , @j4james
+
+* curl: send original UserAgent header: "libsixel/${LIBSIXEL_VERSION}"
+
+* fix heap-buffer-overflow in error_diffuse, quant.c:876 #172
+  Thanks to @waugustus
+
+* fix Heap-buffer-overflow in scale.c:214 #179
+  Thanks to @chameleon10712, @j4james
+
+* build: fallback support for environments without pkg-config.
+
+* fix double-free problem in loader.c (#150)
+  Thanks to @duytai, @ctrlcctrlv
+
+* fix an assertion issue in stbi__create_png_image_raw (#163)
+  Thanks to @kdsjZh, @dankamongmen
+
+* Update stb_image.h from upstream to version 2.30
+  THanks to @hzeller
+
+* Update examples/drawing: add SGR-Pixels mode
+
+* fix a problem on monochromatic encoded (-e) output (#112)
+  Thanks to @interkosmos, @j4james
+
+* fix a FPE issue (#166, #167)
+  Thanks to @waugustus, @j4james
+
+* cli: fix a scaling issue introduced in v1.6.1, which is caused
+       when one of -w/-h is a percentage and the other is unset or "auto"
+
+* fix a memory leak ploblem (#164)
+  Thanks to @muetzenmann, @j4james
 
                   ------------------------------
-                   What's new in libsixel-1.8 ?
+                   What's new in libsixel-1.8 (<= 1.8.6) ?
                   ------------------------------
 
 * python: Fix broken python interface problem(#128), reported by @fd00.
