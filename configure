@@ -14502,7 +14502,7 @@ if test ${with_winhttp+y}
 then :
   withval=$with_winhttp;
 else case e in #(
-  e) with_wic=auto ;;
+  e) with_winhttp=auto ;;
 esac
 fi
 
@@ -17524,9 +17524,9 @@ have_png="no"
 have_winpthread="no"
 have_wic="no"
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gdk-pixbuf2" >&5
-printf %s "checking for gdk-pixbuf2... " >&6; }
 if test x$with_gdk_pixbuf2 != xno; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gdk-pixbuf2" >&5
+printf "%s\n" "$as_me: checking for gdk-pixbuf2" >&6;}
     if test x${PKG_CONFIG} != x; then
 
 pkg_failed=no
@@ -17600,8 +17600,6 @@ printf "%s\n" "yes" >&6; }
         have_gdk_pixbuf2=yes
 fi
         if test x$have_gdk_pixbuf2 != xno; then
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf: $have_gdk_pixbuf2" >&5
-printf "%s\n" "$as_me: gdk-pixbuf: $have_gdk_pixbuf2" >&6;}
 
 printf "%s\n" "#define HAVE_GDK_PIXBUF2 1" >>confdefs.h
 
@@ -17622,9 +17620,10 @@ fi
 
 
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GD" >&5
-printf %s "checking for GD... " >&6; }
+
 if test x$with_gd != xno; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GD" >&5
+printf "%s\n" "$as_me: checking for GD" >&6;}
     CFLAGS_BACKUP=$CFLAGS
     LDFLAGS_BACKUP=$LDFLAGS
     if test x$with_gd != xyes -a x$with_gd != xauto; then
@@ -18501,10 +18500,10 @@ fi
 
 
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libcurl" >&5
-printf %s "checking for libcurl... " >&6; }
 if test x$with_libcurl != xno; then
     if test x$build = x$host; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libcurl" >&5
+printf "%s\n" "$as_me: checking for libcurl" >&6;}
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
         if test x$with_libcurl != xyes -a x$with_libcurl != xauto; then
@@ -18669,8 +18668,6 @@ printf "%s\n" "#define HAVE_LIBCURL 1" >>confdefs.h
         if test x$with_libcurl != xauto; then
             as_fn_error $? "unable to find libcurl" "$LINENO" 5
         fi
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libcurl is not available" >&5
-printf "%s\n" "$as_me: libcurl is not available" >&6;}
     fi
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libcurl cflags is ${LIBCURL_CFLAGS}" >&5
 printf "%s\n" "$as_me: libcurl cflags is ${LIBCURL_CFLAGS}" >&6;}
@@ -18680,18 +18677,16 @@ fi
 
 
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for WinHTTP" >&5
-printf %s "checking for WinHTTP... " >&6; }
 if test x$with_winhttp != xno; then
     case "$host_os" in
     mingw* | cygwin* | msys*)
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: checking on Windows host" >&5
-printf "%s\n" "checking on Windows host" >&6; }
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for WinHTTP" >&5
+printf "%s\n" "$as_me: checking for WinHTTP" >&6;}
         CFLAGS_BACKUP="$CFLAGS"
         LIBS_BACKUP="$LIBS"
-        if test x$with_png != xyes -a x$with_png != xauto; then
-            if test ! -d "$with_png"; then
-                as_fn_error $? "\"${with_png}\" is not directory" "$LINENO" 5
+        if test x$with_winhttp != xyes -a x$with_winhttp != xauto; then
+            if test ! -d "$with_winhttp"; then
+                as_fn_error $? "\"${with_winhttp}\" is not directory" "$LINENO" 5
             fi
             ADDED_CFLAGS="-I${with_winhttp}/include"
             ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
@@ -18774,44 +18769,53 @@ then :
 
 else case e in #(
   e) have_winhttp=no
-                           as_fn_error $? "library wincodecs is not avilable." "$LINENO" 5 ;;
+                           as_fn_error $? "library wincodecs is not avilable." "$LINENO" 5
+                           ;;
 esac
 fi
 
 else case e in #(
   e) have_winhttp=no
-             as_fn_error $? "windows.h or winhttp.h is not avilable." "$LINENO" 5 ;;
+             as_fn_error $? "windows.h or winhttp.h is not avilable." "$LINENO" 5
+             ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+        CFLAGS=$CFLAGS_BACKUP
+        LIBS=$LIBS_BACKUP
+
+        if test "x$have_winhttp" = "xyes"
+then :
+
+printf "%s\n" "#define HAVE_WINHTTP 1" >>confdefs.h
+
+               if test x${net} = x; then
+                   net="winhttp"
+               else
+                   net="${net} winhttp"
+               fi
+               WINHTTP_CFLAGS=$ADDED_CFLAGS
+               WINHTTP_LIBS=$ADDED_LIBS
+fi
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: winhttp cflags is ${WINHTTP_CFLAGS}" >&5
+printf "%s\n" "$as_me: winhttp cflags is ${WINHTTP_CFLAGS}" >&6;}
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: winhttp libs is ${WINHTTP_LIBS}" >&5
+printf "%s\n" "$as_me: winhttp libs is ${WINHTTP_LIBS}" >&6;}
         ;;
     *)
         have_winhttp=no
         ;;
     esac
-    CFLAGS=$CFLAGS_BACKUP
-    LIBS=$LIBS_BACKUP
-    if test "x$have_winhttp" = "xyes"
-then :
-
-printf "%s\n" "#define HAVE_WINHTTP 1" >>confdefs.h
-
-           net="${net} winhttp"
-           WINHTTP_CFLAGS=$ADDED_CFLAGS
-           WINHTTP_LIBS=$ADDED_LIBS
-           { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WinHTTP is available" >&5
-printf "%s\n" "$as_me: WinHTTP is available" >&6;}
-else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WinHTTP is not available" >&5
-printf "%s\n" "$as_me: WinHTTP is not available" >&6;} ;;
-esac
 fi
-fi
+
 
 
 
 if test x$with_jpeg != xno; then
     if test x$build = x$host; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for jpeg" >&5
+printf "%s\n" "$as_me: checking for jpeg" >&6;}
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
         if test x$with_jpeg != xyes -a x$with_jpeg != xauto; then
@@ -18989,6 +18993,8 @@ fi
 
 if test x$with_png != xno; then
     if test x$build = x$host; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for png" >&5
+printf "%s\n" "$as_me: checking for png" >&6;}
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
         if test x$with_png != xyes -a x$with_png != xauto; then
@@ -19191,6 +19197,8 @@ fi
 
 if test x$with_winpthread != xno; then
     if test x$build = x$host; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for winpthread" >&5
+printf "%s\n" "$as_me: checking for winpthread" >&6;}
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing nanosleep" >&5
 printf %s "checking for library containing nanosleep... " >&6; }
 if test ${ac_cv_search_nanosleep+y}
@@ -19267,25 +19275,34 @@ printf "%s\n" "#define WITH_WINPTHREAD 1" >>confdefs.h
                         have_winpthread=yes
 
 else case e in #(
-  e) as_fn_error $? "winpthread is not available" "$LINENO" 5 ;;
+  e) have_winpthread=yes ;;
 esac
 fi
 
+        if test "x$have_winpthread" = "xyes"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libpng cflags is ${LIBPNG_CFLAGS}" >&5
+printf "%s\n" "$as_me: libpng cflags is ${LIBPNG_CFLAGS}" >&6;}
+               { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libpng libs is ${LIBPNG_LIBS}" >&5
+printf "%s\n" "$as_me: libpng libs is ${LIBPNG_LIBS}" >&6;}
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libpng libs is not available" >&5
+printf "%s\n" "$as_me: libpng libs is not available" >&6;} ;;
+esac
+fi
     fi
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Windows Imaging Component (WIC)" >&5
-printf %s "checking for Windows Imaging Component (WIC)... " >&6; }
 if test x$with_wic != xno; then
     case "$host_os" in
     mingw* | cygwin* | msys*)
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: checking on Windows host" >&5
-printf "%s\n" "checking on Windows host" >&6; }
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Windows Imaging Component (WIC)" >&5
+printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
         CFLAGS_BACKUP="$CFLAGS"
         LIBS_BACKUP="$LIBS"
-        if test x$with_png != xyes -a x$with_png != xauto; then
-            if test ! -d "$with_png"; then
-                as_fn_error $? "\"${with_png}\" is not directory" "$LINENO" 5
+        if test x$with_wic != xyes -a x$with_wic != xauto; then
+            if test ! -d "$with_wic"; then
+                as_fn_error $? "\"${with_wic}\" is not directory" "$LINENO" 5
             fi
             ADDED_CFLAGS="-I${with_wic}/include"
             ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
@@ -19351,8 +19368,7 @@ then :
   LIBS="-lole32 $LIBS"
 
 else case e in #(
-  e) have_wic=no
-                                        as_fn_error $? "library ole32 is not avilable." "$LINENO" 5 ;;
+  e) have_wic=no ;;
 esac
 fi
 
@@ -19397,18 +19413,33 @@ then :
   LIBS="-lwindowscodecs $LIBS"
 
 else case e in #(
-  e) have_wic=no
-                                        as_fn_error $? "library wincodecs is not avilable." "$LINENO" 5 ;;
+  e) have_wic=no ;;
 esac
 fi
 
 else case e in #(
-  e) have_wic=no
-                          as_fn_error $? "windows.h or wincodec.h is not avilable." "$LINENO" 5 ;;
+  e) have_wic=no ;;
 esac
 fi
 
 done
+        if test "x$have_wic" = "xyes"
+then :
+
+printf "%s\n" "#define HAVE_WIC 1" >>confdefs.h
+
+               loaders="${loaders} wic"
+               WIC_CFLAGS=$ADDED_CFLAGS
+               WIC_LIBS=$ADDED_LIBS
+               { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WIC cflags is ${WIC_CFLAGS}" >&5
+printf "%s\n" "$as_me: WIC cflags is ${WIC_CFLAGS}" >&6;}
+               { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WIC libs is ${WIC_LIBS}" >&5
+printf "%s\n" "$as_me: WIC libs is ${WIC_LIBS}" >&6;}
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WIC is not available" >&5
+printf "%s\n" "$as_me: WIC is not available" >&6;} ;;
+esac
+fi
         ;;
     *)
         have_wic=no
@@ -19416,21 +19447,6 @@ done
     esac
     CFLAGS=$CFLAGS_BACKUP
     LIBS=$LIBS_BACKUP
-    if test "x$have_wic" = "xyes"
-then :
-
-printf "%s\n" "#define HAVE_WIC 1" >>confdefs.h
-
-           loaders="${loaders} wic"
-           WIC_CFLAGS=$ADDED_CFLAGS
-           WIC_LIBS=$ADDED_LIBS
-           { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WIC is available" >&5
-printf "%s\n" "$as_me: WIC is available" >&6;}
-else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WIC is not available" >&5
-printf "%s\n" "$as_me: WIC is not available" >&6;} ;;
-esac
-fi
 fi
 
 
