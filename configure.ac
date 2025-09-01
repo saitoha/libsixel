@@ -190,7 +190,7 @@ AC_ARG_WITH([winhttp],
             [AS_HELP_STRING([--with-winhttp],
                             [whether to build with WinHTTP, windows only (default: auto)])],
             [],
-            [with_wic=auto])
+            [with_winhttp=auto])
 
 AC_ARG_WITH(pkgconfigdir,
             AS_HELP_STRING([--with-pkgconfigdir],
@@ -491,7 +491,6 @@ have_png="no"
 have_winpthread="no"
 have_wic="no"
 
-AC_MSG_CHECKING([for gdk-pixbuf2])
 if test x$with_gdk_pixbuf2 != xno; then
     AC_MSG_NOTICE([checking for gdk-pixbuf2])
     if test x${PKG_CONFIG} != x; then
@@ -519,8 +518,8 @@ fi
 AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
 
-AC_MSG_CHECKING([for GD])
 if test x$with_gd != xno; then
+    AC_MSG_NOTICE([checking for GD])
     CFLAGS_BACKUP=$CFLAGS
     LDFLAGS_BACKUP=$LDFLAGS
     if test x$with_gd != xyes -a x$with_gd != xauto; then
@@ -623,7 +622,6 @@ fi
 AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
 
-AC_MSG_CHECKING([for libcurl])
 if test x$with_libcurl != xno; then
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for libcurl])
@@ -678,16 +676,15 @@ fi
 AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
 
-AC_MSG_CHECKING([for WinHTTP])
 if test x$with_winhttp != xno; then
     case "$host_os" in
     mingw* | cygwin* | msys*)
-        AC_MSG_RESULT([checking on Windows host])
+        AC_MSG_NOTICE([checking for WinHTTP])
         CFLAGS_BACKUP="$CFLAGS"
         LIBS_BACKUP="$LIBS"
-        if test x$with_png != xyes -a x$with_png != xauto; then
-            if test ! -d "$with_png"; then
-                AC_MSG_ERROR(["${with_png}" is not directory])
+        if test x$with_winhttp != xyes -a x$with_winhttp != xauto; then
+            if test ! -d "$with_winhttp"; then
+                AC_MSG_ERROR(["${with_winhttp}" is not directory])
             fi
             ADDED_CFLAGS="-I${with_winhttp}/include"
             ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
@@ -712,26 +709,36 @@ if test x$with_winhttp != xno; then
                           [WinHttpOpen],
                           [],
                           [have_winhttp=no
-                           AC_MSG_ERROR([library wincodecs is not avilable.])])],
+                           AC_MSG_ERROR([library wincodecs is not avilable.])
+                          ])],
             [have_winhttp=no
-             AC_MSG_ERROR([windows.h or winhttp.h is not avilable.])])
+             AC_MSG_ERROR([windows.h or winhttp.h is not avilable.])
+            ])
+        CFLAGS=$CFLAGS_BACKUP
+        LIBS=$LIBS_BACKUP
+
+        AS_IF([test "x$have_winhttp" = "xyes"],
+              [AC_DEFINE([HAVE_WINHTTP],
+                         [1],
+                         [whether WinHTTP is available])
+               if test x${net} = x; then
+                   net="winhttp"
+               else
+                   net="${net} winhttp"
+               fi
+               WINHTTP_CFLAGS=$ADDED_CFLAGS
+               WINHTTP_LIBS=$ADDED_LIBS],
+              [])
+
+        AC_MSG_NOTICE([winhttp cflags is ${WINHTTP_CFLAGS}])
+        AC_MSG_NOTICE([winhttp libs is ${WINHTTP_LIBS}])
         ;;
     *)
         have_winhttp=no
         ;;
     esac
-    CFLAGS=$CFLAGS_BACKUP
-    LIBS=$LIBS_BACKUP
-    AS_IF([test "x$have_winhttp" = "xyes"],
-          [AC_DEFINE([HAVE_WINHTTP],
-                     [1],
-                     [whether WinHTTP is available])
-           net="${net} winhttp"
-           WINHTTP_CFLAGS=$ADDED_CFLAGS
-           WINHTTP_LIBS=$ADDED_LIBS
-           AC_MSG_NOTICE([WinHTTP is available])],
-          [AC_MSG_NOTICE([WinHTTP is not available])])
 fi
+
 AC_SUBST(WINHTTP_CFLAGS)
 AC_SUBST(WINHTTP_LIBS)
 
@@ -857,6 +864,7 @@ AC_SUBST(LIBPNG_LIBS)
 
 if test x$with_winpthread != xno; then
     if test x$build = x$host; then
+        AC_MSG_NOTICE([checking for winpthread])
         AC_SEARCH_LIBS([nanosleep],
                        [winpthread],
                        [AC_DEFINE([HAVE_NANOSLEEP],
@@ -870,20 +878,23 @@ if test x$with_winpthread != xno; then
                                   [Define if libwinpthread is available])
                         have_winpthread=yes
                        ],
-                       [AC_MSG_ERROR([winpthread is not available])])
+                       [have_winpthread=yes])
+        AS_IF([test "x$have_winpthread" = "xyes"],
+              [AC_MSG_NOTICE([libpng cflags is ${LIBPNG_CFLAGS}])
+               AC_MSG_NOTICE([libpng libs is ${LIBPNG_LIBS}])],
+              [AC_MSG_NOTICE([libpng libs is not available])])
     fi
 fi
 
-AC_MSG_CHECKING([for Windows Imaging Component (WIC)])
 if test x$with_wic != xno; then
     case "$host_os" in
     mingw* | cygwin* | msys*)
-        AC_MSG_RESULT([checking on Windows host])
+        AC_MSG_NOTICE([checking for Windows Imaging Component (WIC)])
         CFLAGS_BACKUP="$CFLAGS"
         LIBS_BACKUP="$LIBS"
-        if test x$with_png != xyes -a x$with_png != xauto; then
-            if test ! -d "$with_png"; then
-                AC_MSG_ERROR(["${with_png}" is not directory])
+        if test x$with_wic != xyes -a x$with_wic != xauto; then
+            if test ! -d "$with_wic"; then
+                AC_MSG_ERROR(["${with_wic}" is not directory])
             fi
             ADDED_CFLAGS="-I${with_wic}/include"
             ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
@@ -903,15 +914,22 @@ if test x$with_wic != xno; then
                          [AC_CHECK_LIB([ole32],
                                        [main],
                                        [],
-                                       [have_wic=no
-                                        AC_MSG_ERROR([library ole32 is not avilable.])])
+                                       [have_wic=no])
                           AC_CHECK_LIB([windowscodecs],
                                        [main],
                                        [],
-                                       [have_wic=no
-                                        AC_MSG_ERROR([library wincodecs is not avilable.])])],
-                         [have_wic=no
-                          AC_MSG_ERROR([windows.h or wincodec.h is not avilable.])])
+                                       [have_wic=no])],
+                         [have_wic=no])
+        AS_IF([test "x$have_wic" = "xyes"],
+              [AC_DEFINE([HAVE_WIC],
+                         [1],
+                         [whether Windows Imaging Component (WIC) is available])
+               loaders="${loaders} wic"
+               WIC_CFLAGS=$ADDED_CFLAGS
+               WIC_LIBS=$ADDED_LIBS
+               AC_MSG_NOTICE([WIC cflags is ${WIC_CFLAGS}])
+               AC_MSG_NOTICE([WIC libs is ${WIC_LIBS}])],
+              [AC_MSG_NOTICE([WIC is not available])])
         ;;
     *)
         have_wic=no
@@ -919,15 +937,6 @@ if test x$with_wic != xno; then
     esac
     CFLAGS=$CFLAGS_BACKUP
     LIBS=$LIBS_BACKUP
-    AS_IF([test "x$have_wic" = "xyes"],
-          [AC_DEFINE([HAVE_WIC],
-                     [1],
-                     [whether Windows Imaging Component (WIC) is available])
-           loaders="${loaders} wic"
-           WIC_CFLAGS=$ADDED_CFLAGS
-           WIC_LIBS=$ADDED_LIBS
-           AC_MSG_NOTICE([WIC is available])],
-          [AC_MSG_NOTICE([WIC is not available])])
 fi
 AC_SUBST(WIC_CFLAGS)
 AC_SUBST(WIC_LIBS)
