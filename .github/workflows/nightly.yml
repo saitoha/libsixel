@@ -1,0 +1,163 @@
+name: libsixel Nightly build (scheduled pre-release)
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  nightly:
+    name: ${{ matrix.branch }} • ${{ matrix.os }} ${{ matrix.sys || 'native' }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        branch: [master, develop]
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: windows-latest
+            sys: MINGW64
+            branch: master
+          - os: windows-latest
+            sys: UCRT64
+            branch: master
+          - os: windows-latest
+            sys: CLANG64
+            branch: master
+          - os: windows-latest
+            sys: MINGW64
+            branch: develop
+          - os: windows-latest
+            sys: UCRT64
+            branch: develop
+          - os: windows-latest
+            sys: CLANG64
+            branch: develop
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        ref: ${{ matrix.branch }}
+
+    - name: Setup MSYS2 (Windows)
+      if: runner.os == 'Windows'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.sys }}
+        update: true
+        install: >-
+          make
+          zip
+        pacboy: >-
+          cc:p
+
+    - name: Configure and build (non-Windows)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        ./configure \
+            --without-png \
+            --without-jpeg \
+            --without-libcurl \
+            --without-bashcompletiondir \
+            --without-zshcompletiondir \
+            --disable-python \
+            --disable-dependency-tracking
+        make -j$(getconf _NPROCESSORS_ONLN)
+        make check
+        mkdir -p libsixel
+        make install DESTDIR=$(pwd)/libsixel
+        cp README.md LICENSE* libsixel/
+        zip -r libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
+
+    - name: Configure and build (Windows)
+      if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: |
+        ./configure LDFLAGS="-Wl,-static -lwinpthread" \
+            --without-png \
+            --without-jpeg \
+            --without-libcurl \
+            --without-bashcompletiondir \
+            --without-zshcompletiondir \
+            --disable-python \
+            --enable-static \
+            --disable-shared \
+            --disable-dependency-tracking
+        make -j$(getconf _NPROCESSORS_ONLN)
+        make check
+        mkdir -p libsixel
+        make install DESTDIR=$(pwd)/libsixel
+        cp README.md LICENSE* libsixel/
+        zip -r libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}
+        path: libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip
+        retention-days: 7
+        overwrite: true
+        compression-level: 0
+
+  release:
+    needs: nightly
+    runs-on: ubuntu-latest
+    concurrency:
+      group: nightly-release-aggregate
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          pattern: libsixel-*
+          merge-multiple: true
+
+      - name: Debug downloaded artifacts
+        shell: bash
+        run: |
+          echo "Downloaded files:"
+          find artifacts -type f -exec ls -lh {} \; || echo "No files found"
+          echo ""
+          echo "Artifacts directory size:"
+          du -sh artifacts || echo "No artifacts directory found"
+
+      - name: Create and publish nightly pre-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="nightly-latest"
+          if gh release view "$TAG_NAME" --repo ${{ github.repository }} >/dev/null 2>&1; then
+            echo "Updating existing $TAG_NAME"
+            gh release edit "$TAG_NAME" \
+              --title "libsixel Nightly" \
+              --notes "Nightly from multiple branches/OS. Generated on $(date -u +'%Y-%m-%dT%H:%M:%SZ') (UTC)" \
+              --prerelease \
+              --repo ${{ github.repository }}
+          else
+            echo "Creating $TAG_NAME"
+            gh release create "$TAG_NAME" \
+              --title "libsixel Nightly" \
+              --notes "Nightly from multiple branches/OS. Generated on $(date -u +'%Y-%m-%dT%H:%M:%SZ') (UTC)" \
+              --prerelease \
+              --repo ${{ github.repository }}
+          fi
+          gh release upload "$TAG_NAME" artifacts/*.zip --clobber --repo ${{ github.repository }}
+
+# emacs Local Variables:
+# emacs mode: c
+# emacs tab-width: 4
+# emacs indent-tabs-mode: nil
+# emacs c-basic-offset: 4
+# emacs End:
+# vim: set ft=awk et ts=4 sw=0 sts=-1 fdm=marker fdl=0:

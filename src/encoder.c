@@ -31,8 +31,7 @@
 #endif  /* HAVE_STRING_H */
 #if HAVE_UNISTD_H
 # include <unistd.h>
-#endif  /* HAVE_UNISTD_H */
-#if HAVE_SYS_UNISTD_H
+#elif HAVE_SYS_UNISTD_H
 # include <sys/unistd.h>
 #endif  /* HAVE_SYS_UNISTD_H */
 #if HAVE_SYS_TYPES_H
@@ -40,8 +39,7 @@
 #endif  /* HAVE_SYS_TYPES_H */
 #if HAVE_TIME_H
 # include <time.h>
-#endif  /* HAVE_TIME_H */
-#if HAVE_SYS_TIME_H
+#elif HAVE_SYS_TIME_H
 # include <sys/time.h>
 #endif  /* HAVE_SYS_TIME_H */
 #if HAVE_INTTYPES_H
@@ -56,11 +54,63 @@
 #if HAVE_FCNTL_H
 # include <fcntl.h>
 #endif  /* HAVE_FCNTL_H */
+#if HAVE_ERRNO_H
+# include <errno.h>
+#endif  /* HAVE_ERRNO_H */
 
 #include <sixel.h>
 #include "tty.h"
 #include "encoder.h"
 #include "rgblookup.h"
+
+
+#if defined(_WIN32)
+
+# include <windows.h>
+
+# if !defined(HAVE_NANOSLEEP)
+#define HAVE_NANOSLEEP 1
+static int
+nanosleep(const struct timespec *req, struct timespec *rem)
+{
+    LONGLONG nanoseconds;
+    LARGE_INTEGER dueTime;
+
+    if (req == NULL || req->tv_sec < 0 || req->tv_nsec < 0 ||
+        req->tv_nsec >= 1000000000L) {
+        errno = EINVAL;
+        return (-1);
+    }
+
+    /* Convert to 100-nanosecond intervals (Windows FILETIME units) */
+    nanoseconds = req->tv_sec * 1000000000LL + req->tv_nsec;
+    dueTime.QuadPart = -(nanoseconds / 100); /* Negative for relative time */
+
+    HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
+    if (timer == NULL) {
+        errno = EFAULT;  /* Approximate error */
+        return (-1);
+    }
+
+    if (!SetWaitableTimer(timer, &dueTime, 0, NULL, NULL, FALSE)) {
+        CloseHandle(timer);
+        errno = EFAULT;
+        return (-1);
+    }
+
+    (void) WaitForSingleObject(timer, INFINITE);
+    (void) CloseHandle(timer);
+
+    /* No interruption handling, so rem is unchanged */
+    if (rem != NULL) {
+        rem->tv_sec = 0;
+        rem->tv_nsec = 0;
+    }
+
+    return (0);
+}
+# endif  /* HAVE_NANOSLEEP */
+#endif /* _WIN32 */
 
 
 static char *
@@ -621,6 +671,20 @@ sixel_encoder_do_resize(
     src_width = sixel_frame_get_width(frame);
     src_height = sixel_frame_get_height(frame);
 
+    if (src_width < 1) {
+         sixel_helper_set_additional_message(
+             "sixel_encoder_do_resize: "
+             "detected a frame with a non-positive width.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (src_height < 1) {
+         sixel_helper_set_additional_message(
+             "sixel_encoder_do_resize: "
+             "detected a frame with a non-positive height.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
     /* settings around scaling */
     dst_width = encoder->pixelwidth;    /* may be -1 (default) */
     dst_height = encoder->pixelheight;  /* may be -1 (default) */
@@ -636,11 +700,11 @@ sixel_encoder_do_resize(
 
     /* if only either width or height is set, set also the other
        to retain frame aspect ratio */
-    if (encoder->pixelwidth > 0 && dst_height <= 0) {
-        dst_height = src_height * encoder->pixelwidth / src_width;
+    if (dst_width > 0 && dst_height <= 0) {
+        dst_height = src_height * dst_width / src_width;
     }
-    if (encoder->pixelheight > 0 && dst_width <= 0) {
-        dst_width = src_width * encoder->pixelheight / src_height;
+    if (dst_height > 0 && dst_width <= 0) {
+        dst_width = src_width * dst_height / src_height;
     }
 
     /* do resize */
@@ -730,9 +794,9 @@ sixel_debug_print_palette(
     fprintf(stderr, "palette:\n");
     for (i = 0; i < sixel_dither_get_num_of_palette_colors(dither); ++i) {
         fprintf(stderr, "%d: #%02x%02x%02x\n", i,
+                palette[i * 3 + 0],
                 palette[i * 3 + 1],
-                palette[i * 3 + 2],
-                palette[i * 3 + 3]);
+                palette[i * 3 + 2]);
     }
 }
 
@@ -1804,7 +1868,7 @@ sixel_encoder_encode_bytes(
     int                 /* in */    ncolors)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    sixel_frame_t *frame;
+    sixel_frame_t *frame = NULL;
 
     if (encoder == NULL || bytes == NULL) {
         status = SIXEL_BAD_ARGUMENT;
@@ -1830,6 +1894,13 @@ sixel_encoder_encode_bytes(
     status = SIXEL_OK;
 
 end:
+    /* we need to free the frame before exiting, but we can't use the
+       sixel_frame_destroy function, because that will also attempt to
+       free the pixels and palette, which we don't own */
+    if (frame != NULL && encoder->allocator != NULL) {
+        sixel_allocator_free(encoder->allocator, frame);
+        sixel_allocator_unref(encoder->allocator);
+    }
     return status;
 }
 

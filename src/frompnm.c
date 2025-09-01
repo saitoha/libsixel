@@ -150,6 +150,8 @@ load_pnm(unsigned char      /* in */  *p,
     if (p == end) {
         /* check empty content */
         /* Issue 71: https://github.com/saitoha/libsixel/issues/71 */
+        sixel_helper_set_additional_message(
+            "load_pnm: the 2nd line (width height) is empty");
         goto invalid;
     }
 
@@ -198,6 +200,8 @@ load_pnm(unsigned char      /* in */  *p,
         if (p == end) {
             /* check empty content */
             /* Issue 71: https://github.com/saitoha/libsixel/issues/71 */
+            sixel_helper_set_additional_message(
+                "load_pnm: the 3nd line (depth) is empty");
             goto invalid;
         }
         s = tmp;
@@ -217,6 +221,9 @@ load_pnm(unsigned char      /* in */  *p,
     }
 
     if (width < 1 || height < 1 || deps < 1) {
+        sixel_helper_set_additional_message(
+            "load_pnm: invalid data detected: "
+            "width < 1 || height < 1 || deps < 1");
         goto invalid;
     }
 
@@ -319,8 +326,6 @@ unknown:
 
 invalid:
     status = SIXEL_RUNTIME_ERROR;
-    sixel_helper_set_additional_message(
-        "load_pnm: invalid data detected.");
     sixel_allocator_free(allocator, *result);
     *result = NULL;
     goto end;

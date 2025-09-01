@@ -32,11 +32,11 @@ dist-windows: dist-zip
 
 dist-windows-i686-vexe:
 	tools/vexe --host=i686-w64-mingw32 debian dist-windows
-	docker ps -a --filter ancestor=libsixel-debian --format '{{.ID}}' | xargs -I{} docker cp {}:/tmp/libsixel/@PACKAGE_NAME@-@PACKAGE_VERSION@-i686-w64-mingw32.zip .
+	docker ps -a --filter ancestor=libsixel-debian --format '{{.ID}}' | xargs -I{} docker cp {}:/tmp/libsixel/lib@PACKAGE_NAME@-@PACKAGE_VERSION@-i686-w64-mingw32.zip .
 
 dist-windows-x86_64-vexe:
 	tools/vexe --host=x86_64-w64-mingw32 debian dist-windows
-	docker ps -a --filter ancestor=libsixel-debian --format '{{.ID}}' | xargs -I{} docker cp {}:/tmp/libsixel/@PACKAGE_NAME@-@PACKAGE_VERSION@-x86_64-w64-mingw32.zip .
+	docker ps -a --filter ancestor=libsixel-debian --format '{{.ID}}' | xargs -I{} docker cp {}:/tmp/libsixel/lib@PACKAGE_NAME@-@PACKAGE_VERSION@-x86_64-w64-mingw32.zip .
 
 unittest: all
 	cd $(srcdir)/src && $(MAKE) unittest 2>&1 |tee $(builddir)/unittest.log
@@ -89,6 +89,21 @@ issue-165:
 
 issue-165-vexe:
 	tools/vexe --without-png ubuntu issue-165
+
+issue-166:
+	converters/img2sixel ../tests/issue/166/poc -w128 ; test $$? = 255 -o $$? = 127
+
+issue-166-vexe:
+	tools/vexe --platform=amd64 ubuntu issue-166
+
+issue-167:
+	converters/img2sixel ../tests/issue/167/poc -h128 ; test $$? = 255 -o $$? = 127
+
+issue-167-vexe:
+	tools/vexe --platform=amd64 ubuntu issue-167
+
+issue-200:
+	converters/img2sixel --7bit-mode -8 --invert --palette-type=auto --verbose tests/issue/200/POC_img2sixel_heap_buffer_overflow -o /dev/null
 
 libsixel-libsixel-issue-73:
 	converters/img2sixel tests/issue/libsixel-libsixel/73/stbi_1561_poc.bin

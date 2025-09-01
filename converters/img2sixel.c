@@ -29,8 +29,7 @@
 
 #if HAVE_UNISTD_H
 # include <unistd.h>
-#endif
-#if HAVE_SYS_UNISTD_H
+#elif HAVE_SYS_UNISTD_H
 # include <sys/unistd.h>
 #endif
 #if HAVE_SYS_TYPES_H
@@ -44,8 +43,7 @@
 #endif
 #if HAVE_SIGNAL_H
 # include <signal.h>
-#endif
-#if HAVE_SYS_SIGNAL_H
+#elif HAVE_SYS_SIGNAL_H
 # include <sys/signal.h>
 #endif
 

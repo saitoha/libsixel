@@ -1,6 +1,6 @@
 {
   "name": "libsixel",
-  "version": "@PACKAGE_VERSION@",
+  "version": "v@PACKAGE_VERSION@",
   "repo": "saitoha/libsixel",
   "description": "@PACKAGE_DESCRIPTION@",
   "keywords": ["terminal", "graphics", "image", "sixel"],

@@ -53,6 +53,43 @@ matrix:
 #    env: XCC=gcc HOST= PREFIX=/usr/local DEBUG="--enable-tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" JPEG="--with-jpeg" PNG="--with-png" LIBCURL="--with-libcurl"
   - os: linux
     env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= JPEG="--with-jpeg" PNG="--with-png" LIBCURL="--with-libcurl" GCOV="--enable-gcov" STATIC="--disable-shared"
+#Added power jobs
+  - os: linux
+    arch: ppc64le
+    env: XCC=gcc HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= LIBCURL=--without-libcurl JPEG=--without-jpeg PNG=--without-png
+  - os: linux
+    arch: ppc64le
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= LIBCURL=--without-libcurl JPEG=--without-jpeg PNG=--without-png
+  - os: linux
+    arch: ppc64le
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= JPEG="--with-jpeg" PNG="--with-png"
+  - os: linux
+    arch: ppc64le
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" JPEG=--without-jpeg PNG=--without-png
+  - os: linux
+    arch: ppc64le
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
+  - os: linux
+    arch: ppc64le
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= GD="--with-gd" JPEG=--without-jpeg PNG=--without-png
+  - os: linux
+    arch: ppc64le
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
+  - os: linux
+    arch: ppc64le
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= GD="--with-gd" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
+  - os: linux
+    arch: ppc64le
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" JPEG=--without-jpeg PNG=--without-png
+  - os: linux
+    arch: ppc64le
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" LIBCURL="--with-libcurl" JPEG=--without-jpeg PNG=--without-png
+  - os: linux
+    arch: ppc64le
+    env: XCC=gcc HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= GDKPIXBUF="--with-gdk-pixbuf2" GD="--with-gd" JPEG="--with-jpeg" PNG="--with-png" LIBCURL="--with-libcurl"
+  - os: linux
+    arch: ppc64le
+    env: XCC=clang HOST= PREFIX=/usr DEBUG="--enable-tests --enable-debug" WINE= JPEG="--with-jpeg" PNG="--with-png" LIBCURL="--with-libcurl" GCOV="--enable-gcov" STATIC="--disable-shared"
 
 before_install:
   - "if [ x$TRAVIS_OS_NAME = xlinux ]; then sudo apt-get -qq update --force-yes > /dev/null; fi"
