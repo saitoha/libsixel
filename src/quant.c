@@ -1038,7 +1038,7 @@ diffuse_stucki(unsigned char *data, int width, int height,
      *  2/48    4/48    8/48    4/48    2/48
      *  1/48    2/48    4/48    2/48    1/48
      */
-    if (x < height - 2 && y < width - 2) {
+    if (x < width - 2 && y < height - 2) {
         pos = y * width + x;
         error_diffuse_precise(data, pos + width * 0 + 1, depth, error, 1, 6);
         error_diffuse_precise(data, pos + width * 0 + 2, depth, error, 1, 12);
