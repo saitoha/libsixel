@@ -89,6 +89,7 @@ SIXEL_DIFFUSE_STUCKI    = 0x5  # diffuse with Stucki's method
 SIXEL_DIFFUSE_BURKES    = 0x6  # diffuse with Burkes' method
 SIXEL_DIFFUSE_A_DITHER  = 0x7  # positionally stable arithmetic dither
 SIXEL_DIFFUSE_X_DITHER  = 0x8  # positionally stable arithmetic xor based dither
+SIXEL_DIFFUSE_LSO1      = 0x9  # diffuse with libsixel original method
 
 # quality modes
 SIXEL_QUALITY_AUTO      = 0x0  # choose quality mode automatically
@@ -213,6 +214,7 @@ SIXEL_OPTFLAG_DIFFUSION        = 'd'  # -d DIFFUSIONTYPE, --diffusion=DIFFUSIONT
                                       #                        arithmetic dither
                                       #            x_dither -> positionally stable
                                       #                        arithmetic xor based dither
+                                      #            lso1     -> libsixel's original method
 
 SIXEL_OPTFLAG_FIND_LARGEST     = 'f'  # -f FINDTYPE, --find-largest=FINDTYPE:
                                       #         choose method for finding the largest

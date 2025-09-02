@@ -86,8 +86,14 @@ void show_version(void)
 #else
            "no\n"
 #endif
+           "  WIC: "
+#ifdef HAVE_WIC
+           "yes\n"
+#else
+           "no\n"
+#endif
            "\n"
-           "Copyright (C) 2014-2018 Hayaki Saito <saitoha@me.com>.\n"
+           "Copyright (C) 2014-2025 Hayaki Saito <saitoha@me.com>.\n"
            "\n"
            "Permission is hereby granted, free of charge, to any person obtaining a copy of\n"
            "this software and associated documentation files (the \"Software\"), to deal in\n"
@@ -170,6 +176,7 @@ void show_help(void)
             "                                         arithmetic dither\n"
             "                             x_dither -> positionally stable\n"
             "                                         arithmetic xor based dither\n"
+            "                             lso1     -> libsixel's original method\n"
             "-f FINDTYPE, --find-largest=FINDTYPE\n"
             "                           choose method for finding the largest\n"
             "                           dimension of median cut boxes for\n"

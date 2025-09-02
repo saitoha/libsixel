@@ -12,7 +12,7 @@
 /* Define to 1 if you have the 'clearerr' function. */
 #undef HAVE_CLEARERR
 
-/* Define to 1 if you have the 'clock' function. */
+/* Define if clock exists */
 #undef HAVE_CLOCK
 
 /* Define to 1 if you have the <ctype.h> header file. */
@@ -84,7 +84,8 @@
 /* define 1 if GCC supports -Wclobbered */
 #undef HAVE_DIAGNOSTIC_CLOBBERED
 
-/* define 1 if GCC supports -Wdeprecated-declarations */
+/* Define to 1 if the compiler can ignore -Wdeprecated-declarations via
+   pragmas */
 #undef HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 
 /* define 1 if GCC supports -Wdouble-promotion */
@@ -102,7 +103,8 @@
 /* define 1 if GCC supports -Wswitch-default */
 #undef HAVE_DIAGNOSTIC_SWITCH_DEFAULT
 
-/* define 1 if GCC supports -Wtypedef-redefinition */
+/* Define to 1 if the compiler can ignore -Wtypedef-redefinition via pragmas
+   */
 #undef HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
 
 /* define 1 if GCC supports -Wuninitialized */
@@ -125,6 +127,9 @@
 
 /* Define to 1 if you have the 'floor' function. */
 #undef HAVE_FLOOR
+
+/* define 1 if GCC supports -fno-emulated-tls */
+#undef HAVE_FNO_EMULATED_TLS
 
 /* Define to 1 if the system has the `deprecated' function attribute */
 #undef HAVE_FUNC_ATTRIBUTE_DEPRECATED
@@ -168,8 +173,17 @@
 /* Define to 1 if you have the 'm' library (-lm). */
 #undef HAVE_LIBM
 
+/* Define to 1 if you have the 'ole32' library (-lole32). */
+#undef HAVE_LIBOLE32
+
 /* whether libpng is available */
 #undef HAVE_LIBPNG
+
+/* Define to 1 if you have the 'windowscodecs' library (-lwindowscodecs). */
+#undef HAVE_LIBWINDOWSCODECS
+
+/* Define to 1 if you have the 'winhttp' library (-lwinhttp). */
+#undef HAVE_LIBWINHTTP
 
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
@@ -302,6 +316,18 @@
 /* Define to 1 if the system has the `deprecated' variable attribute */
 #undef HAVE_VAR_ATTRIBUTE_DEPRECATED
 
+/* whether Windows Imaging Component (WIC) is available */
+#undef HAVE_WIC
+
+/* Define to 1 if you have the <wincodec.h> header file. */
+#undef HAVE_WINCODEC_H
+
+/* Define to 1 if you have the <windows.h> header file. */
+#undef HAVE_WINDOWS_H
+
+/* whether WinHTTP is available */
+#undef HAVE_WINHTTP
+
 /* Define to 1 if the system has the type '_Bool'. */
 #undef HAVE__BOOL
 
@@ -343,6 +369,9 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* Define if libwinpthread is available */
+#undef WITH_WINPTHREAD
 
 /* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
    <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the

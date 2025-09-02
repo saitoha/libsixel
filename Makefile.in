@@ -191,7 +191,7 @@ am__define_uniq_tagged_files = \
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(srcdir)/libsixel.pc.in $(srcdir)/package.json.in.in \
 	ChangeLog NEWS README.md compile config.guess config.sub \
-	depcomp install-sh ltmain.sh missing py-compile
+	install-sh ltmain.sh missing py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -329,6 +329,10 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+WIC_CFLAGS = @WIC_CFLAGS@
+WIC_LIBS = @WIC_LIBS@
+WINHTTP_CFLAGS = @WINHTTP_CFLAGS@
+WINHTTP_LIBS = @WINHTTP_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@

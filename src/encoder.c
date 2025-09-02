@@ -37,11 +37,13 @@
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif  /* HAVE_SYS_TYPES_H */
-#if HAVE_TIME_H
-# include <time.h>
-#elif HAVE_SYS_TIME_H
-# include <sys/time.h>
-#endif  /* HAVE_SYS_TIME_H */
+#if defined(HAVE_CLOCK) || defined(HAVE_NANOSLEEP)
+# if HAVE_TIME_H
+#  include <time.h>
+# elif HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# endif  /* HHAVE_TIME_H HAVE_SYS_TIME_H */
+#endif  /* defined(HAVE_CLOCK) || defined(HAVE_NANOSLEEP) */
 #if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif  /* HAVE_INTTYPES_H */
@@ -68,13 +70,22 @@
 
 # include <windows.h>
 
+typedef long clock_win_t;
+# if defined(CLOCKS_PER_SEC)
+#  undef CLOCKS_PER_SEC
+# endif
+# define CLOCKS_PER_SEC 1000
+
 # if !defined(HAVE_NANOSLEEP)
-#define HAVE_NANOSLEEP 1
+# define HAVE_NANOSLEEP_WIN 1
 static int
-nanosleep(const struct timespec *req, struct timespec *rem)
+nanosleep_win(
+    struct timespec const *req,
+    struct timespec *rem)
 {
     LONGLONG nanoseconds;
     LARGE_INTEGER dueTime;
+    HANDLE timer;
 
     if (req == NULL || req->tv_sec < 0 || req->tv_nsec < 0 ||
         req->tv_nsec >= 1000000000L) {
@@ -86,14 +97,14 @@ nanosleep(const struct timespec *req, struct timespec *rem)
     nanoseconds = req->tv_sec * 1000000000LL + req->tv_nsec;
     dueTime.QuadPart = -(nanoseconds / 100); /* Negative for relative time */
 
-    HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
+    timer = CreateWaitableTimer(NULL, TRUE, NULL);
     if (timer == NULL) {
         errno = EFAULT;  /* Approximate error */
         return (-1);
     }
 
-    if (!SetWaitableTimer(timer, &dueTime, 0, NULL, NULL, FALSE)) {
-        CloseHandle(timer);
+    if (! SetWaitableTimer(timer, &dueTime, 0, NULL, NULL, FALSE)) {
+        (void) CloseHandle(timer);
         errno = EFAULT;
         return (-1);
     }
@@ -110,6 +121,25 @@ nanosleep(const struct timespec *req, struct timespec *rem)
     return (0);
 }
 # endif  /* HAVE_NANOSLEEP */
+
+# if !defined(HAVE_CLOCK)
+# define HAVE_CLOCK_WIN 1
+static clock_win_t
+clock_win(void)
+{
+    FILETIME ct, et, kt, ut;
+    ULARGE_INTEGER u, k;
+
+    if (! GetProcessTimes(GetCurrentProcess(), &ct, &et, &kt, &ut)) {
+        return (clock_win_t) - 1;
+    }
+    u.LowPart = ut.dwLowDateTime; u.HighPart = ut.dwHighDateTime;
+    k.LowPart = kt.dwLowDateTime; k.HighPart = kt.dwHighDateTime;
+    /* 100ns -> ms */
+    return (clock_win_t)((u.QuadPart + k.QuadPart) / 10000ULL);
+}
+# endif  /* HAVE_CLOCK */
+
 #endif /* _WIN32 */
 
 
@@ -814,13 +844,15 @@ sixel_encoder_output_without_macro(
     enum { message_buffer_size = 256 };
     char message[message_buffer_size];
     int nwrite;
-#if HAVE_NANOSLEEP
+#if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
     int dulation;
     int delay;
     int lag = 0;
     struct timespec tv;
-# if HAVE_CLOCK
+# if defined(HAVE_CLOCK)
     clock_t start;
+# elif defined(HAVE_CLOCK_WIN)
+    clock_win_t start;
 # endif
 #endif
     unsigned char *pixbuf;
@@ -864,14 +896,19 @@ sixel_encoder_output_without_macro(
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-#if HAVE_NANOSLEEP && HAVE_CLOCK
+#if defined(HAVE_CLOCK)
     start = clock();
+#elif defined(HAVE_CLOCK_WIN)
+    start = clock_win();
 #endif
-#if HAVE_NANOSLEEP
+#if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
     delay = sixel_frame_get_delay(frame);
     if (delay > 0 && !encoder->fignore_delay) {
-# if HAVE_CLOCK
+# if defined(HAVE_CLOCK)
         dulation = (int)((clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC) - (int)lag;
+        lag = 0;
+# elif defined(HAVE_CLOCK_WIN)
+        dulation = (int)((clock_win() - start) * 1000 * 1000 / CLOCKS_PER_SEC) - (int)lag;
         lag = 0;
 # else
         dulation = 0;
@@ -879,7 +916,11 @@ sixel_encoder_output_without_macro(
         if (dulation < 10000 * delay) {
             tv.tv_sec = 0;
             tv.tv_nsec = (long)((10000 * delay - dulation) * 1000);
+# if defined(HAVE_NANOSLEEP)
             nanosleep(&tv, NULL);
+# elif defined(HAVE_NANOSLEEP_WIN)  /* _WIN32 */
+            nanosleep_win(&tv, NULL);
+# endif
         } else {
             lag = (int)(10000 * delay - dulation);
         }
@@ -916,23 +957,27 @@ sixel_encoder_output_with_macro(
     enum { message_buffer_size = 256 };
     char buffer[message_buffer_size];
     int nwrite;
-#if HAVE_NANOSLEEP
+#if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
     int dulation;
     int lag = 0;
     struct timespec tv;
-# if HAVE_CLOCK
+# if defined(HAVE_CLOCK)
     clock_t start;
+# elif defined(HAVE_CLOCK_WIN)
+    clock_win_t start;
 # endif
 #endif
     unsigned char *pixbuf;
     int width;
     int height;
-#if HAVE_NANOSLEEP
+#if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
     int delay;
 #endif
 
-#if HAVE_NANOSLEEP && HAVE_CLOCK
+#if defined(HAVE_CLOCK)
     start = clock();
+#elif defined(HAVE_CLOCK_WIN)
+    start = clock_win();
 #endif
     if (sixel_frame_get_loop_no(frame) == 0) {
         if (encoder->macro_number >= 0) {
@@ -984,19 +1029,28 @@ sixel_encoder_output_with_macro(
                 "sixel_encoder_output_with_macro: sixel_write_callback() failed.");
             goto end;
         }
-#if HAVE_NANOSLEEP
+#if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
         delay = sixel_frame_get_delay(frame);
         if (delay > 0 && !encoder->fignore_delay) {
-# if HAVE_CLOCK
+# if defined(HAVE_CLOCK)
             dulation = (int)((clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC) - (int)lag;
+            lag = 0;
+# elif defined(HAVE_CLOCK_WIN)
+            dulation = (int)((clock_win() - start) * 1000 * 1000 / CLOCKS_PER_SEC) - (int)lag;
             lag = 0;
 # else
             dulation = 0;
 # endif
             if (dulation < 10000 * delay) {
+# if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
                 tv.tv_sec = 0;
                 tv.tv_nsec = (long)((10000 * delay - dulation) * 1000);
+#  if defined(HAVE_NANOSLEEP)
                 nanosleep(&tv, NULL);
+#  else
+                nanosleep_win(&tv, NULL);
+#  endif
+# endif
             } else {
                 lag = (int)(10000 * delay - dulation);
             }
@@ -1442,6 +1496,8 @@ sixel_encoder_setopt(
             encoder->method_for_diffuse = SIXEL_DIFFUSE_A_DITHER;
         } else if (strcmp(value, "x_dither") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_X_DITHER;
+        } else if (strcmp(value, "lso1") == 0) {
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_LSO1;
         } else {
             sixel_helper_set_additional_message(
                 "specified diffusion method is not supported.");

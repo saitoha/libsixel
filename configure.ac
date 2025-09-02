@@ -20,7 +20,7 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
 AX_GCC_VAR_ATTRIBUTE([deprecated])
-if test x$ax_cv_have_func_attribute_deprecated != x; then
+if test x$ax_cv_have_var_attribute_deprecated != x; then
     AC_SUBST(attr_var_deprecated, [__attribute__\(\(deprecated\)\)])
 fi
 
@@ -31,39 +31,59 @@ fi
 
 AX_GCC_BUILTIN([__builtin_unreachable])
 
-CFLAGS_BACKUP=$CFLAGS
-CFLAGS="$CFLAGS -Werror"
-AC_COMPILE_IFELSE(
-  [AC_LANG_PROGRAM([
-                     #pragma GCC diagnostic push
-                     #pragma GCC diagnostic pop
-                     #pragma GCC diagnostic ignored "-Wtypedef-redefinition"
-                   ],
-                   [
-                     typedef int foo;
-                     typedef int foo;
-                   ])],
-  [AC_DEFINE(HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION,
-             1,
-             [define 1 if GCC supports -Wtypedef-redefinition])])
-CFLAGS=$CFLAGS_BACKUP
+AC_CACHE_CHECK(
+  [whether the compiler can silence -Wtypedef-redefinition via pragmas],
+  [ac_cv_have_diag_typedef_redef],
+  [
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   AC_COMPILE_IFELSE(
+     [AC_LANG_SOURCE([[
+       #if defined(__clang__) || defined(__GNUC__)
+       #pragma clang diagnostic push
+       #pragma clang diagnostic ignored "-Wtypedef-redefinition"
+       typedef int foo;
+       typedef int foo;
+       #pragma clang diagnostic pop
+       #endif
+     ]])],
+     [ac_cv_have_diag_typedef_redef=yes],
+     [ac_cv_have_diag_typedef_redef=no])
+   CFLAGS="$ac_save_CFLAGS"
+  ])
 
-CFLAGS_BACKUP=$CFLAGS
-CFLAGS="$CFLAGS -Werror"
-AC_COMPILE_IFELSE(
-  [AC_LANG_PROGRAM([
-                     #pragma GCC diagnostic push
-                     #pragma GCC diagnostic pop
-                     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-                     __attribute__((deprecated)) void test(void) {}
-                   ],
-                   [
-                     test();
-                   ])],
-  [AC_DEFINE(HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS,
-             1,
-             [define 1 if GCC supports -Wdeprecated-declarations])])
-CFLAGS=$CFLAGS_BACKUP
+AS_IF([test "x$ac_cv_have_diag_typedef_redef" = "xyes"], [
+  AC_DEFINE([HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION],
+            [1],
+            [Define to 1 if the compiler can ignore -Wtypedef-redefinition via pragmas])
+])
+
+AC_CACHE_CHECK(
+  [whether the compiler can silence -Wdeprecated-declarations],
+  [ac_cv_have_diag_deprecated_declarations],
+  [
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   AC_COMPILE_IFELSE(
+     [AC_LANG_SOURCE([[
+       #if defined(__clang__) || defined(__GNUC__)
+       #pragma clang diagnostic push
+       #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+       typedef int foo;
+       typedef int foo;
+       #pragma clang diagnostic pop
+       #endif
+     ]])],
+     [ac_cv_have_diag_deprecated_declarations=yes],
+     [ac_cv_have_diag_deprecated_declarations=no])
+   CFLAGS="$ac_save_CFLAGS"
+  ])
+
+AS_IF([test "x$ac_cv_have_diag_deprecated_declarations" = "xyes"], [
+  AC_DEFINE([HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS],
+            [1],
+            [Define to 1 if the compiler can ignore -Wdeprecated-declarations via pragmas])
+])
 
 # Options
 AC_ARG_ENABLE([img2sixel],
@@ -110,11 +130,23 @@ AC_ARG_WITH([png],
             [],
             [with_png=auto])
 
-#AC_ARG_WITH([wic],
-#            [AS_HELP_STRING([--with-wic],
-#                            [whether to build with windows WIC integration, windows only (default: no)])],
-#            [],
-#            [with_wic=no])
+AC_ARG_WITH([winpthread],
+            [AS_HELP_STRING([--with-winpthread],
+                            [whether to build with libwinpthread, windows only (default: no)])],
+            [],
+            [with_winpthread=no])
+
+AC_ARG_WITH([wic],
+            [AS_HELP_STRING([--with-wic],
+                            [whether to build with Windows Imaging Component (WIC), windows only (default: auto)])],
+            [],
+            [with_wic=auto])
+
+AC_ARG_WITH([winhttp],
+            [AS_HELP_STRING([--with-winhttp],
+                            [whether to build with WinHTTP, windows only (default: auto)])],
+            [],
+            [with_winhttp=auto])
 
 AC_ARG_WITH(pkgconfigdir,
             AS_HELP_STRING([--with-pkgconfigdir],
@@ -181,44 +213,105 @@ AS_IF([test x$cross_compile != xyes],
                             PKG_CONFIG=false])],
       [])
 
-AC_DEFUN([LS_CHECK_CFLAG], [
-   AC_MSG_CHECKING([if $CC supports $1])
-   saved_cflags="$CFLAGS"
-   CFLAGS="$1 -Werror"
-   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
-                     [AC_MSG_RESULT([yes])
-                      m4_default([$2], :)],
-                     [AC_MSG_RESULT([no])
-                      m4_default([$3], :)])
-   CFLAGS="$saved_cflags"
-])
+AC_DEFUN([LS_CHECK_CFLAG],
+         [AC_CACHE_CHECK([if $CC supports $1],
+                         [ac_cv_cc_flag_[]AS_TR_SH([$4])],
+                         [saved_cflags="$CFLAGS"
+                          CFLAGS="$1 -Werror"
+                          AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
+                                            [ac_cv_cc_flag_$4=yes],
+                                            [ac_cv_cc_flag_$4=no])
+                          CFLAGS="$saved_cflags"])
+          AS_IF([eval test \"x\$ac_cv_cc_flag_[]AS_TR_SH([$4])\" = xyes],
+                [m4_default([$2], :)],
+                [m4_default([$3], :)])
+         ])
 
 CPPFLAGS="$CPPFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L"
-LS_CHECK_CFLAG([-std=c99], [CFLAGS="$CFLAGS -std=c99"], [])
-LS_CHECK_CFLAG([-Wall],[AM_CFLAGS="$AM_CFLAGS -Wall"], [])
-LS_CHECK_CFLAG([-Wextra],[AM_CFLAGS="$AM_CFLAGS -Wextra"], [])
-LS_CHECK_CFLAG([-Wformat=2],[AM_CFLAGS="$AM_CFLAGS -Wformat=2"], [])
+LS_CHECK_CFLAG([-std=c99],
+               [CFLAGS="$CFLAGS -std=c99"],
+               [],
+               [std_c99])
+LS_CHECK_CFLAG([-Wall],
+               [AM_CFLAGS="$AM_CFLAGS -Wall"],
+               [],
+               [wall])
+LS_CHECK_CFLAG([-Wextra],
+               [AM_CFLAGS="$AM_CFLAGS -Wextra"],
+               [],
+               [wextra])
+LS_CHECK_CFLAG([-Wformat=2],
+               [AM_CFLAGS="$AM_CFLAGS -Wformat=2"],
+               [],
+               [wformat_2])
 LS_CHECK_CFLAG([-Wsign-conversion],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION, 1, [define 1 if GCC supports -Wsign-conversion])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION,
+                          [1],
+                          [define 1 if GCC supports -Wsign-conversion])],
+               [],
+               [wsign_conversion])
 LS_CHECK_CFLAG([-Wuninitialized],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_UNINITIALIZED, 1, [define 1 if GCC supports -Wuninitialized])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_UNINITIALIZED,
+                          [1],
+                          [define 1 if GCC supports -Wuninitialized])],
+               [],
+               [wuninitialized])
 LS_CHECK_CFLAG([-Wstrict-overflow],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW, 1, [define 1 if GCC supports -Wstrict-overeflow=1])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW,
+                          [1],
+                          [define 1 if GCC supports -Wstrict-overeflow=1])],
+               [],
+               [wstrict_overflow])
 LS_CHECK_CFLAG([-Wshadow],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW, 1, [define 1 if GCC supports -Wshadow])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW,
+                          [1],
+                          [define 1 if GCC supports -Wshadow])],
+               [],
+               [wshadow])
 LS_CHECK_CFLAG([-Wdouble-promotion],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_DOUBLE_PROMOTION, 1, [define 1 if GCC supports -Wdouble-promotion])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_DOUBLE_PROMOTION,
+                          [1],
+                          [define 1 if GCC supports -Wdouble-promotion])],
+               [],
+               [wdouble_promotions])
 LS_CHECK_CFLAG([-Wswitch-default],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT, 1, [define 1 if GCC supports -Wswitch-default])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT,
+                          [1],
+                          [define 1 if GCC supports -Wswitch-default])],
+               [],
+               [wswitch_default])
 LS_CHECK_CFLAG([-Wunused-function],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_FUNCTION, 1, [define 1 if GCC supports -Wunused-function])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_FUNCTION,
+                          [1],
+                          [define 1 if GCC supports -Wunused-function])],
+               [],
+               [wunused_function])
 LS_CHECK_CFLAG([-Wclobbered],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_CLOBBERED, 1, [define 1 if GCC supports -Wclobbered])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_CLOBBERED,
+                          [1],
+                          [define 1 if GCC supports -Wclobbered])],
+               [],
+               [wclobbered])
 LS_CHECK_CFLAG([-Wunused-but-set-variable],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE, 1, [define 1 if GCC supports -Wunused-but-set-variable])])
+               [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE,
+                          [1],
+                          [define 1 if GCC supports -Wunused-but-set-variable])],
+               [],
+               [wunused_but_set_variable])
 LS_CHECK_CFLAG([-Bsymbolic],
                [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
-                AC_DEFINE(HAVE_BSYMBOLIC, 1, [define 1 if GCC supports -Bsymbolic])])
+                AC_DEFINE(HAVE_BSYMBOLIC,
+                          [1],
+                          [define 1 if GCC supports -Bsymbolic])],
+               [],
+               [bsymbolic])
+LS_CHECK_CFLAG([-fno-emulated-tls],
+               [AM_CFLAGS="$AM_CFLAGS -Bfno-emulated-tls"
+                AC_DEFINE(HAVE_FNO_EMULATED_TLS,
+                          [1],
+                          [define 1 if GCC supports -fno-emulated-tls])],
+               [],
+               [fno_emulated_tls])
 AS_IF([test x$enable_debug = xyes],
       [LS_CHECK_CFLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
 AC_SUBST([AM_CFLAGS])
@@ -290,7 +383,6 @@ AC_CHECK_FUNCS([memcpy \
                 strdup \
                 strtoul \
                 calloc \
-                clock \
                 clearerr \
                 stat \
                 setjmp \
@@ -309,10 +401,6 @@ AC_CHECK_FUNCS([memcpy \
                 strstr \
                 strtol])
 
-AC_SEARCH_LIBS([nanosleep], [winpthread rt pthread],
-  [AC_DEFINE([HAVE_NANOSLEEP],[1],[Define if nanosleep exists])],
-  [AC_MSG_WARN([Define to 1 if you have the 'nanosleep' function.])])
-
 AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
                [
                    #ifdef HAVE_SIGNAL_H
@@ -326,28 +414,18 @@ loaders="stb_image"
 have_curl="no"
 have_jpeg="no"
 have_png="no"
-#have_wic="no"
-
-#if test x$with_wic != xno; then
-#    AC_CHECK_HEADERS([wincodec.h], [],
-#                     [AC_MSG_ERROR([WIC integration: wincodec.h is not avilable.])])
-#    AC_CHECK_LIB([ole32], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library ole32 is not avilable.])])
-#    AC_CHECK_LIB([uuid], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library uuid is not avilable.])])
-#    AC_CHECK_LIB([windowscodecs], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library wincodecs is not avilable.])])
-#    have_wic="yes"
-#fi
+have_winpthread="no"
+have_wic="auto"
+have_winhttp="auto"
 
 if test x$with_gdk_pixbuf2 != xno; then
+    AC_MSG_NOTICE([checking for gdk-pixbuf2])
     if test x${PKG_CONFIG} != x; then
         PKG_CHECK_MODULES([GDK_PIXBUF],
                           [gdk-pixbuf-2.0],
                           [have_gdk_pixbuf2=yes],
                           [have_gdk_pixbuf2=no])
         if test x$have_gdk_pixbuf2 != xno; then
-            AC_MSG_NOTICE([gdk-pixbuf: $have_gdk_pixbuf2])
             AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
             loaders="${loaders} gdk-pixbuf2"
         else
@@ -361,11 +439,12 @@ if test x$with_gdk_pixbuf2 != xno; then
     AC_MSG_NOTICE([gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}])
     AC_MSG_NOTICE([gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}])
 fi
+
 AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
 
-
 if test x$with_gd != xno; then
+    AC_MSG_NOTICE([checking for GD])
     CFLAGS_BACKUP=$CFLAGS
     LDFLAGS_BACKUP=$LDFLAGS
     if test x$with_gd != xyes -a x$with_gd != xauto; then
@@ -465,6 +544,7 @@ AC_SUBST(GD_LIBS)
 
 if test x$with_libcurl != xno; then
     if test x$build = x$host; then
+        AC_MSG_NOTICE([checking for libcurl])
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
         if test x$with_libcurl != xyes -a x$with_libcurl != xauto; then
@@ -503,12 +583,16 @@ if test x$with_libcurl != xno; then
         fi
     fi
     if test x$have_curl = xyes; then
+        if test x${net} = x; then
+            net="libcurl"
+        else
+            net="${net} libcurl"
+        fi
         AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
     else
         if test x$with_libcurl != xauto; then
             AC_MSG_ERROR([unable to find libcurl])
         fi
-        AC_MSG_NOTICE([libcurl is not available])
     fi
     AC_MSG_NOTICE([libcurl cflags is ${LIBCURL_CFLAGS}])
     AC_MSG_NOTICE([libcurl libs is ${LIBCURL_LIBS}])
@@ -516,8 +600,75 @@ fi
 AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
 
+if test x$with_winhttp != xno; then
+    case "$host_os" in
+    mingw* | cygwin* | msys*)
+        AC_MSG_NOTICE([checking for WinHTTP])
+        CFLAGS_BACKUP="$CFLAGS"
+        LIBS_BACKUP="$LIBS"
+        if test x$with_winhttp != xyes -a x$with_winhttp != xauto; then
+            if test ! -d "$with_winhttp"; then
+                AC_MSG_ERROR(["${with_winhttp}" is not directory])
+            fi
+            ADDED_CFLAGS="-I${with_winhttp}/include"
+            ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lwinhttp"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lwinhttp"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LIBS="${LIBS} ${ADDED_LIBS}"
+        have_winhttp=yes
+        AC_COMPILE_IFELSE(
+            [AC_LANG_PROGRAM([[
+              #include <windows.h>
+              #include <winhttp.h>
+            ]], [[]])],
+            [AC_CHECK_LIB([winhttp],
+                          [WinHttpOpen],
+                          [],
+                          [have_winhttp=no
+                           AC_MSG_ERROR([library wincodecs is not avilable.])
+                          ])],
+            [have_winhttp=no
+             AC_MSG_ERROR([windows.h or winhttp.h is not avilable.])
+            ])
+        CFLAGS=$CFLAGS_BACKUP
+        LIBS=$LIBS_BACKUP
+
+        AS_IF([test "x$have_winhttp" = "xyes"],
+              [AC_DEFINE([HAVE_WINHTTP],
+                         [1],
+                         [whether WinHTTP is available])
+               if test x${net} = x; then
+                   net="winhttp"
+               else
+                   net="${net} winhttp"
+               fi
+               WINHTTP_CFLAGS=$ADDED_CFLAGS
+               WINHTTP_LIBS=$ADDED_LIBS],
+              [])
+
+        AC_MSG_NOTICE([winhttp cflags is ${WINHTTP_CFLAGS}])
+        AC_MSG_NOTICE([winhttp libs is ${WINHTTP_LIBS}])
+        ;;
+    *)
+        have_winhttp=no
+        ;;
+    esac
+fi
+
+AC_SUBST(WINHTTP_CFLAGS)
+AC_SUBST(WINHTTP_LIBS)
+
 if test x$with_jpeg != xno; then
     if test x$build = x$host; then
+        AC_MSG_NOTICE([checking for jpeg])
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
         if test x$with_jpeg != xyes -a x$with_jpeg != xauto; then
@@ -572,6 +723,7 @@ AC_SUBST(LIBJPEG_LIBS)
 
 if test x$with_png != xno; then
     if test x$build = x$host; then
+        AC_MSG_NOTICE([checking for png])
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
         if test x$with_png != xyes -a x$with_png != xauto; then
@@ -630,6 +782,85 @@ fi
 AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBPNG_LIBS)
 
+if test x$with_winpthread != xno; then
+    if test x$build = x$host; then
+        AC_MSG_NOTICE([checking for winpthread])
+        AC_SEARCH_LIBS([nanosleep],
+                       [winpthread],
+                       [AC_DEFINE([HAVE_NANOSLEEP],
+                                  [1],
+                                  [Define if nanosleep exists])
+                        AC_DEFINE([HAVE_CLOCK],
+                                  [1],
+                                  [Define if clock exists])
+                        AC_DEFINE([WITH_WINPTHREAD],
+                                  [1],
+                                  [Define if libwinpthread is available])
+                        have_winpthread=yes
+                       ],
+                       [have_winpthread=yes])
+        AS_IF([test "x$have_winpthread" = "xyes"],
+              [AC_MSG_NOTICE([libpng cflags is ${LIBPNG_CFLAGS}])
+               AC_MSG_NOTICE([libpng libs is ${LIBPNG_LIBS}])],
+              [AC_MSG_NOTICE([libpng libs is not available])])
+    fi
+fi
+
+if test x$with_wic != xno; then
+    case "$host_os" in
+    mingw* | cygwin* | msys*)
+        AC_MSG_NOTICE([checking for Windows Imaging Component (WIC)])
+        CFLAGS_BACKUP="$CFLAGS"
+        LIBS_BACKUP="$LIBS"
+        if test x$with_wic != xyes -a x$with_wic != xauto; then
+            if test ! -d "$with_wic"; then
+                AC_MSG_ERROR(["${with_wic}" is not directory])
+            fi
+            ADDED_CFLAGS="-I${with_wic}/include"
+            ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LIBS="${LIBS} ${ADDED_LIBS}"
+        have_wic=yes
+        AC_CHECK_HEADERS([windows.h wincodec.h],
+                         [AC_CHECK_LIB([ole32],
+                                       [main],
+                                       [],
+                                       [have_wic=no])
+                          AC_CHECK_LIB([windowscodecs],
+                                       [main],
+                                       [],
+                                       [have_wic=no])],
+                         [have_wic=no])
+        AS_IF([test "x$have_wic" = "xyes"],
+              [AC_DEFINE([HAVE_WIC],
+                         [1],
+                         [whether Windows Imaging Component (WIC) is available])
+               loaders="${loaders} wic"
+               WIC_CFLAGS=$ADDED_CFLAGS
+               WIC_LIBS=$ADDED_LIBS
+               AC_MSG_NOTICE([WIC cflags is ${WIC_CFLAGS}])
+               AC_MSG_NOTICE([WIC libs is ${WIC_LIBS}])],
+              [AC_MSG_NOTICE([WIC is not available])])
+        ;;
+    *)
+        have_wic=no
+        ;;
+    esac
+    CFLAGS=$CFLAGS_BACKUP
+    LIBS=$LIBS_BACKUP
+fi
+AC_SUBST(WIC_CFLAGS)
+AC_SUBST(WIC_LIBS)
+
 have_python=no
 if test x$enable_python != xno; then
     AM_PATH_PYTHON([2.3], [have_python=yes], [have_python=no])
@@ -637,7 +868,6 @@ if test x$enable_python != xno; then
         AC_MSG_ERROR([python is not available])
     fi
 fi
-AM_CONDITIONAL([HAVE_PYTHON], [test x$have_python = xyes])
 if test x$have_python = xyes; then
     message_python="$have_python: $pythondir"
 else
@@ -651,9 +881,12 @@ AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           ])
 LS_UPDATE_TIMESTAMP
 
+AM_CONDITIONAL([HAVE_CURL], [test x$have_curl = xyes])
+AM_CONDITIONAL([HAVE_WINHTTP], [test x$have_wic = xyes])
 AM_CONDITIONAL([HAVE_JPEG], [test x$have_jpeg = xyes])
 AM_CONDITIONAL([HAVE_PNG], [test x$have_png = xyes])
-AM_CONDITIONAL([HAVE_CURL], [test x$have_curl = xyes])
+AM_CONDITIONAL([HAVE_WIC], [test x$have_wic = xyes])
+AM_CONDITIONAL([HAVE_PYTHON], [test x$have_python = xyes])
 
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
@@ -674,7 +907,8 @@ echo ""
 echo "libsixel was configured as follows"
 echo ""
 echo "       Loader component    : $loaders"
-echo "       libcurl integration : $have_curl"
+echo "       Network access      : $net"
+echo "       libwinpthread       : $have_winpthread"
 echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
@@ -685,3 +919,4 @@ echo "       debugging           : $enable_debug"
 echo "       tests               : $enable_tests"
 echo ""
 echo ""
+dnl :vim set et:

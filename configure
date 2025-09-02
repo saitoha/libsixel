@@ -655,14 +655,18 @@ ac_unique_file="src/fromsixel.c"
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
-HAVE_CURL_FALSE
-HAVE_CURL_TRUE
+HAVE_PYTHON_FALSE
+HAVE_PYTHON_TRUE
+HAVE_WIC_FALSE
+HAVE_WIC_TRUE
 HAVE_PNG_FALSE
 HAVE_PNG_TRUE
 HAVE_JPEG_FALSE
 HAVE_JPEG_TRUE
-HAVE_PYTHON_FALSE
-HAVE_PYTHON_TRUE
+HAVE_WINHTTP_FALSE
+HAVE_WINHTTP_TRUE
+HAVE_CURL_FALSE
+HAVE_CURL_TRUE
 pkgpyexecdir
 pyexecdir
 pkgpythondir
@@ -672,10 +676,14 @@ PYTHON_PREFIX
 PYTHON_PLATFORM
 PYTHON_VERSION
 PYTHON
+WIC_LIBS
+WIC_CFLAGS
 LIBPNG_LIBS
 LIBPNG_CFLAGS
 LIBJPEG_LIBS
 LIBJPEG_CFLAGS
+WINHTTP_LIBS
+WINHTTP_CFLAGS
 LIBCURL_LIBS
 LIBCURL_CFLAGS
 AM_CPPFLAGS
@@ -850,6 +858,9 @@ with_gd
 with_libcurl
 with_jpeg
 with_png
+with_winpthread
+with_wic
+with_winhttp
 with_pkgconfigdir
 with_bashcompletiondir
 with_zshcompletiondir
@@ -1546,6 +1557,12 @@ Optional Packages:
   --with-libcurl          whether to build with libcurl (default: auto)
   --with-jpeg             whether to build with libjpeg (default: auto)
   --with-png              whether to build with libpng (default: auto)
+  --with-winpthread       whether to build with libwinpthread, windows only
+                          (default: no)
+  --with-wic              whether to build with Windows Imaging Component
+                          (WIC), windows only (default: auto)
+  --with-winhttp          whether to build with WinHTTP, windows only
+                          (default: auto)
   --with-pkgconfigdir     Use the specified pkgconfig dir (default is
                           libdir/pkgconfig)
   --with-bashcompletiondir
@@ -14162,7 +14179,7 @@ fi
 
 
 
-if test x$ax_cv_have_func_attribute_deprecated != x; then
+if test x$ax_cv_have_var_attribute_deprecated != x; then
     attr_var_deprecated=__attribute__\(\(deprecated\)\)
 
 fi
@@ -14275,63 +14292,95 @@ fi
 
 
 
-CFLAGS_BACKUP=$CFLAGS
-CFLAGS="$CFLAGS -Werror"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler can silence -Wtypedef-redefinition via pragmas" >&5
+printf %s "checking whether the compiler can silence -Wtypedef-redefinition via pragmas... " >&6; }
+if test ${ac_cv_have_diag_typedef_redef+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-                     #pragma GCC diagnostic push
-                     #pragma GCC diagnostic pop
-                     #pragma GCC diagnostic ignored "-Wtypedef-redefinition"
+       #if defined(__clang__) || defined(__GNUC__)
+       #pragma clang diagnostic push
+       #pragma clang diagnostic ignored "-Wtypedef-redefinition"
+       typedef int foo;
+       typedef int foo;
+       #pragma clang diagnostic pop
+       #endif
 
-int
-main (void)
-{
-
-                     typedef int foo;
-                     typedef int foo;
-
-  ;
-  return 0;
-}
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
+  ac_cv_have_diag_typedef_redef=yes
+else case e in #(
+  e) ac_cv_have_diag_typedef_redef=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+   CFLAGS="$ac_save_CFLAGS"
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_have_diag_typedef_redef" >&5
+printf "%s\n" "$ac_cv_have_diag_typedef_redef" >&6; }
+
+if test "x$ac_cv_have_diag_typedef_redef" = "xyes"
+then :
+
 
 printf "%s\n" "#define HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION 1" >>confdefs.h
 
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-CFLAGS=$CFLAGS_BACKUP
 
-CFLAGS_BACKUP=$CFLAGS
-CFLAGS="$CFLAGS -Werror"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler can silence -Wdeprecated-declarations" >&5
+printf %s "checking whether the compiler can silence -Wdeprecated-declarations... " >&6; }
+if test ${ac_cv_have_diag_deprecated_declarations+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-                     #pragma GCC diagnostic push
-                     #pragma GCC diagnostic pop
-                     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-                     __attribute__((deprecated)) void test(void) {}
+       #if defined(__clang__) || defined(__GNUC__)
+       #pragma clang diagnostic push
+       #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+       typedef int foo;
+       typedef int foo;
+       #pragma clang diagnostic pop
+       #endif
 
-int
-main (void)
-{
-
-                     test();
-
-  ;
-  return 0;
-}
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
+  ac_cv_have_diag_deprecated_declarations=yes
+else case e in #(
+  e) ac_cv_have_diag_deprecated_declarations=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+   CFLAGS="$ac_save_CFLAGS"
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_have_diag_deprecated_declarations" >&5
+printf "%s\n" "$ac_cv_have_diag_deprecated_declarations" >&6; }
+
+if test "x$ac_cv_have_diag_deprecated_declarations" = "xyes"
+then :
+
 
 printf "%s\n" "#define HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS 1" >>confdefs.h
 
+
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-CFLAGS=$CFLAGS_BACKUP
 
 # Options
 # Check whether --enable-img2sixel was given.
@@ -14425,11 +14474,38 @@ esac
 fi
 
 
-#AC_ARG_WITH([wic],
-#            [AS_HELP_STRING([--with-wic],
-#                            [whether to build with windows WIC integration, windows only (default: no)])],
-#            [],
-#            [with_wic=no])
+
+# Check whether --with-winpthread was given.
+if test ${with_winpthread+y}
+then :
+  withval=$with_winpthread;
+else case e in #(
+  e) with_winpthread=no ;;
+esac
+fi
+
+
+
+# Check whether --with-wic was given.
+if test ${with_wic+y}
+then :
+  withval=$with_wic;
+else case e in #(
+  e) with_wic=auto ;;
+esac
+fi
+
+
+
+# Check whether --with-winhttp was given.
+if test ${with_winhttp+y}
+then :
+  withval=$with_winhttp;
+else case e in #(
+  e) with_winhttp=auto ;;
+esac
+fi
+
 
 
 # Check whether --with-pkgconfigdir was given.
@@ -15863,12 +15939,15 @@ fi
 
 
 CPPFLAGS="$CPPFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L"
-
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -std=c99" >&5
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -std=c99" >&5
 printf %s "checking if $CC supports -std=c99... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-std=c99 -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test ${ac_cv_cc_flag_std_c99+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-std=c99 -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -15881,24 +15960,34 @@ main (void)
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-                      CFLAGS="$CFLAGS -std=c99"
+  ac_cv_cc_flag_std_c99=yes
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-                      : ;;
+  e) ac_cv_cc_flag_std_c99=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-   CFLAGS="$saved_cflags"
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_std_c99" >&5
+printf "%s\n" "$ac_cv_cc_flag_std_c99" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_std_c99\" = xyes
+then :
+  CFLAGS="$CFLAGS -std=c99"
+else case e in #(
+  e) : ;;
+esac
+fi
 
-
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wall" >&5
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wall" >&5
 printf %s "checking if $CC supports -Wall... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-Wall -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test ${ac_cv_cc_flag_wall+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-Wall -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -15911,24 +16000,34 @@ main (void)
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Wall"
+  ac_cv_cc_flag_wall=yes
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-                      : ;;
+  e) ac_cv_cc_flag_wall=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-   CFLAGS="$saved_cflags"
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_wall" >&5
+printf "%s\n" "$ac_cv_cc_flag_wall" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_wall\" = xyes
+then :
+  AM_CFLAGS="$AM_CFLAGS -Wall"
+else case e in #(
+  e) : ;;
+esac
+fi
 
-
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wextra" >&5
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wextra" >&5
 printf %s "checking if $CC supports -Wextra... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-Wextra -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test ${ac_cv_cc_flag_wextra+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-Wextra -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -15941,24 +16040,34 @@ main (void)
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Wextra"
+  ac_cv_cc_flag_wextra=yes
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-                      : ;;
+  e) ac_cv_cc_flag_wextra=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-   CFLAGS="$saved_cflags"
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_wextra" >&5
+printf "%s\n" "$ac_cv_cc_flag_wextra" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_wextra\" = xyes
+then :
+  AM_CFLAGS="$AM_CFLAGS -Wextra"
+else case e in #(
+  e) : ;;
+esac
+fi
 
-
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wformat=2" >&5
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wformat=2" >&5
 printf %s "checking if $CC supports -Wformat=2... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-Wformat=2 -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test ${ac_cv_cc_flag_wformat_2+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-Wformat=2 -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -15971,24 +16080,34 @@ main (void)
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Wformat=2"
+  ac_cv_cc_flag_wformat_2=yes
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-                      : ;;
+  e) ac_cv_cc_flag_wformat_2=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-   CFLAGS="$saved_cflags"
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_wformat_2" >&5
+printf "%s\n" "$ac_cv_cc_flag_wformat_2" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_wformat_2\" = xyes
+then :
+  AM_CFLAGS="$AM_CFLAGS -Wformat=2"
+else case e in #(
+  e) : ;;
+esac
+fi
 
-
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wsign-conversion" >&5
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wsign-conversion" >&5
 printf %s "checking if $CC supports -Wsign-conversion... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-Wsign-conversion -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test ${ac_cv_cc_flag_wsign_conversion+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-Wsign-conversion -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -16001,26 +16120,36 @@ main (void)
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
+  ac_cv_cc_flag_wsign_conversion=yes
+else case e in #(
+  e) ac_cv_cc_flag_wsign_conversion=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_wsign_conversion" >&5
+printf "%s\n" "$ac_cv_cc_flag_wsign_conversion" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_wsign_conversion\" = xyes
+then :
 
 printf "%s\n" "#define HAVE_DIAGNOSTIC_SIGN_CONVERSION 1" >>confdefs.h
 
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-                      : ;;
+  e) : ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-   CFLAGS="$saved_cflags"
 
-
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wuninitialized" >&5
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wuninitialized" >&5
 printf %s "checking if $CC supports -Wuninitialized... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-Wuninitialized -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test ${ac_cv_cc_flag_wuninitialized+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-Wuninitialized -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -16033,26 +16162,36 @@ main (void)
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
+  ac_cv_cc_flag_wuninitialized=yes
+else case e in #(
+  e) ac_cv_cc_flag_wuninitialized=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_wuninitialized" >&5
+printf "%s\n" "$ac_cv_cc_flag_wuninitialized" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_wuninitialized\" = xyes
+then :
 
 printf "%s\n" "#define HAVE_DIAGNOSTIC_UNINITIALIZED 1" >>confdefs.h
 
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-                      : ;;
+  e) : ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-   CFLAGS="$saved_cflags"
 
-
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wstrict-overflow" >&5
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wstrict-overflow" >&5
 printf %s "checking if $CC supports -Wstrict-overflow... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-Wstrict-overflow -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test ${ac_cv_cc_flag_wstrict_overflow+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-Wstrict-overflow -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -16065,26 +16204,36 @@ main (void)
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
+  ac_cv_cc_flag_wstrict_overflow=yes
+else case e in #(
+  e) ac_cv_cc_flag_wstrict_overflow=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_wstrict_overflow" >&5
+printf "%s\n" "$ac_cv_cc_flag_wstrict_overflow" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_wstrict_overflow\" = xyes
+then :
 
 printf "%s\n" "#define HAVE_DIAGNOSTIC_STRICT_OVERFLOW 1" >>confdefs.h
 
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-                      : ;;
+  e) : ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-   CFLAGS="$saved_cflags"
 
-
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wshadow" >&5
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wshadow" >&5
 printf %s "checking if $CC supports -Wshadow... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-Wshadow -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test ${ac_cv_cc_flag_wshadow+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-Wshadow -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -16097,26 +16246,36 @@ main (void)
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
+  ac_cv_cc_flag_wshadow=yes
+else case e in #(
+  e) ac_cv_cc_flag_wshadow=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_wshadow" >&5
+printf "%s\n" "$ac_cv_cc_flag_wshadow" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_wshadow\" = xyes
+then :
 
 printf "%s\n" "#define HAVE_DIAGNOSTIC_SHADOW 1" >>confdefs.h
 
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-                      : ;;
+  e) : ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-   CFLAGS="$saved_cflags"
 
-
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wdouble-promotion" >&5
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wdouble-promotion" >&5
 printf %s "checking if $CC supports -Wdouble-promotion... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-Wdouble-promotion -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test ${ac_cv_cc_flag_wdouble_promotions+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-Wdouble-promotion -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -16129,26 +16288,36 @@ main (void)
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
+  ac_cv_cc_flag_wdouble_promotions=yes
+else case e in #(
+  e) ac_cv_cc_flag_wdouble_promotions=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_wdouble_promotions" >&5
+printf "%s\n" "$ac_cv_cc_flag_wdouble_promotions" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_wdouble_promotions\" = xyes
+then :
 
 printf "%s\n" "#define HAVE_DIAGNOSTIC_DOUBLE_PROMOTION 1" >>confdefs.h
 
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-                      : ;;
+  e) : ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-   CFLAGS="$saved_cflags"
 
-
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wswitch-default" >&5
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wswitch-default" >&5
 printf %s "checking if $CC supports -Wswitch-default... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-Wswitch-default -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test ${ac_cv_cc_flag_wswitch_default+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-Wswitch-default -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -16161,26 +16330,36 @@ main (void)
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
+  ac_cv_cc_flag_wswitch_default=yes
+else case e in #(
+  e) ac_cv_cc_flag_wswitch_default=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_wswitch_default" >&5
+printf "%s\n" "$ac_cv_cc_flag_wswitch_default" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_wswitch_default\" = xyes
+then :
 
 printf "%s\n" "#define HAVE_DIAGNOSTIC_SWITCH_DEFAULT 1" >>confdefs.h
 
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-                      : ;;
+  e) : ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-   CFLAGS="$saved_cflags"
 
-
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wunused-function" >&5
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wunused-function" >&5
 printf %s "checking if $CC supports -Wunused-function... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-Wunused-function -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test ${ac_cv_cc_flag_wunused_function+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-Wunused-function -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -16193,26 +16372,36 @@ main (void)
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
+  ac_cv_cc_flag_wunused_function=yes
+else case e in #(
+  e) ac_cv_cc_flag_wunused_function=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_wunused_function" >&5
+printf "%s\n" "$ac_cv_cc_flag_wunused_function" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_wunused_function\" = xyes
+then :
 
 printf "%s\n" "#define HAVE_DIAGNOSTIC_UNUSED_FUNCTION 1" >>confdefs.h
 
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-                      : ;;
+  e) : ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-   CFLAGS="$saved_cflags"
 
-
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wclobbered" >&5
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wclobbered" >&5
 printf %s "checking if $CC supports -Wclobbered... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-Wclobbered -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test ${ac_cv_cc_flag_wclobbered+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-Wclobbered -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -16225,26 +16414,36 @@ main (void)
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
+  ac_cv_cc_flag_wclobbered=yes
+else case e in #(
+  e) ac_cv_cc_flag_wclobbered=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_wclobbered" >&5
+printf "%s\n" "$ac_cv_cc_flag_wclobbered" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_wclobbered\" = xyes
+then :
 
 printf "%s\n" "#define HAVE_DIAGNOSTIC_CLOBBERED 1" >>confdefs.h
 
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-                      : ;;
+  e) : ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-   CFLAGS="$saved_cflags"
 
-
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wunused-but-set-variable" >&5
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wunused-but-set-variable" >&5
 printf %s "checking if $CC supports -Wunused-but-set-variable... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-Wunused-but-set-variable -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test ${ac_cv_cc_flag_wunused_but_set_variable+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-Wunused-but-set-variable -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -16257,26 +16456,36 @@ main (void)
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
+  ac_cv_cc_flag_wunused_but_set_variable=yes
+else case e in #(
+  e) ac_cv_cc_flag_wunused_but_set_variable=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_wunused_but_set_variable" >&5
+printf "%s\n" "$ac_cv_cc_flag_wunused_but_set_variable" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_wunused_but_set_variable\" = xyes
+then :
 
 printf "%s\n" "#define HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE 1" >>confdefs.h
 
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-                      : ;;
+  e) : ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-   CFLAGS="$saved_cflags"
 
-
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Bsymbolic" >&5
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Bsymbolic" >&5
 printf %s "checking if $CC supports -Bsymbolic... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-Bsymbolic -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test ${ac_cv_cc_flag_bsymbolic+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-Bsymbolic -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -16289,29 +16498,37 @@ main (void)
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
+  ac_cv_cc_flag_bsymbolic=yes
+else case e in #(
+  e) ac_cv_cc_flag_bsymbolic=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_bsymbolic" >&5
+printf "%s\n" "$ac_cv_cc_flag_bsymbolic" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_bsymbolic\" = xyes
+then :
+  AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
 
 printf "%s\n" "#define HAVE_BSYMBOLIC 1" >>confdefs.h
 
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-                      : ;;
+  e) : ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-   CFLAGS="$saved_cflags"
 
-if test x$enable_debug = xyes
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -fno-emulated-tls" >&5
+printf %s "checking if $CC supports -fno-emulated-tls... " >&6; }
+if test ${ac_cv_cc_flag_fno_emulated_tls+y}
 then :
-
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Werror" >&5
-printf %s "checking if $CC supports -Werror... " >&6; }
-   saved_cflags="$CFLAGS"
-   CFLAGS="-Werror -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-fno-emulated-tls -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
@@ -16324,17 +16541,69 @@ main (void)
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-                      AM_CFLAGS="$AM_CFLAGS -Werror"
+  ac_cv_cc_flag_fno_emulated_tls=yes
 else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-                      : ;;
+  e) ac_cv_cc_flag_fno_emulated_tls=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-   CFLAGS="$saved_cflags"
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_fno_emulated_tls" >&5
+printf "%s\n" "$ac_cv_cc_flag_fno_emulated_tls" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_fno_emulated_tls\" = xyes
+then :
+  AM_CFLAGS="$AM_CFLAGS -Bfno-emulated-tls"
+
+printf "%s\n" "#define HAVE_FNO_EMULATED_TLS 1" >>confdefs.h
+
+else case e in #(
+  e) : ;;
+esac
+fi
+
+if test x$enable_debug = xyes
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Werror" >&5
+printf %s "checking if $CC supports -Werror... " >&6; }
+if test ${ac_cv_cc_flag_+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-Werror -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ac_cv_cc_flag_=yes
+else case e in #(
+  e) ac_cv_cc_flag_=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_" >&5
+printf "%s\n" "$ac_cv_cc_flag_" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_\" = xyes
+then :
+  AM_CFLAGS="$AM_CFLAGS -Werror"
+else case e in #(
+  e) : ;;
+esac
+fi
 
 fi
 
@@ -17011,12 +17280,6 @@ then :
   printf "%s\n" "#define HAVE_CALLOC 1" >>confdefs.h
 
 fi
-ac_fn_c_check_func "$LINENO" "clock" "ac_cv_func_clock"
-if test "x$ac_cv_func_clock" = xyes
-then :
-  printf "%s\n" "#define HAVE_CLOCK 1" >>confdefs.h
-
-fi
 ac_fn_c_check_func "$LINENO" "clearerr" "ac_cv_func_clearerr"
 if test "x$ac_cv_func_clearerr" = xyes
 then :
@@ -17118,80 +17381,6 @@ if test "x$ac_cv_func_strtol" = xyes
 then :
   printf "%s\n" "#define HAVE_STRTOL 1" >>confdefs.h
 
-fi
-
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing nanosleep" >&5
-printf %s "checking for library containing nanosleep... " >&6; }
-if test ${ac_cv_search_nanosleep+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.
-   The 'extern "C"' is for builds by C++ compilers;
-   although this is not generally supported in C code supporting it here
-   has little cost and some practical benefit (sr 110532).  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char nanosleep (void);
-int
-main (void)
-{
-return nanosleep ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' winpthread rt pthread
-do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_search_nanosleep=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext
-  if test ${ac_cv_search_nanosleep+y}
-then :
-  break
-fi
-done
-if test ${ac_cv_search_nanosleep+y}
-then :
-
-else case e in #(
-  e) ac_cv_search_nanosleep=no ;;
-esac
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_nanosleep" >&5
-printf "%s\n" "$ac_cv_search_nanosleep" >&6; }
-ac_res=$ac_cv_search_nanosleep
-if test "$ac_res" != no
-then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
-printf "%s\n" "#define HAVE_NANOSLEEP 1" >>confdefs.h
-
-else case e in #(
-  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: Define to 1 if you have the 'nanosleep' function." >&5
-printf "%s\n" "$as_me: WARNING: Define to 1 if you have the 'nanosleep' function." >&2;} ;;
-esac
 fi
 
 
@@ -17332,21 +17521,13 @@ loaders="stb_image"
 have_curl="no"
 have_jpeg="no"
 have_png="no"
-#have_wic="no"
-
-#if test x$with_wic != xno; then
-#    AC_CHECK_HEADERS([wincodec.h], [],
-#                     [AC_MSG_ERROR([WIC integration: wincodec.h is not avilable.])])
-#    AC_CHECK_LIB([ole32], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library ole32 is not avilable.])])
-#    AC_CHECK_LIB([uuid], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library uuid is not avilable.])])
-#    AC_CHECK_LIB([windowscodecs], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library wincodecs is not avilable.])])
-#    have_wic="yes"
-#fi
+have_winpthread="no"
+have_wic="auto"
+have_winhttp="auto"
 
 if test x$with_gdk_pixbuf2 != xno; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gdk-pixbuf2" >&5
+printf "%s\n" "$as_me: checking for gdk-pixbuf2" >&6;}
     if test x${PKG_CONFIG} != x; then
 
 pkg_failed=no
@@ -17420,8 +17601,6 @@ printf "%s\n" "yes" >&6; }
         have_gdk_pixbuf2=yes
 fi
         if test x$have_gdk_pixbuf2 != xno; then
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf: $have_gdk_pixbuf2" >&5
-printf "%s\n" "$as_me: gdk-pixbuf: $have_gdk_pixbuf2" >&6;}
 
 printf "%s\n" "#define HAVE_GDK_PIXBUF2 1" >>confdefs.h
 
@@ -17444,6 +17623,8 @@ fi
 
 
 if test x$with_gd != xno; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GD" >&5
+printf "%s\n" "$as_me: checking for GD" >&6;}
     CFLAGS_BACKUP=$CFLAGS
     LDFLAGS_BACKUP=$LDFLAGS
     if test x$with_gd != xyes -a x$with_gd != xauto; then
@@ -18322,6 +18503,8 @@ fi
 
 if test x$with_libcurl != xno; then
     if test x$build = x$host; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libcurl" >&5
+printf "%s\n" "$as_me: checking for libcurl" >&6;}
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
         if test x$with_libcurl != xyes -a x$with_libcurl != xauto; then
@@ -18478,6 +18661,11 @@ fi
         fi
     fi
     if test x$have_curl = xyes; then
+        if test x${net} = x; then
+            net="libcurl"
+        else
+            net="${net} libcurl"
+        fi
 
 printf "%s\n" "#define HAVE_LIBCURL 1" >>confdefs.h
 
@@ -18485,8 +18673,6 @@ printf "%s\n" "#define HAVE_LIBCURL 1" >>confdefs.h
         if test x$with_libcurl != xauto; then
             as_fn_error $? "unable to find libcurl" "$LINENO" 5
         fi
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libcurl is not available" >&5
-printf "%s\n" "$as_me: libcurl is not available" >&6;}
     fi
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libcurl cflags is ${LIBCURL_CFLAGS}" >&5
 printf "%s\n" "$as_me: libcurl cflags is ${LIBCURL_CFLAGS}" >&6;}
@@ -18496,8 +18682,145 @@ fi
 
 
 
+if test x$with_winhttp != xno; then
+    case "$host_os" in
+    mingw* | cygwin* | msys*)
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for WinHTTP" >&5
+printf "%s\n" "$as_me: checking for WinHTTP" >&6;}
+        CFLAGS_BACKUP="$CFLAGS"
+        LIBS_BACKUP="$LIBS"
+        if test x$with_winhttp != xyes -a x$with_winhttp != xauto; then
+            if test ! -d "$with_winhttp"; then
+                as_fn_error $? "\"${with_winhttp}\" is not directory" "$LINENO" 5
+            fi
+            ADDED_CFLAGS="-I${with_winhttp}/include"
+            ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lwinhttp"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lwinhttp"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LIBS="${LIBS} ${ADDED_LIBS}"
+        have_winhttp=yes
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+              #include <windows.h>
+              #include <winhttp.h>
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for WinHttpOpen in -lwinhttp" >&5
+printf %s "checking for WinHttpOpen in -lwinhttp... " >&6; }
+if test ${ac_cv_lib_winhttp_WinHttpOpen+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-lwinhttp  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.
+   The 'extern "C"' is for builds by C++ compilers;
+   although this is not generally supported in C code supporting it here
+   has little cost and some practical benefit (sr 110532).  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char WinHttpOpen (void);
+int
+main (void)
+{
+return WinHttpOpen ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_winhttp_WinHttpOpen=yes
+else case e in #(
+  e) ac_cv_lib_winhttp_WinHttpOpen=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_winhttp_WinHttpOpen" >&5
+printf "%s\n" "$ac_cv_lib_winhttp_WinHttpOpen" >&6; }
+if test "x$ac_cv_lib_winhttp_WinHttpOpen" = xyes
+then :
+  printf "%s\n" "#define HAVE_LIBWINHTTP 1" >>confdefs.h
+
+  LIBS="-lwinhttp $LIBS"
+
+else case e in #(
+  e) have_winhttp=no
+                           as_fn_error $? "library wincodecs is not avilable." "$LINENO" 5
+                           ;;
+esac
+fi
+
+else case e in #(
+  e) have_winhttp=no
+             as_fn_error $? "windows.h or winhttp.h is not avilable." "$LINENO" 5
+             ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+        CFLAGS=$CFLAGS_BACKUP
+        LIBS=$LIBS_BACKUP
+
+        if test "x$have_winhttp" = "xyes"
+then :
+
+printf "%s\n" "#define HAVE_WINHTTP 1" >>confdefs.h
+
+               if test x${net} = x; then
+                   net="winhttp"
+               else
+                   net="${net} winhttp"
+               fi
+               WINHTTP_CFLAGS=$ADDED_CFLAGS
+               WINHTTP_LIBS=$ADDED_LIBS
+fi
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: winhttp cflags is ${WINHTTP_CFLAGS}" >&5
+printf "%s\n" "$as_me: winhttp cflags is ${WINHTTP_CFLAGS}" >&6;}
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: winhttp libs is ${WINHTTP_LIBS}" >&5
+printf "%s\n" "$as_me: winhttp libs is ${WINHTTP_LIBS}" >&6;}
+        ;;
+    *)
+        have_winhttp=no
+        ;;
+    esac
+fi
+
+
+
+
 if test x$with_jpeg != xno; then
     if test x$build = x$host; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for jpeg" >&5
+printf "%s\n" "$as_me: checking for jpeg" >&6;}
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
         if test x$with_jpeg != xyes -a x$with_jpeg != xauto; then
@@ -18675,6 +18998,8 @@ fi
 
 if test x$with_png != xno; then
     if test x$build = x$host; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for png" >&5
+printf "%s\n" "$as_me: checking for png" >&6;}
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
         if test x$with_png != xyes -a x$with_png != xauto; then
@@ -18871,6 +19196,262 @@ printf "%s\n" "$as_me: libpng libs is ${LIBPNG_LIBS}" >&6;}
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libpng is not available" >&5
 printf "%s\n" "$as_me: libpng is not available" >&6;}
     fi
+fi
+
+
+
+if test x$with_winpthread != xno; then
+    if test x$build = x$host; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for winpthread" >&5
+printf "%s\n" "$as_me: checking for winpthread" >&6;}
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing nanosleep" >&5
+printf %s "checking for library containing nanosleep... " >&6; }
+if test ${ac_cv_search_nanosleep+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.
+   The 'extern "C"' is for builds by C++ compilers;
+   although this is not generally supported in C code supporting it here
+   has little cost and some practical benefit (sr 110532).  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char nanosleep (void);
+int
+main (void)
+{
+return nanosleep ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' winpthread
+do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_search_nanosleep=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext
+  if test ${ac_cv_search_nanosleep+y}
+then :
+  break
+fi
+done
+if test ${ac_cv_search_nanosleep+y}
+then :
+
+else case e in #(
+  e) ac_cv_search_nanosleep=no ;;
+esac
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_nanosleep" >&5
+printf "%s\n" "$ac_cv_search_nanosleep" >&6; }
+ac_res=$ac_cv_search_nanosleep
+if test "$ac_res" != no
+then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+printf "%s\n" "#define HAVE_NANOSLEEP 1" >>confdefs.h
+
+
+printf "%s\n" "#define HAVE_CLOCK 1" >>confdefs.h
+
+
+printf "%s\n" "#define WITH_WINPTHREAD 1" >>confdefs.h
+
+                        have_winpthread=yes
+
+else case e in #(
+  e) have_winpthread=yes ;;
+esac
+fi
+
+        if test "x$have_winpthread" = "xyes"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libpng cflags is ${LIBPNG_CFLAGS}" >&5
+printf "%s\n" "$as_me: libpng cflags is ${LIBPNG_CFLAGS}" >&6;}
+               { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libpng libs is ${LIBPNG_LIBS}" >&5
+printf "%s\n" "$as_me: libpng libs is ${LIBPNG_LIBS}" >&6;}
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libpng libs is not available" >&5
+printf "%s\n" "$as_me: libpng libs is not available" >&6;} ;;
+esac
+fi
+    fi
+fi
+
+if test x$with_wic != xno; then
+    case "$host_os" in
+    mingw* | cygwin* | msys*)
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Windows Imaging Component (WIC)" >&5
+printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
+        CFLAGS_BACKUP="$CFLAGS"
+        LIBS_BACKUP="$LIBS"
+        if test x$with_wic != xyes -a x$with_wic != xauto; then
+            if test ! -d "$with_wic"; then
+                as_fn_error $? "\"${with_wic}\" is not directory" "$LINENO" 5
+            fi
+            ADDED_CFLAGS="-I${with_wic}/include"
+            ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LIBS="${LIBS} ${ADDED_LIBS}"
+        have_wic=yes
+               for ac_header in windows.h wincodec.h
+do :
+  as_ac_Header=`printf "%s\n" "ac_cv_header_$ac_header" | sed "$as_sed_sh"`
+ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"
+then :
+  cat >>confdefs.h <<_ACEOF
+#define `printf "%s\n" "HAVE_$ac_header" | sed "$as_sed_cpp"` 1
+_ACEOF
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for main in -lole32" >&5
+printf %s "checking for main in -lole32... " >&6; }
+if test ${ac_cv_lib_ole32_main+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-lole32  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main (void)
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_ole32_main=yes
+else case e in #(
+  e) ac_cv_lib_ole32_main=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ole32_main" >&5
+printf "%s\n" "$ac_cv_lib_ole32_main" >&6; }
+if test "x$ac_cv_lib_ole32_main" = xyes
+then :
+  printf "%s\n" "#define HAVE_LIBOLE32 1" >>confdefs.h
+
+  LIBS="-lole32 $LIBS"
+
+else case e in #(
+  e) have_wic=no ;;
+esac
+fi
+
+                          { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for main in -lwindowscodecs" >&5
+printf %s "checking for main in -lwindowscodecs... " >&6; }
+if test ${ac_cv_lib_windowscodecs_main+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-lwindowscodecs  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main (void)
+{
+return main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_windowscodecs_main=yes
+else case e in #(
+  e) ac_cv_lib_windowscodecs_main=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_windowscodecs_main" >&5
+printf "%s\n" "$ac_cv_lib_windowscodecs_main" >&6; }
+if test "x$ac_cv_lib_windowscodecs_main" = xyes
+then :
+  printf "%s\n" "#define HAVE_LIBWINDOWSCODECS 1" >>confdefs.h
+
+  LIBS="-lwindowscodecs $LIBS"
+
+else case e in #(
+  e) have_wic=no ;;
+esac
+fi
+
+else case e in #(
+  e) have_wic=no ;;
+esac
+fi
+
+done
+        if test "x$have_wic" = "xyes"
+then :
+
+printf "%s\n" "#define HAVE_WIC 1" >>confdefs.h
+
+               loaders="${loaders} wic"
+               WIC_CFLAGS=$ADDED_CFLAGS
+               WIC_LIBS=$ADDED_LIBS
+               { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WIC cflags is ${WIC_CFLAGS}" >&5
+printf "%s\n" "$as_me: WIC cflags is ${WIC_CFLAGS}" >&6;}
+               { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WIC libs is ${WIC_LIBS}" >&5
+printf "%s\n" "$as_me: WIC libs is ${WIC_LIBS}" >&6;}
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WIC is not available" >&5
+printf "%s\n" "$as_me: WIC is not available" >&6;} ;;
+esac
+fi
+        ;;
+    *)
+        have_wic=no
+        ;;
+    esac
+    CFLAGS=$CFLAGS_BACKUP
+    LIBS=$LIBS_BACKUP
 fi
 
 
@@ -19312,14 +19893,6 @@ printf "%s\n" "$am_cv_python_pyexecdir" >&6; }
         as_fn_error $? "python is not available" "$LINENO" 5
     fi
 fi
- if test x$have_python = xyes; then
-  HAVE_PYTHON_TRUE=
-  HAVE_PYTHON_FALSE='#'
-else
-  HAVE_PYTHON_TRUE='#'
-  HAVE_PYTHON_FALSE=
-fi
-
 if test x$have_python = xyes; then
     message_python="$have_python: $pythondir"
 else
@@ -19332,6 +19905,22 @@ fi
                    converters/Makefile.in include/Makefile.in \
                    python/Makefile.in src/Makefile.in tools/Makefile.in
 
+
+ if test x$have_curl = xyes; then
+  HAVE_CURL_TRUE=
+  HAVE_CURL_FALSE='#'
+else
+  HAVE_CURL_TRUE='#'
+  HAVE_CURL_FALSE=
+fi
+
+ if test x$have_wic = xyes; then
+  HAVE_WINHTTP_TRUE=
+  HAVE_WINHTTP_FALSE='#'
+else
+  HAVE_WINHTTP_TRUE='#'
+  HAVE_WINHTTP_FALSE=
+fi
 
  if test x$have_jpeg = xyes; then
   HAVE_JPEG_TRUE=
@@ -19349,12 +19938,20 @@ else
   HAVE_PNG_FALSE=
 fi
 
- if test x$have_curl = xyes; then
-  HAVE_CURL_TRUE=
-  HAVE_CURL_FALSE='#'
+ if test x$have_wic = xyes; then
+  HAVE_WIC_TRUE=
+  HAVE_WIC_FALSE='#'
 else
-  HAVE_CURL_TRUE='#'
-  HAVE_CURL_FALSE=
+  HAVE_WIC_TRUE='#'
+  HAVE_WIC_FALSE=
+fi
+
+ if test x$have_python = xyes; then
+  HAVE_PYTHON_TRUE=
+  HAVE_PYTHON_FALSE='#'
+else
+  HAVE_PYTHON_TRUE='#'
+  HAVE_PYTHON_FALSE=
 fi
 
 
@@ -19534,8 +20131,12 @@ if test -z "${HAVE_GETOPT_LONG_TRUE}" && test -z "${HAVE_GETOPT_LONG_FALSE}"; th
   as_fn_error $? "conditional \"HAVE_GETOPT_LONG\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${HAVE_PYTHON_TRUE}" && test -z "${HAVE_PYTHON_FALSE}"; then
-  as_fn_error $? "conditional \"HAVE_PYTHON\" was never defined.
+if test -z "${HAVE_CURL_TRUE}" && test -z "${HAVE_CURL_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_CURL\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_WINHTTP_TRUE}" && test -z "${HAVE_WINHTTP_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_WINHTTP\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_JPEG_TRUE}" && test -z "${HAVE_JPEG_FALSE}"; then
@@ -19546,8 +20147,12 @@ if test -z "${HAVE_PNG_TRUE}" && test -z "${HAVE_PNG_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_PNG\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${HAVE_CURL_TRUE}" && test -z "${HAVE_CURL_FALSE}"; then
-  as_fn_error $? "conditional \"HAVE_CURL\" was never defined.
+if test -z "${HAVE_WIC_TRUE}" && test -z "${HAVE_WIC_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_WIC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_PYTHON_TRUE}" && test -z "${HAVE_PYTHON_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_PYTHON\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -21722,7 +22327,8 @@ echo ""
 echo "libsixel was configured as follows"
 echo ""
 echo "       Loader component    : $loaders"
-echo "       libcurl integration : $have_curl"
+echo "       Network access      : $net"
+echo "       libwinpthread       : $have_winpthread"
 echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"

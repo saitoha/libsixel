@@ -723,7 +723,7 @@ sixel_dither_set_transparent(
 
 
 /* set transparent */
-SIXELAPI sixel_index_t *
+sixel_index_t *
 sixel_dither_apply_palette(
     sixel_dither_t  /* in */ *dither,
     sixel_index_t   /* in */ *pixels,

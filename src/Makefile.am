@@ -57,17 +57,21 @@ libsixel_la_SOURCES = \
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/
 libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(LIBCURL_CFLAGS) \
+		$(WINHTTP_CFLAGS) \
 		$(LIBPNG_CFLAGS) \
 		$(LIBJPEG_CFLAGS) \
 		$(GDK_PIXBUF_CFLAGS) \
-		$(GD_CFLAGS)
+		$(GD_CFLAGS) \
+		$(WIC_CFLAGS)
 libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION)
 libsixel_la_LIBADD = -lm \
 		$(LIBCURL_LIBS) \
+		$(WINHTTP_LIBS) \
 		$(LIBPNG_LIBS) \
 		$(LIBJPEG_LIBS) \
 		$(GDK_PIXBUF_LIBS) \
-		$(GD_LIBS)
+		$(GD_LIBS) \
+		$(WIC_LIBS)
 
 if COND_TESTS
 noinst_PROGRAMS = tests

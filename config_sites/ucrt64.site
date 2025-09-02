@@ -1,0 +1,163 @@
+# This file is a shell script that caches the results of configure
+# tests run on this system so they can be shared between configure
+# scripts and configure runs, see configure's option --config-cache.
+# It is not useful on other systems.  If it contains results you don't
+# want to keep, you may remove or edit it.
+#
+# config.status only pays attention to the cache file if you give it
+# the --recheck option to rerun configure.
+#
+# 'ac_cv_env_foo' variables (set or unset) will be overridden when
+# loading this file, other *unset* 'ac_cv_foo' will be assigned the
+# following values.
+
+ac_cv_build=${ac_cv_build=x86_64-w64-mingw32}
+ac_cv_c_compiler_gnu=${ac_cv_c_compiler_gnu=yes}
+ac_cv_c_inline=${ac_cv_c_inline=inline}
+ac_cv_c_int16_t=${ac_cv_c_int16_t=yes}
+ac_cv_c_int32_t=${ac_cv_c_int32_t=yes}
+ac_cv_c_uint16_t=${ac_cv_c_uint16_t=yes}
+ac_cv_c_uint32_t=${ac_cv_c_uint32_t=yes}
+ac_cv_c_undeclared_builtin_options=${ac_cv_c_undeclared_builtin_options='none needed'}
+ac_cv_cc_flag_bsymbolic=${ac_cv_cc_flag_bsymbolic=yes}
+ac_cv_cc_flag_fno_emulated_tls=${ac_cv_cc_flag_fno_emulated_tls=no}
+ac_cv_cc_flag_std_c99=${ac_cv_cc_flag_std_c99=yes}
+ac_cv_cc_flag_wall=${ac_cv_cc_flag_wall=yes}
+ac_cv_cc_flag_wclobbered=${ac_cv_cc_flag_wclobbered=yes}
+ac_cv_cc_flag_wdouble_promotions=${ac_cv_cc_flag_wdouble_promotions=yes}
+ac_cv_cc_flag_wextra=${ac_cv_cc_flag_wextra=yes}
+ac_cv_cc_flag_wformat_2=${ac_cv_cc_flag_wformat_2=yes}
+ac_cv_cc_flag_wshadow=${ac_cv_cc_flag_wshadow=yes}
+ac_cv_cc_flag_wsign_conversion=${ac_cv_cc_flag_wsign_conversion=yes}
+ac_cv_cc_flag_wstrict_overflow=${ac_cv_cc_flag_wstrict_overflow=yes}
+ac_cv_cc_flag_wswitch_default=${ac_cv_cc_flag_wswitch_default=yes}
+ac_cv_cc_flag_wuninitialized=${ac_cv_cc_flag_wuninitialized=yes}
+ac_cv_cc_flag_wunused_but_set_variable=${ac_cv_cc_flag_wunused_but_set_variable=yes}
+ac_cv_cc_flag_wunused_function=${ac_cv_cc_flag_wunused_function=yes}
+ac_cv_exeext=${ac_cv_exeext=.exe}
+ac_cv_func__setmode=${ac_cv_func__setmode=yes}
+ac_cv_func_calloc=${ac_cv_func_calloc=yes}
+ac_cv_func_clearerr=${ac_cv_func_clearerr=yes}
+ac_cv_func_floor=${ac_cv_func_floor=yes}
+ac_cv_func_getopt_long=${ac_cv_func_getopt_long=yes}
+ac_cv_func_isatty=${ac_cv_func_isatty=yes}
+ac_cv_func_ldiv=${ac_cv_func_ldiv=yes}
+ac_cv_func_localeconv=${ac_cv_func_localeconv=yes}
+ac_cv_func_longjmp=${ac_cv_func_longjmp=yes}
+ac_cv_func_malloc_0_nonnull=${ac_cv_func_malloc_0_nonnull=yes}
+ac_cv_func_memcpy=${ac_cv_func_memcpy=yes}
+ac_cv_func_memmove=${ac_cv_func_memmove=yes}
+ac_cv_func_memset=${ac_cv_func_memset=yes}
+ac_cv_func_pow=${ac_cv_func_pow=yes}
+ac_cv_func_realloc_0_nonnull=${ac_cv_func_realloc_0_nonnull=yes}
+ac_cv_func_select=${ac_cv_func_select=no}
+ac_cv_func_setjmp=${ac_cv_func_setjmp=yes}
+ac_cv_func_setmode=${ac_cv_func_setmode=yes}
+ac_cv_func_signal=${ac_cv_func_signal=yes}
+ac_cv_func_sqrt=${ac_cv_func_sqrt=yes}
+ac_cv_func_stat=${ac_cv_func_stat=yes}
+ac_cv_func_strchr=${ac_cv_func_strchr=yes}
+ac_cv_func_strdup=${ac_cv_func_strdup=yes}
+ac_cv_func_strerror=${ac_cv_func_strerror=yes}
+ac_cv_func_strncmp=${ac_cv_func_strncmp=yes}
+ac_cv_func_strstr=${ac_cv_func_strstr=yes}
+ac_cv_func_strtol=${ac_cv_func_strtol=yes}
+ac_cv_func_strtoul=${ac_cv_func_strtoul=yes}
+ac_cv_have_decl_SIGHUP=${ac_cv_have_decl_SIGHUP=no}
+ac_cv_have_decl_SIGINT=${ac_cv_have_decl_SIGINT=yes}
+ac_cv_have_decl_SIGTERM=${ac_cv_have_decl_SIGTERM=yes}
+ac_cv_have_diag_deprecated_declarations=${ac_cv_have_diag_deprecated_declarations=yes}
+ac_cv_have_diag_typedef_redef=${ac_cv_have_diag_typedef_redef=yes}
+ac_cv_header_assert_h=${ac_cv_header_assert_h=yes}
+ac_cv_header_ctype_h=${ac_cv_header_ctype_h=yes}
+ac_cv_header_dlfcn_h=${ac_cv_header_dlfcn_h=no}
+ac_cv_header_errno_h=${ac_cv_header_errno_h=yes}
+ac_cv_header_fcntl_h=${ac_cv_header_fcntl_h=yes}
+ac_cv_header_getopt_h=${ac_cv_header_getopt_h=yes}
+ac_cv_header_inttypes_h=${ac_cv_header_inttypes_h=yes}
+ac_cv_header_io_h=${ac_cv_header_io_h=yes}
+ac_cv_header_limits_h=${ac_cv_header_limits_h=yes}
+ac_cv_header_math_h=${ac_cv_header_math_h=yes}
+ac_cv_header_memory_h=${ac_cv_header_memory_h=yes}
+ac_cv_header_signal_h=${ac_cv_header_signal_h=yes}
+ac_cv_header_stdbool_h=${ac_cv_header_stdbool_h=yes}
+ac_cv_header_stdint_h=${ac_cv_header_stdint_h=yes}
+ac_cv_header_stdio_h=${ac_cv_header_stdio_h=yes}
+ac_cv_header_stdlib_h=${ac_cv_header_stdlib_h=yes}
+ac_cv_header_string_h=${ac_cv_header_string_h=yes}
+ac_cv_header_strings_h=${ac_cv_header_strings_h=yes}
+ac_cv_header_sys_ioctl_h=${ac_cv_header_sys_ioctl_h=no}
+ac_cv_header_sys_select_h=${ac_cv_header_sys_select_h=no}
+ac_cv_header_sys_signal_h=${ac_cv_header_sys_signal_h=no}
+ac_cv_header_sys_stat_h=${ac_cv_header_sys_stat_h=yes}
+ac_cv_header_sys_time_h=${ac_cv_header_sys_time_h=yes}
+ac_cv_header_sys_types_h=${ac_cv_header_sys_types_h=yes}
+ac_cv_header_sys_unistd_h=${ac_cv_header_sys_unistd_h=yes}
+ac_cv_header_termios_h=${ac_cv_header_termios_h=no}
+ac_cv_header_time_h=${ac_cv_header_time_h=yes}
+ac_cv_header_unistd_h=${ac_cv_header_unistd_h=yes}
+ac_cv_host=${ac_cv_host=x86_64-w64-mingw32}
+ac_cv_lib_m_floor=${ac_cv_lib_m_floor=yes}
+ac_cv_objext=${ac_cv_objext=o}
+ac_cv_path_EGREP=${ac_cv_path_EGREP='/usr/bin/grep -E'}
+ac_cv_path_EGREP_TRADITIONAL=${ac_cv_path_EGREP_TRADITIONAL='/usr/bin/grep -E'}
+ac_cv_path_FGREP=${ac_cv_path_FGREP='/usr/bin/grep -F'}
+ac_cv_path_GREP=${ac_cv_path_GREP=/usr/bin/grep}
+ac_cv_path_SED=${ac_cv_path_SED=/usr/bin/sed}
+ac_cv_path_ac_pt_PKG_CONFIG=${ac_cv_path_ac_pt_PKG_CONFIG=/ucrt64/bin/pkg-config}
+ac_cv_path_install=${ac_cv_path_install='/usr/bin/install -c'}
+ac_cv_path_lt_DD=${ac_cv_path_lt_DD=/usr/bin/dd}
+ac_cv_path_mkdir=${ac_cv_path_mkdir=/usr/bin/mkdir}
+ac_cv_prog_AWK=${ac_cv_prog_AWK=gawk}
+ac_cv_prog_CPP=${ac_cv_prog_CPP='gcc -E'}
+ac_cv_prog_FILECMD=${ac_cv_prog_FILECMD=file}
+ac_cv_prog_MD5SUM=${ac_cv_prog_MD5SUM=md5sum}
+ac_cv_prog_ac_ct_AR=${ac_cv_prog_ac_ct_AR=ar}
+ac_cv_prog_ac_ct_CC=${ac_cv_prog_ac_ct_CC=gcc}
+ac_cv_prog_ac_ct_DLLTOOL=${ac_cv_prog_ac_ct_DLLTOOL=dlltool}
+ac_cv_prog_ac_ct_OBJDUMP=${ac_cv_prog_ac_ct_OBJDUMP=objdump}
+ac_cv_prog_ac_ct_RANLIB=${ac_cv_prog_ac_ct_RANLIB=ranlib}
+ac_cv_prog_ac_ct_STRIP=${ac_cv_prog_ac_ct_STRIP=strip}
+ac_cv_prog_cc_c11=${ac_cv_prog_cc_c11=}
+ac_cv_prog_cc_g=${ac_cv_prog_cc_g=yes}
+ac_cv_prog_cc_stdc=${ac_cv_prog_cc_stdc=}
+ac_cv_prog_make_make_set=${ac_cv_prog_make_make_set=yes}
+ac_cv_type__Bool=${ac_cv_type__Bool=yes}
+ac_cv_type_size_t=${ac_cv_type_size_t=yes}
+am_cv_CC_dependencies_compiler_type=${am_cv_CC_dependencies_compiler_type=gcc3}
+am_cv_filesystem_timestamp_resolution=${am_cv_filesystem_timestamp_resolution=0.01}
+am_cv_make_support_nested_variables=${am_cv_make_support_nested_variables=yes}
+am_cv_prog_cc_c_o=${am_cv_prog_cc_c_o=yes}
+am_cv_prog_tar_ustar=${am_cv_prog_tar_ustar=gnutar}
+am_cv_sleep_fractional_seconds=${am_cv_sleep_fractional_seconds=yes}
+am_cv_xargs_n_works=${am_cv_xargs_n_works=yes}
+ax_cv_have___builtin_unreachable=${ax_cv_have___builtin_unreachable=yes}
+ax_cv_have_func_attribute_deprecated=${ax_cv_have_func_attribute_deprecated=yes}
+ax_cv_have_var_attribute_deprecated=${ax_cv_have_var_attribute_deprecated=yes}
+lt_cv_ar_at_file=${lt_cv_ar_at_file=@}
+lt_cv_archive_cmds_need_lc=${lt_cv_archive_cmds_need_lc=yes}
+lt_cv_deplibs_check_method=${lt_cv_deplibs_check_method='file_magic ^x86 archive import|^x86 DLL'}
+lt_cv_file_magic_cmd=${lt_cv_file_magic_cmd=func_win32_libid}
+lt_cv_file_magic_test_file=${lt_cv_file_magic_test_file=}
+lt_cv_ld_reload_flag=${lt_cv_ld_reload_flag=-r}
+lt_cv_nm_interface=${lt_cv_nm_interface='BSD nm'}
+lt_cv_objdir=${lt_cv_objdir=.libs}
+lt_cv_path_LD=${lt_cv_path_LD=C:/msys64/ucrt64/x86_64-w64-mingw32/bin/ld.exe}
+lt_cv_path_NM=${lt_cv_path_NM='/ucrt64/bin/nm -B'}
+lt_cv_path_manifest_tool=${lt_cv_path_manifest_tool=no}
+lt_cv_prog_compiler_c_o=${lt_cv_prog_compiler_c_o=yes}
+lt_cv_prog_compiler_pic=${lt_cv_prog_compiler_pic='-DDLL_EXPORT -DPIC'}
+lt_cv_prog_compiler_pic_works=${lt_cv_prog_compiler_pic_works=yes}
+lt_cv_prog_compiler_rtti_exceptions=${lt_cv_prog_compiler_rtti_exceptions=no}
+lt_cv_prog_compiler_static_works=${lt_cv_prog_compiler_static_works=yes}
+lt_cv_prog_gnu_ld=${lt_cv_prog_gnu_ld=yes}
+lt_cv_sharedlib_from_linklib_cmd=${lt_cv_sharedlib_from_linklib_cmd=func_cygming_dll_for_implib}
+test ${lt_cv_sys_global_symbol_pipe+y} || lt_cv_sys_global_symbol_pipe='/usr/bin/sed -n -e '\''s/^.*[	 ]\([ABCDGIRSTW][ABCDGIRSTW]*\)[	 ][	 ]*\([_A-Za-z][_A-Za-z0-9]*\)\{0,1\}$/\1 \2 \2/p'\'' | /usr/bin/sed '\''/ __gnu_lto/d'\'''
+test ${lt_cv_sys_global_symbol_to_c_name_address+y} || lt_cv_sys_global_symbol_to_c_name_address='/usr/bin/sed -n -e '\''s/^: \(.*\) .*$/  {"\1", (void *) 0},/p'\'' -e '\''s/^[ABCDGIRSTW][ABCDGIRSTW]* .* \(.*\)$/  {"\1", (void *) \&\1},/p'\'''
+test ${lt_cv_sys_global_symbol_to_c_name_address_lib_prefix+y} || lt_cv_sys_global_symbol_to_c_name_address_lib_prefix='/usr/bin/sed -n -e '\''s/^: \(.*\) .*$/  {"\1", (void *) 0},/p'\'' -e '\''s/^[ABCDGIRSTW][ABCDGIRSTW]* .* \(lib.*\)$/  {"\1", (void *) \&\1},/p'\'' -e '\''s/^[ABCDGIRSTW][ABCDGIRSTW]* .* \(.*\)$/  {"lib\1", (void *) \&\1},/p'\'''
+lt_cv_sys_global_symbol_to_cdecl=${lt_cv_sys_global_symbol_to_cdecl='/usr/bin/sed -n -e '\''s/^T .* \(.*\)$/extern int \1();/p'\'' -e '\''s/^[ABCDGIRSTW][ABCDGIRSTW]* .* \(.*\)$/extern char \1;/p'\'''}
+lt_cv_sys_global_symbol_to_import=${lt_cv_sys_global_symbol_to_import=}
+lt_cv_sys_max_cmd_len=${lt_cv_sys_max_cmd_len=8192}
+lt_cv_to_host_file_cmd=${lt_cv_to_host_file_cmd=func_convert_file_msys_to_w32}
+lt_cv_to_tool_file_cmd=${lt_cv_to_tool_file_cmd=func_convert_file_msys_to_w32}
+lt_cv_truncate_bin=${lt_cv_truncate_bin='/usr/bin/dd bs=4096 count=1'}
