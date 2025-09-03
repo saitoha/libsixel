@@ -144,12 +144,14 @@ typedef int SIXELSTATUS;
 #define SIXEL_PIXELFORMAT_G2       (SIXEL_FORMATTYPE_GRAYSCALE | 0x01) /* 2bpp grayscale */
 #define SIXEL_PIXELFORMAT_G4       (SIXEL_FORMATTYPE_GRAYSCALE | 0x02) /* 4bpp grayscale */
 #define SIXEL_PIXELFORMAT_G8       (SIXEL_FORMATTYPE_GRAYSCALE | 0x03) /* 8bpp grayscale */
+#define SIXEL_PIXELFORMAT_G16      (SIXEL_FORMATTYPE_GRAYSCALE | 0x04) /* 16bpp grayscale */
 #define SIXEL_PIXELFORMAT_AG88     (SIXEL_FORMATTYPE_GRAYSCALE | 0x13) /* 16bpp gray+alpha */
 #define SIXEL_PIXELFORMAT_GA88     (SIXEL_FORMATTYPE_GRAYSCALE | 0x23) /* 16bpp gray+alpha */
 #define SIXEL_PIXELFORMAT_PAL1     (SIXEL_FORMATTYPE_PALETTE   | 0x00) /* 1bpp palette */
 #define SIXEL_PIXELFORMAT_PAL2     (SIXEL_FORMATTYPE_PALETTE   | 0x01) /* 2bpp palette */
 #define SIXEL_PIXELFORMAT_PAL4     (SIXEL_FORMATTYPE_PALETTE   | 0x02) /* 4bpp palette */
 #define SIXEL_PIXELFORMAT_PAL8     (SIXEL_FORMATTYPE_PALETTE   | 0x03) /* 8bpp palette */
+#define SIXEL_PIXELFORMAT_PAL16    (SIXEL_FORMATTYPE_PALETTE   | 0x04) /* 16bpp palette */
 
 /* palette type */
 #define SIXEL_PALETTETYPE_AUTO     0   /* choose palette type automatically */

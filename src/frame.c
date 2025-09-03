@@ -407,7 +407,8 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     size_t size;
     unsigned char *dst;
     unsigned char *src;
-    unsigned char *p;
+    sixel_index_t *src_wide;
+    sixel_index_t *p;
 
     sixel_frame_ref(frame);
 
@@ -415,7 +416,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
-        size = (size_t)(frame->width * frame->height * 4);
+        size = (size_t)(frame->width * frame->height * (3 + sizeof(sixel_index_t)));
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
@@ -435,7 +436,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             sixel_allocator_free(frame->allocator, normalized_pixels);
             goto end;
         }
-        for (p = src; dst < src; ++p) {
+        for (p = (sixel_index_t *)src; dst < src; ++p) {
             *dst++ = *(frame->palette + *p * 3 + 0);
             *dst++ = *(frame->palette + *p * 3 + 1);
             *dst++ = *(frame->palette + *p * 3 + 2);
@@ -459,6 +460,26 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             *dst++ = frame->palette[*src * 3 + 0];
             *dst++ = frame->palette[*src * 3 + 1];
             *dst++ = frame->palette[*src * 3 + 2];
+        }
+        sixel_allocator_free(frame->allocator, frame->pixels);
+        frame->pixels = normalized_pixels;
+        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        break;
+    case SIXEL_PIXELFORMAT_PAL16:
+        size = (size_t)(frame->width * frame->height * 3);
+        normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
+        if (normalized_pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_frame_convert_to_rgb888: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        src_wide = (sixel_index_t *)frame->pixels;
+        dst = normalized_pixels;
+        for (; dst != normalized_pixels + size; ++src_wide) {
+            *dst++ = frame->palette[*src_wide * 3 + 0];
+            *dst++ = frame->palette[*src_wide * 3 + 1];
+            *dst++ = frame->palette[*src_wide * 3 + 2];
         }
         sixel_allocator_free(frame->allocator, frame->pixels);
         frame->pixels = normalized_pixels;
@@ -624,6 +645,7 @@ clip(unsigned char *pixels,
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_PAL8:
+    case SIXEL_PIXELFORMAT_PAL16:
     case SIXEL_PIXELFORMAT_G8:
     case SIXEL_PIXELFORMAT_RGB888:
         depth = sixel_helper_compute_depth(pixelformat);
@@ -654,7 +676,7 @@ clip(unsigned char *pixels,
         status = SIXEL_BAD_ARGUMENT;
         nwrite = sprintf(message,
                          "clip: "
-                         "invalid pixelformat(%08x) is specified.",
+                         "invalid pixelformat(0x%08x) is specified.",
                          pixelformat);
         if (nwrite > 0) {
             sixel_helper_set_additional_message(message);

@@ -794,10 +794,14 @@ sixel_encode_dither(
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_PAL8:
     case SIXEL_PIXELFORMAT_G1:
     case SIXEL_PIXELFORMAT_G2:
     case SIXEL_PIXELFORMAT_G4:
-        bufsize = (sizeof(sixel_index_t) * (size_t)width * (size_t)height * 3UL);
+    case SIXEL_PIXELFORMAT_G8:
+    case SIXEL_PIXELFORMAT_GA88:
+    case SIXEL_PIXELFORMAT_AG88:
+        bufsize = (sizeof(sixel_index_t) * (size_t)width * (size_t)height);
         paletted_pixels = (sixel_index_t *)sixel_allocator_malloc(dither->allocator, bufsize);
         if (paletted_pixels == NULL) {
             sixel_helper_set_additional_message(
@@ -814,12 +818,6 @@ sixel_encode_dither(
             goto end;
         }
         input_pixels = paletted_pixels;
-        break;
-    case SIXEL_PIXELFORMAT_PAL8:
-    case SIXEL_PIXELFORMAT_G8:
-    case SIXEL_PIXELFORMAT_GA88:
-    case SIXEL_PIXELFORMAT_AG88:
-        input_pixels = (sixel_index_t *)pixels;
         break;
     default:
         /* apply palette */
