@@ -189,7 +189,7 @@ am__define_uniq_tagged_files = \
     if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
   done | $(am__uniquify_input)`
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(srcdir)/libsixel.pc.in $(srcdir)/package.json.in.in \
+	$(srcdir)/libsixel.pc.in $(srcdir)/package.json.in.in AUTHORS \
 	ChangeLog NEWS README.md compile config.guess config.sub \
 	depcomp install-sh ltmain.sh missing py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -1021,6 +1021,12 @@ issue-167-vexe:
 
 issue-200:
 	converters/img2sixel --7bit-mode -8 --invert --palette-type=auto --verbose tests/issue/200/POC_img2sixel_heap_buffer_overflow -o /dev/null
+
+issue-207: all
+	converters/img2sixel -h 50% -r lanczos3 -w 300px tests/issue/207/poc; test $$? = 255 -o $$? = 127
+
+issue-207-vexe:
+	CC=clang CFLAGS="-fsanitize=address -O0 -g -fno-omit-frame-pointer" tools/vexe ubuntu issue-207
 
 issue-220:
 	converters/img2sixel -B '#000000' tests/issue/220/poc1_gif_oob.gif -o /dev/null
