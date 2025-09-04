@@ -248,6 +248,8 @@ gif_init_frame(
         }
     } else {
         frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        /* TODO: Allocated memory should be reused */
+        sixel_allocator_free(frame->allocator, frame->pixels);
         frame_size = (size_t)pg->w * (size_t)pg->h * 3;
         frame->pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, frame_size);
         if (frame->pixels == NULL) {
