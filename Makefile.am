@@ -123,8 +123,11 @@ issue-167-vexe:
 issue-200:
 	converters/img2sixel --7bit-mode -8 --invert --palette-type=auto --verbose tests/issue/200/POC_img2sixel_heap_buffer_overflow -o /dev/null
 
-issue-220:
-	converters/img2sixel -B '#000000' tests/issue/220/poc1_gif_oob.gif -o /dev/null
+issue-207: all
+	converters/img2sixel -h 50% -r lanczos3 -w 300px tests/issue/207/poc; test $$? = 255 -o $$? = 127
+
+issue-207-vexe:
+	CC=clang CFLAGS="-fsanitize=address -O0 -g -fno-omit-frame-pointer" tools/vexe ubuntu issue-207
 
 libsixel-libsixel-issue-73:
 	converters/img2sixel tests/issue/libsixel-libsixel/73/stbi_1561_poc.bin
