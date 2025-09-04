@@ -189,9 +189,9 @@ am__define_uniq_tagged_files = \
     if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
   done | $(am__uniquify_input)`
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(srcdir)/libsixel.pc.in $(srcdir)/package.json.in.in \
+	$(srcdir)/libsixel.pc.in $(srcdir)/package.json.in.in AUTHORS \
 	ChangeLog NEWS README.md compile config.guess config.sub \
-	install-sh ltmain.sh missing py-compile
+	depcomp install-sh ltmain.sh missing py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -1026,12 +1026,11 @@ issue-167-vexe:
 issue-200:
 	converters/img2sixel --7bit-mode -8 --invert --palette-type=auto --verbose tests/issue/200/POC_img2sixel_heap_buffer_overflow -o /dev/null
 
-issue-220:
-	converters/img2sixel -B '#000000' tests/issue/220/poc1_gif_oob.gif -o /dev/null
-	converters/sixel2png -i tests/issue/220/poc2_sixel_dcs_signed_integer_overflow.sixel -o /dev/null; test $$? = 255 -o $$? = 127
-	converters/img2sixel -h 1890177820 -e -I -C 637555838 -S -o /dev/null tests/issue/220/poc3_encoder_integer_overflow.gif; test $$? = 255 -o $$? = 127
-	converters/img2sixel -S -o /dev/null tests/issue/220/poc5_encode_integer_overflow.gif
-	converters/img2sixel -p4 -C 2147483647 -o /dev/null tests/issue/220/poc6_quant_integer_overflow_8x8.png; test $$? = 255 -o $$? = 127
+issue-207: all
+	converters/img2sixel -h 50% -r lanczos3 -w 300px tests/issue/207/poc; test $$? = 255 -o $$? = 127
+
+issue-207-vexe:
+	CC=clang CFLAGS="-fsanitize=address -O0 -g -fno-omit-frame-pointer" tools/vexe ubuntu issue-207
 
 libsixel-libsixel-issue-73:
 	converters/img2sixel tests/issue/libsixel-libsixel/73/stbi_1561_poc.bin

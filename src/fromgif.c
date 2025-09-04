@@ -219,11 +219,50 @@ gif_init_frame(
         goto end;
     }
 
-    /*
-     * The canvas is already composited in RGB888, so each frame can be
-     * exported directly without reinterpretation through a per-frame palette.
-     */
-    memcpy(frame->pixels, pg->out, frame_size);
+        for (i = 0; i < frame->ncolors; ++i) {
+            frame->palette[i * 3 + 0] = pg->color_table[i * 3 + 2];
+            frame->palette[i * 3 + 1] = pg->color_table[i * 3 + 1];
+            frame->palette[i * 3 + 2] = pg->color_table[i * 3 + 0];
+        }
+        if (pg->lflags & 0x80) {
+            if (pg->eflags & 0x01) {
+                if (bgcolor) {
+                    frame->palette[pg->transparent * 3 + 0] = bgcolor[0];
+                    frame->palette[pg->transparent * 3 + 1] = bgcolor[1];
+                    frame->palette[pg->transparent * 3 + 2] = bgcolor[2];
+                } else {
+                    frame->transparent = pg->transparent;
+                }
+            }
+        } else if (pg->flags & 0x80) {
+            if (pg->eflags & 0x01) {
+                if (bgcolor) {
+                    frame->palette[pg->transparent * 3 + 0] = bgcolor[0];
+                    frame->palette[pg->transparent * 3 + 1] = bgcolor[1];
+                    frame->palette[pg->transparent * 3 + 2] = bgcolor[2];
+                } else {
+                    frame->transparent = pg->transparent;
+                }
+            }
+        }
+    } else {
+        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        /* TODO: Allocated memory should be reused */
+        sixel_allocator_free(frame->allocator, frame->pixels);
+        frame_size = (size_t)pg->w * (size_t)pg->h * 3;
+        frame->pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, frame_size);
+        if (frame->pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_allocator_malloc() failed in gif_init_frame().");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        for (i = 0; i < pg->w * pg->h; ++i) {
+            frame->pixels[i * 3 + 0] = pg->color_table[pg->out[i] * 3 + 2];
+            frame->pixels[i * 3 + 1] = pg->color_table[pg->out[i] * 3 + 1];
+            frame->pixels[i * 3 + 2] = pg->color_table[pg->out[i] * 3 + 0];
+        }
+    }
     frame->multiframe = (pg->loop_count != (-1));
 
     status = SIXEL_OK;
