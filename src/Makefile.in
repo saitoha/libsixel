@@ -139,7 +139,7 @@ am__DEPENDENCIES_1 =
 libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-fromsixel.lo libsixel_la-tosixel.lo \
 	libsixel_la-quant.lo libsixel_la-dither.lo \
@@ -264,6 +264,8 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+COREGRAPHICS_CFLAGS = @COREGRAPHICS_CFLAGS@
+COREGRAPHICS_LIBS = @COREGRAPHICS_LIBS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CSCOPE = @CSCOPE@
@@ -461,7 +463,8 @@ libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(LIBJPEG_CFLAGS) \
 		$(GDK_PIXBUF_CFLAGS) \
 		$(GD_CFLAGS) \
-		$(WIC_CFLAGS)
+		$(WIC_CFLAGS) \
+		$(COREGRAPHICS_CFLAGS)
 
 libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION)
 libsixel_la_LIBADD = -lm \
@@ -471,7 +474,8 @@ libsixel_la_LIBADD = -lm \
 		$(LIBJPEG_LIBS) \
 		$(GDK_PIXBUF_LIBS) \
 		$(GD_LIBS) \
-		$(WIC_LIBS)
+		$(WIC_LIBS) \
+		$(COREGRAPHICS_LIBS)
 
 @COND_TESTS_TRUE@tests_SOURCES = $(srcdir)/tests.c
 @COND_TESTS_TRUE@tests_CPPFLAGS = -I$(top_builddir)/include/ \

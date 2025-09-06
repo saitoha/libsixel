@@ -689,6 +689,8 @@ LIBCURL_CFLAGS
 AM_CPPFLAGS
 GD_LIBS
 GD_CFLAGS
+COREGRAPHICS_LIBS
+COREGRAPHICS_CFLAGS
 GDK_PIXBUF_LIBS
 GDK_PIXBUF_CFLAGS
 HAVE_GETOPT_LONG_FALSE
@@ -855,6 +857,7 @@ enable_img2sixel
 enable_sixel2png
 with_gdk_pixbuf2
 with_gd
+with_coregraphics
 with_libcurl
 with_jpeg
 with_png
@@ -1554,6 +1557,7 @@ Optional Packages:
                           compiler's sysroot if not specified).
   --with-gdk-pixbuf2      whether to build with gdk-pixbuf2 (default: no)
   --with-gd               whether to build with gd (default: no)
+  --with-coregraphics     whether to build with CoreGraphics (default: auto)
   --with-libcurl          whether to build with libcurl (default: auto)
   --with-jpeg             whether to build with libjpeg (default: auto)
   --with-png              whether to build with libpng (default: auto)
@@ -6566,7 +6570,7 @@ mingw* | windows* | pw32*)
     lt_cv_file_magic_cmd='func_win32_libid'
   else
     # Keep this pattern in sync with the one in func_win32_libid.
-    lt_cv_deplibs_check_method='file_magic file format (pei*-i386(.*architecture: i386)?|pe-arm-wince|pe-x86-64|pe-aarch64|coff-arm|coff-arm64|coff-i386|coff-x86-64)'
+    lt_cv_deplibs_check_method='file_magic file format (pei*-i386(.*architecture: i386)?|pe-arm-wince|pe-x86-64|pe-aarch64)'
     lt_cv_file_magic_cmd='$OBJDUMP -f'
   fi
   ;;
@@ -12138,7 +12142,7 @@ cygwin* | mingw* | windows* | pw32* | cegcc*)
     case $host_os in
     cygwin*)
       # Cygwin DLLs use 'cyg' prefix rather than 'lib'
-      soname_spec='`echo $libname | $SED -e 's/^lib/msys-/'``echo $release | $SED -e 's/[.]/-/g'`$versuffix$shared_ext'
+      soname_spec='`echo $libname | $SED -e 's/^lib/cyg/'``echo $release | $SED -e 's/[.]/-/g'`$versuffix$shared_ext'
 
       sys_lib_search_path_spec="$sys_lib_search_path_spec /usr/lib/w32api"
       ;;
@@ -14437,6 +14441,17 @@ then :
   withval=$with_gd;
 else case e in #(
   e) with_gd=no ;;
+esac
+fi
+
+
+
+# Check whether --with-coregraphics was given.
+if test ${with_coregraphics+y}
+then :
+  withval=$with_coregraphics;
+else case e in #(
+  e) with_coregraphics=auto ;;
 esac
 fi
 
@@ -17522,8 +17537,21 @@ have_curl="no"
 have_jpeg="no"
 have_png="no"
 have_winpthread="no"
-have_wic="auto"
-have_winhttp="auto"
+have_wic="no"
+have_winhttp="no"
+have_coregraphics="no"
+
+#if test x$with_wic != xno; then
+#    AC_CHECK_HEADERS([wincodec.h], [],
+#                     [AC_MSG_ERROR([WIC integration: wincodec.h is not avilable.])])
+#    AC_CHECK_LIB([ole32], [main], [],
+#                 [AC_MSG_ERROR([WIC integration: library ole32 is not avilable.])])
+#    AC_CHECK_LIB([uuid], [main], [],
+#                 [AC_MSG_ERROR([WIC integration: library uuid is not avilable.])])
+#    AC_CHECK_LIB([windowscodecs], [main], [],
+#                 [AC_MSG_ERROR([WIC integration: library wincodecs is not avilable.])])
+#    have_wic="yes"
+#fi
 
 if test x$with_gdk_pixbuf2 != xno; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gdk-pixbuf2" >&5
@@ -17619,6 +17647,47 @@ printf "%s\n" "$as_me: gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}" >&6;}
 printf "%s\n" "$as_me: gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}" >&6;}
 fi
 
+
+
+
+if test x$with_coregraphics != xno; then
+    saved_LIBS="$LIBS"
+    LIBS="$LIBS -framework CoreGraphics -framework ImageIO"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <CoreGraphics/CoreGraphics.h>
+                           #include <ImageIO/ImageIO.h>
+int
+main (void)
+{
+CGImageRef image = NULL;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  have_coregraphics=yes
+else case e in #(
+  e) have_coregraphics=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+    LIBS="$saved_LIBS"
+    if test x$have_coregraphics = xyes; then
+
+printf "%s\n" "#define HAVE_COREGRAPHICS 1" >>confdefs.h
+
+        COREGRAPHICS_LIBS="-framework CoreFoundation -framework CoreGraphics -framework ImageIO"
+        COREGRAPHICS_CFLAGS=""
+        loaders="${loaders} coregraphics"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: coregraphics libs is ${COREGRAPHICS_LIBS}" >&5
+printf "%s\n" "$as_me: coregraphics libs is ${COREGRAPHICS_LIBS}" >&6;}
+    elif test x$with_coregraphics = xyes; then
+        as_fn_error $? "unable to find CoreGraphics" "$LINENO" 5
+    fi
+fi
 
 
 

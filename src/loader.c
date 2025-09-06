@@ -53,6 +53,10 @@
 #if HAVE_JPEG
 # include <jpeglib.h>
 #endif  /* HAVE_JPEG */
+#if HAVE_COREGRAPHICS
+# include <ApplicationServices/ApplicationServices.h>
+# include <ImageIO/ImageIO.h>
+#endif
 
 #if !defined(HAVE_MEMCPY)
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
@@ -350,8 +354,10 @@ load_png(unsigned char      /* out */ **result,
         goto cleanup;
     }
 
-    // The minimum valid PNG is 67 bytes.
-    // https://garethrees.org/2007/11/14/pngcrush/
+    /*
+     * The minimum valid PNG is 67 bytes.
+     * https://garethrees.org/2007/11/14/pngcrush/
+     */
     if (size < 67) {
         sixel_helper_set_additional_message("PNG data too small to be valid!");
         status = SIXEL_PNG_ERROR;
@@ -366,7 +372,6 @@ load_png(unsigned char      /* out */ **result,
         goto cleanup;
     }
 #endif  /* HAVE_SETJMP */
-
 
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
@@ -1192,6 +1197,108 @@ end:
 }
 #endif  /* HAVE_GDK_PIXBUF2 */
 
+#ifdef HAVE_COREGRAPHICS
+static SIXELSTATUS
+load_with_coregraphics(
+    sixel_chunk_t const       /* in */     *pchunk,
+    int                       /* in */     fstatic,
+    int                       /* in */     fuse_palette,
+    int                       /* in */     reqcolors,
+    unsigned char             /* in */     *bgcolor,
+    int                       /* in */     loop_control,
+    sixel_load_image_function /* in */     fn_load,
+    void                      /* in/out */ *context)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_frame_t *frame = NULL;
+    CFDataRef data = NULL;
+    CGImageSourceRef source = NULL;
+    CGImageRef image = NULL;
+    CGColorSpaceRef color_space = NULL;
+    CGContextRef ctx = NULL;
+    size_t stride;
+
+    (void) fstatic;
+    (void) fuse_palette;
+    (void) reqcolors;
+    (void) bgcolor;
+    (void) loop_control;
+
+    status = sixel_frame_new(&frame, pchunk->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    data = CFDataCreate(kCFAllocatorDefault, pchunk->buffer, (CFIndex)pchunk->size);
+    if (!data) {
+        goto end;
+    }
+
+    source = CGImageSourceCreateWithData(data, NULL);
+    if (!source) {
+        goto end;
+    }
+
+    image = CGImageSourceCreateImageAtIndex(source, 0, NULL);
+    if (!image) {
+        goto end;
+    }
+
+    frame->width = (int)CGImageGetWidth(image);
+    frame->height = (int)CGImageGetHeight(image);
+    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    stride = (size_t)frame->width * 4;
+    frame->pixels = sixel_allocator_malloc(
+        pchunk->allocator, (size_t)(frame->height * stride));
+
+    if (frame->pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "load_with_coregraphics: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    color_space = CGColorSpaceCreateDeviceRGB();
+    if (!color_space) {
+        goto end;
+    }
+
+    ctx = CGBitmapContextCreate(frame->pixels, frame->width, frame->height,
+                                8, stride, color_space,
+                                kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+    if (!ctx) {
+        goto end;
+    }
+
+    CGContextDrawImage(ctx, CGRectMake(0, 0, frame->width, frame->height), image);
+
+    status = fn_load(frame, context);
+
+end:
+    if (ctx) {
+        CGContextRelease(ctx);
+    }
+    if (color_space) {
+        CGColorSpaceRelease(color_space);
+    }
+    if (image) {
+        CGImageRelease(image);
+    }
+    if (source) {
+        CFRelease(source);
+    }
+    if (data) {
+        CFRelease(data);
+    }
+    if (frame) {
+        sixel_allocator_free(pchunk->allocator, frame->pixels);
+        sixel_allocator_free(pchunk->allocator, frame->palette);
+        sixel_allocator_free(pchunk->allocator, frame);
+    }
+    return status;
+}
+#endif  /* HAVE_COREGRAPHICS */
+
 #if HAVE_GD
 static int
 detect_file_format(int len, unsigned char *data)
@@ -1623,6 +1730,18 @@ sixel_helper_load_image_file(
                                context);
     }
 #endif  /* HAVE_WIC */
+#ifdef HAVE_COREGRAPHICS
+    if (SIXEL_FAILED(status)) {
+        status = load_with_coregraphics(pchunk,
+                                        fstatic,
+                                        fuse_palette,
+                                        reqcolors,
+                                        bgcolor,
+                                        loop_control,
+                                        fn_load,
+                                        context);
+    }
+#endif  /* HAVE_COREGRAPHICS */
 #ifdef HAVE_GDK_PIXBUF2
     if (SIXEL_FAILED(status)) {
         status = load_with_gdkpixbuf(pchunk,

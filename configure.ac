@@ -112,6 +112,12 @@ AC_ARG_WITH([gd],
             [],
             [with_gd=no])
 
+AC_ARG_WITH([coregraphics],
+            [AS_HELP_STRING([--with-coregraphics],
+                            [whether to build with CoreGraphics (default: auto)])],
+            [],
+            [with_coregraphics=auto])
+
 AC_ARG_WITH([libcurl],
             [AS_HELP_STRING([--with-libcurl],
                             [whether to build with libcurl (default: auto)])],
@@ -415,8 +421,21 @@ have_curl="no"
 have_jpeg="no"
 have_png="no"
 have_winpthread="no"
-have_wic="auto"
-have_winhttp="auto"
+have_wic="no"
+have_winhttp="no"
+have_coregraphics="no"
+
+#if test x$with_wic != xno; then
+#    AC_CHECK_HEADERS([wincodec.h], [],
+#                     [AC_MSG_ERROR([WIC integration: wincodec.h is not avilable.])])
+#    AC_CHECK_LIB([ole32], [main], [],
+#                 [AC_MSG_ERROR([WIC integration: library ole32 is not avilable.])])
+#    AC_CHECK_LIB([uuid], [main], [],
+#                 [AC_MSG_ERROR([WIC integration: library uuid is not avilable.])])
+#    AC_CHECK_LIB([windowscodecs], [main], [],
+#                 [AC_MSG_ERROR([WIC integration: library wincodecs is not avilable.])])
+#    have_wic="yes"
+#fi
 
 if test x$with_gdk_pixbuf2 != xno; then
     AC_MSG_NOTICE([checking for gdk-pixbuf2])
@@ -442,6 +461,29 @@ fi
 
 AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
+
+if test x$with_coregraphics != xno; then
+    saved_LIBS="$LIBS"
+    LIBS="$LIBS -framework CoreGraphics -framework ImageIO"
+    AC_LINK_IFELSE(
+        [AC_LANG_PROGRAM([[#include <CoreGraphics/CoreGraphics.h>
+                           #include <ImageIO/ImageIO.h>]],
+                         [[CGImageRef image = NULL;]])],
+        [have_coregraphics=yes],
+        [have_coregraphics=no])
+    LIBS="$saved_LIBS"
+    if test x$have_coregraphics = xyes; then
+        AC_DEFINE(HAVE_COREGRAPHICS, 1, [whether CoreGraphics is available])
+        COREGRAPHICS_LIBS="-framework CoreFoundation -framework CoreGraphics -framework ImageIO"
+        COREGRAPHICS_CFLAGS=""
+        loaders="${loaders} coregraphics"
+        AC_MSG_NOTICE([coregraphics libs is ${COREGRAPHICS_LIBS}])
+    elif test x$with_coregraphics = xyes; then
+        AC_MSG_ERROR([unable to find CoreGraphics])
+    fi
+fi
+AC_SUBST(COREGRAPHICS_CFLAGS)
+AC_SUBST(COREGRAPHICS_LIBS)
 
 if test x$with_gd != xno; then
     AC_MSG_NOTICE([checking for GD])
