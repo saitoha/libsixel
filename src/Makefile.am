@@ -64,7 +64,8 @@ libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(LIBJPEG_CFLAGS) \
 		$(GDK_PIXBUF_CFLAGS) \
 		$(GD_CFLAGS) \
-		$(WIC_CFLAGS)
+		$(WIC_CFLAGS) \
+                $(COREGRAPHICS_CFLAGS)
 libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION)
 libsixel_la_LIBADD = -lm \
 		$(LIBCURL_LIBS) \
@@ -73,7 +74,8 @@ libsixel_la_LIBADD = -lm \
 		$(LIBJPEG_LIBS) \
 		$(GDK_PIXBUF_LIBS) \
 		$(GD_LIBS) \
-		$(WIC_LIBS)
+		$(WIC_LIBS) \
+                $(COREGRAPHICS_LIBS)
 
 if COND_TESTS
 noinst_PROGRAMS = tests

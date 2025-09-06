@@ -689,11 +689,6 @@ LIBCURL_CFLAGS
 AM_CPPFLAGS
 GD_LIBS
 GD_CFLAGS
-HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE
-HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE
-APPLE_QUICKLOOK_OBJCFLAGS
-APPLE_QUICKLOOK_REGISTER_LIBS
-APPLE_QUICKLOOK_EXTENSION_LIBS
 COREGRAPHICS_LIBS
 COREGRAPHICS_CFLAGS
 GDK_PIXBUF_LIBS
@@ -873,7 +868,6 @@ enable_sixel2png
 with_gdk_pixbuf2
 with_gd
 with_coregraphics
-enable_quicklook_extension
 with_libcurl
 with_jpeg
 with_png
@@ -14727,6 +14721,17 @@ fi
 
 
 
+# Check whether --with-coregraphics was given.
+if test ${with_coregraphics+y}
+then :
+  withval=$with_coregraphics;
+else case e in #(
+  e) with_coregraphics=auto ;;
+esac
+fi
+
+
+
 # Check whether --with-libcurl was given.
 if test ${with_libcurl+y}
 then :
@@ -18565,6 +18570,7 @@ have_jpeg="no"
 have_png="no"
 have_winpthread="no"
 have_wic="no"
+have_coregraphics="no"
 
 if test x$with_gdk_pixbuf2 != xno; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gdk-pixbuf2" >&5
@@ -18662,6 +18668,47 @@ printf "%s\n" "$as_me: gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}" >&6;}
 printf "%s\n" "$as_me: gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}" >&6;}
 fi
 
+
+
+
+if test x$with_coregraphics != xno; then
+    saved_LIBS="$LIBS"
+    LIBS="$LIBS -framework CoreGraphics -framework ImageIO"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <CoreGraphics/CoreGraphics.h>
+                           #include <ImageIO/ImageIO.h>
+int
+main (void)
+{
+CGImageRef image = NULL;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  have_coregraphics=yes
+else case e in #(
+  e) have_coregraphics=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+    LIBS="$saved_LIBS"
+    if test x$have_coregraphics = xyes; then
+
+printf "%s\n" "#define HAVE_COREGRAPHICS 1" >>confdefs.h
+
+        COREGRAPHICS_LIBS="-framework CoreFoundation -framework CoreGraphics -framework ImageIO"
+        COREGRAPHICS_CFLAGS=""
+        loaders="${loaders} coregraphics"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: coregraphics libs is ${COREGRAPHICS_LIBS}" >&5
+printf "%s\n" "$as_me: coregraphics libs is ${COREGRAPHICS_LIBS}" >&6;}
+    elif test x$with_coregraphics = xyes; then
+        as_fn_error $? "unable to find CoreGraphics" "$LINENO" 5
+    fi
+fi
 
 
 
