@@ -715,6 +715,8 @@ WANT_SIXEL2PNG_FALSE
 WANT_SIXEL2PNG_TRUE
 WANT_IMG2SIXEL_FALSE
 WANT_IMG2SIXEL_TRUE
+WIN_SUBSYSTEM_FALSE
+WIN_SUBSYSTEM_TRUE
 attr_func_deprecated
 attr_var_deprecated
 LT_SYS_LIBRARY_PATH
@@ -6570,7 +6572,7 @@ mingw* | windows* | pw32*)
     lt_cv_file_magic_cmd='func_win32_libid'
   else
     # Keep this pattern in sync with the one in func_win32_libid.
-    lt_cv_deplibs_check_method='file_magic file format (pei*-i386(.*architecture: i386)?|pe-arm-wince|pe-x86-64|pe-aarch64)'
+    lt_cv_deplibs_check_method='file_magic file format (pei*-i386(.*architecture: i386)?|pe-arm-wince|pe-x86-64|pe-aarch64|coff-arm|coff-arm64|coff-i386|coff-x86-64)'
     lt_cv_file_magic_cmd='$OBJDUMP -f'
   fi
   ;;
@@ -12142,7 +12144,7 @@ cygwin* | mingw* | windows* | pw32* | cegcc*)
     case $host_os in
     cygwin*)
       # Cygwin DLLs use 'cyg' prefix rather than 'lib'
-      soname_spec='`echo $libname | $SED -e 's/^lib/cyg/'``echo $release | $SED -e 's/[.]/-/g'`$versuffix$shared_ext'
+      soname_spec='`echo $libname | $SED -e 's/^lib/msys-/'``echo $release | $SED -e 's/[.]/-/g'`$versuffix$shared_ext'
 
       sys_lib_search_path_spec="$sys_lib_search_path_spec /usr/lib/w32api"
       ;;
@@ -14385,6 +14387,21 @@ printf "%s\n" "#define HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS 1" >>confdefs.h
 
 
 fi
+
+case "$host_os" in
+    mingw*)
+    target_mingw=yes
+    ;;
+esac
+
+ if test x${target_mingw} = xyes; then
+  WIN_SUBSYSTEM_TRUE=
+  WIN_SUBSYSTEM_FALSE='#'
+else
+  WIN_SUBSYSTEM_TRUE='#'
+  WIN_SUBSYSTEM_FALSE=
+fi
+
 
 # Options
 # Check whether --enable-img2sixel was given.
@@ -16863,6 +16880,12 @@ then :
   printf "%s\n" "#define HAVE_INTTYPES_H 1" >>confdefs.h
 
 fi
+ac_fn_c_check_header_compile "$LINENO" "windows.h" "ac_cv_header_windows_h" "$ac_includes_default"
+if test "x$ac_cv_header_windows_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_WINDOWS_H 1" >>confdefs.h
+
+fi
 
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -17395,6 +17418,18 @@ ac_fn_c_check_func "$LINENO" "strtol" "ac_cv_func_strtol"
 if test "x$ac_cv_func_strtol" = xyes
 then :
   printf "%s\n" "#define HAVE_STRTOL 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "fsync" "ac_cv_func_fsync"
+if test "x$ac_cv_func_fsync" = xyes
+then :
+  printf "%s\n" "#define HAVE_FSYNC 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "_commit" "ac_cv_func__commit"
+if test "x$ac_cv_func__commit" = xyes
+then :
+  printf "%s\n" "#define HAVE__COMMIT 1" >>confdefs.h
 
 fi
 
@@ -20170,6 +20205,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${WIN_SUBSYSTEM_TRUE}" && test -z "${WIN_SUBSYSTEM_FALSE}"; then
+  as_fn_error $? "conditional \"WIN_SUBSYSTEM\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_IMG2SIXEL_TRUE}" && test -z "${WANT_IMG2SIXEL_FALSE}"; then

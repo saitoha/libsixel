@@ -46,6 +46,10 @@
 #elif HAVE_SYS_SIGNAL_H
 # include <sys/signal.h>
 #endif
+#if HAVE_WINDOWS_H
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+#endif
 
 #include <sixel.h>
 
@@ -342,6 +346,21 @@ signal_handler(int sig)
 
 #endif
 
+#if HAVE_WINDOWS_H
+static void
+set_console_mode(void)
+{
+    DWORD mode = 0;
+    HANDLE hStdout;
+
+    hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    GetConsoleMode(hStdout, &mode);
+    mode = mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(hStdout, mode);
+    SetConsoleCP(437);   /* IBM 437 !! */
+}
+#endif
+
 int
 main(int argc, char *argv[])
 {
@@ -452,6 +471,8 @@ main(int argc, char *argv[])
     (void) signal_handler;
 #endif
 
+    set_console_mode();
+
     if (optind == argc) {
         status = sixel_encoder_encode(encoder, NULL);
         if (SIXEL_FAILED(status)) {
@@ -486,6 +507,13 @@ error:
     status = (-1);
 end:
     sixel_encoder_unref(encoder);
+
+#if HAVE_FSYNC
+    fsync(STDOUT_FILENO);
+#elif HAVE__COMMIT
+    _commit(STDOUT_FILENO);
+#endif
+
     return status;
 }
 

@@ -134,6 +134,9 @@
 /* define 1 if GCC supports -fno-emulated-tls */
 #undef HAVE_FNO_EMULATED_TLS
 
+/* Define to 1 if you have the 'fsync' function. */
+#undef HAVE_FSYNC
+
 /* Define to 1 if the system has the `deprecated' function attribute */
 #undef HAVE_FUNC_ATTRIBUTE_DEPRECATED
 
@@ -333,6 +336,9 @@
 
 /* Define to 1 if the system has the type '_Bool'. */
 #undef HAVE__BOOL
+
+/* Define to 1 if you have the '_commit' function. */
+#undef HAVE__COMMIT
 
 /* Define to 1 if you have the '_setmode' function. */
 #undef HAVE__SETMODE

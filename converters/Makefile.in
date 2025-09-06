@@ -135,7 +135,7 @@ am__v_lt_0 = --silent
 am__v_lt_1 = 
 img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(img2sixel_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(img2sixel_LDFLAGS) $(LDFLAGS) -o $@
 am__sixel2png_SOURCES_DIST = $(srcdir)/sixel2png.c \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h
 @WANT_SIXEL2PNG_TRUE@am_sixel2png_OBJECTS =  \
@@ -468,6 +468,7 @@ CLEANFILES = *.gcno *.gcda *.gcov \
 @WANT_IMG2SIXEL_TRUE@img2sixel_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 @WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la
+@WANT_IMG2SIXEL_TRUE@@WIN_SUBSYSTEM_TRUE@img2sixel_LDFLAGS = -mwindows
 @WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = $(srcdir)/sixel2png.c $(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h
 @WANT_SIXEL2PNG_TRUE@sixel2png_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 @WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
