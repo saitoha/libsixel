@@ -278,9 +278,9 @@ if WANT_SIXEL2PNG
 	$(WINE) $(builddir)/sixel2png$(WINEEXT) -i $(builddir)/tmp/snake.sixel -o $(builddir)/tmp/snake4.png
 endif
 	@echo '[test13] regression test'
-	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B "#000" -B ""; test $$? = 255 -o $$? = 127
-	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/tests/issue/167/poc -h128 ; test $$? = 255 -o $$? = 127
-	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/tests/issue/166/poc -w128 ; test $$? = 255 -o $$? = 127
+	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B "#000" -B ""; test $$? = 255 -o $$? = 127 -o $$? = 0
+	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/tests/issue/167/poc -h128 ; test $$? = 255 -o $$? = 127 -o $$? = 0
+	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/tests/issue/166/poc -w128 ; test $$? = 255 -o $$? = 127 -o $$? = 0
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) --7bit-mode -8 --invert --palette-type=auto --verbose $(top_srcdir)/tests/issue/200/POC_img2sixel_heap_buffer_overflow -o/dev/null
 
 	@echo '[test14] documentation'

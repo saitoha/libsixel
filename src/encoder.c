@@ -542,6 +542,7 @@ sixel_encoder_prepare_palette(
             status = SIXEL_OK;
         } else {
             status = sixel_dither_new(dither, (-1), encoder->allocator);
+            sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
         }
         goto end;
     case SIXEL_COLOR_OPTION_MONOCHROME:

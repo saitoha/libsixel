@@ -15,6 +15,9 @@
 /* Define to 1 if you have the 'clock' function. */
 #undef HAVE_CLOCK
 
+/* whether CoreGraphics is available */
+#undef HAVE_COREGRAPHICS
+
 /* Define to 1 if you have the <ctype.h> header file. */
 #undef HAVE_CTYPE_H
 

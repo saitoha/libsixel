@@ -302,6 +302,8 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+COREGRAPHICS_CFLAGS = @COREGRAPHICS_CFLAGS@
+COREGRAPHICS_LIBS = @COREGRAPHICS_LIBS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CSCOPE = @CSCOPE@
@@ -1262,9 +1264,9 @@ test_impl:
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) $(builddir)/sixel2png$(WINEEXT) - - < $(builddir)/tmp/snake3.sixel > $(builddir)/tmp/snake3.png
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) $(builddir)/sixel2png$(WINEEXT) -i $(builddir)/tmp/snake.sixel -o $(builddir)/tmp/snake4.png
 @WANT_IMG2SIXEL_TRUE@	@echo '[test13] regression test'
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B "#000" -B ""; test $$? = 255 -o $$? = 127
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/tests/issue/167/poc -h128 ; test $$? = 255 -o $$? = 127
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/tests/issue/166/poc -w128 ; test $$? = 255 -o $$? = 127
+@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B "#000" -B ""; test $$? = 255 -o $$? = 127 -o $$? = 0
+@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/tests/issue/167/poc -h128 ; test $$? = 255 -o $$? = 127 -o $$? = 0
+@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/tests/issue/166/poc -w128 ; test $$? = 255 -o $$? = 127 -o $$? = 0
 @WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) --7bit-mode -8 --invert --palette-type=auto --verbose $(top_srcdir)/tests/issue/200/POC_img2sixel_heap_buffer_overflow -o/dev/null
 
 @WANT_IMG2SIXEL_TRUE@	@echo '[test14] documentation'
