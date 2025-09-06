@@ -435,6 +435,7 @@ have_winpthread="no"
 have_wic="no"
 have_winhttp="no"
 have_coregraphics="no"
+have_libwinpthread="no"
 
 #if test x$with_wic != xno; then
 #    AC_CHECK_HEADERS([wincodec.h], [],
