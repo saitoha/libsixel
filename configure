@@ -14389,7 +14389,7 @@ printf "%s\n" "#define HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS 1" >>confdefs.h
 fi
 
 case "$host_os" in
-    mingw*)
+    mingw32)
     target_mingw=yes
     ;;
 esac

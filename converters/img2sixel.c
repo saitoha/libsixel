@@ -49,6 +49,9 @@
 #if HAVE_WINDOWS_H
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
+# include <tlhelp32.h>
+# include <fcntl.h>
+# include <psapi.h>
 #endif
 
 #include <sixel.h>
@@ -346,6 +349,181 @@ signal_handler(int sig)
 
 #endif
 
+#if HAVE_WINDOWS_H
+# if !defined(__CYGWIN__)
+static BOOL
+end_with(wchar_t const *path, wchar_t const *needle)
+{
+    size_t lp, ln;
+    wchar_t lhs, rhs;
+
+    lp = wcslen(path);
+    ln = wcslen(needle);
+    if (ln > lp) {
+        return FALSE;
+    }
+
+    for (size_t i = 0; i < ln; ++i) {
+        lhs = path[lp - ln + i];
+        rhs = needle[i];
+        if (lhs >= L'A' && lhs <= L'Z') {
+            lhs = lhs - L'A' + L'a';
+        }
+        if (rhs >= L'A' && rhs <= L'Z') {
+            rhs = rhs - L'A' + L'a';
+        }
+        if (lhs != rhs) {
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+static BOOL
+pid_image_basename(DWORD pid, wchar_t *out, DWORD cch_out)
+{
+    BOOL status = FALSE;
+    HANDLE handle;
+    DWORD n;
+    wchar_t *p;
+
+    handle = OpenProcess(
+        PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
+        FALSE,
+        pid);
+    if (!handle) {
+        return FALSE;
+    }
+
+    n = GetModuleFileNameExW(handle, NULL, out, cch_out);
+    if (n) {
+        p = out + n;
+        while (p > out && p[-1] != L'\\' && p[-1] != L'/') p--;
+        if (p != out) {
+            memmove(out, p, (wcslen(p) + 1) * sizeof(wchar_t));
+        }
+        status = TRUE;
+    }
+
+    CloseHandle(handle);
+
+    return status;
+}
+
+static DWORD
+get_parent_pid(DWORD pid)
+{
+    DWORD ppid = 0;
+    HANDLE snap;
+    PROCESSENTRY32W pe = { .dwSize = sizeof(pe) };
+
+    snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) {
+        return 0;
+    }
+    if (Process32FirstW(snap, &pe)) {
+        do {
+            if (pe.th32ProcessID == pid) {
+                ppid = pe.th32ParentProcessID;
+                break;
+            }
+        } while (Process32NextW(snap, &pe));
+    }
+    CloseHandle(snap);
+
+    return ppid;
+}
+
+static BOOL
+in_windows_terminal(void) {
+    DWORD self;
+    DWORD pid;
+    wchar_t base[MAX_PATH];
+
+    self = GetCurrentProcessId();
+    pid = get_parent_pid(self);
+    while (pid) {
+        if (pid_image_basename(pid, base, MAX_PATH)) {
+            if (end_with(base, L"cmd.exe")) {
+                return TRUE;
+            } else if (end_with(base, L"powershell.exe")) {
+                return TRUE;
+            } else if (end_with(base, L"pwsh.exe")) {
+                return TRUE;
+            } else if (end_with(base, L"windowsterminal.exe")) {
+                return TRUE;
+            }
+        }
+        pid = get_parent_pid(pid);
+    }
+
+    return FALSE;
+}
+
+static SIXELSTATUS
+init_stdio()
+{
+    HANDLE handle;
+    FILE *out, *err, *in;
+    int fd;
+
+    (void) AttachConsole(ATTACH_PARENT_PROCESS);
+
+    if (! in_windows_terminal()) {
+        return SIXEL_OK;
+    }
+    /* initialize stdout/stderr */
+    handle = CreateFileW(L"CONOUT$", GENERIC_WRITE | GENERIC_READ,
+                         FILE_SHARE_WRITE | FILE_SHARE_READ,
+                         NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (handle != INVALID_HANDLE_VALUE) {
+        fd = _open_osfhandle((intptr_t)handle, _O_BINARY | _O_WRONLY);
+        if (fd >= 0) {
+            _dup2(fd, STDOUT_FILENO);
+            _dup2(fd, STDERR_FILENO);
+            _close(fd);
+            _setmode(STDOUT_FILENO, _O_BINARY);
+            _setmode(STDERR_FILENO, _O_BINARY);
+            out = _fdopen(STDOUT_FILENO, "wb");
+            if (out) {
+                *stdout = *out;
+                setvbuf(stdout, NULL, _IONBF, 0);
+            }
+            err = _fdopen(STDERR_FILENO, "wb");
+            if (err) {
+                *stderr = *err;
+                setvbuf(stderr, NULL, _IONBF, 0);
+            }
+            SetStdHandle(STD_OUTPUT_HANDLE, (HANDLE) _get_osfhandle(STDOUT_FILENO));
+            SetStdHandle(STD_ERROR_HANDLE,  (HANDLE) _get_osfhandle(STDERR_FILENO));
+        }
+    }
+
+    /* initialize stdin */
+    handle = CreateFileW(L"CONIN$", GENERIC_READ | GENERIC_WRITE,
+                         FILE_SHARE_READ | FILE_SHARE_WRITE,
+                         NULL, OPEN_EXISTING, 0, NULL);
+    if (handle != INVALID_HANDLE_VALUE) {
+        fd = _open_osfhandle((intptr_t)handle, _O_BINARY | _O_RDONLY);
+        if (fd >= 0) {
+            _dup2(fd, STDIN_FILENO);
+            _close(fd);
+            _setmode(STDIN_FILENO, _O_BINARY);
+            in = _fdopen(STDIN_FILENO, "rb");
+            if (in) {
+                *stdin = *in;
+                setvbuf(stdin, NULL, _IONBF, 0);
+            }
+            SetStdHandle(STD_INPUT_HANDLE, (HANDLE)_get_osfhandle(STDIN_FILENO));
+        }
+    }
+
+    return (0);
+}
+# endif  /* !defined(__CYGWIN__) */
+#endif
+
 int
 main(int argc, char *argv[])
 {
@@ -395,6 +573,15 @@ main(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
+
+#if HAVE_WINDOWS_H
+# if !defined(__CYGWIN__)
+    status = init_stdio();
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+# endif
+#endif
 
     status = sixel_encoder_new(&encoder, NULL);
     if (SIXEL_FAILED(status)) {
@@ -454,10 +641,6 @@ main(int argc, char *argv[])
     }
 #else
     (void) signal_handler;
-#endif
-
-#if HAVE_WINDOWS_H
-    AttachConsole(ATTACH_PARENT_PROCESS);
 #endif
 
     if (optind == argc) {

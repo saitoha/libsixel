@@ -86,7 +86,7 @@ AS_IF([test "x$ac_cv_have_diag_deprecated_declarations" = "xyes"], [
 ])
 
 case "$host_os" in
-    mingw*)
+    mingw32)
     target_mingw=yes
     ;;
 esac
