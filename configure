@@ -676,6 +676,8 @@ PYTHON_PREFIX
 PYTHON_PLATFORM
 PYTHON_VERSION
 PYTHON
+LIBS_PRIVATE
+REQUIRES_PRIVATE
 WIC_LIBS
 WIC_CFLAGS
 LIBPNG_LIBS
@@ -18572,6 +18574,9 @@ have_winpthread="no"
 have_wic="no"
 have_coregraphics="no"
 
+REQUIRES_PRIVATE=""
+LIBS_PRIVATE="$LIBS"
+
 if test x$with_gdk_pixbuf2 != xno; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gdk-pixbuf2" >&5
 printf "%s\n" "$as_me: checking for gdk-pixbuf2" >&6;}
@@ -18703,6 +18708,7 @@ printf "%s\n" "#define HAVE_COREGRAPHICS 1" >>confdefs.h
         COREGRAPHICS_LIBS="-framework CoreFoundation -framework CoreGraphics -framework ImageIO"
         COREGRAPHICS_CFLAGS=""
         loaders="${loaders} coregraphics"
+        LIBS_PRIVATE="$LIBS_PRIVATE $COREGRAPHICS_LIBS"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: coregraphics libs is ${COREGRAPHICS_LIBS}" >&5
 printf "%s\n" "$as_me: coregraphics libs is ${COREGRAPHICS_LIBS}" >&6;}
     elif test x$with_coregraphics = xyes; then
@@ -19811,7 +19817,13 @@ fi
         fi
     fi
     if test x$have_curl = xyes; then
-        net="${net} libcurl"
+        if test x${net} = x; then
+            net="libcurl"
+        else
+            net="${net} libcurl"
+        fi
+        REQUIRES_PRIVATE="$REQUIRES_PRIVATE libcurl"
+        LIBS_PRIVATE="$LIBS_PRIVATE $LIBCURL_LIBS"
 
 printf "%s\n" "#define HAVE_LIBCURL 1" >>confdefs.h
 
@@ -20584,6 +20596,7 @@ then :
 printf "%s\n" "#define HAVE_WIC 1" >>confdefs.h
 
                loaders="${loaders} wic"
+               LIBS_PRIVATE="$LIBS_PRIVATE $WIC_LIBS"
                WIC_CFLAGS=$ADDED_CFLAGS
                WIC_LIBS=$ADDED_LIBS
                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WIC cflags is ${WIC_CFLAGS}" >&5
@@ -20603,6 +20616,9 @@ fi
     CFLAGS=$CFLAGS_BACKUP
     LIBS=$LIBS_BACKUP
 fi
+
+
+
 
 
 

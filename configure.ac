@@ -486,6 +486,9 @@ have_winpthread="no"
 have_wic="no"
 have_coregraphics="no"
 
+REQUIRES_PRIVATE=""
+LIBS_PRIVATE="$LIBS"
+
 if test x$with_gdk_pixbuf2 != xno; then
     AC_MSG_NOTICE([checking for gdk-pixbuf2])
     if test x${PKG_CONFIG} != x; then
@@ -528,6 +531,7 @@ if test x$with_coregraphics != xno; then
         COREGRAPHICS_LIBS="-framework CoreFoundation -framework CoreGraphics -framework ImageIO"
         COREGRAPHICS_CFLAGS=""
         loaders="${loaders} coregraphics"
+        LIBS_PRIVATE="$LIBS_PRIVATE $COREGRAPHICS_LIBS"
         AC_MSG_NOTICE([coregraphics libs is ${COREGRAPHICS_LIBS}])
     elif test x$with_coregraphics = xyes; then
         AC_MSG_ERROR([unable to find CoreGraphics])
@@ -681,7 +685,13 @@ if test x$with_libcurl != xno; then
         fi
     fi
     if test x$have_curl = xyes; then
-        net="${net} libcurl"
+        if test x${net} = x; then
+            net="libcurl"
+        else
+            net="${net} libcurl"
+        fi
+        REQUIRES_PRIVATE="$REQUIRES_PRIVATE libcurl"
+        LIBS_PRIVATE="$LIBS_PRIVATE $LIBCURL_LIBS"
         AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
     else
         if test x$with_libcurl != xauto; then
@@ -943,6 +953,7 @@ if test x$with_wic != xno; then
                          [1],
                          [whether Windows Imaging Component (WIC) is available])
                loaders="${loaders} wic"
+               LIBS_PRIVATE="$LIBS_PRIVATE $WIC_LIBS"
                WIC_CFLAGS=$ADDED_CFLAGS
                WIC_LIBS=$ADDED_LIBS
                AC_MSG_NOTICE([WIC cflags is ${WIC_CFLAGS}])
@@ -958,6 +969,9 @@ if test x$with_wic != xno; then
 fi
 AC_SUBST(WIC_CFLAGS)
 AC_SUBST(WIC_LIBS)
+
+AC_SUBST(REQUIRES_PRIVATE)
+AC_SUBST(LIBS_PRIVATE)
 
 have_python=no
 if test x$enable_python != xno; then
