@@ -500,7 +500,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     default:
         status = SIXEL_LOGIC_ERROR;
         sixel_helper_set_additional_message(
-            "do_resize: invalid pixelformat.");
+            "sixel_frame_convert_to_rgb888: invalid pixelformat.");
         goto end;
     }
 
