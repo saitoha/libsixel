@@ -230,8 +230,18 @@ scale_with_resampling(
     int const dsth,
     int const depth,
     resample_fn_t const f_resample,
-    double n)
+    double n,
+    sixel_allocator_t *allocator)
 {
+    /*
+     * Resize an RGB image using an arbitrary resampling kernel.
+     *
+     * The filter is assumed to be separable, so we first convolve all
+     * rows horizontally into a temporary buffer and then convolve the
+     * intermediate image vertically.  This two-pass approach greatly
+     * reduces the number of multiplications compared to evaluating the
+     * 2-D kernel for every destination pixel directly.
+     */
     int w;
     int h;
     int x;
@@ -244,7 +254,65 @@ scale_with_resampling(
     double weight;
     double total;
     double offsets[8];
+    unsigned char *tmp;
 
+    /* allocate intermediate buffer for horizontally filtered rows */
+    tmp = (unsigned char *)sixel_allocator_malloc(
+        allocator, (size_t)(dstw * srch * depth));
+    if (tmp == NULL) {
+        return;                 /* give up if memory allocation fails */
+    }
+
+    /*
+     * Horizontal pass
+     */
+    for (y = 0; y < srch; y++) {
+        for (w = 0; w < dstw; w++) {
+            /* reset accumulators for each destination pixel */
+            total = 0.0;
+            for (i = 0; i < depth; i++) {
+                offsets[i] = 0;
+            }
+
+            /* determine which source pixels contribute to this column */
+            if (dstw >= srcw) {
+                /* up-scaling: source and destination share the same scale */
+                center_x = (w + 0.5) * srcw / dstw;
+                x_first = MAX(center_x - n, 0);
+                x_last = MIN(center_x + n, srcw - 1);
+            } else {
+                /* down-scaling: map destination pixel back to source space */
+                center_x = w + 0.5;
+                x_first = MAX(floor((center_x - n) * srcw / dstw), 0);
+                x_last = MIN(floor((center_x + n) * srcw / dstw), srcw - 1);
+            }
+
+            /* accumulate weighted source samples */
+            for (x = x_first; x <= x_last; x++) {
+                diff_x = (dstw >= srcw)
+                            ? (x + 0.5) - center_x
+                            : (x + 0.5) * dstw / srcw - center_x;
+                weight = f_resample(fabs(diff_x));
+                for (i = 0; i < depth; i++) {
+                    pos = (y * srcw + x) * depth + i;
+                    offsets[i] += src[pos] * weight;
+                }
+                total += weight;
+            }
+
+            /* normalize accumulated value and store into the temp buffer */
+            if (total > 0.0) {
+                for (i = 0; i < depth; i++) {
+                    pos = (y * dstw + w) * depth + i;
+                    tmp[pos] = normalize(offsets[i], total);
+                }
+            }
+        }
+    }
+
+    /*
+     * Vertical pass
+     */
     for (h = 0; h < dsth; h++) {
         for (w = 0; w < dstw; w++) {
             total = 0.0;
@@ -252,16 +320,7 @@ scale_with_resampling(
                 offsets[i] = 0;
             }
 
-            /* retrieve range of affected pixels */
-            if (dstw >= srcw) {
-                center_x = (w + 0.5) * srcw / dstw;
-                x_first = MAX(center_x - n, 0);
-                x_last = MIN(center_x + n, srcw - 1);
-            } else {
-                center_x = w + 0.5;
-                x_first = MAX(floor((center_x - n) * srcw / dstw), 0);
-                x_last = MIN(floor((center_x + n) * srcw / dstw), srcw - 1);
-            }
+            /* determine contributing rows for this destination pixel */
             if (dsth >= srch) {
                 center_y = (h + 0.5) * srch / dsth;
                 y_first = MAX(center_y - n, 0);
@@ -272,29 +331,18 @@ scale_with_resampling(
                 y_last = MIN(floor((center_y + n) * srch / dsth), srch - 1);
             }
 
-            /* accumerate weights of affected pixels */
             for (y = y_first; y <= y_last; y++) {
-                for (x = x_first; x <= x_last; x++) {
-                    if (dstw >= srcw) {
-                        diff_x = (x + 0.5) - center_x;
-                    } else {
-                        diff_x = (x + 0.5) * dstw / srcw - center_x;
-                    }
-                    if (dsth >= srch) {
-                        diff_y = (y + 0.5) - center_y;
-                    } else {
-                        diff_y = (y + 0.5) * dsth / srch - center_y;
-                    }
-                    weight = f_resample(fabs(diff_x)) * f_resample(fabs(diff_y));
-                    for (i = 0; i < depth; i++) {
-                        pos = (y * srcw + x) * depth + i;
-                        offsets[i] += src[pos] * weight;
-                    }
-                    total += weight;
+                diff_y = (dsth >= srch)
+                            ? (y + 0.5) - center_y
+                            : (y + 0.5) * dsth / srch - center_y;
+                weight = f_resample(fabs(diff_y));
+                for (i = 0; i < depth; i++) {
+                    pos = (y * dstw + w) * depth + i;
+                    offsets[i] += tmp[pos] * weight;
                 }
+                total += weight;
             }
 
-            /* normalize */
             if (total > 0.0) {
                 for (i = 0; i < depth; i++) {
                     pos = (h * dstw + w) * depth + i;
@@ -303,6 +351,9 @@ scale_with_resampling(
             }
         }
     }
+
+    /* clean up temporary storage */
+    sixel_allocator_free(allocator, tmp);
 }
 
 
@@ -318,13 +369,20 @@ sixel_helper_scale_image(
     int                 /* in */  method_for_resampling,  /* one of methodForResampling */
     sixel_allocator_t   /* in */  *allocator)             /* allocator object */
 {
+    /*
+     * Convert the source image to RGB24 if necessary and scale it to the
+     * requested destination size.  The caller supplies an allocator used
+     * for any temporary buffers required during conversion or filtering.
+     */
     int const depth = sixel_helper_compute_depth(pixelformat);
-    unsigned char *new_src = NULL;
+    unsigned char *new_src = NULL;  /* optional converted source buffer */
     int nret;
     int new_pixelformat;
 
+    /* ensure the scaler operates on RGB triples */
     if (depth != 3) {
-        new_src = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(srcw * srch * 3));
+        new_src = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                          (size_t)(srcw * srch * 3));
         if (new_src == NULL) {
             return (-1);
         }
@@ -337,7 +395,7 @@ sixel_helper_scale_image(
             return (-1);
         }
 
-        src = new_src;
+        src = new_src;  /* use converted buffer from here on */
     } else {
         new_pixelformat = pixelformat;
     }
@@ -349,44 +407,45 @@ sixel_helper_scale_image(
         break;
     case SIXEL_RES_GAUSSIAN:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              gaussian, 1.0);
+                              gaussian, 1.0, allocator);
         break;
     case SIXEL_RES_HANNING:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              hanning, 1.0);
+                              hanning, 1.0, allocator);
         break;
     case SIXEL_RES_HAMMING:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              hamming, 1.0);
+                              hamming, 1.0, allocator);
         break;
     case SIXEL_RES_WELSH:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              welsh, 1.0);
+                              welsh, 1.0, allocator);
         break;
     case SIXEL_RES_BICUBIC:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              bicubic, 2.0);
+                              bicubic, 2.0, allocator);
         break;
     case SIXEL_RES_LANCZOS2:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              lanczos2, 2.0);
+                              lanczos2, 2.0, allocator);
         break;
     case SIXEL_RES_LANCZOS3:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              lanczos3, 3.0);
+                              lanczos3, 3.0, allocator);
         break;
     case SIXEL_RES_LANCZOS4:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              lanczos4, 4.0);
+                              lanczos4, 4.0, allocator);
         break;
     case SIXEL_RES_BILINEAR:
     default:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              bilinear, 1.0);
+                              bilinear, 1.0, allocator);
         break;
     }
 
-    free(new_src);
+    /* release temporary copy created for pixel-format normalization */
+    sixel_allocator_free(allocator, new_src);
     return 0;
 }
 
