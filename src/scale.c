@@ -369,7 +369,7 @@ sixel_helper_scale_image(
         break;
     case SIXEL_RES_LANCZOS2:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
-                              lanczos2, 3.0);
+                              lanczos2, 2.0);
         break;
     case SIXEL_RES_LANCZOS3:
         scale_with_resampling(dst, src, srcw, srch, dstw, dsth, depth,
