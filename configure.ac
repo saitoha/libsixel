@@ -424,6 +424,9 @@ have_winpthread="no"
 have_wic="no"
 have_coregraphics="no"
 
+REQUIRES_PRIVATE=""
+LIBS_PRIVATE="$LIBS"
+
 if test x$with_gdk_pixbuf2 != xno; then
     AC_MSG_NOTICE([checking for gdk-pixbuf2])
     if test x${PKG_CONFIG} != x; then
@@ -434,6 +437,8 @@ if test x$with_gdk_pixbuf2 != xno; then
         if test x$have_gdk_pixbuf2 != xno; then
             AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
             loaders="${loaders} gdk-pixbuf2"
+            REQUIRES_PRIVATE="$REQUIRES_PRIVATE gdk-pixbuf-2.0"
+            LIBS_PRIVATE="$LIBS_PRIVATE $GDK_PIXBUF_LIBS"
         else
             AC_MSG_ERROR([pkg-config is not available.])
         fi
@@ -464,6 +469,7 @@ if test x$with_coregraphics != xno; then
         COREGRAPHICS_LIBS="-framework CoreFoundation -framework CoreGraphics -framework ImageIO"
         COREGRAPHICS_CFLAGS=""
         loaders="${loaders} coregraphics"
+        LIBS_PRIVATE="$LIBS_PRIVATE $COREGRAPHICS_LIBS"
         AC_MSG_NOTICE([coregraphics libs is ${COREGRAPHICS_LIBS}])
     elif test x$with_coregraphics = xyes; then
         AC_MSG_ERROR([unable to find CoreGraphics])
@@ -546,6 +552,8 @@ if test x$with_gd != xno; then
         LDFLAGS=$LDFLAGS_BACKUP
         AC_DEFINE(HAVE_GD, 1, [whether gd is available])
         loaders="${loaders} gd"
+        REQUIRES_PRIVATE="$REQUIRES_PRIVATE gdlib"
+        LIBS_PRIVATE="$LIBS_PRIVATE $GD_LIBS"
     else
         GD_CFLAGS=
         GD_LIBS=
@@ -612,7 +620,13 @@ if test x$with_libcurl != xno; then
         fi
     fi
     if test x$have_curl = xyes; then
-        net="${net} libcurl"
+        if test x${net} = x; then
+            net="libcurl"
+        else
+            net="${net} libcurl"
+        fi
+        REQUIRES_PRIVATE="$REQUIRES_PRIVATE libcurl"
+        LIBS_PRIVATE="$LIBS_PRIVATE $LIBCURL_LIBS"
         AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
     else
         if test x$with_libcurl != xauto; then
@@ -734,6 +748,8 @@ if test x$with_jpeg != xno; then
     if test x$have_jpeg = xyes; then
         AC_DEFINE(HAVE_JPEG, 1, [whether jpeg codec library is available])
         loaders="${loaders} jpeg"
+        REQUIRES_PRIVATE="$REQUIRES_PRIVATE libjpeg"
+        LIBS_PRIVATE="$LIBS_PRIVATE $LIBJPEG_LIBS"
         AC_MSG_NOTICE([jpeg cflags is ${LIBJPEG_CFLAGS}])
         AC_MSG_NOTICE([jpeg libs is ${LIBJPEG_LIBS}])
     else
@@ -795,6 +811,8 @@ if test x$with_png != xno; then
         LDFLAGS=$LDFLAGS_BACKUP
         AC_DEFINE(HAVE_LIBPNG, 1, [whether libpng is available])
         loaders="${loaders} png"
+        REQUIRES_PRIVATE="$REQUIRES_PRIVATE libpng"
+        LIBS_PRIVATE="$LIBS_PRIVATE $LIBPNG_LIBS"
         AC_MSG_NOTICE([libpng cflags is ${LIBPNG_CFLAGS}])
         AC_MSG_NOTICE([libpng libs is ${LIBPNG_LIBS}])
     else
@@ -870,6 +888,7 @@ if test x$with_wic != xno; then
                          [1],
                          [whether Windows Imaging Component (WIC) is available])
                loaders="${loaders} wic"
+               LIBS_PRIVATE="$LIBS_PRIVATE $WIC_LIBS"
                WIC_CFLAGS=$ADDED_CFLAGS
                WIC_LIBS=$ADDED_LIBS
                AC_MSG_NOTICE([WIC cflags is ${WIC_CFLAGS}])
@@ -885,6 +904,9 @@ if test x$with_wic != xno; then
 fi
 AC_SUBST(WIC_CFLAGS)
 AC_SUBST(WIC_LIBS)
+
+AC_SUBST(REQUIRES_PRIVATE)
+AC_SUBST(LIBS_PRIVATE)
 
 have_python=no
 if test x$enable_python != xno; then
