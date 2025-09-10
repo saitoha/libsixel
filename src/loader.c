@@ -1697,6 +1697,7 @@ sixel_helper_load_image_file(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_chunk_t *pchunk = NULL;
+    int is_gif;
 
     /* normalize reqested colors */
     if (reqcolors > SIXEL_PALETTE_MAX) {
@@ -1721,9 +1722,10 @@ sixel_helper_load_image_file(
         goto end;
     }
 
+    is_gif = chunk_is_gif(pchunk);
     status = SIXEL_FALSE;
 #ifdef HAVE_WIC
-    if (SIXEL_FAILED(status)) {
+    if (SIXEL_FAILED(status) && !is_gif) {
         status = load_with_wic(pchunk,
                                fstatic,
                                fuse_palette,
@@ -1735,7 +1737,7 @@ sixel_helper_load_image_file(
     }
 #endif  /* HAVE_WIC */
 #ifdef HAVE_COREGRAPHICS
-    if (SIXEL_FAILED(status)) {
+    if (SIXEL_FAILED(status) && !is_gif) {
         status = load_with_coregraphics(pchunk,
                                         fstatic,
                                         fuse_palette,
@@ -1759,7 +1761,7 @@ sixel_helper_load_image_file(
     }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
-    if (SIXEL_FAILED(status)) {
+    if (SIXEL_FAILED(status) && !is_gif) {
         status = load_with_gd(pchunk,
                               fstatic,
                               fuse_palette,
