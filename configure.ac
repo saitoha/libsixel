@@ -469,6 +469,14 @@ AC_CHECK_FUNCS([assert \
                 strstr \
                 strtol])
 
+case "${host_os}" in
+  mingw*)
+    ;;
+  *)
+    AC_CHECK_FUNCS([clock nanosleep])
+    ;;
+esac
+
 AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
                [
                    #ifdef HAVE_SIGNAL_H
