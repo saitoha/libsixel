@@ -17401,6 +17401,26 @@ then :
 fi
 
 
+case "${host_os}" in
+  mingw*)
+    ;;
+  *)
+    ac_fn_c_check_func "$LINENO" "clock" "ac_cv_func_clock"
+if test "x$ac_cv_func_clock" = xyes
+then :
+  printf "%s\n" "#define HAVE_CLOCK 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "nanosleep" "ac_cv_func_nanosleep"
+if test "x$ac_cv_func_nanosleep" = xyes
+then :
+  printf "%s\n" "#define HAVE_NANOSLEEP 1" >>confdefs.h
+
+fi
+
+    ;;
+esac
+
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CC options needed to detect all undeclared functions" >&5
 printf %s "checking for $CC options needed to detect all undeclared functions... " >&6; }
 if test ${ac_cv_c_undeclared_builtin_options+y}
