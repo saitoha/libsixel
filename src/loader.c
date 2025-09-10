@@ -1217,19 +1217,29 @@ load_with_coregraphics(
     CGColorSpaceRef color_space = NULL;
     CGContextRef ctx = NULL;
     size_t stride;
+    size_t frame_count;
+    int anim_loop_count = (-1);
+    CFDictionaryRef props = NULL;
+    CFDictionaryRef anim_dict;
+    CFNumberRef loop_num;
+    CFDictionaryRef frame_props;
+    CFDictionaryRef frame_anim_dict;
+    CFNumberRef delay_num;
+    double delay_sec;
+    size_t i;
 
-    (void) fstatic;
     (void) fuse_palette;
     (void) reqcolors;
     (void) bgcolor;
-    (void) loop_control;
 
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    data = CFDataCreate(kCFAllocatorDefault, pchunk->buffer, (CFIndex)pchunk->size);
+    data = CFDataCreate(kCFAllocatorDefault,
+                        pchunk->buffer,
+                        (CFIndex)pchunk->size);
     if (!data) {
         goto end;
     }
@@ -1239,23 +1249,23 @@ load_with_coregraphics(
         goto end;
     }
 
-    image = CGImageSourceCreateImageAtIndex(source, 0, NULL);
-    if (!image) {
-        goto end;
+    frame_count = CGImageSourceGetCount(source);
+    if (fstatic) {
+        frame_count = 1;
     }
 
-    frame->width = (int)CGImageGetWidth(image);
-    frame->height = (int)CGImageGetHeight(image);
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-    stride = (size_t)frame->width * 4;
-    frame->pixels = sixel_allocator_malloc(
-        pchunk->allocator, (size_t)(frame->height * stride));
-
-    if (frame->pixels == NULL) {
-        sixel_helper_set_additional_message(
-            "load_with_coregraphics: sixel_allocator_malloc() failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
+    props = CGImageSourceCopyProperties(source, NULL);
+    if (props) {
+        anim_dict = (CFDictionaryRef)CFDictionaryGetValue(
+            props, kCGImagePropertyGIFDictionary);
+        if (anim_dict) {
+            loop_num = (CFNumberRef)CFDictionaryGetValue(
+                anim_dict, kCGImagePropertyGIFLoopCount);
+            if (loop_num) {
+                CFNumberGetValue(loop_num, kCFNumberIntType, &anim_loop_count);
+            }
+        }
+        CFRelease(props);
     }
 
     color_space = CGColorSpaceCreateDeviceRGB();
@@ -1263,16 +1273,105 @@ load_with_coregraphics(
         goto end;
     }
 
-    ctx = CGBitmapContextCreate(frame->pixels, frame->width, frame->height,
-                                8, stride, color_space,
-                                kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
-    if (!ctx) {
-        goto end;
+    frame->loop_count = 0;
+
+    for (;;) {
+        frame->frame_no = 0;
+        for (i = 0; i < frame_count; ++i) {
+            delay_sec = 0.0;
+            frame_props = CGImageSourceCopyPropertiesAtIndex(
+                source, (CFIndex)i, NULL);
+            if (frame_props) {
+                frame_anim_dict = (CFDictionaryRef)CFDictionaryGetValue(
+                    frame_props, kCGImagePropertyGIFDictionary);
+                if (frame_anim_dict) {
+                    delay_num = (CFNumberRef)CFDictionaryGetValue(
+                        frame_anim_dict, kCGImagePropertyGIFUnclampedDelayTime);
+                    if (!delay_num) {
+                        delay_num = (CFNumberRef)CFDictionaryGetValue(
+                            frame_anim_dict, kCGImagePropertyGIFDelayTime);
+                    }
+                    if (delay_num) {
+                        CFNumberGetValue(delay_num,
+                                         kCFNumberDoubleType,
+                                         &delay_sec);
+                    }
+                }
+                CFRelease(frame_props);
+            }
+            frame->delay = (int)(delay_sec * 100);
+
+            image = CGImageSourceCreateImageAtIndex(source, (CFIndex)i, NULL);
+            if (!image) {
+                goto end;
+            }
+
+            frame->width = (int)CGImageGetWidth(image);
+            frame->height = (int)CGImageGetHeight(image);
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+            stride = (size_t)frame->width * 4;
+            frame->pixels = sixel_allocator_malloc(
+                pchunk->allocator, (size_t)(frame->height * stride));
+
+            if (frame->pixels == NULL) {
+                sixel_helper_set_additional_message(
+                    "load_with_coregraphics: sixel_allocator_malloc() failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                CGImageRelease(image);
+                goto end;
+            }
+
+            ctx = CGBitmapContextCreate(frame->pixels,
+                                        frame->width,
+                                        frame->height,
+                                        8,
+                                        stride,
+                                        color_space,
+                                        kCGImageAlphaPremultipliedLast |
+                                            kCGBitmapByteOrder32Big);
+            if (!ctx) {
+                CGImageRelease(image);
+                goto end;
+            }
+
+            CGContextDrawImage(ctx,
+                               CGRectMake(0, 0, frame->width, frame->height),
+                               image);
+            CGContextRelease(ctx);
+            ctx = NULL;
+
+            frame->multiframe = (frame_count > 1);
+            status = fn_load(frame, context);
+            sixel_allocator_free(pchunk->allocator, frame->pixels);
+            frame->pixels = NULL;
+            CGImageRelease(image);
+            image = NULL;
+            if (status != SIXEL_OK) {
+                goto end;
+            }
+            ++frame->frame_no;
+        }
+
+        ++frame->loop_count;
+
+        if (frame_count <= 1) {
+            break;
+        }
+        if (loop_control == SIXEL_LOOP_DISABLE) {
+            break;
+        }
+        if (loop_control == SIXEL_LOOP_AUTO) {
+            if (anim_loop_count < 0) {
+                break;
+            }
+            if (anim_loop_count > 0 && frame->loop_count >= anim_loop_count) {
+                break;
+            }
+            continue;
+        }
     }
 
-    CGContextDrawImage(ctx, CGRectMake(0, 0, frame->width, frame->height), image);
-
-    status = fn_load(frame, context);
+    status = SIXEL_OK;
 
 end:
     if (ctx) {
@@ -1693,7 +1792,6 @@ sixel_helper_load_image_file(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_chunk_t *pchunk = NULL;
-    int is_gif;
 
     /* normalize reqested colors */
     if (reqcolors > SIXEL_PALETTE_MAX) {
@@ -1718,10 +1816,9 @@ sixel_helper_load_image_file(
         goto end;
     }
 
-    is_gif = chunk_is_gif(pchunk);
     status = SIXEL_FALSE;
 #ifdef HAVE_WIC
-    if (SIXEL_FAILED(status) && !is_gif) {
+    if (SIXEL_FAILED(status) && !chunk_is_gif(pchunk)) {
         status = load_with_wic(pchunk,
                                fstatic,
                                fuse_palette,
@@ -1733,7 +1830,7 @@ sixel_helper_load_image_file(
     }
 #endif  /* HAVE_WIC */
 #ifdef HAVE_COREGRAPHICS
-    if (SIXEL_FAILED(status) && !is_gif) {
+    if (SIXEL_FAILED(status)) {
         status = load_with_coregraphics(pchunk,
                                         fstatic,
                                         fuse_palette,
@@ -1757,7 +1854,7 @@ sixel_helper_load_image_file(
     }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
-    if (SIXEL_FAILED(status) && !is_gif) {
+    if (SIXEL_FAILED(status)) {
         status = load_with_gd(pchunk,
                               fstatic,
                               fuse_palette,
