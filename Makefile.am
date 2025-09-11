@@ -12,19 +12,8 @@ if HAVE_WICCODEC
 SUBDIRS += wic
 endif
 
-DIST_SUBDIRS = include src converters tools python ruby wic quicklook-extension
-
-EXTRA_DIST = LICENSE depcomp
-
-.PHONY: install-quicklook-extension uninstall-quicklook-extension
-
-install-quicklook-extension:
-	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension install-quicklook-extension
-	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@{ echo "Quick Look extension is not enabled in this build" >&2; exit 1; }
-
-uninstall-quicklook-extension:
-	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension uninstall-quicklook-extension
-	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@{ echo "Quick Look extension is not enabled in this build" >&2; exit 1; }
+EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
+	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb depcomp
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 

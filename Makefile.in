@@ -200,7 +200,7 @@ am__define_uniq_tagged_files = \
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(srcdir)/libsixel.pc.in $(srcdir)/package.json.in.in AUTHORS \
 	ChangeLog NEWS README.md compile config.guess config.sub \
-	install-sh ltmain.sh missing py-compile
+	depcomp install-sh ltmain.sh missing py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -424,10 +424,11 @@ zshcompletiondir = @zshcompletiondir@
 #
 # @configure_input@
 #
-SUBDIRS = include src converters tools python $(am__append_1) \
-	$(am__append_2) $(am__append_3)
-DIST_SUBDIRS = include src converters tools python ruby wic quicklook-extension
-EXTRA_DIST = LICENSE depcomp
+SUBDIRS = include src converters tools python
+DIST_SUBDIRS = $(SUBDIRS)
+EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
+	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb depcomp
+
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = $(builddir)/libsixel.pc
 CLEANFILES = $(builddir)/package.json \
