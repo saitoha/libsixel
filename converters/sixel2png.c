@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021-2025 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2017 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -73,6 +74,12 @@ void show_version(void)
 #else
            "no\n"
 #endif
+           "  WinHTTP: "
+#ifdef HAVE_WINHTTP
+           "yes\n"
+#else
+           "no\n"
+#endif
            "  libpng: "
 #ifdef HAVE_LIBPNG
            "yes\n"
@@ -97,7 +104,20 @@ void show_version(void)
 #else
            "no\n"
 #endif
+           "  WIC: "
+#ifdef HAVE_WIC
+           "yes\n"
+#else
+           "no\n"
+#endif
+           "  CoreGraphics: "
+#ifdef HAVE_COREGRAPHICS
+           "yes\n"
+#else
+           "no\n"
+#endif
            "\n"
+           "Copyright (c) 2021-2025 libsixel developers. See `AUTHORS`.\n"
            "Copyright (C) 2014-2017 Hayaki Saito <saitoha@me.com>.\n"
            "\n"
            "Permission is hereby granted, free of charge, to any person obtaining a copy of\n"
