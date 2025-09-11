@@ -61,7 +61,7 @@
 #if HAVE_COREGRAPHICS
 # include <ApplicationServices/ApplicationServices.h>
 # include <ImageIO/ImageIO.h>
-#endif
+#endif  /* HAVE_COREGRAPHICS */
 
 #if !defined(HAVE_MEMCPY)
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
