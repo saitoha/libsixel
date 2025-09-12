@@ -226,6 +226,15 @@ AC_ARG_ENABLE([simd],
               [],
               [])
 
+AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
+
+
+AC_ARG_ENABLE([python],
+              [AS_HELP_STRING([--enable-python],
+                              [Python interface (default: yes)])],
+              [],
+              [])
+
 AC_ARG_ENABLE([wiccodec],
               [AS_HELP_STRING([--enable-wiccodec],
                               [build WIC codec DLL (default: auto)])],
@@ -980,6 +989,10 @@ AC_SUBST(WIC_LIBS)
 
 AC_SUBST(REQUIRES_PRIVATE)
 AC_SUBST(LIBS_PRIVATE)
+
+if test x$enable_simd = xno; then
+    AC_DEFINE(DISABLE_SIMD, [1], [disable SIMD])
+fi
 
 have_python=no
 if test x$enable_python != xno; then

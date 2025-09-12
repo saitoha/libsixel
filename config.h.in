@@ -1,10 +1,10 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* disable SIMD */
+#undef DISABLE_SIMD
+
 /* Define to 1 if you have the <arm_neon.h> header file. */
 #undef HAVE_ARM_NEON_H
-
-/* Define to 1 if you have the 'assert' function. */
-#undef HAVE_ASSERT
 
 /* Define to 1 if you have the <assert.h> header file. */
 #undef HAVE_ASSERT_H
