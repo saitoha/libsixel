@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021-2025 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2016 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -23,6 +24,10 @@
 
 /* STDC_HEADERS */
 #include <stdlib.h>
+
+#if HAVE_STRING_H
+# include <string.h>
+#endif  /* HAVE_STRING_H */
 
 #if HAVE_MATH_H
 # define _USE_MATH_DEFINES  /* for MSVC */
@@ -448,6 +453,116 @@ sixel_helper_scale_image(
     sixel_allocator_free(allocator, new_src);
     return 0;
 }
+
+#if HAVE_TESTS
+
+static void
+reference_scale(
+    unsigned char *dst,
+    unsigned char const *src,
+    int const srcw,
+    int const srch,
+    int const dstw,
+    int const dsth,
+    int const depth)
+{
+    int w;
+    int h;
+    int x;
+    int y;
+    int i;
+    int pos;
+
+    for (h = 0; h < dsth; h++) {
+        for (w = 0; w < dstw; w++) {
+            x = (long)w * srcw / dstw;
+            y = (long)h * srch / dsth;
+            for (i = 0; i < depth; i++) {
+                pos = (y * srcw + x) * depth + i;
+                dst[(h * dstw + w) * depth + i] = src[pos];
+            }
+        }
+    }
+}
+
+static int
+test_without_resampling_case(
+    int srcw,
+    int srch,
+    int dstw,
+    int dsth,
+    int depth)
+{
+    int nret = EXIT_FAILURE;
+    size_t srcsize = (size_t)srcw * srch * depth;
+    size_t dstsize = (size_t)dstw * dsth * depth;
+    unsigned char *src = NULL;
+    unsigned char *ref = NULL;
+    unsigned char *out = NULL;
+    size_t i;
+
+    src = (unsigned char *)malloc(srcsize);
+    ref = (unsigned char *)malloc(dstsize);
+    out = (unsigned char *)malloc(dstsize);
+    if (src == NULL || ref == NULL || out == NULL) {
+        goto end;
+    }
+
+    for (i = 0; i < srcsize; ++i) {
+        src[i] = (unsigned char)(i & 0xff);
+    }
+
+    reference_scale(ref, src, srcw, srch, dstw, dsth, depth);
+    scale_without_resampling(out, src, srcw, srch, dstw, dsth, depth);
+
+    if (memcmp(ref, out, dstsize) != 0) {
+        goto end;
+    }
+
+    nret = EXIT_SUCCESS;
+
+end:
+    free(src);
+    free(ref);
+    free(out);
+    return nret;
+}
+
+int
+sixel_scale_tests_main(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t i;
+    struct {
+        int srcw;
+        int srch;
+        int dstw;
+        int dsth;
+        int depth;
+    } cases[] = {
+        {3, 3, 5, 5, 1},
+        {8, 4, 3, 7, 3},
+        {13, 9, 17, 6, 4}
+    };
+
+    for (i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        nret = test_without_resampling_case(cases[i].srcw,
+                                            cases[i].srch,
+                                            cases[i].dstw,
+                                            cases[i].dsth,
+                                            cases[i].depth);
+        if (nret != EXIT_SUCCESS) {
+            goto end;
+        }
+    }
+
+    nret = EXIT_SUCCESS;
+
+end:
+    return nret;
+}
+
+#endif /* HAVE_TESTS */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */
