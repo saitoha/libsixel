@@ -873,6 +873,7 @@ with_winhttp
 with_pkgconfigdir
 with_bashcompletiondir
 with_zshcompletiondir
+enable_simd
 enable_python
 enable_debug
 enable_gcov
@@ -1551,8 +1552,9 @@ Optional Features:
   --disable-dependency-tracking
                           speeds up one-time build
   --disable-libtool-lock  avoid locking (might break parallel builds)
-  --disable-img2sixel     whether to build img2sixel (default: yes)
-  --disable-sixel2png     whether to build sixel2png (default: yes)
+  --disable-img2sixel     disable building the img2sixel utility (default: no)
+  --disable-sixel2png     disable building the sixel2png utility (default: no)
+  --enable-simd           enable SS2 and NEON (default: auto)
   --enable-python         Python interface (default: yes)
   --enable-debug          Use debug macro and specific CFLAGS
   --enable-gcov           Use gcov
@@ -14602,6 +14604,23 @@ fi
 printf "%s\n" "$as_me: zsh-completion directory is ${zshcompletiondir}" >&6;}
 
 
+# Check whether --enable-simd was given.
+if test ${enable_simd+y}
+then :
+  enableval=$enable_simd;
+fi
+
+
+ if test x$enable_sixel2png != xno; then
+  WANT_SIXEL2PNG_TRUE=
+  WANT_SIXEL2PNG_FALSE='#'
+else
+  WANT_SIXEL2PNG_TRUE='#'
+  WANT_SIXEL2PNG_FALSE=
+fi
+
+
+
 # Check whether --enable-python was given.
 if test ${enable_python+y}
 then :
@@ -16899,6 +16918,18 @@ ac_fn_c_check_header_compile "$LINENO" "inttypes.h" "ac_cv_header_inttypes_h" "$
 if test "x$ac_cv_header_inttypes_h" = xyes
 then :
   printf "%s\n" "#define HAVE_INTTYPES_H 1" >>confdefs.h
+
+fi
+ac_fn_c_check_header_compile "$LINENO" "emmintrin.h" "ac_cv_header_emmintrin_h" "$ac_includes_default"
+if test "x$ac_cv_header_emmintrin_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_EMMINTRIN_H 1" >>confdefs.h
+
+fi
+ac_fn_c_check_header_compile "$LINENO" "arm_neon.h" "ac_cv_header_arm_neon_h" "$ac_includes_default"
+if test "x$ac_cv_header_arm_neon_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_ARM_NEON_H 1" >>confdefs.h
 
 fi
 
@@ -19588,6 +19619,12 @@ fi
 
 
 
+if test x$enable_simd = xno; then
+
+printf "%s\n" "#define DISABLE_SIMD 1" >>confdefs.h
+
+fi
+
 have_python=no
 if test x$enable_python != xno; then
 
@@ -20241,6 +20278,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_IMG2SIXEL_TRUE}" && test -z "${WANT_IMG2SIXEL_FALSE}"; then
   as_fn_error $? "conditional \"WANT_IMG2SIXEL\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${WANT_SIXEL2PNG_TRUE}" && test -z "${WANT_SIXEL2PNG_FALSE}"; then
+  as_fn_error $? "conditional \"WANT_SIXEL2PNG\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_SIXEL2PNG_TRUE}" && test -z "${WANT_SIXEL2PNG_FALSE}"; then

@@ -336,6 +336,11 @@ if zsh_completion_dir == ''
   zsh_completion_dir = join_paths(get_option('datadir'), 'zsh', 'site-functions')
 endif
 
+simd_opt = get_option('simd')
+if simd_opt.disabled()
+  conf.set('DISABLE_SIMD', 1)
+endif
+
 py_opt = get_option('python')
 if not py_opt.disabled()
   py_mod = import('python')
