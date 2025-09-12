@@ -30,6 +30,7 @@ option('winhttp', type: 'feature', value: 'auto', description: 'Use WinHTTP libr
 option('winpthread', type: 'feature', value: 'disabled', description: 'Link with winpthread')
 option('bashcompletiondir', type: 'string', value: '', description: 'Directory for bash completion files')
 option('zshcompletiondir', type: 'string', value: '', description: 'Directory for zsh completion files')
+option('simd', type: 'feature', value: 'auto', description: 'Use SIMD')
 option('python', type: 'feature', value: 'auto', description: 'Install Python bindings')
 option('tests', type: 'boolean', value: false, description: 'Build tests')
 option('gcov', type: 'boolean', value: false, description: 'Enable gcov coverage flags')

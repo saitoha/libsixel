@@ -39,6 +39,21 @@
 
 #include <sixel.h>
 
+#if !defined(DISABLE_SIMD)
+# if defined(__SSE2__)
+#  if defined(HAVE_EMMINTRIN_H)
+#   include <emmintrin.h>
+#   define SIXEL_USE_SSE2 1
+#  endif
+# endif
+# if (defined(__ARM_NEON) || defined(__ARM_NEON__))
+#  if defined(HAVE_ARM_NEON_H)
+#   include <arm_neon.h>
+#   define SIXEL_USE_NEON 1
+#  endif
+# endif
+#endif
+
 #if !defined(MAX)
 # define MAX(l, r) ((l) > (r) ? (l) : (r))
 #endif
@@ -293,6 +308,71 @@ scale_with_resampling(
             }
 
             /* accumulate weighted source samples */
+#if defined(SIXEL_USE_SSE2) || defined(SIXEL_USE_NEON)
+            if (depth == 3) {
+#if defined(SIXEL_USE_SSE2)
+                __m128 acc = _mm_setzero_ps();
+#elif defined(SIXEL_USE_NEON)
+                float32x4_t acc = vdupq_n_f32(0.0f);
+#endif
+                for (x = x_first; x <= x_last; x++) {
+                    diff_x = (dstw >= srcw)
+                                ? (x + 0.5) - center_x
+                                : (x + 0.5) * dstw / srcw - center_x;
+                    weight = f_resample(fabs(diff_x));
+                    pos = (y * srcw + x) * depth;
+                    const unsigned char *psrc = src + pos;
+#if defined(SIXEL_USE_SSE2)
+                    unsigned int pixel = psrc[0] | (psrc[1] << 8) | (psrc[2] << 16);
+                    __m128i pixi = _mm_cvtsi32_si128((int)pixel);
+                    pixi = _mm_unpacklo_epi8(pixi, _mm_setzero_si128());
+                    pixi = _mm_unpacklo_epi16(pixi, _mm_setzero_si128());
+                    __m128 pixf = _mm_cvtepi32_ps(pixi);
+                    __m128 wv = _mm_set1_ps((float)weight);
+                    acc = _mm_add_ps(acc, _mm_mul_ps(pixf, wv));
+#else /* NEON */
+                    uint32x4_t pix32 = {psrc[0], psrc[1], psrc[2], 0};
+                    float32x4_t pixf = vcvtq_f32_u32(pix32);
+                    float32x4_t wv = vdupq_n_f32((float)weight);
+                    acc = vmlaq_f32(acc, pixf, wv);
+#endif
+                    total += weight;
+                }
+                if (total > 0.0) {
+#if defined(SIXEL_USE_SSE2)
+                    __m128 scalev = _mm_set1_ps((float)(1.0 / total));
+                    acc = _mm_mul_ps(acc, scalev);
+                    __m128 minv = _mm_set1_ps(0.0f);
+                    __m128 maxv = _mm_set1_ps(255.0f);
+                    acc = _mm_max_ps(minv, _mm_min_ps(acc, maxv));
+                    __m128i acci = _mm_cvtps_epi32(acc);
+                    __m128i acc16 = _mm_packs_epi32(acci, _mm_setzero_si128());
+                    acc16 = _mm_packus_epi16(acc16, _mm_setzero_si128());
+                    pos = (y * dstw + w) * depth;
+                    unsigned int out = (unsigned int)_mm_cvtsi128_si32(acc16);
+                    tmp[pos + 0] = (unsigned char)out;
+                    tmp[pos + 1] = (unsigned char)(out >> 8);
+                    tmp[pos + 2] = (unsigned char)(out >> 16);
+#else /* NEON */
+                    float32x4_t scalev = vdupq_n_f32((float)(1.0 / total));
+                    acc = vmulq_f32(acc, scalev);
+                    float32x4_t minv = vdupq_n_f32(0.0f);
+                    float32x4_t maxv = vdupq_n_f32(255.0f);
+                    acc = vmaxq_f32(minv, vminq_f32(acc, maxv));
+                    uint32x4_t acci = vcvtq_u32_f32(acc);
+                    uint16x4_t acc16 = vmovn_u32(acci);
+                    uint8x8_t acc8 = vmovn_u16(vcombine_u16(acc16, acc16));
+                    uint8_t outb[8];
+                    vst1_u8(outb, acc8);
+                    pos = (y * dstw + w) * depth;
+                    tmp[pos + 0] = outb[0];
+                    tmp[pos + 1] = outb[1];
+                    tmp[pos + 2] = outb[2];
+#endif
+                }
+                continue;
+            }
+#endif /* SIMD paths */
             for (x = x_first; x <= x_last; x++) {
                 diff_x = (dstw >= srcw)
                             ? (x + 0.5) - center_x
@@ -336,6 +416,72 @@ scale_with_resampling(
                 y_last = MIN(floor((center_y + n) * srch / dsth), srch - 1);
             }
 
+            /* accumulate weighted rows */
+#if defined(SIXEL_USE_SSE2) || defined(SIXEL_USE_NEON)
+            if (depth == 3) {
+#if defined(SIXEL_USE_SSE2)
+                __m128 acc = _mm_setzero_ps();
+#elif defined(SIXEL_USE_NEON)
+                float32x4_t acc = vdupq_n_f32(0.0f);
+#endif
+                for (y = y_first; y <= y_last; y++) {
+                    diff_y = (dsth >= srch)
+                                ? (y + 0.5) - center_y
+                                : (y + 0.5) * dsth / srch - center_y;
+                    weight = f_resample(fabs(diff_y));
+                    pos = (y * dstw + w) * depth;
+                    const unsigned char *psrc = tmp + pos;
+#if defined(SIXEL_USE_SSE2)
+                    unsigned int pixel = psrc[0] | (psrc[1] << 8) | (psrc[2] << 16);
+                    __m128i pixi = _mm_cvtsi32_si128((int)pixel);
+                    pixi = _mm_unpacklo_epi8(pixi, _mm_setzero_si128());
+                    pixi = _mm_unpacklo_epi16(pixi, _mm_setzero_si128());
+                    __m128 pixf = _mm_cvtepi32_ps(pixi);
+                    __m128 wv = _mm_set1_ps((float)weight);
+                    acc = _mm_add_ps(acc, _mm_mul_ps(pixf, wv));
+#else /* NEON */
+                    uint32x4_t pix32 = {psrc[0], psrc[1], psrc[2], 0};
+                    float32x4_t pixf = vcvtq_f32_u32(pix32);
+                    float32x4_t wv = vdupq_n_f32((float)weight);
+                    acc = vmlaq_f32(acc, pixf, wv);
+#endif
+                    total += weight;
+                }
+                if (total > 0.0) {
+#if defined(SIXEL_USE_SSE2)
+                    __m128 scalev = _mm_set1_ps((float)(1.0 / total));
+                    acc = _mm_mul_ps(acc, scalev);
+                    __m128 minv = _mm_set1_ps(0.0f);
+                    __m128 maxv = _mm_set1_ps(255.0f);
+                    acc = _mm_max_ps(minv, _mm_min_ps(acc, maxv));
+                    __m128i acci = _mm_cvtps_epi32(acc);
+                    __m128i acc16 = _mm_packs_epi32(acci, _mm_setzero_si128());
+                    acc16 = _mm_packus_epi16(acc16, _mm_setzero_si128());
+                    pos = (h * dstw + w) * depth;
+                    unsigned int out = (unsigned int)_mm_cvtsi128_si32(acc16);
+                    dst[pos + 0] = (unsigned char)out;
+                    dst[pos + 1] = (unsigned char)(out >> 8);
+                    dst[pos + 2] = (unsigned char)(out >> 16);
+#else /* NEON */
+                    float32x4_t scalev = vdupq_n_f32((float)(1.0 / total));
+                    acc = vmulq_f32(acc, scalev);
+                    float32x4_t minv = vdupq_n_f32(0.0f);
+                    float32x4_t maxv = vdupq_n_f32(255.0f);
+                    acc = vmaxq_f32(minv, vminq_f32(acc, maxv));
+                    uint32x4_t acci = vcvtq_u32_f32(acc);
+                    uint16x4_t acc16 = vmovn_u32(acci);
+                    uint8x8_t acc8 = vmovn_u16(vcombine_u16(acc16, acc16));
+                    uint8_t outb[8];
+                    vst1_u8(outb, acc8);
+                    pos = (h * dstw + w) * depth;
+                    dst[pos + 0] = outb[0];
+                    dst[pos + 1] = outb[1];
+                    dst[pos + 2] = outb[2];
+#endif
+                }
+                continue;
+            }
+#endif /* SIMD paths */
             for (y = y_first; y <= y_last; y++) {
                 diff_y = (dsth >= srch)
                             ? (y + 0.5) - center_y

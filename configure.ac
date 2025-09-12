@@ -90,14 +90,14 @@ AS_IF([test "x$ac_cv_have_diag_deprecated_declarations" = "xyes"], [
 # Options
 AC_ARG_ENABLE([img2sixel],
               [AS_HELP_STRING([--disable-img2sixel],
-                              [whether to build img2sixel (default: yes)])],
+                              [disable building the img2sixel utility (default: no)])],
               [],
               [enable_img2sixel=yes])
 AM_CONDITIONAL(WANT_IMG2SIXEL, test x$enable_img2sixel != xno)
 
 AC_ARG_ENABLE([sixel2png],
               [AS_HELP_STRING([--disable-sixel2png],
-                              [whether to build sixel2png (default: yes)])],
+                              [disable building the sixel2png utility (default: no)])],
               [],
               [enable_sixel2png=yes])
 AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
@@ -179,6 +179,15 @@ AC_ARG_WITH(zshcompletiondir,
                            [zshcompletiondir=${datadir}/zsh/site-functions])
 AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])
 AC_SUBST(zshcompletiondir)
+
+AC_ARG_ENABLE([simd],
+              [AS_HELP_STRING([--enable-simd],
+                              [enable SS2 and NEON (default: auto)])],
+              [],
+              [])
+
+AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
+
 
 AC_ARG_ENABLE([python],
               [AS_HELP_STRING([--enable-python],
@@ -356,7 +365,10 @@ AC_CHECK_HEADERS([assert.h \
                   sys/signal.h \
                   termios.h \
                   sys/ioctl.h \
-                  inttypes.h])
+                  inttypes.h \
+                  emmintrin.h \
+                  arm_neon.h \
+                 ])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL
@@ -917,6 +929,10 @@ AC_SUBST(WIC_LIBS)
 
 AC_SUBST(REQUIRES_PRIVATE)
 AC_SUBST(LIBS_PRIVATE)
+
+if test x$enable_simd = xno; then
+    AC_DEFINE(DISABLE_SIMD, [1], [disable SIMD])
+fi
 
 have_python=no
 if test x$enable_python != xno; then
