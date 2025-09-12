@@ -51,6 +51,7 @@
 #include "fromgif.h"
 #include "chunk.h"
 #include "allocator.h"
+#include "scale.h"
 
 #if HAVE_TESTS
 
@@ -58,108 +59,121 @@ int
 main(int argc, char *argv[])
 {
     int nret = EXIT_FAILURE;
+    int dirty = 0;
 
     (void) argc;
     (void) argv;
 
     nret = sixel_fromgif_tests_main();
     if (nret != EXIT_SUCCESS) {
-        goto error;
+        puts("fromgif ng.");
+        dirty = 1;
+    } else {
+        puts("fromgif ok.");
     }
-
-    puts("fromgif ok.");
-    fflush(stdout);
 
     nret = sixel_loader_tests_main();
     if (nret != EXIT_SUCCESS) {
-        goto error;
+        puts("loader ng.");
+        dirty = 1;
+    } else {
+        puts("loader ok.");
     }
-
-    puts("loader ok.");
-    fflush(stdout);
 
     nret = sixel_dither_tests_main();
     if (nret != EXIT_SUCCESS) {
-        goto error;
+        puts("dither ng.");
+        dirty = 1;
+    } else {
+        puts("dither ok.");
     }
-
-    puts("dither ok.");
-    fflush(stdout);
 
     nret = sixel_pixelformat_tests_main();
     if (nret != EXIT_SUCCESS) {
-        goto error;
+        puts("pixelformat ng.");
+        dirty = 1;
+    } else {
+        puts("pixelformat ok.");
     }
-
-    puts("pixelformat ok.");
-    fflush(stdout);
 
     nret = sixel_frame_tests_main();
     if (nret != EXIT_SUCCESS) {
-        goto error;
+        puts("frame ng.");
+        dirty = 1;
+    } else {
+        puts("frame ok.");
     }
-
-    puts("frame ok.");
-    fflush(stdout);
 
     nret = sixel_writer_tests_main();
     if (nret != EXIT_SUCCESS) {
-        goto error;
+        puts("writer ng.");
+        dirty = 1;
+    } else {
+        puts("writer ok.");
     }
-
-    puts("writer ok.");
-    fflush(stdout);
 
     nret = sixel_quant_tests_main();
     if (nret != EXIT_SUCCESS) {
-        goto error;
+        puts("quant ng.");
+        dirty = 1;
+    } else {
+        puts("quant ok.");
     }
-
-    puts("quant ok.");
-    fflush(stdout);
 
     nret = sixel_encoder_tests_main();
     if (nret != EXIT_SUCCESS) {
-        goto error;
+        puts("encoder ng.");
+        dirty = 1;
+    } else {
+        puts("encoder ok.");
     }
-
-    puts("encoder ok.");
-    fflush(stdout);
 
     nret = sixel_decoder_tests_main();
     if (nret != EXIT_SUCCESS) {
-        goto error;
+        puts("decoder ng.");
+        dirty = 1;
+    } else {
+        puts("decoder ok.");
     }
-
-    puts("decoder ok.");
-    fflush(stdout);
 
     nret = sixel_status_tests_main();
     if (nret != EXIT_SUCCESS) {
-        goto error;
+        puts("status ng.");
+        dirty = 1;
+    } else {
+        puts("status ok.");
     }
-
-    puts("status ok.");
-    fflush(stdout);
 
     nret = sixel_chunk_tests_main();
     if (nret != EXIT_SUCCESS) {
-        goto error;
+        puts("chunk ng.");
+        dirty = 1;
+    } else {
+        puts("chunk ok.");
     }
-
-    puts("chunk ok.");
-    fflush(stdout);
 
     nret = sixel_allocator_tests_main();
     if (nret != EXIT_SUCCESS) {
-        goto error;
+        puts("allocator ng.");
+        dirty = 1;
+    } else {
+        puts("allocator ok.");
     }
 
-    puts("allocator ok.");
+    nret = sixel_scale_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        puts("scale ng.");
+        dirty = 1;
+    } else {
+        puts("scale ok.");
+    }
+
     fflush(stdout);
 
-error:
-    return nret;
+    if (dirty) {
+        return (127);
+    }
+    return (0);
 }
 
 #endif
