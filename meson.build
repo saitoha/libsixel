@@ -30,16 +30,18 @@ project('libsixel',
         ])
 
 host_system = host_machine.system()
-cc = meson.get_compiler('c')
-if add_languages('objc', required: false, native: false)
-  objc = meson.get_compiler('objc')
-  message('Objective-C compiler found: ' + objc.get_id())
-else
-  message('Objective-C compiler not available, skipping ObjC parts')
-endif
+add_project_arguments(
+    '-D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L',
+    language: 'c')
 
 # configuration data
 conf = configuration_data()
+ls_lt_current = 1
+ls_lt_revision = 6
+ls_lt_age = 0
+ls_lt_version = '@0@:@1@:@2@'.format(ls_lt_current, ls_lt_revision, ls_lt_age)
+
+conf.set('LS_LTVERSION', ls_lt_version)
 conf.set_quoted('PACKAGE', meson.project_name())
 conf.set_quoted('PACKAGE_NAME', meson.project_name())
 conf.set_quoted('PACKAGE_STRING',
@@ -64,45 +66,11 @@ endif
 loaders = ['stb_image']
 net = []
 have_winpthread = false
+python_message = 'no'
 have_python = false
-have_wic = false
-have_wiccodec = false
-have_quicklook_extension = false
-quicklook_extension_frameworks = []
-quicklook_extension_register_frameworks = []
-quicklook_extension_message = 'no'
-quicklook_os_supported = true
-quicklook_os_reason = 'requires macOS 10.15+'
-cpu = host_machine.cpu_family()
 
-has_func_attr_deprecated = false
-has_var_attr_deprecated = false
-
-have_unreachable = cc.compiles('''
-  static void f(int x) {
-    if (x) return;
-    __builtin_unreachable();
-  }
-  int main(void){ f(0); return 0; }
-''', name: '__builtin_unreachable()', args: ['-Werror'])
-if have_unreachable
-  conf.set('HAVE___BUILTIN_UNREACHABLE', 1)
-endif
-
-if cc.compiles('''
-    __attribute__((deprecated)) void test(void) {}
-''')
-   has_func_attr_deprecated = true
-   conf.set('HAVE_FUNC_ATTRIBUTE_DEPRECATED', 1)
-endif
-
-if cc.compiles('''
-    __attribute__((deprecated)) int test;
-''')
-   has_var_attr_deprecated = true
-   conf.set('HAVE_VAR_ATTRIBUTE_DEPRECATED', 1)
-endif
-
+cc = meson.get_compiler('c')
+cc.has_function('unreachable')
 if cc.compiles('''
     #pragma GCC diagnostic push
     #pragma GCC diagnostic pop
@@ -112,34 +80,17 @@ if cc.compiles('''
   conf.set('HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS', 1)
 endif
 
-flags = cc.get_supported_arguments([
-    '-Wformat=2',
-    '-fno-emulated-tls',
-    '-Bsymbolic',
-])
-add_project_arguments(flags, language: 'c')
-foreach f: flags
-  if f == '-fno-emulated-tls'
-    conf.set('HAVE_FNO_EMULATED_TLS', 1)
-  elif f == '-Bsymbolic'
-    conf.set('HAVE_BSYMBOLIC', 1)
-  endif
+c_args = [
+  '-Wformat=2',
+  '-fno-emulated-tls',
+  '-Bsymbolic',
+]
+
+foreach a : c_args
+  cc.has_argument(a)
 endforeach
 
-wflags = cc.get_supported_arguments([
-    '-Wdeprecated-declarations',
-    '-Wunused-but-set-variable',
-    '-Wclobbered'
-])
-foreach f: wflags
-  if f == '-Wdeprecated-declarations'
-    conf.set('HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS', 1)
-  elif f == '-Wunused-but-set-variable'
-    conf.set('HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE', 1)
-  elif f == '-Wclobbered'
-    conf.set('HAVE_DIAGNOSTIC_CLOBBERED', 1)
-  endif
-endforeach
+add_global_arguments(c_args, language: 'c')
 
 # check common headers
 std_headers = [
@@ -168,6 +119,7 @@ std_headers = [
     'stdio.h',
     'stdlib.h',
     'string.h',
+    'stddef.h'
 ]
 foreach h : std_headers
   if cc.has_header(h)
@@ -176,15 +128,20 @@ foreach h : std_headers
   endif
 endforeach
 
+# memory functions and headers
+if cc.has_function('memcpy')
+  conf.set('HAVE_MEMCPY', 1)
+endif
+if cc.has_function('memmove')
+  conf.set('HAVE_MEMMOVE', 1)
+endif
+if cc.has_function('memset')
+  conf.set('HAVE_MEMSET', 1)
+endif
+
 # miscellaneous functions
 extra_funcs = [
-  'assert',
-  'malloc',
-  'realloc',
-  'calloc',
-  'memcpy',
-  'memmove',
-  'memset',
+  'getopt',
   'getopt_long',
   'memcpy',
   'memmove',
@@ -218,10 +175,6 @@ foreach f : extra_funcs
   endif
 endforeach
 
-if not cc.has_function('getopt_long') and cc.has_function('getopt')
-    conf.set('HAVE_GETOPT', 1)
-endif
-
 if host_machine.system() != 'windows'
   if cc.has_function('clock')
     conf.set('HAVE_CLOCK', 1)
@@ -238,29 +191,30 @@ foreach s : ['SIGINT', 'SIGTERM', 'SIGHUP']
   endif
 endforeach
 
+# detect attributes
+if cc.has_function_attribute('deprecated')
+  conf.set('attr_func_deprecated', '__attribute__((deprecated))')
+  conf.set('attr_var_deprecated', '__attribute__((deprecated))')
+endif
+
 deps = []
 reqs = []
 link_libs = []
+libpriv_flags = []
 
 m_dep = cc.find_library('m', required: false)
 if m_dep.found()
   link_libs += m_dep
   deps += m_dep
-  conf.set('HAVE_LIBM', 1)
+  libpriv_flags += '-lm'
 endif
 
 png_dep = dependency('libpng', required: get_option('png'))
 if png_dep.found()
   deps += png_dep
   reqs += png_dep
-  conf.set('HAVE_LIBPNG', 1)
+  conf.set('HAVE_PNG', 1)
   loaders += 'png'
-  conf.set10('HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8',
-             cc.has_function('png_set_gray_1_2_4_to_8',
-                             dependencies: png_dep))
-  conf.set10('HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8',
-             cc.has_function('png_set_expand_gray_1_2_4_to_8',
-                             dependencies: png_dep))
 endif
 
 jpeg_dep = dependency('libjpeg', required: get_option('jpeg'))
@@ -275,7 +229,7 @@ curl_dep = dependency('libcurl', required: get_option('curl'))
 if curl_dep.found()
   deps += curl_dep
   reqs += curl_dep
-  conf.set('HAVE_LIBCURL', 1)
+  conf.set('HAVE_CURL', 1)
   net += 'libcurl'
 endif
 
@@ -287,7 +241,7 @@ if gdk_dep.found()
   loaders += 'gdk-pixbuf2'
 endif
 
-gd_dep = dependency('gd', required: false)
+gd_dep = dependency('gd', required: get_option('gd'))
 if not gd_dep.found()
   gd_dep = dependency('gdlib', required: get_option('gd'))
 endif
@@ -296,89 +250,26 @@ if gd_dep.found()
   reqs += gd_dep
   conf.set('HAVE_GD', 1)
   loaders += 'gd'
-  gd_funcs = [
-    'gdImageCreateFromGifPtr',
-    'gdImageCreateFromPngPtr',
-    'gdImageCreateFromBmpPtr',
-    'gdImageCreateFromJpegPtrEx',
-    'gdImageCreateFromJpegPtr',
-    'gdImageCreateFromTgaPtr',
-    'gdImageCreateFromWBMPPtr',
-    'gdImageCreateFromTiffPtr',
-    'gdImageCreateFromGd2Ptr',
-    'gdImagePaletteToTrueColor',
-    'gdImageCreateFromGifAnimPtr',
-  ]
-  foreach f : gd_funcs
-    conf.set10('HAVE_DECL_' + f.to_upper(),
-               cc.has_function(f, prefix: '#include <gd.h>',
-                               dependencies: gd_dep))
-  endforeach
 endif
 
 wic_opt = get_option('wic')
 if host_system == 'windows'
   if not wic_opt.disabled()
     have_wic_headers = cc.has_header('windows.h') and cc.has_header('wincodec.h')
-    ole32_wic = cc.find_library('ole32', required: false)
-    windowscodecs_wic = cc.find_library('windowscodecs', required: false)
-    if have_wic_headers and ole32_wic.found() and windowscodecs_wic.found()
+    ole32 = cc.find_library('ole32', required: false)
+    windowscodecs = cc.find_library('windowscodecs', required: false)
+    if have_wic_headers and ole32.found() and windowscodecs.found()
       conf.set('HAVE_WIC', 1)
-      conf.set('HAVE_WINDOWS_H', 1)
-      conf.set('HAVE_WINCODEC_H', 1)
-      deps += [ole32_wic, windowscodecs_wic]
-      link_libs += [ole32_wic, windowscodecs_wic]
+      deps += [ole32, windowscodecs]
+      link_libs += [ole32, windowscodecs]
+      libpriv_flags += ['-lole32', '-lwindowscodecs']
       loaders += 'wic'
-      have_wic = true
     elif wic_opt.enabled()
       error('WIC support requested, but required headers or libraries were not found')
     endif
   endif
 elif wic_opt.enabled()
   error('WIC support is only available on Windows')
-endif
-
-wiccodec_opt = get_option('wiccodec')
-wiccodec_message = 'no'
-have_wiccodec = false
-if host_system == 'windows'
-  if not wiccodec_opt.disabled()
-    have_wiccodec_headers = cc.has_header('windows.h') and cc.has_header('wincodec.h')
-    ole32 = cc.find_library('ole32', required: false)
-    windowscodecs = cc.find_library('windowscodecs', required: false)
-    advapi32 = cc.find_library('advapi32', required: false)
-    user32 = cc.find_library('user32', required: false)
-    if have_wiccodec_headers \
-         and ole32.found() \
-         and windowscodecs.found() \
-         and advapi32.found() \
-         and user32.found()
-      conf.set('HAVE_WICCODEC', 1)
-      if not have_wic
-        conf.set('HAVE_WINDOWS_H', 1)
-        conf.set('HAVE_WINCODEC_H', 1)
-      endif
-      if cc.has_header('wincodecsdk.h')
-        conf.set('HAVE_WINCODECSDK_H', 1)
-      endif
-      if not have_wic
-        deps += [ole32, windowscodecs]
-        link_libs += [ole32, windowscodecs]
-      endif
-      deps += [advapi32, user32]
-      link_libs += [advapi32, user32]
-      have_wiccodec = true
-      wiccodec_message = 'yes'
-    elif wiccodec_opt.enabled()
-      error('WIC codec support requested, but required headers or libraries were not found')
-    endif
-  endif
-elif wiccodec_opt.enabled()
-  error('WIC codec support is only available on Windows')
-endif
-
-if get_option('register_dll') and not have_wiccodec
-  error('register_dll option requires WIC codec support')
 endif
 
 winhttp_opt = get_option('winhttp')
@@ -390,6 +281,7 @@ if host_system == 'windows'
       conf.set('HAVE_WINHTTP', 1)
       deps += winhttp_lib
       link_libs += winhttp_lib
+      libpriv_flags += '-lwinhttp'
       net += 'winhttp'
     elif winhttp_opt.enabled()
       error('WinHTTP support requested, but required headers or library were not found')
@@ -407,6 +299,7 @@ if host_system == 'windows'
     conf.set('HAVE_NANOSLEEP', 1)
     conf.set('HAVE_CLOCK', 1)
     deps += winpthread_lib
+    libpriv_flags += '-lwinpthread'
     link_libs += winpthread_lib
   endif
 elif winpthread_opt.enabled()
@@ -417,13 +310,12 @@ cg_opt = get_option('coregraphics')
 if host_system == 'darwin'
   if not cg_opt.disabled()
     cg_modules = ['CoreGraphics', 'CoreFoundation', 'ImageIO']
-    cg_dep = dependency('appleframeworks', \
-                        modules: cg_modules, \
-                        required: cg_opt.enabled())
+    cg_dep = dependency('appleframeworks', modules: cg_modules, required: cg_opt.enabled())
     if cg_dep.found()
       conf.set('HAVE_COREGRAPHICS', 1)
       deps += cg_dep
       link_libs += cg_dep
+      libpriv_flags += ['-framework CoreGraphics', '-framework CoreFoundation', '-framework ImageIO']
       loaders += 'coregraphics'
     endif
   endif
@@ -431,138 +323,21 @@ elif cg_opt.enabled()
   error('CoreGraphics support requires macOS')
 endif
 
-quicklook_ext_opt = get_option('quicklook_extension')
-if host_system == 'darwin'
-  if not quicklook_ext_opt.disabled()
-    quicklook_ext_dep = dependency('appleframeworks',
-      modules: ['Foundation', \
-                'AppKit', \
-                'QuickLookUI', \
-                'QuickLookThumbnailing', \
-                'UniformTypeIdentifiers', \
-                'CoreGraphics', \
-                'ImageIO'],
-      required: quicklook_ext_opt.enabled())
-    quicklook_register_dep = dependency('appleframeworks',
-      modules: ['Foundation', 'CoreServices', 'UniformTypeIdentifiers'],
-      required: quicklook_ext_opt.enabled())
-    if quicklook_ext_dep.found() and quicklook_register_dep.found()
-      have_quicklook_extension = true
-      quicklook_extension_frameworks = [quicklook_ext_dep]
-      quicklook_extension_register_frameworks = [quicklook_register_dep]
-      quicklook_extension_message = 'yes'
-    elif quicklook_ext_opt.enabled()
-      error('Quick Look extension requested, but required frameworks were not found')
-    else
-      quicklook_extension_message = 'no (frameworks unavailable)'
-    endif
-  endif
-elif quicklook_ext_opt.enabled()
-  error('Quick Look extension is only available on macOS')
-endif
-
-simd_opt = get_option('simd')
-if simd_opt.disabled()
-  simd_message = 'no'
-elif cpu == 'x86_64'
-  if cc.has_header('emmintrin.h')
-    conf.set('HAVE_EMMINTRIN_H', 1)
-    conf.set('HAVE_SSE2', 1)
-    simd_message = 'sse2'
-  else
-    simd_message = 'no'
-  endif
-elif cpu == 'x86'
-  if cc.has_header('emmintrin.h')
-    conf.set('HAVE_EMMINTRIN_H', 1)
-    if cc.get_id() != 'msvc'
-      if cc.has_argument('-msse2') and cc.compiles('''
-          #include <emmintrin.h>
-          int main(void){
-            __m128i a = _mm_setzero_si128(); (void)a; return 0;
-          }''', args: ['-msse2'])
-        conf.set('HAVE_SSE2', 1)
-        simd_message = 'sse2'
-        add_project_arguments('-msse2', language: 'c')
-      else
-        simd_message = 'no'
-      endif
-    else
-      if cc.has_argument('/arch:SSE2') and cc.compiles('''
-          #include <emmintrin.h>
-          int main(void){
-            __m128i a = _mm_setzero_si128(); (void)a; return 0;
-          }''', args: ['/arch:SSE2'])
-        conf.set('HAVE_SSE2', 1)
-        simd_message = 'sse2'
-        add_project_arguments('/arch:SSE2', language: 'c')
-      else
-        simd_message = 'no'
-      endif
-    endif
-  else
-    simd_message = 'no'
-  endif
-elif cpu == 'aarch64'
-  if cc.has_header('arm_neon.h')
-    conf.set('HAVE_ARM_NEON_H', 1)
-    conf.set('HAVE_NEON', 1)
-    simd_message = 'neon'
-  else
-    simd_message = 'no'
-  endif
-elif cpu.startswith('arm') or cpu == 'aarch32'
-  if cc.has_header('arm_neon.h')
-    conf.set('HAVE_ARM_NEON_H', 1)
-    if cc.get_id() == 'msvc'
-      conf.set('HAVE_NEON', 1)
-      simd_message = 'neon'
-    else
-      test_args = ['-mfpu=neon']
-      if cc.has_multi_arguments(test_args) and cc.compiles('''
-          #include <arm_neon.h>
-          int main(void){
-            int32x4_t v = vdupq_n_s32(0); (void)v; return 0;
-          }''', args: test_args)
-        conf.set('HAVE_NEON', 1)
-        simd_message = 'neon'
-        add_project_arguments(test_args, language: 'c')
-      else
-        simd_message = 'no 3'
-      endif
-    endif
-  else
-    simd_message = 'no 1'
-  endif
-else
-  simd_message = 'no'
-endif
-
 config_h = configure_file(output: 'config.h', configuration: conf)
 project_inc = include_directories('.', 'include', 'src')
 
-bash_completion_opt = get_option('bashcompletiondir')
-bash_completion_dir = ''
-if bash_completion_opt != 'disabled'
-  if bash_completion_opt == '' or bash_completion_opt == 'auto'
-    bash_completion_dir = join_paths(get_option('datadir'), 'bash-completion', 'completions')
-  else
-    bash_completion_dir = bash_completion_opt
-  endif
+bash_completion_dir = get_option('bashcompletiondir')
+if bash_completion_dir == ''
+  bash_completion_dir = join_paths(get_option('datadir'), 'bash-completion', 'completions')
 endif
 
-zsh_completion_opt = get_option('zshcompletiondir')
-zsh_completion_dir = ''
-if zsh_completion_opt != 'disabled'
-  if zsh_completion_opt == '' or zsh_completion_opt == 'auto'
-    zsh_completion_dir = join_paths(get_option('datadir'), 'zsh', 'site-functions')
-  else
-    zsh_completion_dir = zsh_completion_opt
-  endif
+zsh_completion_dir = get_option('zshcompletiondir')
+if zsh_completion_dir == ''
+  zsh_completion_dir = join_paths(get_option('datadir'), 'zsh', 'site-functions')
 endif
 
 py_opt = get_option('python')
-if py_opt.enabled()
+if not py_opt.disabled()
   py_mod = import('python')
   py = py_mod.find_installation(required: py_opt.enabled())
   if py.found()
@@ -570,80 +345,16 @@ if py_opt.enabled()
     python_message = 'yes: ' + py.get_install_dir()
   elif py_opt.enabled()
     error('Python support requires an interpreter')
-  else
-    python_message = 'no'
   endif
 elif py_opt.enabled()
   error('Python support requires an interpreter')
-else
-  python_message = 'no'
-endif
-
-ruby_message = 'no'
-have_ruby = false
-# Generate Ruby version file (pure Ruby bindings)
-subdir('ruby/lib/libsixel')
-ruby_opt = get_option('ruby')
-if ruby_opt.enabled()
-  ruby = find_program('ruby', required: ruby_opt.enabled())
-  if ruby.found()
-    have_ruby = true
-    # Generate constants from header
-    constants_rb = custom_target('ruby_constants',
-      input: 'include/sixel.h',
-      output: 'constants.rb',
-      command: [ruby, 'tools/gen_ruby_constants.rb', '@INPUT@', '@OUTPUT@'],
-      build_by_default: true)
-    # Install Ruby bindings if requested
-    if ruby_opt.enabled()
-      sitelibdir = run_command(ruby, '-rrbconfig', '-e', 'print RbConfig::CONFIG["sitelibdir"]').stdout()
-      ruby_message = 'yes: ' + sitelibdir
-      install_data('ruby/lib/libsixel.rb', install_dir: sitelibdir)
-      install_subdir('ruby/lib/libsixel',
-        install_dir: join_paths(sitelibdir, 'libsixel'),
-        strip_directory: true,
-        exclude_files: ['version_runtime.rb'])
-      # Install generated files explicitly to override source ones
-      install_data(ruby_version_runtime, install_dir: join_paths(sitelibdir, 'libsixel'))
-      install_data(constants_rb, install_dir: join_paths(sitelibdir, 'libsixel'))
-    endif
-  endif
 endif
 
 subdir('include')
-
-libsixel_posix_defs = cc.get_supported_arguments([
-  '-D_POSIX_SOURCE',
-  '-D_POSIX_C_SOURCE=199309L',
-])
-
 subdir('src')
 subdir('converters')
-if have_wiccodec
-  subdir('wic')
-endif
-
-
-if have_quicklook_extension
-  subdir('quicklook-extension')
-endif
 if have_python
   subdir('python')
-endif
-
-
-if get_option('tests')
-  if have_ruby
-    env = environment()
-    bindir = meson.current_build_dir()
-    src_build_dir = join_paths(bindir, 'src')
-    env.set('LD_LIBRARY_PATH', src_build_dir + ':' + env.get('LD_LIBRARY_PATH', ''))
-    env.set('DYLD_LIBRARY_PATH', src_build_dir + ':' + env.get('DYLD_LIBRARY_PATH', ''))
-    ruby_build_libdir = join_paths(bindir, 'ruby', 'lib')
-    test('ruby-bindings', ruby,
-         args: ['-I', ruby_build_libdir, '-I', 'ruby/lib', '-I', 'ruby/test', 'ruby/test/test_libsixel.rb'],
-         env: env)
-  endif
 endif
 
 pkgconfig_dir_rel = join_paths(get_option('libdir'), 'pkgconfig')
@@ -662,7 +373,7 @@ pc_conf.set('includedir', join_paths('${prefix}', get_option('includedir')))
 pc_conf.set('PACKAGE_DESCRIPTION', 'A lightweight, fast implementation of DEC SIXEL graphics codec')
 pc_conf.set('PACKAGE_VERSION', meson.project_version())
 pc_conf.set('REQUIRES_PRIVATE', ' '.join(req_names))
-pc_conf.set('LIBS_PRIVATE', '')  # TODO: how to get the correct linker flags for static linking in meson?
+pc_conf.set('LIBS_PRIVATE', ' '.join(libpriv_flags))
 
 configure_file(
   input: 'libsixel.pc.in',
@@ -674,16 +385,6 @@ configure_file(
 net_summary = ' '.join(net)
 loaders_summary = ' '.join(loaders)
 
-bash_completion_message = 'disabled'
-if bash_completion_dir != ''
-  bash_completion_message = bash_completion_dir
-endif
-
-zsh_completion_message = 'disabled'
-if zsh_completion_dir != ''
-  zsh_completion_message = zsh_completion_dir
-endif
-
 message('')
 message('libsixel was configured as follows')
 message('')
@@ -691,13 +392,9 @@ message('       Loader component    : ' + loaders_summary)
 message('       Network access      : ' + net_summary)
 message('       libwinpthread       : ' + (have_winpthread ? 'yes' : 'no'))
 message('       pkg-config dir      : ' + pkgconfig_dir)
-message('       Bash completion dir : ' + bash_completion_message)
-message('       Zsh completion dir  : ' + zsh_completion_message)
-message('       QuickLook extension : ' + quicklook_extension_message)
-message('       WIC codec           : ' + wiccodec_message)
+message('       Bash completion dir : ' + bash_completion_dir)
+message('       Zsh completion dir  : ' + zsh_completion_dir)
 message('       python bindings     : ' + python_message)
-message('       ruby bindings       : ' + ruby_message)
-message('       SIMD                : ' + simd_message)
 message('       gcov integration    : ' + (get_option('gcov') ? 'yes' : 'no'))
 message('       debugging           : ' + (get_option('debug') ? 'yes' : 'no'))
 message('       tests               : ' + (get_option('tests') ? 'yes' : 'no'))
