@@ -682,7 +682,7 @@ if test x$with_winhttp != xno; then
                           [WinHttpOpen],
                           [],
                           [have_winhttp=no
-                           AC_MSG_ERROR([library wincodecs is not avilable.])
+                           AC_MSG_ERROR([library winhttp is not avilable.])
                           ])],
             [have_winhttp=no
              AC_MSG_ERROR([windows.h or winhttp.h is not avilable.])

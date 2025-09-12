@@ -18898,7 +18898,7 @@ then :
 
 else case e in #(
   e) have_winhttp=no
-                           as_fn_error $? "library wincodecs is not avilable." "$LINENO" 5
+                           as_fn_error $? "library winhttp is not avilable." "$LINENO" 5
                            ;;
 esac
 fi

@@ -489,7 +489,7 @@ test4(void)
     int nret = EXIT_FAILURE;
     SIXELSTATUS status;
     unsigned char pixels[] = {0xa0};
-    sixel_dither_t *dither = sixel_dither_get(SIXEL_BUILTIN_MONO_DARK);
+    sixel_dither_t *dither = sixel_dither_get(SIXEL_BUILTIN_XTERM256);
 
     status = sixel_helper_write_image_file(
         pixels,
