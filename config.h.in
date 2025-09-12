@@ -1,5 +1,11 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* disable SIMD */
+#undef DISABLE_SIMD
+
+/* Define to 1 if you have the <arm_neon.h> header file. */
+#undef HAVE_ARM_NEON_H
+
 /* Define to 1 if you have the <assert.h> header file. */
 #undef HAVE_ASSERT_H
 
@@ -121,6 +127,9 @@
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
+
+/* Define to 1 if you have the <emmintrin.h> header file. */
+#undef HAVE_EMMINTRIN_H
 
 /* Define to 1 if you have the <errno.h> header file. */
 #undef HAVE_ERRNO_H
