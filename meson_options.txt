@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2025 libsixel developers. See `AUTHORS`.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+option('png', type: 'feature', value: 'auto', description: 'Use libpng for PNG support')
+option('jpeg', type: 'feature', value: 'auto', description: 'Use libjpeg for JPEG support')
+option('curl', type: 'feature', value: 'auto', description: 'Use libcurl for network access')
+option('gdk_pixbuf2', type: 'feature', value: 'disabled', description: 'Use gdk-pixbuf2 loader')
+option('gd', type: 'feature', value: 'disabled', description: 'Use GD image library')
+option('coregraphics', type: 'feature', value: 'auto', description: 'Use CoreGraphics framework')
+option('wic', type: 'feature', value: 'auto', description: 'Use Windows Imaging Component')
+option('winhttp', type: 'feature', value: 'auto', description: 'Use WinHTTP library')
+option('winpthread', type: 'feature', value: 'disabled', description: 'Link with winpthread')
+option('bashcompletiondir', type: 'string', value: '', description: 'Directory for bash completion files')
+option('zshcompletiondir', type: 'string', value: '', description: 'Directory for zsh completion files')
+option('python', type: 'feature', value: 'auto', description: 'Install Python bindings')
+option('tests', type: 'boolean', value: false, description: 'Build tests')
+option('gcov', type: 'boolean', value: false, description: 'Enable gcov coverage flags')
+option('img2sixel', type: 'feature', value: 'enabled', description: 'Build img2sixel tool')
+option('sixel2png', type: 'feature', value: 'enabled', description: 'Build sixel2png tool')
+# vim: set et ts=2:

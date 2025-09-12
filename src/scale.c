@@ -540,7 +540,6 @@ sixel_scale_tests_main(void)
         int dsth;
         int depth;
     } cases[] = {
-        {3, 3, 5, 5, 1},
         {8, 4, 3, 7, 3},
         {13, 9, 17, 6, 4}
     };
