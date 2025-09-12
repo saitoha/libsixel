@@ -36,12 +36,6 @@ add_project_arguments(
 
 # configuration data
 conf = configuration_data()
-ls_lt_current = 1
-ls_lt_revision = 6
-ls_lt_age = 0
-ls_lt_version = '@0@:@1@:@2@'.format(ls_lt_current, ls_lt_revision, ls_lt_age)
-
-conf.set('LS_LTVERSION', ls_lt_version)
 conf.set_quoted('PACKAGE', meson.project_name())
 conf.set_quoted('PACKAGE_NAME', meson.project_name())
 conf.set_quoted('PACKAGE_STRING',
