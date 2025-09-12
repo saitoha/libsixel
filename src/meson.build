@@ -1,0 +1,67 @@
+# SPDX-License-Identifier: MIT
+#
+# Copyright (c) 2025 libsixel developers. See `AUTHORS`.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+srcs = [
+  'output.c',
+  'fromsixel.c',
+  'tosixel.c',
+  'quant.c',
+  'dither.c',
+  'frame.c',
+  'pixelformat.c',
+  'scale.c',
+  'chunk.c',
+  'loader.c',
+  'frompnm.c',
+  'fromgif.c',
+  'encoder.c',
+  'decoder.c',
+  'writer.c',
+  'stb_image_write.c',
+  'status.c',
+  'malloc_stub.c',
+  'allocator.c',
+  'tty.c',
+]
+
+lt_soversion = ls_lt_current - ls_lt_age
+lt_version = '@0@.@1@.@2@'.format(lt_soversion, ls_lt_age, ls_lt_revision)
+
+libsixel = library('sixel',
+                   srcs,
+                   include_directories: project_inc,
+                   dependencies: deps,
+                   version: lt_version,
+                   soversion: lt_soversion.to_string(),
+                   install: true)
+
+libsixel_dep = declare_dependency(link_with: libsixel,
+                                  include_directories: project_inc,
+                                  dependencies: deps)
+
+if get_option('tests')
+  executable('tests', ['tests.c'],
+    dependencies: libsixel_dep,
+    include_directories: project_inc,
+    install: false)
+endif
+
+# vim: set et ts=2:
