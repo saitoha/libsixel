@@ -84,17 +84,12 @@ if cc.compiles('''
    conf.set('attr_var_deprecated', '__attribute__((deprecated))')
 endif
 
-c_args = [
-  '-Wformat=2',
-  '-fno-emulated-tls',
-  '-Bsymbolic',
-]
-
-foreach a : c_args
-  cc.has_argument(a)
-endforeach
-
-add_global_arguments(c_args, language: 'c')
+add_project_arguments(
+  cc.get_supported_arguments([
+    '-Wformat=2',
+    '-fno-emulated-tls',
+    '-Bsymbolic',
+  ]), language: 'c')
 
 # check common headers
 std_headers = [
