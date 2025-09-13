@@ -36,12 +36,6 @@ add_project_arguments(
 
 # configuration data
 conf = configuration_data()
-ls_lt_current = 1
-ls_lt_revision = 6
-ls_lt_age = 0
-ls_lt_version = '@0@:@1@:@2@'.format(ls_lt_current, ls_lt_revision, ls_lt_age)
-
-conf.set('LS_LTVERSION', ls_lt_version)
 conf.set_quoted('PACKAGE', meson.project_name())
 conf.set_quoted('PACKAGE_NAME', meson.project_name())
 conf.set_quoted('PACKAGE_STRING',
@@ -84,17 +78,12 @@ if cc.compiles('''
    conf.set('attr_var_deprecated', '__attribute__((deprecated))')
 endif
 
-c_args = [
-  '-Wformat=2',
-  '-fno-emulated-tls',
-  '-Bsymbolic',
-]
-
-foreach a : c_args
-  cc.has_argument(a)
-endforeach
-
-add_global_arguments(c_args, language: 'c')
+add_project_arguments(
+  cc.get_supported_arguments([
+    '-Wformat=2',
+    '-fno-emulated-tls',
+    '-Bsymbolic',
+  ]), language: 'c')
 
 # check common headers
 std_headers = [
