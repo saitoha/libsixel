@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([sixel], [1.8.7], [saitoha@me.com])
+AC_INIT([libsixel], [1.8.7], [saitoha@me.com])
 LS_LT_CURRENT=1
 LS_LT_REVISION=6
 LS_LT_AGE=0
@@ -371,7 +371,6 @@ AC_CHECK_HEADERS([assert.h \
                  ])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_CHECK_HEADER_STDBOOL
 AC_C_INLINE
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
