@@ -1,8 +1,5 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* disable SIMD */
-#undef DISABLE_SIMD
-
 /* Define to 1 if you have the <arm_neon.h> header file. */
 #undef HAVE_ARM_NEON_H
 
@@ -228,6 +225,9 @@
 /* Define if nanosleep exists */
 #undef HAVE_NANOSLEEP
 
+/* Define if NEON is available */
+#undef HAVE_NEON
+
 /* Define to 1 if you have the 'pow' function. */
 #undef HAVE_POW
 
@@ -252,6 +252,9 @@
 
 /* Define to 1 if you have the 'sqrt' function. */
 #undef HAVE_SQRT
+
+/* Define if SSE2 is available */
+#undef HAVE_SSE2
 
 /* Define to 1 if you have the 'stat' function. */
 #undef HAVE_STAT
