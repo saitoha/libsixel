@@ -445,6 +445,8 @@ have_png="no"
 have_winpthread="no"
 have_wic="no"
 have_coregraphics="no"
+have_sse2=no
+have_neon=no
 
 REQUIRES_PRIVATE=""
 LIBS_PRIVATE="$LIBS"
@@ -930,8 +932,81 @@ AC_SUBST(WIC_LIBS)
 AC_SUBST(REQUIRES_PRIVATE)
 AC_SUBST(LIBS_PRIVATE)
 
-if test x$enable_simd = xno; then
-    AC_DEFINE(DISABLE_SIMD, [1], [disable SIMD])
+if test "x${enable_simd}" = xno; then
+    message_simd=no
+else
+    case "${host_cpu}" in
+    x86_64|amd64)
+        have_sse2=yes
+        ;;
+
+    i*86)
+        if x$ac_cv_header_emmintrin_h = xyes; then
+            AC_MSG_CHECKING([whether the compiler supports -msse2 and <emmintrin.h>])
+            saved_CFLAGS="$CFLAGS"
+            CFLAGS="$CFLAGS -msse2"
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+                                #include <emmintrin.h>
+                              ]], [[
+                                __m128i a = _mm_setzero_si128();
+                                (void)a;
+                                return 0;
+                              ]])],
+                              [have_sse2=yes],
+                              [have_sse2=no])
+            CFLAGS="$saved_CFLAGS"
+            AC_MSG_RESULT([$have_sse2])
+            if test "x$have_sse2" = xyes; then
+                AM_CFLAGS="$AM_CFLAGS -msse2"
+            fi
+        fi
+        ;;
+
+    aarch64|arm64)
+        have_neon=yes
+        ;;
+
+    arm*|aarch32)
+        if x$ac_cv_header_arm_neon_h = xyes; then
+            AC_MSG_CHECKING([whether the compiler supports -mfpu=neon and <arm_neon.h>])
+            saved_CFLAGS="$CFLAGS"
+            CFLAGS="$CFLAGS -mfpu=neon"
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+                                #include <arm_neon.h>
+                              ]], [[
+                                int32x4_t v = vdupq_n_s32(0);
+                                (void) v;
+                                return 0;
+                              ]])],
+                              [have_neon=yes],
+                              [have_neon=no])
+            CFLAGS="$saved_CFLAGS"
+            AC_MSG_RESULT([$have_neon])
+            if test "x$have_neon" = xyes; then
+                AM_CFLAGS="$AM_CFLAGS -mfpu=neon"
+            fi
+        fi
+        ;;
+
+    *)
+        ;;
+
+    esac
+fi
+
+if test "x$have_sse2" = xyes; then
+    AC_DEFINE([HAVE_SSE2], [1], [Define if SSE2 is available])
+    message_simd=sse2
+fi
+if test "x$have_neon" = xyes; then
+    AC_DEFINE([HAVE_NEON], [1], [Define if NEON is available])
+    message_neon=neon
+fi
+
+if test "x$enable_simd" = xyes; then
+    if test "x$have_sse2" != xyes && test "x$have_neon" != xyes; then
+        AC_MSG_ERROR([SIMD header is not found])
+    fi
 fi
 
 have_python=no
@@ -987,6 +1062,7 @@ echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       python bindings     : $message_python"
+echo "       simd                : $message_simd"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
 echo "       tests               : $enable_tests"

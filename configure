@@ -17628,6 +17628,8 @@ have_png="no"
 have_winpthread="no"
 have_wic="no"
 have_coregraphics="no"
+have_sse2=no
+have_neon=no
 
 REQUIRES_PRIVATE=""
 LIBS_PRIVATE="$LIBS"
@@ -19619,10 +19621,121 @@ fi
 
 
 
-if test x$enable_simd = xno; then
+if test "x${enable_simd}" = xno; then
+    message_simd=no
+else
+    case "${host_cpu}" in
+    x86_64|amd64)
+        have_sse2=yes
+        ;;
 
-printf "%s\n" "#define DISABLE_SIMD 1" >>confdefs.h
+    i*86)
+        if x$ac_cv_header_emmintrin_h = xyes; then
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler supports -msse2 and <emmintrin.h>" >&5
+printf %s "checking whether the compiler supports -msse2 and <emmintrin.h>... " >&6; }
+            saved_CFLAGS="$CFLAGS"
+            CFLAGS="$CFLAGS -msse2"
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
 
+                                #include <emmintrin.h>
+
+int
+main (void)
+{
+
+                                __m128i a = _mm_setzero_si128();
+                                (void)a;
+                                return 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  have_sse2=yes
+else case e in #(
+  e) have_sse2=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+            CFLAGS="$saved_CFLAGS"
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_sse2" >&5
+printf "%s\n" "$have_sse2" >&6; }
+            if test "x$have_sse2" = xyes; then
+                AM_CFLAGS="$AM_CFLAGS -msse2"
+            fi
+        fi
+        ;;
+
+    aarch64|arm64)
+        have_neon=yes
+        ;;
+
+    arm*|aarch32)
+        if x$ac_cv_header_arm_neon_h = xyes; then
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler supports -mfpu=neon and <arm_neon.h>" >&5
+printf %s "checking whether the compiler supports -mfpu=neon and <arm_neon.h>... " >&6; }
+            saved_CFLAGS="$CFLAGS"
+            CFLAGS="$CFLAGS -mfpu=neon"
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+                                #include <arm_neon.h>
+
+int
+main (void)
+{
+
+                                int32x4_t v = vdupq_n_s32(0);
+                                (void) v;
+                                return 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  have_neon=yes
+else case e in #(
+  e) have_neon=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+            CFLAGS="$saved_CFLAGS"
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_neon" >&5
+printf "%s\n" "$have_neon" >&6; }
+            if test "x$have_neon" = xyes; then
+                AM_CFLAGS="$AM_CFLAGS -mfpu=neon"
+            fi
+        fi
+        ;;
+
+    *)
+        ;;
+
+    esac
+fi
+
+if test "x$have_sse2" = xyes; then
+
+printf "%s\n" "#define HAVE_SSE2 1" >>confdefs.h
+
+    message_simd=sse2
+fi
+if test "x$have_neon" = xyes; then
+
+printf "%s\n" "#define HAVE_NEON 1" >>confdefs.h
+
+    message_neon=neon
+fi
+
+if test "x$enable_simd" = xyes; then
+    if test "x$have_sse2" != xyes && test "x$have_neon" != xyes; then
+        as_fn_error $? "SIMD header is not found" "$LINENO" 5
+    fi
 fi
 
 have_python=no
@@ -22511,6 +22624,7 @@ echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 #echo "       WIC integration     : $have_wic"
 echo "       python bindings     : $message_python"
+echo "       simd                : $message_simd"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
 echo "       tests               : $enable_tests"
