@@ -65,25 +65,53 @@ have_python = false
 cc = meson.get_compiler('c')
 cpu = host_machine.cpu_family()
 
-cc.has_function('unreachable')
+have_unreachable = cc.compiles('''
+  static void f(int x) {
+    if (x) return;
+    __builtin_unreachable();
+  }
+  int main(void){ f(0); return 0; }
+''', name: '__builtin_unreachable()', args: ['-Werror'])
+if have_unreachable
+  conf.set('HAVE___BUILTIN_UNREACHABLE', 1)
+endif
+
 if cc.compiles('''
     __attribute__((deprecated)) void test(void) {}
 ''')
-   conf.set('attr_func_deprecated', '__attribute__((deprecated))')
+   has_func_attr_deprecated = true
+   conf.set('HAVE_FUNC_ATTRIBUTE_DEPRECATED', 1)
 endif
 
 if cc.compiles('''
     __attribute__((deprecated)) int test;
 ''')
-   conf.set('attr_var_deprecated', '__attribute__((deprecated))')
+   has_var_attr_deprecated = true
+   conf.set('HAVE_VAR_ATTRIBUTE_DEPRECATED', 1)
 endif
 
-add_project_arguments(
-  cc.get_supported_arguments([
+if cc.compiles('''
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic pop
+    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    __attribute__((deprecated)) void test(void) {}
+''')
+  conf.set('HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS', 1)
+endif
+
+flags = cc.get_supported_arguments([
     '-Wformat=2',
     '-fno-emulated-tls',
     '-Bsymbolic',
-  ]), language: 'c')
+])
+add_project_arguments(flags, language: 'c')
+foreach f: flags
+  if f == '-fno-emulated-tls'
+    conf.set('HAVE_FNO_EMULATED_TLS', 1)
+  elif f == '-Bsymbolic'
+    conf.set('HAVE_BSYMBOLIC', 1)
+  endif
+endforeach
 
 # check common headers
 std_headers = [
@@ -112,8 +140,6 @@ std_headers = [
     'stdio.h',
     'stdlib.h',
     'string.h',
-    'emmintrin.h',
-    'arm_neon.h'
 ]
 foreach h : std_headers
   if cc.has_header(h)
@@ -130,7 +156,6 @@ extra_funcs = [
   'memcpy',
   'memmove',
   'memset',
-  'getopt',
   'getopt_long',
   'memcpy',
   'memmove',
@@ -164,6 +189,10 @@ foreach f : extra_funcs
   endif
 endforeach
 
+if not cc.has_function('getopt_long') and cc.has_function('getopt')
+    conf.set('HAVE_GETOPT', 1)
+endif
+
 if host_machine.system() != 'windows'
   if cc.has_function('clock')
     conf.set('HAVE_CLOCK', 1)
@@ -179,12 +208,6 @@ foreach s : ['SIGINT', 'SIGTERM', 'SIGHUP']
     conf.set('HAVE_DECL_' + s, 1)
   endif
 endforeach
-
-# detect attributes
-if cc.has_function_attribute('deprecated')
-  conf.set('attr_func_deprecated', '__attribute__((deprecated))')
-  conf.set('attr_var_deprecated', '__attribute__((deprecated))')
-endif
 
 deps = []
 reqs = []
@@ -203,6 +226,12 @@ if png_dep.found()
   reqs += png_dep
   conf.set('HAVE_LIBPNG', 1)
   loaders += 'png'
+  conf.set10('HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8',
+             cc.has_function('png_set_gray_1_2_4_to_8',
+                             dependencies: png_dep))
+  conf.set10('HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8',
+             cc.has_function('png_set_expand_gray_1_2_4_to_8',
+                             dependencies: png_dep))
 endif
 
 jpeg_dep = dependency('libjpeg', required: get_option('jpeg'))
@@ -312,6 +341,7 @@ if simd_opt.disabled()
   simd_message = 'no'
 elif cpu == 'x86_64'
   if cc.has_header('emmintrin.h')
+    conf.set('HAVE_EMMINTRIN_H', 1)
     conf.set('HAVE_SSE2', 1)
     simd_message = 'sse2'
   else
@@ -319,6 +349,7 @@ elif cpu == 'x86_64'
   endif
 elif cpu == 'x86'
   if cc.has_header('emmintrin.h')
+    conf.set('HAVE_EMMINTRIN_H', 1)
     if cc.get_id() != 'msvc'
       if cc.has_argument('-msse2') and cc.compiles('''
           #include <emmintrin.h>
@@ -349,6 +380,7 @@ elif cpu == 'x86'
   endif
 elif cpu == 'aarch64'
   if cc.has_header('arm_neon.h')
+    conf.set('HAVE_ARM_NEON_H', 1)
     conf.set('HAVE_NEON', 1)
     simd_message = 'neon'
   else
@@ -356,6 +388,7 @@ elif cpu == 'aarch64'
   endif
 elif cpu.startswith('arm') or cpu == 'aarch32'
   if cc.has_header('arm_neon.h')
+    conf.set('HAVE_ARM_NEON_H', 1)
     if cc.get_id() == 'msvc'
       conf.set('HAVE_NEON', 1)
       simd_message = 'neon'
