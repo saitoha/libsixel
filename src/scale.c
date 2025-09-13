@@ -39,13 +39,14 @@
 
 #include <sixel.h>
 
-#if !defined(DISABLE_SIMD)
+#if defined(HAVE_SSE2)
 # if defined(__SSE2__)
 #  if defined(HAVE_EMMINTRIN_H)
 #   include <emmintrin.h>
 #   define SIXEL_USE_SSE2 1
 #  endif
 # endif
+#elif defined(HAVE_NEON)
 # if (defined(__ARM_NEON) || defined(__ARM_NEON__))
 #  if defined(HAVE_ARM_NEON_H)
 #   include <arm_neon.h>
