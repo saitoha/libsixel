@@ -26,10 +26,13 @@ ls_lt_version = '@0@:@1@:@2@'.format(ls_lt_current, ls_lt_revision, ls_lt_age)
 inc_conf = configuration_data()
 inc_conf.set('PACKAGE_VERSION', meson.project_version())
 inc_conf.set('LS_LTVERSION', ls_lt_version)
-#if cc.has_function_attribute('deprecated')
-#  conf.set('attr_func_deprecated', '__attribute__((deprecated))')
-#  conf.set('attr_var_deprecated', '__attribute__((deprecated))')
-#endif
+
+if has_func_attr_deprecated
+  inc_conf.set('attr_func_deprecated', '__attribute__((deprecated))')
+endif
+if has_var_attr_deprecated
+  inc_conf.set('attr_var_deprecated', '__attribute__((deprecated))')
+endif
 
 sixel_h = configure_file(input: 'sixel.h.in', output: 'sixel.h', configuration: inc_conf)
 install_headers(sixel_h, subdir: 'sixel')
