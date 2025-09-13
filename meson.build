@@ -66,18 +66,22 @@ endif
 loaders = ['stb_image']
 net = []
 have_winpthread = false
-python_message = 'no'
 have_python = false
 
 cc = meson.get_compiler('c')
+cpu = host_machine.cpu_family()
+
 cc.has_function('unreachable')
 if cc.compiles('''
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic pop
-    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     __attribute__((deprecated)) void test(void) {}
 ''')
-  conf.set('HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS', 1)
+   conf.set('attr_func_deprecated', '__attribute__((deprecated))')
+endif
+
+if cc.compiles('''
+    __attribute__((deprecated)) int test;
+''')
+   conf.set('attr_var_deprecated', '__attribute__((deprecated))')
 endif
 
 c_args = [
@@ -119,7 +123,8 @@ std_headers = [
     'stdio.h',
     'stdlib.h',
     'string.h',
-    'stddef.h'
+    'emmintrin.h',
+    'arm_neon.h'
 ]
 foreach h : std_headers
   if cc.has_header(h)
@@ -128,19 +133,14 @@ foreach h : std_headers
   endif
 endforeach
 
-# memory functions and headers
-if cc.has_function('memcpy')
-  conf.set('HAVE_MEMCPY', 1)
-endif
-if cc.has_function('memmove')
-  conf.set('HAVE_MEMMOVE', 1)
-endif
-if cc.has_function('memset')
-  conf.set('HAVE_MEMSET', 1)
-endif
-
 # miscellaneous functions
 extra_funcs = [
+  'malloc',
+  'realloc',
+  'calloc',
+  'memcpy',
+  'memmove',
+  'memset',
   'getopt',
   'getopt_long',
   'memcpy',
@@ -200,20 +200,19 @@ endif
 deps = []
 reqs = []
 link_libs = []
-libpriv_flags = []
 
 m_dep = cc.find_library('m', required: false)
 if m_dep.found()
   link_libs += m_dep
   deps += m_dep
-  libpriv_flags += '-lm'
+  conf.set('HAVE_LIBM', 1)
 endif
 
 png_dep = dependency('libpng', required: get_option('png'))
 if png_dep.found()
   deps += png_dep
   reqs += png_dep
-  conf.set('HAVE_PNG', 1)
+  conf.set('HAVE_LIBPNG', 1)
   loaders += 'png'
 endif
 
@@ -229,7 +228,7 @@ curl_dep = dependency('libcurl', required: get_option('curl'))
 if curl_dep.found()
   deps += curl_dep
   reqs += curl_dep
-  conf.set('HAVE_CURL', 1)
+  conf.set('HAVE_LIBCURL', 1)
   net += 'libcurl'
 endif
 
@@ -262,7 +261,6 @@ if host_system == 'windows'
       conf.set('HAVE_WIC', 1)
       deps += [ole32, windowscodecs]
       link_libs += [ole32, windowscodecs]
-      libpriv_flags += ['-lole32', '-lwindowscodecs']
       loaders += 'wic'
     elif wic_opt.enabled()
       error('WIC support requested, but required headers or libraries were not found')
@@ -281,7 +279,6 @@ if host_system == 'windows'
       conf.set('HAVE_WINHTTP', 1)
       deps += winhttp_lib
       link_libs += winhttp_lib
-      libpriv_flags += '-lwinhttp'
       net += 'winhttp'
     elif winhttp_opt.enabled()
       error('WinHTTP support requested, but required headers or library were not found')
@@ -299,7 +296,6 @@ if host_system == 'windows'
     conf.set('HAVE_NANOSLEEP', 1)
     conf.set('HAVE_CLOCK', 1)
     deps += winpthread_lib
-    libpriv_flags += '-lwinpthread'
     link_libs += winpthread_lib
   endif
 elif winpthread_opt.enabled()
@@ -315,12 +311,84 @@ if host_system == 'darwin'
       conf.set('HAVE_COREGRAPHICS', 1)
       deps += cg_dep
       link_libs += cg_dep
-      libpriv_flags += ['-framework CoreGraphics', '-framework CoreFoundation', '-framework ImageIO']
       loaders += 'coregraphics'
     endif
   endif
 elif cg_opt.enabled()
   error('CoreGraphics support requires macOS')
+endif
+
+simd_opt = get_option('simd')
+if simd_opt.disabled()
+  simd_message = 'no'
+elif cpu == 'x86_64'
+  if cc.has_header('emmintrin.h')
+    conf.set('HAVE_SSE2', 1)
+    simd_message = 'sse2'
+  else
+    simd_message = 'no'
+  endif
+elif cpu == 'x86'
+  if cc.has_header('emmintrin.h')
+    if cc.get_id() != 'msvc'
+      if cc.has_argument('-msse2') and cc.compiles('''
+          #include <emmintrin.h>
+          int main(void){
+            __m128i a = _mm_setzero_si128(); (void)a; return 0;
+          }''', args: ['-msse2'])
+        conf.set('HAVE_SSE2', 1)
+        simd_message = 'sse2'
+        add_project_arguments('-msse2', language: 'c')
+      else
+        simd_message = 'no'
+      endif
+    else
+      if cc.has_argument('/arch:SSE2') and cc.compiles('''
+          #include <emmintrin.h>
+          int main(void){
+            __m128i a = _mm_setzero_si128(); (void)a; return 0;
+          }''', args: ['/arch:SSE2'])
+        conf.set('HAVE_SSE2', 1)
+        simd_message = 'sse2'
+        add_project_arguments('/arch:SSE2', language: 'c')
+      else
+        simd_message = 'no'
+      endif
+    endif
+  else
+    simd_message = 'no'
+  endif
+elif cpu == 'aarch64'
+  if cc.has_header('arm_neon.h')
+    conf.set('HAVE_NEON', 1)
+    simd_message = 'neon'
+  else
+    simd_message = 'no'
+  endif
+elif cpu.startswith('arm') or cpu == 'aarch32'
+  if cc.has_header('arm_neon.h')
+    if cc.get_id() == 'msvc'
+      conf.set('HAVE_NEON', 1)
+      simd_message = 'neon'
+    else
+      test_args = ['-mfpu=neon']
+      if cc.has_multi_arguments(test_args) and cc.compiles('''
+          #include <arm_neon.h>
+          int main(void){
+            int32x4_t v = vdupq_n_s32(0); (void)v; return 0;
+          }''', args: test_args)
+        conf.set('HAVE_NEON', 1)
+        simd_message = 'neon'
+        add_project_arguments(test_args, language: 'c')
+      else
+        simd_message = 'no 3'
+      endif
+    endif
+  else
+    simd_message = 'no 1'
+  endif
+else
+  simd_message = 'no'
 endif
 
 config_h = configure_file(output: 'config.h', configuration: conf)
@@ -336,11 +404,6 @@ if zsh_completion_dir == ''
   zsh_completion_dir = join_paths(get_option('datadir'), 'zsh', 'site-functions')
 endif
 
-simd_opt = get_option('simd')
-if simd_opt.disabled()
-  conf.set('DISABLE_SIMD', 1)
-endif
-
 py_opt = get_option('python')
 if not py_opt.disabled()
   py_mod = import('python')
@@ -350,6 +413,8 @@ if not py_opt.disabled()
     python_message = 'yes: ' + py.get_install_dir()
   elif py_opt.enabled()
     error('Python support requires an interpreter')
+  else
+    python_message = 'no'
   endif
 elif py_opt.enabled()
   error('Python support requires an interpreter')
@@ -378,7 +443,7 @@ pc_conf.set('includedir', join_paths('${prefix}', get_option('includedir')))
 pc_conf.set('PACKAGE_DESCRIPTION', 'A lightweight, fast implementation of DEC SIXEL graphics codec')
 pc_conf.set('PACKAGE_VERSION', meson.project_version())
 pc_conf.set('REQUIRES_PRIVATE', ' '.join(req_names))
-pc_conf.set('LIBS_PRIVATE', ' '.join(libpriv_flags))
+pc_conf.set('LIBS_PRIVATE', '')  # TODO: how to get the correct linker flags for static linking in meson?
 
 configure_file(
   input: 'libsixel.pc.in',
@@ -400,6 +465,7 @@ message('       pkg-config dir      : ' + pkgconfig_dir)
 message('       Bash completion dir : ' + bash_completion_dir)
 message('       Zsh completion dir  : ' + zsh_completion_dir)
 message('       python bindings     : ' + python_message)
+message('       SIMD                : ' + simd_message)
 message('       gcov integration    : ' + (get_option('gcov') ? 'yes' : 'no'))
 message('       debugging           : ' + (get_option('debug') ? 'yes' : 'no'))
 message('       tests               : ' + (get_option('tests') ? 'yes' : 'no'))
