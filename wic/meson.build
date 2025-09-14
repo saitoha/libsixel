@@ -2,7 +2,6 @@
 
 wic_sources = files(
   'wic.c',
-  'wic_stub.c',
   '../src/fromsixel.c',
   '../src/allocator.c',
   '../src/status.c',
@@ -17,12 +16,8 @@ shared_module(
   install_dir: join_paths(get_option('libdir'), meson.project_name()),
 )
 
-if host_machine.system() == 'windows' and get_option('register_dll')
-  dll_rel_win = join_paths( \
-    get_option('libdir'), \
-    meson.project_name(), \
-    'libwicsixel.dll' \
-  ).replace('/', '\\')
+if host_machine.system() == 'windows'
+  dll_rel_win = join_paths(get_option('libdir'), meson.project_name(), 'wicsixel.dll').replace('/', '\\')
 
   meson.add_install_script(
     'powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command',
