@@ -17,7 +17,7 @@ shared_module(
 )
 
 if host_machine.system() == 'windows'
-  dll_rel_win = join_paths(get_option('libdir'), meson.project_name(), 'wicsixel.dll').replace('/', '\\')
+  dll_rel_win = join_paths(get_option('libdir'), meson.project_name(), 'libwicsixel.dll').replace('/', '\\')
 
   meson.add_install_script(
     'powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command',
