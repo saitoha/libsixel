@@ -276,7 +276,7 @@ if gdk_dep.found()
   loaders += 'gdk-pixbuf2'
 endif
 
-gd_dep = dependency('gd', required: get_option('gd'))
+gd_dep = dependency('gd', required: false)
 if not gd_dep.found()
   gd_dep = dependency('gdlib', required: get_option('gd'))
 endif
@@ -285,6 +285,23 @@ if gd_dep.found()
   reqs += gd_dep
   conf.set('HAVE_GD', 1)
   loaders += 'gd'
+  gd_funcs = [
+    'gdImageCreateFromGifPtr',
+    'gdImageCreateFromPngPtr',
+    'gdImageCreateFromBmpPtr',
+    'gdImageCreateFromJpegPtrEx',
+    'gdImageCreateFromJpegPtr',
+    'gdImageCreateFromTgaPtr',
+    'gdImageCreateFromWBMPPtr',
+    'gdImageCreateFromTiffPtr',
+    'gdImageCreateFromGd2Ptr',
+    'gdImagePaletteToTrueColor',
+  ]
+  foreach f : gd_funcs
+    conf.set10('HAVE_DECL_' + f.to_upper(),
+               cc.has_function(f, prefix: '#include <gd.h>',
+                               dependencies: gd_dep))
+  endforeach
 endif
 
 wic_opt = get_option('wic')
