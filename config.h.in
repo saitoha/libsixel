@@ -222,6 +222,9 @@
 /* Define to 1 if you have the 'memset' function. */
 #undef HAVE_MEMSET
 
+/* Define if building with MSVC */
+#undef HAVE_MSVC
+
 /* Define if nanosleep exists */
 #undef HAVE_NANOSLEEP
 

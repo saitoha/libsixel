@@ -65,6 +65,13 @@
 # define O_BINARY _O_BINARY
 #endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 
+#if !defined(S_ISREG) && defined(S_IFMT) && defined(S_IFREG)
+# define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#endif
+#if !defined(S_ISDIR) && defined(S_IFMT) && defined(S_IFDIR)
+# define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#endif
+
 #include "chunk.h"
 #include "allocator.h"
 

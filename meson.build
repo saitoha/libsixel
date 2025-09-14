@@ -30,9 +30,13 @@ project('libsixel',
         ])
 
 host_system = host_machine.system()
-add_project_arguments(
-    '-D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L',
-    language: 'c')
+cc = meson.get_compiler('c')
+if cc.get_id() != 'msvc'
+  add_project_arguments([
+      '-D_POSIX_SOURCE',
+      '-D_POSIX_C_SOURCE=199309L'],
+      language: 'c')
+endif
 
 # configuration data
 conf = configuration_data()
@@ -62,8 +66,6 @@ net = []
 have_winpthread = false
 have_python = false
 have_wic = false
-
-cc = meson.get_compiler('c')
 cpu = host_machine.cpu_family()
 
 have_unreachable = cc.compiles('''
@@ -111,6 +113,21 @@ foreach f: flags
     conf.set('HAVE_FNO_EMULATED_TLS', 1)
   elif f == '-Bsymbolic'
     conf.set('HAVE_BSYMBOLIC', 1)
+  endif
+endforeach
+
+wflags = cc.get_supported_arguments([
+    '-Wdeprecated-declarations',
+    '-Wunused-but-set-variable',
+    '-Wclobbered'
+])
+foreach f: flags
+  if f == '-Wdeprecated-declarations'
+    conf.set('HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS', 1)
+  elif f == '-Wunused-but-set-variable'
+    conf.set('HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE', 1)
+  elif f == '-Wclobbered'
+    conf.set('HAVE_DIAGNOSTIC_CLOBBERED', 1)
   endif
 endforeach
 
