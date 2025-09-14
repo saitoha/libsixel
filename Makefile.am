@@ -1,7 +1,11 @@
 #
 # @configure_input@
 #
-SUBDIRS = include src converters tools python wic
+SUBDIRS = include src converters tools python
+if HAVE_WIC
+SUBDIRS += wic
+endif
+
 DIST_SUBDIRS = $(SUBDIRS)
 
 EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
