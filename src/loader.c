@@ -1479,10 +1479,11 @@ load_with_gd(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *p;
-    gdImagePtr im;
+    gdImagePtr im = NULL;
     int x, y;
     int c;
     sixel_frame_t *frame = NULL;
+    int format;
 
     (void) fstatic;
     (void) fuse_palette;
@@ -1490,19 +1491,105 @@ load_with_gd(
     (void) bgcolor;
     (void) loop_control;
 
+    format = detect_file_format(pchunk->size, pchunk->buffer);
+
+    if (format == SIXEL_FORMAT_GIF) {
+#if HAVE_DECL_GDIMAGECREATEFROMGIFANIMPTR
+        gdImagePtr *ims = NULL;
+        int frames = 0;
+        int i;
+        int *delays = NULL;
+
+        ims = gdImageCreateFromGifAnimPtr(pchunk->size, pchunk->buffer,
+                                          &frames, &delays);
+        if (ims == NULL) {
+            status = SIXEL_GD_ERROR;
+            goto end;
+        }
+
+        for (i = 0; i < frames; i++) {
+            im = ims[i];
+            if (!gdImageTrueColor(im)) {
+# if HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
+                if (!gdImagePaletteToTrueColor(im)) {
+                    status = SIXEL_GD_ERROR;
+                    goto gif_end;
+                }
+# else
+                status = SIXEL_GD_ERROR;
+                goto gif_end;
+# endif
+            }
+
+            status = sixel_frame_new(&frame, pchunk->allocator);
+            if (SIXEL_FAILED(status)) {
+                goto gif_end;
+            }
+
+            frame->width = gdImageSX(im);
+            frame->height = gdImageSY(im);
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            p = frame->pixels = sixel_allocator_malloc(
+                pchunk->allocator,
+                (size_t)(frame->width * frame->height * 3));
+            if (frame->pixels == NULL) {
+                sixel_helper_set_additional_message(
+                    "load_with_gd: sixel_allocator_malloc() failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                sixel_frame_unref(frame);
+                frame = NULL;
+                goto gif_end;
+            }
+            for (y = 0; y < frame->height; y++) {
+                for (x = 0; x < frame->width; x++) {
+                    c = gdImageTrueColorPixel(im, x, y);
+                    *p++ = gdTrueColorGetRed(c);
+                    *p++ = gdTrueColorGetGreen(c);
+                    *p++ = gdTrueColorGetBlue(c);
+                }
+            }
+
+            if (delays) {
+                frame->delay.tv_sec = delays[i] / 100;
+                frame->delay.tv_nsec = (delays[i] % 100) * 10000000L;
+            }
+
+            status = fn_load(frame, context);
+            frame = NULL;
+            gdImageDestroy(im);
+            ims[i] = NULL;
+            if (SIXEL_FAILED(status)) {
+                goto gif_end;
+            }
+        }
+
+        status = SIXEL_OK;
+
+gif_end:
+        if (delays) {
+            gdFree(delays);
+        }
+        if (ims) {
+            for (i = 0; i < frames; i++) {
+                if (ims[i]) {
+                    gdImageDestroy(ims[i]);
+                }
+            }
+            gdFree(ims);
+        }
+        goto end;
+#else
+        status = SIXEL_GD_ERROR;
+        goto end;
+#endif
+    }
+
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    switch (detect_file_format(pchunk->size, pchunk->buffer)) {
-#if 0
-# if HAVE_DECL_GDIMAGECREATEFROMGIFPTR
-        case SIXEL_FORMAT_GIF:
-            im = gdImageCreateFromGifPtr(pchunk->size, pchunk->buffer);
-            break;
-# endif  /* HAVE_DECL_GDIMAGECREATEFROMGIFPTR */
-#endif
+    switch (format) {
 #if HAVE_DECL_GDIMAGECREATEFROMPNGPTR
         case SIXEL_FORMAT_PNG:
             im = gdImageCreateFromPngPtr(pchunk->size, pchunk->buffer);
