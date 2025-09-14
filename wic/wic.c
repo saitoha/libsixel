@@ -1136,6 +1136,7 @@ SixelFactory_LockServer(
 }
 
 static IClassFactoryVtbl SixelFactory_Vtbl = {
+    /* IUnknown */
     SixelFactory_QueryInterface,
     SixelFactory_AddRef,
     SixelFactory_Release,
@@ -1143,60 +1144,6 @@ static IClassFactoryVtbl SixelFactory_Vtbl = {
     SixelFactory_CreateInstance,
     SixelFactory_LockServer
 };
-
-/* DLL exports */
-__declspec(dllexport)
-STDAPI
-DllGetClassObject(
-    REFCLSID   rclsid,
-    REFIID     riid,
-    void     **ppv
-)
-{
-    SixelFactory *factory;
-    HRESULT hr = E_FAIL;
-
-    if (ppv == NULL) {
-        return E_POINTER;
-    }
-    *ppv = NULL;
-
-    if (IsEqualCLSID(rclsid, &CLSID_SixelDecoder)) {
-        factory = (SixelFactory*)CoTaskMemAlloc(sizeof(SixelFactory));
-        if (factory == NULL) {
-            return E_OUTOFMEMORY;
-        }
-
-        factory->lpVtbl = &SixelFactory_Vtbl;
-        factory->ref = 1;
-        hr = SixelFactory_QueryInterface((IClassFactory*)factory, riid, ppv);
-        SixelFactory_Release((IClassFactory*)factory);
-
-        return hr;
-    }
-
-    return CLASS_E_CLASSNOTAVAILABLE;
-}
-
-__declspec(dllexport)
-STDAPI
-DllCanUnloadNow(void)
-{
-    return g_serverLocks == 0 ? S_OK: S_FALSE;
-}
-
-BOOL APIENTRY
-DllMain(
-    HINSTANCE h,
-    DWORD r,
-    LPVOID
-)
-{
-    if (r == DLL_PROCESS_ATTACH) {
-        DisableThreadLibraryCalls(h);
-    }
-    return TRUE;
-}
 
 /* Registry helpers & Register/Unregister */
 static HRESULT
@@ -1216,7 +1163,12 @@ RegisterStringValue(
         return HRESULT_FROM_WIN32(r);
     }
 
-    r = RegSetValueExW(h, name, 0, REG_SZ, (const BYTE*)value, (DWORD)((wcslen(value) + 1) * sizeof(wchar_t)));
+    r = RegSetValueExW(h,
+                       name,
+                       0,
+                       REG_SZ,
+                       (const BYTE*)value,
+                       (DWORD)((wcslen(value) + 1) * sizeof(wchar_t)));
 
     RegCloseKey(h);
 
@@ -1337,6 +1289,7 @@ RegisterCodecKeysInCLSID(const wchar_t* clsidStr, const wchar_t* modulePath)
     }
 }
 
+/* DLL exports */
 __declspec(dllexport)
 STDAPI
 DllRegisterServer(void) {
@@ -1396,6 +1349,63 @@ DllUnregisterServer(void)
 
     return S_OK;
 }
+
+__declspec(dllexport)
+STDAPI
+DllGetClassObject(
+    REFCLSID   rclsid,
+    REFIID     riid,
+    void     **ppv
+)
+{
+    SixelFactory *factory;
+    HRESULT hr = E_FAIL;
+
+    if (ppv == NULL) {
+        return E_POINTER;
+    }
+    *ppv = NULL;
+
+    if (IsEqualCLSID(rclsid, &CLSID_SixelDecoder)) {
+        factory = (SixelFactory*)CoTaskMemAlloc(sizeof(SixelFactory));
+        if (factory == NULL) {
+            return E_OUTOFMEMORY;
+        }
+
+        factory->lpVtbl = &SixelFactory_Vtbl;
+        factory->ref = 1;
+        hr = SixelFactory_QueryInterface((IClassFactory*)factory, riid, ppv);
+        SixelFactory_Release((IClassFactory*)factory);
+
+        return hr;
+    }
+
+    return CLASS_E_CLASSNOTAVAILABLE;
+}
+
+__declspec(dllexport)
+STDAPI
+DllCanUnloadNow(void)
+{
+    return g_serverLocks == 0 ? S_OK: S_FALSE;
+}
+
+BOOL WINAPI
+DllMain(
+    HINSTANCE hinstDLL,  /* handle to DLL module */
+    DWORD fdwReason,     /* reason for calling function */
+    LPVOID lpvReserved   /* reserved */
+)
+{
+    (void) lpvReserved;
+
+    if (fdwReason == DLL_PROCESS_ATTACH) {
+        DisableThreadLibraryCalls(hinstDLL);
+    }
+
+    return TRUE;
+}
+
 /* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */
