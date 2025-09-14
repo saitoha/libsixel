@@ -94,10 +94,9 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
 	$(top_srcdir)/m4/ax_gcc_func_attribute.m4 \
 	$(top_srcdir)/m4/ax_gcc_var_attribute.m4 \
-	$(top_srcdir)/m4/ax_ruby_ext.m4 $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
+	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
+	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
@@ -137,7 +136,6 @@ am__DEPENDENCIES_1 =
 libwicsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_libwicsixel_la_OBJECTS = libwicsixel_la-wic.lo \
-	libwicsixel_la-wic_stub.lo \
 	$(top_builddir)/src/libwicsixel_la-fromsixel.lo \
 	$(top_builddir)/src/libwicsixel_la-allocator.lo \
 	$(top_builddir)/src/libwicsixel_la-status.lo
@@ -169,8 +167,7 @@ am__depfiles_remade =  \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo \
-	./$(DEPDIR)/libwicsixel_la-wic.Plo \
-	./$(DEPDIR)/libwicsixel_la-wic_stub.Plo
+	./$(DEPDIR)/libwicsixel_la-wic.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -222,9 +219,6 @@ AMTAR = @AMTAR@
 AM_CFLAGS = @AM_CFLAGS@
 AM_CPPFLAGS = @AM_CPPFLAGS@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
-APPLE_QUICKLOOK_EXTENSION_LIBS = @APPLE_QUICKLOOK_EXTENSION_LIBS@
-APPLE_QUICKLOOK_OBJCFLAGS = @APPLE_QUICKLOOK_OBJCFLAGS@
-APPLE_QUICKLOOK_REGISTER_LIBS = @APPLE_QUICKLOOK_REGISTER_LIBS@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -287,9 +281,6 @@ MD5SUM = @MD5SUM@
 MKDIR_P = @MKDIR_P@
 NM = @NM@
 NMEDIT = @NMEDIT@
-OBJC = @OBJC@
-OBJCDEPMODE = @OBJCDEPMODE@
-OBJCFLAGS = @OBJCFLAGS@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 OTOOL = @OTOOL@
@@ -313,14 +304,6 @@ PYTHON_PREFIX = @PYTHON_PREFIX@
 PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
 REQUIRES_PRIVATE = @REQUIRES_PRIVATE@
-RUBY = @RUBY@
-RUBY_EXT_CPPFLAGS = @RUBY_EXT_CPPFLAGS@
-RUBY_EXT_DLEXT = @RUBY_EXT_DLEXT@
-RUBY_EXT_INC = @RUBY_EXT_INC@
-RUBY_EXT_LDFLAGS = @RUBY_EXT_LDFLAGS@
-RUBY_EXT_LIB = @RUBY_EXT_LIB@
-RUBY_SITE_LIBDIR = @RUBY_SITE_LIBDIR@
-RUBY_VERSION = @RUBY_VERSION@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -339,7 +322,6 @@ abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
-ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -400,7 +382,6 @@ zshcompletiondir = @zshcompletiondir@
 CLEANFILES = *.o *.obj
 pkglib_LTLIBRARIES = libwicsixel.la
 libwicsixel_la_SOURCES = $(srcdir)/wic.c \
-                         $(srcdir)/wic_stub.c \
                          $(top_builddir)/src/fromsixel.c \
                          $(top_builddir)/src/allocator.c \
                          $(top_builddir)/src/status.c
@@ -510,7 +491,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libwicsixel_la-wic.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libwicsixel_la-wic_stub.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -548,13 +528,6 @@ libwicsixel_la-wic.lo: wic.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='wic.c' object='libwicsixel_la-wic.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o libwicsixel_la-wic.lo `test -f 'wic.c' || echo '$(srcdir)/'`wic.c
-
-libwicsixel_la-wic_stub.lo: wic_stub.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -MT libwicsixel_la-wic_stub.lo -MD -MP -MF $(DEPDIR)/libwicsixel_la-wic_stub.Tpo -c -o libwicsixel_la-wic_stub.lo `test -f 'wic_stub.c' || echo '$(srcdir)/'`wic_stub.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libwicsixel_la-wic_stub.Tpo $(DEPDIR)/libwicsixel_la-wic_stub.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='wic_stub.c' object='libwicsixel_la-wic_stub.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o libwicsixel_la-wic_stub.lo `test -f 'wic_stub.c' || echo '$(srcdir)/'`wic_stub.c
 
 $(top_builddir)/src/libwicsixel_la-fromsixel.lo: $(top_builddir)/src/fromsixel.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libwicsixel_la-fromsixel.lo -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Tpo -c -o $(top_builddir)/src/libwicsixel_la-fromsixel.lo `test -f '$(top_builddir)/src/fromsixel.c' || echo '$(srcdir)/'`$(top_builddir)/src/fromsixel.c
@@ -719,7 +692,6 @@ distclean: distclean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo
 	-rm -f ./$(DEPDIR)/libwicsixel_la-wic.Plo
-	-rm -f ./$(DEPDIR)/libwicsixel_la-wic_stub.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -770,7 +742,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo
 	-rm -f ./$(DEPDIR)/libwicsixel_la-wic.Plo
-	-rm -f ./$(DEPDIR)/libwicsixel_la-wic_stub.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -787,9 +758,10 @@ ps: ps-am
 
 ps-am:
 
-@REGISTER_DLL_FALSE@uninstall-am: uninstall-pkglibLTLIBRARIES
-
-.MAKE: install-am install-exec-am install-strip
+uninstall-am: uninstall-pkglibLTLIBRARIES
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
+.MAKE: install-am install-exec-am install-strip uninstall-am
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am clean \
 	clean-generic clean-libtool clean-pkglibLTLIBRARIES \
@@ -804,26 +776,21 @@ ps-am:
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am \
+	tags tags-am uninstall uninstall-am uninstall-hook \
 	uninstall-pkglibLTLIBRARIES
 
 .PRECIOUS: Makefile
 
 
-@REGISTER_DLL_TRUE@install-exec-hook:
-@REGISTER_DLL_TRUE@	$(LIBTOOL) --mode=execute \
-@REGISTER_DLL_TRUE@	    $(REGSVR32) -s \
-@REGISTER_DLL_TRUE@	    "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
-@REGISTER_DLL_FALSE@install-exec-hook:
+install-exec-hook:
+	$(LIBTOOL) --mode=execute \
+	  $(REGSVR32) -s \
+	  "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
 
-@REGISTER_DLL_TRUE@.PHONY: preuninstall
-@REGISTER_DLL_TRUE@uninstall-am: preuninstall
-@REGISTER_DLL_TRUE@	$(MAKE) uninstall-pkglibLTLIBRARIES
-
-@REGISTER_DLL_TRUE@preuninstall:
-@REGISTER_DLL_TRUE@	$(LIBTOOL) --mode=execute \
-@REGISTER_DLL_TRUE@	    $(REGSVR32) -u -s \
-@REGISTER_DLL_TRUE@	    "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
+uninstall-hook:
+	$(LIBTOOL) --mode=execute \
+	  $(REGSVR32) -u -s \
+	  "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
