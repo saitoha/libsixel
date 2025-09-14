@@ -1350,7 +1350,11 @@ DllUnregisterServer(void)
     return S_OK;
 }
 
+#if defined(_MSC_VER)
+_Check_return_
+#else
 __declspec(dllexport)
+#endif
 STDAPI
 DllGetClassObject(
     REFCLSID   rclsid,
@@ -1383,7 +1387,11 @@ DllGetClassObject(
     return CLASS_E_CLASSNOTAVAILABLE;
 }
 
+#if defined(_MSC_VER)
+__control_entrypoint(DllExport)
+#else
 __declspec(dllexport)
+#endif
 STDAPI
 DllCanUnloadNow(void)
 {
