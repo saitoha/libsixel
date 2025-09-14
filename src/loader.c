@@ -1618,25 +1618,27 @@ load_with_wic(
     void                      /* in/out */ *context      /* private data for callback */
 )
 {
-    HRESULT hr = E_FAIL;
-    SIXELSTATUS status = SIXEL_FALSE;
+    HRESULT                 hr = E_FAIL;
+    SIXELSTATUS             status = SIXEL_FALSE;
     IWICImagingFactory     *factory  = NULL;
     IWICStream             *stream   = NULL;
     IWICBitmapDecoder      *decoder  = NULL;
     IWICBitmapFrameDecode  *wicframe = NULL;
     IWICFormatConverter    *conv     = NULL;
     IWICBitmapSource       *src      = NULL;
-    sixel_frame_t *frame = NULL;
-    int comp = 4;
+    IWICPalette            *wicpalette = NULL;
+    WICColor               *wiccolors  = NULL;
+    UINT                    ncolors    = 0;
+    sixel_frame_t          *frame = NULL;
+    int                     comp = 4;
+    UINT                    actual = 0;
+    UINT                    i;
+    WICColor                c;
 
     (void) fstatic;
     (void) reqcolors;
     (void) bgcolor;
     (void) loop_control;
-
-    if (fuse_palette) {
-        return status;
-    }
 
     if (memcmp("GIF", pchunk->buffer, 3) == 0) {
         return status;
@@ -1645,7 +1647,7 @@ load_with_wic(
     hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
     if (FAILED(hr) && hr != RPC_E_CHANGED_MODE) {
         return status;
-	}
+    }
 
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
@@ -1655,46 +1657,119 @@ load_with_wic(
     hr = CoCreateInstance(&CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER,
                           &IID_IWICImagingFactory, (void**)&factory);
     if (FAILED(hr)) {
-		goto end;
-	}
+        goto end;
+    }
 
     hr = factory->lpVtbl->CreateStream(factory, &stream);
     if (FAILED(hr)) {
-		goto end;
-	}
+        goto end;
+    }
 
-    hr = stream->lpVtbl->InitializeFromMemory(
-        stream, (BYTE*)pchunk->buffer, (DWORD)pchunk->size);
+    hr = stream->lpVtbl->InitializeFromMemory(stream,
+                                              (BYTE*)pchunk->buffer,
+                                              (DWORD)pchunk->size);
     if (FAILED(hr)) {
-		goto end;
-	}
+        goto end;
+    }
 
-    hr = factory->lpVtbl->CreateDecoderFromStream(
-				    factory, (IStream*)stream, NULL,
-                    WICDecodeMetadataCacheOnDemand, &decoder);
+    hr = factory->lpVtbl->CreateDecoderFromStream(factory,
+                                                  (IStream*)stream,
+                                                  NULL,
+                                                  WICDecodeMetadataCacheOnDemand,
+                                                  &decoder);
     if (FAILED(hr)) {
-		goto end;
-	}
+        goto end;
+    }
 
     hr = decoder->lpVtbl->GetFrame(decoder, 0, &wicframe);
     if (FAILED(hr)) {
-		goto end;
-	}
+        goto end;
+    }
 
-    hr = factory->lpVtbl->CreateFormatConverter(factory, &conv);
-    if (FAILED(hr)) {
-		goto end;
-	}
+    if (fuse_palette) {
+        hr = factory->lpVtbl->CreatePalette(factory, &wicpalette);
+        if (SUCCEEDED(hr)) {
+            hr = wicframe->lpVtbl->CopyPalette(wicframe, wicpalette);
+        }
+        if (SUCCEEDED(hr)) {
+            hr = wicpalette->lpVtbl->GetColorCount(wicpalette, &ncolors);
+        }
+        if (SUCCEEDED(hr) && ncolors > 0 && ncolors <= 256) {
+            hr = factory->lpVtbl->CreateFormatConverter(factory, &conv);
+            if (SUCCEEDED(hr)) {
+                hr = conv->lpVtbl->Initialize(conv,
+                                              (IWICBitmapSource*)wicframe,
+                                              &GUID_WICPixelFormat8bppIndexed,
+                                              WICBitmapDitherTypeNone,
+                                              wicpalette,
+                                              0.0,
+                                              WICBitmapPaletteTypeCustom);
+            }
+            if (SUCCEEDED(hr)) {
+                src = (IWICBitmapSource*)conv;
+                comp = 1;
+                frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
+                frame->palette = sixel_allocator_malloc(
+                    pchunk->allocator,
+                    (size_t)ncolors * 3);
+                if (frame->palette == NULL) {
+                    hr = E_OUTOFMEMORY;
+                } else {
+                    wiccolors = (WICColor *)sixel_allocator_malloc(
+                        pchunk->allocator,
+                        (size_t)ncolors * sizeof(WICColor));
+                    if (wiccolors == NULL) {
+                        hr = E_OUTOFMEMORY;
+                    } else {
+                        actual = 0;
+                        hr = wicpalette->lpVtbl->GetColors(
+                            wicpalette, ncolors, wiccolors, &actual);
+                        if (SUCCEEDED(hr) && actual == ncolors) {
+                            for (i = 0; i < ncolors; ++i) {
+                                c = wiccolors[i];
+                                frame->palette[i * 3 + 0] = (unsigned char)((c >> 16) & 0xFF);
+                                frame->palette[i * 3 + 1] = (unsigned char)((c >> 8) & 0xFF);
+                                frame->palette[i * 3 + 2] = (unsigned char)(c & 0xFF);
+                            }
+                            frame->ncolors = (int)ncolors;
+                        } else {
+                            hr = E_FAIL;
+                        }
+                    }
+                }
+            }
+            if (FAILED(hr)) {
+                if (conv) {
+                    conv->lpVtbl->Release(conv);
+                    conv = NULL;
+                }
+                sixel_allocator_free(pchunk->allocator, frame->palette);
+                frame->palette = NULL;
+                sixel_allocator_free(pchunk->allocator, wiccolors);
+                wiccolors = NULL;
+                src = NULL;
+            }
+        }
+    }
 
-    hr = conv->lpVtbl->Initialize(conv, (IWICBitmapSource*)wicframe,
-                                  &GUID_WICPixelFormat32bppRGBA,
-                                  WICBitmapDitherTypeNone, NULL, 0.0,
-                                  WICBitmapPaletteTypeCustom);
-    if (FAILED(hr)) {
-		goto end;
-	}
+    if (src == NULL) {
+        hr = factory->lpVtbl->CreateFormatConverter(factory, &conv);
+        if (FAILED(hr)) {
+                goto end;
+        }
 
-    src = (IWICBitmapSource*)conv;
+        hr = conv->lpVtbl->Initialize(conv, (IWICBitmapSource*)wicframe,
+                                      &GUID_WICPixelFormat32bppRGBA,
+                                      WICBitmapDitherTypeNone, NULL, 0.0,
+                                      WICBitmapPaletteTypeCustom);
+        if (FAILED(hr)) {
+                goto end;
+        }
+
+        src = (IWICBitmapSource*)conv;
+        comp = 4;
+        frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    }
 
     hr = src->lpVtbl->GetSize(
         src, (UINT *)&frame->width, (UINT *)&frame->height);
@@ -1728,7 +1803,6 @@ load_with_wic(
         goto end;
     }
 
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
     frame->pixels = sixel_allocator_malloc(
         pchunk->allocator,
         (size_t)(frame->height * frame->width * comp));
@@ -1753,6 +1827,12 @@ end:
     if (conv) {
          conv->lpVtbl->Release(conv);
     }
+    if (wicpalette) {
+         wicpalette->lpVtbl->Release(wicpalette);
+    }
+    if (wiccolors) {
+         sixel_allocator_free(pchunk->allocator, wiccolors);
+    }
     if (wicframe) {
          wicframe->lpVtbl->Release(wicframe);
     }
@@ -1762,6 +1842,7 @@ end:
     if (factory) {
          factory->lpVtbl->Release(factory);
     }
+    sixel_frame_unref(frame);
 
     CoUninitialize();
 

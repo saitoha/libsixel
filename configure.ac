@@ -1024,7 +1024,8 @@ fi
 AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch -c aclocal.m4 Makefile.in configure config.h.in \
                    converters/Makefile.in include/Makefile.in \
-                   python/Makefile.in src/Makefile.in tools/Makefile.in
+                   python/Makefile.in src/Makefile.in tools/Makefile.in \
+                   wic/Makefile.in
           ])
 LS_UPDATE_TIMESTAMP
 
@@ -1045,6 +1046,7 @@ AC_CONFIG_FILES([Makefile
                  tools/Makefile
                  tools/libsixel-config
                  python/Makefile
+                 wic/Makefile
                 ])
 
 AC_OUTPUT
