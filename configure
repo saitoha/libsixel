@@ -20088,7 +20088,8 @@ fi
 
           touch -c aclocal.m4 Makefile.in configure config.h.in \
                    converters/Makefile.in include/Makefile.in \
-                   python/Makefile.in src/Makefile.in tools/Makefile.in
+                   python/Makefile.in src/Makefile.in tools/Makefile.in \
+                   wic/Makefile.in
 
 
  if test x$have_curl = xyes; then
@@ -20140,7 +20141,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile tools/Makefile tools/libsixel-config python/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile tools/Makefile tools/libsixel-config python/Makefile wic/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -21236,6 +21237,7 @@ do
     "tools/Makefile") CONFIG_FILES="$CONFIG_FILES tools/Makefile" ;;
     "tools/libsixel-config") CONFIG_FILES="$CONFIG_FILES tools/libsixel-config" ;;
     "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
+    "wic/Makefile") CONFIG_FILES="$CONFIG_FILES wic/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: '$ac_config_target'" "$LINENO" 5;;
   esac
