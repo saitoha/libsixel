@@ -1332,7 +1332,8 @@ sixel_quant_apply_palette(
     sixel_allocator_t /* in */  *allocator)
 {
     typedef int component_t;
-    const int max_depth = 4;
+    enum { max_depth = 4 };
+    unsigned char copy[max_depth];
     SIXELSTATUS status = SIXEL_FALSE;
     int pos, n, x, y, sum1, sum2;
     component_t offset;
@@ -1452,7 +1453,6 @@ sixel_quant_apply_palette(
         if (f_mask) {
             for (y = 0; y < height; ++y) {
                 for (x = 0; x < width; ++x) {
-                    unsigned char copy[max_depth];
                     int d;
                     int val;
 
@@ -1504,7 +1504,6 @@ sixel_quant_apply_palette(
         if (f_mask) {
             for (y = 0; y < height; ++y) {
                 for (x = 0; x < width; ++x) {
-                    unsigned char copy[max_depth];
                     int d;
                     int val;
 

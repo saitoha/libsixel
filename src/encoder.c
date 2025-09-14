@@ -65,10 +65,29 @@
 #include "encoder.h"
 #include "rgblookup.h"
 
-
 #if defined(_WIN32)
 
 # include <windows.h>
+# if defined(_MSC_VER)
+#   include <time.h>
+# endif
+
+/* for msvc */
+# ifndef STDIN_FILENO
+#  define STDIN_FILENO 0
+# endif
+# ifndef STDOUT_FILENO
+#  define STDOUT_FILENO 1
+# endif
+# ifndef STDERR_FILENO
+#  define STDERR_FILENO 2
+# endif
+# ifndef S_IRUSR
+#  define S_IRUSR _S_IREAD
+# endif
+# ifndef S_IWUSR
+#  define S_IWUSR _S_IWRITE
+# endif
 
 typedef long clock_win_t;
 # if defined(CLOCKS_PER_SEC)
