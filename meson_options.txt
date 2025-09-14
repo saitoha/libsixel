@@ -26,6 +26,7 @@ option('gdk_pixbuf2', type: 'feature', value: 'disabled', description: 'Use gdk-
 option('gd', type: 'feature', value: 'disabled', description: 'Use GD image library')
 option('coregraphics', type: 'feature', value: 'auto', description: 'Use CoreGraphics framework')
 option('wic', type: 'feature', value: 'auto', description: 'Use Windows Imaging Component')
+option('wiccodec', type: 'feature', value: 'auto', description: 'Build WIC codec DLL')
 option('winhttp', type: 'feature', value: 'auto', description: 'Use WinHTTP library')
 option('winpthread', type: 'feature', value: 'disabled', description: 'Link with winpthread')
 option('bashcompletiondir', type: 'string', value: '', description: 'Directory for bash completion files')
