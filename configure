@@ -657,6 +657,8 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 HAVE_PYTHON_FALSE
 HAVE_PYTHON_TRUE
+HAVE_WICCODEC_FALSE
+HAVE_WICCODEC_TRUE
 HAVE_WIC_FALSE
 HAVE_WIC_TRUE
 HAVE_PNG_FALSE
@@ -678,8 +680,6 @@ PYTHON_VERSION
 PYTHON
 WICCODEC_LIBS
 WICCODEC_CFLAGS
-HAVE_WICCODEC_FALSE
-HAVE_WICCODEC_TRUE
 LIBS_PRIVATE
 REQUIRES_PRIVATE
 WIC_LIBS
@@ -19838,14 +19838,6 @@ done
             CFLAGS=$CFLAGS_BACKUP
             LIBS=$CFLAGS_LIBS
         fi
-         if test x$have_wiccodec = xyes; then
-  HAVE_WICCODEC_TRUE=
-  HAVE_WICCODEC_FALSE='#'
-else
-  HAVE_WICCODEC_TRUE='#'
-  HAVE_WICCODEC_FALSE=
-fi
-
         ;;
       *)
         if test "x${enable_wiccodec}" = xyes; then
@@ -20349,6 +20341,14 @@ else
   HAVE_WIC_FALSE=
 fi
 
+ if test x$have_wiccodec = xyes; then
+  HAVE_WICCODEC_TRUE=
+  HAVE_WICCODEC_FALSE='#'
+else
+  HAVE_WICCODEC_TRUE='#'
+  HAVE_WICCODEC_FALSE=
+fi
+
  if test x$have_python = xyes; then
   HAVE_PYTHON_TRUE=
   HAVE_PYTHON_FALSE='#'
@@ -20538,10 +20538,6 @@ if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${HAVE_WICCODEC_TRUE}" && test -z "${HAVE_WICCODEC_FALSE}"; then
-  as_fn_error $? "conditional \"HAVE_WICCODEC\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
 if test -z "${HAVE_CURL_TRUE}" && test -z "${HAVE_CURL_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_CURL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -20560,6 +20556,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_WIC_TRUE}" && test -z "${HAVE_WIC_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_WIC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_WICCODEC_TRUE}" && test -z "${HAVE_WICCODEC_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_WICCODEC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_PYTHON_TRUE}" && test -z "${HAVE_PYTHON_FALSE}"; then
