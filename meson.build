@@ -61,6 +61,7 @@ loaders = ['stb_image']
 net = []
 have_winpthread = false
 have_python = false
+have_wic = false
 
 cc = meson.get_compiler('c')
 cpu = host_machine.cpu_family()
@@ -280,6 +281,7 @@ if host_system == 'windows'
       deps += [ole32, windowscodecs]
       link_libs += [ole32, windowscodecs]
       loaders += 'wic'
+      have_wic = true
     elif wic_opt.enabled()
       error('WIC support requested, but required headers or libraries were not found')
     endif
@@ -445,6 +447,9 @@ endif
 subdir('include')
 subdir('src')
 subdir('converters')
+if have_wic
+  subdir('wic')
+endif
 if have_python
   subdir('python')
 endif
