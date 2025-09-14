@@ -26,6 +26,9 @@ case "$CC" in
   *cl*|*clang-cl*)
     using_cl=yes
     CFLAGS=`echo "$CFLAGS" | sed s/-g//g`
+    CFLAGS="$CFLAGS -O2"
+    LDFLAGS="$LDFLAGS -DEBUG"
+    PKG_CONFIG=
     ;;
   *)
     using_cl=no
@@ -397,9 +400,6 @@ AC_TYPE_UINT32_T
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 
-AC_CHECK_FUNC([memset], [],
-              [AC_MSG_ERROR(memset is not available.)])
-
 AC_CHECK_FUNC([getopt_long],
               [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])
                have_getopt_long=1],
@@ -407,10 +407,18 @@ AC_CHECK_FUNC([getopt_long],
                              [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
                              [])])
 
-AC_CHECK_FUNCS([memcpy \
-                memmove \
-                memset \
-                setmode \
+if test "x$using_cl" = "xyes"; then
+    AC_DEFINE([HAVE_MEMCPY], [1])
+    AC_DEFINE([HAVE_MEMMOVE], [1])
+    AC_DEFINE([HAVE_MEMSET], [1])
+else
+    AC_CHECK_FUNCS([memcpy \
+                    memmove \
+                    memset \
+                   ])
+fi
+
+AC_CHECK_FUNCS([setmode \
                 _setmode \
                 signal \
                 strdup \
@@ -515,7 +523,7 @@ fi
 AC_SUBST(COREGRAPHICS_CFLAGS)
 AC_SUBST(COREGRAPHICS_LIBS)
 
-if test x$with_gd != xno; then
+if test x$with_gd != xno && test "x$using_cl" != "xyes"; then
     AC_MSG_NOTICE([checking for GD])
     CFLAGS_BACKUP=$CFLAGS
     LDFLAGS_BACKUP=$LDFLAGS
@@ -616,7 +624,7 @@ fi
 AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
 
-if test x$with_libcurl != xno; then
+if test x$with_libcurl != xno && test "x$using_cl" != "xyes"; then
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for libcurl])
         CFLAGS_BACKUP=$CFLAGS
@@ -688,7 +696,7 @@ if test x$with_winhttp != xno; then
             fi
             if test "x${using_cl}" = xyes; then
                 ADDED_CFLAGS="-I${with_winhttp}\include"
-                ADDED_LIBS="winhttp.lib"
+                ADDED_LIBS="-lwinhttp"
             else
                 ADDED_CFLAGS="-I${with_winhttp}/include"
                 ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
@@ -696,8 +704,8 @@ if test x$with_winhttp != xno; then
         else
             if test x${prefix} != x -a x${prefix} != xNONE; then
                 if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS="-I${prefix}\include"
-                    ADDED_LIBS="winhttp.lib"
+                    ADDED_CFLAGS=
+                    ADDED_LIBS="-lwinhttp"
                 else
                     ADDED_CFLAGS="-I${prefix}/include"
                     ADDED_LIBS="-L${prefix}/lib -lwinhttp"
@@ -705,7 +713,7 @@ if test x$with_winhttp != xno; then
             else
                 if test "x${using_cl}" = xyes; then
                     ADDED_CFLAGS=
-                    ADDED_LIBS="winhttp.lib"
+                    ADDED_LIBS="-lwinhttp"
                 else
                     ADDED_CFLAGS="-I/usr/local/include"
                     ADDED_LIBS="-L/usr/local/lib -lwinhttp"
@@ -757,7 +765,7 @@ fi
 AC_SUBST(WINHTTP_CFLAGS)
 AC_SUBST(WINHTTP_LIBS)
 
-if test x$with_jpeg != xno; then
+if test x$with_jpeg != xno && test "x$using_cl" != "xyes"; then
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for jpeg])
         CFLAGS_BACKUP=$CFLAGS
@@ -814,7 +822,7 @@ fi
 AC_SUBST(LIBJPEG_CFLAGS)
 AC_SUBST(LIBJPEG_LIBS)
 
-if test x$with_png != xno; then
+if test x$with_png != xno && test "x$using_cl" != "xyes"; then
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for png])
         CFLAGS_BACKUP=$CFLAGS
@@ -877,7 +885,7 @@ fi
 AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBPNG_LIBS)
 
-if test x$with_winpthread != xno; then
+if test x$with_winpthread != xno && test "x$using_cl" != "xyes"; then
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for winpthread])
         AC_SEARCH_LIBS([nanosleep],
@@ -903,7 +911,7 @@ fi
 
 if test x$with_wic != xno; then
     case "$host_os" in
-    mingw* | cygwin* | msys*)
+    mingw* | cygwin* | msys* | msvc* )
         AC_MSG_NOTICE([checking for Windows Imaging Component (WIC)])
         CFLAGS_BACKUP="$CFLAGS"
         LIBS_BACKUP="$LIBS"
@@ -911,15 +919,30 @@ if test x$with_wic != xno; then
             if test ! -d "$with_wic"; then
                 AC_MSG_ERROR(["${with_wic}" is not directory])
             fi
-            ADDED_CFLAGS="-I${with_wic}/include"
-            ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
+            if test "x${using_cl}" = xyes; then
+                ADDED_CFLAGS="-I${with_wic}\include"
+                ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
+            else
+                ADDED_CFLAGS="-I${with_wic}/include"
+                ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
+            fi
         else
             if test x${prefix} != x -a x${prefix} != xNONE; then
-                ADDED_CFLAGS="-I${prefix}/include"
-                ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+                if test "x${using_cl}" = xyes; then
+                    ADDED_CFLAGS=
+                    ADDED_LIBS="-lole32 -lwindowscodecs"
+                else
+                    ADDED_CFLAGS="-I${prefix}/include"
+                    ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+                fi
             else
-                ADDED_CFLAGS="-I/usr/local/include"
-                ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+                if test "x${using_cl}" = xyes; then
+                    ADDED_CFLAGS=
+                    ADDED_LIBS="-lole32 -lwindowscodecs"
+                else
+                    ADDED_CFLAGS="-I/usr/local/include"
+                    ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+                fi
             fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
@@ -1041,21 +1064,36 @@ if test "x${enable_wiccodec}" = xno; then
     message_wiccodec=no
 else
     case "${host_os}" in
-      mingw*)
+      mingw* | msvc* )
         have_wiccodec=yes
         if test x${have_wic} = xyes; then
-            WICCODEC_CFLAGS="$WIC_CFLAGS"
-            WICCODEC_LIBS="$WIC_LIBS"
+            if test "x${using_cl}" = xyes; then
+                WICCODEC_CFLAGS="$WIC_CFLAGS"
+                WICCODEC_LIBS="$WIC_LIBS -ladvapi32 -luser32"
+            else
+                WICCODEC_CFLAGS="$WIC_CFLAGS"
+                WICCODEC_LIBS="$WIC_LIBS"
+            fi
         else
             AC_MSG_NOTICE([checking for Windows Imaging Component (WIC)])
             CFLAGS_BACKUP="$CFLAGS"
             LIBS_BACKUP="$LIBS"
             if test x${prefix} != x -a x${prefix} != xNONE; then
-                ADDED_CFLAGS="-I${prefix}/include"
-                ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+                if test "x${using_cl}" = xyes; then
+                    ADDED_CFLAGS=
+                    ADDED_LIBS="-lole32 -lwindowscodecs -ladvapi32 -luser32"
+                else
+                    ADDED_CFLAGS="-I${prefix}/include"
+                    ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+                fi
             else
-                ADDED_CFLAGS="-I/usr/local/include"
-                ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+                if test "x${using_cl}" = xyes; then
+                    ADDED_CFLAGS=
+                    ADDED_LIBS="-lole32 -lwindowscodecs -ladvapi32 -luser32"
+                else
+                    ADDED_CFLAGS="-I/usr/local/include"
+                    ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+                fi
             fi
             CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
             LIBS="${LIBS} ${ADDED_LIBS}"

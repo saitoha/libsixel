@@ -37,18 +37,16 @@
 #if HAVE_LIBPNG
 # include <png.h>
 #else
+# if !defined(HAVE_MEMCPY)
+#  define memcpy(d, s, n) (bcopy ((s), (d), (n)))
+# endif
+# if !defined(HAVE_MEMMOVE)
+#  define memmove(d, s, n) (bcopy ((s), (d), (n)))
+# endif
 # include "stb_image_write.h"
 #endif  /* HAVE_LIBPNG */
 
 #include <sixel.h>
-
-#if !defined(HAVE_MEMCPY)
-# define memcpy(d, s, n) (bcopy ((s), (d), (n)))
-#endif
-
-#if !defined(HAVE_MEMMOVE)
-# define memmove(d, s, n) (bcopy ((s), (d), (n)))
-#endif
 
 #if !defined(O_BINARY) && defined(_O_BINARY)
 # define O_BINARY _O_BINARY
