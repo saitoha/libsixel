@@ -186,8 +186,11 @@ AC_ARG_ENABLE([simd],
               [],
               [])
 
-AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
-
+AC_ARG_ENABLE([wiccodec],
+              [AS_HELP_STRING([--enable-wiccodec],
+                              [build WIC codec DLL (default: auto)])],
+              [],
+              [])
 
 AC_ARG_ENABLE([python],
               [AS_HELP_STRING([--enable-python],
@@ -1008,6 +1011,56 @@ if test "x$enable_simd" = xyes; then
     fi
 fi
 
+if test "x${enable_wiccodec}" = xno; then
+    message_wiccodec=no
+else
+    case "${host_os}" in
+      mingw*)
+        have_wiccodec=yes
+        if test x${have_wic} = xyes; then
+            WICCODEC_CFLAGS="$WIC_CFLAGS"
+            WICCODEC_LIBS="$WIC_LIBS"
+        else
+            AC_MSG_NOTICE([checking for Windows Imaging Component (WIC)])
+            CFLAGS_BACKUP="$CFLAGS"
+            LIBS_BACKUP="$LIBS"
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+            fi
+            CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+            LIBS="${LIBS} ${ADDED_LIBS}"
+            AC_CHECK_HEADERS([windows.h wincodec.h],
+                             [AC_CHECK_LIB([ole32],
+                                           [main],
+                                           [],
+                                           [have_wiccodec=no])
+                              AC_CHECK_LIB([windowscodecs],
+                                           [main],
+                                           [],
+                                           [have_wiccodec=no])],
+                             [have_wiccodec=no])
+            WICCODEC_CFLAGS="$ADDED_CFLAGS"
+            WICCODEC_LIBS="$ADDED_LIBS"
+            CFLAGS=CFLAGS_BACKUP
+            LIBS=CFLAGS_LIBS
+        fi
+        AM_CONDITIONAL([HAVE_WICCODEC], [test x$have_wiccodec = xyes])
+        ;;
+      *)
+        if test "x${enable_wiccodec}" = xyes; then
+            AC_MSG_ERROR([--enable-wiccodec option is available only MinGW target])
+        fi
+        message_wiccodec=no
+        ;;
+    esac
+fi
+AC_SUBST(WICCODEC_CFLAGS)
+AC_SUBST(WICCODEC_LIBS)
+
 have_python=no
 if test x$enable_python != xno; then
     AM_PATH_PYTHON([2.3], [have_python=yes], [have_python=no])
@@ -1061,7 +1114,7 @@ echo "       libwinpthread       : $have_winpthread"
 echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
-#echo "       WIC integration     : $have_wic"
+echo "       WIC codec           : $message_wiccodec"
 echo "       python bindings     : $message_python"
 echo "       simd                : $message_simd"
 echo "       gcov integration    : $enable_gcov"
