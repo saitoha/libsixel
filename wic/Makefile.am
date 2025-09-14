@@ -20,4 +20,14 @@ libwicsixel_la_CFLAGS = $(AM_CFLAGS)
 libwicsixel_la_LDFLAGS = -no-undefined -module -avoid-version
 libwicsixel_la_LIBADD = -lole32 -lwindowscodecs
 
+REGSVR32 = "$(shell cygpath $(SYSTEMROOT)/System32/regsvr32.exe)"
 
+install-exec-hook:
+	$(LIBTOOL) --mode=execute \
+	  $(REGSVR32) -s \
+	  "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
+
+uninstall-hook:
+	$(LIBTOOL) --mode=execute \
+	  $(REGSVR32) -u -s \
+	  "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
