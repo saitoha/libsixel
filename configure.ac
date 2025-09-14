@@ -567,6 +567,9 @@ if test x$with_gd != xno && test "x$using_cl" != "xyes"; then
                      [gdImageCreateFromGifPtr],
                      [AC_CHECK_DECLS([gdImageCreateFromGifPtr],   [], [], [ #include <gd.h> ])])
         AC_CHECK_LIB([gd],
+                     [gdImageCreateFromGifAnimPtr],
+                     [AC_CHECK_DECLS([gdImageCreateFromGifAnimPtr], [], [], [ #include <gd.h> ])])
+        AC_CHECK_LIB([gd],
                      [gdImageCreateFromPngPtr],
                      [AC_CHECK_DECLS([gdImageCreateFromPngPtr],   [], [], [ #include <gd.h> ])])
         AC_CHECK_LIB([gd],

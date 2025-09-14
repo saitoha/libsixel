@@ -296,6 +296,7 @@ if gd_dep.found()
     'gdImageCreateFromTiffPtr',
     'gdImageCreateFromGd2Ptr',
     'gdImagePaletteToTrueColor',
+    'gdImageCreateFromGifAnimPtr',
   ]
   foreach f : gd_funcs
     conf.set10('HAVE_DECL_' + f.to_upper(),
