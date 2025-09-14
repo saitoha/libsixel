@@ -1142,7 +1142,6 @@ else
             CFLAGS=$CFLAGS_BACKUP
             LIBS=$CFLAGS_LIBS
         fi
-        AM_CONDITIONAL([HAVE_WICCODEC], [test x$have_wiccodec = xyes])
         ;;
       *)
         if test "x${enable_wiccodec}" = xyes; then
@@ -1213,6 +1212,7 @@ AM_CONDITIONAL([HAVE_WINHTTP], [test x$have_wic = xyes])
 AM_CONDITIONAL([HAVE_JPEG], [test x$have_jpeg = xyes])
 AM_CONDITIONAL([HAVE_PNG], [test x$have_png = xyes])
 AM_CONDITIONAL([HAVE_WIC], [test x$have_wic = xyes])
+AM_CONDITIONAL([HAVE_WICCODEC], [test x$have_wiccodec = xyes])
 AM_CONDITIONAL([HAVE_PYTHON], [test x$have_python = xyes])
 
 AC_CONFIG_FILES([Makefile
