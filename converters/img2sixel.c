@@ -22,6 +22,7 @@
 
 #include "config.h"
 #include "malloc_stub.h"
+#include "getopt_stub.h"
 
 #include <stdio.h>
 #include <stdlib.h>
