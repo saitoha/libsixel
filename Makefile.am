@@ -2,7 +2,7 @@
 # @configure_input@
 #
 SUBDIRS = include src converters tools python
-if HAVE_WIC
+if HAVE_WICCODEC
 SUBDIRS += wic
 endif
 
