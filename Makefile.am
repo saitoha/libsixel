@@ -1,16 +1,8 @@
 #
 # @configure_input@
 #
-SUBDIRS = include src converters tools python
-if HAVE_RUBY
-SUBDIRS += ruby
-endif
-if HAVE_APPLE_QUICKLOOK_EXTENSION
-SUBDIRS += quicklook-extension
-endif
-if HAVE_WICCODEC
-SUBDIRS += wic
-endif
+SUBDIRS = include src converters tools python wic
+DIST_SUBDIRS = $(SUBDIRS)
 
 EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
 	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb depcomp
@@ -40,6 +32,14 @@ install-data-local:
 
 uninstall-local:
 	@:
+
+register:
+	-regsvr32 -s "$(shell cygpath -w $(builddir)/wic/.libs/libwicsixel.dll)"
+	@echo Registered: .libs/libwicsixel.dll
+
+unregister:
+	-regsvr32 -u -s "$(shell cygpath -w $(builddir)/wic/.libs/libwicsixel.dll)"
+	@echo Unregistered: .libs/libwicsixel.dll
 
 register:
 	-regsvr32 -s "$(shell cygpath -w $(builddir)/wic/.libs/libwicsixel.dll)"

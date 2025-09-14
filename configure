@@ -21476,7 +21476,7 @@ fi
           touch -c aclocal.m4 Makefile.in configure config.h.in \
                    converters/Makefile.in include/Makefile.in \
                    python/Makefile.in src/Makefile.in tools/Makefile.in \
-                   wic/Makefile.in quicklook-extension/Makefile.in
+                   wic/Makefile.in
 
 
  if test x$have_curl = xyes; then
@@ -21528,7 +21528,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile tools/Makefile tools/libsixel-config python/Makefile ruby/Makefile ruby/lib/libsixel/version_runtime.rb quicklook-extension/Makefile wic/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile tools/Makefile tools/libsixel-config python/Makefile wic/Makefile"
 
 
 # Generate Ruby constants file from include/sixel.h when Ruby is enabled
@@ -22665,15 +22665,7 @@ do
     "tools/Makefile") CONFIG_FILES="$CONFIG_FILES tools/Makefile" ;;
     "tools/libsixel-config") CONFIG_FILES="$CONFIG_FILES tools/libsixel-config" ;;
     "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
-    "ruby/Makefile") CONFIG_FILES="$CONFIG_FILES ruby/Makefile" ;;
-    "ruby/lib/libsixel/version_runtime.rb") CONFIG_FILES="$CONFIG_FILES ruby/lib/libsixel/version_runtime.rb" ;;
-    "quicklook-extension/Makefile") CONFIG_FILES="$CONFIG_FILES quicklook-extension/Makefile" ;;
     "wic/Makefile") CONFIG_FILES="$CONFIG_FILES wic/Makefile" ;;
-    "rubyconstants") CONFIG_COMMANDS="$CONFIG_COMMANDS rubyconstants" ;;
-    "quicklook-extension/generated-resources/Host-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Host-Info.plist:quicklook-extension/Resources/Host-Info.plist.in" ;;
-    "quicklook-extension/generated-resources/Preview-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Preview-Info.plist:quicklook-extension/Resources/Preview-Info.plist.in" ;;
-    "quicklook-extension/generated-resources/Thumbnail-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Thumbnail-Info.plist:quicklook-extension/Resources/Thumbnail-Info.plist.in" ;;
-    "quicklook-extension/generated-resources/Bridge-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Bridge-Info.plist:quicklook-extension/Resources/Bridge-Info.plist.in" ;;
 
   *) as_fn_error $? "invalid argument: '$ac_config_target'" "$LINENO" 5;;
   esac

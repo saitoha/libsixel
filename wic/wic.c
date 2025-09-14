@@ -18,29 +18,57 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#include "config.h"
-
-#include "wic_stub.h"
+#define _UNICODE
+#define UNICODE
+#define COBJMACROS
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <wincodec.h>
+#include <wincodecsdk.h>
+#include <initguid.h>
+#include <objbase.h>
 #include <strsafe.h>
-#include <stddef.h>
-#include <wchar.h>
-#include <limits.h>
-#include <string.h>
-#include <oleauto.h>
 
 #include <sixel.h>
 
-#define WIC_DISABLE_THUMBNAIL_CACHE 0
-#define WIC_PAL8_AS_DEFAULT_PIXELFORMAT 0
-
-#ifndef EXIF_COLORSPACE_SRGB
-# define EXIF_COLORSPACE_SRGB 1
-#endif
-#ifndef EXIF_COLORSPACE_UNCALIBRATED
-# define EXIF_COLORSPACE_UNCALIBRATED 0xFFFF
-#endif
-
 extern IMAGE_DOS_HEADER __ImageBase;
+
+/* custom malloc */
+void *
+wic_malloc(size_t size) {
+    return CoTaskMemAlloc(size);
+}
+
+/* custom realloc */
+void *
+wic_realloc(void* ptr, size_t new_size)
+{
+    return CoTaskMemRealloc(ptr, new_size);
+}
+
+/* custom calloc */
+void *
+wic_calloc(size_t count, size_t size)
+{
+    size_t total;
+    void *p;
+
+    total = count * size;
+    p = CoTaskMemAlloc(total);
+    if (p) {
+        memset(p, 0, total);
+    }
+    return p;
+}
+
+/* custom free */
+void
+wic_free(void* ptr)
+{
+    if (ptr) {
+        CoTaskMemFree(ptr);
+    }
+}
 
 /* CLSID */
 static const CLSID CLSID_SixelDecoder = {
@@ -50,6 +78,8 @@ static const CLSID CLSID_SixelDecoder = {
     0x4977,
     { 0x85, 0x71, 0xcf, 0x00, 0x58, 0x84, 0xbc, 0xb9 }
 };
+static wchar_t const CLSID_SixelDecoder_String[]
+    = L"{15B9B4DA-B155-4977-8571-CF005884BCB9}";
 
 /* ContainerFormat */
 static const GUID GUID_ContainerFormatSIXEL = {
@@ -59,1126 +89,64 @@ static const GUID GUID_ContainerFormatSIXEL = {
     0x4e0e,
     { 0x9d, 0x4c, 0x96, 0x53, 0x23, 0x64, 0x40, 0x1a }
 };
+static wchar_t const GUID_ContainerFormatSIXEL_String[]
+    = L"{5B2053A9-7A2E-4E0E-9D4C-96532364401A}";
 
-#define CLSIDSTR_SixelDecoder \
-    L"{15B9B4DA-B155-4977-8571-CF005884BCB9}"
-#define GUIDSTR_ContainerFormatSIXEL \
-    L"{5B2053A9-7A2E-4E0E-9D4C-96532364401A}"
-#define GUIDSTR_VendorSIXEL \
-    L"{0B0A6D1E-0C4F-42E9-BA37-1FF5636E9A55}"
-#define CATIDSTR_WICBitmapDecoders \
-    L"{7ED96837-96F0-4812-B211-F13C24117ED3}"
+/* VendorGUID */
+#if 0
+static const GUID GUID_VendorSIXEL = {
+    /* 0b0a6d1e-0c4f-42e9-ba37-1ff5636e9a55 */
+    0x0b0a6d1e,
+    0x0c4f,
+    0x42e9,
+    {0xba, 0x37, 0x1f, 0xf5, 0x63, 0x6e, 0x9a, 0x55}
+};
+#endif
+static wchar_t const GUID_VendorSIXEL_String[]
+    = L"{0B0A6D1E-0C4F-42E9-BA37-1FF5636E9A55}";
 
 /* GUID_WICPixelFormat32bppBGRA */
-#define GUIDSTR_WICPixelFormat32bppBGRA \
-    L"{6FDDC324-4E03-4BFE-B185-3D77768DC90F}"
+static wchar_t const GUID_WICPixelFormat32bppBGRA_String[]
+    = L"{6FDDC324-4E03-4BFE-B185-3D77768DC90F}";
 
-/* GUID_WICPixelFormat8bppIndexed */
-#define GUIDSTR_WICPixelFormat8bppIndexed \
-    L"{6FDDC324-4E03-4BFE-B185-3D77768DC904}"
-
-/* Windows Photo Viewer */
-#define CLSIDSTR_WindowsPhotoViewer \
-    L"{FFE2A43C-56B9-4bf5-9A79-CC6D4285608A}"
-
-/* Thumbnail Handler */
-#define IIDSTR_IThumbnailProvider \
-    L"{E357FCCD-A995-4576-B01F-234630154E96}"
-
-#define CLSIDSTR_PhotoThumbnailProvider \
-    L"{C7657C4A-9F68-40fa-A4DF-96BC08EB3551}"
-
-/* metadata object */
-typedef struct {
-    LONG ref;
-    UINT colorspace;
-    UINT orientation;
-} SixelMetadata;
-
-/* metadata names */
-static const WCHAR sixel_metadata_color_space_exif_name[] = L"/app1/ifd/exif:ColorSpace";
-static const WCHAR sixel_metadata_color_space_tag_name[] = L"/app1/ifd/{ushort=40961}";
-static const WCHAR sixel_metadata_orientation_exif_name[] = L"/app1/ifd/exif:Orientation";
-static const WCHAR sixel_metadata_orientation_tag_name[] = L"/app1/ifd/{ushort=274}";
-
-static SixelMetadata *
-SixelMetadata_Create(void)
+/* IID_IUnknown  {00000000-0000-0000-C000-000000000046} */
+const IID IID_IUnknown = 
 {
-    SixelMetadata *metadata;
-
-    metadata = (SixelMetadata*)CoTaskMemAlloc(sizeof(SixelMetadata));
-    if (metadata == NULL) {
-        return NULL;
-    }
-
-    metadata->ref = 1;
-    metadata->colorspace = EXIF_COLORSPACE_SRGB;
-    metadata->orientation = 0;
-
-    return metadata;
-}
-
-static void
-SixelMetadata_AddRef(SixelMetadata *metadata)
-{
-    if (metadata) {
-        InterlockedIncrement(&metadata->ref);
-    }
-}
-
-static void
-SixelMetadata_Release(SixelMetadata *metadata)
-{
-    if (metadata && InterlockedDecrement(&metadata->ref) == 0) {
-        CoTaskMemFree(metadata);
-    }
-}
-
-static UINT
-SixelMetadata_GetExifOrientation(const SixelMetadata *metadata)
-{
-    static const UINT orientation_map[] = { 1, 6, 3, 8, 2, 4 };
-
-    if (metadata && metadata->orientation < sizeof(orientation_map) / sizeof(orientation_map[0])) {
-        return orientation_map[metadata->orientation];
-    }
-
-    return orientation_map[0];
-}
-
-static BOOL
-SixelMetadata_SetOrientationFromExif(SixelMetadata *metadata, UINT exif_orientation)
-{
-    UINT orientation;
-
-    if (metadata == NULL) {
-        return FALSE;
-    }
-
-    switch (exif_orientation) {
-    case 1:
-        orientation = 0;
-        break;
-    case 6:
-        orientation = 1;
-        break;
-    case 3:
-        orientation = 2;
-        break;
-    case 8:
-        orientation = 3;
-        break;
-    case 2:
-        orientation = 4;
-        break;
-    case 4:
-        orientation = 5;
-        break;
-    default:
-        return FALSE;
-    }
-
-    metadata->orientation = orientation;
-
-    return TRUE;
-}
-
-static BOOL
-SixelMetadata_IsColorSpaceName(LPCWSTR name)
-{
-    if (name == NULL) {
-        return FALSE;
-    }
-
-    return lstrcmpW(name, sixel_metadata_color_space_exif_name) == 0
-        || lstrcmpW(name, sixel_metadata_color_space_tag_name) == 0;
-}
-
-static BOOL
-SixelMetadata_IsOrientationName(LPCWSTR name)
-{
-    if (name == NULL) {
-        return FALSE;
-    }
-
-    return lstrcmpW(name, sixel_metadata_orientation_exif_name) == 0
-        || lstrcmpW(name, sixel_metadata_orientation_tag_name) == 0;
-}
-
-static HRESULT
-SixelMetadata_ReadUInt(const PROPVARIANT *value, UINT *result)
-{
-    if (value == NULL || result == NULL) {
-        return E_INVALIDARG;
-    }
-
-    switch (value->vt) {
-    case VT_UI1:
-        *result = value->bVal;
-        return S_OK;
-    case VT_UI2:
-        *result = value->uiVal;
-        return S_OK;
-    case VT_UI4:
-        *result = value->ulVal;
-        return S_OK;
-    case VT_I1:
-        if (value->cVal < 0) {
-            return E_INVALIDARG;
-        }
-        *result = (UINT)value->cVal;
-        return S_OK;
-    case VT_I2:
-        if (value->iVal < 0) {
-            return E_INVALIDARG;
-        }
-        *result = (UINT)value->iVal;
-        return S_OK;
-    case VT_I4:
-        if (value->lVal < 0) {
-            return E_INVALIDARG;
-        }
-        *result = (UINT)value->lVal;
-        return S_OK;
-    default:
-        return WINCODEC_ERR_PROPERTYNOTSUPPORTED;
-    }
-}
-
-static HRESULT
-SixelMetadata_ApplyFromQueryReader(
-    SixelMetadata            *metadata,
-    IWICMetadataQueryReader  *reader)
-{
-    PROPVARIANT value;
-    HRESULT hr;
-
-    if (reader == NULL) {
-        return E_INVALIDARG;
-    }
-
-    PropVariantInit(&value);
-    hr = IWICMetadataQueryReader_GetMetadataByName(
-        reader,
-        sixel_metadata_color_space_exif_name,
-        &value);
-    if (hr == WINCODEC_ERR_PROPERTYNOTFOUND) {
-        hr = IWICMetadataQueryReader_GetMetadataByName(
-            reader,
-            sixel_metadata_color_space_tag_name,
-            &value);
-    }
-    if (SUCCEEDED(hr)) {
-        UINT numeric = 0;
-        HRESULT tmp = SixelMetadata_ReadUInt(&value, &numeric);
-        if (SUCCEEDED(tmp)) {
-            if (metadata) {
-                metadata->colorspace = numeric;
-            }
-        } else {
-            hr = tmp;
-        }
-    } else if (hr == WINCODEC_ERR_PROPERTYNOTFOUND) {
-        hr = S_OK;
-    }
-    PropVariantClear(&value);
-    if (FAILED(hr)) {
-        return hr;
-    }
-
-    PropVariantInit(&value);
-    hr = IWICMetadataQueryReader_GetMetadataByName(
-        reader,
-        sixel_metadata_orientation_exif_name,
-        &value);
-    if (hr == WINCODEC_ERR_PROPERTYNOTFOUND) {
-        hr = IWICMetadataQueryReader_GetMetadataByName(
-            reader,
-            sixel_metadata_orientation_tag_name,
-            &value);
-    }
-    if (SUCCEEDED(hr)) {
-        UINT numeric = 0;
-        HRESULT tmp = SixelMetadata_ReadUInt(&value, &numeric);
-        if (SUCCEEDED(tmp)) {
-            if (metadata) {
-                if (!SixelMetadata_SetOrientationFromExif(metadata, numeric)) {
-                    tmp = E_INVALIDARG;
-                }
-            }
-        }
-        if (FAILED(tmp)) {
-            hr = tmp;
-        }
-    } else if (hr == WINCODEC_ERR_PROPERTYNOTFOUND) {
-        hr = S_OK;
-    }
-    PropVariantClear(&value);
-
-    return hr;
-}
-
-typedef struct {
-    const IEnumStringVtbl *lpVtbl;
-    LONG ref;
-    UINT index;
-} SixelMetadataEnumString;
-
-typedef struct {
-    const IWICMetadataQueryReaderVtbl *lpReaderVtbl;
-    const IWICMetadataQueryWriterVtbl *lpWriterVtbl;
-    LONG ref;
-    SixelMetadata *metadata;
-} SixelMetadataQuery;
-
-static const LPCWSTR sixel_metadata_keys[] = {
-    sixel_metadata_color_space_exif_name,
-    sixel_metadata_orientation_exif_name,
+    0x00000000,
+    0x0000,
+    0x0000,
+    { 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 }
 };
 
-static const IEnumStringVtbl SixelMetadataEnumString_Vtbl;
-static const IWICMetadataQueryReaderVtbl SixelMetadataQueryReader_Vtbl;
-static const IWICMetadataQueryWriterVtbl SixelMetadataQueryWriter_Vtbl;
-
-static HRESULT
-SixelMetadata_CopyString(LPCWSTR source, LPOLESTR *destination)
+/* IID_IClassFactory {00000001-0000-0000-C000-000000000046} */
+const IID IID_IClassFactory = 
 {
-    size_t length;
-    size_t bytes;
-    WCHAR *copy;
-
-    if (destination == NULL) {
-        return E_POINTER;
-    }
-
-    if (source == NULL) {
-        *destination = NULL;
-        return S_OK;
-    }
-
-    length = wcslen(source) + 1;
-    bytes = length * sizeof(WCHAR);
-    copy = (WCHAR*)CoTaskMemAlloc(bytes);
-    if (copy == NULL) {
-        return E_OUTOFMEMORY;
-    }
-
-    memcpy(copy, source, bytes);
-    *destination = copy;
-
-    return S_OK;
-}
-
-static HRESULT
-SixelMetadataEnumString_Create(
-    UINT index,
-    IEnumString **ppEnum
-)
-{
-    SixelMetadataEnumString *enumerator;
-
-    if (ppEnum == NULL) {
-        return E_POINTER;
-    }
-
-    enumerator = (SixelMetadataEnumString*)CoTaskMemAlloc(sizeof(SixelMetadataEnumString));
-    if (enumerator == NULL) {
-        return E_OUTOFMEMORY;
-    }
-
-    enumerator->lpVtbl = &SixelMetadataEnumString_Vtbl;
-    enumerator->ref = 1;
-    enumerator->index = index;
-
-    *ppEnum = (IEnumString*)enumerator;
-
-    return S_OK;
-}
-
-/* IEnumString implementation
- *
- * MIDL_INTERFACE("00000101-0000-0000-c000-000000000046")
- * IEnumString : public IUnknown
- * {
- *     virtual HRESULT STDMETHODCALLTYPE Next(
- *         ULONG celt,
- *         LPOLESTR *rgelt,
- *         ULONG *pceltFetched) = 0;
- *     virtual HRESULT STDMETHODCALLTYPE Skip(
- *         ULONG celt) = 0;
- *     virtual HRESULT STDMETHODCALLTYPE Reset(
- *         ) = 0;
- *     virtual HRESULT STDMETHODCALLTYPE Clone(
- *         IEnumString **ppenum) = 0;
- * };
- */
-/* IUnknown */
-static HRESULT STDMETHODCALLTYPE
-SixelMetadataEnumString_QueryInterface(
-    IEnumString  *iface,
-    REFIID        riid,
-    void        **ppv
-)
-{
-    if (ppv == NULL) {
-        return E_POINTER;
-    }
-
-    if (IsEqualIID(riid, &IID_IUnknown) || IsEqualIID(riid, &IID_IEnumString)) {
-        *ppv = iface;
-        IEnumString_AddRef(iface);
-        return S_OK;
-    }
-
-    *ppv = NULL;
-
-    return E_NOINTERFACE;
-}
-
-static ULONG STDMETHODCALLTYPE
-SixelMetadataEnumString_AddRef(
-    IEnumString *iface
-)
-{
-    SixelMetadataEnumString *enumerator;
-
-    enumerator = (SixelMetadataEnumString*) iface;
-
-    return (ULONG)InterlockedIncrement(&enumerator->ref);
-}
-
-static ULONG STDMETHODCALLTYPE
-SixelMetadataEnumString_Release(
-    IEnumString *iface
-)
-{
-    SixelMetadataEnumString *enumerator;
-    LONG ref;
-
-    enumerator = (SixelMetadataEnumString*) iface;
-    ref = InterlockedDecrement(&enumerator->ref);
-    if (ref == 0) {
-        CoTaskMemFree(enumerator);
-    }
-
-    return (ULONG)ref;
-}
-
-/* IEnumString::Next
- *
- * objidlbase.h
- *
- * HRESULT Next(
- *   [in]  ULONG    celt,
- *   [out] LPOLESTR *rgelt,
- *   [out] ULONG    *pceltFetched
- * );
- */
-static HRESULT STDMETHODCALLTYPE
-SixelMetadataEnumString_Next(
-    IEnumString *iface,
-    ULONG         celt,
-    LPOLESTR     *rgelt,
-    ULONG        *pceltFetched)
-{
-    SixelMetadataEnumString *enumerator;
-    ULONG fetched = 0;
-    HRESULT hr = S_OK;
-
-    if (rgelt == NULL) {
-        return E_POINTER;
-    }
-
-    if (pceltFetched) {
-        *pceltFetched = 0;
-    } else if (celt != 1) {
-        return E_POINTER;
-    }
-
-    enumerator = (SixelMetadataEnumString*) iface;
-
-    while (fetched < celt && enumerator->index < sizeof(sixel_metadata_keys) / sizeof(sixel_metadata_keys[0])) {
-        hr = SixelMetadata_CopyString(sixel_metadata_keys[enumerator->index], &rgelt[fetched]);
-        if (FAILED(hr)) {
-            while (fetched > 0) {
-                --fetched;
-                CoTaskMemFree(rgelt[fetched]);
-                rgelt[fetched] = NULL;
-            }
-            return hr;
-        }
-        ++enumerator->index;
-        ++fetched;
-    }
-
-    if (pceltFetched) {
-        *pceltFetched = fetched;
-    }
-
-    return fetched == celt ? S_OK : S_FALSE;
-}
-
-/* IEnumString::Skip
- *
- * objidlbase.h
- *
- * HRESULT Skip(
- *   [in] ULONG celt
- * );
- */
-static HRESULT STDMETHODCALLTYPE
-SixelMetadataEnumString_Skip(IEnumString *iface, ULONG celt)
-{
-    SixelMetadataEnumString *enumerator;
-
-    enumerator = (SixelMetadataEnumString*) iface;
-
-    if (enumerator->index + celt <= sizeof(sixel_metadata_keys) / sizeof(sixel_metadata_keys[0])) {
-        enumerator->index += celt;
-        return S_OK;
-    }
-
-    enumerator->index = sizeof(sixel_metadata_keys) / sizeof(sixel_metadata_keys[0]);
-
-    return S_FALSE;
-}
-
-/* IEnumString::Reset
- *
- * objidlbase.h
- *
- * HRESULT Reset();
- */
-static HRESULT STDMETHODCALLTYPE
-SixelMetadataEnumString_Reset(IEnumString *iface)
-{
-    SixelMetadataEnumString *enumerator;
-
-    enumerator = (SixelMetadataEnumString*) iface;
-    enumerator->index = 0;
-
-    return S_OK;
-}
-
-/* IEnumString::Clone
- *
- * objidlbase.h
- *
- * HRESULT Clone(
- *   [out] IEnumString **ppenum
- * );
- */
-static HRESULT STDMETHODCALLTYPE
-SixelMetadataEnumString_Clone(IEnumString *iface, IEnumString **ppEnum)
-{
-    SixelMetadataEnumString *enumerator;
-
-    if (ppEnum == NULL) {
-        return E_POINTER;
-    }
-
-    enumerator = (SixelMetadataEnumString*) iface;
-
-    return SixelMetadataEnumString_Create(enumerator->index, ppEnum);
-}
-
-static const IEnumStringVtbl SixelMetadataEnumString_Vtbl = {
-    /*** IUnknown methods ***/
-    SixelMetadataEnumString_QueryInterface,
-    SixelMetadataEnumString_AddRef,
-    SixelMetadataEnumString_Release,
-    /** IEnumString methods ***/
-    SixelMetadataEnumString_Next,
-    SixelMetadataEnumString_Skip,
-    SixelMetadataEnumString_Reset,
-    SixelMetadataEnumString_Clone
+    0x00000001,
+    0x0000,
+    0x0000,
+    { 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 }
 };
 
+static wchar_t const CATID_WICBitmapDecoders_String[]
+    = L"{7ED96837-96F0-4812-B211-F13C24117ED3}";
 
-static HRESULT
-SixelMetadataQuery_GetValue(
-    SixelMetadataQuery *query,
-    LPCWSTR             name,
-    PROPVARIANT        *value)
-{
-    UINT colorspace;
-
-    if (value == NULL) {
-        return E_POINTER;
-    }
-    if (name == NULL) {
-        return E_INVALIDARG;
-    }
-
-    memset(value, 0, sizeof(*value));
-
-    /* colorspace */
-    if (SixelMetadata_IsColorSpaceName(name)) {
-        colorspace = EXIF_COLORSPACE_SRGB;
-
-        if (query && query->metadata) {
-            colorspace = query->metadata->colorspace;
-        }
-
-        value->vt = VT_UI2;
-        value->uiVal = (USHORT)colorspace;
-
-        return S_OK;
-    }
-
-    /* orientation */
-    if (SixelMetadata_IsOrientationName(name)) {
-        UINT orientation = SixelMetadata_GetExifOrientation(query ? query->metadata : NULL);
-
-        value->vt = VT_UI2;
-        value->uiVal = (USHORT)orientation;
-
-        return S_OK;
-    }
-
-    return WINCODEC_ERR_PROPERTYNOTFOUND;
-}
-
-static HRESULT
-SixelMetadataQuery_SetValue(
-    SixelMetadataQuery      *query,
-    LPCWSTR                  name,
-    const PROPVARIANT       *value)
-{
-    UINT numeric;
-    HRESULT hr;
-
-    if (query == NULL || query->metadata == NULL) {
-        return E_POINTER;
-    }
-    if (name == NULL) {
-        return E_INVALIDARG;
-    }
-
-    if (SixelMetadata_IsColorSpaceName(name)) {
-        hr = SixelMetadata_ReadUInt(value, &numeric);
-        if (FAILED(hr)) {
-            return hr;
-        }
-        query->metadata->colorspace = numeric;
-        return S_OK;
-    }
-
-    if (SixelMetadata_IsOrientationName(name)) {
-        hr = SixelMetadata_ReadUInt(value, &numeric);
-        if (FAILED(hr)) {
-            return hr;
-        }
-        if (!SixelMetadata_SetOrientationFromExif(query->metadata, numeric)) {
-            return E_INVALIDARG;
-        }
-        return S_OK;
-    }
-
-    return WINCODEC_ERR_PROPERTYNOTSUPPORTED;
-}
-
-static HRESULT
-SixelMetadataQuery_Remove(
-    SixelMetadataQuery *query,
-    LPCWSTR             name
-)
-{
-    if (query == NULL || query->metadata == NULL) {
-        return E_POINTER;
-    }
-    if (name == NULL) {
-        return E_INVALIDARG;
-    }
-
-    if (SixelMetadata_IsColorSpaceName(name)) {
-        query->metadata->colorspace = EXIF_COLORSPACE_SRGB;
-        return S_OK;
-    }
-
-    if (SixelMetadata_IsOrientationName(name)) {
-        query->metadata->orientation = 0;
-        return S_OK;
-    }
-
-    return WINCODEC_ERR_PROPERTYNOTSUPPORTED;
-}
-
-/* IWICMetadataQueryReader implementation
- *
- * MIDL_INTERFACE("30989668-e1c9-4597-b395-458eedb808df")
- * IWICMetadataQueryReader : public IUnknown
- * {
- *     virtual HRESULT STDMETHODCALLTYPE GetContainerFormat(
- *         GUID *pguidContainerFormat) = 0;
- *     virtual HRESULT STDMETHODCALLTYPE GetLocation(
- *         UINT cchMaxLength,
- *         WCHAR *wzNamespace,
- *         UINT *pcchActualLength) = 0;
- *     virtual HRESULT STDMETHODCALLTYPE GetMetadataByName(
- *         LPCWSTR wzName,
- *         PROPVARIANT *pvarValue) = 0;
- *     virtual HRESULT STDMETHODCALLTYPE GetEnumerator(
- *         IEnumString **ppIEnumString) = 0;
- * };
- */
-/* IUnknown */
-static HRESULT STDMETHODCALLTYPE
-SixelMetadataQueryReader_QueryInterface(
-    IWICMetadataQueryReader *iface,
-    REFIID                   riid,
-    void                   **ppv
-)
-{
-    SixelMetadataQuery *query;
-
-    if (ppv == NULL) {
-        return E_POINTER;
-    }
-
-    query = (SixelMetadataQuery *) iface;
-
-    if (IsEqualIID(riid, &IID_IUnknown)) {
-        *ppv = (IWICMetadataQueryReader *) query;
-    } else if (IsEqualIID(riid, &IID_IWICMetadataQueryReader)) {
-        *ppv = (IWICMetadataQueryReader *) query;
-    } else if (IsEqualIID(riid, &IID_IWICMetadataQueryWriter)) {
-        *ppv = (IWICMetadataQueryWriter *) &query->lpWriterVtbl;
-    } else {
-        *ppv = NULL;
-        return E_NOINTERFACE;
-    }
-
-    (void) IUnknown_AddRef((IWICMetadataQueryReader *) query);
-
-    return S_OK;
-}
-
-static ULONG STDMETHODCALLTYPE
-SixelMetadataQueryReader_AddRef(
-    IWICMetadataQueryReader *iface
-)
-{
-    return (ULONG) InterlockedIncrement(&((SixelMetadataQuery*) iface)->ref);
-}
-
-static ULONG STDMETHODCALLTYPE
-SixelMetadataQueryReader_Release(
-    IWICMetadataQueryReader *iface
-)
-{
-    LONG ref;
-    SixelMetadataQuery *query;
-
-    query = (SixelMetadataQuery *) iface;
-
-    ref = InterlockedDecrement(&query->ref);
-    if (ref == 0) {
-        if (query->metadata) {
-            SixelMetadata_Release(query->metadata);
-        }
-        CoTaskMemFree(query);
-    }
-
-    return (ULONG)ref;
-}
-
-/* IWICMetadataQueryReader::GetContainerFormat
- *
- * wincodec.h
- *
- * HRESULT GetContainerFormat(
- *   [out] GUID *pguidContainerFormat
- * );
- */
-static HRESULT STDMETHODCALLTYPE
-SixelMetadataQueryReader_GetContainerFormat(
-    IWICMetadataQueryReader             *iface,
-    GUID                    /* [out] */ *pguidContainerFormat
-)
-{
-    (void)iface;
-
-    if (pguidContainerFormat == NULL) {
-        return E_POINTER;
-    }
-
-    *pguidContainerFormat = GUID_MetadataFormatExif;
-
-    return S_OK;
-}
-
-/* IWICMetadataQueryReader::GetLocation
- *
- * wincodec.h
- *
- * HRESULT GetLocation(
- *   [in]      UINT  cchMaxLength,
- *   [in, out] WCHAR *wzNamespace,
- *   [out]     UINT  *pcchActualLength
- * );
- */
-static HRESULT STDMETHODCALLTYPE
-SixelMetadataQueryReader_GetLocation(
-    IWICMetadataQueryReader *iface,
-    UINT                     cchMaxLength,
-    WCHAR                   *wzNamespace,
-    UINT                    *pcchActualLength)
-{
-    (void) iface;
-    (void) cchMaxLength;
-
-    if (pcchActualLength) {
-        *pcchActualLength = 0;
-    }
-
-    if (wzNamespace && cchMaxLength > 0) {
-        wzNamespace[0] = L'\0';
-    }
-
-    return S_OK;
-}
-
-/* IWICMetadataQueryReader::GetMetadataByName
- *
- * wincodec.h
- *
- * HRESULT GetMetadataByName(
- *   [in]      LPCWSTR     wzName,
- *   [in, out] PROPVARIANT *pvarValue
- * );
- */
-static HRESULT STDMETHODCALLTYPE
-SixelMetadataQueryReader_GetMetadataByName(
-    IWICMetadataQueryReader *iface,
-    LPCWSTR                  wzName,
-    PROPVARIANT             *pvarValue)
-{
-    return SixelMetadataQuery_GetValue(
-        (SixelMetadataQuery*) iface,
-        wzName,
-        pvarValue);
-}
-
-/* IWICMetadataQueryReader::GetEnumerator
- *
- * wincodec.h
- *
- * HRESULT GetEnumerator(
- *   [out] IEnumString **ppIEnumString
- * );
- */
-static HRESULT STDMETHODCALLTYPE
-SixelMetadataQueryReader_GetEnumerator(
-    IWICMetadataQueryReader *iface,
-    IEnumString            **ppIEnumString)
-{
-    (void)iface;
-
-    return SixelMetadataEnumString_Create(0, ppIEnumString);
-}
-
-static const IWICMetadataQueryReaderVtbl SixelMetadataQueryReader_Vtbl = {
-    /*** IUnknown methods ***/
-    SixelMetadataQueryReader_QueryInterface,
-    SixelMetadataQueryReader_AddRef,
-    SixelMetadataQueryReader_Release,
-    /*** IWICMetadataQueryReader ***/
-    SixelMetadataQueryReader_GetContainerFormat,
-    SixelMetadataQueryReader_GetLocation,
-    SixelMetadataQueryReader_GetMetadataByName,
-    SixelMetadataQueryReader_GetEnumerator
-};
-
-/* IWICMetadataQueryWriter implementation
- *
- * MIDL_INTERFACE("a721791a-0def-4d06-bd91-2118bf1db10b")
- * IWICMetadataQueryWriter : public IWICMetadataQueryReader
- * {
- *     virtual HRESULT STDMETHODCALLTYPE SetMetadataByName(
- *         LPCWSTR wzName,
- *         const PROPVARIANT *pvarValue) = 0;
- *     virtual HRESULT STDMETHODCALLTYPE RemoveMetadataByName(
- *         LPCWSTR wzName) = 0;
- * };
- */
-/* IUnknown */
-static HRESULT STDMETHODCALLTYPE
-SixelMetadataQueryWriter_QueryInterface(
-    IWICMetadataQueryWriter *iface,
-    REFIID                   riid,
-    void                   **ppv
-)
-{
-    SixelMetadataQuery *query;
-
-    if (ppv == NULL) {
-        return E_POINTER;
-    }
-
-    /* dynamic cast */
-    query = (SixelMetadataQuery *)((BYTE *)iface - offsetof(SixelMetadataQuery, lpWriterVtbl));
-
-    /* aggregation */
-    return IUnknown_QueryInterface((IWICMetadataQueryReader *) query, riid, ppv);
-}
-
-static ULONG STDMETHODCALLTYPE
-SixelMetadataQueryWriter_AddRef(
-    IWICMetadataQueryWriter *iface
-)
-{
-    SixelMetadataQuery *query;
-
-    /* dynamic cast */
-    query = (SixelMetadataQuery *)((BYTE *)iface - offsetof(SixelMetadataQuery, lpWriterVtbl));
-
-    /* aggregation */
-    return IUnknown_AddRef((IWICMetadataQueryReader *) query);
-}
-
-static ULONG STDMETHODCALLTYPE
-SixelMetadataQueryWriter_Release(
-    IWICMetadataQueryWriter *iface
-)
-{
-    SixelMetadataQuery *query;
-
-    /* dynamic cast */
-    query = (SixelMetadataQuery *)((BYTE *)iface - offsetof(SixelMetadataQuery, lpWriterVtbl));
-
-    /* aggregation */
-    return IUnknown_Release((IWICMetadataQueryReader *) query);
-}
-
-/* IWICMetadataQueryReader::GetContainerFormat
- *
- * wincodec.h
- *
- * HRESULT GetContainerFormat(
- *   [out] GUID *pguidContainerFormat
- * );
- */
-static HRESULT STDMETHODCALLTYPE
-SixelMetadataQueryWriter_GetContainerFormat(
-    IWICMetadataQueryWriter             *iface,
-    GUID                    /* [out] */ *pguidContainerFormat)
-{
-    (void)iface;
-
-    if (pguidContainerFormat == NULL) {
-        return E_POINTER;
-    }
-
-    *pguidContainerFormat = GUID_MetadataFormatExif;
-    return S_OK;
-}
-
-/* IWICMetadataQueryReader::GetLocation
- *
- * wincodec.h
- *
- * HRESULT GetLocation(
- *   [in]      UINT  cchMaxLength,
- *   [in, out] WCHAR *wzNamespace,
- *   [out]     UINT  *pcchActualLength
- * );
- */
-static HRESULT STDMETHODCALLTYPE
-SixelMetadataQueryWriter_GetLocation(
-    IWICMetadataQueryWriter                 *iface,
-    UINT                    /* [in] */       cchMaxLength,
-    WCHAR                   /* [in, out] */ *wzNamespace,
-    UINT                    /* [out] */     *pcchActualLength)
-{
-    (void)iface;
-    (void)cchMaxLength;
-
-    if (pcchActualLength) {
-        *pcchActualLength = 0;
-    }
-
-    if (wzNamespace && cchMaxLength > 0) {
-        wzNamespace[0] = L'\0';
-    }
-
-    return S_OK;
-}
-
-/* IWICMetadataQueryReader::GetMetadataByName
- *
- * wincodec.h
- *
- * HRESULT GetMetadataByName(
- *   [in]      LPCWSTR     wzName,
- *   [in, out] PROPVARIANT *pvarValue
- * );
- */
-static HRESULT STDMETHODCALLTYPE
-SixelMetadataQueryWriter_GetMetadataByName(
-    IWICMetadataQueryWriter                 *iface,
-    LPCWSTR                 /* [in]      */  wzName,
-    PROPVARIANT             /* [in, out] */ *pvarValue)
-{
-    SixelMetadataQuery *query;
-
-    query = (SixelMetadataQuery *)((BYTE *)iface - offsetof(SixelMetadataQuery, lpWriterVtbl));
-
-    return SixelMetadataQuery_GetValue(query, wzName, pvarValue);
-}
-
-/* IWICMetadataQueryReader::GetEnumerator
- *
- * wincodec.h
- * HRESULT GetEnumerator(
- *   [out] IEnumString **ppIEnumString
- * );
- */
-static HRESULT STDMETHODCALLTYPE
-SixelMetadataQueryWriter_GetEnumerator(
-    IWICMetadataQueryWriter              *iface,
-    IEnumString             /* [out] */ **ppIEnumString)
-{
-    (void)iface;
-
-    return SixelMetadataEnumString_Create(0, ppIEnumString);
-}
-
-
-/* IWICMetadataQueryWriter::SetMetadataByName
- *
- * wincodec.h
- *
- * HRESULT SetMetadataByName(
- *   [in] LPCWSTR           wzName,
- *   [in] const PROPVARIANT *pvarValue
- * );
- */
-static HRESULT STDMETHODCALLTYPE
-SixelMetadataQueryWriter_SetMetadataByName(
-    IWICMetadataQueryWriter            *iface,
-    LPCWSTR                 /* [in] */  wzName,
-    const PROPVARIANT       /* [in] */ *pvarValue)
-{
-    SixelMetadataQuery *query;
-
-    query = (SixelMetadataQuery *)((BYTE *)iface - offsetof(SixelMetadataQuery, lpWriterVtbl));
-
-    return SixelMetadataQuery_SetValue(query, wzName, pvarValue);
-}
-
-/* IWICMetadataQueryWriter::RemoveMetadataByName
- *
- * wincodec.h
- *
- * HRESULT RemoveMetadataByName(
- *   [in] LPCWSTR wzName
- * );
- */
-static HRESULT STDMETHODCALLTYPE
-SixelMetadataQueryWriter_RemoveMetadataByName(
-    IWICMetadataQueryWriter            *iface,
-    LPCWSTR                 /* [in] */  wzName)
-{
-    SixelMetadataQuery *query;
-
-    query = (SixelMetadataQuery *)((BYTE *)iface - offsetof(SixelMetadataQuery, lpWriterVtbl));
-
-    return SixelMetadataQuery_Remove(query, wzName);
-}
-
-static const IWICMetadataQueryWriterVtbl SixelMetadataQueryWriter_Vtbl = {
-    /*** IUnknown methods ***/
-    SixelMetadataQueryWriter_QueryInterface,
-    SixelMetadataQueryWriter_AddRef,
-    SixelMetadataQueryWriter_Release,
-    /*** IWICMetadataQueryReader methods ***/
-    SixelMetadataQueryWriter_GetContainerFormat,
-    SixelMetadataQueryWriter_GetLocation,
-    SixelMetadataQueryWriter_GetMetadataByName,
-    SixelMetadataQueryWriter_GetEnumerator,
-    /*** IWICMetadataQueryWriter methods ***/
-    SixelMetadataQueryWriter_SetMetadataByName,
-    SixelMetadataQueryWriter_RemoveMetadataByName,
-};
-
-static HRESULT
-SixelMetadataQuery_Create(
-    SixelMetadata              *metadata,
-    IWICMetadataQueryReader    *initialReader,
-    IWICMetadataQueryReader   **ppReader)
-{
-    SixelMetadataQuery *query;
-    HRESULT hr;
-
-    if (ppReader == NULL) {
-        return E_POINTER;
-    }
-
-    query = (SixelMetadataQuery*)CoTaskMemAlloc(sizeof(SixelMetadataQuery));
-    if (query == NULL) {
-        return E_OUTOFMEMORY;
-    }
-
-    query->lpReaderVtbl = &SixelMetadataQueryReader_Vtbl;
-    query->lpWriterVtbl = &SixelMetadataQueryWriter_Vtbl;
-    query->ref = 1;
-    query->metadata = metadata;
-    if (metadata) {
-        SixelMetadata_AddRef(metadata);
-    }
-
-    if (initialReader) {
-        hr = SixelMetadata_ApplyFromQueryReader(metadata, initialReader);
-        if (FAILED(hr)) {
-            if (metadata) {
-                (void) SixelMetadata_Release(metadata);
-            }
-            CoTaskMemFree(query);
-            return hr;
-        }
-    }
-
-    *ppReader = (IWICMetadataQueryReader*)query;
-
-    return S_OK;
-}
-
-/* Frame object
-   implements: IWICBitmapFrameDecode
-               IWICBitmapSourceTransform
-*/
+/* Frame object (implements IWICBitmapFrameDecode) */
 typedef struct {
-    /* frame vtbl pointer */
-    const IWICBitmapFrameDecodeVtbl      *lpVtbl;
-    /* transform vtbl pointer */
-    const IWICBitmapSourceTransformVtbl  *lpTransVtbl;
-    /* ref counter */
+    const IWICBitmapFrameDecodeVtbl* lpVtbl;  /* vtbl pointer */
     LONG ref;
-    /* width */
     UINT w;
-    /* height */
     UINT h;
-    /* 8bpp indexed pixels */
-    BYTE *indices;
-    /* ARGB palette */
-    WICColor *palette;
-    /* num of colors */
-    UINT ncolors;
-    /* metadata */
-    SixelMetadata *metadata;
+    BYTE *buf;
 } SixelFrame;
 
 /* IUnknown */
 static HRESULT STDMETHODCALLTYPE
 SixelFrame_QueryInterface(
-    IWICBitmapFrameDecode              *iface,
-    REFIID                /* [in] */    riid,
-    void                  /* [out] */ **ppv
+    IWICBitmapFrameDecode *iface,
+    REFIID                 riid,
+    void                 **ppv
 )
 {
-    SixelFrame *f;
-
     if (! ppv) {
         return E_POINTER;
     }
@@ -1194,11 +162,6 @@ SixelFrame_QueryInterface(
         return S_OK;
     } else if (IsEqualIID(riid, &IID_IWICBitmapFrameDecode)) {
         *ppv = iface;
-        IUnknown_AddRef(iface);
-        return S_OK;
-    } else if (IsEqualIID(riid, &IID_IWICBitmapSourceTransform)) {
-        f = (SixelFrame*)iface;
-        *ppv = (void*)&f->lpTransVtbl;
         IUnknown_AddRef(iface);
         return S_OK;
     }
@@ -1231,14 +194,8 @@ SixelFrame_Release(
     n = (ULONG)InterlockedDecrement(&f->ref);
 
     if (n == 0) {
-        if (f->indices) {
-            CoTaskMemFree(f->indices);
-        }
-        if (f->palette) {
-            CoTaskMemFree(f->palette);
-        }
-        if (f->metadata) {
-            SixelMetadata_Release(f->metadata);
+        if (f->buf) {
+            CoTaskMemFree(f->buf);
         }
         CoTaskMemFree(f);
     }
@@ -1300,12 +257,7 @@ SixelFrame_GetPixelFormat(
         return E_INVALIDARG;
     }
 
-    /* default to BGRA */
-#if WIC_PAL8_AS_DEFAULT_PIXELFORMAT
-    *pPixelFormat = GUID_WICPixelFormat8bppIndexed;
-#else
     *pPixelFormat = GUID_WICPixelFormat32bppBGRA;
-#endif
 
     return S_OK;
 }
@@ -1328,7 +280,7 @@ SixelFrame_GetResolution(
 {
     (void) iface;
 
-    if (pDpiX == NULL || pDpiY == NULL) {
+    if(pDpiX == NULL || pDpiY == NULL) {
         return E_INVALIDARG;
     }
 
@@ -1352,15 +304,10 @@ SixelFrame_CopyPalette(
     IWICPalette           /* [in] */ *pIPalette
 )
 {
-    SixelFrame *f;
+    (void) iface;
+    (void) pIPalette;
 
-    if (pIPalette == NULL) {
-        return E_INVALIDARG;
-    }
-
-    f = (SixelFrame*)iface;
-
-    return IWICPalette_InitializeCustom(pIPalette, f->palette, f->ncolors);
+    return WINCODEC_ERR_PALETTEUNAVAILABLE;
 }
 
 /* IIWICBitmapSource::CopyPixels
@@ -1390,15 +337,9 @@ SixelFrame_CopyPixels(
     UINT rh;
     BYTE *src;
     UINT i;
-#if ! WIC_PAL8_AS_DEFAULT_PIXELFORMAT
-    UINT j;
-    BYTE idx;
-    WICColor c;
-    BYTE *d;
-#endif
 
     f = (SixelFrame*)iface;
-    if (dst == NULL) {
+    if(dst == NULL) {
         return E_INVALIDARG;
     }
     rw = f->w;
@@ -1410,281 +351,23 @@ SixelFrame_CopyPixels(
         rh = prc->Height;
     }
 
-#if WIC_PAL8_AS_DEFAULT_PIXELFORMAT
     if(cbStride == 0) {
-        cbStride = rw;
+        cbStride = rw * 4;
     }
 
     if(cbBufferSize < cbStride * rh) {
         return E_INVALIDARG;
     }
 
-    src = f->indices + y * f->w + x;
+    src = f->buf + y * f->w * 4 + x * 4;
     for(i = 0; i < rh; ++i) {
         memcpy(dst + i * cbStride,
-               src + i * f->w,
-               rw);
-    }
-#else
-    if (cbStride == 0) {
-        cbStride = rw * 4;
-    }
-
-    if (cbBufferSize < cbStride * rh) {
-        return E_INVALIDARG;
-    }
-
-    src = f->indices + y * f->w + x;
-    for (i = 0; i < rh; ++i) {
-        for (j = 0; j < rw; ++j) {
-            idx = src[i * f->w + j];
-            c = f->palette[idx];
-            d = dst + i * cbStride + j * 4;
-            d[0] = (BYTE)(c & 0xFF);         /* B */
-            d[1] = (BYTE)((c >> 8) & 0xFF);  /* G */
-            d[2] = (BYTE)((c >> 16) & 0xFF); /* R */
-            d[3] = (BYTE)((c >> 24) & 0xFF); /* A */
-        }
-    }
-#endif
-
-    return S_OK;
-}
-
-/* IWICBitmapSourceTransform (Aggregated) */
-
-/* IUnknown (IWICBitmapSourceTransform) */
-static HRESULT STDMETHODCALLTYPE
-SixelFrame_Transform_QueryInterface(
-    IWICBitmapSourceTransform              *iface,
-    REFIID                    /* [in] */    riid,
-    void                      /* [out] */ **ppv)
-{
-    SixelFrame *f;
-    HRESULT hr = E_FAIL;
-
-    f = (SixelFrame *)((BYTE *)iface - offsetof(SixelFrame, lpTransVtbl));
-
-    hr = IUnknown_QueryInterface((IWICBitmapFrameDecode*)f, riid, ppv);
-    if (FAILED(hr)) {
-        return hr;
+               src + i * f->w * 4,
+               rw * 4);
     }
 
     return S_OK;
 }
-
-static ULONG STDMETHODCALLTYPE
-SixelFrame_Transform_AddRef(
-    IWICBitmapSourceTransform *iface
-)
-{
-    SixelFrame *f;
-
-    f = (SixelFrame *)((BYTE *)iface - offsetof(SixelFrame, lpTransVtbl));
-
-    return SixelFrame_AddRef((IWICBitmapFrameDecode*)f);
-}
-
-static ULONG STDMETHODCALLTYPE
-SixelFrame_Transform_Release(
-    IWICBitmapSourceTransform *iface
-)
-{
-    SixelFrame *f;
-
-    f = (SixelFrame *)((BYTE *)iface - offsetof(SixelFrame, lpTransVtbl));
-
-    return SixelFrame_Release((IWICBitmapFrameDecode*)f);
-}
-
-/* IWICBitmapSourceTransform::CopyPixels
- *
- * wincodec.h
- *
- * HRESULT CopyPixels(
- *   [in]  const WICRect             *prc,
- *   [in]  UINT                      uiWidth,
- *   [in]  UINT                      uiHeight,
- *   [in]  WICPixelFormatGUID        *pguidDstFormat,
- *   [in]  WICBitmapTransformOptions dstTransform,
- *   [in]  UINT                      nStride,
- *   [in]  UINT                      cbBufferSize,
- *   [out] BYTE                      *pbBuffer
- * );
- */
-static HRESULT STDMETHODCALLTYPE
-SixelFrame_Transform_CopyPixels(
-    IWICBitmapSourceTransform *iface,
-    const WICRect              /* [in] */  *prc,
-    UINT                       /* [in] */   uiWidth,
-    UINT                       /* [in] */   uiHeight,
-    WICPixelFormatGUID         /* [in] */  *pguidDstFormat,
-    WICBitmapTransformOptions  /* [in] */   dstTransform,
-    UINT                       /* [in] */   nStride,
-    UINT                       /* [in] */   cbBufferSize,
-    BYTE                       /* [out] */ *pbBuffer)
-{
-    SixelFrame *f;
-    UINT x = 0;
-    UINT y = 0;
-    UINT rw;
-    UINT rh;
-    UINT i;
-    UINT j;
-    BYTE *src;
-    BYTE idx;
-    WICColor c;
-    BYTE *d;
-
-    f = (SixelFrame *)((BYTE *)iface - offsetof(SixelFrame, lpTransVtbl));
-
-    if (dstTransform != WICBitmapTransformRotate0) {
-        return WINCODEC_ERR_UNSUPPORTEDOPERATION;
-    }
-    if (uiWidth != f->w || uiHeight != f->h) {
-        return WINCODEC_ERR_UNSUPPORTEDOPERATION;
-    }
-    if (prc) {
-        x = prc->X;
-        y = prc->Y;
-        rw = prc->Width;
-        rh = prc->Height;
-    } else {
-        rw = f->w;
-        rh = f->h;
-    }
-
-    if (IsEqualGUID(pguidDstFormat, &GUID_WICPixelFormat32bppBGRA)) {
-        if (nStride == 0) {
-            nStride = rw * 4;
-        }
-        if (cbBufferSize < nStride * rh) {
-            return E_INVALIDARG;
-        }
-        src = f->indices + y * f->w + x;
-        for (i = 0; i < rh; ++i) {
-            for (j = 0; j < rw; ++j) {
-                idx = src[i * f->w + j];
-                c = f->palette[idx];
-                d = pbBuffer + i * nStride + j * 4;
-                d[0] = (BYTE)(c & 0xFF);         /* B */
-                d[1] = (BYTE)((c >> 8) & 0xFF);  /* G */
-                d[2] = (BYTE)((c >> 16) & 0xFF); /* R */
-                d[3] = (BYTE)((c >> 24) & 0xFF); /* A */
-            }
-        }
-        return S_OK;
-    } else if (IsEqualGUID(pguidDstFormat, &GUID_WICPixelFormat8bppIndexed)) {
-        if (nStride == 0) {
-            nStride = rw;
-        }
-        if (cbBufferSize < nStride * rh) {
-            return E_INVALIDARG;
-        }
-        src = f->indices + y * f->w + x;
-        for (i = 0; i < rh; ++i) {
-            memcpy(pbBuffer + i * nStride,
-                   src + i * f->w,
-                   rw);
-        }
-        return S_OK;
-    }
-
-    return WINCODEC_ERR_UNSUPPORTEDPIXELFORMAT;
-}
-
-/* IWICBitmapSourceTransform::GetClosestSize
- *
- * wincodec.h
- *
- * HRESULT GetClosestSize(
- *   [in, out] UINT *puiWidth,
- *   [in, out] UINT *puiHeight
- * );
- */
-static HRESULT STDMETHODCALLTYPE
-SixelFrame_Transform_GetClosestSize(
-    IWICBitmapSourceTransform                 *iface,
-    UINT                      /* [in, out] */ *puiWidth,
-    UINT                      /* [in, out] */ *puiHeight)
-{
-    SixelFrame *f;
-
-    f = (SixelFrame *)((BYTE *)iface - offsetof(SixelFrame, lpTransVtbl));
-
-    if (puiWidth == NULL || puiHeight == NULL) {
-        return E_INVALIDARG;
-    }
-
-    *puiWidth = f->w;
-    *puiHeight = f->h;
-
-    return S_OK;
-}
-
-/* IWICBitmapSourceTransform::GetClosestPixelFormat
- *
- * wincodec.h
- *
- * HRESULT GetClosestPixelFormat(
- *   [in, out] WICPixelFormatGUID *pPixelFormat
- * );
- */
-static HRESULT STDMETHODCALLTYPE
-SixelFrame_Transform_GetClosestPixelFormat(
-    IWICBitmapSourceTransform                 *iface,
-    WICPixelFormatGUID        /* [in, out] */ *pPixelFormat)
-{
-    (void) iface;
-
-    if (! pPixelFormat) {
-        return E_INVALIDARG;
-    }
-
-    if (IsEqualGUID(pPixelFormat, &GUID_WICPixelFormat32bppBGRA)) {
-        *pPixelFormat = GUID_WICPixelFormat32bppBGRA;
-    } else if (IsEqualGUID(pPixelFormat, &GUID_WICPixelFormat8bppIndexed)) {
-        *pPixelFormat = GUID_WICPixelFormat8bppIndexed;
-    }
-
-    return S_OK;
-}
-
-/* IWICBitmapSourceTransform::DoesSupportTransform
- *
- * wincodec.h
- *
- * HRESULT DoesSupportTransform(
- *   [in]  WICBitmapTransformOptions dstTransform,
- *   [out] BOOL *pfIsSupported
- * );
- */
-static HRESULT STDMETHODCALLTYPE
-SixelFrame_Transform_DoesSupportTransform(
-    IWICBitmapSourceTransform             *iface,
-    WICBitmapTransformOptions /* [in] */   dstTransform,
-    BOOL                      /* [out] */ *pfIsSupported)
-{
-    (void) iface;
-
-    if (! pfIsSupported) {
-        return E_INVALIDARG;
-    }
-
-    *pfIsSupported = (dstTransform == WICBitmapTransformRotate0);
-
-    return S_OK;
-}
-
-static IWICBitmapSourceTransformVtbl SixelFrame_Transform_Vtbl = {
-    SixelFrame_Transform_QueryInterface,
-    SixelFrame_Transform_AddRef,
-    SixelFrame_Transform_Release,
-    SixelFrame_Transform_CopyPixels,
-    SixelFrame_Transform_GetClosestSize,
-    SixelFrame_Transform_GetClosestPixelFormat,
-    SixelFrame_Transform_DoesSupportTransform
-};
 
 /* IIWICBitmapFrameDecode */
 
@@ -1701,35 +384,11 @@ SixelFrame_GetMetadataQueryReader(
     IWICBitmapFrameDecode                 *iface,
     IWICMetadataQueryReader  /* [out] */ **pp)
 {
-    SixelFrame *frame;
-    HRESULT hr;
-    BOOL created = FALSE;
-
-    if (pp == NULL) {
-        return E_INVALIDARG;
-    }
+    (void) iface;
 
     *pp = NULL;
 
-    frame = (SixelFrame*)iface;
-    if (frame->metadata == NULL) {
-        frame->metadata = SixelMetadata_Create();
-        if (frame->metadata == NULL) {
-            return E_OUTOFMEMORY;
-        }
-        created = TRUE;
-    }
-
-    hr = SixelMetadataQuery_Create(frame->metadata, NULL, pp);
-    if (FAILED(hr)) {
-        if (created) {
-            SixelMetadata_Release(frame->metadata);
-            frame->metadata = NULL;
-        }
-        return hr;
-    }
-
-    return S_OK;
+    return E_NOTIMPL;
 }
 
 /* IWICBitmapFrameDecode::GetColorContexts
@@ -1749,34 +408,17 @@ SixelFrame_GetColorContexts(
     IWICColorContext      /* [in, out] */ **ppIColorContexts,
     UINT                  /* [out] */      *pcActualCount)
 {
-    SixelFrame *frame;
-    UINT colorspace = EXIF_COLORSPACE_SRGB;
+    (void) iface;
+    (void) cCount;
+    (void) ppIColorContexts;
 
     if (pcActualCount == NULL) {
         return E_INVALIDARG;
     }
 
-    *pcActualCount = 1;
+    *pcActualCount = 0;
 
-    if (ppIColorContexts == NULL) {
-        if (cCount == 0) {
-            return S_OK;
-        } else {
-            return E_INVALIDARG;
-        }
-    }
-
-    if (cCount == 0 || ppIColorContexts[0] == NULL) {
-        return E_INVALIDARG;
-    }
-
-    frame = (SixelFrame*)iface;
-    if (frame->metadata) {
-        colorspace = frame->metadata->colorspace;
-    }
-
-    return IWICColorContext_InitializeFromExifColorSpace(ppIColorContexts[0],
-                                                         colorspace);
+    return WINCODEC_ERR_UNSUPPORTEDOPERATION;
 }
 
 /* IWICBitmapFrameDecode::GetThumbnail
@@ -1850,17 +492,17 @@ SixelFrame_GetThumbnail(
  * }
  */
 static IWICBitmapFrameDecodeVtbl SixelFrame_Vtbl = {
-    /*** IUnknown methods ***/
+    /* IUnknown */
     SixelFrame_QueryInterface,
     SixelFrame_AddRef,
     SixelFrame_Release,
-    /*** IIWICBitmapSource methods ***/
+    /* IIWICBitmapSource */
     SixelFrame_GetSize,
     SixelFrame_GetPixelFormat,
     SixelFrame_GetResolution,
     SixelFrame_CopyPalette,
     SixelFrame_CopyPixels,
-    /*** IIWICBitmapFrameDecode methods ***/
+    /* IIWICBitmapFrameDecode */
     SixelFrame_GetMetadataQueryReader,
     SixelFrame_GetColorContexts,
     SixelFrame_GetThumbnail
@@ -1874,10 +516,7 @@ typedef struct {
     BOOL initialized;
     UINT w;
     UINT h;
-    BYTE *indices;
-    WICColor *palette;
-    UINT ncolors;
-    SixelMetadata *metadata;
+    BYTE* solid;
 } SixelDecoder;
 
 static HRESULT STDMETHODCALLTYPE
@@ -1928,724 +567,12 @@ SixelDecoder_Release(IWICBitmapDecoder* iface)
     n = (ULONG)InterlockedDecrement(&decoder->ref);
 
     if(n == 0) {
-        if (decoder->indices) {
-            CoTaskMemFree(decoder->indices);
-        }
-        if (decoder->palette) {
-            CoTaskMemFree(decoder->palette);
-        }
-        if (decoder->metadata) {
-            SixelMetadata_Release(decoder->metadata);
+        if (decoder->solid) {
+            CoTaskMemFree(decoder->solid);
         }
         CoTaskMemFree(decoder);
     }
     return n;
-}
-
-static SIXELSTATUS
-sixel_parse_header(
-    unsigned char      /* in */   *ibuf,
-    size_t             /* in */    headsize,
-    unsigned int       /* out */ **pparams,
-    size_t             /* out */  *pparamsize,
-    sixel_allocator_t  /* in */   *allocator
-)
-{
-    SIXELSTATUS status = SIXEL_FALSE;
-
-    enum {
-        STATE_GROUND            =  0,
-        STATE_ESC               =  1,
-        STATE_ESC_INTERMEDIATE  =  2,
-        STATE_CSI_PARAMETER     =  3,
-        STATE_CSI_INTERMEDIATE  =  4,
-        STATE_SS                =  5,
-        STATE_OSC               =  6,
-        STATE_DCS_PARAMETER     =  7,
-        STATE_DCS_INTERMEDIATE  =  8,
-        STATE_SOS               =  9,
-        STATE_PM                = 10,
-        STATE_APC               = 11,
-        STATE_UTF8              = 12,
-        STATE_OSC_UTF8          = 13,
-    };
-    int state = STATE_GROUND;
-    unsigned char *p;
-    unsigned int params[1024];
-    int prm = 0;
-    const INT PRM_MAX = 255;
-    int idx = 0;
-    const INT IDX_MAX = sizeof(params) / sizeof(params[0]);
-    unsigned int ibytes = 0;
-    UINT u8len = 0;
-
-    *pparams = NULL;
-    *pparamsize = 0;
-
-    for (p = ibuf; p < ibuf + headsize; ++p) {
-        switch (state) {
-        case STATE_GROUND:
-            switch (*p) {
-            case 0x1b:  /* ESC */
-                state = STATE_ESC;
-                break;
-            case 0x90:  /* DCS */
-                ibytes = 0;
-                prm = 0;
-                idx = 0;
-                state = STATE_DCS_PARAMETER;
-                break;
-            case 0x98:  /* SOS */
-                state = STATE_SOS;
-                break;
-            case 0x9b:  /* CSI */
-                ibytes = 0;
-                prm = 0;
-                idx = 0;
-                state = STATE_CSI_PARAMETER;
-                break;
-            case 0x9e:  /* PM */
-                state = STATE_PM;
-                break;
-            case 0x9f:  /* APC */
-                state = STATE_APC;
-                break;
-            /* utf-8 */
-            case 0xc2: case 0xc3: case 0xc4: case 0xc5: case 0xc6: case 0xc7:
-            case 0xc8: case 0xc9: case 0xca: case 0xcb: case 0xcc: case 0xcd:
-            case 0xce: case 0xcf: case 0xd0: case 0xd1: case 0xd2: case 0xd3:
-            case 0xd4: case 0xd5: case 0xd6: case 0xd7: case 0xd8: case 0xd9:
-            case 0xda: case 0xdb: case 0xdc: case 0xdd: case 0xde: case 0xdf:
-                u8len = 1;
-                state = STATE_UTF8;
-                break;
-            case 0xe0: case 0xe1: case 0xe2: case 0xe3: case 0xe4: case 0xe5:
-            case 0xe6: case 0xe7: case 0xe8: case 0xe9: case 0xea: case 0xeb:
-            case 0xec: case 0xee: case 0xef:
-                u8len = 2;
-                state = STATE_UTF8;
-                break;
-            case 0xf0: case 0xf1: case 0xf2: case 0xf3: case 0xf4:
-                u8len = 3;
-                state = STATE_UTF8;
-                break;
-            default:
-                /* ignore */
-                break;
-            }
-            break;
-        case STATE_ESC:
-            /*
-             * - ISO-6429 independent escape sequense
-             *
-             *     ESC F
-             *
-             * - ISO-2022 designation sequence
-             *
-             *     ESC I ... I F
-             */
-            switch (*p) {
-            /* ctrl chars */
-            case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05:
-            case 0x06: case 0x07: case 0x08: case 0x09: case 0x0a: case 0x0b:
-            case 0x0c: case 0x0d: case 0x0e: case 0x0f: case 0x10: case 0x11:
-            case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
-                /* ignore */
-                break;
-            case 0x18:  /* CAN */
-                state = STATE_GROUND;
-                break;
-            case 0x19:
-                /* ignore */
-                break;
-            case 0x1a:  /* SUB */
-                state = STATE_GROUND;
-                break;
-            case 0x1b:  /* ESC */
-                /* ignore */
-                break;
-            case 0x1c: case 0x1d: case 0x1e: case 0x1f:
-                /* ignore */
-                break;
-            /* SP to / */
-            case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25:
-            case 0x26: case 0x27: case 0x28: case 0x29: case 0x2a: case 0x2b:
-            case 0x2c: case 0x2d: case 0x2e: case 0x2f:
-                ibytes = ibytes << 8 | *p;
-                state = STATE_ESC_INTERMEDIATE;
-                break;
-            case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35:
-            case 0x36: case 0x37: case 0x38: case 0x39: case 0x3a: case 0x3b:
-            case 0x3c: case 0x3d: case 0x3e: case 0x3f: case 0x40: case 0x41:
-            case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47:
-            case 0x48: case 0x49: case 0x4a: case 0x4b: case 0x4c: case 0x4d:
-                state = STATE_GROUND;
-                break;
-            case 0x4e:  /* N */
-            case 0x4f:  /* O */
-                state = STATE_SS;
-                break;
-            case 0x50:  /* P(DCS) */
-                ibytes = 0;
-                prm = 0;
-                idx = 0;
-                state = STATE_DCS_PARAMETER;
-                break;
-            case 0x51: case 0x52: case 0x53: case 0x54: case 0x55:
-            case 0x56: case 0x57:
-                state = STATE_GROUND;
-                break;
-            case 0x58:  /* X(SOS) */
-                state = STATE_SOS;
-                break;
-            case 0x59: case 0x5a:
-                state = STATE_GROUND;
-                break;
-            case 0x5b:  /* [ */
-                ibytes = 0;
-                prm = 0;
-                idx = 0;
-                state = STATE_CSI_PARAMETER;
-                break;
-            case 0x5c:
-                state = STATE_GROUND;
-                break;
-            case 0x5d:  /* ] */
-                state = STATE_OSC;
-                break;
-            case 0x5e:  /* ^(PM) */
-                state = STATE_PM;
-                break;
-            case 0x5f:  /* _(APC) */
-                state = STATE_APC;
-                break;
-            case 0x60: case 0x61: case 0x62: case 0x63:
-            case 0x64: case 0x65: case 0x66: case 0x67: case 0x68: case 0x69:
-            case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e: case 0x6f:
-            case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75:
-            case 0x76: case 0x77: case 0x78: case 0x79: case 0x7a: case 0x7b:
-            case 0x7c: case 0x7d: case 0x7e:
-                state = STATE_GROUND;
-                break;
-            case 0x7f:
-                /* ignore */
-                break;
-            case 0x90:  /* DCS */
-                ibytes = 0;
-                prm = 0;
-                idx = 0;
-                state = STATE_DCS_PARAMETER;
-                break;
-            case 0x98:  /* SOS */
-                state = STATE_SOS;
-                break;
-            case 0x9b:  /* CSI */
-                ibytes = 0;
-                prm = 0;
-                idx = 0;
-                state = STATE_CSI_PARAMETER;
-                break;
-            case 0x9e:  /* PM */
-                state = STATE_PM;
-                break;
-            case 0x9f:  /* APC */
-                state = STATE_APC;
-                break;
-            /* utf-8 */
-            case 0xc2: case 0xc3: case 0xc4: case 0xc5: case 0xc6: case 0xc7:
-            case 0xc8: case 0xc9: case 0xca: case 0xcb: case 0xcc: case 0xcd:
-            case 0xce: case 0xcf: case 0xd0: case 0xd1: case 0xd2: case 0xd3:
-            case 0xd4: case 0xd5: case 0xd6: case 0xd7: case 0xd8: case 0xd9:
-            case 0xda: case 0xdb: case 0xdc: case 0xdd: case 0xde: case 0xdf:
-                u8len = 1;
-                state = STATE_UTF8;
-                break;
-            case 0xe0: case 0xe1: case 0xe2: case 0xe3: case 0xe4: case 0xe5:
-            case 0xe6: case 0xe7: case 0xe8: case 0xe9: case 0xea: case 0xeb:
-            case 0xec: case 0xee: case 0xef:
-                u8len = 2;
-                state = STATE_UTF8;
-                break;
-            case 0xf0: case 0xf1: case 0xf2: case 0xf3: case 0xf4:
-                u8len = 3;
-                state = STATE_UTF8;
-                break;
-            default:
-                state = STATE_GROUND;
-                break;
-            }
-            break;
-        case STATE_CSI_PARAMETER:
-            /*
-             * parse control sequence
-             *
-             * CSI P ... P I ... I F
-             *     ^
-             */
-            switch (*p) {
-            /* ctrl chars */
-            case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05:
-            case 0x06: case 0x07: case 0x08: case 0x09: case 0x0a: case 0x0b:
-            case 0x0c: case 0x0d: case 0x0e: case 0x0f: case 0x10: case 0x11:
-            case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
-                /* ignore */
-                break;
-            case 0x18: /* CAN */
-                state = STATE_GROUND;
-                break;
-            case 0x19:
-                /* ignore */
-                break;
-            case 0x1a: /* SUB */
-                state = STATE_GROUND;
-                break;
-            case 0x1b:  /* ESC */
-                state = STATE_ESC;
-                break;
-            case 0x1c: case 0x1d: case 0x1e: case 0x1f:
-                /* ignore */
-                break;
-            /* intermediate, SP to / */
-            case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25:
-            case 0x26: case 0x27: case 0x28: case 0x29: case 0x2a: case 0x2b:
-            case 0x2c: case 0x2d: case 0x2e: case 0x2f:
-                idx = min(idx + 1, IDX_MAX);
-                params[idx] = prm;
-                prm = 0;
-                ibytes = ibytes << 8 | *p;
-                state = STATE_CSI_INTERMEDIATE;
-                /* handling point of control sequences */
-                break;
-            /* parameter, 0 to 9 */
-            case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35:
-            case 0x36: case 0x37: case 0x38: case 0x39:
-                prm = min(prm * 10 + *p - 0x30, PRM_MAX);
-                break;
-            case 0x3a:           /* separator, : */
-                ibytes = ibytes << 8;
-                break;
-            case 0x3b:           /* separator, ; */
-                idx = min(idx + 1, IDX_MAX);
-                params[idx] = prm;
-                prm = 0;
-                break;
-            /* parameter, < to ? */
-            case 0x3c: case 0x3d: case 0x3e: case 0x3f:
-                ibytes = ibytes << 8 | *p;
-                break;
-            /* Final byte, @ to ~ */
-            case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45:
-            case 0x46: case 0x47: case 0x48: case 0x49: case 0x4a: case 0x4b:
-            case 0x4c: case 0x4d: case 0x4e: case 0x4f: case 0x50: case 0x51:
-            case 0x52: case 0x53: case 0x54: case 0x55: case 0x56: case 0x57:
-            case 0x58: case 0x59: case 0x5a: case 0x5b: case 0x5c: case 0x5d:
-            case 0x5e: case 0x5f: case 0x60: case 0x61: case 0x62: case 0x63:
-            case 0x64: case 0x65: case 0x66: case 0x67: case 0x68: case 0x69:
-            case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e: case 0x6f:
-            case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75:
-            case 0x76: case 0x77: case 0x78: case 0x79: case 0x7a: case 0x7b:
-            case 0x7c: case 0x7d: case 0x7e:
-                idx = min(idx + 1, IDX_MAX);
-                params[idx] = prm;
-                ibytes = ibytes << 8 | *p;
-                state = STATE_GROUND;
-                /* handling point of control sequences */
-                break;
-            case 0x7f:
-                /* ignore */
-                break;
-            case 0x90:  /* DCS */
-                ibytes = 0;
-                prm = 0;
-                idx = 0;
-                state = STATE_DCS_PARAMETER;
-                break;
-            case 0x98:  /* SOS */
-                state = STATE_SOS;
-                break;
-            case 0x9b:  /* CSI */
-                ibytes = 0;
-                prm = 0;
-                idx = 0;
-                state = STATE_CSI_PARAMETER;
-                break;
-            case 0x9e:  /* PM */
-                state = STATE_PM;
-                break;
-            case 0x9f:  /* APC */
-                state = STATE_APC;
-                break;
-            /* utf-8 */
-            case 0xc2: case 0xc3: case 0xc4: case 0xc5: case 0xc6: case 0xc7:
-            case 0xc8: case 0xc9: case 0xca: case 0xcb: case 0xcc: case 0xcd:
-            case 0xce: case 0xcf: case 0xd0: case 0xd1: case 0xd2: case 0xd3:
-            case 0xd4: case 0xd5: case 0xd6: case 0xd7: case 0xd8: case 0xd9:
-            case 0xda: case 0xdb: case 0xdc: case 0xdd: case 0xde: case 0xdf:
-                u8len = 1;
-                state = STATE_UTF8;
-                break;
-            case 0xe0: case 0xe1: case 0xe2: case 0xe3: case 0xe4: case 0xe5:
-            case 0xe6: case 0xe7: case 0xe8: case 0xe9: case 0xea: case 0xeb:
-            case 0xec: case 0xee: case 0xef:
-                u8len = 2;
-                state = STATE_UTF8;
-                break;
-            case 0xf0: case 0xf1: case 0xf2: case 0xf3: case 0xf4:
-                u8len = 3;
-                state = STATE_UTF8;
-                break;
-            default:
-                state = STATE_GROUND;
-                break;
-            }
-            break;
-        case STATE_CSI_INTERMEDIATE:
-            /*
-             * parse control sequence
-             *
-             * CSI P ... P I ... I F
-             *             ^
-             */
-            switch (*p) {
-            /* ctrl chars */
-            case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05:
-            case 0x06: case 0x07: case 0x08: case 0x09: case 0x0a: case 0x0b:
-            case 0x0c: case 0x0d: case 0x0e: case 0x0f: case 0x10: case 0x11:
-            case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
-                /* ignore */
-                break;
-            case 0x18: /* CAN */
-                state = STATE_GROUND;
-                break;
-            case 0x19:
-                /* ignore */
-                break;
-            case 0x1a: /* SUB */
-                state = STATE_GROUND;
-                break;
-            case 0x1b:  /* ESC */
-                state = STATE_ESC;
-                break;
-            case 0x1c: case 0x1d: case 0x1e: case 0x1f:
-                /* ignore */
-                break;
-            /* intermediate bytes, SP to / */
-            case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25:
-            case 0x26: case 0x27: case 0x28: case 0x29: case 0x2a: case 0x2b:
-            case 0x2c: case 0x2d: case 0x2e: case 0x2f:
-                ibytes = ibytes << 8 | *p;
-                break;
-            case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35:
-            case 0x36: case 0x37: case 0x38: case 0x39: case 0x3a: case 0x3b:
-            case 0x3c: case 0x3d: case 0x3e: case 0x3f:
-                state = STATE_GROUND;
-                break;
-            /* Final byte, @ to ~ */
-            case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45:
-            case 0x46: case 0x47: case 0x48: case 0x49: case 0x4a: case 0x4b:
-            case 0x4c: case 0x4d: case 0x4e: case 0x4f: case 0x50: case 0x51:
-            case 0x52: case 0x53: case 0x54: case 0x55: case 0x56: case 0x57:
-            case 0x58: case 0x59: case 0x5a: case 0x5b: case 0x5c: case 0x5d:
-            case 0x5e: case 0x5f: case 0x60: case 0x61: case 0x62: case 0x63:
-            case 0x64: case 0x65: case 0x66: case 0x67: case 0x68: case 0x69:
-            case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e: case 0x6f:
-            case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75:
-            case 0x76: case 0x77: case 0x78: case 0x79: case 0x7a: case 0x7b:
-            case 0x7c: case 0x7d: case 0x7e:
-                ibytes = ibytes << 8 | *p;
-                state = STATE_GROUND;
-                /* handling point of control sequences */
-                break;
-            case 0x90:  /* DCS */
-                ibytes = 0;
-                prm = 0;
-                idx = 0;
-                state = STATE_DCS_PARAMETER;
-                break;
-            case 0x98:  /* SOS */
-                state = STATE_SOS;
-                break;
-            case 0x9b:  /* CSI */
-                ibytes = 0;
-                prm = 0;
-                idx = 0;
-                state = STATE_CSI_PARAMETER;
-                break;
-            case 0x9e:  /* PM */
-                state = STATE_PM;
-                break;
-            case 0x9f:  /* APC */
-                state = STATE_APC;
-                break;
-            /* utf-8 */
-            case 0xc2: case 0xc3: case 0xc4: case 0xc5: case 0xc6: case 0xc7:
-            case 0xc8: case 0xc9: case 0xca: case 0xcb: case 0xcc: case 0xcd:
-            case 0xce: case 0xcf: case 0xd0: case 0xd1: case 0xd2: case 0xd3:
-            case 0xd4: case 0xd5: case 0xd6: case 0xd7: case 0xd8: case 0xd9:
-            case 0xda: case 0xdb: case 0xdc: case 0xdd: case 0xde: case 0xdf:
-                u8len = 1;
-                state = STATE_UTF8;
-                break;
-            case 0xe0: case 0xe1: case 0xe2: case 0xe3: case 0xe4: case 0xe5:
-            case 0xe6: case 0xe7: case 0xe8: case 0xe9: case 0xea: case 0xeb:
-            case 0xec: case 0xee: case 0xef:
-                u8len = 2;
-                state = STATE_UTF8;
-                break;
-            case 0xf0: case 0xf1: case 0xf2: case 0xf3: case 0xf4:
-                u8len = 3;
-                state = STATE_UTF8;
-                break;
-            default:
-                state = STATE_GROUND;
-                break;
-            }
-            break;
-        case STATE_ESC_INTERMEDIATE:
-            switch (*p) {
-            /* ctrl chars */
-            case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05:
-            case 0x06: case 0x07: case 0x08: case 0x09: case 0x0a: case 0x0b:
-            case 0x0c: case 0x0d: case 0x0e: case 0x0f: case 0x10: case 0x11:
-            case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
-                /* ignore */
-                break;
-            case 0x18: /* CAN */
-                state = STATE_GROUND;
-                break;
-            case 0x19:
-                /* ignore */
-                break;
-            case 0x1a: /* SUB */
-                state = STATE_GROUND;
-                break;
-            case 0x1b:  /* ESC */
-                state = STATE_ESC;
-                break;
-            case 0x1c: case 0x1d: case 0x1e: case 0x1f:
-                /* ignore */
-                break;
-            /* intermediate bytes, SP to / */
-            case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25:
-            case 0x26: case 0x27: case 0x28: case 0x29: case 0x2a: case 0x2b:
-            case 0x2c: case 0x2d: case 0x2e: case 0x2f:
-                ibytes = ibytes << 8 | *p;
-                break;
-            /* Final byte, 0 to ~ */
-            case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35:
-            case 0x36: case 0x37: case 0x38: case 0x39: case 0x3a: case 0x3b:
-            case 0x3c: case 0x3d: case 0x3e: case 0x3f:
-            case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45:
-            case 0x46: case 0x47: case 0x48: case 0x49: case 0x4a: case 0x4b:
-            case 0x4c: case 0x4d: case 0x4e: case 0x4f: case 0x50: case 0x51:
-            case 0x52: case 0x53: case 0x54: case 0x55: case 0x56: case 0x57:
-            case 0x58: case 0x59: case 0x5a: case 0x5b: case 0x5c: case 0x5d:
-            case 0x5e: case 0x5f: case 0x60: case 0x61: case 0x62: case 0x63:
-            case 0x64: case 0x65: case 0x66: case 0x67: case 0x68: case 0x69:
-            case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e: case 0x6f:
-            case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75:
-            case 0x76: case 0x77: case 0x78: case 0x79: case 0x7a: case 0x7b:
-            case 0x7c: case 0x7d: case 0x7e:
-                /* handling point of ISO-2022 designation */
-                state = STATE_GROUND;
-                break;
-            case 0x7f:
-                /* ignore */
-                break;
-            case 0x90:  /* DCS */
-                ibytes = 0;
-                prm = 0;
-                idx = 0;
-                state = STATE_DCS_PARAMETER;
-                break;
-            case 0x98:  /* SOS */
-                state = STATE_SOS;
-                break;
-            case 0x9b:  /* CSI */
-                ibytes = 0;
-                prm = 0;
-                idx = 0;
-                state = STATE_CSI_PARAMETER;
-                break;
-            case 0x9e:  /* PM */
-                state = STATE_PM;
-                break;
-            case 0x9f:  /* APC */
-                state = STATE_APC;
-                break;
-            /* utf-8 */
-            case 0xc2: case 0xc3: case 0xc4: case 0xc5: case 0xc6: case 0xc7:
-            case 0xc8: case 0xc9: case 0xca: case 0xcb: case 0xcc: case 0xcd:
-            case 0xce: case 0xcf: case 0xd0: case 0xd1: case 0xd2: case 0xd3:
-            case 0xd4: case 0xd5: case 0xd6: case 0xd7: case 0xd8: case 0xd9:
-            case 0xda: case 0xdb: case 0xdc: case 0xdd: case 0xde: case 0xdf:
-                u8len = 1;
-                state = STATE_UTF8;
-                break;
-            case 0xe0: case 0xe1: case 0xe2: case 0xe3: case 0xe4: case 0xe5:
-            case 0xe6: case 0xe7: case 0xe8: case 0xe9: case 0xea: case 0xeb:
-            case 0xec: case 0xee: case 0xef:
-                u8len = 2;
-                state = STATE_UTF8;
-                break;
-            case 0xf0: case 0xf1: case 0xf2: case 0xf3: case 0xf4:
-                u8len = 3;
-                state = STATE_UTF8;
-                break;
-            default:
-                state = STATE_GROUND;
-                break;
-            }
-            break;
-        case STATE_OSC:
-            switch (*p) {
-            case 0x07:  /* broken ST */
-            case 0x18:
-            case 0x1a:
-                state = STATE_GROUND;
-                break;
-            case 0x1b:
-                state = STATE_ESC;
-                break;
-            case 0x9c:  /* ST */
-                state = STATE_GROUND;
-                break;
-            default:
-                break;
-            }
-            break;
-        case STATE_DCS_PARAMETER:
-            /*
-             * parse DCS sequence
-             *
-             * DCS P ... P I ... I F D ... D ST
-             *     ^
-             */
-            switch (*p) {
-            /* ctrl chars */
-            case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05:
-            case 0x06: case 0x07: case 0x08: case 0x09: case 0x0a: case 0x0b:
-            case 0x0c: case 0x0d: case 0x0e: case 0x0f: case 0x10: case 0x11:
-            case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
-                /* ignore */
-                break;
-            case 0x18: /* CAN */
-                state = STATE_GROUND;
-                break;
-            case 0x19:
-                /* ignore */
-                break;
-            case 0x1a: /* SUB */
-                state = STATE_GROUND;
-                break;
-            case 0x1b:  /* ESC */
-                state = STATE_ESC;
-                break;
-            case 0x1c: case 0x1d: case 0x1e: case 0x1f:
-                /* ignore */
-                break;
-            /* intermediate bytes, SP to / */
-            case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25:
-            case 0x26: case 0x27: case 0x28: case 0x29: case 0x2a: case 0x2b:
-            case 0x2c: case 0x2d: case 0x2e: case 0x2f:
-                ibytes = ibytes << 8 | *p;
-                break;
-            /* parameter bytes, 0 to ? */
-            case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35:
-            case 0x36: case 0x37: case 0x38: case 0x39: case 0x3a: case 0x3b:
-            case 0x3c: case 0x3d: case 0x3e: case 0x3f:
-                state = STATE_GROUND;
-                break;
-            /* Final byte, @ to ~ */
-            case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45:
-            case 0x46: case 0x47: case 0x48: case 0x49: case 0x4a: case 0x4b:
-            case 0x4c: case 0x4d: case 0x4e: case 0x4f: case 0x50: case 0x51:
-            case 0x52: case 0x53: case 0x54: case 0x55: case 0x56: case 0x57:
-            case 0x58: case 0x59: case 0x5a: case 0x5b: case 0x5c: case 0x5d:
-            case 0x5e: case 0x5f: case 0x60: case 0x61: case 0x62: case 0x63:
-            case 0x64: case 0x65: case 0x66: case 0x67: case 0x68: case 0x69:
-            case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e: case 0x6f:
-            case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75:
-            case 0x76: case 0x77: case 0x78: case 0x79: case 0x7a: case 0x7b:
-            case 0x7c: case 0x7d: case 0x7e:
-                ibytes = ibytes << 8 | *p;
-                state = STATE_GROUND;
-                /* handling point of control sequences */
-                if (ibytes == 'q') {
-                    *pparamsize = idx;
-                    *pparams = sixel_allocator_malloc(
-                        allocator, sizeof(unsigned int) * idx);
-                    status = SIXEL_OK;
-                    goto end;
-                }
-                break;
-            case 0x9c:  /* ST */
-                state = STATE_GROUND;
-                break;
-            default:
-                state = STATE_GROUND;
-                break;
-            }
-            break;
-        case STATE_SOS:
-        case STATE_PM:
-        case STATE_APC:
-            /*
-             * parse SOS/PM/APC sequence
-             *
-             * SOS/PM/APC D ... D ST
-             *            ^
-             */
-            switch (*p) {
-            case 0x18:
-            case 0x1a:
-                state = STATE_GROUND;
-                break;
-            case 0x1b:
-                state = STATE_ESC;
-                break;
-            case 0x9c:  /* ST */
-                state = STATE_GROUND;
-                break;
-            default:
-                break;
-            }
-            break;
-        case STATE_SS:
-            switch (*p) {
-            case 0x1b:
-                state = STATE_ESC;
-                break;
-            default:
-                state = STATE_GROUND;
-                break;
-            }
-            break;
-        case STATE_UTF8:
-            if (*p >= 0x80 && *p <= 0xbf) {
-                if (--u8len == 0) {
-                    state = STATE_GROUND;
-                }
-                break;
-            }
-            --p;
-            state = STATE_GROUND;
-            break;
-        case STATE_OSC_UTF8:
-            if (*p >= 0x80 && *p <= 0xbf) {
-                if (--u8len == 0) {
-                    state = STATE_OSC;
-                }
-                break;
-            }
-            --p;
-            state = STATE_OSC;
-            break;
-        }
-    }
-
-end:
-    return status;
 }
 
 /* IWICBitmapDecoder::QueryCapability
@@ -2664,81 +591,14 @@ SixelDecoder_QueryCapability(
     DWORD             /* [out] */ *pdwCapability
 )
 {
-    HRESULT hr = E_FAIL;
-    ULONG size;
-    ULONG headsize;
-    ULONG read;
-    STATSTG stat;
-    LARGE_INTEGER dlibMove = {0};
-    ULARGE_INTEGER pos = {0};
-    SIXELSTATUS status = SIXEL_FALSE;
-    BYTE ibuf[256];
-    unsigned int *params = NULL;
-    size_t paramsize = 0;
-    sixel_allocator_t *allocator = NULL;
-
     (void) iface;
+    (void) pIStream;
 
     if (pdwCapability == NULL) {
         return E_INVALIDARG;
     }
 
-    hr = IStream_Stat(pIStream, &stat, STATFLAG_NONAME);
-    if (FAILED(hr)) {
-        return hr;
-    }
-
-    if (stat.cbSize.HighPart != 0) {
-        return E_OUTOFMEMORY;
-    }
-
-    size = stat.cbSize.LowPart;
-    if (size > SIXEL_ALLOCATE_BYTES_MAX) {
-        return E_OUTOFMEMORY;
-    }
-
-    hr = IStream_Seek(pIStream, dlibMove, STREAM_SEEK_CUR, &pos);
-    if (FAILED(hr)) {
-        return hr;
-    }
-
-    headsize = min(size, sizeof(ibuf));
-    read = 0;
-    hr = IStream_Read(pIStream, ibuf, headsize, &read);
-
-    /* restore position */
-    dlibMove.QuadPart = pos.QuadPart;
-    (void) IStream_Seek(pIStream, dlibMove, STREAM_SEEK_SET, NULL);
-
-    status = sixel_allocator_new(
-        &allocator, wic_malloc, wic_calloc, wic_realloc, wic_free);
-    if (SIXEL_FAILED(status)) {
-        return E_FAIL;
-    }
-
-    status = sixel_parse_header(
-        ibuf, headsize, &params, &paramsize, allocator);
-
-    if (paramsize > 0) {
-        sixel_allocator_free(allocator, params);
-    }
-    sixel_allocator_unref(allocator);
-
-    if (FAILED(hr)) {
-        return hr;
-    }
-
-    if (read != headsize) {
-        return E_FAIL;
-    }
-
-    if (status == SIXEL_OK) {
-        *pdwCapability = WICBitmapDecoderCapabilityCanDecodeAllImages
-                       | WICBitmapDecoderCapabilityCanDecodeThumbnail
-                       ;
-    } else {
-        return WINCODEC_ERR_UNKNOWNIMAGEFORMAT;
-    }
+    *pdwCapability = WICBitmapDecoderCapabilityCanDecodeAllImages;
 
     return S_OK;
 }
@@ -2760,6 +620,9 @@ SixelDecoder_Initialize(
 )
 {
     SixelDecoder *decoder;
+    UINT x;
+    UINT y;
+    BYTE *p;
     STATSTG stat;
     HRESULT hr = E_FAIL;
     ULONG size;
@@ -2771,18 +634,14 @@ SixelDecoder_Initialize(
     unsigned char *palette = NULL;
     int width;
     int height;
-    UINT i;
+    int index;
     int ncolors;
-    unsigned int *params = NULL;
-    size_t paramsize = 0;
 
-    (void) cacheOptions;  /* TODO: cache implementation */
+    (void) cacheOptions;
 
     if (pIStream == NULL) {
         return E_POINTER;
     }
-
-    decoder = (SixelDecoder*)iface;
 
     hr = IStream_Stat(pIStream, &stat, STATFLAG_NONAME);
     if (FAILED(hr)) {
@@ -2793,17 +652,17 @@ SixelDecoder_Initialize(
         return E_OUTOFMEMORY;
     }
 
-    size = stat.cbSize.LowPart;
-    if (size > SIXEL_ALLOCATE_BYTES_MAX) {
-        return E_OUTOFMEMORY;
-    }
-
     status = sixel_allocator_new(
-        &allocator, wic_malloc, wic_calloc, wic_realloc, wic_free);
+        &allocator,
+        wic_malloc,
+        wic_calloc,
+        wic_realloc,
+        wic_free);
     if (SIXEL_FAILED(status)) {
         return E_FAIL;
     }
 
+    size = stat.cbSize.LowPart;
     input = sixel_allocator_malloc(allocator, size);
 
     read = 0;
@@ -2816,88 +675,46 @@ SixelDecoder_Initialize(
         goto end;
     }
 
-    if (decoder->metadata == NULL) {
-        decoder->metadata = SixelMetadata_Create();
-        if (decoder->metadata == NULL) {
-            hr = E_OUTOFMEMORY;
-            goto end;
-        }
-    } else {
-        /* reset metadata */
-        decoder->metadata->colorspace = EXIF_COLORSPACE_SRGB;
-        decoder->metadata->orientation = 0;
-    }
-
-    status = sixel_allocator_new(
-        &allocator, wic_malloc, wic_calloc, wic_realloc, wic_free);
-    if (SIXEL_FAILED(status)) {
-        hr = E_FAIL;
-        goto end;
-    }
-
-    status = sixel_parse_header(
-        input, size, &params, &paramsize, allocator);
-    if (status == SIXEL_OK) {
-        if (paramsize >= 4) {
-            if (params[3] == 0) {
-                decoder->metadata->colorspace = params[3];
-            } else {
-                decoder->metadata->colorspace = EXIF_COLORSPACE_SRGB;
-            }
-        } else {
-            decoder->metadata->colorspace = EXIF_COLORSPACE_SRGB;
-        }
-        if (paramsize >= 5) {
-            decoder->metadata->orientation = params[4];
-        } else {
-            decoder->metadata->orientation = 0;
-        }
-    }
-    if (paramsize > 0) {
-        sixel_allocator_free(allocator, params);
-    }
-
     status = sixel_decode_raw(
         input, size, &pixels, &width, &height,
         &palette, &ncolors, allocator);
     if (SIXEL_FAILED(status)) {
-        hr = E_FAIL;
-        goto end;
+        return E_FAIL;
     }
 
+    decoder = (SixelDecoder*)iface;
     if (decoder->initialized) {
-        hr = WINCODEC_ERR_WRONGSTATE;
-        goto end;
+        return WINCODEC_ERR_WRONGSTATE;
     }
 
     decoder->w = width;
     decoder->h = height;
-    decoder->indices = (BYTE *)CoTaskMemAlloc(width * height);
-    decoder->palette = (WICColor *)CoTaskMemAlloc(ncolors * sizeof(WICColor));
-    if (decoder->indices == NULL || decoder->palette == NULL) {
-        hr = E_OUTOFMEMORY;
-        goto end;
+    decoder->solid = (BYTE*)CoTaskMemAlloc(width * height * 4);
+    if (decoder->solid == NULL) {
+        return E_OUTOFMEMORY;
     }
 
-    memcpy(decoder->indices, pixels, width * height);
-    for (i = 0; i < (UINT)ncolors; ++i) {
-        decoder->palette[i] = 0xFF000000 |
-            (palette[i * 3 + 0] << 16) |
-            (palette[i * 3 + 1] << 8) |
-            (palette[i * 3 + 2]);
+    for(y = 0; y < decoder->h; ++y) {
+        for(x = 0; x < decoder->w; ++x) {
+            index = pixels[y * decoder->w + x];
+            p = decoder->solid + y * decoder->w * 4 + x * 4;
+            /* RGB -> BGRA */
+            p[0] = palette[index * 3 + 2];  /* B */
+            p[1] = palette[index * 3 + 1];  /* G */
+            p[2] = palette[index * 3 + 0];  /* R */
+            p[3] = 255;                     /* A */
+        }
     }
-    decoder->ncolors = ncolors;
+
     decoder->initialized = TRUE;
-    hr = S_OK;
 
 end:
-    sixel_allocator_free(allocator, params);
     sixel_allocator_free(allocator, input);
     sixel_allocator_free(allocator, pixels);
     sixel_allocator_free(allocator, palette);
     sixel_allocator_unref(allocator);
 
-    return hr;
+    return S_OK;
 }
 
 /* IWICBitmapDecoder::GetContainerFormat
@@ -2994,20 +811,10 @@ SixelDecoder_CopyPalette(
     IWICPalette       /* [in] */ *pIPalette
 )
 {
-    SixelDecoder *decoder;
+    (void) iface;
+    (void) pIPalette;
 
-    if (pIPalette == NULL) {
-        return E_INVALIDARG;
-    }
-
-    decoder = (SixelDecoder*)iface;
-    if (! decoder->initialized) {
-        return WINCODEC_ERR_NOTINITIALIZED;
-    }
-
-    return IWICPalette_InitializeCustom(pIPalette,
-                                        decoder->palette,
-                                        decoder->ncolors);
+    return WINCODEC_ERR_PALETTEUNAVAILABLE;
 }
 
 /* IWICBitmapDecoder::GetMetadataQueryReader
@@ -3024,39 +831,15 @@ SixelDecoder_GetMetadataQueryReader(
     IWICMetadataQueryReader  /* [out] */ **ppIMetadataQueryReader
 )
 {
-    SixelDecoder *decoder;
-    HRESULT hr;
-    BOOL created = FALSE;
+    (void) iface;
 
     if (ppIMetadataQueryReader == NULL) {
-        return E_INVALIDARG;
+        return E_NOTIMPL;
     }
 
     *ppIMetadataQueryReader = NULL;
 
-    decoder = (SixelDecoder*)iface;
-    if (!decoder->initialized) {
-        return WINCODEC_ERR_NOTINITIALIZED;
-    }
-
-    if (decoder->metadata == NULL) {
-        decoder->metadata = SixelMetadata_Create();
-        if (decoder->metadata == NULL) {
-            return E_OUTOFMEMORY;
-        }
-        created = TRUE;
-    }
-
-    hr = SixelMetadataQuery_Create(decoder->metadata, NULL, ppIMetadataQueryReader);
-    if (FAILED(hr)) {
-        if (created) {
-            SixelMetadata_Release(decoder->metadata);
-            decoder->metadata = NULL;
-        }
-        return hr;
-    }
-
-    return S_OK;
+    return E_NOTIMPL;
 }
 
 /* IWICBitmapDecoder::GetPreview
@@ -3073,21 +856,10 @@ SixelDecoder_GetPreview(
     IWICBitmapSource  /* [out] */ **ppIBitmapSource
 )
 {
-    IWICBitmapFrameDecode *frame = NULL;
-    HRESULT hr = E_FAIL;
+    (void) iface;
+    (void) ppIBitmapSource;
 
-    if (ppIBitmapSource == NULL) {
-        return E_INVALIDARG;
-    }
-
-    hr = IWICBitmapDecoder_GetFrame(iface, 0, &frame);
-    if (FAILED(hr)) {
-        return hr;
-    }
-
-    *ppIBitmapSource = (IWICBitmapSource*)frame;
-
-    return S_OK;
+    return WINCODEC_ERR_UNSUPPORTEDOPERATION;
 }
 
 /* IWICBitmapDecoder::GetColorContexts
@@ -3108,37 +880,15 @@ SixelDecoder_GetColorContexts(
     UINT              /* [out]     */  *pcActualCount
 )
 {
-    SixelDecoder *decoder;
-    UINT colorspace = EXIF_COLORSPACE_SRGB;
+    (void) iface;
+    (void) cCount;
+    (void) ppIColorContexts;
 
-    decoder = (SixelDecoder*)iface;
-
-    if (pcActualCount == NULL) {
-        return E_INVALIDARG;
+    if (pcActualCount) {
+        *pcActualCount = 0;
     }
 
-    *pcActualCount = 1;
-
-    if (ppIColorContexts == NULL) {
-        if (cCount == 0) {
-            return S_OK;
-        }
-        return E_INVALIDARG;
-    }
-
-    if (cCount == 0 || ppIColorContexts[0] == NULL) {
-        return E_INVALIDARG;
-    }
-
-    if (!decoder->initialized) {
-        return WINCODEC_ERR_NOTINITIALIZED;
-    }
-
-    if (decoder->metadata) {
-        colorspace = decoder->metadata->colorspace;
-    }
-
-    return IWICColorContext_InitializeFromExifColorSpace(ppIColorContexts[0], colorspace);
+    return WINCODEC_ERR_UNSUPPORTEDOPERATION;
 }
 
 /* IWICBitmapDecoder::GetThumbnail
@@ -3155,79 +905,10 @@ SixelDecoder_GetThumbnail(
     IWICBitmapSource  /* [out] */ **ppIThumbnail
 )
 {
-    SixelDecoder *decoder;
-    SixelFrame *frame;
-    BYTE *thumb;
-    WICColor *pal_copy;
-    UINT tw, th;
-    UINT x, y, sx, sy;
+    (void) iface;
+    (void) ppIThumbnail;
 
-    if (ppIThumbnail == NULL) {
-        return E_INVALIDARG;
-    }
-
-    decoder = (SixelDecoder*)iface;
-    if (!decoder->initialized) {
-        return WINCODEC_ERR_NOTINITIALIZED;
-    }
-
-    tw = decoder->w;
-    th = decoder->h;
-    if (tw >= th) {
-        if (tw > 256) {
-            th = (decoder->h * 256) / decoder->w;
-            tw = 256;
-        }
-    } else {
-        if (th > 256) {
-            tw = (decoder->w * 256) / decoder->h;
-            th = 256;
-        }
-    }
-
-    thumb = (BYTE *)CoTaskMemAlloc(tw * th);
-    if (thumb == NULL) {
-        return E_OUTOFMEMORY;
-    }
-
-    for (y = 0; y < th; ++y) {
-        sy = y * decoder->h / th;
-        for (x = 0; x < tw; ++x) {
-            sx = x * decoder->w / tw;
-            thumb[y * tw + x] = decoder->indices[sy * decoder->w + sx];
-        }
-    }
-
-    pal_copy = (WICColor*)CoTaskMemAlloc(decoder->ncolors * sizeof(WICColor));
-    if (pal_copy == NULL) {
-        CoTaskMemFree(thumb);
-        return E_OUTOFMEMORY;
-    }
-    memcpy(pal_copy, decoder->palette, decoder->ncolors * sizeof(WICColor));
-
-    frame = (SixelFrame*)CoTaskMemAlloc(sizeof(SixelFrame));
-    if (frame == NULL) {
-        CoTaskMemFree(thumb);
-        CoTaskMemFree(pal_copy);
-        return E_OUTOFMEMORY;
-    }
-
-    frame->lpVtbl = &SixelFrame_Vtbl;
-    frame->lpTransVtbl = &SixelFrame_Transform_Vtbl;
-    frame->ref = 1;
-    frame->w = tw;
-    frame->h = th;
-    frame->indices = thumb;
-    frame->palette = pal_copy;
-    frame->ncolors = decoder->ncolors;
-    frame->metadata = decoder->metadata;
-    if (frame->metadata) {
-        SixelMetadata_AddRef(frame->metadata);
-    }
-
-    *ppIThumbnail = (IWICBitmapSource*)frame;
-
-    return S_OK;
+    return WINCODEC_ERR_UNSUPPORTEDOPERATION;
 }
 
 /* IWICBitmapDecoder::GetFrameCount
@@ -3277,8 +958,7 @@ SixelDecoder_GetFrame(
 {
     SixelDecoder *decoder;
     SixelFrame *frame;
-    BYTE *idx_copy;
-    WICColor *pal_copy;
+    BYTE *copy;
 
     decoder = (SixelDecoder*)iface;
 
@@ -3296,48 +976,36 @@ SixelDecoder_GetFrame(
         return WINCODEC_ERR_FRAMEMISSING;
     }
 
-    idx_copy = (BYTE *)CoTaskMemAlloc(decoder->w * decoder->h);
-    pal_copy = (WICColor *)CoTaskMemAlloc(decoder->ncolors * sizeof(WICColor));
+    copy = (BYTE*)CoTaskMemAlloc(decoder->w * decoder->h * 4);
 
-    if (idx_copy == NULL || pal_copy == NULL) {
-        CoTaskMemFree(idx_copy);
-        CoTaskMemFree(pal_copy);
+    if (copy == NULL) {
         return E_OUTOFMEMORY;
     }
 
-    memcpy(idx_copy, decoder->indices, decoder->w * decoder->h);
-    memcpy(pal_copy, decoder->palette, decoder->ncolors * sizeof(WICColor));
+    memcpy(copy, decoder->solid, decoder->w * decoder->h * 4);
 
     frame = (SixelFrame*)CoTaskMemAlloc(sizeof(SixelFrame));
     if(frame == NULL) {
-        CoTaskMemFree(idx_copy);
-        CoTaskMemFree(pal_copy);
+        CoTaskMemFree(copy);
         return E_OUTOFMEMORY;
     }
 
     frame->lpVtbl = &SixelFrame_Vtbl;
-    frame->lpTransVtbl = &SixelFrame_Transform_Vtbl;
     frame->ref = 1;
     frame->w = decoder->w;
     frame->h = decoder->h;
-    frame->indices = idx_copy;
-    frame->palette = pal_copy;
-    frame->ncolors = decoder->ncolors;
-    frame->metadata = decoder->metadata;
-    if (frame->metadata) {
-        SixelMetadata_AddRef(frame->metadata);
-    }
+    frame->buf = copy;
     *ppIBitmapFrame = (IWICBitmapFrameDecode *)frame;
 
     return S_OK;
 }
 
 static IWICBitmapDecoderVtbl SixelDecoder_Vtbl = {
-    /*** IUnknown methods ***/
+    /* IUnknown */
     SixelDecoder_QueryInterface,
     SixelDecoder_AddRef,
     SixelDecoder_Release,
-    /*** IWICBitmapDecoder methods ***/
+    /* IWICBitmapDecoder */
     SixelDecoder_QueryCapability,
     SixelDecoder_Initialize,
     SixelDecoder_GetContainerFormat,
@@ -3361,9 +1029,9 @@ static LONG g_serverLocks = 0;
 
 static HRESULT STDMETHODCALLTYPE
 SixelFactory_QueryInterface(
-    IClassFactory               *iface,
-    REFIID         /* [in] */    riid,
-    void           /* [out] */ **ppv
+    IClassFactory *iface,
+    REFIID         riid,
+    void         **ppv
 )
 {
     if (ppv == NULL) {
@@ -3376,7 +1044,7 @@ SixelFactory_QueryInterface(
         *ppv = iface;
         IUnknown_AddRef(iface);
         return S_OK;
-    } else if (IsEqualIID(riid, &IID_IClassFactory)) {
+    } else if (IsEqualIID(riid,&IID_IClassFactory)) {
         *ppv = iface;
         IUnknown_AddRef(iface);
         return S_OK;
@@ -3442,12 +1110,9 @@ SixelFactory_CreateInstance(
     decoder->initialized = FALSE;
     decoder->w = 0;
     decoder->h = 0;
-    decoder->indices = NULL;
-    decoder->palette = NULL;
-    decoder->ncolors = 0;
-    decoder->metadata = NULL;
+    decoder->solid = NULL;
 
-    hr = IUnknown_QueryInterface((IWICBitmapDecoder*)decoder, riid, ppv);
+    hr = SixelDecoder_QueryInterface((IWICBitmapDecoder*)decoder, riid, ppv);
     SixelDecoder_Release((IWICBitmapDecoder*)decoder);
 
     return hr;
@@ -3471,786 +1136,16 @@ SixelFactory_LockServer(
 }
 
 static IClassFactoryVtbl SixelFactory_Vtbl = {
-    /*** IUnknown methods ***/
     SixelFactory_QueryInterface,
     SixelFactory_AddRef,
     SixelFactory_Release,
-    /*** IClassFactory methods ***/
+    /* IClassFactory */
     SixelFactory_CreateInstance,
     SixelFactory_LockServer
 };
 
-/* Registry helpers */
-static void
-RegisterStringValue(
-    HKEY root,
-    const LPCWSTR subkey,
-    const LPCWSTR name,
-    const LPCWSTR value
-)
-{
-    HKEY h;
-    LONG r;
-
-    r = RegCreateKeyExW(root, subkey, 0, NULL, 0,
-                        KEY_SET_VALUE, NULL, &h, NULL);
-
-    if (r != ERROR_SUCCESS) {
-        fwprintf(stderr,
-                 L"RegCreateKeyExW: failed. key: %ls, code: %lu\n", subkey, r);
-        return;
-    }
-
-    r = RegSetValueExW(h,
-                       name,
-                       0,
-                       REG_SZ,
-                       (const BYTE *)value,
-                       (DWORD)((lstrlenW(value) + 1) * sizeof(WCHAR)));
-
-    if (r != ERROR_SUCCESS) {
-        fwprintf(stderr,
-                 L"RegSetValueExW: failed. key: %ls, code: %lu\n",
-                 subkey, r);
-        return;
-    }
-
-    r = RegCloseKey(h);
-    if (r != ERROR_SUCCESS) {
-        fwprintf(stderr,
-                 L"RegCloseKey: failed. key: %ls, code: %lu\n",
-                 subkey, r);
-        return;
-    }
-
-}
-
-static void
-RegisterDwordValue(
-    HKEY root,
-    LPCWSTR subkey,
-    LPCWSTR name,
-    DWORD value
-)
-{
-    HKEY h;
-    LONG r;
-
-    r = RegCreateKeyExW(root, subkey, 0, NULL, 0,
-                        KEY_SET_VALUE, NULL, &h, NULL);
-    if (r != ERROR_SUCCESS) {
-        fwprintf(stderr,
-                 L"RegCreateKeyExW: failed. key: %ls, code: %lu\n",
-                 subkey, r);
-        return;
-    }
-
-    r = RegSetValueExW(h, name, 0, REG_DWORD, (const BYTE *)&value, sizeof(value));
-    if (r != ERROR_SUCCESS) {
-        fwprintf(stderr,
-                 L"RegSetValueExW: failed. key: %ls, name: %ls, code: %lu\n",
-                 subkey, name, r);
-        return;
-    }
-
-    r = RegCloseKey(h);
-    if (r != ERROR_SUCCESS) {
-        fwprintf(stderr,
-                 L"RegCloseKey: failed. key: %ls, code: %lu\n",
-                 subkey, r);
-        return;
-    }
-}
-
-static void
-RegisterBinaryValue(
-    HKEY root,
-    LPCWSTR subkey,
-    LPCWSTR name,
-    LPCVOID data,
-    DWORD cb
-)
-{
-    HKEY h;
-    LONG r;
-
-    r = RegCreateKeyExW(root, subkey, 0, NULL, 0, KEY_SET_VALUE, NULL, &h, NULL);
-    if (r != ERROR_SUCCESS) {
-        fwprintf(stderr,
-                 L"RegCreateKeyExW: failed. key: %ls, code: %lu\n",
-                 subkey, r);
-        return;
-    }
-
-    r = RegSetValueExW(h, name, 0, REG_BINARY, (const BYTE *)data, cb);
-    if (r != ERROR_SUCCESS) {
-        fwprintf(stderr,
-                 L"RegSetValueExW: failed. key: %ls, name: %ls, code: %lu\n",
-                 subkey, name, r);
-        return;
-    }
-
-    r = RegCloseKey(h);
-    if (r != ERROR_SUCCESS) {
-        fwprintf(stderr,
-                 L"RegCloseKey: failed. key: %ls, code: %lu\n",
-                 subkey, r);
-        return;
-    }
-}
-
-
 /* DLL exports */
 __declspec(dllexport)
-STDAPI
-DllRegisterServer(void)
-{
-    const BYTE pat0[] = { 0x1B };   /* ESC */
-    const BYTE pat1[] = { 0x90 };   /* DCS */
-    const BYTE pat2[] = { 0x9B };   /* CSI */
-    const BYTE pat3[] = { 0x9D };   /* SOS */
-    const BYTE pat4[] = { 0x9E };   /* PM */
-    const BYTE pat5[] = { 0x9F };   /* APC */
-    const BYTE mask[] = { 0xFF };
-    LPWSTR key = NULL;
-    WCHAR modulePath[MAX_PATH];
-
-    GetModuleFileNameW((HINSTANCE)&__ImageBase, modulePath, MAX_PATH);
-
-    /* extensions */
-
-    /*
-     * extension: .six
-     */
-    key = L".six";
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        NULL, L"sixelfile");  /* progid */
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"ContentType", L"image/x-sixel");
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"PerceivedType", L"image");
-
-    /* for windows photo viewer */
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"OpenWithProgids", L"sixelfile");  /* progid */
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"OpenWithList", L"PhotoViewer.dll");
-
-    key = L".six\\ShellEx\\ContextMenuHandlers\\ShellImagePreview";
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        NULL, CLSIDSTR_WindowsPhotoViewer);
-
-    /* IThumbnailProvider */
-    key = L".six\\ShellEx\\" IIDSTR_IThumbnailProvider;
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        NULL, CLSIDSTR_PhotoThumbnailProvider);
-
-    key = L"SystemFileAssociations\\.six";
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"OpenWithList", L"PhotoViewer.dll");
-
-    key = L"SystemFileAssociations\\.six\\ShellEx\\"
-          L"ContextMenuHandlers\\ShellImagePreview";
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        NULL, CLSIDSTR_WindowsPhotoViewer);
-
-    /* IThumbnailProvider */
-    key = L"SystemFileAssociations\\.six\\ShellEx\\"
-          IIDSTR_IThumbnailProvider;
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        NULL, CLSIDSTR_PhotoThumbnailProvider);
-
-    /* System.Kind support */
-    key = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\KindMap";
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L".six", L"Picture");
-
-    /*
-     * extension: .sixel
-     */
-    key = L".sixel";
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        NULL, L"sixelfile");
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"ContentType", L"image/x-sixel");
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"PerceivedType", L"image");
-
-    /* for windows photo viewer */
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"OpenWithProgids", L"sixelfile");  /* progid */
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"OpenWithList", L"PhotoViewer.dll");
-
-    key = L".sixel\\ShellEx\\ContextMenuHandlers\\ShellImagePreview";
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        NULL, CLSIDSTR_WindowsPhotoViewer);
-
-    key = L"SystemFileAssociations\\.sixel";
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"OpenWithList", L"PhotoViewer.dll");
-
-    key = L"SystemFileAssociations\\.sixel\\ShellEx\\"
-          L"ContextMenuHandlers\\ShellImagePreview";
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        NULL, CLSIDSTR_WindowsPhotoViewer);
-
-    key = L"SystemFileAssociations\\.sixel\\ShellEx\\"
-          IIDSTR_IThumbnailProvider;
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        NULL, CLSIDSTR_PhotoThumbnailProvider);
-
-    /* System.Kind support */
-    key = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\KindMap";
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L".sixel", L"Picture");
-
-    /*
-     * progid: "sixelfile"
-     */
-    key = L"sixelfile";
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        NULL, L"SIXEL image format");
-
-    key = L"sixelfile\\shell\\open";
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"MuiVerb",
-                        L"@%PROGRAMFILES%\\Windows Photo Viewer\\"
-                        L"PhotoViewer.dll,-3043");
-
-    key = L"sixelfile\\shell\\open\\command";
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        NULL,
-                        L"%SystemRoot%\\System32\\rundll32.exe"
-                        L" \"%ProgramFiles%\\Windows Photo Viewer\\"
-                           L"PhotoViewer.dll\","
-                        L" ImageView_Fullscreen %1");
-
-    key = L"sixelfile\\shell\\open\\DropTarget";
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"Clsid", CLSIDSTR_WindowsPhotoViewer);
-
-    key = L"sixelfile\\shell\\printto\\command";
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        NULL, L"%SystemRoot%\\System32\\rundll32.exe"
-                              L" \"%SystemRoot%\\System32\\shimgvw.dll\","
-                              L" ImageView_PrintTo"
-                              L" /pt \"%1\" \"%2\" \"%3\" \"%4\"");
-
-    /*
-     * CLSID
-     */
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder;
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        NULL, L"WIC SIXEL Decoder");
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"FriendlyName", L"WIC SIXEL Decoder");
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"Description", L"Decoder for DEC SIXEL graphics");
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"Author", L"Hayaki Saito");
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"CLSID", CLSIDSTR_SixelDecoder);
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"VendorGUID", GUIDSTR_VendorSIXEL);
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"ContainerFormat", GUIDSTR_ContainerFormatSIXEL);
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"FileExtensions", L".six;.sixel");
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"MimeTypes", L"image/x-sixel");
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"Version", L"1.0.0.1");
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"Date", L"2014-02-20");
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"SpecVersion", L"1.0.0.0");
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"ColorManagementVersion", L"1.0");
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"SupportsAnimation", 0);
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"SupportsChromakey", 0);
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"SupportsLossless", 1);
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"SupportsMultiframe", 0);
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"ArbitrationPriority", 0x0);
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"Capabilities", 0x9);
-
-    /* InprocServer32 */
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
-          L"InprocServer32";
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        NULL, modulePath);
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"ThreadingModel", L"Both");
-
-    /* Formats */
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
-          L"Formats\\" GUIDSTR_WICPixelFormat8bppIndexed;
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        NULL, L"");
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
-          L"Formats\\" GUIDSTR_WICPixelFormat32bppBGRA;
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        NULL, L"");
-
-    /* Patterns */
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
-          L"Patterns\\0";
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"Position", 0);
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"Length", 1);
-    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
-                        L"Pattern", pat0, sizeof(pat0));
-    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
-                        L"Mask", mask, sizeof(mask));
-
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
-          L"Patterns\\1";
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"Position", 0);
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"Length", 1);
-    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
-                        L"Pattern", pat1, sizeof(pat1));
-    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
-                        L"Mask", mask, sizeof(mask));
-
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
-          L"Patterns\\2";
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"Position", 0);
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"Length", 1);
-    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
-                        L"Pattern", pat2, sizeof(pat2));
-    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
-                        L"Mask", mask, sizeof(mask));
-
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
-          L"Patterns\\3";
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"Position", 0);
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"Length", 1);
-    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
-                        L"Pattern", pat3, sizeof(pat3));
-    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
-                        L"Mask", mask, sizeof(mask));
-
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
-          L"Patterns\\4";
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"Position", 0);
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"Length", 1);
-    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
-                        L"Pattern", pat4, sizeof(pat4));
-    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
-                        L"Mask", mask, sizeof(mask));
-
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
-          L"Patterns\\5";
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"Position", 0);
-    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"Length", 1);
-    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
-                        L"Pattern", pat5, sizeof(pat5));
-    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
-                        L"Mask", mask, sizeof(mask));
-
-    /* category */
-    key = L"CLSID\\" CATIDSTR_WICBitmapDecoders "\\"
-          L"Instance\\" CLSIDSTR_SixelDecoder;
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"CLSID", CLSIDSTR_SixelDecoder);
-    RegisterStringValue(HKEY_CLASSES_ROOT, key,
-                        L"FriendlyName", L"WIC SIXEL Decoder");
-
-    /* WIC extensions */
-    key = L"Software\\Microsoft\\Windows Imaging Component\\"
-          L"Extensions\\.six";
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L"CLSID", CLSIDSTR_SixelDecoder);
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L"ContainerFormat", GUIDSTR_ContainerFormatSIXEL);
-
-    key = L"Software\\Microsoft\\Windows Imaging Component\\"
-          L"Extensions\\.sixel";
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L"CLSID", CLSIDSTR_SixelDecoder);
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L"ContainerFormat", GUIDSTR_ContainerFormatSIXEL);
-
-    /* WIC decoders */
-    key = L"Software\\Microsoft\\Windows Imaging Component\\"
-          L"Decoders\\" CLSIDSTR_SixelDecoder;
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        NULL, L"WIC SIXEL Decoder");
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L"FriendlyName", L"WIC SIXEL Decoder");
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L"Description", L"Decoder for DEC SIXEL graphics");
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L"Author", L"Hayaki Saito");
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L"CLSID", CLSIDSTR_SixelDecoder);
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L"VendorGUID", GUIDSTR_VendorSIXEL);
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L"ContainerFormat", GUIDSTR_ContainerFormatSIXEL);
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L"FileExtensions", L".six");
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L"MimeTypes", L"image/x-sixel");
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L"Version", L"1.0.0.1");
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L"Date", L"2014-02-20");
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L"SpecVersion", L"1.0.0.0");
-    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
-                        L"ColorManagementVersion", L"1.0");
-    RegisterDwordValue (HKEY_LOCAL_MACHINE, key,
-                        L"SupportsAnimation", 0);
-    RegisterDwordValue (HKEY_LOCAL_MACHINE, key,
-                        L"SupportsChromakey", 0);
-    RegisterDwordValue (HKEY_LOCAL_MACHINE, key,
-                        L"SupportsLossless", 1);
-    RegisterDwordValue (HKEY_LOCAL_MACHINE, key,
-                        L"SupportsMultiframe", 0);
-    RegisterDwordValue (HKEY_LOCAL_MACHINE, key,
-                        L"ArbitrationPriority", 0x0);
-    RegisterDwordValue (HKEY_LOCAL_MACHINE, key,
-                        L"Capabilities", 0x9);
-
-#if WIC_DISABLE_THUMBNAIL_CACHE
-    /* debugging: disable explorer's thumbnail cache
-     * NOTE: please remove this registry value manually
-     *       command:
-     *         $ reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\DisableThumbnailCache"
-     */
-    key = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced";
-    RegisterDwordValue (HKEY_CURRENT_USER, key,
-                        L"DisableThumbnailCache", 1);
-#endif
-    return S_OK;
-}
-
-
-__declspec(dllexport)
-STDAPI
-DllUnregisterServer(void)
-{
-    LSTATUS r;
-    LPWSTR key = NULL;
-
-    /* WIC decoders */
-    key = L"Software\\Microsoft\\Windows Imaging Component\\"
-          L"Decoders\\" CLSIDSTR_SixelDecoder;
-    r = RegDeleteKeyW(HKEY_LOCAL_MACHINE, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    /* WIC extensions */
-    key = L"Software\\Microsoft\\Windows Imaging Component\\"
-          L"Extensions\\.six";
-    r = RegDeleteKeyW(HKEY_LOCAL_MACHINE, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"Software\\Microsoft\\Windows Imaging Component\\"
-          L"Extensions\\.sixel";
-    r = RegDeleteKeyW(HKEY_LOCAL_MACHINE, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    /* category */
-    key = L"CLSID\\" CATIDSTR_WICBitmapDecoders L"\\"
-          L"Instance\\" CLSIDSTR_SixelDecoder;
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    /* Patterns */
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\6";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\5";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\4";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\3";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\2";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\1";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\0";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    /* Formats */
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Formats\\"
-          GUIDSTR_WICPixelFormat8bppIndexed;
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Formats\\"
-          GUIDSTR_WICPixelFormat32bppBGRA;
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Formats";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    /* InprocServer32 */
-    key =L"CLSID\\" CLSIDSTR_SixelDecoder L"\\InprocServer32";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    /* CLSID */
-    key = L"CLSID\\" CLSIDSTR_SixelDecoder;
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    /* progid */
-    key = L"sixelfile\\shell\\printto\\command";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"sixelfile\\shell\\printto";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"sixelfile\\shell\\open\\DropTarget";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"sixelfile\\shell\\open\\command";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"sixelfile\\shell\\open";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"sixelfile\\shell";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"sixelfile";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    /* extensions */
-
-    key = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\KindMap";
-    r = RegDeleteKeyW(HKEY_LOCAL_MACHINE, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"SystemFileAssociations\\.six\\ShellEx\\"
-          IIDSTR_IThumbnailProvider;
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"SystemFileAssociations\\.six\\ShellEx\\"
-          L"ContextMenuHandlers\\ShellImagePreview";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"SystemFileAssociations\\.six\\ShellEx\\"
-          L"ContextMenuHandlers";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"SystemFileAssociations\\.six\\ShellEx";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"SystemFileAssociations\\.six";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L".six\\ShellEx\\" IIDSTR_IThumbnailProvider;
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L".six\\ShellEx\\ContextMenuHandlers\\ShellImagePreview";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L".six\\ShellEx\\ContextMenuHandlers";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L".six\\ShellEx";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L".six";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"SystemFileAssociations\\.sixel\\ShellEx\\"
-          IIDSTR_IThumbnailProvider;
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"SystemFileAssociations\\.sixel\\ShellEx\\"
-          L"ContextMenuHandlers\\ShellImagePreview";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"SystemFileAssociations\\.sixel\\ShellEx\\"
-          L"ContextMenuHandlers";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"SystemFileAssociations\\.sixel\\ShellEx";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L"SystemFileAssociations\\.sixel";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L".sixel\\ShellEx\\" IIDSTR_IThumbnailProvider;
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L".sixel\\ShellEx\\ContextMenuHandlers\\ShellImagePreview";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L".sixel\\ShellEx\\ContextMenuHandlers";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L".sixel\\ShellEx";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    key = L".sixel";
-    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
-    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
-        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
-    }
-
-    return S_OK;
-}
-
-#if defined(_MSC_VER)
-_Check_return_
-#elif !defined(__clang__)
-__declspec(dllexport)
-#endif
 STDAPI
 DllGetClassObject(
     REFCLSID   rclsid,
@@ -4274,7 +1169,7 @@ DllGetClassObject(
 
         factory->lpVtbl = &SixelFactory_Vtbl;
         factory->ref = 1;
-        hr = IUnknown_QueryInterface((IClassFactory*)factory, riid, ppv);
+        hr = SixelFactory_QueryInterface((IClassFactory*)factory, riid, ppv);
         SixelFactory_Release((IClassFactory*)factory);
 
         return hr;
@@ -4283,33 +1178,224 @@ DllGetClassObject(
     return CLASS_E_CLASSNOTAVAILABLE;
 }
 
-#if defined(_MSC_VER)
-__control_entrypoint(DllExport)
-#elif !defined(__clang__)
 __declspec(dllexport)
-#endif
 STDAPI
 DllCanUnloadNow(void)
 {
     return g_serverLocks == 0 ? S_OK: S_FALSE;
 }
 
-BOOL WINAPI
+BOOL APIENTRY
 DllMain(
-    HINSTANCE hinstDLL,  /* handle to DLL module */
-    DWORD fdwReason,     /* reason for calling function */
-    LPVOID lpvReserved   /* reserved */
+    HINSTANCE h,
+    DWORD r,
+    LPVOID
 )
 {
-    (void) lpvReserved;
-
-    if (fdwReason == DLL_PROCESS_ATTACH) {
-        DisableThreadLibraryCalls(hinstDLL);
+    if (r == DLL_PROCESS_ATTACH) {
+        DisableThreadLibraryCalls(h);
     }
-
     return TRUE;
 }
 
+/* Registry helpers & Register/Unregister */
+static HRESULT
+RegisterStringValue(
+    HKEY root,
+    const wchar_t *subkey,
+    const wchar_t *name,
+    const wchar_t *value
+)
+{
+    HKEY h;
+    LONG r;
+
+    r = RegCreateKeyExW(root, subkey, 0, NULL, 0, KEY_SET_VALUE, NULL, &h, NULL);
+
+    if (r != ERROR_SUCCESS) {
+        return HRESULT_FROM_WIN32(r);
+    }
+
+    r = RegSetValueExW(h, name, 0, REG_SZ, (const BYTE*)value, (DWORD)((wcslen(value) + 1) * sizeof(wchar_t)));
+
+    RegCloseKey(h);
+
+    return r == ERROR_SUCCESS ? S_OK: HRESULT_FROM_WIN32(r);
+}
+
+static HRESULT
+RegisterDwordValue(
+    HKEY root,
+    const wchar_t *subkey,
+    const wchar_t *name,
+    DWORD value
+)
+{
+    HKEY h;
+    LONG r;
+
+    r = RegCreateKeyExW(root, subkey, 0, NULL, 0, KEY_SET_VALUE, NULL, &h, NULL);
+    if (r != ERROR_SUCCESS) {
+        return HRESULT_FROM_WIN32(r);
+    }
+    r = RegSetValueExW(h, name, 0, REG_DWORD, (const BYTE*)&value, sizeof(value));
+
+    RegCloseKey(h);
+
+    return r == ERROR_SUCCESS ? S_OK: HRESULT_FROM_WIN32(r);
+}
+
+static HRESULT
+RegisterBinaryValue(
+    HKEY root,
+    const wchar_t *subkey,
+    const wchar_t *name,
+    const void *data,
+    DWORD cb
+)
+{
+    HKEY h;
+    LONG r;
+
+    r = RegCreateKeyExW(root, subkey, 0, NULL, 0, KEY_SET_VALUE, NULL, &h, NULL);
+
+    if (r != ERROR_SUCCESS) {
+        return HRESULT_FROM_WIN32(r);
+    }
+    r = RegSetValueExW(h, name, 0, REG_BINARY, (const BYTE*)data, cb);
+
+    RegCloseKey(h);
+
+    return r == ERROR_SUCCESS ? S_OK: HRESULT_FROM_WIN32(r);
+}
+
+static void
+RegisterCodecKeysInCLSID(const wchar_t* clsidStr, const wchar_t* modulePath)
+{
+    /* CLSID */
+    wchar_t clsidKey[256];
+    wsprintfW(clsidKey, L"CLSID\\%s", clsidStr);
+
+    /* InprocServer32 */
+    {
+        wchar_t inprocKey[300];
+        wsprintfW(inprocKey, L"%s\\InprocServer32", clsidKey);
+        RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey,  NULL,                 L"WIC SIXEL Decoder");
+        RegisterStringValue(HKEY_CLASSES_ROOT, inprocKey, NULL,                 modulePath);
+        RegisterStringValue(HKEY_CLASSES_ROOT, inprocKey, L"ThreadingModel",    L"Both");
+    }
+
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"FriendlyName",           L"WIC SIXEL Decoder (Dummy)");
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Description",            L"WIC SIXEL Decoder (Dummy)");
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Author",                 L"Hayaki Saito");
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"VendorGUID",             GUID_VendorSIXEL_String);
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"ContainerFormat",        GUID_ContainerFormatSIXEL_String);
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"FileExtensions",         L".six");
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"MimeTypes",              L"image/sixel");
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Version",                L"1.0.0.0");
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Date",                   L"2014-02-20");
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"SpecVersion",            L"1.0.0.0");
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"ColorManagementVersion", L"0");
+    RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"SupportsAnimation",      0);
+    RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"SupportsChromakey",      1);
+    RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"SupportsLossless",       1);
+    RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"SupportsMultiframe",     0);
+    RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"ArbitrationPriority",    0x100);
+
+    /* Formats */
+    {
+        wchar_t formatsKey[512];
+ 
+        wsprintfW(formatsKey, L"%s\\Formats\\%s", clsidKey, GUID_WICPixelFormat32bppBGRA_String);
+        RegisterStringValue(HKEY_CLASSES_ROOT, formatsKey, NULL, L"");
+    }
+
+    /* Patterns */
+    {
+        wchar_t patKey[512];
+        const BYTE pat[]  = { 0x1B, 0x50 };   /* ESC 'P' */
+        const BYTE mask[] = { 0xFF, 0xFF };
+
+        wsprintfW(patKey, L"%s\\Patterns\\0", clsidKey);
+        RegisterDwordValue (HKEY_CLASSES_ROOT, patKey, L"Position", 0);
+        RegisterDwordValue (HKEY_CLASSES_ROOT, patKey, L"Length",   2);
+        RegisterBinaryValue(HKEY_CLASSES_ROOT, patKey, L"Pattern",  pat,  sizeof(pat));
+        RegisterBinaryValue(HKEY_CLASSES_ROOT, patKey, L"Mask",     mask, sizeof(mask));
+        /* RegisterDwordValue(HKEY_CLASSES_ROOT, patKey, L"EndOfStream", 0); */
+    }
+
+    /* category */
+    {
+        wchar_t instKey[512];
+
+        wsprintfW(instKey,
+                  L"CLSID\\%s\\Instance\\%s",
+                  CATID_WICBitmapDecoders_String,
+                  clsidStr);
+        RegisterStringValue(HKEY_CLASSES_ROOT, instKey, L"CLSID",        clsidStr);
+        RegisterStringValue(HKEY_CLASSES_ROOT, instKey, L"FriendlyName", L"WIC SIXEL Decoder");
+    }
+}
+
+__declspec(dllexport)
+STDAPI
+DllRegisterServer(void) {
+    wchar_t modulePath[MAX_PATH];
+    wchar_t clsidKey[256];
+    wchar_t inprocKey[512];
+    wchar_t categoryKey[512];
+
+    GetModuleFileNameW((HINSTANCE)&__ImageBase, modulePath, MAX_PATH);
+    wsprintfW(clsidKey, L"CLSID\\%s", CLSID_SixelDecoder_String);
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, NULL, L"WIC SIXEL Decoder");
+    wsprintfW(inprocKey, L"%s\\InprocServer32", clsidKey);
+    RegisterStringValue(HKEY_CLASSES_ROOT, inprocKey, NULL, modulePath);
+    RegisterStringValue(HKEY_CLASSES_ROOT, inprocKey, L"ThreadingModel", L"Both");
+    wsprintfW(categoryKey,
+              L"CLSID\\%s\\Instance\\%s",
+              CATID_WICBitmapDecoders_String,
+              CLSID_SixelDecoder_String);
+    RegisterStringValue(HKEY_CLASSES_ROOT, categoryKey, L"CLSID", CLSID_SixelDecoder_String);
+    RegisterStringValue(HKEY_CLASSES_ROOT, categoryKey, L"FriendlyName", L"WIC SIXEL Decoder");
+
+    RegisterCodecKeysInCLSID(CLSID_SixelDecoder_String, modulePath);
+
+    return S_OK;
+}
+
+__declspec(dllexport)
+STDAPI
+DllUnregisterServer(void)
+{
+    wchar_t clsidKey[256];
+    wchar_t inprocKey[512];
+    wchar_t patternKey[512];
+    wchar_t pattern0Key[512];
+    wchar_t categoryKey[512];
+    wchar_t formatsKey[512];
+    wchar_t formats1Key[512];
+
+    wsprintfW(clsidKey, L"CLSID\\%s", CLSID_SixelDecoder_String);
+    wsprintfW(categoryKey,
+              L"CLSID\\%s\\Instance\\%s",
+              CATID_WICBitmapDecoders_String,
+              CLSID_SixelDecoder_String);
+    wsprintfW(inprocKey, L"%s\\InprocServer32",clsidKey);
+    wsprintfW(patternKey, L"%s\\Patterns",clsidKey);
+    wsprintfW(pattern0Key, L"%s\\0",patternKey);
+    wsprintfW(formatsKey, L"%s\\Formats\\%s",clsidKey);
+    wsprintfW(formats1Key, L"%s\\%s", formatsKey, GUID_WICPixelFormat32bppBGRA_String);
+
+    RegDeleteKeyW(HKEY_CLASSES_ROOT, inprocKey);
+    RegDeleteKeyW(HKEY_CLASSES_ROOT, categoryKey);
+    RegDeleteKeyW(HKEY_CLASSES_ROOT, pattern0Key);
+    RegDeleteKeyW(HKEY_CLASSES_ROOT, patternKey);
+    RegDeleteKeyW(HKEY_CLASSES_ROOT, formats1Key);
+    RegDeleteKeyW(HKEY_CLASSES_ROOT, formatsKey);
+    RegDeleteKeyW(HKEY_CLASSES_ROOT, clsidKey);
+
+    return S_OK;
+}
 /* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */
