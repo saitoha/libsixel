@@ -471,11 +471,11 @@ CLEANFILES = *.gcno *.gcda *.gcov \
 
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = $(srcdir)/img2sixel.c $(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h
 @WANT_IMG2SIXEL_TRUE@img2sixel_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
-@WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
+@WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la
 @WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = $(srcdir)/sixel2png.c $(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h
 @WANT_SIXEL2PNG_TRUE@sixel2png_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
-@WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
+@WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la
 all: all-recursive
 
