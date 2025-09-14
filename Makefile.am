@@ -1,7 +1,7 @@
 #
 # @configure_input@
 #
-SUBDIRS = include src converters tools python
+SUBDIRS = include src converters tools python wic
 DIST_SUBDIRS = $(SUBDIRS)
 
 # Keep image fixtures in release archives for converter test coverage.
@@ -38,6 +38,14 @@ all-am:
 	cp $(builddir)/package.json.in $(builddir)/package.json
 
 check-am:
+
+register:
+	-regsvr32 -s "$(shell cygpath -w $(builddir)/wic/.libs/libwicsixel.dll)"
+	@echo Registered: .libs/libwicsixel.dll
+
+unregister:
+	-regsvr32 -u -s "$(shell cygpath -w $(builddir)/wic/.libs/libwicsixel.dll)"
+	@echo Unregistered: .libs/libwicsixel.dll
 
 dist-windows: dist-zip
 	mkdir -p @PACKAGE_NAME@-@PACKAGE_VERSION@/bin-windows
