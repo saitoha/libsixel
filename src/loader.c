@@ -1697,7 +1697,6 @@ load_with_gd(
 
             status = sixel_frame_new(&frame, pchunk->allocator);
             if (SIXEL_FAILED(status)) {
-                frame = NULL;
                 goto gif_end;
             }
 
@@ -1730,7 +1729,6 @@ load_with_gd(
             }
 
             status = fn_load(frame, context);
-            sixel_frame_unref(frame);
             frame = NULL;
             gdImageDestroy(im);
             ims[i] = NULL;
@@ -1753,6 +1751,15 @@ gif_end:
             }
             gdFree(ims);
         }
+        goto end;
+#else
+        status = SIXEL_GD_ERROR;
+        goto end;
+#endif
+    }
+
+    status = sixel_frame_new(&frame, pchunk->allocator);
+    if (SIXEL_FAILED(status)) {
         goto end;
 #else
         status = SIXEL_GD_ERROR;
