@@ -14177,6 +14177,9 @@ case "$CC" in
   *cl*|*clang-cl*)
     using_cl=yes
     CFLAGS=`echo "$CFLAGS" | sed s/-g//g`
+    CFLAGS="$CFLAGS -O2"
+    LDFLAGS="$LDFLAGS -DEBUG"
+    PKG_CONFIG=
     ;;
   *)
     using_cl=no
@@ -17196,16 +17199,6 @@ fi
 
 
 
-ac_fn_c_check_func "$LINENO" "memset" "ac_cv_func_memset"
-if test "x$ac_cv_func_memset" = xyes
-then :
-
-else case e in #(
-  e) as_fn_error $? "memset is not available." "$LINENO" 5 ;;
-esac
-fi
-
-
 ac_fn_c_check_func "$LINENO" "getopt_long" "ac_cv_func_getopt_long"
 if test "x$ac_cv_func_getopt_long" = xyes
 then :
@@ -17226,7 +17219,15 @@ esac
 fi
 
 
-ac_fn_c_check_func "$LINENO" "memcpy" "ac_cv_func_memcpy"
+if test "x$using_cl" = "xyes"; then
+    printf "%s\n" "#define HAVE_MEMCPY 1" >>confdefs.h
+
+    printf "%s\n" "#define HAVE_MEMMOVE 1" >>confdefs.h
+
+    printf "%s\n" "#define HAVE_MEMSET 1" >>confdefs.h
+
+else
+    ac_fn_c_check_func "$LINENO" "memcpy" "ac_cv_func_memcpy"
 if test "x$ac_cv_func_memcpy" = xyes
 then :
   printf "%s\n" "#define HAVE_MEMCPY 1" >>confdefs.h
@@ -17244,6 +17245,9 @@ then :
   printf "%s\n" "#define HAVE_MEMSET 1" >>confdefs.h
 
 fi
+
+fi
+
 ac_fn_c_check_func "$LINENO" "setmode" "ac_cv_func_setmode"
 if test "x$ac_cv_func_setmode" = xyes
 then :
@@ -17691,7 +17695,7 @@ fi
 
 
 
-if test x$with_gd != xno; then
+if test x$with_gd != xno && test "x$using_cl" != "xyes"; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GD" >&5
 printf "%s\n" "$as_me: checking for GD" >&6;}
     CFLAGS_BACKUP=$CFLAGS
@@ -18572,7 +18576,7 @@ fi
 
 
 
-if test x$with_libcurl != xno; then
+if test x$with_libcurl != xno && test "x$using_cl" != "xyes"; then
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libcurl" >&5
 printf "%s\n" "$as_me: checking for libcurl" >&6;}
@@ -18768,7 +18772,7 @@ printf "%s\n" "$as_me: checking for WinHTTP" >&6;}
             fi
             if test "x${using_cl}" = xyes; then
                 ADDED_CFLAGS="-I${with_winhttp}\include"
-                ADDED_LIBS="winhttp.lib"
+                ADDED_LIBS="-lwinhttp"
             else
                 ADDED_CFLAGS="-I${with_winhttp}/include"
                 ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
@@ -18776,8 +18780,8 @@ printf "%s\n" "$as_me: checking for WinHTTP" >&6;}
         else
             if test x${prefix} != x -a x${prefix} != xNONE; then
                 if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS="-I${prefix}\include"
-                    ADDED_LIBS="winhttp.lib"
+                    ADDED_CFLAGS=
+                    ADDED_LIBS="-lwinhttp"
                 else
                     ADDED_CFLAGS="-I${prefix}/include"
                     ADDED_LIBS="-L${prefix}/lib -lwinhttp"
@@ -18785,7 +18789,7 @@ printf "%s\n" "$as_me: checking for WinHTTP" >&6;}
             else
                 if test "x${using_cl}" = xyes; then
                     ADDED_CFLAGS=
-                    ADDED_LIBS="winhttp.lib"
+                    ADDED_LIBS="-lwinhttp"
                 else
                     ADDED_CFLAGS="-I/usr/local/include"
                     ADDED_LIBS="-L/usr/local/lib -lwinhttp"
@@ -18907,7 +18911,7 @@ fi
 
 
 
-if test x$with_jpeg != xno; then
+if test x$with_jpeg != xno && test "x$using_cl" != "xyes"; then
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for jpeg" >&5
 printf "%s\n" "$as_me: checking for jpeg" >&6;}
@@ -19088,7 +19092,7 @@ fi
 
 
 
-if test x$with_png != xno; then
+if test x$with_png != xno && test "x$using_cl" != "xyes"; then
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for png" >&5
 printf "%s\n" "$as_me: checking for png" >&6;}
@@ -19294,7 +19298,7 @@ fi
 
 
 
-if test x$with_winpthread != xno; then
+if test x$with_winpthread != xno && test "x$using_cl" != "xyes"; then
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for winpthread" >&5
 printf "%s\n" "$as_me: checking for winpthread" >&6;}
@@ -19394,7 +19398,7 @@ fi
 
 if test x$with_wic != xno; then
     case "$host_os" in
-    mingw* | cygwin* | msys*)
+    mingw* | cygwin* | msys* | msvc* )
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Windows Imaging Component (WIC)" >&5
 printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
         CFLAGS_BACKUP="$CFLAGS"
@@ -19403,15 +19407,30 @@ printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
             if test ! -d "$with_wic"; then
                 as_fn_error $? "\"${with_wic}\" is not directory" "$LINENO" 5
             fi
-            ADDED_CFLAGS="-I${with_wic}/include"
-            ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
+            if test "x${using_cl}" = xyes; then
+                ADDED_CFLAGS="-I${with_wic}\include"
+                ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
+            else
+                ADDED_CFLAGS="-I${with_wic}/include"
+                ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
+            fi
         else
             if test x${prefix} != x -a x${prefix} != xNONE; then
-                ADDED_CFLAGS="-I${prefix}/include"
-                ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+                if test "x${using_cl}" = xyes; then
+                    ADDED_CFLAGS=
+                    ADDED_LIBS="-lole32 -lwindowscodecs"
+                else
+                    ADDED_CFLAGS="-I${prefix}/include"
+                    ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+                fi
             else
-                ADDED_CFLAGS="-I/usr/local/include"
-                ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+                if test "x${using_cl}" = xyes; then
+                    ADDED_CFLAGS=
+                    ADDED_LIBS="-lole32 -lwindowscodecs"
+                else
+                    ADDED_CFLAGS="-I/usr/local/include"
+                    ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+                fi
             fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
@@ -19675,22 +19694,37 @@ if test "x${enable_wiccodec}" = xno; then
     message_wiccodec=no
 else
     case "${host_os}" in
-      mingw*)
+      mingw* | msvc* )
         have_wiccodec=yes
         if test x${have_wic} = xyes; then
-            WICCODEC_CFLAGS="$WIC_CFLAGS"
-            WICCODEC_LIBS="$WIC_LIBS"
+            if test "x${using_cl}" = xyes; then
+                WICCODEC_CFLAGS="$WIC_CFLAGS"
+                WICCODEC_LIBS="$WIC_LIBS -ladvapi32 -luser32"
+            else
+                WICCODEC_CFLAGS="$WIC_CFLAGS"
+                WICCODEC_LIBS="$WIC_LIBS"
+            fi
         else
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Windows Imaging Component (WIC)" >&5
 printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
             CFLAGS_BACKUP="$CFLAGS"
             LIBS_BACKUP="$LIBS"
             if test x${prefix} != x -a x${prefix} != xNONE; then
-                ADDED_CFLAGS="-I${prefix}/include"
-                ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+                if test "x${using_cl}" = xyes; then
+                    ADDED_CFLAGS=
+                    ADDED_LIBS="-lole32 -lwindowscodecs -ladvapi32 -luser32"
+                else
+                    ADDED_CFLAGS="-I${prefix}/include"
+                    ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+                fi
             else
-                ADDED_CFLAGS="-I/usr/local/include"
-                ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+                if test "x${using_cl}" = xyes; then
+                    ADDED_CFLAGS=
+                    ADDED_LIBS="-lole32 -lwindowscodecs -ladvapi32 -luser32"
+                else
+                    ADDED_CFLAGS="-I/usr/local/include"
+                    ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+                fi
             fi
             CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
             LIBS="${LIBS} ${ADDED_LIBS}"
