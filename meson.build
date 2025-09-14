@@ -66,6 +66,7 @@ net = []
 have_winpthread = false
 have_python = false
 have_wic = false
+have_wiccodec = false
 cpu = host_machine.cpu_family()
 
 have_unreachable = cc.compiles('''
@@ -121,7 +122,7 @@ wflags = cc.get_supported_arguments([
     '-Wunused-but-set-variable',
     '-Wclobbered'
 ])
-foreach f: flags
+foreach f: wflags
   if f == '-Wdeprecated-declarations'
     conf.set('HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS', 1)
   elif f == '-Wunused-but-set-variable'
@@ -309,12 +310,12 @@ wic_opt = get_option('wic')
 if host_system == 'windows'
   if not wic_opt.disabled()
     have_wic_headers = cc.has_header('windows.h') and cc.has_header('wincodec.h')
-    ole32 = cc.find_library('ole32', required: false)
-    windowscodecs = cc.find_library('windowscodecs', required: false)
-    if have_wic_headers and ole32.found() and windowscodecs.found()
+    ole32_wic = cc.find_library('ole32', required: false)
+    windowscodecs_wic = cc.find_library('windowscodecs', required: false)
+    if have_wic_headers and ole32_wic.found() and windowscodecs_wic.found()
       conf.set('HAVE_WIC', 1)
-      deps += [ole32, windowscodecs]
-      link_libs += [ole32, windowscodecs]
+      deps += [ole32_wic, windowscodecs_wic]
+      link_libs += [ole32_wic, windowscodecs_wic]
       loaders += 'wic'
       have_wic = true
     elif wic_opt.enabled()
@@ -323,6 +324,33 @@ if host_system == 'windows'
   endif
 elif wic_opt.enabled()
   error('WIC support is only available on Windows')
+endif
+
+wiccodec_opt = get_option('wiccodec')
+wiccodec_message = 'no'
+have_wiccodec = false
+if host_system == 'windows'
+  if not wiccodec_opt.disabled()
+    have_wiccodec_headers = cc.has_header('windows.h') and cc.has_header('wincodec.h')
+    ole32 = cc.find_library('ole32', required: false)
+    windowscodecs = cc.find_library('windowscodecs', required: false)
+    advapi32 = cc.find_library('advapi32', required: false)
+    user32 = cc.find_library('user32', required: false)
+    if have_wiccodec_headers and ole32.found() and windowscodecs.found() and advapi32.found() and user32.found()
+      if not have_wic
+        deps += [ole32, windowscodecs]
+        link_libs += [ole32, windowscodecs]
+      endif
+      deps += [advapi32, user32]
+      link_libs += [advapi32, user32]
+      have_wiccodec = true
+      wiccodec_message = 'yes'
+    elif wiccodec_opt.enabled()
+      error('WIC codec support requested, but required headers or libraries were not found')
+    endif
+  endif
+elif wiccodec_opt.enabled()
+  error('WIC codec support is only available on Windows')
 endif
 
 winhttp_opt = get_option('winhttp')
@@ -482,7 +510,7 @@ endif
 subdir('include')
 subdir('src')
 subdir('converters')
-if have_wic
+if have_wiccodec
   subdir('wic')
 endif
 if have_python
@@ -526,6 +554,7 @@ message('       libwinpthread       : ' + (have_winpthread ? 'yes' : 'no'))
 message('       pkg-config dir      : ' + pkgconfig_dir)
 message('       Bash completion dir : ' + bash_completion_dir)
 message('       Zsh completion dir  : ' + zsh_completion_dir)
+message('       WIC codec           : ' + wiccodec_message)
 message('       python bindings     : ' + python_message)
 message('       SIMD                : ' + simd_message)
 message('       gcov integration    : ' + (get_option('gcov') ? 'yes' : 'no'))
