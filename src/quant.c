@@ -1332,7 +1332,11 @@ sixel_quant_apply_palette(
     sixel_allocator_t /* in */  *allocator)
 {
     typedef int component_t;
+#if _MSC_VER
     enum { max_depth = 4 };
+#else
+    const size_t max_depth = 4;
+#endif
     unsigned char copy[max_depth];
     SIXELSTATUS status = SIXEL_FALSE;
     int pos, n, x, y, sum1, sum2;
