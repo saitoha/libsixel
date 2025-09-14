@@ -722,13 +722,6 @@ WANT_IMG2SIXEL_FALSE
 WANT_IMG2SIXEL_TRUE
 USING_CL_FALSE
 USING_CL_TRUE
-CPP
-am__fastdepOBJC_FALSE
-am__fastdepOBJC_TRUE
-OBJCDEPMODE
-ac_ct_OBJC
-OBJCFLAGS
-OBJC
 LT_SYS_LIBRARY_PATH
 OTOOL64
 OTOOL
@@ -14399,169 +14392,23 @@ ac_config_headers="$ac_config_headers config.h"
 
 
 
-if test -z "$CC" && { test "x$MSYSTEM" = "xCLANG64" || test "x$MSYSTEM" = "xCLANGARM64"; }
-then :
-
-  if test -n "$ac_tool_prefix"; then
-  for ac_prog in clang clang.exe
-  do
-    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
-set dummy $ac_tool_prefix$ac_prog; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_CC+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) if test -n "$CC"; then
-  ac_cv_prog_CC="$CC" # Let the user override the test.
+# Detect Microsoft Visual C compiler
+case "$CC" in
+  *cl*|*clang-cl*)
+    using_cl=yes
+    CFLAGS=`echo "$CFLAGS" | sed s/-g//g`
+    ;;
+  *)
+    using_cl=no
+    ;;
+esac
+ if test "x$using_cl" = "xyes"; then
+  USING_CL_TRUE=
+  USING_CL_FALSE='#'
 else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_CC="$ac_tool_prefix$ac_prog"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi ;;
-esac
+  USING_CL_TRUE='#'
+  USING_CL_FALSE=
 fi
-CC=$ac_cv_prog_CC
-if test -n "$CC"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $CC" >&5
-printf "%s\n" "$CC" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-
-if test x$ax_cv_have_var_attribute_deprecated != x; then
-    attr_var_deprecated=__attribute__\(\(deprecated\)\)
-
-fi
-if test -z "$CC"; then
-  ac_ct_CC=$CC
-  for ac_prog in clang clang.exe
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_ac_ct_CC+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e)
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-                    int foo( void ) __attribute__((deprecated("")));
-
-int
-main (void)
-{
-
-  ;
-  return 0;
-}
-
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-                                      if test -s conftest.err
-then :
-  ax_cv_have_func_attribute_deprecated=no
-else case e in #(
-  e) ax_cv_have_func_attribute_deprecated=yes ;;
-esac
-fi
-else case e in #(
-  e) ax_cv_have_func_attribute_deprecated=no ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-     ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_have_func_attribute_deprecated" >&5
-printf "%s\n" "$ax_cv_have_func_attribute_deprecated" >&6; }
-
-    if test yes = $ax_cv_have_func_attribute_deprecated
-then :
-
-printf "%s\n" "#define HAVE_FUNC_ATTRIBUTE_DEPRECATED 1" >>confdefs.h
-
-fi
-
-
-
-if test x$ax_cv_have_func_attribute_deprecated != x; then
-    attr_func_deprecated=__attribute__\(\(deprecated\)\)
-
-fi
-
-
-
-
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for __builtin_unreachable" >&5
-printf %s "checking for __builtin_unreachable... " >&6; }
-if test ${ax_cv_have___builtin_unreachable+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e)
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main (void)
-{
-
-            __builtin_unreachable()
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ax_cv_have___builtin_unreachable=yes
-else case e in #(
-  e) ax_cv_have___builtin_unreachable=no ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-     ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_have___builtin_unreachable" >&5
-printf "%s\n" "$ax_cv_have___builtin_unreachable" >&6; }
-
-    if test yes = $ax_cv_have___builtin_unreachable
-then :
-
-printf "%s\n" "#define HAVE___BUILTIN_UNREACHABLE 1" >>confdefs.h
-
-fi
-
-
 
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler can silence -Wtypedef-redefinition via pragmas" >&5
@@ -17090,8 +16937,182 @@ fi
 
 
 
-CPPFLAGS="$CPPFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L"
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -std=c99" >&5
+if test "x$using_cl" = "xyes"; then
+  CPPFLAGS="$CPPFLAGS -D_CRT_SECURE_NO_WARNINGS"
+  CFLAGS="$CFLAGS -nologo"
+
+printf "%s\n" "#define HAVE_MSVC 1" >>confdefs.h
+
+else
+
+
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for __attribute__((deprecated))" >&5
+printf %s "checking for __attribute__((deprecated))... " >&6; }
+if test ${ax_cv_have_var_attribute_deprecated+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+                    int foo __attribute__((deprecated)) = 0;
+
+int
+main (void)
+{
+
+
+
+  ;
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+                                      if test -s conftest.err
+then :
+  ax_cv_have_var_attribute_deprecated=no
+else case e in #(
+  e) ax_cv_have_var_attribute_deprecated=yes ;;
+esac
+fi
+else case e in #(
+  e) ax_cv_have_var_attribute_deprecated=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+     ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_have_var_attribute_deprecated" >&5
+printf "%s\n" "$ax_cv_have_var_attribute_deprecated" >&6; }
+
+    if test yes = $ax_cv_have_var_attribute_deprecated
+then :
+
+printf "%s\n" "#define HAVE_VAR_ATTRIBUTE_DEPRECATED 1" >>confdefs.h
+
+fi
+
+
+
+  if test x$ax_cv_have_var_attribute_deprecated != x; then
+      attr_var_deprecated=__attribute__\(\(deprecated\)\)
+
+  fi
+
+
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for __attribute__((deprecated))" >&5
+printf %s "checking for __attribute__((deprecated))... " >&6; }
+if test ${ax_cv_have_func_attribute_deprecated+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+                    int foo( void ) __attribute__((deprecated("")));
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+                                      if test -s conftest.err
+then :
+  ax_cv_have_func_attribute_deprecated=no
+else case e in #(
+  e) ax_cv_have_func_attribute_deprecated=yes ;;
+esac
+fi
+else case e in #(
+  e) ax_cv_have_func_attribute_deprecated=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+     ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_have_func_attribute_deprecated" >&5
+printf "%s\n" "$ax_cv_have_func_attribute_deprecated" >&6; }
+
+    if test yes = $ax_cv_have_func_attribute_deprecated
+then :
+
+printf "%s\n" "#define HAVE_FUNC_ATTRIBUTE_DEPRECATED 1" >>confdefs.h
+
+fi
+
+
+
+  if test x$ax_cv_have_func_attribute_deprecated != x; then
+      attr_func_deprecated=__attribute__\(\(deprecated\)\)
+
+  fi
+
+
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for __builtin_unreachable" >&5
+printf %s "checking for __builtin_unreachable... " >&6; }
+if test ${ax_cv_have___builtin_unreachable+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+            __builtin_unreachable()
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ax_cv_have___builtin_unreachable=yes
+else case e in #(
+  e) ax_cv_have___builtin_unreachable=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+     ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_have___builtin_unreachable" >&5
+printf "%s\n" "$ax_cv_have___builtin_unreachable" >&6; }
+
+    if test yes = $ax_cv_have___builtin_unreachable
+then :
+
+printf "%s\n" "#define HAVE___BUILTIN_UNREACHABLE 1" >>confdefs.h
+
+fi
+
+
+
+  CPPFLAGS="$CPPFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L"
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -std=c99" >&5
 printf %s "checking if $CC supports -std=c99... " >&6; }
 if test ${ac_cv_cc_flag_std_c99+y}
 then :
@@ -17131,7 +17152,7 @@ else case e in #(
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wall" >&5
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wall" >&5
 printf %s "checking if $CC supports -Wall... " >&6; }
 if test ${ac_cv_cc_flag_wall+y}
 then :
@@ -17171,7 +17192,7 @@ else case e in #(
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wextra" >&5
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wextra" >&5
 printf %s "checking if $CC supports -Wextra... " >&6; }
 if test ${ac_cv_cc_flag_wextra+y}
 then :
@@ -17211,7 +17232,7 @@ else case e in #(
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wformat=2" >&5
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wformat=2" >&5
 printf %s "checking if $CC supports -Wformat=2... " >&6; }
 if test ${ac_cv_cc_flag_wformat_2+y}
 then :
@@ -17251,7 +17272,7 @@ else case e in #(
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wsign-conversion" >&5
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wsign-conversion" >&5
 printf %s "checking if $CC supports -Wsign-conversion... " >&6; }
 if test ${ac_cv_cc_flag_wsign_conversion+y}
 then :
@@ -17293,7 +17314,7 @@ else case e in #(
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wuninitialized" >&5
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wuninitialized" >&5
 printf %s "checking if $CC supports -Wuninitialized... " >&6; }
 if test ${ac_cv_cc_flag_wuninitialized+y}
 then :
@@ -17335,7 +17356,7 @@ else case e in #(
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wstrict-overflow" >&5
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wstrict-overflow" >&5
 printf %s "checking if $CC supports -Wstrict-overflow... " >&6; }
 if test ${ac_cv_cc_flag_wstrict_overflow+y}
 then :
@@ -17377,7 +17398,7 @@ else case e in #(
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wshadow" >&5
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wshadow" >&5
 printf %s "checking if $CC supports -Wshadow... " >&6; }
 if test ${ac_cv_cc_flag_wshadow+y}
 then :
@@ -17419,7 +17440,7 @@ else case e in #(
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wdouble-promotion" >&5
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wdouble-promotion" >&5
 printf %s "checking if $CC supports -Wdouble-promotion... " >&6; }
 if test ${ac_cv_cc_flag_wdouble_promotions+y}
 then :
@@ -17461,7 +17482,7 @@ else case e in #(
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wswitch-default" >&5
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wswitch-default" >&5
 printf %s "checking if $CC supports -Wswitch-default... " >&6; }
 if test ${ac_cv_cc_flag_wswitch_default+y}
 then :
@@ -17503,7 +17524,7 @@ else case e in #(
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wunused-function" >&5
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wunused-function" >&5
 printf %s "checking if $CC supports -Wunused-function... " >&6; }
 if test ${ac_cv_cc_flag_wunused_function+y}
 then :
@@ -17545,7 +17566,7 @@ else case e in #(
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wclobbered" >&5
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wclobbered" >&5
 printf %s "checking if $CC supports -Wclobbered... " >&6; }
 if test ${ac_cv_cc_flag_wclobbered+y}
 then :
@@ -17587,7 +17608,7 @@ else case e in #(
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wunused-but-set-variable" >&5
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wunused-but-set-variable" >&5
 printf %s "checking if $CC supports -Wunused-but-set-variable... " >&6; }
 if test ${ac_cv_cc_flag_wunused_but_set_variable+y}
 then :
@@ -17629,7 +17650,7 @@ else case e in #(
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Bsymbolic" >&5
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Bsymbolic" >&5
 printf %s "checking if $CC supports -Bsymbolic... " >&6; }
 if test ${ac_cv_cc_flag_bsymbolic+y}
 then :
@@ -17672,7 +17693,7 @@ else case e in #(
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -fno-emulated-tls" >&5
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -fno-emulated-tls" >&5
 printf %s "checking if $CC supports -fno-emulated-tls... " >&6; }
 if test ${ac_cv_cc_flag_fno_emulated_tls+y}
 then :
@@ -17715,7 +17736,7 @@ else case e in #(
 esac
 fi
 
-if test x$enable_debug = xyes
+  if test x$enable_debug = xyes
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Werror" >&5
 printf %s "checking if $CC supports -Werror... " >&6; }
@@ -18270,15 +18291,7 @@ esac
 fi
 
 
-if test "x$using_cl" = "xyes"; then
-    printf "%s\n" "#define HAVE_MEMCPY 1" >>confdefs.h
-
-    printf "%s\n" "#define HAVE_MEMMOVE 1" >>confdefs.h
-
-    printf "%s\n" "#define HAVE_MEMSET 1" >>confdefs.h
-
-else
-    ac_fn_c_check_func "$LINENO" "memcpy" "ac_cv_func_memcpy"
+ac_fn_c_check_func "$LINENO" "memcpy" "ac_cv_func_memcpy"
 if test "x$ac_cv_func_memcpy" = xyes
 then :
   printf "%s\n" "#define HAVE_MEMCPY 1" >>confdefs.h
@@ -19885,15 +19898,30 @@ printf "%s\n" "$as_me: checking for WinHTTP" >&6;}
             if test ! -d "$with_winhttp"; then
                 as_fn_error $? "\"${with_winhttp}\" is not directory" "$LINENO" 5
             fi
-            ADDED_CFLAGS="-I${with_winhttp}/include"
-            ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
+            if test "x${using_cl}" = xyes; then
+                ADDED_CFLAGS="-I${with_winhttp}\include"
+                ADDED_LIBS="winhttp.lib"
+            else
+                ADDED_CFLAGS="-I${with_winhttp}/include"
+                ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
+            fi
         else
             if test x${prefix} != x -a x${prefix} != xNONE; then
-                ADDED_CFLAGS="-I${prefix}/include"
-                ADDED_LIBS="-L${prefix}/lib -lwinhttp"
+                if test "x${using_cl}" = xyes; then
+                    ADDED_CFLAGS="-I${prefix}\include"
+                    ADDED_LIBS="winhttp.lib"
+                else
+                    ADDED_CFLAGS="-I${prefix}/include"
+                    ADDED_LIBS="-L${prefix}/lib -lwinhttp"
+                fi
             else
-                ADDED_CFLAGS="-I/usr/local/include"
-                ADDED_LIBS="-L/usr/local/lib -lwinhttp"
+                if test "x${using_cl}" = xyes; then
+                    ADDED_CFLAGS=
+                    ADDED_LIBS="winhttp.lib"
+                else
+                    ADDED_CFLAGS="-I/usr/local/include"
+                    ADDED_LIBS="-L/usr/local/lib -lwinhttp"
+                fi
             fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
@@ -19966,14 +19994,16 @@ then :
 
 else case e in #(
   e) have_winhttp=no
-                           as_fn_error $? "library winhttp is not avilable." "$LINENO" 5
+                           { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: library winhttp is not avilable." >&5
+printf "%s\n" "$as_me: WARNING: library winhttp is not avilable." >&2;}
                            ;;
 esac
 fi
 
 else case e in #(
   e) have_winhttp=no
-             as_fn_error $? "windows.h or winhttp.h is not avilable." "$LINENO" 5
+             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: windows.h or winhttp.h is not avilable." >&5
+printf "%s\n" "$as_me: WARNING: windows.h or winhttp.h is not avilable." >&2;}
              ;;
 esac
 fi
@@ -20903,8 +20933,8 @@ fi
 done
             WICCODEC_CFLAGS="$ADDED_CFLAGS"
             WICCODEC_LIBS="$ADDED_LIBS"
-            CFLAGS=CFLAGS_BACKUP
-            LIBS=CFLAGS_LIBS
+            CFLAGS=$CFLAGS_BACKUP
+            LIBS=$CFLAGS_LIBS
         fi
          if test x$have_wiccodec = xyes; then
   HAVE_WICCODEC_TRUE=
@@ -21850,18 +21880,6 @@ if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
-  as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${am__fastdepOBJC_TRUE}" && test -z "${am__fastdepOBJC_FALSE}"; then
-  as_fn_error $? "conditional \"am__fastdepOBJC\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${am__fastdepOBJC_TRUE}" && test -z "${am__fastdepOBJC_FALSE}"; then
-  as_fn_error $? "conditional \"am__fastdepOBJC\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
 if test -z "${USING_CL_TRUE}" && test -z "${USING_CL_FALSE}"; then
   as_fn_error $? "conditional \"USING_CL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -21888,10 +21906,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE}" && test -z "${HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_APPLE_QUICKLOOK_EXTENSION\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${REGISTER_DLL_TRUE}" && test -z "${REGISTER_DLL_FALSE}"; then
-  as_fn_error $? "conditional \"REGISTER_DLL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_WICCODEC_TRUE}" && test -z "${HAVE_WICCODEC_FALSE}"; then

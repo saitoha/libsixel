@@ -26,7 +26,6 @@
 # else
 
 #  include <stdio.h>
-#  include <stdlib.h>
 #  include <string.h>
 
 /* provide long option interface */
@@ -50,135 +49,34 @@ static int optopt;
 
 /* internal state for getopt */
 static char *nextchar;
-static int first_nonopt = 1;
-static int last_nonopt = 1;
-
-static void
-permute_args(char **argv, int first, int middle, int last)
-{
-    int num_front;
-    int num_back;
-    int i;
-    char **tmp;
-
-    num_front = middle - first;
-    num_back = last - middle;
-    if (num_front <= 0 || num_back <= 0) {
-        return;
-    }
-
-    tmp = (char **)malloc((size_t)num_front * sizeof(*tmp));
-    if (!tmp) {
-        return;
-    }
-    for (i = 0; i < num_front; ++i) {
-        tmp[i] = argv[first + i];
-    }
-    for (i = 0; i < num_back; ++i) {
-        argv[first + i] = argv[middle + i];
-    }
-    for (i = 0; i < num_front; ++i) {
-        argv[first + num_back + i] = tmp[i];
-    }
-    free(tmp);
-}
-
-static int
-next_option_token(int argc, char * const argv[], int allow_long, char **long_token)
-{
-    char **mutable_argv;
-
-    mutable_argv = (char **)argv;
-
-    while (!nextchar || *nextchar == '\0') {
-        if (first_nonopt != last_nonopt && last_nonopt != optind) {
-            permute_args(mutable_argv, first_nonopt, last_nonopt, optind);
-            first_nonopt += optind - last_nonopt;
-            last_nonopt = optind;
-        }
-
-        if (optind >= argc || argv[optind] == NULL) {
-            if (first_nonopt == last_nonopt) {
-                first_nonopt = optind;
-            }
-            last_nonopt = optind;
-            optind = first_nonopt;
-            first_nonopt = optind;
-            last_nonopt = optind;
-            nextchar = NULL;
-            return -1;
-        }
-
-        if (strcmp(argv[optind], "--") == 0) {
-            ++optind;
-            if (first_nonopt != last_nonopt && last_nonopt != optind) {
-                permute_args(mutable_argv, first_nonopt, last_nonopt, optind);
-                first_nonopt += optind - last_nonopt;
-            } else if (first_nonopt == last_nonopt) {
-                first_nonopt = optind;
-            }
-            last_nonopt = optind;
-            optind = first_nonopt;
-            first_nonopt = optind;
-            last_nonopt = optind;
-            nextchar = NULL;
-            return -1;
-        }
-
-        if (argv[optind][0] != '-' || argv[optind][1] == '\0') {
-            if (first_nonopt == last_nonopt) {
-                first_nonopt = optind;
-            }
-            last_nonopt = optind + 1;
-            ++optind;
-            continue;
-        }
-
-        if (allow_long && argv[optind][1] == '-') {
-            if (long_token) {
-                *long_token = argv[optind] + 2;
-            }
-            ++optind;
-            nextchar = NULL;
-            return 1;
-        }
-
-        nextchar = argv[optind] + 1;
-        ++optind;
-        return 0;
-    }
-
-    return 0;
-}
 
 static int
 getopt(int argc, char * const argv[], const char *optstring)
 {
     const char *opt_ptr;
     int c;
+    char *arg;
 
-    if (optind == 0) {
-        optind = 1;
-        nextchar = NULL;
-        first_nonopt = 1;
-        last_nonopt = 1;
-    }
-
-    if (!optstring || *optstring == '\0') {
-        optind = first_nonopt;
-        last_nonopt = first_nonopt;
+    if (optind >= argc || argv[optind] == NULL) {
         return -1;
     }
 
     if (!nextchar || *nextchar == '\0') {
-        if (next_option_token(argc, argv, 0, NULL) < 0 || !nextchar || *nextchar == '\0') {
+        arg = argv[optind];
+        if (arg[0] != '-' || arg[1] == '\0') {
             return -1;
         }
+        if (strcmp(arg, "--") == 0) {
+            optind++;
+            return -1;
+        }
+        nextchar = arg + 1;
+        ++optind;
     }
 
-    c = (unsigned char)*nextchar++;
+    c = *nextchar++;
     opt_ptr = strchr(optstring, c);
-    if (!opt_ptr) {
+    if (! opt_ptr) {
         optopt = c;
         if (opterr && *optstring != ':') {
             fprintf(stderr, "unknown option '-%c'\n", c);
@@ -205,7 +103,7 @@ getopt(int argc, char * const argv[], const char *optstring)
         }
     } else {
         optarg = NULL;
-        if (!nextchar || *nextchar == '\0') {
+        if (*nextchar == '\0') {
             nextchar = NULL;
         }
     }
@@ -219,75 +117,76 @@ getopt_long(int argc,
             const struct option *longopts,
             int *longindex)
 {
+    char *arg;
     const struct option *o;
     int i;
     char *name;
     char *value;
     size_t namelen;
-    int status;
 
-    if (optind == 0) {
-        optind = 1;
-        nextchar = NULL;
-        first_nonopt = 1;
-        last_nonopt = 1;
-    }
-
-    if (nextchar && *nextchar != '\0') {
-        return getopt(argc, argv, optstring);
-    }
-
-    status = next_option_token(argc, argv, 1, &name);
-    if (status < 0) {
+    if (optind >= argc) {
         return -1;
     }
-    if (status == 0) {
-        return getopt(argc, argv, optstring);
+
+    arg = argv[optind];
+    if (arg[0] != '-') {
+        return -1;
+    }
+    if (strcmp(arg, "--") == 0) {
+        optind++;
+        return -1;
     }
 
-    value = strchr(name, '=');
-    namelen = value ? (size_t)(value - name) : strlen(name);
-    for (i = 0; longopts && longopts[i].name; ++i) {
-        o = &longopts[i];
-        if (strlen(o->name) == namelen && strncmp(name, o->name, namelen) == 0) {
-            if (longindex) {
-                *longindex = i;
-            }
-            if (o->has_arg == required_argument) {
-                if (value) {
-                    optarg = value + 1;
-                } else if (optind < argc) {
-                    optarg = argv[optind];
-                    ++optind;
-                } else {
-                    optopt = o->val;
-                    if (*optstring == ':') {
-                        return ':';
-                    }
-                    if (opterr) {
-                        fprintf(stderr, "option '--%s' requires an argument\n", o->name);
-                    }
-                    return '?';
+    if (arg[1] == '-') {
+        name = arg + 2;
+        value = strchr(name, '=');
+        namelen = value ? (size_t)(value - name) : strlen(name);
+        for (i = 0; longopts[i].name; ++i) {
+            o = &longopts[i];
+            if (strlen(o->name) == namelen && strncmp(name, o->name, namelen) == 0) {
+                if (longindex) {
+                    *longindex = i;
                 }
-            } else if (o->has_arg == optional_argument) {
-                optarg = value ? value + 1 : NULL;
-            } else {
-                optarg = NULL;
+                optind++;
+                if (o->has_arg == required_argument) {
+                    if (value) {
+                        optarg = value + 1;
+                    } else if (optind < argc) {
+                        optarg = argv[optind];
+                        optind++;
+                    } else {
+                        optopt = o->val;
+                        if (*optstring == ':') {
+                            return ':';
+                        }
+                        if (opterr) {
+                            fprintf(stderr, "option '--%s' requires an argument\n", o->name);
+                        }
+                        return '?';
+                    }
+                } else if (o->has_arg == optional_argument) {
+                    optarg = value ? value + 1 : NULL;
+                    if (!value) {
+                        optarg = NULL;
+                    }
+                } else {
+                    optarg = NULL;
+                }
+                if (o->flag) {
+                    *(o->flag) = o->val;
+                    return 0;
+                }
+                return o->val;
             }
-            if (o->flag) {
-                *(o->flag) = o->val;
-                return 0;
-            }
-            return o->val;
         }
+        ++optind;
+        if (opterr) {
+            fprintf(stderr, "unrecognized option '--%.*s'\n", (int)namelen, name);
+        }
+        return '?';
     }
 
-    if (opterr) {
-        fprintf(stderr, "unrecognized option '--%.*s'\n", (int)namelen, name);
-    }
-    optopt = 0;
-    optarg = NULL;
-    return '?';
+    return getopt(argc, argv, optstring);
 }
 
 /* ensure long options are available */

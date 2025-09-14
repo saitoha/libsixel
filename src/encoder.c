@@ -107,9 +107,6 @@
 #if defined(_WIN32)
 
 # include <windows.h>
-# if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
-#  include <io.h>
-# endif
 # if defined(_MSC_VER)
 #   include <time.h>
 # endif
@@ -130,12 +127,6 @@
 # ifndef S_IWUSR
 #  define S_IWUSR _S_IWRITE
 # endif
-
-typedef long clock_win_t;
-# if defined(CLOCKS_PER_SEC)
-#  undef CLOCKS_PER_SEC
-# endif
-# define CLOCKS_PER_SEC 1000
 
 typedef long clock_win_t;
 # if defined(CLOCKS_PER_SEC)
