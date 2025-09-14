@@ -1705,31 +1705,30 @@ load_with_wic(
     void                      /* in/out */ *context      /* private data for callback */
 )
 {
-    HRESULT                 hr = E_FAIL;
-    SIXELSTATUS             status = SIXEL_FALSE;
-    IWICImagingFactory     *factory  = NULL;
-    IWICStream             *stream   = NULL;
-    IWICBitmapDecoder      *decoder  = NULL;
-    IWICBitmapFrameDecode  *wicframe = NULL;
-    IWICFormatConverter    *conv     = NULL;
-    IWICBitmapSource       *src      = NULL;
+    HRESULT                 hr         = E_FAIL;
+    SIXELSTATUS             status     = SIXEL_FALSE;
+    IWICImagingFactory     *factory    = NULL;
+    IWICStream             *stream     = NULL;
+    IWICBitmapDecoder      *decoder    = NULL;
+    IWICBitmapFrameDecode  *wicframe   = NULL;
+    IWICFormatConverter    *conv       = NULL;
+    IWICBitmapSource       *src        = NULL;
     IWICPalette            *wicpalette = NULL;
     WICColor               *wiccolors  = NULL;
+    IWICMetadataQueryReader *qdecoder  = NULL;
+    IWICMetadataQueryReader *qframe    = NULL;
     UINT                    ncolors    = 0;
-    sixel_frame_t          *frame = NULL;
-    int                     comp = 4;
-    UINT                    actual = 0;
+    sixel_frame_t          *frame      = NULL;
+    int                     comp       = 4;
+    UINT                    actual     = 0;
     UINT                    i;
+    UINT                    frame_count = 0;
+    int                     anim_loop_count = (-1);
+    int                     is_gif;
     WICColor                c;
 
-    (void) fstatic;
     (void) reqcolors;
     (void) bgcolor;
-    (void) loop_control;
-
-    if (memcmp("GIF", pchunk->buffer, 3) == 0) {
-        return status;
-    }
 
     hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
     if (FAILED(hr) && hr != RPC_E_CHANGED_MODE) {
@@ -1765,6 +1764,154 @@ load_with_wic(
                                                   WICDecodeMetadataCacheOnDemand,
                                                   &decoder);
     if (FAILED(hr)) {
+        goto end;
+    }
+
+    is_gif = (memcmp("GIF", pchunk->buffer, 3) == 0);
+
+    if (is_gif) {
+        hr = decoder->lpVtbl->GetFrameCount(decoder, &frame_count);
+        if (FAILED(hr)) {
+            goto end;
+        }
+        if (fstatic) {
+            frame_count = 1;
+        }
+
+        hr = decoder->lpVtbl->GetMetadataQueryReader(decoder, &qdecoder);
+        if (SUCCEEDED(hr)) {
+            PROPVARIANT pv;
+            PropVariantInit(&pv);
+            hr = qdecoder->lpVtbl->GetMetadataByName(
+                qdecoder,
+                L"/appext/Application/NETSCAPE2.0/Loop",
+                &pv);
+            if (SUCCEEDED(hr) && pv.vt == VT_UI2) {
+                anim_loop_count = pv.uiVal;
+            }
+            PropVariantClear(&pv);
+            qdecoder->lpVtbl->Release(qdecoder);
+            qdecoder = NULL;
+        }
+
+        frame->loop_count = 0;
+        for (;;) {
+            frame->frame_no = 0;
+            for (i = 0; i < frame_count; ++i) {
+                hr = decoder->lpVtbl->GetFrame(decoder, i, &wicframe);
+                if (FAILED(hr)) {
+                    goto end;
+                }
+
+                hr = factory->lpVtbl->CreateFormatConverter(factory, &conv);
+                if (FAILED(hr)) {
+                    goto end;
+                }
+                hr = conv->lpVtbl->Initialize(conv,
+                                              (IWICBitmapSource*)wicframe,
+                                              &GUID_WICPixelFormat32bppRGBA,
+                                              WICBitmapDitherTypeNone,
+                                              NULL,
+                                              0.0,
+                                              WICBitmapPaletteTypeCustom);
+                if (FAILED(hr)) {
+                    goto end;
+                }
+
+                src = (IWICBitmapSource*)conv;
+                comp = 4;
+                frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+
+                hr = src->lpVtbl->GetSize(
+                    src,
+                    (UINT *)&frame->width,
+                    (UINT *)&frame->height);
+                if (FAILED(hr)) {
+                    goto end;
+                }
+
+                if (frame->width <= 0 || frame->height <= 0 ||
+                    frame->width > SIXEL_WIDTH_LIMIT ||
+                    frame->height > SIXEL_HEIGHT_LIMIT) {
+                    sixel_helper_set_additional_message(
+                        "load_with_wic: an invalid width or height parameter detected.");
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+
+                frame->pixels = sixel_allocator_malloc(
+                    pchunk->allocator,
+                    (size_t)(frame->height * frame->width * comp));
+                if (frame->pixels == NULL) {
+                    hr = E_OUTOFMEMORY;
+                    goto end;
+                }
+
+                {
+                    WICRect rc = { 0, 0, (INT)frame->width, (INT)frame->height };
+                    hr = src->lpVtbl->CopyPixels(
+                        src,
+                        &rc,
+                        frame->width * comp,
+                        (UINT)frame->width * frame->height * comp,
+                        frame->pixels);
+                    if (FAILED(hr)) {
+                        goto end;
+                    }
+                }
+
+                frame->delay = 0;
+                hr = wicframe->lpVtbl->GetMetadataQueryReader(wicframe, &qframe);
+                if (SUCCEEDED(hr)) {
+                    PROPVARIANT pv;
+                    PropVariantInit(&pv);
+                    hr = qframe->lpVtbl->GetMetadataByName(
+                        qframe,
+                        L"/grctlext/Delay",
+                        &pv);
+                    if (SUCCEEDED(hr) && pv.vt == VT_UI2) {
+                        frame->delay = (int)(pv.uiVal) * 10;
+                    }
+                    PropVariantClear(&pv);
+                    qframe->lpVtbl->Release(qframe);
+                    qframe = NULL;
+                }
+
+                frame->multiframe = 1;
+                status = fn_load(frame, context);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                frame->pixels = NULL;
+                frame->palette = NULL;
+
+                if (conv) {
+                    conv->lpVtbl->Release(conv);
+                    conv = NULL;
+                }
+                if (wicframe) {
+                    wicframe->lpVtbl->Release(wicframe);
+                    wicframe = NULL;
+                }
+
+                frame->frame_no++;
+            }
+
+            ++frame->loop_count;
+
+            if (anim_loop_count < 0) {
+                break;
+            }
+            if (loop_control == SIXEL_LOOP_DISABLE || frame->frame_no == 1) {
+                break;
+            }
+            if (loop_control == SIXEL_LOOP_AUTO &&
+                frame->loop_count == anim_loop_count) {
+                break;
+            }
+        }
+
+        status = SIXEL_OK;
         goto end;
     }
 
@@ -1842,7 +1989,7 @@ load_with_wic(
     if (src == NULL) {
         hr = factory->lpVtbl->CreateFormatConverter(factory, &conv);
         if (FAILED(hr)) {
-                goto end;
+            goto end;
         }
 
         hr = conv->lpVtbl->Initialize(conv, (IWICBitmapSource*)wicframe,
@@ -1850,7 +1997,7 @@ load_with_wic(
                                       WICBitmapDitherTypeNone, NULL, 0.0,
                                       WICBitmapPaletteTypeCustom);
         if (FAILED(hr)) {
-                goto end;
+            goto end;
         }
 
         src = (IWICBitmapSource*)conv;
@@ -1894,15 +2041,17 @@ load_with_wic(
         pchunk->allocator,
         (size_t)(frame->height * frame->width * comp));
 
-    WICRect rc = (WICRect){ 0, 0, (INT)frame->width, (INT)frame->height };
-    hr = src->lpVtbl->CopyPixels(
-        src,
-        &rc,                                        /* prc */
-        frame->width * comp,                        /* cbStride */
-        (UINT)frame->width * frame->height * comp,  /* cbBufferSize */
-        frame->pixels);                             /* pbBuffer */
-    if (FAILED(hr)) {
-        goto end;
+    {
+        WICRect rc = { 0, 0, (INT)frame->width, (INT)frame->height };
+        hr = src->lpVtbl->CopyPixels(
+            src,
+            &rc,                                        /* prc */
+            frame->width * comp,                        /* cbStride */
+            (UINT)frame->width * frame->height * comp,  /* cbBufferSize */
+            frame->pixels);                             /* pbBuffer */
+        if (FAILED(hr)) {
+            goto end;
+        }
     }
 
     status = fn_load(frame, context);
@@ -1922,6 +2071,12 @@ end:
     }
     if (wicframe) {
          wicframe->lpVtbl->Release(wicframe);
+    }
+    if (qdecoder) {
+         qdecoder->lpVtbl->Release(qdecoder);
+    }
+    if (qframe) {
+         qframe->lpVtbl->Release(qframe);
     }
     if (stream) {
          stream->lpVtbl->Release(stream);
