@@ -1332,8 +1332,7 @@ sixel_quant_apply_palette(
     sixel_allocator_t /* in */  *allocator)
 {
     typedef int component_t;
-    enum { max_depth = 4 };
-    enum { max_channel_diff_sq = 255 * 255 };
+    const int max_depth = 4;
     SIXELSTATUS status = SIXEL_FALSE;
     int pos, n, x, y, sum1, sum2;
     int non_weighted_components;
