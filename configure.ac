@@ -21,17 +21,17 @@ AC_CONFIG_SRCDIR([src/fromsixel.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
-AX_GCC_VAR_ATTRIBUTE([deprecated])
-if test x$ax_cv_have_var_attribute_deprecated != x; then
-    AC_SUBST(attr_var_deprecated, [__attribute__\(\(deprecated\)\)])
-fi
-
-AX_GCC_FUNC_ATTRIBUTE([deprecated])
-if test x$ax_cv_have_func_attribute_deprecated != x; then
-    AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
-fi
-
-AX_GCC_BUILTIN([__builtin_unreachable])
+# Detect Microsoft Visual C compiler
+case "$CC" in
+  *cl*|*clang-cl*)
+    using_cl=yes
+    CFLAGS=`echo "$CFLAGS" | sed s/-g//g`
+    ;;
+  *)
+    using_cl=no
+    ;;
+esac
+AM_CONDITIONAL([USING_CL], [test "x$using_cl" = "xyes"])
 
 AC_CACHE_CHECK(
   [whether the compiler can silence -Wtypedef-redefinition via pragmas],
@@ -247,97 +247,109 @@ AC_DEFUN([LS_CHECK_CFLAG],
                 [m4_default([$3], :)])
          ])
 
-CPPFLAGS="$CPPFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L"
-LS_CHECK_CFLAG([-std=c99],
-               [CFLAGS="$CFLAGS -std=c99"],
-               [],
-               [std_c99])
-LS_CHECK_CFLAG([-Wall],
-               [AM_CFLAGS="$AM_CFLAGS -Wall"],
-               [],
-               [wall])
-LS_CHECK_CFLAG([-Wextra],
-               [AM_CFLAGS="$AM_CFLAGS -Wextra"],
-               [],
-               [wextra])
-LS_CHECK_CFLAG([-Wformat=2],
-               [AM_CFLAGS="$AM_CFLAGS -Wformat=2"],
-               [],
-               [wformat_2])
-LS_CHECK_CFLAG([-Wsign-conversion],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION,
-                          [1],
-                          [define 1 if GCC supports -Wsign-conversion])],
-               [],
-               [wsign_conversion])
-LS_CHECK_CFLAG([-Wuninitialized],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_UNINITIALIZED,
-                          [1],
-                          [define 1 if GCC supports -Wuninitialized])],
-               [],
-               [wuninitialized])
-LS_CHECK_CFLAG([-Wstrict-overflow],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW,
-                          [1],
-                          [define 1 if GCC supports -Wstrict-overeflow=1])],
-               [],
-               [wstrict_overflow])
-LS_CHECK_CFLAG([-Wshadow],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW,
-                          [1],
-                          [define 1 if GCC supports -Wshadow])],
-               [],
-               [wshadow])
-LS_CHECK_CFLAG([-Wdouble-promotion],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_DOUBLE_PROMOTION,
-                          [1],
-                          [define 1 if GCC supports -Wdouble-promotion])],
-               [],
-               [wdouble_promotions])
-LS_CHECK_CFLAG([-Wswitch-default],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT,
-                          [1],
-                          [define 1 if GCC supports -Wswitch-default])],
-               [],
-               [wswitch_default])
-LS_CHECK_CFLAG([-Wunused-function],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_FUNCTION,
-                          [1],
-                          [define 1 if GCC supports -Wunused-function])],
-               [],
-               [wunused_function])
-LS_CHECK_CFLAG([-Wclobbered],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_CLOBBERED,
-                          [1],
-                          [define 1 if GCC supports -Wclobbered])],
-               [],
-               [wclobbered])
-LS_CHECK_CFLAG([-Wunused-but-set-variable],
-               [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE,
-                          [1],
-                          [define 1 if GCC supports -Wunused-but-set-variable])],
-               [],
-               [wunused_but_set_variable])
-LS_CHECK_CFLAG([-Bsymbolic],
-               [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
-                AC_DEFINE(HAVE_BSYMBOLIC,
-                          [1],
-                          [define 1 if GCC supports -Bsymbolic])],
-               [],
-               [bsymbolic])
-LS_CHECK_CFLAG([-fno-emulated-tls],
-               [AM_CFLAGS="$AM_CFLAGS -Bfno-emulated-tls"
-                AC_DEFINE(HAVE_FNO_EMULATED_TLS,
-                          [1],
-                          [define 1 if GCC supports -fno-emulated-tls])],
-               [],
-               [fno_emulated_tls])
-AS_IF([test x$enable_debug = xyes],
-      [LS_CHECK_CFLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
+if test "x$using_cl" = "xyes"; then
+  CPPFLAGS="$CPPFLAGS -D_CRT_SECURE_NO_WARNINGS"
+  CFLAGS="$CFLAGS -nologo"
+  AC_DEFINE([HAVE_MSVC], [1], [Define if building with MSVC])
+else
+  AX_GCC_VAR_ATTRIBUTE([deprecated])
+  if test x$ax_cv_have_var_attribute_deprecated != x; then
+      AC_SUBST(attr_var_deprecated, [__attribute__\(\(deprecated\)\)])
+  fi
+  AX_GCC_FUNC_ATTRIBUTE([deprecated])
+  if test x$ax_cv_have_func_attribute_deprecated != x; then
+      AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
+  fi
+  AX_GCC_BUILTIN([__builtin_unreachable])
+  CPPFLAGS="$CPPFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L"
+  LS_CHECK_CFLAG([-std=c99],
+                 [CFLAGS="$CFLAGS -std=c99"],
+                 [],
+                 [std_c99])
+  LS_CHECK_CFLAG([-Wall],
+                 [AM_CFLAGS="$AM_CFLAGS -Wall"],
+                 [],
+                 [wall])
+  LS_CHECK_CFLAG([-Wextra],
+                 [AM_CFLAGS="$AM_CFLAGS -Wextra"],
+                 [],
+                 [wextra])
+  LS_CHECK_CFLAG([-Wformat=2],
+                 [AM_CFLAGS="$AM_CFLAGS -Wformat=2"],
+                 [],
+                 [wformat_2])
+  LS_CHECK_CFLAG([-Wsign-conversion],
+                 [AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION,
+                            [1],
+                            [define 1 if GCC supports -Wsign-conversion])],
+                 [],
+                 [wsign_conversion])
+  LS_CHECK_CFLAG([-Wuninitialized],
+                 [AC_DEFINE(HAVE_DIAGNOSTIC_UNINITIALIZED,
+                            [1],
+                            [define 1 if GCC supports -Wuninitialized])],
+                 [],
+                 [wuninitialized])
+  LS_CHECK_CFLAG([-Wstrict-overflow],
+                 [AC_DEFINE(HAVE_DIAGNOSTIC_STRICT_OVERFLOW,
+                            [1],
+                            [define 1 if GCC supports -Wstrict-overeflow=1])],
+                 [],
+                 [wstrict_overflow])
+  LS_CHECK_CFLAG([-Wshadow],
+                 [AC_DEFINE(HAVE_DIAGNOSTIC_SHADOW,
+                            [1],
+                            [define 1 if GCC supports -Wshadow])],
+                 [],
+                 [wshadow])
+  LS_CHECK_CFLAG([-Wdouble-promotion],
+                 [AC_DEFINE(HAVE_DIAGNOSTIC_DOUBLE_PROMOTION,
+                            [1],
+                            [define 1 if GCC supports -Wdouble-promotion])],
+                 [],
+                 [wdouble_promotions])
+  LS_CHECK_CFLAG([-Wswitch-default],
+                 [AC_DEFINE(HAVE_DIAGNOSTIC_SWITCH_DEFAULT,
+                            [1],
+                            [define 1 if GCC supports -Wswitch-default])],
+                 [],
+                 [wswitch_default])
+  LS_CHECK_CFLAG([-Wunused-function],
+                 [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_FUNCTION,
+                            [1],
+                            [define 1 if GCC supports -Wunused-function])],
+                 [],
+                 [wunused_function])
+  LS_CHECK_CFLAG([-Wclobbered],
+                 [AC_DEFINE(HAVE_DIAGNOSTIC_CLOBBERED,
+                            [1],
+                            [define 1 if GCC supports -Wclobbered])],
+                 [],
+                 [wclobbered])
+  LS_CHECK_CFLAG([-Wunused-but-set-variable],
+                 [AC_DEFINE(HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE,
+                            [1],
+                            [define 1 if GCC supports -Wunused-but-set-variable])],
+                 [],
+                 [wunused_but_set_variable])
+  LS_CHECK_CFLAG([-Bsymbolic],
+                 [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
+                  AC_DEFINE(HAVE_BSYMBOLIC,
+                            [1],
+                            [define 1 if GCC supports -Bsymbolic])],
+                 [],
+                 [bsymbolic])
+  LS_CHECK_CFLAG([-fno-emulated-tls],
+                 [AM_CFLAGS="$AM_CFLAGS -Bfno-emulated-tls"
+                  AC_DEFINE(HAVE_FNO_EMULATED_TLS,
+                            [1],
+                            [define 1 if GCC supports -fno-emulated-tls])],
+                 [],
+                 [fno_emulated_tls])
+  AS_IF([test x$enable_debug = xyes],
+        [LS_CHECK_CFLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
+fi
 AC_SUBST([AM_CFLAGS])
-
-# For wic integration
-#AC_PROG_CXX
 
 # For test
 AC_CHECK_PROGS(MD5SUM, [md5sum md5])
@@ -393,8 +405,7 @@ AC_CHECK_FUNC([getopt_long],
                have_getopt_long=1],
               [AC_CHECK_FUNC([getopt],
                              [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
-                             [AC_MSG_ERROR(getopt or getopt_long is not available.)])])
-AM_CONDITIONAL([HAVE_GETOPT_LONG], [test x$have_getopt_long = xyes])
+                             [])])
 
 AC_CHECK_FUNCS([memcpy \
                 memmove \
@@ -675,15 +686,30 @@ if test x$with_winhttp != xno; then
             if test ! -d "$with_winhttp"; then
                 AC_MSG_ERROR(["${with_winhttp}" is not directory])
             fi
-            ADDED_CFLAGS="-I${with_winhttp}/include"
-            ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
+            if test "x${using_cl}" = xyes; then
+                ADDED_CFLAGS="-I${with_winhttp}\include"
+                ADDED_LIBS="winhttp.lib"
+            else
+                ADDED_CFLAGS="-I${with_winhttp}/include"
+                ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
+            fi
         else
             if test x${prefix} != x -a x${prefix} != xNONE; then
-                ADDED_CFLAGS="-I${prefix}/include"
-                ADDED_LIBS="-L${prefix}/lib -lwinhttp"
+                if test "x${using_cl}" = xyes; then
+                    ADDED_CFLAGS="-I${prefix}\include"
+                    ADDED_LIBS="winhttp.lib"
+                else
+                    ADDED_CFLAGS="-I${prefix}/include"
+                    ADDED_LIBS="-L${prefix}/lib -lwinhttp"
+                fi
             else
-                ADDED_CFLAGS="-I/usr/local/include"
-                ADDED_LIBS="-L/usr/local/lib -lwinhttp"
+                if test "x${using_cl}" = xyes; then
+                    ADDED_CFLAGS=
+                    ADDED_LIBS="winhttp.lib"
+                else
+                    ADDED_CFLAGS="-I/usr/local/include"
+                    ADDED_LIBS="-L/usr/local/lib -lwinhttp"
+                fi
             fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
@@ -698,10 +724,10 @@ if test x$with_winhttp != xno; then
                           [WinHttpOpen],
                           [],
                           [have_winhttp=no
-                           AC_MSG_ERROR([library winhttp is not avilable.])
+                           AC_MSG_WARN([library winhttp is not avilable.])
                           ])],
             [have_winhttp=no
-             AC_MSG_ERROR([windows.h or winhttp.h is not avilable.])
+             AC_MSG_WARN([windows.h or winhttp.h is not avilable.])
             ])
         CFLAGS=$CFLAGS_BACKUP
         LIBS=$LIBS_BACKUP
@@ -1045,8 +1071,8 @@ else
                              [have_wiccodec=no])
             WICCODEC_CFLAGS="$ADDED_CFLAGS"
             WICCODEC_LIBS="$ADDED_LIBS"
-            CFLAGS=CFLAGS_BACKUP
-            LIBS=CFLAGS_LIBS
+            CFLAGS=$CFLAGS_BACKUP
+            LIBS=$CFLAGS_LIBS
         fi
         AM_CONDITIONAL([HAVE_WICCODEC], [test x$have_wiccodec = xyes])
         ;;
