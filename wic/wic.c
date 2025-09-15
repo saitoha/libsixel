@@ -28,6 +28,7 @@
 #include <initguid.h>
 #include <objbase.h>
 #include <strsafe.h>
+#include <string.h>
 
 #include <sixel.h>
 
@@ -386,9 +387,13 @@ SixelFrame_GetMetadataQueryReader(
 {
     (void) iface;
 
+    if (pp == NULL) {
+        return E_INVALIDARG;
+    }
+
     *pp = NULL;
 
-    return E_NOTIMPL;
+    return WINCODEC_ERR_UNSUPPORTEDOPERATION;
 }
 
 /* IWICBitmapFrameDecode::GetColorContexts
@@ -834,12 +839,12 @@ SixelDecoder_GetMetadataQueryReader(
     (void) iface;
 
     if (ppIMetadataQueryReader == NULL) {
-        return E_NOTIMPL;
+        return E_INVALIDARG;
     }
 
     *ppIMetadataQueryReader = NULL;
 
-    return E_NOTIMPL;
+    return WINCODEC_ERR_UNSUPPORTEDOPERATION;
 }
 
 /* IWICBitmapDecoder::GetPreview
@@ -856,10 +861,21 @@ SixelDecoder_GetPreview(
     IWICBitmapSource  /* [out] */ **ppIBitmapSource
 )
 {
-    (void) iface;
-    (void) ppIBitmapSource;
+    IWICBitmapFrameDecode *frame = NULL;
+    HRESULT hr = E_FAIL;
 
-    return WINCODEC_ERR_UNSUPPORTEDOPERATION;
+    if (ppIBitmapSource == NULL) {
+        return E_INVALIDARG;
+    }
+
+    hr = SixelDecoder_GetFrame(iface, 0, &frame);
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    *ppIBitmapSource = (IWICBitmapSource*)frame;
+
+    return S_OK;
 }
 
 /* IWICBitmapDecoder::GetColorContexts
@@ -905,10 +921,65 @@ SixelDecoder_GetThumbnail(
     IWICBitmapSource  /* [out] */ **ppIThumbnail
 )
 {
-    (void) iface;
-    (void) ppIThumbnail;
+    SixelDecoder *decoder;
+    SixelFrame *frame;
+    BYTE *thumb;
+    UINT tw, th;
+    UINT x, y, sx, sy;
 
-    return WINCODEC_ERR_UNSUPPORTEDOPERATION;
+    if (ppIThumbnail == NULL) {
+        return E_INVALIDARG;
+    }
+
+    decoder = (SixelDecoder*)iface;
+    if (!decoder->initialized) {
+        return WINCODEC_ERR_NOTINITIALIZED;
+    }
+
+    tw = decoder->w;
+    th = decoder->h;
+    if (tw >= th) {
+        if (tw > 256) {
+            th = (decoder->h * 256) / decoder->w;
+            tw = 256;
+        }
+    } else {
+        if (th > 256) {
+            tw = (decoder->w * 256) / decoder->h;
+            th = 256;
+        }
+    }
+
+    thumb = (BYTE*)CoTaskMemAlloc(tw * th * 4);
+    if (thumb == NULL) {
+        return E_OUTOFMEMORY;
+    }
+
+    for (y = 0; y < th; ++y) {
+        sy = y * decoder->h / th;
+        for (x = 0; x < tw; ++x) {
+            sx = x * decoder->w / tw;
+            memcpy(thumb + (y * tw + x) * 4,
+                   decoder->solid + (sy * decoder->w + sx) * 4,
+                   4);
+        }
+    }
+
+    frame = (SixelFrame*)CoTaskMemAlloc(sizeof(SixelFrame));
+    if (frame == NULL) {
+        CoTaskMemFree(thumb);
+        return E_OUTOFMEMORY;
+    }
+
+    frame->lpVtbl = &SixelFrame_Vtbl;
+    frame->ref = 1;
+    frame->w = tw;
+    frame->h = th;
+    frame->buf = thumb;
+
+    *ppIThumbnail = (IWICBitmapSource*)frame;
+
+    return S_OK;
 }
 
 /* IWICBitmapDecoder::GetFrameCount
