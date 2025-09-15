@@ -17915,6 +17915,64 @@ printf "%s\n" "#define HAVE_DECL_GDIMAGECREATEFROMGIFPTR $ac_have_decl" >>confde
 
 fi
 
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromGifAnimPtr in -lgd" >&5
+printf %s "checking for gdImageCreateFromGifAnimPtr in -lgd... " >&6; }
+if test ${ac_cv_lib_gd_gdImageCreateFromGifAnimPtr+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-lgd  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.
+   The 'extern "C"' is for builds by C++ compilers;
+   although this is not generally supported in C code supporting it here
+   has little cost and some practical benefit (sr 110532).  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char gdImageCreateFromGifAnimPtr (void);
+int
+main (void)
+{
+return gdImageCreateFromGifAnimPtr ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_gd_gdImageCreateFromGifAnimPtr=yes
+else case e in #(
+  e) ac_cv_lib_gd_gdImageCreateFromGifAnimPtr=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gd_gdImageCreateFromGifAnimPtr" >&5
+printf "%s\n" "$ac_cv_lib_gd_gdImageCreateFromGifAnimPtr" >&6; }
+if test "x$ac_cv_lib_gd_gdImageCreateFromGifAnimPtr" = xyes
+then :
+  ac_fn_check_decl "$LINENO" "gdImageCreateFromGifAnimPtr" "ac_cv_have_decl_gdImageCreateFromGifAnimPtr" " #include <gd.h>
+" "$ac_c_undeclared_builtin_options" "CFLAGS"
+if test "x$ac_cv_have_decl_gdImageCreateFromGifAnimPtr" = xyes
+then :
+  ac_have_decl=1
+else case e in #(
+  e) ac_have_decl=0 ;;
+esac
+fi
+printf "%s\n" "#define HAVE_DECL_GDIMAGECREATEFROMGIFANIMPTR $ac_have_decl" >>confdefs.h
+
+fi
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gdImageCreateFromPngPtr in -lgd" >&5
 printf %s "checking for gdImageCreateFromPngPtr in -lgd... " >&6; }
 if test ${ac_cv_lib_gd_gdImageCreateFromPngPtr+y}
