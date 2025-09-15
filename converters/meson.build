@@ -36,7 +36,7 @@ if get_option('sixel2png').enabled()
     dependencies: libsixel_dep,
     include_directories: project_inc,
     install: true)
-  install_man('img2sixel.1')
+  install_man('sixel2png.1')
 endif
 
 # vim: set et ts=2:

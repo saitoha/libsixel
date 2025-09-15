@@ -314,6 +314,8 @@ if host_system == 'windows'
     windowscodecs_wic = cc.find_library('windowscodecs', required: false)
     if have_wic_headers and ole32_wic.found() and windowscodecs_wic.found()
       conf.set('HAVE_WIC', 1)
+      conf.set('HAVE_WINDOWS_H', 1)
+      conf.set('HAVE_WINCODEC_H', 1)
       deps += [ole32_wic, windowscodecs_wic]
       link_libs += [ole32_wic, windowscodecs_wic]
       loaders += 'wic'
@@ -336,7 +338,19 @@ if host_system == 'windows'
     windowscodecs = cc.find_library('windowscodecs', required: false)
     advapi32 = cc.find_library('advapi32', required: false)
     user32 = cc.find_library('user32', required: false)
-    if have_wiccodec_headers and ole32.found() and windowscodecs.found() and advapi32.found() and user32.found()
+    if have_wiccodec_headers \
+         and ole32.found() \
+         and windowscodecs.found() \
+         and advapi32.found() \
+         and user32.found()
+      conf.set('HAVE_WICCODEC', 1)
+      if not have_wic
+        conf.set('HAVE_WINDOWS_H', 1)
+        conf.set('HAVE_WINCODEC_H', 1)
+      endif
+      if cc.has_header('wincodecsdk.h')
+        conf.set('HAVE_WINCODECSDK_H', 1)
+      endif
       if not have_wic
         deps += [ole32, windowscodecs]
         link_libs += [ole32, windowscodecs]
