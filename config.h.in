@@ -35,6 +35,10 @@
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMGD2PTR
 
+/* Define to 1 if you have the declaration of 'gdImageCreateFromGifAnimPtr',
+   and to 0 if you don't. */
+#undef HAVE_DECL_GDIMAGECREATEFROMGIFANIMPTR
+
 /* Define to 1 if you have the declaration of 'gdImageCreateFromGifPtr', and
    to 0 if you don't. */
 #undef HAVE_DECL_GDIMAGECREATEFROMGIFPTR
@@ -336,6 +340,12 @@
 
 /* whether Windows Imaging Component (WIC) is available */
 #undef HAVE_WIC
+
+/* define 1 if wic codec support is enabled */
+#undef HAVE_WICCODEC
+
+/* Define to 1 if you have the <wincodecsdk.h> header file. */
+#undef HAVE_WINCODECSDK_H
 
 /* Define to 1 if you have the <wincodec.h> header file. */
 #undef HAVE_WINCODEC_H
