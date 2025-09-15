@@ -800,7 +800,9 @@ SixelDecoder_QueryCapability(
         return E_INVALIDARG;
     }
 
-    *pdwCapability = WICBitmapDecoderCapabilityCanDecodeAllImages;
+    *pdwCapability = WICBitmapDecoderCapabilityCanDecodeAllImages
+                   | WICBitmapDecoderCapabilityCanDecodeThumbnail
+                   ;
 
     return S_OK;
 }
