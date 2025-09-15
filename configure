@@ -19786,7 +19786,7 @@ printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
             fi
             CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
             LIBS="${LIBS} ${ADDED_LIBS}"
-                   for ac_header in windows.h wincodec.h
+                   for ac_header in windows.h wincodec.h wincodecsdk.h
 do :
   as_ac_Header=`printf "%s\n" "ac_cv_header_$ac_header" | sed "$as_sed_sh"`
 ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -19895,6 +19895,11 @@ done
             WICCODEC_LIBS="$ADDED_LIBS"
             CFLAGS=$CFLAGS_BACKUP
             LIBS=$CFLAGS_LIBS
+        fi
+        if test "x${have_wiccodec}" = xyes; then
+
+printf "%s\n" "#define HAVE_WICCODEC 1" >>confdefs.h
+
         fi
         ;;
       *)
