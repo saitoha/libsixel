@@ -1519,26 +1519,22 @@ RegisterBinaryValue(
 static void
 RegisterCodecKeysInCLSID(const wchar_t* clsidStr, const wchar_t* modulePath)
 {
+    /* extension */
+    RegisterStringValue(HKEY_CLASSES_ROOT, L".six", NULL,             L"SIXEL image");
+    RegisterStringValue(HKEY_CLASSES_ROOT, L".six", L"Content Type",  L"image/x-sixel");
+    RegisterStringValue(HKEY_CLASSES_ROOT, L".six", L"PerceivedType", L"image");
+
     /* CLSID */
     wchar_t clsidKey[256];
     wsprintfW(clsidKey, L"CLSID\\%s", clsidStr);
-
-    /* InprocServer32 */
-    {
-        wchar_t inprocKey[300];
-        wsprintfW(inprocKey, L"%s\\InprocServer32", clsidKey);
-        RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey,  NULL,                 L"WIC SIXEL Decoder");
-        RegisterStringValue(HKEY_CLASSES_ROOT, inprocKey, NULL,                 modulePath);
-        RegisterStringValue(HKEY_CLASSES_ROOT, inprocKey, L"ThreadingModel",    L"Both");
-    }
-
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"FriendlyName",           L"WIC SIXEL Decoder (Dummy)");
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Description",            L"WIC SIXEL Decoder (Dummy)");
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, NULL,                      L"WIC SIXEL Decoder");
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"FriendlyName",           L"WIC SIXEL Decoder");
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Description",            L"Decoding DEC SIXEL graphics");
     RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Author",                 L"Hayaki Saito");
     RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"VendorGUID",             GUID_VendorSIXEL_String);
     RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"ContainerFormat",        GUID_ContainerFormatSIXEL_String);
     RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"FileExtensions",         L".six");
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"MimeTypes",              L"image/sixel");
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"MimeTypes",              L"image/x-sixel");
     RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Version",                L"1.0.0.0");
     RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Date",                   L"2014-02-20");
     RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"SpecVersion",            L"1.0.0.0");
@@ -1548,6 +1544,14 @@ RegisterCodecKeysInCLSID(const wchar_t* clsidStr, const wchar_t* modulePath)
     RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"SupportsLossless",       1);
     RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"SupportsMultiframe",     0);
     RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"ArbitrationPriority",    0x100);
+
+    /* InprocServer32 */
+    {
+        wchar_t inprocKey[300];
+        wsprintfW(inprocKey, L"%s\\InprocServer32", clsidKey);
+        RegisterStringValue(HKEY_CLASSES_ROOT, inprocKey, NULL,                 modulePath);
+        RegisterStringValue(HKEY_CLASSES_ROOT, inprocKey, L"ThreadingModel",    L"Both");
+    }
 
     /* Formats */
     {
@@ -1592,22 +1596,7 @@ __declspec(dllexport)
 STDAPI
 DllRegisterServer(void) {
     wchar_t modulePath[MAX_PATH];
-    wchar_t clsidKey[256];
-    wchar_t inprocKey[512];
-    wchar_t categoryKey[512];
-
     GetModuleFileNameW((HINSTANCE)&__ImageBase, modulePath, MAX_PATH);
-    wsprintfW(clsidKey, L"CLSID\\%s", CLSID_SixelDecoder_String);
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, NULL, L"WIC SIXEL Decoder");
-    wsprintfW(inprocKey, L"%s\\InprocServer32", clsidKey);
-    RegisterStringValue(HKEY_CLASSES_ROOT, inprocKey, NULL, modulePath);
-    RegisterStringValue(HKEY_CLASSES_ROOT, inprocKey, L"ThreadingModel", L"Both");
-    wsprintfW(categoryKey,
-              L"CLSID\\%s\\Instance\\%s",
-              CATID_WICBitmapDecoders_String,
-              CLSID_SixelDecoder_String);
-    RegisterStringValue(HKEY_CLASSES_ROOT, categoryKey, L"CLSID", CLSID_SixelDecoder_String);
-    RegisterStringValue(HKEY_CLASSES_ROOT, categoryKey, L"FriendlyName", L"WIC SIXEL Decoder");
 
     RegisterCodecKeysInCLSID(CLSID_SixelDecoder_String, modulePath);
 
@@ -1639,6 +1628,7 @@ DllUnregisterServer(void)
     wsprintfW(formats0Key, L"%s\\%s", formatsKey, GUID_WICPixelFormat8bppIndexed_String);
     wsprintfW(formats1Key, L"%s\\%s", formatsKey, GUID_WICPixelFormat32bppBGRA_String);
 
+    RegDeleteKeyW(HKEY_CLASSES_ROOT, L".six");
     RegDeleteKeyW(HKEY_CLASSES_ROOT, inprocKey);
     RegDeleteKeyW(HKEY_CLASSES_ROOT, categoryKey);
     RegDeleteKeyW(HKEY_CLASSES_ROOT, pattern0Key);
