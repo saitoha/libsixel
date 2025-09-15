@@ -19,10 +19,9 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <objbase.h>
-
 #define INITGUID
 #include "wic_stub.h"
+#include <initguid.h>
 
 /* custom malloc */
 void *
