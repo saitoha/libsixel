@@ -19,15 +19,18 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#define COBJMACROS
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <wincodec.h>
-#if defined(HAVE_WINCODECSDK_H)
-# include <wincodecsdk.h>
-#endif
-#include <initguid.h>
-#include <unknwn.h>
+#ifndef LIBSIXEL_WIC_STUB_H
+# define LIBSIXEL_WIC_STUB_H
+
+# define COBJMACROS
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+# include <wincodec.h>
+# if defined(HAVE_WINCODECSDK_H)
+#  include <wincodecsdk.h>
+# endif
+# include <unknwn.h>
+# include <objbase.h>
 
 /* custom malloc */
 void * wic_malloc(size_t size);
@@ -96,4 +99,5 @@ struct IWICBitmapSourceTransform {
     CONST_VTBL struct IWICBitmapSourceTransformVtbl *lpVtbl;
 };
 
-#endif /* __IWICBitmapSourceTransform_INTERFACE_DEFINED__ */
+# endif /* __IWICBitmapSourceTransform_INTERFACE_DEFINED__ */
+#endif /* LIBSIXEL_WIC_STUB_H */
