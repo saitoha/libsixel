@@ -71,7 +71,7 @@ static wchar_t const CATID_WICBitmapDecoders_String[]
 static wchar_t const GUID_WICPixelFormat32bppBGRA_String[]
     = L"{6FDDC324-4E03-4BFE-B185-3D77768DC90F}";
 static wchar_t const GUID_WICPixelFormat8bppIndexed_String[]
-    = L"{6FDDC324-4E03-4BFE-B185-3D77768DC90E}";
+    = L"{6FDDC324-4E03-4BFE-B185-3D77768DC904}";
 
 /* Frame object (implements IWICBitmapFrameDecode and IWICBitmapSourceTransform) */
 typedef struct {
