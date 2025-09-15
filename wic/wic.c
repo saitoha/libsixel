@@ -1531,19 +1531,21 @@ RegisterCodecKeysInCLSID(const wchar_t* clsidStr, const wchar_t* modulePath)
     RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"FriendlyName",           L"WIC SIXEL Decoder");
     RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Description",            L"Decoding DEC SIXEL graphics");
     RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Author",                 L"Hayaki Saito");
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"CLSID",                  clsidStr);
     RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"VendorGUID",             GUID_VendorSIXEL_String);
     RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"ContainerFormat",        GUID_ContainerFormatSIXEL_String);
     RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"FileExtensions",         L".six");
     RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"MimeTypes",              L"image/x-sixel");
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Version",                L"1.0.0.0");
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Version",                L"1.0.0.1");
     RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Date",                   L"2014-02-20");
     RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"SpecVersion",            L"1.0.0.0");
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"ColorManagementVersion", L"0");
+    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"ColorManagementVersion", L"1.0");
     RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"SupportsAnimation",      0);
     RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"SupportsChromakey",      1);
     RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"SupportsLossless",       1);
     RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"SupportsMultiframe",     0);
     RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"ArbitrationPriority",    0x100);
+    RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"Capabilities",           0x9);
 
     /* InprocServer32 */
     {
