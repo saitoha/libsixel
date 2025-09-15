@@ -341,6 +341,12 @@
 /* whether Windows Imaging Component (WIC) is available */
 #undef HAVE_WIC
 
+/* define 1 if wic codec support is enabled */
+#undef HAVE_WICCODEC
+
+/* Define to 1 if you have the <wincodecsdk.h> header file. */
+#undef HAVE_WINCODECSDK_H
+
 /* Define to 1 if you have the <wincodec.h> header file. */
 #undef HAVE_WINCODEC_H
 

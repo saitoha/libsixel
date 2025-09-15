@@ -1127,7 +1127,7 @@ else
             fi
             CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
             LIBS="${LIBS} ${ADDED_LIBS}"
-            AC_CHECK_HEADERS([windows.h wincodec.h],
+            AC_CHECK_HEADERS([windows.h wincodec.h wincodecsdk.h],
                              [AC_CHECK_LIB([ole32],
                                            [main],
                                            [],
@@ -1141,6 +1141,9 @@ else
             WICCODEC_LIBS="$ADDED_LIBS"
             CFLAGS=$CFLAGS_BACKUP
             LIBS=$CFLAGS_LIBS
+        fi
+        if test "x${have_wiccodec}" = xyes; then
+            AC_DEFINE([HAVE_WICCODEC], [1],  [define 1 if wic codec support is enabled])
         fi
         ;;
       *)

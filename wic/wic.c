@@ -20,56 +20,14 @@
  */
 #define _UNICODE
 #define UNICODE
-#define COBJMACROS
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <wincodec.h>
-#include <wincodecsdk.h>
-#include <initguid.h>
-#include <objbase.h>
+#include "wic_stub.h"
 #include <strsafe.h>
 #include <string.h>
+#include <stddef.h>
 
 #include <sixel.h>
 
 extern IMAGE_DOS_HEADER __ImageBase;
-
-/* custom malloc */
-void *
-wic_malloc(size_t size) {
-    return CoTaskMemAlloc(size);
-}
-
-/* custom realloc */
-void *
-wic_realloc(void* ptr, size_t new_size)
-{
-    return CoTaskMemRealloc(ptr, new_size);
-}
-
-/* custom calloc */
-void *
-wic_calloc(size_t count, size_t size)
-{
-    size_t total;
-    void *p;
-
-    total = count * size;
-    p = CoTaskMemAlloc(total);
-    if (p) {
-        memset(p, 0, total);
-    }
-    return p;
-}
-
-/* custom free */
-void
-wic_free(void* ptr)
-{
-    if (ptr) {
-        CoTaskMemFree(ptr);
-    }
-}
 
 /* CLSID */
 static const CLSID CLSID_SixelDecoder = {
@@ -106,46 +64,33 @@ static const GUID GUID_VendorSIXEL = {
 static wchar_t const GUID_VendorSIXEL_String[]
     = L"{0B0A6D1E-0C4F-42E9-BA37-1FF5636E9A55}";
 
-/* GUID_WICPixelFormat32bppBGRA */
-static wchar_t const GUID_WICPixelFormat32bppBGRA_String[]
-    = L"{6FDDC324-4E03-4BFE-B185-3D77768DC90F}";
-
-/* IID_IUnknown  {00000000-0000-0000-C000-000000000046} */
-const IID IID_IUnknown = 
-{
-    0x00000000,
-    0x0000,
-    0x0000,
-    { 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 }
-};
-
-/* IID_IClassFactory {00000001-0000-0000-C000-000000000046} */
-const IID IID_IClassFactory = 
-{
-    0x00000001,
-    0x0000,
-    0x0000,
-    { 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 }
-};
-
 static wchar_t const CATID_WICBitmapDecoders_String[]
     = L"{7ED96837-96F0-4812-B211-F13C24117ED3}";
 
-/* Frame object (implements IWICBitmapFrameDecode) */
+/* GUID_WICPixelFormat32bppBGRA */
+static wchar_t const GUID_WICPixelFormat32bppBGRA_String[]
+    = L"{6FDDC324-4E03-4BFE-B185-3D77768DC90F}";
+static wchar_t const GUID_WICPixelFormat8bppIndexed_String[]
+    = L"{6FDDC324-4E03-4BFE-B185-3D77768DC90E}";
+
+/* Frame object (implements IWICBitmapFrameDecode and IWICBitmapSourceTransform) */
 typedef struct {
-    const IWICBitmapFrameDecodeVtbl* lpVtbl;  /* vtbl pointer */
+    const IWICBitmapFrameDecodeVtbl      *lpVtbl;       /* frame vtbl pointer */
+    const IWICBitmapSourceTransformVtbl  *lpTransVtbl;  /* transform vtbl pointer */
     LONG ref;
     UINT w;
     UINT h;
-    BYTE *buf;
+    BYTE *indices;     /* 8bpp indexed pixels */
+    WICColor *palette; /* ARGB palette */
+    UINT ncolors;
 } SixelFrame;
 
 /* IUnknown */
 static HRESULT STDMETHODCALLTYPE
 SixelFrame_QueryInterface(
-    IWICBitmapFrameDecode *iface,
-    REFIID                 riid,
-    void                 **ppv
+    IWICBitmapFrameDecode              *iface,
+    REFIID                /* [in] */    riid,
+    void                  /* [out] */ **ppv
 )
 {
     if (! ppv) {
@@ -163,6 +108,11 @@ SixelFrame_QueryInterface(
         return S_OK;
     } else if (IsEqualIID(riid, &IID_IWICBitmapFrameDecode)) {
         *ppv = iface;
+        IUnknown_AddRef(iface);
+        return S_OK;
+    } else if (IsEqualIID(riid, &IID_IWICBitmapSourceTransform)) {
+        SixelFrame *f = (SixelFrame*)iface;
+        *ppv = (void*)&f->lpTransVtbl;
         IUnknown_AddRef(iface);
         return S_OK;
     }
@@ -195,8 +145,11 @@ SixelFrame_Release(
     n = (ULONG)InterlockedDecrement(&f->ref);
 
     if (n == 0) {
-        if (f->buf) {
-            CoTaskMemFree(f->buf);
+        if (f->indices) {
+            CoTaskMemFree(f->indices);
+        }
+        if (f->palette) {
+            CoTaskMemFree(f->palette);
         }
         CoTaskMemFree(f);
     }
@@ -258,7 +211,7 @@ SixelFrame_GetPixelFormat(
         return E_INVALIDARG;
     }
 
-    *pPixelFormat = GUID_WICPixelFormat32bppBGRA;
+    *pPixelFormat = GUID_WICPixelFormat8bppIndexed;
 
     return S_OK;
 }
@@ -305,10 +258,14 @@ SixelFrame_CopyPalette(
     IWICPalette           /* [in] */ *pIPalette
 )
 {
-    (void) iface;
-    (void) pIPalette;
+    SixelFrame *f;
 
-    return WINCODEC_ERR_PALETTEUNAVAILABLE;
+    if (pIPalette == NULL) {
+        return E_INVALIDARG;
+    }
+
+    f = (SixelFrame*)iface;
+    return IWICPalette_InitializeCustom(pIPalette, f->palette, f->ncolors);
 }
 
 /* IIWICBitmapSource::CopyPixels
@@ -353,22 +310,257 @@ SixelFrame_CopyPixels(
     }
 
     if(cbStride == 0) {
-        cbStride = rw * 4;
+        cbStride = rw;
     }
 
     if(cbBufferSize < cbStride * rh) {
         return E_INVALIDARG;
     }
 
-    src = f->buf + y * f->w * 4 + x * 4;
+    src = f->indices + y * f->w + x;
     for(i = 0; i < rh; ++i) {
         memcpy(dst + i * cbStride,
-               src + i * f->w * 4,
-               rw * 4);
+               src + i * f->w,
+               rw);
     }
 
     return S_OK;
 }
+
+/* IWICBitmapSourceTransform (Aggregated) */
+
+/* IUnknown (IWICBitmapSourceTransform) */
+static HRESULT STDMETHODCALLTYPE
+SixelFrame_Transform_QueryInterface(
+    IWICBitmapSourceTransform              *iface,
+    REFIID                    /* [in] */    riid,
+    void                      /* [out] */ **ppv)
+{
+    SixelFrame *f;
+    HRESULT hr = E_FAIL;
+
+    f = (SixelFrame*)((BYTE*)iface - offsetof(SixelFrame, lpTransVtbl));
+
+    hr = IUnknown_QueryInterface((IWICBitmapFrameDecode*)f, riid, ppv);
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    return S_OK;
+}
+
+static ULONG STDMETHODCALLTYPE
+SixelFrame_Transform_AddRef(
+    IWICBitmapSourceTransform *iface
+)
+{
+    SixelFrame *f;
+
+    f = (SixelFrame*)((BYTE*)iface - offsetof(SixelFrame, lpTransVtbl));
+
+    return SixelFrame_AddRef((IWICBitmapFrameDecode*)f);
+}
+
+static ULONG STDMETHODCALLTYPE
+SixelFrame_Transform_Release(
+    IWICBitmapSourceTransform *iface
+)
+{
+    SixelFrame *f;
+
+    f = (SixelFrame*)((BYTE*)iface - offsetof(SixelFrame, lpTransVtbl));
+
+    return SixelFrame_Release((IWICBitmapFrameDecode*)f);
+}
+
+/* IWICBitmapSourceTransform::CopyPixels
+ *
+ * wincodec.h
+ *
+ * HRESULT CopyPixels(
+ *   [in]  const WICRect             *prc,
+ *   [in]  UINT                      uiWidth,
+ *   [in]  UINT                      uiHeight,
+ *   [in]  WICPixelFormatGUID        *pguidDstFormat,
+ *   [in]  WICBitmapTransformOptions dstTransform,
+ *   [in]  UINT                      nStride,
+ *   [in]  UINT                      cbBufferSize,
+ *   [out] BYTE                      *pbBuffer
+ * );
+ */
+static HRESULT STDMETHODCALLTYPE
+SixelFrame_Transform_CopyPixels(
+    IWICBitmapSourceTransform *iface,
+    const WICRect              /* [in] */  *prc,
+    UINT                       /* [in] */   uiWidth,
+    UINT                       /* [in] */   uiHeight,
+    WICPixelFormatGUID         /* [in] */  *pguidDstFormat,
+    WICBitmapTransformOptions  /* [in] */   dstTransform,
+    UINT                       /* [in] */   nStride,
+    UINT                       /* [in] */   cbBufferSize,
+    BYTE                       /* [out] */ *pbBuffer)
+{
+    SixelFrame *f;
+    UINT x = 0;
+    UINT y = 0;
+    UINT rw;
+    UINT rh;
+    UINT i;
+    UINT j;
+    BYTE *src;
+    BYTE idx;
+    WICColor c;
+    BYTE *d;
+
+    f = (SixelFrame*)((BYTE*)iface - offsetof(SixelFrame, lpTransVtbl));
+
+    if (dstTransform != WICBitmapTransformRotate0) {
+        return WINCODEC_ERR_UNSUPPORTEDOPERATION;
+    }
+    if (uiWidth != f->w || uiHeight != f->h) {
+        return WINCODEC_ERR_UNSUPPORTEDOPERATION;
+    }
+    if (prc) {
+        x = prc->X;
+        y = prc->Y;
+        rw = prc->Width;
+        rh = prc->Height;
+    } else {
+        rw = f->w;
+        rh = f->h;
+    }
+
+    if (IsEqualGUID(pguidDstFormat, &GUID_WICPixelFormat8bppIndexed)) {
+        if (nStride == 0) {
+            nStride = rw;
+        }
+        if (cbBufferSize < nStride * rh) {
+            return E_INVALIDARG;
+        }
+        src = f->indices + y * f->w + x;
+        for (i = 0; i < rh; ++i) {
+            memcpy(pbBuffer + i * nStride,
+                   src + i * f->w,
+                   rw);
+        }
+        return S_OK;
+    } else if (IsEqualGUID(pguidDstFormat, &GUID_WICPixelFormat32bppBGRA)) {
+        if (nStride == 0) {
+            nStride = rw * 4;
+        }
+        if (cbBufferSize < nStride * rh) {
+            return E_INVALIDARG;
+        }
+        src = f->indices + y * f->w + x;
+        for (i = 0; i < rh; ++i) {
+            for (j = 0; j < rw; ++j) {
+                idx = src[i * f->w + j];
+                c = f->palette[idx];
+                d = pbBuffer + i * nStride + j * 4;
+                d[0] = (BYTE)(c & 0xFF);         /* B */
+                d[1] = (BYTE)((c >> 8) & 0xFF);  /* G */
+                d[2] = (BYTE)((c >> 16) & 0xFF); /* R */
+                d[3] = (BYTE)((c >> 24) & 0xFF); /* A */
+            }
+        }
+        return S_OK;
+    }
+
+    return WINCODEC_ERR_UNSUPPORTEDPIXELFORMAT;
+}
+
+/* IWICBitmapSourceTransform::GetClosestSize
+ *
+ * wincodec.h
+ *
+ * HRESULT GetClosestSize(
+ *   [in, out] UINT *puiWidth,
+ *   [in, out] UINT *puiHeight
+ * );
+ */
+static HRESULT STDMETHODCALLTYPE
+SixelFrame_Transform_GetClosestSize(
+    IWICBitmapSourceTransform                 *iface,
+    UINT                      /* [in, out] */ *puiWidth,
+    UINT                      /* [in, out] */ *puiHeight)
+{
+    SixelFrame *f;
+
+    f = (SixelFrame*)((BYTE*)iface - offsetof(SixelFrame, lpTransVtbl));
+
+    if (puiWidth == NULL || puiHeight == NULL) {
+        return E_INVALIDARG;
+    }
+
+    *puiWidth = f->w;
+    *puiHeight = f->h;
+
+    return S_OK;
+}
+
+/* IWICBitmapSourceTransform::GetClosestPixelFormat
+ *
+ * wincodec.h
+ *
+ * HRESULT GetClosestPixelFormat(
+ *   [in, out] WICPixelFormatGUID *pPixelFormat
+ * );
+ */
+static HRESULT STDMETHODCALLTYPE
+SixelFrame_Transform_GetClosestPixelFormat(
+    IWICBitmapSourceTransform                 *iface,
+    WICPixelFormatGUID        /* [in, out] */ *pPixelFormat)
+{
+    (void) iface;
+
+    if (! pPixelFormat) {
+        return E_INVALIDARG;
+    }
+
+    if (!IsEqualGUID(pPixelFormat, &GUID_WICPixelFormat8bppIndexed)) {
+        *pPixelFormat = GUID_WICPixelFormat8bppIndexed;
+    } else if (!IsEqualGUID(pPixelFormat, &GUID_WICPixelFormat32bppBGRA)) {
+        /* *pPixelFormat = GUID_WICPixelFormat8bppIndexed; */
+        *pPixelFormat = GUID_WICPixelFormat32bppBGRA;
+    }
+
+    return S_OK;
+}
+
+/* IWICBitmapSourceTransform::DoesSupportTransform
+ *
+ * wincodec.h
+ *
+ * HRESULT DoesSupportTransform(
+ *   [in]  WICBitmapTransformOptions dstTransform,
+ *   [out] BOOL *pfIsSupported
+ * );
+ */
+static HRESULT STDMETHODCALLTYPE
+SixelFrame_Transform_DoesSupportTransform(
+    IWICBitmapSourceTransform             *iface,
+    WICBitmapTransformOptions /* [in] */   dstTransform,
+    BOOL                      /* [out] */ *pfIsSupported)
+{
+    (void) iface;
+    if (! pfIsSupported) {
+        return E_INVALIDARG;
+    }
+
+    *pfIsSupported = (dstTransform == WICBitmapTransformRotate0);
+
+    return S_OK;
+}
+
+static IWICBitmapSourceTransformVtbl SixelFrame_Transform_Vtbl = {
+    SixelFrame_Transform_QueryInterface,
+    SixelFrame_Transform_AddRef,
+    SixelFrame_Transform_Release,
+    SixelFrame_Transform_CopyPixels,
+    SixelFrame_Transform_GetClosestSize,
+    SixelFrame_Transform_GetClosestPixelFormat,
+    SixelFrame_Transform_DoesSupportTransform
+};
 
 /* IIWICBitmapFrameDecode */
 
@@ -521,7 +713,9 @@ typedef struct {
     BOOL initialized;
     UINT w;
     UINT h;
-    BYTE* solid;
+    BYTE *indices;
+    WICColor *palette;
+    UINT ncolors;
 } SixelDecoder;
 
 static HRESULT STDMETHODCALLTYPE
@@ -572,8 +766,11 @@ SixelDecoder_Release(IWICBitmapDecoder* iface)
     n = (ULONG)InterlockedDecrement(&decoder->ref);
 
     if(n == 0) {
-        if (decoder->solid) {
-            CoTaskMemFree(decoder->solid);
+        if (decoder->indices) {
+            CoTaskMemFree(decoder->indices);
+        }
+        if (decoder->palette) {
+            CoTaskMemFree(decoder->palette);
         }
         CoTaskMemFree(decoder);
     }
@@ -625,9 +822,6 @@ SixelDecoder_Initialize(
 )
 {
     SixelDecoder *decoder;
-    UINT x;
-    UINT y;
-    BYTE *p;
     STATSTG stat;
     HRESULT hr = E_FAIL;
     ULONG size;
@@ -639,10 +833,10 @@ SixelDecoder_Initialize(
     unsigned char *palette = NULL;
     int width;
     int height;
-    int index;
+    UINT i;
     int ncolors;
 
-    (void) cacheOptions;
+    (void) cacheOptions;  /* TODO: cache implementation */
 
     if (pIStream == NULL) {
         return E_POINTER;
@@ -694,24 +888,23 @@ SixelDecoder_Initialize(
 
     decoder->w = width;
     decoder->h = height;
-    decoder->solid = (BYTE*)CoTaskMemAlloc(width * height * 4);
-    if (decoder->solid == NULL) {
-        return E_OUTOFMEMORY;
+    decoder->indices = (BYTE*)CoTaskMemAlloc(width * height);
+    decoder->palette = (WICColor*)CoTaskMemAlloc(ncolors * sizeof(WICColor));
+    if (decoder->indices == NULL || decoder->palette == NULL) {
+        hr = E_OUTOFMEMORY;
+        goto end;
     }
 
-    for(y = 0; y < decoder->h; ++y) {
-        for(x = 0; x < decoder->w; ++x) {
-            index = pixels[y * decoder->w + x];
-            p = decoder->solid + y * decoder->w * 4 + x * 4;
-            /* RGB -> BGRA */
-            p[0] = palette[index * 3 + 2];  /* B */
-            p[1] = palette[index * 3 + 1];  /* G */
-            p[2] = palette[index * 3 + 0];  /* R */
-            p[3] = 255;                     /* A */
-        }
+    memcpy(decoder->indices, pixels, width * height);
+    for (i = 0; i < (UINT)ncolors; ++i) {
+        decoder->palette[i] = 0xFF000000 |
+            (palette[i * 3 + 0] << 16) |
+            (palette[i * 3 + 1] << 8) |
+            (palette[i * 3 + 2]);
     }
-
+    decoder->ncolors = ncolors;
     decoder->initialized = TRUE;
+    hr = S_OK;
 
 end:
     sixel_allocator_free(allocator, input);
@@ -719,7 +912,7 @@ end:
     sixel_allocator_free(allocator, palette);
     sixel_allocator_unref(allocator);
 
-    return S_OK;
+    return hr;
 }
 
 /* IWICBitmapDecoder::GetContainerFormat
@@ -816,10 +1009,18 @@ SixelDecoder_CopyPalette(
     IWICPalette       /* [in] */ *pIPalette
 )
 {
-    (void) iface;
-    (void) pIPalette;
+    SixelDecoder *decoder;
 
-    return WINCODEC_ERR_PALETTEUNAVAILABLE;
+    if (pIPalette == NULL) {
+        return E_INVALIDARG;
+    }
+
+    decoder = (SixelDecoder*)iface;
+    if (!decoder->initialized) {
+        return WINCODEC_ERR_NOTINITIALIZED;
+    }
+
+    return IWICPalette_InitializeCustom(pIPalette, decoder->palette, decoder->ncolors);
 }
 
 /* IWICBitmapDecoder::GetMetadataQueryReader
@@ -868,7 +1069,7 @@ SixelDecoder_GetPreview(
         return E_INVALIDARG;
     }
 
-    hr = SixelDecoder_GetFrame(iface, 0, &frame);
+    hr = IWICBitmapDecoder_GetFrame(iface, 0, &frame);
     if (FAILED(hr)) {
         return hr;
     }
@@ -924,6 +1125,7 @@ SixelDecoder_GetThumbnail(
     SixelDecoder *decoder;
     SixelFrame *frame;
     BYTE *thumb;
+    WICColor *pal_copy;
     UINT tw, th;
     UINT x, y, sx, sy;
 
@@ -950,7 +1152,7 @@ SixelDecoder_GetThumbnail(
         }
     }
 
-    thumb = (BYTE*)CoTaskMemAlloc(tw * th * 4);
+    thumb = (BYTE*)CoTaskMemAlloc(tw * th);
     if (thumb == NULL) {
         return E_OUTOFMEMORY;
     }
@@ -959,23 +1161,32 @@ SixelDecoder_GetThumbnail(
         sy = y * decoder->h / th;
         for (x = 0; x < tw; ++x) {
             sx = x * decoder->w / tw;
-            memcpy(thumb + (y * tw + x) * 4,
-                   decoder->solid + (sy * decoder->w + sx) * 4,
-                   4);
+            thumb[y * tw + x] = decoder->indices[sy * decoder->w + sx];
         }
     }
+
+    pal_copy = (WICColor*)CoTaskMemAlloc(decoder->ncolors * sizeof(WICColor));
+    if (pal_copy == NULL) {
+        CoTaskMemFree(thumb);
+        return E_OUTOFMEMORY;
+    }
+    memcpy(pal_copy, decoder->palette, decoder->ncolors * sizeof(WICColor));
 
     frame = (SixelFrame*)CoTaskMemAlloc(sizeof(SixelFrame));
     if (frame == NULL) {
         CoTaskMemFree(thumb);
+        CoTaskMemFree(pal_copy);
         return E_OUTOFMEMORY;
     }
 
     frame->lpVtbl = &SixelFrame_Vtbl;
+    frame->lpTransVtbl = &SixelFrame_Transform_Vtbl;
     frame->ref = 1;
     frame->w = tw;
     frame->h = th;
-    frame->buf = thumb;
+    frame->indices = thumb;
+    frame->palette = pal_copy;
+    frame->ncolors = decoder->ncolors;
 
     *ppIThumbnail = (IWICBitmapSource*)frame;
 
@@ -1029,7 +1240,8 @@ SixelDecoder_GetFrame(
 {
     SixelDecoder *decoder;
     SixelFrame *frame;
-    BYTE *copy;
+    BYTE *idx_copy;
+    WICColor *pal_copy;
 
     decoder = (SixelDecoder*)iface;
 
@@ -1047,25 +1259,33 @@ SixelDecoder_GetFrame(
         return WINCODEC_ERR_FRAMEMISSING;
     }
 
-    copy = (BYTE*)CoTaskMemAlloc(decoder->w * decoder->h * 4);
+    idx_copy = (BYTE*)CoTaskMemAlloc(decoder->w * decoder->h);
+    pal_copy = (WICColor*)CoTaskMemAlloc(decoder->ncolors * sizeof(WICColor));
 
-    if (copy == NULL) {
+    if (idx_copy == NULL || pal_copy == NULL) {
+        CoTaskMemFree(idx_copy);
+        CoTaskMemFree(pal_copy);
         return E_OUTOFMEMORY;
     }
 
-    memcpy(copy, decoder->solid, decoder->w * decoder->h * 4);
+    memcpy(idx_copy, decoder->indices, decoder->w * decoder->h);
+    memcpy(pal_copy, decoder->palette, decoder->ncolors * sizeof(WICColor));
 
     frame = (SixelFrame*)CoTaskMemAlloc(sizeof(SixelFrame));
     if(frame == NULL) {
-        CoTaskMemFree(copy);
+        CoTaskMemFree(idx_copy);
+        CoTaskMemFree(pal_copy);
         return E_OUTOFMEMORY;
     }
 
     frame->lpVtbl = &SixelFrame_Vtbl;
+    frame->lpTransVtbl = &SixelFrame_Transform_Vtbl;
     frame->ref = 1;
     frame->w = decoder->w;
     frame->h = decoder->h;
-    frame->buf = copy;
+    frame->indices = idx_copy;
+    frame->palette = pal_copy;
+    frame->ncolors = decoder->ncolors;
     *ppIBitmapFrame = (IWICBitmapFrameDecode *)frame;
 
     return S_OK;
@@ -1100,9 +1320,9 @@ static LONG g_serverLocks = 0;
 
 static HRESULT STDMETHODCALLTYPE
 SixelFactory_QueryInterface(
-    IClassFactory *iface,
-    REFIID         riid,
-    void         **ppv
+    IClassFactory               *iface,
+    REFIID         /* [in] */    riid,
+    void           /* [out] */ **ppv
 )
 {
     if (ppv == NULL) {
@@ -1181,9 +1401,11 @@ SixelFactory_CreateInstance(
     decoder->initialized = FALSE;
     decoder->w = 0;
     decoder->h = 0;
-    decoder->solid = NULL;
+    decoder->indices = NULL;
+    decoder->palette = NULL;
+    decoder->ncolors = 0;
 
-    hr = SixelDecoder_QueryInterface((IWICBitmapDecoder*)decoder, riid, ppv);
+    hr = IUnknown_QueryInterface((IWICBitmapDecoder*)decoder, riid, ppv);
     SixelDecoder_Release((IWICBitmapDecoder*)decoder);
 
     return hr;
@@ -1328,7 +1550,10 @@ RegisterCodecKeysInCLSID(const wchar_t* clsidStr, const wchar_t* modulePath)
     /* Formats */
     {
         wchar_t formatsKey[512];
- 
+
+        wsprintfW(formatsKey, L"%s\\Formats\\%s", clsidKey, GUID_WICPixelFormat8bppIndexed_String);
+        RegisterStringValue(HKEY_CLASSES_ROOT, formatsKey, NULL, L"");
+
         wsprintfW(formatsKey, L"%s\\Formats\\%s", clsidKey, GUID_WICPixelFormat32bppBGRA_String);
         RegisterStringValue(HKEY_CLASSES_ROOT, formatsKey, NULL, L"");
     }
@@ -1397,6 +1622,7 @@ DllUnregisterServer(void)
     wchar_t pattern0Key[512];
     wchar_t categoryKey[512];
     wchar_t formatsKey[512];
+    wchar_t formats0Key[512];
     wchar_t formats1Key[512];
 
     wsprintfW(clsidKey, L"CLSID\\%s", CLSID_SixelDecoder_String);
@@ -1407,13 +1633,15 @@ DllUnregisterServer(void)
     wsprintfW(inprocKey, L"%s\\InprocServer32",clsidKey);
     wsprintfW(patternKey, L"%s\\Patterns",clsidKey);
     wsprintfW(pattern0Key, L"%s\\0",patternKey);
-    wsprintfW(formatsKey, L"%s\\Formats\\%s",clsidKey);
+    wsprintfW(formatsKey, L"%s\\Formats",clsidKey);
+    wsprintfW(formats0Key, L"%s\\%s", formatsKey, GUID_WICPixelFormat8bppIndexed_String);
     wsprintfW(formats1Key, L"%s\\%s", formatsKey, GUID_WICPixelFormat32bppBGRA_String);
 
     RegDeleteKeyW(HKEY_CLASSES_ROOT, inprocKey);
     RegDeleteKeyW(HKEY_CLASSES_ROOT, categoryKey);
     RegDeleteKeyW(HKEY_CLASSES_ROOT, pattern0Key);
     RegDeleteKeyW(HKEY_CLASSES_ROOT, patternKey);
+    RegDeleteKeyW(HKEY_CLASSES_ROOT, formats0Key);
     RegDeleteKeyW(HKEY_CLASSES_ROOT, formats1Key);
     RegDeleteKeyW(HKEY_CLASSES_ROOT, formatsKey);
     RegDeleteKeyW(HKEY_CLASSES_ROOT, clsidKey);
@@ -1449,7 +1677,7 @@ DllGetClassObject(
 
         factory->lpVtbl = &SixelFactory_Vtbl;
         factory->ref = 1;
-        hr = SixelFactory_QueryInterface((IClassFactory*)factory, riid, ppv);
+        hr = IUnknown_QueryInterface((IClassFactory*)factory, riid, ppv);
         SixelFactory_Release((IClassFactory*)factory);
 
         return hr;
