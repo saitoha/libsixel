@@ -18,14 +18,15 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#define _UNICODE
-#define UNICODE
+#include "config.h"
+
 #include "wic_stub.h"
 #include <strsafe.h>
-#include <string.h>
-#include <stddef.h>
 
 #include <sixel.h>
+
+#define WIC_DISABLE_THUMBNAIL_CACHE 0
+#define WIC_PAL8_AS_DEFAULT_PIXELFORMAT 0
 
 extern IMAGE_DOS_HEADER __ImageBase;
 
@@ -37,8 +38,6 @@ static const CLSID CLSID_SixelDecoder = {
     0x4977,
     { 0x85, 0x71, 0xcf, 0x00, 0x58, 0x84, 0xbc, 0xb9 }
 };
-static wchar_t const CLSID_SixelDecoder_String[]
-    = L"{15B9B4DA-B155-4977-8571-CF005884BCB9}";
 
 /* ContainerFormat */
 static const GUID GUID_ContainerFormatSIXEL = {
@@ -48,40 +47,53 @@ static const GUID GUID_ContainerFormatSIXEL = {
     0x4e0e,
     { 0x9d, 0x4c, 0x96, 0x53, 0x23, 0x64, 0x40, 0x1a }
 };
-static wchar_t const GUID_ContainerFormatSIXEL_String[]
-    = L"{5B2053A9-7A2E-4E0E-9D4C-96532364401A}";
 
-/* VendorGUID */
-#if 0
-static const GUID GUID_VendorSIXEL = {
-    /* 0b0a6d1e-0c4f-42e9-ba37-1ff5636e9a55 */
-    0x0b0a6d1e,
-    0x0c4f,
-    0x42e9,
-    {0xba, 0x37, 0x1f, 0xf5, 0x63, 0x6e, 0x9a, 0x55}
-};
-#endif
-static wchar_t const GUID_VendorSIXEL_String[]
-    = L"{0B0A6D1E-0C4F-42E9-BA37-1FF5636E9A55}";
-
-static wchar_t const CATID_WICBitmapDecoders_String[]
-    = L"{7ED96837-96F0-4812-B211-F13C24117ED3}";
+#define CLSIDSTR_SixelDecoder \
+    L"{15B9B4DA-B155-4977-8571-CF005884BCB9}"
+#define GUIDSTR_ContainerFormatSIXEL \
+    L"{5B2053A9-7A2E-4E0E-9D4C-96532364401A}"
+#define GUIDSTR_VendorSIXEL \
+    L"{0B0A6D1E-0C4F-42E9-BA37-1FF5636E9A55}"
+#define CATIDSTR_WICBitmapDecoders \
+    L"{7ED96837-96F0-4812-B211-F13C24117ED3}"
 
 /* GUID_WICPixelFormat32bppBGRA */
-static wchar_t const GUID_WICPixelFormat32bppBGRA_String[]
-    = L"{6FDDC324-4E03-4BFE-B185-3D77768DC90F}";
-static wchar_t const GUID_WICPixelFormat8bppIndexed_String[]
-    = L"{6FDDC324-4E03-4BFE-B185-3D77768DC904}";
+#define GUIDSTR_WICPixelFormat32bppBGRA \
+    L"{6FDDC324-4E03-4BFE-B185-3D77768DC90F}"
+#define GUIDSTR_WICPixelFormat8bppIndexed \
+    L"{6FDDC324-4E03-4BFE-B185-3D77768DC904}"
 
-/* Frame object (implements IWICBitmapFrameDecode and IWICBitmapSourceTransform) */
+/* Windows Photo Viewer */
+#define CLSIDSTR_WindowsPhotoViewer \
+    L"{FFE2A43C-56B9-4bf5-9A79-CC6D4285608A}"
+
+/* Thumbnail Handler */
+#define IIDSTR_IThumbnailProvider \
+    L"{E357FCCD-A995-4576-B01F-234630154E96}"
+
+#define CLSIDSTR_PhotoThumbnailProvider \
+    L"{C7657C4A-9F68-40fa-A4DF-96BC08EB3551}"
+
+/* Frame object
+   implements: IWICBitmapFrameDecode
+               IWICBitmapSourceTransform
+*/
 typedef struct {
-    const IWICBitmapFrameDecodeVtbl      *lpVtbl;       /* frame vtbl pointer */
-    const IWICBitmapSourceTransformVtbl  *lpTransVtbl;  /* transform vtbl pointer */
+    /* frame vtbl pointer */
+    const IWICBitmapFrameDecodeVtbl      *lpVtbl;
+    /* transform vtbl pointer */
+    const IWICBitmapSourceTransformVtbl  *lpTransVtbl;
+    /* ref counter */
     LONG ref;
+    /* width */
     UINT w;
+    /* height */
     UINT h;
-    BYTE *indices;     /* 8bpp indexed pixels */
-    WICColor *palette; /* ARGB palette */
+    /* 8bpp indexed pixels */
+    BYTE *indices;
+    /* ARGB palette */
+    WICColor *palette;
+    /* num of colors */
     UINT ncolors;
 } SixelFrame;
 
@@ -93,6 +105,8 @@ SixelFrame_QueryInterface(
     void                  /* [out] */ **ppv
 )
 {
+    SixelFrame *f;
+
     if (! ppv) {
         return E_POINTER;
     }
@@ -111,7 +125,7 @@ SixelFrame_QueryInterface(
         IUnknown_AddRef(iface);
         return S_OK;
     } else if (IsEqualIID(riid, &IID_IWICBitmapSourceTransform)) {
-        SixelFrame *f = (SixelFrame*)iface;
+        f = (SixelFrame*)iface;
         *ppv = (void*)&f->lpTransVtbl;
         IUnknown_AddRef(iface);
         return S_OK;
@@ -211,7 +225,12 @@ SixelFrame_GetPixelFormat(
         return E_INVALIDARG;
     }
 
+    /* default to BGRA */
+#if WIC_PAL8_AS_DEFAULT_PIXELFORMAT
     *pPixelFormat = GUID_WICPixelFormat8bppIndexed;
+#else
+    *pPixelFormat = GUID_WICPixelFormat32bppBGRA;
+#endif
 
     return S_OK;
 }
@@ -234,7 +253,7 @@ SixelFrame_GetResolution(
 {
     (void) iface;
 
-    if(pDpiX == NULL || pDpiY == NULL) {
+    if (pDpiX == NULL || pDpiY == NULL) {
         return E_INVALIDARG;
     }
 
@@ -265,6 +284,7 @@ SixelFrame_CopyPalette(
     }
 
     f = (SixelFrame*)iface;
+
     return IWICPalette_InitializeCustom(pIPalette, f->palette, f->ncolors);
 }
 
@@ -295,9 +315,15 @@ SixelFrame_CopyPixels(
     UINT rh;
     BYTE *src;
     UINT i;
+#if ! WIC_PAL8_AS_DEFAULT_PIXELFORMAT
+    UINT j;
+    BYTE idx;
+    WICColor c;
+    BYTE *d;
+#endif
 
     f = (SixelFrame*)iface;
-    if(dst == NULL) {
+    if (dst == NULL) {
         return E_INVALIDARG;
     }
     rw = f->w;
@@ -309,6 +335,7 @@ SixelFrame_CopyPixels(
         rh = prc->Height;
     }
 
+#if WIC_PAL8_AS_DEFAULT_PIXELFORMAT
     if(cbStride == 0) {
         cbStride = rw;
     }
@@ -323,6 +350,28 @@ SixelFrame_CopyPixels(
                src + i * f->w,
                rw);
     }
+#else
+    if (cbStride == 0) {
+        cbStride = rw * 4;
+    }
+
+    if (cbBufferSize < cbStride * rh) {
+        return E_INVALIDARG;
+    }
+
+    src = f->indices + y * f->w + x;
+    for (i = 0; i < rh; ++i) {
+        for (j = 0; j < rw; ++j) {
+            idx = src[i * f->w + j];
+            c = f->palette[idx];
+            d = dst + i * cbStride + j * 4;
+            d[0] = (BYTE)(c & 0xFF);         /* B */
+            d[1] = (BYTE)((c >> 8) & 0xFF);  /* G */
+            d[2] = (BYTE)((c >> 16) & 0xFF); /* R */
+            d[3] = (BYTE)((c >> 24) & 0xFF); /* A */
+        }
+    }
+#endif
 
     return S_OK;
 }
@@ -430,21 +479,7 @@ SixelFrame_Transform_CopyPixels(
         rh = f->h;
     }
 
-    if (IsEqualGUID(pguidDstFormat, &GUID_WICPixelFormat8bppIndexed)) {
-        if (nStride == 0) {
-            nStride = rw;
-        }
-        if (cbBufferSize < nStride * rh) {
-            return E_INVALIDARG;
-        }
-        src = f->indices + y * f->w + x;
-        for (i = 0; i < rh; ++i) {
-            memcpy(pbBuffer + i * nStride,
-                   src + i * f->w,
-                   rw);
-        }
-        return S_OK;
-    } else if (IsEqualGUID(pguidDstFormat, &GUID_WICPixelFormat32bppBGRA)) {
+    if (IsEqualGUID(pguidDstFormat, &GUID_WICPixelFormat32bppBGRA)) {
         if (nStride == 0) {
             nStride = rw * 4;
         }
@@ -462,6 +497,20 @@ SixelFrame_Transform_CopyPixels(
                 d[2] = (BYTE)((c >> 16) & 0xFF); /* R */
                 d[3] = (BYTE)((c >> 24) & 0xFF); /* A */
             }
+        }
+        return S_OK;
+    } else if (IsEqualGUID(pguidDstFormat, &GUID_WICPixelFormat8bppIndexed)) {
+        if (nStride == 0) {
+            nStride = rw;
+        }
+        if (cbBufferSize < nStride * rh) {
+            return E_INVALIDARG;
+        }
+        src = f->indices + y * f->w + x;
+        for (i = 0; i < rh; ++i) {
+            memcpy(pbBuffer + i * nStride,
+                   src + i * f->w,
+                   rw);
         }
         return S_OK;
     }
@@ -517,11 +566,10 @@ SixelFrame_Transform_GetClosestPixelFormat(
         return E_INVALIDARG;
     }
 
-    if (!IsEqualGUID(pPixelFormat, &GUID_WICPixelFormat8bppIndexed)) {
-        *pPixelFormat = GUID_WICPixelFormat8bppIndexed;
-    } else if (!IsEqualGUID(pPixelFormat, &GUID_WICPixelFormat32bppBGRA)) {
-        /* *pPixelFormat = GUID_WICPixelFormat8bppIndexed; */
+    if (IsEqualGUID(pPixelFormat, &GUID_WICPixelFormat32bppBGRA)) {
         *pPixelFormat = GUID_WICPixelFormat32bppBGRA;
+    } else if (IsEqualGUID(pPixelFormat, &GUID_WICPixelFormat8bppIndexed)) {
+        *pPixelFormat = GUID_WICPixelFormat8bppIndexed;
     }
 
     return S_OK;
@@ -543,6 +591,7 @@ SixelFrame_Transform_DoesSupportTransform(
     BOOL                      /* [out] */ *pfIsSupported)
 {
     (void) iface;
+
     if (! pfIsSupported) {
         return E_INVALIDARG;
     }
@@ -1337,7 +1386,7 @@ SixelFactory_QueryInterface(
         *ppv = iface;
         IUnknown_AddRef(iface);
         return S_OK;
-    } else if (IsEqualIID(riid,&IID_IClassFactory)) {
+    } else if (IsEqualIID(riid, &IID_IClassFactory)) {
         *ppv = iface;
         IUnknown_AddRef(iface);
         return S_OK;
@@ -1440,22 +1489,25 @@ static IClassFactoryVtbl SixelFactory_Vtbl = {
     SixelFactory_LockServer
 };
 
-/* Registry helpers & Register/Unregister */
-static HRESULT
+/* Registry helpers */
+static void
 RegisterStringValue(
     HKEY root,
-    const wchar_t *subkey,
-    const wchar_t *name,
-    const wchar_t *value
+    const LPCWSTR subkey,
+    const LPCWSTR name,
+    const LPCWSTR value
 )
 {
     HKEY h;
     LONG r;
 
-    r = RegCreateKeyExW(root, subkey, 0, NULL, 0, KEY_SET_VALUE, NULL, &h, NULL);
+    r = RegCreateKeyExW(root, subkey, 0, NULL, 0,
+                        KEY_SET_VALUE, NULL, &h, NULL);
 
     if (r != ERROR_SUCCESS) {
-        return HRESULT_FROM_WIN32(r);
+        fwprintf(stderr,
+                 L"RegCreateKeyExW: failed. key: %ls, code: %lu\n", subkey, r);
+        return;
     }
 
     r = RegSetValueExW(h,
@@ -1463,41 +1515,68 @@ RegisterStringValue(
                        0,
                        REG_SZ,
                        (const BYTE*)value,
-                       (DWORD)((wcslen(value) + 1) * sizeof(wchar_t)));
+                       (DWORD)((lstrlenW(value) + 1) * sizeof(WCHAR)));
 
-    RegCloseKey(h);
+    if (r != ERROR_SUCCESS) {
+        fwprintf(stderr,
+                 L"RegSetValueExW: failed. key: %ls, code: %lu\n",
+                 subkey, r);
+        return;
+    }
 
-    return r == ERROR_SUCCESS ? S_OK: HRESULT_FROM_WIN32(r);
+    r = RegCloseKey(h);
+    if (r != ERROR_SUCCESS) {
+        fwprintf(stderr,
+                 L"RegCloseKey: failed. key: %ls, code: %lu\n",
+                 subkey, r);
+        return;
+    }
+
 }
 
-static HRESULT
+static void
 RegisterDwordValue(
     HKEY root,
-    const wchar_t *subkey,
-    const wchar_t *name,
+    LPCWSTR subkey,
+    LPCWSTR name,
     DWORD value
 )
 {
     HKEY h;
     LONG r;
 
-    r = RegCreateKeyExW(root, subkey, 0, NULL, 0, KEY_SET_VALUE, NULL, &h, NULL);
+    r = RegCreateKeyExW(root, subkey, 0, NULL, 0,
+                        KEY_SET_VALUE, NULL, &h, NULL);
     if (r != ERROR_SUCCESS) {
-        return HRESULT_FROM_WIN32(r);
+        fwprintf(stderr,
+                 L"RegCreateKeyExW: failed. key: %ls, code: %lu\n",
+                 subkey, r);
+        return;
     }
+
     r = RegSetValueExW(h, name, 0, REG_DWORD, (const BYTE*)&value, sizeof(value));
+    if (r != ERROR_SUCCESS) {
+        fwprintf(stderr,
+                 L"RegSetValueExW: failed. key: %ls, name: %ls, code: %lu\n",
+                 subkey, name, r);
+        return;
+    }
 
-    RegCloseKey(h);
-
-    return r == ERROR_SUCCESS ? S_OK: HRESULT_FROM_WIN32(r);
+    r = RegCloseKey(h);
+    if (r != ERROR_SUCCESS) {
+        fwprintf(stderr,
+                 L"RegCloseKey: failed. key: %ls, code: %lu\n",
+                 subkey, r);
+        return;
+    }
 }
 
-static HRESULT
+static void
 RegisterBinaryValue(
     HKEY root,
-    const wchar_t *subkey,
-    const wchar_t *name,
-    const void *data,
+    LPCWSTR subkey,
+    LPCWSTR name,
+    LPCVOID data,
     DWORD cb
 )
 {
@@ -1505,140 +1584,571 @@ RegisterBinaryValue(
     LONG r;
 
     r = RegCreateKeyExW(root, subkey, 0, NULL, 0, KEY_SET_VALUE, NULL, &h, NULL);
-
     if (r != ERROR_SUCCESS) {
-        return HRESULT_FROM_WIN32(r);
+        fwprintf(stderr,
+                 L"RegCreateKeyExW: failed. key: %ls, code: %lu\n",
+                 subkey, r);
+        return;
     }
+
     r = RegSetValueExW(h, name, 0, REG_BINARY, (const BYTE*)data, cb);
-
-    RegCloseKey(h);
-
-    return r == ERROR_SUCCESS ? S_OK: HRESULT_FROM_WIN32(r);
-}
-
-static void
-RegisterCodecKeysInCLSID(const wchar_t* clsidStr, const wchar_t* modulePath)
-{
-    /* extension */
-    RegisterStringValue(HKEY_CLASSES_ROOT, L".six", NULL,             L"SIXEL image");
-    RegisterStringValue(HKEY_CLASSES_ROOT, L".six", L"Content Type",  L"image/x-sixel");
-    RegisterStringValue(HKEY_CLASSES_ROOT, L".six", L"PerceivedType", L"image");
-
-    /* CLSID */
-    wchar_t clsidKey[256];
-    wsprintfW(clsidKey, L"CLSID\\%s", clsidStr);
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, NULL,                      L"WIC SIXEL Decoder");
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"FriendlyName",           L"WIC SIXEL Decoder");
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Description",            L"Decoding DEC SIXEL graphics");
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Author",                 L"Hayaki Saito");
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"CLSID",                  clsidStr);
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"VendorGUID",             GUID_VendorSIXEL_String);
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"ContainerFormat",        GUID_ContainerFormatSIXEL_String);
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"FileExtensions",         L".six");
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"MimeTypes",              L"image/x-sixel");
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Version",                L"1.0.0.1");
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"Date",                   L"2014-02-20");
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"SpecVersion",            L"1.0.0.0");
-    RegisterStringValue(HKEY_CLASSES_ROOT, clsidKey, L"ColorManagementVersion", L"1.0");
-    RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"SupportsAnimation",      0);
-    RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"SupportsChromakey",      1);
-    RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"SupportsLossless",       1);
-    RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"SupportsMultiframe",     0);
-    RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"ArbitrationPriority",    0x100);
-    RegisterDwordValue (HKEY_CLASSES_ROOT, clsidKey, L"Capabilities",           0x9);
-
-    /* InprocServer32 */
-    {
-        wchar_t inprocKey[300];
-        wsprintfW(inprocKey, L"%s\\InprocServer32", clsidKey);
-        RegisterStringValue(HKEY_CLASSES_ROOT, inprocKey, NULL,                 modulePath);
-        RegisterStringValue(HKEY_CLASSES_ROOT, inprocKey, L"ThreadingModel",    L"Both");
+    if (r != ERROR_SUCCESS) {
+        fwprintf(stderr,
+                 L"RegSetValueExW: failed. key: %ls, name: %ls, code: %lu\n",
+                 subkey, name, r);
+        return;
     }
 
-    /* Formats */
-    {
-        wchar_t formatsKey[512];
-
-        wsprintfW(formatsKey, L"%s\\Formats\\%s", clsidKey, GUID_WICPixelFormat8bppIndexed_String);
-        RegisterStringValue(HKEY_CLASSES_ROOT, formatsKey, NULL, L"");
-
-        wsprintfW(formatsKey, L"%s\\Formats\\%s", clsidKey, GUID_WICPixelFormat32bppBGRA_String);
-        RegisterStringValue(HKEY_CLASSES_ROOT, formatsKey, NULL, L"");
-    }
-
-    /* Patterns */
-    {
-        wchar_t patKey[512];
-        const BYTE pat[]  = { 0x1B, 0x50 };   /* ESC 'P' */
-        const BYTE mask[] = { 0xFF, 0xFF };
-
-        wsprintfW(patKey, L"%s\\Patterns\\0", clsidKey);
-        RegisterDwordValue (HKEY_CLASSES_ROOT, patKey, L"Position", 0);
-        RegisterDwordValue (HKEY_CLASSES_ROOT, patKey, L"Length",   2);
-        RegisterBinaryValue(HKEY_CLASSES_ROOT, patKey, L"Pattern",  pat,  sizeof(pat));
-        RegisterBinaryValue(HKEY_CLASSES_ROOT, patKey, L"Mask",     mask, sizeof(mask));
-        /* RegisterDwordValue(HKEY_CLASSES_ROOT, patKey, L"EndOfStream", 0); */
-    }
-
-    /* category */
-    {
-        wchar_t instKey[512];
-
-        wsprintfW(instKey,
-                  L"CLSID\\%s\\Instance\\%s",
-                  CATID_WICBitmapDecoders_String,
-                  clsidStr);
-        RegisterStringValue(HKEY_CLASSES_ROOT, instKey, L"CLSID",        clsidStr);
-        RegisterStringValue(HKEY_CLASSES_ROOT, instKey, L"FriendlyName", L"WIC SIXEL Decoder");
+    r = RegCloseKey(h);
+    if (r != ERROR_SUCCESS) {
+        fwprintf(stderr,
+                 L"RegCloseKey: failed. key: %ls, code: %lu\n",
+                 subkey, r);
+        return;
     }
 }
+
 
 /* DLL exports */
 __declspec(dllexport)
 STDAPI
-DllRegisterServer(void) {
-    wchar_t modulePath[MAX_PATH];
+DllRegisterServer(void)
+{
+    const BYTE pat[]  = { 0x1B, 0x50 };   /* ESC 'P' */
+    const BYTE mask[] = { 0xFF, 0xFF };
+    LPWSTR key = NULL;
+    WCHAR modulePath[MAX_PATH];
+
     GetModuleFileNameW((HINSTANCE)&__ImageBase, modulePath, MAX_PATH);
 
-    RegisterCodecKeysInCLSID(CLSID_SixelDecoder_String, modulePath);
+    /* extensions */
 
+    /*
+     * extension: .six
+     */
+    key = L".six";
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, L"sixelfile");  /* progid */
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"ContentType", L"image/x-sixel");
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"PerceivedType", L"image");
+
+    /* for windows photo viewer */
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"OpenWithProgids", L"sixelfile");  /* progid */
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"OpenWithList", L"PhotoViewer.dll");
+
+    key = L".six\\ShellEx\\ContextMenuHandlers\\ShellImagePreview";
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, CLSIDSTR_WindowsPhotoViewer);
+
+    /* IThumbnailProvider */
+    key = L".six\\ShellEx\\" IIDSTR_IThumbnailProvider;
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, CLSIDSTR_PhotoThumbnailProvider);
+
+    key = L"SystemFileAssociations\\.six";
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"OpenWithList", L"PhotoViewer.dll");
+
+    key = L"SystemFileAssociations\\.six\\ShellEx\\"
+          L"ContextMenuHandlers\\ShellImagePreview";
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, CLSIDSTR_WindowsPhotoViewer);
+
+    /* IThumbnailProvider */
+    key = L"SystemFileAssociations\\.six\\ShellEx\\"
+          IIDSTR_IThumbnailProvider;
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, CLSIDSTR_PhotoThumbnailProvider);
+
+    /* System.Kind support */
+    key = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\KindMap";
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L".six", L"Picture");
+
+    /*
+     * extension: .sixel
+     */
+    key = L".sixel";
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, L"sixelfile");
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"ContentType", L"image/x-sixel");
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"PerceivedType", L"image");
+
+    /* for windows photo viewer */
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"OpenWithProgids", L"sixelfile");  /* progid */
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"OpenWithList", L"PhotoViewer.dll");
+
+    key = L".sixel\\ShellEx\\ContextMenuHandlers\\ShellImagePreview";
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, CLSIDSTR_WindowsPhotoViewer);
+
+    key = L"SystemFileAssociations\\.sixel";
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"OpenWithList", L"PhotoViewer.dll");
+
+    key = L"SystemFileAssociations\\.sixel\\ShellEx\\"
+          L"ContextMenuHandlers\\ShellImagePreview";
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, CLSIDSTR_WindowsPhotoViewer);
+
+    key = L"SystemFileAssociations\\.sixel\\ShellEx\\"
+          IIDSTR_IThumbnailProvider;
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, CLSIDSTR_PhotoThumbnailProvider);
+
+    /* System.Kind support */
+    key = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\KindMap";
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L".sixel", L"Picture");
+
+    /*
+     * progid: "sixelfile"
+     */
+    key = L"sixelfile";
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, L"SIXEL image format");
+
+    key = L"sixelfile\\open";
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"MuiVerb",
+                        L"@%PROGRAMFILES%\\Windows Photo Viewer\\"
+                        L"PhotoViewer.dll,-3043");
+
+    key = L"sixelfile\\open\\command";
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL,
+                        L"%SystemRoot%\\System32\\rundll32.exe"
+                        L" \"%ProgramFiles%\\Windows Photo Viewer\\"
+                           L"PhotoViewer.dll\","
+                        L" ImageView_Fullscreen %1");
+
+    key = L"sixelfile\\open\\DropTarget";
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"Clsid", CLSIDSTR_WindowsPhotoViewer);
+
+    key = L"sixelfile\\printto\\command";
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, L"%SystemRoot%\\System32\\rundll32.exe"
+                              L" \"%SystemRoot%\\System32\\shimgvw.dll\","
+                              L" ImageView_PrintTo"
+                              L" /pt \"%1\" \"%2\" \"%3\" \"%4\"");
+
+    /*
+     * CLSID
+     */
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder;
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, L"WIC SIXEL Decoder");
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"FriendlyName", L"WIC SIXEL Decoder");
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"Description", L"Decoder for DEC SIXEL graphics");
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"Author", L"Hayaki Saito");
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"CLSID", CLSIDSTR_SixelDecoder);
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"VendorGUID", GUIDSTR_VendorSIXEL);
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"ContainerFormat", GUIDSTR_ContainerFormatSIXEL);
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"FileExtensions", L".six;.sixel");
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"MimeTypes", L"image/x-sixel");
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"Version", L"1.0.0.1");
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"Date", L"2014-02-20");
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"SpecVersion", L"1.0.0.0");
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"ColorManagementVersion", L"1.0");
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"SupportsAnimation", 0);
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"SupportsChromakey", 0);
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"SupportsLossless", 1);
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"SupportsMultiframe", 0);
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"ArbitrationPriority", 0x0);
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"Capabilities", 0x9);
+
+    /* InprocServer32 */
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
+          L"InprocServer32";
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, modulePath);
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"ThreadingModel", L"Both");
+
+    /* Formats */
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
+          L"Formats\\" GUIDSTR_WICPixelFormat8bppIndexed;
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, L"");
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
+          L"Formats\\" GUIDSTR_WICPixelFormat32bppBGRA;
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, L"");
+
+    /* Patterns */
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
+          L"Patterns\\0";
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"Position", 0);
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"Length", 2);
+    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
+                        L"Pattern", pat, sizeof(pat));
+    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
+                        L"Mask", mask, sizeof(mask));
+
+    /* category */
+    key = L"CLSID\\" CATIDSTR_WICBitmapDecoders "\\"
+          L"Instance\\" CLSIDSTR_SixelDecoder;
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"CLSID", CLSIDSTR_SixelDecoder);
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"FriendlyName", L"WIC SIXEL Decoder");
+
+    /* WIC extensions */
+    key = L"Software\\Microsoft\\Windows Imaging Component\\"
+          L"Extensions\\.six";
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L"CLSID", CLSIDSTR_SixelDecoder);
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L"ContainerFormat", GUIDSTR_ContainerFormatSIXEL);
+
+    key = L"Software\\Microsoft\\Windows Imaging Component\\"
+          L"Extensions\\.sixel";
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L"CLSID", CLSIDSTR_SixelDecoder);
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L"ContainerFormat", GUIDSTR_ContainerFormatSIXEL);
+
+    /* WIC decoders */
+    key = L"Software\\Microsoft\\Windows Imaging Component\\"
+          L"Decoders\\" CLSIDSTR_SixelDecoder;
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        NULL, L"WIC SIXEL Decoder");
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L"FriendlyName", L"WIC SIXEL Decoder");
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L"Description", L"Decoder for DEC SIXEL graphics");
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L"Author", L"Hayaki Saito");
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L"CLSID", CLSIDSTR_SixelDecoder);
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L"VendorGUID", GUIDSTR_VendorSIXEL);
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L"ContainerFormat", GUIDSTR_ContainerFormatSIXEL);
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L"FileExtensions", L".six");
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L"MimeTypes", L"image/x-sixel");
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L"Version", L"1.0.0.1");
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L"Date", L"2014-02-20");
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L"SpecVersion", L"1.0.0.0");
+    RegisterStringValue(HKEY_LOCAL_MACHINE, key,
+                        L"ColorManagementVersion", L"1.0");
+    RegisterDwordValue (HKEY_LOCAL_MACHINE, key,
+                        L"SupportsAnimation", 0);
+    RegisterDwordValue (HKEY_LOCAL_MACHINE, key,
+                        L"SupportsChromakey", 0);
+    RegisterDwordValue (HKEY_LOCAL_MACHINE, key,
+                        L"SupportsLossless", 1);
+    RegisterDwordValue (HKEY_LOCAL_MACHINE, key,
+                        L"SupportsMultiframe", 0);
+    RegisterDwordValue (HKEY_LOCAL_MACHINE, key,
+                        L"ArbitrationPriority", 0x0);
+    RegisterDwordValue (HKEY_LOCAL_MACHINE, key,
+                        L"Capabilities", 0x9);
+
+#if WIC_DISABLE_THUMBNAIL_CACHE
+    /* debugging: disable explorer's thumbnail cache
+     * NOTE: please remove this registry value manually
+     *       command:
+     *         $ reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\DisableThumbnailCache"
+     */
+    key = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced";
+    RegisterDwordValue (HKEY_CURRENT_USER, key,
+                        L"DisableThumbnailCache", 1);
+#endif
     return S_OK;
 }
+
 
 __declspec(dllexport)
 STDAPI
 DllUnregisterServer(void)
 {
-    wchar_t clsidKey[256];
-    wchar_t inprocKey[512];
-    wchar_t patternKey[512];
-    wchar_t pattern0Key[512];
-    wchar_t categoryKey[512];
-    wchar_t formatsKey[512];
-    wchar_t formats0Key[512];
-    wchar_t formats1Key[512];
+    LSTATUS r;
+    LPWSTR key = NULL;
 
-    wsprintfW(clsidKey, L"CLSID\\%s", CLSID_SixelDecoder_String);
-    wsprintfW(categoryKey,
-              L"CLSID\\%s\\Instance\\%s",
-              CATID_WICBitmapDecoders_String,
-              CLSID_SixelDecoder_String);
-    wsprintfW(inprocKey, L"%s\\InprocServer32",clsidKey);
-    wsprintfW(patternKey, L"%s\\Patterns",clsidKey);
-    wsprintfW(pattern0Key, L"%s\\0",patternKey);
-    wsprintfW(formatsKey, L"%s\\Formats",clsidKey);
-    wsprintfW(formats0Key, L"%s\\%s", formatsKey, GUID_WICPixelFormat8bppIndexed_String);
-    wsprintfW(formats1Key, L"%s\\%s", formatsKey, GUID_WICPixelFormat32bppBGRA_String);
+    /* WIC decoders */
+    key = L"Software\\Microsoft\\Windows Imaging Component\\"
+          L"Decoders\\" CLSIDSTR_SixelDecoder;
+    r = RegDeleteKeyW(HKEY_LOCAL_MACHINE, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
 
-    RegDeleteKeyW(HKEY_CLASSES_ROOT, L".six");
-    RegDeleteKeyW(HKEY_CLASSES_ROOT, inprocKey);
-    RegDeleteKeyW(HKEY_CLASSES_ROOT, categoryKey);
-    RegDeleteKeyW(HKEY_CLASSES_ROOT, pattern0Key);
-    RegDeleteKeyW(HKEY_CLASSES_ROOT, patternKey);
-    RegDeleteKeyW(HKEY_CLASSES_ROOT, formats0Key);
-    RegDeleteKeyW(HKEY_CLASSES_ROOT, formats1Key);
-    RegDeleteKeyW(HKEY_CLASSES_ROOT, formatsKey);
-    RegDeleteKeyW(HKEY_CLASSES_ROOT, clsidKey);
+    /* WIC extensions */
+    key = L"Software\\Microsoft\\Windows Imaging Component\\"
+          L"Extensions\\.six";
+    r = RegDeleteKeyW(HKEY_LOCAL_MACHINE, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"Software\\Microsoft\\Windows Imaging Component\\"
+          L"Extensions\\.sixel";
+    r = RegDeleteKeyW(HKEY_LOCAL_MACHINE, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    /* category */
+    key = L"CLSID\\" CATIDSTR_WICBitmapDecoders L"\\"
+          L"Instance\\" CLSIDSTR_SixelDecoder;
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    /* Patterns */
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\0";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    /* Formats */
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Formats\\"
+          GUIDSTR_WICPixelFormat8bppIndexed;
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Formats\\"
+          GUIDSTR_WICPixelFormat32bppBGRA;
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Formats";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    /* InprocServer32 */
+    key =L"CLSID\\" CLSIDSTR_SixelDecoder L"\\InprocServer32";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    /* CLSID */
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder;
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    /* progid */
+    key = L"sixelfile\\printto\\command";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"sixelfile\\printto";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"sixelfile\\open\\DropTarget";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"sixelfile\\open\\command";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"sixelfile\\open";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"sixelfile";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    /* extensions */
+
+    key = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\KindMap";
+    r = RegDeleteKeyW(HKEY_LOCAL_MACHINE, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"SystemFileAssociations\\.six\\ShellEx\\"
+          IIDSTR_IThumbnailProvider;
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"SystemFileAssociations\\.six\\ShellEx\\"
+          L"ContextMenuHandlers\\ShellImagePreview";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"SystemFileAssociations\\.six\\ShellEx\\"
+          L"ContextMenuHandlers";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"SystemFileAssociations\\.six\\ShellEx";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"SystemFileAssociations\\.six";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L".six\\ShellEx\\" IIDSTR_IThumbnailProvider;
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L".six\\ShellEx\\ContextMenuHandlers\\ShellImagePreview";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L".six\\ShellEx\\ContextMenuHandlers";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L".six\\ShellEx";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L".six";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"SystemFileAssociations\\.sixel\\ShellEx\\"
+          IIDSTR_IThumbnailProvider;
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"SystemFileAssociations\\.sixel\\ShellEx\\"
+          L"ContextMenuHandlers\\ShellImagePreview";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"SystemFileAssociations\\.sixel\\ShellEx\\"
+          L"ContextMenuHandlers";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"SystemFileAssociations\\.sixel\\ShellEx";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"SystemFileAssociations\\.sixel";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L".sixel\\ShellEx\\" IIDSTR_IThumbnailProvider;
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L".sixel\\ShellEx\\ContextMenuHandlers\\ShellImagePreview";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L".sixel\\ShellEx\\ContextMenuHandlers";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L".sixel\\ShellEx";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L".sixel";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
 
     return S_OK;
 }
