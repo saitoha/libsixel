@@ -22,6 +22,8 @@
 #ifndef LIBSIXEL_WIC_STUB_H
 # define LIBSIXEL_WIC_STUB_H
 
+#define _UNICODE
+#define UNICODE
 # define COBJMACROS
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
