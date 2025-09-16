@@ -28,6 +28,13 @@
 #define WIC_DISABLE_THUMBNAIL_CACHE 0
 #define WIC_PAL8_AS_DEFAULT_PIXELFORMAT 0
 
+#ifndef EXIF_COLORSPACE_SRGB
+# define EXIF_COLORSPACE_SRGB       1
+#endif
+# ifndef EXIF_COLORSPACE_UNCALIBRATED
+# define EXIF_COLORSPACE_UNCALIBRATED 0xFFFF
+#endif
+
 extern IMAGE_DOS_HEADER __ImageBase;
 
 /* CLSID */
@@ -655,16 +662,23 @@ SixelFrame_GetColorContexts(
     UINT                  /* [out] */      *pcActualCount)
 {
     (void) iface;
-    (void) cCount;
-    (void) ppIColorContexts;
 
     if (pcActualCount == NULL) {
         return E_INVALIDARG;
     }
 
-    *pcActualCount = 0;
+    *pcActualCount = 1;
 
-    return WINCODEC_ERR_UNSUPPORTEDOPERATION;
+    if (ppIColorContexts == NULL) {
+        if (cCount == 0) {
+            return S_OK;
+        } else {
+            return E_INVALIDARG;
+        }
+    }
+
+    return IWICColorContext_InitializeFromExifColorSpace(*ppIColorContexts,
+                                                         EXIF_COLORSPACE_SRGB);
 }
 
 /* IWICBitmapFrameDecode::GetThumbnail
