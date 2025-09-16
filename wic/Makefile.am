@@ -31,7 +31,11 @@ install-exec-hook:
 	  $(REGSVR32) -s \
 	  "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
 
-uninstall-hook:
+.PHONY: preuninstall
+uninstall-am: preuninstall
+	$(MAKE) uninstall-pkglibLTLIBRARIES
+
+preuninstall:
 	$(LIBTOOL) --mode=execute \
 	  $(REGSVR32) -u -s \
 	  "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
