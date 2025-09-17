@@ -856,16 +856,537 @@ SixelDecoder_QueryCapability(
     DWORD             /* [out] */ *pdwCapability
 )
 {
+    HRESULT hr = E_FAIL;
+    ULONG size;
+    ULONG headsize;
+    ULONG read;
+    STATSTG stat;
+    enum {
+        STATE_GROUND            =  0,
+        STATE_ESC               =  1,
+        STATE_ESC_INTERMEDIATE  =  2,
+        STATE_CSI_PARAMETER     =  3,
+        STATE_CSI_INTERMEDIATE  =  4,
+        STATE_SS                =  5,
+        STATE_OSC               =  6,
+        STATE_DCS_PARAMETER     =  7,
+        STATE_DCS_INTERMEDIATE  =  8,
+        STATE_SOS               =  9,
+        STATE_PM                = 10,
+        STATE_APC               = 11,
+        STATE_STR               = 12,
+    };
+    INT state = STATE_GROUND;
+    BYTE ibuf[256];
+    BYTE *p;
+    UINT params[1024];
+    INT prm = 0;
+    const INT PRM_MAX = 255;
+    INT idx = 0;
+    const INT IDX_MAX = sizeof(params) / sizeof(params[0]);
+    INT ibytes;
+    BOOL is_sixel = FALSE;
+    LARGE_INTEGER dlibMove = {0};
+    ULARGE_INTEGER pos = {0};
+
     (void) iface;
-    (void) pIStream;
 
     if (pdwCapability == NULL) {
         return E_INVALIDARG;
     }
 
-    *pdwCapability = WICBitmapDecoderCapabilityCanDecodeAllImages
-                   | WICBitmapDecoderCapabilityCanDecodeThumbnail
-                   ;
+    hr = IStream_Stat(pIStream, &stat, STATFLAG_NONAME);
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    if (stat.cbSize.HighPart != 0) {
+        return E_OUTOFMEMORY;
+    }
+
+    size = stat.cbSize.LowPart;
+    if (size > SIXEL_ALLOCATE_BYTES_MAX) {
+        return E_OUTOFMEMORY;
+    }
+
+    hr = IStream_Seek(pIStream, dlibMove, STREAM_SEEK_CUR, &pos);
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    headsize = min(size, sizeof(ibuf));
+    read = 0;
+    hr = IStream_Read(pIStream, ibuf, headsize, &read);
+    /* restore position */
+    dlibMove.QuadPart = pos.QuadPart;
+    (void) IStream_Seek(pIStream, dlibMove, STREAM_SEEK_SET, NULL);
+
+    if (FAILED(hr)) {
+        goto end;
+    }
+    if (read != headsize) {
+        hr = E_FAIL;
+        goto end;
+    }
+
+    for (p = ibuf; p < ibuf + headsize; ++p) {
+        switch (state) {
+        case STATE_GROUND:
+            switch (*p) {
+            case 0x1b:  /* ESC */
+                state = STATE_ESC;
+                break;
+            case 0x90:  /* DCS */
+                ibytes = 0;
+                prm = 0;
+                idx = 0;
+                state = STATE_DCS_PARAMETER;
+                break;
+            case 0x98:  /* SOS */
+                state = STATE_SOS;
+                break;
+            case 0x9b:  /* CSI */
+                ibytes = 0;
+                prm = 0;
+                idx = 0;
+                state = STATE_CSI_PARAMETER;
+                break;
+            case 0x9e:  /* PM */
+                state = STATE_STR;
+                break;
+            case 0x9f:  /* APC */
+                state = STATE_STR;
+                break;
+            default:
+                /* ignore */
+                break;
+            }
+            break;
+        case STATE_ESC:
+            /*
+             * - ISO-6429 independent escape sequense
+             *
+             *     ESC F
+             *
+             * - ISO-2022 designation sequence
+             *
+             *     ESC I ... I F
+             */
+            switch (*p) {
+            /* ctrl chars */
+            case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05:
+            case 0x06: case 0x07: case 0x08: case 0x09: case 0x0a: case 0x0b:
+            case 0x0c: case 0x0d: case 0x0e: case 0x0f: case 0x10: case 0x11:
+            case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
+                /* ignore */
+                break;
+            case 0x18:  /* CAN */
+                state = STATE_GROUND;
+                break;
+            case 0x19:
+                /* ignore */
+                break;
+            case 0x1a:  /* SUB */
+                state = STATE_GROUND;
+                break;
+            case 0x1b:  /* ESC */
+                /* ignore */
+                break;
+            case 0x1c: case 0x1d: case 0x1e: case 0x1f:
+                /* ignore */
+                break;
+            /* SP to / */
+            case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25:
+            case 0x26: case 0x27: case 0x28: case 0x29: case 0x2a: case 0x2b:
+            case 0x2c: case 0x2d: case 0x2e: case 0x2f:
+                ibytes = ibytes << 8 | *p;
+                state = STATE_ESC_INTERMEDIATE;
+                break;
+            case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35:
+            case 0x36: case 0x37: case 0x38: case 0x39: case 0x3a: case 0x3b:
+            case 0x3c: case 0x3d: case 0x3e: case 0x3f: case 0x40: case 0x41:
+            case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47:
+            case 0x48: case 0x49: case 0x4a: case 0x4b: case 0x4c: case 0x4d:
+                state = STATE_GROUND;
+                break;
+            case 0x4e:  /* N */
+            case 0x4f:  /* O */
+                state = STATE_SS;
+                break;
+            case 0x50:  /* P(DCS) */
+                ibytes = 0;
+                prm = 0;
+                idx = 0;
+                state = STATE_DCS_PARAMETER;
+                break;
+            case 0x51: case 0x52: case 0x53: case 0x54: case 0x55:
+            case 0x56: case 0x57:
+                state = STATE_GROUND;
+                break;
+            case 0x58:  /* X(SOS) */
+                state = STATE_SOS;
+                break;
+            case 0x59: case 0x5a:
+                state = STATE_GROUND;
+                break;
+            case 0x5b:  /* [ */
+                ibytes = 0;
+                prm = 0;
+                idx = 0;
+                state = STATE_CSI_PARAMETER;
+                break;
+            case 0x5c:
+                state = STATE_GROUND;
+                break;
+            case 0x5d:  /* ] */
+                state = STATE_OSC;
+                break;
+            case 0x5e:  /* ^(PM) */
+                state = STATE_STR;
+                break;
+            case 0x5f:  /* _(APC) */
+                state = STATE_STR;
+                break;
+            case 0x60: case 0x61: case 0x62: case 0x63:
+            case 0x64: case 0x65: case 0x66: case 0x67: case 0x68: case 0x69:
+            case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e: case 0x6f:
+            case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75:
+            case 0x76: case 0x77: case 0x78: case 0x79: case 0x7a: case 0x7b:
+            case 0x7c: case 0x7d: case 0x7e:
+                state = STATE_GROUND;
+                break;
+            case 0x7f:
+                /* ignore */
+                break;
+            default:
+                state = STATE_GROUND;
+                break;
+            }
+            break;
+        case STATE_CSI_PARAMETER:
+            /*
+             * parse control sequence
+             *
+             * CSI P ... P I ... I F
+             *     ^
+             */
+            switch (*p) {
+            /* ctrl chars */
+            case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05:
+            case 0x06: case 0x07: case 0x08: case 0x09: case 0x0a: case 0x0b:
+            case 0x0c: case 0x0d: case 0x0e: case 0x0f: case 0x10: case 0x11:
+            case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
+                /* ignore */
+                break;
+            case 0x18: /* CAN */
+                state = STATE_GROUND;
+                break;
+            case 0x19:
+                /* ignore */
+                break;
+            case 0x1a: /* SUB */
+                state = STATE_GROUND;
+                break;
+            case 0x1b:  /* ESC */
+                state = STATE_ESC;
+                break;
+            case 0x1c: case 0x1d: case 0x1e: case 0x1f:
+                /* ignore */
+                break;
+            /* intermediate, SP to / */
+            case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25:
+            case 0x26: case 0x27: case 0x28: case 0x29: case 0x2a: case 0x2b:
+            case 0x2c: case 0x2d: case 0x2e: case 0x2f:
+                idx = min(idx + 1, IDX_MAX);
+                params[idx] = prm;
+                prm = 0;
+                ibytes = ibytes << 8 | *p;
+                state = STATE_CSI_INTERMEDIATE;
+                /* handling point of control sequences */
+                break;
+            /* parameter, 0 to 9 */
+            case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35:
+            case 0x36: case 0x37: case 0x38: case 0x39:
+                prm = min(prm * 10 + *p - 0x30, PRM_MAX);
+                break;
+            case 0x3a:           /* separator, : */
+                ibytes = ibytes << 8;
+                break;
+            case 0x3b:           /* separator, ; */
+                idx = min(idx + 1, IDX_MAX);
+                params[idx] = prm;
+                prm = 0;
+                break;
+            /* parameter, < to ? */
+            case 0x3c: case 0x3d: case 0x3e: case 0x3f:
+                ibytes = ibytes << 8 | *p;
+                break;
+            /* Final byte, @ to ~ */
+            case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45:
+            case 0x46: case 0x47: case 0x48: case 0x49: case 0x4a: case 0x4b:
+            case 0x4c: case 0x4d: case 0x4e: case 0x4f: case 0x50: case 0x51:
+            case 0x52: case 0x53: case 0x54: case 0x55: case 0x56: case 0x57:
+            case 0x58: case 0x59: case 0x5a: case 0x5b: case 0x5c: case 0x5d:
+            case 0x5e: case 0x5f: case 0x60: case 0x61: case 0x62: case 0x63:
+            case 0x64: case 0x65: case 0x66: case 0x67: case 0x68: case 0x69:
+            case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e: case 0x6f:
+            case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75:
+            case 0x76: case 0x77: case 0x78: case 0x79: case 0x7a: case 0x7b:
+            case 0x7c: case 0x7d: case 0x7e:
+                idx = min(idx + 1, IDX_MAX);
+                params[idx] = prm;
+                ibytes = ibytes << 8 | *p;
+                state = STATE_GROUND;
+                /* handling point of control sequences */
+            case 0x7f:
+                /* ignore */
+                break;
+            default:
+                state = STATE_GROUND;
+                break;
+            }
+            break;
+        case STATE_CSI_INTERMEDIATE:
+            /*
+             * parse control sequence
+             *
+             * CSI P ... P I ... I F
+             *             ^
+             */
+            switch (*p) {
+            /* ctrl chars */
+            case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05:
+            case 0x06: case 0x07: case 0x08: case 0x09: case 0x0a: case 0x0b:
+            case 0x0c: case 0x0d: case 0x0e: case 0x0f: case 0x10: case 0x11:
+            case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
+                /* ignore */
+                break;
+            case 0x18: /* CAN */
+                state = STATE_GROUND;
+                break;
+            case 0x19:
+                /* ignore */
+                break;
+            case 0x1a: /* SUB */
+                state = STATE_GROUND;
+                break;
+            case 0x1b:  /* ESC */
+                state = STATE_ESC;
+                break;
+            case 0x1c: case 0x1d: case 0x1e: case 0x1f:
+                /* ignore */
+                break;
+            /* intermediate bytes, SP to / */
+            case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25:
+            case 0x26: case 0x27: case 0x28: case 0x29: case 0x2a: case 0x2b:
+            case 0x2c: case 0x2d: case 0x2e: case 0x2f:
+                ibytes = ibytes << 8 | *p;
+                break;
+            case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35:
+            case 0x36: case 0x37: case 0x38: case 0x39: case 0x3a: case 0x3b:
+            case 0x3c: case 0x3d: case 0x3e: case 0x3f:
+                state = STATE_GROUND;
+                break;
+            /* Final byte, @ to ~ */
+            case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45:
+            case 0x46: case 0x47: case 0x48: case 0x49: case 0x4a: case 0x4b:
+            case 0x4c: case 0x4d: case 0x4e: case 0x4f: case 0x50: case 0x51:
+            case 0x52: case 0x53: case 0x54: case 0x55: case 0x56: case 0x57:
+            case 0x58: case 0x59: case 0x5a: case 0x5b: case 0x5c: case 0x5d:
+            case 0x5e: case 0x5f: case 0x60: case 0x61: case 0x62: case 0x63:
+            case 0x64: case 0x65: case 0x66: case 0x67: case 0x68: case 0x69:
+            case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e: case 0x6f:
+            case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75:
+            case 0x76: case 0x77: case 0x78: case 0x79: case 0x7a: case 0x7b:
+            case 0x7c: case 0x7d: case 0x7e:
+                ibytes = ibytes << 8 | *p;
+                state = STATE_GROUND;
+                /* handling point of control sequences */
+                break;
+            default:
+                state = STATE_GROUND;
+                break;
+            }
+            break;
+        case STATE_ESC_INTERMEDIATE:
+            switch (*p) {
+            /* ctrl chars */
+            case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05:
+            case 0x06: case 0x07: case 0x08: case 0x09: case 0x0a: case 0x0b:
+            case 0x0c: case 0x0d: case 0x0e: case 0x0f: case 0x10: case 0x11:
+            case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
+                /* ignore */
+                break;
+            case 0x18: /* CAN */
+                state = STATE_GROUND;
+                break;
+            case 0x19:
+                /* ignore */
+                break;
+            case 0x1a: /* SUB */
+                state = STATE_GROUND;
+                break;
+            case 0x1b:  /* ESC */
+                state = STATE_ESC;
+                break;
+            case 0x1c: case 0x1d: case 0x1e: case 0x1f:
+                /* ignore */
+                break;
+            /* intermediate bytes, SP to / */
+            case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25:
+            case 0x26: case 0x27: case 0x28: case 0x29: case 0x2a: case 0x2b:
+            case 0x2c: case 0x2d: case 0x2e: case 0x2f:
+                ibytes = ibytes << 8 | *p;
+                break;
+            /* Final byte, 0 to ~ */
+            case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35:
+            case 0x36: case 0x37: case 0x38: case 0x39: case 0x3a: case 0x3b:
+            case 0x3c: case 0x3d: case 0x3e: case 0x3f:
+            case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45:
+            case 0x46: case 0x47: case 0x48: case 0x49: case 0x4a: case 0x4b:
+            case 0x4c: case 0x4d: case 0x4e: case 0x4f: case 0x50: case 0x51:
+            case 0x52: case 0x53: case 0x54: case 0x55: case 0x56: case 0x57:
+            case 0x58: case 0x59: case 0x5a: case 0x5b: case 0x5c: case 0x5d:
+            case 0x5e: case 0x5f: case 0x60: case 0x61: case 0x62: case 0x63:
+            case 0x64: case 0x65: case 0x66: case 0x67: case 0x68: case 0x69:
+            case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e: case 0x6f:
+            case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75:
+            case 0x76: case 0x77: case 0x78: case 0x79: case 0x7a: case 0x7b:
+            case 0x7c: case 0x7d: case 0x7e:
+                /* handling point of ISO-2022 designation */
+                state = STATE_GROUND;
+                break;
+            case 0x7f:
+                /* ignore */
+                break;
+            default:
+                state = STATE_GROUND;
+                break;
+            }
+            break;
+        case STATE_OSC:
+            switch (*p) {
+            case 0x07:  /* broken ST */
+            case 0x18:
+            case 0x1a:
+                state = STATE_GROUND;
+                break;
+            case 0x1b:
+                state = STATE_ESC;
+                break;
+            default:
+                break;
+            }
+            break;
+        case STATE_DCS_PARAMETER:
+            /*
+             * parse DCS sequence
+             *
+             * DCS P ... P I ... I F D ... D ST
+             *     ^
+             */
+            switch (*p) {
+            /* ctrl chars */
+            case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05:
+            case 0x06: case 0x07: case 0x08: case 0x09: case 0x0a: case 0x0b:
+            case 0x0c: case 0x0d: case 0x0e: case 0x0f: case 0x10: case 0x11:
+            case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
+                /* ignore */
+                break;
+            case 0x18: /* CAN */
+                state = STATE_GROUND;
+                break;
+            case 0x19:
+                /* ignore */
+                break;
+            case 0x1a: /* SUB */
+                state = STATE_GROUND;
+                break;
+            case 0x1b:  /* ESC */
+                state = STATE_ESC;
+                break;
+            case 0x1c: case 0x1d: case 0x1e: case 0x1f:
+                /* ignore */
+                break;
+            /* intermediate bytes, SP to / */
+            case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25:
+            case 0x26: case 0x27: case 0x28: case 0x29: case 0x2a: case 0x2b:
+            case 0x2c: case 0x2d: case 0x2e: case 0x2f:
+                ibytes = ibytes << 8 | *p;
+                break;
+            /* parameter bytes, 0 to ? */
+            case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35:
+            case 0x36: case 0x37: case 0x38: case 0x39: case 0x3a: case 0x3b:
+            case 0x3c: case 0x3d: case 0x3e: case 0x3f:
+                state = STATE_GROUND;
+                break;
+            /* Final byte, @ to ~ */
+            case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45:
+            case 0x46: case 0x47: case 0x48: case 0x49: case 0x4a: case 0x4b:
+            case 0x4c: case 0x4d: case 0x4e: case 0x4f: case 0x50: case 0x51:
+            case 0x52: case 0x53: case 0x54: case 0x55: case 0x56: case 0x57:
+            case 0x58: case 0x59: case 0x5a: case 0x5b: case 0x5c: case 0x5d:
+            case 0x5e: case 0x5f: case 0x60: case 0x61: case 0x62: case 0x63:
+            case 0x64: case 0x65: case 0x66: case 0x67: case 0x68: case 0x69:
+            case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e: case 0x6f:
+            case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75:
+            case 0x76: case 0x77: case 0x78: case 0x79: case 0x7a: case 0x7b:
+            case 0x7c: case 0x7d: case 0x7e:
+                ibytes = ibytes << 8 | *p;
+                state = STATE_GROUND;
+                /* handling point of control sequences */
+                if (ibytes == 'q') {
+                    is_sixel = TRUE;
+                    goto end;
+                }
+                break;
+            default:
+                state = STATE_GROUND;
+                break;
+            }
+            break;
+        case STATE_SOS:
+        case STATE_PM:
+        case STATE_APC:
+            /*
+             * parse SOS/PM/APC sequence
+             *
+             * SOS/PM/APC D ... D ST
+             *            ^
+             */
+            switch (*p) {
+            case 0x18:
+            case 0x1a:
+                state = STATE_GROUND;
+                break;
+            case 0x1b:
+                state = STATE_ESC;
+                break;
+            default:
+                break;
+            }
+            break;
+        case STATE_SS:
+            switch (*p) {
+            case 0x1b:
+                state = STATE_ESC;
+                break;
+            default:
+                state = STATE_GROUND;
+                break;
+            }
+            break;
+        }
+    }
+
+end:
+    if (is_sixel) {
+        *pdwCapability = WICBitmapDecoderCapabilityCanDecodeAllImages
+                       | WICBitmapDecoderCapabilityCanDecodeThumbnail
+                       ;
+    } else {
+        return WINCODEC_ERR_UNKNOWNIMAGEFORMAT;
+    }
 
     return S_OK;
 }
@@ -916,6 +1437,11 @@ SixelDecoder_Initialize(
         return E_OUTOFMEMORY;
     }
 
+    size = stat.cbSize.LowPart;
+    if (size > SIXEL_ALLOCATE_BYTES_MAX) {
+        return E_OUTOFMEMORY;
+    }
+
     status = sixel_allocator_new(
         &allocator,
         wic_malloc,
@@ -926,7 +1452,6 @@ SixelDecoder_Initialize(
         return E_FAIL;
     }
 
-    size = stat.cbSize.LowPart;
     input = sixel_allocator_malloc(allocator, size);
 
     read = 0;
@@ -1628,8 +2153,13 @@ __declspec(dllexport)
 STDAPI
 DllRegisterServer(void)
 {
-    const BYTE pat[]  = { 0x1B, 0x50 };   /* ESC 'P' */
-    const BYTE mask[] = { 0xFF, 0xFF };
+    const BYTE pat0[] = { 0x1B };   /* ESC */
+    const BYTE pat1[] = { 0x90 };   /* DCS */
+    const BYTE pat2[] = { 0x9B };   /* CSI */
+    const BYTE pat3[] = { 0x9D };   /* SOS */
+    const BYTE pat4[] = { 0x9E };   /* PM */
+    const BYTE pat5[] = { 0x9F };   /* APC */
+    const BYTE mask[] = { 0xFF };
     LPWSTR key = NULL;
     WCHAR modulePath[MAX_PATH];
 
@@ -1822,9 +2352,64 @@ DllRegisterServer(void)
     RegisterDwordValue (HKEY_CLASSES_ROOT, key,
                         L"Position", 0);
     RegisterDwordValue (HKEY_CLASSES_ROOT, key,
-                        L"Length", 2);
+                        L"Length", 1);
     RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
-                        L"Pattern", pat, sizeof(pat));
+                        L"Pattern", pat0, sizeof(pat0));
+    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
+                        L"Mask", mask, sizeof(mask));
+
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
+          L"Patterns\\1";
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"Position", 0);
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"Length", 1);
+    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
+                        L"Pattern", pat1, sizeof(pat1));
+    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
+                        L"Mask", mask, sizeof(mask));
+
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
+          L"Patterns\\2";
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"Position", 0);
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"Length", 1);
+    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
+                        L"Pattern", pat2, sizeof(pat2));
+    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
+                        L"Mask", mask, sizeof(mask));
+
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
+          L"Patterns\\3";
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"Position", 0);
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"Length", 1);
+    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
+                        L"Pattern", pat3, sizeof(pat3));
+    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
+                        L"Mask", mask, sizeof(mask));
+
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
+          L"Patterns\\4";
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"Position", 0);
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"Length", 1);
+    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
+                        L"Pattern", pat4, sizeof(pat4));
+    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
+                        L"Mask", mask, sizeof(mask));
+
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
+          L"Patterns\\5";
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"Position", 0);
+    RegisterDwordValue (HKEY_CLASSES_ROOT, key,
+                        L"Length", 1);
+    RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
+                        L"Pattern", pat5, sizeof(pat5));
     RegisterBinaryValue(HKEY_CLASSES_ROOT, key,
                         L"Mask", mask, sizeof(mask));
 
@@ -1946,6 +2531,42 @@ DllUnregisterServer(void)
     }
 
     /* Patterns */
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\6";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\5";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\4";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\3";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\2";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\1";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
     key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\Patterns\\0";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
