@@ -1736,7 +1736,7 @@ DllRegisterServer(void)
                         L"@%PROGRAMFILES%\\Windows Photo Viewer\\"
                         L"PhotoViewer.dll,-3043");
 
-    key = L"sixelfile\\open\\command";
+    key = L"sixelfile\\shell\\open\\command";
     RegisterStringValue(HKEY_CLASSES_ROOT, key,
                         NULL,
                         L"%SystemRoot%\\System32\\rundll32.exe"
@@ -1744,11 +1744,11 @@ DllRegisterServer(void)
                            L"PhotoViewer.dll\","
                         L" ImageView_Fullscreen %1");
 
-    key = L"sixelfile\\open\\DropTarget";
+    key = L"sixelfile\\shell\\open\\DropTarget";
     RegisterStringValue(HKEY_CLASSES_ROOT, key,
                         L"Clsid", CLSIDSTR_WindowsPhotoViewer);
 
-    key = L"sixelfile\\printto\\command";
+    key = L"sixelfile\\shell\\printto\\command";
     RegisterStringValue(HKEY_CLASSES_ROOT, key,
                         NULL, L"%SystemRoot%\\System32\\rundll32.exe"
                               L" \"%SystemRoot%\\System32\\shimgvw.dll\","
@@ -2006,13 +2006,13 @@ DllUnregisterServer(void)
         fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
     }
 
-    key = L"sixelfile\\open\\DropTarget";
+    key = L"sixelfile\\shell\\open\\DropTarget";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
         fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
     }
 
-    key = L"sixelfile\\open\\command";
+    key = L"sixelfile\\shell\\open\\command";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
         fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
