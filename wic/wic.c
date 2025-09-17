@@ -1606,11 +1606,13 @@ SixelDecoder_CopyPalette(
     }
 
     decoder = (SixelDecoder*)iface;
-    if (!decoder->initialized) {
+    if (! decoder->initialized) {
         return WINCODEC_ERR_NOTINITIALIZED;
     }
 
-    return IWICPalette_InitializeCustom(pIPalette, decoder->palette, decoder->ncolors);
+    return IWICPalette_InitializeCustom(pIPalette,
+                                        decoder->palette,
+                                        decoder->ncolors);
 }
 
 /* IWICBitmapDecoder::GetMetadataQueryReader
@@ -1691,11 +1693,13 @@ SixelDecoder_GetColorContexts(
     (void) cCount;
     (void) ppIColorContexts;
 
-    if (pcActualCount) {
-        *pcActualCount = 0;
+    if (pcActualCount == NULL) {
+        return E_INVALIDARG;
     }
 
-    return WINCODEC_ERR_UNSUPPORTEDOPERATION;
+    *pcActualCount = 0;
+
+    return S_OK;
 }
 
 /* IWICBitmapDecoder::GetThumbnail
