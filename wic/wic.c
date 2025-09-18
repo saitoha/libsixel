@@ -318,90 +318,6 @@ SixelMetadata_ApplyFromQueryReader(
     return hr;
 }
 
-static void
-SixelMetadata_ParseHeader(SixelMetadata *metadata,
-                          const unsigned char *data,
-                          size_t size)
-{
-    const unsigned char *p;
-    const unsigned char *end;
-    int params[5] = { 0, 0, 0, EXIF_COLORSPACE_SRGB, 0 };
-    int nparams = 0;
-    int value = -1;
-    BOOL started = FALSE;
-
-    if (metadata == NULL || data == NULL || size == 0) {
-        return;
-    }
-
-    p = data;
-    end = data + size;
-
-    while (p < end) {
-        unsigned char ch = *p++;
-
-        if (!started) {
-            if (ch == 0x90) {
-                started = TRUE;
-            } else if (ch == 0x1b) {
-                if (p < end && *p == 'P') {
-                    ++p;
-                    started = TRUE;
-                }
-            }
-            continue;
-        }
-
-        if (ch >= '0' && ch <= '9') {
-            if (value < 0) {
-                value = 0;
-            }
-            if (value > INT_MAX / 10) {
-                value = INT_MAX / 10;
-            }
-            value = value * 10 + (ch - '0');
-            if (value > INT_MAX) {
-                value = INT_MAX;
-            }
-            continue;
-        }
-
-        if (ch == ';') {
-            if (value < 0) {
-                value = 0;
-            }
-            if ((size_t) nparams < sizeof(params) / sizeof(params[0])) {
-                params[nparams++] = value;
-            }
-            value = -1;
-            continue;
-        }
-
-        if (ch == 'q') {
-            if (value >= 0 && (size_t) nparams < sizeof(params) / sizeof(params[0])) {
-                params[nparams++] = value;
-            }
-            break;
-        }
-
-        if (ch >= 0x40 && ch <= 0x7e) {
-            break;
-        }
-    }
-
-    if (nparams >= 4) {
-        metadata->colorspace = (UINT)params[3];
-    } else {
-        metadata->colorspace = EXIF_COLORSPACE_SRGB;
-    }
-
-    if (nparams >= 5 && params[4] >= 0 && params[4] <= 5) {
-        metadata->orientation = (UINT)params[4];
-    } else {
-        metadata->orientation = 0;
-    }
-}
-
 typedef struct {
     const IEnumStringVtbl *lpVtbl;
     LONG ref;
@@ -1000,22 +916,11 @@ SixelMetadataQueryWriter_QueryInterface(
         return E_POINTER;
     }
 
+    /* dynamic cast */
     query = (SixelMetadataQuery *)((BYTE *)iface - offsetof(SixelMetadataQuery, lpWriterVtbl));
 
-    if (IsEqualIID(riid, &IID_IUnknown)) {
-        *ppv = (IWICMetadataQueryReader *) query;
-    } else if (IsEqualIID(riid, &IID_IWICMetadataQueryReader)) {
-        *ppv = (IWICMetadataQueryReader *) query;
-    } else if (IsEqualIID(riid, &IID_IWICMetadataQueryWriter)) {
-        *ppv = (IWICMetadataQueryWriter *) &query->lpWriterVtbl;
-    } else {
-        *ppv = NULL;
-        return E_NOINTERFACE;
-    }
-
-    (void) IUnknown_AddRef((IWICMetadataQueryReader *) query);
-
-    return S_OK;
+    /* aggregation */
+    return IUnknown_QueryInterface((IWICMetadataQueryReader *) query, riid, ppv);
 }
 
 static ULONG STDMETHODCALLTYPE
@@ -1025,9 +930,11 @@ SixelMetadataQueryWriter_AddRef(
 {
     SixelMetadataQuery *query;
 
+    /* dynamic cast */
     query = (SixelMetadataQuery *)((BYTE *)iface - offsetof(SixelMetadataQuery, lpWriterVtbl));
 
-    return (ULONG)InterlockedIncrement(&query->ref);
+    /* aggregation */
+    return IUnknown_AddRef((IWICMetadataQueryReader *) query);
 }
 
 static ULONG STDMETHODCALLTYPE
@@ -1037,8 +944,10 @@ SixelMetadataQueryWriter_Release(
 {
     SixelMetadataQuery *query;
 
+    /* dynamic cast */
     query = (SixelMetadataQuery *)((BYTE *)iface - offsetof(SixelMetadataQuery, lpWriterVtbl));
 
+    /* aggregation */
     return IUnknown_Release((IWICMetadataQueryReader *) query);
 }
 
@@ -1223,7 +1132,7 @@ SixelMetadataQuery_Create(
         hr = SixelMetadata_ApplyFromQueryReader(metadata, initialReader);
         if (FAILED(hr)) {
             if (metadata) {
-                SixelMetadata_Release(metadata);
+                (void) SixelMetadata_Release(metadata);
             }
             CoTaskMemFree(query);
             return hr;
@@ -2711,7 +2620,8 @@ SixelDecoder_Initialize(
     status = sixel_allocator_new(
         &allocator, wic_malloc, wic_calloc, wic_realloc, wic_free);
     if (SIXEL_FAILED(status)) {
-        return E_FAIL;
+        hr = E_FAIL;
+        goto end;
     }
 
     status = sixel_parse_header(
@@ -2735,9 +2645,6 @@ SixelDecoder_Initialize(
     if (paramsize > 0) {
         sixel_allocator_free(allocator, params);
     }
-    sixel_allocator_unref(allocator);
-
-    SixelMetadata_ParseHeader(decoder->metadata, input, size);
 
     status = sixel_decode_raw(
         input, size, &pixels, &width, &height,
@@ -2773,6 +2680,7 @@ SixelDecoder_Initialize(
     hr = S_OK;
 
 end:
+    sixel_allocator_free(allocator, params);
     sixel_allocator_free(allocator, input);
     sixel_allocator_free(allocator, pixels);
     sixel_allocator_free(allocator, palette);
