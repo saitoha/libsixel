@@ -1966,7 +1966,8 @@ sixel_parse_header(
         STATE_SOS               =  9,
         STATE_PM                = 10,
         STATE_APC               = 11,
-        STATE_STR               = 12,
+        STATE_UTF8              = 12,
+        STATE_OSC_UTF8          = 13,
     };
     int state = STATE_GROUND;
     unsigned char *p;
@@ -1976,6 +1977,7 @@ sixel_parse_header(
     int idx = 0;
     const INT IDX_MAX = sizeof(params) / sizeof(params[0]);
     unsigned int ibytes = 0;
+    UINT u8len = 0;
 
     *pparams = NULL;
     *pparamsize = 0;
@@ -2003,10 +2005,29 @@ sixel_parse_header(
                 state = STATE_CSI_PARAMETER;
                 break;
             case 0x9e:  /* PM */
-                state = STATE_STR;
+                state = STATE_PM;
                 break;
             case 0x9f:  /* APC */
-                state = STATE_STR;
+                state = STATE_APC;
+                break;
+            /* utf-8 */
+            case 0xc2: case 0xc3: case 0xc4: case 0xc5: case 0xc6: case 0xc7:
+            case 0xc8: case 0xc9: case 0xca: case 0xcb: case 0xcc: case 0xcd:
+            case 0xce: case 0xcf: case 0xd0: case 0xd1: case 0xd2: case 0xd3:
+            case 0xd4: case 0xd5: case 0xd6: case 0xd7: case 0xd8: case 0xd9:
+            case 0xda: case 0xdb: case 0xdc: case 0xdd: case 0xde: case 0xdf:
+                u8len = 1;
+                state = STATE_UTF8;
+                break;
+            case 0xe0: case 0xe1: case 0xe2: case 0xe3: case 0xe4: case 0xe5:
+            case 0xe6: case 0xe7: case 0xe8: case 0xe9: case 0xea: case 0xeb:
+            case 0xec: case 0xee: case 0xef:
+                u8len = 2;
+                state = STATE_UTF8;
+                break;
+            case 0xf0: case 0xf1: case 0xf2: case 0xf3: case 0xf4:
+                u8len = 3;
+                state = STATE_UTF8;
                 break;
             default:
                 /* ignore */
@@ -2093,10 +2114,10 @@ sixel_parse_header(
                 state = STATE_OSC;
                 break;
             case 0x5e:  /* ^(PM) */
-                state = STATE_STR;
+                state = STATE_PM;
                 break;
             case 0x5f:  /* _(APC) */
-                state = STATE_STR;
+                state = STATE_APC;
                 break;
             case 0x60: case 0x61: case 0x62: case 0x63:
             case 0x64: case 0x65: case 0x66: case 0x67: case 0x68: case 0x69:
@@ -2108,6 +2129,46 @@ sixel_parse_header(
                 break;
             case 0x7f:
                 /* ignore */
+                break;
+            case 0x90:  /* DCS */
+                ibytes = 0;
+                prm = 0;
+                idx = 0;
+                state = STATE_DCS_PARAMETER;
+                break;
+            case 0x98:  /* SOS */
+                state = STATE_SOS;
+                break;
+            case 0x9b:  /* CSI */
+                ibytes = 0;
+                prm = 0;
+                idx = 0;
+                state = STATE_CSI_PARAMETER;
+                break;
+            case 0x9e:  /* PM */
+                state = STATE_PM;
+                break;
+            case 0x9f:  /* APC */
+                state = STATE_APC;
+                break;
+            /* utf-8 */
+            case 0xc2: case 0xc3: case 0xc4: case 0xc5: case 0xc6: case 0xc7:
+            case 0xc8: case 0xc9: case 0xca: case 0xcb: case 0xcc: case 0xcd:
+            case 0xce: case 0xcf: case 0xd0: case 0xd1: case 0xd2: case 0xd3:
+            case 0xd4: case 0xd5: case 0xd6: case 0xd7: case 0xd8: case 0xd9:
+            case 0xda: case 0xdb: case 0xdc: case 0xdd: case 0xde: case 0xdf:
+                u8len = 1;
+                state = STATE_UTF8;
+                break;
+            case 0xe0: case 0xe1: case 0xe2: case 0xe3: case 0xe4: case 0xe5:
+            case 0xe6: case 0xe7: case 0xe8: case 0xe9: case 0xea: case 0xeb:
+            case 0xec: case 0xee: case 0xef:
+                u8len = 2;
+                state = STATE_UTF8;
+                break;
+            case 0xf0: case 0xf1: case 0xf2: case 0xf3: case 0xf4:
+                u8len = 3;
+                state = STATE_UTF8;
                 break;
             default:
                 state = STATE_GROUND;
@@ -2191,6 +2252,45 @@ sixel_parse_header(
                 /* handling point of control sequences */
             case 0x7f:
                 /* ignore */
+            case 0x90:  /* DCS */
+                ibytes = 0;
+                prm = 0;
+                idx = 0;
+                state = STATE_DCS_PARAMETER;
+                break;
+            case 0x98:  /* SOS */
+                state = STATE_SOS;
+                break;
+            case 0x9b:  /* CSI */
+                ibytes = 0;
+                prm = 0;
+                idx = 0;
+                state = STATE_CSI_PARAMETER;
+                break;
+            case 0x9e:  /* PM */
+                state = STATE_PM;
+                break;
+            case 0x9f:  /* APC */
+                state = STATE_APC;
+                break;
+            /* utf-8 */
+            case 0xc2: case 0xc3: case 0xc4: case 0xc5: case 0xc6: case 0xc7:
+            case 0xc8: case 0xc9: case 0xca: case 0xcb: case 0xcc: case 0xcd:
+            case 0xce: case 0xcf: case 0xd0: case 0xd1: case 0xd2: case 0xd3:
+            case 0xd4: case 0xd5: case 0xd6: case 0xd7: case 0xd8: case 0xd9:
+            case 0xda: case 0xdb: case 0xdc: case 0xdd: case 0xde: case 0xdf:
+                u8len = 1;
+                state = STATE_UTF8;
+                break;
+            case 0xe0: case 0xe1: case 0xe2: case 0xe3: case 0xe4: case 0xe5:
+            case 0xe6: case 0xe7: case 0xe8: case 0xe9: case 0xea: case 0xeb:
+            case 0xec: case 0xee: case 0xef:
+                u8len = 2;
+                state = STATE_UTF8;
+                break;
+            case 0xf0: case 0xf1: case 0xf2: case 0xf3: case 0xf4:
+                u8len = 3;
+                state = STATE_UTF8;
                 break;
             default:
                 state = STATE_GROUND;
@@ -2254,6 +2354,46 @@ sixel_parse_header(
                 state = STATE_GROUND;
                 /* handling point of control sequences */
                 break;
+            case 0x90:  /* DCS */
+                ibytes = 0;
+                prm = 0;
+                idx = 0;
+                state = STATE_DCS_PARAMETER;
+                break;
+            case 0x98:  /* SOS */
+                state = STATE_SOS;
+                break;
+            case 0x9b:  /* CSI */
+                ibytes = 0;
+                prm = 0;
+                idx = 0;
+                state = STATE_CSI_PARAMETER;
+                break;
+            case 0x9e:  /* PM */
+                state = STATE_PM;
+                break;
+            case 0x9f:  /* APC */
+                state = STATE_APC;
+                break;
+            /* utf-8 */
+            case 0xc2: case 0xc3: case 0xc4: case 0xc5: case 0xc6: case 0xc7:
+            case 0xc8: case 0xc9: case 0xca: case 0xcb: case 0xcc: case 0xcd:
+            case 0xce: case 0xcf: case 0xd0: case 0xd1: case 0xd2: case 0xd3:
+            case 0xd4: case 0xd5: case 0xd6: case 0xd7: case 0xd8: case 0xd9:
+            case 0xda: case 0xdb: case 0xdc: case 0xdd: case 0xde: case 0xdf:
+                u8len = 1;
+                state = STATE_UTF8;
+                break;
+            case 0xe0: case 0xe1: case 0xe2: case 0xe3: case 0xe4: case 0xe5:
+            case 0xe6: case 0xe7: case 0xe8: case 0xe9: case 0xea: case 0xeb:
+            case 0xec: case 0xee: case 0xef:
+                u8len = 2;
+                state = STATE_UTF8;
+                break;
+            case 0xf0: case 0xf1: case 0xf2: case 0xf3: case 0xf4:
+                u8len = 3;
+                state = STATE_UTF8;
+                break;
             default:
                 state = STATE_GROUND;
                 break;
@@ -2310,6 +2450,46 @@ sixel_parse_header(
             case 0x7f:
                 /* ignore */
                 break;
+            case 0x90:  /* DCS */
+                ibytes = 0;
+                prm = 0;
+                idx = 0;
+                state = STATE_DCS_PARAMETER;
+                break;
+            case 0x98:  /* SOS */
+                state = STATE_SOS;
+                break;
+            case 0x9b:  /* CSI */
+                ibytes = 0;
+                prm = 0;
+                idx = 0;
+                state = STATE_CSI_PARAMETER;
+                break;
+            case 0x9e:  /* PM */
+                state = STATE_PM;
+                break;
+            case 0x9f:  /* APC */
+                state = STATE_APC;
+                break;
+            /* utf-8 */
+            case 0xc2: case 0xc3: case 0xc4: case 0xc5: case 0xc6: case 0xc7:
+            case 0xc8: case 0xc9: case 0xca: case 0xcb: case 0xcc: case 0xcd:
+            case 0xce: case 0xcf: case 0xd0: case 0xd1: case 0xd2: case 0xd3:
+            case 0xd4: case 0xd5: case 0xd6: case 0xd7: case 0xd8: case 0xd9:
+            case 0xda: case 0xdb: case 0xdc: case 0xdd: case 0xde: case 0xdf:
+                u8len = 1;
+                state = STATE_UTF8;
+                break;
+            case 0xe0: case 0xe1: case 0xe2: case 0xe3: case 0xe4: case 0xe5:
+            case 0xe6: case 0xe7: case 0xe8: case 0xe9: case 0xea: case 0xeb:
+            case 0xec: case 0xee: case 0xef:
+                u8len = 2;
+                state = STATE_UTF8;
+                break;
+            case 0xf0: case 0xf1: case 0xf2: case 0xf3: case 0xf4:
+                u8len = 3;
+                state = STATE_UTF8;
+                break;
             default:
                 state = STATE_GROUND;
                 break;
@@ -2324,6 +2504,9 @@ sixel_parse_header(
                 break;
             case 0x1b:
                 state = STATE_ESC;
+                break;
+            case 0x9c:  /* ST */
+                state = STATE_GROUND;
                 break;
             default:
                 break;
@@ -2394,6 +2577,9 @@ sixel_parse_header(
                     goto end;
                 }
                 break;
+            case 0x9c:  /* ST */
+                state = STATE_GROUND;
+                break;
             default:
                 state = STATE_GROUND;
                 break;
@@ -2416,6 +2602,9 @@ sixel_parse_header(
             case 0x1b:
                 state = STATE_ESC;
                 break;
+            case 0x9c:  /* ST */
+                state = STATE_GROUND;
+                break;
             default:
                 break;
             }
@@ -2429,6 +2618,26 @@ sixel_parse_header(
                 state = STATE_GROUND;
                 break;
             }
+            break;
+        case STATE_UTF8:
+            if (*p >= 0x80 && *p <= 0xbf) {
+                if (--u8len == 0) {
+                    state = STATE_GROUND;
+                }
+                break;
+            }
+            --p;
+            state = STATE_GROUND;
+            break;
+        case STATE_OSC_UTF8:
+            if (*p >= 0x80 && *p <= 0xbf) {
+                if (--u8len == 0) {
+                    state = STATE_OSC;
+                }
+                break;
+            }
+            --p;
+            state = STATE_OSC;
             break;
         }
     }
