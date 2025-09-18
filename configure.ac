@@ -159,6 +159,12 @@ AC_ARG_WITH([winhttp],
             [],
             [with_winhttp=auto])
 
+AC_ARG_ENABLE([oleauto],
+              [AS_HELP_STRING([--enable-oleauto],
+                              [build the Windows OLE Automation component (default: auto)])],
+              [],
+              [enable_oleauto=auto])
+
 AC_ARG_WITH(pkgconfigdir,
             AS_HELP_STRING([--with-pkgconfigdir],
                            [Use the specified pkgconfig dir (default is libdir/pkgconfig)]),
@@ -1147,7 +1153,7 @@ AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch -c aclocal.m4 Makefile.in configure config.h.in \
                    converters/Makefile.in include/Makefile.in \
                    python/Makefile.in src/Makefile.in tools/Makefile.in \
-                   wic/Makefile.in
+                   wic/Makefile.in oleauto/Makefile.in
           ])
 LS_UPDATE_TIMESTAMP
 
@@ -1158,6 +1164,47 @@ AM_CONDITIONAL([HAVE_PNG], [test x$have_png = xyes])
 AM_CONDITIONAL([HAVE_WIC], [test x$have_wic = xyes])
 AM_CONDITIONAL([HAVE_WICCODEC], [test x$have_wiccodec = xyes])
 AM_CONDITIONAL([HAVE_PYTHON], [test x$have_python = xyes])
+host_can_oleauto=no
+case "$host_os" in
+  mingw* | win32* | windows* | msvc*)
+    host_can_oleauto=yes ;;
+esac
+if test "x$using_cl" = "xyes"; then
+  host_can_oleauto=yes
+fi
+case "$host_os" in
+  msys* | cygwin*)
+    host_can_oleauto=no ;;
+esac
+
+have_oleauto=no
+message_oleauto=no
+case "$enable_oleauto" in
+  yes)
+    if test "x$host_can_oleauto" != "xyes"; then
+      AC_MSG_ERROR([--enable-oleauto requires a Windows target using MinGW or MSVC without MSYS/Cygwin runtime])
+    fi
+    have_oleauto=yes
+    message_oleauto=yes
+    ;;
+  no)
+    have_oleauto=no
+    message_oleauto=no
+    ;;
+  auto)
+    if test "x$host_can_oleauto" = "xyes"; then
+      have_oleauto=yes
+      message_oleauto="yes (auto)"
+    else
+      have_oleauto=no
+      message_oleauto="no (auto)"
+    fi
+    ;;
+  *)
+    AC_MSG_ERROR([Invalid value for --enable-oleauto: $enable_oleauto])
+    ;;
+esac
+AM_CONDITIONAL([HAVE_OLEAUTO], [test x$have_oleauto = xyes])
 
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
@@ -1170,6 +1217,7 @@ AC_CONFIG_FILES([Makefile
                  tools/libsixel-config
                  python/Makefile
                  wic/Makefile
+                 oleauto/Makefile
                 ])
 
 AC_OUTPUT
@@ -1186,6 +1234,7 @@ echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 echo "       WIC codec           : $message_wiccodec"
 echo "       python bindings     : $message_python"
+echo "       OLE automation      : $message_oleauto"
 echo "       simd                : $message_simd"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"

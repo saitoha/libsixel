@@ -399,6 +399,38 @@ elif winpthread_opt.enabled()
   error('winpthread is only available on Windows')
 endif
 
+oleauto_opt = get_option('oleauto')
+oleauto_is_auto = (not oleauto_opt.enabled()) and (not oleauto_opt.disabled())
+have_oleauto = false
+oleauto_message = 'no'
+msys_define = ''
+cygwin_define = ''
+if host_system == 'windows'
+  msys_define = cc.get_define('__MSYS__')
+  cygwin_define = cc.get_define('__CYGWIN__')
+endif
+uses_posix_runtime = (msys_define != '' or cygwin_define != '')
+pure_windows_toolchain = host_system == 'windows' and not uses_posix_runtime
+cc_id = cc.get_id()
+if cc_id == 'msvc' or cc_id == 'clang-cl'
+  pure_windows_toolchain = host_system == 'windows'
+endif
+if oleauto_opt.enabled()
+  if not pure_windows_toolchain
+    error('OLE automation support requires a Windows target using MinGW or MSVC without MSYS/Cygwin runtime')
+  endif
+  have_oleauto = true
+elif oleauto_opt.disabled()
+  have_oleauto = false
+else
+  have_oleauto = pure_windows_toolchain
+endif
+if have_oleauto
+  oleauto_message = oleauto_is_auto ? 'yes (auto)' : 'yes'
+else
+  oleauto_message = oleauto_is_auto ? 'no (auto)' : 'no'
+endif
+
 cg_opt = get_option('coregraphics')
 if host_system == 'darwin'
   if not cg_opt.disabled()
@@ -530,6 +562,9 @@ endif
 if have_python
   subdir('python')
 endif
+if have_oleauto
+  subdir('oleauto')
+endif
 
 pkgconfig_dir_rel = join_paths(get_option('libdir'), 'pkgconfig')
 pkgconfig_dir = join_paths(get_option('prefix'), pkgconfig_dir_rel)
@@ -570,6 +605,7 @@ message('       Bash completion dir : ' + bash_completion_dir)
 message('       Zsh completion dir  : ' + zsh_completion_dir)
 message('       WIC codec           : ' + wiccodec_message)
 message('       python bindings     : ' + python_message)
+message('       OLE automation      : ' + oleauto_message)
 message('       SIMD                : ' + simd_message)
 message('       gcov integration    : ' + (get_option('gcov') ? 'yes' : 'no'))
 message('       debugging           : ' + (get_option('debug') ? 'yes' : 'no'))

@@ -33,6 +33,7 @@ option('bashcompletiondir', type: 'string', value: '', description: 'Directory f
 option('zshcompletiondir', type: 'string', value: '', description: 'Directory for zsh completion files')
 option('simd', type: 'feature', value: 'enabled', description: 'Use SIMD')
 option('python', type: 'feature', value: 'auto', description: 'Install Python bindings')
+option('oleauto', type: 'feature', value: 'auto', description: 'Build Windows OLE Automation component')
 option('tests', type: 'boolean', value: false, description: 'Build tests')
 option('gcov', type: 'boolean', value: false, description: 'Enable gcov coverage flags')
 option('img2sixel', type: 'feature', value: 'enabled', description: 'Build img2sixel tool')
