@@ -53,6 +53,16 @@ static const IID IID_IWICBitmapSourceTransform = {
 };
 #endif
 
+#ifndef GUID_MetadataFormatExif
+/* {1C3C4A13-2D32-4bc4-8B4D-A8B40B4B6A24} */
+static const GUID GUID_MetadataFormatExif = {
+    0x1c3c4a13,
+    0x2d32,
+    0x4bc4,
+    { 0x8b, 0x4d, 0xa8, 0xb4, 0x0b, 0x4b, 0x6a, 0x24 }
+};
+#endif
+
 #ifndef __IWICBitmapSourceTransform_INTERFACE_DEFINED__
 #define __IWICBitmapSourceTransform_INTERFACE_DEFINED__
 
