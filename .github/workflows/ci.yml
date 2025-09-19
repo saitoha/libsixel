@@ -30,9 +30,6 @@ jobs:
             compiler: clang
             sys: CLANG64
           - os: windows-latest
-            compiler: clang
-            sys: CLANGARM64
-          - os: windows-latest
             compiler: cl
             sys: MSYS
 
