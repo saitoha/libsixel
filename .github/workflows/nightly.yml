@@ -28,6 +28,9 @@ jobs:
             sys: CLANG64
             branch: master
           - os: windows-latest
+            sys: CLANGARM64
+            branch: master
+          - os: windows-latest
             sys: MINGW64
             branch: develop
           - os: windows-latest
@@ -35,6 +38,9 @@ jobs:
             branch: develop
           - os: windows-latest
             sys: CLANG64
+            branch: develop
+          - os: windows-latest
+            sys: CLANGARM64
             branch: develop
 
     steps:
