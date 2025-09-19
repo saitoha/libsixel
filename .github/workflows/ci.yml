@@ -45,21 +45,7 @@ jobs:
             compiler: clang
             sys: CLANG64
           - os: windows-latest
-            runner: windows-latest
-            compiler: cl
-            sys: MSVC
-          - os: windows-latest
-            runner: windows-latest
-            compiler: gcc
-            sys: MINGW32
-          - os: windows-latest
-            runner: windows-latest
-            compiler: gcc
-            sys: MSYS
-          - os: windows-latest
-            runner: windows-latest
-            compiler: gcc
-            sys: CYGWIN
+            sys: CLANGARM64
 
     steps:
     - name: Configure git EOL
