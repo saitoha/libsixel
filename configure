@@ -709,7 +709,6 @@ attr_var_deprecated
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
-CPP
 COND_TESTS_FALSE
 COND_TESTS_TRUE
 COND_GCOV_FALSE
@@ -725,6 +724,7 @@ WANT_IMG2SIXEL_FALSE
 WANT_IMG2SIXEL_TRUE
 USING_CL_FALSE
 USING_CL_TRUE
+CPP
 LT_SYS_LIBRARY_PATH
 OTOOL64
 OTOOL
@@ -758,11 +758,9 @@ am__include
 DEPDIR
 OBJEXT
 EXEEXT
-ac_ct_CC
 CPPFLAGS
 LDFLAGS
 CFLAGS
-CC
 LIBTOOL
 MAINT
 MAINTAINER_MODE_FALSE
@@ -807,6 +805,8 @@ build_os
 build_vendor
 build_cpu
 build
+ac_ct_CC
+CC
 PACKAGE_DESCRIPTION
 LS_LTVERSION
 target_alias
@@ -3044,6 +3044,118 @@ LS_LTVERSION=$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE
 
 PACKAGE_DESCRIPTION="A lightweight, fast implementation of DEC SIXEL graphics codec"
 
+
+if test -n "$ac_tool_prefix"; then
+  for ac_prog in clang clang.exe
+  do
+    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
+set dummy $ac_tool_prefix$ac_prog; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_CC+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$CC"; then
+  ac_cv_prog_CC="$CC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_CC="$ac_tool_prefix$ac_prog"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+CC=$ac_cv_prog_CC
+if test -n "$CC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $CC" >&5
+printf "%s\n" "$CC" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+    test -n "$CC" && break
+  done
+fi
+if test -z "$CC"; then
+  ac_ct_CC=$CC
+  for ac_prog in clang clang.exe
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_CC+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$ac_ct_CC"; then
+  ac_cv_prog_ac_ct_CC="$ac_ct_CC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_CC="$ac_prog"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+ac_ct_CC=$ac_cv_prog_ac_ct_CC
+if test -n "$ac_ct_CC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_CC" >&5
+printf "%s\n" "$ac_ct_CC" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+  test -n "$ac_ct_CC" && break
+done
+
+  if test "x$ac_ct_CC" = x; then
+    CC="gcc"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    CC=$ac_ct_CC
+  fi
+fi
 
 
 
@@ -14177,386 +14289,123 @@ ac_config_headers="$ac_config_headers config.h"
 
 
 
-# Detect Microsoft Visual C compiler
-case "$CC" in
-  *cl*|*clang-cl*)
-    using_cl=yes
-    CFLAGS=`echo "$CFLAGS" | sed s/-g//g`
-    CFLAGS="$CFLAGS -O2"
-    LDFLAGS="$LDFLAGS -DEBUG"
-    PKG_CONFIG=
-    ;;
-  *)
-    using_cl=no
-    ;;
-esac
- if test "x$using_cl" = "xyes"; then
-  USING_CL_TRUE=
-  USING_CL_FALSE='#'
-else
-  USING_CL_TRUE='#'
-  USING_CL_FALSE=
-fi
+if test -z "$CC" && { test "x$MSYSTEM" = "xCLANG64" || test "x$MSYSTEM" = "xCLANGARM64"; }
+then :
 
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler can silence -Wtypedef-redefinition via pragmas" >&5
-printf %s "checking whether the compiler can silence -Wtypedef-redefinition via pragmas... " >&6; }
-if test ${ac_cv_have_diag_typedef_redef+y}
+  if test -n "$ac_tool_prefix"; then
+  for ac_prog in clang clang.exe
+  do
+    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
+set dummy $ac_tool_prefix$ac_prog; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_CC+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
-  e)
-   ac_save_CFLAGS="$CFLAGS"
-   CFLAGS="$CFLAGS -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
+  e) if test -n "$CC"; then
+  ac_cv_prog_CC="$CC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_CC="$ac_tool_prefix$ac_prog"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
 
-       #if defined(__clang__) || defined(__GNUC__)
-       #pragma clang diagnostic push
-       #pragma clang diagnostic ignored "-Wtypedef-redefinition"
-       typedef int foo;
-       typedef int foo;
-       #pragma clang diagnostic pop
-       #endif
-
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  ac_cv_have_diag_typedef_redef=yes
-else case e in #(
-  e) ac_cv_have_diag_typedef_redef=no ;;
+fi ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-   CFLAGS="$ac_save_CFLAGS"
-   ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_have_diag_typedef_redef" >&5
-printf "%s\n" "$ac_cv_have_diag_typedef_redef" >&6; }
-
-if test "x$ac_cv_have_diag_typedef_redef" = "xyes"
-then :
-
-
-printf "%s\n" "#define HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION 1" >>confdefs.h
-
-
+CC=$ac_cv_prog_CC
+if test -n "$CC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $CC" >&5
+printf "%s\n" "$CC" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler can silence -Wdeprecated-declarations" >&5
-printf %s "checking whether the compiler can silence -Wdeprecated-declarations... " >&6; }
-if test ${ac_cv_have_diag_deprecated_declarations+y}
+
+    test -n "$CC" && break
+  done
+fi
+if test -z "$CC"; then
+  ac_ct_CC=$CC
+  for ac_prog in clang clang.exe
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_CC+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
-  e)
-   ac_save_CFLAGS="$CFLAGS"
-   CFLAGS="$CFLAGS -Werror"
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-       #if defined(__clang__) || defined(__GNUC__)
-       #pragma clang diagnostic push
-       #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-       typedef int foo;
-       typedef int foo;
-       #pragma clang diagnostic pop
-       #endif
-
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  ac_cv_have_diag_deprecated_declarations=yes
-else case e in #(
-  e) ac_cv_have_diag_deprecated_declarations=no ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-   CFLAGS="$ac_save_CFLAGS"
-   ;;
-esac
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_have_diag_deprecated_declarations" >&5
-printf "%s\n" "$ac_cv_have_diag_deprecated_declarations" >&6; }
-
-if test "x$ac_cv_have_diag_deprecated_declarations" = "xyes"
-then :
-
-
-printf "%s\n" "#define HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS 1" >>confdefs.h
-
-
-fi
-
-# Options
-# Check whether --enable-img2sixel was given.
-if test ${enable_img2sixel+y}
-then :
-  enableval=$enable_img2sixel;
-else case e in #(
-  e) enable_img2sixel=yes ;;
-esac
-fi
-
- if test x$enable_img2sixel != xno; then
-  WANT_IMG2SIXEL_TRUE=
-  WANT_IMG2SIXEL_FALSE='#'
+  e) if test -n "$ac_ct_CC"; then
+  ac_cv_prog_ac_ct_CC="$ac_ct_CC" # Let the user override the test.
 else
-  WANT_IMG2SIXEL_TRUE='#'
-  WANT_IMG2SIXEL_FALSE=
-fi
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_CC="$ac_prog"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
 
-
-# Check whether --enable-sixel2png was given.
-if test ${enable_sixel2png+y}
-then :
-  enableval=$enable_sixel2png;
-else case e in #(
-  e) enable_sixel2png=yes ;;
+fi ;;
 esac
 fi
-
- if test x$enable_sixel2png != xno; then
-  WANT_SIXEL2PNG_TRUE=
-  WANT_SIXEL2PNG_FALSE='#'
+ac_ct_CC=$ac_cv_prog_ac_ct_CC
+if test -n "$ac_ct_CC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_CC" >&5
+printf "%s\n" "$ac_ct_CC" >&6; }
 else
-  WANT_SIXEL2PNG_TRUE='#'
-  WANT_SIXEL2PNG_FALSE=
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
 fi
 
 
+  test -n "$ac_ct_CC" && break
+done
 
-# Check whether --with-gdk-pixbuf2 was given.
-if test ${with_gdk_pixbuf2+y}
-then :
-  withval=$with_gdk_pixbuf2;
-else case e in #(
-  e) with_gdk_pixbuf2=no ;;
+  if test "x$ac_ct_CC" = x; then
+    CC="gcc"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
 esac
+    CC=$ac_ct_CC
+  fi
 fi
 
 
-
-# Check whether --with-gd was given.
-if test ${with_gd+y}
-then :
-  withval=$with_gd;
-else case e in #(
-  e) with_gd=no ;;
-esac
 fi
-
-
-
-# Check whether --with-coregraphics was given.
-if test ${with_coregraphics+y}
-then :
-  withval=$with_coregraphics;
-else case e in #(
-  e) with_coregraphics=auto ;;
-esac
-fi
-
-
-
-# Check whether --with-libcurl was given.
-if test ${with_libcurl+y}
-then :
-  withval=$with_libcurl;
-else case e in #(
-  e) with_libcurl=auto ;;
-esac
-fi
-
-
-
-# Check whether --with-jpeg was given.
-if test ${with_jpeg+y}
-then :
-  withval=$with_jpeg;
-else case e in #(
-  e) with_jpeg=auto ;;
-esac
-fi
-
-
-
-# Check whether --with-png was given.
-if test ${with_png+y}
-then :
-  withval=$with_png;
-else case e in #(
-  e) with_png=auto ;;
-esac
-fi
-
-
-
-# Check whether --with-winpthread was given.
-if test ${with_winpthread+y}
-then :
-  withval=$with_winpthread;
-else case e in #(
-  e) with_winpthread=no ;;
-esac
-fi
-
-
-
-# Check whether --with-wic was given.
-if test ${with_wic+y}
-then :
-  withval=$with_wic;
-else case e in #(
-  e) with_wic=auto ;;
-esac
-fi
-
-
-
-# Check whether --with-winhttp was given.
-if test ${with_winhttp+y}
-then :
-  withval=$with_winhttp;
-else case e in #(
-  e) with_winhttp=auto ;;
-esac
-fi
-
-
-
-# Check whether --with-pkgconfigdir was given.
-if test ${with_pkgconfigdir+y}
-then :
-  withval=$with_pkgconfigdir; pkgconfigdir=${withval}
-else case e in #(
-  e) pkgconfigdir=${libdir}/pkgconfig ;;
-esac
-fi
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: pkgconfig directory is ${pkgconfigdir}" >&5
-printf "%s\n" "$as_me: pkgconfig directory is ${pkgconfigdir}" >&6;}
-
-
-
-# Check whether --with-bashcompletiondir was given.
-if test ${with_bashcompletiondir+y}
-then :
-  withval=$with_bashcompletiondir; bashcompletiondir=${withval}
-else case e in #(
-  e) bashcompletiondir=${datadir}/bash-completion/completions ;;
-esac
-fi
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: bash-completion directory is ${bashcompletiondir}" >&5
-printf "%s\n" "$as_me: bash-completion directory is ${bashcompletiondir}" >&6;}
-
-
-
-# Check whether --with-zshcompletiondir was given.
-if test ${with_zshcompletiondir+y}
-then :
-  withval=$with_zshcompletiondir; zshcompletiondir=${withval}
-else case e in #(
-  e) zshcompletiondir=${datadir}/zsh/site-functions ;;
-esac
-fi
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: zsh-completion directory is ${zshcompletiondir}" >&5
-printf "%s\n" "$as_me: zsh-completion directory is ${zshcompletiondir}" >&6;}
-
-
-# Check whether --enable-simd was given.
-if test ${enable_simd+y}
-then :
-  enableval=$enable_simd;
-fi
-
-
-# Check whether --enable-wiccodec was given.
-if test ${enable_wiccodec+y}
-then :
-  enableval=$enable_wiccodec;
-fi
-
-
-# Check whether --enable-register-dll was given.
-if test ${enable_register_dll+y}
-then :
-  enableval=$enable_register_dll; enable_register_dll=$enableval
-else case e in #(
-  e) enable_register_dll=no ;;
-esac
-fi
-
-
-# Check whether --enable-python was given.
-if test ${enable_python+y}
-then :
-  enableval=$enable_python;
-fi
-
-
-# Check whether --enable-debug was given.
-if test ${enable_debug+y}
-then :
-  enableval=$enable_debug;
-printf "%s\n" "#define HAVE_DEBUG 1" >>confdefs.h
-
-else case e in #(
-  e) enable_debug=no ;;
-esac
-fi
-
- if test x$enable_debug != xno; then
-  COND_DEBUG_TRUE=
-  COND_DEBUG_FALSE='#'
-else
-  COND_DEBUG_TRUE='#'
-  COND_DEBUG_FALSE=
-fi
-
-
-# Check whether --enable-gcov was given.
-if test ${enable_gcov+y}
-then :
-  enableval=$enable_gcov;
-else case e in #(
-  e) enable_gcov=no ;;
-esac
-fi
-
- if test x$enable_gcov != xno; then
-  COND_GCOV_TRUE=
-  COND_GCOV_FALSE='#'
-else
-  COND_GCOV_TRUE='#'
-  COND_GCOV_FALSE=
-fi
-
-
-# Check whether --enable-tests was given.
-if test ${enable_tests+y}
-then :
-  enableval=$enable_tests;
-printf "%s\n" "#define HAVE_TESTS 1" >>confdefs.h
-
-else case e in #(
-  e) enable_tests=no ;;
-esac
-fi
-
- if test x$enable_tests != xno; then
-  COND_TESTS_TRUE=
-  COND_TESTS_FALSE='#'
-else
-  COND_TESTS_TRUE='#'
-  COND_TESTS_FALSE=
-fi
-
-
-# Checks for programs.
 for ac_prog in gawk mawk nawk awk
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
@@ -15734,6 +15583,385 @@ else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
   SET_MAKE="MAKE=${MAKE-make}"
+fi
+
+
+# Detect Microsoft Visual C compiler
+case "$CC" in
+  *cl|*cl.exe|*clang-cl*)
+    using_cl=yes
+    CFLAGS=`echo "$CFLAGS" | sed s/-g//g`
+    CFLAGS="$CFLAGS -O2"
+    LDFLAGS="$LDFLAGS -DEBUG"
+    PKG_CONFIG=
+    ;;
+  *)
+    using_cl=no
+    ;;
+esac
+ if test "x$using_cl" = "xyes"; then
+  USING_CL_TRUE=
+  USING_CL_FALSE='#'
+else
+  USING_CL_TRUE='#'
+  USING_CL_FALSE=
+fi
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler can silence -Wtypedef-redefinition via pragmas" >&5
+printf %s "checking whether the compiler can silence -Wtypedef-redefinition via pragmas... " >&6; }
+if test ${ac_cv_have_diag_typedef_redef+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+       #if defined(__clang__) || defined(__GNUC__)
+       #pragma clang diagnostic push
+       #pragma clang diagnostic ignored "-Wtypedef-redefinition"
+       typedef int foo;
+       typedef int foo;
+       #pragma clang diagnostic pop
+       #endif
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ac_cv_have_diag_typedef_redef=yes
+else case e in #(
+  e) ac_cv_have_diag_typedef_redef=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+   CFLAGS="$ac_save_CFLAGS"
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_have_diag_typedef_redef" >&5
+printf "%s\n" "$ac_cv_have_diag_typedef_redef" >&6; }
+
+if test "x$ac_cv_have_diag_typedef_redef" = "xyes"
+then :
+
+
+printf "%s\n" "#define HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION 1" >>confdefs.h
+
+
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler can silence -Wdeprecated-declarations" >&5
+printf %s "checking whether the compiler can silence -Wdeprecated-declarations... " >&6; }
+if test ${ac_cv_have_diag_deprecated_declarations+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+       #if defined(__clang__) || defined(__GNUC__)
+       #pragma clang diagnostic push
+       #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+       typedef int foo;
+       typedef int foo;
+       #pragma clang diagnostic pop
+       #endif
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ac_cv_have_diag_deprecated_declarations=yes
+else case e in #(
+  e) ac_cv_have_diag_deprecated_declarations=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+   CFLAGS="$ac_save_CFLAGS"
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_have_diag_deprecated_declarations" >&5
+printf "%s\n" "$ac_cv_have_diag_deprecated_declarations" >&6; }
+
+if test "x$ac_cv_have_diag_deprecated_declarations" = "xyes"
+then :
+
+
+printf "%s\n" "#define HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS 1" >>confdefs.h
+
+
+fi
+
+# Options
+# Check whether --enable-img2sixel was given.
+if test ${enable_img2sixel+y}
+then :
+  enableval=$enable_img2sixel;
+else case e in #(
+  e) enable_img2sixel=yes ;;
+esac
+fi
+
+ if test x$enable_img2sixel != xno; then
+  WANT_IMG2SIXEL_TRUE=
+  WANT_IMG2SIXEL_FALSE='#'
+else
+  WANT_IMG2SIXEL_TRUE='#'
+  WANT_IMG2SIXEL_FALSE=
+fi
+
+
+# Check whether --enable-sixel2png was given.
+if test ${enable_sixel2png+y}
+then :
+  enableval=$enable_sixel2png;
+else case e in #(
+  e) enable_sixel2png=yes ;;
+esac
+fi
+
+ if test x$enable_sixel2png != xno; then
+  WANT_SIXEL2PNG_TRUE=
+  WANT_SIXEL2PNG_FALSE='#'
+else
+  WANT_SIXEL2PNG_TRUE='#'
+  WANT_SIXEL2PNG_FALSE=
+fi
+
+
+
+# Check whether --with-gdk-pixbuf2 was given.
+if test ${with_gdk_pixbuf2+y}
+then :
+  withval=$with_gdk_pixbuf2;
+else case e in #(
+  e) with_gdk_pixbuf2=no ;;
+esac
+fi
+
+
+
+# Check whether --with-gd was given.
+if test ${with_gd+y}
+then :
+  withval=$with_gd;
+else case e in #(
+  e) with_gd=no ;;
+esac
+fi
+
+
+
+# Check whether --with-coregraphics was given.
+if test ${with_coregraphics+y}
+then :
+  withval=$with_coregraphics;
+else case e in #(
+  e) with_coregraphics=auto ;;
+esac
+fi
+
+
+
+# Check whether --with-libcurl was given.
+if test ${with_libcurl+y}
+then :
+  withval=$with_libcurl;
+else case e in #(
+  e) with_libcurl=auto ;;
+esac
+fi
+
+
+
+# Check whether --with-jpeg was given.
+if test ${with_jpeg+y}
+then :
+  withval=$with_jpeg;
+else case e in #(
+  e) with_jpeg=auto ;;
+esac
+fi
+
+
+
+# Check whether --with-png was given.
+if test ${with_png+y}
+then :
+  withval=$with_png;
+else case e in #(
+  e) with_png=auto ;;
+esac
+fi
+
+
+
+# Check whether --with-winpthread was given.
+if test ${with_winpthread+y}
+then :
+  withval=$with_winpthread;
+else case e in #(
+  e) with_winpthread=no ;;
+esac
+fi
+
+
+
+# Check whether --with-wic was given.
+if test ${with_wic+y}
+then :
+  withval=$with_wic;
+else case e in #(
+  e) with_wic=auto ;;
+esac
+fi
+
+
+
+# Check whether --with-winhttp was given.
+if test ${with_winhttp+y}
+then :
+  withval=$with_winhttp;
+else case e in #(
+  e) with_winhttp=auto ;;
+esac
+fi
+
+
+
+# Check whether --with-pkgconfigdir was given.
+if test ${with_pkgconfigdir+y}
+then :
+  withval=$with_pkgconfigdir; pkgconfigdir=${withval}
+else case e in #(
+  e) pkgconfigdir=${libdir}/pkgconfig ;;
+esac
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: pkgconfig directory is ${pkgconfigdir}" >&5
+printf "%s\n" "$as_me: pkgconfig directory is ${pkgconfigdir}" >&6;}
+
+
+
+# Check whether --with-bashcompletiondir was given.
+if test ${with_bashcompletiondir+y}
+then :
+  withval=$with_bashcompletiondir; bashcompletiondir=${withval}
+else case e in #(
+  e) bashcompletiondir=${datadir}/bash-completion/completions ;;
+esac
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: bash-completion directory is ${bashcompletiondir}" >&5
+printf "%s\n" "$as_me: bash-completion directory is ${bashcompletiondir}" >&6;}
+
+
+
+# Check whether --with-zshcompletiondir was given.
+if test ${with_zshcompletiondir+y}
+then :
+  withval=$with_zshcompletiondir; zshcompletiondir=${withval}
+else case e in #(
+  e) zshcompletiondir=${datadir}/zsh/site-functions ;;
+esac
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: zsh-completion directory is ${zshcompletiondir}" >&5
+printf "%s\n" "$as_me: zsh-completion directory is ${zshcompletiondir}" >&6;}
+
+
+# Check whether --enable-simd was given.
+if test ${enable_simd+y}
+then :
+  enableval=$enable_simd;
+fi
+
+
+# Check whether --enable-wiccodec was given.
+if test ${enable_wiccodec+y}
+then :
+  enableval=$enable_wiccodec;
+fi
+
+
+# Check whether --enable-register-dll was given.
+if test ${enable_register_dll+y}
+then :
+  enableval=$enable_register_dll; enable_register_dll=$enableval
+else case e in #(
+  e) enable_register_dll=no ;;
+esac
+fi
+
+
+# Check whether --enable-python was given.
+if test ${enable_python+y}
+then :
+  enableval=$enable_python;
+fi
+
+
+# Check whether --enable-debug was given.
+if test ${enable_debug+y}
+then :
+  enableval=$enable_debug;
+printf "%s\n" "#define HAVE_DEBUG 1" >>confdefs.h
+
+else case e in #(
+  e) enable_debug=no ;;
+esac
+fi
+
+ if test x$enable_debug != xno; then
+  COND_DEBUG_TRUE=
+  COND_DEBUG_FALSE='#'
+else
+  COND_DEBUG_TRUE='#'
+  COND_DEBUG_FALSE=
+fi
+
+
+# Check whether --enable-gcov was given.
+if test ${enable_gcov+y}
+then :
+  enableval=$enable_gcov;
+else case e in #(
+  e) enable_gcov=no ;;
+esac
+fi
+
+ if test x$enable_gcov != xno; then
+  COND_GCOV_TRUE=
+  COND_GCOV_FALSE='#'
+else
+  COND_GCOV_TRUE='#'
+  COND_GCOV_FALSE=
+fi
+
+
+# Check whether --enable-tests was given.
+if test ${enable_tests+y}
+then :
+  enableval=$enable_tests;
+printf "%s\n" "#define HAVE_TESTS 1" >>confdefs.h
+
+else case e in #(
+  e) enable_tests=no ;;
+esac
+fi
+
+ if test x$enable_tests != xno; then
+  COND_TESTS_TRUE=
+  COND_TESTS_FALSE='#'
+else
+  COND_TESTS_TRUE='#'
+  COND_TESTS_FALSE=
 fi
 
 
@@ -19471,7 +19699,7 @@ fi
 
 if test x$with_wic != xno; then
     case "$host_os" in
-    mingw* | cygwin* | msys* | msvc* )
+    mingw* | cygwin* | msys* | msvc*)
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Windows Imaging Component (WIC)" >&5
 printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
         CFLAGS_BACKUP="$CFLAGS"
@@ -19767,7 +19995,7 @@ if test "x${enable_wiccodec}" = xno; then
     message_wiccodec=no
 else
     case "${host_os}" in
-      mingw* | msvc* )
+      mingw* | msvc*)
         message_wiccodec=yes
         have_wiccodec=yes
         if test x${have_wic} = xyes; then
@@ -20618,6 +20846,10 @@ if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
+  as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${USING_CL_TRUE}" && test -z "${USING_CL_FALSE}"; then
   as_fn_error $? "conditional \"USING_CL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -20640,10 +20872,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${COND_TESTS_TRUE}" && test -z "${COND_TESTS_FALSE}"; then
   as_fn_error $? "conditional \"COND_TESTS\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
-  as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${REGISTER_DLL_TRUE}" && test -z "${REGISTER_DLL_FALSE}"; then
