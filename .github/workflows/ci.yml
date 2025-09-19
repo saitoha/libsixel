@@ -62,15 +62,13 @@ jobs:
       if: runner.os == 'Windows'
       shell: msys2 {0}
       run: |
-        ./configure LDFLAGS="-Wl,-static -lwinpthread" \
+        ./configure \
             --without-png \
             --without-jpeg \
             --without-libcurl \
             --without-bashcompletiondir \
             --without-zshcompletiondir \
             --disable-python \
-            --enable-static \
-            --disable-shared \
             --disable-dependency-tracking
         make 
 
