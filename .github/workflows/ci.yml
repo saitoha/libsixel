@@ -26,6 +26,8 @@ jobs:
             sys: UCRT64
           - os: windows-latest
             sys: CLANG64
+          - os: windows-latest
+            sys: CLANGARM64
 
     steps:
     - uses: actions/checkout@v4
