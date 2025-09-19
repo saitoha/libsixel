@@ -122,7 +122,8 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" \
 	"$(DESTDIR)$(zshcompletiondir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__img2sixel_SOURCES_DIST = $(srcdir)/img2sixel.c \
-	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h
+	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
+	$(srcdir)/getopt_stub.h
 @WANT_IMG2SIXEL_TRUE@am_img2sixel_OBJECTS =  \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-img2sixel.$(OBJEXT) \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-malloc_stub.$(OBJEXT)
@@ -137,7 +138,8 @@ img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(img2sixel_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 am__sixel2png_SOURCES_DIST = $(srcdir)/sixel2png.c \
-	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h
+	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
+	$(srcdir)/getopt_stub.h
 @WANT_SIXEL2PNG_TRUE@am_sixel2png_OBJECTS =  \
 @WANT_SIXEL2PNG_TRUE@	sixel2png-sixel2png.$(OBJEXT) \
 @WANT_SIXEL2PNG_TRUE@	sixel2png-malloc_stub.$(OBJEXT)
@@ -469,11 +471,19 @@ CLEANFILES = *.gcno *.gcda *.gcov \
   $(builddir)/tmp/server.crt \
   $(builddir)/tmp/testfile
 
-@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = $(srcdir)/img2sixel.c $(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h
+@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = $(srcdir)/img2sixel.c \
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/malloc_stub.c \
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/malloc_stub.h \
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/getopt_stub.h
+
 @WANT_IMG2SIXEL_TRUE@img2sixel_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 @WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la
-@WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = $(srcdir)/sixel2png.c $(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h
+@WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = $(srcdir)/sixel2png.c \
+@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/malloc_stub.c \
+@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/malloc_stub.h \
+@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/getopt_stub.h
+
 @WANT_SIXEL2PNG_TRUE@sixel2png_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 @WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la
