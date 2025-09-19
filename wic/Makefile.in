@@ -771,6 +771,8 @@ ps: ps-am
 
 ps-am:
 
+@REGISTER_DLL_FALSE@uninstall-am: uninstall-pkglibLTLIBRARIES
+
 .MAKE: install-am install-exec-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am clean \
@@ -792,19 +794,20 @@ ps-am:
 .PRECIOUS: Makefile
 
 
-install-exec-hook:
-	$(LIBTOOL) --mode=execute \
-	  $(REGSVR32) -s \
-	  "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
+@REGISTER_DLL_TRUE@install-exec-hook:
+@REGISTER_DLL_TRUE@	$(LIBTOOL) --mode=execute \
+@REGISTER_DLL_TRUE@	    $(REGSVR32) -s \
+@REGISTER_DLL_TRUE@	    "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
+@REGISTER_DLL_FALSE@install-exec-hook:
 
-.PHONY: preuninstall
-uninstall-am: preuninstall
-	$(MAKE) uninstall-pkglibLTLIBRARIES
+@REGISTER_DLL_TRUE@.PHONY: preuninstall
+@REGISTER_DLL_TRUE@uninstall-am: preuninstall
+@REGISTER_DLL_TRUE@	$(MAKE) uninstall-pkglibLTLIBRARIES
 
-preuninstall:
-	$(LIBTOOL) --mode=execute \
-	  $(REGSVR32) -u -s \
-	  "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
+@REGISTER_DLL_TRUE@preuninstall:
+@REGISTER_DLL_TRUE@	$(LIBTOOL) --mode=execute \
+@REGISTER_DLL_TRUE@	    $(REGSVR32) -u -s \
+@REGISTER_DLL_TRUE@	    "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

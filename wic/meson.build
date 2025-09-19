@@ -17,7 +17,7 @@ shared_module(
   install_dir: join_paths(get_option('libdir'), meson.project_name()),
 )
 
-if host_machine.system() == 'windows'
+if host_machine.system() == 'windows' and get_option('register_dll')
   dll_rel_win = join_paths( \
     get_option('libdir'), \
     meson.project_name(), \
