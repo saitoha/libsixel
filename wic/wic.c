@@ -4037,7 +4037,7 @@ DllUnregisterServer(void)
 
 #if defined(_MSC_VER)
 _Check_return_
-#else
+#elif !defined(__clang__)
 __declspec(dllexport)
 #endif
 STDAPI
@@ -4074,7 +4074,7 @@ DllGetClassObject(
 
 #if defined(_MSC_VER)
 __control_entrypoint(DllExport)
-#else
+#elif !defined(__clang__)
 __declspec(dllexport)
 #endif
 STDAPI
