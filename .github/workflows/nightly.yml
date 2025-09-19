@@ -39,9 +39,6 @@ jobs:
           - os: windows-latest
             sys: CLANG64
             branch: develop
-          - os: windows-latest
-            sys: CLANGARM64
-            branch: develop
 
     steps:
     - uses: actions/checkout@v4
