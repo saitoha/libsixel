@@ -26,16 +26,22 @@ libwicsixel_la_LIBADD = $(WICCODEC_LIBS)
 
 REGSVR32 = "$(shell cygpath $(SYSTEMROOT)/System32/regsvr32.exe)"
 
+if REGISTER_DLL
 install-exec-hook:
 	$(LIBTOOL) --mode=execute \
-	  $(REGSVR32) -s \
-	  "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
+	    $(REGSVR32) -s \
+	    "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
+else
+install-exec-hook:
+endif
 
+if REGISTER_DLL
 .PHONY: preuninstall
 uninstall-am: preuninstall
 	$(MAKE) uninstall-pkglibLTLIBRARIES
 
 preuninstall:
 	$(LIBTOOL) --mode=execute \
-	  $(REGSVR32) -u -s \
-	  "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
+	    $(REGSVR32) -u -s \
+	    "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
+endif
