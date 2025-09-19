@@ -206,6 +206,12 @@ AC_ARG_ENABLE([wiccodec],
               [],
               [])
 
+AC_ARG_ENABLE([register-dll],
+              [AS_HELP_STRING([--enable-register-dll],
+                              [register WIC codec DLL during install (default: no, admin rights required)])],
+              [enable_register_dll=$enableval],
+              [enable_register_dll=no])
+
 AC_ARG_ENABLE([python],
               [AS_HELP_STRING([--enable-python],
                               [Python interface (default: yes)])],
@@ -1095,6 +1101,7 @@ if test "x${enable_wiccodec}" = xno; then
 else
     case "${host_os}" in
       mingw* | msvc* )
+        message_wiccodec=yes
         have_wiccodec=yes
         if test x${have_wic} = xyes; then
             if test "x${using_cl}" = xyes; then
@@ -1104,6 +1111,10 @@ else
                 WICCODEC_CFLAGS="$WIC_CFLAGS"
                 WICCODEC_LIBS="$WIC_LIBS"
             fi
+            AC_CHECK_HEADER([wincodecsdk.h],
+                            [],
+                            [message_wiccodec=no
+                             have_wiccodec=no])
         else
             AC_MSG_NOTICE([checking for Windows Imaging Component (WIC)])
             CFLAGS_BACKUP="$CFLAGS"
@@ -1131,12 +1142,15 @@ else
                              [AC_CHECK_LIB([ole32],
                                            [main],
                                            [],
-                                           [have_wiccodec=no])
+                                           [message_wiccodec=no
+                                            have_wiccodec=no])
                               AC_CHECK_LIB([windowscodecs],
                                            [main],
                                            [],
-                                           [have_wiccodec=no])],
-                             [have_wiccodec=no])
+                                           [message_wiccodec=no
+                                            have_wiccodec=no])],
+                             [message_wiccodec=no
+                              have_wiccodec=no])
             WICCODEC_CFLAGS="$ADDED_CFLAGS"
             WICCODEC_LIBS="$ADDED_LIBS"
             CFLAGS=$CFLAGS_BACKUP
@@ -1151,11 +1165,20 @@ else
             AC_MSG_ERROR([--enable-wiccodec option is available only MinGW target])
         fi
         message_wiccodec=no
+        have_wiccodec=no
         ;;
     esac
 fi
 AC_SUBST(WICCODEC_CFLAGS)
 AC_SUBST(WICCODEC_LIBS)
+
+if test x$enable_register_dll = xyes; then
+    if test "x${have_wiccodec}" != xyes; then
+        AC_MSG_ERROR([--enable-register-dll requires WIC codec support])
+    fi
+fi
+
+AM_CONDITIONAL([REGISTER_DLL], [test x$enable_register_dll = xyes])
 
 have_python=no
 if test x$enable_python != xno; then
@@ -1257,15 +1280,8 @@ AC_OUTPUT
 if test x$have_wiccodec = xyes; then
     message_register_dll=$enable_register_dll
 else
-    message_register_dll=no
+    message_register_dll=n/a
 fi
-
-AS_IF([test -n "$bashcompletiondir"],
-      [message_bashcompletiondir=$bashcompletiondir],
-      [message_bashcompletiondir=disabled])
-AS_IF([test -n "$zshcompletiondir"],
-      [message_zshcompletiondir=$zshcompletiondir],
-      [message_zshcompletiondir=disabled])
 
 echo ""
 echo ""
@@ -1278,6 +1294,7 @@ echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
 echo "       WIC codec           : $message_wiccodec"
+echo "       Register WIC DLL    : $message_register_dll"
 echo "       python bindings     : $message_python"
 echo "       simd                : $message_simd"
 echo "       gcov integration    : $enable_gcov"

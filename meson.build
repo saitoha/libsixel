@@ -367,6 +367,10 @@ elif wiccodec_opt.enabled()
   error('WIC codec support is only available on Windows')
 endif
 
+if get_option('register_dll') and not have_wiccodec
+  error('register_dll option requires WIC codec support')
+endif
+
 winhttp_opt = get_option('winhttp')
 if host_system == 'windows'
   if not winhttp_opt.disabled()
