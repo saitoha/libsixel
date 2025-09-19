@@ -22,9 +22,19 @@ AC_CONFIG_SRCDIR([src/fromsixel.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
+AS_IF([test -z "$CC" && { test "x$MSYSTEM" = "xCLANG64" || test "x$MSYSTEM" = "xCLANGARM64"; }], [
+  AC_CHECK_TOOLS([CC],  [clang clang.exe],  [gcc])
+])
+AC_PROG_AWK
+AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+
 # Detect Microsoft Visual C compiler
 case "$CC" in
-  *cl*|*clang-cl*)
+  *cl|*cl.exe|*clang-cl*)
     using_cl=yes
     CFLAGS=`echo "$CFLAGS" | sed s/-g//g`
     CFLAGS="$CFLAGS -O2"
@@ -947,7 +957,7 @@ fi
 
 if test x$with_wic != xno; then
     case "$host_os" in
-    mingw* | cygwin* | msys* | msvc* )
+    mingw* | cygwin* | msys* | msvc*)
         AC_MSG_NOTICE([checking for Windows Imaging Component (WIC)])
         CFLAGS_BACKUP="$CFLAGS"
         LIBS_BACKUP="$LIBS"
@@ -1100,7 +1110,7 @@ if test "x${enable_wiccodec}" = xno; then
     message_wiccodec=no
 else
     case "${host_os}" in
-      mingw* | msvc* )
+      mingw* | msvc*)
         message_wiccodec=yes
         have_wiccodec=yes
         if test x${have_wic} = xyes; then

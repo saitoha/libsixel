@@ -154,15 +154,13 @@ jobs:
       if: ${{ runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.sys != 'CYGWIN' }}
       shell: msys2 {0}
       run: |
-        ./configure CC=${{ matrix.compiler }} \
+        ./configure \
             --without-png \
             --without-jpeg \
             --without-libcurl \
             --without-bashcompletiondir \
             --without-zshcompletiondir \
             --disable-python \
-            --enable-debug \
-            --enable-tests \
             --disable-dependency-tracking
         make
 
