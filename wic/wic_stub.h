@@ -28,9 +28,7 @@
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
 # include <wincodec.h>
-# if defined(HAVE_WINCODECSDK_H)
-#  include <wincodecsdk.h>
-# endif
+# include <wincodecsdk.h>
 # include <unknwn.h>
 # include <objbase.h>
 
@@ -50,16 +48,6 @@ static const IID IID_IWICBitmapSourceTransform = {
     0x6a43,
     0x4ec9,
     { 0xa8, 0x13, 0x3d, 0x93, 0x0c, 0x13, 0xb9, 0x40 }
-};
-#endif
-
-#ifndef GUID_MetadataFormatExif
-/* {1C3C4A13-2D32-4bc4-8B4D-A8B40B4B6A24} */
-static const GUID GUID_MetadataFormatExif = {
-    0x1c3c4a13,
-    0x2d32,
-    0x4bc4,
-    { 0x8b, 0x4d, 0xa8, 0xb4, 0x0b, 0x4b, 0x6a, 0x24 }
 };
 #endif
 

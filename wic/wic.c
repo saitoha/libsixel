@@ -3501,7 +3501,7 @@ DllRegisterServer(void)
     RegisterStringValue(HKEY_CLASSES_ROOT, key,
                         NULL, L"SIXEL image format");
 
-    key = L"sixelfile\\open";
+    key = L"sixelfile\\shell\\open";
     RegisterStringValue(HKEY_CLASSES_ROOT, key,
                         L"MuiVerb",
                         L"@%PROGRAMFILES%\\Windows Photo Viewer\\"
@@ -3856,13 +3856,13 @@ DllUnregisterServer(void)
     }
 
     /* progid */
-    key = L"sixelfile\\printto\\command";
+    key = L"sixelfile\\shell\\printto\\command";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
         fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
     }
 
-    key = L"sixelfile\\printto";
+    key = L"sixelfile\\shell\\printto";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
         fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
@@ -3880,7 +3880,13 @@ DllUnregisterServer(void)
         fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
     }
 
-    key = L"sixelfile\\open";
+    key = L"sixelfile\\shell\\open";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"sixelfile\\shell";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
     if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
         fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
