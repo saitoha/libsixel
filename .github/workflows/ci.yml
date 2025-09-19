@@ -44,8 +44,8 @@ jobs:
       with:
         arch: x64
 
-    - name: Setup MSYS2 (Windows)
-      if: runner.os == 'Windows'
+    - name: Setup MSYS2 (Windows, not MSVC)
+      if: runner.os == 'Windows' && matrix.compiler != 'cl'
       uses: msys2/setup-msys2@v2
       with:
         msystem: ${{ matrix.sys }}
@@ -55,6 +55,16 @@ jobs:
           zip
         pacboy: >-
           cc:p
+
+    - name: Setup MSYS2 (Windows, MSVC)
+      if: runner.os == 'Windows' && matrix.compiler == 'cl'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.sys }}
+        update: true
+        install: >-
+          make
+          zip
 
     - name: Configure and build (non-Windows)
       if: runner.os != 'Windows'
@@ -70,8 +80,8 @@ jobs:
             --disable-dependency-tracking
         make
 
-    - name: Configure and build (Windows)
-      if: runner.os == 'Windows'
+    - name: Configure and build (Windows, not MSVC)
+      if: ${{ runner.os == 'Windows' && matrix.compiler != 'cl' }}
       shell: msys2 {0}
       run: |
         ./configure CC=${{ matrix.compiler }} \
@@ -82,7 +92,21 @@ jobs:
             --without-zshcompletiondir \
             --disable-python \
             --disable-dependency-tracking
-        make 
+        make
+
+    - name: Configure and build (Windows, MSVC)
+      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
+      shell: msys2 {0}
+      run: |
+        ./configure CC=${{ matrix.compiler }} \
+            --without-png \
+            --without-jpeg \
+            --without-libcurl \
+            --without-bashcompletiondir \
+            --without-zshcompletiondir \
+            --disable-python \
+            --disable-dependency-tracking || ! cat config.log
+        make
 
     - name: Run tests (non-Windows)
       if: runner.os != 'Windows'
