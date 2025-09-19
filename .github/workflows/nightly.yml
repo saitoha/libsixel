@@ -16,97 +16,30 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # ubuntu: [master, develop] x [x86_64, i686]
-          - branch: master
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            sys: x86_64
-          - branch: develop
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            sys: x86_64
-          - branch: master
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            sys: i686
-          - branch: develop
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            sys: i686
-          # macos-latest (arm): [master, develop] x [aarch64]
-          - branch: master
-            os: macos-latest
-            runner: macos-latest
-            sys: aarch64
-          - branch: develop
-            os: macos-latest
-            runner: macos-latest
-            sys: aarch64
-          # macos-13 (intel): [master, develop] x [x86_64]
-          - branch: master
-            os: macos-13
-            runner: macos-13
-            sys: x86_64
-          - branch: develop
-            os: macos-13
-            runner: macos-13
-            sys: x86_64
-          # windows-mingw: [master, develop] x [MINGW64, UCRT64, CLANG64, MINGW32]
-          - branch: master
-            os: windows-latest
-            msystem: MINGW64
-            runner: windows-latest
-            compiler: gcc
-            sys: x86_64-MINGW64
-          - branch: master
-            os: windows-latest
-            msystem: UCRT64
-            runner: windows-latest
-            compiler: gcc
-            sys: x86_64-UCRT64
-          - branch: master
-            os: windows-latest
-            msystem: CLANG64
-            runner: windows-latest
-            compiler: clang
-            sys: x86_64-CLANG64
-          - branch: master
-            os: windows-latest
-            msystem: MINGW32
-            runner: windows-latest
-            compiler: gcc
-            sys: i686-MINGW32
-          - branch: develop
-            os: windows-latest
-            msystem: MINGW64
-            runner: windows-latest
-            compiler: gcc
-            sys: x86_64-MINGW64
-          - branch: develop
-            os: windows-latest
-            msystem: UCRT64
-            runner: windows-latest
-            compiler: gcc
-            sys: x86_64-UCRT64
-          - branch: develop
-            os: windows-latest
-            msystem: CLANG64
-            runner: windows-latest
-            compiler: clang
-            sys: x86_64-CLANG64
-          - branch: develop
-            os: windows-latest
-            msystem: MINGW32
-            runner: windows-latest
-            compiler: gcc
-            sys: i686-MINGW32
-          # windows-msvc: [develop] x [x86_64] x [msvc]
-          - branch: develop
-            os: windows-latest
-            msystem: MSYS
-            runner: windows-latest
-            compiler: cl
-            sys: x86_64-msvc
+          - os: windows-latest
+            sys: MINGW64
+            branch: master
+          - os: windows-latest
+            sys: UCRT64
+            branch: master
+          - os: windows-latest
+            sys: CLANG64
+            branch: master
+          - os: windows-latest
+            sys: CLANGARM64
+            branch: master
+          - os: windows-latest
+            sys: MINGW64
+            branch: develop
+          - os: windows-latest
+            sys: UCRT64
+            branch: develop
+          - os: windows-latest
+            sys: CLANG64
+            branch: develop
+          - os: windows-latest
+            sys: CLANGARM64
+            branch: develop
 
     steps:
     - uses: actions/checkout@v4
