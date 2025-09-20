@@ -198,7 +198,7 @@ SixelQuickLookCreateImageFromData(NSData *data, NSError **error_out)
         unsigned char g = 0;
         unsigned char b = 0;
 
-        if ((int)((unsigned int)index) < ncolors) {
+        if (index < (unsigned char)ncolors) {
             size_t base = (size_t)index * 3u;
             r = palette[base + 0];
             g = palette[base + 1];

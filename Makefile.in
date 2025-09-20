@@ -89,7 +89,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@HAVE_WICCODEC_TRUE@am__append_1 = wic
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_1 = quicklook-extension
+@HAVE_WICCODEC_TRUE@am__append_2 = wic
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
@@ -108,7 +109,6 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = libsixel.pc package.json.in \
-	ruby/lib/libsixel/version_runtime.rb \
 	quicklook-extension/generated-resources/Host-Info.plist \
 	quicklook-extension/generated-resources/Preview-Info.plist \
 	quicklook-extension/generated-resources/Thumbnail-Info.plist \
@@ -196,9 +196,13 @@ am__define_uniq_tagged_files = \
     if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
   done | $(am__uniquify_input)`
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(srcdir)/libsixel.pc.in $(srcdir)/package.json.in.in AUTHORS \
-	ChangeLog NEWS README.md compile config.guess config.sub \
-	depcomp install-sh ltmain.sh missing py-compile
+	$(srcdir)/libsixel.pc.in $(srcdir)/package.json.in.in \
+	$(top_srcdir)/quicklook-extension/Resources/Bridge-Info.plist.in \
+	$(top_srcdir)/quicklook-extension/Resources/Host-Info.plist.in \
+	$(top_srcdir)/quicklook-extension/Resources/Preview-Info.plist.in \
+	$(top_srcdir)/quicklook-extension/Resources/Thumbnail-Info.plist.in \
+	AUTHORS ChangeLog NEWS README.md compile config.guess \
+	config.sub depcomp install-sh ltmain.sh missing py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -424,10 +428,12 @@ zshcompletiondir = @zshcompletiondir@
 #
 # @configure_input@
 #
-SUBDIRS = include src converters tools python $(am__append_1)
-DIST_SUBDIRS = $(SUBDIRS)
+SUBDIRS = include src converters tools python $(am__append_1) \
+	$(am__append_2)
+DIST_SUBDIRS = include src converters tools python wic quicklook-extension
 EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
-	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb depcomp
+	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb depcomp \
+	tools/quicklook-extension.bash tools/build_quicklook_bundle.py
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = $(builddir)/libsixel.pc
@@ -491,8 +497,6 @@ distclean-hdr:
 libsixel.pc: $(top_builddir)/config.status $(srcdir)/libsixel.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 package.json.in: $(top_builddir)/config.status $(srcdir)/package.json.in.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-ruby/lib/libsixel/version_runtime.rb: $(top_builddir)/config.status $(top_srcdir)/ruby/lib/libsixel/version_runtime.rb.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 quicklook-extension/generated-resources/Host-Info.plist: $(top_builddir)/config.status $(top_srcdir)/quicklook-extension/Resources/Host-Info.plist.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
