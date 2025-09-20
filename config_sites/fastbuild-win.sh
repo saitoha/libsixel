@@ -18,25 +18,25 @@ MAKE=$(which mingw32-make make 2>/dev/null | head -n1)
 
 case "${MSYSTEM}${OSTYPE}" in
 cygwin)
-    CONFIG_SITE="/etc/config.site $(dirname "${0}")/config_sites/cygwin.site"
+    CONFIG_SITE="/etc/config.site $(dirname "${0}")/cygwin.site"
     ;;
 MSYS*)
-    CONFIG_SITE="/etc/config.site $(dirname "${0}")/config_sites/msys.site"
+    CONFIG_SITE="/etc/config.site $(dirname "${0}")/msys.site"
     ;;
 MINGW64*)
-    CONFIG_SITE="/etc/config.site $(dirname "${0}")/config_sites/mingw64.site"
+    CONFIG_SITE="/etc/config.site $(dirname "${0}")/mingw64.site"
     cc=gcc
     prefix=/mingw64
     host=x86_64-w64-mingw32
     ;;
 UCRT64*)
-    CONFIG_SITE="/etc/config.site $(dirname "${0}")/config_sites/ucrt64.site"
+    CONFIG_SITE="/etc/config.site $(dirname "${0}")/ucrt64.site"
     cc=gcc
     prefix=/ucrt64
     host=x86_64-w64-mingw32
     ;;
 CLANG64*)
-    CONFIG_SITE="/etc/config.site $(dirname "${0}")/config_sites/clang64.site"
+    CONFIG_SITE="/etc/config.site $(dirname "${0}")/clang64.site"
     cc=clang
     prefix=/clang64
     host=x86_64-w64-mingw32

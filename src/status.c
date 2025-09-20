@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021-2025 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -34,6 +35,14 @@
 #ifdef HAVE_ERRNO_H
 # include <errno.h>
 #endif  /* HAVE_ERRNO_H */
+#ifdef SIXEL_DISABLE_EXT_LIBS
+# undef HAVE_LIBCURL
+# undef HAVE_JPEG
+# undef HAVE_LIBPNG
+# undef HAVE_GDK_PIXBUF2
+# undef HAVE_GD
+#endif
+
 #ifdef HAVE_LIBCURL
 # include <curl/curl.h>
 #endif  /* HAVE_LIBCURL */
