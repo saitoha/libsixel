@@ -98,7 +98,27 @@ jobs:
       if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
       shell: msys2 {0}
       run: |
-        ./configure CC=${{ matrix.compiler }} \
+        vs_bin="$(cygpath -u "${VCToolsInstallDir}")/bin/Hostx64/x64"
+        sdk_ver="$(echo "${WindowsSDKVersion:-}" | tr -d '\\')"   # 例: 10.0.26100.0
+        sdk_root="$(cygpath -u "${WindowsSdkDir:-${WindowsSdkVerBinPath%/bin/*}}")"
+        sdk_bin="$sdk_root/bin/${sdk_ver:+$sdk_ver/}x64"
+        vs_llvm_bin="$(cygpath -u "${VSINSTALLDIR}")/VC/Tools/Llvm/x64/bin"
+        vs_cmake_bin="$(cygpath -u "${VSINSTALLDIR}")/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin"
+
+        for d in "$vs_bin" "$sdk_bin" "$vs_llvm_bin" "$vs_cmake_bin"; do
+            [ -d "$d" ] && export PATH="$d:$PATH"
+        done
+
+        export CC=cl CXX=cl CPP="cl -E" LD=link AR=lib NM="dumpbin -symbols" STRIP=: RANLIB=:
+        export CFLAGS="/nologo /O2 /MD" CXXFLAGS="/nologo /O2 /MD"
+        export CPPFLAGS="-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS"
+        export MSYS2_ARG_CONV_EXCL="*"
+
+        # check
+        which cl || true
+        cl 2>&1 | head -n 5 || true
+
+        ./configure \
             --without-png \
             --without-jpeg \
             --without-libcurl \
