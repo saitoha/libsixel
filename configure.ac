@@ -933,7 +933,7 @@ if test x$with_wic != xno; then
             fi
             if test "x${using_cl}" = xyes; then
                 ADDED_CFLAGS="-I${with_wic}\include"
-                ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
+                ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs -lshlwapi -luuid"
             else
                 ADDED_CFLAGS="-I${with_wic}/include"
                 ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
@@ -942,7 +942,7 @@ if test x$with_wic != xno; then
             if test x${prefix} != x -a x${prefix} != xNONE; then
                 if test "x${using_cl}" = xyes; then
                     ADDED_CFLAGS=
-                    ADDED_LIBS="-lole32 -lwindowscodecs"
+                    ADDED_LIBS="-lole32 -lwindowscodecs -lshlwapi -luuid"
                 else
                     ADDED_CFLAGS="-I${prefix}/include"
                     ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
@@ -950,7 +950,7 @@ if test x$with_wic != xno; then
             else
                 if test "x${using_cl}" = xyes; then
                     ADDED_CFLAGS=
-                    ADDED_LIBS="-lole32 -lwindowscodecs"
+                    ADDED_LIBS="-lole32 -lwindowscodecs -lshlwapi -luuid"
                 else
                     ADDED_CFLAGS="-I/usr/local/include"
                     ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
