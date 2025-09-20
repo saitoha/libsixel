@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021-2025 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2019 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
