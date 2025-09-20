@@ -31,11 +31,11 @@ project('libsixel',
 
 host_system = host_machine.system()
 cc = meson.get_compiler('c')
-if cc.get_id() != 'msvc'
-  add_project_arguments([
-      '-D_POSIX_SOURCE',
-      '-D_POSIX_C_SOURCE=199309L'],
-      language: 'c')
+if add_languages('objc', required: false, native: false)
+  objc = meson.get_compiler('objc')
+  message('Objective-C compiler found: ' + objc.get_id())
+else
+  message('Objective-C compiler not available, skipping ObjC parts')
 endif
 
 # configuration data
@@ -67,6 +67,12 @@ have_winpthread = false
 have_python = false
 have_wic = false
 have_wiccodec = false
+have_quicklook_extension = false
+quicklook_extension_frameworks = []
+quicklook_extension_register_frameworks = []
+quicklook_extension_message = 'no'
+quicklook_os_supported = true
+quicklook_os_reason = 'requires macOS 10.15+'
 cpu = host_machine.cpu_family()
 
 have_unreachable = cc.compiles('''
@@ -407,7 +413,9 @@ cg_opt = get_option('coregraphics')
 if host_system == 'darwin'
   if not cg_opt.disabled()
     cg_modules = ['CoreGraphics', 'CoreFoundation', 'ImageIO']
-    cg_dep = dependency('appleframeworks', modules: cg_modules, required: cg_opt.enabled())
+    cg_dep = dependency('appleframeworks', \
+                        modules: cg_modules, \
+                        required: cg_opt.enabled())
     if cg_dep.found()
       conf.set('HAVE_COREGRAPHICS', 1)
       deps += cg_dep
@@ -417,6 +425,36 @@ if host_system == 'darwin'
   endif
 elif cg_opt.enabled()
   error('CoreGraphics support requires macOS')
+endif
+
+quicklook_ext_opt = get_option('quicklook_extension')
+if host_system == 'darwin'
+  if not quicklook_ext_opt.disabled()
+    quicklook_ext_dep = dependency('appleframeworks',
+      modules: ['Foundation', \
+                'AppKit', \
+                'QuickLookUI', \
+                'QuickLookThumbnailing', \
+                'UniformTypeIdentifiers', \
+                'CoreGraphics', \
+                'ImageIO'],
+      required: quicklook_ext_opt.enabled())
+    quicklook_register_dep = dependency('appleframeworks',
+      modules: ['Foundation', 'CoreServices', 'UniformTypeIdentifiers'],
+      required: quicklook_ext_opt.enabled())
+    if quicklook_ext_dep.found() and quicklook_register_dep.found()
+      have_quicklook_extension = true
+      quicklook_extension_frameworks = [quicklook_ext_dep]
+      quicklook_extension_register_frameworks = [quicklook_register_dep]
+      quicklook_extension_message = 'yes'
+    elif quicklook_ext_opt.enabled()
+      error('Quick Look extension requested, but required frameworks were not found')
+    else
+      quicklook_extension_message = 'no (frameworks unavailable)'
+    endif
+  endif
+elif quicklook_ext_opt.enabled()
+  error('Quick Look extension is only available on macOS')
 endif
 
 simd_opt = get_option('simd')
@@ -531,6 +569,11 @@ subdir('converters')
 if have_wiccodec
   subdir('wic')
 endif
+
+
+if have_quicklook_extension
+  subdir('quicklook-extension')
+endif
 if have_python
   subdir('python')
 endif
@@ -572,6 +615,7 @@ message('       libwinpthread       : ' + (have_winpthread ? 'yes' : 'no'))
 message('       pkg-config dir      : ' + pkgconfig_dir)
 message('       Bash completion dir : ' + bash_completion_dir)
 message('       Zsh completion dir  : ' + zsh_completion_dir)
+message('       QuickLook extension : ' + quicklook_extension_message)
 message('       WIC codec           : ' + wiccodec_message)
 message('       python bindings     : ' + python_message)
 message('       SIMD                : ' + simd_message)

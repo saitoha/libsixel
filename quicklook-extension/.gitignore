@@ -1,0 +1,17 @@
+# Ignore generated Quick Look build artifacts
+products/
+generated-resources/
+module-cache/
+Resources/
+bundle-stamp
+
+# Built executables in this directory
+SixelPreview
+SixelPreviewBridge
+SixelQuickLookHost
+SixelThumbnail
+register_sixel_preview
+
+# Local build artifacts
+.libs/
+libsixelquicklookcore.a
