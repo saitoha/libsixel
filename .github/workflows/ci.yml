@@ -98,34 +98,33 @@ jobs:
       if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
       shell: msys2 {0}
       run: |
-        vs_bin="$(cygpath -u "${VCToolsInstallDir}")/bin/Hostx64/x64"
-        sdk_ver="$(echo "${WindowsSDKVersion:-}" | tr -d '\\')"   # 例: 10.0.26100.0
-        sdk_root="$(cygpath -u "${WindowsSdkDir:-${WindowsSdkVerBinPath%/bin/*}}")"
-        sdk_bin="$sdk_root/bin/${sdk_ver:+$sdk_ver/}x64"
-        vs_llvm_bin="$(cygpath -u "${VSINSTALLDIR}")/VC/Tools/Llvm/x64/bin"
-        vs_cmake_bin="$(cygpath -u "${VSINSTALLDIR}")/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin"
+        VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+        cmd //c call "${VCVARS}" x64 \>nul \&\& set
+        eval $(
+            cmd //c call "${VCVARS}" x64 \>nul \&\& set |
+            grep -i '^\(PATH\|INCLUDE\|LIB\|LIBPATH\)'  |
+            while IFS== read -r key val; do
+                case "$key" in PATH|Path)
+                    echo export PATH=\"$(echo "$val" | tr \; \\n | while read -r p; do cygpath "$p"; done | grep ^/ | tr \\n :)\"\;
+                    ;;
+                *)
+                    echo export "$key"=\""$val"\"\;
+                    ;;
+                esac;
+            done
+        )
 
-        for d in "$vs_bin" "$sdk_bin" "$vs_llvm_bin" "$vs_cmake_bin"; do
-            [ -d "$d" ] && export PATH="$d:$PATH"
-        done
+        chmod +x "$(pwd)/tools/ar-msvc.sh"
 
-        export CC=cl # CXX=cl CPP="cl -E" LD=link AR=lib ARFLAGS= NM="dumpbin -symbols" STRIP=: RANLIB=:
-        export CFLAGS="/nologo /O2 /MD"
-        export CPPFLAGS="-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS"
-        export MSYS2_ARG_CONV_EXCL="*"
-
-        # check
-        which cl || true
-        cl 2>&1 | head -n 5 || true
-
-        ./configure \
+        ./configure CC=cl LD=link AR="$(pwd)/tools/ar-msvc.sh" ARFLAGS= NM="dumpbin -symbols" STRIP=: RANLIB=: \
+            --host=x86_64-pc-windows-msvc \
             --without-png \
             --without-jpeg \
             --without-libcurl \
             --without-bashcompletiondir \
             --without-zshcompletiondir \
             --disable-python \
-            --disable-dependency-tracking || ! cat config.log
+            --disable-dependency-tracking
         make
 
     - name: Run tests (non-Windows)
@@ -133,10 +132,32 @@ jobs:
       shell: bash
       run: make check
 
-    - name: Run tests (Windows)
-      if: runner.os == 'Windows'
+    - name: Run tests (Windows, not MSVC)
+      if: runner.os == 'Windows' && matrix.compiler != 'cl'
       shell: msys2 {0}
       run: make check
+
+    - name: Run tests (Windows, MSVC)
+      if: runner.os == 'Windows' && matrix.compiler == 'cl'
+      shell: msys2 {0}
+      run: |
+        VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+        cmd //c call "${VCVARS}" x64 \>nul \&\& set
+        eval $(
+            cmd //c call "${VCVARS}" x64 \>nul \&\& set |
+            grep -i '^\(PATH\|INCLUDE\|LIB\|LIBPATH\)'  |
+            while IFS== read -r key val; do
+                case "$key" in PATH|Path)
+                    echo export PATH=\"$(echo "$val" | tr \; \\n | while read -r p; do cygpath "$p"; done | grep ^/ | tr \\n :)\"\;
+                    ;;
+                *)
+                    echo export "$key"=\""$val"\"\;
+                    ;;
+                esac;
+            done
+        )
+        make check V=1
+
 
 # emacs Local Variables:
 # emacs mode: c
