@@ -27,6 +27,7 @@ AS_IF([test -z "$CC" && { test "x$MSYSTEM" = "xCLANG64" || test "x$MSYSTEM" = "x
 ])
 AC_PROG_AWK
 AC_PROG_CC
+AS_CASE([$host_os], [darwin*], [AC_PROG_OBJC], [*], [:])
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -133,6 +134,12 @@ AC_ARG_WITH([coregraphics],
                             [whether to build with CoreGraphics (default: auto)])],
             [],
             [with_coregraphics=auto])
+
+AC_ARG_ENABLE([quicklook-extension],
+              [AS_HELP_STRING([--enable-quicklook-extension],
+                              [build the macOS Quick Look extension (default: auto)])],
+              [],
+              [enable_quicklook_extension=auto])
 
 AC_ARG_WITH([libcurl],
             [AS_HELP_STRING([--with-libcurl],
@@ -273,7 +280,6 @@ else
       AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
   fi
   AX_GCC_BUILTIN([__builtin_unreachable])
-  CPPFLAGS="$CPPFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L"
   LS_CHECK_CFLAG([-std=c99],
                  [CFLAGS="$CFLAGS -std=c99"],
                  [],
@@ -531,6 +537,102 @@ if test x$with_coregraphics != xno; then
 fi
 AC_SUBST(COREGRAPHICS_CFLAGS)
 AC_SUBST(COREGRAPHICS_LIBS)
+
+APPLE_QUICKLOOK_EXTENSION_LIBS=""
+APPLE_QUICKLOOK_REGISTER_LIBS=""
+APPLE_QUICKLOOK_OBJCFLAGS="-fobjc-arc -fmodules"
+have_quicklook_extension=no
+message_quicklook_extension=no
+case $host_os in
+  darwin*)
+    if test x$enable_quicklook_extension != xno; then
+        quicklook_os_version_ok=yes
+        quicklook_os_reason="requires macOS 10.15 or newer"
+        macos_product_version=""
+        if command -v sw_vers >/dev/null 2>&1; then
+            macos_product_version=`sw_vers -productVersion 2>/dev/null`
+        fi
+        if test "x$macos_product_version" != x; then
+            macos_version_major=`echo "$macos_product_version" | awk -F. '{print $1}'`
+            macos_version_minor=`echo "$macos_product_version" | awk -F. '{print ($2 != "" ? $2 : 0)}'`
+            case $macos_version_major in
+              ''|*[!0-9]*)
+                quicklook_os_version_ok=no
+                quicklook_os_reason="unable to parse macOS version ($macos_product_version)"
+                ;;
+              10)
+                case $macos_version_minor in ''|*[!0-9]*) macos_version_minor=0 ;; esac
+                if test "$macos_version_minor" -lt 15; then
+                    quicklook_os_version_ok=no
+                fi
+                ;;
+              *)
+                if test "$macos_version_major" -lt 10; then
+                    quicklook_os_version_ok=no
+                fi
+                ;;
+            esac
+        else
+            quicklook_os_version_ok=no
+            quicklook_os_reason="unable to determine macOS version"
+        fi
+
+        if test x$quicklook_os_version_ok != xyes; then
+            if test x$enable_quicklook_extension = xyes; then
+                AC_MSG_ERROR([Quick Look extension requires macOS 10.15 or newer ($quicklook_os_reason)])
+            else
+                message_quicklook_extension="no (${quicklook_os_reason})"
+            fi
+        else
+        AC_LANG_PUSH([Objective C])
+        saved_LIBS="$LIBS"
+        added_LIBS=
+        added_LIBS="$added_LIBS -framework Foundation "
+        added_LIBS="$added_LIBS -framework AppKit "
+        added_LIBS="$added_LIBS -framework QuickLookUI "
+        added_LIBS="$added_LIBS -framework QuickLookThumbnailing "
+        added_LIBS="$added_LIBS -framework UniformTypeIdentifiers "
+        added_LIBS="$added_LIBS -framework CoreGraphics "
+        added_LIBS="$added_LIBS -framework ImageIO "
+        LIBS="$LIBS $added_LIBS"
+        AC_LINK_IFELSE(
+            [AC_LANG_PROGRAM([[
+#import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
+#import <QuickLookUI/QuickLookUI.h>
+#import <QuickLookThumbnailing/QuickLookThumbnailing.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>]],
+                             [[QLThumbnailReply *reply = nil; (void)reply;]])],
+            [have_quicklook_extension=yes],
+            [have_quicklook_extension=no])
+        LIBS="$saved_LIBS"
+        AC_LANG_POP([Objective C])
+        if test x$have_quicklook_extension = xyes; then
+            APPLE_QUICKLOOK_EXTENSION_LIBS="$added_LIBS"
+            APPLE_QUICKLOOK_REGISTER_LIBS=
+            APPLE_QUICKLOOK_REGISTER_LIBS="$APPLE_QUICKLOOK_REGISTER_LIBS -framework Foundation "
+            APPLE_QUICKLOOK_REGISTER_LIBS="$APPLE_QUICKLOOK_REGISTER_LIBS -framework CoreServices "
+            APPLE_QUICKLOOK_REGISTER_LIBS="$APPLE_QUICKLOOK_REGISTER_LIBS -framework UniformTypeIdentifiers "
+            message_quicklook_extension=yes
+        elif test x$enable_quicklook_extension = xyes; then
+            AC_MSG_ERROR([Quick Look extension requested, but required frameworks were not found])
+        else
+            message_quicklook_extension="no (required frameworks unavailable)"
+        fi
+    fi
+    fi
+    ;;
+  *)
+    if test x$enable_quicklook_extension = xyes; then
+        AC_MSG_ERROR([Quick Look extension requires macOS])
+    fi
+    ;;
+esac
+
+AC_SUBST(APPLE_QUICKLOOK_EXTENSION_LIBS)
+AC_SUBST(APPLE_QUICKLOOK_REGISTER_LIBS)
+AC_SUBST(APPLE_QUICKLOOK_OBJCFLAGS)
+AM_CONDITIONAL([HAVE_APPLE_QUICKLOOK_EXTENSION], [test x$have_quicklook_extension = xyes])
 
 if test x$with_gd != xno && test "x$using_cl" != "xyes"; then
     AC_MSG_NOTICE([checking for GD])
@@ -1063,7 +1165,7 @@ if test "x$have_sse2" = xyes; then
 fi
 if test "x$have_neon" = xyes; then
     AC_DEFINE([HAVE_NEON], [1], [Define if NEON is available])
-    message_neon=neon
+    message_simd=neon
 fi
 
 if test "x$enable_simd" = xyes; then
@@ -1173,7 +1275,7 @@ AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch -c aclocal.m4 Makefile.in configure config.h.in \
                    converters/Makefile.in include/Makefile.in \
                    python/Makefile.in src/Makefile.in tools/Makefile.in \
-                   wic/Makefile.in
+                   wic/Makefile.in quicklook-extension/Makefile.in
           ])
 LS_UPDATE_TIMESTAMP
 
@@ -1195,15 +1297,29 @@ AC_CONFIG_FILES([Makefile
                  tools/Makefile
                  tools/libsixel-config
                  python/Makefile
+                 quicklook-extension/Makefile
                  wic/Makefile
                 ])
+
+# Generate Quick Look Info.plist files only when the extension is enabled
+AS_IF([test x$have_quicklook_extension = xyes], [
+  AC_CONFIG_COMMANDS_PRE([
+    test -d quicklook-extension/generated-resources || mkdir -p quicklook-extension/generated-resources
+  ])
+  AC_CONFIG_FILES([
+    quicklook-extension/generated-resources/Host-Info.plist:quicklook-extension/Resources/Host-Info.plist.in
+    quicklook-extension/generated-resources/Preview-Info.plist:quicklook-extension/Resources/Preview-Info.plist.in
+    quicklook-extension/generated-resources/Thumbnail-Info.plist:quicklook-extension/Resources/Thumbnail-Info.plist.in
+    quicklook-extension/generated-resources/Bridge-Info.plist:quicklook-extension/Resources/Bridge-Info.plist.in
+  ])
+])
 
 AC_OUTPUT
 
 if test x$have_wiccodec = xyes; then
     message_register_dll=$enable_register_dll
 else
-    message_register_dll=n/a
+    message_register_dll=no
 fi
 
 echo ""
@@ -1216,6 +1332,7 @@ echo "       libwinpthread       : $have_winpthread"
 echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
+echo "       QuickLook extension : $message_quicklook_extension"
 echo "       WIC codec           : $message_wiccodec"
 echo "       Register WIC DLL    : $message_register_dll"
 echo "       python bindings     : $message_python"

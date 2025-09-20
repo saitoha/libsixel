@@ -697,6 +697,11 @@ LIBCURL_CFLAGS
 AM_CPPFLAGS
 GD_LIBS
 GD_CFLAGS
+HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE
+HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE
+APPLE_QUICKLOOK_OBJCFLAGS
+APPLE_QUICKLOOK_REGISTER_LIBS
+APPLE_QUICKLOOK_EXTENSION_LIBS
 COREGRAPHICS_LIBS
 COREGRAPHICS_CFLAGS
 GDK_PIXBUF_LIBS
@@ -725,6 +730,12 @@ WANT_IMG2SIXEL_TRUE
 USING_CL_FALSE
 USING_CL_TRUE
 CPP
+am__fastdepOBJC_FALSE
+am__fastdepOBJC_TRUE
+OBJCDEPMODE
+ac_ct_OBJC
+OBJCFLAGS
+OBJC
 LT_SYS_LIBRARY_PATH
 OTOOL64
 OTOOL
@@ -870,6 +881,7 @@ enable_sixel2png
 with_gdk_pixbuf2
 with_gd
 with_coregraphics
+enable_quicklook_extension
 with_libcurl
 with_jpeg
 with_png
@@ -899,6 +911,8 @@ LDFLAGS
 LIBS
 CPPFLAGS
 LT_SYS_LIBRARY_PATH
+OBJC
+OBJCFLAGS
 CPP
 PKG_CONFIG
 PKG_CONFIG_PATH
@@ -1562,6 +1576,8 @@ Optional Features:
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-img2sixel     disable building the img2sixel utility (default: no)
   --disable-sixel2png     disable building the sixel2png utility (default: no)
+  --enable-quicklook-extension
+                          build the macOS Quick Look extension (default: auto)
   --enable-simd           enable SS2 and NEON (default: auto)
   --enable-wiccodec       build WIC codec DLL (default: auto)
   --enable-register-dll   register WIC codec DLL during install (default: no,
@@ -1610,6 +1626,8 @@ Some influential environment variables:
               you have headers in a nonstandard directory <include dir>
   LT_SYS_LIBRARY_PATH
               User-defined run-time library search path.
+  OBJC        Objective C compiler command
+  OBJCFLAGS   Objective C compiler flags
   CPP         C preprocessor
   PKG_CONFIG  path to pkg-config utility
   PKG_CONFIG_PATH
@@ -1902,6 +1920,46 @@ printf "%s\n" "$ac_res" >&6; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_c_check_func
+
+# ac_fn_objc_try_compile LINENO
+# -----------------------------
+# Try to compile conftest.$ac_ext, and return whether this succeeded.
+ac_fn_objc_try_compile ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  rm -f conftest.$ac_objext conftest.beam
+  if { { ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+printf "%s\n" "$ac_try_echo"; } >&5
+  (eval "$ac_compile") 2>conftest.err
+  ac_status=$?
+  if test -s conftest.err; then
+    grep -v '^ *+' conftest.err >conftest.er1
+    cat conftest.er1 >&5
+    mv -f conftest.er1 conftest.err
+  fi
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } && {
+	 test -z "$ac_objc_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext
+then :
+  ac_retval=0
+else case e in #(
+  e) printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_retval=1 ;;
+esac
+fi
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+  as_fn_set_status $ac_retval
+
+} # ac_fn_objc_try_compile
 
 # ac_fn_c_try_cpp LINENO
 # ----------------------
@@ -2240,6 +2298,54 @@ printf "%s\n" "$ac_res" >&6; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_check_decl
+
+# ac_fn_objc_try_link LINENO
+# --------------------------
+# Try to link conftest.$ac_ext, and return whether this succeeded.
+ac_fn_objc_try_link ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  rm -f conftest.$ac_objext conftest.beam conftest$ac_exeext
+  if { { ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+printf "%s\n" "$ac_try_echo"; } >&5
+  (eval "$ac_link") 2>conftest.err
+  ac_status=$?
+  if test -s conftest.err; then
+    grep -v '^ *+' conftest.err >conftest.er1
+    cat conftest.er1 >&5
+    mv -f conftest.er1 conftest.err
+  fi
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } && {
+	 test -z "$ac_objc_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 test -x conftest$ac_exeext
+       }
+then :
+  ac_retval=0
+else case e in #(
+  e) printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_retval=1 ;;
+esac
+fi
+  # Delete the IPA/IPO (Inter Procedural Analysis/Optimization) information
+  # created by the PGI compiler (conftest_ipa8_conftest.oo), as it would
+  # interfere with the next link command; also delete a directory that is
+  # left behind by Apple's compiler.  We do this before executing the actions.
+  rm -rf conftest.dSYM conftest_ipa8_conftest.oo
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+  as_fn_set_status $ac_retval
+
+} # ac_fn_objc_try_link
 ac_configure_args_raw=
 for ac_arg
 do
@@ -15402,6 +15508,417 @@ else
 fi
 
 
+case $host_os in #(
+  darwin*) :
+    ac_ext=m
+ac_cpp='$OBJCPP $CPPFLAGS'
+ac_compile='$OBJC -c $OBJCFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$OBJC -o conftest$ac_exeext $OBJCFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_objc_compiler_gnu
+if test -n "$ac_tool_prefix"; then
+  for ac_prog in gcc objcc objc cc CC clang
+  do
+    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
+set dummy $ac_tool_prefix$ac_prog; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_OBJC+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$OBJC"; then
+  ac_cv_prog_OBJC="$OBJC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_OBJC="$ac_tool_prefix$ac_prog"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+OBJC=$ac_cv_prog_OBJC
+if test -n "$OBJC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $OBJC" >&5
+printf "%s\n" "$OBJC" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+    test -n "$OBJC" && break
+  done
+fi
+if test -z "$OBJC"; then
+  ac_ct_OBJC=$OBJC
+  for ac_prog in gcc objcc objc cc CC clang
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_OBJC+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$ac_ct_OBJC"; then
+  ac_cv_prog_ac_ct_OBJC="$ac_ct_OBJC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_OBJC="$ac_prog"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+ac_ct_OBJC=$ac_cv_prog_ac_ct_OBJC
+if test -n "$ac_ct_OBJC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_OBJC" >&5
+printf "%s\n" "$ac_ct_OBJC" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+  test -n "$ac_ct_OBJC" && break
+done
+
+  if test "x$ac_ct_OBJC" = x; then
+    OBJC="gcc"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    OBJC=$ac_ct_OBJC
+  fi
+fi
+
+# Provide some information about the compiler.
+printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Objective C compiler version" >&5
+set X $ac_compile
+ac_compiler=$2
+for ac_option in --version -v -V -qversion; do
+  { { ac_try="$ac_compiler $ac_option >&5"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+printf "%s\n" "$ac_try_echo"; } >&5
+  (eval "$ac_compiler $ac_option >&5") 2>conftest.err
+  ac_status=$?
+  if test -s conftest.err; then
+    sed '10a\
+... rest of stderr output deleted ...
+         10q' conftest.err >conftest.er1
+    cat conftest.er1 >&5
+  fi
+  rm -f conftest.er1 conftest.err
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }
+done
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler supports GNU Objective C" >&5
+printf %s "checking whether the compiler supports GNU Objective C... " >&6; }
+if test ${ac_cv_objc_compiler_gnu+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+#ifndef __GNUC__
+       choke me
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_objc_try_compile "$LINENO"
+then :
+  ac_compiler_gnu=yes
+else case e in #(
+  e) ac_compiler_gnu=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+ac_cv_objc_compiler_gnu=$ac_compiler_gnu
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_objc_compiler_gnu" >&5
+printf "%s\n" "$ac_cv_objc_compiler_gnu" >&6; }
+ac_compiler_gnu=$ac_cv_objc_compiler_gnu
+
+if test $ac_compiler_gnu = yes; then
+  GOBJC=yes
+else
+  GOBJC=
+fi
+ac_test_OBJCFLAGS=${OBJCFLAGS+y}
+ac_save_OBJCFLAGS=$OBJCFLAGS
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether $OBJC accepts -g" >&5
+printf %s "checking whether $OBJC accepts -g... " >&6; }
+if test ${ac_cv_prog_objc_g+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_save_objc_werror_flag=$ac_objc_werror_flag
+   ac_objc_werror_flag=yes
+   ac_cv_prog_objc_g=no
+   OBJCFLAGS="-g"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_objc_try_compile "$LINENO"
+then :
+  ac_cv_prog_objc_g=yes
+else case e in #(
+  e) OBJCFLAGS=""
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_objc_try_compile "$LINENO"
+then :
+
+else case e in #(
+  e) ac_objc_werror_flag=$ac_save_objc_werror_flag
+	 OBJCFLAGS="-g"
+	 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_objc_try_compile "$LINENO"
+then :
+  ac_cv_prog_objc_g=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+   ac_objc_werror_flag=$ac_save_objc_werror_flag ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_prog_objc_g" >&5
+printf "%s\n" "$ac_cv_prog_objc_g" >&6; }
+if test $ac_test_OBJCFLAGS; then
+  OBJCFLAGS=$ac_save_OBJCFLAGS
+elif test $ac_cv_prog_objc_g = yes; then
+  if test "$GOBJC" = yes; then
+    OBJCFLAGS="-g -O2"
+  else
+    OBJCFLAGS="-g"
+  fi
+else
+  if test "$GOBJC" = yes; then
+    OBJCFLAGS="-O2"
+  else
+    OBJCFLAGS=
+  fi
+fi
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+depcc="$OBJC" am_compiler_list='gcc3 gcc'
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking dependency style of $depcc" >&5
+printf %s "checking dependency style of $depcc... " >&6; }
+if test ${am_cv_OBJC_dependencies_compiler_type+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -z "$AMDEP_TRUE" && test -f "$am_depcomp"; then
+  # We make a subdir and do the tests there.  Otherwise we can end up
+  # making bogus files that we don't know about and never remove.  For
+  # instance it was reported that on HP-UX the gcc test will end up
+  # making a dummy file named 'D' -- because '-MD' means "put the output
+  # in D".
+  rm -rf conftest.dir
+  mkdir conftest.dir
+  # Copy depcomp to subdir because otherwise we won't find it if we're
+  # using a relative directory.
+  cp "$am_depcomp" conftest.dir
+  cd conftest.dir
+  # We will build objects and dependencies in a subdirectory because
+  # it helps to detect inapplicable dependency modes.  For instance
+  # both Tru64's cc and ICC support -MD to output dependencies as a
+  # side effect of compilation, but ICC will put the dependencies in
+  # the current directory while Tru64 will put them in the object
+  # directory.
+  mkdir sub
+
+  am_cv_OBJC_dependencies_compiler_type=none
+  if test "$am_compiler_list" = ""; then
+     am_compiler_list=`sed -n 's/^#*\([a-zA-Z0-9]*\))$/\1/p' < ./depcomp`
+  fi
+  am__universal=false
+
+
+  for depmode in $am_compiler_list; do
+    # Setup a source with many dependencies, because some compilers
+    # like to wrap large dependency lists on column 80 (with \), and
+    # we should not choose a depcomp mode which is confused by this.
+    #
+    # We need to recreate these files for each test, as the compiler may
+    # overwrite some of them when testing with obscure command lines.
+    # This happens at least with the AIX C compiler.
+    : > sub/conftest.c
+    for i in 1 2 3 4 5 6; do
+      echo '#include "conftst'$i'.h"' >> sub/conftest.c
+      # Using ": > sub/conftst$i.h" creates only sub/conftst1.h with
+      # Solaris 10 /bin/sh.
+      echo '/* dummy */' > sub/conftst$i.h
+    done
+    echo "${am__include} ${am__quote}sub/conftest.Po${am__quote}" > confmf
+
+    # We check with '-c' and '-o' for the sake of the "dashmstdout"
+    # mode.  It turns out that the SunPro C++ compiler does not properly
+    # handle '-M -o', and we need to detect this.  Also, some Intel
+    # versions had trouble with output in subdirs.
+    am__obj=sub/conftest.${OBJEXT-o}
+    am__minus_obj="-o $am__obj"
+    case $depmode in
+    gcc)
+      # This depmode causes a compiler race in universal mode.
+      test "$am__universal" = false || continue
+      ;;
+    nosideeffect)
+      # After this tag, mechanisms are not by side-effect, so they'll
+      # only be used when explicitly requested.
+      if test "x$enable_dependency_tracking" = xyes; then
+	continue
+      else
+	break
+      fi
+      ;;
+    msvc7 | msvc7msys | msvisualcpp | msvcmsys)
+      # This compiler won't grok '-c -o', but also, the minuso test has
+      # not run yet.  These depmodes are late enough in the game, and
+      # so weak that their functioning should not be impacted.
+      am__obj=conftest.${OBJEXT-o}
+      am__minus_obj=
+      ;;
+    none) break ;;
+    esac
+    if depmode=$depmode \
+       source=sub/conftest.c object=$am__obj \
+       depfile=sub/conftest.Po tmpdepfile=sub/conftest.TPo \
+       $SHELL ./depcomp $depcc -c $am__minus_obj sub/conftest.c \
+         >/dev/null 2>conftest.err &&
+       grep sub/conftst1.h sub/conftest.Po > /dev/null 2>&1 &&
+       grep sub/conftst6.h sub/conftest.Po > /dev/null 2>&1 &&
+       grep $am__obj sub/conftest.Po > /dev/null 2>&1 &&
+       ${MAKE-make} -s -f confmf > /dev/null 2>&1; then
+      # icc doesn't choke on unknown options, it will just issue warnings
+      # or remarks (even with -Werror).  So we grep stderr for any message
+      # that says an option was ignored or not supported.
+      # When given -MP, icc 7.0 and 7.1 complain thus:
+      #   icc: Command line warning: ignoring option '-M'; no argument required
+      # The diagnosis changed in icc 8.0:
+      #   icc: Command line remark: option '-MP' not supported
+      if (grep 'ignoring option' conftest.err ||
+          grep 'not supported' conftest.err) >/dev/null 2>&1; then :; else
+        am_cv_OBJC_dependencies_compiler_type=$depmode
+        break
+      fi
+    fi
+  done
+
+  cd ..
+  rm -rf conftest.dir
+else
+  am_cv_OBJC_dependencies_compiler_type=none
+fi
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $am_cv_OBJC_dependencies_compiler_type" >&5
+printf "%s\n" "$am_cv_OBJC_dependencies_compiler_type" >&6; }
+OBJCDEPMODE=depmode=$am_cv_OBJC_dependencies_compiler_type
+
+ if
+  test "x$enable_dependency_tracking" != xno \
+  && test "$am_cv_OBJC_dependencies_compiler_type" = gcc3; then
+  am__fastdepOBJC_TRUE=
+  am__fastdepOBJC_FALSE='#'
+else
+  am__fastdepOBJC_TRUE='#'
+  am__fastdepOBJC_FALSE=
+fi
+
+ ;; #(
+  *) :
+    : ;; #(
+  *) :
+     ;;
+esac
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -15764,6 +16281,16 @@ then :
   withval=$with_coregraphics;
 else case e in #(
   e) with_coregraphics=auto ;;
+esac
+fi
+
+
+# Check whether --enable-quicklook-extension was given.
+if test ${enable_quicklook_extension+y}
+then :
+  enableval=$enable_quicklook_extension;
+else case e in #(
+  e) enable_quicklook_extension=auto ;;
 esac
 fi
 
@@ -16282,7 +16809,6 @@ fi
 
 
 
-  CPPFLAGS="$CPPFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L"
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -std=c99" >&5
 printf %s "checking if $CC supports -std=c99... " >&6; }
 if test ${ac_cv_cc_flag_std_c99+y}
@@ -17936,6 +18462,135 @@ printf "%s\n" "$as_me: coregraphics libs is ${COREGRAPHICS_LIBS}" >&6;}
     fi
 fi
 
+
+
+APPLE_QUICKLOOK_EXTENSION_LIBS=""
+APPLE_QUICKLOOK_REGISTER_LIBS=""
+APPLE_QUICKLOOK_OBJCFLAGS="-fobjc-arc -fmodules"
+have_quicklook_extension=no
+message_quicklook_extension=no
+case $host_os in
+  darwin*)
+    if test x$enable_quicklook_extension != xno; then
+        quicklook_os_version_ok=yes
+        quicklook_os_reason="requires macOS 10.15 or newer"
+        macos_product_version=""
+        if command -v sw_vers >/dev/null 2>&1; then
+            macos_product_version=`sw_vers -productVersion 2>/dev/null`
+        fi
+        if test "x$macos_product_version" != x; then
+            macos_version_major=`echo "$macos_product_version" | awk -F. '{print $1}'`
+            macos_version_minor=`echo "$macos_product_version" | awk -F. '{print ($2 != "" ? $2 : 0)}'`
+            case $macos_version_major in
+              ''|*!0-9*)
+                quicklook_os_version_ok=no
+                quicklook_os_reason="unable to parse macOS version ($macos_product_version)"
+                ;;
+              10)
+                case $macos_version_minor in ''|*!0-9*) macos_version_minor=0 ;; esac
+                if test "$macos_version_minor" -lt 15; then
+                    quicklook_os_version_ok=no
+                fi
+                ;;
+              *)
+                if test "$macos_version_major" -lt 10; then
+                    quicklook_os_version_ok=no
+                fi
+                ;;
+            esac
+        else
+            quicklook_os_version_ok=no
+            quicklook_os_reason="unable to determine macOS version"
+        fi
+
+        if test x$quicklook_os_version_ok != xyes; then
+            if test x$enable_quicklook_extension = xyes; then
+                as_fn_error $? "Quick Look extension requires macOS 10.15 or newer ($quicklook_os_reason)" "$LINENO" 5
+            else
+                message_quicklook_extension="no (${quicklook_os_reason})"
+            fi
+        else
+        ac_ext=m
+ac_cpp='$OBJCPP $CPPFLAGS'
+ac_compile='$OBJC -c $OBJCFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$OBJC -o conftest$ac_exeext $OBJCFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_objc_compiler_gnu
+
+        saved_LIBS="$LIBS"
+        added_LIBS=
+        added_LIBS="$added_LIBS -framework Foundation "
+        added_LIBS="$added_LIBS -framework AppKit "
+        added_LIBS="$added_LIBS -framework QuickLookUI "
+        added_LIBS="$added_LIBS -framework QuickLookThumbnailing "
+        added_LIBS="$added_LIBS -framework UniformTypeIdentifiers "
+        added_LIBS="$added_LIBS -framework CoreGraphics "
+        added_LIBS="$added_LIBS -framework ImageIO "
+        LIBS="$LIBS $added_LIBS"
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
+#import <QuickLookUI/QuickLookUI.h>
+#import <QuickLookThumbnailing/QuickLookThumbnailing.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+int
+main (void)
+{
+QLThumbnailReply *reply = nil; (void)reply;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_objc_try_link "$LINENO"
+then :
+  have_quicklook_extension=yes
+else case e in #(
+  e) have_quicklook_extension=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        LIBS="$saved_LIBS"
+        ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+        if test x$have_quicklook_extension = xyes; then
+            APPLE_QUICKLOOK_EXTENSION_LIBS="$added_LIBS"
+            APPLE_QUICKLOOK_REGISTER_LIBS=
+            APPLE_QUICKLOOK_REGISTER_LIBS="$APPLE_QUICKLOOK_REGISTER_LIBS -framework Foundation "
+            APPLE_QUICKLOOK_REGISTER_LIBS="$APPLE_QUICKLOOK_REGISTER_LIBS -framework CoreServices "
+            APPLE_QUICKLOOK_REGISTER_LIBS="$APPLE_QUICKLOOK_REGISTER_LIBS -framework UniformTypeIdentifiers "
+            message_quicklook_extension=yes
+        elif test x$enable_quicklook_extension = xyes; then
+            as_fn_error $? "Quick Look extension requested, but required frameworks were not found" "$LINENO" 5
+        else
+            message_quicklook_extension="no (required frameworks unavailable)"
+        fi
+    fi
+    fi
+    ;;
+  *)
+    if test x$enable_quicklook_extension = xyes; then
+        as_fn_error $? "Quick Look extension requires macOS" "$LINENO" 5
+    fi
+    ;;
+esac
+
+
+
+
+ if test x$have_quicklook_extension = xyes; then
+  HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE=
+  HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE='#'
+else
+  HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE='#'
+  HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE=
+fi
 
 
 if test x$with_gd != xno && test "x$using_cl" != "xyes"; then
@@ -19982,7 +20637,7 @@ if test "x$have_neon" = xyes; then
 
 printf "%s\n" "#define HAVE_NEON 1" >>confdefs.h
 
-    message_neon=neon
+    message_simd=neon
 fi
 
 if test "x$enable_simd" = xyes; then
@@ -20634,7 +21289,7 @@ fi
           touch -c aclocal.m4 Makefile.in configure config.h.in \
                    converters/Makefile.in include/Makefile.in \
                    python/Makefile.in src/Makefile.in tools/Makefile.in \
-                   wic/Makefile.in
+                   wic/Makefile.in quicklook-extension/Makefile.in
 
 
  if test x$have_curl = xyes; then
@@ -20694,8 +21349,18 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile tools/Makefile tools/libsixel-config python/Makefile wic/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile tools/Makefile tools/libsixel-config python/Makefile quicklook-extension/Makefile wic/Makefile"
 
+
+# Generate Quick Look Info.plist files only when the extension is enabled
+if test x$have_quicklook_extension = xyes
+then :
+
+
+  ac_config_files="$ac_config_files quicklook-extension/generated-resources/Host-Info.plist:quicklook-extension/Resources/Host-Info.plist.in quicklook-extension/generated-resources/Preview-Info.plist:quicklook-extension/Resources/Preview-Info.plist.in quicklook-extension/generated-resources/Thumbnail-Info.plist:quicklook-extension/Resources/Thumbnail-Info.plist.in quicklook-extension/generated-resources/Bridge-Info.plist:quicklook-extension/Resources/Bridge-Info.plist.in"
+
+
+fi
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -20850,6 +21515,10 @@ if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${am__fastdepOBJC_TRUE}" && test -z "${am__fastdepOBJC_FALSE}"; then
+  as_fn_error $? "conditional \"am__fastdepOBJC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${USING_CL_TRUE}" && test -z "${USING_CL_FALSE}"; then
   as_fn_error $? "conditional \"USING_CL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -20872,6 +21541,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${COND_TESTS_TRUE}" && test -z "${COND_TESTS_FALSE}"; then
   as_fn_error $? "conditional \"COND_TESTS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE}" && test -z "${HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_APPLE_QUICKLOOK_EXTENSION\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${REGISTER_DLL_TRUE}" && test -z "${REGISTER_DLL_FALSE}"; then
@@ -20906,6 +21579,9 @@ if test -z "${HAVE_PYTHON_TRUE}" && test -z "${HAVE_PYTHON_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_PYTHON\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+
+    test -d quicklook-extension/generated-resources || mkdir -p quicklook-extension/generated-resources
+
 
 : "${CONFIG_STATUS=./config.status}"
 ac_write_fail=0
@@ -21794,7 +22470,12 @@ do
     "tools/Makefile") CONFIG_FILES="$CONFIG_FILES tools/Makefile" ;;
     "tools/libsixel-config") CONFIG_FILES="$CONFIG_FILES tools/libsixel-config" ;;
     "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
+    "quicklook-extension/Makefile") CONFIG_FILES="$CONFIG_FILES quicklook-extension/Makefile" ;;
     "wic/Makefile") CONFIG_FILES="$CONFIG_FILES wic/Makefile" ;;
+    "quicklook-extension/generated-resources/Host-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Host-Info.plist:quicklook-extension/Resources/Host-Info.plist.in" ;;
+    "quicklook-extension/generated-resources/Preview-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Preview-Info.plist:quicklook-extension/Resources/Preview-Info.plist.in" ;;
+    "quicklook-extension/generated-resources/Thumbnail-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Thumbnail-Info.plist:quicklook-extension/Resources/Thumbnail-Info.plist.in" ;;
+    "quicklook-extension/generated-resources/Bridge-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Bridge-Info.plist:quicklook-extension/Resources/Bridge-Info.plist.in" ;;
 
   *) as_fn_error $? "invalid argument: '$ac_config_target'" "$LINENO" 5;;
   esac
@@ -23077,7 +23758,7 @@ fi
 if test x$have_wiccodec = xyes; then
     message_register_dll=$enable_register_dll
 else
-    message_register_dll=n/a
+    message_register_dll=no
 fi
 
 echo ""
@@ -23090,6 +23771,7 @@ echo "       libwinpthread       : $have_winpthread"
 echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
+echo "       QuickLook extension : $message_quicklook_extension"
 echo "       WIC codec           : $message_wiccodec"
 echo "       Register WIC DLL    : $message_register_dll"
 echo "       python bindings     : $message_python"

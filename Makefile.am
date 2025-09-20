@@ -2,11 +2,14 @@
 # @configure_input@
 #
 SUBDIRS = include src converters tools python
+if HAVE_APPLE_QUICKLOOK_EXTENSION
+SUBDIRS += quicklook-extension
+endif
 if HAVE_WICCODEC
 SUBDIRS += wic
 endif
 
-DIST_SUBDIRS = $(SUBDIRS)
+DIST_SUBDIRS = include src converters tools python wic quicklook-extension
 
 # Keep image fixtures in release archives for converter test coverage.
 DIST_IMAGE_FILES = $(shell cd $(srcdir) && find images -type f -print)
@@ -22,7 +25,18 @@ DIST_TEST_FIXTURES = \
 	tests/issue/220/poc6_quant_integer_overflow_8x8.png
 
 EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
-	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb depcomp
+	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb depcomp \
+	tools/quicklook-extension.bash tools/build_quicklook_bundle.py
+
+.PHONY: install-quicklook-extension uninstall-quicklook-extension
+
+install-quicklook-extension:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension install-quicklook-extension
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@{ echo "Quick Look extension is not enabled in this build" >&2; exit 1; }
+
+uninstall-quicklook-extension:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension uninstall-quicklook-extension
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@{ echo "Quick Look extension is not enabled in this build" >&2; exit 1; }
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 

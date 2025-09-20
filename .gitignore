@@ -39,6 +39,7 @@ libtool
 stamp-h1
 .libs
 .deps
+.dirstamp
 
 # OSX
 .DS_Store
