@@ -19710,7 +19710,7 @@ printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
             fi
             if test "x${using_cl}" = xyes; then
                 ADDED_CFLAGS="-I${with_wic}\include"
-                ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
+                ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs -lshlwapi -luuid"
             else
                 ADDED_CFLAGS="-I${with_wic}/include"
                 ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
@@ -19719,7 +19719,7 @@ printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
             if test x${prefix} != x -a x${prefix} != xNONE; then
                 if test "x${using_cl}" = xyes; then
                     ADDED_CFLAGS=
-                    ADDED_LIBS="-lole32 -lwindowscodecs"
+                    ADDED_LIBS="-lole32 -lwindowscodecs -lshlwapi -luuid"
                 else
                     ADDED_CFLAGS="-I${prefix}/include"
                     ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
@@ -19727,7 +19727,7 @@ printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
             else
                 if test "x${using_cl}" = xyes; then
                     ADDED_CFLAGS=
-                    ADDED_LIBS="-lole32 -lwindowscodecs"
+                    ADDED_LIBS="-lole32 -lwindowscodecs -lshlwapi -luuid"
                 else
                     ADDED_CFLAGS="-I/usr/local/include"
                     ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
