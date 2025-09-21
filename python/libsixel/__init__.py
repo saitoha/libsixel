@@ -365,11 +365,17 @@ SIXEL_OPTFLAG_VERBOSE          = 'v'  # -v, --verbose: show debugging info
 SIXEL_OPTFLAG_VERSION          = 'V'  # -V, --version: show version and license info
 SIXEL_OPTFLAG_HELP             = 'H'  # -H, --help: show this help
 
-if not find_library('sixel'):
+_lib_path = [
+    find_library(lib_name)
+    for lib_name in ["sixel", "libsixel", "sixel-1", "libsixel-1"]
+    if find_library(lib_name) is not None
+][0]
+
+if _lib_path is None:
     raise ImportError("libsixel not found.")
 
 # load shared library
-_sixel = cdll.LoadLibrary(find_library('sixel'))
+_sixel = cdll.LoadLibrary(_lib_path)
 
 # convert error status code int formatted string
 def sixel_helper_format_error(status):
