@@ -367,7 +367,7 @@ SIXEL_OPTFLAG_HELP             = 'H'  # -H, --help: show this help
 
 _lib_path = [
     find_library(lib_name)
-    for lib_name in ["sixel", "libsixel", "sixel-1", "libsixel-1"]
+    for lib_name in ["sixel", "libsixel", "sixel-1", "libsixel-1", "msys-sixel", "cygsixel"]
     if find_library(lib_name) is not None
 ][0]
 
