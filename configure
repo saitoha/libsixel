@@ -720,6 +720,10 @@ COND_GCOV_FALSE
 COND_GCOV_TRUE
 COND_DEBUG_FALSE
 COND_DEBUG_TRUE
+HAVE_RUBY_FALSE
+HAVE_RUBY_TRUE
+RUBY_SITE_LIBDIR
+RUBY
 zshcompletiondir
 bashcompletiondir
 pkgconfigdir
@@ -895,6 +899,7 @@ enable_simd
 enable_wiccodec
 enable_register_dll
 enable_python
+enable_ruby
 enable_debug
 enable_gcov
 enable_tests
@@ -1583,6 +1588,7 @@ Optional Features:
   --enable-register-dll   register WIC codec DLL during install (default: no,
                           admin rights required)
   --enable-python         Python interface (default: yes)
+  --enable-ruby           Ruby interface (default: auto)
   --enable-debug          Use debug macro and specific CFLAGS
   --enable-gcov           Use gcov
   --enable-tests          Build tests
@@ -16434,6 +16440,107 @@ then :
 fi
 
 
+# Ruby bindings option
+# Check whether --enable-ruby was given.
+if test ${enable_ruby+y}
+then :
+  enableval=$enable_ruby;
+else case e in #(
+  e) enable_ruby=auto ;;
+esac
+fi
+
+message_ruby=no
+RUBY=
+RUBY_SITE_LIBDIR=
+if test "x$enable_ruby" != xno
+then :
+
+  # Extract the first word of "ruby", so it can be a program name with args.
+set dummy ruby; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_RUBY+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $RUBY in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_RUBY="$RUBY" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_RUBY="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac ;;
+esac
+fi
+RUBY=$ac_cv_path_RUBY
+if test -n "$RUBY"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $RUBY" >&5
+printf "%s\n" "$RUBY" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+  if test "x$RUBY" = x
+then :
+
+    if test "x$enable_ruby" = xyes
+then :
+  as_fn_error $? "ruby was not found, but --enable-ruby was specified" "$LINENO" 5
+fi
+    :
+
+else case e in #(
+  e)
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: ruby found: $RUBY" >&5
+printf "%s\n" "$as_me: ruby found: $RUBY" >&6;}
+    RUBY_SITE_LIBDIR=`$RUBY -rrbconfig -e 'c = ::RbConfig.const_defined?(:CONFIG) ? ::RbConfig::CONFIG : {}; print( c.fetch(%q{sitelibdir}, nil) || c.fetch(%q{vendorlibdir}, nil) || c.fetch(%q{rubylibdir}, nil) || %q{} )'`
+
+    if test "x$RUBY_SITE_LIBDIR" != x
+then :
+  message_ruby="yes: ${RUBY_SITE_LIBDIR}"
+else case e in #(
+  e) if test "x$enable_ruby" = xyes
+then :
+  as_fn_error $? "failed to detect Ruby sitelibdir" "$LINENO" 5
+fi ;;
+esac
+fi
+   ;;
+esac
+fi
+
+fi
+ if test "x$enable_ruby" != xno -a "x$RUBY" != x -a "x$RUBY_SITE_LIBDIR" != x; then
+  HAVE_RUBY_TRUE=
+  HAVE_RUBY_FALSE='#'
+else
+  HAVE_RUBY_TRUE='#'
+  HAVE_RUBY_FALSE=
+fi
+
+
 # Check whether --enable-debug was given.
 if test ${enable_debug+y}
 then :
@@ -21349,7 +21456,11 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile tools/Makefile tools/libsixel-config python/Makefile quicklook-extension/Makefile wic/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile tools/Makefile tools/libsixel-config python/Makefile ruby/lib/libsixel/version_runtime.rb quicklook-extension/Makefile wic/Makefile"
+
+
+# Generate Ruby constants file from include/sixel.h when Ruby is enabled
+ac_config_commands="$ac_config_commands rubyconstants"
 
 
 # Generate Quick Look Info.plist files only when the extension is enabled
@@ -21529,6 +21640,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_SIXEL2PNG_TRUE}" && test -z "${WANT_SIXEL2PNG_FALSE}"; then
   as_fn_error $? "conditional \"WANT_SIXEL2PNG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_RUBY_TRUE}" && test -z "${HAVE_RUBY_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_RUBY\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${COND_DEBUG_TRUE}" && test -z "${COND_DEBUG_FALSE}"; then
@@ -22470,8 +22585,10 @@ do
     "tools/Makefile") CONFIG_FILES="$CONFIG_FILES tools/Makefile" ;;
     "tools/libsixel-config") CONFIG_FILES="$CONFIG_FILES tools/libsixel-config" ;;
     "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
+    "ruby/lib/libsixel/version_runtime.rb") CONFIG_FILES="$CONFIG_FILES ruby/lib/libsixel/version_runtime.rb" ;;
     "quicklook-extension/Makefile") CONFIG_FILES="$CONFIG_FILES quicklook-extension/Makefile" ;;
     "wic/Makefile") CONFIG_FILES="$CONFIG_FILES wic/Makefile" ;;
+    "rubyconstants") CONFIG_COMMANDS="$CONFIG_COMMANDS rubyconstants" ;;
     "quicklook-extension/generated-resources/Host-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Host-Info.plist:quicklook-extension/Resources/Host-Info.plist.in" ;;
     "quicklook-extension/generated-resources/Preview-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Preview-Info.plist:quicklook-extension/Resources/Preview-Info.plist.in" ;;
     "quicklook-extension/generated-resources/Thumbnail-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Thumbnail-Info.plist:quicklook-extension/Resources/Thumbnail-Info.plist.in" ;;
@@ -23716,6 +23833,12 @@ ltmain=$ac_aux_dir/ltmain.sh
   chmod +x "$ofile"
 
  ;;
+    "rubyconstants":C)
+  if test "x$enable_ruby" != xno && test "x$RUBY" != x; then
+    echo "Generating ruby/lib/libsixel/constants.rb from include/sixel.h"
+    $RUBY tools/gen_ruby_constants.rb include/sixel.h ruby/lib/libsixel/constants.rb || exit 1
+  fi
+ ;;
 
   esac
 done # for ac_tag
@@ -23775,6 +23898,7 @@ echo "       QuickLook extension : $message_quicklook_extension"
 echo "       WIC codec           : $message_wiccodec"
 echo "       Register WIC DLL    : $message_register_dll"
 echo "       python bindings     : $message_python"
+echo "       ruby bindings       : $message_ruby"
 echo "       simd                : $message_simd"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
