@@ -8,7 +8,6 @@ Gem::Specification.new do |spec|
   spec.version       = Libsixel::VERSION
   spec.authors       = ["Hayaki Saito"]
   spec.email         = ["saitoha@me.com"]
-  spec.extensions    = ["ext/libsixel/extconf.rb"]
   spec.summary       = %q{A ruby interface to libsixel}
   spec.description   = %q{libsixel is a lightweight, fast implementation of DEC SIXEL graphics codec}
   spec.homepage      = "http://saitoha.github.com/libsixel"
@@ -21,6 +20,5 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", ">= 2.6.7"
   spec.add_development_dependency "rake", "~> 13.2"
-  spec.add_development_dependency "rake-compiler"
   spec.add_development_dependency "minitest"
 end
