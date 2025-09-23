@@ -1,4 +1,8 @@
-require "bundler/gem_tasks"
+begin
+  require "bundler/gem_tasks"
+rescue LoadError
+  # Bundler is optional for running tests
+end
 require "rake/testtask"
 
 Rake::TestTask.new(:test) do |t|
@@ -7,8 +11,4 @@ end
 
 task :default => :test
 
-require "rake/extensiontask"
-
-Rake::ExtensionTask.new("libsixel") do |ext|
-  ext.lib_dir = "lib/libsixel"
-end
+# ネイティブ拡張のビルドは不要（Fiddle ベース）

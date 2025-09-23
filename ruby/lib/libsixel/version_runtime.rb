@@ -1,24 +1,10 @@
-require "libsixel/version"
-require "fiddle"
-require "fiddle/import"
-
-begin
-  require_relative "libsixel/constants"
-rescue LoadError
-  # constants.rb is generated at build time; proceed without it in dev
-end
-
-require_relative "libsixel/api"
-require_relative "libsixel/encoder"
-require_relative "libsixel/decoder"
-require_relative "libsixel/output"
-require_relative "libsixel/dither"
-require_relative "libsixel/helper"
-require_relative "libsixel/frame"
-
 module Libsixel
+  VERSION = "1.8.7"
+  def self.version
+    VERSION
+  end
 end
-
+ 
 # emacs Local Variables:
 # emacs mode: ruby
 # emacs tab-width: 2
@@ -27,6 +13,7 @@ end
 # emacs End:
 # vim: set expandtab ts=2 sts=2 sw=2 :
 # EOF
+#!/usr/bin/env ruby
 #
 # Copyright (c) 2025 libsixel developers. See `AUTHORS`.
 #
