@@ -1,21 +1,18 @@
 require 'minitest_helper'
 
-class TestLibsixel < MiniTest::Unit::TestCase
-
-  def setup
-    @encoder = Encoder.new
-  end
-
+class TestLibsixelVersion < Minitest::Test
   def test_that_it_has_a_version_number
     refute_nil ::Libsixel::VERSION
   end
+end
+
+class TestLibsixel < Minitest::Test
+  def setup
+    skip("libsixel shared library not found: #{$LIBSIXEL_LOAD_ERROR}") unless $LIBSIXEL_LOADED
+    @encoder = Encoder.new
+  end
 
   def test_throws_runtime_error_when_invalid_option_detected
-    begin
-      @encoder.setopt('X', '16')
-      assert false
-    rescue RuntimeError
-      assert true
-    end
+    assert_raises(RuntimeError) { @encoder.setopt('X', '16') }
   end
 end

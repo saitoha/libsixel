@@ -3,7 +3,7 @@
  *
  * Hayaki Saito <saitoha@me.com>
  *
- * I declared this program is in Public Domain (CC0 - "No Rights Reserved"),
+ * I declare this program is in Public Domain (CC0 - "No Rights Reserved"),
  * This file is offered AS-IS, without any warranty.
  *
  */
