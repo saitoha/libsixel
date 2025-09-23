@@ -19,14 +19,40 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-begin
-  require_relative 'version_runtime'
-rescue LoadError
-  module Libsixel
-    VERSION = 'dev'
-    def self.version
-      VERSION
+module Libsixel
+  class DecoderHandle
+    attr_reader :ptr
+    def initialize(ptr)
+      @ptr = ptr
     end
+  end
+end
+
+class Decoder
+  def initialize(allocator: nil)
+    out = Libsixel::API::Util.make_outptr
+    status = Libsixel::API.sixel_decoder_new(out, allocator || 0)
+    raise RuntimeError, Libsixel::API::Err.message(status) if Libsixel::API.failed?(status)
+    @ptr = Libsixel::API::Util.read_outptr(out)
+    ObjectSpace.define_finalizer(self, self.class.finalizer(@ptr))
+  end
+
+  def self.finalizer(ptr)
+    proc { Libsixel::API.sixel_decoder_unref(ptr) if ptr && ptr.to_i != 0 }
+  end
+
+  def setopt(flag, opt)
+    int_flag = flag.is_a?(Integer) ? flag : flag.to_s.getbyte(0)
+    cstr = Libsixel::API::Util.to_cstr(opt)
+    status = Libsixel::API.sixel_decoder_setopt(@ptr, int_flag, cstr)
+    raise RuntimeError, Libsixel::API::Err.message(status) if Libsixel::API.failed?(status)
+    nil
+  end
+
+  def decode
+    status = Libsixel::API.sixel_decoder_decode(@ptr)
+    raise RuntimeError, Libsixel::API::Err.message(status) if Libsixel::API.failed?(status)
+    nil
   end
 end
 

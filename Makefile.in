@@ -108,6 +108,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = libsixel.pc package.json.in \
+	ruby/lib/libsixel/version_runtime.rb \
 	quicklook-extension/generated-resources/Host-Info.plist \
 	quicklook-extension/generated-resources/Preview-Info.plist \
 	quicklook-extension/generated-resources/Thumbnail-Info.plist \
@@ -200,8 +201,9 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/quicklook-extension/Resources/Host-Info.plist.in \
 	$(top_srcdir)/quicklook-extension/Resources/Preview-Info.plist.in \
 	$(top_srcdir)/quicklook-extension/Resources/Thumbnail-Info.plist.in \
-	AUTHORS ChangeLog NEWS README.md compile config.guess \
-	config.sub depcomp install-sh ltmain.sh missing py-compile
+	$(top_srcdir)/ruby/lib/libsixel/version_runtime.rb.in AUTHORS \
+	ChangeLog NEWS README.md compile config.guess config.sub \
+	depcomp install-sh ltmain.sh missing py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -345,6 +347,8 @@ PYTHON_PREFIX = @PYTHON_PREFIX@
 PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
 REQUIRES_PRIVATE = @REQUIRES_PRIVATE@
+RUBY = @RUBY@
+RUBY_SITE_LIBDIR = @RUBY_SITE_LIBDIR@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -492,6 +496,8 @@ distclean-hdr:
 libsixel.pc: $(top_builddir)/config.status $(srcdir)/libsixel.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 package.json.in: $(top_builddir)/config.status $(srcdir)/package.json.in.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+ruby/lib/libsixel/version_runtime.rb: $(top_builddir)/config.status $(top_srcdir)/ruby/lib/libsixel/version_runtime.rb.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 quicklook-extension/generated-resources/Host-Info.plist: $(top_builddir)/config.status $(top_srcdir)/quicklook-extension/Resources/Host-Info.plist.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
@@ -902,7 +908,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-pkgconfigDATA
+install-data-am: install-data-local install-pkgconfigDATA
 
 install-dvi: install-dvi-recursive
 
@@ -948,7 +954,7 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-pkgconfigDATA
+uninstall-am: uninstall-local uninstall-pkgconfigDATA
 
 .MAKE: $(am__recursive_targets) all install-am install-strip
 
@@ -960,15 +966,15 @@ uninstall-am: uninstall-pkgconfigDATA
 	distclean-generic distclean-hdr distclean-libtool \
 	distclean-tags distcleancheck distdir distuninstallcheck dvi \
 	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-pkgconfigDATA install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-generic mostlyclean-libtool pdf pdf-am \
-	ps ps-am tags tags-am uninstall uninstall-am \
-	uninstall-pkgconfigDATA
+	install-data install-data-am install-data-local install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-pkgconfigDATA install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
+	uninstall-am uninstall-local uninstall-pkgconfigDATA
 
 .PRECIOUS: Makefile
 
@@ -985,8 +991,59 @@ uninstall-quicklook-extension:
 
 all-am:
 	cp $(builddir)/package.json.in $(builddir)/package.json
+@HAVE_RUBY_TRUE@	@if test -x "$(RUBY)"; then \
+@HAVE_RUBY_TRUE@	  echo "Ensuring Ruby constants are generated..."; \
+@HAVE_RUBY_TRUE@	  $(MKDIR_P) $(builddir)/ruby/lib/libsixel 2>/dev/null || true; \
+@HAVE_RUBY_TRUE@	  $(RUBY) tools/gen_ruby_constants.rb $(srcdir)/include/sixel.h $(builddir)/ruby/lib/libsixel/constants.rb || true; \
+@HAVE_RUBY_TRUE@	fi
 
 check-am:
+	@if command -v ruby >/dev/null 2>&1; then \
+	  echo "Running Ruby tests..."; \
+	  LD_LIBRARY_PATH=$(builddir)/src/.libs:$$LD_LIBRARY_PATH \
+	  DYLD_LIBRARY_PATH=$(builddir)/src/.libs:$$DYLD_LIBRARY_PATH \
+	  ruby -I $(srcdir)/ruby/lib -I $(srcdir)/ruby/test $(srcdir)/ruby/test/test_libsixel.rb || exit 1; \
+	else \
+	  echo "Ruby not found; skipping Ruby tests"; \
+	fi
+
+install-data-local:
+@HAVE_RUBY_TRUE@	@if test "x$(RUBY_SITE_LIBDIR)" != x; then \
+@HAVE_RUBY_TRUE@	  echo "Installing Ruby bindings to $(DESTDIR)$(RUBY_SITE_LIBDIR)"; \
+@HAVE_RUBY_TRUE@	  $(MKDIR_P) $(DESTDIR)$(RUBY_SITE_LIBDIR); \
+@HAVE_RUBY_TRUE@	  $(INSTALL_DATA) $(srcdir)/ruby/lib/libsixel.rb $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel.rb; \
+@HAVE_RUBY_TRUE@	  $(MKDIR_P) $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel; \
+@HAVE_RUBY_TRUE@	  for f in api.rb encoder.rb decoder.rb output.rb dither.rb helper.rb version.rb frame.rb; do \
+@HAVE_RUBY_TRUE@	    $(INSTALL_DATA) $(srcdir)/ruby/lib/libsixel/$$f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/$$f; \
+@HAVE_RUBY_TRUE@	  done; \
+@HAVE_RUBY_TRUE@	  if test -f $(builddir)/ruby/lib/libsixel/version_runtime.rb; then \
+@HAVE_RUBY_TRUE@	    $(INSTALL_DATA) $(builddir)/ruby/lib/libsixel/version_runtime.rb $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/version_runtime.rb; \
+@HAVE_RUBY_TRUE@	  fi; \
+@HAVE_RUBY_TRUE@	  if test -f $(builddir)/ruby/lib/libsixel/constants.rb; then \
+@HAVE_RUBY_TRUE@	    $(INSTALL_DATA) $(builddir)/ruby/lib/libsixel/constants.rb $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/constants.rb; \
+@HAVE_RUBY_TRUE@	  else \
+@HAVE_RUBY_TRUE@	    if test -f $(srcdir)/ruby/lib/libsixel/constants.rb; then \
+@HAVE_RUBY_TRUE@	      $(INSTALL_DATA) $(srcdir)/ruby/lib/libsixel/constants.rb $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/constants.rb; \
+@HAVE_RUBY_TRUE@	    fi; \
+@HAVE_RUBY_TRUE@	  fi; \
+@HAVE_RUBY_TRUE@	else \
+@HAVE_RUBY_TRUE@	  echo "Ruby site libdir not detected; skip installing Ruby bindings"; \
+@HAVE_RUBY_TRUE@	fi
+
+uninstall-local:
+@HAVE_RUBY_TRUE@	@if test "x$(RUBY_SITE_LIBDIR)" != x; then \
+@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel.rb; \
+@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/api.rb; \
+@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/encoder.rb; \
+@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/decoder.rb; \
+@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/output.rb; \
+@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/dither.rb; \
+@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/helper.rb; \
+@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/version.rb; \
+@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/version_runtime.rb; \
+@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/constants.rb; \
+@HAVE_RUBY_TRUE@	  rmdir $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel 2>/dev/null || true; \
+@HAVE_RUBY_TRUE@	fi
 
 register:
 	-regsvr32 -s "$(shell cygpath -w $(builddir)/wic/.libs/libwicsixel.dll)"
