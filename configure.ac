@@ -235,35 +235,16 @@ AC_ARG_ENABLE([register-dll],
 
 AC_ARG_ENABLE([python],
               [AS_HELP_STRING([--enable-python],
-                              [Python interface (default: yes)])],
+                              [Python interface (default: auto)])],
               [],
               [])
 
 # Ruby bindings option
 AC_ARG_ENABLE([ruby],
               [AS_HELP_STRING([--enable-ruby],
-                              [Ruby interface (default: auto)])],
+                              [Ruby interface (default: no)])],
               [],
-              [enable_ruby=auto])
-message_ruby=no
-RUBY=
-RUBY_SITE_LIBDIR=
-AS_IF([test "x$enable_ruby" != xno], [
-  AC_PATH_PROG([RUBY], [ruby], [])
-  AS_IF([test "x$RUBY" = x], [
-    AS_IF([test "x$enable_ruby" = xyes], [AC_MSG_ERROR([ruby was not found, but --enable-ruby was specified])])
-    :
-  ], [
-    AC_MSG_NOTICE([ruby found: $RUBY])
-    RUBY_SITE_LIBDIR=`$RUBY -rrbconfig -e 'c = ::RbConfig.const_defined?(:CONFIG) ? ::RbConfig::CONFIG : {}; print( c.fetch(%q{sitelibdir}, nil) || c.fetch(%q{vendorlibdir}, nil) || c.fetch(%q{rubylibdir}, nil) || %q{} )'`
-    AC_SUBST([RUBY_SITE_LIBDIR])
-    AS_IF([test "x$RUBY_SITE_LIBDIR" != x],
-          [message_ruby="yes: ${RUBY_SITE_LIBDIR}"],
-          [AS_IF([test "x$enable_ruby" = xyes], [AC_MSG_ERROR([failed to detect Ruby sitelibdir])])])
-  ])
-])
-AM_CONDITIONAL([HAVE_RUBY], [test "x$enable_ruby" != xno -a "x$RUBY" != x -a "x$RUBY_SITE_LIBDIR" != x])
-
+              [enable_ruby=no])
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
                               [Use debug macro and specific CFLAGS])],
@@ -1368,6 +1349,7 @@ AC_CONFIG_FILES([Makefile
                  tools/Makefile
                  tools/libsixel-config
                  python/Makefile
+                 ruby/Makefile
                  ruby/lib/libsixel/version_runtime.rb
                  quicklook-extension/Makefile
                  wic/Makefile
