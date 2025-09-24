@@ -1196,6 +1196,12 @@ http://www.gnu.org/software/autoconf-archive/ax_gcc_builtin.html
 > and this notice are preserved.  This file is offered as-is, without any
 > warranty.
 
+#### AX_RUBY_EXT (Autoconf Archive)
+
+We vendor `m4/ax_ruby_ext.m4` to detect Ruby headers/flags for extensions and to keep `configure.ac` compact.
+
+- Source: https://www.gnu.org/software/autoconf-archive/ax_ruby_ext.html
+- License: BSD-2-Clause (Copyright (c) 2011 Stanislav Sedov)
 
 ### graphics.c (from Xterm pl#310)
 
