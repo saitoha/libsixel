@@ -89,16 +89,18 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_1 = quicklook-extension
-@HAVE_WICCODEC_TRUE@am__append_2 = wic
+@HAVE_RUBY_TRUE@am__append_1 = ruby
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_2 = quicklook-extension
+@HAVE_WICCODEC_TRUE@am__append_3 = wic
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
 	$(top_srcdir)/m4/ax_gcc_func_attribute.m4 \
 	$(top_srcdir)/m4/ax_gcc_var_attribute.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/ax_ruby_ext.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
@@ -348,7 +350,13 @@ PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
 REQUIRES_PRIVATE = @REQUIRES_PRIVATE@
 RUBY = @RUBY@
+RUBY_EXT_CPPFLAGS = @RUBY_EXT_CPPFLAGS@
+RUBY_EXT_DLEXT = @RUBY_EXT_DLEXT@
+RUBY_EXT_INC = @RUBY_EXT_INC@
+RUBY_EXT_LDFLAGS = @RUBY_EXT_LDFLAGS@
+RUBY_EXT_LIB = @RUBY_EXT_LIB@
 RUBY_SITE_LIBDIR = @RUBY_SITE_LIBDIR@
+RUBY_VERSION = @RUBY_VERSION@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -432,12 +440,9 @@ zshcompletiondir = @zshcompletiondir@
 # @configure_input@
 #
 SUBDIRS = include src converters tools python $(am__append_1) \
-	$(am__append_2)
-DIST_SUBDIRS = include src converters tools python wic quicklook-extension
-EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
-	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb depcomp \
-	tools/quicklook-extension.bash tools/build_quicklook_bundle.py
-
+	$(am__append_2) $(am__append_3)
+DIST_SUBDIRS = include src converters tools python ruby wic quicklook-extension
+EXTRA_DIST = LICENSE depcomp
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = $(builddir)/libsixel.pc
 CLEANFILES = $(builddir)/valgrind.log $(builddir)/test.log $(builddir)/unittest.log
@@ -991,59 +996,15 @@ uninstall-quicklook-extension:
 
 all-am:
 	cp $(builddir)/package.json.in $(builddir)/package.json
-@HAVE_RUBY_TRUE@	@if test -x "$(RUBY)"; then \
-@HAVE_RUBY_TRUE@	  echo "Ensuring Ruby constants are generated..."; \
-@HAVE_RUBY_TRUE@	  $(MKDIR_P) $(builddir)/ruby/lib/libsixel 2>/dev/null || true; \
-@HAVE_RUBY_TRUE@	  $(RUBY) tools/gen_ruby_constants.rb $(srcdir)/include/sixel.h $(builddir)/ruby/lib/libsixel/constants.rb || true; \
-@HAVE_RUBY_TRUE@	fi
 
 check-am:
-	@if command -v ruby >/dev/null 2>&1; then \
-	  echo "Running Ruby tests..."; \
-	  LD_LIBRARY_PATH=$(builddir)/src/.libs:$$LD_LIBRARY_PATH \
-	  DYLD_LIBRARY_PATH=$(builddir)/src/.libs:$$DYLD_LIBRARY_PATH \
-	  ruby -I $(srcdir)/ruby/lib -I $(srcdir)/ruby/test $(srcdir)/ruby/test/test_libsixel.rb || exit 1; \
-	else \
-	  echo "Ruby not found; skipping Ruby tests"; \
-	fi
+	@:
 
 install-data-local:
-@HAVE_RUBY_TRUE@	@if test "x$(RUBY_SITE_LIBDIR)" != x; then \
-@HAVE_RUBY_TRUE@	  echo "Installing Ruby bindings to $(DESTDIR)$(RUBY_SITE_LIBDIR)"; \
-@HAVE_RUBY_TRUE@	  $(MKDIR_P) $(DESTDIR)$(RUBY_SITE_LIBDIR); \
-@HAVE_RUBY_TRUE@	  $(INSTALL_DATA) $(srcdir)/ruby/lib/libsixel.rb $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel.rb; \
-@HAVE_RUBY_TRUE@	  $(MKDIR_P) $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel; \
-@HAVE_RUBY_TRUE@	  for f in api.rb encoder.rb decoder.rb output.rb dither.rb helper.rb version.rb frame.rb; do \
-@HAVE_RUBY_TRUE@	    $(INSTALL_DATA) $(srcdir)/ruby/lib/libsixel/$$f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/$$f; \
-@HAVE_RUBY_TRUE@	  done; \
-@HAVE_RUBY_TRUE@	  if test -f $(builddir)/ruby/lib/libsixel/version_runtime.rb; then \
-@HAVE_RUBY_TRUE@	    $(INSTALL_DATA) $(builddir)/ruby/lib/libsixel/version_runtime.rb $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/version_runtime.rb; \
-@HAVE_RUBY_TRUE@	  fi; \
-@HAVE_RUBY_TRUE@	  if test -f $(builddir)/ruby/lib/libsixel/constants.rb; then \
-@HAVE_RUBY_TRUE@	    $(INSTALL_DATA) $(builddir)/ruby/lib/libsixel/constants.rb $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/constants.rb; \
-@HAVE_RUBY_TRUE@	  else \
-@HAVE_RUBY_TRUE@	    if test -f $(srcdir)/ruby/lib/libsixel/constants.rb; then \
-@HAVE_RUBY_TRUE@	      $(INSTALL_DATA) $(srcdir)/ruby/lib/libsixel/constants.rb $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/constants.rb; \
-@HAVE_RUBY_TRUE@	    fi; \
-@HAVE_RUBY_TRUE@	  fi; \
-@HAVE_RUBY_TRUE@	else \
-@HAVE_RUBY_TRUE@	  echo "Ruby site libdir not detected; skip installing Ruby bindings"; \
-@HAVE_RUBY_TRUE@	fi
+	@:
 
 uninstall-local:
-@HAVE_RUBY_TRUE@	@if test "x$(RUBY_SITE_LIBDIR)" != x; then \
-@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel.rb; \
-@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/api.rb; \
-@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/encoder.rb; \
-@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/decoder.rb; \
-@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/output.rb; \
-@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/dither.rb; \
-@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/helper.rb; \
-@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/version.rb; \
-@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/version_runtime.rb; \
-@HAVE_RUBY_TRUE@	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/constants.rb; \
-@HAVE_RUBY_TRUE@	  rmdir $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel 2>/dev/null || true; \
-@HAVE_RUBY_TRUE@	fi
+	@:
 
 register:
 	-regsvr32 -s "$(shell cygpath -w $(builddir)/wic/.libs/libwicsixel.dll)"

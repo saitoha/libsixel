@@ -2,6 +2,9 @@
 # @configure_input@
 #
 SUBDIRS = include src converters tools python
+if HAVE_RUBY
+SUBDIRS += ruby
+endif
 if HAVE_APPLE_QUICKLOOK_EXTENSION
 SUBDIRS += quicklook-extension
 endif
@@ -9,11 +12,9 @@ if HAVE_WICCODEC
 SUBDIRS += wic
 endif
 
-DIST_SUBDIRS = include src converters tools python wic quicklook-extension
+DIST_SUBDIRS = include src converters tools python ruby wic quicklook-extension
 
-EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
-	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb depcomp \
-	tools/quicklook-extension.bash tools/build_quicklook_bundle.py
+EXTRA_DIST = LICENSE depcomp
 
 .PHONY: install-quicklook-extension uninstall-quicklook-extension
 
@@ -38,65 +39,15 @@ CLEANFILES = $(builddir)/valgrind.log $(builddir)/test.log $(builddir)/unittest.
 
 all-am:
 	cp $(builddir)/package.json.in $(builddir)/package.json
-if HAVE_RUBY
-	@if test -x "$(RUBY)"; then \
-	  echo "Ensuring Ruby constants are generated..."; \
-	  $(MKDIR_P) $(builddir)/ruby/lib/libsixel 2>/dev/null || true; \
-	  $(RUBY) tools/gen_ruby_constants.rb $(srcdir)/include/sixel.h $(builddir)/ruby/lib/libsixel/constants.rb || true; \
-	fi
-endif
 
 check-am:
-	@if command -v ruby >/dev/null 2>&1; then \
-	  echo "Running Ruby tests..."; \
-	  LD_LIBRARY_PATH=$(builddir)/src/.libs:$$LD_LIBRARY_PATH \
-	  DYLD_LIBRARY_PATH=$(builddir)/src/.libs:$$DYLD_LIBRARY_PATH \
-	  ruby -I $(srcdir)/ruby/lib -I $(srcdir)/ruby/test $(srcdir)/ruby/test/test_libsixel.rb || exit 1; \
-	else \
-	  echo "Ruby not found; skipping Ruby tests"; \
-	fi
+	@:
 
 install-data-local:
-if HAVE_RUBY
-	@if test "x$(RUBY_SITE_LIBDIR)" != x; then \
-	  echo "Installing Ruby bindings to $(DESTDIR)$(RUBY_SITE_LIBDIR)"; \
-	  $(MKDIR_P) $(DESTDIR)$(RUBY_SITE_LIBDIR); \
-	  $(INSTALL_DATA) $(srcdir)/ruby/lib/libsixel.rb $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel.rb; \
-	  $(MKDIR_P) $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel; \
-	  for f in api.rb encoder.rb decoder.rb output.rb dither.rb helper.rb version.rb frame.rb; do \
-	    $(INSTALL_DATA) $(srcdir)/ruby/lib/libsixel/$$f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/$$f; \
-	  done; \
-	  if test -f $(builddir)/ruby/lib/libsixel/version_runtime.rb; then \
-	    $(INSTALL_DATA) $(builddir)/ruby/lib/libsixel/version_runtime.rb $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/version_runtime.rb; \
-	  fi; \
-	  if test -f $(builddir)/ruby/lib/libsixel/constants.rb; then \
-	    $(INSTALL_DATA) $(builddir)/ruby/lib/libsixel/constants.rb $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/constants.rb; \
-	  else \
-	    if test -f $(srcdir)/ruby/lib/libsixel/constants.rb; then \
-	      $(INSTALL_DATA) $(srcdir)/ruby/lib/libsixel/constants.rb $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/constants.rb; \
-	    fi; \
-	  fi; \
-	else \
-	  echo "Ruby site libdir not detected; skip installing Ruby bindings"; \
-	fi
-endif
+	@:
 
 uninstall-local:
-if HAVE_RUBY
-	@if test "x$(RUBY_SITE_LIBDIR)" != x; then \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/api.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/encoder.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/decoder.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/output.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/dither.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/helper.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/version.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/version_runtime.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/constants.rb; \
-	  rmdir $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel 2>/dev/null || true; \
-	fi
-endif
+	@:
 
 register:
 	-regsvr32 -s "$(shell cygpath -w $(builddir)/wic/.libs/libwicsixel.dll)"
