@@ -15,21 +15,34 @@ concurrency:
 
 jobs:
   ci:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner || matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
         include:
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+          - os: ubuntu-24.04-arm64
+            runner:
+              - ubuntu-24.04
+              - ARM64
+          - os: macos-latest
+            runner: macos-latest
+          - os: macos-13
+            runner: macos-13
           - os: windows-latest
+            runner: windows-latest
             compiler: gcc
             sys: MINGW64
           - os: windows-latest
+            runner: windows-latest
             compiler: gcc
             sys: UCRT64
           - os: windows-latest
+            runner: windows-latest
             compiler: clang
             sys: CLANG64
           - os: windows-latest
+            runner: windows-latest
             compiler: cl
             sys: MSYS
 
@@ -39,7 +52,7 @@ jobs:
         fetch-depth: 0
 
     - name: Setup MSVC developer env (vcvars)
-      if: ${{ matrix.os == 'windows-latest' && matrix.compiler == 'cl' }}
+      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64

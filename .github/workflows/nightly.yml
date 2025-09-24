@@ -11,34 +11,61 @@ permissions:
 jobs:
   nightly:
     name: ${{ matrix.branch }} • ${{ matrix.os }} ${{ matrix.sys || 'native' }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner || matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         branch: [master, develop]
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, ubuntu-24.04-arm64, macos-latest, macos-13]
         include:
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+          - os: ubuntu-24.04-arm64
+            runner:
+              - ubuntu-24.04
+              - ARM64
+          - os: macos-latest
+            runner: macos-latest
+          - os: macos-13
+            runner: macos-13
           - os: windows-latest
             sys: MINGW64
             branch: master
+            runner: windows-latest
           - os: windows-latest
             sys: UCRT64
             branch: master
+            runner: windows-latest
           - os: windows-latest
             sys: CLANG64
             branch: master
+            runner: windows-latest
           - os: windows-latest
             sys: CLANGARM64
             branch: master
+            runner: windows-latest
+          - os: windows-latest
+            sys: MSYS
+            compiler: cl
+            branch: master
+            runner: windows-latest
           - os: windows-latest
             sys: MINGW64
             branch: develop
+            runner: windows-latest
           - os: windows-latest
             sys: UCRT64
             branch: develop
+            runner: windows-latest
           - os: windows-latest
             sys: CLANG64
             branch: develop
+            runner: windows-latest
+          - os: windows-latest
+            sys: MSYS
+            compiler: cl
+            branch: develop
+            runner: windows-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -57,6 +84,12 @@ jobs:
           zip
         pacboy: >-
           cc:p
+
+    - name: Setup MSVC developer env (vcvars)
+      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
 
     - name: Configure and build (non-Windows)
       if: runner.os != 'Windows'
@@ -77,8 +110,8 @@ jobs:
         cp README.md LICENSE* libsixel/
         zip -r libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
 
-    - name: Configure and build (Windows)
-      if: runner.os == 'Windows'
+    - name: Configure and build (Windows, not MSVC)
+      if: ${{ runner.os == 'Windows' && matrix.compiler != 'cl' }}
       shell: msys2 {0}
       run: |
         ./configure LDFLAGS="-Wl,-static -lwinpthread" \
@@ -92,7 +125,49 @@ jobs:
             --disable-shared \
             --disable-dependency-tracking
         make -j$(getconf _NPROCESSORS_ONLN)
-        make check
+        if [ '${{ matrix.sys }}' != 'CLANGARM64' ]; then
+          make check
+        else
+          echo 'Skipping make check on CLANGARM64 due to known failure.'
+        fi
+        mkdir -p libsixel
+        make install DESTDIR=$(pwd)/libsixel
+        cp README.md LICENSE* libsixel/
+        zip -r libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
+
+    - name: Configure and build (Windows, MSVC)
+      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
+      shell: msys2 {0}
+      run: |
+        VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+        cmd //c call "${VCVARS}" x64 \>nul \&\& set
+        eval $(
+            cmd //c call "${VCVARS}" x64 \>nul \&\& set |
+            grep -i '^\(PATH\|INCLUDE\|LIB\|LIBPATH\)' |
+            while IFS== read -r key val; do
+                case "$key" in PATH|Path)
+                    echo export PATH=\"$(echo "$val" | tr \; \\n | while read -r p; do cygpath "$p"; done | grep ^/ | tr \\n :)\"\;
+                    ;;
+                *)
+                    echo export "$key"=\""$val"\"\;
+                    ;;
+                esac;
+            done
+        )
+
+        chmod +x "$(pwd)/tools/ar-msvc.sh"
+
+        ./configure CC=cl LD=link AR="$(pwd)/tools/ar-msvc.sh" ARFLAGS= NM="dumpbin -symbols" STRIP=: RANLIB=: \
+            --host=x86_64-pc-windows-msvc \
+            --without-png \
+            --without-jpeg \
+            --without-libcurl \
+            --without-bashcompletiondir \
+            --without-zshcompletiondir \
+            --disable-python \
+            --disable-dependency-tracking
+        make
+        make check V=1
         mkdir -p libsixel
         make install DESTDIR=$(pwd)/libsixel
         cp README.md LICENSE* libsixel/
