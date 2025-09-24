@@ -563,25 +563,10 @@ elif py_opt.enabled()
   error('Python support requires an interpreter')
 endif
 
-subdir('include')
-subdir('src')
-subdir('converters')
-if have_wiccodec
-  subdir('wic')
-endif
-
-
-if have_quicklook_extension
-  subdir('quicklook-extension')
-endif
-if have_python
-  subdir('python')
-endif
-
 ruby_message = 'no'
 have_ruby = false
 ruby_opt = get_option('ruby')
-if not ruby_opt.disabled()
+if ruby_opt.enabled()
   ruby = find_program('ruby', required: ruby_opt.enabled())
   if ruby.found()
     have_ruby = true
@@ -609,6 +594,22 @@ if not ruby_opt.disabled()
     endif
   endif
 endif
+
+subdir('include')
+subdir('src')
+subdir('converters')
+if have_wiccodec
+  subdir('wic')
+endif
+
+
+if have_quicklook_extension
+  subdir('quicklook-extension')
+endif
+if have_python
+  subdir('python')
+endif
+
 
 if get_option('tests')
   if have_ruby
