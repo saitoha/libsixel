@@ -21,6 +21,9 @@ jobs:
         include:
           - os: ubuntu-latest
             runner: ubuntu-latest
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+            sys: i686
           - os: ubuntu-24.04-arm64
             runner:
               - ubuntu-24.04
@@ -45,11 +48,29 @@ jobs:
             runner: windows-latest
             compiler: cl
             sys: MSYS
+          - os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MINGW32
+          - os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MSYS
+          - os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: CYGWIN
 
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
+    - name: Install multilib toolchain (Linux i686)
+      if: runner.os == 'Linux' && coalesce(matrix.sys, '') == 'i686'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-multilib
 
     - name: Setup MSVC developer env (vcvars)
       if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
@@ -57,8 +78,8 @@ jobs:
       with:
         arch: x64
 
-    - name: Setup MSYS2 (Windows, not MSVC)
-      if: runner.os == 'Windows' && matrix.compiler != 'cl'
+    - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
+      if: runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN'
       uses: msys2/setup-msys2@v2
       with:
         msystem: ${{ matrix.sys }}
@@ -68,6 +89,18 @@ jobs:
           zip
         pacboy: >-
           cc:p
+
+    - name: Setup MSYS2 (Windows, MSYS gcc)
+      if: runner.os == 'Windows' && matrix.sys == 'MSYS' && matrix.compiler == 'gcc'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MSYS
+        update: true
+        install: >-
+          make
+          zip
+          gcc
+          pkgconf
 
     - name: Setup MSYS2 (Windows, MSVC)
       if: runner.os == 'Windows' && matrix.compiler == 'cl'
@@ -79,10 +112,21 @@ jobs:
           make
           zip
 
+    - name: Setup Cygwin
+      if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
+      uses: cygwin/cygwin-install-action@v4
+      with:
+        packages: gcc-core,make,zip,pkg-config,python3,python3-pip,ninja
+
     - name: Configure and build (non-Windows)
       if: runner.os != 'Windows'
       shell: bash
       run: |
+        if [ '${{ coalesce(matrix.sys, '') }}' = 'i686' ]; then
+          export CC="gcc -m32"
+          export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
+          export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
+        fi
         ./configure \
             --without-png \
             --without-jpeg \
@@ -93,11 +137,26 @@ jobs:
             --disable-dependency-tracking
         make
 
-    - name: Configure and build (Windows, not MSVC)
-      if: ${{ runner.os == 'Windows' && matrix.compiler != 'cl' }}
+    - name: Configure and build (Windows, not MSVC/Cygwin)
+      if: ${{ runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.sys != 'CYGWIN' }}
       shell: msys2 {0}
       run: |
         ./configure CC=${{ matrix.compiler }} \
+            --without-png \
+            --without-jpeg \
+            --without-libcurl \
+            --without-bashcompletiondir \
+            --without-zshcompletiondir \
+            --disable-python \
+            --disable-dependency-tracking
+        make
+
+    - name: Configure and build (Windows, Cygwin)
+      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
+      shell: C:\\cygwin64\\bin\\bash.exe --login -eo pipefail -c
+      run: |
+        cd "$GITHUB_WORKSPACE"
+        ./configure \
             --without-png \
             --without-jpeg \
             --without-libcurl \
@@ -145,8 +204,8 @@ jobs:
       shell: bash
       run: make check
 
-    - name: Run tests (Windows, not MSVC)
-      if: runner.os == 'Windows' && matrix.compiler != 'cl'
+    - name: Run tests (Windows, not MSVC/Cygwin)
+      if: runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.sys != 'CYGWIN'
       shell: msys2 {0}
       run: make check
 
@@ -170,6 +229,227 @@ jobs:
             done
         )
         make check V=1
+
+    - name: Run tests (Windows, Cygwin)
+      if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
+      shell: C:\\cygwin64\\bin\\bash.exe --login -eo pipefail -c
+      run: |
+        cd "$GITHUB_WORKSPACE"
+        make check
+
+  ci-meson:
+    name: Meson • ${{ matrix.os }} ${{ matrix.sys || 'native' }}
+    runs-on: ${{ matrix.runner || matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+            sys: i686
+          - os: ubuntu-24.04-arm64
+            runner:
+              - ubuntu-24.04
+              - ARM64
+          - os: macos-latest
+            runner: macos-latest
+          - os: macos-13
+            runner: macos-13
+          - os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MINGW64
+          - os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: UCRT64
+          - os: windows-latest
+            runner: windows-latest
+            compiler: clang
+            sys: CLANG64
+          - os: windows-latest
+            runner: windows-latest
+            compiler: cl
+            sys: MSYS
+          - os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MINGW32
+          - os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MSYS
+          - os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: CYGWIN
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install multilib toolchain (Linux i686)
+      if: runner.os == 'Linux' && coalesce(matrix.sys, '') == 'i686'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-multilib
+
+    - name: Setup MSVC developer env (vcvars)
+      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+
+    - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
+      if: runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.sys }}
+        update: true
+        install: >-
+          python
+          ninja
+        pacboy: >-
+          cc:p
+          meson:p
+          ninja:p
+
+    - name: Setup MSYS2 (Windows, MSYS gcc)
+      if: runner.os == 'Windows' && matrix.sys == 'MSYS' && matrix.compiler == 'gcc'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MSYS
+        update: true
+        install: >-
+          python
+          ninja
+          meson
+          zip
+          gcc
+          pkgconf
+
+    - name: Setup MSYS2 (Windows, MSVC)
+      if: runner.os == 'Windows' && matrix.compiler == 'cl'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.sys }}
+        update: true
+        install: >-
+          python
+          ninja
+          meson
+
+    - name: Setup Cygwin
+      if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
+      uses: cygwin/cygwin-install-action@v4
+      with:
+        packages: gcc-core,make,zip,pkg-config,python3,python3-pip,ninja
+
+    - name: Install Meson (non-Windows)
+      if: runner.os != 'Windows'
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install meson ninja
+
+    - name: Install Meson (Cygwin)
+      if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
+      shell: C:\\cygwin64\\bin\\bash.exe --login -eo pipefail -c
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install meson ninja
+
+    - name: Configure, build, and test (Meson, non-Windows)
+      if: runner.os != 'Windows'
+      run: |
+        if [ '${{ coalesce(matrix.sys, '') }}' = 'i686' ]; then
+          export CC=gcc
+          export CFLAGS="-m32"
+          export LDFLAGS="-m32"
+          export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
+          export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
+        fi
+        meson setup builddir \
+            --wrap-mode=nodownload \
+            -Dpng=disabled \
+            -Djpeg=disabled \
+            -Dcurl=disabled \
+            -Dbashcompletiondir= \
+            -Dzshcompletiondir= \
+            -Dpython=disabled \
+            -Dtests=true
+        meson compile -C builddir
+        meson test -C builddir
+
+    - name: Configure, build, and test (Meson, Windows, not MSVC/Cygwin)
+      if: ${{ runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.sys != 'CYGWIN' }}
+      shell: msys2 {0}
+      run: |
+        meson setup builddir \
+            --wrap-mode=nodownload \
+            --default-library static \
+            -Dpng=disabled \
+            -Djpeg=disabled \
+            -Dcurl=disabled \
+            -Dbashcompletiondir= \
+            -Dzshcompletiondir= \
+            -Dpython=disabled \
+            -Dwinpthread=enabled \
+            -Dtests=true
+        meson compile -C builddir
+        meson test -C builddir
+
+    - name: Configure, build, and test (Meson, Windows, Cygwin)
+      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
+      shell: C:\\cygwin64\\bin\\bash.exe --login -eo pipefail -c
+      run: |
+        cd "$GITHUB_WORKSPACE"
+        meson setup builddir \
+            --wrap-mode=nodownload \
+            --default-library static \
+            -Dpng=disabled \
+            -Djpeg=disabled \
+            -Dcurl=disabled \
+            -Dbashcompletiondir= \
+            -Dzshcompletiondir= \
+            -Dpython=disabled \
+            -Dtests=true
+        meson compile -C builddir
+        meson test -C builddir -v
+
+    - name: Configure, build, and test (Meson, Windows, MSVC)
+      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
+      shell: msys2 {0}
+      run: |
+        VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+        cmd //c call "${VCVARS}" x64 \>nul \&\& set
+        eval $(
+            cmd //c call "${VCVARS}" x64 \>nul \&\& set |
+            grep -i '^\(PATH\|INCLUDE\|LIB\|LIBPATH\)' |
+            while IFS== read -r key val; do
+                case "$key" in PATH|Path)
+                    echo export PATH=\"$(echo "$val" | tr \; \\n | while read -r p; do cygpath "$p"; done | grep ^/ | tr \\n :)\"\;
+                    ;;
+                *)
+                    echo export "$key"=\""$val"\"\;
+                    ;;
+                esac;
+            done
+        )
+
+        meson setup builddir \
+            --wrap-mode=nodownload \
+            --default-library static \
+            -Dpng=disabled \
+            -Djpeg=disabled \
+            -Dcurl=disabled \
+            -Dbashcompletiondir= \
+            -Dzshcompletiondir= \
+            -Dpython=disabled \
+            -Dtests=true
+        meson compile -C builddir
+        meson test -C builddir -v
 
 
 # emacs Local Variables:
