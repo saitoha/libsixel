@@ -15921,7 +15921,14 @@ fi
 
  ;; #(
   *) :
-    : ;; #(
+     if false; then
+  am__fastdepOBJC_TRUE=
+  am__fastdepOBJC_FALSE='#'
+else
+  am__fastdepOBJC_TRUE='#'
+  am__fastdepOBJC_FALSE=
+fi
+ ;; #(
   *) :
      ;;
 esac
@@ -21624,6 +21631,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${am__fastdepOBJC_TRUE}" && test -z "${am__fastdepOBJC_FALSE}"; then
+  as_fn_error $? "conditional \"am__fastdepOBJC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepOBJC_TRUE}" && test -z "${am__fastdepOBJC_FALSE}"; then
