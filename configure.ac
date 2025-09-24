@@ -27,7 +27,11 @@ AS_IF([test -z "$CC" && { test "x$MSYSTEM" = "xCLANG64" || test "x$MSYSTEM" = "x
 ])
 AC_PROG_AWK
 AC_PROG_CC
-AS_CASE([$host_os], [darwin*], [AC_PROG_OBJC], [*], [:])
+AS_CASE([$host_os],
+        [darwin*],
+        [AC_PROG_OBJC],
+        [*],
+        [AM_CONDITIONAL([am__fastdepOBJC], [false])])
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
