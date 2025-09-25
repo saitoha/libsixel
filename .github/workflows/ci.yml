@@ -2,9 +2,9 @@ name: libsixel CI (build & test)
 
 on:
   push:
-    branches: ['*']
+    branches: ['**']
   pull_request:
-    branches: ['*']
+    branches: ['**']
 
 permissions:
   contents: read
@@ -21,10 +21,9 @@ jobs:
         include:
           - os: ubuntu-latest
             runner: ubuntu-latest
-          - os: ubuntu-24.04-arm64
-            runner:
-              - ubuntu-24.04
-              - ARM64
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+            sys: i686
           - os: macos-latest
             runner: macos-latest
           - os: macos-13
@@ -302,8 +301,11 @@ jobs:
     - name: Install Meson (non-Windows)
       if: runner.os != 'Windows'
       run: |
-        python3 -m pip install --upgrade pip
-        python3 -m pip install meson ninja
+        python3 -m venv .meson-venv
+        . .meson-venv/bin/activate
+        pip install --upgrade pip
+        pip install meson ninja
+        echo "$PWD/.meson-venv/bin" >> "$GITHUB_PATH"
 
     - name: Install Meson (Cygwin)
       if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
