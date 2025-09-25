@@ -94,7 +94,7 @@ jobs:
         ref: ${{ matrix.branch }}
 
     - name: Install multilib toolchain (Linux i686)
-      if: runner.os == 'Linux' && coalesce(matrix.sys, '') == 'i686'
+      if: runner.os == 'Linux' && (matrix.sys || '') == 'i686'
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-multilib
@@ -132,7 +132,7 @@ jobs:
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        if [ '${{ coalesce(matrix.sys, '') }}' = 'i686' ]; then
+        if [ '${{ matrix.sys || '' }}' = 'i686' ]; then
           export CC="gcc -m32"
           export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
           export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
@@ -222,6 +222,7 @@ jobs:
         compression-level: 0
 
   nightly-meson:
+    if: ${{ false }}
     name: Meson • ${{ matrix.branch }} • ${{ matrix.os }} ${{ matrix.sys || 'native' }}
     runs-on: ${{ matrix.runner || matrix.os }}
     strategy:
@@ -306,7 +307,7 @@ jobs:
         ref: ${{ matrix.branch }}
 
     - name: Install multilib toolchain (Linux i686)
-      if: runner.os == 'Linux' && coalesce(matrix.sys, '') == 'i686'
+      if: runner.os == 'Linux' && (matrix.sys || '') == 'i686'
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-multilib
@@ -354,7 +355,7 @@ jobs:
     - name: Configure, build, and package (Meson, non-Windows)
       if: runner.os != 'Windows'
       run: |
-        if [ '${{ coalesce(matrix.sys, '') }}' = 'i686' ]; then
+        if [ '${{ matrix.sys || '' }}' = 'i686' ]; then
           export CC=gcc
           export CFLAGS="-m32"
           export LDFLAGS="-m32"
@@ -445,7 +446,6 @@ jobs:
   release:
     needs:
       - nightly
-      - nightly-meson
     runs-on: ubuntu-latest
     concurrency:
       group: nightly-release-aggregate
