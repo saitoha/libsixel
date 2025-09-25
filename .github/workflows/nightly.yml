@@ -10,62 +10,103 @@ permissions:
 
 jobs:
   nightly:
-    name: ${{ matrix.branch }} • ${{ matrix.os }} ${{ matrix.sys || 'native' }}
+    name: ${{ matrix.branch }} • ${{ matrix.os }} ${{ matrix.sys }}
     runs-on: ${{ matrix.runner || matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        branch: [master, develop]
-        os: [ubuntu-latest, ubuntu-24.04-arm64, macos-latest, macos-13]
         include:
-          - os: ubuntu-latest
+          # ubuntu: [master, develop] x [x86_64, i686]
+          - branch: master
+            os: ubuntu-latest
             runner: ubuntu-latest
-          - os: ubuntu-24.04-arm64
-            runner:
-              - ubuntu-24.04
-              - ARM64
-          - os: macos-latest
+            sys: x86_64
+          - branch: develop
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            sys: x86_64
+          - branch: master
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            sys: i686
+          - branch: develop
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            sys: i686
+          # macos-latest (arm): [master, develop] x [aarch64]
+          - branch: master
+            os: macos-latest
             runner: macos-latest
-          - os: macos-13
+            sys: aarch64
+          - branch: develop
+            os: macos-latest
+            runner: macos-latest
+            sys: aarch64
+          # macos-13 (intel): [master, develop] x [x86_64]
+          - branch: master
+            os: macos-13
             runner: macos-13
-          - os: windows-latest
-            sys: MINGW64
-            branch: master
+            sys: x86_64
+          - branch: develop
+            os: macos-13
+            runner: macos-13
+            sys: x86_64
+          # windows-mingw: [master, develop] x [MINGW64, UCRT64, CLANG64, MINGW32]
+          - branch: master
+            os: windows-latest
+            msystem: MINGW64
             runner: windows-latest
-          - os: windows-latest
-            sys: UCRT64
-            branch: master
+            compiler: gcc
+            sys: x86_64-MINGW64
+          - branch: master
+            os: windows-latest
+            msystem: UCRT64
             runner: windows-latest
-          - os: windows-latest
-            sys: CLANG64
-            branch: master
+            compiler: gcc
+            sys: x86_64-UCRT64
+          - branch: master
+            os: windows-latest
+            msystem: CLANG64
             runner: windows-latest
-          - os: windows-latest
-            sys: CLANGARM64
-            branch: master
+            compiler: clang
+            sys: x86_64-CLANG64
+          - branch: master
+            os: windows-latest
+            msystem: MINGW32
             runner: windows-latest
-          - os: windows-latest
-            sys: MSYS
+            compiler: gcc
+            sys: i686-MINGW32
+          - branch: develop
+            os: windows-latest
+            msystem: MINGW64
+            runner: windows-latest
+            compiler: gcc
+            sys: x86_64-MINGW64
+          - branch: develop
+            os: windows-latest
+            msystem: UCRT64
+            runner: windows-latest
+            compiler: gcc
+            sys: x86_64-UCRT64
+          - branch: develop
+            os: windows-latest
+            msystem: CLANG64
+            runner: windows-latest
+            compiler: clang
+            sys: x86_64-CLANG64
+          - branch: develop
+            os: windows-latest
+            msystem: MINGW32
+            runner: windows-latest
+            compiler: gcc
+            sys: i686-MINGW32
+          # windows-msvc: [develop] x [x86_64] x [msvc]
+          - branch: develop
+            os: windows-latest
+            msystem: MSYS
+            runner: windows-latest
             compiler: cl
-            branch: master
-            runner: windows-latest
-          - os: windows-latest
-            sys: MINGW64
-            branch: develop
-            runner: windows-latest
-          - os: windows-latest
-            sys: UCRT64
-            branch: develop
-            runner: windows-latest
-          - os: windows-latest
-            sys: CLANG64
-            branch: develop
-            runner: windows-latest
-          - os: windows-latest
-            sys: MSYS
-            compiler: cl
-            branch: develop
-            runner: windows-latest
+            sys: x86_64-msvc
 
     steps:
     - uses: actions/checkout@v4
@@ -80,16 +121,26 @@ jobs:
         sudo apt-get install -y gcc-multilib
 
     - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
-      if: runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.sys != 'MSYS'
+      if: runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.msystem != 'MSYS'
       uses: msys2/setup-msys2@v2
       with:
-        msystem: ${{ matrix.sys }}
+        msystem: ${{ matrix.msystem }}
         update: true
         install: >-
           make
           zip
         pacboy: >-
           cc:p
+
+    - name: Setup MSYS2 (Windows, MSVC)
+      if: runner.os == 'Windows' && matrix.compiler == 'cl'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.msystem }}
+        update: true
+        install: >-
+          make
+          zip
 
     - name: Setup MSVC developer env (vcvars)
       if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
@@ -119,13 +170,13 @@ jobs:
         mkdir -p libsixel
         make install DESTDIR=$(pwd)/libsixel
         cp README.md LICENSE* libsixel/
-        zip -r libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
+        zip -r libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys }}.zip libsixel
 
     - name: Configure and build (Windows, not MSVC)
       if: ${{ runner.os == 'Windows' && matrix.compiler != 'cl' }}
       shell: msys2 {0}
       run: |
-        ./configure LDFLAGS="-Wl,-static -lwinpthread" \
+        ./configure \
             --without-png \
             --without-jpeg \
             --without-libcurl \
@@ -144,7 +195,7 @@ jobs:
         mkdir -p libsixel
         make install DESTDIR=$(pwd)/libsixel
         cp README.md LICENSE* libsixel/
-        zip -r libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
+        zip -r libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys }}.zip libsixel
 
     - name: Configure and build (Windows, MSVC)
       if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
@@ -182,235 +233,13 @@ jobs:
         mkdir -p libsixel
         make install DESTDIR=$(pwd)/libsixel
         cp README.md LICENSE* libsixel/
-        zip -r libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
+        zip -r libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys }}.zip libsixel
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}
-        path: libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip
-        retention-days: 7
-        overwrite: true
-        compression-level: 0
-
-  nightly-meson:
-    if: ${{ false }}
-    name: Meson • ${{ matrix.branch }} • ${{ matrix.os }} ${{ matrix.sys || 'native' }}
-    runs-on: ${{ matrix.runner || matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        branch: [master, develop]
-        os: [ubuntu-latest, ubuntu-24.04-arm64, macos-latest, macos-13]
-        include:
-          - os: ubuntu-latest
-            runner: ubuntu-latest
-          - os: ubuntu-latest
-            runner: ubuntu-latest
-            sys: i686
-            branch: master
-          - os: ubuntu-latest
-            runner: ubuntu-latest
-            sys: i686
-            branch: develop
-          - os: ubuntu-24.04-arm64
-            runner:
-              - ubuntu-24.04
-              - ARM64
-          - os: macos-latest
-            runner: macos-latest
-          - os: macos-13
-            runner: macos-13
-          - os: windows-latest
-            sys: MINGW64
-            branch: master
-            runner: windows-latest
-            compiler: gcc
-          - os: windows-latest
-            sys: UCRT64
-            branch: master
-            runner: windows-latest
-            compiler: gcc
-          - os: windows-latest
-            sys: CLANG64
-            branch: master
-            runner: windows-latest
-            compiler: clang
-          - os: windows-latest
-            sys: MSYS
-            compiler: cl
-            branch: master
-            runner: windows-latest
-          - os: windows-latest
-            sys: MINGW32
-            branch: master
-            runner: windows-latest
-            compiler: gcc
-          - os: windows-latest
-            sys: MINGW64
-            branch: develop
-            runner: windows-latest
-            compiler: gcc
-          - os: windows-latest
-            sys: UCRT64
-            branch: develop
-            runner: windows-latest
-            compiler: gcc
-          - os: windows-latest
-            sys: CLANG64
-            branch: develop
-            runner: windows-latest
-            compiler: clang
-          - os: windows-latest
-            sys: MSYS
-            compiler: cl
-            branch: develop
-            runner: windows-latest
-          - os: windows-latest
-            sys: MINGW32
-            branch: develop
-            runner: windows-latest
-            compiler: gcc
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        ref: ${{ matrix.branch }}
-
-    - name: Install multilib toolchain (Linux i686)
-      if: runner.os == 'Linux' && (matrix.sys || '') == 'i686'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc-multilib
-
-    - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
-      if: runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.sys != 'MSYS'
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: ${{ matrix.sys }}
-        update: true
-        install: >-
-          python
-          ninja
-          meson
-          zip
-        pacboy: >-
-          cc:p
-          meson:p
-          ninja:p
-
-    - name: Setup MSYS2 (Windows, MSVC)
-      if: runner.os == 'Windows' && matrix.compiler == 'cl'
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: ${{ matrix.sys }}
-        update: true
-        install: >-
-          python
-          ninja
-          meson
-          zip
-
-    - name: Setup MSVC developer env (vcvars)
-      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
-
-    - name: Install Meson (non-Windows)
-      if: runner.os != 'Windows'
-      run: |
-        python3 -m pip install --upgrade pip
-        python3 -m pip install meson ninja
-
-    - name: Configure, build, and package (Meson, non-Windows)
-      if: runner.os != 'Windows'
-      run: |
-        if [ '${{ matrix.sys || '' }}' = 'i686' ]; then
-          export CC=gcc
-          export CFLAGS="-m32"
-          export LDFLAGS="-m32"
-          export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
-          export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
-        fi
-        meson setup builddir \
-            --wrap-mode=nodownload \
-            -Dpng=disabled \
-            -Djpeg=disabled \
-            -Dcurl=disabled \
-            -Dbashcompletiondir= \
-            -Dzshcompletiondir= \
-            -Dpython=disabled \
-            -Dtests=true
-        meson compile -C builddir
-        meson test -C builddir
-        meson install -C builddir --destdir $(pwd)/libsixel
-        cp README.md LICENSE* libsixel/
-        zip -r libsixel-meson-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
-
-    - name: Configure, build, and package (Meson, Windows, not MSVC)
-      if: ${{ runner.os == 'Windows' && matrix.compiler != 'cl' }}
-      shell: msys2 {0}
-      run: |
-        meson setup builddir \
-            --wrap-mode=nodownload \
-            --default-library static \
-            -Dpng=disabled \
-            -Djpeg=disabled \
-            -Dcurl=disabled \
-            -Dbashcompletiondir= \
-            -Dzshcompletiondir= \
-            -Dpython=disabled \
-            -Dwinpthread=enabled \
-            -Dtests=true
-        meson compile -C builddir
-        meson test -C builddir
-        meson install -C builddir --destdir $(pwd)/libsixel
-        cp README.md LICENSE* libsixel/
-        zip -r libsixel-meson-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
-
-    - name: Configure, build, and package (Meson, Windows, MSVC)
-      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
-      shell: msys2 {0}
-      run: |
-        VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
-        cmd //c call "${VCVARS}" x64 \>nul \&\& set
-        eval $(
-            cmd //c call "${VCVARS}" x64 \>nul \&\& set |
-            grep -i '^\(PATH\|INCLUDE\|LIB\|LIBPATH\)' |
-            while IFS== read -r key val; do
-                case "$key" in PATH|Path)
-                    echo export PATH=\"$(echo "$val" | tr \; \\n | while read -r p; do cygpath "$p"; done | grep ^/ | tr \\n :)\"\;
-                    ;;
-                *)
-                    echo export "$key"=\""$val"\"\;
-                    ;;
-                esac;
-            done
-        )
-
-        meson setup builddir \
-            --wrap-mode=nodownload \
-            --default-library static \
-            -Dpng=disabled \
-            -Djpeg=disabled \
-            -Dcurl=disabled \
-            -Dbashcompletiondir= \
-            -Dzshcompletiondir= \
-            -Dpython=disabled \
-            -Dtests=true
-        meson compile -C builddir
-        meson test -C builddir -v
-        meson install -C builddir --destdir $(pwd)/libsixel
-        cp README.md LICENSE* libsixel/
-        zip -r libsixel-meson-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip libsixel
-
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: libsixel-meson-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}
-        path: libsixel-meson-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys || 'native' }}.zip
+        name: libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys }}
+        path: libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys }}.zip
         retention-days: 7
         overwrite: true
         compression-level: 0
