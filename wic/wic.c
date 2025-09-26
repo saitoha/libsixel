@@ -2250,8 +2250,10 @@ sixel_parse_header(
                 ibytes = ibytes << 8 | *p;
                 state = STATE_GROUND;
                 /* handling point of control sequences */
+                break;
             case 0x7f:
                 /* ignore */
+                break;
             case 0x90:  /* DCS */
                 ibytes = 0;
                 prm = 0;
