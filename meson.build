@@ -597,6 +597,12 @@ if ruby_opt.enabled()
 endif
 
 subdir('include')
+
+libsixel_posix_defs = cc.get_supported_arguments([
+  '-D_POSIX_SOURCE',
+  '-D_POSIX_C_SOURCE=199309L',
+])
+
 subdir('src')
 subdir('converters')
 if have_wiccodec
