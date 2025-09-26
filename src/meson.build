@@ -48,6 +48,7 @@ lt_version = '@0@.@1@.@2@'.format(lt_soversion, ls_lt_age, ls_lt_revision)
 libsixel = library('sixel',
                    srcs,
                    include_directories: project_inc,
+                   c_args: libsixel_posix_defs,
                    dependencies: deps,
                    version: lt_version,
                    soversion: lt_soversion.to_string(),
