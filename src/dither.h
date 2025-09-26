@@ -58,7 +58,7 @@ sixel_dither_apply_palette(struct sixel_dither /* in */ *dither,
                            int                 /* in */ height);
 
 #if HAVE_TESTS
-int
+SIXELAPI int
 sixel_frame_tests_main(void);
 #endif
 

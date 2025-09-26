@@ -70,7 +70,7 @@ sixel_quant_free_palette(
     sixel_allocator_t   /* in */ *allocator);
 
 #if HAVE_TESTS
-int
+SIXELAPI int
 sixel_quant_tests_main(void);
 #endif
 

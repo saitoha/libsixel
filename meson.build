@@ -75,6 +75,9 @@ quicklook_os_supported = true
 quicklook_os_reason = 'requires macOS 10.15+'
 cpu = host_machine.cpu_family()
 
+has_func_attr_deprecated = false
+has_var_attr_deprecated = false
+
 have_unreachable = cc.compiles('''
   static void f(int x) {
     if (x) return;
