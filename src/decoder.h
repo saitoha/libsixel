@@ -33,7 +33,7 @@ struct sixel_decoder {
 };
 
 #if HAVE_TESTS
-int
+SIXELAPI int
 sixel_decoder_tests_main(void);
 #endif
 

@@ -46,7 +46,7 @@ extern "C" {
 #endif
 
 #if HAVE_TESTS
-int
+SIXELAPI int
 sixel_dither_tests_main(void);
 #endif
 

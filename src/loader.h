@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 #if HAVE_TESTS
-int
+SIXELAPI int
 sixel_loader_tests_main(void);
 #endif
 
