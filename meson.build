@@ -565,17 +565,13 @@ endif
 
 ruby_message = 'no'
 have_ruby = false
+# Generate Ruby version file (pure Ruby bindings)
+subdir('ruby/lib/libsixel')
 ruby_opt = get_option('ruby')
 if ruby_opt.enabled()
   ruby = find_program('ruby', required: ruby_opt.enabled())
   if ruby.found()
     have_ruby = true
-    # Generate version file for Ruby
-    configure_file(
-      input: 'ruby/lib/libsixel/version_runtime.rb.in',
-      output: 'ruby/lib/libsixel/version_runtime.rb',
-      configuration: conf,
-      install: false)
     # Generate constants from header
     constants_rb = custom_target('ruby_constants',
       input: 'include/sixel.h',
@@ -587,9 +583,12 @@ if ruby_opt.enabled()
       sitelibdir = run_command(ruby, '-rrbconfig', '-e', 'print RbConfig::CONFIG["sitelibdir"]').stdout()
       ruby_message = 'yes: ' + sitelibdir
       install_data('ruby/lib/libsixel.rb', install_dir: sitelibdir)
-      install_subdir('ruby/lib/libsixel', install_dir: join_paths(sitelibdir, 'libsixel'), strip_directory: true)
+      install_subdir('ruby/lib/libsixel',
+        install_dir: join_paths(sitelibdir, 'libsixel'),
+        strip_directory: true,
+        exclude_files: ['version_runtime.rb'])
       # Install generated files explicitly to override source ones
-      install_data('ruby/lib/libsixel/version_runtime.rb', install_dir: join_paths(sitelibdir, 'libsixel'))
+      install_data(ruby_version_runtime, install_dir: join_paths(sitelibdir, 'libsixel'))
       install_data(constants_rb, install_dir: join_paths(sitelibdir, 'libsixel'))
     endif
   endif
@@ -618,18 +617,12 @@ if get_option('tests')
     src_build_dir = join_paths(bindir, 'src')
     env.set('LD_LIBRARY_PATH', src_build_dir + ':' + env.get('LD_LIBRARY_PATH', ''))
     env.set('DYLD_LIBRARY_PATH', src_build_dir + ':' + env.get('DYLD_LIBRARY_PATH', ''))
+    ruby_build_libdir = join_paths(bindir, 'ruby', 'lib')
     test('ruby-bindings', ruby,
-         args: ['-I', 'ruby/lib', '-I', 'ruby/test', 'ruby/test/test_libsixel.rb'],
+         args: ['-I', ruby_build_libdir, '-I', 'ruby/lib', '-I', 'ruby/test', 'ruby/test/test_libsixel.rb'],
          env: env)
   endif
 endif
-
-# Generate Ruby version file (pure Ruby bindings)
-configure_file(
-  input: 'ruby/lib/libsixel/version_runtime.rb.in',
-  output: 'ruby/lib/libsixel/version_runtime.rb',
-  configuration: conf,
-  install: false)
 
 pkgconfig_dir_rel = join_paths(get_option('libdir'), 'pkgconfig')
 pkgconfig_dir = join_paths(get_option('prefix'), pkgconfig_dir_rel)
