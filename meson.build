@@ -561,6 +561,8 @@ if not py_opt.disabled()
   endif
 elif py_opt.enabled()
   error('Python support requires an interpreter')
+else
+  python_message = 'no'
 endif
 
 ruby_message = 'no'
