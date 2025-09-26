@@ -1577,7 +1577,7 @@ error:
 }
 
 
-SIXELAPI int
+int
 sixel_quant_tests_main(void)
 {
     int nret = EXIT_FAILURE;

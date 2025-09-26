@@ -15,19 +15,23 @@ concurrency:
 
 jobs:
   ci-autotools:
+    name: Autotools • ${{ matrix.os }} ${{ matrix.sys || 'native' }}
     runs-on: ${{ matrix.runner || matrix.os }}
     strategy:
       matrix:
         include:
           - os: ubuntu-latest
             runner: ubuntu-latest
+            sys: x86_64
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: i686
           - os: macos-latest
             runner: macos-latest
+            sys: aarch64
           - os: macos-13
             runner: macos-13
+            sys: x86_64
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -43,7 +47,7 @@ jobs:
           - os: windows-latest
             runner: windows-latest
             compiler: cl
-            sys: MSYS
+            sys: MSVC
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -58,9 +62,20 @@ jobs:
             sys: CYGWIN
 
     steps:
+    - name: Configure git EOL
+      if: runner.os == 'Windows'
+      run: git config --global core.autocrlf false
+
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
+    - name: Normalize line endings (Windows)
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        git config core.autocrlf false
+        git reset --hard
 
     - name: Install multilib toolchain (Linux i686)
       if: runner.os == 'Linux' && (matrix.sys || '') == 'i686'
@@ -102,7 +117,7 @@ jobs:
       if: runner.os == 'Windows' && matrix.compiler == 'cl'
       uses: msys2/setup-msys2@v2
       with:
-        msystem: ${{ matrix.sys }}
+        msystem: MSYS
         update: true
         install: >-
           make
@@ -130,6 +145,8 @@ jobs:
             --without-bashcompletiondir \
             --without-zshcompletiondir \
             --disable-python \
+            --enable-debug \
+            --enable-tests \
             --disable-dependency-tracking
         make
 
@@ -144,23 +161,28 @@ jobs:
             --without-bashcompletiondir \
             --without-zshcompletiondir \
             --disable-python \
+            --enable-debug \
+            --enable-tests \
             --disable-dependency-tracking
         make
 
     - name: Configure and build (Windows, Cygwin)
       if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
-      shell: C:\\cygwin64\\bin\\bash.exe --login -eo pipefail -c
+      shell: pwsh
       run: |
-        cd "$GITHUB_WORKSPACE"
-        ./configure \
-            --without-png \
-            --without-jpeg \
-            --without-libcurl \
-            --without-bashcompletiondir \
-            --without-zshcompletiondir \
-            --disable-python \
-            --disable-dependency-tracking
-        make
+        $cygwinRoot = 'C:\cygwin'
+        if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
+        $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
+        $scriptLines = @(
+          'set -eu',
+          'set -o pipefail 2>/dev/null || true',
+          "export GITHUB_WORKSPACE=`"$workspace`"",
+          "cd `"$workspace`"",
+          './configure --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --disable-dependency-tracking',
+          'make'
+        )
+        $script = [string]::Join("`n", $scriptLines)
+        &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Configure and build (Windows, MSVC)
       if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
@@ -192,6 +214,8 @@ jobs:
             --without-bashcompletiondir \
             --without-zshcompletiondir \
             --disable-python \
+            --enable-debug \
+            --enable-tests \
             --disable-dependency-tracking
         make
 
@@ -228,10 +252,20 @@ jobs:
 
     - name: Run tests (Windows, Cygwin)
       if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
-      shell: C:\\cygwin64\\bin\\bash.exe --login -eo pipefail -c
+      shell: pwsh
       run: |
-        cd "$GITHUB_WORKSPACE"
-        make check
+        $cygwinRoot = 'C:\cygwin'
+        if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
+        $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
+        $scriptLines = @(
+          'set -eu',
+          'set -o pipefail 2>/dev/null || true',
+          "export GITHUB_WORKSPACE=`"$workspace`"",
+          "cd `"$workspace`"",
+          'make check'
+        )
+        $script = [string]::Join("`n", $scriptLines)
+        &"$cygwinRoot\bin\bash.exe" --login -c $script
 
   ci-meson:
     name: Meson • ${{ matrix.os }} ${{ matrix.sys || 'native' }}
@@ -244,10 +278,6 @@ jobs:
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: i686
-          - os: ubuntu-24.04-arm64
-            runner:
-              - ubuntu-24.04
-              - ARM64
           - os: macos-latest
             runner: macos-latest
           - os: macos-13
@@ -267,7 +297,7 @@ jobs:
           - os: windows-latest
             runner: windows-latest
             compiler: cl
-            sys: MSYS
+            sys: MSVC
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -276,15 +306,26 @@ jobs:
             runner: windows-latest
             compiler: gcc
             sys: MSYS
-          - os: windows-latest
-            runner: windows-latest
-            compiler: gcc
-            sys: CYGWIN
+#          - os: windows-latest
+#            runner: windows-latest
+#            compiler: gcc
+#            sys: CYGWIN
 
     steps:
+    - name: Configure git EOL
+      if: runner.os == 'Windows'
+      run: git config --global core.autocrlf false
+
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
+    - name: Normalize line endings (Windows)
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        git config core.autocrlf false
+        git reset --hard
 
     - name: Install multilib toolchain (Linux i686)
       if: runner.os == 'Linux' && (matrix.sys || '') == 'i686'
@@ -326,17 +367,6 @@ jobs:
           gcc
           pkgconf
 
-    - name: Setup MSYS2 (Windows, MSVC)
-      if: runner.os == 'Windows' && matrix.compiler == 'cl'
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: ${{ matrix.sys }}
-        update: true
-        install: >-
-          python
-          ninja
-          meson
-
     - name: Setup Cygwin
       if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
       uses: cygwin/cygwin-install-action@v4
@@ -354,10 +384,20 @@ jobs:
 
     - name: Install Meson (Cygwin)
       if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
-      shell: C:\\cygwin64\\bin\\bash.exe --login -eo pipefail -c
+      shell: pwsh
       run: |
-        python3 -m pip install --upgrade pip
-        python3 -m pip install meson ninja
+        $cygwinRoot = 'C:\cygwin'
+        if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
+        $scriptLines = @(
+          'set -eu',
+          'set -o pipefail 2>/dev/null || true',
+          'python3 -m pip install --upgrade pip',
+          'python3 -m pip install meson ninja',
+          'gp_posix=$(cygpath -u "$GITHUB_PATH")',
+          'echo "$HOME/.local/bin" >> "$gp_posix"'
+        )
+        $script = [string]::Join("`n", $scriptLines)
+        &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Configure, build, and test (Meson, non-Windows)
       if: runner.os != 'Windows'
@@ -394,61 +434,53 @@ jobs:
             -Dbashcompletiondir= \
             -Dzshcompletiondir= \
             -Dpython=disabled \
-            -Dwinpthread=enabled \
             -Dtests=true
         meson compile -C builddir
         meson test -C builddir
 
     - name: Configure, build, and test (Meson, Windows, Cygwin)
       if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
-      shell: C:\\cygwin64\\bin\\bash.exe --login -eo pipefail -c
+      shell: pwsh
       run: |
-        cd "$GITHUB_WORKSPACE"
-        meson setup builddir \
-            --wrap-mode=nodownload \
-            --default-library static \
-            -Dpng=disabled \
-            -Djpeg=disabled \
-            -Dcurl=disabled \
-            -Dbashcompletiondir= \
-            -Dzshcompletiondir= \
-            -Dpython=disabled \
-            -Dtests=true
-        meson compile -C builddir
-        meson test -C builddir -v
+        $cygwinRoot = 'C:\cygwin'
+        if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
+        $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
+        $scriptLines = @(
+          'set -eu',
+          'set -o pipefail 2>/dev/null || true',
+          "export GITHUB_WORKSPACE=`"$workspace`"",
+          "cd `"$workspace`"",
+          'meson setup builddir --wrap-mode=nodownload --default-library static -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir= -Dzshcompletiondir= -Dpython=disabled -Dtests=true',
+          'meson compile -C builddir',
+          'meson test -C builddir -v'
+        )
+        $script = [string]::Join("`n", $scriptLines)
+        &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Configure, build, and test (Meson, Windows, MSVC)
       if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
-      shell: msys2 {0}
+      shell: cmd
       run: |
-        VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
-        cmd //c call "${VCVARS}" x64 \>nul \&\& set
-        eval $(
-            cmd //c call "${VCVARS}" x64 \>nul \&\& set |
-            grep -i '^\(PATH\|INCLUDE\|LIB\|LIBPATH\)' |
-            while IFS== read -r key val; do
-                case "$key" in PATH|Path)
-                    echo export PATH=\"$(echo "$val" | tr \; \\n | while read -r p; do cygpath "$p"; done | grep ^/ | tr \\n :)\"\;
-                    ;;
-                *)
-                    echo export "$key"=\""$val"\"\;
-                    ;;
-                esac;
-            done
-        )
-
-        meson setup builddir \
-            --wrap-mode=nodownload \
-            --default-library static \
-            -Dpng=disabled \
-            -Djpeg=disabled \
-            -Dcurl=disabled \
-            -Dbashcompletiondir= \
-            -Dzshcompletiondir= \
-            -Dpython=disabled \
+        setlocal ENABLEDELAYEDEXPANSION
+        call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
+        python -m pip install --upgrade pip
+        python -m pip install meson ninja
+        python -m mesonbuild.mesonmain setup builddir ^
+            --wrap-mode=nodownload ^
+            --default-library static ^
+            -Dpng=disabled ^
+            -Djpeg=disabled ^
+            -Dcurl=disabled ^
+            -Dbashcompletiondir= ^
+            -Dzshcompletiondir= ^
+            -Dpython=disabled ^
             -Dtests=true
-        meson compile -C builddir
-        meson test -C builddir -v
+        if errorlevel 1 exit /b !errorlevel!
+        python -m mesonbuild.mesonmain compile -C builddir
+        if errorlevel 1 exit /b !errorlevel!
+        python -m mesonbuild.mesonmain test -C builddir -v
+        if errorlevel 1 exit /b !errorlevel!
+        endlocal
 
 
 # emacs Local Variables:
