@@ -68,6 +68,9 @@
 #if defined(_WIN32)
 
 # include <windows.h>
+# if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
+#  include <io.h>
+# endif
 # if defined(_MSC_VER)
 #   include <time.h>
 # endif

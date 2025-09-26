@@ -675,7 +675,7 @@ end:
     return nret;
 }
 
-int
+SIXELAPI int
 sixel_scale_tests_main(void)
 {
     int nret = EXIT_FAILURE;
