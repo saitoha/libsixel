@@ -52,7 +52,7 @@ sixel_chunk_destroy(
 
 
 #if HAVE_TESTS
-int
+SIXELAPI int
 sixel_chunk_tests_main(void);
 #endif
 

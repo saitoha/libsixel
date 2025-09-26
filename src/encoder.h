@@ -74,7 +74,7 @@ struct sixel_encoder {
 };
 
 #if HAVE_TESTS
-int
+SIXELAPI int
 sixel_encoder_tests_main(void);
 #endif
 

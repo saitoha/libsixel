@@ -44,7 +44,7 @@ load_gif(
 );
 
 #if HAVE_TESTS
-int
+SIXELAPI int
 sixel_fromgif_tests_main(void);
 #endif
 
