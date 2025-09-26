@@ -187,15 +187,12 @@ jobs:
             --disable-shared \
             --disable-dependency-tracking
         make -j$(getconf _NPROCESSORS_ONLN)
-        if [ '${{ matrix.sys }}' != 'CLANGARM64' ]; then
-          make check
-        else
-          echo 'Skipping make check on CLANGARM64 due to known failure.'
-        fi
+        make check
         mkdir -p libsixel
         make install DESTDIR=$(pwd)/libsixel
         cp README.md LICENSE* libsixel/
         zip -r libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys }}.zip libsixel
+
 
     - name: Configure and build (Windows, MSVC)
       if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}

@@ -33,7 +33,7 @@ struct sixel_allocator {
 };
 
 #if HAVE_TESTS
-int
+SIXELAPI int
 sixel_allocator_tests_main(void);
 #endif
 
