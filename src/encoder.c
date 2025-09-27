@@ -567,7 +567,7 @@ sixel_prepare_specified_palette(
         return status;
     }
 
-    if (!callback_context.dither) {
+    if (! callback_context.dither) {
         sixel_helper_set_additional_message(
             "sixel_prepare_specified_palette() failed.\n"
             "reason: mapfile is empty.");
@@ -957,6 +957,7 @@ sixel_encoder_output_without_macro(
     }
 
     pixelformat = sixel_frame_get_pixelformat(frame);
+    sixel_dither_set_pixelformat(dither, pixelformat);
     depth = sixel_helper_compute_depth(pixelformat);
     if (depth < 0) {
         status = SIXEL_LOGIC_ERROR;
