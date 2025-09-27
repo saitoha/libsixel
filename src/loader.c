@@ -1243,12 +1243,14 @@ load_with_coregraphics(
     data = CFDataCreate(kCFAllocatorDefault,
                         pchunk->buffer,
                         (CFIndex)pchunk->size);
-    if (!data) {
+    if (! data) {
+        status = SIXEL_FALSE;
         goto end;
     }
 
     source = CGImageSourceCreateWithData(data, NULL);
-    if (!source) {
+    if (! source) {
+        status = SIXEL_FALSE;
         goto end;
     }
 
@@ -1272,7 +1274,8 @@ load_with_coregraphics(
     }
 
     color_space = CGColorSpaceCreateDeviceRGB();
-    if (!color_space) {
+    if (! color_space) {
+        status = SIXEL_FALSE;
         goto end;
     }
 
@@ -1290,7 +1293,7 @@ load_with_coregraphics(
                 if (frame_anim_dict) {
                     delay_num = (CFNumberRef)CFDictionaryGetValue(
                         frame_anim_dict, kCGImagePropertyGIFUnclampedDelayTime);
-                    if (!delay_num) {
+                    if (! delay_num) {
                         delay_num = (CFNumberRef)CFDictionaryGetValue(
                             frame_anim_dict, kCGImagePropertyGIFDelayTime);
                     }
@@ -1305,7 +1308,8 @@ load_with_coregraphics(
             frame->delay = (int)(delay_sec * 100);
 
             image = CGImageSourceCreateImageAtIndex(source, (CFIndex)i, NULL);
-            if (!image) {
+            if (! image) {
+                status = SIXEL_FALSE;
                 goto end;
             }
 
