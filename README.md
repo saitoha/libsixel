@@ -348,42 +348,7 @@ You can install libsixel via the following package systems.
 
 ### Build from source package
 
-```
-$ ./configure
-$ make
-# make install
-```
-
-#### Build with optional packages
-
-You can configure with the following options
-
-```
---with-libcurl            build with libcurl (default: auto)
---with-gd                 build with libgd (default: no)
---with-gdk-pixbuf2        build with gdk-pixbuf2 (default: no)
---with-jpeg               build with libjpeg (default: auto)
---with-png                build with libpng (default: auto)
---with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
---with-bashcompletiondir  install bash completion (default: no, use "auto" for default path)
---with-zshcompletiondir   install zsh completion (default: no, use "auto" for default path)
---enable-python           Python interface (default: yes)
---enable-debug            Use debug macro and specific CFLAGS
---enable-gcov             Use gcov
---enable-tests            Build tests
-```
-
-For more information, see "./configure --help".
-
-
-##### Cross compiling with MinGW
-
-You can build a windows binary in cross-build environment.
-
-```
-$ CC=i686-w64-mingw32-gcc cross_compile=yes ./configure --host=i686-w64-mingw32
-$ make
-```
+See [build.md](https://github.com/saitoha/libsixel/blob/master/build.md).
 
 ## Usage of command line tools
 
