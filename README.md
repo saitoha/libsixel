@@ -365,8 +365,8 @@ You can configure with the following options
 --with-jpeg               build with libjpeg (default: auto)
 --with-png                build with libpng (default: auto)
 --with-pkgconfigdir       specify pkgconfig dir (default is libdir/pkgconfig)
---with-bashcompletiondir  specify bashcompletion.d
---with-zshcompletiondir   specify zshcompletion.d
+--with-bashcompletiondir  install bash completion (default: no, use "auto" for default path)
+--with-zshcompletiondir   install zsh completion (default: no, use "auto" for default path)
 --enable-python           Python interface (default: yes)
 --enable-debug            Use debug macro and specific CFLAGS
 --enable-gcov             Use gcov
