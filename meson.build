@@ -673,6 +673,16 @@ configure_file(
 net_summary = ' '.join(net)
 loaders_summary = ' '.join(loaders)
 
+bash_completion_message = 'disabled'
+if bash_completion_dir != ''
+  bash_completion_message = bash_completion_dir
+endif
+
+zsh_completion_message = 'disabled'
+if zsh_completion_dir != ''
+  zsh_completion_message = zsh_completion_dir
+endif
+
 message('')
 message('libsixel was configured as follows')
 message('')
@@ -680,8 +690,8 @@ message('       Loader component    : ' + loaders_summary)
 message('       Network access      : ' + net_summary)
 message('       libwinpthread       : ' + (have_winpthread ? 'yes' : 'no'))
 message('       pkg-config dir      : ' + pkgconfig_dir)
-message('       Bash completion dir : ' + bash_completion_dir)
-message('       Zsh completion dir  : ' + zsh_completion_dir)
+message('       Bash completion dir : ' + bash_completion_message)
+message('       Zsh completion dir  : ' + zsh_completion_message)
 message('       QuickLook extension : ' + quicklook_extension_message)
 message('       WIC codec           : ' + wiccodec_message)
 message('       python bindings     : ' + python_message)

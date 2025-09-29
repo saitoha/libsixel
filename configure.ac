@@ -190,19 +190,29 @@ AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
 AC_SUBST(pkgconfigdir)
 
 AC_ARG_WITH(bashcompletiondir,
-            AS_HELP_STRING([--with-bashcompletiondir],
-                           [Use the specified bashcompletion.d]),
-                           [bashcompletiondir=${withval}],
-                           [bashcompletiondir=${datadir}/bash-completion/completions])
-AC_MSG_NOTICE([bash-completion directory is ${bashcompletiondir}])
+            AS_HELP_STRING([--with-bashcompletiondir[=DIR]],
+                           [Install bash completion to DIR (default: no)]),
+                           [AS_CASE([$withval],
+                                    [yes|auto|''], [bashcompletiondir=${datadir}/bash-completion/completions],
+                                    [no], [bashcompletiondir=],
+                                    [bashcompletiondir=${withval}])],
+                           [bashcompletiondir=])
+AS_IF([test -n "$bashcompletiondir"],
+      [AC_MSG_NOTICE([bash-completion directory is ${bashcompletiondir}])],
+      [AC_MSG_NOTICE([bash-completion installation disabled])])
 AC_SUBST(bashcompletiondir)
 
 AC_ARG_WITH(zshcompletiondir,
-            AS_HELP_STRING([--with-zshcompletiondir],
-                           [Use the specified zshcompletion.d]),
-                           [zshcompletiondir=${withval}],
-                           [zshcompletiondir=${datadir}/zsh/site-functions])
-AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])
+            AS_HELP_STRING([--with-zshcompletiondir[=DIR]],
+                           [Install zsh completion to DIR (default: no)]),
+                           [AS_CASE([$withval],
+                                    [yes|auto|''], [zshcompletiondir=${datadir}/zsh/site-functions],
+                                    [no], [zshcompletiondir=],
+                                    [zshcompletiondir=${withval}])],
+                           [zshcompletiondir=])
+AS_IF([test -n "$zshcompletiondir"],
+      [AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])],
+      [AC_MSG_NOTICE([zsh-completion installation disabled])])
 AC_SUBST(zshcompletiondir)
 
 AC_ARG_ENABLE([simd],
@@ -1374,6 +1384,13 @@ else
     message_register_dll=no
 fi
 
+AS_IF([test -n "$bashcompletiondir"],
+      [message_bashcompletiondir=$bashcompletiondir],
+      [message_bashcompletiondir=disabled])
+AS_IF([test -n "$zshcompletiondir"],
+      [message_zshcompletiondir=$zshcompletiondir],
+      [message_zshcompletiondir=disabled])
+
 echo ""
 echo ""
 echo "libsixel was configured as follows"
@@ -1382,8 +1399,8 @@ echo "       Loader component    : $loaders"
 echo "       Network access      : $net"
 echo "       libwinpthread       : $have_winpthread"
 echo "       pkg-config dir      : $pkgconfigdir"
-echo "       Bash completion dir : $bashcompletiondir"
-echo "       Zsh completion dir  : $zshcompletiondir"
+echo "       Bash completion dir : $message_bashcompletiondir"
+echo "       Zsh completion dir  : $message_zshcompletiondir"
 echo "       QuickLook extension : $message_quicklook_extension"
 echo "       WIC codec           : $message_wiccodec"
 echo "       Register WIC DLL    : $message_register_dll"
