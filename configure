@@ -18093,6 +18093,12 @@ fi
 
 fi
 
+ac_fn_c_check_func "$LINENO" "assert" "ac_cv_func_assert"
+if test "x$ac_cv_func_assert" = xyes
+then :
+  printf "%s\n" "#define HAVE_ASSERT 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "setmode" "ac_cv_func_setmode"
 if test "x$ac_cv_func_setmode" = xyes
 then :
