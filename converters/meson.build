@@ -27,8 +27,12 @@ if get_option('img2sixel').enabled()
     include_directories: project_inc,
     install: true)
   install_man('img2sixel.1')
-  install_data('shell-completion/bash/img2sixel', install_dir: bash_completion_dir)
-  install_data('shell-completion/zsh/_img2sixel', install_dir: zsh_completion_dir)
+  if bash_completion_dir != ''
+    install_data('shell-completion/bash/img2sixel', install_dir: bash_completion_dir)
+  endif
+  if zsh_completion_dir != ''
+    install_data('shell-completion/zsh/_img2sixel', install_dir: zsh_completion_dir)
+  endif
 endif
 
 if get_option('sixel2png').enabled()
