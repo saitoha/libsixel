@@ -1598,7 +1598,7 @@ Optional Features:
   --enable-wiccodec       build WIC codec DLL (default: auto)
   --enable-register-dll   register WIC codec DLL during install (default: no,
                           admin rights required)
-  --enable-python         Python interface (default: auto)
+  --enable-python         Python interface (default: no)
   --enable-ruby           Ruby interface (default: no)
   --enable-debug          Use debug macro and specific CFLAGS
   --enable-gcov           Use gcov
@@ -16465,6 +16465,9 @@ fi
 if test ${enable_python+y}
 then :
   enableval=$enable_python;
+else case e in #(
+  e) enable_python=no ;;
+esac
 fi
 
 
