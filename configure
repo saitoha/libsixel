@@ -1624,9 +1624,10 @@ Optional Packages:
                           (default: auto)
   --with-pkgconfigdir     Use the specified pkgconfig dir (default is
                           libdir/pkgconfig)
-  --with-bashcompletiondir
-                          Use the specified bashcompletion.d
-  --with-zshcompletiondir Use the specified zshcompletion.d
+  --with-bashcompletiondir=DIR
+                          Install bash completion to DIR (default: no)
+  --with-zshcompletiondir=DIR
+                          Install zsh completion to DIR (default: no)
   --with-python-sys-prefix
                           use Python's sys.prefix and sys.exec_prefix values
   --with-python_prefix    override the default PYTHON_PREFIX
@@ -16413,28 +16414,56 @@ printf "%s\n" "$as_me: pkgconfig directory is ${pkgconfigdir}" >&6;}
 # Check whether --with-bashcompletiondir was given.
 if test ${with_bashcompletiondir+y}
 then :
-  withval=$with_bashcompletiondir; bashcompletiondir=${withval}
+  withval=$with_bashcompletiondir; case $withval in #(
+  yes|auto|'') :
+    bashcompletiondir=${datadir}/bash-completion/completions ;; #(
+  no) :
+    bashcompletiondir= ;; #(
+  *) :
+    bashcompletiondir=${withval} ;;
+esac
 else case e in #(
-  e) bashcompletiondir=${datadir}/bash-completion/completions ;;
+  e) bashcompletiondir= ;;
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: bash-completion directory is ${bashcompletiondir}" >&5
+if test -n "$bashcompletiondir"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: bash-completion directory is ${bashcompletiondir}" >&5
 printf "%s\n" "$as_me: bash-completion directory is ${bashcompletiondir}" >&6;}
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: bash-completion installation disabled" >&5
+printf "%s\n" "$as_me: bash-completion installation disabled" >&6;} ;;
+esac
+fi
 
 
 
 # Check whether --with-zshcompletiondir was given.
 if test ${with_zshcompletiondir+y}
 then :
-  withval=$with_zshcompletiondir; zshcompletiondir=${withval}
+  withval=$with_zshcompletiondir; case $withval in #(
+  yes|auto|'') :
+    zshcompletiondir=${datadir}/zsh/site-functions ;; #(
+  no) :
+    zshcompletiondir= ;; #(
+  *) :
+    zshcompletiondir=${withval} ;;
+esac
 else case e in #(
-  e) zshcompletiondir=${datadir}/zsh/site-functions ;;
+  e) zshcompletiondir= ;;
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: zsh-completion directory is ${zshcompletiondir}" >&5
+if test -n "$zshcompletiondir"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: zsh-completion directory is ${zshcompletiondir}" >&5
 printf "%s\n" "$as_me: zsh-completion directory is ${zshcompletiondir}" >&6;}
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: zsh-completion installation disabled" >&5
+printf "%s\n" "$as_me: zsh-completion installation disabled" >&6;} ;;
+esac
+fi
 
 
 # Check whether --enable-simd was given.
@@ -24087,6 +24116,21 @@ else
     message_register_dll=no
 fi
 
+if test -n "$bashcompletiondir"
+then :
+  message_bashcompletiondir=$bashcompletiondir
+else case e in #(
+  e) message_bashcompletiondir=disabled ;;
+esac
+fi
+if test -n "$zshcompletiondir"
+then :
+  message_zshcompletiondir=$zshcompletiondir
+else case e in #(
+  e) message_zshcompletiondir=disabled ;;
+esac
+fi
+
 echo ""
 echo ""
 echo "libsixel was configured as follows"
@@ -24095,8 +24139,8 @@ echo "       Loader component    : $loaders"
 echo "       Network access      : $net"
 echo "       libwinpthread       : $have_winpthread"
 echo "       pkg-config dir      : $pkgconfigdir"
-echo "       Bash completion dir : $bashcompletiondir"
-echo "       Zsh completion dir  : $zshcompletiondir"
+echo "       Bash completion dir : $message_bashcompletiondir"
+echo "       Zsh completion dir  : $message_zshcompletiondir"
 echo "       QuickLook extension : $message_quicklook_extension"
 echo "       WIC codec           : $message_wiccodec"
 echo "       Register WIC DLL    : $message_register_dll"
