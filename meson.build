@@ -540,18 +540,28 @@ endif
 config_h = configure_file(output: 'config.h', configuration: conf)
 project_inc = include_directories('.', 'include', 'src')
 
-bash_completion_dir = get_option('bashcompletiondir')
-if bash_completion_dir == ''
-  bash_completion_dir = join_paths(get_option('datadir'), 'bash-completion', 'completions')
+bash_completion_opt = get_option('bashcompletiondir')
+bash_completion_dir = ''
+if bash_completion_opt != 'disabled'
+  if bash_completion_opt == '' or bash_completion_opt == 'auto'
+    bash_completion_dir = join_paths(get_option('datadir'), 'bash-completion', 'completions')
+  else
+    bash_completion_dir = bash_completion_opt
+  endif
 endif
 
-zsh_completion_dir = get_option('zshcompletiondir')
-if zsh_completion_dir == ''
-  zsh_completion_dir = join_paths(get_option('datadir'), 'zsh', 'site-functions')
+zsh_completion_opt = get_option('zshcompletiondir')
+zsh_completion_dir = ''
+if zsh_completion_opt != 'disabled'
+  if zsh_completion_opt == '' or zsh_completion_opt == 'auto'
+    zsh_completion_dir = join_paths(get_option('datadir'), 'zsh', 'site-functions')
+  else
+    zsh_completion_dir = zsh_completion_opt
+  endif
 endif
 
 py_opt = get_option('python')
-if not py_opt.disabled()
+if py_opt.enabled()
   py_mod = import('python')
   py = py_mod.find_installation(required: py_opt.enabled())
   if py.found()
