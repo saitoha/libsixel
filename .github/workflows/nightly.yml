@@ -183,8 +183,6 @@ jobs:
             --without-bashcompletiondir \
             --without-zshcompletiondir \
             --disable-python \
-            --enable-static \
-            --disable-shared \
             --disable-dependency-tracking
         make -j$(getconf _NPROCESSORS_ONLN)
         make check
