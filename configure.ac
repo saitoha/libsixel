@@ -453,7 +453,8 @@ else
                    ])
 fi
 
-AC_CHECK_FUNCS([setmode \
+AC_CHECK_FUNCS([assert \
+                setmode \
                 _setmode \
                 signal \
                 strdup \

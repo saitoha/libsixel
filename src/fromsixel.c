@@ -31,6 +31,9 @@
 #if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif  /* HAVE_INTTYPES_H */
+#if HAVE_ASSERT_H
+# include <assert.h>
+#endif  /* HAVE_ASSERT_H */
 
 #include <sixel.h>
 #include "output.h"
@@ -242,6 +245,10 @@ image_buffer_init(
     for (i = 0; i < 24; i++) {
         image->palette[n++] = SIXEL_RGB(i * 11, i * 11, i * 11);
     }
+
+#if HAVE_ASSERT
+    assert(n == 256);
+#endif  /* HAVE_ASSERT */
 
     for (; n < SIXEL_PALETTE_MAX; n++) {
         image->palette[n] = SIXEL_RGB(255, 255, 255);
