@@ -1384,6 +1384,13 @@ else
     message_register_dll=no
 fi
 
+AS_IF([test -n "$bashcompletiondir"],
+      [message_bashcompletiondir=$bashcompletiondir],
+      [message_bashcompletiondir=disabled])
+AS_IF([test -n "$zshcompletiondir"],
+      [message_zshcompletiondir=$zshcompletiondir],
+      [message_zshcompletiondir=disabled])
+
 echo ""
 echo ""
 echo "libsixel was configured as follows"
@@ -1392,8 +1399,8 @@ echo "       Loader component    : $loaders"
 echo "       Network access      : $net"
 echo "       libwinpthread       : $have_winpthread"
 echo "       pkg-config dir      : $pkgconfigdir"
-echo "       Bash completion dir : $bashcompletiondir"
-echo "       Zsh completion dir  : $zshcompletiondir"
+echo "       Bash completion dir : $message_bashcompletiondir"
+echo "       Zsh completion dir  : $message_zshcompletiondir"
 echo "       QuickLook extension : $message_quicklook_extension"
 echo "       WIC codec           : $message_wiccodec"
 echo "       Register WIC DLL    : $message_register_dll"
