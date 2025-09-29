@@ -178,6 +178,7 @@ endforeach
 
 # miscellaneous functions
 extra_funcs = [
+  'assert',
   'malloc',
   'realloc',
   'calloc',
