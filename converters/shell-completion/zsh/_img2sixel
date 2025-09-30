@@ -117,6 +117,7 @@ _arguments -S -s -A "-*" -S \
   {-I,--high-color}'[output 15bpp sixel image]' \
   {-u,--use-macro}'[use DECDMAC and DECINVM for GIF animation]' \
   {-n,--macro-number}'[specify a number argument for DECDMAC]' \
+  {-@,--drcs}'[output DRCSMMv1 tiles instead of regular SIXEL image]' \
   {-C,--complexion-score=}'[specify a score value for complexion correction]' \
   {-g,--ignore-delay}'[render GIF animation without delay]' \
   {-S,--static}'[render animated GIF as a static image]' \

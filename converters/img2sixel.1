@@ -65,6 +65,13 @@ use DECDMAC and DEVINVM sequences to optimize GIF animation rendering.
 specify an number argument for DECDMAC and make terminal memorize
 SIXEL image. No image is shown if this option is specified
 .TP 5
+.B \-@, \-\-drcs
+output DRCSMMv1 tiles instead of a regular SIXEL image (experimental).
+.br
+This option requires the terminal to report pixel cell size via
+.B TIOCGWINSZ
+and skips the standard SIXEL header sequences.
+.TP 5
 .B \-C \fICOMPLEXIONSCORE\fP, \-\-complexion-score=\fICOMPLEXIONSCORE\fP
 specify an number argument for the score of complexion correction.
 \fICOMPLEXIONSCORE\fP must be 1 or more.

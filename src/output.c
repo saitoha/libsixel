@@ -67,6 +67,7 @@ sixel_output_new(
     (*output)->has_sdm_glitch = 0;
     (*output)->has_gri_arg_limit = 1;
     (*output)->skip_dcs_envelope = 0;
+    (*output)->skip_header = 0;
     (*output)->palette_type = SIXEL_PALETTETYPE_AUTO;
     (*output)->fn_write = fn_write;
     (*output)->save_pixel = 0;
@@ -182,6 +183,13 @@ SIXELAPI void
 sixel_output_set_skip_dcs_envelope(sixel_output_t *output, int skip)
 {
     output->skip_dcs_envelope = skip;
+}
+
+
+SIXELAPI void
+sixel_output_set_skip_header(sixel_output_t *output, int skip)
+{
+    output->skip_header = skip;
 }
 
 

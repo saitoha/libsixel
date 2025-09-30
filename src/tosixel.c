@@ -313,7 +313,7 @@ sixel_encode_header(int width, int height, sixel_output_t *output)
 
     output->pos = 0;
 
-    if (!output->skip_dcs_envelope) {
+    if (! output->skip_dcs_envelope) {
         if (output->has_8bit_control) {
             sixel_puts(output->buffer + output->pos,
                        DCS_START_8BIT,
@@ -325,6 +325,10 @@ sixel_encode_header(int width, int height, sixel_output_t *output)
                        DCS_START_7BIT_SIZE);
             sixel_advance(output, DCS_START_7BIT_SIZE);
         }
+    }
+
+    if (output->skip_header) {
+        goto laster_attr;
     }
 
     if (p[2] == 0) {
@@ -357,6 +361,7 @@ sixel_encode_header(int width, int height, sixel_output_t *output)
     sixel_putc(output->buffer + output->pos, 'q');
     sixel_advance(output, 1);
 
+laster_attr:
     if (use_raster_attributes) {
         sixel_puts(output->buffer + output->pos, "\"1;1;", 5);
         sixel_advance(output, 5);
