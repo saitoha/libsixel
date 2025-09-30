@@ -57,6 +57,9 @@ struct sixel_output {
      * 1: skip DCS envelope */
     unsigned char skip_dcs_envelope;
 
+    /* 0: emit sixel header, 1: skip header */
+    unsigned char skip_header;
+
     /* PALETTETYPE_AUTO: select palette type automatically
      * PALETTETYPE_HLS : HLS color space
      * PALETTETYPE_RGB : RGB color space */

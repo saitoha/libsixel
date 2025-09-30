@@ -80,6 +80,7 @@ module Libsixel
     extern "void sixel_output_set_gri_arg_limit(void *, int)"
     extern "void sixel_output_set_penetrate_multiplexer(void *, int)"
     extern "void sixel_output_set_skip_dcs_envelope(void *, int)"
+    extern "void sixel_output_set_skip_header(void *, int)"
     extern "void sixel_output_set_palette_type(void *, int)"
     extern "void sixel_output_set_encode_policy(void *, int)"
 

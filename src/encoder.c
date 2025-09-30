@@ -1,4 +1,5 @@
-/*
+/* SPDX-License-Identifier: MIT AND BSD-3-Clause
+ *
  * Copyright (c) 2014-2019 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -17,6 +18,37 @@
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * -------------------------------------------------------------------------------
+ * Portions of this file(sixel_encoder_emit_drcsmmv1_chars) are derived from
+ * mlterm's drcssixel.c.
+ *
+ * Copyright (c) Araki Ken(arakiken@users.sourceforge.net)
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of any author may not be used to endorse or promote
+ *    products derived from this software without their specific prior
+ *    written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
  */
 
 #include "config.h"
@@ -53,6 +85,9 @@
 #if HAVE_SYS_STAT_H
 # include <sys/stat.h>
 #endif  /* HAVE_SYS_STAT_H */
+#if HAVE_SYS_IOCTL_H
+# include <sys/ioctl.h>
+#endif  /* HAVE_SYS_IOCTL_H */
 #if HAVE_FCNTL_H
 # include <fcntl.h>
 #endif  /* HAVE_FCNTL_H */
@@ -380,6 +415,56 @@ sixel_hex_write_callback(
 #endif
 
     return result;
+}
+
+static SIXELSTATUS
+sixel_encoder_ensure_cell_size(sixel_encoder_t *encoder)
+{
+#if defined(TIOCGWINSZ)
+    struct winsize ws;
+    int result;
+
+    if (encoder->cell_width > 0 && encoder->cell_height > 0) {
+        return SIXEL_OK;
+    }
+
+#if HAVE_ISATTY
+    if (! isatty(STDIN_FILENO)) {
+        sixel_helper_set_additional_message(
+            "drcs option requires a tty on stdin.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+#endif
+
+    result = ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
+    if (result != 0) {
+        sixel_helper_set_additional_message(
+            "failed to query terminal geometry with ioctl().");
+        return (SIXEL_LIBC_ERROR | (errno & 0xff));
+    }
+
+    if (ws.ws_col <= 0 || ws.ws_row <= 0 ||
+        ws.ws_xpixel <= ws.ws_col || ws.ws_ypixel <= ws.ws_row) {
+        sixel_helper_set_additional_message(
+            "terminal does not report pixel cell size for drcs option.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    encoder->cell_width = ws.ws_xpixel / ws.ws_col;
+    encoder->cell_height = ws.ws_ypixel / ws.ws_row;
+    if (encoder->cell_width <= 0 || encoder->cell_height <= 0) {
+        sixel_helper_set_additional_message(
+            "terminal cell size reported zero via ioctl().");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return SIXEL_OK;
+#else
+    (void) encoder;
+    sixel_helper_set_additional_message(
+        "drcs option is not supported on this platform.");
+    return SIXEL_NOT_IMPLEMENTED;
+#endif
 }
 
 
@@ -1087,6 +1172,76 @@ end:
 }
 
 
+/*
+ * This routine is derived from mlterm's drcssixel.c
+ * (https://raw.githubusercontent.com/arakiken/mlterm/master/drcssixel/drcssixel.c).
+ * The original implementation is credited to Araki Ken.
+ * Adjusted here to integrate with libsixel's encoder pipeline.
+ */
+static SIXELSTATUS
+sixel_encoder_emit_drcsmmv1_chars(
+    sixel_encoder_t *encoder,
+    sixel_frame_t *frame
+)
+{
+    char *buf_p, *buf;
+    int col, row;
+    int charset = 0x30;
+    int is_96cs = 0;
+    unsigned int code;
+    int num_cols, num_rows;
+    SIXELSTATUS status;
+
+    code = 0x100020 + (is_96cs ? 0x80 : 0) + charset * 0x100;
+    num_cols = (sixel_frame_get_width(frame) + encoder->cell_width - 1)
+             / encoder->cell_width;
+    num_rows = (sixel_frame_get_height(frame) + encoder->cell_height - 1)
+             / encoder->cell_height;
+
+    buf_p = buf = sixel_allocator_malloc(encoder->allocator, num_cols * num_rows);
+    if (buf == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_emit_drcsmmv1_chars: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    for(row = 0; row < num_rows; row++) {
+        for(col = 0; col < num_cols; col++) {
+            *(buf_p++) = ((code >> 18) & 0x07) | 0xf0;
+            *(buf_p++) = ((code >> 12) & 0x3f) | 0x80;
+            *(buf_p++) = ((code >> 6) & 0x3f) | 0x80;
+            *(buf_p++) = (code & 0x3f) | 0x80;
+            code++;
+            if ((code & 0x7f) == 0x0) {
+                if (charset == 0x7e) {
+                    is_96cs = 1 - is_96cs;
+                    charset = '0';
+                } else {
+                    charset++;
+                }
+                code = 0x100020 + (is_96cs ? 0x80 : 0) + charset * 0x100;
+            }
+        }
+        *(buf_p++) = '\n';
+    }
+
+    if (charset == 0x7e) {
+        is_96cs = 1 - is_96cs;
+    } else {
+        charset = '0';
+        charset++;
+    }
+    write(encoder->outfd, buf, buf_p - buf);
+
+    sixel_allocator_free(encoder->allocator, buf);
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
 static SIXELSTATUS
 sixel_encoder_encode_frame(
     sixel_encoder_t *encoder,
@@ -1098,6 +1253,8 @@ sixel_encoder_encode_frame(
     int height;
     int is_animation = 0;
     int nwrite;
+    char buf[256];
+    sixel_write_function fn_write = NULL;
 
     /* evaluate -w, -h, and -c option: crop/scale input source */
     if (encoder->clipfirst) {
@@ -1138,6 +1295,19 @@ sixel_encoder_encode_frame(
         sixel_dither_ref(dither);
     }
 
+    if (encoder->fdrcs) {
+        status = sixel_encoder_ensure_cell_size(encoder);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        if (encoder->fuse_macro || encoder->macro_number >= 0) {
+            sixel_helper_set_additional_message(
+                "drcs option cannot be used together with macro output.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+    }
+
     /* evaluate -v option: print palette */
     if (encoder->verbose) {
         if ((sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_PALETTE)) {
@@ -1159,19 +1329,22 @@ sixel_encoder_encode_frame(
         /* create output context */
         if (encoder->fuse_macro || encoder->macro_number >= 0) {
             /* -u or -n option */
-            status = sixel_output_new(&output,
-                                      sixel_hex_write_callback,
-                                      &encoder->outfd,
-                                      encoder->allocator);
+            fn_write = sixel_hex_write_callback;
         } else {
-            status = sixel_output_new(&output,
-                                      sixel_write_callback,
-                                      &encoder->outfd,
-                                      encoder->allocator);
+            fn_write = sixel_write_callback;
         }
+        status = sixel_output_new(&output,
+                                  fn_write,
+                                  &encoder->outfd,
+                                  encoder->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+    }
+
+    if (encoder->fdrcs) {
+        sixel_output_set_skip_dcs_envelope(output, 1);
+        sixel_output_set_skip_header(output, 1);
     }
 
     sixel_output_set_8bit_availability(output, encoder->f8bit);
@@ -1195,6 +1368,27 @@ sixel_encoder_encode_frame(
         goto end;
     }
 
+    if (encoder->fdrcs) {  /* -@ option */
+        nwrite = sprintf(buf,
+                         "%s?8800h%s1;0;0;%d;1;3;%d;0{ 0",
+                         encoder->f8bit ? "\233": "\033[",
+                         encoder->f8bit ? "\220": "\033P",
+                         encoder->cell_width,
+                         encoder->cell_height);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode_frame: sprintf() failed.");
+            goto end;
+        }
+        nwrite = fn_write(buf, nwrite, &encoder->outfd);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode_frame: write() failed.");
+            goto end;
+        }
+    }
     /* output sixel: junction of multi-frame processing strategy */
     if (encoder->fuse_macro) {  /* -u option */
         /* use macro */
@@ -1206,21 +1400,42 @@ sixel_encoder_encode_frame(
         /* do not use macro */
         status = sixel_encoder_output_without_macro(frame, dither, output, encoder);
     }
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
 
     if (encoder->cancel_flag && *encoder->cancel_flag) {
         nwrite = sixel_write_callback("\x18\033\\", 3, &encoder->outfd);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
-                "load_image_callback: sixel_write_callback() failed.");
+                "sixel_encoder_encode_frame: sixel_write_callback() failed.");
             goto end;
         }
         status = SIXEL_INTERRUPTED;
     }
-
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+
+    if (encoder->fdrcs) {  /* -@ option */
+        if (encoder->f8bit) {
+            nwrite = fn_write("\234", 1, &encoder->outfd);
+        } else {
+            nwrite = fn_write("\033\\", 2, &encoder->outfd);
+        }
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode_frame: fn_write() failed.");
+            goto end;
+        }
+        status = sixel_encoder_emit_drcsmmv1_chars(encoder, frame);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+
 
 end:
     if (output) {
@@ -1282,9 +1497,12 @@ sixel_encoder_new(
     (*ppencoder)->has_gri_arg_limit     = 0;
     (*ppencoder)->finvert               = 0;
     (*ppencoder)->fuse_macro            = 0;
+    (*ppencoder)->fdrcs                 = 0;
     (*ppencoder)->fignore_delay         = 0;
     (*ppencoder)->complexion            = 1;
     (*ppencoder)->fstatic               = 0;
+    (*ppencoder)->cell_width            = 0;
+    (*ppencoder)->cell_height           = 0;
     (*ppencoder)->pixelwidth            = (-1);
     (*ppencoder)->pixelheight           = (-1);
     (*ppencoder)->percentwidth          = (-1);
@@ -1742,6 +1960,9 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_STATIC:  /* S */
         encoder->fstatic = 1;
+        break;
+    case SIXEL_OPTFLAG_DRCS:  /* @ */
+        encoder->fdrcs = 1;
         break;
     case SIXEL_OPTFLAG_PENETRATE:  /* P */
         encoder->penetrate_multiplexer = 1;
