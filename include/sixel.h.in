@@ -374,6 +374,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_PENETRATE         ('P')  /* -P, --penetrate:
                                                   penetrate GNU Screen using DCS
                                                   pass-through sequence */
+#define SIXEL_OPTFLAG_DRCS              ('@')  /* -@, --drcs: emit DRCS tiles */
 #define SIXEL_OPTFLAG_PIPE_MODE         ('D')  /* -D, --pipe-mode: (deprecated)
                                                   read source images from stdin continuously */
 #define SIXEL_OPTFLAG_VERBOSE           ('v')  /* -v, --verbose: show debugging info */
@@ -642,6 +643,13 @@ sixel_output_set_skip_dcs_envelope(
     sixel_output_t /* in */ *output,   /* output context */
     int            /* in */ skip);     /* 0: output DCS envelope
                                           1: do not output DCS envelope */
+
+/* set whether we skip to emit parameter bytes and final byte 'q' (P..P q)
+   after DCS introducer */
+SIXELAPI void
+sixel_output_set_skip_header(
+    sixel_output_t /* in */ *output,
+    int            /* in */ skip);
 
 /* set palette type: RGB or HLS */
 SIXELAPI void

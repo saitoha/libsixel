@@ -461,6 +461,13 @@ def sixel_output_set_skip_dcs_envelope(output):
     _sixel.sixel_output_set_skip_dcs_envelope(output)
 
 
+# set whether we skip SIXEL header
+def sixel_output_set_skip_header(output):
+    _sixel.sixel_output_set_skip_header.restype = None
+    _sixel.sixel_output_set_skip_header.argtypes = [c_void_p, c_int]
+    _sixel.sixel_output_set_skip_header(output)
+
+
 # set palette type: RGB or HLS
 def sixel_output_set_palette_type(output):
     _sixel.sixel_output_set_palette_type.restype = None
