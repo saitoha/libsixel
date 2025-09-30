@@ -370,7 +370,7 @@ main(int argc, char *argv[])
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    char const *optstring = "o:78ORp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:B:C:DVH";
+    char const *optstring = "o:78Rp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:B:C:D@OVH";
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",          required_argument,  &long_opt, 'o'},
@@ -404,6 +404,7 @@ main(int argc, char *argv[])
         {"bgcolor",          required_argument,  &long_opt, 'B'},
         {"complexion-score", required_argument,  &long_opt, 'C'},
         {"pipe-mode",        no_argument,        &long_opt, 'D'}, /* deprecated */
+        {"drcs",             no_argument,        &long_opt, '@'},
         {"ormode",           no_argument,        &long_opt, 'O'},
         {"version",          no_argument,        &long_opt, 'V'},
         {"help",             no_argument,        &long_opt, 'H'},
@@ -491,7 +492,7 @@ main(int argc, char *argv[])
 
 argerr:
     fprintf(stderr,
-            "usage: img2sixel [-78eIkiugvSPDOVH] [-p colors] [-m file] [-d diffusiontype]\n"
+            "usage: img2sixel [-78eIkiugvSPD@OVH] [-p colors] [-m file] [-d diffusiontype]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
             "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
