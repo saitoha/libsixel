@@ -1191,6 +1191,7 @@ sixel_encoder_emit_drcsmmv1_chars(
     unsigned int code;
     int num_cols, num_rows;
     SIXELSTATUS status;
+    size_t alloc_size;
 
     code = 0x100020 + (is_96cs ? 0x80 : 0) + charset * 0x100;
     num_cols = (sixel_frame_get_width(frame) + encoder->cell_width - 1)
@@ -1198,7 +1199,9 @@ sixel_encoder_emit_drcsmmv1_chars(
     num_rows = (sixel_frame_get_height(frame) + encoder->cell_height - 1)
              / encoder->cell_height;
 
-    buf_p = buf = sixel_allocator_malloc(encoder->allocator, num_cols * num_rows);
+    /* cols x rows x 4(out of BMP) + rows(LFs) */
+    alloc_size = num_cols * num_rows * 4 + num_rows;
+    buf_p = buf = sixel_allocator_malloc(encoder->allocator, alloc_size);
     if (buf == NULL) {
         sixel_helper_set_additional_message(
             "sixel_encoder_emit_drcsmmv1_chars: sixel_allocator_malloc() failed.");
