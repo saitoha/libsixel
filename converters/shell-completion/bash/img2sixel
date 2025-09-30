@@ -131,6 +131,7 @@ _img2sixel()
                                    -I --high-color \
                                    -u --use-macro \
                                    -n --macro-number \
+                                   -@ --drcs \
                                    -C --complexion-score \
                                    -g --ignore-delay \
                                    -S --static \

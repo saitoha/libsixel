@@ -74,6 +74,11 @@ class Output
     nil
   end
 
+  def set_skip_header(v)
+    Libsixel::API.sixel_output_set_skip_header(@ptr, v.to_i)
+    nil
+  end
+
   def set_palette_type(t)
     Libsixel::API.sixel_output_set_palette_type(@ptr, t.to_i)
     nil
