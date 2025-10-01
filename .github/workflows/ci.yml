@@ -267,6 +267,94 @@ jobs:
         $script = [string]::Join("`n", $scriptLines)
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
+  ci-autotools-asan:
+    name: Autotools ASan • ${{ matrix.os }} clang
+    runs-on: ${{ matrix.runner || matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+          - os: macos-latest
+            runner: macos-latest
+          - os: macos-13
+            runner: macos-13
+          - os: windows-latest
+            runner: windows-latest
+            sys: CLANG64
+    env:
+      ASAN_CFLAGS: "-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+      ASAN_LDFLAGS: "-fsanitize=address"
+    steps:
+    - name: Configure git EOL
+      if: runner.os == 'Windows'
+      run: git config --global core.autocrlf false
+
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Normalize line endings (Windows)
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        git config core.autocrlf false
+        git reset --hard
+
+    - name: Install clang (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang
+
+    - name: Setup MSYS2 (Windows, clang)
+      if: runner.os == 'Windows'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.sys }}
+        update: true
+        install: >-
+          make
+          zip
+          pkgconf
+        pacboy: >-
+          cc:p
+
+    - name: Configure and build (ASan, non-Windows)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        CC=clang \
+        CFLAGS="$ASAN_CFLAGS" \
+        LDFLAGS="$ASAN_LDFLAGS" \
+        ./configure \
+            --without-png \
+            --without-jpeg \
+            --without-libcurl \
+            --without-bashcompletiondir \
+            --without-zshcompletiondir \
+            --disable-python \
+            --enable-debug \
+            --enable-tests \
+            --disable-dependency-tracking
+        make
+
+    - name: Configure and build (ASan, Windows)
+      if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: |
+        CC=clang CFLAGS="$ASAN_CFLAGS" LDFLAGS="$ASAN_LDFLAGS" ./configure \
+            --without-png \
+            --without-jpeg \
+            --without-libcurl \
+            --without-bashcompletiondir \
+            --without-zshcompletiondir \
+            --disable-python \
+            --enable-debug \
+            --enable-tests \
+            --disable-dependency-tracking
+        make
+
   ci-meson:
     name: Meson • ${{ matrix.os }} ${{ matrix.sys || 'native' }}
     runs-on: ${{ matrix.runner || matrix.os }}
