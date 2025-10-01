@@ -1411,59 +1411,59 @@ end:
 static int
 detect_file_format(int len, unsigned char *data)
 {
-    if (memcmp("TRUEVISION", data + len - 18, 10) == 0) {
+    if (len > 18 && memcmp("TRUEVISION", data + len - 18, 10) == 0) {
         return SIXEL_FORMAT_TGA;
     }
 
-    if (memcmp("GIF", data, 3) == 0) {
+    if (len > 3 && memcmp("GIF", data, 3) == 0) {
         return SIXEL_FORMAT_GIF;
     }
 
-    if (memcmp("\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", data, 8) == 0) {
+    if (len > 8 && memcmp("\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", data, 8) == 0) {
         return SIXEL_FORMAT_PNG;
     }
 
-    if (memcmp("BM", data, 2) == 0) {
+    if (len > 2 && memcmp("BM", data, 2) == 0) {
         return SIXEL_FORMAT_BMP;
     }
 
-    if (memcmp("\xFF\xD8", data, 2) == 0) {
+    if (len > 2 && memcmp("\xFF\xD8", data, 2) == 0) {
         return SIXEL_FORMAT_JPG;
     }
 
-    if (memcmp("\x00\x00", data, 2) == 0) {
+    if (len > 2 && memcmp("\x00\x00", data, 2) == 0) {
         return SIXEL_FORMAT_WBMP;
     }
 
-    if (memcmp("\x4D\x4D", data, 2) == 0) {
+    if (len > 2 && memcmp("\x4D\x4D", data, 2) == 0) {
         return SIXEL_FORMAT_TIFF;
     }
 
-    if (memcmp("\x49\x49", data, 2) == 0) {
+    if (len > 2 && memcmp("\x49\x49", data, 2) == 0) {
         return SIXEL_FORMAT_TIFF;
     }
 
-    if (memcmp("\033P", data, 2) == 0) {
+    if (len > 2 && memcmp("\033P", data, 2) == 0) {
         return SIXEL_FORMAT_SIXEL;
     }
 
-    if (data[0] == 0x90  && (data[len-1] == 0x9C || data[len-2] == 0x9C)) {
+    if (len > 2 && data[0] == 0x90  && (data[len - 1] == 0x9C || data[len - 2] == 0x9C)) {
         return SIXEL_FORMAT_SIXEL;
     }
 
-    if (data[0] == 'P' && data[1] >= '1' && data[1] <= '6') {
+    if (len > 1 && data[0] == 'P' && data[1] >= '1' && data[1] <= '6') {
         return SIXEL_FORMAT_PNM;
     }
 
-    if (memcmp("gd2", data, 3) == 0) {
+    if (len > 3 && memcmp("gd2", data, 3) == 0) {
         return SIXEL_FORMAT_GD2;
     }
 
-    if (memcmp("8BPS", data, 4) == 0) {
+    if (len > 4 && memcmp("8BPS", data, 4) == 0) {
         return SIXEL_FORMAT_PSD;
     }
 
-    if (memcmp("#?RADIANCE\n", data, 11) == 0) {
+    if (len > 11 && memcmp("#?RADIANCE\n", data, 11) == 0) {
         return SIXEL_FORMAT_HDR;
     }
 
