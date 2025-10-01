@@ -288,6 +288,21 @@ jobs:
             variant_suffix: ' • with-gdk-pixbuf2'
             configure_extra: '--with-gdk-pixbuf2'
             apt: 'libgdk-pixbuf2.0-dev'
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+            variant_suffix: ' • with-png'
+            configure_extra: '--with-png'
+            apt: 'libpng-dev'
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+            variant_suffix: ' • with-jpeg'
+            configure_extra: '--with-jpeg'
+            apt: 'libjpeg-turbo8-dev'
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+            variant_suffix: ' • with-libcurl'
+            configure_extra: '--with-libcurl'
+            apt: 'libcurl4-openssl-dev'
           - os: macos-latest
             runner: macos-latest
             variant_suffix: ''
