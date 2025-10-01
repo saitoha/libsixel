@@ -268,20 +268,70 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
   ci-autotools-asan:
-    name: Autotools ASan • ${{ matrix.os }} clang
+    name: Autotools ASan • ${{ matrix.os }} clang${{ matrix.variant_suffix }}
     runs-on: ${{ matrix.runner || matrix.os }}
     strategy:
       matrix:
         include:
           - os: ubuntu-latest
             runner: ubuntu-latest
+            variant_suffix: ''
+            configure_extra: ''
+            apt: ''
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+            variant_suffix: ' • with-gd'
+            configure_extra: '--with-gd'
+            apt: 'libgd-dev'
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+            variant_suffix: ' • with-gdk-pixbuf2'
+            configure_extra: '--with-gdk-pixbuf2'
+            apt: 'libgdk-pixbuf2.0-dev'
           - os: macos-latest
             runner: macos-latest
+            variant_suffix: ''
+            configure_extra: ''
+            apt: ''
+          - os: macos-latest
+            runner: macos-latest
+            variant_suffix: ' • enable-quicklook-extension'
+            configure_extra: '--enable-quicklook-extension'
+            apt: ''
+          - os: macos-latest
+            runner: macos-latest
+            variant_suffix: ' • with-coregraphics'
+            configure_extra: '--with-coregraphics'
+            apt: ''
           - os: macos-13
             runner: macos-13
+            variant_suffix: ''
+            configure_extra: ''
+            apt: ''
           - os: windows-latest
             runner: windows-latest
             sys: CLANG64
+            variant_suffix: ''
+            configure_extra: ''
+            apt: ''
+          - os: windows-latest
+            runner: windows-latest
+            sys: CLANG64
+            variant_suffix: ' • with-wic'
+            configure_extra: '--with-wic'
+            apt: ''
+          - os: windows-latest
+            runner: windows-latest
+            sys: CLANG64
+            variant_suffix: ' • enable-wiccodec'
+            configure_extra: '--enable-wiccodec'
+            apt: ''
+          - os: windows-latest
+            runner: windows-latest
+            sys: CLANG64
+            variant_suffix: ' • with-winhttp'
+            configure_extra: '--with-winhttp'
+            apt: ''
     env:
       ASAN_CFLAGS: "-fsanitize=address -O1 -g -fno-omit-frame-pointer"
       ASAN_LDFLAGS: "-fsanitize=address"
@@ -307,6 +357,12 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y clang
 
+    - name: Install dependencies (Ubuntu variant)
+      if: runner.os == 'Linux' && matrix.apt != ''
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ${{ matrix.apt }}
+
     - name: Setup MSYS2 (Windows, clang)
       if: runner.os == 'Windows'
       uses: msys2/setup-msys2@v2
@@ -324,6 +380,7 @@ jobs:
       if: runner.os != 'Windows'
       shell: bash
       run: |
+        extra='${{ matrix.configure_extra }}'
         CC=clang \
         CFLAGS="$ASAN_CFLAGS" \
         LDFLAGS="$ASAN_LDFLAGS" \
@@ -336,13 +393,15 @@ jobs:
             --disable-python \
             --enable-debug \
             --enable-tests \
-            --disable-dependency-tracking
+            --disable-dependency-tracking \
+            ${extra:+$extra}
         make
 
     - name: Configure and build (ASan, Windows)
       if: runner.os == 'Windows'
       shell: msys2 {0}
       run: |
+        extra='${{ matrix.configure_extra }}'
         CC=clang CFLAGS="$ASAN_CFLAGS" LDFLAGS="$ASAN_LDFLAGS" ./configure \
             --without-png \
             --without-jpeg \
@@ -352,7 +411,8 @@ jobs:
             --disable-python \
             --enable-debug \
             --enable-tests \
-            --disable-dependency-tracking
+            --disable-dependency-tracking \
+            ${extra:+$extra}
         make
 
   ci-meson:
