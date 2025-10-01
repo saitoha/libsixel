@@ -1554,8 +1554,6 @@ load_with_coregraphics(
         }
     }
 
-    sixel_frame_unref(frame);
-
     status = SIXEL_OK;
 
 end:
