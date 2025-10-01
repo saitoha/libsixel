@@ -1563,6 +1563,7 @@ load_with_gd(
             }
 
             status = fn_load(frame, context);
+            sixel_frame_unref(frame);
             frame = NULL;
             gdImageDestroy(im);
             ims[i] = NULL;
@@ -1590,11 +1591,6 @@ gif_end:
         status = SIXEL_GD_ERROR;
         goto end;
 #endif
-    }
-
-    status = sixel_frame_new(&frame, pchunk->allocator);
-    if (SIXEL_FAILED(status)) {
-        goto end;
     }
 
     switch (format) {
@@ -1662,10 +1658,16 @@ gif_end:
 #endif
     }
 
+    status = sixel_frame_new(&frame, pchunk->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
     frame->width = gdImageSX(im);
     frame->height = gdImageSY(im);
     frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    p = frame->pixels = sixel_allocator_malloc(pchunk->allocator, (size_t)(frame->width * frame->height * 3));
+    p = frame->pixels = sixel_allocator_malloc(
+        pchunk->allocator, (size_t)(frame->width * frame->height * 3));
     if (frame->pixels == NULL) {
         sixel_helper_set_additional_message(
             "load_with_gd: sixel_allocator_malloc() failed.");
@@ -1687,6 +1689,8 @@ gif_end:
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+
+    sixel_frame_unref(frame);
 
     status = SIXEL_OK;
 
