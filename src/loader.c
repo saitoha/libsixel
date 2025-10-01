@@ -1382,6 +1382,8 @@ load_with_coregraphics(
         }
     }
 
+    sixel_frame_unref(frame);
+
     status = SIXEL_OK;
 
 end:
@@ -1533,6 +1535,7 @@ load_with_gd(
 
             status = sixel_frame_new(&frame, pchunk->allocator);
             if (SIXEL_FAILED(status)) {
+                frame = NULL;
                 goto gif_end;
             }
 
@@ -1649,6 +1652,7 @@ gif_end:
     if (!gdImageTrueColor(im)) {
 #if HAVE_DECL_GDIMAGEPALETTETOTRUECOLOR
         if (!gdImagePaletteToTrueColor(im)) {
+            gdImageDestroy(im);
             status = SIXEL_GD_ERROR;
             /* TODO: retrieve error detail */
             goto end;
