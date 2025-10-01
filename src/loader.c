@@ -1255,6 +1255,10 @@ load_with_coregraphics(
     }
 
     frame_count = CGImageSourceGetCount(source);
+    if (! frame_count) {
+        status = SIXEL_FALSE;
+        goto end;
+    }
     if (fstatic) {
         frame_count = 1;
     }
