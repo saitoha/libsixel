@@ -1554,6 +1554,8 @@ load_with_coregraphics(
         }
     }
 
+    sixel_frame_unref(frame);
+
     status = SIXEL_OK;
 
 end:
@@ -1705,6 +1707,7 @@ load_with_gd(
 
             status = sixel_frame_new(&frame, pchunk->allocator);
             if (SIXEL_FAILED(status)) {
+                frame = NULL;
                 goto gif_end;
             }
 
