@@ -2331,6 +2331,7 @@ sixel_helper_load_image_file(
     status = SIXEL_FALSE;
 #ifdef HAVE_WIC
     if (SIXEL_FAILED(status) && !chunk_is_gif(pchunk)) {
+        loader_trace_try("wic");
         status = load_with_wic(pchunk,
                                fstatic,
                                fuse_palette,
@@ -2339,10 +2340,12 @@ sixel_helper_load_image_file(
                                loop_control,
                                fn_load,
                                context);
+        loader_trace_result("wic", status);
     }
 #endif  /* HAVE_WIC */
 #ifdef HAVE_COREGRAPHICS
     if (SIXEL_FAILED(status)) {
+        loader_trace_try("coregraphics");
         status = load_with_coregraphics(pchunk,
                                         fstatic,
                                         fuse_palette,
@@ -2351,6 +2354,7 @@ sixel_helper_load_image_file(
                                         loop_control,
                                         fn_load,
                                         context);
+        loader_trace_result("coregraphics", status);
     }
 #endif  /* HAVE_COREGRAPHICS */
 #ifdef HAVE_GDK_PIXBUF2
@@ -2369,6 +2373,7 @@ sixel_helper_load_image_file(
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
     if (SIXEL_FAILED(status)) {
+        loader_trace_try("gd");
         status = load_with_gd(pchunk,
                               fstatic,
                               fuse_palette,
