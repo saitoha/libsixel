@@ -67,12 +67,43 @@
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
 #endif
 
-#include "frame.h"
 #include <sixel.h>
+#include "loader.h"
+#include "frame.h"
 #include "chunk.h"
 #include "frompnm.h"
 #include "fromgif.h"
 #include "allocator.h"
+
+static int loader_trace_enabled;
+
+void
+sixel_helper_set_loader_trace(int enable)
+{
+    loader_trace_enabled = enable ? 1 : 0;
+}
+
+static void
+loader_trace_try(char const *name)
+{
+    if (loader_trace_enabled) {
+        fprintf(stderr, "libsixel: trying %s loader\n", name);
+    }
+}
+
+static void
+loader_trace_result(char const *name, SIXELSTATUS status)
+{
+    if (!loader_trace_enabled) {
+        return;
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        fprintf(stderr, "libsixel: loader %s succeeded\n", name);
+    } else {
+        fprintf(stderr, "libsixel: loader %s failed (%s)\n",
+                name, sixel_helper_format_error(status));
+    }
+}
 
 sixel_allocator_t *stbi_allocator;
 
@@ -2296,6 +2327,7 @@ sixel_helper_load_image_file(
     status = SIXEL_FALSE;
 #ifdef HAVE_WIC
     if (SIXEL_FAILED(status) && !chunk_is_gif(pchunk)) {
+        loader_trace_try("wic");
         status = load_with_wic(pchunk,
                                fstatic,
                                fuse_palette,
@@ -2304,10 +2336,12 @@ sixel_helper_load_image_file(
                                loop_control,
                                fn_load,
                                context);
+        loader_trace_result("wic", status);
     }
 #endif  /* HAVE_WIC */
 #ifdef HAVE_COREGRAPHICS
     if (SIXEL_FAILED(status)) {
+        loader_trace_try("coregraphics");
         status = load_with_coregraphics(pchunk,
                                         fstatic,
                                         fuse_palette,
@@ -2316,10 +2350,12 @@ sixel_helper_load_image_file(
                                         loop_control,
                                         fn_load,
                                         context);
+        loader_trace_result("coregraphics", status);
     }
 #endif  /* HAVE_COREGRAPHICS */
 #ifdef HAVE_GDK_PIXBUF2
     if (SIXEL_FAILED(status)) {
+        loader_trace_try("gdk-pixbuf2");
         status = load_with_gdkpixbuf(pchunk,
                                      fstatic,
                                      fuse_palette,
@@ -2328,10 +2364,12 @@ sixel_helper_load_image_file(
                                      loop_control,
                                      fn_load,
                                      context);
+        loader_trace_result("gdk-pixbuf2", status);
     }
 #endif  /* HAVE_GDK_PIXBUF2 */
 #if HAVE_GD
     if (SIXEL_FAILED(status)) {
+        loader_trace_try("gd");
         status = load_with_gd(pchunk,
                               fstatic,
                               fuse_palette,
@@ -2340,9 +2378,11 @@ sixel_helper_load_image_file(
                               loop_control,
                               fn_load,
                               context);
+        loader_trace_result("gd", status);
     }
 #endif  /* HAVE_GD */
     if (SIXEL_FAILED(status)) {
+        loader_trace_try("builtin");
         status = load_with_builtin(pchunk,
                                    fstatic,
                                    fuse_palette,
@@ -2351,6 +2391,7 @@ sixel_helper_load_image_file(
                                    loop_control,
                                    fn_load,
                                    context);
+        loader_trace_result("builtin", status);
     }
     if (SIXEL_FAILED(status)) {
         goto end;
