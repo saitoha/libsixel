@@ -137,6 +137,8 @@ _arguments -S -s -A "-*" -S \
   {-P,--penetrate}'[penetrate GNU Screen using DCS pass-through sequence]' \
   {-D,--pipe-mode}'[read source images from stdin continuously]' \
   {-v,--verbose}'[show debugging information]' \
+  {-@,--drcs}'[output DRCSMMv1 tiles instead of regular SIXEL image]' \
+  {-O,--ormode}'[output ormode sixel image]' \
   {-V,--version}'[show version and license information]' \
   {-H,--help}'[show help]' \
   '*:files:_files' \

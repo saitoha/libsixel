@@ -47,6 +47,8 @@ module Libsixel
 
     # Basic constants and status helpers
     SIXEL_FALSE = 0x1000 unless const_defined?(:SIXEL_FALSE)
+    SIXEL_OPTFLAG_DRCS = '@' unless const_defined?(:SIXEL_OPTFLAG_DRCS)
+    SIXEL_OPTFLAG_ORMODE = 'O' unless const_defined?(:SIXEL_OPTFLAG_ORMODE)
     def self.succeeded?(status) ((status & SIXEL_FALSE) == 0) end
     def self.failed?(status)    ((status & SIXEL_FALSE) != 0) end
 
@@ -82,6 +84,7 @@ module Libsixel
     extern "void sixel_output_set_skip_dcs_envelope(void *, int)"
     extern "void sixel_output_set_skip_header(void *, int)"
     extern "void sixel_output_set_palette_type(void *, int)"
+    extern "void sixel_output_set_ormode(void *, int)"
     extern "void sixel_output_set_encode_policy(void *, int)"
 
     extern "int sixel_dither_new(void *, int, void *)"

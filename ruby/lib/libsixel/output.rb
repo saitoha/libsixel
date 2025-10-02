@@ -84,6 +84,11 @@ class Output
     nil
   end
 
+  def set_ormode(v)
+    Libsixel::API.sixel_output_set_ormode(@ptr, v.to_i)
+    nil
+  end
+
   def set_encode_policy(p)
     Libsixel::API.sixel_output_set_encode_policy(@ptr, p.to_i)
     nil
