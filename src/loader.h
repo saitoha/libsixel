@@ -26,6 +26,8 @@
 extern "C" {
 #endif
 
+void sixel_helper_set_loader_trace(int enable);
+
 #if HAVE_TESTS
 SIXELAPI int
 sixel_loader_tests_main(void);

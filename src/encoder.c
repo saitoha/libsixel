@@ -96,6 +96,7 @@
 #endif  /* HAVE_ERRNO_H */
 
 #include <sixel.h>
+#include "loader.h"
 #include "tty.h"
 #include "encoder.h"
 #include "rgblookup.h"
@@ -634,6 +635,7 @@ sixel_prepare_specified_palette(
     callback_context.dither = NULL;
     callback_context.allocator = encoder->allocator;
 
+    sixel_helper_set_loader_trace(encoder->verbose);
     status = sixel_helper_load_image_file(encoder->mapfile,
                                           1,   /* fstatic */
                                           1,   /* fuse_palette */
@@ -1960,6 +1962,7 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_VERBOSE:  /* v */
         encoder->verbose = 1;
+        sixel_helper_set_loader_trace(1);
         break;
     case SIXEL_OPTFLAG_STATIC:  /* S */
         encoder->fstatic = 1;
@@ -2122,6 +2125,7 @@ sixel_encoder_encode(
     }
 
 reload:
+    sixel_helper_set_loader_trace(encoder->verbose);
     status = sixel_helper_load_image_file(filename,
                                           encoder->fstatic,
                                           fuse_palette,
