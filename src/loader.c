@@ -1475,9 +1475,36 @@ load_with_coregraphics(
                                          &delay_sec);
                     }
                 }
+#if defined(kCGImagePropertyPNGDictionary) && \
+    defined(kCGImagePropertyAPNGUnclampedDelayTime) && \
+    defined(kCGImagePropertyAPNGDelayTime)
+                if (delay_sec <= 0.0) {
+                    CFDictionaryRef png_frame = (CFDictionaryRef)CFDictionaryGetValue(
+                        frame_props, kCGImagePropertyPNGDictionary);
+                    if (png_frame) {
+                        delay_num = (CFNumberRef)CFDictionaryGetValue(
+                            png_frame, kCGImagePropertyAPNGUnclampedDelayTime);
+                        if (! delay_num) {
+                            delay_num = (CFNumberRef)CFDictionaryGetValue(
+                                png_frame, kCGImagePropertyAPNGDelayTime);
+                        }
+                        if (delay_num) {
+                            CFNumberGetValue(delay_num,
+                                             kCFNumberDoubleType,
+                                             &delay_sec);
+                        }
+                    }
+                }
+#endif
                 CFRelease(frame_props);
             }
-            frame->delay = (int)(delay_sec * 100);
+            if (delay_sec <= 0.0) {
+                delay_sec = 0.1;
+            }
+            frame->delay = (int)(delay_sec * 100.0 + 0.5);
+            if (frame->delay < 1) {
+                frame->delay = 1;
+            }
 
             image = CGImageSourceCreateImageAtIndex(source, (CFIndex)i, NULL);
             if (! image) {
