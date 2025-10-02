@@ -342,6 +342,7 @@ SIXEL_OPTFLAG_ENCODE_POLICY    = 'E'  # -E ENCODEPOLICY, --encode-policy=ENCODEP
                                       #          fast -> encode as fast as possible
                                       #          size -> encode to as small sixel
                                       #                  sequence as possible
+SIXEL_OPTFLAG_ORMODE           = 'O'  # -O, --ormode: output ormode sixel image
 
 SIXEL_OPTFLAG_BGCOLOR          = 'B'  # -B BGCOLOR, --bgcolor=BGCOLOR:
                                       #        specify background color
@@ -359,6 +360,8 @@ SIXEL_OPTFLAG_BGCOLOR          = 'B'  # -B BGCOLOR, --bgcolor=BGCOLOR:
 SIXEL_OPTFLAG_PENETRATE        = 'P'  # -P, --penetrate:
                                       #        penetrate GNU Screen using DCS
                                       #        pass-through sequence
+SIXEL_OPTFLAG_DRCS             = '@'  # -@, --drcs: emit DRCSMMv1 tiles instead of
+                                      #        regular SIXEL image
 SIXEL_OPTFLAG_PIPE_MODE        = 'D'  # -D, --pipe-mode: (deprecated)
                                       #         read source images from stdin continuously
 SIXEL_OPTFLAG_VERBOSE          = 'v'  # -v, --verbose: show debugging info
@@ -469,10 +472,17 @@ def sixel_output_set_skip_header(output):
 
 
 # set palette type: RGB or HLS
-def sixel_output_set_palette_type(output):
+def sixel_output_set_palette_type(output, palettetype):
     _sixel.sixel_output_set_palette_type.restype = None
     _sixel.sixel_output_set_palette_type.argtypes = [c_void_p, c_int]
-    _sixel.sixel_output_set_palette_type(output)
+    _sixel.sixel_output_set_palette_type(output, palettetype)
+
+
+# enable or disable ormode output
+def sixel_output_set_ormode(output, ormode):
+    _sixel.sixel_output_set_ormode.restype = None
+    _sixel.sixel_output_set_ormode.argtypes = [c_void_p, c_int]
+    _sixel.sixel_output_set_ormode(output, ormode)
 
 
 # set encodeing policy: auto, fast or size

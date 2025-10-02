@@ -151,6 +151,8 @@ _img2sixel()
                                    -P --penetrate \
                                    -D --pipe-mode \
                                    -v --verbose \
+                                   -@ --drcs \
+                                   -O --ormode \
                                    -V --version \
                                    -H --help \
                                   ' -- "$cur" ))

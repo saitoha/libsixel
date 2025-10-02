@@ -273,6 +273,20 @@ penetrate GNU Screen using DCS pass-through sequence.
 .B \-v, \-\-verbose
 show debugging info.
 .TP 5
+.B \-@, \-\-drcs
+output DRCSMMv1 tiles instead of a regular SIXEL image (experimental).
+.br
+This option requires the terminal to report pixel cell size via
+.B TIOCGWINSZ
+and skips the standard SIXEL header sequences.
+.TP 5
+.B \-O, \-\-ormode
+This option enables sixel output in "ormode". ormode is a SIXEL graphics
+dialect originating from the netbsd/x68k console \fIite\fP and the twitter
+client \fIsayaka\fP. It decomposes palette indices into bitplanes and
+represents the index by overlaying planes via repaints, with the goal of
+reducing output size.
+.TP 5
 .B \-V, \-\-version
 show version and license info.
 .TP 5
@@ -398,7 +412,8 @@ and imported some code from \fIpnmquant.c (netpbm library)\fP for image quantiza
 
 
 .SH COPYRIGHT
-Copyright (c) 2014-2016 Hayaki Saito
+Copyright (c) 2021-2025 libsixel developers.
+Copyright (c) 2014-2020 Hayaki Saito
 .PP
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in

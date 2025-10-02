@@ -328,6 +328,9 @@ void show_help(void)
             "-D, --pipe-mode            [[deprecated]] read source images from\n"
             "                           stdin continuously\n"
             "-v, --verbose              show debugging info\n"
+            "-@, --drcs                 output DRCSMMv1 tiles instead of regular\n"
+            "                           SIXEL image (experimental)\n"
+            "-O, --ormode               output ormode sixel image\n"
             "-V, --version              show version and license info\n"
             "-H, --help                 show this help\n"
             "\n"
@@ -369,7 +372,7 @@ main(int argc, char *argv[])
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    char const *optstring = "o:78Rp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:B:C:DVH@";
+    char const *optstring = "o:78Rp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:B:C:D@OVH";
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",          required_argument,  &long_opt, 'o'},
@@ -404,6 +407,7 @@ main(int argc, char *argv[])
         {"complexion-score", required_argument,  &long_opt, 'C'},
         {"pipe-mode",        no_argument,        &long_opt, 'D'}, /* deprecated */
         {"drcs",             no_argument,        &long_opt, '@'},
+        {"ormode",           no_argument,        &long_opt, 'O'},
         {"version",          no_argument,        &long_opt, 'V'},
         {"help",             no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}
@@ -490,7 +494,7 @@ main(int argc, char *argv[])
 
 argerr:
     fprintf(stderr,
-            "usage: img2sixel [-78eIkiugvSPDVH@] [-p colors] [-m file] [-d diffusiontype]\n"
+            "usage: img2sixel [-78eIkiugvSPD@OVH] [-p colors] [-m file] [-d diffusiontype]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
             "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
