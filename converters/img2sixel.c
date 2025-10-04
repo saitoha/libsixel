@@ -160,7 +160,7 @@ void show_help(void)
             "                           is white, make sense only when -e\n"
             "                           option is given\n"
             "-I, --high-color           output 15bpp sixel image\n"
-            "-u, --use-macro            use DECDMAC and DEVINVM sequences to\n"
+            "-u, --use-macro            use DECDMAC and DECINVM sequences to\n"
             "                           optimize GIF animation rendering\n"
             "-n MACRONO, --macro-number=MACRONO\n"
             "                           specify an number argument for\n"

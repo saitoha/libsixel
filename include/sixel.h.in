@@ -205,7 +205,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_INSECURE          ('k')  /* -k, --insecure: allow to connect to SSL sites without certs */
 #define SIXEL_OPTFLAG_INVERT            ('i')  /* -i, --invert: assume the terminal background color */
 #define SIXEL_OPTFLAG_HIGH_COLOR        ('I')  /* -I, --high-color: output 15bpp sixel image */
-#define SIXEL_OPTFLAG_USE_MACRO         ('u')  /* -u, --use-macro: use DECDMAC and DEVINVM sequences */
+#define SIXEL_OPTFLAG_USE_MACRO         ('u')  /* -u, --use-macro: use DECDMAC and DECINVM sequences */
 #define SIXEL_OPTFLAG_MACRO_NUMBER      ('n')  /* -n MACRONO, --macro-number=MACRONO:
                                                   specify macro register number */
 #define SIXEL_OPTFLAG_COMPLEXION_SCORE  ('C')  /* -C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE:
