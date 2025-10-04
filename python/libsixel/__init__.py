@@ -191,7 +191,7 @@ SIXEL_OPTFLAG_MONOCHROME       = 'e'  # -e, --monochrome: output monochrome sixe
 SIXEL_OPTFLAG_INSECURE         = 'k'  # -k, --insecure: allow to connect to SSL sites without certs
 SIXEL_OPTFLAG_INVERT           = 'i'  # -i, --invert: assume the terminal background color
 SIXEL_OPTFLAG_HIGH_COLOR       = 'I'  # -I, --high-color: output 15bpp sixel image
-SIXEL_OPTFLAG_USE_MACRO        = 'u'  # -u, --use-macro: use DECDMAC and DEVINVM sequences
+SIXEL_OPTFLAG_USE_MACRO        = 'u'  # -u, --use-macro: use DECDMAC and DECINVM sequences
 SIXEL_OPTFLAG_MACRO_NUMBER     = 'n'  # -n MACRONO, --macro-number=MACRONO:
                                       #        specify macro register number
 SIXEL_OPTFLAG_COMPLEXION_SCORE = 'C'  # -C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE:
