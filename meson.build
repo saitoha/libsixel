@@ -588,16 +588,21 @@ if ruby_opt.enabled()
   ruby = find_program('ruby', required: ruby_opt.enabled())
   if ruby.found()
     have_ruby = true
-    # Generate constants from header
-    constants_rb = custom_target('ruby_constants',
-      input: 'include/sixel.h',
-      output: 'constants.rb',
-      command: [ruby, 'tools/gen_ruby_constants.rb', '@INPUT@', '@OUTPUT@'],
-      build_by_default: true)
     # Install Ruby bindings if requested
     if ruby_opt.enabled()
-      sitelibdir = run_command(ruby, '-rrbconfig', '-e', 'print RbConfig::CONFIG["sitelibdir"]').stdout()
+      sitelibdir_cmd = run_command(ruby,
+        '-rrbconfig',
+        '-e', 'print RbConfig::CONFIG["sitelibdir"]',
+        check: true)
+      sitelibdir = sitelibdir_cmd.stdout().strip()
       ruby_message = 'yes: ' + sitelibdir
+      constants_rb = custom_target('ruby_constants',
+        input: 'include/sixel.h',
+        output: 'constants.rb',
+        command: [ruby, 'tools/gen_ruby_constants.rb', '@INPUT@', '@OUTPUT@'],
+        build_by_default: true,
+        install: true,
+        install_dir: join_paths(sitelibdir, 'libsixel'))
       install_data('ruby/lib/libsixel.rb', install_dir: sitelibdir)
       install_subdir('ruby/lib/libsixel',
         install_dir: join_paths(sitelibdir, 'libsixel'),
@@ -605,7 +610,6 @@ if ruby_opt.enabled()
         exclude_files: ['version_runtime.rb'])
       # Install generated files explicitly to override source ones
       install_data(ruby_version_runtime, install_dir: join_paths(sitelibdir, 'libsixel'))
-      install_data(constants_rb, install_dir: join_paths(sitelibdir, 'libsixel'))
     endif
   endif
 endif
@@ -633,16 +637,41 @@ endif
 
 
 if get_option('tests')
+  bindir = meson.current_build_dir()
+  src_build_dir = join_paths(bindir, 'src')
+  path_sep = host_system == 'windows' ? ';' : ':'
+
+  if have_python
+    python_env = environment()
+    python_env.append('LD_LIBRARY_PATH', src_build_dir, separator: path_sep)
+    python_env.append('DYLD_LIBRARY_PATH', src_build_dir, separator: path_sep)
+    if host_system == 'windows'
+      python_env.append('PATH', src_build_dir, separator: ';')
+    endif
+    python_module_path = join_paths(meson.source_root(), 'python')
+    python_env.append('PYTHONPATH', python_module_path, separator: path_sep)
+    test('python-bindings', py,
+         args: [join_paths(meson.source_root(), 'python', 'test', 'test_libsixel.py')],
+         env: python_env)
+  endif
+
   if have_ruby
-    env = environment()
-    bindir = meson.current_build_dir()
-    src_build_dir = join_paths(bindir, 'src')
-    env.set('LD_LIBRARY_PATH', src_build_dir + ':' + env.get('LD_LIBRARY_PATH', ''))
-    env.set('DYLD_LIBRARY_PATH', src_build_dir + ':' + env.get('DYLD_LIBRARY_PATH', ''))
+    ruby_env = environment()
+    ruby_env.append('LD_LIBRARY_PATH', src_build_dir, separator: path_sep)
+    ruby_env.append('DYLD_LIBRARY_PATH', src_build_dir, separator: path_sep)
+    if host_system == 'windows'
+      ruby_env.append('PATH', src_build_dir, separator: ';')
+    endif
     ruby_build_libdir = join_paths(bindir, 'ruby', 'lib')
+    ruby_src_libdir = join_paths(meson.source_root(), 'ruby', 'lib')
+    ruby_test_dir = join_paths(meson.source_root(), 'ruby', 'test')
+    ruby_test_script = join_paths(ruby_test_dir, 'test_libsixel.rb')
     test('ruby-bindings', ruby,
-         args: ['-I', ruby_build_libdir, '-I', 'ruby/lib', '-I', 'ruby/test', 'ruby/test/test_libsixel.rb'],
-         env: env)
+         args: ['-I', ruby_build_libdir,
+                '-I', ruby_src_libdir,
+                '-I', ruby_test_dir,
+                ruby_test_script],
+         env: ruby_env)
   endif
 endif
 

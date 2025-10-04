@@ -84,6 +84,7 @@ tests_CPPFLAGS = -I$(top_builddir)/include/ \
 		 -I$(top_builddir)/src/ $(AM_CPPFLAGS)
 tests_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 tests_LDADD = $(srcdir)/libsixel.la
+TESTS = tests
 endif
 
 dist_man_MANS = $(srcdir)/sixel.5
@@ -100,5 +101,4 @@ gen-rgblookup: $(srcdir)/rgblookup.gperf
 	gperf -C -N lookup_rgb $(GPERF_OPT) $<  |\
 	sed 's/{""}/\{"", 0, 0, 0\}/g'          |\
 	astyle                                  > $(srcdir)/rgblookup.h
-
 

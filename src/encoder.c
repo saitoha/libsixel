@@ -20,7 +20,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * -------------------------------------------------------------------------------
- * Portions of this file(sixel_encoder_emit_drcsmmv1_chars) are derived from
+ * Portions of this file(sixel_encoder_emit_drcsmmv2_chars) are derived from
  * mlterm's drcssixel.c.
  *
  * Copyright (c) Araki Ken(arakiken@users.sourceforge.net)
@@ -1173,15 +1173,8 @@ end:
     return status;
 }
 
-
-/*
- * This routine is derived from mlterm's drcssixel.c
- * (https://raw.githubusercontent.com/arakiken/mlterm/master/drcssixel/drcssixel.c).
- * The original implementation is credited to Araki Ken.
- * Adjusted here to integrate with libsixel's encoder pipeline.
- */
 static SIXELSTATUS
-sixel_encoder_emit_drcsmmv1_chars(
+sixel_encoder_emit_iso2022_chars(
     sixel_encoder_t *encoder,
     sixel_frame_t *frame
 )
@@ -1206,7 +1199,82 @@ sixel_encoder_emit_drcsmmv1_chars(
     buf_p = buf = sixel_allocator_malloc(encoder->allocator, alloc_size);
     if (buf == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_encoder_emit_drcsmmv1_chars: sixel_allocator_malloc() failed.");
+            "sixel_encoder_emit_drcsmmv2_chars: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    code = 0x20;
+    *(buf_p++) = '\016';  /* SI */
+    *(buf_p++) = '\033';
+    *(buf_p++) = '*';
+    *(buf_p++) = ' ';
+    *(buf_p++) = charset;
+    for(row = 0; row < num_rows; row++) {
+        for(col = 0; col < num_cols; col++) {
+            if ((code & 0x7f) == 0x0) {
+                if (charset == 0x7e) {
+                    is_96cs = 1 - is_96cs;
+                    charset = '0';
+                } else {
+                    charset++;
+                }
+                code = 0x20;
+                *(buf_p++) = '\033';
+                *(buf_p++) = ')';
+                *(buf_p++) = ' ';
+                *(buf_p++) = charset;
+            }
+            *(buf_p++) = code++;
+        }
+        *(buf_p++) = '\n';
+    }
+    *(buf_p++) = '\017';  /* SO */
+
+    write(encoder->outfd, buf, buf_p - buf);
+
+    sixel_allocator_free(encoder->allocator, buf);
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+
+/*
+ * This routine is derived from mlterm's drcssixel.c
+ * (https://raw.githubusercontent.com/arakiken/mlterm/master/drcssixel/drcssixel.c).
+ * The original implementation is credited to Araki Ken.
+ * Adjusted here to integrate with libsixel's encoder pipeline.
+ */
+static SIXELSTATUS
+sixel_encoder_emit_drcsmmv2_chars(
+    sixel_encoder_t *encoder,
+    sixel_frame_t *frame
+)
+{
+    char *buf_p, *buf;
+    int col, row;
+    int charset = 0x30;
+    int is_96cs = 0;
+    unsigned int code;
+    int num_cols, num_rows;
+    SIXELSTATUS status;
+    size_t alloc_size;
+
+    code = 0x100020 + (is_96cs ? 0x80 : 0) + charset * 0x100;
+    num_cols = (sixel_frame_get_width(frame) + encoder->cell_width - 1)
+             / encoder->cell_width;
+    num_rows = (sixel_frame_get_height(frame) + encoder->cell_height - 1)
+             / encoder->cell_height;
+
+    /* cols x rows x 4(out of BMP) + rows(LFs) */
+    alloc_size = num_cols * num_rows * 4 + num_rows;
+    buf_p = buf = sixel_allocator_malloc(encoder->allocator, alloc_size);
+    if (buf == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_emit_drcsmmv2_chars: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -1435,10 +1503,16 @@ sixel_encoder_encode_frame(
                 "sixel_encoder_encode_frame: fn_write() failed.");
             goto end;
         }
-        status = sixel_encoder_emit_drcsmmv1_chars(encoder, frame);
+        status = sixel_encoder_emit_iso2022_chars(encoder, frame);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+/*
+        status = sixel_encoder_emit_drcsmmv2_chars(encoder, frame);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+*/
     }
 
 

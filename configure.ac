@@ -22,6 +22,13 @@ AC_CONFIG_SRCDIR([src/fromsixel.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
+AC_ARG_VAR([WINE], [Wine executable used to run Windows binaries during tests])
+AC_ARG_VAR([WINEEXT], [Executable suffix when running under Wine])
+: "${WINE:=}"
+: "${WINEEXT:=}"
+AC_SUBST([WINE])
+AC_SUBST([WINEEXT])
+
 AS_IF([test -z "$CC" && { test "x$MSYSTEM" = "xCLANG64" || test "x$MSYSTEM" = "xCLANGARM64"; }], [
   AC_CHECK_TOOLS([CC],  [clang clang.exe],  [gcc])
 ])
@@ -1340,6 +1347,16 @@ AM_CONDITIONAL([HAVE_WIC], [test x$have_wic = xyes])
 AM_CONDITIONAL([HAVE_WICCODEC], [test x$have_wiccodec = xyes])
 AM_CONDITIONAL([HAVE_PYTHON], [test x$have_python = xyes])
 
+AS_IF([test x$have_png = xyes], [tests_have_png=1], [tests_have_png=0])
+AS_IF([test x$have_curl = xyes], [tests_have_curl=1], [tests_have_curl=0])
+AS_IF([test x$enable_sixel2png != xno], [tests_want_sixel2png=1], [tests_want_sixel2png=0])
+
+AC_SUBST([TESTS_HAVE_PNG], [$tests_have_png])
+AC_SUBST([TESTS_HAVE_CURL], [$tests_have_curl])
+AC_SUBST([TESTS_WANT_SIXEL2PNG], [$tests_want_sixel2png])
+AC_SUBST([TESTS_WINE], [$WINE])
+AC_SUBST([TESTS_WINEEXT], [$WINEEXT])
+
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
                  package.json.in
@@ -1347,6 +1364,7 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  include/Makefile
                  converters/Makefile
+                 converters/tests/config.sh
                  tools/Makefile
                  tools/libsixel-config
                  python/Makefile

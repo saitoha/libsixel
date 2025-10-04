@@ -47,6 +47,7 @@ module Libsixel
 
     # Basic constants and status helpers
     SIXEL_FALSE = 0x1000 unless const_defined?(:SIXEL_FALSE)
+    SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT = 'R' unless const_defined?(:SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT)
     SIXEL_OPTFLAG_DRCS = '@' unless const_defined?(:SIXEL_OPTFLAG_DRCS)
     SIXEL_OPTFLAG_ORMODE = 'O' unless const_defined?(:SIXEL_OPTFLAG_ORMODE)
     def self.succeeded?(status) ((status & SIXEL_FALSE) == 0) end

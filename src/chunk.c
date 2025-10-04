@@ -28,6 +28,49 @@
 #if HAVE_STRING_H
 # include <string.h>
 #endif  /* HAVE_STRING_H */
+#if HAVE_STRINGS_H
+# include <strings.h>
+#endif  /* HAVE_STRINGS_H */
+#if !HAVE_STRINGS_H && defined(_WIN32)
+# include <string.h>
+#endif
+
+static int
+sixel_internal_strncasecmp(char const *lhs, char const *rhs, size_t n)
+{
+#if HAVE_STRINGS_H
+    return strncasecmp(lhs, rhs, n);
+#elif defined(_WIN32)
+    return _strnicmp(lhs, rhs, (int)n);
+#else
+    size_t i;
+
+    for (i = 0; i < n; ++i) {
+        unsigned char cl;
+        unsigned char cr;
+
+        if (lhs[i] == '\0' && rhs[i] == '\0') {
+            return 0;
+        }
+        if (lhs[i] == '\0' || rhs[i] == '\0') {
+            return (unsigned char)lhs[i] - (unsigned char)rhs[i];
+        }
+
+        cl = (unsigned char)lhs[i];
+        cr = (unsigned char)rhs[i];
+        if (cl >= 'A' && cl <= 'Z') {
+            cl = (unsigned char)(cl - 'A' + 'a');
+        }
+        if (cr >= 'A' && cr <= 'Z') {
+            cr = (unsigned char)(cr - 'A' + 'a');
+        }
+        if (cl != cr) {
+            return (int)cl - (int)cr;
+        }
+    }
+    return 0;
+#endif
+}
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif  /* HAVE_SYS_TYPES_H */
@@ -599,6 +642,46 @@ sixel_chunk_from_url_with_curl(
         goto end;
     }
 
+#if defined(CURLOPT_PROTOCOLS) && defined(CURLPROTO_HTTP) && defined(CURLPROTO_HTTPS)
+    code = curl_easy_setopt(curl, CURLOPT_PROTOCOLS,
+                            (long)(CURLPROTO_HTTP | CURLPROTO_HTTPS));
+    if (code != CURLE_OK) {
+        status = SIXEL_CURL_ERROR & (code & 0xff);
+        sixel_helper_set_additional_message(
+            "curl_easy_setopt(CURLOPT_PROTOCOLS) failed.");
+        goto end;
+    }
+
+# if defined(CURLOPT_REDIR_PROTOCOLS)
+    code = curl_easy_setopt(curl, CURLOPT_REDIR_PROTOCOLS,
+                            (long)(CURLPROTO_HTTP | CURLPROTO_HTTPS));
+    if (code != CURLE_OK) {
+        status = SIXEL_CURL_ERROR & (code & 0xff);
+        sixel_helper_set_additional_message(
+            "curl_easy_setopt(CURLOPT_REDIR_PROTOCOLS) failed.");
+        goto end;
+    }
+# endif
+#elif defined(CURLOPT_PROTOCOLS_STR)
+    code = curl_easy_setopt(curl, CURLOPT_PROTOCOLS_STR, "http,https");
+    if (code != CURLE_OK) {
+        status = SIXEL_CURL_ERROR & (code & 0xff);
+        sixel_helper_set_additional_message(
+            "curl_easy_setopt(CURLOPT_PROTOCOLS_STR) failed.");
+        goto end;
+    }
+
+# if defined(CURLOPT_REDIR_PROTOCOLS_STR)
+    code = curl_easy_setopt(curl, CURLOPT_REDIR_PROTOCOLS_STR, "http,https");
+    if (code != CURLE_OK) {
+        status = SIXEL_CURL_ERROR & (code & 0xff);
+        sixel_helper_set_additional_message(
+            "curl_easy_setopt(CURLOPT_REDIR_PROTOCOLS_STR) failed.");
+        goto end;
+    }
+# endif
+#endif
+
     code = curl_easy_setopt(curl, CURLOPT_USERAGENT,
                             "libsixel/" LIBSIXEL_VERSION);
     if (code != CURLE_OK) {
@@ -742,8 +825,59 @@ sixel_chunk_new(
 
     sixel_allocator_ref(allocator);
 
-    if (filename != NULL && strstr(filename, "://")) {
-        status = sixel_chunk_from_url(filename, *ppchunk, finsecure);
+    if (filename != NULL) {
+        char const *scheme_marker = strstr(filename, "://");
+
+        if (scheme_marker != NULL) {
+            if (sixel_internal_strncasecmp(filename, "file://", 7) == 0) {
+                char const *path = scheme_marker + 3;
+
+                if (*path == '\0') {
+                    sixel_helper_set_additional_message(
+                        "file URL missing path component.");
+                    status = SIXEL_BAD_INPUT;
+                } else {
+                    if (*path != '/') {
+                        char const *slash = strchr(path, '/');
+                        size_t hostlen;
+
+                        if (slash == NULL) {
+                            sixel_helper_set_additional_message(
+                                "file URL missing path component.");
+                            status = SIXEL_BAD_INPUT;
+                            goto url_end;
+                        }
+                        hostlen = (size_t)(slash - path);
+                        if (hostlen != 0 &&
+                            !(hostlen == 9 &&
+                              sixel_internal_strncasecmp(path,
+                                                         "localhost",
+                                                         9) == 0)) {
+                            sixel_helper_set_additional_message(
+                                "file URL with remote host is not supported.");
+                            status = SIXEL_BAD_INPUT;
+                            goto url_end;
+                        }
+                        path = slash;
+                    }
+                    status = sixel_chunk_from_file(path, *ppchunk, cancel_flag);
+                }
+url_end:
+                ;
+            } else {
+                char const *after_scheme = scheme_marker + 3;
+
+                if (*after_scheme == '\0' || *after_scheme == '/') {
+                    sixel_helper_set_additional_message(
+                        "URL host component is missing.");
+                    status = SIXEL_BAD_INPUT;
+                } else {
+                    status = sixel_chunk_from_url(filename, *ppchunk, finsecure);
+                }
+            }
+        } else {
+            status = sixel_chunk_from_file(filename, *ppchunk, cancel_flag);
+        }
     } else {
         status = sixel_chunk_from_file(filename, *ppchunk, cancel_flag);
     }

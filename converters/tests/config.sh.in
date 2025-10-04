@@ -1,0 +1,12 @@
+#!/bin/sh
+# Generated from config.sh.in. Do not edit manually.
+
+export TEST_BUILD_DIR="@abs_top_builddir@/converters"
+export TEST_SRC_DIR="@abs_top_srcdir@/converters"
+export TEST_TOP_SRC_DIR="@abs_top_srcdir@"
+
+export HAVE_PNG="@TESTS_HAVE_PNG@"
+export HAVE_CURL="@TESTS_HAVE_CURL@"
+export WANT_SIXEL2PNG="@TESTS_WANT_SIXEL2PNG@"
+export WINE="@TESTS_WINE@"
+export WINEEXT="@TESTS_WINEEXT@"

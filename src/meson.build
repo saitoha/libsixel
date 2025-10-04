@@ -59,10 +59,11 @@ libsixel_dep = declare_dependency(link_with: libsixel,
                                   dependencies: deps)
 
 if get_option('tests')
-  executable('tests', ['tests.c'],
+  libsixel_tests = executable('tests', ['tests.c'],
     dependencies: libsixel_dep,
     include_directories: project_inc,
     install: false)
+  test('libsixel-unittest', libsixel_tests)
 endif
 
 # vim: set et ts=2:

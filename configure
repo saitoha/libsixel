@@ -655,6 +655,11 @@ ac_unique_file="src/fromsixel.c"
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
+TESTS_WINEEXT
+TESTS_WINE
+TESTS_WANT_SIXEL2PNG
+TESTS_HAVE_CURL
+TESTS_HAVE_PNG
 HAVE_PYTHON_FALSE
 HAVE_PYTHON_TRUE
 HAVE_WICCODEC_FALSE
@@ -746,6 +751,8 @@ OBJCDEPMODE
 ac_ct_OBJC
 OBJCFLAGS
 OBJC
+WINEEXT
+WINE
 LT_SYS_LIBRARY_PATH
 OTOOL64
 OTOOL
@@ -922,6 +929,8 @@ LDFLAGS
 LIBS
 CPPFLAGS
 LT_SYS_LIBRARY_PATH
+WINE
+WINEEXT
 OBJC
 OBJCFLAGS
 CPP
@@ -1644,6 +1653,8 @@ Some influential environment variables:
               you have headers in a nonstandard directory <include dir>
   LT_SYS_LIBRARY_PATH
               User-defined run-time library search path.
+  WINE        Wine executable used to run Windows binaries during tests
+  WINEEXT     Executable suffix when running under Wine
   OBJC        Objective C compiler command
   OBJCFLAGS   Objective C compiler flags
   CPP         C preprocessor
@@ -14423,6 +14434,13 @@ ac_config_headers="$ac_config_headers config.h"
 
 
 
+
+
+: "${WINE:=}"
+: "${WINEEXT:=}"
+
+
+
 if test -z "$CC" && { test "x$MSYSTEM" = "xCLANG64" || test "x$MSYSTEM" = "xCLANGARM64"; }
 then :
 
@@ -21689,7 +21707,40 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile tools/Makefile tools/libsixel-config python/Makefile ruby/Makefile ruby/lib/libsixel/version_runtime.rb quicklook-extension/Makefile wic/Makefile"
+if test x$have_png = xyes
+then :
+  tests_have_png=1
+else case e in #(
+  e) tests_have_png=0 ;;
+esac
+fi
+if test x$have_curl = xyes
+then :
+  tests_have_curl=1
+else case e in #(
+  e) tests_have_curl=0 ;;
+esac
+fi
+if test x$enable_sixel2png != xno
+then :
+  tests_want_sixel2png=1
+else case e in #(
+  e) tests_want_sixel2png=0 ;;
+esac
+fi
+
+TESTS_HAVE_PNG=$tests_have_png
+
+TESTS_HAVE_CURL=$tests_have_curl
+
+TESTS_WANT_SIXEL2PNG=$tests_want_sixel2png
+
+TESTS_WINE=$WINE
+
+TESTS_WINEEXT=$WINEEXT
+
+
+ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile converters/tests/config.sh tools/Makefile tools/libsixel-config python/Makefile ruby/Makefile ruby/lib/libsixel/version_runtime.rb quicklook-extension/Makefile wic/Makefile"
 
 
 # Generate Ruby constants file from include/sixel.h when Ruby is enabled
@@ -22819,6 +22870,7 @@ do
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
     "converters/Makefile") CONFIG_FILES="$CONFIG_FILES converters/Makefile" ;;
+    "converters/tests/config.sh") CONFIG_FILES="$CONFIG_FILES converters/tests/config.sh" ;;
     "tools/Makefile") CONFIG_FILES="$CONFIG_FILES tools/Makefile" ;;
     "tools/libsixel-config") CONFIG_FILES="$CONFIG_FILES tools/libsixel-config" ;;
     "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
