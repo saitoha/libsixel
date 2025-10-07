@@ -318,7 +318,8 @@ sixel_frame_ensure_colorspace(sixel_frame_t *frame, int colorspace)
     }
 
     if (colorspace != SIXEL_COLORSPACE_LINEAR &&
-            colorspace != SIXEL_COLORSPACE_GAMMA) {
+            colorspace != SIXEL_COLORSPACE_GAMMA &&
+            colorspace != SIXEL_COLORSPACE_OKLAB) {
         sixel_helper_set_additional_message(
             "sixel_frame_ensure_colorspace: unsupported colorspace.");
         return SIXEL_BAD_INPUT;
