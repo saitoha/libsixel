@@ -242,6 +242,15 @@ fast -> encode as fast as possible
 .br
 size -> encode to as small sixel sequence as possible
 .TP 5
+.B \-W \fIWORKING_COLORSPACE\fP, \-\-working\-colorspace=\fIWORKING_COLORSPACE\fP
+select internal working color space
+.br
+\fIWORKING_COLORSPACE\fP is one of them:
+.br
+gamma  -> keep gamma encoded pixels (default)
+.br
+linear -> convert to linear RGB for processing
+.TP 5
 .B \-B \fIBGCOLOR\fP, \-\-bgcolor=\fIBGCOLOR\fP
 .br
 specify background color

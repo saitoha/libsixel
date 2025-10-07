@@ -110,6 +110,11 @@ _img2sixel()
                                    size' -- "$cur" ) )
         return 0
         ;;
+    -W|--working-colorspace)
+        COMPREPLY=( $( compgen -W 'gamma \
+                                   linear' -- "$cur" ) )
+        return 0
+        ;;
     -o|--outfile)
         _filedir
         return 0
@@ -147,6 +152,7 @@ _img2sixel()
                                    -t --palette-type \
                                    -b --builtin-palette \
                                    -E --encode-policy \
+                                   -W --working-colorspace \
                                    -B --bgcolor \
                                    -P --penetrate \
                                    -D --pipe-mode \

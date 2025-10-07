@@ -104,6 +104,13 @@ _encodepolicy() {
     'size[encode to as small sixel sequence as possible]'
 }
 
+_workingcolorspace() {
+  _values \
+    'WORKINGCOLORSPACE' \
+    'gamma[keep gamma encoded pixels (default)]' \
+    'linear[use linear RGB as working space]'
+}
+
 _arguments -S -s -A "-*" -S \
   {-o,--outfile}'[specify output file (default: stdout)]':files:_files \
   {-7,--7bit-mode}'[generate a sixel image for 7bit terminals (default)]' \
@@ -133,6 +140,7 @@ _arguments -S -s -A "-*" -S \
   {-t,--palette-type=}'[select palette color space type]':palettetype:_palettetype \
   {-b,--builtin-palette=}'[select built-in palette type]':builtinpalette:_builtinpalette \
   {-E,--encode-policy=}'[select encoding policy]':encodepolicy:_encodepolicy \
+  {-W,--working-colorspace=}'[select internal working color space]':workingcolorspace:_workingcolorspace \
   {-B,--bgcolor=}'[select background color]' \
   {-P,--penetrate}'[penetrate GNU Screen using DCS pass-through sequence]' \
   {-D,--pipe-mode}'[read source images from stdin continuously]' \
