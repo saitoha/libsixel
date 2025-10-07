@@ -32,9 +32,33 @@
 #define SIXEL_OKLAB_AB_OFFSET 0.5
 #define SIXEL_OKLAB_AB_SCALE  255.0
 
+static const double sixel_linear_srgb_to_smptec_matrix[3][3] = {
+    { 1.0651944799343782, -0.05539144537002962, -0.009975616485882548 },
+    { -0.019633066659433226,  1.0363870284433383, -0.016731961783904975 },
+    { 0.0016324889176928742,  0.004413466273704836,  0.994192644808602 }
+};
+
+static const double sixel_linear_smptec_to_srgb_matrix[3][3] = {
+    { 0.9397048483892231,  0.05018036042570272,  0.010273409684415205 },
+    { 0.01777536262173348, 0.9657705626655305,  0.01643197976410589 },
+    { -0.0016219271954016755, -0.00436969856687614,  1.0057514450874723 }
+};
+
 static unsigned char gamma_to_linear_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static unsigned char linear_to_gamma_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static int tables_initialized = 0;
+
+static inline double
+sixel_clamp_unit(double value)
+{
+    if (value < 0.0) {
+        return 0.0;
+    }
+    if (value > 1.0) {
+        return 1.0;
+    }
+    return value;
+}
 
 static unsigned char
 sixel_colorspace_clamp(int value)
@@ -92,6 +116,37 @@ sixel_linear_double_to_byte(double v)
     }
 
     return sixel_colorspace_clamp((int)(v * 255.0 + 0.5));
+}
+
+static inline double
+sixel_smptec_to_linear_double(unsigned char v)
+{
+    double x = (double)v / 255.0;
+
+    if (x <= 0.0) {
+        return 0.0;
+    }
+    if (x >= 1.0) {
+        return 1.0;
+    }
+
+    return pow(x, 2.2);
+}
+
+static inline unsigned char
+sixel_linear_double_to_smptec(double v)
+{
+    double y;
+
+    if (v <= 0.0) {
+        return 0;
+    }
+    if (v >= 1.0) {
+        return 255;
+    }
+
+    y = pow(v, 1.0 / 2.2);
+    return sixel_colorspace_clamp((int)(y * 255.0 + 0.5));
 }
 
 static inline unsigned char
@@ -185,6 +240,52 @@ sixel_oklab_to_linear(double L, double A, double B,
 }
 
 static void
+sixel_linear_srgb_to_smptec(double r, double g, double b,
+                            double *rs, double *gs, double *bs)
+{
+    double sr;
+    double sg;
+    double sb;
+
+    sr = sixel_linear_srgb_to_smptec_matrix[0][0] * r
+       + sixel_linear_srgb_to_smptec_matrix[0][1] * g
+       + sixel_linear_srgb_to_smptec_matrix[0][2] * b;
+    sg = sixel_linear_srgb_to_smptec_matrix[1][0] * r
+       + sixel_linear_srgb_to_smptec_matrix[1][1] * g
+       + sixel_linear_srgb_to_smptec_matrix[1][2] * b;
+    sb = sixel_linear_srgb_to_smptec_matrix[2][0] * r
+       + sixel_linear_srgb_to_smptec_matrix[2][1] * g
+       + sixel_linear_srgb_to_smptec_matrix[2][2] * b;
+
+    *rs = sixel_clamp_unit(sr);
+    *gs = sixel_clamp_unit(sg);
+    *bs = sixel_clamp_unit(sb);
+}
+
+static void
+sixel_linear_smptec_to_srgb(double rs, double gs, double bs,
+                            double *r, double *g, double *b)
+{
+    double r_lin;
+    double g_lin;
+    double b_lin;
+
+    r_lin = sixel_linear_smptec_to_srgb_matrix[0][0] * rs
+          + sixel_linear_smptec_to_srgb_matrix[0][1] * gs
+          + sixel_linear_smptec_to_srgb_matrix[0][2] * bs;
+    g_lin = sixel_linear_smptec_to_srgb_matrix[1][0] * rs
+          + sixel_linear_smptec_to_srgb_matrix[1][1] * gs
+          + sixel_linear_smptec_to_srgb_matrix[1][2] * bs;
+    b_lin = sixel_linear_smptec_to_srgb_matrix[2][0] * rs
+          + sixel_linear_smptec_to_srgb_matrix[2][1] * gs
+          + sixel_linear_smptec_to_srgb_matrix[2][2] * bs;
+
+    *r = sixel_clamp_unit(r_lin);
+    *g = sixel_clamp_unit(g_lin);
+    *b = sixel_clamp_unit(b_lin);
+}
+
+static void
 sixel_colorspace_init_tables(void)
 {
     int i;
@@ -249,6 +350,15 @@ sixel_decode_linear_from_colorspace(int colorspace,
         sixel_oklab_to_linear(L, A, B, r_lin, g_lin, b_lin);
         break;
     }
+    case SIXEL_COLORSPACE_SMPTEC:
+    {
+        double r_smptec = sixel_smptec_to_linear_double(r8);
+        double g_smptec = sixel_smptec_to_linear_double(g8);
+        double b_smptec = sixel_smptec_to_linear_double(b8);
+        sixel_linear_smptec_to_srgb(r_smptec, g_smptec, b_smptec,
+                                    r_lin, g_lin, b_lin);
+        break;
+    }
     default:
         *r_lin = (double)r8 / 255.0;
         *g_lin = (double)g8 / 255.0;
@@ -287,6 +397,20 @@ sixel_encode_linear_to_colorspace(int colorspace,
         *g8 = sixel_oklab_encode_ab(A);
         *b8 = sixel_oklab_encode_ab(B);
         break;
+    case SIXEL_COLORSPACE_SMPTEC:
+    {
+        double r_smptec;
+        double g_smptec;
+        double b_smptec;
+
+        sixel_linear_srgb_to_smptec(r_lin, g_lin, b_lin,
+                                     &r_smptec, &g_smptec, &b_smptec);
+
+        *r8 = sixel_linear_double_to_smptec(r_smptec);
+        *g8 = sixel_linear_double_to_smptec(g_smptec);
+        *b8 = sixel_linear_double_to_smptec(b_smptec);
+        break;
+    }
     default:
         *r8 = sixel_linear_double_to_byte(r_lin);
         *g8 = sixel_linear_double_to_byte(g_lin);
@@ -296,11 +420,11 @@ sixel_encode_linear_to_colorspace(int colorspace,
 }
 
 static SIXELSTATUS
-sixel_convert_pixels_oklab(unsigned char *pixels,
-                           size_t size,
-                           int pixelformat,
-                           int colorspace_src,
-                           int colorspace_dst)
+sixel_convert_pixels_via_linear(unsigned char *pixels,
+                                size_t size,
+                                int pixelformat,
+                                int colorspace_src,
+                                int colorspace_dst)
 {
     size_t i;
     int step;
@@ -347,6 +471,24 @@ sixel_convert_pixels_oklab(unsigned char *pixels,
         step = 4;
         index_r = 3;
         index_g = 2;
+        index_b = 1;
+        break;
+    case SIXEL_PIXELFORMAT_G8:
+        step = 1;
+        index_r = 0;
+        index_g = 0;
+        index_b = 0;
+        break;
+    case SIXEL_PIXELFORMAT_GA88:
+        step = 2;
+        index_r = 0;
+        index_g = 0;
+        index_b = 0;
+        break;
+    case SIXEL_PIXELFORMAT_AG88:
+        step = 2;
+        index_r = 1;
+        index_g = 1;
         index_b = 1;
         break;
     default:
@@ -456,15 +598,17 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
     sixel_colorspace_init_tables();
 
     if (colorspace_src == SIXEL_COLORSPACE_OKLAB ||
-            colorspace_dst == SIXEL_COLORSPACE_OKLAB) {
-        SIXELSTATUS status = sixel_convert_pixels_oklab(pixels,
-                                                        size,
-                                                        pixelformat,
-                                                        colorspace_src,
-                                                        colorspace_dst);
+            colorspace_dst == SIXEL_COLORSPACE_OKLAB ||
+            colorspace_src == SIXEL_COLORSPACE_SMPTEC ||
+            colorspace_dst == SIXEL_COLORSPACE_SMPTEC) {
+        SIXELSTATUS status = sixel_convert_pixels_via_linear(pixels,
+                                                             size,
+                                                             pixelformat,
+                                                             colorspace_src,
+                                                             colorspace_dst);
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
-                "sixel_helper_convert_colorspace: unsupported pixelformat for OKLab.");
+                "sixel_helper_convert_colorspace: unsupported pixelformat for conversion.");
         }
         return status;
     }

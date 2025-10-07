@@ -336,6 +336,11 @@ void show_help(void)
             "                             gamma  -> sRGB gamma(default)\n"
             "                             linear -> linear RGB color space\n"
             "                             oklab  -> OKLab color space\n"
+            "-U OUTPUT_COLORSPACE, --output-colorspace=OUTPUT_COLORSPACE\n"
+            "                           choose output color space\n"
+            "                             gamma   -> sRGB gamma(default)\n"
+            "                             linear  -> linear RGB color space\n"
+            "                             smpte-c -> SMPTE-C gamma color space\n"
             "-V, --version              show version and license info\n"
             "-H, --help                 show this help\n"
             "\n"
@@ -377,7 +382,7 @@ main(int argc, char *argv[])
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    char const *optstring = "o:78Rp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:B:C:D@OVW:H";
+    char const *optstring = "o:78Rp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:U:B:C:D@OVW:H";
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",            required_argument,  &long_opt, 'o'},
@@ -408,6 +413,7 @@ main(int argc, char *argv[])
         {"macro-number",       required_argument,  &long_opt, 'n'},
         {"penetrate",          no_argument,        &long_opt, 'P'},
         {"encode-policy",      required_argument,  &long_opt, 'E'},
+        {"output-colorspace",  required_argument,  &long_opt, 'U'},
         {"working-colorspace", required_argument,  &long_opt, 'W'},
         {"bgcolor",            required_argument,  &long_opt, 'B'},
         {"complexion-score",   required_argument,  &long_opt, 'C'},
@@ -504,7 +510,8 @@ argerr:
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
             "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
-            "                 [-E encodepolicy] [-W workingcolorspace] [-B bgcolor]\n"
+            "                 [-E encodepolicy] [-W workingcolorspace]\n"
+            "                 [-U outputcolorspace] [-B bgcolor]\n"
             "                 [-o outfile] [filename ...]\n"
             "for more details, type: 'img2sixel -H'.\n");
 
