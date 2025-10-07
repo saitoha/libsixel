@@ -65,6 +65,7 @@ struct sixel_encoder {
     int macro_number;
     int penetrate_multiplexer;
     int encode_policy;
+    int working_colorspace;
     int ormode;
     int pipe_mode;
     int verbose;

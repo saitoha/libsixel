@@ -123,6 +123,10 @@ typedef int SIXELSTATUS;
 #define SIXEL_BUILTIN_G4          0x8  /* 4bit grayscale */
 #define SIXEL_BUILTIN_G8          0x9  /* 8bit grayscale */
 
+/* colorspace */
+#define SIXEL_COLORSPACE_GAMMA    0x0  /* gamma encoded (sRGB) */
+#define SIXEL_COLORSPACE_LINEAR   0x1  /* linear RGB */
+
 /* offset value of pixelFormat */
 #define SIXEL_FORMATTYPE_COLOR     (0)
 #define SIXEL_FORMATTYPE_GRAYSCALE (1 << 6)
@@ -357,6 +361,11 @@ typedef int SIXELSTATUS;
                                                     fast -> encode as fast as possible
                                                     size -> encode to as small sixel
                                                             sequence as possible
+                                                */
+#define SIXEL_OPTFLAG_WORKING_COLORSPACE ('W') /* -W WORKINGCOLORSPACE, --working-colorspace=WORKINGCOLORSPACE
+                                                  select internal working color space
+                                                    gamma  -> keep gamma encoded pixels (default)
+                                                    linear -> convert to linear RGB for processing
                                                 */
 #define SIXEL_OPTFLAG_ORMODE            ('O')  /* -O, --ormode:
                                                   output ormode sixel image
@@ -672,6 +681,12 @@ sixel_output_set_encode_policy(
     sixel_output_t /* in */ *output,    /* output context */
     int            /* in */ encode_policy);
 
+SIXELAPI SIXELSTATUS
+sixel_output_convert_colorspace(
+    sixel_output_t  /* in */     *output,
+    unsigned char   /* in/out */ *pixels,
+    size_t          /* in */      size);
+
 
 #ifdef __cplusplus
 }
@@ -889,6 +904,14 @@ sixel_helper_scale_image(
     sixel_allocator_t   /* in */  *allocator             /* allocator object */
 );
 
+SIXELAPI SIXELSTATUS
+sixel_helper_convert_colorspace(
+    unsigned char       /* in/out */ *pixels,
+    size_t              /* in */      size,
+    int                 /* in */      pixelformat,
+    int                 /* in */      colorspace_src,
+    int                 /* in */      colorspace_dst);
+
 #ifdef __cplusplus
 }
 #endif
@@ -981,6 +1004,10 @@ sixel_frame_get_ncolors(sixel_frame_t /* in */ *frame);  /* frame object */
 /* get pixelformat */
 SIXELAPI int
 sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* get colorspace */
+SIXELAPI int
+sixel_frame_get_colorspace(sixel_frame_t /* in */ *frame);  /* frame object */
 
 /* get transparent */
 SIXELAPI int

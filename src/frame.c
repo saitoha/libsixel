@@ -37,10 +37,14 @@
 #endif  /* HAVE_INTTYPES_H */
 
 #include "frame.h"
+#include "colorspace.h"
 
 #if !defined(HAVE_MEMMOVE)
 # define memmove(d, s, n) (bcopy ((s), (d), (n)))
 #endif
+
+static SIXELSTATUS
+sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame);
 
 /* constructor of frame object */
 SIXELAPI SIXELSTATUS
@@ -73,6 +77,7 @@ sixel_frame_new(
     (*ppframe)->height = 0;
     (*ppframe)->ncolors = (-1);
     (*ppframe)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    (*ppframe)->colorspace = SIXEL_COLORSPACE_GAMMA;
     (*ppframe)->delay = 0;
     (*ppframe)->frame_no = 0;
     (*ppframe)->loop_count = 0;
@@ -188,7 +193,7 @@ sixel_frame_init(
     frame->pixelformat = pixelformat;
     frame->palette = palette;
     frame->ncolors = ncolors;
-
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
     status = SIXEL_OK;
 
 end:
@@ -246,6 +251,13 @@ sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame)  /* frame object */
 }
 
 
+SIXELAPI int
+sixel_frame_get_colorspace(sixel_frame_t /* in */ *frame)  /* frame object */
+{
+    return frame->colorspace;
+}
+
+
 /* get transparent */
 SIXELAPI int
 sixel_frame_get_transparent(sixel_frame_t /* in */ *frame)  /* frame object */
@@ -283,6 +295,88 @@ SIXELAPI int
 sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->loop_count;
+}
+
+SIXELSTATUS
+sixel_frame_ensure_colorspace(sixel_frame_t *frame, int colorspace)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    int current;
+    int pixelformat;
+    int depth;
+    size_t size;
+
+    if (frame == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_ensure_colorspace: frame is null.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    current = frame->colorspace;
+    if (current == colorspace) {
+        return SIXEL_OK;
+    }
+
+    if (colorspace != SIXEL_COLORSPACE_LINEAR &&
+            colorspace != SIXEL_COLORSPACE_GAMMA) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_ensure_colorspace: unsupported colorspace.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    pixelformat = frame->pixelformat;
+
+    if (pixelformat & SIXEL_FORMATTYPE_PALETTE) {
+        if (frame->palette && frame->ncolors > 0) {
+            status = sixel_helper_convert_colorspace(
+                frame->palette,
+                (size_t)frame->ncolors * 3,
+                SIXEL_PIXELFORMAT_RGB888,
+                current,
+                colorspace);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        }
+        frame->colorspace = colorspace;
+        return SIXEL_OK;
+    }
+
+    if (!sixel_colorspace_supports_pixelformat(pixelformat)) {
+        if (colorspace == SIXEL_COLORSPACE_LINEAR &&
+                current == SIXEL_COLORSPACE_GAMMA) {
+            status = sixel_frame_convert_to_rgb888(frame);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            pixelformat = frame->pixelformat;
+        } else {
+            sixel_helper_set_additional_message(
+                "sixel_frame_ensure_colorspace: unsupported pixelformat.");
+            return SIXEL_BAD_INPUT;
+        }
+    }
+
+    depth = sixel_helper_compute_depth(pixelformat);
+    if (depth <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_ensure_colorspace: invalid depth.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    size = (size_t)frame->width * (size_t)frame->height * (size_t)depth;
+    status = sixel_helper_convert_colorspace(frame->pixels,
+                                             size,
+                                             pixelformat,
+                                             current,
+                                             colorspace);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    frame->colorspace = colorspace;
+
+    return SIXEL_OK;
 }
 
 

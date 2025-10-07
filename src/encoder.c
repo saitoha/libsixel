@@ -94,11 +94,16 @@
 #if HAVE_ERRNO_H
 # include <errno.h>
 #endif  /* HAVE_ERRNO_H */
+#if HAVE_CTYPE_H
+# include <ctype.h>
+#endif  /* HAVE_CTYPE_H */
 
 #include <sixel.h>
 #include "loader.h"
 #include "tty.h"
 #include "encoder.h"
+#include "output.h"
+#include "frame.h"
 #include "rgblookup.h"
 
 #if defined(_WIN32)
@@ -968,8 +973,13 @@ sixel_encoder_output_without_macro(
     unsigned char *pixbuf;
     int width;
     int height;
-    int pixelformat;
+    int pixelformat = 0;
     size_t size;
+    int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
+    unsigned char *palette = NULL;
+    int palette_colors = 0;
+    size_t palette_size = 0;
+    int palette_converted = 0;
 
     if (encoder == NULL) {
         sixel_helper_set_additional_message(
@@ -983,6 +993,10 @@ sixel_encoder_output_without_macro(
     }
 
     pixelformat = sixel_frame_get_pixelformat(frame);
+    frame_colorspace = sixel_frame_get_colorspace(frame);
+    output->pixelformat = pixelformat;
+    output->source_colorspace = frame_colorspace;
+    output->colorspace = SIXEL_COLORSPACE_GAMMA;
     sixel_dither_set_pixelformat(dither, pixelformat);
     depth = sixel_helper_compute_depth(pixelformat);
     if (depth < 0) {
@@ -1025,12 +1039,14 @@ sixel_encoder_output_without_macro(
         dulation = 0;
 # endif
         if (dulation < 10000 * delay) {
+# if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
             tv.tv_sec = 0;
             tv.tv_nsec = (long)((10000 * delay - dulation) * 1000);
-# if defined(HAVE_NANOSLEEP)
+#  if defined(HAVE_NANOSLEEP)
             nanosleep(&tv, NULL);
-# elif defined(HAVE_NANOSLEEP_WIN)  /* _WIN32 */
+#  else
             nanosleep_win(&tv, NULL);
+#  endif
 # endif
         } else {
             lag = (int)(10000 * delay - dulation);
@@ -1041,8 +1057,31 @@ sixel_encoder_output_without_macro(
     pixbuf = sixel_frame_get_pixels(frame);
     memcpy(p, pixbuf, (size_t)(width * height * depth));
 
+    status = sixel_output_convert_colorspace(output, p, size);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
     if (encoder->cancel_flag && *encoder->cancel_flag) {
         goto end;
+    }
+
+    palette = sixel_dither_get_palette(dither);
+    palette_colors = sixel_dither_get_num_of_palette_colors(dither);
+    if (palette && palette_colors > 0 &&
+            frame_colorspace != output->colorspace) {
+        palette_size = (size_t)palette_colors * 3;
+        output->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        output->source_colorspace = frame_colorspace;
+        status = sixel_output_convert_colorspace(output,
+                                                 palette,
+                                                 palette_size);
+        output->pixelformat = pixelformat;
+        output->source_colorspace = frame_colorspace;
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        palette_converted = 1;
     }
 
     status = sixel_encode(p, width, height, depth, dither, output);
@@ -1051,6 +1090,15 @@ sixel_encoder_output_without_macro(
     }
 
 end:
+    if (palette_converted) {
+        (void)sixel_helper_convert_colorspace(palette,
+                                              palette_size,
+                                              SIXEL_PIXELFORMAT_RGB888,
+                                              SIXEL_COLORSPACE_GAMMA,
+                                              frame_colorspace);
+    }
+    output->pixelformat = pixelformat;
+    output->source_colorspace = frame_colorspace;
     sixel_allocator_free(encoder->allocator, p);
 
     return status;
@@ -1078,9 +1126,17 @@ sixel_encoder_output_with_macro(
     clock_win_t start;
 # endif
 #endif
-    unsigned char *pixbuf;
     int width;
     int height;
+    int pixelformat;
+    int depth;
+    size_t size = 0;
+    int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
+    unsigned char *converted = NULL;
+    unsigned char *palette = NULL;
+    int palette_colors = 0;
+    size_t palette_size = 0;
+    int palette_converted = 0;
 #if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
     int delay;
 #endif
@@ -1090,11 +1146,65 @@ sixel_encoder_output_with_macro(
 #elif defined(HAVE_CLOCK_WIN)
     start = clock_win();
 #endif
+
+    width = sixel_frame_get_width(frame);
+    height = sixel_frame_get_height(frame);
+    pixelformat = sixel_frame_get_pixelformat(frame);
+    depth = sixel_helper_compute_depth(pixelformat);
+    if (depth < 0) {
+        status = SIXEL_LOGIC_ERROR;
+        sixel_helper_set_additional_message(
+            "sixel_encoder_output_with_macro: "
+            "sixel_helper_compute_depth() failed.");
+        goto end;
+    }
+
+    frame_colorspace = sixel_frame_get_colorspace(frame);
+    size = (size_t)width * (size_t)height * (size_t)depth;
+    converted = (unsigned char *)sixel_allocator_malloc(
+        encoder->allocator, size);
+    if (converted == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_output_with_macro: "
+            "sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    memcpy(converted, sixel_frame_get_pixels(frame), size);
+    output->pixelformat = pixelformat;
+    output->source_colorspace = frame_colorspace;
+    output->colorspace = SIXEL_COLORSPACE_GAMMA;
+    status = sixel_output_convert_colorspace(output, converted, size);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    palette = sixel_dither_get_palette(dither);
+    palette_colors = sixel_dither_get_num_of_palette_colors(dither);
+    if (palette && palette_colors > 0 &&
+            frame_colorspace != output->colorspace) {
+        palette_size = (size_t)palette_colors * 3;
+        output->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        output->source_colorspace = frame_colorspace;
+        status = sixel_output_convert_colorspace(output,
+                                                 palette,
+                                                 palette_size);
+        output->pixelformat = pixelformat;
+        output->source_colorspace = frame_colorspace;
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        palette_converted = 1;
+    }
+
     if (sixel_frame_get_loop_no(frame) == 0) {
         if (encoder->macro_number >= 0) {
-            nwrite = sprintf(buffer, "\033P%d;0;1!z", encoder->macro_number);
+            nwrite = sprintf(buffer, "\033P%d;0;1!z",
+                             encoder->macro_number);
         } else {
-            nwrite = sprintf(buffer, "\033P%d;0;1!z", sixel_frame_get_frame_no(frame));
+            nwrite = sprintf(buffer, "\033P%d;0;1!z",
+                             sixel_frame_get_frame_no(frame));
         }
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
@@ -1102,18 +1212,23 @@ sixel_encoder_output_with_macro(
                 "sixel_encoder_output_with_macro: sprintf() failed.");
             goto end;
         }
-        nwrite = sixel_write_callback(buffer, (int)strlen(buffer), &encoder->outfd);
+        nwrite = sixel_write_callback(buffer,
+                                      (int)strlen(buffer),
+                                      &encoder->outfd);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
-                "sixel_encoder_output_with_macro: sixel_write_callback() failed.");
+                "sixel_encoder_output_with_macro: "
+                "sixel_write_callback() failed.");
             goto end;
         }
 
-        pixbuf = sixel_frame_get_pixels(frame),
-        width = sixel_frame_get_width(frame),
-        height = sixel_frame_get_height(frame),
-        status = sixel_encode(pixbuf, width, height, /* unused */ 3, dither, output);
+        status = sixel_encode(converted,
+                              width,
+                              height,
+                              depth,
+                              dither,
+                              output);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -1122,32 +1237,39 @@ sixel_encoder_output_with_macro(
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
-                "sixel_encoder_output_with_macro: sixel_write_callback() failed.");
+                "sixel_encoder_output_with_macro: "
+                "sixel_write_callback() failed.");
             goto end;
         }
     }
     if (encoder->macro_number < 0) {
-        nwrite = sprintf(buffer, "\033[%d*z", sixel_frame_get_frame_no(frame));
+        nwrite = sprintf(buffer, "\033[%d*z",
+                         sixel_frame_get_frame_no(frame));
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
                 "sixel_encoder_output_with_macro: sprintf() failed.");
         }
-        nwrite = sixel_write_callback(buffer, (int)strlen(buffer), &encoder->outfd);
+        nwrite = sixel_write_callback(buffer,
+                                      (int)strlen(buffer),
+                                      &encoder->outfd);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
-                "sixel_encoder_output_with_macro: sixel_write_callback() failed.");
+                "sixel_encoder_output_with_macro: "
+                "sixel_write_callback() failed.");
             goto end;
         }
 #if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
         delay = sixel_frame_get_delay(frame);
         if (delay > 0 && !encoder->fignore_delay) {
 # if defined(HAVE_CLOCK)
-            dulation = (int)((clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC) - (int)lag;
+            dulation = (int)((clock() - start) * 1000 * 1000
+                             / CLOCKS_PER_SEC) - (int)lag;
             lag = 0;
 # elif defined(HAVE_CLOCK_WIN)
-            dulation = (int)((clock_win() - start) * 1000 * 1000 / CLOCKS_PER_SEC) - (int)lag;
+            dulation = (int)((clock_win() - start) * 1000 * 1000
+                             / CLOCKS_PER_SEC) - (int)lag;
             lag = 0;
 # else
             dulation = 0;
@@ -1170,6 +1292,17 @@ sixel_encoder_output_with_macro(
     }
 
 end:
+    if (palette_converted) {
+        (void)sixel_helper_convert_colorspace(palette,
+                                              palette_size,
+                                              SIXEL_PIXELFORMAT_RGB888,
+                                              SIXEL_COLORSPACE_GAMMA,
+                                              frame_colorspace);
+    }
+    output->pixelformat = pixelformat;
+    output->source_colorspace = frame_colorspace;
+    sixel_allocator_free(encoder->allocator, converted);
+
     return status;
 }
 
@@ -1286,6 +1419,12 @@ sixel_encoder_encode_frame(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+    }
+
+    status = sixel_frame_ensure_colorspace(frame,
+                                           encoder->working_colorspace);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     /* prepare dither context */
@@ -1521,6 +1660,7 @@ sixel_encoder_new(
     (*ppencoder)->verbose               = 0;
     (*ppencoder)->penetrate_multiplexer = 0;
     (*ppencoder)->encode_policy         = SIXEL_ENCODEPOLICY_AUTO;
+    (*ppencoder)->working_colorspace    = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->ormode                = 0;
     (*ppencoder)->pipe_mode             = 0;
     (*ppencoder)->bgcolor               = NULL;
@@ -1985,6 +2125,40 @@ sixel_encoder_setopt(
                 "cannot parse encode policy option.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
+        }
+        break;
+    case SIXEL_OPTFLAG_WORKING_COLORSPACE:  /* W */
+        if (value == NULL) {
+            sixel_helper_set_additional_message(
+                "working-colorspace requires an argument.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        } else {
+            char lowered[16];
+            size_t len = strlen(value);
+            size_t i;
+
+            if (len >= sizeof(lowered)) {
+                sixel_helper_set_additional_message(
+                    "specified working colorspace name is too long.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
+            for (i = 0; i < len; ++i) {
+                lowered[i] = (char)tolower((unsigned char)value[i]);
+            }
+            lowered[len] = '\0';
+
+            if (strcmp(lowered, "gamma") == 0) {
+                encoder->working_colorspace = SIXEL_COLORSPACE_GAMMA;
+            } else if (strcmp(lowered, "linear") == 0) {
+                encoder->working_colorspace = SIXEL_COLORSPACE_LINEAR;
+            } else {
+                sixel_helper_set_additional_message(
+                    "unsupported working colorspace specified.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
         }
         break;
     case SIXEL_OPTFLAG_ORMODE:  /* O */

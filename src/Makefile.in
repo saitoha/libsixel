@@ -144,7 +144,8 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-fromsixel.lo libsixel_la-tosixel.lo \
 	libsixel_la-quant.lo libsixel_la-dither.lo \
-	libsixel_la-frame.lo libsixel_la-pixelformat.lo \
+	libsixel_la-colorspace.lo libsixel_la-frame.lo \
+	libsixel_la-pixelformat.lo \
 	libsixel_la-scale.lo libsixel_la-chunk.lo \
 	libsixel_la-loader.lo libsixel_la-frompnm.lo \
 	libsixel_la-fromgif.lo libsixel_la-encoder.lo \
@@ -182,7 +183,8 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
+	am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
+	./$(DEPDIR)/libsixel_la-colorspace.Plo \
 	./$(DEPDIR)/libsixel_la-chunk.Plo \
 	./$(DEPDIR)/libsixel_la-decoder.Plo \
 	./$(DEPDIR)/libsixel_la-dither.Plo \
@@ -444,6 +446,8 @@ libsixel_la_SOURCES = \
 		$(srcdir)/quant.h \
 		$(srcdir)/dither.c \
 		$(srcdir)/dither.h \
+		$(srcdir)/colorspace.c \
+		$(srcdir)/colorspace.h \
 		$(srcdir)/frame.c \
 		$(srcdir)/frame.h \
 		$(srcdir)/pixelformat.c \
@@ -680,6 +684,13 @@ libsixel_la-dither.lo: dither.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither.c' object='libsixel_la-dither.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither.lo `test -f 'dither.c' || echo '$(srcdir)/'`dither.c
+
+libsixel_la-colorspace.lo: colorspace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-colorspace.lo -MD -MP -MF $(DEPDIR)/libsixel_la-colorspace.Tpo -c -o libsixel_la-colorspace.lo `test -f 'colorspace.c' || echo '$(srcdir)/'`colorspace.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-colorspace.Tpo $(DEPDIR)/libsixel_la-colorspace.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='colorspace.c' object='libsixel_la-colorspace.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-colorspace.lo `test -f 'colorspace.c' || echo '$(srcdir)/'`colorspace.c
 
 libsixel_la-frame.lo: frame.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-frame.lo -MD -MP -MF $(DEPDIR)/libsixel_la-frame.Tpo -c -o libsixel_la-frame.lo `test -f 'frame.c' || echo '$(srcdir)/'`frame.c

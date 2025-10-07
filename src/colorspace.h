@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016 Hayaki Saito
+ * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -19,47 +19,23 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBSIXEL_FRAME_H
-#define LIBSIXEL_FRAME_H
+#ifndef LIBSIXEL_COLORSPACE_H
+#define LIBSIXEL_COLORSPACE_H
 
 #include <sixel.h>
-
-/* frame object */
-struct sixel_frame {
-    unsigned int ref;               /* reference counter */
-    unsigned char *pixels;          /* loaded pixel data */
-    unsigned char *palette;         /* loaded palette data */
-    int width;                      /* frame width */
-    int height;                     /* frame height */
-    int ncolors;                    /* palette colors */
-    int pixelformat;                /* one of enum pixelFormat */
-    int colorspace;                 /* one of SIXEL_COLORSPACE_* */
-    int delay;                      /* delay in msec */
-    int frame_no;                   /* frame number */
-    int loop_count;                 /* loop count */
-    int multiframe;                 /* whether the image has multiple frames */
-    int transparent;                /* -1(no transparent) or >= 0(index of transparent color) */
-    sixel_allocator_t *allocator;   /* allocator object */
-};
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-SIXELSTATUS
-sixel_frame_ensure_colorspace(
-    sixel_frame_t  /* in */ *frame,
-    int            /* in */  colorspace);
-#if HAVE_TESTS
-SIXELAPI int
-sixel_dither_tests_main(void);
-#endif
+int
+sixel_colorspace_supports_pixelformat(int pixelformat);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LIBSIXEL_FRAME_H */
+#endif /* LIBSIXEL_COLORSPACE_H */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */
