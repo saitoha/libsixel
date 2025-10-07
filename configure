@@ -20905,6 +20905,9 @@ printf "%s\n" "#define HAVE_WICCODEC 1" >>confdefs.h
         ;;
     esac
 fi
+if test "x${enable_wiccodec}" = xyes -a "x${have_wiccodec}" != xyes; then
+    as_fn_error $? "required WIC headers or libraries are not available" "$LINENO" 5
+fi
 
 
 
