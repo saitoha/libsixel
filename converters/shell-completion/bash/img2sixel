@@ -116,6 +116,12 @@ _img2sixel()
                                    oklab' -- "$cur" ) )
         return 0
         ;;
+    -U|--output-colorspace)
+        COMPREPLY=( $( compgen -W 'gamma \
+                                   linear \
+                                   smpte-c' -- "$cur" ) )
+        return 0
+        ;;
     -o|--outfile)
         _filedir
         return 0
@@ -160,6 +166,7 @@ _img2sixel()
                                    -@ --drcs \
                                    -O --ormode \
                                    -W --working-colorspace \
+                                   -U --output-colorspace \
                                    -V --version \
                                    -H --help \
                                   ' -- "$cur" ))

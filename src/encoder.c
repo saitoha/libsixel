@@ -1004,7 +1004,7 @@ sixel_encoder_output_without_macro(
     frame_colorspace = sixel_frame_get_colorspace(frame);
     output->pixelformat = pixelformat;
     output->source_colorspace = frame_colorspace;
-    output->colorspace = SIXEL_COLORSPACE_GAMMA;
+    output->colorspace = encoder->output_colorspace;
     sixel_dither_set_pixelformat(dither, pixelformat);
     depth = sixel_helper_compute_depth(pixelformat);
     if (depth < 0) {
@@ -1182,7 +1182,7 @@ sixel_encoder_output_with_macro(
     memcpy(converted, sixel_frame_get_pixels(frame), size);
     output->pixelformat = pixelformat;
     output->source_colorspace = frame_colorspace;
-    output->colorspace = SIXEL_COLORSPACE_GAMMA;
+    output->colorspace = encoder->output_colorspace;
     status = sixel_output_convert_colorspace(output, converted, size);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -1669,6 +1669,7 @@ sixel_encoder_new(
     (*ppencoder)->penetrate_multiplexer = 0;
     (*ppencoder)->encode_policy         = SIXEL_ENCODEPOLICY_AUTO;
     (*ppencoder)->working_colorspace    = SIXEL_COLORSPACE_GAMMA;
+    (*ppencoder)->output_colorspace     = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->ormode                = 0;
     (*ppencoder)->pipe_mode             = 0;
     (*ppencoder)->bgcolor               = NULL;
@@ -2166,6 +2167,43 @@ sixel_encoder_setopt(
             } else {
                 sixel_helper_set_additional_message(
                     "unsupported working colorspace specified.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
+        }
+        break;
+    case SIXEL_OPTFLAG_OUTPUT_COLORSPACE:  /* U */
+        if (value == NULL) {
+            sixel_helper_set_additional_message(
+                "output-colorspace requires an argument.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        } else {
+            char lowered[16];
+            size_t len = strlen(value);
+            size_t i;
+
+            if (len >= sizeof(lowered)) {
+                sixel_helper_set_additional_message(
+                    "specified output colorspace name is too long.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
+            for (i = 0; i < len; ++i) {
+                lowered[i] = (char)tolower((unsigned char)value[i]);
+            }
+            lowered[len] = '\0';
+
+            if (strcmp(lowered, "gamma") == 0) {
+                encoder->output_colorspace = SIXEL_COLORSPACE_GAMMA;
+            } else if (strcmp(lowered, "linear") == 0) {
+                encoder->output_colorspace = SIXEL_COLORSPACE_LINEAR;
+            } else if (strcmp(lowered, "smpte-c") == 0 ||
+                       strcmp(lowered, "smptec") == 0) {
+                encoder->output_colorspace = SIXEL_COLORSPACE_SMPTEC;
+            } else {
+                sixel_helper_set_additional_message(
+                    "unsupported output colorspace specified.");
                 status = SIXEL_BAD_ARGUMENT;
                 goto end;
             }

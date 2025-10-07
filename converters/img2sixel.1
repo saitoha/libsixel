@@ -298,6 +298,17 @@ linear -> convert to linear RGB for processing
 .br
 oklab -> operate in OKLab uniform color space for palette decisions
 .TP 5
+.B \-U \fIOUTPUT_COLORSPACE\fP, \-\-output\-colorspace=\fIOUTPUT_COLORSPACE\fP
+select output color space
+.br
+\fIOUTPUT_COLORSPACE\fP is one of them:
+.br
+gamma   -> sRGB gamma encoded output (default)
+.br
+linear  -> linear RGB output
+.br
+smpte-c -> SMPTE-C gamma encoded output
+.TP 5
 .B \-V, \-\-version
 show version and license info.
 .TP 5

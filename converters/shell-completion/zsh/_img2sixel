@@ -112,6 +112,14 @@ _workingcolorspace() {
     'oklab[operate in OKLab uniform color space]'
 }
 
+_outputcolorspace() {
+  _values \
+    'OUTPUTCOLORSPACE' \
+    'gamma[sRGB gamma encoded output (default)]' \
+    'linear[linear RGB output]' \
+    'smpte-c[SMPTE-C gamma encoded output]'
+}
+
 _arguments -S -s -A "-*" -S \
   {-o,--outfile}'[specify output file (default: stdout)]':files:_files \
   {-7,--7bit-mode}'[generate a sixel image for 7bit terminals (default)]' \
@@ -148,6 +156,7 @@ _arguments -S -s -A "-*" -S \
   {-@,--drcs}'[output DRCSMMv1 tiles instead of regular SIXEL image]' \
   {-O,--ormode}'[output ormode sixel image]' \
   {-W,--working-colorspace=}'[select internal working color space]':workingcolorspace:_workingcolorspace \
+  {-U,--output-colorspace=}'[select output color space]':outputcolorspace:_outputcolorspace \
   {-V,--version}'[show version and license information]' \
   {-H,--help}'[show help]' \
   '*:files:_files' \
