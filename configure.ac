@@ -1268,6 +1268,9 @@ else
         ;;
     esac
 fi
+if test "x${enable_wiccodec}" = xyes -a "x${have_wiccodec}" != xyes; then
+    AC_MSG_ERROR([required WIC headers or libraries are not available])
+fi
 AC_SUBST(WICCODEC_CFLAGS)
 AC_SUBST(WICCODEC_LIBS)
 
