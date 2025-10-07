@@ -108,7 +108,8 @@ _workingcolorspace() {
   _values \
     'WORKINGCOLORSPACE' \
     'gamma[keep gamma encoded pixels (default)]' \
-    'linear[use linear RGB as working space]'
+    'linear[use linear RGB as working space]' \
+    'oklab[operate in OKLab uniform color space]'
 }
 
 _arguments -S -s -A "-*" -S \
@@ -140,13 +141,13 @@ _arguments -S -s -A "-*" -S \
   {-t,--palette-type=}'[select palette color space type]':palettetype:_palettetype \
   {-b,--builtin-palette=}'[select built-in palette type]':builtinpalette:_builtinpalette \
   {-E,--encode-policy=}'[select encoding policy]':encodepolicy:_encodepolicy \
-  {-W,--working-colorspace=}'[select internal working color space]':workingcolorspace:_workingcolorspace \
   {-B,--bgcolor=}'[select background color]' \
   {-P,--penetrate}'[penetrate GNU Screen using DCS pass-through sequence]' \
   {-D,--pipe-mode}'[read source images from stdin continuously]' \
   {-v,--verbose}'[show debugging information]' \
   {-@,--drcs}'[output DRCSMMv1 tiles instead of regular SIXEL image]' \
   {-O,--ormode}'[output ormode sixel image]' \
+  {-W,--working-colorspace=}'[select internal working color space]':workingcolorspace:_workingcolorspace \
   {-V,--version}'[show version and license information]' \
   {-H,--help}'[show help]' \
   '*:files:_files' \

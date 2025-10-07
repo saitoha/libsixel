@@ -242,15 +242,6 @@ fast -> encode as fast as possible
 .br
 size -> encode to as small sixel sequence as possible
 .TP 5
-.B \-W \fIWORKING_COLORSPACE\fP, \-\-working\-colorspace=\fIWORKING_COLORSPACE\fP
-select internal working color space
-.br
-\fIWORKING_COLORSPACE\fP is one of them:
-.br
-gamma  -> keep gamma encoded pixels (default)
-.br
-linear -> convert to linear RGB for processing
-.TP 5
 .B \-B \fIBGCOLOR\fP, \-\-bgcolor=\fIBGCOLOR\fP
 .br
 specify background color
@@ -295,6 +286,17 @@ dialect originating from the netbsd/x68k console \fIite\fP and the twitter
 client \fIsayaka\fP. It decomposes palette indices into bitplanes and
 represents the index by overlaying planes via repaints, with the goal of
 reducing output size.
+.TP 5
+.B \-W \fIWORKING_COLORSPACE\fP, \-\-working\-colorspace=\fIWORKING_COLORSPACE\fP
+select internal working color space
+.br
+\fIWORKING_COLORSPACE\fP is one of them:
+.br
+gamma  -> keep gamma encoded pixels (default)
+.br
+linear -> convert to linear RGB for processing
+.br
+oklab -> operate in OKLab uniform color space for palette decisions
 .TP 5
 .B \-V, \-\-version
 show version and license info.

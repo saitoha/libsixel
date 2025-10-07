@@ -126,6 +126,7 @@ typedef int SIXELSTATUS;
 /* colorspace */
 #define SIXEL_COLORSPACE_GAMMA    0x0  /* gamma encoded (sRGB) */
 #define SIXEL_COLORSPACE_LINEAR   0x1  /* linear RGB */
+#define SIXEL_COLORSPACE_OKLAB    0x2  /* OKLab uniform color space */
 
 /* offset value of pixelFormat */
 #define SIXEL_FORMATTYPE_COLOR     (0)
