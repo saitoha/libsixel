@@ -23,6 +23,8 @@ libsixel_la_SOURCES = \
 		$(srcdir)/quant.h \
 		$(srcdir)/dither.c \
 		$(srcdir)/dither.h \
+		$(srcdir)/colorspace.c \
+		$(srcdir)/colorspace.h \
 		$(srcdir)/frame.c \
 		$(srcdir)/frame.h \
 		$(srcdir)/pixelformat.c \
@@ -100,5 +102,4 @@ gen-rgblookup: $(srcdir)/rgblookup.gperf
 	gperf -C -N lookup_rgb $(GPERF_OPT) $<  |\
 	sed 's/{""}/\{"", 0, 0, 0\}/g'          |\
 	astyle                                  > $(srcdir)/rgblookup.h
-
 

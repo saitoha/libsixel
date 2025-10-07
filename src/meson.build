@@ -25,6 +25,7 @@ srcs = [
   'tosixel.c',
   'quant.c',
   'dither.c',
+  'colorspace.c',
   'frame.c',
   'pixelformat.c',
   'scale.c',
