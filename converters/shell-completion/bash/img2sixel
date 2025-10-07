@@ -112,7 +112,8 @@ _img2sixel()
         ;;
     -W|--working-colorspace)
         COMPREPLY=( $( compgen -W 'gamma \
-                                   linear' -- "$cur" ) )
+                                   linear \
+                                   oklab' -- "$cur" ) )
         return 0
         ;;
     -o|--outfile)
@@ -152,13 +153,13 @@ _img2sixel()
                                    -t --palette-type \
                                    -b --builtin-palette \
                                    -E --encode-policy \
-                                   -W --working-colorspace \
                                    -B --bgcolor \
                                    -P --penetrate \
                                    -D --pipe-mode \
                                    -v --verbose \
                                    -@ --drcs \
                                    -O --ormode \
+                                   -W --working-colorspace \
                                    -V --version \
                                    -H --help \
                                   ' -- "$cur" ))

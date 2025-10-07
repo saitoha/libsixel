@@ -528,6 +528,7 @@ typedef struct sixel_callback_context_for_mapfile {
     int reqcolors;
     sixel_dither_t *dither;
     sixel_allocator_t *allocator;
+    int working_colorspace;
 } sixel_callback_context_for_mapfile_t;
 
 
@@ -542,6 +543,12 @@ load_image_callback_for_palette(
 
     /* get callback context object from the private data */
     callback_context = (sixel_callback_context_for_mapfile_t *)data;
+
+    status = sixel_frame_ensure_colorspace(frame,
+                                           callback_context->working_colorspace);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
 
     switch (sixel_frame_get_pixelformat(frame)) {
     case SIXEL_PIXELFORMAT_PAL1:
@@ -639,6 +646,7 @@ sixel_prepare_specified_palette(
     callback_context.reqcolors = encoder->reqcolors;
     callback_context.dither = NULL;
     callback_context.allocator = encoder->allocator;
+    callback_context.working_colorspace = encoder->working_colorspace;
 
     sixel_helper_set_loader_trace(encoder->verbose);
     status = sixel_helper_load_image_file(encoder->mapfile,
@@ -2153,6 +2161,8 @@ sixel_encoder_setopt(
                 encoder->working_colorspace = SIXEL_COLORSPACE_GAMMA;
             } else if (strcmp(lowered, "linear") == 0) {
                 encoder->working_colorspace = SIXEL_COLORSPACE_LINEAR;
+            } else if (strcmp(lowered, "oklab") == 0) {
+                encoder->working_colorspace = SIXEL_COLORSPACE_OKLAB;
             } else {
                 sixel_helper_set_additional_message(
                     "unsupported working colorspace specified.");
