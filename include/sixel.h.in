@@ -395,7 +395,11 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_PENETRATE         ('P')  /* -P, --penetrate:
                                                   penetrate GNU Screen using DCS
                                                   pass-through sequence */
-#define SIXEL_OPTFLAG_DRCS              ('@')  /* -@, --drcs: emit DRCS tiles */
+#define SIXEL_OPTFLAG_DRCS              ('@')  /* -@ DSCS, --drcs DSCS:
+                                                  output extended DRCS tiles instead of regular
+                                                  SIXEL image (experimental) */
+#define SIXEL_OPTFLAG_MAPPING_VERSION   ('M')  /* -M, --mapping-version:
+                                                  specify DRCS-SIXEL Unicode mapping version */
 #define SIXEL_OPTFLAG_PIPE_MODE         ('D')  /* -D, --pipe-mode: (deprecated)
                                                   read source images from stdin continuously */
 #define SIXEL_OPTFLAG_VERBOSE           ('v')  /* -v, --verbose: show debugging info */
