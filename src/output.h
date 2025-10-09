@@ -22,6 +22,17 @@
 #ifndef LIBSIXEL_OUTPUT_H
 #define LIBSIXEL_OUTPUT_H
 
+#if defined(HAVE_CLOCK) || defined(HAVE_NANOSLEEP)
+# if HAVE_TIME_H
+#  include <time.h>
+# elif HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# endif  /* HHAVE_TIME_H HAVE_SYS_TIME_H */
+typedef clock_t sixel_clock_t;
+#else
+typedef long sixel_clock_t;
+#endif  /* defined(HAVE_CLOCK) || defined(HAVE_NANOSLEEP) */
+
 typedef struct sixel_node {
     struct sixel_node *next;
     int pal;
@@ -81,6 +92,7 @@ struct sixel_output {
     int penetrate_multiplexer;
     int encode_policy;
     int ormode;
+    sixel_clock_t last_clock;
 
     void *priv;
     int pos;
