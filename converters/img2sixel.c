@@ -167,8 +167,6 @@ void show_help(void)
             "                           DECDMAC and make terminal memorize\n"
             "                           SIXEL image. No image is shown if\n"
             "                           this option is specified\n"
-            "-@, --drcs                 output DRCSMMv1 tiles instead of regular\n"
-            "                           SIXEL image (experimental)\n"
             "-C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE\n"
             "                           specify an number argument for the\n"
             "                           score of complexion correction.\n"
@@ -328,9 +326,10 @@ void show_help(void)
             "-D, --pipe-mode            [[deprecated]] read source images from\n"
             "                           stdin continuously\n"
             "-v, --verbose              show debugging info\n"
-            "-@, --drcs                 output DRCSMMv1 tiles instead of regular\n"
+            "-@ DSCS, --drcs DSCS       output extended DRCS tiles instead of regular\n"
             "                           SIXEL image (experimental)\n"
-            "-O, --ormode               output ormode sixel image\n"
+            "-M VERSION, --mapping-version VERSION\n"
+            "                           specify DRCS-SIXEL Unicode mapping version\n"
             "-W WORKING_COLORSPACE, --working-colorspace=WORKING_COLORSPACE\n"
             "                           choose internal working color space\n"
             "                             gamma  -> sRGB gamma(default)\n"
@@ -382,7 +381,7 @@ main(int argc, char *argv[])
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    char const *optstring = "o:78Rp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:U:B:C:D@OVW:H";
+    char const *optstring = "o:78Rp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:U:B:C:D@:M:OVW:H";
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",            required_argument,  &long_opt, 'o'},
@@ -418,7 +417,8 @@ main(int argc, char *argv[])
         {"bgcolor",            required_argument,  &long_opt, 'B'},
         {"complexion-score",   required_argument,  &long_opt, 'C'},
         {"pipe-mode",          no_argument,        &long_opt, 'D'}, /* deprecated */
-        {"drcs",               no_argument,        &long_opt, '@'},
+        {"drcs",               required_argument,  &long_opt, '@'},
+        {"mapping-version",    required_argument,  &long_opt, 'M'},
         {"ormode",             no_argument,        &long_opt, 'O'},
         {"version",            no_argument,        &long_opt, 'V'},
         {"help",               no_argument,        &long_opt, 'H'},
@@ -506,12 +506,12 @@ main(int argc, char *argv[])
 
 argerr:
     fprintf(stderr,
-            "usage: img2sixel [-78eIkiugvSPD@OVH] [-p colors] [-m file] [-d diffusiontype]\n"
+            "usage: img2sixel [-78eIkiugvSPDOVH] [-p colors] [-m file] [-d diffusiontype]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
             "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
-            "                 [-E encodepolicy] [-W workingcolorspace]\n"
-            "                 [-U outputcolorspace] [-B bgcolor]\n"
+            "                 [-E encodepolicy] [-@ dscs] [-M mapping-version]\n"
+            "                 [-W workingcolorspace] [-U outputcolorspace] [-B bgcolor]\n"
             "                 [-o outfile] [filename ...]\n"
             "for more details, type: 'img2sixel -H'.\n");
 

@@ -20,7 +20,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * -------------------------------------------------------------------------------
- * Portions of this file(sixel_encoder_emit_drcsmmv1_chars) are derived from
+ * Portions of this file(sixel_encoder_emit_drcsmmv2_chars) are derived from
  * mlterm's drcssixel.c.
  *
  * Copyright (c) Araki Ken(arakiken@users.sourceforge.net)
@@ -1323,6 +1323,75 @@ end:
 }
 
 
+static SIXELSTATUS
+sixel_encoder_emit_iso2022_chars(
+    sixel_encoder_t *encoder,
+    sixel_frame_t *frame
+)
+{
+    char *buf_p, *buf;
+    int col, row;
+    int charset = encoder->start_dscs;
+    int is_96cs = 0;
+    unsigned int code;
+    int num_cols, num_rows;
+    SIXELSTATUS status;
+    size_t alloc_size;
+
+    code = 0x100020 + (is_96cs ? 0x80 : 0) + charset * 0x100;
+    num_cols = (sixel_frame_get_width(frame) + encoder->cell_width - 1)
+             / encoder->cell_width;
+    num_rows = (sixel_frame_get_height(frame) + encoder->cell_height - 1)
+             / encoder->cell_height;
+
+    /* cols x rows + designation(4 chars) + SI + SO + LFs */
+    alloc_size = num_cols * num_rows + (num_cols * num_rows / 96 + 1) * 4 + 2 + num_rows;
+    buf_p = buf = sixel_allocator_malloc(encoder->allocator, alloc_size);
+    if (buf == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_emit_iso2022_chars: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    code = 0x20;
+    *(buf_p++) = '\016';  /* SI */
+    *(buf_p++) = '\033';
+    *(buf_p++) = ')';
+    *(buf_p++) = ' ';
+    *(buf_p++) = charset;
+    for(row = 0; row < num_rows; row++) {
+        for(col = 0; col < num_cols; col++) {
+            if ((code & 0x7f) == 0x0) {
+                if (charset == 0x7e) {
+                    is_96cs = 1 - is_96cs;
+                    charset = '0';
+                } else {
+                    charset++;
+                }
+                code = 0x20;
+                *(buf_p++) = '\033';
+                *(buf_p++) = is_96cs ? '-': ')';
+                *(buf_p++) = ' ';
+                *(buf_p++) = charset;
+            }
+            *(buf_p++) = code++;
+        }
+        *(buf_p++) = '\n';
+    }
+    *(buf_p++) = '\017';  /* SO */
+
+    write(encoder->outfd, buf, buf_p - buf);
+
+    sixel_allocator_free(encoder->allocator, buf);
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+
 /*
  * This routine is derived from mlterm's drcssixel.c
  * (https://raw.githubusercontent.com/arakiken/mlterm/master/drcssixel/drcssixel.c).
@@ -1330,7 +1399,7 @@ end:
  * Adjusted here to integrate with libsixel's encoder pipeline.
  */
 static SIXELSTATUS
-sixel_encoder_emit_drcsmmv1_chars(
+sixel_encoder_emit_drcsmmv2_chars(
     sixel_encoder_t *encoder,
     sixel_frame_t *frame
 )
@@ -1355,7 +1424,7 @@ sixel_encoder_emit_drcsmmv1_chars(
     buf_p = buf = sixel_allocator_malloc(encoder->allocator, alloc_size);
     if (buf == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_encoder_emit_drcsmmv1_chars: sixel_allocator_malloc() failed.");
+            "sixel_encoder_emit_drcsmmv2_chars: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -1530,11 +1599,12 @@ sixel_encoder_encode_frame(
 
     if (encoder->fdrcs) {  /* -@ option */
         nwrite = sprintf(buf,
-                         "%s?8800h%s1;0;0;%d;1;3;%d;0{ 0",
-                         encoder->f8bit ? "\233": "\033[",
+                         "%s%s1;0;0;%d;1;3;%d;0{ %c",
+                         (encoder->drcs_mmv > 0) ? (encoder->f8bit ? "\233?8800h": "\033[8800h"): "",
                          encoder->f8bit ? "\220": "\033P",
                          encoder->cell_width,
-                         encoder->cell_height);
+                         encoder->cell_height,
+                         encoder->start_dscs);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
@@ -1591,9 +1661,17 @@ sixel_encoder_encode_frame(
                 "sixel_encoder_encode_frame: fn_write() failed.");
             goto end;
         }
-        status = sixel_encoder_emit_drcsmmv1_chars(encoder, frame);
-        if (SIXEL_FAILED(status)) {
-            goto end;
+
+        if (encoder->drcs_mmv == 0) {
+            status = sixel_encoder_emit_iso2022_chars(encoder, frame);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        } else {
+            status = sixel_encoder_emit_drcsmmv2_chars(encoder, frame);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
         }
     }
 
@@ -1686,6 +1764,8 @@ sixel_encoder_new(
     (*ppencoder)->finsecure             = 0;
     (*ppencoder)->cancel_flag           = NULL;
     (*ppencoder)->dither_cache          = NULL;
+    (*ppencoder)->start_dscs            = '0';
+    (*ppencoder)->drcs_mmv              = 2;
     (*ppencoder)->allocator             = allocator;
 
     /* evaluate environment variable ${SIXEL_BGCOLOR} */
@@ -2127,6 +2207,14 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_DRCS:  /* @ */
         encoder->fdrcs = 1;
+        if (strlen(value) == 1 && value[0] >= 32 && value[0] <= 127) {
+            encoder->start_dscs = value[0];
+        } else {
+            sixel_helper_set_additional_message(
+                "cannot parse DSCS option.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
         break;
     case SIXEL_OPTFLAG_PENETRATE:  /* P */
         encoder->penetrate_multiplexer = 1;

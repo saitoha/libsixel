@@ -76,6 +76,8 @@ struct sixel_encoder {
     int finsecure;
     int *cancel_flag;
     void *dither_cache;
+    unsigned char start_dscs;
+    int drcs_mmv;
 };
 
 #if HAVE_TESTS
