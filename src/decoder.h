@@ -30,6 +30,7 @@ struct sixel_decoder {
     char *input;
     char *output;
     sixel_allocator_t *allocator;
+    sixel_dequantize_method_t dequantize_method;
 };
 
 #if HAVE_TESTS

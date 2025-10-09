@@ -104,6 +104,11 @@ typedef int SIXELSTATUS;
 #define SIXEL_DIFFUSE_X_DITHER    0x8  /* positionally stable arithmetic xor based dither */
 #define SIXEL_DIFFUSE_LSO1        0x9  /* diffuse with libsixel's original method */
 
+typedef enum sixel_dequantize_method {
+    SIXEL_DEQUANTIZE_NONE = 0,
+    SIXEL_DEQUANTIZE_FS   = 1
+} sixel_dequantize_method_t;
+
 /* quality modes */
 #define SIXEL_QUALITY_AUTO        0x0  /* choose quality mode automatically */
 #define SIXEL_QUALITY_HIGH        0x1  /* high quality palette construction */
@@ -201,6 +206,7 @@ typedef int SIXELSTATUS;
 /* setopt flags */
 #define SIXEL_OPTFLAG_INPUT             ('i')  /* -i, --input: specify input file name. */
 #define SIXEL_OPTFLAG_OUTPUT            ('o')  /* -o, --output: specify output file name. */
+#define SIXEL_DECODER_OPTFLAG_DEQUANTIZE ('d') /* -d, --dequantize: enable palette dequantization. */
 #define SIXEL_OPTFLAG_OUTFILE           ('o')  /* -o, --outfile: specify output file name. */
 #define SIXEL_OPTFLAG_7BIT_MODE         ('7')  /* -7, --7bit-mode: for 7bit terminals or printers (default) */
 #define SIXEL_OPTFLAG_8BIT_MODE         ('8')  /* -8, --8bit-mode: for 8bit terminals or printers */

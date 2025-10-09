@@ -151,6 +151,8 @@ show_help(void)
             "Options:\n"
             "-i, --input     specify input file\n"
             "-o, --output    specify output file\n"
+            "-d, --dequantize METHOD\n"
+            "                 apply palette dequantization (fs|none, default: none)\n"
             "-V, --version   show version and license information\n"
             "-H, --help      show this help\n"
            );
@@ -167,12 +169,13 @@ main(int argc, char *argv[])
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    char const *optstring = "i:o:VH";
+    char const *optstring = "i:o:d:VH";
 
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"input",        required_argument,  &long_opt, 'i'},
         {"output",       required_argument,  &long_opt, 'o'},
+        {"dequantize",   required_argument,  &long_opt, 'd'},
         {"version",      no_argument,        &long_opt, 'V'},
         {"help",         no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}

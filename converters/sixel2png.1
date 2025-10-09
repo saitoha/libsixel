@@ -35,6 +35,11 @@ this command accepts SIXEL data from STDIN.
 .B \-o
 Specify output file. If it is omitted or "-",
 this command emit SIXEL data into STDOUT.
+.TP 5
+.B \-d
+Apply palette dequantization when writing PNG images.
+Specify \fIfs\fP to enable Floyd-Steinberg error diffusion, or
+\fInone\fP to keep the original palette (default).
 
 
 .SH "SEE ALSO"

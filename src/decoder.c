@@ -86,6 +86,7 @@ sixel_decoder_new(
     (*ppdecoder)->output       = strdup_with_allocator("-", allocator);
     (*ppdecoder)->input        = strdup_with_allocator("-", allocator);
     (*ppdecoder)->allocator    = allocator;
+    (*ppdecoder)->dequantize_method = SIXEL_DEQUANTIZE_NONE;
 
     if ((*ppdecoder)->output == NULL || (*ppdecoder)->input == NULL) {
         sixel_decoder_unref(*ppdecoder);
@@ -157,6 +158,147 @@ sixel_decoder_unref(sixel_decoder_t *decoder)
 }
 
 
+static inline int
+sixel_int_round_positive(double value)
+{
+    return (int)(value + 0.5);
+}
+
+static SIXELSTATUS
+sixel_dequantize_floyd_steinberg(unsigned char *indexed_pixels,
+                                 int width,
+                                 int height,
+                                 unsigned char *palette,
+                                 int ncolors,
+                                 sixel_allocator_t *allocator,
+                                 unsigned char **output)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    unsigned char *rgb = NULL;
+    double *error_curr = NULL;
+    double *error_next = NULL;
+    size_t width3;
+    size_t num_pixels;
+    int y;
+    int x;
+
+    if (width <= 0 || height <= 0) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    width3 = (size_t)width * 3;
+    num_pixels = (size_t)width * (size_t)height;
+
+    rgb = (unsigned char *)sixel_allocator_malloc(allocator, num_pixels * 3);
+    if (rgb == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_dequantize_floyd_steinberg: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    error_curr = (double *)sixel_allocator_calloc(allocator, width3, sizeof(double));
+    if (error_curr == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_dequantize_floyd_steinberg: sixel_allocator_calloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    error_next = (double *)sixel_allocator_calloc(allocator, width3, sizeof(double));
+    if (error_next == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_dequantize_floyd_steinberg: sixel_allocator_calloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    for (y = 0; y < height; ++y) {
+        memset(error_next, 0, width3 * sizeof(double));
+
+        for (x = 0; x < width; ++x) {
+            int palette_index = indexed_pixels[y * width + x];
+            int base_index = x * 3;
+            size_t out_index = (size_t)(y * width + x) * 3;
+            double error[3];
+            int output_pixel[3];
+            int channel;
+
+            if (palette_index < 0 || palette_index >= ncolors) {
+                palette_index = 0;
+            }
+
+            for (channel = 0; channel < 3; ++channel) {
+                double quantized = palette[palette_index * 3 + channel];
+                double accumulated = quantized + error_curr[base_index + channel];
+                double reconstructed = accumulated;
+
+                error_curr[base_index + channel] = 0.0;
+
+                if (reconstructed < 0.0) {
+                    reconstructed = 0.0;
+                } else if (reconstructed > 255.0) {
+                    reconstructed = 255.0;
+                }
+
+                output_pixel[channel] = sixel_int_round_positive(reconstructed);
+                if (output_pixel[channel] < 0) {
+                    output_pixel[channel] = 0;
+                }
+                if (output_pixel[channel] > 255) {
+                    output_pixel[channel] = 255;
+                }
+                error[channel] = (double)output_pixel[channel] - quantized;
+                rgb[out_index + channel] = (unsigned char)output_pixel[channel];
+            }
+
+            if (x + 1 < width) {
+                int right = base_index + 3;
+                error_curr[right + 0] += error[0] * (7.0 / 16.0);
+                error_curr[right + 1] += error[1] * (7.0 / 16.0);
+                error_curr[right + 2] += error[2] * (7.0 / 16.0);
+            }
+
+            if (y + 1 < height) {
+                if (x > 0) {
+                    int down_left = base_index - 3;
+                    error_next[down_left + 0] += error[0] * (3.0 / 16.0);
+                    error_next[down_left + 1] += error[1] * (3.0 / 16.0);
+                    error_next[down_left + 2] += error[2] * (3.0 / 16.0);
+                }
+
+                error_next[base_index + 0] += error[0] * (5.0 / 16.0);
+                error_next[base_index + 1] += error[1] * (5.0 / 16.0);
+                error_next[base_index + 2] += error[2] * (5.0 / 16.0);
+
+                if (x + 1 < width) {
+                    int down_right = base_index + 3;
+                    error_next[down_right + 0] += error[0] * (1.0 / 16.0);
+                    error_next[down_right + 1] += error[1] * (1.0 / 16.0);
+                    error_next[down_right + 2] += error[2] * (1.0 / 16.0);
+                }
+            }
+        }
+
+        {
+            double *tmp = error_curr;
+            error_curr = error_next;
+            error_next = tmp;
+        }
+    }
+
+    *output = rgb;
+    rgb = NULL;
+    status = SIXEL_OK;
+
+end:
+    sixel_allocator_free(allocator, rgb);
+    sixel_allocator_free(allocator, error_curr);
+    sixel_allocator_free(allocator, error_next);
+    return status;
+}
+
 /* set an option flag to decoder object */
 SIXELAPI SIXELSTATUS
 sixel_decoder_setopt(
@@ -187,6 +329,20 @@ sixel_decoder_setopt(
             sixel_helper_set_additional_message(
                 "sixel_decoder_setopt: strdup_with_allocator() failed.");
             status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        break;
+    case SIXEL_DECODER_OPTFLAG_DEQUANTIZE: /* d */
+        if (value == NULL || value[0] == '\0') {
+            decoder->dequantize_method = SIXEL_DEQUANTIZE_FS;
+        } else if (strcmp(value, "fs") == 0) {
+            decoder->dequantize_method = SIXEL_DEQUANTIZE_FS;
+        } else if (strcmp(value, "none") == 0) {
+            decoder->dequantize_method = SIXEL_DEQUANTIZE_NONE;
+        } else {
+            sixel_helper_set_additional_message(
+                "sixel_decoder_setopt: unsupported dequantize method.");
+            status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
         break;
@@ -221,6 +377,10 @@ sixel_decoder_decode(
     FILE *input_fp = NULL;
     unsigned char *indexed_pixels = NULL;
     unsigned char *palette = NULL;
+    unsigned char *rgb_pixels = NULL;
+    unsigned char *output_pixels;
+    unsigned char *output_palette;
+    int output_pixelformat;
     int ncolors;
 
     sixel_decoder_ref(decoder);
@@ -295,8 +455,28 @@ sixel_decoder_decode(
         goto end;
     }
 
-    status = sixel_helper_write_image_file(indexed_pixels, sx, sy, palette,
-                                           SIXEL_PIXELFORMAT_PAL8,
+    output_pixels = indexed_pixels;
+    output_palette = palette;
+    output_pixelformat = SIXEL_PIXELFORMAT_PAL8;
+
+    if (decoder->dequantize_method == SIXEL_DEQUANTIZE_FS) {
+        status = sixel_dequantize_floyd_steinberg(indexed_pixels,
+                                                  sx,
+                                                  sy,
+                                                  palette,
+                                                  ncolors,
+                                                  decoder->allocator,
+                                                  &rgb_pixels);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        output_pixels = rgb_pixels;
+        output_palette = NULL;
+        output_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    }
+
+    status = sixel_helper_write_image_file(output_pixels, sx, sy, output_palette,
+                                           output_pixelformat,
                                            decoder->output,
                                            SIXEL_FORMAT_PNG,
                                            decoder->allocator);
@@ -309,6 +489,7 @@ end:
     sixel_allocator_free(decoder->allocator, raw_data);
     sixel_allocator_free(decoder->allocator, indexed_pixels);
     sixel_allocator_free(decoder->allocator, palette);
+    sixel_allocator_free(decoder->allocator, rgb_pixels);
     sixel_decoder_unref(decoder);
 
     return status;
@@ -594,3 +775,4 @@ error:
 /* emacs End:                  */
 /* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */
+

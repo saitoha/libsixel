@@ -585,6 +585,8 @@ Usage: sixel2png -i input.sixel -o output.png
 Options:
 -i, --input     specify input file
 -o, --output    specify output file
+-d, --dequantize METHOD
+                apply palette dequantization (fs|none, default: none)
 -V, --version   show version and license information
 -H, --help      show this help
 ```
