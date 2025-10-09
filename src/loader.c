@@ -1102,6 +1102,7 @@ load_with_gdkpixbuf(
     int i;
     int depth;
     int anim_loop_count = (-1);  /* (-1): infinite, >=0: finite loop count */
+    int delay_ms;
 
     (void) fuse_palette;
     (void) reqcolors;
@@ -1239,7 +1240,6 @@ load_with_gdkpixbuf(
             /* handle one logical loop of the animation */
             finished = FALSE;
             while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
-                int delay_ms;
 
                 pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
                 if (pixbuf == NULL) {

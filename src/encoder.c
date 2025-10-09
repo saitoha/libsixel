@@ -69,13 +69,6 @@
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif  /* HAVE_SYS_TYPES_H */
-#if defined(HAVE_CLOCK) || defined(HAVE_NANOSLEEP)
-# if HAVE_TIME_H
-#  include <time.h>
-# elif HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# endif  /* HHAVE_TIME_H HAVE_SYS_TIME_H */
-#endif  /* defined(HAVE_CLOCK) || defined(HAVE_NANOSLEEP) */
 #if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif  /* HAVE_INTTYPES_H */
@@ -133,7 +126,6 @@
 #  define S_IWUSR _S_IWRITE
 # endif
 
-typedef long clock_win_t;
 # if defined(CLOCKS_PER_SEC)
 #  undef CLOCKS_PER_SEC
 # endif
@@ -187,19 +179,19 @@ nanosleep_win(
 
 # if !defined(HAVE_CLOCK)
 # define HAVE_CLOCK_WIN 1
-static clock_win_t
+static sixel_clock_t
 clock_win(void)
 {
     FILETIME ct, et, kt, ut;
     ULARGE_INTEGER u, k;
 
     if (! GetProcessTimes(GetCurrentProcess(), &ct, &et, &kt, &ut)) {
-        return (clock_win_t) - 1;
+        return (sixel_clock_t)(-1);
     }
     u.LowPart = ut.dwLowDateTime; u.HighPart = ut.dwHighDateTime;
     k.LowPart = kt.dwLowDateTime; k.HighPart = kt.dwHighDateTime;
     /* 100ns -> ms */
-    return (clock_win_t)((u.QuadPart + k.QuadPart) / 10000ULL);
+    return (sixel_clock_t)((u.QuadPart + k.QuadPart) / 10000ULL);
 }
 # endif  /* HAVE_CLOCK */
 
@@ -970,13 +962,7 @@ sixel_encoder_output_without_macro(
 #if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
     int dulation;
     int delay;
-    int lag = 0;
     struct timespec tv;
-# if defined(HAVE_CLOCK)
-    clock_t start;
-# elif defined(HAVE_CLOCK_WIN)
-    clock_win_t start;
-# endif
 #endif
     unsigned char *pixbuf;
     int width;
@@ -988,6 +974,9 @@ sixel_encoder_output_without_macro(
     int palette_colors = 0;
     size_t palette_size = 0;
     int palette_converted = 0;
+#if defined(HAVE_CLOCK) || defined(HAVE_CLOCK_WIN)
+    sixel_clock_t last_clock;
+#endif
 
     if (encoder == NULL) {
         sixel_helper_set_additional_message(
@@ -1030,34 +1019,46 @@ sixel_encoder_output_without_macro(
         goto end;
     }
 #if defined(HAVE_CLOCK)
-    start = clock();
+    if (output->last_clock == 0) {
+        output->last_clock = clock();
+    }
 #elif defined(HAVE_CLOCK_WIN)
-    start = clock_win();
+    if (output->last_clock == 0) {
+        output->last_clock = clock_win();
+    }
 #endif
 #if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
     delay = sixel_frame_get_delay(frame);
     if (delay > 0 && !encoder->fignore_delay) {
 # if defined(HAVE_CLOCK)
-        dulation = (int)((clock() - start) * 1000 * 1000 / CLOCKS_PER_SEC) - (int)lag;
-        lag = 0;
+        last_clock = clock();
+/* https://stackoverflow.com/questions/16697005/clock-and-clocks-per-sec-on-osx-10-7 */
+#  if defined(__APPLE__)
+        dulation = (int)((last_clock - output->last_clock) * 1000 * 1000
+                          / 100000);
+#  else
+        dulation = (int)((last_clock - output->last_clock) * 1000 * 1000
+                          / CLOCKS_PER_SEC);
+#  endif
+        output->last_clock = last_clock;
 # elif defined(HAVE_CLOCK_WIN)
-        dulation = (int)((clock_win() - start) * 1000 * 1000 / CLOCKS_PER_SEC) - (int)lag;
-        lag = 0;
+        last_clock = clock_win();
+        dulation = (int)((last_clock - output->last_clock) * 1000 * 1000
+                          / CLOCKS_PER_SEC);
+        output->last_clock = last_clock;
 # else
         dulation = 0;
 # endif
-        if (dulation < 10000 * delay) {
+        if (dulation < 1000 * 10 * delay) {
 # if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
             tv.tv_sec = 0;
-            tv.tv_nsec = (long)((10000 * delay - dulation) * 1000);
+            tv.tv_nsec = (long)((1000 * 10 * delay - dulation) * 1000);
 #  if defined(HAVE_NANOSLEEP)
             nanosleep(&tv, NULL);
 #  else
             nanosleep_win(&tv, NULL);
 #  endif
 # endif
-        } else {
-            lag = (int)(10000 * delay - dulation);
         }
     }
 #endif
@@ -1126,13 +1127,7 @@ sixel_encoder_output_with_macro(
     int nwrite;
 #if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
     int dulation;
-    int lag = 0;
     struct timespec tv;
-# if defined(HAVE_CLOCK)
-    clock_t start;
-# elif defined(HAVE_CLOCK_WIN)
-    clock_win_t start;
-# endif
 #endif
     int width;
     int height;
@@ -1148,11 +1143,18 @@ sixel_encoder_output_with_macro(
 #if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
     int delay;
 #endif
+#if defined(HAVE_CLOCK) || defined(HAVE_CLOCK_WIN)
+    sixel_clock_t last_clock;
+#endif
 
 #if defined(HAVE_CLOCK)
-    start = clock();
+    if (output->last_clock == 0) {
+        output->last_clock = clock();
+    }
 #elif defined(HAVE_CLOCK_WIN)
-    start = clock_win();
+    if (output->last_clock == 0) {
+        output->last_clock = clock_win();
+    }
 #endif
 
     width = sixel_frame_get_width(frame);
@@ -1272,28 +1274,34 @@ sixel_encoder_output_with_macro(
         delay = sixel_frame_get_delay(frame);
         if (delay > 0 && !encoder->fignore_delay) {
 # if defined(HAVE_CLOCK)
-            dulation = (int)((clock() - start) * 1000 * 1000
-                             / CLOCKS_PER_SEC) - (int)lag;
-            lag = 0;
+            last_clock = clock();
+/* https://stackoverflow.com/questions/16697005/clock-and-clocks-per-sec-on-osx-10-7 */
+#  if defined(__APPLE__)
+            dulation = (int)((last_clock - output->last_clock) * 1000 * 1000
+                             / 100000);
+#  else
+            dulation = (int)((last_clock - output->last_clock) * 1000 * 1000
+                             / CLOCKS_PER_SEC);
+#  endif
+            output->last_clock = last_clock;
 # elif defined(HAVE_CLOCK_WIN)
-            dulation = (int)((clock_win() - start) * 1000 * 1000
-                             / CLOCKS_PER_SEC) - (int)lag;
-            lag = 0;
+            last_clock = clock_win();
+            dulation = (int)((last_clock - output->last_clock) * 1000 * 1000
+                             / CLOCKS_PER_SEC);
+            output->last_clock = last_clock;
 # else
             dulation = 0;
 # endif
-            if (dulation < 10000 * delay) {
+            if (dulation < 1000 * 10 * delay) {
 # if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
                 tv.tv_sec = 0;
-                tv.tv_nsec = (long)((10000 * delay - dulation) * 1000);
+                tv.tv_nsec = (long)((1000 * 10 * delay - dulation) * 1000);
 #  if defined(HAVE_NANOSLEEP)
                 nanosleep(&tv, NULL);
 #  else
                 nanosleep_win(&tv, NULL);
 #  endif
 # endif
-            } else {
-                lag = (int)(10000 * delay - dulation);
             }
         }
 #endif
@@ -1541,6 +1549,7 @@ sixel_encoder_encode_frame(
             goto end;
         }
     }
+
     /* output sixel: junction of multi-frame processing strategy */
     if (encoder->fuse_macro) {  /* -u option */
         /* use macro */
