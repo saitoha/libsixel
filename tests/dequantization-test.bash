@@ -1,8 +1,8 @@
 f="$(dirname "${0}")"/../images/autumn.png
-crop=380x320+1200+500
+crop=360x320+1200+500
 sample=400%
 fontface="Verdana-Bold"
-fontsize=100
+fontsize=90
 fontcolor="#563d1c"
 strokecolor="#ffe0ec"
 strokewidth=5
