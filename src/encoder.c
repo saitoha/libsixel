@@ -2227,6 +2227,15 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
+    case SIXEL_OPTFLAG_MAPPING_VERSION:  /* M */
+        encoder->drcs_mmv = atoi(value);
+        if (encoder->drcs_mmv < 0 || encoder->drcs_mmv >= 3) {
+            sixel_helper_set_additional_message(
+                "unknown DRCS unicode mapping version.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        break;
     case SIXEL_OPTFLAG_PENETRATE:  /* P */
         encoder->penetrate_multiplexer = 1;
         break;
