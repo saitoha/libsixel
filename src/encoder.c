@@ -1918,6 +1918,17 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_COLORS:  /* p */
         encoder->reqcolors = atoi(value);
+        if (encoder->complexion < 1) {
+            sixel_helper_set_additional_message(
+                "-p/--colors parameter must be 1 or more.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        } else if (encoder->complexion > 256) {
+            sixel_helper_set_additional_message(
+                "-p/--colors parameter must be less then or equal to 256.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
         break;
     case SIXEL_OPTFLAG_MAPFILE:  /* m */
         if (encoder->mapfile) {

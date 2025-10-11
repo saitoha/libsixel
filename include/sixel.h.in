@@ -134,6 +134,10 @@ typedef int SIXELSTATUS;
 #define SIXEL_FORMATTYPE_GRAYSCALE (1 << 6)
 #define SIXEL_FORMATTYPE_PALETTE   (1 << 7)
 
+/* method for dequantization */
+#define SIXEL_DEQUANTIZE_NONE       0x0  /* don't dequantize */
+#define SIXEL_DEQUANTIZE_K_UNDITHER 0x1  /* kornelski's undither method */
+
 /* pixelformat type of input image
    NOTE: for compatibility, the value of PIXELFORAMT_COLOR_RGB888 must be 3 */
 #define SIXEL_PIXELFORMAT_RGB555   (SIXEL_FORMATTYPE_COLOR     | 0x01) /* 15bpp */
@@ -201,7 +205,10 @@ typedef int SIXELSTATUS;
 /* setopt flags */
 #define SIXEL_OPTFLAG_INPUT             ('i')  /* -i, --input: specify input file name. */
 #define SIXEL_OPTFLAG_OUTPUT            ('o')  /* -o, --output: specify output file name. */
-#define SIXEL_OPTFLAG_OUTFILE           ('o')  /* -o, --outfile: specify output file name. */
+#define SIXEL_OPTFLAG_DEQUANTIZE        ('d')  /* -d, --dequantize: apply palette dequantization. */
+#define SIXEL_OPTFLAG_SIMILARITY        ('s')  /* -s, --similarity: specify similarity bias (1-1000, default: 30). */
+#define SIXEL_OPTFLAG_EDGE              ('e')  /* -e, --edge: specify  bias (1-1000, default: 30). */
+#define SIXEL_OPTFLAG_OUTFILE           ('o')  /* -o, --outfile: specify edge protection bios. */
 #define SIXEL_OPTFLAG_7BIT_MODE         ('7')  /* -7, --7bit-mode: for 7bit terminals or printers (default) */
 #define SIXEL_OPTFLAG_8BIT_MODE         ('8')  /* -8, --8bit-mode: for 8bit terminals or printers */
 #define SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT ('R')  /* -R, --gri-limit: limit arguments of DECGRI('!') to 255 */

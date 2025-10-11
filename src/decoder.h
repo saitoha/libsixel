@@ -29,6 +29,9 @@ struct sixel_decoder {
     unsigned int ref;
     char *input;
     char *output;
+    int dequantize_method;
+    int dequantize_similarity_bias;
+    int dequantize_edge_strength;
     sixel_allocator_t *allocator;
 };
 
