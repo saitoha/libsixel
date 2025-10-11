@@ -143,7 +143,6 @@ _img2sixel()
                                    -I --high-color \
                                    -u --use-macro \
                                    -n --macro-number \
-                                   -@ --drcs \
                                    -C --complexion-score \
                                    -g --ignore-delay \
                                    -S --static \
@@ -164,6 +163,7 @@ _img2sixel()
                                    -D --pipe-mode \
                                    -v --verbose \
                                    -@ --drcs \
+                                   -M --mapping-version \
                                    -O --ormode \
                                    -W --working-colorspace \
                                    -U --output-colorspace \
