@@ -2218,7 +2218,7 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_DRCS:  /* @ */
         encoder->fdrcs = 1;
-        if (strlen(value) == 1 && value[0] >= 32 && value[0] <= 127) {
+        if (strlen(value) == 1 && value[0] >= 32) {
             encoder->start_dscs = value[0];
         } else {
             sixel_helper_set_additional_message(
