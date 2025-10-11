@@ -153,6 +153,7 @@ _arguments -S -s -A "-*" -S \
   {-D,--pipe-mode}'[read source images from stdin continuously]' \
   {-v,--verbose}'[show debugging information]' \
   {-@,--drcs}'[output DRCSMMv1 tiles instead of regular SIXEL image]' \
+  {-M,--mapping-version}'[enables sixel output in "ormode"]' \
   {-O,--ormode}'[output ormode sixel image]' \
   {-W,--working-colorspace=}'[select internal working color space]':workingcolorspace:_workingcolorspace \
   {-U,--output-colorspace=}'[select output color space]':outputcolorspace:_outputcolorspace \

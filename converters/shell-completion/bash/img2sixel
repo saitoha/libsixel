@@ -163,6 +163,7 @@ _img2sixel()
                                    -D --pipe-mode \
                                    -v --verbose \
                                    -@ --drcs \
+                                   -M --mapping-version \
                                    -O --ormode \
                                    -W --working-colorspace \
                                    -U --output-colorspace \
