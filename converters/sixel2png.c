@@ -69,50 +69,8 @@ void show_version(void)
     printf("sixel2png " PACKAGE_VERSION "\n"
            "\n"
            "configured with:\n"
-           "  libcurl: "
-#ifdef HAVE_LIBCURL
-           "yes\n"
-#else
-           "no\n"
-#endif
-           "  WinHTTP: "
-#ifdef HAVE_WINHTTP
-           "yes\n"
-#else
-           "no\n"
-#endif
            "  libpng: "
 #ifdef HAVE_LIBPNG
-           "yes\n"
-#else
-           "no\n"
-#endif
-           "  libjpeg: "
-#ifdef HAVE_JPEG
-           "yes\n"
-#else
-           "no\n"
-#endif
-           "  gdk-pixbuf2: "
-#ifdef HAVE_GDK_PIXBUF2
-           "yes\n"
-#else
-           "no\n"
-#endif
-           "  GD: "
-#ifdef HAVE_GD
-           "yes\n"
-#else
-           "no\n"
-#endif
-           "  WIC: "
-#ifdef HAVE_WIC
-           "yes\n"
-#else
-           "no\n"
-#endif
-           "  CoreGraphics: "
-#ifdef HAVE_COREGRAPHICS
            "yes\n"
 #else
            "no\n"
@@ -149,10 +107,18 @@ show_help(void)
             "       sixel2png < input.sixel > output.png\n"
             "\n"
             "Options:\n"
-            "-i, --input     specify input file\n"
-            "-o, --output    specify output file\n"
-            "-V, --version   show version and license information\n"
-            "-H, --help      show this help\n"
+            "-i, --input      specify input file\n"
+            "-o, --output     specify output file\n"
+            "-d, --dequantize=METHOD\n"
+            "                 apply palette dequantization\n"
+            "                   none       -> no dequantization (default)\n"
+            "                   k_undither -> kornelski's undither algorithm\n"
+            "-s, --similarity=BIAS\n"
+            "                 specify similarity bias (0-1000, default: 30)\n"
+            "-e, --edge=BIAS\n"
+            "                 specify edge protection bias (0-1000, default: 0)\n"
+            "-V, --version    show version and license information\n"
+            "-H, --help       show this help\n"
            );
 }
 
@@ -167,14 +133,17 @@ main(int argc, char *argv[])
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    char const *optstring = "i:o:VH";
+    char const *optstring = "i:o:d:s:e:VH";
 
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
-        {"input",        required_argument,  &long_opt, 'i'},
-        {"output",       required_argument,  &long_opt, 'o'},
-        {"version",      no_argument,        &long_opt, 'V'},
-        {"help",         no_argument,        &long_opt, 'H'},
+        {"input",            required_argument,  &long_opt, 'i'},
+        {"output",           required_argument,  &long_opt, 'o'},
+        {"dequantize",       required_argument,  &long_opt, 'd'},
+        {"similarity",       required_argument,  &long_opt, 's'},
+        {"edge",             required_argument,  &long_opt, 'e'},
+        {"version",          no_argument,        &long_opt, 'V'},
+        {"help",             no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
