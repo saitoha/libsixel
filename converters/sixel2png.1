@@ -21,12 +21,12 @@ sixel2png \- convert DEC SIXEL images into PNG format images
 
 
 .SH DESCRIPTION
-.I img2sixel
+.I sixel2png
 convert DEC SIXEL images into PNG format images.
 
 
 .SH "COMMAND-LINE OPTIONS"
-\fIimg2sixel\fP has the following command-line options:
+\fIsixel2png\fP has the following command-line options:
 .TP 5
 .B \-i
 Specify input file. If it is omitted or "-",
@@ -35,6 +35,34 @@ this command accepts SIXEL data from STDIN.
 .B \-o
 Specify output file. If it is omitted or "-",
 this command emit SIXEL data into STDOUT.
+.TP 5
+.B \-d
+Apply palette dequantization to the decoded image.
+The argument specifies the method to use.
+.RS
+.TP 5
+.B none
+Disable dequantization (default).
+.TP 5
+.B k_undither
+Use kornelski's undithering algorithm to smooth gradients.
+.RE
+.TP 5
+.B \-s
+Specify similarity bias for dequantization.
+The argument must be an integer between 0 and 1000.
+The default value is 30.
+.TP 5
+.B \-e
+Specify edge protection bias for dequantization.
+The argument must be an integer between 0 and 1000.
+The default value is 0.
+.TP 5
+.B \-V
+Show version and license information, then exit.
+.TP 5
+.B \-H
+Show usage information, then exit.
 
 
 .SH "SEE ALSO"
@@ -81,6 +109,8 @@ a public domain PNG/BMP/TGA writer.
 .nf
 Masami HIRATA(@msmhrt)
 Bruce Mitchener (@waywardmonkeys)
+Takatsugu Nokubi (@knok)
+Turenar <sora@turenar.xyz>
 .fi
 
 
