@@ -129,6 +129,15 @@ jobs:
       with:
         packages: gcc-core,make,zip,pkg-config,python3,python3-pip,ninja
 
+    - name: Install gcovr
+      if: matrix.sys == 'MSVC'
+      run: |
+        python3 -m venv .venv
+        . .venv/bin/activate
+        pip install --upgrade pip
+        pip install gcovr
+        echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+
     - name: Configure and build (non-Windows)
       if: runner.os != 'Windows'
       shell: bash
@@ -147,6 +156,7 @@ jobs:
             --disable-python \
             --enable-debug \
             --enable-tests \
+            --enable-gcov \
             --disable-dependency-tracking
         make
 
@@ -163,6 +173,7 @@ jobs:
             --disable-python \
             --enable-debug \
             --enable-tests \
+            --enable-gcov \
             --disable-dependency-tracking
         make
 
@@ -266,6 +277,33 @@ jobs:
         )
         $script = [string]::Join("`n", $scriptLines)
         &"$cygwinRoot\bin\bash.exe" --login -c $script
+
+    - name: Capture coverage (non-MSVC)
+      if: matrix.sys != 'MSVC'
+      shell: bash
+      run: |
+        gcovr -r . --lcov -o coverage.info --branches
+
+    - name: Upload to Coveralls (per-flag, parallel)
+      if: ${{ hashFiles('coverage.info') != '' }}
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: coverage.info
+        flag-name: ${{ matrix.cfg }}
+        parallel: true
+
+
+  ci-autotools-finish:
+    needs: ci-autotools
+    runs-on: ubuntu-latest
+    steps:
+      - name: Finalize Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          parallel-finished: true
+
 
   ci-autotools-asan:
     name: Autotools ASan • ${{ matrix.os }} clang${{ matrix.variant_suffix }}
