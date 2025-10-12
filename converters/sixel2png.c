@@ -114,7 +114,7 @@ show_help(void)
             "                   none       -> no dequantization (default)\n"
             "                   k_undither -> kornelski's undither algorithm\n"
             "-s, --similarity=BIAS\n"
-            "                 specify similarity bias (0-1000, default: 30)\n"
+            "                 specify similarity bias (0-1000, default: 100)\n"
             "-e, --edge=BIAS\n"
             "                 specify edge protection bias (0-1000, default: 0)\n"
             "-V, --version    show version and license information\n"
