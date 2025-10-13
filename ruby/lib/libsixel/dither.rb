@@ -57,6 +57,10 @@ class Dither
     Libsixel::API.sixel_dither_set_diffusion_type(@ptr, m.to_i); nil
   end
 
+  def set_diffusion_scan(m)
+    Libsixel::API.sixel_dither_set_diffusion_scan(@ptr, m.to_i); nil
+  end
+
   def num_palette_colors
     Libsixel::API.sixel_dither_get_num_of_palette_colors(@ptr)
   end

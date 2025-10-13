@@ -103,6 +103,11 @@ typedef int SIXELSTATUS;
 #define SIXEL_DIFFUSE_A_DITHER    0x7  /* positionally stable arithmetic dither */
 #define SIXEL_DIFFUSE_X_DITHER    0x8  /* positionally stable arithmetic xor based dither */
 #define SIXEL_DIFFUSE_LSO1        0x9  /* diffuse with libsixel's original method */
+#define SIXEL_DIFFUSE_OSTROMOUKHOV 0xa /* Ostromoukhov method */
+#define SIXEL_DIFFUSE_ZHOUFANG    0xb  /* Zhou Fang method */
+#define SIXEL_SCAN_AUTO           0x0  /* choose scan order automatically */
+#define SIXEL_SCAN_RASTER         0x1  /* scan from left to right on each line */
+#define SIXEL_SCAN_SERPENTINE     0x2  /* alternate scan direction per line */
 
 /* quality modes */
 #define SIXEL_QUALITY_AUTO        0x0  /* choose quality mode automatically */
@@ -229,20 +234,39 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_DIFFUSION         ('d')  /* -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE:
                                                   choose diffusion method which used with -p option.
                                                   DIFFUSIONTYPE is one of them:
-                                                    auto     -> choose diffusion type
-                                                                automatically (default)
-                                                    none     -> do not diffuse
-                                                    fs       -> Floyd-Steinberg method
-                                                    atkinson -> Bill Atkinson's method
-                                                    jajuni   -> Jarvis, Judice & Ninke
-                                                    stucki   -> Stucki's method
-                                                    burkes   -> Burkes' method
-                                                    a_dither -> positionally stable
-                                                                arithmetic dither
-                                                    a_dither -> positionally stable
-                                                                arithmetic xor based dither
-                                                    lso1     -> libsixel original diffusion
-                                                                method
+                                                    auto         -> choose diffusion type
+                                                                    automatically (default)
+                                                    none         -> do not diffuse
+                                                    fs           -> Floyd-Steinberg method
+                                                    atkinson     -> Bill Atkinson's method
+                                                    jajuni       -> Jarvis, Judice & Ninke
+                                                    stucki       -> Stucki's method
+                                                    burkes       -> Burkes' method
+                                                    a_dither     -> positionally stable
+                                                                    arithmetic dither
+                                                    x_dither     -> positionally stable
+                                                                    arithmetic xor based dither
+                                                    lso1         -> libsixel original diffusion
+                                                                    method
+                                                    ostromoukhov -> Ostromoukhov variable
+                                                                    error diffusion
+                                                    zhoufang     -> Zhou Fang variable error
+                                                                    diffusion
+                                                */
+#define SIXEL_OPTFLAG_DIFFUSION_SCAN    ('y')  /* -y SCANTYPE, --diffusion-scan=SCANTYPE:
+                                                  choose scan order for error diffusion.
+                                                  SCANTYPE is one of:
+                                                    auto       -> choose scan order
+                                                                   automatically (default;
+                                                                   serpentine for variable
+                                                                   error diffusion or when
+                                                                   --quality high is
+                                                                   active, otherwise
+                                                                   raster)
+                                                    raster     -> left-to-right for
+                                                                   every line
+                                                    serpentine -> alternate direction
+                                                                   on each scanline
                                                 */
 #define SIXEL_OPTFLAG_FIND_LARGEST      ('f')  /* -f FINDTYPE, --find-largest=FINDTYPE:
                                                   choose method for finding the largest
@@ -449,8 +473,17 @@ enum methodForDiffuse {
     DIFFUSE_STUCKI   = 5, /* diffuse with Stucki's method */
     DIFFUSE_BURKES   = 6, /* diffuse with Burkes' method */
     DIFFUSE_A_DITHER = 7, /* positionally stable arithmetic dither */
-    DIFFUSE_X_DITHER = 8, /* positionally stable arithmetic xor based dither */
-    DIFFUSE_LSO1     = 9  /* libsixel original diffusion method */
+    DIFFUSE_X_DITHER     = 8,  /* positionally stable arithmetic xor */
+    DIFFUSE_LSO1         = 9,  /* libsixel original diffusion method */
+    DIFFUSE_OSTROMOUKHOV = 10, /* Ostromoukhov variable error diffusion */
+    DIFFUSE_ZHOUFANG     = 11  /* Zhou Fang variable error diffusion */
+};
+
+/* scan order for diffusing */
+enum methodForScan {
+    SCAN_AUTO       = 0, /* choose scan order automatically */
+    SCAN_RASTER     = 1, /* scan from left to right on each line */
+    SCAN_SERPENTINE = 2  /* alternate the scan direction per line */
 };
 
 /* quality modes */
@@ -768,6 +801,12 @@ SIXELAPI void
 sixel_dither_set_diffusion_type(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     int /* in */ method_for_diffuse);  /* one of enum methodForDiffuse */
+
+/* set scan order for diffusion, choose from enum methodForScan */
+SIXELAPI void
+sixel_dither_set_diffusion_scan(
+    sixel_dither_t /* in */ *dither, /* dither context object */
+    int /* in */ method_for_scan);   /* one of enum methodForScan */
 
 /* get number of palette colors */
 SIXELAPI int

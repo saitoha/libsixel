@@ -99,6 +99,27 @@ a_dither -> positionally stable arithmetic dither
 x_dither -> positionally stable arithmetic xor based dither
 .br
 lso1     -> libsixel's original method
+.br
+ostromoukhov -> Ostromoukhov variable error diffusion
+.br
+zhoufang -> Zhou Fang variable error diffusion
+.TP 5
+.B \-y \fISCANTYPE\fP, \-\-diffusion\-scan=\fISCANTYPE\fP
+choose scan order for error diffusion.
+.br
+\fISCANTYPE\fP is one of them:
+.br
+auto -> choose scan order automatically (default)
+.br
+        selects serpentine for variable error diffusion or when
+.br
+        \-\-quality high is active
+.br
+        selects raster otherwise
+.br
+raster -> left-to-right scan on every line
+.br
+serpentine -> alternate direction on each line
 .TP 5
 .B \-f \fIFINDTYPE\fP, \-\-find\-largest=\fIFINDTYPE\fP
 choose method for finding the largest dimension of median

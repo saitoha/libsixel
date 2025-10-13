@@ -145,14 +145,13 @@ am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-fromsixel.lo libsixel_la-tosixel.lo \
 	libsixel_la-quant.lo libsixel_la-dither.lo \
 	libsixel_la-colorspace.lo libsixel_la-frame.lo \
-	libsixel_la-pixelformat.lo \
-	libsixel_la-scale.lo libsixel_la-chunk.lo \
-	libsixel_la-loader.lo libsixel_la-frompnm.lo \
-	libsixel_la-fromgif.lo libsixel_la-encoder.lo \
-	libsixel_la-decoder.lo libsixel_la-writer.lo \
-	libsixel_la-stb_image_write.lo libsixel_la-status.lo \
-	libsixel_la-malloc_stub.lo libsixel_la-allocator.lo \
-	libsixel_la-tty.lo
+	libsixel_la-pixelformat.lo libsixel_la-scale.lo \
+	libsixel_la-chunk.lo libsixel_la-loader.lo \
+	libsixel_la-frompnm.lo libsixel_la-fromgif.lo \
+	libsixel_la-encoder.lo libsixel_la-decoder.lo \
+	libsixel_la-writer.lo libsixel_la-stb_image_write.lo \
+	libsixel_la-status.lo libsixel_la-malloc_stub.lo \
+	libsixel_la-allocator.lo libsixel_la-tty.lo
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -183,9 +182,9 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-	am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
-	./$(DEPDIR)/libsixel_la-colorspace.Plo \
+am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-chunk.Plo \
+	./$(DEPDIR)/libsixel_la-colorspace.Plo \
 	./$(DEPDIR)/libsixel_la-decoder.Plo \
 	./$(DEPDIR)/libsixel_la-dither.Plo \
 	./$(DEPDIR)/libsixel_la-encoder.Plo \
@@ -492,7 +491,7 @@ libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(GDK_PIXBUF_CFLAGS) \
 		$(GD_CFLAGS) \
 		$(WIC_CFLAGS) \
-                $(COREGRAPHICS_CFLAGS)
+		$(COREGRAPHICS_CFLAGS)
 
 libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION)
 libsixel_la_LIBADD = -lm \
@@ -503,7 +502,7 @@ libsixel_la_LIBADD = -lm \
 		$(GDK_PIXBUF_LIBS) \
 		$(GD_LIBS) \
 		$(WIC_LIBS) \
-                $(COREGRAPHICS_LIBS)
+		$(COREGRAPHICS_LIBS)
 
 @COND_TESTS_TRUE@tests_SOURCES = $(srcdir)/tests.c
 @COND_TESTS_TRUE@tests_CPPFLAGS = -I$(top_builddir)/include/ \
@@ -600,6 +599,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-allocator.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-chunk.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-colorspace.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder.Plo@am__quote@ # am--include-marker
@@ -991,6 +991,7 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-allocator.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-colorspace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder.Plo
@@ -1057,6 +1058,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-allocator.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-colorspace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder.Plo

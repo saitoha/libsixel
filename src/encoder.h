@@ -38,6 +38,7 @@ struct sixel_encoder {
     char *mapfile;
     int builtin_palette;
     int method_for_diffuse;
+    int method_for_scan;
     int method_for_largest;
     int method_for_rep;
     int quality_mode;

@@ -1546,6 +1546,7 @@ sixel_encoder_encode_frame(
 
     /* evaluate -d option: set method for diffusion */
     sixel_dither_set_diffusion_type(dither, encoder->method_for_diffuse);
+    sixel_dither_set_diffusion_scan(dither, encoder->method_for_scan);
 
     /* evaluate -C option: set complexion score */
     if (encoder->complexion > 1) {
@@ -1726,6 +1727,7 @@ sixel_encoder_new(
     (*ppencoder)->color_option          = SIXEL_COLOR_OPTION_DEFAULT;
     (*ppencoder)->builtin_palette       = 0;
     (*ppencoder)->method_for_diffuse    = SIXEL_DIFFUSE_AUTO;
+    (*ppencoder)->method_for_scan       = SIXEL_SCAN_AUTO;
     (*ppencoder)->method_for_largest    = SIXEL_LARGE_AUTO;
     (*ppencoder)->method_for_rep        = SIXEL_REP_AUTO;
     (*ppencoder)->quality_mode          = SIXEL_QUALITY_AUTO;
@@ -1994,11 +1996,29 @@ sixel_encoder_setopt(
             encoder->method_for_diffuse = SIXEL_DIFFUSE_A_DITHER;
         } else if (strcmp(value, "x_dither") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_X_DITHER;
+        } else if (strcmp(value, "ostromoukhov") == 0) {
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_OSTROMOUKHOV;
+        } else if (strcmp(value, "zhoufang") == 0) {
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_ZHOUFANG;
         } else if (strcmp(value, "lso1") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_LSO1;
         } else {
             sixel_helper_set_additional_message(
                 "specified diffusion method is not supported.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        break;
+    case SIXEL_OPTFLAG_DIFFUSION_SCAN:  /* y */
+        if (strcmp(value, "auto") == 0) {
+            encoder->method_for_scan = SIXEL_SCAN_AUTO;
+        } else if (strcmp(value, "serpentine") == 0) {
+            encoder->method_for_scan = SIXEL_SCAN_SERPENTINE;
+        } else if (strcmp(value, "raster") == 0) {
+            encoder->method_for_scan = SIXEL_SCAN_RASTER;
+        } else {
+            sixel_helper_set_additional_message(
+                "specified diffusion scan is not supported.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }

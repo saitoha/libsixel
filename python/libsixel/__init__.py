@@ -80,16 +80,23 @@ SIXEL_REP_AVERAGE_COLORS = 0x2  # choose the average all the color in the box (s
 SIXEL_REP_AVERAGE_PIXELS = 0x3  # choose the average all the pixels in the box
 
 # method for diffusing
-SIXEL_DIFFUSE_AUTO      = 0x0  # choose diffusion type automatically
-SIXEL_DIFFUSE_NONE      = 0x1  # don't diffuse
-SIXEL_DIFFUSE_ATKINSON  = 0x2  # diffuse with Bill Atkinson's method
-SIXEL_DIFFUSE_FS        = 0x3  # diffuse with Floyd-Steinberg method
-SIXEL_DIFFUSE_JAJUNI    = 0x4  # diffuse with Jarvis, Judice & Ninke method
-SIXEL_DIFFUSE_STUCKI    = 0x5  # diffuse with Stucki's method
-SIXEL_DIFFUSE_BURKES    = 0x6  # diffuse with Burkes' method
-SIXEL_DIFFUSE_A_DITHER  = 0x7  # positionally stable arithmetic dither
-SIXEL_DIFFUSE_X_DITHER  = 0x8  # positionally stable arithmetic xor based dither
-SIXEL_DIFFUSE_LSO1      = 0x9  # diffuse with libsixel original method
+SIXEL_DIFFUSE_AUTO         = 0x0  # choose diffusion type automatically
+SIXEL_DIFFUSE_NONE         = 0x1  # don't diffuse
+SIXEL_DIFFUSE_ATKINSON     = 0x2  # diffuse with Bill Atkinson's method
+SIXEL_DIFFUSE_FS           = 0x3  # diffuse with Floyd-Steinberg method
+SIXEL_DIFFUSE_JAJUNI       = 0x4  # diffuse with Jarvis, Judice & Ninke method
+SIXEL_DIFFUSE_STUCKI       = 0x5  # diffuse with Stucki's method
+SIXEL_DIFFUSE_BURKES       = 0x6  # diffuse with Burkes' method
+SIXEL_DIFFUSE_A_DITHER     = 0x7  # positionally stable arithmetic dither
+SIXEL_DIFFUSE_X_DITHER     = 0x8  # positionally stable arithmetic xor based dither
+SIXEL_DIFFUSE_LSO1         = 0x9  # diffuse with libsixel original method
+SIXEL_DIFFUSE_OSTROMOUKHOV = 0xa  # Ostromoukhov variable error diffusion
+SIXEL_DIFFUSE_ZHOUFANG     = 0xb  # Zhou Fang variable error diffusion
+
+# scan order for diffusing
+SIXEL_SCAN_AUTO       = 0x0  # choose scan order automatically
+SIXEL_SCAN_RASTER     = 0x1  # scan from left to right on each line
+SIXEL_SCAN_SERPENTINE = 0x2  # alternate scan direction per line
 
 # quality modes
 SIXEL_QUALITY_AUTO      = 0x0  # choose quality mode automatically
@@ -215,6 +222,23 @@ SIXEL_OPTFLAG_DIFFUSION        = 'd'  # -d DIFFUSIONTYPE, --diffusion=DIFFUSIONT
                                       #            x_dither -> positionally stable
                                       #                        arithmetic xor based dither
                                       #            lso1     -> libsixel's original method
+                                      #            ostromoukhov -> Ostromoukhov variable
+                                      #                          error diffusion
+                                      #            zhoufang -> Zhou Fang variable error
+                                      #                         diffusion
+SIXEL_OPTFLAG_DIFFUSION_SCAN   = 'y'  # -y SCANTYPE, --diffusion-scan=SCANTYPE:
+                                      #          choose scan order for diffusion.
+                                      #          SCANTYPE is one of them:
+                                      #            auto       -> choose scan order
+                                      #                          automatically (default;
+                                      #                          serpentine for variable
+                                      #                          error diffusion or
+                                      #                          --quality high,
+                                      #                          raster otherwise)
+                                      #            raster     -> left-to-right
+                                      #                          scan
+                                      #            serpentine -> alternate direction
+                                      #                          on each line
 
 SIXEL_OPTFLAG_FIND_LARGEST     = 'f'  # -f FINDTYPE, --find-largest=FINDTYPE:
                                       #         choose method for finding the largest
@@ -554,6 +578,12 @@ def sixel_dither_set_diffusion_type(dither, method_for_diffuse):
     _sixel.sixel_dither_set_diffusion_type.restype = None
     _sixel.sixel_dither_set_diffusion_type.argtypes = [c_void_p, c_int]
     _sixel.sixel_dither_set_diffusion_type(dither, method_for_diffuse)
+
+
+def sixel_dither_set_diffusion_scan(dither, method_for_scan):
+    _sixel.sixel_dither_set_diffusion_scan.restype = None
+    _sixel.sixel_dither_set_diffusion_scan.argtypes = [c_void_p, c_int]
+    _sixel.sixel_dither_set_diffusion_scan(dither, method_for_scan)
 
 
 # get number of palette colors
