@@ -45,7 +45,16 @@ _img2sixel()
                                    stucki \
                                    burkes \
                                    a_dither \
-                                   x_dither' -- "$cur" ) )
+                                   x_dither \
+                                   lso1 \
+                                   ostromoukhov \
+                                   zhoufang' -- "$cur" ) )
+        return 0
+        ;;
+    -y|--diffusion-scan)
+        COMPREPLY=( $( compgen -W 'auto \
+                                   raster \
+                                   serpentine' -- "$cur" ) )
         return 0
         ;;
     -f|--find-largest)

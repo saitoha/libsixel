@@ -325,7 +325,9 @@ sixel_dither_new(
     (*ppdither)->method_for_largest = SIXEL_LARGE_NORM;
     (*ppdither)->method_for_rep = SIXEL_REP_CENTER_BOX;
     (*ppdither)->method_for_diffuse = SIXEL_DIFFUSE_FS;
+    (*ppdither)->method_for_scan = SIXEL_SCAN_AUTO;
     (*ppdither)->quality_mode = quality_mode;
+    (*ppdither)->requested_quality_mode = quality_mode;
     (*ppdither)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     (*ppdither)->allocator = allocator;
 
@@ -500,6 +502,8 @@ sixel_dither_set_quality_mode(
     sixel_dither_t  /* in */  *dither,
     int             /* in */  quality_mode)
 {
+    dither->requested_quality_mode = quality_mode;
+
     if (quality_mode == SIXEL_QUALITY_AUTO) {
         if (dither->ncolors <= 8) {
             quality_mode = SIXEL_QUALITY_HIGH;
@@ -624,6 +628,20 @@ sixel_dither_set_diffusion_type(
 }
 
 
+/* set scan order for diffusion */
+SIXELAPI void
+sixel_dither_set_diffusion_scan(
+    sixel_dither_t  /* in */ *dither,
+    int             /* in */ method_for_scan)
+{
+    if (method_for_scan != SIXEL_SCAN_SERPENTINE &&
+            method_for_scan != SIXEL_SCAN_AUTO) {
+        method_for_scan = SIXEL_SCAN_RASTER;
+    }
+    dither->method_for_scan = method_for_scan;
+}
+
+
 /* get number of palette colors */
 SIXELAPI int
 sixel_dither_get_num_of_palette_colors(
@@ -734,6 +752,7 @@ sixel_dither_apply_palette(
     size_t bufsize;
     sixel_index_t *dest = NULL;
     int ncolors;
+    int method_for_scan;
     unsigned char *normalized_pixels = NULL;
     unsigned char *input_pixels;
 
@@ -797,12 +816,28 @@ sixel_dither_apply_palette(
         input_pixels = pixels;
     }
 
+    method_for_scan = dither->method_for_scan;
+    if (method_for_scan == SIXEL_SCAN_AUTO) {
+        int use_serpentine = 0;
+
+        if (dither->requested_quality_mode == SIXEL_QUALITY_HIGH) {
+            use_serpentine = 1;
+        }
+        if (dither->method_for_diffuse == SIXEL_DIFFUSE_OSTROMOUKHOV ||
+                dither->method_for_diffuse == SIXEL_DIFFUSE_ZHOUFANG) {
+            use_serpentine = 1;
+        }
+        method_for_scan = use_serpentine ? SIXEL_SCAN_SERPENTINE
+                                         : SIXEL_SCAN_RASTER;
+    }
+
     status = sixel_quant_apply_palette(dest,
                                        input_pixels,
                                        width, height, 3,
                                        dither->palette,
                                        dither->ncolors,
                                        dither->method_for_diffuse,
+                                       method_for_scan,
                                        dither->optimized,
                                        dither->optimize_palette,
                                        dither->complexion,

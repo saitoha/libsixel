@@ -192,6 +192,23 @@ void show_help(void)
             "                             x_dither -> positionally stable\n"
             "                                         arithmetic xor based dither\n"
             "                             lso1     -> libsixel's original method\n"
+            "                             ostromoukhov -> Ostromoukhov variable\n"
+            "                                             error diffusion\n"
+            "                             zhoufang -> Zhou Fang variable\n"
+            "                                          error diffusion\n"
+            "-y SCANTYPE, --diffusion-scan=SCANTYPE\n"
+            "                           choose scan order for diffusion\n"
+            "                           SCANTYPE is one of them:\n"
+            "                             auto -> choose scan order\n"
+            "                                     automatically\n"
+            "                                     (default; serpentine\n"
+            "                                     for variable error\n"
+            "                                     diffusion or when\n"
+            "                                     --quality high is\n"
+            "                                     active)\n"
+            "                             raster -> left-to-right scan\n"
+            "                             serpentine -> alternate direction\n"
+            "                                           on each line\n"
             "-f FINDTYPE, --find-largest=FINDTYPE\n"
             "                           choose method for finding the largest\n"
             "                           dimension of median cut boxes for\n"
@@ -382,7 +399,7 @@ main(int argc, char *argv[])
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    char const *optstring = "o:78Rp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:U:B:C:D@:M:OVW:H";
+    char const *optstring = "o:78Rp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:U:B:C:D@:M:OVW:Hy:";
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",            required_argument,  &long_opt, 'o'},
@@ -395,6 +412,7 @@ main(int argc, char *argv[])
         {"high-color",         no_argument,        &long_opt, 'I'},
         {"builtin-palette",    required_argument,  &long_opt, 'b'},
         {"diffusion",          required_argument,  &long_opt, 'd'},
+        {"diffusion-scan",     required_argument,  &long_opt, 'y'},
         {"find-largest",       required_argument,  &long_opt, 'f'},
         {"select-color",       required_argument,  &long_opt, 's'},
         {"crop",               required_argument,  &long_opt, 'c'},
@@ -508,6 +526,7 @@ main(int argc, char *argv[])
 argerr:
     fprintf(stderr,
             "usage: img2sixel [-78eIkiugvSPDOVH] [-p colors] [-m file] [-d diffusiontype]\n"
+            "                 [-y scantype]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
             "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
