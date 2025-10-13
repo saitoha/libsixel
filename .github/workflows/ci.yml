@@ -130,13 +130,19 @@ jobs:
         packages: gcc-core,make,zip,pkg-config,python3,python3-pip,ninja
 
     - name: Install gcovr
-      if: matrix.sys == 'MSVC'
+      if: matrix.sys != 'MSVC'
       run: |
         python3 -m venv .venv
         . .venv/bin/activate
         pip install --upgrade pip
         pip install gcovr
         echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+
+    - name: Install gcc-14 (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-14
 
     - name: Configure and build (non-Windows)
       if: runner.os != 'Windows'
@@ -146,6 +152,9 @@ jobs:
           export CC="gcc -m32"
           export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
           export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
+        fi
+        if [ "${{ runner.os }}" = "Linux" ]; then
+          export CC=gcc-14
         fi
         ./configure \
             --without-png \
@@ -189,7 +198,7 @@ jobs:
           'set -o pipefail 2>/dev/null || true',
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          './configure --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --disable-dependency-tracking',
+          './configure --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking',
           'make'
         )
         $script = [string]::Join("`n", $scriptLines)
@@ -278,11 +287,48 @@ jobs:
         $script = [string]::Join("`n", $scriptLines)
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
-    - name: Capture coverage (non-MSVC)
-      if: matrix.sys != 'MSVC'
+    - name: Capture coverage (Linux)
+      if: runner.os == 'Linux'
       shell: bash
       run: |
-        gcovr -r . --lcov -o coverage.info --branches
+        gcovr -r . --lcov -o coverage.info \
+                   --gcov-executable gcov-14
+
+    - name: Capture coverage (non-MSVC)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        lcov -c \
+          -d "$PWD/src/.libs" \
+          -d "$PWD/converters" \
+          --base-directory "$PWD" \
+          --rc branch_coverage=1 \
+          -o coverage.info
+
+    - name: Capture coverage (Windows MSYS2)
+      if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN'
+      shell: msys2 {0}
+      run: |
+        pip install gcovr
+        gcovr -r . --lcov -o coverage.info
+
+    - name: Capture coverage (Windows Cygwin via gcovr)
+      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
+      shell: pwsh
+      run: |
+        $cygwinRoot = 'C:\cygwin'
+        if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
+        $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
+        $scriptLines = @(
+          'set -eu',
+          'set -o pipefail 2>/dev/null || true',
+          "export GITHUB_WORKSPACE=`"$workspace`"",
+          "cd `"$workspace`"",
+          'python3 -m pip install gcovr',
+          'gcovr -r . --lcov -o coverage.info --gcov-executable /usr/bin/gcov
+        )
+        $script = [string]::Join("`n", $scriptLines)
+        &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Upload to Coveralls (per-flag, parallel)
       if: ${{ hashFiles('coverage.info') != '' }}
@@ -623,7 +669,7 @@ jobs:
         meson test -C builddir
 
     - name: Configure, build, and test (Meson, Windows, not MSVC/Cygwin)
-      if: ${{ runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.sys != 'CYGWIN' }}
+      if: ${{ runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' }}
       shell: msys2 {0}
       run: |
         meson setup builddir \

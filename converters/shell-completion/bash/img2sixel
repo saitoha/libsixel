@@ -156,6 +156,7 @@ _img2sixel()
                                    -g --ignore-delay \
                                    -S --static \
                                    -d --diffusion \
+                                   -y --diffusion-scan \
                                    -f --find-largest \
                                    -s --select-color \
                                    -c --crop \
