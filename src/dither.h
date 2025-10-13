@@ -36,11 +36,13 @@ struct sixel_dither {
     int optimize_palette;           /* minimize palette size */
     int complexion;                 /* for complexion correction */
     int bodyonly;                   /* do not output palette section if true */
-    int method_for_largest;         /* method for finding the largest dimention 
+    int method_for_largest;         /* method for finding the largest dimention
                                        for splitting */
     int method_for_rep;             /* method for choosing a color from the box */
     int method_for_diffuse;         /* method for diffusing */
+    int method_for_scan;            /* scan order for diffusing */
     int quality_mode;               /* quality of histogram */
+    int requested_quality_mode;     /* original quality mode request */
     int keycolor;                   /* background color */
     int pixelformat;                /* pixelformat for internal processing */
     sixel_allocator_t *allocator;   /* allocator */

@@ -409,6 +409,23 @@ Options:
                                          arithmetic dither
                              x_dither -> positionally stable
                                          arithmetic xor based dither
+                             lso1     -> libsixel's original method
+                             ostromoukhov -> Ostromoukhov variable
+                                             error diffusion
+                             zhoufang -> Zhou Fang variable error
+                                          diffusion
+-y SCANTYPE, --diffusion-scan=SCANTYPE
+                           choose scan order for error diffusion
+                           SCANTYPE is one of them:
+                             auto -> choose scan order automatically
+                                     (default)
+                                      - selects serpentine for
+                                        variable error diffusion
+                                        or when --quality high is
+                                        active
+                                      - selects raster otherwise
+                             raster -> left-to-right scan
+                             serpentine -> alternate direction on each line
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
                            dimension of median cut boxes for
