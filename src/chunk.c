@@ -208,6 +208,9 @@ open_binary_file(
 #if HAVE_STAT
     struct stat sb;
 #endif  /* HAVE_STAT */
+#if HAVE_FOPEN_S
+    errno_t e;
+#endif  /* HAVE_FOPEN_S */
 
     if (filename == NULL || strcmp(filename, "-") == 0) {
         /* for windows */
@@ -249,12 +252,21 @@ open_binary_file(
     }
 #endif  /* HAVE_STAT */
 
+# if HAVE_FOPEN_S
+    e = fopen_s(f, filename, "rb");
+    if (e != (0)) {
+        status = (SIXEL_LIBC_ERROR | (e & 0xff));
+        sixel_helper_set_additional_message("fopen_s() failed.");
+        goto end;
+    }
+# else
     *f = fopen(filename, "rb");
-    if (!*f) {
+    if (! *f) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message("fopen() failed.");
         goto end;
     }
+# endif  /* HAVE_FOPEN_S */
 
     status = SIXEL_OK;
 
