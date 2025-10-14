@@ -1406,7 +1406,7 @@ sixel_encoder_emit_drcsmmv2_chars(
 {
     char *buf_p, *buf;
     int col, row;
-    int charset = 0x30;
+    int charset = encoder->start_dscs;
     int is_96cs = 0;
     unsigned int code;
     int num_cols, num_rows;
@@ -1601,7 +1601,9 @@ sixel_encoder_encode_frame(
     if (encoder->fdrcs) {  /* -@ option */
         nwrite = sprintf(buf,
                          "%s%s1;0;0;%d;1;3;%d;0{ %c",
-                         (encoder->drcs_mmv > 0) ? (encoder->f8bit ? "\233?8800h": "\033[8800h"): "",
+                         (encoder->drcs_mmv > 0) ? (
+                             encoder->f8bit ? "\233?8800h": "\033[?8800h"
+                         ): "",
                          encoder->f8bit ? "\220": "\033P",
                          encoder->cell_width,
                          encoder->cell_height,
