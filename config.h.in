@@ -141,6 +141,9 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
+/* Define to 1 if you have the 'fileno' function. */
+#undef HAVE_FILENO
+
 /* Define to 1 if you have the 'floor' function. */
 #undef HAVE_FLOOR
 
@@ -358,6 +361,12 @@
 
 /* whether WinHTTP is available */
 #undef HAVE_WINHTTP
+
+/* Define to 1 if you have the '_fileno' function. */
+#undef HAVE__FILENO
+
+/* Define to 1 if you have the '_isatty' function. */
+#undef HAVE__ISATTY
 
 /* Define to 1 if you have the '_setmode' function. */
 #undef HAVE__SETMODE

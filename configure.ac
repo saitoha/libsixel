@@ -456,6 +456,8 @@ fi
 AC_CHECK_FUNCS([assert \
                 setmode \
                 _setmode \
+                fileno \
+                _fileno \
                 signal \
                 strdup \
                 strtoul \
@@ -465,6 +467,7 @@ AC_CHECK_FUNCS([assert \
                 setjmp \
                 longjmp \
                 strerror \
+                _isatty \
                 isatty \
                 strncmp \
                 ldiv \
