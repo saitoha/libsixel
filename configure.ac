@@ -456,10 +456,8 @@ fi
 AC_CHECK_FUNCS([assert \
                 setmode \
                 _setmode \
-                fileno \
                 _fileno \
                 fopen_s \
-                fopen \
                 signal \
                 strdup \
                 strtoul \
@@ -470,7 +468,10 @@ AC_CHECK_FUNCS([assert \
                 longjmp \
                 strerror \
                 _isatty \
-                isatty \
+                _open \
+                _write \
+                _close \
+                sscanf_s \
                 strncmp \
                 ldiv \
                 floor \
@@ -751,8 +752,6 @@ if test x$with_gd != xno && test "x$using_cl" != "xyes"; then
                          [AC_CHECK_LIB(iconv, [iconv], [],
                                        [AC_MSG_ERROR([please install libiconv])])
                          ])
-            AM_CPPFLAGS="$CPPFLAGS -D_CRT_SECURE_NO_WARNINGS"
-            AC_SUBST([AM_CPPFLAGS])
             ;;
         *-*-interix)
             AM_CPPFLAGS="-D_ALL_SOURCES"
