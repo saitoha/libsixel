@@ -150,6 +150,12 @@
 /* define 1 if GCC supports -fno-emulated-tls */
 #undef HAVE_FNO_EMULATED_TLS
 
+/* Define to 1 if you have the 'fopen' function. */
+#undef HAVE_FOPEN
+
+/* Define to 1 if you have the 'fopen_s' function. */
+#undef HAVE_FOPEN_S
+
 /* Define to 1 if the system has the `deprecated' function attribute */
 #undef HAVE_FUNC_ATTRIBUTE_DEPRECATED
 
