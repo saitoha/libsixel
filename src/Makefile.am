@@ -56,7 +56,7 @@ libsixel_la_SOURCES = \
 		$(srcdir)/tty.c \
 		$(srcdir)/tty.h \
 		$(srcdir)/rgblookup.h
-libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ \
+libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS) \
                        -D_POSIX_SOURCE \
                        -D_POSIX_C_SOURCE=199309L
 libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
