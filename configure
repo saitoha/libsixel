@@ -19629,6 +19629,8 @@ fi
 esac
 fi
 
+            AM_CPPFLAGS="$CPPFLAGS -D_CRT_SECURE_NO_WARNINGS"
+
             ;;
         *-*-interix)
             AM_CPPFLAGS="-D_ALL_SOURCES"
