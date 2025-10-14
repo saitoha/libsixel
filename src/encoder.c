@@ -205,10 +205,17 @@ arg_strdup(
                                                  destination buffer */
 {
     char *p;
+    size_t len;
 
-    p = (char *)sixel_allocator_malloc(allocator, strlen(s) + 1);
+    len = strlen(s);
+
+    p = (char *)sixel_allocator_malloc(allocator, len + 1);
     if (p) {
-        strcpy(p, s);
+#if HAVE_STRCPY_S
+        (void) strcpy_s(p, (rsize_t)len, s);
+#else
+        (void) strcpy(p, s);
+#endif  /* HAVE_STRCPY_S */
     }
     return p;
 }
@@ -377,7 +384,9 @@ sixel_write_callback(char *data, int size, void *priv)
 {
     int result;
 
-#if defined(__MINGW64__)
+#if HAVE__WRITE
+    result = _write(*(int *)priv, data, (size_t)size);
+#elif defined(__MINGW64__)
     result = write(*(int *)priv, data, (unsigned int)size);
 #else
     result = write(*(int *)priv, data, (size_t)size);
@@ -406,7 +415,9 @@ sixel_hex_write_callback(
         hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
     }
 
-#if defined(__MINGW64__)
+#if HAVE__WRITE
+    result = _write(*(int *)priv, hex, (unsigned int)(size * 2));
+#elif defined(__MINGW64__)
     result = write(*(int *)priv, hex, (unsigned int)(size * 2));
 #else
     result = write(*(int *)priv, hex, (size_t)(size * 2));
@@ -1699,9 +1710,13 @@ sixel_encoder_new(
                                                   default allocator */
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    char const *env_default_bgcolor;
-    char const *env_default_ncolors;
+    char const *env_default_bgcolor = NULL;
+    char const *env_default_ncolors = NULL;
     int ncolors;
+#if HAVE__DUPENV_S
+    errno_t e;
+    size_t len;
+#endif  /* HAVE__DUPENV_S */
 
     if (allocator == NULL) {
         status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
@@ -1773,8 +1788,17 @@ sixel_encoder_new(
     (*ppencoder)->allocator             = allocator;
 
     /* evaluate environment variable ${SIXEL_BGCOLOR} */
+#if HAVE__DUPENV_S
+    e = _dupenv_s(&env_default_bgcolor, &len, "SIXEL_BGCOLOR");
+    if (e != (0)) {
+        sixel_helper_set_additional_message(
+            "failed to get environment variable $SIXEL_BGCOLOR.");
+        return (SIXEL_LIBC_ERROR | (e & 0xff));
+    }
+#else
     env_default_bgcolor = getenv("SIXEL_BGCOLOR");
-    if (env_default_bgcolor) {
+#endif  /* HAVE__DUPENV_S */
+    if (env_default_bgcolor != NULL) {
         status = sixel_parse_x_colorspec(&(*ppencoder)->bgcolor,
                                          env_default_bgcolor,
                                          allocator);
@@ -1784,7 +1808,16 @@ sixel_encoder_new(
     }
 
     /* evaluate environment variable ${SIXEL_COLORS} */
+#if HAVE__DUPENV_S
+    e = _dupenv_s(&env_default_bgcolor, &len, "SIXEL_COLORS");
+    if (e != (0)) {
+        sixel_helper_set_additional_message(
+            "failed to get environment variable $SIXEL_COLORS.");
+        return (SIXEL_LIBC_ERROR | (e & 0xff));
+    }
+#else
     env_default_ncolors = getenv("SIXEL_COLORS");
+#endif  /* HAVE__DUPENV_S */
     if (env_default_ncolors) {
         ncolors = atoi(env_default_ncolors); /* may overflow */
         if (ncolors > 1 && ncolors <= SIXEL_PALETTE_MAX) {
@@ -1803,6 +1836,10 @@ error:
     *ppencoder = NULL;
 
 end:
+#if HAVE__DUPENV_S
+    free(env_default_bgcolor);
+    free(env_default_ncolors);
+#endif  /* HAVE__DUPENV_S */
     return status;
 }
 
@@ -1837,7 +1874,11 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
         if (encoder->outfd
             && encoder->outfd != STDOUT_FILENO
             && encoder->outfd != STDERR_FILENO) {
-            close(encoder->outfd);
+#if HAVE__CLOSE
+            (void) _close(encoder->outfd);
+#else
+            (void) close(encoder->outfd);
+#endif  /* HAVE__CLOSE */
         }
         sixel_allocator_free(allocator, encoder);
         sixel_allocator_unref(allocator);
@@ -1891,6 +1932,9 @@ sixel_encoder_setopt(
     int number;
     int parsed;
     char unit[32];
+    char lowered[16];
+    size_t len;
+    size_t i;
 
     sixel_encoder_ref(encoder);
 
@@ -1904,11 +1948,21 @@ sixel_encoder_setopt(
         }
         if (strcmp(value, "-") != 0) {
             if (encoder->outfd && encoder->outfd != STDOUT_FILENO) {
-                close(encoder->outfd);
+#if HAVE__CLOSE
+                (void) _close(encoder->outfd);
+#else
+                (void) close(encoder->outfd);
+#endif  /* HAVE__CLOSE */
             }
+#if HAVE__OPEN
+            encoder->outfd = _open(value,
+                                   O_RDWR|O_CREAT|O_TRUNC,
+                                   S_IRUSR|S_IWUSR);
+#else
             encoder->outfd = open(value,
                                   O_RDWR|O_CREAT|O_TRUNC,
                                   S_IRUSR|S_IWUSR);
+#endif  /* HAVE__OPEN */
         }
         break;
     case SIXEL_OPTFLAG_7BIT_MODE:  /* 7 */
@@ -2061,9 +2115,15 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_CROP:  /* c */
+#if HAVE_SSCANF_S
+        number = sscanf_s(value, "%dx%d+%d+%d",
+                          &encoder->clipwidth, &encoder->clipheight,
+                          &encoder->clipx, &encoder->clipy);
+#else
         number = sscanf(value, "%dx%d+%d+%d",
                         &encoder->clipwidth, &encoder->clipheight,
                         &encoder->clipx, &encoder->clipy);
+#endif  /* HAVE_SSCANF_S */
         if (number != 4) {
             status = SIXEL_BAD_ARGUMENT;
             goto end;
@@ -2079,7 +2139,11 @@ sixel_encoder_setopt(
         encoder->clipfirst = 0;
         break;
     case SIXEL_OPTFLAG_WIDTH:  /* w */
+#if HAVE_SSCANF_S
+        parsed = sscanf_s(value, "%d%2s", &number, unit, sizeof(unit) - 1);
+#else
         parsed = sscanf(value, "%d%2s", &number, unit);
+#endif  /* HAVE_SSCANF_S */
         if (parsed == 2 && strcmp(unit, "%") == 0) {
             encoder->pixelwidth = (-1);
             encoder->percentwidth = number;
@@ -2100,7 +2164,11 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_HEIGHT:  /* h */
+#if HAVE_SSCANF_S
+        parsed = sscanf_s(value, "%d%2s", &number, unit, sizeof(unit) - 1);
+#else
         parsed = sscanf(value, "%d%2s", &number, unit);
+#endif  /* HAVE_SSCANF_S */
         if (parsed == 2 && strcmp(unit, "%") == 0) {
             encoder->pixelheight = (-1);
             encoder->percentheight = number;
@@ -2282,9 +2350,7 @@ sixel_encoder_setopt(
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         } else {
-            char lowered[16];
-            size_t len = strlen(value);
-            size_t i;
+            len = strlen(value);
 
             if (len >= sizeof(lowered)) {
                 sixel_helper_set_additional_message(
@@ -2318,9 +2384,7 @@ sixel_encoder_setopt(
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         } else {
-            char lowered[16];
-            size_t len = strlen(value);
-            size_t i;
+            len = strlen(value);
 
             if (len >= sizeof(lowered)) {
                 sixel_helper_set_additional_message(

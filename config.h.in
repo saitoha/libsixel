@@ -141,17 +141,11 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
-/* Define to 1 if you have the 'fileno' function. */
-#undef HAVE_FILENO
-
 /* Define to 1 if you have the 'floor' function. */
 #undef HAVE_FLOOR
 
 /* define 1 if GCC supports -fno-emulated-tls */
 #undef HAVE_FNO_EMULATED_TLS
-
-/* Define to 1 if you have the 'fopen' function. */
-#undef HAVE_FOPEN
 
 /* Define to 1 if you have the 'fopen_s' function. */
 #undef HAVE_FOPEN_S
@@ -179,9 +173,6 @@
 
 /* Define to 1 if you have the <io.h> header file. */
 #undef HAVE_IO_H
-
-/* Define to 1 if you have the 'isatty' function. */
-#undef HAVE_ISATTY
 
 /* whether jpeg codec library is available */
 #undef HAVE_JPEG
@@ -271,6 +262,9 @@
 
 /* Define to 1 if you have the 'sqrt' function. */
 #undef HAVE_SQRT
+
+/* Define to 1 if you have the 'sscanf_s' function. */
+#undef HAVE_SSCANF_S
 
 /* Define if SSE2 is available */
 #undef HAVE_SSE2
@@ -368,14 +362,23 @@
 /* whether WinHTTP is available */
 #undef HAVE_WINHTTP
 
+/* Define to 1 if you have the '_close' function. */
+#undef HAVE__CLOSE
+
 /* Define to 1 if you have the '_fileno' function. */
 #undef HAVE__FILENO
 
 /* Define to 1 if you have the '_isatty' function. */
 #undef HAVE__ISATTY
 
+/* Define to 1 if you have the '_open' function. */
+#undef HAVE__OPEN
+
 /* Define to 1 if you have the '_setmode' function. */
 #undef HAVE__SETMODE
+
+/* Define to 1 if you have the '_write' function. */
+#undef HAVE__WRITE
 
 /* Define to 1 if the system has the `__builtin_unreachable' built-in function
    */
