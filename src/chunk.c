@@ -213,9 +213,21 @@ open_binary_file(
         /* for windows */
 #if defined(O_BINARY)
 # if HAVE__SETMODE
-        _setmode(fileno(stdin), O_BINARY);
+        _setmode(
+#  if HAVE__FILENO
+            _fileno(stdin),
+#  else
+            fileno(stdin),
+#  endif  /* HAVE__FILENO */
+            O_BINARY);
 # elif HAVE_SETMODE
-        setmode(fileno(stdin), O_BINARY);
+        setmode(
+#  if HAVE__FILENO
+            _fileno(stdin),
+#  else
+            fileno(stdin),
+#  endif  /* HAVE__FILENO */
+            O_BINARY);
 # endif  /* HAVE_SETMODE */
 #endif  /* defined(O_BINARY) */
         *f = stdin;
@@ -284,13 +296,37 @@ sixel_chunk_from_file(
             }
         }
 
-        if (isatty(fileno(f))) {
+        if (
+#if HAVE__ISATTY
+            _isatty(
+# if HAVE__FILENO
+                _fileno(f)
+# else
+                fileno(f)
+# endif  /* HAVE__FILENO */
+            )
+#else
+            isatty(
+# if HAVE__FILENO
+                _fileno(f)
+# else
+                fileno(f)
+# endif  /* HAVE__FILENO */
+            )
+#endif  /* HAVE__ISATTY */
+        ) {
             for (;;) {
                 if (*cancel_flag) {
                     status = SIXEL_INTERRUPTED;
                     goto end;
                 }
-                ret = wait_file(fileno(f), 10000);
+                ret = wait_file(
+# if HAVE__FILENO
+                    _fileno(f),
+# else
+                    fileno(f),
+# endif  /* HAVE__FILENO */
+                    10000);
                 if (ret < 0) {
                     sixel_helper_set_additional_message(
                         "sixel_chunk_from_file: wait_file() failed.");
