@@ -18123,6 +18123,18 @@ then :
   printf "%s\n" "#define HAVE__FILENO 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "fopen_s" "ac_cv_func_fopen_s"
+if test "x$ac_cv_func_fopen_s" = xyes
+then :
+  printf "%s\n" "#define HAVE_FOPEN_S 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "fopen" "ac_cv_func_fopen"
+if test "x$ac_cv_func_fopen" = xyes
+then :
+  printf "%s\n" "#define HAVE_FOPEN 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "signal" "ac_cv_func_signal"
 if test "x$ac_cv_func_signal" = xyes
 then :

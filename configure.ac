@@ -458,6 +458,8 @@ AC_CHECK_FUNCS([assert \
                 _setmode \
                 fileno \
                 _fileno \
+                fopen_s \
+                fopen \
                 signal \
                 strdup \
                 strtoul \
