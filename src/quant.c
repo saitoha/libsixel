@@ -1626,6 +1626,457 @@ diffuse_zhoufang(int32_t *workspace, int width, int height,
 }
 
 
+static SIXELSTATUS
+apply_palette_positional(
+    sixel_index_t *result,
+    unsigned char *data,
+    int width,
+    int height,
+    int depth,
+    unsigned char *palette,
+    int reqcolor,
+    float (*f_mask)(int x, int y, int c),
+    int serpentine,
+    int foptimize_palette,
+    int (*f_lookup)(const unsigned char *pixel,
+                    int depth,
+                    const unsigned char *palette,
+                    int reqcolor,
+                    unsigned short *cachetable,
+                    int complexion),
+    unsigned short *indextable,
+    int complexion,
+    unsigned char copy[],
+    unsigned char new_palette[],
+    unsigned short migration_map[],
+    int *ncolors)
+{
+    int y;
+
+    if (foptimize_palette) {
+        int x;
+
+        *ncolors = 0;
+        memset(new_palette, 0x00,
+               (size_t)SIXEL_PALETTE_MAX * (size_t)depth);
+        memset(migration_map, 0x00,
+               sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);
+        for (y = 0; y < height; ++y) {
+            int start;
+            int end;
+            int step;
+
+            if (serpentine && (y & 1)) {
+                start = width - 1;
+                end = -1;
+                step = -1;
+            } else {
+                start = 0;
+                end = width;
+                step = 1;
+            }
+            for (x = start; x != end; x += step) {
+                int pos;
+                int d;
+                int color_index;
+
+                pos = y * width + x;
+                for (d = 0; d < depth; ++d) {
+                    int val;
+
+                    val = data[pos * depth + d]
+                        + f_mask(x, y, d) * 32;
+                    copy[d] = val < 0 ? 0 : val > 255 ? 255 : val;
+                }
+                color_index = f_lookup(copy, depth, palette,
+                                       reqcolor, indextable,
+                                       complexion);
+                if (migration_map[color_index] == 0) {
+                    result[pos] = *ncolors;
+                    for (d = 0; d < depth; ++d) {
+                        new_palette[*ncolors * depth + d]
+                            = palette[color_index * depth + d];
+                    }
+                    ++*ncolors;
+                    migration_map[color_index] = *ncolors;
+                } else {
+                    result[pos] = migration_map[color_index] - 1;
+                }
+            }
+        }
+        memcpy(palette, new_palette, (size_t)(*ncolors * depth));
+    } else {
+        int x;
+
+        for (y = 0; y < height; ++y) {
+            int start;
+            int end;
+            int step;
+
+            if (serpentine && (y & 1)) {
+                start = width - 1;
+                end = -1;
+                step = -1;
+            } else {
+                start = 0;
+                end = width;
+                step = 1;
+            }
+            for (x = start; x != end; x += step) {
+                int pos;
+                int d;
+
+                pos = y * width + x;
+                for (d = 0; d < depth; ++d) {
+                    int val;
+
+                    val = data[pos * depth + d]
+                        + f_mask(x, y, d) * 32;
+                    copy[d] = val < 0 ? 0 : val > 255 ? 255 : val;
+                }
+                result[pos] = f_lookup(copy, depth, palette,
+                                       reqcolor, indextable,
+                                       complexion);
+            }
+        }
+        *ncolors = reqcolor;
+    }
+
+    return SIXEL_OK;
+}
+
+
+static SIXELSTATUS
+apply_palette_variable(
+    sixel_index_t *result,
+    unsigned char *data,
+    int width,
+    int height,
+    int depth,
+    unsigned char *palette,
+    int reqcolor,
+    int serpentine,
+    int foptimize_palette,
+    int (*f_lookup)(const unsigned char *pixel,
+                    int depth,
+                    const unsigned char *palette,
+                    int reqcolor,
+                    unsigned short *cachetable,
+                    int complexion),
+    unsigned short *indextable,
+    int complexion,
+    unsigned char new_palette[],
+    unsigned short migration_map[],
+    int *ncolors,
+    int32_t *varerr_work,
+    int32_t varerr_value[],
+    int varerr_index[],
+    diffuse_varerr_mode varerr_diffuse,
+    int methodForDiffuse)
+{
+    int y;
+
+    if (foptimize_palette) {
+        int x;
+
+        *ncolors = 0;
+        memset(new_palette, 0x00,
+               (size_t)SIXEL_PALETTE_MAX * (size_t)depth);
+        memset(migration_map, 0x00,
+               sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);
+        for (y = 0; y < height; ++y) {
+            int start;
+            int end;
+            int step;
+            int direction;
+
+            if (serpentine && (y & 1)) {
+                direction = -1;
+                start = width - 1;
+                end = -1;
+                step = -1;
+            } else {
+                direction = 1;
+                start = 0;
+                end = width;
+                step = 1;
+            }
+            for (x = start; x != end; x += step) {
+                int pos;
+                size_t base;
+                int n;
+                int color_index;
+
+                pos = y * width + x;
+                base = (size_t)pos * (size_t)depth;
+                for (n = 0; n < depth; ++n) {
+                    int32_t value;
+                    unsigned char byte;
+
+                    value = varerr_work[base + n];
+                    if (value < 0) {
+                        value = 0;
+                    } else if (value > VARERR_MAX_VALUE) {
+                        value = VARERR_MAX_VALUE;
+                    }
+                    varerr_work[base + n] = value;
+                    byte = varerr_to_byte(value);
+                    data[base + n] = byte;
+                    varerr_value[n] = value;
+                    if (methodForDiffuse == SIXEL_DIFFUSE_ZHOUFANG) {
+                        varerr_index[n] =
+                            zhoufang_index_from_byte(byte);
+                    } else {
+                        varerr_index[n] = byte;
+                    }
+                }
+                color_index = f_lookup(data + base, depth, palette,
+                                       reqcolor, indextable,
+                                       complexion);
+                if (migration_map[color_index] == 0) {
+                    result[pos] = *ncolors;
+                    for (n = 0; n < depth; ++n) {
+                        new_palette[*ncolors * depth + n]
+                            = palette[color_index * depth + n];
+                    }
+                    ++*ncolors;
+                    migration_map[color_index] = *ncolors;
+                } else {
+                    result[pos] = migration_map[color_index] - 1;
+                }
+                for (n = 0; n < depth; ++n) {
+                    size_t idx;
+                    int32_t target;
+                    int32_t error_scaled;
+
+                    idx = base + n;
+                    target = varerr_from_byte(
+                                palette[color_index * depth + n]);
+                    error_scaled = varerr_value[n] - target;
+                    varerr_work[idx] = target;
+                    varerr_diffuse(varerr_work + n, width, height,
+                                   x, y, depth, error_scaled,
+                                   varerr_index[n], direction);
+                }
+            }
+        }
+        memcpy(palette, new_palette, (size_t)(*ncolors * depth));
+    } else {
+        int x;
+
+        for (y = 0; y < height; ++y) {
+            int start;
+            int end;
+            int step;
+            int direction;
+
+            if (serpentine && (y & 1)) {
+                direction = -1;
+                start = width - 1;
+                end = -1;
+                step = -1;
+            } else {
+                direction = 1;
+                start = 0;
+                end = width;
+                step = 1;
+            }
+            for (x = start; x != end; x += step) {
+                int pos;
+                size_t base;
+                int n;
+                int color_index;
+
+                pos = y * width + x;
+                base = (size_t)pos * (size_t)depth;
+                for (n = 0; n < depth; ++n) {
+                    int32_t value;
+                    unsigned char byte;
+
+                    value = varerr_work[base + n];
+                    if (value < 0) {
+                        value = 0;
+                    } else if (value > VARERR_MAX_VALUE) {
+                        value = VARERR_MAX_VALUE;
+                    }
+                    varerr_work[base + n] = value;
+                    byte = varerr_to_byte(value);
+                    data[base + n] = byte;
+                    varerr_value[n] = value;
+                    if (methodForDiffuse == SIXEL_DIFFUSE_ZHOUFANG) {
+                        varerr_index[n] =
+                            zhoufang_index_from_byte(byte);
+                    } else {
+                        varerr_index[n] = byte;
+                    }
+                }
+                color_index = f_lookup(data + base, depth, palette,
+                                       reqcolor, indextable,
+                                       complexion);
+                result[pos] = color_index;
+                for (n = 0; n < depth; ++n) {
+                    size_t idx;
+                    int32_t target;
+                    int32_t error_scaled;
+
+                    idx = base + n;
+                    target = varerr_from_byte(
+                                palette[color_index * depth + n]);
+                    error_scaled = varerr_value[n] - target;
+                    varerr_work[idx] = target;
+                    varerr_diffuse(varerr_work + n, width, height,
+                                   x, y, depth, error_scaled,
+                                   varerr_index[n], direction);
+                }
+            }
+        }
+        *ncolors = reqcolor;
+    }
+
+    return SIXEL_OK;
+}
+
+
+static SIXELSTATUS
+apply_palette_fixed(
+    sixel_index_t *result,
+    unsigned char *data,
+    int width,
+    int height,
+    int depth,
+    unsigned char *palette,
+    int reqcolor,
+    int serpentine,
+    int foptimize_palette,
+    int (*f_lookup)(const unsigned char *pixel,
+                    int depth,
+                    const unsigned char *palette,
+                    int reqcolor,
+                    unsigned short *cachetable,
+                    int complexion),
+    unsigned short *indextable,
+    int complexion,
+    unsigned char new_palette[],
+    unsigned short migration_map[],
+    int *ncolors,
+    void (*f_diffuse)(unsigned char *data,
+                      int width,
+                      int height,
+                      int x,
+                      int y,
+                      int depth,
+                      int offset,
+                      int direction))
+{
+    int y;
+
+    if (foptimize_palette) {
+        int x;
+
+        *ncolors = 0;
+        memset(new_palette, 0x00,
+               (size_t)SIXEL_PALETTE_MAX * (size_t)depth);
+        memset(migration_map, 0x00,
+               sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);
+        for (y = 0; y < height; ++y) {
+            int start;
+            int end;
+            int step;
+            int direction;
+
+            if (serpentine && (y & 1)) {
+                direction = -1;
+                start = width - 1;
+                end = -1;
+                step = -1;
+            } else {
+                direction = 1;
+                start = 0;
+                end = width;
+                step = 1;
+            }
+            for (x = start; x != end; x += step) {
+                int pos;
+                size_t base;
+                int n;
+                int color_index;
+
+                pos = y * width + x;
+                base = (size_t)pos * (size_t)depth;
+                color_index = f_lookup(data + base, depth, palette,
+                                       reqcolor, indextable,
+                                       complexion);
+                if (migration_map[color_index] == 0) {
+                    result[pos] = *ncolors;
+                    for (n = 0; n < depth; ++n) {
+                        new_palette[*ncolors * depth + n]
+                            = palette[color_index * depth + n];
+                    }
+                    ++*ncolors;
+                    migration_map[color_index] = *ncolors;
+                } else {
+                    result[pos] = migration_map[color_index] - 1;
+                }
+                for (n = 0; n < depth; ++n) {
+                    int offset;
+
+                    offset = (int)data[base + n]
+                           - (int)palette[color_index * depth + n];
+                    f_diffuse(data + n, width, height, x, y,
+                              depth, offset, direction);
+                }
+            }
+        }
+        memcpy(palette, new_palette, (size_t)(*ncolors * depth));
+    } else {
+        int x;
+
+        for (y = 0; y < height; ++y) {
+            int start;
+            int end;
+            int step;
+            int direction;
+
+            if (serpentine && (y & 1)) {
+                direction = -1;
+                start = width - 1;
+                end = -1;
+                step = -1;
+            } else {
+                direction = 1;
+                start = 0;
+                end = width;
+                step = 1;
+            }
+            for (x = start; x != end; x += step) {
+                int pos;
+                size_t base;
+                int n;
+                int color_index;
+
+                pos = y * width + x;
+                base = (size_t)pos * (size_t)depth;
+                color_index = f_lookup(data + base, depth, palette,
+                                       reqcolor, indextable,
+                                       complexion);
+                result[pos] = color_index;
+                for (n = 0; n < depth; ++n) {
+                    int offset;
+
+                    offset = (int)data[base + n]
+                           - (int)palette[color_index * depth + n];
+                    f_diffuse(data + n, width, height, x, y,
+                              depth, offset, direction);
+                }
+            }
+        }
+        *ncolors = reqcolor;
+    }
+
+    return SIXEL_OK;
+}
+
+
 static void
 diffuse_none(unsigned char *data, int width, int height,
              int x, int y, int depth, int error, int direction)
@@ -2205,7 +2656,6 @@ sixel_quant_apply_palette(
     int               /* in */  *ncolors,
     sixel_allocator_t /* in */  *allocator)
 {
-    typedef int component_t;
 #if _MSC_VER
     enum { max_depth = 4 };
 #else
@@ -2213,9 +2663,8 @@ sixel_quant_apply_palette(
 #endif
     unsigned char copy[max_depth];
     SIXELSTATUS status = SIXEL_FALSE;
-    int pos, n, x, y, sum1, sum2;
-    component_t offset;
-    int color_index;
+    int sum1, sum2;
+    int n;
     unsigned short *indextable;
     unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
     unsigned short migration_map[SIXEL_PALETTE_MAX];
@@ -2367,253 +2816,33 @@ sixel_quant_apply_palette(
 
     serpentine = (methodForScan == SIXEL_SCAN_SERPENTINE);
 
-    if (foptimize_palette) {
-        *ncolors = 0;
-
-        memset(new_palette, 0x00, sizeof(SIXEL_PALETTE_MAX * depth));
-        memset(migration_map, 0x00, sizeof(migration_map));
-
-        if (f_mask) {
-            for (y = 0; y < height; ++y) {
-                int start;
-                int end;
-                int step;
-
-                if (serpentine && (y & 1)) {
-                    start = width - 1;
-                    end = -1;
-                    step = -1;
-                } else {
-                    start = 0;
-                    end = width;
-                    step = 1;
-                }
-                for (x = start; x != end; x += step) {
-                    int d;
-                    int val;
-
-                    pos = y * width + x;
-                    for (d = 0; d < depth; d ++) {
-                        val = data[pos * depth + d] + f_mask(x, y, d) * 32;
-                        copy[d] = val < 0 ? 0 : val > 255 ? 255 : val;
-                    }
-                    color_index = f_lookup(copy, depth,
-                                           palette, reqcolor, indextable, complexion);
-                    if (migration_map[color_index] == 0) {
-                        result[pos] = *ncolors;
-                        for (n = 0; n < depth; ++n) {
-                            new_palette[*ncolors * depth + n]
-                                = palette[color_index * depth + n];
-                        }
-                        ++*ncolors;
-                        migration_map[color_index] = *ncolors;
-                    } else {
-                        result[pos] = migration_map[color_index] - 1;
-                    }
-                }
-            }
-            memcpy(palette, new_palette, (size_t)(*ncolors * depth));
-        } else {
-            for (y = 0; y < height; ++y) {
-                int start;
-                int end;
-                int step;
-                int direction;
-
-                if (serpentine && (y & 1)) {
-                    direction = -1;
-                    start = width - 1;
-                    end = -1;
-                    step = -1;
-                } else {
-                    direction = 1;
-                    start = 0;
-                    end = width;
-                    step = 1;
-                }
-                for (x = start; x != end; x += step) {
-                    size_t base;
-
-                    pos = y * width + x;
-                    base = (size_t)pos * (size_t)depth;
-                    if (use_varerr) {
-                        for (n = 0; n < depth; ++n) {
-                            int32_t value;
-                            unsigned char byte;
-
-                            value = varerr_work[base + n];
-                            if (value < 0) {
-                                value = 0;
-                            } else if (value > VARERR_MAX_VALUE) {
-                                value = VARERR_MAX_VALUE;
-                            }
-                            varerr_work[base + n] = value;
-                            byte = varerr_to_byte(value);
-                            data[base + n] = byte;
-                            varerr_value[n] = value;
-                            if (methodForDiffuse ==
-                                    SIXEL_DIFFUSE_ZHOUFANG) {
-                                varerr_index[n] =
-                                    zhoufang_index_from_byte(byte);
-                            } else {
-                                varerr_index[n] = byte;
-                            }
-                        }
-                    }
-
-                    color_index = f_lookup(data + (pos * depth), depth,
-                                           palette, reqcolor, indextable, complexion);
-                    if (migration_map[color_index] == 0) {
-                        result[pos] = *ncolors;
-                        for (n = 0; n < depth; ++n) {
-                            new_palette[*ncolors * depth + n]
-                                = palette[color_index * depth + n];
-                        }
-                        ++*ncolors;
-                        migration_map[color_index] = *ncolors;
-                    } else {
-                        result[pos] = migration_map[color_index] - 1;
-                    }
-                    if (use_varerr) {
-                        for (n = 0; n < depth; ++n) {
-                            size_t idx;
-                            int32_t target;
-                            int32_t error_scaled;
-
-                            idx = base + n;
-                            target = varerr_from_byte(
-                                        palette[color_index * depth + n]);
-                            error_scaled = varerr_value[n] - target;
-                            varerr_work[idx] = target;
-                            varerr_diffuse(varerr_work + n,
-                                           width, height,
-                                           x, y, depth,
-                                           error_scaled,
-                                           varerr_index[n],
-                                           direction);
-                        }
-                    } else {
-                        for (n = 0; n < depth; ++n) {
-                            offset = data[pos * depth + n]
-                                   - palette[color_index * depth + n];
-                            f_diffuse(data + n, width, height, x, y,
-                                      depth, offset, direction);
-                        }
-                    }
-                }
-            }
-            memcpy(palette, new_palette, (size_t)(*ncolors * depth));
-        }
+    if (f_mask) {
+        status = apply_palette_positional(result, data, width, height,
+                                          depth, palette, reqcolor,
+                                          f_mask, serpentine,
+                                          foptimize_palette, f_lookup,
+                                          indextable, complexion, copy,
+                                          new_palette, migration_map,
+                                          ncolors);
+    } else if (use_varerr) {
+        status = apply_palette_variable(result, data, width, height,
+                                        depth, palette, reqcolor,
+                                        serpentine, foptimize_palette,
+                                        f_lookup, indextable, complexion,
+                                        new_palette, migration_map,
+                                        ncolors, varerr_work,
+                                        varerr_value, varerr_index,
+                                        varerr_diffuse, methodForDiffuse);
     } else {
-        if (f_mask) {
-            for (y = 0; y < height; ++y) {
-                int start;
-                int end;
-                int step;
-
-                if (serpentine && (y & 1)) {
-                    start = width - 1;
-                    end = -1;
-                    step = -1;
-                } else {
-                    start = 0;
-                    end = width;
-                    step = 1;
-                }
-                for (x = start; x != end; x += step) {
-                    int d;
-                    int val;
-
-                    pos = y * width + x;
-                    for (d = 0; d < depth; d ++) {
-                        val = data[pos * depth + d] + f_mask(x, y, d) * 32;
-                        copy[d] = val < 0 ? 0 : val > 255 ? 255 : val;
-                    }
-                    result[pos] = f_lookup(copy, depth,
-                                           palette, reqcolor, indextable, complexion);
-                }
-            }
-        } else {
-            for (y = 0; y < height; ++y) {
-                int start;
-                int end;
-                int step;
-                int direction;
-
-                if (serpentine && (y & 1)) {
-                    direction = -1;
-                    start = width - 1;
-                    end = -1;
-                    step = -1;
-                } else {
-                    direction = 1;
-                    start = 0;
-                    end = width;
-                    step = 1;
-                }
-                for (x = start; x != end; x += step) {
-                    size_t base;
-
-                    pos = y * width + x;
-                    base = (size_t)pos * (size_t)depth;
-                    if (use_varerr) {
-                        for (n = 0; n < depth; ++n) {
-                            int32_t value;
-                            unsigned char byte;
-
-                            value = varerr_work[base + n];
-                            if (value < 0) {
-                                value = 0;
-                            } else if (value > VARERR_MAX_VALUE) {
-                                value = VARERR_MAX_VALUE;
-                            }
-                            varerr_work[base + n] = value;
-                            byte = varerr_to_byte(value);
-                            data[base + n] = byte;
-                            varerr_value[n] = value;
-                            if (methodForDiffuse ==
-                                    SIXEL_DIFFUSE_ZHOUFANG) {
-                                varerr_index[n] =
-                                    zhoufang_index_from_byte(byte);
-                            } else {
-                                varerr_index[n] = byte;
-                            }
-                        }
-                    }
-
-                    color_index = f_lookup(data + (pos * depth), depth,
-                                           palette, reqcolor, indextable, complexion);
-                    result[pos] = color_index;
-                    if (use_varerr) {
-                        for (n = 0; n < depth; ++n) {
-                            size_t idx;
-                            int32_t target;
-                            int32_t error_scaled;
-
-                            idx = base + n;
-                            target = varerr_from_byte(
-                                        palette[color_index * depth + n]);
-                            error_scaled = varerr_value[n] - target;
-                            varerr_work[idx] = target;
-                            varerr_diffuse(varerr_work + n,
-                                           width, height,
-                                           x, y, depth,
-                                           error_scaled,
-                                           varerr_index[n],
-                                           direction);
-                        }
-                    } else {
-                        for (n = 0; n < depth; ++n) {
-                            offset = data[pos * depth + n]
-                                   - palette[color_index * depth + n];
-                            f_diffuse(data + n, width, height, x, y,
-                                      depth, offset, direction);
-                        }
-                    }
-                }
-            }
-        }
-        *ncolors = reqcolor;
+        status = apply_palette_fixed(result, data, width, height,
+                                     depth, palette, reqcolor,
+                                     serpentine, foptimize_palette,
+                                     f_lookup, indextable, complexion,
+                                     new_palette, migration_map,
+                                     ncolors, f_diffuse);
+    }
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     if (cachetable == NULL) {
