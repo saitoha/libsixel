@@ -91,7 +91,7 @@ jobs:
         brew install gcovr
 
     - name: Setup MSVC developer env (vcvars)
-      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
+      if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' }}
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
@@ -133,7 +133,7 @@ jobs:
           lcov
 
     - name: Setup MSYS2 (Windows, MSVC)
-      if: runner.os == 'Windows' && matrix.compiler == 'cl'
+      if: runner.os == 'Windows' && matrix.sys == 'MSVC'
       uses: msys2/setup-msys2@v2
       with:
         msystem: MSYS
@@ -187,7 +187,7 @@ jobs:
         make
 
     - name: Configure and build (Windows, not MSVC/Cygwin)
-      if: ${{ runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.sys != 'CYGWIN' }}
+      if: ${{ runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' }}
       shell: msys2 {0}
       run: |
         ./configure CC=${{ matrix.compiler }} \
@@ -215,7 +215,7 @@ jobs:
           'set -o pipefail 2>/dev/null || true',
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          './configure --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking',
+          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking',
           'make'
         )
         $script = [string]::Join("`n", $scriptLines)
