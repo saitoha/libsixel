@@ -250,7 +250,7 @@ image_buffer_init(
     assert(n == 256);
 #endif  /* HAVE_ASSERT */
 
-    for (; n < SIXEL_PALETTE_MAX; n++) {
+    for (n = 256; n < SIXEL_PALETTE_MAX; n++) {
         image->palette[n] = SIXEL_RGB(255, 255, 255);
     }
 
