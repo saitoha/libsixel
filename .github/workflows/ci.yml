@@ -88,7 +88,7 @@ jobs:
       shell: bash
       run: |
         brew update
-        brew install gcovr
+        brew install lcov
 
     - name: Setup MSVC developer env (vcvars)
       if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' }}
@@ -326,14 +326,11 @@ jobs:
       if: runner.os == 'macOS'
       shell: bash
       run: |
-        gcovr -r . --lcov -o coverage.info \
-                   --gcov-executable gcov
-#        lcov -c \
-#          -d "$PWD/src/.libs" \
-#          -d "$PWD/converters" \
-#          --base-directory "$PWD" \
-#          --rc branch_coverage=1 \
-#          -o coverage.info
+        lcov -c \
+          -d "$PWD/src/.libs" \
+          -d "$PWD/converters" \
+          --rc branch_coverage=1 \
+          -o coverage.info
 
     - name: Capture coverage (Windows MSYS2/MinGW/UCRT/Clang)
       if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32'
@@ -345,23 +342,23 @@ jobs:
           --rc branch_coverage=1 \
           -o coverage.info
 
-    - name: Capture coverage (Windows Cygwin via gcovr)
-      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
-      shell: pwsh
-      run: |
-        $cygwinRoot = 'C:\cygwin'
-        if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
-        $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
-        $scriptLines = @(
-          'set -eu',
-          'set -o pipefail 2>/dev/null || true',
-          "export GITHUB_WORKSPACE=`"$workspace`"",
-          "cd `"$workspace`"",
-          'python3 -m pip install gcovr',
-          'gcovr -r . --lcov -o coverage.info --gcov-executable /usr/bin/gcov
-        )
-        $script = [string]::Join("`n", $scriptLines)
-        &"$cygwinRoot\bin\bash.exe" --login -c $script
+#    - name: Capture coverage (Windows Cygwin via gcovr)
+#      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
+#      shell: pwsh
+#      run: |
+#        $cygwinRoot = 'C:\cygwin'
+#        if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
+#        $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
+#        $scriptLines = @(
+#          'set -eu',
+#          'set -o pipefail 2>/dev/null || true',
+#          "export GITHUB_WORKSPACE=`"$workspace`"",
+#          "cd `"$workspace`"",
+#          'python3 -m pip install gcovr',
+#          'gcovr -r . --lcov -o coverage.info --gcov-executable /usr/bin/gcov'
+#        )
+#        $script = [string]::Join("`n", $scriptLines)
+#        &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Upload to Coveralls (per-flag, parallel)
       if: ${{ runner.os != 'Windows' }}
