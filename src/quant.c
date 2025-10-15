@@ -554,6 +554,38 @@ varerr_from_byte(unsigned char value)
     return ((int32_t)value) << VARERR_SCALE_SHIFT;
 }
 
+/*
+ * Compute a tone index for variable error diffusion tables.  Color inputs
+ * use Rec.601 luma weights to reduce RGB into a single 0-255 luminance
+ * value.  Grayscale inputs fall back to the first channel.
+ */
+static inline int
+varerr_tone_from_pixel(const unsigned char *pixel, int depth)
+{
+    int tone;
+
+    if (depth >= 3) {
+        int r;
+        int g;
+        int b;
+
+        r = pixel[0];
+        g = pixel[1];
+        b = pixel[2];
+        tone = (299 * r + 587 * g + 114 * b + 500) / 1000;
+    } else {
+        tone = pixel[0];
+    }
+    if (tone < 0) {
+        tone = 0;
+    }
+    if (tone > 255) {
+        tone = 255;
+    }
+
+    return tone;
+}
+
 #if HAVE_DEBUG
 #define quant_trace fprintf
 #else
@@ -1454,6 +1486,7 @@ diffuse_varerr_common(void *target, int width, int height,
     int denom;
 
     /*
+     * Table lookups expect a tone index derived from the pixel luminance.
      * Each table entry provides weights for the neighbours shown below.  The
      * fourth value is the shared denominator, equal to the sum of the first
      * three.  Forward scan applies the offsets on the left, while reverse scan
@@ -1770,7 +1803,6 @@ apply_palette_variable(
     int *ncolors,
     int32_t *varerr_work,
     int32_t varerr_value[],
-    int varerr_index[],
     diffuse_varerr_mode varerr_diffuse,
     int methodForDiffuse)
 {
@@ -1806,6 +1838,8 @@ apply_palette_variable(
                 size_t base;
                 int n;
                 int color_index;
+                int tone_index;
+                int table_index;
 
                 pos = y * width + x;
                 base = (size_t)pos * (size_t)depth;
@@ -1823,12 +1857,13 @@ apply_palette_variable(
                     byte = varerr_to_byte(value);
                     data[base + n] = byte;
                     varerr_value[n] = value;
-                    if (methodForDiffuse == SIXEL_DIFFUSE_ZHOUFANG) {
-                        varerr_index[n] =
-                            zhoufang_index_from_byte(byte);
-                    } else {
-                        varerr_index[n] = byte;
-                    }
+                }
+                tone_index = varerr_tone_from_pixel(data + base, depth);
+                if (methodForDiffuse == SIXEL_DIFFUSE_ZHOUFANG) {
+                    table_index = zhoufang_index_from_byte(
+                        (unsigned char)tone_index);
+                } else {
+                    table_index = tone_index;
                 }
                 color_index = f_lookup(data + base, depth, palette,
                                        reqcolor, indextable,
@@ -1856,7 +1891,7 @@ apply_palette_variable(
                     varerr_work[idx] = target;
                     varerr_diffuse(varerr_work + n, width, height,
                                    x, y, depth, error_scaled,
-                                   varerr_index[n], direction);
+                                   table_index, direction);
                 }
             }
         }
@@ -1886,6 +1921,8 @@ apply_palette_variable(
                 size_t base;
                 int n;
                 int color_index;
+                int tone_index;
+                int table_index;
 
                 pos = y * width + x;
                 base = (size_t)pos * (size_t)depth;
@@ -1903,12 +1940,13 @@ apply_palette_variable(
                     byte = varerr_to_byte(value);
                     data[base + n] = byte;
                     varerr_value[n] = value;
-                    if (methodForDiffuse == SIXEL_DIFFUSE_ZHOUFANG) {
-                        varerr_index[n] =
-                            zhoufang_index_from_byte(byte);
-                    } else {
-                        varerr_index[n] = byte;
-                    }
+                }
+                tone_index = varerr_tone_from_pixel(data + base, depth);
+                if (methodForDiffuse == SIXEL_DIFFUSE_ZHOUFANG) {
+                    table_index = zhoufang_index_from_byte(
+                        (unsigned char)tone_index);
+                } else {
+                    table_index = tone_index;
                 }
                 color_index = f_lookup(data + base, depth, palette,
                                        reqcolor, indextable,
@@ -1926,7 +1964,7 @@ apply_palette_variable(
                     varerr_work[idx] = target;
                     varerr_diffuse(varerr_work + n, width, height,
                                    x, y, depth, error_scaled,
-                                   varerr_index[n], direction);
+                                   table_index, direction);
                 }
             }
         }
@@ -2683,7 +2721,6 @@ sixel_quant_apply_palette(
     int32_t *varerr_work = NULL;
     size_t varerr_count = 0;
     int32_t varerr_value[max_depth];
-    int varerr_index[max_depth];
     diffuse_varerr_mode varerr_diffuse = NULL;
 
     /* check bad reqcolor */
@@ -2831,7 +2868,7 @@ sixel_quant_apply_palette(
                                         f_lookup, indextable, complexion,
                                         new_palette, migration_map,
                                         ncolors, varerr_work,
-                                        varerr_value, varerr_index,
+                                        varerr_value,
                                         varerr_diffuse, methodForDiffuse);
     } else {
         status = apply_palette_fixed(result, data, width, height,
