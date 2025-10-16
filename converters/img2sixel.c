@@ -204,6 +204,16 @@ void show_help(void)
             "                             raster -> left-to-right scan\n"
             "                             serpentine -> alternate direction\n"
             "                                           on each line\n"
+            "-Y CARRYTYPE, --diffusion-carry=CARRYTYPE\n"
+            "                           control carry buffers for diffusion\n"
+            "                           CARRYTYPE is one of them:\n"
+            "                             auto   -> choose carry mode\n"
+            "                                        automatically\n"
+            "                             direct -> write error back\n"
+            "                                        to pixel data\n"
+            "                                        immediately\n"
+            "                             carry  -> accumulate error in\n"
+            "                                        workspace buffers\n"
             "-f FINDTYPE, --find-largest=FINDTYPE\n"
             "                           choose method for finding the largest\n"
             "                           dimension of median cut boxes for\n"
@@ -394,7 +404,7 @@ main(int argc, char *argv[])
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    char const *optstring = "o:78Rp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:U:B:C:D@:M:OVW:Hy:";
+    char const *optstring = "o:78Rp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:U:B:C:D@:M:OVW:HY:y:";
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",            required_argument,  &long_opt, 'o'},
@@ -408,6 +418,7 @@ main(int argc, char *argv[])
         {"builtin-palette",    required_argument,  &long_opt, 'b'},
         {"diffusion",          required_argument,  &long_opt, 'd'},
         {"diffusion-scan",     required_argument,  &long_opt, 'y'},
+        {"diffusion-carry",    required_argument,  &long_opt, 'Y'},
         {"find-largest",       required_argument,  &long_opt, 'f'},
         {"select-color",       required_argument,  &long_opt, 's'},
         {"crop",               required_argument,  &long_opt, 'c'},

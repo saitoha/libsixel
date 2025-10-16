@@ -56,6 +56,7 @@ sixel_quant_apply_palette(
     int                 /* in */  reqcolor,
     int const           /* in */  methodForDiffuse,
     int const           /* in */  methodForScan,
+    int const           /* in */  methodForCarry,
     int                 /* in */  foptimize,
     int                 /* in */  foptimize_palette,
     int                 /* in */  complexion,

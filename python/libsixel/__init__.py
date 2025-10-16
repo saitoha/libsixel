@@ -97,6 +97,9 @@ SIXEL_DIFFUSE_ZHOUFANG     = 0xb  # Zhou Fang variable error diffusion
 SIXEL_SCAN_AUTO       = 0x0  # choose scan order automatically
 SIXEL_SCAN_RASTER     = 0x1  # scan from left to right on each line
 SIXEL_SCAN_SERPENTINE = 0x2  # alternate scan direction per line
+SIXEL_CARRY_AUTO      = 0x0  # choose carry mode automatically
+SIXEL_CARRY_DISABLE   = 0x1  # apply errors directly to pixels
+SIXEL_CARRY_ENABLE    = 0x2  # accumulate errors in carry lines
 
 # quality modes
 SIXEL_QUALITY_AUTO      = 0x0  # choose quality mode automatically
@@ -584,6 +587,12 @@ def sixel_dither_set_diffusion_scan(dither, method_for_scan):
     _sixel.sixel_dither_set_diffusion_scan.restype = None
     _sixel.sixel_dither_set_diffusion_scan.argtypes = [c_void_p, c_int]
     _sixel.sixel_dither_set_diffusion_scan(dither, method_for_scan)
+
+
+def sixel_dither_set_diffusion_carry(dither, method_for_carry):
+    _sixel.sixel_dither_set_diffusion_carry.restype = None
+    _sixel.sixel_dither_set_diffusion_carry.argtypes = [c_void_p, c_int]
+    _sixel.sixel_dither_set_diffusion_carry(dither, method_for_carry)
 
 
 # get number of palette colors

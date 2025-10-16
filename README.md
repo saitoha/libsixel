@@ -413,7 +413,7 @@ Options:
                              ostromoukhov -> Ostromoukhov variable
                                              error diffusion
                              zhoufang -> Zhou Fang variable error
-                                          diffusion
+                                         diffusion
 -y SCANTYPE, --diffusion-scan=SCANTYPE
                            choose scan order for error diffusion
                            SCANTYPE is one of them:
@@ -426,6 +426,14 @@ Options:
                                       - selects raster otherwise
                              raster -> left-to-right scan
                              serpentine -> alternate direction on each line
+-Y CARRYTYPE, --diffusion-carry=CARRYTYPE
+                           control carry buffers for error diffusion
+                           CARRYTYPE is one of them:
+                             auto   -> choose carry mode automatically
+                             direct -> write error back to pixel data
+                                       immediately
+                             carry  -> accumulate error in workspace
+                                       buffers before applying
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
                            dimension of median cut boxes for

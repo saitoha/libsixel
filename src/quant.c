@@ -95,6 +95,55 @@ static const int zhoufang_threshold_gain[128] = {
        90,   92,   93,   94,   96,   97,   99,  100,
 };
 
+static float mask_a(int x, int y, int c);
+static float mask_x(int x, int y, int c);
+static void diffuse_none(unsigned char *data, int width, int height,
+                         int x, int y, int depth, int error, int direction);
+static void diffuse_fs(unsigned char *data, int width, int height,
+                       int x, int y, int depth, int error, int direction);
+static void diffuse_atkinson(unsigned char *data, int width, int height,
+                             int x, int y, int depth, int error,
+                             int direction);
+static void diffuse_jajuni(unsigned char *data, int width, int height,
+                           int x, int y, int depth, int error,
+                           int direction);
+static void diffuse_stucki(unsigned char *data, int width, int height,
+                           int x, int y, int depth, int error,
+                           int direction);
+static void diffuse_burkes(unsigned char *data, int width, int height,
+                           int x, int y, int depth, int error,
+                           int direction);
+static void diffuse_lso1(unsigned char *data, int width, int height,
+                         int x, int y, int depth, int error, int direction);
+static void diffuse_none_carry(int32_t *carry_curr, int32_t *carry_next,
+                               int32_t *carry_far, int width, int height,
+                               int depth, int x, int y, int32_t error,
+                               int direction, int channel);
+static void diffuse_fs_carry(int32_t *carry_curr, int32_t *carry_next,
+                             int32_t *carry_far, int width, int height,
+                             int depth, int x, int y, int32_t error,
+                             int direction, int channel);
+static void diffuse_atkinson_carry(int32_t *carry_curr, int32_t *carry_next,
+                                   int32_t *carry_far, int width,
+                                   int height, int depth, int x, int y,
+                                   int32_t error, int direction,
+                                   int channel);
+static void diffuse_jajuni_carry(int32_t *carry_curr, int32_t *carry_next,
+                                 int32_t *carry_far, int width, int height,
+                                 int depth, int x, int y, int32_t error,
+                                 int direction, int channel);
+static void diffuse_stucki_carry(int32_t *carry_curr, int32_t *carry_next,
+                                 int32_t *carry_far, int width, int height,
+                                 int depth, int x, int y, int32_t error,
+                                 int direction, int channel);
+static void diffuse_burkes_carry(int32_t *carry_curr, int32_t *carry_next,
+                                 int32_t *carry_far, int width, int height,
+                                 int depth, int x, int y, int32_t error,
+                                 int direction, int channel);
+static void diffuse_lso1_carry(int32_t *carry_curr, int32_t *carry_next,
+                               int32_t *carry_far, int width, int height,
+                               int depth, int x, int y, int32_t error,
+                               int direction, int channel);
 
 static const int (*
 ostromoukhov_table(void))[4]
@@ -104,7 +153,7 @@ ostromoukhov_table(void))[4]
      * Error-Diffusion Algorithm", SIGGRAPH 2001
      * (https://perso.liris.cnrs.fr/victor.ostromoukhov/publications/pdf/
      *  SIGGRAPH01_varcoeffED.pdf).  Each tuple lists the weights for the
-     * neighbours documented in diffuse_varerr_common().  The fourth element
+     * neighbours documented near diffuse_varerr_term().  The fourth element
      * matches the sum of the first three, preserving the normalization from
      * the paper.
      */
@@ -384,7 +433,7 @@ zhoufang_table(void))[4]
      * to integers, and keep the first 128 tones; tones 128-255 mirror the same
      * coefficients.  The fourth element of every tuple stores the shared
      * denominator, i.e. the sum of the first three values.  All tuples use the
-     * neighbour ordering described in diffuse_varerr_common().
+     * neighbour ordering documented near diffuse_varerr_term().
      */
     static const int table[][4] = {
         {         13,          0,          5,         18 },
@@ -526,34 +575,6 @@ zhoufang_table(void))[4]
 #define VARERR_ROUND       (1 << (VARERR_SCALE_SHIFT - 1))
 #define VARERR_MAX_VALUE   (255 * VARERR_SCALE)
 
-static inline unsigned char
-varerr_to_byte(int32_t value)
-{
-    int32_t rounded;
-
-    if (value < 0) {
-        return 0;
-    }
-    if (value > VARERR_MAX_VALUE) {
-        return 255;
-    }
-    rounded = (value + VARERR_ROUND) >> VARERR_SCALE_SHIFT;
-    if (rounded < 0) {
-        rounded = 0;
-    }
-    if (rounded > 255) {
-        rounded = 255;
-    }
-
-    return (unsigned char)rounded;
-}
-
-static inline int32_t
-varerr_from_byte(unsigned char value)
-{
-    return ((int32_t)value) << VARERR_SCALE_SHIFT;
-}
-
 /*
  * Compute a tone index for variable error diffusion tables.  Color inputs
  * use Rec.601 luma weights to reduce RGB into a single 0-255 luminance
@@ -572,7 +593,11 @@ varerr_tone_from_pixel(const unsigned char *pixel, int depth)
         r = pixel[0];
         g = pixel[1];
         b = pixel[2];
+#if 1
         tone = (299 * r + 587 * g + 114 * b + 500) / 1000;
+#else
+        tone = (int) ((1.5f + r + g + b) / 3.0f);
+#endif
     } else {
         tone = pixel[0];
     }
@@ -1449,9 +1474,20 @@ error_diffuse_precise(
 }
 
 
-typedef void (*diffuse_varerr_func)(void *target, int depth, size_t offset,
-                                    int32_t error, int weight, int denom);
-typedef void (*diffuse_varerr_mode)(int32_t *workspace,
+typedef void (*diffuse_fixed_carry_mode)(int32_t *carry_curr,
+                                         int32_t *carry_next,
+                                         int32_t *carry_far,
+                                         int width,
+                                         int height,
+                                         int depth,
+                                         int x,
+                                         int y,
+                                         int32_t error,
+                                         int direction,
+                                         int channel);
+
+
+typedef void (*diffuse_varerr_mode)(unsigned char *data,
                                     int width,
                                     int height,
                                     int x,
@@ -1461,96 +1497,17 @@ typedef void (*diffuse_varerr_mode)(int32_t *workspace,
                                     int index,
                                     int direction);
 
-static void diffuse_varerr_accum_pixel(int32_t *workspace, int depth,
-                                       size_t offset, int32_t error,
-                                       int weight, int denom);
-
-static void
-diffuse_varerr_apply_accum(void *target, int depth, size_t offset,
-                           int32_t error, int weight, int denom)
-{
-    int32_t *workspace;
-
-    workspace = (int32_t *)target;
-    diffuse_varerr_accum_pixel(workspace, depth, offset,
-                               error, weight, denom);
-}
-
-static void
-diffuse_varerr_common(void *target, int width, int height,
-                      int x, int y, int depth, int32_t error,
-                      int index, const int (*table)[4], int direction,
-                      diffuse_varerr_func apply)
-{
-    const int *entry;
-    int denom;
-
-    /*
-     * Table lookups expect a tone index derived from the pixel luminance.
-     * Each table entry provides weights for the neighbours shown below.  The
-     * fourth value is the shared denominator, equal to the sum of the first
-     * three.  Forward scan applies the offsets on the left, while reverse scan
-     * uses the layout on the right.
-     *
-     *   forward scan (direction >= 0)              reverse scan (direction < 0)
-     *
-     *              [0] (x+1, y)                                 (x-1, y) [0]
-     *                 ^                                              ^
-     *                 | processing direction                         |
-     *                 |                                              |
-     *   (x, y)  o---->o                                        o<----o  (x, y)
-     *                 \                                              /
-     *                  \                                            /
-     *      [1] (x-1, y+1)   [2] (x, y+1)         [1] (x+1, y+1)   [2] (x, y+1)
-     */
-
-    if (index < 0) {
-        index = 0;
-    }
-    if (index > 255) {
-        index = 255;
-    }
-
-    entry = table[index];
-    denom = entry[3];
-    if (denom == 0 || error == 0) {
-        return;
-    }
-
-    if (direction >= 0) {
-        size_t offset;
-
-        if (x + 1 < width) {
-            offset = (size_t)y * (size_t)width + (size_t)(x + 1);
-            apply(target, depth, offset, error, entry[0], denom);
-        }
-        if (y + 1 < height && x - 1 >= 0) {
-            offset = (size_t)(y + 1) * (size_t)width;
-            offset += (size_t)(x - 1);
-            apply(target, depth, offset, error, entry[1], denom);
-        }
-        if (y + 1 < height) {
-            offset = (size_t)(y + 1) * (size_t)width + (size_t)x;
-            apply(target, depth, offset, error, entry[2], denom);
-        }
-    } else {
-        size_t offset;
-
-        if (x - 1 >= 0) {
-            offset = (size_t)y * (size_t)width + (size_t)(x - 1);
-            apply(target, depth, offset, error, entry[0], denom);
-        }
-        if (y + 1 < height && x + 1 < width) {
-            offset = (size_t)(y + 1) * (size_t)width;
-            offset += (size_t)(x + 1);
-            apply(target, depth, offset, error, entry[1], denom);
-        }
-        if (y + 1 < height) {
-            offset = (size_t)(y + 1) * (size_t)width + (size_t)x;
-            apply(target, depth, offset, error, entry[2], denom);
-        }
-    }
-}
+typedef void (*diffuse_varerr_carry_mode)(int32_t *carry_curr,
+                                          int32_t *carry_next,
+                                          int width,
+                                          int height,
+                                          int depth,
+                                          int x,
+                                          int y,
+                                          int32_t error,
+                                          int index,
+                                          int direction,
+                                          int channel);
 
 static int
 zhoufang_index_from_byte(unsigned char value)
@@ -1604,58 +1561,393 @@ zhoufang_index_from_byte(unsigned char value)
 }
 
 
-static void
-diffuse_varerr_accum_pixel(int32_t *workspace, int depth, size_t offset,
-                           int32_t error, int weight, int denom)
+/*
+ * Table lookups expect a tone index derived from the pixel luminance.  Each
+ * table entry provides weights for the neighbours shown below.  The fourth
+ * value is the shared denominator, equal to the sum of the first three.  The
+ * downwards coefficient is not used directly; instead we compute the residual
+ * error so that rounding matches Ostromoukhov's reference implementation.
+ *
+ *   forward scan (direction >= 0)              reverse scan (direction < 0)
+ *
+ *              [0] (x+1, y)                                 (x-1, y) [0]
+ *                 ^                                              ^
+ *                 | processing direction                         |
+ *                 |                                              |
+ *   (x, y)  o---->o                                        o<----o  (x, y)
+ *                 \                                              /
+ *                  \                                            /
+ *      [1] (x-1, y+1)   [2] (x, y+1)         [1] (x+1, y+1)   [2] (x, y+1)
+ */
+
+static int32_t
+diffuse_varerr_term(int32_t error, int weight, int denom)
 {
-    int64_t value;
     int64_t delta;
 
-    value = workspace[offset * depth];
-    delta = (int64_t)error * weight;
+    delta = (int64_t)error * (int64_t)weight;
     if (delta >= 0) {
         delta = (delta + denom / 2) / denom;
     } else {
         delta = (delta - denom / 2) / denom;
     }
+
+    return (int32_t)delta;
+}
+
+
+static int32_t
+diffuse_fixed_term(int32_t error, int numerator, int denominator)
+{
+    int64_t delta;
+
+    delta = (int64_t)error * (int64_t)numerator;
+    if (delta >= 0) {
+        delta = (delta + denominator / 2) / denominator;
+    } else {
+        delta = (delta - denominator / 2) / denominator;
+    }
+
+    return (int32_t)delta;
+}
+
+
+static void
+diffuse_varerr_apply_direct(unsigned char *target, int depth, size_t offset,
+                            int32_t delta)
+{
+    int64_t value;
+    int result;
+
+    value = (int64_t)target[offset * depth] << VARERR_SCALE_SHIFT;
     value += delta;
     if (value < 0) {
         value = 0;
-    } else if (value > VARERR_MAX_VALUE) {
-        value = VARERR_MAX_VALUE;
+    } else {
+        int64_t max_value;
+
+        max_value = VARERR_MAX_VALUE;
+        if (value > max_value) {
+            value = max_value;
+        }
     }
-    workspace[offset * depth] = (int32_t)value;
+
+    result = (int)((value + VARERR_ROUND) >> VARERR_SCALE_SHIFT);
+    if (result < 0) {
+        result = 0;
+    }
+    if (result > 255) {
+        result = 255;
+    }
+    target[offset * depth] = (unsigned char)result;
 }
 
 
 static void
-diffuse_varerr_accum(int32_t *workspace, int width, int height,
-                     int x, int y, int depth, int32_t error,
-                     int index, const int (*table)[4], int direction)
-{
-    diffuse_varerr_common(workspace, width, height, x, y, depth,
-                          error, index, table, direction,
-                          diffuse_varerr_apply_accum);
-}
-
-
-static void
-diffuse_ostromoukhov(int32_t *workspace, int width, int height,
+diffuse_ostromoukhov(unsigned char *data, int width, int height,
                      int x, int y, int depth, int32_t error,
                      int index, int direction)
 {
-    diffuse_varerr_accum(workspace, width, height, x, y, depth,
-                         error, index, ostromoukhov_table(), direction);
+    const int (*table)[4];
+    const int *entry;
+    int denom;
+    int32_t term_r;
+    int32_t term_dl;
+    int32_t term_d;
+
+    if (error == 0) {
+        return;
+    }
+    if (index < 0) {
+        index = 0;
+    }
+    if (index > 255) {
+        index = 255;
+    }
+
+    table = ostromoukhov_table();
+    entry = table[index];
+    denom = entry[3];
+    if (denom == 0) {
+        return;
+    }
+
+    term_r = diffuse_varerr_term(error, entry[0], denom);
+    term_dl = diffuse_varerr_term(error, entry[1], denom);
+    term_d = error - term_r - term_dl;
+
+    if (direction >= 0) {
+        size_t offset;
+
+        if (x + 1 < width) {
+            offset = (size_t)y * (size_t)width + (size_t)(x + 1);
+            diffuse_varerr_apply_direct(data, depth, offset, term_r);
+        }
+        if (y + 1 < height && x - 1 >= 0) {
+            offset = (size_t)(y + 1) * (size_t)width;
+            offset += (size_t)(x - 1);
+            diffuse_varerr_apply_direct(data, depth, offset, term_dl);
+        }
+        if (y + 1 < height) {
+            offset = (size_t)(y + 1) * (size_t)width + (size_t)x;
+            diffuse_varerr_apply_direct(data, depth, offset, term_d);
+        }
+    } else {
+        size_t offset;
+
+        if (x - 1 >= 0) {
+            offset = (size_t)y * (size_t)width + (size_t)(x - 1);
+            diffuse_varerr_apply_direct(data, depth, offset, term_r);
+        }
+        if (y + 1 < height && x + 1 < width) {
+            offset = (size_t)(y + 1) * (size_t)width;
+            offset += (size_t)(x + 1);
+            diffuse_varerr_apply_direct(data, depth, offset, term_dl);
+        }
+        if (y + 1 < height) {
+            offset = (size_t)(y + 1) * (size_t)width + (size_t)x;
+            diffuse_varerr_apply_direct(data, depth, offset, term_d);
+        }
+    }
 }
 
 
 static void
-diffuse_zhoufang(int32_t *workspace, int width, int height,
+diffuse_zhoufang(unsigned char *data, int width, int height,
                  int x, int y, int depth, int32_t error,
                  int index, int direction)
 {
-    diffuse_varerr_accum(workspace, width, height, x, y, depth,
-                         error, index, zhoufang_table(), direction);
+    const int (*table)[4];
+    const int *entry;
+    int denom;
+    int32_t term_r;
+    int32_t term_dl;
+    int32_t term_d;
+
+    if (error == 0) {
+        return;
+    }
+    if (index < 0) {
+        index = 0;
+    }
+    if (index > 255) {
+        index = 255;
+    }
+
+    table = zhoufang_table();
+    entry = table[index];
+    denom = entry[3];
+    if (denom == 0) {
+        return;
+    }
+
+    term_r = diffuse_varerr_term(error, entry[0], denom);
+    term_dl = diffuse_varerr_term(error, entry[1], denom);
+    term_d = error - term_r - term_dl;
+
+    if (direction >= 0) {
+        size_t offset;
+
+        if (x + 1 < width) {
+            offset = (size_t)y * (size_t)width + (size_t)(x + 1);
+            diffuse_varerr_apply_direct(data, depth, offset, term_r);
+        }
+        if (y + 1 < height && x - 1 >= 0) {
+            offset = (size_t)(y + 1) * (size_t)width;
+            offset += (size_t)(x - 1);
+            diffuse_varerr_apply_direct(data, depth, offset, term_dl);
+        }
+        if (y + 1 < height) {
+            offset = (size_t)(y + 1) * (size_t)width + (size_t)x;
+            diffuse_varerr_apply_direct(data, depth, offset, term_d);
+        }
+    } else {
+        size_t offset;
+
+        if (x - 1 >= 0) {
+            offset = (size_t)y * (size_t)width + (size_t)(x - 1);
+            diffuse_varerr_apply_direct(data, depth, offset, term_r);
+        }
+        if (y + 1 < height && x + 1 < width) {
+            offset = (size_t)(y + 1) * (size_t)width;
+            offset += (size_t)(x + 1);
+            diffuse_varerr_apply_direct(data, depth, offset, term_dl);
+        }
+        if (y + 1 < height) {
+            offset = (size_t)(y + 1) * (size_t)width + (size_t)x;
+            diffuse_varerr_apply_direct(data, depth, offset, term_d);
+        }
+    }
+}
+
+
+static void
+diffuse_ostromoukhov_carry(int32_t *carry_curr, int32_t *carry_next,
+                           int width, int height, int depth,
+                           int x, int y, int32_t error,
+                           int index, int direction, int channel)
+{
+    const int (*table)[4];
+    const int *entry;
+    int denom;
+    int32_t term_r;
+    int32_t term_dl;
+    int32_t term_d;
+
+    if (error == 0) {
+        return;
+    }
+    if (index < 0) {
+        index = 0;
+    }
+    if (index > 255) {
+        index = 255;
+    }
+
+    table = ostromoukhov_table();
+    entry = table[index];
+    denom = entry[3];
+    if (denom == 0) {
+        return;
+    }
+
+    term_r = diffuse_varerr_term(error, entry[0], denom);
+    term_dl = diffuse_varerr_term(error, entry[1], denom);
+    term_d = error - term_r - term_dl;
+
+    if (direction >= 0) {
+        if (x + 1 < width) {
+            size_t base;
+
+            base = ((size_t)(x + 1) * (size_t)depth) + (size_t)channel;
+            carry_curr[base] += term_r;
+        }
+        if (y + 1 < height && x - 1 >= 0) {
+            size_t base;
+
+            base = ((size_t)(x - 1) * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term_dl;
+        }
+        if (y + 1 < height) {
+            size_t base;
+
+            base = ((size_t)x * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term_d;
+        }
+    } else {
+        if (x - 1 >= 0) {
+            size_t base;
+
+            base = ((size_t)(x - 1) * (size_t)depth) + (size_t)channel;
+            carry_curr[base] += term_r;
+        }
+        if (y + 1 < height && x + 1 < width) {
+            size_t base;
+
+            base = ((size_t)(x + 1) * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term_dl;
+        }
+        if (y + 1 < height) {
+            size_t base;
+
+            base = ((size_t)x * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term_d;
+        }
+    }
+}
+
+
+static void
+diffuse_zhoufang_carry(int32_t *carry_curr, int32_t *carry_next,
+                       int width, int height, int depth,
+                       int x, int y, int32_t error,
+                       int index, int direction, int channel)
+{
+    const int (*table)[4];
+    const int *entry;
+    int denom;
+    int32_t term_r;
+    int32_t term_dl;
+    int32_t term_d;
+
+    if (error == 0) {
+        return;
+    }
+    if (index < 0) {
+        index = 0;
+    }
+    if (index > 255) {
+        index = 255;
+    }
+
+    table = zhoufang_table();
+    entry = table[index];
+    denom = entry[3];
+    if (denom == 0) {
+        return;
+    }
+
+    term_r = diffuse_varerr_term(error, entry[0], denom);
+    term_dl = diffuse_varerr_term(error, entry[1], denom);
+    term_d = error - term_r - term_dl;
+
+    if (direction >= 0) {
+        if (x + 1 < width) {
+            size_t base;
+
+            base = ((size_t)(x + 1) * (size_t)depth) + (size_t)channel;
+            carry_curr[base] += term_r;
+        }
+        if (y + 1 < height && x - 1 >= 0) {
+            size_t base;
+
+            base = ((size_t)(x - 1) * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term_dl;
+        }
+        if (y + 1 < height) {
+            size_t base;
+
+            base = ((size_t)x * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term_d;
+        }
+    } else {
+        if (x - 1 >= 0) {
+            size_t base;
+
+            base = ((size_t)(x - 1) * (size_t)depth) + (size_t)channel;
+            carry_curr[base] += term_r;
+        }
+        if (y + 1 < height && x + 1 < width) {
+            size_t base;
+
+            base = ((size_t)(x + 1) * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term_dl;
+        }
+        if (y + 1 < height) {
+            size_t base;
+
+            base = ((size_t)x * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term_d;
+        }
+    }
+}
+
+
+static void
+scanline_params(int serpentine, int index, int limit,
+                int *start, int *end, int *step, int *direction)
+{
+    if (serpentine && (index & 1)) {
+        *start = limit - 1;
+        *end = -1;
+        *step = -1;
+        *direction = -1;
+    } else {
+        *start = 0;
+        *end = limit;
+        *step = 1;
+        *direction = 1;
+    }
 }
 
 
@@ -1668,8 +1960,8 @@ apply_palette_positional(
     int depth,
     unsigned char *palette,
     int reqcolor,
-    float (*f_mask)(int x, int y, int c),
-    int serpentine,
+    int methodForDiffuse,
+    int methodForScan,
     int foptimize_palette,
     int (*f_lookup)(const unsigned char *pixel,
                     int depth,
@@ -1684,7 +1976,21 @@ apply_palette_positional(
     unsigned short migration_map[],
     int *ncolors)
 {
+    int serpentine;
     int y;
+    float (*f_mask)(int x, int y, int c);
+
+    switch (methodForDiffuse) {
+    case SIXEL_DIFFUSE_A_DITHER:
+        f_mask = mask_a;
+        break;
+    case SIXEL_DIFFUSE_X_DITHER:
+    default:
+        f_mask = mask_x;
+        break;
+    }
+
+    serpentine = (methodForScan == SIXEL_SCAN_SERPENTINE);
 
     if (foptimize_palette) {
         int x;
@@ -1698,16 +2004,11 @@ apply_palette_positional(
             int start;
             int end;
             int step;
+            int direction;
 
-            if (serpentine && (y & 1)) {
-                start = width - 1;
-                end = -1;
-                step = -1;
-            } else {
-                start = 0;
-                end = width;
-                step = 1;
-            }
+            scanline_params(serpentine, y, width,
+                            &start, &end, &step, &direction);
+            (void)direction;
             for (x = start; x != end; x += step) {
                 int pos;
                 int d;
@@ -1719,7 +2020,8 @@ apply_palette_positional(
 
                     val = data[pos * depth + d]
                         + f_mask(x, y, d) * 32;
-                    copy[d] = val < 0 ? 0 : val > 255 ? 255 : val;
+                    copy[d] = val < 0 ? 0
+                               : val > 255 ? 255 : val;
                 }
                 color_index = f_lookup(copy, depth, palette,
                                        reqcolor, indextable,
@@ -1745,16 +2047,11 @@ apply_palette_positional(
             int start;
             int end;
             int step;
+            int direction;
 
-            if (serpentine && (y & 1)) {
-                start = width - 1;
-                end = -1;
-                step = -1;
-            } else {
-                start = 0;
-                end = width;
-                step = 1;
-            }
+            scanline_params(serpentine, y, width,
+                            &start, &end, &step, &direction);
+            (void)direction;
             for (x = start; x != end; x += step) {
                 int pos;
                 int d;
@@ -1765,7 +2062,8 @@ apply_palette_positional(
 
                     val = data[pos * depth + d]
                         + f_mask(x, y, d) * 32;
-                    copy[d] = val < 0 ? 0 : val > 255 ? 255 : val;
+                    copy[d] = val < 0 ? 0
+                               : val > 255 ? 255 : val;
                 }
                 result[pos] = f_lookup(copy, depth, palette,
                                        reqcolor, indextable,
@@ -1788,7 +2086,7 @@ apply_palette_variable(
     int depth,
     unsigned char *palette,
     int reqcolor,
-    int serpentine,
+    int methodForScan,
     int foptimize_palette,
     int (*f_lookup)(const unsigned char *pixel,
                     int depth,
@@ -1801,177 +2099,220 @@ apply_palette_variable(
     unsigned char new_palette[],
     unsigned short migration_map[],
     int *ncolors,
-    int32_t *varerr_work,
-    int32_t varerr_value[],
-    diffuse_varerr_mode varerr_diffuse,
-    int methodForDiffuse)
+    int methodForDiffuse,
+    int methodForCarry)
 {
+    SIXELSTATUS status = SIXEL_FALSE;
+#if _MSC_VER
+    enum { max_channels = 4 };
+#else
+    const int max_channels = 4;
+#endif
+    int serpentine;
     int y;
+    diffuse_varerr_mode varerr_diffuse;
+    diffuse_varerr_carry_mode varerr_diffuse_carry;
+    int use_carry;
+    size_t carry_len;
+    int32_t *carry_curr = NULL;
+    int32_t *carry_next = NULL;
+    unsigned char corrected[max_channels];
+    int32_t sample_scaled[max_channels];
+    int32_t accum_scaled[max_channels];
+
+    if (depth > max_channels) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    use_carry = (methodForCarry == SIXEL_CARRY_ENABLE);
+    carry_len = 0;
+
+    switch (methodForDiffuse) {
+    case SIXEL_DIFFUSE_OSTROMOUKHOV:
+        varerr_diffuse = diffuse_ostromoukhov;
+        varerr_diffuse_carry = diffuse_ostromoukhov_carry;
+        break;
+    case SIXEL_DIFFUSE_ZHOUFANG:
+        varerr_diffuse = diffuse_zhoufang;
+        varerr_diffuse_carry = diffuse_zhoufang_carry;
+        srand((unsigned int)time(NULL));
+        break;
+    default:
+        varerr_diffuse = diffuse_ostromoukhov;
+        varerr_diffuse_carry = diffuse_ostromoukhov_carry;
+        break;
+    }
+
+    if (use_carry) {
+        carry_len = (size_t)width * (size_t)depth;
+        carry_curr = (int32_t *)calloc(carry_len, sizeof(int32_t));
+        if (carry_curr == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        carry_next = (int32_t *)calloc(carry_len, sizeof(int32_t));
+        if (carry_next == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+    }
+
+    serpentine = (methodForScan == SIXEL_SCAN_SERPENTINE);
 
     if (foptimize_palette) {
-        int x;
-
         *ncolors = 0;
         memset(new_palette, 0x00,
                (size_t)SIXEL_PALETTE_MAX * (size_t)depth);
         memset(migration_map, 0x00,
                sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);
-        for (y = 0; y < height; ++y) {
-            int start;
-            int end;
-            int step;
-            int direction;
+    }
 
-            if (serpentine && (y & 1)) {
-                direction = -1;
-                start = width - 1;
-                end = -1;
-                step = -1;
-            } else {
-                direction = 1;
-                start = 0;
-                end = width;
-                step = 1;
-            }
-            for (x = start; x != end; x += step) {
-                int pos;
-                size_t base;
-                int n;
-                int color_index;
-                int tone_index;
-                int table_index;
+    for (y = 0; y < height; ++y) {
+        int start;
+        int end;
+        int step;
+        int direction;
 
-                pos = y * width + x;
-                base = (size_t)pos * (size_t)depth;
+        int x;
+
+        scanline_params(serpentine, y, width,
+                        &start, &end, &step, &direction);
+        for (x = start; x != end; x += step) {
+            int pos;
+            size_t base;
+            size_t carry_base;
+            const unsigned char *source_pixel;
+            int tone_index;
+            int table_index_common;
+            int color_index;
+            int output_index;
+            int n;
+
+            pos = y * width + x;
+            base = (size_t)pos * (size_t)depth;
+            carry_base = (size_t)x * (size_t)depth;
+            if (use_carry) {
                 for (n = 0; n < depth; ++n) {
-                    int32_t value;
-                    unsigned char byte;
+                    int64_t accum;
+                    int64_t clamped;
 
-                    value = varerr_work[base + n];
-                    if (value < 0) {
-                        value = 0;
-                    } else if (value > VARERR_MAX_VALUE) {
-                        value = VARERR_MAX_VALUE;
+                    accum = ((int64_t)data[base + n]
+                             << VARERR_SCALE_SHIFT)
+                          + carry_curr[carry_base + (size_t)n];
+                    if (accum < INT32_MIN) {
+                        accum = INT32_MIN;
+                    } else if (accum > INT32_MAX) {
+                        accum = INT32_MAX;
                     }
-                    varerr_work[base + n] = value;
-                    byte = varerr_to_byte(value);
-                    data[base + n] = byte;
-                    varerr_value[n] = value;
+                    accum_scaled[n] = (int32_t)accum;
+                    carry_curr[carry_base + (size_t)n] = 0;
+                    clamped = accum;
+                    if (clamped < 0) {
+                        clamped = 0;
+                    } else if (clamped > VARERR_MAX_VALUE) {
+                        clamped = VARERR_MAX_VALUE;
+                    }
+                    corrected[n]
+                        = (unsigned char)((clamped + VARERR_ROUND)
+                                          >> VARERR_SCALE_SHIFT);
                 }
-                tone_index = varerr_tone_from_pixel(data + base, depth);
-                if (methodForDiffuse == SIXEL_DIFFUSE_ZHOUFANG) {
-                    table_index = zhoufang_index_from_byte(
-                        (unsigned char)tone_index);
-                } else {
-                    table_index = tone_index;
+                source_pixel = corrected;
+            } else {
+                for (n = 0; n < depth; ++n) {
+                    sample_scaled[n]
+                        = (int32_t)data[base + n]
+                        << VARERR_SCALE_SHIFT;
+                    corrected[n] = data[base + n];
                 }
-                color_index = f_lookup(data + base, depth, palette,
-                                       reqcolor, indextable,
-                                       complexion);
+                source_pixel = data + base;
+            }
+
+            tone_index = varerr_tone_from_pixel(source_pixel, depth);
+            if (methodForDiffuse == SIXEL_DIFFUSE_ZHOUFANG) {
+                table_index_common = zhoufang_index_from_byte(
+                    (unsigned char)tone_index);
+            } else {
+                table_index_common = tone_index;
+            }
+
+            color_index = f_lookup(source_pixel, depth, palette,
+                                   reqcolor, indextable,
+                                   complexion);
+
+            if (foptimize_palette) {
                 if (migration_map[color_index] == 0) {
-                    result[pos] = *ncolors;
+                    output_index = *ncolors;
                     for (n = 0; n < depth; ++n) {
-                        new_palette[*ncolors * depth + n]
+                        new_palette[output_index * depth + n]
                             = palette[color_index * depth + n];
                     }
                     ++*ncolors;
                     migration_map[color_index] = *ncolors;
                 } else {
-                    result[pos] = migration_map[color_index] - 1;
+                    output_index = migration_map[color_index] - 1;
                 }
-                for (n = 0; n < depth; ++n) {
-                    size_t idx;
-                    int32_t target;
+                result[pos] = output_index;
+            } else {
+                output_index = color_index;
+                result[pos] = output_index;
+            }
+
+            for (n = 0; n < depth; ++n) {
+                int palette_value;
+                if (foptimize_palette) {
+                    palette_value = new_palette[output_index * depth + n];
+                } else {
+                    palette_value = palette[color_index * depth + n];
+                }
+                if (use_carry) {
+                    int32_t target_scaled;
                     int32_t error_scaled;
 
-                    idx = base + n;
-                    target = varerr_from_byte(
-                                palette[color_index * depth + n]);
-                    error_scaled = varerr_value[n] - target;
-                    varerr_work[idx] = target;
-                    varerr_diffuse(varerr_work + n, width, height,
+                    target_scaled = (int32_t)palette_value
+                                  << VARERR_SCALE_SHIFT;
+                    error_scaled = accum_scaled[n] - target_scaled;
+                    varerr_diffuse_carry(carry_curr, carry_next,
+                                         width, height, depth,
+                                         x, y, error_scaled,
+                                         table_index_common,
+                                         direction, n);
+                } else {
+                    int32_t target_scaled;
+                    int32_t error_scaled;
+
+                    target_scaled = (int32_t)palette_value
+                                  << VARERR_SCALE_SHIFT;
+                    error_scaled = sample_scaled[n] - target_scaled;
+                    varerr_diffuse(data + n, width, height,
                                    x, y, depth, error_scaled,
-                                   table_index, direction);
+                                   table_index_common,
+                                   direction);
                 }
             }
         }
+        if (use_carry) {
+            int32_t *tmp;
+
+            tmp = carry_curr;
+            carry_curr = carry_next;
+            carry_next = tmp;
+            memset(carry_next, 0x00, carry_len * sizeof(int32_t));
+        }
+    }
+
+    if (foptimize_palette) {
         memcpy(palette, new_palette, (size_t)(*ncolors * depth));
     } else {
-        int x;
-
-        for (y = 0; y < height; ++y) {
-            int start;
-            int end;
-            int step;
-            int direction;
-
-            if (serpentine && (y & 1)) {
-                direction = -1;
-                start = width - 1;
-                end = -1;
-                step = -1;
-            } else {
-                direction = 1;
-                start = 0;
-                end = width;
-                step = 1;
-            }
-            for (x = start; x != end; x += step) {
-                int pos;
-                size_t base;
-                int n;
-                int color_index;
-                int tone_index;
-                int table_index;
-
-                pos = y * width + x;
-                base = (size_t)pos * (size_t)depth;
-                for (n = 0; n < depth; ++n) {
-                    int32_t value;
-                    unsigned char byte;
-
-                    value = varerr_work[base + n];
-                    if (value < 0) {
-                        value = 0;
-                    } else if (value > VARERR_MAX_VALUE) {
-                        value = VARERR_MAX_VALUE;
-                    }
-                    varerr_work[base + n] = value;
-                    byte = varerr_to_byte(value);
-                    data[base + n] = byte;
-                    varerr_value[n] = value;
-                }
-                tone_index = varerr_tone_from_pixel(data + base, depth);
-                if (methodForDiffuse == SIXEL_DIFFUSE_ZHOUFANG) {
-                    table_index = zhoufang_index_from_byte(
-                        (unsigned char)tone_index);
-                } else {
-                    table_index = tone_index;
-                }
-                color_index = f_lookup(data + base, depth, palette,
-                                       reqcolor, indextable,
-                                       complexion);
-                result[pos] = color_index;
-                for (n = 0; n < depth; ++n) {
-                    size_t idx;
-                    int32_t target;
-                    int32_t error_scaled;
-
-                    idx = base + n;
-                    target = varerr_from_byte(
-                                palette[color_index * depth + n]);
-                    error_scaled = varerr_value[n] - target;
-                    varerr_work[idx] = target;
-                    varerr_diffuse(varerr_work + n, width, height,
-                                   x, y, depth, error_scaled,
-                                   table_index, direction);
-                }
-            }
-        }
         *ncolors = reqcolor;
     }
 
-    return SIXEL_OK;
+    status = SIXEL_OK;
+
+end:
+    free(carry_next);
+    free(carry_curr);
+    return status;
 }
 
 
@@ -1984,7 +2325,7 @@ apply_palette_fixed(
     int depth,
     unsigned char *palette,
     int reqcolor,
-    int serpentine,
+    int methodForScan,
     int foptimize_palette,
     int (*f_lookup)(const unsigned char *pixel,
                     int depth,
@@ -1997,6 +2338,17 @@ apply_palette_fixed(
     unsigned char new_palette[],
     unsigned short migration_map[],
     int *ncolors,
+    int methodForDiffuse,
+    int methodForCarry)
+{
+#if _MSC_VER
+    enum { max_channels = 4 };
+#else
+    const int max_channels = 4;
+#endif
+    SIXELSTATUS status = SIXEL_FALSE;
+    int serpentine;
+    int y;
     void (*f_diffuse)(unsigned char *data,
                       int width,
                       int height,
@@ -2004,114 +2356,233 @@ apply_palette_fixed(
                       int y,
                       int depth,
                       int offset,
-                      int direction))
-{
-    int y;
+                      int direction);
+    diffuse_fixed_carry_mode f_diffuse_carry;
+    int use_carry;
+    size_t carry_len;
+    int32_t *carry_curr = NULL;
+    int32_t *carry_next = NULL;
+    int32_t *carry_far = NULL;
+    unsigned char corrected[max_channels];
+    int32_t accum_scaled[max_channels];
+
+    if (depth > max_channels) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    use_carry = (methodForCarry == SIXEL_CARRY_ENABLE);
+    carry_len = 0;
+
+    if (depth != 3) {
+        f_diffuse = diffuse_none;
+        f_diffuse_carry = diffuse_none_carry;
+        use_carry = 0;
+    } else {
+        switch (methodForDiffuse) {
+        case SIXEL_DIFFUSE_NONE:
+            f_diffuse = diffuse_none;
+            f_diffuse_carry = diffuse_none_carry;
+            break;
+        case SIXEL_DIFFUSE_ATKINSON:
+            f_diffuse = diffuse_atkinson;
+            f_diffuse_carry = diffuse_atkinson_carry;
+            break;
+        case SIXEL_DIFFUSE_FS:
+            f_diffuse = diffuse_fs;
+            f_diffuse_carry = diffuse_fs_carry;
+            break;
+        case SIXEL_DIFFUSE_JAJUNI:
+            f_diffuse = diffuse_jajuni;
+            f_diffuse_carry = diffuse_jajuni_carry;
+            break;
+        case SIXEL_DIFFUSE_STUCKI:
+            f_diffuse = diffuse_stucki;
+            f_diffuse_carry = diffuse_stucki_carry;
+            break;
+        case SIXEL_DIFFUSE_BURKES:
+            f_diffuse = diffuse_burkes;
+            f_diffuse_carry = diffuse_burkes_carry;
+            break;
+        case SIXEL_DIFFUSE_LSO1:
+            f_diffuse = diffuse_lso1;
+            f_diffuse_carry = diffuse_lso1_carry;
+            break;
+        case SIXEL_DIFFUSE_OSTROMOUKHOV:
+        case SIXEL_DIFFUSE_ZHOUFANG:
+            f_diffuse = diffuse_none;
+            f_diffuse_carry = diffuse_none_carry;
+            break;
+        default:
+            quant_trace(stderr,
+                        "Internal error: invalid methodForDiffuse: %d\n",
+                        methodForDiffuse);
+            f_diffuse = diffuse_none;
+            f_diffuse_carry = diffuse_none_carry;
+            break;
+        }
+    }
+
+    if (use_carry) {
+        carry_len = (size_t)width * (size_t)depth;
+        if (carry_len > 0) {
+            carry_curr = (int32_t *)calloc(carry_len, sizeof(int32_t));
+            if (carry_curr == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+            carry_next = (int32_t *)calloc(carry_len, sizeof(int32_t));
+            if (carry_next == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+            carry_far = (int32_t *)calloc(carry_len, sizeof(int32_t));
+            if (carry_far == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+        } else {
+            use_carry = 0;
+        }
+    }
+
+    serpentine = (methodForScan == SIXEL_SCAN_SERPENTINE);
 
     if (foptimize_palette) {
-        int x;
-
         *ncolors = 0;
         memset(new_palette, 0x00,
                (size_t)SIXEL_PALETTE_MAX * (size_t)depth);
         memset(migration_map, 0x00,
                sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);
-        for (y = 0; y < height; ++y) {
-            int start;
-            int end;
-            int step;
-            int direction;
+    } else {
+        *ncolors = reqcolor;
+    }
 
-            if (serpentine && (y & 1)) {
-                direction = -1;
-                start = width - 1;
-                end = -1;
-                step = -1;
+    for (y = 0; y < height; ++y) {
+        int start;
+        int end;
+        int step;
+        int direction;
+        int x;
+
+        scanline_params(serpentine, y, width,
+                        &start, &end, &step, &direction);
+        for (x = start; x != end; x += step) {
+            int pos;
+            size_t base;
+            size_t carry_base;
+            const unsigned char *source_pixel;
+            int color_index;
+            int output_index;
+            int n;
+
+            pos = y * width + x;
+            base = (size_t)pos * (size_t)depth;
+            carry_base = (size_t)x * (size_t)depth;
+            if (use_carry) {
+                for (n = 0; n < depth; ++n) {
+                    int64_t accum;
+                    int64_t clamped;
+
+                    accum = ((int64_t)data[base + n]
+                             << VARERR_SCALE_SHIFT)
+                           + carry_curr[carry_base + (size_t)n];
+                    if (accum < INT32_MIN) {
+                        accum = INT32_MIN;
+                    } else if (accum > INT32_MAX) {
+                        accum = INT32_MAX;
+                    }
+                    accum_scaled[n] = (int32_t)accum;
+                    clamped = accum;
+                    if (clamped < 0) {
+                        clamped = 0;
+                    } else if (clamped > VARERR_MAX_VALUE) {
+                        clamped = VARERR_MAX_VALUE;
+                    }
+                    corrected[n]
+                        = (unsigned char)((clamped + VARERR_ROUND)
+                                          >> VARERR_SCALE_SHIFT);
+                    data[base + n] = corrected[n];
+                    carry_curr[carry_base + (size_t)n] = 0;
+                }
+                source_pixel = corrected;
             } else {
-                direction = 1;
-                start = 0;
-                end = width;
-                step = 1;
+                source_pixel = data + base;
             }
-            for (x = start; x != end; x += step) {
-                int pos;
-                size_t base;
-                int n;
-                int color_index;
 
-                pos = y * width + x;
-                base = (size_t)pos * (size_t)depth;
-                color_index = f_lookup(data + base, depth, palette,
-                                       reqcolor, indextable,
-                                       complexion);
+            color_index = f_lookup(source_pixel, depth, palette,
+                                   reqcolor, indextable,
+                                   complexion);
+
+            if (foptimize_palette) {
                 if (migration_map[color_index] == 0) {
-                    result[pos] = *ncolors;
+                    output_index = *ncolors;
                     for (n = 0; n < depth; ++n) {
-                        new_palette[*ncolors * depth + n]
+                        new_palette[output_index * depth + n]
                             = palette[color_index * depth + n];
                     }
                     ++*ncolors;
                     migration_map[color_index] = *ncolors;
                 } else {
-                    result[pos] = migration_map[color_index] - 1;
+                    output_index = migration_map[color_index] - 1;
                 }
-                for (n = 0; n < depth; ++n) {
-                    int offset;
-
-                    offset = (int)data[base + n]
-                           - (int)palette[color_index * depth + n];
-                    f_diffuse(data + n, width, height, x, y,
-                              depth, offset, direction);
-                }
-            }
-        }
-        memcpy(palette, new_palette, (size_t)(*ncolors * depth));
-    } else {
-        int x;
-
-        for (y = 0; y < height; ++y) {
-            int start;
-            int end;
-            int step;
-            int direction;
-
-            if (serpentine && (y & 1)) {
-                direction = -1;
-                start = width - 1;
-                end = -1;
-                step = -1;
+                result[pos] = output_index;
             } else {
-                direction = 1;
-                start = 0;
-                end = width;
-                step = 1;
+                output_index = color_index;
+                result[pos] = output_index;
             }
-            for (x = start; x != end; x += step) {
-                int pos;
-                size_t base;
-                int n;
-                int color_index;
 
-                pos = y * width + x;
-                base = (size_t)pos * (size_t)depth;
-                color_index = f_lookup(data + base, depth, palette,
-                                       reqcolor, indextable,
-                                       complexion);
-                result[pos] = color_index;
-                for (n = 0; n < depth; ++n) {
+            for (n = 0; n < depth; ++n) {
+                int palette_value;
+
+                if (foptimize_palette) {
+                    palette_value = new_palette[output_index * depth + n];
+                } else {
+                    palette_value = palette[color_index * depth + n];
+                }
+                if (use_carry) {
+                    int32_t target_scaled;
+                    int32_t error_scaled;
+
+                    target_scaled = (int32_t)palette_value
+                                  << VARERR_SCALE_SHIFT;
+                    error_scaled = accum_scaled[n] - target_scaled;
+                    f_diffuse_carry(carry_curr, carry_next, carry_far,
+                                    width, height, depth,
+                                    x, y, error_scaled, direction, n);
+                } else {
                     int offset;
 
-                    offset = (int)data[base + n]
-                           - (int)palette[color_index * depth + n];
+                    offset = (int)source_pixel[n] - palette_value;
                     f_diffuse(data + n, width, height, x, y,
                               depth, offset, direction);
                 }
             }
         }
-        *ncolors = reqcolor;
+        if (use_carry) {
+            int32_t *tmp;
+
+            tmp = carry_curr;
+            carry_curr = carry_next;
+            carry_next = carry_far;
+            carry_far = tmp;
+            if (carry_len > 0) {
+                memset(carry_far, 0x00, carry_len * sizeof(int32_t));
+            }
+        }
     }
 
-    return SIXEL_OK;
+    if (foptimize_palette) {
+        memcpy(palette, new_palette, (size_t)(*ncolors * depth));
+    }
+
+    status = SIXEL_OK;
+
+end:
+    free(carry_far);
+    free(carry_next);
+    free(carry_curr);
+    return status;
 }
 
 
@@ -2127,6 +2598,26 @@ diffuse_none(unsigned char *data, int width, int height,
     /* unused */ (void) depth;
     /* unused */ (void) error;
     /* unused */ (void) direction;
+}
+
+
+static void
+diffuse_none_carry(int32_t *carry_curr, int32_t *carry_next,
+                   int32_t *carry_far, int width, int height,
+                   int depth, int x, int y, int32_t error,
+                   int direction, int channel)
+{
+    /* unused */ (void) carry_curr;
+    /* unused */ (void) carry_next;
+    /* unused */ (void) carry_far;
+    /* unused */ (void) width;
+    /* unused */ (void) height;
+    /* unused */ (void) depth;
+    /* unused */ (void) x;
+    /* unused */ (void) y;
+    /* unused */ (void) error;
+    /* unused */ (void) direction;
+    /* unused */ (void) channel;
 }
 
 
@@ -2187,6 +2678,100 @@ diffuse_fs(unsigned char *data, int width, int height,
 
 
 static void
+diffuse_fs_carry(int32_t *carry_curr, int32_t *carry_next,
+                 int32_t *carry_far, int width, int height,
+                 int depth, int x, int y, int32_t error,
+                 int direction, int channel)
+{
+    int forward;
+
+    /* unused */ (void) carry_far;
+    if (error == 0) {
+        return;
+    }
+
+    forward = direction >= 0;
+    if (forward) {
+        if (x + 1 < width) {
+            size_t base;
+            int32_t term;
+
+            base = ((size_t)(x + 1) * (size_t)depth)
+                 + (size_t)channel;
+            term = diffuse_fixed_term(error, 7, 16);
+            carry_curr[base] += term;
+        }
+        if (y + 1 < height) {
+            if (x > 0) {
+                size_t base;
+                int32_t term;
+
+                base = ((size_t)(x - 1) * (size_t)depth)
+                     + (size_t)channel;
+                term = diffuse_fixed_term(error, 3, 16);
+                carry_next[base] += term;
+            }
+            {
+                size_t base;
+                int32_t term;
+
+                base = ((size_t)x * (size_t)depth) + (size_t)channel;
+                term = diffuse_fixed_term(error, 5, 16);
+                carry_next[base] += term;
+            }
+            if (x + 1 < width) {
+                size_t base;
+                int32_t term;
+
+                base = ((size_t)(x + 1) * (size_t)depth)
+                     + (size_t)channel;
+                term = diffuse_fixed_term(error, 1, 16);
+                carry_next[base] += term;
+            }
+        }
+    } else {
+        if (x - 1 >= 0) {
+            size_t base;
+            int32_t term;
+
+            base = ((size_t)(x - 1) * (size_t)depth)
+                 + (size_t)channel;
+            term = diffuse_fixed_term(error, 7, 16);
+            carry_curr[base] += term;
+        }
+        if (y + 1 < height) {
+            if (x + 1 < width) {
+                size_t base;
+                int32_t term;
+
+                base = ((size_t)(x + 1) * (size_t)depth)
+                     + (size_t)channel;
+                term = diffuse_fixed_term(error, 3, 16);
+                carry_next[base] += term;
+            }
+            {
+                size_t base;
+                int32_t term;
+
+                base = ((size_t)x * (size_t)depth) + (size_t)channel;
+                term = diffuse_fixed_term(error, 5, 16);
+                carry_next[base] += term;
+            }
+            if (x - 1 >= 0) {
+                size_t base;
+                int32_t term;
+
+                base = ((size_t)(x - 1) * (size_t)depth)
+                     + (size_t)channel;
+                term = diffuse_fixed_term(error, 1, 16);
+                carry_next[base] += term;
+            }
+        }
+    }
+}
+
+
+static void
 diffuse_atkinson(unsigned char *data, int width, int height,
                  int x, int y, int depth, int error, int direction)
 {
@@ -2225,6 +2810,66 @@ diffuse_atkinson(unsigned char *data, int width, int height,
     }
     if (y < height - 2) {
         error_diffuse_fast(data, pos + width * 2, depth, error, 1, 8);
+    }
+}
+
+
+static void
+diffuse_atkinson_carry(int32_t *carry_curr, int32_t *carry_next,
+                       int32_t *carry_far, int width, int height,
+                       int depth, int x, int y, int32_t error,
+                       int direction, int channel)
+{
+    int sign;
+    int32_t term;
+
+    if (error == 0) {
+        return;
+    }
+
+    term = diffuse_fixed_term(error, 1, 8);
+    sign = direction >= 0 ? 1 : -1;
+    if (x + sign >= 0 && x + sign < width) {
+        size_t base;
+
+        base = ((size_t)(x + sign) * (size_t)depth)
+             + (size_t)channel;
+        carry_curr[base] += term;
+    }
+    if (x + sign * 2 >= 0 && x + sign * 2 < width) {
+        size_t base;
+
+        base = ((size_t)(x + sign * 2) * (size_t)depth)
+             + (size_t)channel;
+        carry_curr[base] += term;
+    }
+    if (y + 1 < height) {
+        if (x - sign >= 0 && x - sign < width) {
+            size_t base;
+
+            base = ((size_t)(x - sign) * (size_t)depth)
+                 + (size_t)channel;
+            carry_next[base] += term;
+        }
+        {
+            size_t base;
+
+            base = ((size_t)x * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term;
+        }
+        if (x + sign >= 0 && x + sign < width) {
+            size_t base;
+
+            base = ((size_t)(x + sign) * (size_t)depth)
+                 + (size_t)channel;
+            carry_next[base] += term;
+        }
+    }
+    if (y + 2 < height) {
+        size_t base;
+
+        base = ((size_t)x * (size_t)depth) + (size_t)channel;
+        carry_far[base] += term;
     }
 }
 
@@ -2295,6 +2940,69 @@ diffuse_jajuni(unsigned char *data, int width, int height,
                                   row + (neighbor - x),
                                   depth, error,
                                   row2_weights[i], 48);
+        }
+    }
+}
+
+
+static void
+diffuse_jajuni_carry(int32_t *carry_curr, int32_t *carry_next,
+                     int32_t *carry_far, int width, int height,
+                     int depth, int x, int y, int32_t error,
+                     int direction, int channel)
+{
+    static const int row0_offsets[] = { 1, 2 };
+    static const int row0_weights[] = { 7, 5 };
+    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row1_weights[] = { 3, 5, 7, 5, 3 };
+    static const int row2_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row2_weights[] = { 1, 3, 5, 3, 1 };
+    int sign;
+    int i;
+
+    if (error == 0) {
+        return;
+    }
+
+    sign = direction >= 0 ? 1 : -1;
+    for (i = 0; i < 2; ++i) {
+        int neighbor;
+        int32_t term;
+
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        term = diffuse_fixed_term(error, row0_weights[i], 48);
+        carry_curr[((size_t)neighbor * (size_t)depth)
+                   + (size_t)channel] += term;
+    }
+    if (y + 1 < height) {
+        for (i = 0; i < 5; ++i) {
+            int neighbor;
+            int32_t term;
+
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row1_weights[i], 48);
+            carry_next[((size_t)neighbor * (size_t)depth)
+                       + (size_t)channel] += term;
+        }
+    }
+    if (y + 2 < height) {
+        for (i = 0; i < 5; ++i) {
+            int neighbor;
+            int32_t term;
+
+            neighbor = x + sign * row2_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row2_weights[i], 48);
+            carry_far[((size_t)neighbor * (size_t)depth)
+                      + (size_t)channel] += term;
         }
     }
 }
@@ -2375,6 +3083,72 @@ diffuse_stucki(unsigned char *data, int width, int height,
 
 
 static void
+diffuse_stucki_carry(int32_t *carry_curr, int32_t *carry_next,
+                     int32_t *carry_far, int width, int height,
+                     int depth, int x, int y, int32_t error,
+                     int direction, int channel)
+{
+    static const int row0_offsets[] = { 1, 2 };
+    static const int row0_num[] = { 1, 1 };
+    static const int row0_den[] = { 6, 12 };
+    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row1_num[] = { 1, 1, 1, 1, 1 };
+    static const int row1_den[] = { 24, 12, 6, 12, 24 };
+    static const int row2_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row2_num[] = { 1, 1, 1, 1, 1 };
+    static const int row2_den[] = { 48, 24, 12, 24, 48 };
+    int sign;
+    int i;
+
+    if (error == 0) {
+        return;
+    }
+
+    sign = direction >= 0 ? 1 : -1;
+    for (i = 0; i < 2; ++i) {
+        int neighbor;
+        int32_t term;
+
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        term = diffuse_fixed_term(error, row0_num[i], row0_den[i]);
+        carry_curr[((size_t)neighbor * (size_t)depth)
+                   + (size_t)channel] += term;
+    }
+    if (y + 1 < height) {
+        for (i = 0; i < 5; ++i) {
+            int neighbor;
+            int32_t term;
+
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row1_num[i], row1_den[i]);
+            carry_next[((size_t)neighbor * (size_t)depth)
+                       + (size_t)channel] += term;
+        }
+    }
+    if (y + 2 < height) {
+        for (i = 0; i < 5; ++i) {
+            int neighbor;
+            int32_t term;
+
+            neighbor = x + sign * row2_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row2_num[i], row2_den[i]);
+            carry_far[((size_t)neighbor * (size_t)depth)
+                      + (size_t)channel] += term;
+        }
+    }
+}
+
+
+static void
 diffuse_burkes(unsigned char *data, int width, int height,
                int x, int y, int depth, int error, int direction)
 {
@@ -2427,6 +3201,55 @@ diffuse_burkes(unsigned char *data, int width, int height,
 }
 
 static void
+diffuse_burkes_carry(int32_t *carry_curr, int32_t *carry_next,
+                     int32_t *carry_far, int width, int height,
+                     int depth, int x, int y, int32_t error,
+                     int direction, int channel)
+{
+    static const int row0_offsets[] = { 1, 2 };
+    static const int row0_num[] = { 1, 1 };
+    static const int row0_den[] = { 4, 8 };
+    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row1_num[] = { 1, 1, 1, 1, 1 };
+    static const int row1_den[] = { 16, 8, 4, 8, 16 };
+    int sign;
+    int i;
+
+    /* unused */ (void) carry_far;
+    if (error == 0) {
+        return;
+    }
+
+    sign = direction >= 0 ? 1 : -1;
+    for (i = 0; i < 2; ++i) {
+        int neighbor;
+        int32_t term;
+
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        term = diffuse_fixed_term(error, row0_num[i], row0_den[i]);
+        carry_curr[((size_t)neighbor * (size_t)depth)
+                   + (size_t)channel] += term;
+    }
+    if (y + 1 < height) {
+        for (i = 0; i < 5; ++i) {
+            int neighbor;
+            int32_t term;
+
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row1_num[i], row1_den[i]);
+            carry_next[((size_t)neighbor * (size_t)depth)
+                       + (size_t)channel] += term;
+        }
+    }
+}
+
+static void
 diffuse_lso1(unsigned char *data, int width, int height,
              int x, int y, int depth, int error, int direction)
 {
@@ -2465,6 +3288,58 @@ diffuse_lso1(unsigned char *data, int width, int height,
     }
     if (y < height - 2) {
         error_diffuse_fast(data, pos + width * 2, depth, error, 2, 8);
+    }
+}
+
+
+static void
+diffuse_lso1_carry(int32_t *carry_curr, int32_t *carry_next,
+                   int32_t *carry_far, int width, int height,
+                   int depth, int x, int y, int32_t error,
+                   int direction, int channel)
+{
+    int sign;
+    int32_t edge_term;
+    int32_t center_term;
+    int32_t far_term;
+
+    /* unused */ (void) carry_curr;
+    if (error == 0) {
+        return;
+    }
+
+    sign = direction >= 0 ? 1 : -1;
+    edge_term = diffuse_fixed_term(error, 1, 8);
+    center_term = diffuse_fixed_term(error, 4, 8);
+    far_term = diffuse_fixed_term(error, 2, 8);
+
+    if (y + 1 < height) {
+        if (x - sign >= 0 && x - sign < width) {
+            size_t base;
+
+            base = ((size_t)(x - sign) * (size_t)depth)
+                 + (size_t)channel;
+            carry_next[base] += edge_term;
+        }
+        {
+            size_t base;
+
+            base = ((size_t)x * (size_t)depth) + (size_t)channel;
+            carry_next[base] += center_term;
+        }
+        if (x + sign >= 0 && x + sign < width) {
+            size_t base;
+
+            base = ((size_t)(x + sign) * (size_t)depth)
+                 + (size_t)channel;
+            carry_next[base] += edge_term;
+        }
+    }
+    if (y + 2 < height) {
+        size_t base;
+
+        base = ((size_t)x * (size_t)depth) + (size_t)channel;
+        carry_far[base] += far_term;
     }
 }
 
@@ -2687,6 +3562,7 @@ sixel_quant_apply_palette(
     int               /* in */  reqcolor,
     int               /* in */  methodForDiffuse,
     int               /* in */  methodForScan,
+    int               /* in */  methodForCarry,
     int               /* in */  foptimize,
     int               /* in */  foptimize_palette,
     int               /* in */  complexion,
@@ -2706,22 +3582,15 @@ sixel_quant_apply_palette(
     unsigned short *indextable;
     unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
     unsigned short migration_map[SIXEL_PALETTE_MAX];
-    float (*f_mask) (int x, int y, int c) = NULL;
-    void (*f_diffuse)(unsigned char *data, int width, int height,
-                      int x, int y, int depth, int offset,
-                      int direction);
     int (*f_lookup)(unsigned char const * const pixel,
                     int const depth,
                     unsigned char const * const palette,
                     int const reqcolor,
                     unsigned short * const cachetable,
                     int const complexion);
-    int serpentine;
-    int use_varerr = 0;
-    int32_t *varerr_work = NULL;
-    size_t varerr_count = 0;
-    int32_t varerr_value[max_depth];
-    diffuse_varerr_mode varerr_diffuse = NULL;
+    int use_varerr;
+    int use_positional;
+    int carry_mode;
 
     /* check bad reqcolor */
     if (reqcolor < 1) {
@@ -2739,82 +3608,14 @@ sixel_quant_apply_palette(
      * reference pos + width * 1 - 1, but since these functions are only called
      * when width >= 1, they do not cause underflow.
      */
-    if (depth != 3) {
-        f_diffuse = diffuse_none;
-    } else {
-        switch (methodForDiffuse) {
-        case SIXEL_DIFFUSE_NONE:
-            f_diffuse = diffuse_none;
-            break;
-        case SIXEL_DIFFUSE_ATKINSON:
-            f_diffuse = diffuse_atkinson;
-            break;
-        case SIXEL_DIFFUSE_FS:
-            f_diffuse = diffuse_fs;
-            break;
-        case SIXEL_DIFFUSE_JAJUNI:
-            f_diffuse = diffuse_jajuni;
-            break;
-        case SIXEL_DIFFUSE_STUCKI:
-            f_diffuse = diffuse_stucki;
-            break;
-        case SIXEL_DIFFUSE_BURKES:
-            f_diffuse = diffuse_burkes;
-            break;
-        case SIXEL_DIFFUSE_OSTROMOUKHOV:
-        case SIXEL_DIFFUSE_ZHOUFANG:
-            /* Variable diffusion updates run through diffuse_varerr_accum. */
-            f_diffuse = diffuse_none;
-            break;
-        case SIXEL_DIFFUSE_LSO1:
-            f_diffuse = diffuse_lso1;
-            break;
-        case SIXEL_DIFFUSE_A_DITHER:
-            f_diffuse = diffuse_none;
-            f_mask = mask_a;
-            break;
-        case SIXEL_DIFFUSE_X_DITHER:
-            f_diffuse = diffuse_none;
-            f_mask = mask_x;
-            break;
-        default:
-            quant_trace(stderr, "Internal error: invalid value of"
-                                " methodForDiffuse: %d\n",
-                        methodForDiffuse);
-            f_diffuse = diffuse_none;
-            break;
-        }
-    }
-
-    if (methodForDiffuse == SIXEL_DIFFUSE_ZHOUFANG) {
-        srand((unsigned int)time(NULL));
-    }
-
-    use_varerr = 0;
-    if (depth == 3 &&
-            (methodForDiffuse == SIXEL_DIFFUSE_OSTROMOUKHOV ||
-             methodForDiffuse == SIXEL_DIFFUSE_ZHOUFANG)) {
-        size_t idx;
-
-        varerr_count = (size_t)width * (size_t)height * (size_t)depth;
-        varerr_work = (int32_t *)sixel_allocator_malloc(allocator,
-                            varerr_count * sizeof(int32_t));
-        if (varerr_work == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
-            sixel_helper_set_additional_message(
-                "unable to allocate variable error workspace");
-            goto end;
-        }
-        for (idx = 0; idx < varerr_count; ++idx) {
-            varerr_work[idx] = varerr_from_byte(data[idx]);
-        }
-        use_varerr = 1;
-        if (methodForDiffuse == SIXEL_DIFFUSE_OSTROMOUKHOV) {
-            varerr_diffuse = diffuse_ostromoukhov;
-        } else {
-            varerr_diffuse = diffuse_zhoufang;
-        }
-    }
+    use_varerr = (depth == 3
+                  && (methodForDiffuse == SIXEL_DIFFUSE_OSTROMOUKHOV
+                      || methodForDiffuse == SIXEL_DIFFUSE_ZHOUFANG));
+    use_positional = (methodForDiffuse == SIXEL_DIFFUSE_A_DITHER
+                      || methodForDiffuse == SIXEL_DIFFUSE_X_DITHER);
+    carry_mode = (methodForCarry == SIXEL_CARRY_ENABLE)
+               ? SIXEL_CARRY_ENABLE
+               : SIXEL_CARRY_DISABLE;
 
     f_lookup = NULL;
     if (reqcolor == 2) {
@@ -2851,12 +3652,10 @@ sixel_quant_apply_palette(
         }
     }
 
-    serpentine = (methodForScan == SIXEL_SCAN_SERPENTINE);
-
-    if (f_mask) {
+    if (use_positional) {
         status = apply_palette_positional(result, data, width, height,
                                           depth, palette, reqcolor,
-                                          f_mask, serpentine,
+                                          methodForDiffuse, methodForScan,
                                           foptimize_palette, f_lookup,
                                           indextable, complexion, copy,
                                           new_palette, migration_map,
@@ -2864,19 +3663,20 @@ sixel_quant_apply_palette(
     } else if (use_varerr) {
         status = apply_palette_variable(result, data, width, height,
                                         depth, palette, reqcolor,
-                                        serpentine, foptimize_palette,
+                                        methodForScan, foptimize_palette,
                                         f_lookup, indextable, complexion,
                                         new_palette, migration_map,
-                                        ncolors, varerr_work,
-                                        varerr_value,
-                                        varerr_diffuse, methodForDiffuse);
+                                        ncolors,
+                                        methodForDiffuse,
+                                        carry_mode);
     } else {
         status = apply_palette_fixed(result, data, width, height,
                                      depth, palette, reqcolor,
-                                     serpentine, foptimize_palette,
+                                     methodForScan, foptimize_palette,
                                      f_lookup, indextable, complexion,
                                      new_palette, migration_map,
-                                     ncolors, f_diffuse);
+                                     ncolors, methodForDiffuse,
+                                     carry_mode);
     }
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -2889,10 +3689,6 @@ sixel_quant_apply_palette(
     status = SIXEL_OK;
 
 end:
-    if (use_varerr) {
-        sixel_allocator_free(allocator, varerr_work);
-    }
-
     return status;
 }
 
