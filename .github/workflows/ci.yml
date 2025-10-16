@@ -83,6 +83,14 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y gcc-multilib
 
+    - name: Fix Homebrew taps/cache
+      if: runner.os == 'macOS'
+      run: |
+        brew update-reset
+        rm -f ~/Library/Caches/Homebrew/downloads/* || true
+        brew update -f
+        brew doctor || true
+
     - name: Install lcov (macOS)
       if: runner.os == 'macOS'
       shell: bash
@@ -361,7 +369,7 @@ jobs:
 #        &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Upload to Coveralls (per-flag, parallel)
-      if: ${{ runner.os != 'Windows' }}
+      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-13' }}
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
