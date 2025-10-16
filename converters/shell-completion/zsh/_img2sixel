@@ -38,6 +38,14 @@ _scantype() {
     'serpentine[alternate direction on each line]'
 }
 
+_carrytype() {
+  _values \
+    'CARRYTYPE' \
+    'auto[choose carry mode automatically (default)]' \
+    'direct[write error back to pixel data immediately]' \
+    'carry[accumulate error in workspace buffers before applying]'
+}
+
 _findtype() {
   _values \
     'FINDTYPE' \
@@ -149,6 +157,7 @@ _arguments -S -s -A "-*" -S \
   {-S,--static}'[render animated GIF as a static image]' \
   {-d,--diffusion=}'[choose diffusion method which used with -p option]':diffusiontype:_diffusiontype \
   {-y,--diffusion-scan=}'[choose scan order for diffusion]':scantype:_scantype \
+  {-Y,--diffusion-carry=}'[control carry buffers for diffusion]':carrytype:_carrytype \
   {-f,--find-largest=}'[method for finding the largest dimension in median-cut]':findtype:_findtype \
   {-s,--select-color=}'[method for selecting color from median-cut boxes]':selecttype:_selecttype \
   {-c,--crop=}'[crop image to specified geometory(%dx%d+%d+%d)]' \

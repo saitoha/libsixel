@@ -326,6 +326,7 @@ sixel_dither_new(
     (*ppdither)->method_for_rep = SIXEL_REP_CENTER_BOX;
     (*ppdither)->method_for_diffuse = SIXEL_DIFFUSE_FS;
     (*ppdither)->method_for_scan = SIXEL_SCAN_AUTO;
+    (*ppdither)->method_for_carry = SIXEL_CARRY_AUTO;
     (*ppdither)->quality_mode = quality_mode;
     (*ppdither)->requested_quality_mode = quality_mode;
     (*ppdither)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -634,11 +635,27 @@ sixel_dither_set_diffusion_scan(
     sixel_dither_t  /* in */ *dither,
     int             /* in */ method_for_scan)
 {
-    if (method_for_scan != SIXEL_SCAN_SERPENTINE &&
-            method_for_scan != SIXEL_SCAN_AUTO) {
+    if (method_for_scan != SIXEL_SCAN_AUTO &&
+            method_for_scan != SIXEL_SCAN_RASTER &&
+            method_for_scan != SIXEL_SCAN_SERPENTINE) {
         method_for_scan = SIXEL_SCAN_RASTER;
     }
     dither->method_for_scan = method_for_scan;
+}
+
+
+/* set carry buffer mode for diffusion */
+SIXELAPI void
+sixel_dither_set_diffusion_carry(
+    sixel_dither_t  /* in */ *dither,
+    int             /* in */ method_for_carry)
+{
+    if (method_for_carry != SIXEL_CARRY_AUTO &&
+            method_for_carry != SIXEL_CARRY_DISABLE &&
+            method_for_carry != SIXEL_CARRY_ENABLE) {
+        method_for_carry = SIXEL_CARRY_AUTO;
+    }
+    dither->method_for_carry = method_for_carry;
 }
 
 
@@ -753,6 +770,7 @@ sixel_dither_apply_palette(
     sixel_index_t *dest = NULL;
     int ncolors;
     int method_for_scan;
+    int method_for_carry;
     unsigned char *normalized_pixels = NULL;
     unsigned char *input_pixels;
 
@@ -831,6 +849,23 @@ sixel_dither_apply_palette(
                                          : SIXEL_SCAN_RASTER;
     }
 
+    method_for_carry = dither->method_for_carry;
+    if (method_for_carry == SIXEL_CARRY_AUTO) {
+        int enable_carry = 0;
+
+        if (dither->quality_mode == SIXEL_QUALITY_HIGH ||
+                dither->quality_mode == SIXEL_QUALITY_FULL ||
+                dither->quality_mode == SIXEL_QUALITY_HIGHCOLOR) {
+            enable_carry = 1;
+        }
+        if (dither->method_for_diffuse == SIXEL_DIFFUSE_OSTROMOUKHOV ||
+                dither->method_for_diffuse == SIXEL_DIFFUSE_ZHOUFANG) {
+            enable_carry = 1;
+        }
+        method_for_carry = enable_carry ? SIXEL_CARRY_ENABLE
+                                        : SIXEL_CARRY_DISABLE;
+    }
+
     status = sixel_quant_apply_palette(dest,
                                        input_pixels,
                                        width, height, 3,
@@ -838,6 +873,7 @@ sixel_dither_apply_palette(
                                        dither->ncolors,
                                        dither->method_for_diffuse,
                                        method_for_scan,
+                                       method_for_carry,
                                        dither->optimized,
                                        dither->optimize_palette,
                                        dither->complexion,

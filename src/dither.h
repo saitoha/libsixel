@@ -41,6 +41,7 @@ struct sixel_dither {
     int method_for_rep;             /* method for choosing a color from the box */
     int method_for_diffuse;         /* method for diffusing */
     int method_for_scan;            /* scan order for diffusing */
+    int method_for_carry;           /* carry buffer mode for diffusion */
     int quality_mode;               /* quality of histogram */
     int requested_quality_mode;     /* original quality mode request */
     int keycolor;                   /* background color */

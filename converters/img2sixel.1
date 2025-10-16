@@ -115,6 +115,17 @@ raster -> left-to-right scan on every line
 .br
 serpentine -> alternate direction on each line
 .TP 5
+.B \-Y \fICARRYTYPE\fP, \-\-diffusion\-carry=\fICARRYTYPE\fP
+control carry buffers used during diffusion.
+.br
+\fICARRYTYPE\fP is one of them:
+.br
+auto   -> choose carry mode automatically (default)
+.br
+direct -> write error back to pixel data immediately
+.br
+carry  -> accumulate error in workspace buffers before applying
+.TP 5
 .B \-f \fIFINDTYPE\fP, \-\-find\-largest=\fIFINDTYPE\fP
 choose method for finding the largest dimension of median
 cut boxes for splitting, make sense only when -p option
