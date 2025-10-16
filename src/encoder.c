@@ -1674,6 +1674,7 @@ sixel_encoder_encode_frame(
     /* evaluate -d option: set method for diffusion */
     sixel_dither_set_diffusion_type(dither, encoder->method_for_diffuse);
     sixel_dither_set_diffusion_scan(dither, encoder->method_for_scan);
+    sixel_dither_set_diffusion_carry(dither, encoder->method_for_carry);
 
     /* evaluate -C option: set complexion score */
     if (encoder->complexion > 1) {
@@ -1861,6 +1862,7 @@ sixel_encoder_new(
     (*ppencoder)->builtin_palette       = 0;
     (*ppencoder)->method_for_diffuse    = SIXEL_DIFFUSE_AUTO;
     (*ppencoder)->method_for_scan       = SIXEL_SCAN_AUTO;
+    (*ppencoder)->method_for_carry      = SIXEL_CARRY_AUTO;
     (*ppencoder)->method_for_largest    = SIXEL_LARGE_AUTO;
     (*ppencoder)->method_for_rep        = SIXEL_REP_AUTO;
     (*ppencoder)->quality_mode          = SIXEL_QUALITY_AUTO;
@@ -2191,6 +2193,20 @@ sixel_encoder_setopt(
         } else {
             sixel_helper_set_additional_message(
                 "specified diffusion scan is not supported.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        break;
+    case SIXEL_OPTFLAG_DIFFUSION_CARRY:  /* Y */
+        if (strcmp(value, "auto") == 0) {
+            encoder->method_for_carry = SIXEL_CARRY_AUTO;
+        } else if (strcmp(value, "direct") == 0) {
+            encoder->method_for_carry = SIXEL_CARRY_DISABLE;
+        } else if (strcmp(value, "carry") == 0) {
+            encoder->method_for_carry = SIXEL_CARRY_ENABLE;
+        } else {
+            sixel_helper_set_additional_message(
+                "specified diffusion carry mode is not supported.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }

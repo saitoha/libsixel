@@ -39,6 +39,7 @@ struct sixel_encoder {
     int builtin_palette;
     int method_for_diffuse;
     int method_for_scan;
+    int method_for_carry;
     int method_for_largest;
     int method_for_rep;
     int quality_mode;

@@ -57,6 +57,12 @@ _img2sixel()
                                    serpentine' -- "$cur" ) )
         return 0
         ;;
+    -Y|--diffusion-carry)
+        COMPREPLY=( $( compgen -W 'auto \
+                                   direct \
+                                   carry' -- "$cur" ) )
+        return 0
+        ;;
     -f|--find-largest)
         COMPREPLY=( $( compgen -W 'auto \
                                    norm \
@@ -157,6 +163,7 @@ _img2sixel()
                                    -S --static \
                                    -d --diffusion \
                                    -y --diffusion-scan \
+                                   -Y --diffusion-carry \
                                    -f --find-largest \
                                    -s --select-color \
                                    -c --crop \
