@@ -83,6 +83,14 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y gcc-multilib
 
+    - name: Fix Homebrew taps/cache
+      if: runner.os == 'macOS'
+      run: |
+        brew update-reset
+        rm -f ~/Library/Caches/Homebrew/downloads/* || true
+        brew update -f
+        brew doctor || true
+
     - name: Install lcov (macOS)
       if: runner.os == 'macOS'
       shell: bash
