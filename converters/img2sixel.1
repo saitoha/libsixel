@@ -100,9 +100,13 @@ x_dither -> positionally stable arithmetic xor based dither
 .br
 lso1     -> libsixel's original method
 .br
-ostromoukhov -> Ostromoukhov variable error diffusion
+lso2     -> libsixel method based on variable error diffusion tables,
 .br
-zhoufang -> Zhou Fang variable error diffusion
+            optimized for size
+.br
+lso3     -> libsixel method based on variable error diffusion
+.br
+            tables + jitter, optimized for image quality
 .TP 5
 .B \-y \fISCANTYPE\fP, \-\-diffusion\-scan=\fISCANTYPE\fP
 choose scan order for error diffusion.
