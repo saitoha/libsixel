@@ -836,34 +836,12 @@ sixel_dither_apply_palette(
 
     method_for_scan = dither->method_for_scan;
     if (method_for_scan == SIXEL_SCAN_AUTO) {
-        int use_serpentine = 0;
-
-        if (dither->requested_quality_mode == SIXEL_QUALITY_HIGH) {
-            use_serpentine = 1;
-        }
-        if (dither->method_for_diffuse == SIXEL_DIFFUSE_OSTROMOUKHOV ||
-                dither->method_for_diffuse == SIXEL_DIFFUSE_ZHOUFANG) {
-            use_serpentine = 1;
-        }
-        method_for_scan = use_serpentine ? SIXEL_SCAN_SERPENTINE
-                                         : SIXEL_SCAN_RASTER;
+        method_for_scan = SIXEL_SCAN_RASTER;
     }
 
     method_for_carry = dither->method_for_carry;
     if (method_for_carry == SIXEL_CARRY_AUTO) {
-        int enable_carry = 0;
-
-        if (dither->quality_mode == SIXEL_QUALITY_HIGH ||
-                dither->quality_mode == SIXEL_QUALITY_FULL ||
-                dither->quality_mode == SIXEL_QUALITY_HIGHCOLOR) {
-            enable_carry = 1;
-        }
-        if (dither->method_for_diffuse == SIXEL_DIFFUSE_OSTROMOUKHOV ||
-                dither->method_for_diffuse == SIXEL_DIFFUSE_ZHOUFANG) {
-            enable_carry = 1;
-        }
-        method_for_carry = enable_carry ? SIXEL_CARRY_ENABLE
-                                        : SIXEL_CARRY_DISABLE;
+        method_for_carry = SIXEL_CARRY_DISABLE;
     }
 
     status = sixel_quant_apply_palette(dest,

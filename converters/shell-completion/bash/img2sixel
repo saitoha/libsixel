@@ -47,8 +47,8 @@ _img2sixel()
                                    a_dither \
                                    x_dither \
                                    lso1 \
-                                   ostromoukhov \
-                                   zhoufang' -- "$cur" ) )
+                                   lso2 \
+                                   lso3' -- "$cur" ) )
         return 0
         ;;
     -y|--diffusion-scan)

@@ -26,8 +26,8 @@ _diffusiontype() {
     'a_dither[positionally stable arithmetic dither]' \
     'x_dither[positionally stable arithmetic xor based dither]' \
     'lso1[libsixel original diffusion method]' \
-    'ostromoukhov[Ostromoukhov variable error diffusion]' \
-    'zhoufang[Zhou Fang variable error diffusion]'
+    'lso2[libsixel method based on variable error diffusion]' \
+    'lso3[libsixel method based on variable error diffusion + jitter]'
 }
 
 _scantype() {

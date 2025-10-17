@@ -96,6 +96,7 @@
 #include "tty.h"
 #include "encoder.h"
 #include "output.h"
+#include "dither.h"
 #include "frame.h"
 #include "rgblookup.h"
 
@@ -505,6 +506,98 @@ end:
 
 
 /* returns dithering context object with specified builtin palette */
+typedef struct palette_conversion {
+    unsigned char *original;
+    unsigned char *copy;
+    size_t size;
+    int convert_inplace;
+    int converted;
+    int frame_colorspace;
+} palette_conversion_t;
+
+static SIXELSTATUS
+sixel_encoder_convert_palette(sixel_encoder_t *encoder,
+                              sixel_output_t *output,
+                              sixel_dither_t *dither,
+                              int frame_colorspace,
+                              int pixelformat,
+                              palette_conversion_t *ctx)
+{
+    SIXELSTATUS status = SIXEL_OK;
+    unsigned char *palette;
+    int palette_colors;
+
+    ctx->original = NULL;
+    ctx->copy = NULL;
+    ctx->size = 0;
+    ctx->convert_inplace = 0;
+    ctx->converted = 0;
+    ctx->frame_colorspace = frame_colorspace;
+
+    palette = sixel_dither_get_palette(dither);
+    palette_colors = sixel_dither_get_num_of_palette_colors(dither);
+    ctx->original = palette;
+
+    if (palette == NULL || palette_colors <= 0 ||
+            frame_colorspace == output->colorspace) {
+        return SIXEL_OK;
+    }
+
+    ctx->size = (size_t)palette_colors * 3;
+
+    output->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    output->source_colorspace = frame_colorspace;
+
+    if (palette != (unsigned char *)(dither + 1)) {
+        ctx->copy = (unsigned char *)sixel_allocator_malloc(
+            encoder->allocator, ctx->size);
+        if (ctx->copy == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_convert_palette: "
+                "sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        memcpy(ctx->copy, palette, ctx->size);
+        dither->palette = ctx->copy;
+    } else {
+        ctx->convert_inplace = 1;
+    }
+
+    status = sixel_output_convert_colorspace(output,
+                                             dither->palette,
+                                             ctx->size);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    ctx->converted = 1;
+
+end:
+    output->pixelformat = pixelformat;
+    output->source_colorspace = frame_colorspace;
+
+    return status;
+}
+
+static void
+sixel_encoder_restore_palette(sixel_encoder_t *encoder,
+                              sixel_dither_t *dither,
+                              palette_conversion_t *ctx)
+{
+    if (ctx->copy) {
+        dither->palette = ctx->original;
+        sixel_allocator_free(encoder->allocator, ctx->copy);
+        ctx->copy = NULL;
+    } else if (ctx->convert_inplace && ctx->converted &&
+               ctx->original && ctx->size > 0) {
+        (void)sixel_helper_convert_colorspace(ctx->original,
+                                              ctx->size,
+                                              SIXEL_PIXELFORMAT_RGB888,
+                                              SIXEL_COLORSPACE_GAMMA,
+                                              ctx->frame_colorspace);
+    }
+}
+
 static SIXELSTATUS
 sixel_prepare_builtin_palette(
     sixel_dither_t /* out */ **dither,
@@ -981,10 +1074,9 @@ sixel_encoder_output_without_macro(
     int pixelformat = 0;
     size_t size;
     int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
-    unsigned char *palette = NULL;
-    int palette_colors = 0;
-    size_t palette_size = 0;
-    int palette_converted = 0;
+    palette_conversion_t palette_ctx;
+
+    memset(&palette_ctx, 0, sizeof(palette_ctx));
 #if defined(HAVE_CLOCK) || defined(HAVE_CLOCK_WIN)
     sixel_clock_t last_clock;
 #endif
@@ -1086,22 +1178,14 @@ sixel_encoder_output_without_macro(
         goto end;
     }
 
-    palette = sixel_dither_get_palette(dither);
-    palette_colors = sixel_dither_get_num_of_palette_colors(dither);
-    if (palette && palette_colors > 0 &&
-            frame_colorspace != output->colorspace) {
-        palette_size = (size_t)palette_colors * 3;
-        output->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        output->source_colorspace = frame_colorspace;
-        status = sixel_output_convert_colorspace(output,
-                                                 palette,
-                                                 palette_size);
-        output->pixelformat = pixelformat;
-        output->source_colorspace = frame_colorspace;
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        palette_converted = 1;
+    status = sixel_encoder_convert_palette(encoder,
+                                           output,
+                                           dither,
+                                           frame_colorspace,
+                                           pixelformat,
+                                           &palette_ctx);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     status = sixel_encode(p, width, height, depth, dither, output);
@@ -1110,13 +1194,7 @@ sixel_encoder_output_without_macro(
     }
 
 end:
-    if (palette_converted) {
-        (void)sixel_helper_convert_colorspace(palette,
-                                              palette_size,
-                                              SIXEL_PIXELFORMAT_RGB888,
-                                              SIXEL_COLORSPACE_GAMMA,
-                                              frame_colorspace);
-    }
+    sixel_encoder_restore_palette(encoder, dither, &palette_ctx);
     output->pixelformat = pixelformat;
     output->source_colorspace = frame_colorspace;
     sixel_allocator_free(encoder->allocator, p);
@@ -1147,16 +1225,15 @@ sixel_encoder_output_with_macro(
     size_t size = 0;
     int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
     unsigned char *converted = NULL;
-    unsigned char *palette = NULL;
-    int palette_colors = 0;
-    size_t palette_size = 0;
-    int palette_converted = 0;
+    palette_conversion_t palette_ctx;
 #if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
     int delay;
 #endif
 #if defined(HAVE_CLOCK) || defined(HAVE_CLOCK_WIN)
     sixel_clock_t last_clock;
 #endif
+
+    memset(&palette_ctx, 0, sizeof(palette_ctx));
 
 #if defined(HAVE_CLOCK)
     if (output->last_clock == 0) {
@@ -1201,22 +1278,14 @@ sixel_encoder_output_with_macro(
         goto end;
     }
 
-    palette = sixel_dither_get_palette(dither);
-    palette_colors = sixel_dither_get_num_of_palette_colors(dither);
-    if (palette && palette_colors > 0 &&
-            frame_colorspace != output->colorspace) {
-        palette_size = (size_t)palette_colors * 3;
-        output->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        output->source_colorspace = frame_colorspace;
-        status = sixel_output_convert_colorspace(output,
-                                                 palette,
-                                                 palette_size);
-        output->pixelformat = pixelformat;
-        output->source_colorspace = frame_colorspace;
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        palette_converted = 1;
+    status = sixel_encoder_convert_palette(encoder,
+                                           output,
+                                           dither,
+                                           frame_colorspace,
+                                           pixelformat,
+                                           &palette_ctx);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     if (sixel_frame_get_loop_no(frame) == 0) {
@@ -1319,13 +1388,7 @@ sixel_encoder_output_with_macro(
     }
 
 end:
-    if (palette_converted) {
-        (void)sixel_helper_convert_colorspace(palette,
-                                              palette_size,
-                                              SIXEL_PIXELFORMAT_RGB888,
-                                              SIXEL_COLORSPACE_GAMMA,
-                                              frame_colorspace);
-    }
+    sixel_encoder_restore_palette(encoder, dither, &palette_ctx);
     output->pixelformat = pixelformat;
     output->source_colorspace = frame_colorspace;
     sixel_allocator_free(encoder->allocator, converted);
@@ -2054,12 +2117,12 @@ sixel_encoder_setopt(
             encoder->method_for_diffuse = SIXEL_DIFFUSE_A_DITHER;
         } else if (strcmp(value, "x_dither") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_X_DITHER;
-        } else if (strcmp(value, "ostromoukhov") == 0) {
-            encoder->method_for_diffuse = SIXEL_DIFFUSE_OSTROMOUKHOV;
-        } else if (strcmp(value, "zhoufang") == 0) {
-            encoder->method_for_diffuse = SIXEL_DIFFUSE_ZHOUFANG;
         } else if (strcmp(value, "lso1") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_LSO1;
+        } else if (strcmp(value, "lso2") == 0) {
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_LSO2;
+        } else if (strcmp(value, "lso3") == 0) {
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_LSO3;
         } else {
             sixel_helper_set_additional_message(
                 "specified diffusion method is not supported.");
