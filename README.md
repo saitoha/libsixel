@@ -410,10 +410,13 @@ Options:
                              x_dither -> positionally stable
                                          arithmetic xor based dither
                              lso1     -> libsixel's original method
-                             ostromoukhov -> Ostromoukhov variable
-                                             error diffusion
-                             zhoufang -> Zhou Fang variable error
-                                         diffusion
+                             lso2     -> libsixel method based on
+                                         variable error diffusion
+                                         tables, optimized for size
+                             lso3     -> libsixel method based on
+                                         variable error diffusion
+                                         tables + jitter, optimized
+                                         for image quality
 -y SCANTYPE, --diffusion-scan=SCANTYPE
                            choose scan order for error diffusion
                            SCANTYPE is one of them:
