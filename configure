@@ -712,6 +712,10 @@ HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE
 APPLE_QUICKLOOK_OBJCFLAGS
 APPLE_QUICKLOOK_REGISTER_LIBS
 APPLE_QUICKLOOK_EXTENSION_LIBS
+HAVE_QUICKLOOK_THUMBNAILING_FALSE
+HAVE_QUICKLOOK_THUMBNAILING_TRUE
+QUICKLOOK_LIBS
+QUICKLOOK_CFLAGS
 COREGRAPHICS_LIBS
 COREGRAPHICS_CFLAGS
 GDK_PIXBUF_LIBS
@@ -892,6 +896,7 @@ with_gdk_pixbuf2
 with_gd
 with_coregraphics
 enable_quicklook_extension
+enable_quicklook_preview
 with_libcurl
 with_jpeg
 with_png
@@ -1594,6 +1599,9 @@ Optional Features:
   --disable-sixel2png     disable building the sixel2png utility (default: no)
   --enable-quicklook-extension
                           build the macOS Quick Look extension (default: auto)
+  --enable-quicklook-preview
+                          use macOS Quick Look for preview extraction
+                          (default: auto)
   --enable-simd           enable SS2 and NEON (default: auto)
   --enable-wiccodec       build WIC codec DLL (default: auto)
   --enable-register-dll   register WIC codec DLL during install (default: no,
@@ -16330,6 +16338,16 @@ esac
 fi
 
 
+# Check whether --enable-quicklook-preview was given.
+if test ${enable_quicklook_preview+y}
+then :
+  enableval=$enable_quicklook_preview; enable_quicklook_preview=$enableval
+else case e in #(
+  e) enable_quicklook_preview=auto ;;
+esac
+fi
+
+
 
 # Check whether --with-libcurl was given.
 if test ${with_libcurl+y}
@@ -18582,6 +18600,142 @@ fi
 
 
 
+QUICKLOOK_LIBS=""
+QUICKLOOK_CFLAGS=""
+have_quicklook_preview=no
+have_quicklook_thumbnailing=no
+case $host_os in
+  darwin*)
+    if test x$enable_quicklook_preview != xno; then
+        if test x$have_coregraphics != xyes; then
+            if test x$enable_quicklook_preview = xyes; then
+                as_fn_error $? "Quick Look preview requires CoreGraphics support" "$LINENO" 5
+            fi
+        else
+            saved_LIBS="$LIBS"
+            LIBS="$LIBS -framework QuickLook -framework CoreServices \
+                  -framework ApplicationServices -framework CoreGraphics"
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <CoreServices/CoreServices.h>
+#include <QuickLook/QuickLook.h>
+#include <CoreGraphics/CoreGraphics.h>
+int
+main (void)
+{
+CGSize size = CGSizeMake(1.0f, 1.0f);
+CGImageRef image = QLThumbnailImageCreate(NULL, NULL, size, NULL);
+if (image) {
+    CGImageRelease(image);
+}
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  have_quicklook_preview=yes
+else case e in #(
+  e) have_quicklook_preview=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+            LIBS="$saved_LIBS"
+            if test x$have_quicklook_preview = xyes; then
+
+printf "%s\n" "#define HAVE_QUICKLOOK 1" >>confdefs.h
+
+                QUICKLOOK_LIBS="-framework QuickLook -framework CoreServices \
+                                -framework ApplicationServices \
+                                -framework CoreGraphics"
+                QUICKLOOK_CFLAGS=""
+                loaders="${loaders} quicklook"
+                LIBS_PRIVATE="$LIBS_PRIVATE $QUICKLOOK_LIBS"
+                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: quicklook libs is ${QUICKLOOK_LIBS}" >&5
+printf "%s\n" "$as_me: quicklook libs is ${QUICKLOOK_LIBS}" >&6;}
+                ac_ext=m
+ac_cpp='$OBJCPP $CPPFLAGS'
+ac_compile='$OBJC -c $OBJCFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$OBJC -o conftest$ac_exeext $OBJCFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_objc_compiler_gnu
+
+                saved_LIBS_OBJC="$LIBS"
+                added_OBJC_LIBS="-framework QuickLookThumbnailing \
+                                   -framework UniformTypeIdentifiers \
+                                   -framework Foundation"
+                LIBS="$LIBS $added_OBJC_LIBS"
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#import <Foundation/Foundation.h>
+#import <QuickLookThumbnailing/QuickLookThumbnailing.h>
+int
+main (void)
+{
+@autoreleasepool {
+    NSURL *url = [NSURL fileURLWithPath:@"/"];
+    CGSize size = CGSizeMake(16.0f, 16.0f);
+    QLThumbnailGenerationRequest *request =
+        [[QLThumbnailGenerationRequest alloc]
+            initWithFileAtURL:url
+                         size:size
+                        scale:1.0f
+          representationTypes:
+              QLThumbnailGenerationRequestRepresentationTypeThumbnail];
+    [[QLThumbnailGenerator sharedGenerator] cancelRequest:request];
+    [request release];
+} return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_objc_try_link "$LINENO"
+then :
+  have_quicklook_thumbnailing=yes
+else case e in #(
+  e) have_quicklook_thumbnailing=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+                LIBS="$saved_LIBS_OBJC"
+                ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+                if test x$have_quicklook_thumbnailing = xyes; then
+
+printf "%s\n" "#define HAVE_QUICKLOOK_THUMBNAILING 1" >>confdefs.h
+
+                    QUICKLOOK_LIBS="$QUICKLOOK_LIBS $added_OBJC_LIBS"
+                fi
+            elif test x$enable_quicklook_preview = xyes; then
+                as_fn_error $? "unable to find Quick Look framework" "$LINENO" 5
+            fi
+        fi
+    fi
+    ;;
+  *)
+    if test x$enable_quicklook_preview = xyes; then
+        as_fn_error $? "Quick Look preview requires macOS" "$LINENO" 5
+    fi
+    ;;
+esac
+
+
+
+ if test x$have_quicklook_thumbnailing = xyes; then
+  HAVE_QUICKLOOK_THUMBNAILING_TRUE=
+  HAVE_QUICKLOOK_THUMBNAILING_FALSE='#'
+else
+  HAVE_QUICKLOOK_THUMBNAILING_TRUE='#'
+  HAVE_QUICKLOOK_THUMBNAILING_FALSE=
+fi
+
+
 APPLE_QUICKLOOK_EXTENSION_LIBS=""
 APPLE_QUICKLOOK_REGISTER_LIBS=""
 APPLE_QUICKLOOK_OBJCFLAGS="-fobjc-arc -fmodules"
@@ -18644,8 +18798,7 @@ ac_compiler_gnu=$ac_cv_objc_compiler_gnu
         added_LIBS="$added_LIBS -framework CoreGraphics "
         added_LIBS="$added_LIBS -framework ImageIO "
         LIBS="$LIBS $added_LIBS"
-
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #import <Foundation/Foundation.h>
@@ -21928,6 +22081,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${COND_TESTS_TRUE}" && test -z "${COND_TESTS_FALSE}"; then
   as_fn_error $? "conditional \"COND_TESTS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_QUICKLOOK_THUMBNAILING_TRUE}" && test -z "${HAVE_QUICKLOOK_THUMBNAILING_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_QUICKLOOK_THUMBNAILING\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE}" && test -z "${HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE}"; then

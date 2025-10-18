@@ -90,6 +90,9 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__append_1 = \
+@HAVE_QUICKLOOK_THUMBNAILING_TRUE@                $(srcdir)/quicklook_thumbnailing.m
+
 @COND_TESTS_TRUE@noinst_PROGRAMS = tests$(EXEEXT)
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -140,7 +143,25 @@ am__DEPENDENCIES_1 =
 libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
+am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
+	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/quant.c \
+	$(srcdir)/quant.h $(srcdir)/dither.c $(srcdir)/dither.h \
+	$(srcdir)/colorspace.c $(srcdir)/colorspace.h \
+	$(srcdir)/frame.c $(srcdir)/frame.h $(srcdir)/pixelformat.c \
+	$(srcdir)/pixelformat.h $(srcdir)/scale.c $(srcdir)/chunk.c \
+	$(srcdir)/chunk.h $(srcdir)/loader.c $(srcdir)/loader.h \
+	$(srcdir)/frompnm.c $(srcdir)/frompnm.h $(srcdir)/fromgif.c \
+	$(srcdir)/fromgif.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
+	$(srcdir)/decoder.c $(srcdir)/decoder.h $(srcdir)/stb_image.h \
+	$(srcdir)/writer.c $(srcdir)/writer.h \
+	$(srcdir)/stb_image_write.c $(srcdir)/stb_image_write.h \
+	$(srcdir)/status.c $(srcdir)/status.h $(srcdir)/malloc_stub.c \
+	$(srcdir)/malloc_stub.h $(srcdir)/allocator.c \
+	$(srcdir)/allocator.h $(srcdir)/tty.c $(srcdir)/tty.h \
+	$(srcdir)/rgblookup.h $(srcdir)/quicklook_thumbnailing.m
+@HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__objects_1 = libsixel_la-quicklook_thumbnailing.lo
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-fromsixel.lo libsixel_la-tosixel.lo \
 	libsixel_la-quant.lo libsixel_la-dither.lo \
@@ -151,15 +172,15 @@ am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-encoder.lo libsixel_la-decoder.lo \
 	libsixel_la-writer.lo libsixel_la-stb_image_write.lo \
 	libsixel_la-status.lo libsixel_la-malloc_stub.lo \
-	libsixel_la-allocator.lo libsixel_la-tty.lo
+	libsixel_la-allocator.lo libsixel_la-tty.lo $(am__objects_1)
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-libsixel_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libsixel_la_CFLAGS) \
-	$(CFLAGS) $(libsixel_la_LDFLAGS) $(LDFLAGS) -o $@
+libsixel_la_LINK = $(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(OBJCLD) $(AM_OBJCFLAGS) \
+	$(OBJCFLAGS) $(libsixel_la_LDFLAGS) $(LDFLAGS) -o $@
 am__tests_SOURCES_DIST = $(srcdir)/tests.c
 @COND_TESTS_TRUE@am_tests_OBJECTS = tests-tests.$(OBJEXT)
 tests_OBJECTS = $(am_tests_OBJECTS)
@@ -197,6 +218,7 @@ am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-output.Plo \
 	./$(DEPDIR)/libsixel_la-pixelformat.Plo \
 	./$(DEPDIR)/libsixel_la-quant.Plo \
+	./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo \
 	./$(DEPDIR)/libsixel_la-scale.Plo \
 	./$(DEPDIR)/libsixel_la-status.Plo \
 	./$(DEPDIR)/libsixel_la-stb_image_write.Plo \
@@ -222,8 +244,27 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
+OBJCCOMPILE = $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS)
+LTOBJCCOMPILE = $(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_OBJCFLAGS) $(OBJCFLAGS)
+AM_V_OBJC = $(am__v_OBJC_@AM_V@)
+am__v_OBJC_ = $(am__v_OBJC_@AM_DEFAULT_V@)
+am__v_OBJC_0 = @echo "  OBJC    " $@;
+am__v_OBJC_1 = 
+OBJCLD = $(OBJC)
+OBJCLINK = $(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(OBJCLD) $(AM_OBJCFLAGS) $(OBJCFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_OBJCLD = $(am__v_OBJCLD_@AM_V@)
+am__v_OBJCLD_ = $(am__v_OBJCLD_@AM_DEFAULT_V@)
+am__v_OBJCLD_0 = @echo "  OBJCLD  " $@;
+am__v_OBJCLD_1 = 
 SOURCES = $(libsixel_la_SOURCES) $(tests_SOURCES)
-DIST_SOURCES = $(libsixel_la_SOURCES) $(am__tests_SOURCES_DIST)
+DIST_SOURCES = $(am__libsixel_la_SOURCES_DIST) \
+	$(am__tests_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -347,6 +388,8 @@ PYTHON_EXEC_PREFIX = @PYTHON_EXEC_PREFIX@
 PYTHON_PLATFORM = @PYTHON_PLATFORM@
 PYTHON_PREFIX = @PYTHON_PREFIX@
 PYTHON_VERSION = @PYTHON_VERSION@
+QUICKLOOK_CFLAGS = @QUICKLOOK_CFLAGS@
+QUICKLOOK_LIBS = @QUICKLOOK_LIBS@
 RANLIB = @RANLIB@
 REQUIRES_PRIVATE = @REQUIRES_PRIVATE@
 RUBY = @RUBY@
@@ -436,49 +479,22 @@ zshcompletiondir = @zshcompletiondir@
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 lib_LTLIBRARIES = libsixel.la
-libsixel_la_SOURCES = \
-		$(srcdir)/output.c \
-		$(srcdir)/output.h \
-		$(srcdir)/fromsixel.c \
-		$(srcdir)/tosixel.c \
-		$(srcdir)/quant.c \
-		$(srcdir)/quant.h \
-		$(srcdir)/dither.c \
-		$(srcdir)/dither.h \
-		$(srcdir)/colorspace.c \
-		$(srcdir)/colorspace.h \
-		$(srcdir)/frame.c \
-		$(srcdir)/frame.h \
-		$(srcdir)/pixelformat.c \
-		$(srcdir)/pixelformat.h \
-		$(srcdir)/scale.c \
-		$(srcdir)/chunk.c \
-		$(srcdir)/chunk.h \
-		$(srcdir)/loader.c \
-		$(srcdir)/loader.h \
-		$(srcdir)/frompnm.c \
-		$(srcdir)/frompnm.h \
-		$(srcdir)/fromgif.c \
-		$(srcdir)/fromgif.h \
-		$(srcdir)/encoder.c \
-		$(srcdir)/encoder.h \
-		$(srcdir)/decoder.c \
-		$(srcdir)/decoder.h \
-		$(srcdir)/stb_image.h \
-		$(srcdir)/writer.c \
-		$(srcdir)/writer.h \
-		$(srcdir)/stb_image_write.c \
-		$(srcdir)/stb_image_write.h \
-		$(srcdir)/status.c \
-		$(srcdir)/status.h \
-		$(srcdir)/malloc_stub.c \
-		$(srcdir)/malloc_stub.h \
-		$(srcdir)/allocator.c \
-		$(srcdir)/allocator.h \
-		$(srcdir)/tty.c \
-		$(srcdir)/tty.h \
-		$(srcdir)/rgblookup.h
-
+libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
+	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/quant.c \
+	$(srcdir)/quant.h $(srcdir)/dither.c $(srcdir)/dither.h \
+	$(srcdir)/colorspace.c $(srcdir)/colorspace.h \
+	$(srcdir)/frame.c $(srcdir)/frame.h $(srcdir)/pixelformat.c \
+	$(srcdir)/pixelformat.h $(srcdir)/scale.c $(srcdir)/chunk.c \
+	$(srcdir)/chunk.h $(srcdir)/loader.c $(srcdir)/loader.h \
+	$(srcdir)/frompnm.c $(srcdir)/frompnm.h $(srcdir)/fromgif.c \
+	$(srcdir)/fromgif.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
+	$(srcdir)/decoder.c $(srcdir)/decoder.h $(srcdir)/stb_image.h \
+	$(srcdir)/writer.c $(srcdir)/writer.h \
+	$(srcdir)/stb_image_write.c $(srcdir)/stb_image_write.h \
+	$(srcdir)/status.c $(srcdir)/status.h $(srcdir)/malloc_stub.c \
+	$(srcdir)/malloc_stub.h $(srcdir)/allocator.c \
+	$(srcdir)/allocator.h $(srcdir)/tty.c $(srcdir)/tty.h \
+	$(srcdir)/rgblookup.h $(am__append_1)
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS) \
                        -D_POSIX_SOURCE \
                        -D_POSIX_C_SOURCE=199309L
@@ -491,7 +507,8 @@ libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(GDK_PIXBUF_CFLAGS) \
 		$(GD_CFLAGS) \
 		$(WIC_CFLAGS) \
-		$(COREGRAPHICS_CFLAGS)
+		$(COREGRAPHICS_CFLAGS) \
+		$(QUICKLOOK_CFLAGS)
 
 libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION)
 libsixel_la_LIBADD = -lm \
@@ -502,7 +519,8 @@ libsixel_la_LIBADD = -lm \
 		$(GDK_PIXBUF_LIBS) \
 		$(GD_LIBS) \
 		$(WIC_LIBS) \
-		$(COREGRAPHICS_LIBS)
+		$(COREGRAPHICS_LIBS) \
+		$(QUICKLOOK_LIBS)
 
 @COND_TESTS_TRUE@tests_SOURCES = $(srcdir)/tests.c
 @COND_TESTS_TRUE@tests_CPPFLAGS = -I$(top_builddir)/include/ \
@@ -516,7 +534,7 @@ GPERF_OPT = --ignore-case --language=ANSI-C
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .lo .o .obj
+.SUFFIXES: .c .lo .m .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -585,7 +603,7 @@ clean-libLTLIBRARIES:
 	$(am__rm_f) $${locs}
 
 libsixel.la: $(libsixel_la_OBJECTS) $(libsixel_la_DEPENDENCIES) $(EXTRA_libsixel_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libsixel_la_LINK) -rpath $(libdir) $(libsixel_la_OBJECTS) $(libsixel_la_LIBADD) $(LIBS)
+	$(AM_V_OBJCLD)$(libsixel_la_LINK) -rpath $(libdir) $(libsixel_la_OBJECTS) $(libsixel_la_LIBADD) $(LIBS)
 
 tests$(EXEEXT): $(tests_OBJECTS) $(tests_DEPENDENCIES) $(EXTRA_tests_DEPENDENCIES) 
 	@rm -f tests$(EXEEXT)
@@ -612,6 +630,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-output.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-pixelformat.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quant.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-scale.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-status.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-stb_image_write.Plo@am__quote@ # am--include-marker
@@ -811,6 +830,37 @@ tests-tests.obj: tests.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -c -o tests-tests.obj `if test -f 'tests.c'; then $(CYGPATH_W) 'tests.c'; else $(CYGPATH_W) '$(srcdir)/tests.c'; fi`
 
+.m.o:
+@am__fastdepOBJC_TRUE@	$(AM_V_OBJC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepOBJC_TRUE@	$(OBJCCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepOBJC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	$(AM_V_OBJC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(OBJCCOMPILE) -c -o $@ $<
+
+.m.obj:
+@am__fastdepOBJC_TRUE@	$(AM_V_OBJC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepOBJC_TRUE@	$(OBJCCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+@am__fastdepOBJC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	$(AM_V_OBJC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(OBJCCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+.m.lo:
+@am__fastdepOBJC_TRUE@	$(AM_V_OBJC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepOBJC_TRUE@	$(LTOBJCCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepOBJC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	$(AM_V_OBJC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LTOBJCCOMPILE) -c -o $@ $<
+
+libsixel_la-quicklook_thumbnailing.lo: quicklook_thumbnailing.m
+@am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libsixel_la-quicklook_thumbnailing.lo -MD -MP -MF $(DEPDIR)/libsixel_la-quicklook_thumbnailing.Tpo -c -o libsixel_la-quicklook_thumbnailing.lo `test -f 'quicklook_thumbnailing.m' || echo '$(srcdir)/'`quicklook_thumbnailing.m
+@am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-quicklook_thumbnailing.Tpo $(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	$(AM_V_OBJC)source='quicklook_thumbnailing.m' object='libsixel_la-quicklook_thumbnailing.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libsixel_la-quicklook_thumbnailing.lo `test -f 'quicklook_thumbnailing.m' || echo '$(srcdir)/'`quicklook_thumbnailing.m
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -1004,6 +1054,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-pixelformat.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quant.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-status.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-stb_image_write.Plo
@@ -1071,6 +1122,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-pixelformat.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quant.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-status.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-stb_image_write.Plo
