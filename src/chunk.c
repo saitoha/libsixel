@@ -837,7 +837,7 @@ test1(void)
     unsigned char *ptr = malloc(16);
 
 #ifdef HAVE_LIBCURL
-    sixel_chunk_t chunk = {0, 0, 0, NULL};
+    sixel_chunk_t chunk = {0, 0, 0, NULL, NULL};
     int nread;
 
     nread = memory_write(NULL, 1, 1, NULL);
