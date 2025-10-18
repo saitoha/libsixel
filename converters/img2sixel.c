@@ -231,6 +231,8 @@ void show_help(void)
             "                             lum  -> transforming into\n"
             "                                     luminosities before the\n"
             "                                     comparison\n"
+            );
+    fprintf(stdout,
             "-s SELECTTYPE, --select-color=SELECTTYPE\n"
             "                           choose the method for selecting\n"
             "                           representative color from each\n"
