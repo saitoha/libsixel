@@ -15546,9 +15546,7 @@ else
 fi
 
 
-case $host_os in #(
-  darwin*) :
-    ac_ext=m
+ac_ext=m
 ac_cpp='$OBJCPP $CPPFLAGS'
 ac_compile='$OBJC -c $OBJCFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$OBJC -o conftest$ac_exeext $OBJCFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
@@ -15951,19 +15949,7 @@ else
   am__fastdepOBJC_FALSE=
 fi
 
- ;; #(
-  *) :
-     if false; then
-  am__fastdepOBJC_TRUE=
-  am__fastdepOBJC_FALSE='#'
-else
-  am__fastdepOBJC_TRUE='#'
-  am__fastdepOBJC_FALSE=
-fi
- ;; #(
-  *) :
-     ;;
-esac
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -22068,10 +22054,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${am__fastdepOBJC_TRUE}" && test -z "${am__fastdepOBJC_FALSE}"; then
-  as_fn_error $? "conditional \"am__fastdepOBJC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepOBJC_TRUE}" && test -z "${am__fastdepOBJC_FALSE}"; then
