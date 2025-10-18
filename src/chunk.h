@@ -31,6 +31,7 @@ typedef struct sixel_chunk
     size_t size;
     size_t max_size;
     sixel_allocator_t *allocator;
+    char *source_path;
 } sixel_chunk_t;
 
 #ifdef __cplusplus

@@ -56,6 +56,10 @@ libsixel_la_SOURCES = \
 		$(srcdir)/tty.c \
 		$(srcdir)/tty.h \
 		$(srcdir)/rgblookup.h
+if HAVE_QUICKLOOK_THUMBNAILING
+libsixel_la_SOURCES += \
+                $(srcdir)/quicklook_thumbnailing.m
+endif
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS) \
                        -D_POSIX_SOURCE \
                        -D_POSIX_C_SOURCE=199309L
@@ -67,7 +71,8 @@ libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(GDK_PIXBUF_CFLAGS) \
 		$(GD_CFLAGS) \
 		$(WIC_CFLAGS) \
-		$(COREGRAPHICS_CFLAGS)
+		$(COREGRAPHICS_CFLAGS) \
+		$(QUICKLOOK_CFLAGS)
 libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION)
 libsixel_la_LIBADD = -lm \
 		$(LIBCURL_LIBS) \
@@ -77,7 +82,8 @@ libsixel_la_LIBADD = -lm \
 		$(GDK_PIXBUF_LIBS) \
 		$(GD_LIBS) \
 		$(WIC_LIBS) \
-		$(COREGRAPHICS_LIBS)
+		$(COREGRAPHICS_LIBS) \
+		$(QUICKLOOK_LIBS)
 
 if COND_TESTS
 noinst_PROGRAMS = tests

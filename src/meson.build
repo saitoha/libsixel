@@ -43,6 +43,10 @@ srcs = [
   'tty.c',
 ]
 
+if have_quicklook_thumbnailing
+  srcs += ['quicklook_thumbnailing.m']
+endif
+
 lt_soversion = ls_lt_current - ls_lt_age
 lt_version = '@0@.@1@.@2@'.format(lt_soversion, ls_lt_age, ls_lt_revision)
 

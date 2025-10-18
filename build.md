@@ -45,6 +45,7 @@ or provide the desired directory path explicitly.
 | `--disable-img2sixel` | disabled (builds by default) | Skip building the `img2sixel` CLI tool. |
 | `--disable-sixel2png` | disabled (builds by default) | Skip building the `sixel2png` CLI tool. |
 | `--enable-quicklook-extension` | `auto` | Build the macOS Quick Look extension bundle (requires macOS ≥ 10.15). |
+| `--enable-quicklook-preview` | `auto` | Use macOS Quick Look to render previews for non-image inputs. |
 | `--with-coregraphics[=auto]` | `auto` | Use CoreGraphics for macOS-only rendering helpers. |
 | `--with-libcurl[=auto]` | `auto` | Link against libcurl to enable network transfers. |
 | `--with-jpeg[=auto]` | `auto` | Link against libjpeg to decode JPEG input. |
@@ -65,6 +66,14 @@ or provide the desired directory path explicitly.
 | `--enable-debug` | `no` | Enable debug macros and apply extra diagnostic compiler flags. |
 | `--enable-gcov` | `no` | Compile with gcov coverage instrumentation. |
 | `--enable-tests` | `no` | Build the optional test suites. |
+
+#### macOS Quick Look preview
+
+When the Quick Look preview feature is enabled (the default on macOS builds),
+`img2sixel` falls back to macOS Quick Look APIs to rasterize non-image inputs
+such as PDF or SVG files before encoding them to SIXEL. Use the
+`--disable-quicklook-preview` configure flag or `-Dquicklook_preview=disabled`
+in Meson to turn this behavior off.
 
 #### macOS Quick Look extension
 
@@ -120,6 +129,7 @@ meson setup builddir
 | `-Dgd=` | feature, `disabled` | Enable helpers based on the GD image library. |
 | `-Dcoregraphics=` | feature, `auto` | Use the CoreGraphics framework on macOS. |
 | `-Dquicklook_extension=` | feature, `auto` | Build the macOS Quick Look extension bundle. |
+| `-Dquicklook_preview=` | feature, `auto` | Use macOS Quick Look to render previews for non-image inputs. |
 | `-Dwic=` | feature, `auto` | Use Windows Imaging Component (WIC) libraries. |
 | `-Dwiccodec=` | feature, `auto` | Build the Windows WIC codec DLL. |
 | `-Dregister_dll=` | boolean, `false` | Register the WIC codec DLL during `meson install` (requires admin rights). |

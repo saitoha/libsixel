@@ -62,6 +62,15 @@
 # include <ApplicationServices/ApplicationServices.h>
 # include <ImageIO/ImageIO.h>
 #endif  /* HAVE_COREGRAPHICS */
+#if HAVE_QUICKLOOK
+# include <CoreServices/CoreServices.h>
+# include <QuickLook/QuickLook.h>
+#endif  /* HAVE_QUICKLOOK */
+
+#if HAVE_QUICKLOOK_THUMBNAILING
+CGImageRef
+sixel_quicklook_thumbnail_create(CFURLRef url, CGSize max_size);
+#endif
 
 #if !defined(HAVE_MEMCPY)
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
@@ -1368,7 +1377,7 @@ end:
 }
 #endif  /* HAVE_GDK_PIXBUF2 */
 
-#ifdef HAVE_COREGRAPHICS
+#if HAVE_COREGRAPHICS
 static SIXELSTATUS
 load_with_coregraphics(
     sixel_chunk_t const       /* in */     *pchunk,
@@ -1603,6 +1612,246 @@ end:
     return status;
 }
 #endif  /* HAVE_COREGRAPHICS */
+
+#if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
+static SIXELSTATUS
+load_with_quicklook(
+    sixel_chunk_t const       /* in */     *pchunk,
+    int                       /* in */     fstatic,
+    int                       /* in */     fuse_palette,
+    int                       /* in */     reqcolors,
+    unsigned char             /* in */     *bgcolor,
+    int                       /* in */     loop_control,
+    sixel_load_image_function /* in */     fn_load,
+    void                      /* in/out */ *context)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_frame_t *frame = NULL;
+    CFStringRef path = NULL;
+    CFURLRef url = NULL;
+    CGImageRef image = NULL;
+    CGColorSpaceRef color_space = NULL;
+    CGContextRef ctx = NULL;
+    CGRect bounds;
+    size_t stride;
+    unsigned char fill_color[3];
+    CGFloat fill_r;
+    CGFloat fill_g;
+    CGFloat fill_b;
+
+    (void)fstatic;
+    (void)fuse_palette;
+    (void)reqcolors;
+    (void)loop_control;
+
+    if (pchunk == NULL || pchunk->source_path == NULL) {
+        goto end;
+    }
+
+    status = sixel_frame_new(&frame, pchunk->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    path = CFStringCreateWithCString(kCFAllocatorDefault,
+                                     pchunk->source_path,
+                                     kCFStringEncodingUTF8);
+    if (path == NULL) {
+        status = SIXEL_RUNTIME_ERROR;
+        goto end;
+    }
+
+    url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
+                                        path,
+                                        kCFURLPOSIXPathStyle,
+                                        false);
+    if (url == NULL) {
+        status = SIXEL_RUNTIME_ERROR;
+        goto end;
+    }
+
+    CGSize max_size;
+    max_size.width = 1000.0f;
+    max_size.height = 1000.0f;
+#if HAVE_QUICKLOOK_THUMBNAILING
+    image = sixel_quicklook_thumbnail_create(url, max_size);
+    if (image == NULL) {
+# if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wdeprecated-declarations"
+# endif
+        image = QLThumbnailImageCreate(kCFAllocatorDefault,
+                                       url,
+                                       max_size,
+                                       NULL);
+# if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma clang diagnostic pop
+# endif
+    }
+#else
+# if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wdeprecated-declarations"
+# endif
+    image = QLThumbnailImageCreate(kCFAllocatorDefault,
+                                   url,
+                                   max_size,
+                                   NULL);
+# if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma clang diagnostic pop
+# endif
+#endif
+    if (image == NULL) {
+        status = SIXEL_RUNTIME_ERROR;
+        sixel_helper_set_additional_message(
+            "load_with_quicklook: CQLThumbnailImageCreate() failed.");
+        goto end;
+    }
+
+    color_space = CGColorSpaceCreateDeviceRGB();
+    if (color_space == NULL) {
+        status = SIXEL_RUNTIME_ERROR;
+        sixel_helper_set_additional_message(
+            "load_with_quicklook: CGColorSpaceCreateDeviceRGB() failed.");
+        goto end;
+    }
+
+    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    frame->width = (int)CGImageGetWidth(image);
+    frame->height = (int)CGImageGetHeight(image);
+    if (frame->width <= 0 || frame->height <= 0) {
+        status = SIXEL_RUNTIME_ERROR;
+        sixel_helper_set_additional_message(
+            "load_with_quicklook: invalid image size detected.");
+        goto end;
+    }
+
+    stride = (size_t)frame->width * 4;
+    frame->pixels =
+        sixel_allocator_malloc(pchunk->allocator,
+                               (size_t)frame->height * stride);
+    if (frame->pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "load_with_quicklook: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    if (bgcolor != NULL) {
+        fill_color[0] = bgcolor[0];
+        fill_color[1] = bgcolor[1];
+        fill_color[2] = bgcolor[2];
+    } else {
+        fill_color[0] = 255;
+        fill_color[1] = 255;
+        fill_color[2] = 255;
+    }
+
+    ctx = CGBitmapContextCreate(frame->pixels,
+                                frame->width,
+                                frame->height,
+                                8,
+                                stride,
+                                color_space,
+                                kCGImageAlphaPremultipliedLast |
+                                    kCGBitmapByteOrder32Big);
+    if (ctx == NULL) {
+        status = SIXEL_RUNTIME_ERROR;
+        sixel_helper_set_additional_message(
+            "load_with_quicklook: CGBitmapContextCreate() failed.");
+        goto end;
+    }
+
+    bounds = CGRectMake(0,
+                        0,
+                        (CGFloat)frame->width,
+                        (CGFloat)frame->height);
+    fill_r = (CGFloat)fill_color[0] / 255.0f;
+    fill_g = (CGFloat)fill_color[1] / 255.0f;
+    fill_b = (CGFloat)fill_color[2] / 255.0f;
+    CGContextSetRGBFillColor(ctx, fill_r, fill_g, fill_b, 1.0f);
+    CGContextFillRect(ctx, bounds);
+    CGContextDrawImage(ctx, bounds, image);
+    CGContextFlush(ctx);
+
+    /* Abort when Quick Look produced no visible pixels so other loaders run. */
+    {
+        size_t pixel_count;
+        size_t index;
+        unsigned char *pixel;
+        int has_content;
+
+        pixel_count = (size_t)frame->width * (size_t)frame->height;
+        pixel = frame->pixels;
+        has_content = 0;
+        for (index = 0; index < pixel_count; ++index) {
+            if (pixel[0] != fill_color[0] ||
+                    pixel[1] != fill_color[1] ||
+                    pixel[2] != fill_color[2] ||
+                    pixel[3] != 0xff) {
+                has_content = 1;
+                break;
+            }
+            pixel += 4;
+        }
+        if (! has_content) {
+            sixel_helper_set_additional_message(
+                "load_with_quicklook: thumbnail contained no visible pixels.");
+            status = SIXEL_BAD_INPUT;
+            CGContextRelease(ctx);
+            ctx = NULL;
+            goto end;
+        }
+    }
+
+    CGContextRelease(ctx);
+    ctx = NULL;
+
+    frame->delay = 0;
+    frame->frame_no = 0;
+    frame->loop_count = 1;
+    frame->multiframe = 0;
+    frame->transparent = (-1);
+
+    status = sixel_frame_strip_alpha(frame, fill_color);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = fn_load(frame, context);
+    sixel_allocator_free(pchunk->allocator, frame->pixels);
+    frame->pixels = NULL;
+    if (status != SIXEL_OK) {
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    if (ctx != NULL) {
+        CGContextRelease(ctx);
+    }
+    if (color_space != NULL) {
+        CGColorSpaceRelease(color_space);
+    }
+    if (image != NULL) {
+        CGImageRelease(image);
+    }
+    if (url != NULL) {
+        CFRelease(url);
+    }
+    if (path != NULL) {
+        CFRelease(path);
+    }
+    if (frame != NULL) {
+        sixel_allocator_free(pchunk->allocator, frame->pixels);
+        sixel_allocator_free(pchunk->allocator, frame->palette);
+        sixel_allocator_free(pchunk->allocator, frame);
+    }
+
+    return status;
+}
+#endif  /* HAVE_COREGRAPHICS && HAVE_QUICKLOOK */
 
 #if HAVE_GD
 static int
@@ -2380,6 +2629,20 @@ sixel_helper_load_image_file(
         loader_trace_result("coregraphics", status);
     }
 #endif  /* HAVE_COREGRAPHICS */
+#if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
+    if (SIXEL_FAILED(status)) {
+        loader_trace_try("quicklook");
+        status = load_with_quicklook(pchunk,
+                                     fstatic,
+                                     fuse_palette,
+                                     reqcolors,
+                                     bgcolor,
+                                     loop_control,
+                                     fn_load,
+                                     context);
+        loader_trace_result("quicklook", status);
+    }
+#endif  /* HAVE_COREGRAPHICS && HAVE_QUICKLOOK */
 #ifdef HAVE_GDK_PIXBUF2
     if (SIXEL_FAILED(status)) {
         loader_trace_try("gdk-pixbuf2");
