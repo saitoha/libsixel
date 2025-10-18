@@ -97,6 +97,8 @@ sixel_chunk_init(
         goto end;
     }
 
+    pchunk->source_path = NULL;
+
     status = SIXEL_OK;
 
 end:
@@ -113,6 +115,7 @@ sixel_chunk_destroy(
     if (pchunk) {
         allocator = pchunk->allocator;
         sixel_allocator_free(allocator, pchunk->buffer);
+        sixel_allocator_free(allocator, pchunk->source_path);
         sixel_allocator_free(allocator, pchunk);
         sixel_allocator_unref(allocator);
     }
@@ -790,6 +793,23 @@ sixel_chunk_new(
     }
 
     sixel_allocator_ref(allocator);
+
+    if (filename != NULL &&
+        strcmp(filename, "-") != 0 &&
+        strstr(filename, "://") == NULL) {
+        size_t pathlen = strlen(filename);
+        (*ppchunk)->source_path =
+            (char *)sixel_allocator_malloc(allocator, pathlen + 1);
+        if ((*ppchunk)->source_path == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_chunk_new: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            sixel_chunk_destroy(*ppchunk);
+            *ppchunk = NULL;
+            goto end;
+        }
+        memcpy((*ppchunk)->source_path, filename, pathlen + 1);
+    }
 
     if (filename != NULL && strstr(filename, "://")) {
         status = sixel_chunk_from_url(filename, *ppchunk, finsecure);

@@ -25,6 +25,7 @@ option('curl', type: 'feature', value: 'auto', description: 'Use libcurl for net
 option('gdk_pixbuf2', type: 'feature', value: 'disabled', description: 'Use gdk-pixbuf2 loader')
 option('gd', type: 'feature', value: 'disabled', description: 'Use GD image library')
 option('coregraphics', type: 'feature', value: 'auto', description: 'Use CoreGraphics framework')
+option('quicklook_preview', type: 'feature', value: 'auto', description: 'Use macOS Quick Look for preview extraction')
 option('quicklook_extension', type: 'feature', value: 'auto', description: 'Build macOS Quick Look extension bundle')
 option('wic', type: 'feature', value: 'auto', description: 'Use Windows Imaging Component')
 option('wiccodec', type: 'feature', value: 'auto', description: 'Build WIC codec DLL')
