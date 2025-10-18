@@ -141,9 +141,17 @@ AC_ARG_WITH([coregraphics],
 
 AC_ARG_ENABLE([quicklook-extension],
               [AS_HELP_STRING([--enable-quicklook-extension],
-                              [build the macOS Quick Look extension (default: auto)])],
+                              [build the macOS Quick Look extension
+                               (default: auto)])],
               [],
               [enable_quicklook_extension=auto])
+
+AC_ARG_ENABLE([quicklook-preview],
+              [AS_HELP_STRING([--enable-quicklook-preview],
+                              [use macOS Quick Look for preview extraction
+                               (default: auto)])],
+              [enable_quicklook_preview=$enableval],
+              [enable_quicklook_preview=auto])
 
 AC_ARG_WITH([libcurl],
             [AS_HELP_STRING([--with-libcurl],
@@ -564,6 +572,92 @@ if test x$with_coregraphics != xno; then
 fi
 AC_SUBST(COREGRAPHICS_CFLAGS)
 AC_SUBST(COREGRAPHICS_LIBS)
+
+QUICKLOOK_LIBS=""
+QUICKLOOK_CFLAGS=""
+have_quicklook_preview=no
+have_quicklook_thumbnailing=no
+case $host_os in
+  darwin*)
+    if test x$enable_quicklook_preview != xno; then
+        if test x$have_coregraphics != xyes; then
+            if test x$enable_quicklook_preview = xyes; then
+                AC_MSG_ERROR([Quick Look preview requires CoreGraphics support])
+            fi
+        else
+            saved_LIBS="$LIBS"
+            LIBS="$LIBS -framework QuickLook -framework CoreServices \
+                  -framework ApplicationServices -framework CoreGraphics"
+            AC_LINK_IFELSE(
+                [AC_LANG_PROGRAM([[#include <CoreServices/CoreServices.h>
+#include <QuickLook/QuickLook.h>
+#include <CoreGraphics/CoreGraphics.h>]],
+                                 [[CGSize size = CGSizeMake(1.0f, 1.0f);
+CGImageRef image = QLThumbnailImageCreate(NULL, NULL, size, NULL);
+if (image) {
+    CGImageRelease(image);
+}]])],
+                [have_quicklook_preview=yes],
+                [have_quicklook_preview=no])
+            LIBS="$saved_LIBS"
+            if test x$have_quicklook_preview = xyes; then
+                AC_DEFINE(HAVE_QUICKLOOK, 1,
+                          [whether macOS Quick Look is available])
+                QUICKLOOK_LIBS="-framework QuickLook -framework CoreServices \
+                                -framework ApplicationServices \
+                                -framework CoreGraphics"
+                QUICKLOOK_CFLAGS=""
+                loaders="${loaders} quicklook"
+                LIBS_PRIVATE="$LIBS_PRIVATE $QUICKLOOK_LIBS"
+                AC_MSG_NOTICE([quicklook libs is ${QUICKLOOK_LIBS}])
+                AC_LANG_PUSH([Objective C])
+                saved_LIBS_OBJC="$LIBS"
+                added_OBJC_LIBS="-framework QuickLookThumbnailing \
+                                   -framework UniformTypeIdentifiers \
+                                   -framework Foundation"
+                LIBS="$LIBS $added_OBJC_LIBS"
+                AC_LINK_IFELSE(
+                    [AC_LANG_PROGRAM([[#import <Foundation/Foundation.h>
+#import <QuickLookThumbnailing/QuickLookThumbnailing.h>]],
+                                     [[@autoreleasepool {
+    NSURL *url = [NSURL fileURLWithPath:@"/"];
+    CGSize size = CGSizeMake(16.0f, 16.0f);
+    QLThumbnailGenerationRequest *request =
+        [[QLThumbnailGenerationRequest alloc]
+            initWithFileAtURL:url
+                         size:size
+                        scale:1.0f
+          representationTypes:
+              QLThumbnailGenerationRequestRepresentationTypeThumbnail];
+    [[QLThumbnailGenerator sharedGenerator] cancelRequest:request];
+    [request release];
+} return 0;]])],
+                    [have_quicklook_thumbnailing=yes],
+                    [have_quicklook_thumbnailing=no])
+                LIBS="$saved_LIBS_OBJC"
+                AC_LANG_POP([Objective C])
+                if test x$have_quicklook_thumbnailing = xyes; then
+                    AC_DEFINE(HAVE_QUICKLOOK_THUMBNAILING, 1,
+                              [whether macOS Quick Look Thumbnailing is available])
+                    QUICKLOOK_LIBS="$QUICKLOOK_LIBS $added_OBJC_LIBS"
+                fi
+            elif test x$enable_quicklook_preview = xyes; then
+                AC_MSG_ERROR([unable to find Quick Look framework])
+            fi
+        fi
+    fi
+    ;;
+  *)
+    if test x$enable_quicklook_preview = xyes; then
+        AC_MSG_ERROR([Quick Look preview requires macOS])
+    fi
+    ;;
+esac
+
+AC_SUBST(QUICKLOOK_CFLAGS)
+AC_SUBST(QUICKLOOK_LIBS)
+AM_CONDITIONAL([HAVE_QUICKLOOK_THUMBNAILING],
+               [test x$have_quicklook_thumbnailing = xyes])
 
 APPLE_QUICKLOOK_EXTENSION_LIBS=""
 APPLE_QUICKLOOK_REGISTER_LIBS=""

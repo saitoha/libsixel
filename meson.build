@@ -31,6 +31,7 @@ project('libsixel',
 
 host_system = host_machine.system()
 cc = meson.get_compiler('c')
+objc = none
 if add_languages('objc', required: false, native: false)
   objc = meson.get_compiler('objc')
   message('Objective-C compiler found: ' + objc.get_id())
@@ -429,6 +430,66 @@ if host_system == 'darwin'
   endif
 elif cg_opt.enabled()
   error('CoreGraphics support requires macOS')
+endif
+
+quicklook_preview_opt = get_option('quicklook_preview')
+have_quicklook_thumbnailing = false
+if host_system == 'darwin'
+  if not quicklook_preview_opt.disabled()
+    if conf.get('HAVE_COREGRAPHICS', 0) != 1
+      if quicklook_preview_opt.enabled()
+        error('Quick Look preview requires CoreGraphics support')
+      endif
+    else
+      quicklook_modules = ['QuickLook', 'CoreServices', 'ApplicationServices', 'CoreGraphics']
+      quicklook_dep = dependency('appleframeworks',
+        modules: quicklook_modules,
+        required: quicklook_preview_opt.enabled())
+      quicklook_thumb_dep = dependency('appleframeworks',
+        modules: ['QuickLookThumbnailing', 'UniformTypeIdentifiers', 'Foundation'],
+        required: false)
+      if quicklook_dep.found()
+        conf.set('HAVE_QUICKLOOK', 1)
+        deps += quicklook_dep
+        link_libs += quicklook_dep
+        loaders += 'quicklook'
+        if objc != none and quicklook_thumb_dep.found()
+          thumb_test = '''
+            #import <Foundation/Foundation.h>
+            #import <QuickLookThumbnailing/QuickLookThumbnailing.h>
+            int main(void)
+            {
+                @autoreleasepool {
+                    NSURL *url = [NSURL fileURLWithPath:@"/"];
+                    CGSize size = CGSizeMake(16.0f, 16.0f);
+                    QLThumbnailGenerationRequest *request =
+                        [[QLThumbnailGenerationRequest alloc]
+                            initWithFileAtURL:url
+                                         size:size
+                                        scale:1.0f
+                          representationTypes:
+                              QLThumbnailGenerationRequestRepresentationTypeThumbnail];
+                    [[QLThumbnailGenerator sharedGenerator] cancelRequest:request];
+                    [request release];
+                }
+                return 0;
+            }
+          '''
+          if objc.compiles(thumb_test, name: 'quicklook thumbnailing probe',
+                           dependencies: quicklook_thumb_dep)
+            have_quicklook_thumbnailing = true
+            conf.set('HAVE_QUICKLOOK_THUMBNAILING', 1)
+            deps += quicklook_thumb_dep
+            link_libs += quicklook_thumb_dep
+          endif
+        endif
+      elif quicklook_preview_opt.enabled()
+        error('Quick Look preview requested, but required frameworks were not found')
+      endif
+    endif
+  endif
+elif quicklook_preview_opt.enabled()
+  error('Quick Look preview requires macOS')
 endif
 
 quicklook_ext_opt = get_option('quicklook_extension')
