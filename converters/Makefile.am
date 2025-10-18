@@ -36,6 +36,7 @@ img2sixel_SOURCES = $(srcdir)/img2sixel.c \
                     $(srcdir)/getopt_stub.h
 img2sixel_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 img2sixel_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
+img2sixel_LDFLAGS = $(MAYBE_COVERAGE)
 img2sixel_LDADD = $(top_builddir)/src/libsixel.la
 dist_man_MANS += $(srcdir)/img2sixel.1
 dist_bashcompletion_DATA += $(srcdir)/shell-completion/bash/img2sixel
@@ -50,6 +51,7 @@ sixel2png_SOURCES = $(srcdir)/sixel2png.c \
                     $(srcdir)/getopt_stub.h
 sixel2png_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 sixel2png_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
+sixel2png_LDFLAGS = $(MAYBE_COVERAGE)
 sixel2png_LDADD = $(top_builddir)/src/libsixel.la
 dist_man_MANS += $(srcdir)/sixel2png.1
 endif
