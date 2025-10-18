@@ -73,7 +73,11 @@ libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(WIC_CFLAGS) \
 		$(COREGRAPHICS_CFLAGS) \
 		$(QUICKLOOK_CFLAGS)
+if BUILDING_ON_WINDOWS
 libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION)
+else
+libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION)
+endif
 libsixel_la_LIBADD = -lm \
 		$(LIBCURL_LIBS) \
 		$(WINHTTP_LIBS) \
