@@ -1411,6 +1411,7 @@ sixel_encoder_emit_iso2022_chars(
     int num_cols, num_rows;
     SIXELSTATUS status;
     size_t alloc_size;
+    int nwrite;
 
     code = 0x100020 + (is_96cs ? 0x80 : 0) + charset * 0x100;
     num_cols = (sixel_frame_get_width(frame) + encoder->cell_width - 1)
@@ -1455,7 +1456,13 @@ sixel_encoder_emit_iso2022_chars(
     }
     *(buf_p++) = '\017';  /* SO */
 
-    write(encoder->outfd, buf, buf_p - buf);
+    nwrite = write(encoder->outfd, buf, buf_p - buf);
+    if (nwrite != buf_p - buf) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_emit_iso2022_chars: write() failed.");
+        status = SIXEL_RUNTIME_ERROR;
+        goto end;
+    }
 
     sixel_allocator_free(encoder->allocator, buf);
 
@@ -1486,6 +1493,7 @@ sixel_encoder_emit_drcsmmv2_chars(
     int num_cols, num_rows;
     SIXELSTATUS status;
     size_t alloc_size;
+    int nwrite;
 
     code = 0x100020 + (is_96cs ? 0x80 : 0) + charset * 0x100;
     num_cols = (sixel_frame_get_width(frame) + encoder->cell_width - 1)
@@ -1529,7 +1537,13 @@ sixel_encoder_emit_drcsmmv2_chars(
         charset = '0';
         charset++;
     }
-    write(encoder->outfd, buf, buf_p - buf);
+    nwrite = write(encoder->outfd, buf, buf_p - buf);
+    if (nwrite != buf_p - buf) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_emit_drcsmmv2_chars: write() failed.");
+        status = SIXEL_RUNTIME_ERROR;
+        goto end;
+    }
 
     sixel_allocator_free(encoder->allocator, buf);
 
