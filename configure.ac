@@ -572,7 +572,6 @@ if test x$with_coregraphics != xno; then
         COREGRAPHICS_CFLAGS=""
         loaders="${loaders} coregraphics"
         LIBS_PRIVATE="$LIBS_PRIVATE $COREGRAPHICS_LIBS"
-        AC_MSG_NOTICE([coregraphics libs is ${COREGRAPHICS_LIBS}])
     elif test x$with_coregraphics = xyes; then
         AC_MSG_ERROR([unable to find CoreGraphics])
     fi
@@ -616,7 +615,6 @@ if (image) {
                 QUICKLOOK_CFLAGS=""
                 loaders="${loaders} quicklook"
                 LIBS_PRIVATE="$LIBS_PRIVATE $QUICKLOOK_LIBS"
-                AC_MSG_NOTICE([quicklook libs is ${QUICKLOOK_LIBS}])
                 AC_LANG_PUSH([Objective C])
                 saved_LIBS_OBJC="$LIBS"
                 added_OBJC_LIBS="-framework QuickLookThumbnailing \
