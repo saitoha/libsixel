@@ -37,6 +37,17 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
+case "$host_os" in
+  mingw*|msys*|cygwin*)
+      build_windows=yes
+      ;;
+  *)
+      build_windows=no
+      ;;
+esac
+AM_CONDITIONAL([BUILDING_ON_WINDOWS],
+               [test "x$build_windows" = "xyes"])
+
 # Detect Microsoft Visual C compiler
 case "$CC" in
   *cl|*cl.exe|*clang-cl*)
