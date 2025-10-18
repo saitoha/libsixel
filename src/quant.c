@@ -148,15 +148,6 @@ static void diffuse_lso1_carry(int32_t *carry_curr, int32_t *carry_next,
 static const int (*
 lso2_table(void))[7]
 {
-    /*
-     * Coefficients follow Victor Ostromoukhov, "A Simple and Efficient
-     * Error-Diffusion Algorithm", SIGGRAPH 2001
-     * (https://perso.liris.cnrs.fr/victor.ostromoukhov/publications/pdf/
-     *  SIGGRAPH01_varcoeffED.pdf).  Each tuple lists the weights for the
-     * neighbours documented near diffuse_varerr_term().  The fourth element
-     * matches the sum of the first three, preserving the normalization from
-     * the paper.
-     */
 #include "lso2.h"
     return var_coefs;
 }
@@ -1126,21 +1117,6 @@ zhoufang_index_from_byte(unsigned char value)
 }
 
 
-/*
- * Table lookups expect a tone index derived from the pixel luminance.  Each
- * table entry provides weights for the neighbours shown below.  The fourth
- * value is the shared denominator, equal to the sum of the first three.  The
- * downwards coefficient is not used directly; instead we compute the residual
- * error so that rounding matches Ostromoukhov's reference implementation.
- *
- *     forward scan (direction >= 0)             reverse scan (direction < 0)
- *
- *     (x, y)  o----->o     [0] (x+1, y)    (x-1, y) [0]     o<----o  (x, y)
- *                                                                
- *            [1]    [2]                             [2]    [1]
- *      (x-1, y+1)  (x, y+1)                     (x, y+1)  (x+1, y+1)
- */
-
 static int32_t
 diffuse_varerr_term(int32_t error, int weight, int denom)
 {
@@ -1242,11 +1218,7 @@ diffuse_lso2(unsigned char *data, int width, int height,
     term_dl = diffuse_varerr_term(error, entry[2], denom);
     term_d = diffuse_varerr_term(error, entry[3], denom);
     term_dr = diffuse_varerr_term(error, entry[4], denom);
-#if 0
-    term_d2 = error - term_r - term_r2 - term_dl - term_d - term_dr;
-#else
-    term_dr = diffuse_varerr_term(error, entry[5], denom);
-#endif
+    term_d2 = diffuse_varerr_term(error, entry[5], denom);
 
 
     if (direction >= 0) {
@@ -1345,11 +1317,7 @@ diffuse_lso3(unsigned char *data, int width, int height,
     term_dl = diffuse_varerr_term(error, entry[2], denom);
     term_d = diffuse_varerr_term(error, entry[3], denom);
     term_dr = diffuse_varerr_term(error, entry[4], denom);
-#if 0
     term_d2 = error - term_r - term_r2 - term_dl - term_d - term_dr;
-#else
-    term_dr = diffuse_varerr_term(error, entry[5], denom);
-#endif
 
     if (direction >= 0) {
         if (x + 1 < width) {
@@ -1448,11 +1416,7 @@ diffuse_lso2_carry(int32_t *carry_curr, int32_t *carry_next, int32_t *carry_far,
     term_dl = diffuse_varerr_term(error, entry[2], denom);
     term_d = diffuse_varerr_term(error, entry[3], denom);
     term_dr = diffuse_varerr_term(error, entry[4], denom);
-#if 0
     term_d2 = error - term_r - term_r2 - term_dl - term_d - term_dr;
-#else
-    term_dr = diffuse_varerr_term(error, entry[5], denom);
-#endif
 
     if (direction >= 0) {
         if (x + 1 < width) {
@@ -1547,11 +1511,7 @@ diffuse_lso3_carry(int32_t *carry_curr, int32_t *carry_next, int32_t *carry_far,
     term_dl = diffuse_varerr_term(error, entry[2], denom);
     term_d = diffuse_varerr_term(error, entry[3], denom);
     term_dr = diffuse_varerr_term(error, entry[4], denom);
-#if 0
-    term_d2 = error - term_r - term_r2 - term_dl - term_d - term_dr;
-#else
-    term_dr = diffuse_varerr_term(error, entry[5], denom);
-#endif
+    term_d2 = diffuse_varerr_term(error, entry[5], denom);
 
     if (direction >= 0) {
         if (x + 1 < width) {
@@ -1946,7 +1906,7 @@ apply_palette_variable(
                 table_index = diff;
                 if (methodForDiffuse == SIXEL_DIFFUSE_LSO3) {
                     table_index = zhoufang_index_from_byte(
-                        (unsigned char)table_index);
+                        (unsigned char)source_pixel[n]);
                 }
                 if (use_carry) {
                     target_scaled = (int32_t)palette_value
