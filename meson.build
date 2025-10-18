@@ -31,8 +31,8 @@ project('libsixel',
 
 host_system = host_machine.system()
 cc = meson.get_compiler('c')
-objc = none
-if add_languages('objc', required: false, native: false)
+have_objc = add_languages('objc', required: false, native: false)
+if have_objc
   objc = meson.get_compiler('objc')
   message('Objective-C compiler found: ' + objc.get_id())
 else
@@ -453,7 +453,7 @@ if host_system == 'darwin'
         deps += quicklook_dep
         link_libs += quicklook_dep
         loaders += 'quicklook'
-        if objc != none and quicklook_thumb_dep.found()
+        if have_objc and quicklook_thumb_dep.found()
           thumb_test = '''
             #import <Foundation/Foundation.h>
             #import <QuickLookThumbnailing/QuickLookThumbnailing.h>
