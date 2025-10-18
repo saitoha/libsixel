@@ -743,6 +743,8 @@ WANT_IMG2SIXEL_FALSE
 WANT_IMG2SIXEL_TRUE
 USING_CL_FALSE
 USING_CL_TRUE
+BUILDING_ON_WINDOWS_FALSE
+BUILDING_ON_WINDOWS_TRUE
 CPP
 am__fastdepOBJC_FALSE
 am__fastdepOBJC_TRUE
@@ -16146,6 +16148,23 @@ printf "%s\n" "no" >&6; }
 fi
 
 
+case "$host_os" in
+  mingw*|msys*|cygwin*)
+      build_windows=yes
+      ;;
+  *)
+      build_windows=no
+      ;;
+esac
+ if test "x$build_windows" = "xyes"; then
+  BUILDING_ON_WINDOWS_TRUE=
+  BUILDING_ON_WINDOWS_FALSE='#'
+else
+  BUILDING_ON_WINDOWS_TRUE='#'
+  BUILDING_ON_WINDOWS_FALSE=
+fi
+
+
 # Detect Microsoft Visual C compiler
 case "$CC" in
   *cl|*cl.exe|*clang-cl*)
@@ -22057,6 +22076,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepOBJC_TRUE}" && test -z "${am__fastdepOBJC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepOBJC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${BUILDING_ON_WINDOWS_TRUE}" && test -z "${BUILDING_ON_WINDOWS_FALSE}"; then
+  as_fn_error $? "conditional \"BUILDING_ON_WINDOWS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USING_CL_TRUE}" && test -z "${USING_CL_FALSE}"; then
