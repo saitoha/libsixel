@@ -18596,8 +18596,6 @@ printf "%s\n" "#define HAVE_COREGRAPHICS 1" >>confdefs.h
         COREGRAPHICS_CFLAGS=""
         loaders="${loaders} coregraphics"
         LIBS_PRIVATE="$LIBS_PRIVATE $COREGRAPHICS_LIBS"
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: coregraphics libs is ${COREGRAPHICS_LIBS}" >&5
-printf "%s\n" "$as_me: coregraphics libs is ${COREGRAPHICS_LIBS}" >&6;}
     elif test x$with_coregraphics = xyes; then
         as_fn_error $? "unable to find CoreGraphics" "$LINENO" 5
     fi
@@ -18657,8 +18655,6 @@ printf "%s\n" "#define HAVE_QUICKLOOK 1" >>confdefs.h
                 QUICKLOOK_CFLAGS=""
                 loaders="${loaders} quicklook"
                 LIBS_PRIVATE="$LIBS_PRIVATE $QUICKLOOK_LIBS"
-                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: quicklook libs is ${QUICKLOOK_LIBS}" >&5
-printf "%s\n" "$as_me: quicklook libs is ${QUICKLOOK_LIBS}" >&6;}
                 ac_ext=m
 ac_cpp='$OBJCPP $CPPFLAGS'
 ac_compile='$OBJC -c $OBJCFLAGS $CPPFLAGS conftest.$ac_ext >&5'

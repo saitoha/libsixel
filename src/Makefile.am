@@ -74,9 +74,9 @@ libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(COREGRAPHICS_CFLAGS) \
 		$(QUICKLOOK_CFLAGS)
 if BUILDING_ON_WINDOWS
-libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION)
+libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
 else
-libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION)
+libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
 endif
 libsixel_la_LIBADD = -lm \
 		$(LIBCURL_LIBS) \
@@ -95,6 +95,7 @@ tests_SOURCES = $(srcdir)/tests.c
 tests_CPPFLAGS = -I$(top_builddir)/include/ \
 		 -I$(top_builddir)/src/ $(AM_CPPFLAGS)
 tests_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
+tests_LDFLAGS = $(MAYBE_COVERAGE)
 tests_LDADD = $(srcdir)/libsixel.la
 endif
 
