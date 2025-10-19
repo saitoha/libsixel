@@ -206,8 +206,8 @@ SIXEL_OPTFLAG_USE_MACRO        = 'u'  # -u, --use-macro: use DECDMAC and DECINVM
 SIXEL_OPTFLAG_MACRO_NUMBER     = 'n'  # -n MACRONO, --macro-number=MACRONO:
                                       #        specify macro register number
 SIXEL_OPTFLAG_COMPLEXION_SCORE = 'C'  # -C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE:
-                                      #        specify an number argument for the score of
-                                      #        complexion correction.
+                                      #        (deprecated) specify an number argument for the
+                                      #        score of complexion correction.
 SIXEL_OPTFLAG_IGNORE_DELAY     = 'g'  # -g, --ignore-delay: render GIF animation without delay
 SIXEL_OPTFLAG_STATIC           = 'S'  # -S, --static: render animated GIF as a static image
 SIXEL_OPTFLAG_DIFFUSION        = 'd'  # -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE:
@@ -386,7 +386,7 @@ SIXEL_OPTFLAG_BGCOLOR          = 'B'  # -B BGCOLOR, --bgcolor=BGCOLOR:
                                       #          rgb:rrr/ggg/bbb
                                       #          rgb:rrrr/gggg/bbbb
 
-SIXEL_OPTFLAG_PENETRATE        = 'P'  # -P, --penetrate:
+SIXEL_OPTFLAG_PENETRATE        = 'P'  # -P, --penetrate: (deprecated)
                                       #        penetrate GNU Screen using DCS
                                       #        pass-through sequence
 SIXEL_OPTFLAG_DRCS             = '@'  # -@, --drcs: emit DRCSMMv1 tiles instead of

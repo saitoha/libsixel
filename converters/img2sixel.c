@@ -171,8 +171,9 @@ void show_help(void)
             "                           SIXEL image. No image is shown if\n"
             "                           this option is specified\n"
             "-C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE\n"
-            "                           specify an number argument for the\n"
-            "                           score of complexion correction.\n"
+            "                           [[deprecated]] specify an number\n"
+            "                           argument for the score of\n"
+            "                           complexion correction.\n"
             "                           COMPLEXIONSCORE must be 1 or more.\n"
             "-g, --ignore-delay         render GIF animation without delay\n"
             "-S, --static               render animated GIF as a static image\n"
@@ -351,8 +352,8 @@ void show_help(void)
             "                             rgb:rr/gg/bb\n"
             "                             rgb:rrr/ggg/bbb\n"
             "                             rgb:rrrr/gggg/bbbb\n"
-            "-P, --penetrate            penetrate GNU Screen using DCS\n"
-            "                           pass-through sequence\n"
+            "-P, --penetrate            [[deprecated]] penetrate GNU Screen\n"
+            "                           using DCS pass-through sequence\n"
             "-D, --pipe-mode            [[deprecated]] read source images from\n"
             "                           stdin continuously\n"
             "-v, --verbose              show debugging info\n"
@@ -444,12 +445,12 @@ main(int argc, char *argv[])
         {"verbose",            no_argument,        &long_opt, 'v'},
         {"static",             no_argument,        &long_opt, 'S'},
         {"macro-number",       required_argument,  &long_opt, 'n'},
-        {"penetrate",          no_argument,        &long_opt, 'P'},
+        {"penetrate",          no_argument,        &long_opt, 'P'}, /* deprecated */
         {"encode-policy",      required_argument,  &long_opt, 'E'},
         {"output-colorspace",  required_argument,  &long_opt, 'U'},
         {"working-colorspace", required_argument,  &long_opt, 'W'},
         {"bgcolor",            required_argument,  &long_opt, 'B'},
-        {"complexion-score",   required_argument,  &long_opt, 'C'},
+        {"complexion-score",   required_argument,  &long_opt, 'C'}, /* deprecated */
         {"pipe-mode",          no_argument,        &long_opt, 'D'}, /* deprecated */
         {"drcs",               required_argument,  &long_opt, '@'},
         {"mapping-version",    required_argument,  &long_opt, 'M'},

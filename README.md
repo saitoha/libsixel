@@ -388,8 +388,9 @@ Options:
                            SIXEL image. No image is shown if
                            this option is specified
 -C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE
-                           specify an number argument for the
-                           score of complexion correction.
+                           [[deprecated]] specify an number
+                           argument for the score of complexion
+                           correction.
                            COMPLEXIONSCORE must be 1 or more.
 -g, --ignore-delay         render GIF animation without delay
 -S, --static               render animated GIF as a static image
@@ -562,8 +563,8 @@ Options:
                              rgb:rr/gg/bb
                              rgb:rrr/ggg/bbb
                              rgb:rrrr/gggg/bbbb
--P, --penetrate            penetrate GNU Screen using DCS
-                           pass-through sequence
+-P, --penetrate            [[deprecated]] penetrate GNU Screen
+                           using DCS pass-through sequence
 -D, --pipe-mode            [[deprecated]] read source images from
                            stdin continuously
 -v, --verbose              show debugging info
