@@ -141,12 +141,17 @@ _img2sixel()
         _filedir
         return 0
         ;;
+    -T|--tiles)
+        _filedir
+        return 0
+        ;;
     esac
 
     case "$cur" in
     -*)
         COMPREPLY=( $( compgen -W '
                                    -o --outfile \
+                                   -T --tiles \
                                    -7 --7bit-mode \
                                    -8 --8bit-mode \
                                    -R --gri-limit \
