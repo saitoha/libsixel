@@ -141,6 +141,9 @@ void show_help(void)
             "Options:\n"
             "-o, --outfile              specify output file name.\n"
             "                           (default:stdout)\n"
+            "-T PATH, --tiles=PATH      specify output path for DRCS-SIXEL\n"
+            "                           tile characters.\n"
+            "                           use '-' to write to stdout.\n"
             "-7, --7bit-mode            generate a sixel image for 7bit\n"
             "                           terminals or printers (default)\n"
             "-8, --8bit-mode            generate a sixel image for 8bit\n"
@@ -409,10 +412,11 @@ main(int argc, char *argv[])
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    char const *optstring = "o:78Rp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:U:B:C:D@:M:OVW:HY:y:";
+    char const *optstring = "o:T:78Rp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:U:B:C:D@:M:OVW:HY:y:";
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",            required_argument,  &long_opt, 'o'},
+        {"tiles",              required_argument,  &long_opt, 'T'},
         {"7bit-mode",          no_argument,        &long_opt, '7'},
         {"8bit-mode",          no_argument,        &long_opt, '8'},
         {"gri-limit",          no_argument,        &long_opt, 'R'},
@@ -543,7 +547,7 @@ argerr:
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
             "                 [-E encodepolicy] [-@ dscs] [-M mapping-version]\n"
             "                 [-W workingcolorspace] [-U outputcolorspace] [-B bgcolor]\n"
-            "                 [-o outfile] [filename ...]\n"
+            "                 [-T path] [-o outfile] [filename ...]\n"
             "for more details, type: 'img2sixel -H'.\n");
 
 error:
