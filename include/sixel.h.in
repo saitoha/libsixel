@@ -235,8 +235,8 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_MACRO_NUMBER      ('n')  /* -n MACRONO, --macro-number=MACRONO:
                                                   specify macro register number */
 #define SIXEL_OPTFLAG_COMPLEXION_SCORE  ('C')  /* -C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE:
-                                                  specify an number argument for the score of
-                                                  complexion correction. */
+                                                  (deprecated) specify an number argument for the
+                                                  score of complexion correction. */
 #define SIXEL_OPTFLAG_IGNORE_DELAY      ('g')  /* -g, --ignore-delay: render GIF animation without delay */
 #define SIXEL_OPTFLAG_STATIC            ('S')  /* -S, --static: render animated GIF as a static image */
 #define SIXEL_OPTFLAG_DIFFUSION         ('d')  /* -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE:
@@ -450,7 +450,7 @@ typedef int SIXELSTATUS;
                                                     rgb:rrr/ggg/bbb
                                                     rgb:rrrr/gggg/bbbb
                                                 */
-#define SIXEL_OPTFLAG_PENETRATE         ('P')  /* -P, --penetrate:
+#define SIXEL_OPTFLAG_PENETRATE         ('P')  /* -P, --penetrate: (deprecated)
                                                   penetrate GNU Screen using DCS
                                                   pass-through sequence */
 #define SIXEL_OPTFLAG_DRCS              ('@')  /* -@ DSCS, --drcs DSCS:
