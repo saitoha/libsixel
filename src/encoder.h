@@ -75,6 +75,7 @@ struct sixel_encoder {
     int has_gri_arg_limit;
     unsigned char *bgcolor;
     int outfd;
+    int tile_outfd;
     int finsecure;
     int *cancel_flag;
     void *dither_cache;
