@@ -433,20 +433,25 @@ sixel_encoder_ensure_cell_size(sixel_encoder_t *encoder)
 #if defined(TIOCGWINSZ)
     struct winsize ws;
     int result;
+    int fd = 0;
 
     if (encoder->cell_width > 0 && encoder->cell_height > 0) {
         return SIXEL_OK;
     }
 
-#if HAVE_ISATTY
-    if (! isatty(STDIN_FILENO)) {
+#if HAVE__OPEN
+    fd = _open("/dev/tty", O_RDONLY);
+#else
+    fd = open("/dev/tty", O_RDONLY);
+#endif  /* #if HAVE__OPEN */
+    if (fd >= 0) {
+        result = ioctl(fd, TIOCGWINSZ, &ws);
+        close(fd);
+    } else {
         sixel_helper_set_additional_message(
-            "drcs option requires a tty on stdin.");
-        return SIXEL_BAD_ARGUMENT;
+            "failed to open /dev/tty");
+        return (SIXEL_LIBC_ERROR | (errno & 0xff));
     }
-#endif
-
-    result = ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
     if (result != 0) {
         sixel_helper_set_additional_message(
             "failed to query terminal geometry with ioctl().");
@@ -1412,6 +1417,7 @@ sixel_encoder_emit_iso2022_chars(
     SIXELSTATUS status;
     size_t alloc_size;
     int nwrite;
+    int target_fd;
 
     code = 0x100020 + (is_96cs ? 0x80 : 0) + charset * 0x100;
     num_cols = (sixel_frame_get_width(frame) + encoder->cell_width - 1)
@@ -1456,7 +1462,13 @@ sixel_encoder_emit_iso2022_chars(
     }
     *(buf_p++) = '\017';  /* SO */
 
-    nwrite = write(encoder->outfd, buf, buf_p - buf);
+    if (encoder->tile_outfd >= 0) {
+        target_fd = encoder->tile_outfd;
+    } else {
+        target_fd = encoder->outfd;
+    }
+
+    nwrite = write(target_fd, buf, buf_p - buf);
     if (nwrite != buf_p - buf) {
         sixel_helper_set_additional_message(
             "sixel_encoder_emit_iso2022_chars: write() failed.");
@@ -1494,6 +1506,7 @@ sixel_encoder_emit_drcsmmv2_chars(
     SIXELSTATUS status;
     size_t alloc_size;
     int nwrite;
+    int target_fd;
 
     code = 0x100020 + (is_96cs ? 0x80 : 0) + charset * 0x100;
     num_cols = (sixel_frame_get_width(frame) + encoder->cell_width - 1)
@@ -1537,7 +1550,13 @@ sixel_encoder_emit_drcsmmv2_chars(
         charset = '0';
         charset++;
     }
-    nwrite = write(encoder->outfd, buf, buf_p - buf);
+    if (encoder->tile_outfd >= 0) {
+        target_fd = encoder->tile_outfd;
+    } else {
+        target_fd = encoder->outfd;
+    }
+
+    nwrite = write(target_fd, buf, buf_p - buf);
     if (nwrite != buf_p - buf) {
         sixel_helper_set_additional_message(
             "sixel_encoder_emit_drcsmmv2_chars: write() failed.");
@@ -1859,6 +1878,7 @@ sixel_encoder_new(
     (*ppencoder)->pipe_mode             = 0;
     (*ppencoder)->bgcolor               = NULL;
     (*ppencoder)->outfd                 = STDOUT_FILENO;
+    (*ppencoder)->tile_outfd            = (-1);
     (*ppencoder)->finsecure             = 0;
     (*ppencoder)->cancel_flag           = NULL;
     (*ppencoder)->dither_cache          = NULL;
@@ -1959,6 +1979,16 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
             (void) close(encoder->outfd);
 #endif  /* HAVE__CLOSE */
         }
+        if (encoder->tile_outfd >= 0
+            && encoder->tile_outfd != encoder->outfd
+            && encoder->tile_outfd != STDOUT_FILENO
+            && encoder->tile_outfd != STDERR_FILENO) {
+#if HAVE__CLOSE
+            (void) _close(encoder->tile_outfd);
+#else
+            (void) close(encoder->tile_outfd);
+#endif  /* HAVE__CLOSE */
+        }
         sixel_allocator_free(allocator, encoder);
         sixel_allocator_unref(allocator);
     }
@@ -2042,6 +2072,45 @@ sixel_encoder_setopt(
                                   O_RDWR|O_CREAT|O_TRUNC,
                                   S_IRUSR|S_IWUSR);
 #endif  /* HAVE__OPEN */
+        }
+        break;
+    case SIXEL_OPTFLAG_ALT_CHARSET_PATH:  /* T */
+        if (*value == '\0') {
+            sixel_helper_set_additional_message(
+                "no file name specified.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        if (encoder->tile_outfd >= 0
+            && encoder->tile_outfd != encoder->outfd
+            && encoder->tile_outfd != STDOUT_FILENO
+            && encoder->tile_outfd != STDERR_FILENO) {
+#if HAVE__CLOSE
+            (void) _close(encoder->tile_outfd);
+#else
+            (void) close(encoder->tile_outfd);
+#endif  /* HAVE__CLOSE */
+        }
+        encoder->tile_outfd = (-1);
+        if (strcmp(value, "-") == 0) {
+            encoder->tile_outfd = STDOUT_FILENO;
+        } else {
+#if HAVE__OPEN
+            encoder->tile_outfd = _open(value,
+                                           O_RDWR|O_CREAT|O_TRUNC,
+                                           S_IRUSR|S_IWUSR);
+#else
+            encoder->tile_outfd = open(value,
+                                          O_RDWR|O_CREAT|O_TRUNC,
+                                          S_IRUSR|S_IWUSR);
+#endif  /* HAVE__OPEN */
+            if (encoder->tile_outfd < 0) {
+                sixel_helper_set_additional_message(
+                    "sixel_encoder_setopt: failed to open tile"
+                    " output path.");
+                status = SIXEL_RUNTIME_ERROR;
+                goto end;
+            }
         }
         break;
     case SIXEL_OPTFLAG_7BIT_MODE:  /* 7 */

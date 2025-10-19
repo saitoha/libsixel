@@ -221,6 +221,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_SIMILARITY        ('s')  /* -s, --similarity: specify similarity bias (1-1000, default: 30). */
 #define SIXEL_OPTFLAG_EDGE              ('e')  /* -e, --edge: specify  bias (1-1000, default: 30). */
 #define SIXEL_OPTFLAG_OUTFILE           ('o')  /* -o, --outfile: specify edge protection bios. */
+#define SIXEL_OPTFLAG_ALT_CHARSET_PATH  ('T')  /* -T, tile character output destination. */
 #define SIXEL_OPTFLAG_7BIT_MODE         ('7')  /* -7, --7bit-mode: for 7bit terminals or printers (default) */
 #define SIXEL_OPTFLAG_8BIT_MODE         ('8')  /* -8, --8bit-mode: for 8bit terminals or printers */
 #define SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT ('R')  /* -R, --gri-limit: limit arguments of DECGRI('!') to 255 */
