@@ -1773,15 +1773,17 @@ sixel_encoder_encode_frame(
             goto end;
         }
 
-        if (encoder->drcs_mmv == 0) {
-            status = sixel_encoder_emit_iso2022_chars(encoder, frame);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-        } else {
-            status = sixel_encoder_emit_drcsmmv2_chars(encoder, frame);
-            if (SIXEL_FAILED(status)) {
-                goto end;
+        if (encoder->tile_outfd >= 0) {
+            if (encoder->drcs_mmv == 0) {
+                status = sixel_encoder_emit_iso2022_chars(encoder, frame);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+            } else {
+                status = sixel_encoder_emit_drcsmmv2_chars(encoder, frame);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
             }
         }
     }
