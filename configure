@@ -737,6 +737,8 @@ COND_DEBUG_TRUE
 zshcompletiondir
 bashcompletiondir
 pkgconfigdir
+WANT_THUMBNAILER_FALSE
+WANT_THUMBNAILER_TRUE
 WANT_SIXEL2PNG_FALSE
 WANT_SIXEL2PNG_TRUE
 WANT_IMG2SIXEL_FALSE
@@ -745,6 +747,7 @@ USING_CL_FALSE
 USING_CL_TRUE
 BUILDING_ON_WINDOWS_FALSE
 BUILDING_ON_WINDOWS_TRUE
+UPDATE_MIME_DATABASE
 CPP
 am__fastdepOBJC_FALSE
 am__fastdepOBJC_TRUE
@@ -1601,7 +1604,8 @@ Optional Features:
   --disable-img2sixel     disable building the img2sixel utility (default: no)
   --disable-sixel2png     disable building the sixel2png utility (default: no)
   --enable-thumbnailer-command
-                          install the sixel thumbnailer command (default: auto)
+                          install the sixel thumbnailer command (default:
+                          auto)
   --enable-quicklook-extension
                           build the macOS Quick Look extension (default: auto)
   --enable-quicklook-preview
@@ -4034,50 +4038,6 @@ then :
 else case e in #(
   e) am__rm_f_notfound='""' ;;
 esac
-fi
-
-# Extract the first word of "update-mime-database", so it can be a program name with args.
-set dummy update-mime-database; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_UPDATE_MIME_DATABASE+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  case $UPDATE_MIME_DATABASE in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_UPDATE_MIME_DATABASE="$UPDATE_MIME_DATABASE" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_UPDATE_MIME_DATABASE="$as_dir$ac_word$ac_exec_ext"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-UPDATE_MIME_DATABASE=$ac_cv_path_UPDATE_MIME_DATABASE
-if test -n "$UPDATE_MIME_DATABASE"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $UPDATE_MIME_DATABASE" >&5
-printf "%s\n" "$UPDATE_MIME_DATABASE" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
 fi
 
 
@@ -16180,6 +16140,52 @@ printf "%s\n" "no" >&6; }
   SET_MAKE="MAKE=${MAKE-make}"
 fi
 
+# Extract the first word of "update-mime-database", so it can be a program name with args.
+set dummy update-mime-database; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_UPDATE_MIME_DATABASE+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $UPDATE_MIME_DATABASE in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_UPDATE_MIME_DATABASE="$UPDATE_MIME_DATABASE" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_UPDATE_MIME_DATABASE="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac ;;
+esac
+fi
+UPDATE_MIME_DATABASE=$ac_cv_path_UPDATE_MIME_DATABASE
+if test -n "$UPDATE_MIME_DATABASE"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $UPDATE_MIME_DATABASE" >&5
+printf "%s\n" "$UPDATE_MIME_DATABASE" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
 
 case "$host_os" in
   mingw*|msys*|cygwin*)
@@ -16347,19 +16353,21 @@ else
 fi
 
 
-
 # Check whether --enable-thumbnailer-command was given.
 if test ${enable_thumbnailer_command+y}
 then :
-  enableval=$enable_thumbnailer_command;
+  enableval=$enable_thumbnailer_command; enable_thumbnailer_command=$enableval
 else case e in #(
   e) enable_thumbnailer_command=auto ;;
 esac
 fi
 
+
 case $enable_thumbnailer_command in #(
-  yes|no|auto) ;; #(
-  *) as_fn_error $? "invalid value for --enable-thumbnailer-command: $enable_thumbnailer_command" "$LINENO" 5;;
+  yes|no|auto) :
+     ;; #(
+  *) :
+    as_fn_error $? "invalid value for --enable-thumbnailer-command: $enable_thumbnailer_command" "$LINENO" 5 ;;
 esac
 
 thumbnailer_command_mode=$enable_thumbnailer_command
@@ -22231,6 +22239,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_SIXEL2PNG_TRUE}" && test -z "${WANT_SIXEL2PNG_FALSE}"; then
   as_fn_error $? "conditional \"WANT_SIXEL2PNG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${WANT_THUMBNAILER_TRUE}" && test -z "${WANT_THUMBNAILER_FALSE}"; then
+  as_fn_error $? "conditional \"WANT_THUMBNAILER\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${COND_DEBUG_TRUE}" && test -z "${COND_DEBUG_FALSE}"; then

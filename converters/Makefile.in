@@ -97,8 +97,6 @@ bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @WANT_IMG2SIXEL_TRUE@am__append_4 = $(srcdir)/shell-completion/zsh/_img2sixel
 @WANT_SIXEL2PNG_TRUE@am__append_5 = sixel2png
 @WANT_SIXEL2PNG_TRUE@am__append_6 = $(srcdir)/sixel2png.1
-@WANT_SIXEL2PNG_TRUE@am__append_7 = $(srcdir)/shell-completion/bash/sixel2png
-@WANT_SIXEL2PNG_TRUE@am__append_8 = $(srcdir)/shell-completion/zsh/_sixel2png
 subdir = converters
 SUBDIRS =
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -236,11 +234,9 @@ man1dir = $(mandir)/man1
 NROFF = nroff
 MANS = $(dist_man_MANS)
 am__dist_bashcompletion_DATA_DIST =  \
-        $(srcdir)/shell-completion/bash/img2sixel \
-        $(srcdir)/shell-completion/bash/sixel2png
+	$(srcdir)/shell-completion/bash/img2sixel
 am__dist_zshcompletion_DATA_DIST =  \
-        $(srcdir)/shell-completion/zsh/_img2sixel \
-        $(srcdir)/shell-completion/zsh/_sixel2png
+	$(srcdir)/shell-completion/zsh/_img2sixel
 DATA = $(dist_bashcompletion_DATA) $(dist_zshcompletion_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
@@ -406,6 +402,7 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
 VERSION = @VERSION@
 WICCODEC_CFLAGS = @WICCODEC_CFLAGS@
 WICCODEC_LIBS = @WICCODEC_LIBS@
@@ -480,8 +477,8 @@ top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 DIST_SUBDIRS = $(SUBDIRS)
 dist_man_MANS = $(am__append_2) $(am__append_6)
-dist_bashcompletion_DATA = $(am__append_3) $(am__append_7)
-dist_zshcompletion_DATA = $(am__append_4) $(am__append_8)
+dist_bashcompletion_DATA = $(am__append_3)
+dist_zshcompletion_DATA = $(am__append_4)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 CLEANFILES = *.gcno *.gcda *.gcov \
   $(builddir)/tmp/*.png \

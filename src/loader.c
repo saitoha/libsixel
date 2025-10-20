@@ -161,10 +161,252 @@ loader_trace_message(char const *format, ...)
     }
 
     fprintf(stderr, "libsixel: ");
+
     va_start(args, format);
+#if defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wformat-nonliteral"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
     vfprintf(stderr, format, args);
+#if defined(__clang__)
+# pragma clang diagnostic pop
+#elif defined(__GNUC__)
+# pragma GCC diagnostic pop
+#endif
     va_end(args);
+
     fprintf(stderr, "\n");
+}
+
+static int
+thumbnailer_format_append_char(char *buffer,
+                               size_t capacity,
+                               size_t *position,
+                               char ch,
+                               int *truncated)
+{
+    if (buffer == NULL || position == NULL) {
+        return 0;
+    }
+
+    if (*position + 1 < capacity) {
+        buffer[*position] = ch;
+        *position += 1;
+        buffer[*position] = '\0';
+    } else {
+        if (capacity > 0) {
+            buffer[capacity - 1] = '\0';
+        }
+        if (truncated != NULL) {
+            *truncated = 1;
+        }
+    }
+
+    return 1;
+}
+
+static int
+thumbnailer_format_append_text(char *buffer,
+                               size_t capacity,
+                               size_t *position,
+                               char const *text,
+                               int *truncated)
+{
+    size_t length;
+    size_t copy_length;
+
+    if (buffer == NULL || position == NULL) {
+        return 0;
+    }
+
+    if (text == NULL) {
+        text = "(null)";
+    }
+
+    length = strlen(text);
+    copy_length = length;
+
+    if (*position + copy_length >= capacity) {
+        if (capacity <= *position) {
+            copy_length = 0;
+        } else {
+            copy_length = capacity - 1 - *position;
+        }
+        if (truncated != NULL) {
+            *truncated = 1;
+        }
+    }
+
+    if (copy_length > 0) {
+        memcpy(buffer + *position, text, copy_length);
+        *position += copy_length;
+        buffer[*position] = '\0';
+    } else if (*position < capacity) {
+        buffer[*position] = '\0';
+    } else if (capacity > 0) {
+        buffer[capacity - 1] = '\0';
+    }
+
+    return 1;
+}
+
+static int
+thumbnailer_format_append_decimal(char *buffer,
+                                  size_t capacity,
+                                  size_t *position,
+                                  int value,
+                                  int *truncated)
+{
+    char digits[16];
+    size_t index;
+    size_t length;
+    unsigned int magnitude;
+    int negative;
+
+    if (buffer == NULL || position == NULL) {
+        return 0;
+    }
+
+    index = 0;
+    magnitude = 0;
+    negative = 0;
+
+    if (value < 0) {
+        negative = 1;
+        magnitude = (unsigned int)(-value);
+    } else {
+        magnitude = (unsigned int)value;
+    }
+
+    do {
+        digits[index] = (char)('0' + (magnitude % 10));
+        index += 1;
+        magnitude /= 10;
+    } while (magnitude != 0);
+
+    if (negative) {
+        digits[index] = '-';
+        index += 1;
+    }
+
+    length = index;
+
+    while (index > 0) {
+        index -= 1;
+        if (!thumbnailer_format_append_char(buffer,
+                                            capacity,
+                                            position,
+                                            digits[index],
+                                            truncated)) {
+            return 0;
+        }
+    }
+
+    if (length == 0) {
+        if (!thumbnailer_format_append_char(buffer,
+                                            capacity,
+                                            position,
+                                            '0',
+                                            truncated)) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+static int
+thumbnailer_safe_format(char *buffer,
+                        size_t capacity,
+                        char const *format,
+                        ...)
+{
+    va_list args;
+    size_t position;
+    char const *ptr;
+    int truncated;
+    char const *text;
+    int value;
+
+    if (buffer == NULL || capacity == 0 || format == NULL) {
+        return 0;
+    }
+
+    position = 0;
+    truncated = 0;
+    buffer[0] = '\0';
+
+    va_start(args, format);
+    ptr = format;
+    while (ptr != NULL && ptr[0] != '\0') {
+        if (ptr[0] != '%') {
+            if (!thumbnailer_format_append_char(buffer,
+                                                capacity,
+                                                &position,
+                                                ptr[0],
+                                                &truncated)) {
+                va_end(args);
+                return 0;
+            }
+            ptr += 1;
+            continue;
+        }
+
+        ptr += 1;
+        if (ptr[0] == '%') {
+            if (!thumbnailer_format_append_char(buffer,
+                                                capacity,
+                                                &position,
+                                                '%',
+                                                &truncated)) {
+                va_end(args);
+                return 0;
+            }
+            ptr += 1;
+            continue;
+        }
+
+        if (ptr[0] == 's') {
+            text = va_arg(args, char const *);
+            if (!thumbnailer_format_append_text(buffer,
+                                                capacity,
+                                                &position,
+                                                text,
+                                                &truncated)) {
+                va_end(args);
+                return 0;
+            }
+            ptr += 1;
+            continue;
+        }
+
+        if (ptr[0] == 'd') {
+            value = va_arg(args, int);
+            if (!thumbnailer_format_append_decimal(buffer,
+                                                   capacity,
+                                                   &position,
+                                                   value,
+                                                   &truncated)) {
+                va_end(args);
+                return 0;
+            }
+            ptr += 1;
+            continue;
+        }
+
+        va_end(args);
+        return 0;
+    }
+    va_end(args);
+
+    if (truncated != 0 && capacity > 0) {
+        buffer[capacity - 1] = '\0';
+    }
+
+    return 1;
 }
 
 /*
@@ -1968,6 +2210,35 @@ end:
 extern int mkstemp(char *);
 #endif
 
+/*
+ * thumbnailer_resolve_path
+ * Purpose:
+ *     Resolve the supplied path to an absolute canonical path when possible.
+ * Arguments:
+ *     path - original filesystem path.
+ * Returns:
+ *     Newly allocated canonical path or NULL on failure.
+ */
+static char *
+thumbnailer_resolve_path(char const *path)
+{
+    char *resolved;
+
+    resolved = NULL;
+
+    if (path == NULL) {
+        return NULL;
+    }
+
+#if defined(_WIN32)
+    resolved = _fullpath(NULL, path, 0);
+#else
+    resolved = realpath(path, NULL);
+#endif
+
+    return resolved;
+}
+
 struct thumbnailer_string_list {
     char **items;
     size_t length;
@@ -2990,7 +3261,12 @@ thumbnailer_build_command(char const *template_command,
     }
 
     if (size > 0) {
-        snprintf(size_text, sizeof(size_text), "%d", size);
+        if (!thumbnailer_safe_format(size_text,
+                                     sizeof(size_text),
+                                     "%d",
+                                     size)) {
+            goto error;
+        }
     }
 
     while (ptr != NULL && ptr[0] != '\0') {
@@ -3229,7 +3505,12 @@ thumbnailer_build_evince_command(char const *input_path,
         command->argv[index] = NULL;
     }
 
-    snprintf(size_text, sizeof(size_text), "%d", size);
+    if (!thumbnailer_safe_format(size_text,
+                                 sizeof(size_text),
+                                 "%d",
+                                 size)) {
+        size_text[0] = '\0';
+    }
 
     command->argv[0] = thumbnailer_strdup("evince-thumbnailer");
     command->argv[1] = thumbnailer_strdup("-s");
@@ -3286,7 +3567,7 @@ thumbnailer_build_file_uri(char const *path)
         return NULL;
     }
 
-    resolved = realpath(path, NULL);
+    resolved = thumbnailer_resolve_path(path);
     if (resolved == NULL) {
         return NULL;
     }
@@ -3546,12 +3827,14 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
                          O_WRONLY | O_CREAT | O_TRUNC,
                          0600);
         if (output_fd < 0) {
-            snprintf(message,
-                     sizeof(message),
-                     "%s: open(%s) failed (%s).",
-                     log_prefix,
-                     stdout_path,
-                     strerror(errno));
+            if (!thumbnailer_safe_format(message,
+                                         sizeof(message),
+                                         "%s: open(%s) failed (%s).",
+                                         log_prefix,
+                                         stdout_path,
+                                         strerror(errno))) {
+                message[0] = '\0';
+            }
             sixel_helper_set_additional_message(message);
             goto cleanup;
         }
@@ -3568,11 +3851,13 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
 
     if (capture_stdout) {
         if (pipe(stdout_pipe) != 0) {
-            snprintf(message,
-                     sizeof(message),
-                     "%s: pipe() for stdout failed (%s).",
-                     log_prefix,
-                     strerror(errno));
+            if (!thumbnailer_safe_format(message,
+                                         sizeof(message),
+                                         "%s: pipe() for stdout failed (%s).",
+                                         log_prefix,
+                                         strerror(errno))) {
+                message[0] = '\0';
+            }
             sixel_helper_set_additional_message(message);
             goto cleanup;
         }
@@ -3588,10 +3873,13 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
 
 #if HAVE_POSIX_SPAWNP
     if (posix_spawn_file_actions_init(&actions) != 0) {
-        snprintf(message,
-                 sizeof(message),
-                 "%s: posix_spawn_file_actions_init() failed.",
-                 log_prefix);
+        if (!thumbnailer_safe_format(message,
+                                     sizeof(message),
+                                     "%s: posix_spawn_file_actions_init() "
+                                     "failed.",
+                                     log_prefix)) {
+            message[0] = '\0';
+        }
         sixel_helper_set_additional_message(message);
         goto cleanup;
     }
@@ -3625,22 +3913,26 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
                                 environ);
     posix_spawn_file_actions_destroy(&actions);
     if (spawn_result != 0) {
-        snprintf(message,
-                 sizeof(message),
-                 "%s: posix_spawnp() failed (%s).",
-                 log_prefix,
-                 strerror(spawn_result));
+        if (!thumbnailer_safe_format(message,
+                                     sizeof(message),
+                                     "%s: posix_spawnp() failed (%s).",
+                                     log_prefix,
+                                     strerror(spawn_result))) {
+            message[0] = '\0';
+        }
         sixel_helper_set_additional_message(message);
         goto cleanup;
     }
 #else
     pid = fork();
     if (pid < 0) {
-        snprintf(message,
-                 sizeof(message),
-                 "%s: fork() failed (%s).",
-                 log_prefix,
-                 strerror(errno));
+        if (!thumbnailer_safe_format(message,
+                                     sizeof(message),
+                                     "%s: fork() failed (%s).",
+                                     log_prefix,
+                                     strerror(errno))) {
+            message[0] = '\0';
+        }
         sixel_helper_set_additional_message(message);
         goto cleanup;
     }
@@ -3740,10 +4032,12 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
                             stderr_pipe[0] = -1;
                         }
                         stderr_pipe_created = 0;
-                        snprintf(message,
-                                 sizeof(message),
-                                 "%s: realloc() failed.",
-                                 log_prefix);
+                        if (!thumbnailer_safe_format(message,
+                                                     sizeof(message),
+                                                     "%s: realloc() failed.",
+                                                     log_prefix)) {
+                            message[0] = '\0';
+                        }
                         sixel_helper_set_additional_message(message);
                         status = SIXEL_BAD_ALLOCATION;
                         fatal_error = 1;
@@ -3769,11 +4063,13 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
             } else if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 /* no data */
             } else {
-                snprintf(message,
-                         sizeof(message),
-                         "%s: read() failed (%s).",
-                         log_prefix,
-                         strerror(errno));
+                if (!thumbnailer_safe_format(message,
+                                             sizeof(message),
+                                             "%s: read() failed (%s).",
+                                             log_prefix,
+                                             strerror(errno))) {
+                    message[0] = '\0';
+                }
                 sixel_helper_set_additional_message(message);
                 stderr_open = 0;
                 if (stderr_pipe[0] >= 0) {
@@ -3799,11 +4095,13 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
                         if (errno == EINTR) {
                             continue;
                         }
-                        snprintf(message,
-                                 sizeof(message),
-                                 "%s: write() failed (%s).",
-                                 log_prefix,
-                                 strerror(errno));
+                        if (!thumbnailer_safe_format(message,
+                                                     sizeof(message),
+                                                     "%s: write() failed (%s).",
+                                                     log_prefix,
+                                                     strerror(errno))) {
+                            message[0] = '\0';
+                        }
                         sixel_helper_set_additional_message(message);
                         stdout_open = 0;
                         fatal_error = 1;
@@ -3823,11 +4121,13 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
             } else if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 /* no data */
             } else {
-                snprintf(message,
-                         sizeof(message),
-                         "%s: read() failed (%s).",
-                         log_prefix,
-                         strerror(errno));
+                if (!thumbnailer_safe_format(message,
+                                             sizeof(message),
+                                             "%s: read() failed (%s).",
+                                             log_prefix,
+                                             strerror(errno))) {
+                    message[0] = '\0';
+                }
                 sixel_helper_set_additional_message(message);
                 stdout_open = 0;
                 if (stdout_pipe[0] >= 0) {
@@ -3846,11 +4146,13 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
             } else if (wait_result == 0) {
                 /* child running */
             } else if (errno != EINTR) {
-                snprintf(message,
-                         sizeof(message),
-                         "%s: waitpid() failed (%s).",
-                         log_prefix,
-                         strerror(errno));
+                if (!thumbnailer_safe_format(message,
+                                             sizeof(message),
+                                             "%s: waitpid() failed (%s).",
+                                             log_prefix,
+                                             strerror(errno))) {
+                    message[0] = '\0';
+                }
                 sixel_helper_set_additional_message(message);
                 status = SIXEL_RUNTIME_ERROR;
                 fatal_error = 1;
@@ -3868,11 +4170,13 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
             wait_result = waitpid(pid, &status_code, 0);
         } while (wait_result < 0 && errno == EINTR);
         if (wait_result < 0) {
-            snprintf(message,
-                     sizeof(message),
-                     "%s: waitpid() failed (%s).",
-                     log_prefix,
-                     strerror(errno));
+            if (!thumbnailer_safe_format(message,
+                                         sizeof(message),
+                                         "%s: waitpid() failed (%s).",
+                                         log_prefix,
+                                         strerror(errno))) {
+                message[0] = '\0';
+            }
             sixel_helper_set_additional_message(message);
             status = SIXEL_RUNTIME_ERROR;
             goto cleanup;
@@ -3881,10 +4185,12 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
     }
 
     if (!have_status) {
-        snprintf(message,
-                 sizeof(message),
-                 "%s: waitpid() failed (no status).",
-                 log_prefix);
+        if (!thumbnailer_safe_format(message,
+                                     sizeof(message),
+                                     "%s: waitpid() failed (no status).",
+                                     log_prefix)) {
+            message[0] = '\0';
+        }
         sixel_helper_set_additional_message(message);
         status = SIXEL_RUNTIME_ERROR;
         goto cleanup;
@@ -3897,32 +4203,41 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
                                  log_prefix,
                                  (long)pid);
         } else if (WIFEXITED(status_code)) {
-            snprintf(message,
-                     sizeof(message),
-                     "%s: %s exited with status %d.",
-                     log_prefix,
-                     (thumbnailer_name != NULL) ? thumbnailer_name :
-                     "thumbnailer",
-                     WEXITSTATUS(status_code));
+            if (!thumbnailer_safe_format(message,
+                                         sizeof(message),
+                                         "%s: %s exited with status %d.",
+                                         log_prefix,
+                                         (thumbnailer_name != NULL) ?
+                                         thumbnailer_name :
+                                         "thumbnailer",
+                                         WEXITSTATUS(status_code))) {
+                message[0] = '\0';
+            }
             sixel_helper_set_additional_message(message);
             status = SIXEL_RUNTIME_ERROR;
         } else if (WIFSIGNALED(status_code)) {
-            snprintf(message,
-                     sizeof(message),
-                     "%s: %s terminated by signal %d.",
-                     log_prefix,
-                     (thumbnailer_name != NULL) ? thumbnailer_name :
-                     "thumbnailer",
-                     WTERMSIG(status_code));
+            if (!thumbnailer_safe_format(message,
+                                         sizeof(message),
+                                         "%s: %s terminated by signal %d.",
+                                         log_prefix,
+                                         (thumbnailer_name != NULL) ?
+                                         thumbnailer_name :
+                                         "thumbnailer",
+                                         WTERMSIG(status_code))) {
+                message[0] = '\0';
+            }
             sixel_helper_set_additional_message(message);
             status = SIXEL_RUNTIME_ERROR;
         } else {
-            snprintf(message,
-                     sizeof(message),
-                     "%s: %s exited abnormally.",
-                     log_prefix,
-                     (thumbnailer_name != NULL) ? thumbnailer_name :
-                     "thumbnailer");
+            if (!thumbnailer_safe_format(message,
+                                         sizeof(message),
+                                         "%s: %s exited abnormally.",
+                                         log_prefix,
+                                         (thumbnailer_name != NULL) ?
+                                         thumbnailer_name :
+                                         "thumbnailer")) {
+                message[0] = '\0';
+            }
             sixel_helper_set_additional_message(message);
             status = SIXEL_RUNTIME_ERROR;
         }
@@ -4084,7 +4399,14 @@ load_with_gnome_thumbnailer(
         unlink(template_path);
         goto end;
     }
-    snprintf(png_path, path_length, "%s.png", template_path);
+    if (!thumbnailer_safe_format(png_path,
+                                 path_length,
+                                 "%s.png",
+                                 template_path)) {
+        if (path_length > 0) {
+            png_path[path_length - 1] = '\0';
+        }
+    }
     if (rename(template_path, png_path) != 0) {
         sixel_helper_set_additional_message(
             "load_with_gnome_thumbnailer: rename() failed.");

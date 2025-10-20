@@ -54,8 +54,6 @@ sixel2png_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
 sixel2png_LDFLAGS = $(MAYBE_COVERAGE)
 sixel2png_LDADD = $(top_builddir)/src/libsixel.la
 dist_man_MANS += $(srcdir)/sixel2png.1
-dist_bashcompletion_DATA += $(srcdir)/shell-completion/bash/sixel2png
-dist_zshcompletion_DATA += $(srcdir)/shell-completion/zsh/_sixel2png
 endif
 
 check: test_impl
