@@ -154,6 +154,7 @@ sixel_helper_set_thumbnail_size_hint(int size)
  *     format - printf-style message template.
  *     ...    - arguments consumed according to the format string.
  */
+#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
 static void
 loader_trace_message(char const *format, ...)
 {
@@ -436,6 +437,8 @@ thumbnailer_sleep_briefly(void)
     (void)usleep(10000);
 #endif
 }
+
+#endif  /* HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK */
 
 static void
 loader_trace_try(char const *name)
