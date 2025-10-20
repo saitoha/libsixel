@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="image/sixel">
+    <comment>DEC SIXEL image</comment>
+    <glob pattern="*.six"/>
+    <glob pattern="*.sixel"/>
+  </mime-type>
+  <mime-type type="image/x-sixel">
+    <alias type="image/sixel"/>
+    <glob pattern="*.six"/>
+    <glob pattern="*.sixel"/>
+  </mime-type>
+</mime-info>

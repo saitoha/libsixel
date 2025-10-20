@@ -113,8 +113,10 @@ show_help(void)
             "                 apply palette dequantization\n"
             "                   none       -> no dequantization (default)\n"
             "                   k_undither -> kornelski's undither algorithm\n"
-            "-s, --similarity=BIAS\n"
+            "-S, --similarity=BIAS\n"
             "                 specify similarity bias (0-1000, default: 100)\n"
+            "-s, --size=SIZE  scale longer edge to SIZE pixels while\n"
+            "                 preserving aspect ratio\n"
             "-e, --edge=BIAS\n"
             "                 specify edge protection bias (0-1000, default: 0)\n"
             "-V, --version    show version and license information\n"
@@ -133,14 +135,15 @@ main(int argc, char *argv[])
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    char const *optstring = "i:o:d:s:e:VH";
+    char const *optstring = "i:o:d:S:e:s:VH";
 
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"input",            required_argument,  &long_opt, 'i'},
         {"output",           required_argument,  &long_opt, 'o'},
         {"dequantize",       required_argument,  &long_opt, 'd'},
-        {"similarity",       required_argument,  &long_opt, 's'},
+        {"similarity",       required_argument,  &long_opt, 'S'},
+        {"size",             required_argument,  &long_opt, 's'},
         {"edge",             required_argument,  &long_opt, 'e'},
         {"version",          no_argument,        &long_opt, 'V'},
         {"help",             no_argument,        &long_opt, 'H'},

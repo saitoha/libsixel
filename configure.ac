@@ -32,6 +32,7 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AC_PATH_PROG([UPDATE_MIME_DATABASE], [update-mime-database])
 
 case "$host_os" in
   mingw*|msys*|cygwin*)
@@ -127,6 +128,85 @@ AC_ARG_ENABLE([sixel2png],
               [],
               [enable_sixel2png=yes])
 AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
+
+AC_ARG_ENABLE([thumbnailer-command],
+              [AS_HELP_STRING([--enable-thumbnailer-command],
+                              [install the sixel thumbnailer command (default: auto)])],
+              [enable_thumbnailer_command=$enableval],
+              [enable_thumbnailer_command=auto])
+
+AS_CASE([$enable_thumbnailer_command],
+        [yes|no|auto],
+        [],
+        [AC_MSG_ERROR([invalid value for --enable-thumbnailer-command: $enable_thumbnailer_command])])
+
+thumbnailer_command_mode=$enable_thumbnailer_command
+thumbnailer_auto_installed=no
+message_thumbnailer=no
+
+if test x$enable_sixel2png = xno; then
+  enable_thumbnailer_command=no
+  message_thumbnailer='no (requires sixel2png)'
+fi
+
+if test x$enable_thumbnailer_command = xauto; then
+  datadir_expanded=`eval echo "$datadir"`
+  sixel_thumbnailer_install=no
+  xdg_data_dirs=$XDG_DATA_DIRS
+  if test -z "$xdg_data_dirs"; then
+    xdg_data_dirs="/usr/local/share:/usr/share"
+  fi
+  old_IFS=$IFS
+  IFS=:
+  for xdg_dir in $xdg_data_dirs; do
+    if test -n "$xdg_dir"; then
+      sixel_thumbnailer_candidate="$xdg_dir/thumbnailers"
+      if test -d "$sixel_thumbnailer_candidate"; then
+        sixel_thumbnailer_install=yes
+        break
+      fi
+    fi
+  done
+  IFS=$old_IFS
+  if test x$sixel_thumbnailer_install = xno; then
+    if test -n "$HOME"; then
+      sixel_thumbnailer_candidate="$HOME/.local/share/thumbnailers"
+      if test -d "$sixel_thumbnailer_candidate"; then
+        sixel_thumbnailer_install=yes
+      fi
+    fi
+  fi
+  if test x$sixel_thumbnailer_install = xno; then
+    sixel_thumbnailer_candidate="$datadir_expanded/thumbnailers"
+    if test -d "$sixel_thumbnailer_candidate"; then
+      sixel_thumbnailer_install=yes
+    fi
+  fi
+  if test x$sixel_thumbnailer_install = xyes; then
+    enable_thumbnailer_command=yes
+    thumbnailer_auto_installed=yes
+  else
+    enable_thumbnailer_command=no
+  fi
+fi
+
+if test x$message_thumbnailer = xno; then
+  if test x$enable_thumbnailer_command = xyes; then
+    if test x$thumbnailer_command_mode = xauto; then
+      if test x$thumbnailer_auto_installed = xyes; then
+        message_thumbnailer=yes
+      else
+        message_thumbnailer=yes
+      fi
+    else
+      message_thumbnailer=yes
+    fi
+  elif test x$thumbnailer_command_mode = xauto; then
+    message_thumbnailer='no (thumbnailer dir not found)'
+  fi
+fi
+
+AM_CONDITIONAL([WANT_THUMBNAILER], [test x$enable_thumbnailer_command = xyes])
 
 AC_ARG_WITH([gdk-pixbuf2],
             [AS_HELP_STRING([--with-gdk-pixbuf2],
@@ -433,6 +513,8 @@ AC_CHECK_HEADERS([assert.h \
                   sys/signal.h \
                   termios.h \
                   sys/ioctl.h \
+                  sys/wait.h \
+                  spawn.h \
                   inttypes.h \
                   emmintrin.h \
                   arm_neon.h \
@@ -503,7 +585,7 @@ case "${host_os}" in
   mingw*)
     ;;
   *)
-    AC_CHECK_FUNCS([clock nanosleep])
+    AC_CHECK_FUNCS([clock nanosleep fork posix_spawnp])
     ;;
 esac
 
@@ -1513,6 +1595,7 @@ echo "       Zsh completion dir  : $message_zshcompletiondir"
 echo "       QuickLook extension : $message_quicklook_extension"
 echo "       WIC codec           : $message_wiccodec"
 echo "       Register WIC DLL    : $message_register_dll"
+echo "       Thumbnailer command : $message_thumbnailer"
 echo "       python bindings     : $message_python"
 echo "       ruby bindings       : $message_ruby"
 echo "       simd                : $message_simd"

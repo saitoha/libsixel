@@ -39,6 +39,7 @@
 #endif /* HAVE_ERRNO_H */
 
 #include "decoder.h"
+#include "frame.h"
 
 
 /* original version of strdup(3) with allocator object */
@@ -92,6 +93,7 @@ sixel_decoder_new(
     (*ppdecoder)->dequantize_method = SIXEL_DEQUANTIZE_NONE;
     (*ppdecoder)->dequantize_similarity_bias = 100;
     (*ppdecoder)->dequantize_edge_strength = 0;
+    (*ppdecoder)->thumbnail_size = 0;
 
     if ((*ppdecoder)->output == NULL || (*ppdecoder)->input == NULL) {
         sixel_decoder_unref(*ppdecoder);
@@ -713,12 +715,22 @@ sixel_decoder_setopt(
         }
         break;
 
-    case SIXEL_OPTFLAG_SIMILARITY:  /* s */
+    case SIXEL_OPTFLAG_SIMILARITY:  /* S */
         decoder->dequantize_similarity_bias = atoi(value);
         if (decoder->dequantize_similarity_bias < 0 ||
             decoder->dequantize_similarity_bias > 1000) {
             sixel_helper_set_additional_message(
                 "similarity must be between 1 and 1000.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        break;
+
+    case SIXEL_OPTFLAG_SIZE:  /* s */
+        decoder->thumbnail_size = atoi(value);
+        if (decoder->thumbnail_size <= 0) {
+            sixel_helper_set_additional_message(
+                "size must be greater than zero.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
@@ -771,8 +783,25 @@ sixel_decoder_decode(
     unsigned char *output_palette;
     int output_pixelformat;
     int ncolors;
+    sixel_frame_t *frame;
+    int new_width;
+    int new_height;
+    double scaled_width;
+    double scaled_height;
+    int max_dimension;
+    int thumbnail_size;
+    int frame_ncolors;
 
     sixel_decoder_ref(decoder);
+
+    frame = NULL;
+    new_width = 0;
+    new_height = 0;
+    scaled_width = 0.0;
+    scaled_height = 0.0;
+    max_dimension = 0;
+    thumbnail_size = decoder->thumbnail_size;
+    frame_ncolors = -1;
 
     if (strcmp(decoder->input, "-") == 0) {
         /* for windows */
@@ -872,6 +901,91 @@ sixel_decoder_decode(
         output_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     }
 
+    if (output_pixelformat == SIXEL_PIXELFORMAT_PAL8) {
+        frame_ncolors = ncolors;
+    }
+
+    if (thumbnail_size > 0) {
+        /*
+         * When the caller requests a thumbnail, compute the new geometry
+         * while preserving the original aspect ratio. We only allocate a
+         * frame when the dimensions actually change, so the fast path for
+         * matching sizes still avoids any additional allocations.
+         */
+        max_dimension = sx;
+        if (sy > max_dimension) {
+            max_dimension = sy;
+        }
+        if (max_dimension > 0) {
+            if (sx >= sy) {
+                new_width = thumbnail_size;
+                scaled_height = (double)sy * (double)thumbnail_size /
+                    (double)sx;
+                new_height = (int)(scaled_height + 0.5);
+            } else {
+                new_height = thumbnail_size;
+                scaled_width = (double)sx * (double)thumbnail_size /
+                    (double)sy;
+                new_width = (int)(scaled_width + 0.5);
+            }
+            if (new_width < 1) {
+                new_width = 1;
+            }
+            if (new_height < 1) {
+                new_height = 1;
+            }
+            if (new_width != sx || new_height != sy) {
+                /*
+                 * Wrap the decoded pixels in a frame so we can reuse the
+                 * central scaling helper. Ownership transfers to the frame,
+                 * which keeps the lifetime rules identical on both paths.
+                 */
+                status = sixel_frame_new(&frame, decoder->allocator);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                status = sixel_frame_init(
+                    frame,
+                    output_pixels,
+                    sx,
+                    sy,
+                    output_pixelformat,
+                    output_palette,
+                    frame_ncolors);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                if (output_pixels == indexed_pixels) {
+                    indexed_pixels = NULL;
+                }
+                if (output_pixels == rgb_pixels) {
+                    rgb_pixels = NULL;
+                }
+                if (output_palette == palette) {
+                    palette = NULL;
+                }
+                status = sixel_frame_resize(
+                    frame,
+                    new_width,
+                    new_height,
+                    SIXEL_RES_BILINEAR);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                /*
+                 * The resized frame already exposes a tightly packed RGB
+                 * buffer, so write the updated dimensions and references
+                 * back to the main encoder path.
+                 */
+                sx = sixel_frame_get_width(frame);
+                sy = sixel_frame_get_height(frame);
+                output_pixels = sixel_frame_get_pixels(frame);
+                output_palette = NULL;
+                output_pixelformat = sixel_frame_get_pixelformat(frame);
+            }
+        }
+    }
+
     status = sixel_helper_write_image_file(
         output_pixels,
         sx,
@@ -887,6 +1001,7 @@ sixel_decoder_decode(
     }
 
 end:
+    sixel_frame_unref(frame);
     sixel_allocator_free(decoder->allocator, raw_data);
     sixel_allocator_free(decoder->allocator, indexed_pixels);
     sixel_allocator_free(decoder->allocator, palette);

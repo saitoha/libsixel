@@ -41,4 +41,5 @@ option('tests', type: 'boolean', value: false, description: 'Build tests')
 option('gcov', type: 'boolean', value: false, description: 'Enable gcov coverage flags')
 option('img2sixel', type: 'feature', value: 'enabled', description: 'Build img2sixel tool')
 option('sixel2png', type: 'feature', value: 'enabled', description: 'Build sixel2png tool')
+option('thumbnailer_command', type: 'feature', value: 'auto', description: 'Install sixel thumbnailer command')
 # vim: set et ts=2:

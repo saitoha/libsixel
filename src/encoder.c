@@ -90,6 +90,9 @@
 #if HAVE_CTYPE_H
 # include <ctype.h>
 #endif  /* HAVE_CTYPE_H */
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif  /* HAVE_LIMITS_H */
 
 #include <sixel.h>
 #include "loader.h"
@@ -624,6 +627,55 @@ end:
     return status;
 }
 
+static int
+sixel_encoder_thumbnail_hint(sixel_encoder_t *encoder)
+{
+    int width_hint;
+    int height_hint;
+    long base;
+    long size;
+
+    width_hint = 0;
+    height_hint = 0;
+    base = 0;
+    size = 0;
+
+    if (encoder == NULL) {
+        return 0;
+    }
+
+    width_hint = encoder->pixelwidth;
+    height_hint = encoder->pixelheight;
+
+    /* Request extra resolution for downscaling to preserve detail. */
+    if (width_hint > 0 && height_hint > 0) {
+        /* Follow the CLI rule: double the larger axis before doubling
+         * again for the final request size. */
+        if (width_hint >= height_hint) {
+            base = (long)width_hint;
+        } else {
+            base = (long)height_hint;
+        }
+        base *= 2L;
+    } else if (width_hint > 0) {
+        base = (long)width_hint;
+    } else if (height_hint > 0) {
+        base = (long)height_hint;
+    } else {
+        return 0;
+    }
+
+    size = base * 2L;
+    if (size > (long)INT_MAX) {
+        size = (long)INT_MAX;
+    }
+    if (size < 1L) {
+        size = 1L;
+    }
+
+    return (int)size;
+}
+
 
 typedef struct sixel_callback_context_for_mapfile {
     int reqcolors;
@@ -750,6 +802,8 @@ sixel_prepare_specified_palette(
     callback_context.working_colorspace = encoder->working_colorspace;
 
     sixel_helper_set_loader_trace(encoder->verbose);
+    sixel_helper_set_thumbnail_size_hint(
+        sixel_encoder_thumbnail_hint(encoder));
     status = sixel_helper_load_image_file(encoder->mapfile,
                                           1,   /* fstatic */
                                           1,   /* fuse_palette */
@@ -2715,6 +2769,8 @@ sixel_encoder_encode(
 
 reload:
     sixel_helper_set_loader_trace(encoder->verbose);
+    sixel_helper_set_thumbnail_size_hint(
+        sixel_encoder_thumbnail_hint(encoder));
     status = sixel_helper_load_image_file(filename,
                                           encoder->fstatic,
                                           fuse_palette,

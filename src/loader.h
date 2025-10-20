@@ -27,6 +27,7 @@ extern "C" {
 #endif
 
 void sixel_helper_set_loader_trace(int enable);
+void sixel_helper_set_thumbnail_size_hint(int size);
 
 #if HAVE_TESTS
 SIXELAPI int

@@ -1,0 +1,86 @@
+#!/bin/sh
+# sixel-thumbnailer - gnome thumbnailer for SIXEL images
+# The script accepts the optional -s/--size switch to scale the
+# longer dimension while preserving the aspect ratio. Any additional
+# flags after "--" are forwarded directly to sixel2png.
+set -eu
+
+usage() {
+    echo "Usage: sixel-thumbnailer [-s SIZE] INPUT OUTPUT [-- sixel2png options]" >&2
+    exit 2
+}
+
+size=
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -s)
+            if [ $# -lt 2 ]; then
+                usage
+            fi
+            size="$2"
+            shift 2
+            ;;
+        --size)
+            if [ $# -lt 2 ]; then
+                usage
+            fi
+            size="$2"
+            shift 2
+            ;;
+        --size=*)
+            size="${1#*=}"
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            echo "sixel-thumbnailer: unknown option '$1'" >&2
+            usage
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+case "$size" in
+    '')
+        ;;
+    *[!0-9]*)
+        echo "sixel-thumbnailer: invalid size '$size'" >&2
+        usage
+        ;;
+    0)
+        echo "sixel-thumbnailer: size must be greater than zero" >&2
+        usage
+        ;;
+    *)
+        ;;
+esac
+
+if [ $# -lt 2 ]; then
+    usage
+fi
+
+input=$1
+output=$2
+shift 2
+
+if ! command -v sixel2png >/dev/null 2>&1; then
+    echo "sixel-thumbnailer: sixel2png is required" >&2
+    exit 127
+fi
+
+set -- "$@"
+
+if [ -n "$size" ]; then
+    # Append the scaler request so downstream options keep their
+    # relative order. sixel2png tolerates duplicates and the latest
+    # flag wins, which matches thumbnailer expectations.
+    set -- "$@" -s "$size"
+fi
+
+# Run the converter with the resolved argument vector.
+sixel2png "$@" -i "$input" -o "$output"

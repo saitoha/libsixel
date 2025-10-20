@@ -1,0 +1,4 @@
+[Thumbnailer Entry]
+TryExec=sixel-thumbnailer
+Exec=sixel-thumbnailer -s %s %i %o
+MimeType=image/x-sixel;image/sixel;

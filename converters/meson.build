@@ -41,6 +41,14 @@ if get_option('sixel2png').enabled()
     include_directories: project_inc,
     install: true)
   install_man('sixel2png.1')
+  if bash_completion_dir != ''
+    install_data('shell-completion/bash/sixel2png',
+      install_dir: bash_completion_dir)
+  endif
+  if zsh_completion_dir != ''
+    install_data('shell-completion/zsh/_sixel2png',
+      install_dir: zsh_completion_dir)
+  endif
 endif
 
 # vim: set et ts=2:
