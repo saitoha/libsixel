@@ -115,8 +115,9 @@ extern char **environ;
 
 /*
  * sixel_helper_set_loader_trace
- * Purpose:
- *     Toggle verbose loader tracing so debugging output can be collected.
+ *
+ * Toggle verbose loader tracing so debugging output can be collected.
+ *
  * Arguments:
  *     enable - non-zero enables tracing, zero disables it.
  */
@@ -128,8 +129,9 @@ sixel_helper_set_loader_trace(int enable)
 
 /*
  * sixel_helper_set_thumbnail_size_hint
- * Purpose:
- *     Record the caller's preferred maximum thumbnail dimension.
+ *
+ * Record the caller's preferred maximum thumbnail dimension.
+ *
  * Arguments:
  *     size - requested dimension in pixels; non-positive resets to default.
  */
@@ -145,8 +147,9 @@ sixel_helper_set_thumbnail_size_hint(int size)
 
 /*
  * loader_trace_message
- * Purpose:
- *     Emit a formatted trace message when verbose loader tracing is enabled.
+ *
+ * Emit a formatted trace message when verbose loader tracing is enabled.
+ *
  * Arguments:
  *     format - printf-style message template.
  *     ...    - arguments consumed according to the format string.
@@ -411,11 +414,10 @@ thumbnailer_safe_format(char *buffer,
 
 /*
  * thumbnailer_sleep_briefly
- * Purpose:
- *     Yield the CPU for a short duration so child polling loops avoid busy
- *     waiting.
- * Arguments:
- *     None.
+ *
+ * Yield the CPU for a short duration so child polling loops avoid busy
+ * waiting.
+ *
  */
 static void
 thumbnailer_sleep_briefly(void)
@@ -2210,10 +2212,83 @@ end:
 extern int mkstemp(char *);
 #endif
 
+#if !defined(_WIN32) && !defined(HAVE_REALPATH)
+static char *
+thumbnailer_resolve_without_realpath(char const *path)
+{
+    char *cwd;
+    char *resolved;
+    size_t cwd_length;
+    size_t path_length;
+    int need_separator;
+
+    cwd = NULL;
+    resolved = NULL;
+    cwd_length = 0;
+    path_length = 0;
+    need_separator = 0;
+
+    if (path == NULL) {
+        return NULL;
+    }
+
+    if (path[0] == '/') {
+        path_length = strlen(path);
+        resolved = malloc(path_length + 1);
+        if (resolved == NULL) {
+            return NULL;
+        }
+        memcpy(resolved, path, path_length + 1);
+
+        return resolved;
+    }
+
+#if defined(PATH_MAX)
+    cwd = malloc(PATH_MAX);
+    if (cwd != NULL) {
+        if (getcwd(cwd, PATH_MAX) != NULL) {
+            cwd_length = strlen(cwd);
+            path_length = strlen(path);
+            need_separator = 0;
+            if (cwd_length > 0 && cwd[cwd_length - 1] != '/') {
+                need_separator = 1;
+            }
+            resolved = malloc(cwd_length + need_separator + path_length + 1);
+            if (resolved != NULL) {
+                memcpy(resolved, cwd, cwd_length);
+                if (need_separator != 0) {
+                    resolved[cwd_length] = '/';
+                }
+                memcpy(resolved + cwd_length + need_separator,
+                       path,
+                       path_length + 1);
+            }
+            free(cwd);
+            if (resolved != NULL) {
+                return resolved;
+            }
+        } else {
+            free(cwd);
+        }
+    }
+#endif  /* PATH_MAX */
+
+    path_length = strlen(path);
+    resolved = malloc(path_length + 1);
+    if (resolved == NULL) {
+        return NULL;
+    }
+    memcpy(resolved, path, path_length + 1);
+
+    return resolved;
+}
+#endif  /* !_WIN32 && !HAVE_REALPATH */
+
 /*
  * thumbnailer_resolve_path
- * Purpose:
- *     Resolve the supplied path to an absolute canonical path when possible.
+ *
+ * Resolve the supplied path to an absolute canonical path when possible.
+ *
  * Arguments:
  *     path - original filesystem path.
  * Returns:
@@ -2232,8 +2307,10 @@ thumbnailer_resolve_path(char const *path)
 
 #if defined(_WIN32)
     resolved = _fullpath(NULL, path, 0);
-#else
+#elif defined(HAVE_REALPATH)
     resolved = realpath(path, NULL);
+#else
+    resolved = thumbnailer_resolve_without_realpath(path);
 #endif
 
     return resolved;
@@ -2253,8 +2330,9 @@ struct thumbnailer_entry {
 
 /*
  * thumbnailer_strdup
- * Purpose:
- *     Duplicate a string with malloc so thumbnail helpers own their copies.
+ *
+ * Duplicate a string with malloc so thumbnail helpers own their copies.
+ *
  * Arguments:
  *     src - zero-terminated string to copy; may be NULL.
  * Returns:
@@ -2285,8 +2363,9 @@ thumbnailer_strdup(char const *src)
 
 /*
  * thumbnailer_string_list_new
- * Purpose:
- *     Allocate an empty expandable string list used throughout the loader.
+ *
+ * Allocate an empty expandable string list used throughout the loader.
+ *
  * Arguments:
  *     None.
  * Returns:
@@ -2311,8 +2390,9 @@ thumbnailer_string_list_new(void)
 
 /*
  * thumbnailer_string_list_free
- * Purpose:
- *     Release every string stored in the list and free the container itself.
+ *
+ * Release every string stored in the list and free the container itself.
+ *
  * Arguments:
  *     list - list instance produced by thumbnailer_string_list_new().
  */
@@ -2341,8 +2421,9 @@ thumbnailer_string_list_free(struct thumbnailer_string_list *list)
 
 /*
  * thumbnailer_string_list_append
- * Purpose:
- *     Append a copy of the supplied string to the dynamic list.
+ *
+ * Append a copy of the supplied string to the dynamic list.
+ *
  * Arguments:
  *     list  - destination list.
  *     value - string to duplicate and append.
@@ -2390,8 +2471,9 @@ thumbnailer_string_list_append(struct thumbnailer_string_list *list,
 
 /*
  * thumbnailer_entry_init
- * Purpose:
- *     Prepare a thumbnailer_entry structure for population.
+ *
+ * Prepare a thumbnailer_entry structure for population.
+ *
  * Arguments:
  *     entry - caller-provided structure to initialize.
  */
@@ -2409,8 +2491,9 @@ thumbnailer_entry_init(struct thumbnailer_entry *entry)
 
 /*
  * thumbnailer_entry_clear
- * Purpose:
- *     Release every heap allocation associated with a thumbnailer_entry.
+ *
+ * Release every heap allocation associated with a thumbnailer_entry.
+ *
  * Arguments:
  *     entry - structure previously initialized with thumbnailer_entry_init().
  */
@@ -2431,8 +2514,9 @@ thumbnailer_entry_clear(struct thumbnailer_entry *entry)
 
 /*
  * thumbnailer_join_paths
- * Purpose:
- *     Concatenate two path fragments inserting a slash when required.
+ *
+ * Concatenate two path fragments inserting a slash when required.
+ *
  * Arguments:
  *     left  - directory prefix.
  *     right - trailing component.
@@ -2485,9 +2569,9 @@ thumbnailer_join_paths(char const *left, char const *right)
 
 /*
  * thumbnailer_collect_directories
- * Purpose:
- *     Enumerate directories that may contain FreeDesktop thumbnailer
- *     definitions according to the XDG specification.
+ *
+ * Enumerate directories that may contain FreeDesktop thumbnailer
+ * definitions according to the XDG specification.
  *
  * GNOME thumbnailers follow the XDG data directory contract:
  *
@@ -2495,14 +2579,14 @@ thumbnailer_join_paths(char const *left, char const *right)
  *     | HOME/.local/share| ---> | HOME/.local/share/        |
  *     |                  |      |    thumbnailers/(*.thumbnailer)
  *     +------------------+      +---------------------------+
- *                 |
- *                 v
+ *
  *     +------------------+      +---------------------------+
  *     | XDG_DATA_DIRS    | ---> | <dir>/thumbnailers/(*.thumbnailer)
  *     +------------------+      +---------------------------+
  *
  * The helper below expands both sources so that the caller can iterate
  * through every known definition in order of precedence.
+ *
  * Arguments:
  *     None.
  * Returns:
@@ -2602,8 +2686,9 @@ thumbnailer_collect_directories(void)
 
 /*
  * thumbnailer_trim_right
- * Purpose:
- *     Remove trailing whitespace in place from a mutable string.
+ *
+ * Remove trailing whitespace in place from a mutable string.
+ *
  * Arguments:
  *     text - string to trim; must be writable and zero-terminated.
  */
@@ -2627,8 +2712,9 @@ thumbnailer_trim_right(char *text)
 
 /*
  * thumbnailer_trim_left
- * Purpose:
- *     Skip leading whitespace so parsers can focus on significant tokens.
+ *
+ * Skip leading whitespace so parsers can focus on significant tokens.
+ *
  * Arguments:
  *     text - string to inspect; may be NULL.
  * Returns:
@@ -2650,8 +2736,9 @@ thumbnailer_trim_left(char *text)
 
 /*
  * thumbnailer_parse_file
- * Purpose:
- *     Populate a thumbnailer_entry by parsing a .thumbnailer ini file.
+ *
+ * Populate a thumbnailer_entry by parsing a .thumbnailer ini file.
+ *
  * Arguments:
  *     path  - filesystem path to the ini file.
  *     entry - output structure initialized with thumbnailer_entry_init().
@@ -2790,8 +2877,9 @@ thumbnailer_parse_file(char const *path, struct thumbnailer_entry *entry)
 
 /*
  * thumbnailer_has_tryexec
- * Purpose:
- *     Confirm that the optional TryExec binary exists and is executable.
+ *
+ * Confirm that the optional TryExec binary exists and is executable.
+ *
  * Arguments:
  *     tryexec - value from the .thumbnailer file; may be NULL.
  * Returns:
@@ -2863,8 +2951,9 @@ thumbnailer_has_tryexec(char const *tryexec)
 
 /*
  * thumbnailer_mime_matches
- * Purpose:
- *     Test whether a thumbnailer MIME pattern matches the probed MIME type.
+ *
+ * Test whether a thumbnailer MIME pattern matches the probed MIME type.
+ *
  * Arguments:
  *     pattern   - literal MIME pattern or prefix ending with "slash-asterisk".
  *     mime_type - MIME value obtained from file --mime-type.
@@ -2897,8 +2986,9 @@ thumbnailer_mime_matches(char const *pattern, char const *mime_type)
 
 /*
  * thumbnailer_supports_mime
- * Purpose:
- *     Iterate over MIME patterns advertised by a thumbnailer entry.
+ *
+ * Iterate over MIME patterns advertised by a thumbnailer entry.
+ *
  * Arguments:
  *     entry     - parsed thumbnailer entry with mime_types list.
  *     mime_type - MIME type string to match.
@@ -2933,8 +3023,9 @@ thumbnailer_supports_mime(struct thumbnailer_entry *entry,
 
 /*
  * thumbnailer_shell_quote
- * Purpose:
- *     Produce a single-quoted variant of an argument for readable logging.
+ *
+ * Produce a single-quoted variant of an argument for readable logging.
+ *
  * Arguments:
  *     text - unquoted argument.
  * Returns:
@@ -2999,8 +3090,9 @@ struct thumbnailer_builder {
 
 /*
  * thumbnailer_builder_reserve
- * Purpose:
- *     Grow the builder buffer so future appends fit without overflow.
+ *
+ * Grow the builder buffer so future appends fit without overflow.
+ *
  * Arguments:
  *     builder    - mutable builder instance.
  *     additional - number of bytes that must fit excluding terminator.
@@ -3039,8 +3131,9 @@ thumbnailer_builder_reserve(struct thumbnailer_builder *builder,
 
 /*
  * thumbnailer_builder_append_char
- * Purpose:
- *     Append a single character to the builder.
+ *
+ * Append a single character to the builder.
+ *
  * Arguments:
  *     builder - mutable builder instance.
  *     ch      - character to append.
@@ -3064,8 +3157,9 @@ thumbnailer_builder_append_char(struct thumbnailer_builder *builder,
 
 /*
  * thumbnailer_builder_append
- * Purpose:
- *     Append a string of known length to the builder buffer.
+ *
+ * Append a string of known length to the builder buffer.
+ *
  * Arguments:
  *     builder - mutable builder instance.
  *     text    - zero-terminated string to append.
@@ -3098,8 +3192,9 @@ thumbnailer_builder_append(struct thumbnailer_builder *builder,
 
 /*
  * thumbnailer_builder_clear
- * Purpose:
- *     Reset builder length to zero while retaining allocated storage.
+ *
+ * Reset builder length to zero while retaining allocated storage.
+ *
  * Arguments:
  *     builder - builder to reset.
  */
@@ -3125,8 +3220,9 @@ struct thumbnailer_command {
 
 /*
  * thumbnailer_command_free
- * Purpose:
- *     Release argv entries, the array itself, and the formatted display copy.
+ *
+ * Release argv entries, the array itself, and the formatted display copy.
+ *
  * Arguments:
  *     command - structure created by thumbnailer_build_command().
  */
@@ -3156,8 +3252,9 @@ thumbnailer_command_free(struct thumbnailer_command *command)
 
 /*
  * thumbnailer_command_format
- * Purpose:
- *     Join argv entries into a human-readable command line for logging.
+ *
+ * Join argv entries into a human-readable command line for logging.
+ *
  * Arguments:
  *     argv - array of argument strings.
  *     argc - number of entries stored in argv.
@@ -3206,9 +3303,10 @@ thumbnailer_command_format(char **argv, size_t argc)
 
 /*
  * thumbnailer_build_command
- * Purpose:
- *     Expand a .thumbnailer Exec template into an argv array that honours
- *     FreeDesktop substitution rules.
+ *
+ * Expand a .thumbnailer Exec template into an argv array that honours
+ * FreeDesktop substitution rules.
+ *
  * Arguments:
  *     template_command - Exec line containing % tokens.
  *     input_path       - filesystem path to the source document.
@@ -3422,9 +3520,10 @@ error:
 
 /*
  * thumbnailer_is_evince_thumbnailer
- * Purpose:
- *     Detect whether the selected thumbnailer maps to evince-thumbnailer so
- *     the stdout redirection workaround can be applied.
+ *
+ * Detect whether the selected thumbnailer maps to evince-thumbnailer so
+ * the stdout redirection workaround can be applied.
+ *
  * Arguments:
  *     exec_line - Exec string parsed from the .thumbnailer file.
  *     tryexec   - optional TryExec value for additional matching.
@@ -3465,9 +3564,10 @@ thumbnailer_is_evince_thumbnailer(char const *exec_line,
 
 /*
  * thumbnailer_build_evince_command
- * Purpose:
- *     Construct an argv sequence that streams evince-thumbnailer output to
- *     stdout so downstream code can capture the PNG safely.
+ *
+ * Construct an argv sequence that streams evince-thumbnailer output to
+ * stdout so downstream code can capture the PNG safely.
+ *
  * Arguments:
  *     input_path - source document path.
  *     size       - numeric size hint forwarded to the -s option.
@@ -3538,8 +3638,9 @@ thumbnailer_build_evince_command(char const *input_path,
 
 /*
  * thumbnailer_build_file_uri
- * Purpose:
- *     Convert a filesystem path into a percent-encoded file:// URI.
+ *
+ * Convert a filesystem path into a percent-encoded file:// URI.
+ *
  * Arguments:
  *     path - filesystem path; may be relative but will be resolved.
  * Returns:
@@ -3618,8 +3719,9 @@ thumbnailer_build_file_uri(char const *path)
 
 /*
  * thumbnailer_guess_content_type
- * Purpose:
- *     Invoke the file(1) utility to obtain a MIME type for the input path.
+ *
+ * Invoke the file(1) utility to obtain a MIME type for the input path.
+ *
  * Arguments:
  *     path - filesystem path passed to file --mime-type.
  * Returns:
@@ -4283,9 +4385,9 @@ cleanup:
 
 /*
  * load_with_gnome_thumbnailer
- * Purpose:
- *     Drive the FreeDesktop thumbnailer pipeline and then decode the PNG
- *     result using the built-in loader.
+ *
+ * Drive the FreeDesktop thumbnailer pipeline and then decode the PNG
+ * result using the built-in loader.
  *
  * GNOME thumbnail workflow overview:
  *
@@ -4301,6 +4403,7 @@ cleanup:
  * Each step logs verbose breadcrumbs so integrators can diagnose which
  * thumbnailer matched, how the command was prepared, and why fallbacks
  * were selected.
+ *
  * Arguments:
  *     pchunk        - source chunk representing the original document.
  *     fstatic       - image static-ness flag.

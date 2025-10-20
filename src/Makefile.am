@@ -60,9 +60,8 @@ if HAVE_QUICKLOOK_THUMBNAILING
 libsixel_la_SOURCES += \
                 $(srcdir)/quicklook_thumbnailing.m
 endif
-libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS) \
-                       -D_POSIX_SOURCE \
-                       -D_POSIX_C_SOURCE=199309L
+libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
+                       -D_POSIX_SOURCE -D_POSIX_C_SOURCE=200112L
 libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(LIBCURL_CFLAGS) \
 		$(WINHTTP_CFLAGS) \

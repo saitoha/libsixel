@@ -575,6 +575,7 @@ AC_CHECK_FUNCS([assert \
                 localeconv \
                 pow \
                 select \
+                realpath \
                 sqrt \
                 strchr \
                 strerror \

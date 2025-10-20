@@ -210,6 +210,7 @@ extra_funcs = [
   'localeconv',
   'pow',
   'select',
+  'realpath',
   'sqrt',
   'strchr',
   'strerror',
@@ -640,20 +641,13 @@ elif thumbnailer_opt.disabled()
 else
   datadir_opt = get_option('datadir')
   datadir_path = join_paths(get_option('prefix'), datadir_opt)
-  xdg_data_dirs = meson.get_env('XDG_DATA_DIRS')
-  if xdg_data_dirs == ''
-    xdg_data_dirs = '/usr/local/share:/usr/share'
-  endif
+  xdg_data_dirs = '/usr/local/share:/usr/share'
   thumbnailer_candidates = []
   foreach xdg_dir : xdg_data_dirs.split(':')
     if xdg_dir != ''
       thumbnailer_candidates += [join_paths(xdg_dir, 'thumbnailers')]
     endif
   endforeach
-  home_dir = meson.get_env('HOME')
-  if home_dir != ''
-    thumbnailer_candidates += [join_paths(home_dir, '.local', 'share', 'thumbnailers')]
-  endif
   thumbnailer_candidates += [join_paths(datadir_path, 'thumbnailers')]
   have_thumbnailer_dir = false
   foreach candidate : thumbnailer_candidates
@@ -737,7 +731,7 @@ subdir('include')
 
 libsixel_posix_defs = cc.get_supported_arguments([
   '-D_POSIX_SOURCE',
-  '-D_POSIX_C_SOURCE=199309L',
+  '-D_POSIX_C_SOURCE 200112L',
 ])
 
 subdir('src')
