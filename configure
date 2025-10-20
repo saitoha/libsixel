@@ -18423,6 +18423,12 @@ then :
   printf "%s\n" "#define HAVE_SELECT 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "realpath" "ac_cv_func_realpath"
+if test "x$ac_cv_func_realpath" = xyes
+then :
+  printf "%s\n" "#define HAVE_REALPATH 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "sqrt" "ac_cv_func_sqrt"
 if test "x$ac_cv_func_sqrt" = xyes
 then :
