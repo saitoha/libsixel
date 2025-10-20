@@ -144,14 +144,14 @@
 /* Define to 1 if you have the 'floor' function. */
 #undef HAVE_FLOOR
 
-/* Define to 1 if you have the 'fork' function. */
-#undef HAVE_FORK
-
 /* define 1 if GCC supports -fno-emulated-tls */
 #undef HAVE_FNO_EMULATED_TLS
 
 /* Define to 1 if you have the 'fopen_s' function. */
 #undef HAVE_FOPEN_S
+
+/* Define to 1 if you have the 'fork' function. */
+#undef HAVE_FORK
 
 /* Define to 1 if the system has the `deprecated' function attribute */
 #undef HAVE_FUNC_ATTRIBUTE_DEPRECATED
@@ -238,11 +238,11 @@
 /* Define if nanosleep exists */
 #undef HAVE_NANOSLEEP
 
-/* Define to 1 if you have the 'posix_spawnp' function. */
-#undef HAVE_POSIX_SPAWNP
-
 /* Define if NEON is available */
 #undef HAVE_NEON
+
+/* Define to 1 if you have the 'posix_spawnp' function. */
+#undef HAVE_POSIX_SPAWNP
 
 /* Define to 1 if you have the 'pow' function. */
 #undef HAVE_POW
@@ -271,6 +271,9 @@
 
 /* Define to 1 if you have the <signal.h> header file. */
 #undef HAVE_SIGNAL_H
+
+/* Define to 1 if you have the <spawn.h> header file. */
+#undef HAVE_SPAWN_H
 
 /* Define to 1 if you have the 'sqrt' function. */
 #undef HAVE_SQRT
@@ -343,9 +346,6 @@
 
 /* Define to 1 if you have the <sys/wait.h> header file. */
 #undef HAVE_SYS_WAIT_H
-
-/* Define to 1 if you have the <spawn.h> header file. */
-#undef HAVE_SPAWN_H
 
 /* Define to 1 if you have the <termios.h> header file. */
 #undef HAVE_TERMIOS_H

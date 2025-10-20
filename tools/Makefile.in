@@ -90,6 +90,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@WANT_THUMBNAILER_TRUE@am__append_1 = sixel-thumbnailer
 subdir = tools
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
@@ -340,8 +341,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 CLEANFILES = 
-bin_SCRIPTS = libsixel-config
-	@WANT_THUMBNAILER_TRUE@bin_SCRIPTS += sixel-thumbnailer
+bin_SCRIPTS = libsixel-config $(am__append_1)
 EXTRA_DIST = libsixel-config.in \
              quicklook-extension.bash \
              sixel-thumbnailer \
@@ -476,36 +476,6 @@ install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
 
-install-data-hook:
-	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/thumbnailers"; do \
-	@WANT_THUMBNAILER_TRUE@      $(MKDIR_P) "$$dest" && \
-	@WANT_THUMBNAILER_TRUE@      $(INSTALL_DATA) "$(srcdir)/libsixel-thumbnailer.thumbnailer" "$$dest/"; \
-	@WANT_THUMBNAILER_TRUE@    done
-	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/packages"; do \
-	@WANT_THUMBNAILER_TRUE@      $(MKDIR_P) "$$dest" && \
-	@WANT_THUMBNAILER_TRUE@      $(INSTALL_DATA) "$(srcdir)/sixel.xml" "$$dest/"; \
-	@WANT_THUMBNAILER_TRUE@    done
-	@WANT_THUMBNAILER_TRUE@    @if test -n "$(UPDATE_MIME_DATABASE)"; then \
-	@WANT_THUMBNAILER_TRUE@      if test -z "$(DESTDIR)"; then \
-	@WANT_THUMBNAILER_TRUE@        $(SHELL) "$(top_srcdir)/tools/update-mime-database.sh" "$(UPDATE_MIME_DATABASE)" "$(datadir)" install; \
-	@WANT_THUMBNAILER_TRUE@      fi; \
-	@WANT_THUMBNAILER_TRUE@    fi
-	@WANT_THUMBNAILER_FALSE@    @:
-
-uninstall-hook:
-	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/thumbnailers"; do \
-	@WANT_THUMBNAILER_TRUE@      rm -f "$$dest/libsixel-thumbnailer.thumbnailer"; \
-	@WANT_THUMBNAILER_TRUE@    done
-	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/packages"; do \
-	@WANT_THUMBNAILER_TRUE@      rm -f "$$dest/sixel.xml"; \
-	@WANT_THUMBNAILER_TRUE@    done
-	@WANT_THUMBNAILER_TRUE@    @if test -n "$(UPDATE_MIME_DATABASE)"; then \
-	@WANT_THUMBNAILER_TRUE@      if test -z "$(DESTDIR)"; then \
-	@WANT_THUMBNAILER_TRUE@        $(SHELL) "$(top_srcdir)/tools/update-mime-database.sh" "$(UPDATE_MIME_DATABASE)" "$(datadir)" uninstall; \
-	@WANT_THUMBNAILER_TRUE@      fi; \
-	@WANT_THUMBNAILER_TRUE@    fi
-	@WANT_THUMBNAILER_FALSE@    @:
-
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 
@@ -553,7 +523,8 @@ info: info-am
 info-am:
 
 install-data-am:
-
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-dvi: install-dvi-am
 
 install-dvi-am:
@@ -597,26 +568,57 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-binSCRIPTS
-
-.MAKE: install-am install-strip
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
+.MAKE: install-am install-data-am install-strip uninstall-am
 
 .PHONY: all all-am check check-am clean clean-generic clean-libtool \
 	clean-local cscopelist-am ctags-am distclean distclean-generic \
 	distclean-libtool distdir dvi dvi-am html html-am info info-am \
 	install install-am install-binSCRIPTS install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
+	install-data-am install-data-hook install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-generic \
 	mostlyclean-libtool pdf pdf-am ps ps-am tags-am uninstall \
-	uninstall-am uninstall-binSCRIPTS
+	uninstall-am uninstall-binSCRIPTS uninstall-hook
 
 .PRECIOUS: Makefile
 
 
 clean-local:
+
+install-data-hook:
+	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/thumbnailers"; do \
+	@WANT_THUMBNAILER_TRUE@      $(MKDIR_P) "$$dest" && \
+	@WANT_THUMBNAILER_TRUE@      $(INSTALL_DATA) "$(srcdir)/libsixel-thumbnailer.thumbnailer" "$$dest/"; \
+	@WANT_THUMBNAILER_TRUE@    done
+	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/packages"; do \
+	@WANT_THUMBNAILER_TRUE@      $(MKDIR_P) "$$dest" && \
+	@WANT_THUMBNAILER_TRUE@      $(INSTALL_DATA) "$(srcdir)/sixel.xml" "$$dest/"; \
+	@WANT_THUMBNAILER_TRUE@    done
+	@WANT_THUMBNAILER_TRUE@    @if test -n "$(UPDATE_MIME_DATABASE)"; then \
+	@WANT_THUMBNAILER_TRUE@      if test -z "$(DESTDIR)"; then \
+	@WANT_THUMBNAILER_TRUE@        $(SHELL) "$(top_srcdir)/tools/update-mime-database.sh" "$(UPDATE_MIME_DATABASE)" "$(datadir)" install; \
+	@WANT_THUMBNAILER_TRUE@      fi; \
+	@WANT_THUMBNAILER_TRUE@    fi
+	@WANT_THUMBNAILER_FALSE@    @:
+
+uninstall-hook:
+	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/thumbnailers"; do \
+	@WANT_THUMBNAILER_TRUE@      rm -f "$$dest/libsixel-thumbnailer.thumbnailer"; \
+	@WANT_THUMBNAILER_TRUE@    done
+	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/packages"; do \
+	@WANT_THUMBNAILER_TRUE@      rm -f "$$dest/sixel.xml"; \
+	@WANT_THUMBNAILER_TRUE@    done
+	@WANT_THUMBNAILER_TRUE@    @if test -n "$(UPDATE_MIME_DATABASE)"; then \
+	@WANT_THUMBNAILER_TRUE@      if test -z "$(DESTDIR)"; then \
+	@WANT_THUMBNAILER_TRUE@        $(SHELL) "$(top_srcdir)/tools/update-mime-database.sh" "$(UPDATE_MIME_DATABASE)" "$(datadir)" uninstall; \
+	@WANT_THUMBNAILER_TRUE@      fi; \
+	@WANT_THUMBNAILER_TRUE@    fi
+	@WANT_THUMBNAILER_FALSE@    @:
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
