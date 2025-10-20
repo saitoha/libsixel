@@ -31,6 +31,7 @@ project('libsixel',
 
 host_system = host_machine.system()
 cc = meson.get_compiler('c')
+fs = import('fs')
 have_objc = add_languages('objc', required: false, native: false)
 if have_objc
   objc = meson.get_compiler('objc')
@@ -165,6 +166,8 @@ std_headers = [
     'sys/signal.h',
     'termios.h',
     'sys/ioctl.h',
+    'sys/wait.h',
+    'spawn.h',
     'inttypes.h',
     'stdio.h',
     'stdlib.h',
@@ -211,7 +214,9 @@ extra_funcs = [
   'strchr',
   'strerror',
   'strstr',
-  'strtol'
+  'strtol',
+  'fork',
+  'posix_spawnp'
 ]
 foreach f : extra_funcs
   if cc.has_function(f)
@@ -622,6 +627,63 @@ if zsh_completion_opt != 'disabled'
   endif
 endif
 
+thumbnailer_message = 'no'
+thumbnailer_opt = get_option('thumbnailer_command')
+thumbnailer_install = false
+sixel2png_opt = get_option('sixel2png')
+update_mime_database = find_program('update-mime-database', required : false)
+
+if sixel2png_opt.disabled()
+  thumbnailer_message = 'no (requires sixel2png)'
+elif thumbnailer_opt.disabled()
+  thumbnailer_message = 'no'
+else
+  datadir_opt = get_option('datadir')
+  datadir_path = join_paths(get_option('prefix'), datadir_opt)
+  xdg_data_dirs = meson.get_env('XDG_DATA_DIRS')
+  if xdg_data_dirs == ''
+    xdg_data_dirs = '/usr/local/share:/usr/share'
+  endif
+  thumbnailer_candidates = []
+  foreach xdg_dir : xdg_data_dirs.split(':')
+    if xdg_dir != ''
+      thumbnailer_candidates += [join_paths(xdg_dir, 'thumbnailers')]
+    endif
+  endforeach
+  home_dir = meson.get_env('HOME')
+  if home_dir != ''
+    thumbnailer_candidates += [join_paths(home_dir, '.local', 'share', 'thumbnailers')]
+  endif
+  thumbnailer_candidates += [join_paths(datadir_path, 'thumbnailers')]
+  have_thumbnailer_dir = false
+  foreach candidate : thumbnailer_candidates
+    if fs.exists(candidate)
+      have_thumbnailer_dir = true
+      break
+    endif
+  endforeach
+  if thumbnailer_opt.enabled()
+    thumbnailer_install = true
+  elif thumbnailer_opt.auto() and have_thumbnailer_dir
+    thumbnailer_install = true
+  endif
+
+  if thumbnailer_install
+    install_script('tools/sixel-thumbnailer', install_dir: get_option('bindir'))
+    install_data('tools/libsixel-thumbnailer.thumbnailer', install_dir: join_paths(get_option('datadir'), 'thumbnailers'))
+    install_data('tools/sixel.xml', install_dir: join_paths(get_option('datadir'), 'packages'))
+    if update_mime_database.found()
+      update_mime_script = join_paths(meson.project_source_root(), 'tools', 'update-mime-database.sh')
+      meson.add_install_script(update_mime_script, update_mime_database.path(), join_paths(get_option('prefix'), get_option('datadir')), 'install', skip_if_destdir: true)
+    endif
+    thumbnailer_message = 'yes'
+  elif thumbnailer_opt.auto()
+    thumbnailer_message = 'no (thumbnailer dir not found)'
+  else
+    thumbnailer_message = 'no'
+  endif
+endif
+
 py_opt = get_option('python')
 if py_opt.enabled()
   py_mod = import('python')
@@ -758,6 +820,7 @@ message('       QuickLook extension : ' + quicklook_extension_message)
 message('       WIC codec           : ' + wiccodec_message)
 message('       python bindings     : ' + python_message)
 message('       ruby bindings       : ' + ruby_message)
+message('       Thumbnailer command : ' + thumbnailer_message)
 message('       SIMD                : ' + simd_message)
 message('       gcov integration    : ' + (get_option('gcov') ? 'yes' : 'no'))
 message('       debugging           : ' + (get_option('debug') ? 'yes' : 'no'))

@@ -46,6 +46,7 @@ or provide the desired directory path explicitly.
 | `--disable-sixel2png` | disabled (builds by default) | Skip building the `sixel2png` CLI tool. |
 | `--enable-quicklook-extension` | `auto` | Build the macOS Quick Look extension bundle (requires macOS ≥ 10.15). |
 | `--enable-quicklook-preview` | `auto` | Use macOS Quick Look to render previews for non-image inputs. |
+| `--enable-thumbnailer-command` | `auto` | Enable the FreeDesktop.org thumbnailer command bridge used by GNOME, Cinnamon, MATE, and Xfce (via Tumbler) as well as other desktops that honour `.thumbnailer` definitions. |
 | `--with-coregraphics[=auto]` | `auto` | Use CoreGraphics for macOS-only rendering helpers. |
 | `--with-libcurl[=auto]` | `auto` | Link against libcurl to enable network transfers. |
 | `--with-jpeg[=auto]` | `auto` | Link against libjpeg to decode JPEG input. |
