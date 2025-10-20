@@ -48,10 +48,14 @@ Disable dequantization (default).
 Use kornelski's undithering algorithm to smooth gradients.
 .RE
 .TP 5
-.B \-s
+.B \-S
 Specify similarity bias for dequantization.
 The argument must be an integer between 0 and 1000.
 The default value is 30.
+.TP 5
+.B \-s
+Resize the decoded image so that the longer edge becomes SIZE pixels.
+The aspect ratio is preserved.
 .TP 5
 .B \-e
 Specify edge protection bias for dequantization.

@@ -218,7 +218,8 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_INPUT             ('i')  /* -i, --input: specify input file name. */
 #define SIXEL_OPTFLAG_OUTPUT            ('o')  /* -o, --output: specify output file name. */
 #define SIXEL_OPTFLAG_DEQUANTIZE        ('d')  /* -d, --dequantize: apply palette dequantization. */
-#define SIXEL_OPTFLAG_SIMILARITY        ('s')  /* -s, --similarity: specify similarity bias (1-1000, default: 30). */
+#define SIXEL_OPTFLAG_SIMILARITY        ('S')  /* -S, --similarity: specify similarity bias (1-1000, default: 30). */
+#define SIXEL_OPTFLAG_SIZE              ('s')  /* -s, --size: limit longer edge to SIZE pixels. */
 #define SIXEL_OPTFLAG_EDGE              ('e')  /* -e, --edge: specify  bias (1-1000, default: 30). */
 #define SIXEL_OPTFLAG_OUTFILE           ('o')  /* -o, --outfile: specify edge protection bios. */
 #define SIXEL_OPTFLAG_ALT_CHARSET_PATH  ('T')  /* -T, tile character output destination. */

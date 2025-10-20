@@ -587,6 +587,20 @@ SIXEL_BGCOLOR              specify background color.
 
 ```
 
+When running under GNOME or other desktops that implement the FreeDesktop.org
+Thumbnail Managing Standard (including Cinnamon, MATE, and Xfce via Tumbler),
+`img2sixel` inspects the installed `.thumbnailer` definitions located in
+`$HOME/.local/share/thumbnailers` and each directory listed in `XDG_DATA_DIRS`
+(defaulting to `/usr/local/share` and `/usr/share`). It invokes the first entry
+that advertises support for the source file's MIME type. The MIME type is
+obtained from `file --mime-type`, so GLib is not required at runtime. The
+generated preview is rendered at a provisional width of 512 pixels before being
+converted to SIXEL. When `-w` and/or `-h` are supplied, libsixel requests
+more headroom: the larger of the supplied pixel sizes is doubled and the
+result is doubled again (if only one side is specified the final size is
+simply twice that value). If no specialised thumbnailer is available,
+`gdk-pixbuf-thumbnailer` is used as a fallback.
+
 Convert a jpeg image file into a sixel file
 
 ```
