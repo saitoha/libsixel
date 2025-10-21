@@ -1,0 +1,195 @@
+name: clang-quality
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+  workflow_dispatch:
+
+jobs:
+  # =========================================================
+  # Job 1: clang-tidy with reviewdog + SARIF upload
+  # =========================================================
+  clang-tidy:
+    runs-on: ubuntu-latest
+    env:
+      CC: clang
+      CXX: clang++
+    strategy:
+      fail-fast: false
+      matrix:
+        build_system: [ meson, autotools ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install toolchain & helpers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang clang-tidy clang-tools \
+            meson ninja-build pkg-config \
+            bear ccache \
+            python3 python3-pip
+
+      - name: Show versions
+        run: |
+          echo "clang: $(clang --version | head -n1)"
+          echo "clang-tidy: $(clang-tidy --version)"
+          echo "meson: $(meson --version)"
+          echo "bear: $(bear --version)"
+          echo "python: $(python3 --version)"
+
+      # ---------- Build (Autotools) ----------
+      - name: Configure & Build (Autotools) with bear
+        if: matrix.build_system == 'autotools'
+        run: |
+          # Generate compile_commands.json at repo root via bear
+          export CC="ccache clang"; export CXX="ccache clang++"
+          bear -- ./configure || true
+          bear -- make -j"$(nproc)"
+
+      # ---------- Build (Meson) ----------
+      - name: Configure (Meson)
+        if: matrix.build_system == 'meson'
+        run: |
+          # Use ccache for speed and produce compile_commands.json under build/
+          export CC="ccache clang"; export CXX="ccache clang++"
+          meson setup build \
+            --buildtype=debug \
+            -Dwerror=true
+          meson compile -C build
+
+      - name: Locate compile_commands.json
+        id: compdb
+        run: |
+          # Prefer Meson's build dir; fallback to repo root for Autotools
+          if [ -f build/compile_commands.json ]; then
+            echo "path=build" >> "$GITHUB_OUTPUT"
+          elif [ -f compile_commands.json ]; then
+            echo "path=." >> "$GITHUB_OUTPUT"
+          else
+            echo "compile_commands.json not found"; exit 1
+          fi
+
+      # ---------- reviewdog inline review ----------
+      - name: Set up reviewdog
+        uses: reviewdog/action-setup@v1
+        # Installs reviewdog CLI for generic piping mode
+
+      - name: Run clang-tidy (reviewdog; PR-only annotations)
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Collect C/C++/ObjC sources under version control.
+          FILES="$(git ls-files '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hpp' '*.hh' '*.hxx' '*.m' '*.mm' || true)"
+          if [ -z "$FILES" ]; then
+            echo "No C/C++/ObjC sources found. Skipping."; exit 0
+          fi
+
+          # Running clang-tidy once for reviewdog (stdout is parsed in 'clang-tidy' format).
+          # Use compile_commands.json from $COMPDB; fail the job on new problems in the diff.
+          COMPDB="${{ steps.compdb.outputs.path }}"
+          clang-tidy -p "$COMPDB" \
+            -header-filter='.*' \
+            $FILES \
+            | reviewdog -f=clang-tidy \
+                -name="clang-tidy (reviewdog)" \
+                -reporter=github-pr-review \
+                -filter-mode=diff_context \
+                -fail-on-error=true
+
+      # ---------- SARIF generation & upload ----------
+      # We run clang-tidy a second time to produce machine-readable output for SARIF.
+      - name: Export clang-tidy fixes (YAML)
+        run: |
+          FILES="$(git ls-files '*.c' '*.cc' '*.cpp' '*.cxx' '*.m' '*.mm' || true)"
+          if [ -z "$FILES" ]; then
+            echo "No sources for SARIF export. Creating empty fixes.yaml."
+            echo "{}" > fixes.yaml
+            exit 0
+          fi
+          COMPDB="${{ steps.compdb.outputs.path }}"
+          # -export-fixes overwrites; run once to collect into fixes.yaml
+          clang-tidy -p "$COMPDB" -header-filter='.*' -export-fixes=fixes.yaml $FILES || true
+          [ -s fixes.yaml ] || echo "{}" > fixes.yaml
+
+      - name: Convert fixes.yaml to SARIF
+        run: |
+          # Use a lightweight converter from clang-tidy 'fixes' YAML to SARIF.
+          # If you prefer another converter, replace this step accordingly.
+          python3 -m pip install --upgrade pip >/dev/null
+          python3 -m pip install clang-tidy-sarif >/dev/null
+          python3 - << 'PY'
+          import json, sys, subprocess, os
+          # Prefer converting from clang-tidy standard output if desired,
+          # but here we convert 'fixes.yaml' to 'results.sarif'.
+          from clang_tidy_sarif import from_yaml
+          with open('fixes.yaml','rb') as f:
+              sarif = from_yaml(f.read())
+          with open('results.sarif','w',encoding='utf-8') as out:
+              json.dump(sarif, out, ensure_ascii=False, indent=2)
+          print("Wrote results.sarif")
+          PY
+
+      - name: Upload SARIF to "Code scanning alerts"
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+          category: clang-tidy
+
+      - name: Keep artifacts for debugging (optional)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clang-tidy-artifacts-${{ matrix.build_system }}
+          path: |
+            fixes.yaml
+            results.sarif
+
+  # =========================================================
+  # Job 2: clang-format with reviewdog (diff-only)
+  # =========================================================
+  clang-format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install clang-format & reviewdog
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+      - uses: reviewdog/action-setup@v1
+
+      - name: Show versions
+        run: |
+          clang-format --version
+          reviewdog -version
+
+      - name: Run clang-format (reviewdog; PR-only annotations)
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # List changed C/C++/ObjC files in the PR against the base.
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          else
+            # Fallback for push/manual: compare with main
+            BASE_SHA="$(git rev-parse origin/${{ github.ref_name || 'main' }} || true)"
+          fi
+
+          FILES="$(git ls-files '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hpp' '*.hh' '*.hxx' '*.m' '*.mm' || true)"
+          [ -n "$FILES" ] || exit 0
+
+          # Print unified diffs produced by clang-format and pass them to reviewdog (diff mode).
+          # Non-zero exit on formatting problems to keep PR red if needed.
+          set -o pipefail
+          clang-format -n --Werror $FILES 2>&1 \
+            | reviewdog -f=clang-format \
+                -name="clang-format (reviewdog)" \
+                -reporter=github-pr-review \
+                -filter-mode=diff_context \
+                -fail-on-error=true
