@@ -557,6 +557,7 @@ fi
 AC_CHECK_FUNCS([assert \
                 setmode \
                 _setmode \
+                fileno \
                 _fileno \
                 fopen_s \
                 signal \
@@ -569,6 +570,7 @@ AC_CHECK_FUNCS([assert \
                 longjmp \
                 strerror \
                 _isatty \
+                isatty \
                 _open \
                 _write \
                 _close \

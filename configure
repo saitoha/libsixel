@@ -18300,6 +18300,12 @@ then :
   printf "%s\n" "#define HAVE__SETMODE 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "fileno" "ac_cv_func_fileno"
+if test "x$ac_cv_func_fileno" = xyes
+then :
+  printf "%s\n" "#define HAVE_FILENO 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "_fileno" "ac_cv_func__fileno"
 if test "x$ac_cv_func__fileno" = xyes
 then :
@@ -18372,6 +18378,12 @@ then :
   printf "%s\n" "#define HAVE__ISATTY 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "isatty" "ac_cv_func_isatty"
+if test "x$ac_cv_func_isatty" = xyes
+then :
+  printf "%s\n" "#define HAVE_ISATTY 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "_open" "ac_cv_func__open"
 if test "x$ac_cv_func__open" = xyes
 then :
@@ -18430,6 +18442,12 @@ ac_fn_c_check_func "$LINENO" "select" "ac_cv_func_select"
 if test "x$ac_cv_func_select" = xyes
 then :
   printf "%s\n" "#define HAVE_SELECT 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "_fullpath" "ac_cv_func__fullpath"
+if test "x$ac_cv_func__fullpath" = xyes
+then :
+  printf "%s\n" "#define HAVE__FULLPATH 1" >>confdefs.h
 
 fi
 ac_fn_c_check_func "$LINENO" "_realpath" "ac_cv_func__realpath"
