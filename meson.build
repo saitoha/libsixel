@@ -195,6 +195,7 @@ extra_funcs = [
   '_setmode',
   'fileno',
   '_fileno',
+  'mkstemp',
   'fopen_s',
   'signal',
   'strdup',
