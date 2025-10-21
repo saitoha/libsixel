@@ -105,6 +105,9 @@ jobs:
         sudo dpkg --add-architecture i386 || true
         sudo apt-get update
         sudo apt-get install -y ${{ matrix.mingw_packages }} ${{ matrix.wine_packages }} pkg-config
+        if [ "${{ matrix.wine }}" = "wine64" ] && [ -x /usr/lib/wine/wine64 ]; then
+          sudo update-alternatives --install /usr/bin/wine64 wine64 /usr/lib/wine/wine64 10
+        fi
 
     - name: Fix Homebrew taps/cache
       if: runner.os == 'macOS'
