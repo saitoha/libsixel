@@ -62,6 +62,17 @@
 # define memmove(d, s, n) (bcopy ((s), (d), (n)))
 #endif
 
+/* for msvc */
+#ifndef STDIN_FILENO
+# define STDIN_FILENO 0
+#endif
+#ifndef STDOUT_FILENO
+# define STDOUT_FILENO 1
+#endif
+#ifndef STDERR_FILENO
+# define STDERR_FILENO 2
+#endif
+
 #if !defined(O_BINARY) && defined(_O_BINARY)
 # define O_BINARY _O_BINARY
 #endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
@@ -73,6 +84,7 @@
 # define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 
+#include "stdio_stub.h"
 #include "chunk.h"
 #include "allocator.h"
 
@@ -220,21 +232,9 @@ open_binary_file(
         /* for windows */
 #if defined(O_BINARY)
 # if HAVE__SETMODE
-        _setmode(
-#  if HAVE__FILENO
-            _fileno(stdin),
-#  else
-            fileno(stdin),
-#  endif  /* HAVE__FILENO */
-            O_BINARY);
+        _setmode(STDIN_FILENO, O_BINARY);
 # elif HAVE_SETMODE
-        setmode(
-#  if HAVE__FILENO
-            _fileno(stdin),
-#  else
-            fileno(stdin),
-#  endif  /* HAVE__FILENO */
-            O_BINARY);
+        setmode(STDIN_FILENO, O_BINARY);
 # endif  /* HAVE_SETMODE */
 #endif  /* defined(O_BINARY) */
         *f = stdin;
@@ -314,21 +314,9 @@ sixel_chunk_from_file(
 
         if (
 #if HAVE__ISATTY
-            _isatty(
-# if HAVE__FILENO
-                _fileno(f)
-# else
-                fileno(f)
-# endif  /* HAVE__FILENO */
-            )
+            _isatty(sixel_fileno(f))
 #else
-            isatty(
-# if HAVE__FILENO
-                _fileno(f)
-# else
-                fileno(f)
-# endif  /* HAVE__FILENO */
-            )
+            isatty(sixel_fileno(f))
 #endif  /* HAVE__ISATTY */
         ) {
             for (;;) {
@@ -337,11 +325,7 @@ sixel_chunk_from_file(
                     goto end;
                 }
                 ret = wait_file(
-# if HAVE__FILENO
-                    _fileno(f),
-# else
-                    fileno(f),
-# endif  /* HAVE__FILENO */
+                    sixel_fileno(f),
                     10000);
                 if (ret < 0) {
                     sixel_helper_set_additional_message(
