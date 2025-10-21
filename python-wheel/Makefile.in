@@ -13,8 +13,6 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
-
-# Ruby bindings: build helpers, tests, install/uninstall
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -91,7 +89,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-subdir = ruby
+subdir = python-wheel
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
 	$(top_srcdir)/m4/ax_gcc_func_attribute.m4 \
@@ -142,12 +140,9 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
-BASH = @BASH@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
-CLIPBOARD_CFLAGS = @CLIPBOARD_CFLAGS@
-CLIPBOARD_LIBS = @CLIPBOARD_LIBS@
 COREGRAPHICS_CFLAGS = @COREGRAPHICS_CFLAGS@
 COREGRAPHICS_LIBS = @COREGRAPHICS_LIBS@
 CPP = @CPP@
@@ -207,8 +202,6 @@ OBJCDEPMODE = @OBJCDEPMODE@
 OBJCFLAGS = @OBJCFLAGS@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
-ONNXRUNTIME_CFLAGS = @ONNXRUNTIME_CFLAGS@
-ONNXRUNTIME_LIBS = @ONNXRUNTIME_LIBS@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -248,9 +241,6 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
-THREAD_CFLAGS = @THREAD_CFLAGS@
-THREAD_CPPFLAGS = @THREAD_CPPFLAGS@
-THREAD_LIBS = @THREAD_LIBS@
 UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
 VERSION = @VERSION@
 WICCODEC_CFLAGS = @WICCODEC_CFLAGS@
@@ -304,7 +294,6 @@ localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
-modeldir = @modeldir@
 oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
 pkgconfigdir = @pkgconfigdir@
@@ -325,6 +314,12 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
+PYTHON_FALLBACK = python3
+PYTHON_CMD = $(if $(strip $(PYTHON_FOR_SHARED)),$(PYTHON_FOR_SHARED),$(PYTHON_FALLBACK))
+SHARED_SYNC_SCRIPT = $(top_srcdir)/python-shared/sync_shared_sources.py
+STAGE_DIR = $(abs_builddir)/.stage
+DIST_DIR = $(builddir)/dist
+WHEELHOUSE_DIR = $(builddir)/wheelhouse
 all: all-am
 
 .SUFFIXES:
@@ -337,9 +332,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign ruby/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign python-wheel/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign ruby/Makefile
+	  $(AUTOMAKE) --foreign python-wheel/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -404,14 +399,11 @@ distdir-am: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-	$(MAKE) $(AM_MAKEFLAGS) check-local
 check: check-am
 all-am: Makefile all-local
 installdirs:
-install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
-uninstall: uninstall-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
@@ -440,7 +432,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool mostlyclean-am
+clean-am: clean-generic clean-libtool clean-local mostlyclean-am
 
 distclean: distclean-am
 	-rm -f Makefile
@@ -458,7 +450,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-data-local
+install-data-am:
 
 install-dvi: install-dvi-am
 
@@ -502,80 +494,76 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-local
+uninstall-am:
 
-.MAKE: check-am install-am install-strip
+.MAKE: install-am install-strip
 
-.PHONY: all all-am all-local check check-am check-local clean \
-	clean-generic clean-libtool cscopelist-am ctags-am distclean \
+.PHONY: all all-am all-local check check-am clean clean-generic \
+	clean-libtool clean-local cscopelist-am ctags-am distclean \
 	distclean-generic distclean-libtool distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
-	install-data-am install-data-local install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-generic \
 	mostlyclean-libtool pdf pdf-am ps ps-am tags-am uninstall \
-	uninstall-am uninstall-local
+	uninstall-am
 
 .PRECIOUS: Makefile
 
 
-all-local:
-	@if test -x "$(RUBY)"; then \
-	  echo "Ensuring Ruby constants are generated..."; \
-	  $(MKDIR_P) $(builddir)/lib/libsixel 2>/dev/null || true; \
-	  $(RUBY) $(top_srcdir)/tools/gen_ruby_constants.rb $(top_srcdir)/include/sixel.h $(builddir)/lib/libsixel/constants.rb || true; \
-	fi
+.PHONY: all-local shared-sync wheel-local upload-local clean-local install uninstall
 
-check-local:
-	@if test -x "$(RUBY)"; then \
-	  echo "Running Ruby tests..."; \
-	  LD_LIBRARY_PATH=$(top_builddir)/src/.libs:$$LD_LIBRARY_PATH \
-	  DYLD_LIBRARY_PATH=$(top_builddir)/src/.libs:$$DYLD_LIBRARY_PATH \
-	  $(RUBY) -I $(srcdir)/lib -I $(srcdir)/test $(srcdir)/test/test_libsixel.rb || exit 1; \
+shared-sync:
+	@$(PYTHON_CMD) $(SHARED_SYNC_SCRIPT) $(top_srcdir)
+
+all-local: wheel-local
+
+wheel-local: shared-sync
+	@rm -rf $(STAGE_DIR)
+	@mkdir -p $(STAGE_DIR)
+	@$(MAKE) -C $(top_builddir) install DESTDIR=$(STAGE_DIR)
+	@bash $(srcdir)/scripts/copy_libsixel_artifacts.sh $(STAGE_DIR)
+	@rm -rf $(DIST_DIR) $(WHEELHOUSE_DIR)
+	@mkdir -p $(DIST_DIR) $(WHEELHOUSE_DIR)
+	@$(PYTHON_CMD) -m build --wheel --outdir $(DIST_DIR) $(srcdir)
+	@wheel_path=`ls $(DIST_DIR)/libsixel_wheel-*.whl 2>/dev/null | head -n1`; \
+	if [ -z "$$wheel_path" ]; then \
+		echo "wheel build failed" >&2; exit 1; \
+	fi; \
+	uname_s=`uname`; \
+	if [ "$$uname_s" = "Linux" ]; then \
+		if command -v auditwheel >/dev/null 2>&1; then \
+			auditwheel -v repair -w $(WHEELHOUSE_DIR) "$$wheel_path"; \
+		else \
+			echo "auditwheel not found, copying wheel without repair" >&2; \
+			cp "$$wheel_path" $(WHEELHOUSE_DIR)/; \
+		fi; \
+	elif [ "$$uname_s" = "Darwin" ]; then \
+		if command -v delocate-wheel >/dev/null 2>&1; then \
+			delocate-wheel -v -w $(WHEELHOUSE_DIR) "$$wheel_path"; \
+		else \
+			echo "delocate-wheel not found, copying wheel without repair" >&2; \
+			cp "$$wheel_path" $(WHEELHOUSE_DIR)/; \
+		fi; \
 	else \
-	  echo "Ruby not found; skipping Ruby tests"; \
+		cp "$$wheel_path" $(WHEELHOUSE_DIR)/; \
 	fi
 
-install-data-local:
-	@if test "x$(RUBY_SITE_LIBDIR)" != x; then \
-	  echo "Installing Ruby bindings to $(DESTDIR)$(RUBY_SITE_LIBDIR)"; \
-	  $(MKDIR_P) $(DESTDIR)$(RUBY_SITE_LIBDIR); \
-	  $(INSTALL_DATA) $(srcdir)/lib/libsixel.rb $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel.rb; \
-	  $(MKDIR_P) $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel; \
-	  for f in api.rb encoder.rb decoder.rb output.rb dither.rb helper.rb version.rb frame.rb; do \
-	    $(INSTALL_DATA) $(srcdir)/lib/libsixel/$$f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/$$f; \
-	  done; \
-	  if test -f $(builddir)/lib/libsixel/version_runtime.rb; then \
-	    $(INSTALL_DATA) $(builddir)/lib/libsixel/version_runtime.rb $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/version_runtime.rb; \
-	  fi; \
-	  if test -f $(builddir)/lib/libsixel/constants.rb; then \
-	    $(INSTALL_DATA) $(builddir)/lib/libsixel/constants.rb $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/constants.rb; \
-	  else \
-	    if test -f $(srcdir)/lib/libsixel/constants.rb; then \
-	      $(INSTALL_DATA) $(srcdir)/lib/libsixel/constants.rb $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/constants.rb; \
-	    fi; \
-	  fi; \
-	else \
-	  echo "Ruby site libdir not detected; skip installing Ruby bindings"; \
-	fi
+upload-local: wheel-local
+	@PYPI_REPO=$(PYPI_REPO) PYPI_USERNAME=$(PYPI_USERNAME) PYPI_PASSWORD_ENV=$(PYPI_PASSWORD_ENV) \
+		bash $(srcdir)/scripts/meson_upload_wheel.sh
 
-uninstall-local:
-	@if test "x$(RUBY_SITE_LIBDIR)" != x; then \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/api.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/encoder.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/decoder.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/output.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/dither.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/helper.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/version.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/version_runtime.rb; \
-	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel/constants.rb; \
-	  rmdir $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel 2>/dev/null || true; \
-	fi
+clean-local:
+	@rm -rf $(STAGE_DIR) $(DIST_DIR) $(WHEELHOUSE_DIR)
+
+install:
+	@:
+
+uninstall:
+	@:
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

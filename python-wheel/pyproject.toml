@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "libsixel-wheel"
+version = "1.8.7.post0"
+description = "Vendored libsixel shared library with ctypes bindings"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+authors = [
+    {name = "libsixel developers", email = "saitoha@me.com"},
+]
+keywords = ["sixel", "terminal", "graphics", "ctypes", "image"]
+classifiers = [
+    "Programming Language :: Python", 
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX",
+    "Topic :: Multimedia :: Graphics",
+]
+
+[project.urls]
+Homepage = "https://github.com/libsixel/libsixel"
+Documentation = "https://github.com/libsixel/libsixel"
+Source = "https://github.com/libsixel/libsixel"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"libsixel_wheel" = [
+    "_libsixel_common/*.py",
+    ".binaries/*.so",
+    ".binaries/*.so.*",
+    ".binaries/*.dylib",
+    ".binaries/*.dll",
+]
+

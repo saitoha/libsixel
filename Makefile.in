@@ -89,9 +89,10 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@HAVE_RUBY_TRUE@am__append_1 = ruby
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_2 = quicklook-extension
-@HAVE_WICCODEC_TRUE@am__append_3 = wic
+@ENABLE_PYTHON_WHEEL_TRUE@am__append_1 = python-wheel
+@HAVE_RUBY_TRUE@am__append_2 = ruby
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_3 = quicklook-extension
+@HAVE_WICCODEC_TRUE@am__append_4 = wic
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
@@ -347,8 +348,12 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
+PYPI_PASSWORD_ENV = @PYPI_PASSWORD_ENV@
+PYPI_REPO = @PYPI_REPO@
+PYPI_USERNAME = @PYPI_USERNAME@
 PYTHON = @PYTHON@
 PYTHON_EXEC_PREFIX = @PYTHON_EXEC_PREFIX@
+PYTHON_FOR_SHARED = @PYTHON_FOR_SHARED@
 PYTHON_PLATFORM = @PYTHON_PLATFORM@
 PYTHON_PREFIX = @PYTHON_PREFIX@
 PYTHON_VERSION = @PYTHON_VERSION@
@@ -452,11 +457,13 @@ zshcompletiondir = @zshcompletiondir@
 # @configure_input@
 #
 SUBDIRS = include src converters assessment tools python \
-	$(am__append_1) $(am__append_2) $(am__append_3)
-DIST_SUBDIRS = include src converters assessment tools python ruby wic \
+	$(am__append_1) $(am__append_2) $(am__append_3) \
+	$(am__append_4)
+DIST_SUBDIRS = include src converters assessment tools python python-wheel ruby wic \
         quicklook-extension
 
-EXTRA_DIST = LICENSE depcomp tests/converters/common.bash \
+EXTRA_DIST = LICENSE depcomp python-shared/sync_shared_sources.py \
+	tests/converters/common.bash \
 	tests/converters/test_0001_invalid_option.bash \
 	tests/converters/test_0002_stdin.bash \
 	tests/converters/test_0003_information.bash \
@@ -1027,6 +1034,7 @@ uninstall-am: uninstall-local uninstall-pkgconfigDATA
 
 .PRECIOUS: Makefile
 
+>>>>>>> f6672cef (python: add alternate python binding "python-wheel")
 
 .PHONY: install-quicklook-extension uninstall-quicklook-extension
 

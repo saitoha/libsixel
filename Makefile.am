@@ -2,6 +2,10 @@
 # @configure_input@
 #
 SUBDIRS = include src converters assessment tools python
+if ENABLE_PYTHON_WHEEL
+SUBDIRS += python-wheel
+endif
+>>>>>>> f6672cef (python: add alternate python binding "python-wheel")
 if HAVE_RUBY
 SUBDIRS += ruby
 endif
@@ -12,10 +16,10 @@ if HAVE_WICCODEC
 SUBDIRS += wic
 endif
 
-DIST_SUBDIRS = include src converters assessment tools python ruby wic \
+DIST_SUBDIRS = include src converters assessment tools python python-wheel ruby wic \
         quicklook-extension
 
-EXTRA_DIST = LICENSE depcomp
+EXTRA_DIST = LICENSE depcomp python-shared/sync_shared_sources.py
 
 EXTRA_DIST += tests/converters/common.bash \
 	tests/converters/test_0001_invalid_option.bash \

@@ -682,6 +682,12 @@ RUBY_EXT_LIB
 RUBY_EXT_INC
 RUBY_VERSION
 RUBY
+PYPI_PASSWORD_ENV
+PYPI_USERNAME
+PYPI_REPO
+ENABLE_PYTHON_WHEEL_FALSE
+ENABLE_PYTHON_WHEEL_TRUE
+PYTHON_FOR_SHARED
 pkgpyexecdir
 pyexecdir
 pkgpythondir
@@ -935,6 +941,10 @@ enable_simd
 enable_wiccodec
 enable_register_dll
 enable_python
+enable_python_wheel
+with_pypi_repo
+with_pypi_username
+with_pypi_password_env
 enable_ruby
 enable_debug
 enable_gcov
@@ -1640,6 +1650,7 @@ Optional Features:
   --enable-register-dll   register WIC codec DLL during install (default: no,
                           admin rights required)
   --enable-python         Python interface (default: no)
+  --enable-python-wheel   build Python wheel helpers (default: no)
   --enable-ruby           Ruby interface (default: no)
   --enable-debug          Use debug macro and specific CFLAGS
   --enable-gcov           Use gcov
@@ -1671,6 +1682,12 @@ Optional Packages:
                           Install bash completion to DIR (default: no)
   --with-zshcompletiondir=DIR
                           Install zsh completion to DIR (default: no)
+  --with-pypi-repo=NAME   target repository for wheel uploads (default: pypi)
+  --with-pypi-username=NAME
+                          username for wheel uploads (default: __token__)
+  --with-pypi-password-env=VAR
+                          environment variable supplying the upload password
+                          (default: TWINE_PASSWORD)
   --with-onnxruntime=PATH use ONNX Runtime for LPIPS helper (default=auto)
   --with-python-sys-prefix
                           use Python's sys.prefix and sys.exec_prefix values
@@ -16934,6 +16951,49 @@ esac
 fi
 
 
+# Check whether --enable-python-wheel was given.
+if test ${enable_python_wheel+y}
+then :
+  enableval=$enable_python_wheel;
+else case e in #(
+  e) enable_python_wheel=no ;;
+esac
+fi
+
+
+
+# Check whether --with-pypi-repo was given.
+if test ${with_pypi_repo+y}
+then :
+  withval=$with_pypi_repo;
+else case e in #(
+  e) with_pypi_repo=pypi ;;
+esac
+fi
+
+
+
+# Check whether --with-pypi-username was given.
+if test ${with_pypi_username+y}
+then :
+  withval=$with_pypi_username;
+else case e in #(
+  e) with_pypi_username=__token__ ;;
+esac
+fi
+
+
+
+# Check whether --with-pypi-password-env was given.
+if test ${with_pypi_password_env+y}
+then :
+  withval=$with_pypi_password_env;
+else case e in #(
+  e) with_pypi_password_env=TWINE_PASSWORD ;;
+esac
+fi
+
+
 # Ruby bindings option
 # Check whether --enable-ruby was given.
 if test ${enable_ruby+y}
@@ -22491,6 +22551,100 @@ else
     message_python=$have_python
 fi
 
+PYTHON_FOR_SHARED=
+python_for_shared_found=no
+if test x$enable_python_wheel = xyes || test x$enable_python != xno; then
+    if test "x$PYTHON" != x; then
+        if "$PYTHON" -c 'import sys; import sysconfig; sys.exit(0 if sys.version_info0 == 3 else 1)' \
+            >/dev/null 2>&1; then
+            PYTHON_FOR_SHARED=$PYTHON
+            python_for_shared_found=yes
+        fi
+    fi
+    if test x$python_for_shared_found != xyes; then
+        for ac_prog in python3 python3.12 python3.11 python3.10 python3.9 python3.8 python3.7
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_PYTHON_FOR_SHARED+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $PYTHON_FOR_SHARED in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PYTHON_FOR_SHARED="$PYTHON_FOR_SHARED" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_PYTHON_FOR_SHARED="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac ;;
+esac
+fi
+PYTHON_FOR_SHARED=$ac_cv_path_PYTHON_FOR_SHARED
+if test -n "$PYTHON_FOR_SHARED"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PYTHON_FOR_SHARED" >&5
+printf "%s\n" "$PYTHON_FOR_SHARED" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+  test -n "$PYTHON_FOR_SHARED" && break
+done
+
+        if test "x$PYTHON_FOR_SHARED" != x; then
+            python_for_shared_found=yes
+        fi
+    fi
+    if test x$python_for_shared_found != xyes; then
+        as_fn_error $? "python3 interpreter is required when enabling Python bindings or wheel helpers" "$LINENO" 5
+    fi
+fi
+
+
+message_python_wheel=no
+if test x$enable_python_wheel = xyes; then
+    message_python_wheel=yes
+fi
+
+ if test x$enable_python_wheel = xyes; then
+  ENABLE_PYTHON_WHEEL_TRUE=
+  ENABLE_PYTHON_WHEEL_FALSE='#'
+else
+  ENABLE_PYTHON_WHEEL_TRUE='#'
+  ENABLE_PYTHON_WHEEL_FALSE=
+fi
+
+PYPI_REPO=$with_pypi_repo
+
+PYPI_USERNAME=$with_pypi_username
+
+PYPI_PASSWORD_ENV=$with_pypi_password_env
+
+
+
+
 message_ruby=no
 RUBY=
 RUBY_SITE_LIBDIR=
@@ -22817,9 +22971,10 @@ fi
 
           touch -c aclocal.m4 Makefile.in configure config.h.in \
                    converters/Makefile.in include/Makefile.in \
-                   python/Makefile.in src/Makefile.in tools/Makefile.in \
-                   assessment/Makefile.in wic/Makefile.in \
-                   quicklook-extension/Makefile.in
+                   python/Makefile.in python-wheel/Makefile.in \
+                   src/Makefile.in tools/Makefile.in \
+                   assessment/Makefile.in \
+                   wic/Makefile.in quicklook-extension/Makefile.in
 
 
  if test x$have_curl = xyes; then
@@ -22879,7 +23034,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile assessment/Makefile tools/Makefile tools/libsixel-config python/Makefile ruby/Makefile ruby/lib/libsixel/version_runtime.rb quicklook-extension/Makefile wic/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile assessment/Makefile tools/Makefile tools/libsixel-config python/Makefile python-wheel/Makefile ruby/Makefile ruby/lib/libsixel/version_runtime.rb quicklook-extension/Makefile wic/Makefile"
 
 
 # Generate Ruby constants file from include/sixel.h when Ruby is enabled
@@ -23107,6 +23262,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${REGISTER_DLL_TRUE}" && test -z "${REGISTER_DLL_FALSE}"; then
   as_fn_error $? "conditional \"REGISTER_DLL\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_PYTHON_WHEEL_TRUE}" && test -z "${ENABLE_PYTHON_WHEEL_FALSE}"; then
+  as_fn_error $? "conditional \"ENABLE_PYTHON_WHEEL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_RUBY_TRUE}" && test -z "${HAVE_RUBY_FALSE}"; then
@@ -24037,6 +24196,7 @@ do
     "tools/Makefile") CONFIG_FILES="$CONFIG_FILES tools/Makefile" ;;
     "tools/libsixel-config") CONFIG_FILES="$CONFIG_FILES tools/libsixel-config" ;;
     "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
+    "python-wheel/Makefile") CONFIG_FILES="$CONFIG_FILES python-wheel/Makefile" ;;
     "ruby/Makefile") CONFIG_FILES="$CONFIG_FILES ruby/Makefile" ;;
     "ruby/lib/libsixel/version_runtime.rb") CONFIG_FILES="$CONFIG_FILES ruby/lib/libsixel/version_runtime.rb" ;;
     "quicklook-extension/Makefile") CONFIG_FILES="$CONFIG_FILES quicklook-extension/Makefile" ;;
@@ -25305,6 +25465,47 @@ test $ac_write_fail = 0 ||
   as_fn_error $? "write failure creating $CONFIG_STATUS" "$LINENO" 5
 
 
+  if test "x$enable_python_wheel" = xyes || test "x$enable_python" != xno; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for shared Python source synchronization" >&5
+printf %s "checking for shared Python source synchronization... " >&6; }
+    if test -f "$srcdir/python-shared/sync_shared_sources.py"; then
+      if test "x$PYTHON_FOR_SHARED" != x; then
+        if "$PYTHON_FOR_SHARED" "$srcdir/python-shared/sync_shared_sources.py" "$srcdir"; then
+          { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        else
+          { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+          { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in '$ac_pwd':" >&5
+printf "%s\n" "$as_me: error: in '$ac_pwd':" >&2;}
+as_fn_error $? "
+            failed to synchronize shared Python sources; ensure python3 is available
+
+See 'config.log' for more details" "$LINENO" 5; }
+        fi
+      else
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in '$ac_pwd':" >&5
+printf "%s\n" "$as_me: error: in '$ac_pwd':" >&2;}
+as_fn_error $? "
+          python3 interpreter not found; set PYTHON_FOR_SHARED
+
+See 'config.log' for more details" "$LINENO" 5; }
+      fi
+    else
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+      { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in '$ac_pwd':" >&5
+printf "%s\n" "$as_me: error: in '$ac_pwd':" >&2;}
+as_fn_error $? "
+        python shared sync script missing at $srcdir/python-shared/sync_shared_sources.py
+
+See 'config.log' for more details" "$LINENO" 5; }
+    fi
+  fi
+
+
 # configure is writing to config.log, and then calls config.status.
 # config.status does its own redirection, appending to config.log.
 # Unfortunately, on DOS this fails, as config.log is still kept open
@@ -25377,6 +25578,7 @@ echo "       Register WIC DLL    : $message_register_dll"
 echo "       Thumbnailer command : $message_thumbnailer"
 echo "       ONNX Runtime        : $message_onnxruntime"
 echo "       python bindings     : $message_python"
+echo "       python wheel        : $message_python_wheel"
 echo "       ruby bindings       : $message_ruby"
 echo "       simd                : $message_simd"
 echo "       gcov integration    : $enable_gcov"
