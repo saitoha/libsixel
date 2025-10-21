@@ -20,10 +20,6 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#if !defined(_WIN32) && !defined(_POSIX_C_SOURCE)
-# define _POSIX_C_SOURCE 200809L
-#endif
-
 #include "config.h"
 
 /* STDC_HEADERS */
