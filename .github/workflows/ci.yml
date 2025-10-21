@@ -192,6 +192,7 @@ jobs:
             --enable-tests \
             --enable-gcov \
             --disable-dependency-tracking
+        cat config.log
         make V=1
 
     - name: Configure and build (Windows, not MSVC/Cygwin)
@@ -209,6 +210,7 @@ jobs:
             --enable-tests \
             --enable-gcov \
             --disable-dependency-tracking
+        cat config.log
         make V=1
 
     - name: Configure and build (Windows, Cygwin)
@@ -224,6 +226,7 @@ jobs:
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
           './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking',
+          'cat config.log',
           'make V=1'
         )
         $script = [string]::Join("`n", $scriptLines)
@@ -262,6 +265,7 @@ jobs:
             --enable-debug \
             --enable-tests \
             --disable-dependency-tracking
+        cat config.log
         make V=1
 
     - name: Run tests (non-Windows)
@@ -531,6 +535,7 @@ jobs:
             --enable-tests \
             --disable-dependency-tracking \
             ${extra:+$extra}
+        cat config.log
         make V=1
 
     - name: Configure and build (ASan, Windows)
@@ -549,6 +554,7 @@ jobs:
             --enable-tests \
             --disable-dependency-tracking \
             ${extra:+$extra}
+        cat config.log
         make V=1
 
   ci-meson:
