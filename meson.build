@@ -738,7 +738,6 @@ endif
 subdir('include')
 
 libsixel_posix_defs = cc.get_supported_arguments([
-  '-D_POSIX_SOURCE',
   '-D_POSIX_C_SOURCE=200809L',
 ])
 
