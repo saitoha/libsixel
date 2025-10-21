@@ -317,6 +317,56 @@ jobs:
       if: runner.os == 'Linux' && (matrix.wine || '') != ''
       shell: bash
       run: |
+        set -euo pipefail
+
+        unix_to_win_path() {
+          local path="$1"
+          path="${path%/}"
+          printf 'Z:%s\n' "${path//\//\\}"
+        }
+
+        add_search_path() {
+          local dir="$1"
+          if [ -d "$dir" ]; then
+            local win_dir
+            win_dir="$(unix_to_win_path "$dir")"
+            if [ -z "$wine_search_windows" ]; then
+              wine_search_windows="$win_dir"
+            else
+              wine_search_windows="${wine_search_windows};${win_dir}"
+            fi
+            if [ -z "$wine_search_unix" ]; then
+              wine_search_unix="$dir"
+            else
+              wine_search_unix="${wine_search_unix}:$dir"
+            fi
+          fi
+        }
+
+        wine_search_windows=""
+        wine_search_unix=""
+
+        add_search_path "$PWD/src/.libs"
+        add_search_path "$PWD/converters/.libs"
+
+        if command -v '${{ matrix.cc }}' >/dev/null 2>&1; then
+          libgcc_path="$('${{ matrix.cc }}' -print-libgcc-file-name 2>/dev/null || true)"
+          if [ -n "$libgcc_path" ]; then
+            add_search_path "$(dirname "$libgcc_path")"
+          fi
+          libstdcpp_path="$('${{ matrix.cc }}' -print-file-name=libstdc++.dll.a 2>/dev/null || true)"
+          if [ -n "$libstdcpp_path" ]; then
+            add_search_path "$(dirname "$libstdcpp_path")"
+          fi
+        fi
+
+        if [ -n "$wine_search_windows" ]; then
+          export WINEPATH="$wine_search_windows"
+        fi
+        if [ -n "$wine_search_unix" ]; then
+          export WINEDLLPATH="$wine_search_unix"
+        fi
+
         make check WINE=${{ matrix.wine }} WINEEXT=.exe
 
     - name: Run tests (Windows, not MSVC/Cygwin/CLANG64)
