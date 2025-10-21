@@ -211,6 +211,7 @@ extra_funcs = [
   'localeconv',
   'pow',
   'select',
+  '_fullpath',
   '_realpath',
   'realpath',
   'sqrt',
