@@ -2,6 +2,9 @@
 # @configure_input@
 #
 SUBDIRS = include src converters assessment tools tests python
+if ENABLE_PYTHON_WHEEL
+SUBDIRS += python-wheel
+endif
 if HAVE_RUBY
 SUBDIRS += ruby
 endif
@@ -12,11 +15,11 @@ if HAVE_WICCODEC
 SUBDIRS += wic
 endif
 
-DIST_SUBDIRS = include src converters assessment tools tests python ruby wic \
+DIST_SUBDIRS = include src converters assessment tools tests python python-wheel ruby wic \
         quicklook-extension
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
-EXTRA_DIST = LICENSE build-aux/depcomp
+EXTRA_DIST = LICENSE build-aux/depcomp python-shared/sync_shared_sources.py
 
 EXTRA_DIST += examples/windows/wsh_decoder_sample.vbs
 

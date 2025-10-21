@@ -1,3 +1,1888 @@
+2025-10-22  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/clang-quality.yml: ci:
+	add clang-quality.yml, static analysis and format checking
+
+2025-10-22  Hayaki Saito <saitoha@me.com>
+
+	* .clang-format, .clang-tidy: ci: add .clang-format / .clang-tidy
+
+2025-10-21  Hayaki Saito <saitoha@me.com>
+
+	* : add test images images/libsixel.{avif,webp,jxl}
+
+2025-10-21  Hayaki Saito <saitoha@me.com>
+
+	* README.md: readme: update badges of build status and coverage
+
+2025-10-21  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c, src/loader.c: compat: define _POSIX_C_SOURCE as
+	200809L in src/encoder.c and src/loader.c
+
+2025-10-21  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, meson.build, src/encoder.c,
+	src/loader.c, src/stdio_stub.h: compat: declare prototype of
+	fileno(), realpath(), nanosleep(), and mkstemp()
+
+2025-10-21  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac: configure: decide whether to add
+	-D_POSIX_C_SOURCE=200809L or -D_USE_XOPEN_EXTENDED=1 to CPPFLAGS by
+	probing the build
+
+2025-10-21  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: add "cat config.log" to autotools
+	jobs
+
+2025-10-21  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac, src/encoder.c, src/loader.c: build: add
+	-D_POSIX_C_SOURCE=200809L to CPPFLAGS insted of CFLAGS
+
+2025-10-21  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, meson.build: build: align
+	function checks between configure.ac and meson
+
+2025-10-21  Hayaki Saito <saitoha@me.com>
+
+	* configure.ac, meson.build, src/loader.c: build: check _fullpath()
+	availability
+
+2025-10-21  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac, meson.build: build: don't use
+	-D_POSIX_SOURCE
+
+2025-10-21  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: add V=1 to make args in asan build
+	job
+
+2025-10-21  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, meson.build, src/loader.c: 
+	build: test dirent.h availability
+
+2025-10-21  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, converters/malloc_stub.c,
+	src/Makefile.am, src/chunk.c, src/decoder.c, src/encoder.c,
+	src/loader.c, src/stdio_stub.h, src/writer.c: compat: add
+	src/stdio_stub.h to abstract calls to fileno() and _fileno()
+
+2025-10-21  Hayaki Saito <saitoha@me.com>
+
+	* converters/meson.build, meson.build: meson: switch thumbnailer
+	script install from install_script() to configure_file()
+
+2025-10-21  Hayaki Saito <saitoha@me.com>
+
+	* meson.build, src/Makefile.am, src/loader.c: build: suppress
+	-Werror=unused-function
+
+2025-10-21  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, meson.build,
+	src/Makefile.am, src/Makefile.in, src/loader.c: build: Implemented a
+	fallback path resolution for the thumbnail loader on Unix systems where realpath is unavailable.
+
+2025-10-20  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in, config.h.in, configure, converters/Makefile.am,
+	converters/Makefile.in, include/Makefile.in, python/Makefile.in,
+	quicklook-extension/Makefile.in, ruby/Makefile.in, src/Makefile.in,
+	src/loader.c, tools/Makefile.in, wic/Makefile.in: compat: don't
+	require C99 function snprintf()
+
+2025-10-20  Hayaki Saito <saitoha@me.com>
+
+	* README.md, build.md, config.h.in, configure, configure.ac,
+	converters/Makefile.am, converters/Makefile.in,
+	converters/meson.build, converters/sixel2png.1,
+	converters/sixel2png.c, include/sixel.h.in, meson.build,
+	meson_options.txt, src/decoder.c, src/decoder.h, src/encoder.c,
+	src/loader.c, src/loader.h, tools/Makefile.am, tools/Makefile.in,
+	tools/libsixel-thumbnailer.thumbnailer, tools/sixel-thumbnailer,
+	tools/sixel.xml, tools/update-mime-database.sh: feat: add gnome
+	desktop style thumbnailer and loader
+
+2025-10-20  Hayaki Saito <saitoha@me.com>
+
+	* converters/shell-completion/bash/img2sixel,
+	converters/shell-completion/zsh/_img2sixel: completion: update
+	bash/zsh completion files
+
+2025-10-20  Hayaki Saito <saitoha@me.com>
+
+	* README.md, converters/img2sixel.1, converters/img2sixel.c,
+	include/sixel.h.in, python/libsixel/__init__.py: img2sixel: mark -C
+	and -P options as deprecated
+
+2025-10-20  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c: emit DRCS tile characters only if -T option is
+	specified
+
+2025-10-20  Hayaki Saito <saitoha@me.com>
+
+	* converters/img2sixel.1, converters/img2sixel.c,
+	include/sixel.h.in, src/encoder.c, src/encoder.h: feat: introduce
+	new option -T,--tiles
+
+2025-10-19  Hayaki Saito <saitoha@me.com>
+
+	* src/lso2.h, src/lso3.h, src/quant.c: quant: update lso2/lso3
+	parameter table
+
+2025-10-19  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c: build: suppress warning, -Wunused-result
+
+2025-10-18  Hayaki Saito <saitoha@me.com>
+
+	* converters/img2sixel.c: build: suppress warnings,
+	-Woverlength-strings
+
+2025-10-18  Hayaki Saito <saitoha@me.com>
+
+	* meson.build: meson: fix a reference error
+
+2025-10-18  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac, converters/Makefile.am,
+	converters/Makefile.in, src/Makefile.am, src/Makefile.in: build: add
+	--coverage to LDFLAGS if gcov option is enabled
+
+2025-10-18  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac: build: don't touch am__fastdepOBJC
+
+2025-10-18  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac, src/Makefile.am, src/Makefile.in: build:
+	don't add -no-undefined to libsixel_la_LDFLAGS on linux
+
+2025-10-18  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: make with V=1
+
+2025-10-18  Hayaki Saito <saitoha@me.com>
+
+	* src/chunk.c, src/chunk.h: supress gcc warning,
+	-Wmissing-field-initializers
+
+2025-10-18  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in, build.md, config.h.in, configure, configure.ac,
+	converters/Makefile.in, include/Makefile.in, meson.build,
+	meson_options.txt, python/Makefile.in,
+	quicklook-extension/Makefile.in, ruby/Makefile.in, src/Makefile.am,
+	src/Makefile.in, src/chunk.c, src/chunk.h, src/loader.c,
+	src/meson.build, src/quicklook_thumbnailing.m, tools/Makefile.in,
+	wic/Makefile.in: feat: add quicklook loader
+
+2025-10-18  Hayaki Saito <saitoha@me.com>
+
+	* tools/gen_varcoefs.awk: quant: Add tools/gen_varcoefs.awk, for
+	generating src/{lso2,lso3}.h
+
+2025-10-18  Hayaki Saito <saitoha@me.com>
+
+	* README.md, converters/img2sixel.1, converters/img2sixel.c,
+	converters/shell-completion/bash/img2sixel,
+	converters/shell-completion/zsh/_img2sixel, include/sixel.h.in,
+	python/libsixel/__init__.py, ruby/lib/libsixel/constants.rb,
+	src/dither.c, src/encoder.c, src/lso2.h, src/lso3.h, src/quant.c: 
+	feat: introduce new diffusion method lso2, lso3
+
+2025-10-17  Hayaki Saito <saitoha@me.com>
+
+	* : commit 35083195ee3676f753095566c04ca0d38c8baa70 Author: Hayaki
+	Saito <saitoha@me.com> Date:   Thu Oct 16 17:59:04 2025 +0900
+
+2025-10-17  Hayaki Saito <saitoha@me.com>
+
+	* README.md, converters/img2sixel.1, converters/img2sixel.c,
+	converters/shell-completion/bash/img2sixel,
+	converters/shell-completion/zsh/_img2sixel, include/sixel.h.in,
+	python/libsixel/__init__.py, ruby/lib/libsixel/api.rb,
+	ruby/lib/libsixel/constants.rb, ruby/lib/libsixel/dither.rb,
+	src/dither.c, src/dither.h, src/encoder.c, src/encoder.h,
+	src/quant.c, src/quant.h: feat: introduce -Y,--diffusion-carry
+	option
+
+2025-10-16  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: Fix Homebrew taps/cache
+
+2025-10-15  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: fix for cygwin
+
+2025-10-15  Hayaki Saito <saitoha@me.com>
+
+	* src/quant.c: quant: luminance-based variable diffusion
+
+2025-10-15  Hayaki Saito <saitoha@me.com>
+
+	* src/fromsixel.c: build: suppress
+	-Werror=aggressive-loop-optimizations
+
+2025-10-15  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: specify CC=${{ matrix.compiler }}
+	explicitly in cygwin environment
+
+2025-10-15  Hayaki Saito <saitoha@me.com>
+
+	* src/quant.c: quant: refactor ugly function
+	sixel_quant_apply_palette()
+
+2025-10-15  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, src/encoder.c: use CRT
+	secure functions in src/encoder.c - open -> _open - close -> _close - write -> _write - strcpy -> strcpy_s - sscanf -> sscanf_s - getenv -> _dupenv_s
+
+2025-10-15  Hayaki Saito <saitoha@me.com>
+
+	* src/Makefile.am, src/Makefile.in: build: add $(AM_CPPFLAGS) to
+	src/Makefile.am
+
+2025-10-15  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac, src/chunk.c: build: add
+	-D_CRT_SECURE_NO_WARNINGS to CPPFLAGS on cygwin build
+
+2025-10-15  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, src/chunk.c: build: use
+	fopen_s() insted of fopen() if available
+
+2025-10-14  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, src/chunk.c: build fix for
+	cygwin
+
+2025-10-14  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: try to revive coveralls integration
+
+2025-10-14  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c: drcs: fix start character set designation not
+	applied in DRCSMMv2 output
+
+2025-10-14  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, converters/img2sixel.1,
+	converters/img2sixel.c, converters/shell-completion/bash/img2sixel: 
+	ci: try to revive coveralls integration
+
+2025-10-13  Hayaki Saito <saitoha@me.com>
+
+	* README.md, converters/img2sixel.1, converters/img2sixel.c,
+	converters/shell-completion/bash/img2sixel,
+	converters/shell-completion/zsh/_img2sixel, include/sixel.h.in,
+	python/libsixel/__init__.py, ruby/lib/libsixel/api.rb,
+	ruby/lib/libsixel/constants.rb, ruby/lib/libsixel/dither.rb,
+	src/Makefile.am, src/Makefile.in, src/dither.c, src/dither.h,
+	src/encoder.c, src/encoder.h, src/quant.c, src/quant.h: add new
+	option -y/--diffusion-scan, and introduce variable error diffusion
+	methods
+
+2025-10-12  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: try to revive coveralls integration
+
+2025-10-12  Hayaki Saito <saitoha@me.com>
+
+	* converters/sixel2png.1, converters/sixel2png.c: Update manpage of
+	sixel2png
+
+2025-10-12  Hayaki Saito <saitoha@me.com>
+
+	* converters/img2sixel.1, converters/img2sixel.c,
+	converters/shell-completion/bash/img2sixel,
+	converters/shell-completion/zsh/_img2sixel, src/encoder.c: cli/docs:
+	ensure consistency between help output, man page, and shell
+	completions
+
+2025-10-12  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c, tests/dequantization-test.bash: build: suppress a
+	gcc warning -Werror=type-limits
+
+2025-10-11  Hayaki Saito <saitoha@me.com>
+
+	* converters/sixel2png.c, include/sixel.h.in, src/decoder.c,
+	src/decoder.h, src/encoder.c, tests/dequantization-test.bash: feat:
+	add dequantization options (-d,-s,-e) to sixel2png
+
+2025-10-10  Hayaki Saito <saitoha@me.com>
+
+	* : images: add some test image data *.{dds,hdp,webp,heic}
+
+2025-10-10  Hayaki Saito <saitoha@me.com>
+
+	* converters/img2sixel.c, include/sixel.h.in, src/encoder.c,
+	src/encoder.h: feat: add -M/--mapping-version, specify DRCS-SIXEL
+	Unicode mapping version
+
+2025-10-09  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c, src/loader.c, src/output.c, src/output.h: fix:
+	considering CLOCKS_PER_SEC glitch on macOS
+	https://stackoverflow.com/questions/16697005/clock-and-clocks-per-sec-on-osx-10-7
+
+2025-10-08  Hayaki Saito <saitoha@me.com>
+
+	* converters/img2sixel.1, converters/img2sixel.c,
+	converters/shell-completion/bash/img2sixel,
+	converters/shell-completion/zsh/_img2sixel, include/sixel.h.in,
+	src/colorspace.c, src/encoder.c, src/encoder.h: feat: add
+	-U/--output-colorspace option
+
+2025-10-08  Hayaki Saito <saitoha@me.com>
+
+	* converters/img2sixel.1, converters/img2sixel.c,
+	converters/shell-completion/bash/img2sixel,
+	converters/shell-completion/zsh/_img2sixel, include/sixel.h.in,
+	src/colorspace.c, src/encoder.c, src/frame.c: feat: add new working
+	colorspace OKLab
+
+2025-10-08  Hayaki Saito <saitoha@me.com>
+
+	* converters/img2sixel.1, converters/img2sixel.c,
+	converters/shell-completion/bash/img2sixel,
+	converters/shell-completion/zsh/_img2sixel, include/sixel.h.in,
+	src/Makefile.am, src/Makefile.in, src/colorspace.c,
+	src/colorspace.h, src/encoder.c, src/encoder.h, src/frame.c,
+	src/frame.h, src/meson.build, src/output.c, src/output.h: feat: add
+	new option -W/--working-colorspace
+
+2025-10-07  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac: build: fail ./configure if wic headers
+	are missing even when --enable-wiccodec is specified
+
+2025-10-04  Hayaki Saito <saitoha@me.com>
+
+	* converters/img2sixel.1, converters/img2sixel.c,
+	include/sixel.h.in, python/libsixel/__init__.py: fix typo, DEVINVM
+	-> DECINVM
+
+2025-10-03  Hayaki Saito <saitoha@me.com>
+
+	* : commit 487a34ce8cf9d16209c41c6623a721ef261ff583 Author: Hayaki
+	Saito <saitoha@me.com> Date:   Fri Oct 3 05:15:50 2025 +0900
+
+2020-03-25  arakiken <arakiken@users.sf.net>
+
+	* src/tosixel.c: Support OR mode which is enabled by -O, --ormode
+	option.
+	(http://www.pastel-flower.jp/~isaki/NetBSD/osc16hi/page40.html)
+
+2025-10-03  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: coregraphics: correctly interpret APNG frame delays
+
+2025-10-02  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c, src/loader.c, src/loader.h: loader: enable loader
+	logs with -v/--verbose option
+
+2025-10-02  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: Fix: animated GIFs stop after the first loop in
+	gdk-pixbuf loader
+
+2025-10-02  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: coregraphics: fix double free
+
+2025-10-02  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: gd: fix a memory leak
+
+2025-10-02  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: add more asan build variants
+
+2025-10-02  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: add some variants of asan build
+
+2025-10-02  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: add new ci job ci-autotools-asan
+
+2025-10-01  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: gd: fix memory leak in load_with_gd()
+
+2025-10-01  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: loader: prevent BOR when calling memcmp()
+
+2025-10-01  Hayaki Saito <saitoha@me.com>
+
+	* quicklook-extension/Sources/SixelQuickLookShared.m: quicklook:
+	prevent an overflow problem when ncolors == 256
+
+2025-10-01  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: coregraphics: ensure load_with_coregraphics() fails
+	when CGImageSourceGetCount() returns 0
+
+2025-10-01  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c: fix: prevent HBO in
+	sixel_encoder_emit_drcsmmv1_chars()
+
+2025-10-01  Hayaki Saito <saitoha@me.com>
+
+	* LICENSE, converters/img2sixel.1, converters/img2sixel.c,
+	converters/shell-completion/bash/img2sixel,
+	converters/shell-completion/zsh/_img2sixel, include/sixel.h.in,
+	python/libsixel/__init__.py, ruby/lib/libsixel/api.rb,
+	ruby/lib/libsixel/output.rb, src/encoder.c, src/encoder.h,
+	src/output.c, src/output.h, src/tosixel.c: drcs: add -@/--drcs
+	option; emit DRCS-SIXEL tiles using DRCSMMv1
+
+2025-09-30  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/nightly.yml: nightly: strip --enable-static
+	--disable-shared option from windows builds
+
+2025-09-30  Hayaki Saito <saitoha@me.com>
+
+	* README.md: readme: refer build instructions to build.md
+
+2025-09-30  Hayaki Saito <saitoha@me.com>
+
+	* LICENSE, README.md, build.md: license: update LICENSE, add missing
+	notice of xterm
+
+2025-09-30  Hayaki Saito <saitoha@me.com>
+
+	* README.md: completions: disable default installation of bash/zsh
+	completion scripts to match libsixel/libsixel
+
+2025-09-30  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, meson.build,
+	src/fromsixel.c: build: suppress -Waggressive-loop-optimizations
+	warnings
+
+2025-09-30  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac, converters/meson.build, meson.build,
+	meson_options.txt: completions: disable default installation of
+	bash/zsh completion scripts to match libsixel/libsixel
+
+2025-09-30  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac, meson.build, meson_options.txt: python:
+	disable default installation of the python bindings to match
+	libsixel/libsixel
+
+2025-09-27  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c: encoder: fix invalid dither pixelformat passed to
+	sixel_encode() when a mapfile is specified
+
+2025-09-27  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: coregraphics: fix load_with_coregraphics() not
+	returning failure when CGImageSourceCreateImageAtIndex() fails
+
+2025-09-26  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/nightly.yml,
+	meson.build, src/allocator.h, src/chunk.h, src/decoder.h,
+	src/dither.h, src/encoder.c, src/encoder.h, src/frame.h,
+	src/fromgif.h, src/loader.h, src/pixelformat.h, src/quant.c,
+	src/quant.h, src/scale.c, src/scale.h, src/status.h, src/writer.h,
+	wic/wic.c: build: fix for cygwin
+
+2025-09-26  Hayaki Saito <saitoha@me.com>
+
+	* meson.build, src/meson.build: meson: define _POSIX_SOURCE and
+	_POSIX_C_SOURCE=199309L when compiling sources under src/
+
+2025-09-26  Hayaki Saito <saitoha@me.com>
+
+	* meson.build: meson: enable message output even when python
+	bindings are disabled
+
+2025-09-26  Hayaki Saito <saitoha@me.com>
+
+	* meson.build, ruby/lib/libsixel/meson.build: build: fix meson build To avoid the issue of Meson not allowing path separators in output,
+	we've reorganized the Ruby version file generation to be done in a
+	subdirectory called meson.build.
+
+2025-09-25  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/nightly.yml: ci: drop
+	ubuntu arm64 target
+
+2025-09-25  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/nightly.yml: ci: don't
+	use coalesce() in ci.yml
+
+2025-09-25  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/nightly.yml: Revert
+	"ci: add meson targets" This reverts commit aa5d3e7ebe76af64c43caa601936ed93748b5b04.
+
+2025-09-25  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/nightly.yml: ci: add
+	meson targets
+
+2025-09-24  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/nightly.yml: ci: add
+	msvc target for nightly
+
+2025-09-24  Hayaki Saito <saitoha@me.com>
+
+	* LICENSE, LICENSE.images, LICENSE.mesa, LICENSE.pngsuite,
+	LICENSE.pnmcolormap, LICENSE.sdump, LICENSE.sixel.original,
+	LICENSE.stb, README.md: license: consolidate into a single file
+
+2025-09-24  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, aclocal.m4, configure, configure.ac,
+	converters/Makefile.in, include/Makefile.in, m4/ax_ruby_ext.m4,
+	meson.build, python/Makefile.in, quicklook-extension/Makefile.in,
+	ruby/Makefile.am, ruby/Makefile.in, src/Makefile.in,
+	tools/Makefile.am, tools/Makefile.in, wic/Makefile.in: build: tweak
+	for ruby module build/test/install
+
+2025-09-24  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac, src/Makefile.am, src/Makefile.in: build:
+	linux build fix
+
+2025-09-24  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, configure, configure.ac,
+	converters/Makefile.in, examples/drawing/main.c,
+	examples/ruby/README.md, examples/ruby/encoder_stdout.rb,
+	examples/ruby/output_gradient.rb, include/Makefile.in, meson.build,
+	meson_options.txt, python/Makefile.in,
+	quicklook-extension/Makefile.in, ruby/README.md, ruby/Rakefile,
+	ruby/ext/libsixel/extconf.rb, ruby/ext/libsixel/libsixel.c,
+	ruby/ext/libsixel/libsixel.h, ruby/lib/libsixel.rb,
+	ruby/lib/libsixel/api.rb, ruby/lib/libsixel/constants.rb,
+	ruby/lib/libsixel/decoder.rb, ruby/lib/libsixel/dither.rb,
+	ruby/lib/libsixel/encoder.rb, ruby/lib/libsixel/frame.rb,
+	ruby/lib/libsixel/helper.rb, ruby/lib/libsixel/output.rb,
+	ruby/lib/libsixel/version.rb, ruby/lib/libsixel/version_runtime.rb,
+	ruby/lib/libsixel/version_runtime.rb.in,
+	ruby/libsixel-ruby.gemspec, ruby/test/minitest_helper.rb,
+	ruby/test/test_libsixel.rb, src/Makefile.in, tools/Makefile.in,
+	tools/gen_ruby_constants.rb, wic/Makefile.in: ruby: refine ruby
+	interface.
+
+2025-09-23  Hayaki Saito <saitoha@me.com>
+
+	* ruby/libsixel-ruby.gemspec: security: fix CVE-2019-3881 and
+	CVE-2021-43809; suppress Dependabot alerts
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* .gitignore, LICENSE.sixel => LICENSE.sixel.original, Makefile.am,
+	Makefile.in, fastbuild-win.sh => config_sites/fastbuild-win.sh,
+	configure, configure.ac, converters/Makefile.in,
+	include/Makefile.in, ltmain.sh, meson.build, meson_options.txt,
+	python/Makefile.in, quicklook-extension/.gitignore,
+	quicklook-extension/Makefile.am, quicklook-extension/Makefile.in,
+	quicklook-extension/Resources/Bridge-Info.plist.in,
+	quicklook-extension/Resources/Host-Info.plist.in,
+	quicklook-extension/Resources/Preview-Info.plist.in,
+	quicklook-extension/Resources/QuickLookExtension.entitlements,
+	quicklook-extension/Resources/Thumbnail-Info.plist.in,
+	quicklook-extension/Sources/SixelPreviewBridge.m,
+	quicklook-extension/Sources/SixelPreviewMain.m,
+	quicklook-extension/Sources/SixelPreviewProvider.h,
+	quicklook-extension/Sources/SixelPreviewProvider.m,
+	quicklook-extension/Sources/SixelQuickLookHost.m,
+	quicklook-extension/Sources/SixelQuickLookShared.h,
+	quicklook-extension/Sources/SixelQuickLookShared.m,
+	quicklook-extension/Sources/SixelThumbnailMain.m,
+	quicklook-extension/Sources/SixelThumbnailProvider.h,
+	quicklook-extension/Sources/SixelThumbnailProvider.m,
+	quicklook-extension/meson.build, src/Makefile.in, src/allocator.c,
+	src/pixelformat.c, src/status.c, tools/Makefile.in,
+	tools/quicklook-extension.bash, tools/register_sixel_preview.m,
+	wic/Makefile.in: add quicklook-extension
+
+2025-09-22  Yuki Nagato <37764578+YUKI2eN3e@users.noreply.github.com>
+
+	* python/libsixel/__init__.py: Added msys-sixel and cygsixel to the
+	list of lib names to search for
+
+2025-09-21  Yuki Nagato <37764578+YUKI2eN3e@users.noreply.github.com>
+
+	* python/libsixel/__init__.py: Try more lib names when calling
+	find_library
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, configure, configure.ac,
+	tools/ar-msvc.sh: ci: invoke vcvarsall.bat and import env variables
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: msvc build
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: add ARFLAGS="" to msvc build
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: add msvc path explicitly
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: don't call pacboy cc:p when the
+	compiler is msvc
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/nightly.yml: ci: drop
+	CLANGARM64 build
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: add initial msvc build workflow
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: drop CLANGARM64 target
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* converters/Makefile.am, converters/Makefile.in,
+	converters/getopt_stub.h: getopt: allow postfix option arguments to
+	improve glibc compatibility
+
+2025-09-19  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/nightly.yml: ci: add
+	CLANGARM64 build
+
+2025-09-18  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: wiccodec: consider utf-8 sequence in
+	IWICBitmapDecoder::QueryCapability
+
+2025-09-19  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, configure, configure.ac, wic/wic.c: 
+	build: prefer clang over gcc when $MSYSTEM is CLANG64 or CLANGARM64
+
+2025-09-19  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac, meson.build, meson_options.txt,
+	wic/Makefile.am, wic/Makefile.in, wic/meson.build, wic/wic.c,
+	wic/wic_stub.h: build: introduce new build option
+	--enable-register-dll(autoconf)/-Dregister_dll
+
+2025-09-19  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: wiccodec: avoiding use-after-free
+
+2025-09-19  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c, wic/wic_stub.h: wiccocdec: add basic metadata support
+
+2025-09-18  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: wiccodec: implement IWICBitmapDecoder::GetColorContexts
+
+2025-09-18  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: wic: make IWICBitmapDecoder::QueryCapability more
+	flexible; decode sixel output from ppmtosixel and chafa
+
+2025-09-17  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: associate extensions .six/.sixel to Windows Photo
+	Viewer
+
+2025-09-17  Hayaki Saito <saitoha@me.com>
+
+	* autogen.sh: remove autogen.sh
+
+2025-09-17  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: wiccodec: implements
+	IWICBitmapFrameDecode::GetColorContexts, simply returns sRGB
+
+2025-09-17  Hayaki Saito <saitoha@me.com>
+
+	* wic/Makefile.am, wic/Makefile.in, wic/wic.c, wic/wic_stub.h: 
+	Enable explorer's thmbnail/preview handler
+
+2025-09-16  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: fix wrong GUID_WICPixelFormat8bppIndexed definition
+
+2025-09-16  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic_stub.c, wic/wic_stub.h: wiccodec: ensure IID definitions
+	are emitted to resolve link-time errors
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: wiccodec: add Capabilities registry entry
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: wiccodec: add extension handler
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: wiccodec: report capability
+	WICBitmapDecoderCapabilityCanDecodeThumbnail
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, converters/meson.build,
+	meson.build, wic/Makefile.am, wic/Makefile.in, wic/meson.build,
+	wic/wic.c, wic/wic_stub.c, wic/wic_stub.h: wiccodec: add format for
+	decoding: WICPixelFormat8bppIndexed
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* configure, wic/wic.c: wiccodec: implements GetThumbnail and
+	GetPreview
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* wic/meson.build: meson: correct wic codec dll name
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: wic: add support for animated images in the loader
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* meson.build, meson_options.txt, src/quant.c: meson: add new option
+	wiccodec
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* configure.ac, meson.build, src/loader.c: gd: enable animated gif
+	support in the loader by using gdImageCreateFromGifAnimPtr instead of
+	gdImageCreateFromGifPtr
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* meson.build: meson: add checks for GD functions
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* wic/Makefile.in: Add missing file, wic/Makefile.in
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac: build fix for non-windows environment
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac, converters/Makefile.am,
+	converters/Makefile.in, src/writer.c, wic/wic.c: configure.ac:
+	detect wic and winhttp when CC=cl (msvc)
+
+2025-09-14  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, converters/getopt_stub.h,
+	converters/img2sixel.c, converters/sixel2png.c, meson.build,
+	src/Makefile.am, src/Makefile.in, src/chunk.c, src/encoder.c,
+	src/quant.c: build: minimum support for msvc (cl.exe)
+
+2025-09-14  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, configure, configure.ac,
+	converters/Makefile.in, include/Makefile.in, python/Makefile.in,
+	src/Makefile.in, tools/Makefile.in, wic/Makefile.am: configure: add
+	--enable-wiccodec configure option
+
+2025-09-14  Hayaki Saito <saitoha@me.com>
+
+	* meson.build, wic/meson.build: meson: add wic/meson.build
+
+2025-09-14  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: build: suppress -Wmissing-parameter-name warnings with
+	gcc/clang
+
+2025-09-14  Hayaki Saito <saitoha@me.com>
+
+	* src/quant.c: build: suppress -Wstringop-overflow warnings with
+	gcc/clang
+
+2025-09-14  Hayaki Saito <saitoha@me.com>
+
+	* wic/Makefile.am: wiccodec: invoke regsvr32 during installation
+
+2025-09-14  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in: wiccodec: build the codec server only on
+	windows
+
+2025-09-14  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, configure, configure.ac, src/loader.c,
+	wic/Makefile.am, wic/wic.c, wic/wic.cc: com: add WIC codec server
+
+2025-09-13  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, config.h.in, configure, configure.ac,
+	include/meson.build, meson.build: build: change package name, sixel
+	-> libsixel
+
+2025-09-13  Hayaki Saito <saitoha@me.com>
+
+	* include/meson.build, meson.build: meson: additional build fix
+
+2025-09-13  Hayaki Saito <saitoha@me.com>
+
+	* meson.build: meson: fix build on MinGW
+
+2025-09-13  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, meson.build,
+	meson_options.txt, src/scale.c: build: detect SIMD capability
+
+2025-09-13  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, meson.build,
+	meson_options.txt, src/scale.c: perf: accelerate scaling using SIMD
+
+2025-09-13  Hayaki Saito <saitoha@me.com>
+
+	* src/scale.h: add missing header src/scale.h
+
+2025-09-13  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac, converters/meson.build,
+	include/meson.build, meson.build, meson_options.txt,
+	python/meson.build, src/meson.build, src/scale.c, src/writer.c: 
+	build: add meson.build / meson_options.txt
+
+2025-09-12  Hayaki Saito <saitoha@me.com>
+
+	* src/dither.c, src/scale.c, src/tests.c: tests: fix broken unit
+	tests
+
+2025-09-11  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in: automake: Add depcomp to EXTRA_DIST
+
+2025-09-11  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in, aclocal.m4, configure, configure.ac,
+	converters/Makefile.in, include/Makefile.in, python/Makefile.in,
+	src/Makefile.in, tools/Makefile.in: autotools: default
+	AM_SILENT_RULES to yes and explicitly set AM_MAINTAINER_MODE=enable; may switch the default to disabled in the future
+
+2025-09-11  Hayaki Saito <saitoha@me.com>
+
+	* converters/img2sixel.c, converters/sixel2png.c,
+	include/sixel.h.in, src/loader.c: cli: Add build-time linkage info
+	for coregraphics/winhttp to --version output
+
+2025-09-11  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: coregraphics: add gif animation support to the
+	loader, mirroring gdk-pixbuf2
+
+2025-09-11  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac: configure: fix detection of clock() and
+	nanosleep()
+
+2025-09-11  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: gif: use gdk-pixbuf2 or the built-in decoder for gif
+	input when wic/coregraphics/gd are enabled
+
+2025-09-10  Hayaki Saito <saitoha@me.com>
+
+	* src/fromgif.c: gif: honor GCE disposal and enforce frame limits - apply previous frame's disposal method and reset GCE state - skip transparent pixels and preserve background when decoding - reject zero-sized or oversized frames using SIXEL_* limits - propagate errors from recursive gif_out_code calls
+
+2025-09-10  Hayaki Saito <saitoha@me.com>
+
+	* include/sixel.h.in, python/libsixel/__init__.py: fix typo 10248 ->
+	1024
+
+2025-09-09  Hayaki Saito <saitoha@me.com>
+
+	* src/scale.c: perf: accelerate scaling with separable filter - Split resampling into horizontal and vertical passes to cut
+	multiplications - Precompute and reuse kernel weights instead of recalculating
+	expensive functions - Streamline temporary buffers for better cache locality and overall
+	throughput on my macos system, the command below improved from 6.474s to 4.806s
+	(~26% faster)    time converters/img2sixel.orig images/snake.jpg -w1000% -o
+	   /dev/null
+
+2025-09-09  Hayaki Saito <saitoha@me.com>
+
+	* src/frame.c, src/scale.c: Corrected the Lanczos-2 filter radius, 3
+	-> 2
+
+2025-09-08  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in, configure, configure.ac, converters/Makefile.in,
+	include/Makefile.in, libsixel.pc.in, python/Makefile.in,
+	src/Makefile.in, tools/Makefile.in: Add Requires.private and
+	Libs.private to libsixel.pc for static linking
+
+2025-09-07  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in, config.h.in, configure, configure.ac,
+	converters/Makefile.am, converters/Makefile.in,
+	include/Makefile.in, python/Makefile.in, src/Makefile.am,
+	src/Makefile.in, src/encoder.c, src/loader.c, tools/Makefile.in: Add
+	CoreGraphics loader
+
+2025-09-04  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, src/fromgif.c,
+	tests/issue/207/contributor.txt: fix memory leak issue #207,
+	reported by @optionGo
+
+2025-09-04  Hayaki Saito <saitoha@me.com>
+
+	* AUTHORS, LICENSE, README.md: readme: import minor fixes from
+	libsixel/libsixel's README.md
+
+2025-09-02  Hayaki Saito <saitoha@me.com>
+
+	* src/quant.c: fix an overflow problem in diffuse_stucki()
+
+2025-09-02  Hayaki Saito <saitoha@me.com>
+
+	* src/quant.c: dither: split error_diffuse() into three strategies
+	and improve perceptual quality 1. error_diffuse_fast(): integer math 2. error_diffuse_normal(): integer math with truncation-error
+	compensation 3. error_diffuse_precise(): compute diffusion weights in double and
+	cast on accumulation usage: - use precise for algorithms with large denominators (~48), e.g.,
+	jajuni, stucki - use normal for medium denominators (~16), e.g., floyd-steinberg,
+	burkes - use fast for atkinson and lso1 this change reduces banding and speckling and yields visibly cleaner
+	results, with the biggest gains on jajuni and stucki
+
+2025-09-01  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac: build fix for windows
+
+2025-08-27  Hayaki Saito <saitoha@me.com>
+
+	* converters/img2sixel.1, converters/img2sixel.c,
+	include/sixel.h.in, python/libsixel/__init__.py, src/encoder.c,
+	src/quant.c: Add libsixel-specific error diffusion (dithering) to
+	improve sixel compression by steering error propagation so out-of-palette intermediate colors
+	render as horizontal bands rather than grainy noise, we increase RLE
+	more effective.
+
+2025-08-31  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac: configure: add a notation "windows only"
+	to --with-winpthread optoin
+
+2025-08-14  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in, config.h.in, configure, configure.ac,
+	converters/Makefile.in, include/Makefile.in, python/Makefile.in,
+	src/Makefile.am, src/Makefile.in, src/chunk.c, tools/Makefile.in: 
+	Enabled use of WinHTTP in the Windows build.  This change allows the creation of Windows binaries with network
+	access functionality without depending on libcurl, libssl, libcrypt,
+	or ca-certificates, thereby improving portability.
+
+2025-08-14  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in, config.h.in, configure, configure.ac,
+	converters/Makefile.in, converters/img2sixel.c,
+	include/Makefile.in, python/Makefile.in, src/Makefile.am,
+	src/Makefile.in, src/loader.c, tools/Makefile.in: Enable WIC support
+	for Windows builds (MinGW, MSYS2, Cygwin) when available. Depending on the installed codecs, this
+	change may allow displaying formats such as *.ico, *.webp, *.wdp,
+	*.heif, *.heic, and *.dds.
+
+2025-08-31  Hayaki Saito <saitoha@me.com>
+
+	* config_sites/clang64.site, config_sites/cygwin.site,
+	config_sites/mingw64.site, config_sites/msys.site,
+	config_sites/ucrt64.site, fastbuild-win.sh: build: add a
+	windows-specific shell script that wraps ./configure to speed up
+	slow builds
+
+2025-08-31  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in, config.h.in, configure, configure.ac, src/loader.c: 
+	win32: disable tls in stb_image.h to avoid dynamic dll-load crashes
+	and the libgcc_s_seh-1.dll dependency; stbi_failure_reason() may return incorrect values when called from
+	multiple threads, which is considered negligible
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, src/dither.c, src/encoder.c: 
+	Add new configure option --with-libwinpthread(default=no)
+
+2025-08-16  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in: fix package filename in vexe build
+
+2025-08-14  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in: Bump version to v1.8.7 Since the script previously used to generate the ChangeLog was lost,
+	the ChangeLog was regenerated using git2cl.
+	https://github.com/lobaro/git2cl
+
+2025-08-16  Hayaki Saito <saitoha@me.com>
+
+	* : Update package.json
+
+2025-08-14  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in: Bump version to v1.8.7 Since the script previously used to generate the ChangeLog was lost,
+	the ChangeLog was regenerated using git2cl.
+	https://github.com/lobaro/git2cl
+
+2025-10-03  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: coregraphics: correctly interpret APNG frame delays
+
+2025-10-02  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c, src/loader.c, src/loader.h: loader: enable loader
+	logs with -v/--verbose option
+
+2025-10-02  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: Fix: animated GIFs stop after the first loop in
+	gdk-pixbuf loader
+
+2025-10-02  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: coregraphics: fix double free
+
+2025-10-02  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: gd: fix a memory leak
+
+2025-10-02  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: add more asan build variants
+
+2025-10-02  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: add some variants of asan build
+
+2025-10-02  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: add new ci job ci-autotools-asan
+
+2025-10-01  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: gd: fix memory leak in load_with_gd()
+
+2025-10-01  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: loader: prevent BOR when calling memcmp()
+
+2025-10-01  Hayaki Saito <saitoha@me.com>
+
+	* quicklook-extension/Sources/SixelQuickLookShared.m: quicklook:
+	prevent an overflow problem when ncolors == 256
+
+2025-10-01  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: coregraphics: ensure load_with_coregraphics() fails
+	when CGImageSourceGetCount() returns 0
+
+2025-10-01  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c: fix: prevent HBO in
+	sixel_encoder_emit_drcsmmv1_chars()
+
+2025-10-01  Hayaki Saito <saitoha@me.com>
+
+	* LICENSE, converters/img2sixel.1, converters/img2sixel.c,
+	converters/shell-completion/bash/img2sixel,
+	converters/shell-completion/zsh/_img2sixel, include/sixel.h.in,
+	python/libsixel/__init__.py, ruby/lib/libsixel/api.rb,
+	ruby/lib/libsixel/output.rb, src/encoder.c, src/encoder.h,
+	src/output.c, src/output.h, src/tosixel.c: drcs: add -@/--drcs
+	option; emit DRCS-SIXEL tiles using DRCSMMv1
+
+2025-09-30  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/nightly.yml: nightly: strip --enable-static
+	--disable-shared option from windows builds
+
+2025-09-30  Hayaki Saito <saitoha@me.com>
+
+	* README.md: readme: refer build instructions to build.md
+
+2025-09-30  Hayaki Saito <saitoha@me.com>
+
+	* LICENSE, README.md, build.md: license: update LICENSE, add missing
+	notice of xterm
+
+2025-09-30  Hayaki Saito <saitoha@me.com>
+
+	* README.md: completions: disable default installation of bash/zsh
+	completion scripts to match libsixel/libsixel
+
+2025-09-30  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, meson.build,
+	src/fromsixel.c: build: suppress -Waggressive-loop-optimizations
+	warnings
+
+2025-09-30  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac, converters/meson.build, meson.build,
+	meson_options.txt: completions: disable default installation of
+	bash/zsh completion scripts to match libsixel/libsixel
+
+2025-09-30  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac, meson.build, meson_options.txt: python:
+	disable default installation of the python bindings to match
+	libsixel/libsixel
+
+2025-09-27  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c: encoder: fix invalid dither pixelformat passed to
+	sixel_encode() when a mapfile is specified
+
+2025-09-27  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: coregraphics: fix load_with_coregraphics() not
+	returning failure when CGImageSourceCreateImageAtIndex() fails
+
+2025-09-26  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/nightly.yml,
+	meson.build, src/allocator.h, src/chunk.h, src/decoder.h,
+	src/dither.h, src/encoder.c, src/encoder.h, src/frame.h,
+	src/fromgif.h, src/loader.h, src/pixelformat.h, src/quant.c,
+	src/quant.h, src/scale.c, src/scale.h, src/status.h, src/writer.h,
+	wic/wic.c: build: fix for cygwin
+
+2025-09-26  Hayaki Saito <saitoha@me.com>
+
+	* meson.build, src/meson.build: meson: define _POSIX_SOURCE and
+	_POSIX_C_SOURCE=199309L when compiling sources under src/
+
+2025-09-26  Hayaki Saito <saitoha@me.com>
+
+	* meson.build: meson: enable message output even when python
+	bindings are disabled
+
+2025-09-26  Hayaki Saito <saitoha@me.com>
+
+	* meson.build, ruby/lib/libsixel/meson.build: build: fix meson build To avoid the issue of Meson not allowing path separators in output,
+	we've reorganized the Ruby version file generation to be done in a
+	subdirectory called meson.build.
+
+2025-09-25  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/nightly.yml: ci: drop
+	ubuntu arm64 target
+
+2025-09-25  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/nightly.yml: ci: don't
+	use coalesce() in ci.yml
+
+2025-09-25  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/nightly.yml: Revert
+	"ci: add meson targets" This reverts commit aa5d3e7ebe76af64c43caa601936ed93748b5b04.
+
+2025-09-25  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/nightly.yml: ci: add
+	meson targets
+
+2025-09-24  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/nightly.yml: ci: add
+	msvc target for nightly
+
+2025-09-24  Hayaki Saito <saitoha@me.com>
+
+	* LICENSE, LICENSE.images, LICENSE.mesa, LICENSE.pngsuite,
+	LICENSE.pnmcolormap, LICENSE.sdump, LICENSE.sixel.original,
+	LICENSE.stb, README.md: license: consolidate into a single file
+
+2025-09-24  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, aclocal.m4, configure, configure.ac,
+	converters/Makefile.in, include/Makefile.in, m4/ax_ruby_ext.m4,
+	meson.build, python/Makefile.in, quicklook-extension/Makefile.in,
+	ruby/Makefile.am, ruby/Makefile.in, src/Makefile.in,
+	tools/Makefile.am, tools/Makefile.in, wic/Makefile.in: build: tweak
+	for ruby module build/test/install
+
+2025-09-24  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac, src/Makefile.am, src/Makefile.in: build:
+	linux build fix
+
+2025-09-24  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, configure, configure.ac,
+	converters/Makefile.in, examples/drawing/main.c,
+	examples/ruby/README.md, examples/ruby/encoder_stdout.rb,
+	examples/ruby/output_gradient.rb, include/Makefile.in, meson.build,
+	meson_options.txt, python/Makefile.in,
+	quicklook-extension/Makefile.in, ruby/README.md, ruby/Rakefile,
+	ruby/ext/libsixel/extconf.rb, ruby/ext/libsixel/libsixel.c,
+	ruby/ext/libsixel/libsixel.h, ruby/lib/libsixel.rb,
+	ruby/lib/libsixel/api.rb, ruby/lib/libsixel/constants.rb,
+	ruby/lib/libsixel/decoder.rb, ruby/lib/libsixel/dither.rb,
+	ruby/lib/libsixel/encoder.rb, ruby/lib/libsixel/frame.rb,
+	ruby/lib/libsixel/helper.rb, ruby/lib/libsixel/output.rb,
+	ruby/lib/libsixel/version.rb, ruby/lib/libsixel/version_runtime.rb,
+	ruby/lib/libsixel/version_runtime.rb.in,
+	ruby/libsixel-ruby.gemspec, ruby/test/minitest_helper.rb,
+	ruby/test/test_libsixel.rb, src/Makefile.in, tools/Makefile.in,
+	tools/gen_ruby_constants.rb, wic/Makefile.in: ruby: refine ruby
+	interface.
+
+2025-09-23  Hayaki Saito <saitoha@me.com>
+
+	* ruby/libsixel-ruby.gemspec: security: fix CVE-2019-3881 and
+	CVE-2021-43809; suppress Dependabot alerts
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* .gitignore, LICENSE.sixel => LICENSE.sixel.original, Makefile.am,
+	Makefile.in, fastbuild-win.sh => config_sites/fastbuild-win.sh,
+	configure, configure.ac, converters/Makefile.in,
+	include/Makefile.in, ltmain.sh, meson.build, meson_options.txt,
+	python/Makefile.in, quicklook-extension/.gitignore,
+	quicklook-extension/Makefile.am, quicklook-extension/Makefile.in,
+	quicklook-extension/Resources/Bridge-Info.plist.in,
+	quicklook-extension/Resources/Host-Info.plist.in,
+	quicklook-extension/Resources/Preview-Info.plist.in,
+	quicklook-extension/Resources/QuickLookExtension.entitlements,
+	quicklook-extension/Resources/Thumbnail-Info.plist.in,
+	quicklook-extension/Sources/SixelPreviewBridge.m,
+	quicklook-extension/Sources/SixelPreviewMain.m,
+	quicklook-extension/Sources/SixelPreviewProvider.h,
+	quicklook-extension/Sources/SixelPreviewProvider.m,
+	quicklook-extension/Sources/SixelQuickLookHost.m,
+	quicklook-extension/Sources/SixelQuickLookShared.h,
+	quicklook-extension/Sources/SixelQuickLookShared.m,
+	quicklook-extension/Sources/SixelThumbnailMain.m,
+	quicklook-extension/Sources/SixelThumbnailProvider.h,
+	quicklook-extension/Sources/SixelThumbnailProvider.m,
+	quicklook-extension/meson.build, src/Makefile.in, src/allocator.c,
+	src/pixelformat.c, src/status.c, tools/Makefile.in,
+	tools/quicklook-extension.bash, tools/register_sixel_preview.m,
+	wic/Makefile.in: add quicklook-extension
+
+2025-09-22  Yuki Nagato <37764578+YUKI2eN3e@users.noreply.github.com>
+
+	* python/libsixel/__init__.py: Added msys-sixel and cygsixel to the
+	list of lib names to search for
+
+2025-09-21  Yuki Nagato <37764578+YUKI2eN3e@users.noreply.github.com>
+
+	* python/libsixel/__init__.py: Try more lib names when calling
+	find_library
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* : commit ba7d75bbb53b94bc63c233936807c0851346c1bc Author: Hayaki
+	Saito <saitoha@me.com> Date:   Sat Sep 20 12:40:22 2025 +0900
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: drop CLANGARM64 target
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: msvc build
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: add ARFLAGS="" to msvc build
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: add msvc path explicitly
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: don't call pacboy cc:p when the
+	compiler is msvc
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/nightly.yml: ci: drop
+	CLANGARM64 build
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* converters/Makefile.am, converters/Makefile.in,
+	converters/getopt_stub.h: getopt: allow postfix option arguments to
+	improve glibc compatibility
+
+2025-09-20  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml: ci: add initial msvc build workflow
+
+2025-09-19  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/nightly.yml: ci: add
+	CLANGARM64 build
+
+2025-09-18  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: wiccodec: consider utf-8 sequence in
+	IWICBitmapDecoder::QueryCapability
+
+2025-09-19  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, configure, configure.ac, wic/wic.c: 
+	build: prefer clang over gcc when $MSYSTEM is CLANG64 or CLANGARM64
+
+2025-09-19  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac, meson.build, meson_options.txt,
+	wic/Makefile.am, wic/Makefile.in, wic/meson.build, wic/wic.c,
+	wic/wic_stub.h: build: introduce new build option
+	--enable-register-dll(autoconf)/-Dregister_dll
+
+2025-09-19  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: wiccodec: avoiding use-after-free
+
+2025-09-19  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c, wic/wic_stub.h: wiccocdec: add basic metadata support
+
+2025-09-18  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: wiccodec: implement IWICBitmapDecoder::GetColorContexts
+
+2025-09-18  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: wic: make IWICBitmapDecoder::QueryCapability more
+	flexible; decode sixel output from ppmtosixel and chafa
+
+2025-09-17  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: associate extensions .six/.sixel to Windows Photo
+	Viewer
+
+2025-09-17  Hayaki Saito <saitoha@me.com>
+
+	* autogen.sh: remove autogen.sh
+
+2025-09-17  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: wiccodec: implements
+	IWICBitmapFrameDecode::GetColorContexts, simply returns sRGB
+
+2025-09-17  Hayaki Saito <saitoha@me.com>
+
+	* wic/Makefile.am, wic/Makefile.in, wic/wic.c, wic/wic_stub.h: 
+	Enable explorer's thmbnail/preview handler
+
+2025-09-16  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: fix wrong GUID_WICPixelFormat8bppIndexed definition
+
+2025-09-16  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic_stub.c, wic/wic_stub.h: wiccodec: ensure IID definitions
+	are emitted to resolve link-time errors
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: wiccodec: add Capabilities registry entry
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: wiccodec: add extension handler
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: wiccodec: report capability
+	WICBitmapDecoderCapabilityCanDecodeThumbnail
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, converters/meson.build,
+	meson.build, wic/Makefile.am, wic/Makefile.in, wic/meson.build,
+	wic/wic.c, wic/wic_stub.c, wic/wic_stub.h: wiccodec: add format for
+	decoding: WICPixelFormat8bppIndexed
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* configure, wic/wic.c: wiccodec: implements GetThumbnail and
+	GetPreview
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* wic/meson.build: meson: correct wic codec dll name
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: wic: add support for animated images in the loader
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* meson.build, meson_options.txt, src/quant.c: meson: add new option
+	wiccodec
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* configure.ac, meson.build, src/loader.c: gd: enable animated gif
+	support in the loader by using gdImageCreateFromGifAnimPtr instead of
+	gdImageCreateFromGifPtr
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* meson.build: meson: add checks for GD functions
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* wic/Makefile.in: Add missing file, wic/Makefile.in
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac: build fix for non-windows environment
+
+2025-09-15  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac, converters/Makefile.am,
+	converters/Makefile.in, src/writer.c, wic/wic.c: configure.ac:
+	detect wic and winhttp when CC=cl (msvc)
+
+2025-09-14  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, converters/getopt_stub.h,
+	converters/img2sixel.c, converters/sixel2png.c, meson.build,
+	src/Makefile.am, src/Makefile.in, src/chunk.c, src/encoder.c,
+	src/quant.c: build: minimum support for msvc (cl.exe)
+
+2025-09-14  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, configure, configure.ac,
+	converters/Makefile.in, include/Makefile.in, python/Makefile.in,
+	src/Makefile.in, tools/Makefile.in, wic/Makefile.am: configure: add
+	--enable-wiccodec configure option
+
+2025-09-14  Hayaki Saito <saitoha@me.com>
+
+	* meson.build, wic/meson.build: meson: add wic/meson.build
+
+2025-09-14  Hayaki Saito <saitoha@me.com>
+
+	* wic/wic.c: build: suppress -Wmissing-parameter-name warnings with
+	gcc/clang
+
+2025-09-14  Hayaki Saito <saitoha@me.com>
+
+	* src/quant.c: build: suppress -Wstringop-overflow warnings with
+	gcc/clang
+
+2025-09-14  Hayaki Saito <saitoha@me.com>
+
+	* wic/Makefile.am: wiccodec: invoke regsvr32 during installation
+
+2025-09-14  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in: wiccodec: build the codec server only on
+	windows
+
+2025-09-14  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, configure, configure.ac, src/loader.c,
+	wic/Makefile.am, wic/wic.c, wic/wic.cc: com: add WIC codec server
+
+2025-09-13  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, config.h.in, configure, configure.ac,
+	include/meson.build, meson.build: build: change package name, sixel
+	-> libsixel
+
+2025-09-13  Hayaki Saito <saitoha@me.com>
+
+	* : commit cd9174bd6c2ff98e5d9f4113406a0feb29f7b5c3 Author: Hayaki
+	Saito <saitoha@me.com> Date:   Sat Sep 13 14:13:46 2025 +0900
+
+2025-09-13  Hayaki Saito <saitoha@me.com>
+
+	* include/meson.build, meson.build: meson: additional build fix
+
+2025-09-13  Hayaki Saito <saitoha@me.com>
+
+	* meson.build: meson: fix build on MinGW
+
+2025-09-13  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, meson.build,
+	meson_options.txt, src/scale.c: perf: accelerate scaling using SIMD
+
+2025-09-13  Hayaki Saito <saitoha@me.com>
+
+	* src/scale.h: add missing header src/scale.h
+
+2025-09-13  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac, converters/meson.build,
+	include/meson.build, meson.build, meson_options.txt,
+	python/meson.build, src/meson.build, src/scale.c, src/writer.c: 
+	build: add meson.build / meson_options.txt
+
+2025-09-12  Hayaki Saito <saitoha@me.com>
+
+	* src/dither.c, src/scale.c, src/tests.c: tests: fix broken unit
+	tests
+
+2025-09-11  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in: automake: Add depcomp to EXTRA_DIST
+
+2025-09-11  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in, aclocal.m4, configure, configure.ac,
+	converters/Makefile.in, include/Makefile.in, python/Makefile.in,
+	src/Makefile.in, tools/Makefile.in: autotools: default
+	AM_SILENT_RULES to yes and explicitly set AM_MAINTAINER_MODE=enable; may switch the default to disabled in the future
+
+2025-09-11  Hayaki Saito <saitoha@me.com>
+
+	* converters/img2sixel.c, converters/sixel2png.c,
+	include/sixel.h.in, src/loader.c: cli: Add build-time linkage info
+	for coregraphics/winhttp to --version output
+
+2025-09-11  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: coregraphics: add gif animation support to the
+	loader, mirroring gdk-pixbuf2
+
+2025-09-11  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac: configure: fix detection of clock() and
+	nanosleep()
+
+2025-09-11  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: gif: use gdk-pixbuf2 or the built-in decoder for gif
+	input when wic/coregraphics/gd are enabled
+
+2025-09-10  Hayaki Saito <saitoha@me.com>
+
+	* src/fromgif.c: gif: honor GCE disposal and enforce frame limits - apply previous frame's disposal method and reset GCE state - skip transparent pixels and preserve background when decoding - reject zero-sized or oversized frames using SIXEL_* limits - propagate errors from recursive gif_out_code calls
+
+2025-09-10  Hayaki Saito <saitoha@me.com>
+
+	* include/sixel.h.in, python/libsixel/__init__.py: fix typo 10248 ->
+	1024
+
+2025-09-09  Hayaki Saito <saitoha@me.com>
+
+	* src/scale.c: perf: accelerate scaling with separable filter - Split resampling into horizontal and vertical passes to cut
+	multiplications - Precompute and reuse kernel weights instead of recalculating
+	expensive functions - Streamline temporary buffers for better cache locality and overall
+	throughput on my macos system, the command below improved from 6.474s to 4.806s
+	(~26% faster)    time converters/img2sixel.orig images/snake.jpg -w1000% -o
+	   /dev/null
+
+2025-09-09  Hayaki Saito <saitoha@me.com>
+
+	* src/frame.c, src/scale.c: Corrected the Lanczos-2 filter radius, 3
+	-> 2
+
+2025-09-08  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in, configure, configure.ac, converters/Makefile.in,
+	include/Makefile.in, libsixel.pc.in, python/Makefile.in,
+	src/Makefile.in, tools/Makefile.in: Add Requires.private and
+	Libs.private to libsixel.pc for static linking
+
+2025-09-07  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in, config.h.in, configure, configure.ac,
+	converters/Makefile.am, converters/Makefile.in,
+	include/Makefile.in, python/Makefile.in, src/Makefile.am,
+	src/Makefile.in, src/encoder.c, src/loader.c, tools/Makefile.in: Add
+	CoreGraphics loader
+
+2025-09-04  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, src/fromgif.c,
+	tests/issue/207/contributor.txt: fix memory leak issue #207,
+	reported by @optionGo
+
+2025-09-04  Hayaki Saito <saitoha@me.com>
+
+	* AUTHORS, LICENSE, README.md: readme: import minor fixes from
+	libsixel/libsixel's README.md
+
+2025-09-02  Hayaki Saito <saitoha@me.com>
+
+	* src/quant.c: fix an overflow problem in diffuse_stucki()
+
+2025-09-02  Hayaki Saito <saitoha@me.com>
+
+	* src/quant.c: dither: split error_diffuse() into three strategies
+	and improve perceptual quality 1. error_diffuse_fast(): integer math 2. error_diffuse_normal(): integer math with truncation-error
+	compensation 3. error_diffuse_precise(): compute diffusion weights in double and
+	cast on accumulation usage: - use precise for algorithms with large denominators (~48), e.g.,
+	jajuni, stucki - use normal for medium denominators (~16), e.g., floyd-steinberg,
+	burkes - use fast for atkinson and lso1 this change reduces banding and speckling and yields visibly cleaner
+	results, with the biggest gains on jajuni and stucki
+
+2025-09-01  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac: build fix for windows
+
+2025-08-27  Hayaki Saito <saitoha@me.com>
+
+	* converters/img2sixel.1, converters/img2sixel.c,
+	include/sixel.h.in, python/libsixel/__init__.py, src/encoder.c,
+	src/quant.c: Add libsixel-specific error diffusion (dithering) to
+	improve sixel compression by steering error propagation so out-of-palette intermediate colors
+	render as horizontal bands rather than grainy noise, we increase RLE
+	more effective.
+
+2025-08-31  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac: configure: add a notation "windows only"
+	to --with-winpthread optoin
+
+2025-08-14  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in, config.h.in, configure, configure.ac,
+	converters/Makefile.in, include/Makefile.in, python/Makefile.in,
+	src/Makefile.am, src/Makefile.in, src/chunk.c, tools/Makefile.in: 
+	Enabled use of WinHTTP in the Windows build.  This change allows the creation of Windows binaries with network
+	access functionality without depending on libcurl, libssl, libcrypt,
+	or ca-certificates, thereby improving portability.
+
+2025-08-14  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in, config.h.in, configure, configure.ac,
+	converters/Makefile.in, converters/img2sixel.c,
+	include/Makefile.in, python/Makefile.in, src/Makefile.am,
+	src/Makefile.in, src/loader.c, tools/Makefile.in: Enable WIC support
+	for Windows builds (MinGW, MSYS2, Cygwin) when available. Depending on the installed codecs, this
+	change may allow displaying formats such as *.ico, *.webp, *.wdp,
+	*.heif, *.heic, and *.dds.
+
+2025-08-31  Hayaki Saito <saitoha@me.com>
+
+	* config_sites/clang64.site, config_sites/cygwin.site,
+	config_sites/mingw64.site, config_sites/msys.site,
+	config_sites/ucrt64.site, fastbuild-win.sh: build: add a
+	windows-specific shell script that wraps ./configure to speed up
+	slow builds
+
+2025-08-31  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in, config.h.in, configure, configure.ac, src/loader.c: 
+	win32: disable tls in stb_image.h to avoid dynamic dll-load crashes
+	and the libgcc_s_seh-1.dll dependency; stbi_failure_reason() may return incorrect values when called from
+	multiple threads, which is considered negligible
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* config.h.in, configure, configure.ac, src/dither.c, src/encoder.c: 
+	Add new configure option --with-libwinpthread(default=no)
+
+2025-08-16  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in: fix package filename in vexe build
+
+2025-08-14  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in: Bump version to v1.8.7 Since the script previously used to generate the ChangeLog was lost,
+	the ChangeLog was regenerated using git2cl.
+	https://github.com/lobaro/git2cl
+
+2025-08-16  Hayaki Saito <saitoha@me.com>
+
+	* : Update package.json
+
+2025-08-14  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in: Bump version to v1.8.7 Since the script previously used to generate the ChangeLog was lost,
+	the ChangeLog was regenerated using git2cl.
+	https://github.com/lobaro/git2cl
+
+2025-08-31  Hayaki Saito <saitoha@me.com>
+
+	* src/tosixel.c: Apply the patch provided by @j4james (#187) to
+	privent heap-buffer-overflow problem
+
+2020-04-12  arakiken <arakiken@users.sf.net>
+
+	* include/sixel.h.in, src/output.c, src/tosixel.c: Add
+	sixel_output_set_ormode() to sixel.h.in
+
+2020-04-12  arakiken <arakiken@users.sf.net>
+
+	* src/tosixel.c: Fix compiling error of -Werror=pointer-sign.
+
+2020-03-25  arakiken <arakiken@users.sf.net>
+
+	* converters/img2sixel.c, include/sixel.h.in, src/encoder.c,
+	src/encoder.h, src/output.c, src/output.h, src/tosixel.c: Support OR
+	mode which is enabled by -O, --ormode option.
+	(http://www.pastel-flower.jp/~isaki/NetBSD/osc16hi/page40.html)
+
+2025-08-31  Hayaki Saito <saitoha@me.com>
+
+	* NEWS, README.md, converters/img2sixel.1: docs: update NEWS and
+	contributors list
+
+2025-08-16  Hayaki Saito <saitoha@me.com>
+
+	* package.json: Update package.json
+
+2025-08-16  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in: fix package filename in vexe build
+
+2025-08-14  Hayaki Saito <saitoha@me.com>
+
+	* ChangeLog, Makefile.in, configure, configure.ac: Bump version to
+	v1.8.7 Since the script previously used to generate the ChangeLog was lost,
+	the ChangeLog was regenerated using git2cl.
+	https://github.com/lobaro/git2cl
+
+2025-08-31  Hayaki Saito <saitoha@me.com>
+
+	* : images: add map64.six for custom palette mapping (refs #169)
+
+2025-08-31  Hayaki Saito <saitoha@me.com>
+
+	* : Merge pull request #204 from max-amb/patch-1 Update NixOS link for libsixel in README
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/nightly.yml: ci: fix
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/nightly.yml: ci: more tweaks
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/nightly.yml: ci: more tweaks
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/nightly.yml: ci: tweaks
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* : commit 767bd9d94ccde9de9025b0eb092e9e3e46ff3ae5 Author: Hayaki
+	Saito <saitoha@me.com> Date:   Sat Aug 30 03:54:02 2025 +0900
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/{build.yml =>
+	nightly.yml}: ci: create separate workflow files for nightly builds
+	(master/develop) and for ci across all branches
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml, converters/Makefile.in: ci tweak
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml, converters/Makefile.am: treat all
+	files under images/ as binary to prevent test failures from
+	line-ending conversion
+
+2025-08-29  Hayaki Saito <saitoha@me.com>
+
+	* src/decoder.c, src/encoder.c, src/tty.c: remove redundant includes
+
+2025-08-29  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml, config.h.in, configure,
+	configure.ac, ltmain.sh, m4/libtool.m4, src/frompnm.c: configure:
+	reliably detect nanosleep when provided by non-crt libraries (e.g.,
+	libwinpthread)
+
+2025-08-29  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml, converters/Makefile.am,
+	converters/Makefile.in: ci/windows: temporarily skip selected tests
+	to diagnose GitHub Actions-specific issues
+
+2025-08-29  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c: build fix: check HAVE_NANOSLEEP macro
+
+2025-08-28  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml: build.yml: fix for windows, add cc:p
+
+2025-08-28  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml: Add ./configure to
+	--disable-dependency-tracking
+
+2025-08-28  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml: build.yml: install base-devel
+
+2025-08-28  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml: build fix for windows: add MAKE=gmake
+	to ./configure
+
+2025-08-28  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml: build.yml: build with minimal
+	dependencies
+
+2025-08-28  Hayaki Saito <saitoha@me.com>
+
+	* converters/img2sixel.c: compat: prefer POSIX headers <unistd.h>
+	and <signal.h>; fall back to <sys/unistd.h> and <sys/signal.h> if unavailable
+
+2025-08-28  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c: fix memory leak (#164) reported by @muetzenmann;
+	patch by @j4james
+
+2025-08-27  Hayaki Saito <saitoha@me.com>
+
+	* converters/Makefile.am, converters/Makefile.in, src/encoder.c: 
+	cli: fix scaling when one of -w/-h is a percentage and the other is
+	unset or "auto" this bug is introduced in v1.6.1
+
+2025-08-25  Kreijstal <rainb@tfwno.gf>
+
+	* .github/workflows/build.yml, autogen.sh, src/encoder.c: 
+	Feature/update ci for windows (#5) * Update CI to support Windows and create nightly releases This commit updates the GitHub Actions workflow to: - Add Windows builds for MINGW64, UCRT64, and CLANG64 using MSYS2.  - Continue building on Ubuntu and macOS.  - Use autotools for all builds.  - Create a nightly pre-release on every push to any branch.  - The workflow has been streamlined to avoid duplication of steps
+	for different operating systems.  * Update CI to support Windows and create nightly releases This commit updates the GitHub Actions workflow to: - Add Windows builds for MINGW64, UCRT64, and CLANG64 using MSYS2.  - Continue building on Ubuntu and macOS.  - Use autotools for all builds.  - Create a nightly pre-release on every push to any branch.  * Small Change * Refactor MSYS2 package installation in build.yml Updated the installation section to use a single install command for
+	MSYS2 packages.  ---------
+
 2025-08-12  Hayaki Saito <saitoha@me.com>
 
 	* : Merge pull request #140 from dthadi3/ppc64le Travis-ci: added support for ppc64le
@@ -254,7 +2139,7 @@
 	m4/libtool.m4, m4/ltoptions.m4, m4/ltversion.m4,
 	python/Makefile.in, src/Makefile.in, tools/Makefile.in: 
 	configure.ac: Remove override of $LIBJPEG_CFLAGS and $LIBJPEG_LIBS
-	set by PKG_CHECK_MODULES() Lines 559â€60 were unintentionally overwriting the values obtained
+	set by PKG_CHECK_MODULES() Lines 559â€“560 were unintentionally overwriting the values obtained
 	from PKG_CHECK_MODULES(), so this redundant assignment has been
 	removed.
 
@@ -3618,9 +5503,9 @@
 
 	* .gitignore, .travis.yml, Gemfile, LICENSE.txt, README.md,
 	Rakefile, ext/libsixel/extconf.rb, ext/libsixel/libsixel.c,
-	ext/libsixel/libsixel.h, images/egret.six, lib/libsixel.rb,
-	lib/libsixel/version.rb, libsixel-ruby.gemspec,
-	test/minitest_helper.rb, test/test_libsixel.rb: Initial commit
+	ext/libsixel/libsixel.h, lib/libsixel.rb, lib/libsixel/version.rb,
+	libsixel-ruby.gemspec, test/minitest_helper.rb,
+	test/test_libsixel.rb: Initial commit
 
 2015-06-16  Hayaki Saito <user@zuse.jp>
 
@@ -3984,10 +5869,9 @@
 2015-05-29  Hayaki Saito <user@zuse.jp>
 
 	* Build.PL, MANIFEST, MANIFEST.SKIP, META.yml, Makefile.PL, README,
-	images/egret.six, lib/Image/Sixel.pm, lib/Image/Sixel.xs,
-	lib/Image/Sixel/Decoder.pm, lib/Image/Sixel/Encoder.pm,
-	lib/Image/ppport.h, t/sixel.t: Initial commit of libsixel perl
-	interface
+	lib/Image/Sixel.pm, lib/Image/Sixel.xs, lib/Image/Sixel/Decoder.pm,
+	lib/Image/Sixel/Encoder.pm, lib/Image/ppport.h, t/sixel.t: Initial
+	commit of libsixel perl interface
 
 2015-05-29  Hayaki Saito <user@zuse.jp>
 
@@ -6378,7 +8262,7 @@
 
 2014-11-25  Hayaki Saito <user@zuse.jp>
 
-	* images/map8.six, images/snake.six: Add test sixel images
+	* : Add test sixel images
 
 2014-11-25  Hayaki Saito <user@zuse.jp>
 
@@ -6923,9 +8807,7 @@
 
 2014-11-08  Hayaki Saito <user@zuse.jp>
 
-	* images/snake-ascii.pbm, images/snake-ascii.pgm,
-	images/snake-ascii.ppm, images/snake.pgm, images/{snake.pnm =>
-	snake.ppm}: Add various ppm images for testing
+	* : Add various ppm images for testing
 
 2014-11-08  Hayaki Saito <user@zuse.jp>
 
@@ -9535,7 +11417,7 @@
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
 
-	* images/snake.pnm: Add new test image snake.pnm
+	* : Add new test image snake.pnm
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
 

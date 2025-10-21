@@ -1,0 +1,4 @@
+include README.md
+include LICENSE
+recursive-include src/libsixel_wheel/_libsixel_common *.py
+recursive-include src/libsixel_wheel/.binaries *
