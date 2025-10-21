@@ -19,19 +19,19 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <stdlib.h>
 #include "config.h"
 
+/* STDC_HEADERS */
+#include <stdlib.h>
+
 #if HAVE_SYS_TYPES_H
-#include <sys/types.h>
+# include <sys/types.h>
 #endif  /* HAVE_SYS_TYPES_H */
-
 #if HAVE_ERRNO_H
-#include <errno.h>
+# include <errno.h>
 #endif  /* HAVE_ERRNO_H */
-
 #if HAVE_MEMORY_H
-#include <memory.h>
+# include <memory.h>
 #endif  /* HAVE_MEMORY_H */
 
 #if !HAVE_MALLOC

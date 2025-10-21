@@ -20,6 +20,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#if !defined(_WIN32) && !defined(_POSIX_C_SOURCE)
+# define _POSIX_C_SOURCE 200809L
+#endif
+
 #include "config.h"
 
 /* STDC_HEADERS */
@@ -2215,7 +2219,7 @@ end:
 extern int mkstemp(char *);
 #endif
 
-#if !defined(_WIN32) && !defined(HAVE_REALPATH)
+#if !defined(_WIN32) && defined(HAVE__REALPATH) && !defined(HAVE_REALPATH)
 static char *
 thumbnailer_resolve_without_realpath(char const *path)
 {
@@ -2285,7 +2289,7 @@ thumbnailer_resolve_without_realpath(char const *path)
 
     return resolved;
 }
-#endif  /* !_WIN32 && !HAVE_REALPATH */
+#endif  /* !defined(_WIN32) && defined(HAVE__REALPATH) && !defined(HAVE_REALPATH) */
 
 /*
  * thumbnailer_resolve_path
@@ -2310,6 +2314,8 @@ thumbnailer_resolve_path(char const *path)
 
 #if defined(_WIN32)
     resolved = _fullpath(NULL, path, 0);
+#elif defined(HAVE__REALPATH)
+    resolved = _realpath(path, NULL);
 #elif defined(HAVE_REALPATH)
     resolved = realpath(path, NULL);
 #else

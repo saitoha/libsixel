@@ -60,6 +60,9 @@ case "$CC" in
 esac
 AM_CONDITIONAL([USING_CL], [test "x$using_cl" = "xyes"])
 
+CFLAGS="$CFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=200809L"
+AM_CFLAGS="$CFLAGS"
+
 AC_CACHE_CHECK(
   [whether the compiler can silence -Wtypedef-redefinition via pragmas],
   [ac_cv_have_diag_typedef_redef],
@@ -575,6 +578,7 @@ AC_CHECK_FUNCS([assert \
                 localeconv \
                 pow \
                 select \
+                _realpath \
                 realpath \
                 sqrt \
                 strchr \

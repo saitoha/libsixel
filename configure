@@ -16226,6 +16226,9 @@ else
 fi
 
 
+CFLAGS="$CFLAGS -D_POSIX_SOURCE -D_POSIX_C_SOURCE=200809L"
+AM_CFLAGS="$CFLAGS"
+
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler can silence -Wtypedef-redefinition via pragmas" >&5
 printf %s "checking whether the compiler can silence -Wtypedef-redefinition via pragmas... " >&6; }
 if test ${ac_cv_have_diag_typedef_redef+y}
@@ -18421,6 +18424,12 @@ ac_fn_c_check_func "$LINENO" "select" "ac_cv_func_select"
 if test "x$ac_cv_func_select" = xyes
 then :
   printf "%s\n" "#define HAVE_SELECT 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "_realpath" "ac_cv_func__realpath"
+if test "x$ac_cv_func__realpath" = xyes
+then :
+  printf "%s\n" "#define HAVE__REALPATH 1" >>confdefs.h
 
 fi
 ac_fn_c_check_func "$LINENO" "realpath" "ac_cv_func_realpath"

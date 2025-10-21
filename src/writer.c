@@ -47,6 +47,7 @@
 #endif  /* HAVE_LIBPNG */
 
 #include <sixel.h>
+#include "stdio_stub.h"
 
 #if !defined(O_BINARY) && defined(_O_BINARY)
 # define O_BINARY _O_BINARY
@@ -205,9 +206,9 @@ write_png_to_file(
     if (strcmp(filename, "-") == 0) {
 #if defined(O_BINARY)
 # if HAVE__SETMODE
-        _setmode(fileno(stdout), O_BINARY);
+        _setmode(STDOUT_FILENO, O_BINARY);
 # elif HAVE_SETMODE
-        setmode(fileno(stdout), O_BINARY);
+        setmode(STDOUT_FILENO, O_BINARY);
 # endif  /* HAVE_SETMODE */
 #endif  /* defined(O_BINARY) */
         output_fp = stdout;
