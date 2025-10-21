@@ -2,6 +2,9 @@
 # @configure_input@
 #
 SUBDIRS = include src converters tools python
+if ENABLE_PYTHON_WHEEL
+SUBDIRS += python-wheel
+endif
 if HAVE_RUBY
 SUBDIRS += ruby
 endif
@@ -12,9 +15,9 @@ if HAVE_WICCODEC
 SUBDIRS += wic
 endif
 
-DIST_SUBDIRS = include src converters tools python ruby wic quicklook-extension
+DIST_SUBDIRS = include src converters tools python python-wheel ruby wic quicklook-extension
 
-EXTRA_DIST = LICENSE depcomp
+EXTRA_DIST = LICENSE depcomp python-shared/sync_shared_sources.py
 
 .PHONY: install-quicklook-extension uninstall-quicklook-extension
 

@@ -13,7 +13,6 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
-
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -90,8 +89,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@WANT_THUMBNAILER_TRUE@am__append_1 = sixel-thumbnailer
-subdir = tools
+subdir = python-wheel
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
 	$(top_srcdir)/m4/ax_gcc_func_attribute.m4 \
@@ -105,36 +103,8 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES = libsixel-config
+CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
-am__install_max = 40
-am__nobase_strip_setup = \
-  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
-am__nobase_strip = \
-  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
-am__nobase_list = $(am__nobase_strip_setup); \
-  for p in $$list; do echo "$$p $$p"; done | \
-  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
-  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
-    if (++n[$$2] == $(am__install_max)) \
-      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
-    END { for (dir in files) print dir, files[dir] }'
-am__base_list = \
-  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
-  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__uninstall_files_from_dir = { \
-  { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
-  || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
-       $(am__cd) "$$dir" && echo $$files | $(am__xargs_n) 40 $(am__rm_f); }; \
-  }
-am__installdirs = "$(DESTDIR)$(bindir)"
-SCRIPTS = $(bin_SCRIPTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -155,7 +125,7 @@ am__can_run_installinfo = \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
-am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/libsixel-config.in
+am__DIST_COMMON = $(srcdir)/Makefile.in README.md
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -344,15 +314,12 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
-CLEANFILES = 
-bin_SCRIPTS = libsixel-config $(am__append_1)
-EXTRA_DIST = libsixel-config.in \
-             quicklook-extension.bash \
-             sixel-thumbnailer \
-             update-mime-database.sh \
-             libsixel-thumbnailer.thumbnailer \
-             sixel.xml
-
+PYTHON_FALLBACK = python3
+PYTHON_CMD = $(if $(strip $(PYTHON_FOR_SHARED)),$(PYTHON_FOR_SHARED),$(PYTHON_FALLBACK))
+SHARED_SYNC_SCRIPT = $(top_srcdir)/python-shared/sync_shared_sources.py
+STAGE_DIR = $(abs_builddir)/.stage
+DIST_DIR = $(builddir)/dist
+WHEELHOUSE_DIR = $(builddir)/wheelhouse
 all: all-am
 
 .SUFFIXES:
@@ -365,9 +332,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign tools/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign python-wheel/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign tools/Makefile
+	  $(AUTOMAKE) --foreign python-wheel/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -385,43 +352,6 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
-libsixel-config: $(top_builddir)/config.status $(srcdir)/libsixel-config.in
-	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
-install-binSCRIPTS: $(bin_SCRIPTS)
-	@$(NORMAL_INSTALL)
-	@list='$(bin_SCRIPTS)'; test -n "$(bindir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(bindir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(bindir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  if test -f "$$d$$p"; then echo "$$d$$p"; echo "$$p"; else :; fi; \
-	done | \
-	sed -e 'p;s,.*/,,;n' \
-	    -e 'h;s|.*|.|' \
-	    -e 'p;x;s,.*/,,;$(transform)' | sed 'N;N;N;s,\n, ,g' | \
-	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1; } \
-	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
-	    if ($$2 == $$4) { files[d] = files[d] " " $$1; \
-	      if (++n[d] == $(am__install_max)) { \
-		print "f", d, files[d]; n[d] = 0; files[d] = "" } } \
-	    else { print "f", d "/" $$4, $$1 } } \
-	  END { for (d in files) print "f", d, files[d] }' | \
-	while read type dir files; do \
-	     if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
-	     test -z "$$files" || { \
-	       echo " $(INSTALL_SCRIPT) $$files '$(DESTDIR)$(bindir)$$dir'"; \
-	       $(INSTALL_SCRIPT) $$files "$(DESTDIR)$(bindir)$$dir" || exit $$?; \
-	     } \
-	; done
-
-uninstall-binSCRIPTS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(bin_SCRIPTS)'; test -n "$(bindir)" || exit 0; \
-	files=`for p in $$list; do echo "$$p"; done | \
-	       sed -e 's,.*/,,;$(transform)'`; \
-	dir='$(DESTDIR)$(bindir)'; $(am__uninstall_files_from_dir)
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -470,15 +400,10 @@ distdir-am: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(SCRIPTS)
+all-am: Makefile all-local
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)"; do \
-	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
-	done
-install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
-uninstall: uninstall-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
@@ -497,7 +422,6 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
-	-$(am__rm_f) $(CLEANFILES)
 
 distclean-generic:
 	-$(am__rm_f) $(CONFIG_CLEAN_FILES)
@@ -527,13 +451,12 @@ info: info-am
 info-am:
 
 install-data-am:
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
+
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-binSCRIPTS
+install-exec-am:
 
 install-html: install-html-am
 
@@ -571,58 +494,76 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binSCRIPTS
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
-.MAKE: install-am install-data-am install-strip uninstall-am
+uninstall-am:
 
-.PHONY: all all-am check check-am clean clean-generic clean-libtool \
-	clean-local cscopelist-am ctags-am distclean distclean-generic \
-	distclean-libtool distdir dvi dvi-am html html-am info info-am \
-	install install-am install-binSCRIPTS install-data \
-	install-data-am install-data-hook install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
+.MAKE: install-am install-strip
+
+.PHONY: all all-am all-local check check-am clean clean-generic \
+	clean-libtool clean-local cscopelist-am ctags-am distclean \
+	distclean-generic distclean-libtool distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-generic \
 	mostlyclean-libtool pdf pdf-am ps ps-am tags-am uninstall \
-	uninstall-am uninstall-binSCRIPTS uninstall-hook
+	uninstall-am
 
 .PRECIOUS: Makefile
 
 
+.PHONY: all-local shared-sync wheel-local upload-local clean-local install uninstall
+
+shared-sync:
+	@$(PYTHON_CMD) $(SHARED_SYNC_SCRIPT) $(top_srcdir)
+
+all-local: wheel-local
+
+wheel-local: shared-sync
+	@rm -rf $(STAGE_DIR)
+	@mkdir -p $(STAGE_DIR)
+	@$(MAKE) -C $(top_builddir) install DESTDIR=$(STAGE_DIR)
+	@bash $(srcdir)/scripts/copy_libsixel_artifacts.sh $(STAGE_DIR)
+	@rm -rf $(DIST_DIR) $(WHEELHOUSE_DIR)
+	@mkdir -p $(DIST_DIR) $(WHEELHOUSE_DIR)
+	@$(PYTHON_CMD) -m build --wheel --outdir $(DIST_DIR) $(srcdir)
+	@wheel_path=`ls $(DIST_DIR)/libsixel_wheel-*.whl 2>/dev/null | head -n1`; \
+	if [ -z "$$wheel_path" ]; then \
+		echo "wheel build failed" >&2; exit 1; \
+	fi; \
+	uname_s=`uname`; \
+	if [ "$$uname_s" = "Linux" ]; then \
+		if command -v auditwheel >/dev/null 2>&1; then \
+			auditwheel -v repair -w $(WHEELHOUSE_DIR) "$$wheel_path"; \
+		else \
+			echo "auditwheel not found, copying wheel without repair" >&2; \
+			cp "$$wheel_path" $(WHEELHOUSE_DIR)/; \
+		fi; \
+	elif [ "$$uname_s" = "Darwin" ]; then \
+		if command -v delocate-wheel >/dev/null 2>&1; then \
+			delocate-wheel -v -w $(WHEELHOUSE_DIR) "$$wheel_path"; \
+		else \
+			echo "delocate-wheel not found, copying wheel without repair" >&2; \
+			cp "$$wheel_path" $(WHEELHOUSE_DIR)/; \
+		fi; \
+	else \
+		cp "$$wheel_path" $(WHEELHOUSE_DIR)/; \
+	fi
+
+upload-local: wheel-local
+	@PYPI_REPO=$(PYPI_REPO) PYPI_USERNAME=$(PYPI_USERNAME) PYPI_PASSWORD_ENV=$(PYPI_PASSWORD_ENV) \
+		bash $(srcdir)/scripts/meson_upload_wheel.sh
+
 clean-local:
+	@rm -rf $(STAGE_DIR) $(DIST_DIR) $(WHEELHOUSE_DIR)
 
-install-data-hook:
-	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/thumbnailers"; do \
-	@WANT_THUMBNAILER_TRUE@      $(MKDIR_P) "$$dest" && \
-	@WANT_THUMBNAILER_TRUE@      $(INSTALL_DATA) "$(srcdir)/libsixel-thumbnailer.thumbnailer" "$$dest/"; \
-	@WANT_THUMBNAILER_TRUE@    done
-	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/packages"; do \
-	@WANT_THUMBNAILER_TRUE@      $(MKDIR_P) "$$dest" && \
-	@WANT_THUMBNAILER_TRUE@      $(INSTALL_DATA) "$(srcdir)/sixel.xml" "$$dest/"; \
-	@WANT_THUMBNAILER_TRUE@    done
-	@WANT_THUMBNAILER_TRUE@    @if test -n "$(UPDATE_MIME_DATABASE)"; then \
-	@WANT_THUMBNAILER_TRUE@      if test -z "$(DESTDIR)"; then \
-	@WANT_THUMBNAILER_TRUE@        $(SHELL) "$(top_srcdir)/tools/update-mime-database.sh" "$(UPDATE_MIME_DATABASE)" "$(datadir)" install; \
-	@WANT_THUMBNAILER_TRUE@      fi; \
-	@WANT_THUMBNAILER_TRUE@    fi
-	@WANT_THUMBNAILER_FALSE@    @:
+install:
+	@:
 
-uninstall-hook:
-	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/thumbnailers"; do \
-	@WANT_THUMBNAILER_TRUE@      rm -f "$$dest/libsixel-thumbnailer.thumbnailer"; \
-	@WANT_THUMBNAILER_TRUE@    done
-	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/packages"; do \
-	@WANT_THUMBNAILER_TRUE@      rm -f "$$dest/sixel.xml"; \
-	@WANT_THUMBNAILER_TRUE@    done
-	@WANT_THUMBNAILER_TRUE@    @if test -n "$(UPDATE_MIME_DATABASE)"; then \
-	@WANT_THUMBNAILER_TRUE@      if test -z "$(DESTDIR)"; then \
-	@WANT_THUMBNAILER_TRUE@        $(SHELL) "$(top_srcdir)/tools/update-mime-database.sh" "$(UPDATE_MIME_DATABASE)" "$(datadir)" uninstall; \
-	@WANT_THUMBNAILER_TRUE@      fi; \
-	@WANT_THUMBNAILER_TRUE@    fi
-	@WANT_THUMBNAILER_FALSE@    @:
+uninstall:
+	@:
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

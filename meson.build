@@ -695,10 +695,10 @@ else
   endif
 endif
 
+python_module = import('python')
 py_opt = get_option('python')
+py = python_module.find_installation(required: py_opt.enabled())
 if py_opt.enabled()
-  py_mod = import('python')
-  py = py_mod.find_installation(required: py_opt.enabled())
   if py.found()
     have_python = true
     python_message = 'yes: ' + py.get_install_dir()
@@ -711,6 +711,77 @@ elif py_opt.enabled()
   error('Python support requires an interpreter')
 else
   python_message = 'no'
+endif
+
+python_sync = py
+if not python_sync.found()
+  python_sync = python_module.find_installation('python3', required: get_option('python_wheel'))
+endif
+if get_option('python_wheel') or not py_opt.disabled()
+  if python_sync.found()
+    meson.add_postconf_script(
+      python_sync,
+      files('python-shared/sync_shared_sources.py'),
+      meson.project_source_root(),
+    )
+  else
+    warning('python interpreter not found; skipping shared Python sync')
+  endif
+endif
+
+python_wheel_message = 'no'
+if get_option('python_wheel')
+  python_wheel_message = 'yes'
+  wheel_scripts_dir = join_paths(meson.project_source_root(), 'python-wheel', 'scripts')
+  stage_dir = join_paths(meson.project_source_root(), 'python-wheel', '.stage')
+  if host_system == 'windows'
+    stage_command = 'if (Test-Path "{0}") {{ Remove-Item "{0}" -Recurse -Force }}; meson install --destdir "{0}"'.format(stage_dir)
+    stage_target = run_target(
+      'python-wheel-stage-install',
+      command: ['pwsh', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', stage_command]
+    )
+    wheel_target = run_target(
+      'python-wheel-wheel',
+      command: ['pwsh', '-NoProfile', '-ExecutionPolicy', 'Bypass',
+                join_paths(wheel_scripts_dir, 'meson_build_wheel_windows.ps1')],
+      depends: [stage_target]
+    )
+    upload_target = run_target(
+      'python-wheel-upload',
+      command: ['pwsh', '-NoProfile', '-ExecutionPolicy', 'Bypass',
+                join_paths(wheel_scripts_dir, 'meson_upload_wheel.ps1')],
+      depends: [wheel_target],
+      env: {
+        'PYPI_REPO': get_option('pypi_repo'),
+        'PYPI_USERNAME': get_option('pypi_username'),
+        'PYPI_PASSWORD_ENV': get_option('pypi_password_env'),
+      }
+    )
+  else
+    stage_command = 'rm -rf "{0}" && meson install --destdir "{0}"'.format(stage_dir)
+    stage_target = run_target(
+      'python-wheel-stage-install',
+      command: ['bash', '-c', stage_command]
+    )
+    wheel_target = run_target(
+      'python-wheel-wheel',
+      command: ['bash', join_paths(wheel_scripts_dir, 'meson_build_wheel_posix.sh')],
+      depends: [stage_target]
+    )
+    upload_target = run_target(
+      'python-wheel-upload',
+      command: ['bash', join_paths(wheel_scripts_dir, 'meson_upload_wheel.sh')],
+      depends: [wheel_target],
+      env: {
+        'PYPI_REPO': get_option('pypi_repo'),
+        'PYPI_USERNAME': get_option('pypi_username'),
+        'PYPI_PASSWORD_ENV': get_option('pypi_password_env'),
+      }
+    )
+  endif
+  alias_target('stage-install', stage_target)
+  alias_target('wheel', wheel_target)
+  alias_target('upload', upload_target)
 endif
 
 ruby_message = 'no'
@@ -829,6 +900,7 @@ message('       Zsh completion dir  : ' + zsh_completion_message)
 message('       QuickLook extension : ' + quicklook_extension_message)
 message('       WIC codec           : ' + wiccodec_message)
 message('       python bindings     : ' + python_message)
+message('       python wheel        : ' + python_wheel_message)
 message('       ruby bindings       : ' + ruby_message)
 message('       Thumbnailer command : ' + thumbnailer_message)
 message('       SIMD                : ' + simd_message)

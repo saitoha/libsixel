@@ -334,6 +334,30 @@ AC_ARG_ENABLE([python],
               [],
               [enable_python=no])
 
+AC_ARG_ENABLE([python-wheel],
+              [AS_HELP_STRING([--enable-python-wheel],
+                              [build Python wheel helpers (default: no)])],
+              [],
+              [enable_python_wheel=no])
+
+AC_ARG_WITH([pypi-repo],
+            [AS_HELP_STRING([--with-pypi-repo=NAME],
+                            [target repository for wheel uploads (default: pypi)])],
+            [],
+            [with_pypi_repo=pypi])
+
+AC_ARG_WITH([pypi-username],
+            [AS_HELP_STRING([--with-pypi-username=NAME],
+                            [username for wheel uploads (default: __token__)])],
+            [],
+            [with_pypi_username=__token__])
+
+AC_ARG_WITH([pypi-password-env],
+            [AS_HELP_STRING([--with-pypi-password-env=VAR],
+                            [environment variable supplying the upload password (default: TWINE_PASSWORD)])],
+            [],
+            [with_pypi_password_env=TWINE_PASSWORD])
+
 # Ruby bindings option
 AC_ARG_ENABLE([ruby],
               [AS_HELP_STRING([--enable-ruby],
@@ -1491,6 +1515,68 @@ else
     message_python=$have_python
 fi
 
+PYTHON_FOR_SHARED=
+python_for_shared_found=no
+if test x$enable_python_wheel = xyes || test x$enable_python != xno; then
+    if test "x$PYTHON" != x; then
+        if "$PYTHON" -c 'import sys; import sysconfig; sys.exit(0 if sys.version_info[0] == 3 else 1)' \
+            >/dev/null 2>&1; then
+            PYTHON_FOR_SHARED=$PYTHON
+            python_for_shared_found=yes
+        fi
+    fi
+    if test x$python_for_shared_found != xyes; then
+        AC_PATH_PROGS([PYTHON_FOR_SHARED],
+                      [python3 python3.12 python3.11 python3.10 python3.9 python3.8 python3.7],
+                      [])
+        if test "x$PYTHON_FOR_SHARED" != x; then
+            python_for_shared_found=yes
+        fi
+    fi
+    if test x$python_for_shared_found != xyes; then
+        AC_MSG_ERROR([python3 interpreter is required when enabling Python bindings or wheel helpers])
+    fi
+fi
+AC_SUBST([PYTHON_FOR_SHARED])
+
+message_python_wheel=no
+if test x$enable_python_wheel = xyes; then
+    message_python_wheel=yes
+fi
+
+AM_CONDITIONAL([ENABLE_PYTHON_WHEEL], [test x$enable_python_wheel = xyes])
+AC_SUBST([PYPI_REPO], [$with_pypi_repo])
+AC_SUBST([PYPI_USERNAME], [$with_pypi_username])
+AC_SUBST([PYPI_PASSWORD_ENV], [$with_pypi_password_env])
+
+AC_CONFIG_COMMANDS_POST([
+  if test "x$enable_python_wheel" = xyes || test "x$enable_python" != xno; then
+    AC_MSG_CHECKING([for shared Python source synchronization])
+    if test -f "$srcdir/python-shared/sync_shared_sources.py"; then
+      if test "x$PYTHON_FOR_SHARED" != x; then
+        if "$PYTHON_FOR_SHARED" "$srcdir/python-shared/sync_shared_sources.py" "$srcdir"; then
+          AC_MSG_RESULT([yes])
+        else
+          AC_MSG_RESULT([no])
+          AC_MSG_FAILURE([
+            failed to synchronize shared Python sources; ensure python3 is available
+          ])
+        fi
+      else
+        AC_MSG_RESULT([no])
+        AC_MSG_FAILURE([
+          python3 interpreter not found; set PYTHON_FOR_SHARED
+        ])
+      fi
+    else
+      AC_MSG_RESULT([no])
+      AC_MSG_FAILURE([
+        python shared sync script missing at $srcdir/python-shared/sync_shared_sources.py
+      ])
+    fi
+  fi
+])
+
 message_ruby=no
 RUBY=
 RUBY_SITE_LIBDIR=
@@ -1526,7 +1612,8 @@ AM_CONDITIONAL([HAVE_RUBY], [test "x$enable_ruby" != xno -a "x$have_ruby" = xyes
 AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch -c aclocal.m4 Makefile.in configure config.h.in \
                    converters/Makefile.in include/Makefile.in \
-                   python/Makefile.in src/Makefile.in tools/Makefile.in \
+                   python/Makefile.in python-wheel/Makefile.in \
+                   src/Makefile.in tools/Makefile.in \
                    wic/Makefile.in quicklook-extension/Makefile.in
           ])
 LS_UPDATE_TIMESTAMP
@@ -1549,6 +1636,7 @@ AC_CONFIG_FILES([Makefile
                  tools/Makefile
                  tools/libsixel-config
                  python/Makefile
+                 python-wheel/Makefile
                  ruby/Makefile
                  ruby/lib/libsixel/version_runtime.rb
                  quicklook-extension/Makefile
@@ -1606,6 +1694,7 @@ echo "       WIC codec           : $message_wiccodec"
 echo "       Register WIC DLL    : $message_register_dll"
 echo "       Thumbnailer command : $message_thumbnailer"
 echo "       python bindings     : $message_python"
+echo "       python wheel        : $message_python_wheel"
 echo "       ruby bindings       : $message_ruby"
 echo "       simd                : $message_simd"
 echo "       gcov integration    : $enable_gcov"

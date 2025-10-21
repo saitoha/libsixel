@@ -89,9 +89,10 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@HAVE_RUBY_TRUE@am__append_1 = ruby
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_2 = quicklook-extension
-@HAVE_WICCODEC_TRUE@am__append_3 = wic
+@ENABLE_PYTHON_WHEEL_TRUE@am__append_1 = python-wheel
+@HAVE_RUBY_TRUE@am__append_2 = ruby
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_3 = quicklook-extension
+@HAVE_WICCODEC_TRUE@am__append_4 = wic
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
@@ -342,8 +343,12 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
+PYPI_PASSWORD_ENV = @PYPI_PASSWORD_ENV@
+PYPI_REPO = @PYPI_REPO@
+PYPI_USERNAME = @PYPI_USERNAME@
 PYTHON = @PYTHON@
 PYTHON_EXEC_PREFIX = @PYTHON_EXEC_PREFIX@
+PYTHON_FOR_SHARED = @PYTHON_FOR_SHARED@
 PYTHON_PLATFORM = @PYTHON_PLATFORM@
 PYTHON_PREFIX = @PYTHON_PREFIX@
 PYTHON_VERSION = @PYTHON_VERSION@
@@ -443,9 +448,9 @@ zshcompletiondir = @zshcompletiondir@
 # @configure_input@
 #
 SUBDIRS = include src converters tools python $(am__append_1) \
-	$(am__append_2) $(am__append_3)
-DIST_SUBDIRS = include src converters tools python ruby wic quicklook-extension
-EXTRA_DIST = LICENSE depcomp
+	$(am__append_2) $(am__append_3) $(am__append_4)
+DIST_SUBDIRS = include src converters tools python python-wheel ruby wic quicklook-extension
+EXTRA_DIST = LICENSE depcomp python-shared/sync_shared_sources.py
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = $(builddir)/libsixel.pc
 CLEANFILES = $(builddir)/valgrind.log $(builddir)/test.log $(builddir)/unittest.log

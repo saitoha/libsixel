@@ -1,0 +1,6 @@
+/.stage/
+/.build-autotools/
+/.build-meson/
+/.build-windows/
+/dist/
+/wheelhouse/
