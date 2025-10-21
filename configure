@@ -17987,6 +17987,12 @@ then :
   printf "%s\n" "#define HAVE_ARM_NEON_H 1" >>confdefs.h
 
 fi
+ac_fn_c_check_header_compile "$LINENO" "dirent.h" "ac_cv_header_dirent_h" "$ac_includes_default"
+if test "x$ac_cv_header_dirent_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_DIRENT_H 1" >>confdefs.h
+
+fi
 
 
 # Checks for typedefs, structures, and compiler characteristics.

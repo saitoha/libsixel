@@ -172,6 +172,7 @@ std_headers = [
     'stdio.h',
     'stdlib.h',
     'string.h',
+    'dirent.h',
 ]
 foreach h : std_headers
   if cc.has_header(h)
@@ -210,6 +211,7 @@ extra_funcs = [
   'localeconv',
   'pow',
   'select',
+  '_realpath',
   'realpath',
   'sqrt',
   'strchr',

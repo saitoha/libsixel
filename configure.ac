@@ -521,6 +521,7 @@ AC_CHECK_HEADERS([assert.h \
                   inttypes.h \
                   emmintrin.h \
                   arm_neon.h \
+                  dirent.h \
                  ])
 
 # Checks for typedefs, structures, and compiler characteristics.

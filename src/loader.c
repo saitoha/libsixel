@@ -62,6 +62,10 @@
 #if HAVE_LIMITS_H
 # include <limits.h>
 #endif
+#if HAVE_DIRENT_H
+# include <dirent.h>
+#endif
+
 #ifdef HAVE_GDK_PIXBUF2
 # if HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
 #   pragma GCC diagnostic push
@@ -2212,12 +2216,6 @@ end:
 #endif  /* HAVE_COREGRAPHICS && HAVE_QUICKLOOK */
 
 #if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
-
-#include <dirent.h>
-
-#if !defined(_WIN32)
-extern int mkstemp(char *);
-#endif
 
 #if !defined(_WIN32) && defined(HAVE__REALPATH) && !defined(HAVE_REALPATH)
 static char *
