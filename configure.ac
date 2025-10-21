@@ -60,8 +60,6 @@ case "$CC" in
 esac
 AM_CONDITIONAL([USING_CL], [test "x$using_cl" = "xyes"])
 
-CPPFLAGS="$CPPFLAGS -D_POSIX_C_SOURCE=200809L"
-
 AC_CACHE_CHECK(
   [whether the compiler can silence -Wtypedef-redefinition via pragmas],
   [ac_cv_have_diag_typedef_redef],
@@ -522,6 +520,47 @@ AC_CHECK_HEADERS([assert.h \
                   arm_neon.h \
                   dirent.h \
                  ])
+
+if test x$ac_cv_func_realpath = xyes; then
+   AC_COMPILE_IFELSE(
+     [AC_LANG_SOURCE([[
+       #include <stdlib.h>
+       int main (void)
+       {
+         char *p = realpath ("", NULL);
+         return 0;
+       }
+     ]])],
+     [],
+     [
+       AC_COMPILE_IFELSE(
+         [AC_LANG_SOURCE([[
+           #define _POSIX_C_SOURCE=200809L
+           #include <stdlib.h>
+           int main (void)
+           {
+             char *p = realpath ("", NULL);
+             return 0;
+           }
+         ]])],
+         [CPPFLAGS="$CPPFLAGS -D_POSIX_C_SOURCE=200809L"],
+         [
+           AC_COMPILE_IFELSE(
+             [AC_LANG_SOURCE([[
+               #define _USE_XOPEN_EXTENDED=1
+               #include <stdlib.h>
+               int main (void)
+               {
+                 char *p = realpath ("", NULL);
+                 return 0;
+               }
+             ]])],
+             [CPPFLAGS="$CPPFLAGS -D_USE_XOPEN_EXTENDED=1"],
+             [
+             ])
+         ])
+     ])
+fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
