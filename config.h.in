@@ -395,6 +395,9 @@
 /* Define to 1 if you have the '_open' function. */
 #undef HAVE__OPEN
 
+/* Define to 1 if you have the '_realpath' function. */
+#undef HAVE__REALPATH
+
 /* Define to 1 if you have the '_setmode' function. */
 #undef HAVE__SETMODE
 

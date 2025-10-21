@@ -807,9 +807,9 @@ sixel_decoder_decode(
         /* for windows */
 #if defined(O_BINARY)
 # if HAVE__SETMODE
-        _setmode(fileno(stdin), O_BINARY);
+        _setmode(STDIN_FILENO, O_BINARY);
 # elif HAVE_SETMODE
-        setmode(fileno(stdin), O_BINARY);
+        setmode(STDIN_FILENO, O_BINARY);
 # endif  /* HAVE_SETMODE */
 #endif  /* defined(O_BINARY) */
         input_fp = stdin;
