@@ -1,0 +1,31 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+UseTab: Never
+ColumnLimit: 80
+AllowShortIfStatementsOnASingleLine: false
+BreakBeforeBraces: Custom
+BraceWrapping:
+  # Break after function definitions only
+  AfterFunction: true
+
+  # Keep control statements (if/for/while/switch) attached
+  AfterControlStatement: false
+
+  # Keep "} else", "} catch", "} while" (do-while) on the same line
+  BeforeElse: false
+  BeforeCatch: false
+  BeforeWhile: false
+
+  # keep classes/structs/enums attached as well
+  AfterClass: false
+  AfterStruct: false
+  AfterEnum: false
+
+  # don't split empty braces like "foo() {}"
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+
+SpaceBeforeParens: ControlStatements
+DerivePointerAlignment: false
+PointerAlignment: Right
