@@ -1,8 +1,8 @@
 libsixel
 ========
 
-[![Build Status](https://travis-ci.org/saitoha/libsixel.svg?branch=master)](https://travis-ci.org/saitoha/libsixel)
-[![Coverage Status](https://coveralls.io/repos/saitoha/libsixel/badge.png?branch=master)](https://coveralls.io/r/saitoha/libsixel?branch=master)
+[![libsixel CI (build & test)](https://github.com/saitoha/libsixel/actions/workflows/ci.yml/badge.svg)](https://github.com/saitoha/libsixel/actions/workflows/ci.yml)
+[![Coverage Status](https://coveralls.io/repos/github/saitoha/libsixel/badge.svg?branch=master)](https://coveralls.io/github/saitoha/libsixel?branch=master)
 
 ## What is this?
 
