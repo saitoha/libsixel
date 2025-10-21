@@ -26,6 +26,22 @@ jobs:
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: i686
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+            sys: wine-x86_64
+            host: x86_64-w64-mingw32
+            cc: x86_64-w64-mingw32-gcc
+            wine: wine64
+            mingw_packages: gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
+            wine_packages: wine64
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+            sys: wine-i686
+            host: i686-w64-mingw32
+            cc: i686-w64-mingw32-gcc
+            wine: wine
+            mingw_packages: gcc-mingw-w64-i686 binutils-mingw-w64-i686
+            wine_packages: "wine32 wine64"
           - os: macos-latest
             runner: macos-latest
             sys: aarch64
@@ -82,6 +98,13 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-multilib
+
+    - name: Install mingw-w64 and Wine (Linux Wine targets)
+      if: runner.os == 'Linux' && (matrix.wine || '') != ''
+      run: |
+        sudo dpkg --add-architecture i386 || true
+        sudo apt-get update
+        sudo apt-get install -y ${{ matrix.mingw_packages }} ${{ matrix.wine_packages }} pkg-config
 
     - name: Fix Homebrew taps/cache
       if: runner.os == 'macOS'
@@ -173,15 +196,29 @@ jobs:
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        if [ '${{ matrix.sys || '' }}' = 'i686' ]; then
-          export CC="gcc -m32"
-          export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
-          export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
+        host_arg=
+        if [ '${{ matrix.host || '' }}' != '' ]; then
+          host_arg="--host=${{ matrix.host }}"
+          export CC='${{ matrix.cc }}'
+          export AR='${{ matrix.host }}-ar'
+          export RANLIB='${{ matrix.host }}-ranlib'
+          export STRIP='${{ matrix.host }}-strip'
+        else
+          if [ '${{ matrix.sys || '' }}' = 'i686' ]; then
+            export CC="gcc -m32"
+            export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
+            export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
+          fi
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            export CC=gcc-14
+          fi
         fi
-        if [ "${{ runner.os }}" = "Linux" ]; then
-          export CC=gcc-14
+        gcov_flag='--enable-gcov'
+        if [ '${{ matrix.wine || '' }}' != '' ]; then
+          gcov_flag='--disable-gcov'
         fi
         ./configure \
+            ${host_arg:+$host_arg} \
             --without-png \
             --without-jpeg \
             --without-libcurl \
@@ -190,7 +227,7 @@ jobs:
             --disable-python \
             --enable-debug \
             --enable-tests \
-            --enable-gcov \
+            ${gcov_flag} \
             --disable-dependency-tracking
         cat config.log
         make V=1
@@ -269,9 +306,15 @@ jobs:
         make V=1
 
     - name: Run tests (non-Windows)
-      if: runner.os != 'Windows'
+      if: runner.os != 'Windows' && (matrix.wine || '') == ''
       shell: bash
       run: make check
+
+    - name: Run tests (Wine)
+      if: runner.os == 'Linux' && (matrix.wine || '') != ''
+      shell: bash
+      run: |
+        make check WINE=${{ matrix.wine }} WINEEXT=.exe
 
     - name: Run tests (Windows, not MSVC/Cygwin/CLANG64)
       if: runner.os == 'Windows' && matrix.sys != 'CLANG64' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN'
@@ -328,7 +371,7 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Capture coverage (Linux)
-      if: runner.os == 'Linux'
+      if: runner.os == 'Linux' && (matrix.wine || '') == ''
       shell: bash
       run: |
         gcovr -r . --lcov -o coverage.info \
@@ -373,7 +416,7 @@ jobs:
 #        &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Upload to Coveralls (per-flag, parallel)
-      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-13' }}
+      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-13' && (matrix.wine || '') == '' }}
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
