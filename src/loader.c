@@ -68,13 +68,13 @@
 
 #ifdef HAVE_GDK_PIXBUF2
 # if HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
-#   pragma GCC diagnostic push
-#   pragma GCC diagnostic ignored "-Wtypedef-redefinition"
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wtypedef-redefinition"
 # endif
 # include <gdk-pixbuf/gdk-pixbuf.h>
 # include <gdk-pixbuf/gdk-pixbuf-simple-anim.h>
 # if HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
-#   pragma GCC diagnostic pop
+#  pragma GCC diagnostic pop
 # endif
 #endif
 #if HAVE_GD
@@ -1995,6 +1995,7 @@ load_with_quicklook(
     CGFloat fill_g;
     CGFloat fill_b;
     CGFloat max_dimension;
+    CGSize max_size;
 
     (void)fstatic;
     (void)fuse_palette;
@@ -2027,7 +2028,6 @@ load_with_quicklook(
         goto end;
     }
 
-    CGSize max_size;
     if (thumbnailer_size_hint > 0) {
         max_dimension = (CGFloat)thumbnailer_size_hint;
     } else {
@@ -2217,7 +2217,7 @@ end:
 
 #if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
 
-#if !defined(_WIN32) && defined(HAVE__REALPATH) && !defined(HAVE_REALPATH)
+# if !defined(_WIN32) && defined(HAVE__REALPATH) && !defined(HAVE_REALPATH)
 static char *
 thumbnailer_resolve_without_realpath(char const *path)
 {
@@ -2248,7 +2248,7 @@ thumbnailer_resolve_without_realpath(char const *path)
         return resolved;
     }
 
-#if defined(PATH_MAX)
+#  if defined(PATH_MAX)
     cwd = malloc(PATH_MAX);
     if (cwd != NULL) {
         if (getcwd(cwd, PATH_MAX) != NULL) {
@@ -2276,7 +2276,7 @@ thumbnailer_resolve_without_realpath(char const *path)
             free(cwd);
         }
     }
-#endif  /* PATH_MAX */
+#  endif  /* PATH_MAX */
 
     path_length = strlen(path);
     resolved = malloc(path_length + 1);
@@ -2287,7 +2287,7 @@ thumbnailer_resolve_without_realpath(char const *path)
 
     return resolved;
 }
-#endif  /* !defined(_WIN32) && defined(HAVE__REALPATH) && !defined(HAVE_REALPATH) */
+# endif  /* !defined(_WIN32) && defined(HAVE__REALPATH) && !defined(HAVE_REALPATH) */
 
 /*
  * thumbnailer_resolve_path
@@ -2310,15 +2310,15 @@ thumbnailer_resolve_path(char const *path)
         return NULL;
     }
 
-#if defined(_WIN32)
+# if defined(HAVE__FULLPATH)
     resolved = _fullpath(NULL, path, 0);
-#elif defined(HAVE__REALPATH)
+# elif defined(HAVE__REALPATH)
     resolved = _realpath(path, NULL);
-#elif defined(HAVE_REALPATH)
+# elif defined(HAVE_REALPATH)
     resolved = realpath(path, NULL);
-#else
+# else
     resolved = thumbnailer_resolve_without_realpath(path);
-#endif
+# endif
 
     return resolved;
 }
@@ -3832,8 +3832,7 @@ thumbnailer_guess_content_type(char const *path)
  *
  * Non-blocking pipes keep verbose thumbnailers from stalling the loop,
  * and argv arrays mean Exec templates never pass through /bin/sh.
- */
-/*
+ *
  * thumbnailer_spawn is responsible for preparing pipes, launching the
  * thumbnail helper, and streaming any emitted data back into libsixel.
  *
@@ -3886,10 +3885,10 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
     ssize_t write_result;
     size_t to_write;
     char const *display_command;
-#if HAVE_POSIX_SPAWNP
+# if HAVE_POSIX_SPAWNP
     posix_spawn_file_actions_t actions;
     int spawn_result;
-#endif
+# endif
 
     pid = (-1);
     status_code = 0;
@@ -3918,9 +3917,9 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
     write_result = 0;
     to_write = 0;
     display_command = NULL;
-#if HAVE_POSIX_SPAWNP
+# if HAVE_POSIX_SPAWNP
     spawn_result = 0;
-#endif
+# endif
 
     if (command == NULL || command->argv == NULL ||
             command->argv[0] == NULL) {
@@ -3980,7 +3979,7 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
                          log_prefix,
                          display_command);
 
-#if HAVE_POSIX_SPAWNP
+# if HAVE_POSIX_SPAWNP
     if (posix_spawn_file_actions_init(&actions) != 0) {
         if (!thumbnailer_safe_format(message,
                                      sizeof(message),
@@ -4032,7 +4031,7 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
         sixel_helper_set_additional_message(message);
         goto cleanup;
     }
-#else
+# else
     pid = fork();
     if (pid < 0) {
         if (!thumbnailer_safe_format(message,
@@ -4074,7 +4073,7 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
         execvp(command->argv[0], (char * const *)command->argv);
         _exit(127);
     }
-#endif
+# endif
 
     loader_trace_message("%s: forked child pid=%ld",
                          log_prefix,

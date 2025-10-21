@@ -579,6 +579,7 @@ AC_CHECK_FUNCS([assert \
                 localeconv \
                 pow \
                 select \
+                _fullpath \
                 _realpath \
                 realpath \
                 sqrt \
