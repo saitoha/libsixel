@@ -21,6 +21,9 @@
  */
 
 #include "config.h"
+#if !defined(_POSIX_C_SOURCE)
+# define _POSIX_C_SOURCE 200809L
+#endif
 
 /* STDC_HEADERS */
 #include <stdio.h>
