@@ -17992,67 +17992,6 @@ then :
 fi
 
 
-if test x$ac_cv_func_realpath = xyes; then
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-       #include <stdlib.h>
-       int main (void)
-       {
-         char *p = realpath ("", NULL);
-         return 0;
-       }
-
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-
-else case e in #(
-  e)
-       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-           #define _POSIX_C_SOURCE=200809L
-           #include <stdlib.h>
-           int main (void)
-           {
-             char *p = realpath ("", NULL);
-             return 0;
-           }
-
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  CPPFLAGS="$CPPFLAGS -D_POSIX_C_SOURCE=200809L"
-else case e in #(
-  e)
-           cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-               #define _USE_XOPEN_EXTENDED=1
-               #include <stdlib.h>
-               int main (void)
-               {
-                 char *p = realpath ("", NULL);
-                 return 0;
-               }
-
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  CPPFLAGS="$CPPFLAGS -D_USE_XOPEN_EXTENDED=1"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-          ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-      ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
 # Checks for typedefs, structures, and compiler characteristics.
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for inline" >&5
 printf %s "checking for inline... " >&6; }
@@ -18368,6 +18307,24 @@ ac_fn_c_check_func "$LINENO" "_fileno" "ac_cv_func__fileno"
 if test "x$ac_cv_func__fileno" = xyes
 then :
   printf "%s\n" "#define HAVE__FILENO 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "_mktemp" "ac_cv_func__mktemp"
+if test "x$ac_cv_func__mktemp" = xyes
+then :
+  printf "%s\n" "#define HAVE__MKTEMP 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "mkstemp" "ac_cv_func_mkstemp"
+if test "x$ac_cv_func_mkstemp" = xyes
+then :
+  printf "%s\n" "#define HAVE_MKSTEMP 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "mktemp" "ac_cv_func_mktemp"
+if test "x$ac_cv_func_mktemp" = xyes
+then :
+  printf "%s\n" "#define HAVE_MKTEMP 1" >>confdefs.h
 
 fi
 ac_fn_c_check_func "$LINENO" "fopen_s" "ac_cv_func_fopen_s"

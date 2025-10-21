@@ -40,9 +40,11 @@
 #if HAVE_FCNTL_H
 # include <fcntl.h>
 #endif
-#if HAVE_TIME_H
+#if HAVE_SYS_TIME_H
+# include <sys/time.h>
+#elif HAVE_TIME_H
 # include <time.h>
-#endif
+#endif  /* HAVE_SYS_TIME_H HAVE_TIME_H */
 #if defined(_WIN32)
 # include <windows.h>
 #endif
@@ -149,6 +151,7 @@ sixel_helper_set_thumbnail_size_hint(int size)
     }
 }
 
+#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
 /*
  * loader_trace_message
  *
@@ -158,7 +161,6 @@ sixel_helper_set_thumbnail_size_hint(int size)
  *     format - printf-style message template.
  *     ...    - arguments consumed according to the format string.
  */
-#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
 static void
 loader_trace_message(char const *format, ...)
 {
@@ -188,260 +190,6 @@ loader_trace_message(char const *format, ...)
 
     fprintf(stderr, "\n");
 }
-
-static int
-thumbnailer_format_append_char(char *buffer,
-                               size_t capacity,
-                               size_t *position,
-                               char ch,
-                               int *truncated)
-{
-    if (buffer == NULL || position == NULL) {
-        return 0;
-    }
-
-    if (*position + 1 < capacity) {
-        buffer[*position] = ch;
-        *position += 1;
-        buffer[*position] = '\0';
-    } else {
-        if (capacity > 0) {
-            buffer[capacity - 1] = '\0';
-        }
-        if (truncated != NULL) {
-            *truncated = 1;
-        }
-    }
-
-    return 1;
-}
-
-static int
-thumbnailer_format_append_text(char *buffer,
-                               size_t capacity,
-                               size_t *position,
-                               char const *text,
-                               int *truncated)
-{
-    size_t length;
-    size_t copy_length;
-
-    if (buffer == NULL || position == NULL) {
-        return 0;
-    }
-
-    if (text == NULL) {
-        text = "(null)";
-    }
-
-    length = strlen(text);
-    copy_length = length;
-
-    if (*position + copy_length >= capacity) {
-        if (capacity <= *position) {
-            copy_length = 0;
-        } else {
-            copy_length = capacity - 1 - *position;
-        }
-        if (truncated != NULL) {
-            *truncated = 1;
-        }
-    }
-
-    if (copy_length > 0) {
-        memcpy(buffer + *position, text, copy_length);
-        *position += copy_length;
-        buffer[*position] = '\0';
-    } else if (*position < capacity) {
-        buffer[*position] = '\0';
-    } else if (capacity > 0) {
-        buffer[capacity - 1] = '\0';
-    }
-
-    return 1;
-}
-
-static int
-thumbnailer_format_append_decimal(char *buffer,
-                                  size_t capacity,
-                                  size_t *position,
-                                  int value,
-                                  int *truncated)
-{
-    char digits[16];
-    size_t index;
-    size_t length;
-    unsigned int magnitude;
-    int negative;
-
-    if (buffer == NULL || position == NULL) {
-        return 0;
-    }
-
-    index = 0;
-    magnitude = 0;
-    negative = 0;
-
-    if (value < 0) {
-        negative = 1;
-        magnitude = (unsigned int)(-value);
-    } else {
-        magnitude = (unsigned int)value;
-    }
-
-    do {
-        digits[index] = (char)('0' + (magnitude % 10));
-        index += 1;
-        magnitude /= 10;
-    } while (magnitude != 0);
-
-    if (negative) {
-        digits[index] = '-';
-        index += 1;
-    }
-
-    length = index;
-
-    while (index > 0) {
-        index -= 1;
-        if (!thumbnailer_format_append_char(buffer,
-                                            capacity,
-                                            position,
-                                            digits[index],
-                                            truncated)) {
-            return 0;
-        }
-    }
-
-    if (length == 0) {
-        if (!thumbnailer_format_append_char(buffer,
-                                            capacity,
-                                            position,
-                                            '0',
-                                            truncated)) {
-            return 0;
-        }
-    }
-
-    return 1;
-}
-
-static int
-thumbnailer_safe_format(char *buffer,
-                        size_t capacity,
-                        char const *format,
-                        ...)
-{
-    va_list args;
-    size_t position;
-    char const *ptr;
-    int truncated;
-    char const *text;
-    int value;
-
-    if (buffer == NULL || capacity == 0 || format == NULL) {
-        return 0;
-    }
-
-    position = 0;
-    truncated = 0;
-    buffer[0] = '\0';
-
-    va_start(args, format);
-    ptr = format;
-    while (ptr != NULL && ptr[0] != '\0') {
-        if (ptr[0] != '%') {
-            if (!thumbnailer_format_append_char(buffer,
-                                                capacity,
-                                                &position,
-                                                ptr[0],
-                                                &truncated)) {
-                va_end(args);
-                return 0;
-            }
-            ptr += 1;
-            continue;
-        }
-
-        ptr += 1;
-        if (ptr[0] == '%') {
-            if (!thumbnailer_format_append_char(buffer,
-                                                capacity,
-                                                &position,
-                                                '%',
-                                                &truncated)) {
-                va_end(args);
-                return 0;
-            }
-            ptr += 1;
-            continue;
-        }
-
-        if (ptr[0] == 's') {
-            text = va_arg(args, char const *);
-            if (!thumbnailer_format_append_text(buffer,
-                                                capacity,
-                                                &position,
-                                                text,
-                                                &truncated)) {
-                va_end(args);
-                return 0;
-            }
-            ptr += 1;
-            continue;
-        }
-
-        if (ptr[0] == 'd') {
-            value = va_arg(args, int);
-            if (!thumbnailer_format_append_decimal(buffer,
-                                                   capacity,
-                                                   &position,
-                                                   value,
-                                                   &truncated)) {
-                va_end(args);
-                return 0;
-            }
-            ptr += 1;
-            continue;
-        }
-
-        va_end(args);
-        return 0;
-    }
-    va_end(args);
-
-    if (truncated != 0 && capacity > 0) {
-        buffer[capacity - 1] = '\0';
-    }
-
-    return 1;
-}
-
-/*
- * thumbnailer_sleep_briefly
- *
- * Yield the CPU for a short duration so child polling loops avoid busy
- * waiting.
- *
- */
-static void
-thumbnailer_sleep_briefly(void)
-{
-#if HAVE_NANOSLEEP
-    struct timespec ts;
-#endif
-
-#if HAVE_NANOSLEEP
-    ts.tv_sec = 0;
-    ts.tv_nsec = 10000000L;
-    nanosleep(&ts, NULL);
-#elif defined(_WIN32)
-    Sleep(10);
-#else
-    (void)usleep(10000);
-#endif
-}
-
 #endif  /* HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK */
 
 static void
@@ -2212,6 +1960,269 @@ end:
 #endif  /* HAVE_COREGRAPHICS && HAVE_QUICKLOOK */
 
 #if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
+
+# if defined(HAVE_NANOSLEEP)
+int nanosleep (const struct timespec *rqtp, struct timespec *rmtp);
+# endif
+# if defined(HAVE_REALPATH)
+char * realpath (const char *restrict path, char *restrict resolved_path);
+# endif
+# if defined(HAVE_MKSTEMP)
+int mkstemp (char *);
+# endif
+
+static int
+thumbnailer_format_append_char(char *buffer,
+                               size_t capacity,
+                               size_t *position,
+                               char ch,
+                               int *truncated)
+{
+    if (buffer == NULL || position == NULL) {
+        return 0;
+    }
+
+    if (*position + 1 < capacity) {
+        buffer[*position] = ch;
+        *position += 1;
+        buffer[*position] = '\0';
+    } else {
+        if (capacity > 0) {
+            buffer[capacity - 1] = '\0';
+        }
+        if (truncated != NULL) {
+            *truncated = 1;
+        }
+    }
+
+    return 1;
+}
+
+static int
+thumbnailer_format_append_text(char *buffer,
+                               size_t capacity,
+                               size_t *position,
+                               char const *text,
+                               int *truncated)
+{
+    size_t length;
+    size_t copy_length;
+
+    if (buffer == NULL || position == NULL) {
+        return 0;
+    }
+
+    if (text == NULL) {
+        text = "(null)";
+    }
+
+    length = strlen(text);
+    copy_length = length;
+
+    if (*position + copy_length >= capacity) {
+        if (capacity <= *position) {
+            copy_length = 0;
+        } else {
+            copy_length = capacity - 1 - *position;
+        }
+        if (truncated != NULL) {
+            *truncated = 1;
+        }
+    }
+
+    if (copy_length > 0) {
+        memcpy(buffer + *position, text, copy_length);
+        *position += copy_length;
+        buffer[*position] = '\0';
+    } else if (*position < capacity) {
+        buffer[*position] = '\0';
+    } else if (capacity > 0) {
+        buffer[capacity - 1] = '\0';
+    }
+
+    return 1;
+}
+
+static int
+thumbnailer_format_append_decimal(char *buffer,
+                                  size_t capacity,
+                                  size_t *position,
+                                  int value,
+                                  int *truncated)
+{
+    char digits[16];
+    size_t index;
+    size_t length;
+    unsigned int magnitude;
+    int negative;
+
+    if (buffer == NULL || position == NULL) {
+        return 0;
+    }
+
+    index = 0;
+    magnitude = 0;
+    negative = 0;
+
+    if (value < 0) {
+        negative = 1;
+        magnitude = (unsigned int)(-value);
+    } else {
+        magnitude = (unsigned int)value;
+    }
+
+    do {
+        digits[index] = (char)('0' + (magnitude % 10));
+        index += 1;
+        magnitude /= 10;
+    } while (magnitude != 0);
+
+    if (negative) {
+        digits[index] = '-';
+        index += 1;
+    }
+
+    length = index;
+
+    while (index > 0) {
+        index -= 1;
+        if (!thumbnailer_format_append_char(buffer,
+                                            capacity,
+                                            position,
+                                            digits[index],
+                                            truncated)) {
+            return 0;
+        }
+    }
+
+    if (length == 0) {
+        if (!thumbnailer_format_append_char(buffer,
+                                            capacity,
+                                            position,
+                                            '0',
+                                            truncated)) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+static int
+thumbnailer_safe_format(char *buffer,
+                        size_t capacity,
+                        char const *format,
+                        ...)
+{
+    va_list args;
+    size_t position;
+    char const *ptr;
+    int truncated;
+    char const *text;
+    int value;
+
+    if (buffer == NULL || capacity == 0 || format == NULL) {
+        return 0;
+    }
+
+    position = 0;
+    truncated = 0;
+    buffer[0] = '\0';
+
+    va_start(args, format);
+    ptr = format;
+    while (ptr != NULL && ptr[0] != '\0') {
+        if (ptr[0] != '%') {
+            if (!thumbnailer_format_append_char(buffer,
+                                                capacity,
+                                                &position,
+                                                ptr[0],
+                                                &truncated)) {
+                va_end(args);
+                return 0;
+            }
+            ptr += 1;
+            continue;
+        }
+
+        ptr += 1;
+        if (ptr[0] == '%') {
+            if (!thumbnailer_format_append_char(buffer,
+                                                capacity,
+                                                &position,
+                                                '%',
+                                                &truncated)) {
+                va_end(args);
+                return 0;
+            }
+            ptr += 1;
+            continue;
+        }
+
+        if (ptr[0] == 's') {
+            text = va_arg(args, char const *);
+            if (!thumbnailer_format_append_text(buffer,
+                                                capacity,
+                                                &position,
+                                                text,
+                                                &truncated)) {
+                va_end(args);
+                return 0;
+            }
+            ptr += 1;
+            continue;
+        }
+
+        if (ptr[0] == 'd') {
+            value = va_arg(args, int);
+            if (!thumbnailer_format_append_decimal(buffer,
+                                                   capacity,
+                                                   &position,
+                                                   value,
+                                                   &truncated)) {
+                va_end(args);
+                return 0;
+            }
+            ptr += 1;
+            continue;
+        }
+
+        va_end(args);
+        return 0;
+    }
+    va_end(args);
+
+    if (truncated != 0 && capacity > 0) {
+        buffer[capacity - 1] = '\0';
+    }
+
+    return 1;
+}
+
+/*
+ * thumbnailer_sleep_briefly
+ *
+ * Yield the CPU for a short duration so child polling loops avoid busy
+ * waiting.
+ *
+ */
+static void
+thumbnailer_sleep_briefly(void)
+{
+# if HAVE_NANOSLEEP
+    struct timespec ts;
+# endif
+
+# if HAVE_NANOSLEEP
+    ts.tv_sec = 0;
+    ts.tv_nsec = 10000000L;
+    nanosleep(&ts, NULL);
+# elif defined(_WIN32)
+    Sleep(10);
+# else
+    (void)usleep(10000);
+# endif
+}
 
 # if !defined(_WIN32) && defined(HAVE__REALPATH) && !defined(HAVE_REALPATH)
 static char *
@@ -4434,7 +4445,6 @@ load_with_gnome_thumbnailer(
     char template_path[] = "/tmp/libsixel-thumb-XXXXXX";
     char *png_path;
     size_t path_length;
-    int fd;
     struct thumbnailer_string_list *directories;
     size_t dir_index;
     DIR *dir;
@@ -4454,6 +4464,7 @@ load_with_gnome_thumbnailer(
     thumb_chunk = NULL;
     png_path = NULL;
     path_length = 0;
+    int fd;
     fd = -1;
     directories = NULL;
     dir_index = 0;
@@ -4485,7 +4496,13 @@ load_with_gnome_thumbnailer(
         goto end;
     }
 
+#if defined(HAVE_MKSTEMP)
     fd = mkstemp(template_path);
+#elif defined(HAVE__MKTEMP)
+    fd = _mktemp(template_path);
+#elif defined(HAVE_MKTEMP)
+    fd = mktemp(template_path);
+#endif
     if (fd < 0) {
         sixel_helper_set_additional_message(
             "load_with_gnome_thumbnailer: mkstemp() failed.");
