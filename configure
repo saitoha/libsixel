@@ -16226,8 +16226,7 @@ else
 fi
 
 
-CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200809L"
-AM_CFLAGS="$CFLAGS"
+CPPFLAGS="$CPPFLAGS -D_POSIX_C_SOURCE=200809L"
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler can silence -Wtypedef-redefinition via pragmas" >&5
 printf %s "checking whether the compiler can silence -Wtypedef-redefinition via pragmas... " >&6; }

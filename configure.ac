@@ -11,7 +11,7 @@ AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 AC_SUBST([PACKAGE_DESCRIPTION],
          ["A lightweight, fast implementation of DEC SIXEL graphics codec"])
 
-AC_CHECK_TOOLS([CC],  [clang clang.exe],  [gcc])
+AC_CHECK_TOOLS([CC], [clang clang.exe], [gcc])
 AC_CANONICAL_HOST
 
 AM_INIT_AUTOMAKE([foreign subdir-objects])
@@ -60,8 +60,7 @@ case "$CC" in
 esac
 AM_CONDITIONAL([USING_CL], [test "x$using_cl" = "xyes"])
 
-CFLAGS="$CFLAGS -D_POSIX_C_SOURCE=200809L"
-AM_CFLAGS="$CFLAGS"
+CPPFLAGS="$CPPFLAGS -D_POSIX_C_SOURCE=200809L"
 
 AC_CACHE_CHECK(
   [whether the compiler can silence -Wtypedef-redefinition via pragmas],
