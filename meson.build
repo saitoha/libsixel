@@ -663,7 +663,13 @@ else
   endif
 
   if thumbnailer_install
-    install_script('tools/sixel-thumbnailer', install_dir: get_option('bindir'))
+    configure_file(
+      input: 'tools/sixel-thumbnailer',
+      output: 'sixel-thumbnailer',
+      copy: true,
+      install: true,
+      install_dir: get_option('bindir')
+    )
     install_data('tools/libsixel-thumbnailer.thumbnailer', install_dir: join_paths(get_option('datadir'), 'thumbnailers'))
     install_data('tools/sixel.xml', install_dir: join_paths(get_option('datadir'), 'packages'))
     if update_mime_database.found()
@@ -731,7 +737,7 @@ subdir('include')
 
 libsixel_posix_defs = cc.get_supported_arguments([
   '-D_POSIX_SOURCE',
-  '-D_POSIX_C_SOURCE 200809L',
+  '-D_POSIX_C_SOURCE=200809L',
 ])
 
 subdir('src')
