@@ -759,7 +759,7 @@ jobs:
             --enable-tests \
             --disable-dependency-tracking \
             ${extra:+$extra}
-        make
+        make V=1
 
     - name: Configure and build (ASan, Windows)
       if: runner.os == 'Windows'
@@ -777,7 +777,7 @@ jobs:
             --enable-tests \
             --disable-dependency-tracking \
             ${extra:+$extra}
-        make
+        make V=1
 
   ci-meson:
     name: Meson • ${{ matrix.os }} ${{ matrix.sys || 'native' }}
