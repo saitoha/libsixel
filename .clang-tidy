@@ -1,0 +1,14 @@
+# CI-wide defaults. Tighten or relax per repository needs.
+Checks: >
+  -*,
+  bugprone-*,
+  clang-analyzer-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  modernize-*,
+  cppcoreguidelines-*,
+  hicpp-*
+WarningsAsErrors: '*'         # Make all triggered checks fail CI in PRs
+HeaderFilterRegex: '.*'       # Consider all project headers; trim if too noisy
+FormatStyle: none             # Defer to .clang-format for layout
