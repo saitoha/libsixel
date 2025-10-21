@@ -26,8 +26,11 @@
 
 #if defined(HAVE__FILENO) && HAVE__FILENO
 # define sixel_fileno(stream) _fileno(stream)
-#else
+#elif defined(HAVE_FILENO) && HAVE_FILENO
+int fileno (FILE *);
 # define sixel_fileno(stream) fileno(stream)
+#else
+int fileno (FILE *fp) { (void) fp; return (-1); }
 #endif  /* defined(HAVE__FILENO) && HAVE__FILENO */
 
 #endif  /* LIBSIXEL_STDIO_STUB_H */

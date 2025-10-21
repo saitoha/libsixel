@@ -241,6 +241,12 @@
 /* Define to 1 if you have the 'memset' function. */
 #undef HAVE_MEMSET
 
+/* Define to 1 if you have the 'mkstemp' function. */
+#undef HAVE_MKSTEMP
+
+/* Define to 1 if you have the 'mktemp' function. */
+#undef HAVE_MKTEMP
+
 /* Define if building with MSVC */
 #undef HAVE_MSVC
 
@@ -403,6 +409,9 @@
 
 /* Define to 1 if you have the '_isatty' function. */
 #undef HAVE__ISATTY
+
+/* Define to 1 if you have the '_mktemp' function. */
+#undef HAVE__MKTEMP
 
 /* Define to 1 if you have the '_open' function. */
 #undef HAVE__OPEN
