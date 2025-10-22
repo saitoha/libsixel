@@ -16,6 +16,21 @@ DIST_SUBDIRS = include src converters tools python ruby wic quicklook-extension
 
 EXTRA_DIST = LICENSE depcomp
 
+EXTRA_DIST += tests/converters/common.bash \
+	tests/converters/test_img2sixel_0001_invalid_option.bash \
+	tests/converters/test_img2sixel_0002_stdin.bash \
+	tests/converters/test_img2sixel_0003_information.bash \
+	tests/converters/test_img2sixel_0004_conversion_options.bash \
+	tests/converters/test_img2sixel_0005_dcs_arguments.bash \
+	tests/converters/test_img2sixel_0006_dcs_variations.bash \
+	tests/converters/test_img2sixel_0007_animation.bash \
+	tests/converters/test_img2sixel_0008_progressive_jpeg.bash \
+	tests/converters/test_img2sixel_0009_pngsuite.bash \
+	tests/converters/test_img2sixel_0010_curl.bash \
+	tests/converters/test_sixel2png_0011_basic.bash \
+	tests/converters/test_img2sixel_0012_regressions.bash \
+	tests/converters/test_img2sixel_0013_documentation.bash
+
 .PHONY: install-quicklook-extension uninstall-quicklook-extension
 
 install-quicklook-extension:
