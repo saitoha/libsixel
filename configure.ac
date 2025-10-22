@@ -1523,6 +1523,13 @@ AS_IF([test "x$enable_ruby" != xno], [
 ])
 AM_CONDITIONAL([HAVE_RUBY], [test "x$enable_ruby" != xno -a "x$have_ruby" = xyes -a "x$RUBY_SITE_LIBDIR" != x])
 
+AC_ARG_VAR([BASH], [Path to the Bash shell for converter tests])
+AC_PATH_PROG([BASH], [bash], [no])
+AS_IF([test "x$BASH" = x -o "x$BASH" = xno], [
+  AC_MSG_WARN([bash not found; converter tests will be skipped])
+])
+AM_CONDITIONAL([HAVE_BASH], [test "x$BASH" != x -a "x$BASH" != xno])
+
 AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch -c aclocal.m4 Makefile.in configure config.h.in \
                    converters/Makefile.in include/Makefile.in \
