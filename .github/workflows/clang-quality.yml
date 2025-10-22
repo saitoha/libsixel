@@ -150,7 +150,7 @@ jobs:
             results.sarif
 
   # =========================================================
-  # Job 2: clang-format with reviewdog (diff-only)
+  # Job 2: clang-format with reviewdog (PR: inline / push: checks)
   # =========================================================
   clang-format:
     runs-on: ubuntu-latest
@@ -158,38 +158,47 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install clang-format & reviewdog
+      - name: Install clang-format
         run: |
           sudo apt-get update
           sudo apt-get install -y clang-format
-      - uses: reviewdog/action-setup@v1
+
+      - name: Set up reviewdog
+        uses: reviewdog/action-setup@v1
 
       - name: Show versions
         run: |
           clang-format --version
           reviewdog -version
 
-      - name: Run clang-format (reviewdog; PR-only annotations)
+      - name: Run clang-format with reviewdog (event-aware)
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # List changed C/C++/ObjC files in the PR against the base.
+          # Decide reporter per event:
+          # - pull_request  -> github-pr-review (inline comments)
+          # - others        -> github-check (Checks tab)
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            REPORTER="github-pr-review"
+            FILTER="-filter-mode=diff_context"  # comment only on changed lines
           else
-            # Fallback for push/manual: compare with main
-            BASE_SHA="$(git rev-parse origin/${{ github.ref_name || 'main' }} || true)"
+            REPORTER="github-check"
+            FILTER=""                             # Checks tab, no diff filter needed
           fi
 
+          # Collect files
           FILES="$(git ls-files '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hpp' '*.hh' '*.hxx' '*.m' '*.mm' || true)"
-          [ -n "$FILES" ] || exit 0
+          if [ -z "$FILES" ]; then
+            echo "No C/C++/ObjC sources found. Skipping."
+            exit 0
+          fi
 
-          # Print unified diffs produced by clang-format and pass them to reviewdog (diff mode).
-          # Non-zero exit on formatting problems to keep PR red if needed.
+          # Run clang-format in dry-run (no edits) and feed to reviewdog.
+          # Keep non-zero on style violations so CI can fail appropriately.
           set -o pipefail
           clang-format -n --Werror $FILES 2>&1 \
             | reviewdog -f=clang-format \
-                -name="clang-format (reviewdog)" \
-                -reporter=github-pr-review \
-                -filter-mode=diff_context \
+                -name="clang-format" \
+                -reporter="${REPORTER}" \
+                ${FILTER} \
                 -fail-on-error=true
