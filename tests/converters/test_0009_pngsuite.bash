@@ -38,26 +38,32 @@ pngsuite_background=(
     background/bgyn6a16.png
 )
 
+# Convert each basic PNGSuite sample with default settings.
 for rel in "${pngsuite_basic[@]}"; do
     run_img2sixel "${IMAGES_DIR}/pngsuite/${rel}"
 done
 
+# Resize each basic PNGSuite sample to a narrow width.
 for rel in "${pngsuite_basic[@]}"; do
     run_img2sixel -w32 "${IMAGES_DIR}/pngsuite/${rel}"
 done
 
+# Crop each basic PNGSuite sample before conversion.
 for rel in "${pngsuite_basic[@]}"; do
     run_img2sixel -c16x16+8+8 "${IMAGES_DIR}/pngsuite/${rel}"
 done
 
+# Convert PNGSuite background samples with defaults.
 for rel in "${pngsuite_background[@]}"; do
     run_img2sixel "${IMAGES_DIR}/pngsuite/${rel}"
 done
 
+# Convert background samples while forcing white background.
 for rel in "${pngsuite_background[@]}"; do
     run_img2sixel -B'#fff' "${IMAGES_DIR}/pngsuite/${rel}"
 done
 
+# Combine width reduction with forced background handling.
 for rel in "${pngsuite_background[@]}"; do
     run_img2sixel -w32 -B'#fff' "${IMAGES_DIR}/pngsuite/${rel}"
 done

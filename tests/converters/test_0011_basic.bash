@@ -26,8 +26,10 @@ expect_failure() {
     rm -f "${output_file}"
 }
 
+# Reject nonexistent Sixel input file.
 expect_failure -i "${TMP_DIR}/unknown.six"
 output_file="${TMP_DIR}/capture.$$"
+# Ensure invalid legacy width syntax is ignored.
 if run_sixel2png -% < "${TMP_DIR}/snake.six" >"${output_file}" 2>/dev/null; then
     :
 fi
@@ -38,6 +40,7 @@ if [[ -s ${output_file} ]]; then
 fi
 rm -f "${output_file}"
 output_file="${TMP_DIR}/capture.$$"
+# Ensure invalid output filename is rejected.
 if run_sixel2png invalid_filename < "${IMAGES_DIR}/snake.six" >"${output_file}" 2>/dev/null; then
     :
 fi
@@ -48,9 +51,15 @@ if [[ -s ${output_file} ]]; then
 fi
 rm -f "${output_file}"
 
+# Confirm help output is accessible.
 run_sixel2png -H
+# Confirm version output is accessible.
 run_sixel2png -V
+# Convert Sixel snake to PNG via stdin.
 run_sixel2png < "${IMAGES_DIR}/snake.six" > "${TMP_DIR}/snake1.png"
+# Convert Sixel map8 to PNG via stdin.
 run_sixel2png < "${IMAGES_DIR}/map8.six" > "${TMP_DIR}/map8.png"
+# Convert Sixel map64 to PNG using explicit stdin/stdout markers.
 run_sixel2png - - < "${IMAGES_DIR}/map64.six" > "${TMP_DIR}/map64.png"
+# Convert Sixel snake to PNG using file arguments.
 run_sixel2png -i "${IMAGES_DIR}/snake.six" -o "${TMP_DIR}/snake4.png"
