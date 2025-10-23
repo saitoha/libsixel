@@ -51,6 +51,6 @@ rm -f "${output_file}"
 run_sixel2png -H
 run_sixel2png -V
 run_sixel2png < "${IMAGES_DIR}/snake.six" > "${TMP_DIR}/snake1.png"
-run_sixel2png < "${IMAGES_DIR}/map8.six" > "${TMP_DIR}/snake2.png"
-run_sixel2png - - < "${IMAGES_DIR}/map64.six" > "${TMP_DIR}/snake3.png"
+run_sixel2png < "${IMAGES_DIR}/map8.six" > "${TMP_DIR}/map8.png"
+run_sixel2png - - < "${IMAGES_DIR}/map64.six" > "${TMP_DIR}/map64.png"
 run_sixel2png -i "${IMAGES_DIR}/snake.six" -o "${TMP_DIR}/snake4.png"
