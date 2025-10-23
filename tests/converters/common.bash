@@ -25,12 +25,7 @@ WINEEXT=${WINEEXT:-}
 IMG2SIXEL_PATH="${BUILD_DIR_ABS}/img2sixel${WINEEXT}"
 SIXEL2PNG_PATH="${BUILD_DIR_ABS}/sixel2png${WINEEXT}"
 
-CONVERTER_IMAGES_DIR="${SRC_DIR}/images"
-if [[ -d "${CONVERTER_IMAGES_DIR}" ]]; then
-    IMAGES_DIR="${CONVERTER_IMAGES_DIR}"
-else
-    IMAGES_DIR="${TOP_SRCDIR}/images"
-fi
+IMAGES_DIR="${TOP_SRCDIR}/images"
 
 mkdir -p "${TMP_DIR}"
 
