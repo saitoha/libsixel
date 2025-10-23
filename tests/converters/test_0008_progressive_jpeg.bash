@@ -10,4 +10,5 @@ echo '[test8] progressive jpeg'
 
 require_file "${IMAGES_DIR}/snake-progressive.jpg"
 
+# Convert a progressive JPEG end-to-end.
 run_img2sixel "${IMAGES_DIR}/snake-progressive.jpg"

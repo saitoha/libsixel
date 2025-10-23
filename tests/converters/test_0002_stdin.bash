@@ -7,6 +7,7 @@ source "${SCRIPT_DIR}/common.bash"
 
 echo '[test2] STDIN handling'
 
+# Verify that non-image stdin is rejected.
 output_file="${TMP_DIR}/capture.$$"
 if echo -n a | run_img2sixel >"${output_file}" 2>/dev/null; then
     :

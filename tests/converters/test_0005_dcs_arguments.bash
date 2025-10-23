@@ -11,6 +11,7 @@ require_file "${IMAGES_DIR}/map8.png"
 
 for i in $(seq 0 10); do
     for j in $(seq 0 2); do
+        # Confirm arbitrary DCS prefix arguments are tolerated.
         run_img2sixel "${IMAGES_DIR}/map8.png" | \
             sed "s/Pq/P${i};;${j}q/" | \
             run_img2sixel >/dev/null
