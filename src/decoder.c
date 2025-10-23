@@ -278,12 +278,12 @@ sixel_post_undither_refine(unsigned char *rgb,
     gate = NULL;
     gradient = NULL;
 
-    sigma_r = 6.0f;
-    beta = 0.24f;
+    sigma_r = 10.0f;
+    beta = 0.25f;
     alpha1 = 0.60f;
     alpha2 = 0.40f;
     inv_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
-    smooth_gate_scale = 0.85f;
+    smooth_gate_scale = 0.96f;
 
     Y = (float *)malloc(num_pixels * sizeof(float));
     Cb = (float *)malloc(num_pixels * sizeof(float));
@@ -818,12 +818,12 @@ sixel_similarity_compare(sixel_similarity_t *similarity,
     }
 
     if (min_diff >= base_distance * 2U) {
-        result = 12U;
+        result = 5U;
     } else if (min_diff >= base_distance) {
         result = 8U;
     } else if ((unsigned long long)min_diff * 6ULL
                >= (unsigned long long)base_distance * 5ULL) {
-        result = 8U;
+        result = 7U;
     } else if ((unsigned long long)min_diff * 4ULL
                >= (unsigned long long)base_distance * 3ULL) {
         result = 7U;
@@ -832,10 +832,10 @@ sixel_similarity_compare(sixel_similarity_t *similarity,
         result = 5U;
     } else if ((unsigned long long)min_diff * 5ULL
                >= (unsigned long long)base_distance * 3ULL) {
-        result = 4U;
+        result = 7U;
     } else if ((unsigned long long)min_diff * 2ULL
                >= (unsigned long long)base_distance * 1ULL) {
-        result = 3U;
+        result = 4U;
     } else if ((unsigned long long)min_diff * 3ULL
                >= (unsigned long long)base_distance * 1ULL) {
         result = 2U;
@@ -940,9 +940,9 @@ sixel_dequantize_k_undither(unsigned char *indexed_pixels,
     unsigned short strong_threshold;
     unsigned short detail_threshold;
     static const int neighbor_offsets[8][4] = {
-        {-1, -1,  2, 16}, {0, -1, 10, 16}, {1, -1,  6, 16},
-        {-1,  0, 14, 16},                  {1,  0, 14, 16},
-        {-1,  1,  6, 16}, {0,  1, 10, 16}, {1,  1,  2, 16}
+        {-1, -1,  10, 16}, {0, -1, 16, 16}, {1, -1,   6, 16},
+        {-1,  0,  11, 16},                  {1,  0,  11, 16},
+        {-1,  1,   6, 16}, {0,  1, 16, 16}, {1,  1,  10, 16}
     };
     const unsigned char *color;
     size_t out_index;
