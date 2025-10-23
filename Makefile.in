@@ -447,19 +447,19 @@ SUBDIRS = include src converters tools python $(am__append_1) \
 	$(am__append_2) $(am__append_3)
 DIST_SUBDIRS = include src converters tools python ruby wic quicklook-extension
 EXTRA_DIST = LICENSE depcomp tests/converters/common.bash \
-	tests/converters/test_img2sixel_0001_invalid_option.bash \
-	tests/converters/test_img2sixel_0002_stdin.bash \
-	tests/converters/test_img2sixel_0003_information.bash \
-	tests/converters/test_img2sixel_0004_conversion_options.bash \
-	tests/converters/test_img2sixel_0005_dcs_arguments.bash \
-	tests/converters/test_img2sixel_0006_dcs_variations.bash \
-	tests/converters/test_img2sixel_0007_animation.bash \
-	tests/converters/test_img2sixel_0008_progressive_jpeg.bash \
-	tests/converters/test_img2sixel_0009_pngsuite.bash \
-	tests/converters/test_img2sixel_0010_curl.bash \
-	tests/converters/test_sixel2png_0011_basic.bash \
-	tests/converters/test_img2sixel_0012_regressions.bash \
-	tests/converters/test_img2sixel_0013_documentation.bash
+	tests/converters/test_0001_invalid_option.bash \
+	tests/converters/test_0002_stdin.bash \
+	tests/converters/test_0003_information.bash \
+	tests/converters/test_0004_conversion_options.bash \
+	tests/converters/test_0005_dcs_arguments.bash \
+	tests/converters/test_0006_dcs_variations.bash \
+	tests/converters/test_0007_animation.bash \
+	tests/converters/test_0008_progressive_jpeg.bash \
+	tests/converters/test_0009_pngsuite.bash \
+	tests/converters/test_0010_curl.bash \
+	tests/converters/test_0011_basic.bash \
+	tests/converters/test_0012_regressions.bash \
+	tests/converters/test_0013_documentation.bash
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = $(builddir)/libsixel.pc
 CLEANFILES = $(builddir)/valgrind.log $(builddir)/test.log $(builddir)/unittest.log
