@@ -27,8 +27,12 @@ check_exit() {
     esac
 }
 
+# Regression 167: tolerate empty background strings.
 check_exit -B '#000' -B ''
+# Regression 167: handle crafted input with specific height.
 check_exit "${TOP_SRCDIR}/tests/issue/167/poc" -h128
+# Regression 166: handle crafted input with specific width.
 check_exit "${TOP_SRCDIR}/tests/issue/166/poc" -w128
+# Regression 200: ensure complex flag mix avoids heap overflow.
 run_img2sixel --7bit-mode -8 --invert --palette-type=auto --verbose \
     "${TOP_SRCDIR}/tests/issue/200/POC_img2sixel_heap_buffer_overflow" -o /dev/null

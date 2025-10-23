@@ -23,16 +23,23 @@ fail_fetch() {
     rm -f "${output_file}"
 }
 
+# Ensure invalid file URLs are rejected.
 fail_fetch 'file:///test'
+# Ensure malformed HTTPS URLs are rejected.
 fail_fetch 'https:///test'
 
+# Fetch a local file via libcurl's file scheme.
 run_img2sixel "file://$(pwd)/${TOP_SRCDIR}/images/snake.jpg"
 
 if command -v openssl >/dev/null 2>&1 && command -v python >/dev/null 2>&1; then
+    # Ensure the HTTPS test asset is available.
     require_file "${TMP_DIR}/snake.sixel"
+    # Generate a self-signed TLS key pair for the local server.
     openssl genrsa | openssl rsa > "${TMP_DIR}/server.key"
+    # Issue a certificate for localhost using the generated key.
     openssl req -new -key "${TMP_DIR}/server.key" -subj "/CN=localhost" | \
         openssl x509 -req -signkey "${TMP_DIR}/server.key" > "${TMP_DIR}/server.crt"
+    # Write a minimal HTTPS file server.
     cat > "${TMP_DIR}/server.py" <<'PY'
 try:
     from http.server import SimpleHTTPRequestHandler
@@ -65,6 +72,7 @@ with TLSHTTPServer(('localhost', 4443), SimpleHTTPRequestHandler) as httpd:
 PY
     (
         cd "${TMP_DIR}"
+        # Launch the HTTPS server in the background.
         python server.py &
         server_pid=$!
         cleanup() {
@@ -74,6 +82,7 @@ PY
         trap cleanup EXIT
         sleep 1
         output_file="${TMP_DIR}/capture.$$"
+        # Verify that HTTPS fetch fails without -k for self-signed certs.
         if run_img2sixel 'https://localhost:4443/snake.sixel' >"${output_file}" 2>/dev/null; then
             echo 'Skipping certificate verification check: img2sixel accepted self-signed certificate without -k' >&2
         else
@@ -86,6 +95,7 @@ PY
         fi
         rm -f "${output_file}"
         sleep 1
+        # Verify that -k allows fetching from the self-signed server.
         run_img2sixel -k 'https://localhost:4443/snake.sixel'
         cleanup
         trap - EXIT
