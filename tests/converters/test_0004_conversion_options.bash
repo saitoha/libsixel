@@ -53,9 +53,9 @@ run_img2sixel -w210 -h210 -djajuni -bxterm256 -o "${TMP_DIR}/snake3.sixel" < "${
 run_img2sixel --height=100 --diffusion=atkinson --outfile="${TMP_DIR}/snake4.sixel" < "${snake_jpg}"
 run_img2sixel -w105% -h100 -B'#000000000' -rnearest < "${snake_gif}"
 run_img2sixel -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto "${snake_tga}"
-run_img2sixel -p200 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhanning -dstucki -thls "${snake_tiff}"
-run_img2sixel -8 -qauto -thls -e "${snake_pgm}"
-run_img2sixel -8 -m "${map8_palette}" -Esize "${snake_ppm}"
+run_img2sixel -p200 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhanning -dstucki -thls "${snake_tiff}" -o/dev/null
+run_img2sixel -8 -qauto -thls -e "${snake_pgm}" -o/dev/null
+run_img2sixel -8 -m "${map8_palette}" -Esize "${snake_ppm}" -o/dev/null
 run_img2sixel -7 -m "${map16_palette}" -Efast "${snake_jpg}"
 run_img2sixel -7 -w300 "${snake_palette_png}"
 run_img2sixel -7 -w100 -h100 -bxterm16 -B'#aB3' -B'#aB3' "${IMAGES_DIR}/snake.pbm"
@@ -66,7 +66,7 @@ run_img2sixel -bgray1 -w120 "${snake_tga}"
 run_img2sixel -bgray2 -w120 "${snake_tga}"
 run_img2sixel -bgray4 -w120 "${snake_tga}"
 run_img2sixel -bgray8 -w120 "${snake_tga}"
-run_img2sixel -I -8 -dburkes -B'#ffffffffffff' "${snake_ascii_ppm}"
+run_img2sixel -I -8 -dburkes -B'#ffffffffffff' "${snake_ascii_ppm}" > /dev/null
 run_img2sixel -I -C10 -djajuni "${snake_png}"
 run_img2sixel -I -Eauto "${snake_ascii_pgm}"
 run_img2sixel -I -datkinson "${snake_ascii_pbm}"
