@@ -24,26 +24,26 @@ CONVERTER_TEST_LIST =
 if WANT_IMG2SIXEL
 if HAVE_BASH
 CONVERTER_TEST_LIST += \
-	$(top_srcdir)/tests/converters/test_img2sixel_0001_invalid_option.bash \
-	$(top_srcdir)/tests/converters/test_img2sixel_0002_stdin.bash \
-	$(top_srcdir)/tests/converters/test_img2sixel_0003_information.bash \
-	$(top_srcdir)/tests/converters/test_img2sixel_0004_conversion_options.bash \
-	$(top_srcdir)/tests/converters/test_img2sixel_0005_dcs_arguments.bash \
-	$(top_srcdir)/tests/converters/test_img2sixel_0006_dcs_variations.bash \
-	$(top_srcdir)/tests/converters/test_img2sixel_0007_animation.bash \
-	$(top_srcdir)/tests/converters/test_img2sixel_0008_progressive_jpeg.bash
+	$(top_srcdir)/tests/converters/test_0001_invalid_option.bash \
+	$(top_srcdir)/tests/converters/test_0002_stdin.bash \
+	$(top_srcdir)/tests/converters/test_0003_information.bash \
+	$(top_srcdir)/tests/converters/test_0004_conversion_options.bash \
+	$(top_srcdir)/tests/converters/test_0005_dcs_arguments.bash \
+	$(top_srcdir)/tests/converters/test_0006_dcs_variations.bash \
+	$(top_srcdir)/tests/converters/test_0007_animation.bash \
+	$(top_srcdir)/tests/converters/test_0008_progressive_jpeg.bash
 if HAVE_PNG
-CONVERTER_TEST_LIST += $(top_srcdir)/tests/converters/test_img2sixel_0009_pngsuite.bash
+CONVERTER_TEST_LIST += $(top_srcdir)/tests/converters/test_0009_pngsuite.bash
 endif
 if HAVE_CURL
-CONVERTER_TEST_LIST += $(top_srcdir)/tests/converters/test_img2sixel_0010_curl.bash
+CONVERTER_TEST_LIST += $(top_srcdir)/tests/converters/test_0010_curl.bash
 endif
 if WANT_SIXEL2PNG
-CONVERTER_TEST_LIST += $(top_srcdir)/tests/converters/test_sixel2png_0011_basic.bash
+CONVERTER_TEST_LIST += $(top_srcdir)/tests/converters/test_0011_basic.bash
 endif
 CONVERTER_TEST_LIST += \
-	$(top_srcdir)/tests/converters/test_img2sixel_0012_regressions.bash \
-	$(top_srcdir)/tests/converters/test_img2sixel_0013_documentation.bash
+	$(top_srcdir)/tests/converters/test_0012_regressions.bash \
+	$(top_srcdir)/tests/converters/test_0013_documentation.bash
 endif
 endif
 
