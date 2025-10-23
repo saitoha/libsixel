@@ -230,8 +230,21 @@ extra_funcs = [
   'fork',
   'posix_spawnp'
 ]
+
+func_prefixes = {
+  'setmode': '#include <io.h>',
+  '_setmode': '#include <io.h>',
+}
+
 foreach f : extra_funcs
-  if cc.has_function(f)
+  prefix = func_prefixes.get(f, '')
+  has_func = false
+  if prefix != ''
+    has_func = cc.has_function(f, prefix: prefix)
+  else
+    has_func = cc.has_function(f)
+  endif
+  if has_func
     conf.set('HAVE_' + f.to_upper().replace('.', '_'), 1)
   endif
 endforeach

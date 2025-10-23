@@ -91,12 +91,29 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
-@WANT_IMG2SIXEL_TRUE@am__append_1 = img2sixel
-@WANT_IMG2SIXEL_TRUE@am__append_2 = $(srcdir)/img2sixel.1
-@WANT_IMG2SIXEL_TRUE@am__append_3 = $(srcdir)/shell-completion/bash/img2sixel
-@WANT_IMG2SIXEL_TRUE@am__append_4 = $(srcdir)/shell-completion/zsh/_img2sixel
-@WANT_SIXEL2PNG_TRUE@am__append_5 = sixel2png
-@WANT_SIXEL2PNG_TRUE@am__append_6 = $(srcdir)/sixel2png.1
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_1 = \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0001_invalid_option.bash \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0002_stdin.bash \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0003_information.bash \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0004_conversion_options.bash \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0005_dcs_arguments.bash \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0006_dcs_variations.bash \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0007_animation.bash \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0008_progressive_jpeg.bash
+
+@HAVE_BASH_TRUE@@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_2 = $(top_srcdir)/tests/converters/test_0009_pngsuite.bash
+@HAVE_BASH_TRUE@@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_3 = $(top_srcdir)/tests/converters/test_0010_curl.bash
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_4 = $(top_srcdir)/tests/converters/test_0011_basic.bash
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_5 = \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0012_regressions.bash \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0013_documentation.bash
+
+@WANT_IMG2SIXEL_TRUE@am__append_6 = img2sixel
+@WANT_IMG2SIXEL_TRUE@am__append_7 = $(srcdir)/img2sixel.1
+@WANT_IMG2SIXEL_TRUE@am__append_8 = $(srcdir)/shell-completion/bash/img2sixel
+@WANT_IMG2SIXEL_TRUE@am__append_9 = $(srcdir)/shell-completion/zsh/_img2sixel
+@WANT_SIXEL2PNG_TRUE@am__append_10 = sixel2png
+@WANT_SIXEL2PNG_TRUE@am__append_11 = $(srcdir)/sixel2png.1
 subdir = converters
 SUBDIRS =
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -305,6 +322,7 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BASH = @BASH@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -400,6 +418,7 @@ RUBY_SITE_LIBDIR = @RUBY_SITE_LIBDIR@
 RUBY_VERSION = @RUBY_VERSION@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
+@HAVE_BASH_TRUE@SHELL = $(BASH)
 SHELL = @SHELL@
 STRIP = @STRIP@
 UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
@@ -476,9 +495,11 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 DIST_SUBDIRS = $(SUBDIRS)
-dist_man_MANS = $(am__append_2) $(am__append_6)
-dist_bashcompletion_DATA = $(am__append_3)
-dist_zshcompletion_DATA = $(am__append_4)
+dist_man_MANS = $(am__append_7) $(am__append_11)
+dist_bashcompletion_DATA = $(am__append_8)
+dist_zshcompletion_DATA = $(am__append_9)
+CONVERTER_TEST_LIST = $(am__append_1) $(am__append_2) $(am__append_3) \
+	$(am__append_4) $(am__append_5)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 CLEANFILES = *.gcno *.gcda *.gcov \
   $(builddir)/tmp/*.png \
@@ -1087,239 +1108,28 @@ check: test_impl
 test: all test_impl
 
 test_impl:
+	@if test "x$(BASH)" = x -o "x$(BASH)" = xno; then \
+		echo '[skipped] bash is not available; converter tests skipped'; \
+		exit 0; \
+	fi
+	@if test -z "$(CONVERTER_TEST_LIST)"; then \
+		echo '[skipped] no converter tests are enabled'; \
+		exit 0; \
+	fi
 	@echo '[start]'
-
-@WANT_IMG2SIXEL_TRUE@	@echo '[test1] invalid option handling'
-@WANT_IMG2SIXEL_TRUE@	mkdir -p $(builddir)/tmp/
-@WANT_IMG2SIXEL_TRUE@	touch $(builddir)/tmp/testfile
-@WANT_IMG2SIXEL_TRUE@	chmod -r $(builddir)/tmp/testfile
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) $(builddir)/tmp/testfile)
-@WANT_IMG2SIXEL_TRUE@	rm -f $(builddir)/tmp/testfile
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) $(builddir)/tmp/invalid_filename)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) .)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -d invalid_option)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -r invalid_option)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -s invalid_option)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -t invalid_option)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -w invalid_option)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -h invalid_option)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -f invalid_option)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -q invalid_option)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -l invalid_option)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -b invalid_option)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -E invalid_option)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -B invalid_option)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -B \#ffff $(top_srcdir)/images/map8.png)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -B \#0000000000000 $(top_srcdir)/images/map8.png)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -B \#00G)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -B test)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -B rgb:11/11)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -%)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -m $(builddir)/tmp/invalid_filename $(top_srcdir)/images/snake.jpg)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -p16 -e $(top_srcdir)/images/snake.jpg)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -I -C0 $(top_srcdir)/images/snake.png)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -I -p8 $(top_srcdir)/images/snake.png)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -p64 -bxterm256 $(top_srcdir)/images/snake.png)
-@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) -8 -P $(top_srcdir)/images/snake.png)
-
-@WANT_IMG2SIXEL_TRUE@	@echo '[test2] STDIN handling'
-@WANT_IMG2SIXEL_TRUE@	test ! $$(echo -n a | $(WINE) $(builddir)/img2sixel$(WINEEXT))
-
-@WANT_IMG2SIXEL_TRUE@	@echo '[test3] print information'
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -H
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -V
-
-@WANT_IMG2SIXEL_TRUE@	@echo '[test4] conversion options'
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(srcdir)/images/snake.jpg -datkinson -flum -saverage | $(WINE) $(builddir)/img2sixel$(WINEEXT) | tee $(builddir)/tmp/snake.sixel
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w50% -h150% -dfs -Bblue -thls -shistogram < $(top_srcdir)/images/snake.jpg | tee $(builddir)/tmp/snake2.sixel
-@WANT_IMG2SIXEL_TRUE@	$(WINE) printf '\033Pq"1;1;1;1!6~\033\\' | $(builddir)/img2sixel$(WINEEXT) -r nearest -w200% | tr \# \\n | tail -n+3 | od -An -tx1 | tr -d \  | xargs test 302131327e2d2131327e1b5c =
-@WANT_IMG2SIXEL_TRUE@	$(WINE) printf '\033Pq"1;1;1;1!6~\033\\' | $(builddir)/img2sixel$(WINEEXT) -r nearest -h200% | tr \# \\n | tail -n+3 | od -An -tx1 | tr -d \  | xargs test 302131327e2d2131327e1b5c =
-@WANT_IMG2SIXEL_TRUE@	$(WINE) printf '\033Pq"1;1;1;1!6~\033\\' | $(builddir)/img2sixel$(WINEEXT) -r nearest -h200% -wauto | tr \# \\n | tail -n+3 | od -An -tx1 | tr -d \  | xargs test 302131327e2d2131327e1b5c =
-@WANT_IMG2SIXEL_TRUE@	$(WINE) printf '\033Pq"1;1;1;1!6~\033\\' | $(builddir)/img2sixel$(WINEEXT) -r nearest -hauto -w12 | tr \# \\n | tail -n+3 | od -An -tx1 | tr -d \  | xargs test 302131327e2d2131327e1b5c =
-@WANT_IMG2SIXEL_TRUE@	$(WINE) printf '\033Pq"1;1;1;1!6~\033\\' | $(builddir)/img2sixel$(WINEEXT) -r nearest -h12 -w200% | tr \# \\n | tail -n+3 | od -An -tx1 | tr -d \  | xargs test 302131327e2d2131327e1b5c =
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w210 -h210 -djajuni -bxterm256 -o $(builddir)/tmp/snake3.sixel < $(top_srcdir)/images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) --height=100 --diffusion=atkinson --outfile=$(builddir)/tmp/snake4.sixel < $(top_srcdir)/images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w105% -h100 -B\#000000000 -rnearest < $(top_srcdir)/images/snake.gif
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto $(top_srcdir)/images/snake.tga
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -p200 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhanning -dstucki -thls $(top_srcdir)/images/snake.tiff
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -8 -qauto -thls -e $(top_srcdir)/images/snake.pgm
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -8 -m $(top_srcdir)/images/map8-palette.png -Esize $(top_srcdir)/images/snake.ppm
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -7 -m $(top_srcdir)/images/map16-palette.png -Efast $(top_srcdir)/images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -7 -w300 $(top_srcdir)/images/snake-palette.png
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -7 -w100 -h100 -bxterm16 -B\#aB3 -B\#aB3 $(top_srcdir)/images/snake.pbm
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I -dstucki -thls -B\#a0B030 $(top_srcdir)/images/snake.ppm
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -bvt340color $(top_srcdir)/images/snake.ppm
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -bvt340mono $(top_srcdir)/images/snake.tga
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -bgray1 -w120 $(top_srcdir)/images/snake.tga
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -bgray2 -w120 $(top_srcdir)/images/snake.tga
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -bgray4 -w120 $(top_srcdir)/images/snake.tga
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -bgray8 -w120 $(top_srcdir)/images/snake.tga
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I -8 -dburkes -B\#ffffffffffff $(top_srcdir)/images/snake-ascii.ppm
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I -C10 -djajuni $(top_srcdir)/images/snake.png
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I -Eauto $(top_srcdir)/images/snake-ascii.pgm
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I -datkinson $(top_srcdir)/images/snake-ascii.pbm
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/snake-grayscale.png
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -m $(top_srcdir)/images/map8-palette.png $(top_srcdir)/images/snake-grayscale.png
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -m $(top_srcdir)/images/snake-grayscale.png $(top_srcdir)/images/snake.png
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -c200x200+100+100 -dx_dither $(top_srcdir)/images/snake-grayscale.png
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -c200x200+100+100 -w400 -da_dither $(top_srcdir)/images/snake-grayscale.png
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I $(top_srcdir)/images/snake-grayscale.png
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I $(top_srcdir)/images/snake-grayscale.jpg
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -m $(top_srcdir)/images/map8.six -m $(top_srcdir)/images/map8.six $(top_srcdir)/images/snake.six
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w200 -p8 $(top_srcdir)/images/snake.six
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -c200x200+2000+2000 $(top_srcdir)/images/snake.six
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -bxterm16 $(top_srcdir)/images/snake.six
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -e $(top_srcdir)/images/snake.six
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I $(top_srcdir)/images/snake.six
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I -da_dither -w100 $(top_srcdir)/images/snake.six
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I -dx_dither -h100 $(top_srcdir)/images/snake.six
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I -c2000x100+40+20 -wauto -h200 -qhigh -dfs -rbilinear -trgb $(top_srcdir)/images/snake.ppm
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -I -v -w200 -hauto -c100x1000+40+20 -qlow -dnone -rhamming -thls $(top_srcdir)/images/snake.bmp
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -m $(top_srcdir)/images/map8.png -w200 -fauto -rwelsh $(top_srcdir)/images/egret.jpg
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -m $(top_srcdir)/images/map16.png -w100 -hauto -rbicubic -dauto $(top_srcdir)/images/snake.ppm
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -p 16 -C3 -h100 -fnorm -rlanczos2 $(top_srcdir)/images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -v -p 8 -h200 -fnorm -rlanczos2 -dnone $(top_srcdir)/images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -p 2 -h100 -wauto -rlanczos3 $(top_srcdir)/images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -p 1 -h100 -n1 $(top_srcdir)/images/snake.jpg && printf '\033[*1z'
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -e -h140 -rlanczos4 -P $(top_srcdir)/images/snake.jpg
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -e -i -P $(top_srcdir)/images/snake.jpg > /dev/null
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w204 -h204 $(top_srcdir)/images/snake.png | $(WINE) $(builddir)/img2sixel$(WINEEXT) > /dev/null
-
-@WANT_IMG2SIXEL_TRUE@	@echo '[test5] DCS arguments handling'
-@WANT_IMG2SIXEL_TRUE@	seq 0 10 | while read i; do \
-@WANT_IMG2SIXEL_TRUE@	    seq 0 2 | while read j; do \
-@WANT_IMG2SIXEL_TRUE@	            $(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/map8.png | \
-@WANT_IMG2SIXEL_TRUE@	            sed "s/Pq/P$${i};;$${j}q/" | \
-@WANT_IMG2SIXEL_TRUE@	            $(WINE) $(builddir)/img2sixel$(WINEEXT); \
-@WANT_IMG2SIXEL_TRUE@	    done; \
-@WANT_IMG2SIXEL_TRUE@	done
-
-@WANT_IMG2SIXEL_TRUE@	@echo
-@WANT_IMG2SIXEL_TRUE@	@echo '[test6] DCS format variations'
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/snake.png| sed 's/C/C:/g'| tr : '\t'| $(WINE) $(builddir)/img2sixel$(WINEEXT)
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/snake.png| sed 's/"1;1;600;450/"1;1;700;500/'| $(WINE) $(builddir)/img2sixel$(WINEEXT)
-
-@WANT_IMG2SIXEL_TRUE@	@echo
-@WANT_IMG2SIXEL_TRUE@	@echo '[test7] animation'
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -ldisable -dnone -u -lauto $(top_srcdir)/images/seq2gif.gif
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -ldisable -dnone -g $(top_srcdir)/images/seq2gif.gif
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -ldisable -dnone -u -g $(top_srcdir)/images/seq2gif.gif
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -S -datkinson $(top_srcdir)/images/seq2gif.gif
-
-@WANT_IMG2SIXEL_TRUE@	@echo
-@WANT_IMG2SIXEL_TRUE@	@echo '[test8] progressive jpeg'
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/snake-progressive.jpg
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	@echo
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	@echo '[test9] various PNG'
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/basic/basn0g01.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/basic/basn0g02.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/basic/basn0g04.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/basic/basn0g08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/basic/basn0g16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/basic/basn3p01.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/basic/basn3p02.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/basic/basn3p04.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/basic/basn3p08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/basic/basn4a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/basic/basn4a16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/basic/basn6a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/basic/basn6a16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 $(top_srcdir)/images/pngsuite/basic/basn0g01.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 $(top_srcdir)/images/pngsuite/basic/basn0g02.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 $(top_srcdir)/images/pngsuite/basic/basn0g04.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 $(top_srcdir)/images/pngsuite/basic/basn0g08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 $(top_srcdir)/images/pngsuite/basic/basn0g16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 $(top_srcdir)/images/pngsuite/basic/basn3p01.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 $(top_srcdir)/images/pngsuite/basic/basn3p02.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 $(top_srcdir)/images/pngsuite/basic/basn3p04.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 $(top_srcdir)/images/pngsuite/basic/basn3p08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 $(top_srcdir)/images/pngsuite/basic/basn4a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 $(top_srcdir)/images/pngsuite/basic/basn4a16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 $(top_srcdir)/images/pngsuite/basic/basn6a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 $(top_srcdir)/images/pngsuite/basic/basn6a16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -c16x16+8+8 $(top_srcdir)/images/pngsuite/basic/basn0g01.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -c16x16+8+8 $(top_srcdir)/images/pngsuite/basic/basn0g02.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -c16x16+8+8 $(top_srcdir)/images/pngsuite/basic/basn0g04.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -c16x16+8+8 $(top_srcdir)/images/pngsuite/basic/basn0g08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -c16x16+8+8 $(top_srcdir)/images/pngsuite/basic/basn0g16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -c16x16+8+8 $(top_srcdir)/images/pngsuite/basic/basn3p01.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -c16x16+8+8 $(top_srcdir)/images/pngsuite/basic/basn3p02.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -c16x16+8+8 $(top_srcdir)/images/pngsuite/basic/basn3p04.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -c16x16+8+8 $(top_srcdir)/images/pngsuite/basic/basn3p08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -c16x16+8+8 $(top_srcdir)/images/pngsuite/basic/basn4a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -c16x16+8+8 $(top_srcdir)/images/pngsuite/basic/basn4a16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -c16x16+8+8 $(top_srcdir)/images/pngsuite/basic/basn6a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -c16x16+8+8 $(top_srcdir)/images/pngsuite/basic/basn6a16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/background/bgai4a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/background/bgai4a16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/background/bgan6a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/background/bgan6a16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/background/bgbn4a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/background/bggn4a16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/background/bgwn6a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/images/pngsuite/background/bgyn6a16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B\#fff $(top_srcdir)/images/pngsuite/background/bgai4a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B\#fff $(top_srcdir)/images/pngsuite/background/bgai4a16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B\#fff $(top_srcdir)/images/pngsuite/background/bgan6a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B\#fff $(top_srcdir)/images/pngsuite/background/bgan6a16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B\#fff $(top_srcdir)/images/pngsuite/background/bgbn4a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B\#fff $(top_srcdir)/images/pngsuite/background/bggn4a16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B\#fff $(top_srcdir)/images/pngsuite/background/bgwn6a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B\#fff $(top_srcdir)/images/pngsuite/background/bgyn6a16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 -B\#fff $(top_srcdir)/images/pngsuite/background/bgai4a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 -B\#fff $(top_srcdir)/images/pngsuite/background/bgai4a16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 -B\#fff $(top_srcdir)/images/pngsuite/background/bgan6a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 -B\#fff $(top_srcdir)/images/pngsuite/background/bgan6a16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 -B\#fff $(top_srcdir)/images/pngsuite/background/bgbn4a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 -B\#fff $(top_srcdir)/images/pngsuite/background/bggn4a16.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 -B\#fff $(top_srcdir)/images/pngsuite/background/bgwn6a08.png
-@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -w32 -B\#fff $(top_srcdir)/images/pngsuite/background/bgyn6a16.png
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	@echo
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	@echo '[test10] curl'
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) file:///test)
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	test ! $$($(WINE) $(builddir)/img2sixel$(WINEEXT) https:///test)
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) file:///$$(pwd)/$(top_srcdir)/images/snake.jpg
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	if which openssl && which python; then \
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    openssl genrsa | openssl rsa > $(builddir)/tmp/server.key; \
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    openssl req -new -key $(builddir)/tmp/server.key -subj "/CN=localhost" | openssl x509 -req -signkey $(builddir)/tmp/server.key > $(builddir)/tmp/server.crt; \
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "import BaseHTTPServer as bs, SimpleHTTPServer as ss, ssl" > $(builddir)/tmp/server.py; \
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "httpd = bs.HTTPServer(('localhost', 4443), ss.SimpleHTTPRequestHandler)" >> $(builddir)/tmp/server.py; \
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "httpd.socket = ssl.wrap_socket(httpd.socket, certfile='server.crt', keyfile='server.key', server_side=True)" >> $(builddir)/tmp/server.py; \
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "httpd.handle_request()" >> $(builddir)/tmp/server.py; \
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    echo "httpd.handle_request()" >> $(builddir)/tmp/server.py; \
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    python $(builddir)/tmp/server.py & \
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    sleep 1; \
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    ! $(WINE) $(builddir)/img2sixel$(WINEEXT) 'https://localhost:4443/snake.sixel'; \
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    sleep 1; \
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	    $(WINE) $(builddir)/img2sixel$(WINEEXT) -k 'https://localhost:4443/snake.sixel'; \
-@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@	fi
-@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	@echo '[test11] sixel2png'
-@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	test ! $$($(WINE) $(builddir)/sixel2png$(WINEEXT) -i $(builddir)/tmp/unknown.sixel)
-@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	test ! $$($(WINE) $(builddir)/sixel2png$(WINEEXT) -% < $(builddir)/tmp/snake.sixel)
-@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	test ! $$($(WINE) $(builddir)/sixel2png$(WINEEXT) invalid_filename < $(builddir)/tmp/snake.sixel)
-@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) $(builddir)/sixel2png$(WINEEXT) -H
-@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) $(builddir)/sixel2png$(WINEEXT) -V
-@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) $(builddir)/sixel2png$(WINEEXT) < $(builddir)/tmp/snake.sixel > $(builddir)/tmp/snake1.png
-@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) $(builddir)/sixel2png$(WINEEXT) < $(builddir)/tmp/snake2.sixel > $(builddir)/tmp/snake2.png
-@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) $(builddir)/sixel2png$(WINEEXT) - - < $(builddir)/tmp/snake3.sixel > $(builddir)/tmp/snake3.png
-@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) $(builddir)/sixel2png$(WINEEXT) -i $(builddir)/tmp/snake.sixel -o $(builddir)/tmp/snake4.png
-@WANT_IMG2SIXEL_TRUE@	@echo '[test13] regression test'
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B "#000" -B ""; test $$? = 255 -o $$? = 127 -o $$? = 0
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/tests/issue/167/poc -h128 ; test $$? = 255 -o $$? = 127 -o $$? = 0
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/tests/issue/166/poc -w128 ; test $$? = 255 -o $$? = 127 -o $$? = 0
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) --7bit-mode -8 --invert --palette-type=auto --verbose $(top_srcdir)/tests/issue/200/POC_img2sixel_heap_buffer_overflow -o/dev/null
-
-@WANT_IMG2SIXEL_TRUE@	@echo '[test14] documentation'
-@WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -H| grep ^\ \*\-|sed 's/^\ *//'| cut -f1 -d' '| cut -f1 -d, > $(builddir)/tmp/options1.txt
-@WANT_IMG2SIXEL_TRUE@	grep ^\.B $(srcdir)/img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > $(builddir)/tmp/options2.txt
-@WANT_IMG2SIXEL_TRUE@	grep ' --' $(srcdir)/shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > $(builddir)/tmp/options3.txt
-@WANT_IMG2SIXEL_TRUE@	grep '{-' $(srcdir)/shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > $(builddir)/tmp/options4.txt
-@WANT_IMG2SIXEL_TRUE@	if which diff; then diff $(builddir)/tmp/options1.txt $(builddir)/tmp/options2.txt; fi
-@WANT_IMG2SIXEL_TRUE@	if which diff; then diff $(builddir)/tmp/options2.txt $(builddir)/tmp/options3.txt; fi
-@WANT_IMG2SIXEL_TRUE@	if which diff; then diff $(builddir)/tmp/options3.txt $(builddir)/tmp/options4.txt; fi
+	@set -e; \
+	for test_script in $(CONVERTER_TEST_LIST); do \
+		echo "[$$(basename $$test_script)]"; \
+		TOP_SRCDIR=$(top_srcdir) \
+		SRC_DIR=$(srcdir) \
+		BUILD_DIR=$(builddir) \
+		TMP_DIR=$(builddir)/tmp \
+		WINE="$(WINE)" \
+		WINEEXT="$(WINEEXT)" \
+		$(BASH) "$$test_script" || exit $$?; \
+	done
 
 	@echo '[succeeded]'
-
 winetest: all
 	WINE=wine $(MAKE) test
 

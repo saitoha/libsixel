@@ -669,6 +669,9 @@ HAVE_WINHTTP_FALSE
 HAVE_WINHTTP_TRUE
 HAVE_CURL_FALSE
 HAVE_CURL_TRUE
+HAVE_BASH_FALSE
+HAVE_BASH_TRUE
+BASH
 HAVE_RUBY_FALSE
 HAVE_RUBY_TRUE
 RUBY_SITE_LIBDIR
@@ -954,7 +957,8 @@ RUBY_EXT_INC
 RUBY_EXT_LIB
 RUBY_EXT_CPPFLAGS
 RUBY_EXT_LDFLAGS
-RUBY_EXT_DLEXT'
+RUBY_EXT_DLEXT
+BASH'
 
 
 # Initialize some variables set by options.
@@ -1697,6 +1701,7 @@ Some influential environment variables:
               LDFLAGS to build Ruby extensions
   RUBY_EXT_DLEXT
               Ruby dynamic library extension
+  BASH        Path to the Bash shell for converter tests
 
 Use these variables to override the choices made by 'configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -16870,11 +16875,6 @@ printf "%s\n" "no" >&6; }
 		PKG_CONFIG=""
 	fi
 fi
-if test -z "$PKG_CONFIG"; then
-	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: pkg-config not found, continuing without it" >&5
-printf "%s\n" "$as_me: WARNING: pkg-config not found, continuing without it" >&2;}
-                            PKG_CONFIG=false
-fi
 fi
 
 
@@ -18743,24 +18743,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-                GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
+	        GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
         else
-                GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
+	        GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
         fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$GDK_PIXBUF_PKG_ERRORS" >&5
+	# Put the nasty error message in config.log where it belongs
+	echo "$GDK_PIXBUF_PKG_ERRORS" >&5
 
-        have_gdk_pixbuf2=no
+	have_gdk_pixbuf2=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-        have_gdk_pixbuf2=no
+	have_gdk_pixbuf2=no
 else
-        GDK_PIXBUF_CFLAGS=$pkg_cv_GDK_PIXBUF_CFLAGS
-        GDK_PIXBUF_LIBS=$pkg_cv_GDK_PIXBUF_LIBS
+	GDK_PIXBUF_CFLAGS=$pkg_cv_GDK_PIXBUF_CFLAGS
+	GDK_PIXBUF_LIBS=$pkg_cv_GDK_PIXBUF_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-        have_gdk_pixbuf2=yes
+	have_gdk_pixbuf2=yes
 fi
         if test x$have_gdk_pixbuf2 != xno; then
 
@@ -19224,24 +19224,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-                GD_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gdlib" 2>&1`
+	        GD_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gdlib" 2>&1`
         else
-                GD_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gdlib" 2>&1`
+	        GD_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gdlib" 2>&1`
         fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$GD_PKG_ERRORS" >&5
+	# Put the nasty error message in config.log where it belongs
+	echo "$GD_PKG_ERRORS" >&5
 
-        have_gd=no
+	have_gd=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-        have_gd=no
+	have_gd=no
 else
-        GD_CFLAGS=$pkg_cv_GD_CFLAGS
-        GD_LIBS=$pkg_cv_GD_LIBS
+	GD_CFLAGS=$pkg_cv_GD_CFLAGS
+	GD_LIBS=$pkg_cv_GD_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-        have_gd=yes
+	have_gd=yes
 fi
         fi
     fi
@@ -20164,24 +20164,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-                LIBCURL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libcurl" 2>&1`
+	        LIBCURL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libcurl" 2>&1`
         else
-                LIBCURL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libcurl" 2>&1`
+	        LIBCURL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libcurl" 2>&1`
         fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$LIBCURL_PKG_ERRORS" >&5
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBCURL_PKG_ERRORS" >&5
 
-        have_curl=no
+	have_curl=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-        have_curl=no
+	have_curl=no
 else
-        LIBCURL_CFLAGS=$pkg_cv_LIBCURL_CFLAGS
-        LIBCURL_LIBS=$pkg_cv_LIBCURL_LIBS
+	LIBCURL_CFLAGS=$pkg_cv_LIBCURL_CFLAGS
+	LIBCURL_LIBS=$pkg_cv_LIBCURL_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-        have_curl=yes
+	have_curl=yes
 fi
             fi
         fi
@@ -20499,24 +20499,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-                LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libjpeg" 2>&1`
+	        LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libjpeg" 2>&1`
         else
-                LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libjpeg" 2>&1`
+	        LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libjpeg" 2>&1`
         fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$LIBJPEG_PKG_ERRORS" >&5
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBJPEG_PKG_ERRORS" >&5
 
-        have_jpeg=no
+	have_jpeg=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-        have_jpeg=no
+	have_jpeg=no
 else
-        LIBJPEG_CFLAGS=$pkg_cv_LIBJPEG_CFLAGS
-        LIBJPEG_LIBS=$pkg_cv_LIBJPEG_LIBS
+	LIBJPEG_CFLAGS=$pkg_cv_LIBJPEG_CFLAGS
+	LIBJPEG_LIBS=$pkg_cv_LIBJPEG_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-        have_jpeg=yes
+	have_jpeg=yes
 fi
             fi
         fi
@@ -20680,24 +20680,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-                LIBPNG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libpng" 2>&1`
+	        LIBPNG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libpng" 2>&1`
         else
-                LIBPNG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libpng" 2>&1`
+	        LIBPNG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libpng" 2>&1`
         fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$LIBPNG_PKG_ERRORS" >&5
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBPNG_PKG_ERRORS" >&5
 
-        have_png=no
+	have_png=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-        have_png=no
+	have_png=no
 else
-        LIBPNG_CFLAGS=$pkg_cv_LIBPNG_CFLAGS
-        LIBPNG_LIBS=$pkg_cv_LIBPNG_LIBS
+	LIBPNG_CFLAGS=$pkg_cv_LIBPNG_CFLAGS
+	LIBPNG_LIBS=$pkg_cv_LIBPNG_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-        have_png=yes
+	have_png=yes
 fi
             fi
         fi
@@ -22041,6 +22041,70 @@ fi
 
 
 
+# Extract the first word of "bash", so it can be a program name with args.
+set dummy bash; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_BASH+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $BASH in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_BASH="$BASH" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_BASH="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_BASH" && ac_cv_path_BASH="no"
+  ;;
+esac ;;
+esac
+fi
+BASH=$ac_cv_path_BASH
+if test -n "$BASH"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $BASH" >&5
+printf "%s\n" "$BASH" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+if test "x$BASH" = x -o "x$BASH" = xno
+then :
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: bash not found; converter tests will be skipped" >&5
+printf "%s\n" "$as_me: WARNING: bash not found; converter tests will be skipped" >&2;}
+
+fi
+ if test "x$BASH" != x -a "x$BASH" != xno; then
+  HAVE_BASH_TRUE=
+  HAVE_BASH_FALSE='#'
+else
+  HAVE_BASH_TRUE='#'
+  HAVE_BASH_FALSE=
+fi
+
+
+
 
           touch -c aclocal.m4 Makefile.in configure config.h.in \
                    converters/Makefile.in include/Makefile.in \
@@ -22325,6 +22389,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_RUBY_TRUE}" && test -z "${HAVE_RUBY_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_RUBY\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_BASH_TRUE}" && test -z "${HAVE_BASH_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_BASH\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_CURL_TRUE}" && test -z "${HAVE_CURL_FALSE}"; then
