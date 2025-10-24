@@ -765,17 +765,130 @@ end:
 }
 
 
-static unsigned int
-computeHash(unsigned char const *data, unsigned int const depth)
-{
-    unsigned int hash = 0;
-    unsigned int n;
+struct histogram_control {
+    unsigned int channel_shift;
+    unsigned int channel_bits;
+    unsigned int channel_mask;
+};
 
+static struct histogram_control
+histogram_control_make(unsigned int depth);
+static size_t histogram_size(unsigned int depth,
+                             struct histogram_control const *control);
+static unsigned int histogram_reconstruct(unsigned int quantized,
+                                          struct histogram_control const
+                                              *control);
+
+static size_t
+histogram_size(unsigned int depth,
+               struct histogram_control const *control)
+{
+    size_t size;
+    unsigned int exponent;
+
+    size = 1U;
+    exponent = depth * control->channel_bits;
+    size <<= exponent;
+
+    return size;
+}
+
+static unsigned int
+histogram_reconstruct(unsigned int quantized,
+                      struct histogram_control const *control)
+{
+    unsigned int value;
+
+    value = quantized << control->channel_shift;
+    if (quantized == control->channel_mask) {
+        value = 255U;
+    } else {
+        if (control->channel_shift > 0U) {
+            value |= (1U << (control->channel_shift - 1U));
+        }
+    }
+    if (value > 255U) {
+        value = 255U;
+    }
+
+    return value;
+}
+
+static unsigned int
+computeHash(unsigned char const *data,
+            unsigned int const depth,
+            struct histogram_control const *control)
+{
+    unsigned int hash;
+    unsigned int n;
+    unsigned int sample8;
+    unsigned int quantized;
+    unsigned int shift;
+    unsigned int bits;
+
+    hash = 0;
+    shift = control->channel_shift;
+    bits = control->channel_bits;
     for (n = 0; n < depth; n++) {
+#if 0
         hash |= (unsigned int)(data[depth - 1 - n] >> 3) << n * 5;
+#else
+        sample8 = (unsigned int)data[depth - 1 - n];
+        quantized = sample8 >> shift;
+        hash |= quantized << (n * bits);
+#endif
     }
 
     return hash;
+}
+
+static struct histogram_control
+histogram_control_make(unsigned int depth)
+{
+    struct histogram_control control;
+
+    /*
+     * The block below keeps a narrow per-channel bin size for RGB data while
+     * falling back to the classic 5-bit buckets for RGBA inputs.  The idea is
+     * illustrated in ASCII form:
+     *
+     *   depth <= 3          depth > 3
+     *   ---------          ----------
+     *   | | | | |          |   |   |
+     *   ---------          ----------
+     *
+     * Wider buckets on the right prevent 2^24 histogram entries from being
+     * allocated when an alpha channel is present.
+     */
+    control.channel_shift = 2U;
+    if (depth > 3U) {
+        control.channel_shift = 3U;
+    }
+    control.channel_bits = 8U - control.channel_shift;
+    control.channel_mask = (1U << control.channel_bits) - 1U;
+
+    return control;
+}
+
+size_t
+sixel_quant_fast_cache_size(void)
+{
+    struct histogram_control control;
+    size_t size;
+
+    /*
+     * The figure below shows how the fast RGB cache subdivides the cube.
+     *
+     *   RRRRRR GGGGGG BBBBBB
+     *   |----| |----| |----|
+     *
+     * Each group of six bits selects one face of the histogram lattice,
+     * producing 2^(6*3) buckets.
+     */
+    control = histogram_control_make(3U);
+    size = histogram_size(3U, &control);
+
+    return size;
 }
 
 
@@ -788,15 +901,19 @@ computeHistogram(unsigned char const    /* in */  *data,
                  sixel_allocator_t      /* in */  *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    typedef unsigned short unit_t;
+    typedef uint32_t unit_t;
     unsigned int i, n;
     unit_t *histogram = NULL;
     unit_t *refmap = NULL;
     unit_t *ref;
-    unit_t *it;
     unsigned int bucket_index;
     unsigned int step;
     unsigned int max_sample;
+    size_t hist_size;
+    unit_t bucket_value;
+    unsigned int component;
+    unsigned int reconstructed;
+    struct histogram_control control;
 
     switch (qualityMode) {
     case SIXEL_QUALITY_LOW:
@@ -818,8 +935,10 @@ computeHistogram(unsigned char const    /* in */  *data,
 
     quant_trace(stderr, "making histogram...\n");
 
+    control = histogram_control_make((unsigned int)depth);
+    hist_size = histogram_size((unsigned int)depth, &control);
     histogram = (unit_t *)sixel_allocator_calloc(allocator,
-                                                 (size_t)(1 << depth * 5),
+                                                 hist_size,
                                                  sizeof(unit_t));
     if (histogram == NULL) {
         sixel_helper_set_additional_message(
@@ -827,10 +946,10 @@ computeHistogram(unsigned char const    /* in */  *data,
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    it = ref = refmap
-        = (unsigned short *)sixel_allocator_malloc(allocator,
-                                                   (size_t)(1 << depth * 5) * sizeof(unit_t));
-    if (!it) {
+    ref = refmap = (unit_t *)sixel_allocator_malloc(allocator,
+                                                    hist_size *
+                                                    sizeof(unit_t));
+    if (refmap == NULL) {
         sixel_helper_set_additional_message(
             "unable to allocate memory for lookup table.");
         status = SIXEL_BAD_ALLOCATION;
@@ -838,30 +957,40 @@ computeHistogram(unsigned char const    /* in */  *data,
     }
 
     for (i = 0; i < length; i += step) {
-        bucket_index = computeHash(data + i, 3);
+        bucket_index = computeHash(data + i,
+                                   (unsigned int)depth,
+                                   &control);
         if (histogram[bucket_index] == 0) {
             *ref++ = bucket_index;
         }
-        if (histogram[bucket_index] < (unsigned int)(1 << sizeof(unsigned short) * 8) - 1) {
+        if (histogram[bucket_index] < UINT32_MAX) {
             histogram[bucket_index]++;
         }
     }
 
     colorfreqtableP->size = (unsigned int)(ref - refmap);
 
-    status = alloctupletable(&colorfreqtableP->table, depth, (unsigned int)(ref - refmap), allocator);
+    status = alloctupletable(&colorfreqtableP->table,
+                             depth,
+                             (unsigned int)(ref - refmap),
+                             allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
     for (i = 0; i < colorfreqtableP->size; ++i) {
-        if (histogram[refmap[i]] > 0) {
-            colorfreqtableP->table[i]->value = histogram[refmap[i]];
+        bucket_value = refmap[i];
+        if (histogram[bucket_value] > 0) {
+            colorfreqtableP->table[i]->value = histogram[bucket_value];
             for (n = 0; n < depth; n++) {
+                component = (unsigned int)
+                    ((bucket_value >> (n * control.channel_bits)) &
+                     control.channel_mask);
+                reconstructed = histogram_reconstruct(component,
+                                                      &control);
                 colorfreqtableP->table[i]->tuple[depth - 1 - n]
-                    = (sample)((*it >> n * 5 & 0x1f) << 3);
+                    = (sample)reconstructed;
             }
         }
-        it++;
     }
 
     quant_trace(stderr, "%u colors found\n", colorfreqtableP->size);
@@ -3061,13 +3190,15 @@ lookup_fast(unsigned char const * const pixel,
     int cache;
     int i;
     int distant;
+    struct histogram_control control;
 
     /* don't use depth in 'fast' strategy because it's always 3 */
     (void) depth;
 
     result = (-1);
     diff = INT_MAX;
-    hash = computeHash(pixel, 3);
+    control = histogram_control_make(3U);
+    hash = computeHash(pixel, 3U, &control);
 
     cache = cachetable[hash];
     if (cache) {  /* fast lookup */
@@ -3231,6 +3362,7 @@ sixel_quant_apply_palette(
     int sum1, sum2;
     int n;
     unsigned short *indextable;
+    size_t cache_size;
     unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
     unsigned short migration_map[SIXEL_PALETTE_MAX];
     int (*f_lookup)(unsigned char const * const pixel,
@@ -3294,9 +3426,11 @@ sixel_quant_apply_palette(
 
     indextable = cachetable;
     if (cachetable == NULL && f_lookup == lookup_fast) {
-        indextable = (unsigned short *)sixel_allocator_calloc(allocator,
-                                                              (size_t)(1 << depth * 5),
-                                                              sizeof(unsigned short));
+        cache_size = sixel_quant_fast_cache_size();
+        indextable = (unsigned short *)
+            sixel_allocator_calloc(allocator,
+                                   cache_size,
+                                   sizeof(unsigned short));
         if (!indextable) {
             quant_trace(stderr, "Unable to allocate memory for indextable.\n");
             goto end;
