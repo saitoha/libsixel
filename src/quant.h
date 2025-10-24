@@ -72,6 +72,25 @@ sixel_quant_set_lut_policy(
 size_t
 sixel_quant_fast_cache_size(void);
 
+SIXELSTATUS
+sixel_quant_cache_prepare(
+    unsigned short      /* in,out */ **cachetable,
+    size_t              /* in,out */ *cachetable_size,
+    int                 /* in */     lut_policy,
+    int                 /* in */     reqcolor,
+    sixel_allocator_t   /* in */     *allocator);
+
+void
+sixel_quant_cache_clear(
+    unsigned short      /* in,out */ *cachetable,
+    int                 /* in */     lut_policy);
+
+void
+sixel_quant_cache_release(
+    unsigned short      /* in,out */ *cachetable,
+    int                 /* in */     lut_policy,
+    sixel_allocator_t   /* in */     *allocator);
+
 
 /* deallocate specified palette */
 void
