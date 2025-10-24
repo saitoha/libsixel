@@ -815,6 +815,38 @@ histogram_reconstruct(unsigned int quantized,
 }
 
 static unsigned int
+histogram_quantize(unsigned int sample8,
+                   struct histogram_control const *control)
+{
+    unsigned int quantized;
+    unsigned int shift;
+    unsigned int mask;
+    unsigned int rounding;
+
+    /*
+     * We want each bucket to capture its center value instead of the lower
+     * edge.  The ASCII sketch below shows how rounding keeps the midpoint:
+     *
+     *   0---1---2---3        sample8 + round
+     *   |   |   |   |  ==>  ----------------  -> bucket index
+     *   0   1   2   3              2^shift
+     */
+    shift = control->channel_shift;
+    mask = control->channel_mask;
+    if (shift == 0U) {
+        quantized = sample8;
+    } else {
+        rounding = 1U << (shift - 1U);
+        quantized = (sample8 + rounding) >> shift;
+        if (quantized > mask) {
+            quantized = mask;
+        }
+    }
+
+    return quantized;
+}
+
+static unsigned int
 computeHash(unsigned char const *data,
             unsigned int const depth,
             struct histogram_control const *control)
@@ -822,20 +854,16 @@ computeHash(unsigned char const *data,
     unsigned int hash;
     unsigned int n;
     unsigned int sample8;
-    unsigned int quantized;
-    unsigned int shift;
     unsigned int bits;
 
     hash = 0;
-    shift = control->channel_shift;
     bits = control->channel_bits;
     for (n = 0; n < depth; n++) {
 #if 0
         hash |= (unsigned int)(data[depth - 1 - n] >> 3) << n * 5;
 #else
         sample8 = (unsigned int)data[depth - 1 - n];
-        quantized = sample8 >> shift;
-        hash |= quantized << (n * bits);
+        hash |= histogram_quantize(sample8, control) << (n * bits);
 #endif
     }
 
