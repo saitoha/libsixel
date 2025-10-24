@@ -308,6 +308,12 @@ void show_help(void)
             "                                     speed mode\n"
             "                             full -> full quality and careful\n"
             "                                     speed mode\n"
+            "-L LUTPOLICY, --lut-policy=LUTPOLICY\n"
+            "                           choose histogram lookup width\n"
+            "                           LUTPOLICY is one of them:\n"
+            "                             auto  -> follow pixel depth\n"
+            "                             5bit  -> force classic 5-bit buckets\n"
+            "                             6bit  -> favor 6-bit RGB buckets\n"
             "-l LOOPMODE, --loop-control=LOOPMODE\n"
             "                           select loop control mode for GIF\n"
             "                           animation.\n"
@@ -413,7 +419,7 @@ main(int argc, char *argv[])
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    char const *optstring = "o:T:78Rp:m:eb:Id:f:s:c:w:h:r:q:kil:t:ugvSn:PE:U:B:C:D@:M:OVW:HY:y:";
+    char const *optstring = "o:T:78Rp:m:eb:Id:f:s:c:w:h:r:q:L:kil:t:ugvSn:PE:U:B:C:D@:M:OVW:HY:y:";
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",            required_argument,  &long_opt, 'o'},
@@ -436,6 +442,7 @@ main(int argc, char *argv[])
         {"height",             required_argument,  &long_opt, 'h'},
         {"resampling",         required_argument,  &long_opt, 'r'},
         {"quality",            required_argument,  &long_opt, 'q'},
+        {"lut-policy",         required_argument,  &long_opt, 'L'},
         {"palette-type",       required_argument,  &long_opt, 't'},
         {"insecure",           no_argument,        &long_opt, 'k'},
         {"invert",             no_argument,        &long_opt, 'i'},

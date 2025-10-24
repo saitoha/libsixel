@@ -314,6 +314,7 @@ sixel_dither_new(
     (*ppdither)->ref = 1;
     (*ppdither)->palette = (unsigned char*)(*ppdither + 1);
     (*ppdither)->cachetable = NULL;
+    (*ppdither)->cachetable_size = 0U;
     (*ppdither)->reqcolors = ncolors;
     (*ppdither)->ncolors = ncolors;
     (*ppdither)->origcolors = (-1);
@@ -331,6 +332,7 @@ sixel_dither_new(
     (*ppdither)->requested_quality_mode = quality_mode;
     (*ppdither)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     (*ppdither)->allocator = allocator;
+    (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
 
     status = SIXEL_OK;
 
@@ -367,6 +369,7 @@ sixel_dither_destroy(
         allocator = dither->allocator;
         sixel_allocator_free(allocator, dither->cachetable);
         dither->cachetable = NULL;
+        dither->cachetable_size = 0U;
         sixel_allocator_free(allocator, dither);
         sixel_allocator_unref(allocator);
     }
@@ -545,6 +548,9 @@ sixel_dither_initialize(
 
     sixel_dither_set_pixelformat(dither, pixelformat);
 
+    /* keep quantizer policy in sync with the dither object */
+    sixel_quant_set_lut_policy(dither->lut_policy);
+
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_RGB888:
         input_pixels = data;
@@ -609,6 +615,59 @@ end:
     sixel_dither_unref(dither);
 
     return status;
+}
+
+
+/* set lookup table policy */
+SIXELAPI void
+sixel_dither_set_lut_policy(
+    sixel_dither_t  /* in */ *dither,
+    int             /* in */ lut_policy)
+{
+    int normalized;
+    sixel_allocator_t *allocator;
+
+    if (dither == NULL) {
+        return;
+    }
+
+    normalized = SIXEL_LUT_POLICY_AUTO;
+    if (lut_policy == SIXEL_LUT_POLICY_5BIT
+        || lut_policy == SIXEL_LUT_POLICY_6BIT) {
+        normalized = lut_policy;
+    }
+    if (dither->lut_policy == normalized) {
+        return;
+    }
+
+    /*
+     * Policy transitions are illustrated as an ASCII timeline below:
+     *
+     *   [cache] --policy change--> (flush) --rebuild--> [cache]
+     */
+    dither->lut_policy = normalized;
+    if (dither->cachetable != NULL) {
+        allocator = dither->allocator;
+        sixel_allocator_free(allocator, dither->cachetable);
+        dither->cachetable = NULL;
+        dither->cachetable_size = 0U;
+    }
+}
+
+
+/* get lookup table policy */
+SIXELAPI int
+sixel_dither_get_lut_policy(
+    sixel_dither_t  /* in */ *dither)
+{
+    int policy;
+
+    policy = SIXEL_LUT_POLICY_AUTO;
+    if (dither != NULL) {
+        policy = dither->lut_policy;
+    }
+
+    return policy;
 }
 
 
@@ -775,6 +834,8 @@ sixel_dither_apply_palette(
     unsigned char *input_pixels;
     size_t cache_size;
 
+    cache_size = 0U;
+
     /* ensure dither object is not null */
     if (dither == NULL) {
         sixel_helper_set_additional_message(
@@ -782,6 +843,8 @@ sixel_dither_apply_palette(
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
+
+    sixel_quant_set_lut_policy(dither->lut_policy);
 
     sixel_dither_ref(dither);
 
@@ -799,18 +862,27 @@ sixel_dither_apply_palette(
         dither->optimized = 0;
     }
 
-    if (dither->cachetable == NULL && dither->optimized) {
+    if (dither->optimized) {
         if (dither->palette != pal_mono_dark && dither->palette != pal_mono_light) {
             cache_size = sixel_quant_fast_cache_size();
-            dither->cachetable = (unsigned short *)
-                sixel_allocator_calloc(dither->allocator,
-                                       cache_size,
-                                       sizeof(unsigned short));
+            if (dither->cachetable != NULL
+                && dither->cachetable_size != cache_size) {
+                sixel_allocator_free(dither->allocator, dither->cachetable);
+                dither->cachetable = NULL;
+                dither->cachetable_size = 0U;
+            }
             if (dither->cachetable == NULL) {
-                sixel_helper_set_additional_message(
-                    "sixel_dither_new: sixel_allocator_calloc() failed.");
-                status = SIXEL_BAD_ALLOCATION;
-                goto end;
+                dither->cachetable = (unsigned short *)
+                    sixel_allocator_calloc(dither->allocator,
+                                           cache_size,
+                                           sizeof(unsigned short));
+                if (dither->cachetable == NULL) {
+                    sixel_helper_set_additional_message(
+                        "sixel_dither_new: sixel_allocator_calloc() failed.");
+                    status = SIXEL_BAD_ALLOCATION;
+                    goto end;
+                }
+                dither->cachetable_size = cache_size;
             }
         }
     }

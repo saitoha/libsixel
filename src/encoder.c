@@ -690,6 +690,7 @@ typedef struct sixel_callback_context_for_mapfile {
     sixel_dither_t *dither;
     sixel_allocator_t *allocator;
     int working_colorspace;
+    int lut_policy;
 } sixel_callback_context_for_mapfile_t;
 
 
@@ -728,6 +729,9 @@ load_image_callback_for_palette(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+
+        sixel_dither_set_lut_policy(callback_context->dither,
+                                    callback_context->lut_policy);
 
         /* use palette which is extracted from the image */
         sixel_dither_set_palette(callback_context->dither,
@@ -770,6 +774,9 @@ load_image_callback_for_palette(
             goto end;
         }
 
+        sixel_dither_set_lut_policy(callback_context->dither,
+                                    callback_context->lut_policy);
+
         /* create adaptive palette from given frame object */
         status = sixel_dither_initialize(callback_context->dither,
                                          sixel_frame_get_pixels(frame),
@@ -808,6 +815,7 @@ sixel_prepare_specified_palette(
     callback_context.dither = NULL;
     callback_context.allocator = encoder->allocator;
     callback_context.working_colorspace = encoder->working_colorspace;
+    callback_context.lut_policy = encoder->lut_policy;
 
     sixel_helper_set_loader_trace(encoder->verbose);
     sixel_helper_set_thumbnail_size_hint(
@@ -945,6 +953,8 @@ sixel_encoder_prepare_palette(
         goto end;
     }
 
+    sixel_dither_set_lut_policy(*dither, encoder->lut_policy);
+
     status = sixel_dither_initialize(*dither,
                                      sixel_frame_get_pixels(frame),
                                      sixel_frame_get_width(frame),
@@ -967,6 +977,9 @@ sixel_encoder_prepare_palette(
     status = SIXEL_OK;
 
 end:
+    if (SIXEL_SUCCEEDED(status) && dither != NULL && *dither != NULL) {
+        sixel_dither_set_lut_policy(*dither, encoder->lut_policy);
+    }
     return status;
 }
 
@@ -1910,6 +1923,7 @@ sixel_encoder_new(
     (*ppencoder)->method_for_largest    = SIXEL_LARGE_AUTO;
     (*ppencoder)->method_for_rep        = SIXEL_REP_AUTO;
     (*ppencoder)->quality_mode          = SIXEL_QUALITY_AUTO;
+    (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_AUTO;
     (*ppencoder)->method_for_resampling = SIXEL_RES_BILINEAR;
     (*ppencoder)->loop_mode             = SIXEL_LOOP_AUTO;
     (*ppencoder)->palette_type          = SIXEL_PALETTETYPE_AUTO;
@@ -2567,6 +2581,24 @@ sixel_encoder_setopt(
                 "cannot parse encode policy option.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
+        }
+        break;
+    case SIXEL_OPTFLAG_LUT_POLICY:  /* L */
+        if (strcmp(value, "auto") == 0) {
+            encoder->lut_policy = SIXEL_LUT_POLICY_AUTO;
+        } else if (strcmp(value, "5bit") == 0) {
+            encoder->lut_policy = SIXEL_LUT_POLICY_5BIT;
+        } else if (strcmp(value, "6bit") == 0) {
+            encoder->lut_policy = SIXEL_LUT_POLICY_6BIT;
+        } else {
+            sixel_helper_set_additional_message(
+                "cannot parse lut policy option.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        if (encoder->dither_cache != NULL) {
+            sixel_dither_set_lut_policy(encoder->dither_cache,
+                                        encoder->lut_policy);
         }
         break;
     case SIXEL_OPTFLAG_WORKING_COLORSPACE:  /* W */
