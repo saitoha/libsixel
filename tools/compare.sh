@@ -7,10 +7,10 @@ src_topdir="${dir}/.."
 in="${1}"
 
 magick "${in}" -dither fs six:-            |
-"${src_topdir}"/tools/evaluate.sh "${in}"
+"${src_topdir}"/tools/evaluate.sh "${in}" - imagemagick
 
-converters/img2sixel -dlso2 "${in}"        |
-"${src_topdir}"/tools/evaluate.sh "${in}"
+converters/img2sixel "${in}" |
+"${src_topdir}"/tools/evaluate.sh "${in}" - libsixel
 
 chafa -f sixel --dither diffusion "${in}"  |
-"${src_topdir}"/tools/evaluate.sh "${in}"
+"${src_topdir}"/tools/evaluate.sh "${in}" - chafa
