@@ -980,12 +980,6 @@ struct hopscotch_table32 {
     sixel_allocator_t *allocator;
 };
 
-struct histogram_entry {
-    uint32_t key;
-    uint32_t value;
-};
-
-static int histogram_entry_compare(void const *lhs, void const *rhs);
 static SIXELSTATUS hopscotch_table32_init(struct hopscotch_table32 *table,
                                           size_t expected,
                                           sixel_allocator_t *allocator);
@@ -997,24 +991,6 @@ static SIXELSTATUS hopscotch_table32_insert(struct hopscotch_table32 *table,
                                             uint32_t key,
                                             uint32_t value);
 static SIXELSTATUS hopscotch_table32_grow(struct hopscotch_table32 *table);
-
-static int
-histogram_entry_compare(void const *lhs, void const *rhs)
-{
-    struct histogram_entry const *a;
-    struct histogram_entry const *b;
-
-    a = (struct histogram_entry const *)lhs;
-    b = (struct histogram_entry const *)rhs;
-    if (a->key < b->key) {
-        return -1;
-    }
-    if (a->key > b->key) {
-        return 1;
-    }
-
-    return 0;
-}
 
 static struct histogram_control
 histogram_control_make(unsigned int depth)
@@ -1789,12 +1765,9 @@ computeHistogram_robinhood(unsigned char const *data,
 {
     SIXELSTATUS status = SIXEL_FALSE;
     struct robinhood_table32 table;
-    struct histogram_entry *entries;
     size_t expected;
     size_t cap_limit;
     size_t index;
-    size_t entry_count;
-    size_t entry_index;
     unsigned int depth_u;
     unsigned int i;
     unsigned int n;
@@ -1813,9 +1786,6 @@ computeHistogram_robinhood(unsigned char const *data,
     table.capacity = 0U;
     table.count = 0U;
     table.allocator = allocator;
-    entries = NULL;
-    entry_count = 0U;
-    entry_index = 0U;
     cap_limit = (size_t)1U << 20;
     expected = max_sample;
     if (expected < 256U) {
@@ -1857,20 +1827,6 @@ computeHistogram_robinhood(unsigned char const *data,
         goto end;
     }
 
-    entry_count = table.count;
-    if (entry_count > 0U) {
-        entries = (struct histogram_entry *)
-            sixel_allocator_malloc(allocator,
-                                   entry_count
-                                   * sizeof(struct histogram_entry));
-        if (entries == NULL) {
-            sixel_helper_set_additional_message(
-                "unable to allocate histogram scratch.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-    }
-
     colorfreqtableP->size = (unsigned int)table.count;
     status = alloctupletable(&colorfreqtableP->table,
                              depth_u,
@@ -1880,36 +1836,21 @@ computeHistogram_robinhood(unsigned char const *data,
         goto end;
     }
 
-    entry_index = 0U;
+    index = 0U;
+    /*
+     * Stream slots in the hash traversal order to avoid qsort overhead.
+     * This favors throughput over identical palette ordering.
+     */
     for (i = 0U; i < table.capacity; ++i) {
         slot = &table.slots[i];
         if (slot->value == 0U) {
             continue;
         }
-        if (entry_index < entry_count) {
-            entries[entry_index].key = slot->key;
-            entries[entry_index].value = slot->value;
-            entry_index++;
+        if (index >= colorfreqtableP->size) {
+            break;
         }
-    }
-
-    if (entry_count > 1U) {
-        /*
-         * Canonicalize traversal order so every LUT backend feeds the same
-         * sequence into median cut:
-         *
-         *   unsorted  : [hash2][hash0][hash1]
-         *   sorted    : [hash0][hash1][hash2]
-         */
-        qsort(entries,
-              entry_count,
-              sizeof(struct histogram_entry),
-              histogram_entry_compare);
-    }
-
-    for (index = 0U; index < entry_count; ++index) {
-        entry_key = entries[index].key;
-        colorfreqtableP->table[index]->value = entries[index].value;
+        entry_key = slot->key;
+        colorfreqtableP->table[index]->value = slot->value;
         for (n = 0U; n < depth_u; ++n) {
             component = (unsigned int)
                 ((entry_key >> (n * control->channel_bits))
@@ -1918,14 +1859,12 @@ computeHistogram_robinhood(unsigned char const *data,
             colorfreqtableP->table[index]->tuple[depth_u - 1U - n]
                 = (sample)reconstructed;
         }
+        index++;
     }
 
     status = SIXEL_OK;
 
 end:
-    if (entries != NULL) {
-        sixel_allocator_free(allocator, entries);
-    }
     robinhood_table32_fini(&table);
 
     return status;
@@ -1943,12 +1882,9 @@ computeHistogram_hopscotch(unsigned char const *data,
 {
     SIXELSTATUS status = SIXEL_FALSE;
     struct hopscotch_table32 table;
-    struct histogram_entry *entries;
     size_t expected;
     size_t cap_limit;
     size_t index;
-    size_t entry_count;
-    size_t entry_index;
     unsigned int depth_u;
     unsigned int i;
     unsigned int n;
@@ -1970,9 +1906,6 @@ computeHistogram_hopscotch(unsigned char const *data,
     table.count = 0U;
     table.neighborhood = HOPSCOTCH_DEFAULT_NEIGHBORHOOD;
     table.allocator = allocator;
-    entries = NULL;
-    entry_count = 0U;
-    entry_index = 0U;
     cap_limit = (size_t)1U << 20;
     expected = max_sample;
     if (expected < 256U) {
@@ -2014,20 +1947,6 @@ computeHistogram_hopscotch(unsigned char const *data,
         goto end;
     }
 
-    entry_count = table.count;
-    if (entry_count > 0U) {
-        entries = (struct histogram_entry *)
-            sixel_allocator_malloc(allocator,
-                                   entry_count
-                                   * sizeof(struct histogram_entry));
-        if (entries == NULL) {
-            sixel_helper_set_additional_message(
-                "unable to allocate histogram scratch.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-    }
-
     colorfreqtableP->size = (unsigned int)table.count;
     status = alloctupletable(&colorfreqtableP->table,
                              depth_u,
@@ -2037,29 +1956,21 @@ computeHistogram_hopscotch(unsigned char const *data,
         goto end;
     }
 
-    entry_index = 0U;
+    index = 0U;
+    /*
+     * Stream slots in the hash traversal order to avoid qsort overhead.
+     * This favors throughput over identical palette ordering.
+     */
     for (i = 0U; i < table.capacity; ++i) {
         slot = &table.slots[i];
         if (slot->key == HOPSCOTCH_EMPTY_KEY || slot->value == 0U) {
             continue;
         }
-        if (entry_index < entry_count) {
-            entries[entry_index].key = slot->key;
-            entries[entry_index].value = slot->value;
-            entry_index++;
+        if (index >= colorfreqtableP->size) {
+            break;
         }
-    }
-
-    if (entry_count > 1U) {
-        qsort(entries,
-              entry_count,
-              sizeof(struct histogram_entry),
-              histogram_entry_compare);
-    }
-
-    for (index = 0U; index < entry_count; ++index) {
-        entry_key = entries[index].key;
-        colorfreqtableP->table[index]->value = entries[index].value;
+        entry_key = slot->key;
+        colorfreqtableP->table[index]->value = slot->value;
         for (n = 0U; n < depth_u; ++n) {
             component = (unsigned int)
                 ((entry_key >> (n * control->channel_bits))
@@ -2068,14 +1979,12 @@ computeHistogram_hopscotch(unsigned char const *data,
             colorfreqtableP->table[index]->tuple[depth_u - 1U - n]
                 = (sample)reconstructed;
         }
+        index++;
     }
 
     status = SIXEL_OK;
 
 end:
-    if (entries != NULL) {
-        sixel_allocator_free(allocator, entries);
-    }
     hopscotch_table32_fini(&table);
 
     return status;
