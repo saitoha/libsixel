@@ -774,7 +774,8 @@ sixel_quant_set_lut_policy(int lut_policy)
 
     normalized = SIXEL_LUT_POLICY_AUTO;
     if (lut_policy == SIXEL_LUT_POLICY_5BIT
-        || lut_policy == SIXEL_LUT_POLICY_6BIT) {
+        || lut_policy == SIXEL_LUT_POLICY_6BIT
+        || lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
         normalized = lut_policy;
     }
 
@@ -789,24 +790,67 @@ struct histogram_control {
 
 static struct histogram_control
 histogram_control_make(unsigned int depth);
-static size_t histogram_size(unsigned int depth,
-                             struct histogram_control const *control);
+static struct histogram_control
+histogram_control_make_for_policy(unsigned int depth, int lut_policy);
+static size_t histogram_dense_size(unsigned int depth,
+                                   struct histogram_control const
+                                       *control);
 static unsigned int histogram_reconstruct(unsigned int quantized,
                                           struct histogram_control const
                                               *control);
 
 static size_t
-histogram_size(unsigned int depth,
-               struct histogram_control const *control)
+histogram_dense_size(unsigned int depth,
+                     struct histogram_control const *control)
 {
     size_t size;
     unsigned int exponent;
+    unsigned int i;
 
     size = 1U;
     exponent = depth * control->channel_bits;
-    size <<= exponent;
+    for (i = 0U; i < exponent; ++i) {
+        if (size > SIZE_MAX / 2U) {
+            size = SIZE_MAX;
+            break;
+        }
+        size <<= 1U;
+    }
 
     return size;
+}
+
+static struct histogram_control
+histogram_control_make_for_policy(unsigned int depth, int lut_policy)
+{
+    struct histogram_control control;
+
+    /*
+     * The ASCII ladder below shows how each policy selects bucket width.
+     *
+     *   auto / 6bit RGB : |--6--|
+     *   forced 5bit     : |---5---|
+     *   robinhood       : |------8------|
+     *   alpha fallback  : |---5---|  (avoids 2^(6*4) buckets)
+     */
+    control.channel_shift = 2U;
+    if (depth > 3U) {
+        control.channel_shift = 3U;
+    }
+    if (lut_policy == SIXEL_LUT_POLICY_5BIT) {
+        control.channel_shift = 3U;
+    } else if (lut_policy == SIXEL_LUT_POLICY_6BIT) {
+        control.channel_shift = 2U;
+        if (depth > 3U) {
+            control.channel_shift = 3U;
+        }
+    } else if (lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
+        control.channel_shift = 0U;
+    }
+    control.channel_bits = 8U - control.channel_shift;
+    control.channel_mask = (1U << control.channel_bits) - 1U;
+
+    return control;
 }
 
 static unsigned int
@@ -886,34 +930,288 @@ computeHash(unsigned char const *data,
     return hash;
 }
 
+struct robinhood_slot32 {
+    uint32_t key;
+    uint32_t value;
+    uint16_t distance;
+    uint16_t pad;
+};
+
+struct robinhood_table32 {
+    struct robinhood_slot32 *slots;
+    size_t capacity;
+    size_t count;
+    sixel_allocator_t *allocator;
+};
+
+static size_t robinhood_round_capacity(size_t hint);
+static SIXELSTATUS robinhood_table32_init(struct robinhood_table32 *table,
+                                         size_t expected,
+                                         sixel_allocator_t *allocator);
+static void robinhood_table32_clear(struct robinhood_table32 *table);
+static void robinhood_table32_fini(struct robinhood_table32 *table);
+static struct robinhood_slot32 *
+robinhood_table32_lookup(struct robinhood_table32 *table, uint32_t key);
+static SIXELSTATUS robinhood_table32_insert(struct robinhood_table32 *table,
+                                           uint32_t key,
+                                           uint32_t value);
+static SIXELSTATUS robinhood_table32_grow(struct robinhood_table32 *table);
+static struct robinhood_slot32 *
+robinhood_table32_place(struct robinhood_table32 *table,
+                        struct robinhood_slot32 entry);
+
 static struct histogram_control
 histogram_control_make(unsigned int depth)
 {
     struct histogram_control control;
 
-    /*
-     * The ASCII ladder below shows how each policy selects bucket width.
-     *
-     *   auto / 6bit RGB : |--6--|
-     *   forced 5bit     : |---5---|
-     *   alpha fallback  : |---5---|  (avoids 2^(6*4) buckets)
-     */
-    control.channel_shift = 2U;
-    if (depth > 3U) {
-        control.channel_shift = 3U;
-    }
-    if (histogram_lut_policy == SIXEL_LUT_POLICY_5BIT) {
-        control.channel_shift = 3U;
-    } else if (histogram_lut_policy == SIXEL_LUT_POLICY_6BIT) {
-        control.channel_shift = 2U;
-        if (depth > 3U) {
-            control.channel_shift = 3U;
-        }
-    }
-    control.channel_bits = 8U - control.channel_shift;
-    control.channel_mask = (1U << control.channel_bits) - 1U;
+    control = histogram_control_make_for_policy(depth,
+                                                histogram_lut_policy);
 
     return control;
+}
+
+static size_t
+robinhood_round_capacity(size_t hint)
+{
+    size_t capacity;
+
+    capacity = 16U;
+    if (hint < capacity) {
+        return capacity;
+    }
+
+    capacity = hint - 1U;
+    capacity |= capacity >> 1;
+    capacity |= capacity >> 2;
+    capacity |= capacity >> 4;
+    capacity |= capacity >> 8;
+    capacity |= capacity >> 16;
+#if SIZE_MAX > UINT32_MAX
+    capacity |= capacity >> 32;
+#endif
+    if (capacity == SIZE_MAX) {
+        return SIZE_MAX;
+    }
+    capacity++;
+    if (capacity < 16U) {
+        capacity = 16U;
+    }
+
+    return capacity;
+}
+
+static SIXELSTATUS
+robinhood_table32_init(struct robinhood_table32 *table,
+                       size_t expected,
+                       sixel_allocator_t *allocator)
+{
+    size_t hint;
+    size_t capacity;
+
+    table->slots = NULL;
+    table->capacity = 0U;
+    table->count = 0U;
+    table->allocator = allocator;
+
+    if (expected < 16U) {
+        expected = 16U;
+    }
+    if (expected > SIZE_MAX / 2U) {
+        hint = SIZE_MAX / 2U;
+    } else {
+        hint = expected * 2U;
+    }
+    capacity = robinhood_round_capacity(hint);
+    if (capacity == SIZE_MAX && hint != SIZE_MAX) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    table->slots = (struct robinhood_slot32 *)
+        sixel_allocator_calloc(allocator,
+                               capacity,
+                               sizeof(struct robinhood_slot32));
+    if (table->slots == NULL) {
+        table->capacity = 0U;
+        table->count = 0U;
+        return SIXEL_BAD_ALLOCATION;
+    }
+    table->capacity = capacity;
+    table->count = 0U;
+
+    return SIXEL_OK;
+}
+
+static void
+robinhood_table32_clear(struct robinhood_table32 *table)
+{
+    size_t bytes;
+
+    if (table->slots == NULL) {
+        return;
+    }
+
+    bytes = table->capacity * sizeof(struct robinhood_slot32);
+    memset(table->slots, 0, bytes);
+    table->count = 0U;
+}
+
+static void
+robinhood_table32_fini(struct robinhood_table32 *table)
+{
+    if (table->slots != NULL) {
+        sixel_allocator_free(table->allocator, table->slots);
+        table->slots = NULL;
+    }
+    table->capacity = 0U;
+    table->count = 0U;
+    table->allocator = NULL;
+}
+
+static struct robinhood_slot32 *
+robinhood_table32_lookup(struct robinhood_table32 *table, uint32_t key)
+{
+    size_t mask;
+    size_t index;
+    uint16_t distance;
+    struct robinhood_slot32 *slot;
+
+    if (table->capacity == 0U || table->slots == NULL) {
+        return NULL;
+    }
+
+    mask = table->capacity - 1U;
+    index = (size_t)(key & mask);
+    distance = 0U;
+
+    for (;;) {
+        slot = &table->slots[index];
+        if (slot->value == 0U) {
+            return NULL;
+        }
+        if (slot->key == key) {
+            return slot;
+        }
+        if (slot->distance < distance) {
+            return NULL;
+        }
+        index = (index + 1U) & mask;
+        distance++;
+    }
+}
+
+static struct robinhood_slot32 *
+robinhood_table32_place(struct robinhood_table32 *table,
+                        struct robinhood_slot32 entry)
+{
+    size_t mask;
+    size_t index;
+    struct robinhood_slot32 *slot;
+    struct robinhood_slot32 tmp;
+
+    mask = table->capacity - 1U;
+    index = (size_t)(entry.key & mask);
+
+    for (;;) {
+        slot = &table->slots[index];
+        if (slot->value == 0U) {
+            *slot = entry;
+            table->count++;
+            return slot;
+        }
+        if (slot->key == entry.key) {
+            slot->value = entry.value;
+            return slot;
+        }
+        if (slot->distance < entry.distance) {
+            tmp = *slot;
+            *slot = entry;
+            entry = tmp;
+        }
+        index = (index + 1U) & mask;
+        entry.distance++;
+    }
+}
+
+static SIXELSTATUS
+robinhood_table32_grow(struct robinhood_table32 *table)
+{
+    struct robinhood_slot32 *old_slots;
+    size_t old_capacity;
+    size_t new_capacity;
+    size_t i;
+
+    if (table->allocator == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    if (table->capacity == 0U) {
+        new_capacity = 16U;
+    } else {
+        if (table->capacity > SIZE_MAX / 2U) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        new_capacity = table->capacity << 1U;
+    }
+    new_capacity = robinhood_round_capacity(new_capacity);
+    if (new_capacity <= table->capacity) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    old_slots = table->slots;
+    old_capacity = table->capacity;
+    table->slots = (struct robinhood_slot32 *)
+        sixel_allocator_calloc(table->allocator,
+                               new_capacity,
+                               sizeof(struct robinhood_slot32));
+    if (table->slots == NULL) {
+        table->slots = old_slots;
+        table->capacity = old_capacity;
+        return SIXEL_BAD_ALLOCATION;
+    }
+    table->capacity = new_capacity;
+    table->count = 0U;
+
+    for (i = 0U; i < old_capacity; ++i) {
+        struct robinhood_slot32 entry;
+
+        if (old_slots[i].value == 0U) {
+            continue;
+        }
+        entry.key = old_slots[i].key;
+        entry.value = old_slots[i].value;
+        entry.distance = 0U;
+        (void)robinhood_table32_place(table, entry);
+    }
+
+    sixel_allocator_free(table->allocator, old_slots);
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+robinhood_table32_insert(struct robinhood_table32 *table,
+                         uint32_t key,
+                         uint32_t value)
+{
+    SIXELSTATUS status;
+    struct robinhood_slot32 entry;
+
+    if (table->slots == NULL || table->capacity == 0U) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (table->count * 2U >= table->capacity) {
+        status = robinhood_table32_grow(table);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+
+    entry.key = key;
+    entry.value = value;
+    entry.distance = 0U;
+    (void)robinhood_table32_place(table, entry);
+
+    return SIXEL_OK;
 }
 
 size_t
@@ -931,12 +1229,26 @@ sixel_quant_fast_cache_size(void)
      * Each group of six bits selects one face of the histogram lattice,
      * producing 2^(6*3) buckets.
      */
-    control = histogram_control_make(3U);
-    size = histogram_size(3U, &control);
+    if (histogram_lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
+        size = 0U;
+    } else {
+        control = histogram_control_make(3U);
+        size = histogram_dense_size(3U, &control);
+    }
 
     return size;
 }
 
+
+static SIXELSTATUS
+computeHistogram_robinhood(unsigned char const *data,
+                           unsigned int length,
+                           unsigned long depth,
+                           unsigned int step,
+                           unsigned int max_sample,
+                           tupletable2 * const colorfreqtableP,
+                           struct histogram_control const *control,
+                           sixel_allocator_t *allocator);
 
 static SIXELSTATUS
 computeHistogram(unsigned char const    /* in */  *data,
@@ -982,7 +1294,19 @@ computeHistogram(unsigned char const    /* in */  *data,
     quant_trace(stderr, "making histogram...\n");
 
     control = histogram_control_make((unsigned int)depth);
-    hist_size = histogram_size((unsigned int)depth, &control);
+    if (histogram_lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
+        status = computeHistogram_robinhood(data,
+                                            length,
+                                            depth,
+                                            step,
+                                            max_sample,
+                                            colorfreqtableP,
+                                            &control,
+                                            allocator);
+        goto end;
+    }
+
+    hist_size = histogram_dense_size((unsigned int)depth, &control);
     histogram = (unit_t *)sixel_allocator_calloc(allocator,
                                                  hist_size,
                                                  sizeof(unit_t));
@@ -1048,6 +1372,258 @@ end:
     sixel_allocator_free(allocator, histogram);
 
     return status;
+}
+
+static SIXELSTATUS
+computeHistogram_robinhood(unsigned char const *data,
+                           unsigned int length,
+                           unsigned long depth,
+                           unsigned int step,
+                           unsigned int max_sample,
+                           tupletable2 * const colorfreqtableP,
+                           struct histogram_control const *control,
+                           sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    struct robinhood_table32 table;
+    size_t expected;
+    size_t cap_limit;
+    size_t index;
+    unsigned int depth_u;
+    unsigned int i;
+    unsigned int n;
+    uint32_t bucket_index;
+    struct robinhood_slot32 *slot;
+    unsigned int component;
+    unsigned int reconstructed;
+
+    /*
+     * The ASCII sketch below shows how the sparse table stores samples:
+     *
+     *   [hash]->(key,value,distance)  Robin Hood probing keeps dense tails.
+     */
+    table.slots = NULL;
+    table.capacity = 0U;
+    table.count = 0U;
+    table.allocator = allocator;
+    cap_limit = (size_t)1U << 20;
+    expected = max_sample;
+    if (expected < 256U) {
+        expected = 256U;
+    }
+    if (expected > cap_limit) {
+        expected = cap_limit;
+    }
+
+    status = robinhood_table32_init(&table, expected, allocator);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "unable to allocate robinhood histogram.");
+        goto end;
+    }
+
+    depth_u = (unsigned int)depth;
+    for (i = 0U; i < length; i += step) {
+        bucket_index = computeHash(data + i, depth_u, control);
+        slot = robinhood_table32_lookup(&table, bucket_index);
+        if (slot == NULL) {
+            status = robinhood_table32_insert(&table,
+                                              bucket_index,
+                                              1U);
+            if (SIXEL_FAILED(status)) {
+                sixel_helper_set_additional_message(
+                    "unable to grow robinhood histogram.");
+                goto end;
+            }
+        } else if (slot->value < UINT32_MAX) {
+            slot->value++;
+        }
+    }
+
+    if (table.count > UINT_MAX) {
+        sixel_helper_set_additional_message(
+            "too many unique colors for histogram.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    colorfreqtableP->size = (unsigned int)table.count;
+    status = alloctupletable(&colorfreqtableP->table,
+                             depth_u,
+                             (unsigned int)table.count,
+                             allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    index = 0U;
+    for (i = 0U; i < table.capacity; ++i) {
+        slot = &table.slots[i];
+        if (slot->value == 0U) {
+            continue;
+        }
+        colorfreqtableP->table[index]->value = slot->value;
+        for (n = 0U; n < depth_u; ++n) {
+            component = (unsigned int)
+                ((slot->key >> (n * control->channel_bits))
+                 & control->channel_mask);
+            reconstructed = histogram_reconstruct(component, control);
+            colorfreqtableP->table[index]->tuple[depth_u - 1U - n]
+                = (sample)reconstructed;
+        }
+        index++;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    robinhood_table32_fini(&table);
+
+    return status;
+}
+
+SIXELSTATUS
+sixel_quant_cache_prepare(unsigned short **cachetable,
+                          size_t *cachetable_size,
+                          int lut_policy,
+                          int reqcolor,
+                          sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    struct histogram_control control;
+    size_t needed;
+    size_t expected;
+    size_t cap_limit;
+    struct robinhood_table32 *table;
+
+    if (cachetable == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    /*
+     * The ASCII ladder below highlights both cache layouts:
+     *
+     *   flat array : [index0][index1][index2]...
+     *   robinhood  : dither->cachetable -> table -> slots
+     */
+    if (lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
+        cap_limit = (size_t)1U << 20;
+        expected = (size_t)reqcolor * 64U;
+        if (expected < 512U) {
+            expected = 512U;
+        }
+        if (expected > cap_limit) {
+            expected = cap_limit;
+        }
+        table = (struct robinhood_table32 *)*cachetable;
+        if (table != NULL) {
+            if (table->capacity < expected) {
+                robinhood_table32_fini(table);
+                sixel_allocator_free(allocator, table);
+                table = NULL;
+                *cachetable = NULL;
+            } else {
+                robinhood_table32_clear(table);
+            }
+        }
+        if (table == NULL) {
+            table = (struct robinhood_table32 *)
+                sixel_allocator_malloc(allocator,
+                                      sizeof(struct robinhood_table32));
+            if (table == NULL) {
+                sixel_helper_set_additional_message(
+                    "unable to allocate robinhood cache state.");
+                return SIXEL_BAD_ALLOCATION;
+            }
+            table->slots = NULL;
+            table->capacity = 0U;
+            table->count = 0U;
+            table->allocator = allocator;
+            status = robinhood_table32_init(table, expected, allocator);
+            if (SIXEL_FAILED(status)) {
+                sixel_allocator_free(allocator, table);
+                sixel_helper_set_additional_message(
+                    "unable to initialize robinhood cache.");
+                return status;
+            }
+            *cachetable = (unsigned short *)table;
+        }
+        if (cachetable_size != NULL) {
+            *cachetable_size = table->capacity;
+        }
+        return SIXEL_OK;
+    }
+
+    control = histogram_control_make_for_policy(3U, lut_policy);
+    needed = histogram_dense_size(3U, &control);
+    if (*cachetable != NULL) {
+        if (cachetable_size == NULL
+            || (cachetable_size != NULL && *cachetable_size != needed)) {
+            sixel_allocator_free(allocator, *cachetable);
+            *cachetable = NULL;
+        } else {
+            memset(*cachetable, 0, needed * sizeof(unsigned short));
+        }
+    }
+    if (*cachetable == NULL) {
+        *cachetable = (unsigned short *)
+            sixel_allocator_calloc(allocator,
+                                   needed,
+                                   sizeof(unsigned short));
+        if (*cachetable == NULL) {
+            sixel_helper_set_additional_message(
+                "unable to allocate cache table.");
+            return SIXEL_BAD_ALLOCATION;
+        }
+    }
+    if (cachetable_size != NULL) {
+        *cachetable_size = needed;
+    }
+
+    status = SIXEL_OK;
+
+    return status;
+}
+
+void
+sixel_quant_cache_clear(unsigned short *cachetable,
+                        int lut_policy)
+{
+    struct histogram_control control;
+    size_t size;
+
+    if (cachetable == NULL) {
+        return;
+    }
+
+    if (lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
+        robinhood_table32_clear((struct robinhood_table32 *)cachetable);
+        return;
+    }
+
+    control = histogram_control_make_for_policy(3U, lut_policy);
+    size = histogram_dense_size(3U, &control);
+    memset(cachetable, 0, size * sizeof(unsigned short));
+}
+
+void
+sixel_quant_cache_release(unsigned short *cachetable,
+                          int lut_policy,
+                          sixel_allocator_t *allocator)
+{
+    if (cachetable == NULL || allocator == NULL) {
+        return;
+    }
+
+    if (lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
+        struct robinhood_table32 *table;
+
+        table = (struct robinhood_table32 *)cachetable;
+        robinhood_table32_fini(table);
+        sixel_allocator_free(allocator, table);
+    } else {
+        sixel_allocator_free(allocator, cachetable);
+    }
 }
 
 
@@ -3274,6 +3850,66 @@ lookup_fast(unsigned char const * const pixel,
     return result;
 }
 
+/*
+ * The robin hood lookup mirrors the array-based fast path but stores
+ * key/value pairs in a sparse table:
+ *
+ *   pixel hash --> [slot:key,value,distance]
+ */
+static int
+lookup_fast_robinhood(unsigned char const * const pixel,
+                      int const depth,
+                      unsigned char const * const palette,
+                      int const reqcolor,
+                      unsigned short * const cachetable,
+                      int const complexion)
+{
+    int result;
+    unsigned int hash;
+    int diff;
+    int i;
+    int distant;
+    struct histogram_control control;
+    struct robinhood_table32 *table;
+    struct robinhood_slot32 *slot;
+    SIXELSTATUS status;
+
+    (void)depth;
+
+    result = (-1);
+    diff = INT_MAX;
+    control = histogram_control_make(3U);
+    hash = computeHash(pixel, 3U, &control);
+
+    table = (struct robinhood_table32 *)cachetable;
+    slot = robinhood_table32_lookup(table, hash);
+    if (slot != NULL && slot->value != 0U) {
+        return (int)(slot->value - 1U);
+    }
+
+    for (i = 0; i < reqcolor; i++) {
+        distant = (pixel[0] - palette[i * 3 + 0])
+                * (pixel[0] - palette[i * 3 + 0]) * complexion
+                + (pixel[1] - palette[i * 3 + 1])
+                * (pixel[1] - palette[i * 3 + 1])
+                + (pixel[2] - palette[i * 3 + 2])
+                * (pixel[2] - palette[i * 3 + 2]);
+        if (distant < diff) {
+            diff = distant;
+            result = i;
+        }
+    }
+
+    status = robinhood_table32_insert(table,
+                                      hash,
+                                      (uint32_t)(result + 1));
+    if (SIXEL_FAILED(status)) {
+        /* ignore cache update failure */
+    }
+
+    return result;
+}
+
 
 static int
 lookup_mono_darkbg(unsigned char const * const pixel,
@@ -3409,6 +4045,8 @@ sixel_quant_apply_palette(
     int n;
     unsigned short *indextable;
     size_t cache_size;
+    int allocated_cache;
+    int using_robinhood_cache;
     unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
     unsigned short migration_map[SIXEL_PALETTE_MAX];
     int (*f_lookup)(unsigned char const * const pixel,
@@ -3470,17 +4108,43 @@ sixel_quant_apply_palette(
         }
     }
 
+    if (f_lookup == lookup_fast
+        && histogram_lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
+        f_lookup = lookup_fast_robinhood;
+    }
+
     indextable = cachetable;
-    if (cachetable == NULL && f_lookup == lookup_fast) {
-        cache_size = sixel_quant_fast_cache_size();
-        indextable = (unsigned short *)
-            sixel_allocator_calloc(allocator,
-                                   cache_size,
-                                   sizeof(unsigned short));
-        if (!indextable) {
-            quant_trace(stderr, "Unable to allocate memory for indextable.\n");
-            goto end;
+    allocated_cache = 0;
+    using_robinhood_cache = (f_lookup == lookup_fast_robinhood);
+    if (cachetable == NULL) {
+        if (f_lookup == lookup_fast) {
+            cache_size = sixel_quant_fast_cache_size();
+            indextable = (unsigned short *)
+                sixel_allocator_calloc(allocator,
+                                       cache_size,
+                                       sizeof(unsigned short));
+            if (!indextable) {
+                quant_trace(stderr,
+                            "Unable to allocate memory for indextable.\n");
+                goto end;
+            }
+            allocated_cache = 1;
+        } else if (using_robinhood_cache) {
+            status = sixel_quant_cache_prepare(&indextable,
+                                               &cache_size,
+                                               SIXEL_LUT_POLICY_ROBINHOOD,
+                                               reqcolor,
+                                               allocator);
+            if (SIXEL_FAILED(status)) {
+                quant_trace(stderr,
+                            "Unable to allocate robinhood indextable.\n");
+                goto end;
+            }
+            allocated_cache = 1;
         }
+    } else if (using_robinhood_cache) {
+        sixel_quant_cache_clear(indextable,
+                                SIXEL_LUT_POLICY_ROBINHOOD);
     }
 
     if (use_positional) {
@@ -3513,8 +4177,14 @@ sixel_quant_apply_palette(
         goto end;
     }
 
-    if (cachetable == NULL) {
-        sixel_allocator_free(allocator, indextable);
+    if (allocated_cache) {
+        if (using_robinhood_cache) {
+            sixel_quant_cache_release(indextable,
+                                      SIXEL_LUT_POLICY_ROBINHOOD,
+                                      allocator);
+        } else {
+            sixel_allocator_free(allocator, indextable);
+        }
     }
 
     status = SIXEL_OK;

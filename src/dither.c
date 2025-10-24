@@ -367,7 +367,9 @@ sixel_dither_destroy(
 
     if (dither) {
         allocator = dither->allocator;
-        sixel_allocator_free(allocator, dither->cachetable);
+        sixel_quant_cache_release(dither->cachetable,
+                                  dither->lut_policy,
+                                  allocator);
         dither->cachetable = NULL;
         dither->cachetable_size = 0U;
         sixel_allocator_free(allocator, dither);
@@ -625,6 +627,7 @@ sixel_dither_set_lut_policy(
     int             /* in */ lut_policy)
 {
     int normalized;
+    int previous_policy;
     sixel_allocator_t *allocator;
 
     if (dither == NULL) {
@@ -633,10 +636,12 @@ sixel_dither_set_lut_policy(
 
     normalized = SIXEL_LUT_POLICY_AUTO;
     if (lut_policy == SIXEL_LUT_POLICY_5BIT
-        || lut_policy == SIXEL_LUT_POLICY_6BIT) {
+        || lut_policy == SIXEL_LUT_POLICY_6BIT
+        || lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
         normalized = lut_policy;
     }
-    if (dither->lut_policy == normalized) {
+    previous_policy = dither->lut_policy;
+    if (previous_policy == normalized) {
         return;
     }
 
@@ -648,7 +653,9 @@ sixel_dither_set_lut_policy(
     dither->lut_policy = normalized;
     if (dither->cachetable != NULL) {
         allocator = dither->allocator;
-        sixel_allocator_free(allocator, dither->cachetable);
+        sixel_quant_cache_release(dither->cachetable,
+                                  previous_policy,
+                                  allocator);
         dither->cachetable = NULL;
         dither->cachetable_size = 0U;
     }
@@ -832,9 +839,6 @@ sixel_dither_apply_palette(
     int method_for_carry;
     unsigned char *normalized_pixels = NULL;
     unsigned char *input_pixels;
-    size_t cache_size;
-
-    cache_size = 0U;
 
     /* ensure dither object is not null */
     if (dither == NULL) {
@@ -864,25 +868,15 @@ sixel_dither_apply_palette(
 
     if (dither->optimized) {
         if (dither->palette != pal_mono_dark && dither->palette != pal_mono_light) {
-            cache_size = sixel_quant_fast_cache_size();
-            if (dither->cachetable != NULL
-                && dither->cachetable_size != cache_size) {
-                sixel_allocator_free(dither->allocator, dither->cachetable);
-                dither->cachetable = NULL;
-                dither->cachetable_size = 0U;
-            }
-            if (dither->cachetable == NULL) {
-                dither->cachetable = (unsigned short *)
-                    sixel_allocator_calloc(dither->allocator,
-                                           cache_size,
-                                           sizeof(unsigned short));
-                if (dither->cachetable == NULL) {
-                    sixel_helper_set_additional_message(
-                        "sixel_dither_new: sixel_allocator_calloc() failed.");
-                    status = SIXEL_BAD_ALLOCATION;
-                    goto end;
-                }
-                dither->cachetable_size = cache_size;
+            status = sixel_quant_cache_prepare(&dither->cachetable,
+                                               &dither->cachetable_size,
+                                               dither->lut_policy,
+                                               dither->ncolors,
+                                               dither->allocator);
+            if (SIXEL_FAILED(status)) {
+                sixel_helper_set_additional_message(
+                    "sixel_dither_apply_palette: cache preparation failed.");
+                goto end;
             }
         }
     }
