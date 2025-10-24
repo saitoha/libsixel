@@ -69,9 +69,6 @@ void
 sixel_quant_set_lut_policy(
     int                 /* in */  lut_policy);
 
-size_t
-sixel_quant_fast_cache_size(void);
-
 SIXELSTATUS
 sixel_quant_cache_prepare(
     unsigned short      /* in,out */ **cachetable,
