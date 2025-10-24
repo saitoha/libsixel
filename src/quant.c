@@ -775,7 +775,8 @@ sixel_quant_set_lut_policy(int lut_policy)
     normalized = SIXEL_LUT_POLICY_AUTO;
     if (lut_policy == SIXEL_LUT_POLICY_5BIT
         || lut_policy == SIXEL_LUT_POLICY_6BIT
-        || lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
+        || lut_policy == SIXEL_LUT_POLICY_ROBINHOOD
+        || lut_policy == SIXEL_LUT_POLICY_HOPSCOTCH) {
         normalized = lut_policy;
     }
 
@@ -844,7 +845,8 @@ histogram_control_make_for_policy(unsigned int depth, int lut_policy)
         if (depth > 3U) {
             control.channel_shift = 3U;
         }
-    } else if (lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
+    } else if (lut_policy == SIXEL_LUT_POLICY_ROBINHOOD
+               || lut_policy == SIXEL_LUT_POLICY_HOPSCOTCH) {
         control.channel_shift = 0U;
     }
     control.channel_bits = 8U - control.channel_shift;
@@ -959,6 +961,60 @@ static SIXELSTATUS robinhood_table32_grow(struct robinhood_table32 *table);
 static struct robinhood_slot32 *
 robinhood_table32_place(struct robinhood_table32 *table,
                         struct robinhood_slot32 entry);
+
+#define HOPSCOTCH_EMPTY_KEY 0xffffffffU
+#define HOPSCOTCH_DEFAULT_NEIGHBORHOOD 32U
+#define HOPSCOTCH_INSERT_RANGE 256U
+
+struct hopscotch_slot32 {
+    uint32_t key;
+    uint32_t value;
+};
+
+struct hopscotch_table32 {
+    struct hopscotch_slot32 *slots;
+    uint32_t *hopinfo;
+    size_t capacity;
+    size_t count;
+    size_t neighborhood;
+    sixel_allocator_t *allocator;
+};
+
+struct histogram_entry {
+    uint32_t key;
+    uint32_t value;
+};
+
+static int histogram_entry_compare(void const *lhs, void const *rhs);
+static SIXELSTATUS hopscotch_table32_init(struct hopscotch_table32 *table,
+                                          size_t expected,
+                                          sixel_allocator_t *allocator);
+static void hopscotch_table32_clear(struct hopscotch_table32 *table);
+static void hopscotch_table32_fini(struct hopscotch_table32 *table);
+static struct hopscotch_slot32 *
+hopscotch_table32_lookup(struct hopscotch_table32 *table, uint32_t key);
+static SIXELSTATUS hopscotch_table32_insert(struct hopscotch_table32 *table,
+                                            uint32_t key,
+                                            uint32_t value);
+static SIXELSTATUS hopscotch_table32_grow(struct hopscotch_table32 *table);
+
+static int
+histogram_entry_compare(void const *lhs, void const *rhs)
+{
+    struct histogram_entry const *a;
+    struct histogram_entry const *b;
+
+    a = (struct histogram_entry const *)lhs;
+    b = (struct histogram_entry const *)rhs;
+    if (a->key < b->key) {
+        return -1;
+    }
+    if (a->key > b->key) {
+        return 1;
+    }
+
+    return 0;
+}
 
 static struct histogram_control
 histogram_control_make(unsigned int depth)
@@ -1214,6 +1270,330 @@ robinhood_table32_insert(struct robinhood_table32 *table,
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+hopscotch_table32_init(struct hopscotch_table32 *table,
+                       size_t expected,
+                       sixel_allocator_t *allocator)
+{
+    size_t hint;
+    size_t capacity;
+    size_t i;
+
+    if (table == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    table->slots = NULL;
+    table->hopinfo = NULL;
+    table->capacity = 0U;
+    table->count = 0U;
+    table->neighborhood = HOPSCOTCH_DEFAULT_NEIGHBORHOOD;
+    table->allocator = allocator;
+
+    if (expected < 16U) {
+        expected = 16U;
+    }
+    if (expected > SIZE_MAX / 2U) {
+        hint = SIZE_MAX / 2U;
+    } else {
+        hint = expected * 2U;
+    }
+    capacity = robinhood_round_capacity(hint);
+    if (capacity == SIZE_MAX && hint != SIZE_MAX) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    if (capacity < table->neighborhood) {
+        capacity = table->neighborhood;
+    }
+
+    table->slots = (struct hopscotch_slot32 *)
+        sixel_allocator_malloc(allocator,
+                               capacity * sizeof(struct hopscotch_slot32));
+    if (table->slots == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    table->hopinfo = (uint32_t *)
+        sixel_allocator_calloc(allocator,
+                               capacity,
+                               sizeof(uint32_t));
+    if (table->hopinfo == NULL) {
+        sixel_allocator_free(allocator, table->slots);
+        table->slots = NULL;
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (i = 0U; i < capacity; ++i) {
+        table->slots[i].key = HOPSCOTCH_EMPTY_KEY;
+        table->slots[i].value = 0U;
+    }
+    table->capacity = capacity;
+    table->count = 0U;
+    if (table->neighborhood > 32U) {
+        table->neighborhood = 32U;
+    }
+    if (table->neighborhood > table->capacity) {
+        table->neighborhood = table->capacity;
+    }
+
+    return SIXEL_OK;
+}
+
+static void
+hopscotch_table32_clear(struct hopscotch_table32 *table)
+{
+    size_t i;
+    size_t bytes;
+
+    if (table == NULL || table->slots == NULL || table->hopinfo == NULL) {
+        return;
+    }
+
+    bytes = table->capacity * sizeof(uint32_t);
+    memset(table->hopinfo, 0, bytes);
+    for (i = 0U; i < table->capacity; ++i) {
+        table->slots[i].key = HOPSCOTCH_EMPTY_KEY;
+        table->slots[i].value = 0U;
+    }
+    table->count = 0U;
+}
+
+static void
+hopscotch_table32_fini(struct hopscotch_table32 *table)
+{
+    sixel_allocator_t *allocator;
+
+    if (table == NULL) {
+        return;
+    }
+
+    allocator = table->allocator;
+    if (allocator != NULL) {
+        if (table->slots != NULL) {
+            sixel_allocator_free(allocator, table->slots);
+        }
+        if (table->hopinfo != NULL) {
+            sixel_allocator_free(allocator, table->hopinfo);
+        }
+    }
+    table->slots = NULL;
+    table->hopinfo = NULL;
+    table->capacity = 0U;
+    table->count = 0U;
+}
+
+static struct hopscotch_slot32 *
+hopscotch_table32_lookup(struct hopscotch_table32 *table, uint32_t key)
+{
+    size_t index;
+    size_t bit;
+    size_t candidate;
+    uint32_t hop;
+    size_t mask;
+    size_t neighborhood;
+
+    if (table == NULL || table->slots == NULL || table->hopinfo == NULL) {
+        return NULL;
+    }
+    if (table->capacity == 0U) {
+        return NULL;
+    }
+
+    mask = table->capacity - 1U;
+    index = (size_t)key & mask;
+    hop = table->hopinfo[index];
+    neighborhood = table->neighborhood;
+    for (bit = 0U; bit < neighborhood; ++bit) {
+        if ((hop & (1U << bit)) == 0U) {
+            continue;
+        }
+        candidate = (index + bit) & mask;
+        if (table->slots[candidate].key == key) {
+            return &table->slots[candidate];
+        }
+    }
+
+    return NULL;
+}
+
+static SIXELSTATUS
+hopscotch_table32_grow(struct hopscotch_table32 *table)
+{
+    SIXELSTATUS status;
+    struct hopscotch_table32 tmp;
+    size_t i;
+    struct hopscotch_slot32 *slot;
+
+    tmp.slots = NULL;
+    tmp.hopinfo = NULL;
+    tmp.capacity = 0U;
+    tmp.count = 0U;
+    tmp.neighborhood = table->neighborhood;
+    tmp.allocator = table->allocator;
+
+    status = hopscotch_table32_init(&tmp,
+                                    table->capacity * 2U,
+                                    table->allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (tmp.neighborhood > table->neighborhood) {
+        tmp.neighborhood = table->neighborhood;
+    }
+
+    for (i = 0U; i < table->capacity; ++i) {
+        slot = &table->slots[i];
+        if (slot->key == HOPSCOTCH_EMPTY_KEY) {
+            continue;
+        }
+        status = hopscotch_table32_insert(&tmp,
+                                          slot->key,
+                                          slot->value);
+        if (SIXEL_FAILED(status)) {
+            hopscotch_table32_fini(&tmp);
+            return status;
+        }
+    }
+
+    hopscotch_table32_fini(table);
+
+    table->slots = tmp.slots;
+    table->hopinfo = tmp.hopinfo;
+    table->capacity = tmp.capacity;
+    table->count = tmp.count;
+    table->neighborhood = tmp.neighborhood;
+    table->allocator = tmp.allocator;
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+hopscotch_table32_insert(struct hopscotch_table32 *table,
+                         uint32_t key,
+                         uint32_t value)
+{
+    SIXELSTATUS status;
+    struct hopscotch_slot32 *slot;
+    size_t index;
+    size_t mask;
+    size_t distance;
+    size_t attempts;
+    size_t free_index;
+    size_t neighborhood;
+    int relocated;
+    size_t offset;
+    uint32_t hop;
+    size_t bit;
+    size_t move_index;
+    struct hopscotch_slot32 tmp_slot;
+
+    if (table == NULL || table->slots == NULL || table->hopinfo == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (table->capacity == 0U) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    slot = hopscotch_table32_lookup(table, key);
+    if (slot != NULL) {
+        slot->value = value;
+        return SIXEL_OK;
+    }
+
+    if (table->count * 2U >= table->capacity) {
+        status = hopscotch_table32_grow(table);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        return hopscotch_table32_insert(table, key, value);
+    }
+
+    mask = table->capacity - 1U;
+    neighborhood = table->neighborhood;
+    index = (size_t)key & mask;
+    slot = NULL;
+    free_index = index;
+    distance = 0U;
+    for (attempts = 0U; attempts < HOPSCOTCH_INSERT_RANGE; ++attempts) {
+        free_index = (index + attempts) & mask;
+        slot = &table->slots[free_index];
+        if (slot->key == HOPSCOTCH_EMPTY_KEY) {
+            distance = attempts;
+            break;
+        }
+    }
+    if (slot == NULL || slot->key != HOPSCOTCH_EMPTY_KEY) {
+        status = hopscotch_table32_grow(table);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        return hopscotch_table32_insert(table, key, value);
+    }
+
+    /*
+     * Relocation diagram:
+     *
+     *   free slot <--- hop window <--- [base bucket]
+     *      ^ move resident outward until distance < neighborhood
+     */
+    while (distance >= neighborhood) {
+        relocated = 0;
+        for (offset = neighborhood - 1U; offset > 0U; --offset) {
+            size_t base;
+
+            base = (free_index + table->capacity - offset) & mask;
+            hop = table->hopinfo[base];
+            if (hop == 0U) {
+                continue;
+            }
+            for (bit = 0U; bit < offset; ++bit) {
+                if ((hop & (1U << bit)) == 0U) {
+                    continue;
+                }
+                move_index = (base + bit) & mask;
+                tmp_slot = table->slots[move_index];
+                table->slots[free_index] = tmp_slot;
+                table->slots[move_index].key = HOPSCOTCH_EMPTY_KEY;
+                table->slots[move_index].value = 0U;
+                table->hopinfo[base] &= (uint32_t)~(1U << bit);
+                table->hopinfo[base] |= (uint32_t)(1U << offset);
+                free_index = move_index;
+                if (free_index >= index) {
+                    distance = free_index - index;
+                } else {
+                    distance = free_index + table->capacity - index;
+                }
+                relocated = 1;
+                break;
+            }
+            if (relocated) {
+                break;
+            }
+        }
+        if (!relocated) {
+            status = hopscotch_table32_grow(table);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            return hopscotch_table32_insert(table, key, value);
+        }
+    }
+
+    if (distance >= 32U) {
+        status = hopscotch_table32_grow(table);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        return hopscotch_table32_insert(table, key, value);
+    }
+
+    table->slots[free_index].key = key;
+    table->slots[free_index].value = value;
+    table->hopinfo[index] |= (uint32_t)(1U << distance);
+    table->count++;
+
+    return SIXEL_OK;
+}
+
 size_t
 sixel_quant_fast_cache_size(void)
 {
@@ -1229,7 +1609,8 @@ sixel_quant_fast_cache_size(void)
      * Each group of six bits selects one face of the histogram lattice,
      * producing 2^(6*3) buckets.
      */
-    if (histogram_lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
+    if (histogram_lut_policy == SIXEL_LUT_POLICY_ROBINHOOD
+        || histogram_lut_policy == SIXEL_LUT_POLICY_HOPSCOTCH) {
         size = 0U;
     } else {
         control = histogram_control_make(3U);
@@ -1242,6 +1623,16 @@ sixel_quant_fast_cache_size(void)
 
 static SIXELSTATUS
 computeHistogram_robinhood(unsigned char const *data,
+                           unsigned int length,
+                           unsigned long depth,
+                           unsigned int step,
+                           unsigned int max_sample,
+                           tupletable2 * const colorfreqtableP,
+                           struct histogram_control const *control,
+                           sixel_allocator_t *allocator);
+
+static SIXELSTATUS
+computeHistogram_hopscotch(unsigned char const *data,
                            unsigned int length,
                            unsigned long depth,
                            unsigned int step,
@@ -1294,15 +1685,27 @@ computeHistogram(unsigned char const    /* in */  *data,
     quant_trace(stderr, "making histogram...\n");
 
     control = histogram_control_make((unsigned int)depth);
-    if (histogram_lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
-        status = computeHistogram_robinhood(data,
-                                            length,
-                                            depth,
-                                            step,
-                                            max_sample,
-                                            colorfreqtableP,
-                                            &control,
-                                            allocator);
+    if (histogram_lut_policy == SIXEL_LUT_POLICY_ROBINHOOD
+        || histogram_lut_policy == SIXEL_LUT_POLICY_HOPSCOTCH) {
+        if (histogram_lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
+            status = computeHistogram_robinhood(data,
+                                                length,
+                                                depth,
+                                                step,
+                                                max_sample,
+                                                colorfreqtableP,
+                                                &control,
+                                                allocator);
+        } else {
+            status = computeHistogram_hopscotch(data,
+                                                length,
+                                                depth,
+                                                step,
+                                                max_sample,
+                                                colorfreqtableP,
+                                                &control,
+                                                allocator);
+        }
         goto end;
     }
 
@@ -1386,13 +1789,17 @@ computeHistogram_robinhood(unsigned char const *data,
 {
     SIXELSTATUS status = SIXEL_FALSE;
     struct robinhood_table32 table;
+    struct histogram_entry *entries;
     size_t expected;
     size_t cap_limit;
     size_t index;
+    size_t entry_count;
+    size_t entry_index;
     unsigned int depth_u;
     unsigned int i;
     unsigned int n;
     uint32_t bucket_index;
+    uint32_t entry_key;
     struct robinhood_slot32 *slot;
     unsigned int component;
     unsigned int reconstructed;
@@ -1406,6 +1813,9 @@ computeHistogram_robinhood(unsigned char const *data,
     table.capacity = 0U;
     table.count = 0U;
     table.allocator = allocator;
+    entries = NULL;
+    entry_count = 0U;
+    entry_index = 0U;
     cap_limit = (size_t)1U << 20;
     expected = max_sample;
     if (expected < 256U) {
@@ -1447,6 +1857,20 @@ computeHistogram_robinhood(unsigned char const *data,
         goto end;
     }
 
+    entry_count = table.count;
+    if (entry_count > 0U) {
+        entries = (struct histogram_entry *)
+            sixel_allocator_malloc(allocator,
+                                   entry_count
+                                   * sizeof(struct histogram_entry));
+        if (entries == NULL) {
+            sixel_helper_set_additional_message(
+                "unable to allocate histogram scratch.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+    }
+
     colorfreqtableP->size = (unsigned int)table.count;
     status = alloctupletable(&colorfreqtableP->table,
                              depth_u,
@@ -1456,28 +1880,203 @@ computeHistogram_robinhood(unsigned char const *data,
         goto end;
     }
 
-    index = 0U;
+    entry_index = 0U;
     for (i = 0U; i < table.capacity; ++i) {
         slot = &table.slots[i];
         if (slot->value == 0U) {
             continue;
         }
-        colorfreqtableP->table[index]->value = slot->value;
+        if (entry_index < entry_count) {
+            entries[entry_index].key = slot->key;
+            entries[entry_index].value = slot->value;
+            entry_index++;
+        }
+    }
+
+    if (entry_count > 1U) {
+        /*
+         * Canonicalize traversal order so every LUT backend feeds the same
+         * sequence into median cut:
+         *
+         *   unsorted  : [hash2][hash0][hash1]
+         *   sorted    : [hash0][hash1][hash2]
+         */
+        qsort(entries,
+              entry_count,
+              sizeof(struct histogram_entry),
+              histogram_entry_compare);
+    }
+
+    for (index = 0U; index < entry_count; ++index) {
+        entry_key = entries[index].key;
+        colorfreqtableP->table[index]->value = entries[index].value;
         for (n = 0U; n < depth_u; ++n) {
             component = (unsigned int)
-                ((slot->key >> (n * control->channel_bits))
+                ((entry_key >> (n * control->channel_bits))
                  & control->channel_mask);
             reconstructed = histogram_reconstruct(component, control);
             colorfreqtableP->table[index]->tuple[depth_u - 1U - n]
                 = (sample)reconstructed;
         }
-        index++;
     }
 
     status = SIXEL_OK;
 
 end:
+    if (entries != NULL) {
+        sixel_allocator_free(allocator, entries);
+    }
     robinhood_table32_fini(&table);
+
+    return status;
+}
+
+static SIXELSTATUS
+computeHistogram_hopscotch(unsigned char const *data,
+                           unsigned int length,
+                           unsigned long depth,
+                           unsigned int step,
+                           unsigned int max_sample,
+                           tupletable2 * const colorfreqtableP,
+                           struct histogram_control const *control,
+                           sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    struct hopscotch_table32 table;
+    struct histogram_entry *entries;
+    size_t expected;
+    size_t cap_limit;
+    size_t index;
+    size_t entry_count;
+    size_t entry_index;
+    unsigned int depth_u;
+    unsigned int i;
+    unsigned int n;
+    uint32_t bucket_index;
+    uint32_t entry_key;
+    struct hopscotch_slot32 *slot;
+    unsigned int component;
+    unsigned int reconstructed;
+
+    /*
+     * Hopscotch hashing stores the local neighbourhood using the map below:
+     *
+     *   [home] hopinfo bits ---> |slot+0|slot+1|slot+2| ...
+     *                              ^ entries hop within this window.
+     */
+    table.slots = NULL;
+    table.hopinfo = NULL;
+    table.capacity = 0U;
+    table.count = 0U;
+    table.neighborhood = HOPSCOTCH_DEFAULT_NEIGHBORHOOD;
+    table.allocator = allocator;
+    entries = NULL;
+    entry_count = 0U;
+    entry_index = 0U;
+    cap_limit = (size_t)1U << 20;
+    expected = max_sample;
+    if (expected < 256U) {
+        expected = 256U;
+    }
+    if (expected > cap_limit) {
+        expected = cap_limit;
+    }
+
+    status = hopscotch_table32_init(&table, expected, allocator);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "unable to allocate hopscotch histogram.");
+        goto end;
+    }
+
+    depth_u = (unsigned int)depth;
+    for (i = 0U; i < length; i += step) {
+        bucket_index = computeHash(data + i, depth_u, control);
+        slot = hopscotch_table32_lookup(&table, bucket_index);
+        if (slot == NULL) {
+            status = hopscotch_table32_insert(&table,
+                                              bucket_index,
+                                              1U);
+            if (SIXEL_FAILED(status)) {
+                sixel_helper_set_additional_message(
+                    "unable to grow hopscotch histogram.");
+                goto end;
+            }
+        } else if (slot->value < UINT32_MAX) {
+            slot->value++;
+        }
+    }
+
+    if (table.count > UINT_MAX) {
+        sixel_helper_set_additional_message(
+            "too many unique colors for histogram.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    entry_count = table.count;
+    if (entry_count > 0U) {
+        entries = (struct histogram_entry *)
+            sixel_allocator_malloc(allocator,
+                                   entry_count
+                                   * sizeof(struct histogram_entry));
+        if (entries == NULL) {
+            sixel_helper_set_additional_message(
+                "unable to allocate histogram scratch.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+    }
+
+    colorfreqtableP->size = (unsigned int)table.count;
+    status = alloctupletable(&colorfreqtableP->table,
+                             depth_u,
+                             (unsigned int)table.count,
+                             allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    entry_index = 0U;
+    for (i = 0U; i < table.capacity; ++i) {
+        slot = &table.slots[i];
+        if (slot->key == HOPSCOTCH_EMPTY_KEY || slot->value == 0U) {
+            continue;
+        }
+        if (entry_index < entry_count) {
+            entries[entry_index].key = slot->key;
+            entries[entry_index].value = slot->value;
+            entry_index++;
+        }
+    }
+
+    if (entry_count > 1U) {
+        qsort(entries,
+              entry_count,
+              sizeof(struct histogram_entry),
+              histogram_entry_compare);
+    }
+
+    for (index = 0U; index < entry_count; ++index) {
+        entry_key = entries[index].key;
+        colorfreqtableP->table[index]->value = entries[index].value;
+        for (n = 0U; n < depth_u; ++n) {
+            component = (unsigned int)
+                ((entry_key >> (n * control->channel_bits))
+                 & control->channel_mask);
+            reconstructed = histogram_reconstruct(component, control);
+            colorfreqtableP->table[index]->tuple[depth_u - 1U - n]
+                = (sample)reconstructed;
+        }
+    }
+
+    status = SIXEL_OK;
+
+end:
+    if (entries != NULL) {
+        sixel_allocator_free(allocator, entries);
+    }
+    hopscotch_table32_fini(&table);
 
     return status;
 }
@@ -1495,18 +2094,21 @@ sixel_quant_cache_prepare(unsigned short **cachetable,
     size_t expected;
     size_t cap_limit;
     struct robinhood_table32 *table;
+    struct hopscotch_table32 *hop_table;
 
     if (cachetable == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     /*
-     * The ASCII ladder below highlights both cache layouts:
+     * The ASCII ladder below highlights the cache layouts:
      *
-     *   flat array : [index0][index1][index2]...
-     *   robinhood  : dither->cachetable -> table -> slots
+     *   flat array  : [index0][index1][index2]...
+     *   robinhood   : cache -> table -> slots
+     *   hopscotch   : cache -> table -> slots + hopinfo bitmap
      */
-    if (lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
+    if (lut_policy == SIXEL_LUT_POLICY_ROBINHOOD
+        || lut_policy == SIXEL_LUT_POLICY_HOPSCOTCH) {
         cap_limit = (size_t)1U << 20;
         expected = (size_t)reqcolor * 64U;
         if (expected < 512U) {
@@ -1515,41 +2117,84 @@ sixel_quant_cache_prepare(unsigned short **cachetable,
         if (expected > cap_limit) {
             expected = cap_limit;
         }
-        table = (struct robinhood_table32 *)*cachetable;
-        if (table != NULL) {
-            if (table->capacity < expected) {
-                robinhood_table32_fini(table);
-                sixel_allocator_free(allocator, table);
-                table = NULL;
-                *cachetable = NULL;
-            } else {
-                robinhood_table32_clear(table);
+        if (lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
+            table = (struct robinhood_table32 *)*cachetable;
+            if (table != NULL) {
+                if (table->capacity < expected) {
+                    robinhood_table32_fini(table);
+                    sixel_allocator_free(allocator, table);
+                    table = NULL;
+                    *cachetable = NULL;
+                } else {
+                    robinhood_table32_clear(table);
+                }
             }
-        }
-        if (table == NULL) {
-            table = (struct robinhood_table32 *)
-                sixel_allocator_malloc(allocator,
-                                      sizeof(struct robinhood_table32));
             if (table == NULL) {
-                sixel_helper_set_additional_message(
-                    "unable to allocate robinhood cache state.");
-                return SIXEL_BAD_ALLOCATION;
+                table = (struct robinhood_table32 *)
+                    sixel_allocator_malloc(allocator,
+                                          sizeof(struct robinhood_table32));
+                if (table == NULL) {
+                    sixel_helper_set_additional_message(
+                        "unable to allocate robinhood cache state.");
+                    return SIXEL_BAD_ALLOCATION;
+                }
+                table->slots = NULL;
+                table->capacity = 0U;
+                table->count = 0U;
+                table->allocator = allocator;
+                status = robinhood_table32_init(table, expected, allocator);
+                if (SIXEL_FAILED(status)) {
+                    sixel_allocator_free(allocator, table);
+                    sixel_helper_set_additional_message(
+                        "unable to initialize robinhood cache.");
+                    return status;
+                }
+                *cachetable = (unsigned short *)table;
             }
-            table->slots = NULL;
-            table->capacity = 0U;
-            table->count = 0U;
-            table->allocator = allocator;
-            status = robinhood_table32_init(table, expected, allocator);
-            if (SIXEL_FAILED(status)) {
-                sixel_allocator_free(allocator, table);
-                sixel_helper_set_additional_message(
-                    "unable to initialize robinhood cache.");
-                return status;
+            if (cachetable_size != NULL) {
+                *cachetable_size = table->capacity;
             }
-            *cachetable = (unsigned short *)table;
-        }
-        if (cachetable_size != NULL) {
-            *cachetable_size = table->capacity;
+        } else {
+            hop_table = (struct hopscotch_table32 *)*cachetable;
+            if (hop_table != NULL) {
+                if (hop_table->capacity < expected) {
+                    hopscotch_table32_fini(hop_table);
+                    sixel_allocator_free(allocator, hop_table);
+                    hop_table = NULL;
+                    *cachetable = NULL;
+                } else {
+                    hopscotch_table32_clear(hop_table);
+                }
+            }
+            if (hop_table == NULL) {
+                hop_table = (struct hopscotch_table32 *)
+                    sixel_allocator_malloc(allocator,
+                                          sizeof(struct hopscotch_table32));
+                if (hop_table == NULL) {
+                    sixel_helper_set_additional_message(
+                        "unable to allocate hopscotch cache state.");
+                    return SIXEL_BAD_ALLOCATION;
+                }
+                hop_table->slots = NULL;
+                hop_table->hopinfo = NULL;
+                hop_table->capacity = 0U;
+                hop_table->count = 0U;
+                hop_table->neighborhood = HOPSCOTCH_DEFAULT_NEIGHBORHOOD;
+                hop_table->allocator = allocator;
+                status = hopscotch_table32_init(hop_table,
+                                                expected,
+                                                allocator);
+                if (SIXEL_FAILED(status)) {
+                    sixel_allocator_free(allocator, hop_table);
+                    sixel_helper_set_additional_message(
+                        "unable to initialize hopscotch cache.");
+                    return status;
+                }
+                *cachetable = (unsigned short *)hop_table;
+            }
+            if (cachetable_size != NULL) {
+                *cachetable_size = hop_table->capacity;
+            }
         }
         return SIXEL_OK;
     }
@@ -1600,6 +2245,10 @@ sixel_quant_cache_clear(unsigned short *cachetable,
         robinhood_table32_clear((struct robinhood_table32 *)cachetable);
         return;
     }
+    if (lut_policy == SIXEL_LUT_POLICY_HOPSCOTCH) {
+        hopscotch_table32_clear((struct hopscotch_table32 *)cachetable);
+        return;
+    }
 
     control = histogram_control_make_for_policy(3U, lut_policy);
     size = histogram_dense_size(3U, &control);
@@ -1620,6 +2269,12 @@ sixel_quant_cache_release(unsigned short *cachetable,
 
         table = (struct robinhood_table32 *)cachetable;
         robinhood_table32_fini(table);
+        sixel_allocator_free(allocator, table);
+    } else if (lut_policy == SIXEL_LUT_POLICY_HOPSCOTCH) {
+        struct hopscotch_table32 *table;
+
+        table = (struct hopscotch_table32 *)cachetable;
+        hopscotch_table32_fini(table);
         sixel_allocator_free(allocator, table);
     } else {
         sixel_allocator_free(allocator, cachetable);
@@ -3910,6 +4565,60 @@ lookup_fast_robinhood(unsigned char const * const pixel,
     return result;
 }
 
+static int
+lookup_fast_hopscotch(unsigned char const * const pixel,
+                      int const depth,
+                      unsigned char const * const palette,
+                      int const reqcolor,
+                      unsigned short * const cachetable,
+                      int const complexion)
+{
+    int result;
+    unsigned int hash;
+    int diff;
+    int i;
+    int distant;
+    struct histogram_control control;
+    struct hopscotch_table32 *table;
+    struct hopscotch_slot32 *slot;
+    SIXELSTATUS status;
+
+    (void)depth;
+
+    result = (-1);
+    diff = INT_MAX;
+    control = histogram_control_make(3U);
+    hash = computeHash(pixel, 3U, &control);
+
+    table = (struct hopscotch_table32 *)cachetable;
+    slot = hopscotch_table32_lookup(table, hash);
+    if (slot != NULL && slot->value != 0U) {
+        return (int)(slot->value - 1U);
+    }
+
+    for (i = 0; i < reqcolor; i++) {
+        distant = (pixel[0] - palette[i * 3 + 0])
+                * (pixel[0] - palette[i * 3 + 0]) * complexion
+                + (pixel[1] - palette[i * 3 + 1])
+                * (pixel[1] - palette[i * 3 + 1])
+                + (pixel[2] - palette[i * 3 + 2])
+                * (pixel[2] - palette[i * 3 + 2]);
+        if (distant < diff) {
+            diff = distant;
+            result = i;
+        }
+    }
+
+    status = hopscotch_table32_insert(table,
+                                      hash,
+                                      (uint32_t)(result + 1));
+    if (SIXEL_FAILED(status)) {
+        /* ignore cache update failure */
+    }
+
+    return result;
+}
+
 
 static int
 lookup_mono_darkbg(unsigned char const * const pixel,
@@ -4046,7 +4755,8 @@ sixel_quant_apply_palette(
     unsigned short *indextable;
     size_t cache_size;
     int allocated_cache;
-    int using_robinhood_cache;
+    int using_sparse_cache;
+    int sparse_policy;
     unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
     unsigned short migration_map[SIXEL_PALETTE_MAX];
     int (*f_lookup)(unsigned char const * const pixel,
@@ -4108,14 +4818,23 @@ sixel_quant_apply_palette(
         }
     }
 
-    if (f_lookup == lookup_fast
-        && histogram_lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
-        f_lookup = lookup_fast_robinhood;
+    if (f_lookup == lookup_fast) {
+        if (histogram_lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
+            f_lookup = lookup_fast_robinhood;
+        } else if (histogram_lut_policy == SIXEL_LUT_POLICY_HOPSCOTCH) {
+            f_lookup = lookup_fast_hopscotch;
+        }
     }
 
     indextable = cachetable;
     allocated_cache = 0;
-    using_robinhood_cache = (f_lookup == lookup_fast_robinhood);
+    sparse_policy = SIXEL_LUT_POLICY_AUTO;
+    if (f_lookup == lookup_fast_robinhood) {
+        sparse_policy = SIXEL_LUT_POLICY_ROBINHOOD;
+    } else if (f_lookup == lookup_fast_hopscotch) {
+        sparse_policy = SIXEL_LUT_POLICY_HOPSCOTCH;
+    }
+    using_sparse_cache = (sparse_policy != SIXEL_LUT_POLICY_AUTO);
     if (cachetable == NULL) {
         if (f_lookup == lookup_fast) {
             cache_size = sixel_quant_fast_cache_size();
@@ -4129,22 +4848,21 @@ sixel_quant_apply_palette(
                 goto end;
             }
             allocated_cache = 1;
-        } else if (using_robinhood_cache) {
+        } else if (using_sparse_cache) {
             status = sixel_quant_cache_prepare(&indextable,
                                                &cache_size,
-                                               SIXEL_LUT_POLICY_ROBINHOOD,
+                                               sparse_policy,
                                                reqcolor,
                                                allocator);
             if (SIXEL_FAILED(status)) {
                 quant_trace(stderr,
-                            "Unable to allocate robinhood indextable.\n");
+                            "Unable to allocate sparse indextable.\n");
                 goto end;
             }
             allocated_cache = 1;
         }
-    } else if (using_robinhood_cache) {
-        sixel_quant_cache_clear(indextable,
-                                SIXEL_LUT_POLICY_ROBINHOOD);
+    } else if (using_sparse_cache) {
+        sixel_quant_cache_clear(indextable, sparse_policy);
     }
 
     if (use_positional) {
@@ -4178,9 +4896,9 @@ sixel_quant_apply_palette(
     }
 
     if (allocated_cache) {
-        if (using_robinhood_cache) {
+        if (using_sparse_cache) {
             sixel_quant_cache_release(indextable,
-                                      SIXEL_LUT_POLICY_ROBINHOOD,
+                                      sparse_policy,
                                       allocator);
         } else {
             sixel_allocator_free(allocator, indextable);
