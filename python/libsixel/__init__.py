@@ -159,6 +159,23 @@ SIXEL_ENCODEPOLICY_AUTO    = 0   # choose encoding policy automatically
 SIXEL_ENCODEPOLICY_FAST    = 1   # encode as fast as possible
 SIXEL_ENCODEPOLICY_SIZE    = 2   # encode to as small sixel sequence as possible
 
+# LUT policy constants mirror the C header so that Python callers can request
+# the exact histogram backend they need.  Keeping the numeric values in sync is
+# critical because the encoder forwards them directly to libsixel.
+#
+#   auto ----> channel depth based decision
+#                |
+#         +------+------+
+#         |             |
+#      classic       hashing
+#      (5/6bit)   (robinhood/hopscotch)
+#
+SIXEL_LUT_POLICY_AUTO      = 0x0  # choose LUT width automatically
+SIXEL_LUT_POLICY_5BIT      = 0x1  # use legacy 5-bit buckets
+SIXEL_LUT_POLICY_6BIT      = 0x2  # use 6-bit RGB buckets
+SIXEL_LUT_POLICY_ROBINHOOD = 0x3  # keep 8-bit data via Robin Hood hashing
+SIXEL_LUT_POLICY_HOPSCOTCH = 0x4  # keep 8-bit data via Hopscotch hashing
+
 # method for re-sampling
 SIXEL_RES_NEAREST          = 0   # Use nearest neighbor method
 SIXEL_RES_GAUSSIAN         = 1   # Use guaussian filter
@@ -371,6 +388,26 @@ SIXEL_OPTFLAG_ENCODE_POLICY    = 'E'  # -E ENCODEPOLICY, --encode-policy=ENCODEP
                                       #          fast -> encode as fast as possible
                                       #          size -> encode to as small sixel
                                       #                  sequence as possible
+SIXEL_OPTFLAG_LUT_POLICY        = 'L'  # -L LUTPOLICY, --lut-policy=LUTPOLICY:
+                                      #        choose histogram lookup width and
+                                      #        collision strategy.
+                                      #          auto      -> follow pixel depth
+                                      #          5bit      -> force 5-bit buckets
+                                      #          6bit      -> force 6-bit buckets
+                                      #                       (RGB inputs)
+                                      #          robinhood -> keep 8-bit channels
+                                      #                       via Robin Hood
+                                      #                       hashing
+                                      #          hopscotch -> keep 8-bit channels
+                                      #                       via Hopscotch
+                                      #                       hashing
+                                      #        Flow chart:
+                                      #            auto
+                                      #              |
+                                      #     +--------+--------+
+                                      #     |                 |
+                                      #  bucket trim      hashing table
+                                      #   (5/6bit)     (robinhood/hopscotch)
 SIXEL_OPTFLAG_ORMODE           = 'O'  # -O, --ormode: output ormode sixel image
 
 SIXEL_OPTFLAG_BGCOLOR          = 'B'  # -B BGCOLOR, --bgcolor=BGCOLOR:

@@ -93,7 +93,16 @@ _img2sixel()
     -q|--quality)
         COMPREPLY=( $( compgen -W 'auto \
                                    high \
-                                   low' -- "$cur" ) )
+                                   low \
+                                   full' -- "$cur" ) )
+        return 0
+        ;;
+    -L|--lut-policy)
+        COMPREPLY=( $( compgen -W 'auto \
+                                   5bit \
+                                   6bit \
+                                   robinhood \
+                                   hopscotch' -- "$cur" ) )
         return 0
         ;;
     -l|--loop-control)
@@ -176,6 +185,7 @@ _img2sixel()
                                    -h --height \
                                    -r --resampling \
                                    -q --quality \
+                                   -L --lut-policy \
                                    -l --loop-control \
                                    -t --palette-type \
                                    -b --builtin-palette \

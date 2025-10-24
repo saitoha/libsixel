@@ -49,6 +49,16 @@ module Libsixel
     SIXEL_FALSE = 0x1000 unless const_defined?(:SIXEL_FALSE)
     SIXEL_OPTFLAG_DRCS = '@' unless const_defined?(:SIXEL_OPTFLAG_DRCS)
     SIXEL_OPTFLAG_ORMODE = 'O' unless const_defined?(:SIXEL_OPTFLAG_ORMODE)
+    # The LUT flag mirrors img2sixel's -L switch.  ASCII flow:
+    #
+    #       auto
+    #        |
+    #   +----+----+
+    #   |         |
+    # classic  hashing
+    # (5/6bit) (robinhood/hopscotch)
+    #
+    SIXEL_OPTFLAG_LUT_POLICY = 'L' unless const_defined?(:SIXEL_OPTFLAG_LUT_POLICY)
     def self.succeeded?(status) ((status & SIXEL_FALSE) == 0) end
     def self.failed?(status)    ((status & SIXEL_FALSE) != 0) end
 
