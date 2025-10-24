@@ -8,9 +8,9 @@ original="${1}"
 sixel="${2--}"
 [ -n "${sixel}" ]
 
-dir="$(dirname "${0}")"
-src_topdir="${dir}/.."
-tag="$(basename ${original})"
+tag="${3:-$(basename ${original})}"
+
+src_topdir="$(dirname "${0}")/.."
 
 "${src_topdir}"/converters/sixel2png ${sixel} |
 "${src_topdir}"/tools/evaluate.py --ref "${original}" --prefix=evaluate-"${tag}"
