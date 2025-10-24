@@ -26,7 +26,6 @@
 extern "C" {
 #endif
 
-#include <stddef.h>
 #include <sixel.h>
 
 /* choose colors using median-cut method */
