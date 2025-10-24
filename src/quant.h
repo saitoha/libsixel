@@ -26,6 +26,7 @@
 extern "C" {
 #endif
 
+#include <stddef.h>
 #include <sixel.h>
 
 /* choose colors using median-cut method */
@@ -63,6 +64,9 @@ sixel_quant_apply_palette(
     unsigned short      /* in */  *cachetable,
     int                 /* in */  *ncolor,
     sixel_allocator_t   /* in */  *allocator);
+
+size_t
+sixel_quant_fast_cache_size(void);
 
 
 /* deallocate specified palette */
