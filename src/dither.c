@@ -637,7 +637,8 @@ sixel_dither_set_lut_policy(
     normalized = SIXEL_LUT_POLICY_AUTO;
     if (lut_policy == SIXEL_LUT_POLICY_5BIT
         || lut_policy == SIXEL_LUT_POLICY_6BIT
-        || lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
+        || lut_policy == SIXEL_LUT_POLICY_ROBINHOOD
+        || lut_policy == SIXEL_LUT_POLICY_HOPSCOTCH) {
         normalized = lut_policy;
     }
     previous_policy = dither->lut_policy;

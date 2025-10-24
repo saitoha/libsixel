@@ -124,10 +124,11 @@ typedef int SIXELSTATUS;
 #define SIXEL_QUALITY_HIGHCOLOR   0x4  /* high color */
 
 /* histogram bucket policy */
-#define SIXEL_LUT_POLICY_AUTO     0x0  /* choose LUT width automatically */
-#define SIXEL_LUT_POLICY_5BIT     0x1  /* use 5 bits per channel */
-#define SIXEL_LUT_POLICY_6BIT     0x2  /* use 6 bits per channel */
-#define SIXEL_LUT_POLICY_ROBINHOOD 0x3 /* preserve 8-bit channels */
+#define SIXEL_LUT_POLICY_AUTO      0x0  /* choose LUT width automatically */
+#define SIXEL_LUT_POLICY_5BIT      0x1  /* use 5 bits per channel */
+#define SIXEL_LUT_POLICY_6BIT      0x2  /* use 6 bits per channel */
+#define SIXEL_LUT_POLICY_ROBINHOOD 0x3  /* preserve 8-bit channels */
+#define SIXEL_LUT_POLICY_HOPSCOTCH 0x4  /* preserve 8-bit channels */
 
 /* built-in dither */
 #define SIXEL_BUILTIN_MONO_DARK   0x0  /* monochrome terminal with dark background */

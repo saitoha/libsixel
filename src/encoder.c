@@ -2592,6 +2592,8 @@ sixel_encoder_setopt(
             encoder->lut_policy = SIXEL_LUT_POLICY_6BIT;
         } else if (strcmp(value, "robinhood") == 0) {
             encoder->lut_policy = SIXEL_LUT_POLICY_ROBINHOOD;
+        } else if (strcmp(value, "hopscotch") == 0) {
+            encoder->lut_policy = SIXEL_LUT_POLICY_HOPSCOTCH;
         } else {
             sixel_helper_set_additional_message(
                 "cannot parse lut policy option.");
