@@ -765,6 +765,22 @@ end:
 }
 
 
+static int histogram_lut_policy = SIXEL_LUT_POLICY_AUTO;
+
+void
+sixel_quant_set_lut_policy(int lut_policy)
+{
+    int normalized;
+
+    normalized = SIXEL_LUT_POLICY_AUTO;
+    if (lut_policy == SIXEL_LUT_POLICY_5BIT
+        || lut_policy == SIXEL_LUT_POLICY_6BIT) {
+        normalized = lut_policy;
+    }
+
+    histogram_lut_policy = normalized;
+}
+
 struct histogram_control {
     unsigned int channel_shift;
     unsigned int channel_bits;
@@ -876,21 +892,23 @@ histogram_control_make(unsigned int depth)
     struct histogram_control control;
 
     /*
-     * The block below keeps a narrow per-channel bin size for RGB data while
-     * falling back to the classic 5-bit buckets for RGBA inputs.  The idea is
-     * illustrated in ASCII form:
+     * The ASCII ladder below shows how each policy selects bucket width.
      *
-     *   depth <= 3          depth > 3
-     *   ---------          ----------
-     *   | | | | |          |   |   |
-     *   ---------          ----------
-     *
-     * Wider buckets on the right prevent 2^24 histogram entries from being
-     * allocated when an alpha channel is present.
+     *   auto / 6bit RGB : |--6--|
+     *   forced 5bit     : |---5---|
+     *   alpha fallback  : |---5---|  (avoids 2^(6*4) buckets)
      */
     control.channel_shift = 2U;
     if (depth > 3U) {
         control.channel_shift = 3U;
+    }
+    if (histogram_lut_policy == SIXEL_LUT_POLICY_5BIT) {
+        control.channel_shift = 3U;
+    } else if (histogram_lut_policy == SIXEL_LUT_POLICY_6BIT) {
+        control.channel_shift = 2U;
+        if (depth > 3U) {
+            control.channel_shift = 3U;
+        }
     }
     control.channel_bits = 8U - control.channel_shift;
     control.channel_mask = (1U << control.channel_bits) - 1U;

@@ -123,6 +123,11 @@ typedef int SIXELSTATUS;
 #define SIXEL_QUALITY_FULL        0x3  /* full quality palette construction */
 #define SIXEL_QUALITY_HIGHCOLOR   0x4  /* high color */
 
+/* histogram bucket policy */
+#define SIXEL_LUT_POLICY_AUTO     0x0  /* choose LUT width automatically */
+#define SIXEL_LUT_POLICY_5BIT     0x1  /* use 5 bits per channel */
+#define SIXEL_LUT_POLICY_6BIT     0x2  /* use 6 bits per channel */
+
 /* built-in dither */
 #define SIXEL_BUILTIN_MONO_DARK   0x0  /* monochrome terminal with dark background */
 #define SIXEL_BUILTIN_MONO_LIGHT  0x1  /* monochrome terminal with light background */
@@ -422,6 +427,12 @@ typedef int SIXELSTATUS;
                                                     fast -> encode as fast as possible
                                                     size -> encode to as small sixel
                                                             sequence as possible
+                                                */
+#define SIXEL_OPTFLAG_LUT_POLICY        ('L')  /* -L LUTPOLICY, --lut-policy=LUTPOLICY:
+                                                  choose histogram LUT width
+                                                    auto -> select by pixel depth
+                                                    5bit -> use 5-bit buckets
+                                                    6bit -> use 6-bit buckets (RGB only)
                                                 */
 #define SIXEL_OPTFLAG_WORKING_COLORSPACE ('W') /* -W WORKINGCOLORSPACE, --working-colorspace=WORKINGCOLORSPACE
                                                   select internal working color space
@@ -825,6 +836,17 @@ sixel_dither_initialize(
     int           /* in */ method_for_largest, /* method for finding the largest dimension */
     int           /* in */ method_for_rep,     /* method for choosing a color from the box */
     int           /* in */ quality_mode);      /* quality of histogram processing */
+
+/* choose lookup table policy */
+SIXELAPI void
+sixel_dither_set_lut_policy(
+    sixel_dither_t *dither,  /* dither context object */
+    int             lut_policy);  /* one of SIXEL_LUT_POLICY_* */
+
+/* query lookup table policy */
+SIXELAPI int
+sixel_dither_get_lut_policy(
+    sixel_dither_t *dither);  /* dither context object */
 
 /* set diffusion type, choose from enum methodForDiffuse */
 SIXELAPI void
