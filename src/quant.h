@@ -65,6 +65,10 @@ sixel_quant_apply_palette(
     int                 /* in */  *ncolor,
     sixel_allocator_t   /* in */  *allocator);
 
+void
+sixel_quant_set_lut_policy(
+    int                 /* in */  lut_policy);
+
 size_t
 sixel_quant_fast_cache_size(void);
 

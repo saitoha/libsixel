@@ -29,6 +29,7 @@ struct sixel_dither {
     unsigned int ref;               /* reference counter */
     unsigned char *palette;         /* palette definition */
     unsigned short *cachetable;     /* cache table */
+    size_t cachetable_size;         /* cached table length */
     int reqcolors;                  /* requested colors */
     int ncolors;                    /* active colors */
     int origcolors;                 /* original colors */
@@ -47,6 +48,7 @@ struct sixel_dither {
     int keycolor;                   /* background color */
     int pixelformat;                /* pixelformat for internal processing */
     sixel_allocator_t *allocator;   /* allocator */
+    int lut_policy;                 /* histogram LUT policy */
 };
 
 #ifdef __cplusplus
