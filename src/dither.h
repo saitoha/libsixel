@@ -31,6 +31,7 @@ struct sixel_dither {
     unsigned short *cachetable;     /* cache table */
     size_t cachetable_size;         /* cached table length */
     int reqcolors;                  /* requested colors */
+    int force_palette;              /* keep palette size when non-zero */
     int ncolors;                    /* active colors */
     int origcolors;                 /* original colors */
     int optimized;                  /* pixel is 15bpp compressable */
