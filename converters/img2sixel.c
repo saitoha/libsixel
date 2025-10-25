@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <limits.h>
 
 #if HAVE_UNISTD_H
 # include <unistd.h>
@@ -95,6 +96,7 @@ create_png_temp_template(void)
     size_t template_len;
     char *template_path;
     int needs_separator;
+    size_t maximum_tmpdir_len;
 
     tmpdir = getenv("TMPDIR");
 #if defined(_WIN32)
@@ -115,6 +117,20 @@ create_png_temp_template(void)
 
     tmpdir_len = strlen(tmpdir);
     suffix_len = strlen("img2sixel-XXXXXX");
+    maximum_tmpdir_len = (size_t)INT_MAX;
+
+    /*
+     * MinGW promotes snprintf's size argument to int, so allowing the
+     * directory to grow beyond INT_MAX would reintroduce the truncation
+     * warning seen in GCC.  Bail out when the directory is so long that the
+     * resulting template would exceed that upper bound.
+     */
+    if (maximum_tmpdir_len <= suffix_len + 2) {
+        return NULL;
+    }
+    if (tmpdir_len > maximum_tmpdir_len - (suffix_len + 2)) {
+        return NULL;
+    }
     needs_separator = 1;
     if (tmpdir_len > 0) {
         if (tmpdir[tmpdir_len - 1] == '/' || tmpdir[tmpdir_len - 1] == '\\') {
