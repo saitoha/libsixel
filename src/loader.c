@@ -1194,9 +1194,11 @@ load_with_builtin(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_frame_t *frame = NULL;
+    fn_pointer fnp;
+    stbi__context stb_context;
+    int depth;
     char message[256];
     int nwrite;
-    fn_pointer fnp;
 
     if (chunk_is_sixel(pchunk)) {
         status = sixel_frame_new(&frame, pchunk->allocator);
@@ -1242,50 +1244,7 @@ load_with_builtin(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-    }
-#if HAVE_JPEG
-    else if (chunk_is_jpeg(pchunk)) {
-        status = sixel_frame_new(&frame, pchunk->allocator);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        status = load_jpeg(&frame->pixels,
-                           pchunk->buffer,
-                           pchunk->size,
-                           &frame->width,
-                           &frame->height,
-                           &frame->pixelformat,
-                           pchunk->allocator);
-
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
-#endif  /* HAVE_JPEG */
-#if HAVE_LIBPNG
-    else if (chunk_is_png(pchunk)) {
-        status = sixel_frame_new(&frame, pchunk->allocator);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        status = load_png(&frame->pixels,
-                          pchunk->buffer,
-                          pchunk->size,
-                          &frame->width,
-                          &frame->height,
-                          fuse_palette ? &frame->palette: NULL,
-                          &frame->ncolors,
-                          reqcolors,
-                          &frame->pixelformat,
-                          bgcolor,
-                          &frame->transparent,
-                          pchunk->allocator);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
-#endif  /* HAVE_LIBPNG */
-    else if (chunk_is_gif(pchunk)) {
+    } else if (chunk_is_gif(pchunk)) {
         fnp.fn = fn_load;
         if (pchunk->size > INT_MAX) {
             status = SIXEL_BAD_INTEGER_OVERFLOW;
@@ -1306,27 +1265,42 @@ load_with_builtin(
         }
         goto end;
     } else {
-        stbi__context s;
-        int depth;
-
+        /*
+         * Fallback to stb_image decoding when no specialized handler
+         * claimed the chunk.
+         *
+         *    +--------------+     +--------------------+
+         *    | raw chunk    | --> | stb_image decoding |
+         *    +--------------+     +--------------------+
+         *                        |
+         *                        v
+         *                +--------------------+
+         *                | sixel frame emit   |
+         *                +--------------------+
+         */
         status = sixel_frame_new(&frame, pchunk->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        stbi_allocator = pchunk->allocator;
         if (pchunk->size > INT_MAX) {
             status = SIXEL_BAD_INTEGER_OVERFLOW;
             goto end;
         }
-        stbi__start_mem(&s, pchunk->buffer, (int)pchunk->size);
-        frame->pixels = stbi__load_and_postprocess_8bit(&s, &frame->width, &frame->height, &depth, 3);
-        if (!frame->pixels) {
+        stbi_allocator = pchunk->allocator;
+        stbi__start_mem(&stb_context,
+                        pchunk->buffer,
+                        (int)pchunk->size);
+        frame->pixels = stbi__load_and_postprocess_8bit(&stb_context,
+                                                        &frame->width,
+                                                        &frame->height,
+                                                        &depth,
+                                                        3);
+        if (frame->pixels == NULL) {
             sixel_helper_set_additional_message(stbi_failure_reason());
             status = SIXEL_STBI_ERROR;
             goto end;
         }
         frame->loop_count = 1;
-
         switch (depth) {
         case 1:
         case 3:
@@ -1334,13 +1308,15 @@ load_with_builtin(
             frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
             break;
         default:
-            nwrite = sprintf(message,
-                             "load_with_builtin() failed.\n"
-                             "reason: unknown pixel-format.(depth: %d)\n",
-                             depth);
+            nwrite = snprintf(message,
+                              sizeof(message),
+                              "load_with_builtin() failed.\n"
+                              "reason: unknown pixel-format.(depth: %d)\n",
+                              depth);
             if (nwrite > 0) {
                 sixel_helper_set_additional_message(message);
             }
+            status = SIXEL_STBI_ERROR;
             goto end;
         }
     }
@@ -1363,6 +1339,153 @@ end:
     return status;
 }
 
+
+#if HAVE_JPEG
+/*
+ * Dedicated libjpeg loader wiring minimal pipeline.
+ *
+ *    +------------+     +-------------------+     +--------------------+
+ *    | JPEG chunk | --> | libjpeg decode    | --> | sixel frame emit   |
+ *    +------------+     +-------------------+     +--------------------+
+ */
+static SIXELSTATUS
+load_with_libjpeg(
+    sixel_chunk_t const       /* in */     *pchunk,
+    int                       /* in */     fstatic,
+    int                       /* in */     fuse_palette,
+    int                       /* in */     reqcolors,
+    unsigned char             /* in */     *bgcolor,
+    int                       /* in */     loop_control,
+    sixel_load_image_function /* in */     fn_load,
+    void                      /* in/out */ *context)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_frame_t *frame = NULL;
+
+    (void)fstatic;
+    (void)fuse_palette;
+    (void)reqcolors;
+    (void)loop_control;
+
+    status = sixel_frame_new(&frame, pchunk->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = load_jpeg(&frame->pixels,
+                       pchunk->buffer,
+                       pchunk->size,
+                       &frame->width,
+                       &frame->height,
+                       &frame->pixelformat,
+                       pchunk->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_frame_strip_alpha(frame, bgcolor);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = fn_load(frame, context);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    sixel_frame_unref(frame);
+
+    return status;
+}
+
+static int
+loader_can_try_libjpeg(sixel_chunk_t const *chunk)
+{
+    if (chunk == NULL) {
+        return 0;
+    }
+
+    return chunk_is_jpeg(chunk);
+}
+#endif  /* HAVE_JPEG */
+
+#if HAVE_LIBPNG
+/*
+ * Dedicated libpng loader for precise PNG decoding.
+ *
+ *    +-----------+     +------------------+     +--------------------+
+ *    | PNG chunk | --> | libpng decode    | --> | sixel frame emit   |
+ *    +-----------+     +------------------+     +--------------------+
+ */
+static SIXELSTATUS
+load_with_libpng(
+    sixel_chunk_t const       /* in */     *pchunk,
+    int                       /* in */     fstatic,
+    int                       /* in */     fuse_palette,
+    int                       /* in */     reqcolors,
+    unsigned char             /* in */     *bgcolor,
+    int                       /* in */     loop_control,
+    sixel_load_image_function /* in */     fn_load,
+    void                      /* in/out */ *context)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_frame_t *frame = NULL;
+
+    (void)fstatic;
+    (void)loop_control;
+
+    status = sixel_frame_new(&frame, pchunk->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = load_png(&frame->pixels,
+                      pchunk->buffer,
+                      pchunk->size,
+                      &frame->width,
+                      &frame->height,
+                      fuse_palette ? &frame->palette : NULL,
+                      &frame->ncolors,
+                      reqcolors,
+                      &frame->pixelformat,
+                      bgcolor,
+                      &frame->transparent,
+                      pchunk->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_frame_strip_alpha(frame, bgcolor);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = fn_load(frame, context);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    sixel_frame_unref(frame);
+
+    return status;
+}
+
+static int
+loader_can_try_libpng(sixel_chunk_t const *chunk)
+{
+    if (chunk == NULL) {
+        return 0;
+    }
+
+    return chunk_is_png(chunk);
+}
+#endif  /* HAVE_LIBPNG */
 
 #ifdef HAVE_GDK_PIXBUF2
 /*
@@ -5711,6 +5834,12 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
 #endif
 #if HAVE_GD
     { "gd", load_with_gd, NULL },
+#endif
+#if HAVE_JPEG
+    { "libjpeg", load_with_libjpeg, loader_can_try_libjpeg },
+#endif
+#if HAVE_LIBPNG
+    { "libpng", load_with_libpng, loader_can_try_libpng },
 #endif
     { "builtin", load_with_builtin, NULL },
 #if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
