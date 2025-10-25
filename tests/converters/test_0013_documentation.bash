@@ -33,7 +33,7 @@ awk '
     }
 ' "${SRC_DIR}/img2sixel.1" > "${man_opts}"
 # Collect option flags from the bash completion script.
-grep ' --' "${SRC_DIR}/shell-completion/bash/img2sixel" | grep -v "' " | \
+grep ' --[0-9a-zA-Z_@=~%?]' "${SRC_DIR}/shell-completion/bash/img2sixel" | grep -v "' " | \
     sed 's/.* \(-.\) .*/\1/' > "${bash_opts}"
 # Collect option flags from the zsh completion script.
 grep '{-' "${SRC_DIR}/shell-completion/zsh/_img2sixel" | cut -f1 -d, | cut -f2 -d'{' > "${zsh_opts}"

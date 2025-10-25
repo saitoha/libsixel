@@ -45,7 +45,10 @@ The argument specifies the method to use.
 Disable dequantization (default).
 .TP 5
 .B k_undither
-Use kornelski's undithering algorithm to smooth gradients.
+Use kornelski's undithering algorithm without the post-refinement pass.
+.TP 5
+.B k_undither+
+Use kornelski's undithering algorithm with the post-refinement pass enabled.
 .RE
 .TP 5
 .B \-S

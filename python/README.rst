@@ -48,6 +48,14 @@ decoder ::
     decoder = Decoder()
     decoder.setopt(SIXEL_OPTFLAG_INPUT, "test.six")
     decoder.setopt(SIXEL_OPTFLAG_OUTPUT, "test.png")
+    # Request Kornel's undither without the refine pass:
+    #
+    #     +-------------+----------------------------------------+
+    #     | k_undither  | Kornel's undither without refinement   |
+    #     | k_undither+ | Kornel's undither with post-refine run |
+    #     +-------------+----------------------------------------+
+    #
+    decoder.setopt(ord('d'), "k_undither")
     decoder.decode()
 
 

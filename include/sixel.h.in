@@ -157,8 +157,11 @@ typedef int SIXELSTATUS;
 #define SIXEL_FORMATTYPE_PALETTE   (1 << 7)
 
 /* method for dequantization */
-#define SIXEL_DEQUANTIZE_NONE       0x0  /* don't dequantize */
-#define SIXEL_DEQUANTIZE_K_UNDITHER 0x1  /* kornelski's undither method */
+#define SIXEL_DEQUANTIZE_NONE            0x0  /* don't dequantize */
+#define SIXEL_DEQUANTIZE_K_UNDITHER      0x1  /* Kornel's undither without
+                                                 post-refine smoothing */
+#define SIXEL_DEQUANTIZE_K_UNDITHER_PLUS 0x2  /* Kornel's undither with
+                                                 post-refine smoothing */
 
 /* pixelformat type of input image
    NOTE: for compatibility, the value of PIXELFORAMT_COLOR_RGB888 must be 3 */
