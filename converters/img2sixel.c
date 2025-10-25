@@ -34,6 +34,9 @@
 #elif HAVE_SYS_UNISTD_H
 # include <sys/unistd.h>
 #endif
+#if HAVE_CTYPE_H
+# include <ctype.h>
+#endif
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -50,6 +53,138 @@
 #endif
 
 #include <sixel.h>
+
+#if defined(HAVE_MKSTEMP)
+int mkstemp(char *);
+#endif
+
+static int
+is_png_target(char const *path)
+{
+    size_t len;
+    int matched;
+
+    len = 0;
+    matched = 0;
+
+    if (path == NULL) {
+        return 0;
+    }
+
+    if (strcmp(path, "png:-") == 0) {
+        return 1;
+    }
+
+    len = strlen(path);
+    if (len >= 4) {
+        matched = (tolower((unsigned char)path[len - 4]) == '.')
+            && (tolower((unsigned char)path[len - 3]) == 'p')
+            && (tolower((unsigned char)path[len - 2]) == 'n')
+            && (tolower((unsigned char)path[len - 1]) == 'g');
+    }
+
+    return matched;
+}
+
+static char *
+create_png_temp_template(void)
+{
+    char const *tmpdir;
+    size_t tmpdir_len;
+    size_t suffix_len;
+    size_t template_len;
+    char *template_path;
+    int needs_separator;
+
+    tmpdir = getenv("TMPDIR");
+#if defined(_WIN32)
+    if (tmpdir == NULL || tmpdir[0] == '\0') {
+        tmpdir = getenv("TEMP");
+    }
+    if (tmpdir == NULL || tmpdir[0] == '\0') {
+        tmpdir = getenv("TMP");
+    }
+#endif
+    if (tmpdir == NULL || tmpdir[0] == '\0') {
+#if defined(_WIN32)
+        tmpdir = ".";
+#else
+        tmpdir = "/tmp";
+#endif
+    }
+
+    tmpdir_len = strlen(tmpdir);
+    suffix_len = strlen("img2sixel-XXXXXX");
+    needs_separator = 1;
+    if (tmpdir_len > 0) {
+        if (tmpdir[tmpdir_len - 1] == '/' || tmpdir[tmpdir_len - 1] == '\\') {
+            needs_separator = 0;
+        }
+    }
+
+    template_len = tmpdir_len + suffix_len + 2;
+    template_path = (char *)malloc(template_len);
+    if (template_path == NULL) {
+        return NULL;
+    }
+
+    if (needs_separator) {
+#if defined(_WIN32)
+        (void) snprintf(template_path, template_len,
+                        "%s\\%s", tmpdir, "img2sixel-XXXXXX");
+#else
+        (void) snprintf(template_path, template_len,
+                        "%s/%s", tmpdir, "img2sixel-XXXXXX");
+#endif
+    } else {
+        (void) snprintf(template_path, template_len,
+                        "%s%s", tmpdir, "img2sixel-XXXXXX");
+    }
+
+    return template_path;
+}
+
+/*
+ * The converter forms a round-trip pipeline when PNG output is requested.
+ *
+ *     +-------------+     +--------------------+     +-------------+
+ *     | source load | --> | sixel encoder temp | --> | PNG decoder |
+ *     +-------------+     +--------------------+     +-------------+
+ *
+ * Keeping the decoded stage inside libsixel guarantees that the PNG image
+ * reproduces the post-quantized SIXEL output exactly.
+ */
+static SIXELSTATUS
+write_png_from_sixel(char const *sixel_path, char const *output_path)
+{
+    SIXELSTATUS status;
+    sixel_decoder_t *decoder;
+
+    status = SIXEL_FALSE;
+    decoder = NULL;
+
+    status = sixel_decoder_new(&decoder, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT, sixel_path);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_OUTPUT, output_path);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_decoder_decode(decoder);
+
+end:
+    sixel_decoder_unref(decoder);
+
+    return status;
+}
 
 /* output version info to STDOUT */
 static
@@ -518,6 +653,19 @@ main(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
+    int output_is_png;
+    int output_png_to_stdout;
+    char *png_output_path;
+    char *png_temp_path;
+    int png_temp_fd;
+    char const *png_final_path;
+
+    output_is_png = 0;
+    output_png_to_stdout = 0;
+    png_output_path = NULL;
+    png_temp_path = NULL;
+    png_temp_fd = (-1);
+    png_final_path = NULL;
 
     status = sixel_encoder_new(&encoder, NULL);
     if (SIXEL_FAILED(status)) {
@@ -551,6 +699,33 @@ main(int argc, char *argv[])
             show_help();
             status = SIXEL_OK;
             goto end;
+        case 'o':
+            if (is_png_target(optarg)) {
+                output_is_png = 1;
+                output_png_to_stdout = (strcmp(optarg, "png:-") == 0);
+                free(png_output_path);
+                png_output_path = NULL;
+                if (!output_png_to_stdout) {
+                    png_output_path = (char *)malloc(strlen(optarg) + 1);
+                    if (png_output_path == NULL) {
+                        sixel_helper_set_additional_message(
+                            "img2sixel: malloc() failed for PNG output path.");
+                        status = SIXEL_BAD_ALLOCATION;
+                        goto error;
+                    }
+                    strcpy(png_output_path, optarg);
+                }
+            } else {
+                output_is_png = 0;
+                output_png_to_stdout = 0;
+                free(png_output_path);
+                png_output_path = NULL;
+                status = sixel_encoder_setopt(encoder, n, optarg);
+                if (SIXEL_FAILED(status)) {
+                    goto argerr;
+                }
+            }
+            break;
         default:
             status = sixel_encoder_setopt(encoder, n, optarg);
             if (SIXEL_FAILED(status)) {
@@ -579,6 +754,68 @@ main(int argc, char *argv[])
     (void) signal_handler;
 #endif
 
+    if (output_is_png) {
+        png_temp_path = create_png_temp_template();
+        if (png_temp_path == NULL) {
+            sixel_helper_set_additional_message(
+                "img2sixel: malloc() failed for PNG staging path.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
+        }
+#if defined(HAVE_MKSTEMP)
+        png_temp_fd = mkstemp(png_temp_path);
+        if (png_temp_fd < 0) {
+            sixel_helper_set_additional_message(
+                "img2sixel: mkstemp() failed for PNG staging file.");
+            status = SIXEL_RUNTIME_ERROR;
+            goto error;
+        }
+        (void) close(png_temp_fd);
+        png_temp_fd = (-1);
+#elif defined(HAVE__MKTEMP)
+        if (_mktemp(png_temp_path) == NULL) {
+            sixel_helper_set_additional_message(
+                "img2sixel: _mktemp() failed for PNG staging file.");
+            status = SIXEL_RUNTIME_ERROR;
+            goto error;
+        }
+#elif defined(HAVE_MKTEMP)
+        if (mktemp(png_temp_path) == NULL) {
+            sixel_helper_set_additional_message(
+                "img2sixel: mktemp() failed for PNG staging file.");
+            status = SIXEL_RUNTIME_ERROR;
+            goto error;
+        }
+#else
+        {
+            char *generated;
+
+            generated = tmpnam(NULL);
+            if (generated == NULL) {
+                sixel_helper_set_additional_message(
+                    "img2sixel: tmpnam() failed for PNG staging file.");
+                status = SIXEL_RUNTIME_ERROR;
+                goto error;
+            }
+            free(png_temp_path);
+            png_temp_path = (char *)malloc(strlen(generated) + 1);
+            if (png_temp_path == NULL) {
+                sixel_helper_set_additional_message(
+                    "img2sixel: malloc() failed for PNG staging path copy.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto error;
+            }
+            strcpy(png_temp_path, generated);
+        }
+#endif
+
+        status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_OUTFILE,
+                                      png_temp_path);
+        if (SIXEL_FAILED(status)) {
+            goto error;
+        }
+    }
+
     if (optind == argc) {
         status = sixel_encoder_encode(encoder, NULL);
         if (SIXEL_FAILED(status)) {
@@ -590,6 +827,20 @@ main(int argc, char *argv[])
             if (SIXEL_FAILED(status)) {
                 goto error;
             }
+        }
+    }
+
+    if (output_is_png) {
+        png_final_path = output_png_to_stdout ? "-" : png_output_path;
+        if (!output_png_to_stdout && png_final_path == NULL) {
+            sixel_helper_set_additional_message(
+                "img2sixel: missing PNG output path.");
+            status = SIXEL_RUNTIME_ERROR;
+            goto error;
+        }
+        status = write_png_from_sixel(png_temp_path, png_final_path);
+        if (SIXEL_FAILED(status)) {
+            goto error;
         }
     }
 
@@ -616,6 +867,11 @@ error:
             sixel_helper_get_additional_message());
     status = (-1);
 end:
+    if (png_temp_path != NULL) {
+        (void) unlink(png_temp_path);
+    }
+    free(png_temp_path);
+    free(png_output_path);
     sixel_encoder_unref(encoder);
     return status;
 }
