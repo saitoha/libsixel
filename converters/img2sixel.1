@@ -321,6 +321,12 @@ rgb:rrrr/gggg/bbbb
 .B \-v, \-\-verbose
 show debugging info.
 .TP 5
+.B \-J \fILIST\fP, \-\-loaders=\fILIST\fP
+choose the loader priority order. \fILIST\fP is a comma separated
+sequence of loader names such as \fBgd\fP, \fBcoregraphics\fP, or
+\fBbuiltin\fP. Unknown names are ignored so you can reuse the same
+command line across different builds.
+.TP 5
 .B \-@, \-\-drcs
 output DRCSMMv1 tiles instead of a regular SIXEL image (experimental).
 .br
@@ -361,6 +367,8 @@ smpte-c -> SMPTE-C gamma encoded output
 .TP 5
 .B \-V, \-\-version
 show version and license info.
+.br
+The output also lists the loader backends available in the current build.
 .TP 5
 .B \-H, \-\-help
 print help.

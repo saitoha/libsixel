@@ -214,6 +214,7 @@ SIXEL_LOOP_DISABLE         = 2   # always disable loop
 SIXEL_OPTFLAG_INPUT            = 'i'  # -i, --input: specify input file name.
 SIXEL_OPTFLAG_OUTPUT           = 'o'  # -o, --output: specify output file name.
 SIXEL_OPTFLAG_OUTFILE          = 'o'  # -o, --outfile: specify output file name.
+SIXEL_OPTFLAG_LOADERS          = 'J'  # -J LIST, --loaders=LIST: override loader order.
 SIXEL_OPTFLAG_7BIT_MODE        = '7'  # -7, --7bit-mode: for 7bit terminals or printers (default)
 SIXEL_OPTFLAG_8BIT_MODE        = '8'  # -8, --8bit-mode: for 8bit terminals or printers
 SIXEL_OPTFLAG_COLORS           = 'p'  # -p COLORS, --colors=COLORS: specify number of colors

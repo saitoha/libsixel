@@ -571,7 +571,11 @@ Options:
 -D, --pipe-mode            [[deprecated]] read source images from
                            stdin continuously
 -v, --verbose              show debugging info
+-J LIST, --loaders=LIST    override loader priority order
+                           LIST is a comma separated sequence of
+                           loader names such as 'gd,builtin'
 -V, --version              show version and license info
+                           also lists available image loaders
 -H, --help                 show this help
 
 Environment variables:
@@ -589,6 +593,12 @@ SIXEL_BGCOLOR              specify background color.
                              rgb:rrrr/gggg/bbbb
 
 ```
+
+Use `--loaders` to reorder the loader chain. Provide a comma separated list of
+loader names such as `gd,builtin`. libsixel tries the listed loaders first and
+then falls back to any remaining backends in their default order. Unknown names
+are ignored, making it safe to reuse the same preference string across
+platforms.
 
 When running under GNOME or other desktops that implement the FreeDesktop.org
 Thumbnail Managing Standard (including Cinnamon, MATE, and Xfce via Tumbler),
