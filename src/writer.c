@@ -58,7 +58,117 @@
 unsigned char *
 stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes,
                       int x, int y, int n, int *out_len);
-#endif
+
+/*
+ * The CRC generator mirrors the PNG chunk layout so we can reuse the helper
+ * from multiple writers.
+ *
+ *     +------+-------+
+ *     | type | data  |
+ *     +------+-------+
+ */
+static unsigned int
+png_crc32_update(unsigned int crc, unsigned char const *data,
+                 size_t length)
+{
+    static unsigned int table[256];
+    static int initialized;
+    unsigned int rem;
+    unsigned char octet;
+    size_t index;
+    int table_index;
+
+    if (!initialized) {
+        for (table_index = 0; table_index < 256; ++table_index) {
+            rem = (unsigned int)table_index;
+            rem <<= 24;
+            for (index = 0; index < 8; ++index) {
+                if (rem & 0x80000000U) {
+                    rem = (rem << 1) ^ 0x04c11db7U;
+                } else {
+                    rem <<= 1;
+                }
+            }
+            table[table_index] = rem;
+        }
+        initialized = 1;
+    }
+
+    crc = ~crc;
+    for (index = 0; index < length; ++index) {
+        octet = data[index];
+        crc = table[((crc >> 24) ^ octet) & 0xffU] ^ (crc << 8);
+    }
+
+    return ~crc;
+}
+
+static int
+png_write_u32(FILE *output_fp, unsigned int value)
+{
+    unsigned char buffer[4];
+    size_t written;
+
+    buffer[0] = (unsigned char)((value >> 24) & 0xffU);
+    buffer[1] = (unsigned char)((value >> 16) & 0xffU);
+    buffer[2] = (unsigned char)((value >> 8) & 0xffU);
+    buffer[3] = (unsigned char)(value & 0xffU);
+
+    written = fwrite(buffer, 1, sizeof(buffer), output_fp);
+    if (written != sizeof(buffer)) {
+        return 0;
+    }
+
+    return 1;
+}
+
+/*
+ * Emit a single PNG chunk.
+ *     +--------+---------+----------+--------+
+ *     | length |  type   |  data    |  CRC   |
+ *     +--------+---------+----------+--------+
+ */
+static int
+png_write_chunk(FILE *output_fp, char const *tag,
+                unsigned char const *payload, size_t length)
+{
+    unsigned char type[4];
+    unsigned int crc;
+    size_t written;
+
+    type[0] = (unsigned char)tag[0];
+    type[1] = (unsigned char)tag[1];
+    type[2] = (unsigned char)tag[2];
+    type[3] = (unsigned char)tag[3];
+
+    if (!png_write_u32(output_fp, (unsigned int)length)) {
+        return 0;
+    }
+
+    written = fwrite(type, 1, sizeof(type), output_fp);
+    if (written != sizeof(type)) {
+        return 0;
+    }
+
+    if (length > 0) {
+        written = fwrite(payload, 1, length, output_fp);
+        if (written != length) {
+            return 0;
+        }
+    }
+
+    crc = png_crc32_update(0U, type, sizeof(type));
+    if (length > 0) {
+        crc = png_crc32_update(crc, payload, length);
+    }
+
+    if (!png_write_u32(output_fp, crc)) {
+        return 0;
+    }
+
+    return 1;
+}
+#endif  /* !HAVE_LIBPNG */
 
 static SIXELSTATUS
 write_png_to_file(
@@ -74,19 +184,31 @@ write_png_to_file(
     FILE *output_fp = NULL;
     unsigned char *pixels = NULL;
     unsigned char *new_pixels = NULL;
+    int uses_palette = 0;
+    int palette_entries = 0;
+    int total_pixels = 0;
+    int max_index = 0;
+    int i = 0;
+    unsigned char *src = NULL;
+    unsigned char *dst = NULL;
 #if HAVE_LIBPNG
-    int y;
+    int y = 0;
     png_structp png_ptr = NULL;
     png_infop info_ptr = NULL;
     unsigned char **rows = NULL;
+    png_color *png_palette = NULL;
 #else
+    unsigned char *filtered = NULL;
+    unsigned char *compressed = NULL;
     unsigned char *png_data = NULL;
-    int png_len;
-    int write_len;
+    unsigned char signature[8];
+    unsigned char ihdr[13];
+    unsigned char *plte = NULL;
+    int stride = 0;
+    int png_len = 0;
+    int write_len = 0;
+    size_t payload_size = 0;
 #endif  /* HAVE_LIBPNG */
-    int i;
-    unsigned char *src;
-    unsigned char *dst;
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
@@ -98,27 +220,23 @@ write_png_to_file(
                 "write_png_to_file: no palette is given");
             goto end;
         }
-        new_pixels = sixel_allocator_malloc(allocator, (size_t)(width * height * 4));
+        new_pixels = sixel_allocator_malloc(allocator,
+                                            (size_t)(width * height));
         if (new_pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             sixel_helper_set_additional_message(
                 "write_png_to_file: sixel_allocator_malloc() failed");
             goto end;
         }
-        src = new_pixels + width * height * 3;
-        dst = pixels = new_pixels;
-        status = sixel_helper_normalize_pixelformat(src,
+        pixels = new_pixels;
+        status = sixel_helper_normalize_pixelformat(pixels,
                                                     &pixelformat,
                                                     data,
                                                     pixelformat,
-                                                    width, height);
+                                                    width,
+                                                    height);
         if (SIXEL_FAILED(status)) {
             goto end;
-        }
-        for (i = 0; i < width * height; ++i, ++src) {
-            *dst++ = *(palette + *src * 3 + 0);
-            *dst++ = *(palette + *src * 3 + 1);
-            *dst++ = *(palette + *src * 3 + 2);
         }
         break;
     case SIXEL_PIXELFORMAT_PAL8:
@@ -128,19 +246,7 @@ write_png_to_file(
                 "write_png_to_file: no palette is given");
             goto end;
         }
-        src = data;
-        dst = pixels = new_pixels = sixel_allocator_malloc(allocator, (size_t)(width * height * 3));
-        if (new_pixels == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
-            sixel_helper_set_additional_message(
-                "write_png_to_file: sixel_allocator_malloc() failed");
-            goto end;
-        }
-        for (i = 0; i < width * height; ++i, ++src) {
-            *dst++ = *(palette + *src * 3 + 0);
-            *dst++ = *(palette + *src * 3 + 1);
-            *dst++ = *(palette + *src * 3 + 2);
-        }
+        pixels = data;
         break;
     case SIXEL_PIXELFORMAT_RGB888:
         pixels = data;
@@ -180,7 +286,10 @@ write_png_to_file(
     case SIXEL_PIXELFORMAT_ARGB8888:
     case SIXEL_PIXELFORMAT_BGRA8888:
     case SIXEL_PIXELFORMAT_ABGR8888:
-        pixels = new_pixels = sixel_allocator_malloc(allocator, (size_t)(width * height * 3));
+        pixels = new_pixels = sixel_allocator_malloc(allocator,
+                                                    (size_t)(width
+                                                             * height
+                                                             * 3));
         if (new_pixels == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             sixel_helper_set_additional_message(
@@ -203,6 +312,24 @@ write_png_to_file(
         goto end;
     }
 
+    uses_palette = (pixelformat == SIXEL_PIXELFORMAT_PAL8 && palette != NULL);
+    if (uses_palette) {
+        total_pixels = width * height;
+        max_index = 0;
+        for (i = 0; i < total_pixels; ++i) {
+            if (pixels[i] > max_index) {
+                max_index = pixels[i];
+            }
+        }
+        palette_entries = max_index + 1;
+        if (palette_entries < 1) {
+            palette_entries = 1;
+        }
+        if (palette_entries > SIXEL_PALETTE_MAX) {
+            palette_entries = SIXEL_PALETTE_MAX;
+        }
+    }
+
     if (strcmp(filename, "-") == 0) {
 #if defined(O_BINARY)
 # if HAVE__SETMODE
@@ -221,57 +348,220 @@ write_png_to_file(
         }
     }
 
+    /*
+     * Palette and RGB output branches fan out here.
+     *
+     *     +---------------+
+     *     | use palette? |
+     *     +---------------+
+     *        | yes              no |
+     *        v                  v
+     *   indexed pipeline   RGB pipeline
+     */
 #if HAVE_LIBPNG
-    rows = sixel_allocator_malloc(allocator, (size_t)height * sizeof(unsigned char *));
-    if (rows == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
-        sixel_helper_set_additional_message(
-            "write_png_to_file: sixel_allocator_malloc() failed");
-        goto end;
+    if (uses_palette) {
+        rows = sixel_allocator_malloc(allocator,
+                                      (size_t)height
+                                      * sizeof(unsigned char *));
+        if (rows == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "write_png_to_file: sixel_allocator_malloc() failed");
+            goto end;
+        }
+        for (y = 0; y < height; ++y) {
+            rows[y] = pixels + width * y;
+        }
+    } else {
+        rows = sixel_allocator_malloc(allocator,
+                                      (size_t)height
+                                      * sizeof(unsigned char *));
+        if (rows == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "write_png_to_file: sixel_allocator_malloc() failed");
+            goto end;
+        }
+        for (y = 0; y < height; ++y) {
+            rows[y] = pixels + width * 3 * y;
+        }
     }
-    for (y = 0; y < height; ++y) {
-        rows[y] = pixels + width * 3 * y;
-    }
-    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,
+                                      NULL,
+                                      NULL,
+                                      NULL);
     if (!png_ptr) {
         status = SIXEL_PNG_ERROR;
-        /* TODO: get error message */
         goto end;
     }
     info_ptr = png_create_info_struct(png_ptr);
-    if (!png_ptr) {
+    if (!info_ptr) {
         status = SIXEL_PNG_ERROR;
-        /* TODO: get error message */
         goto end;
     }
 # if USE_SETJMP && HAVE_SETJMP
     if (setjmp(png_jmpbuf(png_ptr))) {
         status = SIXEL_PNG_ERROR;
-        /* TODO: get error message */
         goto end;
     }
 # endif
     png_init_io(png_ptr, output_fp);
-    png_set_IHDR(png_ptr, info_ptr, (png_uint_32)width, (png_uint_32)height,
-                 /* bit_depth */ 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
-                 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+    if (uses_palette) {
+        png_set_IHDR(png_ptr,
+                     info_ptr,
+                     (png_uint_32)width,
+                     (png_uint_32)height,
+                     8,
+                     PNG_COLOR_TYPE_PALETTE,
+                     PNG_INTERLACE_NONE,
+                     PNG_COMPRESSION_TYPE_BASE,
+                     PNG_FILTER_TYPE_BASE);
+        png_palette = sixel_allocator_malloc(allocator,
+                                             (size_t)palette_entries
+                                             * sizeof(png_color));
+        if (png_palette == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "write_png_to_file: sixel_allocator_malloc() failed");
+            goto end;
+        }
+        for (i = 0; i < palette_entries; ++i) {
+            png_palette[i].red = palette[i * 3 + 0];
+            png_palette[i].green = palette[i * 3 + 1];
+            png_palette[i].blue = palette[i * 3 + 2];
+        }
+        png_set_PLTE(png_ptr, info_ptr, png_palette, palette_entries);
+    } else {
+        png_set_IHDR(png_ptr,
+                     info_ptr,
+                     (png_uint_32)width,
+                     (png_uint_32)height,
+                     8,
+                     PNG_COLOR_TYPE_RGB,
+                     PNG_INTERLACE_NONE,
+                     PNG_COMPRESSION_TYPE_BASE,
+                     PNG_FILTER_TYPE_BASE);
+    }
     png_write_info(png_ptr, info_ptr);
     png_write_image(png_ptr, rows);
     png_write_end(png_ptr, NULL);
 #else
-    png_data = stbi_write_png_to_mem(pixels, width * 3,
-                                     width, height,
-                                     /* STBI_rgb */ 3, &png_len);
-    if (png_data == NULL) {
-        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-        sixel_helper_set_additional_message("stbi_write_png_to_mem() failed.");
-        goto end;
-    }
-    write_len = (int)fwrite(png_data, 1, (size_t)png_len, output_fp);
-    if (write_len <= 0) {
-        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-        sixel_helper_set_additional_message("fwrite() failed.");
-        goto end;
+    if (uses_palette) {
+        stride = width + 1;
+        payload_size = (size_t)stride * (size_t)height;
+        filtered = sixel_allocator_malloc(allocator, payload_size);
+        if (filtered == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "write_png_to_file: sixel_allocator_malloc() failed");
+            goto end;
+        }
+        for (i = 0; i < height; ++i) {
+            filtered[i * stride] = 0;
+            memcpy(filtered + i * stride + 1,
+                   pixels + i * width,
+                   (size_t)width);
+        }
+        compressed = stbi_zlib_compress(filtered,
+                                        (int)payload_size,
+                                        &png_len,
+                                        stbi_write_png_compression_level);
+        if (compressed == NULL) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "stbi_zlib_compress() failed.");
+            goto end;
+        }
+        signature[0] = 0x89;
+        signature[1] = 0x50;
+        signature[2] = 0x4e;
+        signature[3] = 0x47;
+        signature[4] = 0x0d;
+        signature[5] = 0x0a;
+        signature[6] = 0x1a;
+        signature[7] = 0x0a;
+        write_len = (int)fwrite(signature, 1, sizeof(signature), output_fp);
+        if (write_len != (int)sizeof(signature)) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message("fwrite() failed.");
+            goto end;
+        }
+        memset(ihdr, 0, sizeof(ihdr));
+        ihdr[0] = (unsigned char)((width >> 24) & 0xff);
+        ihdr[1] = (unsigned char)((width >> 16) & 0xff);
+        ihdr[2] = (unsigned char)((width >> 8) & 0xff);
+        ihdr[3] = (unsigned char)(width & 0xff);
+        ihdr[4] = (unsigned char)((height >> 24) & 0xff);
+        ihdr[5] = (unsigned char)((height >> 16) & 0xff);
+        ihdr[6] = (unsigned char)((height >> 8) & 0xff);
+        ihdr[7] = (unsigned char)(height & 0xff);
+        ihdr[8] = 8;
+        ihdr[9] = 3;
+        ihdr[10] = 0;
+        ihdr[11] = 0;
+        ihdr[12] = 0;
+        if (!png_write_chunk(output_fp, "IHDR", ihdr, sizeof(ihdr))) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message("fwrite() failed.");
+            goto end;
+        }
+        plte = sixel_allocator_malloc(allocator,
+                                      (size_t)palette_entries * 3U);
+        if (plte == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "write_png_to_file: sixel_allocator_malloc() failed");
+            goto end;
+        }
+        for (i = 0; i < palette_entries; ++i) {
+            plte[i * 3 + 0] = palette[i * 3 + 0];
+            plte[i * 3 + 1] = palette[i * 3 + 1];
+            plte[i * 3 + 2] = palette[i * 3 + 2];
+        }
+        if (!png_write_chunk(output_fp,
+                             "PLTE",
+                             plte,
+                             (size_t)palette_entries * 3U)) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message("fwrite() failed.");
+            goto end;
+        }
+        if (!png_write_chunk(output_fp,
+                             "IDAT",
+                             compressed,
+                             (size_t)png_len)) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message("fwrite() failed.");
+            goto end;
+        }
+        if (!png_write_chunk(output_fp, "IEND", NULL, 0)) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message("fwrite() failed.");
+            goto end;
+        }
+    } else {
+        png_data = stbi_write_png_to_mem(pixels,
+                                         width * 3,
+                                         width,
+                                         height,
+                                         3,
+                                         &png_len);
+        if (png_data == NULL) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "stbi_write_png_to_mem() failed.");
+            goto end;
+        }
+        write_len = (int)fwrite(png_data,
+                                 1,
+                                 (size_t)png_len,
+                                 output_fp);
+        if (write_len <= 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message("fwrite() failed.");
+            goto end;
+        }
     }
 #endif  /* HAVE_LIBPNG */
 
@@ -286,7 +576,11 @@ end:
     if (png_ptr) {
         png_destroy_write_struct(&png_ptr, &info_ptr);
     }
+    sixel_allocator_free(allocator, png_palette);
 #else
+    sixel_allocator_free(allocator, compressed);
+    sixel_allocator_free(allocator, filtered);
+    sixel_allocator_free(allocator, plte);
     sixel_allocator_free(allocator, png_data);
 #endif  /* HAVE_LIBPNG */
     sixel_allocator_free(allocator, new_pixels);

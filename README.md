@@ -363,7 +363,9 @@ Options:
                            (default:stdout)
                            Use a name ending in ".png" or the literal
                            "png:-" to emit PNG data recreated from the
-                           SIXEL pipeline.
+                           SIXEL pipeline. The PNG keeps the palette
+                           indices so that every color matches the
+                           quantized SIXEL output exactly.
 -7, --7bit-mode            generate a sixel image for 7bit
                            terminals or printers (default)
 -8, --8bit-mode            generate a sixel image for 8bit
