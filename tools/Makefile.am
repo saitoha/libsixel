@@ -1,7 +1,18 @@
 
-CLEANFILES =
+CLEANFILES = evaluate$(EXEEXT)
 
 clean-local:
+
+all-local: evaluate$(EXEEXT)
+
+# Build the fast evaluator locally so shell wrappers can reuse it without
+# requiring installation.
+evaluate$(EXEEXT): $(srcdir)/evaluate.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+		$(AM_CPPFLAGS) $(CPPFLAGS) \
+		-I$(top_srcdir)/src $(AM_CFLAGS) $(CFLAGS) \
+		$(srcdir)/evaluate.c \
+		$(LDFLAGS) -o $@ $(LIBS_PRIVATE) $(LIBS)
 
 bin_SCRIPTS = libsixel-config
 

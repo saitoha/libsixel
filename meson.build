@@ -280,6 +280,17 @@ if m_dep.found()
   conf.set('HAVE_LIBM', 1)
 endif
 
+evaluate_inc = include_directories('src')
+evaluate_deps = []
+if m_dep.found()
+  evaluate_deps += m_dep
+endif
+executable('evaluate',
+           'tools/evaluate.c',
+           include_directories: evaluate_inc,
+           dependencies: evaluate_deps,
+           install: false)
+
 png_dep = dependency('libpng', required: get_option('png'))
 if png_dep.found()
   deps += png_dep
