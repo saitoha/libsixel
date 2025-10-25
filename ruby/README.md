@@ -44,6 +44,16 @@ encoder.encode 'images/egret.jpg'
 
 decoder = Decoder.new
 decoder.decode              # honors options set with setopt
+
+# Kornel's undither presets mirror the CLI table so you can toggle the
+# refine pass:
+#
+#   +-------------+----------------------------------------+
+#   | k_undither  | Kornel's undither without refinement   |
+#   | k_undither+ | Kornel's undither with post-refine run |
+#   +-------------+----------------------------------------+
+#
+decoder.setopt 'd', 'k_undither'
 ```
 
 Low-level C API (ctypes-style) via `Libsixel::API`:

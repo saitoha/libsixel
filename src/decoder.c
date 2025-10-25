@@ -565,6 +565,7 @@ sixel_decoder_new(
     (*ppdecoder)->dequantize_method = SIXEL_DEQUANTIZE_NONE;
     (*ppdecoder)->dequantize_similarity_bias = 100;
     (*ppdecoder)->dequantize_edge_strength = 0;
+    (*ppdecoder)->dequantize_refine = 1;
     (*ppdecoder)->thumbnail_size = 0;
 
     if ((*ppdecoder)->output == NULL || (*ppdecoder)->input == NULL) {
@@ -926,6 +927,7 @@ sixel_dequantize_k_undither(unsigned char *indexed_pixels,
                             int ncolors,
                             int similarity_bias,
                             int edge_strength,
+                            int enable_refine,
                             sixel_allocator_t *allocator,
                             unsigned char **output)
 {
@@ -1125,7 +1127,15 @@ sixel_dequantize_k_undither(unsigned char *indexed_pixels,
 
     *output = rgb;
     rgb = NULL;
-    sixel_post_undither_refine(*output, width, height, NULL);
+    if (enable_refine) {
+        /*
+         *  +--------------+
+         *  | refine pass  |
+         *  +--------------+
+         *  Only run when the caller requested k_undither+.
+         */
+        sixel_post_undither_refine(*output, width, height, NULL);
+    }
     status = SIXEL_OK;
 
 end:
@@ -1178,8 +1188,19 @@ sixel_decoder_setopt(
 
         if (strcmp(value, "none") == 0) {
             decoder->dequantize_method = SIXEL_DEQUANTIZE_NONE;
+            decoder->dequantize_refine = 0;
         } else if (strcmp(value, "k_undither") == 0) {
             decoder->dequantize_method = SIXEL_DEQUANTIZE_K_UNDITHER;
+            decoder->dequantize_refine = 0;
+        } else if (strcmp(value, "k_undither+") == 0) {
+            /*
+             *  +-----------------+
+             *  | refine pipeline |
+             *  +-----------------+
+             *  The plus suffix keeps the post-refinement pass enabled.
+             */
+            decoder->dequantize_method = SIXEL_DEQUANTIZE_K_UNDITHER_PLUS;
+            decoder->dequantize_refine = 1;
         } else {
             sixel_helper_set_additional_message(
                 "unsupported dequantize method.");
@@ -1355,7 +1376,8 @@ sixel_decoder_decode(
     output_palette = palette;
     output_pixelformat = SIXEL_PIXELFORMAT_PAL8;
 
-    if (decoder->dequantize_method == SIXEL_DEQUANTIZE_K_UNDITHER) {
+    if (decoder->dequantize_method == SIXEL_DEQUANTIZE_K_UNDITHER ||
+        decoder->dequantize_method == SIXEL_DEQUANTIZE_K_UNDITHER_PLUS) {
         status = sixel_dequantize_k_undither(
             indexed_pixels,
             sx,
@@ -1364,6 +1386,7 @@ sixel_decoder_decode(
             ncolors,
             decoder->dequantize_similarity_bias,
             decoder->dequantize_edge_strength,
+            decoder->dequantize_refine,
             decoder->allocator,
             &rgb_pixels);
         if (SIXEL_FAILED(status)) {
