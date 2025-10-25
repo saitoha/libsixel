@@ -291,6 +291,53 @@ executable('evaluate',
            dependencies: evaluate_deps,
            install: false)
 
+lpips_opt = get_option('onnxruntime')
+if not lpips_opt.disabled()
+  ort_inc_dirs = []
+  ort_dep = dependency('libonnxruntime', required: false)
+  ort_lib_dir_opt = get_option('onnxruntime_lib_dir')
+  if not ort_dep.found()
+    ort_lib = cc.find_library('onnxruntime',
+                              dirs: ort_lib_dir_opt == '' ? [] : [ort_lib_dir_opt],
+                              required: false)
+    if ort_lib.found()
+      ort_dep = declare_dependency(link_with: ort_lib)
+    endif
+  endif
+  ort_inc_opt = get_option('onnxruntime_include_dir')
+  if ort_inc_opt != ''
+    ort_inc_dirs += include_directories(ort_inc_opt, is_system: true)
+  endif
+  ort_header_found = cc.has_header('onnxruntime_c_api.h',
+                                   include_directories: ort_inc_dirs)
+  if ort_dep.found() and ort_header_found
+    lpips_inc = [evaluate_inc]
+    lpips_inc += ort_inc_dirs
+    lpips_deps = []
+    lpips_deps += evaluate_deps
+    lpips_deps += ort_dep
+    executable('lpips_ort',
+               'tools/lpips_ort.c',
+               include_directories: lpips_inc,
+               dependencies: lpips_deps,
+               install: false)
+
+    lpips_model_dir = join_paths(get_option('datadir'),
+                                 meson.project_name(),
+                                 'models',
+                                 'lpips')
+    install_data(['models/lpips/lpips_diff.onnx',
+                  'models/lpips/lpips_feature.onnx'],
+                 install_dir: lpips_model_dir)
+  else
+    if lpips_opt.enabled()
+      error('ONNX Runtime headers or library not found, cannot build lpips_ort')
+    else
+      message('Skipping lpips_ort helper: ONNX Runtime not detected')
+    endif
+  endif
+endif
+
 png_dep = dependency('libpng', required: get_option('png'))
 if png_dep.found()
   deps += png_dep
