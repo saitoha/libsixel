@@ -69,6 +69,83 @@ IMAGES_DIR="${TOP_SRCDIR}/images"
 
 mkdir -p "${TMP_DIR}"
 
+tap_init() {
+    local base
+    local log_dir
+
+    base=$1
+    log_dir="${TMP_DIR}/logs"
+    mkdir -p "${log_dir}"
+    TAP_LOG_FILE="${log_dir}/${base}.log"
+    : >"${TAP_LOG_FILE}"
+}
+
+tap_plan() {
+    local total
+
+    total=$1
+    printf '1..%s\n' "${total}"
+}
+
+tap_diag() {
+    local message
+
+    for message in "$@"; do
+        printf '# %s\n' "${message}"
+    done
+}
+
+tap_ok() {
+    local number
+    local description
+
+    number=$1
+    description=$2
+    shift 2
+    printf 'ok %s - %s\n' "${number}" "${description}"
+    if [ $# -gt 0 ]; then
+        tap_diag "$@"
+    fi
+}
+
+tap_not_ok() {
+    local number
+    local description
+
+    number=$1
+    description=$2
+    shift 2
+    printf 'not ok %s - %s\n' "${number}" "${description}"
+    if [ $# -gt 0 ]; then
+        tap_diag "$@"
+    fi
+}
+
+tap_log() {
+    local message
+
+    if [ -z "${TAP_LOG_FILE:-}" ]; then
+        return 0
+    fi
+    for message in "$@"; do
+        printf '%s\n' "${message}" >>"${TAP_LOG_FILE}"
+    done
+}
+
+tap_log_hint() {
+    local path
+
+    path=${TAP_LOG_FILE:-}
+    if [ -z "${path}" ]; then
+        return 0
+    fi
+    if [ -n "${BUILD_DIR_ABS:-}" ] && [[ ${path} == ${BUILD_DIR_ABS}/* ]]; then
+        printf '%s\n' "${path#${BUILD_DIR_ABS}/}"
+        return 0
+    fi
+    printf '%s\n' "${path}"
+}
+
 wine_exec() {
     if [[ -n "${WINE}" ]]; then
         "${WINE}" "$@"

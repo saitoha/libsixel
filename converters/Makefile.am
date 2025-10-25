@@ -7,10 +7,6 @@ VPATH = @srcdir@
 
 BASH = @BASH@
 
-if HAVE_BASH
-SHELL = $(BASH)
-endif
-
 bin_PROGRAMS =
 dist_man_MANS =
 
@@ -60,7 +56,8 @@ CLEANFILES = *.gcno *.gcda *.gcov \
   $(builddir)/tmp/server.py \
   $(builddir)/tmp/server.key \
   $(builddir)/tmp/server.crt \
-  $(builddir)/tmp/testfile
+  $(builddir)/tmp/testfile \
+  $(builddir)/tmp/logs/*.log
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
@@ -96,17 +93,17 @@ test: all test_impl
 
 test_impl:
 	@if test "x$(BASH)" = x -o "x$(BASH)" = xno; then \
-		echo '[skipped] bash is not available; converter tests skipped'; \
+		printf '# skipped: bash is not available; converter tests skipped\n'; \
 		exit 0; \
 	fi
 	@if test -z "$(CONVERTER_TEST_LIST)"; then \
-		echo '[skipped] no converter tests are enabled'; \
+		printf '# skipped: no converter tests are enabled\n'; \
 		exit 0; \
 	fi
-	@echo '[start]'
+	@printf '# begin converter tests\n'
 	@set -e; \
 	for test_script in $(CONVERTER_TEST_LIST); do \
-		echo "[$$(basename $$test_script)]"; \
+		printf '# running %s\n' "$$(basename $$test_script)"; \
 		TOP_SRCDIR=$(top_srcdir) \
 		SRC_DIR=$(srcdir) \
 		BUILD_DIR=$(builddir) \
@@ -115,7 +112,6 @@ test_impl:
 		WINEEXT="$(WINEEXT)" \
 		$(BASH) "$$test_script" || exit $$?; \
 	done
-
-	@echo '[succeeded]'
+	@printf '# converter tests complete\n'
 winetest: all
 	WINE=wine $(MAKE) test

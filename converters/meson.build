@@ -103,11 +103,13 @@ if img2sixel_opt.enabled()
         deps += sixel2png_deps
       endif
       test(script, bash,
-        args: ['-xv', join_paths(tests_dir, script)],
+        args: [join_paths(tests_dir, script)],
         env: env,
         depends: deps,
         is_parallel: false,
-        priority: -order)
+        protocol: 'tap',
+        priority: -order,
+        suite: 'converters')
       order += 1
     endforeach
   endif

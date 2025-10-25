@@ -5,42 +5,47 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 # shellcheck source=tests/converters/common.bash
 source "${SCRIPT_DIR}/common.bash"
 
-echo
-echo '[test10] curl'
+tap_init "$(basename "$0")"
+tap_plan 1
 
-fail_fetch() {
-    local output_file
+if {
+    tap_log '[test10] curl'
 
-    output_file="${TMP_DIR}/capture.$$"
-    if run_img2sixel "$@" >"${output_file}" 2>/dev/null; then
-        :
-    fi
-    if [[ -s ${output_file} ]]; then
-        printf 'img2sixel unexpectedly produced output: %s\n' "$*" >&2
+    fail_fetch() {
+        local output_file
+
+        output_file="${TMP_DIR}/capture.$$"
+        if run_img2sixel "$@" >"${output_file}" 2>/dev/null; then
+            :
+        fi
+        if [[ -s ${output_file} ]]; then
+            printf 'img2sixel unexpectedly produced output: %s\n' "$*" >&2
+            rm -f "${output_file}"
+            exit 1
+        fi
         rm -f "${output_file}"
-        exit 1
-    fi
-    rm -f "${output_file}"
-}
+    }
 
-# Ensure invalid file URLs are rejected.
-fail_fetch 'file:///test'
-# Ensure malformed HTTPS URLs are rejected.
-fail_fetch 'https:///test'
+    # Ensure invalid file URLs are rejected.
+    fail_fetch 'file:///test'
+    # Ensure malformed HTTPS URLs are rejected.
+    fail_fetch 'https:///test'
 
-# Fetch a local file via libcurl's file scheme.
-run_img2sixel "file://$(pwd)/${TOP_SRCDIR}/images/snake.jpg"
+    # Fetch a local file via libcurl's file scheme.
+    run_img2sixel "file://$(pwd)/${TOP_SRCDIR}/images/snake.jpg"
 
-if command -v openssl >/dev/null 2>&1 && command -v python >/dev/null 2>&1; then
-    # Ensure the HTTPS test asset is available.
-    require_file "${TMP_DIR}/snake.sixel"
-    # Generate a self-signed TLS key pair for the local server.
-    openssl genrsa | openssl rsa > "${TMP_DIR}/server.key"
-    # Issue a certificate for localhost using the generated key.
-    openssl req -new -key "${TMP_DIR}/server.key" -subj "/CN=localhost" | \
-        openssl x509 -req -signkey "${TMP_DIR}/server.key" > "${TMP_DIR}/server.crt"
-    # Write a minimal HTTPS file server.
-    cat > "${TMP_DIR}/server.py" <<'PY'
+    if command -v openssl >/dev/null 2>&1 && \
+        command -v python >/dev/null 2>&1; then
+        # Ensure the HTTPS test asset is available.
+        require_file "${TMP_DIR}/snake.sixel"
+        # Generate a self-signed TLS key pair for the local server.
+        openssl genrsa | openssl rsa > "${TMP_DIR}/server.key"
+        # Issue a certificate for localhost using the generated key.
+        openssl req -new -key "${TMP_DIR}/server.key" -subj "/CN=localhost" | \
+            openssl x509 -req -signkey "${TMP_DIR}/server.key" > \
+            "${TMP_DIR}/server.crt"
+        # Write a minimal HTTPS file server.
+        cat > "${TMP_DIR}/server.py" <<'PY'
 try:
     from http.server import SimpleHTTPRequestHandler
     from socketserver import TCPServer
@@ -70,34 +75,41 @@ with TLSHTTPServer(('localhost', 4443), SimpleHTTPRequestHandler) as httpd:
     for _ in range(2):
         httpd.handle_request()
 PY
-    (
-        cd "${TMP_DIR}"
-        # Launch the HTTPS server in the background.
-        python server.py &
-        server_pid=$!
-        cleanup() {
-            kill "${server_pid}" 2>/dev/null || true
-            wait "${server_pid}" 2>/dev/null || true
-        }
-        trap cleanup EXIT
-        sleep 1
-        output_file="${TMP_DIR}/capture.$$"
-        # Verify that HTTPS fetch fails without -k for self-signed certs.
-        if run_img2sixel 'https://localhost:4443/snake.sixel' >"${output_file}" 2>/dev/null; then
-            echo 'Skipping certificate verification check: img2sixel accepted self-signed certificate without -k' >&2
-        else
-            if [[ -s ${output_file} ]]; then
-                printf 'img2sixel unexpectedly produced output: %s\n' \
-                    'https://localhost:4443/snake.sixel' >&2
-                rm -f "${output_file}"
-                exit 1
+        (
+            cd "${TMP_DIR}"
+            # Launch the HTTPS server in the background.
+            python server.py &
+            server_pid=$!
+            cleanup() {
+                kill "${server_pid}" 2>/dev/null || true
+                wait "${server_pid}" 2>/dev/null || true
+            }
+            trap cleanup EXIT
+            sleep 1
+            output_file="${TMP_DIR}/capture.$$"
+            # Verify that HTTPS fetch fails without -k for self-signed certs.
+            if run_img2sixel 'https://localhost:4443/snake.sixel' \
+                >"${output_file}" 2>/dev/null; then
+                echo 'Skipping certificate verification check: img2sixel accepted self-signed certificate without -k' >&2
+            else
+                if [[ -s ${output_file} ]]; then
+                    printf 'img2sixel unexpectedly produced output: %s\n' \
+                        'https://localhost:4443/snake.sixel' >&2
+                    rm -f "${output_file}"
+                    exit 1
+                fi
             fi
-        fi
-        rm -f "${output_file}"
-        sleep 1
-        # Verify that -k allows fetching from the self-signed server.
-        run_img2sixel -k 'https://localhost:4443/snake.sixel'
-        cleanup
-        trap - EXIT
-    )
+            rm -f "${output_file}"
+            sleep 1
+            # Verify that -k allows fetching from the self-signed server.
+            run_img2sixel -k 'https://localhost:4443/snake.sixel'
+            cleanup
+            trap - EXIT
+        )
+    fi
+} >>"${TAP_LOG_FILE}" 2>&1; then
+    tap_ok 1 'libcurl transports behave'
+else
+    tap_not_ok 1 'libcurl transports behave' \
+        "See $(tap_log_hint) for details."
 fi
