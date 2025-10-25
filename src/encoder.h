@@ -34,6 +34,7 @@ struct sixel_encoder {
     unsigned int ref;               /* reference counter */
     sixel_allocator_t *allocator;   /* allocator object */
     int reqcolors;
+    int force_palette;              /* force palette size when non-zero */
     int color_option;
     char *mapfile;
     int builtin_palette;
