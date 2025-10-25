@@ -8,6 +8,15 @@ quantization / error-diffusion artifacts (grain, stripes,
 banding, clipping, chroma loss) with plain Python + numpy + Pillow.
 Optional LPIPS if torch+lpips are available.
 
+PIPELINE OVERVIEW (split commands):
+
+    +-----------+      +-----------------+      +-----------------+
+    | evaluate  | ---> | evaluate_scores | ---> | evaluate_report |
+    | (metrics) |      |  (scores/radar) |      |   (HTML glue)   |
+    +-----------+      +-----------------+      +-----------------+
+          \
+           +--> evaluate_histogram (radial spectrum PNG)
+
 USAGE:
   python evaluate_sixel_quality.py --ref path/to/reference.png --out path/to/output.png
   # Optional: write CSV
@@ -32,12 +41,11 @@ NOTES:
 import argparse
 import math
 import sys, io
-import csv, json
+import json
 from typing import Tuple, Dict
 
 import numpy as np
 from PIL import Image
-import matplotlib.pyplot as plt
 
 # ==============================
 # Utility: image loading / prep
@@ -208,39 +216,6 @@ def stripe_score(img_y: np.ndarray, bins=180) -> float:
     m = float(np.mean(hist) + 1e-12)
     mx = float(np.max(hist))
     return mx / m
-
-
-def plot_spectral_histogram(y_ref: np.ndarray, y_out: np.ndarray, out_path: str):
-    def radial_hist(img_y):
-        F = np.fft.fftshift(np.fft.fft2(img_y - np.mean(img_y)))
-        P = np.abs(F) ** 2
-        h, w = img_y.shape
-        cy, cx = h // 2, w // 2
-        yy, xx = np.mgrid[0:h, 0:w]
-        r = np.sqrt((yy - cy) ** 2 + (xx - cx) ** 2)
-        rmax = np.max(r)
-        nbins = 256
-        hist, edges = np.histogram(
-            (r / (rmax + 1e-9)).ravel(), bins=nbins, weights=P.ravel()
-        )
-        hist = hist / (np.max(hist) + 1e-12)
-        centers = 0.5 * (edges[:-1] + edges[1:])
-        return centers, hist
-
-    x1, h1 = radial_hist(y_ref)
-    x2, h2 = radial_hist(y_out)
-
-    plt.figure(figsize=(7, 4.5))
-    plt.plot(x1, h1, label="ref")
-    plt.plot(x2, h2, label="out")
-    plt.xlabel("Normalized Frequency (0=low, 1=Nyquist)")
-    plt.ylabel("Normalized Power")
-    plt.title("Radial Power Spectrum")
-    plt.grid(True, alpha=0.3)
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(out_path)
-    plt.close()
 
 
 # ===============================
@@ -553,195 +528,6 @@ def try_lpips(ref_rgb: np.ndarray, out_rgb: np.ndarray, net: str) -> float:
 
 
 # ========================
-# Scoring (0..100, non-linear)
-# ========================
-
-
-def score_from_metrics(m: Dict[str, float]) -> Dict[str, float]:
-    s = {}
-
-    def clamp01(x):
-        return float(np.clip(x, 0.0, 1.0))
-
-    def invexp(x, k):
-        return math.exp(-max(0.0, x) / max(1e-9, k))
-
-    # MS-SSIM: emphasize high-end differences
-    s["MS-SSIM"] = 100.0 * (m.get("MS-SSIM", 0.0) ** 4.0)
-
-    # Grain: HighFreqRatio_delta (<=0 is good)
-    d = m.get("HighFreqRatio_delta", 0.0)
-    s["Grain"] = 100.0 if d <= 0 else 100.0 * invexp(d, 0.02)
-
-    # Stripe: relative increase only
-    ss_rel = max(0.0, m.get("StripeScore_rel", 0.0))
-    s["Stripe"] = 100.0 * invexp(ss_rel, 0.5)  # 0.5 delta ≈ noticeable
-
-    # Banding (runlen): positive is worse
-    br = max(0.0, m.get("BandingIndex_rel", 0.0))
-    s["Banding(runlen)"] = 100.0 * invexp(br, 0.02)
-
-    # Banding (gradient-hist): positive is worse
-    bg = max(0.0, m.get("BandingIndex_grad_rel", 0.0))
-    s["Banding(grad)"] = 100.0 * invexp(bg, 0.05)
-
-    # Clipping: worst positive delta among channels/luma
-    clip_worst_rel = max(
-        0.0,
-        m.get("ClipRate_L_rel", 0.0),
-        m.get("ClipRate_R_rel", 0.0),
-        m.get("ClipRate_G_rel", 0.0),
-        m.get("ClipRate_B_rel", 0.0),
-    )
-    s["Clipping"] = 100.0 * ((1.0 - clamp01(clip_worst_rel / 0.10)) ** 0.5)
-
-    # Δ Chroma_mean: lower is better, noticeable ~3
-    dch = m.get("Δ Chroma_mean", 0.0)
-    s["Δ Chroma"] = 100.0 * ((1.0 - clamp01(dch / 3.0)) ** 1.0)
-
-    # Δ E00_mean: lower is better, 2-5 noticeable
-    de00 = m.get("Δ E00_mean", m.get("Δ E00_mean", 0.0))
-    s["Δ E00"] = 100.0 * ((1.0 - clamp01(de00 / 5.0)) ** 1.0)
-
-    # GMSD: lower is better, 0.10 ≈ poor
-    gms = m.get("GMSD", 0.0)
-    s["GMSD"] = 100.0 * ((1.0 - clamp01(gms / 0.10)) ** 1.0)
-
-    # PSNR_Y: knee 25..45dB
-    psnr = m.get("PSNR_Y", 0.0)
-    t = clamp01((psnr - 25.0) / 20.0)  # 25->0, 45->1
-    s["PSNR_Y"] = 100.0 * (t**0.6)
-
-    # LPIPS (vgg): lower is better; 0.1 ~ quite different
-    lp = m.get("LPIPS(vgg)", float("nan"))
-    if not (isinstance(lp, float) and np.isnan(lp)):
-        s["LPIPS(vgg)"] = 100.0 * ((1.0 - clamp01(lp / 1.00)) ** 0.5)
-    else:
-        s["LPIPS(vgg)"] = float("nan")
-
-    # Overall (robust mean ignoring NaNs)
-    vals = [v for v in s.values() if isinstance(v, float) and not np.isnan(v)]
-    s["Overall"] = float(np.mean(vals)) if vals else float("nan")
-    return s
-
-
-# ========================
-# Radar (scores) & HTML
-# ========================
-
-
-def plot_radar_scores(scores: Dict[str, float], out_path: str):
-    labels = [
-        "MS-SSIM",
-        "Grain",
-        "Stripe",
-        "Banding(runlen)",
-        "Banding(grad)",
-        "Clipping",
-        "Δ Chroma",
-        "Δ E00",
-        "GMSD",
-        "PSNR_Y",
-        "LPIPS(vgg)",
-    ]
-    values = [scores.get(k, float("nan")) for k in labels]
-    values = [
-        0.0 if (isinstance(v, float) and np.isnan(v)) else float(v) for v in values
-    ]
-    vals = [max(0.0, min(100.0, v)) / 100.0 for v in values]
-    N = len(labels)
-    angles = np.linspace(0, 2 * np.pi, N, endpoint=False).tolist()
-    vals += vals[:1]
-    angles += angles[:1]
-    plt.figure(figsize=(6.5, 6.5))
-    ax = plt.subplot(111, polar=True)
-    ax.plot(angles, vals, linewidth=2)
-    ax.fill(angles, vals, alpha=0.25)
-    ax.set_xticks(angles[:-1])
-    ax.set_xticklabels(labels)
-    ax.set_yticks([0.25, 0.5, 0.75, 1.0])
-    ax.set_yticklabels(["25", "50", "75", "100"])
-    plt.title("Quality Radar (Scores 0..100; higher is better)")
-    plt.tight_layout()
-    plt.savefig(out_path)
-    plt.close()
-
-
-def write_html(prefix: str, metrics: Dict[str, float], scores: Dict[str, float]):
-    html_path = f"{prefix}.html"
-
-    def fmt(v):
-        if isinstance(v, float):
-            return "NaN" if np.isnan(v) else f"{v:.6f}"
-        return str(v)
-
-    rows_raw = "".join(
-        [f"<tr><td>{k}</td><td>{fmt(v)}</td></tr>" for k, v in metrics.items()]
-    )
-    rows_scores = "".join(
-        [f"<tr><td>{k}</td><td>{fmt(v)}</td></tr>" for k, v in scores.items()]
-    )
-
-    with open(html_path, "w", encoding="utf-8") as f:
-        f.write(
-            f"""<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Image Quality Report</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body{{font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin:20px;}}
-h1{{margin-top:0}}
-table{{border-collapse:collapse; width:100%; max-width:1024px}}
-td,th{{border:1px solid #ddd; padding:6px 8px; font-variant-numeric: tabular-nums;}}
-th{{background:#f4f4f4; text-align:left}}
-img{{max-width:100%; height:auto; display:block; margin:10px 0;}}
-.flex{{display:flex; gap:24px; flex-wrap:wrap}}
-.card{{flex:1 1 460px; min-width:320px;}}
-</style>
-</head>
-<body>
-<h1>Image Quality Report</h1>
-
-<div class="flex">
-  <div class="card">
-    <h2>Scores (0..100)</h2>
-    <table>
-      <thead><tr><th>Metric</th><th>Score</th></tr></thead>
-      <tbody>
-        {rows_scores}
-      </tbody>
-    </table>
-  </div>
-  <div class="card">
-    <h2>Raw Metrics</h2>
-    <table>
-      <thead><tr><th>Metric</th><th>Value</th></tr></thead>
-      <tbody>
-        {rows_raw}
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<h2>Charts</h2>
-<h3>Radial Power Spectrum</h3>
-<img src="{prefix}_spectrum.png" alt="Radial Spectrum">
-
-<h3>Quality Radar (Scores)</h3>
-<img src="{prefix}_radar_scores.png" alt="Quality Radar Scores">
-
-<footer style="margin-top:24px; color:#666">
-Generated by evaluate.py
-</footer>
-</body>
-</html>"""
-        )
-    return html_path
-
-
-# ========================
 # Evaluate
 # ========================
 
@@ -845,62 +631,49 @@ def main():
     ap.add_argument(
         "--prefix", default="report", help="Output prefix (default: report)"
     )
-    ap.add_argument("--csv", default="", help="Optional path to write a CSV report")
+    ap.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help=(
+            "Pretty-print metrics to stderr and report the JSON path for"
+            " humans."
+        ),
+    )
     args = ap.parse_args()
 
     ref = load_rgb(args.ref)
     out = load_rgb(args.out)
 
     metrics = evaluate_core(ref, out)
-    scores = score_from_metrics(metrics)
 
-    # Pretty print
-    print("\n=== Image Quality Report (Raw) ===")
-    for k, v in metrics.items():
-        if isinstance(v, float):
-            print(f"{k:>24s}: {'NaN' if np.isnan(v) else f'{v:.6f}'}")
-        else:
-            print(f"{k:>24s}: {v}")
+    # Verbose mode mirrors the legacy stdout table but writes it to stderr
+    # so that pipelines remain clean:
+    #
+    #     evaluate | evaluate_scores | evaluate_report
+    #        |                |                |
+    #        +---- human-readable stderr -----+
+    if args.verbose:
+        print(
+            "\n=== Image Quality Report (Raw Metrics) ===",
+            file=sys.stderr,
+        )
+        for k, v in metrics.items():
+            if isinstance(v, float):
+                pretty = "NaN" if np.isnan(v) else f"{v:.6f}"
+                print(f"{k:>24s}: {pretty}", file=sys.stderr)
+            else:
+                print(f"{k:>24s}: {v}", file=sys.stderr)
 
-    print("\n=== Scores (0..100; higher is better) ===")
-    for k, v in scores.items():
-        if isinstance(v, float):
-            print(f"{k:>24s}: {'NaN' if np.isnan(v) else f'{v:0.2f}'}")
-        else:
-            print(f"{k:>24s}: {v}")
-
-    # Save JSON + optional CSV
+    # Save JSON with raw metrics only
     with open(f"{args.prefix}_metrics.json", "w", encoding="utf-8") as f:
         json.dump(metrics, f, ensure_ascii=False, indent=2)
-    with open(f"{args.prefix}_scores.json", "w", encoding="utf-8") as f:
-        json.dump(scores, f, ensure_ascii=False, indent=2)
-    if args.csv:
-        with open(args.csv, "w", newline="") as f:
-            w = csv.writer(f)
-            w.writerow(["metric", "value"])
-            for k, v in metrics.items():
-                w.writerow([k, v])
+    if args.verbose:
+        print("\nWrote:", f"{args.prefix}_metrics.json", file=sys.stderr)
 
-    # Charts
-    h = min(ref.shape[0], out.shape[0])
-    w = min(ref.shape[1], out.shape[1])
-    ref = ref[:h, :w, :]
-    out = out[:h, :w, :]
-    y_ref = to_luma709(ref)
-    y_out = to_luma709(out)
-    plot_spectral_histogram(y_ref, y_out, f"{args.prefix}_spectrum.png")
-    plot_radar_scores(scores, f"{args.prefix}_radar_scores.png")
-
-    # HTML
-    html_path = write_html(args.prefix, metrics, scores)
-
-    print("\nWrote:", f"{args.prefix}_metrics.json")
-    print("Wrote:", f"{args.prefix}_scores.json")
-    if args.csv:
-        print("Wrote:", args.csv)
-    print("Wrote:", f"{args.prefix}_spectrum.png")
-    print("Wrote:", f"{args.prefix}_radar_scores.png")
-    print("Wrote:", html_path)
+    # Stream JSON to stdout so downstream commands can read from a pipe.
+    json.dump(metrics, sys.stdout, ensure_ascii=False, indent=2)
+    sys.stdout.write("\n")
 
 
 if __name__ == "__main__":
