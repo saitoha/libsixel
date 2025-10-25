@@ -3,13 +3,40 @@
 command -v img2sixel &>/dev/null &&
 _img2sixel()
 {
-    local cur prev
+    # ------------------------------------------------------------------
+    #   +--------------------+     +-------------------------------+
+    #   | bash-completion v2 | --> | _init_completion (preferred) |
+    #   +--------------------+     +-------------------------------+
+    #                 |                     ^
+    #                 v                     |
+    #   +--------------------+     +-------------------------------+
+    #   | bash-completion v1 | --> | manual _get_cword fallback    |
+    #   +--------------------+     +-------------------------------+
+    # ------------------------------------------------------------------
+
+    local cur prev words cword
 
     COMPREPLY=()
-    cur=`_get_cword`
-    prev=${COMP_WORDS[COMP_CWORD-1]}
 
-    _expand || return 0
+    if declare -F _init_completion >/dev/null 2>&1; then
+        _init_completion -n '=' || return
+    else
+        if declare -F _get_comp_words_by_ref >/dev/null 2>&1; then
+            _get_comp_words_by_ref -n '=' cur prev words cword
+        else
+            words=("${COMP_WORDS[@]}")
+            cword=$COMP_CWORD
+            cur=${COMP_WORDS[COMP_CWORD]}
+            prev=${COMP_WORDS[COMP_CWORD-1]}
+        fi
+    fi
+
+    cur=${cur-${COMP_WORDS[COMP_CWORD]}}
+    prev=${prev-${COMP_WORDS[COMP_CWORD-1]}}
+
+    if declare -F _expand >/dev/null 2>&1; then
+        _expand || return 0
+    fi
 
     case "$prev" in
     -p|--colors)
@@ -203,11 +230,11 @@ _img2sixel()
                                    -t --palette-type \
                                    -b --builtin-palette \
                                    -E --encode-policy \
-                                   -J --loaders \
                                    -B --bgcolor \
                                    -P --penetrate \
                                    -D --pipe-mode \
                                    -v --verbose \
+                                   -J --loaders \
                                    -@ --drcs \
                                    -M --mapping-version \
                                    -O --ormode \

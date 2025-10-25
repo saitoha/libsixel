@@ -284,27 +284,86 @@ AC_ARG_WITH(pkgconfigdir,
 AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
 AC_SUBST(pkgconfigdir)
 
+dnl ----------------------------------------------------------------------
+dnl Auto-detect bash-completion directory with a v2 -> v1 fallback chain.
+dnl   +------------------------+     +------------------------+
+dnl   | probe v2 installations | --> | probe legacy (v1) dirs |
+dnl   +------------------------+     +------------------------+
+dnl ----------------------------------------------------------------------
 AC_ARG_WITH(bashcompletiondir,
             AS_HELP_STRING([--with-bashcompletiondir[=DIR]],
                            [Install bash completion to DIR (default: no)]),
-                           [AS_CASE([$withval],
-                                    [yes|auto|''], [bashcompletiondir=${datadir}/bash-completion/completions],
-                                    [no], [bashcompletiondir=],
-                                    [bashcompletiondir=${withval}])],
-                           [bashcompletiondir=])
+                           [bashcompletiondir_request=$withval],
+                           [bashcompletiondir_request=no])
+AS_CASE([$bashcompletiondir_request],
+        [yes|auto|''], [
+            bashcompletiondir=
+            for candidate in \
+                "${datadir}/bash-completion/completions" \
+                "/usr/share/bash-completion/completions" \
+                "/usr/local/share/bash-completion/completions"
+            do
+                if test -d "$candidate"; then
+                    bashcompletiondir=$candidate
+                    break
+                fi
+            done
+            if test -z "$bashcompletiondir"; then
+                for candidate in \
+                    "${sysconfdir}/bash_completion.d" \
+                    "/etc/bash_completion.d" \
+                    "/usr/local/etc/bash_completion.d"
+                do
+                    if test -d "$candidate"; then
+                        bashcompletiondir=$candidate
+                        break
+                    fi
+                done
+            fi
+            if test -z "$bashcompletiondir"; then
+                bashcompletiondir=${datadir}/bash-completion/completions
+            fi
+        ],
+        [no], [bashcompletiondir=],
+        [bashcompletiondir=${bashcompletiondir_request}])
 AS_IF([test -n "$bashcompletiondir"],
       [AC_MSG_NOTICE([bash-completion directory is ${bashcompletiondir}])],
       [AC_MSG_NOTICE([bash-completion installation disabled])])
 AC_SUBST(bashcompletiondir)
 
+# ----------------------------------------------------------------------
+# Auto-detect zsh completion directory by preferring vendor locations.
+#   +---------------------------+     +---------------------------+
+#   | probe vendor completions  | --> | probe site-functions tree |
+#   +---------------------------+     +---------------------------+
+# ----------------------------------------------------------------------
 AC_ARG_WITH(zshcompletiondir,
             AS_HELP_STRING([--with-zshcompletiondir[=DIR]],
                            [Install zsh completion to DIR (default: no)]),
-                           [AS_CASE([$withval],
-                                    [yes|auto|''], [zshcompletiondir=${datadir}/zsh/site-functions],
-                                    [no], [zshcompletiondir=],
-                                    [zshcompletiondir=${withval}])],
-                           [zshcompletiondir=])
+                           [zshcompletiondir_request=$withval],
+                           [zshcompletiondir_request=no])
+AS_CASE([$zshcompletiondir_request],
+        [yes|auto|''], [
+            zshcompletiondir=
+            for candidate in \
+                "${datadir}/zsh/vendor-completions" \
+                "${datadir}/zsh/site-functions" \
+                "/usr/share/zsh/vendor-completions" \
+                "/usr/local/share/zsh/vendor-completions" \
+                "/usr/share/zsh/site-functions" \
+                "/usr/local/share/zsh/site-functions"
+            do
+                if test -d "$candidate"; then
+                    zshcompletiondir=$candidate
+                    break
+                fi
+            done
+            if test -z "$zshcompletiondir"; then
+                zshcompletiondir=${datadir}/zsh/vendor-completions
+            fi
+        ],
+        [no], [zshcompletiondir=],
+        [zshcompletiondir=${zshcompletiondir_request}])
 AS_IF([test -n "$zshcompletiondir"],
       [AC_MSG_NOTICE([zsh-completion directory is ${zshcompletiondir}])],
       [AC_MSG_NOTICE([zsh-completion installation disabled])])

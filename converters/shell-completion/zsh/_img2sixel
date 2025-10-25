@@ -78,7 +78,7 @@ _resamplingtype() {
     'bicubic[Bicubic filter]' \
     'lanczos2[Lanczos2 filter]' \
     'lanczos3[Lanczos3 filter]' \
-    'lanczos3[Lanczos4 filter]'
+    'lanczos4[Lanczos4 filter]'
 }
 
 _qualitytype() {
