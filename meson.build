@@ -636,7 +636,42 @@ bash_completion_opt = get_option('bashcompletiondir')
 bash_completion_dir = ''
 if bash_completion_opt != 'disabled'
   if bash_completion_opt == '' or bash_completion_opt == 'auto'
-    bash_completion_dir = join_paths(get_option('datadir'), 'bash-completion', 'completions')
+    # ------------------------------------------------------------------
+    # Directory probing strategy
+    #   +-----------+     +-----------+
+    #   | prefer v2 | --> | fallback  |
+    #   +-----------+     +-----------+
+    # ------------------------------------------------------------------
+    prefix_dir = get_option('prefix')
+    datadir_opt = get_option('datadir')
+    sysconfdir_opt = get_option('sysconfdir')
+    bash_completion_v2_candidates = [
+      join_paths(prefix_dir, datadir_opt, 'bash-completion', 'completions'),
+      '/usr/share/bash-completion/completions',
+      '/usr/local/share/bash-completion/completions'
+    ]
+    bash_completion_v1_candidates = [
+      join_paths(prefix_dir, sysconfdir_opt, 'bash_completion.d'),
+      '/etc/bash_completion.d',
+      '/usr/local/etc/bash_completion.d'
+    ]
+    foreach candidate : bash_completion_v2_candidates
+      if fs.exists(candidate)
+        bash_completion_dir = candidate
+        break
+      endif
+    endforeach
+    if bash_completion_dir == ''
+      foreach candidate : bash_completion_v1_candidates
+        if fs.exists(candidate)
+          bash_completion_dir = candidate
+          break
+        endif
+      endforeach
+    endif
+    if bash_completion_dir == ''
+      bash_completion_dir = bash_completion_v2_candidates[0]
+    endif
   else
     bash_completion_dir = bash_completion_opt
   endif
@@ -646,7 +681,41 @@ zsh_completion_opt = get_option('zshcompletiondir')
 zsh_completion_dir = ''
 if zsh_completion_opt != 'disabled'
   if zsh_completion_opt == '' or zsh_completion_opt == 'auto'
-    zsh_completion_dir = join_paths(get_option('datadir'), 'zsh', 'site-functions')
+    # ------------------------------------------------------------------
+    # Directory probing strategy
+    #   +---------------------------+     +---------------------------+
+    #   | probe vendor completions  | --> | probe site-functions tree |
+    #   +---------------------------+     +---------------------------+
+    # ------------------------------------------------------------------
+    prefix_dir = get_option('prefix')
+    datadir_opt = get_option('datadir')
+    zsh_vendor_candidates = [
+      join_paths(prefix_dir, datadir_opt, 'zsh', 'vendor-completions'),
+      '/usr/share/zsh/vendor-completions',
+      '/usr/local/share/zsh/vendor-completions'
+    ]
+    zsh_site_candidates = [
+      join_paths(prefix_dir, datadir_opt, 'zsh', 'site-functions'),
+      '/usr/share/zsh/site-functions',
+      '/usr/local/share/zsh/site-functions'
+    ]
+    foreach candidate : zsh_vendor_candidates
+      if fs.exists(candidate)
+        zsh_completion_dir = candidate
+        break
+      endif
+    endforeach
+    if zsh_completion_dir == ''
+      foreach candidate : zsh_site_candidates
+        if fs.exists(candidate)
+          zsh_completion_dir = candidate
+          break
+        endif
+      endforeach
+    endif
+    if zsh_completion_dir == ''
+      zsh_completion_dir = zsh_vendor_candidates[0]
+    endif
   else
     zsh_completion_dir = zsh_completion_opt
   endif

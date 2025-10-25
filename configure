@@ -16587,19 +16587,47 @@ printf "%s\n" "$as_me: pkgconfig directory is ${pkgconfigdir}" >&6;}
 # Check whether --with-bashcompletiondir was given.
 if test ${with_bashcompletiondir+y}
 then :
-  withval=$with_bashcompletiondir; case $withval in #(
-  yes|auto|'') :
-    bashcompletiondir=${datadir}/bash-completion/completions ;; #(
-  no) :
-    bashcompletiondir= ;; #(
-  *) :
-    bashcompletiondir=${withval} ;;
-esac
+  withval=$with_bashcompletiondir; bashcompletiondir_request=$withval
 else case e in #(
-  e) bashcompletiondir= ;;
+  e) bashcompletiondir_request=no ;;
 esac
 fi
 
+case $bashcompletiondir_request in #(
+  yes|auto|'') :
+
+            bashcompletiondir=
+            for candidate in \
+                "${datadir}/bash-completion/completions" \
+                "/usr/share/bash-completion/completions" \
+                "/usr/local/share/bash-completion/completions"
+            do
+                if test -d "$candidate"; then
+                    bashcompletiondir=$candidate
+                    break
+                fi
+            done
+            if test -z "$bashcompletiondir"; then
+                for candidate in \
+                    "${sysconfdir}/bash_completion.d" \
+                    "/etc/bash_completion.d" \
+                    "/usr/local/etc/bash_completion.d"
+                do
+                    if test -d "$candidate"; then
+                        bashcompletiondir=$candidate
+                        break
+                    fi
+                done
+            fi
+            if test -z "$bashcompletiondir"; then
+                bashcompletiondir=${datadir}/bash-completion/completions
+            fi
+         ;; #(
+  no) :
+    bashcompletiondir= ;; #(
+  *) :
+    bashcompletiondir=${bashcompletiondir_request} ;;
+esac
 if test -n "$bashcompletiondir"
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: bash-completion directory is ${bashcompletiondir}" >&5
@@ -16611,23 +16639,48 @@ esac
 fi
 
 
+# ----------------------------------------------------------------------
+# Auto-detect zsh completion directory by preferring vendor locations.
+#   +---------------------------+     +---------------------------+
+#   | probe vendor completions  | --> | probe site-functions tree |
+#   +---------------------------+     +---------------------------+
+# ----------------------------------------------------------------------
 
 # Check whether --with-zshcompletiondir was given.
 if test ${with_zshcompletiondir+y}
 then :
-  withval=$with_zshcompletiondir; case $withval in #(
-  yes|auto|'') :
-    zshcompletiondir=${datadir}/zsh/site-functions ;; #(
-  no) :
-    zshcompletiondir= ;; #(
-  *) :
-    zshcompletiondir=${withval} ;;
-esac
+  withval=$with_zshcompletiondir; zshcompletiondir_request=$withval
 else case e in #(
-  e) zshcompletiondir= ;;
+  e) zshcompletiondir_request=no ;;
 esac
 fi
 
+case $zshcompletiondir_request in #(
+  yes|auto|'') :
+
+            zshcompletiondir=
+            for candidate in \
+                "${datadir}/zsh/vendor-completions" \
+                "${datadir}/zsh/site-functions" \
+                "/usr/share/zsh/vendor-completions" \
+                "/usr/local/share/zsh/vendor-completions" \
+                "/usr/share/zsh/site-functions" \
+                "/usr/local/share/zsh/site-functions"
+            do
+                if test -d "$candidate"; then
+                    zshcompletiondir=$candidate
+                    break
+                fi
+            done
+            if test -z "$zshcompletiondir"; then
+                zshcompletiondir=${datadir}/zsh/vendor-completions
+            fi
+         ;; #(
+  no) :
+    zshcompletiondir= ;; #(
+  *) :
+    zshcompletiondir=${zshcompletiondir_request} ;;
+esac
 if test -n "$zshcompletiondir"
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: zsh-completion directory is ${zshcompletiondir}" >&5
