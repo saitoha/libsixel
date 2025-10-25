@@ -60,6 +60,16 @@ stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes,
                       int x, int y, int n, int *out_len);
 
 /*
+ * The stb helper lives in another translation unit, so we forward declare it
+ * here to satisfy the compiler. The picture below shows the relationship.
+ */
+unsigned char *
+stbi_zlib_compress(unsigned char *data,
+                   int data_len,
+                   int *out_len,
+                   int quality);
+
+/*
  * The CRC generator mirrors the PNG chunk layout so we can reuse the helper
  * from multiple writers.
  *
