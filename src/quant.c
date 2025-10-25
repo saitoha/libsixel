@@ -1091,6 +1091,21 @@ computeHash(unsigned char const *data,
 
     hash = 0;
     bits = control->channel_bits;
+    if (control->channel_shift == 0U) {
+        /*
+         * Fast path for hopscotch / robinhood policies:
+         *
+         *      R   G   B
+         *     [ ]-[ ]-[ ]
+         *      |   |   |
+         *      v   v   v
+         *     0xRRGGBB
+         */
+        for (n = 0U; n < depth; ++n) {
+            hash |= (unsigned int)data[depth - 1U - n] << (n * bits);
+        }
+        return hash;
+    }
     for (n = 0; n < depth; n++) {
 #if 0
         hash |= (unsigned int)(data[depth - 1 - n] >> 3) << n * 5;
@@ -5254,6 +5269,12 @@ lookup_fast_common(unsigned char const *pixel,
     struct cuckoo_table32 *table;
     uint32_t *slot;
     SIXELSTATUS status;
+    unsigned char const *entry;
+    unsigned char const *end;
+    int pixel0;
+    int pixel1;
+    int pixel2;
+    int delta;
 
     result = (-1);
     diff = INT_MAX;
@@ -5267,13 +5288,27 @@ lookup_fast_common(unsigned char const *pixel,
         }
     }
 
-    for (i = 0; i < reqcolor; i++) {
-        distant = (pixel[0] - palette[i * 3 + 0])
-                * (pixel[0] - palette[i * 3 + 0]) * complexion
-                + (pixel[1] - palette[i * 3 + 1])
-                * (pixel[1] - palette[i * 3 + 1])
-                + (pixel[2] - palette[i * 3 + 2])
-                * (pixel[2] - palette[i * 3 + 2]);
+    entry = palette;
+    end = palette + (size_t)reqcolor * 3;
+    pixel0 = (int)pixel[0];
+    pixel1 = (int)pixel[1];
+    pixel2 = (int)pixel[2];
+    /*
+     * Palette traversal as RGB triplets keeps the stride linear:
+     *
+     *   i -> [R][G][B]
+     *        |  |  |
+     *        `--+--'
+     *           v
+     *         entry
+     */
+    for (i = 0; entry < end; ++i, entry += 3) {
+        delta = pixel0 - (int)entry[0];
+        distant = delta * delta * complexion;
+        delta = pixel1 - (int)entry[1];
+        distant += delta * delta;
+        delta = pixel2 - (int)entry[2];
+        distant += delta * delta;
         if (distant < diff) {
             diff = distant;
             result = i;
