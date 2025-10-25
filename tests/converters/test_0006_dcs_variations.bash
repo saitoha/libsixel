@@ -5,25 +5,35 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 # shellcheck source=tests/converters/common.bash
 source "${SCRIPT_DIR}/common.bash"
 
+# ----------------------------------------------------------------------
+#  +----------------------+------------------------------+
+#  | Case                 | Expectation                   |
+#  +----------------------+------------------------------+
+#  | Tab-separated colors | Parsing tolerates \t introducers |
+#  | Oversized geometry   | Parsing tolerates large sizes |
+#  +----------------------+------------------------------+
+# ----------------------------------------------------------------------
+
 tap_init "$(basename "$0")"
-tap_plan 1
 
-if {
-    tap_log '[test6] DCS format variations'
+target_image="${IMAGES_DIR}/snake.png"
+require_file "${target_image}"
 
-    require_file "${IMAGES_DIR}/snake.png"
+tap_plan 2
 
-    # Validate handling of tab-separated colour introducers.
-    run_img2sixel "${IMAGES_DIR}/snake.png" | \
+dcs_tab_separated_colours() {
+    tap_log "[dcs-variations] tab separated colour introducers"
+    run_img2sixel "${target_image}" | \
         sed 's/C/C:/g' | tr ':' '\t' | \
         run_img2sixel >/dev/null
-    # Validate oversized geometry parameters inside the DCS header.
-    run_img2sixel "${IMAGES_DIR}/snake.png" | \
+}
+
+dcs_oversized_geometry() {
+    tap_log "[dcs-variations] oversized geometry values"
+    run_img2sixel "${target_image}" | \
         sed 's/"1;1;600;450/"1;1;700;500/' | \
         run_img2sixel >/dev/null
-} >>"${TAP_LOG_FILE}" 2>&1; then
-    tap_ok 1 'DCS parsing tolerates variations'
-else
-    tap_not_ok 1 'DCS parsing tolerates variations' \
-        "See $(tap_log_hint) for details."
-fi
+}
+
+tap_case 'DCS tolerates tab separators' dcs_tab_separated_colours
+tap_case 'DCS tolerates oversized geometry' dcs_oversized_geometry

@@ -78,6 +78,7 @@ tap_init() {
     mkdir -p "${log_dir}"
     TAP_LOG_FILE="${log_dir}/${base}.log"
     : >"${TAP_LOG_FILE}"
+    TAP_CASE_INDEX=0
 }
 
 tap_plan() {
@@ -85,6 +86,47 @@ tap_plan() {
 
     total=$1
     printf '1..%s\n' "${total}"
+}
+
+# ----------------------------------------------------------------------
+#  +----------------------+
+#  | TAP case navigation |
+#  +----------------------+
+#  The helper below hands out monotonically increasing identifiers so
+#  that each test case can simply call `tap_next` before emitting
+#  success or failure.  The ASCII art illustrates the very small state
+#  machine we maintain:
+#
+#        +---------+   tap_next   +---------+
+#        |  idle   | -----------> | running |
+#        +---------+              +---------+
+#            ^                         |
+#            |   tap_init              |
+#            +-------------------------+
+#
+#  The implementation is intentionally tiny yet explicit because Bash
+#  does not have integers with automatic declaration.
+# ----------------------------------------------------------------------
+tap_next() {
+    TAP_CASE_INDEX=$((TAP_CASE_INDEX + 1))
+}
+
+tap_case() {
+    local description
+    local callback
+    local number
+
+    description=$1
+    callback=$2
+    shift 2
+    tap_next
+    number=${TAP_CASE_INDEX}
+    if "${callback}" "$@" >>"${TAP_LOG_FILE}" 2>&1; then
+        tap_ok "${number}" "${description}"
+    else
+        tap_not_ok "${number}" "${description}" \
+            "See $(tap_log_hint) for details."
+    fi
 }
 
 tap_diag() {

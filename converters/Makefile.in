@@ -92,21 +92,21 @@ build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_1 = \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0001_invalid_option.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0002_stdin.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0003_information.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0004_conversion_options.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0005_dcs_arguments.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0006_dcs_variations.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0007_animation.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0008_progressive_jpeg.bash
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	test_0001_invalid_option.bash \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	test_0002_stdin.bash \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	test_0003_information.bash \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	test_0004_conversion_options.bash \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	test_0005_dcs_arguments.bash \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	test_0006_dcs_variations.bash \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	test_0007_animation.bash \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	test_0008_progressive_jpeg.bash
 
-@HAVE_BASH_TRUE@@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_2 = $(top_srcdir)/tests/converters/test_0009_pngsuite.bash
-@HAVE_BASH_TRUE@@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_3 = $(top_srcdir)/tests/converters/test_0010_curl.bash
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_4 = $(top_srcdir)/tests/converters/test_0011_basic.bash
+@HAVE_BASH_TRUE@@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_2 = test_0009_pngsuite.bash
+@HAVE_BASH_TRUE@@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_3 = test_0010_curl.bash
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_4 = test_0011_basic.bash
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_5 = \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0012_regressions.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0013_documentation.bash
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	test_0012_regressions.bash \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	test_0013_documentation.bash
 
 @WANT_IMG2SIXEL_TRUE@am__append_6 = img2sixel
 @WANT_IMG2SIXEL_TRUE@am__append_7 = $(srcdir)/img2sixel.1
@@ -131,6 +131,33 @@ DIST_COMMON = $(srcdir)/Makefile.am \
 	$(am__dist_zshcompletion_DATA_DIST) $(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
+TEST_EXTENSIONS = .bash
+BASH_LOG_DRIVER =
+BASH_LOG_COMPILER =
+TESTS =
+BASH_TEST_SRCDIR =
+BASH_TEST_SCRIPTS =
+AM_TESTS_ENVIRONMENT =
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@BASH_TEST_SRCDIR = $(top_srcdir)/tests/converters
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@TESTS = $(addprefix $(srcdir)/../tests/converters/, $(CONVERTER_TEST_NAMES))
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@BASH_TEST_SCRIPTS = $(addprefix $(BASH_TEST_SRCDIR)/, $(CONVERTER_TEST_NAMES))
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@BASH_LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/tap-driver.sh
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@BASH_LOG_COMPILER = $(BASH)
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@CONVERTER_TEST_ENV_EXPORT = \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        TOP_SRCDIR=$(top_srcdir); export TOP_SRCDIR; \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        SRC_DIR=$(srcdir); export SRC_DIR; \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        BUILD_DIR=$(builddir); export BUILD_DIR; \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        TMP_DIR=$(builddir)/tmp; export TMP_DIR; \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        WINE="$(WINE)"; export WINE; \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        WINEEXT="$(WINEEXT)"; export WINEEXT
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@CONVERTER_TEST_ENV_VARS = \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        TOP_SRCDIR="$(top_srcdir)" \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        SRC_DIR="$(srcdir)" \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        BUILD_DIR="$(builddir)" \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        TMP_DIR="$(builddir)/tmp" \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        WINE="$(WINE)" \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        WINEEXT="$(WINEEXT)"
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@AM_TESTS_ENVIRONMENT = $(CONVERTER_TEST_ENV_EXPORT)
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 @WANT_IMG2SIXEL_TRUE@am__EXEEXT_1 = img2sixel$(EXEEXT)
@@ -498,7 +525,7 @@ DIST_SUBDIRS = $(SUBDIRS)
 dist_man_MANS = $(am__append_7) $(am__append_11)
 dist_bashcompletion_DATA = $(am__append_8)
 dist_zshcompletion_DATA = $(am__append_9)
-CONVERTER_TEST_LIST = $(am__append_1) $(am__append_2) $(am__append_3) \
+CONVERTER_TEST_NAMES = $(am__append_1) $(am__append_2) $(am__append_3) \
 	$(am__append_4) $(am__append_5)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 CLEANFILES = *.gcno *.gcda *.gcov \
@@ -961,7 +988,7 @@ distdir-am: $(DISTFILES)
 	      || exit 1; \
 	  fi; \
 	done
-check-am: all-am
+check-am: all-am check-converter-tests
 check: check-recursive
 all-am: Makefile $(PROGRAMS) $(MANS) $(DATA)
 installdirs: installdirs-recursive
@@ -1104,32 +1131,29 @@ uninstall-man: uninstall-man1
 .PRECIOUS: Makefile
 
 
-check: test_impl
-
-test: all test_impl
-
-test_impl:
+check-converter-tests:
 	@if test "x$(BASH)" = x -o "x$(BASH)" = xno; then \
-		printf '# skipped: bash is not available; converter tests skipped\n'; \
+		printf 'SKIP: bash is not available; converter tests skipped\n'; \
 		exit 0; \
 	fi
-	@if test -z "$(CONVERTER_TEST_LIST)"; then \
-		printf '# skipped: no converter tests are enabled\n'; \
+	@if test -z "$(BASH_TEST_SCRIPTS)"; then \
+		printf 'SKIP: no converter tests are enabled\n'; \
 		exit 0; \
 	fi
-	@printf '# begin converter tests\n'
-	@set -e; \
-	for test_script in $(CONVERTER_TEST_LIST); do \
-		printf '# running %s\n' "$$(basename $$test_script)"; \
-		TOP_SRCDIR=$(top_srcdir) \
-		SRC_DIR=$(srcdir) \
-		BUILD_DIR=$(builddir) \
-		TMP_DIR=$(builddir)/tmp \
-		WINE="$(WINE)" \
-		WINEEXT="$(WINEEXT)" \
-		$(BASH) "$$test_script" || exit $$?; \
-	done
-	@printf '# converter tests complete\n'
+	@mkdir -p $(builddir)/tmp/logs
+	@rm -f $(builddir)/test-suite.log
+	@overall_status=0; \
+	for test_script in $(BASH_TEST_SCRIPTS); do \
+		name=`basename $$test_script`; \
+		log_file=$(builddir)/$$name.log; \
+		trs_file=$(builddir)/$$name.trs; \
+		rm -f "$$log_file" "$$trs_file"; \
+		if ! $(BASH_LOG_DRIVER) --test-name "$$name" --log-file "$$log_file" --trs-file "$$trs_file" --expect-failure no --color-tests no --enable-hard-errors yes --comments yes -- env $(CONVERTER_TEST_ENV_VARS) $(BASH) "$$test_script"; then \
+			overall_status=1; \
+		fi; \
+		cat "$$trs_file" >>$(builddir)/test-suite.log; \
+	done; \
+	exit $$overall_status
 winetest: all
 	WINE=wine $(MAKE) test
 

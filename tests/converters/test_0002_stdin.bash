@@ -5,26 +5,32 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 # shellcheck source=tests/converters/common.bash
 source "${SCRIPT_DIR}/common.bash"
 
+# ----------------------------------------------------------------------
+#  +----------------------+---------------------------+
+#  | Case                 | Expectation                |
+#  +----------------------+---------------------------+
+#  | STDIN guard          | Non-image data is rejected |
+#  +----------------------+---------------------------+
+# ----------------------------------------------------------------------
+
 tap_init "$(basename "$0")"
 tap_plan 1
 
-if {
-    tap_log '[test2] STDIN handling'
+stdin_rejects_non_image() {
+    local output_file
 
-    # Verify that non-image stdin is rejected.
+    tap_log "[stdin] invalid stdin should be rejected"
     output_file="${TMP_DIR}/capture.$$"
     if echo -n a | run_img2sixel >"${output_file}" 2>/dev/null; then
         :
     fi
     if [[ -s ${output_file} ]]; then
-        echo 'img2sixel unexpectedly produced output for invalid stdin' >&2
+        printf 'img2sixel unexpectedly produced output for invalid stdin\n'
         rm -f "${output_file}"
-        exit 1
+        return 1
     fi
     rm -f "${output_file}"
-} >>"${TAP_LOG_FILE}" 2>&1; then
-    tap_ok 1 'STDIN rejects non-image data'
-else
-    tap_not_ok 1 'STDIN rejects non-image data' \
-        "See $(tap_log_hint) for details."
-fi
+    return 0
+}
+
+tap_case 'STDIN rejects non-image data' stdin_rejects_non_image

@@ -14,7 +14,7 @@ endif
 
 DIST_SUBDIRS = include src converters tools python ruby wic quicklook-extension
 
-EXTRA_DIST = LICENSE depcomp
+EXTRA_DIST = LICENSE depcomp build-aux/tap-driver.sh
 
 EXTRA_DIST += tests/converters/common.bash \
 	tests/converters/test_0001_invalid_option.bash \

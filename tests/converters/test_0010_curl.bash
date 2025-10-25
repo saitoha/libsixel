@@ -5,47 +5,82 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 # shellcheck source=tests/converters/common.bash
 source "${SCRIPT_DIR}/common.bash"
 
+# ----------------------------------------------------------------------
+#  +------------------------------+-------------------------------+
+#  | Transport                    | Expectation                    |
+#  +------------------------------+-------------------------------+
+#  | file:// invalid              | Should fail cleanly           |
+#  | https:// malformed           | Should fail cleanly           |
+#  | file:// valid                | Should succeed                |
+#  | https:// self-signed (no -k) | Should fail (optional)        |
+#  | https:// self-signed (-k)    | Should succeed (optional)     |
+#  +------------------------------+-------------------------------+
+# ----------------------------------------------------------------------
+
 tap_init "$(basename "$0")"
-tap_plan 1
 
-if {
-    tap_log '[test10] curl'
+declare -a CURL_DESCRIPTIONS=()
+declare -a CURL_CALLBACKS=()
+declare -a CURL_ARGUMENTS=()
 
-    fail_fetch() {
-        local output_file
+register_curl_case() {
+    local description
+    local callback
 
-        output_file="${TMP_DIR}/capture.$$"
-        if run_img2sixel "$@" >"${output_file}" 2>/dev/null; then
-            :
-        fi
-        if [[ -s ${output_file} ]]; then
-            printf 'img2sixel unexpectedly produced output: %s\n' "$*" >&2
-            rm -f "${output_file}"
-            exit 1
-        fi
+    description=$1
+    callback=$2
+    shift 2
+    CURL_DESCRIPTIONS+=("${description}")
+    CURL_CALLBACKS+=("${callback}")
+    CURL_ARGUMENTS+=("$*")
+}
+
+fail_fetch_case() {
+    local url
+    local output_file
+
+    url=$1
+    output_file="${TMP_DIR}/capture.$$"
+    tap_log "[curl] expecting failure for ${url}"
+    if run_img2sixel "${url}" >"${output_file}" 2>/dev/null; then
+        :
+    fi
+    if [[ -s ${output_file} ]]; then
+        printf 'img2sixel unexpectedly produced output: %s\n' "${url}"
         rm -f "${output_file}"
-    }
+        return 1
+    fi
+    rm -f "${output_file}"
+    return 0
+}
 
-    # Ensure invalid file URLs are rejected.
-    fail_fetch 'file:///test'
-    # Ensure malformed HTTPS URLs are rejected.
-    fail_fetch 'https:///test'
+file_fetch_case() {
+    local url
 
-    # Fetch a local file via libcurl's file scheme.
-    run_img2sixel "file://$(pwd)/${TOP_SRCDIR}/images/snake.jpg"
+    url=$1
+    tap_log "[curl] fetching ${url}"
+    run_img2sixel "${url}"
+}
 
-    if command -v openssl >/dev/null 2>&1 && \
-        command -v python >/dev/null 2>&1; then
-        # Ensure the HTTPS test asset is available.
-        require_file "${TMP_DIR}/snake.sixel"
-        # Generate a self-signed TLS key pair for the local server.
-        openssl genrsa | openssl rsa > "${TMP_DIR}/server.key"
-        # Issue a certificate for localhost using the generated key.
-        openssl req -new -key "${TMP_DIR}/server.key" -subj "/CN=localhost" | \
-            openssl x509 -req -signkey "${TMP_DIR}/server.key" > \
-            "${TMP_DIR}/server.crt"
-        # Write a minimal HTTPS file server.
-        cat > "${TMP_DIR}/server.py" <<'PY'
+prepare_https_assets() {
+    local https_dir
+
+    https_dir=${TMP_DIR}
+    tap_log '[curl] preparing HTTPS fixtures'
+    if [[ ! -f ${https_dir}/snake.sixel ]]; then
+        run_img2sixel "${TOP_SRCDIR}/images/snake.jpg" \
+            >"${https_dir}/snake.sixel"
+    fi
+    if [[ ! -f ${https_dir}/server.key ]]; then
+        openssl genrsa | openssl rsa >"${https_dir}/server.key"
+    fi
+    if [[ ! -f ${https_dir}/server.crt ]]; then
+        openssl req -new -key "${https_dir}/server.key" \
+            -subj "/CN=localhost" | \
+            openssl x509 -req -signkey "${https_dir}/server.key" \
+                >"${https_dir}/server.crt"
+    fi
+    cat >"${https_dir}/server.py" <<'PY'
 try:
     from http.server import SimpleHTTPRequestHandler
     from socketserver import TCPServer
@@ -75,41 +110,84 @@ with TLSHTTPServer(('localhost', 4443), SimpleHTTPRequestHandler) as httpd:
     for _ in range(2):
         httpd.handle_request()
 PY
-        (
-            cd "${TMP_DIR}"
-            # Launch the HTTPS server in the background.
-            python server.py &
-            server_pid=$!
-            cleanup() {
-                kill "${server_pid}" 2>/dev/null || true
-                wait "${server_pid}" 2>/dev/null || true
-            }
-            trap cleanup EXIT
-            sleep 1
-            output_file="${TMP_DIR}/capture.$$"
-            # Verify that HTTPS fetch fails without -k for self-signed certs.
-            if run_img2sixel 'https://localhost:4443/snake.sixel' \
+}
+
+https_requires_k_case() {
+    tap_log '[curl] verifying HTTPS without -k fails'
+    (
+        cd "${TMP_DIR}"
+        python server.py &
+        server_pid=$!
+        cleanup() {
+            kill "${server_pid}" 2>/dev/null || true
+            wait "${server_pid}" 2>/dev/null || true
+        }
+        trap cleanup EXIT
+        sleep 1
+        output_file="${TMP_DIR}/capture.$$"
+        if run_img2sixel 'https://localhost:4443/snake.sixel' \
                 >"${output_file}" 2>/dev/null; then
-                echo 'Skipping certificate verification check: img2sixel accepted self-signed certificate without -k' >&2
-            else
-                if [[ -s ${output_file} ]]; then
-                    printf 'img2sixel unexpectedly produced output: %s\n' \
-                        'https://localhost:4443/snake.sixel' >&2
-                    rm -f "${output_file}"
-                    exit 1
-                fi
-            fi
+            tap_log '[curl] skipping verification check: img2sixel accepted self-signed certificate without -k'
             rm -f "${output_file}"
-            sleep 1
-            # Verify that -k allows fetching from the self-signed server.
-            run_img2sixel -k 'https://localhost:4443/snake.sixel'
             cleanup
             trap - EXIT
-        )
-    fi
-} >>"${TAP_LOG_FILE}" 2>&1; then
-    tap_ok 1 'libcurl transports behave'
+            return 0
+        fi
+        if [[ -s ${output_file} ]]; then
+            printf 'img2sixel unexpectedly produced output: %s\n' \
+                'https://localhost:4443/snake.sixel'
+            rm -f "${output_file}"
+            cleanup
+            trap - EXIT
+            return 1
+        fi
+        rm -f "${output_file}"
+        cleanup
+        trap - EXIT
+    )
+}
+
+https_succeeds_with_k_case() {
+    tap_log '[curl] verifying HTTPS succeeds with -k'
+    (
+        cd "${TMP_DIR}"
+        python server.py &
+        server_pid=$!
+        cleanup() {
+            kill "${server_pid}" 2>/dev/null || true
+            wait "${server_pid}" 2>/dev/null || true
+        }
+        trap cleanup EXIT
+        sleep 1
+        run_img2sixel -k 'https://localhost:4443/snake.sixel'
+        cleanup
+        trap - EXIT
+    )
+}
+
+register_curl_case 'invalid file:// URL is rejected' fail_fetch_case 'file:///test'
+register_curl_case 'malformed https:// URL is rejected' fail_fetch_case 'https:///test'
+register_curl_case 'file:// fetch succeeds' file_fetch_case \
+    "file://$(pwd)/${TOP_SRCDIR}/images/snake.jpg"
+
+have_https_tools=0
+if command -v openssl >/dev/null 2>&1 && \
+    command -v python >/dev/null 2>&1; then
+    have_https_tools=1
+    prepare_https_assets
+    register_curl_case 'self-signed HTTPS requires -k' https_requires_k_case
+    register_curl_case 'self-signed HTTPS succeeds with -k' https_succeeds_with_k_case
 else
-    tap_not_ok 1 'libcurl transports behave' \
-        "See $(tap_log_hint) for details."
+    tap_diag 'Skipping HTTPS curl tests: openssl or python missing.'
 fi
+
+case_total=${#CURL_DESCRIPTIONS[@]}
+tap_plan "${case_total}"
+
+for index in "${!CURL_DESCRIPTIONS[@]}"; do
+    description=${CURL_DESCRIPTIONS[${index}]}
+    callback=${CURL_CALLBACKS[${index}]}
+    args=${CURL_ARGUMENTS[${index}]}
+    IFS=$' \t\n' read -r -a callback_args <<<"${args}"
+    tap_case "${description}" "${callback}" "${callback_args[@]}"
+done

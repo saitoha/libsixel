@@ -446,7 +446,8 @@ zshcompletiondir = @zshcompletiondir@
 SUBDIRS = include src converters tools python $(am__append_1) \
 	$(am__append_2) $(am__append_3)
 DIST_SUBDIRS = include src converters tools python ruby wic quicklook-extension
-EXTRA_DIST = LICENSE depcomp tests/converters/common.bash \
+EXTRA_DIST = LICENSE depcomp build-aux/tap-driver.sh \
+	tests/converters/common.bash \
 	tests/converters/test_0001_invalid_option.bash \
 	tests/converters/test_0002_stdin.bash \
 	tests/converters/test_0003_information.bash \

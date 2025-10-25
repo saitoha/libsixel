@@ -5,19 +5,27 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 # shellcheck source=tests/converters/common.bash
 source "${SCRIPT_DIR}/common.bash"
 
+# ----------------------------------------------------------------------
+#  +----------------------+----------------------------+
+#  | Case                 | Expectation                 |
+#  +----------------------+----------------------------+
+#  | Help banner          | img2sixel -H runs cleanly   |
+#  | Version banner       | img2sixel -V runs cleanly   |
+#  +----------------------+----------------------------+
+# ----------------------------------------------------------------------
+
 tap_init "$(basename "$0")"
-tap_plan 1
+tap_plan 2
 
-if {
-    tap_log '[test3] print information'
-
-    # Confirm help output is accessible.
+img2sixel_help_displays() {
+    tap_log "[information] verifying -H output"
     run_img2sixel -H
-    # Confirm version output is accessible.
+}
+
+img2sixel_version_displays() {
+    tap_log "[information] verifying -V output"
     run_img2sixel -V
-} >>"${TAP_LOG_FILE}" 2>&1; then
-    tap_ok 1 'img2sixel informational commands succeed'
-else
-    tap_not_ok 1 'img2sixel informational commands succeed' \
-        "See $(tap_log_hint) for details."
-fi
+}
+
+tap_case 'img2sixel -H prints help' img2sixel_help_displays
+tap_case 'img2sixel -V prints version' img2sixel_version_displays
