@@ -1,18 +1,41 @@
+local_helpers = evaluate$(EXEEXT)
 
-CLEANFILES = evaluate$(EXEEXT)
+if HAVE_ONNXRUNTIME
+local_helpers += lpips_ort$(EXEEXT)
+
+lpipsmodelsdir = $(pkgdatadir)/models/lpips
+dist_lpipsmodels_DATA = $(srcdir)/models/lpips/lpips_diff.onnx \
+                        $(srcdir)/models/lpips/lpips_feature.onnx
+endif
+
+CLEANFILES = $(local_helpers)
 
 clean-local:
 
-all-local: evaluate$(EXEEXT)
+all-local: $(local_helpers)
 
 # Build the fast evaluator locally so shell wrappers can reuse it without
 # requiring installation.
 evaluate$(EXEEXT): $(srcdir)/evaluate.c
 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-		$(AM_CPPFLAGS) $(CPPFLAGS) \
-		-I$(top_srcdir)/src $(AM_CFLAGS) $(CFLAGS) \
-		$(srcdir)/evaluate.c \
-		$(LDFLAGS) -o $@ $(LIBS_PRIVATE) $(LIBS)
+	$(AM_CPPFLAGS) $(CPPFLAGS) \
+	-I$(top_srcdir)/src $(AM_CFLAGS) $(CFLAGS) \
+	$(srcdir)/evaluate.c \
+	$(LDFLAGS) -o $@ $(LIBS_PRIVATE) $(LIBS)
+
+if HAVE_ONNXRUNTIME
+
+# +-------------------+   +--------------------+
+# | image pre-process |-->| ONNX Runtime graph |
+# +-------------------+   +--------------------+
+lpips_ort$(EXEEXT): $(srcdir)/lpips_ort.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) \
+	-I$(top_srcdir)/src $(AM_CFLAGS) $(CFLAGS) \
+	$(ONNXRUNTIME_CFLAGS) $(srcdir)/lpips_ort.c \
+	$(LDFLAGS) -o $@ $(ONNXRUNTIME_LIBS) $(LIBS_PRIVATE) $(LIBS)
+
+endif
 
 bin_SCRIPTS = libsixel-config
 

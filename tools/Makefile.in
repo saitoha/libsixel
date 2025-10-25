@@ -14,6 +14,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -90,7 +91,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@WANT_THUMBNAILER_TRUE@am__append_1 = sixel-thumbnailer
+@HAVE_ONNXRUNTIME_TRUE@am__append_1 = lpips_ort$(EXEEXT)
+@WANT_THUMBNAILER_TRUE@am__append_2 = sixel-thumbnailer
 subdir = tools
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
@@ -102,7 +104,8 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
+DIST_COMMON = $(srcdir)/Makefile.am $(am__dist_lpipsmodels_DATA_DIST) \
+	$(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES = libsixel-config
@@ -133,7 +136,7 @@ am__uninstall_files_from_dir = { \
   || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
        $(am__cd) "$$dir" && echo $$files | $(am__xargs_n) 40 $(am__rm_f); }; \
   }
-am__installdirs = "$(DESTDIR)$(bindir)"
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(lpipsmodelsdir)"
 SCRIPTS = $(bin_SCRIPTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -154,6 +157,10 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+am__dist_lpipsmodels_DATA_DIST =  \
+	$(srcdir)/models/lpips/lpips_diff.onnx \
+	$(srcdir)/models/lpips/lpips_feature.onnx
+DATA = $(dist_lpipsmodels_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/libsixel-config.in
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -233,6 +240,8 @@ OBJCDEPMODE = @OBJCDEPMODE@
 OBJCFLAGS = @OBJCFLAGS@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
+ONNXRUNTIME_CFLAGS = @ONNXRUNTIME_CFLAGS@
+ONNXRUNTIME_LIBS = @ONNXRUNTIME_LIBS@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -341,8 +350,13 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
-CLEANFILES = evaluate$(EXEEXT)
-bin_SCRIPTS = libsixel-config $(am__append_1)
+local_helpers = evaluate$(EXEEXT) $(am__append_1)
+@HAVE_ONNXRUNTIME_TRUE@lpipsmodelsdir = $(pkgdatadir)/models/lpips
+@HAVE_ONNXRUNTIME_TRUE@dist_lpipsmodels_DATA = $(srcdir)/models/lpips/lpips_diff.onnx \
+@HAVE_ONNXRUNTIME_TRUE@                        $(srcdir)/models/lpips/lpips_feature.onnx
+
+CLEANFILES = $(local_helpers)
+bin_SCRIPTS = libsixel-config $(am__append_2)
 EXTRA_DIST = libsixel-config.in \
              quicklook-extension.bash \
              sixel-thumbnailer \
@@ -425,6 +439,27 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+install-dist_lpipsmodelsDATA: $(dist_lpipsmodels_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(dist_lpipsmodels_DATA)'; test -n "$(lpipsmodelsdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(lpipsmodelsdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(lpipsmodelsdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(lpipsmodelsdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(lpipsmodelsdir)" || exit $$?; \
+	done
+
+uninstall-dist_lpipsmodelsDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_lpipsmodels_DATA)'; test -n "$(lpipsmodelsdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(lpipsmodelsdir)'; $(am__uninstall_files_from_dir)
 tags TAGS:
 
 ctags CTAGS:
@@ -467,9 +502,9 @@ distdir-am: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(SCRIPTS) all-local
+all-am: Makefile $(SCRIPTS) $(DATA) all-local
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(lpipsmodelsdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -523,7 +558,7 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-dist_lpipsmodelsDATA
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-dvi: install-dvi-am
@@ -568,7 +603,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binSCRIPTS
+uninstall-am: uninstall-binSCRIPTS uninstall-dist_lpipsmodelsDATA
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
 .MAKE: install-am install-data-am install-strip uninstall-am
@@ -577,34 +612,42 @@ uninstall-am: uninstall-binSCRIPTS
 	clean-libtool clean-local cscopelist-am ctags-am distclean \
 	distclean-generic distclean-libtool distdir dvi dvi-am html \
 	html-am info info-am install install-am install-binSCRIPTS \
-	install-data install-data-am install-data-hook install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags-am uninstall uninstall-am uninstall-binSCRIPTS \
-	uninstall-hook
+	install-data install-data-am install-data-hook \
+	install-dist_lpipsmodelsDATA install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags-am uninstall \
+	uninstall-am uninstall-binSCRIPTS \
+	uninstall-dist_lpipsmodelsDATA uninstall-hook
 
 .PRECIOUS: Makefile
 
 
 clean-local:
 
-all-local: evaluate$(EXEEXT)
+all-local: $(local_helpers)
 
-#  +-----------+      +-----------------+
-#  | pipelines | ---> | evaluate helper |
-#  +-----------+      +-----------------+
 # Build the fast evaluator locally so shell wrappers can reuse it without
 # requiring installation.
 evaluate$(EXEEXT): $(srcdir)/evaluate.c
 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-		$(AM_CPPFLAGS) $(CPPFLAGS) \
-		-I$(top_srcdir)/src $(AM_CFLAGS) $(CFLAGS) \
-		$(srcdir)/evaluate.c \
-		$(LDFLAGS) -o $@ $(LIBS_PRIVATE) $(LIBS)
+	$(AM_CPPFLAGS) $(CPPFLAGS) \
+	-I$(top_srcdir)/src $(AM_CFLAGS) $(CFLAGS) \
+	$(srcdir)/evaluate.c \
+	$(LDFLAGS) -o $@ $(LIBS_PRIVATE) $(LIBS)
+
+# +-------------------+   +--------------------+
+# | image pre-process |-->| ONNX Runtime graph |
+# +-------------------+   +--------------------+
+@HAVE_ONNXRUNTIME_TRUE@lpips_ort$(EXEEXT): $(srcdir)/lpips_ort.c
+@HAVE_ONNXRUNTIME_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+@HAVE_ONNXRUNTIME_TRUE@	$(AM_CPPFLAGS) $(CPPFLAGS) \
+@HAVE_ONNXRUNTIME_TRUE@	-I$(top_srcdir)/src $(AM_CFLAGS) $(CFLAGS) \
+@HAVE_ONNXRUNTIME_TRUE@	$(ONNXRUNTIME_CFLAGS) $(srcdir)/lpips_ort.c \
+@HAVE_ONNXRUNTIME_TRUE@	$(LDFLAGS) -o $@ $(ONNXRUNTIME_LIBS) $(LIBS_PRIVATE) $(LIBS)
 
 install-data-hook:
 	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/thumbnailers"; do \
