@@ -215,6 +215,7 @@ typedef struct {
 } tupletable2;
 
 static unsigned int compareplanePlane;
+static tupletable2 const *force_palette_source;
     /* This is a parameter to compareplane().  We use this global variable
        so that compareplane() can be called by qsort(), to compare two
        tuples.  qsort() doesn't pass any arguments except the two tuples.
@@ -599,6 +600,148 @@ colormapFromBv(unsigned int const newcolors,
         }
     }
     return colormap;
+}
+
+
+static int
+force_palette_compare(const void *lhs, const void *rhs)
+{
+    unsigned int left;
+    unsigned int right;
+    unsigned int left_value;
+    unsigned int right_value;
+
+    left = *(const unsigned int *)lhs;
+    right = *(const unsigned int *)rhs;
+    left_value = force_palette_source->table[left]->value;
+    right_value = force_palette_source->table[right]->value;
+    if (left_value > right_value) {
+        return -1;
+    }
+    if (left_value < right_value) {
+        return 1;
+    }
+    if (left < right) {
+        return -1;
+    }
+    if (left > right) {
+        return 1;
+    }
+    return 0;
+}
+
+
+static SIXELSTATUS
+force_palette_completion(tupletable2 *colormapP,
+                         unsigned int depth,
+                         unsigned int reqColors,
+                         tupletable2 const colorfreqtable,
+                         sixel_allocator_t *allocator)
+{
+    /*
+     * We enqueue "losers" from the histogram so that we can revive them:
+     *
+     *   histogram --> sort by hit count --> append to palette tail
+     *        ^                             |
+     *        +-----------------------------+
+     *
+     * The ASCII loop shows how discarded colors walk back into the
+     * palette when the user demands an exact size.
+     */
+    SIXELSTATUS status = SIXEL_FALSE;
+    tupletable new_table = NULL;
+    unsigned int *order = NULL;
+    unsigned int current;
+    unsigned int fill;
+    unsigned int candidate;
+    unsigned int plane;
+    unsigned int source;
+
+    current = colormapP->size;
+    if (current >= reqColors) {
+        return SIXEL_OK;
+    }
+
+    status = alloctupletable(&new_table, depth, reqColors, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    if (colorfreqtable.size > 0U) {
+        order = (unsigned int *)sixel_allocator_malloc(
+            allocator, colorfreqtable.size * sizeof(unsigned int));
+        if (order == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        for (candidate = 0; candidate < colorfreqtable.size; ++candidate) {
+            order[candidate] = candidate;
+        }
+        force_palette_source = &colorfreqtable;
+        qsort(order, colorfreqtable.size, sizeof(unsigned int),
+              force_palette_compare);
+        force_palette_source = NULL;
+    }
+
+    for (fill = 0; fill < current; ++fill) {
+        new_table[fill]->value = colormapP->table[fill]->value;
+        for (plane = 0; plane < depth; ++plane) {
+            new_table[fill]->tuple[plane] =
+                colormapP->table[fill]->tuple[plane];
+        }
+    }
+
+    candidate = 0U;
+    fill = current;
+    if (order != NULL) {
+        while (fill < reqColors && candidate < colorfreqtable.size) {
+            unsigned int index;
+
+            index = order[candidate];
+            new_table[fill]->value = colorfreqtable.table[index]->value;
+            for (plane = 0; plane < depth; ++plane) {
+                new_table[fill]->tuple[plane] =
+                    colorfreqtable.table[index]->tuple[plane];
+            }
+            ++fill;
+            ++candidate;
+        }
+    }
+
+    if (fill < reqColors && fill == 0U) {
+        new_table[fill]->value = 0U;
+        for (plane = 0; plane < depth; ++plane) {
+            new_table[fill]->tuple[plane] = 0U;
+        }
+        ++fill;
+    }
+
+    source = 0U;
+    while (fill < reqColors) {
+        new_table[fill]->value = new_table[source]->value;
+        for (plane = 0; plane < depth; ++plane) {
+            new_table[fill]->tuple[plane] = new_table[source]->tuple[plane];
+        }
+        ++fill;
+        ++source;
+        if (source >= fill) {
+            source = 0U;
+        }
+    }
+
+    sixel_allocator_free(allocator, colormapP->table);
+    colormapP->table = new_table;
+    colormapP->size = reqColors;
+    status = SIXEL_OK;
+
+end:
+    if (status != SIXEL_OK && new_table != NULL) {
+        sixel_allocator_free(allocator, new_table);
+    }
+    if (order != NULL) {
+        sixel_allocator_free(allocator, order);
+    }
+    return status;
 }
 
 
@@ -2526,6 +2669,7 @@ computeColorMapFromInput(unsigned char const *data,
                          int const methodForLargest,
                          int const methodForRep,
                          int const qualityMode,
+                         int const force_palette,
                          tupletable2 * const colormapP,
                          unsigned int *origcolors,
                          sixel_allocator_t *allocator)
@@ -2587,6 +2731,14 @@ computeColorMapFromInput(unsigned char const *data,
             goto end;
         }
         quant_trace(stderr, "%d colors are choosed.\n", colorfreqtable.size);
+    }
+
+    if (force_palette) {
+        status = force_palette_completion(colormapP, depth, reqColors,
+                                          colorfreqtable, allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     status = SIXEL_OK;
@@ -4876,6 +5028,7 @@ sixel_quant_make_palette(
     int                    /* in */  methodForLargest,
     int                    /* in */  methodForRep,
     int                    /* in */  qualityMode,
+    int                    /* in */  force_palette,
     sixel_allocator_t      /* in */  *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -4897,7 +5050,8 @@ sixel_quant_make_palette(
     ret = computeColorMapFromInput(data, length, depth,
                                    reqcolors, methodForLargest,
                                    methodForRep, qualityMode,
-                                   &colormap, origcolors, allocator);
+                                   force_palette, &colormap,
+                                   origcolors, allocator);
     if (ret != 0) {
         *result = NULL;
         goto end;

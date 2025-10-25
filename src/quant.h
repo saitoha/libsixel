@@ -41,6 +41,7 @@ sixel_quant_make_palette(
     int                     /* in */  methodForLargest,
     int                     /* in */  methodForRep,
     int                     /* in */  qualityMode,
+    int                     /* in */  force_palette,
     sixel_allocator_t       /* in */  *allocator);
 
 

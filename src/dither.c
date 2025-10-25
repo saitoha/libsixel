@@ -316,6 +316,7 @@ sixel_dither_new(
     (*ppdither)->cachetable = NULL;
     (*ppdither)->cachetable_size = 0U;
     (*ppdither)->reqcolors = ncolors;
+    (*ppdither)->force_palette = 0;
     (*ppdither)->ncolors = ncolors;
     (*ppdither)->origcolors = (-1);
     (*ppdither)->keycolor = (-1);
@@ -596,6 +597,7 @@ sixel_dither_initialize(
                                       dither->method_for_largest,
                                       dither->method_for_rep,
                                       dither->quality_mode,
+                                      dither->force_palette,
                                       dither->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;

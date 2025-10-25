@@ -979,6 +979,8 @@ sixel_encoder_prepare_palette(
 end:
     if (SIXEL_SUCCEEDED(status) && dither != NULL && *dither != NULL) {
         sixel_dither_set_lut_policy(*dither, encoder->lut_policy);
+        /* pass down the user's demand for an exact palette size */
+        (*dither)->force_palette = encoder->force_palette;
     }
     return status;
 }
@@ -1169,7 +1171,12 @@ sixel_encoder_output_without_macro(
     }
 
     if (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT) {
-        sixel_dither_set_optimize_palette(dither, 1);
+        if (encoder->force_palette) {
+            /* keep every slot when the user forced the palette size */
+            sixel_dither_set_optimize_palette(dither, 0);
+        } else {
+            sixel_dither_set_optimize_palette(dither, 1);
+        }
     }
 
     pixelformat = sixel_frame_get_pixelformat(frame);
@@ -1914,6 +1921,7 @@ sixel_encoder_new(
 
     (*ppencoder)->ref                   = 1;
     (*ppencoder)->reqcolors             = (-1);
+    (*ppencoder)->force_palette         = 0;
     (*ppencoder)->mapfile               = NULL;
     (*ppencoder)->color_option          = SIXEL_COLOR_OPTION_DEFAULT;
     (*ppencoder)->builtin_palette       = 0;
@@ -2122,6 +2130,9 @@ sixel_encoder_setopt(
     char lowered[16];
     size_t len;
     size_t i;
+    long parsed_reqcolors;
+    char *endptr;
+    int forced_palette;
 
     sixel_encoder_ref(encoder);
 
@@ -2201,18 +2212,40 @@ sixel_encoder_setopt(
         encoder->has_gri_arg_limit = 1;
         break;
     case SIXEL_OPTFLAG_COLORS:  /* p */
-        encoder->reqcolors = atoi(value);
-        if (encoder->complexion < 1) {
+        forced_palette = 0;
+        errno = 0;
+        endptr = NULL;
+        parsed_reqcolors = strtol(value, &endptr, 10);
+        if (endptr != NULL && *endptr == '!') {
+            forced_palette = 1;
+            ++endptr;
+        }
+        if (errno == ERANGE || endptr == value) {
+            sixel_helper_set_additional_message(
+                "cannot parse -p/--colors option.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        if (endptr != NULL && *endptr != '\0') {
+            sixel_helper_set_additional_message(
+                "cannot parse -p/--colors option.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        if (parsed_reqcolors < 1) {
             sixel_helper_set_additional_message(
                 "-p/--colors parameter must be 1 or more.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
-        } else if (encoder->complexion > 256) {
+        }
+        if (parsed_reqcolors > SIXEL_PALETTE_MAX) {
             sixel_helper_set_additional_message(
                 "-p/--colors parameter must be less then or equal to 256.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
+        encoder->reqcolors = (int)parsed_reqcolors;
+        encoder->force_palette = forced_palette;
         break;
     case SIXEL_OPTFLAG_MAPFILE:  /* m */
         if (encoder->mapfile) {
