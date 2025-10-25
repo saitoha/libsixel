@@ -341,7 +341,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
-CLEANFILES = 
+CLEANFILES = evaluate$(EXEEXT)
 bin_SCRIPTS = libsixel-config $(am__append_1)
 EXTRA_DIST = libsixel-config.in \
              quicklook-extension.bash \
@@ -467,7 +467,7 @@ distdir-am: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(SCRIPTS)
+all-am: Makefile $(SCRIPTS) all-local
 installdirs:
 	for dir in "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -573,23 +573,38 @@ uninstall-am: uninstall-binSCRIPTS
 	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
 .MAKE: install-am install-data-am install-strip uninstall-am
 
-.PHONY: all all-am check check-am clean clean-generic clean-libtool \
-	clean-local cscopelist-am ctags-am distclean distclean-generic \
-	distclean-libtool distdir dvi dvi-am html html-am info info-am \
-	install install-am install-binSCRIPTS install-data \
-	install-data-am install-data-hook install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags-am uninstall \
-	uninstall-am uninstall-binSCRIPTS uninstall-hook
+.PHONY: all all-am all-local check check-am clean clean-generic \
+	clean-libtool clean-local cscopelist-am ctags-am distclean \
+	distclean-generic distclean-libtool distdir dvi dvi-am html \
+	html-am info info-am install install-am install-binSCRIPTS \
+	install-data install-data-am install-data-hook install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags-am uninstall uninstall-am uninstall-binSCRIPTS \
+	uninstall-hook
 
 .PRECIOUS: Makefile
 
 
 clean-local:
+
+all-local: evaluate$(EXEEXT)
+
+#  +-----------+      +-----------------+
+#  | pipelines | ---> | evaluate helper |
+#  +-----------+      +-----------------+
+# Build the fast evaluator locally so shell wrappers can reuse it without
+# requiring installation.
+evaluate$(EXEEXT): $(srcdir)/evaluate.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+		$(AM_CPPFLAGS) $(CPPFLAGS) \
+		-I$(top_srcdir)/src $(AM_CFLAGS) $(CFLAGS) \
+		$(srcdir)/evaluate.c \
+		$(LDFLAGS) -o $@ $(LIBS_PRIVATE) $(LIBS)
 
 install-data-hook:
 	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/thumbnailers"; do \

@@ -28,7 +28,7 @@ trap cleanup EXIT INT TERM
 
 "${src_topdir}/converters/sixel2png" "${sixel}" > "${tmp_png}"
 
-metrics_json="$("${src_topdir}/tools/evaluate.py" \
+metrics_json="$("${src_topdir}/tools/evaluate" \
     --ref "${original}" \
     --out "${tmp_png}" \
     --prefix "${prefix}")"

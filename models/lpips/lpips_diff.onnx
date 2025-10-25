@@ -1,0 +1,1057 @@
+pytorch1.13.1:ã⁄
+à
+feat_x_0
+feat_y_0/Sub_output_0/Sub"Sub2◊/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(31): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+¯
+/Sub_output_0
+/Constant_output_0/Pow_output_0/Pow"Pow2∏/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/_tensor.py(39): wrapped
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(31): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+å
+feat_x_1
+feat_y_1/Sub_1_output_0/Sub_1"Sub2◊/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(31): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+˛
+/Sub_1_output_0
+/Constant_output_0/Pow_1_output_0/Pow_1"Pow2∏/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/_tensor.py(39): wrapped
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(31): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+å
+feat_x_2
+feat_y_2/Sub_2_output_0/Sub_2"Sub2◊/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(31): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+˛
+/Sub_2_output_0
+/Constant_output_0/Pow_2_output_0/Pow_2"Pow2∏/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/_tensor.py(39): wrapped
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(31): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+å
+feat_x_3
+feat_y_3/Sub_3_output_0/Sub_3"Sub2◊/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(31): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+˛
+/Sub_3_output_0
+/Constant_output_0/Pow_3_output_0/Pow_3"Pow2∏/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/_tensor.py(39): wrapped
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(31): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+å
+feat_x_4
+feat_y_4/Sub_4_output_0/Sub_4"Sub2◊/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(31): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+˛
+/Sub_4_output_0
+/Constant_output_0/Pow_4_output_0/Pow_4"Pow2∏/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/_tensor.py(39): wrapped
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(31): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+ø
+/Pow_output_0
+model.lin0.model.1.weight!/lin0/model/model.1/Conv_output_0/lin0/model/model.1/Conv"Conv*
+	dilations@@†*
+group†*
+kernel_shape@@†*
+pads@ @ @ @ †*
+strides@@†2Ò/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/conv.py(459): _conv_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/conv.py(463): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/container.py(204): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/lpips/lpips.py(167): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): <listcomp>
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+˚
+!/lin0/model/model.1/Conv_output_0/ReduceMean_output_0/ReduceMean"
+ReduceMean*
+axes@@†*
+keepdims†2Ü/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/lpips/lpips.py(15): spatial_average
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): <listcomp>
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+¡
+/Pow_1_output_0
+model.lin1.model.1.weight!/lin1/model/model.1/Conv_output_0/lin1/model/model.1/Conv"Conv*
+	dilations@@†*
+group†*
+kernel_shape@@†*
+pads@ @ @ @ †*
+strides@@†2Ò/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/conv.py(459): _conv_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/conv.py(463): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/container.py(204): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/lpips/lpips.py(167): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): <listcomp>
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+ˇ
+!/lin1/model/model.1/Conv_output_0/ReduceMean_1_output_0/ReduceMean_1"
+ReduceMean*
+axes@@†*
+keepdims†2Ü/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/lpips/lpips.py(15): spatial_average
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): <listcomp>
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+¡
+/Pow_2_output_0
+model.lin2.model.1.weight!/lin2/model/model.1/Conv_output_0/lin2/model/model.1/Conv"Conv*
+	dilations@@†*
+group†*
+kernel_shape@@†*
+pads@ @ @ @ †*
+strides@@†2Ò/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/conv.py(459): _conv_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/conv.py(463): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/container.py(204): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/lpips/lpips.py(167): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): <listcomp>
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+ˇ
+!/lin2/model/model.1/Conv_output_0/ReduceMean_2_output_0/ReduceMean_2"
+ReduceMean*
+axes@@†*
+keepdims†2Ü/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/lpips/lpips.py(15): spatial_average
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): <listcomp>
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+¡
+/Pow_3_output_0
+model.lin3.model.1.weight!/lin3/model/model.1/Conv_output_0/lin3/model/model.1/Conv"Conv*
+	dilations@@†*
+group†*
+kernel_shape@@†*
+pads@ @ @ @ †*
+strides@@†2Ò/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/conv.py(459): _conv_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/conv.py(463): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/container.py(204): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/lpips/lpips.py(167): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): <listcomp>
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+ˇ
+!/lin3/model/model.1/Conv_output_0/ReduceMean_3_output_0/ReduceMean_3"
+ReduceMean*
+axes@@†*
+keepdims†2Ü/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/lpips/lpips.py(15): spatial_average
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): <listcomp>
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+¡
+/Pow_4_output_0
+model.lin4.model.1.weight!/lin4/model/model.1/Conv_output_0/lin4/model/model.1/Conv"Conv*
+	dilations@@†*
+group†*
+kernel_shape@@†*
+pads@ @ @ @ †*
+strides@@†2Ò/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/conv.py(459): _conv_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/conv.py(463): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/container.py(204): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/lpips/lpips.py(167): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): <listcomp>
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+ˇ
+!/lin4/model/model.1/Conv_output_0/ReduceMean_4_output_0/ReduceMean_4"
+ReduceMean*
+axes@@†*
+keepdims†2Ü/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/lpips/lpips.py(15): spatial_average
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): <listcomp>
+/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(34): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+≤
+/ReduceMean_output_0
+/Constant_5_output_0/Unsqueeze_output_0
+/Unsqueeze"	Unsqueeze2◊/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(40): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+∏
+/ReduceMean_1_output_0
+/Constant_5_output_0/Unsqueeze_1_output_0/Unsqueeze_1"	Unsqueeze2◊/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(40): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+∏
+/ReduceMean_2_output_0
+/Constant_5_output_0/Unsqueeze_2_output_0/Unsqueeze_2"	Unsqueeze2◊/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(40): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+∏
+/ReduceMean_3_output_0
+/Constant_5_output_0/Unsqueeze_3_output_0/Unsqueeze_3"	Unsqueeze2◊/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(40): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+∏
+/ReduceMean_4_output_0
+/Constant_5_output_0/Unsqueeze_4_output_0/Unsqueeze_4"	Unsqueeze2◊/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(40): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+˚
+/Unsqueeze_output_0
+/Unsqueeze_1_output_0
+/Unsqueeze_2_output_0
+/Unsqueeze_3_output_0
+/Unsqueeze_4_output_0/Concat_output_0/Concat"Concat*
+axis †2◊/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(40): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+ø
+/Concat_output_0
+/Constant_5_output_0/ReduceSum_output_0
+/ReduceSum"	ReduceSum*
+keepdims †2◊/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(40): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+
+≥
+/ReduceSum_output_0
+/Constant_10_output_0output/Reshape"Reshape*
+	allowzero †2◊/home/runner/work/imgutils/imgutils/zoo/lpips/models.py(40): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1182): _slow_forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(118): wrapper
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(127): forward
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/nn/modules/module.py(1194): _call_impl
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/jit/_trace.py(1184): _get_trace_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(891): _trace_and_get_graph_from_model
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(987): _create_jit_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1111): _model_to_graph
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(1529): _export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/torch/onnx/utils.py(504): export
+/home/runner/work/imgutils/imgutils/zoo/lpips/onnx.py(71): export_diff_model_to_onnx
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(53): export
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(760): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1404): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1657): invoke
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1055): main
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/site-packages/click/core.py(1130): __call__
+/home/runner/work/imgutils/imgutils/zoo/lpips/__main__.py(57): <module>
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(87): _run_code
+/opt/hostedtoolcache/Python/3.8.16/x64/lib/python3.8/runpy.py(194): _run_module_as_main
+	torch_jit*®@Bmodel.lin0.model.1.weightJÄD5~6ë
+>XÇá6    %iZ7            _Ö'>                        ó==            $∫>Ü—≈7»8>            é
+7    iW6    ≠[n6/L6                „¨∑<ÌPÉ8~*>W»à7    ï&¢>    –tﬂ5    S<7                v˛6    ”|>é˘í>Ì†>Î˛≥6    –6    Äeò6ä?5†˘˚>            *©¿Bmodel.lin1.model.1.weightJÄ             ^à8jÖÖ?œÍo8íÂ=‰òá>6+7OZw8^Àû8¸M=Ï˛M5?`99(’ˆ7ì¡=7    ªåæ5.˘8áËå8w >Ñ~>ˇ»N6Õs®8    ‡ãl>“ä70=C_}=    Ùôô7˛§?>wu£8    /·9Ùü7π|®85<˚h9êl=1m)6ßR>=        #…:8nL!85ÿb6¡D>        £8ü7aI°6    ˚–77    ‰B>s≥>    Q8p¶»=    ªç˚>“ï—>b9É9äî<>˛=    <g{?˚J€>    ˘áê8    ŒY8X;à8            ÙÏX?å+¡>I&Ã9˘Or8ogê5Éq58ã∑7    bæ€7èk28Ê™?Ü|π5        jÇö6Y]6“Ø®=                        ã®86            ƒ≤ã>’=?–ÈD=    Ä≠->⁄∂9Âé>    öI$?        ∞âÂ=    ä‚37€Ã;§87
+£ÿ6Z¯?]Ω=ûz9ó˘Ö6¶N=â=«9    9∞=z®_>≥O‘=    í7>∂¥H>Ò•à>        èì5#©∑7Ã
+#9JrT8    ö≠ó=    gfc=Á‘6ÅYı7    ªos?ÏÚâ>‡\õ6›ï7    g9´?¶8            ßo6øÕK8àê]>Ew6=@‡C7    u|=IRT:-	Ü?        nkµ6Ê=O8¡@•> ªd8F7ÿ>µ
+>¢yñ=`∂3=sûó8ò 9d2”8U¶™9[µñ=Lıê6    Í⁄í8G*ç8    nË°8    ïÉ46€8·"?*©ÄBmodel.lin2.model.1.weightJÄ_U„8Àµä>R/æ=ÿA<?ÌÀ8 0:îŸ√>        Äıª8Í	o8    ˆÊE8    6Òü8•â6ñ”›;âÃ9Mt>6ÀU>        dˆf7Gà˚9„ê¡8ás:Œ‡6õÔP6 ’ÿ>    '˚O?PÏb>Ëà:Y.ì8îP∏6Hﬂ=ù®<    ñ±B7Ï⁄˘8ΩñÊ=º>”π¯8â/Œ<`π–<lÏì7~F>+eò8˜ÉN> #√9xÈ9Äx…=-8nÀ≥>?c9Nb∏8Âi9    ŸØö9ë¨&<xã8dò6ÙÉA?˙≈8ÆB‚7<<m<|ÁS=∞Äò;‡˛9¥Ú9    î˛€=hW≈9π-	8%Ë9`™9 ≈è>EI49    U$=⁄/9>píø9∑î68ˆ+í>ÌÚ9>D>~∏Í=Årí>„¸À7…»s=4O„=    Ÿ%&>\1î=.¢ò8Ä£B>èê∫9Ï‚':S¥Ø>ZÕ9-≠6àE&:‰)˘=ãåÇ=˙°8ÛÒ«98q…7kâï<Èˇ8v¡ë8˝+ë9i˛ì8ï°`?E9    ƒÉ7/‡X9ûk>F±å8    bÕs<    ItÂ>Z∏·<b$ˇ9Æb≥<•Í´7Öû’95{Z>"ˆE9    àÏ«>ë‡$<⁄– >+…c=Yì>¿=>r >x›9K≤≠9Ã{>$§:;∞7iQπ9˜h8j0Ï>ìÕ?Êº9√cB?»,S=    ‚mÅ7˝N.=›…}?ÇD]8Äó≥9”óﬁ>Â'>2Öä>ù$∫8X¸ñ5í_ö9        Êl∑7¯8≥9√«^>    Ør>√—y?
+»7?◊í8“î>H=9ìM<Äò=‘§Ω>gıE8I‹=—8˛úÚ7õ$∞=∏;§7‚b8˙õN9K©≈7    TÎã8F9    æsé7•ã>o¥>ùò6Qd7A®Ä9h≥=        ö†¢>`®‹7SJ£>Ã-l8Gªü92≥é>›¢>Î	≠>ÕÖŒ7ç’^>*‰>^B2>b"8P∏:õß…83M9Ûœ8aö9¶%G>    —Ú=    é&y>âäŒ8˛®ï8ƒõï>àWA?ÇñX>    ‘#ä8)˝?»à9îbS9Ä#≤>§j©?âF~7VŸ8 â°>∏hï9§A=ÿö∞7™˘A9    ‰Hú8µI#9£#83ôõ>QUó=Ø€W>í#Î=•	â=~Ä7i?L85˘å>    ¸•Ø=åc<õÁ÷7πFÜ=+ïØ8 Pñ>k;8≠™<ñúÓ8¶Œ7$*>9W©=zö>„ª7y±8<∂8>Ü1=    à¸}>,ƒ>ö90:aÄÑ=#•]8»Å=    €ï÷9è◊ä8s©=ø¥ì7    òm7=CÄ>=sü9fhà96i>o":¡ƒÁ=˝≥59ñ9bñ8,pm=∫‘7?i–I9Tv=oPŒ=¢π™7≠˚U9≤·>k2È8ﬂ≤8ìG9$¥©7—w8>/ß>`ó:UÔ>7¬>≈6    húo9ª^Q<˛Ùì9HG9€H⁄8”âÇ>ÕÄÌ7sµ8    >øé>    ê~˘7]‹="√•=£Sv>¯U‚;⁄˜È8Okÿ>zr 9z◊>"f9    r7o8=¥Î>P)·=äŒ∆>4j8ÄÙ;h$:‰wÚ8Ëiª>Ã7x>o|l>ﬁkª>%x-9øÓ5>&∫ü8,äS>ˆÏ3>=Óˆ8ñ„7íF%>Ë∫ò?Ã9˙8l¡Y9À?wÄ9Ùa√>h¬
+8ƒéÖ=Ô˙=¡óR6J7Ø8aØl?2}7=ç
+±=ü8£.ö=>!5=j£ï=M8b€r8>˝9o÷>9W=`<    LP9h/ñ8`˚∫;◊!ë=*©ÄBmodel.lin3.model.1.weightJÄk>ÊÛ98>˝Äù<B¿^8w&>Ä/>Z?ê7    æø·=D∞≤>˘¬>k?     ∑<5°s9@OÊ8$¯]=„¥£>÷õ89é»å<ê >‡Îå=9Ó¬p9“PÏ7<é><wá9¸£Ä9±79¨)«=Î∞Á=ÆÙÏ=À⁄â=ΩÒ=Zœ>    eÛ=ÊX&8Ó»>ÊàÖ>Ë˚1>˛Ü9j`ò=◊â=	ôx;Êk>=Ü∑>Í¯˘<»¿ô>û≠Í;”Ò=†_ƒ>Ω≥Ì6„º‘<Ä8*ë?8‡F>    `àÈ=    IÇ“=≥b<úé∂>…I>MòR=0“8îèn<ÀVg=(‹=[:ó>”ux>Êæ£>äH9˙ı=yËù=]ò9“î>_9:ﬂ¿“< 0=¢k??b¬>    ¯Fê=    ‚‘">ËÅL>æø>áÛÜ=    Û˘2>Z‚=    ¥›®=7S9kà«=ﬁ˝à9ÎÔ¶<(á(?7¡Û<-ò˝>€|ª8í¬_9-€>)ù=â9√<{k?>ª-a>    YhÙ9åg7‘,F=É)Ô=|ùÔ=≥‚|<à…%>˛ûÉ=˚1	>é⁄ª>‹p>ÍüB8‰/π<y+6ñU¥<Qø”>y˜9    ì´>?•D?≥"l=78π=V∑≥9≈…á>ºx9_∞∞9@iY8ïÏe7R=÷ı¿<    ⁄-º9üˇ79ŸF>TF∫:	Ω#>~û)9    =â=ò+=%;æ=ﬁ≤ï8«T<o∞Ã>    
+t=n$ã9:=ˆ<lLS9√§@7—`Ñ9„∂9«∆ô=ˇÊ˛=ﬂ*‘9ÄÉ|>C¡§9∞‹=<À(˛=‚ˆè=¨jñ=I«√=,”§8.8;9ıåı>ª¥ç<ıaŒ=z9Œ=)@í8hr<öáX>(V±8¥(? ¿8    *jy7K&D6Eœ>ÓE†>ô†-?Him=ì ˛8n,;k‰s=2ü=»W‰=ƒ'?àù™8ô‚>ø´8•vñ>¢m≤>/Û=<NÜ1>*à=qTr888£7ue58    Ê6ò9ÿ}:=õ†q7≠›`9Ñ!)9ñ3ì9Q7	7§≈¢7ö∫>'=›87J>9yπ=!_=ßA99é Ú8ˇd“=ï5æ<ﬂRa>,÷Ü8È«@>’–ì9à≠N>.C78EL7ÜµÜ>ãÑœ=¥≈≥>¢æ=™\9Ã∞59C*Å=Ë˛7‰ﬁ∂>í,Ñ<´wè>&Ù7ë9)>E:)<fç8>>    /«.5Zî=    u≠‡=ñcå>⁄s–=*©ÄBmodel.lin4.model.1.weightJÄQ¶E>n}â=n∂=Ai=#>k<È%>¿˙
+8⁄“á=Ô*98ôO=øÙT=#>\Õ,:Ç˝≥=¸Ã9Â'=¡Z>‡T>`ê4>‡±>=–∆=„aJ>©Íπ>(µ<ûqÇ=¿«==ß>¶w¯<∂Ï<~Ï«;r€9c>òòï<‹éŒ9é±V>ã/ì=k§Ö9ëI§:*&>∞s·=t)æ>}Ä>dv7=ï’>‡`
+>Ê=øS=¡≈õ=—cÏ=jG¿=Æ|„8uÕ>NhÙ<kÊÜ<`Ù=’ˆ∑=á©¡=Rˇ’8%=Ø=E<“W8Wø:€}”>0D=ûÌ∑:qGl>5ô:Ï‰∏<ÊvÙ<ï•ª=õLÁ=,i<ÈD‡=µBC>ëÜÎ=”.=Zn>3>jX=”Õ˘;M9>àck;ÓK>TàJ=IÎ‹9"[Á<Eë¥=Œ>¬=π≤∆;öò>ﬁ€Ö=| >Å^Â=t¿=¶Y‰=#=ßcò=o=Ã]É>™u=";ª=&Ä>;W˘=úıK:"h>>π≠ö=[5$9'¿p>›y:Öº>x1>9ø<><úæ=wQ<ò\)<∫7>S€‰=    ®1=bõ=@¢<=æy?>‰ªé<ÆÀ.=•ï->í=Ôª˜<    :NG:O∫◊=y™∞8ÅvÆ<+ø$9ûd”=PËy>∂˜<¨F> =Ë8C>≤ˇ<K⁄Ò=°OË8Á^∆=‘i]9    â≈ì6≤ƒ>f›>w+ ;˜˘|9 À=%¢õ=D‚Ê<m<U9fòâ>ß-√=»Ω≥=>Rà9≠æ:Y6Á9ü—>"ò9ŒÉî=”ö‚=›ì='W{:Dú£=ÏÖR:ë9G=À`®:◊ÜT>æ/<‹Æó>ªx=<:ó=7X@8V”>fÃò8ÖSE<    ™mﬂ<+ ¢8∂xd=BWp=û>Àì>cı5:e_:9!ÜÊ<ßÙf8¨}:=Æ€=ÒT÷:î0û<) >g«9=O?ä=ªˇ<◊±9˜çÚ9Ω…)9•˚¯=˝˛∑=S¢¢<≠√…<ÎŒä40™=“ı”:5.é;cªñ8/ì:©9}=ôX≠={Ìì9;u∂>kxÿ8‚√ñ=ﬂ£J>V$9gX>´R>v’=ìH(=ûTx;_Õœ;∏}˙=7Ã†<u»>fÖy>◊ì≤<∏8Y>G1¢=…ª=Õ∞±8ﬁú==#P9^3>>±9∞¡‰=N≈9#¥%=    Aï˜<1Ä=Œf•="ƒı8Ì<w>	:-™í>(ß=TŒ7>¸ÿü7ñÍ=˚ä >§#≠=*B/Constant_output_0J   @*$B/Constant_5_output_0J        *%B/Constant_10_output_0JˇˇˇˇˇˇˇˇZ'
+feat_x_0
+
+batch
+@
+c
+cZ(
+feat_x_1
+
+batch
+¿
+1
+1Z(
+feat_x_2
+
+batch
+Ä
+
+Z(
+feat_x_3
+
+batch
+Ä
+
+Z(
+feat_x_4
+
+batch
+Ä
+
+Z'
+feat_y_0
+
+batch
+@
+c
+cZ(
+feat_y_1
+
+batch
+¿
+1
+1Z(
+feat_y_2
+
+batch
+Ä
+
+Z(
+feat_y_3
+
+batch
+Ä
+
+Z(
+feat_y_4
+
+batch
+Ä
+
+b
+output
+	
+batchj,
+/Sub_output_0
+
+batch
+@
+c
+cj,
+/Pow_output_0
+
+batch
+@
+c
+cj/
+/Sub_1_output_0
+
+batch
+¿
+1
+1j/
+/Pow_1_output_0
+
+batch
+¿
+1
+1j/
+/Sub_2_output_0
+
+batch
+Ä
+
+j/
+/Pow_2_output_0
+
+batch
+Ä
+
+j/
+/Sub_3_output_0
+
+batch
+Ä
+
+j/
+/Pow_3_output_0
+
+batch
+Ä
+
+j/
+/Sub_4_output_0
+
+batch
+Ä
+
+j/
+/Pow_4_output_0
+
+batch
+Ä
+
+j@
+!/lin0/model/model.1/Conv_output_0
+
+batch
+
+c
+cj3
+/ReduceMean_output_0
+
+batch
+
+
+j@
+!/lin1/model/model.1/Conv_output_0
+
+batch
+
+1
+1j5
+/ReduceMean_1_output_0
+
+batch
+
+
+j@
+!/lin2/model/model.1/Conv_output_0
+
+batch
+
+
+j5
+/ReduceMean_2_output_0
+
+batch
+
+
+j@
+!/lin3/model/model.1/Conv_output_0
+
+batch
+
+
+j5
+/ReduceMean_3_output_0
+
+batch
+
+
+j@
+!/lin4/model/model.1/Conv_output_0
+
+batch
+
+
+j5
+/ReduceMean_4_output_0
+
+batch
+
+
+j6
+/Unsqueeze_output_0
+
+
+batch
+
+
+j8
+/Unsqueeze_1_output_0
+
+
+batch
+
+
+j8
+/Unsqueeze_2_output_0
+
+
+batch
+
+
+j8
+/Unsqueeze_3_output_0
+
+
+batch
+
+
+j8
+/Unsqueeze_4_output_0
+
+
+batch
+
+
+j3
+/Concat_output_0
+
+
+batch
+
+
+j2
+/ReduceSum_output_0
+
+batch
+
+
+B
+ 
