@@ -1426,6 +1426,7 @@ robinhood_table32_grow(struct robinhood_table32 *table)
         entry.key = old_slots[i].key;
         entry.value = old_slots[i].value;
         entry.distance = 0U;
+        entry.pad = 0U;  /* ensure padding bytes are initialized */
         (void)robinhood_table32_place(table, entry);
     }
 
@@ -1455,6 +1456,7 @@ robinhood_table32_insert(struct robinhood_table32 *table,
     entry.key = key;
     entry.value = value;
     entry.distance = 0U;
+    entry.pad = 0U;  /* ensure padding bytes are initialized */
     (void)robinhood_table32_place(table, entry);
 
     return SIXEL_OK;
