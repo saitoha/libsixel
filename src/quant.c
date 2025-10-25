@@ -120,6 +120,15 @@ static void diffuse_stucki(unsigned char *data, int width, int height,
 static void diffuse_burkes(unsigned char *data, int width, int height,
                            int x, int y, int depth, int error,
                            int direction);
+static void diffuse_sierra1(unsigned char *data, int width, int height,
+                            int x, int y, int depth, int error,
+                            int direction);
+static void diffuse_sierra2(unsigned char *data, int width, int height,
+                            int x, int y, int depth, int error,
+                            int direction);
+static void diffuse_sierra3(unsigned char *data, int width, int height,
+                            int x, int y, int depth, int error,
+                            int direction);
 static void diffuse_lso1(unsigned char *data, int width, int height,
                          int x, int y, int depth, int error, int direction);
 static void diffuse_none_carry(int32_t *carry_curr, int32_t *carry_next,
@@ -147,6 +156,18 @@ static void diffuse_burkes_carry(int32_t *carry_curr, int32_t *carry_next,
                                  int32_t *carry_far, int width, int height,
                                  int depth, int x, int y, int32_t error,
                                  int direction, int channel);
+static void diffuse_sierra1_carry(int32_t *carry_curr, int32_t *carry_next,
+                                  int32_t *carry_far, int width, int height,
+                                  int depth, int x, int y, int32_t error,
+                                  int direction, int channel);
+static void diffuse_sierra2_carry(int32_t *carry_curr, int32_t *carry_next,
+                                  int32_t *carry_far, int width, int height,
+                                  int depth, int x, int y, int32_t error,
+                                  int direction, int channel);
+static void diffuse_sierra3_carry(int32_t *carry_curr, int32_t *carry_next,
+                                  int32_t *carry_far, int width, int height,
+                                  int depth, int x, int y, int32_t error,
+                                  int direction, int channel);
 static void diffuse_lso1_carry(int32_t *carry_curr, int32_t *carry_next,
                                int32_t *carry_far, int width, int height,
                                int depth, int x, int y, int32_t error,
@@ -3856,6 +3877,18 @@ apply_palette_fixed(
             f_diffuse = diffuse_burkes;
             f_diffuse_carry = diffuse_burkes_carry;
             break;
+        case SIXEL_DIFFUSE_SIERRA1:
+            f_diffuse = diffuse_sierra1;
+            f_diffuse_carry = diffuse_sierra1_carry;
+            break;
+        case SIXEL_DIFFUSE_SIERRA2:
+            f_diffuse = diffuse_sierra2;
+            f_diffuse_carry = diffuse_sierra2_carry;
+            break;
+        case SIXEL_DIFFUSE_SIERRA3:
+            f_diffuse = diffuse_sierra3;
+            f_diffuse_carry = diffuse_sierra3_carry;
+            break;
         case SIXEL_DIFFUSE_LSO1:
             f_diffuse = diffuse_lso1;
             f_diffuse_carry = diffuse_lso1_carry;
@@ -4693,6 +4726,366 @@ diffuse_burkes_carry(int32_t *carry_curr, int32_t *carry_next,
         }
     }
 }
+
+static void
+diffuse_sierra1(unsigned char *data, int width, int height,
+                int x, int y, int depth, int error, int direction)
+{
+    /* Sierra Lite Method
+     *          curr    2/4
+     *  1/4     1/4
+     */
+    static const int row0_offsets[] = { 1 };
+    static const int row0_num[] = { 1 };
+    static const int row0_den[] = { 2 };
+    static const int row1_offsets[] = { -1, 0 };
+    static const int row1_num[] = { 1, 1 };
+    static const int row1_den[] = { 4, 4 };
+    int pos;
+    int sign;
+    int i;
+    int neighbor;
+    int row;
+
+    pos = y * width + x;
+    sign = direction >= 0 ? 1 : -1;
+
+    for (i = 0; i < 1; ++i) {
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        error_diffuse_normal(data,
+                             pos + (neighbor - x),
+                             depth, error,
+                             row0_num[i], row0_den[i]);
+    }
+    if (y < height - 1) {
+        row = pos + width;
+        for (i = 0; i < 2; ++i) {
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            error_diffuse_normal(data,
+                                 row + (neighbor - x),
+                                 depth, error,
+                                 row1_num[i], row1_den[i]);
+        }
+    }
+}
+
+
+static void
+diffuse_sierra1_carry(int32_t *carry_curr, int32_t *carry_next,
+                      int32_t *carry_far, int width, int height,
+                      int depth, int x, int y, int32_t error,
+                      int direction, int channel)
+{
+    /* Sierra Lite Method
+     *          curr    2/4
+     *  1/4     1/4
+     */
+    static const int row0_offsets[] = { 1 };
+    static const int row0_num[] = { 1 };
+    static const int row0_den[] = { 2 };
+    static const int row1_offsets[] = { -1, 0 };
+    static const int row1_num[] = { 1, 1 };
+    static const int row1_den[] = { 4, 4 };
+    int sign;
+    int i;
+    int neighbor;
+    int32_t term;
+
+    /* unused */ (void) carry_far;
+
+    if (error == 0) {
+        return;
+    }
+
+    sign = direction >= 0 ? 1 : -1;
+    for (i = 0; i < 1; ++i) {
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        term = diffuse_fixed_term(error, row0_num[i], row0_den[i]);
+        carry_curr[((size_t)neighbor * (size_t)depth)
+                   + (size_t)channel] += term;
+    }
+    if (y + 1 < height) {
+        for (i = 0; i < 2; ++i) {
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row1_num[i], row1_den[i]);
+            carry_next[((size_t)neighbor * (size_t)depth)
+                       + (size_t)channel] += term;
+        }
+    }
+}
+
+
+static void
+diffuse_sierra2(unsigned char *data, int width, int height,
+                int x, int y, int depth, int error, int direction)
+{
+    /* Sierra Two-row Method
+     *                  curr    4/32    3/32
+     *  1/32    2/32    3/32    2/32    1/32
+     *                  2/32    3/32    2/32
+     */
+    static const int row0_offsets[] = { 1, 2 };
+    static const int row0_num[] = { 4, 3 };
+    static const int row0_den[] = { 32, 32 };
+    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row1_num[] = { 1, 2, 3, 2, 1 };
+    static const int row1_den[] = { 32, 32, 32, 32, 32 };
+    static const int row2_offsets[] = { -1, 0, 1 };
+    static const int row2_num[] = { 2, 3, 2 };
+    static const int row2_den[] = { 32, 32, 32 };
+    int pos;
+    int sign;
+    int i;
+    int neighbor;
+    int row;
+
+    pos = y * width + x;
+    sign = direction >= 0 ? 1 : -1;
+
+    for (i = 0; i < 2; ++i) {
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        error_diffuse_precise(data,
+                              pos + (neighbor - x),
+                              depth, error,
+                              row0_num[i], row0_den[i]);
+    }
+    if (y < height - 1) {
+        row = pos + width;
+        for (i = 0; i < 5; ++i) {
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            error_diffuse_precise(data,
+                                  row + (neighbor - x),
+                                  depth, error,
+                                  row1_num[i], row1_den[i]);
+        }
+    }
+    if (y < height - 2) {
+        row = pos + width * 2;
+        for (i = 0; i < 3; ++i) {
+            neighbor = x + sign * row2_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            error_diffuse_precise(data,
+                                  row + (neighbor - x),
+                                  depth, error,
+                                  row2_num[i], row2_den[i]);
+        }
+    }
+}
+
+
+static void
+diffuse_sierra2_carry(int32_t *carry_curr, int32_t *carry_next,
+                      int32_t *carry_far, int width, int height,
+                      int depth, int x, int y, int32_t error,
+                      int direction, int channel)
+{
+    /* Sierra Two-row Method
+     *                  curr    4/32    3/32
+     *  1/32    2/32    3/32    2/32    1/32
+     *                  2/32    3/32    2/32
+     */
+    static const int row0_offsets[] = { 1, 2 };
+    static const int row0_num[] = { 4, 3 };
+    static const int row0_den[] = { 32, 32 };
+    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row1_num[] = { 1, 2, 3, 2, 1 };
+    static const int row1_den[] = { 32, 32, 32, 32, 32 };
+    static const int row2_offsets[] = { -1, 0, 1 };
+    static const int row2_num[] = { 2, 3, 2 };
+    static const int row2_den[] = { 32, 32, 32 };
+    int sign;
+    int i;
+    int neighbor;
+    int32_t term;
+
+    if (error == 0) {
+        return;
+    }
+
+    sign = direction >= 0 ? 1 : -1;
+    for (i = 0; i < 2; ++i) {
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        term = diffuse_fixed_term(error, row0_num[i], row0_den[i]);
+        carry_curr[((size_t)neighbor * (size_t)depth)
+                   + (size_t)channel] += term;
+    }
+    if (y + 1 < height) {
+        for (i = 0; i < 5; ++i) {
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row1_num[i], row1_den[i]);
+            carry_next[((size_t)neighbor * (size_t)depth)
+                       + (size_t)channel] += term;
+        }
+    }
+    if (y + 2 < height) {
+        for (i = 0; i < 3; ++i) {
+            neighbor = x + sign * row2_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row2_num[i], row2_den[i]);
+            carry_far[((size_t)neighbor * (size_t)depth)
+                      + (size_t)channel] += term;
+        }
+    }
+}
+
+
+static void
+diffuse_sierra3(unsigned char *data, int width, int height,
+                int x, int y, int depth, int error, int direction)
+{
+    /* Sierra-3 Method
+     *                  curr    5/32    3/32
+     *  2/32    4/32    5/32    4/32    2/32
+     *                  2/32    3/32    2/32
+     */
+    static const int row0_offsets[] = { 1, 2 };
+    static const int row0_num[] = { 5, 3 };
+    static const int row0_den[] = { 32, 32 };
+    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row1_num[] = { 2, 4, 5, 4, 2 };
+    static const int row1_den[] = { 32, 32, 32, 32, 32 };
+    static const int row2_offsets[] = { -1, 0, 1 };
+    static const int row2_num[] = { 2, 3, 2 };
+    static const int row2_den[] = { 32, 32, 32 };
+    int pos;
+    int sign;
+    int i;
+    int neighbor;
+    int row;
+
+    pos = y * width + x;
+    sign = direction >= 0 ? 1 : -1;
+
+    for (i = 0; i < 2; ++i) {
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        error_diffuse_precise(data,
+                              pos + (neighbor - x),
+                              depth, error,
+                              row0_num[i], row0_den[i]);
+    }
+    if (y < height - 1) {
+        row = pos + width;
+        for (i = 0; i < 5; ++i) {
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            error_diffuse_precise(data,
+                                  row + (neighbor - x),
+                                  depth, error,
+                                  row1_num[i], row1_den[i]);
+        }
+    }
+    if (y < height - 2) {
+        row = pos + width * 2;
+        for (i = 0; i < 3; ++i) {
+            neighbor = x + sign * row2_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            error_diffuse_precise(data,
+                                  row + (neighbor - x),
+                                  depth, error,
+                                  row2_num[i], row2_den[i]);
+        }
+    }
+}
+
+
+static void
+diffuse_sierra3_carry(int32_t *carry_curr, int32_t *carry_next,
+                      int32_t *carry_far, int width, int height,
+                      int depth, int x, int y, int32_t error,
+                      int direction, int channel)
+{
+    /* Sierra-3 Method
+     *                  curr    5/32    3/32
+     *  2/32    4/32    5/32    4/32    2/32
+     *                  2/32    3/32    2/32
+     */
+    static const int row0_offsets[] = { 1, 2 };
+    static const int row0_num[] = { 5, 3 };
+    static const int row0_den[] = { 32, 32 };
+    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row1_num[] = { 2, 4, 5, 4, 2 };
+    static const int row1_den[] = { 32, 32, 32, 32, 32 };
+    static const int row2_offsets[] = { -1, 0, 1 };
+    static const int row2_num[] = { 2, 3, 2 };
+    static const int row2_den[] = { 32, 32, 32 };
+    int sign;
+    int i;
+    int neighbor;
+    int32_t term;
+
+    if (error == 0) {
+        return;
+    }
+
+    sign = direction >= 0 ? 1 : -1;
+    for (i = 0; i < 2; ++i) {
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        term = diffuse_fixed_term(error, row0_num[i], row0_den[i]);
+        carry_curr[((size_t)neighbor * (size_t)depth)
+                   + (size_t)channel] += term;
+    }
+    if (y + 1 < height) {
+        for (i = 0; i < 5; ++i) {
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row1_num[i], row1_den[i]);
+            carry_next[((size_t)neighbor * (size_t)depth)
+                       + (size_t)channel] += term;
+        }
+    }
+    if (y + 2 < height) {
+        for (i = 0; i < 3; ++i) {
+            neighbor = x + sign * row2_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row2_num[i], row2_den[i]);
+            carry_far[((size_t)neighbor * (size_t)depth)
+                      + (size_t)channel] += term;
+        }
+    }
+}
+
 
 static void
 diffuse_lso1(unsigned char *data, int width, int height,
