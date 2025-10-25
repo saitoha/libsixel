@@ -1334,6 +1334,209 @@ dither_func_burkes(unsigned char *data, int width)
 
 
 static void
+dither_func_sierra1(unsigned char *data, int width)
+{
+    int r, g, b;
+    int error_r = data[0] & 0x7;
+    int error_g = data[1] & 0x7;
+    int error_b = data[2] & 0x7;
+
+    error_r += 2;
+    error_g += 2;
+    error_b += 2;
+
+    /* Sierra Lite Method
+     *          curr    2/4
+     *  1/4     1/4
+     */
+    r = data[(width * 0 + 1) * 3 + 0] + (error_r * 2 / 4);
+    g = data[(width * 0 + 1) * 3 + 1] + (error_g * 2 / 4);
+    b = data[(width * 0 + 1) * 3 + 2] + (error_b * 2 / 4);
+    data[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 - 1) * 3 + 0] + (error_r * 1 / 4);
+    g = data[(width * 1 - 1) * 3 + 1] + (error_g * 1 / 4);
+    b = data[(width * 1 - 1) * 3 + 2] + (error_b * 1 / 4);
+    data[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 + 0) * 3 + 0] + (error_r * 1 / 4);
+    g = data[(width * 1 + 0) * 3 + 1] + (error_g * 1 / 4);
+    b = data[(width * 1 + 0) * 3 + 2] + (error_b * 1 / 4);
+    data[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+}
+
+
+static void
+dither_func_sierra2(unsigned char *data, int width)
+{
+    int r, g, b;
+    int error_r = data[0] & 0x7;
+    int error_g = data[1] & 0x7;
+    int error_b = data[2] & 0x7;
+
+    error_r += 4;
+    error_g += 4;
+    error_b += 4;
+
+    /* Sierra Two-row Method
+     *                  curr    4/32    3/32
+     *  1/32    2/32    3/32    2/32    1/32
+     *                  2/32    3/32    2/32
+     */
+    r = data[(width * 0 + 1) * 3 + 0] + (error_r * 4 / 32);
+    g = data[(width * 0 + 1) * 3 + 1] + (error_g * 4 / 32);
+    b = data[(width * 0 + 1) * 3 + 2] + (error_b * 4 / 32);
+    data[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 0 + 2) * 3 + 0] + (error_r * 3 / 32);
+    g = data[(width * 0 + 2) * 3 + 1] + (error_g * 3 / 32);
+    b = data[(width * 0 + 2) * 3 + 2] + (error_b * 3 / 32);
+    data[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 - 2) * 3 + 0] + (error_r * 1 / 32);
+    g = data[(width * 1 - 2) * 3 + 1] + (error_g * 1 / 32);
+    b = data[(width * 1 - 2) * 3 + 2] + (error_b * 1 / 32);
+    data[(width * 1 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 - 1) * 3 + 0] + (error_r * 2 / 32);
+    g = data[(width * 1 - 1) * 3 + 1] + (error_g * 2 / 32);
+    b = data[(width * 1 - 1) * 3 + 2] + (error_b * 2 / 32);
+    data[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 + 0) * 3 + 0] + (error_r * 3 / 32);
+    g = data[(width * 1 + 0) * 3 + 1] + (error_g * 3 / 32);
+    b = data[(width * 1 + 0) * 3 + 2] + (error_b * 3 / 32);
+    data[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 + 1) * 3 + 0] + (error_r * 2 / 32);
+    g = data[(width * 1 + 1) * 3 + 1] + (error_g * 2 / 32);
+    b = data[(width * 1 + 1) * 3 + 2] + (error_b * 2 / 32);
+    data[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 + 2) * 3 + 0] + (error_r * 1 / 32);
+    g = data[(width * 1 + 2) * 3 + 1] + (error_g * 1 / 32);
+    b = data[(width * 1 + 2) * 3 + 2] + (error_b * 1 / 32);
+    data[(width * 1 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 2 - 1) * 3 + 0] + (error_r * 2 / 32);
+    g = data[(width * 2 - 1) * 3 + 1] + (error_g * 2 / 32);
+    b = data[(width * 2 - 1) * 3 + 2] + (error_b * 2 / 32);
+    data[(width * 2 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 2 + 0) * 3 + 0] + (error_r * 3 / 32);
+    g = data[(width * 2 + 0) * 3 + 1] + (error_g * 3 / 32);
+    b = data[(width * 2 + 0) * 3 + 2] + (error_b * 3 / 32);
+    data[(width * 2 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 2 + 1) * 3 + 0] + (error_r * 2 / 32);
+    g = data[(width * 2 + 1) * 3 + 1] + (error_g * 2 / 32);
+    b = data[(width * 2 + 1) * 3 + 2] + (error_b * 2 / 32);
+    data[(width * 2 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 2 + 2) * 3 + 0] + (error_r * 1 / 32);
+    g = data[(width * 2 + 2) * 3 + 1] + (error_g * 1 / 32);
+    b = data[(width * 2 + 2) * 3 + 2] + (error_b * 1 / 32);
+    data[(width * 2 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+}
+
+
+static void
+dither_func_sierra3(unsigned char *data, int width)
+{
+    int r, g, b;
+    int error_r = data[0] & 0x7;
+    int error_g = data[1] & 0x7;
+    int error_b = data[2] & 0x7;
+
+    error_r += 4;
+    error_g += 4;
+    error_b += 4;
+
+    /* Sierra-3 Method
+     *                  curr    5/32    3/32
+     *  2/32    4/32    5/32    4/32    2/32
+     *                  2/32    3/32    2/32
+     */
+    r = data[(width * 0 + 1) * 3 + 0] + (error_r * 5 / 32);
+    g = data[(width * 0 + 1) * 3 + 1] + (error_g * 5 / 32);
+    b = data[(width * 0 + 1) * 3 + 2] + (error_b * 5 / 32);
+    data[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 0 + 2) * 3 + 0] + (error_r * 3 / 32);
+    g = data[(width * 0 + 2) * 3 + 1] + (error_g * 3 / 32);
+    b = data[(width * 0 + 2) * 3 + 2] + (error_b * 3 / 32);
+    data[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 - 2) * 3 + 0] + (error_r * 2 / 32);
+    g = data[(width * 1 - 2) * 3 + 1] + (error_g * 2 / 32);
+    b = data[(width * 1 - 2) * 3 + 2] + (error_b * 2 / 32);
+    data[(width * 1 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 - 1) * 3 + 0] + (error_r * 4 / 32);
+    g = data[(width * 1 - 1) * 3 + 1] + (error_g * 4 / 32);
+    b = data[(width * 1 - 1) * 3 + 2] + (error_b * 4 / 32);
+    data[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 + 0) * 3 + 0] + (error_r * 5 / 32);
+    g = data[(width * 1 + 0) * 3 + 1] + (error_g * 5 / 32);
+    b = data[(width * 1 + 0) * 3 + 2] + (error_b * 5 / 32);
+    data[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 + 1) * 3 + 0] + (error_r * 4 / 32);
+    g = data[(width * 1 + 1) * 3 + 1] + (error_g * 4 / 32);
+    b = data[(width * 1 + 1) * 3 + 2] + (error_b * 4 / 32);
+    data[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 1 + 2) * 3 + 0] + (error_r * 2 / 32);
+    g = data[(width * 1 + 2) * 3 + 1] + (error_g * 2 / 32);
+    b = data[(width * 1 + 2) * 3 + 2] + (error_b * 2 / 32);
+    data[(width * 1 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 1 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 2 - 1) * 3 + 0] + (error_r * 2 / 32);
+    g = data[(width * 2 - 1) * 3 + 1] + (error_g * 2 / 32);
+    b = data[(width * 2 - 1) * 3 + 2] + (error_b * 2 / 32);
+    data[(width * 2 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 2 + 0) * 3 + 0] + (error_r * 3 / 32);
+    g = data[(width * 2 + 0) * 3 + 1] + (error_g * 3 / 32);
+    b = data[(width * 2 + 0) * 3 + 2] + (error_b * 3 / 32);
+    data[(width * 2 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    r = data[(width * 2 + 1) * 3 + 0] + (error_r * 2 / 32);
+    g = data[(width * 2 + 1) * 3 + 1] + (error_g * 2 / 32);
+    b = data[(width * 2 + 1) * 3 + 2] + (error_b * 2 / 32);
+    data[(width * 2 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
+    data[(width * 2 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
+    data[(width * 2 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+}
+
+
+static void
 dither_func_a_dither(unsigned char *data, int width, int x, int y)
 {
     int c;
@@ -1408,6 +1611,21 @@ sixel_apply_15bpp_dither(
     case SIXEL_DIFFUSE_BURKES:
         if (x < width - 2 && y < height - 1) {
             dither_func_burkes(pixels, width);
+        }
+        break;
+    case SIXEL_DIFFUSE_SIERRA1:
+        if (x < width - 1 && y < height - 1) {
+            dither_func_sierra1(pixels, width);
+        }
+        break;
+    case SIXEL_DIFFUSE_SIERRA2:
+        if (x < width - 2 && y < height - 2) {
+            dither_func_sierra2(pixels, width);
+        }
+        break;
+    case SIXEL_DIFFUSE_SIERRA3:
+        if (x < width - 2 && y < height - 2) {
+            dither_func_sierra3(pixels, width);
         }
         break;
     case SIXEL_DIFFUSE_A_DITHER:

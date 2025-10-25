@@ -406,6 +406,9 @@ Options:
                              jajuni   -> Jarvis, Judice & Ninke
                              stucki   -> Stucki's method
                              burkes   -> Burkes' method
+                             sierra1  -> Sierra Lite method
+                             sierra2  -> Sierra Two-row method
+                             sierra3  -> Sierra-3 method
                              a_dither -> positionally stable
                                          arithmetic dither
                              x_dither -> positionally stable

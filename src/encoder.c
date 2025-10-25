@@ -2215,22 +2215,36 @@ sixel_encoder_setopt(
         forced_palette = 0;
         errno = 0;
         endptr = NULL;
-        parsed_reqcolors = strtol(value, &endptr, 10);
-        if (endptr != NULL && *endptr == '!') {
+        if (*value == '!' && value[1] == '\0') {
+            /*
+             * Force the default palette size even when the median cut
+             * finished early.
+             *
+             *   requested colors
+             *          |
+             *          v
+             *        [ 256 ]  <--- "-p!" triggers this shortcut
+             */
+            parsed_reqcolors = SIXEL_PALETTE_MAX;
             forced_palette = 1;
-            ++endptr;
-        }
-        if (errno == ERANGE || endptr == value) {
-            sixel_helper_set_additional_message(
-                "cannot parse -p/--colors option.");
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
-        }
-        if (endptr != NULL && *endptr != '\0') {
-            sixel_helper_set_additional_message(
-                "cannot parse -p/--colors option.");
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
+        } else {
+            parsed_reqcolors = strtol(value, &endptr, 10);
+            if (endptr != NULL && *endptr == '!') {
+                forced_palette = 1;
+                ++endptr;
+            }
+            if (errno == ERANGE || endptr == value) {
+                sixel_helper_set_additional_message(
+                    "cannot parse -p/--colors option.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
+            if (endptr != NULL && *endptr != '\0') {
+                sixel_helper_set_additional_message(
+                    "cannot parse -p/--colors option.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
         }
         if (parsed_reqcolors < 1) {
             sixel_helper_set_additional_message(
@@ -2307,6 +2321,12 @@ sixel_encoder_setopt(
             encoder->method_for_diffuse = SIXEL_DIFFUSE_STUCKI;
         } else if (strcmp(value, "burkes") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_BURKES;
+        } else if (strcmp(value, "sierra1") == 0) {
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_SIERRA1;
+        } else if (strcmp(value, "sierra2") == 0) {
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_SIERRA2;
+        } else if (strcmp(value, "sierra3") == 0) {
+            encoder->method_for_diffuse = SIXEL_DIFFUSE_SIERRA3;
         } else if (strcmp(value, "a_dither") == 0) {
             encoder->method_for_diffuse = SIXEL_DIFFUSE_A_DITHER;
         } else if (strcmp(value, "x_dither") == 0) {

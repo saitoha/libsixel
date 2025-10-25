@@ -92,8 +92,11 @@ SIXEL_DIFFUSE_X_DITHER     = 0x8  # positionally stable arithmetic xor based dit
 SIXEL_DIFFUSE_LSO1         = 0x9  # diffuse with libsixel original method
 SIXEL_DIFFUSE_LSO2         = 0xa  # libsixel method based on variable error
                                   # diffusion
-SIXEL_DIFFUSE_LSO3         = 0xb  # libsixel method based on variable error 
+SIXEL_DIFFUSE_LSO3         = 0xb  # libsixel method based on variable error
                                   # diffusion + jitter
+SIXEL_DIFFUSE_SIERRA1      = 0xc  # diffuse with Sierra Lite method
+SIXEL_DIFFUSE_SIERRA2      = 0xd  # diffuse with Sierra Two-row method
+SIXEL_DIFFUSE_SIERRA3      = 0xe  # diffuse with Sierra-3 method
 # scan order for diffusing
 SIXEL_SCAN_AUTO       = 0x0  # choose scan order automatically
 SIXEL_SCAN_RASTER     = 0x1  # scan from left to right on each line
@@ -238,6 +241,9 @@ SIXEL_OPTFLAG_DIFFUSION        = 'd'  # -d DIFFUSIONTYPE, --diffusion=DIFFUSIONT
                                       #            jajuni   -> Jarvis, Judice & Ninke
                                       #            stucki   -> Stucki's method
                                       #            burkes   -> Burkes' method
+                                      #            sierra1  -> Sierra Lite method
+                                      #            sierra2  -> Sierra Two-row method
+                                      #            sierra3  -> Sierra-3 method
                                       #            a_dither -> positionally stable
                                       #                        arithmetic dither
                                       #            x_dither -> positionally stable
