@@ -361,6 +361,9 @@ Usage: img2sixel [Options] imagefiles
 Options:
 -o, --outfile              specify output file name.
                            (default:stdout)
+                           Use a name ending in ".png" or the literal
+                           "png:-" to emit PNG data recreated from the
+                           SIXEL pipeline.
 -7, --7bit-mode            generate a sixel image for 7bit
                            terminals or printers (default)
 -8, --8bit-mode            generate a sixel image for 8bit
