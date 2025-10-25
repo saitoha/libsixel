@@ -71,35 +71,35 @@ if img2sixel_opt.enabled()
     endif
 
     test_scripts = [
-      'test_0001_invalid_option.bash',
-      'test_0002_stdin.bash',
-      'test_0003_information.bash',
-      'test_0004_conversion_options.bash',
-      'test_0005_dcs_arguments.bash',
-      'test_0006_dcs_variations.bash',
-      'test_0007_animation.bash',
-      'test_0008_progressive_jpeg.bash',
+      '0001_invalid_option.t',
+      '0002_stdin.t',
+      '0003_information.t',
+      '0004_conversion_options.t',
+      '0005_dcs_arguments.t',
+      '0006_dcs_variations.t',
+      '0007_animation.t',
+      '0008_progressive_jpeg.t',
     ]
     if png_dep.found()
-      test_scripts += ['test_0009_pngsuite.bash']
+      test_scripts += ['0009_pngsuite.t']
     endif
     if curl_dep.found()
-      test_scripts += ['test_0010_curl.bash']
+      test_scripts += ['0010_curl.t']
     endif
     if sixel2png_opt.enabled()
-      test_scripts += ['test_0011_basic.bash']
+      test_scripts += ['0011_basic.t']
     endif
     test_scripts += [
-      'test_0012_regressions.bash',
-      'test_0013_documentation.bash',
+      '0012_regressions.t',
+      '0013_documentation.t',
     ]
 
-    tests_dir = join_paths(meson.source_root(), 'tests', 'converters')
+    tests_dir = join_paths(meson.source_root(), 'tests', 't')
     order = 0
     foreach script : test_scripts
       deps = []
       deps += img2sixel_deps
-      if script == 'test_0011_basic.bash'
+      if script == '0011_basic.t'
         deps += sixel2png_deps
       endif
       test(script, bash,

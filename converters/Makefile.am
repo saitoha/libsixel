@@ -7,8 +7,6 @@ VPATH = @srcdir@
 
 BASH = @BASH@
 
-TEST_EXTENSIONS = .bash
-
 bin_PROGRAMS =
 dist_man_MANS =
 
@@ -22,26 +20,26 @@ CONVERTER_TEST_NAMES =
 if WANT_IMG2SIXEL
 if HAVE_BASH
 CONVERTER_TEST_NAMES += \
-        test_0001_invalid_option.bash \
-        test_0002_stdin.bash \
-        test_0003_information.bash \
-        test_0004_conversion_options.bash \
-        test_0005_dcs_arguments.bash \
-        test_0006_dcs_variations.bash \
-        test_0007_animation.bash \
-        test_0008_progressive_jpeg.bash
+        0001_invalid_option.t \
+        0002_stdin.t \
+        0003_information.t \
+        0004_conversion_options.t \
+        0005_dcs_arguments.t \
+        0006_dcs_variations.t \
+        0007_animation.t \
+        0008_progressive_jpeg.t
 if HAVE_PNG
-CONVERTER_TEST_NAMES += test_0009_pngsuite.bash
+CONVERTER_TEST_NAMES += 0009_pngsuite.t
 endif
 if HAVE_CURL
-CONVERTER_TEST_NAMES += test_0010_curl.bash
+CONVERTER_TEST_NAMES += 0010_curl.t
 endif
 if WANT_SIXEL2PNG
-CONVERTER_TEST_NAMES += test_0011_basic.bash
+CONVERTER_TEST_NAMES += 0011_basic.t
 endif
 CONVERTER_TEST_NAMES += \
-        test_0012_regressions.bash \
-        test_0013_documentation.bash
+        0012_regressions.t \
+        0013_documentation.t
 endif
 endif
 
@@ -53,25 +51,26 @@ if HAVE_BASH
 #      converters/Makefile.am (this file)
 #                  |
 #                  v
-#      tests/converters/*.bash  <-- real scripts live here
+#      tests/t/*.t  <-- real scripts live here
+#                  ^
+#                  |
+#          +--------------------------+
+#          | check-converter-tests    |
+#          +------------+-------------+
+#                       |
+#         +-------------v-------------+
+#         | env + TAP driver + bash   |
+#         +---------------------------+
 #
 #  We keep only the basename list in CONVERTER_TEST_NAMES and derive
-#  multiple path variants from it.  Automake refuses $(top_srcdir) in
-#  TESTS, so the TESTS entries use $(srcdir)/../ to walk to the script
-#  directory while our manual driver loop still consumes absolute paths.
+#  multiple path variants from it.  Automake now stays out of the loop,
+#  so the manual harness below is responsible for feeding scripts to the
+#  shared TAP driver and compiler pair.
 # ----------------------------------------------------------------------
-BASH_TEST_SRCDIR = $(top_srcdir)/tests/converters
-TESTS = $(addprefix $(srcdir)/../tests/converters/, $(CONVERTER_TEST_NAMES))
-BASH_TEST_SCRIPTS = $(addprefix $(BASH_TEST_SRCDIR)/, $(CONVERTER_TEST_NAMES))
-BASH_LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/tap-driver.sh
-BASH_LOG_COMPILER = $(BASH)
-CONVERTER_TEST_ENV_EXPORT = \
-        TOP_SRCDIR=$(top_srcdir); export TOP_SRCDIR; \
-        SRC_DIR=$(srcdir); export SRC_DIR; \
-        BUILD_DIR=$(builddir); export BUILD_DIR; \
-        TMP_DIR=$(builddir)/tmp; export TMP_DIR; \
-        WINE="$(WINE)"; export WINE; \
-        WINEEXT="$(WINEEXT)"; export WINEEXT
+CONVERTER_TEST_SRCDIR = $(top_srcdir)/tests/t
+CONVERTER_TEST_SCRIPT_PATHS = $(addprefix $(CONVERTER_TEST_SRCDIR)/, $(CONVERTER_TEST_NAMES))
+CONVERTER_TAP_DRIVER = $(SHELL) $(top_srcdir)/build-aux/tap-driver.sh
+CONVERTER_TAP_COMPILER = $(BASH)
 CONVERTER_TEST_ENV_VARS = \
         TOP_SRCDIR="$(top_srcdir)" \
         SRC_DIR="$(srcdir)" \
@@ -79,7 +78,6 @@ CONVERTER_TEST_ENV_VARS = \
         TMP_DIR="$(builddir)/tmp" \
         WINE="$(WINE)" \
         WINEEXT="$(WINEEXT)"
-AM_TESTS_ENVIRONMENT = $(CONVERTER_TEST_ENV_EXPORT)
 endif
 endif
 
@@ -137,19 +135,19 @@ check-converter-tests:
 		printf 'SKIP: bash is not available; converter tests skipped\n'; \
 		exit 0; \
 	fi
-        @if test -z "$(BASH_TEST_SCRIPTS)"; then \
-                printf 'SKIP: no converter tests are enabled\n'; \
-                exit 0; \
-        fi
-        @mkdir -p $(builddir)/tmp/logs
-        @rm -f $(builddir)/test-suite.log
-        @overall_status=0; \
-        for test_script in $(BASH_TEST_SCRIPTS); do \
-                name=`basename $$test_script`; \
-                log_file=$(builddir)/$$name.log; \
-                trs_file=$(builddir)/$$name.trs; \
+	@if test -z "$(CONVERTER_TEST_SCRIPT_PATHS)"; then \
+		printf 'SKIP: no converter tests are enabled\n'; \
+		exit 0; \
+	fi
+	@mkdir -p $(builddir)/tmp/logs
+	@rm -f $(builddir)/test-suite.log
+	@overall_status=0; \
+	for test_script in $(CONVERTER_TEST_SCRIPT_PATHS); do \
+		name=`basename $$test_script`; \
+		log_file=$(builddir)/$$name.log; \
+		trs_file=$(builddir)/$$name.trs; \
 		rm -f "$$log_file" "$$trs_file"; \
-		if ! $(BASH_LOG_DRIVER) --test-name "$$name" --log-file "$$log_file" --trs-file "$$trs_file" --expect-failure no --color-tests no --enable-hard-errors yes --comments yes -- env $(CONVERTER_TEST_ENV_VARS) $(BASH) "$$test_script"; then \
+		if ! $(CONVERTER_TAP_DRIVER) --test-name "$$name" --log-file "$$log_file" --trs-file "$$trs_file" --expect-failure no --color-tests no --enable-hard-errors yes --comments yes -- env $(CONVERTER_TEST_ENV_VARS) $(CONVERTER_TAP_COMPILER) "$$test_script"; then \
 			overall_status=1; \
 		fi; \
 		cat "$$trs_file" >>$(builddir)/test-suite.log; \
