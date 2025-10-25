@@ -7,10 +7,6 @@ VPATH = @srcdir@
 
 BASH = @BASH@
 
-if HAVE_BASH
-SHELL = $(BASH)
-endif
-
 bin_PROGRAMS =
 dist_man_MANS =
 
