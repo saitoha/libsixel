@@ -1,0 +1,27 @@
+# Model assets bundled with libsixel
+
+This directory collects the neural network artifacts that power the perceptual
+quality evaluator shipped with libsixel.  The layout mirrors the installation
+structure so that the runtime helper can discover the data without additional
+configuration.
+
+```
+models/
+└── lpips/
+    ├── lpips_diff.onnx      # decoder head that reduces feature maps
+    └── lpips_feature.onnx   # feature extractor lifted from AlexNet-style CNNs
+```
+
+Both ONNX graphs originate from the `deepghs/imgutils` repository and are
+redistributed under the upstream MIT License (see LICENSE). The helper binary
+searches for the same relative structure under `share/libsixel/models/lpips`
+after installation, which keeps development and deployment hierarchies
+consistent.
+
+The LPIPS workflow embeds a pair of images into a feature space and then runs a
+compact head that approximates human perceptual distance.  The `lpips_ort`
+utility orchestrates this pipeline through ONNX Runtime, and it requires both
+graphs to be present.  When ONNX Runtime support is enabled at build time the
+installation step copies these models into the location described above.
+
+Please consult the main `LICENSE` file for the exact upstream license text.

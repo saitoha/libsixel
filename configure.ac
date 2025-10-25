@@ -1275,6 +1275,65 @@ fi
 AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBPNG_LIBS)
 
+AC_ARG_WITH([onnxruntime],
+            [AS_HELP_STRING([--with-onnxruntime[=PATH]],
+                            [use ONNX Runtime for LPIPS helper (default=auto)])],
+            [],
+            [with_onnxruntime=auto])
+
+have_onnxruntime=no
+AS_IF([test "x$with_onnxruntime" = "xno"],
+      [have_onnxruntime=no],
+      [
+        if test "x$ONNXRUNTIME_CFLAGS$ONNXRUNTIME_LIBS" != x; then
+            have_onnxruntime=yes
+        fi
+        if test "x$have_onnxruntime" != "xyes"; then
+            PKG_CHECK_MODULES([ONNXRUNTIME],
+                              [libonnxruntime],
+                              [have_onnxruntime=yes],
+                              [have_onnxruntime=no])
+        fi
+        if test "x$have_onnxruntime" != "xyes"; then
+            if test "x$with_onnxruntime" != "xauto" \
+                    -a "x$with_onnxruntime" != "xyes"; then
+                if test -d "$with_onnxruntime"; then
+                    ONNXRUNTIME_CFLAGS="-I$with_onnxruntime/include"
+                    ONNXRUNTIME_LIBS="-L$with_onnxruntime/lib -lonnxruntime"
+                    have_onnxruntime=yes
+                else
+                    AC_MSG_ERROR([--with-onnxruntime expects a directory])
+                fi
+            elif test "x$with_onnxruntime" = "xyes"; then
+                AC_MSG_ERROR([libonnxruntime (ONNX Runtime) not found])
+            fi
+        fi
+        if test "x$have_onnxruntime" = "xyes"; then
+            save_CPPFLAGS="$CPPFLAGS"
+            save_LIBS="$LIBS"
+            CPPFLAGS="$CPPFLAGS $ONNXRUNTIME_CFLAGS"
+            LIBS="$LIBS $ONNXRUNTIME_LIBS"
+            AC_CHECK_HEADER([onnxruntime_c_api.h],
+                            [],
+                            [have_onnxruntime=no])
+            AC_CHECK_LIB([onnxruntime],
+                         [OrtGetApiBase],
+                         [],
+                         [have_onnxruntime=no])
+            CPPFLAGS="$save_CPPFLAGS"
+            LIBS="$save_LIBS"
+        fi
+      ])
+AS_IF([test "x$have_onnxruntime" = "xyes"],
+      [AC_DEFINE([HAVE_ONNXRUNTIME],
+                 [1],
+                 [Define if ONNX Runtime is available])],
+      [ONNXRUNTIME_CFLAGS=
+       ONNXRUNTIME_LIBS=])
+AC_SUBST([ONNXRUNTIME_CFLAGS])
+AC_SUBST([ONNXRUNTIME_LIBS])
+AM_CONDITIONAL([HAVE_ONNXRUNTIME], [test "x$have_onnxruntime" = "xyes"])
+
 if test x$with_winpthread != xno && test "x$using_cl" != "xyes"; then
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for winpthread])

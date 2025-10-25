@@ -699,6 +699,10 @@ LIBS_PRIVATE
 REQUIRES_PRIVATE
 WIC_LIBS
 WIC_CFLAGS
+HAVE_ONNXRUNTIME_FALSE
+HAVE_ONNXRUNTIME_TRUE
+ONNXRUNTIME_LIBS
+ONNXRUNTIME_CFLAGS
 LIBPNG_LIBS
 LIBPNG_CFLAGS
 LIBJPEG_LIBS
@@ -923,6 +927,7 @@ enable_ruby
 enable_debug
 enable_gcov
 enable_tests
+with_onnxruntime
 with_python_sys_prefix
 with_python_prefix
 with_python_exec_prefix
@@ -952,6 +957,8 @@ LIBJPEG_CFLAGS
 LIBJPEG_LIBS
 LIBPNG_CFLAGS
 LIBPNG_LIBS
+ONNXRUNTIME_CFLAGS
+ONNXRUNTIME_LIBS
 PYTHON
 RUBY_EXT_INC
 RUBY_EXT_LIB
@@ -1649,6 +1656,7 @@ Optional Packages:
                           Install bash completion to DIR (default: no)
   --with-zshcompletiondir=DIR
                           Install zsh completion to DIR (default: no)
+  --with-onnxruntime=PATH use ONNX Runtime for LPIPS helper (default=auto)
   --with-python-sys-prefix
                           use Python's sys.prefix and sys.exec_prefix values
   --with-python_prefix    override the default PYTHON_PREFIX
@@ -1690,6 +1698,10 @@ Some influential environment variables:
   LIBPNG_CFLAGS
               C compiler flags for LIBPNG, overriding pkg-config
   LIBPNG_LIBS linker flags for LIBPNG, overriding pkg-config
+  ONNXRUNTIME_CFLAGS
+              C compiler flags for ONNXRUNTIME, overriding pkg-config
+  ONNXRUNTIME_LIBS
+              linker flags for ONNXRUNTIME, overriding pkg-config
   PYTHON      the Python interpreter
   RUBY_EXT_INC
               Directory to include ruby headers from
@@ -20802,6 +20814,208 @@ fi
 
 
 
+
+# Check whether --with-onnxruntime was given.
+if test ${with_onnxruntime+y}
+then :
+  withval=$with_onnxruntime;
+else case e in #(
+  e) with_onnxruntime=auto ;;
+esac
+fi
+
+
+have_onnxruntime=no
+if test "x$with_onnxruntime" = "xno"
+then :
+  have_onnxruntime=no
+else case e in #(
+  e)
+        if test "x$ONNXRUNTIME_CFLAGS$ONNXRUNTIME_LIBS" != x; then
+            have_onnxruntime=yes
+        fi
+        if test "x$have_onnxruntime" != "xyes"; then
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libonnxruntime" >&5
+printf %s "checking for libonnxruntime... " >&6; }
+
+if test -n "$ONNXRUNTIME_CFLAGS"; then
+    pkg_cv_ONNXRUNTIME_CFLAGS="$ONNXRUNTIME_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libonnxruntime\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libonnxruntime") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_ONNXRUNTIME_CFLAGS=`$PKG_CONFIG --cflags "libonnxruntime" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$ONNXRUNTIME_LIBS"; then
+    pkg_cv_ONNXRUNTIME_LIBS="$ONNXRUNTIME_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libonnxruntime\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libonnxruntime") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_ONNXRUNTIME_LIBS=`$PKG_CONFIG --libs "libonnxruntime" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        ONNXRUNTIME_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libonnxruntime" 2>&1`
+        else
+	        ONNXRUNTIME_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libonnxruntime" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$ONNXRUNTIME_PKG_ERRORS" >&5
+
+	have_onnxruntime=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+	have_onnxruntime=no
+else
+	ONNXRUNTIME_CFLAGS=$pkg_cv_ONNXRUNTIME_CFLAGS
+	ONNXRUNTIME_LIBS=$pkg_cv_ONNXRUNTIME_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+	have_onnxruntime=yes
+fi
+        fi
+        if test "x$have_onnxruntime" != "xyes"; then
+            if test "x$with_onnxruntime" != "xauto" \
+                    -a "x$with_onnxruntime" != "xyes"; then
+                if test -d "$with_onnxruntime"; then
+                    ONNXRUNTIME_CFLAGS="-I$with_onnxruntime/include"
+                    ONNXRUNTIME_LIBS="-L$with_onnxruntime/lib -lonnxruntime"
+                    have_onnxruntime=yes
+                else
+                    as_fn_error $? "--with-onnxruntime expects a directory" "$LINENO" 5
+                fi
+            elif test "x$with_onnxruntime" = "xyes"; then
+                as_fn_error $? "libonnxruntime (ONNX Runtime) not found" "$LINENO" 5
+            fi
+        fi
+        if test "x$have_onnxruntime" = "xyes"; then
+            save_CPPFLAGS="$CPPFLAGS"
+            save_LIBS="$LIBS"
+            CPPFLAGS="$CPPFLAGS $ONNXRUNTIME_CFLAGS"
+            LIBS="$LIBS $ONNXRUNTIME_LIBS"
+            ac_fn_c_check_header_compile "$LINENO" "onnxruntime_c_api.h" "ac_cv_header_onnxruntime_c_api_h" "$ac_includes_default"
+if test "x$ac_cv_header_onnxruntime_c_api_h" = xyes
+then :
+
+else case e in #(
+  e) have_onnxruntime=no ;;
+esac
+fi
+
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for OrtGetApiBase in -lonnxruntime" >&5
+printf %s "checking for OrtGetApiBase in -lonnxruntime... " >&6; }
+if test ${ac_cv_lib_onnxruntime_OrtGetApiBase+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-lonnxruntime  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.
+   The 'extern "C"' is for builds by C++ compilers;
+   although this is not generally supported in C code supporting it here
+   has little cost and some practical benefit (sr 110532).  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char OrtGetApiBase (void);
+int
+main (void)
+{
+return OrtGetApiBase ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_onnxruntime_OrtGetApiBase=yes
+else case e in #(
+  e) ac_cv_lib_onnxruntime_OrtGetApiBase=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_onnxruntime_OrtGetApiBase" >&5
+printf "%s\n" "$ac_cv_lib_onnxruntime_OrtGetApiBase" >&6; }
+if test "x$ac_cv_lib_onnxruntime_OrtGetApiBase" = xyes
+then :
+  printf "%s\n" "#define HAVE_LIBONNXRUNTIME 1" >>confdefs.h
+
+  LIBS="-lonnxruntime $LIBS"
+
+else case e in #(
+  e) have_onnxruntime=no ;;
+esac
+fi
+
+            CPPFLAGS="$save_CPPFLAGS"
+            LIBS="$save_LIBS"
+        fi
+       ;;
+esac
+fi
+if test "x$have_onnxruntime" = "xyes"
+then :
+
+printf "%s\n" "#define HAVE_ONNXRUNTIME 1" >>confdefs.h
+
+else case e in #(
+  e) ONNXRUNTIME_CFLAGS=
+       ONNXRUNTIME_LIBS= ;;
+esac
+fi
+
+
+ if test "x$have_onnxruntime" = "xyes"; then
+  HAVE_ONNXRUNTIME_TRUE=
+  HAVE_ONNXRUNTIME_FALSE='#'
+else
+  HAVE_ONNXRUNTIME_TRUE='#'
+  HAVE_ONNXRUNTIME_FALSE=
+fi
+
+
 if test x$with_winpthread != xno && test "x$using_cl" != "xyes"; then
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for winpthread" >&5
@@ -22434,6 +22648,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE}" && test -z "${HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_APPLE_QUICKLOOK_EXTENSION\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_ONNXRUNTIME_TRUE}" && test -z "${HAVE_ONNXRUNTIME_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_ONNXRUNTIME\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${REGISTER_DLL_TRUE}" && test -z "${REGISTER_DLL_FALSE}"; then
