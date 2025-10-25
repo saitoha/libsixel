@@ -55,6 +55,14 @@
 static
 void show_version(void)
 {
+    size_t loader_count;
+    char const **loader_names;
+    size_t loader_index;
+
+    loader_count = 0;
+    loader_names = NULL;
+    loader_index = 0;
+
     printf("img2sixel " PACKAGE_VERSION "\n"
            "\n"
            "configured with:\n"
@@ -107,6 +115,37 @@ void show_version(void)
            "no\n"
 #endif
            "\n"
+          );
+
+    loader_count = sixel_helper_get_available_loader_names(NULL, 0);
+    if (loader_count > 0) {
+        loader_names = (char const **)malloc(loader_count *
+                                             sizeof(char const *));
+        if (loader_names != NULL) {
+            if (sixel_helper_get_available_loader_names(loader_names,
+                                                        loader_count)
+                != loader_count) {
+                free(loader_names);
+                loader_names = NULL;
+                loader_count = 0;
+            }
+        }
+    }
+
+    printf("available loaders:\n");
+    if (loader_names != NULL && loader_count > 0) {
+        for (loader_index = 0; loader_index < loader_count;
+             ++loader_index) {
+            printf("  %s\n", loader_names[loader_index]);
+        }
+    } else if (loader_count > 0) {
+        printf("  (enumeration failed)\n");
+    } else {
+        printf("  (none)\n");
+    }
+    free(loader_names);
+
+    printf("\n"
            "Copyright (c) 2021-2025 libsixel developers. See `AUTHORS`.\n"
            "Copyright (C) 2014-2020 Hayaki Saito <saitoha@me.com>.\n"
            "\n"
@@ -371,6 +410,9 @@ void show_help(void)
             "-D, --pipe-mode            [[deprecated]] read source images from\n"
             "                           stdin continuously\n"
             "-v, --verbose              show debugging info\n"
+            "-J LIST, --loaders=LIST    choose loader priority order\n"
+            "                           LIST is a comma separated set of\n"
+            "                           loader names like 'gd,builtin'\n"
             "-@ DSCS, --drcs DSCS       output extended DRCS tiles instead of regular\n"
             "                           SIXEL image (experimental)\n"
             "-M VERSION, --mapping-version=VERSION\n"
@@ -427,7 +469,7 @@ main(int argc, char *argv[])
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    char const *optstring = "o:T:78Rp:m:eb:Id:f:s:c:w:h:r:q:L:kil:t:ugvSn:PE:U:B:C:D@:M:OVW:HY:y:";
+    char const *optstring = "o:T:78Rp:m:eb:Id:f:s:c:w:h:r:q:L:kil:t:ugvSn:PE:U:B:C:D@:M:OJ:VW:HY:y:";
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",            required_argument,  &long_opt, 'o'},
@@ -458,6 +500,7 @@ main(int argc, char *argv[])
         {"use-macro",          no_argument,        &long_opt, 'u'},
         {"ignore-delay",       no_argument,        &long_opt, 'g'},
         {"verbose",            no_argument,        &long_opt, 'v'},
+        {"loaders",            required_argument,  &long_opt, 'J'},
         {"static",             no_argument,        &long_opt, 'S'},
         {"macro-number",       required_argument,  &long_opt, 'n'},
         {"penetrate",          no_argument,        &long_opt, 'P'}, /* deprecated */
@@ -561,7 +604,8 @@ argerr:
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
             "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
-            "                 [-E encodepolicy] [-@ dscs] [-M mapping-version]\n"
+            "                 [-E encodepolicy] [-J loaderlist] [-@ dscs]\n"
+            "                 [-M mapping-version]\n"
             "                 [-W workingcolorspace] [-U outputcolorspace] [-B bgcolor]\n"
             "                 [-T path] [-o outfile] [filename ...]\n"
             "for more details, type: 'img2sixel -H'.\n");

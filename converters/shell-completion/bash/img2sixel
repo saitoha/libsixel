@@ -137,6 +137,16 @@ _img2sixel()
                                    size' -- "$cur" ) )
         return 0
         ;;
+    -J|--loaders)
+        COMPREPLY=( $( compgen -W 'builtin \
+                                   coregraphics \
+                                   gd \
+                                   gdk-pixbuf2 \
+                                   gnome-thumbnailer \
+                                   quicklook \
+                                   wic' -- "$cur" ) )
+        return 0
+        ;;
     -W|--working-colorspace)
         COMPREPLY=( $( compgen -W 'gamma \
                                    linear \
@@ -193,6 +203,7 @@ _img2sixel()
                                    -t --palette-type \
                                    -b --builtin-palette \
                                    -E --encode-policy \
+                                   -J --loaders \
                                    -B --bgcolor \
                                    -P --penetrate \
                                    -D --pipe-mode \

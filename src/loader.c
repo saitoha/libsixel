@@ -217,6 +217,196 @@ loader_trace_result(char const *name, SIXELSTATUS status)
     }
 }
 
+typedef SIXELSTATUS (*sixel_loader_backend)(
+    sixel_chunk_t const       *pchunk,
+    int                        fstatic,
+    int                        fuse_palette,
+    int                        reqcolors,
+    unsigned char             *bgcolor,
+    int                        loop_control,
+    sixel_load_image_function  fn_load,
+    void                      *context);
+
+typedef int (*sixel_loader_predicate)(sixel_chunk_t const *pchunk);
+
+typedef struct sixel_loader_entry {
+    char const              *name;
+    sixel_loader_backend     backend;
+    sixel_loader_predicate   predicate;
+} sixel_loader_entry_t;
+
+static int
+loader_plan_contains(sixel_loader_entry_t const **plan,
+                     size_t plan_length,
+                     sixel_loader_entry_t const *entry)
+{
+    size_t index;
+
+    for (index = 0; index < plan_length; ++index) {
+        if (plan[index] == entry) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int
+loader_token_matches(char const *token,
+                     size_t token_length,
+                     char const *name)
+{
+    size_t index;
+    unsigned char left;
+    unsigned char right;
+
+    for (index = 0; index < token_length && name[index] != '\0'; ++index) {
+        left = (unsigned char)token[index];
+        right = (unsigned char)name[index];
+        if (tolower(left) != tolower(right)) {
+            return 0;
+        }
+    }
+
+    if (index != token_length || name[index] != '\0') {
+        return 0;
+    }
+
+    return 1;
+}
+
+static sixel_loader_entry_t const *
+loader_lookup_token(char const *token,
+                    size_t token_length,
+                    sixel_loader_entry_t const *entries,
+                    size_t entry_count)
+{
+    size_t index;
+
+    for (index = 0; index < entry_count; ++index) {
+        if (loader_token_matches(token,
+                                 token_length,
+                                 entries[index].name)) {
+            return &entries[index];
+        }
+    }
+
+    return NULL;
+}
+
+/*
+ * loader_build_plan
+ *
+ * Translate a comma separated list into an execution plan that reorders the
+ * runtime loader chain.  Tokens are matched case-insensitively.  Unknown names
+ * are ignored so that new builds remain forward compatible.
+ *
+ *    user input "gd,coregraphics"
+ *                |
+ *                v
+ *        +-------------------+
+ *        | prioritized list  |
+ *        +-------------------+
+ *                |
+ *                v
+ *        +-------------------+
+ *        | default fallbacks |
+ *        +-------------------+
+ */
+static size_t
+loader_build_plan(char const *order,
+                  sixel_loader_entry_t const *entries,
+                  size_t entry_count,
+                  sixel_loader_entry_t const **plan,
+                  size_t plan_capacity)
+{
+    size_t plan_length;
+    size_t index;
+    char const *cursor;
+    char const *token_start;
+    char const *token_end;
+    size_t token_length;
+    sixel_loader_entry_t const *entry;
+    size_t limit;
+
+    plan_length = 0;
+    index = 0;
+    cursor = order;
+    token_start = order;
+    token_end = order;
+    token_length = 0;
+    entry = NULL;
+    limit = plan_capacity;
+
+    if (order != NULL && plan != NULL && plan_capacity > 0) {
+        token_start = order;
+        cursor = order;
+        while (*cursor != '\0') {
+            if (*cursor == ',') {
+                token_end = cursor;
+                while (token_start < token_end &&
+                       isspace((unsigned char)*token_start)) {
+                    ++token_start;
+                }
+                while (token_end > token_start &&
+                       isspace((unsigned char)token_end[-1])) {
+                    --token_end;
+                }
+                token_length = (size_t)(token_end - token_start);
+                if (token_length > 0) {
+                    entry = loader_lookup_token(token_start,
+                                                token_length,
+                                                entries,
+                                                entry_count);
+                    if (entry != NULL &&
+                        !loader_plan_contains(plan,
+                                              plan_length,
+                                              entry) &&
+                        plan_length < limit) {
+                        plan[plan_length] = entry;
+                        ++plan_length;
+                    }
+                }
+                token_start = cursor + 1;
+            }
+            ++cursor;
+        }
+
+        token_end = cursor;
+        while (token_start < token_end &&
+               isspace((unsigned char)*token_start)) {
+            ++token_start;
+        }
+        while (token_end > token_start &&
+               isspace((unsigned char)token_end[-1])) {
+            --token_end;
+        }
+        token_length = (size_t)(token_end - token_start);
+        if (token_length > 0) {
+            entry = loader_lookup_token(token_start,
+                                        token_length,
+                                        entries,
+                                        entry_count);
+            if (entry != NULL &&
+                !loader_plan_contains(plan, plan_length, entry) &&
+                plan_length < limit) {
+                plan[plan_length] = entry;
+                ++plan_length;
+            }
+        }
+    }
+
+    for (index = 0; index < entry_count && plan_length < limit; ++index) {
+        entry = &entries[index];
+        if (!loader_plan_contains(plan, plan_length, entry)) {
+            plan[plan_length] = entry;
+            ++plan_length;
+        }
+    }
+
+    return plan_length;
+}
+
 sixel_allocator_t *stbi_allocator;
 
 void *
@@ -5492,6 +5682,42 @@ end:
 
 #endif /* HAVE_WIC */
 
+#if HAVE_WIC
+static int
+loader_can_try_wic(sixel_chunk_t const *chunk)
+{
+    if (chunk == NULL) {
+        return 0;
+    }
+    if (chunk_is_gif(chunk)) {
+        return 0;
+    }
+    return 1;
+}
+#endif
+
+static sixel_loader_entry_t const sixel_loader_entries[] = {
+#if HAVE_WIC
+    { "wic", load_with_wic, loader_can_try_wic },
+#endif
+#if HAVE_COREGRAPHICS
+    { "coregraphics", load_with_coregraphics, NULL },
+#endif
+#if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
+    { "quicklook", load_with_quicklook, NULL },
+#endif
+#ifdef HAVE_GDK_PIXBUF2
+    { "gdk-pixbuf2", load_with_gdkpixbuf, NULL },
+#endif
+#if HAVE_GD
+    { "gd", load_with_gd, NULL },
+#endif
+    { "builtin", load_with_builtin, NULL },
+#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
+    { "gnome-thumbnailer", load_with_gnome_thumbnailer, NULL },
+#endif
+};
+
 /* load image from file */
 
 SIXELAPI SIXELSTATUS
@@ -5505,12 +5731,21 @@ sixel_helper_load_image_file(
     sixel_load_image_function /* in */     fn_load,       /* callback */
     int                       /* in */     finsecure,     /* true if do not verify SSL */
     int const                 /* in */     *cancel_flag,  /* cancel flag, may be NULL */
+    char const                /* in */     *loader_order, /* loader priority override */
     void                      /* in/out */ *context,      /* private data which is passed to callback function as an argument, may be NULL */
     sixel_allocator_t         /* in */     *allocator     /* allocator object, may be NULL */
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_chunk_t *pchunk = NULL;
+    sixel_loader_entry_t const *plan[
+        sizeof(sixel_loader_entries) / sizeof(sixel_loader_entries[0])];
+    size_t entry_count;
+    size_t plan_length;
+    size_t plan_index;
+
+    entry_count = sizeof(sixel_loader_entries) /
+                  sizeof(sixel_loader_entries[0]);
 
     /* normalize reqested colors */
     if (reqcolors > SIXEL_PALETTE_MAX) {
@@ -5536,102 +5771,34 @@ sixel_helper_load_image_file(
     }
 
     status = SIXEL_FALSE;
-#ifdef HAVE_WIC
-    if (SIXEL_FAILED(status) && !chunk_is_gif(pchunk)) {
-        loader_trace_try("wic");
-        status = load_with_wic(pchunk,
-                               fstatic,
-                               fuse_palette,
-                               reqcolors,
-                               bgcolor,
-                               loop_control,
-                               fn_load,
-                               context);
-        loader_trace_result("wic", status);
+    plan_length = loader_build_plan(loader_order,
+                                    sixel_loader_entries,
+                                    entry_count,
+                                    plan,
+                                    entry_count);
+
+    for (plan_index = 0; plan_index < plan_length; ++plan_index) {
+        if (plan[plan_index] == NULL) {
+            continue;
+        }
+        if (plan[plan_index]->predicate != NULL &&
+            plan[plan_index]->predicate(pchunk) == 0) {
+            continue;
+        }
+        loader_trace_try(plan[plan_index]->name);
+        status = plan[plan_index]->backend(pchunk,
+                                           fstatic,
+                                           fuse_palette,
+                                           reqcolors,
+                                           bgcolor,
+                                           loop_control,
+                                           fn_load,
+                                           context);
+        loader_trace_result(plan[plan_index]->name, status);
+        if (SIXEL_SUCCEEDED(status)) {
+            break;
+        }
     }
-#endif  /* HAVE_WIC */
-#ifdef HAVE_COREGRAPHICS
-    if (SIXEL_FAILED(status)) {
-        loader_trace_try("coregraphics");
-        status = load_with_coregraphics(pchunk,
-                                        fstatic,
-                                        fuse_palette,
-                                        reqcolors,
-                                        bgcolor,
-                                        loop_control,
-                                        fn_load,
-                                        context);
-        loader_trace_result("coregraphics", status);
-    }
-#endif  /* HAVE_COREGRAPHICS */
-#if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
-    if (SIXEL_FAILED(status)) {
-        loader_trace_try("quicklook");
-        status = load_with_quicklook(pchunk,
-                                     fstatic,
-                                     fuse_palette,
-                                     reqcolors,
-                                     bgcolor,
-                                     loop_control,
-                                     fn_load,
-                                     context);
-        loader_trace_result("quicklook", status);
-    }
-#endif  /* HAVE_COREGRAPHICS && HAVE_QUICKLOOK */
-#ifdef HAVE_GDK_PIXBUF2
-    if (SIXEL_FAILED(status)) {
-        loader_trace_try("gdk-pixbuf2");
-        status = load_with_gdkpixbuf(pchunk,
-                                     fstatic,
-                                     fuse_palette,
-                                     reqcolors,
-                                     bgcolor,
-                                     loop_control,
-                                     fn_load,
-                                     context);
-        loader_trace_result("gdk-pixbuf2", status);
-    }
-#endif  /* HAVE_GDK_PIXBUF2 */
-#if HAVE_GD
-    if (SIXEL_FAILED(status)) {
-        loader_trace_try("gd");
-        status = load_with_gd(pchunk,
-                              fstatic,
-                              fuse_palette,
-                              reqcolors,
-                              bgcolor,
-                              loop_control,
-                              fn_load,
-                              context);
-        loader_trace_result("gd", status);
-    }
-#endif  /* HAVE_GD */
-    if (SIXEL_FAILED(status)) {
-        loader_trace_try("builtin");
-        status = load_with_builtin(pchunk,
-                                   fstatic,
-                                   fuse_palette,
-                                   reqcolors,
-                                   bgcolor,
-                                   loop_control,
-                                   fn_load,
-                                   context);
-        loader_trace_result("builtin", status);
-    }
-#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
-    if (SIXEL_FAILED(status)) {
-        loader_trace_try("gnome-thumbnailer");
-        status = load_with_gnome_thumbnailer(pchunk,
-                                             fstatic,
-                                             fuse_palette,
-                                             reqcolors,
-                                             bgcolor,
-                                             loop_control,
-                                             fn_load,
-                                             context);
-        loader_trace_result("gnome-thumbnailer", status);
-    }
-#endif
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -5642,6 +5809,29 @@ end:
     return status;
 }
 
+
+SIXELAPI size_t
+sixel_helper_get_available_loader_names(char const **names, size_t max_names)
+{
+    size_t entry_count;
+    size_t limit;
+    size_t index;
+
+    entry_count = sizeof(sixel_loader_entries) /
+                  sizeof(sixel_loader_entries[0]);
+
+    if (names != NULL && max_names > 0) {
+        limit = entry_count;
+        if (limit > max_names) {
+            limit = max_names;
+        }
+        for (index = 0; index < limit; ++index) {
+            names[index] = sixel_loader_entries[index].name;
+        }
+    }
+
+    return entry_count;
+}
 
 #if HAVE_TESTS
 static int

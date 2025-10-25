@@ -137,6 +137,18 @@ _encodepolicy() {
     'size[encode to as small sixel sequence as possible]'
 }
 
+_loaders() {
+  _values \
+    'LOADER' \
+    'builtin[libsixel builtin decoder]' \
+    'coregraphics[macOS CoreGraphics loader]' \
+    'gd[libgd based loader]' \
+    'gdk-pixbuf2[gdk-pixbuf2 image loader]' \
+    'gnome-thumbnailer[external thumbnailer helper]' \
+    'quicklook[macOS Quick Look integration]' \
+    'wic[Windows Imaging Component loader]'
+}
+
 _workingcolorspace() {
   _values \
     'WORKINGCOLORSPACE' \
@@ -189,6 +201,7 @@ _arguments -S -s -A "-*" -S \
   {-P,--penetrate}'[penetrate GNU Screen using DCS pass-through sequence]' \
   {-D,--pipe-mode}'[read source images from stdin continuously]' \
   {-v,--verbose}'[show debugging information]' \
+  {-J,--loaders=}'[override loader priority order]':loaders:_loaders \
   {-@,--drcs}'[output DRCSMMv1 tiles instead of regular SIXEL image]' \
   {-M,--mapping-version}'[enables sixel output in "ormode"]' \
   {-O,--ormode}'[output ormode sixel image]' \

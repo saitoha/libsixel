@@ -829,6 +829,7 @@ sixel_prepare_specified_palette(
                                           load_image_callback_for_palette,
                                           encoder->finsecure,
                                           encoder->cancel_flag,
+                                          encoder->loader_order,
                                           &callback_context,
                                           encoder->allocator);
     if (status != SIXEL_OK) {
@@ -1923,6 +1924,7 @@ sixel_encoder_new(
     (*ppencoder)->reqcolors             = (-1);
     (*ppencoder)->force_palette         = 0;
     (*ppencoder)->mapfile               = NULL;
+    (*ppencoder)->loader_order          = NULL;
     (*ppencoder)->color_option          = SIXEL_COLOR_OPTION_DEFAULT;
     (*ppencoder)->builtin_palette       = 0;
     (*ppencoder)->method_for_diffuse    = SIXEL_DIFFUSE_AUTO;
@@ -2054,6 +2056,7 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
     if (encoder) {
         allocator = encoder->allocator;
         sixel_allocator_free(allocator, encoder->mapfile);
+        sixel_allocator_free(allocator, encoder->loader_order);
         sixel_allocator_free(allocator, encoder->bgcolor);
         sixel_dither_unref(encoder->dither_cache);
         if (encoder->outfd
@@ -2596,6 +2599,24 @@ sixel_encoder_setopt(
         encoder->verbose = 1;
         sixel_helper_set_loader_trace(1);
         break;
+    case SIXEL_OPTFLAG_LOADERS:  /* J */
+        if (encoder->loader_order != NULL) {
+            sixel_allocator_free(encoder->allocator,
+                                 encoder->loader_order);
+            encoder->loader_order = NULL;
+        }
+        if (value != NULL && *value != '\0') {
+            encoder->loader_order = arg_strdup(value,
+                                               encoder->allocator);
+            if (encoder->loader_order == NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_encoder_setopt: "
+                    "sixel_allocator_malloc() failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+        }
+        break;
     case SIXEL_OPTFLAG_STATIC:  /* S */
         encoder->fstatic = 1;
         break;
@@ -2877,6 +2898,7 @@ reload:
                                           load_image_callback,
                                           encoder->finsecure,
                                           encoder->cancel_flag,
+                                          encoder->loader_order,
                                           (void *)encoder,
                                           encoder->allocator);
     if (status != SIXEL_OK) {
