@@ -89,10 +89,6 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-/* ================================================================
- * Utility data structures
- * ================================================================ */
-
 typedef struct Image {
     int width;
     int height;
@@ -175,10 +171,9 @@ assessment_fail(SIXELSTATUS status, char const *message)
     abort();
 }
 
-/* ================================================================
+/*
  * Memory helpers
- * ================================================================ */
-
+ */
 static void *xmalloc(size_t size)
 {
     void *ptr;
@@ -209,10 +204,9 @@ static void image_free(Image *img)
     }
 }
 
-/* ================================================================
+/*
  * Loader bridge (libsixel -> float RGB)
- * ================================================================ */
-
+ */
 static SIXELSTATUS copy_frame_to_rgb(sixel_frame_t *frame,
                                      unsigned char **pixels,
                                      int *width,
@@ -265,7 +259,8 @@ static SIXELSTATUS copy_frame_to_rgb(sixel_frame_t *frame,
     return SIXEL_OK;
 }
 
-static SIXELSTATUS image_from_frame(sixel_frame_t *frame, Image *img)
+static SIXELSTATUS
+image_from_frame(sixel_frame_t *frame, Image *img)
 {
     SIXELSTATUS status;
     unsigned char *pixels;
@@ -300,10 +295,9 @@ static SIXELSTATUS image_from_frame(sixel_frame_t *frame, Image *img)
     return SIXEL_OK;
 }
 
-/* ================================================================
+/*
  * Path discovery helpers (shared by CLI + LPIPS bridge)
- * ================================================================ */
-
+ */
 #if defined(HAVE_ONNXRUNTIME) || \
     (!defined(_WIN32) && !defined(__APPLE__) && !defined(__linux__))
 static int path_accessible(char const *path)
@@ -318,10 +312,11 @@ static int path_accessible(char const *path)
 #endif
 }
 
-static int join_path(char const *dir,
-                     char const *leaf,
-                     char *buffer,
-                     size_t size)
+static int
+join_path(char const *dir,
+          char const *leaf,
+          char *buffer,
+          size_t size)
 {
     size_t dir_len;
     size_t leaf_len;
@@ -357,9 +352,10 @@ static int join_path(char const *dir,
 #endif
 
 #if !defined(_WIN32) && !defined(__APPLE__) && !defined(__linux__)
-static int resolve_from_path_env(char const *name,
-                                 char *buffer,
-                                 size_t size)
+static int
+resolve_from_path_env(char const *name,
+                      char *buffer,
+                      size_t size)
 {
     char const *env;
     char const *cursor;
@@ -398,9 +394,10 @@ static int resolve_from_path_env(char const *name,
 }
 #endif
 
-static int assessment_resolve_executable_dir(char const *argv0,
-                                            char *buffer,
-                                            size_t size)
+static int
+assessment_resolve_executable_dir(char const *argv0,
+                                  char *buffer,
+                                  size_t size)
 {
     char candidate[PATH_MAX];
     size_t length;
@@ -496,10 +493,9 @@ static int assessment_resolve_executable_dir(char const *argv0,
 }
 
 #if defined(HAVE_ONNXRUNTIME)
-/* ================================================================
+/*
  * LPIPS helper plumbing (model discovery + tensor formatting)
- * ================================================================ */
-
+ */
 typedef struct image_f32 {
     int width;
     int height;
@@ -585,7 +581,8 @@ static int find_model(char const *binary_dir,
     return -1;
 }
 
-static int ensure_lpips_models(sixel_assessment_t *assessment)
+static int
+ensure_lpips_models(sixel_assessment_t *assessment)
 {
     if (assessment->lpips_models_ready) {
         return 0;
@@ -616,7 +613,8 @@ static int ensure_lpips_models(sixel_assessment_t *assessment)
     return 0;
 }
 
-static void free_image_f32(image_f32_t *image)
+static void
+free_image_f32(image_f32_t *image)
 {
     if (image->nchw != NULL) {
         free(image->nchw);
@@ -624,7 +622,8 @@ static void free_image_f32(image_f32_t *image)
     }
 }
 
-static int convert_image_to_nchw(const Image *src, image_f32_t *dst)
+static int
+convert_image_to_nchw(const Image *src, image_f32_t *dst)
 {
     size_t plane_size;
     size_t index;
@@ -652,11 +651,12 @@ static int convert_image_to_nchw(const Image *src, image_f32_t *dst)
     return 0;
 }
 
-static float *bilinear_resize_nchw3(float const *src,
-                                    int src_width,
-                                    int src_height,
-                                    int dst_width,
-                                    int dst_height)
+static float *
+bilinear_resize_nchw3(float const *src,
+                      int src_width,
+                      int src_height,
+                      int dst_width,
+                      int dst_height)
 {
     float *dst;
     int channel;
@@ -721,7 +721,8 @@ static float *bilinear_resize_nchw3(float const *src,
     return dst;
 }
 
-static int ort_status_to_error(OrtStatus *status)
+static int
+ort_status_to_error(OrtStatus *status)
 {
     char const *message;
 
@@ -736,9 +737,10 @@ static int ort_status_to_error(OrtStatus *status)
     return -1;
 }
 
-static void get_first_input_shape(OrtSession *session,
-                                  int64_t *dims,
-                                  size_t *rank)
+static void
+get_first_input_shape(OrtSession *session,
+                      int64_t *dims,
+                      size_t *rank)
 {
     OrtTypeInfo *type_info;
     OrtTensorTypeAndShapeInfo const *shape_info;
@@ -764,7 +766,8 @@ static void get_first_input_shape(OrtSession *session,
     g_lpips_api->ReleaseTypeInfo(type_info);
 }
 
-static int tail_index(char const *name)
+static int
+tail_index(char const *name)
 {
     int length;
     int index;
@@ -780,11 +783,12 @@ static int tail_index(char const *name)
     return atoi(name + index + 1);
 }
 
-static int run_lpips(char const *diff_model,
-                     char const *feat_model,
-                     image_f32_t *image_a,
-                     image_f32_t *image_b,
-                     float *result_out)
+static int
+run_lpips(char const *diff_model,
+          char const *feat_model,
+          image_f32_t *image_a,
+          image_f32_t *image_b,
+          float *result_out)
 {
     OrtEnv *env;
     OrtAllocator *allocator;
@@ -1086,10 +1090,6 @@ cleanup:
     /*
      * Clean up ORT-managed string buffers with explicit status release.
      *
-     *    +-----------------------------+
-     *    | allocator -> char buffers  |
-     *    +-----------------------------+
-     *
      * We always release the temporary OrtStatus objects to prevent
      * resource leaks when ONNX Runtime reports cleanup diagnostics.
      */
@@ -1179,11 +1179,11 @@ cleanup:
 }
 #endif /* HAVE_ONNXRUNTIME */
 
-/* ================================================================
+/*
  * Array math helpers
- * ================================================================ */
-
-static FloatBuffer float_buffer_create(size_t length)
+ */
+static FloatBuffer
+float_buffer_create(size_t length)
 {
     FloatBuffer buf;
     buf.length = length;
@@ -1191,7 +1191,8 @@ static FloatBuffer float_buffer_create(size_t length)
     return buf;
 }
 
-static void float_buffer_free(FloatBuffer *buf)
+static void
+float_buffer_free(FloatBuffer *buf)
 {
     if (buf->values != NULL) {
         free(buf->values);
@@ -1200,7 +1201,8 @@ static void float_buffer_free(FloatBuffer *buf)
     }
 }
 
-static float clamp_float(float v, float min_v, float max_v)
+static float
+clamp_float(float v, float min_v, float max_v)
 {
     float result;
     result = v;
@@ -1213,11 +1215,11 @@ static float clamp_float(float v, float min_v, float max_v)
     return result;
 }
 
-/* ================================================================
+/*
  * Luma conversion and resizing utilities
- * ================================================================ */
-
-static FloatBuffer image_to_luma709(const Image *img)
+ */
+static FloatBuffer
+image_to_luma709(const Image *img)
 {
     FloatBuffer buf;
     size_t total;
@@ -1239,7 +1241,8 @@ static FloatBuffer image_to_luma709(const Image *img)
     return buf;
 }
 
-static FloatBuffer image_channel(const Image *img, int channel)
+static FloatBuffer
+image_channel(const Image *img, int channel)
 {
     FloatBuffer buf;
     size_t total;
@@ -1256,10 +1259,9 @@ static FloatBuffer image_channel(const Image *img, int channel)
     }
     return buf;
 }
-/* ================================================================
+/*
  * Gaussian kernel and separable convolution
- * ================================================================ */
-
+ */
 static FloatBuffer gaussian_kernel1d(int size, float sigma)
 {
     FloatBuffer kernel;
@@ -1286,8 +1288,9 @@ static FloatBuffer gaussian_kernel1d(int size, float sigma)
     return kernel;
 }
 
-static FloatBuffer separable_conv2d(const FloatBuffer *img, int width,
-                                    int height, const FloatBuffer *kernel)
+static FloatBuffer
+separable_conv2d(const FloatBuffer *img, int width,
+                 int height, const FloatBuffer *kernel)
 {
     FloatBuffer tmp;
     FloatBuffer out;
@@ -1355,10 +1358,9 @@ static FloatBuffer separable_conv2d(const FloatBuffer *img, int width,
     return out;
 }
 
-/* ================================================================
+/*
  * SSIM and MS-SSIM computation
- * ================================================================ */
-
+ */
 static float ssim_luma(const FloatBuffer *x, const FloatBuffer *y,
                        int width, int height, float k1, float k2,
                        int win_size, float sigma)
@@ -1456,8 +1458,9 @@ static float ssim_luma(const FloatBuffer *x, const FloatBuffer *y,
     return mean;
 }
 
-static FloatBuffer downsample2(const FloatBuffer *img, int width, int height,
-                               int *new_width, int *new_height)
+static FloatBuffer
+downsample2(const FloatBuffer *img, int width, int height,
+            int *new_width, int *new_height)
 {
     int h2;
     int w2;
@@ -1492,8 +1495,9 @@ static FloatBuffer downsample2(const FloatBuffer *img, int width, int height,
     return out;
 }
 
-static float ms_ssim_luma(const FloatBuffer *ref, const FloatBuffer *out,
-                          int width, int height)
+static float
+ms_ssim_luma(const FloatBuffer *ref, const FloatBuffer *out,
+             int width, int height)
 {
     static const float weights[5] = {
         0.0448f, 0.2856f, 0.3001f, 0.2363f, 0.1333f
@@ -1549,11 +1553,11 @@ static float ms_ssim_luma(const FloatBuffer *ref, const FloatBuffer *out,
     }
     return 0.0f;
 }
-/* ================================================================
+/*
  * FFT helpers for spectral metrics
- * ================================================================ */
-
-static int next_power_of_two(int value)
+ */
+static int
+next_power_of_two(int value)
 {
     int n;
     n = 1;
@@ -1563,7 +1567,8 @@ static int next_power_of_two(int value)
     return n;
 }
 
-static void fft_bit_reverse(Complex *data, int n)
+static void
+fft_bit_reverse(Complex *data, int n)
 {
     int i;
     int j;
@@ -1586,7 +1591,8 @@ static void fft_bit_reverse(Complex *data, int n)
     }
 }
 
-static void fft_cooley_tukey(Complex *data, int n, int inverse)
+static void
+fft_cooley_tukey(Complex *data, int n, int inverse)
 {
     int len;
     double angle;
@@ -1638,8 +1644,9 @@ static void fft_cooley_tukey(Complex *data, int n, int inverse)
     }
 }
 
-static void fft2d(FloatBuffer *input, int width, int height,
-                  Complex *output, int out_width, int out_height)
+static void
+fft2d(FloatBuffer *input, int width, int height,
+      Complex *output, int out_width, int out_height)
 {
     int padded_width;
     int padded_height;
@@ -1691,7 +1698,8 @@ static void fft2d(FloatBuffer *input, int width, int height,
     free(col);
 }
 
-static void fft_shift(Complex *data, int width, int height)
+static void
+fft_shift(Complex *data, int width, int height)
 {
     int half_w;
     int half_h;
@@ -1716,8 +1724,9 @@ static void fft_shift(Complex *data, int width, int height)
         }
     }
 }
-static float high_frequency_ratio(const FloatBuffer *img,
-                                  int width, int height, float cutoff)
+static float
+high_frequency_ratio(const FloatBuffer *img,
+                     int width, int height, float cutoff)
 {
     int padded_width;
     int padded_height;
@@ -1795,8 +1804,9 @@ static float high_frequency_ratio(const FloatBuffer *img,
     return (float)(hi_sum / total_sum);
 }
 
-static float stripe_score(const FloatBuffer *img, int width, int height,
-                          int bins)
+static float
+stripe_score(const FloatBuffer *img, int width, int height,
+             int bins)
 {
     int padded_width;
     int padded_height;
@@ -1892,12 +1902,12 @@ static float stripe_score(const FloatBuffer *img, int width, int height,
 
     return (float)(max_val / mean_val);
 }
-/* ================================================================
+/*
  * Banding metrics (run-length and gradient-based)
- * ================================================================ */
-
-static float banding_index_runlen(const FloatBuffer *img,
-                                  int width, int height, int levels)
+ */
+static float
+banding_index_runlen(const FloatBuffer *img,
+                     int width, int height, int levels)
 {
     int y;
     int x;
@@ -1941,8 +1951,9 @@ static float banding_index_runlen(const FloatBuffer *img,
     return (float)((total_runs / total_segments) / (double)width);
 }
 
-static FloatBuffer gaussian_blur(const FloatBuffer *img, int width,
-                                 int height, float sigma, int ksize)
+static FloatBuffer
+gaussian_blur(const FloatBuffer *img, int width,
+              int height, float sigma, int ksize)
 {
     FloatBuffer kernel;
     FloatBuffer blurred;
@@ -1953,8 +1964,9 @@ static FloatBuffer gaussian_blur(const FloatBuffer *img, int width,
     return blurred;
 }
 
-static void finite_diff(const FloatBuffer *img, int width, int height,
-                        FloatBuffer *dx, FloatBuffer *dy)
+static void
+finite_diff(const FloatBuffer *img, int width, int height,
+            FloatBuffer *dx, FloatBuffer *dy)
 {
     int x;
     int y;
@@ -1998,7 +2010,8 @@ static void finite_diff(const FloatBuffer *img, int width, int height,
     }
 }
 
-static int compare_floats(const void *a, const void *b)
+static int
+compare_floats(const void *a, const void *b)
 {
     float fa;
     float fb;
@@ -2013,8 +2026,9 @@ static int compare_floats(const void *a, const void *b)
     return 0;
 }
 
-static float banding_index_gradient(const FloatBuffer *img,
-                                    int width, int height)
+static float
+banding_index_gradient(const FloatBuffer *img,
+                       int width, int height)
 {
     FloatBuffer blurred;
     FloatBuffer dx;
@@ -2158,10 +2172,9 @@ static float banding_index_gradient(const FloatBuffer *img,
     }
     return (float)(0.6 * (sum_residual / sum_hist) + 0.4 * zero_mass);
 }
-/* ================================================================
+/*
  * Clipping statistics
- * ================================================================ */
-
+ */
 static void clipping_rates(const Image *img, float *clip_l, float *clip_r,
                            float *clip_g, float *clip_b)
 {
@@ -2233,11 +2246,11 @@ static void clipping_rates(const Image *img, float *clip_l, float *clip_r,
     float_buffer_free(&bch);
 }
 
-/* ================================================================
+/*
  * sRGB <-> CIELAB conversions
- * ================================================================ */
-
-static void srgb_to_linear(const float *src, float *dst, size_t count)
+ */
+static void
+srgb_to_linear(const float *src, float *dst, size_t count)
 {
     size_t i;
     float c;
@@ -2253,7 +2266,8 @@ static void srgb_to_linear(const float *src, float *dst, size_t count)
     }
 }
 
-static void linear_to_xyz(const float *rgb, float *xyz, size_t pixels)
+static void
+linear_to_xyz(const float *rgb, float *xyz, size_t pixels)
 {
     size_t i;
     float r;
@@ -2275,7 +2289,8 @@ static void linear_to_xyz(const float *rgb, float *xyz, size_t pixels)
     }
 }
 
-static float f_lab(float t)
+static float
+f_lab(float t)
 {
     float delta;
     delta = 6.0f / 29.0f;
@@ -2285,7 +2300,8 @@ static float f_lab(float t)
     return t / (3.0f * delta * delta) + 4.0f / 29.0f;
 }
 
-static void xyz_to_lab(const float *xyz, float *lab, size_t pixels)
+static void
+xyz_to_lab(const float *xyz, float *lab, size_t pixels)
 {
     const float Xn = 0.95047f;
     const float Yn = 1.00000f;
@@ -2316,7 +2332,8 @@ static void xyz_to_lab(const float *xyz, float *lab, size_t pixels)
     }
 }
 
-static FloatBuffer rgb_to_lab(const Image *img)
+static FloatBuffer
+rgb_to_lab(const Image *img)
 {
     FloatBuffer lab;
     float *linear;
@@ -2335,7 +2352,8 @@ static FloatBuffer rgb_to_lab(const Image *img)
     return lab;
 }
 
-static FloatBuffer chroma_ab(const FloatBuffer *lab, size_t pixels)
+static FloatBuffer
+chroma_ab(const FloatBuffer *lab, size_t pixels)
 {
     FloatBuffer chroma;
     size_t i;
@@ -2350,8 +2368,9 @@ static FloatBuffer chroma_ab(const FloatBuffer *lab, size_t pixels)
     return chroma;
 }
 
-static FloatBuffer deltaE00(const FloatBuffer *lab1,
-                            const FloatBuffer *lab2, size_t pixels)
+static FloatBuffer
+deltaE00(const FloatBuffer *lab1,
+         const FloatBuffer *lab2, size_t pixels)
 {
     FloatBuffer out;
     size_t i;
@@ -2462,12 +2481,12 @@ static FloatBuffer deltaE00(const FloatBuffer *lab1,
     }
     return out;
 }
-/* ================================================================
+/*
  * GMSD and PSNR
- * ================================================================ */
-
-static float gmsd_metric(const FloatBuffer *ref, const FloatBuffer *out,
-                         int width, int height)
+ */
+static float
+gmsd_metric(const FloatBuffer *ref, const FloatBuffer *out,
+            int width, int height)
 {
     static const float kx[9] = {0.25f, 0.0f, -0.25f,
                                 0.5f, 0.0f, -0.5f,
@@ -2598,8 +2617,9 @@ static float gmsd_metric(const FloatBuffer *ref, const FloatBuffer *out,
     return (float)sqrt(sq_sum);
 }
 
-static float psnr_metric(const FloatBuffer *ref, const FloatBuffer *out,
-                         int width, int height)
+static float
+psnr_metric(const FloatBuffer *ref, const FloatBuffer *out,
+            int width, int height)
 {
     double mse;
     size_t total;
@@ -2619,10 +2639,9 @@ static float psnr_metric(const FloatBuffer *ref, const FloatBuffer *out,
     return (float)(10.0 * log10(1.0 / mse));
 }
 
-/* ================================================================
+/*
  * Metrics aggregation
- * ================================================================ */
-
+ */
 static Metrics evaluate_metrics(const Image *ref_img, const Image *out_img)
 {
     Metrics metrics;
@@ -2718,13 +2737,13 @@ static Metrics evaluate_metrics(const Image *ref_img, const Image *out_img)
     return metrics;
 }
 
-/* ================================================================
+/*
  * LPIPS metric integration (ONNX Runtime)
- * ================================================================ */
-
-static float compute_lpips_vgg(sixel_assessment_t *assessment,
-                               const Image *ref_img,
-                               const Image *out_img)
+ */
+static float
+compute_lpips_vgg(sixel_assessment_t *assessment,
+                  const Image *ref_img,
+                  const Image *out_img)
 {
     float value;
 
@@ -2776,7 +2795,8 @@ done:
     return value;
 }
 
-static void align_images(Image *ref, Image *out)
+static void
+align_images(Image *ref, Image *out)
 {
     int width;
     int height;
@@ -2816,10 +2836,9 @@ static void align_images(Image *ref, Image *out)
     out->height = height;
 }
 
-/* ================================================================
+/*
  * Assessment API bridge
- * ================================================================ */
-
+ */
 typedef struct MetricDescriptor {
     int id;
     const char *json_key;
