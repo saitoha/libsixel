@@ -1,14 +1,33 @@
-// SPDX-License-Identifier: MIT
-//
-// Copyright (c) 2025 libsixel developers. See `AUTHORS`.
-//
-// The LPIPS helper evaluates perceptual similarity between two images.
-// The program stitches three subsystems together:
-//
-//  +-------------------+   +-------------------+   +---------------------+
-//  | libsixel loaders  |-->| tensor formatting |-->| ONNX Runtime graph  |
-//  +-------------------+   +-------------------+   +---------------------+
-//
+/*
+ * SPDX-License-Identifier: MIT
+ *
+ * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * The LPIPS helper evaluates perceptual similarity between two images.
+ * The program stitches three subsystems together:
+ *
+ *  +-------------------+   +-------------------+   +---------------------+
+ *  | libsixel loaders  |-->| tensor formatting |-->| ONNX Runtime graph  |
+ *  +-------------------+   +-------------------+   +---------------------+
+ */
+
 #include "config.h"
 
 #include <ctype.h>
@@ -67,20 +86,32 @@ typedef struct loader_capture {
 
 static const OrtApi *g_api = NULL;
 
-// fatalf prints a formatted fatal message and terminates the process.
+/* fatalf prints a formatted fatal message and terminates the process. */
 static void
 fatalf(char const *format, ...)
 {
     va_list args;
 
     va_start(args, format);
+#if defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wformat-nonliteral"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
     vfprintf(stderr, format, args);
+#if defined(__clang__)
+# pragma clang diagnostic pop
+#elif defined(__GNUC__)
+# pragma GCC diagnostic pop
+#endif
     va_end(args);
 
     exit(EXIT_FAILURE);
 }
 
-// ort_check converts OrtStatus failures into fatal errors with a message.
+/* ort_check converts OrtStatus failures into fatal errors with a message. */
 static void
 ort_check(OrtStatus *status)
 {
@@ -96,7 +127,7 @@ ort_check(OrtStatus *status)
     exit(EXIT_FAILURE);
 }
 
-// path_accessible returns non-zero when the file is readable by the process.
+/* path_accessible returns non-zero when the file is readable by the process. */
 static int
 path_accessible(char const *path)
 {
@@ -110,7 +141,7 @@ path_accessible(char const *path)
 #endif
 }
 
-// join_path appends `leaf` to `dir`, inserting a separator when required.
+/* join_path appends `leaf` to `dir`, inserting a separator when required. */
 static int
 join_path(char const *dir, char const *leaf, char *buffer, size_t size)
 {
@@ -146,7 +177,8 @@ join_path(char const *dir, char const *leaf, char *buffer, size_t size)
     return 0;
 }
 
-// resolve_from_path_env searches the PATH components for `name`.
+#if !defined(_WIN32) && !defined(__APPLE__) && !defined(__linux__)
+/* resolve_from_path_env searches the PATH components for `name`. */
 static int
 resolve_from_path_env(char const *name, char *buffer, size_t size)
 {
@@ -185,8 +217,9 @@ resolve_from_path_env(char const *name, char *buffer, size_t size)
     }
     return -1;
 }
+#endif
 
-// resolve_executable_dir deduces the directory that contains the binary.
+/* resolve_executable_dir deduces the directory that contains the binary. */
 static int
 resolve_executable_dir(char const *argv0, char *buffer, size_t size)
 {
@@ -201,6 +234,7 @@ resolve_executable_dir(char const *argv0, char *buffer, size_t size)
     ssize_t count;
 #endif
 
+    (void) argv0;
     candidate[0] = '\0';
 #if defined(_WIN32)
     written = GetModuleFileNameA(NULL, candidate, (DWORD)sizeof(candidate));
@@ -280,7 +314,7 @@ resolve_executable_dir(char const *argv0, char *buffer, size_t size)
     return 0;
 }
 
-// build_local_model_path constructs ../models/lpips/<name> relative to binary.
+/* build_local_model_path constructs ../models/lpips/<name> relative to binary. */
 static int
 build_local_model_path(char const *binary_dir,
                        char const *name,
@@ -308,7 +342,7 @@ build_local_model_path(char const *binary_dir,
     return 0;
 }
 
-// find_model prefers the local models directory and falls back to installs.
+/* find_model prefers the local models directory and falls back to installs. */
 static int
 find_model(char const *binary_dir,
            char const *name,
@@ -330,12 +364,11 @@ find_model(char const *binary_dir,
     return -1;
 }
 
-// capture_first_frame stores the first decoded frame from the loader pipeline.
+/* capture_first_frame stores the first decoded frame from the loader pipeline. */
 static SIXELSTATUS
 capture_first_frame(sixel_frame_t *frame, void *context)
 {
     loader_capture_t *capture;
-
     capture = (loader_capture_t *)context;
     if (capture->frame == NULL) {
         sixel_frame_ref(frame);
@@ -344,7 +377,7 @@ capture_first_frame(sixel_frame_t *frame, void *context)
     return SIXEL_OK;
 }
 
-// copy_frame_to_rgb normalizes frame pixels to RGB888 and copies them out.
+/* copy_frame_to_rgb normalizes frame pixels to RGB888 and copies them out. */
 static SIXELSTATUS
 copy_frame_to_rgb(sixel_frame_t *frame,
                   sixel_allocator_t *allocator,
@@ -360,6 +393,8 @@ copy_frame_to_rgb(sixel_frame_t *frame,
     unsigned char *buffer;
     int normalized_format;
 
+    (void)allocator;
+
     frame_width = sixel_frame_get_width(frame);
     frame_height = sixel_frame_get_height(frame);
     status = sixel_frame_strip_alpha(frame, NULL);
@@ -368,7 +403,12 @@ copy_frame_to_rgb(sixel_frame_t *frame,
     }
     pixelformat = sixel_frame_get_pixelformat(frame);
     size = (size_t)frame_width * (size_t)frame_height * 3u;
-    buffer = (unsigned char *)sixel_allocator_malloc(allocator, size);
+    /*
+     * Use malloc here because the loader's allocator enforces a strict
+     * allocation ceiling that can reject large frames even on hosts with
+     * sufficient RAM available.
+     */
+    buffer = (unsigned char *)malloc(size);
     if (buffer == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
@@ -384,7 +424,7 @@ copy_frame_to_rgb(sixel_frame_t *frame,
             frame_width,
             frame_height);
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(allocator, buffer);
+            free(buffer);
             return status;
         }
     }
@@ -394,13 +434,13 @@ copy_frame_to_rgb(sixel_frame_t *frame,
     return SIXEL_OK;
 }
 
-// load_image_to_nchw converts an image file into normalized float tensors.
+/* load_image_to_nchw converts an image file into normalized float tensors. */
 static SIXELSTATUS
 load_image_to_nchw(char const *path,
                    sixel_allocator_t *allocator,
                    image_f32_t *image)
 {
-    loader_capture_t capture;
+    loader_capture_t capture = { NULL };
     SIXELSTATUS status;
     unsigned char *pixels;
     int width;
@@ -416,17 +456,16 @@ load_image_to_nchw(char const *path,
     image->width = 0;
     image->height = 0;
     image->nchw = NULL;
-
     status = sixel_helper_load_image_file(path,
-                                          1,
-                                          0,
+                                          1,     /* force_static */
+                                          0,     /* fuse_palette */
                                           SIXEL_PALETTE_MAX,
                                           NULL,
-                                          SIXEL_LOOP_AUTO,
+                                          SIXEL_LOOP_DISABLE,
                                           capture_first_frame,
-                                          0,
-                                          NULL,
-                                          NULL,
+                                          0,     /* finsecure */
+                                          NULL,  /* cancel_flag */
+                                          NULL,  /* loader_order */
                                           &capture,
                                           allocator);
     if (SIXEL_FAILED(status)) {
@@ -441,10 +480,10 @@ load_image_to_nchw(char const *path,
         sixel_frame_unref(capture.frame);
         return status;
     }
-    nchw = (float *)malloc((size_t)width * (size_t)height * 3u *
-                           sizeof(float));
+    nchw = (float *)malloc(
+        (size_t)width * (size_t)height * 3u * sizeof(float));
     if (nchw == NULL) {
-        sixel_allocator_free(allocator, pixels);
+        free(pixels);
         sixel_frame_unref(capture.frame);
         return SIXEL_BAD_ALLOCATION;
     }
@@ -463,12 +502,12 @@ load_image_to_nchw(char const *path,
     image->width = width;
     image->height = height;
     image->nchw = nchw;
-    sixel_allocator_free(allocator, pixels);
+    free(pixels);
     sixel_frame_unref(capture.frame);
     return SIXEL_OK;
 }
 
-// free_image releases heap buffers associated with the image container.
+/* free_image releases heap buffers associated with the image container. */
 static void
 free_image(image_f32_t *image)
 {
@@ -478,7 +517,7 @@ free_image(image_f32_t *image)
     }
 }
 
-// bilinear_resize_nchw3 rescales a planar NCHW image with bilinear weights.
+/* bilinear_resize_nchw3 rescales a planar NCHW image with bilinear weights. */
 static float *
 bilinear_resize_nchw3(float const *src,
                       int src_width,
@@ -549,7 +588,7 @@ bilinear_resize_nchw3(float const *src,
     return dst;
 }
 
-// get_first_input_shape queries an ONNX session for its primary input tensor.
+/* get_first_input_shape queries an ONNX session for its primary input tensor. */
 static void
 get_first_input_shape(OrtSession *session, int64_t *dims, size_t *rank)
 {
@@ -565,7 +604,7 @@ get_first_input_shape(OrtSession *session, int64_t *dims, size_t *rank)
     g_api->ReleaseTypeInfo(type_info);
 }
 
-// tail_index extracts the trailing integer from tensor names like feat_x_3.
+/* tail_index extracts the trailing integer from tensor names like feat_x_3. */
 static int
 tail_index(char const *name)
 {
@@ -583,7 +622,7 @@ tail_index(char const *name)
     return atoi(name + index + 1);
 }
 
-// run_lpips drives both ONNX graphs to compute the perceptual distance.
+/* run_lpips drives both ONNX graphs to compute the perceptual distance. */
 static void
 run_lpips(char const *diff_model,
           char const *feat_model,
@@ -876,7 +915,7 @@ run_lpips(char const *diff_model,
     }
 }
 
-// main wires argument parsing, model discovery, and image ingestion together.
+/* main wires argument parsing, model discovery, and image ingestion together. */
 int
 main(int argc, char **argv)
 {
@@ -924,11 +963,29 @@ main(int argc, char **argv)
     }
     status = load_image_to_nchw(argv[1], allocator, &image_a);
     if (SIXEL_FAILED(status)) {
+        char const *detail_a;
+
+        detail_a = sixel_helper_get_additional_message();
+        if (detail_a != NULL && detail_a[0] != '\0') {
+            fatalf("Failed to load %s: %s (%s)\n",
+                   argv[1],
+                   sixel_helper_format_error(status),
+                   detail_a);
+        }
         fatalf("Failed to load %s: %s\n",
                argv[1], sixel_helper_format_error(status));
     }
     status = load_image_to_nchw(argv[2], allocator, &image_b);
     if (SIXEL_FAILED(status)) {
+        char const *detail_b;
+
+        detail_b = sixel_helper_get_additional_message();
+        if (detail_b != NULL && detail_b[0] != '\0') {
+            fatalf("Failed to load %s: %s (%s)\n",
+                   argv[2],
+                   sixel_helper_format_error(status),
+                   detail_b);
+        }
         fatalf("Failed to load %s: %s\n",
                argv[2], sixel_helper_format_error(status));
     }
@@ -943,3 +1000,12 @@ main(int argc, char **argv)
 
     return EXIT_SUCCESS;
 }
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */
