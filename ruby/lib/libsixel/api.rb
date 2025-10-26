@@ -149,7 +149,12 @@ module Libsixel
     extern "int sixel_frame_strip_alpha(void *, char *)"
     extern "int sixel_frame_resize(void *, int, int, int)"
     extern "int sixel_frame_clip(void *, int, int, int, int)"
-    extern "int sixel_helper_load_image_file(char *, int, int, int, char *, int, void *, int, int, char *, void *, void *)"
+    extern "int sixel_loader_new(void *, void *)"
+    extern "void sixel_loader_ref(void *)"
+    extern "void sixel_loader_unref(void *)"
+    extern "int sixel_loader_setopt(void *, int, void *)"
+    extern "int sixel_loader_load_file(void *, char *, void *)"
+    extern "int sixel_helper_load_image_file(char *, int, int, int, char *, int, void *, int, int, void *, void *)"
     extern "int sixel_helper_write_image_file(char *, int, int, char *, int, char *, int, void *)"
 
     extern "int sixel_encoder_new(void *, void *)"

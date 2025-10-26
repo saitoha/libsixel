@@ -122,6 +122,46 @@ static int thumbnailer_size_hint = SIXEL_THUMBNAILER_DEFAULT_SIZE;
 extern char **environ;
 #endif
 
+struct sixel_loader {
+    int ref;
+    int fstatic;
+    int fuse_palette;
+    int reqcolors;
+    unsigned char bgcolor[3];
+    int has_bgcolor;
+    int loop_control;
+    int finsecure;
+    int const *cancel_flag;
+    void *context;
+    char *loader_order;
+    sixel_allocator_t *allocator;
+};
+
+static char *
+loader_strdup(char const *text, sixel_allocator_t *allocator)
+{
+    char *copy;
+    size_t length;
+
+    if (text == NULL) {
+        return NULL;
+    }
+
+    length = strlen(text) + 1;
+    copy = (char *)sixel_allocator_malloc(allocator, length);
+    if (copy == NULL) {
+        return NULL;
+    }
+
+#if HAVE_STRCPY_S
+    (void)strcpy_s(copy, (rsize_t)(length - 1), text);
+#else
+    memcpy(copy, text, length);
+#endif
+
+    return copy;
+}
+
 /*
  * sixel_helper_set_loader_trace
  *
@@ -5843,6 +5883,312 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
 #endif
 };
 
+SIXELAPI SIXELSTATUS
+sixel_loader_new(
+    sixel_loader_t   /* out */ **pploader,
+    sixel_allocator_t/* in */  *allocator)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_loader_t *loader;
+    sixel_allocator_t *local_allocator;
+
+    loader = NULL;
+    local_allocator = allocator;
+
+    if (pploader == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_new: pploader is null.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    if (local_allocator == NULL) {
+        status = sixel_allocator_new(&local_allocator,
+                                     NULL,
+                                     NULL,
+                                     NULL,
+                                     NULL);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    } else {
+        sixel_allocator_ref(local_allocator);
+    }
+
+    loader = (sixel_loader_t *)sixel_allocator_malloc(local_allocator,
+                                                      sizeof(*loader));
+    if (loader == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_new: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        sixel_allocator_unref(local_allocator);
+        goto end;
+    }
+
+    loader->ref = 1;
+    loader->fstatic = 0;
+    loader->fuse_palette = 0;
+    loader->reqcolors = SIXEL_PALETTE_MAX;
+    loader->bgcolor[0] = 0;
+    loader->bgcolor[1] = 0;
+    loader->bgcolor[2] = 0;
+    loader->has_bgcolor = 0;
+    loader->loop_control = SIXEL_LOOP_AUTO;
+    loader->finsecure = 0;
+    loader->cancel_flag = NULL;
+    loader->context = NULL;
+    loader->loader_order = NULL;
+    loader->allocator = local_allocator;
+
+    *pploader = loader;
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+SIXELAPI void
+sixel_loader_ref(
+    sixel_loader_t /* in */ *loader)
+{
+    if (loader == NULL) {
+        return;
+    }
+
+    ++loader->ref;
+}
+
+SIXELAPI void
+sixel_loader_unref(
+    sixel_loader_t /* in */ *loader)
+{
+    sixel_allocator_t *allocator;
+
+    if (loader == NULL) {
+        return;
+    }
+
+    if (--loader->ref == 0) {
+        allocator = loader->allocator;
+        sixel_allocator_free(allocator, loader->loader_order);
+        sixel_allocator_free(allocator, loader);
+        sixel_allocator_unref(allocator);
+    }
+}
+
+SIXELAPI SIXELSTATUS
+sixel_loader_setopt(
+    sixel_loader_t /* in */ *loader,
+    int            /* in */ option,
+    void const     /* in */ *value)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    int const *flag;
+    unsigned char const *color;
+    char const *order;
+    char *copy;
+    sixel_allocator_t *allocator;
+
+    flag = NULL;
+    color = NULL;
+    order = NULL;
+    copy = NULL;
+    allocator = NULL;
+
+    if (loader == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_setopt: loader is null.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end0;
+    }
+
+    sixel_loader_ref(loader);
+
+    switch (option) {
+    case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
+        flag = (int const *)value;
+        loader->fstatic = flag != NULL ? *flag : 0;
+        status = SIXEL_OK;
+        break;
+    case SIXEL_LOADER_OPTION_USE_PALETTE:
+        flag = (int const *)value;
+        loader->fuse_palette = flag != NULL ? *flag : 0;
+        status = SIXEL_OK;
+        break;
+    case SIXEL_LOADER_OPTION_REQCOLORS:
+        flag = (int const *)value;
+        loader->reqcolors = flag != NULL ? *flag : SIXEL_PALETTE_MAX;
+        if (loader->reqcolors > SIXEL_PALETTE_MAX) {
+            loader->reqcolors = SIXEL_PALETTE_MAX;
+        }
+        status = SIXEL_OK;
+        break;
+    case SIXEL_LOADER_OPTION_BGCOLOR:
+        if (value == NULL) {
+            loader->has_bgcolor = 0;
+        } else {
+            color = (unsigned char const *)value;
+            loader->bgcolor[0] = color[0];
+            loader->bgcolor[1] = color[1];
+            loader->bgcolor[2] = color[2];
+            loader->has_bgcolor = 1;
+        }
+        status = SIXEL_OK;
+        break;
+    case SIXEL_LOADER_OPTION_LOOP_CONTROL:
+        flag = (int const *)value;
+        loader->loop_control = flag != NULL ? *flag : SIXEL_LOOP_AUTO;
+        status = SIXEL_OK;
+        break;
+    case SIXEL_LOADER_OPTION_INSECURE:
+        flag = (int const *)value;
+        loader->finsecure = flag != NULL ? *flag : 0;
+        status = SIXEL_OK;
+        break;
+    case SIXEL_LOADER_OPTION_CANCEL_FLAG:
+        loader->cancel_flag = (int const *)value;
+        status = SIXEL_OK;
+        break;
+    case SIXEL_LOADER_OPTION_LOADER_ORDER:
+        allocator = loader->allocator;
+        sixel_allocator_free(allocator, loader->loader_order);
+        loader->loader_order = NULL;
+        if (value != NULL) {
+            order = (char const *)value;
+            copy = loader_strdup(order, allocator);
+            if (copy == NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_loader_setopt: loader_strdup() failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+            loader->loader_order = copy;
+        }
+        status = SIXEL_OK;
+        break;
+    case SIXEL_LOADER_OPTION_CONTEXT:
+        loader->context = (void *)value;
+        status = SIXEL_OK;
+        break;
+    default:
+        sixel_helper_set_additional_message(
+            "sixel_loader_setopt: unknown option.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+end:
+    sixel_loader_unref(loader);
+
+end0:
+    return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_loader_load_file(
+    sixel_loader_t         /* in */ *loader,
+    char const             /* in */ *filename,
+    sixel_load_image_function /* in */ fn_load)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_chunk_t *pchunk;
+    sixel_loader_entry_t const *plan[
+        sizeof(sixel_loader_entries) / sizeof(sixel_loader_entries[0])];
+    size_t entry_count;
+    size_t plan_length;
+    size_t plan_index;
+    unsigned char *bgcolor;
+    int reqcolors;
+
+    pchunk = NULL;
+    entry_count = 0;
+    plan_length = 0;
+    plan_index = 0;
+    bgcolor = NULL;
+    reqcolors = 0;
+
+    if (loader == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_load_file: loader is null.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end0;
+    }
+
+    sixel_loader_ref(loader);
+
+    entry_count = sizeof(sixel_loader_entries) /
+                  sizeof(sixel_loader_entries[0]);
+
+    reqcolors = loader->reqcolors;
+    if (reqcolors > SIXEL_PALETTE_MAX) {
+        reqcolors = SIXEL_PALETTE_MAX;
+    }
+
+    status = sixel_chunk_new(&pchunk,
+                             filename,
+                             loader->finsecure,
+                             loader->cancel_flag,
+                             loader->allocator);
+    if (status != SIXEL_OK) {
+        goto end;
+    }
+
+    if (pchunk->size == 0 || (pchunk->size == 1 && *pchunk->buffer == '\n')) {
+        status = SIXEL_OK;
+        goto end;
+    }
+
+    if (pchunk->buffer == NULL || pchunk->max_size == 0) {
+        status = SIXEL_LOGIC_ERROR;
+        goto end;
+    }
+
+    if (loader->has_bgcolor) {
+        bgcolor = loader->bgcolor;
+    }
+
+    status = SIXEL_FALSE;
+    plan_length = loader_build_plan(loader->loader_order,
+                                    sixel_loader_entries,
+                                    entry_count,
+                                    plan,
+                                    entry_count);
+
+    for (plan_index = 0; plan_index < plan_length; ++plan_index) {
+        if (plan[plan_index] == NULL) {
+            continue;
+        }
+        if (plan[plan_index]->predicate != NULL &&
+            plan[plan_index]->predicate(pchunk) == 0) {
+            continue;
+        }
+        loader_trace_try(plan[plan_index]->name);
+        status = plan[plan_index]->backend(pchunk,
+                                           loader->fstatic,
+                                           loader->fuse_palette,
+                                           reqcolors,
+                                           bgcolor,
+                                           loader->loop_control,
+                                           fn_load,
+                                           loader->context);
+        loader_trace_result(plan[plan_index]->name, status);
+        if (SIXEL_SUCCEEDED(status)) {
+            break;
+        }
+    }
+
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+end:
+    sixel_chunk_destroy(pchunk);
+    sixel_loader_unref(loader);
+
+end0:
+    return status;
+}
+
 /* load image from file */
 
 SIXELAPI SIXELSTATUS
@@ -5861,7 +6207,6 @@ sixel_helper_load_image_file(
     sixel_load_image_function /* in */     fn_load,       /* callback */
     int                       /* in */     finsecure,     /* true if do not verify SSL */
     int const                 /* in */     *cancel_flag,  /* cancel flag, may be NULL */
-    char const                /* in */     *loader_order, /* loader priority override */
     void                      /* in/out */ *context,      /* private data which is passed to
                                                              callback function as an
                                                              argument, may be NULL */
@@ -5869,74 +6214,75 @@ sixel_helper_load_image_file(
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    sixel_chunk_t *pchunk = NULL;
-    sixel_loader_entry_t const *plan[
-        sizeof(sixel_loader_entries) / sizeof(sixel_loader_entries[0])];
-    size_t entry_count;
-    size_t plan_length;
-    size_t plan_index;
+    sixel_loader_t *loader;
 
-    entry_count = sizeof(sixel_loader_entries) /
-                  sizeof(sixel_loader_entries[0]);
+    loader = NULL;
 
-    /* normalize reqested colors */
-    if (reqcolors > SIXEL_PALETTE_MAX) {
-        reqcolors = SIXEL_PALETTE_MAX;
-    }
-
-    /* create new chunk object from file */
-    status = sixel_chunk_new(&pchunk, filename, finsecure, cancel_flag, allocator);
-    if (status != SIXEL_OK) {
-        goto end;
-    }
-
-    /* if input date is empty or 1 byte LF, ignore it and return successfully */
-    if (pchunk->size == 0 || (pchunk->size == 1 && *pchunk->buffer == '\n')) {
-        status = SIXEL_OK;
-        goto end;
-    }
-
-    /* assertion */
-    if (pchunk->buffer == NULL || pchunk->max_size == 0) {
-        status = SIXEL_LOGIC_ERROR;
-        goto end;
-    }
-
-    status = SIXEL_FALSE;
-    plan_length = loader_build_plan(loader_order,
-                                    sixel_loader_entries,
-                                    entry_count,
-                                    plan,
-                                    entry_count);
-
-    for (plan_index = 0; plan_index < plan_length; ++plan_index) {
-        if (plan[plan_index] == NULL) {
-            continue;
-        }
-        if (plan[plan_index]->predicate != NULL &&
-            plan[plan_index]->predicate(pchunk) == 0) {
-            continue;
-        }
-        loader_trace_try(plan[plan_index]->name);
-        status = plan[plan_index]->backend(pchunk,
-                                           fstatic,
-                                           fuse_palette,
-                                           reqcolors,
-                                           bgcolor,
-                                           loop_control,
-                                           fn_load,
-                                           context);
-        loader_trace_result(plan[plan_index]->name, status);
-        if (SIXEL_SUCCEEDED(status)) {
-            break;
-        }
-    }
+    status = sixel_loader_new(&loader, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+                                 &fstatic);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_USE_PALETTE,
+                                 &fuse_palette);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_REQCOLORS,
+                                 &reqcolors);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_BGCOLOR,
+                                 bgcolor);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_LOOP_CONTROL,
+                                 &loop_control);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_INSECURE,
+                                 &finsecure);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_CANCEL_FLAG,
+                                 cancel_flag);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_CONTEXT,
+                                 context);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_loader_load_file(loader, filename, fn_load);
+
 end:
-    sixel_chunk_destroy(pchunk);
+    sixel_loader_unref(loader);
 
     return status;
 }

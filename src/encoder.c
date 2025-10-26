@@ -810,6 +810,11 @@ sixel_prepare_specified_palette(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_callback_context_for_mapfile_t callback_context;
+    sixel_loader_t *loader;
+    int fstatic;
+    int fuse_palette;
+    int reqcolors;
+    int loop_override;
 
     callback_context.reqcolors = encoder->reqcolors;
     callback_context.dither = NULL;
@@ -817,21 +822,93 @@ sixel_prepare_specified_palette(
     callback_context.working_colorspace = encoder->working_colorspace;
     callback_context.lut_policy = encoder->lut_policy;
 
+    loader = NULL;
+    fstatic = 1;
+    fuse_palette = 1;
+    reqcolors = SIXEL_PALETTE_MAX;
+    loop_override = SIXEL_LOOP_DISABLE;
+
     sixel_helper_set_loader_trace(encoder->verbose);
     sixel_helper_set_thumbnail_size_hint(
         sixel_encoder_thumbnail_hint(encoder));
-    status = sixel_helper_load_image_file(encoder->mapfile,
-                                          1,   /* fstatic */
-                                          1,   /* fuse_palette */
-                                          SIXEL_PALETTE_MAX, /* reqcolors */
-                                          encoder->bgcolor,
-                                          SIXEL_LOOP_DISABLE,
-                                          load_image_callback_for_palette,
-                                          encoder->finsecure,
-                                          encoder->cancel_flag,
-                                          encoder->loader_order,
-                                          &callback_context,
-                                          encoder->allocator);
+    status = sixel_loader_new(&loader, encoder->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end_loader;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+                                 &fstatic);
+    if (SIXEL_FAILED(status)) {
+        goto end_loader;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_USE_PALETTE,
+                                 &fuse_palette);
+    if (SIXEL_FAILED(status)) {
+        goto end_loader;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_REQCOLORS,
+                                 &reqcolors);
+    if (SIXEL_FAILED(status)) {
+        goto end_loader;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_BGCOLOR,
+                                 encoder->bgcolor);
+    if (SIXEL_FAILED(status)) {
+        goto end_loader;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_LOOP_CONTROL,
+                                 &loop_override);
+    if (SIXEL_FAILED(status)) {
+        goto end_loader;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_INSECURE,
+                                 &encoder->finsecure);
+    if (SIXEL_FAILED(status)) {
+        goto end_loader;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_CANCEL_FLAG,
+                                 encoder->cancel_flag);
+    if (SIXEL_FAILED(status)) {
+        goto end_loader;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_LOADER_ORDER,
+                                 encoder->loader_order);
+    if (SIXEL_FAILED(status)) {
+        goto end_loader;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_CONTEXT,
+                                 &callback_context);
+    if (SIXEL_FAILED(status)) {
+        goto end_loader;
+    }
+
+    status = sixel_loader_load_file(loader,
+                                    encoder->mapfile,
+                                    load_image_callback_for_palette);
+    if (status != SIXEL_OK) {
+        goto end_loader;
+    }
+
+end_loader:
+    sixel_loader_unref(loader);
+
     if (status != SIXEL_OK) {
         return status;
     }
@@ -2835,6 +2912,7 @@ sixel_encoder_encode(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int fuse_palette = 1;
+    sixel_loader_t *loader;
 
     if (encoder == NULL) {
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
@@ -2886,21 +2964,91 @@ sixel_encoder_encode(
     }
 
 reload:
+    loader = NULL;
+
     sixel_helper_set_loader_trace(encoder->verbose);
     sixel_helper_set_thumbnail_size_hint(
         sixel_encoder_thumbnail_hint(encoder));
-    status = sixel_helper_load_image_file(filename,
-                                          encoder->fstatic,
-                                          fuse_palette,
-                                          encoder->reqcolors,
-                                          encoder->bgcolor,
-                                          encoder->loop_mode,
-                                          load_image_callback,
-                                          encoder->finsecure,
-                                          encoder->cancel_flag,
-                                          encoder->loader_order,
-                                          (void *)encoder,
-                                          encoder->allocator);
+
+    status = sixel_loader_new(&loader, encoder->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto load_end;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+                                 &encoder->fstatic);
+    if (SIXEL_FAILED(status)) {
+        goto load_end;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_USE_PALETTE,
+                                 &fuse_palette);
+    if (SIXEL_FAILED(status)) {
+        goto load_end;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_REQCOLORS,
+                                 &encoder->reqcolors);
+    if (SIXEL_FAILED(status)) {
+        goto load_end;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_BGCOLOR,
+                                 encoder->bgcolor);
+    if (SIXEL_FAILED(status)) {
+        goto load_end;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_LOOP_CONTROL,
+                                 &encoder->loop_mode);
+    if (SIXEL_FAILED(status)) {
+        goto load_end;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_INSECURE,
+                                 &encoder->finsecure);
+    if (SIXEL_FAILED(status)) {
+        goto load_end;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_CANCEL_FLAG,
+                                 encoder->cancel_flag);
+    if (SIXEL_FAILED(status)) {
+        goto load_end;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_LOADER_ORDER,
+                                 encoder->loader_order);
+    if (SIXEL_FAILED(status)) {
+        goto load_end;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_CONTEXT,
+                                 encoder);
+    if (SIXEL_FAILED(status)) {
+        goto load_end;
+    }
+
+    status = sixel_loader_load_file(loader,
+                                    filename,
+                                    load_image_callback);
+    if (status != SIXEL_OK) {
+        goto load_end;
+    }
+
+load_end:
+    sixel_loader_unref(loader);
+    loader = NULL;
+
     if (status != SIXEL_OK) {
         goto end;
     }

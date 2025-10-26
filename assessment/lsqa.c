@@ -264,32 +264,89 @@ load_frame(char const *path, sixel_allocator_t *allocator,
 {
     LoaderCapture capture;
     SIXELSTATUS status;
+    sixel_loader_t *loader;
+    int fstatic;
+    int fuse_palette;
+    int reqcolors;
+    int loop_override;
+    int finsecure;
 
     capture.frame = NULL;
-    status = sixel_helper_load_image_file(path,
-                                          1,
-                                          0,
-                                          SIXEL_PALETTE_MAX,
-                                          NULL,
-                                          SIXEL_LOOP_DISABLE,
-                                          capture_first_frame,
-                                          0,
-                                          NULL,
-                                          NULL,
-                                          &capture,
-                                          allocator);
+    loader = NULL;
+    fstatic = 1;
+    fuse_palette = 0;
+    reqcolors = SIXEL_PALETTE_MAX;
+    loop_override = SIXEL_LOOP_DISABLE;
+    finsecure = 0;
+
+    status = sixel_loader_new(&loader, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+                                 &fstatic);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_USE_PALETTE,
+                                 &fuse_palette);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_REQCOLORS,
+                                 &reqcolors);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_LOOP_CONTROL,
+                                 &loop_override);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_INSECURE,
+                                 &finsecure);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_CONTEXT,
+                                 &capture);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_loader_load_file(loader,
+                                    path,
+                                    capture_first_frame);
     if (SIXEL_FAILED(status) || capture.frame == NULL) {
         fprintf(stderr,
                 "libsixel loader failed for %s: %s\n",
                 path,
                 sixel_helper_format_error(status));
-        if (capture.frame != NULL) {
-            sixel_frame_unref(capture.frame);
-        }
-        return -1;
+        goto error;
     }
+
+    sixel_loader_unref(loader);
     *out_frame = capture.frame;
     return 0;
+
+error:
+    sixel_loader_unref(loader);
+    if (capture.frame != NULL) {
+        sixel_frame_unref(capture.frame);
+    }
+    return -1;
 }
 
 typedef struct Metrics {
