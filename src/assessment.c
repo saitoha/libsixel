@@ -65,8 +65,8 @@
 #include "onnxruntime_c_api.h"
 #endif
 
-#ifndef SIXEL_LPIPS_MODEL_DIR
-#define SIXEL_LPIPS_MODEL_DIR ""
+#ifndef SIXEL_MODEL_DIR
+#define SIXEL_MODEL_DIR ""
 #endif
 
 #if !defined(PATH_MAX)
@@ -541,6 +541,7 @@ static int find_model(char const *binary_dir,
 {
     char env_root[PATH_MAX];
     char install_root[PATH_MAX];
+    char binary_parent_dir[PATH_MAX];
     char const *env_dir;
 
     env_dir = getenv("LIBSIXEL_MODEL_DIR");
@@ -561,8 +562,8 @@ static int find_model(char const *binary_dir,
             }
         }
     }
-    if (SIXEL_LPIPS_MODEL_DIR[0] != '\0') {
-        if (join_path(SIXEL_LPIPS_MODEL_DIR, SIXEL_LOCAL_MODELS_SEG3,
+    if (SIXEL_MODEL_DIR[0] != '\0') {
+        if (join_path(SIXEL_MODEL_DIR, SIXEL_LOCAL_MODELS_SEG3,
                       install_root, sizeof(install_root)) == 0) {
             if (join_path(install_root, name, buffer, size) == 0) {
                 if (path_accessible(buffer)) {
@@ -573,6 +574,14 @@ static int find_model(char const *binary_dir,
     }
     if (binary_dir != NULL && binary_dir[0] != '\0') {
         if (build_local_model_path(binary_dir, name, buffer, size) == 0) {
+            if (path_accessible(buffer)) {
+                return 0;
+            }
+        }
+    }
+    if (join_path(binary_dir, SIXEL_LOCAL_MODELS_SEG1,
+                  binary_parent_dir, sizeof(binary_parent_dir)) == 0) {
+        if (build_local_model_path(binary_parent_dir, name, buffer, size) == 0) {
             if (path_accessible(buffer)) {
                 return 0;
             }

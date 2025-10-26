@@ -12,7 +12,7 @@ lsqa_LDFLAGS = $(MAYBE_COVERAGE)
 lsqa_LDADD = $(top_builddir)/src/libsixel.la
 
 if HAVE_ONNXRUNTIME
-lpipsmodelsdir = @lpipsmodelsdir@
+lpipsmodelsdir = @modeldir@/lpips
 dist_lpipsmodels_DATA = $(top_srcdir)/models/lpips/lpips_diff.onnx \
                         $(top_srcdir)/models/lpips/lpips_feature.onnx
 endif
