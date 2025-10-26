@@ -136,22 +136,27 @@ AC_ARG_WITH([modeldir],
             [],
             [with_modeldir=no])
 if test "x$with_modeldir" = xno || test "x$with_modeldir" = xyes; then
-  lpips_model_root='${pkgdatadir}/models'
+  pkgdatadir="${datadir}/${PACKAGE_TARNAME}"
+  model_root='${pkgdatadir}/models'
 else
-  lpips_model_root=$with_modeldir
+  model_root=$with_modeldir
 fi
-lpips_modeldir="${lpips_model_root}/lpips"
-AC_SUBST([lpipsmodelsdir], [$lpips_modeldir])
-AC_DEFUN([AC_DEFINE_DIR], [
-  dir="\$$2"
-  dir=`eval "echo ${dir}"`
-  dir=`eval "echo ${dir}"`
-  AC_SUBST([$1], ["${dir}"])
-  AC_DEFINE_UNQUOTED([$1], ["${dir}"], [$3])
-])
-AC_DEFINE_DIR([SIXEL_LPIPS_MODEL_DIR],
-              [lpips_model_root],
-              [Base directory that holds libsixel assessment models])
+modeldir="${model_root}"
+AC_SUBST(modeldir)
+if test "x${prefix}" = xNONE; then
+    prefix="${ac_default_prefix}"
+    modeldir=`eval echo "${modeldir}"`
+    modeldir=`eval echo "${modeldir}"`
+    modeldir=`eval echo "${modeldir}"`
+    prefix=NONE
+else
+    modeldir=`eval echo "${modeldir}"`
+    modeldir=`eval echo "${modeldir}"`
+    modeldir=`eval echo "${modeldir}"`
+fi
+AC_DEFINE_UNQUOTED([SIXEL_MODEL_DIR],
+                   ["${modeldir}"],
+                   [Base directory that holds libsixel assessment models])
 
 AC_ARG_ENABLE([thumbnailer-command],
               [AS_HELP_STRING([--enable-thumbnailer-command],
@@ -170,7 +175,7 @@ message_thumbnailer=no
 
 if test x$enable_sixel2png = xno; then
   enable_thumbnailer_command=no
-  message_thumbnailer='no (requires sixel2png)'
+  message_thumbnailer=no
 fi
 
 if test x$enable_thumbnailer_command = xauto; then
@@ -226,7 +231,7 @@ if test x$message_thumbnailer = xno; then
       message_thumbnailer=yes
     fi
   elif test x$thumbnailer_command_mode = xauto; then
-    message_thumbnailer='no (thumbnailer dir not found)'
+    message_thumbnailer=no
   fi
 fi
 

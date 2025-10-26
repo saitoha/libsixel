@@ -78,14 +78,14 @@ sixel_is_path_separator(char ch)
 #endif
 }
 
-/* -----------------------------------------------------------------------
+/*
  * join_path_segments stitches together two path fragments without
  * introducing duplicate separators.
  *
  *    base ----> segment ----> joined
  *
  * The helper accepts absolute segments, which replace the base entirely.
- * ----------------------------------------------------------------------- */
+ */
 static int
 join_path_segments(char const *base,
                    char const *segment,
@@ -151,11 +151,11 @@ path_is_readable(char const *path)
 #endif
 }
 
-/* -----------------------------------------------------------------------
+/*
  * detect_build_models_dir locates ../models/lpips relative to the
  * executable path. The helper validates that both ONNX files exist so it
  * can be safely fed into SIXEL_ASSESSMENT_OPT_MODEL_DIR.
- * ----------------------------------------------------------------------- */
+ */
 static int
 detect_build_models_dir(char const *argv0,
                         char *buffer,
@@ -318,7 +318,7 @@ typedef struct Metrics {
     float delta_e00_mean;
     float gmsd_value;
     float psnr_y;
-    float lpips_vgg;
+    float lpips;
 } Metrics;
 
 typedef struct MetricBinding {
@@ -352,7 +352,7 @@ static const MetricBinding g_metric_bindings[] = {
     {"Δ E00_mean", offsetof(Metrics, delta_e00_mean)},
     {"GMSD", offsetof(Metrics, gmsd_value)},
     {"PSNR_Y", offsetof(Metrics, psnr_y)},
-    {"LPIPS(vgg)", offsetof(Metrics, lpips_vgg)},
+    {"LPIPS", offsetof(Metrics, lpips)},
 };
 
 static void
@@ -426,7 +426,7 @@ verbose_print(const Metrics *m)
         {"Δ E00_mean", m->delta_e00_mean},
         {"GMSD", m->gmsd_value},
         {"PSNR_Y", m->psnr_y},
-        {"LPIPS(vgg)", m->lpips_vgg},
+        {"LPIPS", m->lpips},
     };
     size_t i;
 

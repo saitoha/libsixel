@@ -324,7 +324,6 @@ RUBY_VERSION = @RUBY_VERSION@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
-SIXEL_LPIPS_MODEL_DIR = @SIXEL_LPIPS_MODEL_DIR@
 STRIP = @STRIP@
 UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
 VERSION = @VERSION@
@@ -377,10 +376,9 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
-@HAVE_ONNXRUNTIME_TRUE@lpipsmodelsdir = @lpipsmodelsdir@
-lpipsmodelsdir = @lpipsmodelsdir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
+modeldir = @modeldir@
 oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
 pkgconfigdir = @pkgconfigdir@
@@ -410,6 +408,7 @@ lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
 lsqa_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
 lsqa_LDFLAGS = $(MAYBE_COVERAGE)
 lsqa_LDADD = $(top_builddir)/src/libsixel.la
+@HAVE_ONNXRUNTIME_TRUE@lpipsmodelsdir = @modeldir@/lpips
 @HAVE_ONNXRUNTIME_TRUE@dist_lpipsmodels_DATA = $(top_srcdir)/models/lpips/lpips_diff.onnx \
 @HAVE_ONNXRUNTIME_TRUE@                        $(top_srcdir)/models/lpips/lpips_feature.onnx
 
