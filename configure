@@ -746,8 +746,7 @@ bashcompletiondir
 pkgconfigdir
 WANT_THUMBNAILER_FALSE
 WANT_THUMBNAILER_TRUE
-SIXEL_LPIPS_MODEL_DIR
-lpipsmodelsdir
+modeldir
 WANT_SIXEL2PNG_FALSE
 WANT_SIXEL2PNG_TRUE
 WANT_IMG2SIXEL_FALSE
@@ -16386,23 +16385,26 @@ esac
 fi
 
 if test "x$with_modeldir" = xno || test "x$with_modeldir" = xyes; then
-  lpips_model_root='${pkgdatadir}/models'
+  pkgdatadir="${datadir}/${PACKAGE_TARNAME}"
+  model_root='${pkgdatadir}/models'
 else
-  lpips_model_root=$with_modeldir
+  model_root=$with_modeldir
 fi
-lpips_modeldir="${lpips_model_root}/lpips"
-lpipsmodelsdir=$lpips_modeldir
+modeldir="${model_root}"
 
+if test "x${prefix}" = xNONE; then
+    prefix="${ac_default_prefix}"
+    modeldir=`eval echo "${modeldir}"`
+    modeldir=`eval echo "${modeldir}"`
+    modeldir=`eval echo "${modeldir}"`
+    prefix=NONE
+else
+    modeldir=`eval echo "${modeldir}"`
+    modeldir=`eval echo "${modeldir}"`
+    modeldir=`eval echo "${modeldir}"`
+fi
 
-
-  dir="\$lpips_model_root"
-  dir=`eval "echo ${dir}"`
-  dir=`eval "echo ${dir}"`
-  SIXEL_LPIPS_MODEL_DIR="${dir}"
-
-
-printf "%s\n" "#define SIXEL_LPIPS_MODEL_DIR \"${dir}\"" >>confdefs.h
-
+printf "%s\n" "#define SIXEL_MODEL_DIR \"${modeldir}\"" >>confdefs.h
 
 
 # Check whether --enable-thumbnailer-command was given.
@@ -16428,7 +16430,7 @@ message_thumbnailer=no
 
 if test x$enable_sixel2png = xno; then
   enable_thumbnailer_command=no
-  message_thumbnailer='no (requires sixel2png)'
+  message_thumbnailer=no
 fi
 
 if test x$enable_thumbnailer_command = xauto; then
@@ -16484,7 +16486,7 @@ if test x$message_thumbnailer = xno; then
       message_thumbnailer=yes
     fi
   elif test x$thumbnailer_command_mode = xauto; then
-    message_thumbnailer='no (thumbnailer dir not found)'
+    message_thumbnailer=no
   fi
 fi
 

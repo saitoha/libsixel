@@ -460,7 +460,7 @@
 #undef PACKAGE_VERSION
 
 /* Base directory that holds libsixel assessment models */
-#undef SIXEL_LPIPS_MODEL_DIR
+#undef SIXEL_MODEL_DIR
 
 /* Define to 1 if all of the C89 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
