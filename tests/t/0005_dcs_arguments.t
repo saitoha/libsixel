@@ -5,16 +5,6 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 # shellcheck source=tests/t/common.bash
 source "${SCRIPT_DIR}/common.bash"
 
-# ----------------------------------------------------------------------
-#  +---------------------------+
-#  | Prefix | Suffix | Result |
-#  +---------------------------+
-#  |   i    |   j    |  OK    |
-#  +---------------------------+
-#  The table above mirrors the nested loops below; each coordinate
-#  becomes its own TAP entry.
-# ----------------------------------------------------------------------
-
 tap_init "$(basename "$0")"
 
 require_file "${IMAGES_DIR}/map8.png"

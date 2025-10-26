@@ -22,6 +22,11 @@ man_opts="${TMP_DIR}/options2.txt"
 bash_opts="${TMP_DIR}/options3.txt"
 zsh_opts="${TMP_DIR}/options4.txt"
 
+documentation_dir="${SRC_DIR}"
+if [[ ! -f "${documentation_dir}/img2sixel.1" ]]; then
+    documentation_dir="${TOP_SRCDIR}/converters"
+fi
+
 generate_option_snapshots() {
     tap_log '[documentation] generating option snapshots'
     run_img2sixel -H | awk '
@@ -41,10 +46,11 @@ generate_option_snapshots() {
                 print field
             }
         }
-    ' "${SRC_DIR}/img2sixel.1" >"${man_opts}"
-    grep ' --' "${SRC_DIR}/shell-completion/bash/img2sixel" | \
+    ' "${documentation_dir}/img2sixel.1" >"${man_opts}"
+    grep ' --' "${documentation_dir}/shell-completion/bash/img2sixel" | \
         grep -v "' " | sed 's/.* \(-.\) .*/\1/' >"${bash_opts}"
-    grep '{-' "${SRC_DIR}/shell-completion/zsh/_img2sixel" | cut -f1 -d, | \
+    grep '{-' "${documentation_dir}/shell-completion/zsh/_img2sixel" | \
+        cut -f1 -d, | \
         cut -f2 -d'{' >"${zsh_opts}"
 }
 

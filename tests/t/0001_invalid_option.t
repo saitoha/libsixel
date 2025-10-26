@@ -5,16 +5,12 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 # shellcheck source=tests/t/common.bash
 source "${SCRIPT_DIR}/common.bash"
 
-# ----------------------------------------------------------------------
 #  +---------------------------------------------------------------+
 #  | Test layout                                                   |
 #  +---------------------------------------------------------------+
 #  | Case 1  | Unreadable input file should not yield an output.   |
 #  | Case 2+ | Each suspicious option must be rejected cleanly.    |
 #  +---------------------------------------------------------------+
-#  The ASCII table makes it easy to align the TAP plan with the
-#  registered cases.
-# ----------------------------------------------------------------------
 
 tap_init "$(basename "$0")"
 
@@ -33,20 +29,11 @@ register_expect_failure() {
 expect_failure_case() {
     local output_file
 
-    output_file="${TMP_DIR}/capture.$$"
     tap_log "[invalid-option] checking: $*"
-    # Redirect stdin from /dev/null so tests like `img2sixel -` fail
-    # immediately instead of waiting for input.  This keeps the TAP
-    # execution from hanging.
-    if run_img2sixel "$@" < /dev/null >"${output_file}" 2>/dev/null; then
-        :
-    fi
-    if [[ -s ${output_file} ]]; then
-        printf 'img2sixel unexpectedly produced output: %s\n' "$*"
-        rm -f "${output_file}"
+    if ! run_img2sixel "$@" >/dev/null 2>/dev/null; then
+        printf 'img2sixel unexpectedly scceeded: %s\n' "$*"
         return 1
     fi
-    rm -f "${output_file}"
     return 0
 }
 
@@ -60,6 +47,7 @@ prepare_unreadable_case() {
     touch "${invalid_file}"
     chmod a-r "${invalid_file}"
     output_file="${TMP_DIR}/capture.$$"
+    rm -f "${output_file}"
     if run_img2sixel "${invalid_file}" >"${output_file}" 2>/dev/null; then
         :
     fi

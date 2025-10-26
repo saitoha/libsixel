@@ -62,8 +62,46 @@ if [[ ${TMP_DIR} != /* ]]; then
 fi
 WINE=${WINE:-}
 WINEEXT=${WINEEXT:-}
-IMG2SIXEL_PATH="${BUILD_DIR_ABS}/img2sixel${WINEEXT}"
-SIXEL2PNG_PATH="${BUILD_DIR_ABS}/sixel2png${WINEEXT}"
+
+resolve_converter_executable() {
+    local -a search_paths
+    local candidate
+
+    search_paths=("$@")
+
+    for candidate in "${search_paths[@]}"; do
+        if [[ -x "${candidate}" ]]; then
+            printf '%s\n' "${candidate}"
+            return 0
+        fi
+    done
+
+    printf '%s\n' "${search_paths[0]}"
+    return 1
+}
+
+IMG2SIXEL_CANDIDATES=(
+    "${BUILD_DIR_ABS}/img2sixel${WINEEXT}"
+    "${BUILD_DIR_ABS}/converters/img2sixel${WINEEXT}"
+)
+SIXEL2PNG_CANDIDATES=(
+    "${BUILD_DIR_ABS}/sixel2png${WINEEXT}"
+    "${BUILD_DIR_ABS}/converters/sixel2png${WINEEXT}"
+)
+
+IMG2SIXEL_PATH=$(resolve_converter_executable \
+    "${IMG2SIXEL_CANDIDATES[@]}")
+if [[ ! -x "${IMG2SIXEL_PATH}" ]]; then
+    printf 'warning: img2sixel candidates missing (%s)\n' \
+        "$(printf '%s ' "${IMG2SIXEL_CANDIDATES[@]}")" >&2
+fi
+
+SIXEL2PNG_PATH=$(resolve_converter_executable \
+    "${SIXEL2PNG_CANDIDATES[@]}")
+if [[ ! -x "${SIXEL2PNG_PATH}" ]]; then
+    printf 'warning: sixel2png candidates missing (%s)\n' \
+        "$(printf '%s ' "${SIXEL2PNG_CANDIDATES[@]}")" >&2
+fi
 
 IMAGES_DIR="${TOP_SRCDIR}/images"
 
@@ -205,25 +243,35 @@ wine_exec() {
     local -a sanitized_runner
     local token
     local command_path
+    local encountered_make
 
     wine_tokens=()
     sanitized_runner=()
+    encountered_make=0
 
     if [[ -n "${WINE}" ]]; then
         read -r -a wine_tokens <<<"${WINE}"
         for token in "${wine_tokens[@]}"; do
             if [[ "${token}" == "make" ]]; then
+                encountered_make=1
                 break
             fi
             sanitized_runner+=("${token}")
         done
-        if [[ ${#sanitized_runner[@]} -gt 0 ]]; then
-            command_path="${sanitized_runner[0]}"
-            if command -v "${command_path}" >/dev/null 2>&1; then
-                "${sanitized_runner[@]}" "$@"
-                return 0
+        if [[ ${encountered_make} -eq 0 ]]; then
+            if [[ ${#sanitized_runner[@]} -gt 0 ]]; then
+                command_path="${sanitized_runner[0]}"
+                if command -v "${command_path}" >/dev/null 2>&1; then
+                    "${sanitized_runner[@]}" "$@"
+                    return 0
+                fi
             fi
         fi
+        # Automake's converter harness sometimes feeds us a synthetic
+        # "wine $(MAKE) check" value which is only meant to satisfy the
+        # variable dependency graph.  When we detect the stray "make"
+        # token we intentionally skip the sanitized runner so that we
+        # fall back to native execution even if a Wine binary is present.
     fi
 
     "$@"
