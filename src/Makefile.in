@@ -15,6 +15,7 @@
 @SET_MAKE@
 
 
+
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
     false; \
@@ -93,6 +94,9 @@ host_triplet = @host@
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__append_1 = \
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@                $(srcdir)/quicklook_thumbnailing.m
 
+@HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__append_2 = \
+@HAVE_QUICKLOOK_THUMBNAILING_TRUE@                $(srcdir)/quicklook_thumbnailing.m
+
 @COND_TESTS_TRUE@noinst_PROGRAMS = tests$(EXEEXT)
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -111,6 +115,7 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
+LIBRARIES = $(noinst_LIBRARIES)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -139,6 +144,44 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man5dir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
+ARFLAGS = cr
+AM_V_AR = $(am__v_AR_@AM_V@)
+am__v_AR_ = $(am__v_AR_@AM_DEFAULT_V@)
+am__v_AR_0 = @echo "  AR      " $@;
+am__v_AR_1 = 
+liblibsixelloader_a_AR = $(AR) $(ARFLAGS)
+liblibsixelloader_a_RANLIB = $(RANLIB)
+liblibsixelloader_a_LIBADD =
+am__liblibsixelloader_a_SOURCES_DIST = $(srcdir)/allocator.c \
+	$(srcdir)/allocator.h $(srcdir)/chunk.c $(srcdir)/chunk.h \
+	$(srcdir)/colorspace.c $(srcdir)/colorspace.h \
+	$(srcdir)/dither.c $(srcdir)/dither.h $(srcdir)/frame.c \
+	$(srcdir)/frame.h $(srcdir)/fromgif.c $(srcdir)/fromgif.h \
+	$(srcdir)/frompnm.c $(srcdir)/frompnm.h $(srcdir)/fromsixel.c \
+	$(srcdir)/loader.c $(srcdir)/loader.h $(srcdir)/malloc_stub.c \
+	$(srcdir)/malloc_stub.h $(srcdir)/pixelformat.c \
+	$(srcdir)/pixelformat.h $(srcdir)/quant.c $(srcdir)/quant.h \
+	$(srcdir)/scale.c $(srcdir)/status.c $(srcdir)/status.h \
+	$(srcdir)/tty.c $(srcdir)/tty.h \
+	$(srcdir)/quicklook_thumbnailing.m
+@HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__objects_1 = liblibsixelloader_a-quicklook_thumbnailing.$(OBJEXT)
+am_liblibsixelloader_a_OBJECTS =  \
+	liblibsixelloader_a-allocator.$(OBJEXT) \
+	liblibsixelloader_a-chunk.$(OBJEXT) \
+	liblibsixelloader_a-colorspace.$(OBJEXT) \
+	liblibsixelloader_a-dither.$(OBJEXT) \
+	liblibsixelloader_a-frame.$(OBJEXT) \
+	liblibsixelloader_a-fromgif.$(OBJEXT) \
+	liblibsixelloader_a-frompnm.$(OBJEXT) \
+	liblibsixelloader_a-fromsixel.$(OBJEXT) \
+	liblibsixelloader_a-loader.$(OBJEXT) \
+	liblibsixelloader_a-malloc_stub.$(OBJEXT) \
+	liblibsixelloader_a-pixelformat.$(OBJEXT) \
+	liblibsixelloader_a-quant.$(OBJEXT) \
+	liblibsixelloader_a-scale.$(OBJEXT) \
+	liblibsixelloader_a-status.$(OBJEXT) \
+	liblibsixelloader_a-tty.$(OBJEXT) $(am__objects_1)
+liblibsixelloader_a_OBJECTS = $(am_liblibsixelloader_a_OBJECTS)
 am__DEPENDENCIES_1 =
 libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -161,7 +204,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/malloc_stub.h $(srcdir)/allocator.c \
 	$(srcdir)/allocator.h $(srcdir)/tty.c $(srcdir)/tty.h \
 	$(srcdir)/rgblookup.h $(srcdir)/quicklook_thumbnailing.m
-@HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__objects_1 = libsixel_la-quicklook_thumbnailing.lo
+@HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__objects_2 = libsixel_la-quicklook_thumbnailing.lo
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-fromsixel.lo libsixel_la-tosixel.lo \
 	libsixel_la-quant.lo libsixel_la-dither.lo \
@@ -172,7 +215,7 @@ am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-encoder.lo libsixel_la-decoder.lo \
 	libsixel_la-writer.lo libsixel_la-stb_image_write.lo \
 	libsixel_la-status.lo libsixel_la-malloc_stub.lo \
-	libsixel_la-allocator.lo libsixel_la-tty.lo $(am__objects_1)
+	libsixel_la-allocator.lo libsixel_la-tty.lo $(am__objects_2)
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -203,7 +246,23 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
+am__depfiles_remade = ./$(DEPDIR)/liblibsixelloader_a-allocator.Po \
+	./$(DEPDIR)/liblibsixelloader_a-chunk.Po \
+	./$(DEPDIR)/liblibsixelloader_a-colorspace.Po \
+	./$(DEPDIR)/liblibsixelloader_a-dither.Po \
+	./$(DEPDIR)/liblibsixelloader_a-frame.Po \
+	./$(DEPDIR)/liblibsixelloader_a-fromgif.Po \
+	./$(DEPDIR)/liblibsixelloader_a-frompnm.Po \
+	./$(DEPDIR)/liblibsixelloader_a-fromsixel.Po \
+	./$(DEPDIR)/liblibsixelloader_a-loader.Po \
+	./$(DEPDIR)/liblibsixelloader_a-malloc_stub.Po \
+	./$(DEPDIR)/liblibsixelloader_a-pixelformat.Po \
+	./$(DEPDIR)/liblibsixelloader_a-quant.Po \
+	./$(DEPDIR)/liblibsixelloader_a-quicklook_thumbnailing.Po \
+	./$(DEPDIR)/liblibsixelloader_a-scale.Po \
+	./$(DEPDIR)/liblibsixelloader_a-status.Po \
+	./$(DEPDIR)/liblibsixelloader_a-tty.Po \
+	./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-chunk.Plo \
 	./$(DEPDIR)/libsixel_la-colorspace.Plo \
 	./$(DEPDIR)/libsixel_la-decoder.Plo \
@@ -262,9 +321,10 @@ AM_V_OBJCLD = $(am__v_OBJCLD_@AM_V@)
 am__v_OBJCLD_ = $(am__v_OBJCLD_@AM_DEFAULT_V@)
 am__v_OBJCLD_0 = @echo "  OBJCLD  " $@;
 am__v_OBJCLD_1 = 
-SOURCES = $(libsixel_la_SOURCES) $(tests_SOURCES)
-DIST_SOURCES = $(am__libsixel_la_SOURCES_DIST) \
-	$(am__tests_SOURCES_DIST)
+SOURCES = $(liblibsixelloader_a_SOURCES) $(libsixel_la_SOURCES) \
+	$(tests_SOURCES)
+DIST_SOURCES = $(am__liblibsixelloader_a_SOURCES_DIST) \
+	$(am__libsixel_la_SOURCES_DIST) $(am__tests_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -482,6 +542,30 @@ top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
+noinst_LIBRARIES = liblibsixelloader.a
+liblibsixelloader_a_SOURCES = $(srcdir)/allocator.c \
+	$(srcdir)/allocator.h $(srcdir)/chunk.c $(srcdir)/chunk.h \
+	$(srcdir)/colorspace.c $(srcdir)/colorspace.h \
+	$(srcdir)/dither.c $(srcdir)/dither.h $(srcdir)/frame.c \
+	$(srcdir)/frame.h $(srcdir)/fromgif.c $(srcdir)/fromgif.h \
+	$(srcdir)/frompnm.c $(srcdir)/frompnm.h $(srcdir)/fromsixel.c \
+	$(srcdir)/loader.c $(srcdir)/loader.h $(srcdir)/malloc_stub.c \
+	$(srcdir)/malloc_stub.h $(srcdir)/pixelformat.c \
+	$(srcdir)/pixelformat.h $(srcdir)/quant.c $(srcdir)/quant.h \
+	$(srcdir)/scale.c $(srcdir)/status.c $(srcdir)/status.h \
+	$(srcdir)/tty.c $(srcdir)/tty.h $(am__append_1)
+liblibsixelloader_a_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
+liblibsixelloader_a_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
+                $(LIBPNG_CFLAGS) \
+                $(LIBJPEG_CFLAGS) \
+                $(GDK_PIXBUF_CFLAGS) \
+                $(GD_CFLAGS) \
+                $(WIC_CFLAGS) \
+                $(COREGRAPHICS_CFLAGS) \
+                $(QUICKLOOK_CFLAGS) \
+                $(LIBCURL_CFLAGS) \
+                $(WINHTTP_CFLAGS)
+
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/quant.c \
@@ -498,7 +582,7 @@ libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/status.c $(srcdir)/status.h $(srcdir)/malloc_stub.c \
 	$(srcdir)/malloc_stub.h $(srcdir)/allocator.c \
 	$(srcdir)/allocator.h $(srcdir)/tty.c $(srcdir)/tty.h \
-	$(srcdir)/rgblookup.h $(am__append_1)
+	$(srcdir)/rgblookup.h $(am__append_2)
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(LIBCURL_CFLAGS) \
@@ -572,6 +656,9 @@ clean-noinstPROGRAMS:
 	$(am__rm_f) $(noinst_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(noinst_PROGRAMS:$(EXEEXT)=)
 
+clean-noinstLIBRARIES:
+	-$(am__rm_f) $(noinst_LIBRARIES)
+
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	@list='$(lib_LTLIBRARIES)'; test -n "$(libdir)" || list=; \
@@ -605,6 +692,11 @@ clean-libLTLIBRARIES:
 	echo rm -f $${locs}; \
 	$(am__rm_f) $${locs}
 
+liblibsixelloader.a: $(liblibsixelloader_a_OBJECTS) $(liblibsixelloader_a_DEPENDENCIES) $(EXTRA_liblibsixelloader_a_DEPENDENCIES) 
+	$(AM_V_at)-rm -f liblibsixelloader.a
+	$(AM_V_AR)$(liblibsixelloader_a_AR) liblibsixelloader.a $(liblibsixelloader_a_OBJECTS) $(liblibsixelloader_a_LIBADD)
+	$(AM_V_at)$(liblibsixelloader_a_RANLIB) liblibsixelloader.a
+
 libsixel.la: $(libsixel_la_OBJECTS) $(libsixel_la_DEPENDENCIES) $(EXTRA_libsixel_la_DEPENDENCIES) 
 	$(AM_V_OBJCLD)$(libsixel_la_LINK) -rpath $(libdir) $(libsixel_la_OBJECTS) $(libsixel_la_LIBADD) $(LIBS)
 
@@ -618,6 +710,22 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liblibsixelloader_a-allocator.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liblibsixelloader_a-chunk.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liblibsixelloader_a-colorspace.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liblibsixelloader_a-dither.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liblibsixelloader_a-frame.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liblibsixelloader_a-fromgif.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liblibsixelloader_a-frompnm.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liblibsixelloader_a-fromsixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liblibsixelloader_a-loader.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liblibsixelloader_a-malloc_stub.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liblibsixelloader_a-pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liblibsixelloader_a-quant.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liblibsixelloader_a-quicklook_thumbnailing.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liblibsixelloader_a-scale.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liblibsixelloader_a-status.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liblibsixelloader_a-tty.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-allocator.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-chunk.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-colorspace.Plo@am__quote@ # am--include-marker
@@ -671,6 +779,216 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+liblibsixelloader_a-allocator.o: allocator.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-allocator.o -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-allocator.Tpo -c -o liblibsixelloader_a-allocator.o `test -f 'allocator.c' || echo '$(srcdir)/'`allocator.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-allocator.Tpo $(DEPDIR)/liblibsixelloader_a-allocator.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='allocator.c' object='liblibsixelloader_a-allocator.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-allocator.o `test -f 'allocator.c' || echo '$(srcdir)/'`allocator.c
+
+liblibsixelloader_a-allocator.obj: allocator.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-allocator.obj -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-allocator.Tpo -c -o liblibsixelloader_a-allocator.obj `if test -f 'allocator.c'; then $(CYGPATH_W) 'allocator.c'; else $(CYGPATH_W) '$(srcdir)/allocator.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-allocator.Tpo $(DEPDIR)/liblibsixelloader_a-allocator.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='allocator.c' object='liblibsixelloader_a-allocator.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-allocator.obj `if test -f 'allocator.c'; then $(CYGPATH_W) 'allocator.c'; else $(CYGPATH_W) '$(srcdir)/allocator.c'; fi`
+
+liblibsixelloader_a-chunk.o: chunk.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-chunk.o -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-chunk.Tpo -c -o liblibsixelloader_a-chunk.o `test -f 'chunk.c' || echo '$(srcdir)/'`chunk.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-chunk.Tpo $(DEPDIR)/liblibsixelloader_a-chunk.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='chunk.c' object='liblibsixelloader_a-chunk.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-chunk.o `test -f 'chunk.c' || echo '$(srcdir)/'`chunk.c
+
+liblibsixelloader_a-chunk.obj: chunk.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-chunk.obj -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-chunk.Tpo -c -o liblibsixelloader_a-chunk.obj `if test -f 'chunk.c'; then $(CYGPATH_W) 'chunk.c'; else $(CYGPATH_W) '$(srcdir)/chunk.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-chunk.Tpo $(DEPDIR)/liblibsixelloader_a-chunk.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='chunk.c' object='liblibsixelloader_a-chunk.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-chunk.obj `if test -f 'chunk.c'; then $(CYGPATH_W) 'chunk.c'; else $(CYGPATH_W) '$(srcdir)/chunk.c'; fi`
+
+liblibsixelloader_a-colorspace.o: colorspace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-colorspace.o -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-colorspace.Tpo -c -o liblibsixelloader_a-colorspace.o `test -f 'colorspace.c' || echo '$(srcdir)/'`colorspace.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-colorspace.Tpo $(DEPDIR)/liblibsixelloader_a-colorspace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='colorspace.c' object='liblibsixelloader_a-colorspace.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-colorspace.o `test -f 'colorspace.c' || echo '$(srcdir)/'`colorspace.c
+
+liblibsixelloader_a-colorspace.obj: colorspace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-colorspace.obj -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-colorspace.Tpo -c -o liblibsixelloader_a-colorspace.obj `if test -f 'colorspace.c'; then $(CYGPATH_W) 'colorspace.c'; else $(CYGPATH_W) '$(srcdir)/colorspace.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-colorspace.Tpo $(DEPDIR)/liblibsixelloader_a-colorspace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='colorspace.c' object='liblibsixelloader_a-colorspace.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-colorspace.obj `if test -f 'colorspace.c'; then $(CYGPATH_W) 'colorspace.c'; else $(CYGPATH_W) '$(srcdir)/colorspace.c'; fi`
+
+liblibsixelloader_a-dither.o: dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-dither.o -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-dither.Tpo -c -o liblibsixelloader_a-dither.o `test -f 'dither.c' || echo '$(srcdir)/'`dither.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-dither.Tpo $(DEPDIR)/liblibsixelloader_a-dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither.c' object='liblibsixelloader_a-dither.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-dither.o `test -f 'dither.c' || echo '$(srcdir)/'`dither.c
+
+liblibsixelloader_a-dither.obj: dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-dither.obj -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-dither.Tpo -c -o liblibsixelloader_a-dither.obj `if test -f 'dither.c'; then $(CYGPATH_W) 'dither.c'; else $(CYGPATH_W) '$(srcdir)/dither.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-dither.Tpo $(DEPDIR)/liblibsixelloader_a-dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither.c' object='liblibsixelloader_a-dither.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-dither.obj `if test -f 'dither.c'; then $(CYGPATH_W) 'dither.c'; else $(CYGPATH_W) '$(srcdir)/dither.c'; fi`
+
+liblibsixelloader_a-frame.o: frame.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-frame.o -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-frame.Tpo -c -o liblibsixelloader_a-frame.o `test -f 'frame.c' || echo '$(srcdir)/'`frame.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-frame.Tpo $(DEPDIR)/liblibsixelloader_a-frame.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frame.c' object='liblibsixelloader_a-frame.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-frame.o `test -f 'frame.c' || echo '$(srcdir)/'`frame.c
+
+liblibsixelloader_a-frame.obj: frame.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-frame.obj -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-frame.Tpo -c -o liblibsixelloader_a-frame.obj `if test -f 'frame.c'; then $(CYGPATH_W) 'frame.c'; else $(CYGPATH_W) '$(srcdir)/frame.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-frame.Tpo $(DEPDIR)/liblibsixelloader_a-frame.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frame.c' object='liblibsixelloader_a-frame.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-frame.obj `if test -f 'frame.c'; then $(CYGPATH_W) 'frame.c'; else $(CYGPATH_W) '$(srcdir)/frame.c'; fi`
+
+liblibsixelloader_a-fromgif.o: fromgif.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-fromgif.o -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-fromgif.Tpo -c -o liblibsixelloader_a-fromgif.o `test -f 'fromgif.c' || echo '$(srcdir)/'`fromgif.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-fromgif.Tpo $(DEPDIR)/liblibsixelloader_a-fromgif.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fromgif.c' object='liblibsixelloader_a-fromgif.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-fromgif.o `test -f 'fromgif.c' || echo '$(srcdir)/'`fromgif.c
+
+liblibsixelloader_a-fromgif.obj: fromgif.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-fromgif.obj -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-fromgif.Tpo -c -o liblibsixelloader_a-fromgif.obj `if test -f 'fromgif.c'; then $(CYGPATH_W) 'fromgif.c'; else $(CYGPATH_W) '$(srcdir)/fromgif.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-fromgif.Tpo $(DEPDIR)/liblibsixelloader_a-fromgif.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fromgif.c' object='liblibsixelloader_a-fromgif.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-fromgif.obj `if test -f 'fromgif.c'; then $(CYGPATH_W) 'fromgif.c'; else $(CYGPATH_W) '$(srcdir)/fromgif.c'; fi`
+
+liblibsixelloader_a-frompnm.o: frompnm.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-frompnm.o -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-frompnm.Tpo -c -o liblibsixelloader_a-frompnm.o `test -f 'frompnm.c' || echo '$(srcdir)/'`frompnm.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-frompnm.Tpo $(DEPDIR)/liblibsixelloader_a-frompnm.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frompnm.c' object='liblibsixelloader_a-frompnm.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-frompnm.o `test -f 'frompnm.c' || echo '$(srcdir)/'`frompnm.c
+
+liblibsixelloader_a-frompnm.obj: frompnm.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-frompnm.obj -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-frompnm.Tpo -c -o liblibsixelloader_a-frompnm.obj `if test -f 'frompnm.c'; then $(CYGPATH_W) 'frompnm.c'; else $(CYGPATH_W) '$(srcdir)/frompnm.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-frompnm.Tpo $(DEPDIR)/liblibsixelloader_a-frompnm.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frompnm.c' object='liblibsixelloader_a-frompnm.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-frompnm.obj `if test -f 'frompnm.c'; then $(CYGPATH_W) 'frompnm.c'; else $(CYGPATH_W) '$(srcdir)/frompnm.c'; fi`
+
+liblibsixelloader_a-fromsixel.o: fromsixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-fromsixel.o -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-fromsixel.Tpo -c -o liblibsixelloader_a-fromsixel.o `test -f 'fromsixel.c' || echo '$(srcdir)/'`fromsixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-fromsixel.Tpo $(DEPDIR)/liblibsixelloader_a-fromsixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fromsixel.c' object='liblibsixelloader_a-fromsixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-fromsixel.o `test -f 'fromsixel.c' || echo '$(srcdir)/'`fromsixel.c
+
+liblibsixelloader_a-fromsixel.obj: fromsixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-fromsixel.obj -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-fromsixel.Tpo -c -o liblibsixelloader_a-fromsixel.obj `if test -f 'fromsixel.c'; then $(CYGPATH_W) 'fromsixel.c'; else $(CYGPATH_W) '$(srcdir)/fromsixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-fromsixel.Tpo $(DEPDIR)/liblibsixelloader_a-fromsixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fromsixel.c' object='liblibsixelloader_a-fromsixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-fromsixel.obj `if test -f 'fromsixel.c'; then $(CYGPATH_W) 'fromsixel.c'; else $(CYGPATH_W) '$(srcdir)/fromsixel.c'; fi`
+
+liblibsixelloader_a-loader.o: loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-loader.o -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-loader.Tpo -c -o liblibsixelloader_a-loader.o `test -f 'loader.c' || echo '$(srcdir)/'`loader.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-loader.Tpo $(DEPDIR)/liblibsixelloader_a-loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader.c' object='liblibsixelloader_a-loader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-loader.o `test -f 'loader.c' || echo '$(srcdir)/'`loader.c
+
+liblibsixelloader_a-loader.obj: loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-loader.obj -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-loader.Tpo -c -o liblibsixelloader_a-loader.obj `if test -f 'loader.c'; then $(CYGPATH_W) 'loader.c'; else $(CYGPATH_W) '$(srcdir)/loader.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-loader.Tpo $(DEPDIR)/liblibsixelloader_a-loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader.c' object='liblibsixelloader_a-loader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-loader.obj `if test -f 'loader.c'; then $(CYGPATH_W) 'loader.c'; else $(CYGPATH_W) '$(srcdir)/loader.c'; fi`
+
+liblibsixelloader_a-malloc_stub.o: malloc_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-malloc_stub.o -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-malloc_stub.Tpo -c -o liblibsixelloader_a-malloc_stub.o `test -f 'malloc_stub.c' || echo '$(srcdir)/'`malloc_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-malloc_stub.Tpo $(DEPDIR)/liblibsixelloader_a-malloc_stub.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='malloc_stub.c' object='liblibsixelloader_a-malloc_stub.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-malloc_stub.o `test -f 'malloc_stub.c' || echo '$(srcdir)/'`malloc_stub.c
+
+liblibsixelloader_a-malloc_stub.obj: malloc_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-malloc_stub.obj -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-malloc_stub.Tpo -c -o liblibsixelloader_a-malloc_stub.obj `if test -f 'malloc_stub.c'; then $(CYGPATH_W) 'malloc_stub.c'; else $(CYGPATH_W) '$(srcdir)/malloc_stub.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-malloc_stub.Tpo $(DEPDIR)/liblibsixelloader_a-malloc_stub.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='malloc_stub.c' object='liblibsixelloader_a-malloc_stub.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-malloc_stub.obj `if test -f 'malloc_stub.c'; then $(CYGPATH_W) 'malloc_stub.c'; else $(CYGPATH_W) '$(srcdir)/malloc_stub.c'; fi`
+
+liblibsixelloader_a-pixelformat.o: pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-pixelformat.o -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-pixelformat.Tpo -c -o liblibsixelloader_a-pixelformat.o `test -f 'pixelformat.c' || echo '$(srcdir)/'`pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-pixelformat.Tpo $(DEPDIR)/liblibsixelloader_a-pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='pixelformat.c' object='liblibsixelloader_a-pixelformat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-pixelformat.o `test -f 'pixelformat.c' || echo '$(srcdir)/'`pixelformat.c
+
+liblibsixelloader_a-pixelformat.obj: pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-pixelformat.obj -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-pixelformat.Tpo -c -o liblibsixelloader_a-pixelformat.obj `if test -f 'pixelformat.c'; then $(CYGPATH_W) 'pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-pixelformat.Tpo $(DEPDIR)/liblibsixelloader_a-pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='pixelformat.c' object='liblibsixelloader_a-pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-pixelformat.obj `if test -f 'pixelformat.c'; then $(CYGPATH_W) 'pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/pixelformat.c'; fi`
+
+liblibsixelloader_a-quant.o: quant.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-quant.o -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-quant.Tpo -c -o liblibsixelloader_a-quant.o `test -f 'quant.c' || echo '$(srcdir)/'`quant.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-quant.Tpo $(DEPDIR)/liblibsixelloader_a-quant.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant.c' object='liblibsixelloader_a-quant.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-quant.o `test -f 'quant.c' || echo '$(srcdir)/'`quant.c
+
+liblibsixelloader_a-quant.obj: quant.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-quant.obj -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-quant.Tpo -c -o liblibsixelloader_a-quant.obj `if test -f 'quant.c'; then $(CYGPATH_W) 'quant.c'; else $(CYGPATH_W) '$(srcdir)/quant.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-quant.Tpo $(DEPDIR)/liblibsixelloader_a-quant.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant.c' object='liblibsixelloader_a-quant.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-quant.obj `if test -f 'quant.c'; then $(CYGPATH_W) 'quant.c'; else $(CYGPATH_W) '$(srcdir)/quant.c'; fi`
+
+liblibsixelloader_a-scale.o: scale.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-scale.o -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-scale.Tpo -c -o liblibsixelloader_a-scale.o `test -f 'scale.c' || echo '$(srcdir)/'`scale.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-scale.Tpo $(DEPDIR)/liblibsixelloader_a-scale.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='scale.c' object='liblibsixelloader_a-scale.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-scale.o `test -f 'scale.c' || echo '$(srcdir)/'`scale.c
+
+liblibsixelloader_a-scale.obj: scale.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-scale.obj -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-scale.Tpo -c -o liblibsixelloader_a-scale.obj `if test -f 'scale.c'; then $(CYGPATH_W) 'scale.c'; else $(CYGPATH_W) '$(srcdir)/scale.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-scale.Tpo $(DEPDIR)/liblibsixelloader_a-scale.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='scale.c' object='liblibsixelloader_a-scale.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-scale.obj `if test -f 'scale.c'; then $(CYGPATH_W) 'scale.c'; else $(CYGPATH_W) '$(srcdir)/scale.c'; fi`
+
+liblibsixelloader_a-status.o: status.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-status.o -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-status.Tpo -c -o liblibsixelloader_a-status.o `test -f 'status.c' || echo '$(srcdir)/'`status.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-status.Tpo $(DEPDIR)/liblibsixelloader_a-status.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='status.c' object='liblibsixelloader_a-status.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-status.o `test -f 'status.c' || echo '$(srcdir)/'`status.c
+
+liblibsixelloader_a-status.obj: status.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-status.obj -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-status.Tpo -c -o liblibsixelloader_a-status.obj `if test -f 'status.c'; then $(CYGPATH_W) 'status.c'; else $(CYGPATH_W) '$(srcdir)/status.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-status.Tpo $(DEPDIR)/liblibsixelloader_a-status.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='status.c' object='liblibsixelloader_a-status.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-status.obj `if test -f 'status.c'; then $(CYGPATH_W) 'status.c'; else $(CYGPATH_W) '$(srcdir)/status.c'; fi`
+
+liblibsixelloader_a-tty.o: tty.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-tty.o -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-tty.Tpo -c -o liblibsixelloader_a-tty.o `test -f 'tty.c' || echo '$(srcdir)/'`tty.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-tty.Tpo $(DEPDIR)/liblibsixelloader_a-tty.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tty.c' object='liblibsixelloader_a-tty.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-tty.o `test -f 'tty.c' || echo '$(srcdir)/'`tty.c
+
+liblibsixelloader_a-tty.obj: tty.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -MT liblibsixelloader_a-tty.obj -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-tty.Tpo -c -o liblibsixelloader_a-tty.obj `if test -f 'tty.c'; then $(CYGPATH_W) 'tty.c'; else $(CYGPATH_W) '$(srcdir)/tty.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-tty.Tpo $(DEPDIR)/liblibsixelloader_a-tty.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tty.c' object='liblibsixelloader_a-tty.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(liblibsixelloader_a_CFLAGS) $(CFLAGS) -c -o liblibsixelloader_a-tty.obj `if test -f 'tty.c'; then $(CYGPATH_W) 'tty.c'; else $(CYGPATH_W) '$(srcdir)/tty.c'; fi`
 
 libsixel_la-output.lo: output.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-output.lo -MD -MP -MF $(DEPDIR)/libsixel_la-output.Tpo -c -o libsixel_la-output.lo `test -f 'output.c' || echo '$(srcdir)/'`output.c
@@ -857,6 +1175,20 @@ tests-tests.obj: tests.c
 @AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LTOBJCCOMPILE) -c -o $@ $<
 
+liblibsixelloader_a-quicklook_thumbnailing.o: quicklook_thumbnailing.m
+@am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT liblibsixelloader_a-quicklook_thumbnailing.o -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-quicklook_thumbnailing.Tpo -c -o liblibsixelloader_a-quicklook_thumbnailing.o `test -f 'quicklook_thumbnailing.m' || echo '$(srcdir)/'`quicklook_thumbnailing.m
+@am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-quicklook_thumbnailing.Tpo $(DEPDIR)/liblibsixelloader_a-quicklook_thumbnailing.Po
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	$(AM_V_OBJC)source='quicklook_thumbnailing.m' object='liblibsixelloader_a-quicklook_thumbnailing.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o liblibsixelloader_a-quicklook_thumbnailing.o `test -f 'quicklook_thumbnailing.m' || echo '$(srcdir)/'`quicklook_thumbnailing.m
+
+liblibsixelloader_a-quicklook_thumbnailing.obj: quicklook_thumbnailing.m
+@am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT liblibsixelloader_a-quicklook_thumbnailing.obj -MD -MP -MF $(DEPDIR)/liblibsixelloader_a-quicklook_thumbnailing.Tpo -c -o liblibsixelloader_a-quicklook_thumbnailing.obj `if test -f 'quicklook_thumbnailing.m'; then $(CYGPATH_W) 'quicklook_thumbnailing.m'; else $(CYGPATH_W) '$(srcdir)/quicklook_thumbnailing.m'; fi`
+@am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/liblibsixelloader_a-quicklook_thumbnailing.Tpo $(DEPDIR)/liblibsixelloader_a-quicklook_thumbnailing.Po
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	$(AM_V_OBJC)source='quicklook_thumbnailing.m' object='liblibsixelloader_a-quicklook_thumbnailing.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblibsixelloader_a_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o liblibsixelloader_a-quicklook_thumbnailing.obj `if test -f 'quicklook_thumbnailing.m'; then $(CYGPATH_W) 'quicklook_thumbnailing.m'; else $(CYGPATH_W) '$(srcdir)/quicklook_thumbnailing.m'; fi`
+
 libsixel_la-quicklook_thumbnailing.lo: quicklook_thumbnailing.m
 @am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libsixel_la-quicklook_thumbnailing.lo -MD -MP -MF $(DEPDIR)/libsixel_la-quicklook_thumbnailing.Tpo -c -o libsixel_la-quicklook_thumbnailing.lo `test -f 'quicklook_thumbnailing.m' || echo '$(srcdir)/'`quicklook_thumbnailing.m
 @am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-quicklook_thumbnailing.Tpo $(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
@@ -1000,7 +1332,7 @@ distdir-am: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS) $(LTLIBRARIES) $(MANS)
+all-am: Makefile $(PROGRAMS) $(LIBRARIES) $(LTLIBRARIES) $(MANS)
 installdirs:
 	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man5dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -1039,9 +1371,25 @@ maintainer-clean-generic:
 clean: clean-am
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
-	clean-noinstPROGRAMS mostlyclean-am
+	clean-noinstLIBRARIES clean-noinstPROGRAMS mostlyclean-am
 
 distclean: distclean-am
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-allocator.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-chunk.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-colorspace.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-dither.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-frame.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-fromgif.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-frompnm.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-fromsixel.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-loader.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-malloc_stub.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-pixelformat.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-quant.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-quicklook_thumbnailing.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-scale.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-status.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-tty.Po
 	-rm -f ./$(DEPDIR)/libsixel_la-allocator.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-colorspace.Plo
@@ -1110,6 +1458,22 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-allocator.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-chunk.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-colorspace.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-dither.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-frame.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-fromgif.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-frompnm.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-fromsixel.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-loader.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-malloc_stub.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-pixelformat.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-quant.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-quicklook_thumbnailing.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-scale.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-status.Po
+	-rm -f ./$(DEPDIR)/liblibsixelloader_a-tty.Po
 	-rm -f ./$(DEPDIR)/libsixel_la-allocator.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-colorspace.Plo
@@ -1157,19 +1521,20 @@ uninstall-man: uninstall-man5
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am clean \
 	clean-generic clean-libLTLIBRARIES clean-libtool \
-	clean-noinstPROGRAMS cscopelist-am ctags ctags-am distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-man install-man5 install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am uninstall-libLTLIBRARIES \
-	uninstall-man uninstall-man5
+	clean-noinstLIBRARIES clean-noinstPROGRAMS cscopelist-am ctags \
+	ctags-am distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-libLTLIBRARIES install-man \
+	install-man5 install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
+	uninstall-am uninstall-libLTLIBRARIES uninstall-man \
+	uninstall-man5
 
 .PRECIOUS: Makefile
 

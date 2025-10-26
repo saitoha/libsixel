@@ -13,9 +13,57 @@ endif
 
 CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 
+noinst_LIBRARIES = liblibsixelloader.a
+
+liblibsixelloader_a_SOURCES = \
+                $(srcdir)/allocator.c \
+                $(srcdir)/allocator.h \
+                $(srcdir)/chunk.c \
+                $(srcdir)/chunk.h \
+                $(srcdir)/colorspace.c \
+                $(srcdir)/colorspace.h \
+                $(srcdir)/dither.c \
+                $(srcdir)/dither.h \
+                $(srcdir)/frame.c \
+                $(srcdir)/frame.h \
+                $(srcdir)/fromgif.c \
+                $(srcdir)/fromgif.h \
+                $(srcdir)/frompnm.c \
+                $(srcdir)/frompnm.h \
+                $(srcdir)/fromsixel.c \
+                $(srcdir)/loader.c \
+                $(srcdir)/loader.h \
+                $(srcdir)/malloc_stub.c \
+                $(srcdir)/malloc_stub.h \
+                $(srcdir)/pixelformat.c \
+                $(srcdir)/pixelformat.h \
+                $(srcdir)/quant.c \
+                $(srcdir)/quant.h \
+                $(srcdir)/scale.c \
+                $(srcdir)/status.c \
+                $(srcdir)/status.h \
+                $(srcdir)/tty.c \
+                $(srcdir)/tty.h
+if HAVE_QUICKLOOK_THUMBNAILING
+liblibsixelloader_a_SOURCES += \
+                $(srcdir)/quicklook_thumbnailing.m
+endif
+
+liblibsixelloader_a_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
+liblibsixelloader_a_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
+                $(LIBPNG_CFLAGS) \
+                $(LIBJPEG_CFLAGS) \
+                $(GDK_PIXBUF_CFLAGS) \
+                $(GD_CFLAGS) \
+                $(WIC_CFLAGS) \
+                $(COREGRAPHICS_CFLAGS) \
+                $(QUICKLOOK_CFLAGS) \
+                $(LIBCURL_CFLAGS) \
+                $(WINHTTP_CFLAGS)
+
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = \
-		$(srcdir)/output.c \
+                $(srcdir)/output.c \
 		$(srcdir)/output.h \
 		$(srcdir)/fromsixel.c \
 		$(srcdir)/tosixel.c \

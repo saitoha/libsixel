@@ -1715,6 +1715,9 @@ AS_IF([test -n "$bashcompletiondir"],
 AS_IF([test -n "$zshcompletiondir"],
       [message_zshcompletiondir=$zshcompletiondir],
       [message_zshcompletiondir=disabled])
+AS_IF([test "x$have_onnxruntime" = "xyes"],
+      [message_onnxruntime=yes],
+      [message_onnxruntime=no])
 
 echo ""
 echo ""
@@ -1727,6 +1730,7 @@ echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $message_bashcompletiondir"
 echo "       Zsh completion dir  : $message_zshcompletiondir"
 echo "       QuickLook extension : $message_quicklook_extension"
+echo "       ONNX Runtime        : $message_onnxruntime"
 echo "       WIC codec           : $message_wiccodec"
 echo "       Register WIC DLL    : $message_register_dll"
 echo "       Thumbnailer command : $message_thumbnailer"

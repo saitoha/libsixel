@@ -5,7 +5,7 @@
  *  |                        PIPELINE MAP                         |
  *  +---------------------+------------------+--------------------+
  *  | image loading (RGB) | metric kernels   | JSON emit          |
- *  |      (stb_image)    |  (MS-SSIM, etc.) | (stdout + files)   |
+ *  |  (libsixel loader)  |  (MS-SSIM, etc.) | (stdout + files)   |
  *  +---------------------+------------------+--------------------+
  *
  *  ASCII flow for the metrics modules:
@@ -27,21 +27,60 @@
 #define _POSIX_C_SOURCE 200809L
 #define _XOPEN_SOURCE 700
 
+#include "config.h"
+
+#include <ctype.h>
+#include <errno.h>
+#include <limits.h>
+#include <math.h>
+#include <stdbool.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <math.h>
-#include <errno.h>
-#include <unistd.h>
 
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_STATIC
-#define STBI_NO_HDR
-#define STBI_NO_LINEAR
-#include "../src/stb_image.h"
+#include <sixel.h>
+
+#if defined(_WIN32)
+#include <io.h>
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
+#if defined(__APPLE__)
+#include <mach-o/dyld.h>
+#endif
+
+#if defined(__linux__)
+#include <sys/stat.h>
+#include <sys/types.h>
+#endif
+
+#if defined(HAVE_ONNXRUNTIME)
+#include "onnxruntime_c_api.h"
+#endif
+
+#ifndef SIXEL_LPIPS_MODEL_DIR
+#define SIXEL_LPIPS_MODEL_DIR ""
+#endif
+
+#if !defined(PATH_MAX)
+#define PATH_MAX 4096
+#endif
+
+#if defined(_WIN32)
+#define SIXEL_PATH_SEP '\\'
+#define SIXEL_PATH_LIST_SEP ';'
+#else
+#define SIXEL_PATH_SEP '/'
+#define SIXEL_PATH_LIST_SEP ':'
+#endif
+
+#define SIXEL_LOCAL_MODELS_SEG1 ".."
+#define SIXEL_LOCAL_MODELS_SEG2 "models"
+#define SIXEL_LOCAL_MODELS_SEG3 "lpips"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -105,37 +144,6 @@ typedef struct Metrics {
     float lpips_vgg;
 } Metrics;
 
-static const char *lpips_script_source =
-    "import sys\n"
-    "def _emit_nan():\n"
-    "    print('nan')\n"
-    "    return 0\n"
-    "def main():\n"
-    "    if len(sys.argv) != 3:\n"
-    "        return _emit_nan()\n"
-    "    try:\n"
-    "        import numpy as np\n"
-    "        import torch\n"
-    "        import lpips\n"
-    "        from PIL import Image\n"
-    "    except Exception:\n"
-    "        return _emit_nan()\n"
-    "    ref = Image.open(sys.argv[1]).convert('RGB')\n"
-    "    out = Image.open(sys.argv[2]).convert('RGB')\n"
-    "    ref_arr = np.asarray(ref, dtype=np.float32) / 255.0\n"
-    "    out_arr = np.asarray(out, dtype=np.float32) / 255.0\n"
-    "    ref_t = torch.from_numpy(ref_arr.transpose(2, 0, 1)).unsqueeze(0)\n"
-    "    out_t = torch.from_numpy(out_arr.transpose(2, 0, 1)).unsqueeze(0)\n"
-    "    ref_t = ref_t * 2.0 - 1.0\n"
-    "    out_t = out_t * 2.0 - 1.0\n"
-    "    with torch.no_grad():\n"
-    "        net = lpips.LPIPS(net='vgg')\n"
-    "        dist = net(ref_t, out_t)\n"
-    "    print(float(dist.item()))\n"
-    "    return 0\n"
-    "if __name__ == '__main__':\n"
-    "    sys.exit(main())\n";
-
 /* ================================================================
  * Memory helpers
  * ================================================================ */
@@ -171,134 +179,976 @@ static void image_free(Image *img)
 }
 
 /* ================================================================
- * File loading helpers
+ * Loader bridge (libsixel -> float RGB)
  * ================================================================ */
 
-static unsigned char *read_file_to_memory(const char *path, size_t *size)
+typedef struct LoaderCapture {
+    sixel_frame_t *frame;
+} LoaderCapture;
+
+static SIXELSTATUS capture_first_frame(sixel_frame_t *frame, void *context)
 {
-    FILE *fp;
-    unsigned char *buffer;
-    unsigned char *tmp;
-    size_t capacity;
-    size_t total;
-    size_t chunk;
-    size_t nread;
-    size_t new_capacity;
+    LoaderCapture *capture;
 
-    fp = NULL;
-    buffer = NULL;
-    tmp = NULL;
-    capacity = 0;
-    total = 0;
-    chunk = 64 * 1024;
-    nread = 0;
-    new_capacity = 0;
-
-    if (strcmp(path, "-") == 0 || strcmp(path, "/dev/stdin") == 0) {
-        fp = stdin;
-    } else {
-        fp = fopen(path, "rb");
-        if (fp == NULL) {
-            fprintf(stderr, "Failed to open %s: %s\n", path, strerror(errno));
-            return NULL;
-        }
+    capture = (LoaderCapture *)context;
+    if (capture->frame == NULL) {
+        sixel_frame_ref(frame);
+        capture->frame = frame;
     }
-
-    while (1) {
-        if (total + chunk > capacity) {
-            new_capacity = capacity == 0 ? chunk : capacity * 2;
-            tmp = realloc(buffer, new_capacity);
-            if (tmp == NULL) {
-                fprintf(stderr, "realloc failed (%zu bytes)\n", new_capacity);
-                free(buffer);
-                if (fp != stdin && fp != NULL) {
-                    fclose(fp);
-                }
-                return NULL;
-            }
-            buffer = tmp;
-            capacity = new_capacity;
-        }
-        nread = fread(buffer + total, 1, chunk, fp);
-        total += nread;
-        if (nread < chunk) {
-            if (feof(fp)) {
-                break;
-            }
-            if (ferror(fp)) {
-                fprintf(stderr, "Error while reading %s\n", path);
-                free(buffer);
-                if (fp != stdin && fp != NULL) {
-                    fclose(fp);
-                }
-                return NULL;
-            }
-        }
-    }
-
-    if (fp != stdin && fp != NULL) {
-        fclose(fp);
-    }
-
-    *size = total;
-    return buffer;
+    return SIXEL_OK;
 }
 
-static int load_image(const char *path, Image *img)
+static SIXELSTATUS copy_frame_to_rgb(sixel_frame_t *frame,
+                                     sixel_allocator_t *allocator,
+                                     unsigned char **pixels,
+                                     int *width,
+                                     int *height)
 {
-    unsigned char *file_data;
-    size_t file_size;
-    int w;
-    int h;
-    int comp;
-    int target_comp;
-    unsigned char *decoded;
-    float *pixels;
-    size_t count;
-    size_t i;
+    SIXELSTATUS status;
+    int frame_width;
+    int frame_height;
+    int pixelformat;
+    size_t size;
+    unsigned char *buffer;
+    int normalized_format;
 
-    file_data = NULL;
-    file_size = 0;
-    w = 0;
-    h = 0;
-    comp = 0;
-    target_comp = 3;
-    decoded = NULL;
-    pixels = NULL;
-    count = 0;
-    i = 0;
-
-    if (strcmp(path, "-") == 0 || strcmp(path, "/dev/stdin") == 0) {
-        file_data = read_file_to_memory(path, &file_size);
-        if (file_data == NULL) {
-            return -1;
-        }
-        decoded = stbi_load_from_memory(
-            file_data, (int)file_size, &w, &h, &comp, target_comp);
-        free(file_data);
-    } else {
-        decoded = stbi_load(path, &w, &h, &comp, target_comp);
+    frame_width = sixel_frame_get_width(frame);
+    frame_height = sixel_frame_get_height(frame);
+    status = sixel_frame_strip_alpha(frame, NULL);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
+    pixelformat = sixel_frame_get_pixelformat(frame);
+    size = (size_t)frame_width * (size_t)frame_height * 3u;
+    buffer = (unsigned char *)sixel_allocator_malloc(allocator, size);
+    if (buffer == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    if (pixelformat == SIXEL_PIXELFORMAT_RGB888) {
+        memcpy(buffer, sixel_frame_get_pixels(frame), size);
+    } else {
+        normalized_format = pixelformat;
+        status = sixel_helper_normalize_pixelformat(
+            buffer,
+            &normalized_format,
+            sixel_frame_get_pixels(frame),
+            pixelformat,
+            frame_width,
+            frame_height);
+        if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(allocator, buffer);
+            return status;
+        }
+    }
+    *pixels = buffer;
+    *width = frame_width;
+    *height = frame_height;
+    return SIXEL_OK;
+}
 
-    if (decoded == NULL) {
-        fprintf(stderr, "stb_image failed: %s\n", stbi_failure_reason());
+static int load_image(const char *path,
+                      sixel_allocator_t *allocator,
+                      Image *img)
+{
+    LoaderCapture capture;
+    SIXELSTATUS status;
+    unsigned char *pixels;
+    int width;
+    int height;
+    float *converted;
+    size_t count;
+    size_t index;
+
+    capture.frame = NULL;
+    pixels = NULL;
+    width = 0;
+    height = 0;
+    converted = NULL;
+    count = 0;
+    index = 0;
+
+    status = sixel_helper_load_image_file(path,
+                                          1,
+                                          0,
+                                          SIXEL_PALETTE_MAX,
+                                          NULL,
+                                          SIXEL_LOOP_AUTO,
+                                          capture_first_frame,
+                                          0,
+                                          NULL,
+                                          NULL,
+                                          &capture,
+                                          allocator);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "libsixel loader failed for %s: %s\n",
+                path,
+                sixel_helper_format_error(status));
         return -1;
     }
-
-    count = (size_t)w * (size_t)h * (size_t)target_comp;
-    pixels = (float *)xmalloc(count * sizeof(float));
-    for (i = 0; i < count; ++i) {
-        pixels[i] = decoded[i] / 255.0f;
+    status = copy_frame_to_rgb(capture.frame,
+                               allocator,
+                               &pixels,
+                               &width,
+                               &height);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "libsixel pixel conversion failed for %s: %s\n",
+                path,
+                sixel_helper_format_error(status));
+        if (capture.frame != NULL) {
+            sixel_frame_unref(capture.frame);
+        }
+        return -1;
     }
+    count = (size_t)width * (size_t)height * 3u;
+    converted = (float *)xmalloc(count * sizeof(float));
+    for (index = 0; index < count; ++index) {
+        converted[index] = pixels[index] / 255.0f;
+    }
+    img->width = width;
+    img->height = height;
+    img->channels = 3;
+    img->pixels = converted;
 
-    stbi_image_free(decoded);
-
-    img->width = w;
-    img->height = h;
-    img->channels = target_comp;
-    img->pixels = pixels;
+    sixel_allocator_free(allocator, pixels);
+    if (capture.frame != NULL) {
+        sixel_frame_unref(capture.frame);
+    }
     return 0;
 }
+
+#if defined(HAVE_ONNXRUNTIME)
+/* ================================================================
+ * LPIPS helper plumbing (model discovery + tensor formatting)
+ * ================================================================ */
+
+typedef struct image_f32 {
+    int width;
+    int height;
+    float *nchw;
+} image_f32_t;
+
+static const OrtApi *g_lpips_api = NULL;
+static char g_lpips_binary_dir[PATH_MAX];
+static int g_lpips_binary_dir_state = 0;
+static char g_lpips_diff_model[PATH_MAX];
+static char g_lpips_feat_model[PATH_MAX];
+static int g_lpips_models_ready = 0;
+
+static int path_accessible(char const *path)
+{
+#if defined(_WIN32)
+    int rc;
+
+    rc = _access(path, 4);
+    return rc == 0;
+#else
+    return access(path, R_OK) == 0;
+#endif
+}
+
+static int join_path(char const *dir,
+                     char const *leaf,
+                     char *buffer,
+                     size_t size)
+{
+    size_t dir_len;
+    size_t leaf_len;
+    int need_sep;
+    size_t total;
+
+    dir_len = strlen(dir);
+    leaf_len = strlen(leaf);
+    need_sep = 0;
+    if (leaf_len > 0 && (leaf[0] == '/' || leaf[0] == '\\')) {
+        dir_len = 0;
+    } else if (dir_len > 0 && dir[dir_len - 1] != SIXEL_PATH_SEP) {
+        need_sep = 1;
+    }
+    total = dir_len + need_sep + leaf_len + 1u;
+    if (total > size) {
+        return -1;
+    }
+    if (dir_len > 0) {
+        memcpy(buffer, dir, dir_len);
+    }
+    if (need_sep) {
+        buffer[dir_len] = SIXEL_PATH_SEP;
+        ++dir_len;
+    }
+    if (leaf_len > 0) {
+        memcpy(buffer + dir_len, leaf, leaf_len);
+        dir_len += leaf_len;
+    }
+    buffer[dir_len] = '\0';
+    return 0;
+}
+
+static int resolve_from_path_env(char const *name,
+                                 char *buffer,
+                                 size_t size)
+{
+    char const *env;
+    char const *cursor;
+    char const *separator;
+    size_t chunk_len;
+
+    env = getenv("PATH");
+    if (env == NULL || *env == '\0') {
+        return -1;
+    }
+    cursor = env;
+    while (*cursor != '\0') {
+        separator = strchr(cursor, SIXEL_PATH_LIST_SEP);
+        if (separator == NULL) {
+            chunk_len = strlen(cursor);
+        } else {
+            chunk_len = (size_t)(separator - cursor);
+        }
+        if (chunk_len >= size) {
+            return -1;
+        }
+        memcpy(buffer, cursor, chunk_len);
+        buffer[chunk_len] = '\0';
+        if (join_path(buffer, name, buffer, size) != 0) {
+            return -1;
+        }
+        if (path_accessible(buffer)) {
+            return 0;
+        }
+        if (separator == NULL) {
+            break;
+        }
+        cursor = separator + 1;
+    }
+    return -1;
+}
+
+static int resolve_executable_dir(char const *argv0,
+                                  char *buffer,
+                                  size_t size)
+{
+    char candidate[PATH_MAX];
+    size_t length;
+    char *slash;
+#if defined(_WIN32)
+    DWORD written;
+#elif defined(__APPLE__)
+    uint32_t bufsize;
+#elif defined(__linux__)
+    ssize_t count;
+#endif
+
+    candidate[0] = '\0';
+#if defined(_WIN32)
+    written = GetModuleFileNameA(NULL, candidate, (DWORD)sizeof(candidate));
+    if (written == 0 || written >= sizeof(candidate)) {
+        return -1;
+    }
+#elif defined(__APPLE__)
+    bufsize = (uint32_t)sizeof(candidate);
+    if (_NSGetExecutablePath(candidate, &bufsize) != 0) {
+        return -1;
+    }
+#elif defined(__linux__)
+    count = readlink("/proc/self/exe", candidate, sizeof(candidate) - 1u);
+    if (count < 0 || count >= (ssize_t)sizeof(candidate)) {
+        return -1;
+    }
+    candidate[count] = '\0';
+#else
+    if (argv0 == NULL) {
+        return -1;
+    }
+    if (strchr(argv0, '/') != NULL || strchr(argv0, '\\') != NULL) {
+        if (strlen(argv0) >= sizeof(candidate)) {
+            return -1;
+        }
+        strcpy(candidate, argv0);
+    } else if (resolve_from_path_env(argv0, candidate,
+                                     sizeof(candidate)) != 0) {
+        return -1;
+    }
+    {
+        char *resolved;
+
+        resolved = realpath(candidate, NULL);
+        if (resolved == NULL) {
+            return -1;
+        }
+        if (strlen(resolved) >= sizeof(candidate)) {
+            free(resolved);
+            return -1;
+        }
+        strcpy(candidate, resolved);
+        free(resolved);
+    }
+#endif
+#if defined(_WIN32)
+    {
+        char *resolved;
+
+        resolved = _fullpath(NULL, candidate, 0u);
+        if (resolved != NULL) {
+            if (strlen(resolved) < sizeof(candidate)) {
+                strcpy(candidate, resolved);
+            }
+            free(resolved);
+        }
+    }
+#endif
+    length = strlen(candidate);
+    if (length == 0) {
+        return -1;
+    }
+    slash = strrchr(candidate, '/');
+#if defined(_WIN32)
+    if (slash == NULL) {
+        slash = strrchr(candidate, '\\');
+    }
+#endif
+    if (slash == NULL) {
+        return -1;
+    }
+    *slash = '\0';
+    if (strlen(candidate) + 1u > size) {
+        return -1;
+    }
+    strcpy(buffer, candidate);
+    return 0;
+}
+
+static int build_local_model_path(char const *binary_dir,
+                                  char const *name,
+                                  char *buffer,
+                                  size_t size)
+{
+    char stage1[PATH_MAX];
+    char stage2[PATH_MAX];
+
+    if (binary_dir == NULL || binary_dir[0] == '\0') {
+        return -1;
+    }
+    if (join_path(binary_dir, SIXEL_LOCAL_MODELS_SEG1,
+                  stage1, sizeof(stage1)) != 0) {
+        return -1;
+    }
+    if (join_path(stage1, SIXEL_LOCAL_MODELS_SEG2,
+                  stage2, sizeof(stage2)) != 0) {
+        return -1;
+    }
+    if (join_path(stage2, SIXEL_LOCAL_MODELS_SEG3,
+                  stage1, sizeof(stage1)) != 0) {
+        return -1;
+    }
+    if (join_path(stage1, name, buffer, size) != 0) {
+        return -1;
+    }
+    return 0;
+}
+
+static int find_model(char const *binary_dir,
+                      char const *name,
+                      char *buffer,
+                      size_t size)
+{
+    if (binary_dir != NULL && binary_dir[0] != '\0') {
+        if (build_local_model_path(binary_dir, name, buffer, size) == 0) {
+            if (path_accessible(buffer)) {
+                return 0;
+            }
+        }
+    }
+    if (SIXEL_LPIPS_MODEL_DIR[0] != '\0') {
+        if (join_path(SIXEL_LPIPS_MODEL_DIR, name, buffer, size) == 0) {
+            if (path_accessible(buffer)) {
+                return 0;
+            }
+        }
+    }
+    return -1;
+}
+
+static void set_lpips_binary_dir(char const *argv0)
+{
+    if (g_lpips_binary_dir_state != 0) {
+        return;
+    }
+    if (resolve_executable_dir(argv0,
+                               g_lpips_binary_dir,
+                               sizeof(g_lpips_binary_dir)) == 0) {
+        g_lpips_binary_dir_state = 1;
+    } else {
+        g_lpips_binary_dir[0] = '\0';
+        g_lpips_binary_dir_state = -1;
+    }
+}
+
+static int ensure_lpips_models(void)
+{
+    if (g_lpips_models_ready) {
+        return 0;
+    }
+    if (find_model(g_lpips_binary_dir,
+                   "lpips_diff.onnx",
+                   g_lpips_diff_model,
+                   sizeof(g_lpips_diff_model)) != 0) {
+        fprintf(stderr,
+                "Warning: lpips_diff.onnx not found.\n");
+        return -1;
+    }
+    if (find_model(g_lpips_binary_dir,
+                   "lpips_feature.onnx",
+                   g_lpips_feat_model,
+                   sizeof(g_lpips_feat_model)) != 0) {
+        fprintf(stderr,
+                "Warning: lpips_feature.onnx not found.\n");
+        return -1;
+    }
+    g_lpips_models_ready = 1;
+    return 0;
+}
+
+static void free_image_f32(image_f32_t *image)
+{
+    if (image->nchw != NULL) {
+        free(image->nchw);
+        image->nchw = NULL;
+    }
+}
+
+static int convert_image_to_nchw(const Image *src, image_f32_t *dst)
+{
+    size_t plane_size;
+    size_t index;
+    float *buffer;
+
+    if (src->channels != 3) {
+        return -1;
+    }
+    plane_size = (size_t)src->width * (size_t)src->height;
+    buffer = (float *)malloc(plane_size * 3u * sizeof(float));
+    if (buffer == NULL) {
+        return -1;
+    }
+    for (index = 0; index < plane_size; ++index) {
+        buffer[plane_size * 0u + index] =
+            src->pixels[index * 3u + 0u] * 2.0f - 1.0f;
+        buffer[plane_size * 1u + index] =
+            src->pixels[index * 3u + 1u] * 2.0f - 1.0f;
+        buffer[plane_size * 2u + index] =
+            src->pixels[index * 3u + 2u] * 2.0f - 1.0f;
+    }
+    dst->width = src->width;
+    dst->height = src->height;
+    dst->nchw = buffer;
+    return 0;
+}
+
+static float *bilinear_resize_nchw3(float const *src,
+                                    int src_width,
+                                    int src_height,
+                                    int dst_width,
+                                    int dst_height)
+{
+    float *dst;
+    int channel;
+    int y;
+    int x;
+    float scale_y;
+    float scale_x;
+    float fy;
+    float fx;
+    int y0;
+    int x0;
+    float wy;
+    float wx;
+    size_t src_stride;
+    size_t dst_index;
+
+    dst = (float *)malloc((size_t)3 * (size_t)dst_height *
+                          (size_t)dst_width * sizeof(float));
+    if (dst == NULL) {
+        return NULL;
+    }
+    src_stride = (size_t)src_width * (size_t)src_height;
+    for (channel = 0; channel < 3; ++channel) {
+        for (y = 0; y < dst_height; ++y) {
+            scale_y = (float)src_height / (float)dst_height;
+            fy = (float)y * scale_y;
+            y0 = (int)fy;
+            if (y0 >= src_height - 1) {
+                y0 = src_height - 2;
+            }
+            wy = fy - (float)y0;
+            for (x = 0; x < dst_width; ++x) {
+                scale_x = (float)src_width / (float)dst_width;
+                fx = (float)x * scale_x;
+                x0 = (int)fx;
+                if (x0 >= src_width - 1) {
+                    x0 = src_width - 2;
+                }
+                wx = fx - (float)x0;
+                dst_index = (size_t)channel * (size_t)dst_width *
+                            (size_t)dst_height +
+                            (size_t)y * (size_t)dst_width + (size_t)x;
+                dst[dst_index] =
+                    (1.0f - wx) * (1.0f - wy) *
+                        src[(size_t)channel * src_stride +
+                            (size_t)y0 * (size_t)src_width + (size_t)x0] +
+                    wx * (1.0f - wy) *
+                        src[(size_t)channel * src_stride +
+                            (size_t)y0 * (size_t)src_width +
+                            (size_t)(x0 + 1)] +
+                    (1.0f - wx) * wy *
+                        src[(size_t)channel * src_stride +
+                            (size_t)(y0 + 1) * (size_t)src_width +
+                            (size_t)x0] +
+                    wx * wy *
+                        src[(size_t)channel * src_stride +
+                            (size_t)(y0 + 1) * (size_t)src_width +
+                            (size_t)(x0 + 1)];
+            }
+        }
+    }
+    return dst;
+}
+
+static int ort_status_to_error(OrtStatus *status)
+{
+    char const *message;
+
+    if (status == NULL) {
+        return 0;
+    }
+    message = g_lpips_api->GetErrorMessage(status);
+    fprintf(stderr,
+            "ONNX Runtime error: %s\n",
+            message != NULL ? message : "(null)");
+    g_lpips_api->ReleaseStatus(status);
+    return -1;
+}
+
+static void get_first_input_shape(OrtSession *session,
+                                  int64_t *dims,
+                                  size_t *rank)
+{
+    OrtTypeInfo *type_info;
+    OrtTensorTypeAndShapeInfo const *shape_info;
+
+    type_info = NULL;
+    shape_info = NULL;
+    if (ort_status_to_error(g_lpips_api->SessionGetInputTypeInfo(
+            session, 0, &type_info)) != 0) {
+        return;
+    }
+    if (ort_status_to_error(g_lpips_api->CastTypeInfoToTensorInfo(
+            type_info, &shape_info)) != 0) {
+        g_lpips_api->ReleaseTypeInfo(type_info);
+        return;
+    }
+    if (ort_status_to_error(g_lpips_api->GetDimensionsCount(
+            shape_info, rank)) != 0) {
+        g_lpips_api->ReleaseTypeInfo(type_info);
+        return;
+    }
+    (void)ort_status_to_error(g_lpips_api->GetDimensions(
+        shape_info, dims, *rank));
+    g_lpips_api->ReleaseTypeInfo(type_info);
+}
+
+static int tail_index(char const *name)
+{
+    int length;
+    int index;
+
+    length = (int)strlen(name);
+    index = length - 1;
+    while (index >= 0 && isdigit((unsigned char)name[index])) {
+        --index;
+    }
+    if (index == length - 1) {
+        return -1;
+    }
+    return atoi(name + index + 1);
+}
+
+static int run_lpips(char const *diff_model,
+                     char const *feat_model,
+                     image_f32_t *image_a,
+                     image_f32_t *image_b,
+                     float *result_out)
+{
+    OrtEnv *env;
+    OrtAllocator *allocator;
+    OrtSessionOptions *options;
+    OrtSession *diff_session;
+    OrtSession *feat_session;
+    OrtMemoryInfo *memory_info;
+    OrtValue *tensor_a;
+    OrtValue *tensor_b;
+    OrtValue **features_a;
+    OrtValue **features_b;
+    OrtValue const **diff_values;
+    OrtValue *diff_outputs[1];
+    char *feat_input_name;
+    char **feat_output_names;
+    char **diff_input_names;
+    char *diff_output_name;
+    int64_t feat_dims[8];
+    size_t feat_rank;
+    size_t feat_outputs;
+    size_t diff_inputs;
+    int target_width;
+    int target_height;
+    float *resized_a;
+    float *resized_b;
+    float const *tensor_data_a;
+    float const *tensor_data_b;
+    size_t plane_size;
+    size_t i;
+    int64_t tensor_shape[4];
+    OrtStatus *status;
+    int rc;
+
+    env = NULL;
+    allocator = NULL;
+    options = NULL;
+    diff_session = NULL;
+    feat_session = NULL;
+    memory_info = NULL;
+    tensor_a = NULL;
+    tensor_b = NULL;
+    features_a = NULL;
+    features_b = NULL;
+    diff_values = NULL;
+    diff_outputs[0] = NULL;
+    feat_input_name = NULL;
+    feat_output_names = NULL;
+    diff_input_names = NULL;
+    diff_output_name = NULL;
+    target_width = image_a->width;
+    target_height = image_a->height;
+    resized_a = NULL;
+    resized_b = NULL;
+    tensor_data_a = image_a->nchw;
+    tensor_data_b = image_b->nchw;
+    feat_rank = 0;
+    feat_outputs = 0;
+    diff_inputs = 0;
+    status = NULL;
+    rc = -1;
+    *result_out = NAN;
+
+    g_lpips_api = OrtGetApiBase()->GetApi(ORT_API_VERSION);
+    if (g_lpips_api == NULL) {
+        fprintf(stderr, "ONNX Runtime API unavailable.\n");
+        goto cleanup;
+    }
+
+    status = g_lpips_api->CreateEnv(ORT_LOGGING_LEVEL_WARNING,
+                                    "lpips",
+                                    &env);
+    if (ort_status_to_error(status) != 0) {
+        goto cleanup;
+    }
+    status = g_lpips_api->GetAllocatorWithDefaultOptions(&allocator);
+    if (ort_status_to_error(status) != 0) {
+        goto cleanup;
+    }
+    status = g_lpips_api->CreateSessionOptions(&options);
+    if (ort_status_to_error(status) != 0) {
+        goto cleanup;
+    }
+    status = g_lpips_api->CreateSession(env, diff_model, options,
+                                        &diff_session);
+    if (ort_status_to_error(status) != 0) {
+        goto cleanup;
+    }
+    status = g_lpips_api->CreateSession(env, feat_model, options,
+                                        &feat_session);
+    if (ort_status_to_error(status) != 0) {
+        goto cleanup;
+    }
+
+    get_first_input_shape(feat_session, feat_dims, &feat_rank);
+    if (feat_rank >= 4 && feat_dims[3] > 0) {
+        target_width = (int)feat_dims[3];
+    }
+    if (feat_rank >= 4 && feat_dims[2] > 0) {
+        target_height = (int)feat_dims[2];
+    }
+
+    if (image_a->width != target_width ||
+        image_a->height != target_height) {
+        resized_a = bilinear_resize_nchw3(image_a->nchw,
+                                          image_a->width,
+                                          image_a->height,
+                                          target_width,
+                                          target_height);
+        if (resized_a == NULL) {
+            fprintf(stderr,
+                    "Warning: unable to resize LPIPS reference tensor.\n");
+            goto cleanup;
+        }
+        tensor_data_a = resized_a;
+    }
+    if (image_b->width != target_width ||
+        image_b->height != target_height) {
+        resized_b = bilinear_resize_nchw3(image_b->nchw,
+                                          image_b->width,
+                                          image_b->height,
+                                          target_width,
+                                          target_height);
+        if (resized_b == NULL) {
+            fprintf(stderr,
+                    "Warning: unable to resize LPIPS output tensor.\n");
+            goto cleanup;
+        }
+        tensor_data_b = resized_b;
+    }
+
+    plane_size = (size_t)target_width * (size_t)target_height;
+    tensor_shape[0] = 1;
+    tensor_shape[1] = 3;
+    tensor_shape[2] = target_height;
+    tensor_shape[3] = target_width;
+
+    status = g_lpips_api->CreateCpuMemoryInfo(OrtArenaAllocator,
+                                              OrtMemTypeDefault,
+                                              &memory_info);
+    if (ort_status_to_error(status) != 0) {
+        goto cleanup;
+    }
+    status = g_lpips_api->CreateTensorWithDataAsOrtValue(
+        memory_info,
+        (void *)tensor_data_a,
+        plane_size * 3u * sizeof(float),
+        tensor_shape,
+        4,
+        ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
+        &tensor_a);
+    if (ort_status_to_error(status) != 0) {
+        goto cleanup;
+    }
+    status = g_lpips_api->CreateTensorWithDataAsOrtValue(
+        memory_info,
+        (void *)tensor_data_b,
+        plane_size * 3u * sizeof(float),
+        tensor_shape,
+        4,
+        ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT,
+        &tensor_b);
+    if (ort_status_to_error(status) != 0) {
+        goto cleanup;
+    }
+
+    status = g_lpips_api->SessionGetInputName(feat_session,
+                                              0,
+                                              allocator,
+                                              &feat_input_name);
+    if (ort_status_to_error(status) != 0) {
+        goto cleanup;
+    }
+    status = g_lpips_api->SessionGetOutputCount(feat_session,
+                                                &feat_outputs);
+    if (ort_status_to_error(status) != 0) {
+        goto cleanup;
+    }
+    feat_output_names = (char **)calloc(feat_outputs, sizeof(char *));
+    features_a = (OrtValue **)calloc(feat_outputs, sizeof(OrtValue *));
+    features_b = (OrtValue **)calloc(feat_outputs, sizeof(OrtValue *));
+    if (feat_output_names == NULL ||
+        features_a == NULL ||
+        features_b == NULL) {
+        fprintf(stderr,
+                "Warning: out of memory while preparing LPIPS features.\n");
+        goto cleanup;
+    }
+    for (i = 0; i < feat_outputs; ++i) {
+        status = g_lpips_api->SessionGetOutputName(feat_session,
+                                                   i,
+                                                   allocator,
+                                                   &feat_output_names[i]);
+        if (ort_status_to_error(status) != 0) {
+            goto cleanup;
+        }
+    }
+    status = g_lpips_api->Run(feat_session,
+                              NULL,
+                              (char const *const *)&feat_input_name,
+                              (OrtValue const *const *)&tensor_a,
+                              1,
+                              (char const *const *)feat_output_names,
+                              feat_outputs,
+                              features_a);
+    if (ort_status_to_error(status) != 0) {
+        goto cleanup;
+    }
+    status = g_lpips_api->Run(feat_session,
+                              NULL,
+                              (char const *const *)&feat_input_name,
+                              (OrtValue const *const *)&tensor_b,
+                              1,
+                              (char const *const *)feat_output_names,
+                              feat_outputs,
+                              features_b);
+    if (ort_status_to_error(status) != 0) {
+        goto cleanup;
+    }
+
+    status = g_lpips_api->SessionGetInputCount(diff_session,
+                                               &diff_inputs);
+    if (ort_status_to_error(status) != 0) {
+        goto cleanup;
+    }
+    diff_input_names = (char **)calloc(diff_inputs, sizeof(char *));
+    diff_values = (OrtValue const **)calloc(diff_inputs,
+                                            sizeof(OrtValue *));
+    if (diff_input_names == NULL || diff_values == NULL) {
+        fprintf(stderr,
+                "Warning: out of memory while preparing LPIPS diff inputs.\n");
+        goto cleanup;
+    }
+    for (i = 0; i < diff_inputs; ++i) {
+        status = g_lpips_api->SessionGetInputName(diff_session,
+                                                  i,
+                                                  allocator,
+                                                  &diff_input_names[i]);
+        if (ort_status_to_error(status) != 0) {
+            goto cleanup;
+        }
+        if (diff_input_names[i] == NULL) {
+            continue;
+        }
+        if (strncmp(diff_input_names[i], "feat_x_", 7) == 0) {
+            int index;
+
+            index = tail_index(diff_input_names[i]);
+            if (index >= 0 && (size_t)index < feat_outputs) {
+                diff_values[i] = features_a[index];
+            }
+        } else if (strncmp(diff_input_names[i], "feat_y_", 7) == 0) {
+            int index;
+
+            index = tail_index(diff_input_names[i]);
+            if (index >= 0 && (size_t)index < feat_outputs) {
+                diff_values[i] = features_b[index];
+            }
+        }
+    }
+
+    status = g_lpips_api->SessionGetOutputName(diff_session,
+                                               0,
+                                               allocator,
+                                               &diff_output_name);
+    if (ort_status_to_error(status) != 0) {
+        goto cleanup;
+    }
+    status = g_lpips_api->Run(diff_session,
+                              NULL,
+                              (char const *const *)diff_input_names,
+                              diff_values,
+                              diff_inputs,
+                              (char const *const *)&diff_output_name,
+                              1,
+                              diff_outputs);
+    if (ort_status_to_error(status) != 0) {
+        goto cleanup;
+    }
+
+    if (diff_outputs[0] != NULL) {
+        float *result_data;
+
+        result_data = NULL;
+        status = g_lpips_api->GetTensorMutableData(diff_outputs[0],
+                                                   (void **)&result_data);
+        if (ort_status_to_error(status) != 0) {
+            goto cleanup;
+        }
+        if (result_data != NULL) {
+            *result_out = result_data[0];
+            rc = 0;
+        }
+    }
+
+cleanup:
+    if (diff_outputs[0] != NULL) {
+        g_lpips_api->ReleaseValue(diff_outputs[0]);
+    }
+    if (diff_output_name != NULL) {
+        g_lpips_api->AllocatorFree(allocator, diff_output_name);
+    }
+    if (diff_input_names != NULL) {
+        for (i = 0; i < diff_inputs; ++i) {
+            if (diff_input_names[i] != NULL) {
+                g_lpips_api->AllocatorFree(allocator, diff_input_names[i]);
+            }
+        }
+        free(diff_input_names);
+    }
+    if (diff_values != NULL) {
+        free(diff_values);
+    }
+    if (feat_output_names != NULL) {
+        for (i = 0; i < feat_outputs; ++i) {
+            if (feat_output_names[i] != NULL) {
+                g_lpips_api->AllocatorFree(allocator,
+                                           feat_output_names[i]);
+            }
+        }
+        free(feat_output_names);
+    }
+    if (features_a != NULL) {
+        for (i = 0; i < feat_outputs; ++i) {
+            if (features_a[i] != NULL) {
+                g_lpips_api->ReleaseValue(features_a[i]);
+            }
+        }
+        free(features_a);
+    }
+    if (features_b != NULL) {
+        for (i = 0; i < feat_outputs; ++i) {
+            if (features_b[i] != NULL) {
+                g_lpips_api->ReleaseValue(features_b[i]);
+            }
+        }
+        free(features_b);
+    }
+    if (feat_input_name != NULL) {
+        g_lpips_api->AllocatorFree(allocator, feat_input_name);
+    }
+    if (tensor_a != NULL) {
+        g_lpips_api->ReleaseValue(tensor_a);
+    }
+    if (tensor_b != NULL) {
+        g_lpips_api->ReleaseValue(tensor_b);
+    }
+    if (memory_info != NULL) {
+        g_lpips_api->ReleaseMemoryInfo(memory_info);
+    }
+    if (feat_session != NULL) {
+        g_lpips_api->ReleaseSession(feat_session);
+    }
+    if (diff_session != NULL) {
+        g_lpips_api->ReleaseSession(diff_session);
+    }
+    if (options != NULL) {
+        g_lpips_api->ReleaseSessionOptions(options);
+    }
+    if (env != NULL) {
+        g_lpips_api->ReleaseEnv(env);
+    }
+    if (resized_a != NULL) {
+        free(resized_a);
+    }
+    if (resized_b != NULL) {
+        free(resized_b);
+    }
+    return rc;
+}
+#endif /* HAVE_ONNXRUNTIME */
 
 /* ================================================================
  * Array math helpers
@@ -332,24 +1182,6 @@ static float clamp_float(float v, float min_v, float max_v)
         result = max_v;
     }
     return result;
-}
-
-static unsigned char float_to_byte(float v)
-{
-    float scaled;
-    int ivalue;
-    unsigned char byte;
-
-    scaled = clamp_float(v, 0.0f, 1.0f) * 255.0f + 0.5f;
-    ivalue = (int)scaled;
-    if (ivalue < 0) {
-        ivalue = 0;
-    }
-    if (ivalue > 255) {
-        ivalue = 255;
-    }
-    byte = (unsigned char)ivalue;
-    return byte;
 }
 
 /* ================================================================
@@ -1858,148 +2690,55 @@ static Metrics evaluate_metrics(const Image *ref_img, const Image *out_img)
 }
 
 /* ================================================================
- * Optional LPIPS bridge (Python helper)
+ * LPIPS metric integration (ONNX Runtime)
  * ================================================================ */
-
-static int write_temp_ppm(const Image *img, char *templ_path,
-                          size_t templ_size)
-{
-    int fd;
-    FILE *fp;
-    size_t pixels;
-    size_t i;
-    unsigned char pixel[3];
-    int width;
-    int height;
-
-    if (templ_size < 1) {
-        return -1;
-    }
-    fd = mkstemp(templ_path);
-    if (fd < 0) {
-        return -1;
-    }
-    fp = fdopen(fd, "wb");
-    if (fp == NULL) {
-        close(fd);
-        unlink(templ_path);
-        return -1;
-    }
-
-    width = img->width;
-    height = img->height;
-    if (fprintf(fp, "P6\n%d %d\n255\n", width, height) < 0) {
-        fclose(fp);
-        unlink(templ_path);
-        return -1;
-    }
-
-    pixels = (size_t)width * (size_t)height;
-    for (i = 0; i < pixels; ++i) {
-        pixel[0] = float_to_byte(img->pixels[i * 3 + 0]);
-        pixel[1] = float_to_byte(img->pixels[i * 3 + 1]);
-        pixel[2] = float_to_byte(img->pixels[i * 3 + 2]);
-        if (fwrite(pixel, sizeof(unsigned char), 3, fp) != 3) {
-            fclose(fp);
-            unlink(templ_path);
-            return -1;
-        }
-    }
-
-    if (fclose(fp) != 0) {
-        unlink(templ_path);
-        return -1;
-    }
-    return 0;
-}
-
-static int write_temp_script(char *templ_path, size_t templ_size)
-{
-    int fd;
-    FILE *fp;
-
-    if (templ_size < 1) {
-        return -1;
-    }
-    fd = mkstemp(templ_path);
-    if (fd < 0) {
-        return -1;
-    }
-    fp = fdopen(fd, "w");
-    if (fp == NULL) {
-        close(fd);
-        unlink(templ_path);
-        return -1;
-    }
-    if (fputs(lpips_script_source, fp) == EOF) {
-        fclose(fp);
-        unlink(templ_path);
-        return -1;
-    }
-    if (fclose(fp) != 0) {
-        unlink(templ_path);
-        return -1;
-    }
-    return 0;
-}
 
 static float compute_lpips_vgg(const Image *ref_img, const Image *out_img)
 {
-    char ref_template[] = "/tmp/libsixel_lpips_ref_XXXXXX";
-    char out_template[] = "/tmp/libsixel_lpips_out_XXXXXX";
-    char script_template[] = "/tmp/libsixel_lpips_script_XXXXXX";
-    float result;
-    char command[512];
-    FILE *pipe;
-    char buffer[256];
-    char *endptr;
-    size_t len;
-    int status;
+    float value;
 
-    result = NAN;
-    if (write_temp_ppm(ref_img, ref_template, sizeof(ref_template)) != 0) {
-        return result;
-    }
-    if (write_temp_ppm(out_img, out_template, sizeof(out_template)) != 0) {
-        unlink(ref_template);
-        return result;
-    }
-    if (write_temp_script(script_template, sizeof(script_template)) != 0) {
-        unlink(ref_template);
-        unlink(out_template);
-        return result;
-    }
+    value = NAN;
+#if defined(HAVE_ONNXRUNTIME)
+    image_f32_t ref_tensor;
+    image_f32_t out_tensor;
+    float distance;
 
-    len = snprintf(command, sizeof(command),
-                   "python3 %s %s %s", script_template, ref_template,
-                   out_template);
-    if (len >= sizeof(command)) {
-        unlink(ref_template);
-        unlink(out_template);
-        unlink(script_template);
-        return result;
-    }
+    ref_tensor.width = 0;
+    ref_tensor.height = 0;
+    ref_tensor.nchw = NULL;
+    out_tensor = ref_tensor;
+    distance = NAN;
 
-    pipe = popen(command, "r");
-    if (pipe == NULL) {
-        unlink(ref_template);
-        unlink(out_template);
-        unlink(script_template);
-        return result;
+    if (convert_image_to_nchw(ref_img, &ref_tensor) != 0) {
+        fprintf(stderr,
+                "Warning: unable to convert reference image for LPIPS.\n");
+        goto done;
     }
-    if (fgets(buffer, sizeof(buffer), pipe) != NULL) {
-        result = strtof(buffer, &endptr);
-        if (endptr == buffer) {
-            result = NAN;
-        }
+    if (convert_image_to_nchw(out_img, &out_tensor) != 0) {
+        fprintf(stderr,
+                "Warning: unable to convert output image for LPIPS.\n");
+        goto done;
     }
-    status = pclose(pipe);
-    (void)status;
+    if (ensure_lpips_models() != 0) {
+        goto done;
+    }
+    if (run_lpips(g_lpips_diff_model,
+                  g_lpips_feat_model,
+                  &ref_tensor,
+                  &out_tensor,
+                  &distance) != 0) {
+        goto done;
+    }
+    value = distance;
 
-    unlink(ref_template);
-    unlink(out_template);
-    unlink(script_template);
-    return result;
+done:
+    free_image_f32(&ref_tensor);
+    free_image_f32(&out_tensor);
+#else
+    (void)ref_img;
+    (void)out_img;
+#endif
+    return value;
 }
 
 typedef struct MetricItem {
@@ -2207,12 +2946,16 @@ int main(int argc, char **argv)
     size_t path_len;
     char *json_path;
     FILE *fp;
+    sixel_allocator_t *allocator;
+    SIXELSTATUS loader_status;
 
     ref_img.width = 0;
     ref_img.height = 0;
     ref_img.channels = 0;
     ref_img.pixels = NULL;
     out_img = ref_img;
+    allocator = NULL;
+    loader_status = SIXEL_OK;
 
     status = parse_args(argc, argv, &opts);
     if (status != 0) {
@@ -2220,13 +2963,31 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    if (load_image(opts.ref_path, &ref_img) != 0) {
-        fprintf(stderr, "Failed to load reference image\n");
+    loader_status = sixel_allocator_new(&allocator,
+                                        malloc,
+                                        calloc,
+                                        realloc,
+                                        free);
+    if (SIXEL_FAILED(loader_status) || allocator == NULL) {
+        fprintf(stderr,
+                "Failed to allocate loader: %s\n",
+                sixel_helper_format_error(loader_status));
         return EXIT_FAILURE;
     }
-    if (load_image(opts.out_path, &out_img) != 0) {
+
+#if defined(HAVE_ONNXRUNTIME)
+    set_lpips_binary_dir(argv[0]);
+#endif
+
+    if (load_image(opts.ref_path, allocator, &ref_img) != 0) {
+        fprintf(stderr, "Failed to load reference image\n");
+        sixel_allocator_unref(allocator);
+        return EXIT_FAILURE;
+    }
+    if (load_image(opts.out_path, allocator, &out_img) != 0) {
         fprintf(stderr, "Failed to load output image\n");
         image_free(&ref_img);
+        sixel_allocator_unref(allocator);
         return EXIT_FAILURE;
     }
 
@@ -2262,5 +3023,8 @@ int main(int argc, char **argv)
     free(json_path);
     image_free(&ref_img);
     image_free(&out_img);
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
+    }
     return EXIT_SUCCESS;
 }
