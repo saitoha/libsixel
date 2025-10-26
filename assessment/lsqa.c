@@ -17,23 +17,35 @@
 
 #include "config.h"
 
-#include <ctype.h>
-#include <errno.h>
-#include <limits.h>
-#include <math.h>
-#include <stdbool.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#if HAVE_MATH_H
+# include <stddef.h>
+#endif
+#if HAVE_CTYPE_H
+# include <ctype.h>
+#endif
+#if HAVE_ERRNO_H
+# include <errno.h>
+#endif
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+#if HAVE_MATH_H
+# include <math.h>
+#endif
+
 #include <sixel.h>
 
 #if defined(_WIN32)
-#include <io.h>
-#include <windows.h>
-#else
-#include <unistd.h>
+# if HAVE_IO_H
+#  include <io.h>
+# endif
+# include <windows.h>
+#elif HAVE_UNISTD_H
+# include <unistd.h>
 #endif
 
 #if !defined(PATH_MAX)
