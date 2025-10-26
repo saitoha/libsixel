@@ -543,6 +543,21 @@ static int find_model(char const *binary_dir,
                       char *buffer,
                       size_t size)
 {
+    char env_root[PATH_MAX];
+    char install_root[PATH_MAX];
+    char const *env_dir;
+
+    env_dir = getenv("LIBSIXEL_MODEL_DIR");
+    if (env_dir != NULL && env_dir[0] != '\0') {
+        if (join_path(env_dir, SIXEL_LOCAL_MODELS_SEG3,
+                      env_root, sizeof(env_root)) == 0) {
+            if (join_path(env_root, name, buffer, size) == 0) {
+                if (path_accessible(buffer)) {
+                    return 0;
+                }
+            }
+        }
+    }
     if (override_dir != NULL && override_dir[0] != '\0') {
         if (join_path(override_dir, name, buffer, size) == 0) {
             if (path_accessible(buffer)) {
@@ -550,15 +565,18 @@ static int find_model(char const *binary_dir,
             }
         }
     }
-    if (binary_dir != NULL && binary_dir[0] != '\0') {
-        if (build_local_model_path(binary_dir, name, buffer, size) == 0) {
-            if (path_accessible(buffer)) {
-                return 0;
+    if (SIXEL_LPIPS_MODEL_DIR[0] != '\0') {
+        if (join_path(SIXEL_LPIPS_MODEL_DIR, SIXEL_LOCAL_MODELS_SEG3,
+                      install_root, sizeof(install_root)) == 0) {
+            if (join_path(install_root, name, buffer, size) == 0) {
+                if (path_accessible(buffer)) {
+                    return 0;
+                }
             }
         }
     }
-    if (SIXEL_LPIPS_MODEL_DIR[0] != '\0') {
-        if (join_path(SIXEL_LPIPS_MODEL_DIR, name, buffer, size) == 0) {
+    if (binary_dir != NULL && binary_dir[0] != '\0') {
+        if (build_local_model_path(binary_dir, name, buffer, size) == 0) {
             if (path_accessible(buffer)) {
                 return 0;
             }

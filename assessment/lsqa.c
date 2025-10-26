@@ -46,6 +46,189 @@
 #define SIXEL_PATH_SEP '/'
 #endif
 
+#define SIXEL_LOCAL_MODELS_SEG1 ".."
+#define SIXEL_LOCAL_MODELS_SEG2 "models"
+#define SIXEL_LOCAL_MODELS_SEG3 "lpips"
+
+static int
+sixel_is_path_separator(char ch)
+{
+#if defined(_WIN32)
+    if (ch == '/' || ch == '\\') {
+        return 1;
+    }
+    return 0;
+#else
+    if (ch == '/') {
+        return 1;
+    }
+    return 0;
+#endif
+}
+
+/* -----------------------------------------------------------------------
+ * join_path_segments stitches together two path fragments without
+ * introducing duplicate separators.
+ *
+ *    base ----> segment ----> joined
+ *
+ * The helper accepts absolute segments, which replace the base entirely.
+ * ----------------------------------------------------------------------- */
+static int
+join_path_segments(char const *base,
+                   char const *segment,
+                   char *buffer,
+                   size_t size)
+{
+    size_t base_len;
+    size_t segment_len;
+    int status;
+
+    if (segment == NULL) {
+        return -1;
+    }
+    segment_len = strlen(segment);
+    if (segment_len + 1u > size) {
+        return -1;
+    }
+#if defined(_WIN32)
+    if ((segment_len > 1u && segment[1] == ':') ||
+            sixel_is_path_separator(segment[0])) {
+        memcpy(buffer, segment, segment_len + 1u);
+        return 0;
+    }
+#else
+    if (sixel_is_path_separator(segment[0])) {
+        memcpy(buffer, segment, segment_len + 1u);
+        return 0;
+    }
+#endif
+    if (base == NULL || base[0] == '\0') {
+        memcpy(buffer, segment, segment_len + 1u);
+        return 0;
+    }
+    base_len = strlen(base);
+    if (base_len + segment_len + 2u > size) {
+        return -1;
+    }
+    if (sixel_is_path_separator(base[base_len - 1])) {
+        status = snprintf(buffer, size, "%s%s", base, segment);
+    } else {
+        status = snprintf(buffer, size, "%s%c%s", base, SIXEL_PATH_SEP,
+                          segment);
+    }
+    if (status < 0 || (size_t)status >= size) {
+        return -1;
+    }
+    return 0;
+}
+
+static int
+path_is_readable(char const *path)
+{
+#if defined(_WIN32)
+    if (_access(path, 4) == 0) {
+        return 1;
+    }
+    return 0;
+#else
+    if (access(path, R_OK) == 0) {
+        return 1;
+    }
+    return 0;
+#endif
+}
+
+/* -----------------------------------------------------------------------
+ * detect_build_models_dir locates ../models/lpips relative to the
+ * executable path. The helper validates that both ONNX files exist so it
+ * can be safely fed into SIXEL_ASSESSMENT_OPT_MODEL_DIR.
+ * ----------------------------------------------------------------------- */
+static int
+detect_build_models_dir(char const *argv0,
+                        char *buffer,
+                        size_t size)
+{
+    char absolute[PATH_MAX];
+    char parent[PATH_MAX];
+    char models_root[PATH_MAX];
+    char lpips_dir[PATH_MAX];
+    char probe[PATH_MAX];
+    char *slash;
+
+    if (argv0 == NULL || argv0[0] == '\0') {
+        return -1;
+    }
+#if defined(_WIN32)
+    if (_fullpath(absolute, argv0, (int)sizeof(absolute)) == NULL) {
+        if (strlen(argv0) >= sizeof(absolute)) {
+            return -1;
+        }
+        strcpy(absolute, argv0);
+    }
+#else
+    if (realpath(argv0, absolute) == NULL) {
+        if (sixel_is_path_separator(argv0[0])) {
+            if (strlen(argv0) >= sizeof(absolute)) {
+                return -1;
+            }
+            strcpy(absolute, argv0);
+        } else {
+            char cwd[PATH_MAX];
+
+            if (getcwd(cwd, sizeof(cwd)) == NULL) {
+                return -1;
+            }
+            if (join_path_segments(cwd, argv0, absolute,
+                                   sizeof(absolute)) != 0) {
+                return -1;
+            }
+        }
+    }
+#endif
+    slash = strrchr(absolute, SIXEL_PATH_SEP);
+#if defined(_WIN32)
+    if (slash == NULL) {
+        slash = strrchr(absolute, '/');
+    }
+#endif
+    if (slash == NULL) {
+        return -1;
+    }
+    *slash = '\0';
+    if (join_path_segments(absolute, SIXEL_LOCAL_MODELS_SEG1,
+                           parent, sizeof(parent)) != 0) {
+        return -1;
+    }
+    if (join_path_segments(parent, SIXEL_LOCAL_MODELS_SEG2,
+                           models_root, sizeof(models_root)) != 0) {
+        return -1;
+    }
+    if (join_path_segments(models_root, SIXEL_LOCAL_MODELS_SEG3,
+                           lpips_dir, sizeof(lpips_dir)) != 0) {
+        return -1;
+    }
+    if (join_path_segments(lpips_dir, "lpips_diff.onnx",
+                           probe, sizeof(probe)) != 0) {
+        return -1;
+    }
+    if (!path_is_readable(probe)) {
+        return -1;
+    }
+    if (join_path_segments(lpips_dir, "lpips_feature.onnx",
+                           probe, sizeof(probe)) != 0) {
+        return -1;
+    }
+    if (!path_is_readable(probe)) {
+        return -1;
+    }
+    if (strlen(lpips_dir) + 1u > size) {
+        return -1;
+    }
+    strcpy(buffer, lpips_dir);
+    return 0;
+}
+
 typedef struct LoaderCapture {
     sixel_frame_t *frame;
 } LoaderCapture;
@@ -441,6 +624,8 @@ main(int argc, char **argv)
     size_t path_len;
     char *json_path;
     FILE *fp;
+    char build_models_dir[PATH_MAX];
+    int have_build_models_dir;
 
     allocator = NULL;
     assessment = NULL;
@@ -448,6 +633,8 @@ main(int argc, char **argv)
     out_frame = NULL;
     fp = NULL;
     json_path = NULL;
+    build_models_dir[0] = '\0';
+    have_build_models_dir = 0;
 
     if (parse_args(argc, argv, &opts) != 0) {
         print_usage(argv[0]);
@@ -476,6 +663,13 @@ main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    if (getenv("LIBSIXEL_MODEL_DIR") == NULL) {
+        if (detect_build_models_dir(argv[0], build_models_dir,
+                                    sizeof(build_models_dir)) == 0) {
+            have_build_models_dir = 1;
+        }
+    }
+
     status = sixel_assessment_new(&assessment, allocator);
     if (SIXEL_FAILED(status) || assessment == NULL) {
         fprintf(stderr,
@@ -494,6 +688,17 @@ main(int argc, char **argv)
         fprintf(stderr,
                 "Warning: unable to determine executable directory (%s).\n",
                 sixel_helper_format_error(status));
+    }
+
+    if (have_build_models_dir != 0) {
+        status = sixel_assessment_setopt(assessment,
+                                        SIXEL_ASSESSMENT_OPT_MODEL_DIR,
+                                        build_models_dir);
+        if (SIXEL_FAILED(status)) {
+            fprintf(stderr,
+                    "Warning: unable to configure local model directory (%s).\n",
+                    sixel_helper_format_error(status));
+        }
     }
 
     status = sixel_assessment_setopt(assessment,

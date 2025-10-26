@@ -15,7 +15,6 @@
 @SET_MAKE@
 
 
-
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -92,9 +91,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-noinst_PROGRAMS = lsqa$(EXEEXT) $(am__EXEEXT_1)
-@HAVE_ONNXRUNTIME_TRUE@am__append_1 = lpips
-@WANT_THUMBNAILER_TRUE@am__append_2 = sixel-thumbnailer
+@HAVE_ONNXRUNTIME_TRUE@noinst_PROGRAMS = lpips$(EXEEXT)
+@WANT_THUMBNAILER_TRUE@am__append_1 = sixel-thumbnailer
 subdir = tools
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
@@ -106,13 +104,11 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-DIST_COMMON = $(srcdir)/Makefile.am $(am__dist_lpipsmodels_DATA_DIST) \
-	$(am__DIST_COMMON)
+DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES = libsixel-config
 CONFIG_CLEAN_VPATH_FILES =
-@HAVE_ONNXRUNTIME_TRUE@am__EXEEXT_1 = lpips$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
 am__lpips_SOURCES_DIST = $(srcdir)/lpips.c
 @HAVE_ONNXRUNTIME_TRUE@am_lpips_OBJECTS = lpips-lpips.$(OBJEXT)
@@ -128,12 +124,6 @@ am__v_lt_1 =
 lpips_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lpips_CFLAGS) $(CFLAGS) \
 	$(lpips_LDFLAGS) $(LDFLAGS) -o $@
-am_lsqa_OBJECTS = lsqa-lsqa.$(OBJEXT)
-lsqa_OBJECTS = $(am_lsqa_OBJECTS)
-lsqa_DEPENDENCIES = $(top_builddir)/src/libsixel.la
-lsqa_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lsqa_CFLAGS) $(CFLAGS) \
-	$(lsqa_LDFLAGS) $(LDFLAGS) -o $@
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -160,7 +150,7 @@ am__uninstall_files_from_dir = { \
   || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
        $(am__cd) "$$dir" && echo $$files | $(am__xargs_n) 40 $(am__rm_f); }; \
   }
-am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(lpipsmodelsdir)"
+am__installdirs = "$(DESTDIR)$(bindir)"
 SCRIPTS = $(bin_SCRIPTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -177,8 +167,7 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/lpips-lpips.Po \
-	./$(DEPDIR)/lsqa-lsqa.Po
+am__depfiles_remade = ./$(DEPDIR)/lpips-lpips.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -198,17 +187,13 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(lpips_SOURCES) $(lsqa_SOURCES)
-DIST_SOURCES = $(am__lpips_SOURCES_DIST) $(lsqa_SOURCES)
+SOURCES = $(lpips_SOURCES)
+DIST_SOURCES = $(am__lpips_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-am__dist_lpipsmodels_DATA_DIST =  \
-	$(top_srcdir)/models/lpips/lpips_diff.onnx \
-	$(top_srcdir)/models/lpips/lpips_feature.onnx
-DATA = $(dist_lpipsmodels_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -341,6 +326,7 @@ RUBY_VERSION = @RUBY_VERSION@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SIXEL_LPIPS_MODEL_DIR = @SIXEL_LPIPS_MODEL_DIR@
 STRIP = @STRIP@
 UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
 VERSION = @VERSION@
@@ -393,6 +379,7 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
+lpipsmodelsdir = @lpipsmodelsdir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -416,14 +403,6 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
-lsqa_SOURCES = $(srcdir)/lsqa.c
-lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
-                -I$(top_srcdir)/src \
-                $(AM_CPPFLAGS)
-
-lsqa_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
-lsqa_LDFLAGS = $(MAYBE_COVERAGE)
-lsqa_LDADD = $(top_builddir)/src/libsixel.la
 @HAVE_ONNXRUNTIME_TRUE@lpips_SOURCES = $(srcdir)/lpips.c
 @HAVE_ONNXRUNTIME_TRUE@lpips_CPPFLAGS = -I$(top_builddir)/include/ \
 @HAVE_ONNXRUNTIME_TRUE@                 -I$(top_srcdir)/src \
@@ -435,11 +414,7 @@ lsqa_LDADD = $(top_builddir)/src/libsixel.la
 @HAVE_ONNXRUNTIME_TRUE@lpips_LDADD = $(top_builddir)/src/libsixel.la \
 @HAVE_ONNXRUNTIME_TRUE@              $(ONNXRUNTIME_LIBS)
 
-@HAVE_ONNXRUNTIME_TRUE@lpipsmodelsdir = $(pkgdatadir)/models/lpips
-@HAVE_ONNXRUNTIME_TRUE@dist_lpipsmodels_DATA = $(top_srcdir)/models/lpips/lpips_diff.onnx \
-@HAVE_ONNXRUNTIME_TRUE@                        $(top_srcdir)/models/lpips/lpips_feature.onnx
-
-bin_SCRIPTS = libsixel-config $(am__append_2)
+bin_SCRIPTS = libsixel-config $(am__append_1)
 EXTRA_DIST = libsixel-config.in \
              quicklook-extension.bash \
              sixel-thumbnailer \
@@ -490,10 +465,6 @@ clean-noinstPROGRAMS:
 lpips$(EXEEXT): $(lpips_OBJECTS) $(lpips_DEPENDENCIES) $(EXTRA_lpips_DEPENDENCIES) 
 	@rm -f lpips$(EXEEXT)
 	$(AM_V_CCLD)$(lpips_LINK) $(lpips_OBJECTS) $(lpips_LDADD) $(LIBS)
-
-lsqa$(EXEEXT): $(lsqa_OBJECTS) $(lsqa_DEPENDENCIES) $(EXTRA_lsqa_DEPENDENCIES) 
-	@rm -f lsqa$(EXEEXT)
-	$(AM_V_CCLD)$(lsqa_LINK) $(lsqa_OBJECTS) $(lsqa_LDADD) $(LIBS)
 install-binSCRIPTS: $(bin_SCRIPTS)
 	@$(NORMAL_INSTALL)
 	@list='$(bin_SCRIPTS)'; test -n "$(bindir)" || list=; \
@@ -537,7 +508,6 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lpips-lpips.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsqa-lsqa.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -583,46 +553,11 @@ lpips-lpips.obj: lpips.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lpips_CPPFLAGS) $(CPPFLAGS) $(lpips_CFLAGS) $(CFLAGS) -c -o lpips-lpips.obj `if test -f 'lpips.c'; then $(CYGPATH_W) 'lpips.c'; else $(CYGPATH_W) '$(srcdir)/lpips.c'; fi`
 
-lsqa-lsqa.o: lsqa.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT lsqa-lsqa.o -MD -MP -MF $(DEPDIR)/lsqa-lsqa.Tpo -c -o lsqa-lsqa.o `test -f 'lsqa.c' || echo '$(srcdir)/'`lsqa.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lsqa-lsqa.Tpo $(DEPDIR)/lsqa-lsqa.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lsqa.c' object='lsqa-lsqa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o lsqa-lsqa.o `test -f 'lsqa.c' || echo '$(srcdir)/'`lsqa.c
-
-lsqa-lsqa.obj: lsqa.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT lsqa-lsqa.obj -MD -MP -MF $(DEPDIR)/lsqa-lsqa.Tpo -c -o lsqa-lsqa.obj `if test -f 'lsqa.c'; then $(CYGPATH_W) 'lsqa.c'; else $(CYGPATH_W) '$(srcdir)/lsqa.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lsqa-lsqa.Tpo $(DEPDIR)/lsqa-lsqa.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lsqa.c' object='lsqa-lsqa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o lsqa-lsqa.obj `if test -f 'lsqa.c'; then $(CYGPATH_W) 'lsqa.c'; else $(CYGPATH_W) '$(srcdir)/lsqa.c'; fi`
-
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
-install-dist_lpipsmodelsDATA: $(dist_lpipsmodels_DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(dist_lpipsmodels_DATA)'; test -n "$(lpipsmodelsdir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(lpipsmodelsdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(lpipsmodelsdir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(lpipsmodelsdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(lpipsmodelsdir)" || exit $$?; \
-	done
-
-uninstall-dist_lpipsmodelsDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(dist_lpipsmodels_DATA)'; test -n "$(lpipsmodelsdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(lpipsmodelsdir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -711,9 +646,9 @@ distdir-am: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(DATA)
+all-am: Makefile $(PROGRAMS) $(SCRIPTS)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(lpipsmodelsdir)"; do \
+	for dir in "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -753,7 +688,6 @@ clean-am: clean-generic clean-libtool clean-noinstPROGRAMS \
 
 distclean: distclean-am
 	-rm -f ./$(DEPDIR)/lpips-lpips.Po
-	-rm -f ./$(DEPDIR)/lsqa-lsqa.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -770,7 +704,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-dist_lpipsmodelsDATA
+install-data-am:
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-dvi: install-dvi-am
@@ -801,7 +735,6 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/lpips-lpips.Po
-	-rm -f ./$(DEPDIR)/lsqa-lsqa.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -818,7 +751,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binSCRIPTS uninstall-dist_lpipsmodelsDATA
+uninstall-am: uninstall-binSCRIPTS
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
 .MAKE: install-am install-data-am install-strip uninstall-am
@@ -828,16 +761,15 @@ uninstall-am: uninstall-binSCRIPTS uninstall-dist_lpipsmodelsDATA
 	ctags ctags-am distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-binSCRIPTS \
-	install-data install-data-am install-data-hook \
-	install-dist_lpipsmodelsDATA install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am uninstall-binSCRIPTS \
-	uninstall-dist_lpipsmodelsDATA uninstall-hook
+	install-data install-data-am install-data-hook install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags tags-am uninstall uninstall-am \
+	uninstall-binSCRIPTS uninstall-hook
 
 .PRECIOUS: Makefile
 

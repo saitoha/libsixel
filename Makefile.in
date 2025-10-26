@@ -365,6 +365,7 @@ RUBY_VERSION = @RUBY_VERSION@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SIXEL_LPIPS_MODEL_DIR = @SIXEL_LPIPS_MODEL_DIR@
 STRIP = @STRIP@
 UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
 VERSION = @VERSION@
@@ -417,6 +418,7 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
+lpipsmodelsdir = @lpipsmodelsdir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -445,9 +447,11 @@ zshcompletiondir = @zshcompletiondir@
 #
 # @configure_input@
 #
-SUBDIRS = include src converters tools python $(am__append_1) \
-	$(am__append_2) $(am__append_3)
-DIST_SUBDIRS = include src converters tools python ruby wic quicklook-extension
+SUBDIRS = include src converters assessment tools python \
+	$(am__append_1) $(am__append_2) $(am__append_3)
+DIST_SUBDIRS = include src converters assessment tools python ruby wic \
+        quicklook-extension
+
 EXTRA_DIST = LICENSE depcomp tests/converters/common.bash \
 	tests/converters/test_0001_invalid_option.bash \
 	tests/converters/test_0002_stdin.bash \
