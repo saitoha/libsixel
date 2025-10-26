@@ -1,60 +1,31 @@
-local_helpers = evaluate$(EXEEXT)
+if COND_GCOV
+MAYBE_COVERAGE = --coverage
+endif
+
+noinst_PROGRAMS = lsqa
+lsqa_SOURCES = $(srcdir)/lsqa.c
+lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
+                -I$(top_srcdir)/src \
+                $(AM_CPPFLAGS)
+lsqa_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
+lsqa_LDFLAGS = $(MAYBE_COVERAGE)
+lsqa_LDADD = $(top_builddir)/src/libsixel.la
 
 if HAVE_ONNXRUNTIME
-local_helpers += lpips$(EXEEXT)
+noinst_PROGRAMS += lpips
+lpips_SOURCES = $(srcdir)/lpips.c
+lpips_CPPFLAGS = -I$(top_builddir)/include/ \
+                 -I$(top_srcdir)/src \
+                 $(AM_CPPFLAGS) \
+                 $(ONNXRUNTIME_CFLAGS)
+lpips_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
+lpips_LDFLAGS = $(MAYBE_COVERAGE)
+lpips_LDADD = $(top_builddir)/src/libsixel.la \
+              $(ONNXRUNTIME_LIBS)
 
 lpipsmodelsdir = $(pkgdatadir)/models/lpips
 dist_lpipsmodels_DATA = $(top_srcdir)/models/lpips/lpips_diff.onnx \
                         $(top_srcdir)/models/lpips/lpips_feature.onnx
-endif
-
-CLEANFILES = $(local_helpers)
-
-clean-local:
-
-all-local: $(local_helpers)
-
-# Build the fast evaluator locally so shell wrappers can reuse it without
-# requiring installation.
-evaluate$(EXEEXT): $(srcdir)/evaluate.c
-	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) \
-	-I$(top_builddir) -I$(top_builddir)/include \
-	-I$(top_srcdir)/src $(AM_CFLAGS) $(CFLAGS) \
-	$(ONNXRUNTIME_CFLAGS) \
-	-c -o $@.o $(srcdir)/evaluate.c
-	$(AM_V_CC)$(CC) $(AM_CFLAGS) $(CFLAGS) \
-	$@.o \
-	$(ONNXRUNTIME_LIBS) \
-	$(top_builddir)/src/.libs/libsixel.a \
-	$(LIBPNG_LIBS) $(LIBJPEG_LIBS) $(GDK_PIXBUF_LIBS) \
-	$(GD_LIBS) $(WIC_LIBS) $(COREGRAPHICS_LIBS) \
-	$(QUICKLOOK_LIBS) \
-	$(LIBCURL_LIBS) $(WINHTTP_LIBS) \
-	$(LIBS_PRIVATE) $(LIBS) -o $@
-	$(AM_V_at)rm -f $@.o
-
-
-if HAVE_ONNXRUNTIME
-
-# +-------------------+   +--------------------+   +--------------------+
-# | libsixel loaders  |-->| tensor formatting |-->| ONNX Runtime graph |
-# +-------------------+   +--------------------+   +--------------------+
-lpips$(EXEEXT): $(srcdir)/lpips.c $(top_builddir)/src/liblibsixelloader.a
-	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) -I$(top_srcdir) \
-	-I$(top_srcdir)/include -I$(top_srcdir)/src $(AM_CFLAGS) $(CFLAGS) \
-	$(ONNXRUNTIME_CFLAGS) \
-	-DSIXEL_LPIPS_MODEL_DIR=\"$(pkgdatadir)/models/lpips\" \
-	$(srcdir)/lpips.c \
-	$(LDFLAGS) -o $@ $(ONNXRUNTIME_LIBS) \
-	$(top_builddir)/src/liblibsixelloader.a \
-	$(LIBPNG_LIBS) $(LIBJPEG_LIBS) $(GDK_PIXBUF_LIBS) \
-	$(GD_LIBS) $(WIC_LIBS) $(COREGRAPHICS_LIBS) \
-	$(QUICKLOOK_LIBS) \
-	$(LIBCURL_LIBS) $(WINHTTP_LIBS) \
-	$(LIBS_PRIVATE) $(LIBS)
-
 endif
 
 bin_SCRIPTS = libsixel-config

@@ -23,6 +23,7 @@ srcs = [
   'output.c',
   'fromsixel.c',
   'tosixel.c',
+  'assessment.c',
   'quant.c',
   'dither.c',
   'colorspace.c',
