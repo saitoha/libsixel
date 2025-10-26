@@ -28,6 +28,10 @@
 *.rej
 *.orig
 
+# tests
+*.trs
+*.log
+
 # autotools
 autom4te.cache
 config.h
