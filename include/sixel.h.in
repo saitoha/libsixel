@@ -442,28 +442,20 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_LUT_POLICY        ('L')  /* -L LUTPOLICY, --lut-policy=LUTPOLICY:
                                                   choose histogram LUT width
                                                     auto      -> select by pixel
-                                                                  depth
+                                                                 depth
                                                     5bit      -> use 5-bit
-                                                                  buckets
+                                                                 buckets
                                                     6bit      -> use 6-bit
-                                                                  buckets
-                                                                  (RGB only)
+                                                                 buckets
+                                                                 (RGB only)
                                                     robinhood -> keep 8-bit
-                                                                  channels via
-                                                                  Robin Hood
-                                                                  hashing
+                                                                 channels via
+                                                                 Robin Hood
+                                                                 hashing
                                                     hopscotch -> keep 8-bit
-                                                                  channels via
-                                                                  Hopscotch
-                                                                  hashing
-                                                  Decision map:
-                                                    auto
-                                                      |
-                                  +-------------------+-------------------+
-                                  |                                       |
-                               classic                              hashing
-                                  |                                       |
-                   (5bit / 6bit buckets)          (robinhood / hopscotch tables)
+                                                                 channels via
+                                                                 Hopscotch
+                                                                 hashing
                                                 */
 #define SIXEL_OPTFLAG_WORKING_COLORSPACE ('W') /* -W WORKINGCOLORSPACE, --working-colorspace=WORKINGCOLORSPACE
                                                   select internal working color space

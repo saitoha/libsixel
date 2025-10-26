@@ -1065,7 +1065,6 @@ load_sixel(unsigned char        /* out */ **result,
 
 end:
     sixel_allocator_free(allocator, palette);
-    sixel_allocator_free(allocator, p);
 
     return status;
 }
@@ -1941,6 +1940,9 @@ load_with_coregraphics(
             frame->height = (int)CGImageGetHeight(image);
             frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
             stride = (size_t)frame->width * 4;
+            if (frame->pixels != NULL) {
+                sixel_allocator_free(pchunk->allocator, frame->pixels);
+            }
             frame->pixels = sixel_allocator_malloc(
                 pchunk->allocator, (size_t)(frame->height * stride));
 
@@ -1973,8 +1975,6 @@ load_with_coregraphics(
 
             frame->multiframe = (frame_count > 1);
             status = fn_load(frame, context);
-            sixel_allocator_free(pchunk->allocator, frame->pixels);
-            frame->pixels = NULL;
             CGImageRelease(image);
             image = NULL;
             if (status != SIXEL_OK) {
@@ -2021,9 +2021,7 @@ end:
         CFRelease(data);
     }
     if (frame) {
-        sixel_allocator_free(pchunk->allocator, frame->pixels);
-        sixel_allocator_free(pchunk->allocator, frame->palette);
-        sixel_allocator_free(pchunk->allocator, frame);
+        sixel_frame_unref(frame);
     }
     return status;
 }
@@ -2266,9 +2264,7 @@ end:
         CFRelease(path);
     }
     if (frame != NULL) {
-        sixel_allocator_free(pchunk->allocator, frame->pixels);
-        sixel_allocator_free(pchunk->allocator, frame->palette);
-        sixel_allocator_free(pchunk->allocator, frame);
+        sixel_allocator_unref(pchunk->allocator);
     }
 
     return status;
@@ -5852,16 +5848,23 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
 SIXELAPI SIXELSTATUS
 sixel_helper_load_image_file(
     char const                /* in */     *filename,     /* source file name */
-    int                       /* in */     fstatic,       /* whether to extract static image from animated gif */
-    int                       /* in */     fuse_palette,  /* whether to use paletted image, set non-zero value to try to get paletted image */
-    int                       /* in */     reqcolors,     /* requested number of colors, should be equal or less than SIXEL_PALETTE_MAX */
+    int                       /* in */     fstatic,       /* whether to extract static image
+                                                             from animated gif */
+    int                       /* in */     fuse_palette,  /* whether to use paletted image,
+                                                             set non-zero value to try to get
+                                                             paletted image */
+    int                       /* in */     reqcolors,     /* requested number of colors,
+                                                             should be equal or less than
+                                                             SIXEL_PALETTE_MAX */
     unsigned char             /* in */     *bgcolor,      /* background color, may be NULL */
     int                       /* in */     loop_control,  /* one of enum loopControl */
     sixel_load_image_function /* in */     fn_load,       /* callback */
     int                       /* in */     finsecure,     /* true if do not verify SSL */
     int const                 /* in */     *cancel_flag,  /* cancel flag, may be NULL */
     char const                /* in */     *loader_order, /* loader priority override */
-    void                      /* in/out */ *context,      /* private data which is passed to callback function as an argument, may be NULL */
+    void                      /* in/out */ *context,      /* private data which is passed to
+                                                             callback function as an
+                                                             argument, may be NULL */
     sixel_allocator_t         /* in */     *allocator     /* allocator object, may be NULL */
 )
 {
