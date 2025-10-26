@@ -1197,13 +1197,58 @@ typedef SIXELSTATUS (* sixel_load_image_function)(
     sixel_frame_t /* in */     *frame,
     void          /* in/out */ *context);
 
+/* handle type of generic loader object */
+struct sixel_loader;
+typedef struct sixel_loader sixel_loader_t;
+
+/* option identifiers for sixel_loader_setopt() */
+#define SIXEL_LOADER_OPTION_REQUIRE_STATIC    (1)
+#define SIXEL_LOADER_OPTION_USE_PALETTE       (2)
+#define SIXEL_LOADER_OPTION_REQCOLORS         (3)
+#define SIXEL_LOADER_OPTION_BGCOLOR           (4)
+#define SIXEL_LOADER_OPTION_LOOP_CONTROL      (5)
+#define SIXEL_LOADER_OPTION_INSECURE          (6)
+#define SIXEL_LOADER_OPTION_CANCEL_FLAG       (7)
+#define SIXEL_LOADER_OPTION_LOADER_ORDER      (8)
+#define SIXEL_LOADER_OPTION_CONTEXT           (9)
+
+/* create loader object */
+SIXELAPI SIXELSTATUS
+sixel_loader_new(
+    sixel_loader_t   /* out */ **pploader,
+    sixel_allocator_t/* in */  *allocator);
+
+/* increase reference count of loader object (thread-unsafe) */
+SIXELAPI void
+sixel_loader_ref(
+    sixel_loader_t /* in */ *loader);
+
+/* decrease reference count of loader object (thread-unsafe) */
+SIXELAPI void
+sixel_loader_unref(
+    sixel_loader_t /* in */ *loader);
+
+/* set loader options */
+SIXELAPI SIXELSTATUS
+sixel_loader_setopt(
+    sixel_loader_t /* in */ *loader,
+    int            /* in */ option,
+    void const     /* in */ *value);
+
+/* load an image file using loader configuration */
+SIXELAPI SIXELSTATUS
+sixel_loader_load_file(
+    sixel_loader_t         /* in */ *loader,
+    char const             /* in */ *filename,
+    sixel_load_image_function /* in */ fn_load);
+
 /* Note: this function returns SIXEL_OK without calling FN_LOAD when the file
    content is empty or 1-byte LF.  This implies an assumption that CONTEXT is
    initialized to be the default value for the empty file before calling this
    function.  If it is not the case, the caller needs to properly detect it and
    handle this, or otherwise, CONTEXT can be used uninitialized in subsequent
    codes. */
-SIXELAPI SIXELSTATUS
+SIXELAPI @attr_func_deprecated@ SIXELSTATUS
 sixel_helper_load_image_file(
     char const                /* in */     *filename,     /* source file name */
     int                       /* in */     fstatic,       /* whether to extract static image */
@@ -1214,7 +1259,6 @@ sixel_helper_load_image_file(
     sixel_load_image_function /* in */     fn_load,       /* callback */
     int                       /* in */     finsecure,     /* true if do not verify SSL */
     int const                 /* in */     *cancel_flag,  /* cancel flag */
-    char const                /* in */     *loader_order, /* optional loader priority */
     void                      /* in/out */ *context,      /* private data for callback */
     sixel_allocator_t         /* in */     *allocator);   /* allocator object */
 
