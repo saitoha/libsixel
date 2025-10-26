@@ -188,12 +188,45 @@ tap_log_hint() {
     printf '%s\n' "${path}"
 }
 
+# ----------------------------------------------------------------------
+#  WINE launcher sanitization pipeline
+#
+#      +-------------------+     +---------------------------+
+#      | $WINE token array |---->| drop trailing "make check" |
+#      +-------------------+     +---------------------------+
+#                  |                          |
+#                  +--------------------------+
+#                  |
+#                  v
+#            sanitized runner
+# ----------------------------------------------------------------------
 wine_exec() {
+    local -a wine_tokens
+    local -a sanitized_runner
+    local token
+    local command_path
+
+    wine_tokens=()
+    sanitized_runner=()
+
     if [[ -n "${WINE}" ]]; then
-        "${WINE}" "$@"
-    else
-        "$@"
+        read -r -a wine_tokens <<<"${WINE}"
+        for token in "${wine_tokens[@]}"; do
+            if [[ "${token}" == "make" ]]; then
+                break
+            fi
+            sanitized_runner+=("${token}")
+        done
+        if [[ ${#sanitized_runner[@]} -gt 0 ]]; then
+            command_path="${sanitized_runner[0]}"
+            if command -v "${command_path}" >/dev/null 2>&1; then
+                "${sanitized_runner[@]}" "$@"
+                return 0
+            fi
+        fi
     fi
+
+    "$@"
 }
 
 run_img2sixel() {
