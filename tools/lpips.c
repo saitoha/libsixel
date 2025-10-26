@@ -349,16 +349,33 @@ find_model(char const *binary_dir,
            char *buffer,
            size_t size)
 {
-    if (build_local_model_path(binary_dir, name, buffer, size) == 0) {
-        if (path_accessible(buffer)) {
-            return 0;
+    char stage1[PATH_MAX];
+    char const *env_dir;
+
+    env_dir = getenv("LIBSIXEL_MODEL_DIR");
+    if (env_dir != NULL && env_dir[0] != '\0') {
+        if (join_path(env_dir, SIXEL_LOCAL_MODELS_SEG3,
+                      stage1, sizeof(stage1)) == 0) {
+            if (join_path(stage1, name, buffer, size) == 0) {
+                if (path_accessible(buffer)) {
+                    return 0;
+                }
+            }
         }
     }
     if (SIXEL_LPIPS_MODEL_DIR[0] != '\0') {
-        if (join_path(SIXEL_LPIPS_MODEL_DIR, name, buffer, size) == 0) {
-            if (path_accessible(buffer)) {
-                return 0;
+        if (join_path(SIXEL_LPIPS_MODEL_DIR, SIXEL_LOCAL_MODELS_SEG3,
+                      stage1, sizeof(stage1)) == 0) {
+            if (join_path(stage1, name, buffer, size) == 0) {
+                if (path_accessible(buffer)) {
+                    return 0;
+                }
             }
+        }
+    }
+    if (build_local_model_path(binary_dir, name, buffer, size) == 0) {
+        if (path_accessible(buffer)) {
+            return 0;
         }
     }
     return -1;

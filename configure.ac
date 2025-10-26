@@ -129,6 +129,30 @@ AC_ARG_ENABLE([sixel2png],
               [enable_sixel2png=yes])
 AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
 
+AC_ARG_WITH([modeldir],
+            [AS_HELP_STRING([--with-modeldir=DIR],
+                            [install assessment models under DIR
+                             @<:@default=${pkgdatadir}/models@:>@])],
+            [],
+            [with_modeldir=no])
+if test "x$with_modeldir" = xno || test "x$with_modeldir" = xyes; then
+  lpips_model_root='${pkgdatadir}/models'
+else
+  lpips_model_root=$with_modeldir
+fi
+lpips_modeldir="${lpips_model_root}/lpips"
+AC_SUBST([lpipsmodelsdir], [$lpips_modeldir])
+AC_DEFUN([AC_DEFINE_DIR], [
+  dir="\$$2"
+  dir=`eval "echo ${dir}"`
+  dir=`eval "echo ${dir}"`
+  AC_SUBST([$1], ["${dir}"])
+  AC_DEFINE_UNQUOTED([$1], ["${dir}"], [$3])
+])
+AC_DEFINE_DIR([SIXEL_LPIPS_MODEL_DIR],
+              [lpips_model_root],
+              [Base directory that holds libsixel assessment models])
+
 AC_ARG_ENABLE([thumbnailer-command],
               [AS_HELP_STRING([--enable-thumbnailer-command],
                               [install the sixel thumbnailer command (default: auto)])],
@@ -284,12 +308,7 @@ AC_ARG_WITH(pkgconfigdir,
 AC_MSG_NOTICE([pkgconfig directory is ${pkgconfigdir}])
 AC_SUBST(pkgconfigdir)
 
-dnl ----------------------------------------------------------------------
-dnl Auto-detect bash-completion directory with a v2 -> v1 fallback chain.
-dnl   +------------------------+     +------------------------+
-dnl   | probe v2 installations | --> | probe legacy (v1) dirs |
-dnl   +------------------------+     +------------------------+
-dnl ----------------------------------------------------------------------
+# Auto-detect bash-completion directory with a v2 -> v1 fallback chain.
 AC_ARG_WITH(bashcompletiondir,
             AS_HELP_STRING([--with-bashcompletiondir[=DIR]],
                            [Install bash completion to DIR (default: no)]),
@@ -331,12 +350,7 @@ AS_IF([test -n "$bashcompletiondir"],
       [AC_MSG_NOTICE([bash-completion installation disabled])])
 AC_SUBST(bashcompletiondir)
 
-# ----------------------------------------------------------------------
 # Auto-detect zsh completion directory by preferring vendor locations.
-#   +---------------------------+     +---------------------------+
-#   | probe vendor completions  | --> | probe site-functions tree |
-#   +---------------------------+     +---------------------------+
-# ----------------------------------------------------------------------
 AC_ARG_WITH(zshcompletiondir,
             AS_HELP_STRING([--with-zshcompletiondir[=DIR]],
                            [Install zsh completion to DIR (default: no)]),
@@ -1652,7 +1666,8 @@ AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           touch -c aclocal.m4 Makefile.in configure config.h.in \
                    converters/Makefile.in include/Makefile.in \
                    python/Makefile.in src/Makefile.in tools/Makefile.in \
-                   wic/Makefile.in quicklook-extension/Makefile.in
+                   assessment/Makefile.in wic/Makefile.in \
+                   quicklook-extension/Makefile.in
           ])
 LS_UPDATE_TIMESTAMP
 
@@ -1671,6 +1686,7 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  include/Makefile
                  converters/Makefile
+                 assessment/Makefile
                  tools/Makefile
                  tools/libsixel-config
                  python/Makefile
@@ -1730,10 +1746,10 @@ echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $message_bashcompletiondir"
 echo "       Zsh completion dir  : $message_zshcompletiondir"
 echo "       QuickLook extension : $message_quicklook_extension"
-echo "       ONNX Runtime        : $message_onnxruntime"
 echo "       WIC codec           : $message_wiccodec"
 echo "       Register WIC DLL    : $message_register_dll"
 echo "       Thumbnailer command : $message_thumbnailer"
+echo "       ONNX Runtime        : $message_onnxruntime"
 echo "       python bindings     : $message_python"
 echo "       ruby bindings       : $message_ruby"
 echo "       simd                : $message_simd"

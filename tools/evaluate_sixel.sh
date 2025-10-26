@@ -28,7 +28,7 @@ trap cleanup EXIT INT TERM
 
 "${src_topdir}/converters/sixel2png" "${sixel}" > "${tmp_png}"
 
-metrics_json="$(LSQA_PREFIX="${prefix}" "${src_topdir}/tools/lsqa" \
+metrics_json="$(LSQA_PREFIX="${prefix}" "${src_topdir}/assessment/lsqa" \
     "${original}" \
     "${tmp_png}")"
 

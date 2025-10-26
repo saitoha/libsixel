@@ -27,6 +27,7 @@ option('gd', type: 'feature', value: 'disabled', description: 'Use GD image libr
 option('onnxruntime', type: 'feature', value: 'auto', description: 'Build lpips helper with ONNX Runtime')
 option('onnxruntime_include_dir', type: 'string', value: '', description: 'Extra include directory for ONNX Runtime headers')
 option('onnxruntime_lib_dir', type: 'string', value: '', description: 'Extra library directory for ONNX Runtime libs')
+option('lpips_model_dir', type: 'string', value: '', description: 'Install directory for assessment models')
 option('coregraphics', type: 'feature', value: 'auto', description: 'Use CoreGraphics framework')
 option('quicklook_preview', type: 'feature', value: 'auto', description: 'Use macOS Quick Look for preview extraction')
 option('quicklook_extension', type: 'feature', value: 'auto', description: 'Build macOS Quick Look extension bundle')

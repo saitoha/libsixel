@@ -746,6 +746,8 @@ bashcompletiondir
 pkgconfigdir
 WANT_THUMBNAILER_FALSE
 WANT_THUMBNAILER_TRUE
+SIXEL_LPIPS_MODEL_DIR
+lpipsmodelsdir
 WANT_SIXEL2PNG_FALSE
 WANT_SIXEL2PNG_TRUE
 WANT_IMG2SIXEL_FALSE
@@ -904,6 +906,7 @@ with_sysroot
 enable_libtool_lock
 enable_img2sixel
 enable_sixel2png
+with_modeldir
 enable_thumbnailer_command
 with_gdk_pixbuf2
 with_gd
@@ -1638,6 +1641,8 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-sysroot[=DIR]    Search for dependent libraries within DIR (or the
                           compiler's sysroot if not specified).
+  --with-modeldir=DIR     install assessment models under DIR
+                          [default=${pkgdatadir}/models]
   --with-gdk-pixbuf2      whether to build with gdk-pixbuf2 (default: no)
   --with-gd               whether to build with gd (default: no)
   --with-coregraphics     whether to build with CoreGraphics (default: auto)
@@ -6901,7 +6906,7 @@ mingw* | windows* | pw32*)
     lt_cv_file_magic_cmd='func_win32_libid'
   else
     # Keep this pattern in sync with the one in func_win32_libid.
-    lt_cv_deplibs_check_method='file_magic file format (pei*-i386(.*architecture: i386)?|pe-arm-wince|pe-x86-64|pe-aarch64|coff-arm|coff-arm64|coff-i386|coff-x86-64)'
+    lt_cv_deplibs_check_method='file_magic file format (pei*-i386(.*architecture: i386)?|pe-arm-wince|pe-x86-64|pe-aarch64)'
     lt_cv_file_magic_cmd='$OBJDUMP -f'
   fi
   ;;
@@ -12473,7 +12478,7 @@ cygwin* | mingw* | windows* | pw32* | cegcc*)
     case $host_os in
     cygwin*)
       # Cygwin DLLs use 'cyg' prefix rather than 'lib'
-      soname_spec='`echo $libname | $SED -e 's/^lib/msys-/'``echo $release | $SED -e 's/[.]/-/g'`$versuffix$shared_ext'
+      soname_spec='`echo $libname | $SED -e 's/^lib/cyg/'``echo $release | $SED -e 's/[.]/-/g'`$versuffix$shared_ext'
 
       sys_lib_search_path_spec="$sys_lib_search_path_spec /usr/lib/w32api"
       ;;
@@ -16370,6 +16375,36 @@ else
 fi
 
 
+
+# Check whether --with-modeldir was given.
+if test ${with_modeldir+y}
+then :
+  withval=$with_modeldir;
+else case e in #(
+  e) with_modeldir=no ;;
+esac
+fi
+
+if test "x$with_modeldir" = xno || test "x$with_modeldir" = xyes; then
+  lpips_model_root='${pkgdatadir}/models'
+else
+  lpips_model_root=$with_modeldir
+fi
+lpips_modeldir="${lpips_model_root}/lpips"
+lpipsmodelsdir=$lpips_modeldir
+
+
+
+  dir="\$lpips_model_root"
+  dir=`eval "echo ${dir}"`
+  dir=`eval "echo ${dir}"`
+  SIXEL_LPIPS_MODEL_DIR="${dir}"
+
+
+printf "%s\n" "#define SIXEL_LPIPS_MODEL_DIR \"${dir}\"" >>confdefs.h
+
+
+
 # Check whether --enable-thumbnailer-command was given.
 if test ${enable_thumbnailer_command+y}
 then :
@@ -16595,6 +16630,7 @@ fi
 printf "%s\n" "$as_me: pkgconfig directory is ${pkgconfigdir}" >&6;}
 
 
+# Auto-detect bash-completion directory with a v2 -> v1 fallback chain.
 
 # Check whether --with-bashcompletiondir was given.
 if test ${with_bashcompletiondir+y}
@@ -16651,12 +16687,7 @@ esac
 fi
 
 
-# ----------------------------------------------------------------------
 # Auto-detect zsh completion directory by preferring vendor locations.
-#   +---------------------------+     +---------------------------+
-#   | probe vendor completions  | --> | probe site-functions tree |
-#   +---------------------------+     +---------------------------+
-# ----------------------------------------------------------------------
 
 # Check whether --with-zshcompletiondir was given.
 if test ${with_zshcompletiondir+y}
@@ -22376,7 +22407,8 @@ fi
           touch -c aclocal.m4 Makefile.in configure config.h.in \
                    converters/Makefile.in include/Makefile.in \
                    python/Makefile.in src/Makefile.in tools/Makefile.in \
-                   wic/Makefile.in quicklook-extension/Makefile.in
+                   assessment/Makefile.in wic/Makefile.in \
+                   quicklook-extension/Makefile.in
 
 
  if test x$have_curl = xyes; then
@@ -22436,7 +22468,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile tools/Makefile tools/libsixel-config python/Makefile ruby/Makefile ruby/lib/libsixel/version_runtime.rb quicklook-extension/Makefile wic/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile assessment/Makefile tools/Makefile tools/libsixel-config python/Makefile ruby/Makefile ruby/lib/libsixel/version_runtime.rb quicklook-extension/Makefile wic/Makefile"
 
 
 # Generate Ruby constants file from include/sixel.h when Ruby is enabled
@@ -23582,6 +23614,7 @@ do
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
     "converters/Makefile") CONFIG_FILES="$CONFIG_FILES converters/Makefile" ;;
+    "assessment/Makefile") CONFIG_FILES="$CONFIG_FILES assessment/Makefile" ;;
     "tools/Makefile") CONFIG_FILES="$CONFIG_FILES tools/Makefile" ;;
     "tools/libsixel-config") CONFIG_FILES="$CONFIG_FILES tools/libsixel-config" ;;
     "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
@@ -24918,10 +24951,10 @@ echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $message_bashcompletiondir"
 echo "       Zsh completion dir  : $message_zshcompletiondir"
 echo "       QuickLook extension : $message_quicklook_extension"
-echo "       ONNX Runtime        : $message_onnxruntime"
 echo "       WIC codec           : $message_wiccodec"
 echo "       Register WIC DLL    : $message_register_dll"
 echo "       Thumbnailer command : $message_thumbnailer"
+echo "       ONNX Runtime        : $message_onnxruntime"
 echo "       python bindings     : $message_python"
 echo "       ruby bindings       : $message_ruby"
 echo "       simd                : $message_simd"
