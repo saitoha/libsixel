@@ -20,7 +20,18 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-from ctypes import cdll, c_void_p, c_int, c_byte, c_char_p, POINTER, byref, CFUNCTYPE, string_at
+from ctypes import (
+    cdll,
+    c_void_p,
+    c_int,
+    c_byte,
+    c_char_p,
+    POINTER,
+    byref,
+    CFUNCTYPE,
+    string_at,
+    cast,
+)
 from ctypes.util import find_library
 
 # limitations
@@ -34,6 +45,34 @@ SIXEL_HEIGHT_LIMIT           = 1000000
 
 # loader settings
 SIXEL_DEFALUT_GIF_DELAY      = 1
+
+# loader option identifiers for sixel_loader_setopt().  The numeric values need
+# to stay in sync with include/sixel.h.in so that Python callers can configure
+# the loader object precisely.  Keeping the mapping here prevents mysterious
+# breakage when new options are introduced in the C API.
+#
+#        +-------------------------------+
+#        |  Python option -> C option    |
+#        +-------------------------------+
+#        | REQUIRE_STATIC  -> (1)        |
+#        | USE_PALETTE     -> (2)        |
+#        | REQCOLORS       -> (3)        |
+#        | BGCOLOR         -> (4)        |
+#        | LOOP_CONTROL    -> (5)        |
+#        | INSECURE        -> (6)        |
+#        | CANCEL_FLAG     -> (7)        |
+#        | LOADER_ORDER    -> (8)        |
+#        | CONTEXT         -> (9)        |
+#        +-------------------------------+
+SIXEL_LOADER_OPTION_REQUIRE_STATIC = 1
+SIXEL_LOADER_OPTION_USE_PALETTE = 2
+SIXEL_LOADER_OPTION_REQCOLORS = 3
+SIXEL_LOADER_OPTION_BGCOLOR = 4
+SIXEL_LOADER_OPTION_LOOP_CONTROL = 5
+SIXEL_LOADER_OPTION_INSECURE = 6
+SIXEL_LOADER_OPTION_CANCEL_FLAG = 7
+SIXEL_LOADER_OPTION_LOADER_ORDER = 8
+SIXEL_LOADER_OPTION_CONTEXT = 9
 
 # return value
 SIXEL_OK              = 0x0000
@@ -465,6 +504,158 @@ def sixel_helper_compute_depth(pixelformat):
     _sixel.sixel_helper_compute_depth.restype = c_int
     _sixel.sixel_encoder_encode.argtypes = [c_int]
     return _sixel.sixel_helper_compute_depth(pixelformat)
+
+
+# generic loader -----------------------------------------------------------
+
+_sixel_loader_callback_type = CFUNCTYPE(c_int, c_void_p, c_void_p)
+
+
+def sixel_loader_new(allocator=c_void_p(None)):
+    """Create a loader object that mirrors sixel_loader_new()."""
+
+    _sixel.sixel_loader_new.restype = c_int
+    _sixel.sixel_loader_new.argtypes = [POINTER(c_void_p), c_void_p]
+
+    loader = c_void_p(None)
+    status = _sixel.sixel_loader_new(byref(loader), allocator)
+    if SIXEL_FAILED(status):
+        message = sixel_helper_format_error(status)
+        raise RuntimeError(message)
+    return loader
+
+
+def sixel_loader_ref(loader):
+    """Increase the reference count of a loader object."""
+
+    _sixel.sixel_loader_ref.restype = None
+    _sixel.sixel_loader_ref.argtypes = [c_void_p]
+    _sixel.sixel_loader_ref(loader)
+
+
+def sixel_loader_unref(loader):
+    """Decrease the reference count of a loader object."""
+
+    _sixel.sixel_loader_unref.restype = None
+    _sixel.sixel_loader_unref.argtypes = [c_void_p]
+    _sixel.sixel_loader_unref(loader)
+
+
+def sixel_loader_setopt(loader, option, value=None):
+    """Configure loader behavior via sixel_loader_setopt().
+
+    The helper routes Python values into the pointer-based C API while keeping
+    the conversion rules in plain sight:
+
+        +-----------+---------------------------+---------------------+
+        | Option    | Expected Python value     | Example             |
+        +-----------+---------------------------+---------------------+
+        | STATIC    | bool/int or None          | True                |
+        | PALETTE   | bool/int or None          | 0                   |
+        | REQCOLORS | int or None               | 256                 |
+        | BGCOLOR   | iterable[3] or None       | (0, 0, 0)           |
+        | LOOP      | int or None               | SIXEL_LOOP_FORCE    |
+        | INSECURE  | bool/int or None          | False               |
+        | CANCEL    | ctypes pointer / address  | byref(c_int(0))     |
+        | ORDER     | str/bytes or None         | "stb,png"           |
+        | CONTEXT   | ctypes pointer / address  | c_void_p(id(obj))   |
+        +-----------+---------------------------+---------------------+
+
+    Values left as ``None`` map to NULL so that the C side may install its
+    default behavior.
+    """
+
+    _sixel.sixel_loader_setopt.restype = c_int
+    _sixel.sixel_loader_setopt.argtypes = [c_void_p, c_int, c_void_p]
+
+    option = int(option)
+    pointer_value = c_void_p(None)
+    keepalive = None
+
+    int_options = {
+        SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+        SIXEL_LOADER_OPTION_USE_PALETTE,
+        SIXEL_LOADER_OPTION_REQCOLORS,
+        SIXEL_LOADER_OPTION_LOOP_CONTROL,
+        SIXEL_LOADER_OPTION_INSECURE,
+    }
+
+    if option in int_options:
+        if value is not None:
+            keepalive = c_int(int(value))
+            pointer_value = cast(byref(keepalive), c_void_p)
+    elif option == SIXEL_LOADER_OPTION_BGCOLOR:
+        if value is not None:
+            if len(value) != 3:
+                raise ValueError("bgcolor expects three components")
+            keepalive = (c_byte * 3)(value[0], value[1], value[2])
+            pointer_value = cast(keepalive, c_void_p)
+    elif option == SIXEL_LOADER_OPTION_LOADER_ORDER:
+        if value is not None:
+            if isinstance(value, bytes):
+                encoded = value
+            else:
+                encoded = str(value).encode('utf-8')
+            keepalive = c_char_p(encoded)
+            pointer_value = cast(keepalive, c_void_p)
+    elif option in (
+        SIXEL_LOADER_OPTION_CANCEL_FLAG,
+        SIXEL_LOADER_OPTION_CONTEXT,
+    ):
+        if value is None:
+            pointer_value = c_void_p(None)
+        elif isinstance(value, c_void_p):
+            pointer_value = value
+        elif isinstance(value, int):
+            pointer_value = c_void_p(value)
+        else:
+            pointer_value = cast(value, c_void_p)
+    else:
+        raise ValueError("unknown loader option: %r" % option)
+
+    status = _sixel.sixel_loader_setopt(loader, option, pointer_value)
+    if SIXEL_FAILED(status):
+        message = sixel_helper_format_error(status)
+        raise RuntimeError(message)
+
+
+def sixel_loader_load_file(loader, filename, fn_load):
+    """Load ``filename`` and feed each frame to ``fn_load``.
+
+    ``fn_load`` receives ``(frame_ptr, context_ptr)`` mirroring the C
+    signature.  The loader's context pointer may be set via
+    ``sixel_loader_setopt``.
+    """
+
+    import locale
+
+    if fn_load is None:
+        raise ValueError("fn_load callback is required")
+
+    _sixel.sixel_loader_load_file.restype = c_int
+    _sixel.sixel_loader_load_file.argtypes = [
+        c_void_p,
+        c_char_p,
+        _sixel_loader_callback_type,
+    ]
+
+    _language, encoding = locale.getdefaultlocale()
+    if not encoding:
+        encoding = 'utf-8'
+
+    if filename is None:
+        c_filename = None
+    else:
+        c_filename = filename.encode(encoding)
+
+    def _fn_load_local(frame, context):
+        return fn_load(frame, context)
+
+    callback = _sixel_loader_callback_type(_fn_load_local)
+    status = _sixel.sixel_loader_load_file(loader, c_filename, callback)
+    if SIXEL_FAILED(status):
+        message = sixel_helper_format_error(status)
+        raise RuntimeError(message)
 
 
 # create new output context object
