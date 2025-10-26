@@ -2,19 +2,6 @@ if COND_GCOV
 MAYBE_COVERAGE = --coverage
 endif
 
-if HAVE_ONNXRUNTIME
-noinst_PROGRAMS = lpips
-lpips_SOURCES = $(srcdir)/lpips.c
-lpips_CPPFLAGS = -I$(top_builddir)/include/ \
-                 -I$(top_srcdir)/src \
-                 $(AM_CPPFLAGS) \
-                 $(ONNXRUNTIME_CFLAGS)
-lpips_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
-lpips_LDFLAGS = $(MAYBE_COVERAGE)
-lpips_LDADD = $(top_builddir)/src/libsixel.la \
-              $(ONNXRUNTIME_LIBS)
-endif
-
 bin_SCRIPTS = libsixel-config
 
 if WANT_THUMBNAILER
