@@ -669,6 +669,16 @@ if m_dep.found()
   lsqa_deps += m_dep
 endif
 lsqa_args = []
+lpips_model_root_opt = get_option('lpips_model_dir')
+if lpips_model_root_opt == ''
+  lpips_model_root = join_paths(get_option('datadir'),
+                                meson.project_name(),
+                                'models')
+else
+  lpips_model_root = lpips_model_root_opt
+endif
+lpips_model_dir = join_paths(lpips_model_root, 'lpips')
+lsqa_args += ['-DSIXEL_LPIPS_MODEL_DIR="' + lpips_model_root + '"']
 
 onnxruntime_message = 'no'
 lpips_opt = get_option('onnxruntime')
@@ -695,11 +705,6 @@ if not lpips_opt.disabled()
     onnxruntime_message = 'yes'
     lsqa_inc += ort_inc_dirs
     lsqa_deps += ort_dep
-    lpips_model_dir = join_paths(get_option('datadir'),
-                                 meson.project_name(),
-                                 'models',
-                                 'lpips')
-    lsqa_args += ['-DSIXEL_LPIPS_MODEL_DIR="' + lpips_model_dir + '"']
     lpips_inc = lsqa_inc
     lpips_deps = lsqa_deps
     lpips_args = lsqa_args
@@ -722,11 +727,11 @@ if not lpips_opt.disabled()
 endif
 
 executable('lsqa',
-           'tools/lsqa.c',
+           'assessment/lsqa.c',
            include_directories: lsqa_inc,
            dependencies: lsqa_deps,
            c_args: lsqa_args,
-           install: false)
+           install: true)
 
 bash_completion_opt = get_option('bashcompletiondir')
 bash_completion_dir = ''
