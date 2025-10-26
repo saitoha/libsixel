@@ -1,5 +1,5 @@
 /*
- * evaluate.c - High-speed image quality evaluator ported from Python.
+ * assessment.c - High-speed image quality evaluator ported from Python.
  *
  *  +-------------------------------------------------------------+
  *  |                        PIPELINE MAP                         |
@@ -33,6 +33,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <math.h>
+#include <setjmp.h>
 #include <stdbool.h>
 #include <stdarg.h>
 #include <stdint.h>
@@ -41,6 +42,8 @@
 #include <string.h>
 
 #include <sixel.h>
+
+#include "assessment.h"
 
 #if defined(_WIN32)
 #include <io.h>
@@ -85,14 +88,6 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
-
-#define ARRAY_GUARD(ptr)                                   \
-    do {                                                   \
-        if ((ptr) == NULL) {                              \
-            fprintf(stderr, "Out of memory\n");           \
-            exit(EXIT_FAILURE);                           \
-        }                                                  \
-    } while (0)
 
 /* ================================================================
  * Utility data structures
@@ -144,6 +139,42 @@ typedef struct Metrics {
     float lpips_vgg;
 } Metrics;
 
+static sixel_assessment_t *g_assessment_context = NULL;
+
+static int assessment_resolve_executable_dir(char const *argv0,
+                                            char *buffer,
+                                            size_t size);
+static void align_images(Image *ref, Image *out);
+
+static void
+assessment_fail(SIXELSTATUS status, char const *message)
+{
+    sixel_assessment_t *ctx;
+    size_t length;
+
+    ctx = g_assessment_context;
+    if (ctx != NULL) {
+        ctx->last_error = status;
+        if (message != NULL) {
+            length = strlen(message);
+            if (length >= sizeof(ctx->error_message)) {
+                length = sizeof(ctx->error_message) - 1u;
+            }
+            memcpy(ctx->error_message, message, length);
+            ctx->error_message[length] = '\0';
+        } else {
+            ctx->error_message[0] = '\0';
+        }
+        longjmp(ctx->bailout, 1);
+    }
+    if (message != NULL) {
+        fprintf(stderr, "%s\n", message);
+    } else {
+        fprintf(stderr, "assessment failure\n");
+    }
+    abort();
+}
+
 /* ================================================================
  * Memory helpers
  * ================================================================ */
@@ -153,8 +184,8 @@ static void *xmalloc(size_t size)
     void *ptr;
     ptr = malloc(size);
     if (ptr == NULL) {
-        fprintf(stderr, "malloc failed (%zu bytes)\n", size);
-        exit(EXIT_FAILURE);
+        assessment_fail(SIXEL_BAD_ALLOCATION,
+                       "malloc failed while building assessment state");
     }
     return ptr;
 }
@@ -164,8 +195,8 @@ static void *xcalloc(size_t nmemb, size_t size)
     void *ptr;
     ptr = calloc(nmemb, size);
     if (ptr == NULL) {
-        fprintf(stderr, "calloc failed (%zu bytes)\n", nmemb * size);
-        exit(EXIT_FAILURE);
+        assessment_fail(SIXEL_BAD_ALLOCATION,
+                       "calloc failed while building assessment state");
     }
     return ptr;
 }
@@ -182,24 +213,7 @@ static void image_free(Image *img)
  * Loader bridge (libsixel -> float RGB)
  * ================================================================ */
 
-typedef struct LoaderCapture {
-    sixel_frame_t *frame;
-} LoaderCapture;
-
-static SIXELSTATUS capture_first_frame(sixel_frame_t *frame, void *context)
-{
-    LoaderCapture *capture;
-
-    capture = (LoaderCapture *)context;
-    if (capture->frame == NULL) {
-        sixel_frame_ref(frame);
-        capture->frame = frame;
-    }
-    return SIXEL_OK;
-}
-
 static SIXELSTATUS copy_frame_to_rgb(sixel_frame_t *frame,
-                                     sixel_allocator_t *allocator,
                                      unsigned char **pixels,
                                      int *width,
                                      int *height)
@@ -211,8 +225,6 @@ static SIXELSTATUS copy_frame_to_rgb(sixel_frame_t *frame,
     size_t size;
     unsigned char *buffer;
     int normalized_format;
-
-    (void)allocator;
 
     frame_width = sixel_frame_get_width(frame);
     frame_height = sixel_frame_get_height(frame);
@@ -253,11 +265,8 @@ static SIXELSTATUS copy_frame_to_rgb(sixel_frame_t *frame,
     return SIXEL_OK;
 }
 
-static int load_image(const char *path,
-                      sixel_allocator_t *allocator,
-                      Image *img)
+static SIXELSTATUS image_from_frame(sixel_frame_t *frame, Image *img)
 {
-    LoaderCapture capture;
     SIXELSTATUS status;
     unsigned char *pixels;
     int width;
@@ -266,7 +275,6 @@ static int load_image(const char *path,
     size_t count;
     size_t index;
 
-    capture.frame = NULL;
     pixels = NULL;
     width = 0;
     height = 0;
@@ -274,39 +282,9 @@ static int load_image(const char *path,
     count = 0;
     index = 0;
 
-    status = sixel_helper_load_image_file(path,
-                                          1,
-                                          0,
-                                          SIXEL_PALETTE_MAX,
-                                          NULL,
-                                          SIXEL_LOOP_DISABLE,
-                                          capture_first_frame,
-                                          0,
-                                          NULL,
-                                          NULL,
-                                          &capture,
-                                          allocator);
+    status = copy_frame_to_rgb(frame, &pixels, &width, &height);
     if (SIXEL_FAILED(status)) {
-        fprintf(stderr,
-                "libsixel loader failed for %s: %s\n",
-                path,
-                sixel_helper_format_error(status));
-        return -1;
-    }
-    status = copy_frame_to_rgb(capture.frame,
-                               allocator,
-                               &pixels,
-                               &width,
-                               &height);
-    if (SIXEL_FAILED(status)) {
-        fprintf(stderr,
-                "libsixel pixel conversion failed for %s: %s\n",
-                path,
-                sixel_helper_format_error(status));
-        if (capture.frame != NULL) {
-            sixel_frame_unref(capture.frame);
-        }
-        return -1;
+        return status;
     }
     count = (size_t)width * (size_t)height * 3u;
     converted = (float *)xmalloc(count * sizeof(float));
@@ -319,30 +297,15 @@ static int load_image(const char *path,
     img->pixels = converted;
 
     free(pixels);
-    if (capture.frame != NULL) {
-        sixel_frame_unref(capture.frame);
-    }
-    return 0;
+    return SIXEL_OK;
 }
 
-#if defined(HAVE_ONNXRUNTIME)
 /* ================================================================
- * LPIPS helper plumbing (model discovery + tensor formatting)
+ * Path discovery helpers (shared by CLI + LPIPS bridge)
  * ================================================================ */
 
-typedef struct image_f32 {
-    int width;
-    int height;
-    float *nchw;
-} image_f32_t;
-
-static const OrtApi *g_lpips_api = NULL;
-static char g_lpips_binary_dir[PATH_MAX];
-static int g_lpips_binary_dir_state = 0;
-static char g_lpips_diff_model[PATH_MAX];
-static char g_lpips_feat_model[PATH_MAX];
-static int g_lpips_models_ready = 0;
-
+#if defined(HAVE_ONNXRUNTIME) || \
+    (!defined(_WIN32) && !defined(__APPLE__) && !defined(__linux__))
 static int path_accessible(char const *path)
 {
 #if defined(_WIN32)
@@ -391,7 +354,9 @@ static int join_path(char const *dir,
     buffer[dir_len] = '\0';
     return 0;
 }
+#endif
 
+#if !defined(_WIN32) && !defined(__APPLE__) && !defined(__linux__)
 static int resolve_from_path_env(char const *name,
                                  char *buffer,
                                  size_t size)
@@ -431,10 +396,11 @@ static int resolve_from_path_env(char const *name,
     }
     return -1;
 }
+#endif
 
-static int resolve_executable_dir(char const *argv0,
-                                  char *buffer,
-                                  size_t size)
+static int assessment_resolve_executable_dir(char const *argv0,
+                                            char *buffer,
+                                            size_t size)
 {
     char candidate[PATH_MAX];
     size_t length;
@@ -448,6 +414,9 @@ static int resolve_executable_dir(char const *argv0,
 #endif
 
     candidate[0] = '\0';
+#if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
+    (void)argv0;
+#endif
 #if defined(_WIN32)
     written = GetModuleFileNameA(NULL, candidate, (DWORD)sizeof(candidate));
     if (written == 0 || written >= sizeof(candidate)) {
@@ -526,6 +495,19 @@ static int resolve_executable_dir(char const *argv0,
     return 0;
 }
 
+#if defined(HAVE_ONNXRUNTIME)
+/* ================================================================
+ * LPIPS helper plumbing (model discovery + tensor formatting)
+ * ================================================================ */
+
+typedef struct image_f32 {
+    int width;
+    int height;
+    float *nchw;
+} image_f32_t;
+
+static const OrtApi *g_lpips_api = NULL;
+
 static int build_local_model_path(char const *binary_dir,
                                   char const *name,
                                   char *buffer,
@@ -556,10 +538,18 @@ static int build_local_model_path(char const *binary_dir,
 }
 
 static int find_model(char const *binary_dir,
+                      char const *override_dir,
                       char const *name,
                       char *buffer,
                       size_t size)
 {
+    if (override_dir != NULL && override_dir[0] != '\0') {
+        if (join_path(override_dir, name, buffer, size) == 0) {
+            if (path_accessible(buffer)) {
+                return 0;
+            }
+        }
+    }
     if (binary_dir != NULL && binary_dir[0] != '\0') {
         if (build_local_model_path(binary_dir, name, buffer, size) == 0) {
             if (path_accessible(buffer)) {
@@ -577,43 +567,34 @@ static int find_model(char const *binary_dir,
     return -1;
 }
 
-static void set_lpips_binary_dir(char const *argv0)
+static int ensure_lpips_models(sixel_assessment_t *assessment)
 {
-    if (g_lpips_binary_dir_state != 0) {
-        return;
-    }
-    if (resolve_executable_dir(argv0,
-                               g_lpips_binary_dir,
-                               sizeof(g_lpips_binary_dir)) == 0) {
-        g_lpips_binary_dir_state = 1;
-    } else {
-        g_lpips_binary_dir[0] = '\0';
-        g_lpips_binary_dir_state = -1;
-    }
-}
-
-static int ensure_lpips_models(void)
-{
-    if (g_lpips_models_ready) {
+    if (assessment->lpips_models_ready) {
         return 0;
     }
-    if (find_model(g_lpips_binary_dir,
+    if (find_model(assessment->binary_dir,
+                   assessment->model_dir_state > 0
+                       ? assessment->model_dir
+                       : NULL,
                    "lpips_diff.onnx",
-                   g_lpips_diff_model,
-                   sizeof(g_lpips_diff_model)) != 0) {
+                   assessment->diff_model_path,
+                   sizeof(assessment->diff_model_path)) != 0) {
         fprintf(stderr,
                 "Warning: lpips_diff.onnx not found.\n");
         return -1;
     }
-    if (find_model(g_lpips_binary_dir,
+    if (find_model(assessment->binary_dir,
+                   assessment->model_dir_state > 0
+                       ? assessment->model_dir
+                       : NULL,
                    "lpips_feature.onnx",
-                   g_lpips_feat_model,
-                   sizeof(g_lpips_feat_model)) != 0) {
+                   assessment->feat_model_path,
+                   sizeof(assessment->feat_model_path)) != 0) {
         fprintf(stderr,
                 "Warning: lpips_feature.onnx not found.\n");
         return -1;
     }
-    g_lpips_models_ready = 1;
+    assessment->lpips_models_ready = 1;
     return 0;
 }
 
@@ -1084,13 +1065,30 @@ cleanup:
     if (diff_outputs[0] != NULL) {
         g_lpips_api->ReleaseValue(diff_outputs[0]);
     }
+    /*
+     * Clean up ORT-managed string buffers with explicit status release.
+     *
+     *    +-----------------------------+
+     *    | allocator -> char buffers  |
+     *    +-----------------------------+
+     *
+     * We always release the temporary OrtStatus objects to prevent
+     * resource leaks when ONNX Runtime reports cleanup diagnostics.
+     */
     if (diff_output_name != NULL) {
-        g_lpips_api->AllocatorFree(allocator, diff_output_name);
+        status = g_lpips_api->AllocatorFree(allocator, diff_output_name);
+        if (status != NULL) {
+            g_lpips_api->ReleaseStatus(status);
+        }
     }
     if (diff_input_names != NULL) {
         for (i = 0; i < diff_inputs; ++i) {
             if (diff_input_names[i] != NULL) {
-                g_lpips_api->AllocatorFree(allocator, diff_input_names[i]);
+                status = g_lpips_api->AllocatorFree(allocator,
+                                                    diff_input_names[i]);
+                if (status != NULL) {
+                    g_lpips_api->ReleaseStatus(status);
+                }
             }
         }
         free(diff_input_names);
@@ -1101,8 +1099,11 @@ cleanup:
     if (feat_output_names != NULL) {
         for (i = 0; i < feat_outputs; ++i) {
             if (feat_output_names[i] != NULL) {
-                g_lpips_api->AllocatorFree(allocator,
-                                           feat_output_names[i]);
+                status = g_lpips_api->AllocatorFree(allocator,
+                                                    feat_output_names[i]);
+                if (status != NULL) {
+                    g_lpips_api->ReleaseStatus(status);
+                }
             }
         }
         free(feat_output_names);
@@ -1124,7 +1125,10 @@ cleanup:
         free(features_b);
     }
     if (feat_input_name != NULL) {
-        g_lpips_api->AllocatorFree(allocator, feat_input_name);
+        status = g_lpips_api->AllocatorFree(allocator, feat_input_name);
+        if (status != NULL) {
+            g_lpips_api->ReleaseStatus(status);
+        }
     }
     if (tensor_a != NULL) {
         g_lpips_api->ReleaseValue(tensor_a);
@@ -2700,7 +2704,9 @@ static Metrics evaluate_metrics(const Image *ref_img, const Image *out_img)
  * LPIPS metric integration (ONNX Runtime)
  * ================================================================ */
 
-static float compute_lpips_vgg(const Image *ref_img, const Image *out_img)
+static float compute_lpips_vgg(sixel_assessment_t *assessment,
+                               const Image *ref_img,
+                               const Image *out_img)
 {
     float value;
 
@@ -2716,6 +2722,9 @@ static float compute_lpips_vgg(const Image *ref_img, const Image *out_img)
     out_tensor = ref_tensor;
     distance = NAN;
 
+    if (assessment->enable_lpips == 0) {
+        goto done;
+    }
     if (convert_image_to_nchw(ref_img, &ref_tensor) != 0) {
         fprintf(stderr,
                 "Warning: unable to convert reference image for LPIPS.\n");
@@ -2726,11 +2735,11 @@ static float compute_lpips_vgg(const Image *ref_img, const Image *out_img)
                 "Warning: unable to convert output image for LPIPS.\n");
         goto done;
     }
-    if (ensure_lpips_models() != 0) {
+    if (ensure_lpips_models(assessment) != 0) {
         goto done;
     }
-    if (run_lpips(g_lpips_diff_model,
-                  g_lpips_feat_model,
+    if (run_lpips(assessment->diff_model_path,
+                  assessment->feat_model_path,
                   &ref_tensor,
                   &out_tensor,
                   &distance) != 0) {
@@ -2742,106 +2751,12 @@ done:
     free_image_f32(&ref_tensor);
     free_image_f32(&out_tensor);
 #else
+    (void)assessment;
     (void)ref_img;
     (void)out_img;
 #endif
     return value;
 }
-
-typedef struct MetricItem {
-    const char *name;
-    float value;
-} MetricItem;
-
-/* ================================================================
- * JSON writer and pretty stderr output
- * ================================================================ */
-
-static void json_print_pair(FILE *fp, const char *key, float value, int last)
-{
-    if (isnan(value)) {
-        fprintf(fp, "  \"%s\": NaN%s\n", key, last ? "" : ",");
-    } else {
-        fprintf(fp, "  \"%s\": %.6f%s\n", key, value, last ? "" : ",");
-    }
-}
-
-static void write_metrics_json(FILE *fp, const Metrics *m)
-{
-    fprintf(fp, "{\n");
-    json_print_pair(fp, "MS-SSIM", m->ms_ssim, 0);
-    json_print_pair(fp, "HighFreqRatio_out", m->high_freq_out, 0);
-    json_print_pair(fp, "HighFreqRatio_ref", m->high_freq_ref, 0);
-    json_print_pair(fp, "HighFreqRatio_delta", m->high_freq_delta, 0);
-    json_print_pair(fp, "StripeScore_ref", m->stripe_ref, 0);
-    json_print_pair(fp, "StripeScore_out", m->stripe_out, 0);
-    json_print_pair(fp, "StripeScore_rel", m->stripe_rel, 0);
-    json_print_pair(fp, "BandingIndex_rel", m->band_run_rel, 0);
-    json_print_pair(fp, "BandingIndex_grad_rel", m->band_grad_rel, 0);
-    json_print_pair(fp, "ClipRate_L_ref", m->clip_l_ref, 0);
-    json_print_pair(fp, "ClipRate_R_ref", m->clip_r_ref, 0);
-    json_print_pair(fp, "ClipRate_G_ref", m->clip_g_ref, 0);
-    json_print_pair(fp, "ClipRate_B_ref", m->clip_b_ref, 0);
-    json_print_pair(fp, "ClipRate_L_out", m->clip_l_out, 0);
-    json_print_pair(fp, "ClipRate_R_out", m->clip_r_out, 0);
-    json_print_pair(fp, "ClipRate_G_out", m->clip_g_out, 0);
-    json_print_pair(fp, "ClipRate_B_out", m->clip_b_out, 0);
-    json_print_pair(fp, "ClipRate_L_rel", m->clip_l_rel, 0);
-    json_print_pair(fp, "ClipRate_R_rel", m->clip_r_rel, 0);
-    json_print_pair(fp, "ClipRate_G_rel", m->clip_g_rel, 0);
-    json_print_pair(fp, "ClipRate_B_rel", m->clip_b_rel, 0);
-    json_print_pair(fp, "Δ Chroma_mean", m->delta_chroma_mean, 0);
-    json_print_pair(fp, "Δ E00_mean", m->delta_e00_mean, 0);
-    json_print_pair(fp, "GMSD", m->gmsd_value, 0);
-    json_print_pair(fp, "PSNR_Y", m->psnr_y, 0);
-    json_print_pair(fp, "LPIPS(vgg)", m->lpips_vgg, 1);
-    fprintf(fp, "}\n");
-}
-
-static void verbose_print(const Metrics *m)
-{
-    MetricItem items[] = {
-        {"MS-SSIM", m->ms_ssim},
-        {"HighFreqRatio_out", m->high_freq_out},
-        {"HighFreqRatio_ref", m->high_freq_ref},
-        {"HighFreqRatio_delta", m->high_freq_delta},
-        {"StripeScore_ref", m->stripe_ref},
-        {"StripeScore_out", m->stripe_out},
-        {"StripeScore_rel", m->stripe_rel},
-        {"BandingIndex_rel", m->band_run_rel},
-        {"BandingIndex_grad_rel", m->band_grad_rel},
-        {"ClipRate_L_ref", m->clip_l_ref},
-        {"ClipRate_R_ref", m->clip_r_ref},
-        {"ClipRate_G_ref", m->clip_g_ref},
-        {"ClipRate_B_ref", m->clip_b_ref},
-        {"ClipRate_L_out", m->clip_l_out},
-        {"ClipRate_R_out", m->clip_r_out},
-        {"ClipRate_G_out", m->clip_g_out},
-        {"ClipRate_B_out", m->clip_b_out},
-        {"ClipRate_L_rel", m->clip_l_rel},
-        {"ClipRate_R_rel", m->clip_r_rel},
-        {"ClipRate_G_rel", m->clip_g_rel},
-        {"ClipRate_B_rel", m->clip_b_rel},
-        {"Δ Chroma_mean", m->delta_chroma_mean},
-        {"Δ E00_mean", m->delta_e00_mean},
-        {"GMSD", m->gmsd_value},
-        {"PSNR_Y", m->psnr_y},
-        {"LPIPS(vgg)", m->lpips_vgg},
-    };
-    size_t i;
-    fprintf(stderr, "\n=== Image Quality Report (Raw Metrics) ===\n");
-    for (i = 0; i < sizeof(items) / sizeof(items[0]); ++i) {
-        if (isnan(items[i].value)) {
-            fprintf(stderr, "%24s: NaN\n", items[i].name);
-        } else {
-            fprintf(stderr, "%24s: %.6f\n", items[i].name,
-                    items[i].value);
-        }
-    }
-}
-/* ================================================================
- * Image alignment helper
- * ================================================================ */
 
 static void align_images(Image *ref, Image *out)
 {
@@ -2857,8 +2772,8 @@ static void align_images(Image *ref, Image *out)
     height = ref->height < out->height ? ref->height : out->height;
     channels = ref->channels;
     if (channels != out->channels) {
-        fprintf(stderr, "Channel mismatch between images\n");
-        exit(EXIT_FAILURE);
+        assessment_fail(SIXEL_BAD_ARGUMENT,
+                       "Channel mismatch between input frames");
     }
     ref_new = (float *)xmalloc((size_t)width * (size_t)height *
                                (size_t)channels * sizeof(float));
@@ -2884,154 +2799,358 @@ static void align_images(Image *ref, Image *out)
 }
 
 /* ================================================================
- * Argument parsing and main orchestration
+ * Assessment API bridge
  * ================================================================ */
 
-typedef struct Options {
-    const char *ref_path;
-    const char *out_path;
-    const char *prefix;
-    int verbose;
-} Options;
+typedef struct MetricDescriptor {
+    int id;
+    const char *json_key;
+} MetricDescriptor;
 
-static void print_usage(const char *prog)
+static const MetricDescriptor g_metric_table[] = {
+    {SIXEL_ASSESSMENT_METRIC_MS_SSIM, "MS-SSIM"},
+    {SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT, "HighFreqRatio_out"},
+    {SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_REF, "HighFreqRatio_ref"},
+    {SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_DELTA, "HighFreqRatio_delta"},
+    {SIXEL_ASSESSMENT_METRIC_STRIPE_REF, "StripeScore_ref"},
+    {SIXEL_ASSESSMENT_METRIC_STRIPE_OUT, "StripeScore_out"},
+    {SIXEL_ASSESSMENT_METRIC_STRIPE_REL, "StripeScore_rel"},
+    {SIXEL_ASSESSMENT_METRIC_BAND_RUN_REL, "BandingIndex_rel"},
+    {SIXEL_ASSESSMENT_METRIC_BAND_GRAD_REL, "BandingIndex_grad_rel"},
+    {SIXEL_ASSESSMENT_METRIC_CLIP_L_REF, "ClipRate_L_ref"},
+    {SIXEL_ASSESSMENT_METRIC_CLIP_R_REF, "ClipRate_R_ref"},
+    {SIXEL_ASSESSMENT_METRIC_CLIP_G_REF, "ClipRate_G_ref"},
+    {SIXEL_ASSESSMENT_METRIC_CLIP_B_REF, "ClipRate_B_ref"},
+    {SIXEL_ASSESSMENT_METRIC_CLIP_L_OUT, "ClipRate_L_out"},
+    {SIXEL_ASSESSMENT_METRIC_CLIP_R_OUT, "ClipRate_R_out"},
+    {SIXEL_ASSESSMENT_METRIC_CLIP_G_OUT, "ClipRate_G_out"},
+    {SIXEL_ASSESSMENT_METRIC_CLIP_B_OUT, "ClipRate_B_out"},
+    {SIXEL_ASSESSMENT_METRIC_CLIP_L_REL, "ClipRate_L_rel"},
+    {SIXEL_ASSESSMENT_METRIC_CLIP_R_REL, "ClipRate_R_rel"},
+    {SIXEL_ASSESSMENT_METRIC_CLIP_G_REL, "ClipRate_G_rel"},
+    {SIXEL_ASSESSMENT_METRIC_CLIP_B_REL, "ClipRate_B_rel"},
+    {SIXEL_ASSESSMENT_METRIC_DELTA_CHROMA, "Δ Chroma_mean"},
+    {SIXEL_ASSESSMENT_METRIC_DELTA_E00, "Δ E00_mean"},
+    {SIXEL_ASSESSMENT_METRIC_GMSD, "GMSD"},
+    {SIXEL_ASSESSMENT_METRIC_PSNR_Y, "PSNR_Y"},
+    {SIXEL_ASSESSMENT_METRIC_LPIPS_VGG, "LPIPS(vgg)"},
+};
+
+static void
+store_metrics(sixel_assessment_t *assessment, const Metrics *metrics)
 {
-    fprintf(stderr,
-            "Usage: %s --ref <path> [--out <path>] [--prefix <p>] [-v]\n",
-            prog);
+    double *results;
+
+    results = assessment->results;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_MS_SSIM)]
+        = metrics->ms_ssim;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT)]
+        = metrics->high_freq_out;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_REF)]
+        = metrics->high_freq_ref;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_DELTA)]
+        = metrics->high_freq_delta;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_STRIPE_REF)]
+        = metrics->stripe_ref;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_STRIPE_OUT)]
+        = metrics->stripe_out;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_STRIPE_REL)]
+        = metrics->stripe_rel;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_BAND_RUN_REL)]
+        = metrics->band_run_rel;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_BAND_GRAD_REL)]
+        = metrics->band_grad_rel;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_L_REF)]
+        = metrics->clip_l_ref;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_R_REF)]
+        = metrics->clip_r_ref;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_G_REF)]
+        = metrics->clip_g_ref;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_B_REF)]
+        = metrics->clip_b_ref;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_L_OUT)]
+        = metrics->clip_l_out;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_R_OUT)]
+        = metrics->clip_r_out;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_G_OUT)]
+        = metrics->clip_g_out;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_B_OUT)]
+        = metrics->clip_b_out;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_L_REL)]
+        = metrics->clip_l_rel;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_R_REL)]
+        = metrics->clip_r_rel;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_G_REL)]
+        = metrics->clip_g_rel;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_B_REL)]
+        = metrics->clip_b_rel;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_DELTA_CHROMA)]
+        = metrics->delta_chroma_mean;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_DELTA_E00)]
+        = metrics->delta_e00_mean;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_GMSD)]
+        = metrics->gmsd_value;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_PSNR_Y)]
+        = metrics->psnr_y;
+    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_LPIPS_VGG)]
+        = metrics->lpips_vgg;
 }
 
-static int parse_args(int argc, char **argv, Options *opts)
+SIXELSTATUS
+sixel_assessment_new(sixel_assessment_t **ppassessment,
+                    sixel_allocator_t *allocator)
 {
-    int i;
-    opts->ref_path = NULL;
-    opts->out_path = "-";
-    opts->prefix = "report";
-    opts->verbose = 0;
+    SIXELSTATUS status;
+    sixel_assessment_t *assessment;
 
-    for (i = 1; i < argc; ++i) {
-        if (strcmp(argv[i], "--ref") == 0) {
-            if (i + 1 >= argc) {
-                fprintf(stderr, "--ref requires a value\n");
-                return -1;
-            }
-            opts->ref_path = argv[++i];
-        } else if (strcmp(argv[i], "--out") == 0) {
-            if (i + 1 >= argc) {
-                fprintf(stderr, "--out requires a value\n");
-                return -1;
-            }
-            opts->out_path = argv[++i];
-        } else if (strcmp(argv[i], "--prefix") == 0) {
-            if (i + 1 >= argc) {
-                fprintf(stderr, "--prefix requires a value\n");
-                return -1;
-            }
-            opts->prefix = argv[++i];
-        } else if (strcmp(argv[i], "-v") == 0 ||
-                   strcmp(argv[i], "--verbose") == 0) {
-            opts->verbose = 1;
-        } else {
-            fprintf(stderr, "Unknown argument: %s\n", argv[i]);
-            return -1;
+    if (ppassessment == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (allocator == NULL) {
+        status = sixel_allocator_new(&allocator,
+                                     NULL,
+                                     NULL,
+                                     NULL,
+                                     NULL);
+        if (SIXEL_FAILED(status)) {
+            return status;
         }
+    } else {
+        sixel_allocator_ref(allocator);
     }
 
-    if (opts->ref_path == NULL) {
-        fprintf(stderr, "--ref is required\n");
+    assessment = (sixel_assessment_t *)sixel_allocator_malloc(
+        allocator,
+        sizeof(sixel_assessment_t));
+    if (assessment == NULL) {
+        sixel_allocator_unref(allocator);
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    assessment->refcount = 1;
+    assessment->allocator = allocator;
+    assessment->enable_lpips = 1;
+    assessment->results_ready = 0;
+    assessment->last_error = SIXEL_OK;
+    assessment->error_message[0] = '\0';
+    assessment->binary_dir[0] = '\0';
+    assessment->binary_dir_state = 0;
+    assessment->model_dir[0] = '\0';
+    assessment->model_dir_state = 0;
+    assessment->lpips_models_ready = 0;
+    assessment->diff_model_path[0] = '\0';
+    assessment->feat_model_path[0] = '\0';
+    memset(assessment->results, 0,
+           sizeof(assessment->results));
+
+    *ppassessment = assessment;
+    return SIXEL_OK;
+}
+
+void
+sixel_assessment_ref(sixel_assessment_t *assessment)
+{
+    if (assessment == NULL) {
+        return;
+    }
+    assessment->refcount += 1;
+}
+
+void
+sixel_assessment_unref(sixel_assessment_t *assessment)
+{
+    if (assessment == NULL) {
+        return;
+    }
+    assessment->refcount -= 1;
+    if (assessment->refcount == 0) {
+        sixel_allocator_t *allocator;
+
+        allocator = assessment->allocator;
+        sixel_allocator_free(allocator, assessment);
+        sixel_allocator_unref(allocator);
+    }
+}
+
+static int
+parse_bool_option(char const *value, int *out)
+{
+    char lowered[8];
+    size_t len;
+    size_t i;
+
+    if (value == NULL || out == NULL) {
         return -1;
     }
-    return 0;
+    len = strlen(value);
+    if (len >= sizeof(lowered)) {
+        return -1;
+    }
+    for (i = 0; i < len; ++i) {
+        lowered[i] = (char)tolower((unsigned char)value[i]);
+    }
+    lowered[len] = '\0';
+    if (strcmp(lowered, "1") == 0 || strcmp(lowered, "true") == 0 ||
+        strcmp(lowered, "yes") == 0) {
+        *out = 1;
+        return 0;
+    }
+    if (strcmp(lowered, "0") == 0 || strcmp(lowered, "false") == 0 ||
+        strcmp(lowered, "no") == 0) {
+        *out = 0;
+        return 0;
+    }
+    return -1;
 }
-int main(int argc, char **argv)
+
+SIXELSTATUS
+sixel_assessment_setopt(sixel_assessment_t *assessment,
+                       int option,
+                       char const *value)
 {
-    Options opts;
+    int bool_value;
+    int rc;
+
+    if (assessment == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    switch (option) {
+    case SIXEL_ASSESSMENT_OPT_ENABLE_LPIPS:
+        if (parse_bool_option(value, &bool_value) != 0) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        assessment->enable_lpips = bool_value;
+        return SIXEL_OK;
+    case SIXEL_ASSESSMENT_OPT_MODEL_DIR:
+        if (value == NULL) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        if (strlen(value) >= sizeof(assessment->model_dir)) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        strcpy(assessment->model_dir, value);
+        assessment->model_dir_state = 1;
+        assessment->lpips_models_ready = 0;
+        return SIXEL_OK;
+    case SIXEL_ASSESSMENT_OPT_EXEC_PATH:
+        rc = assessment_resolve_executable_dir(value,
+                                              assessment->binary_dir,
+                                              sizeof(assessment->binary_dir));
+        if (rc != 0) {
+            assessment->binary_dir_state = -1;
+            assessment->binary_dir[0] = '\0';
+            return SIXEL_RUNTIME_ERROR;
+        }
+        assessment->binary_dir_state = 1;
+        assessment->lpips_models_ready = 0;
+        return SIXEL_OK;
+    default:
+        break;
+    }
+    return SIXEL_BAD_ARGUMENT;
+}
+
+SIXELSTATUS
+sixel_assessment_analyze(sixel_assessment_t *assessment,
+                        sixel_frame_t *reference,
+                        sixel_frame_t *output)
+{
+    Metrics metrics;
     Image ref_img;
     Image out_img;
-    Metrics metrics;
-    int status;
-    size_t path_len;
-    char *json_path;
-    FILE *fp;
-    sixel_allocator_t *allocator;
-    SIXELSTATUS loader_status;
+    SIXELSTATUS status;
+    int bail;
+
+    if (assessment == NULL || reference == NULL || output == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     ref_img.width = 0;
     ref_img.height = 0;
     ref_img.channels = 0;
     ref_img.pixels = NULL;
     out_img = ref_img;
-    allocator = NULL;
-    loader_status = SIXEL_OK;
 
-    status = parse_args(argc, argv, &opts);
-    if (status != 0) {
-        print_usage(argv[0]);
-        return EXIT_FAILURE;
+    assessment->last_error = SIXEL_OK;
+    assessment->error_message[0] = '\0';
+    assessment->results_ready = 0;
+    g_assessment_context = assessment;
+    bail = setjmp(assessment->bailout);
+    if (bail != 0) {
+        status = assessment->last_error;
+        goto cleanup;
     }
 
-    loader_status = sixel_allocator_new(&allocator,
-                                        malloc,
-                                        calloc,
-                                        realloc,
-                                        free);
-    if (SIXEL_FAILED(loader_status) || allocator == NULL) {
-        fprintf(stderr,
-                "Failed to allocate loader: %s\n",
-                sixel_helper_format_error(loader_status));
-        return EXIT_FAILURE;
+    status = image_from_frame(reference, &ref_img);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
     }
-
-#if defined(HAVE_ONNXRUNTIME)
-    set_lpips_binary_dir(argv[0]);
-#endif
-
-    if (load_image(opts.ref_path, allocator, &ref_img) != 0) {
-        fprintf(stderr, "Failed to load reference image\n");
-        sixel_allocator_unref(allocator);
-        return EXIT_FAILURE;
-    }
-    if (load_image(opts.out_path, allocator, &out_img) != 0) {
-        fprintf(stderr, "Failed to load output image\n");
-        image_free(&ref_img);
-        sixel_allocator_unref(allocator);
-        return EXIT_FAILURE;
+    status = image_from_frame(output, &out_img);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
     }
 
     align_images(&ref_img, &out_img);
 
     metrics = evaluate_metrics(&ref_img, &out_img);
-    metrics.lpips_vgg = compute_lpips_vgg(&ref_img, &out_img);
+    metrics.lpips_vgg = compute_lpips_vgg(assessment,
+                                          &ref_img,
+                                          &out_img);
+    store_metrics(assessment, &metrics);
+    assessment->results_ready = 1;
+    status = SIXEL_OK;
 
-    if (opts.verbose) {
-        verbose_print(&metrics);
-    }
-
-    path_len = strlen(opts.prefix) + strlen("_metrics.json") + 1;
-    json_path = (char *)xmalloc(path_len);
-    snprintf(json_path, path_len, "%s_metrics.json", opts.prefix);
-    fp = fopen(json_path, "w");
-    if (fp == NULL) {
-        fprintf(stderr, "Failed to open %s for writing: %s\n",
-                json_path, strerror(errno));
-        free(json_path);
-        image_free(&ref_img);
-        image_free(&out_img);
-        return EXIT_FAILURE;
-    }
-    write_metrics_json(fp, &metrics);
-    fclose(fp);
-    if (opts.verbose) {
-        fprintf(stderr, "\nWrote: %s\n", json_path);
-    }
-
-    write_metrics_json(stdout, &metrics);
-
-    free(json_path);
+cleanup:
     image_free(&ref_img);
     image_free(&out_img);
-    if (allocator != NULL) {
-        sixel_allocator_unref(allocator);
+    g_assessment_context = NULL;
+    return status;
+}
+
+SIXELSTATUS
+sixel_assessment_get_json(sixel_assessment_t *assessment,
+                         sixel_assessment_json_callback_t callback,
+                         void *user_data)
+{
+    size_t i;
+    char line[128];
+    int written;
+    int last;
+    double value;
+    int index;
+
+    if (assessment == NULL || callback == NULL) {
+        return SIXEL_BAD_ARGUMENT;
     }
-    return EXIT_SUCCESS;
+    if (!assessment->results_ready) {
+        return SIXEL_RUNTIME_ERROR;
+    }
+
+    callback("{\n", 2, user_data);
+    for (i = 0; i < sizeof(g_metric_table) / sizeof(g_metric_table[0]); ++i) {
+        last = (i + 1 == sizeof(g_metric_table) /
+                sizeof(g_metric_table[0]));
+        index = SIXEL_ASSESSMENT_INDEX(g_metric_table[i].id);
+        value = assessment->results[index];
+        if (isnan(value)) {
+            written = snprintf(line,
+                               sizeof(line),
+                               "  \"%s\": NaN%s\n",
+                               g_metric_table[i].json_key,
+                               last ? "" : ",");
+        } else {
+            written = snprintf(line,
+                               sizeof(line),
+                               "  \"%s\": %.6f%s\n",
+                               g_metric_table[i].json_key,
+                               value,
+                               last ? "" : ",");
+        }
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+    }
+    callback("}\n", 2, user_data);
+    return SIXEL_OK;
 }

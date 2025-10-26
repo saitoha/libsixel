@@ -15,6 +15,7 @@
 @SET_MAKE@
 
 
+
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -91,7 +92,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@HAVE_ONNXRUNTIME_TRUE@am__append_1 = lpips$(EXEEXT)
+noinst_PROGRAMS = lsqa$(EXEEXT) $(am__EXEEXT_1)
+@HAVE_ONNXRUNTIME_TRUE@am__append_1 = lpips
 @WANT_THUMBNAILER_TRUE@am__append_2 = sixel-thumbnailer
 subdir = tools
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -110,6 +112,28 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES = libsixel-config
 CONFIG_CLEAN_VPATH_FILES =
+@HAVE_ONNXRUNTIME_TRUE@am__EXEEXT_1 = lpips$(EXEEXT)
+PROGRAMS = $(noinst_PROGRAMS)
+am__lpips_SOURCES_DIST = $(srcdir)/lpips.c
+@HAVE_ONNXRUNTIME_TRUE@am_lpips_OBJECTS = lpips-lpips.$(OBJEXT)
+lpips_OBJECTS = $(am_lpips_OBJECTS)
+am__DEPENDENCIES_1 =
+@HAVE_ONNXRUNTIME_TRUE@lpips_DEPENDENCIES =  \
+@HAVE_ONNXRUNTIME_TRUE@	$(top_builddir)/src/libsixel.la \
+@HAVE_ONNXRUNTIME_TRUE@	$(am__DEPENDENCIES_1)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
+lpips_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lpips_CFLAGS) $(CFLAGS) \
+	$(lpips_LDFLAGS) $(LDFLAGS) -o $@
+am_lsqa_OBJECTS = lsqa-lsqa.$(OBJEXT)
+lsqa_OBJECTS = $(am_lsqa_OBJECTS)
+lsqa_DEPENDENCIES = $(top_builddir)/src/libsixel.la
+lsqa_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lsqa_CFLAGS) $(CFLAGS) \
+	$(lsqa_LDFLAGS) $(LDFLAGS) -o $@
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -150,8 +174,32 @@ AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
-SOURCES =
-DIST_SOURCES =
+DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
+depcomp = $(SHELL) $(top_srcdir)/depcomp
+am__maybe_remake_depfiles = depfiles
+am__depfiles_remade = ./$(DEPDIR)/lpips-lpips.Po \
+	./$(DEPDIR)/lsqa-lsqa.Po
+am__mv = mv -f
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+AM_V_CC = $(am__v_CC_@AM_V@)
+am__v_CC_ = $(am__v_CC_@AM_DEFAULT_V@)
+am__v_CC_0 = @echo "  CC      " $@;
+am__v_CC_1 = 
+CCLD = $(CC)
+LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CCLD = $(am__v_CCLD_@AM_V@)
+am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
+am__v_CCLD_0 = @echo "  CCLD    " $@;
+am__v_CCLD_1 = 
+SOURCES = $(lpips_SOURCES) $(lsqa_SOURCES)
+DIST_SOURCES = $(am__lpips_SOURCES_DIST) $(lsqa_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -162,7 +210,24 @@ am__dist_lpipsmodels_DATA_DIST =  \
 	$(top_srcdir)/models/lpips/lpips_feature.onnx
 DATA = $(dist_lpipsmodels_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
-am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/libsixel-config.in
+# Read a list of newline-separated strings from the standard input,
+# and print each of them once, without duplicates.  Input order is
+# *not* preserved.
+am__uniquify_input = $(AWK) '\
+  BEGIN { nonempty = 0; } \
+  { items[$$0] = 1; nonempty = 1; } \
+  END { if (nonempty) { for (i in items) print i; }; } \
+'
+# Make sure the list of sources is unique.  This is necessary because,
+# e.g., the same source file might be shared among _SOURCES variables
+# for different programs/libraries.
+am__define_uniq_tagged_files = \
+  list='$(am__tagged_files)'; \
+  unique=`for i in $$list; do \
+    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+  done | $(am__uniquify_input)`
+am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/libsixel-config.in \
+	$(top_srcdir)/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -350,12 +415,30 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
-local_helpers = evaluate$(EXEEXT) $(am__append_1)
+@COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
+lsqa_SOURCES = $(srcdir)/lsqa.c
+lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
+                -I$(top_srcdir)/src \
+                $(AM_CPPFLAGS)
+
+lsqa_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
+lsqa_LDFLAGS = $(MAYBE_COVERAGE)
+lsqa_LDADD = $(top_builddir)/src/libsixel.la
+@HAVE_ONNXRUNTIME_TRUE@lpips_SOURCES = $(srcdir)/lpips.c
+@HAVE_ONNXRUNTIME_TRUE@lpips_CPPFLAGS = -I$(top_builddir)/include/ \
+@HAVE_ONNXRUNTIME_TRUE@                 -I$(top_srcdir)/src \
+@HAVE_ONNXRUNTIME_TRUE@                 $(AM_CPPFLAGS) \
+@HAVE_ONNXRUNTIME_TRUE@                 $(ONNXRUNTIME_CFLAGS)
+
+@HAVE_ONNXRUNTIME_TRUE@lpips_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
+@HAVE_ONNXRUNTIME_TRUE@lpips_LDFLAGS = $(MAYBE_COVERAGE)
+@HAVE_ONNXRUNTIME_TRUE@lpips_LDADD = $(top_builddir)/src/libsixel.la \
+@HAVE_ONNXRUNTIME_TRUE@              $(ONNXRUNTIME_LIBS)
+
 @HAVE_ONNXRUNTIME_TRUE@lpipsmodelsdir = $(pkgdatadir)/models/lpips
 @HAVE_ONNXRUNTIME_TRUE@dist_lpipsmodels_DATA = $(top_srcdir)/models/lpips/lpips_diff.onnx \
 @HAVE_ONNXRUNTIME_TRUE@                        $(top_srcdir)/models/lpips/lpips_feature.onnx
 
-CLEANFILES = $(local_helpers)
 bin_SCRIPTS = libsixel-config $(am__append_2)
 EXTRA_DIST = libsixel-config.in \
              quicklook-extension.bash \
@@ -367,6 +450,7 @@ EXTRA_DIST = libsixel-config.in \
 all: all-am
 
 .SUFFIXES:
+.SUFFIXES: .c .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -398,6 +482,18 @@ $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 $(am__aclocal_m4_deps):
 libsixel-config: $(top_builddir)/config.status $(srcdir)/libsixel-config.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+
+clean-noinstPROGRAMS:
+	$(am__rm_f) $(noinst_PROGRAMS)
+	test -z "$(EXEEXT)" || $(am__rm_f) $(noinst_PROGRAMS:$(EXEEXT)=)
+
+lpips$(EXEEXT): $(lpips_OBJECTS) $(lpips_DEPENDENCIES) $(EXTRA_lpips_DEPENDENCIES) 
+	@rm -f lpips$(EXEEXT)
+	$(AM_V_CCLD)$(lpips_LINK) $(lpips_OBJECTS) $(lpips_LDADD) $(LIBS)
+
+lsqa$(EXEEXT): $(lsqa_OBJECTS) $(lsqa_DEPENDENCIES) $(EXTRA_lsqa_DEPENDENCIES) 
+	@rm -f lsqa$(EXEEXT)
+	$(AM_V_CCLD)$(lsqa_LINK) $(lsqa_OBJECTS) $(lsqa_LDADD) $(LIBS)
 install-binSCRIPTS: $(bin_SCRIPTS)
 	@$(NORMAL_INSTALL)
 	@list='$(bin_SCRIPTS)'; test -n "$(bindir)" || list=; \
@@ -434,6 +530,73 @@ uninstall-binSCRIPTS:
 	       sed -e 's,.*/,,;$(transform)'`; \
 	dir='$(DESTDIR)$(bindir)'; $(am__uninstall_files_from_dir)
 
+mostlyclean-compile:
+	-rm -f *.$(OBJEXT)
+
+distclean-compile:
+	-rm -f *.tab.c
+
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lpips-lpips.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsqa-lsqa.Po@am__quote@ # am--include-marker
+
+$(am__depfiles_remade):
+	@$(MKDIR_P) $(@D)
+	@: >>$@
+
+am--depfiles: $(am__depfiles_remade)
+
+.c.o:
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ $<
+
+.c.obj:
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+.c.lo:
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+lpips-lpips.o: lpips.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lpips_CPPFLAGS) $(CPPFLAGS) $(lpips_CFLAGS) $(CFLAGS) -MT lpips-lpips.o -MD -MP -MF $(DEPDIR)/lpips-lpips.Tpo -c -o lpips-lpips.o `test -f 'lpips.c' || echo '$(srcdir)/'`lpips.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lpips-lpips.Tpo $(DEPDIR)/lpips-lpips.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lpips.c' object='lpips-lpips.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lpips_CPPFLAGS) $(CPPFLAGS) $(lpips_CFLAGS) $(CFLAGS) -c -o lpips-lpips.o `test -f 'lpips.c' || echo '$(srcdir)/'`lpips.c
+
+lpips-lpips.obj: lpips.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lpips_CPPFLAGS) $(CPPFLAGS) $(lpips_CFLAGS) $(CFLAGS) -MT lpips-lpips.obj -MD -MP -MF $(DEPDIR)/lpips-lpips.Tpo -c -o lpips-lpips.obj `if test -f 'lpips.c'; then $(CYGPATH_W) 'lpips.c'; else $(CYGPATH_W) '$(srcdir)/lpips.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lpips-lpips.Tpo $(DEPDIR)/lpips-lpips.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lpips.c' object='lpips-lpips.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lpips_CPPFLAGS) $(CPPFLAGS) $(lpips_CFLAGS) $(CFLAGS) -c -o lpips-lpips.obj `if test -f 'lpips.c'; then $(CYGPATH_W) 'lpips.c'; else $(CYGPATH_W) '$(srcdir)/lpips.c'; fi`
+
+lsqa-lsqa.o: lsqa.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT lsqa-lsqa.o -MD -MP -MF $(DEPDIR)/lsqa-lsqa.Tpo -c -o lsqa-lsqa.o `test -f 'lsqa.c' || echo '$(srcdir)/'`lsqa.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lsqa-lsqa.Tpo $(DEPDIR)/lsqa-lsqa.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lsqa.c' object='lsqa-lsqa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o lsqa-lsqa.o `test -f 'lsqa.c' || echo '$(srcdir)/'`lsqa.c
+
+lsqa-lsqa.obj: lsqa.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT lsqa-lsqa.obj -MD -MP -MF $(DEPDIR)/lsqa-lsqa.Tpo -c -o lsqa-lsqa.obj `if test -f 'lsqa.c'; then $(CYGPATH_W) 'lsqa.c'; else $(CYGPATH_W) '$(srcdir)/lsqa.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lsqa-lsqa.Tpo $(DEPDIR)/lsqa-lsqa.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lsqa.c' object='lsqa-lsqa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o lsqa-lsqa.obj `if test -f 'lsqa.c'; then $(CYGPATH_W) 'lsqa.c'; else $(CYGPATH_W) '$(srcdir)/lsqa.c'; fi`
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -460,12 +623,58 @@ uninstall-dist_lpipsmodelsDATA:
 	@list='$(dist_lpipsmodels_DATA)'; test -n "$(lpipsmodelsdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(lpipsmodelsdir)'; $(am__uninstall_files_from_dir)
-tags TAGS:
 
-ctags CTAGS:
+ID: $(am__tagged_files)
+	$(am__define_uniq_tagged_files); mkid -fID $$unique
+tags: tags-am
+TAGS: tags
 
-cscope cscopelist:
+tags-am: $(TAGS_DEPENDENCIES) $(am__tagged_files)
+	set x; \
+	here=`pwd`; \
+	$(am__define_uniq_tagged_files); \
+	shift; \
+	if test -z "$(ETAGS_ARGS)$$*$$unique"; then :; else \
+	  test -n "$$unique" || unique=$$empty_fix; \
+	  if test $$# -gt 0; then \
+	    $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
+	      "$$@" $$unique; \
+	  else \
+	    $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
+	      $$unique; \
+	  fi; \
+	fi
+ctags: ctags-am
 
+CTAGS: ctags
+ctags-am: $(TAGS_DEPENDENCIES) $(am__tagged_files)
+	$(am__define_uniq_tagged_files); \
+	test -z "$(CTAGS_ARGS)$$unique" \
+	  || $(CTAGS) $(CTAGSFLAGS) $(AM_CTAGSFLAGS) $(CTAGS_ARGS) \
+	     $$unique
+
+GTAGS:
+	here=`$(am__cd) $(top_builddir) && pwd` \
+	  && $(am__cd) $(top_srcdir) \
+	  && gtags -i $(GTAGS_ARGS) "$$here"
+cscopelist: cscopelist-am
+
+cscopelist-am: $(am__tagged_files)
+	list='$(am__tagged_files)'; \
+	case "$(srcdir)" in \
+	  [\\/]* | ?:[\\/]*) sdir="$(srcdir)" ;; \
+	  *) sdir=$(subdir)/$(srcdir) ;; \
+	esac; \
+	for i in $$list; do \
+	  if test -f "$$i"; then \
+	    echo "$(subdir)/$$i"; \
+	  else \
+	    echo "$$sdir/$$i"; \
+	  fi; \
+	done >> $(top_builddir)/cscope.files
+
+distclean-tags:
+	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 
 distdir: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) distdir-am
@@ -502,7 +711,7 @@ distdir-am: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(SCRIPTS) $(DATA) all-local
+all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(DATA)
 installdirs:
 	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(lpipsmodelsdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -529,7 +738,6 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
-	-$(am__rm_f) $(CLEANFILES)
 
 distclean-generic:
 	-$(am__rm_f) $(CONFIG_CLEAN_FILES)
@@ -540,11 +748,15 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-local mostlyclean-am
+clean-am: clean-generic clean-libtool clean-noinstPROGRAMS \
+	mostlyclean-am
 
 distclean: distclean-am
+	-rm -f ./$(DEPDIR)/lpips-lpips.Po
+	-rm -f ./$(DEPDIR)/lsqa-lsqa.Po
 	-rm -f Makefile
-distclean-am: clean-am distclean-generic
+distclean-am: clean-am distclean-compile distclean-generic \
+	distclean-tags
 
 dvi: dvi-am
 
@@ -588,12 +800,15 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
+	-rm -f ./$(DEPDIR)/lpips-lpips.Po
+	-rm -f ./$(DEPDIR)/lsqa-lsqa.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
 mostlyclean: mostlyclean-am
 
-mostlyclean-am: mostlyclean-generic mostlyclean-libtool
+mostlyclean-am: mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool
 
 pdf: pdf-am
 
@@ -608,9 +823,10 @@ uninstall-am: uninstall-binSCRIPTS uninstall-dist_lpipsmodelsDATA
 	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
 .MAKE: install-am install-data-am install-strip uninstall-am
 
-.PHONY: all all-am all-local check check-am clean clean-generic \
-	clean-libtool clean-local cscopelist-am ctags-am distclean \
-	distclean-generic distclean-libtool distdir dvi dvi-am html \
+.PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am clean \
+	clean-generic clean-libtool clean-noinstPROGRAMS cscopelist-am \
+	ctags ctags-am distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-binSCRIPTS \
 	install-data install-data-am install-data-hook \
 	install-dist_lpipsmodelsDATA install-dvi install-dvi-am \
@@ -618,55 +834,13 @@ uninstall-am: uninstall-binSCRIPTS uninstall-dist_lpipsmodelsDATA
 	install-info install-info-am install-man install-pdf \
 	install-pdf-am install-ps install-ps-am install-strip \
 	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags-am uninstall \
-	uninstall-am uninstall-binSCRIPTS \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-am uninstall uninstall-am uninstall-binSCRIPTS \
 	uninstall-dist_lpipsmodelsDATA uninstall-hook
 
 .PRECIOUS: Makefile
 
-
-clean-local:
-
-all-local: $(local_helpers)
-
-# Build the fast evaluator locally so shell wrappers can reuse it without
-# requiring installation.
-evaluate$(EXEEXT): $(srcdir)/evaluate.c
-	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) \
-	-I$(top_builddir) -I$(top_builddir)/include \
-	-I$(top_srcdir)/src $(AM_CFLAGS) $(CFLAGS) \
-	$(ONNXRUNTIME_CFLAGS) \
-	-c -o $@.o $(srcdir)/evaluate.c
-	$(AM_V_CC)$(CC) $(AM_CFLAGS) $(CFLAGS) \
-	$@.o \
-	$(ONNXRUNTIME_LIBS) \
-	$(top_builddir)/src/.libs/libsixel.a \
-	$(LIBPNG_LIBS) $(LIBJPEG_LIBS) $(GDK_PIXBUF_LIBS) \
-	$(GD_LIBS) $(WIC_LIBS) $(COREGRAPHICS_LIBS) \
-	$(QUICKLOOK_LIBS) \
-	$(LIBCURL_LIBS) $(WINHTTP_LIBS) \
-	$(LIBS_PRIVATE) $(LIBS) -o $@
-	$(AM_V_at)rm -f $@.o
-
-# +-------------------+   +--------------------+   +--------------------+
-# | libsixel loaders  |-->| tensor formatting |-->| ONNX Runtime graph |
-# +-------------------+   +--------------------+   +--------------------+
-@HAVE_ONNXRUNTIME_TRUE@lpips$(EXEEXT): $(srcdir)/lpips.c $(top_builddir)/src/liblibsixelloader.a
-@HAVE_ONNXRUNTIME_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-@HAVE_ONNXRUNTIME_TRUE@	$(AM_CPPFLAGS) $(CPPFLAGS) -I$(top_srcdir) \
-@HAVE_ONNXRUNTIME_TRUE@	-I$(top_srcdir)/include -I$(top_srcdir)/src $(AM_CFLAGS) $(CFLAGS) \
-@HAVE_ONNXRUNTIME_TRUE@	$(ONNXRUNTIME_CFLAGS) \
-@HAVE_ONNXRUNTIME_TRUE@	-DSIXEL_LPIPS_MODEL_DIR=\"$(pkgdatadir)/models/lpips\" \
-@HAVE_ONNXRUNTIME_TRUE@	$(srcdir)/lpips.c \
-@HAVE_ONNXRUNTIME_TRUE@	$(LDFLAGS) -o $@ $(ONNXRUNTIME_LIBS) \
-@HAVE_ONNXRUNTIME_TRUE@	$(top_builddir)/src/liblibsixelloader.a \
-@HAVE_ONNXRUNTIME_TRUE@	$(LIBPNG_LIBS) $(LIBJPEG_LIBS) $(GDK_PIXBUF_LIBS) \
-@HAVE_ONNXRUNTIME_TRUE@	$(GD_LIBS) $(WIC_LIBS) $(COREGRAPHICS_LIBS) \
-@HAVE_ONNXRUNTIME_TRUE@	$(QUICKLOOK_LIBS) \
-@HAVE_ONNXRUNTIME_TRUE@	$(LIBCURL_LIBS) $(WINHTTP_LIBS) \
-@HAVE_ONNXRUNTIME_TRUE@	$(LIBS_PRIVATE) $(LIBS)
 
 install-data-hook:
 	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/thumbnailers"; do \

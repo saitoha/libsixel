@@ -634,6 +634,7 @@ project_inc = include_directories('.', 'include', 'src')
 
 loader_helper_sources = files(
   'src/allocator.c',
+  'src/assessment.c',
   'src/chunk.c',
   'src/colorspace.c',
   'src/dither.c',
@@ -649,6 +650,9 @@ loader_helper_sources = files(
   'src/status.c',
   'src/tty.c',
 )
+if have_quicklook_thumbnailing
+  loader_helper_sources += files('src/quicklook_thumbnailing.m')
+endif
 loader_helpers = static_library('sixel_loader_helpers',
   loader_helper_sources,
   include_directories: project_inc,
@@ -659,12 +663,12 @@ loader_helpers_dep = declare_dependency(link_with: loader_helpers,
   include_directories: project_inc,
   dependencies: deps)
 
-evaluate_inc = [project_inc]
-evaluate_deps = [loader_helpers_dep]
+lsqa_inc = [project_inc]
+lsqa_deps = [loader_helpers_dep]
 if m_dep.found()
-  evaluate_deps += m_dep
+  lsqa_deps += m_dep
 endif
-evaluate_args = []
+lsqa_args = []
 
 onnxruntime_message = 'no'
 lpips_opt = get_option('onnxruntime')
@@ -689,16 +693,16 @@ if not lpips_opt.disabled()
   if ort_dep.found() and ort_header_found
     conf.set('HAVE_ONNXRUNTIME', 1)
     onnxruntime_message = 'yes'
-    evaluate_inc += ort_inc_dirs
-    evaluate_deps += ort_dep
+    lsqa_inc += ort_inc_dirs
+    lsqa_deps += ort_dep
     lpips_model_dir = join_paths(get_option('datadir'),
                                  meson.project_name(),
                                  'models',
                                  'lpips')
-    evaluate_args += ['-DSIXEL_LPIPS_MODEL_DIR="' + lpips_model_dir + '"']
-    lpips_inc = evaluate_inc
-    lpips_deps = evaluate_deps
-    lpips_args = evaluate_args
+    lsqa_args += ['-DSIXEL_LPIPS_MODEL_DIR="' + lpips_model_dir + '"']
+    lpips_inc = lsqa_inc
+    lpips_deps = lsqa_deps
+    lpips_args = lsqa_args
     executable('lpips',
                'tools/lpips.c',
                include_directories: lpips_inc,
@@ -717,11 +721,11 @@ if not lpips_opt.disabled()
   endif
 endif
 
-executable('evaluate',
-           'tools/evaluate.c',
-           include_directories: evaluate_inc,
-           dependencies: evaluate_deps,
-           c_args: evaluate_args,
+executable('lsqa',
+           'tools/lsqa.c',
+           include_directories: lsqa_inc,
+           dependencies: lsqa_deps,
+           c_args: lsqa_args,
            install: false)
 
 bash_completion_opt = get_option('bashcompletiondir')

@@ -18,7 +18,7 @@ spectrum_path="${prefix}_spectrum.png"
 radar_path="${prefix}_radar_scores.png"
 html_path="${prefix}.html"
 
-tmp_png="$(mktemp "${TMPDIR:-/tmp}/evaluate.XXXXXX.png")"
+tmp_png="$(mktemp "${TMPDIR:-/tmp}/lsqa.XXXXXX.png")"
 
 cleanup() {
     rm -f "${tmp_png}"
@@ -28,10 +28,9 @@ trap cleanup EXIT INT TERM
 
 "${src_topdir}/converters/sixel2png" "${sixel}" > "${tmp_png}"
 
-metrics_json="$("${src_topdir}/tools/evaluate" \
-    --ref "${original}" \
-    --out "${tmp_png}" \
-    --prefix "${prefix}")"
+metrics_json="$(LSQA_PREFIX="${prefix}" "${src_topdir}/tools/lsqa" \
+    "${original}" \
+    "${tmp_png}")"
 
 histogram_json="$("${src_topdir}/tools/evaluate_histogram.py" \
     --ref "${original}" \

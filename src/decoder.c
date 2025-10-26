@@ -759,7 +759,7 @@ sixel_similarity_compare(sixel_similarity_t *similarity,
     p1 = palette + index1 * 3;
     p2 = palette + index2 * 3;
 
-#if 0
+#if 1
    /*    original: n = (p1 + p2) / 2
     */
     avg_color[0] = (unsigned char)(((unsigned int)p1[0]
@@ -768,6 +768,8 @@ sixel_similarity_compare(sixel_similarity_t *similarity,
                                     + (unsigned int)p2[1]) >> 1);
     avg_color[2] = (unsigned char)(((unsigned int)p1[2]
                                     + (unsigned int)p2[2]) >> 1);
+    (void) numerator;
+    (void) denominator;
 #else
    /*
     *    diffuse(pos_a, n1) -> p1
@@ -782,11 +784,11 @@ sixel_similarity_compare(sixel_similarity_t *similarity,
     * => n = (p1 * numerator + p2 * denominator) / (denominator + numerator)
     *
     */
-    avg_color[0] = (p1[0] * numerator + p2[0] * denominator)
+    avg_color[0] = (p1[0] * numerator + p2[0] * denominator + (numerator + denominator + 0.5) / 2)
                  / (numerator + denominator);
-    avg_color[1] = (p1[1] * numerator + p2[1] * denominator)
+    avg_color[1] = (p1[1] * numerator + p2[1] * denominator + (numerator + denominator + 0.5) / 2)
                  / (numerator + denominator);
-    avg_color[2] = (p1[2] * numerator + p2[2] * denominator)
+    avg_color[2] = (p1[2] * numerator + p2[2] * denominator + (numerator + denominator + 0.5) / 2)
                  / (numerator + denominator);
 #endif
 
