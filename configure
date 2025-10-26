@@ -24899,6 +24899,13 @@ else case e in #(
   e) message_zshcompletiondir=disabled ;;
 esac
 fi
+if test "x$have_onnxruntime" = "xyes"
+then :
+  message_onnxruntime=yes
+else case e in #(
+  e) message_onnxruntime=no ;;
+esac
+fi
 
 echo ""
 echo ""
@@ -24911,6 +24918,7 @@ echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $message_bashcompletiondir"
 echo "       Zsh completion dir  : $message_zshcompletiondir"
 echo "       QuickLook extension : $message_quicklook_extension"
+echo "       ONNX Runtime        : $message_onnxruntime"
 echo "       WIC codec           : $message_wiccodec"
 echo "       Register WIC DLL    : $message_register_dll"
 echo "       Thumbnailer command : $message_thumbnailer"
