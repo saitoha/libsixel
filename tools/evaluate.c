@@ -212,6 +212,8 @@ static SIXELSTATUS copy_frame_to_rgb(sixel_frame_t *frame,
     unsigned char *buffer;
     int normalized_format;
 
+    (void)allocator;
+
     frame_width = sixel_frame_get_width(frame);
     frame_height = sixel_frame_get_height(frame);
     status = sixel_frame_strip_alpha(frame, NULL);
@@ -220,7 +222,12 @@ static SIXELSTATUS copy_frame_to_rgb(sixel_frame_t *frame,
     }
     pixelformat = sixel_frame_get_pixelformat(frame);
     size = (size_t)frame_width * (size_t)frame_height * 3u;
-    buffer = (unsigned char *)sixel_allocator_malloc(allocator, size);
+    /*
+     * Use malloc here because the loader's allocator enforces a strict
+     * allocation ceiling that can reject large frames even on hosts with
+     * sufficient RAM available.
+     */
+    buffer = (unsigned char *)malloc(size);
     if (buffer == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
@@ -236,7 +243,7 @@ static SIXELSTATUS copy_frame_to_rgb(sixel_frame_t *frame,
             frame_width,
             frame_height);
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(allocator, buffer);
+            free(buffer);
             return status;
         }
     }
@@ -272,7 +279,7 @@ static int load_image(const char *path,
                                           0,
                                           SIXEL_PALETTE_MAX,
                                           NULL,
-                                          SIXEL_LOOP_AUTO,
+                                          SIXEL_LOOP_DISABLE,
                                           capture_first_frame,
                                           0,
                                           NULL,
@@ -311,7 +318,7 @@ static int load_image(const char *path,
     img->channels = 3;
     img->pixels = converted;
 
-    sixel_allocator_free(allocator, pixels);
+    free(pixels);
     if (capture.frame != NULL) {
         sixel_frame_unref(capture.frame);
     }
