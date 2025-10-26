@@ -24,7 +24,7 @@ option('jpeg', type: 'feature', value: 'auto', description: 'Use libjpeg for JPE
 option('curl', type: 'feature', value: 'auto', description: 'Use libcurl for network access')
 option('gdk_pixbuf2', type: 'feature', value: 'disabled', description: 'Use gdk-pixbuf2 loader')
 option('gd', type: 'feature', value: 'disabled', description: 'Use GD image library')
-option('onnxruntime', type: 'feature', value: 'auto', description: 'Build lpips_ort helper with ONNX Runtime')
+option('onnxruntime', type: 'feature', value: 'auto', description: 'Build lpips helper with ONNX Runtime')
 option('onnxruntime_include_dir', type: 'string', value: '', description: 'Extra include directory for ONNX Runtime headers')
 option('onnxruntime_lib_dir', type: 'string', value: '', description: 'Extra library directory for ONNX Runtime libs')
 option('coregraphics', type: 'feature', value: 'auto', description: 'Use CoreGraphics framework')

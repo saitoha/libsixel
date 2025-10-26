@@ -9,7 +9,7 @@ configuration.
 models/
 └── lpips/
     ├── lpips_diff.onnx      # decoder head that reduces feature maps
-    └── lpips_feature.onnx   # feature extractor lifted from AlexNet-style CNNs
+    └── lpips_feat.onnx      # feature extractor lifted from AlexNet-style CNNs
 ```
 
 Both ONNX graphs originate from the `deepghs/imgutils` repository and are
@@ -19,7 +19,7 @@ after installation, which keeps development and deployment hierarchies
 consistent.
 
 The LPIPS workflow embeds a pair of images into a feature space and then runs a
-compact head that approximates human perceptual distance.  The `lpips_ort`
+compact head that approximates human perceptual distance.  The `lpips`
 utility orchestrates this pipeline through ONNX Runtime, and it requires both
 graphs to be present.  When ONNX Runtime support is enabled at build time the
 installation step copies these models into the location described above.

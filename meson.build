@@ -280,64 +280,6 @@ if m_dep.found()
   conf.set('HAVE_LIBM', 1)
 endif
 
-evaluate_inc = include_directories('src')
-evaluate_deps = []
-if m_dep.found()
-  evaluate_deps += m_dep
-endif
-executable('evaluate',
-           'tools/evaluate.c',
-           include_directories: evaluate_inc,
-           dependencies: evaluate_deps,
-           install: false)
-
-lpips_opt = get_option('onnxruntime')
-if not lpips_opt.disabled()
-  ort_inc_dirs = []
-  ort_dep = dependency('libonnxruntime', required: false)
-  ort_lib_dir_opt = get_option('onnxruntime_lib_dir')
-  if not ort_dep.found()
-    ort_lib = cc.find_library('onnxruntime',
-                              dirs: ort_lib_dir_opt == '' ? [] : [ort_lib_dir_opt],
-                              required: false)
-    if ort_lib.found()
-      ort_dep = declare_dependency(link_with: ort_lib)
-    endif
-  endif
-  ort_inc_opt = get_option('onnxruntime_include_dir')
-  if ort_inc_opt != ''
-    ort_inc_dirs += include_directories(ort_inc_opt, is_system: true)
-  endif
-  ort_header_found = cc.has_header('onnxruntime_c_api.h',
-                                   include_directories: ort_inc_dirs)
-  if ort_dep.found() and ort_header_found
-    lpips_inc = [evaluate_inc]
-    lpips_inc += ort_inc_dirs
-    lpips_deps = []
-    lpips_deps += evaluate_deps
-    lpips_deps += ort_dep
-    executable('lpips_ort',
-               'tools/lpips_ort.c',
-               include_directories: lpips_inc,
-               dependencies: lpips_deps,
-               install: false)
-
-    lpips_model_dir = join_paths(get_option('datadir'),
-                                 meson.project_name(),
-                                 'models',
-                                 'lpips')
-    install_data(['models/lpips/lpips_diff.onnx',
-                  'models/lpips/lpips_feature.onnx'],
-                 install_dir: lpips_model_dir)
-  else
-    if lpips_opt.enabled()
-      error('ONNX Runtime headers or library not found, cannot build lpips_ort')
-    else
-      message('Skipping lpips_ort helper: ONNX Runtime not detected')
-    endif
-  endif
-endif
-
 png_dep = dependency('libpng', required: get_option('png'))
 if png_dep.found()
   deps += png_dep
@@ -690,6 +632,98 @@ endif
 config_h = configure_file(output: 'config.h', configuration: conf)
 project_inc = include_directories('.', 'include', 'src')
 
+loader_helper_sources = files(
+  'src/allocator.c',
+  'src/chunk.c',
+  'src/colorspace.c',
+  'src/dither.c',
+  'src/frame.c',
+  'src/fromgif.c',
+  'src/frompnm.c',
+  'src/fromsixel.c',
+  'src/loader.c',
+  'src/malloc_stub.c',
+  'src/pixelformat.c',
+  'src/quant.c',
+  'src/scale.c',
+  'src/status.c',
+  'src/tty.c',
+)
+loader_helpers = static_library('sixel_loader_helpers',
+  loader_helper_sources,
+  include_directories: project_inc,
+  dependencies: deps,
+  pic: true,
+  build_by_default: false)
+loader_helpers_dep = declare_dependency(link_with: loader_helpers,
+  include_directories: project_inc,
+  dependencies: deps)
+
+evaluate_inc = [project_inc]
+evaluate_deps = [loader_helpers_dep]
+if m_dep.found()
+  evaluate_deps += m_dep
+endif
+evaluate_args = []
+
+onnxruntime_message = 'no'
+lpips_opt = get_option('onnxruntime')
+if not lpips_opt.disabled()
+  ort_inc_dirs = []
+  ort_dep = dependency('libonnxruntime', required: false)
+  ort_lib_dir_opt = get_option('onnxruntime_lib_dir')
+  if not ort_dep.found()
+    ort_lib = cc.find_library('onnxruntime',
+                              dirs: ort_lib_dir_opt == '' ? [] : [ort_lib_dir_opt],
+                              required: false)
+    if ort_lib.found()
+      ort_dep = declare_dependency(link_with: ort_lib)
+    endif
+  endif
+  ort_inc_opt = get_option('onnxruntime_include_dir')
+  if ort_inc_opt != ''
+    ort_inc_dirs += include_directories(ort_inc_opt, is_system: true)
+  endif
+  ort_header_found = cc.has_header('onnxruntime_c_api.h',
+                                   include_directories: ort_inc_dirs)
+  if ort_dep.found() and ort_header_found
+    conf.set('HAVE_ONNXRUNTIME', 1)
+    onnxruntime_message = 'yes'
+    evaluate_inc += ort_inc_dirs
+    evaluate_deps += ort_dep
+    lpips_model_dir = join_paths(get_option('datadir'),
+                                 meson.project_name(),
+                                 'models',
+                                 'lpips')
+    evaluate_args += ['-DSIXEL_LPIPS_MODEL_DIR="' + lpips_model_dir + '"']
+    lpips_inc = evaluate_inc
+    lpips_deps = evaluate_deps
+    lpips_args = evaluate_args
+    executable('lpips',
+               'tools/lpips.c',
+               include_directories: lpips_inc,
+               dependencies: lpips_deps,
+               c_args: lpips_args,
+               install: false)
+    install_data(['models/lpips/lpips_diff.onnx',
+                  'models/lpips/lpips_feature.onnx'],
+                 install_dir: lpips_model_dir)
+  else
+    if lpips_opt.enabled()
+      error('ONNX Runtime headers or library not found, cannot build lpips helper')
+    else
+      message('Skipping lpips helper: ONNX Runtime not detected')
+    endif
+  endif
+endif
+
+executable('evaluate',
+           'tools/evaluate.c',
+           include_directories: evaluate_inc,
+           dependencies: evaluate_deps,
+           c_args: evaluate_args,
+           install: false)
+
 bash_completion_opt = get_option('bashcompletiondir')
 bash_completion_dir = ''
 if bash_completion_opt != 'disabled'
@@ -967,6 +1001,7 @@ message('       pkg-config dir      : ' + pkgconfig_dir)
 message('       Bash completion dir : ' + bash_completion_message)
 message('       Zsh completion dir  : ' + zsh_completion_message)
 message('       QuickLook extension : ' + quicklook_extension_message)
+message('       ONNX Runtime        : ' + onnxruntime_message)
 message('       WIC codec           : ' + wiccodec_message)
 message('       python bindings     : ' + python_message)
 message('       ruby bindings       : ' + ruby_message)
