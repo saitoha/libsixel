@@ -36,6 +36,17 @@ quantizer.
 specify output path for DRCS-SIXEL tile characters.
 Use "-" to write to standard output.
 .TP 5
+.B \-a \fIMODE\fP, \-\-assessment=\fIMODE\fP
+emit an assessment report as JSON.
+\fIMODE\fP must be \(dqquantized\(dq or \(dqencoded\(dq.
+Quantized mode compares the source frame with the palette-quantized
+image that precedes SIXEL encoding, while encoded mode reloads the
+generated SIXEL stream via the built-in loader before comparison.
+.TP 5
+.B \-J \fIPATH\fP, \-\-assessment-file=\fIPATH\fP
+write the assessment JSON report to \fIPATH\fP.
+Use "-" to write to standard output.
+.TP 5
 .B \-7, \-\-7bit-mode
 generate a sixel image for 7bit terminals or printers (default).
 .TP 5
@@ -325,7 +336,7 @@ rgb:rrrr/gggg/bbbb
 .B \-v, \-\-verbose
 show debugging info.
 .TP 5
-.B \-J \fILIST\fP, \-\-loaders=\fILIST\fP
+.B \-j \fILIST\fP, \-\-loaders=\fILIST\fP
 choose the loader priority order. \fILIST\fP is a comma separated
 sequence of loader names such as \fBgd\fP, \fBcoregraphics\fP, or
 \fBbuiltin\fP. Unknown names are ignored so you can reuse the same

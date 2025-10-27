@@ -22,6 +22,10 @@
 #ifndef LIBSIXEL_ENCODER_H
 #define LIBSIXEL_ENCODER_H
 
+#include <stddef.h>
+
+struct sixel_frame;
+
 /* palette type */
 #define SIXEL_COLOR_OPTION_DEFAULT          0   /* use default settings */
 #define SIXEL_COLOR_OPTION_MONOCHROME       1   /* use monochrome palette */
@@ -84,6 +88,20 @@ struct sixel_encoder {
     void *dither_cache;
     unsigned char start_dscs;
     int drcs_mmv;
+    int capture_quantized;
+    int capture_source;
+    unsigned char *capture_pixels;
+    size_t capture_pixels_size;
+    unsigned char *capture_palette;
+    size_t capture_palette_size;
+    size_t capture_pixel_bytes;
+    int capture_width;
+    int capture_height;
+    int capture_pixelformat;
+    int capture_colorspace;
+    int capture_ncolors;
+    int capture_valid;
+    struct sixel_frame *capture_source_frame;
 };
 
 #if HAVE_TESTS

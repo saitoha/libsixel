@@ -15,6 +15,12 @@
 #define PATH_MAX 4096
 #endif
 
+typedef enum sixel_assessment_spool_mode {
+    SIXEL_ASSESSMENT_SPOOL_MODE_NONE = 0,
+    SIXEL_ASSESSMENT_SPOOL_MODE_STDOUT,
+    SIXEL_ASSESSMENT_SPOOL_MODE_PATH
+} sixel_assessment_spool_mode_t;
+
 struct sixel_assessment {
     int refcount;
     sixel_allocator_t *allocator;
@@ -32,5 +38,15 @@ struct sixel_assessment {
     char feat_model_path[PATH_MAX];
     double results[SIXEL_ASSESSMENT_METRIC_COUNT];
 };
+
+SIXELSTATUS
+sixel_assessment_expand_quantized_frame(sixel_frame_t *source,
+                                        sixel_allocator_t *allocator,
+                                        sixel_frame_t **ppframe);
+
+SIXELSTATUS
+sixel_assessment_load_single_frame(char const *path,
+                                   sixel_allocator_t *allocator,
+                                   sixel_frame_t **ppframe);
 
 #endif /* SIXEL_SRC_ASSESSMENT_H */
