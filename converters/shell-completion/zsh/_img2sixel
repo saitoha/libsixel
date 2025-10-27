@@ -165,9 +165,18 @@ _outputcolorspace() {
     'smpte-c[SMPTE-C gamma encoded output]'
 }
 
+_assessmentmode() {
+  _values \
+    'ASSESSMENTMODE' \
+    'quantized[compare against the palette-quantized frame]' \
+    'encoded[reload the generated SIXEL output for comparison]'
+}
+
 _arguments -S -s -A "-*" -S \
   {-o,--outfile}'[specify output file (default: stdout)]':files:_files \
   {-T,--tiles}'[specify output path for DRCS-SIXEL tile characters]':files:_files \
+  {-a,--assessment=}'[emit assessment report as JSON]':assessmentmode:_assessmentmode \
+  {-J,--assessment-file=}'[write assessment JSON to a file]':files:_files \
   {-7,--7bit-mode}'[generate a sixel image for 7bit terminals (default)]' \
   {-8,--8bit-mode}'[generate a sixel image for 8bit terminals]' \
   {-R,--gri-limit}'[limit arguments of DECGRI(!) to 255]' \
@@ -201,7 +210,7 @@ _arguments -S -s -A "-*" -S \
   {-P,--penetrate}'[penetrate GNU Screen using DCS pass-through sequence]' \
   {-D,--pipe-mode}'[read source images from stdin continuously]' \
   {-v,--verbose}'[show debugging information]' \
-  {-J,--loaders=}'[override loader priority order]':loaders:_loaders \
+  {-j,--loaders=}'[override loader priority order]':loaders:_loaders \
   {-@,--drcs}'[output DRCSMMv1 tiles instead of regular SIXEL image]' \
   {-M,--mapping-version}'[enables sixel output in "ormode"]' \
   {-O,--ormode}'[output ormode sixel image]' \
