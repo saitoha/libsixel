@@ -164,7 +164,7 @@ _img2sixel()
                                    size' -- "$cur" ) )
         return 0
         ;;
-    -J|--loaders)
+    -j|--loaders)
         COMPREPLY=( $( compgen -W 'builtin \
                                    coregraphics \
                                    gd \
@@ -194,6 +194,14 @@ _img2sixel()
         _filedir
         return 0
         ;;
+    -a|--assessment)
+        COMPREPLY=( $( compgen -W 'quantized encoded' -- "$cur" ) )
+        return 0
+        ;;
+    -J|--assessment-file)
+        _filedir
+        return 0
+        ;;
     esac
 
     case "$cur" in
@@ -201,6 +209,8 @@ _img2sixel()
         COMPREPLY=( $( compgen -W '
                                    -o --outfile \
                                    -T --tiles \
+                                   -a --assessment \
+                                   -J --assessment-file \
                                    -7 --7bit-mode \
                                    -8 --8bit-mode \
                                    -R --gri-limit \
@@ -234,7 +244,7 @@ _img2sixel()
                                    -P --penetrate \
                                    -D --pipe-mode \
                                    -v --verbose \
-                                   -J --loaders \
+                                   -j --loaders \
                                    -@ --drcs \
                                    -M --mapping-version \
                                    -O --ormode \

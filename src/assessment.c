@@ -44,6 +44,8 @@
 #include <sixel.h>
 
 #include "assessment.h"
+#include "frame.h"
+#include "loader.h"
 
 #if defined(_WIN32)
 #include <io.h>
@@ -65,8 +67,8 @@
 #include "onnxruntime_c_api.h"
 #endif
 
-#ifndef SIXEL_MODEL_DIR
-#define SIXEL_MODEL_DIR ""
+#ifndef SIXEL_LPIPS_MODEL_DIR
+#define SIXEL_LPIPS_MODEL_DIR ""
 #endif
 
 #if !defined(PATH_MAX)
@@ -134,6 +136,10 @@ typedef struct Metrics {
     float psnr_y;
     float lpips_vgg;
 } Metrics;
+
+typedef struct sixel_assessment_capture {
+    sixel_frame_t *frame;
+} sixel_assessment_capture_t;
 
 static sixel_assessment_t *g_assessment_context = NULL;
 
@@ -541,7 +547,6 @@ static int find_model(char const *binary_dir,
 {
     char env_root[PATH_MAX];
     char install_root[PATH_MAX];
-    char binary_parent_dir[PATH_MAX];
     char const *env_dir;
 
     env_dir = getenv("LIBSIXEL_MODEL_DIR");
@@ -562,8 +567,8 @@ static int find_model(char const *binary_dir,
             }
         }
     }
-    if (SIXEL_MODEL_DIR[0] != '\0') {
-        if (join_path(SIXEL_MODEL_DIR, SIXEL_LOCAL_MODELS_SEG3,
+    if (SIXEL_LPIPS_MODEL_DIR[0] != '\0') {
+        if (join_path(SIXEL_LPIPS_MODEL_DIR, SIXEL_LOCAL_MODELS_SEG3,
                       install_root, sizeof(install_root)) == 0) {
             if (join_path(install_root, name, buffer, size) == 0) {
                 if (path_accessible(buffer)) {
@@ -574,14 +579,6 @@ static int find_model(char const *binary_dir,
     }
     if (binary_dir != NULL && binary_dir[0] != '\0') {
         if (build_local_model_path(binary_dir, name, buffer, size) == 0) {
-            if (path_accessible(buffer)) {
-                return 0;
-            }
-        }
-    }
-    if (join_path(binary_dir, SIXEL_LOCAL_MODELS_SEG1,
-                  binary_parent_dir, sizeof(binary_parent_dir)) == 0) {
-        if (build_local_model_path(binary_parent_dir, name, buffer, size) == 0) {
             if (path_accessible(buffer)) {
                 return 0;
             }
@@ -2940,6 +2937,294 @@ store_metrics(sixel_assessment_t *assessment, const Metrics *metrics)
         = metrics->psnr_y;
     results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_LPIPS_VGG)]
         = metrics->lpips_vgg;
+}
+
+static SIXELSTATUS
+sixel_assessment_capture_first_frame(sixel_frame_t *frame,
+                                     void *user_data)
+{
+    sixel_assessment_capture_t *capture;
+
+    /*
+     * Loader pipeline sketch for encoded round trips:
+     *
+     *     +--------------+     +-----------------+
+     *     | decoder loop | --> | capture.frame   |
+     *     +--------------+     +-----------------+
+     */
+
+    capture = (sixel_assessment_capture_t *)user_data;
+    if (capture == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (capture->frame == NULL) {
+        sixel_frame_ref(frame);
+        capture->frame = frame;
+    }
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_assessment_expand_quantized_frame(sixel_frame_t *source,
+                                        sixel_allocator_t *allocator,
+                                        sixel_frame_t **ppframe)
+{
+    SIXELSTATUS status;
+    sixel_frame_t *frame;
+    unsigned char *indices;
+    unsigned char const *palette;
+    unsigned char *rgb_pixels;
+    size_t pixel_count;
+    size_t rgb_bytes;
+    size_t palette_index;
+    size_t palette_offset;
+    size_t i;
+    int width;
+    int height;
+    int ncolors;
+    int colorspace;
+    int pixelformat;
+    unsigned char *dst;
+
+    /*
+     * Convert the paletted capture into RGB triplets so that the
+     * assessment pipeline can compare against the original input in
+     * a like-for-like space.
+     *
+     *     +-----------+     +----------------+
+     *     | indices   | --> | RGB triplets   |
+     *     +-----------+     +----------------+
+     */
+
+    status = SIXEL_FALSE;
+    frame = NULL;
+    indices = NULL;
+    palette = NULL;
+    rgb_pixels = NULL;
+    pixel_count = 0;
+    rgb_bytes = 0;
+    palette_index = 0;
+    palette_offset = 0;
+    i = 0;
+    width = 0;
+    height = 0;
+    ncolors = 0;
+    colorspace = SIXEL_COLORSPACE_GAMMA;
+    pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    dst = NULL;
+
+    if (source == NULL || allocator == NULL || ppframe == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_assessment_expand_quantized_frame: invalid argument.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *ppframe = NULL;
+    indices = (unsigned char *)sixel_frame_get_pixels(source);
+    palette = (unsigned char const *)sixel_frame_get_palette(source);
+    width = sixel_frame_get_width(source);
+    height = sixel_frame_get_height(source);
+    ncolors = sixel_frame_get_ncolors(source);
+    pixelformat = sixel_frame_get_pixelformat(source);
+    colorspace = sixel_frame_get_colorspace(source);
+
+    if (pixelformat != SIXEL_PIXELFORMAT_PAL8) {
+        sixel_helper_set_additional_message(
+            "sixel_assessment_expand_quantized_frame: not paletted data.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+    if (indices == NULL || palette == NULL || width <= 0 || height <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_assessment_expand_quantized_frame: capture incomplete.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+    if (height != 0 && pixel_count / (size_t)height != (size_t)width) {
+        sixel_helper_set_additional_message(
+            "sixel_assessment_expand_quantized_frame: size overflow.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+    if (ncolors <= 0 || ncolors > 256) {
+        sixel_helper_set_additional_message(
+            "sixel_assessment_expand_quantized_frame: palette size invalid.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+
+    rgb_bytes = pixel_count * 3u;
+    if (pixel_count != 0 && rgb_bytes / 3u != pixel_count) {
+        sixel_helper_set_additional_message(
+            "sixel_assessment_expand_quantized_frame: RGB overflow.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+
+    status = sixel_frame_new(&frame, allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    rgb_pixels = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                         rgb_bytes);
+    if (rgb_pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_assessment_expand_quantized_frame: malloc failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto cleanup;
+    }
+
+    dst = rgb_pixels;
+    for (i = 0; i < pixel_count; ++i) {
+        palette_index = (size_t)indices[i];
+        if (palette_index >= (size_t)ncolors) {
+            sixel_helper_set_additional_message(
+                "sixel_assessment_expand_quantized_frame: index overflow.");
+            status = SIXEL_RUNTIME_ERROR;
+            goto cleanup;
+        }
+        palette_offset = palette_index * 3u;
+        dst[0] = palette[palette_offset + 0];
+        dst[1] = palette[palette_offset + 1];
+        dst[2] = palette[palette_offset + 2];
+        dst += 3;
+    }
+
+    status = sixel_frame_init(frame,
+                              rgb_pixels,
+                              width,
+                              height,
+                              SIXEL_PIXELFORMAT_RGB888,
+                              NULL,
+                              0);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    rgb_pixels = NULL;
+    status = sixel_frame_ensure_colorspace(frame, colorspace);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    *ppframe = frame;
+    return SIXEL_OK;
+
+cleanup:
+    if (rgb_pixels != NULL) {
+        sixel_allocator_free(allocator, rgb_pixels);
+    }
+    if (frame != NULL) {
+        sixel_frame_unref(frame);
+    }
+    return status;
+}
+
+SIXELSTATUS
+sixel_assessment_load_single_frame(char const *path,
+                                   sixel_allocator_t *allocator,
+                                   sixel_frame_t **ppframe)
+{
+    SIXELSTATUS status;
+    sixel_loader_t *loader;
+    sixel_assessment_capture_t capture;
+    int fstatic;
+    int fuse_palette;
+    int reqcolors;
+    int loop_override;
+    int finsecure;
+
+    /*
+     * Reload a single-frame image with the regular loader stack.  This helper
+     * is used when the encoded SIXEL output needs to be analyzed by the
+     * assessment pipeline.
+     */
+
+    status = SIXEL_FALSE;
+    loader = NULL;
+    capture.frame = NULL;
+    fstatic = 1;
+    fuse_palette = 0;
+    reqcolors = SIXEL_PALETTE_MAX;
+    loop_override = SIXEL_LOOP_DISABLE;
+    finsecure = 0;
+
+    if (path == NULL || allocator == NULL || ppframe == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_assessment_load_single_frame: invalid argument.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_loader_new(&loader, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+                                 &fstatic);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_USE_PALETTE,
+                                 &fuse_palette);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_REQCOLORS,
+                                 &reqcolors);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_LOOP_CONTROL,
+                                 &loop_override);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_INSECURE,
+                                 &finsecure);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_CONTEXT,
+                                 &capture);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_loader_load_file(loader,
+                                    path,
+                                    sixel_assessment_capture_first_frame);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    if (capture.frame == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_assessment_load_single_frame: no frames captured.");
+        status = SIXEL_RUNTIME_ERROR;
+        goto cleanup;
+    }
+
+    sixel_frame_ref(capture.frame);
+    *ppframe = capture.frame;
+    capture.frame = NULL;
+    status = SIXEL_OK;
+
+cleanup:
+    if (capture.frame != NULL) {
+        sixel_frame_unref(capture.frame);
+    }
+    if (loader != NULL) {
+        sixel_loader_unref(loader);
+    }
+    return status;
 }
 
 SIXELSTATUS

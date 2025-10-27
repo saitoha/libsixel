@@ -496,7 +496,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_PIPE_MODE         ('D')  /* -D, --pipe-mode: (deprecated)
                                                   read source images from stdin continuously */
 #define SIXEL_OPTFLAG_VERBOSE           ('v')  /* -v, --verbose: show debugging info */
-#define SIXEL_OPTFLAG_LOADERS           ('J')  /* -J LIST, --loaders=LIST: override loader order */
+#define SIXEL_OPTFLAG_LOADERS           ('J')  /* -j LIST, --loaders=LIST: override loader order */
 #define SIXEL_OPTFLAG_VERSION           ('V')  /* -V, --version: show version and license info */
 #define SIXEL_OPTFLAG_HELP              ('H')  /* -H, --help: show this help */
 
@@ -1290,6 +1290,12 @@ sixel_helper_write_image_file(
 struct sixel_assessment;
 typedef struct sixel_assessment sixel_assessment_t;
 
+typedef enum sixel_assessment_mode {
+    SIXEL_ASSESSMENT_MODE_NONE = 0,
+    SIXEL_ASSESSMENT_MODE_QUANTIZED,
+    SIXEL_ASSESSMENT_MODE_ENCODED
+} sixel_assessment_mode_t;
+
 typedef void (*sixel_assessment_json_callback_t)(
     char const *chunk,
     size_t length,
@@ -1486,6 +1492,27 @@ sixel_encoder_encode_bytes(
     int                 /* in */    pixelformat,
     unsigned char       /* in */    *palette,
     int                 /* in */    ncolors);
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_enable_quantized_capture(
+    sixel_encoder_t /* in */ *encoder,
+    int             /* in */ enable);
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_enable_source_capture(
+    sixel_encoder_t /* in */ *encoder,
+    int             /* in */ enable);
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_copy_quantized_frame(
+    sixel_encoder_t     /* in */  *encoder,
+    sixel_allocator_t   /* in */  *allocator,
+    sixel_frame_t       /* out */ **ppframe);
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_copy_source_frame(
+    sixel_encoder_t     /* in */  *encoder,
+    sixel_frame_t       /* out */ **ppframe);
 
 #ifdef __cplusplus
 }
