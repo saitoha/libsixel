@@ -1683,9 +1683,6 @@ load_with_gdkpixbuf(
         if (status != SIXEL_OK) {
             goto end;
         }
-        /* scratch buffer no longer needed after callback */
-        sixel_allocator_free(pchunk->allocator, frame->pixels);
-        frame->pixels = NULL;
     } else {
         gboolean finished;
 
@@ -2279,8 +2276,6 @@ load_with_quicklook(
     }
 
     status = fn_load(frame, context);
-    sixel_allocator_free(pchunk->allocator, frame->pixels);
-    frame->pixels = NULL;
     if (status != SIXEL_OK) {
         goto end;
     }
@@ -2304,7 +2299,7 @@ end:
         CFRelease(path);
     }
     if (frame != NULL) {
-        sixel_allocator_unref(pchunk->allocator);
+        sixel_frame_unref(frame);
     }
 
     return status;
