@@ -45,7 +45,6 @@
 
 #include "assessment.h"
 #include "frame.h"
-#include "loader.h"
 
 #if defined(_WIN32)
 #include <io.h>
@@ -3383,8 +3382,8 @@ sixel_assessment_setopt(sixel_assessment_t *assessment,
 
 SIXELSTATUS
 sixel_assessment_analyze(sixel_assessment_t *assessment,
-                        sixel_frame_t *reference,
-                        sixel_frame_t *output)
+                         sixel_frame_t *reference,
+                         sixel_frame_t *output)
 {
     Metrics metrics;
     Image ref_img;
