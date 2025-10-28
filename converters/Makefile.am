@@ -61,6 +61,8 @@ CLEANFILES = *.gcno *.gcda *.gcov \
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
 img2sixel_SOURCES = $(srcdir)/img2sixel.c \
+                    $(srcdir)/completion_utils.c \
+                    $(srcdir)/completion_utils.h \
                     $(srcdir)/malloc_stub.c \
                     $(srcdir)/malloc_stub.h \
                     $(srcdir)/getopt_stub.h

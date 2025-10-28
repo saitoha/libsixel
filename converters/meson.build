@@ -27,7 +27,7 @@ sixel2png_opt = get_option('sixel2png')
 
 img2sixel_deps = []
 if img2sixel_opt.enabled()
-  img2sixel_exe = executable('img2sixel', ['img2sixel.c'] + sources_common,
+  img2sixel_exe = executable('img2sixel', ['img2sixel.c', 'completion_utils.c'] + sources_common,
     dependencies: libsixel_dep,
     include_directories: project_inc,
     install: true)

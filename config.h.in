@@ -104,6 +104,9 @@
 /* define 1 if GCC supports -Wdouble-promotion */
 #undef HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
 
+/* define 1 if GCC supports -Wformat-nonliteral */
+#undef HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+
 /* define 1 if GCC supports -Wshadow */
 #undef HAVE_DIAGNOSTIC_SHADOW
 
@@ -310,6 +313,12 @@
 
 /* Define to 1 if you have the 'stat' function. */
 #undef HAVE_STAT
+
+/* Define to 1 if you have the <stdarg.h> header file. */
+#undef HAVE_STDARG_H
+
+/* Define to 1 if you have the <stddef.h> header file. */
+#undef HAVE_STDDEF_H
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
