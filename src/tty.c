@@ -297,6 +297,7 @@ sixel_tty_scroll(
         goto end;
     }
 #else  /* mingw */
+    (void) outfd;
     (void) height;
     (void) is_animation;
     nwrite = f_write("\033[H", 3, priv);
