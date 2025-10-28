@@ -28,6 +28,15 @@
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif
+#if HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+#if _MSC_VER
+# if !defined(_MODE_T_DEFINED)
+typedef int mode_t;
+#  define _MODE_T_DEFINED
+# endif
+#endif
 
 int read_entire_file(const char *path, char **buf, size_t *len);
 int write_atomic(const char *dst_path, const void *buf, size_t len,
