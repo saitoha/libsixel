@@ -144,6 +144,9 @@
 /* Define to 1 if you have the <errno.h> header file. */
 #undef HAVE_ERRNO_H
 
+/* Define to 1 if you have the 'fchmod' function. */
+#undef HAVE_FCHMOD
+
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
@@ -161,6 +164,9 @@
 
 /* Define to 1 if you have the 'fork' function. */
 #undef HAVE_FORK
+
+/* Define to 1 if you have the 'fsync' function. */
+#undef HAVE_FSYNC
 
 /* Define to 1 if the system has the `deprecated' function attribute */
 #undef HAVE_FUNC_ATTRIBUTE_DEPRECATED
@@ -222,9 +228,6 @@
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 
-/* Define to 1 if you have the 'localeconv' function. */
-#undef HAVE_LOCALECONV
-
 /* Define to 1 if you have the 'longjmp' function. */
 #undef HAVE_LONGJMP
 
@@ -246,6 +249,9 @@
 
 /* Define to 1 if you have the 'memset' function. */
 #undef HAVE_MEMSET
+
+/* Define to 1 if you have the 'mkdir' function. */
+#undef HAVE_MKDIR
 
 /* Define to 1 if you have the 'mkstemp' function. */
 #undef HAVE_MKSTEMP
@@ -416,6 +422,9 @@
 /* Define to 1 if you have the '_close' function. */
 #undef HAVE__CLOSE
 
+/* Define to 1 if you have the '_commit' function. */
+#undef HAVE__COMMIT
+
 /* Define to 1 if you have the '_fileno' function. */
 #undef HAVE__FILENO
 
@@ -424,6 +433,9 @@
 
 /* Define to 1 if you have the '_isatty' function. */
 #undef HAVE__ISATTY
+
+/* Define to 1 if you have the '_mkdir' function. */
+#undef HAVE__MKDIR
 
 /* Define to 1 if you have the '_mktemp' function. */
 #undef HAVE__MKTEMP

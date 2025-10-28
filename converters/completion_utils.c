@@ -45,6 +45,29 @@
 # include <unistd.h>
 #endif  /* HAVE_UNISTD_H */
 
+/* _WIN32 */
+#if HAVE_DIRECT_H
+# include <direct.h>
+#endif  /* HAVE_DIRECT_H */
+#if HAVE_IO_H
+# include <io.h>
+#endif  /* HAVE_IO_H */
+
+/* Provide ssize_t so MSVC matches POSIX I/O signatures. */
+#if defined(_MSC_VER) && !defined(_SSIZE_T_DEFINED)
+# include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+# define _SSIZE_T_DEFINED
+#endif
+
+/* Replicate POSIX access() flag for readability. */
+#if !defined(R_OK)
+# define R_OK 4
+#endif
+#if !defined(F_OK)
+# define F_OK 0
+#endif
+
 /* ------------------------------------------------------------------------ */
 /* the hybrid lookup strategy:                                              */
 /*                                                                          */
@@ -89,6 +112,39 @@ int fchmod(int, mode_t);
 
 #define IMG2SIXEL_COMPLETION_SHELL_BASH  1
 #define IMG2SIXEL_COMPLETION_SHELL_ZSH   2
+
+/* ------------------------------------------------------------------------ */
+/* helpers for platform abstractions */
+/* ------------------------------------------------------------------------ */
+
+static int
+img2sixel_fsync(int fd)
+{
+#if HAVE__COMMIT
+    return _commit(fd);
+#elif HAVE_FSYNC
+    return fsync(fd);
+#else
+    return (0);
+#endif
+}
+
+#if HAVE__MKDIR
+int _mkdir (const char *);
+#endif
+
+static int
+img2sixel_mkdir(const char *path, mode_t mode)
+{
+#if HAVE__MKDIR
+    (void)mode;
+    return _mkdir(path);
+#elif HAVE_MKDIR
+    return mkdir(path, mode);
+#else
+    return (-1);
+#endif
+}
 
 static void
 img2sixel_log_errno(const char *fmt, ...)
@@ -219,13 +275,19 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
     memcpy(tmp_path, dst_path, dst_len);
     memcpy(tmp_path + dst_len, IMG2SIXEL_TMP_SUFFIX, suffix_len + 1);
 
+#if defined(HAVE_MKSTEMP)
     fd = mkstemp(tmp_path);
+#elif defined(HAVE__MKTEMP)
+    fd = _mktemp(tmp_path);
+#elif defined(HAVE_MKTEMP)
+    fd = mktemp(tmp_path);
+#endif
     if (fd < 0) {
         free(tmp_path);
         return -1;
     }
 
-#if !defined(_WIN32)
+#if !defined(_WIN32) && HAVE_FCHMOD
     if (fchmod(fd, mode) != 0) {
         int saved_errno;
 
@@ -259,7 +321,7 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
         total += (size_t)written;
     }
 
-    if (fsync(fd) != 0) {
+    if (img2sixel_fsync(fd) != 0) {
         int saved_errno;
 
         saved_errno = errno;
@@ -321,7 +383,7 @@ ensure_dir_p(const char *path, mode_t mode)
             saved = tmp[i];
             tmp[i] = '\0';
             if (tmp[0] != '\0') {
-                if (mkdir(tmp, mode) != 0 && errno != EEXIST) {
+                if (img2sixel_mkdir(tmp, mode) != 0 && errno != EEXIST) {
                     int saved_errno;
 
                     saved_errno = errno;
@@ -334,7 +396,7 @@ ensure_dir_p(const char *path, mode_t mode)
         }
     }
 
-    if (mkdir(tmp, mode) != 0 && errno != EEXIST) {
+    if (img2sixel_mkdir(tmp, mode) != 0 && errno != EEXIST) {
         int saved_errno;
 
         saved_errno = errno;

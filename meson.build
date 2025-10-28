@@ -151,6 +151,8 @@ std_headers = [
     'memory.h',
     'unistd.h',
     'stdint.h',
+    'stddef.h',
+    'stdarg.h',
     'sys/unistd.h',
     'getopt.h',
     'sys/types.h',
@@ -195,8 +197,14 @@ extra_funcs = [
   '_setmode',
   'fileno',
   '_fileno',
+  '_mktemp',
   'mkstemp',
+  'mktemp',
   'fopen_s',
+  'fsync',
+  '_commit',
+  '_mkdir',
+  'mkdir',
   'signal',
   'strdup',
   'strtoul',
@@ -228,7 +236,8 @@ extra_funcs = [
   'clock',
   'nanosleep',
   'fork',
-  'posix_spawnp'
+  'posix_spawnp',
+  'fchmod'
 ]
 
 func_prefixes = {

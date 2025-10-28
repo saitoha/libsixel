@@ -859,6 +859,8 @@ void show_help(void)
             "-V, --version              show version and license info\n"
             "-H, --help                 show this help\n"
             "\n"
+            );
+    fprintf(stdout,
             "Environment variables:\n"
             "SIXEL_BGCOLOR              specify background color.\n"
             "                           overrided by -B(--bgcolor) option.\n"

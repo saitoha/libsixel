@@ -18485,6 +18485,30 @@ then :
   printf "%s\n" "#define HAVE_FOPEN_S 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "fsync" "ac_cv_func_fsync"
+if test "x$ac_cv_func_fsync" = xyes
+then :
+  printf "%s\n" "#define HAVE_FSYNC 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "_commit" "ac_cv_func__commit"
+if test "x$ac_cv_func__commit" = xyes
+then :
+  printf "%s\n" "#define HAVE__COMMIT 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "_mkdir" "ac_cv_func__mkdir"
+if test "x$ac_cv_func__mkdir" = xyes
+then :
+  printf "%s\n" "#define HAVE__MKDIR 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "mkdir" "ac_cv_func_mkdir"
+if test "x$ac_cv_func_mkdir" = xyes
+then :
+  printf "%s\n" "#define HAVE_MKDIR 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "signal" "ac_cv_func_signal"
 if test "x$ac_cv_func_signal" = xyes
 then :
@@ -18593,12 +18617,6 @@ then :
   printf "%s\n" "#define HAVE_FLOOR 1" >>confdefs.h
 
 fi
-ac_fn_c_check_func "$LINENO" "localeconv" "ac_cv_func_localeconv"
-if test "x$ac_cv_func_localeconv" = xyes
-then :
-  printf "%s\n" "#define HAVE_LOCALECONV 1" >>confdefs.h
-
-fi
 ac_fn_c_check_func "$LINENO" "pow" "ac_cv_func_pow"
 if test "x$ac_cv_func_pow" = xyes
 then :
@@ -18651,6 +18669,12 @@ ac_fn_c_check_func "$LINENO" "strstr" "ac_cv_func_strstr"
 if test "x$ac_cv_func_strstr" = xyes
 then :
   printf "%s\n" "#define HAVE_STRSTR 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "fchmod" "ac_cv_func_fchmod"
+if test "x$ac_cv_func_fchmod" = xyes
+then :
+  printf "%s\n" "#define HAVE_FCHMOD 1" >>confdefs.h
 
 fi
 ac_fn_c_check_func "$LINENO" "strtol" "ac_cv_func_strtol"

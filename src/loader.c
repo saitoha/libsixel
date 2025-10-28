@@ -36,7 +36,7 @@
 # include <ctype.h>
 #endif
 #if HAVE_STDARG_H
-#include <stdarg.h>
+# include <stdarg.h>
 #endif
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
@@ -2369,13 +2369,13 @@ end:
 #if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
 
 # if defined(HAVE_NANOSLEEP)
-int nanosleep (const struct timespec *rqtp, struct timespec *rmtp);
+int nanosleep(const struct timespec *rqtp, struct timespec *rmtp);
 # endif
 # if defined(HAVE_REALPATH)
-char * realpath (const char *restrict path, char *restrict resolved_path);
+char * realpath(const char *restrict path, char *restrict resolved_path);
 # endif
 # if defined(HAVE_MKSTEMP)
-int mkstemp (char *);
+int mkstemp(char *);
 # endif
 
 static int
