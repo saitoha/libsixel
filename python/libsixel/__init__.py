@@ -63,6 +63,7 @@ SIXEL_DEFALUT_GIF_DELAY      = 1
 #        | CANCEL_FLAG     -> (7)        |
 #        | LOADER_ORDER    -> (8)        |
 #        | CONTEXT         -> (9)        |
+#        | ASSESSMENT      -> (10)       |
 #        +-------------------------------+
 SIXEL_LOADER_OPTION_REQUIRE_STATIC = 1
 SIXEL_LOADER_OPTION_USE_PALETTE = 2
@@ -73,6 +74,7 @@ SIXEL_LOADER_OPTION_INSECURE = 6
 SIXEL_LOADER_OPTION_CANCEL_FLAG = 7
 SIXEL_LOADER_OPTION_LOADER_ORDER = 8
 SIXEL_LOADER_OPTION_CONTEXT = 9
+SIXEL_LOADER_OPTION_ASSESSMENT = 10
 
 # return value
 SIXEL_OK              = 0x0000
@@ -559,6 +561,7 @@ def sixel_loader_setopt(loader, option, value=None):
         | CANCEL    | ctypes pointer / address  | byref(c_int(0))     |
         | ORDER     | str/bytes or None         | "stb,png"           |
         | CONTEXT   | ctypes pointer / address  | c_void_p(id(obj))   |
+        | ASSESSMENT| ctypes pointer / address  | c_void_p(id(obj))   |
         +-----------+---------------------------+---------------------+
 
     Values left as ``None`` map to NULL so that the C side may install its
@@ -601,6 +604,7 @@ def sixel_loader_setopt(loader, option, value=None):
     elif option in (
         SIXEL_LOADER_OPTION_CANCEL_FLAG,
         SIXEL_LOADER_OPTION_CONTEXT,
+        SIXEL_LOADER_OPTION_ASSESSMENT,
     ):
         if value is None:
             pointer_value = c_void_p(None)

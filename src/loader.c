@@ -138,6 +138,14 @@ struct sixel_loader {
     int finsecure;
     int const *cancel_flag;
     void *context;
+    /*
+     * Pointer to the active assessment observer.
+     *
+     * Loader clients opt in by setting SIXEL_LOADER_OPTION_ASSESSMENT.
+     * Context slots remain usable for arbitrary callback state without
+     * tripping the observer wiring.
+     */
+    sixel_assessment_t *assessment;
     char *loader_order;
     sixel_allocator_t *allocator;
     char last_loader_name[64];
@@ -5945,6 +5953,7 @@ sixel_loader_new(
     loader->finsecure = 0;
     loader->cancel_flag = NULL;
     loader->context = NULL;
+    loader->assessment = NULL;
     loader->loader_order = NULL;
     loader->allocator = local_allocator;
     loader->last_loader_name[0] = '\0';
@@ -6079,6 +6088,11 @@ sixel_loader_setopt(
         break;
     case SIXEL_LOADER_OPTION_CONTEXT:
         loader->context = (void *)value;
+        loader->assessment = NULL;
+        status = SIXEL_OK;
+        break;
+    case SIXEL_LOADER_OPTION_ASSESSMENT:
+        loader->assessment = (sixel_assessment_t *)value;
         status = SIXEL_OK;
         break;
     default:
@@ -6137,7 +6151,6 @@ sixel_loader_load_file(
     size_t plan_index;
     unsigned char *bgcolor;
     int reqcolors;
-    sixel_encoder_t *encoder;
     sixel_assessment_t *assessment;
 
     pchunk = NULL;
@@ -6146,7 +6159,6 @@ sixel_loader_load_file(
     plan_index = 0;
     bgcolor = NULL;
     reqcolors = 0;
-    encoder = NULL;
     assessment = NULL;
 
     if (loader == NULL) {
@@ -6166,12 +6178,7 @@ sixel_loader_load_file(
         reqcolors = SIXEL_PALETTE_MAX;
     }
 
-    if (loader->context != NULL) {
-        encoder = (sixel_encoder_t *)loader->context;
-        if (encoder->assessment_observer != NULL) {
-            assessment = encoder->assessment_observer;
-        }
-    }
+    assessment = loader->assessment;
 
     /*
      *  Assessment pipeline sketch:

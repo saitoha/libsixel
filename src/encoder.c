@@ -3546,6 +3546,19 @@ reload:
         goto load_end;
     }
 
+    /*
+     * Wire the optional assessment observer into the loader.
+     *
+     * The observer travels separately from the callback context so mapfile
+     * palette probes and other callbacks can keep using arbitrary structs.
+     */
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_ASSESSMENT,
+                                 encoder->assessment_observer);
+    if (SIXEL_FAILED(status)) {
+        goto load_end;
+    }
+
     status = sixel_loader_load_file(loader,
                                     filename,
                                     load_image_callback);
