@@ -165,6 +165,14 @@ _outputcolorspace() {
     'smpte-c[SMPTE-C gamma encoded output]'
 }
 
+_completiontarget() {
+  _values \
+    'TARGET' \
+    'all[manage both bash and zsh completions]' \
+    'bash[operate on bash completions only]' \
+    'zsh[operate on zsh completions only]'
+}
+
 _assessmentsections() {
   _values -s ',' \
     'ASSESSMENTSECTIONS' \
@@ -220,6 +228,9 @@ _arguments -S -s -A "-*" -S \
   {-O,--ormode}'[output ormode sixel image]' \
   {-W,--working-colorspace=}'[select internal working color space]':workingcolorspace:_workingcolorspace \
   {-U,--output-colorspace=}'[select output color space]':outputcolorspace:_outputcolorspace \
+  {-1,--show-completion=}'[print shell completion script]::target:_completiontarget \
+  {-2,--install-completion=}'[install shell completion script]::target:_completiontarget \
+  {-3,--uninstall-completion=}'[remove installed shell completion script]::target:_completiontarget \
   {-V,--version}'[show version and license information]' \
   {-H,--help}'[show help]' \
   '*:files:_files' \

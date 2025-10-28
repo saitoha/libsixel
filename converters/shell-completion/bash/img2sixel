@@ -39,6 +39,10 @@ _img2sixel()
     fi
 
     case "$prev" in
+    -1|--show-completion|-2|--install-completion|-3|--uninstall-completion)
+        COMPREPLY=( $( compgen -W 'all bash zsh' -- "$cur" ) )
+        return 0
+        ;;
     -p|--colors)
         COMPREPLY=( $( compgen -W '2 \
                                    4 \
@@ -250,6 +254,9 @@ _img2sixel()
                                    -O --ormode \
                                    -W --working-colorspace \
                                    -U --output-colorspace \
+                                   -1 --show-completion \
+                                   -2 --install-completion \
+                                   -3 --uninstall-completion \
                                    -V --version \
                                    -H --help \
                                   ' -- "$cur" ))
