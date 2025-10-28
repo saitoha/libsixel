@@ -2119,16 +2119,24 @@ sixel_encoder_encode_frame(
     char buf[256];
     sixel_write_function fn_write;
     sixel_write_function write_callback;
+    sixel_write_function scroll_callback;
     void *write_priv;
+    void *scroll_priv;
     sixel_encoder_output_probe_t probe;
+    sixel_encoder_output_probe_t scroll_probe;
     sixel_assessment_t *assessment;
 
     fn_write = sixel_write_callback;
     write_callback = sixel_write_callback;
+    scroll_callback = sixel_write_callback;
     write_priv = &encoder->outfd;
+    scroll_priv = &encoder->outfd;
     probe.encoder = NULL;
     probe.base_write = NULL;
     probe.base_priv = NULL;
+    scroll_probe.encoder = NULL;
+    scroll_probe.base_write = NULL;
+    scroll_probe.base_priv = NULL;
     assessment = NULL;
     if (encoder != NULL) {
         assessment = encoder->assessment_observer;
@@ -2299,8 +2307,18 @@ sixel_encoder_encode_frame(
             is_animation = 1;
         }
         height = sixel_frame_get_height(frame);
-        (void) sixel_tty_scroll(write_callback,
-                                write_priv,
+        if (encoder->assessment_observer != NULL) {
+            scroll_probe.encoder = encoder;
+            scroll_probe.base_write = sixel_write_callback;
+            scroll_probe.base_priv = &encoder->outfd;
+            scroll_callback = sixel_write_with_probe;
+            scroll_priv = &scroll_probe;
+        } else {
+            scroll_callback = sixel_write_callback;
+            scroll_priv = &encoder->outfd;
+        }
+        (void) sixel_tty_scroll(scroll_callback,
+                                scroll_priv,
                                 encoder->outfd,
                                 height,
                                 is_animation);
