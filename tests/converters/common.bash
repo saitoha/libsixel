@@ -70,6 +70,7 @@ IMAGES_DIR="${TOP_SRCDIR}/images"
 mkdir -p "${TMP_DIR}"
 
 wine_exec() {
+    echo "$@" >&2
     if [[ -n "${WINE}" ]]; then
         "${WINE}" "$@"
     else
