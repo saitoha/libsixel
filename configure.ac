@@ -543,6 +543,12 @@ else
                             [define 1 if GCC supports -Wunused-but-set-variable])],
                  [],
                  [wunused_but_set_variable])
+  LS_CHECK_CFLAG([-Wformat-nonliteral],
+                 [AC_DEFINE(HAVE_DIAGNOSTIC_FORMAT_NONLITERAL,
+                            [1],
+                            [define 1 if GCC supports -Wformat-nonliteral])],
+                 [],
+                 [wformat_nonliteral])
   LS_CHECK_CFLAG([-Bsymbolic],
                  [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
                   AC_DEFINE(HAVE_BSYMBOLIC,
@@ -576,6 +582,8 @@ AC_CHECK_HEADERS([assert.h \
                   memory.h \
                   unistd.h \
                   stdint.h \
+                  stddef.h \
+                  stdarg.h \
                   sys/unistd.h \
                   getopt.h \
                   sys/types.h \

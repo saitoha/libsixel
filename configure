@@ -17689,6 +17689,48 @@ else case e in #(
 esac
 fi
 
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wformat-nonliteral" >&5
+printf %s "checking if $CC supports -Wformat-nonliteral... " >&6; }
+if test ${ac_cv_cc_flag_wformat_nonliteral+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) saved_cflags="$CFLAGS"
+                          CFLAGS="-Wformat-nonliteral -Werror"
+                          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ac_cv_cc_flag_wformat_nonliteral=yes
+else case e in #(
+  e) ac_cv_cc_flag_wformat_nonliteral=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+                          CFLAGS="$saved_cflags" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_wformat_nonliteral" >&5
+printf "%s\n" "$ac_cv_cc_flag_wformat_nonliteral" >&6; }
+          if eval test \"x\$ac_cv_cc_flag_wformat_nonliteral\" = xyes
+then :
+
+printf "%s\n" "#define HAVE_DIAGNOSTIC_FORMAT_NONLITERAL 1" >>confdefs.h
+
+else case e in #(
+  e) : ;;
+esac
+fi
+
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Bsymbolic" >&5
 printf %s "checking if $CC supports -Bsymbolic... " >&6; }
 if test ${ac_cv_cc_flag_bsymbolic+y}
@@ -17960,6 +18002,18 @@ ac_fn_c_check_header_compile "$LINENO" "stdint.h" "ac_cv_header_stdint_h" "$ac_i
 if test "x$ac_cv_header_stdint_h" = xyes
 then :
   printf "%s\n" "#define HAVE_STDINT_H 1" >>confdefs.h
+
+fi
+ac_fn_c_check_header_compile "$LINENO" "stddef.h" "ac_cv_header_stddef_h" "$ac_includes_default"
+if test "x$ac_cv_header_stddef_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_STDDEF_H 1" >>confdefs.h
+
+fi
+ac_fn_c_check_header_compile "$LINENO" "stdarg.h" "ac_cv_header_stdarg_h" "$ac_includes_default"
+if test "x$ac_cv_header_stdarg_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_STDARG_H 1" >>confdefs.h
 
 fi
 ac_fn_c_check_header_compile "$LINENO" "sys/unistd.h" "ac_cv_header_sys_unistd_h" "$ac_includes_default"

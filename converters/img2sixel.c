@@ -59,6 +59,7 @@
 #include <sixel.h>
 #include "../src/frame.h"
 #include "../src/assessment.h"
+#include "completion_utils.h"
 
 #if defined(HAVE_MKSTEMP)
 int mkstemp(char *);
@@ -849,6 +850,12 @@ void show_help(void)
             "                             gamma   -> sRGB gamma(default)\n"
             "                             linear  -> linear RGB color space\n"
             "                             smpte-c -> SMPTE-C gamma color space\n"
+            "-1, --show-completion[=bash|zsh|all]\n"
+            "                           print shell completion script\n"
+            "-2, --install-completion[=bash|zsh|all]\n"
+            "                           install shell completion script\n"
+            "-3, --uninstall-completion[=bash|zsh|all]\n"
+            "                           uninstall shell completion script\n"
             "-V, --version              show version and license info\n"
             "-H, --help                 show this help\n"
             "\n"
@@ -886,6 +893,8 @@ main(int argc, char *argv[])
     SIXELSTATUS status = SIXEL_FALSE;
     int n;
     sixel_encoder_t *encoder = NULL;
+    int completion_cli_result;
+    int completion_exit_status;
 #if HAVE_GETOPT_LONG
     int long_opt;
     int option_index;
@@ -977,6 +986,16 @@ main(int argc, char *argv[])
     int assessment_stat_result;
     char const *assessment_size_path;
 #endif
+
+    completion_exit_status = 0;
+    completion_cli_result = img2sixel_handle_completion_cli(
+        argc, argv, &completion_exit_status);
+    if (completion_cli_result < 0) {
+        return completion_exit_status;
+    }
+    if (completion_cli_result > 0) {
+        return completion_exit_status;
+    }
 
     output_is_png = 0;
     output_png_to_stdout = 0;

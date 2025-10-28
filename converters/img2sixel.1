@@ -381,6 +381,28 @@ linear  -> linear RGB output
 .br
 smpte-c -> SMPTE-C gamma encoded output
 .TP 5
+.B \-1, \-\-show\-completion[=bash|zsh|all]
+print the requested completion script to standard output. When "all" is
+selected (the default) the bash script is printed first, followed by the zsh
+script separated by comment banners. The lookup order prefers files referenced
+through \fIIMG2SIXEL_COMPLETION_*\fP variables, then files installed under
+\fIPKGDATADIR\fP, and finally falls back to the embedded script bundled with the
+binary.
+.TP 5
+.B \-2, \-\-install\-completion[=bash|zsh|all]
+install completion scripts into user writable directories. Bash installs to
+\fI$HOME/.local/share/bash-completion/completions/img2sixel\fP and updates an
+existing \fI$HOME/.bash_completion.d/img2sixel\fP file when present. Zsh writes
+to \fI$HOME/.zfunc/_img2sixel\fP and ensures the standard \fIfpath\fP and
+\fIcompinit\fP lines are present inside \fI$HOME/.zshrc\fP. Use the
+\fIIMG2SIXEL_COMPLETION_HOME\fP override to test the installer against a custom
+root.
+.TP 5
+.B \-3, \-\-uninstall\-completion[=bash|zsh|all]
+remove completion scripts previously installed by \fB\-\-install\-completion\fP.
+Each removal prints the outcome yet silently skips missing files so repeated
+invocations remain idempotent.
+.TP 5
 .B \-V, \-\-version
 show version and license info.
 .br
@@ -417,6 +439,27 @@ rgb:rrr/ggg/bbb
 .br
 rgb:rrrr/gggg/bbbb
 .br
+.TP 5
+.B IMG2SIXEL_COMPLETION_BASH
+.br
+override the bash completion source path. When set, the completion commands
+load content from the referenced file before consulting packaged defaults.
+.TP 5
+.B IMG2SIXEL_COMPLETION_ZSH
+.br
+override the zsh completion source path. Shares the same priority rules as the
+bash override.
+.TP 5
+.B IMG2SIXEL_COMPLETION_DIR
+.br
+provide a directory that contains \fBbash/img2sixel\fP and \fBzsh/_img2sixel\fP
+entries. The hybrid lookup checks this directory after the shell specific
+override variables.
+.TP 5
+.B IMG2SIXEL_COMPLETION_HOME
+.br
+fake the home directory used during completion installation and removal. This
+is helpful for testing the workflow inside disposable directories.
 .TP 5
 .B SIXEL_NCOLORS
 .br

@@ -28,11 +28,15 @@
 /* STDC_HEADERS */
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
-#include <stdarg.h>
 
 #if HAVE_STRING_H
 # include <string.h>
+#endif
+#if HAVE_CTYPE_H
+# include <ctype.h>
+#endif
+#if HAVE_STDARG_H
+#include <stdarg.h>
 #endif
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
@@ -232,18 +236,22 @@ loader_trace_message(char const *format, ...)
     fprintf(stderr, "libsixel: ");
 
     va_start(args, format);
-#if defined(__clang__)
-# pragma clang diagnostic push
-# pragma clang diagnostic ignored "-Wformat-nonliteral"
-#elif defined(__GNUC__)
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+# if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wformat-nonliteral"
+# elif defined(__GNUC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-nonliteral"
+# endif
 #endif
     vfprintf(stderr, format, args);
-#if defined(__clang__)
-# pragma clang diagnostic pop
-#elif defined(__GNUC__)
-# pragma GCC diagnostic pop
+#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+# if defined(__clang__)
+#  pragma clang diagnostic pop
+# elif defined(__GNUC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
     va_end(args);
 
