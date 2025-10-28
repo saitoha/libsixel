@@ -41,6 +41,9 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+#if HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
 #if HAVE_GETOPT_H
 # include <getopt.h>
 #endif
@@ -180,16 +183,24 @@ create_temp_template(void)
  * The tee sink can be stdout or a user-provided file such as /dev/null.
  */
 static SIXELSTATUS
-copy_file_to_stream(char const *path, FILE *stream)
+copy_file_to_stream(char const *path,
+                    FILE *stream,
+                    sixel_assessment_t *assessment)
 {
     FILE *source;
     unsigned char buffer[4096];
     size_t nread;
     size_t nwritten;
+    double started_at;
+    double finished_at;
+    double duration;
 
     source = NULL;
     nread = 0;
     nwritten = 0;
+    started_at = 0.0;
+    finished_at = 0.0;
+    duration = 0.0;
 
     source = fopen(path, "rb");
     if (source == NULL) {
@@ -209,12 +220,25 @@ copy_file_to_stream(char const *path, FILE *stream)
             }
             break;
         }
+        if (assessment != NULL) {
+            started_at = sixel_assessment_timer_now();
+        }
         nwritten = fwrite(buffer, 1, nread, stream);
         if (nwritten != nread) {
             sixel_helper_set_additional_message(
                 "img2sixel: failed while copying assessment staging file.");
             (void) fclose(source);
             return SIXEL_LIBC_ERROR;
+        }
+        if (assessment != NULL) {
+            finished_at = sixel_assessment_timer_now();
+            duration = finished_at - started_at;
+            if (duration < 0.0) {
+                duration = 0.0;
+            }
+            sixel_assessment_record_output_write(assessment,
+                                                 nwritten,
+                                                 duration);
         }
     }
 
@@ -281,6 +305,158 @@ end:
     sixel_decoder_unref(decoder);
 
     return status;
+}
+
+/*
+ * parse_assessment_sections() translates a comma-separated section list into
+ * the bitmask understood by the assessment back-end.  The accepted grammar is
+ * intentionally small so that the CLI contract stays predictable:
+ *
+ *     list := section {"," section}
+ *     section := name | name "@" view
+ *
+ * Each name maps to a bit flag while the optional view toggles the encoded vs
+ * quantized quality comparison.  The helper folds case, trims ASCII
+ * whitespace, and rejects mixed encoded/quantized requests so that the caller
+ * can rely on a single coherent capture strategy.
+ */
+static int
+parse_assessment_sections(char const *spec,
+                          unsigned int *out_sections)
+{
+    char *copy;
+    char *cursor;
+    char *token;
+    unsigned int sections;
+    unsigned int view;
+    int result;
+    size_t length;
+    size_t spec_len;
+    char *at;
+    char *base;
+    char *variant;
+    char *p;
+
+    if (spec == NULL || out_sections == NULL) {
+        return -1;
+    }
+    spec_len = strlen(spec);
+    copy = (char *)malloc(spec_len + 1u);
+    if (copy == NULL) {
+        return -1;
+    }
+    memcpy(copy, spec, spec_len + 1u);
+    cursor = copy;
+    sections = 0u;
+    view = SIXEL_ASSESSMENT_VIEW_ENCODED;
+    result = 0;
+    while (result == 0) {
+        token = strtok(cursor, ",");
+        if (token == NULL) {
+            break;
+        }
+        cursor = NULL;
+        while (*token == ' ' || *token == '\t') {
+            token += 1;
+        }
+        length = strlen(token);
+        while (length > 0u &&
+               (token[length - 1u] == ' ' || token[length - 1u] == '\t')) {
+            token[length - 1u] = '\0';
+            length -= 1u;
+        }
+        if (*token == '\0') {
+            result = -1;
+            break;
+        }
+        for (p = token; *p != '\0'; ++p) {
+            *p = (char)tolower((unsigned char)*p);
+        }
+        at = strchr(token, '@');
+        if (at != NULL) {
+            *at = '\0';
+            variant = at + 1;
+            if (*variant == '\0') {
+                result = -1;
+                break;
+            }
+        } else {
+            variant = NULL;
+        }
+        base = token;
+        if (strcmp(base, "all") == 0) {
+            sections |= SIXEL_ASSESSMENT_SECTION_ALL;
+            if (variant != NULL && variant[0] != '\0') {
+                if (strcmp(variant, "quantized") == 0) {
+                    if (view != SIXEL_ASSESSMENT_VIEW_ENCODED &&
+                            view != SIXEL_ASSESSMENT_VIEW_QUANTIZED) {
+                        result = -1;
+                    }
+                    view = SIXEL_ASSESSMENT_VIEW_QUANTIZED;
+                } else if (strcmp(variant, "encoded") == 0) {
+                    if (view == SIXEL_ASSESSMENT_VIEW_QUANTIZED) {
+                        result = -1;
+                    }
+                    view = SIXEL_ASSESSMENT_VIEW_ENCODED;
+                } else {
+                    result = -1;
+                }
+            }
+        } else if (strcmp(base, "basic") == 0) {
+            sections |= SIXEL_ASSESSMENT_SECTION_BASIC;
+            if (variant != NULL) {
+                result = -1;
+            }
+        } else if (strcmp(base, "performance") == 0) {
+            sections |= SIXEL_ASSESSMENT_SECTION_PERFORMANCE;
+            if (variant != NULL) {
+                result = -1;
+            }
+        } else if (strcmp(base, "size") == 0) {
+            sections |= SIXEL_ASSESSMENT_SECTION_SIZE;
+            if (variant != NULL) {
+                result = -1;
+            }
+        } else if (strcmp(base, "quality") == 0) {
+            sections |= SIXEL_ASSESSMENT_SECTION_QUALITY;
+            if (variant != NULL && variant[0] != '\0') {
+                if (strcmp(variant, "quantized") == 0) {
+                    if (view != SIXEL_ASSESSMENT_VIEW_ENCODED &&
+                            view != SIXEL_ASSESSMENT_VIEW_QUANTIZED) {
+                        result = -1;
+                    }
+                    view = SIXEL_ASSESSMENT_VIEW_QUANTIZED;
+                } else if (strcmp(variant, "encoded") == 0) {
+                    if (view == SIXEL_ASSESSMENT_VIEW_QUANTIZED) {
+                        result = -1;
+                    }
+                    view = SIXEL_ASSESSMENT_VIEW_ENCODED;
+                } else {
+                    result = -1;
+                }
+            } else if (variant != NULL) {
+                if (view == SIXEL_ASSESSMENT_VIEW_QUANTIZED) {
+                    result = -1;
+                }
+                view = SIXEL_ASSESSMENT_VIEW_ENCODED;
+            }
+        } else {
+            result = -1;
+        }
+    }
+    if (result == 0) {
+        if (sections == 0u) {
+            result = -1;
+        } else {
+            if ((sections & SIXEL_ASSESSMENT_SECTION_QUALITY) != 0u &&
+                    view == SIXEL_ASSESSMENT_VIEW_QUANTIZED) {
+                sections |= SIXEL_ASSESSMENT_VIEW_QUANTIZED;
+            }
+            *out_sections = sections;
+        }
+    }
+    free(copy);
+    return result;
 }
 
 /* output version info to STDOUT */
@@ -421,8 +597,10 @@ void show_help(void)
             "-T PATH, --tiles=PATH      specify output path for DRCS-SIXEL\n"
             "                           tile characters.\n"
             "                           use '-' to write to stdout.\n"
-            "-a MODE, --assessment=MODE emit assessment JSON report.\n"
-            "                           MODE: quantized | encoded\n"
+            "-a LIST, --assessment=LIST emit assessment JSON report.\n"
+            "                           LIST is a comma separated set of\n"
+            "                           sections (basic, performance, size,\n"
+            "                           quality, quality@quantized, all).\n"
             "-J PATH, --assessment-file=PATH\n"
             "                           write assessment JSON to PATH.\n"
             "                           use '-' to write to stdout.\n"
@@ -769,7 +947,13 @@ main(int argc, char *argv[])
     char *png_temp_path;
     int png_temp_fd;
     char const *png_final_path;
-    sixel_assessment_mode_t assessment_mode;
+    unsigned int assessment_sections;
+    unsigned int assessment_section_mask;
+    int assessment_enabled;
+    int assessment_need_source_capture;
+    int assessment_need_quantized_capture;
+    int assessment_need_quality;
+    int assessment_quality_quantized;
     sixel_allocator_t *assessment_allocator;
     sixel_frame_t *assessment_source_frame;
     sixel_frame_t *assessment_target_frame;
@@ -785,6 +969,14 @@ main(int argc, char *argv[])
     sixel_assessment_spool_mode_t assessment_spool_mode;
     char *assessment_forward_path;
     char *sixel_output_path;
+    double assessment_parse_start;
+    double assessment_parse_duration;
+    size_t assessment_output_bytes;
+#if HAVE_SYS_STAT_H
+    struct stat assessment_stat;
+    int assessment_stat_result;
+    char const *assessment_size_path;
+#endif
 
     output_is_png = 0;
     output_png_to_stdout = 0;
@@ -792,7 +984,13 @@ main(int argc, char *argv[])
     png_temp_path = NULL;
     png_temp_fd = (-1);
     png_final_path = NULL;
-    assessment_mode = SIXEL_ASSESSMENT_MODE_NONE;
+    assessment_sections = SIXEL_ASSESSMENT_SECTION_NONE;
+    assessment_section_mask = SIXEL_ASSESSMENT_SECTION_NONE;
+    assessment_enabled = 0;
+    assessment_need_source_capture = 0;
+    assessment_need_quantized_capture = 0;
+    assessment_need_quality = 0;
+    assessment_quality_quantized = 0;
     assessment_allocator = NULL;
     assessment_source_frame = NULL;
     assessment_target_frame = NULL;
@@ -809,6 +1007,13 @@ main(int argc, char *argv[])
     assessment_spool_mode = SIXEL_ASSESSMENT_SPOOL_MODE_NONE;
     assessment_forward_path = NULL;
     sixel_output_path = NULL;
+    assessment_parse_start = sixel_assessment_timer_now();
+    assessment_parse_duration = 0.0;
+    assessment_output_bytes = 0u;
+#if HAVE_SYS_STAT_H
+    assessment_stat_result = 0;
+    assessment_size_path = NULL;
+#endif
 
     status = sixel_encoder_new(&encoder, NULL);
     if (SIXEL_FAILED(status)) {
@@ -843,13 +1048,9 @@ main(int argc, char *argv[])
             status = SIXEL_OK;
             goto end;
         case 'a':
-            if (strcmp(optarg, "quantized") == 0) {
-                assessment_mode = SIXEL_ASSESSMENT_MODE_QUANTIZED;
-            } else if (strcmp(optarg, "encoded") == 0) {
-                assessment_mode = SIXEL_ASSESSMENT_MODE_ENCODED;
-            } else {
+            if (parse_assessment_sections(optarg, &assessment_sections) != 0) {
                 sixel_helper_set_additional_message(
-                    "img2sixel: unknown assessment mode.");
+                    "img2sixel: invalid assessment section list.");
                 status = SIXEL_BAD_ARGUMENT;
                 goto argerr;
             }
@@ -915,25 +1116,44 @@ main(int argc, char *argv[])
         }
     }
 
-    if (assessment_mode != SIXEL_ASSESSMENT_MODE_NONE) {
+    assessment_section_mask =
+        assessment_sections & SIXEL_ASSESSMENT_SECTION_MASK;
+    if (assessment_section_mask != 0u) {
         int input_count;
+        int spool_required;
 
+        assessment_enabled = 1;
+        assessment_need_quality =
+            (assessment_section_mask & SIXEL_ASSESSMENT_SECTION_QUALITY) != 0u;
+        assessment_quality_quantized =
+            (assessment_sections & SIXEL_ASSESSMENT_VIEW_QUANTIZED) != 0u;
+        assessment_need_quantized_capture =
+            ((assessment_section_mask &
+              (SIXEL_ASSESSMENT_SECTION_BASIC |
+               SIXEL_ASSESSMENT_SECTION_SIZE)) != 0u) ||
+            assessment_quality_quantized;
+        assessment_need_source_capture =
+            (assessment_section_mask &
+             (SIXEL_ASSESSMENT_SECTION_BASIC |
+              SIXEL_ASSESSMENT_SECTION_PERFORMANCE |
+              SIXEL_ASSESSMENT_SECTION_SIZE |
+              SIXEL_ASSESSMENT_SECTION_QUALITY)) != 0u;
         input_count = argc - optind;
         if (input_count > 1) {
             sixel_helper_set_additional_message(
-                "img2sixel: assessment mode accepts at most one input file.");
+                "img2sixel: assessment accepts at most one input file.");
             status = SIXEL_BAD_ARGUMENT;
             goto argerr;
         }
-        if (assessment_mode == SIXEL_ASSESSMENT_MODE_ENCODED) {
-            if (output_is_png) {
-                sixel_helper_set_additional_message(
-                    "img2sixel: encoded assessment requires SIXEL output.");
-                status = SIXEL_BAD_ARGUMENT;
-                goto argerr;
-            }
+        if (assessment_need_quality && !assessment_quality_quantized &&
+                output_is_png) {
+            sixel_helper_set_additional_message(
+                "img2sixel: encoded quality assessment requires SIXEL output.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto argerr;
         }
-        status = sixel_encoder_enable_source_capture(encoder, 1);
+        status = sixel_encoder_enable_source_capture(encoder,
+                                                     assessment_need_source_capture);
         if (SIXEL_FAILED(status)) {
             goto error;
         }
@@ -941,17 +1161,15 @@ main(int argc, char *argv[])
         if (SIXEL_FAILED(status)) {
             goto error;
         }
-        if (assessment_mode == SIXEL_ASSESSMENT_MODE_QUANTIZED) {
+        if (assessment_need_quantized_capture) {
             status = sixel_encoder_enable_quantized_capture(encoder, 1);
             if (SIXEL_FAILED(status)) {
                 goto error;
             }
         }
-        if (assessment_mode == SIXEL_ASSESSMENT_MODE_ENCODED) {
-            int spool_required;
-
-            assessment_spool_mode = SIXEL_ASSESSMENT_SPOOL_MODE_NONE;
-            spool_required = 0;
+        assessment_spool_mode = SIXEL_ASSESSMENT_SPOOL_MODE_NONE;
+        spool_required = 0;
+        if (assessment_need_quality && !assessment_quality_quantized) {
             if (sixel_output_path == NULL) {
                 assessment_spool_mode = SIXEL_ASSESSMENT_SPOOL_MODE_STDOUT;
                 spool_required = 1;
@@ -966,38 +1184,39 @@ main(int argc, char *argv[])
                 assessment_forward_path = sixel_output_path;
                 sixel_output_path = NULL;
             }
-            if (spool_required) {
-                assessment_temp_path = create_temp_template();
-                if (assessment_temp_path == NULL) {
-                    sixel_helper_set_additional_message(
-                        "img2sixel: malloc() failed for assessment staging path.");
-                    status = SIXEL_BAD_ALLOCATION;
-                    goto error;
-                }
+        }
+    if (spool_required) {
+        assessment_temp_path = create_temp_template();
+        if (assessment_temp_path == NULL) {
+            sixel_helper_set_additional_message(
+                "img2sixel: malloc() failed for assessment staging path.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
+        }
 #if defined(HAVE_MKSTEMP)
-                assessment_temp_fd = mkstemp(assessment_temp_path);
-                if (assessment_temp_fd < 0) {
-                    sixel_helper_set_additional_message(
-                        "img2sixel: mkstemp() failed for assessment staging file.");
-                    status = SIXEL_RUNTIME_ERROR;
-                    goto error;
-                }
-                (void) close(assessment_temp_fd);
-                assessment_temp_fd = (-1);
+        assessment_temp_fd = mkstemp(assessment_temp_path);
+            if (assessment_temp_fd < 0) {
+                sixel_helper_set_additional_message(
+                    "img2sixel: mkstemp() failed for assessment staging file.");
+                status = SIXEL_RUNTIME_ERROR;
+                goto error;
+            }
+            (void) close(assessment_temp_fd);
+            assessment_temp_fd = (-1);
 #elif defined(HAVE__MKTEMP)
-                if (_mktemp(assessment_temp_path) == NULL) {
-                    sixel_helper_set_additional_message(
-                        "img2sixel: _mktemp() failed for assessment staging file.");
-                    status = SIXEL_RUNTIME_ERROR;
-                    goto error;
-                }
+            if (_mktemp(assessment_temp_path) == NULL) {
+                sixel_helper_set_additional_message(
+                    "img2sixel: _mktemp() failed for assessment staging file.");
+                status = SIXEL_RUNTIME_ERROR;
+                goto error;
+            }
 #elif defined(HAVE_MKTEMP)
-                if (mktemp(assessment_temp_path) == NULL) {
-                    sixel_helper_set_additional_message(
-                        "img2sixel: mktemp() failed for assessment staging file.");
-                    status = SIXEL_RUNTIME_ERROR;
-                    goto error;
-                }
+            if (mktemp(assessment_temp_path) == NULL) {
+                sixel_helper_set_additional_message(
+                    "img2sixel: mktemp() failed for assessment staging file.");
+                status = SIXEL_RUNTIME_ERROR;
+                goto error;
+            }
 #else
                 {
                     char *generated;
@@ -1034,7 +1253,6 @@ main(int argc, char *argv[])
                     goto error;
                 }
                 strcpy(sixel_output_path, assessment_temp_path);
-            }
         }
     }
 
@@ -1119,6 +1337,39 @@ main(int argc, char *argv[])
         }
     }
 
+    assessment_parse_duration =
+        sixel_assessment_timer_now() - assessment_parse_start;
+    if (assessment_enabled) {
+        status = sixel_allocator_new(&assessment_allocator,
+                                     malloc,
+                                     calloc,
+                                     realloc,
+                                     free);
+        if (SIXEL_FAILED(status) || assessment_allocator == NULL) {
+            goto error;
+        }
+        status = sixel_assessment_new(&assessment, assessment_allocator);
+        if (SIXEL_FAILED(status) || assessment == NULL) {
+            goto error;
+        }
+        sixel_assessment_select_sections(assessment, assessment_sections);
+        sixel_assessment_record_stage_duration(
+            assessment,
+            SIXEL_ASSESSMENT_STAGE_ARGUMENT_PARSE,
+            assessment_parse_duration);
+        sixel_assessment_attach_encoder(assessment, encoder);
+        if (argv != NULL && argv[0] != NULL) {
+            status = sixel_assessment_setopt(assessment,
+                                             SIXEL_ASSESSMENT_OPT_EXEC_PATH,
+                                             argv[0]);
+            if (SIXEL_FAILED(status)) {
+                fprintf(stderr,
+                        "img2sixel: warning: unable to locate models (%s).\n",
+                        sixel_helper_format_error(status));
+            }
+        }
+    }
+
     if (optind == argc) {
         status = sixel_encoder_encode(encoder, NULL);
         if (SIXEL_FAILED(status)) {
@@ -1147,61 +1398,64 @@ main(int argc, char *argv[])
         }
     }
 
-    if (assessment_mode != SIXEL_ASSESSMENT_MODE_NONE) {
-        status = sixel_allocator_new(&assessment_allocator,
-                                     malloc,
-                                     calloc,
-                                     realloc,
-                                     free);
-        if (SIXEL_FAILED(status) || assessment_allocator == NULL) {
+    if (assessment_enabled) {
+        if (assessment_allocator == NULL || assessment == NULL) {
+            status = SIXEL_RUNTIME_ERROR;
             goto error;
         }
-        status = sixel_encoder_copy_source_frame(encoder,
-                                                 &assessment_source_frame);
-        if (SIXEL_FAILED(status)) {
-            goto error;
-        }
-        status = sixel_assessment_new(&assessment, assessment_allocator);
-        if (SIXEL_FAILED(status) || assessment == NULL) {
-            goto error;
-        }
-        if (argv != NULL && argv[0] != NULL) {
-            status = sixel_assessment_setopt(assessment,
-                                             SIXEL_ASSESSMENT_OPT_EXEC_PATH,
-                                             argv[0]);
-            if (SIXEL_FAILED(status)) {
-                fprintf(stderr,
-                        "img2sixel: warning: unable to locate models (%s).\n",
-                        sixel_helper_format_error(status));
-            }
-        }
-        if (assessment_mode == SIXEL_ASSESSMENT_MODE_QUANTIZED) {
-            status = sixel_encoder_copy_quantized_frame(
-                encoder, assessment_allocator, &assessment_target_frame);
+        if (assessment_need_source_capture) {
+            status = sixel_encoder_copy_source_frame(encoder,
+                                                     &assessment_source_frame);
             if (SIXEL_FAILED(status)) {
                 goto error;
             }
-            status = sixel_assessment_expand_quantized_frame(
-                assessment_target_frame,
-                assessment_allocator,
-                &assessment_expanded_frame);
-            if (SIXEL_FAILED(status)) {
-                goto error;
+            sixel_assessment_record_source_frame(assessment,
+                                                 assessment_source_frame);
+        }
+        if (assessment_need_quality) {
+            if (assessment_quality_quantized) {
+                status = sixel_encoder_copy_quantized_frame(
+                    encoder, assessment_allocator, &assessment_target_frame);
+                if (SIXEL_FAILED(status)) {
+                    goto error;
+                }
+                status = sixel_assessment_expand_quantized_frame(
+                    assessment_target_frame,
+                    assessment_allocator,
+                    &assessment_expanded_frame);
+                if (SIXEL_FAILED(status)) {
+                    goto error;
+                }
+                sixel_frame_unref(assessment_target_frame);
+                assessment_target_frame = assessment_expanded_frame;
+                assessment_expanded_frame = NULL;
+                sixel_assessment_record_quantized_capture(assessment, encoder);
+            } else {
+                status = sixel_assessment_load_single_frame(
+                    sixel_output_path,
+                    assessment_allocator,
+                    &assessment_target_frame);
+                if (SIXEL_FAILED(status)) {
+                    goto error;
+                }
             }
-            sixel_frame_unref(assessment_target_frame);
-            assessment_target_frame = assessment_expanded_frame;
-            assessment_expanded_frame = NULL;
-        } else {
-            status = sixel_assessment_load_single_frame(
-                sixel_output_path,
-                assessment_allocator,
-                &assessment_target_frame);
-            if (SIXEL_FAILED(status)) {
-                goto error;
+            if (!assessment_quality_quantized &&
+                    assessment_need_quantized_capture) {
+                sixel_assessment_record_quantized_capture(assessment, encoder);
             }
+        } else if (assessment_need_quantized_capture) {
+            sixel_assessment_record_quantized_capture(assessment, encoder);
+        }
+        if (assessment != NULL &&
+                assessment_spool_mode != SIXEL_ASSESSMENT_SPOOL_MODE_NONE) {
+            sixel_assessment_stage_transition(
+                assessment,
+                SIXEL_ASSESSMENT_STAGE_OUTPUT);
         }
         if (assessment_spool_mode == SIXEL_ASSESSMENT_SPOOL_MODE_STDOUT) {
-            status = copy_file_to_stream(assessment_temp_path, stdout);
+            status = copy_file_to_stream(assessment_temp_path,
+                                         stdout,
+                                         assessment);
             if (SIXEL_FAILED(status)) {
                 goto error;
             }
@@ -1220,7 +1474,8 @@ main(int argc, char *argv[])
                 goto error;
             }
             status = copy_file_to_stream(assessment_temp_path,
-                                         assessment_forward_stream);
+                                         assessment_forward_stream,
+                                         assessment);
             if (fclose(assessment_forward_stream) != 0) {
                 if (SIXEL_SUCCEEDED(status)) {
                     sixel_helper_set_additional_message(
@@ -1233,12 +1488,56 @@ main(int argc, char *argv[])
                 goto error;
             }
         }
-        status = sixel_assessment_analyze(assessment,
-                                          assessment_source_frame,
-                                          assessment_target_frame);
-        if (SIXEL_FAILED(status)) {
-            goto error;
+        if (assessment != NULL &&
+                assessment_spool_mode != SIXEL_ASSESSMENT_SPOOL_MODE_NONE) {
+            sixel_assessment_stage_finish(assessment);
         }
+#if HAVE_SYS_STAT_H
+        assessment_output_bytes = 0u;
+        assessment_size_path = NULL;
+        if (assessment_need_quality && !assessment_quality_quantized) {
+            if (assessment_spool_mode == SIXEL_ASSESSMENT_SPOOL_MODE_STDOUT ||
+                    assessment_spool_mode ==
+                        SIXEL_ASSESSMENT_SPOOL_MODE_PATH) {
+                assessment_size_path = assessment_temp_path;
+            } else if (sixel_output_path != NULL &&
+                    strcmp(sixel_output_path, "-") != 0) {
+                assessment_size_path = sixel_output_path;
+            }
+        } else {
+            if (sixel_output_path != NULL &&
+                    strcmp(sixel_output_path, "-") != 0) {
+                assessment_size_path = sixel_output_path;
+            } else if (assessment_spool_mode ==
+                    SIXEL_ASSESSMENT_SPOOL_MODE_STDOUT ||
+                    assessment_spool_mode ==
+                        SIXEL_ASSESSMENT_SPOOL_MODE_PATH) {
+                assessment_size_path = assessment_temp_path;
+            }
+        }
+        if (assessment_size_path != NULL) {
+            assessment_stat_result = stat(assessment_size_path,
+                                          &assessment_stat);
+            if (assessment_stat_result == 0 &&
+                    assessment_stat.st_size >= 0) {
+                assessment_output_bytes =
+                    (size_t)assessment_stat.st_size;
+            }
+        }
+#else
+        assessment_output_bytes = 0u;
+#endif
+        sixel_assessment_record_output_size(assessment,
+                                            assessment_output_bytes);
+        if (assessment_need_quality) {
+            status = sixel_assessment_analyze(assessment,
+                                              assessment_source_frame,
+                                              assessment_target_frame);
+            if (SIXEL_FAILED(status)) {
+                goto error;
+            }
+        }
+        sixel_assessment_stage_finish(assessment);
         if (assessment_json_path != NULL &&
                 strcmp(assessment_json_path, "-") != 0) {
             assessment_json_file = fopen(assessment_json_path, "wb");
@@ -1255,6 +1554,7 @@ main(int argc, char *argv[])
         }
         assessment_sink.failed = 0;
         status = sixel_assessment_get_json(assessment,
+                                           assessment_sections,
                                            assessment_json_callback,
                                            &assessment_sink);
         if (SIXEL_FAILED(status) || assessment_sink.failed) {
@@ -1263,7 +1563,9 @@ main(int argc, char *argv[])
             goto error;
         }
     } else if (assessment_spool_mode == SIXEL_ASSESSMENT_SPOOL_MODE_STDOUT) {
-        status = copy_file_to_stream(assessment_temp_path, stdout);
+        status = copy_file_to_stream(assessment_temp_path,
+                                     stdout,
+                                     assessment);
         if (SIXEL_FAILED(status)) {
             goto error;
         }
@@ -1282,7 +1584,8 @@ main(int argc, char *argv[])
             goto error;
         }
         status = copy_file_to_stream(assessment_temp_path,
-                                     assessment_forward_stream);
+                                     assessment_forward_stream,
+                                     assessment);
         if (fclose(assessment_forward_stream) != 0) {
             if (SIXEL_SUCCEEDED(status)) {
                 sixel_helper_set_additional_message(

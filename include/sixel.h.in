@@ -1301,6 +1301,21 @@ typedef void (*sixel_assessment_json_callback_t)(
     size_t length,
     void *user_data);
 
+#define SIXEL_ASSESSMENT_SECTION_NONE        0x00000000u
+#define SIXEL_ASSESSMENT_SECTION_BASIC       0x00000001u
+#define SIXEL_ASSESSMENT_SECTION_PERFORMANCE 0x00000002u
+#define SIXEL_ASSESSMENT_SECTION_SIZE        0x00000004u
+#define SIXEL_ASSESSMENT_SECTION_QUALITY     0x00000008u
+#define SIXEL_ASSESSMENT_SECTION_MASK        0x0000000fu
+#define SIXEL_ASSESSMENT_SECTION_ALL \
+    (SIXEL_ASSESSMENT_SECTION_BASIC | \
+     SIXEL_ASSESSMENT_SECTION_PERFORMANCE | \
+     SIXEL_ASSESSMENT_SECTION_SIZE | \
+     SIXEL_ASSESSMENT_SECTION_QUALITY)
+#define SIXEL_ASSESSMENT_VIEW_ENCODED        0x00000000u
+#define SIXEL_ASSESSMENT_VIEW_QUANTIZED      0x00010000u
+#define SIXEL_ASSESSMENT_VIEW_MASK           0x00010000u
+
 #define SIXEL_ASSESSMENT_KIND_RELATIVE   0x00010000
 #define SIXEL_ASSESSMENT_KIND_ABSOLUTE   0x00020000
 #define SIXEL_ASSESSMENT_SCOPE_COMPONENT 0x00001000
@@ -1422,9 +1437,15 @@ sixel_assessment_analyze(
     sixel_frame_t      /* in */ *reference,
     sixel_frame_t      /* in */ *output);
 
+SIXELAPI void
+sixel_assessment_select_sections(
+    sixel_assessment_t  /* in */ *assessment,
+    unsigned int        /* in */ sections);
+
 SIXELAPI SIXELSTATUS
 sixel_assessment_get_json(
     sixel_assessment_t                 /* in */ *assessment,
+    unsigned int                       /* in */ sections,
     sixel_assessment_json_callback_t   /* in */  callback,
     void                               /* in */ *user_data);
 

@@ -36,12 +36,13 @@ quantizer.
 specify output path for DRCS-SIXEL tile characters.
 Use "-" to write to standard output.
 .TP 5
-.B \-a \fIMODE\fP, \-\-assessment=\fIMODE\fP
+.B \-a \fILIST\fP, \-\-assessment=\fILIST\fP
 emit an assessment report as JSON.
-\fIMODE\fP must be \(dqquantized\(dq or \(dqencoded\(dq.
-Quantized mode compares the source frame with the palette-quantized
-image that precedes SIXEL encoding, while encoded mode reloads the
-generated SIXEL stream via the built-in loader before comparison.
+\fILIST\fP is a comma separated set of section names (\(dqbasic\(dq,
+\(dqperformance\(dq, \(dqsize\(dq, \(dqquality\(dq, \(dqquality@quantized\(dq, \(dqall\(dq).
+The \(dqquality@quantized\(dq view evaluates the palette-quantized
+frame before SIXEL encoding, while \(dqquality\(dq compares the
+generated SIXEL output via the built-in loader.
 .TP 5
 .B \-J \fIPATH\fP, \-\-assessment-file=\fIPATH\fP
 write the assessment JSON report to \fIPATH\fP.

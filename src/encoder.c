@@ -104,6 +104,7 @@
 
 #include <sixel.h>
 #include "loader.h"
+#include "assessment.h"
 #include "tty.h"
 #include "encoder.h"
 #include "output.h"
@@ -436,6 +437,77 @@ sixel_hex_write_callback(
 #endif
 
     return result;
+}
+
+typedef struct sixel_encoder_output_probe {
+    sixel_encoder_t *encoder;
+    sixel_write_function base_write;
+    void *base_priv;
+} sixel_encoder_output_probe_t;
+
+static int
+sixel_write_with_probe(char *data, int size, void *priv)
+{
+    sixel_encoder_output_probe_t *probe;
+    int written;
+    double started_at;
+    double finished_at;
+    double duration;
+
+    probe = (sixel_encoder_output_probe_t *)priv;
+    if (probe == NULL || probe->base_write == NULL) {
+        return 0;
+    }
+    started_at = 0.0;
+    finished_at = 0.0;
+    duration = 0.0;
+    if (probe->encoder != NULL &&
+            probe->encoder->assessment_observer != NULL) {
+        started_at = sixel_assessment_timer_now();
+    }
+    written = probe->base_write(data, size, probe->base_priv);
+    if (probe->encoder != NULL &&
+            probe->encoder->assessment_observer != NULL) {
+        finished_at = sixel_assessment_timer_now();
+        duration = finished_at - started_at;
+        if (duration < 0.0) {
+            duration = 0.0;
+        }
+    }
+    if (written > 0 && probe->encoder != NULL &&
+            probe->encoder->assessment_observer != NULL) {
+        sixel_assessment_record_output_write(
+            probe->encoder->assessment_observer,
+            (size_t)written,
+            duration);
+    }
+    return written;
+}
+
+/*
+ * Reuse the fn_write probe for raw escape writes so that every
+ * assessment bucket receives the same accounting.
+ *
+ *     encoder        probe wrapper       write(2)
+ *     +------+    +----------------+    +---------+
+ *     | data | -> | sixel_write_*  | -> | target  |
+ *     +------+    +----------------+    +---------+
+ */
+static int
+sixel_encoder_probe_fd_write(sixel_encoder_t *encoder,
+                             char *data,
+                             int size,
+                             int fd)
+{
+    sixel_encoder_output_probe_t probe;
+    int written;
+
+    probe.encoder = encoder;
+    probe.base_write = sixel_write_callback;
+    probe.base_priv = &fd;
+    written = sixel_write_with_probe(data, size, &probe);
+
+    return written;
 }
 
 static SIXELSTATUS
@@ -1102,6 +1174,14 @@ sixel_encoder_prepare_palette(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int histogram_colors;
+    sixel_assessment_t *assessment;
+    int promoted_stage;
+
+    assessment = NULL;
+    promoted_stage = 0;
+    if (encoder != NULL) {
+        assessment = encoder->assessment_observer;
+    }
 
     switch (encoder->color_option) {
     case SIXEL_COLOR_OPTION_HIGHCOLOR:
@@ -1213,6 +1293,13 @@ sixel_encoder_prepare_palette(
         goto end;
     }
 
+    if (assessment != NULL && promoted_stage == 0) {
+        sixel_assessment_stage_transition(
+            assessment,
+            SIXEL_ASSESSMENT_STAGE_PALETTE_SOLVE);
+        promoted_stage = 1;
+    }
+
     histogram_colors = sixel_dither_get_num_of_histogram_colors(*dither);
     if (histogram_colors <= encoder->reqcolors) {
         encoder->method_for_diffuse = SIXEL_DIFFUSE_NONE;
@@ -1222,6 +1309,12 @@ sixel_encoder_prepare_palette(
     status = SIXEL_OK;
 
 end:
+    if (assessment != NULL && promoted_stage == 0) {
+        sixel_assessment_stage_transition(
+            assessment,
+            SIXEL_ASSESSMENT_STAGE_PALETTE_SOLVE);
+        promoted_stage = 1;
+    }
     if (SIXEL_SUCCEEDED(status) && dither != NULL && *dither != NULL) {
         sixel_dither_set_lut_policy(*dither, encoder->lut_policy);
         /* pass down the user's demand for an exact palette size */
@@ -1415,6 +1508,12 @@ sixel_encoder_output_without_macro(
         goto end;
     }
 
+    if (encoder->assessment_observer != NULL) {
+        sixel_assessment_stage_transition(
+            encoder->assessment_observer,
+            SIXEL_ASSESSMENT_STAGE_PALETTE_APPLY);
+    }
+
     if (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT) {
         if (encoder->force_palette) {
             /* keep every slot when the user forced the palette size */
@@ -1534,7 +1633,15 @@ sixel_encoder_output_without_macro(
         }
     }
 
+    if (encoder->assessment_observer != NULL) {
+        sixel_assessment_stage_transition(
+            encoder->assessment_observer,
+            SIXEL_ASSESSMENT_STAGE_ENCODE);
+    }
     status = sixel_encode(p, width, height, depth, dither, output);
+    if (encoder->assessment_observer != NULL) {
+        sixel_assessment_stage_finish(encoder->assessment_observer);
+    }
     if (status != SIXEL_OK) {
         goto end;
     }
@@ -1578,8 +1685,17 @@ sixel_encoder_output_with_macro(
 #if defined(HAVE_CLOCK) || defined(HAVE_CLOCK_WIN)
     sixel_clock_t last_clock;
 #endif
+    double write_started_at;
+    double write_finished_at;
+    double write_duration;
 
     memset(&palette_ctx, 0, sizeof(palette_ctx));
+
+    if (encoder != NULL && encoder->assessment_observer != NULL) {
+        sixel_assessment_stage_transition(
+            encoder->assessment_observer,
+            SIXEL_ASSESSMENT_STAGE_PALETTE_APPLY);
+    }
 
 #if defined(HAVE_CLOCK)
     if (output->last_clock == 0) {
@@ -1648,9 +1764,22 @@ sixel_encoder_output_with_macro(
                 "sixel_encoder_output_with_macro: sprintf() failed.");
             goto end;
         }
+        write_started_at = 0.0;
+        write_finished_at = 0.0;
+        write_duration = 0.0;
+        if (encoder != NULL && encoder->assessment_observer != NULL) {
+            write_started_at = sixel_assessment_timer_now();
+        }
         nwrite = sixel_write_callback(buffer,
                                       (int)strlen(buffer),
                                       &encoder->outfd);
+        if (encoder != NULL && encoder->assessment_observer != NULL) {
+            write_finished_at = sixel_assessment_timer_now();
+            write_duration = write_finished_at - write_started_at;
+            if (write_duration < 0.0) {
+                write_duration = 0.0;
+            }
+        }
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
@@ -1658,24 +1787,58 @@ sixel_encoder_output_with_macro(
                 "sixel_write_callback() failed.");
             goto end;
         }
+        if (encoder != NULL && encoder->assessment_observer != NULL) {
+            sixel_assessment_record_output_write(
+                encoder->assessment_observer,
+                (size_t)nwrite,
+                write_duration);
+        }
 
+        if (encoder != NULL && encoder->assessment_observer != NULL) {
+            sixel_assessment_stage_transition(
+                encoder->assessment_observer,
+                SIXEL_ASSESSMENT_STAGE_ENCODE);
+        }
         status = sixel_encode(converted,
                               width,
                               height,
                               depth,
                               dither,
                               output);
+        if (encoder != NULL && encoder->assessment_observer != NULL) {
+            sixel_assessment_stage_finish(
+                encoder->assessment_observer);
+        }
         if (SIXEL_FAILED(status)) {
             goto end;
         }
 
+        write_started_at = 0.0;
+        write_finished_at = 0.0;
+        write_duration = 0.0;
+        if (encoder != NULL && encoder->assessment_observer != NULL) {
+            write_started_at = sixel_assessment_timer_now();
+        }
         nwrite = sixel_write_callback("\033\\", 2, &encoder->outfd);
+        if (encoder != NULL && encoder->assessment_observer != NULL) {
+            write_finished_at = sixel_assessment_timer_now();
+            write_duration = write_finished_at - write_started_at;
+            if (write_duration < 0.0) {
+                write_duration = 0.0;
+            }
+        }
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
                 "sixel_encoder_output_with_macro: "
                 "sixel_write_callback() failed.");
             goto end;
+        }
+        if (encoder != NULL && encoder->assessment_observer != NULL) {
+            sixel_assessment_record_output_write(
+                encoder->assessment_observer,
+                (size_t)nwrite,
+                write_duration);
         }
     }
     if (encoder->macro_number < 0) {
@@ -1686,15 +1849,34 @@ sixel_encoder_output_with_macro(
             sixel_helper_set_additional_message(
                 "sixel_encoder_output_with_macro: sprintf() failed.");
         }
+        write_started_at = 0.0;
+        write_finished_at = 0.0;
+        write_duration = 0.0;
+        if (encoder != NULL && encoder->assessment_observer != NULL) {
+            write_started_at = sixel_assessment_timer_now();
+        }
         nwrite = sixel_write_callback(buffer,
                                       (int)strlen(buffer),
                                       &encoder->outfd);
+        if (encoder != NULL && encoder->assessment_observer != NULL) {
+            write_finished_at = sixel_assessment_timer_now();
+            write_duration = write_finished_at - write_started_at;
+            if (write_duration < 0.0) {
+                write_duration = 0.0;
+            }
+        }
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
                 "sixel_encoder_output_with_macro: "
                 "sixel_write_callback() failed.");
             goto end;
+        }
+        if (encoder != NULL && encoder->assessment_observer != NULL) {
+            sixel_assessment_record_output_write(
+                encoder->assessment_observer,
+                (size_t)nwrite,
+                write_duration);
         }
 #if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
         delay = sixel_frame_get_delay(frame);
@@ -1759,6 +1941,7 @@ sixel_encoder_emit_iso2022_chars(
     size_t alloc_size;
     int nwrite;
     int target_fd;
+    int chunk_size;
 
     code = 0x100020 + (is_96cs ? 0x80 : 0) + charset * 0x100;
     num_cols = (sixel_frame_get_width(frame) + encoder->cell_width - 1)
@@ -1809,8 +1992,12 @@ sixel_encoder_emit_iso2022_chars(
         target_fd = encoder->outfd;
     }
 
-    nwrite = write(target_fd, buf, buf_p - buf);
-    if (nwrite != buf_p - buf) {
+    chunk_size = (int)(buf_p - buf);
+    nwrite = sixel_encoder_probe_fd_write(encoder,
+                                          buf,
+                                          chunk_size,
+                                          target_fd);
+    if (nwrite != chunk_size) {
         sixel_helper_set_additional_message(
             "sixel_encoder_emit_iso2022_chars: write() failed.");
         status = SIXEL_RUNTIME_ERROR;
@@ -1848,6 +2035,7 @@ sixel_encoder_emit_drcsmmv2_chars(
     size_t alloc_size;
     int nwrite;
     int target_fd;
+    int chunk_size;
 
     code = 0x100020 + (is_96cs ? 0x80 : 0) + charset * 0x100;
     num_cols = (sixel_frame_get_width(frame) + encoder->cell_width - 1)
@@ -1897,8 +2085,12 @@ sixel_encoder_emit_drcsmmv2_chars(
         target_fd = encoder->outfd;
     }
 
-    nwrite = write(target_fd, buf, buf_p - buf);
-    if (nwrite != buf_p - buf) {
+    chunk_size = (int)(buf_p - buf);
+    nwrite = sixel_encoder_probe_fd_write(encoder,
+                                          buf,
+                                          chunk_size,
+                                          target_fd);
+    if (nwrite != chunk_size) {
         sixel_helper_set_additional_message(
             "sixel_encoder_emit_drcsmmv2_chars: write() failed.");
         status = SIXEL_RUNTIME_ERROR;
@@ -1925,39 +2117,91 @@ sixel_encoder_encode_frame(
     int is_animation = 0;
     int nwrite;
     char buf[256];
-    sixel_write_function fn_write = NULL;
+    sixel_write_function fn_write;
+    sixel_write_function write_callback;
+    void *write_priv;
+    sixel_encoder_output_probe_t probe;
+    sixel_assessment_t *assessment;
 
-    /* evaluate -w, -h, and -c option: crop/scale input source */
+    fn_write = sixel_write_callback;
+    write_callback = sixel_write_callback;
+    write_priv = &encoder->outfd;
+    probe.encoder = NULL;
+    probe.base_write = NULL;
+    probe.base_priv = NULL;
+    assessment = NULL;
+    if (encoder != NULL) {
+        assessment = encoder->assessment_observer;
+    }
+    if (assessment != NULL) {
+        if (encoder->clipfirst) {
+            sixel_assessment_stage_transition(
+                assessment,
+                SIXEL_ASSESSMENT_STAGE_CROP);
+        } else {
+            sixel_assessment_stage_transition(
+                assessment,
+                SIXEL_ASSESSMENT_STAGE_SCALE);
+        }
+    }
+
+    /*
+     *  Geometry timeline:
+     *
+     *      +-------+    +------+    +---------------+
+     *      | scale | -> | crop | -> | color convert |
+     *      +-------+    +------+    +---------------+
+     *
+     *  The order of the first two blocks mirrors `-c`, so we hop between
+     *  SCALE and CROP depending on `clipfirst`.
+     */
+
     if (encoder->clipfirst) {
-        /* clipping */
         status = sixel_encoder_do_clip(encoder, frame);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-
-        /* scaling */
+        if (assessment != NULL) {
+            sixel_assessment_stage_transition(
+                assessment,
+                SIXEL_ASSESSMENT_STAGE_SCALE);
+        }
         status = sixel_encoder_do_resize(encoder, frame);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
     } else {
-        /* scaling */
         status = sixel_encoder_do_resize(encoder, frame);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-
-        /* clipping */
+        if (assessment != NULL) {
+            sixel_assessment_stage_transition(
+                assessment,
+                SIXEL_ASSESSMENT_STAGE_CROP);
+        }
         status = sixel_encoder_do_clip(encoder, frame);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
     }
 
+    if (assessment != NULL) {
+        sixel_assessment_stage_transition(
+            assessment,
+            SIXEL_ASSESSMENT_STAGE_COLORSPACE);
+    }
+
     status = sixel_frame_ensure_colorspace(frame,
                                            encoder->working_colorspace);
     if (SIXEL_FAILED(status)) {
         goto end;
+    }
+
+    if (assessment != NULL) {
+        sixel_assessment_stage_transition(
+            assessment,
+            SIXEL_ASSESSMENT_STAGE_PALETTE_HISTOGRAM);
     }
 
     /* prepare dither context */
@@ -2004,6 +2248,13 @@ sixel_encoder_encode_frame(
 
     if (output) {
         sixel_output_ref(output);
+        if (encoder->assessment_observer != NULL) {
+            probe.encoder = encoder;
+            probe.base_write = fn_write;
+            probe.base_priv = &encoder->outfd;
+            write_callback = sixel_write_with_probe;
+            write_priv = &probe;
+        }
     } else {
         /* create output context */
         if (encoder->fuse_macro || encoder->macro_number >= 0) {
@@ -2012,9 +2263,18 @@ sixel_encoder_encode_frame(
         } else {
             fn_write = sixel_write_callback;
         }
+        write_callback = fn_write;
+        write_priv = &encoder->outfd;
+        if (encoder->assessment_observer != NULL) {
+            probe.encoder = encoder;
+            probe.base_write = fn_write;
+            probe.base_priv = &encoder->outfd;
+            write_callback = sixel_write_with_probe;
+            write_priv = &probe;
+        }
         status = sixel_output_new(&output,
-                                  fn_write,
-                                  &encoder->outfd,
+                                  write_callback,
+                                  write_priv,
                                   encoder->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -2039,7 +2299,11 @@ sixel_encoder_encode_frame(
             is_animation = 1;
         }
         height = sixel_frame_get_height(frame);
-        (void) sixel_tty_scroll(sixel_write_callback, encoder->outfd, height, is_animation);
+        (void) sixel_tty_scroll(write_callback,
+                                write_priv,
+                                encoder->outfd,
+                                height,
+                                is_animation);
     }
 
     if (encoder->cancel_flag && *encoder->cancel_flag) {
@@ -2063,7 +2327,7 @@ sixel_encoder_encode_frame(
                 "sixel_encoder_encode_frame: sprintf() failed.");
             goto end;
         }
-        nwrite = fn_write(buf, nwrite, &encoder->outfd);
+        nwrite = write_callback(buf, nwrite, write_priv);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
@@ -2088,11 +2352,11 @@ sixel_encoder_encode_frame(
     }
 
     if (encoder->cancel_flag && *encoder->cancel_flag) {
-        nwrite = sixel_write_callback("\x18\033\\", 3, &encoder->outfd);
+        nwrite = write_callback("\x18\033\\", 3, write_priv);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
-                "sixel_encoder_encode_frame: sixel_write_callback() failed.");
+                "sixel_encoder_encode_frame: write_callback() failed.");
             goto end;
         }
         status = SIXEL_INTERRUPTED;
@@ -2103,14 +2367,14 @@ sixel_encoder_encode_frame(
 
     if (encoder->fdrcs) {  /* -@ option */
         if (encoder->f8bit) {
-            nwrite = fn_write("\234", 1, &encoder->outfd);
+            nwrite = write_callback("\234", 1, write_priv);
         } else {
-            nwrite = fn_write("\033\\", 2, &encoder->outfd);
+            nwrite = write_callback("\033\\", 2, write_priv);
         }
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
-                "sixel_encoder_encode_frame: fn_write() failed.");
+                "sixel_encoder_encode_frame: write_callback() failed.");
             goto end;
         }
 
@@ -2244,6 +2508,10 @@ sixel_encoder_new(
     (*ppencoder)->capture_ncolors       = 0;
     (*ppencoder)->capture_valid         = 0;
     (*ppencoder)->capture_source_frame  = NULL;
+    (*ppencoder)->assessment_observer   = NULL;
+    (*ppencoder)->last_loader_name[0]   = '\0';
+    (*ppencoder)->last_source_path[0]   = '\0';
+    (*ppencoder)->last_input_bytes      = 0u;
     (*ppencoder)->allocator             = allocator;
 
     /* evaluate environment variable ${SIXEL_BGCOLOR} */
@@ -3141,6 +3409,15 @@ sixel_encoder_encode(
         sixel_encoder_ref(encoder);
     }
 
+    if (encoder->assessment_observer != NULL) {
+        sixel_assessment_stage_transition(
+            encoder->assessment_observer,
+            SIXEL_ASSESSMENT_STAGE_IMAGE_CHUNK);
+    }
+    encoder->last_loader_name[0] = '\0';
+    encoder->last_source_path[0] = '\0';
+    encoder->last_input_bytes = 0u;
+
     /* if required color is not set, set the max value */
     if (encoder->reqcolors == (-1)) {
         encoder->reqcolors = SIXEL_PALETTE_MAX;
@@ -3256,6 +3533,29 @@ reload:
                                     load_image_callback);
     if (status != SIXEL_OK) {
         goto load_end;
+    }
+    encoder->last_input_bytes = sixel_loader_get_last_input_bytes(loader);
+    if (sixel_loader_get_last_success_name(loader) != NULL) {
+        (void)snprintf(encoder->last_loader_name,
+                       sizeof(encoder->last_loader_name),
+                       "%s",
+                       sixel_loader_get_last_success_name(loader));
+    } else {
+        encoder->last_loader_name[0] = '\0';
+    }
+    if (sixel_loader_get_last_source_path(loader) != NULL) {
+        (void)snprintf(encoder->last_source_path,
+                       sizeof(encoder->last_source_path),
+                       "%s",
+                       sixel_loader_get_last_source_path(loader));
+    } else {
+        encoder->last_source_path[0] = '\0';
+    }
+    if (encoder->assessment_observer != NULL) {
+        sixel_assessment_record_loader(encoder->assessment_observer,
+                                       encoder->last_source_path,
+                                       encoder->last_loader_name,
+                                       encoder->last_input_bytes);
     }
 
 load_end:
@@ -3600,7 +3900,11 @@ test2(void)
 
     height = sixel_frame_get_height(frame);
 
-    status = sixel_tty_scroll(sixel_write_callback, encoder->outfd, height, is_animation);
+    status = sixel_tty_scroll(sixel_write_callback,
+                              &encoder->outfd,
+                              encoder->outfd,
+                              height,
+                              is_animation);
     if (SIXEL_FAILED(status)) {
         goto error;
     }

@@ -152,6 +152,7 @@ end:
 SIXELSTATUS
 sixel_tty_scroll(
     sixel_write_function f_write,
+    void *priv,
     int outfd,
     int height,
     int is_animation)
@@ -172,7 +173,7 @@ sixel_tty_scroll(
     /* confirm I/O file descriptors are tty devices */
     if (!isatty(STDIN_FILENO) || !isatty(outfd)) {
         /* set cursor position to top-left */
-        nwrite = f_write("\033[H", 3, &outfd);
+        nwrite = f_write("\033[H", 3, priv);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
@@ -194,7 +195,7 @@ sixel_tty_scroll(
     /* if we can not retrieve terminal pixel size over TIOCGWINSZ ioctl,
        return immediatly */
     if (size.ws_ypixel <= 0) {
-        nwrite = f_write("\033[H", 3, &outfd);
+        nwrite = f_write("\033[H", 3, priv);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
@@ -208,7 +209,7 @@ sixel_tty_scroll(
     /* if input source is animation and frame No. is more than 1,
        output DECSC sequence */
     if (is_animation) {
-        nwrite = f_write("\0338", 2, &outfd);
+        nwrite = f_write("\0338", 2, priv);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
@@ -226,7 +227,7 @@ sixel_tty_scroll(
     }
 
     /* request cursor position report */
-    nwrite = f_write("\033[6n", 4, &outfd);
+    nwrite = f_write("\033[6n", 4, priv);
     if (nwrite < 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message(
@@ -238,7 +239,7 @@ sixel_tty_scroll(
     if (SIXEL_FAILED(sixel_tty_wait_stdin(1000 * 1000))) { /* wait up to 1 sec */
         /* If we can't get any response from the terminal,
          * move cursor to (1, 1). */
-        nwrite = f_write("\033[H", 3, &outfd);
+        nwrite = f_write("\033[H", 3, priv);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
@@ -251,7 +252,7 @@ sixel_tty_scroll(
 
     /* scan cursor position report */
     if (scanf("\033[%d;%dR", &row, &col) != 2) {
-        nwrite = f_write("\033[H", 3, &outfd);
+        nwrite = f_write("\033[H", 3, priv);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
@@ -278,7 +279,7 @@ sixel_tty_scroll(
             sixel_helper_set_additional_message(
                 "sixel_tty_scroll: sprintf() failed.");
         }
-        nwrite = f_write(buffer, (int)strlen(buffer), &outfd);
+        nwrite = f_write(buffer, (int)strlen(buffer), priv);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
@@ -288,7 +289,7 @@ sixel_tty_scroll(
     }
 
     /* emit DECSC sequence */
-    nwrite = f_write("\0337", 2, &outfd);
+    nwrite = f_write("\0337", 2, priv);
     if (nwrite < 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message(
@@ -298,7 +299,7 @@ sixel_tty_scroll(
 #else  /* mingw */
     (void) height;
     (void) is_animation;
-    nwrite = f_write("\033[H", 3, &outfd);
+    nwrite = f_write("\033[H", 3, priv);
     if (nwrite < 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message(

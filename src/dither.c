@@ -39,6 +39,7 @@
 
 #include "dither.h"
 #include "quant.h"
+#include "assessment.h"
 #include <sixel.h>
 
 
@@ -842,6 +843,10 @@ sixel_dither_apply_palette(
     int method_for_carry;
     unsigned char *normalized_pixels = NULL;
     unsigned char *input_pixels;
+    int palette_probe_active;
+    double palette_started_at;
+    double palette_finished_at;
+    double palette_duration;
 
     /* ensure dither object is not null */
     if (dither == NULL) {
@@ -916,6 +921,18 @@ sixel_dither_apply_palette(
         method_for_carry = SIXEL_CARRY_DISABLE;
     }
 
+    palette_probe_active = sixel_assessment_palette_probe_enabled();
+    palette_started_at = 0.0;
+    palette_finished_at = 0.0;
+    palette_duration = 0.0;
+    if (palette_probe_active) {
+        /*
+         * Palette spans execute inside the encode stage.  We sample the
+         * duration here so the assessment can reassign the work to the
+         * PaletteApply bucket.
+         */
+        palette_started_at = sixel_assessment_timer_now();
+    }
     status = sixel_quant_apply_palette(dest,
                                        input_pixels,
                                        width, height, 3,
@@ -930,6 +947,14 @@ sixel_dither_apply_palette(
                                        dither->cachetable,
                                        &ncolors,
                                        dither->allocator);
+    if (palette_probe_active) {
+        palette_finished_at = sixel_assessment_timer_now();
+        palette_duration = palette_finished_at - palette_started_at;
+        if (palette_duration < 0.0) {
+            palette_duration = 0.0;
+        }
+        sixel_assessment_record_palette_apply_span(palette_duration);
+    }
     if (SIXEL_FAILED(status)) {
         free(dest);
         dest = NULL;

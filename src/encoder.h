@@ -23,8 +23,14 @@
 #define LIBSIXEL_ENCODER_H
 
 #include <stddef.h>
+#include <limits.h>
+
+#if !defined(PATH_MAX)
+#define PATH_MAX 4096
+#endif
 
 struct sixel_frame;
+struct sixel_assessment;
 
 /* palette type */
 #define SIXEL_COLOR_OPTION_DEFAULT          0   /* use default settings */
@@ -102,6 +108,10 @@ struct sixel_encoder {
     int capture_ncolors;
     int capture_valid;
     struct sixel_frame *capture_source_frame;
+    struct sixel_assessment *assessment_observer;
+    char last_loader_name[64];
+    char last_source_path[PATH_MAX];
+    size_t last_input_bytes;
 };
 
 #if HAVE_TESTS

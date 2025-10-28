@@ -41,9 +41,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if HAVE_TIME_H
+#include <time.h>
+#endif
+#if HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+
 #include <sixel.h>
 
 #include "assessment.h"
+#include "encoder.h"
 #include "frame.h"
 
 #if defined(_WIN32)
@@ -141,6 +149,617 @@ typedef struct sixel_assessment_capture {
 } sixel_assessment_capture_t;
 
 static sixel_assessment_t *g_assessment_context = NULL;
+static sixel_assessment_t *g_active_encode_assessment = NULL;
+
+typedef struct assessment_stage_descriptor {
+    sixel_assessment_stage_t id;
+    char const *label;
+} assessment_stage_descriptor_t;
+
+static assessment_stage_descriptor_t const g_stage_descriptors[] = {
+    {SIXEL_ASSESSMENT_STAGE_ARGUMENT_PARSE, "ArgumentParse"},
+    {SIXEL_ASSESSMENT_STAGE_IMAGE_CHUNK, "ImageRead"},
+    {SIXEL_ASSESSMENT_STAGE_IMAGE_DECODE, "ImageDecode"},
+    {SIXEL_ASSESSMENT_STAGE_SCALE, "Scale"},
+    {SIXEL_ASSESSMENT_STAGE_CROP, "Crop"},
+    {SIXEL_ASSESSMENT_STAGE_COLORSPACE, "ColorConvert"},
+    {SIXEL_ASSESSMENT_STAGE_PALETTE_HISTOGRAM, "PaletteHistogram"},
+    {SIXEL_ASSESSMENT_STAGE_PALETTE_SOLVE, "PaletteSolve"},
+    {SIXEL_ASSESSMENT_STAGE_PALETTE_APPLY, "PaletteApply"},
+    {SIXEL_ASSESSMENT_STAGE_ENCODE, "Encode"},
+    {SIXEL_ASSESSMENT_STAGE_OUTPUT, "Output"}
+};
+
+double
+sixel_assessment_timer_now(void)
+{
+#if defined(_WIN32)
+    static LARGE_INTEGER frequency;
+    LARGE_INTEGER counter;
+    BOOL ok;
+
+    if (frequency.QuadPart == 0) {
+        ok = QueryPerformanceFrequency(&frequency);
+        if (!ok || frequency.QuadPart == 0) {
+            return (double)GetTickCount64() / 1000.0;
+        }
+    }
+    QueryPerformanceCounter(&counter);
+    return (double)counter.QuadPart / (double)frequency.QuadPart;
+#elif defined(HAVE_CLOCK_GETTIME)
+    struct timespec ts;
+
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
+        return 0.0;
+    }
+    return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000.0;
+#elif defined(HAVE_GETTIMEOFDAY)
+    struct timeval tv;
+
+    if (gettimeofday(&tv, NULL) != 0) {
+        return 0.0;
+    }
+    return (double)tv.tv_sec + (double)tv.tv_usec / 1000000.0;
+#else
+    return (double)clock() / (double)CLOCKS_PER_SEC;
+#endif
+}
+
+static void
+assessment_reset_stage_bookkeeping(sixel_assessment_t *assessment)
+{
+    if (assessment == NULL) {
+        return;
+    }
+    assessment->active_stage = SIXEL_ASSESSMENT_STAGE_NONE;
+    assessment->stage_started_at = 0.0;
+    assessment->stage_active = 0;
+    memset(assessment->stage_durations, 0,
+           sizeof(assessment->stage_durations));
+    memset(assessment->stage_bytes, 0, sizeof(assessment->stage_bytes));
+    assessment->output_bytes_written = 0u;
+    assessment->encode_output_time_pending = 0.0;
+}
+
+static void
+assessment_guess_format(sixel_assessment_t *assessment)
+{
+    char const *loader;
+    char const *extension;
+    size_t len;
+    size_t index;
+
+    if (assessment == NULL) {
+        return;
+    }
+    if (assessment->format_name[0] != '\0') {
+        return;
+    }
+    loader = assessment->loader_name;
+    if (loader[0] != '\0') {
+        if (strcmp(loader, "libpng") == 0) {
+            strcpy(assessment->format_name, "png");
+            return;
+        } else if (strcmp(loader, "libjpeg") == 0) {
+            strcpy(assessment->format_name, "jpeg");
+            return;
+        } else if (strcmp(loader, "wic") == 0) {
+            strcpy(assessment->format_name, "wic");
+            return;
+        } else if (strcmp(loader, "builtin") == 0) {
+            strcpy(assessment->format_name, "builtin");
+            return;
+        }
+    }
+    extension = strrchr(assessment->input_path, '.');
+    if (extension != NULL && extension[1] != '\0') {
+        len = strlen(extension + 1);
+        if (len >= sizeof(assessment->format_name)) {
+            len = sizeof(assessment->format_name) - 1;
+        }
+        for (index = 0; index < len; ++index) {
+            assessment->format_name[index] =
+                (char)tolower((unsigned char)extension[1 + index]);
+        }
+        assessment->format_name[len] = '\0';
+    } else {
+        strcpy(assessment->format_name, "unknown");
+    }
+}
+
+static int
+assessment_escape_json(char const *input,
+                       char *output,
+                       size_t output_size)
+{
+    size_t index;
+    size_t written;
+    unsigned char ch;
+    int n;
+
+    if (output == NULL || output_size == 0) {
+        return -1;
+    }
+    written = 0;
+    if (input == NULL) {
+        output[0] = '\0';
+        return 0;
+    }
+    for (index = 0; input[index] != '\0'; ++index) {
+        ch = (unsigned char)input[index];
+        if (ch == '"' || ch == '\\') {
+            if (written + 2 >= output_size) {
+                return -1;
+            }
+            output[written++] = '\\';
+            output[written++] = (char)ch;
+        } else if (ch <= 0x1F) {
+            if (written + 6 >= output_size) {
+                return -1;
+            }
+            n = snprintf(output + written, output_size - written,
+                         "\\u%04x", ch);
+            if (n < 0 || (size_t)n >= output_size - written) {
+                return -1;
+            }
+            written += (size_t)n;
+        } else {
+            if (written + 1 >= output_size) {
+                return -1;
+            }
+            output[written++] = (char)ch;
+        }
+    }
+    if (written >= output_size) {
+        return -1;
+    }
+    output[written] = '\0';
+    return 0;
+}
+
+static char const *
+assessment_pixelformat_name(int pixelformat)
+{
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_PAL1:
+        return "PAL1";
+    case SIXEL_PIXELFORMAT_PAL2:
+        return "PAL2";
+    case SIXEL_PIXELFORMAT_PAL4:
+        return "PAL4";
+    case SIXEL_PIXELFORMAT_PAL8:
+        return "PAL8";
+    case SIXEL_PIXELFORMAT_RGB555:
+        return "RGB555";
+    case SIXEL_PIXELFORMAT_RGB565:
+        return "RGB565";
+    case SIXEL_PIXELFORMAT_RGB888:
+        return "RGB888";
+    case SIXEL_PIXELFORMAT_BGR555:
+        return "BGR555";
+    case SIXEL_PIXELFORMAT_BGR565:
+        return "BGR565";
+    case SIXEL_PIXELFORMAT_BGR888:
+        return "BGR888";
+    case SIXEL_PIXELFORMAT_G1:
+        return "G1";
+    case SIXEL_PIXELFORMAT_G2:
+        return "G2";
+    case SIXEL_PIXELFORMAT_G4:
+        return "G4";
+    case SIXEL_PIXELFORMAT_G8:
+        return "G8";
+    default:
+        break;
+    }
+    return "unknown";
+}
+
+static char const *
+assessment_colorspace_name(int colorspace)
+{
+    switch (colorspace) {
+    case SIXEL_COLORSPACE_GAMMA:
+        return "gamma";
+    case SIXEL_COLORSPACE_LINEAR:
+        return "linear";
+    case SIXEL_COLORSPACE_SMPTEC:
+        return "smpte-c";
+    default:
+        break;
+    }
+    return "unknown";
+}
+
+void
+sixel_assessment_stage_transition(sixel_assessment_t *assessment,
+                                  sixel_assessment_stage_t stage)
+{
+    double now;
+    double elapsed;
+    sixel_assessment_stage_t previous_stage;
+    double total_pending;
+
+    if (assessment == NULL) {
+        return;
+    }
+    if ((assessment->sections_mask &
+            SIXEL_ASSESSMENT_SECTION_PERFORMANCE) == 0u) {
+        return;
+    }
+    if (stage <= SIXEL_ASSESSMENT_STAGE_NONE ||
+            stage >= SIXEL_ASSESSMENT_STAGE_COUNT) {
+        return;
+    }
+    now = sixel_assessment_timer_now();
+    previous_stage = assessment->active_stage;
+    if (assessment->stage_active &&
+            previous_stage > SIXEL_ASSESSMENT_STAGE_NONE &&
+            previous_stage < SIXEL_ASSESSMENT_STAGE_COUNT) {
+        elapsed = now - assessment->stage_started_at;
+        if (previous_stage != SIXEL_ASSESSMENT_STAGE_OUTPUT) {
+            /* Output spans rely on explicit fn_write() timing. */
+            assessment->stage_durations[previous_stage] += elapsed;
+        }
+        if (previous_stage == SIXEL_ASSESSMENT_STAGE_ENCODE &&
+                (assessment->encode_output_time_pending > 0.0 ||
+                 assessment->encode_palette_time_pending > 0.0)) {
+            /*
+             * Rebalance the encode slot so that we only keep the pure
+             * encoder core time.  The write spans move to the output
+             * bucket, and the palette spans return to the palette
+             * bucket.  The ASCII map shows how the same wall-clock
+             * region is split across the stages.
+             *
+             *     encode wall time
+             *     +----------+-----------+------------------+
+             *     | palette  | encode    | write callback ->|
+             *     | (return) | core stay | (output bucket) |
+             *     +----------+-----------+------------------+
+             */
+            total_pending = assessment->encode_output_time_pending +
+                assessment->encode_palette_time_pending;
+            assessment->stage_durations[previous_stage] -= total_pending;
+            if (assessment->stage_durations[previous_stage] < 0.0) {
+                assessment->stage_durations[previous_stage] = 0.0;
+            }
+            assessment->encode_output_time_pending = 0.0;
+            assessment->encode_palette_time_pending = 0.0;
+            if (g_active_encode_assessment == assessment) {
+                g_active_encode_assessment = NULL;
+            }
+        }
+    }
+    assessment->active_stage = stage;
+    assessment->stage_started_at = now;
+    assessment->stage_active = 1;
+    if (stage == SIXEL_ASSESSMENT_STAGE_ENCODE) {
+        assessment->encode_output_time_pending = 0.0;
+        assessment->encode_palette_time_pending = 0.0;
+        g_active_encode_assessment = assessment;
+    } else if (g_active_encode_assessment == assessment) {
+        g_active_encode_assessment = NULL;
+    }
+}
+
+void
+sixel_assessment_stage_finish(sixel_assessment_t *assessment)
+{
+    double now;
+    double elapsed;
+    sixel_assessment_stage_t finished_stage;
+    double total_pending;
+
+    if (assessment == NULL) {
+        return;
+    }
+    if ((assessment->sections_mask &
+            SIXEL_ASSESSMENT_SECTION_PERFORMANCE) == 0u) {
+        assessment->stage_active = 0;
+        assessment->active_stage = SIXEL_ASSESSMENT_STAGE_NONE;
+        assessment->stage_started_at = 0.0;
+        assessment->encode_output_time_pending = 0.0;
+        if (g_active_encode_assessment == assessment) {
+            g_active_encode_assessment = NULL;
+        }
+        return;
+    }
+    if (!assessment->stage_active ||
+            assessment->active_stage <= SIXEL_ASSESSMENT_STAGE_NONE ||
+            assessment->active_stage >= SIXEL_ASSESSMENT_STAGE_COUNT) {
+        assessment->stage_active = 0;
+        assessment->active_stage = SIXEL_ASSESSMENT_STAGE_NONE;
+        assessment->stage_started_at = 0.0;
+        assessment->encode_output_time_pending = 0.0;
+        return;
+    }
+    now = sixel_assessment_timer_now();
+    elapsed = now - assessment->stage_started_at;
+    finished_stage = assessment->active_stage;
+    if (finished_stage != SIXEL_ASSESSMENT_STAGE_OUTPUT) {
+        /* Output spans rely on explicit fn_write() timing. */
+        assessment->stage_durations[finished_stage] += elapsed;
+    }
+    if (finished_stage == SIXEL_ASSESSMENT_STAGE_ENCODE &&
+            (assessment->encode_output_time_pending > 0.0 ||
+             assessment->encode_palette_time_pending > 0.0)) {
+        /* Mirror the transition logic for the final leg. */
+        total_pending = assessment->encode_output_time_pending +
+            assessment->encode_palette_time_pending;
+        assessment->stage_durations[finished_stage] -= total_pending;
+        if (assessment->stage_durations[finished_stage] < 0.0) {
+            assessment->stage_durations[finished_stage] = 0.0;
+        }
+        assessment->encode_output_time_pending = 0.0;
+        assessment->encode_palette_time_pending = 0.0;
+        if (g_active_encode_assessment == assessment) {
+            g_active_encode_assessment = NULL;
+        }
+    }
+    assessment->stage_active = 0;
+    assessment->active_stage = SIXEL_ASSESSMENT_STAGE_NONE;
+    assessment->stage_started_at = 0.0;
+}
+
+void
+sixel_assessment_record_stage_duration(sixel_assessment_t *assessment,
+                                       sixel_assessment_stage_t stage,
+                                       double duration)
+{
+    if (assessment == NULL) {
+        return;
+    }
+    if ((assessment->sections_mask &
+            SIXEL_ASSESSMENT_SECTION_PERFORMANCE) == 0u) {
+        return;
+    }
+    if (stage <= SIXEL_ASSESSMENT_STAGE_NONE ||
+            stage >= SIXEL_ASSESSMENT_STAGE_COUNT) {
+        return;
+    }
+    if (duration < 0.0) {
+        duration = 0.0;
+    }
+    assessment->stage_durations[stage] += duration;
+}
+
+void
+sixel_assessment_record_loader(sixel_assessment_t *assessment,
+                               char const *path,
+                               char const *loader_name,
+                               size_t input_bytes)
+{
+    unsigned int mask;
+
+    if (assessment == NULL) {
+        return;
+    }
+    mask = assessment->sections_mask;
+    if ((mask & (SIXEL_ASSESSMENT_SECTION_BASIC |
+                 SIXEL_ASSESSMENT_SECTION_PERFORMANCE)) == 0u) {
+        return;
+    }
+    if ((mask & SIXEL_ASSESSMENT_SECTION_BASIC) != 0u) {
+        if (path != NULL) {
+            (void)snprintf(assessment->input_path,
+                           sizeof(assessment->input_path),
+                           "%s",
+                           path);
+        } else {
+            assessment->input_path[0] = '\0';
+        }
+        if (loader_name != NULL) {
+            (void)snprintf(assessment->loader_name,
+                           sizeof(assessment->loader_name),
+                           "%s",
+                           loader_name);
+        } else {
+            assessment->loader_name[0] = '\0';
+        }
+        assessment->input_bytes = input_bytes;
+        assessment_guess_format(assessment);
+    }
+    if ((mask & SIXEL_ASSESSMENT_SECTION_PERFORMANCE) != 0u) {
+        assessment->stage_bytes[SIXEL_ASSESSMENT_STAGE_IMAGE_CHUNK] +=
+            input_bytes;
+    }
+}
+
+void
+sixel_assessment_record_source_frame(sixel_assessment_t *assessment,
+                                     sixel_frame_t *frame)
+{
+    int width;
+    int height;
+    int pixelformat;
+    int colorspace;
+    int depth;
+    size_t bytes;
+    unsigned int mask;
+
+    if (assessment == NULL || frame == NULL) {
+        return;
+    }
+    mask = assessment->sections_mask;
+    if ((mask & (SIXEL_ASSESSMENT_SECTION_BASIC |
+                 SIXEL_ASSESSMENT_SECTION_SIZE |
+                 SIXEL_ASSESSMENT_SECTION_PERFORMANCE)) == 0u) {
+        return;
+    }
+    width = sixel_frame_get_width(frame);
+    height = sixel_frame_get_height(frame);
+    pixelformat = sixel_frame_get_pixelformat(frame);
+    colorspace = sixel_frame_get_colorspace(frame);
+    depth = sixel_helper_compute_depth(pixelformat);
+    if (depth <= 0 || width <= 0 || height <= 0) {
+        bytes = 0u;
+    } else {
+        bytes = (size_t)width;
+        bytes *= (size_t)height;
+        bytes *= (size_t)depth;
+    }
+    if ((mask & (SIXEL_ASSESSMENT_SECTION_BASIC |
+                 SIXEL_ASSESSMENT_SECTION_SIZE)) != 0u) {
+        assessment->input_pixelformat = pixelformat;
+        assessment->input_colorspace = colorspace;
+        assessment->source_pixels_bytes = bytes;
+    }
+    if ((mask & SIXEL_ASSESSMENT_SECTION_PERFORMANCE) != 0u) {
+        assessment->stage_bytes[SIXEL_ASSESSMENT_STAGE_IMAGE_DECODE] +=
+            bytes;
+        assessment->stage_bytes[SIXEL_ASSESSMENT_STAGE_SCALE] += bytes;
+        assessment->stage_bytes[SIXEL_ASSESSMENT_STAGE_CROP] += bytes;
+        assessment->stage_bytes[SIXEL_ASSESSMENT_STAGE_COLORSPACE] += bytes;
+        assessment->stage_bytes[SIXEL_ASSESSMENT_STAGE_PALETTE_HISTOGRAM] +=
+            bytes;
+        assessment->stage_bytes[SIXEL_ASSESSMENT_STAGE_PALETTE_SOLVE] +=
+            bytes;
+        assessment->stage_bytes[SIXEL_ASSESSMENT_STAGE_PALETTE_APPLY] +=
+            bytes;
+        assessment->stage_bytes[SIXEL_ASSESSMENT_STAGE_ENCODE] += bytes;
+    }
+}
+
+void
+sixel_assessment_record_quantized_capture(
+    sixel_assessment_t *assessment,
+    sixel_encoder_t *encoder)
+{
+    unsigned int mask;
+
+    if (assessment == NULL || encoder == NULL) {
+        return;
+    }
+    mask = assessment->sections_mask;
+    if ((mask & (SIXEL_ASSESSMENT_SECTION_BASIC |
+                 SIXEL_ASSESSMENT_SECTION_SIZE |
+                 SIXEL_ASSESSMENT_SECTION_QUALITY)) == 0u) {
+        return;
+    }
+    if ((mask & (SIXEL_ASSESSMENT_SECTION_BASIC |
+                 SIXEL_ASSESSMENT_SECTION_SIZE)) == 0u &&
+            (assessment->view_mask & SIXEL_ASSESSMENT_VIEW_QUANTIZED) == 0u) {
+        return;
+    }
+    assessment->quantized_pixels_bytes = encoder->capture_pixel_bytes;
+    assessment->palette_bytes = encoder->capture_palette_size;
+    assessment->palette_colors = encoder->capture_ncolors;
+    if (assessment->quantized_pixels_bytes == 0 &&
+            assessment->palette_colors == 0) {
+        assessment->palette_bytes = 0;
+    }
+}
+
+void
+sixel_assessment_record_output_size(sixel_assessment_t *assessment,
+                                    size_t output_bytes)
+{
+    if (assessment == NULL) {
+        return;
+    }
+    if (output_bytes == 0u && assessment->output_bytes_written > 0u) {
+        output_bytes = assessment->output_bytes_written;
+    }
+    assessment->output_bytes = output_bytes;
+    if ((assessment->sections_mask &
+            SIXEL_ASSESSMENT_SECTION_PERFORMANCE) != 0u) {
+        assessment->stage_bytes[SIXEL_ASSESSMENT_STAGE_OUTPUT] +=
+            output_bytes;
+    }
+}
+
+void
+sixel_assessment_record_output_write(sixel_assessment_t *assessment,
+                                     size_t bytes,
+                                     double duration)
+{
+    if (assessment == NULL) {
+        return;
+    }
+    if (bytes > 0u) {
+        assessment->output_bytes_written += bytes;
+    }
+    if (duration > 0.0 &&
+            (assessment->sections_mask &
+             SIXEL_ASSESSMENT_SECTION_PERFORMANCE) != 0u) {
+        /* The output bucket collects every fn_write() span verbatim. */
+        assessment->stage_durations[SIXEL_ASSESSMENT_STAGE_OUTPUT] += duration;
+        if (assessment->active_stage == SIXEL_ASSESSMENT_STAGE_ENCODE) {
+            assessment->encode_output_time_pending += duration;
+        }
+    }
+}
+
+int
+sixel_assessment_palette_probe_enabled(void)
+{
+    return g_active_encode_assessment != NULL;
+}
+
+void
+sixel_assessment_record_palette_apply_span(double duration)
+{
+    sixel_assessment_t *assessment;
+
+    if (duration <= 0.0) {
+        return;
+    }
+    assessment = g_active_encode_assessment;
+    if (assessment == NULL) {
+        return;
+    }
+    if ((assessment->sections_mask &
+            SIXEL_ASSESSMENT_SECTION_PERFORMANCE) == 0u) {
+        return;
+    }
+    /*
+     * Palette work performed inside sixel_encode() belongs to the
+     * palette bucket even though the call happens while the encode
+     * stage is active.  The time goes straight to the palette stage
+     * while we stash the same span for the later encode rebalance.
+     */
+    assessment->stage_durations[SIXEL_ASSESSMENT_STAGE_PALETTE_APPLY] +=
+        duration;
+    assessment->encode_palette_time_pending += duration;
+}
+
+void
+sixel_assessment_select_sections(sixel_assessment_t *assessment,
+                                 unsigned int sections)
+{
+    unsigned int section_mask;
+    unsigned int view_mask;
+
+    if (assessment == NULL) {
+        return;
+    }
+    section_mask = sections & SIXEL_ASSESSMENT_SECTION_MASK;
+    if ((section_mask & SIXEL_ASSESSMENT_SECTION_QUALITY) == 0u) {
+        view_mask = SIXEL_ASSESSMENT_VIEW_ENCODED;
+    } else if ((sections & SIXEL_ASSESSMENT_VIEW_MASK) != 0u) {
+        view_mask = SIXEL_ASSESSMENT_VIEW_QUANTIZED;
+    } else {
+        view_mask = SIXEL_ASSESSMENT_VIEW_ENCODED;
+    }
+    assessment->sections_mask = section_mask;
+    assessment->view_mask = view_mask;
+    if ((section_mask & SIXEL_ASSESSMENT_SECTION_PERFORMANCE) == 0u) {
+        assessment->stage_active = 0;
+        if (g_active_encode_assessment == assessment) {
+            g_active_encode_assessment = NULL;
+        }
+    }
+}
+
+void
+sixel_assessment_attach_encoder(sixel_assessment_t *assessment,
+                                sixel_encoder_t *encoder)
+{
+    if (encoder == NULL) {
+        return;
+    }
+    encoder->assessment_observer = assessment;
+}
 
 static int assessment_resolve_executable_dir(char const *argv0,
                                             char *buffer,
@@ -516,26 +1135,47 @@ static int build_local_model_path(char const *binary_dir,
 {
     char stage1[PATH_MAX];
     char stage2[PATH_MAX];
+    char stage3[PATH_MAX];
+    int attempt;
 
     if (binary_dir == NULL || binary_dir[0] == '\0') {
         return -1;
     }
-    if (join_path(binary_dir, SIXEL_LOCAL_MODELS_SEG1,
-                  stage1, sizeof(stage1)) != 0) {
-        return -1;
+
+    for (attempt = 0; attempt < 2; ++attempt) {
+        /*
+         * Try ../models/lpips and ../../models/lpips so staged binaries in
+         * converters/ or tools/ still find the ONNX assets.
+         */
+        if (attempt == 0) {
+            if (join_path(binary_dir, SIXEL_LOCAL_MODELS_SEG1,
+                          stage1, sizeof(stage1)) != 0) {
+                continue;
+            }
+        } else {
+            if (join_path(binary_dir, SIXEL_LOCAL_MODELS_SEG1,
+                          stage3, sizeof(stage3)) != 0) {
+                continue;
+            }
+            if (join_path(stage3, SIXEL_LOCAL_MODELS_SEG1,
+                          stage1, sizeof(stage1)) != 0) {
+                continue;
+            }
+        }
+        if (join_path(stage1, SIXEL_LOCAL_MODELS_SEG2,
+                      stage2, sizeof(stage2)) != 0) {
+            continue;
+        }
+        if (join_path(stage2, SIXEL_LOCAL_MODELS_SEG3,
+                      stage1, sizeof(stage1)) != 0) {
+            continue;
+        }
+        if (join_path(stage1, name, buffer, size) != 0) {
+            continue;
+        }
+        return 0;
     }
-    if (join_path(stage1, SIXEL_LOCAL_MODELS_SEG2,
-                  stage2, sizeof(stage2)) != 0) {
-        return -1;
-    }
-    if (join_path(stage2, SIXEL_LOCAL_MODELS_SEG3,
-                  stage1, sizeof(stage1)) != 0) {
-        return -1;
-    }
-    if (join_path(stage1, name, buffer, size) != 0) {
-        return -1;
-    }
-    return 0;
+    return -1;
 }
 
 static int find_model(char const *binary_dir,
@@ -3272,6 +3912,21 @@ sixel_assessment_new(sixel_assessment_t **ppassessment,
     assessment->feat_model_path[0] = '\0';
     memset(assessment->results, 0,
            sizeof(assessment->results));
+    assessment_reset_stage_bookkeeping(assessment);
+    assessment->input_path[0] = '\0';
+    assessment->loader_name[0] = '\0';
+    assessment->format_name[0] = '\0';
+    assessment->input_pixelformat = (-1);
+    assessment->input_colorspace = (-1);
+    assessment->input_bytes = 0u;
+    assessment->source_pixels_bytes = 0u;
+    assessment->quantized_pixels_bytes = 0u;
+    assessment->palette_bytes = 0u;
+    assessment->palette_colors = 0;
+    assessment->output_bytes = 0u;
+    assessment->output_bytes_written = 0u;
+    assessment->sections_mask = SIXEL_ASSESSMENT_SECTION_NONE;
+    assessment->view_mask = SIXEL_ASSESSMENT_VIEW_ENCODED;
 
     *ppassessment = assessment;
     return SIXEL_OK;
@@ -3437,26 +4092,23 @@ cleanup:
     return status;
 }
 
-SIXELSTATUS
-sixel_assessment_get_json(sixel_assessment_t *assessment,
-                         sixel_assessment_json_callback_t callback,
-                         void *user_data)
+static SIXELSTATUS
+assessment_emit_quality_lines(sixel_assessment_t *assessment,
+                              sixel_assessment_json_callback_t callback,
+                              void *user_data,
+                              char const *indent)
 {
+    enum { line_buffer_size = PATH_MAX * 2 + 128 };
     size_t i;
-    char line[128];
+    char line[line_buffer_size];
     int written;
     int last;
-    double value;
     int index;
+    double value;
 
-    if (assessment == NULL || callback == NULL) {
-        return SIXEL_BAD_ARGUMENT;
+    if (indent == NULL) {
+        indent = "";
     }
-    if (!assessment->results_ready) {
-        return SIXEL_RUNTIME_ERROR;
-    }
-
-    callback("{\n", 2, user_data);
     for (i = 0; i < sizeof(g_metric_table) / sizeof(g_metric_table[0]); ++i) {
         last = (i + 1 == sizeof(g_metric_table) /
                 sizeof(g_metric_table[0]));
@@ -3465,13 +4117,15 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
         if (isnan(value)) {
             written = snprintf(line,
                                sizeof(line),
-                               "  \"%s\": NaN%s\n",
+                               "%s\"%s\": null%s\n",
+                               indent,
                                g_metric_table[i].json_key,
                                last ? "" : ",");
         } else {
             written = snprintf(line,
                                sizeof(line),
-                               "  \"%s\": %.6f%s\n",
+                               "%s\"%s\": %.6f%s\n",
+                               indent,
                                g_metric_table[i].json_key,
                                value,
                                last ? "" : ",");
@@ -3481,6 +4135,340 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
         }
         callback(line, (size_t)written, user_data);
     }
-    callback("}\n", 2, user_data);
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_assessment_get_json(sixel_assessment_t *assessment,
+                          unsigned int sections,
+                          sixel_assessment_json_callback_t callback,
+                          void *user_data)
+{
+    enum { path_buffer_size = PATH_MAX * 2 + 32 };
+    enum { line_buffer_size = PATH_MAX * 2 + 128 };
+    unsigned int requested_sections;
+    unsigned int remaining_sections;
+    unsigned int stored_sections;
+    unsigned int requested_view;
+    unsigned int stored_view;
+    size_t stage_index;
+    sixel_assessment_stage_t stage;
+    char line[line_buffer_size];
+    char escaped_path[path_buffer_size];
+    char escaped_loader[128];
+    char escaped_format[64];
+    double duration_ms;
+    double throughput;
+    double total_duration;
+    double ratio_source;
+    double ratio_quantized;
+    double seconds;
+    size_t bytes;
+    int is_last_stage;
+    int written;
+    int has_more;
+    SIXELSTATUS status;
+
+    if (assessment == NULL || callback == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    requested_sections = sections & SIXEL_ASSESSMENT_SECTION_MASK;
+    if (requested_sections == 0u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    stored_sections = assessment->sections_mask;
+    if ((requested_sections & stored_sections) != requested_sections) {
+        return SIXEL_RUNTIME_ERROR;
+    }
+    requested_view = sections & SIXEL_ASSESSMENT_VIEW_MASK;
+    stored_view = assessment->view_mask & SIXEL_ASSESSMENT_VIEW_MASK;
+    if (requested_view == 0u) {
+        requested_view = stored_view;
+    }
+    if ((requested_sections & SIXEL_ASSESSMENT_SECTION_QUALITY) != 0u) {
+        if (!assessment->results_ready) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        if (requested_view != stored_view) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+    }
+
+    callback("{\n", sizeof("{\n") - 1, user_data);
+    remaining_sections = requested_sections;
+
+    if ((requested_sections & SIXEL_ASSESSMENT_SECTION_BASIC) != 0u) {
+        assessment_guess_format(assessment);
+        if (assessment_escape_json(assessment->input_path,
+                                   escaped_path,
+                                   sizeof(escaped_path)) != 0) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        if (assessment_escape_json(assessment->loader_name,
+                                   escaped_loader,
+                                   sizeof(escaped_loader)) != 0) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        if (assessment_escape_json(assessment->format_name,
+                                   escaped_format,
+                                   sizeof(escaped_format)) != 0) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+
+        written = snprintf(line,
+                           sizeof(line),
+                           "  \"basic\": {\n");
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        written = snprintf(line,
+                           sizeof(line),
+                           "    \"input_path\": \"%s\",\n",
+                           escaped_path);
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        written = snprintf(line,
+                           sizeof(line),
+                           "    \"input_format\": \"%s\",\n",
+                           escaped_format);
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        written = snprintf(line,
+                           sizeof(line),
+                           "    \"loader\": \"%s\",\n",
+                           escaped_loader);
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        written = snprintf(line,
+                           sizeof(line),
+                           "    \"input_bytes\": %zu,\n",
+                           assessment->input_bytes);
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        written = snprintf(line,
+                           sizeof(line),
+                           "    \"input_pixelformat\": \"%s\",\n",
+                           assessment_pixelformat_name(
+                               assessment->input_pixelformat));
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        written = snprintf(line,
+                           sizeof(line),
+                           "    \"input_colorspace\": \"%s\",\n",
+                           assessment_colorspace_name(
+                               assessment->input_colorspace));
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        written = snprintf(line,
+                           sizeof(line),
+                           "    \"source_pixels_bytes\": %zu,\n",
+                           assessment->source_pixels_bytes);
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        written = snprintf(line,
+                           sizeof(line),
+                           "    \"quantized_pixels_bytes\": %zu,\n",
+                           assessment->quantized_pixels_bytes);
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        written = snprintf(line,
+                           sizeof(line),
+                           "    \"palette_colors\": %d,\n",
+                           assessment->palette_colors);
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        written = snprintf(line,
+                           sizeof(line),
+                           "    \"palette_bytes\": %zu\n",
+                           assessment->palette_bytes);
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        remaining_sections &= ~SIXEL_ASSESSMENT_SECTION_BASIC;
+        has_more = (remaining_sections != 0u);
+        callback(has_more ? "  },\n" : "  }\n",
+                 has_more ? sizeof("  },\n") - 1 : sizeof("  }\n") - 1,
+                 user_data);
+    }
+
+    if ((requested_sections & SIXEL_ASSESSMENT_SECTION_PERFORMANCE) != 0u) {
+        written = snprintf(line,
+                           sizeof(line),
+                           "  \"performance\": {\n");
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        callback("    \"stages\": [\n",
+                 sizeof("    \"stages\": [\n") - 1,
+                 user_data);
+
+        total_duration = 0.0;
+        for (stage_index = 0;
+             stage_index < sizeof(g_stage_descriptors) /
+                 sizeof(g_stage_descriptors[0]);
+             ++stage_index) {
+            stage = g_stage_descriptors[stage_index].id;
+            seconds = assessment->stage_durations[stage];
+            bytes = (size_t)assessment->stage_bytes[stage];
+            total_duration += seconds;
+            duration_ms = seconds * 1000.0;
+            if (seconds > 0.0) {
+                throughput = (double)bytes / seconds;
+            } else {
+                throughput = 0.0;
+            }
+            is_last_stage =
+                (stage_index + 1 == sizeof(g_stage_descriptors) /
+                    sizeof(g_stage_descriptors[0]));
+            written = snprintf(
+                line,
+                sizeof(line),
+                "      {\n"
+                "        \"name\": \"%s\",\n"
+                "        \"duration_ms\": %.6f,\n"
+                "        \"bytes_processed\": %zu,\n"
+                "        \"throughput_bytes_per_second\": %.6f\n"
+                "      }%s\n",
+                g_stage_descriptors[stage_index].label,
+                duration_ms,
+                bytes,
+                throughput,
+                is_last_stage ? "" : ",");
+            if (written < 0 || (size_t)written >= sizeof(line)) {
+                return SIXEL_RUNTIME_ERROR;
+            }
+            callback(line, (size_t)written, user_data);
+        }
+
+        callback("    ],\n", sizeof("    ],\n") - 1, user_data);
+
+        written = snprintf(line,
+                           sizeof(line),
+                           "    \"total_duration_ms\": %.6f\n",
+                           total_duration * 1000.0);
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        remaining_sections &= ~SIXEL_ASSESSMENT_SECTION_PERFORMANCE;
+        has_more = (remaining_sections != 0u);
+        callback(has_more ? "  },\n" : "  }\n",
+                 has_more ? sizeof("  },\n") - 1 : sizeof("  }\n") - 1,
+                 user_data);
+    }
+
+    if ((requested_sections & SIXEL_ASSESSMENT_SECTION_SIZE) != 0u) {
+        ratio_source = 0.0;
+        if (assessment->source_pixels_bytes > 0) {
+            ratio_source = (double)assessment->output_bytes /
+                (double)assessment->source_pixels_bytes;
+        }
+        ratio_quantized = 0.0;
+        if (assessment->quantized_pixels_bytes > 0) {
+            ratio_quantized = (double)assessment->output_bytes /
+                (double)assessment->quantized_pixels_bytes;
+        }
+
+        written = snprintf(line,
+                           sizeof(line),
+                           "  \"size\": {\n");
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        written = snprintf(line,
+                           sizeof(line),
+                           "    \"output_bytes\": %zu,\n",
+                           assessment->output_bytes);
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        written = snprintf(line,
+                           sizeof(line),
+                           "    \"output_vs_source_ratio\": %.6f,\n",
+                           ratio_source);
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        written = snprintf(line,
+                           sizeof(line),
+                           "    \"output_vs_quantized_ratio\": %.6f\n",
+                           ratio_quantized);
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        remaining_sections &= ~SIXEL_ASSESSMENT_SECTION_SIZE;
+        has_more = (remaining_sections != 0u);
+        callback(has_more ? "  },\n" : "  }\n",
+                 has_more ? sizeof("  },\n") - 1 : sizeof("  }\n") - 1,
+                 user_data);
+    }
+
+    if ((requested_sections & SIXEL_ASSESSMENT_SECTION_QUALITY) != 0u) {
+        written = snprintf(line,
+                           sizeof(line),
+                           "  \"quality\": {\n");
+        if (written < 0 || (size_t)written >= sizeof(line)) {
+            return SIXEL_RUNTIME_ERROR;
+        }
+        callback(line, (size_t)written, user_data);
+
+        status = assessment_emit_quality_lines(assessment,
+                                               callback,
+                                               user_data,
+                                               "    ");
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+
+        remaining_sections &= ~SIXEL_ASSESSMENT_SECTION_QUALITY;
+        has_more = (remaining_sections != 0u);
+        callback(has_more ? "  },\n" : "  }\n",
+                 has_more ? sizeof("  },\n") - 1 : sizeof("  }\n") - 1,
+                 user_data);
+    }
+
+    callback("}\n", sizeof("}\n") - 1, user_data);
     return SIXEL_OK;
 }

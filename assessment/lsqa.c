@@ -770,6 +770,9 @@ main(int argc, char **argv)
         }
     }
 
+    sixel_assessment_select_sections(assessment,
+                                     SIXEL_ASSESSMENT_SECTION_QUALITY);
+
     status = sixel_assessment_setopt(assessment,
                                     SIXEL_ASSESSMENT_OPT_ENABLE_LPIPS,
                                     "yes");
@@ -821,8 +824,9 @@ main(int argc, char **argv)
     collector.stream = fp;
     collector.metrics = &metrics;
     status = sixel_assessment_get_json(assessment,
-                                      json_collect_callback,
-                                      &collector);
+                                       SIXEL_ASSESSMENT_SECTION_QUALITY,
+                                       json_collect_callback,
+                                       &collector);
     fclose(fp);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr,
@@ -839,8 +843,9 @@ main(int argc, char **argv)
     collector.stream = stdout;
     collector.metrics = NULL;
     status = sixel_assessment_get_json(assessment,
-                                      json_collect_callback,
-                                      &collector);
+                                       SIXEL_ASSESSMENT_SECTION_QUALITY,
+                                       json_collect_callback,
+                                       &collector);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr,
                 "Failed to emit JSON: %s\n",

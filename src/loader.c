@@ -40,6 +40,9 @@
 #if HAVE_UNISTD_H
 # include <unistd.h>
 #endif
+#if !defined(PATH_MAX)
+#define PATH_MAX 4096
+#endif
 #if HAVE_FCNTL_H
 # include <fcntl.h>
 #endif
@@ -112,6 +115,8 @@ sixel_quicklook_thumbnail_create(CFURLRef url, CGSize max_size);
 #include "frompnm.h"
 #include "fromgif.h"
 #include "allocator.h"
+#include "assessment.h"
+#include "encoder.h"
 
 #define SIXEL_THUMBNAILER_DEFAULT_SIZE 512
 
@@ -135,6 +140,9 @@ struct sixel_loader {
     void *context;
     char *loader_order;
     sixel_allocator_t *allocator;
+    char last_loader_name[64];
+    char last_source_path[PATH_MAX];
+    size_t last_input_bytes;
 };
 
 static char *
@@ -5934,6 +5942,9 @@ sixel_loader_new(
     loader->context = NULL;
     loader->loader_order = NULL;
     loader->allocator = local_allocator;
+    loader->last_loader_name[0] = '\0';
+    loader->last_source_path[0] = '\0';
+    loader->last_input_bytes = 0u;
 
     *pploader = loader;
     status = SIXEL_OK;
@@ -6079,6 +6090,33 @@ end0:
     return status;
 }
 
+SIXELAPI char const *
+sixel_loader_get_last_success_name(sixel_loader_t const *loader)
+{
+    if (loader == NULL || loader->last_loader_name[0] == '\0') {
+        return NULL;
+    }
+    return loader->last_loader_name;
+}
+
+SIXELAPI char const *
+sixel_loader_get_last_source_path(sixel_loader_t const *loader)
+{
+    if (loader == NULL || loader->last_source_path[0] == '\0') {
+        return NULL;
+    }
+    return loader->last_source_path;
+}
+
+SIXELAPI size_t
+sixel_loader_get_last_input_bytes(sixel_loader_t const *loader)
+{
+    if (loader == NULL) {
+        return 0u;
+    }
+    return loader->last_input_bytes;
+}
+
 SIXELAPI SIXELSTATUS
 sixel_loader_load_file(
     sixel_loader_t         /* in */ *loader,
@@ -6094,6 +6132,8 @@ sixel_loader_load_file(
     size_t plan_index;
     unsigned char *bgcolor;
     int reqcolors;
+    sixel_encoder_t *encoder;
+    sixel_assessment_t *assessment;
 
     pchunk = NULL;
     entry_count = 0;
@@ -6101,6 +6141,8 @@ sixel_loader_load_file(
     plan_index = 0;
     bgcolor = NULL;
     reqcolors = 0;
+    encoder = NULL;
+    assessment = NULL;
 
     if (loader == NULL) {
         sixel_helper_set_additional_message(
@@ -6118,6 +6160,25 @@ sixel_loader_load_file(
     if (reqcolors > SIXEL_PALETTE_MAX) {
         reqcolors = SIXEL_PALETTE_MAX;
     }
+
+    if (loader->context != NULL) {
+        encoder = (sixel_encoder_t *)loader->context;
+        if (encoder->assessment_observer != NULL) {
+            assessment = encoder->assessment_observer;
+        }
+    }
+
+    /*
+     *  Assessment pipeline sketch:
+     *
+     *      +-------------+        +--------------+
+     *      | chunk read | ----->  | image decode |
+     *      +-------------+        +--------------+
+     *
+     *  The loader owns the hand-off.  Chunk I/O ends before any decoder runs,
+     *  so we time the read span in the encoder and pivot to decode once the
+     *  chunk is populated.
+     */
 
     status = sixel_chunk_new(&pchunk,
                              filename,
@@ -6143,6 +6204,11 @@ sixel_loader_load_file(
     }
 
     status = SIXEL_FALSE;
+    if (assessment != NULL) {
+        sixel_assessment_stage_transition(
+            assessment,
+            SIXEL_ASSESSMENT_STAGE_IMAGE_DECODE);
+    }
     plan_length = loader_build_plan(loader->loader_order,
                                     sixel_loader_entries,
                                     entry_count,
@@ -6174,6 +6240,30 @@ sixel_loader_load_file(
 
     if (SIXEL_FAILED(status)) {
         goto end;
+    }
+
+    if (plan_index < plan_length &&
+            plan[plan_index] != NULL &&
+            plan[plan_index]->name != NULL) {
+        (void)snprintf(loader->last_loader_name,
+                       sizeof(loader->last_loader_name),
+                       "%s",
+                       plan[plan_index]->name);
+    } else {
+        loader->last_loader_name[0] = '\0';
+    }
+    loader->last_input_bytes = pchunk->size;
+    if (pchunk->source_path != NULL) {
+        size_t path_len;
+
+        path_len = strlen(pchunk->source_path);
+        if (path_len >= sizeof(loader->last_source_path)) {
+            path_len = sizeof(loader->last_source_path) - 1u;
+        }
+        memcpy(loader->last_source_path, pchunk->source_path, path_len);
+        loader->last_source_path[path_len] = '\0';
+    } else {
+        loader->last_source_path[0] = '\0';
     }
 
 end:
