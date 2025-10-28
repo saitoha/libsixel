@@ -100,62 +100,62 @@ sixel_assessment_load_single_frame(char const *path,
                                    sixel_allocator_t *allocator,
                                    sixel_frame_t **ppframe);
 
-double
+SIXELAPI double
 sixel_assessment_timer_now(void);
 
-void
+SIXELAPI void
 sixel_assessment_stage_transition(sixel_assessment_t *assessment,
                                   sixel_assessment_stage_t stage);
 
-void
+SIXELAPI void
 sixel_assessment_stage_finish(sixel_assessment_t *assessment);
 
-void
+SIXELAPI void
 sixel_assessment_record_stage_duration(sixel_assessment_t *assessment,
                                        sixel_assessment_stage_t stage,
                                        double duration);
 
-void
+SIXELAPI void
 sixel_assessment_record_loader(sixel_assessment_t *assessment,
                                char const *path,
                                char const *loader_name,
                                size_t input_bytes);
 
-void
+SIXELAPI void
 sixel_assessment_record_source_frame(sixel_assessment_t *assessment,
                                      sixel_frame_t *frame);
 
-void
+SIXELAPI void
 sixel_assessment_record_quantized_capture(
     sixel_assessment_t *assessment,
     struct sixel_encoder *encoder);
 
-void
+SIXELAPI void
 sixel_assessment_record_output_size(sixel_assessment_t *assessment,
                                     size_t output_bytes);
 
-void
+SIXELAPI void
 sixel_assessment_record_output_write(sixel_assessment_t *assessment,
                                      size_t bytes,
                                      double duration);
 
-int
+SIXELAPI int
 sixel_assessment_palette_probe_enabled(void);
 
-void
+SIXELAPI void
 sixel_assessment_record_palette_apply_span(double duration);
 
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 sixel_assessment_get_json(sixel_assessment_t *assessment,
                           unsigned int sections,
                           sixel_assessment_json_callback_t callback,
                           void *user_data);
 
-void
+SIXELAPI void
 sixel_assessment_select_sections(sixel_assessment_t *assessment,
                                  unsigned int sections);
 
-void
+SIXELAPI void
 sixel_assessment_attach_encoder(sixel_assessment_t *assessment,
                                 struct sixel_encoder *encoder);
 
