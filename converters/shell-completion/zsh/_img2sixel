@@ -165,17 +165,21 @@ _outputcolorspace() {
     'smpte-c[SMPTE-C gamma encoded output]'
 }
 
-_assessmentmode() {
-  _values \
-    'ASSESSMENTMODE' \
-    'quantized[compare against the palette-quantized frame]' \
-    'encoded[reload the generated SIXEL output for comparison]'
+_assessmentsections() {
+  _values -s ',' \
+    'ASSESSMENTSECTIONS' \
+    'all[emit every assessment section]' \
+    'basic[include basic metadata]' \
+    'performance[include stage timings]' \
+    'size[include output size metrics]' \
+    'quality[compare the encoded SIXEL output]' \
+    'quality@quantized[compare the palette-quantized frame]'
 }
 
 _arguments -S -s -A "-*" -S \
   {-o,--outfile}'[specify output file (default: stdout)]':files:_files \
   {-T,--tiles}'[specify output path for DRCS-SIXEL tile characters]':files:_files \
-  {-a,--assessment=}'[emit assessment report as JSON]':assessmentmode:_assessmentmode \
+  {-a,--assessment=}'[emit assessment report as JSON]':assessmentsections:_assessmentsections \
   {-J,--assessment-file=}'[write assessment JSON to a file]':files:_files \
   {-7,--7bit-mode}'[generate a sixel image for 7bit terminals (default)]' \
   {-8,--8bit-mode}'[generate a sixel image for 8bit terminals]' \

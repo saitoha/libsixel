@@ -28,6 +28,7 @@ sixel_tty_wait_stdin(int usec);
 SIXELSTATUS
 sixel_tty_scroll(
     sixel_write_function f_write,
+    void *priv,
     int outfd,
     int height,
     int is_animation);

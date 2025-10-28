@@ -22,12 +22,23 @@
 #ifndef LIBSIXEL_LOADER_H
 #define LIBSIXEL_LOADER_H
 
+#include <sixel.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void sixel_helper_set_loader_trace(int enable);
 void sixel_helper_set_thumbnail_size_hint(int size);
+
+SIXELAPI char const *
+sixel_loader_get_last_success_name(sixel_loader_t const *loader);
+
+SIXELAPI char const *
+sixel_loader_get_last_source_path(sixel_loader_t const *loader);
+
+SIXELAPI size_t
+sixel_loader_get_last_input_bytes(sixel_loader_t const *loader);
 
 #if HAVE_TESTS
 SIXELAPI int
