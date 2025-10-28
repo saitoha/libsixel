@@ -1211,6 +1211,7 @@ typedef struct sixel_loader sixel_loader_t;
 #define SIXEL_LOADER_OPTION_CANCEL_FLAG       (7)
 #define SIXEL_LOADER_OPTION_LOADER_ORDER      (8)
 #define SIXEL_LOADER_OPTION_CONTEXT           (9)
+#define SIXEL_LOADER_OPTION_ASSESSMENT        (10)
 
 /* create loader object */
 SIXELAPI SIXELSTATUS
