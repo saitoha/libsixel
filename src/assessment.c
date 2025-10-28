@@ -2963,7 +2963,7 @@ sixel_assessment_capture_first_frame(sixel_frame_t *frame,
     return SIXEL_OK;
 }
 
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 sixel_assessment_expand_quantized_frame(sixel_frame_t *source,
                                         sixel_allocator_t *allocator,
                                         sixel_frame_t **ppframe)
@@ -3116,7 +3116,7 @@ cleanup:
     return status;
 }
 
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 sixel_assessment_load_single_frame(char const *path,
                                    sixel_allocator_t *allocator,
                                    sixel_frame_t **ppframe)
