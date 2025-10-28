@@ -165,7 +165,7 @@ static assessment_stage_descriptor_t const g_stage_descriptors[] = {
     {SIXEL_ASSESSMENT_STAGE_OUTPUT, "Output"}
 };
 
-double
+SIXELAPI double
 sixel_assessment_timer_now(void)
 {
 #if defined(_WIN32)
@@ -366,7 +366,7 @@ assessment_colorspace_name(int colorspace)
     return "unknown";
 }
 
-void
+SIXELAPI void
 sixel_assessment_stage_transition(sixel_assessment_t *assessment,
                                   sixel_assessment_stage_t stage)
 {
@@ -437,7 +437,7 @@ sixel_assessment_stage_transition(sixel_assessment_t *assessment,
     }
 }
 
-void
+SIXELAPI void
 sixel_assessment_stage_finish(sixel_assessment_t *assessment)
 {
     double now;
@@ -496,7 +496,7 @@ sixel_assessment_stage_finish(sixel_assessment_t *assessment)
     assessment->stage_started_at = 0.0;
 }
 
-void
+SIXELAPI void
 sixel_assessment_record_stage_duration(sixel_assessment_t *assessment,
                                        sixel_assessment_stage_t stage,
                                        double duration)
@@ -518,7 +518,7 @@ sixel_assessment_record_stage_duration(sixel_assessment_t *assessment,
     assessment->stage_durations[stage] += duration;
 }
 
-void
+SIXELAPI void
 sixel_assessment_record_loader(sixel_assessment_t *assessment,
                                char const *path,
                                char const *loader_name,
@@ -560,7 +560,7 @@ sixel_assessment_record_loader(sixel_assessment_t *assessment,
     }
 }
 
-void
+SIXELAPI void
 sixel_assessment_record_source_frame(sixel_assessment_t *assessment,
                                      sixel_frame_t *frame)
 {
@@ -615,7 +615,7 @@ sixel_assessment_record_source_frame(sixel_assessment_t *assessment,
     }
 }
 
-void
+SIXELAPI void
 sixel_assessment_record_quantized_capture(
     sixel_assessment_t *assessment,
     sixel_encoder_t *encoder)
@@ -645,7 +645,7 @@ sixel_assessment_record_quantized_capture(
     }
 }
 
-void
+SIXELAPI void
 sixel_assessment_record_output_size(sixel_assessment_t *assessment,
                                     size_t output_bytes)
 {
@@ -663,7 +663,7 @@ sixel_assessment_record_output_size(sixel_assessment_t *assessment,
     }
 }
 
-void
+SIXELAPI void
 sixel_assessment_record_output_write(sixel_assessment_t *assessment,
                                      size_t bytes,
                                      double duration)
@@ -685,13 +685,13 @@ sixel_assessment_record_output_write(sixel_assessment_t *assessment,
     }
 }
 
-int
+SIXELAPI int
 sixel_assessment_palette_probe_enabled(void)
 {
     return g_active_encode_assessment != NULL;
 }
 
-void
+SIXELAPI void
 sixel_assessment_record_palette_apply_span(double duration)
 {
     sixel_assessment_t *assessment;
@@ -718,7 +718,7 @@ sixel_assessment_record_palette_apply_span(double duration)
     assessment->encode_palette_time_pending += duration;
 }
 
-void
+SIXELAPI void
 sixel_assessment_select_sections(sixel_assessment_t *assessment,
                                  unsigned int sections)
 {
@@ -746,7 +746,7 @@ sixel_assessment_select_sections(sixel_assessment_t *assessment,
     }
 }
 
-void
+SIXELAPI void
 sixel_assessment_attach_encoder(sixel_assessment_t *assessment,
                                 sixel_encoder_t *encoder)
 {
@@ -4216,7 +4216,7 @@ assessment_emit_quality_lines(sixel_assessment_t *assessment,
     return SIXEL_OK;
 }
 
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 sixel_assessment_get_json(sixel_assessment_t *assessment,
                           unsigned int sections,
                           sixel_assessment_json_callback_t callback,
