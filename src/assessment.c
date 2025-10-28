@@ -98,24 +98,19 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-typedef struct Image {
-    int width;
-    int height;
-    int channels;
-    float *pixels; /* interleaved RGB, values in [0,1] */
-} Image;
+enum { SIXEL_ASSESSMENT_RGB_CHANNELS = 3 };
 
-typedef struct FloatBuffer {
+typedef struct sixel_assessment_float_buffer {
     size_t length;
     float *values;
-} FloatBuffer;
+} sixel_assessment_float_buffer_t;
 
-typedef struct Complex {
+typedef struct sixel_assessment_complex {
     double re;
     double im;
-} Complex;
+} sixel_assessment_complex_t;
 
-typedef struct Metrics {
+typedef struct sixel_assessment_metrics {
     float ms_ssim;
     float high_freq_out;
     float high_freq_ref;
@@ -142,7 +137,7 @@ typedef struct Metrics {
     float gmsd_value;
     float psnr_y;
     float lpips_vgg;
-} Metrics;
+} sixel_assessment_metrics_t;
 
 typedef struct sixel_assessment_capture {
     sixel_frame_t *frame;
@@ -764,7 +759,12 @@ sixel_assessment_attach_encoder(sixel_assessment_t *assessment,
 static int assessment_resolve_executable_dir(char const *argv0,
                                             char *buffer,
                                             size_t size);
-static void align_images(Image *ref, Image *out);
+static void align_frame_pixels(float **ref_pixels,
+                               int *ref_width,
+                               int *ref_height,
+                               float **out_pixels,
+                               int *out_width,
+                               int *out_height);
 
 static void
 assessment_fail(SIXELSTATUS status, char const *message)
@@ -818,14 +818,6 @@ static void *xcalloc(size_t nmemb, size_t size)
                        "calloc failed while building assessment state");
     }
     return ptr;
-}
-
-static void image_free(Image *img)
-{
-    if (img->pixels != NULL) {
-        free(img->pixels);
-        img->pixels = NULL;
-    }
 }
 
 /*
@@ -884,7 +876,10 @@ static SIXELSTATUS copy_frame_to_rgb(sixel_frame_t *frame,
 }
 
 static SIXELSTATUS
-image_from_frame(sixel_frame_t *frame, Image *img)
+frame_to_rgb_float(sixel_frame_t *frame,
+                   float **pixels_out,
+                   int *width_out,
+                   int *height_out)
 {
     SIXELSTATUS status;
     unsigned char *pixels;
@@ -894,6 +889,7 @@ image_from_frame(sixel_frame_t *frame, Image *img)
     size_t count;
     size_t index;
 
+    status = SIXEL_FALSE;
     pixels = NULL;
     width = 0;
     height = 0;
@@ -901,22 +897,39 @@ image_from_frame(sixel_frame_t *frame, Image *img)
     count = 0;
     index = 0;
 
+    if (frame == NULL || pixels_out == NULL || width_out == NULL ||
+            height_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *pixels_out = NULL;
+    *width_out = 0;
+    *height_out = 0;
+
     status = copy_frame_to_rgb(frame, &pixels, &width, &height);
     if (SIXEL_FAILED(status)) {
-        return status;
+        goto cleanup;
     }
-    count = (size_t)width * (size_t)height * 3u;
+    count = (size_t)width * (size_t)height *
+            (size_t)SIXEL_ASSESSMENT_RGB_CHANNELS;
     converted = (float *)xmalloc(count * sizeof(float));
     for (index = 0; index < count; ++index) {
         converted[index] = pixels[index] / 255.0f;
     }
-    img->width = width;
-    img->height = height;
-    img->channels = 3;
-    img->pixels = converted;
+    *pixels_out = converted;
+    *width_out = width;
+    *height_out = height;
+    converted = NULL;
+    status = SIXEL_OK;
 
-    free(pixels);
-    return SIXEL_OK;
+cleanup:
+    if (pixels != NULL) {
+        free(pixels);
+    }
+    if (converted != NULL) {
+        free(converted);
+    }
+    return status;
 }
 
 /*
@@ -1268,30 +1281,38 @@ free_image_f32(image_f32_t *image)
 }
 
 static int
-convert_image_to_nchw(const Image *src, image_f32_t *dst)
+convert_pixels_to_nchw(float const *src_pixels,
+                       int width,
+                       int height,
+                       image_f32_t *dst)
 {
     size_t plane_size;
     size_t index;
     float *buffer;
 
-    if (src->channels != 3) {
+    if (src_pixels == NULL || dst == NULL) {
         return -1;
     }
-    plane_size = (size_t)src->width * (size_t)src->height;
-    buffer = (float *)malloc(plane_size * 3u * sizeof(float));
+    if (width <= 0 || height <= 0) {
+        return -1;
+    }
+    plane_size = (size_t)width * (size_t)height;
+    buffer = (float *)malloc(plane_size *
+                             (size_t)SIXEL_ASSESSMENT_RGB_CHANNELS *
+                             sizeof(float));
     if (buffer == NULL) {
         return -1;
     }
     for (index = 0; index < plane_size; ++index) {
         buffer[plane_size * 0u + index] =
-            src->pixels[index * 3u + 0u] * 2.0f - 1.0f;
+            src_pixels[index * 3u + 0u] * 2.0f - 1.0f;
         buffer[plane_size * 1u + index] =
-            src->pixels[index * 3u + 1u] * 2.0f - 1.0f;
+            src_pixels[index * 3u + 1u] * 2.0f - 1.0f;
         buffer[plane_size * 2u + index] =
-            src->pixels[index * 3u + 2u] * 2.0f - 1.0f;
+            src_pixels[index * 3u + 2u] * 2.0f - 1.0f;
     }
-    dst->width = src->width;
-    dst->height = src->height;
+    dst->width = width;
+    dst->height = height;
     dst->nchw = buffer;
     return 0;
 }
@@ -1827,17 +1848,17 @@ cleanup:
 /*
  * Array math helpers
  */
-static FloatBuffer
+static sixel_assessment_float_buffer_t
 float_buffer_create(size_t length)
 {
-    FloatBuffer buf;
+    sixel_assessment_float_buffer_t buf;
     buf.length = length;
     buf.values = (float *)xcalloc(length, sizeof(float));
     return buf;
 }
 
 static void
-float_buffer_free(FloatBuffer *buf)
+float_buffer_free(sixel_assessment_float_buffer_t *buf)
 {
     if (buf->values != NULL) {
         free(buf->values);
@@ -1863,43 +1884,39 @@ clamp_float(float v, float min_v, float max_v)
 /*
  * Luma conversion and resizing utilities
  */
-static FloatBuffer
-image_to_luma709(const Image *img)
+static sixel_assessment_float_buffer_t
+pixels_to_luma709(const float *pixels, int width, int height)
 {
-    FloatBuffer buf;
+    sixel_assessment_float_buffer_t buf;
     size_t total;
     size_t i;
-    const float *src;
     float r;
     float g;
     float b;
 
-    total = (size_t)img->width * (size_t)img->height;
+    total = (size_t)width * (size_t)height;
     buf = float_buffer_create(total);
-    src = img->pixels;
     for (i = 0; i < total; ++i) {
-        r = src[i * 3 + 0];
-        g = src[i * 3 + 1];
-        b = src[i * 3 + 2];
+        r = pixels[i * 3 + 0];
+        g = pixels[i * 3 + 1];
+        b = pixels[i * 3 + 2];
         buf.values[i] = 0.2126f * r + 0.7152f * g + 0.0722f * b;
     }
     return buf;
 }
 
-static FloatBuffer
-image_channel(const Image *img, int channel)
+static sixel_assessment_float_buffer_t
+pixels_channel(const float *pixels, int width, int height, int channel)
 {
-    FloatBuffer buf;
+    sixel_assessment_float_buffer_t buf;
     size_t total;
     size_t i;
-    const float *src;
     float value;
 
-    total = (size_t)img->width * (size_t)img->height;
+    total = (size_t)width * (size_t)height;
     buf = float_buffer_create(total);
-    src = img->pixels;
     for (i = 0; i < total; ++i) {
-        value = src[i * 3 + channel];
+        value = pixels[i * 3 + channel];
         buf.values[i] = value;
     }
     return buf;
@@ -1907,9 +1924,9 @@ image_channel(const Image *img, int channel)
 /*
  * Gaussian kernel and separable convolution
  */
-static FloatBuffer gaussian_kernel1d(int size, float sigma)
+static sixel_assessment_float_buffer_t gaussian_kernel1d(int size, float sigma)
 {
-    FloatBuffer kernel;
+    sixel_assessment_float_buffer_t kernel;
     int i;
     float mean;
     float sum;
@@ -1933,12 +1950,12 @@ static FloatBuffer gaussian_kernel1d(int size, float sigma)
     return kernel;
 }
 
-static FloatBuffer
-separable_conv2d(const FloatBuffer *img, int width,
-                 int height, const FloatBuffer *kernel)
+static sixel_assessment_float_buffer_t
+separable_conv2d(const sixel_assessment_float_buffer_t *img, int width,
+                 int height, const sixel_assessment_float_buffer_t *kernel)
 {
-    FloatBuffer tmp;
-    FloatBuffer out;
+    sixel_assessment_float_buffer_t tmp;
+    sixel_assessment_float_buffer_t out;
     int pad;
     int x;
     int y;
@@ -2006,19 +2023,25 @@ separable_conv2d(const FloatBuffer *img, int width,
 /*
  * SSIM and MS-SSIM computation
  */
-static float ssim_luma(const FloatBuffer *x, const FloatBuffer *y,
-                       int width, int height, float k1, float k2,
-                       int win_size, float sigma)
+static float ssim_luma(
+    const sixel_assessment_float_buffer_t *x,
+    const sixel_assessment_float_buffer_t *y,
+    int width,
+    int height,
+    float k1,
+    float k2,
+    int win_size,
+    float sigma)
 {
-    FloatBuffer kernel;
-    FloatBuffer mu_x;
-    FloatBuffer mu_y;
-    FloatBuffer mu_x2;
-    FloatBuffer mu_y2;
-    FloatBuffer mu_xy;
-    FloatBuffer sigma_x2;
-    FloatBuffer sigma_y2;
-    FloatBuffer sigma_xy;
+    sixel_assessment_float_buffer_t kernel;
+    sixel_assessment_float_buffer_t mu_x;
+    sixel_assessment_float_buffer_t mu_y;
+    sixel_assessment_float_buffer_t mu_x2;
+    sixel_assessment_float_buffer_t mu_y2;
+    sixel_assessment_float_buffer_t mu_xy;
+    sixel_assessment_float_buffer_t sigma_x2;
+    sixel_assessment_float_buffer_t sigma_y2;
+    sixel_assessment_float_buffer_t sigma_xy;
     float C1;
     float C2;
     size_t total;
@@ -2027,9 +2050,9 @@ static float ssim_luma(const FloatBuffer *x, const FloatBuffer *y,
     float numerator;
     float denominator;
     float value;
-    FloatBuffer x_sq;
-    FloatBuffer y_sq;
-    FloatBuffer xy_buf;
+    sixel_assessment_float_buffer_t x_sq;
+    sixel_assessment_float_buffer_t y_sq;
+    sixel_assessment_float_buffer_t xy_buf;
 
     kernel = gaussian_kernel1d(win_size, sigma);
     mu_x = separable_conv2d(x, width, height, &kernel);
@@ -2103,15 +2126,15 @@ static float ssim_luma(const FloatBuffer *x, const FloatBuffer *y,
     return mean;
 }
 
-static FloatBuffer
-downsample2(const FloatBuffer *img, int width, int height,
+static sixel_assessment_float_buffer_t
+downsample2(const sixel_assessment_float_buffer_t *img, int width, int height,
             int *new_width, int *new_height)
 {
     int h2;
     int w2;
     int y;
     int x;
-    FloatBuffer out;
+    sixel_assessment_float_buffer_t out;
     float sum;
     int idx0;
     int idx1;
@@ -2141,16 +2164,18 @@ downsample2(const FloatBuffer *img, int width, int height,
 }
 
 static float
-ms_ssim_luma(const FloatBuffer *ref, const FloatBuffer *out,
-             int width, int height)
+ms_ssim_luma(const sixel_assessment_float_buffer_t *ref,
+             const sixel_assessment_float_buffer_t *out,
+             int width,
+             int height)
 {
     static const float weights[5] = {
         0.0448f, 0.2856f, 0.3001f, 0.2363f, 0.1333f
     };
-    FloatBuffer cur_ref;
-    FloatBuffer cur_out;
-    FloatBuffer next_ref;
-    FloatBuffer next_out;
+    sixel_assessment_float_buffer_t cur_ref;
+    sixel_assessment_float_buffer_t cur_out;
+    sixel_assessment_float_buffer_t next_ref;
+    sixel_assessment_float_buffer_t next_out;
     int cur_width;
     int cur_height;
     float weighted_sum;
@@ -2213,12 +2238,12 @@ next_power_of_two(int value)
 }
 
 static void
-fft_bit_reverse(Complex *data, int n)
+fft_bit_reverse(sixel_assessment_complex_t *data, int n)
 {
     int i;
     int j;
     int bit;
-    Complex tmp;
+    sixel_assessment_complex_t tmp;
 
     j = 0;
     for (i = 0; i < n; ++i) {
@@ -2237,17 +2262,17 @@ fft_bit_reverse(Complex *data, int n)
 }
 
 static void
-fft_cooley_tukey(Complex *data, int n, int inverse)
+fft_cooley_tukey(sixel_assessment_complex_t *data, int n, int inverse)
 {
     int len;
     double angle;
-    Complex wlen;
+    sixel_assessment_complex_t wlen;
     int half;
     int i;
-    Complex w;
+    sixel_assessment_complex_t w;
     int j;
-    Complex u;
-    Complex v;
+    sixel_assessment_complex_t u;
+    sixel_assessment_complex_t v;
     double tmp_re;
     double tmp_im;
 
@@ -2290,21 +2315,23 @@ fft_cooley_tukey(Complex *data, int n, int inverse)
 }
 
 static void
-fft2d(FloatBuffer *input, int width, int height,
-      Complex *output, int out_width, int out_height)
+fft2d(sixel_assessment_float_buffer_t *input, int width, int height,
+      sixel_assessment_complex_t *output, int out_width, int out_height)
 {
     int padded_width;
     int padded_height;
     int y;
     int x;
-    Complex *row;
-    Complex *col;
-    Complex value;
+    sixel_assessment_complex_t *row;
+    sixel_assessment_complex_t *col;
+    sixel_assessment_complex_t value;
 
     padded_width = out_width;
     padded_height = out_height;
-    row = (Complex *)xmalloc(sizeof(Complex) * (size_t)padded_width);
-    col = (Complex *)xmalloc(sizeof(Complex) * (size_t)padded_height);
+    row = (sixel_assessment_complex_t *)xmalloc(
+        sizeof(sixel_assessment_complex_t) * (size_t)padded_width);
+    col = (sixel_assessment_complex_t *)xmalloc(
+        sizeof(sixel_assessment_complex_t) * (size_t)padded_height);
 
     for (y = 0; y < padded_height; ++y) {
         for (x = 0; x < padded_width; ++x) {
@@ -2344,7 +2371,7 @@ fft2d(FloatBuffer *input, int width, int height,
 }
 
 static void
-fft_shift(Complex *data, int width, int height)
+fft_shift(sixel_assessment_complex_t *data, int width, int height)
 {
     int half_w;
     int half_h;
@@ -2352,7 +2379,7 @@ fft_shift(Complex *data, int width, int height)
     int x;
     int nx;
     int ny;
-    Complex tmp;
+    sixel_assessment_complex_t tmp;
 
     half_w = width / 2;
     half_h = height / 2;
@@ -2370,14 +2397,14 @@ fft_shift(Complex *data, int width, int height)
     }
 }
 static float
-high_frequency_ratio(const FloatBuffer *img,
+high_frequency_ratio(const sixel_assessment_float_buffer_t *img,
                      int width, int height, float cutoff)
 {
     int padded_width;
     int padded_height;
-    Complex *freq;
+    sixel_assessment_complex_t *freq;
     size_t total;
-    FloatBuffer centered;
+    sixel_assessment_float_buffer_t centered;
     double hi_sum;
     double total_sum;
     int y;
@@ -2395,7 +2422,8 @@ high_frequency_ratio(const FloatBuffer *img,
     padded_width = next_power_of_two(width);
     padded_height = next_power_of_two(height);
     total = (size_t)padded_width * (size_t)padded_height;
-    freq = (Complex *)xmalloc(total * sizeof(Complex));
+    freq = (sixel_assessment_complex_t *)xmalloc(
+        total * sizeof(sixel_assessment_complex_t));
     centered = float_buffer_create((size_t)width * (size_t)height);
 
     for (y = 0; y < height; ++y) {
@@ -2450,13 +2478,13 @@ high_frequency_ratio(const FloatBuffer *img,
 }
 
 static float
-stripe_score(const FloatBuffer *img, int width, int height,
+stripe_score(const sixel_assessment_float_buffer_t *img, int width, int height,
              int bins)
 {
     int padded_width;
     int padded_height;
-    Complex *freq;
-    FloatBuffer centered;
+    sixel_assessment_complex_t *freq;
+    sixel_assessment_float_buffer_t centered;
     double cy;
     double cx;
     double rmin;
@@ -2476,8 +2504,9 @@ stripe_score(const FloatBuffer *img, int width, int height,
 
     padded_width = next_power_of_two(width);
     padded_height = next_power_of_two(height);
-    freq = (Complex *)xmalloc(sizeof(Complex) *
-                              (size_t)padded_width * (size_t)padded_height);
+    freq = (sixel_assessment_complex_t *)xmalloc(
+        sizeof(sixel_assessment_complex_t) *
+        (size_t)padded_width * (size_t)padded_height);
     centered = float_buffer_create((size_t)width * (size_t)height);
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width; ++x) {
@@ -2551,7 +2580,7 @@ stripe_score(const FloatBuffer *img, int width, int height,
  * Banding metrics (run-length and gradient-based)
  */
 static float
-banding_index_runlen(const FloatBuffer *img,
+banding_index_runlen(const sixel_assessment_float_buffer_t *img,
                      int width, int height, int levels)
 {
     int y;
@@ -2596,12 +2625,12 @@ banding_index_runlen(const FloatBuffer *img,
     return (float)((total_runs / total_segments) / (double)width);
 }
 
-static FloatBuffer
-gaussian_blur(const FloatBuffer *img, int width,
+static sixel_assessment_float_buffer_t
+gaussian_blur(const sixel_assessment_float_buffer_t *img, int width,
               int height, float sigma, int ksize)
 {
-    FloatBuffer kernel;
-    FloatBuffer blurred;
+    sixel_assessment_float_buffer_t kernel;
+    sixel_assessment_float_buffer_t blurred;
 
     kernel = gaussian_kernel1d(ksize, sigma);
     blurred = separable_conv2d(img, width, height, &kernel);
@@ -2610,8 +2639,11 @@ gaussian_blur(const FloatBuffer *img, int width,
 }
 
 static void
-finite_diff(const FloatBuffer *img, int width, int height,
-            FloatBuffer *dx, FloatBuffer *dy)
+finite_diff(const sixel_assessment_float_buffer_t *img,
+            int width,
+            int height,
+            sixel_assessment_float_buffer_t *dx,
+            sixel_assessment_float_buffer_t *dy)
 {
     int x;
     int y;
@@ -2672,13 +2704,13 @@ compare_floats(const void *a, const void *b)
 }
 
 static float
-banding_index_gradient(const FloatBuffer *img,
+banding_index_gradient(const sixel_assessment_float_buffer_t *img,
                        int width, int height)
 {
-    FloatBuffer blurred;
-    FloatBuffer dx;
-    FloatBuffer dy;
-    FloatBuffer grad;
+    sixel_assessment_float_buffer_t blurred;
+    sixel_assessment_float_buffer_t dx;
+    sixel_assessment_float_buffer_t dy;
+    sixel_assessment_float_buffer_t grad;
     size_t total;
     float *sorted;
     double g99;
@@ -2820,24 +2852,29 @@ banding_index_gradient(const FloatBuffer *img,
 /*
  * Clipping statistics
  */
-static void clipping_rates(const Image *img, float *clip_l, float *clip_r,
-                           float *clip_g, float *clip_b)
+static void clipping_rates(const float *pixels,
+                           int width,
+                           int height,
+                           float *clip_l,
+                           float *clip_r,
+                           float *clip_g,
+                           float *clip_b)
 {
-    FloatBuffer luma;
-    FloatBuffer rch;
-    FloatBuffer gch;
-    FloatBuffer bch;
+    sixel_assessment_float_buffer_t luma;
+    sixel_assessment_float_buffer_t rch;
+    sixel_assessment_float_buffer_t gch;
+    sixel_assessment_float_buffer_t bch;
     size_t total;
     size_t i;
     double eps;
     double lo;
     double hi;
 
-    luma = image_to_luma709(img);
-    rch = image_channel(img, 0);
-    gch = image_channel(img, 1);
-    bch = image_channel(img, 2);
-    total = (size_t)img->width * (size_t)img->height;
+    luma = pixels_to_luma709(pixels, width, height);
+    rch = pixels_channel(pixels, width, height, 0);
+    gch = pixels_channel(pixels, width, height, 1);
+    bch = pixels_channel(pixels, width, height, 2);
+    total = (size_t)width * (size_t)height;
     eps = 1e-6;
 
     lo = 0.0;
@@ -2977,30 +3014,30 @@ xyz_to_lab(const float *xyz, float *lab, size_t pixels)
     }
 }
 
-static FloatBuffer
-rgb_to_lab(const Image *img)
+static sixel_assessment_float_buffer_t
+rgb_to_lab(const float *pixels, int width, int height)
 {
-    FloatBuffer lab;
+    sixel_assessment_float_buffer_t lab;
     float *linear;
     float *xyz;
-    size_t pixels;
+    size_t pixel_count;
 
-    pixels = (size_t)img->width * (size_t)img->height;
-    lab = float_buffer_create(pixels * 3);
-    linear = (float *)xmalloc(pixels * 3 * sizeof(float));
-    xyz = (float *)xmalloc(pixels * 3 * sizeof(float));
-    srgb_to_linear(img->pixels, linear, pixels * 3);
-    linear_to_xyz(linear, xyz, pixels);
-    xyz_to_lab(xyz, lab.values, pixels);
+    pixel_count = (size_t)width * (size_t)height;
+    lab = float_buffer_create(pixel_count * 3);
+    linear = (float *)xmalloc(pixel_count * 3 * sizeof(float));
+    xyz = (float *)xmalloc(pixel_count * 3 * sizeof(float));
+    srgb_to_linear(pixels, linear, pixel_count * 3);
+    linear_to_xyz(linear, xyz, pixel_count);
+    xyz_to_lab(xyz, lab.values, pixel_count);
     free(linear);
     free(xyz);
     return lab;
 }
 
-static FloatBuffer
-chroma_ab(const FloatBuffer *lab, size_t pixels)
+static sixel_assessment_float_buffer_t
+chroma_ab(const sixel_assessment_float_buffer_t *lab, size_t pixels)
 {
-    FloatBuffer chroma;
+    sixel_assessment_float_buffer_t chroma;
     size_t i;
     float a;
     float b;
@@ -3013,11 +3050,11 @@ chroma_ab(const FloatBuffer *lab, size_t pixels)
     return chroma;
 }
 
-static FloatBuffer
-deltaE00(const FloatBuffer *lab1,
-         const FloatBuffer *lab2, size_t pixels)
+static sixel_assessment_float_buffer_t
+deltaE00(const sixel_assessment_float_buffer_t *lab1,
+         const sixel_assessment_float_buffer_t *lab2, size_t pixels)
 {
-    FloatBuffer out;
+    sixel_assessment_float_buffer_t out;
     size_t i;
     double L1;
     double a1;
@@ -3130,8 +3167,10 @@ deltaE00(const FloatBuffer *lab1,
  * GMSD and PSNR
  */
 static float
-gmsd_metric(const FloatBuffer *ref, const FloatBuffer *out,
-            int width, int height)
+gmsd_metric(const sixel_assessment_float_buffer_t *ref,
+            const sixel_assessment_float_buffer_t *out,
+            int width,
+            int height)
 {
     static const float kx[9] = {0.25f, 0.0f, -0.25f,
                                 0.5f, 0.0f, -0.5f,
@@ -3139,12 +3178,12 @@ gmsd_metric(const FloatBuffer *ref, const FloatBuffer *out,
     static const float ky[9] = {0.25f, 0.5f, 0.25f,
                                 0.0f, 0.0f, 0.0f,
                                 -0.25f, -0.5f, -0.25f};
-    FloatBuffer gx1;
-    FloatBuffer gy1;
-    FloatBuffer gx2;
-    FloatBuffer gy2;
-    FloatBuffer gm1;
-    FloatBuffer gm2;
+    sixel_assessment_float_buffer_t gx1;
+    sixel_assessment_float_buffer_t gy1;
+    sixel_assessment_float_buffer_t gx2;
+    sixel_assessment_float_buffer_t gy2;
+    sixel_assessment_float_buffer_t gm1;
+    sixel_assessment_float_buffer_t gm2;
     double c;
     double mean;
     double sq_sum;
@@ -3263,8 +3302,10 @@ gmsd_metric(const FloatBuffer *ref, const FloatBuffer *out,
 }
 
 static float
-psnr_metric(const FloatBuffer *ref, const FloatBuffer *out,
-            int width, int height)
+psnr_metric(const sixel_assessment_float_buffer_t *ref,
+            const sixel_assessment_float_buffer_t *out,
+            int width,
+            int height)
 {
     double mse;
     size_t total;
@@ -3285,18 +3326,22 @@ psnr_metric(const FloatBuffer *ref, const FloatBuffer *out,
 }
 
 /*
- * Metrics aggregation
+ * sixel_assessment_metrics_t aggregation
  */
-static Metrics evaluate_metrics(const Image *ref_img, const Image *out_img)
+static sixel_assessment_metrics_t
+evaluate_metrics(const float *ref_pixels,
+                 const float *out_pixels,
+                 int width,
+                 int height)
 {
-    Metrics metrics;
-    FloatBuffer ref_luma;
-    FloatBuffer out_luma;
-    FloatBuffer ref_lab;
-    FloatBuffer out_lab;
-    FloatBuffer ref_chroma;
-    FloatBuffer out_chroma;
-    FloatBuffer de00;
+    sixel_assessment_metrics_t metrics;
+    sixel_assessment_float_buffer_t ref_luma;
+    sixel_assessment_float_buffer_t out_luma;
+    sixel_assessment_float_buffer_t ref_lab;
+    sixel_assessment_float_buffer_t out_lab;
+    sixel_assessment_float_buffer_t ref_chroma;
+    sixel_assessment_float_buffer_t out_chroma;
+    sixel_assessment_float_buffer_t de00;
     size_t pixels;
     size_t iter;
     double sum_value;
@@ -3304,51 +3349,46 @@ static Metrics evaluate_metrics(const Image *ref_img, const Image *out_img)
     memset(&metrics, 0, sizeof(metrics));
     metrics.lpips_vgg = NAN;
 
-    ref_luma = image_to_luma709(ref_img);
-    out_luma = image_to_luma709(out_img);
+    ref_luma = pixels_to_luma709(ref_pixels, width, height);
+    out_luma = pixels_to_luma709(out_pixels, width, height);
 
-    metrics.ms_ssim = ms_ssim_luma(&ref_luma, &out_luma,
-                                   ref_img->width, ref_img->height);
+    metrics.ms_ssim = ms_ssim_luma(&ref_luma, &out_luma, width, height);
 
-    metrics.high_freq_out = high_frequency_ratio(&out_luma,
-                                                 out_img->width,
-                                                 out_img->height, 0.25f);
-    metrics.high_freq_ref = high_frequency_ratio(&ref_luma,
-                                                 ref_img->width,
-                                                 ref_img->height, 0.25f);
+    metrics.high_freq_out = high_frequency_ratio(&out_luma, width, height,
+                                                 0.25f);
+    metrics.high_freq_ref = high_frequency_ratio(&ref_luma, width, height,
+                                                 0.25f);
     metrics.high_freq_delta = metrics.high_freq_out - metrics.high_freq_ref;
 
-    metrics.stripe_ref = stripe_score(&ref_luma, ref_img->width,
-                                      ref_img->height, 180);
-    metrics.stripe_out = stripe_score(&out_luma, out_img->width,
-                                      out_img->height, 180);
+    metrics.stripe_ref = stripe_score(&ref_luma, width, height, 180);
+    metrics.stripe_out = stripe_score(&out_luma, width, height, 180);
     metrics.stripe_rel = metrics.stripe_out - metrics.stripe_ref;
 
-    metrics.band_run_rel = banding_index_runlen(&out_luma, out_img->width,
-                                                out_img->height, 32) -
-                           banding_index_runlen(&ref_luma, ref_img->width,
-                                                ref_img->height, 32);
+    metrics.band_run_rel = banding_index_runlen(&out_luma, width, height, 32) -
+                           banding_index_runlen(&ref_luma, width, height, 32);
 
-    metrics.band_grad_rel = banding_index_gradient(&out_luma,
-                                                   out_img->width,
-                                                   out_img->height) -
-                            banding_index_gradient(&ref_luma,
-                                                   ref_img->width,
-                                                   ref_img->height);
+    metrics.band_grad_rel = banding_index_gradient(&out_luma, width, height) -
+                            banding_index_gradient(&ref_luma, width, height);
 
-    clipping_rates(ref_img, &metrics.clip_l_ref, &metrics.clip_r_ref,
-                   &metrics.clip_g_ref, &metrics.clip_b_ref);
-    clipping_rates(out_img, &metrics.clip_l_out, &metrics.clip_r_out,
-                   &metrics.clip_g_out, &metrics.clip_b_out);
+    clipping_rates(ref_pixels, width, height,
+                   &metrics.clip_l_ref,
+                   &metrics.clip_r_ref,
+                   &metrics.clip_g_ref,
+                   &metrics.clip_b_ref);
+    clipping_rates(out_pixels, width, height,
+                   &metrics.clip_l_out,
+                   &metrics.clip_r_out,
+                   &metrics.clip_g_out,
+                   &metrics.clip_b_out);
 
     metrics.clip_l_rel = metrics.clip_l_out - metrics.clip_l_ref;
     metrics.clip_r_rel = metrics.clip_r_out - metrics.clip_r_ref;
     metrics.clip_g_rel = metrics.clip_g_out - metrics.clip_g_ref;
     metrics.clip_b_rel = metrics.clip_b_out - metrics.clip_b_ref;
 
-    ref_lab = rgb_to_lab(ref_img);
-    out_lab = rgb_to_lab(out_img);
-    pixels = (size_t)ref_img->width * (size_t)ref_img->height;
+    ref_lab = rgb_to_lab(ref_pixels, width, height);
+    out_lab = rgb_to_lab(out_pixels, width, height);
+    pixels = (size_t)width * (size_t)height;
     ref_chroma = chroma_ab(&ref_lab, pixels);
     out_chroma = chroma_ab(&out_lab, pixels);
 
@@ -3366,10 +3406,8 @@ static Metrics evaluate_metrics(const Image *ref_img, const Image *out_img)
     }
     metrics.delta_e00_mean = (float)(sum_value / (double)pixels);
 
-    metrics.gmsd_value = gmsd_metric(&ref_luma, &out_luma,
-                                     ref_img->width, ref_img->height);
-    metrics.psnr_y = psnr_metric(&ref_luma, &out_luma,
-                                 ref_img->width, ref_img->height);
+    metrics.gmsd_value = gmsd_metric(&ref_luma, &out_luma, width, height);
+    metrics.psnr_y = psnr_metric(&ref_luma, &out_luma, width, height);
 
     float_buffer_free(&ref_luma);
     float_buffer_free(&out_luma);
@@ -3387,8 +3425,10 @@ static Metrics evaluate_metrics(const Image *ref_img, const Image *out_img)
  */
 static float
 compute_lpips_vgg(sixel_assessment_t *assessment,
-                  const Image *ref_img,
-                  const Image *out_img)
+                  const float *ref_pixels,
+                  const float *out_pixels,
+                  int width,
+                  int height)
 {
     float value;
 
@@ -3407,12 +3447,12 @@ compute_lpips_vgg(sixel_assessment_t *assessment,
     if (assessment->enable_lpips == 0) {
         goto done;
     }
-    if (convert_image_to_nchw(ref_img, &ref_tensor) != 0) {
+    if (convert_pixels_to_nchw(ref_pixels, width, height, &ref_tensor) != 0) {
         fprintf(stderr,
                 "Warning: unable to convert reference image for LPIPS.\n");
         goto done;
     }
-    if (convert_image_to_nchw(out_img, &out_tensor) != 0) {
+    if (convert_pixels_to_nchw(out_pixels, width, height, &out_tensor) != 0) {
         fprintf(stderr,
                 "Warning: unable to convert output image for LPIPS.\n");
         goto done;
@@ -3434,14 +3474,21 @@ done:
     free_image_f32(&out_tensor);
 #else
     (void)assessment;
-    (void)ref_img;
-    (void)out_img;
+    (void)ref_pixels;
+    (void)out_pixels;
+    (void)width;
+    (void)height;
 #endif
     return value;
 }
 
 static void
-align_images(Image *ref, Image *out)
+align_frame_pixels(float **ref_pixels,
+                   int *ref_width,
+                   int *ref_height,
+                   float **out_pixels,
+                   int *out_width,
+                   int *out_height)
 {
     int width;
     int height;
@@ -3451,12 +3498,18 @@ align_images(Image *ref, Image *out)
     int y;
     size_t row_bytes;
 
-    width = ref->width < out->width ? ref->width : out->width;
-    height = ref->height < out->height ? ref->height : out->height;
-    channels = ref->channels;
-    if (channels != out->channels) {
+    if (ref_pixels == NULL || ref_width == NULL || ref_height == NULL ||
+            out_pixels == NULL || out_width == NULL || out_height == NULL) {
         assessment_fail(SIXEL_BAD_ARGUMENT,
-                       "Channel mismatch between input frames");
+                       "align_frame_pixels: invalid parameters");
+    }
+
+    channels = SIXEL_ASSESSMENT_RGB_CHANNELS;
+    width = *ref_width < *out_width ? *ref_width : *out_width;
+    height = *ref_height < *out_height ? *ref_height : *out_height;
+    if (width <= 0 || height <= 0) {
+        assessment_fail(SIXEL_BAD_ARGUMENT,
+                       "align_frame_pixels: empty frame dimensions");
     }
     ref_new = (float *)xmalloc((size_t)width * (size_t)height *
                                (size_t)channels * sizeof(float));
@@ -3465,20 +3518,22 @@ align_images(Image *ref, Image *out)
     row_bytes = (size_t)width * (size_t)channels * sizeof(float);
     for (y = 0; y < height; ++y) {
         memcpy(ref_new + (size_t)y * (size_t)width * (size_t)channels,
-               ref->pixels + (size_t)y * (size_t)ref->width *
-               (size_t)channels, row_bytes);
+               *ref_pixels + (size_t)y * (size_t)(*ref_width) *
+               (size_t)channels,
+               row_bytes);
         memcpy(out_new + (size_t)y * (size_t)width * (size_t)channels,
-               out->pixels + (size_t)y * (size_t)out->width *
-               (size_t)channels, row_bytes);
+               *out_pixels + (size_t)y * (size_t)(*out_width) *
+               (size_t)channels,
+               row_bytes);
     }
-    free(ref->pixels);
-    free(out->pixels);
-    ref->pixels = ref_new;
-    out->pixels = out_new;
-    ref->width = width;
-    ref->height = height;
-    out->width = width;
-    out->height = height;
+    free(*ref_pixels);
+    free(*out_pixels);
+    *ref_pixels = ref_new;
+    *out_pixels = out_new;
+    *ref_width = width;
+    *ref_height = height;
+    *out_width = width;
+    *out_height = height;
 }
 
 /*
@@ -3519,7 +3574,8 @@ static const MetricDescriptor g_metric_table[] = {
 };
 
 static void
-store_metrics(sixel_assessment_t *assessment, const Metrics *metrics)
+store_metrics(sixel_assessment_t *assessment,
+              const sixel_assessment_metrics_t *metrics)
 {
     double *results;
 
@@ -4040,21 +4096,26 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
                          sixel_frame_t *reference,
                          sixel_frame_t *output)
 {
-    Metrics metrics;
-    Image ref_img;
-    Image out_img;
+    sixel_assessment_metrics_t metrics;
     SIXELSTATUS status;
     int bail;
+    float *ref_pixels;
+    float *out_pixels;
+    int ref_width;
+    int ref_height;
+    int out_width;
+    int out_height;
 
     if (assessment == NULL || reference == NULL || output == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    ref_img.width = 0;
-    ref_img.height = 0;
-    ref_img.channels = 0;
-    ref_img.pixels = NULL;
-    out_img = ref_img;
+    ref_pixels = NULL;
+    out_pixels = NULL;
+    ref_width = 0;
+    ref_height = 0;
+    out_width = 0;
+    out_height = 0;
 
     assessment->last_error = SIXEL_OK;
     assessment->error_message[0] = '\0';
@@ -4066,28 +4127,45 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
         goto cleanup;
     }
 
-    status = image_from_frame(reference, &ref_img);
+    status = frame_to_rgb_float(reference,
+                                &ref_pixels,
+                                &ref_width,
+                                &ref_height);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    status = image_from_frame(output, &out_img);
+    status = frame_to_rgb_float(output,
+                                &out_pixels,
+                                &out_width,
+                                &out_height);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
 
-    align_images(&ref_img, &out_img);
+    align_frame_pixels(&ref_pixels,
+                       &ref_width,
+                       &ref_height,
+                       &out_pixels,
+                       &out_width,
+                       &out_height);
 
-    metrics = evaluate_metrics(&ref_img, &out_img);
+    metrics = evaluate_metrics(ref_pixels, out_pixels, ref_width, ref_height);
     metrics.lpips_vgg = compute_lpips_vgg(assessment,
-                                          &ref_img,
-                                          &out_img);
+                                          ref_pixels,
+                                          out_pixels,
+                                          ref_width,
+                                          ref_height);
     store_metrics(assessment, &metrics);
     assessment->results_ready = 1;
     status = SIXEL_OK;
 
 cleanup:
-    image_free(&ref_img);
-    image_free(&out_img);
+    if (ref_pixels != NULL) {
+        free(ref_pixels);
+    }
+    if (out_pixels != NULL) {
+        free(out_pixels);
+    }
     g_assessment_context = NULL;
     return status;
 }
