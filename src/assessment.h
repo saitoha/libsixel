@@ -78,12 +78,24 @@ struct sixel_assessment {
     unsigned int view_mask;
 };
 
-SIXELSTATUS
+/*
+ *  +---------------------------+
+ *  | Export boundary diagram   |
+ *  +---------------------------+
+ *  | converters -> assessment  |
+ *  +---------------------------+
+ *  |  Windows link shim layer  |
+ *  +---------------------------+
+ *
+ *  These helpers must be exported so that the converter binaries can
+ *  reach the assessment pipeline when the DLL builds an import library.
+ */
+SIXELAPI SIXELSTATUS
 sixel_assessment_expand_quantized_frame(sixel_frame_t *source,
                                         sixel_allocator_t *allocator,
                                         sixel_frame_t **ppframe);
 
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 sixel_assessment_load_single_frame(char const *path,
                                    sixel_allocator_t *allocator,
                                    sixel_frame_t **ppframe);
