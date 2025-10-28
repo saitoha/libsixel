@@ -1547,10 +1547,10 @@ load_with_gdkpixbuf(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     GdkPixbuf *pixbuf;
-    GdkPixbufAnimation *animation;
     GdkPixbufLoader *loader = NULL;
-    GdkPixbufAnimationIter *it = NULL;
     gboolean loader_closed = FALSE;  /* remember if loader was already closed */
+    GdkPixbufAnimation *animation;
+    GdkPixbufAnimationIter *it = NULL;
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -1567,6 +1567,7 @@ load_with_gdkpixbuf(
     int depth;
     int anim_loop_count = (-1);  /* (-1): infinite, >=0: finite loop count */
     int delay_ms;
+    gboolean use_animation = FALSE;
 
     (void) fuse_palette;
     (void) reqcolors;
@@ -1604,12 +1605,27 @@ load_with_gdkpixbuf(
         goto end;
     }
     loader_closed = TRUE;
+    pixbuf = NULL;
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
     animation = gdk_pixbuf_loader_get_animation(loader);
     if (animation) {
-        /* inspect animation object to determine built-in loop semantics */
+        /*
+         * +------------------------------------------------------+
+         * | GdkPixbuf 2.44 keeps the animation APIs available,   |
+         * | but marks them deprecated. We still need the         |
+         * | GTimeVal-driven timeline to preserve playback, so we |
+         * | mute the warning locally instead of abandoning       |
+         * | multi-frame decoding.                                |
+         * +------------------------------------------------------+
+         */
         if (GDK_IS_PIXBUF_SIMPLE_ANIM(animation)) {
             anim_loop_count = gdk_pixbuf_simple_anim_get_loop(
-                                 GDK_PIXBUF_SIMPLE_ANIM(animation)) ? (-1) : 1;
+                                 GDK_PIXBUF_SIMPLE_ANIM(animation))
+                             ? (-1)
+                             : 1;
         } else {
             GParamSpec *loop_pspec = g_object_class_find_property(
                 G_OBJECT_GET_CLASS(animation), "loop");
@@ -1625,7 +1641,9 @@ load_with_gdkpixbuf(
                                       &loop_value);
                 if (G_VALUE_HOLDS_BOOLEAN(&loop_value)) {
                     /* TRUE means "loop forever" for these properties */
-                    anim_loop_count = g_value_get_boolean(&loop_value) ? (-1) : 1;
+                    anim_loop_count = g_value_get_boolean(&loop_value)
+                                      ? (-1)
+                                      : 1;
                 } else if (G_VALUE_HOLDS_INT(&loop_value)) {
                     int loop_int = g_value_get_int(&loop_value);
                     /* GIF spec treats zero as infinite repetition */
@@ -1643,8 +1661,16 @@ load_with_gdkpixbuf(
                 g_value_unset(&loop_value);
             }
         }
+        if (!fstatic &&
+                !gdk_pixbuf_animation_is_static_image(animation)) {
+            use_animation = TRUE;
+        }
     }
-    if (!animation || fstatic || gdk_pixbuf_animation_is_static_image(animation)) {
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic pop
+#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
+
+    if (! use_animation) {
         /* fall back to single frame decoding */
         pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
         if (pixbuf == NULL) {
@@ -1654,7 +1680,9 @@ load_with_gdkpixbuf(
         frame->width = gdk_pixbuf_get_width(pixbuf);
         frame->height = gdk_pixbuf_get_height(pixbuf);
         stride = gdk_pixbuf_get_rowstride(pixbuf);
-        frame->pixels = sixel_allocator_malloc(pchunk->allocator, (size_t)(frame->height * stride));
+        frame->pixels = sixel_allocator_malloc(
+            pchunk->allocator,
+            (size_t)(frame->height * stride));
         if (frame->pixels == NULL) {
             sixel_helper_set_additional_message(
                 "load_with_gdkpixbuf: sixel_allocator_malloc() failed.");
@@ -1670,8 +1698,7 @@ load_with_gdkpixbuf(
         }
         p = gdk_pixbuf_get_pixels(pixbuf);
         if (stride == frame->width * depth) {
-            memcpy(frame->pixels, gdk_pixbuf_get_pixels(pixbuf),
-                   (size_t)(frame->height * stride));
+            memcpy(frame->pixels, p, (size_t)(frame->height * stride));
         } else {
             for (i = 0; i < frame->height; ++i) {
                 memcpy(frame->pixels + frame->width * depth * i,
@@ -1679,6 +1706,9 @@ load_with_gdkpixbuf(
                        (size_t)(frame->width * depth));
             }
         }
+        frame->delay = 0;
+        frame->multiframe = 0;
+        frame->loop_count = 0;
         status = fn_load(frame, context);
         if (status != SIXEL_OK) {
             goto end;
@@ -1691,6 +1721,10 @@ load_with_gdkpixbuf(
         frame->frame_no = 0;
         frame->loop_count = 0;
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
         it = gdk_pixbuf_animation_get_iter(animation, &time_val);
         if (it == NULL) {
             status = SIXEL_GDK_ERROR;
@@ -1701,7 +1735,7 @@ load_with_gdkpixbuf(
             /* handle one logical loop of the animation */
             finished = FALSE;
             while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
-
+                /* {{{ */
                 pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
                 if (pixbuf == NULL) {
                     finished = TRUE;
@@ -1742,15 +1776,8 @@ load_with_gdkpixbuf(
                 if (delay_ms < 0) {
                     delay_ms = 0;
                 }
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
                 /* advance the synthetic clock before asking gdk to move forward */
                 g_time_val_add(&time_val, delay_ms * 1000);
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic pop
-#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
                 frame->delay = delay_ms / 10;
                 frame->multiframe = 1;
 
@@ -1769,6 +1796,7 @@ load_with_gdkpixbuf(
                 if (finished) {
                     break;
                 }
+                /* }}} */
             }
 
             if (frame->frame_no == 0) {
@@ -1797,6 +1825,9 @@ load_with_gdkpixbuf(
             g_object_unref(it);
             time_val = start_time;
             it = gdk_pixbuf_animation_get_iter(animation, &time_val);
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic pop
+#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
             if (it == NULL) {
                 status = SIXEL_GDK_ERROR;
                 goto end;
