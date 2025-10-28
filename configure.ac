@@ -646,6 +646,10 @@ AC_CHECK_FUNCS([assert \
                 mkstemp \
                 mktemp \
                 fopen_s \
+                fsync \
+                _commit \
+                _mkdir \
+                mkdir \
                 signal \
                 strdup \
                 strtoul \
@@ -664,7 +668,6 @@ AC_CHECK_FUNCS([assert \
                 strncmp \
                 ldiv \
                 floor \
-                localeconv \
                 pow \
                 select \
                 _fullpath \
@@ -674,6 +677,7 @@ AC_CHECK_FUNCS([assert \
                 strchr \
                 strerror \
                 strstr \
+                fchmod \
                 strtol])
 
 case "${host_os}" in
