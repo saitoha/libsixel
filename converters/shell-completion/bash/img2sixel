@@ -195,7 +195,7 @@ _img2sixel()
         return 0
         ;;
     -a|--assessment)
-        COMPREPLY=( $( compgen -W 'quantized encoded' -- "$cur" ) )
+        COMPREPLY=( $( compgen -W 'all basic performance size quality quality@quantized' -- "$cur" ) )
         return 0
         ;;
     -J|--assessment-file)
