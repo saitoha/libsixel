@@ -1112,6 +1112,11 @@ load_sixel(unsigned char        /* out */ **result,
     }
 
 end:
+    /*
+     * Release the decoded index buffer when the caller requested an RGB
+     * conversion.  Palette-backed callers steal ownership by nulling `p`.
+     */
+    sixel_allocator_free(allocator, p);
     sixel_allocator_free(allocator, palette);
 
     return status;
