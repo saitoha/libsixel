@@ -83,7 +83,12 @@ img2sixel_SOURCES = $(srcdir)/img2sixel.c \
                     $(srcdir)/malloc_stub.c \
                     $(srcdir)/malloc_stub.h \
                     $(srcdir)/getopt_stub.h
-img2sixel_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
+# Track the generated header so dependency ordering stays stable.
+nodist_img2sixel_SOURCES = completion_embed.h
+# Ensure older toolchains notice the generated completion header.
+img2sixel_CPPFLAGS = -DHAVE_COMPLETION_EMBED_H \
+        -I$(top_builddir)/include/ \
+        $(AM_CPPFLAGS)
 img2sixel_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
 img2sixel_LDFLAGS = $(MAYBE_COVERAGE)
 img2sixel_LDADD = $(top_builddir)/src/libsixel.la

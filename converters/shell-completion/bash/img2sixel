@@ -3,20 +3,43 @@
 command -v img2sixel &>/dev/null &&
 _img2sixel()
 {
-    # ------------------------------------------------------------------
-    #   +--------------------+     +-------------------------------+
-    #   | bash-completion v2 | --> | _init_completion (preferred) |
-    #   +--------------------+     +-------------------------------+
-    #                 |                     ^
-    #                 v                     |
-    #   +--------------------+     +-------------------------------+
-    #   | bash-completion v1 | --> | manual _get_cword fallback    |
-    #   +--------------------+     +-------------------------------+
-    # ------------------------------------------------------------------
-
     local cur prev words cword
+    local opt_show opt_install opt_uninstall
+    local opt_short_show opt_short_install opt_short_uninstall
 
     COMPREPLY=()
+
+    _img2sixel_filedir()
+    {
+        # --------------------------------------------------------------
+        #   +--------------------+     +------------------------------+
+        #   | bash-completion    | --> | _filedir (preferred helper)  |
+        #   +--------------------+     +------------------------------+
+        #                 |                     ^
+        #                 v                     |
+        #   +--------------------+     +------------------------------+
+        #   | built-in fallback  | --> | compgen -f (legacy Bash)     |
+        #   +--------------------+     +------------------------------+
+        # --------------------------------------------------------------
+
+        if declare -F _filedir >/dev/null 2>&1; then
+            _filedir
+        else
+            # --------------------------------------------------
+            # | Older Bash builds ship without bash-completion |
+            # | so we need to emulate the filename suggestions |
+            # | with compgen -f to avoid runtime errors.       |
+            # --------------------------------------------------
+            COMPREPLY=( $( compgen -f -- "$cur" ) )
+        fi
+    }
+
+    opt_show="--show-completion"
+    opt_install="--install-completion"
+    opt_uninstall="--uninstall-completion"
+    opt_short_show="-1"
+    opt_short_install="-2"
+    opt_short_uninstall="-3"
 
     if declare -F _init_completion >/dev/null 2>&1; then
         _init_completion -n '=' || return
@@ -38,6 +61,26 @@ _img2sixel()
         _expand || return 0
     fi
 
+    if [[ $cur == ${opt_show}=* ]]; then
+        prev=${opt_show}
+        cur=${cur#*=}
+    elif [[ $cur == ${opt_install}=* ]]; then
+        prev=${opt_install}
+        cur=${cur#*=}
+    elif [[ $cur == ${opt_uninstall}=* ]]; then
+        prev=${opt_uninstall}
+        cur=${cur#*=}
+    elif [[ $cur == ${opt_short_show}=* ]]; then
+        prev=${opt_short_show}
+        cur=${cur#*=}
+    elif [[ $cur == ${opt_short_install}=* ]]; then
+        prev=${opt_short_install}
+        cur=${cur#*=}
+    elif [[ $cur == ${opt_short_uninstall}=* ]]; then
+        prev=${opt_short_uninstall}
+        cur=${cur#*=}
+    fi
+
     case "$prev" in
     -1|--show-completion|-2|--install-completion|-3|--uninstall-completion)
         COMPREPLY=( $( compgen -W 'all bash zsh' -- "$cur" ) )
@@ -55,7 +98,7 @@ _img2sixel()
         return 0
         ;;
     -m|--mapfile)
-        _filedir
+        _img2sixel_filedir
         return 0
         ;;
     -C|--complexion-score)
@@ -191,11 +234,11 @@ _img2sixel()
         return 0
         ;;
     -o|--outfile)
-        _filedir
+        _img2sixel_filedir
         return 0
         ;;
     -T|--tiles)
-        _filedir
+        _img2sixel_filedir
         return 0
         ;;
     -a|--assessment)
@@ -203,7 +246,7 @@ _img2sixel()
         return 0
         ;;
     -J|--assessment-file)
-        _filedir
+        _img2sixel_filedir
         return 0
         ;;
     esac
@@ -262,7 +305,7 @@ _img2sixel()
                                   ' -- "$cur" ))
         ;;
     *)
-        _filedir
+        _img2sixel_filedir
         ;;
     esac
 
