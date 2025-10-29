@@ -147,7 +147,9 @@ am__img2sixel_SOURCES_DIST = $(srcdir)/img2sixel.c \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-img2sixel.$(OBJEXT) \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-completion_utils.$(OBJEXT) \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-malloc_stub.$(OBJEXT)
-img2sixel_OBJECTS = $(am_img2sixel_OBJECTS)
+nodist_img2sixel_OBJECTS =
+img2sixel_OBJECTS = $(am_img2sixel_OBJECTS) \
+	$(nodist_img2sixel_OBJECTS)
 @WANT_IMG2SIXEL_TRUE@img2sixel_DEPENDENCIES =  \
 @WANT_IMG2SIXEL_TRUE@	$(top_builddir)/src/libsixel.la
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -208,7 +210,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(img2sixel_SOURCES) $(sixel2png_SOURCES)
+SOURCES = $(img2sixel_SOURCES) $(nodist_img2sixel_SOURCES) \
+	$(sixel2png_SOURCES)
 DIST_SOURCES = $(am__img2sixel_SOURCES_DIST) \
 	$(am__sixel2png_SOURCES_DIST)
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
@@ -525,7 +528,13 @@ CLEANFILES = *.gcno *.gcda *.gcov \
 @WANT_IMG2SIXEL_TRUE@                    $(srcdir)/malloc_stub.h \
 @WANT_IMG2SIXEL_TRUE@                    $(srcdir)/getopt_stub.h
 
-@WANT_IMG2SIXEL_TRUE@img2sixel_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
+# Track the generated header so dependency ordering stays stable.
+@WANT_IMG2SIXEL_TRUE@nodist_img2sixel_SOURCES = completion_embed.h
+# Ensure older toolchains notice the generated completion header.
+@WANT_IMG2SIXEL_TRUE@img2sixel_CPPFLAGS = -DHAVE_COMPLETION_EMBED_H \
+@WANT_IMG2SIXEL_TRUE@        -I$(top_builddir)/include/ \
+@WANT_IMG2SIXEL_TRUE@        $(AM_CPPFLAGS)
+
 @WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @WANT_IMG2SIXEL_TRUE@img2sixel_LDFLAGS = $(MAYBE_COVERAGE)
 @WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la
