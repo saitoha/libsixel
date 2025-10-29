@@ -26,7 +26,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>  /* strcpy */
+#include <string.h>  /* memset */
 
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
@@ -61,6 +61,226 @@
 #endif
 
 #include <sixel.h>
+
+/*
+ * Option-specific help snippets power both the --help output and contextual
+ * diagnostics.  The following ASCII table illustrates the structure we keep
+ * synchronized:
+ *
+ *   +-----------+-------------+-----------------------------+
+ *   | short opt | long option | contextual help text        |
+ *   +-----------+-------------+-----------------------------+
+ *
+ * With this table we can guide the user toward the relevant manual section as
+ * soon as they provide an unsupported argument.
+ */
+typedef struct sixel2png_option_help {
+    int short_opt;
+    char const *long_opt;
+    char const *help;
+} sixel2png_option_help_t;
+
+static sixel2png_option_help_t const g_option_help_table[] = {
+    {
+        'i',
+        "input",
+        "-i FILE, --input=FILE       specify input file\n"
+        "                           use '-' to read from stdin.\n"
+    },
+    {
+        'o',
+        "output",
+        "-o FILE, --output=FILE      specify output file\n"
+        "                           use '-' to write to stdout.\n"
+    },
+    {
+        'd',
+        "dequantize",
+        "-d METHOD, --dequantize=METHOD\n"
+        "                           apply palette dequantization.\n"
+        "                           METHOD is one of:\n"
+        "                             none        -> disable\n"
+        "                             k_undither  -> Kornelski's\n"
+        "                                            undither\n"
+        "                                            (refine off)\n"
+        "                             k_undither+ -> Kornelski's\n"
+        "                                            undither\n"
+        "                                            (refine on)\n"
+    },
+    {
+        'S',
+        "similarity",
+        "-S BIAS, --similarity=BIAS  specify similarity bias\n"
+        "                           range: 0-1000 (default: 100).\n"
+    },
+    {
+        's',
+        "size",
+        "-s SIZE, --size=SIZE        scale longer edge to SIZE pixels\n"
+        "                           while preserving aspect ratio.\n"
+    },
+    {
+        'e',
+        "edge",
+        "-e BIAS, --edge=BIAS        specify edge protection bias\n"
+        "                           range: 0-1000 (default: 0).\n"
+    },
+    {
+        'V',
+        "version",
+        "-V, --version               show version and license info.\n"
+    },
+    {
+        'H',
+        "help",
+        "-H, --help                  show this help.\n"
+    }
+};
+
+static char const g_option_help_fallback[] =
+    "    Refer to \"sixel2png -H\" for more details.\n";
+
+static sixel2png_option_help_t const *
+sixel2png_find_option_help(int short_opt)
+{
+    size_t index;
+    size_t count;
+
+    index = 0u;
+    count = sizeof(g_option_help_table) /
+        sizeof(g_option_help_table[0]);
+    while (index < count) {
+        if (g_option_help_table[index].short_opt == short_opt) {
+            return &g_option_help_table[index];
+        }
+        ++index;
+    }
+
+    return NULL;
+}
+
+static void
+sixel2png_print_option_help(FILE *stream)
+{
+    size_t index;
+    size_t count;
+
+    if (stream == NULL) {
+        return;
+    }
+
+    index = 0u;
+    count = sizeof(g_option_help_table) /
+        sizeof(g_option_help_table[0]);
+    while (index < count) {
+        if (g_option_help_table[index].help != NULL) {
+            fputs(g_option_help_table[index].help, stream);
+        }
+        ++index;
+    }
+}
+
+static void
+sixel2png_report_invalid_argument(int short_opt,
+                                  char const *value,
+                                  char const *detail)
+{
+    char buffer[1024];
+    char detail_copy[1024];
+    sixel2png_option_help_t const *entry;
+    char const *long_opt;
+    char const *help_text;
+    char const *argument;
+    size_t offset;
+    int written;
+
+    memset(buffer, 0, sizeof(buffer));
+    memset(detail_copy, 0, sizeof(detail_copy));
+    entry = sixel2png_find_option_help(short_opt);
+    long_opt = (entry != NULL && entry->long_opt != NULL)
+        ? entry->long_opt : "?";
+    help_text = (entry != NULL && entry->help != NULL)
+        ? entry->help : g_option_help_fallback;
+    argument = (value != NULL && value[0] != '\0')
+        ? value : "(missing)";
+    offset = 0u;
+
+    written = snprintf(buffer,
+                       sizeof(buffer),
+                       "'%s' is invalid argument for -%c,--%s option:\n\n",
+                       argument,
+                       (char)short_opt,
+                       long_opt);
+    if (written < 0) {
+        written = 0;
+    }
+    if ((size_t)written >= sizeof(buffer)) {
+        offset = sizeof(buffer) - 1u;
+    } else {
+        offset = (size_t)written;
+    }
+
+    if (detail != NULL && detail[0] != '\0' && offset < sizeof(buffer) - 1u) {
+        (void) snprintf(detail_copy,
+                        sizeof(detail_copy),
+                        "%s\n",
+                        detail);
+        written = snprintf(buffer + offset,
+                           sizeof(buffer) - offset,
+                           "%s",
+                           detail_copy);
+        if (written < 0) {
+            written = 0;
+        }
+        if ((size_t)written >= sizeof(buffer) - offset) {
+            offset = sizeof(buffer) - 1u;
+        } else {
+            offset += (size_t)written;
+        }
+    }
+
+    if (offset < sizeof(buffer) - 1u) {
+        written = snprintf(buffer + offset,
+                           sizeof(buffer) - offset,
+                           "%s",
+                           help_text);
+        if (written < 0) {
+            written = 0;
+        }
+    }
+
+    sixel_helper_set_additional_message(buffer);
+}
+
+static SIXELSTATUS
+sixel2png_decoder_setopt(sixel_decoder_t *decoder,
+                         int option,
+                         char const *argument)
+{
+    SIXELSTATUS status;
+    char detail_buffer[1024];
+    char const *detail_source;
+
+    status = sixel_decoder_setopt(decoder, option, argument);
+    if (SIXEL_FAILED(status)) {
+        detail_buffer[0] = '\0';
+        detail_source = sixel_helper_get_additional_message();
+        if (detail_source != NULL && detail_source[0] != '\0') {
+            (void) snprintf(detail_buffer,
+                            sizeof(detail_buffer),
+                            "%s",
+                            detail_source);
+        }
+        if (status == SIXEL_BAD_ARGUMENT) {
+            sixel2png_report_invalid_argument(
+                option,
+                argument,
+                detail_buffer[0] != '\0' ? detail_buffer : NULL);
+        }
+    }
+
+    return status;
+}
 
 /* output version info to STDOUT */
 static
@@ -106,25 +326,8 @@ show_help(void)
             "Usage: sixel2png -i input.sixel -o output.png\n"
             "       sixel2png < input.sixel > output.png\n"
             "\n"
-            "Options:\n"
-            "-i, --input      specify input file\n"
-            "-o, --output     specify output file\n"
-            "-d, --dequantize=METHOD\n"
-            "                 apply palette dequantization\n"
-            "                   none       -> no dequantization (default)\n"
-            "                   k_undither  -> kornelski's undither algorithm\n"
-            "                                   (refine disabled)\n"
-            "                   k_undither+ -> kornelski's undither algorithm\n"
-            "                                   (refine enabled)\n"
-            "-S, --similarity=BIAS\n"
-            "                 specify similarity bias (0-1000, default: 100)\n"
-            "-s, --size=SIZE  scale longer edge to SIZE pixels while\n"
-            "                 preserving aspect ratio\n"
-            "-e, --edge=BIAS\n"
-            "                 specify edge protection bias (0-1000, default: 0)\n"
-            "-V, --version    show version and license information\n"
-            "-H, --help       show this help\n"
-           );
+            "Options:\n");
+    sixel2png_print_option_help(stderr);
 }
 
 
@@ -188,9 +391,9 @@ main(int argc, char *argv[])
             status = SIXEL_OK;
             goto end;
         default:
-            status = sixel_decoder_setopt(decoder, n, optarg);
+            status = sixel2png_decoder_setopt(decoder, n, optarg);
             if (SIXEL_FAILED(status)) {
-                goto argerr;
+                goto error;
             }
         }
 
@@ -201,22 +404,22 @@ main(int argc, char *argv[])
     }
 
     if (optind < argc) {
-        status = sixel_decoder_setopt(decoder, 'i', argv[optind++]);
+        status = sixel2png_decoder_setopt(decoder, 'i', argv[optind++]);
         if (SIXEL_FAILED(status)) {
-            goto argerr;
+            goto error;
         }
     }
 
     if (optind < argc) {
-        status = sixel_decoder_setopt(decoder, 'o', argv[optind++]);
+        status = sixel2png_decoder_setopt(decoder, 'o', argv[optind++]);
         if (SIXEL_FAILED(status)) {
-            goto argerr;
+            goto error;
         }
     }
 
     if (optind != argc) {
         status = SIXEL_BAD_ARGUMENT;
-        goto argerr;
+        goto error;
     }
 
     status = sixel_decoder_decode(decoder);
@@ -224,9 +427,6 @@ main(int argc, char *argv[])
         goto error;
     }
     goto end;
-
-argerr:
-    show_help();
 
 error:
     fprintf(stderr, "%s\n%s\n",
