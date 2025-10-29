@@ -5,6 +5,8 @@ top_builddir = @top_builddir@
 builddir = @builddir@
 VPATH = @srcdir@
 
+BUILT_SOURCES = completion_embed.h
+
 BASH = @BASH@
 
 bin_PROGRAMS =
@@ -56,7 +58,22 @@ CLEANFILES = *.gcno *.gcda *.gcov \
   $(builddir)/tmp/server.py \
   $(builddir)/tmp/server.key \
   $(builddir)/tmp/server.crt \
-  $(builddir)/tmp/testfile
+  $(builddir)/tmp/testfile \
+  completion_embed.h
+
+# +--------------------------------------------------------------+
+# | Embedded completion header generation pipeline (ASCII view). |
+# +--------------------------------------------------------------+
+# bash/img2sixel ----\
+#                      >--[gen_completion_embed.awk]--> completion_embed.h
+# zsh/_img2sixel  ----/
+completion_embed.h: \
+	$(srcdir)/shell-completion/bash/img2sixel \
+	$(srcdir)/shell-completion/zsh/_img2sixel \
+	$(top_srcdir)/tools/gen_completion_embed.awk
+	$(AM_V_GEN)$(AWK) -f $(top_srcdir)/tools/gen_completion_embed.awk \
+	       $(srcdir)/shell-completion/bash/img2sixel \
+	       $(srcdir)/shell-completion/zsh/_img2sixel > $@
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
