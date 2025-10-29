@@ -366,6 +366,13 @@ Options:
                            SIXEL pipeline. The PNG keeps the palette
                            indices so that every color matches the
                            quantized SIXEL output exactly.
+-T PATH, --tiles=PATH      specify output path for DRCS-SIXEL
+                           tile characters. Use '-' to write to stdout.
+-a MODE, --assessment=MODE emit assessment JSON report.
+                           MODE: quantized | encoded
+-J PATH, --assessment-file=PATH
+                           write assessment JSON to PATH.
+                           Use '-' to write to stdout.
 -7, --7bit-mode            generate a sixel image for 7bit
                            terminals or printers (default)
 -8, --8bit-mode            generate a sixel image for 8bit
@@ -374,12 +381,12 @@ Options:
 -p COLORS, --colors=COLORS specify number of colors to reduce
                            the image to (default=256)
 -m FILE, --mapfile=FILE    transform image colors to match this
-                           set of colorsspecify map
+                           set of colors.
 -e, --monochrome           output monochrome sixel image
                            this option assumes the terminal
                            background color is black
 -k, --insecure             allow to connect to SSL sites without
-                           certs(enabled only when configured
+                           certs (enabled only when configured
                            with --with-libcurl)
 -i, --invert               assume the terminal background color
                            is white, make sense only when -e
@@ -431,11 +438,6 @@ Options:
                            SCANTYPE is one of them:
                              auto -> choose scan order automatically
                                      (default)
-                                      - selects serpentine for
-                                        variable error diffusion
-                                        or when --quality high is
-                                        active
-                                      - selects raster otherwise
                              raster -> left-to-right scan
                              serpentine -> alternate direction on each line
 -Y CARRYTYPE, --diffusion-carry=CARRYTYPE
@@ -529,6 +531,16 @@ Options:
                                      speed mode
                              full -> full quality and careful
                                      speed mode
+-L LUTPOLICY, --lut-policy=LUTPOLICY
+                           choose histogram lookup width
+                           LUTPOLICY is one of them:
+                             auto      -> follow pixel depth
+                             5bit      -> force classic 5-bit buckets
+                             6bit      -> favor 6-bit RGB buckets
+                             robinhood -> retain 8-bit precision via
+                                          Robin Hood hashing
+                             hopscotch -> retain 8-bit precision via
+                                          Hopscotch hashing
 -l LOOPMODE, --loop-control=LOOPMODE
                            select loop control mode for GIF
                            animation.
@@ -576,9 +588,26 @@ Options:
 -D, --pipe-mode            [[deprecated]] read source images from
                            stdin continuously
 -v, --verbose              show debugging info
--J LIST, --loaders=LIST    override loader priority order
+-j LIST, --loaders=LIST    override loader priority order
                            LIST is a comma separated sequence of
                            loader names such as 'gd,builtin'
+                           Unknown names are ignored so the same
+                           command works across builds.
+-@ DSCS, --drcs=DSCS       output extended DRCS tiles instead of
+                           regular SIXEL image (experimental)
+-M VERSION, --mapping-version=VERSION
+                           specify DRCS-SIXEL Unicode mapping version
+-O, --ormode               enables sixel output in "ormode"
+-W WORKING_COLORSPACE, --working-colorspace=WORKING_COLORSPACE
+                           choose internal working color space
+                             gamma  -> sRGB gamma(default)
+                             linear -> linear RGB color space
+                             oklab  -> OKLab color space
+-U OUTPUT_COLORSPACE, --output-colorspace=OUTPUT_COLORSPACE
+                           choose output color space
+                             gamma   -> sRGB gamma(default)
+                             linear  -> linear RGB color space
+                             smpte-c -> SMPTE-C gamma color space
 -V, --version              show version and license info
                            also lists available image loaders
 -H, --help                 show this help

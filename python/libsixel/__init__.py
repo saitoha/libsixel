@@ -255,7 +255,9 @@ SIXEL_LOOP_DISABLE         = 2   # always disable loop
 SIXEL_OPTFLAG_INPUT            = 'i'  # -i, --input: specify input file name.
 SIXEL_OPTFLAG_OUTPUT           = 'o'  # -o, --output: specify output file name.
 SIXEL_OPTFLAG_OUTFILE          = 'o'  # -o, --outfile: specify output file name.
-SIXEL_OPTFLAG_LOADERS          = 'J'  # -j LIST, --loaders=LIST: override loader order.
+SIXEL_OPTFLAG_ALT_CHARSET_PATH = 'T'  # -T PATH, --tiles=PATH: DRCS tile destination.
+SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT = 'R'  # -R, --gri-limit: clamp DECGRI arguments to 255.
+SIXEL_OPTFLAG_LOADERS          = 'j'  # -j LIST, --loaders=LIST: override loader order.
 SIXEL_OPTFLAG_7BIT_MODE        = '7'  # -7, --7bit-mode: for 7bit terminals or printers (default)
 SIXEL_OPTFLAG_8BIT_MODE        = '8'  # -8, --8bit-mode: for 8bit terminals or printers
 SIXEL_OPTFLAG_COLORS           = 'p'  # -p COLORS, --colors=COLORS: specify number of colors
@@ -309,6 +311,12 @@ SIXEL_OPTFLAG_DIFFUSION_SCAN   = 'y'  # -y SCANTYPE, --diffusion-scan=SCANTYPE:
                                       #                          scan
                                       #            serpentine -> alternate direction
                                       #                          on each line
+
+SIXEL_OPTFLAG_DIFFUSION_CARRY  = 'Y'  # -Y CARRYTYPE, --diffusion-carry=CARRYTYPE:
+                                      #        control diffusion carry buffers.
+                                      #          auto   -> choose automatically
+                                      #          direct -> write error back immediately
+                                      #          carry  -> accumulate in workspace lines
 
 SIXEL_OPTFLAG_FIND_LARGEST     = 'f'  # -f FINDTYPE, --find-largest=FINDTYPE:
                                       #         choose method for finding the largest
@@ -456,6 +464,16 @@ SIXEL_OPTFLAG_LUT_POLICY        = 'L'  # -L LUTPOLICY, --lut-policy=LUTPOLICY:
                                       #     |                 |
                                       #  bucket trim      hashing table
                                       #   (5/6bit)     (robinhood/hopscotch)
+SIXEL_OPTFLAG_WORKING_COLORSPACE = 'W'  # -W WORKING_COLORSPACE, --working-colorspace=WORKING_COLORSPACE:
+                                      #        select internal working space.
+                                      #          gamma  -> keep gamma encoded pixels
+                                      #          linear -> convert to linear RGB
+                                      #          oklab  -> operate in OKLab
+SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U'  # -U OUTPUT_COLORSPACE, --output-colorspace=OUTPUT_COLORSPACE:
+                                      #        select output buffer color space.
+                                      #          gamma   -> sRGB gamma encoded output
+                                      #          linear  -> linear RGB output
+                                      #          smpte-c -> SMPTE-C gamma encoded output
 SIXEL_OPTFLAG_ORMODE           = 'O'  # -O, --ormode: output ormode sixel image
 
 SIXEL_OPTFLAG_BGCOLOR          = 'B'  # -B BGCOLOR, --bgcolor=BGCOLOR:
@@ -474,8 +492,10 @@ SIXEL_OPTFLAG_BGCOLOR          = 'B'  # -B BGCOLOR, --bgcolor=BGCOLOR:
 SIXEL_OPTFLAG_PENETRATE        = 'P'  # -P, --penetrate: (deprecated)
                                       #        penetrate GNU Screen using DCS
                                       #        pass-through sequence
-SIXEL_OPTFLAG_DRCS             = '@'  # -@, --drcs: emit DRCSMMv1 tiles instead of
-                                      #        regular SIXEL image
+SIXEL_OPTFLAG_DRCS             = '@'  # -@, --drcs: emit extended DRCS tiles instead of
+                                      #        regular SIXEL image (experimental)
+SIXEL_OPTFLAG_MAPPING_VERSION  = 'M'  # -M VERSION, --mapping-version=VERSION:
+                                      #        select DRCS-SIXEL Unicode mapping revision
 SIXEL_OPTFLAG_PIPE_MODE        = 'D'  # -D, --pipe-mode: (deprecated)
                                       #         read source images from stdin continuously
 SIXEL_OPTFLAG_VERBOSE          = 'v'  # -v, --verbose: show debugging info
