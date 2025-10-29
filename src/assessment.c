@@ -74,8 +74,8 @@
 #include "onnxruntime_c_api.h"
 #endif
 
-#ifndef SIXEL_LPIPS_MODEL_DIR
-#define SIXEL_LPIPS_MODEL_DIR ""
+#ifndef SIXEL_MODEL_DIR
+#define SIXEL_MODEL_DIR ""
 #endif
 
 #if !defined(PATH_MAX)
@@ -1149,46 +1149,27 @@ static int build_local_model_path(char const *binary_dir,
     char stage1[PATH_MAX];
     char stage2[PATH_MAX];
     char stage3[PATH_MAX];
-    int attempt;
 
     if (binary_dir == NULL || binary_dir[0] == '\0') {
-        return -1;
+        return (-1);
     }
 
-    for (attempt = 0; attempt < 2; ++attempt) {
-        /*
-         * Try ../models/lpips and ../../models/lpips so staged binaries in
-         * converters/ or tools/ still find the ONNX assets.
-         */
-        if (attempt == 0) {
-            if (join_path(binary_dir, SIXEL_LOCAL_MODELS_SEG1,
-                          stage1, sizeof(stage1)) != 0) {
-                continue;
-            }
-        } else {
-            if (join_path(binary_dir, SIXEL_LOCAL_MODELS_SEG1,
-                          stage3, sizeof(stage3)) != 0) {
-                continue;
-            }
-            if (join_path(stage3, SIXEL_LOCAL_MODELS_SEG1,
-                          stage1, sizeof(stage1)) != 0) {
-                continue;
-            }
-        }
-        if (join_path(stage1, SIXEL_LOCAL_MODELS_SEG2,
-                      stage2, sizeof(stage2)) != 0) {
-            continue;
-        }
-        if (join_path(stage2, SIXEL_LOCAL_MODELS_SEG3,
-                      stage1, sizeof(stage1)) != 0) {
-            continue;
-        }
-        if (join_path(stage1, name, buffer, size) != 0) {
-            continue;
-        }
-        return 0;
+    if (join_path(binary_dir, SIXEL_LOCAL_MODELS_SEG1,
+                  stage1, sizeof(stage1)) != 0) {
+        return (-1);
     }
-    return -1;
+    if (join_path(stage1, SIXEL_LOCAL_MODELS_SEG2,
+                  stage2, sizeof(stage2)) != 0) {
+        return (-1);
+    }
+    if (join_path(stage2, SIXEL_LOCAL_MODELS_SEG3,
+                  stage3, sizeof(stage3)) != 0) {
+        return (-1);
+    }
+    if (join_path(stage3, name, buffer, size) != 0) {
+        return (-1);
+    }
+    return (0);
 }
 
 static int find_model(char const *binary_dir,
@@ -1199,6 +1180,7 @@ static int find_model(char const *binary_dir,
 {
     char env_root[PATH_MAX];
     char install_root[PATH_MAX];
+    char binary_parent_path[PATH_MAX];
     char const *env_dir;
 
     env_dir = getenv("LIBSIXEL_MODEL_DIR");
@@ -1207,7 +1189,7 @@ static int find_model(char const *binary_dir,
                       env_root, sizeof(env_root)) == 0) {
             if (join_path(env_root, name, buffer, size) == 0) {
                 if (path_accessible(buffer)) {
-                    return 0;
+                    return (0);
                 }
             }
         }
@@ -1215,28 +1197,46 @@ static int find_model(char const *binary_dir,
     if (override_dir != NULL && override_dir[0] != '\0') {
         if (join_path(override_dir, name, buffer, size) == 0) {
             if (path_accessible(buffer)) {
-                return 0;
+                return (0);
             }
         }
     }
-    if (SIXEL_LPIPS_MODEL_DIR[0] != '\0') {
-        if (join_path(SIXEL_LPIPS_MODEL_DIR, SIXEL_LOCAL_MODELS_SEG3,
+    if (SIXEL_MODEL_DIR[0] != '\0') {
+        /* checking ${packagedatadir}/models */
+        if (join_path(SIXEL_MODEL_DIR, SIXEL_LOCAL_MODELS_SEG3,
                       install_root, sizeof(install_root)) == 0) {
             if (join_path(install_root, name, buffer, size) == 0) {
                 if (path_accessible(buffer)) {
-                    return 0;
+                    return (0);
                 }
             }
         }
     }
+
+    /*
+     * Try ../models/lpips and ../../models/lpips so staged binaries in
+     * converters/ or tools/ still find the ONNX assets.
+     */
     if (binary_dir != NULL && binary_dir[0] != '\0') {
+        /* checking ../models/lpips */
         if (build_local_model_path(binary_dir, name, buffer, size) == 0) {
             if (path_accessible(buffer)) {
-                return 0;
+                return (0);
             }
         }
     }
-    return -1;
+    if (binary_dir != NULL && binary_dir[0] != '\0') {
+        /* checking ../../models/lpips */
+        if (join_path(binary_dir, SIXEL_LOCAL_MODELS_SEG1,
+                      binary_parent_path, sizeof(binary_parent_path)) == 0) {
+            if (build_local_model_path(binary_parent_path, name, buffer, size) == 0) {
+                if (path_accessible(buffer)) {
+                    return (0);
+                }
+            }
+        }
+    }
+    return (-1);
 }
 
 static int
