@@ -15,6 +15,7 @@ AC_CHECK_TOOLS([CC], [clang clang.exe], [gcc])
 AC_CANONICAL_HOST
 
 AM_INIT_AUTOMAKE([foreign subdir-objects])
+AC_REQUIRE_AUX_FILE([ar-lib])
 AM_MAINTAINER_MODE([enable])
 AM_SILENT_RULES([yes])
 LT_INIT
@@ -53,6 +54,7 @@ case "$CC" in
     CFLAGS="$CFLAGS -O2"
     LDFLAGS="$LDFLAGS -DEBUG"
     PKG_CONFIG=
+    AR="$ac_aux_dir/ar-lib lib"
     ;;
   *)
     using_cl=no
