@@ -678,15 +678,11 @@ img2sixel_try_embed(const char *shell, char **out, size_t *len)
     data_len = 0;
 
     if (strcmp(shell, "bash") == 0) {
-#if defined(img2sixel_bash_completion)
-        data = img2sixel_bash_completion;
-        data_len = strlen((const char *)img2sixel_bash_completion);
-#endif
+        data_len = sizeof(img2sixel_bash_completion) - 1;
+        data = (unsigned char *)img2sixel_bash_completion;
     } else if (strcmp(shell, "zsh") == 0) {
-#if defined(img2sixel_zsh_completion)
-        data = img2sixel_zsh_completion;
-        data_len = strlen((const char *)img2sixel_zsh_completion);
-#endif
+        data_len = sizeof(img2sixel_zsh_completion) - 1;
+        data = (unsigned char *)img2sixel_zsh_completion;
     }
 
     if (data == NULL) {
@@ -809,6 +805,83 @@ img2sixel_completion_home(void)
 }
 
 static int
+img2sixel_parse_bash_major(const char *version)
+{
+    int i;
+    int major;
+    char ch;
+
+    if (version == NULL || version[0] == '\0') {
+        return -1;
+    }
+
+    major = 0;
+    for (i = 0; version[i] != '\0'; ++i) {
+        ch = version[i];
+        if (ch == '.') {
+            if (i == 0) {
+                return -1;
+            }
+            return major;
+        }
+        if (ch < '0' || ch > '9') {
+            return -1;
+        }
+        major = (major * 10) + (int)(ch - '0');
+    }
+
+    if (i == 0) {
+        return -1;
+    }
+
+    return major;
+}
+
+static int
+img2sixel_prefer_legacy_bash_path(void)
+{
+    const char *version;
+    int major;
+
+    /* ------------------------------------------------------------------ */
+    /*                                                                    */
+    /*   BASH_VERSION                                                     */
+    /*       |                                                            */
+    /*       v                                                            */
+    /*   +-----------+ yes +-------------------------------+              */
+    /*   | missing?  |---->| keep modern XDG directory     |              */
+    /*   +-----------+     +-------------------------------+              */
+    /*       | no                                                         */
+    /*       v                                                            */
+    /*   +--------------------+     +-----------------------+             */
+    /*   |                    | yes | prefer legacy ~/.bash_|             */
+    /*   | major < 4 detected |---->| completion.d location |             */
+    /*   |                    |     |  (create if required) |             */
+    /*   +--------------------+     +-----------------------|             */
+    /*       | no                                                         */
+    /*       v                                                            */
+    /*   +----------------------------+                                   */
+    /*   | stick with XDG default dir |                                   */
+    /*   +----------------------------+                                   */
+    /*                                                                    */
+    /* ------------------------------------------------------------------ */
+    version = getenv("BASH_VERSION");
+    if (version == NULL) {
+        return 0;
+    }
+
+    major = img2sixel_parse_bash_major(version);
+    if (major < 0) {
+        return 0;
+    }
+    if (major < 4) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 img2sixel_install_single(const char *shell, const char *target_path,
                          const char *target_dir, const char *fallback_path,
                          const void *buf, size_t len)
@@ -901,8 +974,10 @@ img2sixel_handle_install(int mask)
     char *target_path;
     char *target_dir;
     char *fallback_path;
+    char *fallback_dir;
     char *buf;
     size_t len;
+    int prefer_legacy;
 
     home = img2sixel_completion_home();
     if (home == NULL) {
@@ -916,6 +991,7 @@ img2sixel_handle_install(int mask)
             return -1;
         }
 
+        prefer_legacy = img2sixel_prefer_legacy_bash_path();
         if (img2sixel_join_path(home,
             "/.local/share/bash-completion/completions/img2sixel",
             &target_path) != 0) {
@@ -938,19 +1014,43 @@ img2sixel_handle_install(int mask)
             return -1;
         }
 
-        if (img2sixel_install_single("bash", target_path, target_dir,
-                                      fallback_path, buf, len) != 0) {
-            free(buf);
-            free(target_path);
-            free(target_dir);
-            free(fallback_path);
-            return -1;
+        fallback_dir = NULL;
+        if (prefer_legacy != 0) {
+            if (img2sixel_join_path(home, "/.bash_completion.d",
+                &fallback_dir) != 0) {
+                free(buf);
+                free(target_path);
+                free(target_dir);
+                free(fallback_path);
+                return -1;
+            }
+            if (img2sixel_install_single("bash", fallback_path, fallback_dir,
+                    target_path, buf, len) != 0) {
+                free(buf);
+                free(target_path);
+                free(target_dir);
+                free(fallback_path);
+                free(fallback_dir);
+                return -1;
+            }
+        } else {
+            if (img2sixel_install_single("bash", target_path, target_dir,
+                    fallback_path, buf, len) != 0) {
+                free(buf);
+                free(target_path);
+                free(target_dir);
+                free(fallback_path);
+                return -1;
+            }
         }
 
         free(buf);
         free(target_path);
         free(target_dir);
         free(fallback_path);
+        if (fallback_dir != NULL) {
+            free(fallback_dir);
+        }
     }
 
     if ((mask & IMG2SIXEL_COMPLETION_SHELL_ZSH) != 0) {
