@@ -65,6 +65,597 @@
 int mkstemp(char *);
 #endif
 
+/*
+ * Option-specific help snippets drive both the --help output and
+ * contextual error reporting.  The layout below mirrors a table:
+ *
+ *   +-----------+-------------+-----------------------------+
+ *   | short opt | long option | contextual help text        |
+ *   +-----------+-------------+-----------------------------+
+ *
+ * When the user supplies an invalid argument we weave the table entry
+ * into the diagnostic so they see the relevant manual section without
+ * hunting for "img2sixel -H".  The diagram above acts as a quick cheat
+ * sheet for the structure we maintain.
+ */
+typedef struct img2sixel_option_help {
+    int short_opt;
+    char const *long_opt;
+    char const *help;
+} img2sixel_option_help_t;
+
+static img2sixel_option_help_t const g_option_help_table[] = {
+    {
+        'o',
+        "outfile",
+        "-o, --outfile              specify output file name.\n"
+        "                           (default:stdout)\n"
+    },
+    {
+        'T',
+        "tiles",
+        "-T PATH, --tiles=PATH      specify output path for DRCS-SIXEL\n"
+        "                           tile characters.\n"
+        "                           use '-' to write to stdout.\n"
+    },
+    {
+        'a',
+        "assessment",
+        "-a LIST, --assessment=LIST emit assessment JSON report.\n"
+        "                           LIST is a comma separated set of\n"
+        "                           sections (basic, performance, size,\n"
+        "                           quality, quality@quantized, all).\n"
+        "                           Unknown names are ignored so the\n"
+        "                           same command works across builds.\n"
+    },
+    {
+        'J',
+        "assessment-file",
+        "-J PATH, --assessment-file=PATH\n"
+        "                           write assessment JSON to PATH.\n"
+        "                           use '-' to write to stdout.\n"
+    },
+    {
+        '7',
+        "7bit-mode",
+        "-7, --7bit-mode            generate a sixel image for 7bit\n"
+        "                           terminals or printers (default)\n"
+    },
+    {
+        '8',
+        "8bit-mode",
+        "-8, --8bit-mode            generate a sixel image for 8bit\n"
+        "                           terminals or printers\n"
+    },
+    {
+        'R',
+        "gri-limit",
+        "-R, --gri-limit            limit arguments of DECGRI('!') to 255\n"
+    },
+    {
+        'p',
+        "colors",
+        "-p COLORS, --colors=COLORS specify number of colors to reduce\n"
+        "                           the image to (default=256)\n"
+    },
+    {
+        'm',
+        "mapfile",
+        "-m FILE, --mapfile=FILE    transform image colors to match this\n"
+        "                           set of colorsspecify map\n"
+    },
+    {
+        'e',
+        "monochrome",
+        "-e, --monochrome           output monochrome sixel image\n"
+        "                           this option assumes the terminal\n"
+        "                           background color is black\n"
+    },
+    {
+        'k',
+        "insecure",
+        "-k, --insecure             allow to connect to SSL sites without\n"
+        "                           certs(enabled only when configured\n"
+        "                           with --with-libcurl)\n"
+    },
+    {
+        'i',
+        "invert",
+        "-i, --invert               assume the terminal background color\n"
+        "                           is white, make sense only when -e\n"
+        "                           option is given\n"
+    },
+    {
+        'I',
+        "high-color",
+        "-I, --high-color           output 15bpp sixel image\n"
+    },
+    {
+        'u',
+        "use-macro",
+        "-u, --use-macro            use DECDMAC and DECINVM sequences to\n"
+        "                           optimize GIF animation rendering\n"
+    },
+    {
+        'n',
+        "macro-number",
+        "-n MACRONO, --macro-number=MACRONO\n"
+        "                           specify an number argument for\n"
+        "                           DECDMAC and make terminal memorize\n"
+        "                           SIXEL image. No image is shown if\n"
+        "                           this option is specified\n"
+    },
+    {
+        'C',
+        "complexion-score",
+        "-C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE\n"
+        "                           [[deprecated]] specify an number\n"
+        "                           argument for the score of\n"
+        "                           complexion correction.\n"
+        "                           COMPLEXIONSCORE must be 1 or more.\n"
+    },
+    {
+        'g',
+        "ignore-delay",
+        "-g, --ignore-delay         render GIF animation without delay\n"
+    },
+    {
+        'S',
+        "static",
+        "-S, --static               render animated GIF as a static image\n"
+    },
+    {
+        'd',
+        "diffusion",
+        "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
+        "                           choose diffusion method which used\n"
+        "                           with -p option (color reduction)\n"
+        "                           DIFFUSIONTYPE is one of them:\n"
+        "                             auto     -> choose diffusion type\n"
+        "                                         automatically (default)\n"
+        "                             none     -> do not diffuse\n"
+        "                             fs       -> Floyd-Steinberg method\n"
+        "                             atkinson -> Bill Atkinson's method\n"
+        "                             jajuni   -> Jarvis, Judice & Ninke\n"
+        "                             stucki   -> Stucki's method\n"
+        "                             burkes   -> Burkes' method\n"
+        "                             sierra1  -> Sierra Lite method\n"
+        "                             sierra2  -> Sierra Two-row method\n"
+        "                             sierra3  -> Sierra-3 method\n"
+        "                             a_dither -> positionally stable\n"
+        "                                         arithmetic dither\n"
+        "                             x_dither -> positionally stable\n"
+        "                                         arithmetic xor based dither\n"
+        "                             lso1     -> libsixel's original method\n"
+        "                             lso2     -> libsixel method based on\n"
+        "                                         variable error diffusion\n"
+        "                                         tables, optimized for size\n"
+        "                             lso3     -> libsixel method based on\n"
+        "                                         variable error diffusion\n"
+        "                                         tables + jitter, optimized\n"
+        "                                         for image quality\n"
+    },
+    {
+        'y',
+        "diffusion-scan",
+        "-y SCANTYPE, --diffusion-scan=SCANTYPE\n"
+        "                           choose scan order for diffusion\n"
+        "                           SCANTYPE is one of them:\n"
+        "                             auto -> choose scan order\n"
+        "                                     automatically\n"
+        "                             raster -> left-to-right scan\n"
+        "                             serpentine -> alternate direction\n"
+        "                                           on each line\n"
+    },
+    {
+        'Y',
+        "diffusion-carry",
+        "-Y CARRYTYPE, --diffusion-carry=CARRYTYPE\n"
+        "                           control carry buffers for diffusion\n"
+        "                           CARRYTYPE is one of them:\n"
+        "                             auto   -> choose carry mode\n"
+        "                                        automatically\n"
+        "                             direct -> write error back\n"
+        "                                        to pixel data\n"
+        "                                        immediately\n"
+        "                             carry  -> accumulate error in\n"
+        "                                        workspace buffers\n"
+    },
+    {
+        'f',
+        "find-largest",
+        "-f FINDTYPE, --find-largest=FINDTYPE\n"
+        "                           choose method for finding the largest\n"
+        "                           dimension of median cut boxes for\n"
+        "                           splitting, make sense only when -p\n"
+        "                           option (color reduction) is\n"
+        "                           specified\n"
+        "                           FINDTYPE is one of them:\n"
+        "                             auto -> choose finding method\n"
+        "                                     automatically (default)\n"
+        "                             norm -> simply comparing the\n"
+        "                                     range in RGB space\n"
+        "                             lum  -> transforming into\n"
+        "                                     luminosities before the\n"
+        "                                     comparison\n"
+    },
+    {
+        's',
+        "select-color",
+        "-s SELECTTYPE, --select-color=SELECTTYPE\n"
+        "                           choose the method for selecting\n"
+        "                           representative color from each\n"
+        "                           median-cut box, make sense only\n"
+        "                           when -p option (color reduction) is\n"
+        "                           specified\n"
+        "                           SELECTTYPE is one of them:\n"
+        "                             auto      -> choose selecting\n"
+        "                                          method automatically\n"
+        "                                          (default)\n"
+        "                             center    -> choose the center of\n"
+        "                                          the box\n"
+        "                             average    -> calculate the color\n"
+        "                                          average into the box\n"
+        "                             histogram -> similar with average\n"
+        "                                          but considers color\n"
+        "                                          histogram\n"
+    },
+    {
+        'c',
+        "crop",
+        "-c REGION, --crop=REGION   crop source image to fit the\n"
+        "                           specified geometry. REGION should\n"
+        "                           be formatted as '%dx%d+%d+%d'\n"
+    },
+    {
+        'w',
+        "width",
+        "-w WIDTH, --width=WIDTH    resize image to specified width\n"
+        "                           WIDTH is represented by the\n"
+        "                           following syntax\n"
+        "                             auto       -> preserving aspect\n"
+        "                                           ratio (default)\n"
+        "                             <number>%  -> scale width with\n"
+        "                                           given percentage\n"
+        "                             <number>   -> scale width with\n"
+        "                                           pixel counts\n"
+        "                             <number>px -> scale width with\n"
+        "                                           pixel counts\n"
+    },
+    {
+        'h',
+        "height",
+        "-h HEIGHT, --height=HEIGHT resize image to specified height\n"
+        "                           HEIGHT is represented by the\n"
+        "                           following syntax\n"
+        "                             auto       -> preserving aspect\n"
+        "                                           ratio (default)\n"
+        "                             <number>%  -> scale height with\n"
+        "                                           given percentage\n"
+        "                             <number>   -> scale height with\n"
+        "                                           pixel counts\n"
+        "                             <number>px -> scale height with\n"
+        "                                           pixel counts\n"
+    },
+    {
+        'r',
+        "resampling",
+        "-r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE\n"
+        "                           choose resampling filter used\n"
+        "                           with -w or -h option (scaling)\n"
+        "                           RESAMPLINGTYPE is one of them:\n"
+        "                             nearest  -> Nearest-Neighbor\n"
+        "                                         method\n"
+        "                             gaussian -> Gaussian filter\n"
+        "                             hanning  -> Hanning filter\n"
+        "                             hamming  -> Hamming filter\n"
+        "                             bilinear -> Bilinear filter\n"
+        "                                         (default)\n"
+        "                             welsh    -> Welsh filter\n"
+        "                             bicubic  -> Bicubic filter\n"
+        "                             lanczos2 -> Lanczos-2 filter\n"
+        "                             lanczos3 -> Lanczos-3 filter\n"
+        "                             lanczos4 -> Lanczos-4 filter\n"
+    },
+    {
+        'q',
+        "quality",
+        "-q QUALITYMODE, --quality=QUALITYMODE\n"
+        "                           select quality of color\n"
+        "                           quanlization.\n"
+        "                             auto -> decide quality mode\n"
+        "                                     automatically (default)\n"
+        "                             low  -> low quality and high\n"
+        "                                     speed mode\n"
+        "                             high -> high quality and low\n"
+        "                                     speed mode\n"
+        "                             full -> full quality and careful\n"
+        "                                     speed mode\n"
+    },
+    {
+        'L',
+        "lut-policy",
+        "-L LUTPOLICY, --lut-policy=LUTPOLICY\n"
+        "                           choose histogram lookup width\n"
+        "                           LUTPOLICY is one of them:\n"
+        "                             auto      -> follow pixel depth\n"
+        "                             5bit      -> force classic 5-bit\n"
+        "                                          buckets\n"
+        "                             6bit      -> favor 6-bit RGB\n"
+        "                                          buckets\n"
+        "                             robinhood -> retain 8-bit\n"
+        "                                          precision via\n"
+        "                                          Robin Hood hashing\n"
+        "                             hopscotch -> retain 8-bit\n"
+        "                                          precision via\n"
+        "                                          Hopscotch hashing\n"
+    },
+    {
+        'l',
+        "loop-control",
+        "-l LOOPMODE, --loop-control=LOOPMODE\n"
+        "                           select loop control mode for GIF\n"
+        "                           animation.\n"
+        "                             auto    -> honor the setting of\n"
+        "                                        GIF header (default)\n"
+        "                             force   -> always enable loop\n"
+        "                             disable -> always disable loop\n"
+    },
+    {
+        't',
+        "palette-type",
+        "-t PALETTETYPE, --palette-type=PALETTETYPE\n"
+        "                           select palette color space type\n"
+        "                             auto -> choose palette type\n"
+        "                                     automatically (default)\n"
+        "                             hls  -> use HLS color space\n"
+        "                             rgb  -> use RGB color space\n"
+    },
+    {
+        'b',
+        "builtin-palette",
+        "-b BUILTINPALETTE, --builtin-palette=BUILTINPALETTE\n"
+        "                           select built-in palette type\n"
+        "                             xterm16    -> X default 16 color map\n"
+        "                             xterm256   -> X default 256 color map\n"
+        "                             vt340mono  -> VT340 monochrome map\n"
+        "                             vt340color -> VT340 color map\n"
+        "                             gray1      -> 1bit grayscale map\n"
+        "                             gray2      -> 2bit grayscale map\n"
+        "                             gray4      -> 4bit grayscale map\n"
+        "                             gray8      -> 8bit grayscale map\n"
+    },
+    {
+        'E',
+        "encode-policy",
+        "-E ENCODEPOLICY, --encode-policy=ENCODEPOLICY\n"
+        "                           select encoding policy\n"
+        "                             auto -> choose encoding policy\n"
+        "                                     automatically (default)\n"
+        "                             fast -> encode as fast as possible\n"
+        "                             size -> encode to as small sixel\n"
+        "                                     sequence as possible\n"
+    },
+    {
+        'B',
+        "bgcolor",
+        "-B BGCOLOR, --bgcolor=BGCOLOR\n"
+        "                           specify background color\n"
+        "                           BGCOLOR is represented by the\n"
+        "                           following syntax\n"
+        "                             #rgb\n"
+        "                             #rrggbb\n"
+        "                             #rrrgggbbb\n"
+        "                             #rrrrggggbbbb\n"
+        "                             rgb:r/g/b\n"
+        "                             rgb:rr/gg/bb\n"
+        "                             rgb:rrr/ggg/bbb\n"
+        "                             rgb:rrrr/gggg/bbbb\n"
+    },
+    {
+        'P',
+        "penetrate",
+        "-P, --penetrate            [[deprecated]] penetrate GNU Screen\n"
+        "                           using DCS pass-through sequence\n"
+    },
+    {
+        'D',
+        "pipe-mode",
+        "-D, --pipe-mode            [[deprecated]] read source images from\n"
+        "                           stdin continuously\n"
+    },
+    {
+        'v',
+        "verbose",
+        "-v, --verbose              show debugging info\n"
+    },
+    {
+        'j',
+        "loaders",
+        "-j LIST, --loaders=LIST    choose loader priority order\n"
+        "                           LIST is a comma separated set of\n"
+        "                           loader names like 'gd,builtin'\n"
+    },
+    {
+        '@',
+        "drcs",
+        "-@ DSCS, --drcs DSCS       output extended DRCS tiles instead of\n"
+        "                           regular SIXEL image (experimental)\n"
+    },
+    {
+        'M',
+        "mapping-version",
+        "-M VERSION, --mapping-version=VERSION\n"
+        "                           specify DRCS-SIXEL Unicode mapping\n"
+        "                           version\n"
+    },
+    {
+        'O',
+        "ormode",
+        "-O, --ormode               enables sixel output in \"ormode\"\n"
+    },
+    {
+        'W',
+        "working-colorspace",
+        "-W WORKING_COLORSPACE, --working-colorspace=WORKING_COLORSPACE\n"
+        "                           choose internal working color space\n"
+        "                             gamma  -> sRGB gamma(default)\n"
+        "                             linear -> linear RGB color space\n"
+        "                             oklab  -> OKLab color space\n"
+    },
+    {
+        'U',
+        "output-colorspace",
+        "-U OUTPUT_COLORSPACE, --output-colorspace=OUTPUT_COLORSPACE\n"
+        "                           choose output color space\n"
+        "                             gamma   -> sRGB gamma(default)\n"
+        "                             linear  -> linear RGB color space\n"
+        "                             smpte-c -> SMPTE-C gamma color space\n"
+    },
+    {
+        '1',
+        "show-completion",
+        "-1, --show-completion[=bash|zsh|all]\n"
+        "                           print shell completion script\n"
+    },
+    {
+        '2',
+        "install-completion",
+        "-2, --install-completion[=bash|zsh|all]\n"
+        "                           install shell completion script\n"
+    },
+    {
+        '3',
+        "uninstall-completion",
+        "-3, --uninstall-completion[=bash|zsh|all]\n"
+        "                           uninstall shell completion script\n"
+    },
+    {
+        'V',
+        "version",
+        "-V, --version              show version and license info\n"
+    },
+    {
+        'H',
+        "help",
+        "-H, --help                 show this help\n"
+    }
+};
+
+static char const g_option_help_fallback[] =
+    "    Refer to \"img2sixel -H\" for more details.\n";
+
+static img2sixel_option_help_t const *
+img2sixel_find_option_help(int short_opt)
+{
+    size_t index;
+    size_t count;
+
+    index = 0u;
+    count = sizeof(g_option_help_table) /
+        sizeof(g_option_help_table[0]);
+    while (index < count) {
+        if (g_option_help_table[index].short_opt == short_opt) {
+            return &g_option_help_table[index];
+        }
+        ++index;
+    }
+
+    return NULL;
+}
+
+static void
+img2sixel_print_option_help(FILE *stream)
+{
+    size_t index;
+    size_t count;
+
+    if (stream == NULL) {
+        return;
+    }
+    index = 0u;
+    count = sizeof(g_option_help_table) /
+        sizeof(g_option_help_table[0]);
+    while (index < count) {
+        if (g_option_help_table[index].help != NULL) {
+            fputs(g_option_help_table[index].help, stream);
+        }
+        ++index;
+    }
+}
+
+static void
+img2sixel_report_invalid_argument(int short_opt,
+                                  char const *value,
+                                  char const *detail)
+{
+    char buffer[1024];
+    char detail_copy[1024];
+    img2sixel_option_help_t const *entry;
+    char const *long_opt;
+    char const *help_text;
+    char const *argument;
+    size_t offset;
+    int written;
+
+    memset(buffer, 0, sizeof(buffer));
+    memset(detail_copy, 0, sizeof(detail_copy));
+    entry = img2sixel_find_option_help(short_opt);
+    long_opt = (entry != NULL && entry->long_opt != NULL)
+        ? entry->long_opt : "?";
+    help_text = (entry != NULL && entry->help != NULL)
+        ? entry->help : g_option_help_fallback;
+    argument = (value != NULL && value[0] != '\0')
+        ? value : "(missing)";
+    offset = 0u;
+
+    written = snprintf(buffer,
+                       sizeof(buffer),
+                       "'%s' is invalid argument for -%c,--%s option:\n\n",
+                       argument,
+                       (char)short_opt,
+                       long_opt);
+    if (written < 0) {
+        written = 0;
+    }
+    if ((size_t)written >= sizeof(buffer)) {
+        offset = sizeof(buffer) - 1u;
+    } else {
+        offset = (size_t)written;
+    }
+
+    if (detail != NULL && detail[0] != '\0' && offset < sizeof(buffer) - 1u) {
+        (void) snprintf(detail_copy,
+                        sizeof(detail_copy),
+                        "%s\n",
+                        detail);
+        written = snprintf(buffer + offset,
+                           sizeof(buffer) - offset,
+                           "%s",
+                           detail_copy);
+        if (written < 0) {
+            written = 0;
+        }
+        if ((size_t)written >= sizeof(buffer) - offset) {
+            offset = sizeof(buffer) - 1u;
+        } else {
+            offset += (size_t)written;
+        }
+    }
+
+    if (offset < sizeof(buffer) - 1u) {
+        written = snprintf(buffer + offset,
+                           sizeof(buffer) - offset,
+                           "%s",
+                           help_text);
+        if (written < 0) {
+            written = 0;
+        }
+    }
+
+    sixel_helper_set_additional_message(buffer);
+}
+
 static int
 is_png_target(char const *path)
 {
@@ -592,280 +1183,10 @@ void show_help(void)
             "Usage: img2sixel [Options] imagefiles\n"
             "       img2sixel [Options] < imagefile\n"
             "\n"
-            "Options:\n"
-            "-o, --outfile              specify output file name.\n"
-            "                           (default:stdout)\n"
-            "-T PATH, --tiles=PATH      specify output path for DRCS-SIXEL\n"
-            "                           tile characters.\n"
-            "                           use '-' to write to stdout.\n"
-            "-a LIST, --assessment=LIST emit assessment JSON report.\n"
-            "                           LIST is a comma separated set of\n"
-            "                           sections (basic, performance, size,\n"
-            "                           quality, quality@quantized, all).\n"
-            "                           Unknown names are ignored so the\n"
-            "                           same command works across builds.\n"
-            "-J PATH, --assessment-file=PATH\n"
-            "                           write assessment JSON to PATH.\n"
-            "                           use '-' to write to stdout.\n"
-            "-7, --7bit-mode            generate a sixel image for 7bit\n"
-            "                           terminals or printers (default)\n"
-            "-8, --8bit-mode            generate a sixel image for 8bit\n"
-            "                           terminals or printers\n"
-            "-R, --gri-limit            limit arguments of DECGRI('!') to 255\n"
-            "-p COLORS, --colors=COLORS specify number of colors to reduce\n"
-            "                           the image to (default=256)\n"
-            "-m FILE, --mapfile=FILE    transform image colors to match this\n"
-            "                           set of colorsspecify map\n"
-            "-e, --monochrome           output monochrome sixel image\n"
-            "                           this option assumes the terminal\n"
-            "                           background color is black\n"
-            "-k, --insecure             allow to connect to SSL sites without\n"
-            "                           certs(enabled only when configured\n"
-            "                           with --with-libcurl)\n"
-            "-i, --invert               assume the terminal background color\n"
-            "                           is white, make sense only when -e\n"
-            "                           option is given\n"
-            "-I, --high-color           output 15bpp sixel image\n"
-            "-u, --use-macro            use DECDMAC and DECINVM sequences to\n"
-            "                           optimize GIF animation rendering\n"
-            "-n MACRONO, --macro-number=MACRONO\n"
-            "                           specify an number argument for\n"
-            "                           DECDMAC and make terminal memorize\n"
-            "                           SIXEL image. No image is shown if\n"
-            "                           this option is specified\n"
-            "-C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE\n"
-            "                           [[deprecated]] specify an number\n"
-            "                           argument for the score of\n"
-            "                           complexion correction.\n"
-            "                           COMPLEXIONSCORE must be 1 or more.\n"
-            "-g, --ignore-delay         render GIF animation without delay\n"
-            "-S, --static               render animated GIF as a static image\n"
-            );
+            "Options:\n");
+    img2sixel_print_option_help(stdout);
     fprintf(stdout,
-            "-d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE\n"
-            "                           choose diffusion method which used\n"
-            "                           with -p option (color reduction)\n"
-            "                           DIFFUSIONTYPE is one of them:\n"
-            "                             auto     -> choose diffusion type\n"
-            "                                         automatically (default)\n"
-            "                             none     -> do not diffuse\n"
-            "                             fs       -> Floyd-Steinberg method\n"
-            "                             atkinson -> Bill Atkinson's method\n"
-            "                             jajuni   -> Jarvis, Judice & Ninke\n"
-            "                             stucki   -> Stucki's method\n"
-            "                             burkes   -> Burkes' method\n"
-            "                             sierra1  -> Sierra Lite method\n"
-            "                             sierra2  -> Sierra Two-row method\n"
-            "                             sierra3  -> Sierra-3 method\n"
-            "                             a_dither -> positionally stable\n"
-            "                                         arithmetic dither\n"
-            "                             x_dither -> positionally stable\n"
-            "                                         arithmetic xor based dither\n"
-            "                             lso1     -> libsixel's original method\n"
-            "                             lso2     -> libsixel method based on\n"
-            "                                         variable error diffusion\n"
-            "                                         tables, optimized for size\n"
-            "                             lso3     -> libsixel method based on\n"
-            "                                         variable error diffusion\n"
-            "                                         tables + jitter, optimized\n"
-            "                                         for image quality\n"
-            "-y SCANTYPE, --diffusion-scan=SCANTYPE\n"
-            "                           choose scan order for diffusion\n"
-            "                           SCANTYPE is one of them:\n"
-            "                             auto -> choose scan order\n"
-            "                                     automatically\n"
-            "                             raster -> left-to-right scan\n"
-            "                             serpentine -> alternate direction\n"
-            "                                           on each line\n"
-            "-Y CARRYTYPE, --diffusion-carry=CARRYTYPE\n"
-            "                           control carry buffers for diffusion\n"
-            "                           CARRYTYPE is one of them:\n"
-            "                             auto   -> choose carry mode\n"
-            "                                        automatically\n"
-            "                             direct -> write error back\n"
-            "                                        to pixel data\n"
-            "                                        immediately\n"
-            "                             carry  -> accumulate error in\n"
-            "                                        workspace buffers\n"
-            "-f FINDTYPE, --find-largest=FINDTYPE\n"
-            "                           choose method for finding the largest\n"
-            "                           dimension of median cut boxes for\n"
-            "                           splitting, make sense only when -p\n"
-            "                           option (color reduction) is\n"
-            "                           specified\n"
-            "                           FINDTYPE is one of them:\n"
-            "                             auto -> choose finding method\n"
-            "                                     automatically (default)\n"
-            "                             norm -> simply comparing the\n"
-            "                                     range in RGB space\n"
-            "                             lum  -> transforming into\n"
-            "                                     luminosities before the\n"
-            "                                     comparison\n"
-            );
-    fprintf(stdout,
-            "-s SELECTTYPE, --select-color=SELECTTYPE\n"
-            "                           choose the method for selecting\n"
-            "                           representative color from each\n"
-            "                           median-cut box, make sense only\n"
-            "                           when -p option (color reduction) is\n"
-            "                           specified\n"
-            "                           SELECTTYPE is one of them:\n"
-            "                             auto      -> choose selecting\n"
-            "                                          method automatically\n"
-            "                                          (default)\n"
-            "                             center    -> choose the center of\n"
-            "                                          the box\n"
-            "                             average    -> calculate the color\n"
-            "                                          average into the box\n"
-            "                             histogram -> similar with average\n"
-            "                                          but considers color\n"
-            "                                          histogram\n"
-            "-c REGION, --crop=REGION   crop source image to fit the\n"
-            "                           specified geometry. REGION should\n"
-            "                           be formatted as '%%dx%%d+%%d+%%d'\n"
-            "-w WIDTH, --width=WIDTH    resize image to specified width\n"
-            "                           WIDTH is represented by the\n"
-            "                           following syntax\n"
-            "                             auto       -> preserving aspect\n"
-            "                                           ratio (default)\n"
-            "                             <number>%%  -> scale width with\n"
-            "                                           given percentage\n"
-            "                             <number>   -> scale width with\n"
-            "                                           pixel counts\n"
-            "                             <number>px -> scale width with\n"
-            "                                           pixel counts\n"
-            );
-    fprintf(stdout,
-            "-h HEIGHT, --height=HEIGHT resize image to specified height\n"
-            "                           HEIGHT is represented by the\n"
-            "                           following syntax\n"
-            "                             auto       -> preserving aspect\n"
-            "                                           ratio (default)\n"
-            "                             <number>%%  -> scale height with\n"
-            "                                           given percentage\n"
-            "                             <number>   -> scale height with\n"
-            "                                           pixel counts\n"
-            "                             <number>px -> scale height with\n"
-            "                                           pixel counts\n"
-            "-r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE\n"
-            "                           choose resampling filter used\n"
-            "                           with -w or -h option (scaling)\n"
-            "                           RESAMPLINGTYPE is one of them:\n"
-            "                             nearest  -> Nearest-Neighbor\n"
-            "                                         method\n"
-            "                             gaussian -> Gaussian filter\n"
-            "                             hanning  -> Hanning filter\n"
-            "                             hamming  -> Hamming filter\n"
-            "                             bilinear -> Bilinear filter\n"
-            "                                         (default)\n"
-            "                             welsh    -> Welsh filter\n"
-            "                             bicubic  -> Bicubic filter\n"
-            "                             lanczos2 -> Lanczos-2 filter\n"
-            "                             lanczos3 -> Lanczos-3 filter\n"
-            "                             lanczos4 -> Lanczos-4 filter\n"
-            "-q QUALITYMODE, --quality=QUALITYMODE\n"
-            "                           select quality of color\n"
-            "                           quanlization.\n"
-            "                             auto -> decide quality mode\n"
-            "                                     automatically (default)\n"
-            "                             low  -> low quality and high\n"
-            "                                     speed mode\n"
-            "                             high -> high quality and low\n"
-            "                                     speed mode\n"
-            "                             full -> full quality and careful\n"
-            "                                     speed mode\n"
-            "-L LUTPOLICY, --lut-policy=LUTPOLICY\n"
-            "                           choose histogram lookup width\n"
-            "                           LUTPOLICY is one of them:\n"
-            "                             auto      -> follow pixel depth\n"
-            "                             5bit      -> force classic 5-bit\n"
-            "                                          buckets\n"
-            "                             6bit      -> favor 6-bit RGB\n"
-            "                                          buckets\n"
-            "                             robinhood -> retain 8-bit\n"
-            "                                          precision via\n"
-            "                                          Robin Hood hashing\n"
-            "                             hopscotch -> retain 8-bit\n"
-            "                                          precision via\n"
-            "                                          Hopscotch hashing\n"
-            "-l LOOPMODE, --loop-control=LOOPMODE\n"
-            "                           select loop control mode for GIF\n"
-            "                           animation.\n"
-            "                             auto    -> honor the setting of\n"
-            "                                        GIF header (default)\n"
-            "                             force   -> always enable loop\n"
-            "                             disable -> always disable loop\n"
-            );
-    fprintf(stdout,
-            "-t PALETTETYPE, --palette-type=PALETTETYPE\n"
-            "                           select palette color space type\n"
-            "                             auto -> choose palette type\n"
-            "                                     automatically (default)\n"
-            "                             hls  -> use HLS color space\n"
-            "                             rgb  -> use RGB color space\n"
-            "-b BUILTINPALETTE, --builtin-palette=BUILTINPALETTE\n"
-            "                           select built-in palette type\n"
-            "                             xterm16    -> X default 16 color map\n"
-            "                             xterm256   -> X default 256 color map\n"
-            "                             vt340mono  -> VT340 monochrome map\n"
-            "                             vt340color -> VT340 color map\n"
-            "                             gray1      -> 1bit grayscale map\n"
-            "                             gray2      -> 2bit grayscale map\n"
-            "                             gray4      -> 4bit grayscale map\n"
-            "                             gray8      -> 8bit grayscale map\n"
-            "-E ENCODEPOLICY, --encode-policy=ENCODEPOLICY\n"
-            "                           select encoding policy\n"
-            "                             auto -> choose encoding policy\n"
-            "                                     automatically (default)\n"
-            "                             fast -> encode as fast as possible\n"
-            "                             size -> encode to as small sixel\n"
-            "                                     sequence as possible\n"
-            "-B BGCOLOR, --bgcolor=BGCOLOR\n"
-            "                           specify background color\n"
-            "                           BGCOLOR is represented by the\n"
-            "                           following syntax\n"
-            "                             #rgb\n"
-            "                             #rrggbb\n"
-            "                             #rrrgggbbb\n"
-            "                             #rrrrggggbbbb\n"
-            "                             rgb:r/g/b\n"
-            "                             rgb:rr/gg/bb\n"
-            "                             rgb:rrr/ggg/bbb\n"
-            "                             rgb:rrrr/gggg/bbbb\n"
-            "-P, --penetrate            [[deprecated]] penetrate GNU Screen\n"
-            "                           using DCS pass-through sequence\n"
-            "-D, --pipe-mode            [[deprecated]] read source images from\n"
-            "                           stdin continuously\n"
-            "-v, --verbose              show debugging info\n"
-            "-j LIST, --loaders=LIST    choose loader priority order\n"
-            "                           LIST is a comma separated set of\n"
-            "                           loader names like 'gd,builtin'\n"
-            "-@ DSCS, --drcs DSCS       output extended DRCS tiles instead of regular\n"
-            "                           SIXEL image (experimental)\n"
-            "-M VERSION, --mapping-version=VERSION\n"
-            "                           specify DRCS-SIXEL Unicode mapping version\n"
-            "-O, --ormode               enables sixel output in \"ormode\"\n"
-            "-W WORKING_COLORSPACE, --working-colorspace=WORKING_COLORSPACE\n"
-            "                           choose internal working color space\n"
-            "                             gamma  -> sRGB gamma(default)\n"
-            "                             linear -> linear RGB color space\n"
-            "                             oklab  -> OKLab color space\n"
-            "-U OUTPUT_COLORSPACE, --output-colorspace=OUTPUT_COLORSPACE\n"
-            "                           choose output color space\n"
-            "                             gamma   -> sRGB gamma(default)\n"
-            "                             linear  -> linear RGB color space\n"
-            "                             smpte-c -> SMPTE-C gamma color space\n"
-            "-1, --show-completion[=bash|zsh|all]\n"
-            "                           print shell completion script\n"
-            "-2, --install-completion[=bash|zsh|all]\n"
-            "                           install shell completion script\n"
-            "-3, --uninstall-completion[=bash|zsh|all]\n"
-            "                           uninstall shell completion script\n"
-            "-V, --version              show version and license info\n"
-            "-H, --help                 show this help\n"
             "\n"
-            );
-    fprintf(stdout,
             "Environment variables:\n"
             "SIXEL_BGCOLOR              specify background color.\n"
             "                           overrided by -B(--bgcolor) option.\n"
@@ -881,6 +1202,7 @@ void show_help(void)
             "                             rgb:rrrr/gggg/bbbb\n"
             );
 }
+
 
 #if HAVE_SIGNAL
 
@@ -993,6 +1315,8 @@ main(int argc, char *argv[])
     int assessment_stat_result;
     char const *assessment_size_path;
 #endif
+    char detail_buffer[1024];
+    char const *detail_source;
 
     completion_exit_status = 0;
     completion_cli_result = img2sixel_handle_completion_cli(
@@ -1074,11 +1398,14 @@ main(int argc, char *argv[])
             status = SIXEL_OK;
             goto end;
         case 'a':
-            if (parse_assessment_sections(optarg, &assessment_sections) != 0) {
-                sixel_helper_set_additional_message(
+            if (parse_assessment_sections(optarg,
+                                          &assessment_sections) != 0) {
+                img2sixel_report_invalid_argument(
+                    'a',
+                    optarg,
                     "img2sixel: invalid assessment section list.");
                 status = SIXEL_BAD_ARGUMENT;
-                goto argerr;
+                goto error;
             }
             break;
         case 'J':
@@ -1089,7 +1416,23 @@ main(int argc, char *argv[])
                                           SIXEL_OPTFLAG_LOADERS,
                                           optarg);
             if (SIXEL_FAILED(status)) {
-                goto argerr;
+                detail_buffer[0] = '\0';
+                detail_source = sixel_helper_get_additional_message();
+                if (detail_source != NULL && detail_source[0] != '\0') {
+                    (void) snprintf(detail_buffer,
+                                    sizeof(detail_buffer),
+                                    "%s",
+                                    detail_source);
+                }
+                if (status == SIXEL_BAD_ARGUMENT) {
+                    img2sixel_report_invalid_argument(
+                        'j',
+                        optarg,
+                        detail_buffer[0] != '\0'
+                            ? detail_buffer
+                            : NULL);
+                }
+                goto error;
             }
             break;
         case 'o':
@@ -1119,7 +1462,23 @@ main(int argc, char *argv[])
                 sixel_output_path = NULL;
                 status = sixel_encoder_setopt(encoder, n, optarg);
                 if (SIXEL_FAILED(status)) {
-                    goto argerr;
+                    detail_buffer[0] = '\0';
+                    detail_source = sixel_helper_get_additional_message();
+                    if (detail_source != NULL && detail_source[0] != '\0') {
+                        (void) snprintf(detail_buffer,
+                                        sizeof(detail_buffer),
+                                        "%s",
+                                        detail_source);
+                    }
+                    if (status == SIXEL_BAD_ARGUMENT) {
+                        img2sixel_report_invalid_argument(
+                            n,
+                            optarg,
+                            detail_buffer[0] != '\0'
+                                ? detail_buffer
+                                : NULL);
+                    }
+                    goto error;
                 }
                 if (strcmp(optarg, "-") != 0) {
                     sixel_output_path = (char *)malloc(strlen(optarg) + 1);
@@ -1136,7 +1495,23 @@ main(int argc, char *argv[])
         default:
             status = sixel_encoder_setopt(encoder, n, optarg);
             if (SIXEL_FAILED(status)) {
-                goto argerr;
+                detail_buffer[0] = '\0';
+                detail_source = sixel_helper_get_additional_message();
+                if (detail_source != NULL && detail_source[0] != '\0') {
+                    (void) snprintf(detail_buffer,
+                                    sizeof(detail_buffer),
+                                    "%s",
+                                    detail_source);
+                }
+                if (status == SIXEL_BAD_ARGUMENT) {
+                    img2sixel_report_invalid_argument(
+                        n,
+                        optarg,
+                        detail_buffer[0] != '\0'
+                            ? detail_buffer
+                            : NULL);
+                }
+                goto error;
             }
             break;
         }
@@ -1169,14 +1544,14 @@ main(int argc, char *argv[])
             sixel_helper_set_additional_message(
                 "img2sixel: assessment accepts at most one input file.");
             status = SIXEL_BAD_ARGUMENT;
-            goto argerr;
+            goto error;
         }
         if (assessment_need_quality && !assessment_quality_quantized &&
                 output_is_png) {
             sixel_helper_set_additional_message(
                 "img2sixel: encoded quality assessment requires SIXEL output.");
             status = SIXEL_BAD_ARGUMENT;
-            goto argerr;
+            goto error;
         }
         status = sixel_encoder_enable_source_capture(encoder,
                                                      assessment_need_source_capture);
@@ -1629,24 +2004,23 @@ main(int argc, char *argv[])
     status = SIXEL_OK;
     goto end;
 
-argerr:
+error:
+    fprintf(stderr, "\n%s\n%s\n",
+            sixel_helper_format_error(status),
+            sixel_helper_get_additional_message());
+    status = (-1);
     fprintf(stderr,
             "usage: img2sixel [-78eIkiugvSPDOVH] [-p colors] [-m file] [-d diffusiontype]\n"
-            "                 [-y scantype]\n"
+            "                 [-y scantype] [-a assessmentlist] [-J assessmentfile]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
             "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
             "                 [-E encodepolicy] [-j loaderlist] [-J jsonfile] [-@ dscs]\n"
-            "                 [-M mapping-version]\n"
+            "                 [-M mapping-version] [-1 shell] [-2 shell] [-3 shell]\n"
             "                 [-W workingcolorspace] [-U outputcolorspace] [-B bgcolor]\n"
-            "                 [-T path] [-o outfile] [filename ...]\n"
+            "                 [-T tilepath] [-o outfile] [filename ...]\n\n"
             "for more details, type: 'img2sixel -H'.\n");
 
-error:
-    fprintf(stderr, "%s\n%s\n",
-            sixel_helper_format_error(status),
-            sixel_helper_get_additional_message());
-    status = (-1);
 end:
     if (png_temp_path != NULL) {
         (void) unlink(png_temp_path);
