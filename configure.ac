@@ -54,7 +54,15 @@ case "$CC" in
     CFLAGS="$CFLAGS -O2"
     LDFLAGS="$LDFLAGS -DEBUG"
     PKG_CONFIG=
-    AR="$ac_aux_dir/ar-lib lib"
+    LD=link
+    if test -z "${AR}"; then
+        AR="${CONFIG_SHELL-$SHELL} $am_aux_dir/ar-lib lib"
+    fi
+    if test -z "${NM}"; then
+        NM="dumpbin -symbols"
+    fi
+    STRIP=:
+    RANLIB=:
     ;;
   *)
     using_cl=no
