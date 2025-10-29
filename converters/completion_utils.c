@@ -1123,6 +1123,11 @@ img2sixel_parse_completion(int argc, char **argv, int *mask,
     int i;
     int parsed_mask;
     const char *parsed_action;
+    const char *arg;
+    const char *value;
+    int consumed_next;
+    const char *option_name;
+    const char *candidate_action;
 
     if (mask == NULL || action == NULL) {
         return 0;
@@ -1130,51 +1135,69 @@ img2sixel_parse_completion(int argc, char **argv, int *mask,
 
     parsed_mask = 0;
     parsed_action = NULL;
+    arg = NULL;
+    value = NULL;
+    consumed_next = 0;
+    option_name = NULL;
+    candidate_action = NULL;
 
     for (i = 1; i < argc; ++i) {
-        const char *arg;
-        const char *value;
-
         arg = argv[i];
         value = NULL;
+        consumed_next = 0;
+        option_name = NULL;
+        candidate_action = NULL;
 
         if (strcmp(arg, "--") == 0) {
             break;
         }
 
         if (strncmp(arg, "--show-completion", 18) == 0) {
-            parsed_action = "show";
+            candidate_action = "show";
+            option_name = "--show-completion";
             if (arg[18] == '\0') {
-                value = NULL;
+                if (i + 1 < argc && argv[i + 1][0] != '-') {
+                    value = argv[i + 1];
+                    consumed_next = 1;
+                }
             } else if (arg[18] == '=') {
                 value = arg + 19;
             } else {
                 continue;
             }
         } else if (strncmp(arg, "--install-completion", 21) == 0) {
-            parsed_action = "install";
+            candidate_action = "install";
+            option_name = "--install-completion";
             if (arg[21] == '\0') {
-                value = NULL;
+                if (i + 1 < argc && argv[i + 1][0] != '-') {
+                    value = argv[i + 1];
+                    consumed_next = 1;
+                }
             } else if (arg[21] == '=') {
                 value = arg + 22;
             } else {
                 continue;
             }
         } else if (strncmp(arg, "--uninstall-completion", 23) == 0) {
-            parsed_action = "uninstall";
+            candidate_action = "uninstall";
+            option_name = "--uninstall-completion";
             if (arg[23] == '\0') {
-                value = NULL;
+                if (i + 1 < argc && argv[i + 1][0] != '-') {
+                    value = argv[i + 1];
+                    consumed_next = 1;
+                }
             } else if (arg[23] == '=') {
                 value = arg + 24;
             } else {
                 continue;
             }
         } else if (strncmp(arg, "-1", 2) == 0) {
-            parsed_action = "show";
+            candidate_action = "show";
+            option_name = "-1";
             if (arg[2] == '\0') {
                 if (i + 1 < argc && argv[i + 1][0] != '-') {
                     value = argv[i + 1];
-                    ++i;
+                    consumed_next = 1;
                 }
             } else if (arg[2] == '=') {
                 value = arg + 3;
@@ -1182,11 +1205,12 @@ img2sixel_parse_completion(int argc, char **argv, int *mask,
                 value = arg + 2;
             }
         } else if (strncmp(arg, "-2", 2) == 0) {
-            parsed_action = "install";
+            candidate_action = "install";
+            option_name = "-2";
             if (arg[2] == '\0') {
                 if (i + 1 < argc && argv[i + 1][0] != '-') {
                     value = argv[i + 1];
-                    ++i;
+                    consumed_next = 1;
                 }
             } else if (arg[2] == '=') {
                 value = arg + 3;
@@ -1194,11 +1218,12 @@ img2sixel_parse_completion(int argc, char **argv, int *mask,
                 value = arg + 2;
             }
         } else if (strncmp(arg, "-3", 2) == 0) {
-            parsed_action = "uninstall";
+            candidate_action = "uninstall";
+            option_name = "-3";
             if (arg[2] == '\0') {
                 if (i + 1 < argc && argv[i + 1][0] != '-') {
                     value = argv[i + 1];
-                    ++i;
+                    consumed_next = 1;
                 }
             } else if (arg[2] == '=') {
                 value = arg + 3;
@@ -1209,15 +1234,31 @@ img2sixel_parse_completion(int argc, char **argv, int *mask,
             continue;
         }
 
-        parsed_mask = img2sixel_shell_mask(value);
-        if (parsed_mask == 0) {
-            if (value == NULL) {
-                value = "";
+        if (value == NULL || value[0] == '\0') {
+            if (option_name == NULL) {
+                option_name = "completion option";
             }
-            fprintf(stderr, "invalid completion target: %s\n", value);
+            fprintf(stderr, "missing completion target for %s\n",
+                    option_name);
             return -1;
         }
 
+        parsed_mask = img2sixel_shell_mask(value);
+        if (parsed_mask == 0) {
+            if (option_name == NULL) {
+                option_name = "completion option";
+            }
+            fprintf(stderr,
+                    "invalid completion target for %s: %s\n",
+                    option_name, value);
+            return -1;
+        }
+
+        if (consumed_next) {
+            ++i;
+        }
+
+        parsed_action = candidate_action;
         *mask = parsed_mask;
         *action = parsed_action;
         return 1;

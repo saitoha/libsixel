@@ -22,14 +22,35 @@
 
 sources_common = ['malloc_stub.c']
 
+# +--------------------------------------------------------------+
+# | Embedded completion header generation pipeline (ASCII view). |
+# +--------------------------------------------------------------+
+# bash/img2sixel ----\
+#                      >--[gen_completion_embed.py]--> completion_embed.h
+# zsh/_img2sixel  ----/
+gen_completion = find_program(
+  join_paths(meson.project_source_root(), 'tools', 'gen_completion_embed.py'),
+  required: true,
+)
+completion_embed = custom_target('completion_embed.h',
+  input: [
+    'shell-completion/bash/img2sixel',
+    'shell-completion/zsh/_img2sixel',
+  ],
+  output: 'completion_embed.h',
+  command: [gen_completion, '@OUTPUT@', '@INPUT0@', '@INPUT1@'],
+)
+local_inc = include_directories('.')
+
 img2sixel_opt = get_option('img2sixel')
 sixel2png_opt = get_option('sixel2png')
 
 img2sixel_deps = []
 if img2sixel_opt.enabled()
-  img2sixel_exe = executable('img2sixel', ['img2sixel.c', 'completion_utils.c'] + sources_common,
+  img2sixel_exe = executable('img2sixel',
+    ['img2sixel.c', 'completion_utils.c', completion_embed] + sources_common,
     dependencies: libsixel_dep,
-    include_directories: project_inc,
+    include_directories: [project_inc, local_inc],
     install: true)
   img2sixel_deps = [img2sixel_exe]
   install_man('img2sixel.1')

@@ -500,6 +500,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 DIST_SUBDIRS = $(SUBDIRS)
+BUILT_SOURCES = completion_embed.h
 dist_man_MANS = $(am__append_7) $(am__append_11)
 dist_bashcompletion_DATA = $(am__append_8)
 dist_zshcompletion_DATA = $(am__append_9)
@@ -514,7 +515,8 @@ CLEANFILES = *.gcno *.gcda *.gcov \
   $(builddir)/tmp/server.py \
   $(builddir)/tmp/server.key \
   $(builddir)/tmp/server.crt \
-  $(builddir)/tmp/testfile
+  $(builddir)/tmp/testfile \
+  completion_embed.h
 
 @WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = $(srcdir)/img2sixel.c \
 @WANT_IMG2SIXEL_TRUE@                    $(srcdir)/completion_utils.c \
@@ -536,7 +538,8 @@ CLEANFILES = *.gcno *.gcda *.gcov \
 @WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @WANT_SIXEL2PNG_TRUE@sixel2png_LDFLAGS = $(MAYBE_COVERAGE)
 @WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la
-all: all-recursive
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
@@ -983,15 +986,18 @@ distdir-am: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: check-recursive
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-recursive
 all-am: Makefile $(PROGRAMS) $(MANS) $(DATA)
 installdirs: installdirs-recursive
 installdirs-am:
 	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(bashcompletiondir)" "$(DESTDIR)$(zshcompletiondir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-recursive
-install-exec: install-exec-recursive
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-recursive
+install-exec: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-exec-recursive
 install-data: install-data-recursive
 uninstall: uninstall-recursive
 
@@ -1021,6 +1027,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-$(am__rm_f) $(BUILT_SOURCES)
 clean: clean-recursive
 
 clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
@@ -1103,7 +1110,8 @@ uninstall-am: uninstall-binPROGRAMS uninstall-dist_bashcompletionDATA \
 
 uninstall-man: uninstall-man1
 
-.MAKE: $(am__recursive_targets) install-am install-strip
+.MAKE: $(am__recursive_targets) all check install install-am \
+	install-exec install-strip
 
 .PHONY: $(am__recursive_targets) CTAGS GTAGS TAGS all all-am \
 	am--depfiles check check-am clean clean-binPROGRAMS \
@@ -1126,6 +1134,20 @@ uninstall-man: uninstall-man1
 
 .PRECIOUS: Makefile
 
+
+# +--------------------------------------------------------------+
+# | Embedded completion header generation pipeline (ASCII view). |
+# +--------------------------------------------------------------+
+# bash/img2sixel ----\
+#                      >--[gen_completion_embed.awk]--> completion_embed.h
+# zsh/_img2sixel  ----/
+completion_embed.h: \
+	$(srcdir)/shell-completion/bash/img2sixel \
+	$(srcdir)/shell-completion/zsh/_img2sixel \
+	$(top_srcdir)/tools/gen_completion_embed.awk
+	$(AM_V_GEN)$(AWK) -f $(top_srcdir)/tools/gen_completion_embed.awk \
+	       $(srcdir)/shell-completion/bash/img2sixel \
+	       $(srcdir)/shell-completion/zsh/_img2sixel > $@
 
 check: test_impl
 
