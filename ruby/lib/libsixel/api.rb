@@ -58,8 +58,14 @@ module Libsixel
     # classic  hashing
     # (5/6bit) (robinhood/hopscotch)
     #
+    SIXEL_OPTFLAG_ALT_CHARSET_PATH = 'T' unless const_defined?(:SIXEL_OPTFLAG_ALT_CHARSET_PATH)
+    SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT = 'R' unless const_defined?(:SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT)
     SIXEL_OPTFLAG_LUT_POLICY = 'L' unless const_defined?(:SIXEL_OPTFLAG_LUT_POLICY)
-    SIXEL_OPTFLAG_LOADERS = 'J' unless const_defined?(:SIXEL_OPTFLAG_LOADERS)
+    SIXEL_OPTFLAG_DIFFUSION_CARRY = 'Y' unless const_defined?(:SIXEL_OPTFLAG_DIFFUSION_CARRY)
+    SIXEL_OPTFLAG_WORKING_COLORSPACE = 'W' unless const_defined?(:SIXEL_OPTFLAG_WORKING_COLORSPACE)
+    SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U' unless const_defined?(:SIXEL_OPTFLAG_OUTPUT_COLORSPACE)
+    SIXEL_OPTFLAG_MAPPING_VERSION = 'M' unless const_defined?(:SIXEL_OPTFLAG_MAPPING_VERSION)
+    SIXEL_OPTFLAG_LOADERS = 'j' unless const_defined?(:SIXEL_OPTFLAG_LOADERS)
     def self.succeeded?(status) ((status & SIXEL_FALSE) == 0) end
     def self.failed?(status)    ((status & SIXEL_FALSE) != 0) end
 

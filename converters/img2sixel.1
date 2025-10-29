@@ -296,6 +296,14 @@ xterm256   -> X default 256 color map
 vt340mono  -> VT340 monochrome map
 .br
 vt340color -> VT340 color map
+.br
+gray1      -> 1bit grayscale map
+.br
+gray2      -> 2bit grayscale map
+.br
+gray4      -> 4bit grayscale map
+.br
+gray8      -> 8bit grayscale map
 .TP 5
 .B \-E \fIENCODEPOLICY\fP, \-\-encode\-policy=\fIENCODEPOLICY\fP
 select encoding policy
@@ -344,7 +352,7 @@ sequence of loader names such as \fBgd\fP, \fBcoregraphics\fP, or
 command line across different builds.
 .TP 5
 .B \-@, \-\-drcs
-output DRCSMMv1 tiles instead of a regular SIXEL image (experimental).
+output extended DRCS tiles instead of a regular SIXEL image (experimental).
 .br
 This option requires the terminal to report pixel cell size via
 .B TIOCGWINSZ
