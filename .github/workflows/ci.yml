@@ -253,7 +253,7 @@ jobs:
             done
         )
 
-        ./configure CC=cl LD=link NM="dumpbin -symbols" STRIP=: RANLIB=: \
+        ./configure CC=cl LD=link AR="$PWD/ar-lib" NM="dumpbin -symbols" STRIP=: RANLIB=: \
             --host=x86_64-pc-windows-msvc \
             --without-png \
             --without-jpeg \
