@@ -253,9 +253,7 @@ jobs:
             done
         )
 
-        chmod +x "$(pwd)/tools/ar-msvc.sh"
-
-        ./configure CC=cl LD=link AR="$(pwd)/tools/ar-msvc.sh" ARFLAGS= NM="dumpbin -symbols" STRIP=: RANLIB=: \
+        ./configure CC=cl LD=link AR="${SHELL} $(pwd)/ar-lib lib" ARFLAGS=cr NM="dumpbin -symbols" STRIP=: RANLIB=: \
             --host=x86_64-pc-windows-msvc \
             --without-png \
             --without-jpeg \
