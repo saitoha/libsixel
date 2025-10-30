@@ -22,26 +22,26 @@ CONVERTER_TEST_LIST =
 if WANT_IMG2SIXEL
 if HAVE_BASH
 CONVERTER_TEST_LIST += \
-	$(top_srcdir)/tests/converters/test_0001_invalid_option.bash \
-	$(top_srcdir)/tests/converters/test_0002_stdin.bash \
-	$(top_srcdir)/tests/converters/test_0003_information.bash \
-	$(top_srcdir)/tests/converters/test_0004_conversion_options.bash \
-	$(top_srcdir)/tests/converters/test_0005_dcs_arguments.bash \
-	$(top_srcdir)/tests/converters/test_0006_dcs_variations.bash \
-	$(top_srcdir)/tests/converters/test_0007_animation.bash \
-	$(top_srcdir)/tests/converters/test_0008_progressive_jpeg.bash
+	$(top_srcdir)/tests/t/0001_invalid_option.t \
+	$(top_srcdir)/tests/t/0002_stdin.t \
+	$(top_srcdir)/tests/t/0003_information.t \
+	$(top_srcdir)/tests/t/0004_conversion_options.t \
+	$(top_srcdir)/tests/t/0005_dcs_arguments.t \
+	$(top_srcdir)/tests/t/0006_dcs_variations.t \
+	$(top_srcdir)/tests/t/0007_animation.t \
+	$(top_srcdir)/tests/t/0008_progressive_jpeg.t
 if HAVE_PNG
-CONVERTER_TEST_LIST += $(top_srcdir)/tests/converters/test_0009_pngsuite.bash
+CONVERTER_TEST_LIST += $(top_srcdir)/tests/t/0009_pngsuite.t
 endif
 if HAVE_CURL
-CONVERTER_TEST_LIST += $(top_srcdir)/tests/converters/test_0010_curl.bash
+CONVERTER_TEST_LIST += $(top_srcdir)/tests/t/0010_curl.t
 endif
 if WANT_SIXEL2PNG
-CONVERTER_TEST_LIST += $(top_srcdir)/tests/converters/test_0011_basic.bash
+CONVERTER_TEST_LIST += $(top_srcdir)/tests/t/0011_basic.t
 endif
 CONVERTER_TEST_LIST += \
-	$(top_srcdir)/tests/converters/test_0012_regressions.bash \
-	$(top_srcdir)/tests/converters/test_0013_documentation.bash
+	$(top_srcdir)/tests/t/0012_regressions.t \
+	$(top_srcdir)/tests/t/0013_documentation.t
 endif
 endif
 

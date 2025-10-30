@@ -2,7 +2,7 @@
 # Test fetching images via libcurl.
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-# shellcheck source=tests/converters/common.bash
+# shellcheck source=tests/t/common.bash
 source "${SCRIPT_DIR}/common.bash"
 
 echo

@@ -17,20 +17,20 @@ DIST_SUBDIRS = include src converters assessment tools python ruby wic \
 
 EXTRA_DIST = LICENSE depcomp
 
-EXTRA_DIST += tests/converters/common.bash \
-	tests/converters/test_0001_invalid_option.bash \
-	tests/converters/test_0002_stdin.bash \
-	tests/converters/test_0003_information.bash \
-	tests/converters/test_0004_conversion_options.bash \
-	tests/converters/test_0005_dcs_arguments.bash \
-	tests/converters/test_0006_dcs_variations.bash \
-	tests/converters/test_0007_animation.bash \
-	tests/converters/test_0008_progressive_jpeg.bash \
-	tests/converters/test_0009_pngsuite.bash \
-	tests/converters/test_0010_curl.bash \
-	tests/converters/test_0011_basic.bash \
-	tests/converters/test_0012_regressions.bash \
-	tests/converters/test_0013_documentation.bash
+EXTRA_DIST += tests/t/common.bash \
+	tests/t/0001_invalid_option.t \
+	tests/t/0002_stdin.t \
+	tests/t/0003_information.t \
+	tests/t/0004_conversion_options.t \
+	tests/t/0005_dcs_arguments.t \
+	tests/t/0006_dcs_variations.t \
+	tests/t/0007_animation.t \
+	tests/t/0008_progressive_jpeg.t \
+	tests/t/0009_pngsuite.t \
+	tests/t/0010_curl.t \
+	tests/t/0011_basic.t \
+	tests/t/0012_regressions.t \
+	tests/t/0013_documentation.t
 
 .PHONY: install-quicklook-extension uninstall-quicklook-extension
 

@@ -2,7 +2,7 @@
 # Verify error handling for invalid img2sixel options.
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-# shellcheck source=tests/converters/common.bash
+# shellcheck source=tests/t/common.bash
 source "${SCRIPT_DIR}/common.bash"
 
 echo '[test1] invalid option handling'
