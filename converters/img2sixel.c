@@ -145,8 +145,31 @@ static img2sixel_option_help_t const g_option_help_table[] = {
     {
         'm',
         "mapfile",
-        "-m FILE, --mapfile=FILE    transform image colors to match this\n"
-        "                           set of colorsspecify map\n"
+        "-m FILE, --mapfile=FILE    transform image colors to match\n"
+        "                           this set of colors. Accepts\n"
+        "                           image files and palette files\n"
+        "                           in ACT, PAL, and GPL formats.\n"
+        "                           Use TYPE:PATH (act:, pal:,\n"
+        "                           pal-jasc:, pal-riff:, gpl:)\n"
+        "                           to force a format. Without\n"
+        "                           TYPE the extension or file\n"
+        "                           contents decide. TYPE:- reads\n"
+        "                           palette bytes from stdin (for\n"
+        "                           example, gpl:-).\n"
+    },
+    {
+        'M',
+        "mapfile-output",
+        "-M FILE, --mapfile-output=FILE\n"
+        "                           export the computed palette.\n"
+        "                           TYPE:PATH prefixes or file\n"
+        "                           extensions (.act, .pal, .gpl)\n"
+        "                           choose the format. .pal\n"
+        "                           defaults to JASC text; use\n"
+        "                           pal-riff: for RIFF output.\n"
+        "                           Writing to '-' needs TYPE:PATH;\n"
+        "                           TYPE:- sends the palette to\n"
+        "                           stdout.\n"
     },
     {
         'e',
@@ -1418,7 +1441,7 @@ main(int argc, char *argv[])
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     char const *optstring =
-        "o:a:J:j:78Rp:m:eb:Id:f:s:c:w:h:r:q:L:kil:t:ugvSn:PE:U:B:C:D@:"
+        "o:a:J:j:78Rp:m:M:eb:Id:f:s:c:w:h:r:q:L:kil:t:ugvSn:PE:U:B:C:D@:"
         "OVW:HY:y:";
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
@@ -1430,6 +1453,7 @@ main(int argc, char *argv[])
         {"gri-limit",          no_argument,        &long_opt, 'R'},
         {"colors",             required_argument,  &long_opt, 'p'},
         {"mapfile",            required_argument,  &long_opt, 'm'},
+        {"mapfile-output",     required_argument,  &long_opt, 'M'},
         {"monochrome",         no_argument,        &long_opt, 'e'},
         {"high-color",         no_argument,        &long_opt, 'I'},
         {"builtin-palette",    required_argument,  &long_opt, 'b'},

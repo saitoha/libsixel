@@ -47,6 +47,7 @@ struct sixel_encoder {
     int force_palette;              /* force palette size when non-zero */
     int color_option;
     char *mapfile;
+    char *palette_output;
     char *loader_order;
     int builtin_palette;
     int method_for_diffuse;

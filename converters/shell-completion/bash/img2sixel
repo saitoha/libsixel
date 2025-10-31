@@ -97,7 +97,7 @@ _img2sixel()
                                    256' -- "$cur" ) )
         return 0
         ;;
-    -m|--mapfile)
+    -m|--mapfile|-M|--mapfile-output)
         _img2sixel_filedir
         return 0
         ;;
@@ -259,6 +259,7 @@ _img2sixel()
                                    -R --gri-limit \
                                    -p --colors \
                                    -m --mapfile \
+                                   -M --mapfile-output \
                                    -e --monochrome \
                                    -k --insecure \
                                    -i --invert \

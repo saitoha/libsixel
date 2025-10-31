@@ -261,6 +261,7 @@ SIXEL_OPTFLAG_7BIT_MODE        = '7'  # -7, --7bit-mode: for 7bit terminals or p
 SIXEL_OPTFLAG_8BIT_MODE        = '8'  # -8, --8bit-mode: for 8bit terminals or printers
 SIXEL_OPTFLAG_COLORS           = 'p'  # -p COLORS, --colors=COLORS: specify number of colors
 SIXEL_OPTFLAG_MAPFILE          = 'm'  # -m FILE, --mapfile=FILE: specify set of colors
+SIXEL_OPTFLAG_MAPFILE_OUTPUT   = 'M'  # -M FILE, --mapfile-output=FILE: export palette file
 SIXEL_OPTFLAG_MONOCHROME       = 'e'  # -e, --monochrome: output monochrome sixel image
 SIXEL_OPTFLAG_INSECURE         = 'k'  # -k, --insecure: allow to connect to SSL sites without certs
 SIXEL_OPTFLAG_INVERT           = 'i'  # -i, --invert: assume the terminal background color
