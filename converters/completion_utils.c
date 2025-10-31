@@ -383,6 +383,25 @@ ensure_dir_p(const char *path, mode_t mode)
             saved = tmp[i];
             tmp[i] = '\0';
             if (tmp[0] != '\0') {
+#if defined(_WIN32)
+                /*
+                 * Drive-qualified paths include a `letter:` prefix.  The
+                 * ladder below sketches how we peel the segments without
+                 * attempting to `mkdir("d:")`:
+                 *
+                 *   d:/logs/run
+                 *   |  |
+                 *   |  +-- skip the root when `i == 2`
+                 *   +----- drive column we should preserve as-is
+                 */
+                if (i == 2
+                        && ((tmp[0] >= 'A' && tmp[0] <= 'Z')
+                            || (tmp[0] >= 'a' && tmp[0] <= 'z'))
+                        && tmp[1] == ':') {
+                    tmp[i] = saved;
+                    continue;
+                }
+#endif
                 if (img2sixel_mkdir(tmp, mode) != 0 && errno != EEXIST) {
                     int saved_errno;
 
