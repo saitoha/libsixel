@@ -361,11 +361,17 @@ Usage: img2sixel [Options] imagefiles
 Options:
 -o, --outfile              specify output file name.
                            (default:stdout)
-                           Use a name ending in ".png" or the literal
-                           "png:-" to emit PNG data recreated from the
-                           SIXEL pipeline. The PNG keeps the palette
-                           indices so that every color matches the
-                           quantized SIXEL output exactly.
+                           Use a name ending in ".png", the literal
+                           "png:-", or prefix a path with "png:" to
+                           emit PNG data recreated from the SIXEL
+                           pipeline. The PNG keeps the palette indices
+                           so that every color matches the quantized
+                           SIXEL output exactly.
+                           "png:-" writes to stdout while
+                           "png:<path>" stores the PNG next to the
+                           SIXEL output. Supplying
+                           "-o output.png" writes the PNG directly to
+                           that file.
 -a MODE, --assessment=MODE emit assessment JSON report.
                            MODE: quantized | encoded
 -J PATH, --assessment-file=PATH
