@@ -58,6 +58,19 @@ printf '\033Pq"1;1;1;1!6~\033\\' | run_img2sixel -r nearest -h12 -w200% | \
     xargs test 302131327e2d2131327e1b5c =
 # Exercise explicit dimensions, dithering, and terminal palette output.
 run_img2sixel -w210 -h210 -djajuni -bxterm256 -o "${TMP_DIR}/snake3.sixel" < "${snake_jpg}"
+# Confirm inline PNG targets accept prefixed output paths.
+run_img2sixel -o "png:${TMP_DIR}/snake-prefix.png" "${snake_jpg}"
+test -s "${TMP_DIR}/snake-prefix.png"
+# Confirm prefixed PNG targets create missing parent directories.
+rm -rf "${TMP_DIR}/png-nested"
+run_img2sixel -o "png:${TMP_DIR}/png-nested/deep/snake.png" \
+    "${snake_jpg}"
+test -s "${TMP_DIR}/png-nested/deep/snake.png"
+# Confirm plain file names ending in .png trigger PNG output.
+run_img2sixel -o "${TMP_DIR}/snake-filename.png" "${snake_jpg}"
+od -An -tx1 -N8 "${TMP_DIR}/snake-filename.png" | \
+    tr -d ' \n' | \
+    xargs test 89504e470d0a1a0a =
 # Confirm long option forms operate correctly.
 run_img2sixel --height=100 --diffusion=atkinson --outfile="${TMP_DIR}/snake4.sixel" < "${snake_jpg}"
 # Convert GIF using precise scaling, background, and filter settings.

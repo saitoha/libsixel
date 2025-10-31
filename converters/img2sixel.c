@@ -90,6 +90,17 @@ static img2sixel_option_help_t const g_option_help_table[] = {
         "outfile",
         "-o, --outfile              specify output file name.\n"
         "                           (default:stdout)\n"
+        "                           Use a name ending in \".png\"\n"
+        "                           or the literal \"png:-\" or prefix a path\n"
+        "                           with \"png:\" to emit PNG data recreated\n"
+        "                           from the SIXEL pipeline. The PNG keeps\n"
+        "                           the palette indices so every color\n"
+        "                           matches the quantized SIXEL output\n"
+        "                           exactly. \"png:-\" writes to stdout\n"
+        "                           while \"png:<path>\" saves the PNG next\n"
+        "                           to the SIXEL output.\n"
+        "                           Supplying \"-o output.png\" writes the\n"
+        "                           PNG directly to that path.\n"
     },
     {
         'a',
@@ -648,11 +659,148 @@ img2sixel_report_invalid_argument(int short_opt,
     sixel_helper_set_additional_message(buffer);
 }
 
+static char const *
+png_target_payload_view(char const *argument)
+{
+    /*
+     * Inline PNG targets split into either a prefix/payload pair or rely on
+     * a simple file-name suffix:
+     *
+     *   +--------------+------------+-------------+
+     *   | form         | payload    | destination |
+     *   +--------------+------------+-------------+
+     *   | png:         | -          | stdout      |
+     *   | png:         | filename   | filesystem  |
+     *   | *.png        | filename   | filesystem  |
+     *   +--------------+------------+-------------+
+     *
+     * The caller only needs the payload column, so we expose it here.  When
+     * the user omits the prefix we simply echo the original pointer so the
+     * caller can copy the value verbatim.
+     */
+    if (argument == NULL) {
+        return NULL;
+    }
+    if (strncmp(argument, "png:", 4) == 0) {
+        return argument + 4;
+    }
+
+    return argument;
+}
+
+static SIXELSTATUS
+prepare_png_directory(char const *output_path)
+{
+    char *path_copy;
+    char *cursor;
+    char *separator;
+    size_t length;
+    SIXELSTATUS status;
+    int ensure_result;
+
+    /*
+     * The PNG payload may describe a nested directory tree.  We split the
+     * string and materialise the directory column so the decoder can open the
+     * final file without tripping over ENOENT:
+     *
+     *   +-----------------------+-----------------------+
+     *   | payload               | parent directory      |
+     *   +-----------------------+-----------------------+
+     *   | tmp/snake.png         | tmp                   |
+     *   | capture/deep/out.png  | capture/deep          |
+     *   | /var/tmp/image.png    | /var/tmp              |
+     *   +-----------------------+-----------------------+
+     */
+
+    path_copy = NULL;
+    cursor = NULL;
+    separator = NULL;
+    length = 0u;
+    status = SIXEL_OK;
+    ensure_result = 0;
+
+    if (output_path == NULL || output_path[0] == '\0') {
+        return SIXEL_OK;
+    }
+    if (strcmp(output_path, "-") == 0) {
+        return SIXEL_OK;
+    }
+
+    length = strlen(output_path);
+    path_copy = (char *)malloc(length + 1u);
+    if (path_copy == NULL) {
+        sixel_helper_set_additional_message(
+            "img2sixel: malloc() failed while preparing the PNG target "
+            "directory.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    strcpy(path_copy, output_path);
+
+    cursor = path_copy;
+    while (cursor[0] != '\0') {
+#if defined(_WIN32)
+        if (cursor[0] == '\\') {
+            cursor[0] = '/';
+        }
+#endif
+        cursor++;
+    }
+
+    separator = strrchr(path_copy, '/');
+    if (separator == NULL) {
+        free(path_copy);
+        return SIXEL_OK;
+    }
+
+    separator[0] = '\0';
+    while (separator > path_copy && separator[-1] == '/') {
+        separator--;
+        separator[0] = '\0';
+    }
+    if (path_copy[0] == '\0') {
+        free(path_copy);
+        return SIXEL_OK;
+    }
+
+#if defined(_WIN32)
+    if (strlen(path_copy) == 2u
+            && ((path_copy[0] >= 'A' && path_copy[0] <= 'Z')
+                || (path_copy[0] >= 'a' && path_copy[0] <= 'z'))
+            && path_copy[1] == ':') {
+        free(path_copy);
+        return SIXEL_OK;
+    }
+#endif
+
+    ensure_result = ensure_dir_p(path_copy, 0755);
+    if (ensure_result != 0) {
+        sixel_helper_set_additional_message(
+            "img2sixel: failed to create the PNG target directory.");
+        free(path_copy);
+        return SIXEL_LIBC_ERROR;
+    }
+
+    free(path_copy);
+    return status;
+}
+
 static int
 is_png_target(char const *path)
 {
     size_t len;
     int matched;
+
+    /*
+     * Detect PNG requests from explicit prefixes or a ".png" suffix:
+     *
+     *   argument
+     *   |
+     *   v
+     *   .............. . p n g
+     *   ^             ^^^^^^^^^
+     *   |             +-- case-insensitive suffix comparison
+     *   +-- accepts the "png:" inline prefix used for stdout capture
+     */
 
     len = 0;
     matched = 0;
@@ -661,8 +809,8 @@ is_png_target(char const *path)
         return 0;
     }
 
-    if (strcmp(path, "png:-") == 0) {
-        return 1;
+    if (strncmp(path, "png:", 4) == 0) {
+        return path[4] != '\0';
     }
 
     len = strlen(path);
@@ -874,6 +1022,11 @@ write_png_from_sixel(char const *sixel_path, char const *output_path)
     }
 
     status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT, sixel_path);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = prepare_png_directory(output_path);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1277,6 +1430,9 @@ main(int argc, char *argv[])
     char *png_temp_path;
     int png_temp_fd;
     char const *png_final_path;
+    int png_argument_has_prefix;
+    char const *png_payload_view;
+    size_t png_payload_length;
     unsigned int assessment_sections;
     unsigned int assessment_section_mask;
     int assessment_enabled;
@@ -1326,6 +1482,9 @@ main(int argc, char *argv[])
     png_temp_path = NULL;
     png_temp_fd = (-1);
     png_final_path = NULL;
+    png_argument_has_prefix = 0;
+    png_payload_view = NULL;
+    png_payload_length = 0u;
     assessment_sections = SIXEL_ASSESSMENT_SECTION_NONE;
     assessment_section_mask = SIXEL_ASSESSMENT_SECTION_NONE;
     assessment_enabled = 0;
@@ -1430,24 +1589,56 @@ main(int argc, char *argv[])
         case 'o':
             if (is_png_target(optarg)) {
                 output_is_png = 1;
-                output_png_to_stdout = (strcmp(optarg, "png:-") == 0);
+                png_argument_has_prefix =
+                    (optarg != NULL)
+                    && (strncmp(optarg, "png:", 4) == 0);
+                png_payload_view = png_target_payload_view(optarg);
+                if (png_argument_has_prefix
+                        && (png_payload_view == NULL
+                            || png_payload_view[0] == '\0')) {
+                    sixel_helper_set_additional_message(
+                        "img2sixel: missing target after the \"png:\" "
+                        "prefix.");
+                    img2sixel_report_invalid_argument(
+                        'o',
+                        optarg,
+                        "img2sixel: use png:- or png:<path> with a "
+                        "non-empty payload.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto error;
+                }
+                output_png_to_stdout =
+                    (png_payload_view != NULL)
+                    && (strcmp(png_payload_view, "-") == 0);
                 free(png_output_path);
                 png_output_path = NULL;
                 free(sixel_output_path);
                 sixel_output_path = NULL;
                 if (!output_png_to_stdout) {
-                    png_output_path = (char *)malloc(strlen(optarg) + 1);
+                    png_payload_length =
+                        (png_payload_view != NULL)
+                        ? strlen(png_payload_view)
+                        : 0u;
+                    png_output_path =
+                        (char *)malloc(png_payload_length + 1u);
                     if (png_output_path == NULL) {
                         sixel_helper_set_additional_message(
                             "img2sixel: malloc() failed for PNG output path.");
                         status = SIXEL_BAD_ALLOCATION;
                         goto error;
                     }
-                    strcpy(png_output_path, optarg);
+                    if (png_payload_view != NULL) {
+                        strcpy(png_output_path, png_payload_view);
+                    } else {
+                        png_output_path[0] = '\0';
+                    }
                 }
             } else {
                 output_is_png = 0;
                 output_png_to_stdout = 0;
+                png_argument_has_prefix = 0;
+                png_payload_view = NULL;
+                png_payload_length = 0u;
                 free(png_output_path);
                 png_output_path = NULL;
                 free(sixel_output_path);
