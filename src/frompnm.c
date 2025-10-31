@@ -35,6 +35,8 @@
 
 #include <sixel.h>
 
+#include "compat_stub.h"
+
 #define PNM_MAX_WIDTH  (1 << 16)
 #define PNM_MAX_HEIGHT (1 << 16)
 #define PNM_MAX_DEPTH  (1 << 16)
@@ -163,10 +165,11 @@ load_pnm(unsigned char      /* in */  *p,
         width = width * 10 + (*s - '0');
         if (width > PNM_MAX_WIDTH) {
             status = SIXEL_RUNTIME_ERROR;
-            sprintf(
-              message,
-              "load_pnm: image width exceeds the limit %d.",
-              PNM_MAX_WIDTH);
+            sixel_compat_snprintf(
+                message,
+                sizeof(message),
+                "load_pnm: image width exceeds the limit %d.",
+                PNM_MAX_WIDTH);
             sixel_helper_set_additional_message(message);
             goto end;
         }
@@ -182,10 +185,11 @@ load_pnm(unsigned char      /* in */  *p,
         height = height * 10 + (*s - '0');
         if (height > PNM_MAX_HEIGHT) {
             status = SIXEL_RUNTIME_ERROR;
-            sprintf(
-              message,
-              "load_pnm: image height exceeds the limit %d.",
-              PNM_MAX_HEIGHT);
+            sixel_compat_snprintf(
+                message,
+                sizeof(message),
+                "load_pnm: image height exceeds the limit %d.",
+                PNM_MAX_HEIGHT);
             sixel_helper_set_additional_message(message);
             goto end;
         }
@@ -211,10 +215,11 @@ load_pnm(unsigned char      /* in */  *p,
         }
         if (deps > PNM_MAX_DEPTH) {
             status = SIXEL_RUNTIME_ERROR;
-            sprintf(
-              message,
-              "load_pnm: image depth exceeds the limit %d.",
-              PNM_MAX_DEPTH);
+            sixel_compat_snprintf(
+                message,
+                sizeof(message),
+                "load_pnm: image depth exceeds the limit %d.",
+                PNM_MAX_DEPTH);
             sixel_helper_set_additional_message(message);
             goto end;
         }

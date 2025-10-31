@@ -38,6 +38,7 @@
 
 #include "frame.h"
 #include "colorspace.h"
+#include "compat_stub.h"
 
 #if !defined(HAVE_MEMMOVE)
 # define memmove(d, s, n) (bcopy ((s), (d), (n)))
@@ -751,10 +752,15 @@ clip(unsigned char *pixels,
         depth = sixel_helper_compute_depth(pixelformat);
         if (depth < 0) {
             status = SIXEL_LOGIC_ERROR;
-            nwrite = sprintf(message,
-                             "clip: "
-                             "sixel_helper_compute_depth(%08x) failed.",
-                             pixelformat);
+            /*
+             * We funnel formatting through the compat helper so that MSVC
+             * receives explicit bounds information.
+             */
+            nwrite = sixel_compat_snprintf(
+                message,
+                sizeof(message),
+                "clip: sixel_helper_compute_depth(%08x) failed.",
+                pixelformat);
             if (nwrite > 0) {
                 sixel_helper_set_additional_message(message);
             }
@@ -774,10 +780,11 @@ clip(unsigned char *pixels,
         break;
     default:
         status = SIXEL_BAD_ARGUMENT;
-        nwrite = sprintf(message,
-                         "clip: "
-                         "invalid pixelformat(%08x) is specified.",
-                         pixelformat);
+        nwrite = sixel_compat_snprintf(
+            message,
+            sizeof(message),
+            "clip: invalid pixelformat(%08x) is specified.",
+            pixelformat);
         if (nwrite > 0) {
             sixel_helper_set_additional_message(message);
         }

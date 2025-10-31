@@ -652,6 +652,7 @@ loader_helper_sources = files(
   'src/frompnm.c',
   'src/fromsixel.c',
   'src/loader.c',
+  'src/compat_stub.c',
   'src/malloc_stub.c',
   'src/pixelformat.c',
   'src/quant.c',

@@ -45,6 +45,8 @@
 # include <unistd.h>
 #endif  /* HAVE_UNISTD_H */
 
+#include "../src/compat_stub.h"
+
 /* _WIN32 */
 #if HAVE_DIRECT_H
 # include <direct.h>
@@ -58,6 +60,26 @@
 # include <BaseTsd.h>
 typedef SSIZE_T ssize_t;
 # define _SSIZE_T_DEFINED
+#endif
+
+/* ------------------------------------------------------------------------ */
+/* MSVC exposes the classic POSIX permission bits with _S_* names.  To      */
+/* document the mapping we draw the alias ladder so anyone porting new      */
+/* callers understands that the left side feeds the right side:             */
+/*                                                                          */
+/*   S_IRUSR  --->  _S_IREAD                                                */
+/*   S_IWUSR  --->  _S_IWRITE                                               */
+/*                                                                          */
+/* The quick diagram keeps the intent readable while making the macros      */
+/* available to code that expects the POSIX spellings.                      */
+/* ------------------------------------------------------------------------ */
+#if defined(_MSC_VER)
+# if !defined(S_IRUSR)
+#  define S_IRUSR _S_IREAD
+# endif
+# if !defined(S_IWUSR)
+#  define S_IWUSR _S_IWRITE
+# endif
 #endif
 
 /* Replicate POSIX access() flag for readability. */
@@ -150,6 +172,7 @@ static void
 img2sixel_log_errno(const char *fmt, ...)
 {
     va_list ap;
+    char errbuf[128];
 
     va_start(ap, fmt);
 #if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
@@ -171,7 +194,11 @@ img2sixel_log_errno(const char *fmt, ...)
 #endif
     va_end(ap);
     if (errno != 0) {
-        fprintf(stderr, ": %s", strerror(errno));
+        if (sixel_compat_strerror(errno, errbuf, sizeof(errbuf)) != NULL) {
+            fprintf(stderr, ": %s", errbuf);
+        } else {
+            fprintf(stderr, ": errno=%d", errno);
+        }
     }
     fprintf(stderr, "\n");
 }
@@ -219,7 +246,7 @@ read_entire_file(const char *path, char **buf, size_t *len)
         return -1;
     }
 
-    fp = fopen(path, "rb");
+    fp = sixel_compat_fopen(path, "rb");
     if (fp == NULL) {
         return -1;
     }
@@ -259,6 +286,7 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
     char *tmp_path;
     size_t dst_len;
     size_t suffix_len;
+    int saved_errno;
 
     if (dst_path == NULL || buf == NULL) {
         errno = EINVAL;
@@ -277,23 +305,33 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
 
 #if defined(HAVE_MKSTEMP)
     fd = mkstemp(tmp_path);
-#elif defined(HAVE__MKTEMP)
-    fd = _mktemp(tmp_path);
-#elif defined(HAVE_MKTEMP)
-    fd = mktemp(tmp_path);
-#endif
     if (fd < 0) {
         free(tmp_path);
         return -1;
     }
+#else
+    if (sixel_compat_mktemp(tmp_path, dst_len + suffix_len + 1) != 0) {
+        free(tmp_path);
+        return -1;
+    }
+    fd = sixel_compat_open(tmp_path,
+                           O_RDWR | O_CREAT | O_TRUNC,
+                           S_IRUSR | S_IWUSR);
+    if (fd < 0) {
+        saved_errno = errno;
+        free(tmp_path);
+        errno = saved_errno;
+        return -1;
+    }
+#endif
 
 #if !defined(_WIN32) && HAVE_FCHMOD
     if (fchmod(fd, mode) != 0) {
         int saved_errno;
 
         saved_errno = errno;
-        close(fd);
-        unlink(tmp_path);
+        (void)sixel_compat_close(fd);
+        (void)sixel_compat_unlink(tmp_path);
         free(tmp_path);
         errno = saved_errno;
         return -1;
@@ -304,16 +342,16 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
 
     total = 0;
     while (total < len) {
-        written = write(fd, (const char *)buf + total, len - total);
+        written = sixel_compat_write(fd,
+                                     (const char *)buf + total,
+                                     len - total);
         if (written < 0) {
             if (errno == EINTR) {
                 continue;
             }
-            int saved_errno;
-
             saved_errno = errno;
-            close(fd);
-            unlink(tmp_path);
+            (void)sixel_compat_close(fd);
+            (void)sixel_compat_unlink(tmp_path);
             free(tmp_path);
             errno = saved_errno;
             return -1;
@@ -325,28 +363,24 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
         int saved_errno;
 
         saved_errno = errno;
-        close(fd);
-        unlink(tmp_path);
+        (void)sixel_compat_close(fd);
+        (void)sixel_compat_unlink(tmp_path);
         free(tmp_path);
         errno = saved_errno;
         return -1;
     }
 
-    if (close(fd) != 0) {
-        int saved_errno;
-
+    if (sixel_compat_close(fd) != 0) {
         saved_errno = errno;
-        unlink(tmp_path);
+        (void)sixel_compat_unlink(tmp_path);
         free(tmp_path);
         errno = saved_errno;
         return -1;
     }
 
     if (rename(tmp_path, dst_path) != 0) {
-        int saved_errno;
-
         saved_errno = errno;
-        unlink(tmp_path);
+        (void)sixel_compat_unlink(tmp_path);
         free(tmp_path);
         errno = saved_errno;
         return -1;
@@ -440,7 +474,7 @@ files_equal(const char *path, const void *buf, size_t len)
         return -1;
     }
 
-    fp = fopen(path, "rb");
+    fp = sixel_compat_fopen(path, "rb");
     if (fp == NULL) {
         if (errno == ENOENT) {
             return 0;
@@ -553,7 +587,7 @@ ensure_line_in_file(const char *path, const char *line)
         return 0;
     }
 
-    fp = fopen(path, "ab");
+    fp = sixel_compat_fopen(path, "ab");
     if (fp == NULL) {
         free(content);
         return -1;
@@ -622,7 +656,7 @@ img2sixel_read_if_exists(const char *path, char **out, size_t *len)
     if (path == NULL) {
         return -1;
     }
-    if (access(path, R_OK) != 0) {
+    if (sixel_compat_access(path, R_OK) != 0) {
         return -1;
     }
     return read_entire_file(path, out, len);
@@ -633,7 +667,7 @@ img2sixel_try_env(const char *env_name, char **out, size_t *len)
 {
     const char *path;
 
-    path = getenv(env_name);
+    path = sixel_compat_getenv(env_name);
     if (path == NULL || path[0] == '\0') {
         return -1;
     }
@@ -649,7 +683,7 @@ img2sixel_try_env_dir(const char *env_name, const char *suffix,
     char *candidate;
     int ret;
 
-    dir = getenv(env_name);
+    dir = sixel_compat_getenv(env_name);
     if (dir == NULL || dir[0] == '\0') {
         return -1;
     }
@@ -810,12 +844,12 @@ img2sixel_completion_home(void)
 {
     const char *home;
 
-    home = getenv("IMG2SIXEL_COMPLETION_HOME");
+    home = sixel_compat_getenv("IMG2SIXEL_COMPLETION_HOME");
     if (home != NULL && home[0] != '\0') {
         return home;
     }
 
-    home = getenv("HOME");
+    home = sixel_compat_getenv("HOME");
     if (home == NULL || home[0] == '\0') {
         return NULL;
     }
@@ -884,7 +918,7 @@ img2sixel_prefer_legacy_bash_path(void)
     /*   +----------------------------+                                   */
     /*                                                                    */
     /* ------------------------------------------------------------------ */
-    version = getenv("BASH_VERSION");
+    version = sixel_compat_getenv("BASH_VERSION");
     if (version == NULL) {
         return 0;
     }
@@ -929,7 +963,8 @@ img2sixel_install_single(const char *shell, const char *target_path,
         return -1;
     }
 
-    if (fallback_path != NULL && access(fallback_path, F_OK) == 0) {
+    if (fallback_path != NULL
+        && sixel_compat_access(fallback_path, F_OK) == 0) {
         equal = files_equal(fallback_path, buf, len);
         if (equal == 0) {
             ret = write_atomic(fallback_path, buf, len,
@@ -1173,7 +1208,7 @@ img2sixel_handle_show(int mask)
 static int
 img2sixel_unlink_result(const char *path)
 {
-    if (unlink(path) == 0) {
+    if (sixel_compat_unlink(path) == 0) {
         printf("removed %s\n", path);
         return 0;
     }

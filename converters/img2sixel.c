@@ -59,6 +59,7 @@
 #include <sixel.h>
 #include "../src/frame.h"
 #include "../src/assessment.h"
+#include "../src/compat_stub.h"
 #include "completion_utils.h"
 
 #if defined(HAVE_MKSTEMP)
@@ -916,13 +917,13 @@ create_temp_template(void)
     int needs_separator;
     size_t maximum_tmpdir_len;
 
-    tmpdir = getenv("TMPDIR");
+    tmpdir = sixel_compat_getenv("TMPDIR");
 #if defined(_WIN32)
     if (tmpdir == NULL || tmpdir[0] == '\0') {
-        tmpdir = getenv("TEMP");
+        tmpdir = sixel_compat_getenv("TEMP");
     }
     if (tmpdir == NULL || tmpdir[0] == '\0') {
-        tmpdir = getenv("TMP");
+        tmpdir = sixel_compat_getenv("TMP");
     }
 #endif
     if (tmpdir == NULL || tmpdir[0] == '\0') {
@@ -1001,7 +1002,7 @@ copy_file_to_stream(char const *path,
     finished_at = 0.0;
     duration = 0.0;
 
-    source = fopen(path, "rb");
+    source = sixel_compat_fopen(path, "rb");
     if (source == NULL) {
         sixel_helper_set_additional_message(
             "img2sixel: failed to open assessment staging file.");
@@ -1131,6 +1132,7 @@ parse_assessment_sections(char const *spec,
     char *copy;
     char *cursor;
     char *token;
+    char *context;
     unsigned int sections;
     unsigned int view;
     int result;
@@ -1154,8 +1156,9 @@ parse_assessment_sections(char const *spec,
     sections = 0u;
     view = SIXEL_ASSESSMENT_VIEW_ENCODED;
     result = 0;
+    context = NULL;
     while (result == 0) {
-        token = strtok(cursor, ",");
+        token = sixel_compat_strtok(cursor, ",", &context);
         if (token == NULL) {
             break;
         }
@@ -1682,7 +1685,7 @@ main(int argc, char *argv[])
                 png_output_path = NULL;
                 free(sixel_output_path);
                 sixel_output_path = NULL;
-                if (!output_png_to_stdout) {
+                if (! output_png_to_stdout) {
                     png_payload_length =
                         (png_payload_view != NULL)
                         ? strlen(png_payload_view)
@@ -1696,7 +1699,9 @@ main(int argc, char *argv[])
                         goto error;
                     }
                     if (png_payload_view != NULL) {
-                        strcpy(png_output_path, png_payload_view);
+                        (void)sixel_compat_strcpy(png_output_path,
+                                                  strlen(optarg) + 1,
+                                                  optarg);
                     } else {
                         png_output_path[0] = '\0';
                     }
@@ -1740,7 +1745,9 @@ main(int argc, char *argv[])
                         status = SIXEL_BAD_ALLOCATION;
                         goto error;
                     }
-                    strcpy(sixel_output_path, optarg);
+                    (void)sixel_compat_strcpy(sixel_output_path,
+                                              strlen(optarg) + 1,
+                                              optarg);
                 }
             }
             break;
@@ -1854,17 +1861,11 @@ main(int argc, char *argv[])
                 status = SIXEL_RUNTIME_ERROR;
                 goto error;
             }
-            (void) close(assessment_temp_fd);
+            (void)sixel_compat_close(assessment_temp_fd);
             assessment_temp_fd = (-1);
-#elif defined(HAVE__MKTEMP)
-            if (_mktemp(assessment_temp_path) == NULL) {
-                sixel_helper_set_additional_message(
-                    "img2sixel: _mktemp() failed for assessment staging file.");
-                status = SIXEL_RUNTIME_ERROR;
-                goto error;
-            }
-#elif defined(HAVE_MKTEMP)
-            if (mktemp(assessment_temp_path) == NULL) {
+#elif defined(HAVE__MKTEMP) || defined(HAVE_MKTEMP)
+            if (sixel_compat_mktemp(assessment_temp_path,
+                                    strlen(assessment_temp_path) + 1) != 0) {
                 sixel_helper_set_additional_message(
                     "img2sixel: mktemp() failed for assessment staging file.");
                 status = SIXEL_RUNTIME_ERROR;
@@ -1889,7 +1890,9 @@ main(int argc, char *argv[])
                         status = SIXEL_BAD_ALLOCATION;
                         goto error;
                     }
-                    strcpy(assessment_temp_path, generated);
+                    (void)sixel_compat_strcpy(assessment_temp_path,
+                                              strlen(generated) + 1,
+                                              generated);
                 }
 #endif
                 status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_OUTFILE,
@@ -1905,7 +1908,9 @@ main(int argc, char *argv[])
                     status = SIXEL_BAD_ALLOCATION;
                     goto error;
                 }
-                strcpy(sixel_output_path, assessment_temp_path);
+                (void)sixel_compat_strcpy(sixel_output_path,
+                                          strlen(assessment_temp_path) + 1,
+                                          assessment_temp_path);
         }
     }
 
@@ -1944,17 +1949,11 @@ main(int argc, char *argv[])
             status = SIXEL_RUNTIME_ERROR;
             goto error;
         }
-        (void) close(png_temp_fd);
+        (void)sixel_compat_close(png_temp_fd);
         png_temp_fd = (-1);
-#elif defined(HAVE__MKTEMP)
-        if (_mktemp(png_temp_path) == NULL) {
-            sixel_helper_set_additional_message(
-                "img2sixel: _mktemp() failed for PNG staging file.");
-            status = SIXEL_RUNTIME_ERROR;
-            goto error;
-        }
-#elif defined(HAVE_MKTEMP)
-        if (mktemp(png_temp_path) == NULL) {
+#elif defined(HAVE__MKTEMP) || defined(HAVE_MKTEMP)
+        if (sixel_compat_mktemp(png_temp_path,
+                                strlen(png_temp_path) + 1) != 0) {
             sixel_helper_set_additional_message(
                 "img2sixel: mktemp() failed for PNG staging file.");
             status = SIXEL_RUNTIME_ERROR;
@@ -1979,7 +1978,9 @@ main(int argc, char *argv[])
                 status = SIXEL_BAD_ALLOCATION;
                 goto error;
             }
-            strcpy(png_temp_path, generated);
+            (void)sixel_compat_strcpy(png_temp_path,
+                                      strlen(generated) + 1,
+                                      generated);
         }
 #endif
 
@@ -2119,7 +2120,9 @@ main(int argc, char *argv[])
                 status = SIXEL_RUNTIME_ERROR;
                 goto error;
             }
-            assessment_forward_stream = fopen(assessment_forward_path, "wb");
+            assessment_forward_stream = sixel_compat_fopen(
+                assessment_forward_path,
+                "wb");
             if (assessment_forward_stream == NULL) {
                 sixel_helper_set_additional_message(
                     "img2sixel: failed to open assessment spool sink.");
@@ -2193,7 +2196,9 @@ main(int argc, char *argv[])
         sixel_assessment_stage_finish(assessment);
         if (assessment_json_path != NULL &&
                 strcmp(assessment_json_path, "-") != 0) {
-            assessment_json_file = fopen(assessment_json_path, "wb");
+            assessment_json_file = sixel_compat_fopen(
+                assessment_json_path,
+                "wb");
             if (assessment_json_file == NULL) {
                 sixel_helper_set_additional_message(
                     "img2sixel: failed to open assessment JSON file.");
@@ -2229,7 +2234,9 @@ main(int argc, char *argv[])
             status = SIXEL_RUNTIME_ERROR;
             goto error;
         }
-        assessment_forward_stream = fopen(assessment_forward_path, "wb");
+        assessment_forward_stream = sixel_compat_fopen(
+            assessment_forward_path,
+            "wb");
         if (assessment_forward_stream == NULL) {
             sixel_helper_set_additional_message(
                 "img2sixel: failed to open assessment spool sink.");
@@ -2275,7 +2282,7 @@ error:
 
 end:
     if (png_temp_path != NULL) {
-        (void) unlink(png_temp_path);
+        (void)sixel_compat_unlink(png_temp_path);
     }
     free(png_temp_path);
     free(png_output_path);
@@ -2284,7 +2291,7 @@ end:
     }
     if (assessment_temp_path != NULL &&
             assessment_spool_mode != SIXEL_ASSESSMENT_SPOOL_MODE_NONE) {
-        (void) unlink(assessment_temp_path);
+        (void)sixel_compat_unlink(assessment_temp_path);
     }
     free(assessment_temp_path);
     free(assessment_forward_path);
