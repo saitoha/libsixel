@@ -53,6 +53,7 @@
 #include "assessment.h"
 #include "encoder.h"
 #include "frame.h"
+#include "compat_stub.h"
 
 #if defined(_WIN32)
 #include <io.h>
@@ -233,16 +234,24 @@ assessment_guess_format(sixel_assessment_t *assessment)
     loader = assessment->loader_name;
     if (loader[0] != '\0') {
         if (strcmp(loader, "libpng") == 0) {
-            strcpy(assessment->format_name, "png");
+            (void)sixel_compat_strcpy(assessment->format_name,
+                                      sizeof(assessment->format_name),
+                                      "png");
             return;
         } else if (strcmp(loader, "libjpeg") == 0) {
-            strcpy(assessment->format_name, "jpeg");
+            (void)sixel_compat_strcpy(assessment->format_name,
+                                      sizeof(assessment->format_name),
+                                      "jpeg");
             return;
         } else if (strcmp(loader, "wic") == 0) {
-            strcpy(assessment->format_name, "wic");
+            (void)sixel_compat_strcpy(assessment->format_name,
+                                      sizeof(assessment->format_name),
+                                      "wic");
             return;
         } else if (strcmp(loader, "builtin") == 0) {
-            strcpy(assessment->format_name, "builtin");
+            (void)sixel_compat_strcpy(assessment->format_name,
+                                      sizeof(assessment->format_name),
+                                      "builtin");
             return;
         }
     }
@@ -258,7 +267,9 @@ assessment_guess_format(sixel_assessment_t *assessment)
         }
         assessment->format_name[len] = '\0';
     } else {
-        strcpy(assessment->format_name, "unknown");
+        (void)sixel_compat_strcpy(assessment->format_name,
+                                  sizeof(assessment->format_name),
+                                  "unknown");
     }
 }
 
@@ -1075,7 +1086,9 @@ assessment_resolve_executable_dir(char const *argv0,
         if (strlen(argv0) >= sizeof(candidate)) {
             return -1;
         }
-        strcpy(candidate, argv0);
+        (void)sixel_compat_strcpy(candidate,
+                                  sizeof(candidate),
+                                  argv0);
     } else if (resolve_from_path_env(argv0, candidate,
                                      sizeof(candidate)) != 0) {
         return -1;
@@ -1091,7 +1104,9 @@ assessment_resolve_executable_dir(char const *argv0,
             free(resolved);
             return -1;
         }
-        strcpy(candidate, resolved);
+        (void)sixel_compat_strcpy(candidate,
+                                  sizeof(candidate),
+                                  resolved);
         free(resolved);
     }
 #endif
@@ -1102,7 +1117,9 @@ assessment_resolve_executable_dir(char const *argv0,
         resolved = _fullpath(NULL, candidate, 0u);
         if (resolved != NULL) {
             if (strlen(resolved) < sizeof(candidate)) {
-                strcpy(candidate, resolved);
+                (void)sixel_compat_strcpy(candidate,
+                                          sizeof(candidate),
+                                          resolved);
             }
             free(resolved);
         }
@@ -1125,7 +1142,7 @@ assessment_resolve_executable_dir(char const *argv0,
     if (strlen(candidate) + 1u > size) {
         return -1;
     }
-    strcpy(buffer, candidate);
+    (void)sixel_compat_strcpy(buffer, size, candidate);
     return 0;
 }
 
@@ -4069,7 +4086,9 @@ sixel_assessment_setopt(sixel_assessment_t *assessment,
         if (strlen(value) >= sizeof(assessment->model_dir)) {
             return SIXEL_BAD_ARGUMENT;
         }
-        strcpy(assessment->model_dir, value);
+        (void)sixel_compat_strcpy(assessment->model_dir,
+                                  sizeof(assessment->model_dir),
+                                  value);
         assessment->model_dir_state = 1;
         assessment->lpips_models_ready = 0;
         return SIXEL_OK;

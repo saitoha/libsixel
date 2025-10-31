@@ -53,6 +53,7 @@
 #endif  /* HAVE_SYS_IOCTL_H */
 
 #include <sixel.h>
+#include "compat_stub.h"
 
 #if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
 SIXELSTATUS
@@ -273,11 +274,16 @@ sixel_tty_scroll(
     cellheight = height * size.ws_row / size.ws_ypixel + 1;
     scroll = cellheight + row - size.ws_row + 1;
     if (scroll > 0) {
-        nwrite = sprintf(buffer, "\033[%dS\033[%dA", scroll, scroll);
+        nwrite = sixel_compat_snprintf(
+            buffer,
+            sizeof(buffer),
+            "\033[%dS\033[%dA",
+            scroll,
+            scroll);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
-                "sixel_tty_scroll: sprintf() failed.");
+                "sixel_tty_scroll: command format failed.");
         }
         nwrite = f_write(buffer, (int)strlen(buffer), priv);
         if (nwrite < 0) {

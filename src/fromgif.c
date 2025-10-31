@@ -50,6 +50,7 @@
 
 #include "frame.h"
 #include "fromgif.h"
+#include "compat_stub.h"
 
 /*
  * gif_context_t struct and start_xxx functions
@@ -663,7 +664,11 @@ gif_load_next(
                 break;
             }
             if ((c = gif_get8(s)) != 0x00) {
-                sprintf((char *)buffer, "missing valid block terminator (unknown code %02x).", c);
+                sixel_compat_snprintf(
+                    (char *)buffer,
+                    sizeof(buffer),
+                    "missing valid block terminator (unknown code %02x).",
+                    c);
                 sixel_helper_set_additional_message((char *)buffer);
                 status = SIXEL_RUNTIME_ERROR;
                 goto end;
@@ -676,7 +681,11 @@ gif_load_next(
             goto end;
 
         default:
-            sprintf((char *)buffer, "corrupt GIF (reason: unknown code %02x).", c);
+            sixel_compat_snprintf(
+                (char *)buffer,
+                sizeof(buffer),
+                "corrupt GIF (reason: unknown code %02x).",
+                c);
             sixel_helper_set_additional_message((char *)buffer);
             status = SIXEL_RUNTIME_ERROR;
             goto end;
@@ -753,9 +762,11 @@ load_gif(
     g.prev_out = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
     g.history = (unsigned char *)sixel_allocator_malloc(allocator, pcount);
     if (g.out == NULL || g.prev_out == NULL || g.history == NULL) {
-        sprintf(message,
-                "load_gif: sixel_allocator_malloc() failed. size=%zu.",
-                pcount);
+        sixel_compat_snprintf(
+            message,
+            sizeof(message),
+            "load_gif: sixel_allocator_malloc() failed. size=%zu.",
+            pcount);
         sixel_helper_set_additional_message(message);
         status = SIXEL_BAD_ALLOCATION;
         goto end;

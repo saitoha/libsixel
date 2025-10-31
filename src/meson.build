@@ -39,6 +39,7 @@ srcs = [
   'writer.c',
   'stb_image_write.c',
   'status.c',
+  'compat_stub.c',
   'malloc_stub.c',
   'allocator.c',
   'tty.c',

@@ -38,10 +38,19 @@ EXTRA_DIST = \
 
 noinst_LIBRARIES = libsixelquicklookcore.a
 
+# +----------------------------------------------+
+# |  Core static archive                         |
+# +----------------------------------------------+
+# The Quick Look helpers rely on the same compat
+# layer as the main library.  By keeping the
+# archive self-contained we avoid undefined
+# references when the Objective-C targets link it.
+#
 libsixelquicklookcore_a_SOURCES = \
     $(top_srcdir)/src/status.c \
     $(top_srcdir)/src/allocator.c \
-    $(top_srcdir)/src/fromsixel.c
+    $(top_srcdir)/src/fromsixel.c \
+    $(top_srcdir)/src/compat_stub.c
 libsixelquicklookcore_a_CPPFLAGS = $(AM_CPPFLAGS)
 
 if HAVE_APPLE_QUICKLOOK_EXTENSION

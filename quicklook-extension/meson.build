@@ -36,9 +36,22 @@ common_c_args = ['-DSIXEL_DISABLE_EXT_LIBS=1', '-DHAVE_CONFIG_H']
 common_objc_args = ['-fobjc-arc', '-fmodules']
 extension_objc_args = common_objc_args + ['-fapplication-extension']
 
+# +----------------------------------------------+
+# |  Quick Look core aggregation                 |
+# +----------------------------------------------+
+# The Objective-C frontends expect the compat
+# helpers that power strerror() and snprintf().
+# Bundling compat_stub.c here mirrors the layout
+# used by the Autotools build and prevents linker
+# gaps when the static archive is reused.
 quicklook_core = static_library(
   'sixelquicklookcore',
-  ['../src/status.c', '../src/allocator.c', '../src/fromsixel.c'],
+  [
+    '../src/status.c',
+    '../src/allocator.c',
+    '../src/fromsixel.c',
+    '../src/compat_stub.c',
+  ],
   include_directories: [project_inc, include_directories('../src')],
   c_args: common_c_args,
   install: false)

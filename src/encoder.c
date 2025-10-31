@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: MIT AND BSD-3-Clause
  *
+ * Copyright (c) 2021-2025 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2019 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -111,6 +112,7 @@
 #include "dither.h"
 #include "frame.h"
 #include "rgblookup.h"
+#include "compat_stub.h"
 
 #if defined(_WIN32)
 
@@ -482,11 +484,7 @@ arg_strdup(
 
     p = (char *)sixel_allocator_malloc(allocator, len + 1);
     if (p) {
-#if HAVE_STRCPY_S
-        (void) strcpy_s(p, (rsize_t)len, s);
-#else
-        (void) strcpy(p, s);
-#endif  /* HAVE_STRCPY_S */
+        (void)sixel_compat_strcpy(p, len + 1, s);
     }
     return p;
 }
@@ -655,13 +653,9 @@ sixel_write_callback(char *data, int size, void *priv)
 {
     int result;
 
-#if HAVE__WRITE
-    result = _write(*(int *)priv, data, (size_t)size);
-#elif defined(__MINGW64__)
-    result = write(*(int *)priv, data, (unsigned int)size);
-#else
-    result = write(*(int *)priv, data, (size_t)size);
-#endif
+    result = (int)sixel_compat_write(*(int *)priv,
+                                     data,
+                                     (size_t)size);
 
     return result;
 }
@@ -686,13 +680,9 @@ sixel_hex_write_callback(
         hex[j] += (hex[j] < 10 ? '0': ('a' - 10));
     }
 
-#if HAVE__WRITE
-    result = _write(*(int *)priv, hex, (unsigned int)(size * 2));
-#elif defined(__MINGW64__)
-    result = write(*(int *)priv, hex, (unsigned int)(size * 2));
-#else
-    result = write(*(int *)priv, hex, (size_t)(size * 2));
-#endif
+    result = (int)sixel_compat_write(*(int *)priv,
+                                     hex,
+                                     (size_t)(size * 2));
 
     return result;
 }
@@ -780,14 +770,10 @@ sixel_encoder_ensure_cell_size(sixel_encoder_t *encoder)
         return SIXEL_OK;
     }
 
-#if HAVE__OPEN
-    fd = _open("/dev/tty", O_RDONLY);
-#else
-    fd = open("/dev/tty", O_RDONLY);
-#endif  /* #if HAVE__OPEN */
+    fd = sixel_compat_open("/dev/tty", O_RDONLY);
     if (fd >= 0) {
         result = ioctl(fd, TIOCGWINSZ, &ws);
-        close(fd);
+        (void)sixel_compat_close(fd);
     } else {
         sixel_helper_set_additional_message(
             "failed to open /dev/tty");
@@ -3136,10 +3122,12 @@ sixel_encoder_output_without_macro(
     depth = sixel_helper_compute_depth(pixelformat);
     if (depth < 0) {
         status = SIXEL_LOGIC_ERROR;
-        nwrite = sprintf(message,
-                         "sixel_encoder_output_without_macro: "
-                         "sixel_helper_compute_depth(%08x) failed.",
-                         pixelformat);
+        nwrite = sixel_compat_snprintf(
+            message,
+            sizeof(message),
+            "sixel_encoder_output_without_macro: "
+            "sixel_helper_compute_depth(%08x) failed.",
+            pixelformat);
         if (nwrite > 0) {
             sixel_helper_set_additional_message(message);
         }
@@ -3356,16 +3344,22 @@ sixel_encoder_output_with_macro(
 
     if (sixel_frame_get_loop_no(frame) == 0) {
         if (encoder->macro_number >= 0) {
-            nwrite = sprintf(buffer, "\033P%d;0;1!z",
-                             encoder->macro_number);
+            nwrite = sixel_compat_snprintf(
+                buffer,
+                sizeof(buffer),
+                "\033P%d;0;1!z",
+                encoder->macro_number);
         } else {
-            nwrite = sprintf(buffer, "\033P%d;0;1!z",
-                             sixel_frame_get_frame_no(frame));
+            nwrite = sixel_compat_snprintf(
+                buffer,
+                sizeof(buffer),
+                "\033P%d;0;1!z",
+                sixel_frame_get_frame_no(frame));
         }
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
-                "sixel_encoder_output_with_macro: sprintf() failed.");
+                "sixel_encoder_output_with_macro: command format failed.");
             goto end;
         }
         write_started_at = 0.0;
@@ -3446,12 +3440,15 @@ sixel_encoder_output_with_macro(
         }
     }
     if (encoder->macro_number < 0) {
-        nwrite = sprintf(buffer, "\033[%d*z",
-                         sixel_frame_get_frame_no(frame));
+        nwrite = sixel_compat_snprintf(
+            buffer,
+            sizeof(buffer),
+            "\033[%d*z",
+            sixel_frame_get_frame_no(frame));
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
-                "sixel_encoder_output_with_macro: sprintf() failed.");
+                "sixel_encoder_output_with_macro: command format failed.");
         }
         write_started_at = 0.0;
         write_finished_at = 0.0;
@@ -3994,7 +3991,7 @@ sixel_encoder_encode_frame(
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
-                "sixel_encoder_encode_frame: sprintf() failed.");
+                "sixel_encoder_encode_frame: command format failed.");
             goto end;
         }
         nwrite = write_callback(buf, nwrite, write_priv);
@@ -4194,7 +4191,7 @@ sixel_encoder_new(
         return (SIXEL_LIBC_ERROR | (e & 0xff));
     }
 #else
-    env_default_bgcolor = getenv("SIXEL_BGCOLOR");
+    env_default_bgcolor = sixel_compat_getenv("SIXEL_BGCOLOR");
 #endif  /* HAVE__DUPENV_S */
     if (env_default_bgcolor != NULL) {
         status = sixel_parse_x_colorspec(&(*ppencoder)->bgcolor,
@@ -4214,7 +4211,7 @@ sixel_encoder_new(
         return (SIXEL_LIBC_ERROR | (e & 0xff));
     }
 #else
-    env_default_ncolors = getenv("SIXEL_COLORS");
+    env_default_ncolors = sixel_compat_getenv("SIXEL_COLORS");
 #endif  /* HAVE__DUPENV_S */
     if (env_default_ncolors) {
         ncolors = atoi(env_default_ncolors); /* may overflow */
@@ -4274,21 +4271,13 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
         if (encoder->outfd
             && encoder->outfd != STDOUT_FILENO
             && encoder->outfd != STDERR_FILENO) {
-#if HAVE__CLOSE
-            (void) _close(encoder->outfd);
-#else
-            (void) close(encoder->outfd);
-#endif  /* HAVE__CLOSE */
+            (void)sixel_compat_close(encoder->outfd);
         }
         if (encoder->tile_outfd >= 0
             && encoder->tile_outfd != encoder->outfd
             && encoder->tile_outfd != STDOUT_FILENO
             && encoder->tile_outfd != STDERR_FILENO) {
-#if HAVE__CLOSE
-            (void) _close(encoder->tile_outfd);
-#else
-            (void) close(encoder->tile_outfd);
-#endif  /* HAVE__CLOSE */
+            (void)sixel_compat_close(encoder->tile_outfd);
         }
         if (encoder->capture_source_frame != NULL) {
             sixel_frame_unref(encoder->capture_source_frame);
@@ -4382,21 +4371,11 @@ sixel_encoder_setopt(
         }
         if (strcmp(value, "-") != 0) {
             if (encoder->outfd && encoder->outfd != STDOUT_FILENO) {
-#if HAVE__CLOSE
-                (void) _close(encoder->outfd);
-#else
-                (void) close(encoder->outfd);
-#endif  /* HAVE__CLOSE */
+                (void)sixel_compat_close(encoder->outfd);
             }
-#if HAVE__OPEN
-            encoder->outfd = _open(value,
-                                   O_RDWR|O_CREAT|O_TRUNC,
-                                   S_IRUSR|S_IWUSR);
-#else
-            encoder->outfd = open(value,
-                                  O_RDWR|O_CREAT|O_TRUNC,
-                                  S_IRUSR|S_IWUSR);
-#endif  /* HAVE__OPEN */
+            encoder->outfd = sixel_compat_open(value,
+                                               O_RDWR | O_CREAT | O_TRUNC,
+                                               S_IRUSR | S_IWUSR);
         }
         break;
     case SIXEL_OPTFLAG_7BIT_MODE:  /* 7 */

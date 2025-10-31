@@ -48,6 +48,7 @@
 
 #include <sixel.h>
 #include "stdio_stub.h"
+#include "compat_stub.h"
 
 #if !defined(O_BINARY) && defined(_O_BINARY)
 # define O_BINARY _O_BINARY
@@ -350,7 +351,7 @@ write_png_to_file(
 #endif  /* defined(O_BINARY) */
         output_fp = stdout;
     } else {
-        output_fp = fopen(filename, "wb");
+        output_fp = sixel_compat_fopen(filename, "wb");
         if (!output_fp) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message("fopen() failed.");

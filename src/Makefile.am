@@ -49,10 +49,12 @@ libsixel_la_SOURCES = \
 		$(srcdir)/writer.h \
 		$(srcdir)/stb_image_write.c \
 		$(srcdir)/stb_image_write.h \
-		$(srcdir)/status.c \
-		$(srcdir)/status.h \
-		$(srcdir)/malloc_stub.c \
-		$(srcdir)/malloc_stub.h \
+                $(srcdir)/status.c \
+                $(srcdir)/status.h \
+                $(srcdir)/compat_stub.c \
+                $(srcdir)/compat_stub.h \
+                $(srcdir)/malloc_stub.c \
+                $(srcdir)/malloc_stub.h \
 		$(srcdir)/allocator.c \
 		$(srcdir)/allocator.h \
 		$(srcdir)/tty.c \
