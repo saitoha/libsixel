@@ -366,8 +366,6 @@ Options:
                            SIXEL pipeline. The PNG keeps the palette
                            indices so that every color matches the
                            quantized SIXEL output exactly.
--T PATH, --tiles=PATH      specify output path for DRCS-SIXEL
-                           tile characters. Use '-' to write to stdout.
 -a MODE, --assessment=MODE emit assessment JSON report.
                            MODE: quantized | encoded
 -J PATH, --assessment-file=PATH
@@ -593,10 +591,13 @@ Options:
                            loader names such as 'gd,builtin'
                            Unknown names are ignored so the same
                            command works across builds.
--@ DSCS, --drcs=DSCS       output extended DRCS tiles instead of
-                           regular SIXEL image (experimental)
--M VERSION, --mapping-version=VERSION
-                           specify DRCS-SIXEL Unicode mapping version
+-@ MMV:CHARSET:PATH, --drcs=MMV:CHARSET:PATH
+                           emit DRCS tiles instead of regular SIXEL output.
+                           MMV selects the mapping revision (0..2, default 2).
+                           CHARSET picks the DRCS slot (1-126 when MMV=0,
+                           1-63 when MMV=1, 1-158 when MMV=2; default 1).
+                           PATH redirects tile data; use "-" to reuse STDOUT
+                           or leave it blank to discard tiles.
 -O, --ormode               enables sixel output in "ormode"
 -W WORKING_COLORSPACE, --working-colorspace=WORKING_COLORSPACE
                            choose internal working color space
