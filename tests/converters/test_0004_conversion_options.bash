@@ -31,29 +31,36 @@ require_file "${snake_png}"
 require_file "${snake_six}"
 
 # Validate dithering, gamma, and scaling through a round-trip convert.
-run_img2sixel "${snake_jpg}" -datkinson -flum -saverage | \
+run_img2sixel "${snake_jpg}" -datkinson -flum -save | \
     run_img2sixel | tee "${TMP_DIR}/snake.sixel" >/dev/null
+# Reject ambiguous select-color prefixes.
+if run_img2sixel -sa "${snake_jpg}" >/dev/null 2>&1; then
+    echo "expected -sa to fail due to ambiguous prefix" >&2
+    exit 1
+fi
+# Check unique select-color prefixes.
+run_img2sixel -shist "${snake_jpg}" >/dev/null
 # Check percentage scaling, histogram stats, and background overrides.
-run_img2sixel -w50% -h150% -dfs -Bblue -thls -shistogram < "${snake_jpg}" | \
+run_img2sixel -w50% -h150% -dfs -Bblue -thls -shist < "${snake_jpg}" | \
     tee "${TMP_DIR}/snake2.sixel" >/dev/null
 # Ensure width scaling preserves expected DCS coordinates.
-printf '\033Pq"1;1;1;1!6~\033\\' | run_img2sixel -r nearest -w200% | \
+printf '\033Pq"1;1;1;1!6~\033\\' | run_img2sixel -rne -w200% | \
     tr '#' '\n' | tail -n +3 | od -An -tx1 | tr -d ' ' | \
     xargs test 302131327e2d2131327e1b5c =
 # Ensure height scaling preserves expected DCS coordinates.
-printf '\033Pq"1;1;1;1!6~\033\\' | run_img2sixel -r nearest -h200% | \
+printf '\033Pq"1;1;1;1!6~\033\\' | run_img2sixel -rne -h200% | \
     tr '#' '\n' | tail -n +3 | od -An -tx1 | tr -d ' ' | \
     xargs test 302131327e2d2131327e1b5c =
 # Ensure automatic width cooperates with explicit height scaling.
-printf '\033Pq"1;1;1;1!6~\033\\' | run_img2sixel -r nearest -h200% -wauto | \
+printf '\033Pq"1;1;1;1!6~\033\\' | run_img2sixel -rne -h200% -wauto | \
     tr '#' '\n' | tail -n +3 | od -An -tx1 | tr -d ' ' | \
     xargs test 302131327e2d2131327e1b5c =
 # Ensure automatic height cooperates with explicit width scaling.
-printf '\033Pq"1;1;1;1!6~\033\\' | run_img2sixel -r nearest -hauto -w12 | \
+printf '\033Pq"1;1;1;1!6~\033\\' | run_img2sixel -rne -hauto -w12 | \
     tr '#' '\n' | tail -n +3 | od -An -tx1 | tr -d ' ' | \
     xargs test 302131327e2d2131327e1b5c =
 # Ensure combined absolute and percentage scaling stays consistent.
-printf '\033Pq"1;1;1;1!6~\033\\' | run_img2sixel -r nearest -h12 -w200% | \
+printf '\033Pq"1;1;1;1!6~\033\\' | run_img2sixel -rne -h12 -w200% | \
     tr '#' '\n' | tail -n +3 | od -An -tx1 | tr -d ' ' | \
     xargs test 302131327e2d2131327e1b5c =
 # Exercise explicit dimensions, dithering, and terminal palette output.
@@ -74,11 +81,11 @@ od -An -tx1 -N8 "${TMP_DIR}/snake-filename.png" | \
 # Confirm long option forms operate correctly.
 run_img2sixel --height=100 --diffusion=atkinson --outfile="${TMP_DIR}/snake4.sixel" < "${snake_jpg}"
 # Convert GIF using precise scaling, background, and filter settings.
-run_img2sixel -w105% -h100 -B'#000000000' -rnearest < "${snake_gif}"
+run_img2sixel -w105% -h100 -B'#000000000' -rne < "${snake_gif}"
 # Check automatic scaling and Gaussian filter on TGA input.
-run_img2sixel -7 -sauto -w100 -rgaussian -qauto -dburkes -tauto "${snake_tga}"
+run_img2sixel -7 -sauto -w100 -rga -qauto -dburkes -tauto "${snake_tga}"
 # Convert TIFF with palette sizing, centering, and custom colour math.
-run_img2sixel -p200 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhanning -dstucki -thls "${snake_tiff}" -o/dev/null
+run_img2sixel -p200 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhan -dstucki -thls "${snake_tiff}" -o/dev/null
 # Ensure palette auto selection with encode flag on PGM input.
 run_img2sixel -8 -qauto -thls -e "${snake_pgm}" -o/dev/null
 # Verify explicit palette file with encoder sizing tweak.
@@ -146,7 +153,7 @@ run_img2sixel -I -c2000x100+40+20 -wauto -h200 -qhigh -dfs -rbilinear -trgb "${s
 # Inspect BMP with verbose logging and varied scaling controls.
 run_img2sixel -I -v -w200 -hauto -c100x1000+40+20 -qlow -dnone -rhamming -thls "${IMAGES_DIR}/snake.bmp"
 # Convert JPEG using PNG palette, auto format, and Welsh filter.
-run_img2sixel -m "${IMAGES_DIR}/map8.png" -w200 -fauto -rwelsh "${egret_jpg}"
+run_img2sixel -m "${IMAGES_DIR}/map8.png" -w200 -fau -rwelsh "${egret_jpg}"
 # Convert PPM using 16-colour palette with bicubic scaling.
 run_img2sixel -m "${IMAGES_DIR}/map16.png" -w100 -hauto -rbicubic -dauto "${snake_ppm}"
 # Limit palette and adjust colour space for Lanczos2 scaling.

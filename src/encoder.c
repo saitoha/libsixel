@@ -211,6 +211,264 @@ clock_win(void)
 #endif /* _WIN32 */
 
 
+/*
+ * Prefix matcher roadmap:
+ *
+ *   +---------+-------------------+
+ *   | input   | decision           |
+ *   +---------+-------------------+
+ *   | "ave"   | average            |
+ *   | "a"     | ambiguous (auto?)  |
+ *   +---------+-------------------+
+ *
+ * The helper walks the choice table once, collecting prefixes and
+ * checking whether a unique destination emerges.  Ambiguous prefixes
+ * bubble up so the caller can craft a friendly diagnostic.
+ */
+typedef struct sixel_option_choice {
+    char const *name;
+    int value;
+} sixel_option_choice_t;
+
+typedef enum sixel_option_choice_result {
+    SIXEL_OPTION_CHOICE_MATCH = 0,
+    SIXEL_OPTION_CHOICE_AMBIGUOUS = 1,
+    SIXEL_OPTION_CHOICE_NONE = 2
+} sixel_option_choice_result_t;
+
+static sixel_option_choice_result_t
+sixel_match_option_choice(
+    char const *value,
+    sixel_option_choice_t const *choices,
+    size_t choice_count,
+    int *matched_value,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    size_t index;
+    size_t value_length;
+    int candidate_index;
+    size_t match_count;
+    int base_value;
+    int base_value_set;
+    int ambiguous_values;
+    size_t diag_length;
+    size_t copy_length;
+
+    if (diagnostic != NULL && diagnostic_size > 0u) {
+        diagnostic[0] = '\0';
+    }
+    if (value == NULL) {
+        return SIXEL_OPTION_CHOICE_NONE;
+    }
+
+    value_length = strlen(value);
+    if (value_length == 0u) {
+        return SIXEL_OPTION_CHOICE_NONE;
+    }
+
+    index = 0u;
+    candidate_index = (-1);
+    match_count = 0u;
+    base_value = 0;
+    base_value_set = 0;
+    ambiguous_values = 0;
+    diag_length = 0u;
+
+    while (index < choice_count) {
+        if (strncmp(choices[index].name, value, value_length) == 0) {
+            if (choices[index].name[value_length] == '\0') {
+                *matched_value = choices[index].value;
+                return SIXEL_OPTION_CHOICE_MATCH;
+            }
+            if (!base_value_set) {
+                base_value = choices[index].value;
+                base_value_set = 1;
+            } else if (choices[index].value != base_value) {
+                ambiguous_values = 1;
+            }
+            if (candidate_index == (-1)) {
+                candidate_index = (int)index;
+            }
+            ++match_count;
+            if (diagnostic != NULL && diagnostic_size > 0u) {
+                if (diag_length > 0u && diag_length + 2u < diagnostic_size) {
+                    diagnostic[diag_length] = ',';
+                    diagnostic[diag_length + 1u] = ' ';
+                    diag_length += 2u;
+                    diagnostic[diag_length] = '\0';
+                }
+                copy_length = strlen(choices[index].name);
+                if (copy_length > diagnostic_size - diag_length - 1u) {
+                    copy_length = diagnostic_size - diag_length - 1u;
+                }
+                memcpy(diagnostic + diag_length,
+                       choices[index].name,
+                       copy_length);
+                diag_length += copy_length;
+                diagnostic[diag_length] = '\0';
+            }
+        }
+        ++index;
+    }
+
+    if (match_count == 0u) {
+        return SIXEL_OPTION_CHOICE_NONE;
+    }
+    if (!ambiguous_values) {
+        *matched_value = choices[candidate_index].value;
+        return SIXEL_OPTION_CHOICE_MATCH;
+    }
+
+    return SIXEL_OPTION_CHOICE_AMBIGUOUS;
+}
+
+static void
+sixel_report_ambiguous_prefix(
+    char const *option,
+    char const *value,
+    char const *candidates,
+    char *buffer,
+    size_t buffer_size)
+{
+    int written;
+
+    if (buffer == NULL || buffer_size == 0u) {
+        return;
+    }
+    if (candidates != NULL && candidates[0] != '\0') {
+        written = snprintf(buffer,
+                           buffer_size,
+                           "ambiguous prefix \"%s\" for %s (matches: %s).",
+                           value,
+                           option,
+                           candidates);
+    } else {
+        written = snprintf(buffer,
+                           buffer_size,
+                           "ambiguous prefix \"%s\" for %s.",
+                           value,
+                           option);
+    }
+    (void) written;
+    sixel_helper_set_additional_message(buffer);
+}
+
+static sixel_option_choice_t const g_option_choices_builtin_palette[] = {
+    { "xterm16", SIXEL_BUILTIN_XTERM16 },
+    { "xterm256", SIXEL_BUILTIN_XTERM256 },
+    { "vt340mono", SIXEL_BUILTIN_VT340_MONO },
+    { "vt340color", SIXEL_BUILTIN_VT340_COLOR },
+    { "gray1", SIXEL_BUILTIN_G1 },
+    { "gray2", SIXEL_BUILTIN_G2 },
+    { "gray4", SIXEL_BUILTIN_G4 },
+    { "gray8", SIXEL_BUILTIN_G8 }
+};
+
+static sixel_option_choice_t const g_option_choices_diffusion[] = {
+    { "auto", SIXEL_DIFFUSE_AUTO },
+    { "none", SIXEL_DIFFUSE_NONE },
+    { "fs", SIXEL_DIFFUSE_FS },
+    { "atkinson", SIXEL_DIFFUSE_ATKINSON },
+    { "jajuni", SIXEL_DIFFUSE_JAJUNI },
+    { "stucki", SIXEL_DIFFUSE_STUCKI },
+    { "burkes", SIXEL_DIFFUSE_BURKES },
+    { "sierra1", SIXEL_DIFFUSE_SIERRA1 },
+    { "sierra2", SIXEL_DIFFUSE_SIERRA2 },
+    { "sierra3", SIXEL_DIFFUSE_SIERRA3 },
+    { "a_dither", SIXEL_DIFFUSE_A_DITHER },
+    { "x_dither", SIXEL_DIFFUSE_X_DITHER },
+    { "lso1", SIXEL_DIFFUSE_LSO1 },
+    { "lso2", SIXEL_DIFFUSE_LSO2 },
+    { "lso3", SIXEL_DIFFUSE_LSO3 }
+};
+
+static sixel_option_choice_t const g_option_choices_diffusion_scan[] = {
+    { "auto", SIXEL_SCAN_AUTO },
+    { "serpentine", SIXEL_SCAN_SERPENTINE },
+    { "raster", SIXEL_SCAN_RASTER }
+};
+
+static sixel_option_choice_t const g_option_choices_diffusion_carry[] = {
+    { "auto", SIXEL_CARRY_AUTO },
+    { "direct", SIXEL_CARRY_DISABLE },
+    { "carry", SIXEL_CARRY_ENABLE }
+};
+
+static sixel_option_choice_t const g_option_choices_find_largest[] = {
+    { "auto", SIXEL_LARGE_AUTO },
+    { "norm", SIXEL_LARGE_NORM },
+    { "lum", SIXEL_LARGE_LUM }
+};
+
+static sixel_option_choice_t const g_option_choices_select_color[] = {
+    { "auto", SIXEL_REP_AUTO },
+    { "center", SIXEL_REP_CENTER_BOX },
+    { "average", SIXEL_REP_AVERAGE_COLORS },
+    { "histogram", SIXEL_REP_AVERAGE_PIXELS },
+    { "histgram", SIXEL_REP_AVERAGE_PIXELS }
+};
+
+static sixel_option_choice_t const g_option_choices_resampling[] = {
+    { "nearest", SIXEL_RES_NEAREST },
+    { "gaussian", SIXEL_RES_GAUSSIAN },
+    { "hanning", SIXEL_RES_HANNING },
+    { "hamming", SIXEL_RES_HAMMING },
+    { "bilinear", SIXEL_RES_BILINEAR },
+    { "welsh", SIXEL_RES_WELSH },
+    { "bicubic", SIXEL_RES_BICUBIC },
+    { "lanczos2", SIXEL_RES_LANCZOS2 },
+    { "lanczos3", SIXEL_RES_LANCZOS3 },
+    { "lanczos4", SIXEL_RES_LANCZOS4 }
+};
+
+static sixel_option_choice_t const g_option_choices_quality[] = {
+    { "auto", SIXEL_QUALITY_AUTO },
+    { "high", SIXEL_QUALITY_HIGH },
+    { "low", SIXEL_QUALITY_LOW },
+    { "full", SIXEL_QUALITY_FULL }
+};
+
+static sixel_option_choice_t const g_option_choices_loopmode[] = {
+    { "auto", SIXEL_LOOP_AUTO },
+    { "force", SIXEL_LOOP_FORCE },
+    { "disable", SIXEL_LOOP_DISABLE }
+};
+
+static sixel_option_choice_t const g_option_choices_palette_type[] = {
+    { "auto", SIXEL_PALETTETYPE_AUTO },
+    { "hls", SIXEL_PALETTETYPE_HLS },
+    { "rgb", SIXEL_PALETTETYPE_RGB }
+};
+
+static sixel_option_choice_t const g_option_choices_encode_policy[] = {
+    { "auto", SIXEL_ENCODEPOLICY_AUTO },
+    { "fast", SIXEL_ENCODEPOLICY_FAST },
+    { "size", SIXEL_ENCODEPOLICY_SIZE }
+};
+
+static sixel_option_choice_t const g_option_choices_lut_policy[] = {
+    { "auto", SIXEL_LUT_POLICY_AUTO },
+    { "5bit", SIXEL_LUT_POLICY_5BIT },
+    { "6bit", SIXEL_LUT_POLICY_6BIT },
+    { "robinhood", SIXEL_LUT_POLICY_ROBINHOOD },
+    { "hopscotch", SIXEL_LUT_POLICY_HOPSCOTCH }
+};
+
+static sixel_option_choice_t const g_option_choices_working_colorspace[] = {
+    { "gamma", SIXEL_COLORSPACE_GAMMA },
+    { "linear", SIXEL_COLORSPACE_LINEAR },
+    { "oklab", SIXEL_COLORSPACE_OKLAB }
+};
+
+static sixel_option_choice_t const g_option_choices_output_colorspace[] = {
+    { "gamma", SIXEL_COLORSPACE_GAMMA },
+    { "linear", SIXEL_COLORSPACE_LINEAR },
+    { "smpte-c", SIXEL_COLORSPACE_SMPTEC },
+    { "smptec", SIXEL_COLORSPACE_SMPTEC }
+};
+
+
 static char *
 arg_strdup(
     char const          /* in */ *s,          /* source buffer */
@@ -4106,6 +4364,10 @@ sixel_encoder_setopt(
     int drcs_mmv_value;
     long drcs_charset_value;
     unsigned int drcs_charset_limit;
+    sixel_option_choice_result_t match_result;
+    int match_value;
+    char match_detail[128];
+    char match_message[256];
 
     sixel_encoder_ref(encoder);
     opt_copy = NULL;
@@ -4239,128 +4501,160 @@ sixel_encoder_setopt(
         encoder->color_option = SIXEL_COLOR_OPTION_HIGHCOLOR;
         break;
     case SIXEL_OPTFLAG_BUILTIN_PALETTE:  /* b */
-        if (strcmp(value, "xterm16") == 0) {
-            encoder->builtin_palette = SIXEL_BUILTIN_XTERM16;
-        } else if (strcmp(value, "xterm256") == 0) {
-            encoder->builtin_palette = SIXEL_BUILTIN_XTERM256;
-        } else if (strcmp(value, "vt340mono") == 0) {
-            encoder->builtin_palette = SIXEL_BUILTIN_VT340_MONO;
-        } else if (strcmp(value, "vt340color") == 0) {
-            encoder->builtin_palette = SIXEL_BUILTIN_VT340_COLOR;
-        } else if (strcmp(value, "gray1") == 0) {
-            encoder->builtin_palette = SIXEL_BUILTIN_G1;
-        } else if (strcmp(value, "gray2") == 0) {
-            encoder->builtin_palette = SIXEL_BUILTIN_G2;
-        } else if (strcmp(value, "gray4") == 0) {
-            encoder->builtin_palette = SIXEL_BUILTIN_G4;
-        } else if (strcmp(value, "gray8") == 0) {
-            encoder->builtin_palette = SIXEL_BUILTIN_G8;
+        match_result = sixel_match_option_choice(
+            value,
+            g_option_choices_builtin_palette,
+            sizeof(g_option_choices_builtin_palette) /
+            sizeof(g_option_choices_builtin_palette[0]),
+            &match_value,
+            match_detail,
+            sizeof(match_detail));
+        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+            encoder->builtin_palette = match_value;
         } else {
-            sixel_helper_set_additional_message(
+            if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                sixel_report_ambiguous_prefix("--builtin-palette",
+                                              value,
+                                              match_detail,
+                                              match_message,
+                                              sizeof(match_message));
+            } else {
+                sixel_helper_set_additional_message(
                     "cannot parse builtin palette option.");
+            }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
         encoder->color_option = SIXEL_COLOR_OPTION_BUILTIN;
         break;
     case SIXEL_OPTFLAG_DIFFUSION:  /* d */
-        /* parse --diffusion option */
-        if (strcmp(value, "auto") == 0) {
-            encoder->method_for_diffuse = SIXEL_DIFFUSE_AUTO;
-        } else if (strcmp(value, "none") == 0) {
-            encoder->method_for_diffuse = SIXEL_DIFFUSE_NONE;
-        } else if (strcmp(value, "fs") == 0) {
-            encoder->method_for_diffuse = SIXEL_DIFFUSE_FS;
-        } else if (strcmp(value, "atkinson") == 0) {
-            encoder->method_for_diffuse = SIXEL_DIFFUSE_ATKINSON;
-        } else if (strcmp(value, "jajuni") == 0) {
-            encoder->method_for_diffuse = SIXEL_DIFFUSE_JAJUNI;
-        } else if (strcmp(value, "stucki") == 0) {
-            encoder->method_for_diffuse = SIXEL_DIFFUSE_STUCKI;
-        } else if (strcmp(value, "burkes") == 0) {
-            encoder->method_for_diffuse = SIXEL_DIFFUSE_BURKES;
-        } else if (strcmp(value, "sierra1") == 0) {
-            encoder->method_for_diffuse = SIXEL_DIFFUSE_SIERRA1;
-        } else if (strcmp(value, "sierra2") == 0) {
-            encoder->method_for_diffuse = SIXEL_DIFFUSE_SIERRA2;
-        } else if (strcmp(value, "sierra3") == 0) {
-            encoder->method_for_diffuse = SIXEL_DIFFUSE_SIERRA3;
-        } else if (strcmp(value, "a_dither") == 0) {
-            encoder->method_for_diffuse = SIXEL_DIFFUSE_A_DITHER;
-        } else if (strcmp(value, "x_dither") == 0) {
-            encoder->method_for_diffuse = SIXEL_DIFFUSE_X_DITHER;
-        } else if (strcmp(value, "lso1") == 0) {
-            encoder->method_for_diffuse = SIXEL_DIFFUSE_LSO1;
-        } else if (strcmp(value, "lso2") == 0) {
-            encoder->method_for_diffuse = SIXEL_DIFFUSE_LSO2;
-        } else if (strcmp(value, "lso3") == 0) {
-            encoder->method_for_diffuse = SIXEL_DIFFUSE_LSO3;
+        match_result = sixel_match_option_choice(
+            value,
+            g_option_choices_diffusion,
+            sizeof(g_option_choices_diffusion) /
+            sizeof(g_option_choices_diffusion[0]),
+            &match_value,
+            match_detail,
+            sizeof(match_detail));
+        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+            encoder->method_for_diffuse = match_value;
         } else {
-            sixel_helper_set_additional_message(
-                "specified diffusion method is not supported.");
+            if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                sixel_report_ambiguous_prefix("--diffusion",
+                                              value,
+                                              match_detail,
+                                              match_message,
+                                              sizeof(match_message));
+            } else {
+                sixel_helper_set_additional_message(
+                    "specified diffusion method is not supported.");
+            }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
         break;
     case SIXEL_OPTFLAG_DIFFUSION_SCAN:  /* y */
-        if (strcmp(value, "auto") == 0) {
-            encoder->method_for_scan = SIXEL_SCAN_AUTO;
-        } else if (strcmp(value, "serpentine") == 0) {
-            encoder->method_for_scan = SIXEL_SCAN_SERPENTINE;
-        } else if (strcmp(value, "raster") == 0) {
-            encoder->method_for_scan = SIXEL_SCAN_RASTER;
+        match_result = sixel_match_option_choice(
+            value,
+            g_option_choices_diffusion_scan,
+            sizeof(g_option_choices_diffusion_scan) /
+            sizeof(g_option_choices_diffusion_scan[0]),
+            &match_value,
+            match_detail,
+            sizeof(match_detail));
+        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+            encoder->method_for_scan = match_value;
         } else {
-            sixel_helper_set_additional_message(
-                "specified diffusion scan is not supported.");
+            if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                sixel_report_ambiguous_prefix("--diffusion-scan",
+                                              value,
+                                              match_detail,
+                                              match_message,
+                                              sizeof(match_message));
+            } else {
+                sixel_helper_set_additional_message(
+                    "specified diffusion scan is not supported.");
+            }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
         break;
     case SIXEL_OPTFLAG_DIFFUSION_CARRY:  /* Y */
-        if (strcmp(value, "auto") == 0) {
-            encoder->method_for_carry = SIXEL_CARRY_AUTO;
-        } else if (strcmp(value, "direct") == 0) {
-            encoder->method_for_carry = SIXEL_CARRY_DISABLE;
-        } else if (strcmp(value, "carry") == 0) {
-            encoder->method_for_carry = SIXEL_CARRY_ENABLE;
+        match_result = sixel_match_option_choice(
+            value,
+            g_option_choices_diffusion_carry,
+            sizeof(g_option_choices_diffusion_carry) /
+            sizeof(g_option_choices_diffusion_carry[0]),
+            &match_value,
+            match_detail,
+            sizeof(match_detail));
+        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+            encoder->method_for_carry = match_value;
         } else {
-            sixel_helper_set_additional_message(
-                "specified diffusion carry mode is not supported.");
+            if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                sixel_report_ambiguous_prefix("--diffusion-carry",
+                                              value,
+                                              match_detail,
+                                              match_message,
+                                              sizeof(match_message));
+            } else {
+                sixel_helper_set_additional_message(
+                    "specified diffusion carry mode is not supported.");
+            }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
         break;
     case SIXEL_OPTFLAG_FIND_LARGEST:  /* f */
-        /* parse --find-largest option */
-        if (value) {
-            if (strcmp(value, "auto") == 0) {
-                encoder->method_for_largest = SIXEL_LARGE_AUTO;
-            } else if (strcmp(value, "norm") == 0) {
-                encoder->method_for_largest = SIXEL_LARGE_NORM;
-            } else if (strcmp(value, "lum") == 0) {
-                encoder->method_for_largest = SIXEL_LARGE_LUM;
+        if (value != NULL) {
+            match_result = sixel_match_option_choice(
+                value,
+                g_option_choices_find_largest,
+                sizeof(g_option_choices_find_largest) /
+                sizeof(g_option_choices_find_largest[0]),
+                &match_value,
+                match_detail,
+                sizeof(match_detail));
+            if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+                encoder->method_for_largest = match_value;
             } else {
-                sixel_helper_set_additional_message(
-                    "specified finding method is not supported.");
+                if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                    sixel_report_ambiguous_prefix("--find-largest",
+                                                  value,
+                                                  match_detail,
+                                                  match_message,
+                                                  sizeof(match_message));
+                } else {
+                    sixel_helper_set_additional_message(
+                        "specified finding method is not supported.");
+                }
                 status = SIXEL_BAD_ARGUMENT;
                 goto end;
             }
         }
         break;
     case SIXEL_OPTFLAG_SELECT_COLOR:  /* s */
-        /* parse --select-color option */
-        if (strcmp(value, "auto") == 0) {
-            encoder->method_for_rep = SIXEL_REP_AUTO;
-        } else if (strcmp(value, "center") == 0) {
-            encoder->method_for_rep = SIXEL_REP_CENTER_BOX;
-        } else if (strcmp(value, "average") == 0) {
-            encoder->method_for_rep = SIXEL_REP_AVERAGE_COLORS;
-        } else if ((strcmp(value, "histogram") == 0) ||
-                   (strcmp(value, "histgram") == 0)) {
-            encoder->method_for_rep = SIXEL_REP_AVERAGE_PIXELS;
+        match_result = sixel_match_option_choice(
+            value,
+            g_option_choices_select_color,
+            sizeof(g_option_choices_select_color) /
+            sizeof(g_option_choices_select_color[0]),
+            &match_value,
+            match_detail,
+            sizeof(match_detail));
+        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+            encoder->method_for_rep = match_value;
         } else {
-            sixel_helper_set_additional_message(
-                "specified finding method is not supported.");
+            if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                sixel_report_ambiguous_prefix("--select-color",
+                                              value,
+                                              match_detail,
+                                              match_message,
+                                              sizeof(match_message));
+            } else {
+                sixel_helper_set_additional_message(
+                    "specified finding method is not supported.");
+            }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
@@ -4440,77 +4734,105 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_RESAMPLING:  /* r */
-        /* parse --resampling option */
-        if (strcmp(value, "nearest") == 0) {
-            encoder->method_for_resampling = SIXEL_RES_NEAREST;
-        } else if (strcmp(value, "gaussian") == 0) {
-            encoder->method_for_resampling = SIXEL_RES_GAUSSIAN;
-        } else if (strcmp(value, "hanning") == 0) {
-            encoder->method_for_resampling = SIXEL_RES_HANNING;
-        } else if (strcmp(value, "hamming") == 0) {
-            encoder->method_for_resampling = SIXEL_RES_HAMMING;
-        } else if (strcmp(value, "bilinear") == 0) {
-            encoder->method_for_resampling = SIXEL_RES_BILINEAR;
-        } else if (strcmp(value, "welsh") == 0) {
-            encoder->method_for_resampling = SIXEL_RES_WELSH;
-        } else if (strcmp(value, "bicubic") == 0) {
-            encoder->method_for_resampling = SIXEL_RES_BICUBIC;
-        } else if (strcmp(value, "lanczos2") == 0) {
-            encoder->method_for_resampling = SIXEL_RES_LANCZOS2;
-        } else if (strcmp(value, "lanczos3") == 0) {
-            encoder->method_for_resampling = SIXEL_RES_LANCZOS3;
-        } else if (strcmp(value, "lanczos4") == 0) {
-            encoder->method_for_resampling = SIXEL_RES_LANCZOS4;
+        match_result = sixel_match_option_choice(
+            value,
+            g_option_choices_resampling,
+            sizeof(g_option_choices_resampling) /
+            sizeof(g_option_choices_resampling[0]),
+            &match_value,
+            match_detail,
+            sizeof(match_detail));
+        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+            encoder->method_for_resampling = match_value;
         } else {
-            sixel_helper_set_additional_message(
-                "specified desampling method is not supported.");
+            if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                sixel_report_ambiguous_prefix("--resampling",
+                                              value,
+                                              match_detail,
+                                              match_message,
+                                              sizeof(match_message));
+            } else {
+                sixel_helper_set_additional_message(
+                    "specified desampling method is not supported.");
+            }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
         break;
     case SIXEL_OPTFLAG_QUALITY:  /* q */
-        /* parse --quality option */
-        if (strcmp(value, "auto") == 0) {
-            encoder->quality_mode = SIXEL_QUALITY_AUTO;
-        } else if (strcmp(value, "high") == 0) {
-            encoder->quality_mode = SIXEL_QUALITY_HIGH;
-        } else if (strcmp(value, "low") == 0) {
-            encoder->quality_mode = SIXEL_QUALITY_LOW;
-        } else if (strcmp(value, "full") == 0) {
-            encoder->quality_mode = SIXEL_QUALITY_FULL;
+        match_result = sixel_match_option_choice(
+            value,
+            g_option_choices_quality,
+            sizeof(g_option_choices_quality) /
+            sizeof(g_option_choices_quality[0]),
+            &match_value,
+            match_detail,
+            sizeof(match_detail));
+        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+            encoder->quality_mode = match_value;
         } else {
-            sixel_helper_set_additional_message(
-                "cannot parse quality option.");
+            if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                sixel_report_ambiguous_prefix("--quality",
+                                              value,
+                                              match_detail,
+                                              match_message,
+                                              sizeof(match_message));
+            } else {
+                sixel_helper_set_additional_message(
+                    "cannot parse quality option.");
+            }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
         break;
     case SIXEL_OPTFLAG_LOOPMODE:  /* l */
-        /* parse --loop-control option */
-        if (strcmp(value, "auto") == 0) {
-            encoder->loop_mode = SIXEL_LOOP_AUTO;
-        } else if (strcmp(value, "force") == 0) {
-            encoder->loop_mode = SIXEL_LOOP_FORCE;
-        } else if (strcmp(value, "disable") == 0) {
-            encoder->loop_mode = SIXEL_LOOP_DISABLE;
+        match_result = sixel_match_option_choice(
+            value,
+            g_option_choices_loopmode,
+            sizeof(g_option_choices_loopmode) /
+            sizeof(g_option_choices_loopmode[0]),
+            &match_value,
+            match_detail,
+            sizeof(match_detail));
+        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+            encoder->loop_mode = match_value;
         } else {
-            sixel_helper_set_additional_message(
-                "cannot parse loop-control option.");
+            if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                sixel_report_ambiguous_prefix("--loop-control",
+                                              value,
+                                              match_detail,
+                                              match_message,
+                                              sizeof(match_message));
+            } else {
+                sixel_helper_set_additional_message(
+                    "cannot parse loop-control option.");
+            }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
         break;
     case SIXEL_OPTFLAG_PALETTE_TYPE:  /* t */
-        /* parse --palette-type option */
-        if (strcmp(value, "auto") == 0) {
-            encoder->palette_type = SIXEL_PALETTETYPE_AUTO;
-        } else if (strcmp(value, "hls") == 0) {
-            encoder->palette_type = SIXEL_PALETTETYPE_HLS;
-        } else if (strcmp(value, "rgb") == 0) {
-            encoder->palette_type = SIXEL_PALETTETYPE_RGB;
+        match_result = sixel_match_option_choice(
+            value,
+            g_option_choices_palette_type,
+            sizeof(g_option_choices_palette_type) /
+            sizeof(g_option_choices_palette_type[0]),
+            &match_value,
+            match_detail,
+            sizeof(match_detail));
+        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+            encoder->palette_type = match_value;
         } else {
-            sixel_helper_set_additional_message(
-                "cannot parse palette type option.");
+            if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                sixel_report_ambiguous_prefix("--palette-type",
+                                              value,
+                                              match_detail,
+                                              match_message,
+                                              sizeof(match_message));
+            } else {
+                sixel_helper_set_additional_message(
+                    "cannot parse palette type option.");
+            }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
@@ -4762,33 +5084,53 @@ sixel_encoder_setopt(
         encoder->penetrate_multiplexer = 1;
         break;
     case SIXEL_OPTFLAG_ENCODE_POLICY:  /* E */
-        if (strcmp(value, "auto") == 0) {
-            encoder->encode_policy = SIXEL_ENCODEPOLICY_AUTO;
-        } else if (strcmp(value, "fast") == 0) {
-            encoder->encode_policy = SIXEL_ENCODEPOLICY_FAST;
-        } else if (strcmp(value, "size") == 0) {
-            encoder->encode_policy = SIXEL_ENCODEPOLICY_SIZE;
+        match_result = sixel_match_option_choice(
+            value,
+            g_option_choices_encode_policy,
+            sizeof(g_option_choices_encode_policy) /
+            sizeof(g_option_choices_encode_policy[0]),
+            &match_value,
+            match_detail,
+            sizeof(match_detail));
+        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+            encoder->encode_policy = match_value;
         } else {
-            sixel_helper_set_additional_message(
-                "cannot parse encode policy option.");
+            if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                sixel_report_ambiguous_prefix("--encode-policy",
+                                              value,
+                                              match_detail,
+                                              match_message,
+                                              sizeof(match_message));
+            } else {
+                sixel_helper_set_additional_message(
+                    "cannot parse encode policy option.");
+            }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
         break;
     case SIXEL_OPTFLAG_LUT_POLICY:  /* L */
-        if (strcmp(value, "auto") == 0) {
-            encoder->lut_policy = SIXEL_LUT_POLICY_AUTO;
-        } else if (strcmp(value, "5bit") == 0) {
-            encoder->lut_policy = SIXEL_LUT_POLICY_5BIT;
-        } else if (strcmp(value, "6bit") == 0) {
-            encoder->lut_policy = SIXEL_LUT_POLICY_6BIT;
-        } else if (strcmp(value, "robinhood") == 0) {
-            encoder->lut_policy = SIXEL_LUT_POLICY_ROBINHOOD;
-        } else if (strcmp(value, "hopscotch") == 0) {
-            encoder->lut_policy = SIXEL_LUT_POLICY_HOPSCOTCH;
+        match_result = sixel_match_option_choice(
+            value,
+            g_option_choices_lut_policy,
+            sizeof(g_option_choices_lut_policy) /
+            sizeof(g_option_choices_lut_policy[0]),
+            &match_value,
+            match_detail,
+            sizeof(match_detail));
+        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+            encoder->lut_policy = match_value;
         } else {
-            sixel_helper_set_additional_message(
-                "cannot parse lut policy option.");
+            if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                sixel_report_ambiguous_prefix("--lut-policy",
+                                              value,
+                                              match_detail,
+                                              match_message,
+                                              sizeof(match_message));
+            } else {
+                sixel_helper_set_additional_message(
+                    "cannot parse lut policy option.");
+            }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
@@ -4817,15 +5159,28 @@ sixel_encoder_setopt(
             }
             lowered[len] = '\0';
 
-            if (strcmp(lowered, "gamma") == 0) {
-                encoder->working_colorspace = SIXEL_COLORSPACE_GAMMA;
-            } else if (strcmp(lowered, "linear") == 0) {
-                encoder->working_colorspace = SIXEL_COLORSPACE_LINEAR;
-            } else if (strcmp(lowered, "oklab") == 0) {
-                encoder->working_colorspace = SIXEL_COLORSPACE_OKLAB;
+            match_result = sixel_match_option_choice(
+                lowered,
+                g_option_choices_working_colorspace,
+                sizeof(g_option_choices_working_colorspace) /
+                sizeof(g_option_choices_working_colorspace[0]),
+                &match_value,
+                match_detail,
+                sizeof(match_detail));
+            if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+                encoder->working_colorspace = match_value;
             } else {
-                sixel_helper_set_additional_message(
-                    "unsupported working colorspace specified.");
+                if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                    sixel_report_ambiguous_prefix(
+                        "--working-colorspace",
+                        value,
+                        match_detail,
+                        match_message,
+                        sizeof(match_message));
+                } else {
+                    sixel_helper_set_additional_message(
+                        "unsupported working colorspace specified.");
+                }
                 status = SIXEL_BAD_ARGUMENT;
                 goto end;
             }
@@ -4851,16 +5206,28 @@ sixel_encoder_setopt(
             }
             lowered[len] = '\0';
 
-            if (strcmp(lowered, "gamma") == 0) {
-                encoder->output_colorspace = SIXEL_COLORSPACE_GAMMA;
-            } else if (strcmp(lowered, "linear") == 0) {
-                encoder->output_colorspace = SIXEL_COLORSPACE_LINEAR;
-            } else if (strcmp(lowered, "smpte-c") == 0 ||
-                       strcmp(lowered, "smptec") == 0) {
-                encoder->output_colorspace = SIXEL_COLORSPACE_SMPTEC;
+            match_result = sixel_match_option_choice(
+                lowered,
+                g_option_choices_output_colorspace,
+                sizeof(g_option_choices_output_colorspace) /
+                sizeof(g_option_choices_output_colorspace[0]),
+                &match_value,
+                match_detail,
+                sizeof(match_detail));
+            if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+                encoder->output_colorspace = match_value;
             } else {
-                sixel_helper_set_additional_message(
-                    "unsupported output colorspace specified.");
+                if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                    sixel_report_ambiguous_prefix(
+                        "--output-colorspace",
+                        value,
+                        match_detail,
+                        match_message,
+                        sizeof(match_message));
+                } else {
+                    sixel_helper_set_additional_message(
+                        "unsupported output colorspace specified.");
+                }
                 status = SIXEL_BAD_ARGUMENT;
                 goto end;
             }

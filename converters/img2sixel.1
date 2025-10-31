@@ -24,6 +24,10 @@ img2sixel \- image converter to DEC SIXEL graphics
 
 .SH "COMMAND-LINE OPTIONS"
 \fIimg2sixel\fP has the following command-line options:
+.PP
+Arguments that select from a fixed set accept unique prefixes.  For
+example, "\-s ave" resolves to "average", but "\-s a" is rejected because
+it matches both "auto" and "average".
 ." Keep this list in the same order as `img2sixel -H`.
 .TP 5
 .B \-o, \-\-outfile
