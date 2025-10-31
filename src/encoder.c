@@ -1041,31 +1041,1377 @@ end:
 }
 
 
+static SIXELSTATUS
+sixel_encoder_emit_palette_output(sixel_encoder_t *encoder);
+
+
+static int
+sixel_path_has_extension(char const *path, char const *extension)
+{
+    size_t path_len;
+    size_t ext_len;
+    size_t index;
+
+    path_len = 0u;
+    ext_len = 0u;
+    index = 0u;
+
+    if (path == NULL || extension == NULL) {
+        return 0;
+    }
+
+    path_len = strlen(path);
+    ext_len = strlen(extension);
+    if (ext_len == 0u || path_len < ext_len) {
+        return 0;
+    }
+
+    for (index = 0u; index < ext_len; ++index) {
+        unsigned char path_ch;
+        unsigned char ext_ch;
+
+        path_ch = (unsigned char)path[path_len - ext_len + index];
+        ext_ch = (unsigned char)extension[index];
+        if (tolower(path_ch) != tolower(ext_ch)) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+typedef enum sixel_palette_format {
+    SIXEL_PALETTE_FORMAT_NONE = 0,
+    SIXEL_PALETTE_FORMAT_ACT,
+    SIXEL_PALETTE_FORMAT_PAL_JASC,
+    SIXEL_PALETTE_FORMAT_PAL_RIFF,
+    SIXEL_PALETTE_FORMAT_PAL_AUTO,
+    SIXEL_PALETTE_FORMAT_GPL
+} sixel_palette_format_t;
+
+/*
+ * Palette specification parser
+ *
+ *   TYPE:PATH  -> explicit format prefix
+ *   PATH       -> rely on extension or heuristics
+ *
+ * The ASCII diagram below shows how the prefix is peeled:
+ *
+ *   [type] : [path]
+ *    ^-- left part selects decoder/encoder when present.
+ */
+static char const *
+sixel_palette_strip_prefix(char const *spec,
+                           sixel_palette_format_t *format_hint)
+{
+    char const *colon;
+    size_t type_len;
+    size_t index;
+    char lowered[16];
+
+    colon = NULL;
+    type_len = 0u;
+    index = 0u;
+
+    if (format_hint != NULL) {
+        *format_hint = SIXEL_PALETTE_FORMAT_NONE;
+    }
+    if (spec == NULL) {
+        return NULL;
+    }
+
+    colon = strchr(spec, ':');
+    if (colon == NULL) {
+        return spec;
+    }
+
+    type_len = (size_t)(colon - spec);
+    if (type_len == 0u || type_len >= sizeof(lowered)) {
+        return spec;
+    }
+
+    for (index = 0u; index < type_len; ++index) {
+        lowered[index] = (char)tolower((unsigned char)spec[index]);
+    }
+    lowered[type_len] = '\0';
+
+    if (strcmp(lowered, "act") == 0) {
+        if (format_hint != NULL) {
+            *format_hint = SIXEL_PALETTE_FORMAT_ACT;
+        }
+        return colon + 1;
+    }
+    if (strcmp(lowered, "pal") == 0) {
+        if (format_hint != NULL) {
+            *format_hint = SIXEL_PALETTE_FORMAT_PAL_AUTO;
+        }
+        return colon + 1;
+    }
+    if (strcmp(lowered, "pal-jasc") == 0) {
+        if (format_hint != NULL) {
+            *format_hint = SIXEL_PALETTE_FORMAT_PAL_JASC;
+        }
+        return colon + 1;
+    }
+    if (strcmp(lowered, "pal-riff") == 0) {
+        if (format_hint != NULL) {
+            *format_hint = SIXEL_PALETTE_FORMAT_PAL_RIFF;
+        }
+        return colon + 1;
+    }
+    if (strcmp(lowered, "gpl") == 0) {
+        if (format_hint != NULL) {
+            *format_hint = SIXEL_PALETTE_FORMAT_GPL;
+        }
+        return colon + 1;
+    }
+
+    return spec;
+}
+
+static sixel_palette_format_t
+sixel_palette_format_from_extension(char const *path)
+{
+    if (path == NULL) {
+        return SIXEL_PALETTE_FORMAT_NONE;
+    }
+
+    if (sixel_path_has_extension(path, ".act")) {
+        return SIXEL_PALETTE_FORMAT_ACT;
+    }
+    if (sixel_path_has_extension(path, ".pal")) {
+        return SIXEL_PALETTE_FORMAT_PAL_AUTO;
+    }
+    if (sixel_path_has_extension(path, ".gpl")) {
+        return SIXEL_PALETTE_FORMAT_GPL;
+    }
+
+    return SIXEL_PALETTE_FORMAT_NONE;
+}
+
+static int
+sixel_path_has_any_extension(char const *path)
+{
+    char const *slash_forward;
+#if defined(_WIN32)
+    char const *slash_backward;
+#endif
+    char const *start;
+    char const *dot;
+
+    slash_forward = NULL;
+#if defined(_WIN32)
+    slash_backward = NULL;
+#endif
+    start = path;
+    dot = NULL;
+
+    if (path == NULL) {
+        return 0;
+    }
+
+    slash_forward = strrchr(path, '/');
+#if defined(_WIN32)
+    slash_backward = strrchr(path, '\\');
+    if (slash_backward != NULL &&
+            (slash_forward == NULL || slash_backward > slash_forward)) {
+        slash_forward = slash_backward;
+    }
+#endif
+    if (slash_forward == NULL) {
+        start = path;
+    } else {
+        start = slash_forward + 1;
+    }
+
+    dot = strrchr(start, '.');
+    if (dot == NULL) {
+        return 0;
+    }
+
+    if (dot[1] == '\0') {
+        return 0;
+    }
+
+    return 1;
+}
+
+static int
+sixel_palette_has_utf8_bom(unsigned char const *data, size_t size)
+{
+    if (data == NULL || size < 3u) {
+        return 0;
+    }
+    if (data[0] == 0xefu && data[1] == 0xbbu && data[2] == 0xbfu) {
+        return 1;
+    }
+    return 0;
+}
+
+
+/*
+ * Materialize palette bytes from a stream.
+ *
+ * The flow looks like:
+ *
+ *   stream --> [scratch buffer] --> [resizable heap buffer]
+ *                  ^ looped read        ^ returned payload
+ */
+static SIXELSTATUS
+sixel_palette_read_stream(FILE *stream,
+                          sixel_allocator_t *allocator,
+                          unsigned char **pdata,
+                          size_t *psize)
+{
+    SIXELSTATUS status;
+    unsigned char *buffer;
+    unsigned char *grown;
+    size_t capacity;
+    size_t used;
+    size_t read_bytes;
+    size_t needed;
+    size_t new_capacity;
+    unsigned char scratch[4096];
+
+    status = SIXEL_FALSE;
+    buffer = NULL;
+    grown = NULL;
+    capacity = 0u;
+    used = 0u;
+    read_bytes = 0u;
+    needed = 0u;
+    new_capacity = 0u;
+
+    if (pdata == NULL || psize == NULL || stream == NULL || allocator == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_read_stream: invalid argument.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *pdata = NULL;
+    *psize = 0u;
+
+    while (1) {
+        read_bytes = fread(scratch, 1, sizeof(scratch), stream);
+        if (read_bytes == 0u) {
+            if (ferror(stream)) {
+                sixel_helper_set_additional_message(
+                    "sixel_palette_read_stream: fread() failed.");
+                status = SIXEL_LIBC_ERROR;
+                goto cleanup;
+            }
+            break;
+        }
+
+        if (used > SIZE_MAX - read_bytes) {
+            sixel_helper_set_additional_message(
+                "sixel_palette_read_stream: size overflow.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+        needed = used + read_bytes;
+
+        if (needed > capacity) {
+            new_capacity = capacity;
+            if (new_capacity == 0u) {
+                new_capacity = 4096u;
+            }
+            while (needed > new_capacity) {
+                if (new_capacity > SIZE_MAX / 2u) {
+                    sixel_helper_set_additional_message(
+                        "sixel_palette_read_stream: size overflow.");
+                    status = SIXEL_BAD_ALLOCATION;
+                    goto cleanup;
+                }
+                new_capacity *= 2u;
+            }
+
+            grown = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                             new_capacity);
+            if (grown == NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_palette_read_stream: allocation failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto cleanup;
+            }
+
+            if (buffer != NULL) {
+                memcpy(grown, buffer, used);
+                sixel_allocator_free(allocator, buffer);
+            }
+
+            buffer = grown;
+            grown = NULL;
+            capacity = new_capacity;
+        }
+
+        memcpy(buffer + used, scratch, read_bytes);
+        used += read_bytes;
+    }
+
+    *pdata = buffer;
+    *psize = used;
+    status = SIXEL_OK;
+    return status;
+
+cleanup:
+    if (grown != NULL) {
+        sixel_allocator_free(allocator, grown);
+    }
+    if (buffer != NULL) {
+        sixel_allocator_free(allocator, buffer);
+    }
+    return status;
+}
+
+
+static SIXELSTATUS
+sixel_palette_open_read(char const *path, FILE **pstream, int *pclose)
+{
+    if (pstream == NULL || pclose == NULL || path == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_open_read: invalid argument.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (strcmp(path, "-") == 0) {
+        *pstream = stdin;
+        *pclose = 0;
+        return SIXEL_OK;
+    }
+
+    *pstream = fopen(path, "rb");
+    if (*pstream == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_open_read: failed to open file.");
+        return SIXEL_LIBC_ERROR;
+    }
+
+    *pclose = 1;
+    return SIXEL_OK;
+}
+
+
+static void
+sixel_palette_close_stream(FILE *stream, int close_stream)
+{
+    if (close_stream && stream != NULL) {
+        (void) fclose(stream);
+    }
+}
+
+
+static sixel_palette_format_t
+sixel_palette_guess_format(unsigned char const *data, size_t size)
+{
+    size_t offset;
+    size_t data_size;
+
+    offset = 0u;
+    data_size = size;
+
+    if (data == NULL || size == 0u) {
+        return SIXEL_PALETTE_FORMAT_NONE;
+    }
+
+    if (size == 256u * 3u || size == 256u * 3u + 4u) {
+        return SIXEL_PALETTE_FORMAT_ACT;
+    }
+
+    if (size >= 12u && memcmp(data, "RIFF", 4) == 0
+            && memcmp(data + 8, "PAL ", 4) == 0) {
+        return SIXEL_PALETTE_FORMAT_PAL_RIFF;
+    }
+
+    if (sixel_palette_has_utf8_bom(data, size)) {
+        offset = 3u;
+        data_size = size - 3u;
+    }
+
+    if (data_size >= 8u && memcmp(data + offset, "JASC-PAL", 8) == 0) {
+        return SIXEL_PALETTE_FORMAT_PAL_JASC;
+    }
+    if (data_size >= 12u && memcmp(data + offset, "GIMP Palette", 12) == 0) {
+        return SIXEL_PALETTE_FORMAT_GPL;
+    }
+
+    return SIXEL_PALETTE_FORMAT_NONE;
+}
+
+
+static unsigned int
+sixel_palette_read_le16(unsigned char const *ptr)
+{
+    if (ptr == NULL) {
+        return 0u;
+    }
+    return (unsigned int)ptr[0] | ((unsigned int)ptr[1] << 8);
+}
+
+
+static unsigned int
+sixel_palette_read_le32(unsigned char const *ptr)
+{
+    if (ptr == NULL) {
+        return 0u;
+    }
+    return ((unsigned int)ptr[0])
+        | ((unsigned int)ptr[1] << 8)
+        | ((unsigned int)ptr[2] << 16)
+        | ((unsigned int)ptr[3] << 24);
+}
+
+
+/*
+ * Adobe Color Table (*.act) reader
+ *
+ *   +-----------+---------------------------+
+ *   | section   | bytes                     |
+ *   +-----------+---------------------------+
+ *   | palette   | 256 entries * 3 RGB bytes |
+ *   | trailer   | optional count/start pair |
+ *   +-----------+---------------------------+
+ */
+static SIXELSTATUS
+sixel_palette_parse_act(unsigned char const *data,
+                        size_t size,
+                        sixel_encoder_t *encoder,
+                        sixel_dither_t **dither)
+{
+    SIXELSTATUS status;
+    sixel_dither_t *local;
+    unsigned char const *palette_start;
+    unsigned char const *trailer;
+    unsigned char *target;
+    size_t copy_bytes;
+    int exported_colors;
+    int start_index;
+
+    status = SIXEL_FALSE;
+    local = NULL;
+    palette_start = data;
+    trailer = NULL;
+    target = NULL;
+    copy_bytes = 0u;
+    exported_colors = 0;
+    start_index = 0;
+
+    if (encoder == NULL || dither == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_act: invalid argument.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (data == NULL || size < 256u * 3u) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_act: truncated ACT palette.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    if (size == 256u * 3u) {
+        exported_colors = 256;
+        start_index = 0;
+    } else if (size == 256u * 3u + 4u) {
+        trailer = data + 256u * 3u;
+        exported_colors = (int)(((unsigned int)trailer[0] << 8)
+                                | (unsigned int)trailer[1]);
+        start_index = (int)(((unsigned int)trailer[2] << 8)
+                            | (unsigned int)trailer[3]);
+    } else {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_act: invalid ACT length.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    if (start_index < 0 || start_index >= 256) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_act: ACT start index out of range.");
+        return SIXEL_BAD_INPUT;
+    }
+    if (exported_colors <= 0 || exported_colors > 256) {
+        exported_colors = 256;
+    }
+    if (start_index + exported_colors > 256) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_act: ACT palette exceeds 256 slots.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    status = sixel_dither_new(&local, exported_colors, encoder->allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    sixel_dither_set_lut_policy(local, encoder->lut_policy);
+
+    target = sixel_dither_get_palette(local);
+    copy_bytes = (size_t)exported_colors * 3u;
+    memcpy(target, palette_start + (size_t)start_index * 3u, copy_bytes);
+
+    *dither = local;
+    return SIXEL_OK;
+}
+
+
+static SIXELSTATUS
+sixel_palette_parse_pal_jasc(unsigned char const *data,
+                             size_t size,
+                             sixel_encoder_t *encoder,
+                             sixel_dither_t **dither)
+{
+    SIXELSTATUS status;
+    char *text;
+    size_t index;
+    size_t offset;
+    char *cursor;
+    char *line;
+    char *line_end;
+    int stage;
+    int exported_colors;
+    int parsed_colors;
+    sixel_dither_t *local;
+    unsigned char *target;
+    long component;
+    char *parse_end;
+    int value_index;
+    int values[3];
+    char tail;
+
+    status = SIXEL_FALSE;
+    text = NULL;
+    index = 0u;
+    offset = 0u;
+    cursor = NULL;
+    line = NULL;
+    line_end = NULL;
+    stage = 0;
+    exported_colors = 0;
+    parsed_colors = 0;
+    local = NULL;
+    target = NULL;
+    component = 0;
+    parse_end = NULL;
+    value_index = 0;
+    values[0] = 0;
+    values[1] = 0;
+    values[2] = 0;
+
+    if (encoder == NULL || dither == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_jasc: invalid argument.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (data == NULL || size == 0u) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_jasc: empty palette.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    text = (char *)sixel_allocator_malloc(encoder->allocator, size + 1u);
+    if (text == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_jasc: allocation failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    memcpy(text, data, size);
+    text[size] = '\0';
+
+    if (sixel_palette_has_utf8_bom((unsigned char const *)text, size)) {
+        offset = 3u;
+    }
+    cursor = text + offset;
+
+    while (*cursor != '\0') {
+        line = cursor;
+        line_end = cursor;
+        while (*line_end != '\0' && *line_end != '\n' && *line_end != '\r') {
+            ++line_end;
+        }
+        if (*line_end != '\0') {
+            *line_end = '\0';
+            cursor = line_end + 1;
+        } else {
+            cursor = line_end;
+        }
+        while (*cursor == '\n' || *cursor == '\r') {
+            ++cursor;
+        }
+
+        while (*line == ' ' || *line == '\t') {
+            ++line;
+        }
+        index = strlen(line);
+        while (index > 0u) {
+            tail = line[index - 1];
+            if (tail != ' ' && tail != '\t') {
+                break;
+            }
+            line[index - 1] = '\0';
+            --index;
+        }
+        if (*line == '\0') {
+            continue;
+        }
+        if (*line == '#') {
+            continue;
+        }
+
+        if (stage == 0) {
+            if (strcmp(line, "JASC-PAL") != 0) {
+                sixel_helper_set_additional_message(
+                    "sixel_palette_parse_pal_jasc: missing header.");
+                status = SIXEL_BAD_INPUT;
+                goto cleanup;
+            }
+            stage = 1;
+            continue;
+        }
+        if (stage == 1) {
+            stage = 2;
+            continue;
+        }
+        if (stage == 2) {
+            component = strtol(line, &parse_end, 10);
+            if (parse_end == line || component <= 0L || component > 256L) {
+                sixel_helper_set_additional_message(
+                    "sixel_palette_parse_pal_jasc: invalid color count.");
+                status = SIXEL_BAD_INPUT;
+                goto cleanup;
+            }
+            exported_colors = (int)component;
+            status = sixel_dither_new(&local, exported_colors,
+                                      encoder->allocator);
+            if (SIXEL_FAILED(status)) {
+                goto cleanup;
+            }
+            sixel_dither_set_lut_policy(local, encoder->lut_policy);
+            target = sixel_dither_get_palette(local);
+            stage = 3;
+            continue;
+        }
+
+        value_index = 0;
+        while (value_index < 3) {
+            component = strtol(line, &parse_end, 10);
+            if (parse_end == line || component < 0L || component > 255L) {
+                sixel_helper_set_additional_message(
+                    "sixel_palette_parse_pal_jasc: invalid component.");
+                status = SIXEL_BAD_INPUT;
+                goto cleanup;
+            }
+            values[value_index] = (int)component;
+            ++value_index;
+            line = parse_end;
+            while (*line == ' ' || *line == '\t') {
+                ++line;
+            }
+        }
+
+        if (parsed_colors >= exported_colors) {
+            sixel_helper_set_additional_message(
+                "sixel_palette_parse_pal_jasc: excess entries.");
+            status = SIXEL_BAD_INPUT;
+            goto cleanup;
+        }
+
+        target[parsed_colors * 3 + 0] =
+            (unsigned char)values[0];
+        target[parsed_colors * 3 + 1] =
+            (unsigned char)values[1];
+        target[parsed_colors * 3 + 2] =
+            (unsigned char)values[2];
+        ++parsed_colors;
+    }
+
+    if (stage < 3) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_jasc: incomplete header.");
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
+    if (parsed_colors != exported_colors) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_jasc: color count mismatch.");
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
+
+    *dither = local;
+    status = SIXEL_OK;
+
+cleanup:
+    if (SIXEL_FAILED(status) && local != NULL) {
+        sixel_dither_unref(local);
+    }
+    if (text != NULL) {
+        sixel_allocator_free(encoder->allocator, text);
+    }
+    return status;
+}
+
+
+static SIXELSTATUS
+sixel_palette_parse_pal_riff(unsigned char const *data,
+                             size_t size,
+                             sixel_encoder_t *encoder,
+                             sixel_dither_t **dither)
+{
+    SIXELSTATUS status;
+    size_t offset;
+    size_t chunk_size;
+    sixel_dither_t *local;
+    unsigned char const *chunk;
+    unsigned char *target;
+    unsigned int entry_count;
+    unsigned int version;
+    unsigned int index;
+    size_t palette_offset;
+
+    status = SIXEL_FALSE;
+    offset = 0u;
+    chunk_size = 0u;
+    local = NULL;
+    chunk = NULL;
+    target = NULL;
+    entry_count = 0u;
+    version = 0u;
+    index = 0u;
+    palette_offset = 0u;
+
+    if (encoder == NULL || dither == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_riff: invalid argument.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (data == NULL || size < 12u) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_riff: truncated palette.");
+        return SIXEL_BAD_INPUT;
+    }
+    if (memcmp(data, "RIFF", 4) != 0 || memcmp(data + 8, "PAL ", 4) != 0) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_riff: missing RIFF header.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    offset = 12u;
+    while (offset + 8u <= size) {
+        chunk = data + offset;
+        chunk_size = (size_t)sixel_palette_read_le32(chunk + 4);
+        if (offset + 8u + chunk_size > size) {
+            sixel_helper_set_additional_message(
+                "sixel_palette_parse_pal_riff: chunk extends past end.");
+            return SIXEL_BAD_INPUT;
+        }
+        if (memcmp(chunk, "data", 4) == 0) {
+            break;
+        }
+        offset += 8u + ((chunk_size + 1u) & ~1u);
+    }
+
+    if (offset + 8u > size || memcmp(chunk, "data", 4) != 0) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_riff: missing data chunk.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    if (chunk_size < 4u) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_riff: data chunk too small.");
+        return SIXEL_BAD_INPUT;
+    }
+    version = sixel_palette_read_le16(chunk + 8);
+    (void)version;
+    entry_count = sixel_palette_read_le16(chunk + 10);
+    if (entry_count == 0u || entry_count > 256u) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_riff: invalid entry count.");
+        return SIXEL_BAD_INPUT;
+    }
+    if (chunk_size != 4u + (size_t)entry_count * 4u) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_pal_riff: unexpected chunk size.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    status = sixel_dither_new(&local, (int)entry_count, encoder->allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    sixel_dither_set_lut_policy(local, encoder->lut_policy);
+    target = sixel_dither_get_palette(local);
+    palette_offset = 12u;
+    for (index = 0u; index < entry_count; ++index) {
+        target[index * 3u + 0u] =
+            chunk[palette_offset + index * 4u + 0u];
+        target[index * 3u + 1u] =
+            chunk[palette_offset + index * 4u + 1u];
+        target[index * 3u + 2u] =
+            chunk[palette_offset + index * 4u + 2u];
+    }
+
+    *dither = local;
+    return SIXEL_OK;
+}
+
+
+static SIXELSTATUS
+sixel_palette_parse_gpl(unsigned char const *data,
+                        size_t size,
+                        sixel_encoder_t *encoder,
+                        sixel_dither_t **dither)
+{
+    SIXELSTATUS status;
+    char *text;
+    size_t offset;
+    char *cursor;
+    char *line;
+    char *line_end;
+    size_t index;
+    int header_seen;
+    int parsed_colors;
+    unsigned char palette_bytes[256 * 3];
+    long component;
+    char *parse_end;
+    int value_index;
+    int values[3];
+    sixel_dither_t *local;
+    unsigned char *target;
+    char tail;
+
+    status = SIXEL_FALSE;
+    text = NULL;
+    offset = 0u;
+    cursor = NULL;
+    line = NULL;
+    line_end = NULL;
+    index = 0u;
+    header_seen = 0;
+    parsed_colors = 0;
+    component = 0;
+    parse_end = NULL;
+    value_index = 0;
+    values[0] = 0;
+    values[1] = 0;
+    values[2] = 0;
+    local = NULL;
+    target = NULL;
+
+    if (encoder == NULL || dither == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_gpl: invalid argument.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (data == NULL || size == 0u) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_gpl: empty palette.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    text = (char *)sixel_allocator_malloc(encoder->allocator, size + 1u);
+    if (text == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_gpl: allocation failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    memcpy(text, data, size);
+    text[size] = '\0';
+
+    if (sixel_palette_has_utf8_bom((unsigned char const *)text, size)) {
+        offset = 3u;
+    }
+    cursor = text + offset;
+
+    while (*cursor != '\0') {
+        line = cursor;
+        line_end = cursor;
+        while (*line_end != '\0' && *line_end != '\n' && *line_end != '\r') {
+            ++line_end;
+        }
+        if (*line_end != '\0') {
+            *line_end = '\0';
+            cursor = line_end + 1;
+        } else {
+            cursor = line_end;
+        }
+        while (*cursor == '\n' || *cursor == '\r') {
+            ++cursor;
+        }
+
+        while (*line == ' ' || *line == '\t') {
+            ++line;
+        }
+        index = strlen(line);
+        while (index > 0u) {
+            tail = line[index - 1];
+            if (tail != ' ' && tail != '\t') {
+                break;
+            }
+            line[index - 1] = '\0';
+            --index;
+        }
+        if (*line == '\0') {
+            continue;
+        }
+        if (*line == '#') {
+            continue;
+        }
+        if (strncmp(line, "Name:", 5) == 0) {
+            continue;
+        }
+        if (strncmp(line, "Columns:", 8) == 0) {
+            continue;
+        }
+
+        if (!header_seen) {
+            if (strcmp(line, "GIMP Palette") != 0) {
+                sixel_helper_set_additional_message(
+                    "sixel_palette_parse_gpl: missing header.");
+                status = SIXEL_BAD_INPUT;
+                goto cleanup;
+            }
+            header_seen = 1;
+            continue;
+        }
+
+        if (parsed_colors >= 256) {
+            sixel_helper_set_additional_message(
+                "sixel_palette_parse_gpl: too many colors.");
+            status = SIXEL_BAD_INPUT;
+            goto cleanup;
+        }
+
+        value_index = 0;
+        while (value_index < 3) {
+            component = strtol(line, &parse_end, 10);
+            if (parse_end == line || component < 0L || component > 255L) {
+                sixel_helper_set_additional_message(
+                    "sixel_palette_parse_gpl: invalid component.");
+                status = SIXEL_BAD_INPUT;
+                goto cleanup;
+            }
+            values[value_index] = (int)component;
+            ++value_index;
+            line = parse_end;
+            while (*line == ' ' || *line == '\t') {
+                ++line;
+            }
+        }
+
+        palette_bytes[parsed_colors * 3 + 0] =
+            (unsigned char)values[0];
+        palette_bytes[parsed_colors * 3 + 1] =
+            (unsigned char)values[1];
+        palette_bytes[parsed_colors * 3 + 2] =
+            (unsigned char)values[2];
+        ++parsed_colors;
+    }
+
+    if (!header_seen) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_gpl: header missing.");
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
+    if (parsed_colors <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_parse_gpl: no colors parsed.");
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
+
+    status = sixel_dither_new(&local, parsed_colors, encoder->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    sixel_dither_set_lut_policy(local, encoder->lut_policy);
+    target = sixel_dither_get_palette(local);
+    memcpy(target, palette_bytes, (size_t)parsed_colors * 3u);
+
+    *dither = local;
+    status = SIXEL_OK;
+
+cleanup:
+    if (SIXEL_FAILED(status) && local != NULL) {
+        sixel_dither_unref(local);
+    }
+    if (text != NULL) {
+        sixel_allocator_free(encoder->allocator, text);
+    }
+    return status;
+}
+
+
+/*
+ * Palette exporters
+ *
+ *   +----------+-------------------------+
+ *   | format   | emission strategy       |
+ *   +----------+-------------------------+
+ *   | ACT      | fixed 256 entries + EOF |
+ *   | PAL JASC | textual lines           |
+ *   | PAL RIFF | RIFF container          |
+ *   | GPL      | textual lines           |
+ *   +----------+-------------------------+
+ */
+static SIXELSTATUS
+sixel_palette_write_act(FILE *stream,
+                        unsigned char const *palette,
+                        int exported_colors)
+{
+    SIXELSTATUS status;
+    unsigned char act_table[256 * 3];
+    unsigned char trailer[4];
+    size_t exported_bytes;
+
+    status = SIXEL_FALSE;
+    exported_bytes = 0u;
+
+    if (stream == NULL || palette == NULL || exported_colors <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (exported_colors > 256) {
+        exported_colors = 256;
+    }
+
+    memset(act_table, 0, sizeof(act_table));
+    exported_bytes = (size_t)exported_colors * 3u;
+    memcpy(act_table, palette, exported_bytes);
+
+    trailer[0] = (unsigned char)(((unsigned int)exported_colors >> 8)
+                                 & 0xffu);
+    trailer[1] = (unsigned char)((unsigned int)exported_colors & 0xffu);
+    trailer[2] = 0u;
+    trailer[3] = 0u;
+
+    if (fwrite(act_table, 1, sizeof(act_table), stream)
+            != sizeof(act_table)) {
+        status = SIXEL_LIBC_ERROR;
+        return status;
+    }
+    if (fwrite(trailer, 1, sizeof(trailer), stream)
+            != sizeof(trailer)) {
+        status = SIXEL_LIBC_ERROR;
+        return status;
+    }
+
+    return SIXEL_OK;
+}
+
+
+static SIXELSTATUS
+sixel_palette_write_pal_jasc(FILE *stream,
+                             unsigned char const *palette,
+                             int exported_colors)
+{
+    int index;
+
+    if (stream == NULL || palette == NULL || exported_colors <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (fprintf(stream, "JASC-PAL\n0100\n%d\n", exported_colors) < 0) {
+        return SIXEL_LIBC_ERROR;
+    }
+    for (index = 0; index < exported_colors; ++index) {
+        if (fprintf(stream, "%d %d %d\n",
+                    (int)palette[index * 3 + 0],
+                    (int)palette[index * 3 + 1],
+                    (int)palette[index * 3 + 2]) < 0) {
+            return SIXEL_LIBC_ERROR;
+        }
+    }
+    return SIXEL_OK;
+}
+
+
+static SIXELSTATUS
+sixel_palette_write_pal_riff(FILE *stream,
+                             unsigned char const *palette,
+                             int exported_colors)
+{
+    unsigned char header[12];
+    unsigned char chunk[8];
+    unsigned char log_palette[4 + 256 * 4];
+    unsigned int data_size;
+    unsigned int riff_size;
+    int index;
+
+    if (stream == NULL || palette == NULL || exported_colors <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (exported_colors > 256) {
+        exported_colors = 256;
+    }
+
+    data_size = 4u + (unsigned int)exported_colors * 4u;
+    riff_size = 4u + 8u + data_size;
+
+    memcpy(header, "RIFF", 4);
+    header[4] = (unsigned char)(riff_size & 0xffu);
+    header[5] = (unsigned char)((riff_size >> 8) & 0xffu);
+    header[6] = (unsigned char)((riff_size >> 16) & 0xffu);
+    header[7] = (unsigned char)((riff_size >> 24) & 0xffu);
+    memcpy(header + 8, "PAL ", 4);
+
+    memcpy(chunk, "data", 4);
+    chunk[4] = (unsigned char)(data_size & 0xffu);
+    chunk[5] = (unsigned char)((data_size >> 8) & 0xffu);
+    chunk[6] = (unsigned char)((data_size >> 16) & 0xffu);
+    chunk[7] = (unsigned char)((data_size >> 24) & 0xffu);
+
+    memset(log_palette, 0, sizeof(log_palette));
+    log_palette[0] = 0x00;
+    log_palette[1] = 0x03;
+    log_palette[2] = (unsigned char)(exported_colors & 0xff);
+    log_palette[3] = (unsigned char)((exported_colors >> 8) & 0xff);
+    for (index = 0; index < exported_colors; ++index) {
+        log_palette[4 + index * 4 + 0] = palette[index * 3 + 0];
+        log_palette[4 + index * 4 + 1] = palette[index * 3 + 1];
+        log_palette[4 + index * 4 + 2] = palette[index * 3 + 2];
+        log_palette[4 + index * 4 + 3] = 0u;
+    }
+
+    if (fwrite(header, 1, sizeof(header), stream)
+            != sizeof(header)) {
+        return SIXEL_LIBC_ERROR;
+    }
+    if (fwrite(chunk, 1, sizeof(chunk), stream) != sizeof(chunk)) {
+        return SIXEL_LIBC_ERROR;
+    }
+    if (fwrite(log_palette, 1, (size_t)data_size, stream)
+            != (size_t)data_size) {
+        return SIXEL_LIBC_ERROR;
+    }
+    return SIXEL_OK;
+}
+
+
+static SIXELSTATUS
+sixel_palette_write_gpl(FILE *stream,
+                        unsigned char const *palette,
+                        int exported_colors)
+{
+    int index;
+
+    if (stream == NULL || palette == NULL || exported_colors <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (fprintf(stream, "GIMP Palette\n") < 0) {
+        return SIXEL_LIBC_ERROR;
+    }
+    if (fprintf(stream, "Name: libsixel export\n") < 0) {
+        return SIXEL_LIBC_ERROR;
+    }
+    if (fprintf(stream, "Columns: 16\n") < 0) {
+        return SIXEL_LIBC_ERROR;
+    }
+    if (fprintf(stream, "# Exported by libsixel\n") < 0) {
+        return SIXEL_LIBC_ERROR;
+    }
+    for (index = 0; index < exported_colors; ++index) {
+        if (fprintf(stream, "%3d %3d %3d\tIndex %d\n",
+                    (int)palette[index * 3 + 0],
+                    (int)palette[index * 3 + 1],
+                    (int)palette[index * 3 + 2],
+                    index) < 0) {
+            return SIXEL_LIBC_ERROR;
+        }
+    }
+    return SIXEL_OK;
+}
+
+
 /* create palette from specified map file */
 static SIXELSTATUS
 sixel_prepare_specified_palette(
     sixel_dither_t  /* out */   **dither,
     sixel_encoder_t /* in */    *encoder)
 {
-    SIXELSTATUS status = SIXEL_FALSE;
+    SIXELSTATUS status;
     sixel_callback_context_for_mapfile_t callback_context;
     sixel_loader_t *loader;
     int fstatic;
     int fuse_palette;
     int reqcolors;
     int loop_override;
+    char const *path;
+    sixel_palette_format_t format_hint;
+    sixel_palette_format_t format_ext;
+    sixel_palette_format_t format_final;
+    sixel_palette_format_t format_detected;
+    FILE *stream;
+    int close_stream;
+    unsigned char *buffer;
+    size_t buffer_size;
+    int palette_request;
+    int need_detection;
+    int treat_as_image;
+    int path_has_extension;
+
+    status = SIXEL_FALSE;
+    loader = NULL;
+    fstatic = 1;
+    fuse_palette = 1;
+    reqcolors = SIXEL_PALETTE_MAX;
+    loop_override = SIXEL_LOOP_DISABLE;
+    path = NULL;
+    format_hint = SIXEL_PALETTE_FORMAT_NONE;
+    format_ext = SIXEL_PALETTE_FORMAT_NONE;
+    format_final = SIXEL_PALETTE_FORMAT_NONE;
+    format_detected = SIXEL_PALETTE_FORMAT_NONE;
+    stream = NULL;
+    close_stream = 0;
+    buffer = NULL;
+    buffer_size = 0u;
+    palette_request = 0;
+    need_detection = 0;
+    treat_as_image = 0;
+    path_has_extension = 0;
+
+    if (dither == NULL || encoder == NULL || encoder->mapfile == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_prepare_specified_palette: invalid mapfile path.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    path = sixel_palette_strip_prefix(encoder->mapfile, &format_hint);
+    if (path == NULL || *path == '\0') {
+        sixel_helper_set_additional_message(
+            "sixel_prepare_specified_palette: empty mapfile path.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    format_ext = sixel_palette_format_from_extension(path);
+    path_has_extension = sixel_path_has_any_extension(path);
+
+    if (format_hint != SIXEL_PALETTE_FORMAT_NONE) {
+        palette_request = 1;
+        format_final = format_hint;
+    } else if (format_ext != SIXEL_PALETTE_FORMAT_NONE) {
+        palette_request = 1;
+        format_final = format_ext;
+    } else if (!path_has_extension) {
+        palette_request = 1;
+        need_detection = 1;
+    } else {
+        treat_as_image = 1;
+    }
+
+    if (palette_request) {
+        status = sixel_palette_open_read(path, &stream, &close_stream);
+        if (SIXEL_FAILED(status)) {
+            goto palette_cleanup;
+        }
+        status = sixel_palette_read_stream(stream,
+                                           encoder->allocator,
+                                           &buffer,
+                                           &buffer_size);
+        if (close_stream) {
+            sixel_palette_close_stream(stream, close_stream);
+            stream = NULL;
+            close_stream = 0;
+        }
+        if (SIXEL_FAILED(status)) {
+            goto palette_cleanup;
+        }
+        if (buffer_size == 0u) {
+            sixel_helper_set_additional_message(
+                "sixel_prepare_specified_palette: mapfile is empty.");
+            status = SIXEL_BAD_INPUT;
+            goto palette_cleanup;
+        }
+
+        if (format_final == SIXEL_PALETTE_FORMAT_NONE) {
+            format_detected = sixel_palette_guess_format(buffer,
+                                                         buffer_size);
+            if (format_detected == SIXEL_PALETTE_FORMAT_NONE) {
+                sixel_helper_set_additional_message(
+                    "sixel_prepare_specified_palette: "
+                    "unable to detect palette format.");
+                status = SIXEL_BAD_INPUT;
+                goto palette_cleanup;
+            }
+            format_final = format_detected;
+        } else if (format_final == SIXEL_PALETTE_FORMAT_PAL_AUTO) {
+            format_detected = sixel_palette_guess_format(buffer,
+                                                         buffer_size);
+            if (format_detected == SIXEL_PALETTE_FORMAT_PAL_JASC ||
+                    format_detected == SIXEL_PALETTE_FORMAT_PAL_RIFF) {
+                format_final = format_detected;
+            } else {
+                sixel_helper_set_additional_message(
+                    "sixel_prepare_specified_palette: "
+                    "ambiguous .pal content.");
+                status = SIXEL_BAD_INPUT;
+                goto palette_cleanup;
+            }
+        } else if (need_detection) {
+            format_detected = sixel_palette_guess_format(buffer,
+                                                         buffer_size);
+            if (format_detected == SIXEL_PALETTE_FORMAT_NONE) {
+                sixel_helper_set_additional_message(
+                    "sixel_prepare_specified_palette: "
+                    "unable to detect palette format.");
+                status = SIXEL_BAD_INPUT;
+                goto palette_cleanup;
+            }
+            format_final = format_detected;
+        }
+
+        switch (format_final) {
+        case SIXEL_PALETTE_FORMAT_ACT:
+            status = sixel_palette_parse_act(buffer,
+                                             buffer_size,
+                                             encoder,
+                                             dither);
+            break;
+        case SIXEL_PALETTE_FORMAT_PAL_JASC:
+            status = sixel_palette_parse_pal_jasc(buffer,
+                                                  buffer_size,
+                                                  encoder,
+                                                  dither);
+            break;
+        case SIXEL_PALETTE_FORMAT_PAL_RIFF:
+            status = sixel_palette_parse_pal_riff(buffer,
+                                                  buffer_size,
+                                                  encoder,
+                                                  dither);
+            break;
+        case SIXEL_PALETTE_FORMAT_GPL:
+            status = sixel_palette_parse_gpl(buffer,
+                                             buffer_size,
+                                             encoder,
+                                             dither);
+            break;
+        default:
+            sixel_helper_set_additional_message(
+                "sixel_prepare_specified_palette: "
+                "unsupported palette format.");
+            status = SIXEL_BAD_INPUT;
+            break;
+        }
+
+palette_cleanup:
+        if (buffer != NULL) {
+            sixel_allocator_free(encoder->allocator, buffer);
+            buffer = NULL;
+        }
+        if (stream != NULL) {
+            sixel_palette_close_stream(stream, close_stream);
+            stream = NULL;
+        }
+        if (SIXEL_SUCCEEDED(status)) {
+            return status;
+        }
+        if (!treat_as_image) {
+            return status;
+        }
+    }
 
     callback_context.reqcolors = encoder->reqcolors;
     callback_context.dither = NULL;
     callback_context.allocator = encoder->allocator;
     callback_context.working_colorspace = encoder->working_colorspace;
     callback_context.lut_policy = encoder->lut_policy;
-
-    loader = NULL;
-    fstatic = 1;
-    fuse_palette = 1;
-    reqcolors = SIXEL_PALETTE_MAX;
-    loop_override = SIXEL_LOOP_DISABLE;
 
     sixel_helper_set_loader_trace(encoder->verbose);
     sixel_helper_set_thumbnail_size_hint(
@@ -2512,6 +3858,7 @@ sixel_encoder_new(
     (*ppencoder)->reqcolors             = (-1);
     (*ppencoder)->force_palette         = 0;
     (*ppencoder)->mapfile               = NULL;
+    (*ppencoder)->palette_output        = NULL;
     (*ppencoder)->loader_order          = NULL;
     (*ppencoder)->color_option          = SIXEL_COLOR_OPTION_DEFAULT;
     (*ppencoder)->builtin_palette       = 0;
@@ -2662,6 +4009,7 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
     if (encoder) {
         allocator = encoder->allocator;
         sixel_allocator_free(allocator, encoder->mapfile);
+        sixel_allocator_free(allocator, encoder->palette_output);
         sixel_allocator_free(allocator, encoder->loader_order);
         sixel_allocator_free(allocator, encoder->bgcolor);
         sixel_dither_unref(encoder->dither_cache);
@@ -2747,6 +4095,7 @@ sixel_encoder_setopt(
     long parsed_reqcolors;
     char *endptr;
     int forced_palette;
+    char *opt_copy;
     char const *drcs_arg_delim;
     char const *drcs_arg_charset;
     char const *drcs_arg_second_delim;
@@ -2759,6 +4108,7 @@ sixel_encoder_setopt(
     unsigned int drcs_charset_limit;
 
     sixel_encoder_ref(encoder);
+    opt_copy = NULL;
 
     switch(arg) {
     case SIXEL_OPTFLAG_OUTFILE:  /* o */
@@ -2858,6 +4208,29 @@ sixel_encoder_setopt(
             goto end;
         }
         encoder->color_option = SIXEL_COLOR_OPTION_MAPFILE;
+        break;
+    case SIXEL_OPTFLAG_MAPFILE_OUTPUT:  /* M */
+        if (value == NULL || *value == '\0') {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_setopt: mapfile-output path is empty.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        opt_copy = arg_strdup(value, encoder->allocator);
+        if (opt_copy == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_setopt: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        status = sixel_encoder_enable_quantized_capture(encoder, 1);
+        if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(encoder->allocator, opt_copy);
+            goto end;
+        }
+        sixel_allocator_free(encoder->allocator, encoder->palette_output);
+        encoder->palette_output = opt_copy;
+        opt_copy = NULL;
         break;
     case SIXEL_OPTFLAG_MONOCHROME:  /* e */
         encoder->color_option = SIXEL_COLOR_OPTION_MONOCHROME;
@@ -3557,6 +4930,9 @@ sixel_encoder_setopt(
     status = SIXEL_OK;
 
 end:
+    if (opt_copy != NULL) {
+        sixel_allocator_free(encoder->allocator, opt_copy);
+    }
     sixel_encoder_unref(encoder);
 
     return status;
@@ -3587,6 +4963,7 @@ sixel_encoder_encode(
     char const      *filename)  /* input filename */
 {
     SIXELSTATUS status = SIXEL_FALSE;
+    SIXELSTATUS palette_status = SIXEL_OK;
     int fuse_palette = 1;
     sixel_loader_t *loader;
 
@@ -3776,6 +5153,12 @@ load_end:
     loader = NULL;
 
     if (status != SIXEL_OK) {
+        goto end;
+    }
+
+    palette_status = sixel_encoder_emit_palette_output(encoder);
+    if (SIXEL_FAILED(palette_status)) {
+        status = palette_status;
         goto end;
     }
 
@@ -4002,6 +5385,187 @@ cleanup:
     if (frame != NULL) {
         sixel_frame_unref(frame);
     }
+    return status;
+}
+
+
+/*
+ * Emit the captured palette in the requested format.
+ *
+ *   palette_output == NULL  -> skip
+ *   palette_output != NULL  -> materialize captured palette
+ */
+static SIXELSTATUS
+sixel_encoder_emit_palette_output(sixel_encoder_t *encoder)
+{
+    SIXELSTATUS status;
+    sixel_frame_t *frame;
+    unsigned char const *palette;
+    int exported_colors;
+    FILE *stream;
+    int close_stream;
+    char const *path;
+    sixel_palette_format_t format_hint;
+    sixel_palette_format_t format_ext;
+    sixel_palette_format_t format_final;
+    char const *mode;
+
+    status = SIXEL_OK;
+    frame = NULL;
+    palette = NULL;
+    exported_colors = 0;
+    stream = NULL;
+    close_stream = 0;
+    path = NULL;
+    format_hint = SIXEL_PALETTE_FORMAT_NONE;
+    format_ext = SIXEL_PALETTE_FORMAT_NONE;
+    format_final = SIXEL_PALETTE_FORMAT_NONE;
+    mode = "wb";
+
+    if (encoder == NULL || encoder->palette_output == NULL) {
+        return SIXEL_OK;
+    }
+
+    status = sixel_encoder_copy_quantized_frame(encoder,
+                                                encoder->allocator,
+                                                &frame);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    palette = (unsigned char const *)sixel_frame_get_palette(frame);
+    exported_colors = sixel_frame_get_ncolors(frame);
+    if (palette == NULL || exported_colors <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_emit_palette_output: palette unavailable.");
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
+    if (exported_colors > 256) {
+        exported_colors = 256;
+    }
+
+    path = sixel_palette_strip_prefix(encoder->palette_output, &format_hint);
+    if (path == NULL || *path == '\0') {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_emit_palette_output: invalid path.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+
+    format_ext = sixel_palette_format_from_extension(path);
+    format_final = format_hint;
+    if (format_final == SIXEL_PALETTE_FORMAT_NONE) {
+        if (format_ext == SIXEL_PALETTE_FORMAT_NONE) {
+            if (strcmp(path, "-") == 0) {
+                sixel_helper_set_additional_message(
+                    "sixel_encoder_emit_palette_output: "
+                    "format required for '-'.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto cleanup;
+            }
+            sixel_helper_set_additional_message(
+                "sixel_encoder_emit_palette_output: "
+                "unknown palette file extension.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+        format_final = format_ext;
+    }
+    if (format_final == SIXEL_PALETTE_FORMAT_PAL_AUTO) {
+        format_final = SIXEL_PALETTE_FORMAT_PAL_JASC;
+    }
+
+    if (strcmp(path, "-") == 0) {
+        stream = stdout;
+    } else {
+        if (format_final == SIXEL_PALETTE_FORMAT_PAL_JASC ||
+                format_final == SIXEL_PALETTE_FORMAT_GPL) {
+            mode = "w";
+        } else {
+            mode = "wb";
+        }
+        stream = fopen(path, mode);
+        if (stream == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_emit_palette_output: failed to open file.");
+            status = SIXEL_LIBC_ERROR;
+            goto cleanup;
+        }
+        close_stream = 1;
+    }
+
+    switch (format_final) {
+    case SIXEL_PALETTE_FORMAT_ACT:
+        status = sixel_palette_write_act(stream, palette, exported_colors);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_emit_palette_output: failed to write ACT.");
+        }
+        break;
+    case SIXEL_PALETTE_FORMAT_PAL_JASC:
+        status = sixel_palette_write_pal_jasc(stream,
+                                              palette,
+                                              exported_colors);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_emit_palette_output: failed to write JASC.");
+        }
+        break;
+    case SIXEL_PALETTE_FORMAT_PAL_RIFF:
+        status = sixel_palette_write_pal_riff(stream,
+                                              palette,
+                                              exported_colors);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_emit_palette_output: failed to write RIFF.");
+        }
+        break;
+    case SIXEL_PALETTE_FORMAT_GPL:
+        status = sixel_palette_write_gpl(stream,
+                                         palette,
+                                         exported_colors);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_emit_palette_output: failed to write GPL.");
+        }
+        break;
+    default:
+        sixel_helper_set_additional_message(
+            "sixel_encoder_emit_palette_output: unsupported format.");
+        status = SIXEL_BAD_ARGUMENT;
+        break;
+    }
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    if (close_stream) {
+        if (fclose(stream) != 0) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_emit_palette_output: fclose() failed.");
+            status = SIXEL_LIBC_ERROR;
+            stream = NULL;
+            goto cleanup;
+        }
+        stream = NULL;
+    } else {
+        if (fflush(stream) != 0) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_emit_palette_output: fflush() failed.");
+            status = SIXEL_LIBC_ERROR;
+            goto cleanup;
+        }
+    }
+
+cleanup:
+    if (close_stream && stream != NULL) {
+        (void) fclose(stream);
+    }
+    if (frame != NULL) {
+        sixel_frame_unref(frame);
+    }
+
     return status;
 }
 

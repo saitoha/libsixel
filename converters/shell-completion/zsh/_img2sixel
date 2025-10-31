@@ -193,7 +193,8 @@ _arguments -S -s -A "-*" -S \
   {-8,--8bit-mode}'[generate a sixel image for 8bit terminals]' \
   {-R,--gri-limit}'[limit arguments of DECGRI(!) to 255]' \
   {-p,--colors=}'[specify number of colors to reduce the image to]' \
-  {-m,--mapfile=}'[transform image colors to match specified set of colors]':files:_files \
+  {-m,--mapfile=}'[transform image colors using a map image or ACT/PAL/GPL palette; TYPE:PATH prefixes (TYPE:- for stdin) allowed]':files:_files \
+  {-M,--mapfile-output=}'[export the computed palette; TYPE:PATH (TYPE:- for stdout) or .act/.pal/.gpl extensions choose the format]':files:_files \
   {-e,--monochrome}'[output monochrome sixel image]' \
   {-k,--insecure}'[allow to connect to SSL sites without certs]' \
   {-i,--invert}'[assume the terminal background color is white]' \

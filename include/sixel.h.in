@@ -240,6 +240,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT ('R')  /* -R, --gri-limit: limit arguments of DECGRI('!') to 255 */
 #define SIXEL_OPTFLAG_COLORS            ('p')  /* -p COLORS, --colors=COLORS: specify number of colors */
 #define SIXEL_OPTFLAG_MAPFILE           ('m')  /* -m FILE, --mapfile=FILE: specify set of colors */
+#define SIXEL_OPTFLAG_MAPFILE_OUTPUT    ('M')  /* -M FILE, --mapfile-output=FILE: export palette file */
 #define SIXEL_OPTFLAG_MONOCHROME        ('e')  /* -e, --monochrome: output monochrome sixel image */
 #define SIXEL_OPTFLAG_INSECURE          ('k')  /* -k, --insecure: allow to connect to SSL sites without certs */
 #define SIXEL_OPTFLAG_INVERT            ('i')  /* -i, --invert: assume the terminal background color */

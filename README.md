@@ -385,7 +385,22 @@ Options:
 -p COLORS, --colors=COLORS specify number of colors to reduce
                            the image to (default=256)
 -m FILE, --mapfile=FILE    transform image colors to match this
-                           set of colors.
+                           set of colors. Accepts image files and
+                           palette files in Adobe Color Table (*.act),
+                           JASC/RIFF PAL (*.pal), and GIMP Palette
+                           (*.gpl) formats. Use TYPE:PATH (act:, pal:,
+                           pal-jasc:, pal-riff:, gpl:) to force a
+                           format. Without TYPE the extension or file
+                           contents are used to detect the palette.
+                           TYPE:- reads palette bytes from standard
+                           input (for example, gpl:-).
+-M FILE, --mapfile-output=FILE
+                           export the computed palette. The format is
+                           chosen from TYPE:PATH prefixes or file
+                           extensions (.act, .pal, .gpl). When TYPE is
+                           omitted for .pal the JASC text layout is
+                           used. Writing to '-' requires TYPE:PATH;
+                           TYPE:- sends the palette to standard output.
 -e, --monochrome           output monochrome sixel image
                            this option assumes the terminal
                            background color is black
