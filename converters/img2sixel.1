@@ -61,7 +61,18 @@ limit arguments of DECGRI('!') to 255.
 specify number of colors to reduce the image to (default=256).
 .TP 5
 .B \-m \fIFILE\fP, \-\-mapfile=\fIFILE\fP
-transform image colors to match this set of colorsspecify map.
+transform image colors to match this set of colors. Accepts image files
+and palette files in Adobe Color Table (*.act), JASC/RIFF PAL (*.pal),
+and GIMP Palette (*.gpl) formats. Use TYPE:PATH prefixes (act:, pal:,
+pal\-jasc:, pal\-riff:, gpl:) to force a format. Without TYPE the
+extension or file contents decide the palette type. Using TYPE:- reads
+palette bytes from standard input (for example, gpl:-).
+.TP 5
+.B \-M \fIFILE\fP, \-\-mapfile\-output=\fIFILE\fP
+export the computed palette. TYPE:PATH prefixes or file extensions
+(.act, .pal, .gpl) select the output format. The .pal extension defaults
+to JASC text output; use pal\-riff: for the RIFF layout. Writing to '-'
+requires TYPE:PATH; TYPE:- directs the palette to standard output.
 .TP 5
 .B \-e, \-\-monochrome
 output monochrome sixel image.
