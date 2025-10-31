@@ -359,6 +359,9 @@ Usage: img2sixel [Options] imagefiles
        img2sixel [Options] < imagefile
 
 Options:
+-  Choice-valued arguments accept unique prefixes.  For example,
+   `-s ave` resolves to `average`, but `-s a` is rejected because it
+   matches both `auto` and `average`.
 -o, --outfile              specify output file name.
                            (default:stdout)
                            Use a name ending in ".png", the literal
