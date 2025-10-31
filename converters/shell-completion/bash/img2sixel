@@ -237,10 +237,6 @@ _img2sixel()
         _img2sixel_filedir
         return 0
         ;;
-    -T|--tiles)
-        _img2sixel_filedir
-        return 0
-        ;;
     -a|--assessment)
         COMPREPLY=( $( compgen -W 'all basic performance size quality quality@quantized' -- "$cur" ) )
         return 0
@@ -253,9 +249,9 @@ _img2sixel()
 
     case "$cur" in
     -*)
+        # Keep this option list aligned with `img2sixel -H` output.
         COMPREPLY=( $( compgen -W '
                                    -o --outfile \
-                                   -T --tiles \
                                    -a --assessment \
                                    -J --assessment-file \
                                    -7 --7bit-mode \
@@ -293,7 +289,6 @@ _img2sixel()
                                    -v --verbose \
                                    -j --loaders \
                                    -@ --drcs \
-                                   -M --mapping-version \
                                    -O --ormode \
                                    -W --working-colorspace \
                                    -U --output-colorspace \

@@ -24,6 +24,7 @@ img2sixel \- image converter to DEC SIXEL graphics
 
 .SH "COMMAND-LINE OPTIONS"
 \fIimg2sixel\fP has the following command-line options:
+." Keep this list in the same order as `img2sixel -H`.
 .TP 5
 .B \-o, \-\-outfile
 specify output file name (default:stdout).
@@ -31,10 +32,6 @@ Selecting a name ending in \(dq.png\(dq or the literal \(dqpng:-\(dq emits
 PNG data that reproduces the generated SIXEL stream. The PNG keeps
 the palette indices so that each decoded pixel mirrors the SIXEL
 quantizer.
-.TP 5
-.B \-T \fIPATH\fP, \-\-tiles=\fIPATH\fP
-specify output path for DRCS-SIXEL tile characters.
-Use "-" to write to standard output.
 .TP 5
 .B \-a \fILIST\fP, \-\-assessment=\fILIST\fP
 emit an assessment report as JSON.
@@ -352,13 +349,14 @@ sequence of loader names such as \fBgd\fP, \fBcoregraphics\fP, or
 command line across different builds.
 .TP 5
 .B \-@, \-\-drcs
-output extended DRCS tiles instead of a regular SIXEL image (experimental).
+emit extended DRCS tiles instead of a regular SIXEL image (experimental).
+This option accepts arguments in the form \fIMMV:CHARSET:PATH\fP. MMV picks the
+Unicode mapping revision (0..2, default 2). CHARSET chooses the DRCS slot
+(1-126 when MMV=0, 1-63 when MMV=1, 1-158 when MMV=2; default 1). PATH reroutes
+tile data; use "-" to reuse standard output or leave it blank to discard tiles.
 .br
 This option requires the terminal to report pixel cell size via
 .B TIOCGWINSZ
-.TP 5
-.B \-M \fIVERSION\fP, \-\-mapping\-version=\fIVERSION\fP
-specify DRCS-SIXEL Unicode mapping version
 .TP 5
 .B \-O, \-\-ormode
 This option enables sixel output in "ormode". ormode is a SIXEL graphics
