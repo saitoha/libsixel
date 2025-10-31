@@ -49,6 +49,7 @@
 
 #include <sixel.h>
 #include "status.h"
+#include "compat_stub.h"
 
 #define SIXEL_MESSAGE_OK                    ("succeeded")
 #define SIXEL_MESSAGE_FALSE                 ("unexpected error (SIXEL_FALSE)");
@@ -104,8 +105,6 @@ sixel_helper_format_error(
 {
     static char buffer[1024];
     char const *error_string;
-    char *p;
-    size_t len;
 
     switch (status & 0x1000) {
     case SIXEL_OK:
@@ -154,10 +153,11 @@ sixel_helper_format_error(
             }
             break;
         case SIXEL_LIBC_ERROR:
-            p = strerror(errno);
-            len = strlen(p) + 1;
-            memcpy(buffer, p, len < sizeof(buffer) ? len: sizeof(buffer) - 1);
-            buffer[sizeof(buffer) - 1] = 0;
+            if (sixel_compat_strerror(errno,
+                                      buffer,
+                                      sizeof(buffer)) == NULL) {
+                buffer[0] = '\0';
+            }
             error_string = buffer;
             break;
 #ifdef HAVE_LIBCURL

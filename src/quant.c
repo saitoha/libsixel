@@ -76,6 +76,7 @@
 #endif
 
 #include "quant.h"
+#include "compat_stub.h"
 
 /*
  * Random threshold modulation described by Zhou & Fang (Table 2) assigns
@@ -283,9 +284,11 @@ alloctupletable(
     unsigned int i;
 
     if (UINT_MAX / sizeof(struct tupleint) < size) {
-        nwrite = sprintf(message,
-                         "size %u is too big for arithmetic",
-                         size);
+        nwrite = sixel_compat_snprintf(
+            message,
+            sizeof(message),
+            "size %u is too big for arithmetic",
+            size);
         if (nwrite > 0) {
             sixel_helper_set_additional_message(message);
         }
@@ -302,9 +305,11 @@ alloctupletable(
        as a single malloc block and suballocate internally.
     */
     if ((UINT_MAX - mainTableSize) / tupleIntSize < size) {
-        nwrite = sprintf(message,
-                         "size %u is too big for arithmetic",
-                         size);
+        nwrite = sixel_compat_snprintf(
+            message,
+            sizeof(message),
+            "size %u is too big for arithmetic",
+            size);
         if (nwrite > 0) {
             sixel_helper_set_additional_message(message);
         }
@@ -316,10 +321,12 @@ alloctupletable(
 
     pool = sixel_allocator_malloc(allocator, allocSize);
     if (pool == NULL) {
-        sprintf(message,
-                "unable to allocate %u bytes for a %u-entry "
-                "tuple table",
-                 allocSize, size);
+        sixel_compat_snprintf(
+            message,
+            sizeof(message),
+            "unable to allocate %u bytes for a %u-entry tuple table",
+            allocSize,
+            size);
         sixel_helper_set_additional_message(message);
         status = SIXEL_BAD_ALLOCATION;
         goto end;

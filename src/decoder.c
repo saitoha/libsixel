@@ -43,6 +43,7 @@
 
 #include "decoder.h"
 #include "frame.h"
+#include "compat_stub.h"
 
 
 static float sixel_srgb_to_linear_lut[256];
@@ -525,7 +526,7 @@ strdup_with_allocator(
 
     p = (char *)sixel_allocator_malloc(allocator, (size_t)(strlen(s) + 1));
     if (p) {
-        strcpy(p, s);
+        (void)sixel_compat_strcpy(p, strlen(s) + 1, s);
     }
     return p;
 }
@@ -1310,10 +1311,10 @@ sixel_decoder_decode(
 #endif  /* defined(O_BINARY) */
         input_fp = stdin;
     } else {
-        input_fp = fopen(decoder->input, "rb");
+        input_fp = sixel_compat_fopen(decoder->input, "rb");
         if (!input_fp) {
             sixel_helper_set_additional_message(
-                "sixel_decoder_decode: fopen() failed.");
+                "sixel_decoder_decode: failed to open input file.");
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             goto end;
         }
