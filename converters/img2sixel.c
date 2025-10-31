@@ -688,6 +688,48 @@ png_target_payload_view(char const *argument)
     return argument;
 }
 
+static void
+normalise_windows_drive_path(char *path)
+{
+#if defined(_WIN32)
+    size_t length;
+
+    /*
+     * MSYS-like environments forward POSIX-looking absolute paths to native
+     * binaries.  When a user writes "/d/..." MSYS converts the command line to
+     * UTF-16 and preserves the literal bytes.  The Windows CRT, however,
+     * expects "d:/..." or "d:\...".  The tiny state machine below rewrites the
+     * leading token so the runtime resolves the drive correctly:
+     *
+     *   input     normalised
+     *   |         |
+     *   v         v
+     *   / d / ... d : / ...
+     *
+     * The body keeps the rest of the string intact so UNC paths ("//server")
+     * and relative references pass through untouched.
+     */
+
+    length = 0u;
+
+    if (path == NULL) {
+        return;
+    }
+
+    length = strlen(path);
+    if (length >= 3u
+            && path[0] == '/'
+            && ((path[1] >= 'A' && path[1] <= 'Z')
+                || (path[1] >= 'a' && path[1] <= 'z'))
+            && path[2] == '/') {
+        path[0] = path[1];
+        path[1] = ':';
+    }
+#else
+    (void)path;
+#endif
+}
+
 static SIXELSTATUS
 prepare_png_directory(char const *output_path)
 {
@@ -735,6 +777,8 @@ prepare_png_directory(char const *output_path)
         return SIXEL_BAD_ALLOCATION;
     }
     strcpy(path_copy, output_path);
+
+    normalise_windows_drive_path(path_copy);
 
     cursor = path_copy;
     while (cursor[0] != '\0') {
@@ -1632,6 +1676,7 @@ main(int argc, char *argv[])
                     } else {
                         png_output_path[0] = '\0';
                     }
+                    normalise_windows_drive_path(png_output_path);
                 }
             } else {
                 output_is_png = 0;
