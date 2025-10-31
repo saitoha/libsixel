@@ -30,6 +30,8 @@ extern "C" {
 
 void sixel_helper_set_loader_trace(int enable);
 void sixel_helper_set_thumbnail_size_hint(int size);
+int sixel_helper_set_thumbnail_manual_hint(int size);
+int sixel_helper_apply_thumbnail_hint_from_env(void);
 
 SIXELAPI char const *
 sixel_loader_get_last_success_name(sixel_loader_t const *loader);

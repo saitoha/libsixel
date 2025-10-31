@@ -79,6 +79,9 @@ _img2sixel()
     elif [[ $cur == ${opt_short_uninstall}=* ]]; then
         prev=${opt_short_uninstall}
         cur=${cur#*=}
+    elif [[ $cur == --thumbnailer=* ]]; then
+        prev=--thumbnailer
+        cur=${cur#*=}
     fi
 
     case "$prev" in
@@ -221,6 +224,10 @@ _img2sixel()
                                    wic' -- "$cur" ) )
         return 0
         ;;
+    -T|--thumbnailer)
+        COMPREPLY=( $( compgen -W 'auto' -- "$cur" ) )
+        return 0
+        ;;
     -W|--working-colorspace)
         COMPREPLY=( $( compgen -W 'gamma \
                                    linear \
@@ -289,6 +296,7 @@ _img2sixel()
                                    -D --pipe-mode \
                                    -v --verbose \
                                    -j --loaders \
+                                   -T --thumbnailer \
                                    -@ --drcs \
                                    -O --ormode \
                                    -W --working-colorspace \

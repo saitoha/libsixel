@@ -29,6 +29,9 @@
 #include <stdarg.h>
 #include <string.h>
 #include <limits.h>
+#if HAVE_ERRNO_H
+# include <errno.h>
+#endif
 
 #if HAVE_UNISTD_H
 # include <unistd.h>
@@ -59,6 +62,7 @@
 #include <sixel.h>
 #include "../src/frame.h"
 #include "../src/assessment.h"
+#include "../src/loader.h"
 #include "completion_utils.h"
 
 #if defined(HAVE_MKSTEMP)
@@ -504,6 +508,14 @@ static img2sixel_option_help_t const g_option_help_table[] = {
         "                           loader names like 'gd,builtin'\n"
     },
     {
+        'T',
+        "thumbnailer",
+        "-T SIZE, --thumbnailer=SIZE request external thumbnailers\n"
+        "                           with SIZE as the maximum\n"
+        "                           dimension.  Use -T auto to read\n"
+        "                           SIXEL_THUMBNAILER_SIZE.\n"
+    },
+    {
         '@',
         "drcs",
         "-@ MMV:CHARSET:PATH, --drcs=MMV:CHARSET:PATH\n"
@@ -680,6 +692,47 @@ img2sixel_report_invalid_argument(int short_opt,
     }
 
     sixel_helper_set_additional_message(buffer);
+}
+
+/*
+ * img2sixel_parse_thumbnailer_size
+ *
+ * Convert the -T option payload into a validated integer so downstream
+ * code can trust the hint.  The mapping table below shows how every
+ * possible parse outcome feeds into the return value.
+ *
+ *     +---------+----------------+------------------+
+ *     | input   | strtol() state | function result  |
+ *     +---------+----------------+------------------+
+ *     | valid   | clean integer  | 1 (size written) |
+ *     | invalid | garbage/limits | 0 (no change)    |
+ *     +---------+----------------+------------------+
+ */
+static int
+img2sixel_parse_thumbnailer_size(char const *text, int *value)
+{
+    long parsed;
+    char *tail;
+
+    if (text == NULL || value == NULL) {
+        return 0;
+    }
+
+    errno = 0;
+    parsed = strtol(text, &tail, 10);
+    if (errno != 0 || tail == text || *tail != '\0') {
+        return 0;
+    }
+    if (parsed <= 0L) {
+        return 0;
+    }
+    if (parsed > (long)SIXEL_WIDTH_LIMIT ||
+            parsed > (long)SIXEL_HEIGHT_LIMIT) {
+        return 0;
+    }
+
+    *value = (int)parsed;
+    return 1;
 }
 
 static char const *
@@ -1412,6 +1465,11 @@ void show_help(void)
             "                             rgb:rr/gg/bb\n"
             "                             rgb:rrr/ggg/bbb\n"
             "                             rgb:rrrr/gggg/bbbb\n"
+            "SIXEL_THUMBNAILER_SIZE    maximum dimension hint for\n"
+            "                           external thumbnailers.  Set\n"
+            "                           alone or pair with -T auto when\n"
+            "                           the value stays within the SIXEL\n"
+            "                           limits.\n"
             );
 }
 
@@ -1441,7 +1499,7 @@ main(int argc, char *argv[])
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     char const *optstring =
-        "o:a:J:j:78Rp:m:M:eb:Id:f:s:c:w:h:r:q:L:kil:t:ugvSn:PE:U:B:C:D@:"
+        "o:a:J:j:T:78Rp:m:M:eb:Id:f:s:c:w:h:r:q:L:kil:t:ugvSn:PE:U:B:C:D@:"
         "OVW:HY:y:";
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
@@ -1476,6 +1534,7 @@ main(int argc, char *argv[])
         {"ignore-delay",       no_argument,        &long_opt, 'g'},
         {"verbose",            no_argument,        &long_opt, 'v'},
         {"loaders",            required_argument,  &long_opt, 'j'},
+        {"thumbnailer",        required_argument,  &long_opt, 'T'},
         {"static",             no_argument,        &long_opt, 'S'},
         {"macro-number",       required_argument,  &long_opt, 'n'},
         {"penetrate",          no_argument,        &long_opt, 'P'}, /* deprecated */
@@ -1533,6 +1592,7 @@ main(int argc, char *argv[])
 #endif
     char detail_buffer[1024];
     char const *detail_source;
+    int thumbnailer_hint_size;
 
     completion_exit_status = 0;
     completion_cli_result = img2sixel_handle_completion_cli(
@@ -1583,6 +1643,7 @@ main(int argc, char *argv[])
     assessment_stat_result = 0;
     assessment_size_path = NULL;
 #endif
+    thumbnailer_hint_size = 0;
 
     status = sixel_encoder_new(&encoder, NULL);
     if (SIXEL_FAILED(status)) {
@@ -1629,6 +1690,39 @@ main(int argc, char *argv[])
             break;
         case 'J':
             assessment_json_path = optarg;
+            break;
+        case 'T':
+            if (strcmp(optarg, "auto") == 0) {
+                if (!sixel_helper_apply_thumbnail_hint_from_env()) {
+                    img2sixel_report_invalid_argument(
+                        'T',
+                        optarg,
+                        "img2sixel: SIXEL_THUMBNAILER_SIZE is missing or "
+                        "invalid.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto error;
+                }
+                break;
+            }
+            if (!img2sixel_parse_thumbnailer_size(optarg,
+                                                  &thumbnailer_hint_size)) {
+                img2sixel_report_invalid_argument(
+                    'T',
+                    optarg,
+                    "img2sixel: specify a positive integer within the "
+                    "SIXEL limits.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto error;
+            }
+            if (!sixel_helper_set_thumbnail_manual_hint(
+                    thumbnailer_hint_size)) {
+                img2sixel_report_invalid_argument(
+                    'T',
+                    optarg,
+                    "img2sixel: thumbnail size hint rejected.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto error;
+            }
             break;
         case 'j':
             status = sixel_encoder_setopt(encoder,

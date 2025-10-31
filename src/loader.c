@@ -126,6 +126,10 @@ sixel_quicklook_thumbnail_create(CFURLRef url, CGSize max_size);
 
 static int loader_trace_enabled;
 static int thumbnailer_size_hint = SIXEL_THUMBNAILER_DEFAULT_SIZE;
+static int thumbnailer_auto_hint_valid;
+static int thumbnailer_manual_hint;
+static int thumbnailer_manual_hint_valid;
+static int thumbnailer_env_checked;
 
 #if HAVE_POSIX_SPAWNP
 extern char **environ;
@@ -209,9 +213,153 @@ sixel_helper_set_thumbnail_size_hint(int size)
 {
     if (size > 0) {
         thumbnailer_size_hint = size;
+        thumbnailer_auto_hint_valid = 1;
     } else {
         thumbnailer_size_hint = SIXEL_THUMBNAILER_DEFAULT_SIZE;
+        thumbnailer_auto_hint_valid = 0;
     }
+}
+
+/*
+ * thumbnailer_parse_size_text
+ *
+ * Translate a human readable dimension into a validated integer.  The
+ * parsing routine refuses values outside the SIXEL guard rails so every
+ * caller can trust the result without repeating the checks.
+ *
+ *     +---------+-------------------+--------------------+
+ *     | input   | strtol() outcome  | parsed return code |
+ *     +---------+-------------------+--------------------+
+ *     | valid   | integer in range  | 1 (success)        |
+ *     | invalid | garbage / too big | 0 (failure)        |
+ *     +---------+-------------------+--------------------+
+ */
+static int
+thumbnailer_parse_size_text(char const *text, int *value)
+{
+    long parsed;
+    char *tail;
+
+    if (text == NULL || value == NULL) {
+        return 0;
+    }
+
+    errno = 0;
+    parsed = strtol(text, &tail, 10);
+    if (errno != 0 || tail == text || *tail != '\0') {
+        return 0;
+    }
+    if (parsed <= 0L) {
+        return 0;
+    }
+    if (parsed > (long)SIXEL_WIDTH_LIMIT ||
+            parsed > (long)SIXEL_HEIGHT_LIMIT) {
+        return 0;
+    }
+
+    *value = (int)parsed;
+    return 1;
+}
+
+static void
+thumbnailer_set_manual_hint(int size)
+{
+    if (size > 0 &&
+            size <= SIXEL_WIDTH_LIMIT &&
+            size <= SIXEL_HEIGHT_LIMIT) {
+        thumbnailer_manual_hint = size;
+        thumbnailer_manual_hint_valid = 1;
+    } else {
+        thumbnailer_manual_hint = 0;
+        thumbnailer_manual_hint_valid = 0;
+    }
+}
+
+static void
+thumbnailer_initialise_from_environment(void)
+{
+    char const *text;
+    int parsed;
+
+    if (thumbnailer_env_checked) {
+        return;
+    }
+    thumbnailer_env_checked = 1;
+
+    if (thumbnailer_manual_hint_valid) {
+        return;
+    }
+
+    text = getenv("SIXEL_THUMBNAILER_SIZE");
+    if (text == NULL) {
+        return;
+    }
+    if (!thumbnailer_parse_size_text(text, &parsed)) {
+        return;
+    }
+
+    thumbnailer_set_manual_hint(parsed);
+}
+
+int
+sixel_helper_set_thumbnail_manual_hint(int size)
+{
+    if (size <= 0 ||
+            size > SIXEL_WIDTH_LIMIT ||
+            size > SIXEL_HEIGHT_LIMIT) {
+        thumbnailer_set_manual_hint(0);
+        return 0;
+    }
+
+    thumbnailer_env_checked = 1;
+    thumbnailer_set_manual_hint(size);
+    return 1;
+}
+
+int
+sixel_helper_apply_thumbnail_hint_from_env(void)
+{
+    char const *text;
+    int parsed;
+
+    text = getenv("SIXEL_THUMBNAILER_SIZE");
+    if (text == NULL) {
+        return 0;
+    }
+    if (!thumbnailer_parse_size_text(text, &parsed)) {
+        return 0;
+    }
+
+    return sixel_helper_set_thumbnail_manual_hint(parsed);
+}
+
+static int
+thumbnailer_manual_hint_enabled(void)
+{
+    thumbnailer_initialise_from_environment();
+    return thumbnailer_manual_hint_valid;
+}
+
+static int
+thumbnailer_effective_size(void)
+{
+    int size;
+
+    if (!thumbnailer_manual_hint_enabled()) {
+        return 0;
+    }
+
+    size = thumbnailer_manual_hint;
+    if (size <= 0) {
+        size = SIXEL_THUMBNAILER_DEFAULT_SIZE;
+    }
+    if (thumbnailer_auto_hint_valid &&
+            thumbnailer_size_hint > 0 &&
+            thumbnailer_size_hint < size) {
+        size = thumbnailer_size_hint;
+    }
+
+    return size;
 }
 
 #if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
@@ -2151,6 +2299,7 @@ load_with_quicklook(
     CGFloat fill_b;
     CGFloat max_dimension;
     CGSize max_size;
+    int hint_size;
 
     (void)fstatic;
     (void)fuse_palette;
@@ -2183,11 +2332,15 @@ load_with_quicklook(
         goto end;
     }
 
-    if (thumbnailer_size_hint > 0) {
-        max_dimension = (CGFloat)thumbnailer_size_hint;
-    } else {
-        max_dimension = (CGFloat)SIXEL_THUMBNAILER_DEFAULT_SIZE;
+    hint_size = thumbnailer_effective_size();
+    if (hint_size <= 0) {
+        loader_trace_message(
+            "load_with_quicklook: thumbnail size hint unavailable.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
     }
+
+    max_dimension = (CGFloat)hint_size;
     max_size.width = max_dimension;
     max_size.height = max_dimension;
 #if HAVE_QUICKLOOK_THUMBNAILING
@@ -4866,12 +5019,14 @@ load_with_gnome_thumbnailer(
     int command_success;
     int requested_size;
     char const *log_prefix;
+    int hint_size;
+    int fd;
 
     status = SIXEL_FALSE;
     thumb_chunk = NULL;
     png_path = NULL;
     path_length = 0;
-    int fd;
+    hint_size = 0;
     fd = -1;
     directories = NULL;
     dir_index = 0;
@@ -4885,16 +5040,21 @@ load_with_gnome_thumbnailer(
     executed = 0;
     command_success = 0;
     log_prefix = "load_with_gnome_thumbnailer";
-    requested_size = thumbnailer_size_hint;
-    if (requested_size <= 0) {
-        requested_size = SIXEL_THUMBNAILER_DEFAULT_SIZE;
+    thumbnailer_entry_init(&info);
+    hint_size = thumbnailer_effective_size();
+    if (hint_size <= 0) {
+        loader_trace_message(
+            "%s: thumbnail size hint unavailable.",
+            log_prefix);
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
     }
+
+    requested_size = hint_size;
 
     loader_trace_message("%s: thumbnail size hint=%d",
                          log_prefix,
                          requested_size);
-
-    thumbnailer_entry_init(&info);
 
     if (pchunk->source_path == NULL) {
         sixel_helper_set_additional_message(
@@ -5910,6 +6070,34 @@ loader_can_try_wic(sixel_chunk_t const *chunk)
 }
 #endif
 
+#if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
+static int
+loader_can_try_quicklook_thumbnailer(sixel_chunk_t const *chunk)
+{
+    (void)chunk;
+
+    if (!thumbnailer_manual_hint_enabled()) {
+        return 0;
+    }
+
+    return 1;
+}
+#endif
+
+#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
+static int
+loader_can_try_gnome_thumbnailer(sixel_chunk_t const *chunk)
+{
+    (void)chunk;
+
+    if (!thumbnailer_manual_hint_enabled()) {
+        return 0;
+    }
+
+    return 1;
+}
+#endif
+
 static sixel_loader_entry_t const sixel_loader_entries[] = {
 #if HAVE_WIC
     { "wic", load_with_wic, loader_can_try_wic },
@@ -5918,7 +6106,8 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
     { "coregraphics", load_with_coregraphics, NULL },
 #endif
 #if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
-    { "quicklook", load_with_quicklook, NULL },
+    { "quicklook", load_with_quicklook,
+      loader_can_try_quicklook_thumbnailer },
 #endif
 #ifdef HAVE_GDK_PIXBUF2
     { "gdk-pixbuf2", load_with_gdkpixbuf, NULL },
@@ -5934,7 +6123,8 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
 #endif
     { "builtin", load_with_builtin, NULL },
 #if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
-    { "gnome-thumbnailer", load_with_gnome_thumbnailer, NULL },
+    { "gnome-thumbnailer", load_with_gnome_thumbnailer,
+      loader_can_try_gnome_thumbnailer },
 #endif
 };
 
@@ -6427,24 +6617,35 @@ end:
 SIXELAPI size_t
 sixel_helper_get_available_loader_names(char const **names, size_t max_names)
 {
-    size_t entry_count;
+    size_t entry_total;
+    size_t visible;
     size_t limit;
     size_t index;
+    int manual_enabled;
 
-    entry_count = sizeof(sixel_loader_entries) /
+    entry_total = sizeof(sixel_loader_entries) /
                   sizeof(sixel_loader_entries[0]);
-
+    visible = 0u;
+    manual_enabled = thumbnailer_manual_hint_enabled();
+    limit = 0u;
     if (names != NULL && max_names > 0) {
-        limit = entry_count;
-        if (limit > max_names) {
-            limit = max_names;
-        }
-        for (index = 0; index < limit; ++index) {
-            names[index] = sixel_loader_entries[index].name;
-        }
+        limit = max_names;
     }
 
-    return entry_count;
+    for (index = 0; index < entry_total; ++index) {
+        if ((strcmp(sixel_loader_entries[index].name, "quicklook") == 0 ||
+                strcmp(sixel_loader_entries[index].name,
+                       "gnome-thumbnailer") == 0) &&
+                !manual_enabled) {
+            continue;
+        }
+        if (names != NULL && visible < limit) {
+            names[visible] = sixel_loader_entries[index].name;
+        }
+        ++visible;
+    }
+
+    return visible;
 }
 
 #if HAVE_TESTS

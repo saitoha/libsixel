@@ -4093,8 +4093,10 @@ sixel_encoder_setopt(
     size_t len;
     size_t i;
     long parsed_reqcolors;
+    long parsed_thumbnailer;
     char *endptr;
     int forced_palette;
+    int thumbnailer_hint;
     char *opt_copy;
     char const *drcs_arg_delim;
     char const *drcs_arg_charset;
@@ -4570,6 +4572,50 @@ sixel_encoder_setopt(
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
             }
+        }
+        break;
+    case SIXEL_OPTFLAG_THUMBNAILER:  /* T */
+        if (value == NULL || *value == '\0') {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_setopt: thumbnailer hint is missing.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        if (strcmp(value, "auto") == 0) {
+            if (!sixel_helper_apply_thumbnail_hint_from_env()) {
+                sixel_helper_set_additional_message(
+                    "sixel_encoder_setopt: SIXEL_THUMBNAILER_SIZE "
+                    "is missing or invalid.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
+            break;
+        }
+        errno = 0;
+        endptr = NULL;
+        parsed_thumbnailer = strtol(value, &endptr, 10);
+        if (errno != 0 || endptr == value ||
+                (endptr != NULL && *endptr != '\0')) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_setopt: invalid thumbnailer size.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        if (parsed_thumbnailer <= 0L ||
+                parsed_thumbnailer > (long)SIXEL_WIDTH_LIMIT ||
+                parsed_thumbnailer > (long)SIXEL_HEIGHT_LIMIT) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_setopt: thumbnailer size exceeds the "
+                "allowed range.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        thumbnailer_hint = (int)parsed_thumbnailer;
+        if (!sixel_helper_set_thumbnail_manual_hint(thumbnailer_hint)) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_setopt: thumbnailer hint rejected.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
         }
         break;
     case SIXEL_OPTFLAG_STATIC:  /* S */

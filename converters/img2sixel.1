@@ -362,6 +362,13 @@ sequence of loader names such as \fBgd\fP, \fBcoregraphics\fP, or
 \fBbuiltin\fP. Unknown names are ignored so you can reuse the same
 command line across different builds.
 .TP 5
+.B \-T \fISIZE\fP, \-\-thumbnailer=\fISIZE\fP
+enable the external thumbnailer loaders and pass \fISIZE\fP as the maximum
+dimension hint.  Without this option (or the environment variable documented
+below) the Quick Look and GNOME thumbnailer helpers remain disabled.  Use
+\fB\-T auto\fP to mirror \fBSIXEL_THUMBNAILER_SIZE\fP.  Values larger than
+\fBSIXEL_WIDTH_LIMIT\fP or \fBSIXEL_HEIGHT_LIMIT\fP are rejected.
+.TP 5
 .B \-@, \-\-drcs
 emit extended DRCS tiles instead of a regular SIXEL image (experimental).
 This option accepts arguments in the form \fIMMV:CHARSET:PATH\fP. MMV picks the
@@ -485,6 +492,17 @@ rgb:rr/gg/bb
 rgb:rrr/ggg/bbb
 .br
 rgb:rrrr/gggg/bbbb
+.br
+.TP 5
+.B SIXEL_THUMBNAILER_SIZE
+.br
+provide the maximum dimension hint for external thumbnailer loaders.
+.br
+Setting the variable alone enables the thumbnailer backends.
+.br
+Hints exceeding \fBSIXEL_WIDTH_LIMIT\fP or \fBSIXEL_HEIGHT_LIMIT\fP are ignored.
+.br
+Use \fB\-T auto\fP to forward the same value from the command line.
 .br
 .TP 5
 .B IMG2SIXEL_COMPLETION_BASH

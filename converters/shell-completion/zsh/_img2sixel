@@ -149,6 +149,12 @@ _loaders() {
     'wic[Windows Imaging Component loader]'
 }
 
+_thumbnailerhint() {
+  _values \
+    'THUMBNAILERHINT' \
+    'auto[read SIXEL_THUMBNAILER_SIZE from the environment]'
+}
+
 _workingcolorspace() {
   _values \
     'WORKINGCOLORSPACE' \
@@ -224,6 +230,7 @@ _arguments -S -s -A "-*" -S \
   {-D,--pipe-mode}'[read source images from stdin continuously]' \
   {-v,--verbose}'[show debugging information]' \
   {-j,--loaders=}'[override loader priority order]':loaders:_loaders \
+  {-T,--thumbnailer=}'[enable external thumbnailers with a size hint]':thumbnailerhint:_thumbnailerhint \
   {-@,--drcs}'[emit DRCS tiles via MMV:CHARSET:PATH (defaults 2:1:, "-" keeps stdout)]' \
   {-O,--ormode}'[output ormode sixel image]' \
   {-W,--working-colorspace=}'[select internal working color space]':workingcolorspace:_workingcolorspace \

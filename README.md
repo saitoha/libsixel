@@ -656,18 +656,24 @@ then falls back to any remaining backends in their default order. Unknown names
 are ignored, making it safe to reuse the same preference string across
 platforms.
 
-When running under GNOME or other desktops that implement the FreeDesktop.org
-Thumbnail Managing Standard (including Cinnamon, MATE, and Xfce via Tumbler),
-`img2sixel` inspects the installed `.thumbnailer` definitions located in
-`$HOME/.local/share/thumbnailers` and each directory listed in `XDG_DATA_DIRS`
-(defaulting to `/usr/local/share` and `/usr/share`). It invokes the first entry
-that advertises support for the source file's MIME type. The MIME type is
-obtained from `file --mime-type`, so GLib is not required at runtime. The
-generated preview is rendered at a provisional width of 512 pixels before being
-converted to SIXEL. When `-w` and/or `-h` are supplied, libsixel requests
-more headroom: the larger of the supplied pixel sizes is doubled and the
-result is doubled again (if only one side is specified the final size is
-simply twice that value). If no specialised thumbnailer is available,
+The Quick Look and GNOME thumbnailer loaders are disabled unless libsixel
+receives an explicit size hint. Provide `-T SIZE` to enable them for the current
+invocation, or export `SIXEL_THUMBNAILER_SIZE` so wrapper scripts can opt in
+globally. Passing `-T auto` mirrors the environment variable. Hints larger than
+`SIXEL_WIDTH_LIMIT` or `SIXEL_HEIGHT_LIMIT` are ignored so runaway dimensions do
+not trigger expensive work.
+
+When running under GNOME or other desktops that implement the
+FreeDesktop.org Thumbnail Managing Standard (including Cinnamon, MATE, and Xfce
+via Tumbler), `img2sixel` inspects the installed `.thumbnailer` definitions
+located in `$HOME/.local/share/thumbnailers` and each directory listed in
+`XDG_DATA_DIRS` (defaulting to `/usr/local/share` and `/usr/share`). It invokes
+the first entry that advertises support for the source file's MIME type. The
+MIME type is obtained from `file --mime-type`, so GLib is not required at
+runtime. The generated preview honours the hint described above while still
+requesting additional headroom when `-w` and/or `-h` are supplied (the larger
+axis is doubled twice; if only one axis is specified the final size is twice
+that value). If no specialised thumbnailer is available,
 `gdk-pixbuf-thumbnailer` is used as a fallback.
 
 Convert a jpeg image file into a sixel file

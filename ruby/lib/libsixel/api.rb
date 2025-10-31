@@ -71,6 +71,7 @@ module Libsixel
     SIXEL_OPTFLAG_WORKING_COLORSPACE = 'W' unless const_defined?(:SIXEL_OPTFLAG_WORKING_COLORSPACE)
     SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U' unless const_defined?(:SIXEL_OPTFLAG_OUTPUT_COLORSPACE)
     SIXEL_OPTFLAG_LOADERS = 'j' unless const_defined?(:SIXEL_OPTFLAG_LOADERS)
+    SIXEL_OPTFLAG_THUMBNAILER = 'T' unless const_defined?(:SIXEL_OPTFLAG_THUMBNAILER)
     SIXEL_OPTFLAG_MAPFILE_OUTPUT = 'M' unless const_defined?(:SIXEL_OPTFLAG_MAPFILE_OUTPUT)
     def self.succeeded?(status) ((status & SIXEL_FALSE) == 0) end
     def self.failed?(status)    ((status & SIXEL_FALSE) != 0) end
