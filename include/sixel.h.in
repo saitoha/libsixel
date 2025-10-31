@@ -235,7 +235,6 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_SIZE              ('s')  /* -s, --size: limit longer edge to SIZE pixels. */
 #define SIXEL_OPTFLAG_EDGE              ('e')  /* -e, --edge: specify  bias (1-1000, default: 30). */
 #define SIXEL_OPTFLAG_OUTFILE           ('o')  /* -o, --outfile: specify output file name. */
-#define SIXEL_OPTFLAG_ALT_CHARSET_PATH  ('T')  /* -T PATH, --tiles=PATH: DRCS tile destination. */
 #define SIXEL_OPTFLAG_7BIT_MODE         ('7')  /* -7, --7bit-mode: for 7bit terminals or printers (default) */
 #define SIXEL_OPTFLAG_8BIT_MODE         ('8')  /* -8, --8bit-mode: for 8bit terminals or printers */
 #define SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT ('R')  /* -R, --gri-limit: limit arguments of DECGRI('!') to 255 */
@@ -488,11 +487,11 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_PENETRATE         ('P')  /* -P, --penetrate: (deprecated)
                                                   penetrate GNU Screen using DCS
                                                   pass-through sequence */
-#define SIXEL_OPTFLAG_DRCS              ('@')  /* -@ DSCS, --drcs DSCS:
-                                                  output extended DRCS tiles instead of regular
-                                                  SIXEL image (experimental) */
-#define SIXEL_OPTFLAG_MAPPING_VERSION   ('M')  /* -M, --mapping-version:
-                                                  specify DRCS-SIXEL Unicode mapping version */
+#define SIXEL_OPTFLAG_DRCS              ('@')  /* -@ MMV:CHARSET:PATH, --drcs=MMV:CHARSET:PATH:
+                                                  emit extended DRCS tiles while optionally
+                                                  overriding mapping revision, charset slot,
+                                                  and tile output destination (defaults to
+                                                  2:1:; experimental) */
 #define SIXEL_OPTFLAG_PIPE_MODE         ('D')  /* -D, --pipe-mode: (deprecated)
                                                   read source images from stdin continuously */
 #define SIXEL_OPTFLAG_VERBOSE           ('v')  /* -v, --verbose: show debugging info */

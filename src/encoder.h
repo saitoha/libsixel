@@ -92,7 +92,7 @@ struct sixel_encoder {
     int finsecure;
     int *cancel_flag;
     void *dither_cache;
-    unsigned char start_dscs;
+    unsigned short drcs_charset_no;
     int drcs_mmv;
     int capture_quantized;
     int capture_source;

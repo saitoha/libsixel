@@ -92,13 +92,6 @@ static img2sixel_option_help_t const g_option_help_table[] = {
         "                           (default:stdout)\n"
     },
     {
-        'T',
-        "tiles",
-        "-T PATH, --tiles=PATH      specify output path for DRCS-SIXEL\n"
-        "                           tile characters.\n"
-        "                           use '-' to write to stdout.\n"
-    },
-    {
         'a',
         "assessment",
         "-a LIST, --assessment=LIST emit assessment JSON report.\n"
@@ -479,15 +472,14 @@ static img2sixel_option_help_t const g_option_help_table[] = {
     {
         '@',
         "drcs",
-        "-@ DSCS, --drcs DSCS       output extended DRCS tiles instead of\n"
-        "                           regular SIXEL image (experimental)\n"
-    },
-    {
-        'M',
-        "mapping-version",
-        "-M VERSION, --mapping-version=VERSION\n"
-        "                           specify DRCS-SIXEL Unicode mapping\n"
-        "                           version\n"
+        "-@ MMV:CHARSET:PATH, --drcs=MMV:CHARSET:PATH\n"
+        "                           emit DRCS tiles instead of SIXEL output.\n"
+        "                           MMV selects the mapping revision (0..2,\n"
+        "                           default 2). CHARSET chooses the slot\n"
+        "                           (1-126 when MMV=0, 1-63 when MMV=1,\n"
+        "                           1-158 when MMV=2; default 1). PATH routes\n"
+        "                           tile data (\"-\" keeps stdout; blank disables\n"
+        "                           the external sink).\n"
     },
     {
         'O',
@@ -1228,11 +1220,12 @@ main(int argc, char *argv[])
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    char const *optstring = "o:T:a:J:j:78Rp:m:eb:Id:f:s:c:w:h:r:q:L:kil:t:ugvSn:PE:U:B:C:D@:M:OVW:HY:y:";
+    char const *optstring =
+        "o:a:J:j:78Rp:m:eb:Id:f:s:c:w:h:r:q:L:kil:t:ugvSn:PE:U:B:C:D@:"
+        "OVW:HY:y:";
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",            required_argument,  &long_opt, 'o'},
-        {"tiles",              required_argument,  &long_opt, 'T'},
         {"assessment",         required_argument,  &long_opt, 'a'},
         {"assessment-file",    required_argument,  &long_opt, 'J'},
         {"7bit-mode",          no_argument,        &long_opt, '7'},
@@ -1272,7 +1265,6 @@ main(int argc, char *argv[])
         {"complexion-score",   required_argument,  &long_opt, 'C'}, /* deprecated */
         {"pipe-mode",          no_argument,        &long_opt, 'D'}, /* deprecated */
         {"drcs",               required_argument,  &long_opt, '@'},
-        {"mapping-version",    required_argument,  &long_opt, 'M'},
         {"ormode",             no_argument,        &long_opt, 'O'},
         {"version",            no_argument,        &long_opt, 'V'},
         {"help",               no_argument,        &long_opt, 'H'},
@@ -2015,10 +2007,10 @@ error:
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
             "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
-            "                 [-E encodepolicy] [-j loaderlist] [-J jsonfile] [-@ dscs]\n"
-            "                 [-M mapping-version] [-1 shell] [-2 shell] [-3 shell]\n"
-            "                 [-W workingcolorspace] [-U outputcolorspace] [-B bgcolor]\n"
-            "                 [-T tilepath] [-o outfile] [filename ...]\n\n"
+            "                 [-E encodepolicy] [-j loaderlist] [-J jsonfile]\n"
+            "                 [-@ mmv:charset:path] [-1 shell] [-2 shell]\n"
+            "                 [-3 shell] [-W workingcolorspace] [-U outputcolorspace]\n"
+            "                 [-B bgcolor] [-o outfile] [filename ...]\n\n"
             "for more details, type: 'img2sixel -H'.\n");
 
 end:

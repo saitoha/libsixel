@@ -1933,8 +1933,9 @@ sixel_encoder_emit_iso2022_chars(
 {
     char *buf_p, *buf;
     int col, row;
-    int charset = encoder->start_dscs;
-    int is_96cs = 0;
+    int charset;
+    int is_96cs;
+    unsigned int charset_no;
     unsigned int code;
     int num_cols, num_rows;
     SIXELSTATUS status;
@@ -1943,6 +1944,20 @@ sixel_encoder_emit_iso2022_chars(
     int target_fd;
     int chunk_size;
 
+    charset_no = encoder->drcs_charset_no;
+    if (charset_no == 0u) {
+        charset_no = 1u;
+    }
+    if (encoder->drcs_mmv == 0) {
+        is_96cs = (charset_no > 63u) ? 1 : 0;
+        charset = (int)(((charset_no - 1u) % 63u) + 0x40u);
+    } else if (encoder->drcs_mmv == 1) {
+        is_96cs = 0;
+        charset = (int)(charset_no + 0x3fu);
+    } else {
+        is_96cs = (charset_no > 79u) ? 1 : 0;
+        charset = (int)(((charset_no - 1u) % 79u) + 0x30u);
+    }
     code = 0x100020 + (is_96cs ? 0x80 : 0) + charset * 0x100;
     num_cols = (sixel_frame_get_width(frame) + encoder->cell_width - 1)
              / encoder->cell_width;
@@ -2027,8 +2042,9 @@ sixel_encoder_emit_drcsmmv2_chars(
 {
     char *buf_p, *buf;
     int col, row;
-    int charset = encoder->start_dscs;
-    int is_96cs = 0;
+    int charset;
+    int is_96cs;
+    unsigned int charset_no;
     unsigned int code;
     int num_cols, num_rows;
     SIXELSTATUS status;
@@ -2037,6 +2053,20 @@ sixel_encoder_emit_drcsmmv2_chars(
     int target_fd;
     int chunk_size;
 
+    charset_no = encoder->drcs_charset_no;
+    if (charset_no == 0u) {
+        charset_no = 1u;
+    }
+    if (encoder->drcs_mmv == 0) {
+        is_96cs = (charset_no > 63u) ? 1 : 0;
+        charset = (int)(((charset_no - 1u) % 63u) + 0x40u);
+    } else if (encoder->drcs_mmv == 1) {
+        is_96cs = 0;
+        charset = (int)(charset_no + 0x3fu);
+    } else {
+        is_96cs = (charset_no > 79u) ? 1 : 0;
+        charset = (int)(((charset_no - 1u) % 79u) + 0x30u);
+    }
     code = 0x100020 + (is_96cs ? 0x80 : 0) + charset * 0x100;
     num_cols = (sixel_frame_get_width(frame) + encoder->cell_width - 1)
              / encoder->cell_width;
@@ -2116,6 +2146,8 @@ sixel_encoder_encode_frame(
     int height;
     int is_animation = 0;
     int nwrite;
+    int drcs_is_96cs_param;
+    int drcs_designate_char;
     char buf[256];
     sixel_write_function fn_write;
     sixel_write_function write_callback;
@@ -2330,15 +2362,31 @@ sixel_encoder_encode_frame(
     }
 
     if (encoder->fdrcs) {  /* -@ option */
+        if (encoder->drcs_mmv == 0) {
+            drcs_is_96cs_param =
+                (encoder->drcs_charset_no > 63u) ? 1 : 0;
+            drcs_designate_char =
+                (int)(((encoder->drcs_charset_no - 1u) % 63u) + 0x40u);
+        } else if (encoder->drcs_mmv == 1) {
+            drcs_is_96cs_param = 0;
+            drcs_designate_char =
+                (int)(encoder->drcs_charset_no + 0x3fu);
+        } else {
+            drcs_is_96cs_param =
+                (encoder->drcs_charset_no > 79u) ? 1 : 0;
+            drcs_designate_char =
+                (int)(((encoder->drcs_charset_no - 1u) % 79u) + 0x30u);
+        }
         nwrite = sprintf(buf,
-                         "%s%s1;0;0;%d;1;3;%d;0{ %c",
+                         "%s%s1;0;0;%d;1;3;%d;%d{ %c",
                          (encoder->drcs_mmv > 0) ? (
                              encoder->f8bit ? "\233?8800h": "\033[?8800h"
                          ): "",
                          encoder->f8bit ? "\220": "\033P",
                          encoder->cell_width,
                          encoder->cell_height,
-                         encoder->start_dscs);
+                         drcs_is_96cs_param,
+                         drcs_designate_char);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
@@ -2510,7 +2558,7 @@ sixel_encoder_new(
     (*ppencoder)->finsecure             = 0;
     (*ppencoder)->cancel_flag           = NULL;
     (*ppencoder)->dither_cache          = NULL;
-    (*ppencoder)->start_dscs            = '0';
+    (*ppencoder)->drcs_charset_no       = 1u;
     (*ppencoder)->drcs_mmv              = 2;
     (*ppencoder)->capture_quantized     = 0;
     (*ppencoder)->capture_source        = 0;
@@ -2699,6 +2747,16 @@ sixel_encoder_setopt(
     long parsed_reqcolors;
     char *endptr;
     int forced_palette;
+    char const *drcs_arg_delim;
+    char const *drcs_arg_charset;
+    char const *drcs_arg_second_delim;
+    char const *drcs_arg_path;
+    size_t drcs_arg_path_length;
+    size_t drcs_segment_length;
+    char drcs_segment[32];
+    int drcs_mmv_value;
+    long drcs_charset_value;
+    unsigned int drcs_charset_limit;
 
     sixel_encoder_ref(encoder);
 
@@ -2727,45 +2785,6 @@ sixel_encoder_setopt(
                                   O_RDWR|O_CREAT|O_TRUNC,
                                   S_IRUSR|S_IWUSR);
 #endif  /* HAVE__OPEN */
-        }
-        break;
-    case SIXEL_OPTFLAG_ALT_CHARSET_PATH:  /* T */
-        if (*value == '\0') {
-            sixel_helper_set_additional_message(
-                "no file name specified.");
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
-        }
-        if (encoder->tile_outfd >= 0
-            && encoder->tile_outfd != encoder->outfd
-            && encoder->tile_outfd != STDOUT_FILENO
-            && encoder->tile_outfd != STDERR_FILENO) {
-#if HAVE__CLOSE
-            (void) _close(encoder->tile_outfd);
-#else
-            (void) close(encoder->tile_outfd);
-#endif  /* HAVE__CLOSE */
-        }
-        encoder->tile_outfd = (-1);
-        if (strcmp(value, "-") == 0) {
-            encoder->tile_outfd = STDOUT_FILENO;
-        } else {
-#if HAVE__OPEN
-            encoder->tile_outfd = _open(value,
-                                           O_RDWR|O_CREAT|O_TRUNC,
-                                           S_IRUSR|S_IWUSR);
-#else
-            encoder->tile_outfd = open(value,
-                                          O_RDWR|O_CREAT|O_TRUNC,
-                                          S_IRUSR|S_IWUSR);
-#endif  /* HAVE__OPEN */
-            if (encoder->tile_outfd < 0) {
-                sixel_helper_set_additional_message(
-                    "sixel_encoder_setopt: failed to open tile"
-                    " output path.");
-                status = SIXEL_RUNTIME_ERROR;
-                goto end;
-            }
         }
         break;
     case SIXEL_OPTFLAG_7BIT_MODE:  /* 7 */
@@ -3185,22 +3204,185 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_DRCS:  /* @ */
         encoder->fdrcs = 1;
-        if (strlen(value) == 1 && value[0] >= 32) {
-            encoder->start_dscs = value[0];
-        } else {
-            sixel_helper_set_additional_message(
-                "cannot parse DSCS option.");
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
+        drcs_arg_delim = NULL;
+        drcs_arg_charset = NULL;
+        drcs_arg_second_delim = NULL;
+        drcs_arg_path = NULL;
+        drcs_arg_path_length = 0u;
+        drcs_segment_length = 0u;
+        drcs_mmv_value = 2;
+        drcs_charset_value = 1L;
+        drcs_charset_limit = 0u;
+        if (value != NULL && *value != '\0') {
+            drcs_arg_delim = strchr(value, ':');
+            if (drcs_arg_delim == NULL) {
+                drcs_segment_length = strlen(value);
+                if (drcs_segment_length >= sizeof(drcs_segment)) {
+                    sixel_helper_set_additional_message(
+                        "DRCS mapping revision is too long.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                memcpy(drcs_segment, value, drcs_segment_length);
+                drcs_segment[drcs_segment_length] = '\0';
+                errno = 0;
+                endptr = NULL;
+                drcs_mmv_value = (int)strtol(drcs_segment, &endptr, 10);
+                if (errno != 0 || endptr == drcs_segment || *endptr != '\0') {
+                    sixel_helper_set_additional_message(
+                        "cannot parse DRCS option.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+            } else {
+                if (drcs_arg_delim != value) {
+                    drcs_segment_length =
+                        (size_t)(drcs_arg_delim - value);
+                    if (drcs_segment_length >= sizeof(drcs_segment)) {
+                        sixel_helper_set_additional_message(
+                            "DRCS mapping revision is too long.");
+                        status = SIXEL_BAD_ARGUMENT;
+                        goto end;
+                    }
+                    memcpy(drcs_segment, value, drcs_segment_length);
+                    drcs_segment[drcs_segment_length] = '\0';
+                    errno = 0;
+                    endptr = NULL;
+                    drcs_mmv_value = (int)strtol(drcs_segment, &endptr, 10);
+                    if (errno != 0 || endptr == drcs_segment || *endptr != '\0') {
+                        sixel_helper_set_additional_message(
+                            "cannot parse DRCS option.");
+                        status = SIXEL_BAD_ARGUMENT;
+                        goto end;
+                    }
+                }
+                drcs_arg_charset = drcs_arg_delim + 1;
+                drcs_arg_second_delim = strchr(drcs_arg_charset, ':');
+                if (drcs_arg_second_delim != NULL) {
+                    if (drcs_arg_second_delim != drcs_arg_charset) {
+                        drcs_segment_length =
+                            (size_t)(drcs_arg_second_delim - drcs_arg_charset);
+                        if (drcs_segment_length >= sizeof(drcs_segment)) {
+                            sixel_helper_set_additional_message(
+                                "DRCS charset number is too long.");
+                            status = SIXEL_BAD_ARGUMENT;
+                            goto end;
+                        }
+                        memcpy(drcs_segment,
+                               drcs_arg_charset,
+                               drcs_segment_length);
+                        drcs_segment[drcs_segment_length] = '\0';
+                        errno = 0;
+                        endptr = NULL;
+                        drcs_charset_value = strtol(drcs_segment,
+                                                    &endptr,
+                                                    10);
+                        if (errno != 0 || endptr == drcs_segment ||
+                                *endptr != '\0') {
+                            sixel_helper_set_additional_message(
+                                "cannot parse DRCS charset number.");
+                            status = SIXEL_BAD_ARGUMENT;
+                            goto end;
+                        }
+                    }
+                    drcs_arg_path = drcs_arg_second_delim + 1;
+                    drcs_arg_path_length = strlen(drcs_arg_path);
+                    if (drcs_arg_path_length == 0u) {
+                        drcs_arg_path = NULL;
+                    }
+                } else if (*drcs_arg_charset != '\0') {
+                    drcs_segment_length = strlen(drcs_arg_charset);
+                    if (drcs_segment_length >= sizeof(drcs_segment)) {
+                        sixel_helper_set_additional_message(
+                            "DRCS charset number is too long.");
+                        status = SIXEL_BAD_ARGUMENT;
+                        goto end;
+                    }
+                    memcpy(drcs_segment,
+                           drcs_arg_charset,
+                           drcs_segment_length);
+                    drcs_segment[drcs_segment_length] = '\0';
+                    errno = 0;
+                    endptr = NULL;
+                    drcs_charset_value = strtol(drcs_segment,
+                                                &endptr,
+                                                10);
+                    if (errno != 0 || endptr == drcs_segment ||
+                            *endptr != '\0') {
+                        sixel_helper_set_additional_message(
+                            "cannot parse DRCS charset number.");
+                        status = SIXEL_BAD_ARGUMENT;
+                        goto end;
+                    }
+                }
+            }
         }
-        break;
-    case SIXEL_OPTFLAG_MAPPING_VERSION:  /* M */
-        encoder->drcs_mmv = atoi(value);
-        if (encoder->drcs_mmv < 0 || encoder->drcs_mmv >= 3) {
+        /*
+         * Layout of the DRCS option value:
+         *
+         *    value = <mmv>:<charset_no>:<path>
+         *          ^        ^                ^
+         *          |        |                |
+         *          |        |                +-- optional path that may reuse
+         *          |        |                    STDOUT when set to "-" or drop
+         *          |        |                    tiles when left blank
+         *          |        +-- charset number (defaults to 1 when omitted)
+         *          +-- mapping revision (defaults to 2 when omitted)
+         */
+        if (drcs_mmv_value < 0 || drcs_mmv_value > 2) {
             sixel_helper_set_additional_message(
                 "unknown DRCS unicode mapping version.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
+        }
+        if (drcs_mmv_value == 0) {
+            drcs_charset_limit = 126u;
+        } else if (drcs_mmv_value == 1) {
+            drcs_charset_limit = 63u;
+        } else {
+            drcs_charset_limit = 158u;
+        }
+        if (drcs_charset_value < 1 ||
+            (unsigned long)drcs_charset_value > drcs_charset_limit) {
+            sixel_helper_set_additional_message(
+                "DRCS charset number is out of range.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        encoder->drcs_mmv = drcs_mmv_value;
+        encoder->drcs_charset_no = (unsigned short)drcs_charset_value;
+        if (encoder->tile_outfd >= 0
+            && encoder->tile_outfd != encoder->outfd
+            && encoder->tile_outfd != STDOUT_FILENO
+            && encoder->tile_outfd != STDERR_FILENO) {
+#if HAVE__CLOSE
+            (void) _close(encoder->tile_outfd);
+#else
+            (void) close(encoder->tile_outfd);
+#endif  /* HAVE__CLOSE */
+        }
+        encoder->tile_outfd = (-1);
+        if (drcs_arg_path != NULL) {
+            if (strcmp(drcs_arg_path, "-") == 0) {
+                encoder->tile_outfd = STDOUT_FILENO;
+            } else {
+#if HAVE__OPEN
+                encoder->tile_outfd = _open(drcs_arg_path,
+                                            O_RDWR|O_CREAT|O_TRUNC,
+                                            S_IRUSR|S_IWUSR);
+#else
+                encoder->tile_outfd = open(drcs_arg_path,
+                                           O_RDWR|O_CREAT|O_TRUNC,
+                                           S_IRUSR|S_IWUSR);
+#endif  /* HAVE__OPEN */
+                if (encoder->tile_outfd < 0) {
+                    sixel_helper_set_additional_message(
+                        "sixel_encoder_setopt: failed to open tile"
+                        " output path.");
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
+                }
+            }
         }
         break;
     case SIXEL_OPTFLAG_PENETRATE:  /* P */

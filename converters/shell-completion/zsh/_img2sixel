@@ -184,9 +184,9 @@ _assessmentsections() {
     'quality@quantized[compare the palette-quantized frame]'
 }
 
+# Keep the following option order synchronized with `img2sixel -H`.
 _arguments -S -s -A "-*" -S \
   {-o,--outfile}'[specify output file (default: stdout)]':files:_files \
-  {-T,--tiles}'[specify output path for DRCS-SIXEL tile characters]':files:_files \
   {-a,--assessment=}'[emit assessment report as JSON]':assessmentsections:_assessmentsections \
   {-J,--assessment-file=}'[write assessment JSON to a file]':files:_files \
   {-7,--7bit-mode}'[generate a sixel image for 7bit terminals (default)]' \
@@ -223,8 +223,7 @@ _arguments -S -s -A "-*" -S \
   {-D,--pipe-mode}'[read source images from stdin continuously]' \
   {-v,--verbose}'[show debugging information]' \
   {-j,--loaders=}'[override loader priority order]':loaders:_loaders \
-  {-@,--drcs}'[output extended DRCS tiles instead of regular SIXEL image]' \
-  {-M,--mapping-version}'[specify DRCS-SIXEL Unicode mapping version]' \
+  {-@,--drcs}'[emit DRCS tiles via MMV:CHARSET:PATH (defaults 2:1:, "-" keeps stdout)]' \
   {-O,--ormode}'[output ormode sixel image]' \
   {-W,--working-colorspace=}'[select internal working color space]':workingcolorspace:_workingcolorspace \
   {-U,--output-colorspace=}'[select output color space]':outputcolorspace:_outputcolorspace \
