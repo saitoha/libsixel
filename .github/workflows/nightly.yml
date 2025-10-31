@@ -212,7 +212,14 @@ jobs:
             done
         )
 
-        ./configure CC=cl LD=link AR="$PWD/ar-lib" NM="dumpbin -symbols" STRIP=: RANLIB=: \
+        if test -f "${SHELL} $(pwd)/tools/ar-msvc.sh"; then
+            export AR="$(pwd)/tools/ar-msvc.sh"
+            export ARFLAGS= 
+        else
+            export AR="${SHELL} $(pwd)/ar-lib lib"
+            export ARFLAGS=cr
+        fi
+        ./configure CC=cl LD=link NM="dumpbin -symbols" STRIP=: RANLIB=: \
             --host=x86_64-pc-windows-msvc \
             --without-png \
             --without-jpeg \
