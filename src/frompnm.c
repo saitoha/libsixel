@@ -95,6 +95,9 @@ load_pnm(unsigned char      /* in */  *p,
     unsigned char *end;
     unsigned char tmp[256];
     size_t size;
+    unsigned char pixel0;
+    unsigned char pixel1;
+    unsigned char pixel2;
 
     (void) ppalette;
     (void) pncolors;
@@ -308,9 +311,20 @@ load_pnm(unsigned char      /* in */  *p,
                 goto unknown;
             }
 
-            *(*result + (y * width + x) * 3 + 0) = component[0];
-            *(*result + (y * width + x) * 3 + 1) = component[1];
-            *(*result + (y * width + x) * 3 + 2) = component[2];
+            /*
+             * Pack each channel into the RGB888 buffer while keeping the
+             * ASCII art overview below for clarity.
+             *
+             *   +---------+---------+---------+
+             *   |   Red   |  Green  |  Blue   |
+             *   +---------+---------+---------+
+             */
+            pixel0 = (unsigned char)component[0];
+            pixel1 = (unsigned char)component[1];
+            pixel2 = (unsigned char)component[2];
+            *(*result + (y * width + x) * 3 + 0) = pixel0;
+            *(*result + (y * width + x) * 3 + 1) = pixel1;
+            *(*result + (y * width + x) * 3 + 2) = pixel2;
         }
     }
 
