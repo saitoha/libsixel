@@ -50,6 +50,10 @@
 # include <direct.h>
 #endif
 
+#if defined(_MSC_VER)
+# include <share.h>
+#endif
+
 #include "compat_stub.h"
 
 #if defined(__APPLE__) && defined(__clang__)
@@ -283,9 +287,21 @@ sixel_compat_fopen(const char *filename, const char *mode)
     }
 
 #if defined(_MSC_VER)
-    if (fopen_s(&handle, filename, mode) != 0) {
-        handle = NULL;
-    }
+    /*
+     * Windows refuses to reopen a file for reading when another descriptor
+     * still holds an exclusive write handle.  `_fsopen()` lets us request
+     * the POSIX-style behaviour where read/write callers can share the same
+     * file.  The diagram below sketches the handshake between the writer and
+     * reader:
+     *
+     *   writer (encoder)  ---- creates temp file ---->  `png_temp_path`
+     *           |                                         |
+     *           |<--- `_fsopen(..., _SH_DENYNO)` --- reader (decoder)
+     *
+     * Both sides now share the handle without tripping over `_SH_DENYWR`
+     * defaults, mirroring how Unix would allow the concurrent access.
+     */
+    handle = _fsopen(filename, mode, _SH_DENYNO);
 #else
     handle = fopen(filename, mode);
 #endif

@@ -1273,6 +1273,7 @@ sixel_decoder_decode(
     int max;
     int n;
     FILE *input_fp = NULL;
+    char message[2048];
     unsigned char *indexed_pixels = NULL;
     unsigned char *palette = NULL;
     unsigned char *rgb_pixels = NULL;
@@ -1312,9 +1313,13 @@ sixel_decoder_decode(
         input_fp = stdin;
     } else {
         input_fp = sixel_compat_fopen(decoder->input, "rb");
-        if (!input_fp) {
-            sixel_helper_set_additional_message(
-                "sixel_decoder_decode: failed to open input file.");
+        if (! input_fp) {
+            (void)snprintf(
+                message,
+                sizeof(message) - 1,
+                "sixel_decoder_decode: failed to open input file: %s.",
+                decoder->input);
+            sixel_helper_set_additional_message(message);
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             goto end;
         }
