@@ -26,6 +26,26 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdarg.h>
+
+#if !defined(SIXEL_COMPAT_API)
+/*
+ * Export map for compatibility helper
+ *
+ * The wrappers live in the shared library while the CLI
+ * utilities are standalone executables.  Without the explicit
+ * export decoration, MinGW drops the symbols when it builds
+ * libsixel-1.dll.  The result is a flurry of undefined
+ * references when the CLI tries to link against the import
+ * library.  The dedicated macro keeps the functions private
+ * while still being visible to the Windows loader.
+ */
+# ifdef _WIN32
+#  define SIXEL_COMPAT_API __declspec(dllexport)
+# else
+#  define SIXEL_COMPAT_API
+# endif
+#endif
+
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif
@@ -73,44 +93,48 @@ typedef SSIZE_T ssize_t;
  * base while still relying on familiar libc semantics elsewhere.
  */
 
-int sixel_compat_snprintf(char *buffer,
-                          size_t buffer_size,
-                          const char *format,
-                          ...)
+SIXEL_COMPAT_API int sixel_compat_snprintf(char *buffer,
+                                          size_t buffer_size,
+                                          const char *format,
+                                          ...)
     SIXEL_ATTRIBUTE_FORMAT(SIXEL_PRINTF_ARCHETYPE, 3, 4);
 
-int sixel_compat_vsnprintf(char *buffer,
-                           size_t buffer_size,
-                           const char *format,
-                           va_list args)
+SIXEL_COMPAT_API int sixel_compat_vsnprintf(char *buffer,
+                                            size_t buffer_size,
+                                            const char *format,
+                                            va_list args)
     SIXEL_ATTRIBUTE_FORMAT(SIXEL_PRINTF_ARCHETYPE, 3, 0);
 
-int sixel_compat_strcpy(char *destination,
-                        size_t destination_size,
-                        const char *source);
+SIXEL_COMPAT_API int sixel_compat_strcpy(char *destination,
+                                         size_t destination_size,
+                                         const char *source);
 
-char *sixel_compat_strerror(int error_number,
-                            char *buffer,
-                            size_t buffer_size);
+SIXEL_COMPAT_API char *sixel_compat_strerror(int error_number,
+                                             char *buffer,
+                                             size_t buffer_size);
 
-FILE *sixel_compat_fopen(const char *filename, const char *mode);
+SIXEL_COMPAT_API FILE *sixel_compat_fopen(const char *filename,
+                                          const char *mode);
 
-const char *sixel_compat_getenv(const char *name);
+SIXEL_COMPAT_API const char *sixel_compat_getenv(const char *name);
 
-char *sixel_compat_strtok(char *string,
-                          const char *delimiters,
-                          char **context);
+SIXEL_COMPAT_API char *sixel_compat_strtok(char *string,
+                                           const char *delimiters,
+                                           char **context);
 
-int sixel_compat_mktemp(char *templ, size_t buffer_size);
+SIXEL_COMPAT_API int sixel_compat_mktemp(char *templ,
+                                         size_t buffer_size);
 
-int sixel_compat_open(const char *path, int flags, ...);
+SIXEL_COMPAT_API int sixel_compat_open(const char *path, int flags, ...);
 
-int sixel_compat_close(int fd);
+SIXEL_COMPAT_API int sixel_compat_close(int fd);
 
-int sixel_compat_unlink(const char *path);
+SIXEL_COMPAT_API int sixel_compat_unlink(const char *path);
 
-int sixel_compat_access(const char *path, int mode);
+SIXEL_COMPAT_API int sixel_compat_access(const char *path, int mode);
 
-ssize_t sixel_compat_write(int fd, const void *buffer, size_t count);
+SIXEL_COMPAT_API ssize_t sixel_compat_write(int fd,
+                                            const void *buffer,
+                                            size_t count);
 
 #endif /* SIXEL_COMPAT_STUB_H */
