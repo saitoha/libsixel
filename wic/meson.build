@@ -6,6 +6,7 @@ wic_sources = files(
   '../src/fromsixel.c',
   '../src/allocator.c',
   '../src/status.c',
+  '../src/compat_stub.c',
 )
 
 shared_module(
