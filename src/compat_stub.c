@@ -88,7 +88,7 @@
  *  characters that would have been written, mirroring snprintf().
  */
 
-int
+SIXEL_COMPAT_API int
 sixel_compat_vsnprintf(char *buffer,
                        size_t buffer_size,
                        const char *format,
@@ -131,7 +131,7 @@ sixel_compat_vsnprintf(char *buffer,
 }
 
 
-int
+SIXEL_COMPAT_API int
 sixel_compat_snprintf(char *buffer,
                       size_t buffer_size,
                       const char *format,
@@ -160,7 +160,7 @@ sixel_compat_snprintf(char *buffer,
  *  across the project.
  */
 
-int
+SIXEL_COMPAT_API int
 sixel_compat_strcpy(char *destination,
                     size_t destination_size,
                     const char *source)
@@ -188,7 +188,7 @@ sixel_compat_strcpy(char *destination,
 }
 
 
-char *
+SIXEL_COMPAT_API char *
 sixel_compat_strerror(int error_number,
                       char *buffer,
                       size_t buffer_size)
@@ -275,7 +275,7 @@ sixel_compat_strerror(int error_number,
 }
 
 
-FILE *
+SIXEL_COMPAT_API FILE *
 sixel_compat_fopen(const char *filename, const char *mode)
 {
     FILE *handle;
@@ -310,7 +310,7 @@ sixel_compat_fopen(const char *filename, const char *mode)
 }
 
 
-const char *
+SIXEL_COMPAT_API const char *
 sixel_compat_getenv(const char *name)
 {
 #if defined(_MSC_VER)
@@ -342,7 +342,7 @@ sixel_compat_getenv(const char *name)
 }
 
 
-char *
+SIXEL_COMPAT_API char *
 sixel_compat_strtok(char *string,
                     const char *delimiters,
                     char **context)
@@ -358,7 +358,7 @@ sixel_compat_strtok(char *string,
 }
 
 
-int
+SIXEL_COMPAT_API int
 sixel_compat_mktemp(char *templ, size_t buffer_size)
 {
 #if defined(_MSC_VER)
@@ -410,7 +410,7 @@ sixel_compat_mktemp(char *templ, size_t buffer_size)
 }
 
 
-int
+SIXEL_COMPAT_API int
 sixel_compat_open(const char *path, int flags, ...)
 {
     int fd;
@@ -445,7 +445,7 @@ sixel_compat_open(const char *path, int flags, ...)
 }
 
 
-int
+SIXEL_COMPAT_API int
 sixel_compat_close(int fd)
 {
 #if defined(_MSC_VER)
@@ -456,7 +456,7 @@ sixel_compat_close(int fd)
 }
 
 
-int
+SIXEL_COMPAT_API int
 sixel_compat_unlink(const char *path)
 {
 #if defined(_MSC_VER)
@@ -467,7 +467,7 @@ sixel_compat_unlink(const char *path)
 }
 
 
-int
+SIXEL_COMPAT_API int
 sixel_compat_access(const char *path, int mode)
 {
 #if defined(_MSC_VER)
@@ -478,7 +478,7 @@ sixel_compat_access(const char *path, int mode)
 }
 
 
-ssize_t
+SIXEL_COMPAT_API ssize_t
 sixel_compat_write(int fd, const void *buffer, size_t count)
 {
 #if defined(_MSC_VER)

@@ -3070,7 +3070,7 @@ sixel_encoder_output_without_macro(
     SIXELSTATUS status = SIXEL_OK;
     static unsigned char *p;
     int depth;
-    enum { message_buffer_size = 256 };
+    enum { message_buffer_size = 2048 };
     char message[message_buffer_size];
     int nwrite;
 #if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
