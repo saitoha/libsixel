@@ -140,7 +140,8 @@ am_libwicsixel_la_OBJECTS = libwicsixel_la-wic.lo \
 	libwicsixel_la-wic_stub.lo \
 	$(top_builddir)/src/libwicsixel_la-fromsixel.lo \
 	$(top_builddir)/src/libwicsixel_la-allocator.lo \
-	$(top_builddir)/src/libwicsixel_la-status.lo
+	$(top_builddir)/src/libwicsixel_la-status.lo \
+	$(top_builddir)/src/libwicsixel_la-compat_stub.lo
 libwicsixel_la_OBJECTS = $(am_libwicsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -167,6 +168,7 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade =  \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo \
 	./$(DEPDIR)/libwicsixel_la-wic.Plo \
@@ -410,7 +412,8 @@ libwicsixel_la_SOURCES = $(srcdir)/wic.c \
                          $(srcdir)/wic_stub.c \
                          $(top_builddir)/src/fromsixel.c \
                          $(top_builddir)/src/allocator.c \
-                         $(top_builddir)/src/status.c
+                         $(top_builddir)/src/status.c \
+                         $(top_builddir)/src/compat_stub.c
 
 libwicsixel_la_CPPFLAGS = -I$(top_builddir)/include/
 libwicsixel_la_CFLAGS = $(CFLAGS) \
@@ -501,6 +504,9 @@ $(top_builddir)/src/libwicsixel_la-allocator.lo:  \
 $(top_builddir)/src/libwicsixel_la-status.lo:  \
 	$(top_builddir)/src/$(am__dirstamp) \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/libwicsixel_la-compat_stub.lo:  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 
 libwicsixel.la: $(libwicsixel_la_OBJECTS) $(libwicsixel_la_DEPENDENCIES) $(EXTRA_libwicsixel_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libwicsixel_la_LINK) -rpath $(pkglibdir) $(libwicsixel_la_OBJECTS) $(libwicsixel_la_LIBADD) $(LIBS)
@@ -514,6 +520,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libwicsixel_la-wic.Plo@am__quote@ # am--include-marker
@@ -583,6 +590,13 @@ $(top_builddir)/src/libwicsixel_la-status.lo: $(top_builddir)/src/status.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/status.c' object='$(top_builddir)/src/libwicsixel_la-status.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libwicsixel_la-status.lo `test -f '$(top_builddir)/src/status.c' || echo '$(srcdir)/'`$(top_builddir)/src/status.c
+
+$(top_builddir)/src/libwicsixel_la-compat_stub.lo: $(top_builddir)/src/compat_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libwicsixel_la-compat_stub.lo -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Tpo -c -o $(top_builddir)/src/libwicsixel_la-compat_stub.lo `test -f '$(top_builddir)/src/compat_stub.c' || echo '$(srcdir)/'`$(top_builddir)/src/compat_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Tpo $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/compat_stub.c' object='$(top_builddir)/src/libwicsixel_la-compat_stub.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libwicsixel_la-compat_stub.lo `test -f '$(top_builddir)/src/compat_stub.c' || echo '$(srcdir)/'`$(top_builddir)/src/compat_stub.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -723,6 +737,7 @@ clean-am: clean-generic clean-libtool clean-pkglibLTLIBRARIES \
 
 distclean: distclean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo
 	-rm -f ./$(DEPDIR)/libwicsixel_la-wic.Plo
@@ -774,6 +789,7 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo
 	-rm -f ./$(DEPDIR)/libwicsixel_la-wic.Plo

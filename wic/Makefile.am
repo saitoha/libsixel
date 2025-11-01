@@ -14,7 +14,8 @@ libwicsixel_la_SOURCES = $(srcdir)/wic.c \
                          $(srcdir)/wic_stub.c \
                          $(top_builddir)/src/fromsixel.c \
                          $(top_builddir)/src/allocator.c \
-                         $(top_builddir)/src/status.c
+                         $(top_builddir)/src/status.c \
+                         $(top_builddir)/src/compat_stub.c
 
 libwicsixel_la_CPPFLAGS = -I$(top_builddir)/include/
 libwicsixel_la_CFLAGS = $(CFLAGS) \
