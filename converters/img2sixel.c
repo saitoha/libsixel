@@ -591,6 +591,28 @@ img2sixel_find_option_help(int short_opt)
     return NULL;
 }
 
+static img2sixel_option_help_t const *
+img2sixel_find_option_help_by_long_name(char const *long_name)
+{
+    size_t index;
+    size_t count;
+
+    index = 0u;
+    count = sizeof(g_option_help_table) /
+        sizeof(g_option_help_table[0]);
+    while (index < count) {
+        if (g_option_help_table[index].long_opt != NULL
+                && long_name != NULL
+                && strcmp(g_option_help_table[index].long_opt,
+                          long_name) == 0) {
+            return &g_option_help_table[index];
+        }
+        ++index;
+    }
+
+    return NULL;
+}
+
 static void
 img2sixel_print_option_help(FILE *stream)
 {
@@ -681,6 +703,127 @@ img2sixel_report_invalid_argument(int short_opt,
     }
 
     sixel_helper_set_additional_message(buffer);
+}
+
+static void
+img2sixel_report_missing_argument(int short_opt)
+{
+    char buffer[1024];
+    img2sixel_option_help_t const *entry;
+    char const *long_opt;
+    char const *help_text;
+    size_t offset;
+    int written;
+
+    /*
+     * States which option is missing an argument
+     */
+    memset(buffer, 0, sizeof(buffer));
+    entry = img2sixel_find_option_help(short_opt);
+    long_opt = (entry != NULL && entry->long_opt != NULL)
+        ? entry->long_opt : "?";
+    help_text = (entry != NULL && entry->help != NULL)
+        ? entry->help : g_option_help_fallback;
+    offset = 0u;
+
+    written = snprintf(buffer,
+                       sizeof(buffer),
+                       "img2sixel: missing required argument for "
+                       "-%c,--%s option.\n\n",
+                       (char)short_opt,
+                       long_opt);
+    if (written < 0) {
+        written = 0;
+    }
+    if ((size_t)written >= sizeof(buffer)) {
+        offset = sizeof(buffer) - 1u;
+    } else {
+        offset = (size_t)written;
+    }
+
+    if (offset < sizeof(buffer) - 1u) {
+        written = snprintf(buffer + offset,
+                           sizeof(buffer) - offset,
+                           "%s",
+                           help_text);
+        if (written < 0) {
+            written = 0;
+        }
+    }
+
+    sixel_helper_set_additional_message(buffer);
+}
+
+static void
+img2sixel_report_unrecognized_option(int short_opt, char const *token)
+{
+    char buffer[1024];
+    char const *view;
+    int written;
+
+    memset(buffer, 0, sizeof(buffer));
+    view = NULL;
+    if (token != NULL && token[0] != '\0') {
+        view = token;
+    }
+
+    if (view != NULL) {
+        written = snprintf(buffer,
+                           sizeof(buffer),
+                           "img2sixel: unrecognized option '%s'.\n",
+                           view);
+    } else if (short_opt > 0 && short_opt != '?') {
+        written = snprintf(buffer,
+                           sizeof(buffer),
+                           "img2sixel: unrecognized option '-%c'.\n",
+                           (char)short_opt);
+    } else {
+        written = snprintf(buffer,
+                           sizeof(buffer),
+                           "img2sixel: unrecognized option.\n");
+    }
+    if (written < 0) {
+        written = 0;
+    }
+
+    sixel_helper_set_additional_message(buffer);
+}
+
+static void
+img2sixel_handle_getopt_error(int short_opt, char const *token)
+{
+    img2sixel_option_help_t const *entry;
+    img2sixel_option_help_t const *long_entry;
+    char const *long_name;
+
+    entry = NULL;
+    long_entry = NULL;
+    long_name = NULL;
+
+    if (short_opt > 0) {
+        entry = img2sixel_find_option_help(short_opt);
+        if (entry != NULL) {
+            img2sixel_report_missing_argument(short_opt);
+            return;
+        }
+    }
+
+    if (token != NULL && token[0] != '\0') {
+        if (strncmp(token, "--", 2) == 0) {
+            long_name = token + 2;
+        } else if (token[0] == '-') {
+            long_name = token + 1;
+        }
+        if (long_name != NULL && long_name[0] != '\0') {
+            long_entry = img2sixel_find_option_help_by_long_name(long_name);
+            if (long_entry != NULL) {
+                img2sixel_report_missing_argument(long_entry->short_opt);
+                return;
+            }
+        }
+    }
+
+    img2sixel_report_unrecognized_option(short_opt, token);
 }
 
 static char const *
@@ -1619,6 +1762,14 @@ main(int argc, char *argv[])
             show_help();
             status = SIXEL_OK;
             goto end;
+        case '?':
+            img2sixel_handle_getopt_error(
+                optopt,
+                (optind > 0 && optind <= argc)
+                    ? argv[optind - 1]
+                    : NULL);
+            status = SIXEL_BAD_ARGUMENT;
+            goto error;
         case 'a':
             if (parse_assessment_sections(optarg,
                                           &assessment_sections) != 0) {
