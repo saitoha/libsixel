@@ -104,10 +104,23 @@ sixel_compat_vsnprintf(char *buffer,
     if (format == NULL) {
         return written;
     }
-    va_copy(args_copy, args);
 
 #if defined(_MSC_VER)
+    /*
+     * +------------------------------------------------------------+
+     * |  Dual-pass flow for the MSVC secure CRT                    |
+     * +-------------------+----------------------------------------+
+     * | 1. length probe   | _vscprintf() walks the argument list.  |
+     * | 2. final write    | _vsnprintf_s() consumes the original   |
+     * |                   | argument list while clamping writes.   |
+     * +-------------------+----------------------------------------+
+     * The secure CRT insists on receiving the untouched argument
+     * list so we do not clone it for the second phase.  MinGW uses
+     * a distinct runtime and follows the branch below instead.
+     */
+    va_copy(args_copy, args);
     written = _vscprintf(format, args_copy);
+    va_end(args_copy);
     if (buffer_size > 0) {
         error = _vsnprintf_s(buffer,
                              buffer_size,
@@ -118,14 +131,36 @@ sixel_compat_vsnprintf(char *buffer,
             written = (-1);
         }
     }
-#else
-    written = vsnprintf(NULL, (size_t)0, format, args_copy);
+#elif defined(_WIN32)
+    va_copy(args_copy, args);
+    written = _vscprintf(format, args_copy);
+    va_end(args_copy);
     if (buffer_size > 0) {
-        (void)vsnprintf(buffer, buffer_size, format, args);
+        /*
+         * +-------------------+-------------------------------+
+         * | phase             | work performed                |
+         * +-------------------+-------------------------------+
+         * | 1. length probe   | _vscprintf() counts the bytes |
+         * | 2. final write    | vsnprintf() copies to buffer  |
+         * +-------------------+-------------------------------+
+         * MinGW inherits the legacy MSVCRT behaviour where the
+         * "NULL,0" probe fails.  The two-step dance above keeps
+         * the interfaces happy on both Windows and POSIX.
+         */
+        va_copy(args_copy, args);
+        (void)vsnprintf(buffer, buffer_size, format, args_copy);
+        va_end(args_copy);
+    }
+#else
+    va_copy(args_copy, args);
+    written = vsnprintf(NULL, (size_t)0, format, args_copy);
+    va_end(args_copy);
+    if (buffer_size > 0) {
+        va_copy(args_copy, args);
+        (void)vsnprintf(buffer, buffer_size, format, args_copy);
+        va_end(args_copy);
     }
 #endif
-
-    va_end(args_copy);
 
     return written;
 }
