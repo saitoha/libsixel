@@ -396,6 +396,8 @@ ensure_dir_p(const char *path, mode_t mode)
     size_t len;
     char *tmp;
     size_t i;
+    char *component;
+    size_t component_length;
 
     if (path == NULL) {
         errno = EINVAL;
@@ -409,6 +411,8 @@ ensure_dir_p(const char *path, mode_t mode)
     }
 
     memcpy(tmp, path, len + 1);
+    component = NULL;
+    component_length = 0u;
 
     for (i = 1; i < len; ++i) {
         if (tmp[i] == '/') {
@@ -436,13 +440,37 @@ ensure_dir_p(const char *path, mode_t mode)
                     continue;
                 }
 #endif
-                if (img2sixel_mkdir(tmp, mode) != 0 && errno != EEXIST) {
-                    int saved_errno;
+                component = strrchr(tmp, '/');
+                if (component == NULL) {
+                    component = tmp;
+                } else {
+                    component += 1;
+                }
+                component_length = strlen(component);
+                /*
+                 * Skip requests for "." and ".." so Windows builds avoid
+                 * creating a literal "directory dot" segment.  The drawing
+                 * below sketches how the guard trims the problematic edge:
+                 *
+                 *     converters/./tmp
+                 *     |---------| |--|
+                 *          |       +---- ignored because the component is
+                 *          |             "tmp"
+                 *          +------------ ignored because the component is
+                 *                        "."
+                 */
+                if (!((component_length == 1u && component[0] == '.')
+                        || (component_length == 2u
+                            && component[0] == '.'
+                            && component[1] == '.'))) {
+                    if (img2sixel_mkdir(tmp, mode) != 0 && errno != EEXIST) {
+                        int saved_errno;
 
-                    saved_errno = errno;
-                    free(tmp);
-                    errno = saved_errno;
-                    return -1;
+                        saved_errno = errno;
+                        free(tmp);
+                        errno = saved_errno;
+                        return -1;
+                    }
                 }
             }
             tmp[i] = saved;
