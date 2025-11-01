@@ -30,7 +30,8 @@ EXTRA_DIST += tests/converters/common.bash \
 	tests/converters/test_0010_curl.bash \
 	tests/converters/test_0011_basic.bash \
 	tests/converters/test_0012_regressions.bash \
-	tests/converters/test_0013_documentation.bash
+	tests/converters/test_0013_documentation.bash \
+	tests/converters/test_0014_option_matching.bash
 
 .PHONY: install-quicklook-extension uninstall-quicklook-extension
 

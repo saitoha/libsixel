@@ -70,7 +70,7 @@
 #define SIXEL_MESSAGE_GD_ERROR              ("GD error")
 
 
-static char g_buffer[1024] = { 0x0 };
+static char g_buffer[2048] = { 0x0 };
 
 /* set detailed error message (thread-unsafe) */
 SIXELAPI void

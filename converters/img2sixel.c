@@ -615,8 +615,8 @@ img2sixel_report_invalid_argument(int short_opt,
                                   char const *value,
                                   char const *detail)
 {
-    char buffer[1024];
-    char detail_copy[1024];
+    char buffer[2048];
+    char detail_copy[2048];
     img2sixel_option_help_t const *entry;
     char const *long_opt;
     char const *help_text;
@@ -1871,41 +1871,41 @@ main(int argc, char *argv[])
                 goto error;
             }
 #else
-                {
-                    char *generated;
+            {
+                char *generated;
 
-                    generated = tmpnam(NULL);
-                    if (generated == NULL) {
-                        sixel_helper_set_additional_message(
-                            "img2sixel: tmpnam() failed for assessment staging file.");
-                        status = SIXEL_RUNTIME_ERROR;
-                        goto error;
-                    }
-                    free(assessment_temp_path);
-                    assessment_temp_path = (char *)malloc(strlen(generated) + 1);
-                    if (assessment_temp_path == NULL) {
-                        sixel_helper_set_additional_message(
-                            "img2sixel: malloc() failed for assessment staging copy.");
-                        status = SIXEL_BAD_ALLOCATION;
-                        goto error;
-                    }
-                    strcpy(assessment_temp_path, generated);
-                }
-#endif
-                status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_OUTFILE,
-                                              assessment_temp_path);
-                if (SIXEL_FAILED(status)) {
+                generated = tmpnam(NULL);
+                if (generated == NULL) {
+                    sixel_helper_set_additional_message(
+                        "img2sixel: tmpnam() failed for assessment staging file.");
+                    status = SIXEL_RUNTIME_ERROR;
                     goto error;
                 }
-                sixel_output_path = (char *)malloc(
-                    strlen(assessment_temp_path) + 1);
-                if (sixel_output_path == NULL) {
+                free(assessment_temp_path);
+                assessment_temp_path = (char *)malloc(strlen(generated) + 1);
+                if (assessment_temp_path == NULL) {
                     sixel_helper_set_additional_message(
-                        "img2sixel: malloc() failed for assessment staging name.");
+                        "img2sixel: malloc() failed for assessment staging copy.");
                     status = SIXEL_BAD_ALLOCATION;
                     goto error;
                 }
-                strcpy(sixel_output_path, assessment_temp_path);
+                strcpy(assessment_temp_path, generated);
+            }
+#endif
+            status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_OUTFILE,
+                                          assessment_temp_path);
+            if (SIXEL_FAILED(status)) {
+                goto error;
+            }
+            sixel_output_path = (char *)malloc(
+                strlen(assessment_temp_path) + 1);
+            if (sixel_output_path == NULL) {
+                sixel_helper_set_additional_message(
+                    "img2sixel: malloc() failed for assessment staging name.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto error;
+            }
+            strcpy(sixel_output_path, assessment_temp_path);
         }
     }
 
@@ -2261,7 +2261,9 @@ error:
             sixel_helper_format_error(status),
             sixel_helper_get_additional_message());
     status = (-1);
+#if 0
     fprintf(stderr,
+            "\n"
             "usage: img2sixel [-78eIkiugvSPDOVH] [-p colors] [-m file] [-d diffusiontype]\n"
             "                 [-y scantype] [-a assessmentlist] [-J assessmentfile]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
@@ -2272,6 +2274,7 @@ error:
             "                 [-3 shell] [-W workingcolorspace] [-U outputcolorspace]\n"
             "                 [-B bgcolor] [-o outfile] [filename ...]\n\n"
             "for more details, type: 'img2sixel -H'.\n");
+#endif
 
 end:
     if (png_temp_path != NULL) {

@@ -359,9 +359,13 @@ Usage: img2sixel [Options] imagefiles
        img2sixel [Options] < imagefile
 
 Options:
--  Choice-valued arguments accept unique prefixes.  For example,
-   `-s ave` resolves to `average`, but `-s a` is rejected because it
-   matches both `auto` and `average`.
+-  Choice-valued arguments accept unique prefixes and will fix a single
+   character typo when the result is unambiguous.  For example,
+   `-s ave` resolves to `average`, `-s avre` corrects to `average`, while
+   `-s a` is rejected because it matches both `auto` and `average`.
+   When no single match exists the encoder prints a polite list of
+   nearby suggestions (prefix matches and strings within edit distance
+   two).
 -o, --outfile              specify output file name.
                            (default:stdout)
                            Use a name ending in ".png", the literal
