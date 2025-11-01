@@ -36,9 +36,30 @@ typedef SSIZE_T ssize_t;
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
+/*
+ * +----------------------------------------------------------+
+ * |  Format attribute selection matrix                       |
+ * +----------------------------------------------------------+
+ * |  Platform        | Attribute archetype                   |
+ * |------------------+---------------------------------------|
+ * |  MinGW targets   | __MINGW_PRINTF_FORMAT                 |
+ * |  Other targets   | __printf__                            |
+ * +----------------------------------------------------------+
+ * We explicitly choose the MinGW specific archetype so that
+ * `%zu` and friends are accepted when GCC performs compile
+ * time format checks.  Without this mapping, GCC trusts the
+ * MSVCRT dialect, immediately flagging `%zu` as an unknown
+ * conversion and breaking our build with `-Wformat=2`.
+ */
+# if defined(__MINGW32__)
+#  define SIXEL_PRINTF_ARCHETYPE __MINGW_PRINTF_FORMAT
+# else
+#  define SIXEL_PRINTF_ARCHETYPE __printf__
+# endif
 # define SIXEL_ATTRIBUTE_FORMAT(archetype, string_index, first_to_check) \
     __attribute__((__format__(archetype, string_index, first_to_check)))
 #else
+# define SIXEL_PRINTF_ARCHETYPE __printf__
 # define SIXEL_ATTRIBUTE_FORMAT(archetype, string_index, first_to_check)
 #endif
 
@@ -56,13 +77,13 @@ int sixel_compat_snprintf(char *buffer,
                           size_t buffer_size,
                           const char *format,
                           ...)
-    SIXEL_ATTRIBUTE_FORMAT(__printf__, 3, 4);
+    SIXEL_ATTRIBUTE_FORMAT(SIXEL_PRINTF_ARCHETYPE, 3, 4);
 
 int sixel_compat_vsnprintf(char *buffer,
                            size_t buffer_size,
                            const char *format,
                            va_list args)
-    SIXEL_ATTRIBUTE_FORMAT(__printf__, 3, 0);
+    SIXEL_ATTRIBUTE_FORMAT(SIXEL_PRINTF_ARCHETYPE, 3, 0);
 
 int sixel_compat_strcpy(char *destination,
                         size_t destination_size,
