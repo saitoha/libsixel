@@ -1502,8 +1502,8 @@ main(int argc, char *argv[])
     int png_temp_fd;
     char const *png_final_path;
     int png_argument_has_prefix;
-    char const *png_payload_view;
-    size_t png_payload_length;
+    char const *png_path_view;
+    size_t png_path_length;
     unsigned int assessment_sections;
     unsigned int assessment_section_mask;
     int assessment_enabled;
@@ -1554,8 +1554,8 @@ main(int argc, char *argv[])
     png_temp_fd = (-1);
     png_final_path = NULL;
     png_argument_has_prefix = 0;
-    png_payload_view = NULL;
-    png_payload_length = 0u;
+    png_path_view = NULL;
+    png_path_length = 0u;
     assessment_sections = SIXEL_ASSESSMENT_SECTION_NONE;
     assessment_section_mask = SIXEL_ASSESSMENT_SECTION_NONE;
     assessment_enabled = 0;
@@ -1663,10 +1663,10 @@ main(int argc, char *argv[])
                 png_argument_has_prefix =
                     (optarg != NULL)
                     && (strncmp(optarg, "png:", 4) == 0);
-                png_payload_view = png_target_payload_view(optarg);
+                png_path_view = png_target_payload_view(optarg);
                 if (png_argument_has_prefix
-                        && (png_payload_view == NULL
-                            || png_payload_view[0] == '\0')) {
+                        && (png_path_view == NULL
+                            || png_path_view[0] == '\0')) {
                     sixel_helper_set_additional_message(
                         "img2sixel: missing target after the \"png:\" "
                         "prefix.");
@@ -1679,29 +1679,49 @@ main(int argc, char *argv[])
                     goto error;
                 }
                 output_png_to_stdout =
-                    (png_payload_view != NULL)
-                    && (strcmp(png_payload_view, "-") == 0);
+                    (png_path_view != NULL)
+                    && (strcmp(png_path_view, "-") == 0);
                 free(png_output_path);
                 png_output_path = NULL;
                 free(sixel_output_path);
                 sixel_output_path = NULL;
                 if (! output_png_to_stdout) {
-                    png_payload_length =
-                        (png_payload_view != NULL)
-                        ? strlen(png_payload_view)
-                        : 0u;
+                    /*
+                     * +-----------------------------------------+
+                     * |  PNG target normalization               |
+                     * +-----------------------------------------+
+                     * |  Raw input  |  Stored file path         |
+                     * |-------------+---------------------------|
+                     * |  png:-      |  "-" (stdout sentinel)    |
+                     * |  png:/foo   |  "/foo"                   |
+                     * +-----------------------------------------+
+                     * Strip the "png:" prefix so the decoder can
+                     * pass the true filesystem path to libpng
+                     * while the CLI retains its shorthand.
+                     */
+                    png_path_view = optarg;
+                    if (strncmp(optarg, "png:", 4) == 0) {
+                        png_path_view = optarg + 4;
+                    }
+                    if (png_path_view[0] == '\0') {
+                        sixel_helper_set_additional_message(
+                            "img2sixel: PNG output path is empty.");
+                        status = SIXEL_BAD_ARGUMENT;
+                        goto error;
+                    }
+                    png_path_length = strlen(png_path_view);
                     png_output_path =
-                        (char *)malloc(png_payload_length + 1u);
+                        (char *)malloc(png_path_length + 1u);
                     if (png_output_path == NULL) {
                         sixel_helper_set_additional_message(
                             "img2sixel: malloc() failed for PNG output path.");
                         status = SIXEL_BAD_ALLOCATION;
                         goto error;
                     }
-                    if (png_payload_view != NULL) {
+                    if (png_path_view != NULL) {
                         (void)sixel_compat_strcpy(png_output_path,
-                                                  strlen(optarg) + 1,
-                                                  optarg);
+                                                  png_path_length + 1u,
+                                                  png_path_view);
                     } else {
                         png_output_path[0] = '\0';
                     }
@@ -1711,8 +1731,7 @@ main(int argc, char *argv[])
                 output_is_png = 0;
                 output_png_to_stdout = 0;
                 png_argument_has_prefix = 0;
-                png_payload_view = NULL;
-                png_payload_length = 0u;
+                png_path_view = NULL;
                 free(png_output_path);
                 png_output_path = NULL;
                 free(sixel_output_path);
