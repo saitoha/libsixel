@@ -97,7 +97,7 @@ sixel_compat_vsnprintf(char *buffer,
     int written;
     va_list args_copy;
 #if defined(_MSC_VER)
-    errno_t error;
+    int msvc_result;
 #endif
 
     written = (-1);
@@ -121,13 +121,13 @@ sixel_compat_vsnprintf(char *buffer,
     va_copy(args_copy, args);
     written = _vscprintf(format, args_copy);
     va_end(args_copy);
-    if (buffer_size > 0) {
-        error = _vsnprintf_s(buffer,
-                             buffer_size,
-                             _TRUNCATE,
-                             format,
-                             args);
-        if (error != 0) {
+    if (buffer_size > 0 && written >= 0) {
+        msvc_result = _vsnprintf_s(buffer,
+                                   buffer_size,
+                                   _TRUNCATE,
+                                   format,
+                                   args);
+        if (msvc_result < 0) {
             written = (-1);
         }
     }
