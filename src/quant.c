@@ -1086,21 +1086,23 @@ histogram_quantize(unsigned int sample8,
     return quantized;
 }
 
-static unsigned int
-computeHash(unsigned char const *data,
-            unsigned int const depth,
-            struct histogram_control const *control)
+static uint32_t
+histogram_pack_color(unsigned char const *data,
+                     unsigned int const depth,
+                     struct histogram_control const *control)
 {
-    unsigned int hash;
+    uint32_t packed;
     unsigned int n;
     unsigned int sample8;
     unsigned int bits;
 
-    hash = 0;
+    packed = 0U;
     bits = control->channel_bits;
     if (control->channel_shift == 0U) {
         /*
-         * Fast path for hopscotch / robinhood policies:
+         * The channel shift being zero means each component keeps eight
+         * bits.  We therefore pack pixels in RGB order, as illustrated
+         * below:
          *
          *      R   G   B
          *     [ ]-[ ]-[ ]
@@ -1109,20 +1111,52 @@ computeHash(unsigned char const *data,
          *     0xRRGGBB
          */
         for (n = 0U; n < depth; ++n) {
-            hash |= (unsigned int)data[depth - 1U - n] << (n * bits);
+            packed |= (uint32_t)data[depth - 1U - n] << (n * bits);
         }
-        return hash;
+        return packed;
     }
-    for (n = 0; n < depth; n++) {
-#if 0
-        hash |= (unsigned int)(data[depth - 1 - n] >> 3) << n * 5;
-#else
-        sample8 = (unsigned int)data[depth - 1 - n];
-        hash |= histogram_quantize(sample8, control) << (n * bits);
-#endif
+
+    for (n = 0U; n < depth; ++n) {
+        sample8 = (unsigned int)data[depth - 1U - n];
+        packed |= histogram_quantize(sample8, control) << (n * bits);
+    }
+
+    return packed;
+}
+
+static uint32_t
+histogram_hash_mix(uint32_t key)
+{
+    uint32_t hash;
+
+    /*
+     * Multiplicative mixing with two avalanching rounds keeps nearby
+     * colors far apart in the hash domain.  The final tweak avoids the
+     * 0xffffffff sentinel used by hopscotch slots.
+     */
+    hash = key * 0x9e3779b9U;
+    hash ^= hash >> 16;
+    hash *= 0x7feb352dU;
+    hash ^= hash >> 15;
+    hash *= 0x846ca68bU;
+    hash ^= hash >> 16;
+    if (hash == 0xffffffffU) {
+        hash ^= 0x632be59bU;
     }
 
     return hash;
+}
+
+static unsigned int
+computeHash(unsigned char const *data,
+            unsigned int const depth,
+            struct histogram_control const *control)
+{
+    uint32_t packed;
+
+    packed = histogram_pack_color(data, depth, control);
+
+    return histogram_hash_mix(packed);
 }
 
 #define CUCKOO_BUCKET_SIZE 4U
@@ -1171,6 +1205,7 @@ static SIXELSTATUS cuckoo_table32_grow(struct cuckoo_table32 *table);
 
 struct robinhood_slot32 {
     uint32_t key;
+    uint32_t color;
     uint32_t value;
     uint16_t distance;
     uint16_t pad;
@@ -1189,9 +1224,12 @@ static SIXELSTATUS robinhood_table32_init(struct robinhood_table32 *table,
                                          sixel_allocator_t *allocator);
 static void robinhood_table32_fini(struct robinhood_table32 *table);
 static struct robinhood_slot32 *
-robinhood_table32_lookup(struct robinhood_table32 *table, uint32_t key);
+robinhood_table32_lookup(struct robinhood_table32 *table,
+                         uint32_t key,
+                         uint32_t color);
 static SIXELSTATUS robinhood_table32_insert(struct robinhood_table32 *table,
                                            uint32_t key,
+                                           uint32_t color,
                                            uint32_t value);
 static SIXELSTATUS robinhood_table32_grow(struct robinhood_table32 *table);
 static struct robinhood_slot32 *
@@ -1204,6 +1242,7 @@ robinhood_table32_place(struct robinhood_table32 *table,
 
 struct hopscotch_slot32 {
     uint32_t key;
+    uint32_t color;
     uint32_t value;
 };
 
@@ -1221,9 +1260,12 @@ static SIXELSTATUS hopscotch_table32_init(struct hopscotch_table32 *table,
                                           sixel_allocator_t *allocator);
 static void hopscotch_table32_fini(struct hopscotch_table32 *table);
 static struct hopscotch_slot32 *
-hopscotch_table32_lookup(struct hopscotch_table32 *table, uint32_t key);
+hopscotch_table32_lookup(struct hopscotch_table32 *table,
+                         uint32_t key,
+                         uint32_t color);
 static SIXELSTATUS hopscotch_table32_insert(struct hopscotch_table32 *table,
                                             uint32_t key,
+                                            uint32_t color,
                                             uint32_t value);
 static SIXELSTATUS hopscotch_table32_grow(struct hopscotch_table32 *table);
 
@@ -1322,7 +1364,9 @@ robinhood_table32_fini(struct robinhood_table32 *table)
 }
 
 static struct robinhood_slot32 *
-robinhood_table32_lookup(struct robinhood_table32 *table, uint32_t key)
+robinhood_table32_lookup(struct robinhood_table32 *table,
+                         uint32_t key,
+                         uint32_t color)
 {
     size_t mask;
     size_t index;
@@ -1342,7 +1386,7 @@ robinhood_table32_lookup(struct robinhood_table32 *table, uint32_t key)
         if (slot->value == 0U) {
             return NULL;
         }
-        if (slot->key == key) {
+        if (slot->key == key && slot->color == color) {
             return slot;
         }
         if (slot->distance < distance) {
@@ -1372,7 +1416,7 @@ robinhood_table32_place(struct robinhood_table32 *table,
             table->count++;
             return slot;
         }
-        if (slot->key == entry.key) {
+        if (slot->key == entry.key && slot->color == entry.color) {
             slot->value = entry.value;
             return slot;
         }
@@ -1431,6 +1475,7 @@ robinhood_table32_grow(struct robinhood_table32 *table)
             continue;
         }
         entry.key = old_slots[i].key;
+        entry.color = old_slots[i].color;
         entry.value = old_slots[i].value;
         entry.distance = 0U;
         entry.pad = 0U;  /* ensure padding bytes are initialized */
@@ -1445,6 +1490,7 @@ robinhood_table32_grow(struct robinhood_table32 *table)
 static SIXELSTATUS
 robinhood_table32_insert(struct robinhood_table32 *table,
                          uint32_t key,
+                         uint32_t color,
                          uint32_t value)
 {
     SIXELSTATUS status;
@@ -1461,6 +1507,7 @@ robinhood_table32_insert(struct robinhood_table32 *table,
     }
 
     entry.key = key;
+    entry.color = color;
     entry.value = value;
     entry.distance = 0U;
     entry.pad = 0U;  /* ensure padding bytes are initialized */
@@ -1523,6 +1570,7 @@ hopscotch_table32_init(struct hopscotch_table32 *table,
 
     for (i = 0U; i < capacity; ++i) {
         table->slots[i].key = HOPSCOTCH_EMPTY_KEY;
+        table->slots[i].color = 0U;
         table->slots[i].value = 0U;
     }
     table->capacity = capacity;
@@ -1562,7 +1610,9 @@ hopscotch_table32_fini(struct hopscotch_table32 *table)
 }
 
 static struct hopscotch_slot32 *
-hopscotch_table32_lookup(struct hopscotch_table32 *table, uint32_t key)
+hopscotch_table32_lookup(struct hopscotch_table32 *table,
+                         uint32_t key,
+                         uint32_t color)
 {
     size_t index;
     size_t bit;
@@ -1587,7 +1637,8 @@ hopscotch_table32_lookup(struct hopscotch_table32 *table, uint32_t key)
             continue;
         }
         candidate = (index + bit) & mask;
-        if (table->slots[candidate].key == key) {
+        if (table->slots[candidate].key == key
+            && table->slots[candidate].color == color) {
             return &table->slots[candidate];
         }
     }
@@ -1627,6 +1678,7 @@ hopscotch_table32_grow(struct hopscotch_table32 *table)
         }
         status = hopscotch_table32_insert(&tmp,
                                           slot->key,
+                                          slot->color,
                                           slot->value);
         if (SIXEL_FAILED(status)) {
             hopscotch_table32_fini(&tmp);
@@ -1649,6 +1701,7 @@ hopscotch_table32_grow(struct hopscotch_table32 *table)
 static SIXELSTATUS
 hopscotch_table32_insert(struct hopscotch_table32 *table,
                          uint32_t key,
+                         uint32_t color,
                          uint32_t value)
 {
     SIXELSTATUS status;
@@ -1673,7 +1726,7 @@ hopscotch_table32_insert(struct hopscotch_table32 *table,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    slot = hopscotch_table32_lookup(table, key);
+    slot = hopscotch_table32_lookup(table, key, color);
     if (slot != NULL) {
         slot->value = value;
         return SIXEL_OK;
@@ -1684,7 +1737,7 @@ hopscotch_table32_insert(struct hopscotch_table32 *table,
         if (SIXEL_FAILED(status)) {
             return status;
         }
-        return hopscotch_table32_insert(table, key, value);
+        return hopscotch_table32_insert(table, key, color, value);
     }
 
     mask = table->capacity - 1U;
@@ -1706,7 +1759,7 @@ hopscotch_table32_insert(struct hopscotch_table32 *table,
         if (SIXEL_FAILED(status)) {
             return status;
         }
-        return hopscotch_table32_insert(table, key, value);
+        return hopscotch_table32_insert(table, key, color, value);
     }
 
     /*
@@ -1733,6 +1786,7 @@ hopscotch_table32_insert(struct hopscotch_table32 *table,
                 tmp_slot = table->slots[move_index];
                 table->slots[free_index] = tmp_slot;
                 table->slots[move_index].key = HOPSCOTCH_EMPTY_KEY;
+                table->slots[move_index].color = 0U;
                 table->slots[move_index].value = 0U;
                 table->hopinfo[base] &= (uint32_t)~(1U << bit);
                 table->hopinfo[base] |= (uint32_t)(1U << offset);
@@ -1754,7 +1808,7 @@ hopscotch_table32_insert(struct hopscotch_table32 *table,
             if (SIXEL_FAILED(status)) {
                 return status;
             }
-            return hopscotch_table32_insert(table, key, value);
+            return hopscotch_table32_insert(table, key, color, value);
         }
     }
 
@@ -1763,10 +1817,11 @@ hopscotch_table32_insert(struct hopscotch_table32 *table,
         if (SIXEL_FAILED(status)) {
             return status;
         }
-        return hopscotch_table32_insert(table, key, value);
+        return hopscotch_table32_insert(table, key, color, value);
     }
 
     table->slots[free_index].key = key;
+    table->slots[free_index].color = color;
     table->slots[free_index].value = value;
     table->hopinfo[index] |= (uint32_t)(1U << distance);
     table->count++;
@@ -2301,9 +2356,9 @@ computeHistogram(unsigned char const    /* in */  *data,
     }
 
     for (i = 0; i < length; i += step) {
-        bucket_index = computeHash(data + i,
-                                   (unsigned int)depth,
-                                   &control);
+        bucket_index = histogram_pack_color(data + i,
+                                            (unsigned int)depth,
+                                            &control);
         if (histogram[bucket_index] == 0) {
             *ref++ = bucket_index;
         }
@@ -2366,8 +2421,9 @@ computeHistogram_robinhood(unsigned char const *data,
     unsigned int depth_u;
     unsigned int i;
     unsigned int n;
-    uint32_t bucket_index;
-    uint32_t entry_key;
+    uint32_t bucket_color;
+    uint32_t bucket_hash;
+    uint32_t entry_color;
     struct robinhood_slot32 *slot;
     unsigned int component;
     unsigned int reconstructed;
@@ -2399,11 +2455,22 @@ computeHistogram_robinhood(unsigned char const *data,
 
     depth_u = (unsigned int)depth;
     for (i = 0U; i < length; i += step) {
-        bucket_index = computeHash(data + i, depth_u, control);
-        slot = robinhood_table32_lookup(&table, bucket_index);
+        bucket_color = histogram_pack_color(data + i, depth_u, control);
+        bucket_hash = histogram_hash_mix(bucket_color);
+        /*
+         * Hash probing uses the mixed key while the slot stores the
+         * original quantized RGB value:
+         *
+         *   hash --> [slot]
+         *             |color|count|
+         */
+        slot = robinhood_table32_lookup(&table,
+                                        bucket_hash,
+                                        bucket_color);
         if (slot == NULL) {
             status = robinhood_table32_insert(&table,
-                                              bucket_index,
+                                              bucket_hash,
+                                              bucket_color,
                                               1U);
             if (SIXEL_FAILED(status)) {
                 sixel_helper_set_additional_message(
@@ -2444,11 +2511,11 @@ computeHistogram_robinhood(unsigned char const *data,
         if (index >= colorfreqtableP->size) {
             break;
         }
-        entry_key = slot->key;
+        entry_color = slot->color;
         colorfreqtableP->table[index]->value = slot->value;
         for (n = 0U; n < depth_u; ++n) {
             component = (unsigned int)
-                ((entry_key >> (n * control->channel_bits))
+                ((entry_color >> (n * control->channel_bits))
                  & control->channel_mask);
             reconstructed = histogram_reconstruct(component, control);
             colorfreqtableP->table[index]->tuple[depth_u - 1U - n]
@@ -2483,8 +2550,9 @@ computeHistogram_hopscotch(unsigned char const *data,
     unsigned int depth_u;
     unsigned int i;
     unsigned int n;
-    uint32_t bucket_index;
-    uint32_t entry_key;
+    uint32_t bucket_color;
+    uint32_t bucket_hash;
+    uint32_t entry_color;
     struct hopscotch_slot32 *slot;
     unsigned int component;
     unsigned int reconstructed;
@@ -2519,11 +2587,20 @@ computeHistogram_hopscotch(unsigned char const *data,
 
     depth_u = (unsigned int)depth;
     for (i = 0U; i < length; i += step) {
-        bucket_index = computeHash(data + i, depth_u, control);
-        slot = hopscotch_table32_lookup(&table, bucket_index);
+        bucket_color = histogram_pack_color(data + i, depth_u, control);
+        bucket_hash = histogram_hash_mix(bucket_color);
+        /*
+         * Hopscotch buckets mirror the robinhood layout, keeping the
+         * quantized color next to the count so we never derive it from
+         * the scrambled hash key.
+         */
+        slot = hopscotch_table32_lookup(&table,
+                                        bucket_hash,
+                                        bucket_color);
         if (slot == NULL) {
             status = hopscotch_table32_insert(&table,
-                                              bucket_index,
+                                              bucket_hash,
+                                              bucket_color,
                                               1U);
             if (SIXEL_FAILED(status)) {
                 sixel_helper_set_additional_message(
@@ -2564,11 +2641,11 @@ computeHistogram_hopscotch(unsigned char const *data,
         if (index >= colorfreqtableP->size) {
             break;
         }
-        entry_key = slot->key;
+        entry_color = slot->color;
         colorfreqtableP->table[index]->value = slot->value;
         for (n = 0U; n < depth_u; ++n) {
             component = (unsigned int)
-                ((entry_key >> (n * control->channel_bits))
+                ((entry_color >> (n * control->channel_bits))
                  & control->channel_mask);
             reconstructed = histogram_reconstruct(component, control);
             colorfreqtableP->table[index]->tuple[depth_u - 1U - n]
