@@ -572,6 +572,10 @@ static img2sixel_option_help_t const g_option_help_table[] = {
 static char const g_option_help_fallback[] =
     "    Refer to \"img2sixel -H\" for more details.\n";
 
+static char const g_img2sixel_optstring[] =
+    "o:a:J:j:78Rp:m:M:eb:Id:f:s:c:w:h:r:q:L:kil:t:ugvSn:PE:U:B:C:D@:"
+    "OVW:HY:y:";
+
 static img2sixel_option_help_t const *
 img2sixel_find_option_help(int short_opt)
 {
@@ -611,6 +615,153 @@ img2sixel_find_option_help_by_long_name(char const *long_name)
     }
 
     return NULL;
+}
+
+static int
+img2sixel_option_requires_argument(int short_opt)
+{
+    char const *cursor;
+
+    cursor = g_img2sixel_optstring;
+
+    while (*cursor != '\0') {
+        if (*cursor == (char)short_opt) {
+            if (cursor[1] == ':') {
+                return 1;
+            }
+            return 0;
+        }
+        cursor += 1;
+        while (*cursor == ':') {
+            cursor += 1;
+        }
+    }
+
+    return 0;
+}
+
+static int
+img2sixel_option_allows_leading_dash(int short_opt)
+{
+    /*
+     * The options below accept file paths and we must not treat values that
+     * start with '-' as missing arguments.  Users legitimately pass
+     * "-p"-prefixed names through -o or -J when they want files that happen to
+     * look like short options.
+     */
+    if (short_opt == 'o' || short_opt == 'J') {
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+img2sixel_token_is_known_option(char const *token, int *out_short_opt)
+{
+    img2sixel_option_help_t const *entry;
+    char const *long_name_start;
+    size_t length;
+    char long_name[64];
+
+    entry = NULL;
+    long_name_start = NULL;
+    length = 0u;
+
+    if (out_short_opt != NULL) {
+        *out_short_opt = 0;
+    }
+
+    if (token == NULL) {
+        return 0;
+    }
+
+    if (token[0] != '-') {
+        return 0;
+    }
+
+    if (token[1] == '\0') {
+        return 0;
+    }
+
+    if (token[1] == '-') {
+        long_name_start = token + 2;
+        length = 0u;
+        while (long_name_start[length] != '\0'
+                && long_name_start[length] != '=') {
+            length += 1u;
+        }
+        if (length == 0u) {
+            return 0;
+        }
+        if (length >= sizeof(long_name)) {
+            return 0;
+        }
+        memcpy(long_name, long_name_start, length);
+        long_name[length] = '\0';
+        entry = img2sixel_find_option_help_by_long_name(long_name);
+    } else {
+        entry = img2sixel_find_option_help((unsigned char)token[1]);
+    }
+
+    if (entry == NULL) {
+        return 0;
+    }
+
+    if (out_short_opt != NULL) {
+        *out_short_opt = entry->short_opt;
+    }
+
+    return 1;
+}
+
+static void img2sixel_report_missing_argument(int short_opt);
+
+static int
+img2sixel_guard_missing_argument(int short_opt, char *const *argv)
+{
+    int recognised;
+    int candidate_short_opt;
+
+    recognised = 0;
+    candidate_short_opt = 0;
+
+    if (img2sixel_option_requires_argument(short_opt) == 0) {
+        return 0;
+    }
+
+    if (optarg == NULL) {
+        img2sixel_report_missing_argument(short_opt);
+        return -1;
+    }
+
+    if (img2sixel_option_allows_leading_dash(short_opt) != 0) {
+        return 0;
+    }
+
+    recognised = img2sixel_token_is_known_option(optarg,
+                                                 &candidate_short_opt);
+    if (recognised != 0) {
+        if (optind > 0 && optarg == argv[optind - 1]) {
+            /*
+             * When getopt() consumed a separate token as the argument it
+             * stores a pointer to the original argv entry in optarg.  The
+             * ASCII timeline below illustrates the state we are about to fix:
+             *
+             *   argv index : 0     1     2     3
+             *   token     : img2sixel  -m    -w    100
+             *                       ^optarg
+             *
+             * By rewinding optind we hand control of "-w" back to getopt() so
+             * the parser can interpret it as the option the user intended.
+             */
+            optind -= 1;
+            img2sixel_report_missing_argument(short_opt);
+            return -1;
+        }
+    }
+
+    return 0;
 }
 
 static void
@@ -1586,9 +1737,7 @@ main(int argc, char *argv[])
     int long_opt;
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
-    char const *optstring =
-        "o:a:J:j:78Rp:m:M:eb:Id:f:s:c:w:h:r:q:L:kil:t:ugvSn:PE:U:B:C:D@:"
-        "OVW:HY:y:";
+    char const *optstring;
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",            required_argument,  &long_opt, 'o'},
@@ -1680,6 +1829,8 @@ main(int argc, char *argv[])
     char detail_buffer[1024];
     char const *detail_source;
 
+    optstring = g_img2sixel_optstring;
+
     completion_exit_status = 0;
     completion_cli_result = img2sixel_handle_completion_cli(
         argc, argv, &completion_exit_status);
@@ -1752,6 +1903,13 @@ main(int argc, char *argv[])
             n = long_opt;
         }
 #endif  /* HAVE_GETOPT_LONG */
+
+        if (n > 0) {
+            if (img2sixel_guard_missing_argument(n, argv) != 0) {
+                status = SIXEL_BAD_ARGUMENT;
+                goto error;
+            }
+        }
 
         switch (n) {
         case 'V':

@@ -227,6 +227,7 @@ open_binary_file(
 #if HAVE_FOPEN_S
     errno_t e;
 #endif  /* HAVE_FOPEN_S */
+    char message[2048];
 
     if (filename == NULL || strcmp(filename, "-") == 0) {
         /* for windows */
@@ -246,7 +247,8 @@ open_binary_file(
 #if HAVE_STAT
     if (stat(filename, &sb) != 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-        sixel_helper_set_additional_message("stat() failed.");
+        (void)snprintf(message, sizeof(message), "stat() for file '%s' failed.", filename);
+        sixel_helper_set_additional_message(message);
         goto end;
     }
     if (S_ISDIR(sb.st_mode)) {
