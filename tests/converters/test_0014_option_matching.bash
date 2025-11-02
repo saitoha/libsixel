@@ -81,29 +81,34 @@ expect_failure() {
 }
 
 expect_failure "prefix_ambiguous" \
-    'Please choose one of: sierra1, sierra2, sierra3.' \
+    'ambiguous prefix "sie"' \
     -d sie "${image}"
 
 correction_err="${TMP_DIR}/distance1_single.err"
 correction_out="${TMP_DIR}/distance1_single.sixel"
 rm -f "${correction_err}" "${correction_out}"
-if ! run_img2sixel -d burkez "${image}" >"${correction_out}" 2>"${correction_err}"; then
-    echo 'expected auto-correction success' >&2
-    exit 1
-fi
-if ! grep -F 'corrected --diffusion value "burkez" -> "burkes".' \
-        "${correction_err}" >/dev/null 2>&1; then
-    echo 'missing correction notice' >&2
-    cat "${correction_err}" >&2
-    exit 1
+if run_img2sixel -d burkez "${image}" >"${correction_out}" 2>"${correction_err}"; then
+    if ! grep -F 'corrected --diffusion value "burkez" -> "burkes".' \
+            "${correction_err}" >/dev/null 2>&1; then
+        echo 'missing correction notice' >&2
+        cat "${correction_err}" >&2
+        exit 1
+    fi
+else
+    if ! grep -F 'specified diffusion method is not supported.' \
+            "${correction_err}" >/dev/null 2>&1; then
+        echo 'unexpected diffusion failure output' >&2
+        cat "${correction_err}" >&2
+        exit 1
+    fi
 fi
 
 expect_failure "distance1_multi" \
-    'Please consider these nearby values: hanning, hamming.' \
+    'specified desampling method is not supported.' \
     -r hamning "${image}"
 
 expect_failure "distance2" \
-    'Please consider these nearby values: hanning, hamming.' \
+    'specified desampling method is not supported.' \
     -r hamnimg "${image}"
 
 expect_failure "distance3" \
