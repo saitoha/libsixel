@@ -335,6 +335,7 @@ sixel_dither_new(
     (*ppdither)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     (*ppdither)->allocator = allocator;
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
+    (*ppdither)->sixel_reversible = 0;
 
     status = SIXEL_OK;
 
@@ -599,6 +600,7 @@ sixel_dither_initialize(
                                       dither->method_for_rep,
                                       dither->quality_mode,
                                       dither->force_palette,
+                                      dither->sixel_reversible,
                                       dither->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -814,6 +816,30 @@ sixel_dither_set_pixelformat(
     int            /* in */ pixelformat) /* one of enum pixelFormat */
 {
     dither->pixelformat = pixelformat;
+}
+
+
+/* toggle SIXEL reversible palette mode */
+SIXELAPI void
+sixel_dither_set_sixel_reversible(
+    sixel_dither_t /* in */ *dither,
+    int            /* in */ enable)
+{
+    /*
+     * The diagram below shows how the flag routes palette generation:
+     *
+     *   pixels --> [histogram]
+     *                  |
+     *                  v
+     *           (optional reversible snap)
+     *                  |
+     *                  v
+     *               palette
+     */
+    if (dither == NULL) {
+        return;
+    }
+    dither->sixel_reversible = enable ? 1 : 0;
 }
 
 

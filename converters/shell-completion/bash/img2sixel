@@ -257,6 +257,7 @@ _img2sixel()
                                    -7 --7bit-mode \
                                    -8 --8bit-mode \
                                    -R --gri-limit \
+                                   -6 --6reversible \
                                    -p --colors \
                                    -m --mapfile \
                                    -M --mapfile-output \
