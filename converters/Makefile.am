@@ -84,6 +84,8 @@ img2sixel_SOURCES = $(srcdir)/img2sixel.c \
                     $(srcdir)/completion_utils.h \
                     $(srcdir)/malloc_stub.c \
                     $(srcdir)/malloc_stub.h \
+                    $(srcdir)/compat_stub.c \
+                    $(srcdir)/compat_stub.h \
                     $(srcdir)/getopt_stub.h
 # Track the generated header so dependency ordering stays stable.
 nodist_img2sixel_SOURCES = completion_embed.h
