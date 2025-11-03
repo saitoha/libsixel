@@ -5904,120 +5904,6 @@ end:
     return status;
 }
 
-static int
-sixel_compat_mkdir(const char *path, mode_t mode)
-{
-#if HAVE__MKDIR
-    (void)mode;
-    return _mkdir(path);
-#elif HAVE_MKDIR
-    return mkdir(path, mode);
-#else
-    return (-1);
-#endif
-}
-
-
-int
-ensure_dir_p(const char *path, mode_t mode)
-{
-    size_t len;
-    char *tmp;
-    size_t i;
-    char *component;
-    size_t component_length;
-
-    if (path == NULL) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    len = strlen(path);
-    tmp = (char *)malloc(len + 1);
-    if (tmp == NULL) {
-        return -1;
-    }
-
-    memcpy(tmp, path, len + 1);
-    component = NULL;
-    component_length = 0u;
-
-    for (i = 1; i < len; ++i) {
-        if (tmp[i] == '/') {
-            char saved;
-
-            saved = tmp[i];
-            tmp[i] = '\0';
-            if (tmp[0] != '\0') {
-#if defined(_WIN32)
-                /*
-                 * Drive-qualified paths include a `letter:` prefix.  The
-                 * ladder below sketches how we peel the segments without
-                 * attempting to `mkdir("d:")`:
-                 *
-                 *   d:/logs/run
-                 *   |  |
-                 *   |  +-- skip the root when `i == 2`
-                 *   +----- drive column we should preserve as-is
-                 */
-                if (i == 2
-                        && ((tmp[0] >= 'A' && tmp[0] <= 'Z')
-                            || (tmp[0] >= 'a' && tmp[0] <= 'z'))
-                        && tmp[1] == ':') {
-                    tmp[i] = saved;
-                    continue;
-                }
-#endif
-                component = strrchr(tmp, '/');
-                if (component == NULL) {
-                    component = tmp;
-                } else {
-                    component += 1;
-                }
-                component_length = strlen(component);
-                /*
-                 * Skip requests for "." and ".." so Windows builds avoid
-                 * creating a literal "directory dot" segment.  The drawing
-                 * below sketches how the guard trims the problematic edge:
-                 *
-                 *     converters/./tmp
-                 *     |---------| |--|
-                 *          |       +---- ignored because the component is
-                 *          |             "tmp"
-                 *          +------------ ignored because the component is
-                 *                        "."
-                 */
-                if (!((component_length == 1u && component[0] == '.')
-                        || (component_length == 2u
-                            && component[0] == '.'
-                            && component[1] == '.'))) {
-                    if (sixel_compat_mkdir(tmp, mode) != 0 && errno != EEXIST) {
-                        int saved_errno;
-
-                        saved_errno = errno;
-                        free(tmp);
-                        errno = saved_errno;
-                        return -1;
-                    }
-                }
-            }
-            tmp[i] = saved;
-        }
-    }
-
-    if (sixel_compat_mkdir(tmp, mode) != 0 && errno != EEXIST) {
-        int saved_errno;
-
-        saved_errno = errno;
-        free(tmp);
-        errno = saved_errno;
-        return -1;
-    }
-
-    free(tmp);
-    return 0;
-}
-
 
 /* load source data from specified file and encode it to SIXEL format
  * output to encoder->outfd */
@@ -6057,7 +5943,6 @@ sixel_encoder_encode(
 #endif
     char const *png_final_path = NULL;
     char *png_temp_path = NULL;
-    int ensure_result = 0;
     int png_temp_fd = (-1);
     if (encoder->assessment_sections != SIXEL_ASSESSMENT_SECTION_NONE) {
         status = sixel_allocator_new(&assessment_allocator,
@@ -6258,15 +6143,6 @@ sixel_encoder_encode(
 #endif
         if (encoder->outfd && encoder->outfd != STDOUT_FILENO) {
             (void)sixel_compat_close(encoder->outfd);
-        }
-        ensure_result = ensure_dir_p(png_temp_path, 0755);
-        if (ensure_result != 0) {
-            sixel_helper_set_additional_message(
-                "img2sixel: failed to create the PNG target directory.");
-            free(png_temp_path);
-            png_temp_path = NULL;
-            status = SIXEL_LIBC_ERROR;
-            goto end;
         }
         encoder->outfd = sixel_compat_open(png_temp_path,
                                            O_RDWR | O_CREAT | O_TRUNC,
