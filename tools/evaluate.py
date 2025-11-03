@@ -581,11 +581,8 @@ def evaluate_core(ref: np.ndarray, out: np.ndarray) -> Dict[str, float]:
     gmsd_val = gmsd(ref_y, out_y)
     psnr_y = psnr_luma(ref_y, out_y)
 
-    # LPIPS (vgg)
-    lpips_vgg = try_lpips(ref, out, "vgg")
-
     # LPIPS (alex)
-    # lpips_alex = try_lpips(ref, out, 'alex')
+    lpips_alex = try_lpips(ref, out, "alex")
 
     result = {
         "MS-SSIM": ms,
@@ -617,7 +614,7 @@ def evaluate_core(ref: np.ndarray, out: np.ndarray) -> Dict[str, float]:
         "Δ E00_mean": de00_mean,
         "GMSD": gmsd_val,
         "PSNR_Y": psnr_y,
-        "LPIPS(vgg)": lpips_vgg,
+        "LPIPS(alex)": lpips_alex,
     }
     return result
 

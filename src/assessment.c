@@ -137,7 +137,7 @@ typedef struct sixel_assessment_metrics {
     float delta_e00_mean;
     float gmsd_value;
     float psnr_y;
-    float lpips_vgg;
+    float lpips_alex;
 } sixel_assessment_metrics_t;
 
 typedef struct sixel_assessment_capture {
@@ -3364,7 +3364,7 @@ evaluate_metrics(const float *ref_pixels,
     double sum_value;
 
     memset(&metrics, 0, sizeof(metrics));
-    metrics.lpips_vgg = NAN;
+    metrics.lpips_alex = NAN;
 
     ref_luma = pixels_to_luma709(ref_pixels, width, height);
     out_luma = pixels_to_luma709(out_pixels, width, height);
@@ -3441,11 +3441,11 @@ evaluate_metrics(const float *ref_pixels,
  * LPIPS metric integration (ONNX Runtime)
  */
 static float
-compute_lpips_vgg(sixel_assessment_t *assessment,
-                  const float *ref_pixels,
-                  const float *out_pixels,
-                  int width,
-                  int height)
+compute_lpips_alex(sixel_assessment_t *assessment,
+                   const float *ref_pixels,
+                   const float *out_pixels,
+                   int width,
+                   int height)
 {
     float value;
 
@@ -3587,7 +3587,7 @@ static const MetricDescriptor g_metric_table[] = {
     {SIXEL_ASSESSMENT_METRIC_DELTA_E00, "Δ E00_mean"},
     {SIXEL_ASSESSMENT_METRIC_GMSD, "GMSD"},
     {SIXEL_ASSESSMENT_METRIC_PSNR_Y, "PSNR_Y"},
-    {SIXEL_ASSESSMENT_METRIC_LPIPS_VGG, "LPIPS(vgg)"},
+    {SIXEL_ASSESSMENT_METRIC_LPIPS_VGG, "LPIPS(alex)"},
 };
 
 static void
@@ -3648,7 +3648,7 @@ store_metrics(sixel_assessment_t *assessment,
     results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_PSNR_Y)]
         = metrics->psnr_y;
     results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_LPIPS_VGG)]
-        = metrics->lpips_vgg;
+        = metrics->lpips_alex;
 }
 
 static SIXELSTATUS
@@ -4169,11 +4169,11 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
                        &out_height);
 
     metrics = evaluate_metrics(ref_pixels, out_pixels, ref_width, ref_height);
-    metrics.lpips_vgg = compute_lpips_vgg(assessment,
-                                          ref_pixels,
-                                          out_pixels,
-                                          ref_width,
-                                          ref_height);
+    metrics.lpips_alex = compute_lpips_alex(assessment,
+                                            ref_pixels,
+                                            out_pixels,
+                                            ref_width,
+                                            ref_height);
     store_metrics(assessment, &metrics);
     assessment->results_ready = 1;
     status = SIXEL_OK;
