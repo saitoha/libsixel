@@ -146,14 +146,18 @@ cli_compat_strerror(int error_number,
         (void)strncpy(buffer, message, copy_length);
         buffer[buffer_size - 1] = '\0';
     }
-    return buffer;
+# elif defined(HAVE__STRERROR_R)
+    if (_strerror_r(error_number, buffer, buffer_size) != 0) {
+        buffer[0] = '\0';
+        return NULL;
+    }
 # else
     if (strerror_r(error_number, buffer, buffer_size) != 0) {
         buffer[0] = '\0';
         return NULL;
     }
-    return buffer;
 # endif
+    return buffer;
 #endif
 }
 
