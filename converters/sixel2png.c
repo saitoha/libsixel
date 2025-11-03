@@ -27,7 +27,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>  /* memset */
+#include <string.h>
 
 #if HAVE_STDARG_H
 # include <limits.h>
@@ -86,7 +86,7 @@ cli_compat_strerror(int error_number,
     size_t copy_length;
 # endif
 #else
-# if defined(_GNU_SOURCE)
+# if defined(_GNU_SOURCE) || (!defined(HAVE__STRERROR_R) && !defined(HAVE_STRERROR_R))
     char *message;
     size_t copy_length;
 # endif
@@ -151,11 +151,20 @@ cli_compat_strerror(int error_number,
         buffer[0] = '\0';
         return NULL;
     }
-# else
+# elif defined(HAVE_STRERROR_R)
     if (strerror_r(error_number, buffer, buffer_size) != 0) {
         buffer[0] = '\0';
         return NULL;
     }
+# else  /* HAVE_STRERROR */
+    message = strerror(error_number);
+    if (message == NULL) {
+        buffer[0] = '\0';
+        return NULL;
+    }
+    copy_length = buffer_size - 1;
+    (void)strncpy(buffer, message, copy_length);
+    buffer[buffer_size - 1] = '\0';
 # endif
     return buffer;
 #endif
