@@ -71,6 +71,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_BAD_ARGUMENT      (SIXEL_RUNTIME_ERROR | 0x0002)  /* bad argument detected */
 #define SIXEL_BAD_INPUT         (SIXEL_RUNTIME_ERROR | 0x0003)  /* bad input detected */
 #define SIXEL_BAD_INTEGER_OVERFLOW (SIXEL_RUNTIME_ERROR | 0x0004)  /* integer overflow */
+#define SIXEL_BAD_FILE_PATH     (SIXEL_RUNTIME_ERROR | 0x0005)  /* bad input filename */
 
 #define SIXEL_NOT_IMPLEMENTED   (SIXEL_FEATURE_ERROR | 0x0001)  /* feature not implemented */
 
@@ -230,6 +231,9 @@ typedef int SIXELSTATUS;
 /* setopt flags */
 #define SIXEL_OPTFLAG_INPUT             ('i')  /* -i, --input: specify input file name. */
 #define SIXEL_OPTFLAG_OUTPUT            ('o')  /* -o, --output: specify output file name. */
+#define SIXEL_OPTFLAG_ASSESSMENT        ('a')  /* -a, --assessment: specify assessment sections. */
+#define SIXEL_OPTFLAG_ASSESSMENT_FILE   ('J')  /* -J, --assessment-file: specify the output path
+                                                                         of assessment report. */
 #define SIXEL_OPTFLAG_DEQUANTIZE        ('d')  /* -d, --dequantize: apply palette dequantization. */
 #define SIXEL_OPTFLAG_SIMILARITY        ('S')  /* -S, --similarity: specify similarity bias (1-1000, default: 30). */
 #define SIXEL_OPTFLAG_SIZE              ('s')  /* -s, --size: limit longer edge to SIZE pixels. */

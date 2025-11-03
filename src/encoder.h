@@ -41,6 +41,7 @@ struct sixel_assessment;
 
 /* encoder object */
 struct sixel_encoder {
+
     unsigned int ref;               /* reference counter */
     sixel_allocator_t *allocator;   /* allocator object */
     int reqcolors;
@@ -110,10 +111,16 @@ struct sixel_encoder {
     int capture_ncolors;
     int capture_valid;
     struct sixel_frame *capture_source_frame;
+    unsigned int assessment_sections;
+    const char *assessment_json_path;
     struct sixel_assessment *assessment_observer;
     char last_loader_name[64];
     char last_source_path[PATH_MAX];
     size_t last_input_bytes;
+    int output_is_png;
+    int output_png_to_stdout;
+    char *png_output_path;
+    char *sixel_output_path;
 };
 
 #if HAVE_TESTS

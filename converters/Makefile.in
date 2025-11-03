@@ -144,13 +144,11 @@ PROGRAMS = $(bin_PROGRAMS)
 am__img2sixel_SOURCES_DIST = $(srcdir)/img2sixel.c \
 	$(srcdir)/completion_utils.c $(srcdir)/completion_utils.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
-	$(srcdir)/compat_stub.c $(srcdir)/compat_stub.h \
 	$(srcdir)/getopt_stub.h
 @WANT_IMG2SIXEL_TRUE@am_img2sixel_OBJECTS =  \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-img2sixel.$(OBJEXT) \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-completion_utils.$(OBJEXT) \
-@WANT_IMG2SIXEL_TRUE@	img2sixel-malloc_stub.$(OBJEXT) \
-@WANT_IMG2SIXEL_TRUE@	img2sixel-compat_stub.$(OBJEXT)
+@WANT_IMG2SIXEL_TRUE@	img2sixel-malloc_stub.$(OBJEXT)
 nodist_img2sixel_OBJECTS =
 img2sixel_OBJECTS = $(am_img2sixel_OBJECTS) \
 	$(nodist_img2sixel_OBJECTS)
@@ -190,8 +188,7 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/img2sixel-compat_stub.Po \
-	./$(DEPDIR)/img2sixel-completion_utils.Po \
+am__depfiles_remade = ./$(DEPDIR)/img2sixel-completion_utils.Po \
 	./$(DEPDIR)/img2sixel-img2sixel.Po \
 	./$(DEPDIR)/img2sixel-malloc_stub.Po \
 	./$(DEPDIR)/sixel2png-malloc_stub.Po \
@@ -531,8 +528,6 @@ CLEANFILES = *.gcno *.gcda *.gcov \
 @WANT_IMG2SIXEL_TRUE@                    $(srcdir)/completion_utils.h \
 @WANT_IMG2SIXEL_TRUE@                    $(srcdir)/malloc_stub.c \
 @WANT_IMG2SIXEL_TRUE@                    $(srcdir)/malloc_stub.h \
-@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/compat_stub.c \
-@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/compat_stub.h \
 @WANT_IMG2SIXEL_TRUE@                    $(srcdir)/getopt_stub.h
 
 # Track the generated header so dependency ordering stays stable.
@@ -647,7 +642,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-compat_stub.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-completion_utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-img2sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-malloc_stub.Po@am__quote@ # am--include-marker
@@ -725,20 +719,6 @@ img2sixel-malloc_stub.obj: malloc_stub.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='malloc_stub.c' object='img2sixel-malloc_stub.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o img2sixel-malloc_stub.obj `if test -f 'malloc_stub.c'; then $(CYGPATH_W) 'malloc_stub.c'; else $(CYGPATH_W) '$(srcdir)/malloc_stub.c'; fi`
-
-img2sixel-compat_stub.o: compat_stub.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT img2sixel-compat_stub.o -MD -MP -MF $(DEPDIR)/img2sixel-compat_stub.Tpo -c -o img2sixel-compat_stub.o `test -f 'compat_stub.c' || echo '$(srcdir)/'`compat_stub.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel-compat_stub.Tpo $(DEPDIR)/img2sixel-compat_stub.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='compat_stub.c' object='img2sixel-compat_stub.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o img2sixel-compat_stub.o `test -f 'compat_stub.c' || echo '$(srcdir)/'`compat_stub.c
-
-img2sixel-compat_stub.obj: compat_stub.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT img2sixel-compat_stub.obj -MD -MP -MF $(DEPDIR)/img2sixel-compat_stub.Tpo -c -o img2sixel-compat_stub.obj `if test -f 'compat_stub.c'; then $(CYGPATH_W) 'compat_stub.c'; else $(CYGPATH_W) '$(srcdir)/compat_stub.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel-compat_stub.Tpo $(DEPDIR)/img2sixel-compat_stub.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='compat_stub.c' object='img2sixel-compat_stub.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o img2sixel-compat_stub.obj `if test -f 'compat_stub.c'; then $(CYGPATH_W) 'compat_stub.c'; else $(CYGPATH_W) '$(srcdir)/compat_stub.c'; fi`
 
 sixel2png-sixel2png.o: sixel2png.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT sixel2png-sixel2png.o -MD -MP -MF $(DEPDIR)/sixel2png-sixel2png.Tpo -c -o sixel2png-sixel2png.o `test -f 'sixel2png.c' || echo '$(srcdir)/'`sixel2png.c
@@ -1064,7 +1044,6 @@ clean: clean-recursive
 clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-recursive
-	-rm -f ./$(DEPDIR)/img2sixel-compat_stub.Po
 	-rm -f ./$(DEPDIR)/img2sixel-completion_utils.Po
 	-rm -f ./$(DEPDIR)/img2sixel-img2sixel.Po
 	-rm -f ./$(DEPDIR)/img2sixel-malloc_stub.Po
@@ -1116,7 +1095,6 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-recursive
-	-rm -f ./$(DEPDIR)/img2sixel-compat_stub.Po
 	-rm -f ./$(DEPDIR)/img2sixel-completion_utils.Po
 	-rm -f ./$(DEPDIR)/img2sixel-img2sixel.Po
 	-rm -f ./$(DEPDIR)/img2sixel-malloc_stub.Po
