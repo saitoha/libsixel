@@ -71,7 +71,92 @@
 
 #include <sixel.h>
 
-#include "compat_stub.h"
+static char *
+cli_compat_strerror(int error_number,
+                      char *buffer,
+                      size_t buffer_size)
+{
+#if defined(_MSC_VER)
+    errno_t status;
+#elif defined(_WIN32)
+# if defined(__STDC_LIB_EXT1__)
+    errno_t status;
+# else
+    char *message;
+    size_t copy_length;
+# endif
+#else
+# if defined(_GNU_SOURCE)
+    char *message;
+    size_t copy_length;
+# endif
+#endif
+
+    if (buffer == NULL || buffer_size == 0) {
+        return NULL;
+    }
+
+#if defined(_MSC_VER)
+    status = strerror_s(buffer, buffer_size, error_number);
+    if (status != 0) {
+        buffer[0] = '\0';
+        return NULL;
+    }
+    return buffer;
+#elif defined(_WIN32)
+    /*
+     * +----------------------------------------------------+
+     * |  Windows family error messages                     |
+     * +----------------------------------------------------+
+     * |  CRT flavor  |  Routine we can rely on             |
+     * |------------- +-------------------------------------|
+     * |  Annex K     |  strerror_s()                       |
+     * |  Legacy      |  strerror() + manual copy           |
+     * +----------------------------------------------------+
+     * The secure CRT is present both with MSVC and with
+     * clang + UCRT.  When Annex K is unavailable we fall
+     * back to strerror() while still clamping the output.
+     */
+# if defined(__STDC_LIB_EXT1__)
+    status = strerror_s(buffer, buffer_size, error_number);
+    if (status != 0) {
+        buffer[0] = '\0';
+        return NULL;
+    }
+    return buffer;
+# else
+    message = strerror(error_number);
+    if (message == NULL) {
+        buffer[0] = '\0';
+        return NULL;
+    }
+    copy_length = buffer_size - 1;
+    (void)strncpy(buffer, message, copy_length);
+    buffer[buffer_size - 1] = '\0';
+    return buffer;
+# endif
+#else
+# if defined(_GNU_SOURCE)
+    message = strerror_r(error_number, buffer, buffer_size);
+    if (message == NULL) {
+        return NULL;
+    }
+    if (message != buffer) {
+        copy_length = buffer_size - 1;
+        (void)strncpy(buffer, message, copy_length);
+        buffer[buffer_size - 1] = '\0';
+    }
+    return buffer;
+# else
+    if (strerror_r(error_number, buffer, buffer_size) != 0) {
+        buffer[0] = '\0';
+        return NULL;
+    }
+    return buffer;
+# endif
+#endif
+}
+
 
 /*
  * Option-specific help snippets power both the --help output and contextual
@@ -1060,7 +1145,7 @@ sixel2png_build_missing_file_message(char const *option_label,
                 }
             }
         } else {
-            if (sixel_compat_strerror(error_code,
+            if (cli_compat_strerror(error_code,
                                       error_buffer,
                                       sizeof(error_buffer)) == NULL) {
                 error_buffer[0] = '\0';
