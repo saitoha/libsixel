@@ -43,7 +43,8 @@ CONVERTER_TEST_LIST += \
 	$(top_srcdir)/tests/converters/test_0012_regressions.bash \
 	$(top_srcdir)/tests/converters/test_0013_documentation.bash \
 	$(top_srcdir)/tests/converters/test_0014_option_matching.bash \
-	$(top_srcdir)/tests/converters/test_0015_argument_shift.bash
+	$(top_srcdir)/tests/converters/test_0015_argument_shift.bash \
+	$(top_srcdir)/tests/converters/test_0016_assessment_spool.bash
 endif
 endif
 
