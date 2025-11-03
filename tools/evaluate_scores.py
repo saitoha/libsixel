@@ -52,11 +52,11 @@ def score_from_metrics(metrics: Dict[str, float]) -> Dict[str, float]:
     psnr = metrics.get("PSNR_Y", 0.0)
     psnr_norm = clamp01((psnr - 25.0) / 20.0)
     scores["PSNR_Y"] = 100.0 * (psnr_norm**0.6)
-    lpips = metrics.get("LPIPS(vgg)", float("nan"))
+    lpips = metrics.get("LPIPS(alex)", float("nan"))
     if not (isinstance(lpips, float) and np.isnan(lpips)):
-        scores["LPIPS(vgg)"] = 100.0 * ((1.0 - clamp01(lpips / 1.00)) ** 0.5)
+        scores["LPIPS(alex)"] = 100.0 * ((1.0 - clamp01(lpips / 1.00)) ** 0.5)
     else:
-        scores["LPIPS(vgg)"] = float("nan")
+        scores["LPIPS(alex)"] = float("nan")
     valid = [v for v in scores.values() if isinstance(v, float) and not np.isnan(v)]
     scores["Overall"] = float(np.mean(valid)) if valid else float("nan")
     return scores
@@ -75,7 +75,7 @@ def plot_radar_scores(scores: Dict[str, float]) -> bytes:
         "Δ E00",
         "GMSD",
         "PSNR_Y",
-        "LPIPS(vgg)",
+        "LPIPS(alex)",
     ]
     raw_values = [scores.get(k, float("nan")) for k in labels]
     sanitized = [
