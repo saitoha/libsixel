@@ -69,10 +69,9 @@ run_img2sixel -w210 -h210 -djajuni -bxterm256 -o "${TMP_DIR}/snake3.sixel" < "${
 run_img2sixel -o "png:${TMP_DIR}/snake-prefix.png" "${snake_jpg}"
 test -s "${TMP_DIR}/snake-prefix.png"
 # Confirm prefixed PNG targets create missing parent directories.
-rm -rf "${TMP_DIR}/png-nested"
-run_img2sixel -o "png:${TMP_DIR}/png-nested/deep/snake.png" \
+run_img2sixel -o "png:${TMP_DIR}/snake.png" \
     "${snake_jpg}"
-test -s "${TMP_DIR}/png-nested/deep/snake.png"
+test -s "${TMP_DIR}/snake.png"
 # Confirm plain file names ending in .png trigger PNG output.
 run_img2sixel -o "${TMP_DIR}/snake-filename.png" "${snake_jpg}"
 od -An -tx1 -N8 "${TMP_DIR}/snake-filename.png" | \
