@@ -4297,6 +4297,8 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
         }
         sixel_allocator_free(allocator, encoder->capture_pixels);
         sixel_allocator_free(allocator, encoder->capture_palette);
+        sixel_allocator_free(allocator, encoder->png_output_path);
+        sixel_allocator_free(allocator, encoder->sixel_output_path);
         sixel_allocator_free(allocator, encoder);
         sixel_allocator_unref(allocator);
     }
@@ -4687,9 +4689,9 @@ sixel_encoder_setopt(
             encoder->output_png_to_stdout =
                 (png_path_view != NULL)
                 && (strcmp(png_path_view, "-") == 0);
-            free(encoder->png_output_path);
+            sixel_allocator_free(encoder->allocator, encoder->png_output_path);
             encoder->png_output_path = NULL;
-            free(encoder->sixel_output_path);
+            sixel_allocator_free(encoder->allocator, encoder->sixel_output_path);
             encoder->sixel_output_path = NULL;
             if (! encoder->output_png_to_stdout) {
                 /*
@@ -4717,10 +4719,12 @@ sixel_encoder_setopt(
                 }
                 png_path_length = strlen(png_path_view);
                 encoder->png_output_path =
-                    (char *)malloc(png_path_length + 1u);
+                    (char *)sixel_allocator_malloc(
+                        encoder->allocator, png_path_length + 1u);
                 if (encoder->png_output_path == NULL) {
                     sixel_helper_set_additional_message(
-                        "sixel_encoder_setopt: malloc() failed for PNG output path.");
+                        "sixel_encoder_setopt: sixel_allocator_malloc() "
+                        "failed for PNG output path.");
                     status = SIXEL_BAD_ALLOCATION;
                     goto end;
                 }
@@ -4738,12 +4742,13 @@ sixel_encoder_setopt(
             encoder->output_png_to_stdout = 0;
             png_argument_has_prefix = 0;
             png_path_view = NULL;
-            free(encoder->png_output_path);
+            sixel_allocator_free(encoder->allocator, encoder->png_output_path);
             encoder->png_output_path = NULL;
-            free(encoder->sixel_output_path);
+            sixel_allocator_free(encoder->allocator, encoder->sixel_output_path);
             encoder->sixel_output_path = NULL;
             if (strcmp(value, "-") != 0) {
-                encoder->sixel_output_path = (char *)malloc(strlen(value) + 1);
+                encoder->sixel_output_path = (char *)sixel_allocator_malloc(
+                    encoder->allocator, strlen(value) + 1);
                 if (encoder->sixel_output_path == NULL) {
                     sixel_helper_set_additional_message(
                         "sixel_encoder_setopt: malloc() failed for output path.");
@@ -5805,7 +5810,7 @@ assessment_json_callback(char const *chunk,
 }
 
 static char *
-create_temp_template(void)
+create_temp_template(sixel_allocator_t *allocator)
 {
     char const *tmpdir;
     size_t tmpdir_len;
@@ -5850,7 +5855,7 @@ create_temp_template(void)
     }
 
     template_len = tmpdir_len + suffix_len + 2;
-    template_path = (char *)malloc(template_len);
+    template_path = (char *)sixel_allocator_malloc(allocator, template_len);
     if (template_path == NULL) {
         return NULL;
     }
@@ -6023,10 +6028,11 @@ sixel_encoder_encode(
             }
         }
     if (spool_required) {
-        assessment_temp_path = create_temp_template();
+        assessment_temp_path = create_temp_template(encoder->allocator);
         if (assessment_temp_path == NULL) {
             sixel_helper_set_additional_message(
-                "sixel_encoder_encode: malloc() failed for assessment staging path.");
+                "sixel_encoder_encode: sixel_allocator_malloc() "
+                "failed for assessment staging path.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -6034,7 +6040,8 @@ sixel_encoder_encode(
         assessment_temp_fd = mkstemp(assessment_temp_path);
             if (assessment_temp_fd < 0) {
                 sixel_helper_set_additional_message(
-                    "sixel_encoder_encode: mkstemp() failed for assessment staging file.");
+                    "sixel_encoder_encode: mkstemp() "
+                    "failed for assessment staging file.");
                 status = SIXEL_RUNTIME_ERROR;
                 goto end;
             }
@@ -6059,8 +6066,9 @@ sixel_encoder_encode(
                     status = SIXEL_RUNTIME_ERROR;
                     goto end;
                 }
-                free(assessment_temp_path);
-                assessment_temp_path = (char *)malloc(strlen(generated) + 1);
+                sixel_allocator_free(encoder->allocator, assessment_temp_path);
+                assessment_temp_path = (char *)sixel_allocator_malloc(
+                    encoder->allocator, strlen(generated) + 1);
                 if (assessment_temp_path == NULL) {
                     sixel_helper_set_additional_message(
                         "sixel_encoder_encode: malloc() failed for assessment staging copy.");
@@ -6092,7 +6100,7 @@ sixel_encoder_encode(
     }
 
     if (encoder->output_is_png) {
-        png_temp_path = create_temp_template();
+        png_temp_path = create_temp_template(encoder->allocator);
         if (png_temp_path == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_encoder_encode: malloc() failed for PNG staging path.");
@@ -6113,9 +6121,9 @@ sixel_encoder_encode(
         if (sixel_compat_mktemp(png_temp_path,
                                 strlen(png_temp_path) + 1) != 0) {
             sixel_helper_set_additional_message(
-                "img2sixel: mktemp() failed for PNG staging file.");
+                "sixel_encoder_encode: mktemp() failed for PNG staging file.");
             status = SIXEL_RUNTIME_ERROR;
-            goto error;
+            goto end;
         }
 #else
         {
@@ -6126,13 +6134,13 @@ sixel_encoder_encode(
                 sixel_helper_set_additional_message(
                     "sixel_encoder_encode: tmpnam() failed for PNG staging file.");
                 status = SIXEL_RUNTIME_ERROR;
-                goto endk;
+                goto end;
             }
-            free(png_temp_path);
+            sixel_allocator_free(encoder->allocator, png_temp_path);
             png_temp_path = (char *)malloc(strlen(generated) + 1);
             if (png_temp_path == NULL) {
                 sixel_helper_set_additional_message(
-                    "sixel_endoer_encode: malloc() failed for PNG staging path copy.");
+                    "sixel_encoder_encode: malloc() failed for PNG staging path copy.");
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
             }
@@ -6597,8 +6605,8 @@ end:
     if (png_temp_path != NULL) {
         (void)sixel_compat_unlink(png_temp_path);
     }
-    free(png_temp_path);
-    free(encoder->png_output_path);
+    sixel_allocator_free(encoder->allocator, png_temp_path);
+    sixel_allocator_free(encoder->allocator, encoder->png_output_path);
     encoder->png_output_path = NULL;
     if (assessment_forward_stream != NULL) {
         (void) fclose(assessment_forward_stream);
@@ -6607,12 +6615,11 @@ end:
             assessment_spool_mode != SIXEL_ASSESSMENT_SPOOL_MODE_NONE) {
         (void)sixel_compat_unlink(assessment_temp_path);
     }
-    free(assessment_temp_path);
-    free(assessment_forward_path);
+    sixel_allocator_free(encoder->allocator, assessment_temp_path);
+    sixel_allocator_free(encoder->allocator, assessment_forward_path);
     if (assessment_json_owned && assessment_json_file != NULL) {
         (void) fclose(assessment_json_file);
     }
-    free(encoder->sixel_output_path);
     if (assessment_target_frame != NULL) {
         sixel_frame_unref(assessment_target_frame);
     }
