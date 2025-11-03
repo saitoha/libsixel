@@ -168,8 +168,17 @@
 /* Define to 1 if you have the 'm' library (-lm). */
 #undef HAVE_LIBM
 
+/* Define to 1 if you have the 'ole32' library (-lole32). */
+#undef HAVE_LIBOLE32
+
 /* whether libpng is available */
 #undef HAVE_LIBPNG
+
+/* Define to 1 if you have the 'windowscodecs' library (-lwindowscodecs). */
+#undef HAVE_LIBWINDOWSCODECS
+
+/* Define to 1 if you have the 'winhttp' library (-lwinhttp). */
+#undef HAVE_LIBWINHTTP
 
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
@@ -301,6 +310,18 @@
 
 /* Define to 1 if the system has the `deprecated' variable attribute */
 #undef HAVE_VAR_ATTRIBUTE_DEPRECATED
+
+/* whether Windows Imaging Component (WIC) is available */
+#undef HAVE_WIC
+
+/* Define to 1 if you have the <wincodec.h> header file. */
+#undef HAVE_WINCODEC_H
+
+/* Define to 1 if you have the <windows.h> header file. */
+#undef HAVE_WINDOWS_H
+
+/* whether WinHTTP is available */
+#undef HAVE_WINHTTP
 
 /* Define to 1 if the system has the type '_Bool'. */
 #undef HAVE__BOOL

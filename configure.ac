@@ -110,11 +110,17 @@ AC_ARG_WITH([png],
             [],
             [with_png=auto])
 
-#AC_ARG_WITH([wic],
-#            [AS_HELP_STRING([--with-wic],
-#                            [whether to build with windows WIC integration, windows only (default: no)])],
-#            [],
-#            [with_wic=no])
+AC_ARG_WITH([wic],
+            [AS_HELP_STRING([--with-wic],
+                            [whether to build with Windows Imaging Component (WIC), windows only (default: auto)])],
+            [],
+            [with_wic=auto])
+
+AC_ARG_WITH([winhttp],
+            [AS_HELP_STRING([--with-winhttp],
+                            [whether to build with WinHTTP, windows only (default: auto)])],
+            [],
+            [with_wic=auto])
 
 AC_ARG_WITH(pkgconfigdir,
             AS_HELP_STRING([--with-pkgconfigdir],
@@ -326,20 +332,10 @@ loaders="stb_image"
 have_curl="no"
 have_jpeg="no"
 have_png="no"
-#have_wic="no"
+have_wic="auto"
+have_winhttp="auto"
 
-#if test x$with_wic != xno; then
-#    AC_CHECK_HEADERS([wincodec.h], [],
-#                     [AC_MSG_ERROR([WIC integration: wincodec.h is not avilable.])])
-#    AC_CHECK_LIB([ole32], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library ole32 is not avilable.])])
-#    AC_CHECK_LIB([uuid], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library uuid is not avilable.])])
-#    AC_CHECK_LIB([windowscodecs], [main], [],
-#                 [AC_MSG_ERROR([WIC integration: library wincodecs is not avilable.])])
-#    have_wic="yes"
-#fi
-
+AC_MSG_CHECKING([for gdk-pixbuf2])
 if test x$with_gdk_pixbuf2 != xno; then
     if test x${PKG_CONFIG} != x; then
         PKG_CHECK_MODULES([GDK_PIXBUF],
@@ -364,7 +360,7 @@ fi
 AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
 
-
+AC_MSG_CHECKING([for GD])
 if test x$with_gd != xno; then
     CFLAGS_BACKUP=$CFLAGS
     LDFLAGS_BACKUP=$LDFLAGS
@@ -463,6 +459,7 @@ fi
 AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
 
+AC_MSG_CHECKING([for libcurl])
 if test x$with_libcurl != xno; then
     if test x$build = x$host; then
         CFLAGS_BACKUP=$CFLAGS
@@ -503,6 +500,7 @@ if test x$with_libcurl != xno; then
         fi
     fi
     if test x$have_curl = xyes; then
+        net="${net} libcurl"
         AC_DEFINE(HAVE_LIBCURL, 1, [whether libcurl is available])
     else
         if test x$with_libcurl != xauto; then
@@ -515,6 +513,63 @@ if test x$with_libcurl != xno; then
 fi
 AC_SUBST(LIBCURL_CFLAGS)
 AC_SUBST(LIBCURL_LIBS)
+
+AC_MSG_CHECKING([for WinHTTP])
+if test x$with_winhttp != xno; then
+    case "$host_os" in
+    mingw* | cygwin* | msys*)
+        AC_MSG_RESULT([checking on Windows host])
+        CFLAGS_BACKUP="$CFLAGS"
+        LIBS_BACKUP="$LIBS"
+        if test x$with_png != xyes -a x$with_png != xauto; then
+            if test ! -d "$with_png"; then
+                AC_MSG_ERROR(["${with_png}" is not directory])
+            fi
+            ADDED_CFLAGS="-I${with_winhttp}/include"
+            ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lwinhttp"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lwinhttp"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LIBS="${LIBS} ${ADDED_LIBS}"
+        have_winhttp=yes
+        AC_COMPILE_IFELSE(
+            [AC_LANG_PROGRAM([[
+              #include <windows.h>
+              #include <winhttp.h>
+            ]], [[]])],
+            [AC_CHECK_LIB([winhttp],
+                          [WinHttpOpen],
+                          [],
+                          [have_winhttp=no
+                           AC_MSG_ERROR([library wincodecs is not avilable.])])],
+            [have_winhttp=no
+             AC_MSG_ERROR([windows.h or winhttp.h is not avilable.])])
+        ;;
+    *)
+        have_winhttp=no
+        ;;
+    esac
+    CFLAGS=$CFLAGS_BACKUP
+    LIBS=$LIBS_BACKUP
+    AS_IF([test "x$have_winhttp" = "xyes"],
+          [AC_DEFINE([HAVE_WINHTTP],
+                     [1],
+                     [whether WinHTTP is available])
+           net="${net} winhttp"
+           WINHTTP_CFLAGS=$ADDED_CFLAGS
+           WINHTTP_LIBS=$ADDED_LIBS
+           AC_MSG_NOTICE([WinHTTP is available])],
+          [AC_MSG_NOTICE([WinHTTP is not available])])
+fi
+AC_SUBST(WINHTTP_CFLAGS)
+AC_SUBST(WINHTTP_LIBS)
 
 if test x$with_jpeg != xno; then
     if test x$build = x$host; then
@@ -630,6 +685,64 @@ fi
 AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBPNG_LIBS)
 
+AC_MSG_CHECKING([for Windows Imaging Component (WIC)])
+if test x$with_wic != xno; then
+    case "$host_os" in
+    mingw* | cygwin* | msys*)
+        AC_MSG_RESULT([checking on Windows host])
+        CFLAGS_BACKUP="$CFLAGS"
+        LIBS_BACKUP="$LIBS"
+        if test x$with_png != xyes -a x$with_png != xauto; then
+            if test ! -d "$with_png"; then
+                AC_MSG_ERROR(["${with_png}" is not directory])
+            fi
+            ADDED_CFLAGS="-I${with_wic}/include"
+            ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LIBS="${LIBS} ${ADDED_LIBS}"
+        have_wic=yes
+        AC_CHECK_HEADERS([windows.h wincodec.h],
+                         [AC_CHECK_LIB([ole32],
+                                       [main],
+                                       [],
+                                       [have_wic=no
+                                        AC_MSG_ERROR([library ole32 is not avilable.])])
+                          AC_CHECK_LIB([windowscodecs],
+                                       [main],
+                                       [],
+                                       [have_wic=no
+                                        AC_MSG_ERROR([library wincodecs is not avilable.])])],
+                         [have_wic=no
+                          AC_MSG_ERROR([windows.h or wincodec.h is not avilable.])])
+        ;;
+    *)
+        have_wic=no
+        ;;
+    esac
+    CFLAGS=$CFLAGS_BACKUP
+    LIBS=$LIBS_BACKUP
+    AS_IF([test "x$have_wic" = "xyes"],
+          [AC_DEFINE([HAVE_WIC],
+                     [1],
+                     [whether Windows Imaging Component (WIC) is available])
+           loaders="${loaders} wic"
+           WIC_CFLAGS=$ADDED_CFLAGS
+           WIC_LIBS=$ADDED_LIBS
+           AC_MSG_NOTICE([WIC is available])],
+          [AC_MSG_NOTICE([WIC is not available])])
+fi
+AC_SUBST(WIC_CFLAGS)
+AC_SUBST(WIC_LIBS)
+
 have_python=no
 if test x$enable_python != xno; then
     AM_PATH_PYTHON([2.3], [have_python=yes], [have_python=no])
@@ -637,7 +750,6 @@ if test x$enable_python != xno; then
         AC_MSG_ERROR([python is not available])
     fi
 fi
-AM_CONDITIONAL([HAVE_PYTHON], [test x$have_python = xyes])
 if test x$have_python = xyes; then
     message_python="$have_python: $pythondir"
 else
@@ -651,9 +763,12 @@ AC_DEFUN([LS_UPDATE_TIMESTAMP], [
           ])
 LS_UPDATE_TIMESTAMP
 
+AM_CONDITIONAL([HAVE_CURL], [test x$have_curl = xyes])
+AM_CONDITIONAL([HAVE_WINHTTP], [test x$have_wic = xyes])
 AM_CONDITIONAL([HAVE_JPEG], [test x$have_jpeg = xyes])
 AM_CONDITIONAL([HAVE_PNG], [test x$have_png = xyes])
-AM_CONDITIONAL([HAVE_CURL], [test x$have_curl = xyes])
+AM_CONDITIONAL([HAVE_WIC], [test x$have_wic = xyes])
+AM_CONDITIONAL([HAVE_PYTHON], [test x$have_python = xyes])
 
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
@@ -674,7 +789,7 @@ echo ""
 echo "libsixel was configured as follows"
 echo ""
 echo "       Loader component    : $loaders"
-echo "       libcurl integration : $have_curl"
+echo "       Network access      : $net"
 echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $bashcompletiondir"
 echo "       Zsh completion dir  : $zshcompletiondir"
@@ -685,3 +800,4 @@ echo "       debugging           : $enable_debug"
 echo "       tests               : $enable_tests"
 echo ""
 echo ""
+dnl :vim set et:

@@ -312,16 +312,260 @@ end:
     return status;
 }
 
+#if HAVE_WINHTTP
+#define UNICODE
+#define _UNICODE
+#include <windows.h>
+#include <winhttp.h>
 
-/* get chunk of specified resource over libcurl function */
+static wchar_t *
+utf8_to_wide(char const *s) {
+    wchar_t *w;
+    int n;
+
+    n = MultiByteToWideChar(CP_UTF8, 0, s, -1, NULL, 0);
+    if (n <= 0) {
+        return NULL;
+    }
+    w = (wchar_t*) malloc(sizeof(wchar_t) * n);
+    if (!w) {
+        return NULL;
+    }
+    if (!MultiByteToWideChar(CP_UTF8, 0, s, -1, w, n)) {
+         free(w);
+         return NULL;
+    }
+
+    return w;
+}
+#endif  /* HAVE_WINHTTP */
+
+#if HAVE_WINHTTP
 static SIXELSTATUS
-sixel_chunk_from_url(
+sixel_chunk_from_url_with_winhttp(
+    char const      /* in */ *url,
+    sixel_chunk_t   /* in */ *pchunk,
+    int             /* in */ finsecure
+)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    unsigned long const timeout_ms = 10000;
+    wchar_t *wua = NULL;
+    wchar_t *wurl = NULL;
+    wchar_t hostname[2048];
+    wchar_t path[4096];
+    WINHTTP_PROXY_INFO pinfo;
+    WINHTTP_AUTOPROXY_OPTIONS apo;
+    HINTERNET hSession = NULL;
+    HINTERNET hConnect = NULL;
+    HINTERNET hRequest = NULL;
+    INTERNET_PORT port;
+    BOOL bRet;
+    DWORD dwStatus = 0;
+    DWORD dwSize = sizeof(dwStatus);
+    DWORD dwFlags;
+    DWORD dwRead = 0;
+    DWORD dwAvail = 0;
+    DWORD dwEnable = 1;
+    URL_COMPONENTS uc;
+    void *p = NULL;
+
+    wua = utf8_to_wide("libsixel/" LIBSIXEL_VERSION);
+    if (wua == NULL) {
+        goto end;
+    }
+
+    wurl = utf8_to_wide(url);
+    if (wurl == NULL) {
+        goto end;
+    }
+
+    RtlZeroMemory(&uc, sizeof(uc));
+    uc.dwStructSize = sizeof(uc);
+    uc.lpszHostName = hostname;
+    uc.dwHostNameLength = sizeof(hostname) / sizeof(hostname[0]);
+    uc.lpszUrlPath = path;
+    uc.dwUrlPathLength = sizeof(path) / sizeof(path[0]);
+    uc.lpszExtraInfo = NULL;
+    uc.dwExtraInfoLength = 0;
+
+    bRet = WinHttpCrackUrl(wurl, 0, 0, &uc);
+    if (! bRet || ! uc.lpszHostName) {
+        goto end;
+    }
+
+    if (uc.nScheme != INTERNET_SCHEME_HTTPS &&
+        uc.nScheme != INTERNET_SCHEME_HTTP) {
+        /* unavailable protocol */
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    port = uc.nPort;
+    if (! port) {
+        if (uc.nScheme == INTERNET_SCHEME_HTTPS) {
+            port = 443;
+        } else if (uc.nScheme == INTERNET_SCHEME_HTTP) {
+            port = 80;
+        }
+    }
+
+    hSession = WinHttpOpen(wua,
+                           WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+                           WINHTTP_NO_PROXY_NAME,
+                           WINHTTP_NO_PROXY_BYPASS, 0);
+    if (!hSession) {
+        goto end;
+    }
+
+    if (timeout_ms) {
+        WinHttpSetTimeouts(
+            hSession,
+            timeout_ms,  /* dwResolveTimeout */
+            timeout_ms,  /* dwConnectTimeout */
+            timeout_ms,  /* dwSendTimeout */
+            timeout_ms); /* dwReceiveTimeout */
+    }
+
+    hConnect = WinHttpConnect(hSession, uc.lpszHostName, port, 0);
+    if (!hConnect) {
+        goto end;
+    }
+
+    dwFlags = (uc.nScheme == INTERNET_SCHEME_HTTPS) ? WINHTTP_FLAG_SECURE : 0;
+
+    hRequest = WinHttpOpenRequest(hConnect, L"GET",
+                                  uc.lpszUrlPath && *uc.lpszUrlPath ?
+                                      uc.lpszUrlPath :
+                                      L"/",
+                                  NULL,
+                                  WINHTTP_NO_REFERER,
+                                  WINHTTP_DEFAULT_ACCEPT_TYPES,
+                                  dwFlags);
+    if (!hRequest) {
+        goto end;
+    }
+    WinHttpSetOption(hRequest, WINHTTP_OPTION_ENABLE_FEATURE,
+                     &dwEnable, sizeof(dwEnable));
+    if (finsecure) {
+        dwFlags = 0;
+        dwFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+        dwFlags |= SECURITY_FLAG_IGNORE_CERT_DATE_INVALID;
+        dwFlags |= SECURITY_FLAG_IGNORE_CERT_CN_INVALID;
+        WinHttpSetOption(hRequest, WINHTTP_OPTION_SECURITY_FLAGS,
+                         &dwFlags, sizeof(dwFlags));
+    }
+
+    RtlZeroMemory(&apo, sizeof(apo));
+    apo.dwFlags |= WINHTTP_AUTOPROXY_AUTO_DETECT;
+    apo.dwAutoDetectFlags |= WINHTTP_AUTO_DETECT_TYPE_DHCP;
+    apo.dwAutoDetectFlags |= WINHTTP_AUTO_DETECT_TYPE_DNS_A;
+    apo.fAutoLogonIfChallenged = TRUE;
+
+    RtlZeroMemory(&pinfo, sizeof(pinfo));
+    if (WinHttpGetProxyForUrl(hSession, wurl, &apo, &pinfo)) {
+        WinHttpSetOption(hRequest, WINHTTP_OPTION_PROXY,
+                         &pinfo, sizeof(pinfo));
+        if (pinfo.lpszProxy) {
+            GlobalFree(pinfo.lpszProxy);
+        }
+        if (pinfo.lpszProxyBypass) {
+            GlobalFree(pinfo.lpszProxyBypass);
+        }
+    }
+
+    bRet = WinHttpSendRequest(hRequest,
+                              WINHTTP_NO_ADDITIONAL_HEADERS, 0,
+                              WINHTTP_NO_REQUEST_DATA, 0, 0, 0);
+    if (!bRet) {
+        goto end;
+    }
+
+    bRet = WinHttpReceiveResponse(hRequest, NULL);
+    if (!bRet) {
+        goto end;
+    }
+
+    (void) WinHttpQueryHeaders(hRequest,
+            WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
+            WINHTTP_HEADER_NAME_BY_INDEX,
+            &dwStatus,
+            &dwSize,
+            WINHTTP_NO_HEADER_INDEX);
+
+    for (;;) {
+        if (! WinHttpQueryDataAvailable(hRequest, &dwAvail)) {
+            goto err;
+        }
+        if (dwAvail == 0) {
+            break;
+        }
+        if (pchunk->size + dwAvail > pchunk->max_size) {
+            do {
+                pchunk->max_size *= 2;
+            } while (pchunk->max_size < pchunk->size + dwAvail);
+            p = sixel_allocator_realloc(
+                pchunk->allocator, pchunk->buffer, pchunk->max_size);
+            if (! p) {
+                goto err;
+            }
+            pchunk->buffer = p;
+        }
+
+        dwRead = 0;
+        if (! WinHttpReadData(hRequest,
+                              pchunk->buffer + pchunk->size,
+                              dwAvail, &dwRead)) {
+            goto err;
+        }
+        if (dwRead == 0) {
+            break;
+        }
+
+        pchunk->size += dwRead;
+    }
+
+    status = SIXEL_OK;
+
+    goto end;
+
+err:
+    if (pchunk->buffer) {
+        free(pchunk->buffer);
+    }
+
+end:
+    if (hRequest) {
+        WinHttpCloseHandle(hRequest);
+    }
+    if (hConnect) {
+        WinHttpCloseHandle(hConnect);
+    }
+    if (hSession) {
+        WinHttpCloseHandle(hSession);
+    }
+    if (wua) {
+        free(wua);
+    }
+    if (wurl) {
+        free(wurl);
+    }
+
+    status = SIXEL_OK;
+
+    return status;
+}
+# endif  /* HAVE_WINHTTP */
+
+
+# if HAVE_LIBCURL
+static SIXELSTATUS
+sixel_chunk_from_url_with_curl(
     char const      /* in */ *url,
     sixel_chunk_t   /* in */ *pchunk,
     int             /* in */ finsecure)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-# ifdef HAVE_LIBCURL
     CURL *curl = NULL;
     CURLcode code;
 
@@ -400,24 +644,49 @@ sixel_chunk_from_url(
     }
 
     status = SIXEL_OK;
-# else
+
+end:
+    if (curl) {
+        curl_easy_cleanup(curl);
+    }
+
+    return status;
+}
+# endif  /* HAVE_LIBCURL */
+
+/* get chunk of specified resource over libcurl function */
+static SIXELSTATUS
+sixel_chunk_from_url(
+    char const      /* in */ *url,
+    sixel_chunk_t   /* in */ *pchunk,
+    int             /* in */ finsecure)
+{
+    SIXELSTATUS status = SIXEL_NOT_IMPLEMENTED;
+#if HAVE_WINHTTP
+    status = sixel_chunk_from_url_with_winhttp(url, pchunk, finsecure);
+    if (SIXEL_SUCCEEDED(status)) {
+        return status;
+    }
+#endif  /* HAVE_WINHTTP */
+
+#if HAVE_LIBCURL
+    status = sixel_chunk_from_url_with_curl(url, pchunk, finsecure);
+    if (SIXEL_SUCCEEDED(status)) {
+        return status;
+    }
+#endif  /* HAVE_LIBCURL */
+
+#if !defined(HAVE_WINHTTP) && !defined(HAVE_LIBCURL)
     (void) url;
     (void) pchunk;
     (void) finsecure;
     sixel_helper_set_additional_message(
-        "To specify URI schemes, you have to "
-        "configure this program with --with-libcurl "
-        "option at compile time.\n");
+        "To specify URI schemes, you must configure this program "
+        "at compile time using either the --with-libcurl option "
+        "or the --with-winhttp (only available on Windows) option.\n");
     status = SIXEL_NOT_IMPLEMENTED;
-    goto end;
-# endif  /* HAVE_LIBCURL */
+#endif  /* !defined(HAVE_WINHTTP) && !defined(HAVE_LIBCURL) */
 
-end:
-# ifdef HAVE_LIBCURL
-    if (curl) {
-        curl_easy_cleanup(curl);
-    }
-# endif  /* HAVE_LIBCURL */
     return status;
 }
 
