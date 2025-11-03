@@ -214,6 +214,8 @@ extra_funcs = [
   'setjmp',
   'longjmp',
   'strerror',
+  'strerror_r',
+  '_strerror_r',
   '_isatty',
   'isatty',
   '_open',

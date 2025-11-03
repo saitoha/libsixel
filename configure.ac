@@ -669,6 +669,8 @@ AC_CHECK_FUNCS([assert \
                 setjmp \
                 longjmp \
                 strerror \
+                strerror_r \
+                _strerror_r \
                 _isatty \
                 isatty \
                 _open \

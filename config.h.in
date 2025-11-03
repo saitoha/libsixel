@@ -344,6 +344,9 @@
 /* Define to 1 if you have the 'strerror' function. */
 #undef HAVE_STRERROR
 
+/* Define to 1 if you have the 'strerror_r' function. */
+#undef HAVE_STRERROR_R
+
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
 
@@ -448,6 +451,9 @@
 
 /* Define to 1 if you have the '_setmode' function. */
 #undef HAVE__SETMODE
+
+/* Define to 1 if you have the '_strerror_r' function. */
+#undef HAVE__STRERROR_R
 
 /* Define to 1 if you have the '_write' function. */
 #undef HAVE__WRITE
