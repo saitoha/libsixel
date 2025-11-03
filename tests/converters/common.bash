@@ -55,8 +55,9 @@ TOP_SRCDIR=$(normalize_path "${TOP_SRCDIR}")
 SRC_DIR=$(normalize_path "${SRC_DIR}")
 BUILD_DIR=$(normalize_path "${BUILD_DIR}")
 BUILD_DIR_ABS=$(cd "${BUILD_DIR}" && pwd)
-TMP_DIR=${TMP_DIR:-"${BUILD_DIR}/tmp"}
-TMP_DIR=$(normalize_path "${TMP_DIR}")
+#TMP_DIR=${TMP_DIR:-"${BUILD_DIR}/tmp"}
+#TMP_DIR=$(normalize_path "${TMP_DIR}")
+TMP_DIR=tmp
 if [[ ${TMP_DIR} != /* ]]; then
     TMP_DIR="${BUILD_DIR_ABS}/${TMP_DIR}"
 fi

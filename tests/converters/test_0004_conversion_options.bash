@@ -66,12 +66,12 @@ printf '\033Pq"1;1;1;1!6~\033\\' | run_img2sixel -rne -h12 -w200% | \
 # Exercise explicit dimensions, dithering, and terminal palette output.
 run_img2sixel -w210 -h210 -djajuni -bxterm256 -o "${TMP_DIR}/snake3.sixel" < "${snake_jpg}"
 # Confirm inline PNG targets accept prefixed output paths.
-run_img2sixel -o "png:${TMP_DIR}/snake-prefix.png" "${snake_jpg}"
-test -s "${TMP_DIR}/snake-prefix.png"
+run_img2sixel -o "png:snake-prefix.png" "${snake_jpg}"
+test -s "snake-prefix.png"
 # Confirm prefixed PNG targets create missing parent directories.
-run_img2sixel -o "png:${TMP_DIR}/snake.png" \
+run_img2sixel -o "png:snake.png" \
     "${snake_jpg}"
-test -s "${TMP_DIR}/snake.png"
+test -s "snake.png"
 # Confirm plain file names ending in .png trigger PNG output.
 run_img2sixel -o "${TMP_DIR}/snake-filename.png" "${snake_jpg}"
 od -An -tx1 -N8 "${TMP_DIR}/snake-filename.png" | \

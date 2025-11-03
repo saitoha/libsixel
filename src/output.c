@@ -25,9 +25,11 @@
 # include <stdio.h>
 # include <stdlib.h>
 
+#if 0
 #if HAVE_ASSERT_H
 # include <assert.h>
 #endif  /* HAVE_ASSERT_H */
+#endif
 
 #include <sixel.h>
 #include "output.h"
@@ -139,7 +141,9 @@ sixel_output_unref(sixel_output_t *output)
 {
     /* TODO: be thread-safe */
     if (output) {
+#if 0
         assert(output->ref > 0);
+#endif
         output->ref--;
         if (output->ref == 0) {
             sixel_output_destroy(output);
