@@ -1148,6 +1148,110 @@ end:
     sixel_allocator_free(allocator, prewitt);
     return status;
 }
+#define SIXEL_DEQUANT_CHOICE_MATCH 0
+#define SIXEL_DEQUANT_CHOICE_AMBIGUOUS 1
+#define SIXEL_DEQUANT_CHOICE_NONE 2
+
+typedef struct sixel_dequant_choice {
+    char const *name;
+    int method;
+    int refine;
+} sixel_dequant_choice_t;
+
+static int
+sixel_decoder_match_dequant_choice(
+    char const *value,
+    sixel_dequant_choice_t const *choices,
+    size_t choice_count,
+    int *matched_method,
+    int *matched_refine,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    size_t index;
+    size_t value_length;
+    int candidate_index;
+    size_t match_count;
+    int base_method;
+    int base_refine;
+    int base_set;
+    int ambiguous_values;
+    size_t diag_length;
+    size_t copy_length;
+
+    if (diagnostic != NULL && diagnostic_size > 0u) {
+        diagnostic[0] = '\0';
+    }
+    if (value == NULL) {
+        return SIXEL_DEQUANT_CHOICE_NONE;
+    }
+
+    value_length = strlen(value);
+    if (value_length == 0u) {
+        return SIXEL_DEQUANT_CHOICE_NONE;
+    }
+
+    index = 0u;
+    candidate_index = (-1);
+    match_count = 0u;
+    base_method = 0;
+    base_refine = 0;
+    base_set = 0;
+    ambiguous_values = 0;
+    diag_length = 0u;
+
+    while (index < choice_count) {
+        if (strncmp(choices[index].name, value, value_length) == 0) {
+            if (choices[index].name[value_length] == '\0') {
+                *matched_method = choices[index].method;
+                *matched_refine = choices[index].refine;
+                return SIXEL_DEQUANT_CHOICE_MATCH;
+            }
+            if (!base_set) {
+                base_method = choices[index].method;
+                base_refine = choices[index].refine;
+                base_set = 1;
+            } else if (choices[index].method != base_method
+                    || choices[index].refine != base_refine) {
+                ambiguous_values = 1;
+            }
+            if (candidate_index == (-1)) {
+                candidate_index = (int)index;
+            }
+            ++match_count;
+            if (diagnostic != NULL && diagnostic_size > 0u) {
+                if (diag_length > 0u && diag_length + 2u < diagnostic_size) {
+                    diagnostic[diag_length] = ',';
+                    diagnostic[diag_length + 1u] = ' ';
+                    diag_length += 2u;
+                    diagnostic[diag_length] = '\0';
+                }
+                copy_length = strlen(choices[index].name);
+                if (copy_length > diagnostic_size - diag_length - 1u) {
+                    copy_length = diagnostic_size - diag_length - 1u;
+                }
+                memcpy(diagnostic + diag_length,
+                       choices[index].name,
+                       copy_length);
+                diag_length += copy_length;
+                diagnostic[diag_length] = '\0';
+            }
+        }
+        ++index;
+    }
+
+    if (match_count == 0u) {
+        return SIXEL_DEQUANT_CHOICE_NONE;
+    }
+    if (!ambiguous_values && candidate_index != (-1)) {
+        *matched_method = choices[candidate_index].method;
+        *matched_refine = choices[candidate_index].refine;
+        return SIXEL_DEQUANT_CHOICE_MATCH;
+    }
+
+    return SIXEL_DEQUANT_CHOICE_AMBIGUOUS;
+}
+
 /* set an option flag to decoder object */
 SIXELAPI SIXELSTATUS
 sixel_decoder_setopt(
@@ -1189,26 +1293,58 @@ sixel_decoder_setopt(
             goto end;
         }
 
-        if (strcmp(value, "none") == 0) {
-            decoder->dequantize_method = SIXEL_DEQUANTIZE_NONE;
-            decoder->dequantize_refine = 0;
-        } else if (strcmp(value, "k_undither") == 0) {
-            decoder->dequantize_method = SIXEL_DEQUANTIZE_K_UNDITHER;
-            decoder->dequantize_refine = 0;
-        } else if (strcmp(value, "k_undither+") == 0) {
-            /*
-             *  +-----------------+
-             *  | refine pipeline |
-             *  +-----------------+
-             *  The plus suffix keeps the post-refinement pass enabled.
-             */
-            decoder->dequantize_method = SIXEL_DEQUANTIZE_K_UNDITHER_PLUS;
-            decoder->dequantize_refine = 1;
-        } else {
-            sixel_helper_set_additional_message(
-                "unsupported dequantize method.");
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
+        {
+            sixel_dequant_choice_t const choices[] = {
+                { "none", SIXEL_DEQUANTIZE_NONE, 0 },
+                { "k_undither", SIXEL_DEQUANTIZE_K_UNDITHER, 0 },
+                { "k_undither+", SIXEL_DEQUANTIZE_K_UNDITHER_PLUS, 1 }
+            };
+            int match_method;
+            int match_refine;
+            int match_result;
+            char match_detail[128];
+            char match_message[256];
+
+            match_method = SIXEL_DEQUANTIZE_NONE;
+            match_refine = 0;
+            memset(match_detail, 0, sizeof(match_detail));
+            memset(match_message, 0, sizeof(match_message));
+
+            match_result = sixel_decoder_match_dequant_choice(
+                value,
+                choices,
+                sizeof(choices) / sizeof(choices[0]),
+                &match_method,
+                &match_refine,
+                match_detail,
+                sizeof(match_detail));
+            if (match_result == SIXEL_DEQUANT_CHOICE_MATCH) {
+                decoder->dequantize_method = match_method;
+                decoder->dequantize_refine = match_refine;
+            } else {
+                if (match_result == SIXEL_DEQUANT_CHOICE_AMBIGUOUS) {
+                    if (match_detail[0] != '\0') {
+                        (void) snprintf(match_message,
+                                        sizeof(match_message),
+                                        "ambiguous prefix \"%s\" for "
+                                        "--dequantize (matches: %s).",
+                                        value,
+                                        match_detail);
+                    } else {
+                        (void) snprintf(match_message,
+                                        sizeof(match_message),
+                                        "ambiguous prefix \"%s\" for "
+                                        "--dequantize.",
+                                        value);
+                    }
+                    sixel_helper_set_additional_message(match_message);
+                } else {
+                    sixel_helper_set_additional_message(
+                        "unsupported dequantize method.");
+                }
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
         }
         break;
 

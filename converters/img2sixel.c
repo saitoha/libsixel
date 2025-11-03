@@ -21,8 +21,6 @@
  */
 
 #include "config.h"
-#include "malloc_stub.h"
-#include "getopt_stub.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,9 +64,10 @@
 #endif
 
 #include <sixel.h>
-#include "../src/frame.h"
 #include "../src/assessment.h"
-#include "../src/compat_stub.h"
+#include "malloc_stub.h"
+#include "getopt_stub.h"
+#include "compat_stub.h"
 #include "completion_utils.h"
 
 #if defined(HAVE_MKSTEMP)
