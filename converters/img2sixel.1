@@ -61,6 +61,11 @@ generate a sixel image for 8bit terminals or printers.
 .B \-R, \-\-gri-limit
 limit arguments of DECGRI('!') to 255.
 .TP 5
+.B \-6, \-\-6reversible
+quantize every channel through the SIXEL reversible tone set so a decoded
+image re-encoded with the same settings produces identical SIXEL bytes. Any
+rounding error is pushed into the dithering stage.
+.TP 5
 .B \-p \fICOLORS\fP, \-\-colors=\fICOLORS\fP
 specify number of colors to reduce the image to (default=256).
 .TP 5

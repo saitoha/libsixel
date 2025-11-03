@@ -50,6 +50,7 @@ struct sixel_dither {
     int pixelformat;                /* pixelformat for internal processing */
     sixel_allocator_t *allocator;   /* allocator */
     int lut_policy;                 /* histogram LUT policy */
+    int sixel_reversible;           /* restrict palette to reversible tones */
 };
 
 #ifdef __cplusplus
