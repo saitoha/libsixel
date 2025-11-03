@@ -6130,7 +6130,8 @@ sixel_encoder_encode(
             goto end;
         }
         sixel_allocator_free(encoder->allocator, png_temp_path);
-        png_temp_path = (char *)malloc(strlen(generated) + 1);
+        png_temp_path = (char *)sixel_allocator_malloc(
+            encoder->allocator, strlen(generated) + 1);
         if (png_temp_path == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_encoder_encode: malloc() failed for PNG staging path copy.");
@@ -6141,7 +6142,7 @@ sixel_encoder_encode(
                                   strlen(generated) + 1,
                                   generated);
 #endif
-        if (encoder->outfd && encoder->outfd != STDOUT_FILENO) {
+        if (encoder->outfd >= 0 && encoder->outfd != STDOUT_FILENO) {
             (void)sixel_compat_close(encoder->outfd);
         }
         encoder->outfd = sixel_compat_open(png_temp_path,

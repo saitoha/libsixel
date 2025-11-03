@@ -82,7 +82,7 @@ run_sixel2png - - < "${IMAGES_DIR}/map64.six" > "${TMP_DIR}/map64.png"
 run_sixel2png -i "${IMAGES_DIR}/snake.six" -o "${TMP_DIR}/snake4.png"
 
 # Ensure prefixed PNG targets create directories and strip the scheme.
-prefixed_dir="${TMP_DIR}/s2p-prefix"
+prefixed_dir="s2p-prefix"
 rm -rf "${prefixed_dir}"
 mkdir -p "${prefixed_dir}"
 run_sixel2png -o "png:${prefixed_dir}/out.png" \
