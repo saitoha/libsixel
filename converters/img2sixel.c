@@ -2233,6 +2233,8 @@ main(int argc, char *argv[])
 #endif  /* HAVE_GETOPT_LONG */
     char detail_buffer[2048];
     char const *detail_source = NULL;
+    int input_count = 0;
+    int assessment_enabled = 0;
 
     optstring = g_img2sixel_optstring;
 
@@ -2292,7 +2294,7 @@ main(int argc, char *argv[])
                     ? argv[optind - 1]
                     : NULL);
             status = SIXEL_BAD_ARGUMENT;
-            goto error;
+            goto unknown_option_error;
         case 'a':
             status = sixel_encoder_setopt(encoder,
                                           SIXEL_OPTFLAG_ASSESSMENT,
@@ -2304,6 +2306,7 @@ main(int argc, char *argv[])
                     "img2sixel: invalid assessment section list.");
                 goto error;
             }
+            assessment_enabled = 1;
             break;
         case 'J':
             status = sixel_encoder_setopt(encoder,
@@ -2407,17 +2410,6 @@ main(int argc, char *argv[])
         }
     }
 
-#if 0  /* check multiple input files with assessment option */
-        input_count = argc - optind;
-        if (input_count > 1) {
-            sixel_helper_set_additional_message(
-                "img2sixel: assessment accepts at most one input file.");
-            status = SIXEL_BAD_ARGUMENT;
-            goto error;
-        }
-#endif
-
-
     /* set signal handler to handle SIGINT/SIGTERM/SIGHUP */
 #if HAVE_SIGNAL
 # if HAVE_DECL_SIGINT
@@ -2442,6 +2434,16 @@ main(int argc, char *argv[])
             goto error;
         }
     } else {
+        /* check multiple input files with assessment option */
+        if (assessment_enabled) {
+            input_count = argc - optind;
+            if (input_count > 1) {
+                sixel_helper_set_additional_message(
+                    "img2sixel: assessment mode accepts at most one input file.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto error;
+            }
+        }
         for (n = optind; n < argc; n++) {
             if (img2sixel_validate_input_argument(argv[n]) != 0) {
                 status = SIXEL_BAD_ARGUMENT;
@@ -2459,11 +2461,15 @@ main(int argc, char *argv[])
     goto end;
 
 error:
-    fprintf(stderr, "\n%s\n%s\n",
+    fprintf(stderr, "\n%s\n%s\n\n",
             sixel_helper_format_error(status),
             sixel_helper_get_additional_message());
     status = (-1);
+    goto end;
+
+unknown_option_error:
     fprintf(stderr,
+            "\n"
             "usage: img2sixel [-78eIkiugvSPDOVH] [-p colors] [-m file] [-d diffusiontype]\n"
             "                 [-y scantype] [-a assessmentlist] [-J assessmentfile]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
@@ -2473,7 +2479,8 @@ error:
             "                 [-@ mmv:charset:path] [-1 shell] [-2 shell]\n"
             "                 [-3 shell] [-W workingcolorspace] [-U outputcolorspace]\n"
             "                 [-B bgcolor] [-o outfile] [filename ...]\n\n"
-            "for more details, type: 'img2sixel -H'.\n");
+            "for more details, type: 'img2sixel -H'.\n\n");
+    goto end;
 
 end:
     sixel_encoder_unref(encoder);

@@ -108,7 +108,8 @@ bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0012_regressions.bash \
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0013_documentation.bash \
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0014_option_matching.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0015_argument_shift.bash
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0015_argument_shift.bash \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0016_assessment_spool.bash
 
 @WANT_IMG2SIXEL_TRUE@am__append_6 = img2sixel
 @WANT_IMG2SIXEL_TRUE@am__append_7 = $(srcdir)/img2sixel.1
