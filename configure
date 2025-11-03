@@ -18574,6 +18574,18 @@ then :
   printf "%s\n" "#define HAVE_STRERROR 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "strerror_r" "ac_cv_func_strerror_r"
+if test "x$ac_cv_func_strerror_r" = xyes
+then :
+  printf "%s\n" "#define HAVE_STRERROR_R 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "_strerror_r" "ac_cv_func__strerror_r"
+if test "x$ac_cv_func__strerror_r" = xyes
+then :
+  printf "%s\n" "#define HAVE__STRERROR_R 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "_isatty" "ac_cv_func__isatty"
 if test "x$ac_cv_func__isatty" = xyes
 then :
