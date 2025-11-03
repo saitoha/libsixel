@@ -2869,6 +2869,8 @@ sixel_encoder_prepare_palette(
     }
 
     sixel_dither_set_lut_policy(*dither, encoder->lut_policy);
+    sixel_dither_set_sixel_reversible(*dither,
+                                      encoder->sixel_reversible);
 
     status = sixel_dither_initialize(*dither,
                                      sixel_frame_get_pixels(frame),
@@ -4124,6 +4126,7 @@ sixel_encoder_new(
     (*ppencoder)->method_for_rep        = SIXEL_REP_AUTO;
     (*ppencoder)->quality_mode          = SIXEL_QUALITY_AUTO;
     (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_AUTO;
+    (*ppencoder)->sixel_reversible      = 0;
     (*ppencoder)->method_for_resampling = SIXEL_RES_BILINEAR;
     (*ppencoder)->loop_mode             = SIXEL_LOOP_AUTO;
     (*ppencoder)->palette_type          = SIXEL_PALETTETYPE_AUTO;
@@ -4383,6 +4386,9 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_8BIT_MODE:  /* 8 */
         encoder->f8bit = 1;
+        break;
+    case SIXEL_OPTFLAG_6REVERSIBLE:  /* 6 */
+        encoder->sixel_reversible = 1;
         break;
     case SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT:  /* R */
         encoder->has_gri_arg_limit = 1;

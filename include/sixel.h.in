@@ -237,6 +237,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_OUTFILE           ('o')  /* -o, --outfile: specify output file name. */
 #define SIXEL_OPTFLAG_7BIT_MODE         ('7')  /* -7, --7bit-mode: for 7bit terminals or printers (default) */
 #define SIXEL_OPTFLAG_8BIT_MODE         ('8')  /* -8, --8bit-mode: for 8bit terminals or printers */
+#define SIXEL_OPTFLAG_6REVERSIBLE       ('6')  /* -6, --6reversible: snap palette to reversible tones */
 #define SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT ('R')  /* -R, --gri-limit: limit arguments of DECGRI('!') to 255 */
 #define SIXEL_OPTFLAG_COLORS            ('p')  /* -p COLORS, --colors=COLORS: specify number of colors */
 #define SIXEL_OPTFLAG_MAPFILE           ('m')  /* -m FILE, --mapfile=FILE: specify set of colors */
@@ -938,6 +939,12 @@ SIXELAPI void
 sixel_dither_set_pixelformat(
     sixel_dither_t /* in */ *dither,      /* dither context object */
     int            /* in */ pixelformat); /* one of enum pixelFormat */
+
+/* enable reversible palette snapping */
+SIXELAPI void
+sixel_dither_set_sixel_reversible(
+    sixel_dither_t /* in */ *dither,
+    int            /* in */ enable);
 
 /* set transparent */
 SIXELAPI void

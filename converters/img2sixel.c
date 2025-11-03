@@ -147,6 +147,14 @@ static img2sixel_option_help_t const g_option_help_table[] = {
         "-R, --gri-limit            limit arguments of DECGRI('!') to 255\n"
     },
     {
+        '6',
+        "6reversible",
+        "-6, --6reversible          quantize via the SIXEL reversible tone set\n"
+        "                           so decoding and re-encoding keeps the\n"
+        "                           palette stable; diffusion carries the\n"
+        "                           small residuals.\n"
+    },
+    {
         'p',
         "colors",
         "-p COLORS, --colors=COLORS specify number of colors to reduce\n"
@@ -582,7 +590,7 @@ static char const g_option_help_fallback[] =
     "    Refer to \"img2sixel -H\" for more details.\n";
 
 static char const g_img2sixel_optstring[] =
-    "o:a:J:j:78Rp:m:M:eb:Id:f:s:c:w:h:r:q:L:kil:t:ugvSn:PE:U:B:C:D@:"
+    "o:a:J:j:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:L:kil:t:ugvSn:PE:U:B:C:D@:"
     "OVW:HY:y:";
 
 static img2sixel_option_help_t const *
@@ -2678,6 +2686,7 @@ main(int argc, char *argv[])
         {"7bit-mode",          no_argument,        &long_opt, '7'},
         {"8bit-mode",          no_argument,        &long_opt, '8'},
         {"gri-limit",          no_argument,        &long_opt, 'R'},
+        {"6reversible",        no_argument,        &long_opt, '6'},
         {"colors",             required_argument,  &long_opt, 'p'},
         {"mapfile",            required_argument,  &long_opt, 'm'},
         {"mapfile-output",     required_argument,  &long_opt, 'M'},

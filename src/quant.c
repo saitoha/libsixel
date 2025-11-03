@@ -78,6 +78,20 @@
 #include "quant.h"
 #include "compat_stub.h"
 
+static unsigned char const sixel_reversible_tones[101] = {
+     0,  3,  5,  8, 10, 13, 15, 18, 20, 23,
+    26, 28, 31, 33, 36, 38, 41, 43, 46, 48,
+    51, 54, 56, 59, 61, 64, 66, 69, 71, 74,
+    77, 79, 82, 84, 87, 89, 92, 94, 97, 99,
+   102, 105, 107, 110, 112, 115, 117, 120, 122, 125,
+   128, 130, 133, 135, 138, 140, 143, 145, 148, 150,
+   153, 156, 158, 161, 163, 166, 168, 171, 173, 176,
+   179, 181, 184, 186, 189, 191, 194, 196, 199, 201,
+   204, 207, 209, 212, 214, 217, 219, 222, 224, 227,
+   230, 232, 235, 237, 240, 242, 245, 247, 250, 252,
+   255
+};
+
 /*
  * Random threshold modulation described by Zhou & Fang (Table 2) assigns
  * jitter amplitudes to nine key tone distances (0, 44, 64, 85, 95, 102, 107,
@@ -216,6 +230,78 @@ struct box {
 
 typedef unsigned long sample;
 typedef sample * tuple;
+
+static unsigned int
+sixel_quant_reversible_index(unsigned int sample)
+{
+    unsigned int index;
+
+    if (sample > 255U) {
+        sample = 255U;
+    }
+    index = (sample * 100U + 127U) / 255U;
+    if (index > 100U) {
+        index = 100U;
+    }
+
+    return index;
+}
+
+static unsigned char
+sixel_quant_reversible_value(unsigned int sample)
+{
+    unsigned int index;
+
+    index = sixel_quant_reversible_index(sample);
+
+    return sixel_reversible_tones[index];
+}
+
+static void
+sixel_quant_reversible_pixel(unsigned char const *src,
+                             unsigned int depth,
+                             unsigned char *dst)
+{
+    unsigned int plane;
+
+    for (plane = 0U; plane < depth; ++plane) {
+        dst[plane] = sixel_quant_reversible_value(src[plane]);
+    }
+}
+
+static void
+sixel_quant_reversible_tuple(sample *tuple,
+                             unsigned int depth)
+{
+    unsigned int plane;
+    unsigned int sample_value;
+
+    for (plane = 0U; plane < depth; ++plane) {
+        sample_value = (unsigned int)tuple[plane];
+        tuple[plane] =
+            (sample)sixel_quant_reversible_value(sample_value);
+    }
+}
+
+static void
+sixel_quant_reversible_palette(unsigned char *palette,
+                               unsigned int colors,
+                               unsigned int depth)
+{
+    unsigned int index;
+    unsigned int plane;
+    unsigned int sample_value;
+    size_t offset;
+
+    for (index = 0U; index < colors; ++index) {
+        for (plane = 0U; plane < depth; ++plane) {
+            offset = (size_t)index * (size_t)depth + (size_t)plane;
+            sample_value = (unsigned int)palette[offset];
+            palette[offset] =
+                sixel_quant_reversible_value(sample_value);
+        }
+    }
+}
 
 struct tupleint {
     /* An ordered pair of a tuple value and an integer, such as you
@@ -586,6 +672,7 @@ colormapFromBv(unsigned int const newcolors,
                tupletable2 const colorfreqtable,
                unsigned int const depth,
                int const methodForRep,
+               int const use_reversible,
                sixel_allocator_t *allocator)
 {
     /*
@@ -625,6 +712,10 @@ colormapFromBv(unsigned int const newcolors,
             quant_trace(stderr, "Internal error: "
                                 "invalid value of methodForRep: %d\n",
                         methodForRep);
+        }
+        if (use_reversible) {
+            sixel_quant_reversible_tuple(colormap.table[bi]->tuple,
+                                         depth);
         }
     }
     return colormap;
@@ -879,6 +970,7 @@ mediancut(tupletable2 const colorfreqtable,
           unsigned int const newcolors,
           int const methodForLargest,
           int const methodForRep,
+          int const use_reversible,
           tupletable2 *const colormapP,
           sixel_allocator_t *allocator)
 {
@@ -932,7 +1024,8 @@ mediancut(tupletable2 const colorfreqtable,
     }
     *colormapP = colormapFromBv(newcolors, bv, boxes,
                                 colorfreqtable, depth,
-                                methodForRep, allocator);
+                                methodForRep, use_reversible,
+                                allocator);
 
     sixel_allocator_free(allocator, bv);
 
@@ -965,6 +1058,7 @@ struct histogram_control {
     unsigned int channel_shift;
     unsigned int channel_bits;
     unsigned int channel_mask;
+    int reversible_rounding;         /* nonzero biases quantization upward */
 };
 
 static struct histogram_control
@@ -1004,6 +1098,7 @@ histogram_control_make_for_policy(unsigned int depth, int lut_policy)
 {
     struct histogram_control control;
 
+    control.reversible_rounding = 0;
     /*
      * The ASCII ladder below shows how each policy selects bucket width.
      *
@@ -1064,19 +1159,30 @@ histogram_quantize(unsigned int sample8,
     unsigned int rounding;
 
     /*
-     * We want each bucket to capture its center value instead of the lower
-     * edge.  The ASCII sketch below shows how rounding keeps the midpoint:
+     * In reversible mode we already rounded once when snapping to
+     * sixel_reversible_tones[].  If we rounded to the nearest midpoint
+     * again, the second pass would fall back to the lower bucket and break
+     * the round-trip.  Biasing towards the upper edge keeps the bucket
+     * stable after decoding and encoding again.  Non-reversible runs keep
+     * symmetric midpoints to avoid nudging colors upwards.
      *
-     *   0---1---2---3        sample8 + round
-     *   |   |   |   |  ==>  ----------------  -> bucket index
-     *   0   1   2   3              2^shift
+     *        midpoint bias        upper-edge bias
+     *   |----*----|----*----|    |----|----*----|
+     *   0         8        16    0    8        16
+     *
+     * The asterisk marks the midpoint captured by a bucket.  Moving that
+     * midpoint to the upper edge keeps reversible tones from drifting.
      */
     shift = control->channel_shift;
     mask = control->channel_mask;
     if (shift == 0U) {
         quantized = sample8;
     } else {
-        rounding = 1U << (shift - 1U);
+        if (control->reversible_rounding) {
+            rounding = 1U << shift;
+        } else {
+            rounding = 1U << (shift - 1U);
+        }
         quantized = (sample8 + rounding) >> shift;
         if (quantized > mask) {
             quantized = mask;
@@ -2255,6 +2361,7 @@ computeHistogram_robinhood(unsigned char const *data,
                            unsigned int max_sample,
                            tupletable2 * const colorfreqtableP,
                            struct histogram_control const *control,
+                           int use_reversible,
                            sixel_allocator_t *allocator);
 
 static SIXELSTATUS
@@ -2265,6 +2372,7 @@ computeHistogram_hopscotch(unsigned char const *data,
                            unsigned int max_sample,
                            tupletable2 * const colorfreqtableP,
                            struct histogram_control const *control,
+                           int use_reversible,
                            sixel_allocator_t *allocator);
 
 static SIXELSTATUS
@@ -2273,6 +2381,7 @@ computeHistogram(unsigned char const    /* in */  *data,
                  unsigned long const    /* in */  depth,
                  tupletable2 * const    /* out */ colorfreqtableP,
                  int const              /* in */  qualityMode,
+                 int const              /* in */  use_reversible,
                  sixel_allocator_t      /* in */  *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -2289,6 +2398,8 @@ computeHistogram(unsigned char const    /* in */  *data,
     unsigned int component;
     unsigned int reconstructed;
     struct histogram_control control;
+    unsigned int depth_u;
+    unsigned char reversible_pixel[4];
 
     switch (qualityMode) {
     case SIXEL_QUALITY_LOW:
@@ -2310,7 +2421,11 @@ computeHistogram(unsigned char const    /* in */  *data,
 
     quant_trace(stderr, "making histogram...\n");
 
-    control = histogram_control_make((unsigned int)depth);
+    depth_u = (unsigned int)depth;
+    control = histogram_control_make(depth_u);
+    if (use_reversible) {
+        control.reversible_rounding = 1;
+    }
     if (histogram_lut_policy == SIXEL_LUT_POLICY_ROBINHOOD
         || histogram_lut_policy == SIXEL_LUT_POLICY_HOPSCOTCH) {
         if (histogram_lut_policy == SIXEL_LUT_POLICY_ROBINHOOD) {
@@ -2321,6 +2436,7 @@ computeHistogram(unsigned char const    /* in */  *data,
                                                 max_sample,
                                                 colorfreqtableP,
                                                 &control,
+                                                use_reversible,
                                                 allocator);
         } else {
             status = computeHistogram_hopscotch(data,
@@ -2330,6 +2446,7 @@ computeHistogram(unsigned char const    /* in */  *data,
                                                 max_sample,
                                                 colorfreqtableP,
                                                 &control,
+                                                use_reversible,
                                                 allocator);
         }
         goto end;
@@ -2356,9 +2473,18 @@ computeHistogram(unsigned char const    /* in */  *data,
     }
 
     for (i = 0; i < length; i += step) {
-        bucket_index = histogram_pack_color(data + i,
-                                            (unsigned int)depth,
-                                            &control);
+        if (use_reversible) {
+            sixel_quant_reversible_pixel(data + i,
+                                         depth_u,
+                                         reversible_pixel);
+            bucket_index = histogram_pack_color(reversible_pixel,
+                                                depth_u,
+                                                &control);
+        } else {
+            bucket_index = histogram_pack_color(data + i,
+                                                depth_u,
+                                                &control);
+        }
         if (histogram[bucket_index] == 0) {
             *ref++ = bucket_index;
         }
@@ -2386,6 +2512,11 @@ computeHistogram(unsigned char const    /* in */  *data,
                      control.channel_mask);
                 reconstructed = histogram_reconstruct(component,
                                                       &control);
+                if (use_reversible) {
+                    reconstructed =
+                        (unsigned int)sixel_quant_reversible_value(
+                            reconstructed);
+                }
                 colorfreqtableP->table[i]->tuple[depth - 1 - n]
                     = (sample)reconstructed;
             }
@@ -2411,6 +2542,7 @@ computeHistogram_robinhood(unsigned char const *data,
                            unsigned int max_sample,
                            tupletable2 * const colorfreqtableP,
                            struct histogram_control const *control,
+                           int use_reversible,
                            sixel_allocator_t *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -2427,6 +2559,7 @@ computeHistogram_robinhood(unsigned char const *data,
     struct robinhood_slot32 *slot;
     unsigned int component;
     unsigned int reconstructed;
+    unsigned char reversible_pixel[4];
 
     /*
      * The ASCII sketch below shows how the sparse table stores samples:
@@ -2455,7 +2588,15 @@ computeHistogram_robinhood(unsigned char const *data,
 
     depth_u = (unsigned int)depth;
     for (i = 0U; i < length; i += step) {
-        bucket_color = histogram_pack_color(data + i, depth_u, control);
+        if (use_reversible) {
+            sixel_quant_reversible_pixel(data + i, depth_u,
+                                         reversible_pixel);
+            bucket_color = histogram_pack_color(reversible_pixel,
+                                                depth_u, control);
+        } else {
+            bucket_color = histogram_pack_color(data + i,
+                                                depth_u, control);
+        }
         bucket_hash = histogram_hash_mix(bucket_color);
         /*
          * Hash probing uses the mixed key while the slot stores the
@@ -2518,6 +2659,11 @@ computeHistogram_robinhood(unsigned char const *data,
                 ((entry_color >> (n * control->channel_bits))
                  & control->channel_mask);
             reconstructed = histogram_reconstruct(component, control);
+            if (use_reversible) {
+                reconstructed =
+                    (unsigned int)sixel_quant_reversible_value(
+                        reconstructed);
+            }
             colorfreqtableP->table[index]->tuple[depth_u - 1U - n]
                 = (sample)reconstructed;
         }
@@ -2540,6 +2686,7 @@ computeHistogram_hopscotch(unsigned char const *data,
                            unsigned int max_sample,
                            tupletable2 * const colorfreqtableP,
                            struct histogram_control const *control,
+                           int use_reversible,
                            sixel_allocator_t *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -2556,6 +2703,7 @@ computeHistogram_hopscotch(unsigned char const *data,
     struct hopscotch_slot32 *slot;
     unsigned int component;
     unsigned int reconstructed;
+    unsigned char reversible_pixel[4];
 
     /*
      * Hopscotch hashing stores the local neighbourhood using the map below:
@@ -2587,7 +2735,15 @@ computeHistogram_hopscotch(unsigned char const *data,
 
     depth_u = (unsigned int)depth;
     for (i = 0U; i < length; i += step) {
-        bucket_color = histogram_pack_color(data + i, depth_u, control);
+        if (use_reversible) {
+            sixel_quant_reversible_pixel(data + i, depth_u,
+                                         reversible_pixel);
+            bucket_color = histogram_pack_color(reversible_pixel,
+                                                depth_u, control);
+        } else {
+            bucket_color = histogram_pack_color(data + i,
+                                                depth_u, control);
+        }
         bucket_hash = histogram_hash_mix(bucket_color);
         /*
          * Hopscotch buckets mirror the robinhood layout, keeping the
@@ -2648,6 +2804,11 @@ computeHistogram_hopscotch(unsigned char const *data,
                 ((entry_color >> (n * control->channel_bits))
                  & control->channel_mask);
             reconstructed = histogram_reconstruct(component, control);
+            if (use_reversible) {
+                reconstructed =
+                    (unsigned int)sixel_quant_reversible_value(
+                        reconstructed);
+            }
             colorfreqtableP->table[index]->tuple[depth_u - 1U - n]
                 = (sample)reconstructed;
         }
@@ -2792,6 +2953,7 @@ computeColorMapFromInput(unsigned char const *data,
                          int const methodForRep,
                          int const qualityMode,
                          int const force_palette,
+                         int const use_reversible,
                          tupletable2 * const colormapP,
                          unsigned int *origcolors,
                          sixel_allocator_t *allocator)
@@ -2821,7 +2983,8 @@ computeColorMapFromInput(unsigned char const *data,
     unsigned int n;
 
     status = computeHistogram(data, length, depth,
-                              &colorfreqtable, qualityMode, allocator);
+                              &colorfreqtable, qualityMode,
+                              use_reversible, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -2844,11 +3007,16 @@ computeColorMapFromInput(unsigned char const *data,
             for (n = 0; n < depth; ++n) {
                 colormapP->table[i]->tuple[n] = colorfreqtable.table[i]->tuple[n];
             }
+            if (use_reversible) {
+                sixel_quant_reversible_tuple(colormapP->table[i]->tuple,
+                                             depth);
+            }
         }
     } else {
         quant_trace(stderr, "choosing %d colors...\n", reqColors);
         status = mediancut(colorfreqtable, depth, reqColors,
-                           methodForLargest, methodForRep, colormapP, allocator);
+                           methodForLargest, methodForRep,
+                           use_reversible, colormapP, allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -5543,6 +5711,7 @@ sixel_quant_make_palette(
     int                    /* in */  methodForRep,
     int                    /* in */  qualityMode,
     int                    /* in */  force_palette,
+    int                    /* in */  use_reversible,
     sixel_allocator_t      /* in */  *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -5564,8 +5733,8 @@ sixel_quant_make_palette(
     ret = computeColorMapFromInput(data, length, depth,
                                    reqcolors, methodForLargest,
                                    methodForRep, qualityMode,
-                                   force_palette, &colormap,
-                                   origcolors, allocator);
+                                   force_palette, use_reversible,
+                                   &colormap, origcolors, allocator);
     if (ret != 0) {
         *result = NULL;
         goto end;
@@ -5577,6 +5746,10 @@ sixel_quant_make_palette(
         for (n = 0; n < depth; ++n) {
             (*result)[i * depth + n] = colormap.table[i]->tuple[n];
         }
+    }
+
+    if (use_reversible) {
+        sixel_quant_reversible_palette(*result, *ncolors, depth);
     }
 
     sixel_allocator_free(allocator, colormap.table);
