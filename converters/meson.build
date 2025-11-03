@@ -20,10 +20,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-sources_common = [
-    'malloc_stub.c',
-    'compat_stub.c'
-]
+sources_common = ['malloc_stub.c']
 
 # +--------------------------------------------------------------+
 # | Embedded completion header generation pipeline (ASCII view). |

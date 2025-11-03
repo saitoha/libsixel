@@ -153,7 +153,6 @@ typedef struct assessment_stage_descriptor {
 } assessment_stage_descriptor_t;
 
 static assessment_stage_descriptor_t const g_stage_descriptors[] = {
-    {SIXEL_ASSESSMENT_STAGE_ARGUMENT_PARSE, "ArgumentParse"},
     {SIXEL_ASSESSMENT_STAGE_IMAGE_CHUNK, "ImageRead"},
     {SIXEL_ASSESSMENT_STAGE_IMAGE_DECODE, "ImageDecode"},
     {SIXEL_ASSESSMENT_STAGE_SCALE, "Scale"},
