@@ -862,6 +862,7 @@ CLIPBOARD_LIBS=""
 CLIPBOARD_CFLAGS=""
 have_clipboard_macos=no
 have_clipboard_windows=no
+have_clipboard_linux=no
 case $host_os in
   darwin*)
     AC_LANG_PUSH([Objective C])
@@ -890,6 +891,11 @@ case $host_os in
                    [whether Windows clipboard backend is available])
          CLIPBOARD_LIBS="-luser32"],
         [have_clipboard_windows=no])
+    ;;
+  linux*)
+    have_clipboard_linux=yes
+    AC_DEFINE(HAVE_CLIPBOARD_LINUX, 1,
+              [whether Linux clipboard backend is available])
     ;;
 esac
 
