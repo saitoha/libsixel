@@ -861,6 +861,7 @@ AM_CONDITIONAL([HAVE_QUICKLOOK_THUMBNAILING],
 CLIPBOARD_LIBS=""
 CLIPBOARD_CFLAGS=""
 have_clipboard_macos=no
+have_clipboard_windows=no
 case $host_os in
   darwin*)
     AC_LANG_PUSH([Objective C])
@@ -881,6 +882,14 @@ case $host_os in
                   [whether macOS clipboard backend is available])
         CLIPBOARD_LIBS="-framework AppKit -framework Foundation"
     fi
+    ;;
+  mingw* | msys*)
+    AC_CHECK_LIB([user32], [OpenClipboard],
+        [have_clipboard_windows=yes
+         AC_DEFINE(HAVE_CLIPBOARD_WINDOWS, 1,
+                   [whether Windows clipboard backend is available])
+         CLIPBOARD_LIBS="-luser32"],
+        [have_clipboard_windows=no])
     ;;
 esac
 

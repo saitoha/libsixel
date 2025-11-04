@@ -19172,6 +19172,7 @@ fi
 CLIPBOARD_LIBS=""
 CLIPBOARD_CFLAGS=""
 have_clipboard_macos=no
+have_clipboard_windows=no
 case $host_os in
   darwin*)
     ac_ext=m
@@ -19218,6 +19219,63 @@ printf "%s\n" "#define HAVE_CLIPBOARD_MACOS 1" >>confdefs.h
 
         CLIPBOARD_LIBS="-framework AppKit -framework Foundation"
     fi
+    ;;
+  mingw* | msys*)
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for OpenClipboard in -luser32" >&5
+printf %s "checking for OpenClipboard in -luser32... " >&6; }
+if test ${ac_cv_lib_user32_OpenClipboard+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-luser32  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.
+   The 'extern "C"' is for builds by C++ compilers;
+   although this is not generally supported in C code supporting it here
+   has little cost and some practical benefit (sr 110532).  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char OpenClipboard (void);
+int
+main (void)
+{
+return OpenClipboard ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_user32_OpenClipboard=yes
+else case e in #(
+  e) ac_cv_lib_user32_OpenClipboard=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_user32_OpenClipboard" >&5
+printf "%s\n" "$ac_cv_lib_user32_OpenClipboard" >&6; }
+if test "x$ac_cv_lib_user32_OpenClipboard" = xyes
+then :
+  have_clipboard_windows=yes
+
+printf "%s\n" "#define HAVE_CLIPBOARD_WINDOWS 1" >>confdefs.h
+
+         CLIPBOARD_LIBS="-luser32"
+else case e in #(
+  e) have_clipboard_windows=no ;;
+esac
+fi
+
     ;;
 esac
 
