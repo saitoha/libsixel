@@ -43,6 +43,7 @@ sixel_quant_make_palette(
     int                     /* in */  qualityMode,
     int                     /* in */  force_palette,
     int                     /* in */  use_reversible,
+    int                     /* in */  quantize_model,
     sixel_allocator_t       /* in */  *allocator);
 
 

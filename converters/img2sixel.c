@@ -158,6 +158,15 @@ static img2sixel_option_help_t const g_option_help_table[] = {
         "                           the image to (default=256)\n"
     },
     {
+        'Q',
+        "quantize-model",
+        "-Q MODEL, --quantize-model=MODEL\n"
+        "                           choose the palette solver. MODEL is\n"
+        "                           one of auto, heckbert, or kmeans.\n"
+        "                           auto maps to the legacy Heckbert\n"
+        "                           median-cut implementation.\n"
+    },
+    {
         'm',
         "mapfile",
         "-m FILE, --mapfile=FILE    transform image colors to match\n"
@@ -587,7 +596,7 @@ static char const g_option_help_fallback[] =
     "    Refer to \"img2sixel -H\" for more details.\n";
 
 static char const g_img2sixel_optstring[] =
-    "o:a:J:j:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:L:kil:t:ugvSn:PE:U:B:C:D@:"
+    "o:a:J:j:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:L:kil:t:ugvSn:PE:U:B:C:D@:"
     "OVW:HY:y:";
 
 static img2sixel_option_help_t const *
@@ -2245,6 +2254,7 @@ main(int argc, char *argv[])
         {"gri-limit",          no_argument,        &long_opt, 'R'},
         {"6reversible",        no_argument,        &long_opt, '6'},
         {"colors",             required_argument,  &long_opt, 'p'},
+        {"quantize-model",     required_argument,  &long_opt, 'Q'},
         {"mapfile",            required_argument,  &long_opt, 'm'},
         {"mapfile-output",     required_argument,  &long_opt, 'M'},
         {"monochrome",         no_argument,        &long_opt, 'e'},
@@ -2529,6 +2539,7 @@ unknown_option_error:
     fprintf(stderr,
             "\n"
             "usage: img2sixel [-78eIkiugvSPDOVH] [-p colors] [-m file] [-d diffusiontype]\n"
+            "                 [-Q model]\n"
             "                 [-y scantype] [-a assessmentlist] [-J assessmentfile]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
             "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"

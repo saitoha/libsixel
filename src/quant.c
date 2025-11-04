@@ -5697,6 +5697,512 @@ lookup_mono_lightbg(unsigned char const * const pixel,
 }
 
 
+static SIXELSTATUS
+build_palette_kmeans_(unsigned char **result,
+                      unsigned char const *data,
+                      unsigned int length,
+                      unsigned int depth,
+                      unsigned int reqcolors,
+                      unsigned int *ncolors,
+                      unsigned int *origcolors,
+                      int quality_mode,
+                      int force_palette,
+                      sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    unsigned int channels;
+    unsigned int pixel_count;
+    unsigned int sample_limit;
+    unsigned int sample_cap;
+    unsigned int valid_seen;
+    unsigned int sample_count;
+    unsigned int k;
+    unsigned int index;
+    unsigned int channel;
+    unsigned int center_index;
+    unsigned int sample_index;
+    unsigned int replace;
+    unsigned int max_iterations;
+    unsigned int iteration;
+    unsigned int best_index;
+    unsigned int old_cluster;
+    unsigned int farthest_index;
+    unsigned int fill;
+    unsigned int source;
+    unsigned int swap_temp;
+    unsigned int base;
+    unsigned int extra_component;
+    unsigned int *membership;
+    unsigned int *order;
+    unsigned char *samples;
+    unsigned char *palette;
+    unsigned char *new_palette;
+    double *centers;
+    double *distance_cache;
+    double total_weight;
+    double random_point;
+    double best_distance;
+    double distance;
+    double diff;
+    double update;
+    double farthest_distance;
+    unsigned long *counts;
+    unsigned long *accum;
+    unsigned long *channel_sum;
+    unsigned long rand_value;
+    int changed;
+
+    status = SIXEL_BAD_ARGUMENT;
+    channels = depth;
+    pixel_count = 0U;
+    sample_limit = 50000U;
+    sample_cap = sample_limit;
+    valid_seen = 0U;
+    sample_count = 0U;
+    k = 0U;
+    index = 0U;
+    channel = 0U;
+    center_index = 0U;
+    sample_index = 0U;
+    replace = 0U;
+    max_iterations = 0U;
+    iteration = 0U;
+    best_index = 0U;
+    old_cluster = 0U;
+    farthest_index = 0U;
+    fill = 0U;
+    source = 0U;
+    swap_temp = 0U;
+    base = 0U;
+    extra_component = 0U;
+    membership = NULL;
+    order = NULL;
+    samples = NULL;
+    palette = NULL;
+    new_palette = NULL;
+    centers = NULL;
+    distance_cache = NULL;
+    counts = NULL;
+    accum = NULL;
+    channel_sum = NULL;
+    rand_value = 0UL;
+    total_weight = 0.0;
+    random_point = 0.0;
+    best_distance = 0.0;
+    distance = 0.0;
+    diff = 0.0;
+    update = 0.0;
+    farthest_distance = 0.0;
+    changed = 0;
+
+    if (result != NULL) {
+        *result = NULL;
+    }
+    if (ncolors != NULL) {
+        *ncolors = 0U;
+    }
+    if (origcolors != NULL) {
+        *origcolors = 0U;
+    }
+
+    if (channels != 3U && channels != 4U) {
+        goto end;
+    }
+    if (channels == 0U) {
+        goto end;
+    }
+
+    pixel_count = length / channels;
+    if (pixel_count == 0U) {
+        goto end;
+    }
+    if (pixel_count < sample_cap) {
+        sample_cap = pixel_count;
+    }
+    if (sample_cap == 0U) {
+        sample_cap = 1U;
+    }
+
+    samples = (unsigned char *)sixel_allocator_malloc(
+        allocator, (size_t)sample_cap * 3U);
+    if (samples == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    /*
+     * Reservoir sampling keeps the distribution fair when the image is
+     * larger than our budget. Transparent pixels are skipped so that the
+     * solver only sees visible colors.
+     */
+    for (index = 0U; index < pixel_count; ++index) {
+        base = index * channels;
+        if (channels == 4U && data[base + 3U] == 0U) {
+            continue;
+        }
+        ++valid_seen;
+        if (sample_count < sample_cap) {
+            for (channel = 0U; channel < 3U; ++channel) {
+                samples[sample_count * 3U + channel] =
+                    data[base + channel];
+            }
+            ++sample_count;
+        } else {
+            rand_value = (unsigned long)rand();
+            replace = (unsigned int)(rand_value % valid_seen);
+            if (replace < sample_cap) {
+                for (channel = 0U; channel < 3U; ++channel) {
+                    samples[replace * 3U + channel] =
+                        data[base + channel];
+                }
+            }
+        }
+    }
+
+    if (origcolors != NULL) {
+        *origcolors = valid_seen;
+    }
+    if (sample_count == 0U) {
+        goto end;
+    }
+
+    if (reqcolors == 0U) {
+        reqcolors = 1U;
+    }
+    k = reqcolors;
+    if (k > sample_count) {
+        k = sample_count;
+    }
+    if (k == 0U) {
+        goto end;
+    }
+
+    centers = (double *)sixel_allocator_malloc(
+        allocator, (size_t)k * 3U * sizeof(double));
+    distance_cache = (double *)sixel_allocator_malloc(
+        allocator, (size_t)sample_count * sizeof(double));
+    counts = (unsigned long *)sixel_allocator_malloc(
+        allocator, (size_t)k * sizeof(unsigned long));
+    accum = (unsigned long *)sixel_allocator_malloc(
+        allocator, (size_t)k * 3U * sizeof(unsigned long));
+    membership = (unsigned int *)sixel_allocator_malloc(
+        allocator, (size_t)sample_count * sizeof(unsigned int));
+    if (centers == NULL || distance_cache == NULL || counts == NULL ||
+            accum == NULL || membership == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    /*
+     * Seed the first center uniformly from the sampled set. Subsequent
+     * centers use k-means++ to favour distant samples.
+     */
+    rand_value = (unsigned long)rand();
+    replace = (unsigned int)(rand_value % sample_count);
+    for (channel = 0U; channel < 3U; ++channel) {
+        centers[channel] =
+            (double)samples[replace * 3U + channel];
+    }
+    for (sample_index = 0U; sample_index < sample_count; ++sample_index) {
+        distance = 0.0;
+        for (channel = 0U; channel < 3U; ++channel) {
+            diff = (double)samples[sample_index * 3U + channel]
+                - centers[channel];
+            distance += diff * diff;
+        }
+        distance_cache[sample_index] = distance;
+    }
+
+    for (center_index = 1U; center_index < k; ++center_index) {
+        total_weight = 0.0;
+        for (sample_index = 0U; sample_index < sample_count;
+                ++sample_index) {
+            total_weight += distance_cache[sample_index];
+        }
+        random_point = 0.0;
+        if (total_weight > 0.0) {
+            random_point =
+                ((double)rand() / ((double)RAND_MAX + 1.0)) *
+                total_weight;
+        }
+        sample_index = 0U;
+        while (sample_index + 1U < sample_count &&
+               random_point > distance_cache[sample_index]) {
+            random_point -= distance_cache[sample_index];
+            ++sample_index;
+        }
+        for (channel = 0U; channel < 3U; ++channel) {
+            centers[center_index * 3U + channel] =
+                (double)samples[sample_index * 3U + channel];
+        }
+        for (index = 0U; index < sample_count; ++index) {
+            distance = 0.0;
+            for (channel = 0U; channel < 3U; ++channel) {
+                diff = (double)samples[index * 3U + channel]
+                    - centers[center_index * 3U + channel];
+                distance += diff * diff;
+            }
+            if (distance < distance_cache[index]) {
+                distance_cache[index] = distance;
+            }
+        }
+    }
+
+    switch (quality_mode) {
+    case SIXEL_QUALITY_LOW:
+        max_iterations = 6U;
+        break;
+    case SIXEL_QUALITY_HIGH:
+        max_iterations = 24U;
+        break;
+    case SIXEL_QUALITY_FULL:
+        max_iterations = 48U;
+        break;
+    case SIXEL_QUALITY_HIGHCOLOR:
+        max_iterations = 24U;
+        break;
+    case SIXEL_QUALITY_AUTO:
+    default:
+        max_iterations = 12U;
+        break;
+    }
+    if (max_iterations == 0U) {
+        max_iterations = 1U;
+    }
+    if (max_iterations > 20U) {
+        /*
+         * The requirements cap the Lloyd refinement at twenty passes to
+         * keep runtime bounded even for demanding quality presets.
+         */
+        max_iterations = 20U;
+    }
+
+    /*
+     * Lloyd refinement assigns samples to their nearest center and moves
+     * each center to the mean of its cluster. Empty clusters are reseeded
+     * using the farthest sample to improve stability.
+     */
+    for (iteration = 0U; iteration < max_iterations; ++iteration) {
+        for (index = 0U; index < k; ++index) {
+            counts[index] = 0UL;
+        }
+        for (index = 0U; index < k * 3U; ++index) {
+            accum[index] = 0UL;
+        }
+        for (sample_index = 0U; sample_index < sample_count;
+                ++sample_index) {
+            best_index = 0U;
+            distance = 0.0;
+            for (channel = 0U; channel < 3U; ++channel) {
+                diff = (double)samples[sample_index * 3U + channel]
+                    - centers[channel];
+                distance += diff * diff;
+            }
+            best_distance = distance;
+            for (center_index = 1U; center_index < k;
+                    ++center_index) {
+                distance = 0.0;
+                for (channel = 0U; channel < 3U; ++channel) {
+                    diff = (double)samples[sample_index * 3U + channel]
+                        - centers[center_index * 3U + channel];
+                    distance += diff * diff;
+                }
+                if (distance < best_distance) {
+                    best_distance = distance;
+                    best_index = center_index;
+                }
+            }
+            membership[sample_index] = best_index;
+            distance_cache[sample_index] = best_distance;
+            counts[best_index] += 1UL;
+            channel_sum = accum + (size_t)best_index * 3U;
+            for (channel = 0U; channel < 3U; ++channel) {
+                channel_sum[channel] +=
+                    (unsigned long)samples[sample_index * 3U + channel];
+            }
+        }
+        for (center_index = 0U; center_index < k; ++center_index) {
+            if (counts[center_index] != 0UL) {
+                continue;
+            }
+            farthest_distance = -1.0;
+            farthest_index = 0U;
+            for (sample_index = 0U; sample_index < sample_count;
+                    ++sample_index) {
+                if (distance_cache[sample_index] > farthest_distance) {
+                    farthest_distance = distance_cache[sample_index];
+                    farthest_index = sample_index;
+                }
+            }
+            old_cluster = membership[farthest_index];
+            if (counts[old_cluster] > 0UL) {
+                counts[old_cluster] -= 1UL;
+                channel_sum = accum + (size_t)old_cluster * 3U;
+                for (channel = 0U; channel < 3U; ++channel) {
+                    extra_component =
+                        (unsigned int)samples[farthest_index * 3U + channel];
+                    if (channel_sum[channel] >=
+                            (unsigned long)extra_component) {
+                        channel_sum[channel] -=
+                            (unsigned long)extra_component;
+                    } else {
+                        channel_sum[channel] = 0UL;
+                    }
+                }
+            }
+            membership[farthest_index] = center_index;
+            counts[center_index] = 1UL;
+            channel_sum = accum + (size_t)center_index * 3U;
+            for (channel = 0U; channel < 3U; ++channel) {
+                channel_sum[channel] =
+                    (unsigned long)samples[farthest_index * 3U + channel];
+            }
+            distance_cache[farthest_index] = 0.0;
+        }
+        changed = 0;
+        for (center_index = 0U; center_index < k; ++center_index) {
+            if (counts[center_index] == 0UL) {
+                continue;
+            }
+            channel_sum = accum + (size_t)center_index * 3U;
+            for (channel = 0U; channel < 3U; ++channel) {
+                update = (double)channel_sum[channel]
+                    / (double)counts[center_index];
+                diff = centers[center_index * 3U + channel] - update;
+                if (diff < 0.0) {
+                    diff = -diff;
+                }
+                if (diff > 0.5) {
+                    changed = 1;
+                }
+                centers[center_index * 3U + channel] = update;
+            }
+        }
+        if (!changed) {
+            break;
+        }
+    }
+
+    /*
+     * Convert the floating point centers back into the byte palette that
+     * callers expect.
+     */
+    palette = (unsigned char *)sixel_allocator_malloc(
+        allocator, (size_t)k * 3U);
+    if (palette == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    for (center_index = 0U; center_index < k; ++center_index) {
+        for (channel = 0U; channel < 3U; ++channel) {
+            update = centers[center_index * 3U + channel];
+            if (update < 0.0) {
+                update = 0.0;
+            }
+            if (update > 255.0) {
+                update = 255.0;
+            }
+            palette[center_index * 3U + channel] =
+                (unsigned char)(update + 0.5);
+        }
+    }
+
+    if (force_palette && k < reqcolors) {
+        /*
+         * Populate the tail of the palette by repeating the most frequent
+         * clusters so the caller still receives the requested palette size.
+         */
+        new_palette = (unsigned char *)sixel_allocator_malloc(
+            allocator, (size_t)reqcolors * 3U);
+        if (new_palette == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        for (index = 0U; index < k * 3U; ++index) {
+            new_palette[index] = palette[index];
+        }
+        order = (unsigned int *)sixel_allocator_malloc(
+            allocator, (size_t)k * sizeof(unsigned int));
+        if (order == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        for (index = 0U; index < k; ++index) {
+            order[index] = index;
+        }
+        for (index = 0U; index < k; ++index) {
+            for (center_index = index + 1U; center_index < k;
+                    ++center_index) {
+                if (counts[order[center_index]] >
+                        counts[order[index]]) {
+                    swap_temp = order[index];
+                    order[index] = order[center_index];
+                    order[center_index] = swap_temp;
+                }
+            }
+        }
+        fill = k;
+        source = 0U;
+        while (fill < reqcolors && k > 0U) {
+            center_index = order[source];
+            for (channel = 0U; channel < 3U; ++channel) {
+                new_palette[fill * 3U + channel] =
+                    palette[center_index * 3U + channel];
+            }
+            ++fill;
+            ++source;
+            if (source >= k) {
+                source = 0U;
+            }
+        }
+        sixel_allocator_free(allocator, palette);
+        palette = new_palette;
+        new_palette = NULL;
+        k = reqcolors;
+    }
+
+    status = SIXEL_OK;
+    if (result != NULL) {
+        *result = palette;
+    } else {
+        palette = NULL;
+    }
+    if (ncolors != NULL) {
+        *ncolors = k;
+    }
+
+end:
+    if (status != SIXEL_OK && palette != NULL) {
+        sixel_allocator_free(allocator, palette);
+    }
+    if (new_palette != NULL) {
+        sixel_allocator_free(allocator, new_palette);
+    }
+    if (order != NULL) {
+        sixel_allocator_free(allocator, order);
+    }
+    if (membership != NULL) {
+        sixel_allocator_free(allocator, membership);
+    }
+    if (accum != NULL) {
+        sixel_allocator_free(allocator, accum);
+    }
+    if (counts != NULL) {
+        sixel_allocator_free(allocator, counts);
+    }
+    if (distance_cache != NULL) {
+        sixel_allocator_free(allocator, distance_cache);
+    }
+    if (centers != NULL) {
+        sixel_allocator_free(allocator, centers);
+    }
+    if (samples != NULL) {
+        sixel_allocator_free(allocator, samples);
+    }
+    return status;
+}
+
+
 /* choose colors using median-cut method */
 SIXELSTATUS
 sixel_quant_make_palette(
@@ -5712,6 +6218,7 @@ sixel_quant_make_palette(
     int                    /* in */  qualityMode,
     int                    /* in */  force_palette,
     int                    /* in */  use_reversible,
+    int                    /* in */  quantize_model,
     sixel_allocator_t      /* in */  *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -5729,6 +6236,27 @@ sixel_quant_make_palette(
     }
 
     depth = (unsigned int)result_depth;
+
+    if (quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS) {
+        status = build_palette_kmeans_(result,
+                                       data,
+                                       length,
+                                       depth,
+                                       reqcolors,
+                                       ncolors,
+                                       origcolors,
+                                       qualityMode,
+                                       force_palette,
+                                       allocator);
+        if (SIXEL_SUCCEEDED(status)) {
+            if (use_reversible) {
+                sixel_quant_reversible_palette(*result,
+                                               *ncolors,
+                                               depth);
+            }
+            return status;
+        }
+    }
 
     ret = computeColorMapFromInput(data, length, depth,
                                    reqcolors, methodForLargest,

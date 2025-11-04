@@ -79,6 +79,11 @@ rounding error is pushed into the dithering stage.
 .B \-p \fICOLORS\fP, \-\-colors=\fICOLORS\fP
 specify number of colors to reduce the image to (default=256).
 .TP 5
+.B \-Q \fIMODEL\fP, \-\-quantize\-model=\fIMODEL\fP
+select the palette solver. \fIMODEL\fP accepts \fBauto\fP,
+\fBheckbert\fP, or \fBkmeans\fP. The \fBauto\fP setting preserves
+the historical Heckbert median\-cut behaviour.
+.TP 5
 .B \-m \fIFILE\fP, \-\-mapfile=\fIFILE\fP
 transform image colors to match this set of colors. Accepts image files
 and palette files in Adobe Color Table (*.act), JASC/RIFF PAL (*.pal),

@@ -336,6 +336,7 @@ sixel_dither_new(
     (*ppdither)->allocator = allocator;
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
     (*ppdither)->sixel_reversible = 0;
+    (*ppdither)->quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
 
     status = SIXEL_OK;
 
@@ -601,6 +602,7 @@ sixel_dither_initialize(
                                       dither->quality_mode,
                                       dither->force_palette,
                                       dither->sixel_reversible,
+                                      dither->quantize_model,
                                       dither->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
