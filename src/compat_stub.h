@@ -88,6 +88,17 @@ typedef SSIZE_T ssize_t;
 # endif
 #endif
 
+/* for msvc */
+#ifndef STDIN_FILENO
+# define STDIN_FILENO 0
+#endif
+#ifndef STDOUT_FILENO
+# define STDOUT_FILENO 1
+#endif
+#ifndef STDERR_FILENO
+# define STDERR_FILENO 2
+#endif
+
 #if defined(__GNUC__) || defined(__clang__)
 /*
  * +----------------------------------------------------------+
