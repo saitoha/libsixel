@@ -16984,11 +16984,6 @@ printf "%s\n" "no" >&6; }
 		PKG_CONFIG=""
 	fi
 fi
-if test -z "$PKG_CONFIG"; then
-	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: pkg-config not found, continuing without it" >&5
-printf "%s\n" "$as_me: WARNING: pkg-config not found, continuing without it" >&2;}
-                            PKG_CONFIG=false
-fi
 fi
 
 
@@ -18947,24 +18942,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-                GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
+	        GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
         else
-                GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
+	        GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
         fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$GDK_PIXBUF_PKG_ERRORS" >&5
+	# Put the nasty error message in config.log where it belongs
+	echo "$GDK_PIXBUF_PKG_ERRORS" >&5
 
-        have_gdk_pixbuf2=no
+	have_gdk_pixbuf2=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-        have_gdk_pixbuf2=no
+	have_gdk_pixbuf2=no
 else
-        GDK_PIXBUF_CFLAGS=$pkg_cv_GDK_PIXBUF_CFLAGS
-        GDK_PIXBUF_LIBS=$pkg_cv_GDK_PIXBUF_LIBS
+	GDK_PIXBUF_CFLAGS=$pkg_cv_GDK_PIXBUF_CFLAGS
+	GDK_PIXBUF_LIBS=$pkg_cv_GDK_PIXBUF_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-        have_gdk_pixbuf2=yes
+	have_gdk_pixbuf2=yes
 fi
         if test x$have_gdk_pixbuf2 != xno; then
 
@@ -19428,24 +19423,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-                GD_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gdlib" 2>&1`
+	        GD_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gdlib" 2>&1`
         else
-                GD_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gdlib" 2>&1`
+	        GD_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gdlib" 2>&1`
         fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$GD_PKG_ERRORS" >&5
+	# Put the nasty error message in config.log where it belongs
+	echo "$GD_PKG_ERRORS" >&5
 
-        have_gd=no
+	have_gd=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-        have_gd=no
+	have_gd=no
 else
-        GD_CFLAGS=$pkg_cv_GD_CFLAGS
-        GD_LIBS=$pkg_cv_GD_LIBS
+	GD_CFLAGS=$pkg_cv_GD_CFLAGS
+	GD_LIBS=$pkg_cv_GD_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-        have_gd=yes
+	have_gd=yes
 fi
         fi
     fi
@@ -20368,24 +20363,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-                LIBCURL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libcurl" 2>&1`
+	        LIBCURL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libcurl" 2>&1`
         else
-                LIBCURL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libcurl" 2>&1`
+	        LIBCURL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libcurl" 2>&1`
         fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$LIBCURL_PKG_ERRORS" >&5
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBCURL_PKG_ERRORS" >&5
 
-        have_curl=no
+	have_curl=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-        have_curl=no
+	have_curl=no
 else
-        LIBCURL_CFLAGS=$pkg_cv_LIBCURL_CFLAGS
-        LIBCURL_LIBS=$pkg_cv_LIBCURL_LIBS
+	LIBCURL_CFLAGS=$pkg_cv_LIBCURL_CFLAGS
+	LIBCURL_LIBS=$pkg_cv_LIBCURL_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-        have_curl=yes
+	have_curl=yes
 fi
             fi
         fi
@@ -20703,24 +20698,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-                LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libjpeg" 2>&1`
+	        LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libjpeg" 2>&1`
         else
-                LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libjpeg" 2>&1`
+	        LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libjpeg" 2>&1`
         fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$LIBJPEG_PKG_ERRORS" >&5
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBJPEG_PKG_ERRORS" >&5
 
-        have_jpeg=no
+	have_jpeg=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-        have_jpeg=no
+	have_jpeg=no
 else
-        LIBJPEG_CFLAGS=$pkg_cv_LIBJPEG_CFLAGS
-        LIBJPEG_LIBS=$pkg_cv_LIBJPEG_LIBS
+	LIBJPEG_CFLAGS=$pkg_cv_LIBJPEG_CFLAGS
+	LIBJPEG_LIBS=$pkg_cv_LIBJPEG_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-        have_jpeg=yes
+	have_jpeg=yes
 fi
             fi
         fi
@@ -20884,24 +20879,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-                LIBPNG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libpng" 2>&1`
+	        LIBPNG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libpng" 2>&1`
         else
-                LIBPNG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libpng" 2>&1`
+	        LIBPNG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libpng" 2>&1`
         fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$LIBPNG_PKG_ERRORS" >&5
+	# Put the nasty error message in config.log where it belongs
+	echo "$LIBPNG_PKG_ERRORS" >&5
 
-        have_png=no
+	have_png=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-        have_png=no
+	have_png=no
 else
-        LIBPNG_CFLAGS=$pkg_cv_LIBPNG_CFLAGS
-        LIBPNG_LIBS=$pkg_cv_LIBPNG_LIBS
+	LIBPNG_CFLAGS=$pkg_cv_LIBPNG_CFLAGS
+	LIBPNG_LIBS=$pkg_cv_LIBPNG_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-        have_png=yes
+	have_png=yes
 fi
             fi
         fi
@@ -21026,24 +21021,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-                ONNXRUNTIME_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libonnxruntime" 2>&1`
+	        ONNXRUNTIME_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libonnxruntime" 2>&1`
         else
-                ONNXRUNTIME_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libonnxruntime" 2>&1`
+	        ONNXRUNTIME_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libonnxruntime" 2>&1`
         fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$ONNXRUNTIME_PKG_ERRORS" >&5
+	# Put the nasty error message in config.log where it belongs
+	echo "$ONNXRUNTIME_PKG_ERRORS" >&5
 
-        have_onnxruntime=no
+	have_onnxruntime=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-        have_onnxruntime=no
+	have_onnxruntime=no
 else
-        ONNXRUNTIME_CFLAGS=$pkg_cv_ONNXRUNTIME_CFLAGS
-        ONNXRUNTIME_LIBS=$pkg_cv_ONNXRUNTIME_LIBS
+	ONNXRUNTIME_CFLAGS=$pkg_cv_ONNXRUNTIME_CFLAGS
+	ONNXRUNTIME_LIBS=$pkg_cv_ONNXRUNTIME_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-        have_onnxruntime=yes
+	have_onnxruntime=yes
 fi
         fi
         if test "x$have_onnxruntime" != "xyes"; then
