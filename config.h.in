@@ -20,6 +20,7 @@
 
 /* whether macOS clipboard backend is available */
 #undef HAVE_CLIPBOARD_MACOS
+#undef HAVE_CLIPBOARD_WINDOWS
 
 /* Define if clock exists */
 #undef HAVE_CLOCK

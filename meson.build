@@ -79,6 +79,7 @@ cpu = host_machine.cpu_family()
 
 clipboard_dep = []
 have_clipboard_macos = false
+have_clipboard_windows = false
 
 has_func_attr_deprecated = false
 has_var_attr_deprecated = false
@@ -575,6 +576,14 @@ if host_system == 'darwin' and have_objc
     have_clipboard_macos = true
     clipboard_dep = [clipboard_candidate]
     conf.set('HAVE_CLIPBOARD_MACOS', 1)
+    deps += clipboard_dep
+  endif
+elif host_system == 'windows'
+  clipboard_candidate = cc.find_library('user32', required: false)
+  if clipboard_candidate.found()
+    have_clipboard_windows = true
+    clipboard_dep = [clipboard_candidate]
+    conf.set('HAVE_CLIPBOARD_WINDOWS', 1)
     deps += clipboard_dep
   endif
 endif
