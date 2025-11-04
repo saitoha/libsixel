@@ -20,6 +20,16 @@ img2sixel \- image converter to DEC SIXEL graphics
 
 .SH DESCRIPTION
 \fIimg2sixel\fP converts various images into high quality DEC SIXEL image format.
+.PP
+The converter recognises the pseudo file target \(dqclipboard:\(dq in
+addition to traditional paths.  Reading from \(dqclipboard:\(dq pulls the
+most recent image or UTF-8 string payload from the desktop clipboard, while
+writing to \(dqclipboard:\(dq publishes the generated SIXEL stream as
+plain text.  Prefixes such as \(dqpng:clipboard:\(dq request that an
+intermediate PNG snapshot is written to the clipboard instead of the raw
+SIXEL sequence.  When reading, the converter probes for PNG data first,
+falls back to TIFF, and finally consumes UTF-8 strings if no image payload
+is present.
 
 
 .SH "COMMAND-LINE OPTIONS"

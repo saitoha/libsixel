@@ -77,6 +77,9 @@ quicklook_os_supported = true
 quicklook_os_reason = 'requires macOS 10.15+'
 cpu = host_machine.cpu_family()
 
+clipboard_dep = []
+have_clipboard_macos = false
+
 has_func_attr_deprecated = false
 has_var_attr_deprecated = false
 
@@ -561,6 +564,18 @@ if host_system == 'darwin'
   endif
 elif quicklook_ext_opt.enabled()
   error('Quick Look extension is only available on macOS')
+endif
+
+if host_system == 'darwin' and have_objc
+  clipboard_candidate = dependency('appleframeworks',
+    modules: ['AppKit', 'Foundation'],
+    required: false)
+  if clipboard_candidate.found()
+    have_clipboard_macos = true
+    clipboard_dep = [clipboard_candidate]
+    conf.set('HAVE_CLIPBOARD_MACOS', 1)
+    deps += clipboard_dep
+  endif
 endif
 
 simd_opt = get_option('simd')

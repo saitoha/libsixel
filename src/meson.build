@@ -34,6 +34,7 @@ srcs = [
   'loader.c',
   'frompnm.c',
   'fromgif.c',
+  'clipboard.c',
   'encoder.c',
   'decoder.c',
   'writer.c',
@@ -47,6 +48,10 @@ srcs = [
 
 if have_quicklook_thumbnailing
   srcs += ['quicklook_thumbnailing.m']
+endif
+
+if have_clipboard_macos
+  srcs += ['clipboard_macos.m']
 endif
 
 lt_soversion = ls_lt_current - ls_lt_age

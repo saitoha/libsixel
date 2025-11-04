@@ -34,14 +34,16 @@ libsixel_la_SOURCES = \
 		$(srcdir)/scale.c \
 		$(srcdir)/chunk.c \
 		$(srcdir)/chunk.h \
-		$(srcdir)/loader.c \
-		$(srcdir)/loader.h \
-		$(srcdir)/frompnm.c \
-		$(srcdir)/frompnm.h \
-		$(srcdir)/fromgif.c \
-		$(srcdir)/fromgif.h \
-		$(srcdir)/encoder.c \
-		$(srcdir)/encoder.h \
+                $(srcdir)/loader.c \
+                $(srcdir)/loader.h \
+                $(srcdir)/frompnm.c \
+                $(srcdir)/frompnm.h \
+                $(srcdir)/fromgif.c \
+                $(srcdir)/fromgif.h \
+                $(srcdir)/clipboard.c \
+                $(srcdir)/clipboard.h \
+                $(srcdir)/encoder.c \
+                $(srcdir)/encoder.h \
 		$(srcdir)/decoder.c \
 		$(srcdir)/decoder.h \
 		$(srcdir)/stb_image.h \
@@ -67,17 +69,22 @@ if HAVE_QUICKLOOK_THUMBNAILING
 libsixel_la_SOURCES += \
                 $(srcdir)/quicklook_thumbnailing.m
 endif
+if HAVE_CLIPBOARD_MACOS
+libsixel_la_SOURCES += \
+                $(srcdir)/clipboard_macos.m
+endif
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
-		$(LIBCURL_CFLAGS) \
-		$(WINHTTP_CFLAGS) \
-		$(LIBPNG_CFLAGS) \
-		$(LIBJPEG_CFLAGS) \
-		$(GDK_PIXBUF_CFLAGS) \
-		$(GD_CFLAGS) \
-		$(WIC_CFLAGS) \
-		$(COREGRAPHICS_CFLAGS) \
-		$(QUICKLOOK_CFLAGS) \
+                $(LIBCURL_CFLAGS) \
+                $(WINHTTP_CFLAGS) \
+                $(LIBPNG_CFLAGS) \
+                $(LIBJPEG_CFLAGS) \
+                $(GDK_PIXBUF_CFLAGS) \
+                $(GD_CFLAGS) \
+                $(WIC_CFLAGS) \
+                $(COREGRAPHICS_CFLAGS) \
+                $(QUICKLOOK_CFLAGS) \
+                $(CLIPBOARD_CFLAGS) \
                 $(ONNXRUNTIME_CFLAGS)
 if BUILDING_ON_WINDOWS
 libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
@@ -89,11 +96,12 @@ libsixel_la_LIBADD = -lm \
 		$(WINHTTP_LIBS) \
 		$(LIBPNG_LIBS) \
 		$(LIBJPEG_LIBS) \
-		$(GDK_PIXBUF_LIBS) \
-		$(GD_LIBS) \
-		$(WIC_LIBS) \
-		$(COREGRAPHICS_LIBS) \
-		$(QUICKLOOK_LIBS) \
+                $(GDK_PIXBUF_LIBS) \
+                $(GD_LIBS) \
+                $(WIC_LIBS) \
+                $(COREGRAPHICS_LIBS) \
+                $(QUICKLOOK_LIBS) \
+                $(CLIPBOARD_LIBS) \
                 $(ONNXRUNTIME_LIBS)
 
 if COND_TESTS

@@ -75,6 +75,7 @@
 
 #include <sixel.h>
 
+
 static char *
 cli_compat_strerror(int error_number,
                       char *buffer,
@@ -411,6 +412,15 @@ sixel2png_print_option_help(FILE *stream)
         }
         ++index;
     }
+}
+
+static void
+sixel2png_print_clipboard_hint(void)
+{
+    fprintf(stderr,
+            "The pseudo file \"clipboard:\" mirrors the desktop clipboard.\n"
+            "Supported forms include \"clipboard:\", \"png:clipboard:\", and\n"
+            "\"tiff:clipboard:\".\n");
 }
 
 static void
@@ -1443,6 +1453,39 @@ sixel2png_path_looks_remote(char const *path)
 }
 
 static int
+sixel2png_spec_is_clipboard(char const *argument)
+{
+    char const *marker;
+
+    /*
+     * Keep the decoder aligned with the clipboard grammar accepted by the
+     * shared clipboard helpers.  Both "clipboard:" and "format:clipboard:" are
+     * valid pseudo paths that should bypass filesystem validation.
+     */
+    marker = NULL;
+
+    if (argument == NULL) {
+        return 0;
+    }
+
+    marker = strstr(argument, "clipboard:");
+    if (marker == NULL) {
+        return 0;
+    }
+    if (marker[10] != '\0') {
+        return 0;
+    }
+    if (marker == argument) {
+        return 1;
+    }
+    if (marker > argument && marker[-1] == ':') {
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 sixel2png_validate_input_argument(char const *argument)
 {
     struct stat path_stat;
@@ -1461,6 +1504,9 @@ sixel2png_validate_input_argument(char const *argument)
         return -1;
     }
     if (strcmp(argument, "-") == 0) {
+        return 0;
+    }
+    if (sixel2png_spec_is_clipboard(argument)) {
         return 0;
     }
     if (sixel2png_path_looks_remote(argument)) {
@@ -1722,18 +1768,26 @@ main(int argc, char *argv[])
     }
 
     if (optind < argc) {
-        if (sixel2png_validate_input_argument(argv[optind]) != 0) {
+        char const *argument;
+
+        argument = argv[optind];
+        if (sixel2png_validate_input_argument(argument) != 0) {
             status = SIXEL_BAD_ARGUMENT;
             goto error;
         }
-        status = sixel2png_decoder_setopt(decoder, 'i', argv[optind++]);
+        status = sixel2png_decoder_setopt(decoder, 'i', argument);
+        ++optind;
         if (SIXEL_FAILED(status)) {
             goto error;
         }
     }
 
     if (optind < argc) {
-        status = sixel2png_decoder_setopt(decoder, 'o', argv[optind++]);
+        char const *argument;
+
+        argument = argv[optind];
+        status = sixel2png_decoder_setopt(decoder, 'o', argument);
+        ++optind;
         if (SIXEL_FAILED(status)) {
             goto error;
         }
@@ -1748,12 +1802,17 @@ main(int argc, char *argv[])
     if (SIXEL_FAILED(status)) {
         goto error;
     }
+
     goto end;
 
 error:
     fprintf(stderr, "%s\n%s\n",
             sixel_helper_format_error(status),
             sixel_helper_get_additional_message());
+    if (status == SIXEL_BAD_CLIPBOARD) {
+        sixel2png_print_clipboard_hint();
+        fprintf(stderr, "\n");
+    }
     status = (-1);
 
 end:
