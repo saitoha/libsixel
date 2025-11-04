@@ -165,6 +165,14 @@ _outputcolorspace() {
     'smpte-c[SMPTE-C gamma encoded output]'
 }
 
+_quantizemodel() {
+  _values \
+    'MODEL' \
+    'auto[select solver automatically]' \
+    'heckbert[Heckbert median-cut solver]' \
+    'kmeans[k-means palette solver]'
+}
+
 _completiontarget() {
   _values \
     'TARGET' \
@@ -194,6 +202,7 @@ _arguments -S -s -A "-*" -S \
   {-R,--gri-limit}'[limit arguments of DECGRI(!) to 255]' \
   {-6,--6reversible}'[snap the palette to SIXEL-reversible tones]' \
   {-p,--colors=}'[specify number of colors to reduce the image to]' \
+  {-Q,--quantize-model=}'[choose palette solver]':quantizemodel:_quantizemodel \
   {-m,--mapfile=}'[transform image colors using a map image or ACT/PAL/GPL palette; TYPE:PATH prefixes (TYPE:- for stdin) allowed]':files:_files \
   {-M,--mapfile-output=}'[export the computed palette; TYPE:PATH (TYPE:- for stdout) or .act/.pal/.gpl extensions choose the format]':files:_files \
   {-e,--monochrome}'[output monochrome sixel image]' \

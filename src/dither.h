@@ -51,6 +51,7 @@ struct sixel_dither {
     sixel_allocator_t *allocator;   /* allocator */
     int lut_policy;                 /* histogram LUT policy */
     int sixel_reversible;           /* restrict palette to reversible tones */
+    int quantize_model;             /* palette solver selector */
 };
 
 #ifdef __cplusplus
