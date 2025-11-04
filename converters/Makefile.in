@@ -191,10 +191,10 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/img2sixel-completion_utils.Po \
-        ./$(DEPDIR)/img2sixel-img2sixel.Po \
-        ./$(DEPDIR)/img2sixel-malloc_stub.Po \
-        ./$(DEPDIR)/sixel2png-malloc_stub.Po \
-        ./$(DEPDIR)/sixel2png-sixel2png.Po
+	./$(DEPDIR)/img2sixel-img2sixel.Po \
+	./$(DEPDIR)/img2sixel-malloc_stub.Po \
+	./$(DEPDIR)/sixel2png-malloc_stub.Po \
+	./$(DEPDIR)/sixel2png-sixel2png.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -710,10 +710,6 @@ img2sixel-completion_utils.obj: completion_utils.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o img2sixel-completion_utils.obj `if test -f 'completion_utils.c'; then $(CYGPATH_W) 'completion_utils.c'; else $(CYGPATH_W) '$(srcdir)/completion_utils.c'; fi`
 
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-
 img2sixel-malloc_stub.o: malloc_stub.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT img2sixel-malloc_stub.o -MD -MP -MF $(DEPDIR)/img2sixel-malloc_stub.Tpo -c -o img2sixel-malloc_stub.o `test -f 'malloc_stub.c' || echo '$(srcdir)/'`malloc_stub.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel-malloc_stub.Tpo $(DEPDIR)/img2sixel-malloc_stub.Po
@@ -741,10 +737,6 @@ sixel2png-sixel2png.obj: sixel2png.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sixel2png.c' object='sixel2png-sixel2png.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o sixel2png-sixel2png.obj `if test -f 'sixel2png.c'; then $(CYGPATH_W) 'sixel2png.c'; else $(CYGPATH_W) '$(srcdir)/sixel2png.c'; fi`
-
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 
 sixel2png-malloc_stub.o: malloc_stub.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT sixel2png-malloc_stub.o -MD -MP -MF $(DEPDIR)/sixel2png-malloc_stub.Tpo -c -o sixel2png-malloc_stub.o `test -f 'malloc_stub.c' || echo '$(srcdir)/'`malloc_stub.c
