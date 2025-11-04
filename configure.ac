@@ -690,7 +690,8 @@ AC_CHECK_FUNCS([assert \
                 strerror \
                 strstr \
                 fchmod \
-                strtol])
+                strtol \
+                tmpnam])
 
 case "${host_os}" in
   mingw*)
