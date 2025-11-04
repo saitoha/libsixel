@@ -51,6 +51,7 @@ libsixel_la_SOURCES = \
 		$(srcdir)/stb_image_write.h \
                 $(srcdir)/status.c \
                 $(srcdir)/status.h \
+                $(srcdir)/stdio_stub.h \
                 $(srcdir)/compat_stub.c \
                 $(srcdir)/compat_stub.h \
                 $(srcdir)/malloc_stub.c \
@@ -59,7 +60,9 @@ libsixel_la_SOURCES = \
 		$(srcdir)/allocator.h \
 		$(srcdir)/tty.c \
 		$(srcdir)/tty.h \
-		$(srcdir)/rgblookup.h
+		$(srcdir)/rgblookup.h \
+		$(srcdir)/lso2.h \
+		$(srcdir)/lso3.h
 if HAVE_QUICKLOOK_THUMBNAILING
 libsixel_la_SOURCES += \
                 $(srcdir)/quicklook_thumbnailing.m

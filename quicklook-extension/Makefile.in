@@ -132,7 +132,8 @@ am_libsixelquicklookcore_a_OBJECTS =  \
 libsixelquicklookcore_a_OBJECTS =  \
 	$(am_libsixelquicklookcore_a_OBJECTS)
 am__SixelPreview_SOURCES_DIST = Sources/SixelPreviewMain.m \
-	Sources/SixelPreviewProvider.m Sources/SixelQuickLookShared.m
+	Sources/SixelPreviewProvider.h Sources/SixelPreviewProvider.m \
+	Sources/SixelQuickLookShared.m
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am_SixelPreview_OBJECTS = Sources/SixelPreview-SixelPreviewMain.$(OBJEXT) \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	Sources/SixelPreview-SixelPreviewProvider.$(OBJEXT) \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	Sources/SixelPreview-SixelQuickLookShared.$(OBJEXT)
@@ -148,7 +149,7 @@ SixelPreview_LINK = $(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) \
 	$(SixelPreview_OBJCFLAGS) $(OBJCFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 am__SixelPreviewBridge_SOURCES_DIST = Sources/SixelPreviewBridge.m \
-	Sources/SixelQuickLookShared.m
+	Sources/SixelQuickLookShared.h Sources/SixelQuickLookShared.m
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am_SixelPreviewBridge_OBJECTS = Sources/SixelPreviewBridge-SixelPreviewBridge.$(OBJEXT) \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	Sources/SixelPreviewBridge-SixelQuickLookShared.$(OBJEXT)
 SixelPreviewBridge_OBJECTS = $(am_SixelPreviewBridge_OBJECTS)
@@ -167,6 +168,7 @@ SixelQuickLookHost_LINK = $(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) \
 	$(SixelQuickLookHost_OBJCFLAGS) $(OBJCFLAGS) \
 	$(SixelQuickLookHost_LDFLAGS) $(LDFLAGS) -o $@
 am__SixelThumbnail_SOURCES_DIST = Sources/SixelThumbnailMain.m \
+	Sources/SixelThumbnailProvider.h \
 	Sources/SixelThumbnailProvider.m \
 	Sources/SixelQuickLookShared.m
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am_SixelThumbnail_OBJECTS = Sources/SixelThumbnail-SixelThumbnailMain.$(OBJEXT) \
@@ -532,6 +534,7 @@ libsixelquicklookcore_a_CPPFLAGS = $(AM_CPPFLAGS)
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@install_quicklook_script = $(top_srcdir)/tools/quicklook-extension.bash
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@SixelPreview_SOURCES = \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@    Sources/SixelPreviewMain.m \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@    Sources/SixelPreviewProvider.h \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@    Sources/SixelPreviewProvider.m \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@    Sources/SixelQuickLookShared.m
 
@@ -540,6 +543,7 @@ libsixelquicklookcore_a_CPPFLAGS = $(AM_CPPFLAGS)
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@SixelPreview_LDADD = libsixelquicklookcore.a @APPLE_QUICKLOOK_EXTENSION_LIBS@
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@SixelThumbnail_SOURCES = \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@    Sources/SixelThumbnailMain.m \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@    Sources/SixelThumbnailProvider.h \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@    Sources/SixelThumbnailProvider.m \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@    Sources/SixelQuickLookShared.m
 
@@ -552,6 +556,7 @@ libsixelquicklookcore_a_CPPFLAGS = $(AM_CPPFLAGS)
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@SixelQuickLookHost_OBJCFLAGS = $(AM_OBJCFLAGS)
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@SixelPreviewBridge_SOURCES = \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@    Sources/SixelPreviewBridge.m \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@    Sources/SixelQuickLookShared.h \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@    Sources/SixelQuickLookShared.m
 
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@SixelPreviewBridge_CPPFLAGS = $(AM_CPPFLAGS)
