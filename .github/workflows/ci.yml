@@ -30,8 +30,8 @@ jobs:
           - os: macos-latest
             runner: macos-latest
             sys: aarch64
-          - os: macos-13
-            runner: macos-13
+          - os: macos-15
+            runner: macos-15
             sys: x86_64
           - os: windows-latest
             runner: windows-latest
@@ -372,7 +372,7 @@ jobs:
 #        &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Upload to Coveralls (per-flag, parallel)
-      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-13' }}
+      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' }}
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -443,8 +443,8 @@ jobs:
             variant_suffix: ' • with-coregraphics'
             configure_extra: '--with-coregraphics'
             apt: ''
-          - os: macos-13
-            runner: macos-13
+          - os: macos-15
+            runner: macos-15
             variant_suffix: ''
             configure_extra: ''
             apt: ''
@@ -569,8 +569,8 @@ jobs:
             sys: i686
           - os: macos-latest
             runner: macos-latest
-          - os: macos-13
-            runner: macos-13
+          - os: macos-15
+            runner: macos-15
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
