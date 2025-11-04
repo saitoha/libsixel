@@ -158,11 +158,12 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/decoder.c $(srcdir)/decoder.h $(srcdir)/stb_image.h \
 	$(srcdir)/writer.c $(srcdir)/writer.h \
 	$(srcdir)/stb_image_write.c $(srcdir)/stb_image_write.h \
-	$(srcdir)/status.c $(srcdir)/status.h $(srcdir)/compat_stub.c \
-	$(srcdir)/compat_stub.h $(srcdir)/malloc_stub.c \
-	$(srcdir)/malloc_stub.h $(srcdir)/allocator.c \
-	$(srcdir)/allocator.h $(srcdir)/tty.c $(srcdir)/tty.h \
-	$(srcdir)/rgblookup.h $(srcdir)/quicklook_thumbnailing.m
+	$(srcdir)/status.c $(srcdir)/status.h $(srcdir)/stdio_stub.h \
+	$(srcdir)/compat_stub.c $(srcdir)/compat_stub.h \
+	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
+	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
+	$(srcdir)/tty.h $(srcdir)/rgblookup.h $(srcdir)/lso2.h \
+	$(srcdir)/lso3.h $(srcdir)/quicklook_thumbnailing.m
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__objects_1 = libsixel_la-quicklook_thumbnailing.lo
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-assessment.lo libsixel_la-fromsixel.lo \
@@ -502,11 +503,12 @@ libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/decoder.c $(srcdir)/decoder.h $(srcdir)/stb_image.h \
 	$(srcdir)/writer.c $(srcdir)/writer.h \
 	$(srcdir)/stb_image_write.c $(srcdir)/stb_image_write.h \
-	$(srcdir)/status.c $(srcdir)/status.h $(srcdir)/compat_stub.c \
-	$(srcdir)/compat_stub.h $(srcdir)/malloc_stub.c \
-	$(srcdir)/malloc_stub.h $(srcdir)/allocator.c \
-	$(srcdir)/allocator.h $(srcdir)/tty.c $(srcdir)/tty.h \
-	$(srcdir)/rgblookup.h $(am__append_1)
+	$(srcdir)/status.c $(srcdir)/status.h $(srcdir)/stdio_stub.h \
+	$(srcdir)/compat_stub.c $(srcdir)/compat_stub.h \
+	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
+	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
+	$(srcdir)/tty.h $(srcdir)/rgblookup.h $(srcdir)/lso2.h \
+	$(srcdir)/lso3.h $(am__append_1)
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 		$(LIBCURL_CFLAGS) \

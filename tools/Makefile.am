@@ -13,7 +13,8 @@ EXTRA_DIST = libsixel-config.in \
              sixel-thumbnailer \
              update-mime-database.sh \
              libsixel-thumbnailer.thumbnailer \
-             sixel.xml
+             sixel.xml \
+             gen_completion_embed.awk
 
 install-data-hook:
 	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/thumbnailers"; do \
