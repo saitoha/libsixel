@@ -55,6 +55,39 @@
 typedef SSIZE_T ssize_t;
 #endif
 
+#if defined(_MSC_VER)
+# include <fcntl.h>
+# include <sys/stat.h>
+/*
+ * Map the common POSIX flag spellings onto the MSVC prefixed
+ * constants so call sites can keep using the familiar names.
+ */
+# if !defined(O_RDONLY)
+#  define O_RDONLY _O_RDONLY
+# endif
+# if !defined(O_WRONLY)
+#  define O_WRONLY _O_WRONLY
+# endif
+# if !defined(O_RDWR)
+#  define O_RDWR _O_RDWR
+# endif
+# if !defined(O_CREAT)
+#  define O_CREAT _O_CREAT
+# endif
+# if !defined(O_TRUNC)
+#  define O_TRUNC _O_TRUNC
+# endif
+# if !defined(O_EXCL)
+#  define O_EXCL _O_EXCL
+# endif
+# if !defined(S_IRUSR)
+#  define S_IRUSR _S_IREAD
+# endif
+# if !defined(S_IWUSR)
+#  define S_IWUSR _S_IWRITE
+# endif
+#endif
+
 #if defined(__GNUC__) || defined(__clang__)
 /*
  * +----------------------------------------------------------+

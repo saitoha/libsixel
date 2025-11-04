@@ -37,6 +37,12 @@
 #elif HAVE_SYS_UNISTD_H
 # include <sys/unistd.h>
 #endif  /* HAVE_UNISTD_H */
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif  /* HAVE_FCNTL_H */
+#if HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif  /* HAVE_SYS_STAT_H */
 #if HAVE_ERRNO_H
 # include <errno.h>
 #endif /* HAVE_ERRNO_H */
@@ -77,7 +83,8 @@ decoder_clipboard_select_format(char *dest,
 
 static char *
 decoder_create_temp_template_with_prefix(sixel_allocator_t *allocator,
-                                         char const *prefix)
+                                         char const *prefix,
+                                         size_t *capacity_out)
 {
     char const *tmpdir;
     size_t tmpdir_len;
@@ -143,6 +150,10 @@ decoder_create_temp_template_with_prefix(sixel_allocator_t *allocator,
                        "%s%s-XXXXXX", tmpdir, prefix);
     }
 
+    if (capacity_out != NULL) {
+        *capacity_out = template_len;
+    }
+
     return template_path;
 }
 
@@ -154,14 +165,23 @@ decoder_clipboard_create_spool(sixel_allocator_t *allocator,
 {
     SIXELSTATUS status;
     char *template_path;
+    size_t template_capacity;
+    int open_flags;
+    int open_mode;
     int fd;
+    char *tmpname_result;
 
     status = SIXEL_FALSE;
     template_path = NULL;
+    template_capacity = 0u;
+    open_flags = 0;
+    open_mode = 0;
     fd = (-1);
+    tmpname_result = NULL;
 
     template_path = decoder_create_temp_template_with_prefix(allocator,
-                                                             prefix);
+                                                             prefix,
+                                                             &template_capacity);
     if (template_path == NULL) {
         sixel_helper_set_additional_message(
             "clipboard: failed to allocate spool template.");
@@ -169,70 +189,37 @@ decoder_clipboard_create_spool(sixel_allocator_t *allocator,
         goto end;
     }
 
-#if defined(HAVE_MKSTEMP)
-    fd = mkstemp(template_path);
-    if (fd < 0) {
-        sixel_helper_set_additional_message(
-            "clipboard: mkstemp() failed for spool file.");
-        status = SIXEL_LIBC_ERROR;
-        goto end;
+    if (sixel_compat_mktemp(template_path, template_capacity) != 0) {
+        /* Fall back to tmpnam() when mktemp variants are unavailable. */
+        tmpname_result = tmpnam(template_path);
+        if (tmpname_result == NULL) {
+            sixel_helper_set_additional_message(
+                "clipboard: failed to reserve spool template.");
+            status = SIXEL_LIBC_ERROR;
+            goto end;
+        }
+        template_capacity = strlen(template_path) + 1u;
     }
-#elif defined(HAVE__MKTEMP)
-    if (_mktemp(template_path) == NULL) {
-        sixel_helper_set_additional_message(
-            "clipboard: _mktemp() failed for spool file.");
-        status = SIXEL_LIBC_ERROR;
-        goto end;
-    }
-    fd = sixel_compat_open(template_path,
-                           O_RDWR | O_CREAT | O_TRUNC,
-                           S_IRUSR | S_IWUSR);
-    if (fd < 0) {
-        sixel_helper_set_additional_message(
-            "clipboard: failed to open spool file.");
-        status = SIXEL_LIBC_ERROR;
-        goto end;
-    }
-#elif defined(HAVE_MKTEMP)
-    if (mktemp(template_path) == NULL) {
-        sixel_helper_set_additional_message(
-            "clipboard: mktemp() failed for spool file.");
-        status = SIXEL_LIBC_ERROR;
-        goto end;
-    }
-    fd = sixel_compat_open(template_path,
-                           O_RDWR | O_CREAT | O_TRUNC,
-                           S_IRUSR | S_IWUSR);
-    if (fd < 0) {
-        sixel_helper_set_additional_message(
-            "clipboard: failed to open spool file.");
-        status = SIXEL_LIBC_ERROR;
-        goto end;
-    }
-#else
-    if (tmpnam(template_path) == NULL) {
-        sixel_helper_set_additional_message(
-            "clipboard: tmpnam() failed for spool file.");
-        status = SIXEL_LIBC_ERROR;
-        goto end;
-    }
-    fd = sixel_compat_open(template_path,
-                           O_RDWR | O_CREAT | O_TRUNC,
-                           S_IRUSR | S_IWUSR);
-    if (fd < 0) {
-        sixel_helper_set_additional_message(
-            "clipboard: failed to open spool file.");
-        status = SIXEL_LIBC_ERROR;
-        goto end;
-    }
-#endif
 
+    open_flags = O_RDWR | O_CREAT | O_TRUNC;
+#if defined(O_EXCL)
+    open_flags |= O_EXCL;
+#endif
+    open_mode = S_IRUSR | S_IWUSR;
+    fd = sixel_compat_open(template_path, open_flags, open_mode);
+    if (fd < 0) {
+        sixel_helper_set_additional_message(
+            "clipboard: failed to open spool file.");
+        status = SIXEL_LIBC_ERROR;
+        goto end;
+    }
+
+    *path_out = template_path;
     if (fd >= 0) {
         (void)sixel_compat_close(fd);
         fd = (-1);
     }
 
-    *path_out = template_path;
     template_path = NULL;
     status = SIXEL_OK;
 

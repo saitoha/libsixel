@@ -130,10 +130,6 @@ static SIXELSTATUS clipboard_read_file(char const *path,
                                        unsigned char **data,
                                        size_t *size);
 
-#if defined(HAVE_MKSTEMP)
-int mkstemp(char *);
-#endif
-
 #if defined(_WIN32)
 
 # include <windows.h>
@@ -5893,7 +5889,8 @@ assessment_json_callback(char const *chunk,
 
 static char *
 create_temp_template_with_prefix(sixel_allocator_t *allocator,
-                                 char const *prefix)
+                                 char const *prefix,
+                                 size_t *capacity_out)
 {
     char const *tmpdir;
     size_t tmpdir_len;
@@ -5964,14 +5961,21 @@ create_temp_template_with_prefix(sixel_allocator_t *allocator,
                         "%s%s-XXXXXX", tmpdir, prefix);
     }
 
+    if (capacity_out != NULL) {
+        *capacity_out = template_len;
+    }
+
     return template_path;
 }
 
 
 static char *
-create_temp_template(sixel_allocator_t *allocator)
+create_temp_template(sixel_allocator_t *allocator,
+                     size_t *capacity_out)
 {
-    return create_temp_template_with_prefix(allocator, "img2sixel");
+    return create_temp_template_with_prefix(allocator,
+                                            "img2sixel",
+                                            capacity_out);
 }
 
 
@@ -6011,13 +6015,21 @@ clipboard_create_spool(sixel_allocator_t *allocator,
 {
     SIXELSTATUS status;
     char *template_path;
+    size_t template_capacity;
+    int open_flags;
     int fd;
+    char *tmpname_result;
 
     status = SIXEL_FALSE;
     template_path = NULL;
+    template_capacity = 0u;
+    open_flags = 0;
     fd = (-1);
+    tmpname_result = NULL;
 
-    template_path = create_temp_template_with_prefix(allocator, prefix);
+    template_path = create_temp_template_with_prefix(allocator,
+                                                     prefix,
+                                                     &template_capacity);
     if (template_path == NULL) {
         sixel_helper_set_additional_message(
             "clipboard: failed to allocate spool template.");
@@ -6025,78 +6037,37 @@ clipboard_create_spool(sixel_allocator_t *allocator,
         goto end;
     }
 
-#if defined(HAVE_MKSTEMP)
-    fd = mkstemp(template_path);
-    if (fd < 0) {
-        sixel_helper_set_additional_message(
-            "clipboard: mkstemp() failed for spool file.");
-        status = SIXEL_LIBC_ERROR;
-        goto end;
-    }
-#elif defined(HAVE__MKTEMP)
-    if (_mktemp(template_path) == NULL) {
-        sixel_helper_set_additional_message(
-            "clipboard: _mktemp() failed for spool file.");
-        status = SIXEL_LIBC_ERROR;
-        goto end;
-    }
-    fd = sixel_compat_open(template_path,
-                           O_RDWR | O_CREAT | O_TRUNC,
-                           S_IRUSR | S_IWUSR);
-    if (fd < 0) {
-        sixel_helper_set_additional_message(
-            "clipboard: failed to open spool file.");
-        status = SIXEL_LIBC_ERROR;
-        goto end;
-    }
-#elif defined(HAVE_MKTEMP)
-    if (mktemp(template_path) == NULL) {
-        sixel_helper_set_additional_message(
-            "clipboard: mktemp() failed for spool file.");
-        status = SIXEL_LIBC_ERROR;
-        goto end;
-    }
-    fd = sixel_compat_open(template_path,
-                           O_RDWR | O_CREAT | O_TRUNC,
-                           S_IRUSR | S_IWUSR);
-    if (fd < 0) {
-        sixel_helper_set_additional_message(
-            "clipboard: failed to open spool file.");
-        status = SIXEL_LIBC_ERROR;
-        goto end;
-    }
-#else
-    if (tmpnam(template_path) == NULL) {
-        sixel_helper_set_additional_message(
-            "clipboard: tmpnam() failed for spool file.");
-        status = SIXEL_LIBC_ERROR;
-        goto end;
-    }
-    fd = sixel_compat_open(template_path,
-                           O_RDWR | O_CREAT | O_TRUNC,
-                           S_IRUSR | S_IWUSR);
-    if (fd < 0) {
-        sixel_helper_set_additional_message(
-            "clipboard: failed to open spool file.");
-        status = SIXEL_LIBC_ERROR;
-        goto end;
-    }
-#endif
-
-    if (fd_out == NULL) {
-        if (fd >= 0) {
-            (void)sixel_compat_close(fd);
-            fd = (-1);
+    if (sixel_compat_mktemp(template_path, template_capacity) != 0) {
+        /* Fall back to tmpnam() when mktemp variants are unavailable. */
+        tmpname_result = tmpnam(template_path);
+        if (tmpname_result == NULL) {
+            sixel_helper_set_additional_message(
+                "clipboard: failed to reserve spool template.");
+            status = SIXEL_LIBC_ERROR;
+            goto end;
         }
+        template_capacity = strlen(template_path) + 1u;
+    }
+
+    open_flags = O_RDWR | O_CREAT | O_TRUNC;
+#if defined(O_EXCL)
+    open_flags |= O_EXCL;
+#endif
+    fd = sixel_compat_open(template_path, open_flags, S_IRUSR | S_IWUSR);
+    if (fd < 0) {
+        sixel_helper_set_additional_message(
+            "clipboard: failed to open spool file.");
+        status = SIXEL_LIBC_ERROR;
+        goto end;
     }
 
     *path_out = template_path;
     if (fd_out != NULL) {
         *fd_out = fd;
+        fd = (-1);
     }
 
     template_path = NULL;
-    fd = (-1);
     status = SIXEL_OK;
 
 end:
@@ -6306,7 +6277,8 @@ sixel_encoder_encode(
     FILE *assessment_forward_stream = NULL;
     int assessment_json_owned = 0;
     char *assessment_temp_path = NULL;
-    int assessment_temp_fd = (-1);
+    size_t assessment_temp_capacity = 0u;
+    char *assessment_tmpnam_result = NULL;
     sixel_assessment_spool_mode_t assessment_spool_mode
         = SIXEL_ASSESSMENT_SPOOL_MODE_NONE;
     char *assessment_forward_path = NULL;
@@ -6318,10 +6290,9 @@ sixel_encoder_encode(
 #endif
     char const *png_final_path = NULL;
     char *png_temp_path = NULL;
-    int png_temp_fd = (-1);
-#if !defined(HAVE__MKTEMP) && !defined(HAVE_MKTEMP)
-    char *generated = NULL;
-#endif
+    size_t png_temp_capacity = 0u;
+    char *png_tmpnam_result = NULL;
+    int png_open_flags = 0;
     int spool_required;
     sixel_clipboard_spec_t clipboard_spec;
     char clipboard_input_format[32];
@@ -6454,55 +6425,30 @@ sixel_encoder_encode(
                 encoder->sixel_output_path = NULL;
             }
         }
-    if (spool_required) {
-        assessment_temp_path = create_temp_template(encoder->allocator);
-        if (assessment_temp_path == NULL) {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_encode: sixel_allocator_malloc() "
-                "failed for assessment staging path.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-#if defined(HAVE_MKSTEMP)
-        assessment_temp_fd = mkstemp(assessment_temp_path);
-            if (assessment_temp_fd < 0) {
-                sixel_helper_set_additional_message(
-                    "sixel_encoder_encode: mkstemp() "
-                    "failed for assessment staging file.");
-                status = SIXEL_RUNTIME_ERROR;
-                goto end;
-            }
-            (void)sixel_compat_close(assessment_temp_fd);
-            assessment_temp_fd = (-1);
-#elif defined(HAVE__MKTEMP) || defined(HAVE_MKTEMP)
-            if (sixel_compat_mktemp(assessment_temp_path,
-                                    strlen(assessment_temp_path) + 1) != 0) {
-                sixel_helper_set_additional_message(
-                    "sixel_encoder_encode: mktemp() failed for assessment staging file.");
-                status = SIXEL_RUNTIME_ERROR;
-                goto end;
-            }
-#else
-            generated = tmpnam(NULL);
-            if (generated == NULL) {
-                sixel_helper_set_additional_message(
-                    "sixel_encoder_encode: tmpnam() failed for assessment staging file.");
-                status = SIXEL_RUNTIME_ERROR;
-                goto end;
-            }
-            sixel_allocator_free(encoder->allocator, assessment_temp_path);
-            assessment_temp_path = (char *)sixel_allocator_malloc(
-                encoder->allocator, strlen(generated) + 1);
+        if (spool_required) {
+            assessment_temp_capacity = 0u;
+            assessment_tmpnam_result = NULL;
+            assessment_temp_path = create_temp_template(encoder->allocator,
+                                                        &assessment_temp_capacity);
             if (assessment_temp_path == NULL) {
                 sixel_helper_set_additional_message(
-                    "sixel_encoder_encode: malloc() failed for assessment staging copy.");
+                    "sixel_encoder_encode: sixel_allocator_malloc() "
+                    "failed for assessment staging path.");
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
             }
-            (void)sixel_compat_strcpy(assessment_temp_path,
-                                      strlen(generated) + 1,
-                                      generated);
-#endif
+            if (sixel_compat_mktemp(assessment_temp_path,
+                                    assessment_temp_capacity) != 0) {
+                /* Fall back to tmpnam() when mktemp variants are unavailable. */
+                assessment_tmpnam_result = tmpnam(assessment_temp_path);
+                if (assessment_tmpnam_result == NULL) {
+                    sixel_helper_set_additional_message(
+                        "sixel_encoder_encode: mktemp() failed for assessment staging file.");
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
+                }
+                assessment_temp_capacity = strlen(assessment_temp_path) + 1u;
+            }
             status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_OUTFILE,
                                           assessment_temp_path);
             if (SIXEL_FAILED(status)) {
@@ -6520,60 +6466,40 @@ sixel_encoder_encode(
                                       strlen(assessment_temp_path) + 1,
                                       assessment_temp_path);
         }
+
     }
 
     if (encoder->output_is_png) {
-        png_temp_path = create_temp_template(encoder->allocator);
+        png_temp_capacity = 0u;
+        png_tmpnam_result = NULL;
+        png_temp_path = create_temp_template(encoder->allocator,
+                                             &png_temp_capacity);
         if (png_temp_path == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_encoder_encode: malloc() failed for PNG staging path.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-#if defined(HAVE_MKSTEMP)
-        png_temp_fd = mkstemp(png_temp_path);
-        if (png_temp_fd < 0) {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_encode: mkstemp() failed for PNG staging file.");
-            status = SIXEL_RUNTIME_ERROR;
-            goto end;
+        if (sixel_compat_mktemp(png_temp_path, png_temp_capacity) != 0) {
+            /* Fall back to tmpnam() when mktemp variants are unavailable. */
+            png_tmpnam_result = tmpnam(png_temp_path);
+            if (png_tmpnam_result == NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_encoder_encode: mktemp() failed for PNG staging file.");
+                status = SIXEL_RUNTIME_ERROR;
+                goto end;
+            }
+            png_temp_capacity = strlen(png_temp_path) + 1u;
         }
-        (void)sixel_compat_close(png_temp_fd);
-        png_temp_fd = (-1);
-#elif defined(HAVE__MKTEMP) || defined(HAVE_MKTEMP)
-        if (sixel_compat_mktemp(png_temp_path,
-                                strlen(png_temp_path) + 1) != 0) {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_encode: mktemp() failed for PNG staging file.");
-            status = SIXEL_RUNTIME_ERROR;
-            goto end;
-        }
-#else
-        generated = tmpnam(NULL);
-        if (generated == NULL) {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_encode: tmpnam() failed for PNG staging file.");
-            status = SIXEL_RUNTIME_ERROR;
-            goto end;
-        }
-        sixel_allocator_free(encoder->allocator, png_temp_path);
-        png_temp_path = (char *)sixel_allocator_malloc(
-            encoder->allocator, strlen(generated) + 1);
-        if (png_temp_path == NULL) {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_encode: malloc() failed for PNG staging path copy.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-        (void)sixel_compat_strcpy(png_temp_path,
-                                  strlen(generated) + 1,
-                                  generated);
-#endif
         if (encoder->outfd >= 0 && encoder->outfd != STDOUT_FILENO) {
             (void)sixel_compat_close(encoder->outfd);
         }
+        png_open_flags = O_RDWR | O_CREAT | O_TRUNC;
+#if defined(O_EXCL)
+        png_open_flags |= O_EXCL;
+#endif
         encoder->outfd = sixel_compat_open(png_temp_path,
-                                           O_RDWR | O_CREAT | O_TRUNC,
+                                           png_open_flags,
                                            S_IRUSR | S_IWUSR);
         if (encoder->outfd < 0) {
             sixel_helper_set_additional_message(
