@@ -242,7 +242,8 @@ extra_funcs = [
   'nanosleep',
   'fork',
   'posix_spawnp',
-  'fchmod'
+  'fchmod',
+  'tmpnam'
 ]
 
 func_prefixes = {
