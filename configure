@@ -19173,6 +19173,7 @@ CLIPBOARD_LIBS=""
 CLIPBOARD_CFLAGS=""
 have_clipboard_macos=no
 have_clipboard_windows=no
+have_clipboard_linux=no
 case $host_os in
   darwin*)
     ac_ext=m
@@ -19275,6 +19276,12 @@ else case e in #(
   e) have_clipboard_windows=no ;;
 esac
 fi
+
+    ;;
+  linux*)
+    have_clipboard_linux=yes
+
+printf "%s\n" "#define HAVE_CLIPBOARD_LINUX 1" >>confdefs.h
 
     ;;
 esac
