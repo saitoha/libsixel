@@ -124,12 +124,10 @@ clipboard_windows_duplicate_hglobal(HGLOBAL handle,
                                     unsigned char **buffer_out,
                                     size_t *length_out)
 {
-    SIXELSTATUS status;
     SIZE_T handle_size;
     unsigned char *buffer;
     void *view;
 
-    status = SIXEL_FALSE;
     handle_size = 0u;
     buffer = NULL;
     view = NULL;
@@ -226,7 +224,6 @@ static SIXELSTATUS
 clipboard_windows_read_text(unsigned char **data,
                             size_t *size)
 {
-    SIXELSTATUS status;
     HANDLE raw_handle;
     wchar_t const *wide_text;
     size_t wide_length;
@@ -234,7 +231,6 @@ clipboard_windows_read_text(unsigned char **data,
     unsigned char *buffer;
     int convert_result;
 
-    status = SIXEL_FALSE;
     raw_handle = NULL;
     wide_text = NULL;
     wide_length = 0u;
@@ -368,7 +364,6 @@ static SIXELSTATUS
 clipboard_windows_write_text(unsigned char const *data,
                              size_t size)
 {
-    SIXELSTATUS status;
     HGLOBAL handle;
     wchar_t *wide_buffer;
     size_t wide_length;
@@ -376,7 +371,6 @@ clipboard_windows_write_text(unsigned char const *data,
     int convert_result;
     size_t allocation_size;
 
-    status = SIXEL_FALSE;
     handle = NULL;
     wide_buffer = NULL;
     wide_length = 0u;
@@ -460,13 +454,11 @@ static SIXELSTATUS
 clipboard_windows_write_png(unsigned char const *data,
                             size_t size)
 {
-    SIXELSTATUS status;
     HGLOBAL handle;
     unsigned char *view;
     UINT png_format;
     size_t allocation_size;
 
-    status = SIXEL_FALSE;
     handle = NULL;
     view = NULL;
     png_format = 0u;
