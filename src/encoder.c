@@ -112,8 +112,8 @@
 #include "dither.h"
 #include "frame.h"
 #include "rgblookup.h"
-#include "compat_stub.h"
 #include "clipboard.h"
+#include "compat_stub.h"
 
 static void clipboard_select_format(char *dest,
                                     size_t dest_size,
@@ -138,23 +138,6 @@ static SIXELSTATUS clipboard_read_file(char const *path,
 # endif
 # if defined(_MSC_VER)
 #   include <time.h>
-# endif
-
-/* for msvc */
-# ifndef STDIN_FILENO
-#  define STDIN_FILENO 0
-# endif
-# ifndef STDOUT_FILENO
-#  define STDOUT_FILENO 1
-# endif
-# ifndef STDERR_FILENO
-#  define STDERR_FILENO 2
-# endif
-# ifndef S_IRUSR
-#  define S_IRUSR _S_IREAD
-# endif
-# ifndef S_IWUSR
-#  define S_IWUSR _S_IWRITE
 # endif
 
 # if defined(CLOCKS_PER_SEC)
