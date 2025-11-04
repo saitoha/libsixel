@@ -66,6 +66,7 @@ install_quicklook_script = $(top_srcdir)/tools/quicklook-extension.bash
 
 SixelPreview_SOURCES = \
     Sources/SixelPreviewMain.m \
+    Sources/SixelPreviewProvider.h \
     Sources/SixelPreviewProvider.m \
     Sources/SixelQuickLookShared.m
 SixelPreview_CPPFLAGS = $(AM_CPPFLAGS)
@@ -74,6 +75,7 @@ SixelPreview_LDADD = libsixelquicklookcore.a @APPLE_QUICKLOOK_EXTENSION_LIBS@
 
 SixelThumbnail_SOURCES = \
     Sources/SixelThumbnailMain.m \
+    Sources/SixelThumbnailProvider.h \
     Sources/SixelThumbnailProvider.m \
     Sources/SixelQuickLookShared.m
 SixelThumbnail_CPPFLAGS = $(AM_CPPFLAGS)
@@ -88,7 +90,9 @@ SixelQuickLookHost_OBJCFLAGS = $(AM_OBJCFLAGS)
 
 SixelPreviewBridge_SOURCES = \
     Sources/SixelPreviewBridge.m \
+    Sources/SixelQuickLookShared.h \
     Sources/SixelQuickLookShared.m
+
 SixelPreviewBridge_CPPFLAGS = $(AM_CPPFLAGS)
 SixelPreviewBridge_OBJCFLAGS = $(AM_OBJCFLAGS)
 SixelPreviewBridge_LDADD = libsixelquicklookcore.a @APPLE_QUICKLOOK_EXTENSION_LIBS@
