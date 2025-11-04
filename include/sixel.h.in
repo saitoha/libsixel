@@ -165,6 +165,11 @@ typedef int SIXELSTATUS;
 #define SIXEL_DEQUANTIZE_K_UNDITHER_PLUS 0x2  /* Kornel's undither with
                                                  post-refine smoothing */
 
+/* quantize model */
+#define SIXEL_QUANTIZE_MODEL_AUTO        0x0
+#define SIXEL_QUANTIZE_MODEL_MEDIANCUT   0x1
+#define SIXEL_QUANTIZE_MODEL_KMEANS      0x2
+
 /* pixelformat type of input image
    NOTE: for compatibility, the value of PIXELFORAMT_COLOR_RGB888 must be 3 */
 #define SIXEL_PIXELFORMAT_RGB555   (SIXEL_FORMATTYPE_COLOR     | 0x01) /* 15bpp */
@@ -350,6 +355,15 @@ typedef int SIXELSTATUS;
                                                     histogram -> similar with average
                                                                  but considers color
                                                                  histogram
+                                                */
+#define SIXEL_OPTFLAG_QUANTIZE_MODEL    ('Q')  /* -Q MODEL, --quantize-model=MODEL:
+                                                  choose palette solver.
+                                                  MODEL is one of them:
+                                                    auto     -> select model
+                                                                automatically
+                                                                (default, Heckbert)
+                                                    heckbert -> median-cut solver
+                                                    kmeans   -> k-means solver
                                                 */
 #define SIXEL_OPTFLAG_CROP              ('c')  /* -c REGION, --crop=REGION:
                                                   crop source image to fit the

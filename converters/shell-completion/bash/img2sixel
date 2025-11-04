@@ -97,6 +97,12 @@ _img2sixel()
                                    256' -- "$cur" ) )
         return 0
         ;;
+    -Q|--quantize-model)
+        COMPREPLY=( $( compgen -W 'auto \
+                                   heckbert \
+                                   kmeans' -- "$cur" ) )
+        return 0
+        ;;
     -m|--mapfile|-M|--mapfile-output)
         _img2sixel_filedir
         return 0
@@ -259,6 +265,7 @@ _img2sixel()
                                    -R --gri-limit \
                                    -6 --6reversible \
                                    -p --colors \
+                                   -Q --quantize-model \
                                    -m --mapfile \
                                    -M --mapfile-output \
                                    -e --monochrome \

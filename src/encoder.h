@@ -57,6 +57,7 @@ struct sixel_encoder {
     int method_for_largest;
     int method_for_rep;
     int quality_mode;
+    int quantize_model;
     int lut_policy;
     int sixel_reversible;
     int method_for_resampling;

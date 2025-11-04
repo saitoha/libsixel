@@ -152,6 +152,9 @@ SIXEL_QUALITY_HIGH      = 0x1  # high quality palette construction
 SIXEL_QUALITY_LOW       = 0x2  # low quality palette construction
 SIXEL_QUALITY_FULL      = 0x3  # full quality palette construction
 SIXEL_QUALITY_HIGHCOLOR = 0x4  # high color
+SIXEL_QUANTIZE_MODEL_AUTO      = 0x0  # choose palette solver automatically
+SIXEL_QUANTIZE_MODEL_MEDIANCUT = 0x1  # Heckbert median-cut solver
+SIXEL_QUANTIZE_MODEL_KMEANS    = 0x2  # k-means palette solver
 
 # built-in dither
 SIXEL_BUILTIN_MONO_DARK   = 0x0  # monochrome terminal with dark background
@@ -351,6 +354,15 @@ SIXEL_OPTFLAG_SELECT_COLOR     = 's'  # -s SELECTTYPE, --select-color=SELECTTYPE
                                       #          histogram -> similar with average
                                       #                       but considers color
                                       #                       histogram
+SIXEL_OPTFLAG_QUANTIZE_MODEL   = 'Q'  # -Q MODEL, --quantize-model=MODEL:
+                                      #        choose the palette solver.
+                                      #        MODEL is one of them:
+                                      #          auto     -> select solver
+                                      #                      automatically
+                                      #                      (Heckbert)
+                                      #          heckbert -> Heckbert median-cut
+                                      #          kmeans   -> k-means palette
+                                      #                      clustering
 
 SIXEL_OPTFLAG_CROP             = 'c'  # -c REGION, --crop=REGION:
                                       #        crop source image to fit the
