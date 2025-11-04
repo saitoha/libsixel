@@ -116,6 +116,7 @@ if img2sixel_opt.enabled()
       'test_0014_option_matching.bash',
       'test_0015_argument_shift.bash',
       'test_0016_assessment_spool.bash',
+      'test_0017_clipboard.bash',
     ]
 
     tests_dir = join_paths(meson.source_root(), 'tests', 'converters')
